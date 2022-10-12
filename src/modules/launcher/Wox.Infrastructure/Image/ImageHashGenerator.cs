@@ -44,7 +44,7 @@ namespace Wox.Infrastructure.Image
             }
             catch (System.Exception e)
             {
-                Log.Exception($"Failed to get hash from image", e, MethodBase.GetCurrentMethod().DeclaringType);
+                Log.Exception("Failed to get hash from image", e, MethodBase.GetCurrentMethod().DeclaringType);
                 return null;
             }
         }

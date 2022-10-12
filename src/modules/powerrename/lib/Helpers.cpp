@@ -390,7 +390,6 @@ BOOL GetEnumeratedFileName(__out_ecount(cchMax) PWSTR pszUniqueName, UINT cchMax
         hr = E_INVALIDARG;
     }
 
-    int cchTmp = 0;
     int cchStem = 0;
     PCWSTR pszStem = nullptr;
     PCWSTR pszRest = nullptr;
@@ -450,7 +449,7 @@ BOOL GetEnumeratedFileName(__out_ecount(cchMax) PWSTR pszUniqueName, UINT cchMax
             return FALSE;
         }
         ulMin = ulMinLong;
-        cchTmp = cchMax - cchDir - cchStem - (cchFormat - 3);
+        int cchTmp = cchMax - cchDir - cchStem - (cchFormat - 3);
         switch (cchTmp)
         {
         case 1:

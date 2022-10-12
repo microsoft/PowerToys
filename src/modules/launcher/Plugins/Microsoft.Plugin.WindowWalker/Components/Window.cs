@@ -387,7 +387,7 @@ namespace Microsoft.Plugin.WindowWalker.Components
                 {
                     new Task(() =>
                     {
-                        EnumWindowsProc callbackptr = new EnumWindowsProc((IntPtr hwnd, IntPtr lParam) =>
+                        EnumWindowsProc callbackptr = new EnumWindowsProc((hwnd, lParam) =>
                         {
                             // Every uwp app main window has at least three child windows. Only the one we are interested in has a class starting with "Windows.UI.Core." and is assigned to the real app process.
                             // (The other ones have a class name that begins with the string "ApplicationFrame".)

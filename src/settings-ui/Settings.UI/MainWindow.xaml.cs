@@ -87,7 +87,7 @@ namespace Microsoft.PowerToys.Settings.UI
             this.InitializeComponent();
 
             // receive IPC Message
-            App.IPCMessageReceivedCallback = (string msg) =>
+            App.IPCMessageReceivedCallback = msg =>
             {
                 if (ShellPage.ShellHandler.IPCResponseHandleList != null)
                 {

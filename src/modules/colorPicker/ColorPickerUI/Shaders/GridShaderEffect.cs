@@ -17,10 +17,10 @@ namespace ColorPicker.Shaders
             };
 
         public static readonly DependencyProperty InputProperty = ShaderEffect.RegisterPixelShaderSamplerProperty("Input", typeof(GridShaderEffect), 0);
-        public static readonly DependencyProperty MousePositionProperty = DependencyProperty.Register("MousePosition", typeof(Point), typeof(GridShaderEffect), new UIPropertyMetadata(new Point(0D, 0D), PixelShaderConstantCallback(1)));
-        public static readonly DependencyProperty RadiusProperty = DependencyProperty.Register("Radius", typeof(double), typeof(GridShaderEffect), new UIPropertyMetadata((double)0D, PixelShaderConstantCallback(2)));
-        public static readonly DependencyProperty SquareSizeProperty = DependencyProperty.Register("SquareSize", typeof(double), typeof(GridShaderEffect), new UIPropertyMetadata((double)0D, PixelShaderConstantCallback(3)));
-        public static readonly DependencyProperty TextureSizeProperty = DependencyProperty.Register("TextureSize", typeof(double), typeof(GridShaderEffect), new UIPropertyMetadata((double)0D, PixelShaderConstantCallback(4)));
+        public static readonly DependencyProperty MousePositionProperty = DependencyProperty.Register(nameof(MousePosition), typeof(Point), typeof(GridShaderEffect), new UIPropertyMetadata(new Point(0D, 0D), PixelShaderConstantCallback(1)));
+        public static readonly DependencyProperty RadiusProperty = DependencyProperty.Register(nameof(Radius), typeof(double), typeof(GridShaderEffect), new UIPropertyMetadata((double)0D, PixelShaderConstantCallback(2)));
+        public static readonly DependencyProperty SquareSizeProperty = DependencyProperty.Register(nameof(SquareSize), typeof(double), typeof(GridShaderEffect), new UIPropertyMetadata((double)0D, PixelShaderConstantCallback(3)));
+        public static readonly DependencyProperty TextureSizeProperty = DependencyProperty.Register(nameof(TextureSize), typeof(double), typeof(GridShaderEffect), new UIPropertyMetadata((double)0D, PixelShaderConstantCallback(4)));
 
         public GridShaderEffect()
         {

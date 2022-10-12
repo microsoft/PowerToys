@@ -75,7 +75,6 @@ D2D1_RECT_F ZonesOverlay::ConvertRect(RECT rect)
 
 ZonesOverlay::ZonesOverlay(HWND window)
 {
-    HRESULT hr;
     m_window = window;
     m_renderTarget = nullptr;
     m_shouldRender = false;
@@ -98,7 +97,8 @@ ZonesOverlay::ZonesOverlay(HWND window)
     auto renderTargetSize = D2D1::SizeU(m_clientRect.right - m_clientRect.left, m_clientRect.bottom - m_clientRect.top);
     auto hwndRenderTargetProperties = D2D1::HwndRenderTargetProperties(window, renderTargetSize);
 
-    hr = GetD2DFactory()->CreateHwndRenderTarget(renderTargetProperties, hwndRenderTargetProperties, &m_renderTarget);
+    HRESULT hr = GetD2DFactory()->CreateHwndRenderTarget(renderTargetProperties, hwndRenderTargetProperties,
+                                                         &m_renderTarget);
 
     if (!SUCCEEDED(hr))
     {

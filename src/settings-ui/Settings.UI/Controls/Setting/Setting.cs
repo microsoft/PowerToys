@@ -27,25 +27,25 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
         }
 
         public static readonly DependencyProperty HeaderProperty = DependencyProperty.Register(
-           "Header",
+           nameof(Header),
            typeof(string),
            typeof(Setting),
            new PropertyMetadata(default(string), OnHeaderChanged));
 
         public static readonly DependencyProperty DescriptionProperty = DependencyProperty.Register(
-            "Description",
+            nameof(Description),
             typeof(object),
             typeof(Setting),
             new PropertyMetadata(null, OnDescriptionChanged));
 
         public static readonly DependencyProperty IconProperty = DependencyProperty.Register(
-            "Icon",
+            nameof(Icon),
             typeof(object),
             typeof(Setting),
             new PropertyMetadata(default(string), OnIconChanged));
 
         public static readonly DependencyProperty ActionContentProperty = DependencyProperty.Register(
-            "ActionContent",
+            nameof(ActionContent),
             typeof(object),
             typeof(Setting),
             null);

@@ -435,8 +435,7 @@ namespace FancyZonesUnitTests
                 
                 TEST_METHOD (ToJsonWithOptionals)
                 {
-                    json::JsonObject expected = json::JsonObject();
-                    expected = json::JsonObject::Parse(L"{\"rows\": 3, \"columns\": 4}");
+                    json::JsonObject expected = json::JsonObject::Parse(L"{\"rows\": 3, \"columns\": 4}");
                     expected.SetNamedValue(L"rows-percentage", m_rowsArray);
                     expected.SetNamedValue(L"columns-percentage", m_columnsArray);
                     expected.SetNamedValue(L"cell-child-map", m_cells);
@@ -534,8 +533,7 @@ namespace FancyZonesUnitTests
 
                 TEST_METHOD(FromJsonWithOptionals)
                 {
-                    json::JsonObject json = json::JsonObject();
-                    json = json::JsonObject::Parse(L"{\"rows\": 3, \"columns\": 4}");
+                    json::JsonObject json = json::JsonObject::Parse(L"{\"rows\": 3, \"columns\": 4}");
                     json.SetNamedValue(L"rows-percentage", m_rowsArray);
                     json.SetNamedValue(L"columns-percentage", m_columnsArray);
                     json.SetNamedValue(L"cell-child-map", m_cells);

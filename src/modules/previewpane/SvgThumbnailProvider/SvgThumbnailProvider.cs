@@ -103,12 +103,12 @@ namespace Microsoft.PowerToys.ThumbnailHandler.Svg
             _browser.Visible = true;
             _browser.Width = (int)cx;
             _browser.Height = (int)cx;
-            _browser.NavigationCompleted += async (object sender, CoreWebView2NavigationCompletedEventArgs args) =>
+            _browser.NavigationCompleted += async (sender, args) =>
             {
-                var a = await _browser.ExecuteScriptAsync($"document.getElementsByTagName('svg')[0].viewBox;");
+                var a = await _browser.ExecuteScriptAsync("document.getElementsByTagName('svg')[0].viewBox;");
                 if (a != null)
                 {
-                    await _browser.ExecuteScriptAsync($"document.getElementsByTagName('svg')[0].style = 'width:100%;height:100%';");
+                    await _browser.ExecuteScriptAsync("document.getElementsByTagName('svg')[0].style = 'width:100%;height:100%';");
                 }
 
                 // Hide scrollbar - fixes #18286
@@ -154,7 +154,7 @@ namespace Microsoft.PowerToys.ThumbnailHandler.Svg
 
                     // Don't load any resources.
                     _browser.CoreWebView2.AddWebResourceRequestedFilter("*", CoreWebView2WebResourceContext.All);
-                    _browser.CoreWebView2.WebResourceRequested += (object sender, CoreWebView2WebResourceRequestedEventArgs e) =>
+                    _browser.CoreWebView2.WebResourceRequested += (sender, e) =>
                     {
                         // Show local file we've saved with the svg contents. Block all else.
                         if (new Uri(e.Request.Uri) != _localFileURI)

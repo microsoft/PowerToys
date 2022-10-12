@@ -60,7 +60,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
 
             // set the callback functions value to hangle outgoing IPC message.
             SendConfigMSG = ipcMSGCallBackFunc;
-            callback = (PowerLauncherSettings s) =>
+            callback = s =>
             {
                 // Propagate changes to Power Launcher through IPC
                 // Using InvariantCulture as this is an IPC message

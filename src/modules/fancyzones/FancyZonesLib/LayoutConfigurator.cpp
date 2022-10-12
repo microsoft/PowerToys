@@ -241,15 +241,13 @@ ZonesMap LayoutConfigurator::Rows(FancyZonesUtils::Rect workArea, int zoneCount,
 
     long top = spacing;
     long left = spacing;
-    long bottom;
-    long right;
 
     // Note: The expressions below are NOT equal to total{Width|Height} / zoneCount and are done
     // like this to make the sum of all zones' sizes exactly total{Width|Height}.
     for (int zoneIndex = 0; zoneIndex < zoneCount; ++zoneIndex)
     {
-        right = totalWidth + spacing;
-        bottom = top + (zoneIndex + 1) * totalHeight / zoneCount - zoneIndex * totalHeight / zoneCount;
+        long right = totalWidth + spacing;
+        long bottom = top + (zoneIndex + 1) * totalHeight / zoneCount - zoneIndex * totalHeight / zoneCount;
 
         auto zone = MakeZone(RECT{ left, top, right, bottom }, zones.size());
         if (zone)
@@ -282,15 +280,13 @@ ZonesMap LayoutConfigurator::Columns(FancyZonesUtils::Rect workArea, int zoneCou
 
     long top = spacing;
     long left = spacing;
-    long bottom;
-    long right;
 
     // Note: The expressions below are NOT equal to total{Width|Height} / zoneCount and are done
     // like this to make the sum of all zones' sizes exactly total{Width|Height}.
     for (int zoneIndex = 0; zoneIndex < zoneCount; ++zoneIndex)
     {
-        right = left + (zoneIndex + 1) * totalWidth / zoneCount - zoneIndex * totalWidth / zoneCount;
-        bottom = totalHeight + spacing;
+        long right = left + (zoneIndex + 1) * totalWidth / zoneCount - zoneIndex * totalWidth / zoneCount;
+        long bottom = totalHeight + spacing;
 
         auto zone = MakeZone(RECT{ left, top, right, bottom }, zones.size());
         if (zone)
@@ -316,13 +312,13 @@ ZonesMap LayoutConfigurator::Columns(FancyZonesUtils::Rect workArea, int zoneCou
 
 ZonesMap LayoutConfigurator::Grid(FancyZonesUtils::Rect workArea, int zoneCount, int spacing) noexcept
 {
-    int rows = 1, columns = 1;
+    int rows = 1;
     while (zoneCount / rows >= rows)
     {
         rows++;
     }
     rows--;
-    columns = zoneCount / rows;
+    int columns = zoneCount / rows;
     if (zoneCount % rows == 0)
     {
         // even grid

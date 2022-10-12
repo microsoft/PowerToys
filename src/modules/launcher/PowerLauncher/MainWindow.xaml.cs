@@ -710,7 +710,7 @@ namespace PowerLauncher
             }
             catch (Exception ex)
             {
-                Log.Exception($"Exception when trying to Remove hook", ex, ex.GetType());
+                Log.Exception("Exception when trying to Remove hook", ex, ex.GetType());
             }
 
             _hwndSource = null;

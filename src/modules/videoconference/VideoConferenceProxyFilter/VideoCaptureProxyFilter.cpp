@@ -725,8 +725,7 @@ HRESULT VideoCaptureProxyFilter::EnumPins(IEnumPins** ppEnum)
     {
         LOG("VideoCaptureProxyFilter::EnumPins started pin initialization");
         const auto newSettings = SyncCurrentSettings();
-        std::vector<VideoCaptureDeviceInfo> webcams;
-        webcams = VideoCaptureDevice::ListAll();
+        std::vector<VideoCaptureDeviceInfo> webcams = VideoCaptureDevice::ListAll();
         if (webcams.empty())
         {
             LOG("VideoCaptureProxyFilter::EnumPins no physical webcams found");
@@ -893,7 +892,6 @@ VideoCaptureProxyFilter::SyncedSettings VideoCaptureProxyFilter::SyncCurrentSett
 
     _settingsUpdateChannel->access([this, &result](auto settingsMemory) {
         auto settings = reinterpret_cast<CameraSettingsUpdateChannel*>(settingsMemory._data);
-        bool cameraNameUpdated = false;
         result.webcamDisabled = settings->useOverlayImage;
 
         settings->cameraInUse = true;
@@ -903,7 +901,7 @@ VideoCaptureProxyFilter::SyncedSettings VideoCaptureProxyFilter::SyncCurrentSett
             std::wstring_view newCameraNameView{ settings->sourceCameraName->data() };
             if (!_currentSourceCameraName.has_value() || *_currentSourceCameraName != newCameraNameView)
             {
-                cameraNameUpdated = true;
+                bool cameraNameUpdated = true;
                 result.newCameraName = newCameraNameView;
             }
         }

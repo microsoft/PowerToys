@@ -34,8 +34,6 @@ FrameDrawer::FrameDrawer(HWND window) :
 
 bool FrameDrawer::CreateRenderTargets(const RECT& clientRect)
 {
-    HRESULT hr;
-
     constexpr float DPI = 96.f; // Always using the default in DPI-aware mode
     const auto renderTargetProperties = D2D1::RenderTargetProperties(
         D2D1_RENDER_TARGET_TYPE_DEFAULT,
@@ -55,7 +53,8 @@ bool FrameDrawer::CreateRenderTargets(const RECT& clientRect)
 
     const auto hwndRenderTargetProperties = D2D1::HwndRenderTargetProperties(m_window, renderTargetSize, D2D1_PRESENT_OPTIONS_NONE);
 
-    hr = GetD2DFactory()->CreateHwndRenderTarget(renderTargetProperties, hwndRenderTargetProperties, m_renderTarget.put());
+    HRESULT hr = GetD2DFactory()->CreateHwndRenderTarget(renderTargetProperties, hwndRenderTargetProperties,
+                                                         m_renderTarget.put());
 
     if (!SUCCEEDED(hr) || !m_renderTarget)
     {

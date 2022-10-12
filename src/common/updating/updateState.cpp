@@ -56,10 +56,9 @@ bool IsOldFileVersion(const std::wstring_view fileVersion)
 UpdateState UpdateState::read()
 {
     const auto filename = PTSettingsHelper::get_root_save_folder_location() + PERSISTENT_STATE_FILENAME;
-    std::optional<json::JsonObject> json;
     wil::unique_mutex_nothrow mutex{ CreateMutexW(nullptr, FALSE, UPDATE_STATE_MUTEX) };
     auto lock = mutex.acquire();
-    json = json::from_file(filename);
+    std::optional<json::JsonObject> json = json::from_file(filename);
 
     if (json.has_value() && !IsOldFileVersion(json->GetNamedString(L"updateStateFileVersion", L"").c_str()))
     {
@@ -80,11 +79,10 @@ void UpdateState::store(std::function<void(UpdateState&)> stateModifier)
 {
     const auto filename = PTSettingsHelper::get_root_save_folder_location() + PERSISTENT_STATE_FILENAME;
 
-    std::optional<json::JsonObject> json;
     {
         wil::unique_mutex_nothrow mutex{ CreateMutexW(nullptr, FALSE, UPDATE_STATE_MUTEX) };
         auto lock = mutex.acquire();
-        json = json::from_file(filename);
+        std::optional<json::JsonObject> json = json::from_file(filename);
         UpdateState state;
         if (json)
         {

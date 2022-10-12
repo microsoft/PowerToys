@@ -40,7 +40,7 @@ namespace Microsoft.Interop.Tests
                 using (var serverPipe = new TwoWayPipeMessageIPCManaged(
                     ServerSidePipe,
                     ClientSidePipe,
-                    (string msg) =>
+                    msg =>
                     {
                         Assert.AreEqual(testString, msg);
                         reset.Set();

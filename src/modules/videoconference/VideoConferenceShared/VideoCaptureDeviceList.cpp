@@ -30,7 +30,6 @@ void VideoCaptureDeviceList::Clear()
 
 HRESULT VideoCaptureDeviceList::EnumerateDevices()
 {
-    HRESULT hr = S_OK;
     wil::com_ptr<IMFAttributes> pAttributes;
     Clear();
     auto mfplatAPI = mfplatAPIProvider::create();
@@ -43,7 +42,7 @@ HRESULT VideoCaptureDeviceList::EnumerateDevices()
     // Initialize an attribute store. We will use this to
     // specify the enumeration parameters.
 
-    hr = mfplatAPI->MFCreateAttributes(&pAttributes, 1);
+    HRESULT hr = mfplatAPI->MFCreateAttributes(&pAttributes, 1);
 
     // Ask for source type = video capture devices
     if (SUCCEEDED(hr))

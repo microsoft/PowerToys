@@ -82,13 +82,11 @@ namespace MonitorUtils
 
         std::vector<FancyZonesDataTypes::MonitorId> GetHardwareMonitorIds()
         {
-            HRESULT hres;
-
             // Obtain the initial locator to Windows Management
             // on a particular host computer.
             IWbemLocator* pLocator = 0;
 
-            hres = CoCreateInstance(CLSID_WbemLocator, 0, CLSCTX_INPROC_SERVER, IID_IWbemLocator, (LPVOID*)&pLocator);
+            HRESULT hres = CoCreateInstance(CLSID_WbemLocator, 0, CLSCTX_INPROC_SERVER, IID_IWbemLocator, (LPVOID*)&pLocator);
             if (FAILED(hres))
             {
                 Logger::error(L"Failed to create IWbemLocator object. {}", get_last_error_or_default(hres));

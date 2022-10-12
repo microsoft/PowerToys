@@ -16,7 +16,7 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
             set { SetValue(TextProperty, value); }
         }
 
-        public static readonly DependencyProperty TextProperty = DependencyProperty.Register("Text", typeof(string), typeof(PowerAccentShortcutControl), new PropertyMetadata(default(string)));
+        public static readonly DependencyProperty TextProperty = DependencyProperty.Register(nameof(Text), typeof(string), typeof(PowerAccentShortcutControl), new PropertyMetadata(default(string)));
 
         public List<object> Keys
         {
@@ -24,7 +24,7 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
             set { SetValue(KeysProperty, value); }
         }
 
-        public static readonly DependencyProperty KeysProperty = DependencyProperty.Register("Keys", typeof(List<object>), typeof(PowerAccentShortcutControl), new PropertyMetadata(default(string)));
+        public static readonly DependencyProperty KeysProperty = DependencyProperty.Register(nameof(Keys), typeof(List<object>), typeof(PowerAccentShortcutControl), new PropertyMetadata(default(string)));
 
         public PowerAccentShortcutControl()
         {

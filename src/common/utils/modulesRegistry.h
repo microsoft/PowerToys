@@ -65,7 +65,6 @@ inline registry::ChangeSet getMonacoPreviewHandlerChangeSet(const std::wstring i
     ExtExclusions.insert(ExtExclusions.end(), NonLocalizable::ExtMarkdown.begin(), NonLocalizable::ExtMarkdown.end());
     ExtExclusions.insert(ExtExclusions.end(), NonLocalizable::ExtSVG.begin(), NonLocalizable::ExtSVG.end());
     ExtExclusions.insert(ExtExclusions.end(), NonLocalizable::ExtNoNoNo.begin(), NonLocalizable::ExtNoNoNo.end());
-    bool IsExcluded = false;
 
     std::wstring languagesFilePath = fs::path{ installationDir } / NonLocalizable::MONACO_LANGUAGES_FILE_NAME;
     auto json = json::from_file(languagesFilePath);
@@ -74,6 +73,7 @@ inline registry::ChangeSet getMonacoPreviewHandlerChangeSet(const std::wstring i
     {
         try
         {
+            bool IsExcluded = false;
             auto list = json->GetNamedArray(NonLocalizable::ListID);
             for (uint32_t i = 0; i < list.Size(); ++i)
             {

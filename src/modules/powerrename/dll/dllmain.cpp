@@ -130,10 +130,9 @@ STDAPI DllCanUnloadNow(void)
 //
 STDAPI DllGetClassObject(_In_ REFCLSID clsid, _In_ REFIID riid, _Outptr_ void** ppv)
 {
-    HRESULT hr = E_FAIL;
     *ppv = NULL;
     CPowerRenameClassFactory* pClassFactory = new CPowerRenameClassFactory(clsid);
-    hr = pClassFactory->QueryInterface(riid, ppv);
+    HRESULT hr = pClassFactory->QueryInterface(riid, ppv);
     pClassFactory->Release();
     return hr;
 }

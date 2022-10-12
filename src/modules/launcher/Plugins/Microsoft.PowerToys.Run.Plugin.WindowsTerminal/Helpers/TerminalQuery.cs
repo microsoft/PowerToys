@@ -37,7 +37,7 @@ namespace Microsoft.PowerToys.Run.Plugin.WindowsTerminal.Helpers
 
             if (!Terminals.Any())
             {
-                Log.Warn($"No Windows Terminal packages installed", typeof(TerminalQuery));
+                Log.Warn("No Windows Terminal packages installed", typeof(TerminalQuery));
             }
 
             foreach (var terminal in Terminals)

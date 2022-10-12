@@ -107,13 +107,12 @@ void App::OnLaunched(LaunchActivatedEventArgs const&)
 
 #define BUFSIZE 4096 * 4
 
-    BOOL bSuccess;
     WCHAR chBuf[BUFSIZE];
     DWORD dwRead;
     for (;;)
     {
         // Read from standard input and stop on error or no data.
-        bSuccess = ReadFile(hStdin, chBuf, BUFSIZE * sizeof(wchar_t), &dwRead, NULL);
+        BOOL bSuccess = ReadFile(hStdin, chBuf, BUFSIZE * sizeof(wchar_t), &dwRead, NULL);
 
         if (!bSuccess || dwRead == 0)
             break;

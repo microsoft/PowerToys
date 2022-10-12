@@ -84,7 +84,7 @@ namespace Microsoft.PowerToys.Settings.UI
                 return Constants.ShowColorPickerSharedEvent();
             });
 
-            OobeShellPage.SetOpenMainWindowCallback((Type type) =>
+            OobeShellPage.SetOpenMainWindowCallback(type =>
             {
                 App.OpenSettingsWindow(type);
             });

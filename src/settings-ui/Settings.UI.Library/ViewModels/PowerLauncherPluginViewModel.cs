@@ -27,7 +27,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
             this.isDark = isDark;
             foreach (var item in AdditionalOptions)
             {
-                item.PropertyChanged += (object sender, PropertyChangedEventArgs e) =>
+                item.PropertyChanged += (sender, e) =>
                 {
                     NotifyPropertyChanged(nameof(AdditionalOptions));
                 };

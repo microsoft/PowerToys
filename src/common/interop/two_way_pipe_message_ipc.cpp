@@ -80,8 +80,7 @@ void TwoWayPipeMessageIPC::TwoWayPipeMessageIPCImpl::send_pipe_message(std::wstr
     // Adapted from https://learn.microsoft.com/windows/win32/ipc/named-pipe-client
     HANDLE output_pipe_handle;
     const wchar_t* message_send = message.c_str();
-    BOOL fSuccess = FALSE;
-    DWORD cbToWrite, cbWritten, dwMode;
+    DWORD cbWritten, dwMode;
     const wchar_t* lpszPipename = output_pipe_name.c_str();
 
     // Try to open a named pipe; wait for it, if necessary.
@@ -118,7 +117,7 @@ void TwoWayPipeMessageIPC::TwoWayPipeMessageIPCImpl::send_pipe_message(std::wstr
         }
     }
     dwMode = PIPE_READMODE_MESSAGE;
-    fSuccess = SetNamedPipeHandleState(
+    BOOL fSuccess = SetNamedPipeHandleState(
         output_pipe_handle, // pipe handle
         &dwMode, // new pipe mode
         NULL, // don't set maximum bytes
@@ -130,7 +129,7 @@ void TwoWayPipeMessageIPC::TwoWayPipeMessageIPCImpl::send_pipe_message(std::wstr
 
     // Send a message to the pipe server.
 
-    cbToWrite = (lstrlen(message_send)) * sizeof(WCHAR); // no need to send final '\0'. Pipe is in message mode.
+    DWORD cbToWrite = (lstrlen(message_send)) * sizeof(WCHAR); // no need to send final '\0'. Pipe is in message mode.
 
     fSuccess = WriteFile(
         output_pipe_handle, // pipe handle
@@ -163,7 +162,6 @@ BOOL TwoWayPipeMessageIPC::TwoWayPipeMessageIPCImpl::GetLogonSID(HANDLE hToken, 
 {
     // From https://learn.microsoft.com/previous-versions/aa446670(v=vs.85)
     BOOL bSuccess = FALSE;
-    DWORD dwIndex;
     DWORD dwLength = 0;
     PTOKEN_GROUPS ptg = NULL;
 
@@ -207,7 +205,7 @@ BOOL TwoWayPipeMessageIPC::TwoWayPipeMessageIPCImpl::GetLogonSID(HANDLE hToken, 
 
     // Loop through the groups to find the logon SID.
 
-    for (dwIndex = 0; dwIndex < ptg->GroupCount; dwIndex++)
+    for (DWORD dwIndex = 0; dwIndex < ptg->GroupCount; dwIndex++)
         if ((ptg->Groups[dwIndex].Attributes & SE_GROUP_LOGON_ID) == SE_GROUP_LOGON_ID)
         {
             // Found the logon SID; make a copy of it.
@@ -399,7 +397,6 @@ void TwoWayPipeMessageIPC::TwoWayPipeMessageIPCImpl::start_named_pipe_server(HAN
 {
     // Adapted from https://learn.microsoft.com/windows/win32/ipc/multithreaded-pipe-server
     const wchar_t* pipe_name = input_pipe_name.c_str();
-    BOOL connected = FALSE;
     HANDLE connect_pipe_handle = INVALID_HANDLE_VALUE;
     while (!closed)
     {
@@ -429,7 +426,7 @@ void TwoWayPipeMessageIPC::TwoWayPipeMessageIPCImpl::start_named_pipe_server(HAN
             }
             current_connect_pipe_handle = connect_pipe_handle;
         }
-        connected = ConnectNamedPipe(connect_pipe_handle, NULL) ? TRUE : (GetLastError() == ERROR_PIPE_CONNECTED);
+        BOOL connected = ConnectNamedPipe(connect_pipe_handle, NULL) ? TRUE : (GetLastError() == ERROR_PIPE_CONNECTED);
         {
             std::unique_lock lock(pipe_connect_handle_mutex);
             current_connect_pipe_handle = NULL;

@@ -19,13 +19,13 @@ namespace ColorPicker.Controls
     /// </summary>
     public partial class ColorFormatControl : UserControl
     {
-        public static readonly DependencyProperty ColorFormatModelProperty = DependencyProperty.Register("ColorFormatModel", typeof(ColorFormatModel), typeof(ColorFormatControl), new PropertyMetadata(ColorFormatModelPropertyChanged));
+        public static readonly DependencyProperty ColorFormatModelProperty = DependencyProperty.Register(nameof(ColorFormatModel), typeof(ColorFormatModel), typeof(ColorFormatControl), new PropertyMetadata(ColorFormatModelPropertyChanged));
 
-        public static readonly DependencyProperty SelectedColorProperty = DependencyProperty.Register("SelectedColor", typeof(Color), typeof(ColorFormatControl), new PropertyMetadata(SelectedColorPropertyChanged));
+        public static readonly DependencyProperty SelectedColorProperty = DependencyProperty.Register(nameof(SelectedColor), typeof(Color), typeof(ColorFormatControl), new PropertyMetadata(SelectedColorPropertyChanged));
 
-        public static readonly DependencyProperty SelectedColorCopyHelperTextProperty = DependencyProperty.Register("SelectedColorCopyHelperText", typeof(string), typeof(ColorFormatControl));
+        public static readonly DependencyProperty SelectedColorCopyHelperTextProperty = DependencyProperty.Register(nameof(SelectedColorCopyHelperText), typeof(string), typeof(ColorFormatControl));
 
-        public static readonly DependencyProperty ColorCopiedNotificationBorderProperty = DependencyProperty.Register("ColorCopiedNotificationBorder", typeof(FrameworkElement), typeof(ColorFormatControl), new PropertyMetadata(ColorCopiedBorderPropertyChanged));
+        public static readonly DependencyProperty ColorCopiedNotificationBorderProperty = DependencyProperty.Register(nameof(ColorCopiedNotificationBorder), typeof(FrameworkElement), typeof(ColorFormatControl), new PropertyMetadata(ColorCopiedBorderPropertyChanged));
 
         private const int CopyIndicatorStayTimeInMs = 3000;
         private IThrottledActionInvoker _actionInvoker;

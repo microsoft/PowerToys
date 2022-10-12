@@ -21,7 +21,7 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
             set { SetValue(KeysProperty, value); }
         }
 
-        public static readonly DependencyProperty KeysProperty = DependencyProperty.Register("Keys", typeof(List<object>), typeof(SettingsPageControl), new PropertyMetadata(default(string)));
+        public static readonly DependencyProperty KeysProperty = DependencyProperty.Register(nameof(Keys), typeof(List<object>), typeof(SettingsPageControl), new PropertyMetadata(default(string)));
 
         public bool IsError
         {
@@ -29,6 +29,6 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
             set => SetValue(IsErrorProperty, value);
         }
 
-        public static readonly DependencyProperty IsErrorProperty = DependencyProperty.Register("IsError", typeof(bool), typeof(ShortcutDialogContentControl), new PropertyMetadata(false));
+        public static readonly DependencyProperty IsErrorProperty = DependencyProperty.Register(nameof(IsError), typeof(bool), typeof(ShortcutDialogContentControl), new PropertyMetadata(false));
     }
 }

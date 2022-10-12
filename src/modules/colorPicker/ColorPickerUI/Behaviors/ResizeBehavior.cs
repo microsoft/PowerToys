@@ -48,7 +48,7 @@ namespace ColorPicker.Behaviors
             sender.BeginAnimation(prop, move, HandoffBehavior.SnapshotAndReplace);
         }
 
-        public static readonly DependencyProperty WidthProperty = DependencyProperty.Register("Width", typeof(double), typeof(ResizeBehavior), new PropertyMetadata(new PropertyChangedCallback(WidthPropertyChanged)));
+        public static readonly DependencyProperty WidthProperty = DependencyProperty.Register(nameof(Width), typeof(double), typeof(ResizeBehavior), new PropertyMetadata(new PropertyChangedCallback(WidthPropertyChanged)));
 
         private static void WidthPropertyChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
         {
@@ -62,7 +62,7 @@ namespace ColorPicker.Behaviors
             CustomAnimation(FrameworkElement.WidthProperty, sender, fromValue, toValue);
         }
 
-        public static readonly DependencyProperty HeightProperty = DependencyProperty.Register("Height", typeof(double), typeof(ResizeBehavior), new PropertyMetadata(new PropertyChangedCallback(HeightPropertyChanged)));
+        public static readonly DependencyProperty HeightProperty = DependencyProperty.Register(nameof(Height), typeof(double), typeof(ResizeBehavior), new PropertyMetadata(new PropertyChangedCallback(HeightPropertyChanged)));
 
         private static void HeightPropertyChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
         {

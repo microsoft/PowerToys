@@ -69,9 +69,8 @@ LRESULT Toolbar::WindowProcessMessages(HWND hwnd, UINT msg, WPARAM wparam, LPARA
     case WM_PAINT:
     {
         PAINTSTRUCT ps;
-        HDC hdc;
 
-        hdc = BeginPaint(hwnd, &ps);
+        HDC hdc = BeginPaint(hwnd, &ps);
 
         Gdiplus::Graphics graphic(hdc);
 

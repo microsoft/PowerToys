@@ -32,9 +32,9 @@ namespace ColorPicker.Controls
         private Color _originalColor;
         private Color _currentColor;
 
-        public static readonly DependencyProperty SelectedColorProperty = DependencyProperty.Register("SelectedColor", typeof(Color), typeof(ColorPickerControl), new PropertyMetadata(SelectedColorPropertyChanged));
+        public static readonly DependencyProperty SelectedColorProperty = DependencyProperty.Register(nameof(SelectedColor), typeof(Color), typeof(ColorPickerControl), new PropertyMetadata(SelectedColorPropertyChanged));
 
-        public static readonly DependencyProperty SelectedColorChangeCommandProperty = DependencyProperty.Register("SelectedColorChangedCommand", typeof(ICommand), typeof(ColorPickerControl));
+        public static readonly DependencyProperty SelectedColorChangeCommandProperty = DependencyProperty.Register(nameof(SelectedColorChangedCommand), typeof(ICommand), typeof(ColorPickerControl));
 
         public ColorPickerControl()
         {

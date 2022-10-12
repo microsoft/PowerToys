@@ -22,7 +22,6 @@ void ThemeListener::DelChangedHandler(THEME_HANDLE handle)
 
 void ThemeListener::CheckTheme()
 {
-    HANDLE hEvent;
     HKEY hKey;
 
     // Open the Key to listen
@@ -31,7 +30,7 @@ void ThemeListener::CheckTheme()
     while (true)
     {
         // Create an event.
-        hEvent = CreateEvent(NULL, TRUE, FALSE, NULL);
+        HANDLE hEvent = CreateEvent(NULL, TRUE, FALSE, NULL);
         if (hEvent != 0)
         {
             // Watch the registry key for a change of value.

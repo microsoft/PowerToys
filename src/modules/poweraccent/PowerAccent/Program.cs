@@ -80,7 +80,7 @@ internal static class Program
         }
         else
         {
-            Logger.LogInfo($"QuickAccent started detached from PowerToys Runner.");
+            Logger.LogInfo("QuickAccent started detached from PowerToys Runner.");
             _powerToysRunnerPid = -1;
         }
     }

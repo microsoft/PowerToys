@@ -38,9 +38,9 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
             set { SetValue(PageContentProperty, value); }
         }
 
-        public static readonly DependencyProperty TitleProperty = DependencyProperty.Register("Title", typeof(string), typeof(SettingsPageControl), new PropertyMetadata(default(string)));
-        public static readonly DependencyProperty DescriptionProperty = DependencyProperty.Register("Description", typeof(string), typeof(SettingsPageControl), new PropertyMetadata(default(string)));
-        public static readonly DependencyProperty HeroImageProperty = DependencyProperty.Register("HeroImage", typeof(string), typeof(SettingsPageControl), new PropertyMetadata(default(string)));
-        public static readonly DependencyProperty PageContentProperty = DependencyProperty.Register("PageContent", typeof(object), typeof(SettingsPageControl), new PropertyMetadata(new Grid()));
+        public static readonly DependencyProperty TitleProperty = DependencyProperty.Register(nameof(Title), typeof(string), typeof(SettingsPageControl), new PropertyMetadata(default(string)));
+        public static readonly DependencyProperty DescriptionProperty = DependencyProperty.Register(nameof(Description), typeof(string), typeof(SettingsPageControl), new PropertyMetadata(default(string)));
+        public static readonly DependencyProperty HeroImageProperty = DependencyProperty.Register(nameof(HeroImage), typeof(string), typeof(SettingsPageControl), new PropertyMetadata(default(string)));
+        public static readonly DependencyProperty PageContentProperty = DependencyProperty.Register(nameof(PageContent), typeof(object), typeof(SettingsPageControl), new PropertyMetadata(new Grid()));
     }
 }

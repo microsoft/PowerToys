@@ -186,7 +186,7 @@ namespace Microsoft.PowerToys.PreviewHandler.Markdown
 
                                 // Don't load any resources.
                                 _browser.CoreWebView2.AddWebResourceRequestedFilter("*", CoreWebView2WebResourceContext.All);
-                                _browser.CoreWebView2.WebResourceRequested += (object sender, CoreWebView2WebResourceRequestedEventArgs e) =>
+                                _browser.CoreWebView2.WebResourceRequested += (sender, e) =>
                                 {
                                     // Show local file we've saved with the markdown contents. Block all else.
                                     if (new Uri(e.Request.Uri) != _localFileURI)
@@ -212,7 +212,7 @@ namespace Microsoft.PowerToys.PreviewHandler.Markdown
 
                                 Controls.Add(_browser);
 
-                                _browser.NavigationStarting += async (object sender, CoreWebView2NavigationStartingEventArgs args) =>
+                                _browser.NavigationStarting += async (sender, args) =>
                                 {
                                     if (args.Uri != null && args.Uri != _localFileURI?.ToString() && args.IsUserInitiated)
                                     {

@@ -26,7 +26,7 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
             set => SetValue(ContentProperty, value);
         }
 
-        public static readonly DependencyProperty ContentProperty = DependencyProperty.Register("Content", typeof(object), typeof(KeyVisual), new PropertyMetadata(default(string), OnContentChanged));
+        public static readonly DependencyProperty ContentProperty = DependencyProperty.Register(nameof(Content), typeof(object), typeof(KeyVisual), new PropertyMetadata(default(string), OnContentChanged));
 
         public VisualType VisualType
         {
@@ -34,7 +34,7 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
             set => SetValue(VisualTypeProperty, value);
         }
 
-        public static readonly DependencyProperty VisualTypeProperty = DependencyProperty.Register("VisualType", typeof(VisualType), typeof(KeyVisual), new PropertyMetadata(default(VisualType), OnSizeChanged));
+        public static readonly DependencyProperty VisualTypeProperty = DependencyProperty.Register(nameof(VisualType), typeof(VisualType), typeof(KeyVisual), new PropertyMetadata(default(VisualType), OnSizeChanged));
 
         public bool IsError
         {
@@ -42,7 +42,7 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
             set => SetValue(IsErrorProperty, value);
         }
 
-        public static readonly DependencyProperty IsErrorProperty = DependencyProperty.Register("IsError", typeof(bool), typeof(KeyVisual), new PropertyMetadata(false, OnIsErrorChanged));
+        public static readonly DependencyProperty IsErrorProperty = DependencyProperty.Register(nameof(IsError), typeof(bool), typeof(KeyVisual), new PropertyMetadata(false, OnIsErrorChanged));
 
         public KeyVisual()
         {

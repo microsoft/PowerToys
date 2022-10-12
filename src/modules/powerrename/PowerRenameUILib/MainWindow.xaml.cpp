@@ -346,8 +346,7 @@ namespace winrt::PowerRenameUI::implementation
         _TRACER_;
 
         *shellItemArray = nullptr;
-        PIDLIST_ABSOLUTE* itemList = nullptr;
-        itemList = new (std::nothrow) PIDLIST_ABSOLUTE[files.size()];
+        PIDLIST_ABSOLUTE* itemList = new(std::nothrow) PIDLIST_ABSOLUTE[files.size()];
         HRESULT hr = itemList ? S_OK : E_OUTOFMEMORY;
         UINT itemsCnt = 0;
         for (const auto& file : files)

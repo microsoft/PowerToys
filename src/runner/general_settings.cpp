@@ -181,10 +181,9 @@ void start_enabled_powertoys()
             powertoys_to_disable.emplace(name);
     }
 
-    json::JsonObject general_settings;
     try
     {
-        general_settings = load_general_settings();
+        json::JsonObject general_settings = load_general_settings();
         if (general_settings.HasKey(L"enabled"))
         {
             json::JsonObject enabled = general_settings.GetNamedObject(L"enabled");

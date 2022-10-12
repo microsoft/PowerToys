@@ -22,7 +22,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             InitializeComponent();
             var settingsUtils = new SettingsUtils();
             var resourceLoader = ResourceLoader.GetForViewIndependentUse();
-            Func<string, string> loader = (string name) =>
+            Func<string, string> loader = name =>
             {
                 return resourceLoader.GetString(name);
             };

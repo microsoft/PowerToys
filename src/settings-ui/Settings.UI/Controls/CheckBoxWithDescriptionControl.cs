@@ -48,13 +48,13 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
         }
 
         public static readonly DependencyProperty HeaderProperty = DependencyProperty.Register(
-            "Header",
+            nameof(Header),
             typeof(string),
             typeof(CheckBoxWithDescriptionControl),
             new PropertyMetadata(default(string)));
 
         public static readonly DependencyProperty DescriptionProperty = DependencyProperty.Register(
-            "Description",
+            nameof(Description),
             typeof(string),
             typeof(CheckBoxWithDescriptionControl),
             new PropertyMetadata(default(string)));

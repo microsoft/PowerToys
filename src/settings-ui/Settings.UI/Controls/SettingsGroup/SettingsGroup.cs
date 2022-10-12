@@ -34,7 +34,7 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
         }
 
         public static readonly DependencyProperty HeaderProperty = DependencyProperty.Register(
-            "Header",
+            nameof(Header),
             typeof(string),
             typeof(SettingsGroup),
             new PropertyMetadata(default(string)));
@@ -47,7 +47,7 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
         }
 
         public static readonly DependencyProperty DescriptionProperty = DependencyProperty.Register(
-            "Description",
+            nameof(Description),
             typeof(object),
             typeof(SettingsGroup),
             new PropertyMetadata(null, OnDescriptionChanged));

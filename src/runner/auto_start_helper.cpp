@@ -264,7 +264,6 @@ bool delete_auto_start_task_for_this_user()
     HRESULT hr = S_OK;
 
     WCHAR username[USERNAME_LEN];
-    std::wstring wstrTaskName;
 
     ITaskService* pService = NULL;
     ITaskFolder* pTaskFolder = NULL;
@@ -277,7 +276,7 @@ bool delete_auto_start_task_for_this_user()
     }
 
     // Task Name.
-    wstrTaskName = L"Autorun for ";
+    std::wstring wstrTaskName = L"Autorun for ";
     wstrTaskName += username;
 
     // ------------------------------------------------------
@@ -329,7 +328,6 @@ bool is_auto_start_task_active_for_this_user()
     HRESULT hr = S_OK;
 
     WCHAR username[USERNAME_LEN];
-    std::wstring wstrTaskName;
 
     ITaskService* pService = NULL;
     ITaskFolder* pTaskFolder = NULL;
@@ -342,7 +340,7 @@ bool is_auto_start_task_active_for_this_user()
     }
 
     // Task Name.
-    wstrTaskName = L"Autorun for ";
+    std::wstring wstrTaskName = L"Autorun for ";
     wstrTaskName += username;
 
     // ------------------------------------------------------

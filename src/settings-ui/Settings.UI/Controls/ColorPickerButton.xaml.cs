@@ -29,7 +29,7 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
             }
         }
 
-        public static readonly DependencyProperty SelectedColorProperty = DependencyProperty.Register("SelectedColor", typeof(Color), typeof(ColorPickerButton), new PropertyMetadata(null));
+        public static readonly DependencyProperty SelectedColorProperty = DependencyProperty.Register(nameof(SelectedColor), typeof(Color), typeof(ColorPickerButton), new PropertyMetadata(null));
 
         public ColorPickerButton()
         {

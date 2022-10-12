@@ -237,8 +237,7 @@ IFACEMETHODIMP CPowerRenameManager::GetItemById(_In_ int id, _COM_Outptr_ IPower
 
     CSRWSharedAutoLock lock(&m_lockItems);
     HRESULT hr = E_FAIL;
-    std::map<int, IPowerRenameItem*>::iterator it;
-    it = m_renameItems.find(id);
+    std::map<int, IPowerRenameItem*>::iterator it = m_renameItems.find(id);
     if (it != m_renameItems.end())
     {
         *ppItem = m_renameItems[id];

@@ -189,7 +189,7 @@ namespace ImageResizer.Extensions
         {
             if (metadata == null)
             {
-                Debug.WriteLine($"Metadata was null.");
+                Debug.WriteLine("Metadata was null.");
             }
 
             var listOfMetadata = metadata.GetListOfMetadataForDebug();

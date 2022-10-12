@@ -231,13 +231,12 @@ void XamlBridge::OnTakeFocusRequested(winrt::Windows::UI::Xaml::Hosting::Desktop
 HWND XamlBridge::InitDesktopWindowsXamlSource(winrt::Windows::UI::Xaml::Hosting::DesktopWindowXamlSource desktopSource)
 {
     Logger::trace("XamlBridge::InitDesktopWindowsXamlSource()");
-    HRESULT hr = S_OK;
     winrt::init_apartment(apartment_type::single_threaded);
     winxamlmanager = WindowsXamlManager::InitializeForCurrentThread();
 
     auto interop = desktopSource.as<IDesktopWindowXamlSourceNative>();
     // Parent the DesktopWindowXamlSource object to current window
-    hr = interop->AttachToWindow(parentWindow);
+    HRESULT hr = interop->AttachToWindow(parentWindow);
     winrt::check_hresult(hr);
 
     // Get the new child window's hwnd

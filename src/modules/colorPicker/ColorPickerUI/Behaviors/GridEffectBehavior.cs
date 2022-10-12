@@ -12,9 +12,9 @@ namespace ColorPicker.Behaviors
     {
         private static double _baseZoomImageSizeInPx = 50;
 
-        public static readonly DependencyProperty EffectProperty = DependencyProperty.Register("Effect", typeof(GridShaderEffect), typeof(GridEffectBehavior));
+        public static readonly DependencyProperty EffectProperty = DependencyProperty.Register(nameof(Effect), typeof(GridShaderEffect), typeof(GridEffectBehavior));
 
-        public static readonly DependencyProperty ZoomFactorProperty = DependencyProperty.Register("ZoomFactor", typeof(double), typeof(GridEffectBehavior));
+        public static readonly DependencyProperty ZoomFactorProperty = DependencyProperty.Register(nameof(ZoomFactor), typeof(double), typeof(GridEffectBehavior));
 
         public GridShaderEffect Effect
         {

@@ -62,7 +62,7 @@ namespace Common
                 _browser = new WebView2();
                 _browser.Dock = DockStyle.Fill;
                 _browser.Visible = true;
-                _browser.NavigationCompleted += (object sender, CoreWebView2NavigationCompletedEventArgs args) =>
+                _browser.NavigationCompleted += (sender, args) =>
                 {
                     // Put here logic needed after WebView2 control is done navigating to url/page
                 };

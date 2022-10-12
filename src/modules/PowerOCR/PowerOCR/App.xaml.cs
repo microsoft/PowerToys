@@ -70,7 +70,7 @@ public partial class App : Application, IDisposable
         }
         else
         {
-            Logger.LogInfo($"TextExtractor started detached from PowerToys Runner.");
+            Logger.LogInfo("TextExtractor started detached from PowerToys Runner.");
             _powerToysRunnerPid = -1;
             var userSettings = new UserSettings(new Helpers.ThrottledActionInvoker());
             keyboardMonitor = new KeyboardMonitor(userSettings);

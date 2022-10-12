@@ -25,7 +25,7 @@ namespace Microsoft.PowerToys.Settings.UI.Behaviors
             set { SetValue(DefaultHeaderProperty, value); }
         }
 
-        public static readonly DependencyProperty DefaultHeaderProperty = DependencyProperty.Register("DefaultHeader", typeof(object), typeof(NavigationViewHeaderBehavior), new PropertyMetadata(null, (d, e) => current.UpdateHeader()));
+        public static readonly DependencyProperty DefaultHeaderProperty = DependencyProperty.Register(nameof(DefaultHeader), typeof(object), typeof(NavigationViewHeaderBehavior), new PropertyMetadata(null, (d, e) => current.UpdateHeader()));
 
         public static NavigationViewHeaderMode GetHeaderMode(Page item)
         {
@@ -104,23 +104,9 @@ namespace Microsoft.PowerToys.Settings.UI.Behaviors
                 else
                 {
                     var headerFromPage = GetHeaderContext(currentPage);
-                    if (headerFromPage != null)
-                    {
-                        AssociatedObject.Header = headerFromPage;
-                    }
-                    else
-                    {
-                        AssociatedObject.Header = DefaultHeader;
-                    }
+                    AssociatedObject.Header = headerFromPage ?? DefaultHeader;
 
-                    if (headerMode == NavigationViewHeaderMode.Always)
-                    {
-                        AssociatedObject.AlwaysShowHeader = true;
-                    }
-                    else
-                    {
-                        AssociatedObject.AlwaysShowHeader = false;
-                    }
+                    AssociatedObject.AlwaysShowHeader = headerMode == NavigationViewHeaderMode.Always;
                 }
             }
         }

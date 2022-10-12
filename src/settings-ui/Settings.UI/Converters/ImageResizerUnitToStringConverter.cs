@@ -13,11 +13,7 @@ namespace Microsoft.PowerToys.Settings.UI.Converters
     {
         public object Convert(object value, Type targetType, object parameter, string language)
         {
-            var toLower = false;
-            if ((string)parameter == "ToLower")
-            {
-                toLower = true;
-            }
+            bool toLower = (string)parameter == "ToLower";
 
             string targetValue = string.Empty;
             switch (value)

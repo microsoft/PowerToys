@@ -32,7 +32,7 @@ namespace ManagedCommon
         {
             var currentUser = WindowsIdentity.GetCurrent();
             var query = new WqlEventQuery(
-                $"SELECT * FROM RegistryValueChangeEvent WHERE Hive='HKEY_USERS' AND " +
+                "SELECT * FROM RegistryValueChangeEvent WHERE Hive='HKEY_USERS' AND " +
                 $"KeyPath='{currentUser.User.Value}\\\\{ThemeHelpers.HkeyWindowsPersonalizeTheme.Replace("\\", "\\\\")}' AND ValueName='{ThemeHelpers.HValueAppTheme}'");
             watcher = new ManagementEventWatcher(query);
             watcher.EventArrived += Watcher_EventArrived;

@@ -247,7 +247,7 @@ namespace ColorPicker.ViewModels
                 {
                     FormatName = ColorRepresentationType.HEX.ToString(),
 #pragma warning disable CA1304 // Specify CultureInfo
-                    Convert = (Color color) => ColorRepresentationHelper.GetStringRepresentationFromMediaColor(color, ColorRepresentationType.HEX).ToLower(),
+                    Convert = color => ColorRepresentationHelper.GetStringRepresentationFromMediaColor(color, ColorRepresentationType.HEX).ToLower(),
 #pragma warning restore CA1304 // Specify CultureInfo
                 });
 
@@ -255,76 +255,76 @@ namespace ColorPicker.ViewModels
                 new ColorFormatModel()
                 {
                     FormatName = ColorRepresentationType.RGB.ToString(),
-                    Convert = (Color color) => ColorRepresentationHelper.GetStringRepresentationFromMediaColor(color, ColorRepresentationType.RGB),
+                    Convert = color => ColorRepresentationHelper.GetStringRepresentationFromMediaColor(color, ColorRepresentationType.RGB),
                 });
 
             _allColorRepresentations.Add(
                 new ColorFormatModel()
                 {
                     FormatName = ColorRepresentationType.HSL.ToString(),
-                    Convert = (Color color) => ColorRepresentationHelper.GetStringRepresentationFromMediaColor(color, ColorRepresentationType.HSL),
+                    Convert = color => ColorRepresentationHelper.GetStringRepresentationFromMediaColor(color, ColorRepresentationType.HSL),
                 });
 
             _allColorRepresentations.Add(
                 new ColorFormatModel()
                 {
                     FormatName = ColorRepresentationType.HSV.ToString(),
-                    Convert = (Color color) => ColorRepresentationHelper.GetStringRepresentationFromMediaColor(color, ColorRepresentationType.HSV),
+                    Convert = color => ColorRepresentationHelper.GetStringRepresentationFromMediaColor(color, ColorRepresentationType.HSV),
                 });
 
             _allColorRepresentations.Add(
                 new ColorFormatModel()
                 {
                     FormatName = ColorRepresentationType.CMYK.ToString(),
-                    Convert = (Color color) => ColorRepresentationHelper.GetStringRepresentationFromMediaColor(color, ColorRepresentationType.CMYK),
+                    Convert = color => ColorRepresentationHelper.GetStringRepresentationFromMediaColor(color, ColorRepresentationType.CMYK),
                 });
             _allColorRepresentations.Add(
                 new ColorFormatModel()
                 {
                     FormatName = ColorRepresentationType.HSB.ToString(),
-                    Convert = (Color color) => ColorRepresentationHelper.GetStringRepresentationFromMediaColor(color, ColorRepresentationType.HSB),
+                    Convert = color => ColorRepresentationHelper.GetStringRepresentationFromMediaColor(color, ColorRepresentationType.HSB),
                 });
             _allColorRepresentations.Add(
                 new ColorFormatModel()
                 {
                     FormatName = ColorRepresentationType.HSI.ToString(),
-                    Convert = (Color color) => ColorRepresentationHelper.GetStringRepresentationFromMediaColor(color, ColorRepresentationType.HSI),
+                    Convert = color => ColorRepresentationHelper.GetStringRepresentationFromMediaColor(color, ColorRepresentationType.HSI),
                 });
             _allColorRepresentations.Add(
                 new ColorFormatModel()
                 {
                     FormatName = ColorRepresentationType.HWB.ToString(),
-                    Convert = (Color color) => ColorRepresentationHelper.GetStringRepresentationFromMediaColor(color, ColorRepresentationType.HWB),
+                    Convert = color => ColorRepresentationHelper.GetStringRepresentationFromMediaColor(color, ColorRepresentationType.HWB),
                 });
             _allColorRepresentations.Add(
                 new ColorFormatModel()
                 {
                     FormatName = ColorRepresentationType.NCol.ToString(),
-                    Convert = (Color color) => ColorRepresentationHelper.GetStringRepresentationFromMediaColor(color, ColorRepresentationType.NCol),
+                    Convert = color => ColorRepresentationHelper.GetStringRepresentationFromMediaColor(color, ColorRepresentationType.NCol),
                 });
             _allColorRepresentations.Add(
                 new ColorFormatModel()
                 {
                     FormatName = ColorRepresentationType.CIELAB.ToString(),
-                    Convert = (Color color) => ColorRepresentationHelper.GetStringRepresentationFromMediaColor(color, ColorRepresentationType.CIELAB),
+                    Convert = color => ColorRepresentationHelper.GetStringRepresentationFromMediaColor(color, ColorRepresentationType.CIELAB),
                 });
             _allColorRepresentations.Add(
                 new ColorFormatModel()
                 {
                     FormatName = ColorRepresentationType.CIEXYZ.ToString(),
-                    Convert = (Color color) => ColorRepresentationHelper.GetStringRepresentationFromMediaColor(color, ColorRepresentationType.CIEXYZ),
+                    Convert = color => ColorRepresentationHelper.GetStringRepresentationFromMediaColor(color, ColorRepresentationType.CIEXYZ),
                 });
             _allColorRepresentations.Add(
                 new ColorFormatModel()
                 {
                     FormatName = ColorRepresentationType.VEC4.ToString(),
-                    Convert = (Color color) => ColorRepresentationHelper.GetStringRepresentationFromMediaColor(color, ColorRepresentationType.VEC4),
+                    Convert = color => ColorRepresentationHelper.GetStringRepresentationFromMediaColor(color, ColorRepresentationType.VEC4),
                 });
             _allColorRepresentations.Add(
                 new ColorFormatModel()
                 {
                     FormatName = "Decimal",
-                    Convert = (Color color) => ColorRepresentationHelper.GetStringRepresentationFromMediaColor(color, ColorRepresentationType.DecimalValue),
+                    Convert = color => ColorRepresentationHelper.GetStringRepresentationFromMediaColor(color, ColorRepresentationType.DecimalValue),
                 });
 
             _userSettings.VisibleColorFormats.CollectionChanged += VisibleColorFormats_CollectionChanged;

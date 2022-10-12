@@ -155,7 +155,6 @@ namespace BackwardsCompatibility
     
     bool DeviceIdData::IsValidDeviceId(const std::wstring& str)
     {
-        std::wstring monitorName;
         std::wstring temp;
         std::vector<std::wstring> parts;
         std::wstringstream wss(str);
@@ -171,7 +170,7 @@ namespace BackwardsCompatibility
         {
             std::getline(wss, temp, L'#');
 
-            monitorName = temp;
+            std::wstring monitorName = temp;
 
             if (!std::getline(wss, temp, L'_'))
             {

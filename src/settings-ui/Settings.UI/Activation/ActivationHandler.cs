@@ -28,7 +28,7 @@ namespace Microsoft.PowerToys.Settings.UI.Activation
         public override bool CanHandle(object args)
         {
             // CanHandle checks the args is of type you have configured
-            return args is T && CanHandleInternal(args as T);
+            return args is T o && CanHandleInternal(o);
         }
 
         // Override this method to add the activation logic in your activation handler

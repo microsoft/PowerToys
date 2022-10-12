@@ -71,8 +71,7 @@ void ShowOpenSettingsForUpdate()
 
 SHELLEXECUTEINFOW LaunchPowerToysUpdate(const wchar_t* cmdline)
 {
-    std::wstring powertoysUpdaterPath;
-    powertoysUpdaterPath = get_module_folderpath();
+    std::wstring powertoysUpdaterPath = get_module_folderpath();
 
     powertoysUpdaterPath += L"\\PowerToys.Update.exe";
     SHELLEXECUTEINFOW sei{ sizeof(sei) };

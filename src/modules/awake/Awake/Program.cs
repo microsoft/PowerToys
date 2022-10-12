@@ -343,9 +343,7 @@ namespace Awake
 
         private static void SetupNoKeepAwake()
         {
-            _log.Info($"Operating in passive mode (computer's standard power plan). No custom keep awake settings enabled.");
-
-            APIHelper.SetNoKeepAwake();
+            _log.Info("Operating in passive mode (computer's standard power plan). No custom keep awake settings enabled.");
         }
 
         private static void SetupTimedKeepAwake(uint time, bool displayOn)

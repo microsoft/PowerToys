@@ -45,7 +45,7 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
             set { SetValue(IsSystemThemeProperty, value); }
         }
 
-        public static readonly DependencyProperty IsSystemThemeProperty = DependencyProperty.Register("IsSystemTheme", typeof(bool), typeof(FancyZonesPreviewControl), new PropertyMetadata(default(bool), OnPropertyChanged));
+        public static readonly DependencyProperty IsSystemThemeProperty = DependencyProperty.Register(nameof(IsSystemTheme), typeof(bool), typeof(FancyZonesPreviewControl), new PropertyMetadata(default(bool), OnPropertyChanged));
 
         public string WallpaperPath
         {
@@ -53,7 +53,7 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
             set { SetValue(WallpaperPathProperty, value); }
         }
 
-        public static readonly DependencyProperty WallpaperPathProperty = DependencyProperty.Register("WallpaperPath", typeof(string), typeof(FancyZonesPreviewControl), new PropertyMetadata("ms-appx:///Assets/Modules/Wallpaper.png"));
+        public static readonly DependencyProperty WallpaperPathProperty = DependencyProperty.Register(nameof(WallpaperPath), typeof(string), typeof(FancyZonesPreviewControl), new PropertyMetadata("ms-appx:///Assets/Modules/Wallpaper.png"));
 
         public Color CustomBorderColor
         {
@@ -61,7 +61,7 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
             set { SetValue(CustomBorderColorProperty, value); }
         }
 
-        public static readonly DependencyProperty CustomBorderColorProperty = DependencyProperty.Register("CustomBorderColor", typeof(Color), typeof(FancyZonesPreviewControl), new PropertyMetadata(null, OnPropertyChanged));
+        public static readonly DependencyProperty CustomBorderColorProperty = DependencyProperty.Register(nameof(CustomBorderColor), typeof(Color), typeof(FancyZonesPreviewControl), new PropertyMetadata(null, OnPropertyChanged));
 
         public Color CustomInActiveColor
         {
@@ -69,7 +69,7 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
             set { SetValue(CustomInActiveColorProperty, value); }
         }
 
-        public static readonly DependencyProperty CustomInActiveColorProperty = DependencyProperty.Register("CustomInActiveColor", typeof(Color), typeof(FancyZonesPreviewControl), new PropertyMetadata(null, OnPropertyChanged));
+        public static readonly DependencyProperty CustomInActiveColorProperty = DependencyProperty.Register(nameof(CustomInActiveColor), typeof(Color), typeof(FancyZonesPreviewControl), new PropertyMetadata(null, OnPropertyChanged));
 
         public Color CustomHighlightColor
         {
@@ -77,7 +77,7 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
             set { SetValue(CustomHighlightColorProperty, value); }
         }
 
-        public static readonly DependencyProperty CustomHighlightColorProperty = DependencyProperty.Register("CustomHighlightColor", typeof(Color), typeof(FancyZonesPreviewControl), new PropertyMetadata(null, OnPropertyChanged));
+        public static readonly DependencyProperty CustomHighlightColorProperty = DependencyProperty.Register(nameof(CustomHighlightColor), typeof(Color), typeof(FancyZonesPreviewControl), new PropertyMetadata(null, OnPropertyChanged));
 
         public Color CustomNumberColor
         {
@@ -85,7 +85,7 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
             set { SetValue(CustomNumberColorProperty, value); }
         }
 
-        public static readonly DependencyProperty CustomNumberColorProperty = DependencyProperty.Register("CustomNumberColor", typeof(Color), typeof(FancyZonesPreviewControl), new PropertyMetadata(null, OnPropertyChanged));
+        public static readonly DependencyProperty CustomNumberColorProperty = DependencyProperty.Register(nameof(CustomNumberColor), typeof(Color), typeof(FancyZonesPreviewControl), new PropertyMetadata(null, OnPropertyChanged));
 
         public bool ShowZoneNumber
         {
@@ -93,7 +93,7 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
             set { SetValue(ShowZoneNumberProperty, value); }
         }
 
-        public static readonly DependencyProperty ShowZoneNumberProperty = DependencyProperty.Register("ShowZoneNumber", typeof(bool), typeof(FancyZonesPreviewControl), new PropertyMetadata(default(bool), OnPropertyChanged));
+        public static readonly DependencyProperty ShowZoneNumberProperty = DependencyProperty.Register(nameof(ShowZoneNumber), typeof(bool), typeof(FancyZonesPreviewControl), new PropertyMetadata(default(bool), OnPropertyChanged));
 
         public double HighlightOpacity
         {

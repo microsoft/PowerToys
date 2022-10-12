@@ -31,8 +31,8 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
 
         public string Keys { get; set; }
 
-        public static readonly DependencyProperty IsActiveProperty = DependencyProperty.Register("Enabled", typeof(bool), typeof(ShortcutControl), null);
-        public static readonly DependencyProperty HotkeySettingsProperty = DependencyProperty.Register("HotkeySettings", typeof(HotkeySettings), typeof(ShortcutControl), null);
+        public static readonly DependencyProperty IsActiveProperty = DependencyProperty.Register(nameof(Enabled), typeof(bool), typeof(ShortcutControl), null);
+        public static readonly DependencyProperty HotkeySettingsProperty = DependencyProperty.Register(nameof(HotkeySettings), typeof(HotkeySettings), typeof(ShortcutControl), null);
 
         private ShortcutDialogContentControl c = new ShortcutDialogContentControl();
         private ContentDialog shortcutDialog;

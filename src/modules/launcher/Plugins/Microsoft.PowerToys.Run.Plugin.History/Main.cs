@@ -205,7 +205,7 @@ namespace Microsoft.PowerToys.Run.Plugin.History
                     // https://learn.microsoft.com/windows/apps/design/style/segoe-ui-symbol-font
                     FontFamily = "Segoe MDL2 Assets",
                     Glyph = "\xF739",   // ECC9 => Symbol: RemoveFrom, or F739 => SetHistoryStatus2
-                    Title = $"Remove this from history",
+                    Title = "Remove this from history",
                     Action = _ =>
                     {
                         // very special case for Calculator

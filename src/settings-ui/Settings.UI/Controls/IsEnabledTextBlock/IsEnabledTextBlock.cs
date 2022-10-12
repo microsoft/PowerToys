@@ -26,7 +26,7 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
         }
 
         public static readonly DependencyProperty TextProperty = DependencyProperty.Register(
-           "Text",
+           nameof(Text),
            typeof(string),
            typeof(IsEnabledTextBlock),
            null);

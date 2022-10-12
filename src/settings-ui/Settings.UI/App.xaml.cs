@@ -92,7 +92,7 @@ namespace Microsoft.PowerToys.Settings.UI
             var cmdArgs = Environment.GetCommandLineArgs();
             var isDark = IsDarkTheme();
 
-            if (cmdArgs != null && cmdArgs.Length >= RequiredArgumentsQty)
+            if (cmdArgs is { Length: >= RequiredArgumentsQty })
             {
                 // Skip the first argument which is prepended when launched by explorer
                 if (cmdArgs[0].EndsWith(".dll", StringComparison.InvariantCultureIgnoreCase) && cmdArgs[1].EndsWith(".exe", StringComparison.InvariantCultureIgnoreCase) && (cmdArgs.Length >= RequiredArgumentsQty + 1))
@@ -139,7 +139,7 @@ namespace Microsoft.PowerToys.Settings.UI
                     Environment.Exit(0);
                 });
 
-                ipcmanager = new TwoWayPipeMessageIPCManaged(cmdArgs[(int)Arguments.SettingsPipeName], cmdArgs[(int)Arguments.PTPipeName], (string message) =>
+                ipcmanager = new TwoWayPipeMessageIPCManaged(cmdArgs[(int)Arguments.SettingsPipeName], cmdArgs[(int)Arguments.PTPipeName], message =>
                 {
                     if (IPCMessageReceivedCallback != null && message.Length > 0)
                     {
@@ -214,7 +214,7 @@ namespace Microsoft.PowerToys.Settings.UI
             }
 
             InitializeWithWindow.Initialize(dialog, handle);
-            return dialog.ShowAsync().AsTask<IUICommand>();
+            return dialog.ShowAsync().AsTask();
         }
 
         public static TwoWayPipeMessageIPCManaged GetTwoWayIPCManager()
@@ -266,7 +266,7 @@ namespace Microsoft.PowerToys.Settings.UI
             {
                 if (!loggedImmersiveDarkException)
                 {
-                    Logger.LogError($"HandleThemeChange exception. Please install .NET 4.", e);
+                    Logger.LogError("HandleThemeChange exception. Please install .NET 4.", e);
                     loggedImmersiveDarkException = true;
                 }
             }
