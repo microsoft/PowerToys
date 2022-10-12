@@ -632,7 +632,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
 
             SendConfigMSG(outsettings.ToString());
 
-            if (reDoBackupDryRun)
+            if (reDoBackupDryRun && DoBackupAndRestoreDryRun != null)
             {
                 DoBackupAndRestoreDryRun(500);
             }
