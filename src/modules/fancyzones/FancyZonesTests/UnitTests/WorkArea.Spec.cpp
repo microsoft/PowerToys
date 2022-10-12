@@ -2,19 +2,13 @@
 
 #include <filesystem>
 
-#include <FancyZonesLib/util.h>
-#include <FancyZonesLib/ZoneSet.h>
 #include <FancyZonesLib/WorkArea.h>
-#include <FancyZonesLib/FancyZones.h>
 #include <FancyZonesLib/FancyZonesData/AppliedLayouts.h>
 #include <FancyZonesLib/FancyZonesData/AppZoneHistory.h>
-#include <FancyZonesLib/FancyZonesDataTypes.h>
-#include <FancyZonesLib/JsonHelpers.h>
+#include <FancyZonesLib/FancyZonesData/DefaultLayouts.h>
 #include "Util.h"
 
 #include <common/utils/process_path.h>
-
-#include <CppUnitTestLogger.h>
 
 using namespace Microsoft::VisualStudio::CppUnitTestFramework;
 
@@ -40,36 +34,43 @@ namespace FancyZonesUnitTests
 
             AppZoneHistory::instance().LoadData();
             AppliedLayouts::instance().LoadData();
+            DefaultLayouts::instance().LoadData();
         }
 
         TEST_METHOD_CLEANUP(CleanUp)
         {
             std::filesystem::remove(AppliedLayouts::AppliedLayoutsFileName());
             std::filesystem::remove(AppZoneHistory::AppZoneHistoryFileName());
+
+            std::filesystem::remove(DefaultLayouts::DefaultLayoutsFileName());
         }
 
         TEST_METHOD (CreateWorkArea)
         {
+            const auto defaultLayout = DefaultLayouts::instance().GetDefaultLayout();
+
             auto workArea = MakeWorkArea({}, Mocks::Monitor(), m_uniqueId, m_emptyUniqueId);
             Assert::IsFalse(workArea == nullptr);
             Assert::IsTrue(m_uniqueId == workArea->UniqueId());
 
             auto* zoneSet{ workArea->ZoneSet() };
             Assert::IsNotNull(zoneSet);
-            Assert::AreEqual(static_cast<int>(zoneSet->LayoutType()), static_cast<int>(FancyZonesDataTypes::ZoneSetLayoutType::PriorityGrid));
-            Assert::AreEqual(zoneSet->GetZones().size(), static_cast<size_t>(3));
+            Assert::AreEqual(static_cast<int>(defaultLayout.type), static_cast<int>(zoneSet->LayoutType()));
+            Assert::AreEqual(static_cast<size_t>(defaultLayout.zoneCount), zoneSet->GetZones().size());
         }
 
         TEST_METHOD (CreateCombinedWorkArea)
         {
+            const auto defaultLayout = DefaultLayouts::instance().GetDefaultLayout();
+
             auto workArea = MakeWorkArea({}, {}, m_uniqueId, m_emptyUniqueId);
             Assert::IsFalse(workArea == nullptr);
             Assert::IsTrue(m_uniqueId == workArea->UniqueId());
 
             auto* zoneSet{ workArea->ZoneSet() };
             Assert::IsNotNull(zoneSet);
-            Assert::AreEqual(static_cast<int>(zoneSet->LayoutType()), static_cast<int>(FancyZonesDataTypes::ZoneSetLayoutType::PriorityGrid));
-            Assert::AreEqual(zoneSet->GetZones().size(), static_cast<size_t>(3));
+            Assert::AreEqual(static_cast<int>(defaultLayout.type), static_cast<int>(zoneSet->LayoutType()));
+            Assert::AreEqual(static_cast<size_t>(defaultLayout.zoneCount), zoneSet->GetZones().size());
         }
 
         TEST_METHOD (CreateWorkAreaClonedFromParent)
