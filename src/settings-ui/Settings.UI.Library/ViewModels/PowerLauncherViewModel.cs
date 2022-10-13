@@ -36,7 +36,11 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
 
         private Func<string, int> SendConfigMSG { get; }
 
-        public PowerLauncherViewModel(PowerLauncherSettings settings, ISettingsRepository<GeneralSettings> settingsRepository, Func<string, int> ipcMSGCallBackFunc, Func<bool> isDark)
+        public PowerLauncherViewModel(
+            PowerLauncherSettings settings,
+            ISettingsRepository<GeneralSettings> settingsRepository,
+            Func<string, int> ipcMSGCallBackFunc,
+            Func<bool> isDark)
         {
             if (settings == null)
             {
