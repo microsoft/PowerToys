@@ -4,49 +4,42 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:contract7NotPresent="http://schemas.microsoft.com/winfx/2006/xaml/presentation?IsApiContractNotPresent(Windows.Foundation.UniversalApiContract,7)"
     xmlns:contract7Present="http://schemas.microsoft.com/winfx/2006/xaml/presentation?IsApiContractPresent(Windows.Foundation.UniversalApiContract,7)"
+    xmlns:converters="using:CommunityToolkit.WinUI.UI.Converters"
+    xmlns:converters1="using:PowerToys.FileLocksmithUI.Converters"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-    xmlns:p="using:PowerToys.FileLocksmithUI.Properties"
+    xmlns:interop="using:FileLocksmith.Interop"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:p="using:PowerToys.FileLocksmithUI.Properties"
+    xmlns:views="using:PowerToys.FileLocksmithUI.Views"
     xmlns:winuiex="using:WinUIEx"
-    IsMaximizable="True"
-    IsMinimizable="True"
-    IsResizable="True"
+    Title="{x:Bind p:Resources.FileLocksmithTitle}"
+    Width="680"
+    MinWidth="480"
+    MinHeight="320"
     IsShownInSwitchers="True"
     IsTitleBarVisible="True"
-    Title="{x:Bind p:Resources.FileLocksmithTitle}"
-    Width="758"
-    Height="480"
     mc:Ignorable="d">
-    <!--
-    
-    Ignore for now.
-    
     <winuiex:WindowEx.Backdrop>
-        <winuiex:AcrylicSystemBackdrop
-            DarkFallbackColor="#1c1c1c"
-            DarkLuminosityOpacity="0.96"
-            DarkTintColor="#202020"
-            DarkTintOpacity="0.5"
-            LightFallbackColor="#EEEEEE"
-            LightLuminosityOpacity="0.85"
-            LightTintColor="#FCFCFC"
-            LightTintOpacity="0" />
+        <winuiex:MicaSystemBackdrop />
     </winuiex:WindowEx.Backdrop>
-    
-    -->
-
     <Grid>
-        <Grid.RowDefinitions>
-            <RowDefinition Height="40"/>
-            <RowDefinition/>
-        </Grid.RowDefinitions>
         
-        <Grid Grid.Row="0">
-            <Button Margin="8,8,8,0" Click="OnRefreshClick" HorizontalAlignment="Right">Refresh</Button>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="32" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+        <Grid x:Name="titleBar">
+            <StackPanel
+                Margin="16,8,8,8"
+                VerticalAlignment="Top"
+                Orientation="Horizontal">
+                <TextBlock FontFamily="{ThemeResource SymbolThemeFontFamily}" Text="&#xEA3F;" />
+                <TextBlock
+                    x:Uid="AppTitle"
+                    Margin="12,0,0,0"
+                    Style="{StaticResource CaptionTextBlockStyle}" />
+            </StackPanel>
         </Grid>
-        <ScrollViewer Grid.Row="1" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
-            <StackPanel x:Name="stackPanel" Orientation="Vertical"/>
-        </ScrollViewer>
+        <views:MainPage Grid.Row="1" />
     </Grid>
-    
 </winuiex:WindowEx>

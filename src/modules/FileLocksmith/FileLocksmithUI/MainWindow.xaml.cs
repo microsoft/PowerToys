@@ -5,9 +5,11 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Linq;
 using System.Numerics;
 using System.Threading;
+using FileLocksmith.Interop;
 using Microsoft.UI;
 using Microsoft.UI.Windowing;
 using Microsoft.UI.Xaml;
@@ -27,104 +29,26 @@ namespace FileLocksmithUI
     /// </summary>
     public sealed partial class MainWindow : WindowEx, IDisposable
     {
-        private string[] paths;
-
         public MainWindow()
         {
-            paths = FileLocksmith.Interop.NativeMethods.ReadPathsFromStdin();
             InitializeComponent();
-            StartFindingProcesses();
-        }
 
-        private void OnRefreshClick(object sender, RoutedEventArgs e)
-        {
-            StartFindingProcesses();
-        }
-
-        private void StartFindingProcesses()
-        {
-            new Thread(FindProcesses).Start();
-            DisplayProgressRing();
-        }
-
-        private void FindProcesses()
-        {
-            var result = FileLocksmith.Interop.NativeMethods.FindProcessesRecursive(paths);
-
-            DispatcherQueue.TryEnqueue(() =>
+            if (AppWindowTitleBar.IsCustomizationSupported())
             {
-                stackPanel.Children.Clear();
-                foreach (var item in result)
-                {
-                    var entry = new ProcessEntry(item.name, item.pid, (ulong)item.files.Length);
-
-                    foreach (var path in item.files)
-                    {
-                        entry.AddPath(path);
-                    }
-
-                    stackPanel.Children.Add(entry);
-
-                    // Launch a thread to erase this entry if the process exits
-                    new Thread(() => WatchProcess(item.pid)).Start();
-                }
-
-                DisplayNoResultsIfEmpty();
-            });
-        }
-
-        private void WatchProcess(uint pid)
-        {
-            if (FileLocksmith.Interop.NativeMethods.WaitForProcess(pid))
+                SetTitleBar();
+            }
+            else
             {
-                // This process has exited.
-                DispatcherQueue.TryEnqueue(() =>
-                {
-                    for (int i = 0; i < stackPanel.Children.Count; i++)
-                    {
-                        var element = stackPanel.Children[i] as ProcessEntry;
-                        if (element == null)
-                        {
-                            continue;
-                        }
-
-                        if (element.Pid == pid)
-                        {
-                            stackPanel.Children.RemoveAt(i);
-                            DisplayNoResultsIfEmpty();
-                            return;
-                        }
-                    }
-                });
+                titleBar.Visibility = Visibility.Collapsed;
             }
         }
 
-        private void DisplayNoResultsIfEmpty()
+        private void SetTitleBar()
         {
-            if (stackPanel.Children.Count == 0)
-            {
-                var textBlock = new TextBlock();
-
-                textBlock.Text = PowerToys.FileLocksmithUI.Properties.Resources.NoResults;
-                textBlock.FontSize = 24;
-                textBlock.HorizontalAlignment = HorizontalAlignment.Center;
-                textBlock.VerticalAlignment = VerticalAlignment.Center;
-
-                stackPanel.Children.Add(textBlock);
-            }
-        }
-
-        private void DisplayProgressRing()
-        {
-            stackPanel.Children.Clear();
-
-            var ring = new ProgressRing();
-            ring.Width = 64;
-            ring.Height = 64;
-            ring.Margin = new Thickness(0, 16, 0, 0);
-            ring.IsIndeterminate = true;
-
-            stackPanel.Children.Add(ring);
+            AppWindow window = this.GetAppWindow();
+            window.TitleBar.ExtendsContentIntoTitleBar = true;
+            window.TitleBar.ButtonBackgroundColor = Colors.Transparent;
+            SetTitleBar(titleBar);
         }
 
         public void Dispose()
