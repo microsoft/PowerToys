@@ -16,7 +16,7 @@
 
                 <controls:Setting x:Uid="Hosts_EnableToggleControl_HeaderText">
                     <controls:Setting.Icon>
-                        <BitmapIcon UriSource="ms-appx:///Assets/FluentIcons/FluentIconsAlwaysOnTop.png" ShowAsMonochrome="False" />
+                        <BitmapIcon UriSource="ms-appx:///Assets/FluentIcons/FluentIconsHosts.png" ShowAsMonochrome="False" />
                     </controls:Setting.Icon>
                     <controls:Setting.ActionContent>
                         <ToggleSwitch IsOn="{x:Bind ViewModel.IsEnabled, Mode=TwoWay}" x:Uid="ToggleSwitch"/>
