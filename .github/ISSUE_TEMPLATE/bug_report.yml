@@ -58,7 +58,7 @@ body:
   attributes:
     label: Steps to reproduce
     description: We highly suggest including screenshots and a bug report log (System tray > Report bug).
-    placeholder: Tell us exactly the steps required to trigger the bug.
+    placeholder: Having detailed steps helps us reproduce the bug. 
   validations:
     required: true
 
