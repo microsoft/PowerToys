@@ -16,28 +16,28 @@ body:
   attributes:
     label: Utility with translation issue
     options:
-     - General
-     - Always on Top
-     - Awake
-     - ColorPicker
-     - FancyZones
-     - FancyZones Editor 
-     - Image Resizer
-     - Installer
-     - Keyboard Manager
-     - Mouse Utilities
-     - PowerRename
-     - PowerToys Run
-     - Preview Pane (Explorer)
-     - Quick Accent
-     - Screen ruler
-     - Settings
-     - Shortcut Guide
-     - System tray interaction
-     - TextExtractor
-     - Thumbnail preview (Explorer)
-     - Video Conference Mute
-     - Welcome / PowerToys Tour window
+    - General
+    - Always on Top
+    - Awake
+    - ColorPicker
+    - FancyZones
+    - FancyZones Editor 
+    - File Explorer: Preview Pane
+    - File Explorer: Thumbnail preview
+    - Image Resizer
+    - Installer
+    - Keyboard Manager
+    - Mouse Utilities
+    - PowerRename
+    - PowerToys Run
+    - Quick Accent
+    - Screen ruler
+    - Settings
+    - Shortcut Guide
+    - System tray interaction
+    - TextExtractor
+    - Video Conference Mute
+    - Welcome / PowerToys Tour window
   validations:
     required: true
 - type: input
