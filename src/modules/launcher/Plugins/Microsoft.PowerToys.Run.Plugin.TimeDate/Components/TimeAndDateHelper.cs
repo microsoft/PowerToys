@@ -66,7 +66,7 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.Components
                 date = date.AddDays(1);
             }
 
-            return (int)Math.Truncate((double)date.Subtract(beginningOfMonth).TotalDays / 7f) + 1;
+            return (int)Math.Truncate(date.Subtract(beginningOfMonth).TotalDays / 7f) + 1;
         }
 
         /// <summary>

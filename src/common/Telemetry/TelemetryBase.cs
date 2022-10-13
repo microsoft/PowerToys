@@ -31,12 +31,12 @@ namespace Microsoft.PowerToys.Telemetry
         /// <summary>
         /// The event tag for this event source.
         /// </summary>
-        public const EventTags ProjectTelemetryTagProductAndServicePerformance = (EventTags)0x0u;
+        public const EventTags ProjectTelemetryTagProductAndServicePerformance = 0x0u;
 
         /// <summary>
         /// The event keyword for this event source.
         /// </summary>
-        public const EventKeywords ProjectKeywordMeasure = (EventKeywords)0x0;
+        public const EventKeywords ProjectKeywordMeasure = 0x0;
 
         /// <summary>
         /// Group ID for Powertoys project.

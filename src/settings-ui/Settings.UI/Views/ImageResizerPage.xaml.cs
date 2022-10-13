@@ -50,7 +50,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
                 dialog.PrimaryButtonClick += (s, args) =>
                 {
                     // Using InvariantCulture since this is internal and expected to be numerical
-                    bool success = int.TryParse(deleteRowButton?.CommandParameter?.ToString(), NumberStyles.Integer, CultureInfo.InvariantCulture, out int rowNum);
+                    bool success = int.TryParse(deleteRowButton.CommandParameter?.ToString(), NumberStyles.Integer, CultureInfo.InvariantCulture, out int rowNum);
                     if (success)
                     {
                         ViewModel.DeleteImageSize(rowNum);
@@ -60,7 +60,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
                         Logger.LogError("Failed to delete custom image size.");
                     }
                 };
-                var result = await dialog.ShowAsync();
+                await dialog.ShowAsync();
             }
         }
 

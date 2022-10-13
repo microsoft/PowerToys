@@ -22,7 +22,7 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
 
         public object Content
         {
-            get => (object)GetValue(ContentProperty);
+            get => GetValue(ContentProperty);
             set => SetValue(ContentProperty, value);
         }
 
@@ -53,7 +53,7 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
         protected override void OnApplyTemplate()
         {
             IsEnabledChanged -= KeyVisual_IsEnabledChanged;
-            _keyVisual = (KeyVisual)this;
+            _keyVisual = this;
             _keyPresenter = (ContentPresenter)_keyVisual.GetTemplateChild(KeyPresenter);
             Update();
             SetEnabledState();

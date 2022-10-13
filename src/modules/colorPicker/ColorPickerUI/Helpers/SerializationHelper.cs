@@ -33,7 +33,7 @@ namespace ColorPicker.Helpers
             {
                 case GroupExportedColorsBy.Color:
                     {
-                        foreach (Color color in (IList)colorsToExport)
+                        foreach (Color color in colorsToExport)
                         {
                             var tmp = new Dictionary<string, string>();
                             foreach (var colorFormatModel in colorFormatModels)
@@ -63,7 +63,7 @@ namespace ColorPicker.Helpers
                         {
                             var tmp = new Dictionary<string, string>();
                             i = 1;
-                            foreach (Color color in (IList)colorsToExport)
+                            foreach (Color color in colorsToExport)
                             {
                                 var colorInSpecificFormat = colorFormatModel.Convert(color);
                                 if (colorFormatModel.FormatName == "HEX")

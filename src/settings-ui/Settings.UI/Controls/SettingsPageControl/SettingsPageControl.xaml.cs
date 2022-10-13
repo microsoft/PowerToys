@@ -55,7 +55,7 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
 
         public object ModuleContent
         {
-            get { return (object)GetValue(ModuleContentProperty); }
+            get { return GetValue(ModuleContentProperty); }
             set { SetValue(ModuleContentProperty, value); }
         }
 

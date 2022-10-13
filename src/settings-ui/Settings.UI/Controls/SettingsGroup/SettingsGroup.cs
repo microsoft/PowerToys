@@ -42,7 +42,7 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
         [Localizable(true)]
         public object Description
         {
-            get => (object)GetValue(DescriptionProperty);
+            get => GetValue(DescriptionProperty);
             set => SetValue(DescriptionProperty, value);
         }
 
@@ -55,7 +55,7 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
         protected override void OnApplyTemplate()
         {
             IsEnabledChanged -= SettingsGroup_IsEnabledChanged;
-            _settingsGroup = (SettingsGroup)this;
+            _settingsGroup = this;
             _descriptionPresenter = (ContentPresenter)_settingsGroup.GetTemplateChild(PartDescriptionPresenter);
             SetEnabledState();
             IsEnabledChanged += SettingsGroup_IsEnabledChanged;
@@ -84,14 +84,7 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
                 return;
             }
 
-            if (_settingsGroup.Description == null)
-            {
-                _settingsGroup._descriptionPresenter.Visibility = Visibility.Collapsed;
-            }
-            else
-            {
-                _settingsGroup._descriptionPresenter.Visibility = Visibility.Visible;
-            }
+            _settingsGroup._descriptionPresenter.Visibility = _settingsGroup.Description == null ? Visibility.Collapsed : Visibility.Visible;
         }
 
         protected override AutomationPeer OnCreateAutomationPeer()

@@ -60,26 +60,26 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
         [Localizable(true)]
         public object Description
         {
-            get => (object)GetValue(DescriptionProperty);
+            get => GetValue(DescriptionProperty);
             set => SetValue(DescriptionProperty, value);
         }
 
         public object Icon
         {
-            get => (object)GetValue(IconProperty);
+            get => GetValue(IconProperty);
             set => SetValue(IconProperty, value);
         }
 
         public object ActionContent
         {
-            get => (object)GetValue(ActionContentProperty);
+            get => GetValue(ActionContentProperty);
             set => SetValue(ActionContentProperty, value);
         }
 
         protected override void OnApplyTemplate()
         {
             IsEnabledChanged -= Setting_IsEnabledChanged;
-            _setting = (Setting)this;
+            _setting = this;
             _iconPresenter = (ContentPresenter)_setting.GetTemplateChild(PartIconPresenter);
             _descriptionPresenter = (ContentPresenter)_setting.GetTemplateChild(PartDescriptionPresenter);
             Update();
@@ -134,24 +134,10 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
 
             if (_setting._iconPresenter != null)
             {
-                if (_setting.Icon == null)
-                {
-                    _setting._iconPresenter.Visibility = Visibility.Collapsed;
-                }
-                else
-                {
-                    _setting._iconPresenter.Visibility = Visibility.Visible;
-                }
+                _setting._iconPresenter.Visibility = _setting.Icon == null ? Visibility.Collapsed : Visibility.Visible;
             }
 
-            if (_setting.Description == null)
-            {
-                _setting._descriptionPresenter.Visibility = Visibility.Collapsed;
-            }
-            else
-            {
-                _setting._descriptionPresenter.Visibility = Visibility.Visible;
-            }
+            _setting._descriptionPresenter.Visibility = _setting.Description == null ? Visibility.Collapsed : Visibility.Visible;
         }
     }
 }

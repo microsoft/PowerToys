@@ -49,14 +49,7 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
                 SetValue(IsActiveProperty, value);
                 _enabled = value;
 
-                if (value)
-                {
-                    EditButton.IsEnabled = true;
-                }
-                else
-                {
-                    EditButton.IsEnabled = false;
-                }
+                EditButton.IsEnabled = value;
             }
         }
 

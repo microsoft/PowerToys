@@ -34,7 +34,7 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
 
         public object PageContent
         {
-            get { return (object)GetValue(PageContentProperty); }
+            get { return GetValue(PageContentProperty); }
             set { SetValue(PageContentProperty, value); }
         }
 

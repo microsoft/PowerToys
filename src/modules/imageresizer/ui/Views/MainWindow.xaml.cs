@@ -40,6 +40,6 @@ namespace ImageResizer.Views
         }
 
         void IMainView.Close()
-            => Dispatcher.Invoke((Action)Close);
+            => Dispatcher.Invoke(Close);
     }
 }

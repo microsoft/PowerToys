@@ -130,7 +130,7 @@ namespace Microsoft.PowerToys.Run.Plugin.System
                     var resultMatch = StringMatcher.FuzzySearch(query.Search, r.SubTitle);
                     if (resultMatch.Score > 0)
                     {
-                        r.Score = _reduceNetworkResultScore ? (int)(resultMatch.Score * 65 / 100) : resultMatch.Score; // Adjust score to improve user experience and priority order
+                        r.Score = _reduceNetworkResultScore ? resultMatch.Score * 65 / 100 : resultMatch.Score; // Adjust score to improve user experience and priority order
                         r.SubTitleHighlightData = resultMatch.MatchData;
                         results.Add(r);
                     }
