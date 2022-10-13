@@ -75,6 +75,13 @@
                                 ShowAsMonochrome="False" />
                     </NavigationViewItem.Icon>
                 </NavigationViewItem>
+                <NavigationViewItem x:Uid="Shell_Hosts" Tag="Hosts">
+                    <NavigationViewItem.Icon>
+                        <BitmapIcon
+                                UriSource="ms-appx:///Assets/FluentIcons/FluentIconsAlwaysOnTop.png"
+                                ShowAsMonochrome="False" />
+                    </NavigationViewItem.Icon>
+                </NavigationViewItem>
                 <NavigationViewItem x:Uid="Shell_ImageResizer" Tag="ImageResizer">
                     <NavigationViewItem.Icon>
                         <BitmapIcon

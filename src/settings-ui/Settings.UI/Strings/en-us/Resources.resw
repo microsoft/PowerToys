@@ -2554,4 +2554,72 @@ Activate by holding the key for the character you want to add an accent to, then
   <data name="QuickAccent_SelectedLanguage_Italian.Content" xml:space="preserve">
     <value>Italian</value>
   </data>
+  <data name="Hosts.ModuleDescription" xml:space="preserve">
+    <value>Quick and simple utility for managing hosts file.</value>
+    <comment>"Hosts" refers to the system hosts file, do not loc</comment>
+  </data>
+  <data name="Hosts.ModuleTitle" xml:space="preserve">
+    <value>Hosts File Editor</value>
+    <comment>"Hosts" refers to the system hosts file, do not loc</comment>
+  </data>
+  <data name="Shell_Hosts.Content" xml:space="preserve">
+    <value>Hosts File Editor</value>
+    <comment>Products name: Navigation view item name for Hosts File Editor</comment>
+  </data>
+  <data name="Hosts_EnableToggleControl_HeaderText.Header" xml:space="preserve">
+    <value>Enable Hosts File Editor</value>
+    <comment>"Hosts File Editor" is the name of the utility</comment>
+  </data>
+  <data name="Hosts_Toggle_ShowStartupWarning.Header" xml:space="preserve">
+    <value>Show a warning at startup</value>
+  </data>
+  <data name="Hosts_Activation_GroupSettings.Header" xml:space="preserve">
+    <value>Activation</value>
+  </data>
+  <data name="Hosts_LaunchButtonControl.Description" xml:space="preserve">
+    <value>Manage your hosts file</value>
+    <comment>"Hosts" refers to the system hosts file, do not loc</comment>
+  </data>
+  <data name="Hosts_LaunchButtonControl.Header" xml:space="preserve">
+    <value>Launch Host File Editor</value>
+	<comment>"Host File Editor" is a product name</comment>
+  </data>
+  <data name="Hosts_LaunchButton_Accessible.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>Launch Host File Editor</value>
+	<comment>"Host File Editor" is a product name</comment>
+  </data>
+  <data name="Hosts_AdditionalLinesPosition.Header" xml:space="preserve">
+    <value>Additional lines position</value>
+  </data>
+  <data name="Hosts_AdditionalLinesPosition_Bottom.Content" xml:space="preserve">
+    <value>Bottom</value>
+  </data>
+  <data name="Hosts_AdditionalLinesPosition_Top.Content" xml:space="preserve">
+    <value>Top</value>
+  </data>
+  <data name="Hosts_File_GroupSettings.Header" xml:space="preserve">
+    <value>File</value>
+  </data>
+  <data name="Launch_Hosts.Content" xml:space="preserve">
+    <value>Launch Hosts File Editor</value>
+    <comment>"Hosts File Editor" is the name of the utility</comment>
+  </data>
+  <data name="LearnMore_Hosts.Text" xml:space="preserve">
+    <value>Learn more about Hosts File Editor</value>
+    <comment>"Hosts File Editor" is the name of the utility</comment>
+  </data>
+  <data name="Oobe_Hosts.Description" xml:space="preserve">
+    <value>Hosts File Editor is a quick and simple utility for managing hosts file.</value>
+    <comment>"Hosts File Editor" is the name of the utility</comment>
+  </data>
+  <data name="Oobe_Hosts.Title" xml:space="preserve">
+    <value>Hosts File Editor</value>
+    <comment>"Hosts File Editor" is the name of the utility</comment>
+  </data>
+  <data name="Hosts_Toggle_LaunchAdministrator.Description" xml:space="preserve">
+    <value>Needs to be launched as administrator in order to make changes to the hosts file</value>
+  </data>
+  <data name="Hosts_Toggle_LaunchAdministrator.Header" xml:space="preserve">
+    <value>Launch as administrator</value>
+  </data>
 </root>
