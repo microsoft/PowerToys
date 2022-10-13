@@ -2,13 +2,14 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.IO;
 using System.IO.Abstractions;
 
-namespace Hosts.Tests
+namespace Hosts.Tests.Mocks
 {
-    public class TestFileSystemWatcher : FileSystemWatcherBase
+    public class MockFileSystemWatcher : FileSystemWatcherBase
     {
         public override bool IncludeSubdirectories { get; set; }
 
@@ -26,13 +27,15 @@ namespace Hosts.Tests
 
         public override ISynchronizeInvoke SynchronizingObject { get; set; }
 
-        public override WaitForChangedResult WaitForChanged(WatcherChangeTypes changeType) => default(WaitForChangedResult);
+        public override Collection<string> Filters => throw new System.NotImplementedException();
 
-        public override WaitForChangedResult WaitForChanged(WatcherChangeTypes changeType, int timeout) => default(WaitForChangedResult);
+        public override WaitForChangedResult WaitForChanged(WatcherChangeTypes changeType) => default;
 
-        public TestFileSystemWatcher(string path) => Path = path;
+        public override WaitForChangedResult WaitForChanged(WatcherChangeTypes changeType, int timeout) => default;
 
-        public TestFileSystemWatcher(string path, string filter)
+        public MockFileSystemWatcher(string path) => Path = path;
+
+        public MockFileSystemWatcher(string path, string filter)
         {
             Path = path;
             Filter = filter;
