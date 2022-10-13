@@ -515,6 +515,9 @@ jobs:
       targetType: 'inline'
       script: |
         $p = "$(System.ArtifactsDirectory)\";
-        $r = $p + "hash-$(BuildPlatform)-" + ((get-item $p\*.exe | Get-FileHash).Hash)
-        out-file -filepath $r
+        $h = "hash_$(BuildPlatform)_" + ((get-item $p\*.exe | Get-FileHash).Hash)
+        echo $h
+        echo $p
+        out-file -filepath $p + $h
+      pwsh: true
 ...
