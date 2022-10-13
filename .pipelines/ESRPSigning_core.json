@@ -65,6 +65,10 @@
                 "modules\\FileExplorerPreview\\PowerToys.SvgThumbnailProvider.dll",
                 "modules\\FileExplorerPreview\\PowerToys.SvgThumbnailProvider.comhost.dll",
 
+                "modules\\Hosts\\PowerToys.HostsModuleInterface.dll",
+                "modules\\Hosts\\PowerToys.Hosts.dll",
+                "modules\\Hosts\\PowerToys.Hosts.exe",
+
                 "modules\\ImageResizer\\PowerToys.ImageResizer.exe",
                 "modules\\ImageResizer\\PowerToys.ImageResizer.dll",
                 "modules\\ImageResizer\\PowerToys.ImageResizerExt.dll",
@@ -217,6 +221,7 @@
                 "modules\\FileExplorerPreview\\Microsoft.Web.WebView2.WinForms.dll",
                 "modules\\FileExplorerPreview\\Microsoft.Web.WebView2.Wpf.dll",
                 "modules\\FileExplorerPreview\\WebView2Loader.dll",
+                "modules\\Hosts\\Microsoft.Graphics.Canvas.Interop.dll",
                 "modules\\launcher\\e_sqlite3.dll",
                 "modules\\launcher\\LazyCache.dll",
                 "modules\\launcher\\SQLitePCLRaw.batteries_v2.dll",

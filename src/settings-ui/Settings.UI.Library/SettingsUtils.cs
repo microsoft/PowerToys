@@ -139,5 +139,30 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         {
             return _settingsPath.GetSettingsPath(powertoy, fileName);
         }
+
+        /// <summary>
+        /// Method <c>BackupSettings</c> Mostly a wrapper for SettingsBackupAndRestoreUtils.BackupSettings
+        /// </summary>
+        public static (bool success, string message, string severity, bool lastBackupExists) BackupSettings()
+        {
+            var settingsBackupAndRestoreUtilsX = SettingsBackupAndRestoreUtils.Instance;
+            var settingsUtils = new SettingsUtils();
+            var appBasePath = Path.GetDirectoryName(settingsUtils._settingsPath.GetSettingsPath(string.Empty, string.Empty));
+            string settingsBackupAndRestoreDir = settingsBackupAndRestoreUtilsX.GetSettingsBackupAndRestoreDir();
+
+            return settingsBackupAndRestoreUtilsX.BackupSettings(appBasePath, settingsBackupAndRestoreDir, false);
+        }
+
+        /// <summary>
+        /// Method <c>RestoreSettings</c> Mostly a wrapper for SettingsBackupAndRestoreUtils.RestoreSettings
+        /// </summary>
+        public static (bool success, string message, string severity) RestoreSettings()
+        {
+            var settingsBackupAndRestoreUtilsX = SettingsBackupAndRestoreUtils.Instance;
+            var settingsUtils = new SettingsUtils();
+            var appBasePath = Path.GetDirectoryName(settingsUtils._settingsPath.GetSettingsPath(string.Empty, string.Empty));
+            string settingsBackupAndRestoreDir = settingsBackupAndRestoreUtilsX.GetSettingsBackupAndRestoreDir();
+            return settingsBackupAndRestoreUtilsX.RestoreSettings(appBasePath, settingsBackupAndRestoreDir);
+        }
     }
 }

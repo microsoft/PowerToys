@@ -47,7 +47,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="ModernWpfUI" Version="0.9.4" />
+    <PackageReference Include="ModernWpfUI" Version="0.9.6" />
     <PackageReference Include="System.IO.Abstractions" Version="12.2.5" />
     <PackageReference Include="System.Text.Json" Version="6.0.2" />
   </ItemGroup>

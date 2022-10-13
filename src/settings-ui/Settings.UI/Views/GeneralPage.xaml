@@ -14,6 +14,7 @@
         <converters:BoolToVisibilityConverter x:Key="VisibleIfTrueConverter"/>
         <converters:BoolNegationConverter x:Key="NegationConverter"/>
         <localConverters:UpdateStateToBoolConverter x:Key="UpdateStateToBoolConverter" />
+        <localConverters:StringToInfoBarSeverityConverter x:Key="StringToInfoBarSeverityConverter"/>
     </Page.Resources>
 
     <controls:SettingsPageControl x:Uid="General"
@@ -24,11 +25,11 @@
                     <controls:Setting Header="{Binding PowerToysVersion}" Icon="&#xE895;">
                         <controls:Setting.Description>
                             <StackPanel Orientation="Vertical">
-                               
-                            <TextBlock Style="{StaticResource SecondaryTextStyle}">
+
+                                <TextBlock Style="{StaticResource SecondaryTextStyle}">
                                 <Run x:Uid="General_VersionLastChecked" />
                                 <Run Text="{Binding UpdateCheckedDate, Mode=OneWay}"/>
-                            </TextBlock>
+                                </TextBlock>
                                 <HyperlinkButton x:Uid="ReleaseNotes"
                                                  NavigateUri="https://github.com/microsoft/PowerToys/releases/"
                                                  Margin="0,2,0,0"/>
@@ -76,7 +77,7 @@
                                         Command="{Binding UpdateNowButtonEventHandler}"
                                         IsEnabled="{Binding IsDownloadAllowed, Mode=OneWay}"
                                         Visibility="{Binding Mode=OneWay, Path=IsNewVersionDownloading, Converter={StaticResource NegationConverter}}"/>
-                                
+
                                 <!-- In progress panel -->
                                 <StackPanel Visibility="{Binding Mode=OneWay, Path=IsNewVersionDownloading, Converter={StaticResource VisibleIfTrueConverter}}"
                                             Orientation="Horizontal"
@@ -137,7 +138,7 @@
                                     Command="{Binding UpdateNowButtonEventHandler}"
                                     IsEnabled="{Binding IsDownloadAllowed, Mode=OneWay}"
                                     Visibility="{Binding Mode=OneWay, Path=IsNewVersionDownloading, Converter={StaticResource NegationConverter}}"/>
-                                
+
                                 <!-- In progress panel -->
                                 <StackPanel Visibility="{Binding Mode=OneWay, Path=IsNewVersionDownloading, Converter={StaticResource VisibleIfTrueConverter}}"
                                         Orientation="Horizontal"
@@ -167,7 +168,7 @@
                             <ToggleSwitch IsOn="{Binding Mode=TwoWay, Path=AutoDownloadUpdates}" x:Uid="ToggleSwitch"/>
                         </controls:Setting.ActionContent>
                     </controls:Setting>
-                    </controls:SettingsGroup>
+                </controls:SettingsGroup>
 
 
 
@@ -207,26 +208,179 @@
 
                 <controls:SettingsGroup IsEnabled="True" x:Uid="ShortcutGuide_Appearance_Behavior">
                     <controls:Setting x:Uid="ColorModeHeader" Icon="&#xE790;">
-                                <controls:Setting.Description>
-                                    <HyperlinkButton Click="OpenColorsSettings_Click"
+                        <controls:Setting.Description>
+                            <HyperlinkButton Click="OpenColorsSettings_Click"
                                                      x:Uid="Windows_Color_Settings"/>
-                                </controls:Setting.Description>
-                                <controls:Setting.ActionContent>
-                                    <ComboBox SelectedIndex="{x:Bind Mode=TwoWay, Path=ViewModel.ThemeIndex}" MinWidth="{StaticResource SettingActionControlMinWidth}">
-                                        <ComboBoxItem x:Uid="Radio_Theme_Dark"/>
-                                        <ComboBoxItem x:Uid="Radio_Theme_Light"/>
-                                        <ComboBoxItem x:Uid="Radio_Theme_Default"/>
-                                    </ComboBox>
-                                </controls:Setting.ActionContent>
-                            </controls:Setting>
+                        </controls:Setting.Description>
+                        <controls:Setting.ActionContent>
+                            <ComboBox SelectedIndex="{x:Bind Mode=TwoWay, Path=ViewModel.ThemeIndex}" MinWidth="{StaticResource SettingActionControlMinWidth}">
+                                <ComboBoxItem x:Uid="Radio_Theme_Dark"/>
+                                <ComboBoxItem x:Uid="Radio_Theme_Light"/>
+                                <ComboBoxItem x:Uid="Radio_Theme_Default"/>
+                            </ComboBox>
+                        </controls:Setting.ActionContent>
+                    </controls:Setting>
                     <controls:Setting x:Uid="GeneralPage_RunAtStartUp">
                         <controls:Setting.ActionContent>
                             <ToggleSwitch IsOn="{Binding Mode=TwoWay, Path=Startup}" x:Uid="ToggleSwitch"/>
                         </controls:Setting.ActionContent>
                     </controls:Setting>
                 </controls:SettingsGroup>
+
+                <!-- Start General_SettingsBackupAndRestore -->
+
+                <controls:SettingsGroup x:Uid="General_SettingsBackupAndRestoreTitle" Visibility="Visible">
+                    <controls:SettingExpander IsExpanded="True">
+                        <controls:SettingExpander.Header>
+                            <controls:Setting x:Uid="General_SettingsBackupAndRestore" Icon="&#xE777;" Style="{StaticResource ExpanderHeaderSettingStyle}">
+                                <controls:Setting.Description>
+                                    <TextBlock Style="{StaticResource SecondaryTextStyle}">
+                                                <Run x:Uid="General_SettingsBackupAndRestoreDescription" />
+                                    </TextBlock>
+                                </controls:Setting.Description>
+                                <controls:Setting.ActionContent>
+                                    <Grid Visibility="Visible">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="1*" />
+                                            <ColumnDefinition Width="1*" />
+                                        </Grid.ColumnDefinitions>
+                                        <Button Grid.Column="0" x:Uid="General_SettingsBackupAndRestore_ButtonBackup"
+                                        Command="{Binding BackupConfigsEventHandler}"
+                                        IsEnabled="True"
+                                        Visibility="Visible"
+                                        HorizontalAlignment="Right"/>
+
+                                        <Button Grid.Column="2" x:Uid="General_SettingsBackupAndRestore_ButtonRestore"
+                                        Command="{Binding RestoreConfigsEventHandler}"
+                                        IsEnabled="True"
+                                        Visibility="Visible"
+                                        HorizontalAlignment="Right"/>
+
+                                    </Grid>
+                                </controls:Setting.ActionContent>
+                            </controls:Setting>
+                        </controls:SettingExpander.Header>
+
+                        <controls:SettingExpander.Content>
+
+
+                            <StackPanel Orientation="Vertical">
+
+                                <controls:Setting x:Uid="General_SettingsBackupAndRestoreLocationText" Visibility="Visible" Style="{StaticResource ExpanderContentSettingStyle}">
+
+                                    <controls:Setting.ActionContent>
+
+                                        <Grid Padding="10,5,0,0">
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="Auto" />
+                                                <ColumnDefinition Width="*" />
+                                                <ColumnDefinition Width="Auto" />
+                                            </Grid.ColumnDefinitions>
+                                            <Grid.RowDefinitions>
+                                                <RowDefinition Height="Auto" />
+                                            </Grid.RowDefinitions>
+                                            <TextBlock MaxWidth="350" Grid.Row="0" Grid.Column="1" Text="{x:Bind Mode=TwoWay, Path=ViewModel.SettingsBackupAndRestoreDir}" IsTextSelectionEnabled="True" MinWidth="350" />
+                                            <Button Grid.Row="0" Grid.Column="2" x:Uid="General_SettingsBackupAndRestore_ButtonSelectLocation"
+                                        Command="{Binding SelectSettingBackupDirEventHandler}"
+                                        IsEnabled="True"
+                                        Visibility="Visible"
+                                        HorizontalAlignment="Left"/>
+
+                                        </Grid>
+
+                                    </controls:Setting.ActionContent>
+                                </controls:Setting>
+
+                                <controls:Setting x:Uid="General_SettingsBackupAndRestoreStatusInfo" Visibility="Visible" Style="{StaticResource ExpanderContentSettingStyle}"/>
+                                <StackPanel>
+
+
+
+                                    <Grid Padding="55,0,10,10">
+                                        <Grid.Resources >
+                                            <Style TargetType="Border" >
+                                                <Setter Property="Padding" Value="2,0,5,0" />
+                                            </Style>
+                                        </Grid.Resources>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="Auto" />
+                                            <ColumnDefinition Width="Auto" />
+                                        </Grid.ColumnDefinitions>
+                                        <Grid.RowDefinitions>
+                                            <RowDefinition Height="1*" />
+                                            <RowDefinition Height="1*" />
+                                            <RowDefinition Height="1*" />
+                                            <RowDefinition Height="1*" />
+                                        </Grid.RowDefinitions>
+
+                                        <Border Grid.Row="0" Grid.Column="0">
+                                            <TextBlock Style="{StaticResource HeaderTextStyle}">
+                                                <Run x:Uid="General_SettingsBackupInfo_DateHeader" />
+                                            </TextBlock>
+
+                                        </Border>
+                                        <Border Grid.Row="0" Grid.Column="1">
+                                            <TextBlock Style="{StaticResource SecondaryTextStyle}">
+                                                <Run Text="{Binding LastSettingsBackupDate, Mode=OneWay}"/>
+                                            </TextBlock>
+                                        </Border>
+
+                                        <Border Grid.Row="1" Grid.Column="0">
+                                            <TextBlock Style="{StaticResource HeaderTextStyle}">
+                                                <Run x:Uid="General_SettingsBackupInfo_StatusHeader" />
+                                            </TextBlock>
+                                        </Border>
+                                        <Border Grid.Row="1" Grid.Column="1">
+                                            <StackPanel Orientation="Horizontal">
+                                                <TextBlock Style="{StaticResource SecondaryTextStyle}">                                                
+                                                <Run Text="{Binding CurrentSettingMatchText, Mode=OneWay}"/>
+                                                </TextBlock>
+
+                                                <TextBlock Padding="5,0,0,0" Style="{StaticResource SecondaryTextStyle}"><Hyperlink Click="UpdateBackupAndRestoreStatusText" TextDecorations="Underline">
+                                                    <Run x:Uid="General_SettingsBackupAndRestore_LinkRefresh" />
+                                                </Hyperlink></TextBlock>
+
+                                            </StackPanel>
+                                        </Border>
+
+                                        <Border Grid.Row="2" Grid.Column="0">
+                                            <TextBlock Style="{StaticResource HeaderTextStyle}">
+                                                <Run x:Uid="General_SettingsBackupInfo_SourceHeader" />
+                                            </TextBlock>
+                                        </Border>
+                                        <Border Grid.Row="2" Grid.Column="1">
+                                            <TextBlock Style="{StaticResource SecondaryTextStyle}">
+                                                <Run Text="{Binding LastSettingsBackupSource, Mode=OneWay}"/>
+                                            </TextBlock>
+                                        </Border>
+
+                                        <Border Grid.Row="3" Grid.Column="0">
+                                            <TextBlock Style="{StaticResource HeaderTextStyle}">
+                                                <Run x:Uid="General_SettingsBackupInfo_FileNameHeader" />
+                                            </TextBlock>
+                                        </Border>
+                                        <Border Grid.Row="3" Grid.Column="1">
+                                            <TextBlock Style="{StaticResource SecondaryTextStyle}">
+                                                <Run Text="{Binding LastSettingsBackupFileName, Mode=OneWay}"/>
+                                            </TextBlock>
+                                        </Border>
+                                    </Grid>
+                                </StackPanel>
+                            </StackPanel>
+                        </controls:SettingExpander.Content>
+                    </controls:SettingExpander>
+                </controls:SettingsGroup>
+
+                <InfoBar x:Uid="General_SettingsBackupMessageResults"
+                                  IsClosable="False"
+                                  Severity="{Binding BackupRestoreMessageSeverity, Converter={StaticResource StringToInfoBarSeverityConverter}}"                         
+                                  IsTabStop="{Binding SettingsBackupRestoreMessageVisible, Mode=OneWay}"
+                                  IsOpen="{Binding SettingsBackupRestoreMessageVisible, Mode=OneWay}"                                  
+                                  Title="{Binding SettingsBackupMessage}"/>
+                <!-- End General_SettingsBackupAndRestore -->
+
             </StackPanel>
-               
+
         </controls:SettingsPageControl.ModuleContent>
         <controls:SettingsPageControl.PrimaryLinks>
             <controls:PageLink x:Uid="GeneralPage_Documentation" Link="https://aka.ms/PowerToysOverview"/>

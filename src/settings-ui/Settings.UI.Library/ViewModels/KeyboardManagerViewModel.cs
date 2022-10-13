@@ -270,7 +270,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
 
                         if (!readSuccessfully)
                         {
-                            Task.Delay(500).Wait();
+                            Task.Delay(500, ts.Token).Wait(ts.Token);
                         }
                     }
                 });

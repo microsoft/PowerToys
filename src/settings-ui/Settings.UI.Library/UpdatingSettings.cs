@@ -69,6 +69,11 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             {
                 try
                 {
+                    if (LastCheckedDate == null)
+                    {
+                        return string.Empty;
+                    }
+
                     long seconds = long.Parse(LastCheckedDate, CultureInfo.CurrentCulture);
                     var date = DateTimeOffset.FromUnixTimeSeconds(seconds).UtcDateTime;
                     return date.ToLocalTime().ToString(CultureInfo.CurrentCulture);

@@ -287,6 +287,22 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             }
         }
 
+        private bool hosts = true;
+
+        [JsonPropertyName("Hosts")]
+        public bool Hosts
+        {
+            get => hosts;
+            set
+            {
+                if (hosts != value)
+                {
+                    LogTelemetryEvent(value);
+                    hosts = value;
+                }
+            }
+        }
+
         public string ToJsonString()
         {
             return JsonSerializer.Serialize(this);

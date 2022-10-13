@@ -4,9 +4,10 @@
 
 using System;
 using System.Collections.Generic;
-
+using System.Globalization;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
+using System.Text.Json;
 using System.Threading.Tasks;
 using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.PowerToys.Settings.UI.Library.Helpers;
@@ -31,7 +32,13 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         private string _settingsConfigFileFolder = string.Empty;
 
-        public VideoConferenceViewModel(ISettingsUtils settingsUtils, ISettingsRepository<GeneralSettings> settingsRepository, Func<string, int> ipcMSGCallBackFunc, Func<Task<string>> pickFileDialog, string configFileSubfolder = "")
+        public VideoConferenceViewModel(
+            ISettingsUtils settingsUtils,
+            ISettingsRepository<GeneralSettings> settingsRepository,
+            ISettingsRepository<VideoConferenceSettings> videoConferenceSettingsRepository,
+            Func<string, int> ipcMSGCallBackFunc,
+            Func<Task<string>> pickFileDialog,
+            string configFileSubfolder = "")
         {
             PickFileDialog = pickFileDialog;
 
@@ -48,15 +55,12 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
             _settingsConfigFileFolder = configFileSubfolder;
 
-            try
+            if (videoConferenceSettingsRepository == null)
             {
-                Settings = _settingsUtils.GetSettings<VideoConferenceSettings>(GetSettingsSubPath());
+                throw new ArgumentNullException(nameof(videoConferenceSettingsRepository));
             }
-            catch
-            {
-                Settings = new VideoConferenceSettings();
-                _settingsUtils.SaveSettings(Settings.ToJsonString(), GetSettingsSubPath());
-            }
+
+            Settings = videoConferenceSettingsRepository.SettingsConfig;
 
             CameraNames = interop.CommonManaged.GetAllVideoCaptureDeviceNames();
             MicrophoneNames = interop.CommonManaged.GetAllActiveMicrophoneDeviceNames();
@@ -396,16 +400,21 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         public string GetSettingsSubPath()
         {
-            return _settingsConfigFileFolder + "\\" + ModuleName;
+            return _settingsConfigFileFolder + (string.IsNullOrEmpty(_settingsConfigFileFolder) ? string.Empty : "\\") + ModuleName;
         }
 
         public void RaisePropertyChanged([CallerMemberName] string propertyName = null)
         {
             OnPropertyChanged(propertyName);
-            SndVideoConferenceSettings outsettings = new SndVideoConferenceSettings(Settings);
-            SndModuleSettings<SndVideoConferenceSettings> ipcMessage = new SndModuleSettings<SndVideoConferenceSettings>(outsettings);
-            SendConfigMSG(ipcMessage.ToJsonString());
+
             _settingsUtils.SaveSettings(Settings.ToJsonString(), GetSettingsSubPath());
+
+            SendConfigMSG(
+                        string.Format(
+                        CultureInfo.InvariantCulture,
+                        "{{ \"powertoys\": {{ \"{0}\": {1} }} }}",
+                        ModuleName,
+                        JsonSerializer.Serialize(Settings)));
         }
     }
 
