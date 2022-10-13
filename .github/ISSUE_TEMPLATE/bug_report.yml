@@ -1,6 +1,8 @@
 name: "🕷️ Bug report"
 description: Report errors or unexpected behavior
-labels: [Issue-Bug, Needs-Triage]
+labels:
+- Issue-Bug
+- Needs-Triage
 body:
 - type: markdown
   attributes:
@@ -72,7 +74,7 @@ body:
     label: ❌ Actual Behavior
     placeholder: What happened instead?
   validations:
-    required: true
+    required: false
 
 - type: textarea
   attributes:
