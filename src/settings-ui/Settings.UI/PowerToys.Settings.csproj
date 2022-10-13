@@ -36,7 +36,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <None Remove="Assets\FluentIcons\FluentIconsHosts.png" />
     <None Remove="OOBE\Views\OobeHosts.xaml" />
   </ItemGroup>
 

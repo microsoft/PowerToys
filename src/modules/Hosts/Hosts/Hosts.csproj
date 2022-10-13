@@ -21,21 +21,13 @@
     <DefineConstants>DISABLE_XAML_GENERATED_MAIN,TRACE</DefineConstants>
     <ApplicationIcon>Assets/Hosts.ico</ApplicationIcon>
   </PropertyGroup>
-  
-  <ItemGroup>
-    <Content Remove="Assets\Hosts.ico" />
-  </ItemGroup>
-  
+   
   <ItemGroup>
     <None Remove="Assets\AppList.scale-100.png" />
     <None Remove="Assets\AppList.scale-125.png" />
     <None Remove="Assets\AppList.scale-150.png" />
     <None Remove="Assets\AppList.scale-200.png" />
     <None Remove="Assets\AppList.scale-400.png" />
-  </ItemGroup>
-  
-  <ItemGroup>
-    <Content Include="icon.ico" />
   </ItemGroup>
 
   <ItemGroup>
