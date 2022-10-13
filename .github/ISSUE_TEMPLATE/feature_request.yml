@@ -1,10 +1,11 @@
-name: "⭐ New feature request"
+name: "⭐ Feature or enhancement request"
 description: Propose something new.
-labels: ["Needs-Triage", "Idea-New PowerToy"]
+labels:
+- Needs-Triage"
 body:
 - type: textarea
   attributes: 
-    label: Description of the new feature
+    label: Description of the new feature / enhancement
     placeholder: What is the expected behavior of the proposed feature?
   validations:
     required: true
