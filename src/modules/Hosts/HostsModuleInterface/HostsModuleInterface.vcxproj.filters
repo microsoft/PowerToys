@@ -29,13 +29,16 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <None Include="packages.config" />
     <None Include="HostsModuleInterface.base.rc">
       <Filter>Resource Files</Filter>
     </None>
     <None Include="Resource.resx">
       <Filter>Resource Files</Filter>
     </None>
+    <None Include="resource.base.h">
+      <Filter>Header Files</Filter>
+    </None>
+    <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h">
@@ -45,9 +48,6 @@
       <Filter>Generated Files</Filter>
     </ClInclude>
     <ClInclude Include="trace.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="resource.base.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
