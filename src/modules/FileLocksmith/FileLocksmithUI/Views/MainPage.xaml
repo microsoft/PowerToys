@@ -9,6 +9,7 @@
     xmlns:interop="using:FileLocksmith.Interop"
     xmlns:local="using:PowerToys.FileLocksmithUI.Views"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:winui="using:CommunityToolkit.Labs.WinUI"
     mc:Ignorable="d">
     <Page.Resources>
         <converters:BoolToVisibilityConverter
@@ -65,7 +66,10 @@
                     IsEnabled="{x:Bind ViewModel.TasksToBeKilled, Mode=OneWay}"
                     Style="{StaticResource AccentButtonStyle}">
                     <StackPanel Orientation="Horizontal" Spacing="6">
-                        <FontIcon FontFamily="{ThemeResource SymbolThemeFontFamily}" FontSize="14" Glyph="&#xf140;" />
+                        <FontIcon
+                            FontFamily="{ThemeResource SymbolThemeFontFamily}"
+                            FontSize="14"
+                            Glyph="&#xf140;" />
                         <TextBlock Text="End task" />
                     </StackPanel>
                 </Button>
@@ -95,8 +99,27 @@
                         <DataTemplate x:DataType="interop:ProcessResult">
                             <Grid>
 
+                                <winui:SettingsExpander Description="Lala" Header="Test">
+                                    <winui:SettingsExpander.HeaderIcon>
+                                        <FontIcon
+                                            Margin="2,2,12,0"
+                                            VerticalAlignment="Center"
+                                            FontFamily="{ThemeResource SymbolThemeFontFamily}"
+                                            FontSize="14"
+                                            Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                            Glyph="&#xEA3F;" />
 
-                                <Expander
+                                    </winui:SettingsExpander.HeaderIcon>
+                                    <winui:SettingsExpander.Content>
+                                        <Button Content="Hello" />
+                                    </winui:SettingsExpander.Content>
+                                    <winui:SettingsExpander.Items>
+                                        <winui:SettingsCard Header="Hello" />
+                                    </winui:SettingsExpander.Items>
+                                </winui:SettingsExpander>
+
+
+                                <!--<Expander
                                     HorizontalAlignment="Stretch"
                                     Background="Transparent"
                                     BorderBrush="Transparent">
@@ -138,7 +161,7 @@
                                             </ListView>
                                         </Grid>
                                     </Expander.Content>
-                                </Expander>
+                                </Expander>-->
                                 <Rectangle
                                     Grid.ColumnSpan="4"
                                     Height="1"
