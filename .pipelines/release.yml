@@ -515,9 +515,10 @@ jobs:
       targetType: 'inline'
       script: |
         $p = "$(System.ArtifactsDirectory)\";
+        $staging = "$(Build.ArtifactStagingDirectory)"
         $hash = ((get-item $p\*.exe | Get-FileHash).Hash);
         $plat = "hash_$(BuildPlatform).txt";
-        $combinedPath = $p + $plat;
+        $combinedPath = $staging + $plat;
         
         echo $plat
         echo $hash
@@ -526,4 +527,10 @@ jobs:
         
         $hash | out-file -filepath $combinedPath
       pwsh: true
+
+  - task: PublishBuildArtifacts@1
+    displayName: 'Publish Artifact: hash'
+    inputs:
+      PathtoPublish: $(System.ArtifactsDirectory)
+      ArtifactName: setup-$(BuildPlatform)
 ...
