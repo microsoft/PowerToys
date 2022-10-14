@@ -516,7 +516,7 @@ jobs:
       script: |
         $p = "$(System.ArtifactsDirectory)\";
         $hash = ((get-item $p\*.exe | Get-FileHash).Hash);
-        $plat = "hash_$(BuildPlatform).txt;
+        $plat = "hash_$(BuildPlatform).txt";
         $combinedPath = $p + $plat;
         
         echo $plat
