@@ -7,15 +7,13 @@ namespace PowerToys.FileLocksmithUI.ViewModels
     using System;
     using System.Collections.Generic;
     using System.Collections.ObjectModel;
-    using System.Diagnostics;
     using System.Linq;
-    using System.Security.Cryptography;
+    using System.Threading;
     using System.Threading.Tasks;
-    using System.Windows.Input;
     using CommunityToolkit.Mvvm.ComponentModel;
     using CommunityToolkit.Mvvm.Input;
-    using CommunityToolkit.WinUI;
     using FileLocksmith.Interop;
+    using global::FileLocksmithUI;
     using Microsoft.UI.Dispatching;
     using Microsoft.UI.Xaml.Controls;
 
@@ -23,39 +21,14 @@ namespace PowerToys.FileLocksmithUI.ViewModels
     public partial class MainViewModel : ObservableObject, IDisposable
 #pragma warning restore CA1708 // Identifiers should differ by more than case
     {
-        private ObservableCollection<ProcessResult> _processes;
-        private bool _tasksToBeKilled;
+        public IAsyncRelayCommand LoadProcessesCommand { get; }
+
         private bool _isLoading;
+        private bool _isElevated;
         private string[] paths;
         private bool _disposed;
 
-        public ObservableCollection<ProcessResult> Processes
-        {
-            get
-            {
-                return _processes;
-            }
-
-            set
-            {
-                _processes = value;
-                OnPropertyChanged(nameof(Processes));
-            }
-        }
-
-        public bool TasksToBeKilled
-        {
-            get
-            {
-                return _tasksToBeKilled;
-            }
-
-            set
-            {
-                _tasksToBeKilled = value;
-                OnPropertyChanged(nameof(TasksToBeKilled));
-            }
-        }
+        public ObservableCollection<ProcessResult> Processes { get; } = new ();
 
         public bool IsLoading
         {
@@ -71,62 +44,78 @@ namespace PowerToys.FileLocksmithUI.ViewModels
             }
         }
 
-        public MainViewModel()
+        public bool IsElevated
         {
-            LoadProcesses();
+            get
+            {
+                return _isElevated;
+            }
+
+            set
+            {
+                _isElevated = value;
+                OnPropertyChanged(nameof(IsElevated));
+            }
         }
 
-        private void LoadProcesses()
+        public MainViewModel()
+        {
+            LoadProcessesCommand = new AsyncRelayCommand(LoadProcessesAsync);
+        }
+
+        private async Task LoadProcessesAsync()
         {
             IsLoading = true;
+            Processes.Clear();
 
             // paths = NativeMethods.ReadPathsFromStdin();
             paths = new string[1] { "C:\\Program Files" };
-            Processes = new ObservableCollection<ProcessResult>(NativeMethods.FindProcessesRecursive(paths));
+
+            foreach (ProcessResult p in await FindProcesses(paths))
+            {
+                Processes.Add(p);
+            }
+
             IsLoading = false;
         }
 
-        [RelayCommand]
-        public void Reload()
+        private async Task<List<ProcessResult>> FindProcesses(string[] paths)
         {
-            LoadProcesses();
+            var results = new List<ProcessResult>();
+            await Task.Run(() =>
+            {
+                results = NativeMethods.FindProcessesRecursive(paths).ToList();
+            });
+            return results;
         }
 
         [RelayCommand]
-        public void SelectionChanged(IList<object> selectedItems)
+        public void EndTask(ProcessResult selectedProcess)
         {
-            if (selectedItems.Count >= 0)
+            Processes.Remove(selectedProcess);
+
+            // if (NativeMethods.KillProcess(process.pid))
+            // {
+            //   Processes.Remove(selectedProcess);
+            // }
+            // else
+            // {
+            //    // TODO show something on failure.
+            // }
+        }
+
+        [RelayCommand]
+        public void RestartElevated()
+        {
+            if (NativeMethods.StartAsElevated(paths))
             {
-                TasksToBeKilled = true;
+                // TODO gentler exit
+                Environment.Exit(0);
             }
             else
             {
-                TasksToBeKilled = false;
+                // TODO report error?
             }
-
-            System.Diagnostics.Debug.WriteLine(TasksToBeKilled);
-        }
-
-        [RelayCommand]
-        public void KillProcesses(IList<object> selectedItems)
-        {
-            List<ProcessResult> processesToKill = new ();
-
-            foreach (ProcessResult selectedItem in selectedItems)
-            {
-                processesToKill.Add(selectedItem);
-            }
-
-            foreach (ProcessResult process in processesToKill)
-            {
-                // if (!NativeMethods.KillProcess(process.pid))
-                // {
-                    // TODO show something on failure.
-                // }
-                Processes.Remove(process);
-            }
-
-            TasksToBeKilled = false;
         }
 
         public void Dispose()

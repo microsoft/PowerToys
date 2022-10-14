@@ -23,7 +23,7 @@
         <winuiex:MicaSystemBackdrop />
     </winuiex:WindowEx.Backdrop>
     <Grid>
-        
+
         <Grid.RowDefinitions>
             <RowDefinition Height="32" />
             <RowDefinition Height="*" />
@@ -40,6 +40,6 @@
                     Style="{StaticResource CaptionTextBlockStyle}" />
             </StackPanel>
         </Grid>
-        <views:MainPage Grid.Row="1" />
+        <views:MainPage x:Name="mainPage" Grid.Row="1" />
     </Grid>
 </winuiex:WindowEx>

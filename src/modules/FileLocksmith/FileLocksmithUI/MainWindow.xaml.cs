@@ -20,6 +20,7 @@ using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Controls.Primitives;
 using Microsoft.UI.Xaml.Input;
 using PowerToys.FileLocksmithUI.Properties;
+using PowerToys.FileLocksmithUI.Views;
 using Windows.Graphics;
 using WinUIEx;
 
@@ -30,52 +31,27 @@ namespace FileLocksmithUI
     /// </summary>
     public sealed partial class MainWindow : WindowEx, IDisposable
     {
-        private string[] paths;
-
-        public MainWindow(bool elevated)
+        public MainWindow(bool isElevated)
         {
-            var hWnd = WinRT.Interop.WindowNative.GetWindowHandle(this);
-            ThemeHelpers.SetImmersiveDarkMode(hWnd, ThemeHelpers.GetAppTheme() == AppTheme.Dark);
-
-            paths = FileLocksmith.Interop.NativeMethods.ReadPathsFromFile();
             InitializeComponent();
-            StartFindingProcesses();
-            if (elevated)
-            {
-                restartAsAdminBtn.IsEnabled = false;
-            }
-
-            Closed += (o, a) => Environment.Exit(0);
-
-if (AppWindowTitleBar.IsCustomizationSupported())
-            {
-                SetTitleBar();
-            }
-            else
-            {
-                titleBar.Visibility = Visibility.Collapsed;
-            }
-        }
-
-        private void OnElevateClick(object sender, RoutedEventArgs e)
-        {
-            if (FileLocksmith.Interop.NativeMethods.StartAsElevated(paths))
-            {
-                // TODO gentler exit
-                Environment.Exit(0);
-            }
-            else
-            {
-                // TODO report error?
-            }
+            mainPage.ViewModel.IsElevated = isElevated;
+            SetTitleBar();
         }
 
         private void SetTitleBar()
         {
-            AppWindow window = this.GetAppWindow();
-            window.TitleBar.ExtendsContentIntoTitleBar = true;
-            window.TitleBar.ButtonBackgroundColor = Colors.Transparent;
-            SetTitleBar(titleBar);
+            if (AppWindowTitleBar.IsCustomizationSupported())
+            {
+                AppWindow window = this.GetAppWindow();
+                window.TitleBar.ExtendsContentIntoTitleBar = true;
+                window.TitleBar.ButtonBackgroundColor = Colors.Transparent;
+                SetTitleBar(titleBar);
+            }
+            else
+            {
+                ThemeHelpers.SetImmersiveDarkMode(WinRT.Interop.WindowNative.GetWindowHandle(this), ThemeHelpers.GetAppTheme() == AppTheme.Dark);
+                titleBar.Visibility = Visibility.Collapsed;
+            }
         }
 
         public void Dispose()

@@ -7,13 +7,13 @@
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
                 <XamlControlsResources xmlns="using:Microsoft.UI.Xaml.Controls" />
-                <!-- Other merged dictionaries here -->
+                <!--  Other merged dictionaries here  -->
             </ResourceDictionary.MergedDictionaries>
 
             <SolidColorBrush x:Key="SubtleButtonBackground" Color="{ThemeResource SubtleFillColorTransparent}" />
             <SolidColorBrush x:Key="SubtleButtonBackgroundPointerOver" Color="{ThemeResource SubtleFillColorSecondary}" />
             <SolidColorBrush x:Key="SubtleButtonBackgroundPressed" Color="{ThemeResource SubtleFillColorTertiary}" />
-            <SolidColorBrush x:Key="SubtleButtonBackgroundDisabled" Color="{ThemeResource ControlFillColorDisabled}" />
+            <SolidColorBrush x:Key="SubtleButtonBackgroundDisabled" Color="{ThemeResource SubtleFillColorTransparent}" />
 
             <SolidColorBrush x:Key="SubtleButtonForeground" Color="{ThemeResource TextFillColorPrimary}" />
             <SolidColorBrush x:Key="SubtleButtonForegroundPointerOver" Color="{ThemeResource TextFillColorPrimary}" />
@@ -26,6 +26,9 @@
                 <Setter Property="BackgroundSizing" Value="InnerBorderEdge" />
                 <Setter Property="Foreground" Value="{ThemeResource SubtleButtonForeground}" />
                 <Setter Property="BorderThickness" Value="0" />
+                <Setter Property="Width" Value="36" />
+                <Setter Property="Padding" Value="0" />
+                <Setter Property="Height" Value="36" />
                 <Setter Property="Padding" Value="{StaticResource ButtonPadding}" />
                 <Setter Property="HorizontalAlignment" Value="Left" />
                 <Setter Property="VerticalAlignment" Value="Center" />
@@ -39,20 +42,20 @@
                     <Setter.Value>
                         <ControlTemplate TargetType="Button">
                             <ContentPresenter
-                                    x:Name="ContentPresenter"
-                                    Padding="{TemplateBinding Padding}"
-                                    HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}"
-                                    VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}"
-                                    AnimatedIcon.State="Normal"
-                                    AutomationProperties.AccessibilityView="Raw"
-                                    Background="{TemplateBinding Background}"
-                                    BackgroundSizing="{TemplateBinding BackgroundSizing}"
-                                    BorderBrush="{TemplateBinding BorderBrush}"
-                                    BorderThickness="{TemplateBinding BorderThickness}"
-                                    Content="{TemplateBinding Content}"
-                                    ContentTemplate="{TemplateBinding ContentTemplate}"
-                                    ContentTransitions="{TemplateBinding ContentTransitions}"
-                                    CornerRadius="{TemplateBinding CornerRadius}">
+                                x:Name="ContentPresenter"
+                                Padding="{TemplateBinding Padding}"
+                                HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}"
+                                VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}"
+                                AnimatedIcon.State="Normal"
+                                AutomationProperties.AccessibilityView="Raw"
+                                Background="{TemplateBinding Background}"
+                                BackgroundSizing="{TemplateBinding BackgroundSizing}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                Content="{TemplateBinding Content}"
+                                ContentTemplate="{TemplateBinding ContentTemplate}"
+                                ContentTransitions="{TemplateBinding ContentTransitions}"
+                                CornerRadius="{TemplateBinding CornerRadius}">
                                 <ContentPresenter.BackgroundTransition>
                                     <BrushTransition Duration="0:0:0.083" />
                                 </ContentPresenter.BackgroundTransition>
@@ -109,7 +112,7 @@
                     </Setter.Value>
                 </Setter>
             </Style>
-            
+
         </ResourceDictionary>
     </Application.Resources>
 </Application>
