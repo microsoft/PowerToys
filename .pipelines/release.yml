@@ -509,7 +509,7 @@ jobs:
       targetType: 'inline'
       script: |
         $p = "$(System.ArtifactsDirectory)\";
-        $staging = "$(Build.ArtifactStagingDirectory)"
+        $staging = "$(Build.ArtifactStagingDirectory)\"
         $hash = ((get-item $p\*.exe | Get-FileHash).Hash);
         $plat = "hash_$(BuildPlatform).txt";
         $combinedPath = $staging + $plat;
