@@ -516,8 +516,10 @@ jobs:
       script: |
         $p = "$(System.ArtifactsDirectory)\";
         $h = "hash_$(BuildPlatform)_" + ((get-item $p\*.exe | Get-FileHash).Hash)
+        $combinedPath = $p + $h
         echo $h
         echo $p
-        out-file -filepath $p + $h
+        echo $combinedPath
+        out-file -filepath $combinedPath
       pwsh: true
 ...
