@@ -515,11 +515,15 @@ jobs:
       targetType: 'inline'
       script: |
         $p = "$(System.ArtifactsDirectory)\";
-        $h = "hash_$(BuildPlatform)_" + ((get-item $p\*.exe | Get-FileHash).Hash)
-        $combinedPath = $p + $h
-        echo $h
+        $hash = ((get-item $p\*.exe | Get-FileHash).Hash);
+        $plat = "hash_$(BuildPlatform).txt;
+        $combinedPath = $p + $plat;
+        
+        echo $plat
+        echo $hash
         echo $p
         echo $combinedPath
-        out-file -filepath $combinedPath
+        
+        $hash | out-file -filepath $combinedPath
       pwsh: true
 ...
