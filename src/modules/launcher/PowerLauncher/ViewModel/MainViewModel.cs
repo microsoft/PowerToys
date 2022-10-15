@@ -192,15 +192,20 @@ namespace PowerLauncher.ViewModel
                     // SelectedItem returns null if selection is empty.
                     if (result != null && result.Action != null)
                     {
-                        Hide();
+                        bool hideWindow = true;
 
                         Application.Current.Dispatcher.Invoke(() =>
                         {
-                            result.Action(new ActionContext
+                            hideWindow = result.Action(new ActionContext
                             {
                                 SpecialKeyState = KeyboardHelper.CheckModifiers(),
                             });
                         });
+
+                        if (hideWindow)
+                        {
+                            Hide();
+                        }
 
                         if (SelectedIsFromQueryResults())
                         {
