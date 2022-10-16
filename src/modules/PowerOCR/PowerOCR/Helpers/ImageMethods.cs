@@ -157,15 +157,13 @@ internal class ImageMethods
                         {
                             bool isCJK = cjkRegex.IsMatch(ocrWord.Text);
 
-                            if (isBeginning || (isCJK && isCJKPrev))
+                            // Use spaces to separate non-CJK words.
+                            if (!isBeginning && (!isCJK || !isCJKPrev))
                             {
-                                _ = text.Append(ocrWord.Text);
-                            }
-                            else
-                            {
-                                _ = text.Append(' ').Append(ocrWord.Text);
+                                _ = text.Append(' ');
                             }
 
+                            _ = text.Append(ocrWord.Text);
                             isCJKPrev = isCJK;
                             isBeginning = false;
                         }
