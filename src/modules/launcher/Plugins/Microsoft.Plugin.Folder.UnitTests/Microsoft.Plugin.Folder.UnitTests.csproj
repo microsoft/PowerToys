@@ -13,7 +13,7 @@
     <PackageReference Include="MSTest.TestFramework" Version="2.2.3" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.2.0" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
-    <PackageReference Include="System.IO.Abstractions.TestingHelpers" Version="12.2.3" />
+    <PackageReference Include="System.IO.Abstractions.TestingHelpers" Version="17.2.3" />
   </ItemGroup>
 
   <ItemGroup>
