@@ -18,6 +18,22 @@ body:
   validations:
     required: true
 
+- type: dropdown
+  attributes:
+    label: Installation method
+    description: How / Where was PowerToys installed from?
+    multiple: true
+    options:
+      - GitHub
+      - Windows Store
+      - WinGet
+      - PowerToys auto-update
+      - Chocolatey
+      - Scoop
+      - Dev build in Visual Studio
+      - Other (please specify in "Steps to Reproduce")
+  validations:
+    required: true
 - type: checkboxes
   attributes:
     label: Running as admin
