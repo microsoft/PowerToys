@@ -30,6 +30,7 @@ body:
       - PowerToys auto-update
       - Chocolatey
       - Scoop
+      - Dev build in Visual Studio
       - Other (please specify in "Steps to Reproduce")
   validations:
     required: true
