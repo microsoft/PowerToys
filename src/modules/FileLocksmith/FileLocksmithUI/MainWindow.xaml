@@ -9,10 +9,9 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:interop="using:FileLocksmith.Interop"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    xmlns:p="using:PowerToys.FileLocksmithUI.Properties"
     xmlns:views="using:PowerToys.FileLocksmithUI.Views"
     xmlns:winuiex="using:WinUIEx"
-    Title="{x:Bind p:Resources.FileLocksmithTitle}"
+    x:Uid="AppTitle"
     Width="680"
     MinWidth="480"
     MinHeight="320"
@@ -35,7 +34,7 @@
                 Orientation="Horizontal">
                 <TextBlock FontFamily="{ThemeResource SymbolThemeFontFamily}" Text="&#xEA3F;" />
                 <TextBlock
-                    x:Uid="AppTitle"
+                    x:Uid="AppTitleText"
                     Margin="12,0,0,0"
                     Style="{StaticResource CaptionTextBlockStyle}" />
             </StackPanel>

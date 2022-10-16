@@ -23,6 +23,7 @@
             FalseValue="Visible"
             GreaterThan="0"
             TrueValue="Collapsed" />
+        <converters:FileCountConverter x:Key="fileCountConverter" />
         <converters:PidToIconConverter x:Key="pidToIconConverter" />
         <converters:PidToUserConverter x:Key="pidToUserConverter" />
     </Page.Resources>
@@ -35,14 +36,13 @@
 
     <Grid>
         <Grid.RowDefinitions>
-            <RowDefinition Height="86" />
+            <RowDefinition Height="48" />
             <RowDefinition Height="*" />
         </Grid.RowDefinitions>
 
-        <Grid Padding="18,0,18,12" VerticalAlignment="Bottom">
-            <TextBlock Margin="0,2,0,0" Style="{ThemeResource BodyStrongTextBlockStyle}">
-                <Run Text="Current proccesses:" />
-            </TextBlock>
+        <Grid Padding="18,0,18,4" VerticalAlignment="Bottom">
+            <!--<TextBlock Margin="0,2,0,0" Text="Current proccesses:" Style="{ThemeResource BodyStrongTextBlockStyle}"/>-->
+
             <StackPanel
                 HorizontalAlignment="Right"
                 VerticalAlignment="Bottom"
@@ -57,6 +57,9 @@
                         FontFamily="{ThemeResource SymbolThemeFontFamily}"
                         FontSize="16"
                         Glyph="&#xE149;" />
+                    <ToolTipService.ToolTip>
+                        <TextBlock x:Uid="Reload" />
+                    </ToolTipService.ToolTip>
                 </Button>
                 <Button
                     x:Name="RestartAsAdminBtn"
@@ -68,6 +71,9 @@
                         FontFamily="{ThemeResource SymbolThemeFontFamily}"
                         FontSize="16"
                         Glyph="&#xE1A7;" />
+                    <ToolTipService.ToolTip>
+                        <TextBlock x:Uid="RestartAsAdmin" />
+                    </ToolTipService.ToolTip>
                 </Button>
             </StackPanel>
         </Grid>
@@ -101,18 +107,18 @@
                                                     FontFamily="{ThemeResource SymbolThemeFontFamily}"
                                                     FontSize="14"
                                                     Glyph="&#xf140;" />
-                                                <TextBlock Text="End task" />
+                                                <TextBlock x:Uid="EndTask" />
                                             </StackPanel>
                                         </Button>
                                     </labs:SettingsExpander.Content>
                                     <labs:SettingsExpander.Items>
-                                        <labs:SettingsCard Header="Process ID">
+                                        <labs:SettingsCard x:Uid="ProcessID">
                                             <TextBlock
                                                 Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                                                 IsTextSelectionEnabled="True"
                                                 Text="{x:Bind pid}" />
                                         </labs:SettingsCard>
-                                        <labs:SettingsCard Header="User">
+                                        <labs:SettingsCard x:Uid="User">
                                             <TextBlock
                                                 Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                                                 IsTextSelectionEnabled="True"
@@ -121,10 +127,8 @@
                                         <labs:SettingsCard ContentAlignment="Vertical">
                                             <labs:SettingsCard.Header>
                                                 <TextBlock>
-                                                    <Run Text="Files" />
-                                                    <Run Text="(" />
-                                                    <!--<Run Text="{x:Bind files.Length.ToString()}" />-->
-                                                    <Run Text=")" />
+                                                    <Run x:Uid="Files" />
+                                                    <Run Text="(" /><Run Text="{x:Bind files, Converter={StaticResource fileCountConverter}}" /><Run Text=")" />
                                                 </TextBlock>
                                             </labs:SettingsCard.Header>
                                             <ListView
@@ -156,9 +160,10 @@
                     HorizontalAlignment="Center"
                     VerticalAlignment="Center"
                     Orientation="Vertical"
+                    Spacing="8"
                     Visibility="{x:Bind ViewModel.Processes.Count, Mode=OneWay, Converter={StaticResource doubleToVisibilityConverter}}">
-                    <FontIcon FontSize="36" Glyph="&#xE10F;" />
-                    <TextBlock Text="Nothing here.." />
+                    <FontIcon FontSize="32" Glyph="&#xE9F3;" />
+                    <TextBlock x:Uid="EmptyListDescription" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
                 </StackPanel>
             </Grid>
             <ProgressRing

@@ -7,13 +7,16 @@ namespace PowerToys.FileLocksmithUI.Converters
     using System;
     using System.Drawing;
     using System.IO;
+    using CommunityToolkit.WinUI.UI;
     using Microsoft.UI.Xaml.Data;
     using Microsoft.UI.Xaml.Media.Imaging;
+    using Windows.Storage;
 
     public sealed class PidToIconConverter : IValueConverter
     {
         public object Convert(object value, Type targetType, object parameter, string language)
         {
+            var y = FileLocksmith.Interop.NativeMethods.PidToFullPath((uint)value);
             var icon = Icon.ExtractAssociatedIcon(FileLocksmith.Interop.NativeMethods.PidToFullPath((uint)value));
             if (icon != null)
             {
@@ -21,7 +24,7 @@ namespace PowerToys.FileLocksmithUI.Converters
                 BitmapImage bitmapImage = new BitmapImage();
                 using (MemoryStream stream = new MemoryStream())
                 {
-                    bitmap.Save(stream, System.Drawing.Imaging.ImageFormat.Bmp);
+                    bitmap.Save(stream, System.Drawing.Imaging.ImageFormat.Png);
                     stream.Position = 0;
                     bitmapImage.SetSource(stream.AsRandomAccessStream());
                 }

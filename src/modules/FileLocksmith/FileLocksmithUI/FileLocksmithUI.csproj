@@ -40,22 +40,6 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<EmbeddedResource Update="Properties\Resources.resx">
-			<Generator>PublicResXFileCodeGenerator</Generator>
-			<LastGenOutput>Resources.Designer.cs</LastGenOutput>
-			<SubType>Designer</SubType>
-		</EmbeddedResource>
-	</ItemGroup>
-
-	<ItemGroup>
-		<Compile Update="Properties\Resources.Designer.cs">
-			<DesignTime>True</DesignTime>
-			<AutoGen>True</AutoGen>
-			<DependentUpon>Resources.resx</DependentUpon>
-		</Compile>
-	</ItemGroup>
-
-	<ItemGroup>
 		<PackageReference Include="CommunityToolkit.Labs.WinUI.SettingsControls" Version="0.0.2" />
 		<PackageReference Include="CommunityToolkit.Mvvm" Version="8.0.0" />
 		<PackageReference Include="CommunityToolkit.WinUI.UI" Version="7.1.2" />
@@ -76,6 +60,7 @@
 	</ItemGroup>
 	<ItemGroup>
 		<Folder Include="Assets\Icons\" />
+		<Folder Include="Properties\" />
 	</ItemGroup>
 	<ItemGroup>
 		<ProjectReference Include="..\..\..\common\interop\PowerToys.Interop.vcxproj" />
