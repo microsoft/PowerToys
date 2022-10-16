@@ -4,6 +4,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 using System.IO.Abstractions;
@@ -208,6 +209,16 @@ namespace Hosts.Helpers
                 .Where(f => f.CreationTime < DateTime.Now.AddDays(-15))
                 .ToList()
                 .ForEach(f => f.Delete());
+        }
+
+        public void OpenHostsFile()
+        {
+            // Hosts file doesn't have an extension and can't be opened with UseShellExecute
+            var process = new Process
+            {
+                StartInfo = new ProcessStartInfo("notepad.exe", HostsFilePath),
+            };
+            process.Start();
         }
 
         public void Dispose()
