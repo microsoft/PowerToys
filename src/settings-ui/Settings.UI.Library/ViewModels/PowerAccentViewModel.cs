@@ -18,13 +18,14 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
 
         private readonly ISettingsUtils _settingsUtils;
 
+        // These should be in the same order as the ComboBoxItems in PowerAccentPage.xaml
         private readonly string[] _languageOptions =
         {
             "ALL",
             "CUR",
             "CZ",
-            "DE",
             "FR",
+            "DE",
             "HU",
             "IS",
             "IT",
