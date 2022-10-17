@@ -651,8 +651,8 @@
   <data name="General_SettingsBackupAndRestore_ButtonRestore.Content" xml:space="preserve">
     <value>Restore</value>
   </data>
-  <data name="General_SettingsBackupAndRestore_ButtonSelectLocation.Content" xml:space="preserve">
-    <value>Browse</value>
+  <data name="General_SettingsBackupAndRestore_ButtonSelectLocation.Text" xml:space="preserve">
+    <value>Select folder</value>
   </data>
   <data name="GeneralPage_UpdateNow.Content" xml:space="preserve">
     <value>Update now</value>
@@ -823,6 +823,9 @@
   </data>
   <data name="General_SettingsBackupAndRestore.Header" xml:space="preserve">
     <value>Backup and restore your settings at any time</value>
+  </data>
+	<data name="General_SettingsBackupAndRestore.Description" xml:space="preserve">
+    <value>PowerToys will restart automatically if needed.</value>
   </data>
   <data name="ShortcutGuide_Enable.Header" xml:space="preserve">
     <value>Enable Shortcut Guide</value>
@@ -1003,6 +1006,9 @@
   <data name="GeneralSettings_AlwaysRunAsAdminText.Header" xml:space="preserve">
     <value>Always run as administrator</value>
   </data>
+	<data name="GeneralSettings_AlwaysRunAsAdminText.Description" xml:space="preserve">
+    <value>You need to run as administrator to use this setting</value>
+  </data>
   <data name="GeneralSettings_RunningAsUserText" xml:space="preserve">
     <value>Running as user</value>
   </data>
@@ -1060,9 +1066,6 @@
   <data name="General_SettingsBackupInfo_DateHeader.Text" xml:space="preserve">
     <value>Created at:</value>
   </data>
-  <data name="General_SettingsBackupAndRestoreDescription.Text" xml:space="preserve">
-    <value>PowerToys will restart automatically if needed.</value>
-  </data>
   <data name="General_SettingsBackupAndRestoreStatusInfo.Header" xml:space="preserve">
     <value>Backup information</value>
   </data>
@@ -1077,9 +1080,6 @@
   </data>
   <data name="Admin_mode.Header" xml:space="preserve">
     <value>Administrator mode</value>
-  </data>
-  <data name="General_RunAsAdminRequired.Title" xml:space="preserve">
-    <value>You need to run as administrator to use this setting.</value>
   </data>
   <data name="FancyZones_RestoreSize.Content" xml:space="preserve">
     <value>Restore the original size of windows when unsnapping</value>
