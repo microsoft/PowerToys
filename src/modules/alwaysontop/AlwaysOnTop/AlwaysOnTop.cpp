@@ -424,7 +424,6 @@ void AlwaysOnTop::HandleWinHookEvent(WinHookEvent* data) noexcept
         {
             UnpinTopmostWindow(window);
             toErase.push_back(window);
-            continue;
         }
     }
 
