@@ -357,19 +357,11 @@
     <value>Remap a key</value>
     <comment>Keyboard Manager remap keyboard button content</comment>
   </data>
-  <data name="KeyboardManager_RemapKeyboardButton_Accessible.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
-    <value>Remap a key</value>
-    <comment>Keyboard Manager remap keyboard button content</comment>
-  </data>
   <data name="KeyboardManager_Keys.Header" xml:space="preserve">
     <value>Keys</value>
     <comment>Keyboard Manager remap keyboard header</comment>
   </data>
   <data name="KeyboardManager_RemapShortcutsButton.Header" xml:space="preserve">
-    <value>Remap a shortcut</value>
-    <comment>Keyboard Manager remap shortcuts button</comment>
-  </data>
-  <data name="KeyboardManager_RemapShortcutsButton_Accessible.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
     <value>Remap a shortcut</value>
     <comment>Keyboard Manager remap shortcuts button</comment>
   </data>
