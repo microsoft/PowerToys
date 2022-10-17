@@ -70,7 +70,6 @@
                         <controls:ColorPickerButton SelectedColor="{x:Bind Path=ViewModel.CrossColor, Mode=TwoWay}" />
                     </labs:SettingsCard>
                 </controls:SettingsGroup>
-
             </StackPanel>
         </controls:SettingsPageControl.ModuleContent>
         <controls:SettingsPageControl.PrimaryLinks>
