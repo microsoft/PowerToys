@@ -22,9 +22,9 @@ body:
     multiple: true
     options:
       - GitHub
-      - Windows Store
-      - WinGet
       - PowerToys auto-update
+      - Microsoft Store
+      - WinGet
       - Chocolatey
       - Scoop
       - Dev build in Visual Studio
