@@ -294,8 +294,6 @@
                                                     IsTabStop="{x:Bind ShowNotAccessibleWarning}"
                                                     Severity="Error" />
                                             </labs:SettingsCard>
-
-
                                             <labs:SettingsCard ContentAlignment="Left" IsEnabled="{x:Bind Enabled, Mode=OneWay}">
                                                 <CheckBox AutomationProperties.Name="{Binding ElementName=IncludeInGlobalResultTitle, Path=Text}" IsChecked="{x:Bind Path=IsGlobal, Mode=TwoWay}">
                                                     <StackPanel Orientation="Vertical">
@@ -342,7 +340,6 @@
                                                                     Header="{x:Bind Path=DisplayLabel}"
                                                                     IsChecked="{x:Bind Path=Value, Mode=TwoWay}" />
                                                             </labs:SettingsCard>
-
                                                         </DataTemplate>
                                                     </ListView.ItemTemplate>
                                                 </ListView>
