@@ -5,7 +5,7 @@
 #include  <FancyZonesLib/FancyZonesData/LayoutDefaults.h>
 #include <FancyZonesLib/FancyZonesDataTypes.h>
 
-struct Layout
+struct LayoutData
 {
     GUID uuid = GUID_NULL;
     FancyZonesDataTypes::ZoneSetLayoutType type = FancyZonesDataTypes::ZoneSetLayoutType::PriorityGrid;

@@ -99,6 +99,15 @@
     <ClInclude Include="ModuleConstants.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="FancyZonesData\LayoutTemplates.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="FancyZonesData\LayoutDefaults.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="FancyZonesData\LayoutData.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
     <ClInclude Include="ZoneIndexSetBitmask.h">
       <Filter>Header Files</Filter>
     </ClInclude>

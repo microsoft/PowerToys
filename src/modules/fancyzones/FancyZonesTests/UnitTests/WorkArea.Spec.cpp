@@ -83,7 +83,7 @@ namespace FancyZonesUnitTests
             parentUniqueId.monitorId.serialNumber = L"serial-number";
             parentUniqueId.virtualDesktopId = FancyZonesUtils::GuidFromString(L"{61FA9FC0-26A6-4B37-A834-491C148DFC57}").value();
 
-            Layout layout{
+            LayoutData layout{
                 .uuid = FancyZonesUtils::GuidFromString(L"{61FA9FC0-26A6-4B37-A834-491C148DFC58}").value(),
                 .type = ZoneSetLayoutType::Rows,
                 .showSpacing = true,
