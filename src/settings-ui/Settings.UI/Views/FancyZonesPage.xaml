@@ -155,7 +155,10 @@
                                 <CheckBox x:Uid="FancyZones_MakeDraggedWindowTransparentCheckBoxControl" IsChecked="{x:Bind Mode=TwoWay, Path=ViewModel.MakeDraggedWindowsTransparent}" />
                             </labs:SettingsCard>
                             <labs:SettingsCard ContentAlignment="Left">
-                                <controls:CheckBoxWithDescriptionControl x:Uid="FancyZones_AllowPopupWindowSnap" IsChecked="{x:Bind Mode=TwoWay, Path=ViewModel.AllowPopupWindowSnap}" />
+                                <controls:CheckBoxWithDescriptionControl
+                                    x:Uid="FancyZones_AllowPopupWindowSnap"
+                                    Margin="0,0,0,6"
+                                    IsChecked="{x:Bind Mode=TwoWay, Path=ViewModel.AllowPopupWindowSnap}" />
                             </labs:SettingsCard>
                             <labs:SettingsCard ContentAlignment="Left">
                                 <CheckBox x:Uid="FancyZones_AllowChildWindowSnap" IsChecked="{x:Bind Mode=TwoWay, Path=ViewModel.AllowChildWindowSnap}" />
@@ -218,15 +221,11 @@
                 </controls:SettingsGroup>
 
                 <controls:SettingsGroup x:Uid="FancyZones_Layouts" IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}">
-                    <labs:SettingsExpander
-                        x:Uid="FancyZones_QuickLayoutSwitch"
-                        HeaderIcon="{ui:FontIcon Glyph=&#xEDA7;}">
+                    <labs:SettingsExpander x:Uid="FancyZones_QuickLayoutSwitch" HeaderIcon="{ui:FontIcon Glyph=&#xEDA7;}">
                         <ToggleSwitch x:Uid="ToggleSwitch" IsOn="{x:Bind Mode=TwoWay, Path=ViewModel.QuickLayoutSwitch}" />
                         <labs:SettingsExpander.Items>
-                            <labs:SettingsCard IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.QuickSwitchEnabled}" ContentAlignment="Left">
-                                <CheckBox
-                                    x:Uid="FancyZones_FlashZonesOnQuickSwitch"
-                                    IsChecked="{x:Bind Mode=TwoWay, Path=ViewModel.FlashZonesOnQuickSwitch}"/>
+                            <labs:SettingsCard ContentAlignment="Left" IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.QuickSwitchEnabled}">
+                                <CheckBox x:Uid="FancyZones_FlashZonesOnQuickSwitch" IsChecked="{x:Bind Mode=TwoWay, Path=ViewModel.FlashZonesOnQuickSwitch}" />
                             </labs:SettingsCard>
                         </labs:SettingsExpander.Items>
                     </labs:SettingsExpander>
@@ -241,15 +240,15 @@
                         <labs:SettingsExpander.Items>
                             <labs:SettingsCard ContentAlignment="Vertical">
                                 <TextBox
-                                x:Uid="FancyZones_ExcludeApps_TextBoxControl"
-                                MinWidth="240"
-                                MinHeight="160"
-                                AcceptsReturn="True"
-                                ScrollViewer.IsVerticalRailEnabled="True"
-                                ScrollViewer.VerticalScrollBarVisibility="Visible"
-                                ScrollViewer.VerticalScrollMode="Enabled"
-                                Text="{x:Bind Mode=TwoWay, Path=ViewModel.ExcludedApps, UpdateSourceTrigger=PropertyChanged}"
-                                TextWrapping="Wrap" />
+                                    x:Uid="FancyZones_ExcludeApps_TextBoxControl"
+                                    MinWidth="240"
+                                    MinHeight="160"
+                                    AcceptsReturn="True"
+                                    ScrollViewer.IsVerticalRailEnabled="True"
+                                    ScrollViewer.VerticalScrollBarVisibility="Visible"
+                                    ScrollViewer.VerticalScrollMode="Enabled"
+                                    Text="{x:Bind Mode=TwoWay, Path=ViewModel.ExcludedApps, UpdateSourceTrigger=PropertyChanged}"
+                                    TextWrapping="Wrap" />
                             </labs:SettingsCard>
                         </labs:SettingsExpander.Items>
                     </labs:SettingsExpander>
