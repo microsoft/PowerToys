@@ -231,7 +231,7 @@ namespace ViewModelTests
             viewModel.AddRow("New size");
 
             // Assert
-            ImageSize newTestSize = viewModel.Sizes.Where<ImageSize>(x => x.Id == 0).First();
+            ImageSize newTestSize = viewModel.Sizes.First(x => x.Id == 0);
             Assert.AreEqual(newTestSize.Name, "New size 1");
             Assert.AreEqual(newTestSize.Fit, (int)ResizeFit.Fit);
             Assert.AreEqual(newTestSize.Width, 854);
@@ -248,7 +248,7 @@ namespace ViewModelTests
             ImageResizerViewModel viewModel = new ImageResizerViewModel(mockSettingsUtils.Object, SettingsRepository<GeneralSettings>.GetInstance(_mockGeneralSettingsUtils.Object), sendMockIPCConfigMSG, (string name) => name);
             viewModel.AddRow("New Size");
             int sizeOfOriginalArray = viewModel.Sizes.Count;
-            ImageSize deleteCandidate = viewModel.Sizes.Where<ImageSize>(x => x.Id == 0).First();
+            ImageSize deleteCandidate = viewModel.Sizes.First(x => x.Id == 0);
 
             // act
             viewModel.DeleteImageSize(0);
