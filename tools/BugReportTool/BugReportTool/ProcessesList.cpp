@@ -20,5 +20,6 @@ std::vector<std::wstring> processes =
     L"PowerToys.ImageResizer.exe",
     L"PowerToys.Update.exe",
     L"PowerToys.ActionRunner.exe",
-    L"PowerToys.AlwaysOnTop.exe"
+    L"PowerToys.AlwaysOnTop.exe",
+    L"PowerToys.Hosts.exe"
 };

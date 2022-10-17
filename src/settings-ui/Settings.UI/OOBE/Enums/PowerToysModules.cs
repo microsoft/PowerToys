@@ -22,6 +22,7 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Enums
         TextExtractor,
         VideoConference,
         MeasureTool,
+        Hosts,
         WhatsNew,
     }
 }

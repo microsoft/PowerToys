@@ -175,13 +175,15 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
                 if (Settings.Properties.ActivationShortcut != value)
                 {
                     Settings.Properties.ActivationShortcut = value;
+
                     NotifyPropertyChanged();
+
                     SendConfigMSG(
-                        string.Format(
-                            CultureInfo.InvariantCulture,
-                            "{{ \"powertoys\": {{ \"{0}\": {1} }} }}",
-                            MeasureToolSettings.ModuleName,
-                            JsonSerializer.Serialize(Settings)));
+                         string.Format(
+                         CultureInfo.InvariantCulture,
+                         "{{ \"powertoys\": {{ \"{0}\": {1} }} }}",
+                         MeasureToolSettings.ModuleName,
+                         JsonSerializer.Serialize(Settings)));
                 }
             }
         }
@@ -189,7 +191,6 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
         public void NotifyPropertyChanged([CallerMemberName] string propertyName = null)
         {
             OnPropertyChanged(propertyName);
-
             if (propertyName == nameof(ShowContinuousCaptureWarning))
             {
                 // Don't trigger a settings update if the changed property is for visual notification.

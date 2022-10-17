@@ -34,7 +34,11 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
 
         private Func<string, int> SendConfigMSG { get; }
 
-        public ColorPickerViewModel(ISettingsUtils settingsUtils, ISettingsRepository<GeneralSettings> settingsRepository, Func<string, int> ipcMSGCallBackFunc)
+        public ColorPickerViewModel(
+            ISettingsUtils settingsUtils,
+            ISettingsRepository<GeneralSettings> settingsRepository,
+            ISettingsRepository<ColorPickerSettings> colorPickerSettingsRepository,
+            Func<string, int> ipcMSGCallBackFunc)
         {
             // Obtain the general PowerToy settings configurations
             if (settingsRepository == null)
@@ -62,14 +66,13 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
             GeneralSettingsConfig = settingsRepository.SettingsConfig;
 
             _settingsUtils = settingsUtils ?? throw new ArgumentNullException(nameof(settingsUtils));
-            if (_settingsUtils.SettingsExists(ColorPickerSettings.ModuleName))
+
+            if (colorPickerSettingsRepository == null)
             {
-                _colorPickerSettings = _settingsUtils.GetSettingsOrDefault<ColorPickerSettings>(ColorPickerSettings.ModuleName);
+                throw new ArgumentNullException(nameof(colorPickerSettingsRepository));
             }
-            else
-            {
-                _colorPickerSettings = new ColorPickerSettings();
-            }
+
+            _colorPickerSettings = colorPickerSettingsRepository.SettingsConfig;
 
             _isEnabled = GeneralSettingsConfig.Enabled.ColorPicker;
 
