@@ -900,7 +900,7 @@ bool FancyZones::OnSnapHotkeyBasedOnPosition(HWND window, DWORD vkCode) noexcept
                         const auto zones = zoneSet->GetZones();
                         for (const auto& [zoneId, zone] : zones)
                         {
-                            RECT zoneRect = zone->GetZoneRect();
+                            RECT zoneRect = zone.GetZoneRect();
 
                             zoneRect.left += monitorRect.left;
                             zoneRect.right += monitorRect.left;
@@ -948,7 +948,7 @@ bool FancyZones::OnSnapHotkeyBasedOnPosition(HWND window, DWORD vkCode) noexcept
                     const auto zones = zoneSet->GetZones();
                     for (const auto& [zoneId, zone] : zones)
                     {
-                        RECT zoneRect = zone->GetZoneRect();
+                        RECT zoneRect = zone.GetZoneRect();
 
                         zoneRect.left += currentMonitorRect.left;
                         zoneRect.right += currentMonitorRect.left;

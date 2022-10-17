@@ -4,8 +4,8 @@
 
 #include <FancyZonesLib/FancyZonesData/LayoutDefaults.h>
 #include <FancyZonesLib/FancyZonesData/CustomLayouts.h>
-#include "FancyZonesLib\ZoneIndexSetBitmask.h"
-#include "FancyZonesLib\ZoneSet.h"
+#include <FancyZonesLib/ZoneIndexSetBitmask.h>
+#include <FancyZonesLib/ZoneSet.h>
 #include <FancyZonesLib/util.h>
 
 #include "Util.h"
@@ -36,13 +36,13 @@ namespace FancyZonesUnitTests
             std::filesystem::remove_all(CustomLayouts::CustomLayoutsFileName());
         }
 
-        void compareZones(const winrt::com_ptr<IZone>& expected, const winrt::com_ptr<IZone>& actual)
+        void compareZones(const Zone& expected, const Zone& actual)
         {
-            Assert::AreEqual(expected->Id(), actual->Id());
-            Assert::AreEqual(expected->GetZoneRect().left, actual->GetZoneRect().left);
-            Assert::AreEqual(expected->GetZoneRect().right, actual->GetZoneRect().right);
-            Assert::AreEqual(expected->GetZoneRect().top, actual->GetZoneRect().top);
-            Assert::AreEqual(expected->GetZoneRect().bottom, actual->GetZoneRect().bottom);
+            Assert::AreEqual(expected.Id(), actual.Id());
+            Assert::AreEqual(expected.GetZoneRect().left, actual.GetZoneRect().left);
+            Assert::AreEqual(expected.GetZoneRect().right, actual.GetZoneRect().right);
+            Assert::AreEqual(expected.GetZoneRect().top, actual.GetZoneRect().top);
+            Assert::AreEqual(expected.GetZoneRect().bottom, actual.GetZoneRect().bottom);
         }
 
             void saveCustomLayout(const std::vector<RECT>& zones)
@@ -104,31 +104,6 @@ namespace FancyZonesUnitTests
                 Assert::AreEqual((size_t)0, zones.size());
             }
 
-            TEST_METHOD (MakeZoneFromZeroRect)
-            {
-                winrt::com_ptr<IZone> zone = MakeZone({ 0, 0, 0, 0 }, 1);
-                Assert::IsNotNull(zone.get());
-            }
-
-            TEST_METHOD (MakeZoneFromInvalidRectWidth)
-            {
-                winrt::com_ptr<IZone> zone = MakeZone({ 100, 100, 99, 101 }, 1);
-                Assert::IsNull(zone.get());
-            }
-
-            TEST_METHOD (MakeZoneFromInvalidRectHeight)
-            {
-                winrt::com_ptr<IZone> zone = MakeZone({ 100, 100, 101, 99 }, 1);
-                Assert::IsNull(zone.get());
-            }
-
-            TEST_METHOD (MakeZoneFromInvalidRectCoords)
-            {
-                const int invalid = ZoneConstants::MAX_NEGATIVE_SPACING - 1;
-                winrt::com_ptr<IZone> zone = MakeZone({ invalid, invalid, invalid, invalid }, 1);
-                Assert::IsNull(zone.get());
-            }
-
             TEST_METHOD (ZoneFromPointEmpty)
             {
                 auto actual = m_set->ZonesFromPoint(POINT{ 0, 0 });
@@ -173,8 +148,8 @@ namespace FancyZonesUnitTests
                 auto zones = set->ZonesFromPoint(POINT{ 50, 50 });
                 Assert::IsTrue(zones.size() == 1);
 
-                auto expected = MakeZone({ 10, 10, 50, 50 }, 3);
-                auto actual = set->GetZones()[zones[0]];
+                Zone expected({ 10, 10, 50, 50 }, 3);
+                auto actual = set->GetZones().at(zones.at(0));
                 compareZones(expected, actual);
             }
 
@@ -190,11 +165,11 @@ namespace FancyZonesUnitTests
                 auto actual = set->ZonesFromPoint(POINT{ 50, 100 });
                 Assert::IsTrue(actual.size() == 2);
 
-                auto zone1 = MakeZone({ 0, 0, 100, 100 }, 0);
-                compareZones(zone1, set->GetZones()[actual[0]]);
+                Zone zone1({ 0, 0, 100, 100 }, 0);
+                compareZones(zone1, set->GetZones().at(actual[0]));
 
-                auto zone3 = MakeZone({ 0, 100, 100, 200 }, 2);
-                compareZones(zone3, set->GetZones()[actual[1]]);
+                Zone zone3({ 0, 100, 100, 200 }, 2);
+                compareZones(zone3, set->GetZones().at(actual[1]));
             }
 
             TEST_METHOD (ZoneIndexFromWindowUnknown)
@@ -337,10 +312,7 @@ namespace FancyZonesUnitTests
     TEST_CLASS (ZoneSetsMoveWindowIntoZoneByDirectionUnitTests)
     {
         winrt::com_ptr<IZoneSet> m_set;
-        winrt::com_ptr<IZone> m_zone1;
-        winrt::com_ptr<IZone> m_zone2;
-        winrt::com_ptr<IZone> m_zone3;
-
+        
         TEST_METHOD_INITIALIZE(Initialize)
             {
                 ZoneSetConfig config({}, ZoneSetLayoutType::Grid, Mocks::Monitor(), DefaultValues::SensitivityRadius);
@@ -588,7 +560,7 @@ namespace FancyZonesUnitTests
             {
                 Assert::IsTrue(set->IsZoneEmpty(zoneId));
 
-                const auto& zoneRect = zone.second->GetZoneRect();
+                const auto& zoneRect = zone.second.GetZoneRect();
                 Assert::IsTrue(zoneRect.left >= 0, L"left border is less than zero");
                 Assert::IsTrue(zoneRect.top >= 0, L"top border is less than zero");
 

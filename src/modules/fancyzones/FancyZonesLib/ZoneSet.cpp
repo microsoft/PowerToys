@@ -87,7 +87,7 @@ ZoneSet::ZonesFromPoint(POINT pt) const noexcept
     ZoneIndexSet strictlyCapturedZones;
     for (const auto& [zoneId, zone] : m_zones)
     {
-        const RECT& zoneRect = zone->GetZoneRect();
+        const RECT& zoneRect = zone.GetZoneRect();
         if (zoneRect.left - m_config.SensitivityRadius <= pt.x && pt.x <= zoneRect.right + m_config.SensitivityRadius &&
             zoneRect.top - m_config.SensitivityRadius <= pt.y && pt.y <= zoneRect.bottom + m_config.SensitivityRadius)
         {
@@ -119,8 +119,8 @@ ZoneSet::ZonesFromPoint(POINT pt) const noexcept
             RECT rectJ;
             try
             {
-                rectI = m_zones.at(capturedZones[i])->GetZoneRect();
-                rectJ = m_zones.at(capturedZones[j])->GetZoneRect();
+                rectI = m_zones.at(capturedZones[i]).GetZoneRect();
+                rectJ = m_zones.at(capturedZones[j]).GetZoneRect();
             }
             catch (std::out_of_range)
             {
@@ -149,9 +149,9 @@ ZoneSet::ZonesFromPoint(POINT pt) const noexcept
             switch (m_config.SelectionAlgorithm)
             {
             case Algorithm::Smallest:
-                return ZoneSelectPriority(capturedZones, [&](auto zone1, auto zone2) { return zone1->GetZoneArea() < zone2->GetZoneArea(); });
+                return ZoneSelectPriority(capturedZones, [&](auto zone1, auto zone2) { return zone1.GetZoneArea() < zone2.GetZoneArea(); });
             case Algorithm::Largest:
-                return ZoneSelectPriority(capturedZones, [&](auto zone1, auto zone2) { return zone1->GetZoneArea() > zone2->GetZoneArea(); });
+                return ZoneSelectPriority(capturedZones, [&](auto zone1, auto zone2) { return zone1.GetZoneArea() > zone2.GetZoneArea(); });
             case Algorithm::Positional:
                 return ZoneSelectSubregion(capturedZones, pt);
             case Algorithm::ClosestCenter:
@@ -219,7 +219,7 @@ ZoneSet::MoveWindowIntoZoneByIndexSet(HWND window, HWND workAreaWindow, const Zo
         if (m_zones.contains(id))
         {
             const auto& zone = m_zones.at(id);
-            const RECT newSize = zone->GetZoneRect();
+            const RECT newSize = zone.GetZoneRect();
             if (!sizeEmpty)
             {
                 size.left = min(size.left, newSize.left);
@@ -322,7 +322,7 @@ ZoneSet::MoveWindowIntoZoneByDirectionAndPosition(HWND window, HWND workAreaWind
     {
         if (!usedZoneIndices[zoneId])
         {
-            zoneRects.emplace_back(m_zones[zoneId]->GetZoneRect());
+            zoneRects.emplace_back(m_zones.at(zoneId).GetZoneRect());
             freeZoneIndices.emplace_back(zoneId);
         }
     }
@@ -347,7 +347,7 @@ ZoneSet::MoveWindowIntoZoneByDirectionAndPosition(HWND window, HWND workAreaWind
             // Try again from the position off the screen in the opposite direction to vkCode
             // Consider all zones as available
             zoneRects.resize(m_zones.size());
-            std::transform(m_zones.begin(), m_zones.end(), zoneRects.begin(), [](auto zone) { return zone.second->GetZoneRect(); });
+            std::transform(m_zones.begin(), m_zones.end(), zoneRects.begin(), [](auto zone) { return zone.second.GetZoneRect(); });
             windowRect = FancyZonesUtils::PrepareRectForCycling(windowRect, workAreaRect, vkCode);
             result = FancyZonesUtils::ChooseNextZoneByPosition(vkCode, windowRect, zoneRects);
 
@@ -388,7 +388,7 @@ ZoneSet::ExtendWindowByDirectionAndPosition(HWND window, HWND workAreaWindow, DW
         if (finalIndexIt != m_windowFinalIndex.end())
         {
             usedZoneIndices[finalIndexIt->second] = true;
-            windowRect = m_zones[finalIndexIt->second]->GetZoneRect();
+            windowRect = m_zones.at(finalIndexIt->second).GetZoneRect();
         }
         else
         {
@@ -407,7 +407,7 @@ ZoneSet::ExtendWindowByDirectionAndPosition(HWND window, HWND workAreaWindow, DW
         {
             if (!usedZoneIndices[i])
             {
-                zoneRects.emplace_back(m_zones[i]->GetZoneRect());
+                zoneRects.emplace_back(m_zones.at(i).GetZoneRect());
                 freeZoneIndices.emplace_back(i);
             }
         }
@@ -644,7 +644,7 @@ ZoneIndexSet ZoneSet::GetCombinedZoneRange(const ZoneIndexSet& initialZones, con
     {
         if (m_zones.contains(zoneId))
         {
-            const RECT rect = m_zones.at(zoneId)->GetZoneRect();
+            const RECT rect = m_zones.at(zoneId).GetZoneRect();
             if (boundingRectEmpty)
             {
                 boundingRect = rect;
@@ -664,7 +664,7 @@ ZoneIndexSet ZoneSet::GetCombinedZoneRange(const ZoneIndexSet& initialZones, con
     {
         for (const auto& [zoneId, zone] : m_zones)
         {
-            const RECT rect = zone->GetZoneRect();
+            const RECT rect = zone.GetZoneRect();
             if (boundingRect.left <= rect.left && rect.right <= boundingRect.right &&
                 boundingRect.top <= rect.top && rect.bottom <= boundingRect.bottom)
             {
@@ -686,12 +686,12 @@ ZoneIndexSet ZoneSet::ZoneSelectSubregion(const ZoneIndexSet& capturedZones, POI
     };
 
     // Compute the overlapped rectangle.
-    RECT overlap = m_zones.at(capturedZones[0])->GetZoneRect();
+    RECT overlap = m_zones.at(capturedZones[0]).GetZoneRect();
     expand(overlap);
 
     for (size_t i = 1; i < capturedZones.size(); ++i)
     {
-        RECT current = m_zones.at(capturedZones[i])->GetZoneRect();
+        RECT current = m_zones.at(capturedZones[i]).GetZoneRect();
         expand(current);
 
         overlap.top = max(overlap.top, current.top);
@@ -724,7 +724,7 @@ ZoneIndexSet ZoneSet::ZoneSelectSubregion(const ZoneIndexSet& capturedZones, POI
 ZoneIndexSet ZoneSet::ZoneSelectClosestCenter(const ZoneIndexSet& capturedZones, POINT pt) const
 {
     auto getCenter = [](auto zone) {
-        RECT rect = zone->GetZoneRect();
+        RECT rect = zone.GetZoneRect();
         return POINT{ (rect.right + rect.left) / 2, (rect.top + rect.bottom) / 2 };
     };
     auto pointDifference = [](POINT pt1, POINT pt2) {
@@ -741,7 +741,7 @@ ZoneIndexSet ZoneSet::ZoneSelectClosestCenter(const ZoneIndexSet& capturedZones,
         }
         else
         {
-            return zone1->GetZoneArea() < zone2->GetZoneArea();
+            return zone1.GetZoneArea() < zone2.GetZoneArea();
         };
     };
     return ZoneSelectPriority(capturedZones, closerToCenter);
