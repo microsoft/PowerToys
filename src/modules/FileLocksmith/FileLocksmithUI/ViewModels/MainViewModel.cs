@@ -7,6 +7,7 @@ namespace PowerToys.FileLocksmithUI.ViewModels
     using System;
     using System.Collections.Generic;
     using System.Collections.ObjectModel;
+    using System.Diagnostics;
     using System.Linq;
     using System.Threading;
     using System.Threading.Tasks;
@@ -68,12 +69,12 @@ namespace PowerToys.FileLocksmithUI.ViewModels
             IsLoading = true;
             Processes.Clear();
 
-            // paths = NativeMethods.ReadPathsFromStdin();
-            paths = new string[1] { "C:\\Program Files" };
+            paths = NativeMethods.ReadPathsFromFile();
 
             foreach (ProcessResult p in await FindProcesses(paths))
             {
                 Processes.Add(p);
+                WatchProcess(p);
             }
 
             IsLoading = false;
@@ -89,19 +90,21 @@ namespace PowerToys.FileLocksmithUI.ViewModels
             return results;
         }
 
+        private async void WatchProcess(ProcessResult process)
+        {
+            if (await Task.Run(() => NativeMethods.WaitForProcess(process.pid)))
+            {
+                Processes.Remove(process);
+            }
+        }
+
         [RelayCommand]
         public void EndTask(ProcessResult selectedProcess)
         {
-            Processes.Remove(selectedProcess);
-
-            // if (NativeMethods.KillProcess(process.pid))
-            // {
-            //   Processes.Remove(selectedProcess);
-            // }
-            // else
-            // {
-            //    // TODO show something on failure.
-            // }
+            if (!NativeMethods.KillProcess(selectedProcess.pid))
+            {
+                // TODO show something on failure.
+            }
         }
 
         [RelayCommand]
