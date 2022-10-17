@@ -364,14 +364,14 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         /// Method <c>GetSettingsBackupAndRestoreDir</c> returns the path the backup and restore location.
         /// </summary>
         /// <remarks>
-        /// This will return a default location based on Environment Variables if non is set.
+        /// This will return a default location based on user documents if non is set.
         /// </remarks>
         public string GetSettingsBackupAndRestoreDir()
         {
             string settingsBackupAndRestoreDir = GetRegSettingsBackupAndRestoreRegItem("SettingsBackupAndRestoreDir");
             if (settingsBackupAndRestoreDir == null)
             {
-                settingsBackupAndRestoreDir = Environment.ExpandEnvironmentVariables("%USERPROFILE%\\Documents\\PowerToys\\Backup");
+                settingsBackupAndRestoreDir = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "PowerToys\\Backup");
             }
 
             return settingsBackupAndRestoreDir;
