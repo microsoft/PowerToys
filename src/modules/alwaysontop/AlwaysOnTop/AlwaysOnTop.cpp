@@ -312,13 +312,14 @@ void AlwaysOnTop::RegisterLLKH()
 void AlwaysOnTop::SubscribeToEvents()
 {
     // subscribe to windows events
-    std::array<DWORD, 6> events_to_subscribe = {
+    std::array<DWORD, 7> events_to_subscribe = {
         EVENT_OBJECT_LOCATIONCHANGE,
         EVENT_SYSTEM_MINIMIZESTART,
         EVENT_SYSTEM_MINIMIZEEND,
         EVENT_SYSTEM_MOVESIZEEND,
         EVENT_SYSTEM_FOREGROUND,
-        EVENT_OBJECT_DESTROY
+        EVENT_OBJECT_DESTROY,
+        EVENT_OBJECT_FOCUS,
     };
 
     for (const auto event : events_to_subscribe)
@@ -425,14 +426,6 @@ void AlwaysOnTop::HandleWinHookEvent(WinHookEvent* data) noexcept
             toErase.push_back(window);
             continue;
         }
-
-        // check reset windows
-        // fixes https://github.com/microsoft/PowerToys/issues/19168
-        if (!IsTopmost(window))
-        {
-            Logger::trace("Reset topmost flag");
-            PinTopmostWindow(window);
-        }
     }
 
     for (const auto window : toErase)
@@ -491,6 +484,20 @@ void AlwaysOnTop::HandleWinHookEvent(WinHookEvent* data) noexcept
     case EVENT_SYSTEM_FOREGROUND:
     {
         RefreshBorders();
+    }
+    break;
+    case EVENT_OBJECT_FOCUS:
+    {
+        for (const auto& [window, border] : m_topmostWindows)
+        {
+            // check if topmost was reset
+            // fixes https://github.com/microsoft/PowerToys/issues/19168
+            if (!IsTopmost(window))
+            {
+                Logger::trace(L"Reset topmost");
+                PinTopmostWindow(window);
+            }
+        }
     }
     break;
     default:
