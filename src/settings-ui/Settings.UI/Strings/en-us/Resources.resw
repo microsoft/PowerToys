@@ -575,10 +575,6 @@
     <value>Launch layout editor</value>
     <comment>launches the FancyZones layout editor application</comment>
   </data>
-  <data name="FancyZones_LaunchEditorButton_Accessible.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
-    <value>Launch layout editor</value>
-    <comment>launches the FancyZones layout editor application</comment>
-  </data>
   <data name="FancyZones_LaunchEditorButtonControl.Description" xml:space="preserve">
     <value>Set and manage your layouts</value>
     <comment>launches the FancyZones layout editor application</comment>
