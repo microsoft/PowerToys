@@ -33,7 +33,7 @@
         <controls:SettingsPageControl.ModuleContent>
             <StackPanel Orientation="Vertical">
 
-                <labs:SettingsCard x:Uid="AlwaysOnTop_EnableToggleControl_HeaderText" HeaderIcon="{ui:BitmapIcon Source=/Assets/FluentIconsAlwaysOnTop/FluentIconsAwake.png}">
+                <labs:SettingsCard x:Uid="AlwaysOnTop_EnableToggleControl_HeaderText" HeaderIcon="{ui:BitmapIcon Source=/Assets/FluentIcons/FluentIconsAlwaysOnTop.png}">
                     <ToggleSwitch x:Uid="ToggleSwitch" IsOn="{x:Bind ViewModel.IsEnabled, Mode=TwoWay}" />
                 </labs:SettingsCard>
 
