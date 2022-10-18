@@ -13,7 +13,6 @@
                 <ResourceDictionary Source="/Styles/TextBlock.xaml" />
                 <ResourceDictionary Source="/Styles/Button.xaml" />
                 <ResourceDictionary Source="/Themes/Colors.xaml" />
-                <ResourceDictionary Source="/Themes/SettingsExpanderStyles.xaml" />
                 <!--  Other merged dictionaries here  -->
             </ResourceDictionary.MergedDictionaries>
 
