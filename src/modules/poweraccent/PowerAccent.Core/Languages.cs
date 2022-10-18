@@ -278,17 +278,29 @@ namespace PowerAccent.Core
             switch (letter)
             {
                 case LetterKey.VK_A:
-                    return new char[] { 'ā', 'á', 'ǎ', 'à', 'a' };
+                    return new char[] { 'ā', 'á', 'ǎ', 'à', 'a', 'ɑ̄', 'ɑ́', 'ɑ̌', 'ɑ̀' };
                 case LetterKey.VK_E:
-                    return new char[] { 'ē', 'é', 'ě', 'è', 'e' };
+                    return new char[] { 'ē', 'é', 'ě', 'è', 'e' };
                 case LetterKey.VK_I:
-                    return new char[] { 'ī', 'í', 'ǐ', 'ì', 'i' };
+                    return new char[] { 'ī', 'í', 'ǐ', 'ì', 'i' };
                 case LetterKey.VK_O:
-                    return new char[] { 'ō', 'ó', 'ǒ', 'ò', 'o' };
+                    return new char[] { 'ō', 'ó', 'ǒ', 'ò', 'o' };
                 case LetterKey.VK_U:
-                    return new char[] { 'ū', 'ú', 'ǔ', 'ù', 'u' };
+                    return new char[] { 'ū', 'ú', 'ǔ', 'ù', 'u' };
                 case LetterKey.VK_V:
-                    return new char[] { 'ǖ', 'ǘ', 'ǚ', 'ǜ', 'ü' };
+                    return new char[] { 'ǖ', 'ǘ', 'ǚ', 'ǜ', 'ü' };
+                case LetterKey.VK_M:
+                    return new char[] { 'm̄', 'ḿ', 'm̌', 'm̀', 'm' };
+                case LetterKey.VK_N:
+                    return new char[] { 'n̄', 'ń', 'ň', 'ǹ', 'n', 'ŋ', 'ŋ̄', 'ŋ́', 'ŋ̌', 'ŋ̀' };
+                case LetterKey.VK_Y:
+                    return new char[] { '¥' };
+                case LetterKey.VK_Z:
+                    return new char[] { 'ẑ' };
+                case LetterKey.VK_C:
+                    return new char[] { 'ĉ' };
+                case LetterKey.VK_S:
+                    return new char[] { 'ŝ' };
             }
 
             return Array.Empty<char>();
