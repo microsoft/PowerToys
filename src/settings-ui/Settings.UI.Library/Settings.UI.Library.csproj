@@ -2,15 +2,15 @@
 
 	<Import Project="..\..\Version.props" />
 
-  <PropertyGroup>
-    <TargetFramework>net7.0-windows</TargetFramework>
-    <Version>$(Version).0</Version>
-    <Authors>Microsoft Corporation</Authors>
-    <Product>PowerToys</Product>
-    <Description>PowerToys Settings UI Library</Description>
-    <AssemblyName>PowerToys.Settings.UI.Lib</AssemblyName>
-	<UseWindowsForms>false</UseWindowsForms>
-  </PropertyGroup>
+    <PropertyGroup>
+        <TargetFramework>net7.0-windows</TargetFramework>
+        <Version>$(Version).0</Version>
+        <Authors>Microsoft Corporation</Authors>
+        <Product>PowerToys</Product>
+        <Description>PowerToys Settings UI Library</Description>
+        <AssemblyName>PowerToys.Settings.UI.Lib</AssemblyName>
+	    <UseWindowsForms>false</UseWindowsForms>
+    </PropertyGroup>
 
 	<PropertyGroup Condition="'$(Configuration)'=='Debug'">
 		<DefineConstants>DEBUG;TRACE</DefineConstants>
@@ -18,13 +18,13 @@
 		<DebugSymbols>true</DebugSymbols>
 	</PropertyGroup>
 
-  <ItemGroup>
+    <ItemGroup>
 		<None Include="backup_restore_settings.json">
 			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
 		</None>
 	</ItemGroup>
 
-		<ProjectReference Include="..\..\common\interop\PowerToys.Interop.vcxproj" />
+	<ItemGroup>
 		<PackageReference Include="System.IO.Abstractions" Version="17.2.3" />
 		<PackageReference Include="System.Text.Json" Version="7.0.0-rc.1.22426.10" />
 	</ItemGroup>
@@ -34,6 +34,5 @@
 		<ProjectReference Include="..\..\common\ManagedCommon\ManagedCommon.csproj" />
 		<ProjectReference Include="..\..\common\ManagedTelemetry\Telemetry\ManagedTelemetry.csproj" />
 	</ItemGroup>
-
 
 </Project>
