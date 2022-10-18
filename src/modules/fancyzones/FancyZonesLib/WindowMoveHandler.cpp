@@ -261,13 +261,13 @@ void WindowMoveHandler::MoveSizeEnd(HWND window, POINT const& ptScreen, const st
             if (workArea != workAreaMap.end())
             {
                 const auto workAreaPtr = workArea->second;
-                const auto zoneSet = workAreaPtr->ZoneSet();
-                if (zoneSet)
+                const auto& layout = workAreaPtr->GetLayout();
+                if (layout)
                 {
-                    wil::unique_cotaskmem_string guidString;
-                    if (SUCCEEDED_LOG(StringFromCLSID(zoneSet->Id(), &guidString)))
+                    auto guidStr = FancyZonesUtils::GuidToString(layout->Id());
+                    if (guidStr.has_value())
                     {
-                        AppZoneHistory::instance().RemoveAppLastZone(window, workAreaPtr->UniqueId(), guidString.get());
+                        AppZoneHistory::instance().RemoveAppLastZone(window, workAreaPtr->UniqueId(), guidStr.value());
                     }
                 }
             }

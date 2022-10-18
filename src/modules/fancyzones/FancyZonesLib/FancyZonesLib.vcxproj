@@ -54,6 +54,7 @@
     <ClInclude Include="JsonHelpers.h" />
     <ClInclude Include="KeyState.h" />
     <ClInclude Include="FancyZonesData\LayoutHotkeys.h" />
+    <ClInclude Include="Layout.h" />
     <ClInclude Include="LayoutConfigurator.h" />
     <ClInclude Include="ModuleConstants.h" />
     <ClInclude Include="MonitorUtils.h" />
@@ -105,6 +106,7 @@
     <ClCompile Include="FancyZonesData\LayoutHotkeys.cpp">
       <PrecompiledHeaderFile>../pch.h</PrecompiledHeaderFile>
     </ClCompile>
+    <ClCompile Include="Layout.cpp" />
     <ClCompile Include="LayoutConfigurator.cpp" />
     <ClCompile Include="MonitorUtils.cpp" />
     <ClCompile Include="MonitorWorkAreaHandler.cpp" />

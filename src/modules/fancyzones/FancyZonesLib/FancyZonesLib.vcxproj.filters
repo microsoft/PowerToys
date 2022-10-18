@@ -153,6 +153,9 @@
     <ClInclude Include="EditorParameters.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="Layout.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="pch.cpp">
@@ -244,6 +247,9 @@
     </ClCompile>
     <ClCompile Include="FancyZonesData\LayoutTemplates.cpp">
       <Filter>Source Files\FancyZonesData</Filter>
+    </ClCompile>
+    <ClCompile Include="Layout.cpp">
+      <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
