@@ -41,11 +41,11 @@
   <ItemGroup>
     <PackageReference Include="Microsoft.CSharp" Version="4.7.0" />
     <PackageReference Include="ModernWpfUI" Version="0.9.6" />
-    <PackageReference Include="System.ComponentModel.Composition" Version="7.0.0-rc.1.22426.10" />
+    <PackageReference Include="System.ComponentModel.Composition" Version="7.0.0-rc.2.22472.3" />
     <PackageReference Include="System.Data.DataSetExtensions" Version="4.5.0" />
     <PackageReference Include="System.IO.Abstractions" Version="17.2.3" />
     <PackageReference Include="Microsoft.Xaml.Behaviors.Wpf" Version="1.1.39" />
-    <PackageReference Include="System.Drawing.Common" Version="7.0.0-rc.1.22426.10" />
+    <PackageReference Include="System.Drawing.Common" Version="7.0.0-rc.2.22472.3" />
   </ItemGroup>
   <ItemGroup>
     <None Update="Properties\Settings.settings">

@@ -29,7 +29,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="System.Data.OleDb" Version="7.0.0-rc.1.22426.10" />
+    <PackageReference Include="System.Data.OleDb" Version="7.0.0-rc.2.22472.3" />
   </ItemGroup>
 
   <ItemGroup>
