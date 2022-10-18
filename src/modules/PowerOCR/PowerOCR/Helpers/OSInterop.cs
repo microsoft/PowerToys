@@ -69,8 +69,20 @@ public static class OSInterop
     internal static extern short GetAsyncKeyState(int vKey);
 
     public delegate IntPtr HookProc(int nCode, IntPtr wParam, IntPtr lParam);
-#pragma warning restore CA1401 // P/Invokes should not be visible
 
+    [DllImport("user32.dll", SetLastError = true)]
+    public static extern IntPtr SetForegroundWindow(IntPtr hWnd);
+
+    [DllImport("user32.dll")]
+    public static extern IntPtr GetForegroundWindow();
+
+    [DllImport("user32.dll")]
+    public static extern uint GetWindowThreadProcessId(IntPtr hWnd, IntPtr processId);
+
+    [DllImport("user32.dll")]
+    public static extern bool AttachThreadInput(uint idAttach, uint idAttachTo, bool fAttach);
+
+#pragma warning restore CA1401 // P/Invokes should not be visible
     [StructLayout(LayoutKind.Sequential)]
     internal struct LowLevelKeyboardInputEvent
     {

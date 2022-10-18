@@ -35,6 +35,8 @@ struct LogSettings
     inline const static std::string alwaysOnTopLoggerName = "always-on-top";
     inline const static std::string powerOcrLoggerName = "TextExtractor";
     inline const static std::wstring alwaysOnTopLogPath = L"always-on-top-log.txt";
+    inline const static std::string hostsLoggerName = "hosts";
+    inline const static std::wstring hostsLogPath = L"Logs\\hosts-log.txt";
     inline const static int retention = 30;
     std::wstring logLevel;
     LogSettings();

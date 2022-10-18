@@ -22,6 +22,16 @@
                     </controls:Setting.ActionContent>
                 </controls:Setting>
 
+                <InfoBar x:Uid="TextExtractor_SupportedLanguages"
+                        Severity="Informational"
+                        IsClosable="False"
+                        IsOpen="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}"
+                        IsTabStop="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}" >
+                    <InfoBar.ActionButton>
+                        <HyperlinkButton NavigateUri="https://aka.ms/PowerToysOverview_TextExtractor#supported-languages" x:Uid="TextExtractor_SupportedLanguages_Link"/>
+                    </InfoBar.ActionButton>
+                </InfoBar>
+
                 <controls:SettingsGroup x:Uid="Shortcut" IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}">
                     <controls:Setting x:Uid="Activation_Shortcut" Icon="&#xEDA7;">
                         <controls:Setting.ActionContent>

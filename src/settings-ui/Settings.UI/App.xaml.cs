@@ -129,6 +129,7 @@ namespace Microsoft.PowerToys.Settings.UI
                         case "TextExtractor": StartupPage = typeof(Views.PowerOcrPage); break;
                         case "VideoConference": StartupPage = typeof(Views.VideoConferencePage); break;
                         case "MeasureTool": StartupPage = typeof(Views.MeasureToolPage); break;
+                        case "Hosts": StartupPage = typeof(Views.HostsPage); break;
                         default: Debug.Assert(false, "Unexpected SettingsWindow argument value"); break;
                     }
                 }

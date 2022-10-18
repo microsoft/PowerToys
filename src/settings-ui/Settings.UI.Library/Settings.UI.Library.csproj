@@ -1,6 +1,6 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
-  <Import Project="..\..\Version.props" />
+	<Import Project="..\..\Version.props" />
 
   <PropertyGroup>
     <TargetFramework>net7.0-windows</TargetFramework>
@@ -9,24 +9,31 @@
     <Product>PowerToys</Product>
     <Description>PowerToys Settings UI Library</Description>
     <AssemblyName>PowerToys.Settings.UI.Lib</AssemblyName>
+	<UseWindowsForms>false</UseWindowsForms>
   </PropertyGroup>
 
-  <PropertyGroup Condition="'$(Configuration)'=='Debug'">
-    <DefineConstants>DEBUG;TRACE</DefineConstants>
-    <DebugType>full</DebugType>
-    <DebugSymbols>true</DebugSymbols>
-  </PropertyGroup>
+	<PropertyGroup Condition="'$(Configuration)'=='Debug'">
+		<DefineConstants>DEBUG;TRACE</DefineConstants>
+		<DebugType>full</DebugType>
+		<DebugSymbols>true</DebugSymbols>
+	</PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="System.IO.Abstractions" Version="12.2.5" />
-    <PackageReference Include="System.Text.Json" Version="7.0.0-rc.1.22426.10" />
-  </ItemGroup>
+		<None Include="backup_restore_settings.json">
+			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+		</None>
+	</ItemGroup>
 
-  <ItemGroup>
-    <ProjectReference Include="..\..\common\interop\PowerToys.Interop.vcxproj" />
-    <ProjectReference Include="..\..\common\ManagedCommon\ManagedCommon.csproj" />
-    <ProjectReference Include="..\..\common\ManagedTelemetry\Telemetry\ManagedTelemetry.csproj" />
-  </ItemGroup>
+		<ProjectReference Include="..\..\common\interop\PowerToys.Interop.vcxproj" />
+		<PackageReference Include="System.IO.Abstractions" Version="17.2.3" />
+		<PackageReference Include="System.Text.Json" Version="7.0.0-rc.1.22426.10" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<ProjectReference Include="..\..\common\interop\PowerToys.Interop.vcxproj" />
+		<ProjectReference Include="..\..\common\ManagedCommon\ManagedCommon.csproj" />
+		<ProjectReference Include="..\..\common\ManagedTelemetry\Telemetry\ManagedTelemetry.csproj" />
+	</ItemGroup>
 
 
 </Project>

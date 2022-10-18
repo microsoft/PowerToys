@@ -215,6 +215,13 @@ public:
             {
                 Logger::warn("Failed to initialize Opacity from settings. Will use default value");
             }
+
+            // Convert % to uint8_t
+            if ((std::wstring)settingsObject.GetNamedString(L"version") != L"1.0")
+            {
+                opacity = opacity * 255 / 100;
+            }
+
             try
             {
                 // Parse left button click color

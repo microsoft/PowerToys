@@ -266,7 +266,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
 
         public void DeleteImageSize(int id)
         {
-            ImageSize size = _advancedSizes.Where<ImageSize>(x => x.Id == id).First();
+            ImageSize size = _advancedSizes.First(x => x.Id == id);
             ObservableCollection<ImageSize> imageSizes = Sizes;
             imageSizes.Remove(size);
 
@@ -367,7 +367,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
         {
             ImageSize modifiedSize = (ImageSize)sender;
             ObservableCollection<ImageSize> imageSizes = Sizes;
-            imageSizes.Where<ImageSize>(x => x.Id == modifiedSize.Id).First().Update(modifiedSize);
+            imageSizes.First(x => x.Id == modifiedSize.Id).Update(modifiedSize);
             _advancedSizes = imageSizes;
             SavesImageSizes(imageSizes);
         }

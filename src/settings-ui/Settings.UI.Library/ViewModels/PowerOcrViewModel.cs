@@ -33,6 +33,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
         public PowerOcrViewModel(
             ISettingsUtils settingsUtils,
             ISettingsRepository<GeneralSettings> settingsRepository,
+            ISettingsRepository<PowerOcrSettings> powerOcrsettingsRepository,
             Func<string, int> ipcMSGCallBackFunc)
         {
             // To obtain the general settings configurations of PowerToys Settings.
@@ -50,14 +51,13 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
             }
 
             _settingsUtils = settingsUtils ?? throw new ArgumentNullException(nameof(settingsUtils));
-            if (_settingsUtils.SettingsExists(PowerOcrSettings.ModuleName))
+
+            if (powerOcrsettingsRepository == null)
             {
-                _powerOcrSettings = _settingsUtils.GetSettingsOrDefault<PowerOcrSettings>(PowerOcrSettings.ModuleName);
+                throw new ArgumentNullException(nameof(powerOcrsettingsRepository));
             }
-            else
-            {
-                _powerOcrSettings = new PowerOcrSettings();
-            }
+
+            _powerOcrSettings = powerOcrsettingsRepository.SettingsConfig;
 
             _isEnabled = GeneralSettingsConfig.Enabled.PowerOCR;
 
@@ -98,6 +98,8 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
                 {
                     _powerOcrSettings.Properties.ActivationShortcut = value;
                     OnPropertyChanged(nameof(ActivationShortcut));
+
+                    _settingsUtils.SaveSettings(_powerOcrSettings.ToJsonString(), PowerOcrSettings.ModuleName);
                     NotifySettingsChanged();
                 }
             }

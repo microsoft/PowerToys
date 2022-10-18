@@ -370,7 +370,6 @@ cwd
 cxfksword
 CXSMICON
 CXVIRTUALSCREEN
-cxxopts
 cyberrex
 Cyrl
 CYSMICON
@@ -1620,7 +1619,7 @@ pstr
 pstream
 pstrm
 psz
-PTB
+ptb
 ptc
 ptd
 PTOKEN

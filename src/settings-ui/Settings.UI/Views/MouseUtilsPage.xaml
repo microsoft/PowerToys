@@ -178,8 +178,8 @@
                               
                                 <controls:Setting x:Uid="MouseUtils_MouseHighlighter_HighlightOpacity" IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsMouseHighlighterEnabled}" Style="{StaticResource ExpanderContentSettingStyle}">
                                     <controls:Setting.ActionContent>
-                                        <Slider Minimum="0"
-                                            Maximum="255"
+                                        <Slider Minimum="1"
+                                            Maximum="100"
                                             MinWidth="{StaticResource SettingActionControlMinWidth}"
                                             Value="{x:Bind Mode=TwoWay, Path=ViewModel.MouseHighlighterOpacity}"
                                             HorizontalAlignment="Right"/>

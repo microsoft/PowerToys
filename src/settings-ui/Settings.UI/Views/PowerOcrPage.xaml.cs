@@ -18,6 +18,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             ViewModel = new PowerOcrViewModel(
                 settingsUtils,
                 SettingsRepository<GeneralSettings>.GetInstance(settingsUtils),
+                SettingsRepository<PowerOcrSettings>.GetInstance(settingsUtils),
                 ShellPage.SendDefaultIPCMessage);
             DataContext = ViewModel;
             InitializeComponent();

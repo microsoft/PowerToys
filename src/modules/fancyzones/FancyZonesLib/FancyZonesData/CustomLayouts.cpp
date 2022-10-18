@@ -102,7 +102,7 @@ namespace JsonUtils
     
     struct CustomLayoutJSON
     {
-        GUID layoutId;
+        GUID layoutId{};
         FancyZonesDataTypes::CustomLayoutData data;
 
         static std::optional<CustomLayoutJSON> FromJson(const json::JsonObject& json)

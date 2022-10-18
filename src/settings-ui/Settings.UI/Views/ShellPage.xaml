@@ -76,6 +76,12 @@
                     </NavigationViewItem.Icon>
                 </NavigationViewItem>
 
+                <NavigationViewItem x:Uid="Shell_Hosts" helpers:NavHelper.NavigateTo="views:HostsPage">
+                    <NavigationViewItem.Icon>
+                        <BitmapIcon ShowAsMonochrome="False" UriSource="ms-appx:///Assets/FluentIcons/FluentIconsHosts.png" />
+                    </NavigationViewItem.Icon>
+                </NavigationViewItem>
+
                 <NavigationViewItem x:Uid="Shell_ImageResizer" helpers:NavHelper.NavigateTo="views:ImageResizerPage">
                     <NavigationViewItem.Icon>
                         <BitmapIcon ShowAsMonochrome="False" UriSource="ms-appx:///Assets/FluentIcons/FluentIconsImageResizer.png" />
@@ -93,7 +99,7 @@
                         <BitmapIcon ShowAsMonochrome="False" UriSource="ms-appx:///Assets/FluentIcons/FluentIconsMouseUtils.png" />
                     </NavigationViewItem.Icon>
                 </NavigationViewItem>
-                
+
                 <NavigationViewItem x:Uid="Shell_PowerRename" helpers:NavHelper.NavigateTo="views:PowerRenamePage">
                     <NavigationViewItem.Icon>
                         <BitmapIcon ShowAsMonochrome="False" UriSource="ms-appx:///Assets/FluentIcons/FluentIconsPowerRename.png" />
@@ -104,11 +110,9 @@
                         <BitmapIcon ShowAsMonochrome="False" UriSource="ms-appx:///Assets/FluentIcons/FluentIconsPowerToysRun.png" />
                     </NavigationViewItem.Icon>
                 </NavigationViewItem>
-                <NavigationViewItem x:Uid="Shell_QuickAccent"
-                                         helpers:NavHelper.NavigateTo="views:PowerAccentPage">
+                <NavigationViewItem x:Uid="Shell_QuickAccent" helpers:NavHelper.NavigateTo="views:PowerAccentPage">
                     <NavigationViewItem.Icon>
-                        <BitmapIcon UriSource="ms-appx:///Assets/FluentIcons/FluentIconsPowerAccent.png"
-                                    ShowAsMonochrome="False" />
+                        <BitmapIcon ShowAsMonochrome="False" UriSource="ms-appx:///Assets/FluentIcons/FluentIconsPowerAccent.png" />
                     </NavigationViewItem.Icon>
                 </NavigationViewItem>
                 <NavigationViewItem x:Uid="Shell_MeasureTool" helpers:NavHelper.NavigateTo="views:MeasureToolPage">
@@ -121,11 +125,9 @@
                         <BitmapIcon ShowAsMonochrome="False" UriSource="ms-appx:///Assets/FluentIcons/FluentIconsShortcutGuide.png" />
                     </NavigationViewItem.Icon>
                 </NavigationViewItem>
-                <NavigationViewItem x:Uid="Shell_TextExtractor"
-                                         helpers:NavHelper.NavigateTo="views:PowerOcrPage">
+                <NavigationViewItem x:Uid="Shell_TextExtractor" helpers:NavHelper.NavigateTo="views:PowerOcrPage">
                     <NavigationViewItem.Icon>
-                        <BitmapIcon UriSource="ms-appx:///Assets/FluentIcons/FluentIconsPowerOcr.png"
-                                    ShowAsMonochrome="False" />
+                        <BitmapIcon ShowAsMonochrome="False" UriSource="ms-appx:///Assets/FluentIcons/FluentIconsPowerOcr.png" />
                     </NavigationViewItem.Icon>
                 </NavigationViewItem>
 
@@ -137,9 +139,6 @@
                         <BitmapIcon ShowAsMonochrome="False" UriSource="ms-appx:///Assets/FluentIcons/FluentIconsVideoConferenceMute.png" />
                     </NavigationViewItem.Icon>
                 </NavigationViewItem>
-
-
-
             </NavigationView.MenuItems>
             <NavigationView.PaneFooter>
                 <StackPanel Orientation="Vertical">
