@@ -35,7 +35,7 @@ class D3DCaptureState final
     winrt::IDirect3DDevice device;
     winrt::com_ptr<IDXGISwapChain1> swapChain;
 
-    winrt::SizeInt32 frameSize;
+    winrt::SizeInt32 frameSize{};
     HMONITOR monitor = {};
     winrt::DirectXPixelFormat pixelFormat;
 

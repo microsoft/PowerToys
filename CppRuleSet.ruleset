@@ -22,7 +22,7 @@
     <Rule Id="C26454" Action="Info" />
     <Rule Id="C26478" Action="Info" />
     <Rule Id="C26479" Action="Info" />
-    <Rule Id="C26495" Action="Info" />
+    <Rule Id="C26495" Action="Error" />
     <Rule Id="C26498" Action="Info" />
     <Rule Id="C26800" Action="Info" />
     <Rule Id="C26810" Action="Info" />

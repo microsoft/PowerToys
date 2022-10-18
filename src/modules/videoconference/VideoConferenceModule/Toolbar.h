@@ -56,9 +56,9 @@ private:
 
     bool HideToolbarWhenUnmuted = true;
 
-    uint64_t lastTimeCamOrMicMuteStateChanged;
+    uint64_t lastTimeCamOrMicMuteStateChanged{};
 
     std::atomic_bool moduleSettingsUpdateScheduled = false;
     std::atomic_bool generalSettingsUpdateScheduled = false;
-    UINT_PTR nTimerId;
+    UINT_PTR nTimerId{};
 };
