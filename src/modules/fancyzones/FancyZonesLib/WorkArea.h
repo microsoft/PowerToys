@@ -56,7 +56,6 @@ public:
     }
 
     FancyZonesDataTypes::WorkAreaId UniqueId() const noexcept { return { m_uniqueId }; }
-    IZoneSet* ZoneSet() const noexcept { return m_zoneSet.get(); }
     const std::unique_ptr<Layout>& GetLayout() const noexcept { return m_layout; }
     const std::unique_ptr<LayoutWindows>& GetLayoutWindows() const noexcept { return m_layoutWindows; }
     
@@ -99,7 +98,6 @@ private:
     const FancyZonesDataTypes::WorkAreaId m_uniqueId;
     HWND m_window{}; // Hidden tool window used to represent current monitor desktop work area.
     HWND m_windowMoveSize{};
-    winrt::com_ptr<IZoneSet> m_zoneSet;
     std::unique_ptr<Layout> m_layout;
     std::unique_ptr<LayoutWindows> m_layoutWindows;
     ZoneIndexSet m_initialHighlightZone;

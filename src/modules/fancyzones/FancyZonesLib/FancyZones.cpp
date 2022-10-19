@@ -25,7 +25,6 @@
 #include <FancyZonesLib/MonitorUtils.h>
 #include <FancyZonesLib/Settings.h>
 #include <FancyZonesLib/SettingsObserver.h>
-#include <FancyZonesLib/ZoneSet.h>
 #include <FancyZonesLib/WorkArea.h>
 #include <FancyZonesLib/WindowMoveHandler.h>
 #include <FancyZonesLib/WindowUtils.h>

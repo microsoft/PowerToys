@@ -30,9 +30,6 @@
     <ClInclude Include="Zone.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="ZoneSet.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="WorkArea.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -165,9 +162,6 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Zone.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="ZoneSet.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="WorkArea.cpp">
