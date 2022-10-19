@@ -61,6 +61,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
                 { ColorRepresentationType.CIEXYZ, "CIE XYZ - xyz(56, 50, 7)" },
                 { ColorRepresentationType.VEC4, "VEC4 - (1.0f, 0.7f, 0f, 1f)" },
                 { ColorRepresentationType.DecimalValue, "Decimal - 16755200" },
+                { ColorRepresentationType.HexInteger, "HEX Integer - 0xFFAA00EE" },
             };
 
             GeneralSettingsConfig = settingsRepository.SettingsConfig;
@@ -204,6 +205,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
             var cielabFormatName = ColorRepresentationType.CIELAB.ToString();
             var ciexyzFormatName = ColorRepresentationType.CIEXYZ.ToString();
             var vec4FormatName = ColorRepresentationType.VEC4.ToString();
+            var hexIntegerFormatName = "HEX Integer";
             var decimalFormatName = "Decimal";
 
             formatsUnordered.Add(new ColorFormatModel(hexFormatName, "ef68ff", visibleFormats.ContainsKey(hexFormatName) && visibleFormats[hexFormatName]));
@@ -219,6 +221,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
             formatsUnordered.Add(new ColorFormatModel(ciexyzFormatName, "XYZ(59, 35, 98)", visibleFormats.ContainsKey(ciexyzFormatName) && visibleFormats[ciexyzFormatName]));
             formatsUnordered.Add(new ColorFormatModel(vec4FormatName, "(0.94f, 0.41f, 1.00f, 1f)", visibleFormats.ContainsKey(vec4FormatName) && visibleFormats[vec4FormatName]));
             formatsUnordered.Add(new ColorFormatModel(decimalFormatName, "15689983", visibleFormats.ContainsKey(decimalFormatName) && visibleFormats[decimalFormatName]));
+            formatsUnordered.Add(new ColorFormatModel(hexIntegerFormatName, "0xFFAA00EE", visibleFormats.ContainsKey(hexIntegerFormatName) && visibleFormats[hexIntegerFormatName]));
 
             foreach (var storedColorFormat in _colorPickerSettings.Properties.VisibleColorFormats)
             {
