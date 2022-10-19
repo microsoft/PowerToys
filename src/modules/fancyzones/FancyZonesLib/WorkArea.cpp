@@ -127,7 +127,7 @@ HRESULT WorkArea::MoveSizeEnter(HWND window) noexcept
     m_highlightZone = {};
     m_initialHighlightZone = {};
     ShowZonesOverlay();
-    Trace::WorkArea::MoveOrResizeStarted(m_zoneSet);
+    Trace::WorkArea::MoveOrResizeStarted(m_layout.get(), m_layoutWindows.get());
     return S_OK;
 }
 
@@ -192,7 +192,7 @@ HRESULT WorkArea::MoveSizeEnd(HWND window, POINT const& ptScreen) noexcept
 
     MoveWindowIntoZoneByIndexSet(window, m_highlightZone);
 
-    Trace::WorkArea::MoveOrResizeEnd(m_layout.get());
+    Trace::WorkArea::MoveOrResizeEnd(m_layout.get(), m_layoutWindows.get());
 
     HideZonesOverlay();
     m_windowMoveSize = nullptr;
