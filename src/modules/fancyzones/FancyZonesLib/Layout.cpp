@@ -307,7 +307,7 @@ ZoneIndexSet Layout::GetCombinedZoneRange(const ZoneIndexSet& initialZones, cons
 RECT Layout::GetCombinedZonesRect(const ZoneIndexSet& zones)
 {
     RECT size{};
-    bool sizeEmpty = false;
+    bool sizeEmpty = true;
 
     for (ZoneIndex id : zones)
     {
