@@ -145,8 +145,15 @@
                                     </controls:Setting.ActionContent>
                                 </controls:Setting>
                                 <Rectangle Style="{StaticResource ExpanderSeparatorStyle}" />
-
-                                <CheckBox x:Uid="VideoConference_HideToolbarWhenUnmuted" IsChecked="{x:Bind Mode=TwoWay, Path=ViewModel.HideToolbarWhenUnmuted}" Margin="{StaticResource ExpanderSettingMargin}" />
+                                <controls:Setting x:Uid="VideoConference_ToolbarHide" Style="{StaticResource ExpanderContentSettingStyle}">
+                                    <controls:Setting.ActionContent>
+                                        <ComboBox MinWidth="{StaticResource SettingActionControlMinWidth}" SelectedIndex="{ Binding Mode=TwoWay, Path=ToolbarHideIndex}">
+                                            <ComboBoxItem x:Uid="VideoConference_ToolbarHideNever"/>
+                                            <ComboBoxItem x:Uid="VideoConference_ToolbarHideUnmuted"/>
+                                            <ComboBoxItem x:Uid="VideoConference_ToolbarHideMuted"/>
+                                        </ComboBox>
+                                    </controls:Setting.ActionContent>
+                                </controls:Setting>
                             </StackPanel>
                         </controls:SettingExpander.Content>
                     </controls:SettingExpander>

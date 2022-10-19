@@ -255,8 +255,17 @@
   <data name="VideoConference_ToolbarMonitor_All.Content" xml:space="preserve">
     <value>All monitors</value>
   </data>
-  <data name="VideoConference_HideToolbarWhenUnmuted.Content" xml:space="preserve">
-    <value>Hide toolbar when both camera and microphone are unmuted</value>
+  <data name="VideoConference_ToolbarHide.Header" xml:space="preserve">
+    <value>Hide toolbar</value>
+  </data>
+  <data name="VideoConference_ToolbarHideMuted.Content" xml:space="preserve">
+    <value>When both camera and microphone are muted</value>
+  </data>
+  <data name="VideoConference_ToolbarHideNever.Content" xml:space="preserve">
+    <value>Never</value>
+  </data>
+  <data name="VideoConference_ToolbarHideUnmuted.Content" xml:space="preserve">
+    <value>When both camera and microphone are unmuted</value>
   </data>
   <data name="VideoConference.ModuleTitle" xml:space="preserve">
     <value>Video Conference Mute</value>

@@ -12,6 +12,7 @@ using System.Threading.Tasks;
 using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.PowerToys.Settings.UI.Library.Helpers;
 using Microsoft.PowerToys.Settings.UI.Library.Interfaces;
+using Microsoft.PowerToys.Settings.UI.Library.Utilities;
 using Microsoft.PowerToys.Settings.UI.Library.ViewModels.Commands;
 
 namespace Microsoft.PowerToys.Settings.UI.ViewModels
@@ -98,8 +99,6 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             SelectOverlayImage = new ButtonClickCommand(SelectOverlayImageAction);
             ClearOverlayImage = new ButtonClickCommand(ClearOverlayImageAction);
 
-            _hideToolbarWhenUnmuted = Settings.Properties.HideToolbarWhenUnmuted.Value;
-
             switch (Settings.Properties.ToolbarPosition.Value)
             {
                 case "Top left corner":
@@ -133,6 +132,19 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                     break;
             }
 
+            switch (Settings.Properties.ToolbarHide.Value)
+            {
+                case "Never":
+                    _toolbarHideIndex = 0;
+                    break;
+                case "When both camera and microphone are unmuted":
+                    _toolbarHideIndex = 1;
+                    break;
+                case "When both camera and microphone are muted":
+                    _toolbarHideIndex = 2;
+                    break;
+            }
+
             if (shouldSaveSettings)
             {
                 _settingsUtils.SaveSettings(Settings.ToJsonString(), ModuleName);
@@ -142,12 +154,12 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         private bool _isEnabled;
         private int _toolbarPositionIndex;
         private int _toolbarMonitorIndex;
+        private int _toolbarHideIndex;
         private HotkeySettings _cameraAndMicrophoneMuteHotkey;
         private HotkeySettings _microphoneMuteHotkey;
         private HotkeySettings _cameraMuteHotkey;
         private int _selectedCameraIndex = -1;
         private int _selectedMicrophoneIndex;
-        private bool _hideToolbarWhenUnmuted;
 
         public List<string> CameraNames { get; }
 
@@ -380,20 +392,32 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             }
         }
 
-        public bool HideToolbarWhenUnmuted
+        public int ToolbarHideIndex
         {
             get
             {
-                return _hideToolbarWhenUnmuted;
+                return _toolbarHideIndex;
             }
 
             set
             {
-                if (value != _hideToolbarWhenUnmuted)
+                if (value != _toolbarHideIndex)
                 {
-                    _hideToolbarWhenUnmuted = value;
-                    Settings.Properties.HideToolbarWhenUnmuted.Value = value;
-                    RaisePropertyChanged(nameof(HideToolbarWhenUnmuted));
+                    _toolbarHideIndex = value;
+                    switch (_toolbarHideIndex)
+                    {
+                        case 0:
+                            Settings.Properties.ToolbarHide.Value = "Never";
+                            break;
+                        case 1:
+                            Settings.Properties.ToolbarHide.Value = "When both camera and microphone are unmuted";
+                            break;
+                        case 2:
+                            Settings.Properties.ToolbarHide.Value = "When both camera and microphone are muted";
+                            break;
+                    }
+
+                    RaisePropertyChanged(nameof(ToolbarHideIndex));
                 }
             }
         }
