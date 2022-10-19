@@ -155,7 +155,7 @@ protected:
 
 private:
     void UpdateWorkAreas() noexcept;
-    void CycleTabs(bool reverse) noexcept;
+    void CycleWindows(bool reverse) noexcept;
     bool OnSnapHotkeyBasedOnZoneNumber(HWND window, DWORD vkCode) noexcept;
     bool OnSnapHotkeyBasedOnPosition(HWND window, DWORD vkCode) noexcept;
     bool OnSnapHotkey(DWORD vkCode) noexcept;
@@ -561,7 +561,7 @@ LRESULT FancyZones::WndProc(HWND window, UINT message, WPARAM wparam, LPARAM lpa
         else if (wparam == static_cast<WPARAM>(HotkeyId::NextTab) || wparam == static_cast<WPARAM>(HotkeyId::PrevTab))
         {
             bool reverse = wparam == static_cast<WPARAM>(HotkeyId::PrevTab);
-            CycleTabs(reverse);
+            CycleWindows(reverse);
         }
     }
     break;
@@ -782,7 +782,7 @@ void FancyZones::UpdateWorkAreas() noexcept
     }
 }
 
-void FancyZones::CycleTabs(bool reverse) noexcept
+void FancyZones::CycleWindows(bool reverse) noexcept
 {
     auto window = GetForegroundWindow();
     HMONITOR current = WorkAreaKeyFromWindow(window);
@@ -790,7 +790,7 @@ void FancyZones::CycleTabs(bool reverse) noexcept
     auto workArea = m_workAreaHandler.GetWorkArea(VirtualDesktop::instance().GetCurrentVirtualDesktopId(), current);
     if (workArea)
     {
-        workArea->CycleTabs(window, reverse);
+        workArea->CycleWindows(window, reverse);
     }
 }
 
@@ -1207,7 +1207,7 @@ std::vector<std::pair<HMONITOR, RECT>> FancyZones::GetRawMonitorData() noexcept
     const auto& activeWorkAreaMap = m_workAreaHandler.GetWorkAreasByDesktopId(VirtualDesktop::instance().GetCurrentVirtualDesktopId());
     for (const auto& [monitor, workArea] : activeWorkAreaMap)
     {
-        if (workArea->ZoneSet() != nullptr)
+        if (workArea->GetLayout() != nullptr)
         {
             MONITORINFOEX mi;
             mi.cbSize = sizeof(mi);

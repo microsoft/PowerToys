@@ -187,17 +187,10 @@ HRESULT WorkArea::MoveSizeEnd(HWND window, POINT const& ptScreen) noexcept
         return E_INVALIDARG;
     }
 
-    if (m_zoneSet)
-    {
-        POINT ptClient = ptScreen;
-        MapWindowPoints(nullptr, m_window, &ptClient, 1);
-        m_zoneSet->MoveWindowIntoZoneByIndexSet(window, m_window, m_highlightZone);
+    POINT ptClient = ptScreen;
+    MapWindowPoints(nullptr, m_window, &ptClient, 1);
 
-        if (!FancyZonesWindowUtils::HasVisibleOwner(window))
-        {
-            SaveWindowProcessToZoneIndex(window);
-        }
-    }
+    MoveWindowIntoZoneByIndexSet(window, m_highlightZone);
 
     Trace::WorkArea::MoveOrResizeEnd(m_layout.get());
 
@@ -213,51 +206,230 @@ void WorkArea::MoveWindowIntoZoneByIndex(HWND window, ZoneIndex index) noexcept
 
 void WorkArea::MoveWindowIntoZoneByIndexSet(HWND window, const ZoneIndexSet& indexSet) noexcept
 {
-    if (m_zoneSet)
+    if (!m_layout || !m_layoutWindows || m_layout->Zones().empty() || indexSet.empty())
     {
-        m_zoneSet->MoveWindowIntoZoneByIndexSet(window, m_window, indexSet);
+        return;
     }
+
+    FancyZonesWindowUtils::SaveWindowSizeAndOrigin(window);
+    auto rect = m_layout->GetCombinedZonesRect(indexSet);
+    auto adjustedRect = FancyZonesWindowUtils::AdjustRectForSizeWindowToRect(window, rect, m_window);
+    FancyZonesWindowUtils::SizeWindowToRect(window, adjustedRect);
+
+    m_layoutWindows->Assign(window, indexSet);
+    FancyZonesWindowProperties::StampZoneIndexProperty(window, indexSet);
+
+    SaveWindowProcessToZoneIndex(window);
 }
 
 bool WorkArea::MoveWindowIntoZoneByDirectionAndIndex(HWND window, DWORD vkCode, bool cycle) noexcept
 {
-    if (m_zoneSet)
+    if (!m_layout || !m_layoutWindows || m_layout->Zones().empty())
     {
-        if (m_zoneSet->MoveWindowIntoZoneByDirectionAndIndex(window, m_window, vkCode, cycle))
+        return false;
+    }
+
+    auto zoneIndexes = m_layoutWindows->GetZoneIndexSetFromWindow(window);
+    auto numZones = m_layout->Zones().size();
+
+    // The window was not assigned to any zone here
+    if (zoneIndexes.size() == 0)
+    {
+        MoveWindowIntoZoneByIndex(window, vkCode == VK_LEFT ? numZones - 1 : 0);
+    }
+    else
+    {
+        ZoneIndex oldId = zoneIndexes[0];
+
+        // We reached the edge
+        if ((vkCode == VK_LEFT && oldId == 0) || (vkCode == VK_RIGHT && oldId == numZones - 1))
         {
-            if (!FancyZonesWindowUtils::HasVisibleOwner(window))
+            if (!cycle)
             {
-                SaveWindowProcessToZoneIndex(window);
+                return false;
             }
-            return true;
+
+            MoveWindowIntoZoneByIndex(window, vkCode == VK_LEFT ? numZones - 1 : 0);
+        }
+        else
+        {
+            // We didn't reach the edge
+            if (vkCode == VK_LEFT)
+            {
+                MoveWindowIntoZoneByIndex(window, oldId - 1);
+            }
+            else
+            {
+                MoveWindowIntoZoneByIndex(window, oldId + 1);
+            }
         }
     }
-    return false;
+
+    if (!FancyZonesWindowUtils::HasVisibleOwner(window))
+    {
+        SaveWindowProcessToZoneIndex(window);
+    }
+    
+    return true;
 }
 
 bool WorkArea::MoveWindowIntoZoneByDirectionAndPosition(HWND window, DWORD vkCode, bool cycle) noexcept
 {
-    if (m_zoneSet)
+    if (!m_layout || !m_layoutWindows || m_layout->Zones().empty())
     {
-        if (m_zoneSet->MoveWindowIntoZoneByDirectionAndPosition(window, m_window, vkCode, cycle))
+        return false;
+    }
+
+    const auto& zones = m_layout->Zones();
+    std::vector<bool> usedZoneIndices(zones.size(), false);
+    auto windowZones = m_layoutWindows->GetZoneIndexSetFromWindow(window);
+    
+    for (ZoneIndex id : windowZones)
+    {
+        usedZoneIndices[id] = true;
+    }
+
+    std::vector<RECT> zoneRects;
+    ZoneIndexSet freeZoneIndices;
+
+    for (const auto& [zoneId, zone] : zones)
+    {
+        if (!usedZoneIndices[zoneId])
         {
+            zoneRects.emplace_back(zones.at(zoneId).GetZoneRect());
+            freeZoneIndices.emplace_back(zoneId);
+        }
+    }
+
+    RECT windowRect, workAreaRect;
+    if (!GetWindowRect(window, &windowRect) || !GetWindowRect(m_window, &workAreaRect))
+    {
+        Logger::error(L"GetWindowRect failed, {}", get_last_error_or_default(GetLastError()));
+        return false;
+    }
+
+    // Move to coordinates relative to windowZone
+    windowRect.top -= workAreaRect.top;
+    windowRect.bottom -= workAreaRect.top;
+    windowRect.left -= workAreaRect.left;
+    windowRect.right -= workAreaRect.left;
+
+    auto result = FancyZonesUtils::ChooseNextZoneByPosition(vkCode, windowRect, zoneRects);
+    if (result < zoneRects.size())
+    {
+        MoveWindowIntoZoneByIndex(window, freeZoneIndices[result]);
+        SaveWindowProcessToZoneIndex(window);
+        Trace::FancyZones::KeyboardSnapWindowToZone(m_layout.get(), m_layoutWindows.get());
+        return true;
+    }
+    else if (cycle)
+    {
+        // Try again from the position off the screen in the opposite direction to vkCode
+        // Consider all zones as available
+        zoneRects.resize(zones.size());
+        std::transform(zones.begin(), zones.end(), zoneRects.begin(), [](auto zone) { return zone.second.GetZoneRect(); });
+        windowRect = FancyZonesUtils::PrepareRectForCycling(windowRect, workAreaRect, vkCode);
+        result = FancyZonesUtils::ChooseNextZoneByPosition(vkCode, windowRect, zoneRects);
+
+        if (result < zoneRects.size())
+        {
+            MoveWindowIntoZoneByIndex(window, result);
             SaveWindowProcessToZoneIndex(window);
+            Trace::FancyZones::KeyboardSnapWindowToZone(m_layout.get(), m_layoutWindows.get());
             return true;
         }
     }
+
     return false;
 }
 
 bool WorkArea::ExtendWindowByDirectionAndPosition(HWND window, DWORD vkCode) noexcept
 {
-    if (m_zoneSet)
+    if (!m_layout || !m_layoutWindows || m_layout->Zones().empty())
     {
-        if (m_zoneSet->ExtendWindowByDirectionAndPosition(window, m_window, vkCode))
+        return false;
+    }
+
+    RECT windowRect, windowZoneRect;
+    if (!GetWindowRect(window, &windowRect) || !GetWindowRect(m_window, &windowZoneRect))
+    {
+        Logger::error(L"GetWindowRect failed, {}", get_last_error_or_default(GetLastError()));
+        return false;
+    }
+
+    const auto& zones = m_layout->Zones();
+    auto oldZones = m_layoutWindows->GetZoneIndexSetFromWindow(window);
+    const auto& extendModeData = m_layoutWindows->ExtendWindowMode();
+
+    std::vector<bool> usedZoneIndices(zones.size(), false);
+    std::vector<RECT> zoneRects;
+    ZoneIndexSet freeZoneIndices;
+
+    // If selectManyZones = true for the second time, use the last zone into which we moved
+    // instead of the window rect and enable moving to all zones except the old one
+    auto finalIndexIt = extendModeData->m_windowFinalIndex.find(window);
+    if (finalIndexIt != extendModeData->m_windowFinalIndex.end())
+    {
+        usedZoneIndices[finalIndexIt->second] = true;
+        windowRect = zones.at(finalIndexIt->second).GetZoneRect();
+    }
+    else
+    {
+        for (ZoneIndex idx : oldZones)
         {
-            SaveWindowProcessToZoneIndex(window);
-            return true;
+            usedZoneIndices[idx] = true;
+        }
+        // Move to coordinates relative to windowZone
+        windowRect.top -= windowZoneRect.top;
+        windowRect.bottom -= windowZoneRect.top;
+        windowRect.left -= windowZoneRect.left;
+        windowRect.right -= windowZoneRect.left;
+    }
+
+    for (size_t i = 0; i < zones.size(); i++)
+    {
+        if (!usedZoneIndices[i])
+        {
+            zoneRects.emplace_back(zones.at(i).GetZoneRect());
+            freeZoneIndices.emplace_back(i);
         }
     }
+
+    auto result = FancyZonesUtils::ChooseNextZoneByPosition(vkCode, windowRect, zoneRects);
+    if (result < zoneRects.size())
+    {
+        ZoneIndex targetZone = freeZoneIndices[result];
+        ZoneIndexSet resultIndexSet;
+
+        // First time with selectManyZones = true for this window?
+        if (finalIndexIt == extendModeData->m_windowFinalIndex.end())
+        {
+            // Already zoned?
+            if (oldZones.size())
+            {
+                extendModeData->m_windowInitialIndexSet[window] = oldZones;
+                extendModeData->m_windowFinalIndex[window] = targetZone;
+                resultIndexSet = m_layout->GetCombinedZoneRange(oldZones, { targetZone });
+            }
+            else
+            {
+                extendModeData->m_windowInitialIndexSet[window] = { targetZone };
+                extendModeData->m_windowFinalIndex[window] = targetZone;
+                resultIndexSet = { targetZone };
+            }
+        }
+        else
+        {
+            auto deletethis = extendModeData->m_windowInitialIndexSet[window];
+            extendModeData->m_windowFinalIndex[window] = targetZone;
+            resultIndexSet = m_layout->GetCombinedZoneRange(extendModeData->m_windowInitialIndexSet[window], { targetZone });
+        }
+
+        MoveWindowIntoZoneByIndexSet(window, resultIndexSet);
+        m_layoutWindows->FinishExtendWindowMode();
+        return true;
+    }
+
     return false;
 }
 
@@ -336,11 +508,11 @@ void WorkArea::UpdateActiveZoneSet() noexcept
     }
 }
 
-void WorkArea::CycleTabs(HWND window, bool reverse) noexcept
+void WorkArea::CycleWindows(HWND window, bool reverse) noexcept
 {
-    if (m_zoneSet)
+    if (m_layoutWindows)
     {
-        m_zoneSet->CycleTabs(window, reverse);
+        m_layoutWindows->CycleWindows(window, reverse);
     }
 }
 
@@ -409,6 +581,7 @@ void WorkArea::CalculateZoneSet() noexcept
 
     m_layout = std::make_unique<Layout>(appliedLayout.value());
     m_layout->Init(m_workAreaRect, m_monitor);
+    m_layoutWindows = std::make_unique<LayoutWindows>();
 }
 
 LRESULT WorkArea::WndProc(UINT message, WPARAM wparam, LPARAM lparam) noexcept

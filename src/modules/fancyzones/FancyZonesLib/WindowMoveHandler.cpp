@@ -132,10 +132,10 @@ void WindowMoveHandler::MoveSizeStart(HWND window, HMONITOR monitor, POINT const
     auto workArea = workAreaMap.find(monitor);
     if (workArea != workAreaMap.end())
     {
-        const auto zoneSet = workArea->second->ZoneSet();
-        if (zoneSet)
+        const auto& layoutWindows = workArea->second->GetLayoutWindows();
+        if (layoutWindows)
         {
-            zoneSet->DismissWindow(window);
+            layoutWindows->Dismiss(window);
         }
     }
 }
