@@ -269,10 +269,10 @@ namespace ColorPicker.Helpers
         }
 
         /// <summary>
-        /// Return a hexadecimal integral <see cref="string"/> representation of a RGB color
+        /// Return a hexadecimal integer <see cref="string"/> representation of a RGB color
         /// </summary>
-        /// <param name="color">The <see cref="Color"/> for the hexadecimal integral presentation</param>
-        /// <returns>A hexadecimal integral <see cref="string"/> representation of a RGB color</returns>
+        /// <param name="color">The <see cref="Color"/> for the hexadecimal integer presentation</param>
+        /// <returns>A hexadecimal integer <see cref="string"/> representation of a RGB color</returns>
         private static string ColorToHexInteger(Color color)
         {
             const string hexFormat = "X2";
