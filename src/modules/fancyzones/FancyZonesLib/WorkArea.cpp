@@ -180,15 +180,12 @@ HRESULT WorkArea::MoveSizeUpdate(POINT const& ptScreen, bool dragEnabled, bool s
     return S_OK;
 }
 
-HRESULT WorkArea::MoveSizeEnd(HWND window, POINT const& ptScreen) noexcept
+HRESULT WorkArea::MoveSizeEnd(HWND window) noexcept
 {
     if (m_windowMoveSize != window)
     {
         return E_INVALIDARG;
     }
-
-    POINT ptClient = ptScreen;
-    MapWindowPoints(nullptr, m_window, &ptClient, 1);
 
     MoveWindowIntoZoneByIndexSet(window, m_highlightZone);
 

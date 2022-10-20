@@ -101,9 +101,9 @@ public:
         m_windowMoveHandler.MoveSizeUpdate(monitor, ptScreen, m_workAreaHandler.GetWorkAreasByDesktopId(VirtualDesktop::instance().GetCurrentVirtualDesktopId()));
     }
 
-    void MoveSizeEnd(HWND window, POINT const& ptScreen) noexcept
+    void MoveSizeEnd(HWND window) noexcept
     {
-        m_windowMoveHandler.MoveSizeEnd(window, ptScreen, m_workAreaHandler.GetWorkAreasByDesktopId(VirtualDesktop::instance().GetCurrentVirtualDesktopId()));
+        m_windowMoveHandler.MoveSizeEnd(window, m_workAreaHandler.GetWorkAreasByDesktopId(VirtualDesktop::instance().GetCurrentVirtualDesktopId()));
     }
 
     IFACEMETHODIMP_(void)
@@ -629,7 +629,7 @@ LRESULT FancyZones::WndProc(HWND window, UINT message, WPARAM wparam, LPARAM lpa
         else if (message == WM_PRIV_MOVESIZEEND)
         {
             auto hwnd = reinterpret_cast<HWND>(wparam);
-            MoveSizeEnd(hwnd, ptScreen);
+            MoveSizeEnd(hwnd);
         }
         else if (message == WM_PRIV_LOCATIONCHANGE)
         {

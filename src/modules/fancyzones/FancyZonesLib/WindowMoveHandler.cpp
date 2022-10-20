@@ -207,7 +207,7 @@ void WindowMoveHandler::MoveSizeUpdate(HMONITOR monitor, POINT const& ptScreen, 
     }
 }
 
-void WindowMoveHandler::MoveSizeEnd(HWND window, POINT const& ptScreen, const std::unordered_map<HMONITOR, std::shared_ptr<WorkArea>>& workAreaMap) noexcept
+void WindowMoveHandler::MoveSizeEnd(HWND window, const std::unordered_map<HMONITOR, std::shared_ptr<WorkArea>>& workAreaMap) noexcept
 {
     if (window != m_draggedWindow)
     {
@@ -235,7 +235,7 @@ void WindowMoveHandler::MoveSizeEnd(HWND window, POINT const& ptScreen, const st
         }
         else
         {
-            workArea->MoveSizeEnd(m_draggedWindow, ptScreen);
+            workArea->MoveSizeEnd(m_draggedWindow);
         }
     }
     else
