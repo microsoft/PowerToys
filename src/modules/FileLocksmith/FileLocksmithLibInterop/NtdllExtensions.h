@@ -29,6 +29,7 @@ public:
     {
         DWORD pid;
         std::wstring name;
+        std::vector<std::wstring> modules;
     };
 
     struct HandleInfo

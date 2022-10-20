@@ -36,7 +36,7 @@ std::vector<ProcessResult> find_processes_recursive(const std::vector<std::wstri
         }
     }
 
-    std::map<DWORD, std::vector<std::wstring>> pid_files;
+    std::map<DWORD, std::set<std::wstring>> pid_files;
 
     // Returns a normal path of the file specified by kernel_name, if it matches
     // the search criteria. Otherwise, return an empty string.
@@ -71,14 +71,31 @@ std::vector<ProcessResult> find_processes_recursive(const std::vector<std::wstri
             auto path = kernel_paths_contain(handle_info.kernel_file_name);
             if (!path.empty())
             {
-                pid_files[handle_info.pid].push_back(std::move(path));
+                pid_files[handle_info.pid].insert(std::move(path));
+            }
+        }
+    }
+
+    // Check all modules used by processes
+    auto processes = nt_ext.processes();
+
+    for (const auto& process : processes)
+    {
+        for (const auto& path : process.modules)
+        {
+            auto kernel_name = nt_ext.path_to_kernel_name(path.c_str());
+
+            auto found_path = kernel_paths_contain(kernel_name);
+            if (!found_path.empty())
+            {
+                pid_files[process.pid].insert(std::move(found_path));
             }
         }
     }
 
     std::vector<ProcessResult> result;
 
-    for (const auto& process_info : nt_ext.processes())
+    for (const auto& process_info : processes)
     {
         if (auto it = pid_files.find(process_info.pid); it != pid_files.end())
         {
@@ -86,7 +103,7 @@ std::vector<ProcessResult> find_processes_recursive(const std::vector<std::wstri
                 {
                     process_info.name,
                     process_info.pid,
-                    it->second
+                    std::vector(it->second.begin(), it->second.end())
                 });
         }
     }

@@ -3,19 +3,11 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
-using System.Collections.Generic;
-using System.Threading;
-using Microsoft.UI;
-using Microsoft.UI.Windowing;
+using System.Drawing;
+using System.IO;
 using Microsoft.UI.Xaml;
-using Microsoft.UI.Xaml.Automation.Peers;
-using Microsoft.UI.Xaml.Automation.Provider;
 using Microsoft.UI.Xaml.Controls;
-using Microsoft.UI.Xaml.Controls.Primitives;
-using Microsoft.UI.Xaml.Input;
-using PowerToys.FileLocksmithUI.Properties;
-using Windows.Graphics;
-using WinUIEx;
+using Microsoft.UI.Xaml.Media.Imaging;
 
 namespace FileLocksmithUI
 {
@@ -36,6 +28,25 @@ namespace FileLocksmithUI
             processFileCount.Text = PowerToys.FileLocksmithUI.Properties.Resources.FilesUsed + ": " + numFiles;
             processUser.Text = PowerToys.FileLocksmithUI.Properties.Resources.User + ": " +
                 FileLocksmith.Interop.NativeMethods.PidToUser(pid);
+
+            var icon = Icon.ExtractAssociatedIcon(FileLocksmith.Interop.NativeMethods.PidToFullPath(pid));
+            if (icon != null)
+            {
+                Bitmap bitmap = icon.ToBitmap();
+                BitmapImage bitmapImage = new BitmapImage();
+                using (MemoryStream stream = new MemoryStream())
+                {
+                    bitmap.Save(stream, System.Drawing.Imaging.ImageFormat.Bmp);
+                    stream.Position = 0;
+                    bitmapImage.SetSource(stream.AsRandomAccessStream());
+                }
+
+                processIcon.Source = bitmapImage;
+            }
+            else
+            {
+                // TODO put some default image
+            }
         }
 
         public void AddPath(string path)

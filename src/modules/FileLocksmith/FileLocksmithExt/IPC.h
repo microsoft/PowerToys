@@ -15,7 +15,6 @@ namespace ipc
         HANDLE get_read_handle();
 
     private:
-        HANDLE m_read_pipe = NULL;
-        HANDLE m_write_pipe = NULL;
+        std::ofstream m_stream;
     };
 }

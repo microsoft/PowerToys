@@ -225,7 +225,7 @@ ExplorerCommand::~ExplorerCommand()
 inline std::wstring get_module_folderpath(HMODULE mod = nullptr, const bool removeFilename = true)
 {
     wchar_t buffer[MAX_PATH + 1];
-    DWORD actual_length = GetModuleFileNameW(mod, buffer, MAX_PATH);
+    DWORD actual_length = GetModuleFileNameW(mod, buffer, MAX_PATH + 1);
     if (GetLastError() == ERROR_INSUFFICIENT_BUFFER)
     {
         const DWORD long_path_length = 0xFFFF; // should be always enough
@@ -251,13 +251,10 @@ HRESULT ExplorerCommand::LaunchUI(CMINVOKECOMMANDINFO* pici, ipc::Writer* writer
     exe_path += L'\\';
     exe_path += constants::nonlocalizable::FileNameUIExe;
 
-    HANDLE read_handle = writer->get_read_handle();
-
     STARTUPINFO startupInfo;
     ZeroMemory(&startupInfo, sizeof(STARTUPINFO));
     startupInfo.cb = sizeof(STARTUPINFO);
-    startupInfo.hStdInput = read_handle;
-    startupInfo.dwFlags = STARTF_USESHOWWINDOW | STARTF_USESTDHANDLES;
+    startupInfo.dwFlags = STARTF_USESHOWWINDOW;
 
     if (pici)
     {

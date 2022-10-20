@@ -137,6 +137,14 @@
     <value>Process ID</value>
     <comment>An operating system wide numerical identifier of the process, also known as PID</comment>
   </data>
+  <data name="Refresh" xml:space="preserve">
+    <value>Refresh</value>
+    <comment>Recompute the list of results</comment>
+  </data>
+  <data name="RestartAsAdmin" xml:space="preserve">
+    <value>Restart as administrator</value>
+    <comment>Shown on a button</comment>
+  </data>
   <data name="User" xml:space="preserve">
     <value>User</value>
     <comment>Username of the Windows user running this process</comment>

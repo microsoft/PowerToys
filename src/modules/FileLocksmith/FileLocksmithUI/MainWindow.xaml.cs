@@ -10,6 +10,7 @@ using System.Linq;
 using System.Numerics;
 using System.Threading;
 using FileLocksmith.Interop;
+using ManagedCommon;
 using Microsoft.UI;
 using Microsoft.UI.Windowing;
 using Microsoft.UI.Xaml;
@@ -29,17 +30,43 @@ namespace FileLocksmithUI
     /// </summary>
     public sealed partial class MainWindow : WindowEx, IDisposable
     {
-        public MainWindow()
-        {
-            InitializeComponent();
+        private string[] paths;
 
-            if (AppWindowTitleBar.IsCustomizationSupported())
+        public MainWindow(bool elevated)
+        {
+            var hWnd = WinRT.Interop.WindowNative.GetWindowHandle(this);
+            ThemeHelpers.SetImmersiveDarkMode(hWnd, ThemeHelpers.GetAppTheme() == AppTheme.Dark);
+
+            paths = FileLocksmith.Interop.NativeMethods.ReadPathsFromFile();
+            InitializeComponent();
+            StartFindingProcesses();
+            if (elevated)
+            {
+                restartAsAdminBtn.IsEnabled = false;
+            }
+
+            Closed += (o, a) => Environment.Exit(0);
+
+if (AppWindowTitleBar.IsCustomizationSupported())
             {
                 SetTitleBar();
             }
             else
             {
                 titleBar.Visibility = Visibility.Collapsed;
+            }
+        }
+
+        private void OnElevateClick(object sender, RoutedEventArgs e)
+        {
+            if (FileLocksmith.Interop.NativeMethods.StartAsElevated(paths))
+            {
+                // TODO gentler exit
+                Environment.Exit(0);
+            }
+            else
+            {
+                // TODO report error?
             }
         }
 

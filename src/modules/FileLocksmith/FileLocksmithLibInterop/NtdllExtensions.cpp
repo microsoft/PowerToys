@@ -17,6 +17,71 @@ namespace
     {
         return std::wstring(unicode_str.Buffer, unicode_str.Length / sizeof(WCHAR));
     }
+
+    // Implementation adapted from src/common/utils
+    inline std::wstring get_module_name(HANDLE process, HMODULE mod)
+    {
+        wchar_t buffer[MAX_PATH + 1];
+        DWORD actual_length = GetModuleFileNameExW(process, mod, buffer, MAX_PATH + 1);
+        if (GetLastError() == ERROR_INSUFFICIENT_BUFFER)
+        {
+            const DWORD long_path_length = 0xFFFF; // should be always enough
+            std::wstring long_filename(long_path_length, L'\0');
+            actual_length = GetModuleFileNameW(mod, long_filename.data(), long_path_length);
+            long_filename.resize(std::wcslen(long_filename.data()));
+            long_filename.shrink_to_fit();
+            return long_filename;
+        }
+
+        return { buffer, (UINT)lstrlenW(buffer) };
+    }
+
+    constexpr size_t DefaultModulesResultSize = 512;
+
+    std::vector<std::wstring> process_modules(DWORD pid)
+    {
+        HANDLE process = OpenProcess(PROCESS_QUERY_INFORMATION | PROCESS_VM_READ, FALSE, pid);
+        if (!process)
+        {
+            return {};
+        }
+
+        std::vector<std::wstring> result;
+
+        bool completed = false;
+        std::vector<HMODULE> modules(DefaultModulesResultSize);
+        while (!completed)
+        {
+            DWORD needed;
+            auto status = EnumProcessModules(process, modules.data(), static_cast<DWORD>(modules.size() * sizeof(HMODULE)), &needed);
+        
+            if (!status)
+            {
+                // Give up
+                return {};
+            }
+
+            if (needed > modules.size() * sizeof(HMODULE))
+            {
+                // Array is too small
+                modules.resize(needed / sizeof(HMODULE));
+                continue;
+            }
+
+            // Okay
+            modules.resize(needed / sizeof(HMODULE));
+        
+            for (auto mod : modules)
+            {
+                result.push_back(get_module_name(process, mod));
+            }
+
+            completed = true;
+        }
+
+        CloseHandle(process);
+        return result;
+    }
 }
 
 NtdllExtensions::MemoryLoopResult NtdllExtensions::NtQuerySystemInformationMemoryLoop(ULONG SystemInformationClass)
@@ -192,6 +257,7 @@ std::vector<NtdllExtensions::ProcessInfo> NtdllExtensions::processes() noexcept
         ProcessInfo item;
         item.name = unicode_to_str(info_ptr->ImageName);
         item.pid = (DWORD)(uintptr_t)info_ptr->UniqueProcessId;
+        item.modules = process_modules(item.pid);
 
         result.push_back(item);
     }

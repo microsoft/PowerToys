@@ -22,6 +22,9 @@ namespace constants::nonlocalizable
 
 	// Path of the JSON file used to store settings
     constexpr WCHAR DataFilePath[] = L"\\file-locksmith-settings.json";
+
+	// Name of the file where the list of files to checked will be stored
+    constexpr WCHAR LastRunPath[] = L"\\last-run.log";
 }
 
 // Macros, non-localizable

@@ -8,11 +8,11 @@
     xmlns:p="using:PowerToys.FileLocksmithUI.Properties"
     mc:Ignorable="d">
 
-    <Expander Margin="8,8,8,0" HorizontalAlignment="Stretch">
+    <Expander Margin="8,0,8,8" HorizontalAlignment="Stretch">
         <Expander.Header>
             <Grid>
-                <BitmapIcon Name="processIcon"></BitmapIcon>
-                <StackPanel Orientation="Vertical" HorizontalAlignment="Stretch">
+                <Image Width="32" Height="32" Name="processIcon" HorizontalAlignment="Left"></Image>
+                <StackPanel Margin="40,0,0,0" Orientation="Vertical" HorizontalAlignment="Stretch">
                     <TextBlock Margin="4" FontSize="28" Name="processName"/>
                     <Grid HorizontalAlignment="Stretch">
                         <Grid.ColumnDefinitions>
@@ -26,7 +26,7 @@
                         <TextBlock Grid.Column="2" Margin="4" FontSize="12" Name="processUser" HorizontalAlignment="Left"/>
                     </Grid>
                 </StackPanel>
-                <Button Margin="4" Click="KillProcessClick" HorizontalAlignment="Right" Content="{x:Bind p:Resources.EndTask}"/>
+                <Button Style="{ThemeResource AccentButtonStyle}" Margin="4" Click="KillProcessClick" HorizontalAlignment="Right" Content="{x:Bind p:Resources.EndTask}"/>
             </Grid>
         </Expander.Header>
         <Expander.Content>

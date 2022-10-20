@@ -1,6 +1,9 @@
 #include "pch.h"
 
 #include "IPC.h"
+#include "Constants.h"
+
+#include <common/SettingsAPI/settings_helpers.h>
 
 constexpr DWORD DefaultPipeBufferSize = 8192;
 constexpr DWORD DefaultPipeTimeoutMillis = 200;
@@ -19,40 +22,31 @@ namespace ipc
 
     HRESULT Writer::start()
     {
-        SECURITY_ATTRIBUTES sa;
-        sa.nLength = sizeof(SECURITY_ATTRIBUTES);
-        sa.lpSecurityDescriptor = NULL;
-        sa.bInheritHandle = TRUE;
+        std::wstring path = PTSettingsHelper::get_module_save_folder_location(constants::nonlocalizable::PowerToyName);
+        path += L"\\";
+        path += constants::nonlocalizable::LastRunPath;
 
-        if (!CreatePipe(&m_read_pipe, &m_write_pipe, &sa, 0))
+        try
         {
-            return HRESULT_FROM_WIN32(GetLastError());
+            m_stream = std::ofstream(path);
+            return S_OK;
         }
-
-        return S_OK;
+        catch (...)
+        {
+            return E_FAIL;
+        }
     }
 
     HRESULT Writer::add_path(LPCWSTR path)
     {
         int length = lstrlenW(path);
-        DWORD written;
-        if (!WriteFile(m_write_pipe, path, length * sizeof(WCHAR), &written, NULL))
-        {
-            return HRESULT_FROM_WIN32(GetLastError());
-        }
-
-        if (written != length * sizeof(WCHAR))
+        if (!m_stream.write(reinterpret_cast<const char*>(path), length * sizeof(WCHAR)))
         {
             return E_FAIL;
         }
 
         WCHAR line_break = L'\n';
-        if (!WriteFile(m_write_pipe, &line_break, sizeof(WCHAR), &written, NULL))
-        {
-            return HRESULT_FROM_WIN32(GetLastError());
-        }
-
-        if (written != sizeof(WCHAR))
+        if (!m_stream.write(reinterpret_cast<const char*>(&line_break), sizeof(WCHAR)))
         {
             return E_FAIL;
         }
@@ -63,24 +57,6 @@ namespace ipc
     void Writer::finish()
     {
         add_path(L"");
-
-        if (m_write_pipe)
-        {
-            CloseHandle(m_write_pipe);
-            m_write_pipe = NULL;
-        }
-
-        if (m_read_pipe)
-        {
-            CloseHandle(m_read_pipe);
-            m_read_pipe = NULL;
-        }
-    }
-
-    HANDLE Writer::get_read_handle()
-    {
-        HANDLE result = m_read_pipe;
-        m_read_pipe = NULL;
-        return result;
+        m_stream.close();
     }
 }
