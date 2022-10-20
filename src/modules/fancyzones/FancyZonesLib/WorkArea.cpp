@@ -172,7 +172,7 @@ HRESULT WorkArea::MoveSizeUpdate(POINT const& ptScreen, bool dragEnabled, bool s
         redraw = true;
     }
 
-    if (redraw)
+    if (redraw && m_zonesOverlay)
     {
         m_zonesOverlay->DrawActiveZoneSet(m_layout->Zones(), m_highlightZone, Colors::GetZoneColors(), FancyZonesSettings::settings().showZoneNumber);
     }
