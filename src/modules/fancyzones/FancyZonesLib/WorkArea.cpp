@@ -347,8 +347,8 @@ bool WorkArea::ExtendWindowByDirectionAndPosition(HWND window, DWORD vkCode) noe
         return false;
     }
 
-    RECT windowRect, windowZoneRect;
-    if (!GetWindowRect(window, &windowRect) || !GetWindowRect(m_window, &windowZoneRect))
+    RECT windowRect;
+    if (!GetWindowRect(window, &windowRect))
     {
         Logger::error(L"GetWindowRect failed, {}", get_last_error_or_default(GetLastError()));
         return false;
@@ -377,10 +377,10 @@ bool WorkArea::ExtendWindowByDirectionAndPosition(HWND window, DWORD vkCode) noe
             usedZoneIndices[idx] = true;
         }
         // Move to coordinates relative to windowZone
-        windowRect.top -= windowZoneRect.top;
-        windowRect.bottom -= windowZoneRect.top;
-        windowRect.left -= windowZoneRect.left;
-        windowRect.right -= windowZoneRect.left;
+        windowRect.top -= m_workAreaRect.top();
+        windowRect.bottom -= m_workAreaRect.top();
+        windowRect.left -= m_workAreaRect.left();
+        windowRect.right -= m_workAreaRect.left();
     }
 
     for (size_t i = 0; i < zones.size(); i++)
