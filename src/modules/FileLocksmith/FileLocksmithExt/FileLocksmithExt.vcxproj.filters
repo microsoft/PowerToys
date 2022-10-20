@@ -79,7 +79,6 @@
     <None Include="dll.def">
       <Filter>Source Files</Filter>
     </None>
-    <None Include="packages.config" />
     <None Include="resource.base.h">
       <Filter>Header Files</Filter>
     </None>
@@ -89,6 +88,7 @@
     <None Include="Resources.resx">
       <Filter>Resource Files</Filter>
     </None>
+    <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="Generated Files/FileLocksmithExt.rc">
