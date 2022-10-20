@@ -44,7 +44,8 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="..\..\..\deps\cziplib\src\zip.c">
-      <WarningLevel>TurnOffAllWarnings</WarningLevel>
+      <!-- Disabling warnings for external code -->
+	  <DisableSpecificWarnings>26451;4267;4244;%(DisableSpecificWarnings)</DisableSpecificWarnings>
     </ClCompile>
     <ClCompile Include="EventViewer.cpp" />
     <ClCompile Include="InstallationFolder.cpp" />
