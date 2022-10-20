@@ -62,11 +62,11 @@ namespace ZoneSelectionAlgorithms
 
         if (verticalSplit)
         {
-            zoneIndex = (pt.y - overlap.top) * capturedZones.size() / height;
+            zoneIndex = (static_cast<ZoneIndex>(pt.y) - overlap.top) * capturedZones.size() / height;
         }
         else
         {
-            zoneIndex = (pt.x - overlap.left) * capturedZones.size() / width;
+            zoneIndex = (static_cast<ZoneIndex>(pt.x) - overlap.left) * capturedZones.size() / width;
         }
 
         zoneIndex = std::clamp(zoneIndex, ZoneIndex(0), static_cast<ZoneIndex>(capturedZones.size()) - 1);
