@@ -313,29 +313,31 @@
             <ContentDialog.DataContext>
                 <models:Entry />
             </ContentDialog.DataContext>
-            <StackPanel
-                MinWidth="480"
-                Margin="0,12,0,0"
-                HorizontalAlignment="Stretch"
-                Spacing="24">
-                <TextBox
-                    x:Uid="Address"
-                    IsSpellCheckEnabled="False"
-                    Text="{Binding Address, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
-                <TextBox
-                    x:Uid="Hosts"
-                    IsSpellCheckEnabled="False"
-                    Text="{Binding Hosts, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
-                <TextBox
-                    x:Uid="Comment"
-                    IsSpellCheckEnabled="False"
-                    Text="{Binding Comment, Mode=TwoWay}" />
-                <ToggleSwitch
-                    x:Uid="Active"
-                    IsOn="{Binding Active, Mode=TwoWay}"
-                    OffContent=""
-                    OnContent="" />
-            </StackPanel>
+            <ScrollViewer HorizontalScrollMode="Auto" HorizontalScrollBarVisibility="Auto">
+                <StackPanel
+                    MinWidth="480"
+                    Margin="0,12,0,0"
+                    HorizontalAlignment="Stretch"
+                    Spacing="24">
+                    <TextBox
+                        x:Uid="Address"
+                        IsSpellCheckEnabled="False"
+                        Text="{Binding Address, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                    <TextBox
+                        x:Uid="Hosts"
+                        IsSpellCheckEnabled="False"
+                        Text="{Binding Hosts, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                    <TextBox
+                        x:Uid="Comment"
+                        IsSpellCheckEnabled="False"
+                        Text="{Binding Comment, Mode=TwoWay}" />
+                    <ToggleSwitch
+                        x:Uid="Active"
+                        IsOn="{Binding Active, Mode=TwoWay}"
+                        OffContent=""
+                        OnContent="" />
+                </StackPanel>
+            </ScrollViewer>
         </ContentDialog>
 
         <ContentDialog

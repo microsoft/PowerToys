@@ -154,18 +154,27 @@ LRESULT Toolbar::WindowProcessMessages(HWND hwnd, UINT msg, WPARAM wparam, LPARA
         static bool previousShow = false;
         bool show = false;
 
-        if (toolbar->cameraInUse)
+        if (toolbar->ToolbarHide == L"Never")
         {
-            show = toolbar->HideToolbarWhenUnmuted ? toolbar->microphoneMuted || toolbar->cameraMuted : true;
+            show = true;
         }
-        else if (toolbar->previouscameraInUse)
+        else if (toolbar->ToolbarHide == L"When both camera and microphone are muted")
         {
-            VideoConferenceModule::unmuteAll();
+            if(!toolbar->previouscameraInUse && toolbar->cameraInUse && !toolbar->moduleSettingsUpdateScheduled)
+            {
+                VideoConferenceModule::muteAll();
+            }
+            show = !(toolbar->microphoneMuted && (toolbar->cameraMuted || !toolbar->cameraInUse));
         }
-        else
+        else if (toolbar->ToolbarHide == L"When both camera and microphone are unmuted")
         {
-            show = toolbar->microphoneMuted;
+            if(!toolbar->previouscameraInUse && toolbar->cameraInUse && !toolbar->moduleSettingsUpdateScheduled)
+            {
+                VideoConferenceModule::unmuteAll();
+            }
+            show = toolbar->microphoneMuted || toolbar->cameraMuted;
         }
+
         show = show || !showOverlayTimeout;
         if (show)
         {
@@ -332,9 +341,9 @@ void Toolbar::setMicrophoneMute(bool mute)
     microphoneMuted = mute;
 }
 
-void Toolbar::setHideToolbarWhenUnmuted(bool hide)
+void Toolbar::setToolbarHide(std::wstring hide)
 {
-    HideToolbarWhenUnmuted = hide;
+    ToolbarHide = hide;
 }
 
 void Toolbar::setTheme(std::wstring theme)

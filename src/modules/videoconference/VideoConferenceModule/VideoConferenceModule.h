@@ -53,6 +53,7 @@ public:
     void sendOverlayImageUpdate();
 
     static void unmuteAll();
+    static void muteAll();
     static void reverseMicrophoneMute();
     static bool getMicrophoneMuteState();
     static void reverseVirtualCameraMuteState();

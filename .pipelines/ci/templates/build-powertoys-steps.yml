@@ -201,7 +201,7 @@ steps:
       **\PreviewPaneUnitTests.dll
       **\UnitTests-SvgThumbnailProvider.dll
       **\UnitTests-SvgPreviewHandler.dll
-      **\Hosts.Tests.dll
+      **\PowerToys.Hosts.Tests.dll
       !**\obj\**
       !**\ref\**
 
