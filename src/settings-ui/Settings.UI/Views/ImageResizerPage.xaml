@@ -16,23 +16,29 @@
     <Page.Resources>
         <converters:ImageResizerFitToStringConverter x:Key="ImageResizerFitToStringConverter" />
         <converters:ImageResizerUnitToStringConverter x:Key="ImageResizerUnitToStringConverter" />
-        <toolkitconverters:BoolToVisibilityConverter
-            x:Key="BoolToVisibilityConverter"
-            FalseValue="Collapsed"
-            TrueValue="Visible" />
         <toolkitconverters:BoolToObjectConverter
             x:Key="BoolToComboBoxIndexConverter"
             FalseValue="1"
             TrueValue="0" />
     </Page.Resources>
-    <controls:SettingsPageControl x:Uid="ImageResizer" ModuleImageSource="ms-appx:///Assets/Modules/ImageResizer.png">
+    <controls:SettingsPageControl
+        x:Uid="ImageResizer"
+        ModuleImageSource="ms-appx:///Assets/Modules/ImageResizer.png">
         <controls:SettingsPageControl.ModuleContent>
             <StackPanel>
-                <labs:SettingsCard x:Uid="ImageResizer_EnableToggle" HeaderIcon="{ui:BitmapIcon Source=/Assets/FluentIcons/FluentIconsImageResizer.png}">
-                    <ToggleSwitch x:Uid="ToggleSwitch" IsOn="{x:Bind ViewModel.IsEnabled, Mode=TwoWay}" />
+                <labs:SettingsCard
+                    x:Uid="ImageResizer_EnableToggle"
+                    HeaderIcon="{ui:BitmapIcon Source=/Assets/FluentIcons/FluentIconsImageResizer.png}">
+                    <ToggleSwitch
+                        x:Uid="ToggleSwitch"
+                        IsOn="{x:Bind ViewModel.IsEnabled, Mode=TwoWay}" />
                 </labs:SettingsCard>
-                <controls:SettingsGroup x:Uid="ImageResizer_CustomSizes" IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}">
-                    <labs:SettingsCard x:Uid="ImageResizer_Presets" HeaderIcon="{ui:FontIcon Glyph=&#xE792;}">
+                <controls:SettingsGroup
+                    x:Uid="ImageResizer_CustomSizes"
+                    IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}">
+                    <labs:SettingsCard
+                        x:Uid="ImageResizer_Presets"
+                        HeaderIcon="{ui:FontIcon Glyph=&#xE792;}">
                         <Button
                             x:Uid="ImageResizer_AddSizeButton"
                             Click="AddSizeButton_Click"
@@ -45,13 +51,19 @@
                         ItemsSource="{x:Bind ViewModel.Sizes, Mode=TwoWay}"
                         SelectionMode="None">
                         <ListView.ItemTemplate>
-                            <DataTemplate x:Name="SingleLineDataTemplate" x:DataType="models:ImageSize">
+                            <DataTemplate
+                                x:Name="SingleLineDataTemplate"
+                                x:DataType="models:ImageSize">
 
                                 <labs:SettingsCard Header="{x:Bind Name, Mode=OneWay}">
                                     <labs:SettingsCard.Description>
-                                        <StackPanel Orientation="Horizontal" Spacing="4">
+                                        <StackPanel
+                                            Orientation="Horizontal"
+                                            Spacing="4">
                                             <TextBlock Text="{x:Bind Fit, Mode=OneWay, Converter={StaticResource ImageResizerFitToStringConverter}}" />
-                                            <TextBlock FontWeight="SemiBold" Text="{x:Bind Width, Mode=OneWay}" />
+                                            <TextBlock
+                                                FontWeight="SemiBold"
+                                                Text="{x:Bind Width, Mode=OneWay}" />
                                             <TextBlock
                                                 Margin="0,3,0,0"
                                                 AutomationProperties.AccessibilityView="Raw"
@@ -61,10 +73,14 @@
                                                 FontWeight="SemiBold"
                                                 Text="{x:Bind Height, Mode=OneWay}"
                                                 Visibility="{x:Bind EnableEtraBoxes, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}" />
-                                            <TextBlock Text="{x:Bind Unit, Mode=OneWay, Converter={StaticResource ImageResizerUnitToStringConverter}, ConverterParameter=ToLower}" Visibility="{x:Bind EnableEtraBoxes, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}" />
+                                            <TextBlock
+                                                Text="{x:Bind Unit, Mode=OneWay, Converter={StaticResource ImageResizerUnitToStringConverter}, ConverterParameter=ToLower}"
+                                                Visibility="{x:Bind EnableEtraBoxes, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}" />
                                         </StackPanel>
                                     </labs:SettingsCard.Description>
-                                    <StackPanel Orientation="Horizontal" Spacing="8">
+                                    <StackPanel
+                                        Orientation="Horizontal"
+                                        Spacing="8">
                                         <Button
                                             x:Uid="EditButton"
                                             Content="&#xE70F;"
@@ -74,7 +90,9 @@
                                             </ToolTipService.ToolTip>
                                             <Button.Flyout>
                                                 <Flyout x:Uid="ImageResizer_EditSize">
-                                                    <StackPanel Margin="0,12,0,0" Spacing="16">
+                                                    <StackPanel
+                                                        Margin="0,12,0,0"
+                                                        Spacing="16">
                                                         <TextBox
                                                             x:Uid="ImageResizer_Name"
                                                             Width="240"
@@ -91,7 +109,9 @@
                                                             <ComboBoxItem x:Uid="ImageResizer_Sizes_Fit_Stretch" />
                                                         </ComboBox>
 
-                                                        <StackPanel Orientation="Horizontal" Spacing="8">
+                                                        <StackPanel
+                                                            Orientation="Horizontal"
+                                                            Spacing="8">
                                                             <NumberBox
                                                                 x:Uid="ImageResizer_Width"
                                                                 Width="116"
@@ -140,9 +160,13 @@
                     </ListView>
                 </controls:SettingsGroup>
 
-                <controls:SettingsGroup x:Uid="Encoding" IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}">
+                <controls:SettingsGroup
+                    x:Uid="Encoding"
+                    IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}">
                     <labs:SettingsCard x:Uid="ImageResizer_FallBackEncoderText">
-                        <ComboBox MinWidth="{StaticResource SettingActionControlMinWidth}" SelectedIndex="{x:Bind Path=ViewModel.Encoder, Mode=TwoWay}">
+                        <ComboBox
+                            MinWidth="{StaticResource SettingActionControlMinWidth}"
+                            SelectedIndex="{x:Bind Path=ViewModel.Encoder, Mode=TwoWay}">
                             <ComboBoxItem x:Uid="ImageResizer_FallbackEncoder_PNG" />
                             <ComboBoxItem x:Uid="ImageResizer_FallbackEncoder_BMP" />
                             <ComboBoxItem x:Uid="ImageResizer_FallbackEncoder_JPEG" />
@@ -161,7 +185,9 @@
                     </labs:SettingsCard>
 
                     <labs:SettingsCard x:Uid="ImageResizer_PNGInterlacing">
-                        <ComboBox MinWidth="{StaticResource SettingActionControlMinWidth}" SelectedIndex="{x:Bind Mode=TwoWay, Path=ViewModel.PngInterlaceOption}">
+                        <ComboBox
+                            MinWidth="{StaticResource SettingActionControlMinWidth}"
+                            SelectedIndex="{x:Bind Mode=TwoWay, Path=ViewModel.PngInterlaceOption}">
                             <ComboBoxItem x:Uid="Default" />
                             <ComboBoxItem x:Uid="On" />
                             <ComboBoxItem x:Uid="Off" />
@@ -169,7 +195,9 @@
                     </labs:SettingsCard>
 
                     <labs:SettingsCard x:Uid="ImageResizer_PNGInterlacing">
-                        <ComboBox MinWidth="{StaticResource SettingActionControlMinWidth}" SelectedIndex="{x:Bind Mode=TwoWay, Path=ViewModel.PngInterlaceOption}">
+                        <ComboBox
+                            MinWidth="{StaticResource SettingActionControlMinWidth}"
+                            SelectedIndex="{x:Bind Mode=TwoWay, Path=ViewModel.PngInterlaceOption}">
                             <ComboBoxItem x:Uid="Default" />
                             <ComboBoxItem x:Uid="On" />
                             <ComboBoxItem x:Uid="Off" />
@@ -177,7 +205,9 @@
                     </labs:SettingsCard>
 
                     <labs:SettingsCard x:Uid="ImageResizer_TIFFCompression">
-                        <ComboBox MinWidth="{StaticResource SettingActionControlMinWidth}" SelectedIndex="{x:Bind Mode=TwoWay, Path=ViewModel.TiffCompressOption}">
+                        <ComboBox
+                            MinWidth="{StaticResource SettingActionControlMinWidth}"
+                            SelectedIndex="{x:Bind Mode=TwoWay, Path=ViewModel.TiffCompressOption}">
                             <ComboBoxItem x:Uid="ImageResizer_ENCODER_TIFF_Default" />
                             <ComboBoxItem x:Uid="ImageResizer_ENCODER_TIFF_None" />
                             <ComboBoxItem x:Uid="ImageResizer_ENCODER_TIFF_CCITT3" />
@@ -189,9 +219,13 @@
                     </labs:SettingsCard>
                 </controls:SettingsGroup>
 
-                <controls:SettingsGroup x:Uid="File" IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}">
+                <controls:SettingsGroup
+                    x:Uid="File"
+                    IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}">
                     <labs:SettingsCard x:Uid="ImageResizer_FilenameFormatHeader">
-                        <StackPanel Orientation="Horizontal" Spacing="4">
+                        <StackPanel
+                            Orientation="Horizontal"
+                            Spacing="4">
                             <TextBox
                                 x:Uid="ImageResizer_FilenameFormatPlaceholder"
                                 MinWidth="{StaticResource SettingActionControlMinWidth}"
@@ -206,27 +240,39 @@
                                             <Run x:Uid="ImageResizer_FileFormatDescription" />
                                             <LineBreak />
                                             <LineBreak />
-                                            <Run FontWeight="Bold" Text="%1" />
+                                            <Run
+                                                FontWeight="Bold"
+                                                Text="%1" />
                                             <Run Text=" - " />
                                             <Run x:Uid="ImageResizer_Formatting_Filename" />
                                             <LineBreak />
-                                            <Run FontWeight="Bold" Text="%2" />
+                                            <Run
+                                                FontWeight="Bold"
+                                                Text="%2" />
                                             <Run Text=" - " />
                                             <Run x:Uid="ImageResizer_Formatting_Sizename" />
                                             <LineBreak />
-                                            <Run FontWeight="Bold" Text="%3" />
+                                            <Run
+                                                FontWeight="Bold"
+                                                Text="%3" />
                                             <Run Text=" - " />
                                             <Run x:Uid="ImageResizer_Formatting_SelectedWidth" />
                                             <LineBreak />
-                                            <Run FontWeight="Bold" Text="%4" />
+                                            <Run
+                                                FontWeight="Bold"
+                                                Text="%4" />
                                             <Run Text=" - " />
                                             <Run x:Uid="ImageResizer_Formatting_SelectedHeight" />
                                             <LineBreak />
-                                            <Run FontWeight="Bold" Text="%5" />
+                                            <Run
+                                                FontWeight="Bold"
+                                                Text="%5" />
                                             <Run Text=" - " />
                                             <Run x:Uid="ImageResizer_Formatting_ActualWidth" />
                                             <LineBreak />
-                                            <Run FontWeight="Bold" Text="%6" />
+                                            <Run
+                                                FontWeight="Bold"
+                                                Text="%6" />
                                             <Run Text=" - " />
                                             <Run x:Uid="ImageResizer_Formatting_ActualHeight" />
                                         </TextBlock>
@@ -237,7 +283,9 @@
                     </labs:SettingsCard>
 
                     <labs:SettingsCard x:Uid="ImageResizer_FileModifiedDate">
-                        <ComboBox MinWidth="{StaticResource SettingActionControlMinWidth}" SelectedIndex="{x:Bind Mode=TwoWay, Path=ViewModel.KeepDateModified, Converter={StaticResource BoolToComboBoxIndexConverter}}">
+                        <ComboBox
+                            MinWidth="{StaticResource SettingActionControlMinWidth}"
+                            SelectedIndex="{x:Bind Mode=TwoWay, Path=ViewModel.KeepDateModified, Converter={StaticResource ReverseBoolToComboBoxIndexConverter}}">
                             <ComboBoxItem x:Uid="ImageResizer_UseOriginalDate" />
                             <ComboBoxItem x:Uid="ImageResizer_UseResizeDate" />
                         </ComboBox>
@@ -248,10 +296,14 @@
         </controls:SettingsPageControl.ModuleContent>
 
         <controls:SettingsPageControl.PrimaryLinks>
-            <controls:PageLink x:Uid="LearnMore_ImageResizer" Link="https://aka.ms/PowerToysOverview_ImageResizer" />
+            <controls:PageLink
+                x:Uid="LearnMore_ImageResizer"
+                Link="https://aka.ms/PowerToysOverview_ImageResizer" />
         </controls:SettingsPageControl.PrimaryLinks>
         <controls:SettingsPageControl.SecondaryLinks>
-            <controls:PageLink Link="https://github.com/bricelam/ImageResizer/" Text="Brice Lambson's ImageResizer" />
+            <controls:PageLink
+                Link="https://github.com/bricelam/ImageResizer/"
+                Text="Brice Lambson's ImageResizer" />
         </controls:SettingsPageControl.SecondaryLinks>
     </controls:SettingsPageControl>
 </Page>

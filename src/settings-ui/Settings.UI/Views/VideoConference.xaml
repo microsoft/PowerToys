@@ -15,10 +15,6 @@
             x:Name="EmptyToCollapsedConverter"
             EmptyValue="Collapsed"
             NotEmptyValue="Visible" />
-        <converters:BoolToObjectConverter
-            x:Key="BoolToVisibilityConverter"
-            FalseValue="Visible"
-            TrueValue="Collapsed" />
     </Page.Resources>
 
     <controls:SettingsPageControl x:Uid="VideoConference" ModuleImageSource="ms-appx:///Assets/Modules/VideoConference.png">
@@ -38,7 +34,7 @@
                     IsOpen="True"
                     IsTabStop="True"
                     Severity="Warning"
-                    Visibility="{Binding Mode=OneWay, Path=IsElevated, Converter={StaticResource BoolToVisibilityConverter}}" />
+                    Visibility="{Binding Mode=OneWay, Path=IsElevated, Converter={StaticResource ReverseBoolToVisibilityConverter}}" />
 
                 <controls:SettingsGroup x:Uid="VideoConference_Shortcuts" IsEnabled="{Binding Mode=OneWay, Path=IsEnabled}">
                     <labs:SettingsCard x:Uid="VideoConference_CameraAndMicrophoneMuteHotkeyControl_Header">

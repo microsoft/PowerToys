@@ -13,8 +13,6 @@
     mc:Ignorable="d">
 
     <Page.Resources>
-        <converters:BoolToVisibilityConverter x:Key="VisibleIfTrueConverter" />
-        <converters:BoolNegationConverter x:Key="NegationConverter" />
         <localConverters:UpdateStateToBoolConverter x:Key="UpdateStateToBoolConverter" />
         <localConverters:StringToInfoBarSeverityConverter x:Key="StringToInfoBarSeverityConverter" />
     </Page.Resources>
@@ -42,7 +40,7 @@
                                 VerticalAlignment="Center"
                                 Orientation="Horizontal"
                                 Spacing="18"
-                                Visibility="{Binding Mode=OneWay, Path=IsNewVersionDownloading, Converter={StaticResource VisibleIfTrueConverter}}">
+                                Visibility="{Binding Mode=OneWay, Path=IsNewVersionDownloading, Converter={StaticResource BoolToVisibilityConverter}}">
                                 <ProgressRing Width="24" Height="24" />
                                 <TextBlock
                                     x:Uid="General_CheckingForUpdates"
@@ -56,7 +54,7 @@
                                 HorizontalAlignment="Right"
                                 Command="{Binding CheckForUpdatesEventHandler}"
                                 IsEnabled="{Binding IsDownloadAllowed}"
-                                Visibility="{Binding Mode=OneWay, Path=IsNewVersionDownloading, Converter={StaticResource NegationConverter}}" />
+                                Visibility="{Binding Mode=OneWay, Path=IsNewVersionDownloading, Converter={StaticResource BoolNegationConverter}}" />
                         </Grid>
                     </labs:SettingsCard>
                     <InfoBar
@@ -80,14 +78,14 @@
                                     x:Uid="General_DownloadAndInstall"
                                     Command="{Binding UpdateNowButtonEventHandler}"
                                     IsEnabled="{Binding IsDownloadAllowed, Mode=OneWay}"
-                                    Visibility="{Binding Mode=OneWay, Path=IsNewVersionDownloading, Converter={StaticResource NegationConverter}}" />
+                                    Visibility="{Binding Mode=OneWay, Path=IsNewVersionDownloading, Converter={StaticResource BoolNegationConverter}}" />
 
                                 <!--  In progress panel  -->
                                 <StackPanel
                                     Margin="0,0,0,16"
                                     Orientation="Horizontal"
                                     Spacing="18"
-                                    Visibility="{Binding Mode=OneWay, Path=IsNewVersionDownloading, Converter={StaticResource VisibleIfTrueConverter}}">
+                                    Visibility="{Binding Mode=OneWay, Path=IsNewVersionDownloading, Converter={StaticResource BoolToVisibilityConverter}}">
                                     <ProgressRing Width="24" Height="24" />
                                     <TextBlock
                                         x:Uid="General_Downloading"
@@ -146,14 +144,14 @@
                                     x:Uid="General_TryAgainToDownloadAndInstall"
                                     Command="{Binding UpdateNowButtonEventHandler}"
                                     IsEnabled="{Binding IsDownloadAllowed, Mode=OneWay}"
-                                    Visibility="{Binding Mode=OneWay, Path=IsNewVersionDownloading, Converter={StaticResource NegationConverter}}" />
+                                    Visibility="{Binding Mode=OneWay, Path=IsNewVersionDownloading, Converter={StaticResource BoolNegationConverter}}" />
 
                                 <!--  In progress panel  -->
                                 <StackPanel
                                     Margin="0,0,0,16"
                                     Orientation="Horizontal"
                                     Spacing="18"
-                                    Visibility="{Binding Mode=OneWay, Path=IsNewVersionDownloading, Converter={StaticResource VisibleIfTrueConverter}}">
+                                    Visibility="{Binding Mode=OneWay, Path=IsNewVersionDownloading, Converter={StaticResource BoolToVisibilityConverter}}">
                                     <ProgressRing Width="24" Height="24" />
                                     <TextBlock
                                         x:Uid="General_Downloading"
@@ -175,7 +173,7 @@
                         x:Uid="GeneralPage_ToggleSwitch_AutoDownloadUpdates"
                         Margin="0,-6,0,0"
                         IsEnabled="{Binding AutoUpdatesEnabled}"
-                        Visibility="{Binding Mode=OneWay, Path=IsAdmin, Converter={StaticResource VisibleIfTrueConverter}}">
+                        Visibility="{Binding Mode=OneWay, Path=IsAdmin, Converter={StaticResource BoolToVisibilityConverter}}">
                         <ToggleSwitch x:Uid="ToggleSwitch" IsOn="{Binding Mode=TwoWay, Path=AutoDownloadUpdates}" />
                     </labs:SettingsCard>
                 </controls:SettingsGroup>

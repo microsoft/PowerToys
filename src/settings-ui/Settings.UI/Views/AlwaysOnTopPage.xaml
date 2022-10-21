@@ -3,28 +3,12 @@
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:controls="using:Microsoft.PowerToys.Settings.UI.Controls"
-    xmlns:converters="using:CommunityToolkit.WinUI.UI.Converters"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:labs="using:CommunityToolkit.Labs.WinUI"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:ui="using:CommunityToolkit.WinUI.UI"
     AutomationProperties.LandmarkType="Main"
     mc:Ignorable="d">
-
-    <Page.Resources>
-        <converters:BoolToObjectConverter
-            x:Key="BoolToComboBoxIndexConverter"
-            FalseValue="0"
-            TrueValue="1" />
-        <converters:BoolToVisibilityConverter
-            x:Key="FalseToVisibleConverter"
-            FalseValue="Visible"
-            TrueValue="Collapsed" />
-        <converters:BoolToVisibilityConverter
-            x:Key="TrueToVisibleConverter"
-            FalseValue="Collapsed"
-            TrueValue="Visible" />
-    </Page.Resources>
 
     <controls:SettingsPageControl
         x:Uid="AlwaysOnTop"
@@ -33,34 +17,52 @@
         <controls:SettingsPageControl.ModuleContent>
             <StackPanel Orientation="Vertical">
 
-                <labs:SettingsCard x:Uid="AlwaysOnTop_EnableToggleControl_HeaderText" HeaderIcon="{ui:BitmapIcon Source=/Assets/FluentIcons/FluentIconsAlwaysOnTop.png}">
-                    <ToggleSwitch x:Uid="ToggleSwitch" IsOn="{x:Bind ViewModel.IsEnabled, Mode=TwoWay}" />
+                <labs:SettingsCard
+                    x:Uid="AlwaysOnTop_EnableToggleControl_HeaderText"
+                    HeaderIcon="{ui:BitmapIcon Source=/Assets/FluentIcons/FluentIconsAlwaysOnTop.png}">
+                    <ToggleSwitch
+                        x:Uid="ToggleSwitch"
+                        IsOn="{x:Bind ViewModel.IsEnabled, Mode=TwoWay}" />
                 </labs:SettingsCard>
 
-                <controls:SettingsGroup x:Uid="AlwaysOnTop_Activation_GroupSettings" IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}">
+                <controls:SettingsGroup
+                    x:Uid="AlwaysOnTop_Activation_GroupSettings"
+                    IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}">
 
                     <labs:SettingsExpander
                         x:Uid="AlwaysOnTop_ActivationShortcut"
                         HeaderIcon="{ui:FontIcon Glyph=&#xEDA7;}"
                         IsExpanded="True">
-                        <controls:ShortcutControl MinWidth="{StaticResource SettingActionControlMinWidth}" HotkeySettings="{x:Bind Path=ViewModel.Hotkey, Mode=TwoWay}" />
+                        <controls:ShortcutControl
+                            MinWidth="{StaticResource SettingActionControlMinWidth}"
+                            HotkeySettings="{x:Bind Path=ViewModel.Hotkey, Mode=TwoWay}" />
                         <labs:SettingsExpander.Items>
                             <labs:SettingsCard ContentAlignment="Left">
-                                <CheckBox x:Uid="AlwaysOnTop_GameMode" IsChecked="{x:Bind Mode=TwoWay, Path=ViewModel.DoNotActivateOnGameMode}" />
+                                <CheckBox
+                                    x:Uid="AlwaysOnTop_GameMode"
+                                    IsChecked="{x:Bind Mode=TwoWay, Path=ViewModel.DoNotActivateOnGameMode}" />
                             </labs:SettingsCard>
                         </labs:SettingsExpander.Items>
                     </labs:SettingsExpander>
                 </controls:SettingsGroup>
 
-                <controls:SettingsGroup x:Uid="AlwaysOnTop_Behavior_GroupSettings" IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}">
+                <controls:SettingsGroup
+                    x:Uid="AlwaysOnTop_Behavior_GroupSettings"
+                    IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}">
                     <labs:SettingsExpander
                         x:Uid="AlwaysOnTop_FrameEnabled"
                         HeaderIcon="{ui:FontIcon Glyph=&#xEB3C;}"
                         IsExpanded="True">
-                        <ToggleSwitch x:Uid="ToggleSwitch" IsOn="{x:Bind Mode=TwoWay, Path=ViewModel.FrameEnabled}" />
+                        <ToggleSwitch
+                            x:Uid="ToggleSwitch"
+                            IsOn="{x:Bind Mode=TwoWay, Path=ViewModel.FrameEnabled}" />
                         <labs:SettingsExpander.Items>
-                            <labs:SettingsCard x:Uid="AlwaysOnTop_FrameColor_Mode" IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.FrameEnabled}">
-                                <ComboBox MinWidth="{StaticResource SettingActionControlMinWidth}" SelectedIndex="{x:Bind Mode=TwoWay, Path=ViewModel.FrameAccentColor, Converter={StaticResource BoolToComboBoxIndexConverter}}">
+                            <labs:SettingsCard
+                                x:Uid="AlwaysOnTop_FrameColor_Mode"
+                                IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.FrameEnabled}">
+                                <ComboBox
+                                    MinWidth="{StaticResource SettingActionControlMinWidth}"
+                                    SelectedIndex="{x:Bind Mode=TwoWay, Path=ViewModel.FrameAccentColor, Converter={StaticResource BoolToComboBoxIndexConverter}}">
                                     <ComboBoxItem x:Uid="AlwaysOnTop_Radio_Custom_Color" />
                                     <ComboBoxItem x:Uid="AlwaysOnTop_Radio_Windows_Default" />
                                 </ComboBox>
@@ -68,13 +70,13 @@
                             <labs:SettingsCard
                                 x:Uid="AlwaysOnTop_FrameColor"
                                 IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.FrameEnabled}"
-                                Visibility="{x:Bind Mode=OneWay, Path=ViewModel.FrameAccentColor, Converter={StaticResource FalseToVisibleConverter}}">
+                                Visibility="{x:Bind Mode=OneWay, Path=ViewModel.FrameAccentColor, Converter={StaticResource ReverseBoolToVisibilityConverter}}">
                                 <controls:ColorPickerButton SelectedColor="{x:Bind Path=ViewModel.FrameColor, Mode=TwoWay}" />
                             </labs:SettingsCard>
                             <labs:SettingsCard
                                 x:Uid="AlwaysOnTop_FrameThickness"
                                 IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.FrameEnabled}"
-                                Visibility="{x:Bind Mode=OneWay, Path=ViewModel.FrameAccentColor, Converter={StaticResource FalseToVisibleConverter}}">
+                                Visibility="{x:Bind Mode=OneWay, Path=ViewModel.FrameAccentColor, Converter={StaticResource ReverseBoolToVisibilityConverter}}">
                                 <Slider
                                     MinWidth="{StaticResource SettingActionControlMinWidth}"
                                     LargeChange="5"
@@ -87,7 +89,7 @@
                                 <CheckBox
                                     x:Uid="AlwaysOnTop_RoundCorners"
                                     IsChecked="{x:Bind Mode=TwoWay, Path=ViewModel.RoundCornersEnabled}"
-                                    Visibility="{x:Bind Mode=OneWay, Path=ViewModel.Windows11, Converter={StaticResource TrueToVisibleConverter}}" />
+                                    Visibility="{x:Bind Mode=OneWay, Path=ViewModel.Windows11, Converter={StaticResource BoolToVisibilityConverter}}" />
                             </labs:SettingsCard>
                         </labs:SettingsExpander.Items>
                     </labs:SettingsExpander>
@@ -98,13 +100,17 @@
                         IsExpanded="True">
                         <labs:SettingsExpander.Items>
                             <labs:SettingsCard ContentAlignment="Left">
-                                <CheckBox x:Uid="AlwaysOnTop_Sound" IsChecked="{x:Bind Mode=TwoWay, Path=ViewModel.SoundEnabled}" />
+                                <CheckBox
+                                    x:Uid="AlwaysOnTop_Sound"
+                                    IsChecked="{x:Bind Mode=TwoWay, Path=ViewModel.SoundEnabled}" />
                             </labs:SettingsCard>
                         </labs:SettingsExpander.Items>
                     </labs:SettingsExpander>
                 </controls:SettingsGroup>
 
-                <controls:SettingsGroup x:Uid="ExcludedApps" IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}">
+                <controls:SettingsGroup
+                    x:Uid="ExcludedApps"
+                    IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}">
                     <labs:SettingsExpander
                         x:Uid="AlwaysOnTop_ExcludedApps"
                         HeaderIcon="{ui:FontIcon Glyph=&#xECE4;}"
@@ -129,7 +135,9 @@
         </controls:SettingsPageControl.ModuleContent>
 
         <controls:SettingsPageControl.PrimaryLinks>
-            <controls:PageLink x:Uid="LearnMore_AlwaysOnTop" Link="https://aka.ms/PowerToysOverview_AlwaysOnTop" />
+            <controls:PageLink
+                x:Uid="LearnMore_AlwaysOnTop"
+                Link="https://aka.ms/PowerToysOverview_AlwaysOnTop" />
         </controls:SettingsPageControl.PrimaryLinks>
     </controls:SettingsPageControl>
 </Page>

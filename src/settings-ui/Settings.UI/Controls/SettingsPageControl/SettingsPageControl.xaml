@@ -18,7 +18,9 @@
             TrueValue="Visible" />
     </UserControl.Resources>
 
-    <Grid Padding="20,0,0,0" RowSpacing="24">
+    <Grid
+        Padding="20,0,0,0"
+        RowSpacing="24">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
             <RowDefinition Height="*" />
@@ -33,9 +35,13 @@
             Text="{x:Bind ModuleTitle}" />
 
         <ScrollViewer Grid.Row="1">
-            <Grid Padding="0,0,20,48" RowSpacing="24">
+            <Grid
+                Padding="0,0,20,48"
+                RowSpacing="24">
                 <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="*" MaxWidth="1048" />
+                    <ColumnDefinition
+                        Width="*"
+                        MaxWidth="1048" />
                     <ColumnDefinition Width="Auto" />
                 </Grid.ColumnDefinitions>
                 <Grid.RowDefinitions>
@@ -50,7 +56,9 @@
                         <ColumnDefinition Width="160" />
                         <ColumnDefinition Width="*" />
                     </Grid.ColumnDefinitions>
-                    <Border VerticalAlignment="Top" CornerRadius="4">
+                    <Border
+                        VerticalAlignment="Top"
+                        CornerRadius="4">
                         <Image AutomationProperties.AccessibilityView="Raw">
                             <Image.Source>
                                 <BitmapImage UriSource="{x:Bind ModuleImageSource}" />
@@ -72,14 +80,20 @@
                             ItemsSource="{x:Bind PrimaryLinks}">
                             <ItemsControl.ItemTemplate>
                                 <DataTemplate x:DataType="local:PageLink">
-                                    <HyperlinkButton NavigateUri="{x:Bind Link}" Style="{StaticResource TextButtonStyle}">
-                                        <TextBlock Text="{x:Bind Text}" TextWrapping="Wrap" />
+                                    <HyperlinkButton
+                                        NavigateUri="{x:Bind Link}"
+                                        Style="{StaticResource TextButtonStyle}">
+                                        <TextBlock
+                                            Text="{x:Bind Text}"
+                                            TextWrapping="Wrap" />
                                     </HyperlinkButton>
                                 </DataTemplate>
                             </ItemsControl.ItemTemplate>
                             <ItemsControl.ItemsPanel>
                                 <ItemsPanelTemplate>
-                                    <controls:WrapPanel HorizontalSpacing="24" Orientation="Horizontal" />
+                                    <controls:WrapPanel
+                                        HorizontalSpacing="24"
+                                        Orientation="Horizontal" />
                                 </ItemsPanelTemplate>
                             </ItemsControl.ItemsPanel>
                         </ItemsControl>
@@ -115,14 +129,20 @@
                         ItemsSource="{x:Bind SecondaryLinks}">
                         <ItemsControl.ItemTemplate>
                             <DataTemplate x:DataType="local:PageLink">
-                                <HyperlinkButton NavigateUri="{x:Bind Link}" Style="{StaticResource TextButtonStyle}">
-                                    <TextBlock Text="{x:Bind Text}" TextWrapping="Wrap" />
+                                <HyperlinkButton
+                                    NavigateUri="{x:Bind Link}"
+                                    Style="{StaticResource TextButtonStyle}">
+                                    <TextBlock
+                                        Text="{x:Bind Text}"
+                                        TextWrapping="Wrap" />
                                 </HyperlinkButton>
                             </DataTemplate>
                         </ItemsControl.ItemTemplate>
                         <ItemsControl.ItemsPanel>
                             <ItemsPanelTemplate>
-                                <controls:WrapPanel HorizontalSpacing="24" Orientation="Horizontal" />
+                                <controls:WrapPanel
+                                    HorizontalSpacing="24"
+                                    Orientation="Horizontal" />
                             </ItemsPanelTemplate>
                         </ItemsControl.ItemsPanel>
                     </ItemsControl>

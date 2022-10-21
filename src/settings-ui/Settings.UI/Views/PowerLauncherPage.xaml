@@ -4,7 +4,6 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:ViewModels="using:Microsoft.PowerToys.Settings.UI.Library.ViewModels"
     xmlns:controls="using:Microsoft.PowerToys.Settings.UI.Controls"
-    xmlns:converters="using:CommunityToolkit.WinUI.UI.Converters"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:i="using:Microsoft.Xaml.Interactivity"
     xmlns:ic="using:Microsoft.Xaml.Interactions.Core"
@@ -13,14 +12,6 @@
     xmlns:ui="using:CommunityToolkit.WinUI.UI"
     AutomationProperties.LandmarkType="Main"
     mc:Ignorable="d">
-
-    <Page.Resources>
-        <converters:BoolToObjectConverter
-            x:Key="BoolToVisibilityConverter"
-            FalseValue="Collapsed"
-            TrueValue="Visible" />
-        <converters:BoolNegationConverter x:Key="BoolNegationConverter" />
-    </Page.Resources>
 
     <controls:SettingsPageControl x:Uid="PowerLauncher" ModuleImageSource="ms-appx:///Assets/Modules/PowerLauncher.png">
         <controls:SettingsPageControl.ModuleContent>

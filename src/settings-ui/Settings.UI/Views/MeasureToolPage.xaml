@@ -3,37 +3,47 @@
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:controls="using:Microsoft.PowerToys.Settings.UI.Controls"
-    xmlns:converters="using:CommunityToolkit.WinUI.UI.Converters"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:labs="using:CommunityToolkit.Labs.WinUI"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:ui="using:CommunityToolkit.WinUI.UI"
     AutomationProperties.LandmarkType="Main"
     mc:Ignorable="d">
-    <Page.Resources>
-        <converters:BoolToObjectConverter
-            x:Key="BoolToVisibilityConverter"
-            FalseValue="Collapsed"
-            TrueValue="Visible" />
-    </Page.Resources>
 
-    <controls:SettingsPageControl x:Uid="MeasureTool" ModuleImageSource="ms-appx:///Assets/Modules/ScreenRuler.png">
+    <controls:SettingsPageControl
+        x:Uid="MeasureTool"
+        ModuleImageSource="ms-appx:///Assets/Modules/ScreenRuler.png">
         <controls:SettingsPageControl.ModuleContent>
             <StackPanel Orientation="Vertical">
-                <labs:SettingsCard x:Uid="MeasureTool_EnableMeasureTool" HeaderIcon="{ui:BitmapIcon Source=/Assets/FluentIcons/FluentIconsScreenRuler.png}">
-                    <ToggleSwitch x:Uid="ToggleSwitch" IsOn="{x:Bind ViewModel.IsEnabled, Mode=TwoWay}" />
+                <labs:SettingsCard
+                    x:Uid="MeasureTool_EnableMeasureTool"
+                    HeaderIcon="{ui:BitmapIcon Source=/Assets/FluentIcons/FluentIconsScreenRuler.png}">
+                    <ToggleSwitch
+                        x:Uid="ToggleSwitch"
+                        IsOn="{x:Bind ViewModel.IsEnabled, Mode=TwoWay}" />
                 </labs:SettingsCard>
 
-
-                <controls:SettingsGroup x:Uid="MeasureTool_ActivationSettings" IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}">
-                    <labs:SettingsCard x:Uid="MeasureTool_ActivationShortcut" HeaderIcon="{ui:FontIcon Glyph=&#xEDA7;}">
-                        <controls:ShortcutControl MinWidth="{StaticResource SettingActionControlMinWidth}" HotkeySettings="{x:Bind Path=ViewModel.ActivationShortcut, Mode=TwoWay}" />
+                <controls:SettingsGroup
+                    x:Uid="MeasureTool_ActivationSettings"
+                    IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}">
+                    <labs:SettingsCard
+                        x:Uid="MeasureTool_ActivationShortcut"
+                        HeaderIcon="{ui:FontIcon Glyph=&#xEDA7;}">
+                        <controls:ShortcutControl
+                            MinWidth="{StaticResource SettingActionControlMinWidth}"
+                            HotkeySettings="{x:Bind Path=ViewModel.ActivationShortcut, Mode=TwoWay}" />
                     </labs:SettingsCard>
                 </controls:SettingsGroup>
 
-                <controls:SettingsGroup x:Uid="MeasureTool_Settings" IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}">
-                    <labs:SettingsCard x:Uid="MeasureTool_ContinuousCapture" HeaderIcon="{ui:FontIcon Glyph=&#xE7FB;}">
-                        <ToggleSwitch x:Uid="MeasureTool_ContinuousCapture_ToggleSwitch" IsOn="{x:Bind ViewModel.ContinuousCapture, Mode=TwoWay}" />
+                <controls:SettingsGroup
+                    x:Uid="MeasureTool_Settings"
+                    IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}">
+                    <labs:SettingsCard
+                        x:Uid="MeasureTool_ContinuousCapture"
+                        HeaderIcon="{ui:FontIcon Glyph=&#xE7FB;}">
+                        <ToggleSwitch
+                            x:Uid="MeasureTool_ContinuousCapture_ToggleSwitch"
+                            IsOn="{x:Bind ViewModel.ContinuousCapture, Mode=TwoWay}" />
                     </labs:SettingsCard>
                     <InfoBar
                         x:Uid="MeasureTool_ContinuousCapture_Information"
@@ -42,8 +52,12 @@
                         IsTabStop="{x:Bind Mode=OneWay, Path=ViewModel.ShowContinuousCaptureWarning}"
                         Severity="Warning" />
 
-                    <labs:SettingsCard x:Uid="MeasureTool_PerColorChannelEdgeDetection" HeaderIcon="{ui:FontIcon Glyph=&#xE7FB;}">
-                        <ToggleSwitch x:Uid="MeasureTool_PerColorChannelEdgeDetection_ToggleSwitch" IsOn="{x:Bind ViewModel.PerColorChannelEdgeDetection, Mode=TwoWay}" />
+                    <labs:SettingsCard
+                        x:Uid="MeasureTool_PerColorChannelEdgeDetection"
+                        HeaderIcon="{ui:FontIcon Glyph=&#xE7FB;}">
+                        <ToggleSwitch
+                            x:Uid="MeasureTool_PerColorChannelEdgeDetection_ToggleSwitch"
+                            IsOn="{x:Bind ViewModel.PerColorChannelEdgeDetection, Mode=TwoWay}" />
                     </labs:SettingsCard>
 
                     <labs:SettingsCard x:Uid="MeasureTool_PixelTolerance">
@@ -63,7 +77,9 @@
                     </labs:SettingsCard>-->
 
                     <labs:SettingsCard x:Uid="MeasureTool_DrawFeetOnCross">
-                        <ToggleSwitch x:Uid="MeasureTool_DrawFeetOnCross_ToggleSwitch" IsOn="{x:Bind ViewModel.DrawFeetOnCross, Mode=TwoWay}" />
+                        <ToggleSwitch
+                            x:Uid="MeasureTool_DrawFeetOnCross_ToggleSwitch"
+                            IsOn="{x:Bind ViewModel.DrawFeetOnCross, Mode=TwoWay}" />
                     </labs:SettingsCard>
 
                     <labs:SettingsCard x:Uid="MeasureTool_MeasureCrossColor">
@@ -73,10 +89,14 @@
             </StackPanel>
         </controls:SettingsPageControl.ModuleContent>
         <controls:SettingsPageControl.PrimaryLinks>
-            <controls:PageLink x:Uid="LearnMore_MeasureTool" Link="https://aka.ms/PowerToysOverview_ScreenRuler" />
+            <controls:PageLink
+                x:Uid="LearnMore_MeasureTool"
+                Link="https://aka.ms/PowerToysOverview_ScreenRuler" />
         </controls:SettingsPageControl.PrimaryLinks>
         <controls:SettingsPageControl.SecondaryLinks>
-            <controls:PageLink x:Uid="Attribution_Rooler" Link="https://github.com/peteblois/rooler" />
+            <controls:PageLink
+                x:Uid="Attribution_Rooler"
+                Link="https://github.com/peteblois/rooler" />
         </controls:SettingsPageControl.SecondaryLinks>
     </controls:SettingsPageControl>
 </Page>

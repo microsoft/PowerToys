@@ -11,22 +11,6 @@
     AutomationProperties.LandmarkType="Main"
     mc:Ignorable="d">
 
-    <Page.Resources>
-        <converters:BoolToObjectConverter
-            x:Key="BoolToComboBoxIndexConverter"
-            FalseValue="0"
-            TrueValue="1" />
-        <converters:StringFormatConverter x:Key="StringFormatConverter" />
-        <converters:BoolToVisibilityConverter
-            x:Key="FalseToVisibleConverter"
-            FalseValue="Visible"
-            TrueValue="Collapsed" />
-        <converters:BoolToVisibilityConverter
-            x:Key="TrueToVisibleConverter"
-            FalseValue="Collapsed"
-            TrueValue="Visible" />
-    </Page.Resources>
-
     <controls:SettingsPageControl x:Uid="FancyZones" ModuleImageSource="ms-appx:///Assets/Modules/FancyZones.png">
         <controls:SettingsPageControl.ModuleContent>
             <StackPanel Orientation="Vertical">
@@ -116,16 +100,16 @@
                                     Value="{x:Bind Mode=TwoWay, Path=ViewModel.HighlightOpacity}" />
                             </labs:SettingsCard>
 
-                            <labs:SettingsCard x:Uid="FancyZones_ZoneHighlightColor" Visibility="{x:Bind Mode=OneWay, Path=ViewModel.SystemTheme, Converter={StaticResource FalseToVisibleConverter}}">
+                            <labs:SettingsCard x:Uid="FancyZones_ZoneHighlightColor" Visibility="{x:Bind Mode=OneWay, Path=ViewModel.SystemTheme, Converter={StaticResource ReverseBoolToVisibilityConverter}}">
                                 <controls:ColorPickerButton SelectedColor="{x:Bind Path=ViewModel.ZoneHighlightColor, Mode=TwoWay}" />
                             </labs:SettingsCard>
-                            <labs:SettingsCard x:Uid="FancyZones_InActiveColor" Visibility="{x:Bind Mode=OneWay, Path=ViewModel.SystemTheme, Converter={StaticResource FalseToVisibleConverter}}">
+                            <labs:SettingsCard x:Uid="FancyZones_InActiveColor" Visibility="{x:Bind Mode=OneWay, Path=ViewModel.SystemTheme, Converter={StaticResource ReverseBoolToVisibilityConverter}}">
                                 <controls:ColorPickerButton x:Name="InActiveColorButton" SelectedColor="{x:Bind Path=ViewModel.ZoneInActiveColor, Mode=TwoWay}" />
                             </labs:SettingsCard>
-                            <labs:SettingsCard x:Uid="FancyZones_BorderColor" Visibility="{x:Bind Mode=OneWay, Path=ViewModel.SystemTheme, Converter={StaticResource FalseToVisibleConverter}}">
+                            <labs:SettingsCard x:Uid="FancyZones_BorderColor" Visibility="{x:Bind Mode=OneWay, Path=ViewModel.SystemTheme, Converter={StaticResource ReverseBoolToVisibilityConverter}}">
                                 <controls:ColorPickerButton SelectedColor="{x:Bind Path=ViewModel.ZoneBorderColor, Mode=TwoWay}" />
                             </labs:SettingsCard>
-                            <labs:SettingsCard x:Uid="FancyZones_NumberColor" Visibility="{x:Bind Mode=OneWay, Path=ViewModel.SystemTheme, Converter={StaticResource FalseToVisibleConverter}}">
+                            <labs:SettingsCard x:Uid="FancyZones_NumberColor" Visibility="{x:Bind Mode=OneWay, Path=ViewModel.SystemTheme, Converter={StaticResource ReverseBoolToVisibilityConverter}}">
                                 <controls:ColorPickerButton SelectedColor="{x:Bind Path=ViewModel.ZoneNumberColor, Mode=TwoWay}" />
                             </labs:SettingsCard>
                         </labs:SettingsExpander.Items>
@@ -163,7 +147,7 @@
                             <labs:SettingsCard ContentAlignment="Left">
                                 <CheckBox x:Uid="FancyZones_AllowChildWindowSnap" IsChecked="{x:Bind Mode=TwoWay, Path=ViewModel.AllowChildWindowSnap}" />
                             </labs:SettingsCard>
-                            <labs:SettingsCard ContentAlignment="Left" Visibility="{x:Bind Mode=OneWay, Path=ViewModel.Windows11, Converter={StaticResource TrueToVisibleConverter}}">
+                            <labs:SettingsCard ContentAlignment="Left" Visibility="{x:Bind Mode=OneWay, Path=ViewModel.Windows11, Converter={StaticResource BoolToVisibilityConverter}}">
                                 <CheckBox x:Uid="FancyZones_DisableRoundCornersOnWindowSnap" IsChecked="{x:Bind Mode=TwoWay, Path=ViewModel.DisableRoundCornersOnWindowSnap}" />
                             </labs:SettingsCard>
                         </labs:SettingsExpander.Items>
