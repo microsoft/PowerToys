@@ -871,6 +871,15 @@ namespace FancyZonesEditor.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to {0} zones.
+        /// </summary>
+        public static string Template_Zone_Count_Value {
+            get {
+                return ResourceManager.GetString("Template_Zone_Count_Value", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Templates.
         /// </summary>
         public static string Templates {
@@ -894,6 +903,15 @@ namespace FancyZonesEditor.Properties {
         public static string Zone_Count_Increment {
             get {
                 return ResourceManager.GetString("Zone_Count_Increment", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to zones.
+        /// </summary>
+        public static string Zones {
+            get {
+                return ResourceManager.GetString("Zones", resourceCulture);
             }
         }
     }

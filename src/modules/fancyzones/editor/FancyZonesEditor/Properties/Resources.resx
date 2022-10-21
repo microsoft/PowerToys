@@ -414,4 +414,10 @@
   <data name="Slider_Value" xml:space="preserve">
     <value>{0} pixels</value>
   </data>
+  <data name="Template_Zone_Count_Value" xml:space="preserve">
+    <value>{0} zones</value>
+  </data>
+  <data name="Zones" xml:space="preserve">
+    <value>zones</value>
+  </data>
 </root>
