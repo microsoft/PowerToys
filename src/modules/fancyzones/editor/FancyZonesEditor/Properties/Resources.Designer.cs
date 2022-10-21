@@ -691,6 +691,15 @@ namespace FancyZonesEditor.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to {0} pixels.
+        /// </summary>
+        public static string Pixel_Value {
+            get {
+                return ResourceManager.GetString("Pixel_Value", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to px.
         /// </summary>
         public static string Pixels {
@@ -777,15 +786,6 @@ namespace FancyZonesEditor.Properties {
         public static string Show_Space_Zones {
             get {
                 return ResourceManager.GetString("Show_Space_Zones", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to {0} pixels.
-        /// </summary>
-        public static string Slider_Value {
-            get {
-                return ResourceManager.GetString("Slider_Value", resourceCulture);
             }
         }
         

@@ -574,7 +574,7 @@ namespace FancyZonesEditor
                     FrameworkElementAutomationPeer.FromElement(SensitivityInput) as SliderAutomationPeer;
                 string activityId = "sliderValueChanged";
 
-                string value = string.Format(CultureInfo.CurrentCulture, Properties.Resources.Slider_Value, SensitivityInput.Value);
+                string value = string.Format(CultureInfo.CurrentCulture, Properties.Resources.Pixel_Value, SensitivityInput.Value);
 
                 if (peer != null && value != null)
                 {
@@ -616,7 +616,7 @@ namespace FancyZonesEditor
                     FrameworkElementAutomationPeer.FromElement(Spacing) as SliderAutomationPeer;
                 string activityId = "spacingValueChanged";
 
-                string value = string.Format(CultureInfo.CurrentCulture, Properties.Resources.Space_Around_Zones, Spacing.Value);
+                string value = string.Format(CultureInfo.CurrentCulture, Properties.Resources.Pixel_Value, Spacing.Value);
 
                 if (peer != null && value != null)
                 {
