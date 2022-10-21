@@ -214,6 +214,15 @@ namespace FancyZonesEditor.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to {0} slider. Possible range is from {1} to {2}. Value is {3}..
+        /// </summary>
+        public static string Custom_slider_announce {
+            get {
+                return ResourceManager.GetString("Custom_slider_announce", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Custom layout.
         /// </summary>
         public static string Default_Custom_Layout_Name {
@@ -295,15 +304,6 @@ namespace FancyZonesEditor.Properties {
         public static string Distance_adjacent_zones {
             get {
                 return ResourceManager.GetString("Distance_adjacent_zones", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Highlight distance slider. Possible range is from {0} to {1}. Value is {2}..
-        /// </summary>
-        public static string Distance_adjacent_zones_slider_announce {
-            get {
-                return ResourceManager.GetString("Distance_adjacent_zones_slider_announce", resourceCulture);
             }
         }
         
