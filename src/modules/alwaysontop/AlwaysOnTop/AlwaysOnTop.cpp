@@ -493,7 +493,7 @@ void AlwaysOnTop::HandleWinHookEvent(WinHookEvent* data) noexcept
             // fixes https://github.com/microsoft/PowerToys/issues/19168
             if (!IsTopmost(window))
             {
-                Logger::trace(L"Reset topmost");
+                Logger::trace(L"A window no longer has Topmost set and it should. Setting topmost again.");
                 PinTopmostWindow(window);
             }
         }
