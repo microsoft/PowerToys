@@ -2008,7 +2008,7 @@
 			<Component
                 Id="FileLocksmith_WinAppSDKLoc_$(var.IdSafeLanguage)_Component"
                 Directory="WinAppSDKLoc$(var.IdSafeLanguage)FileLocksmithInstallFolder"
-                Guid="$(var.CompGUIDPrefix)04">
+                Guid="$(var.CompGUIDPrefix)05">
 				<File Id="FileLocksmith_WinAppSDKLoc_$(var.IdSafeLanguage)_XamlMui_File" Source="$(var.BinDir)modules\$(var.FileLocksmithProjectName)\$(var.Language)\Microsoft.ui.xaml.dll.mui" />
 				<File Id="FileLocksmith_WinAppSDKLoc_$(var.IdSafeLanguage)_XamlPhoneMui_File" Source="$(var.BinDir)modules\$(var.FileLocksmithProjectName)\$(var.Language)\Microsoft.UI.Xaml.Phone.dll.mui" />
 			</Component>
