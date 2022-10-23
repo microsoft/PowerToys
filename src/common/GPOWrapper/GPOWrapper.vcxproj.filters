@@ -16,6 +16,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h" />
+    <ClInclude Include="resource.h" />
   </ItemGroup>
   <ItemGroup>
     <Midl Include="GPOWrapper.idl" />
@@ -29,5 +30,10 @@
   </ItemGroup>
   <ItemGroup>
     <Text Include="readme.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="GPOWrapper.rc">
+      <Filter>Resources</Filter>
+    </ResourceCompile>
   </ItemGroup>
 </Project>
