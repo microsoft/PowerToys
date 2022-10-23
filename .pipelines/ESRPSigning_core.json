@@ -21,6 +21,8 @@
                 "PowerToys.ManagedCommon.dll",
                 "PowerToys.Common.UI.dll",
                 "PowerToys.Settings.UI.Lib.dll",
+                "PowerToys.GPOWrapper.dll",
+                "PowerToys.GPOWrapperProjection.dll",
 
                 "modules\\AlwaysOnTop\\PowerToys.AlwaysOnTop.exe",
                 "modules\\AlwaysOnTop\\PowerToys.AlwaysOnTopModuleInterface.dll",
