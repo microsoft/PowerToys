@@ -37,6 +37,8 @@ public:
     ~VideoConferenceModule();
     virtual const wchar_t* get_name() override;
 
+    virtual powertoys_gpo::gpo_rule_configured_t gpo_policy_enabled_configuration() override;
+
     virtual bool get_config(wchar_t* buffer, int* buffer_size) override;
 
     virtual void set_config(const wchar_t* config) override;
