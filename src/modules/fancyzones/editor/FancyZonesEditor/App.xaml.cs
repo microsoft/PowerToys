@@ -66,6 +66,14 @@ namespace FancyZonesEditor
 
         private void OnStartup(object sender, StartupEventArgs e)
         {
+            /* TODO: turn this on. Can't find namespace for some reason. Just this project.
+            if (PowerToys.GPOWrapper.GPOWrapper.GetConfiguredFancyZonesEnabledValue() == PowerToys.GPOWrapper.GpoRuleConfigured.Disabled)
+            {
+                Logger.LogWarning("Tried to start with a GPO policy setting the utility to always be disabled. Please contact your systems administrator.");
+                Environment.Exit(0); // Current.Exit won't work until there's a window opened.
+                return;
+            }*/
+
             AppDomain.CurrentDomain.UnhandledException += OnUnhandledException;
 
             _themeManager = new ThemeManager(this);

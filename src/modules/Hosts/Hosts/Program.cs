@@ -16,6 +16,13 @@ namespace Hosts
         public static void Main(string[] args)
         {
             WinRT.ComWrappersSupport.InitializeComWrappers();
+
+            if (PowerToys.GPOWrapper.GPOWrapper.GetConfiguredHostsFileEditorEnabledValue() == PowerToys.GPOWrapper.GpoRuleConfigured.Disabled)
+            {
+                Logger.LogWarning("Tried to start with a GPO policy setting the utility to always be disabled. Please contact your systems administrator.");
+                return;
+            }
+
             var instanceKey = AppInstance.FindOrRegisterForKey("PowerToys_Hosts_Instance");
 
             if (instanceKey.IsCurrent)
