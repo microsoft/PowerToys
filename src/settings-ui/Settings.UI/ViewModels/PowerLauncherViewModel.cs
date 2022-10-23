@@ -10,6 +10,7 @@ using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Text.Json;
 using System.Windows.Input;
+using global::PowerToys.GPOWrapper;
 using ManagedCommon;
 using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.PowerToys.Settings.UI.Library.Helpers;
@@ -23,6 +24,9 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         private int _themeIndex;
         private int _monitorPositionIndex;
 
+        private GpoRuleConfigured _enabledGpoRuleConfiguration;
+        private bool _enabledStateIsGPOConfigured;
+        private bool _isEnabled;
         private string _searchText;
 
         private GeneralSettings GeneralSettingsConfig { get; set; }
@@ -58,6 +62,18 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             }
 
             GeneralSettingsConfig = settingsRepository.SettingsConfig;
+
+            _enabledGpoRuleConfiguration = GPOWrapper.GetConfiguredPowerLauncherEnabledValue();
+            if (_enabledGpoRuleConfiguration == GpoRuleConfigured.Disabled || _enabledGpoRuleConfiguration == GpoRuleConfigured.Enabled)
+            {
+                // Get the enabled state from GPO.
+                _enabledStateIsGPOConfigured = true;
+                _isEnabled = _enabledGpoRuleConfiguration == GpoRuleConfigured.Enabled;
+            }
+            else
+            {
+                _isEnabled = GeneralSettingsConfig.Enabled.PowerLauncher;
+            }
 
             // set the callback functions value to hangle outgoing IPC message.
             SendConfigMSG = ipcMSGCallBackFunc;
@@ -135,13 +151,20 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         {
             get
             {
-                return GeneralSettingsConfig.Enabled.PowerLauncher;
+                return _isEnabled;
             }
 
             set
             {
-                if (GeneralSettingsConfig.Enabled.PowerLauncher != value)
+                if (_enabledStateIsGPOConfigured)
                 {
+                    // If it's GPO configured, shouldn't be able to change this state.
+                    return;
+                }
+
+                if (_isEnabled != value)
+                {
+                    _isEnabled = value;
                     GeneralSettingsConfig.Enabled.PowerLauncher = value;
                     OnPropertyChanged(nameof(EnablePowerLauncher));
                     OnPropertyChanged(nameof(ShowAllPluginsDisabledWarning));
@@ -150,6 +173,11 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                     SendConfigMSG(outgoing.ToString());
                 }
             }
+        }
+
+        public bool IsEnabledGpoConfigured
+        {
+            get => _enabledStateIsGPOConfigured;
         }
 
         public string SearchResultPreference

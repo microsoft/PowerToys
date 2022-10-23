@@ -5,6 +5,7 @@
 using System;
 using System.IO;
 using System.Runtime.CompilerServices;
+using global::PowerToys.GPOWrapper;
 using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.PowerToys.Settings.UI.Library.Helpers;
 using Microsoft.PowerToys.Settings.UI.Library.Interfaces;
@@ -67,9 +68,22 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             _powerRenameMaxDispListNumValue = Settings.Properties.MaxMRUSize.Value;
             _autoComplete = Settings.Properties.MRUEnabled.Value;
             _powerRenameUseBoostLib = Settings.Properties.UseBoostLib.Value;
-            _powerRenameEnabled = GeneralSettingsConfig.Enabled.PowerRename;
+
+            _enabledGpoRuleConfiguration = GPOWrapper.GetConfiguredPowerRenameEnabledValue();
+            if (_enabledGpoRuleConfiguration == GpoRuleConfigured.Disabled || _enabledGpoRuleConfiguration == GpoRuleConfigured.Enabled)
+            {
+                // Get the enabled state from GPO.
+                _enabledStateIsGPOConfigured = true;
+                _powerRenameEnabled = _enabledGpoRuleConfiguration == GpoRuleConfigured.Enabled;
+            }
+            else
+            {
+                _powerRenameEnabled = GeneralSettingsConfig.Enabled.PowerRename;
+            }
         }
 
+        private GpoRuleConfigured _enabledGpoRuleConfiguration;
+        private bool _enabledStateIsGPOConfigured;
         private bool _powerRenameEnabled;
         private bool _powerRenameEnabledOnContextMenu;
         private bool _powerRenameEnabledOnContextExtendedMenu;
@@ -87,6 +101,12 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
             set
             {
+                if (_enabledStateIsGPOConfigured)
+                {
+                    // If it's GPO configured, shouldn't be able to change this state.
+                    return;
+                }
+
                 if (value != _powerRenameEnabled)
                 {
                     GeneralSettingsConfig.Enabled.PowerRename = value;
@@ -99,6 +119,11 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                     RaisePropertyChanged(nameof(GlobalAndMruEnabled));
                 }
             }
+        }
+
+        public bool IsEnabledGpoConfigured
+        {
+            get => _enabledStateIsGPOConfigured;
         }
 
         public bool MRUEnabled

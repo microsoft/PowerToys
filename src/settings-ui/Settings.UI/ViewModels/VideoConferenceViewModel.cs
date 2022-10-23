@@ -9,6 +9,7 @@ using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Text.Json;
 using System.Threading.Tasks;
+using global::PowerToys.GPOWrapper;
 using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.PowerToys.Settings.UI.Library.Helpers;
 using Microsoft.PowerToys.Settings.UI.Library.Interfaces;
@@ -90,7 +91,18 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 _selectedMicrophoneIndex = MicrophoneNames.FindIndex(name => name == Settings.Properties.SelectedMicrophone.Value);
             }
 
-            _isEnabled = GeneralSettingsConfig.Enabled.VideoConference;
+            _enabledGpoRuleConfiguration = GPOWrapper.GetConfiguredVideoConferenceMuteEnabledValue();
+            if (_enabledGpoRuleConfiguration == GpoRuleConfigured.Disabled || _enabledGpoRuleConfiguration == GpoRuleConfigured.Enabled)
+            {
+                // Get the enabled state from GPO.
+                _enabledStateIsGPOConfigured = true;
+                _isEnabled = _enabledGpoRuleConfiguration == GpoRuleConfigured.Enabled;
+            }
+            else
+            {
+                _isEnabled = GeneralSettingsConfig.Enabled.VideoConference;
+            }
+
             _cameraAndMicrophoneMuteHotkey = Settings.Properties.MuteCameraAndMicrophoneHotkey.Value;
             _microphoneMuteHotkey = Settings.Properties.MuteMicrophoneHotkey.Value;
             _cameraMuteHotkey = Settings.Properties.MuteCameraHotkey.Value;
@@ -139,6 +151,8 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             }
         }
 
+        private GpoRuleConfigured _enabledGpoRuleConfiguration;
+        private bool _enabledStateIsGPOConfigured;
         private bool _isEnabled;
         private int _toolbarPositionIndex;
         private int _toolbarMonitorIndex;
@@ -234,6 +248,12 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
             set
             {
+                if (_enabledStateIsGPOConfigured)
+                {
+                    // If it's GPO configured, shouldn't be able to change this state.
+                    return;
+                }
+
                 if (value != _isEnabled)
                 {
                     _isEnabled = value;
@@ -243,6 +263,19 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                     SendConfigMSG(snd.ToString());
                     OnPropertyChanged(nameof(IsEnabled));
                 }
+            }
+        }
+
+        public bool IsEnabledGpoConfigured
+        {
+            get => _enabledStateIsGPOConfigured;
+        }
+
+        public bool CanUserChangeEnabledState
+        {
+            get
+            {
+                return IsElevated && !IsEnabledGpoConfigured;
             }
         }
 
