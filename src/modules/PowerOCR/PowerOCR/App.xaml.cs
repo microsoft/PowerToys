@@ -37,7 +37,7 @@ public partial class App : Application, IDisposable
 
     private void Application_Startup(object sender, StartupEventArgs e)
     {
-        if (PowerToys.GPOWrapper.GPOWrapper.GetConfiguredTextExtractorEnabledValue() == PowerToys.GPOWrapper.GpoRuleConfigured.Disabled)
+        if (PowerToys.GPOWrapperProjection.GPOWrapper.GetConfiguredTextExtractorEnabledValue() == PowerToys.GPOWrapperProjection.GpoRuleConfigured.Disabled)
         {
             Logger.LogWarning("Tried to start with a GPO policy setting the utility to always be disabled. Please contact your systems administrator.");
             Shutdown();

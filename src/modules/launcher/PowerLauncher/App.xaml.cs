@@ -52,7 +52,7 @@ namespace PowerLauncher
             NativeThreadCTS = new CancellationTokenSource();
 
             Log.Info($"Starting PowerToys Run with PID={Environment.ProcessId}", typeof(App));
-            if (PowerToys.GPOWrapper.GPOWrapper.GetConfiguredPowerLauncherEnabledValue() == PowerToys.GPOWrapper.GpoRuleConfigured.Disabled)
+            if (PowerToys.GPOWrapperProjection.GPOWrapper.GetConfiguredPowerLauncherEnabledValue() == PowerToys.GPOWrapperProjection.GpoRuleConfigured.Disabled)
             {
                 Log.Warn("Tried to start with a GPO policy setting the utility to always be disabled. Please contact your systems administrator.", typeof(App));
                 return;

@@ -29,7 +29,7 @@ namespace ImageResizer
             // Fix for .net 3.1.19 making Image Resizer not adapt to DPI changes.
             NativeMethods.SetProcessDPIAware();
 
-            if (PowerToys.GPOWrapper.GPOWrapper.GetConfiguredImageResizerEnabledValue() == PowerToys.GPOWrapper.GpoRuleConfigured.Disabled)
+            if (PowerToys.GPOWrapperProjection.GPOWrapper.GetConfiguredImageResizerEnabledValue() == PowerToys.GPOWrapperProjection.GpoRuleConfigured.Disabled)
             {
                 /* TODO: Add logs to ImageResizer.
                  * Logger.LogWarning("Tried to start with a GPO policy setting the utility to always be disabled. Please contact your systems administrator.");
