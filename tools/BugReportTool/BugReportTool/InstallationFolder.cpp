@@ -106,7 +106,8 @@ wstring GetChecksum(path filePath)
 		return L"CryptCreateHash() failed. " + get_last_error_or_default(GetLastError());
 	}
 
-	while (bResult = ReadFile(hFile, rgbFile, bufferSize, &cbRead, NULL))
+	bResult = ReadFile(hFile, rgbFile, bufferSize, &cbRead, NULL);
+	while (bResult)
 	{
 		if (0 == cbRead)
 		{
