@@ -27,7 +27,14 @@ void LayoutAssignedWindows::Dismiss(HWND window)
 {
     if (m_windowIndexSet.contains(window))
     {
-        m_windowsByIndexSets.erase(m_windowIndexSet[window]);
+        const auto& indexSet = m_windowIndexSet.at(window);
+        auto& windows = m_windowsByIndexSets[indexSet];
+        windows.erase(find(begin(windows), end(windows), window));
+        if (windows.empty())
+        {
+            m_windowsByIndexSets.erase(m_windowIndexSet[window]);
+        }
+        
         m_windowIndexSet.erase(window);
     }
     
