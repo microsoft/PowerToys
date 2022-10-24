@@ -74,7 +74,7 @@ namespace JsonUtils
     struct AppliedLayoutsJSON
     {
     private:
-        static std::optional<FancyZonesDataTypes::WorkAreaId> WorkAreaIdFromJson(const json::JsonObject& json)
+        static std::pair<std::optional<FancyZonesDataTypes::WorkAreaId>, bool> WorkAreaIdFromJson(const json::JsonObject& json)
         {
             try
             {
@@ -90,7 +90,7 @@ namespace JsonUtils
                     auto virtualDesktopGuid = FancyZonesUtils::GuidFromString(virtualDesktop);
                     if (!virtualDesktopGuid)
                     {
-                        return std::nullopt;
+                        return { std::nullopt, false };
                     }
 
                     FancyZonesDataTypes::DeviceId deviceId{};
@@ -105,16 +105,17 @@ namespace JsonUtils
                         deviceId.instanceId = monitorInstance;
                         deviceId.number = monitorNumber;
                     }
-                    
+
                     FancyZonesDataTypes::MonitorId monitorId{
                         .deviceId = deviceId,
                         .serialNumber = monitorSerialNumber
                     };
 
-                    return FancyZonesDataTypes::WorkAreaId{
-                        .monitorId = monitorId,
-                        .virtualDesktopId = virtualDesktopGuid.value(),
-                    };
+                    return { FancyZonesDataTypes::WorkAreaId{
+                                 .monitorId = monitorId,
+                                 .virtualDesktopId = virtualDesktopGuid.value(),
+                             },
+                             false };
                 }
                 else
                 {
@@ -122,24 +123,26 @@ namespace JsonUtils
                     auto bcDeviceId = BackwardsCompatibility::DeviceIdData::ParseDeviceId(deviceIdStr);
                     if (!bcDeviceId)
                     {
-                        return std::nullopt;
+                        return { std::nullopt, false };
                     }
 
-                    return FancyZonesDataTypes::WorkAreaId{
-                        .monitorId = { .deviceId = MonitorUtils::Display::ConvertObsoleteDeviceId(bcDeviceId->deviceName) },
-                        .virtualDesktopId = bcDeviceId->virtualDesktopId,
-                    };
+                    return { FancyZonesDataTypes::WorkAreaId{
+                                 .monitorId = { .deviceId = MonitorUtils::Display::ConvertObsoleteDeviceId(bcDeviceId->deviceName) },
+                                 .virtualDesktopId = bcDeviceId->virtualDesktopId,
+                             },
+                             true };
                 }
             }
             catch (const winrt::hresult_error&)
             {
-                return std::nullopt;
+                return { std::nullopt, false };
             }
         }
 
     public:
         FancyZonesDataTypes::WorkAreaId workAreaId;
         Layout data{};
+        bool hasResolutionInId = false;
 
         static std::optional<AppliedLayoutsJSON> FromJson(const json::JsonObject& json)
         {
@@ -148,7 +151,7 @@ namespace JsonUtils
                 AppliedLayoutsJSON result;
 
                 auto deviceIdOpt = WorkAreaIdFromJson(json);
-                if (!deviceIdOpt.has_value())
+                if (!deviceIdOpt.first.has_value())
                 {
                     return std::nullopt;
                 }
@@ -159,8 +162,10 @@ namespace JsonUtils
                     return std::nullopt;
                 }
                 
-                result.workAreaId = std::move(deviceIdOpt.value());
+                result.workAreaId = std::move(deviceIdOpt.first.value());
                 result.data = std::move(layout.value());
+                result.hasResolutionInId = deviceIdOpt.second;
+
                 return result;
             }
             catch (const winrt::hresult_error&)
@@ -201,8 +206,13 @@ namespace JsonUtils
             if (auto obj = AppliedLayoutsJSON::FromJson(layouts.GetObjectAt(i)); obj.has_value())
             {
                 // skip default layouts in case if they were applied to different resolutions on the same monitor.
-                // NOTE: keep the default layout check for users who update PT version from the v0.57 
-                if (!map.contains(obj->workAreaId) && !isLayoutDefault(obj->data))
+                // NOTE: keep the default layout check for users who update PT version from the v0.57
+                if (obj->hasResolutionInId && isLayoutDefault(obj->data))
+                {
+                    continue;
+                }
+
+                if (!map.contains(obj->workAreaId))
                 {
                     map[obj->workAreaId] = std::move(obj->data);
                 }
