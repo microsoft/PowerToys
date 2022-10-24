@@ -25,33 +25,24 @@ void LayoutWindows::Assign(HWND window, const ZoneIndexSet& zones)
 
 void LayoutWindows::Dismiss(HWND window)
 {
-    auto& indexSet = m_windowIndexSet[window];
-    if (!indexSet.empty())
+    if (m_windowIndexSet.contains(window))
     {
-        auto& windows = m_windowsByIndexSets[indexSet];
-        windows.erase(find(begin(windows), end(windows), window));
-        if (windows.empty())
-        {
-            m_windowsByIndexSets.erase(indexSet);
-        }
-
-        indexSet.clear();
+        m_windowsByIndexSets.erase(m_windowIndexSet[window]);
+        m_windowIndexSet.erase(window);
     }
-
+    
     FancyZonesWindowProperties::SetTabSortKeyWithinZone(window, std::nullopt);
 }
 
 ZoneIndexSet LayoutWindows::GetZoneIndexSetFromWindow(HWND window) const noexcept
 {
     auto it = m_windowIndexSet.find(window);
-    if (it == m_windowIndexSet.end())
-    {
-        return {};
-    }
-    else
+    if (it != m_windowIndexSet.end())
     {
         return it->second;
     }
+    
+    return {};
 }
 
 bool LayoutWindows::IsZoneEmpty(ZoneIndex zoneIndex) const noexcept
