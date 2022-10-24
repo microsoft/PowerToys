@@ -78,6 +78,10 @@ void LayoutAssignedWindows::CycleWindows(HWND window, bool reverse)
     for (;;)
     {
         auto next = GetNextZoneWindow(indexSet, window, reverse);
+        if (!next)
+        {
+            break;
+        }
 
         // Determine whether the window still exists
         if (!IsWindow(next))
@@ -149,15 +153,25 @@ void LayoutAssignedWindows::InsertWindowIntoZone(HWND window, std::optional<size
 
 HWND LayoutAssignedWindows::GetNextZoneWindow(ZoneIndexSet indexSet, HWND current, bool reverse) noexcept
 {
-    const auto& tabs = m_windowsByIndexSets[indexSet];
-    auto tabIt = std::find(tabs.begin(), tabs.end(), current);
+    if (!m_windowsByIndexSets.contains(indexSet))
+    {
+        return nullptr;
+    }
+
+    const auto& assignedWindows = m_windowsByIndexSets[indexSet];
+    if (assignedWindows.empty())
+    {
+        return nullptr;
+    }
+
+    auto iter = std::find(assignedWindows.begin(), assignedWindows.end(), current);
     if (!reverse)
     {
-        ++tabIt;
-        return tabIt == tabs.end() ? tabs.front() : *tabIt;
+        ++iter;
+        return iter == assignedWindows.end() ? assignedWindows.front() : *iter;
     }
     else
     {
-        return tabIt == tabs.begin() ? tabs.back() : *(--tabIt);
+        return iter == assignedWindows.begin() ? assignedWindows.back() : *(--iter);
     }
 }
