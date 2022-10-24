@@ -80,8 +80,8 @@ namespace DefaultLayoutsJsonUtils
 
     struct DefaultLayoutJSON
     {
-        MonitorConfiguraionType monitorConfigurationType;
-        Layout layout;
+        MonitorConfiguraionType monitorConfigurationType{ MonitorConfiguraionType::Horizontal };
+        Layout layout{};
 
         static std::optional<DefaultLayoutJSON> FromJson(const json::JsonObject& json)
         {
