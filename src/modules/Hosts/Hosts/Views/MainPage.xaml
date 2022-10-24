@@ -124,7 +124,18 @@
                         </Flyout>
                     </Button.Flyout>
                 </Button>
-
+                
+                <Button
+                    x:Uid="OpenHostsFileBtn"
+                    Height="36"
+                    Command="{x:Bind ViewModel.OpenHostsFileCommand}"
+                    Style="{StaticResource SubtleButtonStyle}">
+                    <FontIcon
+                        FontFamily="{StaticResource SymbolThemeFontFamily}"
+                        FontSize="14"
+                        Glyph="&#xe8a7;" />
+                </Button>
+                
                 <Button
                     x:Uid="SettingsBtn"
                     Height="36"
