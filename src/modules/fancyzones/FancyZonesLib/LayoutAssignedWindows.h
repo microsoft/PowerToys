@@ -2,7 +2,7 @@
 
 #include <FancyZonesLib/Zone.h>
 
-class LayoutWindows
+class LayoutAssignedWindows
 {
 public:
     struct ExtendWindowModeData
@@ -12,8 +12,8 @@ public:
     };
 
 public :
-    LayoutWindows(){};
-    ~LayoutWindows() = default;
+    LayoutAssignedWindows(){};
+    ~LayoutAssignedWindows() = default;
 
     void Assign(HWND window, const ZoneIndexSet& zones);
     void Dismiss(HWND window);

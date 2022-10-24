@@ -5,7 +5,7 @@
 #include <FancyZonesLib/FancyZonesData/LayoutDefaults.h>
 #include <FancyZonesLib/FancyZonesData/CustomLayouts.h>
 #include <FancyZonesLib/ZoneIndexSetBitmask.h>
-#include <FancyZonesLib/LayoutWindows.h>
+#include <FancyZonesLib/LayoutAssignedWindows.h>
 #include <FancyZonesLib/Settings.h>
 #include <FancyZonesLib/util.h>
 
@@ -16,11 +16,11 @@ using namespace FancyZonesDataTypes;
 
 namespace FancyZonesUnitTests
 {
-    TEST_CLASS (LayoutWindowsUnitTests)
+    TEST_CLASS (LayoutAssignedWindowsUnitTests)
     {
         TEST_METHOD (ZoneIndexFromWindowUnknown)
         {
-            LayoutWindows layoutWindows{};
+            LayoutAssignedWindows layoutWindows{};
 
             layoutWindows.Assign(Mocks::Window(), { 0 });
 
@@ -30,7 +30,7 @@ namespace FancyZonesUnitTests
 
         TEST_METHOD (ZoneIndexFromWindowNull)
         {
-            LayoutWindows layoutWindows{};
+            LayoutAssignedWindows layoutWindows{};
 
             layoutWindows.Assign(Mocks::Window(), { 0 });
 
@@ -42,7 +42,7 @@ namespace FancyZonesUnitTests
         {
             HWND window = Mocks::Window();
 
-            LayoutWindows layoutWindows{};
+            LayoutAssignedWindows layoutWindows{};
             layoutWindows.Assign(window, { 1, 2, 3 });
 
             Assert::IsTrue(std::vector<ZoneIndex>{ 1, 2, 3 } == layoutWindows.GetZoneIndexSetFromWindow(window));
@@ -52,7 +52,7 @@ namespace FancyZonesUnitTests
         {
             HWND window = Mocks::Window();
 
-            LayoutWindows layoutWindows{};
+            LayoutAssignedWindows layoutWindows{};
             layoutWindows.Assign(window, {});
 
             Assert::IsTrue(std::vector<ZoneIndex>{} == layoutWindows.GetZoneIndexSetFromWindow(window));
@@ -60,7 +60,7 @@ namespace FancyZonesUnitTests
 
         TEST_METHOD (AssignSeveralTimesSameWindow)
         {
-            LayoutWindows layoutWindows{};
+            LayoutAssignedWindows layoutWindows{};
             HWND window = Mocks::Window();
 
             layoutWindows.Assign(window, { 0 });
@@ -75,7 +75,7 @@ namespace FancyZonesUnitTests
 
         TEST_METHOD (DismissWindow)
         {
-            LayoutWindows layoutWindows{};
+            LayoutAssignedWindows layoutWindows{};
             HWND window = Mocks::Window();
 
             layoutWindows.Assign(window, { 0 });
@@ -86,7 +86,7 @@ namespace FancyZonesUnitTests
 
         TEST_METHOD (Empty)
         {
-            LayoutWindows layoutWindows{};
+            LayoutAssignedWindows layoutWindows{};
             HWND window = Mocks::Window();
 
             layoutWindows.Assign(window, { 0 });

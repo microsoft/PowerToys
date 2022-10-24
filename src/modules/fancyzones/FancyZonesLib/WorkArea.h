@@ -2,7 +2,7 @@
 
 #include <FancyZonesLib/FancyZonesDataTypes.h>
 #include <FancyZonesLib/Layout.h>
-#include <FancyZonesLib/LayoutWindows.h>
+#include <FancyZonesLib/LayoutAssignedWindows.h>
 #include <FancyZonesLib/util.h>
 
 class ZonesOverlay;
@@ -57,7 +57,7 @@ public:
 
     FancyZonesDataTypes::WorkAreaId UniqueId() const noexcept { return { m_uniqueId }; }
     const std::unique_ptr<Layout>& GetLayout() const noexcept { return m_layout; }
-    const std::unique_ptr<LayoutWindows>& GetLayoutWindows() const noexcept { return m_layoutWindows; }
+    const std::unique_ptr<LayoutAssignedWindows>& GetLayoutWindows() const noexcept { return m_layoutWindows; }
     
     ZoneIndexSet GetWindowZoneIndexes(HWND window) const noexcept;
     
@@ -99,7 +99,7 @@ private:
     HWND m_window{}; // Hidden tool window used to represent current monitor desktop work area.
     HWND m_windowMoveSize{};
     std::unique_ptr<Layout> m_layout;
-    std::unique_ptr<LayoutWindows> m_layoutWindows;
+    std::unique_ptr<LayoutAssignedWindows> m_layoutWindows;
     ZoneIndexSet m_initialHighlightZone;
     ZoneIndexSet m_highlightZone;
     WPARAM m_keyLast{};

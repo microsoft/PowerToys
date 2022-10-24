@@ -6,6 +6,7 @@
 #include <FancyZonesLib/FancyZonesData/AppliedLayouts.h>
 #include <FancyZonesLib/FancyZonesData/AppZoneHistory.h>
 #include <FancyZonesLib/FancyZonesData/DefaultLayouts.h>
+#include <FancyZonesLib/LayoutAssignedWindows.h>
 #include "Util.h"
 
 #include <common/utils/process_path.h>

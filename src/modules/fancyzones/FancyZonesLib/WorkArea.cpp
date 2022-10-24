@@ -578,7 +578,7 @@ void WorkArea::CalculateZoneSet() noexcept
 
     m_layout = std::make_unique<Layout>(appliedLayout.value());
     m_layout->Init(m_workAreaRect, m_monitor);
-    m_layoutWindows = std::make_unique<LayoutWindows>();
+    m_layoutWindows = std::make_unique<LayoutAssignedWindows>();
 }
 
 LRESULT WorkArea::WndProc(UINT message, WPARAM wparam, LPARAM lparam) noexcept

@@ -1,11 +1,11 @@
 #include "pch.h"
-#include "LayoutWindows.h"
+#include "LayoutAssignedWindows.h"
 
 #include <FancyZonesLib/FancyZonesWindowProperties.h>
 #include <FancyZonesLib/Settings.h>
 #include <FancyZonesLib/WindowUtils.h>
 
-void LayoutWindows::Assign(HWND window, const ZoneIndexSet& zones)
+void LayoutAssignedWindows::Assign(HWND window, const ZoneIndexSet& zones)
 {
     Dismiss(window);
 
@@ -23,7 +23,7 @@ void LayoutWindows::Assign(HWND window, const ZoneIndexSet& zones)
     InsertWindowIntoZone(window, tabSortKeyWithinZone, zones);
 }
 
-void LayoutWindows::Dismiss(HWND window)
+void LayoutAssignedWindows::Dismiss(HWND window)
 {
     if (m_windowIndexSet.contains(window))
     {
@@ -34,7 +34,7 @@ void LayoutWindows::Dismiss(HWND window)
     FancyZonesWindowProperties::SetTabSortKeyWithinZone(window, std::nullopt);
 }
 
-ZoneIndexSet LayoutWindows::GetZoneIndexSetFromWindow(HWND window) const noexcept
+ZoneIndexSet LayoutAssignedWindows::GetZoneIndexSetFromWindow(HWND window) const noexcept
 {
     auto it = m_windowIndexSet.find(window);
     if (it != m_windowIndexSet.end())
@@ -45,7 +45,7 @@ ZoneIndexSet LayoutWindows::GetZoneIndexSetFromWindow(HWND window) const noexcep
     return {};
 }
 
-bool LayoutWindows::IsZoneEmpty(ZoneIndex zoneIndex) const noexcept
+bool LayoutAssignedWindows::IsZoneEmpty(ZoneIndex zoneIndex) const noexcept
 {
     for (auto& [window, zones] : m_windowIndexSet)
     {
@@ -58,7 +58,7 @@ bool LayoutWindows::IsZoneEmpty(ZoneIndex zoneIndex) const noexcept
     return true;
 }
 
-void LayoutWindows::CycleWindows(HWND window, bool reverse)
+void LayoutAssignedWindows::CycleWindows(HWND window, bool reverse)
 {
     auto indexSet = GetZoneIndexSetFromWindow(window);
 
@@ -85,7 +85,7 @@ void LayoutWindows::CycleWindows(HWND window, bool reverse)
     }
 }
 
-const std::unique_ptr<LayoutWindows::ExtendWindowModeData>& LayoutWindows::ExtendWindowMode()
+const std::unique_ptr<LayoutAssignedWindows::ExtendWindowModeData>& LayoutAssignedWindows::ExtendWindowMode()
 {
     if (!m_extendMode)
     {
@@ -95,12 +95,12 @@ const std::unique_ptr<LayoutWindows::ExtendWindowModeData>& LayoutWindows::Exten
     return m_extendMode;
 }
 
-void LayoutWindows::FinishExtendWindowMode()
+void LayoutAssignedWindows::FinishExtendWindowMode()
 {
     m_extendMode = nullptr;
 }
 
-void LayoutWindows::InsertWindowIntoZone(HWND window, std::optional<size_t> tabSortKeyWithinZone, const ZoneIndexSet& indexSet)
+void LayoutAssignedWindows::InsertWindowIntoZone(HWND window, std::optional<size_t> tabSortKeyWithinZone, const ZoneIndexSet& indexSet)
 {
     if (tabSortKeyWithinZone.has_value())
     {
@@ -140,7 +140,7 @@ void LayoutWindows::InsertWindowIntoZone(HWND window, std::optional<size_t> tabS
     FancyZonesWindowProperties::SetTabSortKeyWithinZone(window, tabSortKeyWithinZone);
 }
 
-HWND LayoutWindows::GetNextZoneWindow(ZoneIndexSet indexSet, HWND current, bool reverse) noexcept
+HWND LayoutAssignedWindows::GetNextZoneWindow(ZoneIndexSet indexSet, HWND current, bool reverse) noexcept
 {
     const auto& tabs = m_windowsByIndexSets[indexSet];
     auto tabIt = std::find(tabs.begin(), tabs.end(), current);

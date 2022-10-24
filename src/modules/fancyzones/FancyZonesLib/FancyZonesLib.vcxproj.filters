@@ -153,7 +153,7 @@
     <ClInclude Include="Layout.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="LayoutWindows.h">
+    <ClInclude Include="LayoutAssignedWindows.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
@@ -248,7 +248,7 @@
     <ClCompile Include="Layout.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="LayoutWindows.cpp">
+    <ClCompile Include="LayoutAssignedWindows.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

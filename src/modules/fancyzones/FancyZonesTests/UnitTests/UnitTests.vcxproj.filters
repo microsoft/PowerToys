@@ -57,7 +57,7 @@
     <ClCompile Include="Layout.Spec.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="LayoutWindows.Spec.cpp">
+    <ClCompile Include="LayoutAssignedWindows.Spec.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="DefaultLayoutsTests.Spec.cpp">
