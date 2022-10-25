@@ -5,7 +5,7 @@ Since version 0.64, PowerToys is released on GitHub with GroupPolicyObject files
 ## How to install
 
 - Copy "PowerToys.admx" to "C:\Windows\PolicyDefinitions" or equivalent path if Windows is installed in another path.
-- Copy "PowerToys.adml" to "C:\Windows\PolicyDefinitions\en-US" or equivalent path if Windows is installed in another path. If you have a different language installed, copy into your language folder as well.
+- Copy "PowerToys.adml" to "C:\Windows\PolicyDefinitions\en-US" or equivalent path if Windows is installed in another path.
 
 The "Local Group Policy Editor" (gpedit.msc) will now show PowerToys policies under "Local Computer Policy" > "Computer Configuration" > "Administrative Templates" > "Windows Components" > "Microsoft PowerToys".
 
