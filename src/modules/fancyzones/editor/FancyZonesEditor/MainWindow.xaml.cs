@@ -587,7 +587,49 @@ namespace FancyZonesEditor
                     FrameworkElementAutomationPeer.FromElement(SensitivityInput) as SliderAutomationPeer;
                 string activityId = "sliderValueChanged";
 
-                string value = string.Format(CultureInfo.CurrentCulture, Properties.Resources.Slider_Value, SensitivityInput.Value);
+                string value = string.Format(CultureInfo.CurrentCulture, Properties.Resources.Pixel_Value, SensitivityInput.Value);
+
+                if (peer != null && value != null)
+                {
+                    peer.RaiseNotificationEvent(
+                        AutomationNotificationKind.ActionCompleted,
+                        AutomationNotificationProcessing.ImportantMostRecent,
+                        value,
+                        activityId);
+                }
+            }
+        }
+
+        private void TemplateZoneCount_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
+        {
+            if (AutomationPeer.ListenerExists(AutomationEvents.PropertyChanged))
+            {
+                SliderAutomationPeer peer =
+                    FrameworkElementAutomationPeer.FromElement(TemplateZoneCount) as SliderAutomationPeer;
+                string activityId = "templateZoneCountValueChanged";
+
+                string value = string.Format(CultureInfo.CurrentCulture, Properties.Resources.Template_Zone_Count_Value, TemplateZoneCount.Value);
+
+                if (peer != null && value != null)
+                {
+                    peer.RaiseNotificationEvent(
+                        AutomationNotificationKind.ActionCompleted,
+                        AutomationNotificationProcessing.ImportantMostRecent,
+                        value,
+                        activityId);
+                }
+            }
+        }
+
+        private void Spacing_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
+        {
+            if (AutomationPeer.ListenerExists(AutomationEvents.PropertyChanged))
+            {
+                SliderAutomationPeer peer =
+                    FrameworkElementAutomationPeer.FromElement(Spacing) as SliderAutomationPeer;
+                string activityId = "spacingValueChanged";
+
+                string value = string.Format(CultureInfo.CurrentCulture, Properties.Resources.Pixel_Value, Spacing.Value);
 
                 if (peer != null && value != null)
                 {

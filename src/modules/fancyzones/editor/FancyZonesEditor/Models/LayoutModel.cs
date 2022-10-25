@@ -288,6 +288,22 @@ namespace FancyZonesEditor.Models
             }
         }
 
+        public int TemplateZoneCountMinimum
+        {
+            get
+            {
+                return 1;
+            }
+        }
+
+        public int TemplateZoneCountMaximum
+        {
+            get
+            {
+                return 128;
+            }
+        }
+
         private int _zoneCount = LayoutSettings.DefaultZoneCount;
 
         public bool IsZoneAddingAllowed
