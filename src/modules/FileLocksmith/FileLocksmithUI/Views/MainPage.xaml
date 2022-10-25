@@ -26,6 +26,7 @@
         <converters:FileCountConverter x:Key="fileCountConverter" />
         <converters:PidToIconConverter x:Key="pidToIconConverter" />
         <converters:PidToUserConverter x:Key="pidToUserConverter" />
+        <converters:FileListToDescriptionConverter x:Key="fileListToDescriptionConverter" />
     </Page.Resources>
 
     <interactivity:Interaction.Behaviors>
@@ -42,7 +43,13 @@
 
         <Grid Padding="18,0,18,4" VerticalAlignment="Bottom">
             <!--<TextBlock Margin="0,2,0,0" Text="Current proccesses:" Style="{ThemeResource BodyStrongTextBlockStyle}"/>-->
-
+            <TextBlock
+                Margin="0,2,0,0"
+                HorizontalAlignment="Left"
+                Style="{ThemeResource BodyStrongTextBlockStyle}"
+                Text="{x:Bind ViewModel.Paths, Converter={StaticResource fileListToDescriptionConverter}}">
+            </TextBlock>
+            
             <StackPanel
                 HorizontalAlignment="Right"
                 VerticalAlignment="Bottom"

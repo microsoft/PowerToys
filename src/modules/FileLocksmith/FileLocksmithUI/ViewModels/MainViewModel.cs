@@ -59,6 +59,16 @@ namespace PowerToys.FileLocksmithUI.ViewModels
             }
         }
 
+        public string[] Paths
+        {
+            get => paths;
+            set
+            {
+                paths = value;
+                OnPropertyChanged(nameof(Paths));
+            }
+        }
+
         public MainViewModel()
         {
             paths = NativeMethods.ReadPathsFromFile();
