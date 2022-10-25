@@ -531,7 +531,7 @@ jobs:
   - task: PublishBuildArtifacts@1
     displayName: 'Publish Artifact: GPO Files'
     inputs:
-      PathtoPublish: doc\gpo
+      PathtoPublish: doc\gpo\assets
       ArtifactName: GroupPolicyObjectsFiles
 
 
