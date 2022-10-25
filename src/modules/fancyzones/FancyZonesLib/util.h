@@ -45,6 +45,7 @@ namespace FancyZonesUtils
 
     inline void FillRectARGB(wil::unique_hdc& hdc, RECT const* prcFill, BYTE alpha, COLORREF color, bool blendAlpha)
     {
+        UNREFERENCED_PARAMETER(blendAlpha);
         BITMAPINFO bi;
         ZeroMemory(&bi, sizeof(bi));
         bi.bmiHeader.biSize = sizeof(BITMAPINFOHEADER);
@@ -105,6 +106,8 @@ namespace FancyZonesUtils
         result_t result;
 
         auto enumMonitors = [](HMONITOR monitor, HDC hdc, LPRECT pRect, LPARAM param) -> BOOL {
+            UNREFERENCED_PARAMETER(hdc);
+            UNREFERENCED_PARAMETER(pRect);
             MONITORINFOEX mi;
             mi.cbSize = sizeof(mi);
             result_t& result = *reinterpret_cast<result_t*>(param);
@@ -127,6 +130,8 @@ namespace FancyZonesUtils
         result_t result;
 
         auto enumMonitors = [](HMONITOR monitor, HDC hdc, LPRECT pRect, LPARAM param) -> BOOL {
+            UNREFERENCED_PARAMETER(hdc);
+            UNREFERENCED_PARAMETER(pRect);
             MONITORINFOEX mi;
             mi.cbSize = sizeof(mi);
             result_t& result = *reinterpret_cast<result_t*>(param);

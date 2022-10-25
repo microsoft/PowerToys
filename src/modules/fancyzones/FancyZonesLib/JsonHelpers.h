@@ -112,6 +112,7 @@ namespace std
     {
         size_t operator()(const BackwardsCompatibility::DeviceIdData& Value) const
         {
+            UNREFERENCED_PARAMETER(Value);
             return 0;
         }
     };

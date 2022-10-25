@@ -81,5 +81,11 @@ int APIENTRY wWinMain(
         }
         CoUninitialize();
     }
+
+    // avoid warning 4100
+    hPrevInstance;
+    lpCmdLine;
+    nCmdShow;
+
     return 0;
 }

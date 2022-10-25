@@ -108,6 +108,9 @@ UINT MockedInput::SendVirtualInput(UINT cInputs, LPINPUT pInputs, int cbSize)
         }
     }
 
+    // avoid warning 4100
+    cbSize;
+
     return cInputs;
 }
 

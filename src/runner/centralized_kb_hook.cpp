@@ -62,6 +62,8 @@ namespace CentralizedKeyboardHook
         UINT_PTR idTimer,
         DWORD dwTime)
     {
+        UNREFERENCED_PARAMETER(message);
+        UNREFERENCED_PARAMETER(dwTime);
         std::multiset<PressedKeyDescriptor> copy;
         {
             // Make a copy, to look for the action to call.

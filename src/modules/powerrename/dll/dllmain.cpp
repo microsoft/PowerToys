@@ -302,6 +302,7 @@ public:
     // This can be used to spawn more complex editors.
     virtual void call_custom_action(const wchar_t* action) override
     {
+        UNREFERENCED_PARAMETER(action);
     }
 
     // Destroy the powertoy and free memory

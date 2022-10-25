@@ -39,6 +39,9 @@ void HotkeyManager::KeyboardEventProc(KeyboardEvent ^ ev)
         dummyEvent[0].ki.dwFlags = KEYEVENTF_KEYUP;
         SendInput(1, dummyEvent, sizeof(INPUT));
     }
+
+    // avoid warning 4100
+    ev;
 }
 
 // Hotkeys are intended to be global, therefore they are always active no matter the

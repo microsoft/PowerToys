@@ -19,6 +19,9 @@ const std::wstring fancyZonesPath = L"modules\\FancyZones\\PowerToys.FancyZones.
 
 BOOL APIENTRY DllMain(HMODULE hModule, DWORD ul_reason_for_call, LPVOID lpReserved)
 {
+    UNREFERENCED_PARAMETER(hModule);
+    UNREFERENCED_PARAMETER(lpReserved);
+
     switch (ul_reason_for_call)
     {
     case DLL_PROCESS_ATTACH:
@@ -61,6 +64,8 @@ public:
     // These are the settings shown on the settings page along with their current values.
     virtual bool get_config(_Out_ PWSTR buffer, _Out_ int* buffer_size) override
     {
+        UNREFERENCED_PARAMETER(buffer);
+        UNREFERENCED_PARAMETER(buffer_size);
         return false;
     }
 
@@ -68,12 +73,14 @@ public:
     // This is called when the user hits Save on the settings page.
     virtual void set_config(PCWSTR config) override
     {
+        UNREFERENCED_PARAMETER(config);
     }
 
     // Signal from the Settings editor to call a custom action.
     // This can be used to spawn more complex editors.
     virtual void call_custom_action(const wchar_t* action) override
     {
+        UNREFERENCED_PARAMETER(action);
         SetEvent(m_toggleEditorEvent);
     }
 

@@ -249,6 +249,7 @@ namespace std
     {
         size_t operator()(const FancyZonesDataTypes::WorkAreaId& Value) const
         {
+            UNREFERENCED_PARAMETER(Value);
             return 0;
         }
     };

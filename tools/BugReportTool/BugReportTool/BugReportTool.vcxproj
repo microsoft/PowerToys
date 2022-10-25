@@ -9,6 +9,7 @@
     <ProjectName>BugReportTool</ProjectName>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
   <PropertyGroup Label="Configuration">
     <PlatformToolset>v143</PlatformToolset>
   </PropertyGroup>
@@ -23,7 +24,7 @@
   <PropertyGroup Condition="'$(Configuration)'=='Release'">
     <TargetName>PowerToys.$(ProjectName)</TargetName>
   </PropertyGroup>
-  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  
   <ImportGroup Label="ExtensionSettings">
   </ImportGroup>
   <ImportGroup Label="Shared">
@@ -45,7 +46,7 @@
   <ItemGroup>
     <ClCompile Include="..\..\..\deps\cziplib\src\zip.c">
       <!-- Disabling warnings for external code -->
-	  <DisableSpecificWarnings>26451;4267;4244;%(DisableSpecificWarnings)</DisableSpecificWarnings>
+	  <DisableSpecificWarnings>4706;26451;4267;4244;%(DisableSpecificWarnings)</DisableSpecificWarnings>
     </ClCompile>
     <ClCompile Include="EventViewer.cpp" />
     <ClCompile Include="InstallationFolder.cpp" />

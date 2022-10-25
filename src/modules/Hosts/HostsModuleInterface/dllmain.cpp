@@ -16,6 +16,8 @@ extern "C" IMAGE_DOS_HEADER __ImageBase;
 
 BOOL APIENTRY DllMain(HMODULE hModule, DWORD ul_reason_for_call, LPVOID lpReserved)
 {
+    UNREFERENCED_PARAMETER(hModule);
+    UNREFERENCED_PARAMETER(lpReserved);
     switch (ul_reason_for_call)
     {
     case DLL_PROCESS_ATTACH:
@@ -143,6 +145,8 @@ public:
 
     virtual bool get_config(wchar_t* buffer, int* buffer_size) override
     {
+        UNREFERENCED_PARAMETER(buffer);
+        UNREFERENCED_PARAMETER(buffer_size);
         return false;
     }
 
@@ -175,6 +179,7 @@ public:
 
     virtual void set_config(const wchar_t* config) override
     {
+        UNREFERENCED_PARAMETER(config);
     }
 
     virtual bool is_enabled() override

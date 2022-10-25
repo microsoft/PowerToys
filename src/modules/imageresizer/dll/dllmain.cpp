@@ -92,10 +92,16 @@ public:
 
     // Signal from the Settings editor to call a custom action.
     // This can be used to spawn more complex editors.
-    virtual void call_custom_action(const wchar_t* action) override {}
+    virtual void call_custom_action(const wchar_t* action) override
+    {
+        UNREFERENCED_PARAMETER(action);
+    }
 
     // Called by the runner to pass the updated settings values as a serialized JSON.
-    virtual void set_config(const wchar_t* config) override {}
+    virtual void set_config(const wchar_t* config) override
+    {
+        UNREFERENCED_PARAMETER(config);
+    }
 
     // Enable the powertoy
     virtual void enable()
@@ -113,7 +119,6 @@ public:
                 package::RegisterSparsePackage(path, packageUri);
             }
         }
-
 
         Trace::EnableImageResizer(m_enabled);
     }

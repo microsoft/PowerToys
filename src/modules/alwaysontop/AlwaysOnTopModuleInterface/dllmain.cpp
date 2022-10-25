@@ -46,6 +46,10 @@ BOOL APIENTRY DllMain(HMODULE hModule, DWORD ul_reason_for_call, LPVOID lpReserv
         Trace::UnregisterProvider();
         break;
     }
+
+    // avoid warning 4100
+    hModule;
+    lpReserved;
     return TRUE;
 }
 
@@ -120,6 +124,9 @@ public:
 
             return true;
         }
+
+        // avoid warning 4100
+        hotkeyId;
 
         return false;
     }

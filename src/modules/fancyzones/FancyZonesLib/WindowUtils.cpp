@@ -40,6 +40,8 @@ namespace
 {   
     BOOL CALLBACK saveDisplayToVector(HMONITOR monitor, HDC hdc, LPRECT rect, LPARAM data)
     {
+        UNREFERENCED_PARAMETER(hdc);
+        UNREFERENCED_PARAMETER(rect);
         reinterpret_cast<std::vector<HMONITOR>*>(data)->emplace_back(monitor);
         return true;
     }

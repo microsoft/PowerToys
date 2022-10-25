@@ -133,5 +133,11 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, 
     window.ShowWindow();
     run_message_loop();
     Trace::UnregisterProvider();
+
+    // avoid warning 4100
+    nCmdShow;
+    hPrevInstance;
+    hInstance;
+
     return 0;
 }

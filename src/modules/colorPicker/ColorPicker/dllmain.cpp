@@ -28,6 +28,11 @@ BOOL APIENTRY DllMain(HMODULE hModule,
         Trace::UnregisterProvider();
         break;
     }
+
+    // avoid warning 4100
+    hModule;
+    lpReserved;
+
     return TRUE;
 }
 
@@ -210,6 +215,8 @@ public:
 
     virtual void call_custom_action(const wchar_t* action) override
     {
+        // avoid warning 4100
+        action;
     }
 
     virtual void set_config(const wchar_t* config) override
@@ -268,6 +275,9 @@ public:
             SetEvent(m_hInvokeEvent);
             return true;
         }
+
+        // avoid warning 4100
+        hotkeyId;
 
         return false;      
     }

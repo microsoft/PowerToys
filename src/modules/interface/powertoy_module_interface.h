@@ -68,7 +68,10 @@ public:
     /* Sets the configuration values. */
     virtual void set_config(const wchar_t* config) = 0;
     /* Call custom action from settings screen. */
-    virtual void call_custom_action(const wchar_t* action){};
+    virtual void call_custom_action(const wchar_t* action){
+        // avoid warning 4100 
+        action;
+    };
     /* Enables the PowerToy. */
     virtual void enable() = 0;
     /* Disables the PowerToy, should free as much memory as possible. */
@@ -83,7 +86,12 @@ public:
      * Modules do not need to override this method, it will return zero by default.
      * This method is called even when the module is disabled.
      */
-    virtual size_t get_hotkeys(Hotkey* buffer, size_t buffer_size) { return 0; }
+    virtual size_t get_hotkeys(Hotkey* buffer, size_t buffer_size) {
+        // avoid warning 4100
+        buffer;
+        buffer_size;
+        return 0;
+    }
 
     virtual std::optional<HotkeyEx> GetHotkeyEx()
     {
@@ -97,7 +105,11 @@ public:
     /* Called when one of the registered hotkeys is pressed. Should return true
      * if the key press is to be swallowed.
      */
-    virtual bool on_hotkey(size_t hotkeyId) { return false; }
+    virtual bool on_hotkey(size_t hotkeyId) {
+        // avoid warning 4100
+        hotkeyId;
+        return false;
+    }
 
     /* These are for enabling the legacy behavior of showing the shortcut guide after pressing the win key.
      * keep_track_of_pressed_win_key returns true if the module wants to keep track of the win key being pressed.

@@ -22,7 +22,7 @@ public:
             return false;
         }
 #endif
-
+        UNREFERENCED_PARAMETER(hinstance);
         InitLayout(parentUniqueId);
         return true;
     }

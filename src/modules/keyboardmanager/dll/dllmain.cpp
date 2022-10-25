@@ -23,6 +23,11 @@ BOOL APIENTRY DllMain(HMODULE hModule, DWORD ul_reason_for_call, LPVOID lpReserv
         Trace::UnregisterProvider();
         break;
     }
+
+    // avoid warning 4100
+    hModule;
+    lpReserved;
+
     return TRUE;
 }
 
@@ -91,6 +96,8 @@ public:
     // Signal from the Settings editor to call a custom action.
     virtual void call_custom_action(const wchar_t* action) override
     {
+        // avoid warning 4100
+        action;
     }
 
     // Called by the runner to pass the updated settings values as a serialized JSON.

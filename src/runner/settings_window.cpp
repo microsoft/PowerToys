@@ -463,6 +463,7 @@ LExit:
 void bring_settings_to_front()
 {
     auto callback = [](HWND hwnd, LPARAM data) -> BOOL {
+        UNREFERENCED_PARAMETER(data);
         DWORD processId;
         if (GetWindowThreadProcessId(hwnd, &processId) && processId == g_settings_process_id)
         {
