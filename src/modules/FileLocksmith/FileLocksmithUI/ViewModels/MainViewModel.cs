@@ -61,6 +61,7 @@ namespace PowerToys.FileLocksmithUI.ViewModels
 
         public MainViewModel()
         {
+            paths = NativeMethods.ReadPathsFromFile();
             LoadProcessesCommand = new AsyncRelayCommand(LoadProcessesAsync);
         }
 
@@ -68,8 +69,6 @@ namespace PowerToys.FileLocksmithUI.ViewModels
         {
             IsLoading = true;
             Processes.Clear();
-
-            paths = NativeMethods.ReadPathsFromFile();
 
             foreach (ProcessResult p in await FindProcesses(paths))
             {
