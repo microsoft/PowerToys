@@ -12,7 +12,7 @@
     </category>
   </categories>
   <policies>
-    <policy name="ConfigureEnabledUtilityAlwaysOnTop" class="Machine" displayName="$(string.ConfigureEnabledUtilityAlwaysOnTop)" explainText="$(string.ConfigureEnabledUtilityDescription)" key="Software\Policies\Microsoft\Windows\PowerToys" valueName="ConfigureEnabledUtilityAlwaysOnTop">
+    <policy name="ConfigureEnabledUtilityAlwaysOnTop" class="Machine" displayName="$(string.ConfigureEnabledUtilityAlwaysOnTop)" explainText="$(string.ConfigureEnabledUtilityDescription)" key="Software\Policies\PowerToys" valueName="ConfigureEnabledUtilityAlwaysOnTop">
       <parentCategory ref="PowerToys" />
       <supportedOn ref="windows:SUPPORTED_Windows_10_0_20H1" />
       <enabledValue>
@@ -22,7 +22,7 @@
         <decimal value="0" />
       </disabledValue>
     </policy>
-    <policy name="ConfigureEnabledUtilityAwake" class="Machine" displayName="$(string.ConfigureEnabledUtilityAwake)" explainText="$(string.ConfigureEnabledUtilityDescription)" key="Software\Policies\Microsoft\Windows\PowerToys" valueName="ConfigureEnabledUtilityAwake">
+    <policy name="ConfigureEnabledUtilityAwake" class="Machine" displayName="$(string.ConfigureEnabledUtilityAwake)" explainText="$(string.ConfigureEnabledUtilityDescription)" key="Software\Policies\PowerToys" valueName="ConfigureEnabledUtilityAwake">
       <parentCategory ref="PowerToys" />
       <supportedOn ref="windows:SUPPORTED_Windows_10_0_20H1" />
       <enabledValue>
@@ -32,7 +32,7 @@
         <decimal value="0" />
       </disabledValue>
     </policy>
-    <policy name="ConfigureEnabledUtilityColorPicker" class="Machine" displayName="$(string.ConfigureEnabledUtilityColorPicker)" explainText="$(string.ConfigureEnabledUtilityDescription)" key="Software\Policies\Microsoft\Windows\PowerToys" valueName="ConfigureEnabledUtilityColorPicker">
+    <policy name="ConfigureEnabledUtilityColorPicker" class="Machine" displayName="$(string.ConfigureEnabledUtilityColorPicker)" explainText="$(string.ConfigureEnabledUtilityDescription)" key="Software\Policies\PowerToys" valueName="ConfigureEnabledUtilityColorPicker">
       <parentCategory ref="PowerToys" />
       <supportedOn ref="windows:SUPPORTED_Windows_10_0_20H1" />
       <enabledValue>
@@ -42,7 +42,7 @@
         <decimal value="0" />
       </disabledValue>
     </policy>
-    <policy name="ConfigureEnabledUtilityFancyZones" class="Machine" displayName="$(string.ConfigureEnabledUtilityFancyZones)" explainText="$(string.ConfigureEnabledUtilityDescription)" key="Software\Policies\Microsoft\Windows\PowerToys" valueName="ConfigureEnabledUtilityFancyZones">
+    <policy name="ConfigureEnabledUtilityFancyZones" class="Machine" displayName="$(string.ConfigureEnabledUtilityFancyZones)" explainText="$(string.ConfigureEnabledUtilityDescription)" key="Software\Policies\PowerToys" valueName="ConfigureEnabledUtilityFancyZones">
       <parentCategory ref="PowerToys" />
       <supportedOn ref="windows:SUPPORTED_Windows_10_0_20H1" />
       <enabledValue>
@@ -52,7 +52,7 @@
         <decimal value="0" />
       </disabledValue>
     </policy>
-    <policy name="ConfigureEnabledUtilityFileExplorerSVGPreview" class="Machine" displayName="$(string.ConfigureEnabledUtilityFileExplorerSVGPreview)" explainText="$(string.ConfigureEnabledUtilityDescription)" key="Software\Policies\Microsoft\Windows\PowerToys" valueName="ConfigureEnabledUtilityFileExplorerSVGPreview">
+    <policy name="ConfigureEnabledUtilityFileExplorerSVGPreview" class="Machine" displayName="$(string.ConfigureEnabledUtilityFileExplorerSVGPreview)" explainText="$(string.ConfigureEnabledUtilityDescription)" key="Software\Policies\PowerToys" valueName="ConfigureEnabledUtilityFileExplorerSVGPreview">
       <parentCategory ref="PowerToys" />
       <supportedOn ref="windows:SUPPORTED_Windows_10_0_20H1" />
       <enabledValue>
@@ -62,7 +62,7 @@
         <decimal value="0" />
       </disabledValue>
     </policy>
-    <policy name="ConfigureEnabledUtilityFileExplorerMarkdownPreview" class="Machine" displayName="$(string.ConfigureEnabledUtilityFileExplorerMarkdownPreview)" explainText="$(string.ConfigureEnabledUtilityDescription)" key="Software\Policies\Microsoft\Windows\PowerToys" valueName="ConfigureEnabledUtilityFileExplorerMarkdownPreview">
+    <policy name="ConfigureEnabledUtilityFileExplorerMarkdownPreview" class="Machine" displayName="$(string.ConfigureEnabledUtilityFileExplorerMarkdownPreview)" explainText="$(string.ConfigureEnabledUtilityDescription)" key="Software\Policies\PowerToys" valueName="ConfigureEnabledUtilityFileExplorerMarkdownPreview">
       <parentCategory ref="PowerToys" />
       <supportedOn ref="windows:SUPPORTED_Windows_10_0_20H1" />
       <enabledValue>
@@ -72,7 +72,7 @@
         <decimal value="0" />
       </disabledValue>
     </policy>
-    <policy name="ConfigureEnabledUtilityFileExplorerMonacoPreview" class="Machine" displayName="$(string.ConfigureEnabledUtilityFileExplorerMonacoPreview)" explainText="$(string.ConfigureEnabledUtilityDescription)" key="Software\Policies\Microsoft\Windows\PowerToys" valueName="ConfigureEnabledUtilityFileExplorerMonacoPreview">
+    <policy name="ConfigureEnabledUtilityFileExplorerMonacoPreview" class="Machine" displayName="$(string.ConfigureEnabledUtilityFileExplorerMonacoPreview)" explainText="$(string.ConfigureEnabledUtilityDescription)" key="Software\Policies\PowerToys" valueName="ConfigureEnabledUtilityFileExplorerMonacoPreview">
       <parentCategory ref="PowerToys" />
       <supportedOn ref="windows:SUPPORTED_Windows_10_0_20H1" />
       <enabledValue>
@@ -82,7 +82,7 @@
         <decimal value="0" />
       </disabledValue>
     </policy>
-    <policy name="ConfigureEnabledUtilityFileExplorerPDFPreview" class="Machine" displayName="$(string.ConfigureEnabledUtilityFileExplorerPDFPreview)" explainText="$(string.ConfigureEnabledUtilityDescription)" key="Software\Policies\Microsoft\Windows\PowerToys" valueName="ConfigureEnabledUtilityFileExplorerPDFPreview">
+    <policy name="ConfigureEnabledUtilityFileExplorerPDFPreview" class="Machine" displayName="$(string.ConfigureEnabledUtilityFileExplorerPDFPreview)" explainText="$(string.ConfigureEnabledUtilityDescription)" key="Software\Policies\PowerToys" valueName="ConfigureEnabledUtilityFileExplorerPDFPreview">
       <parentCategory ref="PowerToys" />
       <supportedOn ref="windows:SUPPORTED_Windows_10_0_20H1" />
       <enabledValue>
@@ -92,7 +92,7 @@
         <decimal value="0" />
       </disabledValue>
     </policy>
-    <policy name="ConfigureEnabledUtilityFileExplorerGcodePreview" class="Machine" displayName="$(string.ConfigureEnabledUtilityFileExplorerGcodePreview)" explainText="$(string.ConfigureEnabledUtilityDescription)" key="Software\Policies\Microsoft\Windows\PowerToys" valueName="ConfigureEnabledUtilityFileExplorerGcodePreview">
+    <policy name="ConfigureEnabledUtilityFileExplorerGcodePreview" class="Machine" displayName="$(string.ConfigureEnabledUtilityFileExplorerGcodePreview)" explainText="$(string.ConfigureEnabledUtilityDescription)" key="Software\Policies\PowerToys" valueName="ConfigureEnabledUtilityFileExplorerGcodePreview">
       <parentCategory ref="PowerToys" />
       <supportedOn ref="windows:SUPPORTED_Windows_10_0_20H1" />
       <enabledValue>
@@ -102,7 +102,7 @@
         <decimal value="0" />
       </disabledValue>
     </policy>
-    <policy name="ConfigureEnabledUtilityFileExplorerSVGThumbnails" class="Machine" displayName="$(string.ConfigureEnabledUtilityFileExplorerSVGThumbnails)" explainText="$(string.ConfigureEnabledUtilityDescription)" key="Software\Policies\Microsoft\Windows\PowerToys" valueName="ConfigureEnabledUtilityFileExplorerSVGThumbnails">
+    <policy name="ConfigureEnabledUtilityFileExplorerSVGThumbnails" class="Machine" displayName="$(string.ConfigureEnabledUtilityFileExplorerSVGThumbnails)" explainText="$(string.ConfigureEnabledUtilityDescription)" key="Software\Policies\PowerToys" valueName="ConfigureEnabledUtilityFileExplorerSVGThumbnails">
       <parentCategory ref="PowerToys" />
       <supportedOn ref="windows:SUPPORTED_Windows_10_0_20H1" />
       <enabledValue>
@@ -112,7 +112,7 @@
         <decimal value="0" />
       </disabledValue>
     </policy>
-    <policy name="ConfigureEnabledUtilityFileExplorerPDFThumbnails" class="Machine" displayName="$(string.ConfigureEnabledUtilityFileExplorerPDFThumbnails)" explainText="$(string.ConfigureEnabledUtilityDescription)" key="Software\Policies\Microsoft\Windows\PowerToys" valueName="ConfigureEnabledUtilityFileExplorerPDFThumbnails">
+    <policy name="ConfigureEnabledUtilityFileExplorerPDFThumbnails" class="Machine" displayName="$(string.ConfigureEnabledUtilityFileExplorerPDFThumbnails)" explainText="$(string.ConfigureEnabledUtilityDescription)" key="Software\Policies\PowerToys" valueName="ConfigureEnabledUtilityFileExplorerPDFThumbnails">
       <parentCategory ref="PowerToys" />
       <supportedOn ref="windows:SUPPORTED_Windows_10_0_20H1" />
       <enabledValue>
@@ -122,7 +122,7 @@
         <decimal value="0" />
       </disabledValue>
     </policy>
-    <policy name="ConfigureEnabledUtilityFileExplorerGcodeThumbnails" class="Machine" displayName="$(string.ConfigureEnabledUtilityFileExplorerGcodeThumbnails)" explainText="$(string.ConfigureEnabledUtilityDescription)" key="Software\Policies\Microsoft\Windows\PowerToys" valueName="ConfigureEnabledUtilityFileExplorerGcodeThumbnails">
+    <policy name="ConfigureEnabledUtilityFileExplorerGcodeThumbnails" class="Machine" displayName="$(string.ConfigureEnabledUtilityFileExplorerGcodeThumbnails)" explainText="$(string.ConfigureEnabledUtilityDescription)" key="Software\Policies\PowerToys" valueName="ConfigureEnabledUtilityFileExplorerGcodeThumbnails">
       <parentCategory ref="PowerToys" />
       <supportedOn ref="windows:SUPPORTED_Windows_10_0_20H1" />
       <enabledValue>
@@ -132,7 +132,7 @@
         <decimal value="0" />
       </disabledValue>
     </policy>
-    <policy name="ConfigureEnabledUtilityFileExplorerSTLThumbnails" class="Machine" displayName="$(string.ConfigureEnabledUtilityFileExplorerSTLThumbnails)" explainText="$(string.ConfigureEnabledUtilityDescription)" key="Software\Policies\Microsoft\Windows\PowerToys" valueName="ConfigureEnabledUtilityFileExplorerSTLThumbnails">
+    <policy name="ConfigureEnabledUtilityFileExplorerSTLThumbnails" class="Machine" displayName="$(string.ConfigureEnabledUtilityFileExplorerSTLThumbnails)" explainText="$(string.ConfigureEnabledUtilityDescription)" key="Software\Policies\PowerToys" valueName="ConfigureEnabledUtilityFileExplorerSTLThumbnails">
       <parentCategory ref="PowerToys" />
       <supportedOn ref="windows:SUPPORTED_Windows_10_0_20H1" />
       <enabledValue>
@@ -142,7 +142,7 @@
         <decimal value="0" />
       </disabledValue>
     </policy>
-    <policy name="ConfigureEnabledUtilityHostsFileEditor" class="Machine" displayName="$(string.ConfigureEnabledUtilityHostsFileEditor)" explainText="$(string.ConfigureEnabledUtilityDescription)" key="Software\Policies\Microsoft\Windows\PowerToys" valueName="ConfigureEnabledUtilityHostsFileEditor">
+    <policy name="ConfigureEnabledUtilityHostsFileEditor" class="Machine" displayName="$(string.ConfigureEnabledUtilityHostsFileEditor)" explainText="$(string.ConfigureEnabledUtilityDescription)" key="Software\Policies\PowerToys" valueName="ConfigureEnabledUtilityHostsFileEditor">
       <parentCategory ref="PowerToys" />
       <supportedOn ref="windows:SUPPORTED_Windows_10_0_20H1" />
       <enabledValue>
@@ -152,7 +152,7 @@
         <decimal value="0" />
       </disabledValue>
     </policy>
-    <policy name="ConfigureEnabledUtilityImageResizer" class="Machine" displayName="$(string.ConfigureEnabledUtilityImageResizer)" explainText="$(string.ConfigureEnabledUtilityDescription)" key="Software\Policies\Microsoft\Windows\PowerToys" valueName="ConfigureEnabledUtilityImageResizer">
+    <policy name="ConfigureEnabledUtilityImageResizer" class="Machine" displayName="$(string.ConfigureEnabledUtilityImageResizer)" explainText="$(string.ConfigureEnabledUtilityDescription)" key="Software\Policies\PowerToys" valueName="ConfigureEnabledUtilityImageResizer">
       <parentCategory ref="PowerToys" />
       <supportedOn ref="windows:SUPPORTED_Windows_10_0_20H1" />
       <enabledValue>
@@ -162,7 +162,7 @@
         <decimal value="0" />
       </disabledValue>
     </policy>
-    <policy name="ConfigureEnabledUtilityKeyboardManager" class="Machine" displayName="$(string.ConfigureEnabledUtilityKeyboardManager)" explainText="$(string.ConfigureEnabledUtilityDescription)" key="Software\Policies\Microsoft\Windows\PowerToys" valueName="ConfigureEnabledUtilityKeyboardManager">
+    <policy name="ConfigureEnabledUtilityKeyboardManager" class="Machine" displayName="$(string.ConfigureEnabledUtilityKeyboardManager)" explainText="$(string.ConfigureEnabledUtilityDescription)" key="Software\Policies\PowerToys" valueName="ConfigureEnabledUtilityKeyboardManager">
       <parentCategory ref="PowerToys" />
       <supportedOn ref="windows:SUPPORTED_Windows_10_0_20H1" />
       <enabledValue>
@@ -172,7 +172,7 @@
         <decimal value="0" />
       </disabledValue>
     </policy>
-    <policy name="ConfigureEnabledUtilityFindMyMouse" class="Machine" displayName="$(string.ConfigureEnabledUtilityFindMyMouse)" explainText="$(string.ConfigureEnabledUtilityDescription)" key="Software\Policies\Microsoft\Windows\PowerToys" valueName="ConfigureEnabledUtilityFindMyMouse">
+    <policy name="ConfigureEnabledUtilityFindMyMouse" class="Machine" displayName="$(string.ConfigureEnabledUtilityFindMyMouse)" explainText="$(string.ConfigureEnabledUtilityDescription)" key="Software\Policies\PowerToys" valueName="ConfigureEnabledUtilityFindMyMouse">
       <parentCategory ref="PowerToys" />
       <supportedOn ref="windows:SUPPORTED_Windows_10_0_20H1" />
       <enabledValue>
@@ -182,7 +182,7 @@
         <decimal value="0" />
       </disabledValue>
     </policy>
-    <policy name="ConfigureEnabledUtilityMouseHighlighter" class="Machine" displayName="$(string.ConfigureEnabledUtilityMouseHighlighter)" explainText="$(string.ConfigureEnabledUtilityDescription)" key="Software\Policies\Microsoft\Windows\PowerToys" valueName="ConfigureEnabledUtilityMouseHighlighter">
+    <policy name="ConfigureEnabledUtilityMouseHighlighter" class="Machine" displayName="$(string.ConfigureEnabledUtilityMouseHighlighter)" explainText="$(string.ConfigureEnabledUtilityDescription)" key="Software\Policies\PowerToys" valueName="ConfigureEnabledUtilityMouseHighlighter">
       <parentCategory ref="PowerToys" />
       <supportedOn ref="windows:SUPPORTED_Windows_10_0_20H1" />
       <enabledValue>
@@ -192,7 +192,7 @@
         <decimal value="0" />
       </disabledValue>
     </policy>
-    <policy name="ConfigureEnabledUtilityMousePointerCrosshairs" class="Machine" displayName="$(string.ConfigureEnabledUtilityMousePointerCrosshairs)" explainText="$(string.ConfigureEnabledUtilityDescription)" key="Software\Policies\Microsoft\Windows\PowerToys" valueName="ConfigureEnabledUtilityMousePointerCrosshairs">
+    <policy name="ConfigureEnabledUtilityMousePointerCrosshairs" class="Machine" displayName="$(string.ConfigureEnabledUtilityMousePointerCrosshairs)" explainText="$(string.ConfigureEnabledUtilityDescription)" key="Software\Policies\PowerToys" valueName="ConfigureEnabledUtilityMousePointerCrosshairs">
       <parentCategory ref="PowerToys" />
       <supportedOn ref="windows:SUPPORTED_Windows_10_0_20H1" />
       <enabledValue>
@@ -202,7 +202,7 @@
         <decimal value="0" />
       </disabledValue>
     </policy>
-    <policy name="ConfigureEnabledUtilityPowerRename" class="Machine" displayName="$(string.ConfigureEnabledUtilityPowerRename)" explainText="$(string.ConfigureEnabledUtilityDescription)" key="Software\Policies\Microsoft\Windows\PowerToys" valueName="ConfigureEnabledUtilityPowerRename">
+    <policy name="ConfigureEnabledUtilityPowerRename" class="Machine" displayName="$(string.ConfigureEnabledUtilityPowerRename)" explainText="$(string.ConfigureEnabledUtilityDescription)" key="Software\Policies\PowerToys" valueName="ConfigureEnabledUtilityPowerRename">
       <parentCategory ref="PowerToys" />
       <supportedOn ref="windows:SUPPORTED_Windows_10_0_20H1" />
       <enabledValue>
@@ -212,7 +212,7 @@
         <decimal value="0" />
       </disabledValue>
     </policy>
-    <policy name="ConfigureEnabledUtilityPowerLauncher" class="Machine" displayName="$(string.ConfigureEnabledUtilityPowerLauncher)" explainText="$(string.ConfigureEnabledUtilityDescription)" key="Software\Policies\Microsoft\Windows\PowerToys" valueName="ConfigureEnabledUtilityPowerLauncher">
+    <policy name="ConfigureEnabledUtilityPowerLauncher" class="Machine" displayName="$(string.ConfigureEnabledUtilityPowerLauncher)" explainText="$(string.ConfigureEnabledUtilityDescription)" key="Software\Policies\PowerToys" valueName="ConfigureEnabledUtilityPowerLauncher">
       <parentCategory ref="PowerToys" />
       <supportedOn ref="windows:SUPPORTED_Windows_10_0_20H1" />
       <enabledValue>
@@ -222,7 +222,7 @@
         <decimal value="0" />
       </disabledValue>
     </policy>
-    <policy name="ConfigureEnabledUtilityQuickAccent" class="Machine" displayName="$(string.ConfigureEnabledUtilityQuickAccent)" explainText="$(string.ConfigureEnabledUtilityDescription)" key="Software\Policies\Microsoft\Windows\PowerToys" valueName="ConfigureEnabledUtilityQuickAccent">
+    <policy name="ConfigureEnabledUtilityQuickAccent" class="Machine" displayName="$(string.ConfigureEnabledUtilityQuickAccent)" explainText="$(string.ConfigureEnabledUtilityDescription)" key="Software\Policies\PowerToys" valueName="ConfigureEnabledUtilityQuickAccent">
       <parentCategory ref="PowerToys" />
       <supportedOn ref="windows:SUPPORTED_Windows_10_0_20H1" />
       <enabledValue>
@@ -232,7 +232,7 @@
         <decimal value="0" />
       </disabledValue>
     </policy>
-    <policy name="ConfigureEnabledUtilityScreenRuler" class="Machine" displayName="$(string.ConfigureEnabledUtilityScreenRuler)" explainText="$(string.ConfigureEnabledUtilityDescription)" key="Software\Policies\Microsoft\Windows\PowerToys" valueName="ConfigureEnabledUtilityScreenRuler">
+    <policy name="ConfigureEnabledUtilityScreenRuler" class="Machine" displayName="$(string.ConfigureEnabledUtilityScreenRuler)" explainText="$(string.ConfigureEnabledUtilityDescription)" key="Software\Policies\PowerToys" valueName="ConfigureEnabledUtilityScreenRuler">
       <parentCategory ref="PowerToys" />
       <supportedOn ref="windows:SUPPORTED_Windows_10_0_20H1" />
       <enabledValue>
@@ -242,7 +242,7 @@
         <decimal value="0" />
       </disabledValue>
     </policy>
-    <policy name="ConfigureEnabledUtilityShortcutGuide" class="Machine" displayName="$(string.ConfigureEnabledUtilityShortcutGuide)" explainText="$(string.ConfigureEnabledUtilityDescription)" key="Software\Policies\Microsoft\Windows\PowerToys" valueName="ConfigureEnabledUtilityShortcutGuide">
+    <policy name="ConfigureEnabledUtilityShortcutGuide" class="Machine" displayName="$(string.ConfigureEnabledUtilityShortcutGuide)" explainText="$(string.ConfigureEnabledUtilityDescription)" key="Software\Policies\PowerToys" valueName="ConfigureEnabledUtilityShortcutGuide">
       <parentCategory ref="PowerToys" />
       <supportedOn ref="windows:SUPPORTED_Windows_10_0_20H1" />
       <enabledValue>
@@ -252,7 +252,7 @@
         <decimal value="0" />
       </disabledValue>
     </policy>
-    <policy name="ConfigureEnabledUtilityTextExtractor" class="Machine" displayName="$(string.ConfigureEnabledUtilityTextExtractor)" explainText="$(string.ConfigureEnabledUtilityDescription)" key="Software\Policies\Microsoft\Windows\PowerToys" valueName="ConfigureEnabledUtilityTextExtractor">
+    <policy name="ConfigureEnabledUtilityTextExtractor" class="Machine" displayName="$(string.ConfigureEnabledUtilityTextExtractor)" explainText="$(string.ConfigureEnabledUtilityDescription)" key="Software\Policies\PowerToys" valueName="ConfigureEnabledUtilityTextExtractor">
       <parentCategory ref="PowerToys" />
       <supportedOn ref="windows:SUPPORTED_Windows_10_0_20H1" />
       <enabledValue>
@@ -262,7 +262,7 @@
         <decimal value="0" />
       </disabledValue>
     </policy>
-    <policy name="ConfigureEnabledUtilityVideoConferenceMute" class="Machine" displayName="$(string.ConfigureEnabledUtilityVideoConferenceMute)" explainText="$(string.ConfigureEnabledUtilityDescription)" key="Software\Policies\Microsoft\Windows\PowerToys" valueName="ConfigureEnabledUtilityVideoConferenceMute">
+    <policy name="ConfigureEnabledUtilityVideoConferenceMute" class="Machine" displayName="$(string.ConfigureEnabledUtilityVideoConferenceMute)" explainText="$(string.ConfigureEnabledUtilityDescription)" key="Software\Policies\PowerToys" valueName="ConfigureEnabledUtilityVideoConferenceMute">
       <parentCategory ref="PowerToys" />
       <supportedOn ref="windows:SUPPORTED_Windows_10_0_20H1" />
       <enabledValue>

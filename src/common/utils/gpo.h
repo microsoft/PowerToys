@@ -12,7 +12,7 @@ namespace powertoys_gpo {
 	};
 
 	// Registry path where gpo policy values are stored.
-	const std::wstring POLICIES_PATH = L"SOFTWARE\\Policies\\Microsoft\\Windows\\PowerToys";
+	const std::wstring POLICIES_PATH = L"SOFTWARE\\Policies\\PowerToys";
 
 	// Registry scope where gpo policy values are stored.
 	const HKEY POLICIES_SCOPE = HKEY_LOCAL_MACHINE;
