@@ -9,7 +9,6 @@
   <resources minRequiredRevision="1.0" />
   <categories>
     <category name="PowerToys" displayName="$(string.PowerToys)">
-      <parentCategory ref="windows:WindowsComponents" />
     </category>
   </categories>
   <policies>
