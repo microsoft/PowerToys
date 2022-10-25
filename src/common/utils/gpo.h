@@ -15,7 +15,8 @@ namespace powertoys_gpo {
 	const std::wstring POLICIES_PATH = L"SOFTWARE\\Policies\\PowerToys";
 
 	// Registry scope where gpo policy values are stored.
-	const HKEY POLICIES_SCOPE = HKEY_LOCAL_MACHINE;
+	const HKEY POLICIES_SCOPE_MACHINE = HKEY_LOCAL_MACHINE;
+    const HKEY POLICIES_SCOPE_USER = HKEY_CURRENT_USER;
 
 	// The registry value names for PowerToys utilities enabled and disabled policies.
 	const std::wstring POLICY_CONFIGURE_ENABLED_ALWAYS_ON_TOP = L"ConfigureEnabledUtilityAlwaysOnTop";
@@ -48,24 +49,45 @@ namespace powertoys_gpo {
 	inline gpo_rule_configured_t getConfiguredValue(const std::wstring& registry_value_name)
 	{
 		HKEY key{};
-        if (auto res = RegOpenKeyExW(POLICIES_SCOPE, POLICIES_PATH.c_str(), 0, KEY_READ, &key); res != ERROR_SUCCESS)
-		{
-			if (res == ERROR_FILE_NOT_FOUND) {
-				return gpo_rule_configured_not_configured;
-			}
-			return gpo_rule_configured_unavailable;
-		}
-		
-		DWORD value = (DWORD) -2;
-		DWORD valueSize = sizeof(value);
+        DWORD value = (DWORD) -2;
+        DWORD valueSize = sizeof(value);
 
-		auto res = RegQueryValueExW(key, registry_value_name.c_str(), nullptr, nullptr, (LPBYTE)&value, &valueSize);
+        bool machine_key_found = true;
+        if (auto res = RegOpenKeyExW(POLICIES_SCOPE_MACHINE, POLICIES_PATH.c_str(), 0, KEY_READ, &key); res != ERROR_SUCCESS)
+        {
+            machine_key_found = false;
+        }
 
-		RegCloseKey(key);
+        if(machine_key_found)
+        {
+            // If the path was found in the machine, we need to check if the value for the policy exists.
+            auto res = RegQueryValueExW(key, registry_value_name.c_str(), nullptr, nullptr, (LPBYTE)&value, &valueSize);
 
-		if (res != ERROR_SUCCESS) {
-			return gpo_rule_configured_not_configured;
-		}
+            RegCloseKey(key);
+
+            if (res != ERROR_SUCCESS) {
+                // Value not found on the path.
+                machine_key_found=false;
+            }
+        }
+
+        if (!machine_key_found)
+        {
+            // If there's no value found on the machine scope, try to get it from the user scope.
+            if (auto res = RegOpenKeyExW(POLICIES_SCOPE_USER, POLICIES_PATH.c_str(), 0, KEY_READ, &key); res != ERROR_SUCCESS)
+            {
+                if (res == ERROR_FILE_NOT_FOUND) {
+                    return gpo_rule_configured_not_configured;
+                }
+                return gpo_rule_configured_unavailable;
+            }
+            auto res = RegQueryValueExW(key, registry_value_name.c_str(), nullptr, nullptr, (LPBYTE)&value, &valueSize);
+            RegCloseKey(key);
+
+            if (res != ERROR_SUCCESS) {
+                return gpo_rule_configured_not_configured;
+            }
+        }
 
 		switch (value)
 		{
