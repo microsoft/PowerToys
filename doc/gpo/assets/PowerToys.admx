@@ -82,7 +82,7 @@
         <decimal value="0" />
       </disabledValue>
     </policy>
-    <policy name="ConfigureEnabledUtilityFileExplorerPDFPreview" class="Both" displayName="$(string.ConfigureEnabledUtilityFileExplorerPDFPreview)" explainText="$(string.ConfigureEnabledUtilityDescription)" key="Software\Policies\PowerToys" valueName="ConfigureEnabledUtilityFileExplorerPDFPreview">
+    <policy name="ConfigureEnabledUtilityFileExplorerPDFPreview" class="Both" displayName="$(string.ConfigureEnabledUtilityFileExplorerPDFPreview)" explainText="$(string.ConfigureEnabledUtilityDescriptionPDFPreviewHandler)" key="Software\Policies\PowerToys" valueName="ConfigureEnabledUtilityFileExplorerPDFPreview">
       <parentCategory ref="PowerToys" />
       <supportedOn ref="windows:SUPPORTED_Windows_10_0_20H1" />
       <enabledValue>
