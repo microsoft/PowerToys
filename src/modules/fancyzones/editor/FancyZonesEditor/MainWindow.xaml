@@ -670,33 +670,6 @@
                         </StackPanel>
                     </StackPanel>
 
-                    <StackPanel Orientation="Horizontal"
-                                HorizontalAlignment="Left"
-                                Margin="0,16,0,0"
-                                Visibility="{Binding Path=Type, Converter={StaticResource LayoutTypeTemplateToVisibilityConverter}}">
-
-                        <TextBlock FontFamily="Segoe MDL2 Assets"
-                                   VerticalAlignment="Center"
-                                   FontSize="16"
-                                   Margin="0,16,0,0"
-                                   AutomationProperties.Name="{x:Static props:Resources.Number_of_zones}"
-                                   ToolTip="{x:Static props:Resources.Number_of_zones}"
-                                   Text="&#xECA5;" />
-
-                        <ui:NumberBox Minimum="1"
-                                      Maximum="128"
-                                      Width="216"
-                                      KeyDown="EditDialogNumberBox_KeyDown"
-                                      Margin="12,0,0,0"
-                                      Header="{x:Static props:Resources.Number_of_zones}"
-                                      Loaded="NumberBox_Loaded"
-                                      AutomationProperties.Name="{x:Static props:Resources.Number_of_zones}"
-                                      SpinButtonPlacementMode="Compact"
-                                      Text="{Binding TemplateZoneCount}" />
-                    </StackPanel>
-
-
-
                     <StackPanel Orientation="Vertical"
                                 HorizontalAlignment="Left"
                                 Margin="0,16,0,0">
