@@ -212,12 +212,18 @@ HRESULT ExplorerCommand::s_CreateInstance(IUnknown* pUnkOuter, REFIID riid, void
     return hr;
 }
 
+ExplorerCommand::ExplorerCommand()
+{
+    ++globals::ref_count;
+}
+
 ExplorerCommand::~ExplorerCommand()
 {
     if (m_data_obj)
     {
         m_data_obj->Release();
     }
+    --globals::ref_count;
 }
 
 // Implementation taken from src/common/utils

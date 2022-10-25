@@ -35,6 +35,9 @@ public:
     // Static member to create an instance
     static HRESULT s_CreateInstance(IUnknown* pUnkOuter, REFIID riid, void** ppvObject);
 
+    // Constructor
+    ExplorerCommand();
+
     // Destructor
     ~ExplorerCommand();
 
