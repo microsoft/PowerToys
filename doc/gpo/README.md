@@ -9,6 +9,10 @@ Since version 0.64, PowerToys is released on GitHub with GroupPolicyObject files
 
 The "Local Group Policy Editor" (gpedit.msc) will now show PowerToys policies under "Local Computer Policy" > "Computer Configuration" > "Administrative Templates" > "Windows Components" > "Microsoft PowerToys".
 
+### Scope
+
+You will find the policies under "Administrative Templates/Microsoft PowerToys" in both the Computer Configuration and User Configuration folders. If both settings are configured, the setting in Computer Configuration takes precedence over the setting in User Configuration.
+
 ## Policies
 
 ### Configure enabled state
