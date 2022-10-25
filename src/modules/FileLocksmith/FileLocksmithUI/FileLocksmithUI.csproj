@@ -20,6 +20,7 @@
 		<WindowsPackageType>None</WindowsPackageType>
 		<WindowsAppSDKSelfContained>true</WindowsAppSDKSelfContained>
 		<SupportedOSPlatformVersion>10.0.19041.0</SupportedOSPlatformVersion>
+		<ApplicationIcon>icon.ico</ApplicationIcon>
 	</PropertyGroup>
 
 	<PropertyGroup>
@@ -49,10 +50,11 @@
 		<ProjectCapability Include="Msix" />
 	</ItemGroup>
 	<ItemGroup>
-		<Folder Include="Assets\Icons\" />
 		<Folder Include="Properties\" />
 	</ItemGroup>
 	<ItemGroup>
+		<Content Include="icon.ico" />
+	</ItemGroup>	<ItemGroup>
 		<ProjectReference Include="..\..\..\common\interop\PowerToys.Interop.vcxproj" />
 		<ProjectReference Include="..\..\..\common\ManagedCommon\ManagedCommon.csproj" />
 		<ProjectReference Include="..\FileLocksmithLibInterop\FileLocksmithLibInterop.vcxproj" />

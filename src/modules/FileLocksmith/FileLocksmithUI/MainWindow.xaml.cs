@@ -31,8 +31,14 @@ namespace FileLocksmithUI
             }
             else
             {
-                ThemeHelpers.SetImmersiveDarkMode(WinRT.Interop.WindowNative.GetWindowHandle(this), ThemeHelpers.GetAppTheme() == AppTheme.Dark);
+                var hWnd = WinRT.Interop.WindowNative.GetWindowHandle(this);
+                ThemeHelpers.SetImmersiveDarkMode(hWnd, ThemeHelpers.GetAppTheme() == AppTheme.Dark);
                 titleBar.Visibility = Visibility.Collapsed;
+
+                // Set window icon
+                WindowId windowId = Win32Interop.GetWindowIdFromWindow(hWnd);
+                AppWindow appWindow = AppWindow.GetFromWindowId(windowId);
+                appWindow.SetIcon("icon.ico");
             }
         }
 
