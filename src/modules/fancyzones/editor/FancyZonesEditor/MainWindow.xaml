@@ -202,7 +202,7 @@
                                FontWeight="SemiBold"
                                FontSize="24" />
 
-                    <ui:GridView ItemsSource="{Binding DefaultModels}"
+                    <ui:GridView ItemsSource="{Binding TemplateModels}"
                                  Grid.Row="1"
                                  ItemTemplate="{StaticResource LayoutItemTemplate}"
                                  AutomationProperties.LabeledBy="{Binding ElementName=TemplatesHeaderBlock}"
@@ -589,9 +589,6 @@
                         </StackPanel>
                     </StackPanel>
 
-
-
-
                     <StackPanel Margin="0, 12, 0, 0">
                         <TextBlock Text="{x:Static props:Resources.Distance_adjacent_zones}"
                                    x:Name="distanceTitle"
@@ -634,6 +631,97 @@
                                        TextWrapping="Wrap"
                                        VerticalAlignment="Center" />
                         </StackPanel>
+                    </StackPanel>
+
+                    <StackPanel Orientation="Horizontal"
+                                HorizontalAlignment="Left"
+                                Margin="0,16,0,0"
+                                Visibility="{Binding Path=Type, Converter={StaticResource LayoutTypeTemplateToVisibilityConverter}}">
+
+                        <TextBlock FontFamily="Segoe MDL2 Assets"
+                                   VerticalAlignment="Center"
+                                   FontSize="16"
+                                   Margin="0,16,0,0"
+                                   AutomationProperties.Name="{x:Static props:Resources.Number_of_zones}"
+                                   ToolTip="{x:Static props:Resources.Number_of_zones}"
+                                   Text="&#xECA5;" />
+
+                        <ui:NumberBox Minimum="1"
+                                      Maximum="128"
+                                      Width="216"
+                                      KeyDown="EditDialogNumberBox_KeyDown"
+                                      Margin="12,0,0,0"
+                                      Header="{x:Static props:Resources.Number_of_zones}"
+                                      Loaded="NumberBox_Loaded"
+                                      AutomationProperties.Name="{x:Static props:Resources.Number_of_zones}"
+                                      SpinButtonPlacementMode="Compact"
+                                      Text="{Binding TemplateZoneCount}" />
+                    </StackPanel>
+
+
+
+                    <StackPanel Orientation="Vertical"
+                                HorizontalAlignment="Left"
+                                Margin="0,16,0,0">
+
+                        <Button x:Name="SetLayoutAsHorizontalDefaultButton"
+                            Click="SetLayoutAsHorizontalDefaultButton_Click"
+                            AutomationProperties.Name="{x:Static props:Resources.Set_Layout_As_Horizontal_Default}"
+                            ToolTip="{x:Static props:Resources.Set_Layout_As_Horizontal_Default}"
+                            Style="{StaticResource IconOnlyButtonStyle}"
+                            Visibility="{Binding CanBeSetAsHorizontalDefault, Converter={StaticResource BooleanToVisibilityConverter}}">
+                            <Button.Content>
+                                <TextBlock AutomationProperties.Name="{x:Static props:Resources.Set_Layout_As_Horizontal_Default}"
+                                       FontSize="14">
+                                    <Run Text="&#xE734;" FontFamily="Segoe MDL2 Assets"/>
+                                    <Run Text="{x:Static props:Resources.Default_Layout_Horizontal}"/>
+                                </TextBlock>
+                            </Button.Content>
+                        </Button>
+                        <Button x:Name="HorizontalDefaultLayoutButton"
+                            Click="HorizontalDefaultLayoutButton_Click"
+                            ToolTip="{x:Static props:Resources.Default_Layout_Horizontal}"
+                            AutomationProperties.Name="{x:Static props:Resources.Default_Layout_Horizontal}"
+                            Style="{StaticResource IconOnlyButtonStyle}"
+                            Visibility="{Binding IsHorizontalDefault, Converter={StaticResource BooleanToVisibilityConverter}}">
+                            <Button.Content>
+                                <TextBlock AutomationProperties.Name="{x:Static props:Resources.Default_Layout_Horizontal}"
+                                       FontSize="14">
+                                    <Run Text="&#xE735;" FontFamily="Segoe MDL2 Assets"/>
+                                    <Run Text="{x:Static props:Resources.Default_Layout_Horizontal}"/>
+                                </TextBlock>
+                            </Button.Content>
+                        </Button>
+
+                        <Button x:Name="SetLayoutAsVerticalDefaultButton"
+                            Click="SetLayoutAsVerticalDefaultButton_Click"
+                            AutomationProperties.Name="{x:Static props:Resources.Set_Layout_As_Vertical_Default}"
+                            ToolTip="{x:Static props:Resources.Set_Layout_As_Vertical_Default}"
+                            Style="{StaticResource IconOnlyButtonStyle}"
+                            Visibility="{Binding CanBeSetAsVerticalDefault, Converter={StaticResource BooleanToVisibilityConverter}}">
+                            <Button.Content>
+                                <TextBlock AutomationProperties.Name="{x:Static props:Resources.Set_Layout_As_Vertical_Default}"
+                                       FontSize="14">
+                                    <Run Text="&#xE734;" FontFamily="Segoe MDL2 Assets"/>
+                                    <Run Text="{x:Static props:Resources.Default_Layout_Vertical}"/>
+                                </TextBlock>
+                            </Button.Content>
+                        </Button>
+                        <Button x:Name="VerticalDefaultLayoutButton"
+                            Click="VerticalDefaultLayoutButton_Click"
+                            ToolTip="{x:Static props:Resources.Default_Layout_Vertical}"
+                            AutomationProperties.Name="{x:Static props:Resources.Default_Layout_Vertical}"
+                            Style="{StaticResource IconOnlyButtonStyle}"
+                            Visibility="{Binding IsVerticalDefault, Converter={StaticResource BooleanToVisibilityConverter}}">
+                            <Button.Content>
+                                <TextBlock AutomationProperties.Name="{x:Static props:Resources.Default_Layout_Vertical}"
+                                       FontSize="14">
+                                    <Run Text="&#xE735;" FontFamily="Segoe MDL2 Assets"/>
+                                    <Run Text="{x:Static props:Resources.Default_Layout_Vertical}"/>
+                                </TextBlock>
+                            </Button.Content>
+                        </Button>
+
                     </StackPanel>
                 </StackPanel>
             </Grid>

@@ -113,6 +113,13 @@ namespace FancyZonesEditor
                 MessageBox.Show(parseResult.Message, FancyZonesEditor.Properties.Resources.Error_Parsing_Data_Title, MessageBoxButton.OK);
             }
 
+            parseResult = FancyZonesEditorIO.ParseDefaultLayouts();
+            if (!parseResult.Result)
+            {
+                Logger.LogError(ParsingErrorReportTag + ": " + parseResult.Message + "; " + ParsingErrorDataTag + ": " + parseResult.MalformedData);
+                MessageBox.Show(parseResult.Message, FancyZonesEditor.Properties.Resources.Error_Parsing_Data_Title, MessageBoxButton.OK);
+            }
+
             MainWindowSettingsModel settings = ((App)Current).MainWindowSettings;
             settings.UpdateSelectedLayoutModel();
 

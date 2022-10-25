@@ -414,4 +414,19 @@
   <data name="Slider_Value" xml:space="preserve">
     <value>{0} pixels</value>
   </data>
+  <data name="Default_Layout_Horizontal" xml:space="preserve">
+    <value>Default layout for horizontal monitor orientation</value>
+  </data>
+  <data name="Set_Layout_As_Horizontal_Default" xml:space="preserve">
+    <value>Set layout as a default for horizontal monitor orientation</value>
+  </data>
+  <data name="Error_Parsing_Default_Layouts_Message" xml:space="preserve">
+    <value>An error occurred while parsing default layouts.</value>
+  </data>
+  <data name="Default_Layout_Vertical" xml:space="preserve">
+    <value>Default layout for vertical monitor orientation</value>
+  </data>
+  <data name="Set_Layout_As_Vertical_Default" xml:space="preserve">
+    <value>Set layout as a default for vertical monitor orientation</value>
+  </data>
 </root>

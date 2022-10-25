@@ -223,6 +223,24 @@ namespace FancyZonesEditor.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Default layout for horizontal monitor orientation.
+        /// </summary>
+        public static string Default_Layout_Horizontal {
+            get {
+                return ResourceManager.GetString("Default_Layout_Horizontal", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Default layout for vertical monitor orientation.
+        /// </summary>
+        public static string Default_Layout_Vertical {
+            get {
+                return ResourceManager.GetString("Default_Layout_Vertical", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Delete.
         /// </summary>
         public static string Delete {
@@ -448,6 +466,15 @@ namespace FancyZonesEditor.Properties {
         public static string Error_Parsing_Data_Title {
             get {
                 return ResourceManager.GetString("Error_Parsing_Data_Title", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to An error occurred while parsing default layouts..
+        /// </summary>
+        public static string Error_Parsing_Default_Layouts_Message {
+            get {
+                return ResourceManager.GetString("Error_Parsing_Default_Layouts_Message", resourceCulture);
             }
         }
         
@@ -759,6 +786,24 @@ namespace FancyZonesEditor.Properties {
         public static string Save_Apply {
             get {
                 return ResourceManager.GetString("Save_Apply", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Set layout as a default for horizontal monitor orientation.
+        /// </summary>
+        public static string Set_Layout_As_Horizontal_Default {
+            get {
+                return ResourceManager.GetString("Set_Layout_As_Horizontal_Default", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Set layout as a default for vertical monitor orientation.
+        /// </summary>
+        public static string Set_Layout_As_Vertical_Default {
+            get {
+                return ResourceManager.GetString("Set_Layout_As_Vertical_Default", resourceCulture);
             }
         }
         
