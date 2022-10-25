@@ -2,19 +2,13 @@
 
 #include <filesystem>
 
-#include <FancyZonesLib/util.h>
-#include <FancyZonesLib/ZoneSet.h>
 #include <FancyZonesLib/WorkArea.h>
-#include <FancyZonesLib/FancyZones.h>
 #include <FancyZonesLib/FancyZonesData/AppliedLayouts.h>
 #include <FancyZonesLib/FancyZonesData/AppZoneHistory.h>
-#include <FancyZonesLib/FancyZonesDataTypes.h>
-#include <FancyZonesLib/JsonHelpers.h>
+#include <FancyZonesLib/FancyZonesData/DefaultLayouts.h>
 #include "Util.h"
 
 #include <common/utils/process_path.h>
-
-#include <CppUnitTestLogger.h>
 
 using namespace Microsoft::VisualStudio::CppUnitTestFramework;
 
@@ -40,36 +34,43 @@ namespace FancyZonesUnitTests
 
             AppZoneHistory::instance().LoadData();
             AppliedLayouts::instance().LoadData();
+            DefaultLayouts::instance().LoadData();
         }
 
         TEST_METHOD_CLEANUP(CleanUp)
         {
             std::filesystem::remove(AppliedLayouts::AppliedLayoutsFileName());
             std::filesystem::remove(AppZoneHistory::AppZoneHistoryFileName());
+
+            std::filesystem::remove(DefaultLayouts::DefaultLayoutsFileName());
         }
 
         TEST_METHOD (CreateWorkArea)
         {
+            const auto defaultLayout = DefaultLayouts::instance().GetDefaultLayout();
+
             auto workArea = MakeWorkArea({}, Mocks::Monitor(), m_uniqueId, m_emptyUniqueId);
             Assert::IsFalse(workArea == nullptr);
             Assert::IsTrue(m_uniqueId == workArea->UniqueId());
 
             auto* zoneSet{ workArea->ZoneSet() };
             Assert::IsNotNull(zoneSet);
-            Assert::AreEqual(static_cast<int>(zoneSet->LayoutType()), static_cast<int>(FancyZonesDataTypes::ZoneSetLayoutType::PriorityGrid));
-            Assert::AreEqual(zoneSet->GetZones().size(), static_cast<size_t>(3));
+            Assert::AreEqual(static_cast<int>(defaultLayout.type), static_cast<int>(zoneSet->LayoutType()));
+            Assert::AreEqual(static_cast<size_t>(defaultLayout.zoneCount), zoneSet->GetZones().size());
         }
 
         TEST_METHOD (CreateCombinedWorkArea)
         {
+            const auto defaultLayout = DefaultLayouts::instance().GetDefaultLayout();
+
             auto workArea = MakeWorkArea({}, {}, m_uniqueId, m_emptyUniqueId);
             Assert::IsFalse(workArea == nullptr);
             Assert::IsTrue(m_uniqueId == workArea->UniqueId());
 
             auto* zoneSet{ workArea->ZoneSet() };
             Assert::IsNotNull(zoneSet);
-            Assert::AreEqual(static_cast<int>(zoneSet->LayoutType()), static_cast<int>(FancyZonesDataTypes::ZoneSetLayoutType::PriorityGrid));
-            Assert::AreEqual(zoneSet->GetZones().size(), static_cast<size_t>(3));
+            Assert::AreEqual(static_cast<int>(defaultLayout.type), static_cast<int>(zoneSet->LayoutType()));
+            Assert::AreEqual(static_cast<size_t>(defaultLayout.zoneCount), zoneSet->GetZones().size());
         }
 
         TEST_METHOD (CreateWorkAreaClonedFromParent)
@@ -106,6 +107,67 @@ namespace FancyZonesUnitTests
             Assert::AreEqual(layout.showSpacing, actualLayout.showSpacing);
             Assert::AreEqual(layout.spacing, actualLayout.spacing);
             Assert::AreEqual(layout.zoneCount, actualLayout.zoneCount);
+        }
+
+        TEST_METHOD (CreateWorkAreaWithCustomDefault)
+        {
+            // prepare
+            json::JsonObject root{};
+            json::JsonArray layoutsArray{};
+            json::JsonObject layout{};
+            layout.SetNamedValue(NonLocalizable::DefaultLayoutsIds::UuidID, json::value(L"{ACE817FD-2C51-4E13-903A-84CAB86FD17C}"));
+            layout.SetNamedValue(NonLocalizable::DefaultLayoutsIds::TypeID, json::value(L"custom"));
+            json::JsonObject item{};
+            item.SetNamedValue(NonLocalizable::DefaultLayoutsIds::MonitorConfigurationTypeID, json::value(L"horizontal"));
+            item.SetNamedValue(NonLocalizable::DefaultLayoutsIds::LayoutID, layout);
+            layoutsArray.Append(item);
+            root.SetNamedValue(NonLocalizable::DefaultLayoutsIds::DefaultLayoutsArrayID, layoutsArray);
+            
+            json::to_file(DefaultLayouts::DefaultLayoutsFileName(), root);
+            DefaultLayouts::instance().LoadData();
+
+            // test
+            auto workArea = MakeWorkArea({}, Mocks::Monitor(), m_uniqueId, m_emptyUniqueId);
+            Assert::IsFalse(workArea == nullptr);
+            Assert::IsTrue(m_uniqueId == workArea->UniqueId());
+
+            auto* zoneSet{ workArea->ZoneSet() };
+            Assert::IsNotNull(zoneSet);
+            Assert::AreEqual(static_cast<int>(FancyZonesDataTypes::ZoneSetLayoutType::Custom), static_cast<int>(zoneSet->LayoutType()));
+            Assert::IsTrue(FancyZonesUtils::GuidFromString(L"{ACE817FD-2C51-4E13-903A-84CAB86FD17C}").value() == zoneSet->Id());
+        }
+
+        TEST_METHOD (CreateWorkAreaWithTemplateDefault)
+        {
+            // prepare
+            json::JsonObject root{};
+            json::JsonArray layoutsArray{};
+            json::JsonObject layout{};
+            layout.SetNamedValue(NonLocalizable::DefaultLayoutsIds::TypeID, json::value(L"grid"));
+            layout.SetNamedValue(NonLocalizable::DefaultLayoutsIds::ShowSpacingID, json::value(true));
+            layout.SetNamedValue(NonLocalizable::DefaultLayoutsIds::SpacingID, json::value(1));
+            layout.SetNamedValue(NonLocalizable::DefaultLayoutsIds::ZoneCountID, json::value(4));
+            layout.SetNamedValue(NonLocalizable::DefaultLayoutsIds::SensitivityRadiusID, json::value(30));
+
+            json::JsonObject item{};
+            item.SetNamedValue(NonLocalizable::DefaultLayoutsIds::MonitorConfigurationTypeID, json::value(L"horizontal"));
+            item.SetNamedValue(NonLocalizable::DefaultLayoutsIds::LayoutID, layout);
+            layoutsArray.Append(item);
+            root.SetNamedValue(NonLocalizable::DefaultLayoutsIds::DefaultLayoutsArrayID, layoutsArray);
+
+            json::to_file(DefaultLayouts::DefaultLayoutsFileName(), root);
+            DefaultLayouts::instance().LoadData();
+
+            // test
+            auto workArea = MakeWorkArea({}, Mocks::Monitor(), m_uniqueId, m_emptyUniqueId);
+            Assert::IsFalse(workArea == nullptr);
+            Assert::IsTrue(m_uniqueId == workArea->UniqueId());
+
+            auto* zoneSet{ workArea->ZoneSet() };
+            Assert::IsNotNull(zoneSet);
+            Assert::AreEqual(static_cast<int>(FancyZonesDataTypes::ZoneSetLayoutType::Grid), static_cast<int>(zoneSet->LayoutType()));
+            Assert::AreEqual(static_cast<size_t>(4), zoneSet->GetZones().size());
+            Assert::IsTrue(GUID_NULL == zoneSet->Id());
         }
     };
 
