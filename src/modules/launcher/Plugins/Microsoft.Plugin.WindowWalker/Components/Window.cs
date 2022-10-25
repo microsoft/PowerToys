@@ -237,13 +237,8 @@ namespace Microsoft.Plugin.WindowWalker.Components
         /// <summary>
         /// Closes the window
         /// </summary>
-        internal void CloseThisWindow(bool switchBeforeClose)
+        internal void CloseThisWindow()
         {
-            if (switchBeforeClose)
-            {
-                SwitchToWindow();
-            }
-
             _ = NativeMethods.SendMessage(Hwnd, Win32Constants.WM_SYSCOMMAND, Win32Constants.SC_CLOSE);
         }
 
