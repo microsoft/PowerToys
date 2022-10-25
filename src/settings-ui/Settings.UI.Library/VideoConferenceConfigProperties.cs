@@ -73,7 +73,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         public StringProperty Theme { get; set; }
 
         [JsonPropertyName("toolbar_hide")]
-        public StringProperty ToolbarHide { get; set; } = "Never";
+        public StringProperty ToolbarHide { get; set; } = "When both camera and microphone are unmuted";
 
         // converts the current to a json string.
         public string ToJsonString()

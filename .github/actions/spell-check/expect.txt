@@ -62,6 +62,7 @@ APIENTRY
 APIIs
 APPBARDATA
 appdata
+APPEXECLINK
 APPICON
 appid
 appium
@@ -75,6 +76,7 @@ apps
 appwindow
 appwiz
 appx
+appxpackage
 APSTUDIO
 AQS
 Aqtobe
@@ -265,6 +267,7 @@ cnt
 Cocklebiddy
 coclass
 codebase
+codecvt
 CODENAME
 codeofconduct
 codereview
@@ -296,6 +299,7 @@ comsuppw
 comsuppwd
 comutil
 Concat
+concrt
 configs
 Configurator
 CONFLICTINGMODIFIERKEY
@@ -314,6 +318,7 @@ CONTROLPARENT
 Controlz
 coord
 copiedcolorrepresentation
+corewebview
 cortana
 cotaskmem
 COULDNOT
@@ -350,6 +355,7 @@ CSY
 CTAB
 CTest
 ctime
+Ctl
 ctor
 CTRLALTDEL
 Ctrls
@@ -385,6 +391,7 @@ DARKPURPLE
 DARKTEAL
 DARKYELLOW
 datareader
+datatemplate
 Datavalue
 DATAW
 davidegiacometti
@@ -546,6 +553,7 @@ ENTERSIZEMOVE
 entrypoint
 ENU
 enum
+enumerationoptions
 EOAC
 EOL
 epicgames
@@ -566,6 +574,7 @@ etl
 etw
 Eucla
 EUQ
+eurochange
 eventlog
 everytime
 evt
@@ -610,6 +619,7 @@ fileapi
 FILEEXPLORER
 FILEFLAGS
 FILEFLAGSMASK
+fileio
 FILEOP
 FILEOS
 filepath
@@ -624,7 +634,7 @@ Filterkeyboard
 Filterx
 finalizer
 findfast
-Firefox
+firefox
 FIXEDFILEINFO
 flt
 flyout
@@ -641,6 +651,7 @@ franky
 frankychen
 Froml
 FROMTOUCH
+FSCTL
 fstream
 FTYPE
 func
@@ -662,7 +673,8 @@ gcode
 gdi
 gdiplus
 GDISCALED
-generatesqlfromuserquery
+getancestor
+getasynckeystate
 GETDESKWALLPAPER
 GETDLGCODE
 GETDPISCALEDSIZE
@@ -675,7 +687,9 @@ GETTEXTLENGTH
 GHND
 github
 githubusercontent
+globalassemblycache
 globals
+Globbing
 GMEM
 GNumber
 google
@@ -690,10 +704,12 @@ GValue
 gwl
 GWLP
 HACCEL
+handlerroutine
 hangeul
 hanselman
 hardcoded
 Hardlines
+hardlinks
 HARDWAREINPUT
 hashcode
 Hashset
@@ -835,6 +851,7 @@ IDrive
 idx
 IDXGI
 IEasing
+IElevation
 IEnum
 IEnumerable
 IEnumerator
@@ -860,6 +877,7 @@ IFormatter
 ifstream
 IGraph
 IGraphics
+ihost
 iid
 IImage
 Iindex
@@ -907,6 +925,7 @@ INotify
 inout
 INPC
 inproc
+inputdev
 INPUTHARDWARE
 INPUTKEYBOARD
 INPUTLANGCHANGED
@@ -951,6 +970,7 @@ IPin
 IPlugin
 IPower
 ipreview
+ipreviewhandler
 ipreviewhandlertranslateaccelerator
 ipreviewhandlervisualssetfont
 IPrincipal
@@ -975,6 +995,7 @@ isetting
 isfinite
 IShell
 ISingle
+ISite
 ISmart
 isocpp
 iss
@@ -983,6 +1004,7 @@ istreambuf
 istringstream
 iswpunct
 iswspace
+ISynchronize
 ITab
 ITask
 ITemplate
@@ -1002,6 +1024,7 @@ IValue
 IVector
 IView
 IVirtual
+ivirtualdesktopmanager
 IWbem
 IWIC
 iwindow
@@ -1011,8 +1034,6 @@ IYUV
 IZone
 IZoom
 JArray
-jarro
-Jarryd
 jefflord
 jfif
 jgeosdfsdsgmkedfgdfgdfgbkmhcgcflmi
@@ -1219,6 +1240,7 @@ memcpy
 memset
 MENUITEMINFO
 MENUITEMINFOW
+menurc
 Metadatas
 metafile
 mfapi
@@ -1251,6 +1273,7 @@ mjpg
 mkd
 mkdn
 mlcfg
+MMdd
 MMDDYYYY
 mmdeviceapi
 mmi
@@ -1287,8 +1310,9 @@ msclr
 mscoree
 mscorlib
 msdata
-MSDN
+msdn
 msedge
+MSFT
 MSGFLT
 MSIFASTINSTALL
 MSIHANDLE
@@ -1302,6 +1326,7 @@ msp
 msrc
 mst
 msvc
+msvcp
 MTND
 Mul
 multiline
@@ -1312,7 +1337,8 @@ multizone
 Mundrabilla
 mutex
 mutexes
-MVVM
+muxc
+mvvm
 myfile
 MYICON
 MYTZ
@@ -1320,6 +1346,7 @@ NAMECHANGE
 nameof
 namespace
 Navassa
+navigatetostring
 NCACTIVATE
 ncc
 NCCALCSIZE
@@ -1359,7 +1386,7 @@ newdev
 newitem
 newpath
 newrow
-Newtonsoft
+newtonsoft
 nia
 niels
 nielslaute
@@ -1386,6 +1413,7 @@ nonclient
 NONCONVERT
 NONELEVATED
 NONINFRINGEMENT
+nonpackaged
 nonstd
 NOOWNERZORDER
 NOPARENTNOTIFY
@@ -1437,6 +1465,7 @@ OBJID
 objidl
 oblitum
 ocr
+Ocrsettings
 odbc
 odbccp
 Oem
@@ -1450,7 +1479,9 @@ oldpath
 oldtheme
 oleaut
 OLECHAR
-OLEDB
+oledb
+oledbcommand
+oledbconnection
 OLIVEGREEN
 onebranch
 onenote
@@ -1561,7 +1592,6 @@ POWERRENAMECONTEXTMENU
 powerrenameinput
 POWERRENAMETEST
 powertoy
-powertoysinterop
 powertoyssetup
 Powrprof
 ppidl
@@ -1584,7 +1614,7 @@ preload
 PREMULTIPLIED
 prevhost
 previewer
-PREVIEWHANDLERFRAMEINFO
+previewhandlerframeinfo
 previewpane
 previouscamera
 PREVIOUSINSTALLFOLDER
@@ -1642,6 +1672,7 @@ qps
 quateur
 Queryable
 QUERYENDSESSION
+queryfocus
 QUERYOPEN
 QUEUESYNC
 Quickime
@@ -1688,9 +1719,11 @@ REFIID
 REGCLS
 regedit
 regex
+regfile
 REGFILTER
 REGFILTERPINS
 REGISTERCLASSFAILED
+registerhotkey
 registrypath
 regkey
 REGPINTYPES
@@ -1707,7 +1740,7 @@ Removelnk
 renamable
 RENAMEONCOLLISION
 Renamer
-Reparse
+reparse
 requery
 requerying
 rescap
@@ -1717,6 +1750,7 @@ Resizable
 resizers
 resmimetype
 RESOURCEID
+resourcemanager
 RESTORETOMAXIMIZED
 restrictedcapabilities
 restrictederrorinfo
@@ -1760,6 +1794,7 @@ Rstrtmgr
 RTB
 RTLREADING
 RTSS
+ruleset
 runas
 rundll
 rungameid
@@ -1783,6 +1818,7 @@ SAVEFAILED
 scalability
 scancode
 scanled
+Schd
 schedtasks
 Scip
 scipbe
@@ -1797,11 +1833,14 @@ SDKDDK
 sdns
 searchterm
 Secur
+securityoverview
 seekg
-Segoe
+segoe
 Sekan
 SENDCHANGE
+sendinput
 sendvirtualinput
+Seperate
 serializer
 serverside
 SETCONTEXT
@@ -1837,6 +1876,7 @@ SHGFI
 Shl
 shldisp
 shlobj
+Shlw
 shlwapi
 shmem
 shobjidl
@@ -1851,6 +1891,7 @@ Shortcuttool
 shortdate
 SHORTPATH
 shortsplit
+should't
 showcolorname
 SHOWDEFAULT
 SHOWELEVATIONPROMPT
@@ -1860,7 +1901,7 @@ SHOWMINNOACTIVE
 SHOWNA
 SHOWNOACTIVATE
 SHOWNORMAL
-SHOWWINDOW
+showwindow
 shtypes
 SICHINT
 sid
@@ -1888,6 +1929,7 @@ sku
 SLGP
 sln
 SMALLICON
+smartphone
 SMTO
 snd
 snickler
@@ -1937,7 +1979,7 @@ STARTUPINFO
 STARTUPINFOEX
 STARTUPINFOW
 startupscreen
-STATFLAG
+statflag
 STATICEDGE
 STATSTG
 stdafx
@@ -1954,7 +1996,7 @@ STDMETHODIMP
 stdout
 stefan
 Stereolithography
-STGM
+stgm
 STGMEDIUM
 sticpl
 stl
@@ -2005,7 +2047,6 @@ swprintf
 SWRESTORE
 swscanf
 SYMED
-symlink
 SYMOPT
 SYNCMFT
 SYNCPAINT
@@ -2015,9 +2056,10 @@ SYSCOMMAND
 SYSDEADCHAR
 sysdm
 SYSICONINDEX
+sysinfo
 SYSKEY
 syskeydown
-SYSKEYUP
+syskeyup
 syslog
 SYSMENU
 SYSTEMAPPS
@@ -2083,6 +2125,7 @@ Toolset
 toolwindow
 TOPDOWNDIB
 toplevel
+tostring
 TOUCHEVENTF
 TOUCHINPUT
 touchpad
@@ -2105,7 +2148,7 @@ TStr
 Tuva
 TValue
 TWF
-TYMED
+tymed
 typedef
 TYPEKEY
 TYPEKEYBOARD
@@ -2118,6 +2161,7 @@ TYPESHORTCUT
 UAC
 UAL
 uap
+uapmanifestschema
 ubuntu
 udit
 Udk
@@ -2126,6 +2170,7 @@ Udp
 uefi
 UHash
 UIA
+uiauto
 uid
 UIEx
 uint
@@ -2198,12 +2243,15 @@ vabdq
 validmodulename
 Vanara
 vcamp
+vccorlib
 vcdl
 vcgtq
 VCINSTALLDIR
 vcm
+vcomp
 Vcpkg
 VCRT
+vcruntime
 vcvars
 VDesktop
 vdi
@@ -2229,6 +2277,7 @@ viewmodel
 vih
 virtualization
 Virtualizing
+virtualkey
 visiblecolorformats
 Visibletrue
 visualbrush
@@ -2295,6 +2344,7 @@ wikipedia
 wildcards
 winapi
 winappdriver
+winauto
 wincodec
 Wincodecsdk
 wincolor
@@ -2328,7 +2378,8 @@ winkey
 WINL
 winmd
 winmm
-WINNT
+winmsg
+winnt
 winres
 winrt
 winsdk
@@ -2337,6 +2388,7 @@ winspool
 WINTHRESHOLD
 winui
 winuiex
+winuser
 winxamlmanager
 wistd
 withinrafael
@@ -2349,6 +2401,7 @@ WKSG
 Wlkr
 wmain
 Wman
+wmentha
 wmi
 WMICIM
 WMKEYDOWN
@@ -2392,6 +2445,7 @@ wtoi
 WTS
 wtsapi
 WTSAT
+wtypes
 Wubi
 wuceffectsi
 WVC
@@ -2429,6 +2483,7 @@ YUYV
 YVIRTUALSCREEN
 YVU
 YVYU
+yyyy
 Zabaykalsky
 ZEROINIT
 ZIndex
