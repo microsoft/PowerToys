@@ -4,8 +4,8 @@
 
 struct ProcessResult
 {
-	std::wstring name;
-	DWORD pid;
+    std::wstring name;
+    DWORD pid;
     std::vector<std::wstring> files;
 };
 

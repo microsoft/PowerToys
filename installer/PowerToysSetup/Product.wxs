@@ -501,8 +501,8 @@
             </Directory>
             <Directory Id="PowerAccentInstallFolder" Name="$(var.PowerAccentProjectName)">
             </Directory>
-			<Directory Id="FileLocksmithInstallFolder" Name="$(var.FileLocksmithProjectName)">
-			</Directory>
+            <Directory Id="FileLocksmithInstallFolder" Name="$(var.FileLocksmithProjectName)">
+            </Directory>
             <Directory Id="PowerRenameInstallFolder" Name="$(var.PowerRenameProjectName)">
               <Directory Id="PowerRenameAssetsFolder" Name="Assets" />
 							<Directory Id="PowerRenameMicrosoftUIXamlInstallFolder" Name="Microsoft.UI.Xaml">
@@ -882,26 +882,26 @@
       <?endforeach?>
     </DirectoryRef>
 
-	<!-- FileLocksmith -->
-	<DirectoryRef Id="FileLocksmithInstallFolder" FileSource="$(var.BinDir)modules\$(var.FileLocksmithProjectName)">
-		<?foreach File in $(var.FileLocksmithFiles)?>
-		<Component Id="FileLocksmith_$(var.File)" Win64="yes">
-			<File Id="FileLocksmithFile_$(var.File)" Source="$(var.BinDir)modules\$(var.FileLocksmithProjectName)\$(var.File)" />
-		</Component>
-		<?endforeach?>
-		<!-- !Warning! Make sure to change Component Guid if you update something here -->
-		<Component Id="Module_FileLocksmith" Guid="108D3EC1-E6E0-4E81-88EF-25966133CB41" Win64="yes">
-			<RegistryKey Root="HKLM" Key="Software\Classes\CLSID\{84D68575-E186-46AD-B0CB-BAEB45EE29C0}">
-				<RegistryValue Type="string" Value="File Locksmith Shell Extension" />
-				<RegistryValue Type="string" Name="ContextMenuOptIn" Value="" />
-				<RegistryValue Type="string" Key="InprocServer32" Value="[FileLocksmithInstallFolder]PowerToys.FileLocksmithExt.dll" />
-				<RegistryValue Type="string" Key="InprocServer32" Name="ThreadingModel" Value="Apartment" />
-			</RegistryKey>
-			<RegistryKey Root="HKLM" Key="Software\Classes\AllFileSystemObjects\ShellEx\ContextMenuHandlers\FileLocksmithExt">
-				<RegistryValue Type="string" Value="{84D68575-E186-46AD-B0CB-BAEB45EE29C0}"/>
-			</RegistryKey>
-		</Component>
-	</DirectoryRef>
+    <!-- FileLocksmith -->
+    <DirectoryRef Id="FileLocksmithInstallFolder" FileSource="$(var.BinDir)modules\$(var.FileLocksmithProjectName)">
+      <?foreach File in $(var.FileLocksmithFiles)?>
+      <Component Id="FileLocksmith_$(var.File)" Win64="yes">
+        <File Id="FileLocksmithFile_$(var.File)" Source="$(var.BinDir)modules\$(var.FileLocksmithProjectName)\$(var.File)" />
+      </Component>
+      <?endforeach?>
+      <!-- !Warning! Make sure to change Component Guid if you update something here -->
+      <Component Id="Module_FileLocksmith" Guid="108D3EC1-E6E0-4E81-88EF-25966133CB41" Win64="yes">
+        <RegistryKey Root="HKLM" Key="Software\Classes\CLSID\{84D68575-E186-46AD-B0CB-BAEB45EE29C0}">
+          <RegistryValue Type="string" Value="File Locksmith Shell Extension" />
+          <RegistryValue Type="string" Name="ContextMenuOptIn" Value="" />
+          <RegistryValue Type="string" Key="InprocServer32" Value="[FileLocksmithInstallFolder]PowerToys.FileLocksmithExt.dll" />
+          <RegistryValue Type="string" Key="InprocServer32" Name="ThreadingModel" Value="Apartment" />
+        </RegistryKey>
+        <RegistryKey Root="HKLM" Key="Software\Classes\AllFileSystemObjects\ShellEx\ContextMenuHandlers\FileLocksmithExt">
+          <RegistryValue Type="string" Value="{84D68575-E186-46AD-B0CB-BAEB45EE29C0}"/>
+        </RegistryKey>
+        </Component>
+    </DirectoryRef>
 
     <!-- PowerRename -->
     <DirectoryRef Id="PowerRenameInstallFolder" FileSource="$(var.BinDir)modules\$(var.PowerRenameProjectName)">
@@ -1268,9 +1268,9 @@
       <ComponentRef Id="DesktopShortcut" />
       <ComponentRef Id="Module_PowerRename" />
       <ComponentRef Id="Module_FileLocksmith" />
-	  <?foreach File in $(var.FileLocksmithFiles)?>
-	  <ComponentRef Id="FileLocksmith_$(var.File)" />
-	  <?endforeach?>
+      <?foreach File in $(var.FileLocksmithFiles)?>
+      <ComponentRef Id="FileLocksmith_$(var.File)" />
+      <?endforeach?>
       <?foreach File in $(var.PowerAccentFiles)?>
       <ComponentRef Id="PowerAccent_$(var.File)" />
       <?endforeach?>
@@ -2005,16 +2005,16 @@
             <File Id="Hosts_WinAppSDKLoc_$(var.IdSafeLanguage)_XamlMui_File" Source="$(var.BinDir)modules\$(var.HostsProjectName)\$(var.Language)\Microsoft.ui.xaml.dll.mui" />
             <File Id="Hosts_WinAppSDKLoc_$(var.IdSafeLanguage)_XamlPhoneMui_File" Source="$(var.BinDir)modules\$(var.HostsProjectName)\$(var.Language)\Microsoft.UI.Xaml.Phone.dll.mui" />
           </Component>
-			<Component
-                Id="FileLocksmith_WinAppSDKLoc_$(var.IdSafeLanguage)_Component"
-                Directory="WinAppSDKLoc$(var.IdSafeLanguage)FileLocksmithInstallFolder"
-                Guid="$(var.CompGUIDPrefix)05">
-				<File Id="FileLocksmith_WinAppSDKLoc_$(var.IdSafeLanguage)_XamlMui_File" Source="$(var.BinDir)modules\$(var.FileLocksmithProjectName)\$(var.Language)\Microsoft.ui.xaml.dll.mui" />
-				<File Id="FileLocksmith_WinAppSDKLoc_$(var.IdSafeLanguage)_XamlPhoneMui_File" Source="$(var.BinDir)modules\$(var.FileLocksmithProjectName)\$(var.Language)\Microsoft.UI.Xaml.Phone.dll.mui" />
-			</Component>
-            <?undef IdSafeLanguage?>
-            <?undef CompGUIDPrefix?>
-            <?endforeach?>
+          <Component
+              Id="FileLocksmith_WinAppSDKLoc_$(var.IdSafeLanguage)_Component"
+              Directory="WinAppSDKLoc$(var.IdSafeLanguage)FileLocksmithInstallFolder"
+              Guid="$(var.CompGUIDPrefix)05">
+            <File Id="FileLocksmith_WinAppSDKLoc_$(var.IdSafeLanguage)_XamlMui_File" Source="$(var.BinDir)modules\$(var.FileLocksmithProjectName)\$(var.Language)\Microsoft.ui.xaml.dll.mui" />
+            <File Id="FileLocksmith_WinAppSDKLoc_$(var.IdSafeLanguage)_XamlPhoneMui_File" Source="$(var.BinDir)modules\$(var.FileLocksmithProjectName)\$(var.Language)\Microsoft.UI.Xaml.Phone.dll.mui" />
+          </Component>
+          <?undef IdSafeLanguage?>
+          <?undef CompGUIDPrefix?>
+          <?endforeach?>
         </ComponentGroup>
     </Fragment>
     <Fragment>

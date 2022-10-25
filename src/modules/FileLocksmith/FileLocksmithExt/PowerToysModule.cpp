@@ -5,6 +5,7 @@
 #include <common/logger/logger.h>
 #include <common/logger/logger_settings.h>
 #include <common/utils/logger_helper.h>
+#include <optional>
 
 #include "Constants.h"
 #include "dllmain.h"
