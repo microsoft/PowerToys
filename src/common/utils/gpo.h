@@ -3,52 +3,52 @@
 #include <Windows.h>
 
 namespace powertoys_gpo {
-	enum gpo_rule_configured_t {
-		gpo_rule_configured_wrong_value = -3, // The policy is set to an unrecognized value
-		gpo_rule_configured_unavailable = -2, // Couldn't access registry
-		gpo_rule_configured_not_configured = -1, // Policy is not configured
-		gpo_rule_configured_disabled = 0, // Policy is disabled
-		gpo_rule_configured_enabled = 1, // Policy is enabled
-	};
+    enum gpo_rule_configured_t {
+        gpo_rule_configured_wrong_value = -3, // The policy is set to an unrecognized value
+        gpo_rule_configured_unavailable = -2, // Couldn't access registry
+        gpo_rule_configured_not_configured = -1, // Policy is not configured
+        gpo_rule_configured_disabled = 0, // Policy is disabled
+        gpo_rule_configured_enabled = 1, // Policy is enabled
+    };
 
-	// Registry path where gpo policy values are stored.
-	const std::wstring POLICIES_PATH = L"SOFTWARE\\Policies\\PowerToys";
+    // Registry path where gpo policy values are stored.
+    const std::wstring POLICIES_PATH = L"SOFTWARE\\Policies\\PowerToys";
 
-	// Registry scope where gpo policy values are stored.
-	const HKEY POLICIES_SCOPE_MACHINE = HKEY_LOCAL_MACHINE;
+    // Registry scope where gpo policy values are stored.
+    const HKEY POLICIES_SCOPE_MACHINE = HKEY_LOCAL_MACHINE;
     const HKEY POLICIES_SCOPE_USER = HKEY_CURRENT_USER;
 
-	// The registry value names for PowerToys utilities enabled and disabled policies.
-	const std::wstring POLICY_CONFIGURE_ENABLED_ALWAYS_ON_TOP = L"ConfigureEnabledUtilityAlwaysOnTop";
-	const std::wstring POLICY_CONFIGURE_ENABLED_AWAKE = L"ConfigureEnabledUtilityAwake";
+    // The registry value names for PowerToys utilities enabled and disabled policies.
+    const std::wstring POLICY_CONFIGURE_ENABLED_ALWAYS_ON_TOP = L"ConfigureEnabledUtilityAlwaysOnTop";
+    const std::wstring POLICY_CONFIGURE_ENABLED_AWAKE = L"ConfigureEnabledUtilityAwake";
     const std::wstring POLICY_CONFIGURE_ENABLED_COLOR_PICKER = L"ConfigureEnabledUtilityColorPicker";
     const std::wstring POLICY_CONFIGURE_ENABLED_FANCYZONES = L"ConfigureEnabledUtilityFancyZones";
-	const std::wstring POLICY_CONFIGURE_ENABLED_SVG_PREVIEW = L"ConfigureEnabledUtilityFileExplorerSVGPreview";
-	const std::wstring POLICY_CONFIGURE_ENABLED_MARKDOWN_PREVIEW = L"ConfigureEnabledUtilityFileExplorerMarkdownPreview";
-	const std::wstring POLICY_CONFIGURE_ENABLED_MONACO_PREVIEW = L"ConfigureEnabledUtilityFileExplorerMonacoPreview";
-	const std::wstring POLICY_CONFIGURE_ENABLED_PDF_PREVIEW = L"ConfigureEnabledUtilityFileExplorerPDFPreview";
-	const std::wstring POLICY_CONFIGURE_ENABLED_GCODE_PREVIEW = L"ConfigureEnabledUtilityFileExplorerGcodePreview";
-	const std::wstring POLICY_CONFIGURE_ENABLED_SVG_THUMBNAILS = L"ConfigureEnabledUtilityFileExplorerSVGThumbnails";
-	const std::wstring POLICY_CONFIGURE_ENABLED_PDF_THUMBNAILS = L"ConfigureEnabledUtilityFileExplorerPDFThumbnails";
-	const std::wstring POLICY_CONFIGURE_ENABLED_GCODE_THUMBNAILS = L"ConfigureEnabledUtilityFileExplorerGcodeThumbnails";
-	const std::wstring POLICY_CONFIGURE_ENABLED_STL_THUMBNAILS = L"ConfigureEnabledUtilityFileExplorerSTLThumbnails";
-	const std::wstring POLICY_CONFIGURE_ENABLED_HOSTS_FILE_EDITOR = L"ConfigureEnabledUtilityHostsFileEditor";
-	const std::wstring POLICY_CONFIGURE_ENABLED_IMAGE_RESIZER = L"ConfigureEnabledUtilityImageResizer";
-	const std::wstring POLICY_CONFIGURE_ENABLED_KEYBOARD_MANAGER = L"ConfigureEnabledUtilityKeyboardManager";
-	const std::wstring POLICY_CONFIGURE_ENABLED_FIND_MY_MOUSE = L"ConfigureEnabledUtilityFindMyMouse";
-	const std::wstring POLICY_CONFIGURE_ENABLED_MOUSE_HIGHLIGHTER = L"ConfigureEnabledUtilityMouseHighlighter";
-	const std::wstring POLICY_CONFIGURE_ENABLED_MOUSE_POINTER_CROSSHAIRS = L"ConfigureEnabledUtilityMousePointerCrosshairs";
-	const std::wstring POLICY_CONFIGURE_ENABLED_POWER_RENAME = L"ConfigureEnabledUtilityPowerRename";
-	const std::wstring POLICY_CONFIGURE_ENABLED_POWER_LAUNCHER = L"ConfigureEnabledUtilityPowerLauncher";
-	const std::wstring POLICY_CONFIGURE_ENABLED_QUICK_ACCENT = L"ConfigureEnabledUtilityQuickAccent";
-	const std::wstring POLICY_CONFIGURE_ENABLED_SCREEN_RULER = L"ConfigureEnabledUtilityScreenRuler";
-	const std::wstring POLICY_CONFIGURE_ENABLED_SHORTCUT_GUIDE = L"ConfigureEnabledUtilityShortcutGuide";
-	const std::wstring POLICY_CONFIGURE_ENABLED_TEXT_EXTRACTOR = L"ConfigureEnabledUtilityTextExtractor";
-	const std::wstring POLICY_CONFIGURE_ENABLED_VIDEO_CONFERENCE_MUTE = L"ConfigureEnabledUtilityVideoConferenceMute";
+    const std::wstring POLICY_CONFIGURE_ENABLED_SVG_PREVIEW = L"ConfigureEnabledUtilityFileExplorerSVGPreview";
+    const std::wstring POLICY_CONFIGURE_ENABLED_MARKDOWN_PREVIEW = L"ConfigureEnabledUtilityFileExplorerMarkdownPreview";
+    const std::wstring POLICY_CONFIGURE_ENABLED_MONACO_PREVIEW = L"ConfigureEnabledUtilityFileExplorerMonacoPreview";
+    const std::wstring POLICY_CONFIGURE_ENABLED_PDF_PREVIEW = L"ConfigureEnabledUtilityFileExplorerPDFPreview";
+    const std::wstring POLICY_CONFIGURE_ENABLED_GCODE_PREVIEW = L"ConfigureEnabledUtilityFileExplorerGcodePreview";
+    const std::wstring POLICY_CONFIGURE_ENABLED_SVG_THUMBNAILS = L"ConfigureEnabledUtilityFileExplorerSVGThumbnails";
+    const std::wstring POLICY_CONFIGURE_ENABLED_PDF_THUMBNAILS = L"ConfigureEnabledUtilityFileExplorerPDFThumbnails";
+    const std::wstring POLICY_CONFIGURE_ENABLED_GCODE_THUMBNAILS = L"ConfigureEnabledUtilityFileExplorerGcodeThumbnails";
+    const std::wstring POLICY_CONFIGURE_ENABLED_STL_THUMBNAILS = L"ConfigureEnabledUtilityFileExplorerSTLThumbnails";
+    const std::wstring POLICY_CONFIGURE_ENABLED_HOSTS_FILE_EDITOR = L"ConfigureEnabledUtilityHostsFileEditor";
+    const std::wstring POLICY_CONFIGURE_ENABLED_IMAGE_RESIZER = L"ConfigureEnabledUtilityImageResizer";
+    const std::wstring POLICY_CONFIGURE_ENABLED_KEYBOARD_MANAGER = L"ConfigureEnabledUtilityKeyboardManager";
+    const std::wstring POLICY_CONFIGURE_ENABLED_FIND_MY_MOUSE = L"ConfigureEnabledUtilityFindMyMouse";
+    const std::wstring POLICY_CONFIGURE_ENABLED_MOUSE_HIGHLIGHTER = L"ConfigureEnabledUtilityMouseHighlighter";
+    const std::wstring POLICY_CONFIGURE_ENABLED_MOUSE_POINTER_CROSSHAIRS = L"ConfigureEnabledUtilityMousePointerCrosshairs";
+    const std::wstring POLICY_CONFIGURE_ENABLED_POWER_RENAME = L"ConfigureEnabledUtilityPowerRename";
+    const std::wstring POLICY_CONFIGURE_ENABLED_POWER_LAUNCHER = L"ConfigureEnabledUtilityPowerLauncher";
+    const std::wstring POLICY_CONFIGURE_ENABLED_QUICK_ACCENT = L"ConfigureEnabledUtilityQuickAccent";
+    const std::wstring POLICY_CONFIGURE_ENABLED_SCREEN_RULER = L"ConfigureEnabledUtilityScreenRuler";
+    const std::wstring POLICY_CONFIGURE_ENABLED_SHORTCUT_GUIDE = L"ConfigureEnabledUtilityShortcutGuide";
+    const std::wstring POLICY_CONFIGURE_ENABLED_TEXT_EXTRACTOR = L"ConfigureEnabledUtilityTextExtractor";
+    const std::wstring POLICY_CONFIGURE_ENABLED_VIDEO_CONFERENCE_MUTE = L"ConfigureEnabledUtilityVideoConferenceMute";
 
-	inline gpo_rule_configured_t getConfiguredValue(const std::wstring& registry_value_name)
-	{
-		HKEY key{};
+    inline gpo_rule_configured_t getConfiguredValue(const std::wstring& registry_value_name)
+    {
+        HKEY key{};
         DWORD value = (DWORD) -2;
         DWORD valueSize = sizeof(value);
 
@@ -89,20 +89,20 @@ namespace powertoys_gpo {
             }
         }
 
-		switch (value)
-		{
-		case 0:
-			return gpo_rule_configured_disabled;
-		case 1:
-			return gpo_rule_configured_enabled;
-		default:
-			return gpo_rule_configured_wrong_value;
-		}
-	}
+        switch (value)
+        {
+        case 0:
+            return gpo_rule_configured_disabled;
+        case 1:
+            return gpo_rule_configured_enabled;
+        default:
+            return gpo_rule_configured_wrong_value;
+        }
+    }
 
-	inline gpo_rule_configured_t getConfiguredAlwaysOnTopEnabledValue() {
-		return getConfiguredValue(POLICY_CONFIGURE_ENABLED_ALWAYS_ON_TOP);
-	}
+    inline gpo_rule_configured_t getConfiguredAlwaysOnTopEnabledValue() {
+        return getConfiguredValue(POLICY_CONFIGURE_ENABLED_ALWAYS_ON_TOP);
+    }
 
     inline gpo_rule_configured_t getConfiguredAwakeEnabledValue()
     {
