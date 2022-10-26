@@ -65,7 +65,7 @@ namespace PowerLauncher.ViewModel
 
         public const int NoSelectionIndex = -1;
 
-        public ResultViewModel(Result result)
+        public ResultViewModel(Result result, IMainViewModel mainViewModel)
         {
             if (result != null)
             {
@@ -77,6 +77,7 @@ namespace PowerLauncher.ViewModel
 
             ActivateContextButtonsHoverCommand = new RelayCommand(ActivateContextButtonsHoverAction);
             DeactivateContextButtonsHoverCommand = new RelayCommand(DeactivateContextButtonsHoverAction);
+            MainViewModel = mainViewModel;
         }
 
         private void ActivateContextButtonsHoverAction(object sender)
@@ -159,8 +160,7 @@ namespace PowerLauncher.ViewModel
 
                         if (hideWindow)
                         {
-                            // TODO - Do we hide the window
-                            // MainWindowVisibility = Visibility.Collapsed;
+                            MainViewModel.Hide();
                         }
                     })));
             }
@@ -257,6 +257,8 @@ namespace PowerLauncher.ViewModel
         }
 
         public Result Result { get; }
+
+        public IMainViewModel MainViewModel { get; }
 
         public override bool Equals(object obj)
         {

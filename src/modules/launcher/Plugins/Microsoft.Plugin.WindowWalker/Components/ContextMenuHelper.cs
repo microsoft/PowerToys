@@ -42,9 +42,7 @@ namespace Microsoft.Plugin.WindowWalker.Components
                             return false;
                         }
 
-                        // As a workaround to close PT Run after executing the context menu command, we switch to the window before closing it (Issue #16601).
-                        // We use the setting OpenAfterKillAndClose to detect if we have to switch.
-                        windowData.CloseThisWindow(!WindowWalkerSettings.Instance.OpenAfterKillAndClose);
+                        windowData.CloseThisWindow();
 
                         return !WindowWalkerSettings.Instance.OpenAfterKillAndClose;
                     },
@@ -100,12 +98,6 @@ namespace Microsoft.Plugin.WindowWalker.Components
                 {
                     return false;
                 }
-            }
-
-            // As a workaround to close PT Run before executing the command, we switch to the window before killing it's process
-            if (!WindowWalkerSettings.Instance.OpenAfterKillAndClose)
-            {
-                window.SwitchToWindow();
             }
 
             // Kill process

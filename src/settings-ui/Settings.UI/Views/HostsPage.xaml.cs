@@ -3,8 +3,8 @@
 // See the LICENSE file in the project root for more information.
 
 using Microsoft.PowerToys.Settings.UI.Library;
+using Microsoft.PowerToys.Settings.UI.ViewModels;
 using Microsoft.UI.Xaml.Controls;
-using Settings.UI.Library.ViewModels;
 
 namespace Microsoft.PowerToys.Settings.UI.Views
 {

@@ -36,7 +36,7 @@ public class PowerAccent : IDisposable
     {
         _keyboardListener.SetShowToolbarEvent(new PowerToys.PowerAccentKeyboardService.ShowToolbar((LetterKey letterKey) =>
         {
-            Application.Current.Dispatcher.Invoke(() =>
+            System.Windows.Application.Current.Dispatcher.Invoke(() =>
             {
                 ShowToolbar(letterKey);
             });
@@ -44,7 +44,7 @@ public class PowerAccent : IDisposable
 
         _keyboardListener.SetHideToolbarEvent(new PowerToys.PowerAccentKeyboardService.HideToolbar((InputType inputType) =>
         {
-            Application.Current.Dispatcher.Invoke(() =>
+            System.Windows.Application.Current.Dispatcher.Invoke(() =>
             {
                 SendInputAndHideToolbar(inputType);
             });
@@ -52,7 +52,7 @@ public class PowerAccent : IDisposable
 
         _keyboardListener.SetNextCharEvent(new PowerToys.PowerAccentKeyboardService.NextChar((TriggerKey triggerKey) =>
         {
-            Application.Current.Dispatcher.Invoke(() =>
+            System.Windows.Application.Current.Dispatcher.Invoke(() =>
             {
                 ProcessNextChar(triggerKey);
             });
@@ -176,7 +176,8 @@ public class PowerAccent : IDisposable
     public Point GetDisplayCoordinates(Size window)
     {
         (Point Location, Size Size, double Dpi) activeDisplay = WindowsFunctions.GetActiveDisplay();
-        Rect screen = new Rect(activeDisplay.Location, activeDisplay.Size) / activeDisplay.Dpi;
+        double primaryDPI = Screen.PrimaryScreen.Bounds.Width / SystemParameters.PrimaryScreenWidth;
+        Rect screen = new Rect(activeDisplay.Location, activeDisplay.Size) / primaryDPI;
         Position position = _settingService.Position;
 
         /* Debug.WriteLine("Dpi: " + activeDisplay.Dpi); */

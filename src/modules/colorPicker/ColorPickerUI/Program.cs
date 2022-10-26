@@ -18,6 +18,13 @@ namespace ColorPicker
         {
             _args = args;
             Logger.LogInfo($"Color Picker started with pid={Environment.ProcessId}");
+
+            if (PowerToys.GPOWrapperProjection.GPOWrapper.GetConfiguredColorPickerEnabledValue() == PowerToys.GPOWrapperProjection.GpoRuleConfigured.Disabled)
+            {
+                Logger.LogWarning("Tried to start with a GPO policy setting the utility to always be disabled. Please contact your systems administrator.");
+                return;
+            }
+
             AppDomain.CurrentDomain.UnhandledException += CurrentDomain_UnhandledException;
             try
             {

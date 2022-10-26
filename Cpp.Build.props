@@ -34,7 +34,7 @@
   <PropertyGroup>
     <PreferredToolArchitecture>x64</PreferredToolArchitecture>
     <VcpkgEnabled>false</VcpkgEnabled>
-    <ExternalIncludePath>$(MSBuildThisFileFullPath)\..\deps\;$(ExternalIncludePath)</ExternalIncludePath>
+    <ExternalIncludePath>$(MSBuildThisFileFullPath)\..\deps\;$(MSBuildThisFileFullPath)\..\packages\;$(ExternalIncludePath)</ExternalIncludePath>
 	<RunCodeAnalysis>true</RunCodeAnalysis>
 	<CodeAnalysisRuleSet>$(MsbuildThisFileDirectory)\CppRuleSet.ruleset</CodeAnalysisRuleSet>
   </PropertyGroup>

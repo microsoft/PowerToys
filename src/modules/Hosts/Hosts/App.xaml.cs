@@ -60,7 +60,7 @@ namespace Hosts
 
             UnhandledException += App_UnhandledException;
 
-            new Thread(() =>
+            var cleanupBackupThread = new Thread(() =>
             {
                 // Delete old backups only if running elevated
                 if (!GetService<IElevationHelper>().IsElevated)
@@ -76,7 +76,10 @@ namespace Hosts
                 {
                     Logger.LogError("Failed to delete backup", ex);
                 }
-            }).Start();
+            });
+
+            cleanupBackupThread.IsBackground = true;
+            cleanupBackupThread.Start();
         }
 
         protected override void OnLaunched(LaunchActivatedEventArgs args)

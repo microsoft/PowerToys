@@ -152,38 +152,27 @@ LRESULT Toolbar::WindowProcessMessages(HWND hwnd, UINT msg, WPARAM wparam, LPARA
         const bool showOverlayTimeout = nowMillis - toolbar->lastTimeCamOrMicMuteStateChanged > OVERLAY_SHOW_TIME;
 
         static bool previousShow = false;
-        bool show = false;
+        bool show = toolbar->ToolbarHide == L"Never";
 
-        if (toolbar->ToolbarHide == L"Never")
+        const bool cameraJustStoppedInUse = toolbar->previouscameraInUse && !toolbar->cameraInUse;
+        bool shouldUnmuteAll = cameraJustStoppedInUse;
+
+        if (toolbar->ToolbarHide == L"When both camera and microphone are muted")
         {
-            show = true;
-        }
-        else if (toolbar->ToolbarHide == L"When both camera and microphone are muted")
-        {
-            if(!toolbar->previouscameraInUse && toolbar->cameraInUse && !toolbar->moduleSettingsUpdateScheduled)
-            {
-                VideoConferenceModule::muteAll();
-            }
-            show = !(toolbar->microphoneMuted && (toolbar->cameraMuted || !toolbar->cameraInUse));
+            // We shouldn't unmute devices, since we'd like to only show the toolbar only
+            // when something is unmuted -> the use case is to keep everything muted by default and track it
+            shouldUnmuteAll = false;
+            show = (!toolbar->cameraMuted && toolbar->cameraInUse) || !toolbar->microphoneMuted;
         }
         else if (toolbar->ToolbarHide == L"When both camera and microphone are unmuted")
-        {
-            if(!toolbar->previouscameraInUse && toolbar->cameraInUse && !toolbar->moduleSettingsUpdateScheduled)
-            {
-                VideoConferenceModule::unmuteAll();
-            }
-            show = toolbar->microphoneMuted || toolbar->cameraMuted;
-        }
+            show = (toolbar->cameraMuted && toolbar->cameraInUse) || toolbar->microphoneMuted;
+
+        if (shouldUnmuteAll && !toolbar->moduleSettingsUpdateScheduled)
+            VideoConferenceModule::unmuteAll();
 
         show = show || !showOverlayTimeout;
-        if (show)
-        {
-            ShowWindow(hwnd, SW_SHOW);
-        }
-        else
-        {
-            ShowWindow(hwnd, SW_HIDE);
-        }
+        ShowWindow(hwnd, show ? SW_SHOW : SW_HIDE);
+
         if (previousShow != show)
         {
             previousShow = show;

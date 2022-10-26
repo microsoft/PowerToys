@@ -139,9 +139,9 @@ ZonesMap CalculateGridZones(FancyZonesUtils::Rect workArea, FancyZonesDataTypes:
         columnInfo[col].Extent = columnInfo[col].End - columnInfo[col].Start;
     }
 
-    for (int row = 0; row < gridLayoutInfo.rows(); row++)
+    for (int64_t row = 0; row < gridLayoutInfo.rows(); row++)
     {
-        for (int col = 0; col < gridLayoutInfo.columns(); col++)
+        for (int64_t col = 0; col < gridLayoutInfo.columns(); col++)
         {
             int i = gridLayoutInfo.cellChildMap()[row][col];
             if (((row == 0) || (gridLayoutInfo.cellChildMap()[row - 1][col] != i)) &&
@@ -150,12 +150,12 @@ ZonesMap CalculateGridZones(FancyZonesUtils::Rect workArea, FancyZonesDataTypes:
                 long left = columnInfo[col].Start;
                 long top = rowInfo[row].Start;
 
-                int maxRow = row;
+                int64_t maxRow = row;
                 while (((maxRow + 1) < gridLayoutInfo.rows()) && (gridLayoutInfo.cellChildMap()[maxRow + 1][col] == i))
                 {
                     maxRow++;
                 }
-                int maxCol = col;
+                int64_t maxCol = col;
                 while (((maxCol + 1) < gridLayoutInfo.columns()) && (gridLayoutInfo.cellChildMap()[row][maxCol + 1] == i))
                 {
                     maxCol++;
@@ -165,9 +165,9 @@ ZonesMap CalculateGridZones(FancyZonesUtils::Rect workArea, FancyZonesDataTypes:
                 long bottom = rowInfo[maxRow].End;
 
                 top += row == 0 ? spacing : spacing / 2;
-                bottom -= maxRow == gridLayoutInfo.rows() - 1 ? spacing : spacing / 2;
+                bottom -= maxRow == static_cast<int64_t>(gridLayoutInfo.rows()) - 1 ? spacing : spacing / 2;
                 left += col == 0 ? spacing : spacing / 2;
-                right -= maxCol == gridLayoutInfo.columns() - 1 ? spacing : spacing / 2;
+                right -= maxCol == static_cast<int64_t>(gridLayoutInfo.columns()) - 1 ? spacing : spacing / 2;
 
                 auto zone = MakeZone(RECT{ left, top, right, bottom }, i);
                 if (zone)

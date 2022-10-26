@@ -10,14 +10,18 @@ namespace FancyZonesEditor.Controls
 
     internal class CustomSliderAutomationPeer : SliderAutomationPeer
     {
+        private string name = string.Empty;
+
         public CustomSliderAutomationPeer(Slider owner)
             : base(owner)
         {
+            name = GetHelpText();
         }
 
         protected override string GetNameCore()
         {
             var element = this.Owner as Slider;
+
             if (element == null)
             {
                 return string.Empty;
@@ -25,7 +29,8 @@ namespace FancyZonesEditor.Controls
 
             string announce = string.Format(
                 CultureInfo.CurrentCulture,
-                Properties.Resources.Distance_adjacent_zones_slider_announce,
+                Properties.Resources.Custom_slider_announce,
+                name,
                 element.Minimum,
                 element.Maximum,
                 element.Value);
