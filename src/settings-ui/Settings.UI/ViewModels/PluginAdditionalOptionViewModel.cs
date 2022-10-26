@@ -4,8 +4,9 @@
 
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
+using Microsoft.PowerToys.Settings.UI.Library;
 
-namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
+namespace Microsoft.PowerToys.Settings.UI.ViewModels
 {
     public class PluginAdditionalOptionViewModel : INotifyPropertyChanged
     {

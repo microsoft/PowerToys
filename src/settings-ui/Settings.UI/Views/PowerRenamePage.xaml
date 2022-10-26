@@ -19,7 +19,7 @@
                     x:Name="PowerRenameView"
                     HorizontalAlignment="Stretch">
 
-                <controls:Setting x:Uid="PowerRename_Toggle_Enable">
+                <controls:Setting x:Uid="PowerRename_Toggle_Enable" IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabledGpoConfigured, Converter={StaticResource BoolNegationConverter}}">
                     <controls:Setting.Icon>
                         <BitmapIcon UriSource="ms-appx:///Assets/FluentIcons/FluentIconsPowerRename.png" ShowAsMonochrome="False" />
                     </controls:Setting.Icon>
@@ -27,6 +27,11 @@
                         <ToggleSwitch IsOn="{x:Bind Mode=TwoWay, Path=ViewModel.IsEnabled}" x:Uid="ToggleSwitch"/>
                     </controls:Setting.ActionContent>
                 </controls:Setting>
+                <InfoBar x:Uid="GPO_IsSettingForced"
+                    Severity="Informational"
+                    IsClosable="False"
+                    IsOpen="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabledGpoConfigured}"
+                    IsTabStop="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabledGpoConfigured}" />
 
                 <controls:SettingsGroup x:Uid="PowerRename_ShellIntegration" IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}">
                     <controls:SettingExpander IsExpanded="True">

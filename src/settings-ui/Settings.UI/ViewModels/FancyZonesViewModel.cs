@@ -4,12 +4,14 @@
 
 using System;
 using System.Runtime.CompilerServices;
+using global::PowerToys.GPOWrapper;
+using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.PowerToys.Settings.UI.Library.Helpers;
 using Microsoft.PowerToys.Settings.UI.Library.Interfaces;
 using Microsoft.PowerToys.Settings.UI.Library.Utilities;
 using Microsoft.PowerToys.Settings.UI.Library.ViewModels.Commands;
 
-namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
+namespace Microsoft.PowerToys.Settings.UI.ViewModels
 {
     public class FancyZonesViewModel : Observable
     {
@@ -114,7 +116,18 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
             string numberColor = Settings.Properties.FancyzonesNumberColor.Value;
             _zoneNumberColor = !string.IsNullOrEmpty(numberColor) ? numberColor : ConfigDefaults.DefaultFancyzonesNumberColor;
 
-            _isEnabled = GeneralSettingsConfig.Enabled.FancyZones;
+            _enabledGpoRuleConfiguration = GPOWrapper.GetConfiguredFancyZonesEnabledValue();
+            if (_enabledGpoRuleConfiguration == GpoRuleConfigured.Disabled || _enabledGpoRuleConfiguration == GpoRuleConfigured.Enabled)
+            {
+                // Get the enabled state from GPO.
+                _enabledStateIsGPOConfigured = true;
+                _isEnabled = _enabledGpoRuleConfiguration == GpoRuleConfigured.Enabled;
+            }
+            else
+            {
+                _isEnabled = GeneralSettingsConfig.Enabled.FancyZones;
+            }
+
             _windows11 = Helper.Windows11();
 
             // Disable setting on windows 10
@@ -124,6 +137,8 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
             }
         }
 
+        private GpoRuleConfigured _enabledGpoRuleConfiguration;
+        private bool _enabledStateIsGPOConfigured;
         private bool _isEnabled;
         private bool _shiftDrag;
         private bool _mouseSwitch;
@@ -168,6 +183,12 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
 
             set
             {
+                if (_enabledStateIsGPOConfigured)
+                {
+                    // If it's GPO configured, shouldn't be able to change this state.
+                    return;
+                }
+
                 if (value != _isEnabled)
                 {
                     _isEnabled = value;
@@ -183,6 +204,11 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
                     OnPropertyChanged(nameof(WindowSwitchingCategoryEnabled));
                 }
             }
+        }
+
+        public bool IsEnabledGpoConfigured
+        {
+            get => _enabledStateIsGPOConfigured;
         }
 
         public bool SnapHotkeysCategoryEnabled

@@ -6,10 +6,12 @@ using System;
 using System.Globalization;
 using System.Text.Json;
 using System.Timers;
+using global::PowerToys.GPOWrapper;
+using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.PowerToys.Settings.UI.Library.Helpers;
 using Microsoft.PowerToys.Settings.UI.Library.Interfaces;
 
-namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
+namespace Microsoft.PowerToys.Settings.UI.ViewModels
 {
     public class PowerOcrViewModel : Observable, IDisposable
     {
@@ -26,6 +28,8 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
         private readonly PowerOcrSettings _powerOcrSettings;
         private Timer _delayedTimer;
 
+        private GpoRuleConfigured _enabledGpoRuleConfiguration;
+        private bool _enabledStateIsGPOConfigured;
         private bool _isEnabled;
 
         private Func<string, int> SendConfigMSG { get; }
@@ -59,7 +63,17 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
 
             _powerOcrSettings = powerOcrsettingsRepository.SettingsConfig;
 
-            _isEnabled = GeneralSettingsConfig.Enabled.PowerOCR;
+            _enabledGpoRuleConfiguration = GPOWrapper.GetConfiguredTextExtractorEnabledValue();
+            if (_enabledGpoRuleConfiguration == GpoRuleConfigured.Disabled || _enabledGpoRuleConfiguration == GpoRuleConfigured.Enabled)
+            {
+                // Get the enabled state from GPO.
+                _enabledStateIsGPOConfigured = true;
+                _isEnabled = _enabledGpoRuleConfiguration == GpoRuleConfigured.Enabled;
+            }
+            else
+            {
+                _isEnabled = GeneralSettingsConfig.Enabled.PowerOCR;
+            }
 
             // set the callback functions value to hangle outgoing IPC message.
             SendConfigMSG = ipcMSGCallBackFunc;
@@ -75,6 +89,12 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
             get => _isEnabled;
             set
             {
+                if (_enabledStateIsGPOConfigured)
+                {
+                    // If it's GPO configured, shouldn't be able to change this state.
+                    return;
+                }
+
                 if (_isEnabled != value)
                 {
                     _isEnabled = value;
@@ -87,6 +107,11 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
                     SendConfigMSG(outgoing.ToString());
                 }
             }
+        }
+
+        public bool IsEnabledGpoConfigured
+        {
+            get => _enabledStateIsGPOConfigured;
         }
 
         public HotkeySettings ActivationShortcut

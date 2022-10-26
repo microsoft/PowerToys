@@ -4,10 +4,12 @@
 
 using System;
 using System.Runtime.CompilerServices;
+using global::PowerToys.GPOWrapper;
+using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.PowerToys.Settings.UI.Library.Helpers;
 using Microsoft.PowerToys.Settings.UI.Library.Interfaces;
 
-namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
+namespace Microsoft.PowerToys.Settings.UI.ViewModels
 {
     public class AwakeViewModel : Observable
     {
@@ -35,7 +37,18 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
 
             Settings = moduleSettingsRepository.SettingsConfig;
 
-            _isEnabled = GeneralSettingsConfig.Enabled.Awake;
+            _enabledGpoRuleConfiguration = GPOWrapper.GetConfiguredAwakeEnabledValue();
+            if (_enabledGpoRuleConfiguration == GpoRuleConfigured.Disabled || _enabledGpoRuleConfiguration == GpoRuleConfigured.Enabled)
+            {
+                // Get the enabled state from GPO.
+                _enabledStateIsGPOConfigured = true;
+                _isEnabled = _enabledGpoRuleConfiguration == GpoRuleConfigured.Enabled;
+            }
+            else
+            {
+                _isEnabled = GeneralSettingsConfig.Enabled.Awake;
+            }
+
             _keepDisplayOn = Settings.Properties.KeepDisplayOn;
             _mode = Settings.Properties.Mode;
             _hours = Settings.Properties.Hours;
@@ -52,6 +65,12 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
             {
                 if (_isEnabled != value)
                 {
+                    if (_enabledStateIsGPOConfigured)
+                    {
+                        // If it's GPO configured, shouldn't be able to change this state.
+                        return;
+                    }
+
                     _isEnabled = value;
 
                     GeneralSettingsConfig.Enabled.Awake = value;
@@ -63,6 +82,11 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
                     NotifyPropertyChanged();
                 }
             }
+        }
+
+        public bool IsEnabledGpoConfigured
+        {
+            get => _enabledStateIsGPOConfigured;
         }
 
         public bool IsTimeConfigurationEnabled
@@ -148,6 +172,8 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
             }
         }
 
+        private GpoRuleConfigured _enabledGpoRuleConfiguration;
+        private bool _enabledStateIsGPOConfigured;
         private bool _isEnabled;
         private uint _hours;
         private uint _minutes;

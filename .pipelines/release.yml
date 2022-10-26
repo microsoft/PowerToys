@@ -528,5 +528,11 @@ jobs:
       PathtoPublish: $(System.ArtifactsDirectory)
       ArtifactName: setup-$(BuildPlatform)
 
+  - task: PublishBuildArtifacts@1
+    displayName: 'Publish Artifact: GPO Files'
+    inputs:
+      PathtoPublish: doc\gpo\assets
+      ArtifactName: GroupPolicyObjectsFiles
+
 
 ...

@@ -2640,4 +2640,7 @@ Activate by holding the key for the character you want to add an accent to, then
   <data name="Hosts_Toggle_LaunchAdministrator.Header" xml:space="preserve">
     <value>Launch as administrator</value>
   </data>
+  <data name="GPO_IsSettingForced.Title" xml:space="preserve">
+    <value>The systems administrator is forcing this setting.</value>
+  </data>
 </root>

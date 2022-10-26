@@ -28,6 +28,12 @@ internal static class Program
     {
         _ = new Mutex(true, PROGRAM_APP_NAME, out bool instantiated);
 
+        if (PowerToys.GPOWrapper.GPOWrapper.GetConfiguredQuickAccentEnabledValue() == PowerToys.GPOWrapper.GpoRuleConfigured.Disabled)
+        {
+            Logger.LogWarning("Tried to start with a GPO policy setting the utility to always be disabled. Please contact your systems administrator.");
+            return;
+        }
+
         if (instantiated)
         {
             Arguments(args);

@@ -272,6 +272,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "utils", "utils", "{B39DC643
 		src\common\utils\excluded_apps.h = src\common\utils\excluded_apps.h
 		src\common\utils\exec.h = src\common\utils\exec.h
 		src\common\utils\game_mode.h = src\common\utils\game_mode.h
+		src\common\utils\gpo.h = src\common\utils\gpo.h
 		src\common\utils\HDropIterator.h = src\common\utils\HDropIterator.h
 		src\common\utils\HttpClient.h = src\common\utils\HttpClient.h
 		src\common\utils\json.h = src\common\utils\json.h
@@ -456,6 +457,10 @@ EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Hosts.Tests", "src\modules\Hosts\Hosts.Tests\Hosts.Tests.csproj", "{E2D03E0F-7A75-4813-9F4B-D8763D43FD3A}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "HostsModuleInterface", "src\modules\Hosts\HostsModuleInterface\HostsModuleInterface.vcxproj", "{B41B888C-7DB8-4747-B262-4062E05A230D}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "GPOWrapper", "src\common\GPOWrapper\GPOWrapper.vcxproj", "{E599C30B-9DC8-4E5A-BF27-93D4CCEDE788}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GPOWrapperProjection", "src\common\GPOWrapperProjection\GPOWrapperProjection.csproj", "{00EE9BA6-4E8F-43CA-960D-D4882F0FBB97}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -1848,6 +1853,30 @@ Global
 		{B41B888C-7DB8-4747-B262-4062E05A230D}.Release|x64.Build.0 = Release|x64
 		{B41B888C-7DB8-4747-B262-4062E05A230D}.Release|x86.ActiveCfg = Release|x64
 		{B41B888C-7DB8-4747-B262-4062E05A230D}.Release|x86.Build.0 = Release|x64
+		{E599C30B-9DC8-4E5A-BF27-93D4CCEDE788}.Debug|ARM64.ActiveCfg = Debug|ARM64
+		{E599C30B-9DC8-4E5A-BF27-93D4CCEDE788}.Debug|ARM64.Build.0 = Debug|ARM64
+		{E599C30B-9DC8-4E5A-BF27-93D4CCEDE788}.Debug|x64.ActiveCfg = Debug|x64
+		{E599C30B-9DC8-4E5A-BF27-93D4CCEDE788}.Debug|x64.Build.0 = Debug|x64
+		{E599C30B-9DC8-4E5A-BF27-93D4CCEDE788}.Debug|x86.ActiveCfg = Debug|x64
+		{E599C30B-9DC8-4E5A-BF27-93D4CCEDE788}.Debug|x86.Build.0 = Debug|x64
+		{E599C30B-9DC8-4E5A-BF27-93D4CCEDE788}.Release|ARM64.ActiveCfg = Release|ARM64
+		{E599C30B-9DC8-4E5A-BF27-93D4CCEDE788}.Release|ARM64.Build.0 = Release|ARM64
+		{E599C30B-9DC8-4E5A-BF27-93D4CCEDE788}.Release|x64.ActiveCfg = Release|x64
+		{E599C30B-9DC8-4E5A-BF27-93D4CCEDE788}.Release|x64.Build.0 = Release|x64
+		{E599C30B-9DC8-4E5A-BF27-93D4CCEDE788}.Release|x86.ActiveCfg = Release|x64
+		{E599C30B-9DC8-4E5A-BF27-93D4CCEDE788}.Release|x86.Build.0 = Release|x64
+		{00EE9BA6-4E8F-43CA-960D-D4882F0FBB97}.Debug|ARM64.ActiveCfg = Debug|ARM64
+		{00EE9BA6-4E8F-43CA-960D-D4882F0FBB97}.Debug|ARM64.Build.0 = Debug|ARM64
+		{00EE9BA6-4E8F-43CA-960D-D4882F0FBB97}.Debug|x64.ActiveCfg = Debug|x64
+		{00EE9BA6-4E8F-43CA-960D-D4882F0FBB97}.Debug|x64.Build.0 = Debug|x64
+		{00EE9BA6-4E8F-43CA-960D-D4882F0FBB97}.Debug|x86.ActiveCfg = Debug|x64
+		{00EE9BA6-4E8F-43CA-960D-D4882F0FBB97}.Debug|x86.Build.0 = Debug|x64
+		{00EE9BA6-4E8F-43CA-960D-D4882F0FBB97}.Release|ARM64.ActiveCfg = Release|ARM64
+		{00EE9BA6-4E8F-43CA-960D-D4882F0FBB97}.Release|ARM64.Build.0 = Release|ARM64
+		{00EE9BA6-4E8F-43CA-960D-D4882F0FBB97}.Release|x64.ActiveCfg = Release|x64
+		{00EE9BA6-4E8F-43CA-960D-D4882F0FBB97}.Release|x64.Build.0 = Release|x64
+		{00EE9BA6-4E8F-43CA-960D-D4882F0FBB97}.Release|x86.ActiveCfg = Release|x64
+		{00EE9BA6-4E8F-43CA-960D-D4882F0FBB97}.Release|x86.Build.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -2004,6 +2033,8 @@ Global
 		{F05E590D-AD46-42BE-9C25-6A63ADD2E3EA} = {4574FDD0-F61D-4376-98BF-E5A1262C11EC}
 		{E2D03E0F-7A75-4813-9F4B-D8763D43FD3A} = {F05E590D-AD46-42BE-9C25-6A63ADD2E3EA}
 		{B41B888C-7DB8-4747-B262-4062E05A230D} = {F05E590D-AD46-42BE-9C25-6A63ADD2E3EA}
+		{E599C30B-9DC8-4E5A-BF27-93D4CCEDE788} = {1AFB6476-670D-4E80-A464-657E01DFF482}
+		{00EE9BA6-4E8F-43CA-960D-D4882F0FBB97} = {1AFB6476-670D-4E80-A464-657E01DFF482}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {C3A2F9D1-7930-4EF4-A6FC-7EE0A99821D0}

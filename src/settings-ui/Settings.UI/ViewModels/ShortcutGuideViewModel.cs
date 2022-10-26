@@ -4,10 +4,12 @@
 
 using System;
 using System.Runtime.CompilerServices;
+using global::PowerToys.GPOWrapper;
+using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.PowerToys.Settings.UI.Library.Helpers;
 using Microsoft.PowerToys.Settings.UI.Library.Interfaces;
 
-namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
+namespace Microsoft.PowerToys.Settings.UI.ViewModels
 {
     public class ShortcutGuideViewModel : Observable
     {
@@ -51,7 +53,18 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
             // set the callback functions value to hangle outgoing IPC message.
             SendConfigMSG = ipcMSGCallBackFunc;
 
-            _isEnabled = GeneralSettingsConfig.Enabled.ShortcutGuide;
+            _enabledGpoRuleConfiguration = GPOWrapper.GetConfiguredShortcutGuideEnabledValue();
+            if (_enabledGpoRuleConfiguration == GpoRuleConfigured.Disabled || _enabledGpoRuleConfiguration == GpoRuleConfigured.Enabled)
+            {
+                // Get the enabled state from GPO.
+                _enabledStateIsGPOConfigured = true;
+                _isEnabled = _enabledGpoRuleConfiguration == GpoRuleConfigured.Enabled;
+            }
+            else
+            {
+                _isEnabled = GeneralSettingsConfig.Enabled.ShortcutGuide;
+            }
+
             _useLegacyPressWinKeyBehavior = Settings.Properties.UseLegacyPressWinKeyBehavior.Value;
             _pressTime = Settings.Properties.PressTime.Value;
             _opacity = Settings.Properties.OverlayOpacity.Value;
@@ -65,6 +78,8 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
             }
         }
 
+        private GpoRuleConfigured _enabledGpoRuleConfiguration;
+        private bool _enabledStateIsGPOConfigured;
         private bool _isEnabled;
         private int _themeIndex;
         private bool _useLegacyPressWinKeyBehavior;
@@ -80,6 +95,12 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
 
             set
             {
+                if (_enabledStateIsGPOConfigured)
+                {
+                    // If it's GPO configured, shouldn't be able to change this state.
+                    return;
+                }
+
                 if (value != _isEnabled)
                 {
                     _isEnabled = value;
@@ -92,6 +113,11 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
                     OnPropertyChanged(nameof(IsEnabled));
                 }
             }
+        }
+
+        public bool IsEnabledGpoConfigured
+        {
+            get => _enabledStateIsGPOConfigured;
         }
 
         public HotkeySettings OpenShortcutGuide

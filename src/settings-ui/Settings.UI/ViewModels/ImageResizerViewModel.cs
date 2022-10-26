@@ -7,11 +7,13 @@ using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.IO;
 using System.Linq;
+using global::PowerToys.GPOWrapper;
+using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.PowerToys.Settings.UI.Library.Helpers;
 using Microsoft.PowerToys.Settings.UI.Library.Interfaces;
 using Microsoft.PowerToys.Settings.UI.Library.Utilities;
 
-namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
+namespace Microsoft.PowerToys.Settings.UI.ViewModels
 {
     public class ImageResizerViewModel : Observable
     {
@@ -57,7 +59,18 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
             // set the callback functions value to hangle outgoing IPC message.
             SendConfigMSG = ipcMSGCallBackFunc;
 
-            _isEnabled = GeneralSettingsConfig.Enabled.ImageResizer;
+            _enabledGpoRuleConfiguration = GPOWrapper.GetConfiguredImageResizerEnabledValue();
+            if (_enabledGpoRuleConfiguration == GpoRuleConfigured.Disabled || _enabledGpoRuleConfiguration == GpoRuleConfigured.Enabled)
+            {
+                // Get the enabled state from GPO.
+                _enabledStateIsGPOConfigured = true;
+                _isEnabled = _enabledGpoRuleConfiguration == GpoRuleConfigured.Enabled;
+            }
+            else
+            {
+                _isEnabled = GeneralSettingsConfig.Enabled.ImageResizer;
+            }
+
             _advancedSizes = Settings.Properties.ImageresizerSizes.Value;
             _jpegQualityLevel = Settings.Properties.ImageresizerJpegQualityLevel.Value;
             _pngInterlaceOption = Settings.Properties.ImageresizerPngInterlaceOption.Value;
@@ -75,6 +88,8 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
             }
         }
 
+        private GpoRuleConfigured _enabledGpoRuleConfiguration;
+        private bool _enabledStateIsGPOConfigured;
         private bool _isEnabled;
         private ObservableCollection<ImageSize> _advancedSizes = new ObservableCollection<ImageSize>();
         private int _jpegQualityLevel;
@@ -95,6 +110,12 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
 
             set
             {
+                if (_enabledStateIsGPOConfigured)
+                {
+                    // If it's GPO configured, shouldn't be able to change this state.
+                    return;
+                }
+
                 if (value != _isEnabled)
                 {
                     // To set the status of ImageResizer in the General PowerToys settings.
@@ -106,6 +127,11 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
                     OnPropertyChanged(nameof(IsEnabled));
                 }
             }
+        }
+
+        public bool IsEnabledGpoConfigured
+        {
+            get => _enabledStateIsGPOConfigured;
         }
 
         public ObservableCollection<ImageSize> Sizes

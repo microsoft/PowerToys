@@ -19,7 +19,7 @@
 
             <StackPanel Orientation="Vertical">
             
-                <controls:Setting x:Uid="VideoConference_Enable" IsEnabled="{ Binding Mode=OneWay, Path=IsElevated }">
+                <controls:Setting x:Uid="VideoConference_Enable" IsEnabled="{ Binding Mode=OneWay, Path=CanUserChangeEnabledState }">
                     <controls:Setting.Icon>
                         <BitmapIcon UriSource="ms-appx:///Assets/FluentIcons/FluentIconsVideoConferenceMute.png" ShowAsMonochrome="False" />
                     </controls:Setting.Icon>
@@ -34,7 +34,12 @@
                     IsTabStop="True"
                     IsClosable="False"
                     Visibility="{Binding Mode=OneWay, Path=IsElevated, Converter={StaticResource BoolToVisibilityConverter}}" />
-                
+                <InfoBar x:Uid="GPO_IsSettingForced"
+                    Severity="Informational"
+                    IsClosable="False"
+                    IsOpen="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabledGpoConfigured}"
+                    IsTabStop="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabledGpoConfigured}" />
+
                 <controls:SettingsGroup x:Uid="VideoConference_Shortcuts" IsEnabled="{Binding Mode=OneWay, Path=IsEnabled}">
                     <controls:Setting x:Uid="VideoConference_CameraAndMicrophoneMuteHotkeyControl_Header">
                         <controls:Setting.ActionContent>

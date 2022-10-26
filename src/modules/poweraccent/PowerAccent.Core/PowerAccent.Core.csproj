@@ -10,7 +10,7 @@
 	  <UseWindowsForms>true</UseWindowsForms>
     </PropertyGroup>
     <PropertyGroup>
-        <CsWinRTIncludes>PowerToys.PowerAccentKeyboardService</CsWinRTIncludes>
+        <CsWinRTIncludes>PowerToys.GPOWrapper;PowerToys.PowerAccentKeyboardService</CsWinRTIncludes>
         <CsWinRTGeneratedFilesDir>$(OutDir)</CsWinRTGeneratedFilesDir>
         <ErrorOnDuplicatePublishOutputFiles>false</ErrorOnDuplicatePublishOutputFiles>
     </PropertyGroup>
@@ -23,6 +23,7 @@
 </ItemGroup>
 
     <ItemGroup>
+    <ProjectReference Include="..\..\..\common\GPOWrapper\GPOWrapper.vcxproj" />
         <ProjectReference Include="..\..\..\settings-ui\Settings.UI.Library\Settings.UI.Library.csproj" />
         <ProjectReference Include="..\PowerAccentKeyboardService\PowerAccentKeyboardService.vcxproj" />
     </ItemGroup>
