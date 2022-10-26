@@ -32,6 +32,14 @@ namespace FileLocksmithUI
         /// <param name="args">Details about the launch request and process.</param>
         protected override void OnLaunched(LaunchActivatedEventArgs args)
         {
+            if (PowerToys.GPOWrapper.GPOWrapper.GetConfiguredFileLocksmithEnabledValue() == PowerToys.GPOWrapper.GpoRuleConfigured.Disabled)
+            {
+                // TODO: Add logging.
+                // Logger.LogWarning("Tried to start with a GPO policy setting the utility to always be disabled. Please contact your systems administrator.");
+                Environment.Exit(0); // Current.Exit won't work until there's a window opened.
+                return;
+            }
+
             _window = new MainWindow(Environment.GetCommandLineArgs().Contains("--elevated"));
             _window.Activate();
         }

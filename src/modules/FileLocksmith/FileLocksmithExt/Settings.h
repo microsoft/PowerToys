@@ -1,6 +1,7 @@
 #pragma once
 
 #include "pch.h"
+#include <common/utils/gpo.h>
 
 class FileLocksmithSettings
 {
@@ -9,6 +10,11 @@ public:
 
     inline bool GetEnabled()
     {
+        auto gpoSetting = powertoys_gpo::getConfiguredFileLocksmithEnabledValue();
+        if (gpoSetting == powertoys_gpo::gpo_rule_configured_enabled)
+            return true;
+        if (gpoSetting == powertoys_gpo::gpo_rule_configured_disabled)
+            return false;
         Reload();
         return settings.enabled;
     }
