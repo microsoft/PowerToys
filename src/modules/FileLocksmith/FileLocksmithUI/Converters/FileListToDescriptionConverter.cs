@@ -23,7 +23,7 @@ namespace PowerToys.FileLocksmithUI.Converters
             }
             else
             {
-                return paths[0] + ", +" + (paths.Length - 1);
+                return paths[0] + "; +" + (paths.Length - 1);
             }
         }
 

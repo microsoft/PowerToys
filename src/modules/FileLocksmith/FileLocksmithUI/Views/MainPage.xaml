@@ -44,7 +44,7 @@
         <Grid Padding="18,0,18,4" VerticalAlignment="Bottom">
             <!--<TextBlock Margin="0,2,0,0" Text="Current proccesses:" Style="{ThemeResource BodyStrongTextBlockStyle}"/>-->
             <TextBlock
-                Margin="0,2,0,0"
+                Margin="0,8,0,0"
                 HorizontalAlignment="Left"
                 Style="{ThemeResource BodyStrongTextBlockStyle}"
                 Text="{x:Bind ViewModel.Paths, Converter={StaticResource fileListToDescriptionConverter}}">
