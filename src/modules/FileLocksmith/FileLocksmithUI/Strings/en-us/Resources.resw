@@ -132,6 +132,9 @@
   <data name="Files.Text" xml:space="preserve">
     <value>Files</value>
   </data>
+  <data name="NoFilesSelected.Text" xml:space="preserve">
+    <value>No files selected</value>
+  </data>
   <data name="ProcessID.Header" xml:space="preserve">
     <value>Process ID</value>
   </data>
