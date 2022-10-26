@@ -15,6 +15,7 @@ namespace PowerToys.FileLocksmithUI.ViewModels
     using CommunityToolkit.Mvvm.Input;
     using FileLocksmith.Interop;
     using global::FileLocksmithUI;
+    using global::FileLocksmithUI.Helpers;
     using Microsoft.UI.Dispatching;
     using Microsoft.UI.Xaml.Controls;
 
@@ -72,6 +73,7 @@ namespace PowerToys.FileLocksmithUI.ViewModels
         public MainViewModel()
         {
             paths = NativeMethods.ReadPathsFromFile();
+            Logger.LogInfo($"Starting FileLocksmith with {paths.Length} files selected.");
             LoadProcessesCommand = new AsyncRelayCommand(LoadProcessesAsync);
         }
 

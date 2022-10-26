@@ -4,6 +4,7 @@
 
 using System;
 using System.Linq;
+using FileLocksmithUI.Helpers;
 using ManagedCommon;
 using Microsoft.UI.Dispatching;
 using Microsoft.UI.Xaml;
@@ -34,8 +35,7 @@ namespace FileLocksmithUI
         {
             if (PowerToys.GPOWrapper.GPOWrapper.GetConfiguredFileLocksmithEnabledValue() == PowerToys.GPOWrapper.GpoRuleConfigured.Disabled)
             {
-                // TODO: Add logging.
-                // Logger.LogWarning("Tried to start with a GPO policy setting the utility to always be disabled. Please contact your systems administrator.");
+                Logger.LogWarning("Tried to start with a GPO policy setting the utility to always be disabled. Please contact your systems administrator.");
                 Environment.Exit(0); // Current.Exit won't work until there's a window opened.
                 return;
             }
