@@ -59,13 +59,13 @@ namespace FancyZonesUnitTests
             // test
             DefaultLayouts::instance().LoadData();
             
-            Layout horizontal{
+            LayoutData horizontal{
                 .uuid = FancyZonesUtils::GuidFromString(L"{ACE817FD-2C51-4E13-903A-84CAB86FD17C}").value(),
                 .type = FancyZonesDataTypes::ZoneSetLayoutType::Custom
             };
             Assert::IsTrue(horizontal == DefaultLayouts::instance().GetDefaultLayout(MonitorConfiguraionType::Horizontal));
 
-            Layout vertical{
+            LayoutData vertical{
                 .uuid = GUID_NULL,
                 .type = FancyZonesDataTypes::ZoneSetLayoutType::Grid,
                 .showSpacing = true,
@@ -87,7 +87,7 @@ namespace FancyZonesUnitTests
                 // test
                 DefaultLayouts::instance().LoadData();
 
-                Layout priorityGrid{
+                LayoutData priorityGrid{
                     .uuid = GUID_NULL,
                     .type = FancyZonesDataTypes::ZoneSetLayoutType::PriorityGrid,
                     .showSpacing = DefaultValues::ShowSpacing,
@@ -105,7 +105,7 @@ namespace FancyZonesUnitTests
                 // test
                 DefaultLayouts::instance().LoadData();
 
-                Layout priorityGrid{
+                LayoutData priorityGrid{
                     .uuid = GUID_NULL,
                     .type = FancyZonesDataTypes::ZoneSetLayoutType::PriorityGrid,
                     .showSpacing = DefaultValues::ShowSpacing,

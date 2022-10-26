@@ -57,8 +57,8 @@ namespace FancyZonesUnitTests
             const auto& layout = workArea->GetLayout();
             Assert::IsNotNull(layout.get());
             Assert::IsNotNull(workArea->GetLayoutWindows().get());
-            Assert::AreEqual(static_cast<int>(layout->Type()), static_cast<int>(FancyZonesDataTypes::ZoneSetLayoutType::PriorityGrid));
-            Assert::AreEqual(layout->Zones().size(), static_cast<size_t>(3));
+            Assert::AreEqual(static_cast<int>(defaultLayout.type), static_cast<int>(layout->Type()));
+            Assert::AreEqual(defaultLayout.zoneCount, static_cast<int>(layout->Zones().size()));
         }
 
         TEST_METHOD (CreateCombinedWorkArea)
@@ -72,8 +72,8 @@ namespace FancyZonesUnitTests
             const auto& layout = workArea->GetLayout();
             Assert::IsNotNull(layout.get());
             Assert::IsNotNull(workArea->GetLayoutWindows().get());
-            Assert::AreEqual(static_cast<int>(layout->Type()), static_cast<int>(FancyZonesDataTypes::ZoneSetLayoutType::PriorityGrid));
-            Assert::AreEqual(layout->Zones().size(), static_cast<size_t>(3));
+            Assert::AreEqual(static_cast<int>(defaultLayout.type), static_cast<int>(layout->Type()));
+            Assert::AreEqual(defaultLayout.zoneCount, static_cast<int>(layout->Zones().size()));
         }
 
         TEST_METHOD (CreateWorkAreaClonedFromParent)
@@ -135,10 +135,11 @@ namespace FancyZonesUnitTests
             Assert::IsFalse(workArea == nullptr);
             Assert::IsTrue(m_uniqueId == workArea->UniqueId());
 
-            auto* zoneSet{ workArea->ZoneSet() };
-            Assert::IsNotNull(zoneSet);
-            Assert::AreEqual(static_cast<int>(FancyZonesDataTypes::ZoneSetLayoutType::Custom), static_cast<int>(zoneSet->LayoutType()));
-            Assert::IsTrue(FancyZonesUtils::GuidFromString(L"{ACE817FD-2C51-4E13-903A-84CAB86FD17C}").value() == zoneSet->Id());
+            Assert::IsNotNull(workArea->GetLayout().get());
+
+            const auto& actualLayout = workArea->GetLayout();
+            Assert::AreEqual(static_cast<int>(FancyZonesDataTypes::ZoneSetLayoutType::Custom), static_cast<int>(actualLayout->Type()));
+            Assert::IsTrue(FancyZonesUtils::GuidFromString(L"{ACE817FD-2C51-4E13-903A-84CAB86FD17C}").value() == actualLayout->Id());
         }
 
         TEST_METHOD (CreateWorkAreaWithTemplateDefault)
@@ -167,11 +168,12 @@ namespace FancyZonesUnitTests
             Assert::IsFalse(workArea == nullptr);
             Assert::IsTrue(m_uniqueId == workArea->UniqueId());
 
-            auto* zoneSet{ workArea->ZoneSet() };
-            Assert::IsNotNull(zoneSet);
-            Assert::AreEqual(static_cast<int>(FancyZonesDataTypes::ZoneSetLayoutType::Grid), static_cast<int>(zoneSet->LayoutType()));
-            Assert::AreEqual(static_cast<size_t>(4), zoneSet->GetZones().size());
-            Assert::IsTrue(GUID_NULL == zoneSet->Id());
+            Assert::IsNotNull(workArea->GetLayout().get());
+            
+            const auto& actualLayout = workArea->GetLayout();
+            Assert::AreEqual(static_cast<int>(FancyZonesDataTypes::ZoneSetLayoutType::Grid), static_cast<int>(actualLayout->Type()));
+            Assert::AreEqual(static_cast<size_t>(4), actualLayout->Zones().size());
+            Assert::IsTrue(GUID_NULL == actualLayout->Id());
         }
     };
 

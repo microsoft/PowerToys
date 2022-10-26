@@ -141,7 +141,7 @@ namespace JsonUtils
 
     public:
         FancyZonesDataTypes::WorkAreaId workAreaId;
-        Layout data{};
+        LayoutData data{};
         bool hasResolutionInId = false;
 
         static std::optional<AppliedLayoutsJSON> FromJson(const json::JsonObject& json)
@@ -467,8 +467,20 @@ bool AppliedLayouts::ApplyDefaultLayout(const FancyZonesDataTypes::WorkAreaId& d
         return false;
     }
 
-    // TODO: vertical or horizontal
-    m_layouts[deviceId] = DefaultLayouts::instance().GetDefaultLayout();
+    MonitorConfiguraionType type = MonitorConfiguraionType::Horizontal;
+    MONITORINFOEX monitorInfo;
+    monitorInfo.cbSize = sizeof(monitorInfo);
+    if (GetMonitorInfo(deviceId.monitorId.monitor, &monitorInfo))
+    {
+        LONG width = monitorInfo.rcMonitor.right - monitorInfo.rcMonitor.left;
+        LONG height = monitorInfo.rcMonitor.bottom - monitorInfo.rcMonitor.top;
+        if (height > width)
+        {
+            type = MonitorConfiguraionType::Vertical;
+        }
+    }
+
+    m_layouts[deviceId] = DefaultLayouts::instance().GetDefaultLayout(type);
     
     // Saving default layout data doesn't make sense, since it's ignored on parsing.
     // Given that default layouts are ignored when parsing, 

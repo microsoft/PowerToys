@@ -15,7 +15,7 @@ struct LayoutData
     int sensitivityRadius = DefaultValues::SensitivityRadius;
 };
 
-inline bool operator==(const Layout& lhs, const Layout& rhs) 
+inline bool operator==(const LayoutData& lhs, const LayoutData& rhs)
 {
     return lhs.uuid == rhs.uuid &&
            lhs.type == rhs.type &&
