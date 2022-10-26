@@ -10,7 +10,7 @@
     AutomationProperties.LandmarkType="Main">
 
     <controls:SettingsPageControl x:Uid="FileLocksmith"
-                                  ModuleImageSource="ms-appx:///Assets/Modules/PT.png">
+                                  ModuleImageSource="ms-appx:///Assets/Modules/FileLocksmith.png">
         <controls:SettingsPageControl.ModuleContent>
             <StackPanel Orientation="Vertical">
 
