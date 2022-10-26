@@ -46,7 +46,6 @@ jobs:
     clean: true
     submodules: true
     persistCredentials: True
-  - script: DEL nuget.config
 
 # Sets versions for all PowerToy created DLLs
   - task: PowerShell@1
