@@ -7,6 +7,9 @@
   <resources>
     <stringTable>
       <string id="PowerToys">Microsoft PowerToys</string>
+
+      <string id="SUPPORTED_POWERTOYS_0_64_0">PowerToys version 0.64.0 or later</string>
+
       <string id="ConfigureEnabledUtilityDescription">This policy configures the enabled state for a PowerToys utility.
 
 If you enable this setting, the utility will be always enabled and the user won't be able to disable it.
