@@ -15,7 +15,7 @@
     </Page.Resources>
 
     <controls:SettingsPageControl x:Uid="Hosts" IsTabStop="False"
-                                  ModuleImageSource="ms-appx:///Assets/Modules/AlwaysOnTop.png">
+                                  ModuleImageSource="ms-appx:///Assets/Modules/HostsFileEditor.png">
         <controls:SettingsPageControl.ModuleContent>
             <StackPanel Orientation="Vertical">
 
