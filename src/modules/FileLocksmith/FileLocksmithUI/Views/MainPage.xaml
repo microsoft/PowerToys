@@ -97,7 +97,6 @@
                     SelectionMode="None">
                     <ListView.ItemTemplate>
                         <DataTemplate x:DataType="interop:ProcessResult">
-                            <Grid>
                                 <labs:SettingsExpander Margin="0,3,0,0">
                                     <labs:SettingsExpander.Header>
                                         <!--  We can't use the HeaderIcon because it only support a BitmapIcon, which only supports UriSource - not a direct BitmapImage  -->
@@ -162,7 +161,6 @@
                                         </labs:SettingsCard>
                                     </labs:SettingsExpander.Items>
                                 </labs:SettingsExpander>
-                            </Grid>
                         </DataTemplate>
                     </ListView.ItemTemplate>
                 </ListView>
