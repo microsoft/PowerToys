@@ -1529,6 +1529,9 @@ Take a moment to preview the various utilities listed or view our comprehensive 
   <data name="Oobe_FileLocksmith_HowToUse.Text" xml:space="preserve">
     <value>In File Explorer, **right-clicking one or more selected files** and **clicking on "What's using this file?"** from the context menu.</value>
   </data>
+  <data name="Oobe_FileLocksmith_TipsAndTricks.Text" xml:space="preserve">
+    <value>Press the Restart Elevated button from the File Locksmith UI to also get information on elevated processes that might be using the files.</value>
+  </data>
   <data name="Oobe_FileExplorer_HowToEnable.Text" xml:space="preserve">
     <value>Open File Explorer, **select the View tab** in the File Explorer ribbon, then **select Preview Pane**. 
 From there, simply click on one of the supported files in the File Explorer and observe the content on the preview pane!</value>

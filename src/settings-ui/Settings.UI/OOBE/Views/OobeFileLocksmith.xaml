@@ -18,6 +18,11 @@
 
                 <toolkitcontrols:MarkdownTextBlock Background="Transparent" x:Uid="Oobe_FileLocksmith_HowToUse" />
 
+                <TextBlock x:Uid="Oobe_TipsAndTricks"
+                           Style="{ThemeResource OobeSubtitleStyle}"/>
+
+                <toolkitcontrols:MarkdownTextBlock Background="Transparent" x:Uid="Oobe_FileLocksmith_TipsAndTricks" />
+
                 <StackPanel Orientation="Horizontal" Spacing="12" Margin="0,24,0,0">
                     <Button x:Uid="OOBE_Settings"
                             Click="SettingsLaunchButton_Click"/>
