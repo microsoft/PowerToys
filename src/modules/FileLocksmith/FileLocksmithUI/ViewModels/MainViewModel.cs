@@ -123,6 +123,7 @@ namespace PowerToys.FileLocksmithUI.ViewModels
             if (!NativeMethods.KillProcess(selectedProcess.pid))
             {
                 // TODO show something on failure.
+                Logger.LogError($"Couldn't kill process {selectedProcess.name} with PID {selectedProcess.pid}.");
             }
         }
 
@@ -137,6 +138,7 @@ namespace PowerToys.FileLocksmithUI.ViewModels
             else
             {
                 // TODO report error?
+                Logger.LogError($"Couldn't restarted as elevated.");
             }
         }
 
