@@ -12,6 +12,7 @@ using Hosts.Views;
 using ManagedCommon;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.PowerToys.Telemetry;
 using Microsoft.UI.Dispatching;
 using Microsoft.UI.Xaml;
 
@@ -103,6 +104,8 @@ namespace Hosts
             {
                 Logger.LogInfo($"Hosts started detached from PowerToys Runner.");
             }
+
+            PowerToysTelemetry.Log.WriteEvent(new Hosts.Telemetry.HostsFileEditorOpenedEvent());
 
             _window = new MainWindow();
             _window.Activate();

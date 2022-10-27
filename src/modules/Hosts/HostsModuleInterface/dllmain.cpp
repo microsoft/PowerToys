@@ -165,6 +165,7 @@ public:
             {
                 launch_process(true);
             }
+            Trace::ActivateEditor();
         }
         catch (std::exception&)
         {
@@ -185,6 +186,7 @@ public:
     {
         Logger::trace("HostsModuleInterface::enable()");
         m_enabled = true;
+        Trace::EnableHostsFileEditor(true);
     };
 
     virtual void disable()
@@ -196,6 +198,7 @@ public:
         }
 
         m_enabled = false;
+        Trace::EnableHostsFileEditor(false);
     }
 };
 
