@@ -19,6 +19,21 @@
 
             <StackPanel Orientation="Vertical">
             
+                <InfoBar
+                    Severity="Error"
+                    x:Uid="VideoConference_DeprecationWarning"
+                    IsOpen="True"
+                    IsTabStop="True"
+                    IsClosable="False">
+                    <InfoBar.ActionButton>
+                        <HyperlinkButton 
+                                x:Uid="VideoConference_DeprecationWarningButton"
+                                Style="{StaticResource TextButtonStyle}"
+                                NavigateUri="https://github.com/microsoft/PowerToys/issues/21473"
+                                HorizontalAlignment="Right" />
+                    </InfoBar.ActionButton>
+                </InfoBar>
+                
                 <controls:Setting x:Uid="VideoConference_Enable" IsEnabled="{ Binding Mode=OneWay, Path=CanUserChangeEnabledState }">
                     <controls:Setting.Icon>
                         <BitmapIcon UriSource="ms-appx:///Assets/FluentIcons/FluentIconsVideoConferenceMute.png" ShowAsMonochrome="False" />

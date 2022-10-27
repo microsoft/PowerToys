@@ -2131,6 +2131,12 @@ From there, simply click on one of the supported files in the File Explorer and 
   <data name="FancyZones_Zone_Appearance.Header" xml:space="preserve">
     <value>Zone appearance</value>
   </data>
+  <data name="VideoConference_DeprecationWarning.Title" xml:space="preserve">
+    <value>Video Conference utility is reaching its end of life and will be unavailable in one of the future releases.</value>
+  </data>
+  <data name="VideoConference_DeprecationWarningButton.Content" xml:space="preserve">
+    <value>Learn more</value>
+  </data>
   <data name="VideoConference_RunAsAdminRequired.Title" xml:space="preserve">
     <value>You need to run as administrator to modify these settings.</value>
   </data>
