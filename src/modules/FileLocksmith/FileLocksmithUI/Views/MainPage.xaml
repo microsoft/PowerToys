@@ -95,6 +95,12 @@
                     Grid.Row="1"
                     ItemsSource="{x:Bind ViewModel.Processes, Mode=OneWay}"
                     SelectionMode="None">
+                    <ListView.ItemsPanel>
+                        <!-- Virtualization is not working well, so disable it. Higher memory usage is better than a crash. -->
+                        <ItemsPanelTemplate>
+                            <StackPanel></StackPanel>
+                        </ItemsPanelTemplate>
+                    </ListView.ItemsPanel>
                     <ListView.ItemTemplate>
                         <DataTemplate x:DataType="interop:ProcessResult">
                                 <labs:SettingsExpander Margin="0,3,0,0">
