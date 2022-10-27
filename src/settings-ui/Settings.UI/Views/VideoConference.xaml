@@ -20,7 +20,7 @@
             <StackPanel Orientation="Vertical">
             
                 <InfoBar
-                    Severity="Warning"
+                    Severity="Error"
                     x:Uid="VideoConference_DeprecationWarning"
                     IsOpen="True"
                     IsTabStop="True"
