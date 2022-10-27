@@ -138,7 +138,7 @@ namespace PowerToys.FileLocksmithUI.ViewModels
             else
             {
                 // TODO report error?
-                Logger.LogError($"Couldn't restarted as elevated.");
+                Logger.LogError($"Couldn't restart as elevated.");
             }
         }
 
