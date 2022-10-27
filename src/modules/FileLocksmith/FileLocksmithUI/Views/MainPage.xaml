@@ -93,17 +93,12 @@
                 <ListView
                     x:Name="ProcessesListView"
                     Grid.Row="1"
-                    ItemsSource="{x:Bind ViewModel.Processes, Mode=OneWay}"
+                    ItemsSource="{x:Bind ViewModel.Processes}"
+                    IncrementalLoadingThreshold="10"
                     SelectionMode="None">
-                    <ListView.ItemsPanel>
-                        <!-- Virtualization is not working well, so disable it. Higher memory usage is better than a crash. -->
-                        <ItemsPanelTemplate>
-                            <StackPanel></StackPanel>
-                        </ItemsPanelTemplate>
-                    </ListView.ItemsPanel>
                     <ListView.ItemTemplate>
                         <DataTemplate x:DataType="interop:ProcessResult">
-                                <labs:SettingsExpander Margin="0,3,0,0">
+                                <labs:SettingsExpander IsExpanded="{Binding isExpanded}" Margin="0,3,0,0">
                                     <labs:SettingsExpander.Header>
                                         <!--  We can't use the HeaderIcon because it only support a BitmapIcon, which only supports UriSource - not a direct BitmapImage  -->
                                         <StackPanel Orientation="Horizontal">
