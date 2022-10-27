@@ -9,11 +9,8 @@
 
 extern "C" IMAGE_DOS_HEADER __ImageBase;
 
-HMODULE m_hModule;
-
-BOOL APIENTRY DllMain(HMODULE hModule, DWORD ul_reason_for_call, LPVOID lpReserved)
+BOOL APIENTRY DllMain(HMODULE, DWORD ul_reason_for_call, LPVOID)
 {
-    m_hModule = hModule;
     switch (ul_reason_for_call)
     {
     case DLL_PROCESS_ATTACH:
@@ -26,10 +23,6 @@ BOOL APIENTRY DllMain(HMODULE hModule, DWORD ul_reason_for_call, LPVOID lpReserv
         Trace::UnregisterProvider();
         break;
     }
-
-    //avoid warning 4100
-    lpReserved;
-
     return TRUE;
 }
 
@@ -249,7 +242,7 @@ public:
         return m_enabled;
     }
 
-    virtual bool on_hotkey(size_t hotkeyId) override
+    virtual bool on_hotkey(size_t) override
     {
         if (m_enabled)
         {
@@ -265,9 +258,6 @@ public:
 
             return true;
         }
-
-        // avoid warning 4100
-        hotkeyId;
 
         return false;
     }

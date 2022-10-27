@@ -11,13 +11,8 @@
 #include "Generated Files/resource.h"
 #include <common/SettingsAPI/settings_objects.h>
 
-BOOL APIENTRY DllMain(HMODULE hModule, DWORD ul_reason_for_call, LPVOID lpReserved)
+BOOL APIENTRY DllMain(HMODULE, DWORD, LPVOID)
 {
-    // avoid warning 4100
-    hModule;
-    ul_reason_for_call;
-    lpReserved;
-
     return TRUE;
 }
 
@@ -185,7 +180,7 @@ private:
     std::wstring app_key;
     bool _enabled = false;
     HANDLE m_hProcess = nullptr;
-    
+
     // Hotkey to invoke the module
     HotkeyEx m_hotkey;
 
@@ -231,7 +226,7 @@ private:
 
         Logger::trace(L"Started SG process with pid={}", GetProcessId(sei.hProcess));
         m_hProcess = sei.hProcess;
-        return true;    
+        return true;
     }
 
     void TerminateProcess()
@@ -276,7 +271,7 @@ private:
         {
             Logger::error("Failed to init settings. {}", ex.what());
         }
-        catch(...)
+        catch (...)
         {
             Logger::error("Failed to init settings");
         }

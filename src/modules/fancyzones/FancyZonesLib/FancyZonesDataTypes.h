@@ -138,7 +138,7 @@ namespace FancyZonesDataTypes
         GUID virtualDesktopId{};
 
         std::wstring toString() const noexcept;
-    }; 
+    };
 
     struct AppZoneHistoryData
     {
@@ -194,7 +194,7 @@ namespace FancyZonesDataTypes
         {
             return lhs.monitor == rhs.monitor;
         }
-        
+
         if (!lhs.serialNumber.empty() && !rhs.serialNumber.empty())
         {
             bool serialNumbersEqual = lhs.serialNumber == rhs.serialNumber;
@@ -232,7 +232,7 @@ namespace FancyZonesDataTypes
                    lhs.virtualDesktopId.Data2 < rhs.virtualDesktopId.Data2 ||
                    lhs.virtualDesktopId.Data3 < rhs.virtualDesktopId.Data3;
         }
-        
+
         if (!lhs.monitorId.serialNumber.empty() || rhs.monitorId.serialNumber.empty())
         {
             return lhs.monitorId.serialNumber < rhs.monitorId.serialNumber;
@@ -247,9 +247,8 @@ namespace std
     template<>
     struct hash<FancyZonesDataTypes::WorkAreaId>
     {
-        size_t operator()(const FancyZonesDataTypes::WorkAreaId& Value) const
+        size_t operator()(const FancyZonesDataTypes::WorkAreaId&) const
         {
-            UNREFERENCED_PARAMETER(Value);
             return 0;
         }
     };

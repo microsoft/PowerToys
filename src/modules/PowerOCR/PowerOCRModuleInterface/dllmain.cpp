@@ -13,9 +13,9 @@
 #include <common/utils/logger_helper.h>
 #include <common/utils/winapi_error.h>
 
-BOOL APIENTRY DllMain(HMODULE hModule,
+BOOL APIENTRY DllMain(HMODULE,
                       DWORD ul_reason_for_call,
-                      LPVOID lpReserved)
+                      LPVOID)
 {
     switch (ul_reason_for_call)
     {
@@ -30,10 +30,6 @@ BOOL APIENTRY DllMain(HMODULE hModule,
         Trace::UnregisterProvider();
         break;
     }
-
-    // avoid warning 4100
-    lpReserved;
-    hModule;
 
     return TRUE;
 }
@@ -132,7 +128,7 @@ private:
         }
         else
         {
-            Logger::error( L"TextExtractor failed to start. {}", get_last_error_or_default(GetLastError()));
+            Logger::error(L"TextExtractor failed to start. {}", get_last_error_or_default(GetLastError()));
         }
 
         m_hProcess = sei.hProcess;
@@ -212,10 +208,8 @@ public:
         return settings.serialize_to_buffer(buffer, buffer_size);
     }
 
-    virtual void call_custom_action(const wchar_t* action) override
+    virtual void call_custom_action(const wchar_t*) override
     {
-        // avoid warning 4100
-        action;
     }
 
     virtual void set_config(const wchar_t* config) override
@@ -261,7 +255,7 @@ public:
         Trace::EnablePowerOCR(false);
     }
 
-    virtual bool on_hotkey(size_t hotkeyId) override
+    virtual bool on_hotkey(size_t) override
     {
         if (m_enabled)
         {
@@ -275,10 +269,7 @@ public:
             return true;
         }
 
-        // avoid warning 4100
-        hotkeyId;
-
-        return false;      
+        return false;
     }
 
     virtual size_t get_hotkeys(Hotkey* hotkeys, size_t buffer_size) override
@@ -302,7 +293,6 @@ public:
     {
         return m_enabled;
     }
-
 };
 
 extern "C" __declspec(dllexport) PowertoyModuleIface* __cdecl powertoy_create()

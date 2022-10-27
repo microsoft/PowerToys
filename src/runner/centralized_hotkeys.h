@@ -9,10 +9,7 @@ namespace CentralizedHotkeys
         std::wstring moduleName;
         std::function<void(WORD, WORD)> action;
 
-        Action(std::wstring moduleName = L"", std::function<void(WORD, WORD)> action = ([](WORD modifiersMask, WORD vkCode) {
-                                                  UNREFERENCED_PARAMETER(modifiersMask);
-                                                  UNREFERENCED_PARAMETER(vkCode);
-                                              }))
+        Action(std::wstring moduleName = L"", std::function<void(WORD, WORD)> action = ([](WORD, WORD) {}))
         {
             this->moduleName = moduleName;
             this->action = action;

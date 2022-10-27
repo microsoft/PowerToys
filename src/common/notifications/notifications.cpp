@@ -90,12 +90,11 @@ public:
     }
 
     virtual HRESULT STDMETHODCALLTYPE Activate(
-        LPCWSTR appUserModelId,
+        LPCWSTR,
         LPCWSTR invokedArgs,
         const NOTIFICATION_USER_INPUT_DATA*,
         ULONG) override
     {
-        UNREFERENCED_PARAMETER(appUserModelId);
         auto lib = LoadLibraryW(L"PowerToys.BackgroundActivatorDLL.dll");
         if (!lib)
         {

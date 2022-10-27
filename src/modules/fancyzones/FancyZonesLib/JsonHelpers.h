@@ -110,9 +110,8 @@ namespace std
     template<>
     struct hash<BackwardsCompatibility::DeviceIdData>
     {
-        size_t operator()(const BackwardsCompatibility::DeviceIdData& Value) const
+        size_t operator()(const BackwardsCompatibility::DeviceIdData&) const
         {
-            UNREFERENCED_PARAMETER(Value);
             return 0;
         }
     };

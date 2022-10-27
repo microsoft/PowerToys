@@ -14,10 +14,8 @@
 
 extern "C" IMAGE_DOS_HEADER __ImageBase;
 
-BOOL APIENTRY DllMain(HMODULE hModule, DWORD ul_reason_for_call, LPVOID lpReserved)
+BOOL APIENTRY DllMain(HMODULE, DWORD ul_reason_for_call, LPVOID)
 {
-    UNREFERENCED_PARAMETER(hModule);
-    UNREFERENCED_PARAMETER(lpReserved);
     switch (ul_reason_for_call)
     {
     case DLL_PROCESS_ATTACH:
@@ -143,10 +141,8 @@ public:
         return powertoys_gpo::getConfiguredHostsFileEditorEnabledValue();
     }
 
-    virtual bool get_config(wchar_t* buffer, int* buffer_size) override
+    virtual bool get_config(wchar_t*, int*) override
     {
-        UNREFERENCED_PARAMETER(buffer);
-        UNREFERENCED_PARAMETER(buffer_size);
         return false;
     }
 
@@ -177,9 +173,8 @@ public:
         }
     }
 
-    virtual void set_config(const wchar_t* config) override
+    virtual void set_config(const wchar_t*) override
     {
-        UNREFERENCED_PARAMETER(config);
     }
 
     virtual bool is_enabled() override

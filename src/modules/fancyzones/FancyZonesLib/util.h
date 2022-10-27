@@ -43,9 +43,8 @@ namespace FancyZonesUtils
         quad->rgbBlue = GetBValue(color) * alpha / 255;
     }
 
-    inline void FillRectARGB(wil::unique_hdc& hdc, RECT const* prcFill, BYTE alpha, COLORREF color, bool blendAlpha)
+    inline void FillRectARGB(wil::unique_hdc& hdc, RECT const* prcFill, BYTE alpha, COLORREF color, bool)
     {
-        UNREFERENCED_PARAMETER(blendAlpha);
         BITMAPINFO bi;
         ZeroMemory(&bi, sizeof(bi));
         bi.bmiHeader.biSize = sizeof(BITMAPINFOHEADER);
@@ -105,9 +104,7 @@ namespace FancyZonesUtils
         using result_t = std::vector<std::pair<HMONITOR, RECT>>;
         result_t result;
 
-        auto enumMonitors = [](HMONITOR monitor, HDC hdc, LPRECT pRect, LPARAM param) -> BOOL {
-            UNREFERENCED_PARAMETER(hdc);
-            UNREFERENCED_PARAMETER(pRect);
+        auto enumMonitors = [](HMONITOR monitor, HDC, LPRECT, LPARAM param) -> BOOL {
             MONITORINFOEX mi;
             mi.cbSize = sizeof(mi);
             result_t& result = *reinterpret_cast<result_t*>(param);
@@ -129,9 +126,7 @@ namespace FancyZonesUtils
         using result_t = std::vector<std::pair<HMONITOR, MONITORINFOEX>>;
         result_t result;
 
-        auto enumMonitors = [](HMONITOR monitor, HDC hdc, LPRECT pRect, LPARAM param) -> BOOL {
-            UNREFERENCED_PARAMETER(hdc);
-            UNREFERENCED_PARAMETER(pRect);
+        auto enumMonitors = [](HMONITOR monitor, HDC, LPRECT, LPARAM param) -> BOOL {
             MONITORINFOEX mi;
             mi.cbSize = sizeof(mi);
             result_t& result = *reinterpret_cast<result_t*>(param);
@@ -181,5 +176,5 @@ namespace FancyZonesUtils
     std::optional<std::wstring> GuidToString(const GUID& guid) noexcept;
 
     RECT PrepareRectForCycling(RECT windowRect, RECT workAreaRect, DWORD vkCode) noexcept;
-    size_t ChooseNextZoneByPosition(DWORD vkCode, RECT windowRect, const std::vector<RECT>& zoneRects) noexcept;    
+    size_t ChooseNextZoneByPosition(DWORD vkCode, RECT windowRect, const std::vector<RECT>& zoneRects) noexcept;
 }

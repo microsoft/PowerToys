@@ -38,7 +38,7 @@ void CContextMenuHandler::Uninitialize()
     }
 }
 
-HRESULT CContextMenuHandler::Initialize(_In_opt_ PCIDLIST_ABSOLUTE pidlFolder, _In_opt_ IDataObject* pdtobj, _In_opt_ HKEY hkeyProgID)
+HRESULT CContextMenuHandler::Initialize(_In_opt_ PCIDLIST_ABSOLUTE pidlFolder, _In_opt_ IDataObject* pdtobj, _In_opt_ HKEY)
 {
     Uninitialize();
 
@@ -58,13 +58,10 @@ HRESULT CContextMenuHandler::Initialize(_In_opt_ PCIDLIST_ABSOLUTE pidlFolder, _
         m_pdtobj->AddRef();
     }
 
-    // avoid warning 4100
-    hkeyProgID;
-
     return S_OK;
 }
 
-HRESULT CContextMenuHandler::QueryContextMenu(_In_ HMENU hmenu, UINT indexMenu, UINT idCmdFirst, UINT idCmdLast, UINT uFlags)
+HRESULT CContextMenuHandler::QueryContextMenu(_In_ HMENU hmenu, UINT indexMenu, UINT idCmdFirst, UINT, UINT uFlags)
 {
     if (uFlags & CMF_DEFAULTONLY)
         return S_OK;
@@ -167,15 +164,11 @@ HRESULT CContextMenuHandler::QueryContextMenu(_In_ HMENU hmenu, UINT indexMenu, 
         return hr;
     }
 
-    // avoid warning 4100
-    idCmdLast;
-
     return S_OK;
 }
 
-HRESULT CContextMenuHandler::GetCommandString(UINT_PTR idCmd, UINT uType, _In_ UINT* pReserved, LPSTR pszName, UINT cchMax)
+HRESULT CContextMenuHandler::GetCommandString(UINT_PTR idCmd, UINT uType, _In_ UINT*, LPSTR pszName, UINT cchMax)
 {
-    UNREFERENCED_PARAMETER(pReserved);
     if (idCmd == ID_RESIZE_PICTURES)
     {
         if (uType == GCS_VERBW)
@@ -367,10 +360,8 @@ HRESULT __stdcall CContextMenuHandler::GetCanonicalName(GUID* pguidCommandName)
     return S_OK;
 }
 
-HRESULT __stdcall CContextMenuHandler::GetState(IShellItemArray* psiItemArray, BOOL fOkToBeSlow, EXPCMDSTATE* pCmdState)
+HRESULT __stdcall CContextMenuHandler::GetState(IShellItemArray* psiItemArray, BOOL, EXPCMDSTATE* pCmdState)
 {
-    UNREFERENCED_PARAMETER(fOkToBeSlow);
-
     if (!CSettingsInstance().GetEnabled())
     {
         *pCmdState = ECS_HIDDEN;

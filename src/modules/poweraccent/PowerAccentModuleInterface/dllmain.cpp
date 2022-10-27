@@ -18,7 +18,7 @@
 #include <filesystem>
 #include <set>
 
-BOOL APIENTRY DllMain(HMODULE hModule, DWORD ul_reason_for_call, LPVOID lpReserved)
+BOOL APIENTRY DllMain(HMODULE, DWORD ul_reason_for_call, LPVOID)
 {
     switch (ul_reason_for_call)
     {
@@ -32,10 +32,6 @@ BOOL APIENTRY DllMain(HMODULE hModule, DWORD ul_reason_for_call, LPVOID lpReserv
         Trace::UnregisterProvider();
         break;
     }
-
-    // avoid warning 4100
-    hModule;
-    lpReserved;
 
     return TRUE;
 }

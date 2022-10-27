@@ -10,7 +10,7 @@ void MockedInput::SetHookProc(std::function<intptr_t(LowlevelKeyboardEvent*)> ho
 }
 
 // Function to simulate keyboard input - arguments and return value based on SendInput function (https://learn.microsoft.com/windows/win32/api/winuser/nf-winuser-sendinput)
-UINT MockedInput::SendVirtualInput(UINT cInputs, LPINPUT pInputs, int cbSize)
+UINT MockedInput::SendVirtualInput(UINT cInputs, LPINPUT pInputs, int)
 {
     // Iterate over inputs
     for (UINT i = 0; i < cInputs; i++)
@@ -107,9 +107,6 @@ UINT MockedInput::SendVirtualInput(UINT cInputs, LPINPUT pInputs, int cbSize)
             }
         }
     }
-
-    // avoid warning 4100
-    cbSize;
 
     return cInputs;
 }

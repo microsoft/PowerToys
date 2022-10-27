@@ -30,7 +30,7 @@ namespace
     const wchar_t JSON_KEY_VALUE[] = L"value";
 }
 
-BOOL APIENTRY DllMain(HMODULE hModule, DWORD ul_reason_for_call, LPVOID lpReserved)
+BOOL APIENTRY DllMain(HMODULE, DWORD ul_reason_for_call, LPVOID)
 {
     switch (ul_reason_for_call)
     {
@@ -46,10 +46,6 @@ BOOL APIENTRY DllMain(HMODULE hModule, DWORD ul_reason_for_call, LPVOID lpReserv
         Trace::UnregisterProvider();
         break;
     }
-
-    // avoid warning 4100
-    hModule;
-    lpReserved;
     return TRUE;
 }
 
@@ -110,7 +106,7 @@ public:
         }
     }
 
-    virtual bool on_hotkey(size_t hotkeyId) override
+    virtual bool on_hotkey(size_t) override
     {
         if (m_enabled)
         {
@@ -125,12 +121,9 @@ public:
             return true;
         }
 
-        // avoid warning 4100
-        hotkeyId;
-
         return false;
     }
-    
+
     virtual size_t get_hotkeys(Hotkey* hotkeys, size_t buffer_size) override
     {
         if (m_hotkey.key)

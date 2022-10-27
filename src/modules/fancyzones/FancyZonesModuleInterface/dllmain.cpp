@@ -17,11 +17,8 @@
 // Non-localizable
 const std::wstring fancyZonesPath = L"modules\\FancyZones\\PowerToys.FancyZones.exe";
 
-BOOL APIENTRY DllMain(HMODULE hModule, DWORD ul_reason_for_call, LPVOID lpReserved)
+BOOL APIENTRY DllMain(HMODULE, DWORD ul_reason_for_call, LPVOID)
 {
-    UNREFERENCED_PARAMETER(hModule);
-    UNREFERENCED_PARAMETER(lpReserved);
-
     switch (ul_reason_for_call)
     {
     case DLL_PROCESS_ATTACH:
@@ -62,25 +59,21 @@ public:
 
     // Return JSON with the configuration options.
     // These are the settings shown on the settings page along with their current values.
-    virtual bool get_config(_Out_ PWSTR buffer, _Out_ int* buffer_size) override
+    virtual bool get_config(_Out_ PWSTR, _Out_ int*) override
     {
-        UNREFERENCED_PARAMETER(buffer);
-        UNREFERENCED_PARAMETER(buffer_size);
         return false;
     }
 
     // Passes JSON with the configuration settings for the powertoy.
     // This is called when the user hits Save on the settings page.
-    virtual void set_config(PCWSTR config) override
+    virtual void set_config(PCWSTR) override
     {
-        UNREFERENCED_PARAMETER(config);
     }
 
     // Signal from the Settings editor to call a custom action.
     // This can be used to spawn more complex editors.
-    virtual void call_custom_action(const wchar_t* action) override
+    virtual void call_custom_action(const wchar_t*) override
     {
-        UNREFERENCED_PARAMETER(action);
         SetEvent(m_toggleEditorEvent);
     }
 
@@ -131,7 +124,7 @@ public:
     {
         app_name = GET_RESOURCE_STRING(IDS_FANCYZONES);
         app_key = NonLocalizable::ModuleKey;
-        
+
         m_toggleEditorEvent = CreateDefaultEvent(CommonSharedConstants::FANCY_ZONES_EDITOR_TOGGLE_EVENT);
         if (!m_toggleEditorEvent)
         {
