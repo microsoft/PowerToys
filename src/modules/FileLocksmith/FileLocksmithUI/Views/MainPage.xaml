@@ -48,6 +48,9 @@
                 HorizontalAlignment="Left"
                 Style="{ThemeResource BodyStrongTextBlockStyle}"
                 Text="{x:Bind ViewModel.Paths, Converter={StaticResource fileListToDescriptionConverter}}">
+                <ToolTipService.ToolTip>
+                    <ListView ItemsSource="{x:Bind ViewModel.Paths, Mode=OneWay}"/>
+                </ToolTipService.ToolTip>
             </TextBlock>
             
             <StackPanel
