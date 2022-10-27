@@ -70,6 +70,14 @@ namespace PowerToys.FileLocksmithUI.ViewModels
             }
         }
 
+        public string PathsToString
+        {
+            get
+            {
+                return string.Join("; ", paths);
+            }
+        }
+
         public MainViewModel()
         {
             paths = NativeMethods.ReadPathsFromFile();

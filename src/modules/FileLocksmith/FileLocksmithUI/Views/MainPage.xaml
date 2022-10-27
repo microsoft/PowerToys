@@ -49,7 +49,7 @@
                 Style="{ThemeResource BodyStrongTextBlockStyle}"
                 Text="{x:Bind ViewModel.Paths, Converter={StaticResource fileListToDescriptionConverter}}">
                 <ToolTipService.ToolTip>
-                    <ListView ItemsSource="{x:Bind ViewModel.Paths, Mode=OneWay}"/>
+                    <TextBlock TextWrapping="WrapWholeWords" Text="{x:Bind ViewModel.PathsToString, Mode=OneWay}"/>
                 </ToolTipService.ToolTip>
             </TextBlock>
             
