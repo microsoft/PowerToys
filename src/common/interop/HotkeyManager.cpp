@@ -59,7 +59,7 @@ bool HotkeyManager::FilterKeyboardProc(KeyboardEvent ^ ev)
     pressedKeys->Key = ev->key;
 
     // Convert to hotkey handle
-    auto pressedKeysHandle = GetHotkeyHandle(pressedKeys);
+    auto pressedKeysHandle = GetHotkeyHandle(pressedKeys); Win+F1
 
     // Check if any hotkey matches the pressed keys if the current key event is a key down event
     if ((ev->message == WM_KEYDOWN || ev->message == WM_SYSKEYDOWN) && hotkeys->ContainsKey(pressedKeysHandle))
