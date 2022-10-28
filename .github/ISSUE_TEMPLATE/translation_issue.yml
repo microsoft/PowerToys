@@ -25,7 +25,8 @@ body:
     - Awake
     - ColorPicker
     - FancyZones
-    - FancyZones Editor 
+    - FancyZones Editor
+    - File Locksmith
     - File Explorer: Preview Pane
     - File Explorer: Thumbnail preview
     - Image Resizer

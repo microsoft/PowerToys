@@ -1469,6 +1469,9 @@ Made with 💗 by Microsoft and the PowerToys community.</value>
   <data name="Oobe_FancyZones.Description" xml:space="preserve">
     <value>FancyZones is a window manager that makes it easy to create complex window layouts and quickly position windows into those layouts.</value>
   </data>
+  <data name="Oobe_FileLocksmith.Description" xml:space="preserve">
+    <value>File Locksmith lists which processes are using the selected files or directories and allows closing those processes.</value>
+  </data>
   <data name="Oobe_FileExplorer.Description" xml:space="preserve">
     <value>PowerToys introduces add-ons to the Windows File Explorer that will enable files like Markdown (.md), PDF (.pdf), SVG (.svg), STL (.stl), G-code (.gcode) and developer files to be viewed in the preview pane. It introduces File Explorer thumbnail support for a number of these file types as well.</value>
   </data>
@@ -1522,6 +1525,12 @@ Take a moment to preview the various utilities listed or view our comprehensive 
   </data>
   <data name="Oobe_FancyZones_TipsAndTricks.Text" xml:space="preserve">
     <value>Snap a window to multiple zones by holding the **Ctrl** key (while also holding **Shift**) when dragging a window.</value>
+  </data>
+  <data name="Oobe_FileLocksmith_HowToUse.Text" xml:space="preserve">
+    <value>In File Explorer, **right-clicking one or more selected files** and **clicking on "What's using this file?"** from the context menu.</value>
+  </data>
+  <data name="Oobe_FileLocksmith_TipsAndTricks.Text" xml:space="preserve">
+    <value>Press the Restart Elevated button from the File Locksmith UI to also get information on elevated processes that might be using the files.</value>
   </data>
   <data name="Oobe_FileExplorer_HowToEnable.Text" xml:space="preserve">
     <value>Open File Explorer, **select the View tab** in the File Explorer ribbon, then **select Preview Pane**. 
@@ -1595,6 +1604,9 @@ From there, simply click on one of the supported files in the File Explorer and 
   <data name="Oobe_FancyZones.Title" xml:space="preserve">
     <value>FancyZones</value>
     <comment>Do not localize this string</comment>
+  </data>
+  <data name="Oobe_FileLocksmith.Title" xml:space="preserve">
+    <value>File Locksmith</value>
   </data>
   <data name="Oobe_ImageResizer.Title" xml:space="preserve">
     <value>Image Resizer</value>
@@ -1806,6 +1818,9 @@ From there, simply click on one of the supported files in the File Explorer and 
   <data name="LearnMore_FancyZones.Text" xml:space="preserve">
     <value>Learn more about FancyZones</value>
     <comment>FancyZones is a product name, do not loc</comment>
+  </data>
+  <data name="LearnMore_FileLocksmith.Text" xml:space="preserve">
+    <value>Learn more about File Locksmith</value>
   </data>
   <data name="LearnMore_ImageResizer.Text" xml:space="preserve">
     <value>Learn more about Image Resizer</value>
@@ -2645,6 +2660,20 @@ Activate by holding the key for the character you want to add an accent to, then
   </data>
   <data name="Hosts_Toggle_LaunchAdministrator.Header" xml:space="preserve">
     <value>Launch as administrator</value>
+  </data>
+  <data name="FileLocksmith.ModuleDescription" xml:space="preserve">
+    <value>A Windows shell extension to find out which processes are using the selected files and directories.</value>
+  </data>
+  <data name="FileLocksmith.ModuleTitle" xml:space="preserve">
+    <value>File Locksmith</value>
+  </data>
+  <data name="Shell_FileLocksmith.Content" xml:space="preserve">
+    <value>File Locksmith</value>
+    <comment>Product name: Navigation view item name for FileLocksmith</comment>
+  </data>
+  <data name="FileLocksmith_Enable_FileLocksmith.Header" xml:space="preserve">
+    <value>Enable File Locksmith</value>
+    <comment>File Locksmith is the name of the utility</comment>
   </data>
   <data name="GPO_IsSettingForced.Title" xml:space="preserve">
     <value>The systems administrator is forcing this setting.</value>
