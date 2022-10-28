@@ -3,6 +3,7 @@
 
 #include <FancyZonesLib/FancyZonesWindowProperties.h>
 #include <FancyZonesLib/Settings.h>
+#include <FancyZonesLib/VirtualDesktop.h>
 #include <FancyZonesLib/WindowUtils.h>
 
 LayoutAssignedWindows::LayoutAssignedWindows()
@@ -100,7 +101,11 @@ void LayoutAssignedWindows::CycleWindows(HWND window, bool reverse)
             continue;
         }
 
-        FancyZonesWindowUtils::SwitchToWindow(next);
+        if (VirtualDesktop::instance().IsWindowOnCurrentDesktop(next))
+        {
+            FancyZonesWindowUtils::SwitchToWindow(next);
+        }
+
         break;
     }
 }
