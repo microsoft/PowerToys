@@ -5,9 +5,18 @@
 #include <FancyZonesLib/Settings.h>
 #include <FancyZonesLib/WindowUtils.h>
 
+LayoutAssignedWindows::LayoutAssignedWindows()
+{
+    m_extendData = std::make_unique<ExtendWindowModeData>();
+}
+
 void LayoutAssignedWindows::Assign(HWND window, const ZoneIndexSet& zones)
 {
     Dismiss(window);
+
+    // clear info about other windows
+    std::erase_if(m_extendData->windowInitialIndexSet, [window](const auto& item) { return item.first != window; });
+    std::erase_if(m_extendData->windowFinalIndex, [window](const auto& item) { return item.first != window; });
 
     for (const auto& index : zones)
     {
@@ -96,19 +105,9 @@ void LayoutAssignedWindows::CycleWindows(HWND window, bool reverse)
     }
 }
 
-const std::unique_ptr<LayoutAssignedWindows::ExtendWindowModeData>& LayoutAssignedWindows::ExtendWindowMode()
+const std::unique_ptr<LayoutAssignedWindows::ExtendWindowModeData>& LayoutAssignedWindows::ExtendWindowData()
 {
-    if (!m_extendMode)
-    {
-        m_extendMode = std::make_unique<ExtendWindowModeData>();
-    }
-
-    return m_extendMode;
-}
-
-void LayoutAssignedWindows::FinishExtendWindowMode()
-{
-    m_extendMode = nullptr;
+    return m_extendData;
 }
 
 void LayoutAssignedWindows::InsertWindowIntoZone(HWND window, std::optional<size_t> tabSortKeyWithinZone, const ZoneIndexSet& indexSet)

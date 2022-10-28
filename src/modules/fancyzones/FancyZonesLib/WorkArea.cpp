@@ -355,8 +355,8 @@ bool WorkArea::ExtendWindowByDirectionAndPosition(HWND window, DWORD vkCode) noe
     }
 
     const auto& zones = m_layout->Zones();
-    auto oldZones = m_layoutWindows->GetZoneIndexSetFromWindow(window);
-    const auto& extendModeData = m_layoutWindows->ExtendWindowMode();
+    auto appliedZones = m_layoutWindows->GetZoneIndexSetFromWindow(window);
+    const auto& extendModeData = m_layoutWindows->ExtendWindowData();
 
     std::vector<bool> usedZoneIndices(zones.size(), false);
     std::vector<RECT> zoneRects;
@@ -364,15 +364,15 @@ bool WorkArea::ExtendWindowByDirectionAndPosition(HWND window, DWORD vkCode) noe
 
     // If selectManyZones = true for the second time, use the last zone into which we moved
     // instead of the window rect and enable moving to all zones except the old one
-    auto finalIndexIt = extendModeData->m_windowFinalIndex.find(window);
-    if (finalIndexIt != extendModeData->m_windowFinalIndex.end())
+    auto finalIndexIt = extendModeData->windowFinalIndex.find(window);
+    if (finalIndexIt != extendModeData->windowFinalIndex.end())
     {
         usedZoneIndices[finalIndexIt->second] = true;
         windowRect = zones.at(finalIndexIt->second).GetZoneRect();
     }
     else
     {
-        for (ZoneIndex idx : oldZones)
+        for (ZoneIndex idx : appliedZones)
         {
             usedZoneIndices[idx] = true;
         }
@@ -399,31 +399,30 @@ bool WorkArea::ExtendWindowByDirectionAndPosition(HWND window, DWORD vkCode) noe
         ZoneIndexSet resultIndexSet;
 
         // First time with selectManyZones = true for this window?
-        if (finalIndexIt == extendModeData->m_windowFinalIndex.end())
+        if (finalIndexIt == extendModeData->windowFinalIndex.end())
         {
             // Already zoned?
-            if (oldZones.size())
+            if (appliedZones.size())
             {
-                extendModeData->m_windowInitialIndexSet[window] = oldZones;
-                extendModeData->m_windowFinalIndex[window] = targetZone;
-                resultIndexSet = m_layout->GetCombinedZoneRange(oldZones, { targetZone });
+                extendModeData->windowInitialIndexSet[window] = appliedZones;
+                extendModeData->windowFinalIndex[window] = targetZone;
+                resultIndexSet = m_layout->GetCombinedZoneRange(appliedZones, { targetZone });
             }
             else
             {
-                extendModeData->m_windowInitialIndexSet[window] = { targetZone };
-                extendModeData->m_windowFinalIndex[window] = targetZone;
+                extendModeData->windowInitialIndexSet[window] = { targetZone };
+                extendModeData->windowFinalIndex[window] = targetZone;
                 resultIndexSet = { targetZone };
             }
         }
         else
         {
-            auto deletethis = extendModeData->m_windowInitialIndexSet[window];
-            extendModeData->m_windowFinalIndex[window] = targetZone;
-            resultIndexSet = m_layout->GetCombinedZoneRange(extendModeData->m_windowInitialIndexSet[window], { targetZone });
+            auto deletethis = extendModeData->windowInitialIndexSet[window];
+            extendModeData->windowFinalIndex[window] = targetZone;
+            resultIndexSet = m_layout->GetCombinedZoneRange(extendModeData->windowInitialIndexSet[window], { targetZone });
         }
 
         MoveWindowIntoZoneByIndexSet(window, resultIndexSet);
-        m_layoutWindows->FinishExtendWindowMode();
         return true;
     }
 
