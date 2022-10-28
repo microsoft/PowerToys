@@ -55,7 +55,7 @@ std::vector<ProcessResult> find_processes_recursive(const std::vector<std::wstri
 
         for (const auto& [dir_kernel_name, dir_path] : kernel_names_dirs)
         {
-            if (starts_with(kernel_name, dir_kernel_name + L"\\"))
+            if (starts_with(kernel_name, dir_kernel_name + (dir_kernel_name.length()>0&&dir_kernel_name[dir_kernel_name.length()-1]!=L'\\' ? L"\\" : L"")))
             {
                 return dir_path + kernel_name.substr(dir_kernel_name.size());
             }

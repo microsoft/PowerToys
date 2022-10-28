@@ -18,13 +18,26 @@ namespace PowerToys.FileLocksmithUI.Converters
             {
                 return string.Empty;
             }
-            else if (paths.Length == 1)
+
+            string firstPath = paths[0];
+            firstPath = Path.GetFileName(paths[0]);
+            if (string.IsNullOrEmpty(firstPath))
             {
-                return Path.GetFileName(paths[0]);
+                firstPath = Path.GetDirectoryName(paths[0]);
+            }
+
+            if (string.IsNullOrEmpty(firstPath))
+            {
+                firstPath = Path.GetPathRoot(paths[0]);
+            }
+
+            if (paths.Length == 1)
+            {
+                return firstPath;
             }
             else
             {
-                return Path.GetFileName(paths[0]) + "; +" + (paths.Length - 1);
+                return firstPath + "; +" + (paths.Length - 1);
             }
         }
 

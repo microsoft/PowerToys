@@ -900,6 +900,9 @@
         <RegistryKey Root="HKLM" Key="Software\Classes\AllFileSystemObjects\ShellEx\ContextMenuHandlers\FileLocksmithExt">
           <RegistryValue Type="string" Value="{84D68575-E186-46AD-B0CB-BAEB45EE29C0}"/>
         </RegistryKey>
+        <RegistryKey Root="HKLM" Key="Software\Classes\Drive\ShellEx\ContextMenuHandlers\FileLocksmithExt">
+          <RegistryValue Type="string" Value="{84D68575-E186-46AD-B0CB-BAEB45EE29C0}"/>
+        </RegistryKey>
         </Component>
     </DirectoryRef>
 
