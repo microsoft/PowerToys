@@ -176,7 +176,16 @@
                     Orientation="Vertical"
                     Spacing="8"
                     Visibility="{x:Bind ViewModel.Processes.Count, Mode=OneWay, Converter={StaticResource doubleToVisibilityConverter}}">
-                    <FontIcon FontSize="32" Glyph="&#xE9F3;" />
+                    <Button HorizontalAlignment="Center" Command="{Binding LoadProcessesCommand}" >
+                        <Button.Template>
+                            <ControlTemplate TargetType="Button">
+                                <FontIcon FontSize="32" Glyph="&#xE9F3;" />
+                            </ControlTemplate>
+                        </Button.Template>
+                        <ToolTipService.ToolTip>
+                            <TextBlock x:Uid="Reload" />
+                        </ToolTipService.ToolTip>
+                    </Button>
                     <TextBlock x:Uid="EmptyListDescription" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
                 </StackPanel>
             </Grid>
