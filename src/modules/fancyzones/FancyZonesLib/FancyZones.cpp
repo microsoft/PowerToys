@@ -707,13 +707,10 @@ void FancyZones::OnDisplayChange(DisplayChangeType changeType) noexcept
 
     UpdateWorkAreas();
 
-    if ((changeType == DisplayChangeType::WorkArea) || (changeType == DisplayChangeType::DisplayChange))
+    if (FancyZonesSettings::settings().displayChange_moveWindows)
     {
-        if (FancyZonesSettings::settings().displayChange_moveWindows)
-        {
-            auto activeWorkAreas = m_workAreaHandler.GetWorkAreasByDesktopId(VirtualDesktop::instance().GetCurrentVirtualDesktopId());
-            m_windowMoveHandler.UpdateWindowsPositions(activeWorkAreas);
-        }
+        auto activeWorkAreas = m_workAreaHandler.GetWorkAreasByDesktopId(VirtualDesktop::instance().GetCurrentVirtualDesktopId());
+        m_windowMoveHandler.UpdateWindowsPositions(activeWorkAreas);
     }
 }
 

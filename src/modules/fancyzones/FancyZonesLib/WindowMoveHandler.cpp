@@ -324,12 +324,10 @@ void WindowMoveHandler::UpdateWindowsPositions(const std::unordered_map<HMONITOR
             continue;
         }
 
-        for (const auto& [monitor, workArea] : activeWorkAreas)
+        auto monitor = MonitorFromWindow(window, MONITOR_DEFAULTTONULL);
+        if (monitor && activeWorkAreas.contains(monitor))
         {
-            if (MonitorFromWindow(window, MONITOR_DEFAULTTONULL) == monitor)
-            {
-                workArea->MoveWindowIntoZoneByIndexSet(window, zoneIndexSet);
-            }
+            activeWorkAreas.at(monitor)->MoveWindowIntoZoneByIndexSet(window, zoneIndexSet);
         }
     }
 }
