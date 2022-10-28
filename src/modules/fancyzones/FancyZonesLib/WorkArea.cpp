@@ -422,7 +422,15 @@ bool WorkArea::ExtendWindowByDirectionAndPosition(HWND window, DWORD vkCode) noe
             resultIndexSet = m_layout->GetCombinedZoneRange(extendModeData->windowInitialIndexSet[window], { targetZone });
         }
 
-        MoveWindowIntoZoneByIndexSet(window, resultIndexSet);
+        auto rect = m_layout->GetCombinedZonesRect(resultIndexSet);
+        auto adjustedRect = FancyZonesWindowUtils::AdjustRectForSizeWindowToRect(window, rect, m_window);
+        FancyZonesWindowUtils::SizeWindowToRect(window, adjustedRect);
+
+        m_layoutWindows->Extend(window, resultIndexSet);
+        FancyZonesWindowProperties::StampZoneIndexProperty(window, resultIndexSet);
+
+        SaveWindowProcessToZoneIndex(window);
+
         return true;
     }
 

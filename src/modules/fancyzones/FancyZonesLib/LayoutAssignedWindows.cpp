@@ -15,9 +15,27 @@ void LayoutAssignedWindows::Assign(HWND window, const ZoneIndexSet& zones)
 {
     Dismiss(window);
 
-    // clear info about other windows
-    std::erase_if(m_extendData->windowInitialIndexSet, [window](const auto& item) { return item.first != window; });
-    std::erase_if(m_extendData->windowFinalIndex, [window](const auto& item) { return item.first != window; });
+    // clear info about extention 
+    std::erase_if(m_extendData->windowInitialIndexSet, [window](const auto& item) { return item.first == window; });
+    std::erase_if(m_extendData->windowFinalIndex, [window](const auto& item) { return item.first == window; });
+
+    for (const auto& index : zones)
+    {
+        m_windowIndexSet[window].push_back(index);
+    }
+
+    if (FancyZonesSettings::settings().disableRoundCorners)
+    {
+        FancyZonesWindowUtils::DisableRoundCorners(window);
+    }
+
+    auto tabSortKeyWithinZone = FancyZonesWindowProperties::GetTabSortKeyWithinZone(window);
+    InsertWindowIntoZone(window, tabSortKeyWithinZone, zones);
+}
+
+void LayoutAssignedWindows::Extend(HWND window, const ZoneIndexSet& zones)
+{
+    Dismiss(window);
 
     for (const auto& index : zones)
     {

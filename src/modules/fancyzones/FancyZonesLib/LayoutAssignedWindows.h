@@ -16,6 +16,7 @@ public :
     ~LayoutAssignedWindows() = default;
 
     void Assign(HWND window, const ZoneIndexSet& zones);
+    void Extend(HWND window, const ZoneIndexSet& zones);
     void Dismiss(HWND window);
 
     ZoneIndexSet GetZoneIndexSetFromWindow(HWND window) const noexcept;
