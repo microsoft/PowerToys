@@ -29,6 +29,7 @@ namespace PowerToys.FileLocksmithUI.ViewModels
         private bool _isElevated;
         private string[] paths;
         private bool _disposed;
+        private CancellationTokenSource _cancelProcessWatching;
 
         public ObservableCollection<ProcessResult> Processes { get; } = new ();
 
@@ -90,10 +91,17 @@ namespace PowerToys.FileLocksmithUI.ViewModels
             IsLoading = true;
             Processes.Clear();
 
+            if (_cancelProcessWatching is not null)
+            {
+                _cancelProcessWatching.Cancel();
+            }
+
+            _cancelProcessWatching = new CancellationTokenSource();
+
             foreach (ProcessResult p in await FindProcesses(paths))
             {
                 Processes.Add(p);
-                WatchProcess(p);
+                WatchProcess(p, _cancelProcessWatching.Token);
             }
 
             IsLoading = false;
@@ -109,9 +117,19 @@ namespace PowerToys.FileLocksmithUI.ViewModels
             return results;
         }
 
-        private async void WatchProcess(ProcessResult process)
+        private async void WatchProcess(ProcessResult process, CancellationToken token)
         {
-            if (await Task.Run(() => NativeMethods.WaitForProcess(process.pid)))
+            Process handle = Process.GetProcessById((int)process.pid);
+            try
+            {
+                await handle.WaitForExitAsync(token);
+            }
+            catch (TaskCanceledException)
+            {
+                // Nothing to do, normal operation
+            }
+
+            if (handle.HasExited)
             {
                 Processes.Remove(process);
             }
@@ -120,9 +138,13 @@ namespace PowerToys.FileLocksmithUI.ViewModels
         [RelayCommand]
         public void EndTask(ProcessResult selectedProcess)
         {
-            if (!NativeMethods.KillProcess(selectedProcess.pid))
+            Process handle = Process.GetProcessById((int)selectedProcess.pid);
+            try
             {
-                // TODO show something on failure.
+                handle.Kill();
+            }
+            catch (Exception)
+            {
                 Logger.LogError($"Couldn't kill process {selectedProcess.name} with PID {selectedProcess.pid}.");
             }
         }

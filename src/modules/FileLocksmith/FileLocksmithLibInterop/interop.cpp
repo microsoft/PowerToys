@@ -85,33 +85,6 @@ namespace FileLocksmith::Interop
             return result;
         }
 
-        static System::Boolean KillProcess(System::UInt32 pid)
-        {
-            HANDLE process = OpenProcess(PROCESS_TERMINATE, FALSE, pid);
-            if (!process || !TerminateProcess(process, 1))
-            {
-                return false;
-            }
-
-            CloseHandle(process);
-            return true;
-        }
-
-        static System::Boolean WaitForProcess(System::UInt32 pid)
-        {
-            HANDLE process = OpenProcess(SYNCHRONIZE, FALSE, pid);
-
-            if (!process)
-            {
-                return false;
-            }
-
-            auto wait_result = WaitForSingleObject(process, INFINITE);
-            CloseHandle(process);
-
-            return wait_result == WAIT_OBJECT_0;
-        }
-
         static System::String^ PidToUser(System::UInt32 pid)
         {
             auto user_cpp = pid_to_user(pid);
