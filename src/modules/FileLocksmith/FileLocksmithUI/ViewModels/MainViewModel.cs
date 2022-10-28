@@ -74,7 +74,7 @@ namespace PowerToys.FileLocksmithUI.ViewModels
         {
             get
             {
-                return string.Join("; ", paths);
+                return string.Join("\n", paths);
             }
         }
 

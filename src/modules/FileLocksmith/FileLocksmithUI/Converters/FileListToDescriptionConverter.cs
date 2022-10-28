@@ -5,6 +5,7 @@
 namespace PowerToys.FileLocksmithUI.Converters
 {
     using System;
+    using System.IO;
     using FileLocksmith.Interop;
     using Microsoft.UI.Xaml.Data;
 
@@ -19,11 +20,11 @@ namespace PowerToys.FileLocksmithUI.Converters
             }
             else if (paths.Length == 1)
             {
-                return paths[0];
+                return Path.GetFileName(paths[0]);
             }
             else
             {
-                return paths[0] + "; +" + (paths.Length - 1);
+                return Path.GetFileName(paths[0]) + "; +" + (paths.Length - 1);
             }
         }
 

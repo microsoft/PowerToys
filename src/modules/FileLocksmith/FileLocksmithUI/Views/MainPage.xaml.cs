@@ -4,6 +4,7 @@
 
 namespace PowerToys.FileLocksmithUI.Views
 {
+    using System;
     using Microsoft.UI.Xaml.Controls;
     using PowerToys.FileLocksmithUI.ViewModels;
 
@@ -16,6 +17,11 @@ namespace PowerToys.FileLocksmithUI.Views
             this.InitializeComponent();
             ViewModel = new MainViewModel();
             DataContext = ViewModel;
+        }
+
+        private async void ShowSelectedPathsButton_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
+        {
+            await SelectedFilesListDialog.ShowAsync();
         }
     }
 }
