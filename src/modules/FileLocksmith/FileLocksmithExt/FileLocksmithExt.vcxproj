@@ -240,7 +240,6 @@
     <ClInclude Include="ExplorerCommand.h" />
     <ClInclude Include="IPC.h" />
     <ClInclude Include="pch.h" />
-    <ClInclude Include="Registry.h" />
     <ClInclude Include="Settings.h" />
     <ClInclude Include="Trace.h" />
     <None Include="packages.config" />
@@ -268,7 +267,6 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|ARM64'">Create</PrecompiledHeader>
     </ClCompile>
     <ClCompile Include="PowerToysModule.cpp" />
-    <ClCompile Include="Registry.cpp" />
     <ClCompile Include="Settings.cpp" />
     <ClCompile Include="Trace.cpp" />
   </ItemGroup>

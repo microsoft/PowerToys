@@ -4,7 +4,6 @@
 // Additional libraries to link
 #pragma comment(lib, "shlwapi")
 
-#include "Registry.h"
 #include "ClassFactory.h"
 #include "Trace.h"
 
@@ -35,19 +34,12 @@ BOOL APIENTRY DllMain( HMODULE hModule,
 
 STDAPI DllRegisterServer()
 {
-    if (!add_registry_keys())
-    {
-        // Best effort here
-        delete_registry_keys();
-        return E_FAIL;
-    }
-
     return S_OK;
 }
 
 STDAPI DllUnregisterServer()
 {
-    return delete_registry_keys() ? S_OK : E_FAIL;
+    return S_OK;
 }
 
 STDAPI DllGetClassObject(REFCLSID clsid, REFIID riid, void** ppv)
