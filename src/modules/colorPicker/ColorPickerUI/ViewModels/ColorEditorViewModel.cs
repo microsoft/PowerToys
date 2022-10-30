@@ -329,7 +329,7 @@ namespace ColorPicker.ViewModels
             _allColorRepresentations.Add(
                 new ColorFormatModel()
                 {
-                    FormatName = "HEX Integer",
+                    FormatName = "HEX Int",
                     Convert = (Color color) => ColorRepresentationHelper.GetStringRepresentationFromMediaColor(color, ColorRepresentationType.HexInteger),
                 });
 

@@ -205,7 +205,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
             var cielabFormatName = ColorRepresentationType.CIELAB.ToString();
             var ciexyzFormatName = ColorRepresentationType.CIEXYZ.ToString();
             var vec4FormatName = ColorRepresentationType.VEC4.ToString();
-            var hexIntegerFormatName = "HEX Integer";
+            var hexIntegerFormatName = "HEX Int";
             var decimalFormatName = "Decimal";
 
             formatsUnordered.Add(new ColorFormatModel(hexFormatName, "ef68ff", visibleFormats.ContainsKey(hexFormatName) && visibleFormats[hexFormatName]));
