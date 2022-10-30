@@ -5,11 +5,12 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:controls="using:Microsoft.PowerToys.Settings.UI.Controls"
-    xmlns:converters="using:CommunityToolkit.WinUI.UI.Converters"     
+    xmlns:converters="using:CommunityToolkit.WinUI.UI.Converters"
     mc:Ignorable="d"
     AutomationProperties.LandmarkType="Main">
 
     <Page.Resources>
+        <converters:BoolNegationConverter x:Key="BoolNegationConverter"/>
         <converters:BoolToObjectConverter x:Key="BoolToComboBoxIndexConverter" TrueValue="1" FalseValue="0"/>
         <converters:BoolToVisibilityConverter x:Key="FalseToVisibleConverter" TrueValue="Collapsed" FalseValue="Visible"/>
         <converters:BoolToVisibilityConverter x:Key="TrueToVisibleConverter" TrueValue="Visible" FalseValue="Collapsed"/>
@@ -19,8 +20,7 @@
                                   ModuleImageSource="ms-appx:///Assets/Modules/AlwaysOnTop.png">
         <controls:SettingsPageControl.ModuleContent>
             <StackPanel Orientation="Vertical">
-                
-                <controls:Setting x:Uid="AlwaysOnTop_EnableToggleControl_HeaderText">
+                <controls:Setting x:Uid="AlwaysOnTop_EnableToggleControl_HeaderText" IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabledGpoConfigured, Converter={StaticResource BoolNegationConverter}}">
                     <controls:Setting.Icon>
                         <BitmapIcon UriSource="ms-appx:///Assets/FluentIcons/FluentIconsAlwaysOnTop.png" ShowAsMonochrome="False" />
                     </controls:Setting.Icon>
@@ -28,6 +28,11 @@
                         <ToggleSwitch IsOn="{x:Bind ViewModel.IsEnabled, Mode=TwoWay}" x:Uid="ToggleSwitch"/>
                     </controls:Setting.ActionContent>
                 </controls:Setting>
+                <InfoBar x:Uid="GPO_IsSettingForced"
+                    Severity="Informational"
+                    IsClosable="False"
+                    IsOpen="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabledGpoConfigured}"
+                    IsTabStop="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabledGpoConfigured}" />
 
                 <controls:SettingsGroup x:Uid="AlwaysOnTop_Activation_GroupSettings" IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}">
                  

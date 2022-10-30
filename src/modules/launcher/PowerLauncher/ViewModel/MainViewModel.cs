@@ -29,7 +29,7 @@ using Wox.Plugin.Logger;
 namespace PowerLauncher.ViewModel
 {
     [System.Diagnostics.CodeAnalysis.SuppressMessage("Globalization", "CA1309:Use ordinal string comparison", Justification = "Using CurrentCultureIgnoreCase for user facing strings. Each usage is attributed with a comment.")]
-    public class MainViewModel : BaseModel, ISavable, IDisposable
+    public class MainViewModel : BaseModel, IMainViewModel, ISavable, IDisposable
     {
         private string _currentQuery;
         private static string _emptyQuery = string.Empty;
@@ -75,9 +75,9 @@ namespace PowerLauncher.ViewModel
             _history = _historyItemsStorage.Load();
             _userSelectedRecord = _userSelectedRecordStorage.Load();
 
-            ContextMenu = new ResultsViewModel(_settings);
-            Results = new ResultsViewModel(_settings);
-            History = new ResultsViewModel(_settings);
+            ContextMenu = new ResultsViewModel(_settings, this);
+            Results = new ResultsViewModel(_settings, this);
+            History = new ResultsViewModel(_settings, this);
             _selectedResults = Results;
 
             InitializeKeyCommands();
@@ -192,15 +192,20 @@ namespace PowerLauncher.ViewModel
                     // SelectedItem returns null if selection is empty.
                     if (result != null && result.Action != null)
                     {
-                        Hide();
+                        bool hideWindow = true;
 
                         Application.Current.Dispatcher.Invoke(() =>
                         {
-                            result.Action(new ActionContext
+                            hideWindow = result.Action(new ActionContext
                             {
                                 SpecialKeyState = KeyboardHelper.CheckModifiers(),
                             });
                         });
+
+                        if (hideWindow)
+                        {
+                            Hide();
+                        }
 
                         if (SelectedIsFromQueryResults())
                         {

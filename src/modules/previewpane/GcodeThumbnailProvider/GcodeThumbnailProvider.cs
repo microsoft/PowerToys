@@ -158,6 +158,12 @@ namespace Microsoft.PowerToys.ThumbnailHandler.Gcode
                 return;
             }
 
+            if (global::PowerToys.GPOWrapper.GPOWrapper.GetConfiguredGcodeThumbnailsEnabledValue() == global::PowerToys.GPOWrapper.GpoRuleConfigured.Disabled)
+            {
+                // GPO is disabling this utility.
+                return;
+            }
+
             using (var stream = new ReadonlyStream(this.Stream as IStream))
             {
                 using (var reader = new StreamReader(stream))

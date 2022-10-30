@@ -54,7 +54,7 @@ private:
 
     std::wstring theme = L"system";
 
-    std::wstring ToolbarHide = L"Never";
+    std::wstring ToolbarHide = L"When both camera and microphone are unmuted";
 
     uint64_t lastTimeCamOrMicMuteStateChanged{};
 

@@ -103,7 +103,8 @@ namespace Wox.Plugin
         public IconDelegate Icon { get; set; }
 
         /// <summary>
-        /// Gets or sets return true to hide wox after select result
+        /// Gets or sets the result action.
+        /// Return <c>true</c> to hide PowerToys Run after the result has been selected.
         /// </summary>
         [JsonIgnore]
         public Func<ActionContext, bool> Action { get; set; }

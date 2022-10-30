@@ -23,7 +23,7 @@
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.2.0" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="Markdig.Signed" Version="0.27.0" />
+    <PackageReference Include="Microsoft.Windows.CsWinRT" Version="2.0.0" />
     <PackageReference Include="MSTest.TestAdapter" Version="2.2.3" />
     <PackageReference Include="MSTest.TestFramework" Version="2.2.3" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />

@@ -129,4 +129,8 @@
     <value>Can't preview file. This PDF is password protected.</value>
     <comment>This text is displayed if PDF is password protected.</comment>
   </data>
+  <data name="GpoDisabledErrorText" xml:space="preserve">
+    <value>Tried to start with a GPO policy setting the utility to always be disabled. Please contact your systems administrator.</value>
+    <comment>GPO stands for the Windows Group Policy Object feature.</comment>
+  </data>
 </root>

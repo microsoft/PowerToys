@@ -4,6 +4,7 @@
 #include <common/utils/winapi_error.h>
 #include <common/utils/logger_helper.h>
 #include <common/utils/UnhandledExceptionHandler.h>
+#include <common/utils/gpo.h>
 #include <keyboardmanager/common/KeyboardManagerConstants.h>
 #include <keyboardmanager/KeyboardManagerEngineLibrary/KeyboardManager.h>
 #include <keyboardmanager/KeyboardManagerEngineLibrary/trace.h>
@@ -14,7 +15,13 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, 
 {
     winrt::init_apartment();
     LoggerHelpers::init_logger(KeyboardManagerConstants::ModuleName, L"Engine", LogSettings::keyboardManagerLoggerName);
-    
+
+    if (powertoys_gpo::getConfiguredKeyboardManagerEnabledValue() == powertoys_gpo::gpo_rule_configured_disabled)
+    {
+        Logger::warn(L"Tried to start with a GPO policy setting the utility to always be disabled. Please contact your systems administrator.");
+        return 0;
+    }
+
     InitUnhandledExceptionHandler();
 
     auto mutex = CreateMutex(nullptr, true, instanceMutexName.c_str());

@@ -135,6 +135,12 @@ public:
         return app_key.c_str();
     }
 
+    // Return the configured status for the gpo policy for the module
+    virtual powertoys_gpo::gpo_rule_configured_t gpo_policy_enabled_configuration() override
+    {
+        return powertoys_gpo::getConfiguredHostsFileEditorEnabledValue();
+    }
+
     virtual bool get_config(wchar_t* buffer, int* buffer_size) override
     {
         return false;
@@ -159,6 +165,7 @@ public:
             {
                 launch_process(true);
             }
+            Trace::ActivateEditor();
         }
         catch (std::exception&)
         {
@@ -179,6 +186,7 @@ public:
     {
         Logger::trace("HostsModuleInterface::enable()");
         m_enabled = true;
+        Trace::EnableHostsFileEditor(true);
     };
 
     virtual void disable()
@@ -190,6 +198,7 @@ public:
         }
 
         m_enabled = false;
+        Trace::EnableHostsFileEditor(false);
     }
 };
 

@@ -272,6 +272,12 @@ namespace Microsoft.PowerToys.ThumbnailHandler.Svg
                 return;
             }
 
+            if (global::PowerToys.GPOWrapper.GPOWrapper.GetConfiguredSvgThumbnailsEnabledValue() == global::PowerToys.GPOWrapper.GpoRuleConfigured.Disabled)
+            {
+                // GPO is disabling this utility.
+                return;
+            }
+
             string svgData = null;
             using (var stream = new ReadonlyStream(this.Stream as IStream))
             {

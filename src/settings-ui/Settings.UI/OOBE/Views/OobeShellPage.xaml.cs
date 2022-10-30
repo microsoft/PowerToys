@@ -64,7 +64,7 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
             Modules.Insert((int)PowerToysModules.AlwaysOnTop, new OobePowerToysModule()
             {
                 ModuleName = "AlwaysOnTop",
-                IsNew = true,
+                IsNew = false,
             });
             Modules.Insert((int)PowerToysModules.Awake, new OobePowerToysModule()
             {
@@ -80,6 +80,11 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
             {
                 ModuleName = "FancyZones",
                 IsNew = false,
+            });
+            Modules.Insert((int)PowerToysModules.FileLocksmith, new OobePowerToysModule()
+            {
+                ModuleName = "FileLocksmith",
+                IsNew = true,
             });
             Modules.Insert((int)PowerToysModules.FileExplorer, new OobePowerToysModule()
             {
@@ -99,7 +104,7 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
             Modules.Insert((int)PowerToysModules.MouseUtils, new OobePowerToysModule()
             {
                 ModuleName = "MouseUtils",
-                IsNew = true,
+                IsNew = false,
             });
             Modules.Insert((int)PowerToysModules.PowerRename, new OobePowerToysModule()
             {
@@ -114,7 +119,7 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
             Modules.Insert((int)PowerToysModules.QuickAccent, new OobePowerToysModule()
             {
                 ModuleName = "QuickAccent",
-                IsNew = true,
+                IsNew = false,
             });
             Modules.Insert((int)PowerToysModules.ShortcutGuide, new OobePowerToysModule()
             {
@@ -124,19 +129,19 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
             Modules.Insert((int)PowerToysModules.TextExtractor, new OobePowerToysModule()
             {
                 ModuleName = "TextExtractor",
-                IsNew = true,
+                IsNew = false,
             });
 
             Modules.Insert((int)PowerToysModules.VideoConference, new OobePowerToysModule()
             {
                 ModuleName = "VideoConference",
-                IsNew = true,
+                IsNew = false,
             });
 
             Modules.Insert((int)PowerToysModules.MeasureTool, new OobePowerToysModule()
             {
                 ModuleName = "MeasureTool",
-                IsNew = true,
+                IsNew = false,
             });
 
             Modules.Insert((int)PowerToysModules.Hosts, new OobePowerToysModule()
@@ -187,6 +192,7 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
                     case "Awake": NavigationFrame.Navigate(typeof(OobeAwake)); break;
                     case "ColorPicker": NavigationFrame.Navigate(typeof(OobeColorPicker)); break;
                     case "FancyZones": NavigationFrame.Navigate(typeof(OobeFancyZones)); break;
+                    case "FileLocksmith": NavigationFrame.Navigate(typeof(OobeFileLocksmith)); break;
                     case "Run": NavigationFrame.Navigate(typeof(OobeRun)); break;
                     case "ImageResizer": NavigationFrame.Navigate(typeof(OobeImageResizer)); break;
                     case "KBM": NavigationFrame.Navigate(typeof(OobeKBM)); break;

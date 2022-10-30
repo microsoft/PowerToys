@@ -1,0 +1,42 @@
+<Page
+    x:Class="Microsoft.PowerToys.Settings.UI.Views.FileLocksmithPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d"
+    xmlns:muxc="using:Microsoft.UI.Xaml.Controls"
+    xmlns:controls="using:Microsoft.PowerToys.Settings.UI.Controls"
+    xmlns:converters="using:CommunityToolkit.WinUI.UI.Converters"
+    AutomationProperties.LandmarkType="Main">
+
+    <Page.Resources>
+        <converters:BoolNegationConverter x:Key="BoolNegationConverter"/>
+    </Page.Resources>
+
+    <controls:SettingsPageControl x:Uid="FileLocksmith"
+                                  ModuleImageSource="ms-appx:///Assets/Modules/FileLocksmith.png">
+        <controls:SettingsPageControl.ModuleContent>
+            <StackPanel Orientation="Vertical">
+
+                <controls:Setting x:Uid="FileLocksmith_Enable_FileLocksmith" IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabledGpoConfigured, Converter={StaticResource BoolNegationConverter}}">
+                    <controls:Setting.Icon>
+                        <BitmapIcon UriSource="ms-appx:///Assets/FluentIcons/FluentIconsPowerToys.png" ShowAsMonochrome="False" />
+                    </controls:Setting.Icon>
+                    <controls:Setting.ActionContent>
+                        <ToggleSwitch IsOn="{x:Bind ViewModel.IsFileLocksmithEnabled, Mode=TwoWay}" HorizontalAlignment="Right"/>
+                    </controls:Setting.ActionContent>
+                </controls:Setting>
+                <InfoBar x:Uid="GPO_IsSettingForced"
+                    Severity="Informational"
+                    IsClosable="False"
+                    IsOpen="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabledGpoConfigured}"
+                    IsTabStop="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabledGpoConfigured}" />
+
+            </StackPanel>
+        </controls:SettingsPageControl.ModuleContent>
+        <controls:SettingsPageControl.PrimaryLinks>
+            <controls:PageLink x:Uid="LearnMore_FileLocksmith" Link="https://aka.ms/PowerToysOverview_FileLocksmith"/>
+        </controls:SettingsPageControl.PrimaryLinks>
+    </controls:SettingsPageControl>
+</Page>

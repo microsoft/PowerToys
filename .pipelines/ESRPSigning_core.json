@@ -21,6 +21,8 @@
                 "PowerToys.ManagedCommon.dll",
                 "PowerToys.Common.UI.dll",
                 "PowerToys.Settings.UI.Lib.dll",
+                "PowerToys.GPOWrapper.dll",
+                "PowerToys.GPOWrapperProjection.dll",
 
                 "modules\\AlwaysOnTop\\PowerToys.AlwaysOnTop.exe",
                 "modules\\AlwaysOnTop\\PowerToys.AlwaysOnTopModuleInterface.dll",
@@ -68,6 +70,11 @@
                 "modules\\Hosts\\PowerToys.HostsModuleInterface.dll",
                 "modules\\Hosts\\PowerToys.Hosts.dll",
                 "modules\\Hosts\\PowerToys.Hosts.exe",
+
+                "modules\\FileLocksmith\\PowerToys.FileLocksmithLib.Interop.dll",
+                "modules\\FileLocksmith\\PowerToys.FileLocksmithExt.dll",
+                "modules\\FileLocksmith\\PowerToys.FileLocksmithUI.exe",
+                "modules\\FileLocksmith\\PowerToys.FileLocksmithUI.dll",
 
                 "modules\\ImageResizer\\PowerToys.ImageResizer.exe",
                 "modules\\ImageResizer\\PowerToys.ImageResizer.dll",
@@ -205,6 +212,7 @@
                 "vcomp140_app.dll",
                 "vcruntime140_1_app.dll",
                 "vcruntime140_app.dll",
+                "modules\\FileLocksmith\\CommunityToolkit.Labs.WinUI.SettingsControls.dll",
                 "modules\\PowerAccent\\Vanara.Core.dll",
                 "modules\\PowerAccent\\Vanara.PInvoke.ComCtl32.dll",
                 "modules\\PowerAccent\\Vanara.PInvoke.Cryptography.dll",

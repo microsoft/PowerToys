@@ -16,7 +16,7 @@
     <Rule Id="C26444" Action="Info" />
     <Rule Id="C26449" Action="Info" />
     <Rule Id="C26450" Action="Info" />
-    <Rule Id="C26451" Action="Info" />
+    <Rule Id="C26451" Action="Error" />
     <Rule Id="C26452" Action="Info" />
     <Rule Id="C26453" Action="Info" />
     <Rule Id="C26454" Action="Info" />

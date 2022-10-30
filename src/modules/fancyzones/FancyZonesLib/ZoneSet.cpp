@@ -709,11 +709,11 @@ ZoneIndexSet ZoneSet::ZoneSelectSubregion(const ZoneIndexSet& capturedZones, POI
 
     if (verticalSplit)
     {
-        zoneIndex = (pt.y - overlap.top) * capturedZones.size() / height;
+        zoneIndex = (static_cast<int64_t>(pt.y) - overlap.top) * capturedZones.size() / height;
     }
     else
     {
-        zoneIndex = (pt.x - overlap.left) * capturedZones.size() / width;
+        zoneIndex = (static_cast<int64_t>(pt.x) - overlap.left) * capturedZones.size() / width;
     }
 
     zoneIndex = std::clamp(zoneIndex, ZoneIndex(0), static_cast<ZoneIndex>(capturedZones.size()) - 1);
