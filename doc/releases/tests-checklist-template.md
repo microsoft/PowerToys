@@ -29,6 +29,8 @@
  - [ ] Image Resizer
  - [ ] Shortcut Guide (Windows controls are localized)
  - [ ] File Explorer menu entries for Image Resizer and Power Rename
+ - [ ] Hosts File Editor
+ - [ ] File Locksmith
 
 ## General Settings
 
@@ -46,6 +48,11 @@
  - [ ] restart PT and verify that all module are still off in the settings page and they are actually inactive
  - [ ] turn on all the module, all module are now working
  - [ ] restart PT and verify that all module are still on in the settings page and they are actually working
+
+**Settings backup/restore:**
+ - [ ] In the General tab, create a backup of the settings.
+ - [ ] Change some settings in some PowerToys.
+ - [ ] Restore the settings in the General tab and verify the Settings you've applied were reset.
 
 ## Color Picker
 * Enable the Color Picker in settings and ensure that the hotkey brings up Color Picker
@@ -430,3 +437,52 @@ Mouse Pointer Crosshairs:
    - [ ] Verify text is correctly captured on all monitors.
  * Test the different settings and verify they are applied:
    - [ ] Activation shortcut
+
+### Hosts File Editor
+ * Launch Host File Editor:
+   - [ ] Verify the application exits if "Quit" is clicked on the initial warning.
+   - [ ] Launch Host File Editor again and click "Accept". The module should not close. Open the hosts file (`%WinDir%\System32\Drivers\Etc`) in a text editor that auto-refreshes so you can see the changes applied by the editor in real time. (VSCode is an editor like this, for example)
+   - [ ] Enable and disable lines and verify they are applied to the file.
+   - [ ] Add a new entry and verify it's applied.
+   - [ ] Try to filter for lines and verify you can find them.
+   - [ ] Click the "Open hosts file" button and verify it opens in your default editor. (likely Notepad)
+ * Test the different settings and verify they are applied:
+   - [ ] Launch as Administrator.
+   - [ ] Show a warning at startup.
+   - [ ] Additional lines position.
+
+### File Locksmith
+ * Start the PowerToys installer executable and let it stay in the initial screen.
+   - [ ] Right-click the executable file, select "What's using this file?" and verify it shows up. (2 entries will show, since the installer starts two processes)
+   - [ ] End the tasks in File Locksmith UI and verify that closes the installer.
+   - [ ] Start the installer executable again and press the Refresh button in File Locksmith UI. It should find new processes using the files.
+   - [ ] Close the installer window and verify the processes are delisted from the File Locksmith UI. Close the window
+ * Start the PowerToys installer executable again and let it stay in the initial screen.
+   - [ ] Right click the directory where the executable is located, select "What's using this file?" and verify it shows up. 
+   - [ ] Right click the drive where the executable is located, select "What's using this file?" and verify it shows up. You can close the PowerToys installer now.
+ * Restart PowerToys as admin.
+   - [ ] Right click "Program Files", select "What's using this file?" and verify "PowerToys.exe" doesn't show up.
+   - [ ] Press the File Locksmith "Restart as an administrator" button and verify "PowerToys.exe" shows up.
+ - [ ] Right-click the drive where Windows is installed, select "What's using this file?" and scroll down and up, verify File Locksmith doesn't crash with all those entries being shown. Repeat after clicking the File Locksmith "Restart as an administrator" button.
+ - [ ] Disable File Locksmith in Settings and verify the context menu entry no longer appears.
+
+### GPO
+ * Copy the "PowerToys.admx" file to your Policy Definition template folder. (Example: C:\Windows\PolicyDefinitions) and copy the "PowerToys.adml" file to the matching language folder in your Policy Definition folder. (Example: C:\Windows\PolicyDefinitions\en-US)
+   - [ ] Open the "Local Group Policy Editor" on Windows and verify there is a "Microsoft PowerToys" folder in Administrative Templates for both Computer Configuration and User Configuration.
+ * In GPO, disable a module that can run as a standalone (FancyZones sounds good for this). Restart PowerToys.
+   - [ ] Verify the module is not enabled.
+   - [ ] Open settings and verify the module is not enabled and you can't enable it.
+   - [ ] Try to open FancyZones Editor directly from the install folder and verify it doesn't run and adds a message to the log saying it didn't run because of GPO.
+ * In GPO, enable a module that can run as a standalone (FancyZones sounds good for this). Restart PowerToys.
+   - [ ] Verify the module is enabled.
+   - [ ] Open settings and verify the module is enabled and you can't disable it.
+ * In GPO, try to set different settings in the Computer and User Configurations for a PowerToy. Restart PowerToys.
+   - [ ] Verify that the setting in Computer Configuration has priority over the setting in User Configuration.
+ * In GPO, disable a module that has a context menu entry (File Locksmith sounds good for this). Restart PowerToys.
+   - [ ] Verify the module is not enabled. (No context menu entry)
+   - [ ] Open settings and verify the module is not enabled and you can't enable it.
+   - [ ] Try to open File Locksmith directly from the install folder and verify it doesn't run and adds a message to the log saying it didn't run because of GPO.
+ * In GPO, disable a module that is a Preview Handler (Markdown Preview is good for this). Restart PowerToys.
+   - [ ] Verify the module is not enabled. (Markdown files won't appear in the preview pane)
+   - [ ] Open settings and verify the module is not enabled and you can't enable it.
+ * Remember to reset all you Settings to Not Configured after the tests, both in Conputer and User Configurations.
