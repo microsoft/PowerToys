@@ -48,6 +48,7 @@ namespace ColorPicker.Helpers
                 ColorRepresentationType.CIEXYZ => ColorToCIEXYZ(color),
                 ColorRepresentationType.VEC4 => ColorToFloat(color),
                 ColorRepresentationType.DecimalValue => ColorToDecimal(color),
+                ColorRepresentationType.HexInteger => ColorToHexInteger(color),
 
                 // Fall-back value, when "_userSettings.CopiedColorRepresentation.Value" is incorrect
                 _ => ColorToHex(color),
@@ -76,7 +77,7 @@ namespace ColorPicker.Helpers
         /// <summary>
         /// Return a hexadecimal <see cref="string"/> representation of a RGB color
         /// </summary>
-        /// <param name="color">The see cref="Color"/> for the hexadecimal presentation</param>
+        /// <param name="color">The <see cref="Color"/> for the hexadecimal presentation</param>
         /// <returns>A hexadecimal <see cref="string"/> representation of a RGB color</returns>
         private static string ColorToHex(Color color)
         {
@@ -265,6 +266,21 @@ namespace ColorPicker.Helpers
             return $"XYZ({x.ToString(CultureInfo.InvariantCulture)}" +
                    $", {y.ToString(CultureInfo.InvariantCulture)}" +
                    $", {z.ToString(CultureInfo.InvariantCulture)})";
+        }
+
+        /// <summary>
+        /// Return a hexadecimal integer <see cref="string"/> representation of a RGB color
+        /// </summary>
+        /// <param name="color">The <see cref="Color"/> for the hexadecimal integer presentation</param>
+        /// <returns>A hexadecimal integer <see cref="string"/> representation of a RGB color</returns>
+        private static string ColorToHexInteger(Color color)
+        {
+            const string hexFormat = "X2";
+
+            return "0xFF"
+                + $"{color.R.ToString(hexFormat, CultureInfo.InvariantCulture)}"
+                + $"{color.G.ToString(hexFormat, CultureInfo.InvariantCulture)}"
+                + $"{color.B.ToString(hexFormat, CultureInfo.InvariantCulture)}";
         }
     }
 }
