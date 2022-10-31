@@ -38,7 +38,7 @@ namespace FileLocksmithUI
                 // Set window icon
                 WindowId windowId = Win32Interop.GetWindowIdFromWindow(hWnd);
                 AppWindow appWindow = AppWindow.GetFromWindowId(windowId);
-                appWindow.SetIcon("icon.ico");
+                appWindow.SetIcon("Assets/Icon.ico");
             }
         }
 

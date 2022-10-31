@@ -20,7 +20,7 @@
     <WindowsPackageType>None</WindowsPackageType>
     <WindowsAppSDKSelfContained>true</WindowsAppSDKSelfContained>
     <SupportedOSPlatformVersion>10.0.19041.0</SupportedOSPlatformVersion>
-    <ApplicationIcon>icon.ico</ApplicationIcon>
+    <ApplicationIcon>Assets/Icon.ico</ApplicationIcon>
   </PropertyGroup>
 
   <PropertyGroup>
@@ -28,6 +28,15 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Content Include="Assets\Icon.ico" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Remove="Assets\AppList.scale-100.png" />
+    <None Remove="Assets\AppList.scale-125.png" />
+    <None Remove="Assets\AppList.scale-150.png" />
+    <None Remove="Assets\AppList.scale-200.png" />
+    <None Remove="Assets\AppList.scale-400.png" />
     <None Remove="Views\MainPage.xaml" />
   </ItemGroup>
 
@@ -64,9 +73,6 @@
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Properties\" />
-  </ItemGroup>
-  <ItemGroup>
-    <Content Include="icon.ico" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\..\common\GPOWrapper\GPOWrapper.vcxproj" />
