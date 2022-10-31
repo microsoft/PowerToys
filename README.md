@@ -121,7 +121,7 @@ In this release, we focused on releasing new features and improvements.
 - Added a new utility: Hosts File Editor. Thanks [@davidegiacometti](https://github.com/davidegiacometti)!
 - Thanks [@niels9001](https://github.com/niels9001) for the design help on the UI!
 - Thanks [@davidegiacometti](https://github.com/davidegiacometti) for fixing the bugs found and adding features up until release!
-- Thanks [@AtariDreams](https://github.com/AtariDreams) for consolodating the packages comparing to rest of the project!
+- Thanks [@AtariDreams](https://github.com/AtariDreams) for consolidating the packages comparing to the rest of the project!
 - Thanks [@htcfreek](https://github.com/htcfreek) for adding a scrollviewer to the entry editor!
 
 ### Keyboard Manager
