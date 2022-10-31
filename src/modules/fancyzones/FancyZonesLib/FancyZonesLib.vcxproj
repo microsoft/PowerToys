@@ -42,7 +42,7 @@
     <ClInclude Include="FancyZones.h" />
     <ClInclude Include="FancyZonesDataTypes.h" />
     <ClInclude Include="FancyZonesData\DefaultLayouts.h" />
-    <ClInclude Include="FancyZonesData\Layout.h" />
+    <ClInclude Include="FancyZonesData\LayoutData.h" />
     <ClInclude Include="FancyZonesData\LayoutDefaults.h" />
     <ClInclude Include="FancyZonesData\LayoutTemplates.h" />
     <ClInclude Include="FancyZonesWindowProcessing.h" />
@@ -53,7 +53,9 @@
     <ClInclude Include="JsonHelpers.h" />
     <ClInclude Include="KeyState.h" />
     <ClInclude Include="FancyZonesData\LayoutHotkeys.h" />
+    <ClInclude Include="Layout.h" />
     <ClInclude Include="LayoutConfigurator.h" />
+    <ClInclude Include="LayoutAssignedWindows.h" />
     <ClInclude Include="ModuleConstants.h" />
     <ClInclude Include="MonitorUtils.h" />
     <ClInclude Include="MonitorWorkAreaHandler.h" />
@@ -73,7 +75,6 @@
     <ClInclude Include="Zone.h" />
     <ClInclude Include="Colors.h" />
     <ClInclude Include="ZoneIndexSetBitmask.h" />
-    <ClInclude Include="ZoneSet.h" />
     <ClInclude Include="WorkArea.h" />
     <ClInclude Include="ZonesOverlay.h" />
   </ItemGroup>
@@ -104,7 +105,9 @@
     <ClCompile Include="FancyZonesData\LayoutHotkeys.cpp">
       <PrecompiledHeaderFile>../pch.h</PrecompiledHeaderFile>
     </ClCompile>
+    <ClCompile Include="Layout.cpp" />
     <ClCompile Include="LayoutConfigurator.cpp" />
+    <ClCompile Include="LayoutAssignedWindows.cpp" />
     <ClCompile Include="MonitorUtils.cpp" />
     <ClCompile Include="MonitorWorkAreaHandler.cpp" />
     <ClCompile Include="OnThreadExecutor.cpp" />
@@ -119,7 +122,6 @@
     <ClCompile Include="WindowMoveHandler.cpp" />
     <ClCompile Include="WindowUtils.cpp" />
     <ClCompile Include="Zone.cpp" />
-    <ClCompile Include="ZoneSet.cpp" />
     <ClCompile Include="WorkArea.cpp" />
     <ClCompile Include="ZonesOverlay.cpp" />
   </ItemGroup>

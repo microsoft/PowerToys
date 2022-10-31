@@ -303,19 +303,14 @@ void ZonesOverlay::DrawActiveZoneSet(const ZonesMap& zones,
     // First draw the inactive zones
     for (const auto& [zoneId, zone] : zones)
     {
-        if (!zone)
-        {
-            continue;
-        }
-
         if (!isHighlighted[zoneId])
         {
             DrawableRect drawableRect{
-                .rect = ConvertRect(zone->GetZoneRect()),
+                .rect = ConvertRect(zone.GetZoneRect()),
                 .borderColor = borderColor,
                 .fillColor = inactiveColor,
                 .textColor = numberColor,
-                .id = zone->Id(),
+                .id = zone.Id(),
                 .showText = showZoneText
             };
 
@@ -326,19 +321,14 @@ void ZonesOverlay::DrawActiveZoneSet(const ZonesMap& zones,
     // Draw the active zones on top of the inactive zones
     for (const auto& [zoneId, zone] : zones)
     {
-        if (!zone)
-        {
-            continue;
-        }
-
         if (isHighlighted[zoneId])
         {
             DrawableRect drawableRect{
-                .rect = ConvertRect(zone->GetZoneRect()),
+                .rect = ConvertRect(zone.GetZoneRect()),
                 .borderColor = borderColor,
                 .fillColor = highlightColor,
                 .textColor = numberColor,
-                .id = zone->Id(),
+                .id = zone.Id(),
                 .showText = showZoneText
             };
 

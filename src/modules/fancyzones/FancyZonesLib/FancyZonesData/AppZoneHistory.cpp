@@ -556,7 +556,7 @@ void AppZoneHistory::UpdateProcessIdToHandleMap(HWND window, const FancyZonesDat
     }
 }
 
-ZoneIndexSet AppZoneHistory::GetAppLastZoneIndexSet(HWND window, const FancyZonesDataTypes::WorkAreaId& workAreaId, const std::wstring_view& zoneSetId) const
+ZoneIndexSet AppZoneHistory::GetAppLastZoneIndexSet(HWND window, const FancyZonesDataTypes::WorkAreaId& workAreaId, const std::wstring& zoneSetId) const
 {
     auto processPath = get_process_path_waiting_uwp(window);
     if (processPath.empty())

@@ -1,6 +1,6 @@
 #pragma once
 
-#include <FancyZonesLib/FancyZonesData/Layout.h>
+#include <FancyZonesLib/FancyZonesData/LayoutData.h>
 #include <FancyZonesLib/ModuleConstants.h>
 
 #include <common/SettingsAPI/FileWatcher.h>
@@ -31,7 +31,7 @@ enum class MonitorConfiguraionType
 class DefaultLayouts
 {
 public:
-    using TDefaultLayoutsContainer = std::map<MonitorConfiguraionType, Layout>;
+    using TDefaultLayoutsContainer = std::map<MonitorConfiguraionType, LayoutData>;
 
     static DefaultLayouts& instance();
 
@@ -46,7 +46,7 @@ public:
 
     void LoadData();
 
-    Layout GetDefaultLayout(MonitorConfiguraionType type = MonitorConfiguraionType::Horizontal) const noexcept;
+    LayoutData GetDefaultLayout(MonitorConfiguraionType type = MonitorConfiguraionType::Horizontal) const noexcept;
 
 private:
     DefaultLayouts();

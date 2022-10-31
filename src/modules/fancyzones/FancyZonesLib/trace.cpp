@@ -1,6 +1,7 @@
 #include "pch.h"
 #include "trace.h"
-#include "FancyZonesLib/ZoneSet.h"
+#include "FancyZonesLib/Layout.h"
+#include "FancyZonesLib/LayoutAssignedWindows.h"
 #include "FancyZonesLib/Settings.h"
 #include "FancyZonesData/AppZoneHistory.h"
 #include "FancyZonesLib/FancyZonesData/AppliedLayouts.h"
@@ -89,28 +90,23 @@ struct ZoneSetInfo
 };
 
 
-ZoneSetInfo GetZoneSetInfo(_In_opt_ IZoneSet* set) noexcept
+ZoneSetInfo GetZoneSetInfo(_In_opt_ Layout* layout, _In_opt_ LayoutAssignedWindows* layoutWindows) noexcept
 {
     ZoneSetInfo info;
-    if (set)
+    if (layout && layoutWindows)
     {
-        auto zones = set->GetZones();
+        auto zones = layout->Zones();
         info.NumberOfZones = zones.size();
         info.NumberOfWindows = 0;
         for (int i = 0; i < static_cast<int>(zones.size()); i++)
         {
-            if (!set->IsZoneEmpty(i))
+            if (!layoutWindows->IsZoneEmpty(i))
             {
                 info.NumberOfWindows++;
             }
         }
     }
     return info;
-}
-
-ZoneSetInfo GetZoneSetInfo(_In_opt_ winrt::com_ptr<IZoneSet> set) noexcept
-{
-    return GetZoneSetInfo(set.get());
 }
 
 void Trace::RegisterProvider() noexcept
@@ -263,28 +259,28 @@ void Trace::FancyZones::QuickLayoutSwitched(bool shortcutUsed) noexcept
         TraceLoggingBoolean(shortcutUsed, QuickLayoutSwitchedWithShortcutUsed));
 }
 
-void Trace::FancyZones::SnapNewWindowIntoZone(IZoneSet* activeSet) noexcept
+void Trace::FancyZones::SnapNewWindowIntoZone(Layout* activeLayout, LayoutAssignedWindows* layoutWindows) noexcept
 {
-    auto const zoneInfo = GetZoneSetInfo(activeSet);
+    auto const zoneInfo = GetZoneSetInfo(activeLayout, layoutWindows);
     TraceLoggingWrite(
         g_hProvider,
         EventSnapNewWindowIntoZone,
         ProjectTelemetryPrivacyDataTag(ProjectTelemetryTag_ProductAndServicePerformance),
         TraceLoggingKeyword(PROJECT_KEYWORD_MEASURE),
-        TraceLoggingValue(reinterpret_cast<void*>(activeSet), ActiveSetKey),
+        TraceLoggingValue(reinterpret_cast<void*>(activeLayout), ActiveSetKey),
         TraceLoggingValue(zoneInfo.NumberOfZones, NumberOfZonesKey),
         TraceLoggingValue(zoneInfo.NumberOfWindows, NumberOfWindowsKey));
 }
 
-void Trace::FancyZones::KeyboardSnapWindowToZone(IZoneSet* activeSet) noexcept
+void Trace::FancyZones::KeyboardSnapWindowToZone(Layout* activeLayout, LayoutAssignedWindows* layoutWindows) noexcept
 {
-    auto const zoneInfo = GetZoneSetInfo(activeSet);
+    auto const zoneInfo = GetZoneSetInfo(activeLayout, layoutWindows);
     TraceLoggingWrite(
         g_hProvider,
         EventKeyboardSnapWindowToZone,
         ProjectTelemetryPrivacyDataTag(ProjectTelemetryTag_ProductAndServicePerformance),
         TraceLoggingKeyword(PROJECT_KEYWORD_MEASURE),
-        TraceLoggingValue(reinterpret_cast<void*>(activeSet), ActiveSetKey),
+        TraceLoggingValue(reinterpret_cast<void*>(activeLayout), ActiveSetKey),
         TraceLoggingValue(zoneInfo.NumberOfZones, NumberOfZonesKey),
         TraceLoggingValue(zoneInfo.NumberOfWindows, NumberOfWindowsKey));
 }
@@ -361,41 +357,41 @@ void Trace::WorkArea::KeyUp(WPARAM wParam) noexcept
         TraceLoggingValue(wParam, KeyboardValueKey));
 }
 
-void Trace::WorkArea::MoveOrResizeStarted(_In_opt_ winrt::com_ptr<IZoneSet> activeSet) noexcept
+void Trace::WorkArea::MoveOrResizeStarted(_In_opt_ Layout* activeLayout, _In_opt_ LayoutAssignedWindows* layoutWindows) noexcept
 {
-    auto const zoneInfo = GetZoneSetInfo(activeSet);
+    auto const zoneInfo = GetZoneSetInfo(activeLayout, layoutWindows);
     TraceLoggingWrite(
         g_hProvider,
         EventMoveOrResizeStartedKey,
         ProjectTelemetryPrivacyDataTag(ProjectTelemetryTag_ProductAndServicePerformance),
         TraceLoggingKeyword(PROJECT_KEYWORD_MEASURE),
-        TraceLoggingValue(reinterpret_cast<void*>(activeSet.get()), ActiveSetKey),
+        TraceLoggingValue(reinterpret_cast<void*>(activeLayout), ActiveSetKey),
         TraceLoggingValue(zoneInfo.NumberOfZones, NumberOfZonesKey),
         TraceLoggingValue(zoneInfo.NumberOfWindows, NumberOfWindowsKey));
 }
 
-void Trace::WorkArea::MoveOrResizeEnd(_In_opt_ winrt::com_ptr<IZoneSet> activeSet) noexcept
+void Trace::WorkArea::MoveOrResizeEnd(_In_opt_ Layout* activeLayout, _In_opt_ LayoutAssignedWindows* layoutWindows) noexcept
 {
-    auto const zoneInfo = GetZoneSetInfo(activeSet);
+    auto const zoneInfo = GetZoneSetInfo(activeLayout, layoutWindows);
     TraceLoggingWrite(
         g_hProvider,
         EventMoveOrResizeEndedKey,
         ProjectTelemetryPrivacyDataTag(ProjectTelemetryTag_ProductAndServicePerformance),
         TraceLoggingKeyword(PROJECT_KEYWORD_MEASURE),
-        TraceLoggingValue(reinterpret_cast<void*>(activeSet.get()), ActiveSetKey),
+        TraceLoggingValue(reinterpret_cast<void*>(activeLayout), ActiveSetKey),
         TraceLoggingValue(zoneInfo.NumberOfZones, NumberOfZonesKey),
         TraceLoggingValue(zoneInfo.NumberOfWindows, NumberOfWindowsKey));
 }
 
-void Trace::WorkArea::CycleActiveZoneSet(_In_opt_ winrt::com_ptr<IZoneSet> activeSet, InputMode mode) noexcept
+void Trace::WorkArea::CycleActiveZoneSet(_In_opt_ Layout* activeLayout, _In_opt_ LayoutAssignedWindows* layoutWindows, InputMode mode) noexcept
 {
-    auto const zoneInfo = GetZoneSetInfo(activeSet);
+    auto const zoneInfo = GetZoneSetInfo(activeLayout, layoutWindows);
     TraceLoggingWrite(
         g_hProvider,
         EventCycleActiveZoneSetKey,
         ProjectTelemetryPrivacyDataTag(ProjectTelemetryTag_ProductAndServicePerformance),
         TraceLoggingKeyword(PROJECT_KEYWORD_MEASURE),
-        TraceLoggingValue(reinterpret_cast<void*>(activeSet.get()), ActiveSetKey),
+        TraceLoggingValue(reinterpret_cast<void*>(activeLayout), ActiveSetKey),
         TraceLoggingValue(zoneInfo.NumberOfZones, NumberOfZonesKey),
         TraceLoggingValue(zoneInfo.NumberOfWindows, NumberOfWindowsKey),
         TraceLoggingValue(static_cast<int>(mode), InputModeKey));

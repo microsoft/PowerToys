@@ -47,8 +47,10 @@
     <ClCompile Include="DefaultLayoutsTests.Spec.cpp" />
     <ClCompile Include="FancyZonesSettings.Spec.cpp" />
     <ClCompile Include="JsonHelpers.Tests.cpp" />
+    <ClCompile Include="Layout.Spec.cpp" />
     <ClCompile Include="LayoutHotkeysTests.Spec.cpp" />
     <ClCompile Include="LayoutTemplatesTests.Spec.cpp" />
+    <ClCompile Include="LayoutAssignedWindows.Spec.cpp" />
     <ClCompile Include="pch.cpp">
       <PrecompiledHeader Condition="'$(CIBuild)'!='true'">Create</PrecompiledHeader>
     </ClCompile>
@@ -57,7 +59,6 @@
     <ClCompile Include="WorkArea.Spec.cpp" />
     <ClCompile Include="WorkAreaIdTests.Spec.cpp" />
     <ClCompile Include="Zone.Spec.cpp" />
-    <ClCompile Include="ZoneSet.Spec.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h" />

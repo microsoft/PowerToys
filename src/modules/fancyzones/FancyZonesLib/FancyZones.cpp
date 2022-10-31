@@ -25,7 +25,6 @@
 #include <FancyZonesLib/MonitorUtils.h>
 #include <FancyZonesLib/Settings.h>
 #include <FancyZonesLib/SettingsObserver.h>
-#include <FancyZonesLib/ZoneSet.h>
 #include <FancyZonesLib/WorkArea.h>
 #include <FancyZonesLib/WindowMoveHandler.h>
 #include <FancyZonesLib/WindowUtils.h>
@@ -102,9 +101,9 @@ public:
         m_windowMoveHandler.MoveSizeUpdate(monitor, ptScreen, m_workAreaHandler.GetWorkAreasByDesktopId(VirtualDesktop::instance().GetCurrentVirtualDesktopId()));
     }
 
-    void MoveSizeEnd(HWND window, POINT const& ptScreen) noexcept
+    void MoveSizeEnd(HWND window) noexcept
     {
-        m_windowMoveHandler.MoveSizeEnd(window, ptScreen, m_workAreaHandler.GetWorkAreasByDesktopId(VirtualDesktop::instance().GetCurrentVirtualDesktopId()));
+        m_windowMoveHandler.MoveSizeEnd(window, m_workAreaHandler.GetWorkAreasByDesktopId(VirtualDesktop::instance().GetCurrentVirtualDesktopId()));
     }
 
     IFACEMETHODIMP_(void)
@@ -155,7 +154,7 @@ protected:
 
 private:
     void UpdateWorkAreas() noexcept;
-    void CycleTabs(bool reverse) noexcept;
+    void CycleWindows(bool reverse) noexcept;
     bool OnSnapHotkeyBasedOnZoneNumber(HWND window, DWORD vkCode) noexcept;
     bool OnSnapHotkeyBasedOnPosition(HWND window, DWORD vkCode) noexcept;
     bool OnSnapHotkey(DWORD vkCode) noexcept;
@@ -342,7 +341,7 @@ void FancyZones::MoveWindowIntoZone(HWND window, std::shared_ptr<WorkArea> workA
 {
     if (workArea)
     {
-        Trace::FancyZones::SnapNewWindowIntoZone(workArea->ZoneSet());
+        Trace::FancyZones::SnapNewWindowIntoZone(workArea->GetLayout().get(), workArea->GetLayoutWindows().get()); 
     }
     m_windowMoveHandler.MoveWindowIntoZoneByIndexSet(window, zoneIndexSet, workArea);
     AppZoneHistory::instance().UpdateProcessIdToHandleMap(window, workArea->UniqueId());
@@ -434,7 +433,14 @@ void FancyZones::WindowCreated(HWND window) noexcept
     // Open on active monitor if window wasn't zoned
     if (openOnActiveMonitor && !movedToAppLastZone)
     {
-        m_dpiUnawareThread.submit(OnThreadExecutor::task_t{ [&] { MonitorUtils::OpenWindowOnActiveMonitor(window, active); } }).wait();
+        // window is recreated after switching virtual desktop
+        // avoid moving already opened windows after switching vd
+        bool isMoved = FancyZonesWindowProperties::RetreiveMovedOnOpeningProperty(window);
+        if (!isMoved)
+        {
+            FancyZonesWindowProperties::StampMovedOnOpeningProperty(window);
+            m_dpiUnawareThread.submit(OnThreadExecutor::task_t{ [&] { MonitorUtils::OpenWindowOnActiveMonitor(window, active); } }).wait();
+        }
     }
 }
 
@@ -561,7 +567,7 @@ LRESULT FancyZones::WndProc(HWND window, UINT message, WPARAM wparam, LPARAM lpa
         else if (wparam == static_cast<WPARAM>(HotkeyId::NextTab) || wparam == static_cast<WPARAM>(HotkeyId::PrevTab))
         {
             bool reverse = wparam == static_cast<WPARAM>(HotkeyId::PrevTab);
-            CycleTabs(reverse);
+            CycleWindows(reverse);
         }
     }
     break;
@@ -630,7 +636,7 @@ LRESULT FancyZones::WndProc(HWND window, UINT message, WPARAM wparam, LPARAM lpa
         else if (message == WM_PRIV_MOVESIZEEND)
         {
             auto hwnd = reinterpret_cast<HWND>(wparam);
-            MoveSizeEnd(hwnd, ptScreen);
+            MoveSizeEnd(hwnd);
         }
         else if (message == WM_PRIV_LOCATIONCHANGE)
         {
@@ -708,13 +714,10 @@ void FancyZones::OnDisplayChange(DisplayChangeType changeType) noexcept
 
     UpdateWorkAreas();
 
-    if ((changeType == DisplayChangeType::WorkArea) || (changeType == DisplayChangeType::DisplayChange))
+    if (FancyZonesSettings::settings().displayChange_moveWindows)
     {
-        if (FancyZonesSettings::settings().displayChange_moveWindows)
-        {
-            auto activeWorkAreas = m_workAreaHandler.GetWorkAreasByDesktopId(VirtualDesktop::instance().GetCurrentVirtualDesktopId());
-            m_windowMoveHandler.UpdateWindowsPositions(activeWorkAreas);
-        }
+        auto activeWorkAreas = m_workAreaHandler.GetWorkAreasByDesktopId(VirtualDesktop::instance().GetCurrentVirtualDesktopId());
+        m_windowMoveHandler.UpdateWindowsPositions(activeWorkAreas);
     }
 }
 
@@ -782,7 +785,7 @@ void FancyZones::UpdateWorkAreas() noexcept
     }
 }
 
-void FancyZones::CycleTabs(bool reverse) noexcept
+void FancyZones::CycleWindows(bool reverse) noexcept
 {
     auto window = GetForegroundWindow();
     HMONITOR current = WorkAreaKeyFromWindow(window);
@@ -790,7 +793,7 @@ void FancyZones::CycleTabs(bool reverse) noexcept
     auto workArea = m_workAreaHandler.GetWorkArea(VirtualDesktop::instance().GetCurrentVirtualDesktopId(), current);
     if (workArea)
     {
-        workArea->CycleTabs(window, reverse);
+        workArea->CycleWindows(window, reverse);
     }
 }
 
@@ -808,7 +811,7 @@ bool FancyZones::OnSnapHotkeyBasedOnZoneNumber(HWND window, DWORD vkCode) noexce
             auto workArea = m_workAreaHandler.GetWorkArea(VirtualDesktop::instance().GetCurrentVirtualDesktopId(), *currMonitorInfo);
             if (m_windowMoveHandler.MoveWindowIntoZoneByDirectionAndIndex(window, vkCode, false /* cycle through zones */, workArea))
             {
-                Trace::FancyZones::KeyboardSnapWindowToZone(workArea->ZoneSet());
+                Trace::FancyZones::KeyboardSnapWindowToZone(workArea->GetLayout().get(), workArea->GetLayoutWindows().get());
                 return true;
             }
             // We iterated through all zones in current monitor zone layout, move on to next one (or previous depending on direction).
@@ -844,7 +847,7 @@ bool FancyZones::OnSnapHotkeyBasedOnZoneNumber(HWND window, DWORD vkCode) noexce
             }
             else
             {
-                Trace::FancyZones::KeyboardSnapWindowToZone(workArea->ZoneSet());
+                Trace::FancyZones::KeyboardSnapWindowToZone(workArea->GetLayout().get(), workArea->GetLayoutWindows().get());
             }
             return moved;
         }
@@ -853,7 +856,7 @@ bool FancyZones::OnSnapHotkeyBasedOnZoneNumber(HWND window, DWORD vkCode) noexce
             bool moved = m_windowMoveHandler.MoveWindowIntoZoneByDirectionAndIndex(window, vkCode, true /* cycle through zones */, workArea);
             if (moved)
             {
-                Trace::FancyZones::KeyboardSnapWindowToZone(workArea->ZoneSet());
+                Trace::FancyZones::KeyboardSnapWindowToZone(workArea->GetLayout().get(), workArea->GetLayoutWindows().get());
             }
             return moved;
         }
@@ -894,13 +897,13 @@ bool FancyZones::OnSnapHotkeyBasedOnPosition(HWND window, DWORD vkCode) noexcept
                 auto workArea = m_workAreaHandler.GetWorkArea(VirtualDesktop::instance().GetCurrentVirtualDesktopId(), monitor);
                 if (workArea)
                 {
-                    auto zoneSet = workArea->ZoneSet();
-                    if (zoneSet)
+                    const auto& layout = workArea->GetLayout();
+                    if (layout)
                     {
-                        const auto zones = zoneSet->GetZones();
+                        const auto& zones = layout->Zones();
                         for (const auto& [zoneId, zone] : zones)
                         {
-                            RECT zoneRect = zone->GetZoneRect();
+                            RECT zoneRect = zone.GetZoneRect();
 
                             zoneRect.left += monitorRect.left;
                             zoneRect.right += monitorRect.left;
@@ -929,7 +932,7 @@ bool FancyZones::OnSnapHotkeyBasedOnPosition(HWND window, DWORD vkCode) noexcept
             // Moving to another monitor succeeded
             const auto& [trueZoneIdx, workArea] = zoneRectsInfo[chosenIdx];
             m_windowMoveHandler.MoveWindowIntoZoneByIndexSet(window, { trueZoneIdx }, workArea);
-            Trace::FancyZones::KeyboardSnapWindowToZone(workArea->ZoneSet());
+            Trace::FancyZones::KeyboardSnapWindowToZone(workArea->GetLayout().get(), workArea->GetLayoutWindows().get());
             return true;
         }
 
@@ -942,13 +945,13 @@ bool FancyZones::OnSnapHotkeyBasedOnPosition(HWND window, DWORD vkCode) noexcept
             auto workArea = m_workAreaHandler.GetWorkArea(VirtualDesktop::instance().GetCurrentVirtualDesktopId(), current);
             if (workArea)
             {
-                auto zoneSet = workArea->ZoneSet();
-                if (zoneSet)
+                const auto& layout = workArea->GetLayout();
+                if (layout)
                 {
-                    const auto zones = zoneSet->GetZones();
+                    const auto& zones = layout->Zones();
                     for (const auto& [zoneId, zone] : zones)
                     {
-                        RECT zoneRect = zone->GetZoneRect();
+                        RECT zoneRect = zone.GetZoneRect();
 
                         zoneRect.left += currentMonitorRect.left;
                         zoneRect.right += currentMonitorRect.left;
@@ -974,7 +977,7 @@ bool FancyZones::OnSnapHotkeyBasedOnPosition(HWND window, DWORD vkCode) noexcept
             // Moving to another monitor succeeded
             const auto& [trueZoneIdx, workArea] = zoneRectsInfo[chosenIdx];
             m_windowMoveHandler.MoveWindowIntoZoneByIndexSet(window, { trueZoneIdx }, workArea);
-            Trace::FancyZones::KeyboardSnapWindowToZone(workArea->ZoneSet());
+            Trace::FancyZones::KeyboardSnapWindowToZone(workArea->GetLayout().get(), workArea->GetLayoutWindows().get());
             return true;
         }
         else
@@ -1013,7 +1016,7 @@ bool FancyZones::ProcessDirectedSnapHotkey(HWND window, DWORD vkCode, bool cycle
         bool result = m_windowMoveHandler.ExtendWindowByDirectionAndPosition(window, vkCode, workArea);
         if (result) 
         {
-            Trace::FancyZones::KeyboardSnapWindowToZone(workArea->ZoneSet());
+            Trace::FancyZones::KeyboardSnapWindowToZone(workArea->GetLayout().get(), workArea->GetLayoutWindows().get());
         }
         return result;
     }
@@ -1022,7 +1025,7 @@ bool FancyZones::ProcessDirectedSnapHotkey(HWND window, DWORD vkCode, bool cycle
         bool result = m_windowMoveHandler.MoveWindowIntoZoneByDirectionAndPosition(window, vkCode, cycle, workArea);
         if (result)
         {
-            Trace::FancyZones::KeyboardSnapWindowToZone(workArea->ZoneSet());
+            Trace::FancyZones::KeyboardSnapWindowToZone(workArea->GetLayout().get(), workArea->GetLayoutWindows().get());
         }
         return result;
     }
@@ -1130,7 +1133,20 @@ bool FancyZones::ShouldProcessSnapHotkey(DWORD vkCode) noexcept
         HMONITOR monitor = WorkAreaKeyFromWindow(window);
 
         auto workArea = m_workAreaHandler.GetWorkArea(VirtualDesktop::instance().GetCurrentVirtualDesktopId(), monitor);
-        if (workArea && workArea->ZoneSet() && workArea->ZoneSet()->LayoutType() != FancyZonesDataTypes::ZoneSetLayoutType::Blank)
+        if (!workArea)
+        {
+            Logger::error(L"No work area for processing snap hotkey");
+            return false;
+        }
+
+        const auto& layout = workArea->GetLayout();
+        if (!layout)
+        {
+            Logger::error(L"No layout for processing snap hotkey");
+            return false;
+        }
+
+        if (layout->Type() != FancyZonesDataTypes::ZoneSetLayoutType::Blank)
         {
             if (vkCode == VK_UP || vkCode == VK_DOWN)
             {
@@ -1142,6 +1158,7 @@ bool FancyZones::ShouldProcessSnapHotkey(DWORD vkCode) noexcept
             }
         }
     }
+
     return false;
 }
 
@@ -1193,7 +1210,7 @@ std::vector<std::pair<HMONITOR, RECT>> FancyZones::GetRawMonitorData() noexcept
     const auto& activeWorkAreaMap = m_workAreaHandler.GetWorkAreasByDesktopId(VirtualDesktop::instance().GetCurrentVirtualDesktopId());
     for (const auto& [monitor, workArea] : activeWorkAreaMap)
     {
-        if (workArea->ZoneSet() != nullptr)
+        if (workArea->GetLayout() != nullptr)
         {
             MONITORINFOEX mi;
             mi.cbSize = sizeof(mi);
