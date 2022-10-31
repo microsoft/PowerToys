@@ -183,7 +183,7 @@ In this release, we focused on releasing new features and improvements.
 - Improved and clarified the issues templates. Thanks [@Jay-o-Way](https://github.com/Jay-o-Way)!
 - Fixed a PTRun unit test to be more compatible with .NET 6. Thanks [@AtariDreams](https://github.com/AtariDreams)!
 
-#### What is being planned for v0.65
+#### What is being planned for version 0.65
 
 For [v0.65][github-next-release-work], we'll work on below:
 
