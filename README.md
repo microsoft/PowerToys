@@ -140,7 +140,7 @@ In this release, we focused on releasing new features and improvements.
 
 ### Quick Accent
 
-- Corrected dutch to german. Thanks [@damienleroy](https://github.com/damienleroy)!
+- Corrected "Dutch" word to "German". Thanks [@damienleroy](https://github.com/damienleroy)!
 - Added the Portuguese language accents. Thanks [@pcanavar](https://github.com/pcanavar)!
 - Fixed positioning of toolbar on scaled desktops.
 
