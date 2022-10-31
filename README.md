@@ -130,7 +130,7 @@ In this release, we focused on releasing new features and improvements.
 
 ### Mouse Utilities
 
-- Changed the opacity setting to the 1-100 range. Thanks [@davidegiacometti](https://github.com/davidegiacometti!
+- Changed the opacity setting to the 1-100 range. Thanks [@davidegiacometti](https://github.com/davidegiacometti)!
 
 ### PowerToys Run
 
