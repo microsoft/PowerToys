@@ -45,12 +45,12 @@
 - [ ] Check `Save and apply` and `Cancel` buttons behavior after editing.
 - [ ] Assign a layout to each monitor.
 - [ ] Assign keys to quickly switch layouts (custom layouts only), `Win + Ctrl + Alt + number`.
+- [ ] Assign horizontal and vertical default layouts
 - [ ] Test duplicate layout focus
    * Select any layout X in 'Templates' or 'Custom' section by click left mouse button
    * Mouse right button click on any layout Y in 'Templates' or 'Custom' sections
    * Duplicate it by clicking 'Create custom layout' (Templates section) or 'Duplicate' in 'Custom' section
    * Expect the layout Y is duplicated
-
 
 ## FancyZones
 - [ ] Switch between `Allow zones to span across monitors` on and off. Verify that layouts are applied correctly in both cases.
@@ -70,6 +70,8 @@
 * Change screen resolution or scaling.
     - [ ] Assign grid layout, verify that the assigned layout fits the screen.
       NOTE: canvas layout could not fit the screen if it was created on a monitor with a different resolution.
+- [ ] Apply 2 windows to the same zone, verify that window swithing works (`Win + PgUp/PgDown`)
+- [ ] Verify that window switching still works after switching to another virtual desktop and back. 
 - [ ] Disable FZ
 - [ ] Re-enable FZ, verify that everything is in the same state as it was before disabling.
 
@@ -78,7 +80,6 @@ Before testing
    * Remove all virtual desktops 
    * Remove `CurrentVirtualDesktop` from `\HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\Explorer\SessionInfo\1\VirtualDesktops` 
    * Remove `VirtualDesktopIDs` from `\HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\Explorer\VirtualDesktops`
-
 
 - [ ] Test screen locking
    * Set custom layouts on each monitor
@@ -89,6 +90,11 @@ Before testing
    * Set custom layouts on each monitor
    * Restart the computer
    * Verify that layouts weren't reset to defaults
+
+- [ ] Test applying default layouts on reset
+   * Set default horizontal and vertical layouts
+   * Delete `applied-layouts.json`
+   * Verify that selected default layout is applied according to configuration
 
 ## File Explorer Add-ons
  * Running as user:

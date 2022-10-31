@@ -91,8 +91,6 @@
    * Duplicate it by clicking 'Create custom layout' (Templates section) or 'Duplicate' in 'Custom' section
    * Expect the layout Y is duplicated
 
-
-
 ## FancyZones
 - [ ] Switch between `Allow zones to span across monitors` on and off. Verify that layouts are applied correctly in both cases.
 - [ ] Change zone colors and opacity.
@@ -136,7 +134,7 @@ Before testing
    * Set default horizontal and vertical layouts
    * Delete `applied-layouts.json`
    * Verify that selected default layout is applied according to configuration
-   
+
 ## File Explorer Add-ons
  * Running as user:
    * go to PowerToys repo root
