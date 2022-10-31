@@ -166,12 +166,12 @@ In this release, we focused on releasing new features and improvements.
 
 ### Installer
 
-- Added some missing items that were causing Settings and PowerRename issues on some configurations.
+- Added some missing files that were causing Settings and PowerRename to not function correctly on some configurations.
 - Updated the .NET dependency to 6.0.10.
 
 ### Development
 
-- Consolidated nuget packages.
+- Consolidated nuget packages and removed a few unused packages.
 - Updated the Windows.CppRT to the latest version. Thanks [@AtariDreams](https://github.com/AtariDreams)!
 - Removed the cxxopts dependency, which was no longer used. Thanks [@AtariDreams](https://github.com/AtariDreams)!
 - Updated the cziplob dependency to 0.25. Thanks [@AtariDreams](https://github.com/AtariDreams)!
