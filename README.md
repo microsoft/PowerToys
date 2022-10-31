@@ -152,7 +152,7 @@ In this release, we focused on releasing new features and improvements.
 
 - Added a feature to backup/restore settings to/from a file. Thanks [@jefflord](https://github.com/jefflord)!
 - Fixed an issue causing shortcuts shown in OOBE not updating to new values when the window was re-opened.
-- Fixed the "Documents" folder usage in the backup/restore feature. Thanks [@davidegiacometti](https://github.com/davidegiacometti!
+- Fixed the "Documents" folder usage in the backup/restore feature. Thanks [@davidegiacometti](https://github.com/davidegiacometti)!
 
 ### Text Extractor
 
