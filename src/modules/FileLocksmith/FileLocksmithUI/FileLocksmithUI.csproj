@@ -28,7 +28,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Content Remove="Assets\Icon.ico" />
+    <Content Include="Assets\Icon.ico" />
   </ItemGroup>
 
   <ItemGroup>
