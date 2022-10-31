@@ -50,7 +50,6 @@
     <PackageReference Include="System.IO.Abstractions">
       <Version>17.2.3</Version>
     </PackageReference>
-    <PackageReference Include="System.Text.Json" Version="6.0.2" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\..\common\GPOWrapperProjection\GPOWrapperProjection.csproj" />
