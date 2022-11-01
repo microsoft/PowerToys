@@ -2,7 +2,7 @@
 
  Regressions:
  - [x] https://github.com/microsoft/PowerToys/issues/1414#issuecomment-593529038
- - [ ] https://github.com/microsoft/PowerToys/issues/1524
+ - [x] https://github.com/microsoft/PowerToys/issues/1524
 
 ## Localization
  Change the Winodws language to a language different than English. Then verify if the following screens change their language:
@@ -46,9 +46,9 @@
 ## PowerToys Run
 
  * Enable PT Run in settings and ensure that the hotkey brings up PT Run
-   - [ ] when PowerToys is running unelevated on start-up
-   - [ ] when PowerToys is running as admin on start-up
-   - [ ] when PowerToys is restarted as admin, by clicking the restart as admin button in settings.
+   - [x] when PowerToys is running unelevated on start-up
+   - [x] when PowerToys is running as admin on start-up
+   - [x] when PowerToys is restarted as admin, by clicking the restart as admin button in settings.
  * Check that each of the plugins is working:
    - [x] Program - launch a Win32 application
    - [x] Program - launch a Win32 application as admin
