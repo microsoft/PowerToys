@@ -1,7 +1,7 @@
 ## Functional tests
 
  Regressions:
- - [ ] https://github.com/microsoft/PowerToys/issues/1414#issuecomment-593529038
+ - [x] https://github.com/microsoft/PowerToys/issues/1414#issuecomment-593529038
  - [ ] https://github.com/microsoft/PowerToys/issues/1524
 
 ## Localization
