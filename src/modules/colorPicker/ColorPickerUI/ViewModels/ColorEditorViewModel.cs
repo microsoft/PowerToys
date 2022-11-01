@@ -326,6 +326,12 @@ namespace ColorPicker.ViewModels
                     FormatName = "Decimal",
                     Convert = (Color color) => ColorRepresentationHelper.GetStringRepresentationFromMediaColor(color, ColorRepresentationType.DecimalValue),
                 });
+            _allColorRepresentations.Add(
+                new ColorFormatModel()
+                {
+                    FormatName = "HEX Int",
+                    Convert = (Color color) => ColorRepresentationHelper.GetStringRepresentationFromMediaColor(color, ColorRepresentationType.HexInteger),
+                });
 
             _userSettings.VisibleColorFormats.CollectionChanged += VisibleColorFormats_CollectionChanged;
 

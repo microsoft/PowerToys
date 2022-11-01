@@ -5,11 +5,13 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:converters="using:Microsoft.PowerToys.Settings.UI.Converters"
+    xmlns:toolkitConverters="using:CommunityToolkit.WinUI.UI.Converters"
     xmlns:controls="using:Microsoft.PowerToys.Settings.UI.Controls"
     mc:Ignorable="d"
     AutomationProperties.LandmarkType="Main">
 
     <Page.Resources>
+        <toolkitConverters:BoolNegationConverter x:Key="BoolNegationConverter"/>
         <converters:AwakeModeToIntConverter x:Key="AwakeModeToIntConverter" />
     </Page.Resources>
 
@@ -18,7 +20,7 @@
         <controls:SettingsPageControl.ModuleContent>
             <StackPanel Orientation="Vertical">
 
-                <controls:Setting x:Uid="Awake_EnableAwake">
+                <controls:Setting x:Uid="Awake_EnableAwake" IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabledGpoConfigured, Converter={StaticResource BoolNegationConverter}}">
                     <controls:Setting.Icon>
                         <BitmapIcon UriSource="ms-appx:///Assets/FluentIcons/FluentIconsAwake.png" ShowAsMonochrome="False" />
                     </controls:Setting.Icon>
@@ -26,6 +28,11 @@
                         <ToggleSwitch IsOn="{x:Bind ViewModel.IsEnabled, Mode=TwoWay}" x:Uid="ToggleSwitch" HorizontalAlignment="Right"/>
                     </controls:Setting.ActionContent>
                 </controls:Setting>
+                <InfoBar x:Uid="GPO_IsSettingForced"
+                    Severity="Informational"
+                    IsClosable="False"
+                    IsOpen="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabledGpoConfigured}"
+                    IsTabStop="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabledGpoConfigured}" />
 
                 <controls:SettingsGroup x:Uid="Awake_Behavior_GroupSettings" IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}">
                  

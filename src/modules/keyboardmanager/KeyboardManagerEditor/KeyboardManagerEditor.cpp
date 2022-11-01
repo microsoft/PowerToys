@@ -8,6 +8,7 @@
 #include <common/utils/logger_helper.h>
 #include <common/utils/ProcessWaiter.h>
 #include <common/utils/UnhandledExceptionHandler.h>
+#include <common/utils/gpo.h>
 
 #include <trace.h>
 
@@ -28,6 +29,13 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
     UNREFERENCED_PARAMETER(hPrevInstance);
 
     LoggerHelpers::init_logger(KeyboardManagerConstants::ModuleName, L"Editor", LogSettings::keyboardManagerLoggerName);
+
+    if (powertoys_gpo::getConfiguredKeyboardManagerEnabledValue() == powertoys_gpo::gpo_rule_configured_disabled)
+    {
+        Logger::warn(L"Tried to start with a GPO policy setting the utility to always be disabled. Please contact your systems administrator.");
+        return 0;
+    }
+
     InitUnhandledExceptionHandler();
     Trace::RegisterProvider();
 

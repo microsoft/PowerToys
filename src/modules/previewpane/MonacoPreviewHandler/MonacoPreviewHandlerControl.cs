@@ -38,6 +38,16 @@ namespace Microsoft.PowerToys.PreviewHandler.Monaco
         }.AsReadOnly();
 
         /// <summary>
+        /// Text box to display the information about blocked elements from Svg.
+        /// </summary>
+        private RichTextBox _textBox;
+
+        /// <summary>
+        /// Represent if an text box info bar is added for showing message.
+        /// </summary>
+        private bool _infoBarAdded;
+
+        /// <summary>
         /// Saves if the user already navigated to the index page
         /// </summary>
         private bool _hasNavigated;
@@ -93,6 +103,20 @@ namespace Microsoft.PowerToys.PreviewHandler.Monaco
         public override void DoPreview<T>(T dataSource)
         {
             Logger.LogTrace();
+
+            if (global::PowerToys.GPOWrapper.GPOWrapper.GetConfiguredMonacoPreviewEnabledValue() == global::PowerToys.GPOWrapper.GpoRuleConfigured.Disabled)
+            {
+                // GPO is disabling this utility. Show an error message instead.
+                InvokeOnControlThread(() =>
+                {
+                    _infoBarAdded = true;
+                    AddTextBoxControl(Properties.Resources.GpoDisabledErrorText);
+                    Resize += FormResized;
+                    base.DoPreview(dataSource);
+                });
+
+                return;
+            }
 
             base.DoPreview(dataSource);
 
@@ -420,6 +444,48 @@ namespace Microsoft.PowerToys.PreviewHandler.Monaco
         {
             await Launcher.LaunchUriAsync(new Uri("https://developer.microsoft.com/en-us/microsoft-edge/webview2/#download-section"));
             Logger.LogTrace();
+        }
+
+        /// <summary>
+        /// Occurs when RichtextBox is resized.
+        /// </summary>
+        /// <param name="sender">Reference to resized control.</param>
+        /// <param name="e">Provides data for the ContentsResized event.</param>
+        private void RTBContentsResized(object sender, ContentsResizedEventArgs e)
+        {
+            var richTextBox = sender as RichTextBox;
+            richTextBox.Height = e.NewRectangle.Height + 5;
+        }
+
+        /// <summary>
+        /// Occurs when form is resized.
+        /// </summary>
+        /// <param name="sender">Reference to resized control.</param>
+        /// <param name="e">Provides data for the resize event.</param>
+        private void FormResized(object sender, EventArgs e)
+        {
+            if (_infoBarAdded)
+            {
+                _textBox.Width = Width;
+            }
+        }
+
+        /// <summary>
+        /// Adds a Text Box in Controls for showing information about blocked elements.
+        /// </summary>
+        /// <param name="message">Message to be displayed in textbox.</param>
+        private void AddTextBoxControl(string message)
+        {
+            _textBox = new RichTextBox();
+            _textBox.Text = message;
+            _textBox.BackColor = Color.LightYellow;
+            _textBox.Multiline = true;
+            _textBox.Dock = DockStyle.Top;
+            _textBox.ReadOnly = true;
+            _textBox.ContentsResized += RTBContentsResized;
+            _textBox.ScrollBars = RichTextBoxScrollBars.None;
+            _textBox.BorderStyle = BorderStyle.None;
+            Controls.Add(_textBox);
         }
     }
 }

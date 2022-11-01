@@ -37,6 +37,13 @@ public partial class App : Application, IDisposable
 
     private void Application_Startup(object sender, StartupEventArgs e)
     {
+        if (PowerToys.GPOWrapperProjection.GPOWrapper.GetConfiguredTextExtractorEnabledValue() == PowerToys.GPOWrapperProjection.GpoRuleConfigured.Disabled)
+        {
+            Logger.LogWarning("Tried to start with a GPO policy setting the utility to always be disabled. Please contact your systems administrator.");
+            Shutdown();
+            return;
+        }
+
         // allow only one instance of PowerOCR
         _instanceMutex = new Mutex(true, @"Local\PowerToys_PowerOCR_InstanceMutex", out bool createdNew);
         if (!createdNew)

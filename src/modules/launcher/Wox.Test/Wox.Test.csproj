@@ -33,6 +33,11 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Include="..\..\previewpane\STATestClassAttribute.cs" Link="STATestClassAttribute.cs" />
+    <Compile Include="..\..\previewpane\STATestMethodAttribute.cs" Link="STATestMethodAttribute.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\Plugins\Microsoft.Plugin.Folder\Microsoft.Plugin.Folder.csproj" />
     <ProjectReference Include="..\Plugins\Microsoft.Plugin.Indexer\Microsoft.Plugin.Indexer.csproj" />
     <ProjectReference Include="..\Plugins\Microsoft.Plugin.Program\Microsoft.Plugin.Program.csproj" />
@@ -42,6 +47,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="Microsoft.Windows.CsWinRT" Version="2.0.0" />
     <PackageReference Include="Moq" Version="4.16.1" />
     <PackageReference Include="MSTest.TestAdapter" Version="2.2.3" />
     <PackageReference Include="MSTest.TestFramework" Version="2.2.3" />

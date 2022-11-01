@@ -49,6 +49,12 @@ namespace Microsoft.PowerToys.ThumbnailHandler.Pdf
                 return;
             }
 
+            if (global::PowerToys.GPOWrapper.GPOWrapper.GetConfiguredPdfThumbnailsEnabledValue() == global::PowerToys.GPOWrapper.GpoRuleConfigured.Disabled)
+            {
+                // GPO is disabling this utility.
+                return;
+            }
+
             using var dataStream = new ReadonlyStream(this.Stream as IStream);
             using var memStream = new MemoryStream();
 

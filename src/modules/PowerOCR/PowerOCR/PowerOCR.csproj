@@ -39,13 +39,14 @@
   </ItemGroup>
 	
   <ItemGroup>
+    <PackageReference Include="Microsoft.Windows.CsWinRT" Version="2.0.0" />
     <PackageReference Include="System.ComponentModel.Composition" Version="7.0.0-rc.2.22472.3" />
     <PackageReference Include="System.Drawing.Common" Version="7.0.0-rc.2.22472.3" />
   </ItemGroup>
 	
   <ItemGroup>
+    <ProjectReference Include="..\..\..\common\GPOWrapperProjection\GPOWrapperProjection.csproj" />
     <ProjectReference Include="..\..\..\common\Common.UI\Common.UI.csproj" />
     <ProjectReference Include="..\..\..\settings-ui\Settings.UI.Library\Settings.UI.Library.csproj" />
   </ItemGroup>
-	
 </Project>

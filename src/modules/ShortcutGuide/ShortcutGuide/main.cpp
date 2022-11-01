@@ -7,6 +7,7 @@
 #include <common/utils/UnhandledExceptionHandler.h>
 #include <common/utils/logger_helper.h>
 #include <common/utils/EventWaiter.h>
+#include <common/utils/gpo.h>
 
 #include "shortcut_guide.h"
 #include "target_state.h"
@@ -46,6 +47,13 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, 
 {
     winrt::init_apartment();
     LoggerHelpers::init_logger(ShortcutGuideConstants::ModuleKey, L"ShortcutGuide", LogSettings::shortcutGuideLoggerName);
+
+    if (powertoys_gpo::getConfiguredShortcutGuideEnabledValue() == powertoys_gpo::gpo_rule_configured_disabled)
+    {
+        Logger::warn(L"Tried to start with a GPO policy setting the utility to always be disabled. Please contact your systems administrator.");
+        return 0;
+    }
+
     InitUnhandledExceptionHandler();
     Logger::trace("Starting Shortcut Guide");
 

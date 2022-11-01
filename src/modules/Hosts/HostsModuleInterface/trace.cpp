@@ -17,3 +17,24 @@ void Trace::UnregisterProvider() noexcept
 {
     TraceLoggingUnregister(g_hProvider);
 }
+
+// Log if the user has HostsFileEditor enabled or disabled
+void Trace::EnableHostsFileEditor(const bool enabled) noexcept
+{
+    TraceLoggingWrite(
+        g_hProvider,
+        "HostsFileEditor_EnableHostsFileEditor",
+        ProjectTelemetryPrivacyDataTag(ProjectTelemetryTag_ProductAndServicePerformance),
+        TraceLoggingKeyword(PROJECT_KEYWORD_MEASURE),
+        TraceLoggingBoolean(enabled, "Enabled"));
+}
+
+// Log that the user tried to activate the editor
+void Trace::ActivateEditor() noexcept
+{
+    TraceLoggingWrite(
+        g_hProvider,
+        "HostsFileEditor_Activate",
+        ProjectTelemetryPrivacyDataTag(ProjectTelemetryTag_ProductAndServicePerformance),
+        TraceLoggingKeyword(PROJECT_KEYWORD_MEASURE));
+}

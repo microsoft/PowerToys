@@ -408,10 +408,31 @@
   <data name="Error_Parsing_Custom_Layouts_Message" xml:space="preserve">
     <value>An error occurred while parsing custom layouts.</value>
   </data>
-  <data name="Distance_adjacent_zones_slider_announce" xml:space="preserve">
-    <value>Highlight distance slider. Possible range is from {0} to {1}. Value is {2}.</value>
+  <data name="Custom_slider_announce" xml:space="preserve">
+    <value>{0} slider. Possible range is from {1} to {2}. Value is {3}.</value>
   </data>
-  <data name="Slider_Value" xml:space="preserve">
+  <data name="Pixel_Value" xml:space="preserve">
     <value>{0} pixels</value>
+  </data>
+  <data name="Template_Zone_Count_Value" xml:space="preserve">
+    <value>{0} zones</value>
+  </data>
+  <data name="Zones" xml:space="preserve">
+    <value>zones</value>
+  </data>
+  <data name="Default_Layout_Horizontal" xml:space="preserve">
+    <value>Default layout for horizontal monitor orientation</value>
+  </data>
+  <data name="Set_Layout_As_Horizontal_Default" xml:space="preserve">
+    <value>Set layout as a default for horizontal monitor orientation</value>
+  </data>
+  <data name="Error_Parsing_Default_Layouts_Message" xml:space="preserve">
+    <value>An error occurred while parsing default layouts.</value>
+  </data>
+  <data name="Default_Layout_Vertical" xml:space="preserve">
+    <value>Default layout for vertical monitor orientation</value>
+  </data>
+  <data name="Set_Layout_As_Vertical_Default" xml:space="preserve">
+    <value>Set layout as a default for vertical monitor orientation</value>
   </data>
 </root>

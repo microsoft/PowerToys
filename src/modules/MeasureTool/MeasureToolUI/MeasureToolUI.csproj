@@ -26,7 +26,7 @@
 
   <!-- See https://learn.microsoft.com/windows/apps/develop/platform/csharp-winrt/net-projection-from-cppwinrt-component for more info -->
   <PropertyGroup>
-    <CsWinRTIncludes>PowerToys.MeasureToolCore</CsWinRTIncludes>
+    <CsWinRTIncludes>PowerToys.MeasureToolCore;PowerToys.GPOWrapper</CsWinRTIncludes>
     <CsWinRTGeneratedFilesDir>$(OutDir)</CsWinRTGeneratedFilesDir>
     <ErrorOnDuplicatePublishOutputFiles>false</ErrorOnDuplicatePublishOutputFiles>
   </PropertyGroup>
@@ -79,6 +79,7 @@
     <Folder Include="Assets\Icons\" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\..\..\common\GPOWrapper\GPOWrapper.vcxproj" />
     <ProjectReference Include="..\..\..\common\interop\PowerToys.Interop.vcxproj" />
     <ProjectReference Include="..\..\..\common\ManagedCommon\ManagedCommon.csproj" />
     <ProjectReference Include="..\MeasureToolCore\PowerToys.MeasureToolCore.vcxproj" />
