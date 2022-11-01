@@ -16,7 +16,11 @@ CleanCodeDeveloper helped do massive amounts of code stability and image resizer
 Damien has helped out by developing and contributing the Quick Accent utility.
 
 ### [@davidegiacometti](https://github.com/davidegiacometti) - [Davide Giacometti](https://www.linkedin.com/in/davidegiacometti/)
-Davide has helped fix multiple bugs, added new features, as well as help us with the ARM64 effort by porting applications to .NET Core.
+Davide has helped fix multiple bugs, added new utilities, features, as well as help us with the ARM64 effort by porting applications to .NET Core.
+
+### [@dend](https://github.com/dend/) - Den Delimarsky
+
+PowerToys Awake is a tool to keep your computer awake.
 
 ### [@franky920920](https://github.com/franky920920) - [Franky Chen](https://frankychen.net)
 Franky has helped triaging, discussing, and creating a substantial number of issues and contributed features/fixes to PowerToys.
@@ -30,9 +34,9 @@ Jay has helped triaging, discussing, creating a substantial number of issues and
 ### [@jsoref](https://github.com/jsoref) - [Josh Soref](https://check-spelling.dev/)
 Helping keep our spelling correct :)
 
-### [@Niels9001](https://github.com/niels9001/) - [Niels Laute](https://nielslaute.com/)
+### [@martinchrzan](https://github.com/martinchrzan/) - Martin Chrzan
 
-Niels has helped drive large sums of our update toward a new [consistent and modern UX](https://github.com/microsoft/PowerToys/issues/891). This includes the [launcher work](https://github.com/microsoft/PowerToys/issues/44), color picker UX update and [icon design](https://github.com/microsoft/PowerToys/issues/1118).
+Color Picker is from Martin.
 
 ### [@riverar](https://github.com/riverar) - [Rafael Rivera](https://withinrafael.com/)
 
@@ -85,13 +89,9 @@ Image Resizer is from Brice.
 
 PowerRename is from Chris's SmartRename and icon rendering for SVGs in File Explorer
 
-### [@dend](https://github.com/dend/) - Den Delimarsky
+### [@Niels9001](https://github.com/niels9001/) - [Niels Laute](https://nielslaute.com/)
 
-PowerToys Awake is a tool to keep your computer awake.
-
-### [@martinchrzan](https://github.com/martinchrzan/) - Martin Chrzan
-
-Color Picker is from Martin.
+Niels has helped drive large sums of our update toward a new [consistent and modern UX](https://github.com/microsoft/PowerToys/issues/891). This includes the [launcher work](https://github.com/microsoft/PowerToys/issues/44), color picker UX update and [icon design](https://github.com/microsoft/PowerToys/issues/1118).
 
 ### [@oldnewthing](https://github.com/oldnewthing) - Raymond Chen
 
