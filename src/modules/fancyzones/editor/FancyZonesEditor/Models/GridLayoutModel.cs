@@ -119,6 +119,16 @@ namespace FancyZonesEditor.Models
             }
         }
 
+        public int SpacingMinimum
+        {
+            get { return -10; }
+        }
+
+        public int SpacingMaximum
+        {
+            get { return 1000; }
+        }
+
         private int _spacing = LayoutSettings.DefaultSpacing;
 
         public GridLayoutModel()

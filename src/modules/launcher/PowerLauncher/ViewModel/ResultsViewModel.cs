@@ -21,6 +21,7 @@ namespace PowerLauncher.ViewModel
         private readonly object _collectionLock = new object();
 
         private readonly PowerToysRunSettings _settings;
+        private readonly IMainViewModel _mainViewModel;
 
         public ResultsViewModel()
         {
@@ -28,10 +29,11 @@ namespace PowerLauncher.ViewModel
             BindingOperations.EnableCollectionSynchronization(Results, _collectionLock);
         }
 
-        public ResultsViewModel(PowerToysRunSettings settings)
+        public ResultsViewModel(PowerToysRunSettings settings, IMainViewModel mainViewModel)
             : this()
         {
             _settings = settings ?? throw new ArgumentNullException(nameof(settings));
+            _mainViewModel = mainViewModel;
             _settings.PropertyChanged += (s, e) =>
             {
                 if (e.PropertyName == nameof(_settings.MaxResultsToShow))
@@ -246,7 +248,7 @@ namespace PowerLauncher.ViewModel
             List<ResultViewModel> newResults = new List<ResultViewModel>(newRawResults.Count);
             foreach (Result r in newRawResults)
             {
-                newResults.Add(new ResultViewModel(r));
+                newResults.Add(new ResultViewModel(r, _mainViewModel));
                 ct.ThrowIfCancellationRequested();
             }
 

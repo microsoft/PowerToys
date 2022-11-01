@@ -22,5 +22,7 @@ namespace Hosts.Helpers
         Task<bool> PingAsync(string address);
 
         void CleanupBackup();
+
+        void OpenHostsFile();
     }
 }

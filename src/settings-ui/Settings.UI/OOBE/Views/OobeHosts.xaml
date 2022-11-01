@@ -10,7 +10,7 @@
     xmlns:toolkitcontrols="using:CommunityToolkit.WinUI.UI.Controls">
 
     <controls:OOBEPageControl x:Uid="Oobe_Hosts"
-                              HeroImage="ms-appx:///Assets/Modules/OOBE/AlwaysOnTop.png">
+                              HeroImage="ms-appx:///Assets/Modules/OOBE/HostsFileEditor.png">
         <controls:OOBEPageControl.PageContent>
             <StackPanel Orientation="Vertical">
                 <StackPanel Orientation="Horizontal" Spacing="12" Margin="0,24,0,0">

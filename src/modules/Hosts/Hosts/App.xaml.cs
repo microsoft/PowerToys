@@ -12,6 +12,7 @@ using Hosts.Views;
 using ManagedCommon;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.PowerToys.Telemetry;
 using Microsoft.UI.Dispatching;
 using Microsoft.UI.Xaml;
 
@@ -60,7 +61,7 @@ namespace Hosts
 
             UnhandledException += App_UnhandledException;
 
-            new Thread(() =>
+            var cleanupBackupThread = new Thread(() =>
             {
                 // Delete old backups only if running elevated
                 if (!GetService<IElevationHelper>().IsElevated)
@@ -76,7 +77,10 @@ namespace Hosts
                 {
                     Logger.LogError("Failed to delete backup", ex);
                 }
-            }).Start();
+            });
+
+            cleanupBackupThread.IsBackground = true;
+            cleanupBackupThread.Start();
         }
 
         protected override void OnLaunched(LaunchActivatedEventArgs args)
@@ -100,6 +104,8 @@ namespace Hosts
             {
                 Logger.LogInfo($"Hosts started detached from PowerToys Runner.");
             }
+
+            PowerToysTelemetry.Log.WriteEvent(new Hosts.Telemetry.HostsFileEditorOpenedEvent());
 
             _window = new MainWindow();
             _window.Activate();

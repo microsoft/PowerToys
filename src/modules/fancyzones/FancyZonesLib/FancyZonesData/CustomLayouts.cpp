@@ -216,7 +216,7 @@ void CustomLayouts::LoadData()
     }
 }
 
-std::optional<Layout> CustomLayouts::GetLayout(const GUID& id) const noexcept
+std::optional<LayoutData> CustomLayouts::GetLayout(const GUID& id) const noexcept
 {
     auto iter = m_layouts.find(id);
     if (iter == m_layouts.end())
@@ -225,13 +225,9 @@ std::optional<Layout> CustomLayouts::GetLayout(const GUID& id) const noexcept
     }
     
     FancyZonesDataTypes::CustomLayoutData customLayout = iter->second;
-    Layout layout{
+    LayoutData layout{
         .uuid = id,
-        .type = FancyZonesDataTypes::ZoneSetLayoutType::Custom,
-        .showSpacing = DefaultValues::ShowSpacing,
-        .spacing = DefaultValues::Spacing,
-        .zoneCount = DefaultValues::ZoneCount,
-        .sensitivityRadius = DefaultValues::SensitivityRadius
+        .type = FancyZonesDataTypes::ZoneSetLayoutType::Custom
     };
 
     if (customLayout.type == FancyZonesDataTypes::CustomLayoutType::Grid)
