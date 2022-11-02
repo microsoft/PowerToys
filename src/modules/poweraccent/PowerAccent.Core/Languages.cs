@@ -29,11 +29,11 @@ namespace PowerAccent.Core
 
     internal class Languages
     {
-        public static char[] GetDefaultLetterKey(LetterKey letter, Language lang)
+        public static string[] GetDefaultLetterKey(LetterKey letter, Language lang)
         {
             switch (lang)
             {
-                //case Language.ALL: return GetDefaultLetterKeyALL(letter); // ALL
+ /*               //case Language.ALL: return GetDefaultLetterKeyALL(letter); // ALL
                 //case Language.CUR: return GetDefaultLetterKeyCUR(letter); // Currency
                 //case Language.CZ: return GetDefaultLetterKeyCZ(letter); // Czech
                 //case Language.DE: return GetDefaultLetterKeyDE(letter); // German
@@ -42,18 +42,21 @@ namespace PowerAccent.Core
                 //case Language.IS: return GetDefaultLetterKeyIS(letter); // Iceland
                 //case Language.IT: return GetDefaultLetterKeyIT(letter); // Italian
                 //case Language.MI: return GetDefaultLetterKeyMI(letter); // Maori
+*/
                 case Language.PI: return GetDefaultLetterKeyPI(letter); // Pinyin
-                //case Language.PL: return GetDefaultLetterKeyPL(letter); // Polish
+/*                //case Language.PL: return GetDefaultLetterKeyPL(letter); // Polish
                 //case Language.PT: return GetDefaultLetterKeyPT(letter); // Portuguese
                 //case Language.RO: return GetDefaultLetterKeyRO(letter); // Romanian
                 //case Language.SK: return GetDefaultLetterKeySK(letter); // Slovak
                 //case Language.SP: return GetDefaultLetterKeySP(letter); // Spain
                 //case Language.TK: return GetDefaultLetterKeyTK(letter); // Turkish
+*/
             }
 
             throw new ArgumentException("The language {0} is not know in this context", lang.ToString());
         }
 
+/*
         //// All
         //private static char[] GetDefaultLetterKeyALL(LetterKey letter)
         //{
@@ -271,41 +274,43 @@ namespace PowerAccent.Core
 
         //    return Array.Empty<char>();
         //}
+*/
 
         // Pinyin
-        private static char[] GetDefaultLetterKeyPI(LetterKey letter)
+        private static string[] GetDefaultLetterKeyPI(LetterKey letter)
         {
             switch (letter)
             {
                 case LetterKey.VK_A:
-                    return new char[] { 'ā', 'á', 'ǎ', 'à', 'a', 'ɑ̄', 'ɑ́', 'ɑ̌', 'ɑ̀' };
+                    return new string[] { "ā", "á", "ǎ", "à", "a", "ɑ̄", "ɑ́", "ɑ̌", "ɑ̀" };
                 case LetterKey.VK_E:
-                    return new char[] { 'ē', 'é', 'ě', 'è', 'e' };
+                    return new string[] { "ē", "é", "ě", "è", "e" };
                 case LetterKey.VK_I:
-                    return new char[] { 'ī', 'í', 'ǐ', 'ì', 'i' };
+                    return new string[] { "ī", "í", "ǐ", "ì", "i" };
                 case LetterKey.VK_O:
-                    return new char[] { 'ō', 'ó', 'ǒ', 'ò', 'o' };
+                    return new string[] { "ō", "ó", "ǒ", "ò", "o" };
                 case LetterKey.VK_U:
-                    return new char[] { 'ū', 'ú', 'ǔ', 'ù', 'u' };
+                    return new string[] { "ū", "ú", "ǔ", "ù", "u" };
                 case LetterKey.VK_V:
-                    return new char[] { 'ǖ', 'ǘ', 'ǚ', 'ǜ', 'ü' };
+                    return new string[] { "ǖ", "ǘ", "ǚ", "ǜ", "ü" };
                 case LetterKey.VK_M:
-                    return new char[] { 'm̄', 'ḿ', 'm̌', 'm̀', 'm' };
+                    return new string[] { "m̄", "ḿ", "m̌", "m̀", "m" };
                 case LetterKey.VK_N:
-                    return new char[] { 'n̄', 'ń', 'ň', 'ǹ', 'n', 'ŋ', 'ŋ̄', 'ŋ́', 'ŋ̌', 'ŋ̀' };
+                    return new string[] { "n̄", "ń", "ň", "ǹ", "n", "ŋ", "ŋ̄", "ŋ́", "ŋ̌", "ŋ̀" };
                 case LetterKey.VK_Y:
-                    return new char[] { '¥' };
+                    return new string[] { "¥" };
                 case LetterKey.VK_Z:
-                    return new char[] { 'ẑ' };
+                    return new string[] { "ẑ" };
                 case LetterKey.VK_C:
-                    return new char[] { 'ĉ' };
+                    return new string[] { "ĉ" };
                 case LetterKey.VK_S:
-                    return new char[] { 'ŝ' };
+                    return new string[] { "ŝ" };
             }
 
-            return Array.Empty<char>();
+            return Array.Empty<string>();
         }
 
+/*
         //// Turkish
         //private static char[] GetDefaultLetterKeyTK(LetterKey letter)
         //{
@@ -559,5 +564,6 @@ namespace PowerAccent.Core
 
         //    return Array.Empty<char>();
         //}
+*/
     }
 }
