@@ -11,7 +11,6 @@ namespace FileLocksmith::Interop
         System::String^ name;
         System::UInt32 pid;
         array<System::String^>^ files;
-        System::Boolean isExpanded; // For helping in the UI
     };
 
     System::String^ from_wstring_view(std::wstring_view str)
@@ -77,7 +76,6 @@ namespace FileLocksmith::Interop
                 {
                     item->files[j] = from_wstring_view(result_cpp[i].files[j]);
                 }
-                item->isExpanded = false;
 
                 result[i] = item;
             }
