@@ -298,13 +298,13 @@ namespace PowerAccent.Core
                 case LetterKey.VK_N:
                     return new string[] { "n̄", "ń", "ň", "ǹ", "n", "ŋ", "ŋ̄", "ŋ́", "ŋ̌", "ŋ̀" };
                 case LetterKey.VK_Y:
-                    return new string[] { "¥" };
+                    return new string[] { "¥", "y" };
                 case LetterKey.VK_Z:
-                    return new string[] { "ẑ" };
+                    return new string[] { "ẑ", "z" };
                 case LetterKey.VK_C:
-                    return new string[] { "ĉ" };
+                    return new string[] { "ĉ", "c" };
                 case LetterKey.VK_S:
-                    return new string[] { "ŝ" };
+                    return new string[] { "ŝ", "s" };
             }
 
             return Array.Empty<string>();
