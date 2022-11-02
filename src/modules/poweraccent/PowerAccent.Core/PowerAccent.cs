@@ -191,6 +191,25 @@ public class PowerAccent : IDisposable
         GC.SuppressFinalize(this);
     }
 
+    public static string[] ToUpper(string[] array)
+    {
+        string[] result = new string[array.Length];
+        for (int i = 0; i < array.Length; i++)
+        {
+            if (array[i].Contains('ß'))
+            {
+                result[i] = "ẞ";
+            }
+            else
+            {
+                result[i] = array[i].ToUpper(System.Globalization.CultureInfo.InvariantCulture);
+            }
+        }
+
+        return result;
+    }
+
+    /*
     public static char[] ToUpper(char[] array)
     {
         char[] result = new char[array.Length];
@@ -208,4 +227,5 @@ public class PowerAccent : IDisposable
 
         return result;
     }
+    */
 }
