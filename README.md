@@ -103,7 +103,7 @@ In this release, we focused on releasing new features and improvements.
 ### FancyZones
 
 - Added a way for users to configure default layouts for horizontal and vertical screens.
-- Replaced remaning Number Boxes in FancyZones Editor with Sliders, to improve accessibility for screen readers.
+- Replaced remaining Number Boxes in FancyZones Editor with Sliders, to improve accessibility for screen readers.
 - Fixed an issue breaking window switching shortcuts.
 
 ### File Locksmith
