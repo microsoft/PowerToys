@@ -4,17 +4,21 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    xmlns:converters="using:Microsoft.PowerToys.Settings.UI.Converters"
+    xmlns:converters="using:CommunityToolkit.WinUI.UI.Converters"
     xmlns:controls="using:Microsoft.PowerToys.Settings.UI.Controls"
     mc:Ignorable="d"
     AutomationProperties.LandmarkType="Main">
+
+    <Page.Resources>
+        <converters:BoolNegationConverter x:Key="BoolNegationConverter"/>
+    </Page.Resources>
 
     <controls:SettingsPageControl x:Uid="QuickAccent" IsTabStop="False"
                                   ModuleImageSource="ms-appx:///Assets/Modules/PowerAccent.png">
         <controls:SettingsPageControl.ModuleContent>
             <StackPanel Orientation="Vertical">
 
-                <controls:Setting x:Uid="QuickAccent_EnableQuickAccent">
+                <controls:Setting x:Uid="QuickAccent_EnableQuickAccent" IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabledGpoConfigured, Converter={StaticResource BoolNegationConverter}}">
                     <controls:Setting.Icon>
                         <BitmapIcon UriSource="ms-appx:///Assets/FluentIcons/FluentIconsPowerAccent.png" ShowAsMonochrome="False" />
                     </controls:Setting.Icon>
@@ -22,6 +26,11 @@
                         <ToggleSwitch IsOn="{x:Bind ViewModel.IsEnabled, Mode=TwoWay}" x:Uid="ToggleSwitch" HorizontalAlignment="Right"/>
                     </controls:Setting.ActionContent>
                 </controls:Setting>
+                <InfoBar x:Uid="GPO_IsSettingForced"
+                    Severity="Informational"
+                    IsClosable="False"
+                    IsOpen="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabledGpoConfigured}"
+                    IsTabStop="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabledGpoConfigured}" />
 
                 <controls:SettingsGroup x:Uid="QuickAccent_Activation_GroupSettings" IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}">
                     <controls:Setting x:Uid="QuickAccent_Activation_Shortcut" Icon="&#xEDA7;">

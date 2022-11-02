@@ -13,6 +13,7 @@
     <Page.Resources>
         <converters:ImageResizerFitToStringConverter x:Key="ImageResizerFitToStringConverter" />
         <converters:ImageResizerUnitToStringConverter x:Key="ImageResizerUnitToStringConverter" />
+        <toolkitconverters:BoolNegationConverter x:Key="BoolNegationConverter"/>
         <toolkitconverters:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter" TrueValue="Visible" FalseValue="Collapsed" />
         <toolkitconverters:BoolToObjectConverter x:Key="BoolToComboBoxIndexConverter" TrueValue="0" FalseValue="1"/>
     </Page.Resources>
@@ -21,7 +22,7 @@
         <controls:SettingsPageControl.ModuleContent>
             <StackPanel>
 
-                <controls:Setting x:Uid="ImageResizer_EnableToggle">
+                <controls:Setting IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabledGpoConfigured, Converter={StaticResource BoolNegationConverter}}" x:Uid="ImageResizer_EnableToggle">
                     <controls:Setting.Icon>
                         <BitmapIcon UriSource="ms-appx:///Assets/FluentIcons/FluentIconsImageResizer.png" ShowAsMonochrome="False" />
                     </controls:Setting.Icon>
@@ -30,6 +31,11 @@
                     </controls:Setting.ActionContent>
                 </controls:Setting>
 
+                <InfoBar x:Uid="GPO_IsSettingForced"
+                    Severity="Informational"
+                    IsClosable="False"
+                    IsOpen="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabledGpoConfigured}"
+                    IsTabStop="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabledGpoConfigured}" />
 
                 <controls:SettingsGroup x:Uid="ImageResizer_CustomSizes" IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}">
                     <controls:Setting x:Uid="ImageResizer_Presets" Icon="&#xE792;">

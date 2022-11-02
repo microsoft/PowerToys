@@ -222,6 +222,14 @@
   <data name="MoveUp.Text" xml:space="preserve">
     <value>Move up</value>
   </data>
+  <data name="OpenHostsFileBtn.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>Open hosts file</value>
+    <comment>"Hosts" refers to the system hosts file, do not loc</comment>
+  </data>
+  <data name="OpenHostsFileBtn.[using:Microsoft.UI.Xaml.Controls]ToolTipService.ToolTip" xml:space="preserve">
+    <value>Open hosts file</value>
+    <comment>"Hosts" refers to the system hosts file, do not loc</comment>
+  </data>
   <data name="Ping.Text" xml:space="preserve">
     <value>Ping</value>
     <comment>"Ping" refers to the command-line utility, do not loc</comment>

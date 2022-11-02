@@ -250,9 +250,9 @@ void VideoConferenceModule::onModuleSettingsChanged()
                 settings.imageOverlayPath = val.value();
                 sendOverlayImageUpdate();
             }
-            if (const auto val = values.get_bool_value(L"hide_toolbar_when_unmuted"))
+            if (const auto val = values.get_string_value(L"toolbar_hide"))
             {
-                toolbar.setHideToolbarWhenUnmuted(val.value());
+                toolbar.setToolbarHide(val.value());
             }
 
             const auto selectedMic = values.get_string_value(L"selected_mic");
@@ -345,6 +345,12 @@ const wchar_t* VideoConferenceModule::get_key()
     return L"Video Conference";
 }
 
+// Return the configured status for the gpo policy for the module
+powertoys_gpo::gpo_rule_configured_t VideoConferenceModule::gpo_policy_enabled_configuration()
+{
+    return powertoys_gpo::getConfiguredVideoConferenceMuteEnabledValue();
+}
+
 bool VideoConferenceModule::get_config(wchar_t* buffer, int* buffer_size)
 {
     return true;
@@ -397,9 +403,9 @@ void VideoConferenceModule::init_settings()
         {
             settings.imageOverlayPath = val.value();
         }
-        if (const auto val = powerToysSettings.get_bool_value(L"hide_toolbar_when_unmuted"))
+        if (const auto val = powerToysSettings.get_string_value(L"toolbar_hide"))
         {
-            toolbar.setHideToolbarWhenUnmuted(val.value());
+            toolbar.setToolbarHide(val.value());
         }
         if (const auto val = powerToysSettings.get_string_value(L"selected_mic"); val && *val != settings.selectedMicrophone)
         {
@@ -544,6 +550,19 @@ void VideoConferenceModule::unmuteAll()
     }
 
     if (getMicrophoneMuteState())
+    {
+        reverseMicrophoneMute();
+    }
+}
+
+void VideoConferenceModule::muteAll()
+{
+    if (!getVirtualCameraMuteState())
+    {
+        reverseVirtualCameraMuteState();
+    }
+
+    if (!getMicrophoneMuteState())
     {
         reverseMicrophoneMute();
     }

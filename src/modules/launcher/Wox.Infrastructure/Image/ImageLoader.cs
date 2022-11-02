@@ -50,7 +50,12 @@ namespace Wox.Infrastructure.Image
 
             foreach (var icon in new[] { Constant.DefaultIcon, Constant.ErrorIcon, Constant.LightThemedDefaultIcon, Constant.LightThemedErrorIcon })
             {
-                ImageSource img = new BitmapImage(new Uri(icon));
+                BitmapImage bmi = new BitmapImage();
+                bmi.BeginInit();
+                bmi.UriSource = new Uri(icon);
+                bmi.CacheOption = BitmapCacheOption.OnLoad;
+                bmi.EndInit();
+                ImageSource img = bmi;
                 img.Freeze();
                 ImageCache[icon] = img;
             }

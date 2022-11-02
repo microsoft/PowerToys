@@ -130,6 +130,21 @@ namespace Microsoft.PowerToys.PreviewHandler.Markdown
         /// <param name="dataSource">Path to the file.</param>
         public override void DoPreview<T>(T dataSource)
         {
+            if (global::PowerToys.GPOWrapper.GPOWrapper.GetConfiguredMarkdownPreviewEnabledValue() == global::PowerToys.GPOWrapper.GpoRuleConfigured.Disabled)
+            {
+                // GPO is disabling this utility. Show an error message instead.
+                InvokeOnControlThread(() =>
+                {
+                    _infoBarDisplayed = true;
+                    _infoBar = GetTextBoxControl(Resources.GpoDisabledErrorText);
+                    Resize += FormResized;
+                    Controls.Add(_infoBar);
+                    base.DoPreview(dataSource);
+                });
+
+                return;
+            }
+
             CleanupWebView2UserDataFolder();
 
             _infoBarDisplayed = false;

@@ -214,11 +214,38 @@ namespace FancyZonesEditor.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to {0} slider. Possible range is from {1} to {2}. Value is {3}..
+        /// </summary>
+        public static string Custom_slider_announce {
+            get {
+                return ResourceManager.GetString("Custom_slider_announce", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Custom layout.
         /// </summary>
         public static string Default_Custom_Layout_Name {
             get {
                 return ResourceManager.GetString("Default_Custom_Layout_Name", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Default layout for horizontal monitor orientation.
+        /// </summary>
+        public static string Default_Layout_Horizontal {
+            get {
+                return ResourceManager.GetString("Default_Layout_Horizontal", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Default layout for vertical monitor orientation.
+        /// </summary>
+        public static string Default_Layout_Vertical {
+            get {
+                return ResourceManager.GetString("Default_Layout_Vertical", resourceCulture);
             }
         }
         
@@ -295,15 +322,6 @@ namespace FancyZonesEditor.Properties {
         public static string Distance_adjacent_zones {
             get {
                 return ResourceManager.GetString("Distance_adjacent_zones", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Highlight distance slider. Possible range is from {0} to {1}. Value is {2}..
-        /// </summary>
-        public static string Distance_adjacent_zones_slider_announce {
-            get {
-                return ResourceManager.GetString("Distance_adjacent_zones_slider_announce", resourceCulture);
             }
         }
         
@@ -448,6 +466,15 @@ namespace FancyZonesEditor.Properties {
         public static string Error_Parsing_Data_Title {
             get {
                 return ResourceManager.GetString("Error_Parsing_Data_Title", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to An error occurred while parsing default layouts..
+        /// </summary>
+        public static string Error_Parsing_Default_Layouts_Message {
+            get {
+                return ResourceManager.GetString("Error_Parsing_Default_Layouts_Message", resourceCulture);
             }
         }
         
@@ -691,6 +718,15 @@ namespace FancyZonesEditor.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to {0} pixels.
+        /// </summary>
+        public static string Pixel_Value {
+            get {
+                return ResourceManager.GetString("Pixel_Value", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to px.
         /// </summary>
         public static string Pixels {
@@ -763,6 +799,24 @@ namespace FancyZonesEditor.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Set layout as a default for horizontal monitor orientation.
+        /// </summary>
+        public static string Set_Layout_As_Horizontal_Default {
+            get {
+                return ResourceManager.GetString("Set_Layout_As_Horizontal_Default", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Set layout as a default for vertical monitor orientation.
+        /// </summary>
+        public static string Set_Layout_As_Vertical_Default {
+            get {
+                return ResourceManager.GetString("Set_Layout_As_Vertical_Default", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Template settings.
         /// </summary>
         public static string Settings {
@@ -777,15 +831,6 @@ namespace FancyZonesEditor.Properties {
         public static string Show_Space_Zones {
             get {
                 return ResourceManager.GetString("Show_Space_Zones", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to {0} pixels.
-        /// </summary>
-        public static string Slider_Value {
-            get {
-                return ResourceManager.GetString("Slider_Value", resourceCulture);
             }
         }
         
@@ -871,6 +916,15 @@ namespace FancyZonesEditor.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to {0} zones.
+        /// </summary>
+        public static string Template_Zone_Count_Value {
+            get {
+                return ResourceManager.GetString("Template_Zone_Count_Value", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Templates.
         /// </summary>
         public static string Templates {
@@ -894,6 +948,15 @@ namespace FancyZonesEditor.Properties {
         public static string Zone_Count_Increment {
             get {
                 return ResourceManager.GetString("Zone_Count_Increment", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to zones.
+        /// </summary>
+        public static string Zones {
+            get {
+                return ResourceManager.GetString("Zones", resourceCulture);
             }
         }
     }

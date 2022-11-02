@@ -9,6 +9,7 @@
 #include <common/logger/logger.h>
 #include <common/logger/logger_settings.h>
 #include <common/utils/logger_helper.h>
+#include <common/utils/gpo.h>
 
 using namespace winrt;
 using namespace winrt::Microsoft::UI::Xaml;
@@ -52,6 +53,12 @@ App::App()
 void App::OnLaunched(LaunchActivatedEventArgs const&)
 {
     LoggerHelpers::init_logger(moduleName, L"", LogSettings::powerRenameLoggerName);
+
+    if (powertoys_gpo::getConfiguredPowerRenameEnabledValue() == powertoys_gpo::gpo_rule_configured_disabled)
+    {
+        Logger::warn(L"Tried to start with a GPO policy setting the utility to always be disabled. Please contact your systems administrator.");
+        ExitProcess(0);
+    }
 
     auto args = std::wstring{ GetCommandLine() };
     size_t pos{ args.rfind(L"\\\\.\\pipe\\") };

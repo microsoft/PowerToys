@@ -19,6 +19,7 @@
 #include "RegistryUtils.h"
 #include "EventViewer.h"
 #include "InstallationFolder.h"
+#include "ReportGPOValues.h"
 
 using namespace std;
 using namespace std::filesystem;
@@ -354,6 +355,9 @@ int wmain(int argc, wchar_t* argv[], wchar_t*)
 
     // Write registry to the temporary folder
     ReportRegistry(reportDir);
+
+    // Write gpo policies to the temporary folder
+    ReportGPOValues(reportDir);
 
     // Write compatibility tab info to the temporary folder
     ReportCompatibilityTab(reportDir);

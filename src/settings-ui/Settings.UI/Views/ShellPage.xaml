@@ -70,6 +70,12 @@
                     </NavigationViewItem.Icon>
                 </NavigationViewItem>
 
+                <NavigationViewItem x:Uid="Shell_FileLocksmith" helpers:NavHelper.NavigateTo="views:FileLocksmithPage">
+                    <NavigationViewItem.Icon>
+                        <BitmapIcon ShowAsMonochrome="False" UriSource="ms-appx:///Assets/FluentIcons/FluentIconsFileLocksmith.png" />
+                    </NavigationViewItem.Icon>
+                </NavigationViewItem>
+
                 <NavigationViewItem x:Uid="Shell_PowerPreview" helpers:NavHelper.NavigateTo="views:PowerPreviewPage">
                     <NavigationViewItem.Icon>
                         <BitmapIcon ShowAsMonochrome="False" UriSource="ms-appx:///Assets/FluentIcons/FluentIconsFileExplorerPreview.png" />
