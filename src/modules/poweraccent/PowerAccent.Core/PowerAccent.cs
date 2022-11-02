@@ -20,7 +20,8 @@ public class PowerAccent : IDisposable
 
     private int _selectedIndex = -1;
 
-    public event Action<bool, char[]> OnChangeDisplay;
+    // public event Action<bool, char[]> OnChangeDisplay;
+    public event Action<bool, string[]> OnChangeDisplay;
 
     // public event Action<int, char> OnSelectCharacter;
     public event Action<int, string> OnSelectCharacter;
