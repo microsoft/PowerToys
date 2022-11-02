@@ -14,7 +14,10 @@ public class PowerAccent : IDisposable
     private readonly SettingsService _settingService;
 
     private bool _visible;
-    private char[] _characters = Array.Empty<char>();
+
+    // private char[] _characters = Array.Empty<char>();
+    private string[] _characters = Array.Empty<string>();
+
     private int _selectedIndex = -1;
 
     public event Action<bool, char[]> OnChangeDisplay;
