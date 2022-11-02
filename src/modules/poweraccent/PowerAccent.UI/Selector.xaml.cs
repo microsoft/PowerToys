@@ -44,24 +44,6 @@ public partial class Selector : Window, IDisposable
         }
     }
 
-/*
-    private void PowerAccent_OnSelectionCharacter(int index, char character)
-    {
-        characters.SelectedIndex = index;
-    }
-
-    private void PowerAccent_OnChangeDisplay(bool isActive, char[] chars)
-    {
-        this.Visibility = isActive ? Visibility.Visible : Visibility.Collapsed;
-        if (isActive)
-        {
-            characters.ItemsSource = chars;
-            CenterWindow();
-            Microsoft.PowerToys.Telemetry.PowerToysTelemetry.Log.WriteEvent(new PowerAccent.Core.Telemetry.PowerAccentShowAccentMenuEvent());
-        }
-    }
-*/
-
     private void MenuExit_Click(object sender, RoutedEventArgs e)
     {
         Application.Current.Shutdown();

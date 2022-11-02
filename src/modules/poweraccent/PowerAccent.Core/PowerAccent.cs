@@ -15,15 +15,12 @@ public class PowerAccent : IDisposable
 
     private bool _visible;
 
-    // private char[] _characters = Array.Empty<char>();
     private string[] _characters = Array.Empty<string>();
 
     private int _selectedIndex = -1;
 
-    // public event Action<bool, char[]> OnChangeDisplay;
     public event Action<bool, string[]> OnChangeDisplay;
 
-    // public event Action<int, char> OnSelectCharacter;
     public event Action<int, string> OnSelectCharacter;
 
     private KeyboardListener _keyboardListener;
@@ -213,24 +210,4 @@ public class PowerAccent : IDisposable
 
         return result;
     }
-
-    /*
-    public static char[] ToUpper(char[] array)
-    {
-        char[] result = new char[array.Length];
-        for (int i = 0; i < array.Length; i++)
-        {
-            if (array[i] == 'ß')
-            {
-                result[i] = 'ẞ';
-            }
-            else
-            {
-                result[i] = char.ToUpper(array[i], System.Globalization.CultureInfo.InvariantCulture);
-            }
-        }
-
-        return result;
-    }
-    */
 }
