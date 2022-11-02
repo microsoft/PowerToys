@@ -22,7 +22,8 @@ public class PowerAccent : IDisposable
 
     public event Action<bool, char[]> OnChangeDisplay;
 
-    public event Action<int, char> OnSelectCharacter;
+    // public event Action<int, char> OnSelectCharacter;
+    public event Action<int, string> OnSelectCharacter;
 
     private KeyboardListener _keyboardListener;
 
