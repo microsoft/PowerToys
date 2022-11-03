@@ -180,5 +180,51 @@ namespace FileLocksmith::Interop
 
             return false;
         }
+
+        /* Adapted from "https://learn.microsoft.com/en-us/windows/win32/secauthz/enabling-and-disabling-privileges-in-c--" */
+        static System::Boolean SetDebugPrivilege()
+        {
+            HANDLE hToken;
+            TOKEN_PRIVILEGES tp;
+            LUID luid;
+
+            if (OpenProcessToken(GetCurrentProcess(), TOKEN_ADJUST_PRIVILEGES, &hToken) != 0)
+            {
+                if (!LookupPrivilegeValue(
+                        NULL, // lookup privilege on local system
+                        SE_DEBUG_NAME, // privilege to lookup
+                        &luid)) // receives LUID of privilege
+                {
+                    CloseHandle(hToken);
+                    return false;
+                }
+                tp.PrivilegeCount = 1;
+                tp.Privileges[0].Luid = luid;
+                tp.Privileges[0].Attributes = SE_PRIVILEGE_ENABLED;
+
+                if (!AdjustTokenPrivileges(
+                        hToken,
+                        FALSE,
+                        &tp,
+                        sizeof(TOKEN_PRIVILEGES),
+                        (PTOKEN_PRIVILEGES)NULL,
+                        (PDWORD)NULL))
+                {
+                    CloseHandle(hToken);
+                    return false;
+                }
+
+                if (GetLastError() == ERROR_NOT_ALL_ASSIGNED)
+                {
+                    CloseHandle(hToken);
+                    return false;
+                }
+
+                CloseHandle(hToken);
+                return true;
+            }
+            return false;
+        }
+
     };
 }
