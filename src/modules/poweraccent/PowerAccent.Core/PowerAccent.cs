@@ -86,7 +86,7 @@ public class PowerAccent : IDisposable
         {
             case InputType.Space:
                 {
-                    WindowsFunctions.Insert(' ');
+                    WindowsFunctions.Insert(" ");
                     break;
                 }
 
