@@ -211,7 +211,7 @@
             x:Uid="SelectedFilesListDialog"
             >
             <ScrollViewer HorizontalScrollBarVisibility="Auto" HorizontalScrollMode="Auto" VerticalScrollBarVisibility="Auto" VerticalScrollMode="Auto">
-                <TextBlock Text="{x:Bind ViewModel.PathsToString, Mode=OneWay}"/>
+                <TextBlock IsTextSelectionEnabled="True" Text="{x:Bind ViewModel.PathsToString, Mode=OneWay}"/>
             </ScrollViewer>
         </ContentDialog>
     </Grid>
