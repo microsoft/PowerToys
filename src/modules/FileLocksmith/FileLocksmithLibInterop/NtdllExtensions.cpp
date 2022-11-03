@@ -238,6 +238,51 @@ std::vector<NtdllExtensions::HandleInfo> NtdllExtensions::handles() noexcept
 // Returns the list of all processes.
 // On failure, returns an empty vector.
 
+std::wstring NtdllExtensions::pid_to_user(DWORD pid)
+{
+    HANDLE process = OpenProcess(PROCESS_QUERY_LIMITED_INFORMATION, FALSE, pid);
+
+    if (process == NULL)
+    {
+        return {};
+    }
+
+    std::wstring user = L"";
+    std::wstring domain = L"";
+
+    HANDLE token = NULL;
+
+    if (OpenProcessToken(process, TOKEN_QUERY, &token))
+    {
+        DWORD token_size = 0;
+        GetTokenInformation(token, TokenUser, NULL, 0, &token_size);
+
+        if (token_size > 0)
+        {
+            std::vector<BYTE> token_buffer(token_size);
+            GetTokenInformation(token, TokenUser, token_buffer.data(), token_size, &token_size);
+            TOKEN_USER* user_ptr = (TOKEN_USER*)token_buffer.data();
+            PSID psid = user_ptr->User.Sid;
+            DWORD user_size = 0;
+            DWORD domain_size = 0;
+            SID_NAME_USE sid_name;
+            LookupAccountSidW(NULL, psid, NULL, &user_size, NULL, &domain_size, &sid_name);
+            user.resize(user_size + 1);
+            domain.resize(domain_size + 1);
+            LookupAccountSidW(NULL, psid, user.data(), &user_size, domain.data(), &domain_size, &sid_name);
+            user[user_size] = L'\0';
+            domain[domain_size] = L'\0';
+        }
+
+        CloseHandle(token);
+    }
+
+    CloseHandle(process);
+
+    return user;
+}
+
+
 std::vector<NtdllExtensions::ProcessInfo> NtdllExtensions::processes() noexcept
 {
     auto get_info_result = NtQuerySystemInformationMemoryLoop(SystemProcessInformation);
@@ -258,6 +303,7 @@ std::vector<NtdllExtensions::ProcessInfo> NtdllExtensions::processes() noexcept
         item.name = unicode_to_str(info_ptr->ImageName);
         item.pid = (DWORD)(uintptr_t)info_ptr->UniqueProcessId;
         item.modules = process_modules(item.pid);
+        item.user = pid_to_user(item.pid);
 
         result.push_back(item);
     }

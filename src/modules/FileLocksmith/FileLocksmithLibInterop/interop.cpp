@@ -10,6 +10,7 @@ namespace FileLocksmith::Interop
     {
         System::String^ name;
         System::UInt32 pid;
+        System::String^ user;
         array<System::String^>^ files;
     };
 
@@ -69,6 +70,7 @@ namespace FileLocksmith::Interop
 
                 item->name = from_wstring_view(result_cpp[i].name);
                 item->pid = result_cpp[i].pid;
+                item->user = from_wstring_view(result_cpp[i].user);
 
                 const int n_files = static_cast<int>(result_cpp[i].files.size());
                 item->files = gcnew array<System::String ^>(n_files);
@@ -81,12 +83,6 @@ namespace FileLocksmith::Interop
             }
 
             return result;
-        }
-
-        static System::String^ PidToUser(System::UInt32 pid)
-        {
-            auto user_cpp = pid_to_user(pid);
-            return from_wstring_view(user_cpp);
         }
 
         static System::String^ PidToFullPath(System::UInt32 pid)

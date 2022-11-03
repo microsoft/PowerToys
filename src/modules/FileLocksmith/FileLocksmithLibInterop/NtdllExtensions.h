@@ -29,6 +29,7 @@ public:
     {
         DWORD pid;
         std::wstring name;
+        std::wstring user;
         std::vector<std::wstring> modules;
     };
 
@@ -43,6 +44,9 @@ public:
     std::wstring file_handle_to_kernel_name(HANDLE file_handle);
 
     std::wstring path_to_kernel_name(LPCWSTR path);
+
+    // Gives the user name of the account running this process
+    std::wstring pid_to_user(DWORD pid);
 
     std::vector<HandleInfo> handles() noexcept;
 
