@@ -372,7 +372,10 @@
                 Margin="0,12,0,0"
                 HorizontalAlignment="Stretch"
                 AcceptsReturn="True"
-                TextWrapping="Wrap" />
+                TextWrapping="Wrap"
+                ScrollViewer.VerticalScrollBarVisibility="Visible"
+                ScrollViewer.VerticalScrollMode="Enabled"
+                ScrollViewer.IsVerticalRailEnabled="True" />
 
         </ContentDialog>
     </Grid>
