@@ -95,6 +95,7 @@
 - [ ] Switch between `Allow zones to span across monitors` on and off. Verify that layouts are applied correctly in both cases.
 - [ ] Change zone colors and opacity.
 - [ ] Exclude some apps, verify that they're not applicable to a zone.
+- [ ] Disable spacing on any grid layout, verify that there is no space between zones while dragging a window.
 - [ ] Launch PT in user mode, try to assign a window with administrator privileges to a zone. Verify the notification is shown.
 - [ ] Launch PT in administrator mode, assign a window with administrator privileges.
 - [ ] Create virtual desktop, verify that there are the same layouts as applied to the previous virtual desktop.
