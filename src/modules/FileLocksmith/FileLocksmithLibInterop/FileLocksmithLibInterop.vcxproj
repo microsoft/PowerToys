@@ -32,7 +32,7 @@
     <ProjectGuid>{c604b37e-9d0e-4484-8778-e8b31b0e1b3a}</ProjectGuid>
     <RootNamespace>FileLocksmithLibInterop</RootNamespace>
     <WindowsTargetPlatformVersion>10.0.19041.0</WindowsTargetPlatformVersion>
-    <TargetFramework>net6.0-windows</TargetFramework>
+    <TargetFramework>net7.0-windows</TargetFramework>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
