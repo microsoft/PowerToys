@@ -14,7 +14,7 @@ namespace PowerToys.FileLocksmithUI.Converters
     {
         public object Convert(object value, Type targetType, object parameter, string language)
         {
-            string user = ((string)value).ToUpperInvariant().TrimEnd('\0').Trim();
+            string user = ((string)value).ToUpperInvariant().Trim();
             if (user.Equals("SYSTEM", StringComparison.Ordinal) || user.Equals("LOCALSYSTEM", StringComparison.Ordinal))
             {
                 return Visibility.Visible;
