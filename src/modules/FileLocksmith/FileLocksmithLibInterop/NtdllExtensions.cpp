@@ -241,42 +241,48 @@ std::vector<NtdllExtensions::HandleInfo> NtdllExtensions::handles() noexcept
 std::wstring NtdllExtensions::pid_to_user(DWORD pid)
 {
     HANDLE process = OpenProcess(PROCESS_QUERY_LIMITED_INFORMATION, FALSE, pid);
+    std::wstring user;
+    std::wstring domain;
 
-    if (process == NULL)
+    if (process == nullptr)
     {
-        return {};
+        return user;
     }
 
-    std::wstring user = L"";
-    std::wstring domain = L"";
+    HANDLE token = nullptr;
 
-    HANDLE token = NULL;
-
-    if (OpenProcessToken(process, TOKEN_QUERY, &token))
+    if (!OpenProcessToken(process, TOKEN_QUERY, &token))
     {
-        DWORD token_size = 0;
-        GetTokenInformation(token, TokenUser, NULL, 0, &token_size);
-
-        if (token_size > 0)
-        {
-            std::vector<BYTE> token_buffer(token_size);
-            GetTokenInformation(token, TokenUser, token_buffer.data(), token_size, &token_size);
-            TOKEN_USER* user_ptr = (TOKEN_USER*)token_buffer.data();
-            PSID psid = user_ptr->User.Sid;
-            DWORD user_size = 0;
-            DWORD domain_size = 0;
-            SID_NAME_USE sid_name;
-            LookupAccountSidW(NULL, psid, NULL, &user_size, NULL, &domain_size, &sid_name);
-            user.resize(user_size + 1);
-            domain.resize(domain_size + 1);
-            LookupAccountSidW(NULL, psid, user.data(), &user_size, domain.data(), &domain_size, &sid_name);
-            user[user_size] = L'\0';
-            domain[domain_size] = L'\0';
-        }
-
-        CloseHandle(token);
+        return user;
     }
 
+    DWORD token_size = 0;
+    GetTokenInformation(token, TokenUser, nullptr, 0, &token_size);
+
+    if (token_size < 0)
+    {
+        return user;
+    }
+
+    std::vector<BYTE> token_buffer(token_size);
+    GetTokenInformation(token, TokenUser, token_buffer.data(), token_size, &token_size);
+    TOKEN_USER* user_ptr = (TOKEN_USER*)token_buffer.data();
+    PSID psid = user_ptr->User.Sid;
+    DWORD user_buf_size = 0;
+    DWORD domain_buf_size = 0;
+    SID_NAME_USE sid_name;
+    LookupAccountSidW(nullptr, psid, nullptr, &user_buf_size, nullptr, &domain_buf_size, &sid_name);
+    if (!user_buf_size || !domain_buf_size)
+    {
+        return user;
+    }
+
+    user.resize(user_buf_size);
+    domain.resize(domain_buf_size);
+    LookupAccountSidW(nullptr, psid, user.data(), &user_buf_size, domain.data(), &domain_buf_size, &sid_name);
+    user.resize(user.size() - 1);
+    domain.resize(domain.size() - 1);
+    CloseHandle(token);
     CloseHandle(process);
 
     return user;
