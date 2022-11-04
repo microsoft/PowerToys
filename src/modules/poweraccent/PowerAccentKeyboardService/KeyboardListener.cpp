@@ -129,7 +129,6 @@ namespace winrt::PowerToys::PowerAccentKeyboardService::implementation
             m_showToolbarCb(letterPressed);
         }
 
-
         if (m_toolbarVisible && triggerPressed)
         {
             if (triggerPressed == VK_LEFT)
