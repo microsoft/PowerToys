@@ -12,26 +12,46 @@
     AutomationProperties.LandmarkType="Main"
     mc:Ignorable="d">
 
-    <controls:SettingsPageControl x:Uid="ColorPicker" ModuleImageSource="ms-appx:///Assets/Modules/ColorPicker.png">
+    <controls:SettingsPageControl
+        x:Uid="ColorPicker"
+        ModuleImageSource="ms-appx:///Assets/Modules/ColorPicker.png">
         <controls:SettingsPageControl.ModuleContent>
 
-            <StackPanel x:Name="ColorPickerView" Orientation="Vertical">
-                <labs:SettingsCard x:Uid="ColorPicker_EnableColorPicker" HeaderIcon="{ui:BitmapIcon Source=/Assets/FluentIcons/FluentIconsColorPicker.png}" IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabledGpoConfigured, Converter={StaticResource BoolNegationConverter}}">
-                    <ToggleSwitch x:Uid="ToggleSwitch" IsOn="{x:Bind ViewModel.IsEnabled, Mode=TwoWay}" />
+            <StackPanel
+                x:Name="ColorPickerView"
+                Orientation="Vertical">
+                <labs:SettingsCard
+                    x:Uid="ColorPicker_EnableColorPicker"
+                    HeaderIcon="{ui:BitmapIcon Source=/Assets/FluentIcons/FluentIconsColorPicker.png}"
+                    IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabledGpoConfigured, Converter={StaticResource BoolNegationConverter}}">
+                    <ToggleSwitch
+                        x:Uid="ToggleSwitch"
+                        IsOn="{x:Bind ViewModel.IsEnabled, Mode=TwoWay}" />
                 </labs:SettingsCard>
-                 <InfoBar x:Uid="GPO_IsSettingForced"
-                Severity="Informational"
-                IsClosable="False"
-                IsOpen="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabledGpoConfigured}"
-                IsTabStop="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabledGpoConfigured}" />
+                <InfoBar
+                    x:Uid="GPO_IsSettingForced"
+                    IsClosable="False"
+                    IsOpen="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabledGpoConfigured}"
+                    IsTabStop="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabledGpoConfigured}"
+                    Severity="Informational" />
 
-                <controls:SettingsGroup x:Uid="Shortcut" IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}">
-                    <labs:SettingsCard x:Uid="Activation_Shortcut" HeaderIcon="{ui:FontIcon Glyph=&#xEDA7;}">
-                        <controls:ShortcutControl MinWidth="{StaticResource SettingActionControlMinWidth}" HotkeySettings="{x:Bind Path=ViewModel.ActivationShortcut, Mode=TwoWay}" />
+                <controls:SettingsGroup
+                    x:Uid="Shortcut"
+                    IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}">
+                    <labs:SettingsCard
+                        x:Uid="Activation_Shortcut"
+                        HeaderIcon="{ui:FontIcon FontFamily={StaticResource SymbolThemeFontFamily}, Glyph=&#xEDA7;}">
+                        <controls:ShortcutControl
+                            MinWidth="{StaticResource SettingActionControlMinWidth}"
+                            HotkeySettings="{x:Bind Path=ViewModel.ActivationShortcut, Mode=TwoWay}" />
                     </labs:SettingsCard>
 
-                    <labs:SettingsCard x:Uid="ColorPicker_ActivationAction" HeaderIcon="{ui:FontIcon Glyph=&#xEC4E;}">
-                        <ComboBox MinWidth="{StaticResource SettingActionControlMinWidth}" SelectedIndex="{x:Bind Path=ViewModel.ActivationBehavior, Mode=TwoWay}">
+                    <labs:SettingsCard
+                        x:Uid="ColorPicker_ActivationAction"
+                        HeaderIcon="{ui:FontIcon FontFamily={StaticResource SymbolThemeFontFamily}, Glyph=&#xEC4E;}">
+                        <ComboBox
+                            MinWidth="{StaticResource SettingActionControlMinWidth}"
+                            SelectedIndex="{x:Bind Path=ViewModel.ActivationBehavior, Mode=TwoWay}">
                             <ComboBoxItem x:Uid="EditorFirst" />
                             <ComboBoxItem x:Uid="ColorPickerFirst" />
                             <ComboBoxItem x:Uid="ColorPickerOnly" />
@@ -40,8 +60,12 @@
 
                 </controls:SettingsGroup>
 
-                <controls:SettingsGroup x:Uid="ColorFormats" IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}">
-                    <labs:SettingsCard x:Uid="ColorPicker_CopiedColorRepresentation" HeaderIcon="{ui:FontIcon Glyph=&#xF0E3;}">
+                <controls:SettingsGroup
+                    x:Uid="ColorFormats"
+                    IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}">
+                    <labs:SettingsCard
+                        x:Uid="ColorPicker_CopiedColorRepresentation"
+                        HeaderIcon="{ui:FontIcon FontFamily={StaticResource SymbolThemeFontFamily}, Glyph=&#xF0E3;}">
                         <ComboBox
                             x:Name="ColorPicker_ComboBox"
                             MinWidth="{StaticResource SettingActionControlMinWidth}"
@@ -53,7 +77,9 @@
                     </labs:SettingsCard>
 
                     <labs:SettingsCard x:Uid="ColorPicker_ShowColorName">
-                        <ToggleSwitch x:Uid="ToggleSwitch" IsOn="{Binding ShowColorName, Mode=TwoWay}" />
+                        <ToggleSwitch
+                            x:Uid="ToggleSwitch"
+                            IsOn="{Binding ShowColorName, Mode=TwoWay}" />
                     </labs:SettingsCard>
                     <!--
                 Disabling this until we have a safer way to reset cursor as
@@ -66,23 +92,21 @@
                     -->
                 </controls:SettingsGroup>
 
-                <controls:SettingsGroup x:Uid="ColorPicker_Editor" IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}">
-                    <labs:SettingsCard
+                <controls:SettingsGroup
+                    x:Uid="ColorPicker_Editor"
+                    IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}">
+                    <labs:SettingsExpander
                         x:Name="ColorFormatsSetting"
                         x:Uid="ColorPicker_ColorFormats"
-                        HeaderIcon="{ui:FontIcon Glyph=&#xE762;}" />
-
-                    <!--  Disabled reordering by dragging  -->
-                    <!--  CanReorderItems="True" AllowDrop="True"  -->
-                    <ListView
-                        HorizontalAlignment="Stretch"
-                        AutomationProperties.Name="{Binding ElementName=ColorFormatsSetting, Path=Header}"
-                        ItemsSource="{Binding ColorFormats, Mode=TwoWay}"
-                        SelectionMode="None">
-                        <ListView.ItemTemplate>
+                        HeaderIcon="{ui:FontIcon FontFamily={StaticResource SymbolThemeFontFamily}, Glyph=&#xE762;}"
+                        IsExpanded="True"
+                        ItemsSource="{Binding ColorFormats, Mode=TwoWay}">
+                        <labs:SettingsExpander.ItemTemplate>
                             <DataTemplate x:DataType="models:ColorFormatModel">
-                                <labs:SettingsCard Description="{x:Bind Example}" Header="{x:Bind Name}">
-                                    <StackPanel Orientation="Horizontal">
+                                <labs:SettingsCard
+                                    Description="{x:Bind Example}"
+                                    Header="{x:Bind Name}">
+                                    <StackPanel Orientation="Horizontal" Spacing="4">
                                         <ToggleSwitch
                                             x:Uid="Enable_ColorFormat"
                                             AutomationProperties.HelpText="{x:Bind Name}"
@@ -92,18 +116,20 @@
                                         <Button
                                             x:Uid="More_Options_Button"
                                             Content="&#xE712;"
-                                            FontFamily="{ThemeResource SymbolThemeFontFamily}">
+                                            Margin="0,0,-12,0"
+                                            FontFamily="{ThemeResource SymbolThemeFontFamily}"
+                                            Style="{StaticResource SubtleButtonStyle}">
                                             <Button.Flyout>
                                                 <MenuFlyout>
                                                     <MenuFlyoutItem
                                                         x:Uid="MoveUp"
                                                         Click="ReorderButtonUp_Click"
-                                                        Icon="{ui:FontIcon Glyph=&#xE74A;}"
+                                                        Icon="{ui:FontIcon FontFamily={StaticResource SymbolThemeFontFamily}, Glyph=&#xE74A;}"
                                                         IsEnabled="{x:Bind CanMoveUp}" />
                                                     <MenuFlyoutItem
                                                         x:Uid="MoveDown"
                                                         Click="ReorderButtonDown_Click"
-                                                        Icon="{ui:FontIcon Glyph=&#xE74B;}"
+                                                        Icon="{ui:FontIcon FontFamily={StaticResource SymbolThemeFontFamily}, Glyph=&#xE74B;}"
                                                         IsEnabled="{x:Bind CanMoveDown}" />
                                                 </MenuFlyout>
                                             </Button.Flyout>
@@ -114,19 +140,25 @@
                                     </StackPanel>
                                 </labs:SettingsCard>
                             </DataTemplate>
-                        </ListView.ItemTemplate>
-                    </ListView>
+                        </labs:SettingsExpander.ItemTemplate>
+                    </labs:SettingsExpander>
                 </controls:SettingsGroup>
             </StackPanel>
 
         </controls:SettingsPageControl.ModuleContent>
 
         <controls:SettingsPageControl.PrimaryLinks>
-            <controls:PageLink x:Uid="LearnMore_ColorPicker" Link="https://aka.ms/PowerToysOverview_ColorPicker" />
+            <controls:PageLink
+                x:Uid="LearnMore_ColorPicker"
+                Link="https://aka.ms/PowerToysOverview_ColorPicker" />
         </controls:SettingsPageControl.PrimaryLinks>
         <controls:SettingsPageControl.SecondaryLinks>
-            <controls:PageLink Link="https://github.com/martinchrzan/ColorPicker/" Text="Martin Chrzan's Color Picker" />
-            <controls:PageLink Link="https://medium.com/@Niels9001/a-fluent-color-meter-for-powertoys-20407ededf0c" Text="Niels Laute's UX concept" />
+            <controls:PageLink
+                Link="https://github.com/martinchrzan/ColorPicker/"
+                Text="Martin Chrzan's Color Picker" />
+            <controls:PageLink
+                Link="https://medium.com/@Niels9001/a-fluent-color-meter-for-powertoys-20407ededf0c"
+                Text="Niels Laute's UX concept" />
         </controls:SettingsPageControl.SecondaryLinks>
     </controls:SettingsPageControl>
 </Page>

@@ -7,13 +7,13 @@ using System.Collections;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Data;
 
-namespace Microsoft.PowerToys.Settings.UI.Views
+namespace Microsoft.PowerToys.Settings.UI.Converters
 {
-    public class VisibleIfNotEmpty : IValueConverter
+    public class VisibleIfNotEmptyConverter : IValueConverter
     {
         public object Convert(object value, Type targetType, object parameter, string language)
         {
-            return (value == null) || (value as IList).Count == 0 ? Visibility.Collapsed : Visibility.Visible;
+            return value == null || (value as IList).Count == 0 ? Visibility.Collapsed : Visibility.Visible;
         }
 
         public object ConvertBack(object value, Type targetType, object parameter, string language)

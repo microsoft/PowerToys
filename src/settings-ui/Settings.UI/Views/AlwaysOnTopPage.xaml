@@ -18,24 +18,25 @@
             <StackPanel Orientation="Vertical">
                 <labs:SettingsCard
                     x:Uid="AlwaysOnTop_EnableToggleControl_HeaderText"
-                        IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabledGpoConfigured, Converter={StaticResource BoolNegationConverter}}"
-                    HeaderIcon="{ui:BitmapIcon Source=/Assets/FluentIcons/FluentIconsAlwaysOnTop.png}">
+                    HeaderIcon="{ui:BitmapIcon Source=/Assets/FluentIcons/FluentIconsAlwaysOnTop.png}"
+                    IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabledGpoConfigured, Converter={StaticResource BoolNegationConverter}}">
                     <ToggleSwitch
                         x:Uid="ToggleSwitch"
                         IsOn="{x:Bind ViewModel.IsEnabled, Mode=TwoWay}" />
                 </labs:SettingsCard>
-   <InfoBar x:Uid="GPO_IsSettingForced"
-                    Severity="Informational"
+                <InfoBar
+                    x:Uid="GPO_IsSettingForced"
                     IsClosable="False"
                     IsOpen="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabledGpoConfigured}"
-                    IsTabStop="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabledGpoConfigured}" />
+                    IsTabStop="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabledGpoConfigured}"
+                    Severity="Informational" />
                 <controls:SettingsGroup
                     x:Uid="AlwaysOnTop_Activation_GroupSettings"
                     IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}">
 
                     <labs:SettingsExpander
                         x:Uid="AlwaysOnTop_ActivationShortcut"
-                        HeaderIcon="{ui:FontIcon Glyph=&#xEDA7;}"
+                        HeaderIcon="{ui:FontIcon FontFamily={StaticResource SymbolThemeFontFamily}, Glyph=&#xEDA7;}"
                         IsExpanded="True">
                         <controls:ShortcutControl
                             MinWidth="{StaticResource SettingActionControlMinWidth}"
@@ -55,7 +56,7 @@
                     IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}">
                     <labs:SettingsExpander
                         x:Uid="AlwaysOnTop_FrameEnabled"
-                        HeaderIcon="{ui:FontIcon Glyph=&#xEB3C;}"
+                        HeaderIcon="{ui:FontIcon FontFamily={StaticResource SymbolThemeFontFamily}, Glyph=&#xEB3C;}"
                         IsExpanded="True">
                         <ToggleSwitch
                             x:Uid="ToggleSwitch"
@@ -100,7 +101,7 @@
 
                     <labs:SettingsExpander
                         x:Uid="AlwaysOnTop_SoundTitle"
-                        HeaderIcon="{ui:FontIcon Glyph=&#xE7F3;}"
+                        HeaderIcon="{ui:FontIcon FontFamily={StaticResource SymbolThemeFontFamily}, Glyph=&#xE7F3;}"
                         IsExpanded="True">
                         <labs:SettingsExpander.Items>
                             <labs:SettingsCard ContentAlignment="Left">
@@ -117,10 +118,10 @@
                     IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}">
                     <labs:SettingsExpander
                         x:Uid="AlwaysOnTop_ExcludedApps"
-                        HeaderIcon="{ui:FontIcon Glyph=&#xECE4;}"
+                        HeaderIcon="{ui:FontIcon FontFamily={StaticResource SymbolThemeFontFamily}, Glyph=&#xECE4;}"
                         IsExpanded="True">
                         <labs:SettingsExpander.Items>
-                            <labs:SettingsCard ContentAlignment="Vertical">
+                            <labs:SettingsCard ContentAlignment="Vertical" HorizontalContentAlignment="Stretch">
                                 <TextBox
                                     x:Uid="AlwaysOnTop_ExcludedApps_TextBoxControl"
                                     MinWidth="240"

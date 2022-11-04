@@ -11,6 +11,7 @@
     mc:Ignorable="d">
 
     <UserControl.Resources>
+        <x:Double x:Key="PageMaxWidth">1000</x:Double>
         <converters:DoubleToVisibilityConverter
             x:Name="doubleToVisibilityConverter"
             FalseValue="Collapsed"
@@ -28,20 +29,24 @@
 
         <TextBlock
             x:Name="Header"
+            MaxWidth="{StaticResource PageMaxWidth}"
             Margin="0,44,0,0"
             VerticalAlignment="Stretch"
             AutomationProperties.HeadingLevel="1"
             Style="{StaticResource TitleTextBlockStyle}"
             Text="{x:Bind ModuleTitle}" />
 
-        <ScrollViewer Grid.Row="1">
+        <ScrollViewer
+            Grid.Row="1"
+            HorizontalAlignment="Stretch">
             <Grid
+                MaxWidth="{StaticResource PageMaxWidth}"
                 Padding="0,0,20,48"
                 RowSpacing="24">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition
                         Width="*"
-                        MaxWidth="1048" />
+                        MaxWidth="1000" />
                     <ColumnDefinition Width="Auto" />
                 </Grid.ColumnDefinitions>
                 <Grid.RowDefinitions>
@@ -104,7 +109,7 @@
                 <ContentPresenter
                     x:Name="ModuleContentPresenter"
                     Grid.Row="1"
-                    MaxWidth="1048"
+                    MaxWidth="{StaticResource PageMaxWidth}"
                     Margin="0,12,0,0"
                     HorizontalAlignment="Stretch"
                     HorizontalContentAlignment="Stretch"

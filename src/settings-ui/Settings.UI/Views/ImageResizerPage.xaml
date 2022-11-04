@@ -27,41 +27,36 @@
         <controls:SettingsPageControl.ModuleContent>
             <StackPanel>
                 <labs:SettingsCard
-                    x:Uid="ImageResizer_EnableToggle" IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabledGpoConfigured, Converter={StaticResource BoolNegationConverter}}" 
-                    HeaderIcon="{ui:BitmapIcon Source=/Assets/FluentIcons/FluentIconsImageResizer.png}">
+                    x:Uid="ImageResizer_EnableToggle"
+                    HeaderIcon="{ui:BitmapIcon Source=/Assets/FluentIcons/FluentIconsImageResizer.png}"
+                    IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabledGpoConfigured, Converter={StaticResource BoolNegationConverter}}">
                     <ToggleSwitch
                         x:Uid="ToggleSwitch"
                         IsOn="{x:Bind ViewModel.IsEnabled, Mode=TwoWay}" />
                 </labs:SettingsCard>
 
-                  <InfoBar x:Uid="GPO_IsSettingForced"
-                    Severity="Informational"
+                <InfoBar
+                    x:Uid="GPO_IsSettingForced"
                     IsClosable="False"
                     IsOpen="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabledGpoConfigured}"
-                    IsTabStop="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabledGpoConfigured}" />
+                    IsTabStop="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabledGpoConfigured}"
+                    Severity="Informational" />
 
                 <controls:SettingsGroup
                     x:Uid="ImageResizer_CustomSizes"
                     IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}">
-                    <labs:SettingsCard
+                    <labs:SettingsExpander
                         x:Uid="ImageResizer_Presets"
-                        HeaderIcon="{ui:FontIcon Glyph=&#xE792;}">
+                        HeaderIcon="{ui:FontIcon FontFamily={StaticResource SymbolThemeFontFamily},
+                                                 Glyph=&#xE792;}"
+                        IsExpanded="True"
+                        ItemsSource="{x:Bind ViewModel.Sizes, Mode=TwoWay}">
                         <Button
                             x:Uid="ImageResizer_AddSizeButton"
                             Click="AddSizeButton_Click"
                             Style="{ThemeResource AccentButtonStyle}" />
-                    </labs:SettingsCard>
-                    <ListView
-                        x:Name="ImagesSizesListView"
-                        x:Uid="ImagesSizesListView"
-                        ContainerContentChanging="ImagesSizesListView_ContainerContentChanging"
-                        ItemsSource="{x:Bind ViewModel.Sizes, Mode=TwoWay}"
-                        SelectionMode="None">
-                        <ListView.ItemTemplate>
-                            <DataTemplate
-                                x:Name="SingleLineDataTemplate"
-                                x:DataType="models:ImageSize">
-
+                        <labs:SettingsExpander.ItemTemplate>
+                            <DataTemplate x:DataType="models:ImageSize">
                                 <labs:SettingsCard Header="{x:Bind Name, Mode=OneWay}">
                                     <labs:SettingsCard.Description>
                                         <StackPanel
@@ -90,8 +85,9 @@
                                         Spacing="8">
                                         <Button
                                             x:Uid="EditButton"
-                                            Content="&#xE70F;"
-                                            FontFamily="{ThemeResource SymbolThemeFontFamily}">
+                                            Content="{ui:FontIcon FontFamily={StaticResource SymbolThemeFontFamily}, FontSize=14,
+                                                                  Glyph=&#xE70F;}"
+                                            Style="{StaticResource SubtleButtonStyle}">
                                             <ToolTipService.ToolTip>
                                                 <TextBlock x:Uid="EditTooltip" />
                                             </ToolTipService.ToolTip>
@@ -154,8 +150,9 @@
                                             x:Uid="RemoveButton"
                                             Click="DeleteCustomSize"
                                             CommandParameter="{Binding Id}"
-                                            Content="&#xE74D;"
-                                            FontFamily="{ThemeResource SymbolThemeFontFamily}">
+                                            Content="{ui:FontIcon FontFamily={StaticResource SymbolThemeFontFamily}, FontSize=14,
+                                                                  Glyph=&#xE74D;}"
+                                            Style="{StaticResource SubtleButtonStyle}">
                                             <ToolTipService.ToolTip>
                                                 <TextBlock x:Uid="RemoveTooltip" />
                                             </ToolTipService.ToolTip>
@@ -163,8 +160,8 @@
                                     </StackPanel>
                                 </labs:SettingsCard>
                             </DataTemplate>
-                        </ListView.ItemTemplate>
-                    </ListView>
+                        </labs:SettingsExpander.ItemTemplate>
+                    </labs:SettingsExpander>
                 </controls:SettingsGroup>
 
                 <controls:SettingsGroup
@@ -240,6 +237,7 @@
                             <Button
                                 x:Uid="ImageResizer_FilenameParameters"
                                 Content="&#xE946;"
+                                Style="{StaticResource SubtleButtonStyle}"
                                 FontFamily="{ThemeResource SymbolThemeFontFamily}">
                                 <Button.Flyout>
                                     <Flyout>

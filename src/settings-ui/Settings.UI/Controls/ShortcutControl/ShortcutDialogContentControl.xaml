@@ -8,14 +8,18 @@
     xmlns:toolkitcontrols="using:CommunityToolkit.WinUI.UI.Controls"
     x:Name="ShortcutContentControl"
     mc:Ignorable="d">
-    <Grid MinWidth="498" MinHeight="220">
+    <Grid
+        MinWidth="498"
+        MinHeight="220">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
             <RowDefinition MinHeight="110" />
             <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
 
-        <TextBlock x:Uid="Activation_Shortcut_Description" Grid.Row="0" />
+        <TextBlock
+            x:Uid="Activation_Shortcut_Description"
+            Grid.Row="0" />
 
         <ItemsControl
             x:Name="KeysControl"
@@ -28,7 +32,9 @@
             ItemsSource="{x:Bind Keys, Mode=OneWay}">
             <ItemsControl.ItemsPanel>
                 <ItemsPanelTemplate>
-                    <StackPanel Orientation="Horizontal" Spacing="8" />
+                    <StackPanel
+                        Orientation="Horizontal"
+                        Spacing="8" />
                 </ItemsPanelTemplate>
             </ItemsControl.ItemsPanel>
             <ItemsControl.ItemTemplate>

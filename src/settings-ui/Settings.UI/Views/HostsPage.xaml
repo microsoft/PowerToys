@@ -14,35 +14,61 @@
         ModuleImageSource="ms-appx:///Assets/Modules/AlwaysOnTop.png">
         <controls:SettingsPageControl.ModuleContent>
             <StackPanel Orientation="Vertical">
-                <labs:SettingsCard x:Uid="Hosts_EnableToggleControl_HeaderText" HeaderIcon="{ui:BitmapIcon Source=/Assets/FluentIcons/FluentIconsHosts.png}"  IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabledGpoConfigured, Converter={StaticResource BoolNegationConverter}}">
-                    <ToggleSwitch x:Uid="ToggleSwitch" IsOn="{x:Bind ViewModel.IsEnabled, Mode=TwoWay}" />
+                <labs:SettingsCard
+                    x:Uid="Hosts_EnableToggleControl_HeaderText"
+                    HeaderIcon="{ui:BitmapIcon Source=/Assets/FluentIcons/FluentIconsHosts.png}"
+                    IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabledGpoConfigured, Converter={StaticResource BoolNegationConverter}}">
+                    <ToggleSwitch
+                        x:Uid="ToggleSwitch"
+                        IsOn="{x:Bind ViewModel.IsEnabled, Mode=TwoWay}" />
                 </labs:SettingsCard>
-   <InfoBar x:Uid="GPO_IsSettingForced"
-                    Severity="Informational"
+                <InfoBar
+                    x:Uid="GPO_IsSettingForced"
                     IsClosable="False"
                     IsOpen="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabledGpoConfigured}"
-                    IsTabStop="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabledGpoConfigured}" />
-                <controls:SettingsGroup x:Uid="Hosts_Activation_GroupSettings" IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}">
+                    IsTabStop="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabledGpoConfigured}"
+                    Severity="Informational" />
+                <controls:SettingsGroup
+                    x:Uid="Hosts_Activation_GroupSettings"
+                    IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}">
                     <labs:SettingsCard
                         x:Uid="Hosts_LaunchButtonControl"
-                        ActionIcon="{ui:FontIcon Glyph=&#xE8A7;}"
+                        ActionIcon="{ui:FontIcon FontFamily={StaticResource SymbolThemeFontFamily},
+                                                 FontSize=14,
+                                                 Glyph=&#xE8A7;}"
                         Command="{x:Bind ViewModel.LaunchEventHandler}"
-                        HeaderIcon="{ui:FontIcon Glyph=&#xEA37;}"
+                        HeaderIcon="{ui:FontIcon FontFamily={StaticResource SymbolThemeFontFamily},
+                                                 Glyph=&#xEA37;}"
                         IsClickEnabled="True" />
                     <labs:SettingsCard
                         x:Uid="Hosts_Toggle_LaunchAdministrator"
-                        HeaderIcon="{ui:FontIcon Glyph=&#xE7EF;}"
+                        HeaderIcon="{ui:FontIcon FontFamily={StaticResource SymbolThemeFontFamily},
+                                                 Glyph=&#xE7EF;}"
                         IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.LaunchAdministratorEnabled}">
-                        <ToggleSwitch x:Uid="ToggleSwitch" IsOn="{x:Bind Mode=TwoWay, Path=ViewModel.LaunchAdministrator}" />
+                        <ToggleSwitch
+                            x:Uid="ToggleSwitch"
+                            IsOn="{x:Bind Mode=TwoWay, Path=ViewModel.LaunchAdministrator}" />
                     </labs:SettingsCard>
-                    <labs:SettingsCard x:Uid="Hosts_Toggle_ShowStartupWarning" HeaderIcon="{ui:FontIcon Glyph=&#xE7BA;}">
-                        <ToggleSwitch x:Uid="ToggleSwitch" IsOn="{x:Bind Mode=TwoWay, Path=ViewModel.ShowStartupWarning}" />
+                    <labs:SettingsCard
+                        x:Uid="Hosts_Toggle_ShowStartupWarning"
+                        HeaderIcon="{ui:FontIcon FontFamily={StaticResource SymbolThemeFontFamily},
+                                                 Glyph=&#xE7BA;}">
+                        <ToggleSwitch
+                            x:Uid="ToggleSwitch"
+                            IsOn="{x:Bind Mode=TwoWay, Path=ViewModel.ShowStartupWarning}" />
                     </labs:SettingsCard>
                 </controls:SettingsGroup>
 
-                <controls:SettingsGroup x:Uid="Hosts_File_GroupSettings" IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}">
-                    <labs:SettingsCard x:Uid="Hosts_AdditionalLinesPosition" HeaderIcon="{ui:FontIcon Glyph=&#xE8A5;}">
-                        <ComboBox MinWidth="{StaticResource SettingActionControlMinWidth}" SelectedIndex="{x:Bind Path=ViewModel.AdditionalLinesPosition, Mode=TwoWay}">
+                <controls:SettingsGroup
+                    x:Uid="Hosts_File_GroupSettings"
+                    IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}">
+                    <labs:SettingsCard
+                        x:Uid="Hosts_AdditionalLinesPosition"
+                        HeaderIcon="{ui:FontIcon FontFamily={StaticResource SymbolThemeFontFamily},
+                                                 Glyph=&#xE8A5;}">
+                        <ComboBox
+                            MinWidth="{StaticResource SettingActionControlMinWidth}"
+                            SelectedIndex="{x:Bind Path=ViewModel.AdditionalLinesPosition, Mode=TwoWay}">
                             <ComboBoxItem x:Uid="Hosts_AdditionalLinesPosition_Top" />
                             <ComboBoxItem x:Uid="Hosts_AdditionalLinesPosition_Bottom" />
                         </ComboBox>
@@ -52,7 +78,9 @@
         </controls:SettingsPageControl.ModuleContent>
 
         <controls:SettingsPageControl.PrimaryLinks>
-            <controls:PageLink x:Uid="LearnMore_Hosts" Link="https://aka.ms/PowerToysOverview_HostsFileEditor" />
+            <controls:PageLink
+                x:Uid="LearnMore_Hosts"
+                Link="https://aka.ms/PowerToysOverview_HostsFileEditor" />
         </controls:SettingsPageControl.PrimaryLinks>
     </controls:SettingsPageControl>
 </Page>

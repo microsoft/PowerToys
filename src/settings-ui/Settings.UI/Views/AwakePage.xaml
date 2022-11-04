@@ -12,7 +12,6 @@
     mc:Ignorable="d">
 
     <Page.Resources>
-        <toolkitConverters:BoolNegationConverter x:Key="BoolNegationConverter"/>
         <converters:AwakeModeToIntConverter x:Key="AwakeModeToIntConverter" />
     </Page.Resources>
 
@@ -22,19 +21,31 @@
         ModuleImageSource="ms-appx:///Assets/Modules/Awake.png">
         <controls:SettingsPageControl.ModuleContent>
             <StackPanel Orientation="Vertical">
-                <labs:SettingsCard x:Uid="Awake_EnableAwake" IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabledGpoConfigured, Converter={StaticResource BoolNegationConverter}}"> HeaderIcon="{ui:BitmapIcon Source=/Assets/FluentIcons/FluentIconsAwake.png}">
-                    <ToggleSwitch x:Uid="ToggleSwitch" IsOn="{x:Bind ViewModel.IsEnabled, Mode=TwoWay}" />
+                <labs:SettingsCard
+                    x:Uid="Awake_EnableAwake"
+                    HeaderIcon="{ui:BitmapIcon Source=/Assets/FluentIcons/FluentIconsAwake.png}"
+                    IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabledGpoConfigured, Converter={StaticResource BoolNegationConverter}}">
+                    <ToggleSwitch
+                        x:Uid="ToggleSwitch"
+                        IsOn="{x:Bind ViewModel.IsEnabled, Mode=TwoWay}" />
                 </labs:SettingsCard>
-                   <InfoBar x:Uid="GPO_IsSettingForced"
-                    Severity="Informational"
+                <InfoBar
+                    x:Uid="GPO_IsSettingForced"
                     IsClosable="False"
                     IsOpen="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabledGpoConfigured}"
-                    IsTabStop="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabledGpoConfigured}" />
+                    IsTabStop="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabledGpoConfigured}"
+                    Severity="Informational" />
 
-                <controls:SettingsGroup x:Uid="Awake_Behavior_GroupSettings" IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}">
+                <controls:SettingsGroup
+                    x:Uid="Awake_Behavior_GroupSettings"
+                    IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}">
 
-                    <labs:SettingsCard x:Uid="Awake_Mode" HeaderIcon="{ui:FontIcon Glyph=&#xE945;}">
-                        <ComboBox MinWidth="{StaticResource SettingActionControlMinWidth}" SelectedIndex="{x:Bind Path=ViewModel.Mode, Mode=TwoWay, Converter={StaticResource AwakeModeToIntConverter}}">
+                    <labs:SettingsCard
+                        x:Uid="Awake_Mode"
+                        HeaderIcon="{ui:FontIcon FontFamily={StaticResource SymbolThemeFontFamily}, Glyph=&#xE945;}">
+                        <ComboBox
+                            MinWidth="{StaticResource SettingActionControlMinWidth}"
+                            SelectedIndex="{x:Bind Path=ViewModel.Mode, Mode=TwoWay, Converter={StaticResource AwakeModeToIntConverter}}">
                             <ComboBoxItem x:Uid="Awake_NoKeepAwake" />
                             <ComboBoxItem x:Uid="Awake_IndefiniteKeepAwake" />
                             <ComboBoxItem x:Uid="Awake_TemporaryKeepAwake" />
@@ -43,7 +54,7 @@
 
                     <labs:SettingsCard
                         x:Uid="Awake_TimeBeforeAwake"
-                        HeaderIcon="{ui:FontIcon Glyph=&#xE916;}"
+                        HeaderIcon="{ui:FontIcon FontFamily={StaticResource SymbolThemeFontFamily}, Glyph=&#xE916;}"
                         Visibility="{x:Bind ViewModel.IsTimeConfigurationEnabled, Mode=OneWay}">
                         <StackPanel Orientation="Horizontal">
                             <NumberBox
@@ -71,19 +82,25 @@
 
                     <labs:SettingsCard
                         x:Uid="Awake_EnableDisplayKeepAwake"
-                        HeaderIcon="{ui:FontIcon Glyph=&#xE7FB;}"
+                        HeaderIcon="{ui:FontIcon FontFamily={StaticResource SymbolThemeFontFamily}, Glyph=&#xE7FB;}"
                         Visibility="{x:Bind ViewModel.IsTimeConfigurationEnabled, Mode=OneWay}">
-                        <ToggleSwitch x:Uid="ToggleSwitch" IsOn="{x:Bind ViewModel.KeepDisplayOn, Mode=TwoWay}" />
+                        <ToggleSwitch
+                            x:Uid="ToggleSwitch"
+                            IsOn="{x:Bind ViewModel.KeepDisplayOn, Mode=TwoWay}" />
                     </labs:SettingsCard>
                 </controls:SettingsGroup>
             </StackPanel>
         </controls:SettingsPageControl.ModuleContent>
 
         <controls:SettingsPageControl.PrimaryLinks>
-            <controls:PageLink x:Uid="LearnMore_Awake" Link="https://aka.ms/PowerToysOverview_Awake" />
+            <controls:PageLink
+                x:Uid="LearnMore_Awake"
+                Link="https://aka.ms/PowerToysOverview_Awake" />
         </controls:SettingsPageControl.PrimaryLinks>
         <controls:SettingsPageControl.SecondaryLinks>
-            <controls:PageLink Link="https://Awake.den.dev" Text="Den Delimarsky's work on creating Awake" />
+            <controls:PageLink
+                Link="https://Awake.den.dev"
+                Text="Den Delimarsky's work on creating Awake" />
         </controls:SettingsPageControl.SecondaryLinks>
     </controls:SettingsPageControl>
 </Page>

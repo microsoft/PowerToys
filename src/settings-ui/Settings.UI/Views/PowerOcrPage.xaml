@@ -10,21 +10,25 @@
     AutomationProperties.LandmarkType="Main"
     mc:Ignorable="d">
 
-    <Page.Resources>
-        <converters:BoolNegationConverter x:Key="BoolNegationConverter"/>
-    </Page.Resources>
-
-    <controls:SettingsPageControl x:Uid="TextExtractor" ModuleImageSource="ms-appx:///Assets/Modules/PowerOCR.png">
+    <controls:SettingsPageControl
+        x:Uid="TextExtractor"
+        ModuleImageSource="ms-appx:///Assets/Modules/PowerOCR.png">
         <controls:SettingsPageControl.ModuleContent>
             <StackPanel Orientation="Vertical">
-                <labs:SettingsCard x:Uid="TextExtractor_EnableToggleControl_HeaderText" IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabledGpoConfigured, Converter={StaticResource BoolNegationConverter}}" HeaderIcon="{ui:BitmapIcon Source=/Assets/FluentIcons/FluentIconsPowerOcr.png}">
-                    <ToggleSwitch x:Uid="ToggleSwitch" IsOn="{x:Bind ViewModel.IsEnabled, Mode=TwoWay}" />
+                <labs:SettingsCard
+                    x:Uid="TextExtractor_EnableToggleControl_HeaderText"
+                    HeaderIcon="{ui:BitmapIcon Source=/Assets/FluentIcons/FluentIconsPowerOcr.png}"
+                    IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabledGpoConfigured, Converter={StaticResource BoolNegationConverter}}">
+                    <ToggleSwitch
+                        x:Uid="ToggleSwitch"
+                        IsOn="{x:Bind ViewModel.IsEnabled, Mode=TwoWay}" />
                 </labs:SettingsCard>
-                   <InfoBar x:Uid="GPO_IsSettingForced"
-                    Severity="Informational"
+                <InfoBar
+                    x:Uid="GPO_IsSettingForced"
                     IsClosable="False"
                     IsOpen="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabledGpoConfigured}"
-                    IsTabStop="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabledGpoConfigured}" />
+                    IsTabStop="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabledGpoConfigured}"
+                    Severity="Informational" />
                 <InfoBar
                     x:Uid="TextExtractor_SupportedLanguages"
                     IsClosable="False"
@@ -32,23 +36,35 @@
                     IsTabStop="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}"
                     Severity="Informational">
                     <InfoBar.ActionButton>
-                        <HyperlinkButton x:Uid="TextExtractor_SupportedLanguages_Link" NavigateUri="https://aka.ms/PowerToysOverview_TextExtractor#supported-languages" />
+                        <HyperlinkButton
+                            x:Uid="TextExtractor_SupportedLanguages_Link"
+                            NavigateUri="https://aka.ms/PowerToysOverview_TextExtractor#supported-languages" />
                     </InfoBar.ActionButton>
                 </InfoBar>
 
-                <controls:SettingsGroup x:Uid="Shortcut" IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}">
-                    <labs:SettingsCard x:Uid="Activation_Shortcut" HeaderIcon="{ui:FontIcon Glyph=&#xEDA7;}">
-                        <controls:ShortcutControl MinWidth="{StaticResource SettingActionControlMinWidth}" HotkeySettings="{x:Bind Path=ViewModel.ActivationShortcut, Mode=TwoWay}" />
+                <controls:SettingsGroup
+                    x:Uid="Shortcut"
+                    IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}">
+                    <labs:SettingsCard
+                        x:Uid="Activation_Shortcut"
+                        HeaderIcon="{ui:FontIcon FontFamily={StaticResource SymbolThemeFontFamily}, Glyph=&#xEDA7;}">
+                        <controls:ShortcutControl
+                            MinWidth="{StaticResource SettingActionControlMinWidth}"
+                            HotkeySettings="{x:Bind Path=ViewModel.ActivationShortcut, Mode=TwoWay}" />
                     </labs:SettingsCard>
                 </controls:SettingsGroup>
             </StackPanel>
         </controls:SettingsPageControl.ModuleContent>
 
         <controls:SettingsPageControl.PrimaryLinks>
-            <controls:PageLink x:Uid="LearnMore_TextExtractor" Link="https://aka.ms/PowerToysOverview_TextExtractor" />
+            <controls:PageLink
+                x:Uid="LearnMore_TextExtractor"
+                Link="https://aka.ms/PowerToysOverview_TextExtractor" />
         </controls:SettingsPageControl.PrimaryLinks>
         <controls:SettingsPageControl.SecondaryLinks>
-            <controls:PageLink Link="https://github.com/TheJoeFin/Text-Grab" Text="Based upon Joseph Finney's Text Grab" />
+            <controls:PageLink
+                Link="https://github.com/TheJoeFin/Text-Grab"
+                Text="Based upon Joseph Finney's Text Grab" />
         </controls:SettingsPageControl.SecondaryLinks>
     </controls:SettingsPageControl>
 </Page>

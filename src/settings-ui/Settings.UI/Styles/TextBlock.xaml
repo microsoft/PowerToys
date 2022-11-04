@@ -1,6 +1,10 @@
-﻿<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+﻿<ResourceDictionary
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
 
-    <Style x:Key="OobeSubtitleStyle" TargetType="TextBlock">
+    <Style
+        x:Key="OobeSubtitleStyle"
+        TargetType="TextBlock">
         <Setter Property="Margin" Value="0,16,0,0" />
         <Setter Property="Foreground" Value="{ThemeResource DefaultTextForegroundThemeBrush}" />
         <Setter Property="AutomationProperties.HeadingLevel" Value="Level3" />
@@ -14,7 +18,9 @@
     </Style>
 
     <x:Double x:Key="SecondaryTextFontSize">12</x:Double>
-    <Style x:Key="SecondaryTextStyle" TargetType="TextBlock">
+    <Style
+        x:Key="SecondaryTextStyle"
+        TargetType="TextBlock">
         <Setter Property="FontSize" Value="{StaticResource SecondaryTextFontSize}" />
         <Setter Property="Foreground" Value="{ThemeResource TextFillColorSecondaryBrush}" />
     </Style>

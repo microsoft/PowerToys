@@ -22,7 +22,9 @@
         </ic:EventTriggerBehavior>
     </i:Interaction.Behaviors>
 
-    <Grid x:Name="RootGrid" Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
+    <Grid
+        x:Name="RootGrid"
+        Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
 
         <NavigationView
             x:Name="navigationView"
@@ -36,8 +38,12 @@
             PaneOpened="NavigationView_PaneOpened"
             SelectedItem="{x:Bind ViewModel.Selected, Mode=OneWay}">
             <NavigationView.Resources>
-                <SolidColorBrush x:Key="NavigationViewContentBackground" Color="Transparent" />
-                <SolidColorBrush x:Key="NavigationViewContentGridBorderBrush" Color="Transparent" />
+                <SolidColorBrush
+                    x:Key="NavigationViewContentBackground"
+                    Color="Transparent" />
+                <SolidColorBrush
+                    x:Key="NavigationViewContentGridBorderBrush"
+                    Color="Transparent" />
             </NavigationView.Resources>
             <NavigationView.MenuItems>
                 <NavigationViewItem
@@ -64,9 +70,9 @@
                     x:Uid="Shell_FancyZones"
                     helpers:NavHelper.NavigateTo="views:FancyZonesPage"
                     Icon="{ui:BitmapIcon Source=/Assets/FluentIcons/FluentIconsFancyZones.png}" />
-   <NavigationViewItem
+                <NavigationViewItem
                     x:Uid="Shell_FileLocksmith"
-                    helpers:NavHelper.NavigateTo="views:PowerPreviewPage"
+                    helpers:NavHelper.NavigateTo="views:FileLocksmithPage"
                     Icon="{ui:BitmapIcon Source=/Assets/FluentIcons/FluentIconsFileLocksmith.png}" />
                 <NavigationViewItem
                     x:Uid="Shell_PowerPreview"
@@ -132,11 +138,11 @@
                 <StackPanel Orientation="Vertical">
                     <NavigationViewItem
                         x:Uid="OOBE_NavViewItem"
-                        Icon="{ui:FontIcon Glyph=&#xF133;}"
+                        Icon="{ui:FontIcon FontFamily={StaticResource SymbolThemeFontFamily}, Glyph=&#xF133;}"
                         Tapped="OOBEItem_Tapped" />
                     <NavigationViewItem
                         x:Uid="Feedback_NavViewItem"
-                        Icon="{ui:FontIcon Glyph=&#xED15;}"
+                        Icon="{ui:FontIcon FontFamily={StaticResource SymbolThemeFontFamily}, Glyph=&#xED15;}"
                         Tapped="FeedbackItem_Tapped" />
                 </StackPanel>
             </NavigationView.PaneFooter>

@@ -17,11 +17,17 @@
         <localConverters:StringToInfoBarSeverityConverter x:Key="StringToInfoBarSeverityConverter" />
     </Page.Resources>
 
-    <controls:SettingsPageControl x:Uid="General" ModuleImageSource="ms-appx:///Assets/Modules/PT.png">
+    <controls:SettingsPageControl
+        x:Uid="General"
+        ModuleImageSource="ms-appx:///Assets/Modules/PT.png">
         <controls:SettingsPageControl.ModuleContent>
             <StackPanel Orientation="Vertical">
-                <controls:SettingsGroup x:Uid="General_Version" Margin="0,-32,0,0">
-                    <labs:SettingsCard Header="{Binding PowerToysVersion}" HeaderIcon="{ui:FontIcon Glyph=&#xE895;}">
+                <controls:SettingsGroup
+                    x:Uid="General_Version"
+                    Margin="0,-32,0,0">
+                    <labs:SettingsCard
+                        Header="{Binding PowerToysVersion}"
+                        HeaderIcon="{ui:FontIcon FontFamily={StaticResource SymbolThemeFontFamily}, Glyph=&#xE895;}">
                         <labs:SettingsCard.Description>
                             <StackPanel Orientation="Vertical">
                                 <TextBlock Style="{StaticResource SecondaryTextStyle}">
@@ -41,7 +47,9 @@
                                 Orientation="Horizontal"
                                 Spacing="18"
                                 Visibility="{Binding Mode=OneWay, Path=IsNewVersionDownloading, Converter={StaticResource BoolToVisibilityConverter}}">
-                                <ProgressRing Width="24" Height="24" />
+                                <ProgressRing
+                                    Width="24"
+                                    Height="24" />
                                 <TextBlock
                                     x:Uid="General_CheckingForUpdates"
                                     VerticalAlignment="Center"
@@ -86,7 +94,9 @@
                                     Orientation="Horizontal"
                                     Spacing="18"
                                     Visibility="{Binding Mode=OneWay, Path=IsNewVersionDownloading, Converter={StaticResource BoolToVisibilityConverter}}">
-                                    <ProgressRing Width="24" Height="24" />
+                                    <ProgressRing
+                                        Width="24"
+                                        Height="24" />
                                     <TextBlock
                                         x:Uid="General_Downloading"
                                         FontWeight="SemiBold"
@@ -152,7 +162,9 @@
                                     Orientation="Horizontal"
                                     Spacing="18"
                                     Visibility="{Binding Mode=OneWay, Path=IsNewVersionDownloading, Converter={StaticResource BoolToVisibilityConverter}}">
-                                    <ProgressRing Width="24" Height="24" />
+                                    <ProgressRing
+                                        Width="24"
+                                        Height="24" />
                                     <TextBlock
                                         x:Uid="General_Downloading"
                                         FontWeight="SemiBold"
@@ -174,7 +186,9 @@
                         Margin="0,-6,0,0"
                         IsEnabled="{Binding AutoUpdatesEnabled}"
                         Visibility="{Binding Mode=OneWay, Path=IsAdmin, Converter={StaticResource BoolToVisibilityConverter}}">
-                        <ToggleSwitch x:Uid="ToggleSwitch" IsOn="{Binding Mode=TwoWay, Path=AutoDownloadUpdates}" />
+                        <ToggleSwitch
+                            x:Uid="ToggleSwitch"
+                            IsOn="{Binding Mode=TwoWay, Path=AutoDownloadUpdates}" />
                     </labs:SettingsCard>
                 </controls:SettingsGroup>
 
@@ -182,29 +196,43 @@
                     <labs:SettingsExpander
                         x:Uid="Admin_Mode_Running_As"
                         Header="{Binding Mode=OneWay, Path=RunningAsText}"
-                        HeaderIcon="{ui:FontIcon Glyph=&#xE7EF;}"
+                        HeaderIcon="{ui:FontIcon FontFamily={StaticResource SymbolThemeFontFamily}, Glyph=&#xE7EF;}"
                         IsExpanded="True">
                         <labs:SettingsExpander.Description>
-                            <HyperlinkButton x:Uid="GeneralPage_ToggleSwitch_AlwaysRunElevated_Link" NavigateUri="https://aka.ms/powertoysDetectedElevatedHelp" />
+                            <HyperlinkButton
+                                x:Uid="GeneralPage_ToggleSwitch_AlwaysRunElevated_Link"
+                                NavigateUri="https://aka.ms/powertoysDetectedElevatedHelp" />
                         </labs:SettingsExpander.Description>
                         <Button
                             x:Uid="GeneralPage_RestartAsAdmin_Button"
                             Command="{Binding RestartElevatedButtonEventHandler}"
                             IsEnabled="{Binding Mode=OneWay, Path=IsAdminButtonEnabled}" />
                         <labs:SettingsExpander.Items>
-                            <labs:SettingsCard x:Uid="GeneralSettings_AlwaysRunAsAdminText" IsEnabled="{Binding Mode=OneWay, Path=IsElevated}">
-                                <ToggleSwitch x:Uid="ToggleSwitch" IsOn="{Binding Mode=TwoWay, Path=RunElevated}" />
+                            <labs:SettingsCard
+                                x:Uid="GeneralSettings_AlwaysRunAsAdminText"
+                                IsEnabled="{Binding Mode=OneWay, Path=IsElevated}">
+                                <ToggleSwitch
+                                    x:Uid="ToggleSwitch"
+                                    IsOn="{Binding Mode=TwoWay, Path=RunElevated}" />
                             </labs:SettingsCard>
                         </labs:SettingsExpander.Items>
                     </labs:SettingsExpander>
                 </controls:SettingsGroup>
 
-                <controls:SettingsGroup x:Uid="ShortcutGuide_Appearance_Behavior" IsEnabled="True">
-                    <labs:SettingsCard x:Uid="ColorModeHeader" HeaderIcon="{ui:FontIcon Glyph=&#xE790;}">
+                <controls:SettingsGroup
+                    x:Uid="ShortcutGuide_Appearance_Behavior"
+                    IsEnabled="True">
+                    <labs:SettingsCard
+                        x:Uid="ColorModeHeader"
+                        HeaderIcon="{ui:FontIcon FontFamily={StaticResource SymbolThemeFontFamily}, Glyph=&#xE790;}">
                         <labs:SettingsCard.Description>
-                            <HyperlinkButton x:Uid="Windows_Color_Settings" Click="OpenColorsSettings_Click" />
+                            <HyperlinkButton
+                                x:Uid="Windows_Color_Settings"
+                                Click="OpenColorsSettings_Click" />
                         </labs:SettingsCard.Description>
-                        <ComboBox MinWidth="{StaticResource SettingActionControlMinWidth}" SelectedIndex="{x:Bind Mode=TwoWay, Path=ViewModel.ThemeIndex}">
+                        <ComboBox
+                            MinWidth="{StaticResource SettingActionControlMinWidth}"
+                            SelectedIndex="{x:Bind Mode=TwoWay, Path=ViewModel.ThemeIndex}">
                             <ComboBoxItem x:Uid="Radio_Theme_Dark" />
                             <ComboBoxItem x:Uid="Radio_Theme_Light" />
                             <ComboBoxItem x:Uid="Radio_Theme_Default" />
@@ -212,15 +240,27 @@
                     </labs:SettingsCard>
 
                     <labs:SettingsCard x:Uid="GeneralPage_RunAtStartUp">
-                        <ToggleSwitch x:Uid="ToggleSwitch" IsOn="{Binding Mode=TwoWay, Path=Startup}" />
+                        <ToggleSwitch
+                            x:Uid="ToggleSwitch"
+                            IsOn="{Binding Mode=TwoWay, Path=Startup}" />
                     </labs:SettingsCard>
                 </controls:SettingsGroup>
 
-                <controls:SettingsGroup x:Uid="General_SettingsBackupAndRestoreTitle" Visibility="Visible">
-                    <labs:SettingsExpander x:Uid="General_SettingsBackupAndRestore" HeaderIcon="{ui:FontIcon Glyph=&#xE777;}">
-                        <StackPanel Orientation="Horizontal" Spacing="4">
-                            <Button x:Uid="General_SettingsBackupAndRestore_ButtonBackup" Command="{Binding BackupConfigsEventHandler}" />
-                            <Button x:Uid="General_SettingsBackupAndRestore_ButtonRestore" Command="{Binding RestoreConfigsEventHandler}" />
+                <controls:SettingsGroup
+                    x:Uid="General_SettingsBackupAndRestoreTitle"
+                    Visibility="Visible">
+                    <labs:SettingsExpander
+                        x:Uid="General_SettingsBackupAndRestore"
+                        HeaderIcon="{ui:FontIcon FontFamily={StaticResource SymbolThemeFontFamily}, Glyph=&#xE777;}">
+                        <StackPanel
+                            Orientation="Horizontal"
+                            Spacing="4">
+                            <Button
+                                x:Uid="General_SettingsBackupAndRestore_ButtonBackup"
+                                Command="{Binding BackupConfigsEventHandler}" />
+                            <Button
+                                x:Uid="General_SettingsBackupAndRestore_ButtonRestore"
+                                Command="{Binding RestoreConfigsEventHandler}" />
                         </StackPanel>
                         <labs:SettingsExpander.Items>
                             <labs:SettingsCard x:Uid="General_SettingsBackupAndRestoreLocationText">
@@ -257,13 +297,17 @@
                                     </Button>
                                 </StackPanel>
                             </labs:SettingsCard>
-                            <labs:SettingsCard x:Uid="General_SettingsBackupAndRestoreStatusInfo" ContentAlignment="Vertical">
+                            <labs:SettingsCard
+                                x:Uid="General_SettingsBackupAndRestoreStatusInfo" HorizontalContentAlignment="Left"
+                                ContentAlignment="Vertical">
                                 <labs:SettingsCard.Resources>
                                     <Style TargetType="TextBlock">
                                         <Setter Property="FontSize" Value="12" />
                                     </Style>
                                 </labs:SettingsCard.Resources>
-                                <Grid ColumnSpacing="8" Margin="0,0,0,6">
+                                <Grid
+                                    Margin="0,0,0,6"
+                                    ColumnSpacing="8">
                                     <Grid.ColumnDefinitions>
                                         <ColumnDefinition Width="Auto" />
                                         <ColumnDefinition Width="*" />
@@ -279,23 +323,31 @@
                                         Grid.Column="1"
                                         Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                                         Text="{Binding LastSettingsBackupDate, Mode=OneWay}" />
-                                    <TextBlock x:Uid="General_SettingsBackupInfo_StatusHeader" Grid.Row="1" />
+                                    <TextBlock
+                                        x:Uid="General_SettingsBackupInfo_StatusHeader"
+                                        Grid.Row="1" />
                                     <TextBlock
                                         Grid.Row="1"
                                         Grid.Column="1"
                                         Foreground="{ThemeResource TextFillColorSecondaryBrush}">
                                         <Run Text="{Binding CurrentSettingMatchText, Mode=OneWay}" />
-                                        <Hyperlink Click="UpdateBackupAndRestoreStatusText" TextDecorations="Underline">
+                                        <Hyperlink
+                                            Click="UpdateBackupAndRestoreStatusText"
+                                            TextDecorations="Underline">
                                             <Run x:Uid="General_SettingsBackupAndRestore_LinkRefresh" />
                                         </Hyperlink>
                                     </TextBlock>
-                                    <TextBlock x:Uid="General_SettingsBackupInfo_SourceHeader" Grid.Row="2" />
+                                    <TextBlock
+                                        x:Uid="General_SettingsBackupInfo_SourceHeader"
+                                        Grid.Row="2" />
                                     <TextBlock
                                         Grid.Row="2"
                                         Grid.Column="1"
                                         Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                                         Text="{Binding LastSettingsBackupSource, Mode=OneWay}" />
-                                    <TextBlock x:Uid="General_SettingsBackupInfo_FileNameHeader" Grid.Row="3" />
+                                    <TextBlock
+                                        x:Uid="General_SettingsBackupInfo_FileNameHeader"
+                                        Grid.Row="3" />
                                     <TextBlock
                                         Grid.Row="3"
                                         Grid.Column="1"
@@ -318,14 +370,26 @@
 
         </controls:SettingsPageControl.ModuleContent>
         <controls:SettingsPageControl.PrimaryLinks>
-            <controls:PageLink x:Uid="GeneralPage_Documentation" Link="https://aka.ms/PowerToysOverview" />
-            <controls:PageLink x:Uid="General_Repository" Link="https://aka.ms/powertoys" />
-            <controls:PageLink x:Uid="GeneralPage_ReportAbug" Link="https://aka.ms/powerToysReportBug" />
-            <controls:PageLink x:Uid="GeneralPage_RequestAFeature_URL" Link="https://aka.ms/powerToysRequestFeature" />
+            <controls:PageLink
+                x:Uid="GeneralPage_Documentation"
+                Link="https://aka.ms/PowerToysOverview" />
+            <controls:PageLink
+                x:Uid="General_Repository"
+                Link="https://aka.ms/powertoys" />
+            <controls:PageLink
+                x:Uid="GeneralPage_ReportAbug"
+                Link="https://aka.ms/powerToysReportBug" />
+            <controls:PageLink
+                x:Uid="GeneralPage_RequestAFeature_URL"
+                Link="https://aka.ms/powerToysRequestFeature" />
         </controls:SettingsPageControl.PrimaryLinks>
         <controls:SettingsPageControl.SecondaryLinks>
-            <controls:PageLink x:Uid="GeneralPage_PrivacyStatement_URL" Link="http://go.microsoft.com/fwlink/?LinkId=521839" />
-            <controls:PageLink x:Uid="OpenSource_Notice" Link="https://github.com/microsoft/PowerToys/blob/main/NOTICE.md" />
+            <controls:PageLink
+                x:Uid="GeneralPage_PrivacyStatement_URL"
+                Link="http://go.microsoft.com/fwlink/?LinkId=521839" />
+            <controls:PageLink
+                x:Uid="OpenSource_Notice"
+                Link="https://github.com/microsoft/PowerToys/blob/main/NOTICE.md" />
         </controls:SettingsPageControl.SecondaryLinks>
     </controls:SettingsPageControl>
 </Page>

@@ -3,7 +3,6 @@
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:controls="using:Microsoft.PowerToys.Settings.UI.Controls"
-    xmlns:converters="using:CommunityToolkit.WinUI.UI.Converters"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:labs="using:CommunityToolkit.Labs.WinUI"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
@@ -11,27 +10,44 @@
     AutomationProperties.LandmarkType="Main"
     mc:Ignorable="d">
 
-    <controls:SettingsPageControl x:Uid="FancyZones" ModuleImageSource="ms-appx:///Assets/Modules/FancyZones.png">
+    <controls:SettingsPageControl
+        x:Uid="FancyZones"
+        ModuleImageSource="ms-appx:///Assets/Modules/FancyZones.png">
         <controls:SettingsPageControl.ModuleContent>
             <StackPanel Orientation="Vertical">
-                <labs:SettingsCard x:Uid="FancyZones_EnableToggleControl_HeaderText" HeaderIcon="{ui:BitmapIcon Source=/Assets/FluentIcons/FluentIconsFancyZones.png}" IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabledGpoConfigured, Converter={StaticResource BoolNegationConverter}}">
-                    <ToggleSwitch x:Uid="ToggleSwitch" IsOn="{x:Bind ViewModel.IsEnabled, Mode=TwoWay}" />
+                <labs:SettingsCard
+                    x:Uid="FancyZones_EnableToggleControl_HeaderText"
+                    HeaderIcon="{ui:BitmapIcon Source=/Assets/FluentIcons/FluentIconsFancyZones.png}"
+                    IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabledGpoConfigured, Converter={StaticResource BoolNegationConverter}}">
+                    <ToggleSwitch
+                        x:Uid="ToggleSwitch"
+                        IsOn="{x:Bind ViewModel.IsEnabled, Mode=TwoWay}" />
                 </labs:SettingsCard>
 
-                <controls:SettingsGroup x:Uid="FancyZones_Editor_GroupSettings" IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}">
+                <controls:SettingsGroup
+                    x:Uid="FancyZones_Editor_GroupSettings"
+                    IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}">
                     <labs:SettingsCard
                         x:Uid="FancyZones_LaunchEditorButtonControl"
-                        ActionIcon="{ui:FontIcon Glyph=&#xE8A7;}"
+                        ActionIcon="{ui:FontIcon FontFamily={StaticResource SymbolThemeFontFamily}, FontSize=14, Glyph=&#xE8A7;}"
                         Command="{x:Bind ViewModel.LaunchEditorEventHandler}"
-                        HeaderIcon="{ui:FontIcon Glyph=&#xEB3C;}"
+                        HeaderIcon="{ui:FontIcon FontFamily={StaticResource SymbolThemeFontFamily}, Glyph=&#xEB3C;}"
                         IsClickEnabled="True" />
 
-                    <labs:SettingsCard x:Uid="Activation_Shortcut" HeaderIcon="{ui:FontIcon Glyph=&#xEDA7;}">
-                        <controls:ShortcutControl MinWidth="{StaticResource SettingActionControlMinWidth}" HotkeySettings="{x:Bind Path=ViewModel.EditorHotkey, Mode=TwoWay}" />
+                    <labs:SettingsCard
+                        x:Uid="Activation_Shortcut"
+                        HeaderIcon="{ui:FontIcon FontFamily={StaticResource SymbolThemeFontFamily}, Glyph=&#xEDA7;}">
+                        <controls:ShortcutControl
+                            MinWidth="{StaticResource SettingActionControlMinWidth}"
+                            HotkeySettings="{x:Bind Path=ViewModel.EditorHotkey, Mode=TwoWay}" />
                     </labs:SettingsCard>
 
-                    <labs:SettingsCard x:Uid="FancyZones_UseCursorPosEditorStartupScreen" HeaderIcon="{ui:FontIcon Glyph=&#xe7b5;}">
-                        <ComboBox MinWidth="{StaticResource SettingActionControlMinWidth}" SelectedIndex="{x:Bind Mode=TwoWay, Path=ViewModel.UseCursorPosEditorStartupScreen, Converter={StaticResource BoolToComboBoxIndexConverter}}">
+                    <labs:SettingsCard
+                        x:Uid="FancyZones_UseCursorPosEditorStartupScreen"
+                        HeaderIcon="{ui:FontIcon FontFamily={StaticResource SymbolThemeFontFamily}, Glyph=&#xe7b5;}">
+                        <ComboBox
+                            MinWidth="{StaticResource SettingActionControlMinWidth}"
+                            SelectedIndex="{x:Bind Mode=TwoWay, Path=ViewModel.UseCursorPosEditorStartupScreen, Converter={StaticResource BoolToComboBoxIndexConverter}}">
                             <ComboBoxItem x:Uid="FancyZones_LaunchPositionScreen" />
                             <ComboBoxItem x:Uid="FancyZones_LaunchPositionMouse" />
                         </ComboBox>
@@ -43,22 +59,34 @@
                     x:Name="ZonesSettingsGroup"
                     x:Uid="FancyZones_Zones"
                     IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}">
-                    <labs:SettingsExpander x:Uid="FancyZones_ZoneBehavior_GroupSettings" IsExpanded="True">
+                    <labs:SettingsExpander
+                        x:Uid="FancyZones_ZoneBehavior_GroupSettings"
+                        IsExpanded="True">
                         <labs:SettingsExpander.Items>
                             <labs:SettingsCard ContentAlignment="Left">
-                                <CheckBox x:Uid="FancyZones_ShiftDragCheckBoxControl_Header" IsChecked="{x:Bind Mode=TwoWay, Path=ViewModel.ShiftDrag}" />
+                                <CheckBox
+                                    x:Uid="FancyZones_ShiftDragCheckBoxControl_Header"
+                                    IsChecked="{x:Bind Mode=TwoWay, Path=ViewModel.ShiftDrag}" />
                             </labs:SettingsCard>
                             <labs:SettingsCard ContentAlignment="Left">
-                                <CheckBox x:Uid="FancyZones_MouseDragCheckBoxControl_Header" IsChecked="{x:Bind Mode=TwoWay, Path=ViewModel.MouseSwitch}" />
+                                <CheckBox
+                                    x:Uid="FancyZones_MouseDragCheckBoxControl_Header"
+                                    IsChecked="{x:Bind Mode=TwoWay, Path=ViewModel.MouseSwitch}" />
                             </labs:SettingsCard>
                             <labs:SettingsCard ContentAlignment="Left">
-                                <CheckBox x:Uid="FancyZones_ShowZonesOnAllMonitorsCheckBoxControl" IsChecked="{x:Bind Mode=TwoWay, Path=ViewModel.ShowOnAllMonitors}" />
+                                <CheckBox
+                                    x:Uid="FancyZones_ShowZonesOnAllMonitorsCheckBoxControl"
+                                    IsChecked="{x:Bind Mode=TwoWay, Path=ViewModel.ShowOnAllMonitors}" />
                             </labs:SettingsCard>
                             <labs:SettingsCard ContentAlignment="Left">
-                                <controls:CheckBoxWithDescriptionControl x:Uid="FancyZones_SpanZonesAcrossMonitors" IsChecked="{x:Bind Mode=TwoWay, Path=ViewModel.SpanZonesAcrossMonitors}" />
+                                <controls:CheckBoxWithDescriptionControl
+                                    x:Uid="FancyZones_SpanZonesAcrossMonitors"
+                                    IsChecked="{x:Bind Mode=TwoWay, Path=ViewModel.SpanZonesAcrossMonitors}" />
                             </labs:SettingsCard>
                             <labs:SettingsCard x:Uid="FancyZones_OverlappingZones">
-                                <ComboBox MinWidth="{StaticResource SettingActionControlMinWidth}" SelectedIndex="{x:Bind Path=ViewModel.OverlappingZonesAlgorithmIndex, Mode=TwoWay}">
+                                <ComboBox
+                                    MinWidth="{StaticResource SettingActionControlMinWidth}"
+                                    SelectedIndex="{x:Bind Path=ViewModel.OverlappingZonesAlgorithmIndex, Mode=TwoWay}">
                                     <ComboBoxItem x:Uid="FancyZones_OverlappingZonesSmallest" />
                                     <ComboBoxItem x:Uid="FancyZones_OverlappingZonesLargest" />
                                     <ComboBoxItem x:Uid="FancyZones_OverlappingZonesPositional" />
@@ -70,9 +98,11 @@
 
                     <labs:SettingsExpander
                         x:Uid="FancyZones_Zone_Appearance"
-                        HeaderIcon="{ui:FontIcon Glyph=&#xEB3C;}"
+                        HeaderIcon="{ui:FontIcon FontFamily={StaticResource SymbolThemeFontFamily}, Glyph=&#xEB3C;}"
                         IsExpanded="True">
-                        <ComboBox MinWidth="{StaticResource SettingActionControlMinWidth}" SelectedIndex="{x:Bind Mode=TwoWay, Path=ViewModel.SystemTheme, Converter={StaticResource BoolToComboBoxIndexConverter}}">
+                        <ComboBox
+                            MinWidth="{StaticResource SettingActionControlMinWidth}"
+                            SelectedIndex="{x:Bind Mode=TwoWay, Path=ViewModel.SystemTheme, Converter={StaticResource BoolToComboBoxIndexConverter}}">
                             <ComboBoxItem x:Uid="FancyZones_Radio_Custom_Colors" />
                             <ComboBoxItem x:Uid="FancyZones_Radio_Default_Theme" />
                         </ComboBox>
@@ -90,7 +120,9 @@
                                     ShowZoneNumber="{x:Bind Path=ViewModel.ShowZoneNumber, Mode=OneWay}" />
                             </labs:SettingsCard>
                             <labs:SettingsCard ContentAlignment="Left">
-                                <CheckBox x:Uid="FancyZones_ShowZoneNumberCheckBoxControl" IsChecked="{x:Bind Mode=TwoWay, Path=ViewModel.ShowZoneNumber}" />
+                                <CheckBox
+                                    x:Uid="FancyZones_ShowZoneNumberCheckBoxControl"
+                                    IsChecked="{x:Bind Mode=TwoWay, Path=ViewModel.ShowZoneNumber}" />
                             </labs:SettingsCard>
                             <labs:SettingsCard x:Uid="FancyZones_HighlightOpacity">
                                 <Slider
@@ -100,43 +132,69 @@
                                     Value="{x:Bind Mode=TwoWay, Path=ViewModel.HighlightOpacity}" />
                             </labs:SettingsCard>
 
-                            <labs:SettingsCard x:Uid="FancyZones_ZoneHighlightColor" Visibility="{x:Bind Mode=OneWay, Path=ViewModel.SystemTheme, Converter={StaticResource ReverseBoolToVisibilityConverter}}">
+                            <labs:SettingsCard
+                                x:Uid="FancyZones_ZoneHighlightColor"
+                                Visibility="{x:Bind Mode=OneWay, Path=ViewModel.SystemTheme, Converter={StaticResource ReverseBoolToVisibilityConverter}}">
                                 <controls:ColorPickerButton SelectedColor="{x:Bind Path=ViewModel.ZoneHighlightColor, Mode=TwoWay}" />
                             </labs:SettingsCard>
-                            <labs:SettingsCard x:Uid="FancyZones_InActiveColor" Visibility="{x:Bind Mode=OneWay, Path=ViewModel.SystemTheme, Converter={StaticResource ReverseBoolToVisibilityConverter}}">
-                                <controls:ColorPickerButton x:Name="InActiveColorButton" SelectedColor="{x:Bind Path=ViewModel.ZoneInActiveColor, Mode=TwoWay}" />
+                            <labs:SettingsCard
+                                x:Uid="FancyZones_InActiveColor"
+                                Visibility="{x:Bind Mode=OneWay, Path=ViewModel.SystemTheme, Converter={StaticResource ReverseBoolToVisibilityConverter}}">
+                                <controls:ColorPickerButton
+                                    x:Name="InActiveColorButton"
+                                    SelectedColor="{x:Bind Path=ViewModel.ZoneInActiveColor, Mode=TwoWay}" />
                             </labs:SettingsCard>
-                            <labs:SettingsCard x:Uid="FancyZones_BorderColor" Visibility="{x:Bind Mode=OneWay, Path=ViewModel.SystemTheme, Converter={StaticResource ReverseBoolToVisibilityConverter}}">
+                            <labs:SettingsCard
+                                x:Uid="FancyZones_BorderColor"
+                                Visibility="{x:Bind Mode=OneWay, Path=ViewModel.SystemTheme, Converter={StaticResource ReverseBoolToVisibilityConverter}}">
                                 <controls:ColorPickerButton SelectedColor="{x:Bind Path=ViewModel.ZoneBorderColor, Mode=TwoWay}" />
                             </labs:SettingsCard>
-                            <labs:SettingsCard x:Uid="FancyZones_NumberColor" Visibility="{x:Bind Mode=OneWay, Path=ViewModel.SystemTheme, Converter={StaticResource ReverseBoolToVisibilityConverter}}">
+                            <labs:SettingsCard
+                                x:Uid="FancyZones_NumberColor"
+                                Visibility="{x:Bind Mode=OneWay, Path=ViewModel.SystemTheme, Converter={StaticResource ReverseBoolToVisibilityConverter}}">
                                 <controls:ColorPickerButton SelectedColor="{x:Bind Path=ViewModel.ZoneNumberColor, Mode=TwoWay}" />
                             </labs:SettingsCard>
                         </labs:SettingsExpander.Items>
                     </labs:SettingsExpander>
                 </controls:SettingsGroup>
 
-                <controls:SettingsGroup x:Uid="FancyZones_Windows" IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}">
+                <controls:SettingsGroup
+                    x:Uid="FancyZones_Windows"
+                    IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}">
 
-                    <labs:SettingsExpander x:Uid="FancyZones_WindowBehavior_GroupSettings" IsExpanded="True">
+                    <labs:SettingsExpander
+                        x:Uid="FancyZones_WindowBehavior_GroupSettings"
+                        IsExpanded="True">
                         <labs:SettingsExpander.Items>
                             <labs:SettingsCard ContentAlignment="Left">
-                                <CheckBox x:Uid="FancyZones_DisplayChangeMoveWindowsCheckBoxControl" IsChecked="{x:Bind Mode=TwoWay, Path=ViewModel.DisplayChangeMoveWindows}" />
+                                <CheckBox
+                                    x:Uid="FancyZones_DisplayChangeMoveWindowsCheckBoxControl"
+                                    IsChecked="{x:Bind Mode=TwoWay, Path=ViewModel.DisplayChangeMoveWindows}" />
                             </labs:SettingsCard>
                             <labs:SettingsCard ContentAlignment="Left">
-                                <CheckBox x:Uid="FancyZones_ZoneSetChangeMoveWindows" IsChecked="{x:Bind Mode=TwoWay, Path=ViewModel.ZoneSetChangeMoveWindows}" />
+                                <CheckBox
+                                    x:Uid="FancyZones_ZoneSetChangeMoveWindows"
+                                    IsChecked="{x:Bind Mode=TwoWay, Path=ViewModel.ZoneSetChangeMoveWindows}" />
                             </labs:SettingsCard>
                             <labs:SettingsCard ContentAlignment="Left">
-                                <CheckBox x:Uid="FancyZones_AppLastZoneMoveWindows" IsChecked="{x:Bind Mode=TwoWay, Path=ViewModel.AppLastZoneMoveWindows}" />
+                                <CheckBox
+                                    x:Uid="FancyZones_AppLastZoneMoveWindows"
+                                    IsChecked="{x:Bind Mode=TwoWay, Path=ViewModel.AppLastZoneMoveWindows}" />
                             </labs:SettingsCard>
                             <labs:SettingsCard ContentAlignment="Left">
-                                <CheckBox x:Uid="FancyZones_OpenWindowOnActiveMonitor" IsChecked="{Binding Mode=TwoWay, Path=OpenWindowOnActiveMonitor}" />
+                                <CheckBox
+                                    x:Uid="FancyZones_OpenWindowOnActiveMonitor"
+                                    IsChecked="{Binding Mode=TwoWay, Path=OpenWindowOnActiveMonitor}" />
                             </labs:SettingsCard>
                             <labs:SettingsCard ContentAlignment="Left">
-                                <CheckBox x:Uid="FancyZones_RestoreSize" IsChecked="{x:Bind Mode=TwoWay, Path=ViewModel.RestoreSize}" />
+                                <CheckBox
+                                    x:Uid="FancyZones_RestoreSize"
+                                    IsChecked="{x:Bind Mode=TwoWay, Path=ViewModel.RestoreSize}" />
                             </labs:SettingsCard>
                             <labs:SettingsCard ContentAlignment="Left">
-                                <CheckBox x:Uid="FancyZones_MakeDraggedWindowTransparentCheckBoxControl" IsChecked="{x:Bind Mode=TwoWay, Path=ViewModel.MakeDraggedWindowsTransparent}" />
+                                <CheckBox
+                                    x:Uid="FancyZones_MakeDraggedWindowTransparentCheckBoxControl"
+                                    IsChecked="{x:Bind Mode=TwoWay, Path=ViewModel.MakeDraggedWindowsTransparent}" />
                             </labs:SettingsCard>
                             <labs:SettingsCard ContentAlignment="Left">
                                 <controls:CheckBoxWithDescriptionControl
@@ -145,84 +203,128 @@
                                     IsChecked="{x:Bind Mode=TwoWay, Path=ViewModel.AllowPopupWindowSnap}" />
                             </labs:SettingsCard>
                             <labs:SettingsCard ContentAlignment="Left">
-                                <CheckBox x:Uid="FancyZones_AllowChildWindowSnap" IsChecked="{x:Bind Mode=TwoWay, Path=ViewModel.AllowChildWindowSnap}" />
+                                <CheckBox
+                                    x:Uid="FancyZones_AllowChildWindowSnap"
+                                    IsChecked="{x:Bind Mode=TwoWay, Path=ViewModel.AllowChildWindowSnap}" />
                             </labs:SettingsCard>
-                            <labs:SettingsCard ContentAlignment="Left" Visibility="{x:Bind Mode=OneWay, Path=ViewModel.Windows11, Converter={StaticResource BoolToVisibilityConverter}}">
-                                <CheckBox x:Uid="FancyZones_DisableRoundCornersOnWindowSnap" IsChecked="{x:Bind Mode=TwoWay, Path=ViewModel.DisableRoundCornersOnWindowSnap}" />
+                            <labs:SettingsCard
+                                ContentAlignment="Left"
+                                Visibility="{x:Bind Mode=OneWay, Path=ViewModel.Windows11, Converter={StaticResource BoolToVisibilityConverter}}">
+                                <CheckBox
+                                    x:Uid="FancyZones_DisableRoundCornersOnWindowSnap"
+                                    IsChecked="{x:Bind Mode=TwoWay, Path=ViewModel.DisableRoundCornersOnWindowSnap}" />
                             </labs:SettingsCard>
                         </labs:SettingsExpander.Items>
                     </labs:SettingsExpander>
 
                     <labs:SettingsExpander
                         x:Uid="FancyZones_WindowSwitching_GroupSettings"
-                        HeaderIcon="{ui:FontIcon Glyph=&#xEDA7;}"
+                        HeaderIcon="{ui:FontIcon FontFamily={StaticResource SymbolThemeFontFamily}, Glyph=&#xEDA7;}"
                         IsExpanded="True">
-                        <ToggleSwitch x:Uid="ToggleSwitch" IsOn="{x:Bind Mode=TwoWay, Path=ViewModel.WindowSwitching}" />
+                        <ToggleSwitch
+                            x:Uid="ToggleSwitch"
+                            IsOn="{x:Bind Mode=TwoWay, Path=ViewModel.WindowSwitching}" />
                         <labs:SettingsExpander.Items>
-                            <labs:SettingsCard x:Uid="FancyZones_HotkeyNextTabControl" IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.WindowSwitchingCategoryEnabled}">
-                                <controls:ShortcutControl MinWidth="{StaticResource SettingActionControlMinWidth}" HotkeySettings="{x:Bind Path=ViewModel.NextTabHotkey, Mode=TwoWay}" />
+                            <labs:SettingsCard
+                                x:Uid="FancyZones_HotkeyNextTabControl"
+                                IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.WindowSwitchingCategoryEnabled}">
+                                <controls:ShortcutControl
+                                    MinWidth="{StaticResource SettingActionControlMinWidth}"
+                                    HotkeySettings="{x:Bind Path=ViewModel.NextTabHotkey, Mode=TwoWay}" />
                             </labs:SettingsCard>
-                            <labs:SettingsCard x:Uid="FancyZones_HotkeyPrevTabControl" IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.WindowSwitchingCategoryEnabled}">
-                                <controls:ShortcutControl MinWidth="{StaticResource SettingActionControlMinWidth}" HotkeySettings="{x:Bind Path=ViewModel.PrevTabHotkey, Mode=TwoWay}" />
+                            <labs:SettingsCard
+                                x:Uid="FancyZones_HotkeyPrevTabControl"
+                                IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.WindowSwitchingCategoryEnabled}">
+                                <controls:ShortcutControl
+                                    MinWidth="{StaticResource SettingActionControlMinWidth}"
+                                    HotkeySettings="{x:Bind Path=ViewModel.PrevTabHotkey, Mode=TwoWay}" />
                             </labs:SettingsCard>
                         </labs:SettingsExpander.Items>
                     </labs:SettingsExpander>
 
                     <labs:SettingsExpander
                         x:Uid="FancyZones_OverrideSnapHotkeys"
-                        HeaderIcon="{ui:FontIcon Glyph=&#xE90C;}"
+                        HeaderIcon="{ui:FontIcon FontFamily={StaticResource SymbolThemeFontFamily}, Glyph=&#xE90C;}"
                         IsExpanded="True">
-                        <ToggleSwitch x:Uid="ToggleSwitch" IsOn="{x:Bind Mode=TwoWay, Path=ViewModel.OverrideSnapHotkeys}" />
+                        <ToggleSwitch
+                            x:Uid="ToggleSwitch"
+                            IsOn="{x:Bind Mode=TwoWay, Path=ViewModel.OverrideSnapHotkeys}" />
                         <labs:SettingsExpander.Items>
-                            <labs:SettingsCard x:Uid="FancyZones_MoveWindow" IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.SnapHotkeysCategoryEnabled}">
+                            <labs:SettingsCard
+                                x:Uid="FancyZones_MoveWindow"
+                                IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.SnapHotkeysCategoryEnabled}">
                                 <ComboBox
                                     MinWidth="{StaticResource SettingActionControlMinWidth}"
                                     MinHeight="56"
                                     SelectedIndex="{x:Bind Mode=TwoWay, Path=ViewModel.MoveWindowsBasedOnPosition, Converter={StaticResource BoolToComboBoxIndexConverter}}">
                                     <ComboBoxItem x:Uid="FancyZones_MoveWindowLeftRightBasedOnZoneIndex_Accessible">
-                                        <StackPanel Orientation="Vertical" Spacing="4">
+                                        <StackPanel
+                                            Orientation="Vertical"
+                                            Spacing="4">
                                             <controls:IsEnabledTextBlock x:Uid="FancyZones_MoveWindowLeftRightBasedOnZoneIndex" />
-                                            <TextBlock FontFamily="{ThemeResource SymbolThemeFontFamily}" Style="{StaticResource SecondaryTextStyle}">
+                                            <TextBlock
+                                                FontFamily="{ThemeResource SymbolThemeFontFamily}"
+                                                Style="{StaticResource SecondaryTextStyle}">
                                                 <Run x:Uid="FancyZones_MoveWindowLeftRightBasedOnZoneIndex_Description" />
                                             </TextBlock>
                                         </StackPanel>
                                     </ComboBoxItem>
                                     <ComboBoxItem x:Uid="FancyZones_MoveWindowBasedOnRelativePosition_Accessible">
-                                        <StackPanel Orientation="Vertical" Spacing="4">
+                                        <StackPanel
+                                            Orientation="Vertical"
+                                            Spacing="4">
                                             <controls:IsEnabledTextBlock x:Uid="FancyZones_MoveWindowBasedOnRelativePosition" />
-                                            <TextBlock FontFamily="{ThemeResource SymbolThemeFontFamily}" Style="{StaticResource SecondaryTextStyle}">
+                                            <TextBlock
+                                                FontFamily="{ThemeResource SymbolThemeFontFamily}"
+                                                Style="{StaticResource SecondaryTextStyle}">
                                                 <Run x:Uid="FancyZones_MoveWindowBasedOnRelativePosition_Description" />
                                             </TextBlock>
                                         </StackPanel>
                                     </ComboBoxItem>
                                 </ComboBox>
                             </labs:SettingsCard>
-                            <labs:SettingsCard ContentAlignment="Left" IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.SnapHotkeysCategoryEnabled}">
-                                <CheckBox x:Uid="FancyZones_MoveWindowsAcrossAllMonitorsCheckBoxControl" IsChecked="{x:Bind Mode=TwoWay, Path=ViewModel.MoveWindowsAcrossMonitors}" />
+                            <labs:SettingsCard
+                                ContentAlignment="Left"
+                                IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.SnapHotkeysCategoryEnabled}">
+                                <CheckBox
+                                    x:Uid="FancyZones_MoveWindowsAcrossAllMonitorsCheckBoxControl"
+                                    IsChecked="{x:Bind Mode=TwoWay, Path=ViewModel.MoveWindowsAcrossMonitors}" />
                             </labs:SettingsCard>
                         </labs:SettingsExpander.Items>
                     </labs:SettingsExpander>
                 </controls:SettingsGroup>
 
-                <controls:SettingsGroup x:Uid="FancyZones_Layouts" IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}">
-                    <labs:SettingsExpander x:Uid="FancyZones_QuickLayoutSwitch" HeaderIcon="{ui:FontIcon Glyph=&#xEDA7;}">
-                        <ToggleSwitch x:Uid="ToggleSwitch" IsOn="{x:Bind Mode=TwoWay, Path=ViewModel.QuickLayoutSwitch}" />
+                <controls:SettingsGroup
+                    x:Uid="FancyZones_Layouts"
+                    IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}">
+                    <labs:SettingsExpander
+                        x:Uid="FancyZones_QuickLayoutSwitch"
+                        HeaderIcon="{ui:FontIcon FontFamily={StaticResource SymbolThemeFontFamily}, Glyph=&#xEDA7;}">
+                        <ToggleSwitch
+                            x:Uid="ToggleSwitch"
+                            IsOn="{x:Bind Mode=TwoWay, Path=ViewModel.QuickLayoutSwitch}" />
                         <labs:SettingsExpander.Items>
-                            <labs:SettingsCard ContentAlignment="Left" IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.QuickSwitchEnabled}">
-                                <CheckBox x:Uid="FancyZones_FlashZonesOnQuickSwitch" IsChecked="{x:Bind Mode=TwoWay, Path=ViewModel.FlashZonesOnQuickSwitch}" />
+                            <labs:SettingsCard
+                                ContentAlignment="Left"
+                                IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.QuickSwitchEnabled}">
+                                <CheckBox
+                                    x:Uid="FancyZones_FlashZonesOnQuickSwitch"
+                                    IsChecked="{x:Bind Mode=TwoWay, Path=ViewModel.FlashZonesOnQuickSwitch}" />
                             </labs:SettingsCard>
                         </labs:SettingsExpander.Items>
                     </labs:SettingsExpander>
                 </controls:SettingsGroup>
 
-                <controls:SettingsGroup x:Uid="ExcludedApps" IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}">
+                <controls:SettingsGroup
+                    x:Uid="ExcludedApps"
+                    IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}">
 
                     <labs:SettingsExpander
                         x:Uid="FancyZones_ExcludeApps"
-                        HeaderIcon="{ui:FontIcon Glyph=&#xECE4;}"
+                        HeaderIcon="{ui:FontIcon FontFamily={StaticResource SymbolThemeFontFamily}, Glyph=&#xECE4;}"
                         IsExpanded="True">
                         <labs:SettingsExpander.Items>
-                            <labs:SettingsCard ContentAlignment="Vertical">
+                            <labs:SettingsCard ContentAlignment="Vertical" HorizontalContentAlignment="Stretch">
                                 <TextBox
                                     x:Uid="FancyZones_ExcludeApps_TextBoxControl"
                                     MinWidth="240"
@@ -241,7 +343,9 @@
         </controls:SettingsPageControl.ModuleContent>
 
         <controls:SettingsPageControl.PrimaryLinks>
-            <controls:PageLink x:Uid="LearnMore_FancyZones" Link="https://aka.ms/PowerToysOverview_FancyZones" />
+            <controls:PageLink
+                x:Uid="LearnMore_FancyZones"
+                Link="https://aka.ms/PowerToysOverview_FancyZones" />
         </controls:SettingsPageControl.PrimaryLinks>
     </controls:SettingsPageControl>
 </Page>

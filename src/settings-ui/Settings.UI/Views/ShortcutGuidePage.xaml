@@ -17,17 +17,18 @@
             <StackPanel Orientation="Vertical">
                 <labs:SettingsCard
                     x:Uid="ShortcutGuide_Enable"
-                    IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabledGpoConfigured, Converter={StaticResource BoolNegationConverter}}"
-                    HeaderIcon="{ui:BitmapIcon Source=/Assets/FluentIcons/FluentIconsShortcutGuide.png}">
+                    HeaderIcon="{ui:BitmapIcon Source=/Assets/FluentIcons/FluentIconsShortcutGuide.png}"
+                    IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabledGpoConfigured, Converter={StaticResource BoolNegationConverter}}">
                     <ToggleSwitch
                         x:Uid="ToggleSwitch"
                         IsOn="{x:Bind Mode=TwoWay, Path=ViewModel.IsEnabled}" />
                 </labs:SettingsCard>
-                  <InfoBar x:Uid="GPO_IsSettingForced"
-                    Severity="Informational"
+                <InfoBar
+                    x:Uid="GPO_IsSettingForced"
                     IsClosable="False"
                     IsOpen="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabledGpoConfigured}"
-                    IsTabStop="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabledGpoConfigured}" />
+                    IsTabStop="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabledGpoConfigured}"
+                    Severity="Informational" />
                 <controls:SettingsGroup
                     x:Uid="Shortcut"
                     IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}">
@@ -42,7 +43,7 @@
 
                     <labs:SettingsCard
                         x:Uid="Activation_Shortcut"
-                        HeaderIcon="{ui:FontIcon Glyph=&#xEDA7;}"
+                        HeaderIcon="{ui:FontIcon FontFamily={StaticResource SymbolThemeFontFamily}, Glyph=&#xEDA7;}"
                         Visibility="{x:Bind Mode=OneWay, Path=ViewModel.UseLegacyPressWinKeyBehavior, Converter={StaticResource ReverseBoolToVisibilityConverter}}">
                         <controls:ShortcutControl
                             MinWidth="{StaticResource SettingActionControlMinWidth}"
@@ -51,7 +52,7 @@
 
                     <labs:SettingsCard
                         x:Uid="ShortcutGuide_PressTime"
-                        HeaderIcon="{ui:FontIcon Glyph=&#xE916;}"
+                        HeaderIcon="{ui:FontIcon FontFamily={StaticResource SymbolThemeFontFamily}, Glyph=&#xE916;}"
                         Visibility="{x:Bind Mode=OneWay, Path=ViewModel.UseLegacyPressWinKeyBehavior, Converter={StaticResource BoolToVisibilityConverter}}">
                         <NumberBox
                             MinWidth="{StaticResource SettingActionControlMinWidth}"
@@ -76,7 +77,7 @@
                     IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}">
                     <labs:SettingsCard
                         x:Uid="ColorModeHeader"
-                        HeaderIcon="{ui:FontIcon Glyph=&#xE790;}">
+                        HeaderIcon="{ui:FontIcon FontFamily={StaticResource SymbolThemeFontFamily}, Glyph=&#xE790;}">
                         <labs:SettingsCard.Description>
                             <HyperlinkButton
                                 x:Uid="Windows_Color_Settings"
@@ -105,10 +106,10 @@
                     IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}">
                     <labs:SettingsExpander
                         x:Uid="ShortcutGuide_DisabledApps"
-                        HeaderIcon="{ui:FontIcon Glyph=&#xECE4;}"
+                        HeaderIcon="{ui:FontIcon FontFamily={StaticResource SymbolThemeFontFamily}, Glyph=&#xECE4;}"
                         IsExpanded="True">
                         <labs:SettingsExpander.Items>
-                            <labs:SettingsCard ContentAlignment="Left">
+                            <labs:SettingsCard ContentAlignment="Vertical" HorizontalContentAlignment="Stretch">
                                 <TextBox
                                     x:Uid="ShortcutGuide_DisabledApps_TextBoxControl"
                                     MinWidth="240"
