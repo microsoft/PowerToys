@@ -120,7 +120,7 @@
                                         <FontIcon
                                             Margin="0,0,8,0"
                                             Glyph="&#xE7BA;"
-                                            Foreground="Yellow"
+                                            Foreground="{ThemeResource InfoBarWarningSeverityIconBackground}"
                                             Visibility="{x:Bind user, Mode=OneTime, Converter={StaticResource userToSystemWarningVisibilityConverter}}"
                                             >
                                             <ToolTipService.ToolTip>
