@@ -9,7 +9,7 @@
 #include <shellapi.h>
 #include <common/utils/logger_helper.h>
 
-BOOL APIENTRY DllMain(HMODULE, DWORD ul_reason_for_call, LPVOID)
+BOOL APIENTRY DllMain(HMODULE /*hModule*/, DWORD ul_reason_for_call, LPVOID /*lpReserved*/)
 {
     switch (ul_reason_for_call)
     {
@@ -91,7 +91,7 @@ public:
     }
 
     // Signal from the Settings editor to call a custom action.
-    virtual void call_custom_action(const wchar_t*) override
+    virtual void call_custom_action(const wchar_t* /*action*/) override
     {
     }
 

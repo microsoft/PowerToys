@@ -121,6 +121,8 @@ wstring GetChecksum(path filePath)
 			CloseHandle(hFile);
 			return L"CryptHashData() failed. " + get_last_error_or_default(GetLastError());;
 		}
+
+		bResult = ReadFile(hFile, rgbFile, bufferSize, &cbRead, NULL);
 	}
 
 	if (!bResult)

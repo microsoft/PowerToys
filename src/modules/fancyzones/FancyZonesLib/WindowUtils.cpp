@@ -38,7 +38,7 @@ enum DWM_WINDOW_CORNER_PREFERENCE
 
 namespace
 {
-    BOOL CALLBACK saveDisplayToVector(HMONITOR monitor, HDC, LPRECT, LPARAM data)
+    BOOL CALLBACK saveDisplayToVector(HMONITOR monitor, HDC /*hdc*/, LPRECT /*rect*/, LPARAM data)
     {
         reinterpret_cast<std::vector<HMONITOR>*>(data)->emplace_back(monitor);
         return true;

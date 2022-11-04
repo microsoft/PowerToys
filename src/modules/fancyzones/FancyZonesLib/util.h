@@ -43,7 +43,7 @@ namespace FancyZonesUtils
         quad->rgbBlue = GetBValue(color) * alpha / 255;
     }
 
-    inline void FillRectARGB(wil::unique_hdc& hdc, RECT const* prcFill, BYTE alpha, COLORREF color, bool)
+    inline void FillRectARGB(wil::unique_hdc& hdc, RECT const* prcFill, BYTE alpha, COLORREF color, bool /*blendAlpha*/)
     {
         BITMAPINFO bi;
         ZeroMemory(&bi, sizeof(bi));
@@ -104,7 +104,7 @@ namespace FancyZonesUtils
         using result_t = std::vector<std::pair<HMONITOR, RECT>>;
         result_t result;
 
-        auto enumMonitors = [](HMONITOR monitor, HDC, LPRECT, LPARAM param) -> BOOL {
+        auto enumMonitors = [](HMONITOR monitor, HDC /*hdc*/, LPRECT /*pRect*/, LPARAM param) -> BOOL {
             MONITORINFOEX mi;
             mi.cbSize = sizeof(mi);
             result_t& result = *reinterpret_cast<result_t*>(param);
@@ -126,7 +126,7 @@ namespace FancyZonesUtils
         using result_t = std::vector<std::pair<HMONITOR, MONITORINFOEX>>;
         result_t result;
 
-        auto enumMonitors = [](HMONITOR monitor, HDC, LPRECT, LPARAM param) -> BOOL {
+        auto enumMonitors = [](HMONITOR monitor, HDC /*hdc*/, LPRECT /*pRect*/, LPARAM param) -> BOOL {
             MONITORINFOEX mi;
             mi.cbSize = sizeof(mi);
             result_t& result = *reinterpret_cast<result_t*>(param);

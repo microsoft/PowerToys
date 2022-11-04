@@ -11,7 +11,7 @@
 #include "Generated Files/resource.h"
 #include <common/SettingsAPI/settings_objects.h>
 
-BOOL APIENTRY DllMain(HMODULE, DWORD, LPVOID)
+BOOL APIENTRY DllMain(HMODULE /*hModule*/, DWORD /*ul_reason_for_call*/, LPVOID /*lpReserved*/)
 {
     return TRUE;
 }

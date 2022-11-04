@@ -13,7 +13,7 @@
 #include <common/utils/logger_helper.h>
 #include <common/utils/winapi_error.h>
 
-BOOL APIENTRY DllMain(HMODULE, DWORD ul_reason_for_call, LPVOID)
+BOOL APIENTRY DllMain(HMODULE /*hModule*/, DWORD ul_reason_for_call, LPVOID /*lpReserved*/)
 {
     switch (ul_reason_for_call)
     {
@@ -206,7 +206,7 @@ public:
         return settings.serialize_to_buffer(buffer, buffer_size);
     }
 
-    virtual void call_custom_action(const wchar_t*) override
+    virtual void call_custom_action(const wchar_t* /*action*/) override
     {
     }
 
@@ -253,7 +253,7 @@ public:
         m_enabled = false;
     }
 
-    virtual bool on_hotkey(size_t) override
+    virtual bool on_hotkey(size_t /*hotkeyId*/) override
     {
         if (m_enabled)
         {

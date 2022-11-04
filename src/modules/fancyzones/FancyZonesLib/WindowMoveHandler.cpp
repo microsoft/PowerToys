@@ -59,7 +59,7 @@ WindowMoveHandler::WindowMoveHandler(const std::function<void()>& keyUpdateCallb
 {
 }
 
-void WindowMoveHandler::MoveSizeStart(HWND window, HMONITOR monitor, POINT const&, const std::unordered_map<HMONITOR, std::shared_ptr<WorkArea>>& workAreaMap) noexcept
+void WindowMoveHandler::MoveSizeStart(HWND window, HMONITOR monitor, POINT const& /*ptScreen*/, const std::unordered_map<HMONITOR, std::shared_ptr<WorkArea>>& workAreaMap) noexcept
 {
     if (!FancyZonesWindowProcessing::IsProcessable(window))
     {

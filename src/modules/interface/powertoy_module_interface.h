@@ -68,7 +68,7 @@ public:
     /* Sets the configuration values. */
     virtual void set_config(const wchar_t* config) = 0;
     /* Call custom action from settings screen. */
-    virtual void call_custom_action(const wchar_t*){};
+    virtual void call_custom_action(const wchar_t* /*action*/){};
     /* Enables the PowerToy. */
     virtual void enable() = 0;
     /* Disables the PowerToy, should free as much memory as possible. */
@@ -83,7 +83,7 @@ public:
      * Modules do not need to override this method, it will return zero by default.
      * This method is called even when the module is disabled.
      */
-    virtual size_t get_hotkeys(Hotkey*, size_t)
+    virtual size_t get_hotkeys(Hotkey* /*buffer*/, size_t /*buffer_size*/)
     {
         return 0;
     }
@@ -100,7 +100,7 @@ public:
     /* Called when one of the registered hotkeys is pressed. Should return true
      * if the key press is to be swallowed.
      */
-    virtual bool on_hotkey(size_t)
+    virtual bool on_hotkey(size_t /*hotkeyId*/)
     {
         return false;
     }

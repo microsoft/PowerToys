@@ -56,7 +56,11 @@ namespace CentralizedKeyboardHook
     } destroyOnExitObj;
 
     // Handle the pressed key proc
-    void PressedKeyTimerProc(HWND hwnd, UINT, UINT_PTR idTimer, DWORD)
+    void PressedKeyTimerProc(
+        HWND hwnd,
+        UINT /*message*/,
+        UINT_PTR idTimer,
+        DWORD /*dwTime*/)
     {
         std::multiset<PressedKeyDescriptor> copy;
         {

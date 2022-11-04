@@ -11,7 +11,10 @@
 
 const std::wstring instanceMutexName = L"Local\\PowerToys_KBMEngine_InstanceMutex";
 
-int WINAPI wWinMain(_In_ HINSTANCE, _In_opt_ HINSTANCE, _In_ PWSTR lpCmdLine, _In_ int)
+int WINAPI wWinMain(_In_ HINSTANCE /*hInstance*/,
+                    _In_opt_ HINSTANCE /*hPrevInstance*/,
+                    _In_ PWSTR lpCmdLine,
+                    _In_ int /*nCmdShow*/)
 {
     winrt::init_apartment();
     LoggerHelpers::init_logger(KeyboardManagerConstants::ModuleName, L"Engine", LogSettings::keyboardManagerLoggerName);

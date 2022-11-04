@@ -247,7 +247,7 @@ namespace std
     template<>
     struct hash<FancyZonesDataTypes::WorkAreaId>
     {
-        size_t operator()(const FancyZonesDataTypes::WorkAreaId&) const
+        size_t operator()(const FancyZonesDataTypes::WorkAreaId& /*Value*/) const
         {
             return 0;
         }

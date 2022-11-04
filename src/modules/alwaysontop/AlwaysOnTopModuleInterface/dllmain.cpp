@@ -30,7 +30,7 @@ namespace
     const wchar_t JSON_KEY_VALUE[] = L"value";
 }
 
-BOOL APIENTRY DllMain(HMODULE, DWORD ul_reason_for_call, LPVOID)
+BOOL APIENTRY DllMain(HMODULE /*hModule*/, DWORD ul_reason_for_call, LPVOID /*lpReserved*/)
 {
     switch (ul_reason_for_call)
     {
@@ -106,7 +106,7 @@ public:
         }
     }
 
-    virtual bool on_hotkey(size_t) override
+    virtual bool on_hotkey(size_t /*hotkeyId*/) override
     {
         if (m_enabled)
         {

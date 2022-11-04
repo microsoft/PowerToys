@@ -21,7 +21,10 @@
 std::unique_ptr<KeyboardManagerEditor> editor = nullptr;
 const std::wstring instanceMutexName = L"Local\\PowerToys_KBMEditor_InstanceMutex";
 
-int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE, _In_ LPWSTR, _In_ int)
+int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
+                      _In_opt_ HINSTANCE /*hPrevInstance*/,
+                      _In_ LPWSTR /*lpCmdLine*/,
+                      _In_ int /*nCmdShow*/)
 {
     LoggerHelpers::init_logger(KeyboardManagerConstants::ModuleName, L"Editor", LogSettings::keyboardManagerLoggerName);
 

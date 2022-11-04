@@ -92,14 +92,10 @@ public:
 
     // Signal from the Settings editor to call a custom action.
     // This can be used to spawn more complex editors.
-    virtual void call_custom_action(const wchar_t*) override
-    {
-    }
+    virtual void call_custom_action(const wchar_t* /*action*/) override {}
 
     // Called by the runner to pass the updated settings values as a serialized JSON.
-    virtual void set_config(const wchar_t*) override
-    {
-    }
+    virtual void set_config(const wchar_t* /*config*/) override {}
 
     // Enable the powertoy
     virtual void enable()

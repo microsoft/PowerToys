@@ -298,7 +298,7 @@ public:
 
     // Signal from the Settings editor to call a custom action.
     // This can be used to spawn more complex editors.
-    virtual void call_custom_action(const wchar_t*) override
+    virtual void call_custom_action(const wchar_t* /*action*/) override
     {
     }
 
