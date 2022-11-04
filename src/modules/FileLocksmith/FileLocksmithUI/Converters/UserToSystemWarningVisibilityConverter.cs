@@ -5,19 +5,29 @@
 namespace PowerToys.FileLocksmithUI.Converters
 {
     using System;
+    using System.Globalization;
     using FileLocksmith.Interop;
+    using Microsoft.UI.Xaml;
     using Microsoft.UI.Xaml.Data;
 
-    public sealed class PidToUserConverter : IValueConverter
+    public sealed class UserToSystemWarningVisibilityConverter : IValueConverter
     {
         public object Convert(object value, Type targetType, object parameter, string language)
         {
-            return NativeMethods.PidToUser((uint)value);
+            string user = ((string)value).ToUpperInvariant().Trim();
+            if (user.Equals("SYSTEM", StringComparison.Ordinal) || user.Equals("LOCALSYSTEM", StringComparison.Ordinal))
+            {
+                return Visibility.Visible;
+            }
+            else
+            {
+                return Visibility.Collapsed;
+            }
         }
 
         public object ConvertBack(object value, Type targetType, object parameter, string language)
         {
-            return value;
+            throw new NotSupportedException();
         }
     }
 }
