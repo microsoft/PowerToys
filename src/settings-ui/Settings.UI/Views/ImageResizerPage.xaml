@@ -85,7 +85,8 @@
                                         Spacing="8">
                                         <Button
                                             x:Uid="EditButton"
-                                            Content="{ui:FontIcon FontFamily={StaticResource SymbolThemeFontFamily}, FontSize=14,
+                                            Content="{ui:FontIcon FontFamily={StaticResource SymbolThemeFontFamily},
+                                                                  FontSize=14,
                                                                   Glyph=&#xE70F;}"
                                             Style="{StaticResource SubtleButtonStyle}">
                                             <ToolTipService.ToolTip>
@@ -148,9 +149,11 @@
                                         <Button
                                             x:Name="RemoveButton"
                                             x:Uid="RemoveButton"
+                                            Margin="0,0,-12,0"
                                             Click="DeleteCustomSize"
                                             CommandParameter="{Binding Id}"
-                                            Content="{ui:FontIcon FontFamily={StaticResource SymbolThemeFontFamily}, FontSize=14,
+                                            Content="{ui:FontIcon FontFamily={StaticResource SymbolThemeFontFamily},
+                                                                  FontSize=14,
                                                                   Glyph=&#xE74D;}"
                                             Style="{StaticResource SubtleButtonStyle}">
                                             <ToolTipService.ToolTip>
@@ -237,8 +240,8 @@
                             <Button
                                 x:Uid="ImageResizer_FilenameParameters"
                                 Content="&#xE946;"
-                                Style="{StaticResource SubtleButtonStyle}"
-                                FontFamily="{ThemeResource SymbolThemeFontFamily}">
+                                FontFamily="{ThemeResource SymbolThemeFontFamily}"
+                                Style="{StaticResource SubtleButtonStyle}">
                                 <Button.Flyout>
                                     <Flyout>
                                         <TextBlock x:Name="FileFormatTextBlock">
