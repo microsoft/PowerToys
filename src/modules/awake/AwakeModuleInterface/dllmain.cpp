@@ -85,6 +85,12 @@ public:
         Logger::info("Launcher object is constructing");
     };
 
+    // Return the configured status for the gpo policy for the module
+    virtual powertoys_gpo::gpo_rule_configured_t gpo_policy_enabled_configuration() override
+    {
+        return powertoys_gpo::getConfiguredAwakeEnabledValue();
+    }
+
     virtual void destroy() override
     {
         delete this;

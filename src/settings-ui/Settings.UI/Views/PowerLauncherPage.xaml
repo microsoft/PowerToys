@@ -2,7 +2,7 @@
     x:Class="Microsoft.PowerToys.Settings.UI.Views.PowerLauncherPage"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-    xmlns:ViewModels="using:Microsoft.PowerToys.Settings.UI.Library.ViewModels"
+    xmlns:ViewModels="using:Microsoft.PowerToys.Settings.UI.ViewModels"
     xmlns:controls="using:Microsoft.PowerToys.Settings.UI.Controls"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:i="using:Microsoft.Xaml.Interactivity"
@@ -17,9 +17,14 @@
         <controls:SettingsPageControl.ModuleContent>
 
             <StackPanel Orientation="Vertical">
-                <labs:SettingsCard x:Uid="QuickAccent_EnableQuickAccent" HeaderIcon="{ui:BitmapIcon Source=/Assets/FluentIcons/FluentIconsPowerToysRun.png}">
+                <labs:SettingsCard x:Uid="QuickAccent_EnableQuickAccent" HeaderIcon="{ui:BitmapIcon Source=/Assets/FluentIcons/FluentIconsPowerToysRun.png}" IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabledGpoConfigured, Converter={StaticResource BoolNegationConverter}}">
                     <ToggleSwitch x:Uid="ToggleSwitch" IsOn="{x:Bind ViewModel.EnablePowerLauncher, Mode=TwoWay}" />
                 </labs:SettingsCard>
+                  <InfoBar x:Uid="GPO_IsSettingForced"
+                    Severity="Informational"
+                    IsClosable="False"
+                    IsOpen="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabledGpoConfigured}"
+                    IsTabStop="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabledGpoConfigured}" />
 
                 <controls:SettingsGroup x:Uid="Shortcut" IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.EnablePowerLauncher}">
                     <labs:SettingsExpander

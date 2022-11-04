@@ -16,10 +16,14 @@
         ModuleImageSource="ms-appx:///Assets/Modules/PowerAccent.png">
         <controls:SettingsPageControl.ModuleContent>
             <StackPanel Orientation="Vertical">
-                <labs:SettingsCard x:Uid="QuickAccent_EnableQuickAccent" HeaderIcon="{ui:BitmapIcon Source=/Assets/FluentIcons/FluentIconsPowerAccent.png}">
+                <labs:SettingsCard x:Uid="QuickAccent_EnableQuickAccent" HeaderIcon="{ui:BitmapIcon Source=/Assets/FluentIcons/FluentIconsPowerAccent.png}" IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabledGpoConfigured, Converter={StaticResource BoolNegationConverter}}">
                     <ToggleSwitch x:Uid="ToggleSwitch" IsOn="{x:Bind ViewModel.IsEnabled, Mode=TwoWay}" />
                 </labs:SettingsCard>
-
+                 <InfoBar x:Uid="GPO_IsSettingForced"
+                    Severity="Informational"
+                    IsClosable="False"
+                    IsOpen="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabledGpoConfigured}"
+                    IsTabStop="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabledGpoConfigured}" />
                 <controls:SettingsGroup x:Uid="QuickAccent_Activation_GroupSettings" IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}">
                     <labs:SettingsCard x:Uid="QuickAccent_Activation_Shortcut" HeaderIcon="{ui:FontIcon Glyph=&#xEDA7;}">
                         <ComboBox MinWidth="{StaticResource SettingActionControlMinWidth}" SelectedIndex="{x:Bind Path=ViewModel.ActivationKey, Mode=TwoWay}">

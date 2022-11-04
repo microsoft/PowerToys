@@ -9,7 +9,8 @@
     xmlns:toolkitcontrols="using:CommunityToolkit.WinUI.UI.Controls"
     mc:Ignorable="d">
 
-    <controls:OOBEPageControl x:Uid="Oobe_Hosts" HeroImage="ms-appx:///Assets/Modules/OOBE/AlwaysOnTop.png">
+    <controls:OOBEPageControl x:Uid="Oobe_Hosts"
+                              HeroImage="ms-appx:///Assets/Modules/OOBE/HostsFileEditor.png">
         <controls:OOBEPageControl.PageContent>
             <StackPanel Orientation="Vertical">
                 <StackPanel

@@ -10,12 +10,21 @@
     AutomationProperties.LandmarkType="Main"
     mc:Ignorable="d">
 
+    <Page.Resources>
+        <converters:BoolNegationConverter x:Key="BoolNegationConverter"/>
+    </Page.Resources>
+
     <controls:SettingsPageControl x:Uid="TextExtractor" ModuleImageSource="ms-appx:///Assets/Modules/PowerOCR.png">
         <controls:SettingsPageControl.ModuleContent>
             <StackPanel Orientation="Vertical">
-                <labs:SettingsCard x:Uid="TextExtractor_EnableToggleControl_HeaderText" HeaderIcon="{ui:BitmapIcon Source=/Assets/FluentIcons/FluentIconsPowerOcr.png}">
+                <labs:SettingsCard x:Uid="TextExtractor_EnableToggleControl_HeaderText" IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabledGpoConfigured, Converter={StaticResource BoolNegationConverter}}" HeaderIcon="{ui:BitmapIcon Source=/Assets/FluentIcons/FluentIconsPowerOcr.png}">
                     <ToggleSwitch x:Uid="ToggleSwitch" IsOn="{x:Bind ViewModel.IsEnabled, Mode=TwoWay}" />
                 </labs:SettingsCard>
+                   <InfoBar x:Uid="GPO_IsSettingForced"
+                    Severity="Informational"
+                    IsClosable="False"
+                    IsOpen="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabledGpoConfigured}"
+                    IsTabStop="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabledGpoConfigured}" />
                 <InfoBar
                     x:Uid="TextExtractor_SupportedLanguages"
                     IsClosable="False"

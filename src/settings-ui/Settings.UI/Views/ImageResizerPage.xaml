@@ -27,12 +27,19 @@
         <controls:SettingsPageControl.ModuleContent>
             <StackPanel>
                 <labs:SettingsCard
-                    x:Uid="ImageResizer_EnableToggle"
+                    x:Uid="ImageResizer_EnableToggle" IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabledGpoConfigured, Converter={StaticResource BoolNegationConverter}}" 
                     HeaderIcon="{ui:BitmapIcon Source=/Assets/FluentIcons/FluentIconsImageResizer.png}">
                     <ToggleSwitch
                         x:Uid="ToggleSwitch"
                         IsOn="{x:Bind ViewModel.IsEnabled, Mode=TwoWay}" />
                 </labs:SettingsCard>
+
+                  <InfoBar x:Uid="GPO_IsSettingForced"
+                    Severity="Informational"
+                    IsClosable="False"
+                    IsOpen="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabledGpoConfigured}"
+                    IsTabStop="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabledGpoConfigured}" />
+
                 <controls:SettingsGroup
                     x:Uid="ImageResizer_CustomSizes"
                     IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}">

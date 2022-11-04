@@ -97,6 +97,8 @@ namespace Hosts.ViewModels
 
         public ICommand OpenSettingsCommand => new RelayCommand(OpenSettings);
 
+        public ICommand OpenHostsFileCommand => new RelayCommand(OpenHostsFile);
+
         public MainViewModel(
             IHostsService hostService,
             IUserSettings userSettings)
@@ -195,6 +197,11 @@ namespace Hosts.ViewModels
         public void OpenSettings()
         {
             SettingsDeepLink.OpenSettings(SettingsDeepLink.SettingsWindow.Hosts);
+        }
+
+        public void OpenHostsFile()
+        {
+            _hostsService.OpenHostsFile();
         }
 
         public void Dispose()

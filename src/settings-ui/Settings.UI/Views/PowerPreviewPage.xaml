@@ -20,15 +20,28 @@
                         IsOpen="True"
                         IsTabStop="True"
                         Severity="Warning" />
-                    <labs:SettingsCard x:Uid="FileExplorerPreview_ToggleSwitch_Preview_SVG" HeaderIcon="{ui:FontIcon Glyph=&#xE91B;}">
+                    <labs:SettingsCard x:Uid="FileExplorerPreview_ToggleSwitch_Preview_SVG" HeaderIcon="{ui:FontIcon Glyph=&#xE91B;}" IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsSVGRenderEnabledGpoConfigured, Converter={StaticResource BoolNegationConverter}}">>
                         <ToggleSwitch x:Uid="ToggleSwitch" IsOn="{x:Bind Mode=TwoWay, Path=ViewModel.SVGRenderIsEnabled}" />
                     </labs:SettingsCard>
+                    
+    <InfoBar x:Uid="GPO_IsSettingForced"
+                        Severity="Informational"
+                        IsClosable="False"
+                        IsOpen="{x:Bind Mode=OneWay, Path=ViewModel.IsSVGRenderEnabledGpoConfigured}"
+                        IsTabStop="{x:Bind Mode=OneWay, Path=ViewModel.IsSVGRenderEnabledGpoConfigured}" />
 
-                    <labs:SettingsCard x:Uid="FileExplorerPreview_ToggleSwitch_Preview_MD" HeaderIcon="{ui:FontIcon Glyph=&#xE943;}">
+                    <labs:SettingsCard x:Uid="FileExplorerPreview_ToggleSwitch_Preview_MD" HeaderIcon="{ui:FontIcon Glyph=&#xE943;}" IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsMDRenderEnabledGpoConfigured, Converter={StaticResource BoolNegationConverter}}">
                         <ToggleSwitch x:Uid="ToggleSwitch" IsOn="{x:Bind Mode=TwoWay, Path=ViewModel.MDRenderIsEnabled}" />
                     </labs:SettingsCard>
 
-                    <labs:SettingsExpander x:Uid="FileExplorerPreview_ToggleSwitch_Preview_Monaco" HeaderIcon="{ui:FontIcon Glyph=&#xE99A;}">
+ <InfoBar x:Uid="GPO_IsSettingForced"
+                        Severity="Informational"
+                        IsClosable="False"
+                        IsOpen="{x:Bind Mode=OneWay, Path=ViewModel.IsMDRenderEnabledGpoConfigured}"
+                        IsTabStop="{x:Bind Mode=OneWay, Path=ViewModel.IsMDRenderEnabledGpoConfigured}" />
+
+
+                    <labs:SettingsExpander x:Uid="FileExplorerPreview_ToggleSwitch_Preview_Monaco" HeaderIcon="{ui:FontIcon Glyph=&#xE99A;}" IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsMonacoRenderEnabledGpoConfigured, Converter={StaticResource BoolNegationConverter}}">
                         <ToggleSwitch x:Uid="ToggleSwitch" IsOn="{x:Bind Mode=TwoWay, Path=ViewModel.MonacoRenderIsEnabled}" />
                         <labs:SettingsExpander.Items>
                             <labs:SettingsCard ContentAlignment="Left" IsEnabled="{x:Bind ViewModel.MonacoRenderIsEnabled, Mode=OneWay}">
@@ -42,12 +55,29 @@
                             </labs:SettingsCard>
                         </labs:SettingsExpander.Items>
                     </labs:SettingsExpander>
-                    <labs:SettingsCard x:Uid="FileExplorerPreview_ToggleSwitch_Preview_PDF" HeaderIcon="{ui:FontIcon Glyph=&#xEA90;}">
+
+                    <InfoBar x:Uid="GPO_IsSettingForced"
+                        Severity="Informational"
+                        IsClosable="False"
+                        IsOpen="{x:Bind Mode=OneWay, Path=ViewModel.IsMonacoRenderEnabledGpoConfigured}"
+                        IsTabStop="{x:Bind Mode=OneWay, Path=ViewModel.IsMonacoRenderEnabledGpoConfigured}" />
+
+                    <labs:SettingsCard x:Uid="FileExplorerPreview_ToggleSwitch_Preview_PDF" HeaderIcon="{ui:FontIcon Glyph=&#xEA90;}" IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsPDFRenderEnabledGpoConfigured, Converter={StaticResource BoolNegationConverter}}">
                         <ToggleSwitch x:Uid="ToggleSwitch" IsOn="{x:Bind Mode=TwoWay, Path=ViewModel.PDFRenderIsEnabled}" />
                     </labs:SettingsCard>
-                    <labs:SettingsCard x:Uid="FileExplorerPreview_ToggleSwitch_Preview_GCODE" HeaderIcon="{ui:FontIcon Glyph=&#xE914;}">
+                      <InfoBar x:Uid="GPO_IsSettingForced"
+                        Severity="Informational"
+                        IsClosable="False"
+                        IsOpen="{x:Bind Mode=OneWay, Path=ViewModel.IsPDFRenderEnabledGpoConfigured}"
+                        IsTabStop="{x:Bind Mode=OneWay, Path=ViewModel.IsPDFRenderEnabledGpoConfigured}" />
+                    <labs:SettingsCard x:Uid="FileExplorerPreview_ToggleSwitch_Preview_GCODE" HeaderIcon="{ui:FontIcon Glyph=&#xE914;}" IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsGCODERenderEnabledGpoConfigured, Converter={StaticResource BoolNegationConverter}}">
                         <ToggleSwitch x:Uid="ToggleSwitch" IsOn="{x:Bind Mode=TwoWay, Path=ViewModel.GCODERenderIsEnabled}" />
                     </labs:SettingsCard>
+                       <InfoBar x:Uid="GPO_IsSettingForced"
+                        Severity="Informational"
+                        IsClosable="False"
+                        IsOpen="{x:Bind Mode=OneWay, Path=ViewModel.IsGCODERenderEnabledGpoConfigured}"
+                        IsTabStop="{x:Bind Mode=OneWay, Path=ViewModel.IsGCODERenderEnabledGpoConfigured}" />
                 </controls:SettingsGroup>
 
                 <controls:SettingsGroup x:Uid="FileExplorerPreview_IconThumbnail_GroupSettings">
@@ -63,18 +93,33 @@
                         IsOpen="True"
                         IsTabStop="True"
                         Severity="Warning" />
-                    <labs:SettingsCard x:Uid="FileExplorerPreview_ToggleSwitch_Thumbnail_SVG" HeaderIcon="{ui:FontIcon Glyph=&#xE91B;}">
+                    <labs:SettingsCard x:Uid="FileExplorerPreview_ToggleSwitch_Thumbnail_SVG" HeaderIcon="{ui:FontIcon Glyph=&#xE91B;}" IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsSVGThumbnailEnabledGpoConfigured, Converter={StaticResource BoolNegationConverter}}">>
                         <ToggleSwitch x:Uid="ToggleSwitch" IsOn="{x:Bind Mode=TwoWay, Path=ViewModel.SVGThumbnailIsEnabled}" />
                     </labs:SettingsCard>
-                    <labs:SettingsCard x:Uid="FileExplorerPreview_ToggleSwitch_Thumbnail_PDF" HeaderIcon="{ui:FontIcon Glyph=&#xEA90;}">
+                     <InfoBar x:Uid="GPO_IsSettingForced"
+                        Severity="Informational"
+                        IsClosable="False"
+                        IsOpen="{x:Bind Mode=OneWay, Path=ViewModel.IsSVGThumbnailEnabledGpoConfigured}"
+                        IsTabStop="{x:Bind Mode=OneWay, Path=ViewModel.IsSVGThumbnailEnabledGpoConfigured}" />
+                    <labs:SettingsCard x:Uid="FileExplorerPreview_ToggleSwitch_Thumbnail_PDF" HeaderIcon="{ui:FontIcon Glyph=&#xEA90;}" IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsPDFThumbnailEnabledGpoConfigured, Converter={StaticResource BoolNegationConverter}}">
                         <ToggleSwitch x:Uid="ToggleSwitch" IsOn="{x:Bind Mode=TwoWay, Path=ViewModel.PDFThumbnailIsEnabled}" />
                     </labs:SettingsCard>
-                    <labs:SettingsCard x:Uid="FileExplorerPreview_ToggleSwitch_Thumbnail_GCODE" HeaderIcon="{ui:FontIcon Glyph=&#xE914;}">
+                      <InfoBar x:Uid="GPO_IsSettingForced"
+                        Severity="Informational"
+                        IsClosable="False"
+                        IsOpen="{x:Bind Mode=OneWay, Path=ViewModel.IsPDFThumbnailEnabledGpoConfigured}"
+                        IsTabStop="{x:Bind Mode=OneWay, Path=ViewModel.IsPDFThumbnailEnabledGpoConfigured}" />
+                    <labs:SettingsCard x:Uid="FileExplorerPreview_ToggleSwitch_Thumbnail_GCODE" HeaderIcon="{ui:FontIcon Glyph=&#xE914;}" IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsGCODEThumbnailEnabledGpoConfigured, Converter={StaticResource BoolNegationConverter}}">
                         <ToggleSwitch x:Uid="ToggleSwitch" IsOn="{x:Bind Mode=TwoWay, Path=ViewModel.GCODEThumbnailIsEnabled}" />
                     </labs:SettingsCard>
+                        <InfoBar x:Uid="GPO_IsSettingForced"
+                        Severity="Informational"
+                        IsClosable="False"
+                        IsOpen="{x:Bind Mode=OneWay, Path=ViewModel.IsGCODEThumbnailEnabledGpoConfigured}"
+                        IsTabStop="{x:Bind Mode=OneWay, Path=ViewModel.IsGCODEThumbnailEnabledGpoConfigured}" />
 
 
-                    <labs:SettingsExpander x:Uid="FileExplorerPreview_ToggleSwitch_Thumbnail_STL" HeaderIcon="{ui:FontIcon Glyph=&#xE914;}">
+                    <labs:SettingsExpander x:Uid="FileExplorerPreview_ToggleSwitch_Thumbnail_STL" HeaderIcon="{ui:FontIcon Glyph=&#xE914;}" IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsSTLThumbnailEnabledGpoConfigured, Converter={StaticResource BoolNegationConverter}}">
                         <ToggleSwitch x:Uid="ToggleSwitch" IsOn="{x:Bind Mode=TwoWay, Path=ViewModel.STLThumbnailIsEnabled}" />
                         <labs:SettingsExpander.Items>
                             <labs:SettingsCard x:Uid="FileExplorerPreview_Color_Thumbnail_STL">
@@ -82,6 +127,11 @@
                             </labs:SettingsCard>
                         </labs:SettingsExpander.Items>
                     </labs:SettingsExpander>
+                    <InfoBar x:Uid="GPO_IsSettingForced"
+                        Severity="Informational"
+                        IsClosable="False"
+                        IsOpen="{x:Bind Mode=OneWay, Path=ViewModel.IsSTLThumbnailEnabledGpoConfigured}"
+                        IsTabStop="{x:Bind Mode=OneWay, Path=ViewModel.IsSTLThumbnailEnabledGpoConfigured}" />
                 </controls:SettingsGroup>
             </StackPanel>
         </controls:SettingsPageControl.ModuleContent>

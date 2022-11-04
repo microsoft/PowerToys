@@ -16,23 +16,28 @@
         <controls:SettingsPageControl.ModuleContent>
             <StackPanel Orientation="Vertical">
                 <labs:SettingsCard
-                    x:Uid="MeasureTool_EnableMeasureTool"
+                    x:Uid="MeasureTool_EnableMeasureTool" IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabledGpoConfigured, Converter={StaticResource BoolNegationConverter}}"
                     HeaderIcon="{ui:BitmapIcon Source=/Assets/FluentIcons/FluentIconsScreenRuler.png}">
                     <ToggleSwitch
                         x:Uid="ToggleSwitch"
                         IsOn="{x:Bind ViewModel.IsEnabled, Mode=TwoWay}" />
                 </labs:SettingsCard>
-
+      <InfoBar x:Uid="GPO_IsSettingForced"
+                    Severity="Informational"
+                    IsClosable="False"
+                    IsOpen="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabledGpoConfigured}"
+                    IsTabStop="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabledGpoConfigured}" />
                 <controls:SettingsGroup
                     x:Uid="MeasureTool_ActivationSettings"
                     IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}">
                     <labs:SettingsCard
-                        x:Uid="MeasureTool_ActivationShortcut"
+                        x:Uid="MeasureTool_ActivationShortcut" 
                         HeaderIcon="{ui:FontIcon Glyph=&#xEDA7;}">
                         <controls:ShortcutControl
                             MinWidth="{StaticResource SettingActionControlMinWidth}"
                             HotkeySettings="{x:Bind Path=ViewModel.ActivationShortcut, Mode=TwoWay}" />
                     </labs:SettingsCard>
+                
                 </controls:SettingsGroup>
 
                 <controls:SettingsGroup

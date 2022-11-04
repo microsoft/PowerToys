@@ -16,15 +16,19 @@
         ModuleImageSource="ms-appx:///Assets/Modules/AlwaysOnTop.png">
         <controls:SettingsPageControl.ModuleContent>
             <StackPanel Orientation="Vertical">
-
                 <labs:SettingsCard
                     x:Uid="AlwaysOnTop_EnableToggleControl_HeaderText"
+                        IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabledGpoConfigured, Converter={StaticResource BoolNegationConverter}}"
                     HeaderIcon="{ui:BitmapIcon Source=/Assets/FluentIcons/FluentIconsAlwaysOnTop.png}">
                     <ToggleSwitch
                         x:Uid="ToggleSwitch"
                         IsOn="{x:Bind ViewModel.IsEnabled, Mode=TwoWay}" />
                 </labs:SettingsCard>
-
+   <InfoBar x:Uid="GPO_IsSettingForced"
+                    Severity="Informational"
+                    IsClosable="False"
+                    IsOpen="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabledGpoConfigured}"
+                    IsTabStop="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabledGpoConfigured}" />
                 <controls:SettingsGroup
                     x:Uid="AlwaysOnTop_Activation_GroupSettings"
                     IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}">

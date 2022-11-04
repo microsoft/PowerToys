@@ -40,17 +40,16 @@ namespace winrt::PowerRenameUI::implementation
     private:
         std::wstring StateToErrorMessage();
 
-        int32_t m_id;
+        int32_t m_id{};
         hstring m_idStr;
         winrt::hstring m_original;
         winrt::hstring m_renamed;
-        uint32_t m_depth;
+        uint32_t m_depth{};
         hstring m_imagePath;
-        int32_t m_type;
-        bool m_checked;
-        PowerRenameItemRenameStatus m_state;
+        int32_t m_type{};
+        bool m_checked{};
+        PowerRenameItemRenameStatus m_state{};
         winrt::event<Microsoft::UI::Xaml::Data::PropertyChangedEventHandler> m_propertyChanged;
-
     };
 }
 

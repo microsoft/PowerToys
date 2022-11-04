@@ -11,6 +11,7 @@ using System.Runtime.InteropServices.ComTypes;
 using System.Windows.Forms;
 using Common;
 using Common.Utilities;
+using Microsoft.PowerToys.PreviewHandler.Svg.Properties;
 using Microsoft.PowerToys.PreviewHandler.Svg.Telemetry.Events;
 using Microsoft.PowerToys.Telemetry;
 using Microsoft.Web.WebView2.Core;
@@ -82,6 +83,20 @@ namespace Microsoft.PowerToys.PreviewHandler.Svg
         /// <param name="dataSource">Stream reference to access source file.</param>
         public override void DoPreview<T>(T dataSource)
         {
+            if (global::PowerToys.GPOWrapper.GPOWrapper.GetConfiguredSvgPreviewEnabledValue() == global::PowerToys.GPOWrapper.GpoRuleConfigured.Disabled)
+            {
+                // GPO is disabling this utility. Show an error message instead.
+                InvokeOnControlThread(() =>
+                {
+                    _infoBarAdded = true;
+                    AddTextBoxControl(Properties.Resource.GpoDisabledErrorText);
+                    Resize += FormResized;
+                    base.DoPreview(dataSource);
+                });
+
+                return;
+            }
+
             CleanupWebView2UserDataFolder();
 
             string svgData = null;

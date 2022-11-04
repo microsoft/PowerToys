@@ -61,6 +61,12 @@ namespace Awake
             // only one instance of Awake is running.
             _log = LogManager.GetCurrentClassLogger();
 
+            if (PowerToys.GPOWrapper.GPOWrapper.GetConfiguredAwakeEnabledValue() == PowerToys.GPOWrapper.GpoRuleConfigured.Disabled)
+            {
+                Exit("Tried to start with a GPO policy setting the utility to always be disabled. Please contact your systems administrator.", 1, _exitSignal, true);
+                return 0;
+            }
+
             LockMutex = new Mutex(true, InternalConstants.AppName, out bool instantiated);
 
             if (!instantiated)

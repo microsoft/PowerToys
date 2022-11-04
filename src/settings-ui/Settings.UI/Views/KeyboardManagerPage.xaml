@@ -13,6 +13,8 @@
     mc:Ignorable="d">
 
     <Page.Resources>
+       
+
         <local:VisibleIfNotEmpty x:Key="visibleIfNotEmptyConverter" />
 
         <Style x:Name="KeysListViewContainerStyle" TargetType="ListViewItem">
@@ -49,8 +51,7 @@
     <controls:SettingsPageControl x:Uid="KeyboardManager" ModuleImageSource="ms-appx:///Assets/Modules/KBM.png">
         <controls:SettingsPageControl.ModuleContent>
             <StackPanel Orientation="Vertical">
-
-                <labs:SettingsCard x:Uid="KeyboardManager_EnableToggle" HeaderIcon="{ui:BitmapIcon Source=/Assets/FluentIcons/FluentIconsKeyboardManager.png}">
+                <labs:SettingsCard x:Uid="KeyboardManager_EnableToggle" HeaderIcon="{ui:BitmapIcon Source=/Assets/FluentIcons/FluentIconsKeyboardManager.png}" IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabledGpoConfigured, Converter={StaticResource BoolNegationConverter}}">
                     <ToggleSwitch x:Uid="ToggleSwitch" IsOn="{x:Bind ViewModel.Enabled, Mode=TwoWay}" />
                     <labs:SettingsCard.Description>
                         <HyperlinkButton NavigateUri="https://aka.ms/powerToysCannotRemapKeys">
@@ -58,6 +59,12 @@
                         </HyperlinkButton>
                     </labs:SettingsCard.Description>
                 </labs:SettingsCard>
+                      <InfoBar x:Uid="GPO_IsSettingForced"
+                    Severity="Informational"
+                    IsClosable="False"
+                    IsOpen="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabledGpoConfigured}"
+                    IsTabStop="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabledGpoConfigured}" />
+
                 <controls:SettingsGroup x:Uid="KeyboardManager_Keys" IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.Enabled}">
                     <labs:SettingsCard
                         x:Uid="KeyboardManager_RemapKeyboardButton"

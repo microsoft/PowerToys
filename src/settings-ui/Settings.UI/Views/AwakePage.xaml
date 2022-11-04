@@ -12,6 +12,7 @@
     mc:Ignorable="d">
 
     <Page.Resources>
+        <toolkitConverters:BoolNegationConverter x:Key="BoolNegationConverter"/>
         <converters:AwakeModeToIntConverter x:Key="AwakeModeToIntConverter" />
     </Page.Resources>
 
@@ -21,10 +22,14 @@
         ModuleImageSource="ms-appx:///Assets/Modules/Awake.png">
         <controls:SettingsPageControl.ModuleContent>
             <StackPanel Orientation="Vertical">
-
-                <labs:SettingsCard x:Uid="Awake_EnableAwake" HeaderIcon="{ui:BitmapIcon Source=/Assets/FluentIcons/FluentIconsAwake.png}">
+                <labs:SettingsCard x:Uid="Awake_EnableAwake" IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabledGpoConfigured, Converter={StaticResource BoolNegationConverter}}"> HeaderIcon="{ui:BitmapIcon Source=/Assets/FluentIcons/FluentIconsAwake.png}">
                     <ToggleSwitch x:Uid="ToggleSwitch" IsOn="{x:Bind ViewModel.IsEnabled, Mode=TwoWay}" />
                 </labs:SettingsCard>
+                   <InfoBar x:Uid="GPO_IsSettingForced"
+                    Severity="Informational"
+                    IsClosable="False"
+                    IsOpen="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabledGpoConfigured}"
+                    IsTabStop="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabledGpoConfigured}" />
 
                 <controls:SettingsGroup x:Uid="Awake_Behavior_GroupSettings" IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}">
 

@@ -17,10 +17,14 @@
         <controls:SettingsPageControl.ModuleContent>
             <StackPanel Orientation="Vertical">
                 <controls:SettingsGroup x:Uid="MouseUtils_FindMyMouse">
-                    <labs:SettingsCard x:Uid="MeasureTool_EnableMeasureTool" HeaderIcon="{ui:BitmapIcon Source=/Assets/FluentIcons/FluentIconsFindMyMouse.png}">
+                    <labs:SettingsCard x:Uid="MeasureTool_EnableMeasureTool" HeaderIcon="{ui:BitmapIcon Source=/Assets/FluentIcons/FluentIconsFindMyMouse.png}" IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsFindMyMouseEnabledGpoConfigured, Converter={StaticResource BoolNegationConverter}}">
                         <ToggleSwitch x:Uid="ToggleSwitch" IsOn="{x:Bind ViewModel.IsFindMyMouseEnabled, Mode=TwoWay}" />
                     </labs:SettingsCard>
-
+  <InfoBar x:Uid="GPO_IsSettingForced"
+                        Severity="Informational"
+                        IsClosable="False"
+                        IsOpen="{x:Bind Mode=OneWay, Path=ViewModel.IsFindMyMouseEnabledGpoConfigured}"
+                        IsTabStop="{x:Bind Mode=OneWay, Path=ViewModel.IsFindMyMouseEnabledGpoConfigured}" />
                     <labs:SettingsExpander
                         x:Uid="MouseUtils_FindMyMouse_ActivationMethod"
                         HeaderIcon="{ui:FontIcon Glyph=&#xE961;}"
@@ -117,17 +121,20 @@
                 </controls:SettingsGroup>
 
                 <controls:SettingsGroup x:Uid="MouseUtils_MouseHighlighter">
-                    <labs:SettingsCard x:Uid="MouseUtils_Enable_MouseHighlighter" HeaderIcon="{ui:BitmapIcon Source=/Assets/FluentIcons/FluentIconsMouseHighlighter.png}">
+                    <labs:SettingsCard x:Uid="MouseUtils_Enable_MouseHighlighter" HeaderIcon="{ui:BitmapIcon Source=/Assets/FluentIcons/FluentIconsMouseHighlighter.png}" IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsHighlighterEnabledGpoConfigured, Converter={StaticResource BoolNegationConverter}}">
                         <ToggleSwitch x:Uid="ToggleSwitch" IsOn="{x:Bind ViewModel.IsMouseHighlighterEnabled, Mode=TwoWay}" />
                     </labs:SettingsCard>
-
+  <InfoBar x:Uid="GPO_IsSettingForced"
+                        Severity="Informational"
+                        IsClosable="False"
+                        IsOpen="{x:Bind Mode=OneWay, Path=ViewModel.IsHighlighterEnabledGpoConfigured}"
+                        IsTabStop="{x:Bind Mode=OneWay, Path=ViewModel.IsHighlighterEnabledGpoConfigured}" />
                     <labs:SettingsCard
                         x:Uid="MouseUtils_MouseHighlighter_ActivationShortcut"
                         HeaderIcon="{ui:FontIcon Glyph=&#xEDA7;}"
                         IsEnabled="{x:Bind ViewModel.IsMouseHighlighterEnabled, Mode=OneWay}">
                         <controls:ShortcutControl MinWidth="{StaticResource SettingActionControlMinWidth}" HotkeySettings="{x:Bind Path=ViewModel.MouseHighlighterActivationShortcut, Mode=TwoWay}" />
                     </labs:SettingsCard>
-
                     <labs:SettingsExpander
                         x:Uid="ShortcutGuide_Appearance_Behavior"
                         HeaderIcon="{ui:FontIcon Glyph=&#xEB3C;}"
@@ -178,11 +185,14 @@
                 </controls:SettingsGroup>
 
                 <controls:SettingsGroup x:Uid="MouseUtils_MousePointerCrosshairs">
-
-                    <labs:SettingsCard x:Uid="MouseUtils_Enable_MousePointerCrosshairs" HeaderIcon="{ui:BitmapIcon Source=/Assets/FluentIcons/FluentIconsMouseCrosshairs.png}">
+                    <labs:SettingsCard x:Uid="MouseUtils_Enable_MousePointerCrosshairs" HeaderIcon="{ui:BitmapIcon Source=/Assets/FluentIcons/FluentIconsMouseCrosshairs.png}" IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsMousePointerCrosshairsEnabledGpoConfigured, Converter={StaticResource BoolNegationConverter}}">
                         <ToggleSwitch x:Uid="ToggleSwitch" IsOn="{x:Bind ViewModel.IsMousePointerCrosshairsEnabled, Mode=TwoWay}" />
                     </labs:SettingsCard>
-
+ <InfoBar x:Uid="GPO_IsSettingForced"
+                        Severity="Informational"
+                        IsClosable="False"
+                        IsOpen="{x:Bind Mode=OneWay, Path=ViewModel.IsMousePointerCrosshairsEnabledGpoConfigured}"
+                        IsTabStop="{x:Bind Mode=OneWay, Path=ViewModel.IsMousePointerCrosshairsEnabledGpoConfigured}" />
                     <labs:SettingsCard
                         x:Uid="MouseUtils_MousePointerCrosshairs_ActivationShortcut"
                         HeaderIcon="{ui:FontIcon Glyph=&#xEDA7;}"

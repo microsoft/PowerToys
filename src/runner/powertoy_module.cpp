@@ -34,7 +34,7 @@ json::JsonObject PowertoyModule::json_config() const
     int size = 0;
     pt_module->get_config(nullptr, &size);
     std::wstring result;
-    result.resize(size - 1);
+    result.resize(static_cast<size_t>(size) - 1);
     pt_module->get_config(result.data(), &size);
     return json::JsonObject::Parse(result);
 }

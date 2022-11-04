@@ -1,20 +1,17 @@
-name: "🐛 Bug report"
+name: "🕷️ Bug report"
 description: Report errors or unexpected behavior
-labels: 
+labels:
 - Issue-Bug
 - Needs-Triage
 body:
 - type: markdown
   attributes:
-    value: |
-      Please make sure to [search for existing issues](https://github.com/microsoft/PowerToys/issues) before filing a new one!
+    value: Please make sure to [search for existing issues](https://github.com/microsoft/PowerToys/issues) before filing a new one!
 - type: input
   attributes:
     label: Microsoft PowerToys version
-    placeholder: |
-      "0.53.0"
-    description: |
-      Hover over system tray icon or look at Settings
+    placeholder: 0.63.0
+    description: Hover over system tray icon or look at Settings
   validations:
     required: true
 
@@ -25,65 +22,62 @@ body:
     multiple: true
     options:
       - GitHub
-      - Windows Store
-      - WinGet
       - PowerToys auto-update
+      - Microsoft Store
+      - WinGet
       - Chocolatey
       - Scoop
       - Dev build in Visual Studio
       - Other (please specify in "Steps to Reproduce")
   validations:
     required: true
-- type: checkboxes
+
+- type: dropdown
   attributes:
     label: Running as admin
     description: Are you running PowerToys as Admin?
     options:
-      - label: "Yes"
+      - "Yes"
+      - "No"
 
 - type: dropdown
   attributes:
     label: Area(s) with issue?
-    description: What things had an issue?  Check all that apply.
+    description: What things had an issue? Check all that apply.
     multiple: true
     options:
       - General
       - Always on Top
       - Awake
       - ColorPicker
-      - Developer file preview
       - FancyZones
       - FancyZones Editor 
+      - File Locksmith 
+      - "File Explorer: Preview Pane"
+      - "File Explorer: Thumbnail preview"
+      - Hosts File Editor
       - Image Resizer
+      - Installer
       - Keyboard Manager
-      - MD Preview
       - Mouse Utilities
-      - PDF Preview
-      - PDF Thumbnail
-      - G-code Preview
-      - G-code Thumbnail
       - PowerRename
       - PowerToys Run
       - Quick Accent
       - Screen ruler
-      - Shortcut Guide
-      - STL Thumbnail
-      - SVG Preview
-      - SVG Thumbnail
       - Settings
+      - Shortcut Guide
+      - System tray interaction
       - TextExtractor
       - Video Conference Mute
       - Welcome / PowerToys Tour window
-      - System tray interaction
-      - Installer
   validations:
     required: true
 
 - type: textarea
   attributes:
     label: Steps to reproduce
-    description: We highly suggest including screenshots and a bug report log (System tray->Report bug).
-    placeholder: Tell us the steps required to trigger your bug.
+    description: We highly suggest including screenshots and a bug report log (System tray > Report bug).
+    placeholder: Having detailed steps helps us reproduce the bug. 
   validations:
     required: true
 

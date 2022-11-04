@@ -44,6 +44,7 @@
                     x:Uid="Shell_FancyZones"
                     Icon="{ui:BitmapIcon Source=/Assets/FluentIcons/FluentIconsFancyZones.png}"
                     Tag="FancyZones" />
+                      <NavigationViewItem x:Uid="Shell_FileLocksmith" Tag="FileLocksmith"  Icon="{ui:BitmapIcon Source=/Assets/FluentIcons/FluentIconsFileLocksmith.png}"/>
                 <NavigationViewItem
                     x:Uid="Shell_PowerPreview"
                     Icon="{ui:BitmapIcon Source=/Assets/FluentIcons/FluentIconsFileExplorerPreview.png}"

@@ -4,6 +4,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 using System.IO.Abstractions;
@@ -14,6 +15,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Hosts.Models;
 using Hosts.Settings;
+using Microsoft.Win32;
 using Settings.UI.Library.Enumerations;
 
 namespace Hosts.Helpers
@@ -208,6 +210,69 @@ namespace Hosts.Helpers
                 .Where(f => f.CreationTime < DateTime.Now.AddDays(-15))
                 .ToList()
                 .ForEach(f => f.Delete());
+        }
+
+        public void OpenHostsFile()
+        {
+            var notepadFallback = false;
+
+            try
+            {
+                // Try to open in default editor
+                var key = Registry.ClassesRoot.OpenSubKey("SystemFileAssociations\\text\\shell\\edit\\command");
+                if (key != null)
+                {
+                    var commandPattern = key.GetValue(string.Empty).ToString(); // Default value
+                    var file = null as string;
+                    var args = null as string;
+
+                    if (commandPattern.StartsWith('\"'))
+                    {
+                        var endQuoteIndex = commandPattern.IndexOf('\"', 1);
+                        if (endQuoteIndex != -1)
+                        {
+                            file = commandPattern[1..endQuoteIndex];
+                            args = commandPattern[(endQuoteIndex + 1)..].Trim();
+                        }
+                    }
+                    else
+                    {
+                        var spaceIndex = commandPattern.IndexOf(' ');
+                        if (spaceIndex != -1)
+                        {
+                            file = commandPattern[..spaceIndex];
+                            args = commandPattern[(spaceIndex + 1)..].Trim();
+                        }
+                    }
+
+                    if (file != null && args != null)
+                    {
+                        args = args.Replace("%1", HostsFilePath);
+                        Process.Start(new ProcessStartInfo(file, args));
+                    }
+                    else
+                    {
+                        notepadFallback = true;
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError("Failed to open default editor", ex);
+                notepadFallback = true;
+            }
+
+            if (notepadFallback)
+            {
+                try
+                {
+                    Process.Start(new ProcessStartInfo("notepad.exe", HostsFilePath));
+                }
+                catch (Exception ex)
+                {
+                    Logger.LogError("Failed to open notepad", ex);
+                }
+            }
         }
 
         public void Dispose()

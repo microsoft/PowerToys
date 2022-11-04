@@ -64,7 +64,10 @@
                     x:Uid="Shell_FancyZones"
                     helpers:NavHelper.NavigateTo="views:FancyZonesPage"
                     Icon="{ui:BitmapIcon Source=/Assets/FluentIcons/FluentIconsFancyZones.png}" />
-
+   <NavigationViewItem
+                    x:Uid="Shell_FileLocksmith"
+                    helpers:NavHelper.NavigateTo="views:PowerPreviewPage"
+                    Icon="{ui:BitmapIcon Source=/Assets/FluentIcons/FluentIconsFileLocksmith.png}" />
                 <NavigationViewItem
                     x:Uid="Shell_PowerPreview"
                     helpers:NavHelper.NavigateTo="views:PowerPreviewPage"
