@@ -25,7 +25,7 @@
             TrueValue="Collapsed" />
         <converters:FileCountConverter x:Key="fileCountConverter" />
         <converters:PidToIconConverter x:Key="pidToIconConverter" />
-        <converters:PidToUserConverter x:Key="pidToUserConverter" />
+        <converters:UserToSystemWarningVisibilityConverter x:Key="userToSystemWarningVisibilityConverter" />
         <converters:FileListToDescriptionConverter x:Key="fileListToDescriptionConverter" />
     </Page.Resources>
 
@@ -116,6 +116,17 @@
                                         </StackPanel>
                                     </labs:SettingsExpander.Header>
                                     <labs:SettingsExpander.Content>
+                                    <StackPanel Orientation="Horizontal">
+                                        <FontIcon
+                                            Margin="0,0,8,0"
+                                            Glyph="&#xE7BA;"
+                                            Foreground="{ThemeResource InfoBarWarningSeverityIconBackground}"
+                                            Visibility="{x:Bind user, Mode=OneTime, Converter={StaticResource userToSystemWarningVisibilityConverter}}"
+                                            >
+                                            <ToolTipService.ToolTip>
+                                                <TextBlock TextWrapping="Wrap" x:Uid="ProcessIsSystemUserWarning" />
+                                            </ToolTipService.ToolTip>
+                                        </FontIcon>
                                         <Button Command="{Binding Path=DataContext.EndTaskCommand, ElementName=ProcessesListView}" CommandParameter="{Binding}">
                                             <StackPanel Orientation="Horizontal" Spacing="6">
                                                 <FontIcon
@@ -125,6 +136,7 @@
                                                 <TextBlock x:Uid="EndTask" />
                                             </StackPanel>
                                         </Button>
+                                    </StackPanel>
                                     </labs:SettingsExpander.Content>
                                     <labs:SettingsExpander.Items>
                                         <labs:SettingsCard x:Uid="ProcessID">
@@ -137,7 +149,7 @@
                                             <TextBlock
                                                 Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                                                 IsTextSelectionEnabled="True"
-                                                Text="{x:Bind pid, Converter={StaticResource pidToUserConverter}}" />
+                                                Text="{x:Bind user}" />
                                         </labs:SettingsCard>
                                         <labs:SettingsCard ContentAlignment="Vertical">
                                             <labs:SettingsCard.Header>
@@ -199,7 +211,7 @@
             x:Uid="SelectedFilesListDialog"
             >
             <ScrollViewer HorizontalScrollBarVisibility="Auto" HorizontalScrollMode="Auto" VerticalScrollBarVisibility="Auto" VerticalScrollMode="Auto">
-                <TextBlock Text="{x:Bind ViewModel.PathsToString, Mode=OneWay}"/>
+                <TextBlock IsTextSelectionEnabled="True" Text="{x:Bind ViewModel.PathsToString, Mode=OneWay}"/>
             </ScrollViewer>
         </ContentDialog>
     </Grid>
