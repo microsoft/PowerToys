@@ -112,4 +112,7 @@
   <ItemGroup>
     <ResourceCompile Include="Generated Files/runner.rc" />
   </ItemGroup>
+  <ItemGroup>
+    <Natvis Include="$(MSBuildThisFileDirectory)..\..\natvis\wil.natvis" />
+  </ItemGroup>
 </Project>

@@ -103,4 +103,7 @@
   <ItemGroup>
     <ResourceCompile Include="VideoConferenceModule.rc" />
   </ItemGroup>
+  <ItemGroup>
+    <Natvis Include="$(MSBuildThisFileDirectory)..\..\natvis\wil.natvis" />
+  </ItemGroup>
 </Project>
