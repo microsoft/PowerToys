@@ -115,12 +115,20 @@ namespace winrt::PowerToys::PowerAccentKeyboardService::implementation
         {
             Logger::info(L"Show toolbar. Letter: %d, Trigger: %d", letterPressed, triggerPressed);
 
+            if (!((GetAsyncKeyState((int)letterPressed) & 0x8000) != 0))
+            {
+                triggerPressed = 0;
+                Logger::info(L"Reset trigger key");
+                return false;
+            }
+
             // Keep track if it was triggered with space so that it can be typed on false starts.
             m_triggeredWithSpace = triggerPressed == VK_SPACE;
             m_toolbarVisible = true;
 
             m_showToolbarCb(letterPressed);
         }
+
 
         if (m_toolbarVisible && triggerPressed)
         {
