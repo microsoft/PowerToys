@@ -222,5 +222,26 @@ namespace FileLocksmith::Interop
             return false;
         }
 
+        // adapted from common/utils/elevation.h. No need to bring all dependencies to this project, though.
+        // TODO: Make elevation.h lighter so that this function can be used without bringing dependencies like spdlog in.
+        static System::Boolean IsProcessElevated()
+        {
+            HANDLE token = nullptr;
+            bool elevated = false;
+            if (OpenProcessToken(GetCurrentProcess(), TOKEN_QUERY, &token))
+            {
+                TOKEN_ELEVATION elevation;
+                DWORD size;
+                if (GetTokenInformation(token, TokenElevation, &elevation, sizeof(elevation), &size))
+                {
+                    elevated = (elevation.TokenIsElevated != 0);
+                }
+            }
+            if (token)
+            {
+                CloseHandle(token);
+            }
+            return elevated;
+        }
     };
 }

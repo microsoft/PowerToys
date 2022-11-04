@@ -40,7 +40,7 @@ namespace FileLocksmithUI
                 return;
             }
 
-            bool isElevated = Environment.GetCommandLineArgs().Contains("--elevated");
+            bool isElevated = FileLocksmith.Interop.NativeMethods.IsProcessElevated();
 
             if (isElevated)
             {
