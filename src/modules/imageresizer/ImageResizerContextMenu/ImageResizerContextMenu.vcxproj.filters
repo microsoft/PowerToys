@@ -53,24 +53,6 @@
     <None Include="Resources.resx">
       <Filter>Resource Files</Filter>
     </None>
-    <None Include="Assets\**">
-      <Filter>Resource Files</Filter>
-    </None>
-    <None Include="Assets\**">
-      <Filter>Resource Files</Filter>
-    </None>
-    <None Include="Assets\**">
-      <Filter>Resource Files</Filter>
-    </None>
-    <None Include="Assets\**">
-      <Filter>Resource Files</Filter>
-    </None>
-    <None Include="Assets\**">
-      <Filter>Resource Files</Filter>
-    </None>
-    <None Include="Assets\**">
-      <Filter>Resource Files</Filter>
-    </None>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="Generated Files/ImageResizerContextMenu.rc">

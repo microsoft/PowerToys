@@ -38,24 +38,6 @@
     <None Include="Assets\**">
       <Filter>Resource Files</Filter>
     </None>
-    <None Include="Assets\**">
-      <Filter>Resource Files</Filter>
-    </None>
-    <None Include="Assets\**">
-      <Filter>Resource Files</Filter>
-    </None>
-    <None Include="Assets\**">
-      <Filter>Resource Files</Filter>
-    </None>
-    <None Include="Assets\**">
-      <Filter>Resource Files</Filter>
-    </None>
-    <None Include="Assets\**">
-      <Filter>Resource Files</Filter>
-    </None>
-    <None Include="Assets\**">
-      <Filter>Resource Files</Filter>
-    </None>
     <None Include="PowerRenameUI.ico">
       <Filter>Resource Files</Filter>
     </None>

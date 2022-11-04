@@ -31,8 +31,8 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.Windows.CsWinRT" Version="2.0.0" />
-    <PackageReference Include="HelixToolkit" Version="2.20.2" />
-    <PackageReference Include="HelixToolkit.Core.Wpf" Version="2.20.2" />
+    <PackageReference Include="HelixToolkit" Version="2.22.0" />
+    <PackageReference Include="HelixToolkit.Core.Wpf" Version="2.22.0" />
   </ItemGroup>
 
   <ItemGroup>

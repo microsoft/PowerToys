@@ -40,7 +40,7 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<PackageReference Include="Microsoft.Data.Sqlite" Version="6.0.9" />
+		<PackageReference Include="Microsoft.Data.Sqlite" Version="7.0.0" />
 	</ItemGroup>
 
 	<ItemGroup>
