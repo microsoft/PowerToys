@@ -86,7 +86,7 @@ namespace
     }
 
     const LPARAM eventActivateWindow = 1;
-    
+
     bool wasWinPressed = false;
     bool isWinPressed()
     {
@@ -132,7 +132,7 @@ namespace
         {
             event.lParam = reinterpret_cast<KBDLLHOOKSTRUCT*>(lParam);
             event.wParam = wParam;
-            
+
             if (event.lParam->vkCode == VK_ESCAPE)
             {
                 Logger::trace(L"ESC key was pressed");
@@ -164,14 +164,14 @@ namespace
     {
         switch (type)
         {
-            case HideWindowType::ESC_PRESSED:
-                return L"ESC_PRESSED";
-            case HideWindowType::WIN_RELEASED:
-                return L"WIN_RELEASED";
-            case HideWindowType::WIN_SHORTCUT_PRESSED:
-                return L"WIN_SHORTCUT_PRESSED";
-            case HideWindowType::THE_SHORTCUT_PRESSED:
-                return L"THE_SHORTCUT_PRESSED";
+        case HideWindowType::ESC_PRESSED:
+            return L"ESC_PRESSED";
+        case HideWindowType::WIN_RELEASED:
+            return L"WIN_RELEASED";
+        case HideWindowType::WIN_SHORTCUT_PRESSED:
+            return L"WIN_SHORTCUT_PRESSED";
+        case HideWindowType::THE_SHORTCUT_PRESSED:
+            return L"THE_SHORTCUT_PRESSED";
         }
 
         return L"";
@@ -181,7 +181,7 @@ namespace
 OverlayWindow::OverlayWindow(HWND activeWindow)
 {
     instance = this;
-    this -> activeWindow = activeWindow;
+    this->activeWindow = activeWindow;
     app_name = GET_RESOURCE_STRING(IDS_SHORTCUT_GUIDE);
 
     Logger::info("Overlay Window is creating");
@@ -198,6 +198,17 @@ void OverlayWindow::ShowWindow()
     winkey_popup = std::make_unique<D2DOverlayWindow>();
     winkey_popup->apply_overlay_opacity(((float)overlayOpacity.value) / 100.0f);
     winkey_popup->set_theme(theme.value);
+
+    // The delay only takes effect when the power toy is activated by pressing win key
+    if (shouldReactToPressedWinKey.value)
+    {
+        winkey_popup->apply_delay_after_showing_taskbar_shortcuts(delayAfterShowingTaskBarShortcuts.value);
+    }
+    else
+    {
+        winkey_popup->apply_delay_after_showing_taskbar_shortcuts(0);
+    }
+
     target_state = std::make_unique<TargetState>();
     try
     {
@@ -254,12 +265,12 @@ OverlayWindow::~OverlayWindow()
     {
         event_waiter.reset();
     }
-    
+
     if (winkey_popup)
     {
         winkey_popup->hide();
     }
-    
+
     if (target_state)
     {
         target_state->exit();
@@ -270,7 +281,7 @@ OverlayWindow::~OverlayWindow()
     {
         winkey_popup.reset();
     }
-    
+
     if (keyboardHook)
     {
         UnhookWindowsHookEx(keyboardHook);
@@ -310,6 +321,7 @@ void OverlayWindow::init_settings()
     theme.value = settings.theme;
     disabledApps.value = settings.disabledApps;
     shouldReactToPressedWinKey.value = settings.shouldReactToPressedWinKey;
+    delayAfterShowingTaskBarShortcuts.value = settings.delayAfterShowingTaskbarShortcuts;
     update_disabled_apps();
 }
 
@@ -420,6 +432,14 @@ ShortcutGuideSettings OverlayWindow::GetSettings() noexcept
     try
     {
         settings.windowsKeyPressTime = (int)properties.GetNamedObject(WindowsKeyPressTime::name).GetNamedNumber(L"value");
+    }
+    catch (...)
+    {
+    }
+
+    try
+    {
+        settings.delayAfterShowingTaskbarShortcuts = (int)properties.GetNamedObject(DelayAfterShowingTaskbarShortcuts::name).GetNamedNumber(L"value");
     }
     catch (...)
     {

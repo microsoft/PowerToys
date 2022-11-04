@@ -41,6 +41,7 @@ void Trace::SendSettings(ShortcutGuideSettings settings) noexcept
         TraceLoggingWideString(settings.disabledApps.c_str(), "DisabledApps"),
         TraceLoggingBoolean(settings.shouldReactToPressedWinKey, "ShouldReactToPressedWinKey"),
         TraceLoggingInt32(settings.windowsKeyPressTime, "WindowsKeyPressTime"),
+        TraceLoggingInt32(settings.delayAfterShowingTaskbarShortcuts, "DelayAfterShowingTaskbarShortcuts"),
         ProjectTelemetryPrivacyDataTag(ProjectTelemetryTag_ProductAndServicePerformance),
         TraceLoggingBoolean(TRUE, "UTCReplace_AppSessionGuid"),
         TraceLoggingKeyword(PROJECT_KEYWORD_MEASURE));

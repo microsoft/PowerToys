@@ -51,6 +51,7 @@ public:
     void show(HWND active_window, bool snappable);
     ~D2DOverlayWindow();
     void apply_overlay_opacity(float opacity);
+    void apply_delay_after_showing_taskbar_shortcuts(int delay);
     void set_theme(const std::wstring& theme);
     void quick_hide();
 
@@ -103,4 +104,5 @@ private:
         System
     } theme_setting = System;
     bool light_mode = true;
+    UINT milliseconds_delay_after_showing_taskbar_shortcuts = 1000;
 };

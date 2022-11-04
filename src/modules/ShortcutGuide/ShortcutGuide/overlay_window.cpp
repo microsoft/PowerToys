@@ -422,6 +422,11 @@ void D2DOverlayWindow::apply_overlay_opacity(float opacity)
     overlay_opacity = opacity;
 }
 
+void D2DOverlayWindow::apply_delay_after_showing_taskbar_shortcuts(int delay)
+{
+    milliseconds_delay_after_showing_taskbar_shortcuts = std::max(delay, 0);
+}
+
 void D2DOverlayWindow::set_theme(const std::wstring& theme)
 {
     if (theme == L"light")
@@ -645,6 +650,7 @@ void D2DOverlayWindow::render(ID2D1DeviceContext5* d2d_dc)
         x_offset = 0;
         y_offset = (int)(pos_anim_value * use_overlay->height() * use_overlay->get_scale());
     }
+
     // Draw background
     winrt::com_ptr<ID2D1SolidColorBrush> brush;
     float brush_opacity = get_overlay_opacity();
@@ -655,6 +661,23 @@ void D2DOverlayWindow::render(ID2D1DeviceContext5* d2d_dc)
     background_rect.right = (float)window_width;
     d2d_dc->SetTransform(D2D1::Matrix3x2F::Identity());
     d2d_dc->FillRectangle(background_rect, brush.get());
+
+    // Draw the taskbar shortcuts (the arrows with numbers)
+    for (auto&& button : tasklist_buttons)
+    {
+        if ((size_t)(button.keynum) - 1 >= arrows.size())
+        {
+            continue;
+        }
+        render_arrow(arrows[(size_t)(button.keynum) - 1], button, window_rect, use_overlay->get_scale(), d2d_dc);
+    }
+
+    // Do not draw other contents before the delay
+    auto time_since_start = std::chrono::high_resolution_clock::now() - shown_start_time;
+    if (time_since_start.count() / 1000000 < milliseconds_delay_after_showing_taskbar_shortcuts)
+    {
+        return;
+    }
 
     // Thumbnail logic:
     auto window_state = get_window_state(active_window);
@@ -868,13 +891,4 @@ void D2DOverlayWindow::render(ID2D1DeviceContext5* d2d_dc)
     text.set_alignment_right().write(d2d_dc, text_color, use_overlay->get_snap_left(), left);
     use_overlay->find_element(L"KeyRightGroup")->SetAttributeValue(L"fill-opacity", right_disabled ? 0.3f : 1.0f);
     text.set_alignment_left().write(d2d_dc, text_color, use_overlay->get_snap_right(), right);
-    // ... and the arrows with numbers
-    for (auto&& button : tasklist_buttons)
-    {
-        if ((size_t)(button.keynum) - 1 >= arrows.size())
-        {
-            continue;
-        }
-        render_arrow(arrows[(size_t)(button.keynum) - 1], button, window_rect, use_overlay->get_scale(), d2d_dc);
-    }
 }

@@ -89,6 +89,12 @@ private:
         static inline PCWSTR name = L"press_time";
     } windowsKeyPressTime;
 
+    struct DelayAfterShowingTaskbarShortcuts
+    {
+        static inline PCWSTR name = L"delay_time";
+        int value;
+    } delayAfterShowingTaskBarShortcuts;
+
     struct OpenShortcut
     {
         static inline PCWSTR name = L"open_shortcutguide";
