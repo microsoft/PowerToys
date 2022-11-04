@@ -57,6 +57,8 @@
   </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="Microsoft.VariantAssignment.Client" Version="2.4.17140001" />
+    <PackageReference Include="Microsoft.VariantAssignment.Contract" Version="3.0.16990001" />
     <PackageReference Include="Microsoft.Windows.CsWinRT" Version="2.0.0" />
     <PackageReference Include="CommunityToolkit.WinUI.UI" Version="7.1.2" />
     <PackageReference Include="CommunityToolkit.WinUI.UI.Controls" Version="7.1.2" />

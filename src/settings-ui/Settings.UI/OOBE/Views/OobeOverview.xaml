@@ -15,7 +15,7 @@
                 <TextBlock x:Uid="Oobe_HowToUse"
                            Style="{ThemeResource OobeSubtitleStyle}" />
 
-                <HyperlinkButton NavigateUri="https://aka.ms/PowerToysOverview" Style="{StaticResource TextButtonStyle}">
+                <HyperlinkButton NavigateUri="https://google.com" Style="{StaticResource TextButtonStyle}">
                     <TextBlock x:Uid="Oobe_Overview_DescriptionLinkText"
                                TextWrapping="Wrap" />
                 </HyperlinkButton>
