@@ -115,7 +115,7 @@ namespace winrt::PowerToys::PowerAccentKeyboardService::implementation
         {
             Logger::info(L"Show toolbar. Letter: %d, Trigger: %d", letterPressed, triggerPressed);
 
-            if (!((GetAsyncKeyState((int)letterPressed) & 0x8000) != 0))
+            if (((GetAsyncKeyState((int)letterPressed) & 0x8000) == 0))
             {
                 triggerPressed = 0;
                 Logger::info(L"Reset trigger key");
