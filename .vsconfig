@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "components": [  
+  "components": [
     "Microsoft.VisualStudio.Component.CoreEditor",
     "Microsoft.VisualStudio.Workload.CoreEditor",
     "Microsoft.VisualStudio.Workload.NativeDesktop",
@@ -9,7 +9,8 @@
     "Microsoft.VisualStudio.Component.Windows10SDK.19041",
     "Microsoft.VisualStudio.Component.Windows10SDK.20348",
     "Microsoft.VisualStudio.ComponentGroup.UWP.VC",
-    "Microsoft.VisualStudio.Component.VC.Runtimes.x86.x64.Spectre", 
-    "Microsoft.VisualStudio.Component.VC.ATL.Spectre"
+    "Microsoft.VisualStudio.Component.VC.Runtimes.x86.x64.Spectre",
+    "Microsoft.VisualStudio.Component.VC.ATL.Spectre",
+    "Microsoft.VisualStudio.ComponentGroup.WindowsAppSDK.Cs"
   ]
 } 
