@@ -67,6 +67,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
             _useLegacyPressWinKeyBehavior = Settings.Properties.UseLegacyPressWinKeyBehavior.Value;
             _pressTime = Settings.Properties.PressTime.Value;
+            _delayTime = Settings.Properties.DelayTime.Value;
             _opacity = Settings.Properties.OverlayOpacity.Value;
             _disabledApps = Settings.Properties.DisabledApps.Value;
 
@@ -84,6 +85,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         private int _themeIndex;
         private bool _useLegacyPressWinKeyBehavior;
         private int _pressTime;
+        private int _delayTime;
         private int _opacity;
 
         public bool IsEnabled
@@ -210,6 +212,24 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 {
                     _pressTime = value;
                     Settings.Properties.PressTime.Value = value;
+                    NotifyPropertyChanged();
+                }
+            }
+        }
+
+        public int DelayTime
+        {
+            get
+            {
+                return _delayTime;
+            }
+
+            set
+            {
+                if (_delayTime != value)
+                {
+                    _delayTime = value;
+                    Settings.Properties.DelayTime.Value = value;
                     NotifyPropertyChanged();
                 }
             }

@@ -2685,6 +2685,13 @@ Activate by holding the key for the character you want to add an accent to, then
   <data name="Hosts_Toggle_LaunchAdministrator.Header" xml:space="preserve">
     <value>Launch as administrator</value>
   </data>
+  <data name="ShortcutGuide_DelayTime.Description" xml:space="preserve">
+    <value>Delay before showing (ms)</value>
+    <comment>ms = milliseconds</comment>
+  </data>
+  <data name="ShortcutGuide_DelayTime.Header" xml:space="preserve">
+    <value>How long to delay the display of shortcuts except for taskbar shortcuts</value>
+  </data>
   <data name="FileLocksmith.ModuleDescription" xml:space="preserve">
     <value>A Windows shell extension to find out which processes are using the selected files and directories.</value>
   </data>

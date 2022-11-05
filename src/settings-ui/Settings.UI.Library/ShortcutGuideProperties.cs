@@ -13,6 +13,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             OverlayOpacity = new IntProperty(90);
             UseLegacyPressWinKeyBehavior = new BoolProperty(false);
             PressTime = new IntProperty(900);
+            DelayTime = new IntProperty(0);
             Theme = new StringProperty("system");
             DisabledApps = new StringProperty();
             OpenShortcutGuide = new HotkeySettings(true, false, false, true, 0xBF);
@@ -29,6 +30,9 @@ namespace Microsoft.PowerToys.Settings.UI.Library
 
         [JsonPropertyName("press_time")]
         public IntProperty PressTime { get; set; }
+
+        [JsonPropertyName("delay_time")]
+        public IntProperty DelayTime { get; set; }
 
         [JsonPropertyName("theme")]
         public StringProperty Theme { get; set; }
