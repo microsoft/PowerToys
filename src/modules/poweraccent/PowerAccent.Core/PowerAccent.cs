@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft Corporation
+// Copyright (c) Microsoft Corporation
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
@@ -50,11 +50,11 @@ public class PowerAccent : IDisposable
             });
         }));
 
-        _keyboardListener.SetNextCharEvent(new PowerToys.PowerAccentKeyboardService.NextChar((TriggerKey triggerKey) =>
+        _keyboardListener.SetNextCharEvent(new PowerToys.PowerAccentKeyboardService.NextChar((TriggerKey triggerKey, bool shiftPressed) =>
         {
             System.Windows.Application.Current.Dispatcher.Invoke(() =>
             {
-                ProcessNextChar(triggerKey);
+                ProcessNextChar(triggerKey, shiftPressed);
             });
         }));
 
@@ -104,7 +104,7 @@ public class PowerAccent : IDisposable
         _visible = false;
     }
 
-    private void ProcessNextChar(TriggerKey triggerKey)
+    private void ProcessNextChar(TriggerKey triggerKey, bool shiftPressed)
     {
         if (_visible && _selectedIndex == -1)
         {
@@ -139,13 +139,27 @@ public class PowerAccent : IDisposable
 
         if (triggerKey == TriggerKey.Space)
         {
-            if (_selectedIndex < _characters.Length - 1)
+            if (shiftPressed)
             {
-                ++_selectedIndex;
+                if (_selectedIndex == 0)
+                {
+                    _selectedIndex = _characters.Length - 1;
+                }
+                else
+                {
+                    --_selectedIndex;
+                }
             }
             else
             {
-                _selectedIndex = 0;
+                if (_selectedIndex < _characters.Length - 1)
+                {
+                    ++_selectedIndex;
+                }
+                else
+                {
+                    _selectedIndex = 0;
+                }
             }
         }
 
