@@ -40,7 +40,8 @@
                     IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}">
                     <labs:SettingsCard
                         x:Uid="Activation_Shortcut"
-                        HeaderIcon="{ui:FontIcon FontFamily={StaticResource SymbolThemeFontFamily}, Glyph=&#xEDA7;}">
+                        HeaderIcon="{ui:FontIcon FontFamily={StaticResource SymbolThemeFontFamily},
+                                                 Glyph=&#xEDA7;}">
                         <controls:ShortcutControl
                             MinWidth="{StaticResource SettingActionControlMinWidth}"
                             HotkeySettings="{x:Bind Path=ViewModel.ActivationShortcut, Mode=TwoWay}" />
@@ -48,7 +49,8 @@
 
                     <labs:SettingsCard
                         x:Uid="ColorPicker_ActivationAction"
-                        HeaderIcon="{ui:FontIcon FontFamily={StaticResource SymbolThemeFontFamily}, Glyph=&#xEC4E;}">
+                        HeaderIcon="{ui:FontIcon FontFamily={StaticResource SymbolThemeFontFamily},
+                                                 Glyph=&#xEC4E;}">
                         <ComboBox
                             MinWidth="{StaticResource SettingActionControlMinWidth}"
                             SelectedIndex="{x:Bind Path=ViewModel.ActivationBehavior, Mode=TwoWay}">
@@ -65,7 +67,8 @@
                     IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}">
                     <labs:SettingsCard
                         x:Uid="ColorPicker_CopiedColorRepresentation"
-                        HeaderIcon="{ui:FontIcon FontFamily={StaticResource SymbolThemeFontFamily}, Glyph=&#xF0E3;}">
+                        HeaderIcon="{ui:FontIcon FontFamily={StaticResource SymbolThemeFontFamily},
+                                                 Glyph=&#xF0E3;}">
                         <ComboBox
                             x:Name="ColorPicker_ComboBox"
                             MinWidth="{StaticResource SettingActionControlMinWidth}"
@@ -98,7 +101,8 @@
                     <labs:SettingsExpander
                         x:Name="ColorFormatsSetting"
                         x:Uid="ColorPicker_ColorFormats"
-                        HeaderIcon="{ui:FontIcon FontFamily={StaticResource SymbolThemeFontFamily}, Glyph=&#xE762;}"
+                        HeaderIcon="{ui:FontIcon FontFamily={StaticResource SymbolThemeFontFamily},
+                                                 Glyph=&#xE762;}"
                         IsExpanded="True"
                         ItemsSource="{Binding ColorFormats, Mode=TwoWay}">
                         <labs:SettingsExpander.ItemTemplate>
@@ -106,7 +110,9 @@
                                 <labs:SettingsCard
                                     Description="{x:Bind Example}"
                                     Header="{x:Bind Name}">
-                                    <StackPanel Orientation="Horizontal" Spacing="4">
+                                    <StackPanel
+                                        Orientation="Horizontal"
+                                        Spacing="4">
                                         <ToggleSwitch
                                             x:Uid="Enable_ColorFormat"
                                             AutomationProperties.HelpText="{x:Bind Name}"
@@ -115,8 +121,8 @@
                                             OnContent="" />
                                         <Button
                                             x:Uid="More_Options_Button"
-                                            Content="&#xE712;"
                                             Margin="0,0,-12,0"
+                                            Content="&#xE712;"
                                             FontFamily="{ThemeResource SymbolThemeFontFamily}"
                                             Style="{StaticResource SubtleButtonStyle}">
                                             <Button.Flyout>
@@ -124,12 +130,14 @@
                                                     <MenuFlyoutItem
                                                         x:Uid="MoveUp"
                                                         Click="ReorderButtonUp_Click"
-                                                        Icon="{ui:FontIcon FontFamily={StaticResource SymbolThemeFontFamily}, Glyph=&#xE74A;}"
+                                                        Icon="{ui:FontIcon FontFamily={StaticResource SymbolThemeFontFamily},
+                                                                           Glyph=&#xE74A;}"
                                                         IsEnabled="{x:Bind CanMoveUp}" />
                                                     <MenuFlyoutItem
                                                         x:Uid="MoveDown"
                                                         Click="ReorderButtonDown_Click"
-                                                        Icon="{ui:FontIcon FontFamily={StaticResource SymbolThemeFontFamily}, Glyph=&#xE74B;}"
+                                                        Icon="{ui:FontIcon FontFamily={StaticResource SymbolThemeFontFamily},
+                                                                           Glyph=&#xE74B;}"
                                                         IsEnabled="{x:Bind CanMoveDown}" />
                                                 </MenuFlyout>
                                             </Button.Flyout>

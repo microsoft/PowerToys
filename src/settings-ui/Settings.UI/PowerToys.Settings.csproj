@@ -34,7 +34,7 @@
     <WarningsNotAsErrors>CA1720</WarningsNotAsErrors>
     <Optimize>true</Optimize>
   </PropertyGroup>
-
+	
   <!-- See https://learn.microsoft.com/windows/apps/develop/platform/csharp-winrt/net-projection-from-cppwinrt-component for more info -->
   <PropertyGroup>
     <CsWinRTIncludes>PowerToys.GPOWrapper</CsWinRTIncludes>
@@ -42,9 +42,10 @@
     <ErrorOnDuplicatePublishOutputFiles>false</ErrorOnDuplicatePublishOutputFiles>
   </PropertyGroup>
 
-  <ItemGroup>
-    <None Remove="OOBE\Views\OobeHosts.xaml" />
-  </ItemGroup>
+	<!-- Needed for CommunityToolkit.Labs.WinUI.SettingsControls. -->
+	<PropertyGroup>
+		<RestoreAdditionalProjectSources>https://pkgs.dev.azure.com/dotnet/CommunityToolkit/_packaging/CommunityToolkit-Labs/nuget/v3/index.json</RestoreAdditionalProjectSources>
+	</PropertyGroup>
 
   <ItemGroup>
     <Content Include="Assets\SplashScreen.scale-200.png" />

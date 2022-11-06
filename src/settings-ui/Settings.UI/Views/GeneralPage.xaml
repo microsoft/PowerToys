@@ -3,7 +3,6 @@
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:controls="using:Microsoft.PowerToys.Settings.UI.Controls"
-    xmlns:converters="using:CommunityToolkit.WinUI.UI.Converters"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:labs="using:CommunityToolkit.Labs.WinUI"
     xmlns:localConverters="using:Microsoft.PowerToys.Settings.UI.Converters"
@@ -27,7 +26,8 @@
                     Margin="0,-32,0,0">
                     <labs:SettingsCard
                         Header="{Binding PowerToysVersion}"
-                        HeaderIcon="{ui:FontIcon FontFamily={StaticResource SymbolThemeFontFamily}, Glyph=&#xE895;}">
+                        HeaderIcon="{ui:FontIcon FontFamily={StaticResource SymbolThemeFontFamily},
+                                                 Glyph=&#xE895;}">
                         <labs:SettingsCard.Description>
                             <StackPanel Orientation="Vertical">
                                 <TextBlock Style="{StaticResource SecondaryTextStyle}">
@@ -123,13 +123,11 @@
                         Message="{Binding PowerToysNewAvailableVersion}"
                         Severity="Success">
                         <InfoBar.Content>
-                            <StackPanel Spacing="16">
-                                <Button
-                                    x:Uid="General_InstallNow"
-                                    Margin="0,0,0,16"
-                                    Command="{Binding UpdateNowButtonEventHandler}"
-                                    IsEnabled="{Binding IsDownloadAllowed, Mode=OneWay}" />
-                            </StackPanel>
+                            <Button
+                                x:Uid="General_InstallNow"
+                                Margin="0,0,0,16"
+                                Command="{Binding UpdateNowButtonEventHandler}"
+                                IsEnabled="{Binding IsDownloadAllowed, Mode=OneWay}" />
                         </InfoBar.Content>
                         <InfoBar.ActionButton>
                             <HyperlinkButton
@@ -196,7 +194,8 @@
                     <labs:SettingsExpander
                         x:Uid="Admin_Mode_Running_As"
                         Header="{Binding Mode=OneWay, Path=RunningAsText}"
-                        HeaderIcon="{ui:FontIcon FontFamily={StaticResource SymbolThemeFontFamily}, Glyph=&#xE7EF;}"
+                        HeaderIcon="{ui:FontIcon FontFamily={StaticResource SymbolThemeFontFamily},
+                                                 Glyph=&#xE7EF;}"
                         IsExpanded="True">
                         <labs:SettingsExpander.Description>
                             <HyperlinkButton
@@ -224,7 +223,8 @@
                     IsEnabled="True">
                     <labs:SettingsCard
                         x:Uid="ColorModeHeader"
-                        HeaderIcon="{ui:FontIcon FontFamily={StaticResource SymbolThemeFontFamily}, Glyph=&#xE790;}">
+                        HeaderIcon="{ui:FontIcon FontFamily={StaticResource SymbolThemeFontFamily},
+                                                 Glyph=&#xE790;}">
                         <labs:SettingsCard.Description>
                             <HyperlinkButton
                                 x:Uid="Windows_Color_Settings"
@@ -251,7 +251,8 @@
                     Visibility="Visible">
                     <labs:SettingsExpander
                         x:Uid="General_SettingsBackupAndRestore"
-                        HeaderIcon="{ui:FontIcon FontFamily={StaticResource SymbolThemeFontFamily}, Glyph=&#xE777;}">
+                        HeaderIcon="{ui:FontIcon FontFamily={StaticResource SymbolThemeFontFamily},
+                                                 Glyph=&#xE777;}">
                         <StackPanel
                             Orientation="Horizontal"
                             Spacing="4">
@@ -287,7 +288,7 @@
                                     </TextBlock>
                                     <Button
                                         Command="{Binding SelectSettingBackupDirEventHandler}"
-                                        Content="&#xE838;"
+                                        Content="&#xe8da;"
                                         FontFamily="{ThemeResource SymbolThemeFontFamily}">
                                         <ToolTipService.ToolTip>
                                             <ToolTip>
@@ -298,7 +299,8 @@
                                 </StackPanel>
                             </labs:SettingsCard>
                             <labs:SettingsCard
-                                x:Uid="General_SettingsBackupAndRestoreStatusInfo" HorizontalContentAlignment="Left"
+                                x:Uid="General_SettingsBackupAndRestoreStatusInfo"
+                                HorizontalContentAlignment="Left"
                                 ContentAlignment="Vertical">
                                 <labs:SettingsCard.Resources>
                                     <Style TargetType="TextBlock">

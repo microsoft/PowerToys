@@ -201,16 +201,6 @@
                         </ComboBox>
                     </labs:SettingsCard>
 
-                    <labs:SettingsCard x:Uid="ImageResizer_PNGInterlacing">
-                        <ComboBox
-                            MinWidth="{StaticResource SettingActionControlMinWidth}"
-                            SelectedIndex="{x:Bind Mode=TwoWay, Path=ViewModel.PngInterlaceOption}">
-                            <ComboBoxItem x:Uid="Default" />
-                            <ComboBoxItem x:Uid="On" />
-                            <ComboBoxItem x:Uid="Off" />
-                        </ComboBox>
-                    </labs:SettingsCard>
-
                     <labs:SettingsCard x:Uid="ImageResizer_TIFFCompression">
                         <ComboBox
                             MinWidth="{StaticResource SettingActionControlMinWidth}"

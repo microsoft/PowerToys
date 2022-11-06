@@ -31,24 +31,17 @@
             x:Name="Header"
             MaxWidth="{StaticResource PageMaxWidth}"
             Margin="0,44,0,0"
+            HorizontalAlignment="Stretch"
             VerticalAlignment="Stretch"
             AutomationProperties.HeadingLevel="1"
             Style="{StaticResource TitleTextBlockStyle}"
             Text="{x:Bind ModuleTitle}" />
 
-        <ScrollViewer
-            Grid.Row="1"
-            HorizontalAlignment="Stretch">
+        <ScrollViewer Grid.Row="1">
             <Grid
-                MaxWidth="{StaticResource PageMaxWidth}"
-                Padding="0,0,20,48"
+                Padding="0,0,0,48"
                 RowSpacing="24">
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition
-                        Width="*"
-                        MaxWidth="1000" />
-                    <ColumnDefinition Width="Auto" />
-                </Grid.ColumnDefinitions>
+
                 <Grid.RowDefinitions>
                     <RowDefinition Height="Auto" />
                     <RowDefinition Height="Auto" />
@@ -56,7 +49,9 @@
                 </Grid.RowDefinitions>
 
                 <!--  Top panel  -->
-                <Grid ColumnSpacing="16">
+                <Grid
+                    MaxWidth="{StaticResource PageMaxWidth}"
+                    ColumnSpacing="16">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="160" />
                         <ColumnDefinition Width="*" />
@@ -111,14 +106,13 @@
                     Grid.Row="1"
                     MaxWidth="{StaticResource PageMaxWidth}"
                     Margin="0,12,0,0"
-                    HorizontalAlignment="Stretch"
-                    HorizontalContentAlignment="Stretch"
                     Content="{x:Bind ModuleContent}" />
 
                 <!--  Bottom panel  -->
                 <StackPanel
                     x:Name="SecondaryLinksPanel"
                     Grid.Row="2"
+                    MaxWidth="{StaticResource PageMaxWidth}"
                     Orientation="Vertical"
                     Visibility="{x:Bind SecondaryLinks.Count, Converter={StaticResource doubleToVisibilityConverter}}">
                     <TextBlock
@@ -126,7 +120,6 @@
                         AutomationProperties.HeadingLevel="Level2"
                         Style="{ThemeResource BodyStrongTextBlockStyle}"
                         Text="{x:Bind SecondaryLinksHeader}" />
-
                     <ItemsControl
                         x:Name="SecondaryLinksItemControl"
                         Margin="2,0,0,0"

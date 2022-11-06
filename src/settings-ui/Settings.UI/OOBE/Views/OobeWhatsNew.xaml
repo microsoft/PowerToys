@@ -41,20 +41,18 @@
             Grid.Row="1"
             VerticalAlignment="Top"
             IsClosable="False"
-            IsOpen="True"
+            IsOpen="False"
             IsTabStop="True"
-            Severity="Error"
-            Visibility="Collapsed" />
+            Severity="Error" />
         <InfoBar
             x:Name="ProxyWarningInfoBar"
             x:Uid="Oobe_WhatsNew_ProxyAuthenticationWarning"
             Grid.Row="1"
             VerticalAlignment="Top"
             IsClosable="False"
-            IsOpen="True"
+            IsOpen="False"
             IsTabStop="True"
-            Severity="Warning"
-            Visibility="Collapsed" />
+            Severity="Warning" />
         <ScrollViewer
             Grid.Row="1"
             VerticalScrollBarVisibility="Auto">
