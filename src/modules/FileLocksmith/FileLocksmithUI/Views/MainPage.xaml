@@ -25,7 +25,7 @@
             TrueValue="Collapsed" />
         <converters:FileCountConverter x:Key="fileCountConverter" />
         <converters:PidToIconConverter x:Key="pidToIconConverter" />
-        <converters:PidToUserConverter x:Key="pidToUserConverter" />
+        <converters:UserToSystemWarningVisibilityConverter x:Key="userToSystemWarningVisibilityConverter" />
         <converters:FileListToDescriptionConverter x:Key="fileListToDescriptionConverter" />
     </Page.Resources>
 
@@ -126,22 +126,36 @@
                                     </StackPanel>
                                 </labs:SettingsExpander.Header>
                                 <labs:SettingsExpander.Content>
-                                    <Button
-                                        MinWidth="132"
-                                        Command="{Binding Path=DataContext.EndTaskCommand, ElementName=ProcessesListView}"
-                                        CommandParameter="{Binding}">
-                                        <StackPanel
-                                            Orientation="Horizontal"
-                                            Spacing="6">
-                                            <FontIcon
-                                                FontFamily="{ThemeResource SymbolThemeFontFamily}"
-                                                FontSize="14"
-                                                Glyph="&#xf140;" />
-                                            <TextBlock
-                                                x:Uid="EndTask"
-                                                FontSize="14" />
-                                        </StackPanel>
-                                    </Button>
+                                    <StackPanel
+                                        Orientation="Horizontal"
+                                        Spacing="8">
+                                        <FontIcon
+                                            Foreground="{ThemeResource InfoBarWarningSeverityIconBackground}"
+                                            Glyph="&#xE7BA;"
+                                            Visibility="{x:Bind user, Mode=OneTime, Converter={StaticResource userToSystemWarningVisibilityConverter}}">
+                                            <ToolTipService.ToolTip>
+                                                <TextBlock
+                                                    x:Uid="ProcessIsSystemUserWarning"
+                                                    TextWrapping="Wrap" />
+                                            </ToolTipService.ToolTip>
+                                        </FontIcon>
+                                        <Button
+                                            MinWidth="132"
+                                            Command="{Binding Path=DataContext.EndTaskCommand, ElementName=ProcessesListView}"
+                                            CommandParameter="{Binding}">
+                                            <StackPanel
+                                                Orientation="Horizontal"
+                                                Spacing="6">
+                                                <FontIcon
+                                                    FontFamily="{ThemeResource SymbolThemeFontFamily}"
+                                                    FontSize="14"
+                                                    Glyph="&#xf140;" />
+                                                <TextBlock
+                                                    x:Uid="EndTask"
+                                                    FontSize="14" />
+                                            </StackPanel>
+                                        </Button>
+                                    </StackPanel>
                                 </labs:SettingsExpander.Content>
                                 <labs:SettingsExpander.Items>
                                     <labs:SettingsCard x:Uid="ProcessID">
@@ -225,7 +239,9 @@
                 HorizontalScrollMode="Auto"
                 VerticalScrollBarVisibility="Auto"
                 VerticalScrollMode="Auto">
-                <TextBlock Text="{x:Bind ViewModel.PathsToString, Mode=OneWay}" />
+                <!--<TextBlock
+                    IsTextSelectionEnabled="True"
+                    Text="{x:Bind ViewModel.PathsToString, Mode=OneWay}" />-->
             </ScrollViewer>
         </ContentDialog>
     </Grid>
