@@ -57,7 +57,7 @@
     <PackageReference Include="NLog" Version="5.0.4" />
     <PackageReference Include="System.CommandLine" Version="2.0.0-beta1.20071.2" />
     <PackageReference Include="System.Reactive" Version="5.0.0" />
-    <PackageReference Include="System.Runtime.Caching" Version="7.0.0-rc.2.22472.3" />
+    <PackageReference Include="System.Runtime.Caching" Version="7.0.0" />
   </ItemGroup>
 
   <ItemGroup>
