@@ -245,9 +245,9 @@
                 HorizontalScrollMode="Auto"
                 VerticalScrollBarVisibility="Auto"
                 VerticalScrollMode="Auto">
-                <!--<TextBlock
+                <TextBlock
                     IsTextSelectionEnabled="True"
-                    Text="{x:Bind ViewModel.PathsToString, Mode=OneWay}" />-->
+                    Text="{x:Bind ViewModel.PathsToString, Mode=OneWay}" />
             </ScrollViewer>
         </ContentDialog>
     </Grid>
