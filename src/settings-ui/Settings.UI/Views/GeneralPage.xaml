@@ -235,50 +235,35 @@
                             <controls:Setting x:Uid="General_SettingsBackupAndRestore" Icon="&#xE777;" Style="{StaticResource ExpanderHeaderSettingStyle}">
                                 <controls:Setting.Description>
                                     <TextBlock Style="{StaticResource SecondaryTextStyle}">
-                                                <Run x:Uid="General_SettingsBackupAndRestoreDescription" />
+                                        <Run x:Uid="General_SettingsBackupAndRestoreDescription" />
                                     </TextBlock>
                                 </controls:Setting.Description>
                                 <controls:Setting.ActionContent>
-                                    <Grid ColumnSpacing="8">
-                                        <Grid.ColumnDefinitions>
-                                            <ColumnDefinition Width="auto" />
-                                            <ColumnDefinition Width="auto" />
-                                        </Grid.ColumnDefinitions>
-                                        <Button Grid.Column="0" x:Uid="General_SettingsBackupAndRestore_ButtonBackup"
+                                     <StackPanel Spacing="8" Orientation="Horizontal">
+                                        <Button x:Uid="General_SettingsBackupAndRestore_ButtonBackup"
                                         Command="{Binding BackupConfigsEventHandler}"/>
-
-                                        <Button Grid.Column="1" x:Uid="General_SettingsBackupAndRestore_ButtonRestore"
+                                        <Button x:Uid="General_SettingsBackupAndRestore_ButtonRestore"
                                         Command="{Binding RestoreConfigsEventHandler}"/>
-                                    </Grid>
+                                    </StackPanel>
                                 </controls:Setting.ActionContent>
                             </controls:Setting>
                         </controls:SettingExpander.Header>
 
                         <controls:SettingExpander.Content>
                             <StackPanel Orientation="Vertical">
-
                                 <controls:Setting x:Uid="General_SettingsBackupAndRestoreLocationText" Visibility="Visible" Style="{StaticResource ExpanderContentSettingStyle}">
                                     <controls:Setting.ActionContent>
-                                        <Grid ColumnSpacing="8">
-                                            <Grid.ColumnDefinitions>
-                                                <ColumnDefinition Width="*" />
-                                                <ColumnDefinition Width="Auto" />
-                                            </Grid.ColumnDefinitions>
-                                            <Grid.RowDefinitions>
-                                                <RowDefinition Height="Auto" />
-                                            </Grid.RowDefinitions>
-
-                                            <TextBlock Grid.Row="0" Grid.Column="0"
-                                                       VerticalAlignment="Center"
+                                        <StackPanel Spacing="8" Orientation="Horizontal">
+                                            <TextBlock VerticalAlignment="Center"
                                                        Text="{x:Bind Mode=TwoWay, Path=ViewModel.SettingsBackupAndRestoreDir}"
                                                        IsTextSelectionEnabled="True" />
-                                            <Button Grid.Row="0" Grid.Column="1" x:Uid="General_SettingsBackupAndRestore_ButtonSelectLocation"
-                                            Command="{Binding SelectSettingBackupDirEventHandler}"/>
-                                        </Grid>
+                                            <Button x:Uid="General_SettingsBackupAndRestore_ButtonSelectLocation"
+                                                    Command="{Binding SelectSettingBackupDirEventHandler}"/>
+                                        </StackPanel>
                                     </controls:Setting.ActionContent>
                                 </controls:Setting>
 
-                                <controls:Setting x:Uid="General_SettingsBackupAndRestoreStatusInfo" Visibility="Visible" Style="{StaticResource ExpanderContentSettingStyle}"/>
+                                <controls:Setting x:Uid="General_SettingsBackupAndRestoreStatusInfo" Style="{StaticResource ExpanderContentSettingStyle}"/>
                                 <StackPanel>
                                     <Grid ColumnSpacing="8" RowSpacing="4" Margin="55,0,8,8">
                                         <Grid.ColumnDefinitions>
@@ -325,7 +310,6 @@
                                         <TextBlock Grid.Row="3" Grid.Column="1" Style="{StaticResource SecondaryTextStyle}">
                                                 <Run Text="{Binding LastSettingsBackupDate, Mode=OneWay}"/>
                                         </TextBlock>
-
                                     </Grid>
                                 </StackPanel>
                             </StackPanel>
