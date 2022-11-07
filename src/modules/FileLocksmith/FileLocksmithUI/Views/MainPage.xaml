@@ -105,13 +105,6 @@
                     IncrementalLoadingThreshold="10"
                     ItemsSource="{x:Bind ViewModel.Processes}"
                     SelectionMode="None">
-                    <ListView.ItemsPanel>
-                        <ItemsPanelTemplate>
-                            <StackPanel
-                                Padding="0,0,4,16"
-                                Orientation="Vertical" />
-                        </ItemsPanelTemplate>
-                    </ListView.ItemsPanel>
                     <ListView.ItemTemplate>
                         <DataTemplate x:DataType="interop:ProcessResult">
                             <labs:SettingsExpander Margin="0,3,0,0">
