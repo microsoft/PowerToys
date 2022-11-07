@@ -8,7 +8,6 @@
     xmlns:interactivity="using:Microsoft.Xaml.Interactivity"
     xmlns:interop="using:FileLocksmith.Interop"
     xmlns:labs="using:CommunityToolkit.Labs.WinUI"
-    xmlns:local="using:PowerToys.FileLocksmithUI.Views"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:toolkitConverters="using:CommunityToolkit.WinUI.UI.Converters"
     mc:Ignorable="d">
@@ -106,6 +105,13 @@
                     IncrementalLoadingThreshold="10"
                     ItemsSource="{x:Bind ViewModel.Processes}"
                     SelectionMode="None">
+                    <ListView.ItemsPanel>
+                        <ItemsPanelTemplate>
+                            <StackPanel
+                                Padding="0,0,4,16"
+                                Orientation="Vertical" />
+                        </ItemsPanelTemplate>
+                    </ListView.ItemsPanel>
                     <ListView.ItemTemplate>
                         <DataTemplate x:DataType="interop:ProcessResult">
                             <labs:SettingsExpander Margin="0,3,0,0">
@@ -168,7 +174,7 @@
                                         <TextBlock
                                             Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                                             IsTextSelectionEnabled="True"
-                                            Text="{x:Bind pid, Converter={StaticResource pidToUserConverter}}" />
+                                            Text="{x:Bind user}" />
                                     </labs:SettingsCard>
                                     <labs:SettingsCard ContentAlignment="Vertical">
                                         <labs:SettingsCard.Header>
@@ -177,13 +183,13 @@
                                                 <Run Text="(" /><Run Text="{x:Bind files, Converter={StaticResource fileCountConverter}}" /><Run Text=")" />
                                             </TextBlock>
                                         </labs:SettingsCard.Header>
-                                        <ListView
+                                        <ItemsRepeater
                                             Margin="-16,0,0,0"
-                                            ItemsSource="{x:Bind files}"
-                                            SelectionMode="None">
-                                            <ListView.ItemTemplate>
+                                            ItemsSource="{x:Bind files}">
+                                            <ItemsRepeater.ItemTemplate>
                                                 <DataTemplate x:DataType="x:String">
                                                     <TextBlock
+                                                        Margin="16,0,0,4"
                                                         FontSize="12"
                                                         Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                                                         IsTextSelectionEnabled="True"
@@ -193,8 +199,8 @@
                                                         TextWrapping="NoWrap"
                                                         ToolTipService.ToolTip="{Binding}" />
                                                 </DataTemplate>
-                                            </ListView.ItemTemplate>
-                                        </ListView>
+                                            </ItemsRepeater.ItemTemplate>
+                                        </ItemsRepeater>
                                     </labs:SettingsCard>
                                 </labs:SettingsExpander.Items>
                             </labs:SettingsExpander>
