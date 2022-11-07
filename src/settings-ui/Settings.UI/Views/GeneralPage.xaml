@@ -239,131 +239,93 @@
                                     </TextBlock>
                                 </controls:Setting.Description>
                                 <controls:Setting.ActionContent>
-                                    <Grid Visibility="Visible">
+                                    <Grid ColumnSpacing="8">
                                         <Grid.ColumnDefinitions>
-                                            <ColumnDefinition Width="1*" />
-                                            <ColumnDefinition Width="1*" />
+                                            <ColumnDefinition Width="auto" />
+                                            <ColumnDefinition Width="auto" />
                                         </Grid.ColumnDefinitions>
                                         <Button Grid.Column="0" x:Uid="General_SettingsBackupAndRestore_ButtonBackup"
-                                        Command="{Binding BackupConfigsEventHandler}"
-                                        IsEnabled="True"
-                                        Visibility="Visible"
-                                        HorizontalAlignment="Right"/>
+                                        Command="{Binding BackupConfigsEventHandler}"/>
 
-                                        <Button Grid.Column="2" x:Uid="General_SettingsBackupAndRestore_ButtonRestore"
-                                        Command="{Binding RestoreConfigsEventHandler}"
-                                        IsEnabled="True"
-                                        Visibility="Visible"
-                                        HorizontalAlignment="Right"/>
-
+                                        <Button Grid.Column="1" x:Uid="General_SettingsBackupAndRestore_ButtonRestore"
+                                        Command="{Binding RestoreConfigsEventHandler}"/>
                                     </Grid>
                                 </controls:Setting.ActionContent>
                             </controls:Setting>
                         </controls:SettingExpander.Header>
 
                         <controls:SettingExpander.Content>
-
-
                             <StackPanel Orientation="Vertical">
 
                                 <controls:Setting x:Uid="General_SettingsBackupAndRestoreLocationText" Visibility="Visible" Style="{StaticResource ExpanderContentSettingStyle}">
-
                                     <controls:Setting.ActionContent>
-
-                                        <Grid Padding="10,5,0,0">
+                                        <Grid ColumnSpacing="8">
                                             <Grid.ColumnDefinitions>
-                                                <ColumnDefinition Width="Auto" />
                                                 <ColumnDefinition Width="*" />
                                                 <ColumnDefinition Width="Auto" />
                                             </Grid.ColumnDefinitions>
                                             <Grid.RowDefinitions>
                                                 <RowDefinition Height="Auto" />
                                             </Grid.RowDefinitions>
-                                            <TextBlock MaxWidth="350" Grid.Row="0" Grid.Column="1" Text="{x:Bind Mode=TwoWay, Path=ViewModel.SettingsBackupAndRestoreDir}" IsTextSelectionEnabled="True" MinWidth="350" />
-                                            <Button Grid.Row="0" Grid.Column="2" x:Uid="General_SettingsBackupAndRestore_ButtonSelectLocation"
-                                        Command="{Binding SelectSettingBackupDirEventHandler}"
-                                        IsEnabled="True"
-                                        Visibility="Visible"
-                                        HorizontalAlignment="Left"/>
 
+                                            <TextBlock Grid.Row="0" Grid.Column="0"
+                                                       VerticalAlignment="Center"
+                                                       Text="{x:Bind Mode=TwoWay, Path=ViewModel.SettingsBackupAndRestoreDir}"
+                                                       IsTextSelectionEnabled="True" />
+                                            <Button Grid.Row="0" Grid.Column="1" x:Uid="General_SettingsBackupAndRestore_ButtonSelectLocation"
+                                            Command="{Binding SelectSettingBackupDirEventHandler}"/>
                                         </Grid>
-
                                     </controls:Setting.ActionContent>
                                 </controls:Setting>
 
                                 <controls:Setting x:Uid="General_SettingsBackupAndRestoreStatusInfo" Visibility="Visible" Style="{StaticResource ExpanderContentSettingStyle}"/>
                                 <StackPanel>
-
-
-
-                                    <Grid Padding="55,0,10,10">
-                                        <Grid.Resources >
-                                            <Style TargetType="Border" >
-                                                <Setter Property="Padding" Value="2,0,5,0" />
-                                            </Style>
-                                        </Grid.Resources>
+                                    <Grid ColumnSpacing="8" RowSpacing="4" Margin="55,0,8,8">
                                         <Grid.ColumnDefinitions>
                                             <ColumnDefinition Width="Auto" />
                                             <ColumnDefinition Width="Auto" />
                                         </Grid.ColumnDefinitions>
                                         <Grid.RowDefinitions>
-                                            <RowDefinition Height="1*" />
-                                            <RowDefinition Height="1*" />
-                                            <RowDefinition Height="1*" />
-                                            <RowDefinition Height="1*" />
+                                            <RowDefinition Height="Auto" />
+                                            <RowDefinition Height="Auto" />
+                                            <RowDefinition Height="Auto" />
+                                            <RowDefinition Height="Auto" />
                                         </Grid.RowDefinitions>
 
-                                        <Border Grid.Row="0" Grid.Column="0">
-                                            <TextBlock Style="{StaticResource HeaderTextStyle}">
-                                                <Run x:Uid="General_SettingsBackupInfo_DateHeader" />
-                                            </TextBlock>
-
-                                        </Border>
-                                        <Border Grid.Row="0" Grid.Column="1">
-                                            <TextBlock Style="{StaticResource SecondaryTextStyle}">
-                                                <Run Text="{Binding LastSettingsBackupDate, Mode=OneWay}"/>
-                                            </TextBlock>
-                                        </Border>
-
-                                        <Border Grid.Row="1" Grid.Column="0">
-                                            <TextBlock Style="{StaticResource HeaderTextStyle}">
+                                        <TextBlock Grid.Row="0" Grid.Column="0" Style="{StaticResource HeaderTextStyle}">
                                                 <Run x:Uid="General_SettingsBackupInfo_StatusHeader" />
-                                            </TextBlock>
-                                        </Border>
-                                        <Border Grid.Row="1" Grid.Column="1">
-                                            <StackPanel Orientation="Horizontal">
-                                                <TextBlock Style="{StaticResource SecondaryTextStyle}">                                                
+                                        </TextBlock>
+                                        <StackPanel Grid.Row="0" Grid.Column="1" Orientation="Horizontal" Spacing="8">
+                                            <TextBlock Style="{StaticResource SecondaryTextStyle}">                                                
                                                 <Run Text="{Binding CurrentSettingMatchText, Mode=OneWay}"/>
-                                                </TextBlock>
+                                            </TextBlock>
 
-                                                <TextBlock Padding="5,0,0,0" Style="{StaticResource SecondaryTextStyle}"><Hyperlink Click="UpdateBackupAndRestoreStatusText" TextDecorations="Underline">
+                                            <TextBlock Style="{StaticResource SecondaryTextStyle}"><Hyperlink Click="UpdateBackupAndRestoreStatusText" TextDecorations="Underline">
                                                     <Run x:Uid="General_SettingsBackupAndRestore_LinkRefresh" />
                                                 </Hyperlink></TextBlock>
+                                        </StackPanel>
 
-                                            </StackPanel>
-                                        </Border>
-
-                                        <Border Grid.Row="2" Grid.Column="0">
-                                            <TextBlock Style="{StaticResource HeaderTextStyle}">
-                                                <Run x:Uid="General_SettingsBackupInfo_SourceHeader" />
-                                            </TextBlock>
-                                        </Border>
-                                        <Border Grid.Row="2" Grid.Column="1">
-                                            <TextBlock Style="{StaticResource SecondaryTextStyle}">
-                                                <Run Text="{Binding LastSettingsBackupSource, Mode=OneWay}"/>
-                                            </TextBlock>
-                                        </Border>
-
-                                        <Border Grid.Row="3" Grid.Column="0">
-                                            <TextBlock Style="{StaticResource HeaderTextStyle}">
+                                        <TextBlock Grid.Row="1" Grid.Column="0" Style="{StaticResource HeaderTextStyle}">
                                                 <Run x:Uid="General_SettingsBackupInfo_FileNameHeader" />
-                                            </TextBlock>
-                                        </Border>
-                                        <Border Grid.Row="3" Grid.Column="1">
-                                            <TextBlock Style="{StaticResource SecondaryTextStyle}">
+                                        </TextBlock>
+                                        <TextBlock Grid.Row="1" Grid.Column="1" Style="{StaticResource SecondaryTextStyle}">
                                                 <Run Text="{Binding LastSettingsBackupFileName, Mode=OneWay}"/>
-                                            </TextBlock>
-                                        </Border>
+                                        </TextBlock>
+                                        
+                                        <TextBlock Grid.Row="2" Grid.Column="0" Style="{StaticResource HeaderTextStyle}">
+                                                <Run x:Uid="General_SettingsBackupInfo_SourceHeader" />
+                                        </TextBlock>
+                                        <TextBlock Grid.Row="2" Grid.Column="1" Style="{StaticResource SecondaryTextStyle}">
+                                                <Run Text="{Binding LastSettingsBackupSource, Mode=OneWay}"/>
+                                        </TextBlock>
+                                        
+                                        <TextBlock Grid.Row="3" Grid.Column="0" Style="{StaticResource HeaderTextStyle}">
+                                                <Run x:Uid="General_SettingsBackupInfo_DateHeader" />
+                                        </TextBlock>
+                                        <TextBlock Grid.Row="3" Grid.Column="1" Style="{StaticResource SecondaryTextStyle}">
+                                                <Run Text="{Binding LastSettingsBackupDate, Mode=OneWay}"/>
+                                        </TextBlock>
+
                                     </Grid>
                                 </StackPanel>
                             </StackPanel>
@@ -378,7 +340,6 @@
                                   IsOpen="{Binding SettingsBackupRestoreMessageVisible, Mode=OneWay}"                                  
                                   Title="{Binding SettingsBackupMessage}"/>
                 <!-- End General_SettingsBackupAndRestore -->
-
             </StackPanel>
 
         </controls:SettingsPageControl.ModuleContent>
