@@ -92,15 +92,15 @@ namespace
     };
 }
 
-bool AddZone(winrt::com_ptr<IZone> zone, ZonesMap& zones) noexcept
+bool AddZone(Zone zone, ZonesMap& zones) noexcept
 {
-    auto zoneId = zone->Id();
+    auto zoneId = zone.Id();
     if (zones.contains(zoneId))
     {
         return false;
     }
 
-    zones[zoneId] = zone;
+    zones.insert({ zoneId, std::move(zone) });
     return true;
 }
 
@@ -169,8 +169,8 @@ ZonesMap CalculateGridZones(FancyZonesUtils::Rect workArea, FancyZonesDataTypes:
                 left += col == 0 ? spacing : spacing / 2;
                 right -= maxCol == static_cast<int64_t>(gridLayoutInfo.columns()) - 1 ? spacing : spacing / 2;
 
-                auto zone = MakeZone(RECT{ left, top, right, bottom }, i);
-                if (zone)
+                Zone zone(RECT{ left, top, right, bottom }, i);
+                if (zone.IsValid())
                 {
                     if (!AddZone(zone, zones))
                     {
@@ -207,8 +207,8 @@ ZonesMap LayoutConfigurator::Focus(FancyZonesUtils::Rect workArea, int zoneCount
 
     for (int i = 0; i < zoneCount; i++)
     {
-        auto zone = MakeZone(focusZoneRect, zones.size());
-        if (zone)
+        Zone zone(focusZoneRect, zones.size());
+        if (zone.IsValid())
         {
             if (!AddZone(zone, zones))
             {
@@ -251,8 +251,8 @@ ZonesMap LayoutConfigurator::Rows(FancyZonesUtils::Rect workArea, int zoneCount,
         right = totalWidth + spacing;
         bottom = top + (zoneIndex + 1) * totalHeight / zoneCount - zoneIndex * totalHeight / zoneCount;
 
-        auto zone = MakeZone(RECT{ left, top, right, bottom }, zones.size());
-        if (zone)
+        Zone zone(RECT{ left, top, right, bottom }, zones.size());
+        if (zone.IsValid())
         {
             if (!AddZone(zone, zones))
             {
@@ -292,8 +292,8 @@ ZonesMap LayoutConfigurator::Columns(FancyZonesUtils::Rect workArea, int zoneCou
         right = left + (zoneIndex + 1) * totalWidth / zoneCount - zoneIndex * totalWidth / zoneCount;
         bottom = totalHeight + spacing;
 
-        auto zone = MakeZone(RECT{ left, top, right, bottom }, zones.size());
-        if (zone)
+        Zone zone(RECT{ left, top, right, bottom }, zones.size());
+        if (zone.IsValid())
         {
             if (!AddZone(zone, zones))
             {
@@ -404,8 +404,8 @@ ZonesMap LayoutConfigurator::Custom(FancyZonesUtils::Rect workArea, HMONITOR mon
             DPIAware::Convert(monitor, x, y);
             DPIAware::Convert(monitor, zoneWidth, zoneHeight);
             
-            auto zone = MakeZone(RECT{ static_cast<long>(x), static_cast<long>(y), static_cast<long>(x + zoneWidth), static_cast<long>(y + zoneHeight) }, zones.size());
-            if (zone)
+            Zone zone(RECT{ static_cast<long>(x), static_cast<long>(y), static_cast<long>(x + zoneWidth), static_cast<long>(y + zoneHeight) }, zones.size());
+            if (zone.IsValid())
             {
                 if (!AddZone(zone, zones))
                 {

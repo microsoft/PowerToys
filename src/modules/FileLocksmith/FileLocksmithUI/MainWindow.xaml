@@ -1,0 +1,44 @@
+﻿<winuiex:WindowEx
+    x:Class="FileLocksmithUI.MainWindow"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:contract7NotPresent="http://schemas.microsoft.com/winfx/2006/xaml/presentation?IsApiContractNotPresent(Windows.Foundation.UniversalApiContract,7)"
+    xmlns:contract7Present="http://schemas.microsoft.com/winfx/2006/xaml/presentation?IsApiContractPresent(Windows.Foundation.UniversalApiContract,7)"
+    xmlns:converters="using:CommunityToolkit.WinUI.UI.Converters"
+    xmlns:converters1="using:PowerToys.FileLocksmithUI.Converters"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:interop="using:FileLocksmith.Interop"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:views="using:PowerToys.FileLocksmithUI.Views"
+    xmlns:winuiex="using:WinUIEx"
+    x:Uid="AppTitle"
+    Width="680"
+    MinWidth="480"
+    MinHeight="320"
+    IsShownInSwitchers="True"
+    IsTitleBarVisible="True"
+    mc:Ignorable="d">
+    <winuiex:WindowEx.Backdrop>
+        <winuiex:MicaSystemBackdrop />
+    </winuiex:WindowEx.Backdrop>
+    <Grid>
+
+        <Grid.RowDefinitions>
+            <RowDefinition Height="32" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+        <Grid x:Name="titleBar">
+            <StackPanel
+                Margin="16,8,8,8"
+                VerticalAlignment="Top"
+                Orientation="Horizontal">
+                <Image Source="Assets/AppList.png" />
+                <TextBlock
+                    x:Uid="AppTitleText"
+                    Margin="12,0,0,0"
+                    Style="{StaticResource CaptionTextBlockStyle}" />
+            </StackPanel>
+        </Grid>
+        <views:MainPage x:Name="mainPage" Grid.Row="1" />
+    </Grid>
+</winuiex:WindowEx>

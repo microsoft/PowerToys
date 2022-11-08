@@ -5,7 +5,7 @@
 #include  <FancyZonesLib/FancyZonesData/LayoutDefaults.h>
 #include <FancyZonesLib/FancyZonesDataTypes.h>
 
-struct Layout
+struct LayoutData
 {
     GUID uuid = GUID_NULL;
     FancyZonesDataTypes::ZoneSetLayoutType type = FancyZonesDataTypes::ZoneSetLayoutType::PriorityGrid;
@@ -15,7 +15,7 @@ struct Layout
     int sensitivityRadius = DefaultValues::SensitivityRadius;
 };
 
-inline bool operator==(const Layout& lhs, const Layout& rhs) 
+inline bool operator==(const LayoutData& lhs, const LayoutData& rhs)
 {
     return lhs.uuid == rhs.uuid &&
            lhs.type == rhs.type &&

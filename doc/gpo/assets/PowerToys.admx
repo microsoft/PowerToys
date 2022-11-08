@@ -4,9 +4,8 @@
 <policyDefinitions xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" revision="1.0" schemaVersion="1.0" xmlns="http://schemas.microsoft.com/GroupPolicy/2006/07/PolicyDefinitions">
   <policyNamespaces>
     <target prefix="powertoys" namespace="Microsoft.Policies.PowerToys" />
-    <using prefix="windows" namespace="Microsoft.Policies.Windows" />
   </policyNamespaces>
-  <resources minRequiredRevision="1.0"/>
+  <resources minRequiredRevision="1.0"/><!-- PowerToys v0.64.0 -->
   <supportedOn>
     <definitions>
       <definition name="SUPPORTED_POWERTOYS_0_64_0" displayName="$(string.SUPPORTED_POWERTOYS_0_64_0)"/>
@@ -48,6 +47,16 @@
       </disabledValue>
     </policy>
     <policy name="ConfigureEnabledUtilityFancyZones" class="Both" displayName="$(string.ConfigureEnabledUtilityFancyZones)" explainText="$(string.ConfigureEnabledUtilityDescription)" key="Software\Policies\PowerToys" valueName="ConfigureEnabledUtilityFancyZones">
+      <parentCategory ref="PowerToys" />
+      <supportedOn ref="SUPPORTED_POWERTOYS_0_64_0" />
+      <enabledValue>
+        <decimal value="1" />
+      </enabledValue>
+      <disabledValue>
+        <decimal value="0" />
+      </disabledValue>
+    </policy>
+    <policy name="ConfigureEnabledUtilityFileLocksmith" class="Both" displayName="$(string.ConfigureEnabledUtilityFileLocksmith)" explainText="$(string.ConfigureEnabledUtilityDescription)" key="Software\Policies\PowerToys" valueName="ConfigureEnabledUtilityFileLocksmith">
       <parentCategory ref="PowerToys" />
       <supportedOn ref="SUPPORTED_POWERTOYS_0_64_0" />
       <enabledValue>

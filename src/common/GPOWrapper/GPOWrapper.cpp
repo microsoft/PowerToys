@@ -20,6 +20,10 @@ namespace winrt::PowerToys::GPOWrapper::implementation
     {
         return (GpoRuleConfigured)powertoys_gpo::getConfiguredFancyZonesEnabledValue();
     }
+    GpoRuleConfigured GPOWrapper::GetConfiguredFileLocksmithEnabledValue()
+    {
+        return (GpoRuleConfigured)powertoys_gpo::getConfiguredFileLocksmithEnabledValue();
+    }
     GpoRuleConfigured GPOWrapper::GetConfiguredSvgPreviewEnabledValue()
     {
         return (GpoRuleConfigured)powertoys_gpo::getConfiguredSvgPreviewEnabledValue();

@@ -118,6 +118,7 @@ namespace Microsoft.PowerToys.Settings.UI
                         case "Awake": StartupPage = typeof(Views.AwakePage); break;
                         case "ColorPicker": StartupPage = typeof(Views.ColorPickerPage); break;
                         case "FancyZones": StartupPage = typeof(Views.FancyZonesPage); break;
+                        case "FileLocksmith": StartupPage = typeof(Views.FileLocksmithPage); break;
                         case "Run": StartupPage = typeof(Views.PowerLauncherPage); break;
                         case "ImageResizer": StartupPage = typeof(Views.ImageResizerPage); break;
                         case "KBM": StartupPage = typeof(Views.KeyboardManagerPage); break;

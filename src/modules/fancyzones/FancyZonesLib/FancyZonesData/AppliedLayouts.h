@@ -4,7 +4,7 @@
 #include <memory>
 #include <optional>
 
-#include <FancyZonesLib/FancyZonesData/Layout.h>
+#include <FancyZonesLib/FancyZonesData/LayoutData.h>
 #include <FancyZonesLib/ModuleConstants.h>
 
 #include <common/SettingsAPI/FileWatcher.h>
@@ -35,7 +35,7 @@ namespace NonLocalizable
 class AppliedLayouts
 {
 public:
-    using TAppliedLayoutsMap = std::unordered_map<FancyZonesDataTypes::WorkAreaId, Layout>;
+    using TAppliedLayoutsMap = std::unordered_map<FancyZonesDataTypes::WorkAreaId, LayoutData>;
     
     static AppliedLayouts& instance();
 
@@ -55,12 +55,12 @@ public:
     void SyncVirtualDesktops();
     void RemoveDeletedVirtualDesktops(const std::vector<GUID>& activeDesktops);
 
-    std::optional<Layout> GetDeviceLayout(const FancyZonesDataTypes::WorkAreaId& id) const noexcept;
+    std::optional<LayoutData> GetDeviceLayout(const FancyZonesDataTypes::WorkAreaId& id) const noexcept;
     const TAppliedLayoutsMap& GetAppliedLayoutMap() const noexcept;
 
     bool IsLayoutApplied(const FancyZonesDataTypes::WorkAreaId& id) const noexcept;
 
-    bool ApplyLayout(const FancyZonesDataTypes::WorkAreaId& deviceId, Layout layout);
+    bool ApplyLayout(const FancyZonesDataTypes::WorkAreaId& deviceId, LayoutData layout);
     bool ApplyDefaultLayout(const FancyZonesDataTypes::WorkAreaId& deviceId);
     bool CloneLayout(const FancyZonesDataTypes::WorkAreaId& srcId, const FancyZonesDataTypes::WorkAreaId& dstId);
 

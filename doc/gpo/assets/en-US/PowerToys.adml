@@ -32,6 +32,7 @@ If you don't configure this setting, users are able to disable or enable the uti
       <string id="ConfigureEnabledUtilityAwake">Awake: Configure enabled state</string>
       <string id="ConfigureEnabledUtilityColorPicker">Color Picker: Configure enabled state</string>
       <string id="ConfigureEnabledUtilityFancyZones">FancyZones: Configure enabled state</string>
+      <string id="ConfigureEnabledUtilityFileLocksmith">File Locksmith: Configure enabled state</string>
       <string id="ConfigureEnabledUtilityFileExplorerSVGPreview">SVG file preview: Configure enabled state</string>
       <string id="ConfigureEnabledUtilityFileExplorerMarkdownPreview">Markdown file preview: Configure enabled state</string>
       <string id="ConfigureEnabledUtilityFileExplorerMonacoPreview">Source code file preview: Configure enabled state</string>

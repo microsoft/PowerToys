@@ -34,11 +34,11 @@ namespace DefaultLayoutsJsonUtils
 
     struct LayoutJSON
     {
-        static std::optional<Layout> FromJson(const json::JsonObject& json)
+        static std::optional<LayoutData> FromJson(const json::JsonObject& json)
         {
             try
             {
-                Layout data{};
+                LayoutData data{};
                 auto idStr = json.GetNamedString(NonLocalizable::DefaultLayoutsIds::UuidID, L"");
                 if (!idStr.empty())
                 {
@@ -65,7 +65,7 @@ namespace DefaultLayoutsJsonUtils
             }
         }
 
-        static json::JsonObject ToJson(const Layout& data)
+        static json::JsonObject ToJson(const LayoutData& data)
         {
             json::JsonObject result{};
             result.SetNamedValue(NonLocalizable::DefaultLayoutsIds::UuidID, json::value(FancyZonesUtils::GuidToString(data.uuid).value()));
@@ -81,7 +81,7 @@ namespace DefaultLayoutsJsonUtils
     struct DefaultLayoutJSON
     {
         MonitorConfiguraionType monitorConfigurationType{ MonitorConfiguraionType::Horizontal };
-        Layout layout{};
+        LayoutData layout{};
 
         static std::optional<DefaultLayoutJSON> FromJson(const json::JsonObject& json)
         {
@@ -163,7 +163,7 @@ void DefaultLayouts::LoadData()
     }
 }
 
-Layout DefaultLayouts::GetDefaultLayout(MonitorConfiguraionType type) const noexcept
+LayoutData DefaultLayouts::GetDefaultLayout(MonitorConfiguraionType type) const noexcept
 {
     auto iter = m_layouts.find(type);
     if (iter != m_layouts.end())
@@ -171,5 +171,5 @@ Layout DefaultLayouts::GetDefaultLayout(MonitorConfiguraionType type) const noex
         return iter->second;
     }
 
-    return Layout{};
+    return LayoutData{};
 }
