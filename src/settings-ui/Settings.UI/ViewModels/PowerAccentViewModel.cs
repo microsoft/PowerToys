@@ -25,6 +25,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         {
             "ALL",
             "CUR",
+            "HR",
             "CZ",
             "FR",
             "DE",
@@ -32,13 +33,16 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             "IS",
             "IT",
             "MI",
+            "NL",
             "PI",
             "PL",
             "PT",
             "RO",
             "SK",
             "SP",
+            "SW",
             "TK",
+            "CYM",
         };
 
         private readonly string[] _toolbarOptions =
