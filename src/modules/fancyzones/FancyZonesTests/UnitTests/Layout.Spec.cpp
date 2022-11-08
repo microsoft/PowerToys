@@ -21,7 +21,7 @@ namespace FancyZonesUnitTests
         {
             .uuid = FancyZonesUtils::GuidFromString(L"{F762BAD6-DAA1-4997-9497-E11DFEB72F21}").value(),
             .type = ZoneSetLayoutType::Grid,
-            .showSpacing = false,
+            .showSpacing = true,
             .spacing = 17,
             .zoneCount = 4,
             .sensitivityRadius = 33
@@ -192,7 +192,7 @@ namespace FancyZonesUnitTests
         const LayoutData m_data{
             .uuid = FancyZonesUtils::GuidFromString(L"{33A2B101-06E0-437B-A61E-CDBECF502906}").value(),
             .type = ZoneSetLayoutType::Grid,
-            .showSpacing = false,
+            .showSpacing = true,
             .spacing = 17,
             .zoneCount = 4,
             .sensitivityRadius = 33

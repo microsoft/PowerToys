@@ -119,33 +119,49 @@ namespace PowerToys.FileLocksmithUI.ViewModels
 
         private async void WatchProcess(ProcessResult process, CancellationToken token)
         {
-            Process handle = Process.GetProcessById((int)process.pid);
             try
             {
-                await handle.WaitForExitAsync(token);
-            }
-            catch (TaskCanceledException)
-            {
-                // Nothing to do, normal operation
-            }
+                Process handle = Process.GetProcessById((int)process.pid);
+                try
+                {
+                    await handle.WaitForExitAsync(token);
+                }
+                catch (TaskCanceledException)
+                {
+                    // Nothing to do, normal operation
+                }
 
-            if (handle.HasExited)
+                if (handle.HasExited)
+                {
+                    Processes.Remove(process);
+                }
+            }
+            catch (Exception ex)
             {
-                Processes.Remove(process);
+                Logger.LogError($"Couldn't add a waiter to wait for a process to exit. PID = {process.pid} and Name = {process.name}.", ex);
+                Processes.Remove(process); // If we couldn't get an handle to the process or it has exited in the meanwhile, don't show it.
             }
         }
 
         [RelayCommand]
         public void EndTask(ProcessResult selectedProcess)
         {
-            Process handle = Process.GetProcessById((int)selectedProcess.pid);
             try
             {
-                handle.Kill();
+                Process handle = Process.GetProcessById((int)selectedProcess.pid);
+                try
+                {
+                    handle.Kill();
+                }
+                catch (Exception ex)
+                {
+                    Logger.LogError($"Couldn't kill process {selectedProcess.name} with PID {selectedProcess.pid}.", ex);
+                }
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-                Logger.LogError($"Couldn't kill process {selectedProcess.name} with PID {selectedProcess.pid}.");
+                Logger.LogError($"Couldn't get an handle to kill process {selectedProcess.name} with PID {selectedProcess.pid}. Likely has been killed already.", ex);
+                Processes.Remove(selectedProcess); // If we couldn't get an handle to the process, remove it from the list, since it's likely been killed already.
             }
         }
 
