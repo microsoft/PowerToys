@@ -41,7 +41,7 @@
               SuppressRepair="yes" />
         </BootstrapperApplicationRef>
 
-        <util:FileSearch Variable="HasDotnet700rc2" Path="$(var.PlatformProgramFiles)dotnet\shared\Microsoft.WindowsDesktop.App\7.0.0\System.Xaml.dll" Result="exists" />
+        <util:FileSearch Variable="HasDotnet700" Path="$(var.PlatformProgramFiles)dotnet\shared\Microsoft.WindowsDesktop.App\7.0.0\System.Xaml.dll" Result="exists" />
         <util:RegistrySearch Variable="HasWebView2PerMachine" Root="HKLM" Key="SOFTWARE\WOW6432Node\Microsoft\EdgeUpdate\Clients\{F3017226-FE2A-4295-8BDF-00C3A9A7E4C5}" Result="exists" />
         <util:RegistrySearch Variable="HasWebView2PerUser" Root="HKCU" Key="Software\Microsoft\EdgeUpdate\Clients\{F3017226-FE2A-4295-8BDF-00C3A9A7E4C5}" Result="exists" />
 
