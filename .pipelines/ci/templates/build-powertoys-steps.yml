@@ -47,7 +47,6 @@ steps:
   inputs:
     packageType: sdk
     version: '7.x'
-    includePreviewVersions: true
 
 - task: NuGetToolInstaller@1
   displayName: Ensure NuGet Installer
