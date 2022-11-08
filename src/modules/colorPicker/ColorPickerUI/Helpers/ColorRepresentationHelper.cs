@@ -12,7 +12,7 @@ namespace ColorPicker.Helpers
     /// <summary>
     /// Helper class to easier work with color representation
     /// </summary>
-    internal static class ColorRepresentationHelper
+    public static class ColorRepresentationHelper
     {
         /// <summary>
         /// Return a <see cref="string"/> representation of a given <see cref="Color"/>
@@ -281,6 +281,74 @@ namespace ColorPicker.Helpers
                 + $"{color.R.ToString(hexFormat, CultureInfo.InvariantCulture)}"
                 + $"{color.G.ToString(hexFormat, CultureInfo.InvariantCulture)}"
                 + $"{color.B.ToString(hexFormat, CultureInfo.InvariantCulture)}";
+        }
+
+        public static string GetStringRepresentation(Color? color, string formatString)
+        {
+            if (color == null)
+            {
+                color = Color.Moccasin;
+            }
+
+            // convert all %?? expressions to strings
+            int formatterPosition = formatString.IndexOf('%', 0);
+            while (formatterPosition != -1)
+            {
+                if (formatterPosition >= formatString.Length - 1)
+                {
+                    // the formatter % was the last character, we are done
+                    break;
+                }
+
+                char paramFormat = formatString[formatterPosition + 1];
+                char paramType;
+                int paramCount = 2;
+                if (paramFormat >= '1' && paramFormat <= '9')
+                {
+                    // no parameter formatter, just param type defined. (like %2). Using the default formatter -> decimal
+                    paramType = paramFormat;
+                    paramFormat = 'd';
+                    paramCount = 1; // we have only one parameter after the formatter char
+                }
+                else
+                {
+                    // need to check the next char, which should be between 1 and 9. Plus the parameter formatter should be valid.
+                    if (formatterPosition >= formatString.Length - 2)
+                    {
+                        // not enough characters, end of string, we are done
+                        break;
+                    }
+
+                    paramType = formatString[formatterPosition + 2];
+                    if (paramType >= '1' && paramType <= '9' &&
+                        (paramFormat == 'd' || paramFormat == 'p' || paramFormat == 'h' || paramFormat == 'f'))
+                    {
+                        formatString = string.Concat(formatString.AsSpan(0, formatterPosition), GetStringRepresentation(color.Value, paramFormat, paramType), formatString.AsSpan(formatterPosition + paramCount + 1));
+                    }
+                }
+
+                // search for the next occurence of the formatter char
+                formatterPosition = formatString.IndexOf('%', formatterPosition + 1);
+            }
+
+            return formatString;
+        }
+
+        private static string GetStringRepresentation(Color color, char paramFormat, char paramType)
+        {
+            if (paramType < '1' || paramType > '9' || (paramFormat != 'd' && paramFormat != 'p' && paramFormat != 'h' && paramFormat != 'f'))
+            {
+                return string.Empty;
+            }
+
+            switch (paramType)
+            {
+                case '1': return color.R.ToString(CultureInfo.InvariantCulture);
+                case '2': return color.G.ToString(CultureInfo.InvariantCulture);
+                case '3': return color.B.ToString(CultureInfo.InvariantCulture);
+                case '4': return color.A.ToString(CultureInfo.InvariantCulture);
+                default: return string.Empty;
+            }
         }
     }
 }

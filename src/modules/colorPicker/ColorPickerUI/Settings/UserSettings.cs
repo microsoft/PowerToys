@@ -126,7 +126,7 @@ namespace ColorPicker.Settings
                                 VisibleColorFormats.Clear();
                                 foreach (var item in settings.Properties.VisibleColorFormats)
                                 {
-                                    if (item.Value)
+                                    if (item.Value.Item1)
                                     {
                                         VisibleColorFormats.Add(item.Key);
                                     }

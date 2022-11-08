@@ -81,5 +81,26 @@ namespace Microsoft.PowerToys.Settings.UI.Views
                 ViewModel.ColorFormats.Move(index, index + 1);
             }
         }
+
+        private void SaveButton_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
+        {
+            ViewModel.AddNewColorFormat(NewColorName.Text, NewColorFormat.Text, true);
+            NewColorFlyout.Hide();
+        }
+
+        private void CancelButton_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
+        {
+            NewColorFlyout.Hide();
+        }
+
+        private void NewColorName_TextChanged(object sender, TextChangedEventArgs e)
+        {
+            SaveButton.IsEnabled = ViewModel.IsNameEnabled(NewColorName.Text);
+        }
+
+        private void NewColorFormat_TextChanged(object sender, TextChangedEventArgs e)
+        {
+            NewColorPreview.Text = ColorRepresentationHelper.GetStringRepresentation(null, NewColorFormat.Text);
+        }
     }
 }

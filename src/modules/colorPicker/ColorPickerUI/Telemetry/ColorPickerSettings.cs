@@ -2,6 +2,7 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System;
 using System.Collections.Generic;
 using System.Diagnostics.Tracing;
 using Microsoft.PowerToys.Telemetry;
@@ -12,7 +13,7 @@ namespace ColorPicker.Telemetry
     [EventData]
     public class ColorPickerSettings : EventBase, IEvent
     {
-        public ColorPickerSettings(IDictionary<string, bool> editorFormats)
+        public ColorPickerSettings(IDictionary<string, Tuple<bool, string>> editorFormats)
         {
             EditorFormats = editorFormats;
             EventName = "ColorPicker_Settings";
@@ -26,7 +27,7 @@ namespace ColorPicker.Telemetry
 
         public bool ShowColorName { get; set; }
 
-        public IDictionary<string, bool> EditorFormats { get; }
+        public IDictionary<string, Tuple<bool, string>> EditorFormats { get; }
 
         public PartA_PrivTags PartA_PrivTags => PartA_PrivTags.ProductAndServiceUsage;
     }
