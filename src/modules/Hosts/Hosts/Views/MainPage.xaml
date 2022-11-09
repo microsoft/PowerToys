@@ -8,7 +8,6 @@
     xmlns:i="using:Microsoft.Xaml.Interactivity"
     xmlns:ic="using:Microsoft.Xaml.Interactions.Core"
     xmlns:local="using:Hosts.Views"
-    xmlns:localControls="using:Hosts.Controls"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:models="using:Hosts.Models"
     x:Name="Page"
@@ -321,9 +320,10 @@
             </ListView.ItemTemplate>
         </ListView>
 
-        <localControls:TopMarginContentDialog
+        <ContentDialog
             x:Name="EntryDialog"
             x:Uid="EntryDialog"
+            Loaded="ContentDialog_Loaded_ApplyMargin"
             IsPrimaryButtonEnabled="{Binding Valid, Mode=TwoWay}"
             PrimaryButtonStyle="{StaticResource AccentButtonStyle}">
             <ContentDialog.DataContext>
@@ -356,7 +356,7 @@
                         OnContent="" />
                 </StackPanel>
             </ScrollViewer>
-        </localControls:TopMarginContentDialog>
+        </ContentDialog>
 
         <ContentDialog
             x:Name="DeleteDialog"
@@ -369,6 +369,7 @@
         <ContentDialog
             x:Name="AdditionalLinesDialog"
             x:Uid="AdditionalLinesDialog"
+            Loaded="ContentDialog_Loaded_ApplyMargin"
             PrimaryButtonCommand="{x:Bind UpdateAdditionalLinesCommand}"
             PrimaryButtonStyle="{StaticResource AccentButtonStyle}">
 
