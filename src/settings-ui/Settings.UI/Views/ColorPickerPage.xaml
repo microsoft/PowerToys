@@ -166,60 +166,43 @@
                         <Button Style="{ThemeResource AccentButtonStyle}"
                                 Margin="56,0,0,0"
                                 VerticalAlignment="Center"
-                                Content="Add new snippet">
-                            <Button.Flyout>
-                                <Flyout x:Name="NewColorFlyout">
-                                    <StackPanel Spacing="16" Margin="0,12,0,0" Width="400">
-                                        <TextBlock Text="Add new snippet"/>
-                                        <TextBlock Text="Name"/>
-                                        <TextBox Name="NewColorName"
-                                                        Text="Custom 1" 
-                                                        TextChanged="NewColorName_TextChanged"
-                                                        HorizontalAlignment="Stretch"/>
-                                        <TextBlock Text="Format"/>
-                                        <TextBox Name ="NewColorFormat"
-                                                        TextChanged="NewColorFormat_TextChanged"
-                                                        Text="new Color() { R = %1, G = %2, B = %3, A = %4 };" 
-                                                        HorizontalAlignment="Stretch"/>
-                                        <StackPanel Orientation="Horizontal">
-                                            <TextBlock Text="Preview:"/>
-                                            <TextBlock Name="NewColorPreview" Text="new Color() { R = 143, G = 51, B = 47, A = 1 };"/>
-                                        </StackPanel>
-                                        <TextBlock Text="The following parameters can be used:"/>
-                                        <Grid>
-                                            <Grid.ColumnDefinitions>
-                                                <ColumnDefinition Width="1*"/>
-                                                <ColumnDefinition Width="3*"/>
-                                            </Grid.ColumnDefinitions>
-                                            <Grid.RowDefinitions>
-                                                <RowDefinition />
-                                                <RowDefinition />
-                                                <RowDefinition />
-                                                <RowDefinition />
-                                                <RowDefinition />
-                                            </Grid.RowDefinitions>
-                                            <TextBlock Text="%1 - Red"              Grid.Row="0"/>
-                                            <TextBlock Text="%2 - Green"            Grid.Row="1"/>
-                                            <TextBlock Text="%3 - Blue"             Grid.Row="2"/>
-                                            <TextBlock Text="%4 - Alpha"            Grid.Row="3"/>
-                                            <TextBlock Text="%5 - Hex"              Grid.Row="4"/>
-                                            <TextBlock Text="%6 - Hue"              Grid.Row="0"    Grid.Column="1"/>
-                                            <TextBlock Text="%7 - Saturation"       Grid.Row="1"    Grid.Column="1"/>
-                                            <TextBlock Text="%8 - Brightness"       Grid.Row="2"    Grid.Column="1"/>
-                                            <TextBlock Text="%9 - Lightness"        Grid.Row="3"    Grid.Column="1"/>
-                                        </Grid>
-                                        <StackPanel Spacing="8" Orientation="Horizontal">
-                                            <Button Name="SaveButton" Content="Save" Click="SaveButton_Click"></Button>
-                                            <Button Content="Cancel" Click="CancelButton_Click"></Button>
-                                        </StackPanel>
-                                    </StackPanel>
-                                </Flyout>
-                            </Button.Flyout>
+                                Content="Add new snippet"
+                                Click="NewFormatClick">
                         </Button>
                     </Grid>
                 </controls:SettingsGroup>
+                <ContentDialog
+                    x:Name="ColorFormatDialog"
+                    x:Uid="ColorFormatDialog"
+                    PrimaryButtonStyle="{StaticResource AccentButtonStyle}"
+                    SecondaryButtonText="Cancel"
+                    SecondaryButtonClick="ColorFormatDialog_CancelButtonClick">
+                    <ContentDialog.DataContext>
+                        <models:ColorFormatModel />
+                    </ContentDialog.DataContext>
+                    <ScrollViewer HorizontalScrollMode="Auto" HorizontalScrollBarVisibility="Auto">
+                        <StackPanel
+                                MinWidth="580"
+                                Margin="0,12,0,0"
+                                HorizontalAlignment="Stretch"
+                                Spacing="24">
+                            <TextBox
+                                x:Uid="NewColorName"
+                                x:Name="NewColorName"
+                                IsSpellCheckEnabled="False"
+                                Header="Name"
+                                Text="{Binding Name, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                            <TextBox
+                                x:Uid="NewColorFormat"
+                                Name="NewColorFormat"
+                                IsSpellCheckEnabled="False"
+                                Header="Format"
+                                TextChanged="NewColorFormat_TextChanged"
+                                Text="{Binding Example, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                        </StackPanel>
+                    </ScrollViewer>
+                </ContentDialog>
             </StackPanel>
-
         </controls:SettingsPageControl.ModuleContent>
 
         <controls:SettingsPageControl.PrimaryLinks>

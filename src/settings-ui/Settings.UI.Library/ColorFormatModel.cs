@@ -22,6 +22,13 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             IsShown = isShown;
         }
 
+        public ColorFormatModel()
+        {
+            Name = "My Format";
+            Example = "= new Color ();";
+            IsShown = true;
+        }
+
         public string Name
         {
             get

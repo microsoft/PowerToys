@@ -2,15 +2,23 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System;
+using System.Drawing;
+using System.Globalization;
+using System.Windows.Input;
+using Microsoft.PowerToys.Settings.UI.Helpers;
 using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.PowerToys.Settings.UI.ViewModels;
 using Microsoft.UI.Xaml.Controls;
+using Windows.ApplicationModel.Resources;
 
 namespace Microsoft.PowerToys.Settings.UI.Views
 {
     public sealed partial class ColorPickerPage : Page
     {
         public ColorPickerViewModel ViewModel { get; set; }
+
+        public ICommand AddCommand => new RelayCommand(Add);
 
         public ColorPickerPage()
         {
@@ -82,25 +90,101 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             }
         }
 
-        private void SaveButton_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
+        private void Add()
         {
-            ViewModel.AddNewColorFormat(NewColorName.Text, NewColorFormat.Text, true);
-            NewColorFlyout.Hide();
+            ColorFormatModel newColorFormat = ColorFormatDialog.DataContext as ColorFormatModel;
+            ViewModel.AddNewColorFormat(newColorFormat.Name, newColorFormat.Example, true);
+            ColorFormatDialog.Hide();
         }
 
-        private void CancelButton_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
+        public static string GetStringRepresentation(Color? color, string formatString)
         {
-            NewColorFlyout.Hide();
+            if (color == null)
+            {
+                color = Color.Moccasin;
+            }
+
+            // convert all %?? expressions to strings
+            int formatterPosition = formatString.IndexOf('%', 0);
+            while (formatterPosition != -1)
+            {
+                if (formatterPosition >= formatString.Length - 1)
+                {
+                    // the formatter % was the last character, we are done
+                    break;
+                }
+
+                char paramFormat = formatString[formatterPosition + 1];
+                char paramType;
+                int paramCount = 2;
+                if (paramFormat >= '1' && paramFormat <= '9')
+                {
+                    // no parameter formatter, just param type defined. (like %2). Using the default formatter -> decimal
+                    paramType = paramFormat;
+                    paramFormat = 'd';
+                    paramCount = 1; // we have only one parameter after the formatter char
+                }
+                else
+                {
+                    // need to check the next char, which should be between 1 and 9. Plus the parameter formatter should be valid.
+                    if (formatterPosition >= formatString.Length - 2)
+                    {
+                        // not enough characters, end of string, we are done
+                        break;
+                    }
+
+                    paramType = formatString[formatterPosition + 2];
+                }
+
+                if (paramType >= '1' && paramType <= '9' &&
+                    (paramFormat == 'd' || paramFormat == 'p' || paramFormat == 'h' || paramFormat == 'f'))
+                {
+                    formatString = string.Concat(formatString.AsSpan(0, formatterPosition), GetStringRepresentation(color.Value, paramFormat, paramType), formatString.AsSpan(formatterPosition + paramCount + 1));
+                }
+
+                // search for the next occurence of the formatter char
+                formatterPosition = formatString.IndexOf('%', formatterPosition + 1);
+            }
+
+            return formatString;
         }
 
-        private void NewColorName_TextChanged(object sender, TextChangedEventArgs e)
+        private static string GetStringRepresentation(Color color, char paramFormat, char paramType)
         {
-            SaveButton.IsEnabled = ViewModel.IsNameEnabled(NewColorName.Text);
+            if (paramType < '1' || paramType > '9' || (paramFormat != 'd' && paramFormat != 'p' && paramFormat != 'h' && paramFormat != 'f'))
+            {
+                return string.Empty;
+            }
+
+            switch (paramType)
+            {
+                case '1': return color.R.ToString(CultureInfo.InvariantCulture);
+                case '2': return color.G.ToString(CultureInfo.InvariantCulture);
+                case '3': return color.B.ToString(CultureInfo.InvariantCulture);
+                case '4': return color.A.ToString(CultureInfo.InvariantCulture);
+                default: return string.Empty;
+            }
+        }
+
+        private async void NewFormatClick(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
+        {
+            var resourceLoader = ResourceLoader.GetForViewIndependentUse();
+            ColorFormatDialog.Title = "Add custom color format"; // resourceLoader.GetString("AddNewEntryDialog_Title");
+            ColorFormatDialog.DataContext = new ColorFormatModel();
+            NewColorFormat.Description = GetStringRepresentation(null, NewColorFormat.Text);
+            ColorFormatDialog.PrimaryButtonText = "Save"; // resourceLoader.GetString("AddBtn");
+            ColorFormatDialog.PrimaryButtonCommand = AddCommand;
+            await ColorFormatDialog.ShowAsync();
+        }
+
+        private void ColorFormatDialog_CancelButtonClick(ContentDialog sender, ContentDialogButtonClickEventArgs args)
+        {
+            ColorFormatDialog.Hide();
         }
 
         private void NewColorFormat_TextChanged(object sender, TextChangedEventArgs e)
         {
-            NewColorPreview.Text = ColorRepresentationHelper.GetStringRepresentation(null, NewColorFormat.Text);
+            NewColorFormat.Description = GetStringRepresentation(null, NewColorFormat.Text);
         }
     }
 }

@@ -48,6 +48,7 @@ namespace Hosts.Views
             EntryDialog.Title = resourceLoader.GetString("AddNewEntryDialog_Title");
             EntryDialog.PrimaryButtonText = resourceLoader.GetString("AddBtn");
             EntryDialog.PrimaryButtonCommand = AddCommand;
+            EntryDialogBasePanel.MaxHeight = ActualHeight - 200;
             EntryDialog.DataContext = new Entry(string.Empty, string.Empty, string.Empty, true);
             await EntryDialog.ShowAsync();
         }
@@ -65,6 +66,7 @@ namespace Hosts.Views
             EntryDialog.Title = resourceLoader.GetString("UpdateEntry_Title");
             EntryDialog.PrimaryButtonText = resourceLoader.GetString("UpdateBtn");
             EntryDialog.PrimaryButtonCommand = UpdateCommand;
+            EntryDialogBasePanel.MaxHeight = ActualHeight - 200;
             var clone = ViewModel.Selected.Clone();
             EntryDialog.DataContext = clone;
             await EntryDialog.ShowAsync();
