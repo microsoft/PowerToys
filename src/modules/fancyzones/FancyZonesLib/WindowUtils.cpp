@@ -322,9 +322,7 @@ void FancyZonesWindowUtils::SizeWindowToRect(HWND window, RECT rect) noexcept
         ::GetWindowPlacement(window, &placement);
     }
 
-    bool isVisible;
-    isVisible = IsWindowVisible(window);
-    if (!isVisible)
+    if (!IsWindowVisible(window))
     {
         placement.showCmd = SW_HIDE;
     }
