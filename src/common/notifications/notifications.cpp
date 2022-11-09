@@ -90,7 +90,7 @@ public:
     }
 
     virtual HRESULT STDMETHODCALLTYPE Activate(
-        LPCWSTR appUserModelId,
+        LPCWSTR /*appUserModelId*/,
         LPCWSTR invokedArgs,
         const NOTIFICATION_USER_INPUT_DATA*,
         ULONG) override

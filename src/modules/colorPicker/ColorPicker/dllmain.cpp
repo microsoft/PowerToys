@@ -13,9 +13,7 @@
 #include <common/utils/logger_helper.h>
 #include <common/utils/winapi_error.h>
 
-BOOL APIENTRY DllMain(HMODULE hModule,
-                      DWORD ul_reason_for_call,
-                      LPVOID lpReserved)
+BOOL APIENTRY DllMain(HMODULE /*hModule*/, DWORD ul_reason_for_call, LPVOID /*lpReserved*/)
 {
     switch (ul_reason_for_call)
     {
@@ -127,7 +125,7 @@ private:
         }
         else
         {
-            Logger::error( L"ColorPicker failed to start. {}", get_last_error_or_default(GetLastError()));
+            Logger::error(L"ColorPicker failed to start. {}", get_last_error_or_default(GetLastError()));
         }
 
         m_hProcess = sei.hProcess;
@@ -208,7 +206,7 @@ public:
         return settings.serialize_to_buffer(buffer, buffer_size);
     }
 
-    virtual void call_custom_action(const wchar_t* action) override
+    virtual void call_custom_action(const wchar_t* /*action*/) override
     {
     }
 
@@ -255,7 +253,7 @@ public:
         m_enabled = false;
     }
 
-    virtual bool on_hotkey(size_t hotkeyId) override
+    virtual bool on_hotkey(size_t /*hotkeyId*/) override
     {
         if (m_enabled)
         {
@@ -269,7 +267,7 @@ public:
             return true;
         }
 
-        return false;      
+        return false;
     }
 
     virtual size_t get_hotkeys(Hotkey* hotkeys, size_t buffer_size) override

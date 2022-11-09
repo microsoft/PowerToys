@@ -19,7 +19,7 @@ MonitorInfo::MonitorInfo(HMONITOR h) :
     GetMonitorInfoW(handle, &info);
 }
 
-static BOOL CALLBACK GetDisplaysEnumCb(HMONITOR monitor, HDC hdc, LPRECT rect, LPARAM data)
+static BOOL CALLBACK GetDisplaysEnumCb(HMONITOR monitor, HDC /*hdc*/, LPRECT /*rect*/, LPARAM data)
 {
     auto* monitors = reinterpret_cast<std::vector<MonitorInfo>*>(data);
     monitors->emplace_back(monitor);
