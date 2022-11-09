@@ -59,7 +59,7 @@ WindowMoveHandler::WindowMoveHandler(const std::function<void()>& keyUpdateCallb
 {
 }
 
-void WindowMoveHandler::MoveSizeStart(HWND window, HMONITOR monitor, POINT const& ptScreen, const std::unordered_map<HMONITOR, std::shared_ptr<WorkArea>>& workAreaMap) noexcept
+void WindowMoveHandler::MoveSizeStart(HWND window, HMONITOR monitor, POINT const& /*ptScreen*/, const std::unordered_map<HMONITOR, std::shared_ptr<WorkArea>>& workAreaMap) noexcept
 {
     if (!FancyZonesWindowProcessing::IsProcessable(window))
     {
@@ -272,7 +272,7 @@ void WindowMoveHandler::MoveSizeEnd(HWND window, const std::unordered_map<HMONIT
                 }
             }
         }
-        
+
         FancyZonesWindowProperties::RemoveZoneIndexProperty(window);
     }
 
@@ -373,7 +373,7 @@ void WindowMoveHandler::SetWindowTransparency(HWND window) noexcept
     if (FancyZonesSettings::settings().makeDraggedWindowTransparent)
     {
         m_windowTransparencyProperties.draggedWindowExstyle = GetWindowLong(window, GWL_EXSTYLE);
-        
+
         SetWindowLong(window,
                       GWL_EXSTYLE,
                       m_windowTransparencyProperties.draggedWindowExstyle | WS_EX_LAYERED);
@@ -401,7 +401,7 @@ void WindowMoveHandler::ResetWindowTransparency() noexcept
         {
             Logger::error(L"Window transparency: SetLayeredWindowAttributes failed");
         }
-        
+
         if (SetWindowLong(m_windowTransparencyProperties.draggedWindow, GWL_EXSTYLE, m_windowTransparencyProperties.draggedWindowExstyle) == 0)
         {
             Logger::error(L"Window transparency: SetWindowLong failed, {}", get_last_error_or_default(GetLastError()));

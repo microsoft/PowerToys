@@ -14,7 +14,7 @@ public:
     ~WorkArea();
 
 public:
-    inline bool Init(HINSTANCE hinstance, const FancyZonesDataTypes::WorkAreaId& parentUniqueId)
+    inline bool Init([[maybe_unused]] HINSTANCE hinstance, const FancyZonesDataTypes::WorkAreaId& parentUniqueId)
     {
 #ifndef UNIT_TESTS
         if (!InitWindow(hinstance))
@@ -22,7 +22,6 @@ public:
             return false;
         }
 #endif
-
         InitLayout(parentUniqueId);
         return true;
     }
@@ -60,7 +59,7 @@ public:
     const std::unique_ptr<LayoutAssignedWindows>& GetLayoutWindows() const noexcept { return m_layoutWindows; }
     
     ZoneIndexSet GetWindowZoneIndexes(HWND window) const noexcept;
-    
+
     HRESULT MoveSizeEnter(HWND window) noexcept;
     HRESULT MoveSizeUpdate(POINT const& ptScreen, bool dragEnabled, bool selectManyZones) noexcept;
     HRESULT MoveSizeEnd(HWND window) noexcept;
@@ -70,7 +69,7 @@ public:
     bool MoveWindowIntoZoneByDirectionAndPosition(HWND window, DWORD vkCode, bool cycle) noexcept;
     bool ExtendWindowByDirectionAndPosition(HWND window, DWORD vkCode) noexcept;
     void SaveWindowProcessToZoneIndex(HWND window) noexcept;
-    
+
     void UpdateActiveZoneSet() noexcept;
 
     void ShowZonesOverlay() noexcept;
@@ -115,7 +114,7 @@ inline std::shared_ptr<WorkArea> MakeWorkArea(HINSTANCE hinstance, HMONITOR moni
         self->LogInitializationError();
         return nullptr;
     }
-    
+
     if (!self->Init(hinstance, parentUniqueId))
     {
         return nullptr;
@@ -123,4 +122,3 @@ inline std::shared_ptr<WorkArea> MakeWorkArea(HINSTANCE hinstance, HMONITOR moni
 
     return self;
 }
-
