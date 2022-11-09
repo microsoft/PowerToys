@@ -234,20 +234,20 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             var hexIntegerFormatName = "HEX Int";
             var decimalFormatName = "Decimal";
 
-            formatsUnordered.Add(new ColorFormatModel(hexFormatName, "ef68ff", visibleFormats.ContainsKey(hexFormatName) && visibleFormats[hexFormatName].Item1));
-            formatsUnordered.Add(new ColorFormatModel(rgbFormatName, "rgb(239, 104, 255)", visibleFormats.ContainsKey(rgbFormatName) && visibleFormats[rgbFormatName].Item1));
-            formatsUnordered.Add(new ColorFormatModel(hslFormatName, "hsl(294, 100%, 70%)", visibleFormats.ContainsKey(hslFormatName) && visibleFormats[hslFormatName].Item1));
-            formatsUnordered.Add(new ColorFormatModel(hsvFormatName, "hsv(294, 59%, 100%)", visibleFormats.ContainsKey(hsvFormatName) && visibleFormats[hsvFormatName].Item1));
-            formatsUnordered.Add(new ColorFormatModel(cmykFormatName, "cmyk(6%, 59%, 0%, 0%)", visibleFormats.ContainsKey(cmykFormatName) && visibleFormats[cmykFormatName].Item1));
-            formatsUnordered.Add(new ColorFormatModel(hsbFormatName, "hsb(100, 50%, 75%)", visibleFormats.ContainsKey(hsbFormatName) && visibleFormats[hsbFormatName].Item1));
-            formatsUnordered.Add(new ColorFormatModel(hsiFormatName, "hsi(100, 50%, 75%)", visibleFormats.ContainsKey(hsiFormatName) && visibleFormats[hsiFormatName].Item1));
-            formatsUnordered.Add(new ColorFormatModel(hwbFormatName, "hwb(100, 50%, 75%)", visibleFormats.ContainsKey(hwbFormatName) && visibleFormats[hwbFormatName].Item1));
-            formatsUnordered.Add(new ColorFormatModel(ncolFormatName, "R10, 50%, 75%", visibleFormats.ContainsKey(ncolFormatName) && visibleFormats[ncolFormatName].Item1));
-            formatsUnordered.Add(new ColorFormatModel(cielabFormatName, "CIELab(66, 72, -52)", visibleFormats.ContainsKey(cielabFormatName) && visibleFormats[cielabFormatName].Item1));
-            formatsUnordered.Add(new ColorFormatModel(ciexyzFormatName, "XYZ(59, 35, 98)", visibleFormats.ContainsKey(ciexyzFormatName) && visibleFormats[ciexyzFormatName].Item1));
-            formatsUnordered.Add(new ColorFormatModel(vec4FormatName, "(0.94f, 0.41f, 1.00f, 1f)", visibleFormats.ContainsKey(vec4FormatName) && visibleFormats[vec4FormatName].Item1));
-            formatsUnordered.Add(new ColorFormatModel(decimalFormatName, "15689983", visibleFormats.ContainsKey(decimalFormatName) && visibleFormats[decimalFormatName].Item1));
-            formatsUnordered.Add(new ColorFormatModel(hexIntegerFormatName, "0xFFAA00EE", visibleFormats.ContainsKey(hexIntegerFormatName) && visibleFormats[hexIntegerFormatName].Item1));
+            formatsUnordered.Add(new ColorFormatModel(hexFormatName, "ef68ff", visibleFormats.ContainsKey(hexFormatName) && visibleFormats[hexFormatName].Key));
+            formatsUnordered.Add(new ColorFormatModel(rgbFormatName, "rgb(239, 104, 255)", visibleFormats.ContainsKey(rgbFormatName) && visibleFormats[rgbFormatName].Key));
+            formatsUnordered.Add(new ColorFormatModel(hslFormatName, "hsl(294, 100%, 70%)", visibleFormats.ContainsKey(hslFormatName) && visibleFormats[hslFormatName].Key));
+            formatsUnordered.Add(new ColorFormatModel(hsvFormatName, "hsv(294, 59%, 100%)", visibleFormats.ContainsKey(hsvFormatName) && visibleFormats[hsvFormatName].Key));
+            formatsUnordered.Add(new ColorFormatModel(cmykFormatName, "cmyk(6%, 59%, 0%, 0%)", visibleFormats.ContainsKey(cmykFormatName) && visibleFormats[cmykFormatName].Key));
+            formatsUnordered.Add(new ColorFormatModel(hsbFormatName, "hsb(100, 50%, 75%)", visibleFormats.ContainsKey(hsbFormatName) && visibleFormats[hsbFormatName].Key));
+            formatsUnordered.Add(new ColorFormatModel(hsiFormatName, "hsi(100, 50%, 75%)", visibleFormats.ContainsKey(hsiFormatName) && visibleFormats[hsiFormatName].Key));
+            formatsUnordered.Add(new ColorFormatModel(hwbFormatName, "hwb(100, 50%, 75%)", visibleFormats.ContainsKey(hwbFormatName) && visibleFormats[hwbFormatName].Key));
+            formatsUnordered.Add(new ColorFormatModel(ncolFormatName, "R10, 50%, 75%", visibleFormats.ContainsKey(ncolFormatName) && visibleFormats[ncolFormatName].Key));
+            formatsUnordered.Add(new ColorFormatModel(cielabFormatName, "CIELab(66, 72, -52)", visibleFormats.ContainsKey(cielabFormatName) && visibleFormats[cielabFormatName].Key));
+            formatsUnordered.Add(new ColorFormatModel(ciexyzFormatName, "XYZ(59, 35, 98)", visibleFormats.ContainsKey(ciexyzFormatName) && visibleFormats[ciexyzFormatName].Key));
+            formatsUnordered.Add(new ColorFormatModel(vec4FormatName, "(0.94f, 0.41f, 1.00f, 1f)", visibleFormats.ContainsKey(vec4FormatName) && visibleFormats[vec4FormatName].Key));
+            formatsUnordered.Add(new ColorFormatModel(decimalFormatName, "15689983", visibleFormats.ContainsKey(decimalFormatName) && visibleFormats[decimalFormatName].Key));
+            formatsUnordered.Add(new ColorFormatModel(hexIntegerFormatName, "0xFFAA00EE", visibleFormats.ContainsKey(hexIntegerFormatName) && visibleFormats[hexIntegerFormatName].Key));
 
             _predefinedColorNames = formatsUnordered.Select(x => x.Name).ToList();
 
@@ -259,6 +259,12 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                     predefinedFormat.PropertyChanged += ColorFormat_PropertyChanged;
                     ColorFormats.Add(predefinedFormat);
                     formatsUnordered.Remove(predefinedFormat);
+                }
+                else
+                {
+                    ColorFormatModel customColorFormat = new ColorFormatModel(storedColorFormat.Key, storedColorFormat.Value.Value, storedColorFormat.Value.Key);
+                    customColorFormat.PropertyChanged += ColorFormat_PropertyChanged;
+                    ColorFormats.Add(customColorFormat);
                 }
             }
 
@@ -329,7 +335,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             foreach (var colorFormat in ColorFormats)
             {
                 string formatText = _predefinedColorNames.Contains(colorFormat.Name) ? string.Empty : colorFormat.Example;
-                _colorPickerSettings.Properties.VisibleColorFormats.Add(colorFormat.Name, Tuple.Create(colorFormat.IsShown, formatText));
+                _colorPickerSettings.Properties.VisibleColorFormats.Add(colorFormat.Name, new KeyValuePair<bool, string>(colorFormat.IsShown, formatText));
             }
         }
 
@@ -371,6 +377,19 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         {
             Dispose(disposing: true);
             GC.SuppressFinalize(this);
+        }
+
+        internal ColorFormatModel GetNewColorFormatModel()
+        {
+            ColorFormatModel newColorFormatModel = new ColorFormatModel();
+            int extensionNumber = 1;
+            while (ColorFormats.Any(x => x.Name.Equals(newColorFormatModel.Name, StringComparison.Ordinal)))
+            {
+                newColorFormatModel.Name = ColorFormatModel.GetDefaulName() + " (" + extensionNumber + ")";
+                extensionNumber++;
+            }
+
+            return newColorFormatModel;
         }
     }
 }

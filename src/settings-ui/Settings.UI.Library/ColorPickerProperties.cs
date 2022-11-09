@@ -18,10 +18,10 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             ChangeCursor = false;
             ColorHistory = new List<string>();
             ColorHistoryLimit = 20;
-            VisibleColorFormats = new Dictionary<string, Tuple<bool, string>>();
-            VisibleColorFormats.Add("HEX", Tuple.Create(true, string.Empty));
-            VisibleColorFormats.Add("RGB", Tuple.Create(true, string.Empty));
-            VisibleColorFormats.Add("HSL", Tuple.Create(true, string.Empty));
+            VisibleColorFormats = new Dictionary<string, KeyValuePair<bool, string>>();
+            VisibleColorFormats.Add("HEX", new KeyValuePair<bool, string>(true, string.Empty));
+            VisibleColorFormats.Add("RGB", new KeyValuePair<bool, string>(true, string.Empty));
+            VisibleColorFormats.Add("HSL", new KeyValuePair<bool, string>(true, string.Empty));
             ShowColorName = false;
             ActivationAction = ColorPickerActivationAction.OpenColorPickerAndThenEditor;
         }
@@ -45,7 +45,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         public int ColorHistoryLimit { get; set; }
 
         [JsonPropertyName("visiblecolorformats")]
-        public Dictionary<string, Tuple<bool, string>> VisibleColorFormats { get; set; }
+        public Dictionary<string, KeyValuePair<bool, string>> VisibleColorFormats { get; set; }
 
         [JsonPropertyName("showcolorname")]
         [JsonConverter(typeof(BoolPropertyJsonConverter))]
