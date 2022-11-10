@@ -28,9 +28,9 @@ DEFINE_GUID(BHID_DataObject, 0xb8c0bd9f, 0xed24, 0x455c, 0x83, 0xe6, 0xd5, 0x39,
 
 int APIENTRY wWinMain(
     _In_ HINSTANCE hInstance,
-    _In_opt_ HINSTANCE hPrevInstance,
-    _In_ PWSTR lpCmdLine,
-    _In_ int nCmdShow)
+    _In_opt_ HINSTANCE /*hPrevInstance*/,
+    _In_ PWSTR /*lpCmdLine*/,
+    _In_ int /*nCmdShow*/)
 {
     g_hostHInst = hInstance;
     HRESULT hr = CoInitializeEx(nullptr, COINIT_APARTMENTTHREADED | COINIT_DISABLE_OLE1DDE);
@@ -81,5 +81,6 @@ int APIENTRY wWinMain(
         }
         CoUninitialize();
     }
+
     return 0;
 }

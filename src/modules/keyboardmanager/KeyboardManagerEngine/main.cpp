@@ -11,7 +11,10 @@
 
 const std::wstring instanceMutexName = L"Local\\PowerToys_KBMEngine_InstanceMutex";
 
-int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _In_ PWSTR lpCmdLine, _In_ int nCmdShow)
+int WINAPI wWinMain(_In_ HINSTANCE /*hInstance*/,
+                    _In_opt_ HINSTANCE /*hPrevInstance*/,
+                    _In_ PWSTR lpCmdLine,
+                    _In_ int /*nCmdShow*/)
 {
     winrt::init_apartment();
     LoggerHelpers::init_logger(KeyboardManagerConstants::ModuleName, L"Engine", LogSettings::keyboardManagerLoggerName);
@@ -59,11 +62,11 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, 
 
     auto kbm = KeyboardManager();
     kbm.StartLowlevelKeyboardHook();
-    
+
     run_message_loop();
-    
+
     kbm.StopLowlevelKeyboardHook();
     Trace::UnregisterProvider();
-    
+
     return 0;
 }
