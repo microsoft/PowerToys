@@ -71,10 +71,7 @@ steps:
     platform: '$(BuildPlatform)'
     configuration: '$(BuildConfiguration)'
     msbuildArgs: ${{ parameters.additionalBuildArguments }}
-    ${{ if eq(variables['BuildPlatform'], 'arm64') }}:
-      maximumCpuCount: false # Multi processor build for arm64 is broken in the latest pipelines update
-    ${{ else }}:
-      maximumCpuCount: true
+    maximumCpuCount: false # Multi processor build for arm64 is broken in the latest pipelines update
 
 - task: NuGetCommand@2
   displayName: Restore NuGet packages for BugReportTool.sln
