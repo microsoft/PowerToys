@@ -17,6 +17,7 @@ namespace winrt::PowerToys::PowerAccentKeyboardService::implementation
     {
         PowerAccentActivationKey activationKey{ PowerAccentActivationKey::Both };
         std::chrono::milliseconds inputTime{ 200 };
+        std::vector<std::wstring> excludedApps;
     };
 
     struct KeyboardListener : KeyboardListenerT<KeyboardListener>
@@ -36,12 +37,14 @@ namespace winrt::PowerToys::PowerAccentKeyboardService::implementation
 
         void UpdateActivationKey(int32_t activationKey);
         void UpdateInputTime(int32_t inputTime);
+        void UpdateExcludedApps(std::wstring_view excludedApps);
 
         static LRESULT CALLBACK LowLevelKeyboardProc(int nCode, WPARAM wParam, LPARAM lParam);
 
     private:
         bool OnKeyDown(KBDLLHOOKSTRUCT info) noexcept;
         bool OnKeyUp(KBDLLHOOKSTRUCT info) noexcept;
+        bool IsForegroundAppExcluded();
 
         static inline KeyboardListener* s_instance;
         HHOOK s_llKeyboardHook = nullptr;
@@ -53,6 +56,9 @@ namespace winrt::PowerToys::PowerAccentKeyboardService::implementation
         std::function<bool(LetterKey)> m_isLanguageLetterCb;
         bool m_triggeredWithSpace;
         spdlog::stopwatch m_stopwatch;
+
+        std::mutex m_mutex_excluded_apps;
+        std::pair<HWND, bool> m_prevForegrndAppExcl{ NULL, false };
 
         static inline const std::vector<LetterKey> letters = { LetterKey::VK_0,
                                                                LetterKey::VK_1,
