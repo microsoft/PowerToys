@@ -48,10 +48,6 @@ jobs:
     submodules: true
     persistCredentials: True
 
-  - script: echo $(BuildPlatform)
-
-  - script: echo $(useAllCPUsWhileBuildingPowerToys)
-
 # Sets versions for all PowerToy created DLLs
   - task: PowerShell@1
     displayName: Set Versions.Prop
