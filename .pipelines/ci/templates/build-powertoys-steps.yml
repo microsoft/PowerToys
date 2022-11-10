@@ -7,10 +7,6 @@ steps:
   submodules: true
   clean: true
 
-- script: echo $(BuildPlatform)
-
-- script: echo $(useAllCPUsWhileBuildingPowerToys)
-
 - task: PowerShell@2
   displayName: Verify Arm64 configuration for PowerToys.sln
   inputs:
