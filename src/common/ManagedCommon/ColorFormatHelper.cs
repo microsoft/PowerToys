@@ -6,6 +6,7 @@ namespace ManagedCommon
 {
     using System;
     using System.Collections.Generic;
+    using System.Collections.ObjectModel;
     using System.Drawing;
     using System.Globalization;
     using System.Linq;
@@ -14,11 +15,46 @@ namespace ManagedCommon
 
     public static class ColorFormatHelper
     {
+        private static readonly Dictionary<char, char> DefaultFormatTypes = new Dictionary<char, char>()
+        {
+            { 'R', 'b' },   // red              byte
+            { 'G', 'b' },   // green            byte
+            { 'B', 'b' },   // blue             byte
+            { 'A', 'b' },   // alpha            byte
+            { 'C', 'p' },   // cyan             percent
+            { 'M', 'p' },   // magenta          percent
+            { 'E', 'p' },   // yellow           percent
+            { 'K', 'p' },   // black key        percent
+            { 'H', 'i' },   // hue              int
+            { 'S', 'p' },   // saturation       percent
+            { 'T', 'p' },   // brightnes        percent
+            { 'I', 'p' },   // intensity        percent
+            { 'L', 'p' },   // lightness        percent
+            { 'U', 'p' },   // value            percent
+            { 'W', 'p' },   // whiteness        percent
+            { 'N', 'p' },   // blacknes         percent
+            { 'O', 'p' },   // chromaticityA    percent
+            { 'F', 'p' },   // chromaticityB    percent
+            { 'X', 'i' },   // X value          int
+            { 'Y', 'i' },   // Y value          int
+            { 'Z', 'i' },   // Z value          int
+            { 'D', 'i' },   // Decimal value    int
+        };
+
+        private static readonly Dictionary<char, string> FormatTypeToStringFormatters = new Dictionary<char, string>()
+        {
+            { 'b', "b" },       // 0..255 byte
+            { 'p', "%" },       // percent value
+            { 'f', "f" },       // float with leading zero, 2 digits
+            { 'h', "x2" },
+            { 'i', "i" },
+        };
+
         public static string GetStringRepresentation(Color? color, string formatString)
         {
             if (color == null)
             {
-                color = Color.Moccasin;
+                color = Color.Moccasin; // example color
             }
 
             // convert all %?? expressions to strings
@@ -31,31 +67,30 @@ namespace ManagedCommon
                     break;
                 }
 
-                char paramFormat = formatString[formatterPosition + 1];
-                char paramType;
+                char paramFormat;
+                char paramType = formatString[formatterPosition + 1];
                 int paramCount = 2;
-                if (paramFormat >= '1' && paramFormat <= '9')
+                if (DefaultFormatTypes.ContainsKey(paramType))
                 {
-                    // no parameter formatter, just param type defined. (like %2). Using the default formatter -> decimal
-                    paramType = paramFormat;
-                    paramFormat = 'd';
-                    paramCount = 1; // we have only one parameter after the formatter char
-                }
-                else
-                {
-                    // need to check the next char, which should be between 1 and 9. Plus the parameter formatter should be valid.
+                    // check the next char, which could be a formatter
                     if (formatterPosition >= formatString.Length - 2)
                     {
-                        // not enough characters, end of string, we are done
-                        break;
+                        // not enough characters, end of string, no formatter, use the default one
+                        paramFormat = DefaultFormatTypes[paramType];
+                        paramCount = 1;
+                    }
+                    else
+                    {
+                        paramFormat = formatString[formatterPosition + 2];
+
+                        // check if it a valid formatter
+                        if (!FormatTypeToStringFormatters.ContainsKey(paramFormat))
+                        {
+                            paramFormat = DefaultFormatTypes[paramType];
+                            paramCount = 1;
+                        }
                     }
 
-                    paramType = formatString[formatterPosition + 2];
-                }
-
-                if (paramType >= '1' && paramType <= '9' &&
-                    (paramFormat == 'd' || paramFormat == 'p' || paramFormat == 'h' || paramFormat == 'f'))
-                {
                     formatString = string.Concat(formatString.AsSpan(0, formatterPosition), GetStringRepresentation(color.Value, paramFormat, paramType), formatString.AsSpan(formatterPosition + paramCount + 1));
                 }
 
@@ -68,17 +103,17 @@ namespace ManagedCommon
 
         private static string GetStringRepresentation(Color color, char paramFormat, char paramType)
         {
-            if (paramType < '1' || paramType > '9' || (paramFormat != 'd' && paramFormat != 'p' && paramFormat != 'h' && paramFormat != 'f'))
+            if (!DefaultFormatTypes.ContainsKey(paramType) || !FormatTypeToStringFormatters.ContainsKey(paramFormat))
             {
                 return string.Empty;
             }
 
             switch (paramType)
             {
-                case '1': return color.R.ToString(CultureInfo.InvariantCulture);
-                case '2': return color.G.ToString(CultureInfo.InvariantCulture);
-                case '3': return color.B.ToString(CultureInfo.InvariantCulture);
-                case '4': return color.A.ToString(CultureInfo.InvariantCulture);
+                case 'R': return color.R.ToString(CultureInfo.InvariantCulture);
+                case 'G': return color.G.ToString(CultureInfo.InvariantCulture);
+                case 'B': return color.B.ToString(CultureInfo.InvariantCulture);
+                case 'A': return color.A.ToString(CultureInfo.InvariantCulture);
                 default: return string.Empty;
             }
         }

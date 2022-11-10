@@ -349,10 +349,14 @@ namespace ColorPicker.ViewModels
 
             foreach (var colorFormat in _userSettings.VisibleColorFormats)
             {
-                var colorRepresentation = _allColorRepresentations.FirstOrDefault(it => it.FormatName.ToUpperInvariant() == colorFormat.ToUpperInvariant());
+                var colorRepresentation = _allColorRepresentations.FirstOrDefault(it => it.FormatName.ToUpperInvariant() == colorFormat.Key.ToUpperInvariant());
                 if (colorRepresentation != null)
                 {
                     ColorRepresentations.Add(colorRepresentation);
+                }
+                else
+                {
+                    ColorRepresentations.Add(new ColorFormatModel() { FormatName = colorFormat.Key.ToUpperInvariant(), Convert = null, FormatString = colorFormat.Value });
                 }
             }
         }

@@ -77,7 +77,7 @@ namespace ColorPicker.Controls
         private static void SelectedColorPropertyChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
         {
             var self = (ColorFormatControl)d;
-            var colorText = self.ColorFormatModel.Convert((Color)e.NewValue);
+            var colorText = self.ColorFormatModel.GetColorText((Color)e.NewValue);
             self.ColorTextRepresentationTextBlock.Text = colorText;
             self.SelectedColorCopyHelperText = string.Format(CultureInfo.InvariantCulture, "{0} {1}", self.ColorFormatModel.FormatName, colorText);
         }

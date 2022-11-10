@@ -3,12 +3,14 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel.Composition;
 using System.IO;
 using System.IO.Abstractions;
 using System.Linq;
 using System.Threading;
+using ABI.System.Collections.Generic;
 using ColorPicker.Common;
 using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.PowerToys.Settings.UI.Library.Enumerations;
@@ -73,7 +75,7 @@ namespace ColorPicker.Settings
 
         public SettingItem<int> ColorHistoryLimit { get; }
 
-        public ObservableCollection<string> VisibleColorFormats { get; private set; } = new ObservableCollection<string>();
+        public ObservableCollection<System.Collections.Generic.KeyValuePair<string, string>> VisibleColorFormats { get; private set; } = new ObservableCollection<System.Collections.Generic.KeyValuePair<string, string>>();
 
         public SettingItem<bool> ShowColorName { get; }
 
@@ -128,7 +130,7 @@ namespace ColorPicker.Settings
                                 {
                                     if (item.Value.Key)
                                     {
-                                        VisibleColorFormats.Add(item.Key);
+                                        VisibleColorFormats.Add(new System.Collections.Generic.KeyValuePair<string, string>(item.Key, item.Value.Value));
                                     }
                                 }
                             }
