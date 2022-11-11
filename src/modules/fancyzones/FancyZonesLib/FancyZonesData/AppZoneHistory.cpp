@@ -305,9 +305,8 @@ void AppZoneHistory::AdjustWorkAreaIds(const std::vector<FancyZonesDataTypes::Mo
 {
     bool dirtyFlag = false;
 
-    for (auto& iter : m_history)
+    for (auto& [app, data] : m_history)
     {
-        auto& [app, data] = iter;
         for (auto& dataIter : data)
         {
             auto& dataMonitorId = dataIter.workAreaId.monitorId;
