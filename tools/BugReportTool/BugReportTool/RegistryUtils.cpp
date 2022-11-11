@@ -282,7 +282,7 @@ void ReportRegistry(const filesystem::path& tmpDir)
                 {
                     DWORD data = 0;
                     DWORD dataSize = sizeof(data);
-                    RegGetValueW(rootKey, subKey.c_str(), value.c_str(), flags, &type, &data, &dataSize);
+                    result = RegGetValueW(rootKey, subKey.c_str(), value.c_str(), flags, &type, &data, &dataSize);
                     if (result == ERROR_SUCCESS)
                     {
                         registryReport << "\t" << value << " > " << data << "\n";
