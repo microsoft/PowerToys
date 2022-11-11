@@ -38,6 +38,7 @@ jobs:
           ${{ config }}_${{ platform }}:
             BuildConfiguration: ${{ config }}
             BuildPlatform: ${{ platform }}
+            useAllCPUsWhileBuildingPowerToys: ${{ ne(platform, 'arm64') }} # Multi processor build for arm64 is broken in the latest pipelines update
   displayName: Build
   timeoutInMinutes: 120 # Some of the loc stuff adds quite a bit of time.
   cancelTimeoutInMinutes: 1
@@ -134,11 +135,11 @@ jobs:
     inputs:
       solution: '**\PowerToys.sln'
       vsVersion: 17.0
-      msbuildArgs: /p:CIBuild=true /bl:$(Build.SourcesDirectory)\msbuild.binlog
+      msbuildArgs: /p:CIBuild=true /bl:$(Build.SourcesDirectory)\msbuild.binlog -m:2
       platform: $(BuildPlatform)
       configuration: $(BuildConfiguration)
       clean: true
-      maximumCpuCount: true
+      maximumCpuCount: '$(useAllCPUsWhileBuildingPowerToys)'
 
   - task: VSBuild@1
     displayName: Build BugReportTool

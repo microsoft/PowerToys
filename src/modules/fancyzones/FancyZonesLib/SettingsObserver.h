@@ -19,7 +19,7 @@ public:
         FancyZonesSettings::instance().RemoveObserver(*this);
     }
 
-    virtual void SettingsUpdate(SettingId type) {}
+    virtual void SettingsUpdate(SettingId /*type*/) {}
 
     bool WantsToBeNotified(SettingId type) const noexcept
     {

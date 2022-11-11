@@ -93,7 +93,7 @@ LRESULT CALLBACK MeasureToolWndProc(HWND window, UINT message, WPARAM wparam, LP
         if (auto state = GetWindowParam<Serialized<MeasureToolState>*>(window))
         {
             state->Read([](const MeasureToolState& s) { s.commonState->overlayBoxText.Read([](const OverlayBoxText& text) {
-                                                            SetClipBoardToText(text.buffer);
+                                                            SetClipBoardToText(text.buffer.data());
                                                         }); });
         }
         PostMessageW(window, WM_CLOSE, {}, {});

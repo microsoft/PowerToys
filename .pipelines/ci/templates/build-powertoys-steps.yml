@@ -71,7 +71,7 @@ steps:
     platform: '$(BuildPlatform)'
     configuration: '$(BuildConfiguration)'
     msbuildArgs: ${{ parameters.additionalBuildArguments }}
-    maximumCpuCount: true
+    maximumCpuCount: '$(useAllCPUsWhileBuildingPowerToys)'
 
 - task: NuGetCommand@2
   displayName: Restore NuGet packages for BugReportTool.sln

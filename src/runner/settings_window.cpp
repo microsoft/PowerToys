@@ -86,7 +86,7 @@ std::optional<std::wstring> dispatch_json_action_to_module(const json::JsonObjec
                 else if (action == L"restart_maintain_elevation")
                 {
                     // this was added to restart and maintain elevation, which is needed after settings are change from outside the normal process.
-                    // since a normal PostQuitMessage(0) would usually cause this process to save it's in memory settings to disk, we need to 
+                    // since a normal PostQuitMessage(0) would usually cause this process to save it's in memory settings to disk, we need to
                     // send a PostQuitMessage(1) and check for that on exit, and skip the settings-flush.
                     auto loaded = PTSettingsHelper::load_general_settings();
 
@@ -462,7 +462,7 @@ LExit:
 #define MAX_TITLE_LENGTH 100
 void bring_settings_to_front()
 {
-    auto callback = [](HWND hwnd, LPARAM data) -> BOOL {
+    auto callback = [](HWND hwnd, LPARAM /*data*/) -> BOOL {
         DWORD processId;
         if (GetWindowThreadProcessId(hwnd, &processId) && processId == g_settings_process_id)
         {
