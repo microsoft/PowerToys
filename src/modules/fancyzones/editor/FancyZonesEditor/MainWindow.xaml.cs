@@ -11,9 +11,9 @@ using System.Windows.Automation.Peers;
 using System.Windows.Controls;
 using System.Windows.Input;
 using Common.UI;
-using FancyZonesEditor.Logs;
 using FancyZonesEditor.Models;
 using FancyZonesEditor.Utils;
+using Microsoft.PowerToys.Common.Utils;
 using ModernWpf.Controls;
 
 namespace FancyZonesEditor

@@ -4,8 +4,8 @@
 
 using System.Windows;
 using System.Windows.Input;
-using FancyZonesEditor.Logs;
 using FancyZonesEditor.Models;
+using Microsoft.PowerToys.Common.Utils;
 
 namespace FancyZonesEditor
 {

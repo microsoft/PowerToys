@@ -6,8 +6,8 @@ using System;
 using System.Collections.Generic;
 using System.Windows;
 using System.Windows.Controls;
-using FancyZonesEditor.Logs;
 using FancyZonesEditor.Models;
+using Microsoft.PowerToys.Common.Utils;
 
 namespace FancyZonesEditor
 {
