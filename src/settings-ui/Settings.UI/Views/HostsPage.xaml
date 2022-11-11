@@ -69,7 +69,7 @@
 
                 <controls:SettingsGroup x:Uid="Hosts_File_GroupSettings"
                                         IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}">
-                    <controls:Setting x:Uid="Hosts_AdditionalLinesPosition" Icon="&#xE8E9;" >
+                    <controls:Setting x:Uid="Hosts_AdditionalLinesPosition" Icon="&#xE8A5;" >
                         <controls:Setting.ActionContent>
                             <ComboBox MinWidth="{StaticResource SettingActionControlMinWidth}"
                                       SelectedIndex="{x:Bind Path=ViewModel.AdditionalLinesPosition, Mode=TwoWay}" >

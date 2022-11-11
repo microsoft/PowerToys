@@ -68,7 +68,7 @@
                     <FontIcon
                         FontFamily="{StaticResource SymbolThemeFontFamily}"
                         FontSize="14"
-                        Glyph="&#xe8e9;" />
+                        Glyph="&#xe8a5;" />
                 </Button>
 
                 <Button
