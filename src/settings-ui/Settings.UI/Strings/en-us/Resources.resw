@@ -2679,6 +2679,6 @@ Activate by holding the key for the character you want to add an accent to, then
     <value>The systems administrator is forcing this setting.</value>
   </data>
   <data name="Hosts_AdditionalLinesPosition.Description" xml:space="preserve">
-    <value>Additional content is text like copyright, description and examples.</value>
+    <value>Additional content includes the file header and lines that can't parse.</value>
   </data>
 </root>
