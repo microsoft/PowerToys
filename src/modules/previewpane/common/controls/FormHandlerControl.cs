@@ -5,6 +5,7 @@
 using System;
 using System.Drawing;
 using System.Windows.Forms;
+using Common.ComInterlop;
 using PreviewHandlerCommon.ComInterop;
 
 namespace Common
@@ -89,6 +90,14 @@ namespace Common
             this.UpdateWindowBounds(windowBounds);
         }
 
+        /// <summary>
+        ///  sss
+        /// </summary>
+        public void SetRect2(Rectangle rect)
+        {
+            this.UpdateWindowBounds2(parentHwnd, rect);
+        }
+
         /// <inheritdoc />
         public void SetTextColor(Color color)
         {
@@ -103,6 +112,15 @@ namespace Common
         {
             this.parentHwnd = hwnd;
             this.UpdateWindowBounds(rect);
+        }
+
+        /// <summary>
+        ///  sss
+        /// </summary>
+        public void SetWindow2(IntPtr hwnd, Rectangle rect)
+        {
+            this.parentHwnd = hwnd;
+            this.UpdateWindowBounds2(hwnd, rect);
         }
 
         /// <inheritdoc />
@@ -145,20 +163,39 @@ namespace Common
         /// Update the Form Control window with the passed rectangle.
         /// </summary>
         /// <param name="windowBounds">An instance of rectangle.</param>
-        private void UpdateWindowBounds(Rectangle windowBounds)
+        public void UpdateWindowBounds(Rectangle windowBounds)
         {
-            this.InvokeOnControlThread(() =>
+            // We must set the WS_CHILD style to change the form to a control within the Explorer preview pane
+            int windowStyle = NativeMethods.GetWindowLong(Handle, gwlStyle);
+            if ((windowStyle & wsChild) == 0)
             {
-                // We must set the WS_CHILD style to change the form to a control within the Explorer preview pane
-                int windowStyle = NativeMethods.GetWindowLong(Handle, gwlStyle);
-                if ((windowStyle & wsChild) == 0)
-                {
-                    _ = NativeMethods.SetWindowLong(Handle, gwlStyle, windowStyle | wsChild);
-                }
+                _ = NativeMethods.SetWindowLong(Handle, gwlStyle, windowStyle | wsChild);
+            }
 
-                NativeMethods.SetParent(Handle, parentHwnd);
-                Bounds = windowBounds;
-            });
+            NativeMethods.SetParent(Handle, parentHwnd);
+            Bounds = windowBounds;
+        }
+
+        /// <summary>
+        /// Update the Form Control window with the passed rectangle.
+        /// </summary>
+        public void UpdateWindowBounds2(IntPtr hwnd, Rectangle windowBounds)
+        {
+            // We must set the WS_CHILD style to change the form to a control within the Explorer preview pane
+            int windowStyle = NativeMethods.GetWindowLong(Handle, gwlStyle);
+            if ((windowStyle & wsChild) == 0)
+            {
+                _ = NativeMethods.SetWindowLong(Handle, gwlStyle, windowStyle | wsChild);
+            }
+
+            NativeMethods.SetParent(Handle, hwnd);
+
+            RECT s = default(RECT);
+            NativeMethods.GetClientRect(hwnd, ref s);
+            NativeMethods.GetClientRect(hwnd, ref s);
+            windowBounds = s.ToRectangle();
+
+            Bounds = s.ToRectangle();
         }
     }
 }

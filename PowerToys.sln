@@ -470,6 +470,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "GPOWrapper", "src\common\GP
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GPOWrapperProjection", "src\common\GPOWrapperProjection\GPOWrapperProjection.csproj", "{00EE9BA6-4E8F-43CA-960D-D4882F0FBB97}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "MarkdownPreviewHandlerCpp", "src\modules\previewpane\MarkdownPreviewHandlerCpp\MarkdownPreviewHandlerCpp.vcxproj", "{ED9A1AC6-AEB0-4569-A6E9-E1696182B545}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|ARM64 = Debug|ARM64
@@ -1915,6 +1917,18 @@ Global
 		{00EE9BA6-4E8F-43CA-960D-D4882F0FBB97}.Release|x64.Build.0 = Release|x64
 		{00EE9BA6-4E8F-43CA-960D-D4882F0FBB97}.Release|x86.ActiveCfg = Release|x64
 		{00EE9BA6-4E8F-43CA-960D-D4882F0FBB97}.Release|x86.Build.0 = Release|x64
+		{ED9A1AC6-AEB0-4569-A6E9-E1696182B545}.Debug|ARM64.ActiveCfg = Debug|ARM64
+		{ED9A1AC6-AEB0-4569-A6E9-E1696182B545}.Debug|ARM64.Build.0 = Debug|ARM64
+		{ED9A1AC6-AEB0-4569-A6E9-E1696182B545}.Debug|x64.ActiveCfg = Debug|x64
+		{ED9A1AC6-AEB0-4569-A6E9-E1696182B545}.Debug|x64.Build.0 = Debug|x64
+		{ED9A1AC6-AEB0-4569-A6E9-E1696182B545}.Debug|x86.ActiveCfg = Debug|x64
+		{ED9A1AC6-AEB0-4569-A6E9-E1696182B545}.Debug|x86.Build.0 = Debug|x64
+		{ED9A1AC6-AEB0-4569-A6E9-E1696182B545}.Release|ARM64.ActiveCfg = Release|ARM64
+		{ED9A1AC6-AEB0-4569-A6E9-E1696182B545}.Release|ARM64.Build.0 = Release|ARM64
+		{ED9A1AC6-AEB0-4569-A6E9-E1696182B545}.Release|x64.ActiveCfg = Release|x64
+		{ED9A1AC6-AEB0-4569-A6E9-E1696182B545}.Release|x64.Build.0 = Release|x64
+		{ED9A1AC6-AEB0-4569-A6E9-E1696182B545}.Release|x86.ActiveCfg = Release|x64
+		{ED9A1AC6-AEB0-4569-A6E9-E1696182B545}.Release|x86.Build.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -2077,6 +2091,7 @@ Global
 		{C604B37E-9D0E-4484-8778-E8B31B0E1B3A} = {AB82E5DD-C32D-4F28-9746-2C780846188E}
 		{E599C30B-9DC8-4E5A-BF27-93D4CCEDE788} = {1AFB6476-670D-4E80-A464-657E01DFF482}
 		{00EE9BA6-4E8F-43CA-960D-D4882F0FBB97} = {1AFB6476-670D-4E80-A464-657E01DFF482}
+		{ED9A1AC6-AEB0-4569-A6E9-E1696182B545} = {2F305555-C296-497E-AC20-5FA1B237996A}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {C3A2F9D1-7930-4EF4-A6FC-7EE0A99821D0}

@@ -315,11 +315,11 @@ namespace registry
                                                           std::wstring handlerClsid,
                                                           std::wstring powertoysVersion,
                                                           std::wstring fullPathToHandler,
-                                                          std::wstring handlerCategory,
                                                           std::wstring className,
                                                           std::wstring displayName,
                                                           std::vector<std::wstring> fileTypes,
-                                                          std::wstring fileKindType = L"" )
+                                                          std::wstring fileKindType = L"",
+                                                          std::wstring appClsid = L"")
         {
             const HKEY scope = perUser ? HKEY_CURRENT_USER : HKEY_LOCAL_MACHINE;
 
@@ -330,9 +330,6 @@ namespace registry
             std::wstring inprocServerPath = clsidPath;
             inprocServerPath += L'\\';
             inprocServerPath += L"InprocServer32";
-
-            std::wstring implementedCategoriesPath = clsidPath + LR"d(\Implemented Categories\)d";
-            implementedCategoriesPath += handlerCategory;
 
             std::wstring assemblyKeyValue;
             if (const auto lastDotPos = className.rfind(L'.'); lastDotPos != std::wstring::npos)
@@ -352,17 +349,18 @@ namespace registry
             versionPath += L'\\';
             versionPath += powertoysVersion;
 
+            std::wstring appIdPath = L"Software\\Classes\\AppID\\";
+            appIdPath += appClsid;
+
             using vec_t = std::vector<registry::ValueChange>;
             // TODO: verify that we actually need all of those
             vec_t changes = { { scope, clsidPath, L"DisplayName", displayName },
                               { scope, clsidPath, std::nullopt, className },
-                              { scope, implementedCategoriesPath, std::nullopt, L"" },
                               { scope, inprocServerPath, std::nullopt, fullPathToHandler },
                               { scope, inprocServerPath, L"Assembly", assemblyKeyValue },
                               { scope, inprocServerPath, L"Class", className },
-                              { scope, inprocServerPath, L"ThreadingModel", L"Both" },
-                              { scope, versionPath, L"Assembly", assemblyKeyValue },
-                              { scope, versionPath, L"Class", className } };
+                              { scope, inprocServerPath, L"ThreadingModel", L"Apartment" },
+                              { scope, appIdPath, L"DllSurrogate", L"%SystemRoot%\\system32\\prevhost.exe" } };
 
             for (const auto& fileType : fileTypes)
             {
