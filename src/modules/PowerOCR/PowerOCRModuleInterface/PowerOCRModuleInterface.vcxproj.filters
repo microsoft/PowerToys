@@ -49,10 +49,10 @@
     <None Include="Resources.resx">
       <Filter>Resource Files</Filter>
     </None>
-    <None Include="packages.config" />
     <None Include="PowerOCR.base.rc">
       <Filter>Resource Files</Filter>
     </None>
+    <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="Generated Files\PowerOCR.rc">

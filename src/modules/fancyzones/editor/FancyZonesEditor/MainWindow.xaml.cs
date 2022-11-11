@@ -29,6 +29,7 @@ namespace FancyZonesEditor
 
         private readonly MainWindowSettingsModel _settings = ((App)Application.Current).MainWindowSettings;
         private LayoutModel _backup;
+        private List<LayoutModel> _defaultLayoutsBackup;
 
         private ContentDialog _openedDialog;
         private TextBlock _createLayoutAnnounce;
@@ -322,6 +323,8 @@ namespace FancyZonesEditor
                 _backup = new CanvasLayoutModel(canvas);
             }
 
+            _defaultLayoutsBackup = new List<LayoutModel>(MainWindowSettingsModel.DefaultLayouts.DefaultLayouts);
+
             Keyboard.ClearFocus();
             EditLayoutDialogTitle.Text = string.Format(CultureInfo.CurrentCulture, Properties.Resources.Edit_Template, ((LayoutModel)dataContext).Name);
             await EditLayoutDialog.ShowAsync();
@@ -424,6 +427,7 @@ namespace FancyZonesEditor
             }
 
             _backup = null;
+            _defaultLayoutsBackup = null;
 
             // update current settings
             if (model == _settings.AppliedModel)
@@ -464,6 +468,8 @@ namespace FancyZonesEditor
                     _backup = null;
                 }
 
+                MainWindowSettingsModel.DefaultLayouts.Reset(model.Uuid);
+
                 if (model == _settings.AppliedModel)
                 {
                     _settings.SetAppliedModel(_settings.BlankModel);
@@ -480,6 +486,7 @@ namespace FancyZonesEditor
 
                 App.FancyZonesEditorIO.SerializeAppliedLayouts();
                 App.FancyZonesEditorIO.SerializeCustomLayouts();
+                App.FancyZonesEditorIO.SerializeDefaultLayouts();
                 model.Delete();
             }
         }
@@ -543,6 +550,12 @@ namespace FancyZonesEditor
                 _settings.RestoreSelectedModel(_backup);
                 _backup = null;
             }
+
+            if (_defaultLayoutsBackup != null)
+            {
+                MainWindowSettingsModel.DefaultLayouts.Restore(_defaultLayoutsBackup);
+                _defaultLayoutsBackup = null;
+            }
         }
 
         private void NumberBox_Loaded(object sender, RoutedEventArgs e)
@@ -574,7 +587,7 @@ namespace FancyZonesEditor
                     FrameworkElementAutomationPeer.FromElement(SensitivityInput) as SliderAutomationPeer;
                 string activityId = "sliderValueChanged";
 
-                string value = string.Format(CultureInfo.CurrentCulture, Properties.Resources.Slider_Value, SensitivityInput.Value);
+                string value = string.Format(CultureInfo.CurrentCulture, Properties.Resources.Pixel_Value, SensitivityInput.Value);
 
                 if (peer != null && value != null)
                 {
@@ -584,6 +597,88 @@ namespace FancyZonesEditor
                         value,
                         activityId);
                 }
+            }
+        }
+
+        private void TemplateZoneCount_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
+        {
+            if (AutomationPeer.ListenerExists(AutomationEvents.PropertyChanged))
+            {
+                SliderAutomationPeer peer =
+                    FrameworkElementAutomationPeer.FromElement(TemplateZoneCount) as SliderAutomationPeer;
+                string activityId = "templateZoneCountValueChanged";
+
+                string value = string.Format(CultureInfo.CurrentCulture, Properties.Resources.Template_Zone_Count_Value, TemplateZoneCount.Value);
+
+                if (peer != null && value != null)
+                {
+                    peer.RaiseNotificationEvent(
+                        AutomationNotificationKind.ActionCompleted,
+                        AutomationNotificationProcessing.ImportantMostRecent,
+                        value,
+                        activityId);
+                }
+            }
+        }
+
+        private void Spacing_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
+        {
+            if (AutomationPeer.ListenerExists(AutomationEvents.PropertyChanged))
+            {
+                SliderAutomationPeer peer =
+                    FrameworkElementAutomationPeer.FromElement(Spacing) as SliderAutomationPeer;
+                string activityId = "spacingValueChanged";
+
+                string value = string.Format(CultureInfo.CurrentCulture, Properties.Resources.Pixel_Value, Spacing.Value);
+
+                if (peer != null && value != null)
+                {
+                    peer.RaiseNotificationEvent(
+                        AutomationNotificationKind.ActionCompleted,
+                        AutomationNotificationProcessing.ImportantMostRecent,
+                        value,
+                        activityId);
+                }
+            }
+        }
+
+        private void SetLayoutAsVerticalDefaultButton_Click(object sender, RoutedEventArgs e)
+        {
+            var dataContext = ((FrameworkElement)sender).DataContext;
+            if (dataContext is LayoutModel model)
+            {
+                MainWindowSettingsModel.DefaultLayouts.Set(model, MonitorConfigurationType.Vertical);
+                App.FancyZonesEditorIO.SerializeDefaultLayouts();
+            }
+        }
+
+        private void SetLayoutAsHorizontalDefaultButton_Click(object sender, RoutedEventArgs e)
+        {
+            var dataContext = ((FrameworkElement)sender).DataContext;
+            if (dataContext is LayoutModel model)
+            {
+                MainWindowSettingsModel.DefaultLayouts.Set(model, MonitorConfigurationType.Horizontal);
+                App.FancyZonesEditorIO.SerializeDefaultLayouts();
+            }
+        }
+
+        private void HorizontalDefaultLayoutButton_Click(object sender, RoutedEventArgs e)
+        {
+            var dataContext = ((FrameworkElement)sender).DataContext;
+            if (dataContext is LayoutModel model)
+            {
+                MainWindowSettingsModel.DefaultLayouts.Reset(MonitorConfigurationType.Horizontal);
+                App.FancyZonesEditorIO.SerializeDefaultLayouts();
+            }
+        }
+
+        private void VerticalDefaultLayoutButton_Click(object sender, RoutedEventArgs e)
+        {
+            var dataContext = ((FrameworkElement)sender).DataContext;
+            if (dataContext is LayoutModel model)
+            {
+                MainWindowSettingsModel.DefaultLayouts.Reset(MonitorConfigurationType.Vertical);
+                App.FancyZonesEditorIO.SerializeDefaultLayouts();
             }
         }
     }

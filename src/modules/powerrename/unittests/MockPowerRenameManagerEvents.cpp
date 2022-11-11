@@ -53,19 +53,19 @@ IFACEMETHODIMP CMockPowerRenameManagerEvents::OnError(_In_ IPowerRenameItem* pIt
     return S_OK;
 }
 
-IFACEMETHODIMP CMockPowerRenameManagerEvents::OnRegExStarted(_In_ DWORD threadId)
+IFACEMETHODIMP CMockPowerRenameManagerEvents::OnRegExStarted(_In_ DWORD /*threadId*/)
 {
     m_regExStarted = true;
     return S_OK;
 }
 
-IFACEMETHODIMP CMockPowerRenameManagerEvents::OnRegExCanceled(_In_ DWORD threadId)
+IFACEMETHODIMP CMockPowerRenameManagerEvents::OnRegExCanceled(_In_ DWORD /*threadId*/)
 {
     m_regExCanceled = true;
     return S_OK;
 }
 
-IFACEMETHODIMP CMockPowerRenameManagerEvents::OnRegExCompleted(_In_ DWORD threadId)
+IFACEMETHODIMP CMockPowerRenameManagerEvents::OnRegExCompleted(_In_ DWORD /*threadId*/)
 {
     m_regExCompleted = true;
     return S_OK;

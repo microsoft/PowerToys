@@ -62,8 +62,8 @@ Please review these brief docs below relating to our coding standards etc.
 * [Code Organization](./readme.md)
 
 
-[VS Resource Editor]: https://docs.microsoft.com/en-us/cpp/windows/resource-editors?view=vs-2019
-[String Table]: https://docs.microsoft.com/en-us/windows/win32/menurc/stringtable-resource
-[Resx Files VS]: https://docs.microsoft.com/en-us/dotnet/framework/resources/creating-resource-files-for-desktop-apps#resource-files-in-visual-studio
-[Resx Files]: https://docs.microsoft.com/en-us/dotnet/framework/resources/creating-resource-files-for-desktop-apps#resources-in-resx-files
-[Resource Manager]: https://docs.microsoft.com/en-us/dotnet/api/system.resources.resourcemanager?view=netframework-4.8
+[VS Resource Editor]: https://learn.microsoft.com/cpp/windows/resource-editors?view=vs-2019
+[String Table]: https://learn.microsoft.com/windows/win32/menurc/stringtable-resource
+[Resx Files VS]: https://learn.microsoft.com/dotnet/framework/resources/creating-resource-files-for-desktop-apps#resource-files-in-visual-studio
+[Resx Files]: https://learn.microsoft.com/dotnet/framework/resources/creating-resource-files-for-desktop-apps#resources-in-resx-files
+[Resource Manager]: https://learn.microsoft.com/dotnet/api/system.resources.resourcemanager?view=netframework-4.8

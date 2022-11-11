@@ -255,8 +255,17 @@
   <data name="VideoConference_ToolbarMonitor_All.Content" xml:space="preserve">
     <value>All monitors</value>
   </data>
-  <data name="VideoConference_HideToolbarWhenUnmuted.Content" xml:space="preserve">
-    <value>Hide toolbar when both camera and microphone are unmuted</value>
+  <data name="VideoConference_ToolbarHide.Header" xml:space="preserve">
+    <value>Hide toolbar</value>
+  </data>
+  <data name="VideoConference_ToolbarHideMuted.Content" xml:space="preserve">
+    <value>When both camera and microphone are muted</value>
+  </data>
+  <data name="VideoConference_ToolbarHideNever.Content" xml:space="preserve">
+    <value>Never</value>
+  </data>
+  <data name="VideoConference_ToolbarHideUnmuted.Content" xml:space="preserve">
+    <value>When both camera and microphone are unmuted</value>
   </data>
   <data name="VideoConference.ModuleTitle" xml:space="preserve">
     <value>Video Conference Mute</value>
@@ -648,6 +657,24 @@
   <data name="GeneralPage_CheckForUpdates.Content" xml:space="preserve">
     <value>Check for updates</value>
   </data>
+  <data name="General_SettingsBackupAndRestoreLocationText.Header" xml:space="preserve">
+    <value>Location</value>
+  </data>
+  <data name="General_SettingsBackupAndRestore_ButtonBackup.Content" xml:space="preserve">
+    <value>Backup</value>
+  </data>
+  <data name="General_SettingsBackupInfo_FileNameHeader.Text" xml:space="preserve">
+    <value>File name:</value>
+  </data>
+  <data name="General_SettingsBackupAndRestore_LinkRefresh.Text" xml:space="preserve">
+    <value>Refresh</value>
+  </data>
+  <data name="General_SettingsBackupAndRestore_ButtonRestore.Content" xml:space="preserve">
+    <value>Restore</value>
+  </data>
+  <data name="General_SettingsBackupAndRestore_ButtonSelectLocation.Content" xml:space="preserve">
+    <value>Browse</value>
+  </data>
   <data name="GeneralPage_UpdateNow.Content" xml:space="preserve">
     <value>Update now</value>
   </data>
@@ -811,6 +838,12 @@
   </data>
   <data name="ShortcutGuide_Appearance_Behavior.Header" xml:space="preserve">
     <value>Appearance &amp; behavior</value>
+  </data>
+  <data name="General_SettingsBackupAndRestoreTitle.Header" xml:space="preserve">
+    <value>Backup &amp; restore</value>
+  </data>
+  <data name="General_SettingsBackupAndRestore.Header" xml:space="preserve">
+    <value>Backup and restore your settings at any time</value>
   </data>
   <data name="ShortcutGuide_Enable.Header" xml:space="preserve">
     <value>Enable Shortcut Guide</value>
@@ -1044,6 +1077,21 @@
   </data>
   <data name="General_VersionLastChecked.Text" xml:space="preserve">
     <value>Last checked: </value>
+  </data>
+  <data name="General_SettingsBackupInfo_DateHeader.Text" xml:space="preserve">
+    <value>Created at:</value>
+  </data>
+  <data name="General_SettingsBackupAndRestoreDescription.Text" xml:space="preserve">
+    <value>PowerToys will restart automatically if needed.</value>
+  </data>
+  <data name="General_SettingsBackupAndRestoreStatusInfo.Header" xml:space="preserve">
+    <value>Backup information</value>
+  </data>
+  <data name="General_SettingsBackupInfo_SourceHeader.Text" xml:space="preserve">
+    <value>Source machine:</value>
+  </data>
+  <data name="General_SettingsBackupInfo_StatusHeader.Text" xml:space="preserve">
+    <value>Status:</value>
   </data>
   <data name="General_Version.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
     <value>Version</value>
@@ -1421,6 +1469,9 @@ Made with 💗 by Microsoft and the PowerToys community.</value>
   <data name="Oobe_FancyZones.Description" xml:space="preserve">
     <value>FancyZones is a window manager that makes it easy to create complex window layouts and quickly position windows into those layouts.</value>
   </data>
+  <data name="Oobe_FileLocksmith.Description" xml:space="preserve">
+    <value>File Locksmith lists which processes are using the selected files or directories and allows closing those processes.</value>
+  </data>
   <data name="Oobe_FileExplorer.Description" xml:space="preserve">
     <value>PowerToys introduces add-ons to the Windows File Explorer that will enable files like Markdown (.md), PDF (.pdf), SVG (.svg), STL (.stl), G-code (.gcode) and developer files to be viewed in the preview pane. It introduces File Explorer thumbnail support for a number of these file types as well.</value>
   </data>
@@ -1474,6 +1525,12 @@ Take a moment to preview the various utilities listed or view our comprehensive 
   </data>
   <data name="Oobe_FancyZones_TipsAndTricks.Text" xml:space="preserve">
     <value>Snap a window to multiple zones by holding the **Ctrl** key (while also holding **Shift**) when dragging a window.</value>
+  </data>
+  <data name="Oobe_FileLocksmith_HowToUse.Text" xml:space="preserve">
+    <value>In File Explorer, **right-clicking one or more selected files** and **clicking on "What's using this file?"** from the context menu.</value>
+  </data>
+  <data name="Oobe_FileLocksmith_TipsAndTricks.Text" xml:space="preserve">
+    <value>Press the Restart Elevated button from the File Locksmith UI to also get information on elevated processes that might be using the files.</value>
   </data>
   <data name="Oobe_FileExplorer_HowToEnable.Text" xml:space="preserve">
     <value>Open File Explorer, **select the View tab** in the File Explorer ribbon, then **select Preview Pane**. 
@@ -1547,6 +1604,9 @@ From there, simply click on one of the supported files in the File Explorer and 
   <data name="Oobe_FancyZones.Title" xml:space="preserve">
     <value>FancyZones</value>
     <comment>Do not localize this string</comment>
+  </data>
+  <data name="Oobe_FileLocksmith.Title" xml:space="preserve">
+    <value>File Locksmith</value>
   </data>
   <data name="Oobe_ImageResizer.Title" xml:space="preserve">
     <value>Image Resizer</value>
@@ -1758,6 +1818,9 @@ From there, simply click on one of the supported files in the File Explorer and 
   <data name="LearnMore_FancyZones.Text" xml:space="preserve">
     <value>Learn more about FancyZones</value>
     <comment>FancyZones is a product name, do not loc</comment>
+  </data>
+  <data name="LearnMore_FileLocksmith.Text" xml:space="preserve">
+    <value>Learn more about File Locksmith</value>
   </data>
   <data name="LearnMore_ImageResizer.Text" xml:space="preserve">
     <value>Learn more about Image Resizer</value>
@@ -2083,6 +2146,12 @@ From there, simply click on one of the supported files in the File Explorer and 
   <data name="FancyZones_Zone_Appearance.Header" xml:space="preserve">
     <value>Zone appearance</value>
   </data>
+  <data name="VideoConference_DeprecationWarning.Title" xml:space="preserve">
+    <value>VCM is moving into legacy mode (maintenance only).</value>
+  </data>
+  <data name="VideoConference_DeprecationWarningButton.Content" xml:space="preserve">
+    <value>Learn more</value>
+  </data>
   <data name="VideoConference_RunAsAdminRequired.Title" xml:space="preserve">
     <value>You need to run as administrator to modify these settings.</value>
   </data>
@@ -2265,7 +2334,7 @@ From there, simply click on one of the supported files in the File Explorer and 
   <data name="QuickAccent.ModuleDescription" xml:space="preserve">
     <value>Quick Accent is an alternative way to type accented characters, useful for when a keyboard doesn't support that specific accent.
 
-Activate by holding the key for the character you want to add an accent to, then press the Activation Key (space key or left and right arrow keys). If you continue to hold, an overlay to select the accented between multiple characters will appear!</value>
+Activate by holding the key for the character you want to add an accent to, then press the activation key (space, left or right arrow keys) and an overlay to select accented characters will appear!</value>
     <comment>key refers to a physical key on a keyboard</comment>
   </data>
   <data name="QuickAccent.ModuleTitle" xml:space="preserve">
@@ -2275,7 +2344,7 @@ Activate by holding the key for the character you want to add an accent to, then
     <value>Attribution</value>
   </data>
   <data name="Oobe_QuickAccent.Description" xml:space="preserve">
-    <value>Quick Accent is an easy way to write letters with accents, like on the phone.</value>
+    <value>Quick Accent is an easy way to write letters with accents, like on a smartphone.</value>
   </data>
   <data name="Oobe_QuickAccent.Title" xml:space="preserve">
     <value>Quick Accent</value>
@@ -2289,9 +2358,11 @@ Activate by holding the key for the character you want to add an accent to, then
   </data>
   <data name="QuickAccent_Activation_Shortcut.Header" xml:space="preserve">
     <value>Activation key</value>
+    <comment>key refers to a physical key on a keyboard</comment>
   </data>
   <data name="QuickAccent_Activation_Shortcut.Description" xml:space="preserve">
-    <value>This is the extra key needed to activate after you are holding your target letter.</value>
+    <value>Press this key after holding down the target letter.</value>
+    <comment>key refers to a physical key on a keyboard</comment>
   </data>
   <data name="QuickAccent_Activation_Key_Arrows.Content" xml:space="preserve">
     <value>Left/Right Arrow</value>
@@ -2301,8 +2372,9 @@ Activate by holding the key for the character you want to add an accent to, then
     <value>Space</value>
     <comment>Space is the space keyboard key.</comment>
   </data>
-  <data name="QuickAccent_Activation_Key_Both.Content" xml:space="preserve">
-    <value>Both</value>
+  <data name="QuickAccent_Activation_Key_Either.Content" xml:space="preserve">
+    <value>Left, Right or Space</value>
+    <comment>All are keys on a keyboard</comment>
   </data>
   <data name="QuickAccent_Toolbar.Header" xml:space="preserve">
     <value>Toolbar</value>
@@ -2345,10 +2417,69 @@ Activate by holding the key for the character you want to add an accent to, then
     <comment>ms = milliseconds</comment>
   </data>
   <data name="QuickAccent_InputTimeMs.Description" xml:space="preserve">
-    <value>Hold the key for this long to make the accent menu appear (ms)</value>
+    <value>Hold the key down for this much time to make the accent menu appear (ms)</value>
     <comment>ms = milliseconds</comment>
-  </data>  <data name="LearnMore_TextExtractor.Text" xml:space="preserve">
+  </data>
+  <data name="LearnMore_TextExtractor.Text" xml:space="preserve">
     <value>Learn more about Text Extractor</value>
+  </data>
+  <data name="General_SettingsBackupAndRestore_NothingToBackup" xml:space="preserve">
+    <value>A new backup was not created because no settings have been changed since last backup.</value>
+  </data>
+  <data name="General_SettingsBackupAndRestore_NoBackupFound" xml:space="preserve">
+    <value>No backup found</value>
+  </data>
+  <data name="General_SettingsBackupAndRestore_FailedToParseTime" xml:space="preserve">
+    <value>Failed to parse time</value>
+  </data>
+  <data name="General_SettingsBackupAndRestore_UnknownBackupTime" xml:space="preserve">
+    <value>Unknown</value>
+  </data>
+  <data name="General_SettingsBackupAndRestore_UnknownBackupSource" xml:space="preserve">
+    <value>Unknown</value>
+  </data>
+  <data name="General_SettingsBackupAndRestore_ThisMachine" xml:space="preserve">
+    <value>This computer</value>
+  </data>
+  <data name="General_SettingsBackupAndRestore_CurrentSettingsMatch" xml:space="preserve">
+    <value>Current settings match</value>
+  </data>
+  <data name="General_SettingsBackupAndRestore_CurrentSettingsStatusAt" xml:space="preserve">
+    <value>at</value>
+    <comment>E.g., Food was served 'at' noon.</comment>
+  </data>
+  <data name="General_SettingsBackupAndRestore_CurrentSettingsDiffer" xml:space="preserve">
+    <value>Current settings differ</value>
+  </data>
+  <data name="General_SettingsBackupAndRestore_CurrentSettingsNoChecked" xml:space="preserve">
+    <value>Checking...</value>
+  </data>
+  <data name="General_SettingsBackupAndRestore_CurrentSettingsUnknown" xml:space="preserve">
+    <value>Unknown</value>
+  </data>
+  <data name="General_SettingsBackupAndRestore_NeverRestored" xml:space="preserve">
+    <value>Never restored</value>
+  </data>
+  <data name="General_SettingsBackupAndRestore_NothingToRestore" xml:space="preserve">
+    <value>Nothing to restore.</value>
+  </data>
+  <data name="General_SettingsBackupAndRestore_NoSettingsFilesFound" xml:space="preserve">
+    <value>No settings files found.</value>
+  </data>
+  <data name="General_SettingsBackupAndRestore_BackupError" xml:space="preserve">
+    <value>There was an error. Try another backup location.</value>
+  </data>
+  <data name="General_SettingsBackupAndRestore_BackupComplete" xml:space="preserve">
+    <value>Backup completed.</value>
+  </data>
+  <data name="General_SettingsBackupAndRestore_NoBackupSyncPath" xml:space="preserve">
+    <value>No backup location selected.</value>
+  </data>
+  <data name="General_SettingsBackupAndRestore_NoBackupsFound" xml:space="preserve">
+    <value>No backups found to restore.</value>
+  </data>
+  <data name="General_SettingsBackupAndRestore_InvalidBackupLocation" xml:space="preserve">
+    <value>Invalid backup location.</value>
   </data>
   <data name="TextExtractor.ModuleDescription" xml:space="preserve">
     <value>Text Extractor is a convenient way to copy text from anywhere on screen</value>
@@ -2358,6 +2489,12 @@ Activate by holding the key for the character you want to add an accent to, then
   </data>
   <data name="TextExtractor_EnableToggleControl_HeaderText.Header" xml:space="preserve">
     <value>Enable Text Extractor</value>
+  </data>
+  <data name="TextExtractor_SupportedLanguages.Title" xml:space="preserve">
+    <value>Text Extractor can only recognize languages that have the OCR pack installed.</value>
+  </data>
+  <data name="TextExtractor_SupportedLanguages_Link.Content" xml:space="preserve">
+    <value>Learn more about supported languages</value>
   </data>
   <data name="Shell_TextExtractor.Content" xml:space="preserve">
     <value>Text Extractor</value>
@@ -2395,5 +2532,150 @@ Activate by holding the key for the character you want to add an accent to, then
   <data name="MeasureTool_ContinuousCapture_Information.Title" xml:space="preserve">
     <value>The continuous capture mode will consume more resources when in use. Also, measurements will be excluded from screenshots and screen capture.</value>
     <comment>pointer as in mouse pointer. Resources refer to things like CPU, GPU, RAM</comment>
+  </data>
+  <data name="QuickAccent_DisableFullscreen.Header" xml:space="preserve">
+    <value>Disable when Game Mode is On</value>
+  </data>
+  <data name="QuickAccent_Language.Header" xml:space="preserve">
+    <value>Characters</value>
+  </data>
+  <data name="QuickAccent_SelectedLanguage.Header" xml:space="preserve">
+    <value>Choose a character set</value>
+  </data>
+  <data name="QuickAccent_SelectedLanguage.Description" xml:space="preserve">
+    <value>Show only accented characters common to the selected set.</value>
+  </data>
+  <data name="QuickAccent_SelectedLanguage_All.Content" xml:space="preserve">
+    <value>All available</value>
+  </data>
+  <data name="QuickAccent_SelectedLanguage_Currency.Content" xml:space="preserve">
+    <value>Currency</value>
+  </data>
+  <data name="QuickAccent_SelectedLanguage_Czech.Content" xml:space="preserve">
+    <value>Czech</value>
+  </data>
+  <data name="QuickAccent_SelectedLanguage_German.Content" xml:space="preserve">
+    <value>German</value>
+  </data>
+  <data name="QuickAccent_SelectedLanguage_French.Content" xml:space="preserve">
+    <value>French</value>
+  </data>
+  <data name="QuickAccent_SelectedLanguage_Maori.Content" xml:space="preserve">
+    <value>Maori</value>
+  </data>
+  <data name="QuickAccent_SelectedLanguage_Pinyin.Content" xml:space="preserve">
+    <value>Pinyin</value>
+  </data>
+  <data name="QuickAccent_SelectedLanguage_Polish.Content" xml:space="preserve">
+    <value>Polish</value>
+  </data>
+  <data name="QuickAccent_SelectedLanguage_Portuguese.Content" xml:space="preserve">
+    <value>Portuguese</value>
+  </data>
+  <data name="QuickAccent_SelectedLanguage_Slovakian.Content" xml:space="preserve">
+    <value>Slovakian</value>
+  </data>
+  <data name="QuickAccent_SelectedLanguage_Spanish.Content" xml:space="preserve">
+    <value>Spanish</value>
+  </data>
+  <data name="QuickAccent_SelectedLanguage_Turkish.Content" xml:space="preserve">
+    <value>Turkish</value>
+  </data>
+  <data name="QuickAccent_SelectedLanguage_Icelandic.Content" xml:space="preserve">
+    <value>Icelandic</value>
+  </data>
+  <data name="QuickAccent_SelectedLanguage_Romanian.Content" xml:space="preserve">
+    <value>Romanian</value>
+  </data>
+  <data name="QuickAccent_SelectedLanguage_Hungarian.Content" xml:space="preserve">
+    <value>Hungarian</value>
+  </data>
+  <data name="QuickAccent_SelectedLanguage_Italian.Content" xml:space="preserve">
+    <value>Italian</value>
+  </data>
+  <data name="Hosts.ModuleDescription" xml:space="preserve">
+    <value>Quick and simple utility for managing hosts file.</value>
+    <comment>"Hosts" refers to the system hosts file, do not loc</comment>
+  </data>
+  <data name="Hosts.ModuleTitle" xml:space="preserve">
+    <value>Hosts File Editor</value>
+    <comment>"Hosts" refers to the system hosts file, do not loc</comment>
+  </data>
+  <data name="Shell_Hosts.Content" xml:space="preserve">
+    <value>Hosts File Editor</value>
+    <comment>Products name: Navigation view item name for Hosts File Editor</comment>
+  </data>
+  <data name="Hosts_EnableToggleControl_HeaderText.Header" xml:space="preserve">
+    <value>Enable Hosts File Editor</value>
+    <comment>"Hosts File Editor" is the name of the utility</comment>
+  </data>
+  <data name="Hosts_Toggle_ShowStartupWarning.Header" xml:space="preserve">
+    <value>Show a warning at startup</value>
+  </data>
+  <data name="Hosts_Activation_GroupSettings.Header" xml:space="preserve">
+    <value>Activation</value>
+  </data>
+  <data name="Hosts_LaunchButtonControl.Description" xml:space="preserve">
+    <value>Manage your hosts file</value>
+    <comment>"Hosts" refers to the system hosts file, do not loc</comment>
+  </data>
+  <data name="Hosts_LaunchButtonControl.Header" xml:space="preserve">
+    <value>Launch Host File Editor</value>
+    <comment>"Host File Editor" is a product name</comment>
+  </data>
+  <data name="Hosts_LaunchButton_Accessible.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>Launch Host File Editor</value>
+    <comment>"Host File Editor" is a product name</comment>
+  </data>
+  <data name="Hosts_AdditionalLinesPosition.Header" xml:space="preserve">
+    <value>Additional lines position</value>
+  </data>
+  <data name="Hosts_AdditionalLinesPosition_Bottom.Content" xml:space="preserve">
+    <value>Bottom</value>
+  </data>
+  <data name="Hosts_AdditionalLinesPosition_Top.Content" xml:space="preserve">
+    <value>Top</value>
+  </data>
+  <data name="Hosts_File_GroupSettings.Header" xml:space="preserve">
+    <value>File</value>
+  </data>
+  <data name="Launch_Hosts.Content" xml:space="preserve">
+    <value>Launch Hosts File Editor</value>
+    <comment>"Hosts File Editor" is the name of the utility</comment>
+  </data>
+  <data name="LearnMore_Hosts.Text" xml:space="preserve">
+    <value>Learn more about Hosts File Editor</value>
+    <comment>"Hosts File Editor" is the name of the utility</comment>
+  </data>
+  <data name="Oobe_Hosts.Description" xml:space="preserve">
+    <value>Hosts File Editor is a quick and simple utility for managing hosts file.</value>
+    <comment>"Hosts File Editor" is the name of the utility</comment>
+  </data>
+  <data name="Oobe_Hosts.Title" xml:space="preserve">
+    <value>Hosts File Editor</value>
+    <comment>"Hosts File Editor" is the name of the utility</comment>
+  </data>
+  <data name="Hosts_Toggle_LaunchAdministrator.Description" xml:space="preserve">
+    <value>Needs to be launched as administrator in order to make changes to the hosts file</value>
+  </data>
+  <data name="Hosts_Toggle_LaunchAdministrator.Header" xml:space="preserve">
+    <value>Launch as administrator</value>
+  </data>
+  <data name="FileLocksmith.ModuleDescription" xml:space="preserve">
+    <value>A Windows shell extension to find out which processes are using the selected files and directories.</value>
+  </data>
+  <data name="FileLocksmith.ModuleTitle" xml:space="preserve">
+    <value>File Locksmith</value>
+  </data>
+  <data name="Shell_FileLocksmith.Content" xml:space="preserve">
+    <value>File Locksmith</value>
+    <comment>Product name: Navigation view item name for FileLocksmith</comment>
+  </data>
+  <data name="FileLocksmith_Enable_FileLocksmith.Header" xml:space="preserve">
+    <value>Enable File Locksmith</value>
+    <comment>File Locksmith is the name of the utility</comment>
+  </data>
+  <data name="GPO_IsSettingForced.Title" xml:space="preserve">
+    <value>The systems administrator is forcing this setting.</value>
   </data>
 </root>

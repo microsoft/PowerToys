@@ -36,7 +36,7 @@ public class PowerAccent : IDisposable
     {
         _keyboardListener.SetShowToolbarEvent(new PowerToys.PowerAccentKeyboardService.ShowToolbar((LetterKey letterKey) =>
         {
-            Application.Current.Dispatcher.Invoke(() =>
+            System.Windows.Application.Current.Dispatcher.Invoke(() =>
             {
                 ShowToolbar(letterKey);
             });
@@ -44,7 +44,7 @@ public class PowerAccent : IDisposable
 
         _keyboardListener.SetHideToolbarEvent(new PowerToys.PowerAccentKeyboardService.HideToolbar((InputType inputType) =>
         {
-            Application.Current.Dispatcher.Invoke(() =>
+            System.Windows.Application.Current.Dispatcher.Invoke(() =>
             {
                 SendInputAndHideToolbar(inputType);
             });
@@ -52,17 +52,22 @@ public class PowerAccent : IDisposable
 
         _keyboardListener.SetNextCharEvent(new PowerToys.PowerAccentKeyboardService.NextChar((TriggerKey triggerKey) =>
         {
-            Application.Current.Dispatcher.Invoke(() =>
+            System.Windows.Application.Current.Dispatcher.Invoke(() =>
             {
                 ProcessNextChar(triggerKey);
             });
+        }));
+
+        _keyboardListener.SetIsLanguageLetterDelegate(new PowerToys.PowerAccentKeyboardService.IsLanguageLetter((LetterKey letterKey, out bool result) =>
+        {
+            result = Languages.GetDefaultLetterKey(letterKey, _settingService.SelectedLang).Length > 0;
         }));
     }
 
     private void ShowToolbar(LetterKey letterKey)
     {
         _visible = true;
-        _characters = WindowsFunctions.IsCapitalState() ? ToUpper(SettingsService.GetDefaultLetterKey(letterKey)) : SettingsService.GetDefaultLetterKey(letterKey);
+        _characters = (WindowsFunctions.IsCapsLockState() || WindowsFunctions.IsShiftState()) ? ToUpper(Languages.GetDefaultLetterKey(letterKey, _settingService.SelectedLang)) : Languages.GetDefaultLetterKey(letterKey, _settingService.SelectedLang);
         Task.Delay(_settingService.InputTime).ContinueWith(
             t =>
             {
@@ -144,14 +149,25 @@ public class PowerAccent : IDisposable
             }
         }
 
-        if (triggerKey == TriggerKey.Left && _selectedIndex > 0)
+        if (triggerKey == TriggerKey.Left)
         {
             --_selectedIndex;
         }
 
-        if (triggerKey == TriggerKey.Right && _selectedIndex < _characters.Length - 1)
+        if (triggerKey == TriggerKey.Right)
         {
             ++_selectedIndex;
+        }
+
+        // Wrap around at beginning and end of _selectedIndex range
+        if (_selectedIndex < 0)
+        {
+            _selectedIndex = _characters.Length - 1;
+        }
+
+        if (_selectedIndex > _characters.Length - 1)
+        {
+            _selectedIndex = 0;
         }
 
         OnSelectCharacter?.Invoke(_selectedIndex, _characters[_selectedIndex]);
@@ -160,7 +176,8 @@ public class PowerAccent : IDisposable
     public Point GetDisplayCoordinates(Size window)
     {
         (Point Location, Size Size, double Dpi) activeDisplay = WindowsFunctions.GetActiveDisplay();
-        Rect screen = new Rect(activeDisplay.Location, activeDisplay.Size) / activeDisplay.Dpi;
+        double primaryDPI = Screen.PrimaryScreen.Bounds.Width / SystemParameters.PrimaryScreenWidth;
+        Rect screen = new Rect(activeDisplay.Location, activeDisplay.Size) / primaryDPI;
         Position position = _settingService.Position;
 
         /* Debug.WriteLine("Dpi: " + activeDisplay.Dpi); */

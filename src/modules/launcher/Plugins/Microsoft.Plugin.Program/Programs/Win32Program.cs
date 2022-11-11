@@ -711,7 +711,7 @@ namespace Microsoft.Plugin.Program.Programs
 
                     foreach (var childDirectory in Directory.EnumerateDirectories(currentDirectory, "*", new EnumerationOptions()
                     {
-                        // https://docs.microsoft.com/en-us/dotnet/api/system.io.enumerationoptions?view=net-6.0
+                        // https://learn.microsoft.com/dotnet/api/system.io.enumerationoptions?view=net-6.0
                         // Exclude directories with the Reparse Point file attribute, to avoid loops due to symbolic links / directory junction / mount points.
                         AttributesToSkip = FileAttributes.Hidden | FileAttributes.System | FileAttributes.ReparsePoint,
                         RecurseSubdirectories = false,

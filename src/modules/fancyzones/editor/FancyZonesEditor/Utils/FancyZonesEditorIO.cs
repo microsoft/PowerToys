@@ -27,12 +27,15 @@ namespace FancyZonesEditor.Utils
         private const string GridJsonTag = "grid";
         private const string PriorityGridJsonTag = "priority-grid";
         private const string CustomJsonTag = "custom";
+        private const string HorizontalJsonTag = "horizontal";
+        private const string VerticalJsonTag = "vertical";
 
         // Non-localizable strings: Files
         private const string AppliedLayoutsFile = "\\Microsoft\\PowerToys\\FancyZones\\applied-layouts.json";
         private const string LayoutHotkeysFile = "\\Microsoft\\PowerToys\\FancyZones\\layout-hotkeys.json";
         private const string LayoutTemplatesFile = "\\Microsoft\\PowerToys\\FancyZones\\layout-templates.json";
         private const string CustomLayoutsFile = "\\Microsoft\\PowerToys\\FancyZones\\custom-layouts.json";
+        private const string DefaultLayoutsFile = "\\Microsoft\\PowerToys\\FancyZones\\default-layouts.json";
         private const string ParamsFile = "\\Microsoft\\PowerToys\\FancyZones\\editor-parameters.json";
 
         // Non-localizable string: default virtual desktop id
@@ -55,6 +58,8 @@ namespace FancyZonesEditor.Utils
         public string FancyZonesLayoutTemplatesFile { get; private set; }
 
         public string FancyZonesCustomLayoutsFile { get; private set; }
+
+        public string FancyZonesDefaultLayoutsFile { get; private set; }
 
         public string FancyZonesEditorParamsFile { get; private set; }
 
@@ -264,6 +269,35 @@ namespace FancyZonesEditor.Utils
             public List<LayoutHotkeyWrapper> LayoutHotkeys { get; set; }
         }
 
+        // default-layouts.json
+        private struct DefaultLayoutWrapper
+        {
+            public struct LayoutWrapper
+            {
+                public string Uuid { get; set; }
+
+                public string Type { get; set; }
+
+                public bool ShowSpacing { get; set; }
+
+                public int Spacing { get; set; }
+
+                public int ZoneCount { get; set; }
+
+                public int SensitivityRadius { get; set; }
+            }
+
+            public string MonitorConfiguration { get; set; }
+
+            public LayoutWrapper Layout { get; set; }
+        }
+
+        // default-layouts.json
+        private struct DefaultLayoutsListWrapper
+        {
+            public List<DefaultLayoutWrapper> DefaultLayouts { get; set; }
+        }
+
         private struct EditorParams
         {
             public int ProcessId { get; set; }
@@ -296,6 +330,7 @@ namespace FancyZonesEditor.Utils
             FancyZonesLayoutHotkeysFile = localAppDataDir + LayoutHotkeysFile;
             FancyZonesLayoutTemplatesFile = localAppDataDir + LayoutTemplatesFile;
             FancyZonesCustomLayoutsFile = localAppDataDir + CustomLayoutsFile;
+            FancyZonesDefaultLayoutsFile = localAppDataDir + DefaultLayoutsFile;
             FancyZonesEditorParamsFile = localAppDataDir + ParamsFile;
         }
 
@@ -558,6 +593,46 @@ namespace FancyZonesEditor.Utils
             return new ParsingResult(true);
         }
 
+        public ParsingResult ParseDefaultLayouts()
+        {
+            Logger.LogTrace();
+
+            if (_fileSystem.File.Exists(FancyZonesDefaultLayoutsFile))
+            {
+                DefaultLayoutsListWrapper wrapper;
+                string dataString = string.Empty;
+
+                try
+                {
+                    dataString = ReadFile(FancyZonesDefaultLayoutsFile);
+                    wrapper = JsonSerializer.Deserialize<DefaultLayoutsListWrapper>(dataString, _options);
+                }
+                catch (Exception ex)
+                {
+                    Logger.LogError("Default layouts parsing error", ex);
+                    return new ParsingResult(false, ex.Message, dataString);
+                }
+
+                try
+                {
+                    bool parsingResult = SetDefaultLayouts(wrapper.DefaultLayouts);
+                    if (parsingResult)
+                    {
+                        return new ParsingResult(true);
+                    }
+
+                    return new ParsingResult(false, FancyZonesEditor.Properties.Resources.Error_Parsing_Default_Layouts_Message, dataString);
+                }
+                catch (Exception ex)
+                {
+                    Logger.LogError("Default layouts parsing error", ex);
+                    return new ParsingResult(false, ex.Message, dataString);
+                }
+            }
+
+            return new ParsingResult(true);
+        }
+
         public void SerializeAppliedLayouts()
         {
             Logger.LogTrace();
@@ -658,7 +733,7 @@ namespace FancyZonesEditor.Utils
             TemplateLayoutsListWrapper templates = new TemplateLayoutsListWrapper { };
             templates.LayoutTemplates = new List<TemplateLayoutWrapper>();
 
-            foreach (LayoutModel layout in MainWindowSettingsModel.DefaultModels)
+            foreach (LayoutModel layout in MainWindowSettingsModel.TemplateModels)
             {
                 TemplateLayoutWrapper wrapper = new TemplateLayoutWrapper
                 {
@@ -786,6 +861,107 @@ namespace FancyZonesEditor.Utils
             catch (Exception ex)
             {
                 Logger.LogError("Serialize custom layouts error", ex);
+                App.ShowExceptionMessageBox(Properties.Resources.Error_Applying_Layout, ex);
+            }
+        }
+
+        public void SerializeDefaultLayouts()
+        {
+            DefaultLayoutsListWrapper layouts = new DefaultLayoutsListWrapper { };
+            layouts.DefaultLayouts = new List<DefaultLayoutWrapper>();
+
+            foreach (LayoutModel layout in MainWindowSettingsModel.TemplateModels)
+            {
+                if (layout.IsHorizontalDefault || layout.IsVerticalDefault)
+                {
+                    DefaultLayoutWrapper.LayoutWrapper layoutWrapper = new DefaultLayoutWrapper.LayoutWrapper
+                    {
+                        Uuid = string.Empty,
+                        Type = LayoutTypeToJsonTag(layout.Type),
+                        SensitivityRadius = layout.SensitivityRadius,
+                        ZoneCount = layout.TemplateZoneCount,
+                    };
+
+                    if (layout is GridLayoutModel grid)
+                    {
+                        layoutWrapper.ShowSpacing = grid.ShowSpacing;
+                        layoutWrapper.Spacing = grid.Spacing;
+                    }
+
+                    // can be both horizontal and vertical, so check separately
+                    if (layout.IsHorizontalDefault)
+                    {
+                        DefaultLayoutWrapper wrapper = new DefaultLayoutWrapper
+                        {
+                            MonitorConfiguration = MonitorConfigurationTypeToJsonTag(MonitorConfigurationType.Horizontal),
+                            Layout = layoutWrapper,
+                        };
+
+                        layouts.DefaultLayouts.Add(wrapper);
+                    }
+
+                    if (layout.IsVerticalDefault)
+                    {
+                        DefaultLayoutWrapper wrapper = new DefaultLayoutWrapper
+                        {
+                            MonitorConfiguration = MonitorConfigurationTypeToJsonTag(MonitorConfigurationType.Vertical),
+                            Layout = layoutWrapper,
+                        };
+
+                        layouts.DefaultLayouts.Add(wrapper);
+                    }
+                }
+            }
+
+            foreach (LayoutModel layout in MainWindowSettingsModel.CustomModels)
+            {
+                if (layout.IsHorizontalDefault || layout.IsVerticalDefault)
+                {
+                    DefaultLayoutWrapper.LayoutWrapper layoutWrapper = new DefaultLayoutWrapper.LayoutWrapper
+                    {
+                        Uuid = layout.Uuid,
+                        Type = LayoutTypeToJsonTag(LayoutType.Custom),
+                    };
+
+                    if (layout is GridLayoutModel grid)
+                    {
+                        layoutWrapper.ShowSpacing = grid.ShowSpacing;
+                        layoutWrapper.Spacing = grid.Spacing;
+                    }
+
+                    // can be both horizontal and vertical, so check separately
+                    if (layout.IsHorizontalDefault)
+                    {
+                        DefaultLayoutWrapper wrapper = new DefaultLayoutWrapper
+                        {
+                            MonitorConfiguration = MonitorConfigurationTypeToJsonTag(MonitorConfigurationType.Horizontal),
+                            Layout = layoutWrapper,
+                        };
+
+                        layouts.DefaultLayouts.Add(wrapper);
+                    }
+
+                    if (layout.IsVerticalDefault)
+                    {
+                        DefaultLayoutWrapper wrapper = new DefaultLayoutWrapper
+                        {
+                            MonitorConfiguration = MonitorConfigurationTypeToJsonTag(MonitorConfigurationType.Vertical),
+                            Layout = layoutWrapper,
+                        };
+
+                        layouts.DefaultLayouts.Add(wrapper);
+                    }
+                }
+            }
+
+            try
+            {
+                string jsonString = JsonSerializer.Serialize(layouts, _options);
+                _fileSystem.File.WriteAllText(FancyZonesDefaultLayoutsFile, jsonString);
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError("Serialize default layout error", ex);
                 App.ShowExceptionMessageBox(Properties.Resources.Error_Applying_Layout, ex);
             }
         }
@@ -942,7 +1118,7 @@ namespace FancyZonesEditor.Utils
             foreach (var wrapper in templateLayouts)
             {
                 LayoutType type = JsonTagToLayoutType(wrapper.Type);
-                LayoutModel layout = MainWindowSettingsModel.DefaultModels[(int)type];
+                LayoutModel layout = MainWindowSettingsModel.TemplateModels[(int)type];
 
                 layout.SensitivityRadius = wrapper.SensitivityRadius;
                 layout.TemplateZoneCount = wrapper.ZoneCount;
@@ -967,6 +1143,41 @@ namespace FancyZonesEditor.Utils
             foreach (var wrapper in layoutHotkeys.LayoutHotkeys)
             {
                 MainWindowSettingsModel.LayoutHotkeys.SelectKey(wrapper.Key.ToString(CultureInfo.CurrentCulture), wrapper.LayoutId);
+            }
+
+            return true;
+        }
+
+        private bool SetDefaultLayouts(List<DefaultLayoutWrapper> layouts)
+        {
+            Logger.LogTrace();
+
+            if (layouts == null)
+            {
+                return false;
+            }
+
+            foreach (var layout in layouts)
+            {
+                if (layout.Layout.Uuid != null && layout.Layout.Uuid != string.Empty)
+                {
+                    MonitorConfigurationType type = JsonTagToMonitorConfigurationType(layout.MonitorConfiguration);
+
+                    foreach (var customLayout in MainWindowSettingsModel.CustomModels)
+                    {
+                        if (customLayout.Uuid == layout.Layout.Uuid)
+                        {
+                            MainWindowSettingsModel.DefaultLayouts.Set(customLayout, type);
+                            break;
+                        }
+                    }
+                }
+                else
+                {
+                    LayoutType layoutType = JsonTagToLayoutType(layout.Layout.Type);
+                    MonitorConfigurationType type = JsonTagToMonitorConfigurationType(layout.MonitorConfiguration);
+                    MainWindowSettingsModel.DefaultLayouts.Set(MainWindowSettingsModel.TemplateModels[(int)layoutType], type);
+                }
             }
 
             return true;
@@ -1088,6 +1299,32 @@ namespace FancyZonesEditor.Utils
                 default:
                     return string.Empty;
             }
+        }
+
+        private MonitorConfigurationType JsonTagToMonitorConfigurationType(string tag)
+        {
+            switch (tag)
+            {
+                case HorizontalJsonTag:
+                    return MonitorConfigurationType.Horizontal;
+                case VerticalJsonTag:
+                    return MonitorConfigurationType.Vertical;
+            }
+
+            return MonitorConfigurationType.Horizontal;
+        }
+
+        private string MonitorConfigurationTypeToJsonTag(MonitorConfigurationType type)
+        {
+            switch (type)
+            {
+                case MonitorConfigurationType.Horizontal:
+                    return HorizontalJsonTag;
+                case MonitorConfigurationType.Vertical:
+                    return VerticalJsonTag;
+            }
+
+            return HorizontalJsonTag;
         }
     }
 }

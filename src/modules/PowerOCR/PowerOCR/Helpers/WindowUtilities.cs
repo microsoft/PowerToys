@@ -2,7 +2,6 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-using System.Collections.Generic;
 using System.Windows;
 using System.Windows.Forms;
 using Microsoft.PowerToys.Telemetry;
@@ -16,36 +15,12 @@ public static class WindowUtilities
     {
         if (IsOCROverlayCreated())
         {
-            Logger.LogWarning("Tired to launch the overlay but it was already created.");
+            Logger.LogWarning("Tried to launch the overlay, but it has been already created.");
             return;
         }
 
-        Screen[] allScreens = Screen.AllScreens;
-        WindowCollection allWindows = System.Windows.Application.Current.Windows;
-
-        List<OCROverlay> allFullscreenGrab = new List<OCROverlay>();
-
-        foreach (Screen screen in allScreens)
+        foreach (Screen screen in Screen.AllScreens)
         {
-            bool screenHasWindow = true;
-
-            foreach (Window window in allWindows)
-            {
-                System.Drawing.Point windowCenter =
-                    new System.Drawing.Point(
-                        (int)(window.Left + (window.Width / 2)),
-                        (int)(window.Top + (window.Height / 2)));
-                screenHasWindow = screen.Bounds.Contains(windowCenter);
-
-                // if (window is EditTextWindow)
-                //     isEditWindowOpen = true;
-            }
-
-            if (allWindows.Count < 1)
-            {
-                screenHasWindow = false;
-            }
-
             OCROverlay overlay = new OCROverlay()
             {
                 WindowStartupLocation = WindowStartupLocation.Manual,
@@ -73,8 +48,7 @@ public static class WindowUtilities
             }
 
             overlay.Show();
-            overlay.Activate();
-            allFullscreenGrab.Add(overlay);
+            ActivateWindow(overlay);
         }
 
         PowerToysTelemetry.Log.WriteEvent(new PowerOCR.Telemetry.PowerOCRInvokedEvent());
@@ -109,5 +83,25 @@ public static class WindowUtilities
 
         // TODO: Decide when to close the process
         // System.Windows.Application.Current.Shutdown();
+    }
+
+    public static void ActivateWindow(Window window)
+    {
+        var handle = new System.Windows.Interop.WindowInteropHelper(window).Handle;
+        var fgHandle = OSInterop.GetForegroundWindow();
+
+        var threadId1 = OSInterop.GetWindowThreadProcessId(handle, System.IntPtr.Zero);
+        var threadId2 = OSInterop.GetWindowThreadProcessId(fgHandle, System.IntPtr.Zero);
+
+        if (threadId1 != threadId2)
+        {
+            OSInterop.AttachThreadInput(threadId1, threadId2, true);
+            OSInterop.SetForegroundWindow(handle);
+            OSInterop.AttachThreadInput(threadId1, threadId2, false);
+        }
+        else
+        {
+            OSInterop.SetForegroundWindow(handle);
+        }
     }
 }

@@ -167,7 +167,7 @@ LONG WINAPI unhandled_exception_handler(PEXCEPTION_POINTERS info)
     return EXCEPTION_CONTINUE_SEARCH;
 }
 
-extern "C" void AbortHandler(int signal_number)
+extern "C" void AbortHandler(int /*signal_number*/)
 {
     init_symbols();
     std::wstring ex_description = L"SIGABRT was raised.";

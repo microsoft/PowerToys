@@ -32,6 +32,7 @@ namespace winrt::PowerToys::PowerAccentKeyboardService::implementation
         void SetShowToolbarEvent(ShowToolbar showToolbarEvent);
         void SetHideToolbarEvent(HideToolbar hideToolbarEvent);
         void SetNextCharEvent(NextChar NextCharEvent);
+        void SetIsLanguageLetterDelegate(IsLanguageLetter IsLanguageLetterDelegate);
 
         void UpdateActivationKey(int32_t activationKey);
         void UpdateInputTime(int32_t inputTime);
@@ -49,18 +50,47 @@ namespace winrt::PowerToys::PowerAccentKeyboardService::implementation
         std::function<void(LetterKey)> m_showToolbarCb;
         std::function<void(InputType)> m_hideToolbarCb;
         std::function<void(TriggerKey)> m_nextCharCb;
+        std::function<bool(LetterKey)> m_isLanguageLetterCb;
         bool m_triggeredWithSpace;
         spdlog::stopwatch m_stopwatch;
 
-        static inline const std::vector<LetterKey> letters = { LetterKey::VK_A,
-                                                            LetterKey::VK_C,
-                                                            LetterKey::VK_E,
-                                                            LetterKey::VK_I,
-                                                            LetterKey::VK_N,
-                                                            LetterKey::VK_O,
-                                                            LetterKey::VK_S,
-                                                            LetterKey::VK_U,
-                                                            LetterKey::VK_Y };
+        static inline const std::vector<LetterKey> letters = { LetterKey::VK_0,
+                                                               LetterKey::VK_1,
+                                                               LetterKey::VK_2,
+                                                               LetterKey::VK_3,
+                                                               LetterKey::VK_4,
+                                                               LetterKey::VK_5,
+                                                               LetterKey::VK_6,
+                                                               LetterKey::VK_7,
+                                                               LetterKey::VK_8,
+                                                               LetterKey::VK_9,
+                                                               LetterKey::VK_A,
+                                                               LetterKey::VK_B,
+                                                               LetterKey::VK_C,
+                                                               LetterKey::VK_D,
+                                                               LetterKey::VK_E,
+                                                               LetterKey::VK_F,
+                                                               LetterKey::VK_G,
+                                                               LetterKey::VK_H,
+                                                               LetterKey::VK_I,
+                                                               LetterKey::VK_J,
+                                                               LetterKey::VK_K,
+                                                               LetterKey::VK_L,
+                                                               LetterKey::VK_M,
+                                                               LetterKey::VK_N,
+                                                               LetterKey::VK_O,
+                                                               LetterKey::VK_P,
+                                                               LetterKey::VK_Q,
+                                                               LetterKey::VK_R,
+                                                               LetterKey::VK_S,
+                                                               LetterKey::VK_T,
+                                                               LetterKey::VK_U,
+                                                               LetterKey::VK_V,
+                                                               LetterKey::VK_W,
+                                                               LetterKey::VK_X,
+                                                               LetterKey::VK_Y,
+                                                               LetterKey::VK_Z,
+                                                               LetterKey::VK_COMMA };
         LetterKey letterPressed{};
 
         static inline const std::vector<TriggerKey> triggers = { TriggerKey::Right, TriggerKey::Left, TriggerKey::Space };

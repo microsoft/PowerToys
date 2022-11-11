@@ -7,20 +7,22 @@
         <Nullable>disable</Nullable>
         <AllowUnsafeBlocks>True</AllowUnsafeBlocks>
         <UseWPF>true</UseWPF>
+	  <UseWindowsForms>true</UseWindowsForms>
     </PropertyGroup>
     <PropertyGroup>
-        <CsWinRTIncludes>PowerToys.PowerAccentKeyboardService</CsWinRTIncludes>
+        <CsWinRTIncludes>PowerToys.GPOWrapper;PowerToys.PowerAccentKeyboardService</CsWinRTIncludes>
         <CsWinRTGeneratedFilesDir>$(OutDir)</CsWinRTGeneratedFilesDir>
         <ErrorOnDuplicatePublishOutputFiles>false</ErrorOnDuplicatePublishOutputFiles>
     </PropertyGroup>
 
     <ItemGroup>
         <PackageReference Include="Microsoft.Windows.CsWinRT" Version="2.0.0" />
-        <PackageReference Include="System.Configuration.ConfigurationManager" Version="6.0.0" />
         <PackageReference Include="Vanara.PInvoke.User32" Version="3.3.15" />
-    </ItemGroup>
+	<PackageReference Include="Vanara.PInvoke.Shell32" Version="3.3.15" />
+</ItemGroup>
 
     <ItemGroup>
+    <ProjectReference Include="..\..\..\common\GPOWrapper\GPOWrapper.vcxproj" />
         <ProjectReference Include="..\..\..\settings-ui\Settings.UI.Library\Settings.UI.Library.csproj" />
         <ProjectReference Include="..\PowerAccentKeyboardService\PowerAccentKeyboardService.vcxproj" />
     </ItemGroup>

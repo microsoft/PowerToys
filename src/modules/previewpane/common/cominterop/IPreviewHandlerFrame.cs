@@ -18,7 +18,7 @@ namespace Common.ComInterlop
         /// <summary>
         /// Gets a list of the keyboard shortcuts for the preview host.
         /// </summary>
-        /// <param name="pinfo">A pointer to a <see href="https://docs.microsoft.com/en-us/windows/win32/api/shobjidl_core/ns-shobjidl_core-previewhandlerframeinfo">PREVIEWHANDLERFRAMEINFO</see> structure
+        /// <param name="pinfo">A pointer to a <see href="https://learn.microsoft.com/windows/win32/api/shobjidl_core/ns-shobjidl_core-previewhandlerframeinfo">PREVIEWHANDLERFRAMEINFO</see> structure
         /// that receives accelerator table information.</param>
         void GetWindowContext(IntPtr pinfo);
 

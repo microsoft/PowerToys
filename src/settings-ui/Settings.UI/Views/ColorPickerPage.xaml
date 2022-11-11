@@ -5,10 +5,15 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:controls="using:Microsoft.PowerToys.Settings.UI.Controls"
+    xmlns:converters="using:CommunityToolkit.WinUI.UI.Converters"
     xmlns:models="using:Microsoft.PowerToys.Settings.UI.Library"
     mc:Ignorable="d"
     x:Name="RootPage"
     AutomationProperties.LandmarkType="Main">
+
+    <Page.Resources>
+        <converters:BoolNegationConverter x:Key="BoolNegationConverter"/>
+    </Page.Resources>
 
     <controls:SettingsPageControl x:Uid="ColorPicker"
                                   ModuleImageSource="ms-appx:///Assets/Modules/ColorPicker.png">
@@ -17,7 +22,7 @@
         <StackPanel Orientation="Vertical"
                     x:Name="ColorPickerView">
 
-            <controls:Setting x:Uid="ColorPicker_EnableColorPicker">
+            <controls:Setting x:Uid="ColorPicker_EnableColorPicker" IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabledGpoConfigured, Converter={StaticResource BoolNegationConverter}}">
                 <controls:Setting.Icon>
                     <BitmapIcon UriSource="ms-appx:///Assets/FluentIcons/FluentIconsColorPicker.png" ShowAsMonochrome="False" />
                 </controls:Setting.Icon>
@@ -25,6 +30,11 @@
                     <ToggleSwitch IsOn="{x:Bind ViewModel.IsEnabled, Mode=TwoWay}" x:Uid="ToggleSwitch" />
                 </controls:Setting.ActionContent>
             </controls:Setting>
+            <InfoBar x:Uid="GPO_IsSettingForced"
+                Severity="Informational"
+                IsClosable="False"
+                IsOpen="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabledGpoConfigured}"
+                IsTabStop="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabledGpoConfigured}" />
 
             <controls:SettingsGroup x:Uid="Shortcut" IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}">
                 <controls:Setting x:Uid="Activation_Shortcut" Icon="&#xEDA7;">

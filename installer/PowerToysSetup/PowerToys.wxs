@@ -6,13 +6,9 @@
     <?define BinDir="$(var.RepoDir)$(var.Platform)\$(var.Configuration)\" ?>
     <?define PowerToysPlatform="x64"?>
 
-    <?define Dotnet6DownloadUrl="https://download.visualstudio.microsoft.com/download/pr/b4a17a47-2fe8-498d-b817-30ad2e23f413/00020402af25ba40990c6cc3db5cb270/windowsdesktop-runtime-6.0.8-win-x64.exe"?>
-    <?define Dotnet6PayloadSize="57909296"?>
-    <?define Dotnet6PayloadHash="ABA98AAA3DB700D41EB067280F86F35B7DDEA550"?>
-
-    <?define VCRedistDownloadUrl="https://download.visualstudio.microsoft.com/download/pr/ed95ef9e-da02-4735-9064-bd1f7f69b6ed/CE6593A1520591E7DEA2B93FD03116E3FC3B3821A0525322B0A430FAA6B3C0B4/VC_redist.x64.exe"?>
-    <?define VCRedistPayloadSize="25234792"?>
-    <?define VCRedistPayloadHash="D4F9181E70E3F1AA6C8EDFFCC15B3C3D4BABE36B"?>
+    <?define Dotnet6DownloadUrl="https://download.visualstudio.microsoft.com/download/pr/a6e878eb-d1da-40cb-8b6a-7f5b9390f09c/e4431ce2aa28b6c9956db672209be500/windowsdesktop-runtime-6.0.10-win-x64.exe"?>
+    <?define Dotnet6PayloadSize="57361520"?>
+    <?define Dotnet6PayloadHash="0978D0AB85DC6F4682BA18075200F15C1C74FE02"?>
 
     <?define PlatformProgramFiles="[ProgramFiles64Folder]"?>
 <?else?>
@@ -20,14 +16,10 @@
     <?define BinDir="$(var.RepoDir)ARM64\$(var.Configuration)\" ?>
     <?define PowerToysPlatform="ARM64"?>
 
-    <?define Dotnet6DownloadUrl="https://download.visualstudio.microsoft.com/download/pr/17737b16-dbb0-45f8-9684-16cce46f0835/14475e8380422840249513d58c70d8da/windowsdesktop-runtime-6.0.8-win-arm64.exe"?>
-    <?define Dotnet6PayloadSize="51735240"?>
-    <?define Dotnet6PayloadHash="AE097FD933EEF88A1F8D800961A1584CAF9DA37F"?>
+    <?define Dotnet6DownloadUrl="https://download.visualstudio.microsoft.com/download/pr/b05a38ca-a434-473c-b031-07f05c75487e/0dfe9108f47050d81f1bc09002de6881/windowsdesktop-runtime-6.0.10-win-arm64.exe"?>
+    <?define Dotnet6PayloadSize="51265552"?>
+    <?define Dotnet6PayloadHash="A624592684361793BE6D913A9E324BA6CEE4984A"?>
     
-    <?define VCRedistDownloadUrl="https://download.visualstudio.microsoft.com/download/pr/ed95ef9e-da02-4735-9064-bd1f7f69b6ed/8E126191012691AE22A0D5A89FAC01B59BABC7B680E5D9B65828935FD366E375/VC_redist.arm64.exe"?>
-    <?define VCRedistPayloadSize="11500416"?>
-    <?define VCRedistPayloadHash="FEECAC80EF04125B058381487332872896F38477"?>
-
 <!--TODO: define to ARM64 Program files once it's available-->
     <?define PlatformProgramFiles="[ProgramFiles6432Folder]"?> 
 
@@ -49,7 +41,7 @@
               SuppressRepair="yes" />
         </BootstrapperApplicationRef>
 
-        <util:FileSearch Variable="HasDotnet608" Path="$(var.PlatformProgramFiles)dotnet\shared\Microsoft.WindowsDesktop.App\6.0.8\System.Xaml.dll" Result="exists" />
+        <util:FileSearch Variable="HasDotnet6010" Path="$(var.PlatformProgramFiles)dotnet\shared\Microsoft.WindowsDesktop.App\6.0.10\System.Xaml.dll" Result="exists" />
         <util:RegistrySearch Variable="HasWebView2PerMachine" Root="HKLM" Key="SOFTWARE\WOW6432Node\Microsoft\EdgeUpdate\Clients\{F3017226-FE2A-4295-8BDF-00C3A9A7E4C5}" Result="exists" />
         <util:RegistrySearch Variable="HasWebView2PerUser" Root="HKCU" Key="Software\Microsoft\EdgeUpdate\Clients\{F3017226-FE2A-4295-8BDF-00C3A9A7E4C5}" Result="exists" />
 
@@ -69,8 +61,6 @@
       <util:RegistrySearch Id="SearchWindowsBuildNumber" Root="HKLM" Key="SOFTWARE\Microsoft\Windows NT\CurrentVersion" Value="CurrentBuildNumber" Result="value" Format="raw" Variable="DetectedWindowsBuildNumber" />
       <bal:Condition Message="This application is only supported on Windows 10 version v2004 (build 19041) or higher.">DetectedWindowsBuildNumber &gt;= 19041 OR WixBundleInstalled</bal:Condition>
     
-      <util:RegistrySearch Variable="DetectedVCRedistVersion" Root="HKLM" Key="Software\Microsoft\VisualStudio\14.0\VC\Runtimes\$(var.PowerToysPlatform)" Value="Minor" Result="value" Format="raw" />
-
         <Chain>
             <ExePackage
                 DisplayName="Closing PowerToys application"
@@ -85,10 +75,10 @@
             </ExePackage>
             <ExePackage
                 DisplayName="Downloading and installing .NET 6 Desktop Runtime"
-                Name="windowsdesktop-runtime-6.0.8-win-$(var.PowerToysPlatform).exe"
+                Name="windowsdesktop-runtime-6.0.10-win-$(var.PowerToysPlatform).exe"
                 Compressed="no"
                 Id="DotnetRuntime6"
-                DetectCondition="HasDotnet608"
+                DetectCondition="HasDotnet6010"
                 DownloadUrl="$(var.Dotnet6DownloadUrl)"
                 InstallCommand="/install /quiet /norestart"
                 RepairCommand="/repair /passive /norestart"
@@ -97,10 +87,10 @@
                 UninstallCommand="/uninstall /quiet /norestart">
                 <ExitCode Value="1638" Behavior="success"/>
                 <RemotePayload
-                    Description="Microsoft Windows Desktop Runtime - 6.0.8 ($(var.PowerToysPlatform))"
-                    ProductName="Microsoft Windows Desktop Runtime - 6.0.8 ($(var.PowerToysPlatform))"
+                    Description="Microsoft Windows Desktop Runtime - 6.0.10 ($(var.PowerToysPlatform))"
+                    ProductName="Microsoft Windows Desktop Runtime - 6.0.10 ($(var.PowerToysPlatform))"
                     Size="$(var.Dotnet6PayloadSize)"
-                    Version="6.0.8.31518"
+                    Version="6.0.10.31726"
                     Hash="$(var.Dotnet6PayloadHash)" />
             </ExePackage>
             <ExePackage
@@ -115,24 +105,6 @@
                 Permanent="yes"
                 PerMachine="yes"
                 UninstallCommand="/silent /uninstall">
-            </ExePackage>
-            <ExePackage
-                DisplayName="Downloading and installing Microsoft Visual C++ 2015-2022 Redistributable"
-                Name="VCRedist-14.32.31332.exe"
-                DetectCondition="DetectedVCRedistVersion >= 32"
-                Compressed="no"
-                Id="VCRedist"
-                DownloadUrl="$(var.VCRedistDownloadUrl)"
-                InstallCommand="/install /quiet /norestart"
-                RepairCommand="/repair /quiet /norestart"
-                Permanent="yes">
-                <ExitCode Value="1638" Behavior="success"/>
-                <RemotePayload
-                    Description="Microsoft Visual C++ 2015-2022 Redistributable ($(var.PowerToysPlatform)) - 14.32.31332"
-                    ProductName="Microsoft Visual C++ 2015-2022 Redistributable ($(var.PowerToysPlatform)) - 14.32.31332"
-                    Size="$(var.VCRedistPayloadSize)"
-                    Version="14.32.31332.0"
-                    Hash="$(var.VCRedistPayloadHash)" />
             </ExePackage>
             <MsiPackage
                 DisplayName="Installing PowerToys"

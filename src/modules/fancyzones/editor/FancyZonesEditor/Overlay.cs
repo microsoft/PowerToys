@@ -107,7 +107,7 @@ namespace FancyZonesEditor
                     if (settings != null)
                     {
                         settings.SetAppliedModel(null);
-                        settings.UpdateDefaultModels();
+                        settings.UpdateTemplateModels();
                     }
 
                     Update();
