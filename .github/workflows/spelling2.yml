@@ -1,10 +1,54 @@
 # spelling.yml is blocked per https://github.com/check-spelling/check-spelling/security/advisories/GHSA-g86g-chm8-7r2p
 name: Spell checking
+
+# Comment management is handled through a secondary job, for details see:
+# https://github.com/check-spelling/check-spelling/wiki/Feature%3A-Restricted-Permissions
+#
+# `jobs.comment-push` runs when a push is made to a repository and the `jobs.spelling` job needs to make a comment
+#   (in odd cases, it might actually run just to collapse a commment, but that's fairly rare)
+#   it needs `contents: write` in order to add a comment.
+#
+# `jobs.comment-pr` runs when a pull_request is made to a repository and the `jobs.spelling` job needs to make a comment
+#   or collapse a comment (in the case where it had previously made a comment and now no longer needs to show a comment)
+#   it needs `pull-requests: write` in order to manipulate those comments.
+
+# Updating pull request branches is managed via comment handling.
+# For details, see: https://github.com/check-spelling/check-spelling/wiki/Feature:-Update-expect-list
+#
+# These elements work together to make it happen:
+#
+# `on.issue_comment`
+#   This event listens to comments by users asking to update the metadata.
+#
+# `jobs.update`
+#   This job runs in response to an issue_comment and will push a new commit
+#   to update the spelling metadata.
+#
+# `with.experimental_apply_changes_via_bot`
+#   Tells the action to support and generate messages that enable it
+#   to make a commit to update the spelling metadata.
+#
+# `with.ssh_key`
+#   In order to trigger workflows when the commit is made, you can provide a
+#   secret (typically, a write-enabled github deploy key).
+#
+#   For background, see: https://github.com/check-spelling/check-spelling/wiki/Feature:-Update-with-deploy-key
+
 on:
-  pull_request_target:
   push:
-    branches: ["**"]
-    tags-ignore: ["**"]
+    branches:
+    - "**"
+    tags-ignore:
+    - "**"
+  pull_request_target:
+    branches:
+    - "**"
+    tags-ignore:
+    - "**"
+    types:
+    - 'opened'
+    - 'reopened'
+    - 'synchronize'
 
 jobs:
   spelling:
@@ -24,30 +68,55 @@ jobs:
     steps:
     - name: check-spelling
       id: spelling
-      uses: check-spelling/check-spelling@v0.0.20
+      uses: check-spelling/check-spelling@v0.0.21
       with:
         config: .github/actions/spell-check
         suppress_push_for_open_pull_request: 1
         checkout: true
+        check_file_names: 1
+        spell_check_this: check-spelling/spell-check-this@prerelease
         post_comment: 0
+        use_magic_file: 1
+        extra_dictionary_limit: 10
         extra_dictionaries:
+          cspell:software-terms/src/software-terms.txt
+          cspell:cpp/src/stdlib-cpp.txt
           cspell:filetypes/filetypes.txt
+          cspell:cpp/src/stdlib-c.txt
+          cspell:fullstack/fullstack.txt
           cspell:html/html.txt
           cspell:css/css.txt
-        check_extra_dictionaries: ''
 
-  comment:
-    name: Comment
+  comment-push:
+    name: Report (Push)
+    # If your workflow isn't running on push, you can remove this job
     runs-on: ubuntu-latest
     needs: spelling
     permissions:
       contents: write
-      pull-requests: write
-    if: (success() || failure()) && needs.spelling.outputs.followup
+    if: (success() || failure()) && needs.spelling.outputs.followup && github.event_name == 'push'
     steps:
     - name: comment
-      uses: check-spelling/check-spelling@v0.0.20
+      uses: check-spelling/check-spelling@v0.0.21
       with:
         config: .github/actions/spell-check
         checkout: true
+        spell_check_this: check-spelling/spell-check-this@prerelease
+        task: ${{ needs.spelling.outputs.followup }}
+
+  comment-pr:
+    name: Report (PR)
+    # If you workflow isn't running on pull_request*, you can remove this job
+    runs-on: ubuntu-latest
+    needs: spelling
+    permissions:
+      pull-requests: write
+    if: (success() || failure()) && needs.spelling.outputs.followup && contains(github.event_name, 'pull_request')
+    steps:
+    - name: comment
+      uses: check-spelling/check-spelling@v0.0.21
+      with:
+        config: .github/actions/spell-check
+        checkout: true
+        spell_check_this: check-spelling/spell-check-this@prerelease
         task: ${{ needs.spelling.outputs.followup }}
