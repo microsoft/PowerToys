@@ -212,7 +212,7 @@ void Trace::FancyZones::DataChanged() noexcept
             activeZoneSetInfo += L", custom zone data was deleted";
         }
     }
-
+#pragma warning(suppress : 4244)
     TraceLoggingWrite(
         g_hProvider,
         EventZoneSettingsChangedKey,
