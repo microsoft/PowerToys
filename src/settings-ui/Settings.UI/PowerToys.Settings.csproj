@@ -36,10 +36,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <None Remove="OobeWindow.xaml" />
-  </ItemGroup>
-
-  <ItemGroup>
     <Content Include="Assets\SplashScreen.scale-200.png" />
     <Content Include="Assets\LockScreenLogo.scale-200.png" />
     <Content Include="Assets\Square150x150Logo.scale-200.png" />
@@ -52,7 +48,7 @@
   <ItemGroup>
     <PackageReference Include="CommunityToolkit.WinUI.UI" Version="7.1.2" />
     <PackageReference Include="CommunityToolkit.WinUI.UI.Controls" Version="7.1.2" />
-    <PackageReference Include="Microsoft.WindowsAppSDK" Version="1.1.2" />
+    <PackageReference Include="Microsoft.WindowsAppSDK" Version="1.1.4" />
     <PackageReference Include="Microsoft.Windows.SDK.BuildTools" Version="10.0.22000.197" />
     <PackageReference Include="Microsoft.Xaml.Behaviors.WinUI.Managed" Version="2.0.8" />
     <Manifest Include="$(ApplicationManifest)" />
@@ -69,13 +65,13 @@
     <ProjectReference Include="..\Settings.UI.Library\Settings.UI.Library.csproj" />
   </ItemGroup>
   <ItemGroup>
-    <Page Update="OobeWindow.xaml">
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-  </ItemGroup>
-  <ItemGroup>
     <None Update="icon.ico">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
+  </ItemGroup>
+  <ItemGroup>
+    <Page Update="OOBE\Views\OobePowerOCR.xaml">
+      <XamlRuntime>$(DefaultXamlRuntime)</XamlRuntime>
+    </Page>
   </ItemGroup>
 </Project>

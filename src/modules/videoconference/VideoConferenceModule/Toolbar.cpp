@@ -232,38 +232,39 @@ void Toolbar::show(std::wstring position, std::wstring monitorString)
 
     for (auto& monitorInfo : monitorInfos)
     {
+        const auto screenSize = monitorInfo.GetScreenSize(false);
         int positionX = 0;
         int positionY = 0;
 
         if (position == L"Top left corner")
         {
-            positionX = monitorInfo.left() + BORDER_OFFSET;
-            positionY = monitorInfo.top() + BORDER_OFFSET;
+            positionX = screenSize.left() + BORDER_OFFSET;
+            positionY = screenSize.top() + BORDER_OFFSET;
         }
         else if (position == L"Top center")
         {
-            positionX = monitorInfo.middle().x - overlayWidth / 2;
-            positionY = monitorInfo.top() + BORDER_OFFSET;
+            positionX = screenSize.middle().x - overlayWidth / 2;
+            positionY = screenSize.top() + BORDER_OFFSET;
         }
         else if (position == L"Bottom left corner")
         {
-            positionX = monitorInfo.left() + BORDER_OFFSET;
-            positionY = monitorInfo.bottom() - overlayHeight - BORDER_OFFSET;
+            positionX = screenSize.left() + BORDER_OFFSET;
+            positionY = screenSize.bottom() - overlayHeight - BORDER_OFFSET;
         }
         else if (position == L"Bottom center")
         {
-            positionX = monitorInfo.middle().x - overlayWidth / 2;
-            positionY = monitorInfo.bottom() - overlayHeight - BORDER_OFFSET;
+            positionX = screenSize.middle().x - overlayWidth / 2;
+            positionY = screenSize.bottom() - overlayHeight - BORDER_OFFSET;
         }
         else if (position == L"Bottom right corner")
         {
-            positionX = monitorInfo.right() - overlayWidth - BORDER_OFFSET;
-            positionY = monitorInfo.bottom() - overlayHeight - BORDER_OFFSET;
+            positionX = screenSize.right() - overlayWidth - BORDER_OFFSET;
+            positionY = screenSize.bottom() - overlayHeight - BORDER_OFFSET;
         }
         else //"Top right corner" or non-present
         {
-            positionX = monitorInfo.right() - overlayWidth - BORDER_OFFSET;
-            positionY = monitorInfo.top() + TOP_RIGHT_BORDER_OFFSET;
+            positionX = screenSize.right() - overlayWidth - BORDER_OFFSET;
+            positionY = screenSize.top() + TOP_RIGHT_BORDER_OFFSET;
         }
 
         HWND hwnd;

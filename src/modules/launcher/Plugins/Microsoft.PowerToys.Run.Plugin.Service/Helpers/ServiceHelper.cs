@@ -255,7 +255,7 @@ namespace Microsoft.PowerToys.Run.Plugin.Service.Helpers
 
         private static bool IsDelayedStart(string serviceName)
         {
-           return (int?)Registry.LocalMachine.OpenSubKey(@"System\CurrentControlSet\Services\" + serviceName, false)?.GetValue("DelayedAutostart", 0, RegistryValueOptions.None) == 1;
+            return (int?)Registry.LocalMachine.OpenSubKey(@"System\CurrentControlSet\Services\" + serviceName, false)?.GetValue("DelayedAutostart", 0, RegistryValueOptions.None) == 1;
         }
     }
 }

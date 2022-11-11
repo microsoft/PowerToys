@@ -20,15 +20,16 @@ Microsoft PowerToys is a set of utilities for power users to tune and streamline
 | [Always on Top](https://aka.ms/PowerToysOverview_AoT) | [PowerToys Awake](https://aka.ms/PowerToysOverview_Awake) | [Color Picker](https://aka.ms/PowerToysOverview_ColorPicker) |
 | [FancyZones](https://aka.ms/PowerToysOverview_FancyZones) | [File Explorer Add-ons](https://aka.ms/PowerToysOverview_FileExplorerAddOns) | [Image Resizer](https://aka.ms/PowerToysOverview_ImageResizer) |
 | [Keyboard Manager](https://aka.ms/PowerToysOverview_KeyboardManager) | [Mouse utilities](https://aka.ms/PowerToysOverview_MouseUtilities) | [PowerRename](https://aka.ms/PowerToysOverview_PowerRename) |
-| [PowerToys Run](https://aka.ms/PowerToysOverview_PowerToysRun) | [Shortcut Guide](https://aka.ms/PowerToysOverview_ShortcutGuide) | [Video Conference Mute](https://aka.ms/PowerToysOverview_VideoConference) |
+| [PowerToys Run](https://aka.ms/PowerToysOverview_PowerToysRun) | [Quick Accent](https://aka.ms/PowerToysOverview_QuickAccent) | [Screen Ruler](https://aka.ms/PowerToysOverview_ScreenRuler) |
+| [Shortcut Guide](https://aka.ms/PowerToysOverview_ShortcutGuide) | [Text Extractor](https://aka.ms/PowerToysOverview_TextExtractor) | [Video Conference Mute](https://aka.ms/PowerToysOverview_VideoConference) |
 
 ## Installing and running Microsoft PowerToys
 
 ### Requirements
 
-- Windows 11 or Windows 10 v2004 (19041) or newer.
+- Windows 11 or Windows 10 version 2004 (code name 20H1 / build number 19041) or newer.
 - Our installer will install the following items:
-   - [.NET 6.0.6 Desktop Runtime](https://dotnet.microsoft.com/download/dotnet/6.0#runtime-desktop-6.0.6) or a newer 6.0.x runtime.
+   - [.NET 6.0.8 Desktop Runtime](https://dotnet.microsoft.com/download/dotnet/6.0#runtime-desktop-6.0.8) or a newer 6.0.x runtime.
    - [Microsoft Edge WebView2 Runtime](https://go.microsoft.com/fwlink/p/?LinkId=2124703) bootstrapper. This will install the latest version.
    - [Microsoft Visual C++ Redistributable](https://docs.microsoft.com/cpp/windows/latest-supported-vc-redist?view=msvc-170#visual-studio-2015-2017-2019-and-2022) installer. This will install one of the latest versions available.
 
@@ -36,8 +37,8 @@ Microsoft PowerToys is a set of utilities for power users to tune and streamline
 
  [Microsoft PowerToys GitHub releases page][github-release-link], click on `Assets` at the bottom to show the files available in the release. Please use the appropriate the PowerToys installer that matches your machine's architecture.  For most people, it is `x64`.
  
- - **For x64 processors (most common):** click on `PowerToysSetup-0.60.1-x64.exe`
- - **For ARM64 processors:** `PowerToysSetup-0.60.1-arm64.exe`
+ - **For x64 processors (most common):** [PowerToysSetup-0.62.0-x64.exe](https://github.com/microsoft/PowerToys/releases/download/v0.62.0/PowerToysSetup-0.62.0-x64.exe)
+ - **For ARM64 processors:** [PowerToysSetup-0.62.0-arm64.exe](https://github.com/microsoft/PowerToys/releases/download/v0.62.0/PowerToysSetup-0.62.0-arm64.exe)
 
 This is our preferred method.
 
@@ -72,120 +73,112 @@ For guidance on developing for PowerToys, please read the [developer docs](/doc/
 
 Our [prioritized roadmap][roadmap] of features and utilities that the core team is focusing on.
 
-### 0.60 - June 2022 Update
+### 0.62 - August 2022 Update
 
-In this release, we focused heavily on stability and improvements. Below are some of the highlights!
+In this release, we focused on releasing three new PowerToys.
 
 **Highlights**
 
-- PowerRename and Image Resizer now appear on the new Windows 11 context menu.
-- There's a new PowerToys Run plugin for OneNote. Thanks [@palenshus](https://github.com/palenshus)!
-- FancyZones uses a new zone identification with monitor Id to increase stability and avoid zone resets.
-- AlwaysOnTop now uses rounded corners for highlighting rounded windows on Windows 11.
-- Added settings to PowerToys Run to better control the query results order. Thanks [@jefflord](https://github.com/jefflord)!
+- New utility: Screen Ruler is a quick and easy way to measure pixels on your screen.
+- New utility: Quick Accent is an easy way to write letters with accents. Thanks [@damienleroy](https://github.com/damienleroy)!
+- New utility: Text Extractor works like Snipping Tool, but copies the text out of the selected region using OCR and puts it on the clipboard. Thanks [@TheJoeFin](https://github.com/TheJoeFin)!
+- PowerToy Run ships with a new Plugin letting you search in past query results. Thanks [@jefflord](https://github.com/jefflord)!
 
 ### Known issues
-- After installing PowerToys, [the new Windows 11 context menu entries for PowerRename and Image Resizer might not appear before a system restart](https://github.com/microsoft/PowerToys/issues/19124). On some Windows 11 dev channel insider builds, the new context menu entries are not registering correctly and the classic context menu entries will be shown instead.
+- The Text Extractor utility [fails to recognize text in some cases on ARM64 devices running Windows 10](https://github.com/microsoft/PowerToys/issues/20278).
+- After installing PowerToys, [the new Windows 11 context menu entries for PowerRename and Image Resizer might not appear before a system restart](https://github.com/microsoft/PowerToys/issues/19124).
 - There are reports of users who are [unable to open the Settings window](https://github.com/microsoft/PowerToys/issues/18015). This is being caused by incompatibilities with some applications (RTSS RivaTuner Statistics Server and MSI AfterBurner are known examples of this). If you're affected by this, please check the  linked issue to verify if any of the presented solutions works for you.
 
 ### General
-- Upgraded the Windows App SDK runtimes to 1.1.1. (This was a hotfix for 0.59)
+
+- Added a new utility: Screen Ruler.
+- Added a new utility: Quick Accent. Thanks [@damienleroy](https://github.com/damienleroy)!
+- Added a new utility: Text Extractor. Thanks [@TheJoeFin](https://github.com/TheJoeFin)!
+- Upgraded the Windows App SDK runtimes to 1.1.4.
 
 ### Always on Top
 
-- Added support for more diverse keyboard shortcuts with a fallback to low level keyboard hooks. Thanks [@davidegiacometti](https://github.com/davidegiacometti)!
-- Added rounded corner highlights for rounded corner windows on Windows 11.
+- Fixed a bug causing the border to linger when closing an Outlook popup window.
+
+### Color Picker
+
+- Fixed the HSB color format to correctly track HSV instead of HSL.
+- Fixed an issue where the zoom factor wasn't reset when reopening the zoom window. Thanks [@FWest98](https://github.com/FWest98)!
 
 ### FancyZones
 
-- Fixed a bug where windows shown on all desktops were not working with FancyZones. (This was a hotfix for 0.59)
-- When changing zone layouts, windows will match a new size/position if the option is on. (This was a hotfix for 0.59)
-- Minor UI fix in FancyZones Editor. Thanks [@ZetaSp](https://github.com/ZetaSp)!
-- Fixed proper canvas layout rendering in FancyZones Editor and the unscaled monitor resolution is now shown.
-- Fixed an issue with transparency in certain windows causing the window to go blank.
-
-### Image Resizer
-
-- The Image Resizer entry is now shown in the new Windows 11 context menu.
+- Removed the button to open Settings from the FancyZones Editor, as it was opening behind the overlay.
+- Changed the Highlight distance control to a slider in the FancyZones Editor, to address accessibility issues with screen readers.
+- Fixed an issue where the FancyZones Editor would duplicate or edit the wrong layout.
+- Fixed an issue that caused canvas layout width/height to be changed without even opening the layout in FancyZones Editor.
 
 ### File explorer add-ons
 
-- Add a viewBox attribute to svg file thumbnails so that it tries to show the whole image, similar to what was done in the preview handler.
-- Removed access to a remote image in the tests for markdown preview.
-- Fixed flakiness in the markdown preview test suite with proper component initialization timeouts.
-- Fixed the leaking WebView2 resources caused by svg thumbnails.
-
-### Keyboard Manager
-
-- The Editor title bar is now shown in the immersive dark mode theme. Thanks [@WilliamABradley](https://github.com/WilliamABradley)!
-
-### Mouse utility
-
-- The Mouse Pointer Crosshairs default activation shortcut was changed to not collide with a special character combination on some internation keyboards.
+- Quality of life improvements to Developer Files preview, including a progress bar while loading, performance improvements, an improved dark mode, and logs. Thanks [@Aaron-Junker](https://github.com/Aaron-Junker)!
+- Fixed possible WebView related vulnerabilities in the SVG and Markdown handlers.
+- Fixed some race conditions in Developer Files preview causing the loading bar to hang.
+- Added localization support to the Developer Files preview messages.
+- It's now possible to configure default color for Stl Thumbnails. Thanks [@pedrolamas](https://github.com/pedrolamas)!
+- Added an option to format JSON and XML files before rendering. Thanks [@davidegiacometti](https://github.com/davidegiacometti)!
 
 ### PowerRename
 
-- Fixed the file enumeration logic to only change enumerations at the end of the file name.
-- Clicking on regex/date and time cheat sheet appends that item to the selected search or replace text field.
-- The PowerRename entry is now shown in the new Windows 11 context menu.
-- The title bar is now shown in the immersive dark mode theme. Thanks [@WilliamABradley](https://github.com/WilliamABradley)!
+- Fixed an issue that was generating a silent crash when the context menu was triggered when not selecting any file or folder. (This was a hotfix for 0.61)
+- Improved performance when loading a big number of files.
+- Fixed a specific case in which PowerRename tried to rename a file to an empty string.
+- The UI now shows when a file can't be renamed due to its name being too long or containing invalid characters.
 
 ### PowerToys Run
 
-- A setting was added to disable and configure the input delay on searching queries. (This was a hotfix for 0.59)
-- Fixed and added logs for default Web Browser detection. (This was a hotfix for 0.59)
-- The Program plugin can now search .lnk shortcuts by their executable name. Thanks [@davidegiacometti](https://github.com/davidegiacometti)!
-- A new plugin for OneNote was added. Thanks [@palenshus](https://github.com/palenshus)!
-- Query caching and delayed execution was added to the OneNote plugin. Thanks [@palenshus](https://github.com/palenshus)!
-- Quality of life fixes for the TimeZone plugin, including fixes for empty subtitles, missing time zones and results not being found when expected. Thanks [@TobiasSekan](https://github.com/TobiasSekan)!
-- Calls to the obsolete WebRequest API were removed. Thanks [@davidegiacometti](https://github.com/davidegiacometti)!
-- Added common names for the share settings in the Settings plugins. Thanks [@htcfreek](https://github.com/htcfreek)!
-- The Calculator Mages engine was updated to 2.0.1, for higher precision. Thanks for the testing and for pushing for the changes [@htcfreek](https://github.com/htcfreek)!
-- Translation fixes for the Calculator and TimeDate plugins. Thanks [@htcfreek](https://github.com/htcfreek)!
-- An entry for "Search Settings" was added to the Settings plugin. Thanks [@jefflord](https://github.com/jefflord)!
-- Removed uses of the deprecated BinaryFormatter, which contained vulnerabilities. Thanks [@davidegiacometti](https://github.com/davidegiacometti)!
-- Added settings to better control the query results order. Thanks [@jefflord](https://github.com/jefflord)!
-- The Terminal plugin now uses a better API to detect installed Terminal packages. Thanks [@htcfreek](https://github.com/htcfreek)!
+- Added a fix to the VSCodeWorkspaces plugin to better support portable installations. Thanks [@bkmeneguello](https://github.com/bkmeneguello)!
+- The Folder plugin now expands `%HOMEPATH%` correctly.
+- Fixed a case where a previous result was being activated when searching for new results. Added a setting to better control input throttling. Thanks [@jefflord](https://github.com/jefflord)!
+- Added support for port numbers in the URI plugin. Thanks [@KohGeek](https://github.com/KohGeek)!
+- Fixed query errors when the search delay option was turned off.
+- New History plugin to search for old search results. Thanks [@jefflord](https://github.com/jefflord)!
+- Changed the default TimeDate activation keyword to `)`, as queries starting by `(` are expected as Calculator global queries, and added information in Settings so users know that some activation keywords may conflict with normal usage of some plugins when trying to do a global query. Thanks [@htcfreek](https://github.com/htcfreek)!
+- The Unit Converter plugin updated its UnitsNet dependency and now supports plural units. Thanks [@FWest98](https://github.com/FWest98)!
+- Improved the validation logic in the Calculator plugin. Thanks [@htcfreek](https://github.com/htcfreek)!
+
+### Runner
+
+- Improved: Clean up old install folders and logs at startup. Thanks [@davidegiacometti](https://github.com/davidegiacometti)!
 
 ### Settings
 
-- Fixed a bug that said an update had failed, even if PowerToys was fully updated. (This was a hotfix for 0.59)
-- OOBE window is resizable. (This was a hotfix for 0.59)
-- OOBE can now show release notes through authenticated proxies.
-- OOBE now hides the x64 and ARM64 installer hashes on the What's New page.
-- Minor UI fix in the Keyboard Manager page. Thanks [@ZetaSp](https://github.com/ZetaSp)!
-- Fix in internal data type of CheckBox controls. Thanks [@ghost1372](https://github.com/ghost1372)!
-- The title bar is now shown in the immersive dark mode theme. Thanks [@WilliamABradley](https://github.com/WilliamABradley)!
-- Fixed a crash accessing/loading the System.Management API on ARM64 versions of Windows.
+- Image and phrasing adjustments.
+- Icon and image updates for the new utilities. Thanks [@niels9001](https://github.com/niels9001)!
+
+### Shortcut Guide
+
+- Fixed the Narrator shortcut to include the newly added Control key.
 
 ### Installer
-- Fixed signing of the setup custom actions dll in the new pipeline.
-- The Visual C++ redistributable was updated to 14.32.31332 and fixed an installer error when a newer version was installed. Thanks [@snickler](https://github.com/snickler)!
-- Updated the .NET dependency to 6.0.6.
+
+- Fixed a regression that was causing the PowerToys shortcut to be deleted on update. (This was a hotfix for 0.61)
+- Updated the .NET dependency to 6.0.8.
+
+### Documentation
+
+- Fixed wrong links to installers in README. Thanks [@unuing](https://github.com/unuing)!
 
 ### Development
 
-- Clean up of the CA1031 warning suppression. Thanks [@davidegiacometti](https://github.com/davidegiacometti)!
-- Support for ARM64 binaries was added to the Microsoft Store submission task. Thanks [@azchohfi](https://github.com/azchohfi)!
-- Added code for a tool to help identify monitor IDs.
-- Support for ARM64 binaries was added to the winget package creation task.
-- Updated the Pull Request template to better reflect project changes.
-- Component Governance checks were re-activated on the new main branch.
-- CI is failing to run tests calling the newer WebView 2 version, so these were disabled until a fix is found.
-- Updated the tests SDK to 17.2.0.
-- Nuget package versions used in the solution were consolidated.
-- The CodeQL CI task was disabled in the repo, but was causing issues on forks, so it was removed.
-- A specific Newtonsoft.Json version was specified in tests to avoid a vulnerability present in previous versions.
-- FabricBot configurations were added to the repository.
-- Added a dependabot configuration for updating GitHub actions dependencies. Thanks [@naveensrinivasan](https://github.com/naveensrinivasan)!
-- Updated the check-spelling action and added quality of life fixes to the workflow. Thanks [@jsoref](https://github.com/jsoref)!
+- Removed FXCop leftovers. Thanks [@CleanCodeDeveloper](https://github.com/CleanCodeDeveloper)!
+- Added version number to missing binaries and added a CI script to verify that all binaries have their version numbers set correctly.
+- Updated a dependency to fix building on Visual Studio 17.3 C++ tools.
+- Fixed and reactivated the CI unit tests for FancyZones.
+- Cleaned up and removed dead code from PowerRename code base.
+- Added a script for verifying the solution targets match the expected CPU architectures. Thanks [@snickler](https://github.com/snickler)!
+- Obsolete package Castle.Core was removed. Thanks [@davidegiacometti](https://github.com/davidegiacometti)!
+- Language typos were corrected across the PowerToys assets. Thanks [@pea-sys](https://github.com/pea-sys), [@eltociear](https://github.com/eltociear) and [@obairka](https://github.com/obairka)!
 
-#### What is being planned for v0.61
+#### What is being planned for v0.63
 
-For [v0.61][github-next-release-work], we'll work on below:
+For [v0.63][github-next-release-work], we'll work on below:
 
 - Environment Variables Editor PowerToy
-- Screen Measure PowerToy
+- GPO policies for PowerToys
 - Stability / bug fixes
 
 ## PowerToys Community
@@ -213,5 +206,5 @@ The application logs basic telemetry. Our Telemetry Data page (Coming Soon) has 
 [usingPowerToys-docs-link]: https://aka.ms/powertoys-docs
 
 <!-- items that need to be updated release to release -->
-[github-next-release-work]: https://github.com/microsoft/PowerToys/issues?q=is%3Aopen+is%3Aissue+project%3Amicrosoft%2FPowerToys%2F34
-[github-current-release-work]: https://github.com/microsoft/PowerToys/issues?q=is%3Aopen+is%3Aissue+project%3Amicrosoft%2FPowerToys%2F33
+[github-next-release-work]: https://github.com/microsoft/PowerToys/issues?q=is%3Aopen+is%3Aissue+project%3Amicrosoft%2FPowerToys%2F36
+[github-current-release-work]: https://github.com/microsoft/PowerToys/issues?q=is%3Aopen+is%3Aissue+project%3Amicrosoft%2FPowerToys%2F35

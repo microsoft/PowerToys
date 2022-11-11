@@ -4,7 +4,6 @@
 
 using System;
 using System.Collections.ObjectModel;
-using System.Diagnostics.CodeAnalysis;
 using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.PowerToys.Settings.UI.OOBE.Enums;
 using Microsoft.PowerToys.Settings.UI.OOBE.ViewModel;
@@ -112,10 +111,20 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
                 ModuleName = "Run",
                 IsNew = false,
             });
+            Modules.Insert((int)PowerToysModules.QuickAccent, new OobePowerToysModule()
+            {
+                ModuleName = "QuickAccent",
+                IsNew = true,
+            });
             Modules.Insert((int)PowerToysModules.ShortcutGuide, new OobePowerToysModule()
             {
                 ModuleName = "ShortcutGuide",
                 IsNew = false,
+            });
+            Modules.Insert((int)PowerToysModules.TextExtractor, new OobePowerToysModule()
+            {
+                ModuleName = "TextExtractor",
+                IsNew = true,
             });
 
             Modules.Insert((int)PowerToysModules.VideoConference, new OobePowerToysModule()
@@ -123,6 +132,13 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
                 ModuleName = "VideoConference",
                 IsNew = true,
             });
+
+            Modules.Insert((int)PowerToysModules.MeasureTool, new OobePowerToysModule()
+            {
+                ModuleName = "MeasureTool",
+                IsNew = true,
+            });
+
             Modules.Insert((int)PowerToysModules.WhatsNew, new OobePowerToysModule()
             {
                 ModuleName = "WhatsNew",
@@ -151,7 +167,6 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
             }
         }
 
-        [SuppressMessage("Usage", "CA1801:Review unused parameters", Justification = "Params are required for event handler signature requirements.")]
         private void NavigationView_SelectionChanged(Microsoft.UI.Xaml.Controls.NavigationView sender, Microsoft.UI.Xaml.Controls.NavigationViewSelectionChangedEventArgs args)
         {
             Microsoft.UI.Xaml.Controls.NavigationViewItem selectedItem = args.SelectedItem as Microsoft.UI.Xaml.Controls.NavigationViewItem;
@@ -170,10 +185,13 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
                     case "ImageResizer": NavigationFrame.Navigate(typeof(OobeImageResizer)); break;
                     case "KBM": NavigationFrame.Navigate(typeof(OobeKBM)); break;
                     case "PowerRename": NavigationFrame.Navigate(typeof(OobePowerRename)); break;
+                    case "QuickAccent": NavigationFrame.Navigate(typeof(OobePowerAccent)); break;
                     case "FileExplorer": NavigationFrame.Navigate(typeof(OobeFileExplorer)); break;
                     case "ShortcutGuide": NavigationFrame.Navigate(typeof(OobeShortcutGuide)); break;
+                    case "TextExtractor": NavigationFrame.Navigate(typeof(OobePowerOCR)); break;
                     case "VideoConference": NavigationFrame.Navigate(typeof(OobeVideoConference)); break;
                     case "MouseUtils": NavigationFrame.Navigate(typeof(OobeMouseUtils)); break;
+                    case "MeasureTool": NavigationFrame.Navigate(typeof(OobeMeasureTool)); break;
                 }
             }
         }

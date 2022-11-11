@@ -3,7 +3,6 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
-using System.Diagnostics.CodeAnalysis;
 using interop;
 
 namespace Microsoft.PowerToys.Settings.UI.Library
@@ -21,7 +20,6 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         private const int WmSysKeyDown = 0x0104;
         private const int WmSysKeyUp = 0x0105;
 
-        [SuppressMessage("Usage", "CA2213:Disposable fields should be disposed", Justification = "This class conforms to the IDisposable pattern, and the Dispose and C++ destructor does get called when debugging. Looks like a false positive from FxCop.")]
         private KeyboardHook _hook;
         private KeyEvent _keyDown;
         private KeyEvent _keyUp;

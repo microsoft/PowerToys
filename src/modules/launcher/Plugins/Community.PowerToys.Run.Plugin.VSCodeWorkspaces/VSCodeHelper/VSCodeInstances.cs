@@ -75,7 +75,7 @@ namespace Community.PowerToys.Run.Plugin.VSCodeWorkspaces.VSCodeHelper
                 Instances = new List<VSCodeInstance>();
 
                 paths = paths.Where(x =>
-                                    x.Contains("VS Code",  StringComparison.OrdinalIgnoreCase) ||
+                                    x.Contains("VS Code", StringComparison.OrdinalIgnoreCase) ||
                                     x.Contains("VSCodium", StringComparison.OrdinalIgnoreCase) ||
                                     x.Contains("vscode", StringComparison.OrdinalIgnoreCase)).ToList();
                 foreach (var path in paths)
@@ -122,7 +122,9 @@ namespace Community.PowerToys.Run.Plugin.VSCodeWorkspaces.VSCodeHelper
 
                             if (version != string.Empty)
                             {
-                                instance.AppData = Path.Combine(_userAppDataPath, version);
+                                var portableData = Path.Join(iconPath, "data");
+                                instance.AppData = Directory.Exists(portableData) ? Path.Join(portableData, "user-data") : Path.Combine(_userAppDataPath, version);
+
                                 var iconVSCode = Path.Join(iconPath, $"{version}.exe");
 
                                 var bitmapIconVscode = Icon.ExtractAssociatedIcon(iconVSCode).ToBitmap();

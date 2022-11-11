@@ -38,14 +38,12 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         public ColorPickerActivationAction ActivationAction { get; set; }
 
         [JsonPropertyName("colorhistory")]
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Usage", "CA2227:Collection properties should be read only", Justification = "Need to change this collection")]
         public List<string> ColorHistory { get; set; }
 
         [JsonPropertyName("colorhistorylimit")]
         public int ColorHistoryLimit { get; set; }
 
         [JsonPropertyName("visiblecolorformats")]
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Usage", "CA2227:Collection properties should be read only", Justification = "Need to change this collection")]
         public Dictionary<string, bool> VisibleColorFormats { get; set; }
 
         [JsonPropertyName("showcolorname")]

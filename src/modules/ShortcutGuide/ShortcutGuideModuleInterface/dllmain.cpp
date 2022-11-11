@@ -66,7 +66,7 @@ public:
 
             ParseSettings(values);
         }
-        catch (std::exception ex)
+        catch (std::exception& ex)
         {
             Logger::error("Failed to parse settings. {}", ex.what());
         }
@@ -261,7 +261,7 @@ private:
 
             ParseSettings(settings);
         }
-        catch (std::exception ex)
+        catch (std::exception& ex)
         {
             Logger::error("Failed to init settings. {}", ex.what());
         }

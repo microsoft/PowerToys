@@ -7,6 +7,41 @@ steps:
   submodules: true
   clean: true
 
+- task: PowerShell@2
+  displayName: Verify Arm64 configuration for PowerToys.sln
+  inputs:
+    filePath: '$(build.sourcesdirectory)\.pipelines\verifyArm64Configuration.ps1'
+    arguments: -solution '$(build.sourcesdirectory)\PowerToys.sln'
+    pwsh: true
+
+- task: PowerShell@2
+  displayName: Verify Arm64 configuration for BugReportTool.sln
+  inputs:
+    filePath: '$(build.sourcesdirectory)\.pipelines\verifyArm64Configuration.ps1'
+    arguments: -solution '$(build.sourcesdirectory)\tools\BugReportTool\BugReportTool.sln'
+    pwsh: true
+
+- task: PowerShell@2
+  displayName: Verify Arm64 configuration for WebcamReportTool.sln
+  inputs:
+    filePath: '$(build.sourcesdirectory)\.pipelines\verifyArm64Configuration.ps1'
+    arguments: -solution '$(build.sourcesdirectory)\tools\WebcamReportTool\WebcamReportTool.sln'
+    pwsh: true
+
+- task: PowerShell@2
+  displayName: Verify Arm64 configuration for StylesReportTool.sln
+  inputs:
+    filePath: '$(build.sourcesdirectory)\.pipelines\verifyArm64Configuration.ps1'
+    arguments: -solution '$(build.sourcesdirectory)\tools\StylesReportTool\StylesReportTool.sln'
+    pwsh: true
+
+- task: PowerShell@2
+  displayName: Verify Arm64 configuration for PowerToysSetup.sln
+  inputs:
+    filePath: '$(build.sourcesdirectory)\.pipelines\verifyArm64Configuration.ps1'
+    arguments: -solution '$(build.sourcesdirectory)\installer\PowerToysSetup.sln'
+    pwsh: true
+
 - task: UseDotNet@2
   displayName: 'Use .NET 6 SDK'
   inputs:
@@ -184,4 +219,5 @@ steps:
       **\UnitTests-CommonLib.dll
       **\PowerRenameUnitTests.dll
       **\powerpreviewTest.dll
+      **\UnitTests-FancyZones.dll
       !**\obj\**

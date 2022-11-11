@@ -17,8 +17,11 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Enums
         MouseUtils,
         PowerRename,
         Run,
+        QuickAccent,
         ShortcutGuide,
+        TextExtractor,
         VideoConference,
+        MeasureTool,
         WhatsNew,
     }
 }

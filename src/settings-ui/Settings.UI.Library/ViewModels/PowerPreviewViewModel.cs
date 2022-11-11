@@ -51,23 +51,27 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
             _mdRenderIsEnabled = Settings.Properties.EnableMdPreview;
             _monacoRenderIsEnabled = Settings.Properties.EnableMonacoPreview;
             _monacoWrapText = Settings.Properties.EnableMonacoPreviewWordWrap;
+            _monacoPreviewTryFormat = Settings.Properties.MonacoPreviewTryFormat;
             _pdfRenderIsEnabled = Settings.Properties.EnablePdfPreview;
             _gcodeRenderIsEnabled = Settings.Properties.EnableGcodePreview;
             _pdfThumbnailIsEnabled = Settings.Properties.EnablePdfThumbnail;
             _gcodeThumbnailIsEnabled = Settings.Properties.EnableGcodeThumbnail;
             _stlThumbnailIsEnabled = Settings.Properties.EnableStlThumbnail;
+            _stlThumbnailColor = Settings.Properties.StlThumbnailColor.Value;
         }
 
         private bool _svgRenderIsEnabled;
         private bool _mdRenderIsEnabled;
         private bool _monacoRenderIsEnabled;
         private bool _monacoWrapText;
+        private bool _monacoPreviewTryFormat;
         private bool _pdfRenderIsEnabled;
         private bool _gcodeRenderIsEnabled;
         private bool _svgThumbnailIsEnabled;
         private bool _pdfThumbnailIsEnabled;
         private bool _gcodeThumbnailIsEnabled;
         private bool _stlThumbnailIsEnabled;
+        private string _stlThumbnailColor;
 
         public bool SVGRenderIsEnabled
         {
@@ -159,6 +163,24 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
             }
         }
 
+        public bool MonacoPreviewTryFormat
+        {
+            get
+            {
+                return _monacoPreviewTryFormat;
+            }
+
+            set
+            {
+                if (_monacoPreviewTryFormat != value)
+                {
+                    _monacoPreviewTryFormat = value;
+                    Settings.Properties.MonacoPreviewTryFormat = value;
+                    RaisePropertyChanged();
+                }
+            }
+        }
+
         public bool PDFRenderIsEnabled
         {
             get
@@ -244,6 +266,24 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
                 {
                     _stlThumbnailIsEnabled = value;
                     Settings.Properties.EnableStlThumbnail = value;
+                    RaisePropertyChanged();
+                }
+            }
+        }
+
+        public string STLThumbnailColor
+        {
+            get
+            {
+                return _stlThumbnailColor;
+            }
+
+            set
+            {
+                if (value != _stlThumbnailColor)
+                {
+                    _stlThumbnailColor = value;
+                    Settings.Properties.StlThumbnailColor.Value = value;
                     RaisePropertyChanged();
                 }
             }

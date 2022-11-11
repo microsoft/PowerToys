@@ -29,8 +29,6 @@ using namespace winrt;
 using namespace Windows::UI::Xaml;
 using namespace winrt::Microsoft::Windows::ApplicationModel::Resources;
 
-#define MAX_LOADSTRING 100
-
 // Non-localizable
 const std::wstring PowerRenameUIIco = L"PowerRenameUI.ico";
 const wchar_t c_WindowClass[] = L"PowerRename";
@@ -52,7 +50,7 @@ void handleTheme() {
 namespace winrt::PowerRenameUI::implementation
 {
     MainWindow::MainWindow() :
-        m_instance{ nullptr }, m_allSelected{ true }, m_managerEvents{ this }
+        m_allSelected{ true }, m_managerEvents{ this }
     {
         auto windowNative{ this->try_as<::IWindowNative>() };
         winrt::check_bool(windowNative);
@@ -185,55 +183,83 @@ namespace winrt::PowerRenameUI::implementation
         }
         try
         {
-            PopulateExplorerItems();
             UpdateCounts();
             SetHandlers();
             ReadSettings();
         }
-        catch (std::exception e)
+        catch (std::exception& e)
         {
             Logger::error("Exception thrown during explorer items population: {}", std::string{ e.what() });
         }
 
-        m_uiUpdatesItem.ButtonRenameEnabled(false);
+        button_rename().IsEnabled(false);
         InitAutoComplete();
         SearchReplaceChanged();
+    }
+
+    winrt::event_token MainWindow::PropertyChanged(Microsoft::UI::Xaml::Data::PropertyChangedEventHandler const& handler)
+    {
+        return m_propertyChanged.add(handler);
+    }
+
+    void MainWindow::PropertyChanged(winrt::event_token const& token) noexcept
+    {
+        m_propertyChanged.remove(token);
+    }
+
+    hstring MainWindow::OriginalCount()
+    {
+        return hstring{ std::to_wstring(m_explorerItems.Size()) };
+    }
+
+    void MainWindow::OriginalCount(hstring)
+    {
+        m_propertyChanged(*this, Microsoft::UI::Xaml::Data::PropertyChangedEventArgs{ L"OriginalCount" });
+    }
+
+    hstring MainWindow::RenamedCount()
+    {
+        return hstring{ std::to_wstring(m_renamingCount) };
+    }
+
+    void MainWindow::RenamedCount(hstring)
+    {
+        m_propertyChanged(*this, Microsoft::UI::Xaml::Data::PropertyChangedEventArgs{ L"RenamedCount" });
     }
 
     void MainWindow::AddExplorerItem(int32_t id, hstring const& original, hstring const& renamed, int32_t type, uint32_t depth, bool checked)
     {
         auto newItem = winrt::make<PowerRenameUI::implementation::ExplorerItem>(id, original, renamed, type, depth, checked);
+        newItem.PropertyChanged([this](Windows::Foundation::IInspectable const& sender, Microsoft::UI::Xaml::Data::PropertyChangedEventArgs const& e) {
+            auto item = sender.as<ExplorerItem>();
+            std::wstring property{ e.PropertyName() };
+
+            if (item && property == L"Checked")
+            {
+                ToggleItem(item->Id(), item->Checked());
+            }
+        });
         m_explorerItems.Append(newItem);
         m_explorerItemsMap[id] = newItem;
     }
 
-    void MainWindow::UpdateExplorerItem(int32_t id, hstring const& newName)
+    void MainWindow::UpdateExplorerItem(int32_t id, std::optional<hstring> newOriginalName, std::optional<hstring> newName, PowerRenameItemRenameStatus itemStatus)
     {
         auto itemToUpdate = FindById(id);
         if (itemToUpdate != NULL)
         {
-            itemToUpdate.Renamed(newName);
+            if (newOriginalName.has_value())
+            {
+                itemToUpdate.Original(*newOriginalName);
+            }
+
+            if (newName.has_value())
+            {
+                itemToUpdate.Renamed(*newName);
+            }
+
+            itemToUpdate.State(static_cast<int32_t>(itemStatus));
         }
-    }
-
-    void MainWindow::UpdateRenamedExplorerItem(int32_t id, hstring const& newOriginalName)
-    {
-        auto itemToUpdate = FindById(id);
-        if (itemToUpdate != NULL)
-        {
-            itemToUpdate.Original(newOriginalName);
-            itemToUpdate.Renamed(L"");
-        }
-    }
-
-    void MainWindow::AppendSearchMRU(hstring const& value)
-    {
-        m_searchMRUList.Append(value);
-    }
-
-    void MainWindow::AppendReplaceMRU(hstring const& value)
-    {
-        m_replaceMRUList.Append(value);
     }
 
     PowerRenameUI::ExplorerItem MainWindow::FindById(int32_t id)
@@ -241,29 +267,11 @@ namespace winrt::PowerRenameUI::implementation
         return m_explorerItemsMap.contains(id) ? m_explorerItemsMap[id] : NULL;
     }
 
-    void MainWindow::ToggleAll(bool checked)
-    {
-        std::for_each(m_explorerItems.begin(), m_explorerItems.end(), [checked](auto item) { item.Checked(checked); });
-    }
-
-    void MainWindow::Checked_ids(winrt::Windows::Foundation::IInspectable const& sender, winrt::Microsoft::UI::Xaml::RoutedEventArgs const&)
-    {
-        auto checkbox = sender.as<Microsoft::UI::Xaml::Controls::CheckBox>();
-        auto id = std::stoi(std::wstring{ checkbox.Name() });
-        auto item = FindById(id);
-        if (item != NULL && checkbox.IsChecked().GetBoolean() != item.Checked())
-        {
-            m_uiUpdatesItem.Checked(checkbox.IsChecked().GetBoolean());
-            m_uiUpdatesItem.ChangedExplorerItemId(id);
-        }
-    }
-
     void MainWindow::SelectAll(winrt::Windows::Foundation::IInspectable const&, winrt::Microsoft::UI::Xaml::RoutedEventArgs const&)
     {
         if (checkBox_selectAll().IsChecked().GetBoolean() != m_allSelected)
         {
-            ToggleAll(checkBox_selectAll().IsChecked().GetBoolean());
-            m_uiUpdatesItem.ToggleAll();
+            ToggleAll();
             m_allSelected = !m_allSelected;
         }
     }
@@ -272,11 +280,16 @@ namespace winrt::PowerRenameUI::implementation
     {
         button_showAll().IsChecked(true);
         button_showRenamed().IsChecked(false);
-        if (!m_uiUpdatesItem.ShowAll())
+
+        DWORD filter = 0;
+        m_prManager->GetFilter(&filter);
+        if (filter != PowerRenameFilters::None)
         {
             m_explorerItems.Clear();
             m_explorerItemsMap.clear();
-            m_uiUpdatesItem.ShowAll(true);
+            m_prManager->SwitchFilter(0);
+            PopulateExplorerItems();
+            UpdateCounts();
         }
     }
 
@@ -284,11 +297,16 @@ namespace winrt::PowerRenameUI::implementation
     {
         button_showRenamed().IsChecked(true);
         button_showAll().IsChecked(false);
-        if (m_uiUpdatesItem.ShowAll())
+
+        DWORD filter = 0;
+        m_prManager->GetFilter(&filter);
+        if (filter != PowerRenameFilters::ShouldRename)
         {
             m_explorerItems.Clear();
             m_explorerItemsMap.clear();
-            m_uiUpdatesItem.ShowAll(false);
+            m_prManager->SwitchFilter(0);
+            PopulateExplorerItems();
+            UpdateCounts();
         }
     }
 
@@ -308,14 +326,12 @@ namespace winrt::PowerRenameUI::implementation
 
     void MainWindow::button_rename_Click(winrt::Microsoft::UI::Xaml::Controls::SplitButton const&, winrt::Microsoft::UI::Xaml::Controls::SplitButtonClickEventArgs const&)
     {
-        m_uiUpdatesItem.CloseUIWindow(false);
-        m_uiUpdatesItem.Rename();
+        Rename(false);
     }
 
     void MainWindow::MenuFlyoutItem_Click(winrt::Windows::Foundation::IInspectable const&, winrt::Microsoft::UI::Xaml::RoutedEventArgs const&)
     {
-        m_uiUpdatesItem.CloseUIWindow(true);
-        m_uiUpdatesItem.Rename();
+        Rename(true);
     }
 
     void MainWindow::OpenDocs(winrt::Windows::Foundation::IInspectable const&, winrt::Microsoft::UI::Xaml::RoutedEventArgs const&)
@@ -420,7 +436,7 @@ namespace winrt::PowerRenameUI::implementation
                 {
                     if (!item.empty())
                     {
-                        AppendSearchMRU(hstring{ item });
+                        m_searchMRUList.Append(item);
                     }
                 }
             }
@@ -434,7 +450,7 @@ namespace winrt::PowerRenameUI::implementation
                     {
                         if (!item.empty())
                         {
-                            AppendReplaceMRU(hstring{ item });
+                            m_replaceMRUList.Append(item);
                         }
                     }
                 }
@@ -555,26 +571,6 @@ namespace winrt::PowerRenameUI::implementation
     void MainWindow::SetHandlers()
     {
         _TRACER_;
-
-        m_uiUpdatesItem.PropertyChanged([&](auto const&, auto const& e) {
-            std::wstring property{ e.PropertyName() };
-            if (property == L"ShowAll")
-            {
-                SwitchView();
-            }
-            else if (property == L"ChangedItemId")
-            {
-                ToggleItem(m_uiUpdatesItem.ChangedExplorerItemId(), m_uiUpdatesItem.Checked());
-            }
-            else if (property == L"ToggleAll")
-            {
-                ToggleAll();
-            }
-            else if (property == L"Rename")
-            {
-                Rename(m_uiUpdatesItem.CloseUIWindow());
-            }
-        });
 
         // AutoSuggestBox Search
         textBox_search().TextChanged([&](auto const&, auto const&) {
@@ -739,6 +735,10 @@ namespace winrt::PowerRenameUI::implementation
             if (SUCCEEDED(m_prManager->GetItemByIndex(i, &spItem)))
             {
                 spItem->PutSelected(selected);
+                int id = 0;
+                spItem->GetId(&id);
+                auto item = FindById(id);
+                item.Checked(selected);
             }
         }
         UpdateCounts();
@@ -965,15 +965,35 @@ namespace winrt::PowerRenameUI::implementation
             m_renamingCount = renamingCount;
 
             // Update Rename button state
-            m_uiUpdatesItem.ButtonRenameEnabled(renamingCount > 0);
+            button_rename().IsEnabled(renamingCount > 0);
         }
 
-        m_uiUpdatesItem.OriginalCount(std::to_wstring(m_explorerItems.Size()));
-        m_uiUpdatesItem.RenamedCount(std::to_wstring(m_renamingCount));
+        OriginalCount(hstring{ std::to_wstring(m_explorerItems.Size()) });
+        RenamedCount(hstring{ std::to_wstring(m_renamingCount) });
     }
 
-    HRESULT MainWindow::OnItemAdded(_In_ IPowerRenameItem*)
+    HRESULT MainWindow::OnItemAdded(_In_ IPowerRenameItem* renameItem)
     {
+        int id = 0;
+        renameItem->GetId(&id);
+
+        PWSTR originalName = nullptr;
+        renameItem->GetOriginalName(&originalName);
+        PWSTR newName = nullptr;
+        renameItem->GetNewName(&newName);
+
+        bool selected;
+        renameItem->GetSelected(&selected);
+
+        UINT depth = 0;
+        renameItem->GetDepth(&depth);
+
+        bool isFolder = false;
+        winrt::check_hresult(renameItem->GetIsFolder(&isFolder));
+
+        AddExplorerItem(
+            id, originalName, newName == nullptr ? hstring{} : hstring{ newName }, isFolder ? 0 : 1, depth, selected);
+
         return S_OK;
     }
 
@@ -987,8 +1007,13 @@ namespace winrt::PowerRenameUI::implementation
             hr = renameItem->GetNewName(&newName);
             if (SUCCEEDED(hr))
             {
-                hstring newNameStr = newName == nullptr ? hstring{} : newName;
-                UpdateExplorerItem(id, newNameStr);
+                PowerRenameItemRenameStatus status;
+                hr = renameItem->GetStatus(&status);
+                if (SUCCEEDED(hr))
+                {
+                    hstring newNameStr = newName == nullptr ? hstring{} : newName;
+                    UpdateExplorerItem(id, std::nullopt, newNameStr, status);
+                }
             }
         }
 
@@ -1006,26 +1031,11 @@ namespace winrt::PowerRenameUI::implementation
             if (SUCCEEDED(hr))
             {
                 hstring newNameStr = newName == nullptr ? hstring{} : newName;
-                UpdateRenamedExplorerItem(id, newNameStr);
+                UpdateExplorerItem(id, newNameStr, L"", PowerRenameItemRenameStatus::Init);
             }
         }
 
         UpdateCounts();
-        return S_OK;
-    }
-
-    HRESULT MainWindow::OnError(_In_ IPowerRenameItem*)
-    {
-        return S_OK;
-    }
-
-    HRESULT MainWindow::OnRegExStarted(_In_ DWORD)
-    {
-        return S_OK;
-    }
-
-    HRESULT MainWindow::OnRegExCanceled(_In_ DWORD)
-    {
         return S_OK;
     }
 
@@ -1049,11 +1059,6 @@ namespace winrt::PowerRenameUI::implementation
         }
 
         UpdateCounts();
-        return S_OK;
-    }
-
-    HRESULT MainWindow::OnRenameStarted()
-    {
         return S_OK;
     }
 

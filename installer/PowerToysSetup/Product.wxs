@@ -6,12 +6,15 @@
   <?define FancyZonesProjectName="FancyZones"?>
   <?define ImageResizerProjectName="ImageResizer"?>
   <?define KeyboardManagerProjectName="KeyboardManager"?>
+  <?define PowerAccentProjectName="PowerAccent"?>
   <?define PowerRenameProjectName="PowerRename"?>
   <?define ColorPickerProjectName="ColorPicker"?>
+  <?define PowerOCRProjectName="PowerOCR"?>
   <?define VideoConferenceProjectName="VideoConference"?>
   <?define AwakeProjectName="Awake"?>
   <?define MouseUtilsProjectName="MouseUtils"?>
   <?define AlwaysOnTopProjectName="AlwaysOnTop"?>
+  <?define MeasureToolProjectName="MeasureTool"?>
 
   <?define RepoDir="$(var.ProjectDir)..\..\" ?>
   <?if $(var.Platform) = x64?>
@@ -48,11 +51,11 @@
 
   <?define SettingsV2Files=Ijwhost.dll;ColorCode.Core.dll;ColorCode.WinUI.dll;CommunityToolkit.Common.dll;CommunityToolkit.WinUI.dll;CommunityToolkit.WinUI.UI.Controls.Core.dll;CommunityToolkit.WinUI.UI.Controls.DataGrid.dll;CommunityToolkit.WinUI.UI.Controls.Input.dll;CommunityToolkit.WinUI.UI.Controls.Layout.dll;CommunityToolkit.WinUI.UI.Controls.Markdown.dll;CommunityToolkit.WinUI.UI.Controls.Media.dll;CommunityToolkit.WinUI.UI.Controls.Primitives.dll;CommunityToolkit.WinUI.UI.dll;icon.ico;Microsoft.Graphics.Canvas.Interop.dll;Microsoft.InteractiveExperiences.Projection.dll;Microsoft.Windows.ApplicationModel.DynamicDependency.Projection.dll;Microsoft.Windows.ApplicationModel.Resources.Projection.dll;Microsoft.Windows.ApplicationModel.WindowsAppRuntime.Projection.dll;Microsoft.Windows.AppLifecycle.Projection.dll;Microsoft.Windows.SDK.NET.dll;Microsoft.Windows.System.Power.Projection.dll;Microsoft.WindowsAppRuntime.Bootstrap.Net.dll;Microsoft.WinUI.dll;Microsoft.Xaml.Interactions.dll;Microsoft.Xaml.Interactivity.dll;PowerToys.Interop.dll;PowerToys.ManagedCommon.dll;System.Management.dll;PowerToys.ManagedTelemetry.dll;PowerToys.Settings.deps.json;PowerToys.Settings.dll;PowerToys.Settings.exe;PowerToys.Settings.runtimeconfig.json;PowerToys.Settings.UI.Lib.dll;resources.pri;System.IO.Abstractions.dll;System.Text.Json.dll;WinRT.Runtime.dll;Microsoft.Graphics.Canvas.dll;Microsoft.WindowsAppRuntime.Bootstrap.dll;CoreMessagingXP.dll;dcompi.dll;dwmcorei.dll;DwmSceneI.dll;DWriteCore.dll;marshal.dll;Microsoft.DirectManipulation.dll;Microsoft.InputStateManager.dll;Microsoft.Internal.FrameworkUdk.dll;Microsoft.UI.Composition.OSSupport.dll;Microsoft.UI.Input.dll;Microsoft.UI.Windowing.Core.dll;Microsoft.UI.Xaml.Controls.dll;Microsoft.UI.Xaml.Controls.pri;Microsoft.ui.xaml.dll;Microsoft.UI.Xaml.Internal.dll;Microsoft.UI.Xaml.Phone.dll;Microsoft.ui.xaml.resources.19h1.dll;Microsoft.ui.xaml.resources.common.dll;Microsoft.Web.WebView2.Core.dll;Microsoft.Windows.ApplicationModel.Resources.dll;Microsoft.Windows.AppNotifications.Projection.dll;Microsoft.Windows.PushNotifications.Projection.dll;Microsoft.Windows.System.Projection.dll;Microsoft.WindowsAppRuntime.dll;Microsoft.WindowsAppRuntime.Insights.Resource.dll;Microsoft.WindowsAppRuntime.Release.Net.dll;MRM.dll;PushNotificationsLongRunningTask.ProxyStub.dll;WindowsAppRuntime.png;WindowsAppSdk.AppxDeploymentExtensions.Desktop.dll;WinUIEdit.dll;wuceffectsi.dll?>
 
-  <?define SettingsV2AssetsModulesFiles=ColorPicker.png;FancyZones.png;AlwaysOnTop.png;Awake.png;ImageResizer.png;KBM.png;MouseUtils.png;PowerLauncher.png;PowerPreview.png;PowerRename.png;PT.png;ShortcutGuide.png;VideoConference.png?>
+  <?define SettingsV2AssetsModulesFiles=ColorPicker.png;FancyZones.png;AlwaysOnTop.png;Awake.png;ImageResizer.png;KBM.png;MouseUtils.png;PowerAccent.png;PowerOCR.png;PowerLauncher.png;PowerPreview.png;PowerRename.png;PT.png;ScreenRuler.png;ShortcutGuide.png;VideoConference.png?>
 
-  <?define SettingsV2OOBEAssetsModulesFiles=ColorPicker.gif;AlwaysOnTop.png;Awake.png;FancyZones.gif;FileExplorer.png;ImageResizer.gif;KBM.gif;MouseUtils.gif;PowerRename.gif;Run.gif;OOBEShortcutGuide.png;VideoConferenceMute.png;OOBEPTHero.png?>
+  <?define SettingsV2OOBEAssetsModulesFiles=ColorPicker.gif;AlwaysOnTop.png;Awake.png;FancyZones.gif;FileExplorer.png;ImageResizer.gif;KBM.gif;MouseUtils.gif;PowerAccent.gif;PowerOCR.gif;PowerRename.gif;Run.gif;ScreenRuler.gif;OOBEShortcutGuide.png;VideoConferenceMute.png;OOBEPTHero.png?>
 
-  <?define SettingsV2OOBEAssetsFluentIconsFiles=ColorPicker.png;FancyZones.png;AlwaysOnTop.png;Awake.png;FileExplorerPreview.png;FindMyMouse.png;ImageResizer.png;KeyboardManager.png;MouseHighlighter.png;MouseCrosshairs.png;MouseUtils.png;PowerRename.png;PowerToys.png;PowerToysRun.png;Settings.png;ShortcutGuide.png;VideoConferenceMute.png?>
+  <?define SettingsV2OOBEAssetsFluentIconsFiles=ColorPicker.png;FancyZones.png;AlwaysOnTop.png;Awake.png;FileExplorerPreview.png;FindMyMouse.png;ImageResizer.png;KeyboardManager.png;MouseHighlighter.png;MouseCrosshairs.png;MouseUtils.png;PowerAccent.png;PowerOcr.png;PowerRename.png;PowerToys.png;PowerToysRun.png;ScreenRuler.png;Settings.png;ShortcutGuide.png;VideoConferenceMute.png?>
 
 	<?define SettingsV2MicrosoftUIXamlAssetsInstallFiles=NoiseAsset_256x256_PNG.png?>
 
@@ -69,6 +72,8 @@
   <?define ProgramImagesComponentFiles=app.dark.png;app.light.png;disable.light.png;disable.dark.png;folder.light.png;folder.dark.png;shell.light.png;shell.dark.png;user.light.png;user.dark.png?>
 
   <?define ShellComponentFiles=plugin.json;Microsoft.Plugin.Shell.deps.json;Microsoft.Plugin.Shell.dll;PowerToys.ManagedTelemetry.dll?>
+
+  <?define HistoryPluginComponentFiles=plugin.json;Microsoft.PowerToys.Run.Plugin.History.deps.json;Microsoft.PowerToys.Run.Plugin.History.dll?>
 
   <?define ShellImagesComponentFiles=shell.light.png;shell.dark.png;user.light.png;user.dark.png?>
 
@@ -114,7 +119,13 @@
 
   <?define ImageResizerSparsePackageAssets=LargeTile.png;SmallTile.png;SplashScreen.png;Square150x150Logo.png;Square44x44Logo.png;storelogo.png;Wide310x150Logo.png?>
 
+  <?define MeasureToolFiles=CoreMessagingXP.dll;dcompi.dll;dwmcorei.dll;DwmSceneI.dll;DWriteCore.dll;marshal.dll;Microsoft.DirectManipulation.dll;Microsoft.InputStateManager.dll;Microsoft.InteractiveExperiences.Projection.dll;Microsoft.Internal.FrameworkUdk.dll;Microsoft.UI.Composition.OSSupport.dll;Microsoft.UI.Input.dll;Microsoft.UI.Windowing.Core.dll;Microsoft.UI.Xaml.Controls.dll;Microsoft.UI.Xaml.Controls.pri;Microsoft.ui.xaml.dll;Microsoft.UI.Xaml.Internal.dll;Microsoft.UI.Xaml.Phone.dll;Microsoft.ui.xaml.resources.19h1.dll;Microsoft.ui.xaml.resources.common.dll;Microsoft.Web.WebView2.Core.dll;Microsoft.Windows.ApplicationModel.Resources.dll;Microsoft.Windows.ApplicationModel.WindowsAppRuntime.Projection.dll;Microsoft.Windows.AppLifecycle.Projection.dll;Microsoft.Windows.AppNotifications.Projection.dll;Microsoft.Windows.PushNotifications.Projection.dll;Microsoft.Windows.SDK.NET.dll;Microsoft.Windows.System.Projection.dll;Microsoft.WindowsAppRuntime.Bootstrap.dll;Microsoft.WindowsAppRuntime.Bootstrap.Net.dll;Microsoft.WindowsAppRuntime.dll;Microsoft.WindowsAppRuntime.Insights.Resource.dll;Microsoft.WindowsAppRuntime.Release.Net.dll;Microsoft.WinUI.dll;MRM.dll;PowerToys.ManagedCommon.dll;PowerToys.Interop.dll;PowerToys.ManagedTelemetry.dll;PowerToys.MeasureToolCore.dll;PowerToys.MeasureToolUI.deps.json;PowerToys.MeasureToolUI.dll;PowerToys.MeasureToolUI.exe;PowerToys.MeasureToolUI.runtimeconfig.json;PushNotificationsLongRunningTask.ProxyStub.dll;resources.pri;System.CodeDom.dll;System.Management.dll;WindowsAppRuntime.png;WindowsAppSdk.AppxDeploymentExtensions.Desktop.dll;WinRT.Runtime.dll;WinUIEdit.dll;WinUIEx.dll;wuceffectsi.dll?>
+
 	<?define PowerRenameMicrosoftUIXamlAssetsInstallFiles=NoiseAsset_256x256_PNG.png?>
+
+  <?define MeasureToolMicrosoftUIXamlAssetsInstallFiles=NoiseAsset_256x256_PNG.png?>
+
+	<?define PowerAccentFiles=ControlzEx.dll;GongSolutions.WPF.DragDrop.dll;Ijwhost.dll;MahApps.Metro.dll;Microsoft.Xaml.Behaviors.dll;PowerAccent.Core.dll;PowerAccent.deps.json;PowerAccent.dll;PowerAccent.exe;PowerAccent.runtimeconfig.json;PowerToys.PowerAccentModuleInterface.dll;PowerToys.Interop.dll;PowerToys.ManagedCommon.dll;PowerToys.ManagedTelemetry.dll;PowerToys.PowerAccent.deps.json;PowerToys.PowerAccent.dll;PowerToys.PowerAccent.exe;PowerToys.PowerAccent.runtimeconfig.json;PowerToys.Settings.UI.Lib.dll;System.IO.Abstractions.dll;System.Management.dll;System.Text.Json.dll;Vanara.Core.dll;Vanara.PInvoke.Gdi32.dll;Vanara.PInvoke.Kernel32.dll;Vanara.PInvoke.Shared.dll;Vanara.PInvoke.User32.dll;PowerToys.PowerAccentKeyboardService.dll;Microsoft.Windows.SDK.NET.dll;WinRT.Runtime.dll?>
 
   <Product Id="*"
        Name="PowerToys (Preview)"
@@ -409,6 +420,8 @@
             <Directory Id="ImageResizerInstallFolder" Name="$(var.ImageResizerProjectName)">
               <Directory Id="ImageResizerAssetsFolder" Name="Assets" />
             </Directory>
+            <Directory Id="PowerAccentInstallFolder" Name="$(var.PowerAccentProjectName)">
+            </Directory>
             <Directory Id="PowerRenameInstallFolder" Name="$(var.PowerRenameProjectName)">
               <Directory Id="PowerRenameAssetsFolder" Name="Assets" />
 							<Directory Id="PowerRenameMicrosoftUIXamlInstallFolder" Name="Microsoft.UI.Xaml">
@@ -429,6 +442,7 @@
               <Directory Id="MonacoPreviewHandlerMonacoSRCFolder" Name="monacoSRC" />
             </Directory>
             <Directory Id="FancyZonesInstallFolder" Name="$(var.FancyZonesProjectName)" />
+            <Directory Id="PowerOCRInstallFolder" Name="$(var.PowerOCRProjectName)" />
             <Directory Id="AwakeInstallFolder" Name="$(var.AwakeProjectName)">
               <Directory Id="AwakeImagesFolder" Name="Images" />
             </Directory>
@@ -450,6 +464,13 @@
 
             <!-- AlwaysOnTop -->
             <Directory Id="AlwaysOnTopInstallFolder" Name="$(var.AlwaysOnTopProjectName)">
+            </Directory>
+
+            <!-- MeasureTool -->
+            <Directory Id="MeasureToolInstallFolder" Name="$(var.MeasureToolProjectName)">
+                <Directory Id="MeasureToolMicrosoftUIXamlInstallFolder" Name="Microsoft.UI.Xaml">
+                  <Directory Id="MeasureToolMicrosoftUIXamlAssetsInstallFolder" Name="Assets" />
+                </Directory>
             </Directory>
 
             <!-- Launcher -->
@@ -487,6 +508,10 @@
                   <Directory Id="UriImagesFolder" Name="Images" />
                   <Directory Id="UriLanguagesFolder" Name="Languages" />
                 </Directory>
+                <Directory Id="HistoryPluginFolder" Name="History">
+                  <Directory Id="HistoryImagesFolder" Name="Images" />
+                  <Directory Id="HistoryLanguagesFolder" Name="Languages" />
+                </Directory>								
                 <Directory Id="UnitConverterPluginFolder" Name="UnitConverter">
                   <Directory Id="UnitConverterImagesFolder" Name="Images" />
                   <Directory Id="UnitConverterLanguagesFolder" Name="Languages" />
@@ -599,7 +624,6 @@
 
     <DirectoryRef Id="ApplicationProgramsFolder">
       <Component Id="PowerToysStartMenuShortcut" >
-        <Condition>NOT PREVIOUSVERSIONSINSTALLED</Condition>
         <Shortcut Id="ApplicationStartMenuShortcut"
         Name="PowerToys (Preview)"
         Description="PowerToys - Windows system utilities to maximize productivity"
@@ -747,6 +771,15 @@
       </Component>
     </DirectoryRef>
 
+    <!-- PowerAccent -->
+    <DirectoryRef Id="PowerAccentInstallFolder" FileSource="$(var.BinDir)modules\$(var.PowerAccentProjectName)">
+      <?foreach File in $(var.PowerAccentFiles)?>
+      <Component Id="PowerAccent_$(var.File)" Win64="yes">
+        <File Id="PowerAccentFile_$(var.File)" Source="$(var.BinDir)modules\$(var.PowerAccentProjectName)\$(var.File)" />
+      </Component>
+      <?endforeach?>
+    </DirectoryRef>
+
     <!-- PowerRename -->
     <DirectoryRef Id="PowerRenameInstallFolder" FileSource="$(var.BinDir)modules\$(var.PowerRenameProjectName)">
       <?foreach File in $(var.PowerRenameFiles)?>
@@ -768,13 +801,13 @@
       </Component>
     </DirectoryRef>
 
-		<DirectoryRef Id="PowerRenameMicrosoftUIXamlAssetsInstallFolder" FileSource="$(var.BinDir)modules\$(var.PowerRenameProjectName)\Microsoft.UI.Xaml\Assets">
-			<?foreach File in $(var.PowerRenameMicrosoftUIXamlAssetsInstallFiles)?>
-			    <Component Id="PowerRenameMicrosoftUIXamlAssets_$(var.File)" Win64="yes">
-				    <File Id="PowerRenameMicrosoftUIXamlAssetsFile_$(var.File)" Source="$(var.BinDir)modules\$(var.PowerRenameProjectName)\Microsoft.UI.Xaml\Assets\$(var.File)" />
-			    </Component>
-			<?endforeach?>			
-        </DirectoryRef>
+    <DirectoryRef Id="PowerRenameMicrosoftUIXamlAssetsInstallFolder" FileSource="$(var.BinDir)modules\$(var.PowerRenameProjectName)\Microsoft.UI.Xaml\Assets">
+      <?foreach File in $(var.PowerRenameMicrosoftUIXamlAssetsInstallFiles)?>
+        <Component Id="PowerRenameMicrosoftUIXamlAssets_$(var.File)" Win64="yes">
+          <File Id="PowerRenameMicrosoftUIXamlAssetsFile_$(var.File)" Source="$(var.BinDir)modules\$(var.PowerRenameProjectName)\Microsoft.UI.Xaml\Assets\$(var.File)" />
+        </Component>
+      <?endforeach?>			
+    </DirectoryRef>
 
     <DirectoryRef Id="PowerRenameAssetsFolder" FileSource="$(var.BinDir)modules\$(var.PowerRenameProjectName)">
       <!-- !Warning! Make sure to change Component Guid if you update the file list -->
@@ -889,6 +922,16 @@
       </Component>
     </DirectoryRef>
 
+    <!-- PowerOCR Resources -->
+    <DirectoryRef Id="PowerOCRInstallFolder" FileSource="$(var.BinDir)modules\$(var.PowerOCRProjectName)">
+      <!-- !Warning! Make sure to change Component Guid if you update the file list -->
+      <Component Id="Module_PowerOCR" Guid="5640A7E8-E165-4368-8F08-F8E1E9242BDD" Win64="yes">
+        <?foreach File in PowerToys.PowerOCR.dll;ControlzEx.dll;Ijwhost.dll;Microsoft.Windows.SDK.NET.dll;Microsoft.Xaml.Behaviors.dll;PowerToys.Common.UI.dll;PowerToys.Interop.dll;PowerToys.ManagedCommon.dll;PowerToys.ManagedTelemetry.dll;PowerToys.PowerOCR.deps.json;PowerToys.PowerOCR.exe;PowerToys.PowerOCR.runtimeconfig.json;PowerToys.PowerOCRModuleInterface.dll;PowerToys.Settings.UI.Lib.dll;System.ComponentModel.Composition.dll;System.IO.Abstractions.dll;System.Management.dll;System.Text.Json.dll;WinRT.Runtime.dll?>
+        <File Id="PowerOCRFile_$(var.File)" Source="$(var.BinDir)modules\$(var.PowerOCRProjectName)\$(var.File)" />
+        <?endforeach?>
+      </Component>
+    </DirectoryRef>
+
     <!-- Awake -->
     <DirectoryRef Id="AwakeInstallFolder" FileSource="$(var.BinDir)modules\$(var.AwakeProjectName)">
       <!-- !Warning! Make sure to change Component Guid if you update the file list -->
@@ -928,6 +971,28 @@
         <File Source="$(var.BinDir)modules\$(var.AlwaysOnTopProjectName)\PowerToys.AlwaysOnTop.exe" />
       </Component>
 
+    </DirectoryRef>
+
+    <!-- Measure Tool -->
+    <DirectoryRef Id="MeasureToolInstallFolder" FileSource="$(var.BinDir)modules\$(var.MeasureToolProjectName)">
+      <Component Id="Module_MeasureToolInterface" Win64="yes">
+        <File Source="$(var.BinDir)modules\$(var.MeasureToolProjectName)\PowerToys.MeasureToolModuleInterface.dll" />
+      </Component>
+
+      <?foreach File in $(var.MeasureToolFiles)?>
+      <Component Id="MT_$(var.File)" Win64="yes">
+        <File Id="MT_$(var.File)" Source="$(var.BinDir)modules\$(var.MeasureToolProjectName)\$(var.File)" />
+      </Component>
+      <?endforeach?>
+
+    </DirectoryRef>
+
+    <DirectoryRef Id="MeasureToolMicrosoftUIXamlAssetsInstallFolder" FileSource="$(var.BinDir)modules\$(var.MeasureToolProjectName)\Microsoft.UI.Xaml\Assets">
+      <?foreach File in $(var.MeasureToolMicrosoftUIXamlAssetsInstallFiles)?>
+        <Component Id="MeasureToolMicrosoftUIXamlAssets_$(var.File)" Win64="yes">
+          <File Id="MeasureToolMicrosoftUIXamlAssetsFile_$(var.File)" Source="$(var.BinDir)modules\$(var.MeasureToolProjectName)\Microsoft.UI.Xaml\Assets\$(var.File)" />
+        </Component>
+      <?endforeach?>			
     </DirectoryRef>
 
     <!-- SettingsV2 components -->
@@ -1037,6 +1102,9 @@
       <?endforeach?>
       <ComponentRef Id="DesktopShortcut" />
       <ComponentRef Id="Module_PowerRename" />
+      <?foreach File in $(var.PowerAccentFiles)?>
+      <ComponentRef Id="PowerAccent_$(var.File)" />
+      <?endforeach?>
       <?foreach File in $(var.PowerRenameFiles)?>
       <ComponentRef Id="PowerRename_$(var.File)" />
       <?endforeach?>
@@ -1058,6 +1126,7 @@
       <ComponentRef Id="Module_KeyboardManager" />
       <ComponentRef Id="Module_KeyboardManager_Editor" />
       <ComponentRef Id="Module_KeyboardManager_Engine" />
+      <ComponentRef Id="Module_PowerOCR" />
       <ComponentRef Id="Module_ColorPicker" />
       <ComponentRef Id="Module_ColorPicker_Icon"/>
       <ComponentRef Id="Module_ColorPicker_Cursor"/>
@@ -1068,6 +1137,14 @@
       <ComponentRef Id="Module_MousePointerCrosshairs" />
       <ComponentRef Id="Module_AlwaysOnTop"/>
       <ComponentRef Id="Module_AlwaysOnTopInterface"/>
+      <ComponentRef Id="Module_MeasureToolInterface"/>
+      <?foreach File in $(var.MeasureToolFiles)?>
+      <ComponentRef Id="MT_$(var.File)" />
+      <?endforeach?>
+      <?foreach File in $(var.MeasureToolMicrosoftUIXamlAssetsInstallFiles)?>
+        <ComponentRef Id="MeasureToolMicrosoftUIXamlAssets_$(var.File)" />
+      <?endforeach?>
+
       <?foreach File in $(var.SettingsV2Files)?>
       <ComponentRef Id="SV2C_$(var.File)" />
       <?endforeach?>
@@ -1106,7 +1183,7 @@
   <Fragment>
     <!-- Resource directories should be added only if the installer is built on the build farm -->
     <?ifdef env.IsPipeline?>
-    <?foreach ParentDirectory in LauncherInstallFolder;FancyZonesInstallFolder;ImageResizerInstallFolder;ColorPickerInstallFolder;FileExplorerPreviewInstallFolder;CalculatorPluginFolder;FolderPluginFolder;ProgramPluginFolder;ShellPluginFolder;IndexerPluginFolder;UnitConverterPluginFolder;UriPluginFolder;WindowWalkerPluginFolder;OneNotePluginFolder;RegistryPluginFolder;VSCodeWorkspacesPluginFolder;ServicePluginFolder;SystemPluginFolder;TimeDatePluginFolder;TimeZonePluginFolder;WindowsSettingsPluginFolder;WindowsTerminalPluginFolder;WebSearchPluginFolder?>
+    <?foreach ParentDirectory in LauncherInstallFolder;FancyZonesInstallFolder;ImageResizerInstallFolder;ColorPickerInstallFolder;FileExplorerPreviewInstallFolder;HistoryPluginFolder;CalculatorPluginFolder;FolderPluginFolder;ProgramPluginFolder;ShellPluginFolder;IndexerPluginFolder;UnitConverterPluginFolder;UriPluginFolder;WindowWalkerPluginFolder;OneNotePluginFolder;RegistryPluginFolder;VSCodeWorkspacesPluginFolder;ServicePluginFolder;SystemPluginFolder;TimeDatePluginFolder;TimeZonePluginFolder;WindowsSettingsPluginFolder;WindowsTerminalPluginFolder;WebSearchPluginFolder?>
     <DirectoryRef Id="$(var.ParentDirectory)">
       <!-- Resource file directories -->
       <?foreach Language in $(var.LocLanguageList)?>
@@ -1392,6 +1469,18 @@
           Directory="Resource$(var.IdSafeLanguage)OneNotePluginFolder">
         <File Id="Launcher_OneNote_$(var.IdSafeLanguage)_File" Source="$(var.BinDir)modules\launcher\Plugins\OneNote\$(var.Language)\Microsoft.PowerToys.Run.Plugin.OneNote.resources.dll" />
       </Component>
+      <Component
+          Id="MonacoPreviewHandler_$(var.IdSafeLanguage)_Component"
+          Directory="Resource$(var.IdSafeLanguage)FileExplorerPreviewInstallFolder"
+          Guid="$(var.CompGUIDPrefix)1A">
+        <File Id="MonacoPreviewHandler_$(var.IdSafeLanguage)_File" Source="$(var.BinDir)modules\FileExplorerPreview\$(var.Language)\PowerToys.MonacoPreviewHandler.resources.dll" />
+      </Component>
+      <Component
+          Id="Launcher_History_$(var.IdSafeLanguage)_Component"
+          Directory="Resource$(var.IdSafeLanguage)HistoryPluginFolder"
+          Guid="$(var.CompGUIDPrefix)1B">
+        <File Id="Launcher_History_$(var.IdSafeLanguage)_File" Source="$(var.BinDir)modules\launcher\Plugins\History\$(var.Language)\Microsoft.PowerToys.Run.Plugin.History.resources.dll" />
+      </Component>	  
       <?undef IdSafeLanguage?>
       <?undef CompGUIDPrefix?>
       <?endforeach?>
@@ -1402,7 +1491,7 @@
     <!-- Localization languages shipped with WinAppSDK. We should ship these as well. -->
     <?define WinAppSDKLocLanguageList = af-ZA;ar-SA;az-Latn-AZ;bg-BG;bs-Latn-BA;ca-ES;cs-CZ;cy-GB;da-DK;de-DE;el-GR;en-GB;en-us;es-ES;es-MX;et-EE;eu-ES;fa-IR;fi-FI;fr-CA;fr-FR;gl-ES;he-IL;hi-IN;hr-HR;hu-HU;id-ID;is-IS;it-IT;ja-JP;ka-GE;kk-KZ;ko-KR;lt-LT;lv-LV;ms-MY;nb-NO;nl-NL;nn-NO;pl-PL;pt-BR;pt-PT;ro-RO;ru-RU;sk-SK;sl-SI;sq-AL;sr-Cyrl-RS;sr-Latn-RS;sv-SE;th-TH;tr-TR;uk-UA;vi-VN;zh-CN;zh-TW?>
   <Fragment>
-        <?foreach ParentDirectory in SettingsV2InstallFolder;PowerRenameInstallFolder?>
+        <?foreach ParentDirectory in SettingsV2InstallFolder;PowerRenameInstallFolder;MeasureToolInstallFolder?>
         <DirectoryRef Id="$(var.ParentDirectory)">
             <?foreach Language in $(var.WinAppSDKLocLanguageList)?>
             <?if $(var.Language) = af-ZA?>
@@ -1714,6 +1803,13 @@
                 <File Id="PowerRename_WinAppSDKLoc_$(var.IdSafeLanguage)_XamlMui_File" Source="$(var.BinDir)modules\$(var.PowerRenameProjectName)\$(var.Language)\Microsoft.ui.xaml.dll.mui" />
                 <File Id="PowerRename_WinAppSDKLoc_$(var.IdSafeLanguage)_XamlPhoneMui_File" Source="$(var.BinDir)modules\$(var.PowerRenameProjectName)\$(var.Language)\Microsoft.UI.Xaml.Phone.dll.mui" />
             </Component>
+            <Component
+                Id="MeasureTool_WinAppSDKLoc_$(var.IdSafeLanguage)_Component"
+                Directory="WinAppSDKLoc$(var.IdSafeLanguage)MeasureToolInstallFolder"
+                Guid="$(var.CompGUIDPrefix)03">
+                <File Id="MeasureTool_WinAppSDKLoc_$(var.IdSafeLanguage)_XamlMui_File" Source="$(var.BinDir)modules\$(var.MeasureToolProjectName)\$(var.Language)\Microsoft.ui.xaml.dll.mui" />
+                <File Id="MeasureTool_WinAppSDKLoc_$(var.IdSafeLanguage)_XamlPhoneMui_File" Source="$(var.BinDir)modules\$(var.MeasureToolProjectName)\$(var.Language)\Microsoft.UI.Xaml.Phone.dll.mui" />
+            </Component>
             <?undef IdSafeLanguage?>
             <?undef CompGUIDPrefix?>
             <?endforeach?>
@@ -1831,6 +1927,19 @@
         <File Id="WebSearchDark" Source="$(var.BinDir)modules\launcher\Plugins\WebSearch\Images\WebSearch.dark.png" />
       </Component>
 
+      <!-- History Plugin -->
+      <?foreach File in $(var.HistoryPluginComponentFiles)?>
+      <Component Id="HistoryComponent_$(var.File)" Win64="yes" Directory="HistoryPluginFolder">
+        <File Id="HistoryComponentFile_$(var.File)" Source="$(var.BinDir)modules\launcher\Plugins\History\$(var.File)" />
+      </Component>
+      <?endforeach?>
+      <Component Id="HistoryImagesComponentLight" Directory="HistoryImagesFolder" >
+        <File Id="HistoryLightIcon" Source="$(var.BinDir)modules\launcher\Plugins\History\Images\history.light.png" />
+      </Component>
+      <Component Id="HistoryImagesComponentDark" Directory="HistoryImagesFolder" >
+        <File Id="HistoryDarkIcon" Source="$(var.BinDir)modules\launcher\Plugins\History\Images\history.dark.png" />
+      </Component>
+	  
       <!-- Uri Plugin -->
       <?foreach File in $(var.UriComponentFiles)?>
       <Component Id="UriComponent_$(var.File)" Win64="yes" Directory="UriPluginFolder">

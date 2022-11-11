@@ -127,6 +127,9 @@ bool WindowBorder::Init(HINSTANCE hinstance)
         , windowRect.bottom - windowRect.top
         , SWP_NOMOVE | SWP_NOSIZE);
 
+    BOOL val = TRUE;
+    DwmSetWindowAttribute(m_window, DWMWA_EXCLUDED_FROM_PEEK, &val, sizeof(val));
+
     m_frameDrawer = FrameDrawer::Create(m_window);
     if (!m_frameDrawer)
     {

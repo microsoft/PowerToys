@@ -44,7 +44,6 @@ namespace Microsoft.Plugin.Folder.Sources
             return query.Any(c => c.Equals('>'));
         }
 
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Globalization", "CA1308:Normalize strings to uppercase", Justification = "Do not want to change the behavior of the application, but want to enforce static analysis")]
         private (string search, string incompleteName) Process(string search)
         {
             string incompleteName = string.Empty;

@@ -182,13 +182,10 @@
                                                 Margin="16,0,0,0"
                                                 CornerRadius="12">
                                             <Border.Background>
-                                                <SolidColorBrush Color="{ThemeResource SystemAccentColorLight3}"
+                                                <SolidColorBrush Color="{ThemeResource SystemAccentColor}"
                                                                  Opacity="0.3"/>
                                             </Border.Background>
-                                            <TextBlock Text="{x:Bind TargetApp}"
-                                                       Foreground="{ThemeResource SystemAccentColorDark1}"
-                                                       FontWeight="SemiBold"
-                                                       FontSize="12" />
+                                            <TextBlock Text="{x:Bind TargetApp}"/>
                                         </Border>
                                     </StackPanel>
                                 </StackPanel>

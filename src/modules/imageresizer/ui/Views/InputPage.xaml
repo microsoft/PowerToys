@@ -85,7 +85,7 @@
                 </ui:NumberBox.Value>
             </ui:NumberBox>
             <TextBlock VerticalAlignment="Center"
-                       Text="&#xe894;"
+                       Text="&#xE947;"
                        FontFamily="Segoe MDL2 Assets"
                        Width="25"
                        Foreground="{DynamicResource SecondaryForegroundBrush}"

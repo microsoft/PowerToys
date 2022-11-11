@@ -22,6 +22,10 @@ namespace Microsoft.PowerToys.Run.Plugin.Calculator.UnitTests
         [DataRow("=2^96", "Result value was either too large or too small for a decimal number")]
         [DataRow("=+()", "Calculation result is not a valid number (NaN)")]
         [DataRow("=[10,10]", "Unsupported use of square brackets")]
+        [DataRow("=5/0", "Expression contains division by zero")]
+        [DataRow("=5 / 0", "Expression contains division by zero")]
+        [DataRow("10+(8*9)/0+7", "Expression contains division by zero")]
+        [DataRow("10+(8*9)/0*7", "Expression contains division by zero")]
         public void ErrorResultOnInvalidKeywordQuery(string typedString, string expectedResult)
         {
             // Setup
@@ -45,6 +49,10 @@ namespace Microsoft.PowerToys.Run.Plugin.Calculator.UnitTests
         [DataRow("2^96")]
         [DataRow("+()")]
         [DataRow("[10,10]")]
+        [DataRow("5/0")]
+        [DataRow("5 / 0")]
+        [DataRow("10+(8*9)/0+7")]
+        [DataRow("10+(8*9)/0*7")]
         public void NoResultOnInvalidGlobalQuery(string typedString)
         {
             // Setup
@@ -56,6 +64,54 @@ namespace Microsoft.PowerToys.Run.Plugin.Calculator.UnitTests
 
             // Assert
             Assert.AreEqual(result, 0);
+        }
+
+        [DataTestMethod]
+        [DataRow("9+")]
+        [DataRow("9-")]
+        [DataRow("9*")]
+        [DataRow("9|")]
+        [DataRow("9\\")]
+        [DataRow("9^")]
+        [DataRow("9=")]
+        [DataRow("9&")]
+        [DataRow("9/")]
+        [DataRow("9%")]
+        public void NoResultIfQueryEndsWithBinaryOperator(string typedString)
+        {
+            // Setup
+            Mock<Main> main = new ();
+            Query expectedQuery = new (typedString);
+            Query expectedQueryWithKeyword = new ("=" + typedString, "=");
+
+            // Act
+            var result = main.Object.Query(expectedQuery).Count;
+            var resultWithKeyword = main.Object.Query(expectedQueryWithKeyword).Count;
+
+            // Assert
+            Assert.AreEqual(result, 0);
+            Assert.AreEqual(resultWithKeyword, 0);
+        }
+
+        [DataTestMethod]
+        [DataRow("10+(8*9)/0,5")] // German decimal digit separator
+        [DataRow("10+(8*9)/0.5")]
+        [DataRow("10+(8*9)/1,5")] // German decimal digit separator
+        [DataRow("10+(8*9)/1.5")]
+        public void NoErrorForDivisionByNumberWithDecimalDigits(string typedString)
+        {
+            // Setup
+            Mock<Main> main = new ();
+            Query expectedQuery = new (typedString);
+            Query expectedQueryWithKeyword = new ("=" + typedString, "=");
+
+            // Act
+            var result = main.Object.Query(expectedQuery).FirstOrDefault().SubTitle;
+            var resultWithKeyword = main.Object.Query(expectedQueryWithKeyword).FirstOrDefault().SubTitle;
+
+            // Assert
+            Assert.AreEqual(result, "Copy this number to the clipboard");
+            Assert.AreEqual(resultWithKeyword, "Copy this number to the clipboard");
         }
     }
 }
