@@ -13,15 +13,12 @@ namespace ColorPicker
     public static class Program
     {
         private static string[] _args;
-        private static Logger _logger;
 
         [STAThread]
         public static void Main(string[] args)
         {
-            _logger = new Logger("ColorPicker\\Logs");
-
             _args = args;
-            _logger.LogInfo($"Color Picker started with pid={Environment.ProcessId}");
+            Logger.LogInfo($"Color Picker started with pid={Environment.ProcessId}");
             AppDomain.CurrentDomain.UnhandledException += CurrentDomain_UnhandledException;
             try
             {
@@ -33,7 +30,7 @@ namespace ColorPicker
             }
             catch (Exception ex)
             {
-                _logger.LogError("Unhandled exception", ex);
+                Logger.LogError("Unhandled exception", ex);
                 CursorManager.RestoreOriginalCursors();
             }
         }
@@ -42,11 +39,11 @@ namespace ColorPicker
         {
             if (e.ExceptionObject is Exception ex)
             {
-                _logger.LogError("Unhandled exception", ex);
+                Logger.LogError("Unhandled exception", ex);
             }
             else
             {
-                _logger.LogError("Unhandled exception");
+                Logger.LogError("Unhandled exception");
             }
 
             CursorManager.RestoreOriginalCursors();

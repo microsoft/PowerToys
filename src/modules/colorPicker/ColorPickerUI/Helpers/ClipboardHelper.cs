@@ -12,13 +12,6 @@ namespace ColorPicker.Helpers
 {
     public static class ClipboardHelper
     {
-        private static readonly Logger _logger;
-
-        static ClipboardHelper()
-        {
-            _logger = new Logger("ColorPicker\\Logs");
-        }
-
         /// <summary>
         /// Defined error code for "clipboard can't open"
         /// </summary>
@@ -45,11 +38,11 @@ namespace ColorPicker.Helpers
 
                         if ((uint)ex.ErrorCode != ErrorCodeClipboardCantOpen)
                         {
-                            _logger.LogError("Failed to set text into clipboard", ex);
+                            Logger.LogError("Failed to set text into clipboard", ex);
                         }
                         else
                         {
-                            _logger.LogError("Failed to set text into clipboard, application that is locking clipboard - " + applicationUsingClipboard, ex);
+                            Logger.LogError("Failed to set text into clipboard, application that is locking clipboard - " + applicationUsingClipboard, ex);
                         }
                     }
 

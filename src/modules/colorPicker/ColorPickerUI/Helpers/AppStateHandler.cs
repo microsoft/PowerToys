@@ -17,8 +17,6 @@ namespace ColorPicker.Helpers
     [Export(typeof(AppStateHandler))]
     public class AppStateHandler
     {
-        private static Logger _logger;
-
         private readonly IColorEditorViewModel _colorEditorViewModel;
         private readonly IUserSettings _userSettings;
         private ColorEditorWindow _colorEditorWindow;
@@ -34,8 +32,6 @@ namespace ColorPicker.Helpers
         [ImportingConstructor]
         public AppStateHandler(IColorEditorViewModel colorEditorViewModel, IUserSettings userSettings)
         {
-            _logger = new Logger("ColorPicker\\Logs");
-
             Application.Current.MainWindow.Closed += MainWindow_Closed;
             _colorEditorViewModel = colorEditorViewModel;
             _userSettings = userSettings;
@@ -255,7 +251,7 @@ namespace ColorPicker.Helpers
             _hwndSource.AddHook(ProcessWindowMessages);
             if (!NativeMethods.RegisterHotKey(_hwndSource.Handle, _globalHotKeyId, NativeMethods.MOD_NOREPEAT, NativeMethods.VK_ESCAPE))
             {
-                _logger.LogWarning("Couldn't register the hotkey for Esc.");
+                Logger.LogWarning("Couldn't register the hotkey for Esc.");
             }
         }
 
@@ -268,7 +264,7 @@ namespace ColorPicker.Helpers
 
             if (!NativeMethods.UnregisterHotKey(_hwndSource.Handle, _globalHotKeyId))
             {
-                _logger.LogWarning("Couldn't unregister the hotkey for Esc.");
+                Logger.LogWarning("Couldn't unregister the hotkey for Esc.");
             }
 
             _hwndSource.RemoveHook(ProcessWindowMessages);

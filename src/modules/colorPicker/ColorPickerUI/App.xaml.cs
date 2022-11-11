@@ -23,18 +23,16 @@ namespace ColorPickerUI
         private int _powerToysRunnerPid;
         private bool disposedValue;
         private ThemeManager _themeManager;
-        private static Logger _logger;
 
         protected override void OnStartup(StartupEventArgs e)
         {
-            _logger = new Logger("ColorPicker\\Logs");
             _args = e?.Args;
 
             // allow only one instance of color picker
             _instanceMutex = new Mutex(true, @"Local\PowerToys_ColorPicker_InstanceMutex", out bool createdNew);
             if (!createdNew)
             {
-                _logger.LogWarning("There is ColorPicker instance running. Exiting Color Picker");
+                Logger.LogWarning("There is ColorPicker instance running. Exiting Color Picker");
                 _instanceMutex = null;
                 Environment.Exit(0);
                 return;
@@ -44,10 +42,10 @@ namespace ColorPickerUI
             {
                 _ = int.TryParse(_args[0], out _powerToysRunnerPid);
 
-                _logger.LogInfo($"Color Picker started from the PowerToys Runner. Runner pid={_powerToysRunnerPid}");
+                Logger.LogInfo($"Color Picker started from the PowerToys Runner. Runner pid={_powerToysRunnerPid}");
                 RunnerHelper.WaitForPowerToysRunner(_powerToysRunnerPid, () =>
                 {
-                    _logger.LogInfo("PowerToys Runner exited. Exiting ColorPicker");
+                    Logger.LogInfo("PowerToys Runner exited. Exiting ColorPicker");
                     Environment.Exit(0);
                 });
             }

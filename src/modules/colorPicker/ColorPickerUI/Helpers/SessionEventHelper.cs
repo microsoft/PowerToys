@@ -12,14 +12,7 @@ namespace ColorPicker.Helpers
 {
     public static class SessionEventHelper
     {
-        private static Logger _logger;
-
         public static ColorPickerSession Event { get; private set; }
-
-        static SessionEventHelper()
-        {
-            _logger = new Logger("ColorPicker\\Logs");
-        }
 
         public static void Start(ColorPickerActivationAction startedAs)
         {
@@ -32,7 +25,7 @@ namespace ColorPicker.Helpers
         {
             if (_startTime == null)
             {
-                _logger.LogError("Failed to send ColorPickerSessionEvent");
+                Logger.LogError("Failed to send ColorPickerSessionEvent");
                 return;
             }
 

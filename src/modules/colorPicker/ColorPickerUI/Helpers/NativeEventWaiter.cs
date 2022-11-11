@@ -11,13 +11,6 @@ namespace ColorPicker.Helpers
 {
     public static class NativeEventWaiter
     {
-        private static Logger _logger;
-
-        static NativeEventWaiter()
-        {
-            _logger = new Logger("ColorPicker\\Logs");
-        }
-
         public static void WaitForEventLoop(string eventName, Action callback)
         {
             new Thread(() =>
@@ -27,7 +20,7 @@ namespace ColorPicker.Helpers
                 {
                     if (eventHandle.WaitOne())
                     {
-                        _logger.LogInfo($"Successfully waited for {eventName}");
+                        Logger.LogInfo($"Successfully waited for {eventName}");
                         Application.Current.Dispatcher.Invoke(callback);
                     }
                 }
