@@ -9,9 +9,9 @@ using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Input;
 using Common.UI;
-using FancyZonesEditor.Logs;
 using FancyZonesEditor.Utils;
 using ManagedCommon;
+using Microsoft.PowerToys.Common.Utils;
 
 namespace FancyZonesEditor
 {

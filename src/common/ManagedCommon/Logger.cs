@@ -8,6 +8,7 @@ using System.Globalization;
 using System.IO;
 using System.IO.Abstractions;
 using System.Reflection;
+using System.Runtime.Serialization;
 using interop;
 
 namespace Microsoft.PowerToys.Common.Utils
@@ -28,16 +29,22 @@ namespace Microsoft.PowerToys.Common.Utils
         {
             var location = Assembly.GetExecutingAssembly().Location;
 
-            string applicationLogPath = System.Environment.GetEnvironmentVariable("USERPROFILE") + "\\AppData\\Local\\Microsoft\\PowerToys";
+            string applicationLogPath = Path.Combine(Constants.AppDataPath());
 
             if (location.Contains("ColorPicker"))
             {
                 applicationLogPath += "\\ColorPicker\\Logs";
             }
-
-            if (!_fileSystem.Directory.Exists(applicationLogPath))
+            else
             {
-                _fileSystem.Directory.CreateDirectory(applicationLogPath);
+                applicationLogPath += "\\FancyZones\\Logs";
+            }
+
+            applicationLogPath = Path.Combine(applicationLogPath, Version);
+
+            if (!Directory.Exists(applicationLogPath))
+            {
+                Directory.CreateDirectory(applicationLogPath);
             }
 
             // Using InvariantCulture since this is used for a log file name
