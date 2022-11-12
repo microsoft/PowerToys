@@ -8,6 +8,6 @@ struct ShortcutGuideSettings
     std::wstring theme = L"system";
     std::wstring disabledApps = L"";
     bool shouldReactToPressedWinKey = false;
-    int windowsKeyPressTime = 900;
-    int delayAfterShowingTaskbarShortcuts = 900;
+    int windowsKeyPressTimeForGlobalWindowsShortcuts = 1000;
+    int windowsKeyPressTimeForTaskbarIconShortcuts = 1000;
 };

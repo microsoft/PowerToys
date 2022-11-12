@@ -196,18 +196,10 @@ OverlayWindow::OverlayWindow(HWND activeWindow)
 void OverlayWindow::ShowWindow()
 {
     winkey_popup = std::make_unique<D2DOverlayWindow>();
+    winkey_popup->apply_press_time_for_global_windows_shortcuts(windowsKeyPressTimeForTaskbarIconShortcuts.value);
+    winkey_popup->apply_press_time_for_taskbar_icon_shortcuts(windowsKeyPressTimeForTaskbarIconShortcuts.value);
     winkey_popup->apply_overlay_opacity(((float)overlayOpacity.value) / 100.0f);
     winkey_popup->set_theme(theme.value);
-
-    // The delay only takes effect when the power toy is activated by pressing win key
-    if (shouldReactToPressedWinKey.value)
-    {
-        winkey_popup->apply_delay_after_showing_taskbar_shortcuts(delayAfterShowingTaskBarShortcuts.value);
-    }
-    else
-    {
-        winkey_popup->apply_delay_after_showing_taskbar_shortcuts(0);
-    }
 
     target_state = std::make_unique<TargetState>();
     try
@@ -321,7 +313,8 @@ void OverlayWindow::init_settings()
     theme.value = settings.theme;
     disabledApps.value = settings.disabledApps;
     shouldReactToPressedWinKey.value = settings.shouldReactToPressedWinKey;
-    delayAfterShowingTaskBarShortcuts.value = settings.delayAfterShowingTaskbarShortcuts;
+    windowsKeyPressTimeForTaskbarIconShortcuts.value = settings.windowsKeyPressTimeForGlobalWindowsShortcuts;
+    windowsKeyPressTimeForTaskbarIconShortcuts.value = settings.windowsKeyPressTimeForTaskbarIconShortcuts;
     update_disabled_apps();
 }
 
@@ -431,7 +424,7 @@ ShortcutGuideSettings OverlayWindow::GetSettings() noexcept
 
     try
     {
-        settings.windowsKeyPressTime = (int)properties.GetNamedObject(WindowsKeyPressTime::name).GetNamedNumber(L"value");
+        settings.windowsKeyPressTimeForGlobalWindowsShortcuts = (int)properties.GetNamedObject(WindowsKeyPressTimeForGlobalWindowsShortcuts::name).GetNamedNumber(L"value");
     }
     catch (...)
     {
@@ -439,7 +432,7 @@ ShortcutGuideSettings OverlayWindow::GetSettings() noexcept
 
     try
     {
-        settings.delayAfterShowingTaskbarShortcuts = (int)properties.GetNamedObject(DelayAfterShowingTaskbarShortcuts::name).GetNamedNumber(L"value");
+        settings.windowsKeyPressTimeForTaskbarIconShortcuts = (int)properties.GetNamedObject(WindowsKeyPressTimeForTaskbarIconShortcuts::name).GetNamedNumber(L"value");
     }
     catch (...)
     {

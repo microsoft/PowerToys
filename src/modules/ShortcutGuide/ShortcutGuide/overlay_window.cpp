@@ -422,9 +422,14 @@ void D2DOverlayWindow::apply_overlay_opacity(float opacity)
     overlay_opacity = opacity;
 }
 
-void D2DOverlayWindow::apply_delay_after_showing_taskbar_shortcuts(int delay)
+void D2DOverlayWindow::apply_press_time_for_global_windows_shortcuts(int press_time)
 {
-    milliseconds_delay_after_showing_taskbar_shortcuts = std::max(delay, 0);
+    milliseconds_press_time_for_global_windows_shortcuts = std::max(press_time, 0);
+}
+
+void D2DOverlayWindow::apply_press_time_for_taskbar_icon_shortcuts(int press_time)
+{
+    milliseconds_press_time_for_taskbar_icon_shortcuts = std::max(press_time, 0);
 }
 
 void D2DOverlayWindow::set_theme(const std::wstring& theme)
@@ -670,13 +675,6 @@ void D2DOverlayWindow::render(ID2D1DeviceContext5* d2d_dc)
             continue;
         }
         render_arrow(arrows[(size_t)(button.keynum) - 1], button, window_rect, use_overlay->get_scale(), d2d_dc);
-    }
-
-    // Do not draw other contents before the delay
-    auto time_since_start = std::chrono::high_resolution_clock::now() - shown_start_time;
-    if (time_since_start.count() / 1000000 < milliseconds_delay_after_showing_taskbar_shortcuts)
-    {
-        return;
     }
 
     // Thumbnail logic:
