@@ -48,7 +48,7 @@ namespace PowerAccent.Core
                 case Language.IS: return GetDefaultLetterKeyIS(letter); // Iceland
                 case Language.IT: return GetDefaultLetterKeyIT(letter); // Italian
                 case Language.MI: return GetDefaultLetterKeyMI(letter); // Maori
-                case Language.NL: return GetDefaultLetterKeyNL(letter); // Netherlands
+                case Language.NL: return GetDefaultLetterKeyNL(letter); // Dutch
                 case Language.PI: return GetDefaultLetterKeyPI(letter); // Pinyin
                 case Language.PL: return GetDefaultLetterKeyPL(letter); // Polish
                 case Language.PT: return GetDefaultLetterKeyPT(letter); // Portuguese
