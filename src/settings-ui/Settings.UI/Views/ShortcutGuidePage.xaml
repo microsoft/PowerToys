@@ -70,7 +70,7 @@
                     <controls:Setting x:Uid="ShortcutGuide_PressTimeForTaskbarIconShortcuts" Icon="&#xE916;" Visibility="{x:Bind Mode=OneWay, Path=ViewModel.UseLegacyPressWinKeyBehavior, Converter={StaticResource TrueToVisibleConverter}}">
                         <controls:Setting.ActionContent>
                             <NumberBox
-                                Minimum="0"
+                                Minimum="100"
                                 Value="{x:Bind Mode=TwoWay, Path=ViewModel.DelayTime}"
                                 MinWidth="{StaticResource SettingActionControlMinWidth}"
                                 SpinButtonPlacementMode="Compact"
