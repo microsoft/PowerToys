@@ -298,7 +298,7 @@ namespace PowerAccent.Core
             return Array.Empty<char>();
         }
 
-        // Netherlands
+        // Dutch
         private static char[] GetDefaultLetterKeyNL(LetterKey letter)
         {
             switch (letter)
