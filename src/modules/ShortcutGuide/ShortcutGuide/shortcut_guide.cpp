@@ -313,7 +313,7 @@ void OverlayWindow::init_settings()
     theme.value = settings.theme;
     disabledApps.value = settings.disabledApps;
     shouldReactToPressedWinKey.value = settings.shouldReactToPressedWinKey;
-    windowsKeyPressTimeForTaskbarIconShortcuts.value = settings.windowsKeyPressTimeForGlobalWindowsShortcuts;
+    windowsKeyPressTimeForGlobalWindowsShortcuts.value = settings.windowsKeyPressTimeForGlobalWindowsShortcuts;
     windowsKeyPressTimeForTaskbarIconShortcuts.value = settings.windowsKeyPressTimeForTaskbarIconShortcuts;
     update_disabled_apps();
 }
