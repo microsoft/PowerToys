@@ -108,6 +108,7 @@ This amazing team helped PowerToys develop PowerToys Run and Keyboard manager as
 - [@jaimecbernardo](https://github.com/) - Jaime Bernardo - Dev lead
 - [@donlaci](https://github.com/) - Laszlo Nemeth - Dev
 - [@SeraphimaZykova](https://github.com/SeraphimaZykova) - Seraphima Zykova - Dev
+- [@sosssego](https://github.com/sosssego) - Dev
 - [@stefansjfw](https://github.com/stefansjfw) - Stefan Markovic - Dev
-- [@yuyoyuppe](https://github.com/yuyoyuppe) - Andrey Nekrasov - Dev
 - [@taras-janea](https://github.com/taras-janea) - Taras - Dev
+- [@yuyoyuppe](https://github.com/yuyoyuppe) - Andrey Nekrasov - Dev
