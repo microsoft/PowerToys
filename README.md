@@ -35,7 +35,7 @@ Microsoft PowerToys is a set of utilities for power users to tune and streamline
 
 ### Via GitHub with EXE [Recommended]
 
-Go to [Microsoft PowerToys GitHub releases page][github-release-link], click on `Assets` at the bottom to show the files available in the release. Please use the appropriate the PowerToys installer that matches your machine's architecture. For most, it is `x64`.
+Go to [Microsoft PowerToys GitHub releases page][github-release-link], and click on `Assets` at the bottom to show the files available in the release. Please use the appropriate PowerToys installer that matches your machine's architecture. For most, it is `x64`.
  
  - **For x64 processors (most common):** [PowerToysSetup-0.64.0-x64.exe](https://github.com/microsoft/PowerToys/releases/download/v0.64.0/PowerToysSetup-0.64.0-x64.exe)
  - **For ARM64 processors:** [PowerToysSetup-0.64.0-arm64.exe](https://github.com/microsoft/PowerToys/releases/download/v0.64.0/PowerToysSetup-0.64.0-arm64.exe)
@@ -55,11 +55,11 @@ winget install Microsoft.PowerToys -s winget
 
 ### Other install methods
 
-There are [community driven install methods](./doc/unofficialInstallMethods.md) such as Chocolatey and Scoop.  If these are your preferred install solutions, this will have the install instructions.
+There are [community-driven install methods](./doc/unofficialInstallMethods.md) such as Chocolatey and Scoop.  If these are your preferred install solutions, this will have the install instructions.
 
 ## Contributing
 
-This project welcomes contributions of all types. Help spec'ing, design, documentation, finding bugs are ways everyone can help on top of coding features / bug fixes. We are excited to work with the power user community to build a set of tools for helping you get the most out of Windows.
+This project welcomes contributions of all types. Help spec'ing, design, documentation, and finding bugs are ways everyone can help on top of coding features/bug fixes. We are excited to work with the power user community to build a set of tools for helping you get the most out of Windows.
 
 We ask that **before you start work on a feature that you would like to contribute**, please read our [Contributor's Guide](CONTRIBUTING.md). We will be happy to work with you to figure out the best approach, provide guidance and mentorship throughout feature development, and help avoid any wasted or duplicate effort.
 
@@ -80,9 +80,9 @@ In this release, we focused on releasing new features and improvements.
 **Highlights**
 
 - New utility: File Locksmith allows seeing which processes are currently using the selected files.
-- New utility: Hosts File Editor allows you to edit your hosts file in an Editor UI. Thanks [@davidegiacometti](https://github.com/davidegiacometti)!
+- New utility: Hosts File Editor allows you to edit your host's file in an Editor UI. Thanks [@davidegiacometti](https://github.com/davidegiacometti)!
 - Settings has a new feature for backing up / restoring the settings from a file. Thanks [@jefflord](https://github.com/jefflord)!
-- FancyZones allows you to set defaults for horizontal/vertical screens to get better intended behavior for new screens and cases where a monitor ID resets.
+- FancyZones allows you to set defaults for horizontal/vertical screens to get better-intended behavior for new screens and cases where a monitor ID resets.
 - PowerToys ships with Group Policy Objects settings for force disabling and enabling PowerToys utilities in organizations. Check the [GPO docs](https://github.com/microsoft/PowerToys/tree/main/doc/gpo) for more details.
 - Added a warning about deprecating Video Conference Mute in the future (v0.67), please check https://github.com/microsoft/PowerToys/issues/21473 for more information.
 
@@ -90,7 +90,7 @@ In this release, we focused on releasing new features and improvements.
 
 - The Text Extractor utility [fails to recognize text in some cases on ARM64 devices running Windows 10](https://github.com/microsoft/PowerToys/issues/20278).
 - After installing PowerToys, [the new Windows 11 context menu entries for PowerRename and Image Resizer might not appear before a system restart](https://github.com/microsoft/PowerToys/issues/19124).
-- There are reports of users who are [unable to open the Settings window](https://github.com/microsoft/PowerToys/issues/18015). This is being caused by incompatibilities with some applications (RTSS RivaTuner Statistics Server is a known examples of this). If you're affected by this, please check the  linked issue to verify if any of the presented solutions works for you.
+- There are reports of users who are [unable to open the Settings window](https://github.com/microsoft/PowerToys/issues/18015). This is caused by incompatibilities with some applications (RTSS RivaTuner Statistics Server is a known example of this). If you're affected by this, please check the linked issue to verify if any of the presented solutions work for you.
 
 ### Always on Top
 
@@ -114,19 +114,19 @@ In this release, we focused on releasing new features and improvements.
 ### Group Policy Objects
 
 - Group Policy Objects settings for force disabling and enabling PowerToys utilities.
-- Thanks [@htcfreek](https://github.com/htcfreek) for your help in reviewing to make sure the shipped settings conform to system administrators expectations!
+- Thanks [@htcfreek](https://github.com/htcfreek) for your help in reviewing to make sure the shipped settings conform to system administrators' expectations!
 
 ### Hosts File Editor
 
 - Added a new utility: Hosts File Editor. Thanks [@davidegiacometti](https://github.com/davidegiacometti)!
 - Thanks [@niels9001](https://github.com/niels9001) for the design help on the UI!
 - Thanks [@davidegiacometti](https://github.com/davidegiacometti) for fixing the bugs found and adding features up until release!
-- Thanks [@AtariDreams](https://github.com/AtariDreams) for consolidating the packages comparing to the rest of the project!
+- Thanks [@AtariDreams](https://github.com/AtariDreams) for consolidating the packages compared to the rest of the project!
 - Thanks [@htcfreek](https://github.com/htcfreek) for adding a scrollviewer to the entry editor!
 
 ### Keyboard Manager
 
-- Fixed a delay that was not being cancelled properly. Thanks [@AtariDreams](https://github.com/AtariDreams)!
+- Fixed a delay that was not being canceled properly. Thanks [@AtariDreams](https://github.com/AtariDreams)!
 
 ### Mouse Utilities
 
@@ -142,7 +142,7 @@ In this release, we focused on releasing new features and improvements.
 
 - Corrected "Dutch" word to "German". Thanks [@damienleroy](https://github.com/damienleroy)!
 - Added the Portuguese language accents. Thanks [@pcanavar](https://github.com/pcanavar)!
-- Fixed positioning of toolbar on scaled desktops.
+- Fixed positioning of the toolbar on scaled desktops.
 
 ### Screen Ruler
 
@@ -151,7 +151,7 @@ In this release, we focused on releasing new features and improvements.
 ### Settings
 
 - Added a feature to backup/restore settings to/from a file. Thanks [@jefflord](https://github.com/jefflord)!
-- Fixed an issue causing shortcuts shown in OOBE not updating to new values when the window was re-opened.
+- Fixed an issue causing shortcuts shown in OOBE not to update to new values when the window was re-opened.
 - Fixed the "Documents" folder usage in the backup/restore feature. Thanks [@davidegiacometti](https://github.com/davidegiacometti)!
 
 ### Text Extractor
@@ -171,12 +171,12 @@ In this release, we focused on releasing new features and improvements.
 
 ### Development
 
-- Consolidated nuget packages and removed a few unused packages.
+- Consolidated NuGet packages and removed a few unused packages.
 - Updated the Windows.CppRT to the latest version. Thanks [@AtariDreams](https://github.com/AtariDreams)!
 - Removed the cxxopts dependency, which was no longer used. Thanks [@AtariDreams](https://github.com/AtariDreams)!
 - Updated the cziplob dependency to 0.25. Thanks [@AtariDreams](https://github.com/AtariDreams)!
 - Updated the System.IO.Abstractions dependency. Thanks [@davidegiacometti](https://github.com/davidegiacometti)!
-- Turned on C++ code analysis and incrementally fixing warnings.
+- Turned on C++ code analysis and incrementally fixed warnings.
 - Added the install method to the issue template on GitHub, since some issues seem to be related to specific installation methods.
 - Automated installer hash creation in the release CI.
 - Simplified use of `.First()` on ImageResizer. Thanks [@AtariDreams](https://github.com/AtariDreams)!
@@ -187,12 +187,12 @@ In this release, we focused on releasing new features and improvements.
 
 For [v0.65][github-next-release-work], we'll work on below:
 
-- Ship .NET self contained and shared between utilities
-- Stability / bug fixes
+- Ship .NET self-contained and shared between utilities
+- Stability/bug fixes
 
 ## PowerToys Community
 
-The PowerToys team is extremely grateful to have the [support of an amazing active community][community-link]. The work you do is incredibly important. PowerToys wouldn’t be nearly what it is today without your help filing bugs, updating documentation, guiding the design, or writing features. We want to say thank you and take time to recognize your work.  Month over month, you directly help make PowerToys a better piece of software.
+The PowerToys team is extremely grateful to have the [support of an amazingly active community][community-link]. The work you do is incredibly important. PowerToys wouldn’t be nearly what it is today without your help filing bugs, updating documentation, guiding the design, or writing features. We want to say thank you and take the time to recognize your work.  Month over month, you directly help make PowerToys a better piece of software.
 
 ## Code of Conduct
 
@@ -214,6 +214,6 @@ The application logs basic telemetry. Our Telemetry Data page (Coming Soon) has 
 [loc-bug]: https://github.com/microsoft/PowerToys/issues/new?assignees=&labels=&template=translation_issue.md&title=
 [usingPowerToys-docs-link]: https://aka.ms/powertoys-docs
 
-<!-- items that need to be updated release to release -->
+<!-- items that need to be updated from release to release -->
 [github-next-release-work]: https://github.com/microsoft/PowerToys/issues?q=is%3Aopen+is%3Aissue+project%3Amicrosoft%2FPowerToys%2F38
 [github-current-release-work]: https://github.com/microsoft/PowerToys/issues?q=is%3Aopen+is%3Aissue+project%3Amicrosoft%2FPowerToys%2F37
