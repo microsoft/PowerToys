@@ -80,7 +80,11 @@ private:
     int monitor_dx = 0, monitor_dy = 0;
     D2DText text;
     WindowsColors colors;
-    Animation animation;
+    Animation background_animation;
+    Animation global_windows_shortcuts_animation;
+    Animation taskbar_icon_shortcuts_animation;
+    bool global_windows_shortcuts_shown = false;
+    bool taskbar_icon_shortcuts_shown = false;
     RECT window_rect = {};
     Tasklist tasklist;
     std::vector<TasklistButton> tasklist_buttons;

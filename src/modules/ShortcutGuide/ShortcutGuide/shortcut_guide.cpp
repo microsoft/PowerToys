@@ -196,7 +196,7 @@ OverlayWindow::OverlayWindow(HWND activeWindow)
 void OverlayWindow::ShowWindow()
 {
     winkey_popup = std::make_unique<D2DOverlayWindow>();
-    winkey_popup->apply_press_time_for_global_windows_shortcuts(windowsKeyPressTimeForTaskbarIconShortcuts.value);
+    winkey_popup->apply_press_time_for_global_windows_shortcuts(windowsKeyPressTimeForGlobalWindowsShortcuts.value);
     winkey_popup->apply_press_time_for_taskbar_icon_shortcuts(windowsKeyPressTimeForTaskbarIconShortcuts.value);
     winkey_popup->apply_overlay_opacity(((float)overlayOpacity.value) / 100.0f);
     winkey_popup->set_theme(theme.value);
