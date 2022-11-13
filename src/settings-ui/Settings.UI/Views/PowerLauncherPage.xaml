@@ -39,7 +39,8 @@
                     IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.EnablePowerLauncher}">
                     <labs:SettingsExpander
                         x:Uid="Activation_Shortcut"
-                        HeaderIcon="{ui:FontIcon FontFamily={StaticResource SymbolThemeFontFamily}, Glyph=&#xEDA7;}"
+                        HeaderIcon="{ui:FontIcon FontFamily={StaticResource SymbolThemeFontFamily},
+                                                 Glyph=&#xEDA7;}"
                         IsExpanded="True">
                         <controls:ShortcutControl
                             MinWidth="{StaticResource SettingActionControlMinWidth}"
@@ -98,7 +99,8 @@
                     IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.EnablePowerLauncher}">
                     <labs:SettingsExpander
                         x:Uid="PowerLauncher_SearchQueryResultsWithDelay"
-                        HeaderIcon="{ui:FontIcon FontFamily={StaticResource SymbolThemeFontFamily}, Glyph=&#xec48;}"
+                        HeaderIcon="{ui:FontIcon FontFamily={StaticResource SymbolThemeFontFamily},
+                                                 Glyph=&#xec48;}"
                         IsExpanded="True">
                         <ToggleSwitch IsOn="{x:Bind Mode=TwoWay, Path=ViewModel.SearchQueryResultsWithDelay}" />
                         <labs:SettingsExpander.Items>
@@ -129,7 +131,8 @@
 
                     <labs:SettingsExpander
                         x:Uid="PowerLauncher_MaximumNumberOfResults"
-                        HeaderIcon="{ui:FontIcon FontFamily={StaticResource SymbolThemeFontFamily}, Glyph=&#xec8f;}"
+                        HeaderIcon="{ui:FontIcon FontFamily={StaticResource SymbolThemeFontFamily},
+                                                 Glyph=&#xec8f;}"
                         IsExpanded="True">
                         <NumberBox
                             MinWidth="{StaticResource SettingActionControlMinWidth}"
@@ -147,7 +150,8 @@
 
                     <labs:SettingsExpander
                         x:Uid="PowerLauncher_SearchQueryTuningEnabled"
-                        HeaderIcon="{ui:FontIcon FontFamily={StaticResource SymbolThemeFontFamily}, Glyph=&#xE8CB;}"
+                        HeaderIcon="{ui:FontIcon FontFamily={StaticResource SymbolThemeFontFamily},
+                                                 Glyph=&#xE8CB;}"
                         IsExpanded="True">
                         <ToggleSwitch IsOn="{x:Bind Mode=TwoWay, Path=ViewModel.SearchQueryTuningEnabled}" />
                         <labs:SettingsExpander.Items>
@@ -199,7 +203,8 @@
                     IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.EnablePowerLauncher}">
                     <labs:SettingsCard
                         x:Uid="Run_PositionHeader"
-                        HeaderIcon="{ui:FontIcon FontFamily={StaticResource SymbolThemeFontFamily}, Glyph=&#xe78b;}">
+                        HeaderIcon="{ui:FontIcon FontFamily={StaticResource SymbolThemeFontFamily},
+                                                 Glyph=&#xe78b;}">
                         <ComboBox
                             MinWidth="{StaticResource SettingActionControlMinWidth}"
                             SelectedIndex="{x:Bind Mode=TwoWay, Path=ViewModel.MonitorPositionIndex}">
@@ -211,7 +216,8 @@
 
                     <labs:SettingsCard
                         x:Uid="ColorModeHeader"
-                        HeaderIcon="{ui:FontIcon FontFamily={StaticResource SymbolThemeFontFamily}, Glyph=&#xE790;}">
+                        HeaderIcon="{ui:FontIcon FontFamily={StaticResource SymbolThemeFontFamily},
+                                                 Glyph=&#xE790;}">
                         <labs:SettingsCard.Description>
                             <HyperlinkButton
                                 x:Uid="Windows_Color_Settings"
@@ -246,7 +252,8 @@
 
                     <labs:SettingsCard
                         x:Uid="Run_PluginUseDescription"
-                        HeaderIcon="{ui:FontIcon FontFamily={StaticResource SymbolThemeFontFamily}, Glyph=&#xEA86;}">
+                        HeaderIcon="{ui:FontIcon FontFamily={StaticResource SymbolThemeFontFamily},
+                                                 Glyph=&#xEA86;}">
                         <AutoSuggestBox
                             x:Uid="PowerLauncher_SearchList"
                             MinWidth="{StaticResource SettingActionControlMinWidth}"
@@ -283,12 +290,15 @@
                             Style="{ThemeResource SecondaryTextStyle}" />
                     </StackPanel>
 
-                    <ListView
+                    <ItemsControl
                         x:Name="PluginsListView"
-                        IsItemClickEnabled="False"
-                        ItemsSource="{x:Bind Path=ViewModel.Plugins, Mode=OneWay}"
-                        SelectionMode="None">
-                        <ListView.ItemTemplate>
+                        ItemsSource="{x:Bind Path=ViewModel.Plugins, Mode=OneWay}">
+                        <ItemsControl.ItemsPanel>
+                            <ItemsPanelTemplate>
+                                <StackPanel Spacing="2" />
+                            </ItemsPanelTemplate>
+                        </ItemsControl.ItemsPanel>
+                        <ItemsControl.ItemTemplate>
                             <DataTemplate
                                 x:DataType="ViewModels:PowerLauncherPluginViewModel"
                                 x:DefaultBindMode="OneWay">
@@ -338,6 +348,7 @@
                                             <labs:SettingsCard
                                                 Margin="0,0,0,0"
                                                 Padding="0,-4,0,0"
+                                                HorizontalContentAlignment="Left"
                                                 Background="{ThemeResource SystemFillColorCriticalBackgroundBrush}"
                                                 ContentAlignment="Vertical">
                                                 <InfoBar
@@ -380,33 +391,39 @@
                                                     Value="{x:Bind Mode=TwoWay, Path=WeightBoost}" />
                                             </labs:SettingsCard>
                                             <labs:SettingsCard
-                                                Margin="-58,0,-44,0"
-                                                HorizontalContentAlignment="Stretch"
+                                                Margin="0"
+                                                Background="Green"
+                                                HorizontalContentAlignment="Left"
                                                 ContentAlignment="Vertical">
-                                                <ListView
+                                                <ItemsControl
+                                                    Margin="0,-12,0,0"
+                                                    Background="Red"
                                                     HorizontalAlignment="Stretch"
                                                     IsEnabled="{x:Bind Enabled, Mode=OneWay}"
-                                                    ItemsSource="{x:Bind Path=AdditionalOptions}"
-                                                    SelectionMode="None">
-                                                    <ListView.ItemTemplate>
+                                                    ItemsSource="{x:Bind Path=AdditionalOptions}">
+                                                    <ItemsControl.ItemTemplate>
                                                         <DataTemplate x:DataType="ViewModels:PluginAdditionalOptionViewModel">
-                                                            <labs:SettingsCard
-                                                                MinHeight="50"
-                                                                Margin="1"
-                                                                Padding="0"
-                                                                BorderThickness="0,0,0,1"
-                                                                ContentAlignment="Left"
-                                                                CornerRadius="0">
+                                                            <StackPanel Background="Yellow" Orientation="Vertical" HorizontalAlignment="Stretch">
+                                                                <labs:SettingsCard
+                                                                    MinHeight="50"
+                                                                    Margin="1"
+                                                                    Padding="0"
+                                                                    
+                                                                    BorderThickness="0,0,0,0"
+                                                                    ContentAlignment="Left"
+                                                                    CornerRadius="0">
 
-                                                                <controls:CheckBoxWithDescriptionControl
-                                                                    Margin="58,0,0,0"
-                                                                    Description="{x:Bind Path=DisplayDescription}"
-                                                                    Header="{x:Bind Path=DisplayLabel}"
-                                                                    IsChecked="{x:Bind Path=Value, Mode=TwoWay}" />
-                                                            </labs:SettingsCard>
+                                                                    <controls:CheckBoxWithDescriptionControl
+                                                                        Description="{x:Bind Path=DisplayDescription}"
+                                                                        Header="{x:Bind Path=DisplayLabel}"
+                                                                        Margin="0,0,0,0"
+                                                                        IsChecked="{x:Bind Path=Value, Mode=TwoWay}" />
+                                                                </labs:SettingsCard>
+                                                                <Rectangle HorizontalAlignment="Stretch" Height="1" Fill="{ThemeResource CardStrokeColorDefaultBrush}" />
+                                                            </StackPanel>
                                                         </DataTemplate>
-                                                    </ListView.ItemTemplate>
-                                                </ListView>
+                                                    </ItemsControl.ItemTemplate>
+                                                </ItemsControl>
                                             </labs:SettingsCard>
                                             <labs:SettingsCard ContentAlignment="Right">
                                                 <TextBlock
@@ -422,8 +439,8 @@
                                     </labs:SettingsExpander>
                                 </Grid>
                             </DataTemplate>
-                        </ListView.ItemTemplate>
-                    </ListView>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
                 </controls:SettingsGroup>
             </StackPanel>
 

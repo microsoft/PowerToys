@@ -88,9 +88,12 @@
                     IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.Enabled}">
                     <labs:SettingsCard
                         x:Uid="KeyboardManager_RemapKeyboardButton"
-                        ActionIcon="{ui:FontIcon FontFamily={StaticResource SymbolThemeFontFamily}, Glyph=&#xE8A7;}"
+                        ActionIcon="{ui:FontIcon FontFamily={StaticResource SymbolThemeFontFamily},
+                                                 FontSize=14,
+                                                 Glyph=&#xE8A7;}"
                         Command="{Binding Path=RemapKeyboardCommand}"
-                        HeaderIcon="{ui:FontIcon FontFamily={StaticResource SymbolThemeFontFamily}, Glyph=&#xE92E;}"
+                        HeaderIcon="{ui:FontIcon FontFamily={StaticResource SymbolThemeFontFamily},
+                                                 Glyph=&#xE92E;}"
                         IsClickEnabled="True" />
 
                     <ListView
@@ -116,7 +119,7 @@
                                                 </ItemsPanelTemplate>
                                             </ItemsControl.ItemsPanel>
                                         </ItemsControl>
-                                        <TextBlock
+                                        <controls:IsEnabledTextBlock
                                             x:Uid="To"
                                             Margin="8,0,8,0"
                                             VerticalAlignment="Center"
@@ -147,9 +150,12 @@
                     IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.Enabled}">
                     <labs:SettingsCard
                         x:Uid="KeyboardManager_RemapShortcutsButton"
-                        ActionIcon="{ui:FontIcon FontFamily={StaticResource SymbolThemeFontFamily}, Glyph=&#xE8A7;}"
+                        ActionIcon="{ui:FontIcon FontFamily={StaticResource SymbolThemeFontFamily},
+                                                 FontSize=14,
+                                                 Glyph=&#xE8A7;}"
                         Command="{Binding Path=EditShortcutCommand}"
-                        HeaderIcon="{ui:FontIcon FontFamily={StaticResource SymbolThemeFontFamily}, Glyph=&#xE92E;}"
+                        HeaderIcon="{ui:FontIcon FontFamily={StaticResource SymbolThemeFontFamily},
+                                                 Glyph=&#xE92E;}"
                         IsClickEnabled="True" />
 
                     <ListView
@@ -175,7 +181,7 @@
                                                 </ItemsPanelTemplate>
                                             </ItemsControl.ItemsPanel>
                                         </ItemsControl>
-                                        <TextBlock
+                                        <controls:IsEnabledTextBlock
                                             x:Uid="To"
                                             Margin="8,0,8,0"
                                             VerticalAlignment="Center"
