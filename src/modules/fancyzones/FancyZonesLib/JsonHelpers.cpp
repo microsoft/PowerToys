@@ -383,7 +383,7 @@ namespace JSONHelpers
             json::JsonArray columnsPercentage = infoJson.GetNamedArray(NonLocalizable::ColumnsPercentageStr);
             json::JsonArray cellChildMap = infoJson.GetNamedArray(NonLocalizable::CellChildMapStr);
 
-            if (rowsPercentage.Size() != info.m_rows || columnsPercentage.Size() != info.m_columns || cellChildMap.Size() != info.m_rows)
+            if (static_cast<int>(rowsPercentage.Size()) != info.m_rows || static_cast<int>(columnsPercentage.Size()) != info.m_columns || static_cast<int>(cellChildMap.Size()) != info.m_rows)
             {
                 return std::nullopt;
             }
@@ -393,7 +393,7 @@ namespace JSONHelpers
             for (const auto& cellsRow : cellChildMap)
             {
                 const auto cellsArray = cellsRow.GetArray();
-                if (cellsArray.Size() != info.m_columns)
+                if (static_cast<int>(cellsArray.Size()) != info.m_columns)
                 {
                     return std::nullopt;
                 }
