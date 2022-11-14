@@ -685,7 +685,7 @@
           {
             "name": "addReply",
             "parameters": {
-              "comment": "Hi! We've identified this issue that best is suited for Windows Feedback Hub.  To do this on Windows, WinKey+F will bring it up!"
+              "comment": "Hi! We've identified this issue that best is suited for Windows Feedback Hub. To do this on Windows, WinKey+F will bring it up!"
             }
           },
           {
