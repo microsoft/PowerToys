@@ -144,7 +144,7 @@ wstring GetChecksum(path filePath)
 	}
 	else
 	{
-		std::wstring result = L"CryptGetHashParam() failed. " + get_last_error_or_default(GetLastError());;
+		result = L"CryptGetHashParam() failed. " + get_last_error_or_default(GetLastError());;
 	}
 
 	CryptDestroyHash(hHash);
