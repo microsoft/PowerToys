@@ -57,7 +57,7 @@ namespace updating
                 const bool architecture_matched = filename_lower.find(required_architecture) != std::wstring::npos;
                 const bool filename_matched = filename_lower.find(required_filename_pattern) != std::wstring::npos;
                 const bool asset_matched = extension_matched && architecture_matched && filename_matched;
-                if (extension_matched && architecture_matched && filename_matched)
+                if (asset_matched)
                 {
                     return std::make_pair(Uri{ asset.GetNamedString(L"browser_download_url") }, std::move(filename_lower));
                 }

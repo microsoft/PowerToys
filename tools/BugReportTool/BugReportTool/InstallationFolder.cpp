@@ -62,7 +62,6 @@ optional<path> GetRootPath()
 
 wstring GetChecksum(path filePath)
 {
-	DWORD dwStatus = 0;
 	BOOL bResult = FALSE;
 	HCRYPTPROV hProv = 0;
 	HCRYPTHASH hHash = 0;
