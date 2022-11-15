@@ -416,8 +416,6 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             {
                 ColorFormats.Remove(colorFormatModel);
             }
-
-            // ColorFormats_CollectionChanged(null, null);
         }
 
         internal ColorFormatModel GetColorFormatModelCopyByName(string name)
@@ -443,8 +441,6 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             ColorFormatModel oldModel = candidates.Single();
             oldModel.Name = colorFormat.Name;
             oldModel.Example = colorFormat.Example;
-
-            // ColorFormats_CollectionChanged(null, null);
         }
     }
 }
