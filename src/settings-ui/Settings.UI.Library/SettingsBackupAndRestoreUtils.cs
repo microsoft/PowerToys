@@ -432,9 +432,14 @@ namespace Microsoft.PowerToys.Settings.UI.Library
                 var tempPath = Path.GetTempPath();
 
                 var fullBackupDir = Path.Combine(tempPath, "PowerToys_settings_" + latestFile.ToString(CultureInfo.InvariantCulture));
-                if (!Directory.Exists(fullBackupDir))
+
+                lock (backupSettingsInternalLock)
                 {
-                    ZipFile.ExtractToDirectory(settingsBackupFiles[latestFile], fullBackupDir);
+                    if (!Directory.Exists(fullBackupDir) || !File.Exists(Path.Combine(fullBackupDir, "manifest.json")))
+                    {
+                        TryDeleteDirectory(fullBackupDir);
+                        ZipFile.ExtractToDirectory(settingsBackupFiles[latestFile], fullBackupDir);
+                    }
                 }
 
                 ThreadPool.QueueUserWorkItem((x) =>
