@@ -7,7 +7,6 @@ using System.ComponentModel;
 using System.Runtime.InteropServices;
 using System.Security;
 using System.Text;
-using Microsoft.Win32.SafeHandles;
 using static PowerLauncher.Helper.WindowsInteropHelper;
 
 // http://blogs.microsoft.co.il/arik/2010/05/28/wpf-single-instance-application/
@@ -101,7 +100,7 @@ namespace PowerLauncher.Helper
         }
     }
 
-    // https://docs.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-registerhotkey
+    // https://learn.microsoft.com/windows/win32/api/winuser/nf-winuser-registerhotkey
     internal enum HOTKEY_MODIFIERS : uint
     {
         ALT = 0x0001,
@@ -112,7 +111,7 @@ namespace PowerLauncher.Helper
         CHECK_FLAGS = 0x000F, // modifiers to compare between keys.
     }
 
-    // https://docs.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-showwindow
+    // https://learn.microsoft.com/windows/win32/api/winuser/nf-winuser-showwindow
     internal enum SW : int
     {
         HIDE = 0x0000,

@@ -7,16 +7,17 @@
 #include <common/utils/UnhandledExceptionHandler.h>
 #include <common/utils/logger_helper.h>
 #include <common/utils/EventWaiter.h>
+#include <common/utils/gpo.h>
 
 #include "shortcut_guide.h"
 #include "target_state.h"
 #include "ShortcutGuideConstants.h"
-#include "trace.h" 
+#include "trace.h"
 
 const std::wstring instanceMutexName = L"Local\\PowerToys_ShortcutGuide_InstanceMutex";
 
 // set current path to the executable path
-bool SetCurrentPath() 
+bool SetCurrentPath()
 {
     TCHAR buffer[MAX_PATH] = { 0 };
     if (!GetModuleFileName(NULL, buffer, MAX_PATH))
@@ -42,10 +43,17 @@ bool SetCurrentPath()
     return true;
 }
 
-int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _In_ PWSTR lpCmdLine, _In_ int nCmdShow)
+int WINAPI wWinMain(_In_ HINSTANCE /*hInstance*/, _In_opt_ HINSTANCE /*hPrevInstance*/, _In_ PWSTR lpCmdLine, _In_ int /*nCmdShow*/)
 {
     winrt::init_apartment();
     LoggerHelpers::init_logger(ShortcutGuideConstants::ModuleKey, L"ShortcutGuide", LogSettings::shortcutGuideLoggerName);
+
+    if (powertoys_gpo::getConfiguredShortcutGuideEnabledValue() == powertoys_gpo::gpo_rule_configured_disabled)
+    {
+        Logger::warn(L"Tried to start with a GPO policy setting the utility to always be disabled. Please contact your systems administrator.");
+        return 0;
+    }
+
     InitUnhandledExceptionHandler();
     Logger::trace("Starting Shortcut Guide");
 

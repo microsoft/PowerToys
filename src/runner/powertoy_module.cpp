@@ -34,7 +34,7 @@ json::JsonObject PowertoyModule::json_config() const
     int size = 0;
     pt_module->get_config(nullptr, &size);
     std::wstring result;
-    result.resize(size - 1);
+    result.resize(static_cast<size_t>(size) - 1);
     pt_module->get_config(result.data(), &size);
     return json::JsonObject::Parse(result);
 }
@@ -78,7 +78,7 @@ void PowertoyModule::UpdateHotkeyEx()
     {
         auto hotkey = container.value();
         auto modulePtr = pt_module.get();
-        auto action = [modulePtr](WORD modifiersMask, WORD vkCode) {
+        auto action = [modulePtr](WORD /*modifiersMask*/, WORD /*vkCode*/) {
             Logger::trace(L"{} hotkey Ex is invoked from Centralized keyboard hook", modulePtr->get_key());
             modulePtr->OnHotkeyEx();
         };

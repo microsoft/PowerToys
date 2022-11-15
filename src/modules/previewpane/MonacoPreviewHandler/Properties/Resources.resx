@@ -136,4 +136,8 @@ Max file size: %1KB</value>
   <data name="Download_WebView2" xml:space="preserve">
     <value>Download WebView2 to display this file.</value>
   </data>
+  <data name="GpoDisabledErrorText" xml:space="preserve">
+    <value>Tried to start with a GPO policy setting the utility to always be disabled. Please contact your systems administrator.</value>
+    <comment>GPO stands for the Windows Group Policy Object feature.</comment>
+  </data>
 </root>

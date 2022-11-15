@@ -43,6 +43,20 @@ namespace Microsoft.PowerToys.PreviewHandler.Gcode
         /// <param name="dataSource">Stream reference to access source file.</param>
         public override void DoPreview<T>(T dataSource)
         {
+            if (global::PowerToys.GPOWrapper.GPOWrapper.GetConfiguredGcodePreviewEnabledValue() == global::PowerToys.GPOWrapper.GpoRuleConfigured.Disabled)
+            {
+                // GPO is disabling this utility. Show an error message instead.
+                InvokeOnControlThread(() =>
+                {
+                    _infoBarAdded = true;
+                    AddTextBoxControl(Properties.Resource.GpoDisabledErrorText);
+                    Resize += FormResized;
+                    base.DoPreview(dataSource);
+                });
+
+                return;
+            }
+
             InvokeOnControlThread(() =>
             {
                 try
@@ -53,9 +67,7 @@ namespace Microsoft.PowerToys.PreviewHandler.Gcode
                     {
                         using (var reader = new StreamReader(stream))
                         {
-#pragma warning disable CA2000 // Do not dispose here
                             thumbnail = GetThumbnail(reader);
-#pragma warning restore CA2000
                         }
                     }
 

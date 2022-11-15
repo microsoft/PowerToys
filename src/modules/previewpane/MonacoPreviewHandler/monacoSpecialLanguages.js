@@ -7,6 +7,7 @@ export async function registerAdditionalLanguages(monaco){
     registerAdditionalLanguage("cppExt", [".ino", ".pde"], "cpp", monaco)
     registerAdditionalLanguage("xmlExt", [".xsd", ".wsdl", ".xslt"], "xml", monaco)
     registerAdditionalLanguage("razorExt", [".razor"], "razor", monaco)
+    registerAdditionalLanguage("logExt", [".log"], "log", monaco)
     registerAdditionalNewLanguage("reg", [".reg"], regDefinition(), monaco)
 }
 
@@ -19,7 +20,7 @@ async function languageDefinitions() {
 
 function registerAdditionalLanguage(id, extensions, originalId, monaco){
     require.config({ paths: { vs: 'http://powertoyslocalmonaco/monacoSRC/min/vs' } });
-	require(['vs/editor/editor.main'], async function () {
+    require(['vs/editor/editor.main'], async function () {
         monaco.languages.register({
             id: id,
             extensions: extensions
@@ -42,4 +43,3 @@ function registerAdditionalNewLanguage(id, extensions, definition, monaco) {
         monaco.languages.setMonarchTokensProvider(id, definition);
     })
 }
-

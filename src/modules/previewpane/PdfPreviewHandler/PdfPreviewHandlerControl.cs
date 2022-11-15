@@ -52,6 +52,19 @@ namespace Microsoft.PowerToys.PreviewHandler.Pdf
         /// <param name="dataSource">Stream reference to access source file.</param>
         public override void DoPreview<T>(T dataSource)
         {
+            if (global::PowerToys.GPOWrapper.GPOWrapper.GetConfiguredPdfPreviewEnabledValue() == global::PowerToys.GPOWrapper.GpoRuleConfigured.Disabled)
+            {
+                // GPO is disabling this utility. Show an error message instead.
+                InvokeOnControlThread(() =>
+                {
+                    _infoBar = GetTextBoxControl(Resources.GpoDisabledErrorText);
+                    Controls.Add(_infoBar);
+                    base.DoPreview(dataSource);
+                });
+
+                return;
+            }
+
             this.SuspendLayout();
 
             try

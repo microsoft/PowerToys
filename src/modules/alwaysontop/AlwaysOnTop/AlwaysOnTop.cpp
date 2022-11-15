@@ -312,13 +312,14 @@ void AlwaysOnTop::RegisterLLKH()
 void AlwaysOnTop::SubscribeToEvents()
 {
     // subscribe to windows events
-    std::array<DWORD, 6> events_to_subscribe = {
+    std::array<DWORD, 7> events_to_subscribe = {
         EVENT_OBJECT_LOCATIONCHANGE,
         EVENT_SYSTEM_MINIMIZESTART,
         EVENT_SYSTEM_MINIMIZEEND,
         EVENT_SYSTEM_MOVESIZEEND,
         EVENT_SYSTEM_FOREGROUND,
-        EVENT_OBJECT_DESTROY
+        EVENT_OBJECT_DESTROY,
+        EVENT_OBJECT_FOCUS,
     };
 
     for (const auto event : events_to_subscribe)
@@ -413,11 +414,11 @@ void AlwaysOnTop::HandleWinHookEvent(WinHookEvent* data) noexcept
         return;
     }
 
-    // fix for the https://github.com/microsoft/PowerToys/issues/15300
-    // check if the window was closed, since for some EVENT_OBJECT_DESTROY doesn't work 
     std::vector<HWND> toErase{};
     for (const auto& [window, border] : m_topmostWindows)
     {
+        // check if the window was closed, since for some EVENT_OBJECT_DESTROY doesn't work
+        // fixes https://github.com/microsoft/PowerToys/issues/15300
         bool visible = IsWindowVisible(window);
         if (!visible)
         {
@@ -482,6 +483,20 @@ void AlwaysOnTop::HandleWinHookEvent(WinHookEvent* data) noexcept
     case EVENT_SYSTEM_FOREGROUND:
     {
         RefreshBorders();
+    }
+    break;
+    case EVENT_OBJECT_FOCUS:
+    {
+        for (const auto& [window, border] : m_topmostWindows)
+        {
+            // check if topmost was reset
+            // fixes https://github.com/microsoft/PowerToys/issues/19168
+            if (!IsTopmost(window))
+            {
+                Logger::trace(L"A window no longer has Topmost set and it should. Setting topmost again.");
+                PinTopmostWindow(window);
+            }
+        }
     }
     break;
     default:

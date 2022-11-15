@@ -123,6 +123,12 @@ namespace Microsoft.PowerToys.ThumbnailHandler.Stl
                 return;
             }
 
+            if (global::PowerToys.GPOWrapper.GPOWrapper.GetConfiguredStlThumbnailsEnabledValue() == global::PowerToys.GPOWrapper.GpoRuleConfigured.Disabled)
+            {
+                // GPO is disabling this utility.
+                return;
+            }
+
             using (var stream = new ReadonlyStream(this.Stream as IStream))
             {
                 using (var memStream = new MemoryStream())

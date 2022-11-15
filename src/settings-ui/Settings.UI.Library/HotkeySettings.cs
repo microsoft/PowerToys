@@ -29,7 +29,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         /// <param name="ctrl">Should Ctrl key be used</param>
         /// <param name="alt">Should Alt key be used</param>
         /// <param name="shift">Should Shift key be used</param>
-        /// <param name="code">Go to https://docs.microsoft.com/en-us/windows/win32/inputdev/virtual-key-codes to see list of v-keys</param>
+        /// <param name="code">Go to https://learn.microsoft.com/windows/win32/inputdev/virtual-key-codes to see list of v-keys</param>
         public HotkeySettings(bool win, bool ctrl, bool alt, bool shift, int code)
         {
             Win = win;
@@ -131,13 +131,13 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             {
                 switch (Code)
                 {
-                    // https://docs.microsoft.com/en-us/uwp/api/windows.system.virtualkey?view=winrt-20348
+                    // https://learn.microsoft.com/uwp/api/windows.system.virtualkey?view=winrt-20348
                     case 38: // The Up Arrow key or button.
                     case 40: // The Down Arrow key or button.
                     case 37: // The Left Arrow key or button.
                     case 39: // The Right Arrow key or button.
-                    // case 8: // The Back key or button.
-                    // case 13: // The Enter key or button.
+                             // case 8: // The Back key or button.
+                             // case 13: // The Enter key or button.
                         shortcutList.Add(Code);
                         break;
                     default:

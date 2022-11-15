@@ -7,7 +7,6 @@ using System.Diagnostics;
 using System.Threading;
 using System.Windows;
 using System.Windows.Input;
-using System.Windows.Threading;
 using Common.UI;
 using FancyZonesEditor.Logs;
 using FancyZonesEditor.Utils;
@@ -67,6 +66,13 @@ namespace FancyZonesEditor
 
         private void OnStartup(object sender, StartupEventArgs e)
         {
+            if (PowerToys.GPOWrapperProjection.GPOWrapper.GetConfiguredFancyZonesEnabledValue() == PowerToys.GPOWrapperProjection.GpoRuleConfigured.Disabled)
+            {
+                Logger.LogWarning("Tried to start with a GPO policy setting the utility to always be disabled. Please contact your systems administrator.");
+                Shutdown(0);
+                return;
+            }
+
             AppDomain.CurrentDomain.UnhandledException += OnUnhandledException;
 
             _themeManager = new ThemeManager(this);
@@ -108,6 +114,13 @@ namespace FancyZonesEditor
             }
 
             parseResult = FancyZonesEditorIO.ParseLayoutTemplates();
+            if (!parseResult.Result)
+            {
+                Logger.LogError(ParsingErrorReportTag + ": " + parseResult.Message + "; " + ParsingErrorDataTag + ": " + parseResult.MalformedData);
+                MessageBox.Show(parseResult.Message, FancyZonesEditor.Properties.Resources.Error_Parsing_Data_Title, MessageBoxButton.OK);
+            }
+
+            parseResult = FancyZonesEditorIO.ParseDefaultLayouts();
             if (!parseResult.Result)
             {
                 Logger.LogError(ParsingErrorReportTag + ": " + parseResult.Message + "; " + ParsingErrorDataTag + ": " + parseResult.MalformedData);

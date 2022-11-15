@@ -13,7 +13,7 @@ namespace // Strings in this namespace should not be localized
 {
     const wchar_t LATEST_RELEASE_ENDPOINT[] = L"https://api.github.com/repos/microsoft/PowerToys/releases/latest";
     const wchar_t ALL_RELEASES_ENDPOINT[] = L"https://api.github.com/repos/microsoft/PowerToys/releases";
-    
+
     const wchar_t LOCAL_BUILD_ERROR[] = L"Local build cannot be updated";
     const wchar_t NETWORK_ERROR[] = L"Network error";
 
@@ -57,7 +57,7 @@ namespace updating
                 const bool architecture_matched = filename_lower.find(required_architecture) != std::wstring::npos;
                 const bool filename_matched = filename_lower.find(required_filename_pattern) != std::wstring::npos;
                 const bool asset_matched = extension_matched && architecture_matched && filename_matched;
-                if (extension_matched && architecture_matched && filename_matched)
+                if (asset_matched)
                 {
                     return std::make_pair(Uri{ asset.GetNamedString(L"browser_download_url") }, std::move(filename_lower));
                 }
@@ -70,7 +70,7 @@ namespace updating
     std::future<nonstd::expected<github_version_info, std::wstring>> get_github_version_info_async(const bool prerelease)
     {
         // If the current version starts with 0.0.*, it means we're on a local build from a farm and shouldn't check for updates.
-        if (VERSION_MAJOR == 0 && VERSION_MINOR == 0)
+        if constexpr (VERSION_MAJOR == 0 && VERSION_MINOR == 0)
         {
             co_return nonstd::make_unexpected(LOCAL_BUILD_ERROR);
         }

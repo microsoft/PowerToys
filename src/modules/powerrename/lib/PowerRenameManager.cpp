@@ -1123,7 +1123,7 @@ DWORD WINAPI CPowerRenameManager::s_regexWorkerThread(_In_ void* pv)
                         spItem->GetPath(&path);
 
                         // Following characters cannot be used for file names.
-                        // Ref https://docs.microsoft.com/windows/win32/fileio/naming-a-file#naming-conventions
+                        // Ref https://learn.microsoft.com/windows/win32/fileio/naming-a-file#naming-conventions
                         if (newNameToUseWstr.contains('<') ||
                             newNameToUseWstr.contains('>') ||
                             newNameToUseWstr.contains(':') ||
@@ -1137,7 +1137,7 @@ DWORD WINAPI CPowerRenameManager::s_regexWorkerThread(_In_ void* pv)
                             spItem->PutStatus(PowerRenameItemRenameStatus::ItemNameInvalidChar);
                         }
                         // Max file path is 260 and max folder path is 247.
-                        // Ref https://docs.microsoft.com/windows/win32/fileio/maximum-file-path-limitation?tabs=registry
+                        // Ref https://learn.microsoft.com/windows/win32/fileio/maximum-file-path-limitation?tabs=registry
                         else if ((isFolder && lstrlen(path) + (lstrlen(newNameToUse) - lstrlen(originalName)) > 247) ||
                             lstrlen(path) + (lstrlen(newNameToUse) - lstrlen(originalName)) > 260)
                         {

@@ -34,7 +34,12 @@ namespace Microsoft.PowerToys.Settings.UI.Views
         public VideoConferencePage()
         {
             var settingsUtils = new SettingsUtils();
-            ViewModel = new VideoConferenceViewModel(settingsUtils, SettingsRepository<GeneralSettings>.GetInstance(settingsUtils), ShellPage.SendDefaultIPCMessage, PickFileDialog);
+            ViewModel = new VideoConferenceViewModel(
+                settingsUtils,
+                SettingsRepository<GeneralSettings>.GetInstance(settingsUtils),
+                SettingsRepository<VideoConferenceSettings>.GetInstance(settingsUtils),
+                ShellPage.SendDefaultIPCMessage,
+                PickFileDialog);
             DataContext = ViewModel;
             InitializeComponent();
         }

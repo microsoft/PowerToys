@@ -138,7 +138,15 @@ void apply_general_settings(const json::JsonObject& general_configs, bool save)
             }
             PowertoyModule& powertoy = modules().at(name);
             const bool module_inst_enabled = powertoy->is_enabled();
-            const bool target_enabled = value.GetBoolean();
+            bool target_enabled = value.GetBoolean();
+
+            auto gpo_rule = powertoy->gpo_policy_enabled_configuration();
+            if (gpo_rule == powertoys_gpo::gpo_rule_configured_enabled || gpo_rule == powertoys_gpo::gpo_rule_configured_disabled)
+            {
+                // Apply the GPO Rule.
+                target_enabled = gpo_rule == powertoys_gpo::gpo_rule_configured_enabled;
+            }
+
             if (module_inst_enabled == target_enabled)
             {
                 continue;
@@ -174,9 +182,21 @@ void apply_general_settings(const json::JsonObject& general_configs, bool save)
 void start_enabled_powertoys()
 {
     std::unordered_set<std::wstring> powertoys_to_disable;
-    // Take into account default values supplied by modules themselves
+    std::unordered_map<std::wstring, powertoys_gpo::gpo_rule_configured_t> powertoys_gpo_configuration;
+    // Take into account default values supplied by modules themselves and gpo configurations
     for (auto& [name, powertoy] : modules())
     {
+        auto gpo_rule = powertoy->gpo_policy_enabled_configuration();
+        powertoys_gpo_configuration[name] = gpo_rule;
+        if (gpo_rule == powertoys_gpo::gpo_rule_configured_unavailable)
+        {
+            Logger::warn(L"start_enabled_powertoys: couldn't read the gpo rule for Powertoy {}", name);
+        }
+        if (gpo_rule == powertoys_gpo::gpo_rule_configured_wrong_value)
+        {
+            Logger::warn(L"start_enabled_powertoys: gpo rule for Powertoy {} is set to an unknown value", name);
+        }
+
         if (!powertoy->is_enabled_by_default())
             powertoys_to_disable.emplace(name);
     }
@@ -191,6 +211,14 @@ void start_enabled_powertoys()
             for (const auto& disabled_element : enabled)
             {
                 std::wstring disable_module_name{ static_cast<std::wstring_view>(disabled_element.Key()) };
+
+                if (powertoys_gpo_configuration.find(disable_module_name)!=powertoys_gpo_configuration.end() 
+                    && (powertoys_gpo_configuration[disable_module_name]==powertoys_gpo::gpo_rule_configured_enabled || powertoys_gpo_configuration[disable_module_name]==powertoys_gpo::gpo_rule_configured_disabled))
+                {
+                    // If gpo forces the enabled setting, no need to check the setting for this PowerToy. It will be applied later on this function.
+                    continue;
+                }
+
                 // Disable explicitly disabled modules
                 if (!disabled_element.Value().GetBoolean())
                 {
@@ -212,7 +240,23 @@ void start_enabled_powertoys()
 
     for (auto& [name, powertoy] : modules())
     {
-        if (!powertoys_to_disable.contains(name))
+        bool should_powertoy_be_enabled = true;
+
+        auto gpo_rule = powertoys_gpo_configuration.find(name) != powertoys_gpo_configuration.end() ? powertoys_gpo_configuration[name] : powertoys_gpo::gpo_rule_configured_not_configured;
+
+        if (gpo_rule == powertoys_gpo::gpo_rule_configured_enabled || gpo_rule == powertoys_gpo::gpo_rule_configured_disabled)
+        {
+            // Apply the GPO Rule.
+            should_powertoy_be_enabled = gpo_rule == powertoys_gpo::gpo_rule_configured_enabled;
+            Logger::info(L"start_enabled_powertoys: GPO sets the enabled state for {} powertoy as {}", name, should_powertoy_be_enabled);
+        }
+        else if (powertoys_to_disable.contains(name))
+        {
+            // Apply the settings or default information provided by the PowerToy on first run.
+            should_powertoy_be_enabled = false;
+        }
+
+        if (should_powertoy_be_enabled)
         {
             Logger::info(L"start_enabled_powertoys: Enabling powertoy {}", name);
             powertoy->enable();

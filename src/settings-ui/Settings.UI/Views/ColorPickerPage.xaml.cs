@@ -3,7 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using Microsoft.PowerToys.Settings.UI.Library;
-using Microsoft.PowerToys.Settings.UI.Library.ViewModels;
+using Microsoft.PowerToys.Settings.UI.ViewModels;
 using Microsoft.UI.Xaml.Controls;
 
 namespace Microsoft.PowerToys.Settings.UI.Views
@@ -15,7 +15,11 @@ namespace Microsoft.PowerToys.Settings.UI.Views
         public ColorPickerPage()
         {
             var settingsUtils = new SettingsUtils();
-            ViewModel = new ColorPickerViewModel(settingsUtils, SettingsRepository<GeneralSettings>.GetInstance(settingsUtils), ShellPage.SendDefaultIPCMessage);
+            ViewModel = new ColorPickerViewModel(
+                settingsUtils,
+                SettingsRepository<GeneralSettings>.GetInstance(settingsUtils),
+                SettingsRepository<ColorPickerSettings>.GetInstance(settingsUtils),
+                ShellPage.SendDefaultIPCMessage);
             DataContext = ViewModel;
             InitializeComponent();
         }
@@ -27,12 +31,12 @@ namespace Microsoft.PowerToys.Settings.UI.Views
         /// <param name="e">The arguments of this event</param>
         private void ColorPicker_ComboBox_Loaded(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
         {
-           /**
-            * UWP hack
-            * because UWP load the bound ItemSource of the ComboBox asynchronous,
-            * so after InitializeComponent() the ItemSource is still empty and can't automatically select a entry.
-            * Selection via SelectedItem and SelectedValue is still not working too
-            */
+            /**
+             * UWP hack
+             * because UWP load the bound ItemSource of the ComboBox asynchronous,
+             * so after InitializeComponent() the ItemSource is still empty and can't automatically select a entry.
+             * Selection via SelectedItem and SelectedValue is still not working too
+             */
             var index = 0;
 
             foreach (var item in ViewModel.SelectableColorRepresentations)

@@ -11,6 +11,7 @@ using System.Runtime.InteropServices.ComTypes;
 using System.Windows.Forms;
 using Common;
 using Common.Utilities;
+using Microsoft.PowerToys.PreviewHandler.Svg.Properties;
 using Microsoft.PowerToys.PreviewHandler.Svg.Telemetry.Events;
 using Microsoft.PowerToys.Telemetry;
 using Microsoft.Web.WebView2.Core;
@@ -82,6 +83,20 @@ namespace Microsoft.PowerToys.PreviewHandler.Svg
         /// <param name="dataSource">Stream reference to access source file.</param>
         public override void DoPreview<T>(T dataSource)
         {
+            if (global::PowerToys.GPOWrapper.GPOWrapper.GetConfiguredSvgPreviewEnabledValue() == global::PowerToys.GPOWrapper.GpoRuleConfigured.Disabled)
+            {
+                // GPO is disabling this utility. Show an error message instead.
+                InvokeOnControlThread(() =>
+                {
+                    _infoBarAdded = true;
+                    AddTextBoxControl(Properties.Resource.GpoDisabledErrorText);
+                    Resize += FormResized;
+                    base.DoPreview(dataSource);
+                });
+
+                return;
+            }
+
             CleanupWebView2UserDataFolder();
 
             string svgData = null;
@@ -215,7 +230,7 @@ namespace Microsoft.PowerToys.PreviewHandler.Svg
                         _browser.CoreWebView2.WebResourceRequested += CoreWebView2_BlockExternalResources;
 
                         // WebView2.NavigateToString() limitation
-                        // See https://docs.microsoft.com/en-us/dotnet/api/microsoft.web.webview2.core.corewebview2.navigatetostring?view=webview2-dotnet-1.0.864.35#remarks
+                        // See https://learn.microsoft.com/dotnet/api/microsoft.web.webview2.core.corewebview2.navigatetostring?view=webview2-dotnet-1.0.864.35#remarks
                         // While testing the limit, it turned out it is ~1.5MB, so to be on a safe side we go for 1.5m bytes
                         if (svgData.Length > 1_500_000)
                         {

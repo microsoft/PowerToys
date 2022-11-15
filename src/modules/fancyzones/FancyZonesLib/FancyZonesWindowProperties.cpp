@@ -83,6 +83,17 @@ ZoneIndexSet FancyZonesWindowProperties::RetrieveZoneIndexProperty(HWND window)
     return bitmask.ToIndexSet();
 }
 
+void FancyZonesWindowProperties::StampMovedOnOpeningProperty(HWND window)
+{
+    ::SetPropW(window, ZonedWindowProperties::PropertyMovedOnOpening, (HANDLE)1);
+}
+
+bool FancyZonesWindowProperties::RetreiveMovedOnOpeningProperty(HWND window)
+{
+    HANDLE handle = ::GetProp(window, ZonedWindowProperties::PropertyMovedOnOpening);
+    return handle != nullptr;
+}
+
 std::optional<size_t> FancyZonesWindowProperties::GetTabSortKeyWithinZone(HWND window)
 {
     auto rawTabSortKeyWithinZone = ::GetPropW(window, ZonedWindowProperties::PropertySortKeyWithinZone);

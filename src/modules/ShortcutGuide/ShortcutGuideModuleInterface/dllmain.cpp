@@ -11,7 +11,7 @@
 #include "Generated Files/resource.h"
 #include <common/SettingsAPI/settings_objects.h>
 
-BOOL APIENTRY DllMain(HMODULE hModule, DWORD ul_reason_for_call, LPVOID lpReserved)
+BOOL APIENTRY DllMain(HMODULE /*hModule*/, DWORD /*ul_reason_for_call*/, LPVOID /*lpReserved*/)
 {
     return TRUE;
 }
@@ -46,6 +46,12 @@ public:
     virtual const wchar_t* get_key() override
     {
         return app_key.c_str();
+    }
+
+    // Return the configured status for the gpo policy for the module
+    virtual powertoys_gpo::gpo_rule_configured_t gpo_policy_enabled_configuration() override
+    {
+        return powertoys_gpo::getConfiguredShortcutGuideEnabledValue();
     }
 
     virtual bool get_config(wchar_t* buffer, int* buffer_size) override
@@ -174,7 +180,7 @@ private:
     std::wstring app_key;
     bool _enabled = false;
     HANDLE m_hProcess = nullptr;
-    
+
     // Hotkey to invoke the module
     HotkeyEx m_hotkey;
 
@@ -220,7 +226,7 @@ private:
 
         Logger::trace(L"Started SG process with pid={}", GetProcessId(sei.hProcess));
         m_hProcess = sei.hProcess;
-        return true;    
+        return true;
     }
 
     void TerminateProcess()
@@ -265,7 +271,7 @@ private:
         {
             Logger::error("Failed to init settings. {}", ex.what());
         }
-        catch(...)
+        catch (...)
         {
             Logger::error("Failed to init settings");
         }

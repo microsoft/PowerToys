@@ -19,7 +19,6 @@ using Awake.Core;
 using interop;
 using ManagedCommon;
 using Microsoft.PowerToys.Settings.UI.Library;
-using Microsoft.PowerToys.Telemetry.Events;
 using NLog;
 using Windows.Win32;
 using Windows.Win32.Foundation;
@@ -61,6 +60,12 @@ namespace Awake
             // Log initialization needs to always happen before we test whether
             // only one instance of Awake is running.
             _log = LogManager.GetCurrentClassLogger();
+
+            if (PowerToys.GPOWrapper.GPOWrapper.GetConfiguredAwakeEnabledValue() == PowerToys.GPOWrapper.GpoRuleConfigured.Disabled)
+            {
+                Exit("Tried to start with a GPO policy setting the utility to always be disabled. Please contact your systems administrator.", 1, _exitSignal, true);
+                return 0;
+            }
 
             LockMutex = new Mutex(true, InternalConstants.AppName, out bool instantiated);
 

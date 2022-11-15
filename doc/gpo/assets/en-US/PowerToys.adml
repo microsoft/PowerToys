@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright (c) Microsoft Corporation.
+     Licensed under the MIT License. -->
+<policyDefinitionResources xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" revision="1.0" schemaVersion="1.0" xmlns="http://schemas.microsoft.com/GroupPolicy/2006/07/PolicyDefinitions">
+  <displayName>PowerToys</displayName>
+  <description>PowerToys</description>
+  <resources>
+    <stringTable>
+      <string id="PowerToys">Microsoft PowerToys</string>
+
+      <string id="SUPPORTED_POWERTOYS_0_64_0">PowerToys version 0.64.0 or later</string>
+
+      <string id="ConfigureEnabledUtilityDescription">This policy configures the enabled state for a PowerToys utility.
+
+If you enable this setting, the utility will be always enabled and the user won't be able to disable it.
+
+If you disable this setting, the utility will be always disabled and the user won't be able to enable it.
+
+If you don't configure this setting, users are able to disable or enable the utility.
+</string>
+      <string id="ConfigureEnabledUtilityDescriptionPDFPreviewHandler">(Note: There have been reports of incompatibility between the PDF Preview Handler and Outlook)
+
+This policy configures the enabled state for a PowerToys utility.
+
+If you enable this setting, the utility will be always enabled and the user won't be able to disable it.
+
+If you disable this setting, the utility will be always disabled and the user won't be able to enable it.
+
+If you don't configure this setting, users are able to disable or enable the utility.
+</string>
+      <string id="ConfigureEnabledUtilityAlwaysOnTop">Always On Top: Configure enabled state</string>
+      <string id="ConfigureEnabledUtilityAwake">Awake: Configure enabled state</string>
+      <string id="ConfigureEnabledUtilityColorPicker">Color Picker: Configure enabled state</string>
+      <string id="ConfigureEnabledUtilityFancyZones">FancyZones: Configure enabled state</string>
+      <string id="ConfigureEnabledUtilityFileLocksmith">File Locksmith: Configure enabled state</string>
+      <string id="ConfigureEnabledUtilityFileExplorerSVGPreview">SVG file preview: Configure enabled state</string>
+      <string id="ConfigureEnabledUtilityFileExplorerMarkdownPreview">Markdown file preview: Configure enabled state</string>
+      <string id="ConfigureEnabledUtilityFileExplorerMonacoPreview">Source code file preview: Configure enabled state</string>
+      <string id="ConfigureEnabledUtilityFileExplorerPDFPreview">PDF file preview: Configure enabled state</string>
+      <string id="ConfigureEnabledUtilityFileExplorerGcodePreview">Gcode file preview: Configure enabled state</string>
+      <string id="ConfigureEnabledUtilityFileExplorerSVGThumbnails">SVG file thumbnail: Configure enabled state</string>
+      <string id="ConfigureEnabledUtilityFileExplorerPDFThumbnails">PDF file thumbnail: Configure enabled state</string>
+      <string id="ConfigureEnabledUtilityFileExplorerGcodeThumbnails">Gcode file thumbnail: Configure enabled state</string>
+      <string id="ConfigureEnabledUtilityFileExplorerSTLThumbnails">STL file thumbnail: Configure enabled state</string>
+      <string id="ConfigureEnabledUtilityHostsFileEditor">Hosts file editor: Configure enabled state</string>
+      <string id="ConfigureEnabledUtilityImageResizer">Image Resizer: Configure enabled state</string>
+      <string id="ConfigureEnabledUtilityKeyboardManager">Keyboard Manager: Configure enabled state</string>
+      <string id="ConfigureEnabledUtilityFindMyMouse">Find My Mouse: Configure enabled state</string>
+      <string id="ConfigureEnabledUtilityMouseHighlighter">Mouse Highlighter: Configure enabled state</string>
+      <string id="ConfigureEnabledUtilityMousePointerCrosshairs">Mouse Pointer Crosshairs: Configure enabled state</string>
+      <string id="ConfigureEnabledUtilityPowerRename">Power Rename: Configure enabled state</string>
+      <string id="ConfigureEnabledUtilityPowerLauncher">PowerToys Run: Configure enabled state</string>
+      <string id="ConfigureEnabledUtilityQuickAccent">Quick Accent: Configure enabled state</string>
+      <string id="ConfigureEnabledUtilityScreenRuler">Screen Ruler: Configure enabled state</string>
+      <string id="ConfigureEnabledUtilityShortcutGuide">Shortcut Guide: Configure enabled state</string>
+      <string id="ConfigureEnabledUtilityTextExtractor">Text Extractor: Configure enabled state</string>
+      <string id="ConfigureEnabledUtilityVideoConferenceMute">Video Conference Mute: Configure enabled state</string>
+    </stringTable>
+  </resources>
+</policyDefinitionResources>
+

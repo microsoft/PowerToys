@@ -130,6 +130,21 @@ namespace Microsoft.PowerToys.PreviewHandler.Markdown
         /// <param name="dataSource">Path to the file.</param>
         public override void DoPreview<T>(T dataSource)
         {
+            if (global::PowerToys.GPOWrapper.GPOWrapper.GetConfiguredMarkdownPreviewEnabledValue() == global::PowerToys.GPOWrapper.GpoRuleConfigured.Disabled)
+            {
+                // GPO is disabling this utility. Show an error message instead.
+                InvokeOnControlThread(() =>
+                {
+                    _infoBarDisplayed = true;
+                    _infoBar = GetTextBoxControl(Resources.GpoDisabledErrorText);
+                    Resize += FormResized;
+                    Controls.Add(_infoBar);
+                    base.DoPreview(dataSource);
+                });
+
+                return;
+            }
+
             CleanupWebView2UserDataFolder();
 
             _infoBarDisplayed = false;
@@ -196,7 +211,7 @@ namespace Microsoft.PowerToys.PreviewHandler.Markdown
                                 };
 
                                 // WebView2.NavigateToString() limitation
-                                // See https://docs.microsoft.com/en-us/dotnet/api/microsoft.web.webview2.core.corewebview2.navigatetostring?view=webview2-dotnet-1.0.864.35#remarks
+                                // See https://learn.microsoft.com/dotnet/api/microsoft.web.webview2.core.corewebview2.navigatetostring?view=webview2-dotnet-1.0.864.35#remarks
                                 // While testing the limit, it turned out it is ~1.5MB, so to be on a safe side we go for 1.5m bytes
                                 if (markdownHTML.Length > 1_500_000)
                                 {

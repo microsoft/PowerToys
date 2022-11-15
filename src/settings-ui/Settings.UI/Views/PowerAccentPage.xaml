@@ -4,18 +4,21 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    xmlns:converters="using:Microsoft.PowerToys.Settings.UI.Converters"
-    xmlns:muxc="using:Microsoft.UI.Xaml.Controls"
+    xmlns:converters="using:CommunityToolkit.WinUI.UI.Converters"
     xmlns:controls="using:Microsoft.PowerToys.Settings.UI.Controls"
     mc:Ignorable="d"
     AutomationProperties.LandmarkType="Main">
+
+    <Page.Resources>
+        <converters:BoolNegationConverter x:Key="BoolNegationConverter"/>
+    </Page.Resources>
 
     <controls:SettingsPageControl x:Uid="QuickAccent" IsTabStop="False"
                                   ModuleImageSource="ms-appx:///Assets/Modules/PowerAccent.png">
         <controls:SettingsPageControl.ModuleContent>
             <StackPanel Orientation="Vertical">
 
-                <controls:Setting x:Uid="QuickAccent_EnableQuickAccent">
+                <controls:Setting x:Uid="QuickAccent_EnableQuickAccent" IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabledGpoConfigured, Converter={StaticResource BoolNegationConverter}}">
                     <controls:Setting.Icon>
                         <BitmapIcon UriSource="ms-appx:///Assets/FluentIcons/FluentIconsPowerAccent.png" ShowAsMonochrome="False" />
                     </controls:Setting.Icon>
@@ -23,6 +26,11 @@
                         <ToggleSwitch IsOn="{x:Bind ViewModel.IsEnabled, Mode=TwoWay}" x:Uid="ToggleSwitch" HorizontalAlignment="Right"/>
                     </controls:Setting.ActionContent>
                 </controls:Setting>
+                <InfoBar x:Uid="GPO_IsSettingForced"
+                    Severity="Informational"
+                    IsClosable="False"
+                    IsOpen="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabledGpoConfigured}"
+                    IsTabStop="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabledGpoConfigured}" />
 
                 <controls:SettingsGroup x:Uid="QuickAccent_Activation_GroupSettings" IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}">
                     <controls:Setting x:Uid="QuickAccent_Activation_Shortcut" Icon="&#xEDA7;">
@@ -31,7 +39,34 @@
                                       SelectedIndex="{x:Bind Path=ViewModel.ActivationKey, Mode=TwoWay}" >
                                 <ComboBoxItem x:Uid="QuickAccent_Activation_Key_Arrows"/>
                                 <ComboBoxItem x:Uid="QuickAccent_Activation_Key_Space"/>
-                                <ComboBoxItem x:Uid="QuickAccent_Activation_Key_Both"/>
+                                <ComboBoxItem x:Uid="QuickAccent_Activation_Key_Either"/>
+                            </ComboBox>
+                        </controls:Setting.ActionContent>
+                    </controls:Setting>
+                </controls:SettingsGroup>
+
+                <controls:SettingsGroup x:Uid="QuickAccent_Language" IsEnabled="{Binding Mode=OneWay, Path=IsEnabled}">
+                    <controls:Setting x:Uid="QuickAccent_SelectedLanguage" Icon="&#xF2B7;">
+                        <controls:Setting.ActionContent>
+                            <ComboBox MinWidth="{StaticResource SettingActionControlMinWidth}"
+                                      SelectedIndex="{x:Bind Path=ViewModel.SelectedLangIndex, Mode=TwoWay}" >
+                                <!-- These should be in the same order as the array items in PowerAccentViewModel.cs -->
+                                <ComboBoxItem x:Uid="QuickAccent_SelectedLanguage_All"/>
+                                <ComboBoxItem x:Uid="QuickAccent_SelectedLanguage_Currency"/>
+                                <ComboBoxItem x:Uid="QuickAccent_SelectedLanguage_Czech"/>
+                                <ComboBoxItem x:Uid="QuickAccent_SelectedLanguage_French"/>
+                                <ComboBoxItem x:Uid="QuickAccent_SelectedLanguage_German"/>
+                                <ComboBoxItem x:Uid="QuickAccent_SelectedLanguage_Hungarian"/>
+                                <ComboBoxItem x:Uid="QuickAccent_SelectedLanguage_Icelandic"/>
+                                <ComboBoxItem x:Uid="QuickAccent_SelectedLanguage_Italian"/>
+                                <ComboBoxItem x:Uid="QuickAccent_SelectedLanguage_Maori"/>
+                                <ComboBoxItem x:Uid="QuickAccent_SelectedLanguage_Pinyin"/>
+                                <ComboBoxItem x:Uid="QuickAccent_SelectedLanguage_Polish"/>
+                                <ComboBoxItem x:Uid="QuickAccent_SelectedLanguage_Portuguese"/>
+                                <ComboBoxItem x:Uid="QuickAccent_SelectedLanguage_Romanian"/>
+                                <ComboBoxItem x:Uid="QuickAccent_SelectedLanguage_Slovakian"/>
+                                <ComboBoxItem x:Uid="QuickAccent_SelectedLanguage_Spanish"/>
+                                <ComboBoxItem x:Uid="QuickAccent_SelectedLanguage_Turkish"/>
                             </ComboBox>
                         </controls:Setting.ActionContent>
                     </controls:Setting>
@@ -72,7 +107,7 @@
                 <controls:SettingsGroup x:Uid="QuickAccent_Behavior" IsEnabled="{Binding Mode=OneWay, Path=IsEnabled}">
                     <controls:Setting x:Uid="QuickAccent_InputTimeMs" Icon="&#xE916;">
                         <controls:Setting.ActionContent>
-                            <muxc:NumberBox Minimum="100"
+                            <NumberBox Minimum="100"
                                             Value="{x:Bind Mode=TwoWay, Path=ViewModel.InputTimeMs}"
                                             MinWidth="{StaticResource SettingActionControlMinWidth}"
                                             SpinButtonPlacementMode="Compact"
@@ -81,6 +116,24 @@
                                             LargeChange="100"/>
                         </controls:Setting.ActionContent>
                     </controls:Setting>
+                    <controls:SettingExpander IsExpanded="False">
+                        <controls:SettingExpander.Header>
+                            <controls:Setting x:Uid="QuickAccent_ExcludedApps" Icon="&#xECE4;" IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}" Style="{StaticResource ExpanderHeaderSettingStyle}"/>
+                        </controls:SettingExpander.Header>
+                        <controls:SettingExpander.Content>
+                            <TextBox x:Uid="QuickAccent_ExcludedApps_TextBoxControl"
+                                    Margin="{StaticResource ExpanderSettingMargin}"
+                                    Text="{x:Bind Mode=TwoWay, Path=ViewModel.ExcludedApps, UpdateSourceTrigger=PropertyChanged}"
+                                    ScrollViewer.VerticalScrollBarVisibility ="Visible"
+                                    ScrollViewer.VerticalScrollMode="Enabled"
+                                    ScrollViewer.IsVerticalRailEnabled="True"
+                                    TextWrapping="Wrap"
+                                    IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}"
+                                    AcceptsReturn="True"
+                                    MinWidth="240"
+                                    MinHeight="160" />
+                        </controls:SettingExpander.Content>
+                    </controls:SettingExpander>
                 </controls:SettingsGroup>
             </StackPanel>
         </controls:SettingsPageControl.ModuleContent>

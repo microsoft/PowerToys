@@ -70,10 +70,15 @@ internal static class WindowsFunctions
         return (monitorInfo.rcWork.Location, monitorInfo.rcWork.Size, dpi);
     }
 
-    public static bool IsCapitalState()
+    public static bool IsCapsLockState()
     {
         var capital = User32.GetKeyState((int)User32.VK.VK_CAPITAL);
+        return capital != 0;
+    }
+
+    public static bool IsShiftState()
+    {
         var shift = User32.GetKeyState((int)User32.VK.VK_SHIFT);
-        return capital != 0 || shift < 0;
+        return shift < 0;
     }
 }

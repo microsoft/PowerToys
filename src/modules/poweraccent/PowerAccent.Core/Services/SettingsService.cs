@@ -56,6 +56,11 @@ public class SettingsService
                         InputTime = settings.Properties.InputTime.Value;
                         _keyboardListener.UpdateInputTime(InputTime);
 
+                        ExcludedApps = settings.Properties.ExcludedApps.Value;
+                        _keyboardListener.UpdateExcludedApps(ExcludedApps);
+
+                        SelectedLang = Enum.TryParse(settings.Properties.SelectedLang.Value, out Language selectedLangValue) ? selectedLangValue : Language.ALL;
+
                         switch (settings.Properties.ToolbarPosition.Value)
                         {
                             case "Top center":
@@ -143,6 +148,24 @@ public class SettingsService
         }
     }
 
+    private string _excludedApps;
+
+    public string ExcludedApps
+    {
+        get
+        {
+            return _excludedApps;
+        }
+
+        set
+        {
+            _excludedApps = value;
+        }
+    }
+
+    private Language _selectedLang;
+
+    public Language SelectedLang
     private PowerAccentShowDescription _showDescription = PowerAccentShowDescription.SpecialCharacters;
 
     public PowerAccentShowDescription ShowDescription
@@ -153,29 +176,15 @@ public class SettingsService
 
     public static char[] GetDefaultLetterKey(LetterKey letter)
     {
-        switch (letter)
+        get
         {
-            case LetterKey.VK_A:
-                return new char[] { 'à', 'â', 'á', 'ä', 'ã', 'å', 'æ' };
-            case LetterKey.VK_C:
-                return new char[] { 'ć', 'ĉ', 'č', 'ċ', 'ç', 'ḉ' };
-            case LetterKey.VK_E:
-                return new char[] { 'é', 'è', 'ê', 'ë', 'ē', 'ė', '€' };
-            case LetterKey.VK_I:
-                return new char[] { 'î', 'ï', 'í', 'ì', 'ī' };
-            case LetterKey.VK_N:
-                return new char[] { 'ñ', 'ń' };
-            case LetterKey.VK_O:
-                return new char[] { 'ô', 'ö', 'ó', 'ò', 'õ', 'ø', 'œ' };
-            case LetterKey.VK_S:
-                return new char[] { 'š', 'ß', 'ś' };
-            case LetterKey.VK_U:
-                return new char[] { 'û', 'ù', 'ü', 'ú', 'ū' };
-            case LetterKey.VK_Y:
-                return new char[] { 'ÿ', 'ý' };
+            return _selectedLang;
         }
 
-        throw new ArgumentException("Letter {0} is missing", letter.ToString());
+        set
+        {
+            _selectedLang = value;
+        }
     }
 }
 

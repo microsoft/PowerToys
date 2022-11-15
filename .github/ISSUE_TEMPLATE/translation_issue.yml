@@ -1,54 +1,49 @@
 name: "🌐 Localization/Translation issue"
 description: Report incorrect translations.
-labels: 
+labels:
 - Issue-Bug
 - Area-Localization
 - Issue-Translation
-- Needs-Triage 
+- Needs-Triage
 body:
 - type: markdown
   attributes:
-    value: |
-      Please make sure to [search for existing issues](https://github.com/microsoft/PowerToys/issues) before filing a new one!
+    value: Please make sure to [search for existing issues](https://github.com/microsoft/PowerToys/issues) before filing a new one!
 - type: input
   attributes:
     label: Microsoft PowerToys version
-    placeholder: "0.53.0"
-    description: |
-      Hover over system tray icon or look at Settings
+    placeholder: 0.63.0
+    description: Hover over system tray icon or look at Settings
   validations:
     required: true
 - type: dropdown
   attributes:
     label: Utility with translation issue
     options:
-      - General
-      - Always on Top
-      - Awake
-      - ColorPicker
-      - Developer file preview
-      - FancyZones
-      - FancyZones Editor 
-      - Image Resizer
-      - Keyboard Manager
-      - MD Preview
-      - Mouse Utilities
-      - PDF Preview
-      - PDF Thumbnail
-      - G-code Preview
-      - G-code Thumbnail
-      - Quick Accent
-      - PowerRename
-      - PowerToys Run
-      - Screen Ruler
-      - Shortcut Guide
-      - SVG Preview
-      - SVG Thumbnail
-      - Settings
-      - Video Conference Mute
-      - Welcome / PowerToys Tour window
-      - System tray interaction
-      - Installer
+    - General
+    - Always on Top
+    - Awake
+    - ColorPicker
+    - FancyZones
+    - FancyZones Editor
+    - File Locksmith
+    - "File Explorer: Preview Pane"
+    - "File Explorer: Thumbnail preview"
+    - Hosts File Editor
+    - Image Resizer
+    - Installer
+    - Keyboard Manager
+    - Mouse Utilities
+    - PowerRename
+    - PowerToys Run
+    - Quick Accent
+    - Screen ruler
+    - Settings
+    - Shortcut Guide
+    - System tray interaction
+    - TextExtractor
+    - Video Conference Mute
+    - Welcome / PowerToys Tour window
   validations:
     required: true
 - type: input
@@ -60,7 +55,7 @@ body:
 - type: textarea
   attributes: 
     label: ❌ Actual phrase(s)
-    placeholder: What is there?  Please include a screenshot as that is extremely helpful. 
+    placeholder: What is there? Please include a screenshot as that is extremely helpful.
   validations:
     required: true
 - type: textarea

@@ -13,9 +13,9 @@ namespace BackwardsCompatibility
     struct DeviceIdData
     {
         std::wstring deviceName = L"FallbackDevice";
-        int width;
-        int height;
-        GUID virtualDesktopId;
+        int width{};
+        int height{};
+        GUID virtualDesktopId{};
         std::wstring monitorId;
 
         static std::optional<DeviceIdData> ParseDeviceId(const std::wstring& str);
@@ -77,7 +77,7 @@ namespace JSONHelpers
     struct LayoutQuickKeyJSON
     {
         std::wstring layoutUuid;
-        int key;
+        int key{};
 
         static std::optional<LayoutQuickKeyJSON> FromJson(const json::JsonObject& device);
     };
@@ -110,7 +110,7 @@ namespace std
     template<>
     struct hash<BackwardsCompatibility::DeviceIdData>
     {
-        size_t operator()(const BackwardsCompatibility::DeviceIdData& Value) const
+        size_t operator()(const BackwardsCompatibility::DeviceIdData& /*Value*/) const
         {
             return 0;
         }

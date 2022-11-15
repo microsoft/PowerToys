@@ -3,7 +3,6 @@
 // See the LICENSE file in the project root for more information.
 
 using System.Text.Json.Serialization;
-using ManagedCommon;
 using Microsoft.PowerToys.Settings.UI.Library.Enumerations;
 
 namespace Microsoft.PowerToys.Settings.UI.Library
@@ -19,6 +18,12 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         [JsonPropertyName("input_time_ms")]
         public IntProperty InputTime { get; set; }
 
+        [JsonPropertyName("selected_lang")]
+        public StringProperty SelectedLang { get; set; }
+
+        [JsonPropertyName("excluded_apps")]
+        public StringProperty ExcludedApps { get; set; }
+
         [JsonPropertyName("show_description")]
         public PowerAccentShowDescription ShowDescription { get; set; }
 
@@ -27,6 +32,8 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             ActivationKey = PowerAccentActivationKey.Both;
             ToolbarPosition = "Top center";
             InputTime = new IntProperty(200);
+            SelectedLang = "ALL";
+            ExcludedApps = new StringProperty();
             ShowDescription = PowerAccentShowDescription.SpecialCharacters;
         }
     }
