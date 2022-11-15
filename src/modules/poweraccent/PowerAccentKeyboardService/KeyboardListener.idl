@@ -73,6 +73,7 @@ namespace PowerToys
             void SetIsLanguageLetterDelegate(IsLanguageLetter isLanguageLetterDelegate);
             void UpdateActivationKey(Int32 activationKey);
             void UpdateInputTime(Int32 inputTime);
+            void UpdateExcludedApps(String excludedApps);
         }
     }
 }
