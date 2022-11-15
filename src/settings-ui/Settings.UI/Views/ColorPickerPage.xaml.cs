@@ -21,6 +21,8 @@ namespace Microsoft.PowerToys.Settings.UI.Views
 
         public ICommand AddCommand => new RelayCommand(Add);
 
+        public ICommand UpdateCommand => new RelayCommand(Update);
+
         public ColorPickerPage()
         {
             var settingsUtils = new SettingsUtils();
@@ -98,13 +100,22 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             ColorFormatDialog.Hide();
         }
 
+        private void Update()
+        {
+            ColorFormatModel colorFormat = ColorFormatDialog.DataContext as ColorFormatModel;
+            string oldName = ColorFormatDialog.Tag as string;
+            ViewModel.UpdateColorFormat(oldName, colorFormat);
+            ColorFormatDialog.Hide();
+        }
+
         private async void NewFormatClick(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
         {
             var resourceLoader = ResourceLoader.GetForViewIndependentUse();
             ColorFormatDialog.Title = "Add custom color format"; // resourceLoader.GetString("AddNewEntryDialog_Title");
             ColorFormatModel newColorFormatModel = ViewModel.GetNewColorFormatModel();
             ColorFormatDialog.DataContext = newColorFormatModel;
-            NewColorFormat.Description = ColorFormatHelper.GetStringRepresentation(null, NewColorFormat.Text);
+            ColorFormatDialog.Tag = string.Empty;
+            NewColorFormat.Description = ColorFormatHelper.GetStringRepresentation(null, newColorFormatModel.Example);
             ColorFormatDialog.PrimaryButtonText = "Save"; // resourceLoader.GetString("AddBtn");
             ColorFormatDialog.PrimaryButtonCommand = AddCommand;
             await ColorFormatDialog.ShowAsync();
@@ -118,6 +129,33 @@ namespace Microsoft.PowerToys.Settings.UI.Views
         private void NewColorFormat_TextChanged(object sender, TextChangedEventArgs e)
         {
             NewColorFormat.Description = ColorFormatHelper.GetStringRepresentation(null, NewColorFormat.Text);
+            ViewModel.SetValidity(ColorFormatDialog.DataContext as ColorFormatModel, ColorFormatDialog.Tag as string);
+        }
+
+        private void NewColorName_TextChanged(object sender, TextChangedEventArgs e)
+        {
+            ViewModel.SetValidity(ColorFormatDialog.DataContext as ColorFormatModel, ColorFormatDialog.Tag as string);
+        }
+
+        private void RemoveButton_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
+        {
+            Button btn = sender as Button;
+            string name = btn.Tag as string;
+            ViewModel.DeleteModelByName(name);
+        }
+
+        private async void EditButton_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
+        {
+            Button btn = sender as Button;
+            string name = btn.Tag as string;
+            ColorFormatDialog.Title = "Edit custom color format"; // resourceLoader.GetString("AddNewEntryDialog_Title");
+            ColorFormatModel colorFormatModel = ViewModel.GetColorFormatModelCopyByName(name);
+            ColorFormatDialog.DataContext = colorFormatModel;
+            ColorFormatDialog.Tag = name;
+            NewColorFormat.Description = ColorFormatHelper.GetStringRepresentation(null, colorFormatModel.Example);
+            ColorFormatDialog.PrimaryButtonText = "Update"; // resourceLoader.GetString("AddBtn");
+            ColorFormatDialog.PrimaryButtonCommand = UpdateCommand;
+            await ColorFormatDialog.ShowAsync();
         }
     }
 }

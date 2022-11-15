@@ -15,6 +15,7 @@ using ColorPicker.Settings;
 using ColorPicker.ViewModelContracts;
 using Common.UI;
 using interop;
+using ManagedCommon;
 
 namespace ColorPicker.ViewModels
 {

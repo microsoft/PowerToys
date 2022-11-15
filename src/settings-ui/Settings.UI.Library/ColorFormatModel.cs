@@ -2,6 +2,7 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
 
@@ -15,12 +16,17 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         private bool _isShown;
         private bool _canMoveUp = true;
         private bool _canMoveDown = true;
+        private bool _isNew;
+        private bool _isValid = true;
+        private bool _isUserDefined;
 
-        public ColorFormatModel(string name, string example, bool isShown)
+        public ColorFormatModel(string name, string example, bool isShown, bool isUserDefined)
         {
             Name = name;
             Example = example;
             IsShown = isShown;
+            IsUserDefined = isUserDefined;
+            IsNew = false;
         }
 
         public ColorFormatModel()
@@ -28,6 +34,8 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             Name = DefaultName;
             Example = "= new Color ();";
             IsShown = true;
+            IsNew = true;
+            IsUserDefined = true;
         }
 
         public string Name
@@ -96,6 +104,48 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             set
             {
                 _canMoveDown = value;
+                OnPropertyChanged();
+            }
+        }
+
+        public bool IsNew
+        {
+            get
+            {
+                return _isNew;
+            }
+
+            set
+            {
+                _isNew = value;
+                OnPropertyChanged();
+            }
+        }
+
+        public bool IsValid
+        {
+            get
+            {
+                return _isValid;
+            }
+
+            set
+            {
+                _isValid = value;
+                OnPropertyChanged();
+            }
+        }
+
+        public bool IsUserDefined
+        {
+            get
+            {
+                return _isUserDefined;
+            }
+
+            set
+            {
+                _isUserDefined = value;
                 OnPropertyChanged();
             }
         }

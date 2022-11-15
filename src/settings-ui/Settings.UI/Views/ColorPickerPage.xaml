@@ -13,6 +13,7 @@
 
     <Page.Resources>
         <converters:BoolNegationConverter x:Key="BoolNegationConverter"/>
+        <converters:BoolToVisibilityConverter x:Key="BoolToVis" />
     </Page.Resources>
 
     <controls:SettingsPageControl x:Uid="ColorPicker"
@@ -90,6 +91,20 @@
                 <controls:SettingsGroup x:Uid="ColorPicker_Editor" IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}">
                     <controls:Setting x:Name="ColorFormatsSetting" x:Uid="ColorPicker_ColorFormats" Icon="&#xE762;"/>
 
+                    <Grid HorizontalAlignment="Stretch"
+                            Background="{ThemeResource CardBackgroundBrush}"
+                            BorderThickness="{ThemeResource CardBorderThickness}"
+                            BorderBrush="{ThemeResource CardBorderBrush}"
+                            CornerRadius="{ThemeResource ControlCornerRadius}"
+                            Padding="0,0,16,0"
+                            MinHeight="68">
+                        <Button Style="{ThemeResource AccentButtonStyle}"
+                                Margin="56,0,0,0"
+                                VerticalAlignment="Center"
+                                Content="Add new snippet"
+                                Click="NewFormatClick">
+                        </Button>
+                    </Grid>
                     <!-- Disabled reordering by dragging -->
                     <!-- CanReorderItems="True" AllowDrop="True" -->
                     <ListView ItemsSource="{Binding ColorFormats, Mode=TwoWay}"
@@ -113,12 +128,46 @@
                                     <TextBlock FontWeight="SemiBold"
                                     FontSize="16"
                                     Margin="56,8,0,0"
-                                    Text="{x:Bind Name}"/>
+                                    Text="{x:Bind Name, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
                                     <TextBlock Style="{StaticResource SecondaryTextStyle}"
-                                    Text="{x:Bind Example}"
+                                    Text="{x:Bind Example, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                                     Grid.Row="1"
                                     Margin="56,0,0,8"/>
-                                    <ToggleSwitch IsOn="{x:Bind IsShown, Mode=TwoWay}"
+                                    <Button 
+                                        x:Uid="EditButton"
+                                        Background="Transparent"
+                                        FontFamily="{ThemeResource SymbolThemeFontFamily}"
+                                        Grid.RowSpan="2"
+                                        Width="40"
+                                        Height="36"
+                                        HorizontalAlignment="Right"
+                                        Margin="0,0,160,0"
+                                        Content="&#xE70F;"
+                                        Visibility="{x:Bind IsUserDefined, Converter={StaticResource BoolToVis}, Mode=TwoWay}"
+                                        Tag="{x:Bind Name}"
+                                        Click="EditButton_Click">
+                                        <ToolTipService.ToolTip>
+                                            <TextBlock x:Uid="EditTooltip"/>
+                                        </ToolTipService.ToolTip>
+                                    </Button>
+                                    <Button x:Name="RemoveButton"
+                                        x:Uid="RemoveButton"
+                                        Background="Transparent"
+                                        FontFamily="{ThemeResource SymbolThemeFontFamily}"
+                                        Grid.RowSpan="2"
+                                        Width="40"
+                                        Height="36"
+                                        Content="&#xE74D;"
+                                        HorizontalAlignment="Right"
+                                        Margin="0,0,104,0"
+                                        Visibility="{x:Bind IsUserDefined, Converter={StaticResource BoolToVis}, Mode=TwoWay}"
+                                        Tag="{x:Bind Name}"
+                                        Click="RemoveButton_Click">
+                                        <ToolTipService.ToolTip>
+                                            <TextBlock x:Uid="RemoveTooltip"/>
+                                        </ToolTipService.ToolTip>
+                                    </Button>
+                                    <ToggleSwitch IsOn="{x:Bind IsShown, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                                                 OnContent=""
                                                 OffContent=""
                                                 Grid.RowSpan="2"
@@ -156,27 +205,14 @@
                             </DataTemplate>
                         </ListView.ItemTemplate>
                     </ListView>
-                    <Grid HorizontalAlignment="Stretch"
-                            Background="{ThemeResource CardBackgroundBrush}"
-                            BorderThickness="{ThemeResource CardBorderThickness}"
-                            BorderBrush="{ThemeResource CardBorderBrush}"
-                            CornerRadius="{ThemeResource ControlCornerRadius}"
-                            Padding="0,0,16,0"
-                            MinHeight="68">
-                        <Button Style="{ThemeResource AccentButtonStyle}"
-                                Margin="56,0,0,0"
-                                VerticalAlignment="Center"
-                                Content="Add new snippet"
-                                Click="NewFormatClick">
-                        </Button>
-                    </Grid>
                 </controls:SettingsGroup>
                 <ContentDialog
                     x:Name="ColorFormatDialog"
                     x:Uid="ColorFormatDialog"
                     PrimaryButtonStyle="{StaticResource AccentButtonStyle}"
                     SecondaryButtonText="Cancel"
-                    SecondaryButtonClick="ColorFormatDialog_CancelButtonClick">
+                    SecondaryButtonClick="ColorFormatDialog_CancelButtonClick"
+                    IsPrimaryButtonEnabled="{Binding IsValid, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}">
                     <ContentDialog.DataContext>
                         <models:ColorFormatModel />
                     </ContentDialog.DataContext>
@@ -190,6 +226,7 @@
                                 x:Name="NewColorName"
                                 IsSpellCheckEnabled="False"
                                 Header="Name"
+                                TextChanged="NewColorName_TextChanged"
                                 Text="{Binding Name, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
                             <TextBox
                                 x:Uid="NewColorFormat"
