@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft Corporation
+// Copyright (c) Microsoft Corporation
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
@@ -7,11 +7,8 @@ using System.ComponentModel.Composition;
 using System.Drawing;
 using System.Drawing.Imaging;
 using System.IO;
-using System.Windows;
 using System.Windows.Media.Imaging;
-using ColorPicker.Telemetry;
 using ColorPicker.ViewModelContracts;
-using Microsoft.PowerToys.Telemetry;
 
 namespace ColorPicker.Helpers
 {
@@ -88,10 +85,8 @@ namespace ColorPicker.Helpers
 
                 _zoomViewModel.ZoomArea = BitmapToImageSource(_bmp);
             }
-            else
-            {
-                _zoomViewModel.ZoomFactor = Math.Pow(ZoomFactor, _currentZoomLevel - 1);
-            }
+
+            _zoomViewModel.ZoomFactor = Math.Pow(ZoomFactor, _currentZoomLevel - 1);
 
             ShowZoomWindow(point);
         }

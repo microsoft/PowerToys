@@ -191,16 +191,28 @@ IFACEMETHODIMP CPowerRenameItem::PutDepth(_In_ int depth)
     return S_OK;
 }
 
+IFACEMETHODIMP CPowerRenameItem::GetStatus(_Out_ PowerRenameItemRenameStatus* status)
+{
+    *status = m_status;
+    return S_OK;
+}
+
+IFACEMETHODIMP CPowerRenameItem::PutStatus(_In_ PowerRenameItemRenameStatus status)
+{
+    m_status = status;
+    return S_OK;
+}
+
 IFACEMETHODIMP CPowerRenameItem::ShouldRenameItem(_In_ DWORD flags, _Out_ bool* shouldRename)
 {
     // Should we perform a rename on this item given its
     // state and the options that were set?
-    bool hasChanged = m_newName != nullptr && (lstrcmp(m_originalName, m_newName) != 0);
+    bool hasChanged = m_newName != nullptr && (lstrcmp(m_originalName, m_newName) != 0) && (lstrcmp(L"", m_newName) != 0);
     bool excludeBecauseFolder = (m_isFolder && (flags & PowerRenameFlags::ExcludeFolders));
     bool excludeBecauseFile = (!m_isFolder && (flags & PowerRenameFlags::ExcludeFiles));
     bool excludeBecauseSubFolderContent = (m_depth > 0 && (flags & PowerRenameFlags::ExcludeSubfolders));
     *shouldRename = (m_selected && m_canRename && hasChanged && !excludeBecauseFile &&
-                     !excludeBecauseFolder && !excludeBecauseSubFolderContent);
+                     !excludeBecauseFolder && !excludeBecauseSubFolderContent && m_status == PowerRenameItemRenameStatus::ShouldRename);
     return S_OK;
 }
 

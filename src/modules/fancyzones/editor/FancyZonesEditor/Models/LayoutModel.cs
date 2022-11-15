@@ -18,6 +18,8 @@ namespace FancyZonesEditor.Models
         {
             _guid = Guid.NewGuid();
             Type = LayoutType.Custom;
+
+            MainWindowSettingsModel.DefaultLayouts.PropertyChanged += DefaultLayouts_PropertyChanged;
         }
 
         protected LayoutModel(string name)
@@ -144,6 +146,38 @@ namespace FancyZonesEditor.Models
 
         private bool _isApplied;
 
+        public bool IsHorizontalDefault
+        {
+            get
+            {
+                return MainWindowSettingsModel.DefaultLayouts.DefaultLayouts[(int)MonitorConfigurationType.Horizontal].Uuid == this.Uuid;
+            }
+        }
+
+        public bool CanBeSetAsHorizontalDefault
+        {
+            get
+            {
+                return MainWindowSettingsModel.DefaultLayouts.DefaultLayouts[(int)MonitorConfigurationType.Horizontal].Uuid != this.Uuid;
+            }
+        }
+
+        public bool IsVerticalDefault
+        {
+            get
+            {
+                return MainWindowSettingsModel.DefaultLayouts.DefaultLayouts[(int)MonitorConfigurationType.Vertical].Uuid == this.Uuid;
+            }
+        }
+
+        public bool CanBeSetAsVerticalDefault
+        {
+            get
+            {
+                return MainWindowSettingsModel.DefaultLayouts.DefaultLayouts[(int)MonitorConfigurationType.Vertical].Uuid != this.Uuid;
+            }
+        }
+
         public int SensitivityRadius
         {
             get
@@ -162,6 +196,22 @@ namespace FancyZonesEditor.Models
         }
 
         private int _sensitivityRadius = LayoutSettings.DefaultSensitivityRadius;
+
+        public int SensitivityRadiusMinimum
+        {
+            get
+            {
+                return 0;
+            }
+        }
+
+        public int SensitivityRadiusMaximum
+        {
+            get
+            {
+                return 1000;
+            }
+        }
 
         public List<string> QuickKeysAvailable
         {
@@ -235,6 +285,22 @@ namespace FancyZonesEditor.Models
                     FirePropertyChanged(nameof(TemplateZoneCount));
                     FirePropertyChanged(nameof(IsZoneAddingAllowed));
                 }
+            }
+        }
+
+        public int TemplateZoneCountMinimum
+        {
+            get
+            {
+                return 1;
+            }
+        }
+
+        public int TemplateZoneCountMaximum
+        {
+            get
+            {
+                return 128;
             }
         }
 
@@ -317,6 +383,14 @@ namespace FancyZonesEditor.Models
                     break;
                 }
             }
+        }
+
+        public void DefaultLayouts_PropertyChanged(object sender, PropertyChangedEventArgs e)
+        {
+            FirePropertyChanged(nameof(IsHorizontalDefault));
+            FirePropertyChanged(nameof(IsVerticalDefault));
+            FirePropertyChanged(nameof(CanBeSetAsHorizontalDefault));
+            FirePropertyChanged(nameof(CanBeSetAsVerticalDefault));
         }
     }
 }

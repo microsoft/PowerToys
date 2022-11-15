@@ -35,9 +35,7 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
             set => SetValue(ModuleImageSourceProperty, value);
         }
 
-#pragma warning disable CA2227 // Collection properties should be read only
         public ObservableCollection<PageLink> PrimaryLinks
-#pragma warning restore CA2227 // Collection properties should be read only
         {
             get => (ObservableCollection<PageLink>)GetValue(PrimaryLinksProperty);
             set => SetValue(PrimaryLinksProperty, value);
@@ -49,9 +47,7 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
             set { SetValue(SecondaryLinksHeaderProperty, value); }
         }
 
-#pragma warning disable CA2227 // Collection properties should be read only
         public ObservableCollection<PageLink> SecondaryLinks
-#pragma warning restore CA2227 // Collection properties should be read only
         {
             get => (ObservableCollection<PageLink>)GetValue(SecondaryLinksProperty);
             set => SetValue(SecondaryLinksProperty, value);

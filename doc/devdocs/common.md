@@ -95,6 +95,6 @@ namespace
 
 ```
 
-Note: since _background activation_ implies that your toast handler will be invoked in a separate process, you can't share data directly from within a handler and your PT process. Also, since PT is currently a Desktop Bridge app, _foreground activation_ is [handled the same as background](https://docs.microsoft.com/en-US/windows/uwp/design/shell/tiles-and-notifications/send-local-toast-desktop-cpp-wrl#foreground-vs-background-activation), therefore we don't make a dedicated API for it. You can read more on the rationale of the current design [here](https://github.com/microsoft/PowerToys/pull/1178#issue-368768337).
+Note: since _background activation_ implies that your toast handler will be invoked in a separate process, you can't share data directly from within a handler and your PT process. Also, since PT is currently a Desktop Bridge app, _foreground activation_ is [handled the same as background](https://learn.microsoft.com/windows/uwp/design/shell/tiles-and-notifications/send-local-toast-desktop-cpp-wrl#foreground-vs-background-activation), therefore we don't make a dedicated API for it. You can read more on the rationale of the current design [here](https://github.com/microsoft/PowerToys/pull/1178#issue-368768337).
 
 

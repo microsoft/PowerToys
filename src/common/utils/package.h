@@ -102,7 +102,7 @@ namespace package {
 
             return true;
         }
-        catch (std::exception e)
+        catch (std::exception& e)
         {
             Logger::error("Exception thrown while trying to register package: {}", e.what());
 

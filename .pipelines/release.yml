@@ -280,6 +280,38 @@ jobs:
       maximumCpuCount: true
 
   - task: VSBuild@1
+    displayName: Publish Measure Tool UI for Packaging
+    inputs:
+      solution: 'src/modules/MeasureTool/MeasureToolUI/MeasureToolUI.csproj'
+      vsVersion: 17.0
+      # The arguments should be the same as the ones for Settings; make sure they are.
+      msbuildArgs: >-
+        /target:Publish
+        /p:Configuration=$(BuildConfiguration);Platform=$(BuildPlatform);AppxBundle=Never
+        /p:VCRTForwarders-IncludeDebugCRT=false
+        /p:PowerToysRoot=$(Build.SourcesDirectory)
+        /p:PublishProfile=InstallationPublishProfile.pubxml
+      platform: $(BuildPlatform)
+      configuration: $(BuildConfiguration)
+      maximumCpuCount: true
+
+  - task: VSBuild@1
+    displayName: Publish File Locksmith UI for Packaging
+    inputs:
+      solution: 'src/modules/FileLocksmith/FileLocksmithUI/FileLocksmithUI.csproj'
+      vsVersion: 17.0
+      # The arguments should be the same as the ones for Settings; make sure they are.
+      msbuildArgs: >-
+        /target:Publish
+        /p:Configuration=$(BuildConfiguration);Platform=$(BuildPlatform);AppxBundle=Never
+        /p:VCRTForwarders-IncludeDebugCRT=false
+        /p:PowerToysRoot=$(Build.SourcesDirectory)
+        /p:PublishProfile=InstallationPublishProfile.pubxml
+      platform: $(BuildPlatform)
+      configuration: $(BuildConfiguration)
+      maximumCpuCount: true
+
+  - task: VSBuild@1
     displayName: Build PowerToysSetupCustomActions DLL # This dll needs to be build and signed before building the MSI.
     inputs:
       solution: '**/installer/PowerToysSetup.sln'
@@ -486,10 +518,37 @@ jobs:
       contents: '**/PowerToysSetup-*.exe'
       flattenFolders: True
       targetFolder: $(Build.ArtifactStagingDirectory)
+
+  - task: PowerShell@2
+    displayName: 'Calculating SHA256 hash'
+    inputs:
+      targetType: 'inline'
+      script: |
+        $p = "$(System.ArtifactsDirectory)\";
+        $staging = "$(Build.ArtifactStagingDirectory)\"
+        $hash = ((get-item $p\*.exe | Get-FileHash).Hash);
+        $plat = "hash_$(BuildPlatform).txt";
+        $combinedPath = $staging + $plat;
+        
+        echo $plat
+        echo $hash
+        echo $p
+        echo $combinedPath
+        
+        $hash | out-file -filepath $combinedPath
+      pwsh: true
       
   - task: PublishBuildArtifacts@1
     displayName: 'Publish Artifact: PowerToySetup'
     inputs:
       PathtoPublish: $(System.ArtifactsDirectory)
       ArtifactName: setup-$(BuildPlatform)
+
+  - task: PublishBuildArtifacts@1
+    displayName: 'Publish Artifact: GPO Files'
+    inputs:
+      PathtoPublish: doc\gpo\assets
+      ArtifactName: GroupPolicyObjectsFiles
+
+
 ...

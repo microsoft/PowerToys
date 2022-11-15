@@ -221,7 +221,7 @@ void SingleKeyRemapControl::createDetectKeyWindow(winrt::Windows::Foundation::II
     // ContentDialog for detecting remap key. This is the parent UI element.
     ContentDialog detectRemapKeyBox;
 
-    // ContentDialog requires manually setting the XamlRoot (https://docs.microsoft.com/en-us/uwp/api/windows.ui.xaml.controls.contentdialog#contentdialog-in-appwindow-or-xaml-islands)
+    // ContentDialog requires manually setting the XamlRoot (https://learn.microsoft.com/uwp/api/windows.ui.xaml.controls.contentdialog#contentdialog-in-appwindow-or-xaml-islands)
     detectRemapKeyBox.XamlRoot(xamlRoot);
     detectRemapKeyBox.Title(box_value(GET_RESOURCE_STRING(IDS_TYPEKEY_TITLE)));
     detectRemapKeyBox.IsPrimaryButtonEnabled(false);

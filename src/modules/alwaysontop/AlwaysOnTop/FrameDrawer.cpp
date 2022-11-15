@@ -3,6 +3,8 @@
 
 #include <dwmapi.h>
 
+#include <ScalingUtils.h>
+
 namespace
 {
     size_t D2DRectUHash(D2D1_SIZE_U rect)
@@ -88,7 +90,7 @@ void FrameDrawer::Show()
     Render();
 }
 
-void FrameDrawer::SetBorderRect(RECT windowRect, COLORREF color, int thickness, int radius)
+void FrameDrawer::SetBorderRect(RECT windowRect, COLORREF color, int thickness, float radius)
 {
     auto newSceneRect = DrawableRect{
         .borderColor = ConvertColor(color),
@@ -181,15 +183,27 @@ D2D1_COLOR_F FrameDrawer::ConvertColor(COLORREF color)
                         1.f);
 }
 
-D2D1_ROUNDED_RECT FrameDrawer::ConvertRect(RECT rect, int thickness, int radius)
+D2D1_ROUNDED_RECT FrameDrawer::ConvertRect(RECT rect, int thickness, float radius)
 {
-    auto d2d1Rect = D2D1::RectF((float)rect.left + thickness, (float)rect.top + thickness, (float)rect.right - thickness, (float)rect.bottom - thickness);
-    return D2D1::RoundedRect(d2d1Rect, (float)radius, (float)radius);
+    float halfThickness = thickness / 2.0f;
+
+    // 1 is needed to eliminate the gap between border and window
+    auto d2d1Rect = D2D1::RectF((float)rect.left + halfThickness + 1, 
+        (float)rect.top + halfThickness + 1, 
+        (float)rect.right - halfThickness - 1, 
+        (float)rect.bottom - halfThickness - 1);
+    return D2D1::RoundedRect(d2d1Rect, radius, radius);
 }
 
 D2D1_RECT_F FrameDrawer::ConvertRect(RECT rect, int thickness)
 {
-    return D2D1::RectF((float)rect.left + thickness, (float)rect.top + thickness, (float)rect.right - thickness, (float)rect.bottom - thickness);
+    float halfThickness = thickness / 2.0f;
+
+    // 1 is needed to eliminate the gap between border and window
+    return D2D1::RectF((float)rect.left + halfThickness + 1,
+        (float)rect.top + halfThickness + 1,
+        (float)rect.right - halfThickness - 1,
+        (float)rect.bottom - halfThickness - 1);
 }
 
 void FrameDrawer::Render()
@@ -207,11 +221,11 @@ void FrameDrawer::Render()
 
     if (m_sceneRect.roundedRect)
     {
-        m_renderTarget->DrawRoundedRectangle(m_sceneRect.roundedRect.value(), m_borderBrush.get(), static_cast<float>(m_sceneRect.thickness * 2));
+        m_renderTarget->DrawRoundedRectangle(m_sceneRect.roundedRect.value(), m_borderBrush.get(), static_cast<float>(m_sceneRect.thickness));
     }
     else if (m_sceneRect.rect)
     {
-        m_renderTarget->DrawRectangle(m_sceneRect.rect.value(), m_borderBrush.get(), static_cast<float>(m_sceneRect.thickness * 2));
+        m_renderTarget->DrawRectangle(m_sceneRect.rect.value(), m_borderBrush.get(), static_cast<float>(m_sceneRect.thickness));
     }
     
     m_renderTarget->EndDraw();

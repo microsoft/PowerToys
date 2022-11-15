@@ -1,6 +1,6 @@
 #pragma once
 
-#include <FancyZonesLib/FancyZonesData/Layout.h>
+#include <FancyZonesLib/FancyZonesData/LayoutData.h>
 #include <FancyZonesLib/ModuleConstants.h>
 
 #include <common/SettingsAPI/FileWatcher.h>
@@ -35,12 +35,12 @@ public:
 
     void LoadData();
 
-    std::optional<Layout> GetLayout(FancyZonesDataTypes::ZoneSetLayoutType type) const noexcept;
+    std::optional<LayoutData> GetLayout(FancyZonesDataTypes::ZoneSetLayoutType type) const noexcept;
 
 private:
     LayoutTemplates();
     ~LayoutTemplates() = default;
 
     std::unique_ptr<FileWatcher> m_fileWatcher;
-    std::vector<Layout> m_layouts;
+    std::vector<LayoutData> m_layouts;
 };

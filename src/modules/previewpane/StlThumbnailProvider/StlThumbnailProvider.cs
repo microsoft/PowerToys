@@ -11,6 +11,7 @@ using System.Windows.Media.Media3D;
 using Common.ComInterlop;
 using Common.Utilities;
 using HelixToolkit.Wpf;
+using Microsoft.PowerToys.Settings.UI.Library;
 using Bitmap = System.Drawing.Bitmap;
 
 namespace Microsoft.PowerToys.ThumbnailHandler.Stl
@@ -50,7 +51,7 @@ namespace Microsoft.PowerToys.ThumbnailHandler.Stl
 
             var stlReader = new StLReader
             {
-                DefaultMaterial = new DiffuseMaterial(new SolidColorBrush(Color.FromRgb(255, 201, 36))),
+                DefaultMaterial = new DiffuseMaterial(new SolidColorBrush(DefaultMaterialColor)),
             };
 
             var model = stlReader.Read(stream);
@@ -122,6 +123,12 @@ namespace Microsoft.PowerToys.ThumbnailHandler.Stl
                 return;
             }
 
+            if (global::PowerToys.GPOWrapper.GPOWrapper.GetConfiguredStlThumbnailsEnabledValue() == global::PowerToys.GPOWrapper.GpoRuleConfigured.Disabled)
+            {
+                // GPO is disabling this utility.
+                return;
+            }
+
             using (var stream = new ReadonlyStream(this.Stream as IStream))
             {
                 using (var memStream = new MemoryStream())
@@ -138,6 +145,30 @@ namespace Microsoft.PowerToys.ThumbnailHandler.Stl
                             pdwAlpha = WTS_ALPHATYPE.WTSAT_ARGB;
                         }
                     }
+                }
+            }
+        }
+
+        /// <summary>
+        /// Gets a value indicating what color to use.
+        /// </summary>
+        public static Color DefaultMaterialColor
+        {
+            get
+            {
+                try
+                {
+                    var moduleSettings = new SettingsUtils();
+
+                    var colorString = moduleSettings.GetSettings<PowerPreviewSettings>(PowerPreviewSettings.ModuleName).Properties.StlThumbnailColor.Value;
+
+                    return (Color)ColorConverter.ConvertFromString(colorString);
+                }
+                catch (FileNotFoundException)
+                {
+                    // Couldn't read the settings.
+                    // Assume default color value.
+                    return Color.FromRgb(255, 201, 36);
                 }
             }
         }

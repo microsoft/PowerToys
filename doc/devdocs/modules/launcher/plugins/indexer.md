@@ -33,7 +33,7 @@ The indexer plugin is used to search for files within the indexed locations of t
 ### Score
 Each of the indexer plugin results has a score set to 0 so they are present at the bottom of the list.
 
-[OLEDBCommand]: https://docs.microsoft.com/en-us/dotnet/api/system.data.oledb.oledbcommand?view=dotnet-plat-ext-3.1
-[OLEDBConnection]: https://docs.microsoft.com/en-us/dotnet/api/system.data.oledb.oledbconnection?view=dotnet-plat-ext-3.1
-[Contains]: https://docs.microsoft.com/en-us/windows/win32/search/-search-sql-contains
-[Like]: https://docs.microsoft.com/en-us/windows/win32/search/-search-sql-like
+[OLEDBCommand]: https://learn.microsoft.com/dotnet/api/system.data.oledb.oledbcommand?view=dotnet-plat-ext-3.1
+[OLEDBConnection]: https://learn.microsoft.com/dotnet/api/system.data.oledb.oledbconnection?view=dotnet-plat-ext-3.1
+[Contains]: https://learn.microsoft.com/windows/win32/search/-search-sql-contains
+[Like]: https://learn.microsoft.com/windows/win32/search/-search-sql-like

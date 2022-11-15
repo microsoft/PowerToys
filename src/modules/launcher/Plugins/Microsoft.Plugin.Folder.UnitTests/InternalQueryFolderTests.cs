@@ -4,6 +4,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.IO.Abstractions.TestingHelpers;
 using System.Linq;
 using Microsoft.Plugin.Folder.Sources;
@@ -31,7 +32,7 @@ namespace Microsoft.Plugin.Folder.UnitTests
                 { @"c:\Test\b\", new MockDirectoryData() },
             });
 
-            _queryFileSystemInfoMock = new QueryFileSystemInfo(_fileSystem.DirectoryInfo);
+            _queryFileSystemInfoMock = new QueryFileSystemInfo(_fileSystem.DirectoryInfo, MatchType.Simple, FileAttributes.Hidden | FileAttributes.System);
         }
 
         [TestMethod]

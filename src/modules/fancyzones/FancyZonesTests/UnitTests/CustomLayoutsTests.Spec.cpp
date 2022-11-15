@@ -2,7 +2,10 @@
 #include <filesystem>
 
 #include <FancyZonesLib/FancyZonesData.h>
+#include <FancyZonesLib/FancyZonesData/AppliedLayouts.h>
 #include <FancyZonesLib/FancyZonesData/CustomLayouts.h>
+#include <FancyZonesLib/FancyZonesData/LayoutHotkeys.h>
+#include <FancyZonesLib/FancyZonesData/LayoutTemplates.h>
 #include <FancyZonesLib/util.h>
 
 using namespace Microsoft::VisualStudio::CppUnitTestFramework;
@@ -13,6 +16,7 @@ namespace FancyZonesUnitTests
     {
         FancyZonesData& m_fzData = FancyZonesDataInstance();
         std::wstring m_testFolder = L"FancyZonesUnitTests";
+        std::wstring m_testFolderPath = PTSettingsHelper::get_module_save_folder_location(m_testFolder);
 
         json::JsonObject CanvasLayoutJson()
         {
@@ -101,8 +105,12 @@ namespace FancyZonesUnitTests
 
         TEST_METHOD_CLEANUP(CleanUp)
         {
-            std::filesystem::remove_all(CustomLayouts::CustomLayoutsFileName());
-            std::filesystem::remove_all(PTSettingsHelper::get_module_save_folder_location(m_testFolder));
+            // Move...FromZonesSettings creates all of these files, clean up
+            std::filesystem::remove(AppliedLayouts::AppliedLayoutsFileName());
+            std::filesystem::remove(CustomLayouts::CustomLayoutsFileName());
+            std::filesystem::remove(LayoutHotkeys::LayoutHotkeysFileName());
+            std::filesystem::remove(LayoutTemplates::LayoutTemplatesFileName());
+            std::filesystem::remove_all(m_testFolderPath);
         }
 
         TEST_METHOD (CustomLayoutsParse)

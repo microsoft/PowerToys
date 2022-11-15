@@ -22,8 +22,8 @@ namespace Wox.Plugin.Common.VirtualDesktop.Helper
     /// To use this helper you have to create an instance of it and access the method via the helper instance.
     /// We are only allowed to use public documented com interfaces.
     /// </remarks>
-    /// <SeeAlso href="https://docs.microsoft.com/en-us/windows/win32/api/shobjidl_core/nn-shobjidl_core-ivirtualdesktopmanager">Documentation of IVirtualDesktopManager interface</SeeAlso>
-    /// <SeeAlso href="https://docs.microsoft.com/en-us/archive/blogs/winsdk/virtual-desktop-switching-in-windows-10">CSharp example code for IVirtualDesktopManager</SeeAlso>
+    /// <SeeAlso href="https://learn.microsoft.com/windows/win32/api/shobjidl_core/nn-shobjidl_core-ivirtualdesktopmanager">Documentation of IVirtualDesktopManager interface</SeeAlso>
+    /// <SeeAlso href="https://learn.microsoft.com/archive/blogs/winsdk/virtual-desktop-switching-in-windows-10">CSharp example code for IVirtualDesktopManager</SeeAlso>
     public class VirtualDesktopHelper
     {
         /// <summary>

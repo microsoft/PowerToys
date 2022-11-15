@@ -3,6 +3,9 @@
 
 #include <FancyZonesLib/FancyZonesData.h>
 #include <FancyZonesLib/FancyZonesData/AppliedLayouts.h>
+#include <FancyZonesLib/FancyZonesData/CustomLayouts.h>
+#include <FancyZonesLib/FancyZonesData/LayoutHotkeys.h>
+#include <FancyZonesLib/FancyZonesData/LayoutTemplates.h>
 #include <FancyZonesLib/util.h>
 
 using namespace Microsoft::VisualStudio::CppUnitTestFramework;
@@ -13,6 +16,7 @@ namespace FancyZonesUnitTests
     {
         FancyZonesData& m_fzData = FancyZonesDataInstance();
         std::wstring m_testFolder = L"FancyZonesUnitTests";
+        std::wstring m_testFolderPath = PTSettingsHelper::get_module_save_folder_location(m_testFolder);
 
         TEST_METHOD_INITIALIZE(Init)
         {
@@ -21,8 +25,12 @@ namespace FancyZonesUnitTests
 
         TEST_METHOD_CLEANUP(CleanUp)
         {
-            std::filesystem::remove_all(AppliedLayouts::AppliedLayoutsFileName());
-            std::filesystem::remove_all(PTSettingsHelper::get_module_save_folder_location(m_testFolder));
+            // Move...FromZonesSettings creates all of these files, clean up
+            std::filesystem::remove(AppliedLayouts::AppliedLayoutsFileName());
+            std::filesystem::remove(CustomLayouts::CustomLayoutsFileName());
+            std::filesystem::remove(LayoutHotkeys::LayoutHotkeysFileName());
+            std::filesystem::remove(LayoutTemplates::LayoutTemplatesFileName());
+            std::filesystem::remove_all(m_testFolderPath);
             AppliedLayouts::instance().LoadData(); // clean data 
         }
 
@@ -410,7 +418,7 @@ namespace FancyZonesUnitTests
             };
 
             // test
-            Layout expectedLayout {
+            LayoutData expectedLayout {
                 .uuid = FancyZonesUtils::GuidFromString(L"{33A2B101-06E0-437B-A61E-CDBECF502906}").value(),
                 .type = FancyZonesDataTypes::ZoneSetLayoutType::Focus,
                 .showSpacing = true,
@@ -462,7 +470,7 @@ namespace FancyZonesUnitTests
             AppliedLayouts::instance().LoadData();
 
             // test
-            Layout expectedLayout{
+            LayoutData expectedLayout{
                 .uuid = FancyZonesUtils::GuidFromString(L"{33A2B101-06E0-437B-A61E-CDBECF502906}").value(),
                 .type = FancyZonesDataTypes::ZoneSetLayoutType::Focus,
                 .showSpacing = true,
@@ -522,7 +530,7 @@ namespace FancyZonesUnitTests
                 .monitorId = { .deviceId = { .id = L"device", .instanceId = L"instance-id" }, .serialNumber = L"serial-number" },
                 .virtualDesktopId = FancyZonesUtils::GuidFromString(L"{E21F6F29-76FD-4FC1-8970-17AB8AD64847}").value()
             };
-            AppliedLayouts::instance().ApplyLayout(id, Layout{});
+            AppliedLayouts::instance().ApplyLayout(id, LayoutData{});
 
             // test
             Assert::IsTrue(AppliedLayouts::instance().IsLayoutApplied(id));
@@ -535,7 +543,7 @@ namespace FancyZonesUnitTests
                 .monitorId = { .deviceId = { .id = L"device-1", .instanceId = L"instance-id-1" }, .serialNumber = L"serial-number-1" },
                 .virtualDesktopId = FancyZonesUtils::GuidFromString(L"{E21F6F29-76FD-4FC1-8970-17AB8AD64847}").value()
             };
-            AppliedLayouts::instance().ApplyLayout(id1, Layout{});
+            AppliedLayouts::instance().ApplyLayout(id1, LayoutData{});
 
             // test
             FancyZonesDataTypes::WorkAreaId id2{

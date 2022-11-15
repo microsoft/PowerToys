@@ -3,7 +3,6 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
-using System.Collections.Generic;
 using System.CommandLine;
 using System.CommandLine.Invocation;
 using System.Diagnostics;
@@ -17,11 +16,14 @@ using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Awake.Core;
-using Awake.Core.Models;
 using interop;
 using ManagedCommon;
 using Microsoft.PowerToys.Settings.UI.Library;
 using NLog;
+using Windows.Win32;
+using Windows.Win32.Foundation;
+using Windows.Win32.System.Console;
+using Windows.Win32.System.Power;
 
 #pragma warning disable CS8602 // Dereference of a possibly null reference.
 #pragma warning disable CS8603 // Possible null reference return.
@@ -47,8 +49,8 @@ namespace Awake
         private static Logger? _log;
 
 #pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
-        private static ConsoleEventHandler _handler;
-        private static SystemPowerCapabilities _powerCapabilities;
+        private static PHANDLER_ROUTINE _handler;
+        private static SYSTEM_POWER_CAPABILITIES _powerCapabilities;
 #pragma warning restore CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
 
         private static ManualResetEvent _exitSignal = new ManualResetEvent(false);
@@ -59,11 +61,17 @@ namespace Awake
             // only one instance of Awake is running.
             _log = LogManager.GetCurrentClassLogger();
 
+            if (PowerToys.GPOWrapper.GPOWrapper.GetConfiguredAwakeEnabledValue() == PowerToys.GPOWrapper.GpoRuleConfigured.Disabled)
+            {
+                Exit("Tried to start with a GPO policy setting the utility to always be disabled. Please contact your systems administrator.", 1, _exitSignal, true);
+                return 0;
+            }
+
             LockMutex = new Mutex(true, InternalConstants.AppName, out bool instantiated);
 
             if (!instantiated)
             {
-                Exit(InternalConstants.AppName + " is already running! Exiting the application.", 1, true);
+                Exit(InternalConstants.AppName + " is already running! Exiting the application.", 1, _exitSignal, true);
             }
 
             _settingsUtils = new SettingsUtils();
@@ -82,12 +90,12 @@ namespace Awake
 
             // To make it easier to diagnose future issues, let's get the
             // system power capabilities and aggregate them in the log.
-            NativeMethods.GetPwrCapabilities(out _powerCapabilities);
+            PInvoke.GetPwrCapabilities(out _powerCapabilities);
             _log.Info(JsonSerializer.Serialize(_powerCapabilities));
 
             _log.Info("Parsing parameters...");
 
-            Option<bool>? configOption = new (
+            var configOption = new Option<bool>(
                     aliases: new[] { "--use-pt-config", "-c" },
                     getDefaultValue: () => false,
                     description: $"Specifies whether {InternalConstants.AppName} will be using the PowerToys configuration file for managing the state.")
@@ -100,7 +108,7 @@ namespace Awake
 
             configOption.Required = false;
 
-            Option<bool>? displayOption = new (
+            var displayOption = new Option<bool>(
                     aliases: new[] { "--display-on", "-d" },
                     getDefaultValue: () => true,
                     description: "Determines whether the display should be kept awake.")
@@ -113,7 +121,7 @@ namespace Awake
 
             displayOption.Required = false;
 
-            Option<uint>? timeOption = new (
+            var timeOption = new Option<uint>(
                     aliases: new[] { "--time-limit", "-t" },
                     getDefaultValue: () => 0,
                     description: "Determines the interval, in seconds, during which the computer is kept awake.")
@@ -126,7 +134,7 @@ namespace Awake
 
             timeOption.Required = false;
 
-            Option<int>? pidOption = new (
+            var pidOption = new Option<int>(
                     aliases: new[] { "--pid", "-p" },
                     getDefaultValue: () => 0,
                     description: $"Bind the execution of {InternalConstants.AppName} to another process.")
@@ -156,23 +164,23 @@ namespace Awake
             return rootCommand.InvokeAsync(args).Result;
         }
 
-        private static bool ExitHandler(ControlType ctrlType)
+        private static BOOL ExitHandler(uint ctrlType)
         {
             _log.Info($"Exited through handler with control type: {ctrlType}");
-            Exit("Exiting from the internal termination handler.", Environment.ExitCode);
+            Exit("Exiting from the internal termination handler.", Environment.ExitCode, _exitSignal);
             return false;
         }
 
-        private static void Exit(string message, int exitCode, bool force = false)
+        private static void Exit(string message, int exitCode, ManualResetEvent exitSignal, bool force = false)
         {
             _log.Info(message);
 
-            APIHelper.CompleteExit(exitCode, force);
+            APIHelper.CompleteExit(exitCode, exitSignal, force);
         }
 
         private static void HandleCommandLineArguments(bool usePtConfig, bool displayOn, uint timeLimit, int pid)
         {
-            _handler += new ConsoleEventHandler(ExitHandler);
+            _handler += ExitHandler;
             APIHelper.SetConsoleControlHandler(_handler, true);
 
             if (pid == 0)
@@ -192,16 +200,15 @@ namespace Awake
                 // and instead watch for changes in the file.
                 try
                 {
+                    var eventHandle = new EventWaitHandle(false, EventResetMode.ManualReset, Constants.AwakeExitEvent());
                     new Thread(() =>
                     {
-                        EventWaitHandle? eventHandle = new EventWaitHandle(false, EventResetMode.AutoReset, Constants.AwakeExitEvent());
-                        if (eventHandle.WaitOne())
+                        if (WaitHandle.WaitAny(new WaitHandle[] { _exitSignal, eventHandle }) == 1)
                         {
-                            Exit("Received a signal to end the process. Making sure we quit...", 0, true);
+                            Exit("Received a signal to end the process. Making sure we quit...", 0, _exitSignal, true);
                         }
                     }).Start();
-
-                    TrayHelper.InitializeTray(InternalConstants.FullAppName, new Icon("modules/awake/images/awake.ico"));
+                    TrayHelper.InitializeTray(InternalConstants.FullAppName, new Icon("modules/awake/images/awake.ico"), _exitSignal);
 
                     string? settingsPath = _settingsUtils.GetSettingsFilePath(InternalConstants.AppName);
                     _log.Info($"Reading configuration file: {settingsPath}");
@@ -263,7 +270,7 @@ namespace Awake
                 RunnerHelper.WaitForPowerToysRunner(pid, () =>
                 {
                     _log.Info($"Triggered PID-based exit handler for PID {pid}.");
-                    Exit("Terminating from process binding hook.", 0, true);
+                    Exit("Terminating from process binding hook.", 0, _exitSignal, true);
                 });
             }
 

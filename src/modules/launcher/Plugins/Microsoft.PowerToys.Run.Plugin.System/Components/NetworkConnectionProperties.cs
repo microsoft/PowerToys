@@ -238,7 +238,7 @@ namespace Microsoft.PowerToys.Run.Plugin.System.Components
                     }
                     else if (ipList[i].SuffixOrigin == SuffixOrigin.Random)
                     {
-                       IPv6Temporary = ip.ToString();
+                        IPv6Temporary = ip.ToString();
                     }
                     else
                     {

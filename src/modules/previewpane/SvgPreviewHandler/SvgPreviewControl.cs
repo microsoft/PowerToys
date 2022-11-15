@@ -11,6 +11,7 @@ using System.Runtime.InteropServices.ComTypes;
 using System.Windows.Forms;
 using Common;
 using Common.Utilities;
+using Microsoft.PowerToys.PreviewHandler.Svg.Properties;
 using Microsoft.PowerToys.PreviewHandler.Svg.Telemetry.Events;
 using Microsoft.PowerToys.Telemetry;
 using Microsoft.Web.WebView2.Core;
@@ -37,6 +38,11 @@ namespace Microsoft.PowerToys.PreviewHandler.Svg
         /// Name of the virtual host
         /// </summary>
         private const string VirtualHostName = "PowerToysLocalSvg";
+
+        /// <summary>
+        /// URI of the local file saved with the contents
+        /// </summary>
+        private Uri _localFileURI;
 
         /// <summary>
         /// Gets the path of the current assembly.
@@ -77,6 +83,20 @@ namespace Microsoft.PowerToys.PreviewHandler.Svg
         /// <param name="dataSource">Stream reference to access source file.</param>
         public override void DoPreview<T>(T dataSource)
         {
+            if (global::PowerToys.GPOWrapper.GPOWrapper.GetConfiguredSvgPreviewEnabledValue() == global::PowerToys.GPOWrapper.GpoRuleConfigured.Disabled)
+            {
+                // GPO is disabling this utility. Show an error message instead.
+                InvokeOnControlThread(() =>
+                {
+                    _infoBarAdded = true;
+                    AddTextBoxControl(Properties.Resource.GpoDisabledErrorText);
+                    Resize += FormResized;
+                    base.DoPreview(dataSource);
+                });
+
+                return;
+            }
+
             CleanupWebView2UserDataFolder();
 
             string svgData = null;
@@ -162,6 +182,16 @@ namespace Microsoft.PowerToys.PreviewHandler.Svg
             }
         }
 
+        // Disable loading resources.
+        private void CoreWebView2_BlockExternalResources(object sender, CoreWebView2WebResourceRequestedEventArgs e)
+        {
+            // Show local file we've saved with the svg contents. Block all else.
+            if (new Uri(e.Request.Uri) != _localFileURI)
+            {
+                e.Response = _browser.CoreWebView2.Environment.CreateWebResourceResponse(null, 403, "Forbidden", null);
+            }
+        }
+
         /// <summary>
         /// Adds a WebView2 Control to Control Collection.
         /// </summary>
@@ -171,9 +201,11 @@ namespace Microsoft.PowerToys.PreviewHandler.Svg
             _browser = new WebView2();
             _browser.Dock = DockStyle.Fill;
 
+            // Prevent new windows from being opened.
+            var webView2Options = new CoreWebView2EnvironmentOptions("--block-new-web-contents");
             ConfiguredTaskAwaitable<CoreWebView2Environment>.ConfiguredTaskAwaiter
                webView2EnvironmentAwaiter = CoreWebView2Environment
-                   .CreateAsync(userDataFolder: _webView2UserDataFolder)
+                   .CreateAsync(userDataFolder: _webView2UserDataFolder, options: webView2Options)
                    .ConfigureAwait(true).GetAwaiter();
             webView2EnvironmentAwaiter.OnCompleted(() =>
             {
@@ -183,18 +215,29 @@ namespace Microsoft.PowerToys.PreviewHandler.Svg
                     {
                         _webView2Environment = webView2EnvironmentAwaiter.GetResult();
                         await _browser.EnsureCoreWebView2Async(_webView2Environment).ConfigureAwait(true);
-                        await _browser.CoreWebView2.AddScriptToExecuteOnDocumentCreatedAsync("window.addEventListener('contextmenu', window => {window.preventDefault();});");
-                        _browser.CoreWebView2.SetVirtualHostNameToFolderMapping(VirtualHostName, AssemblyDirectory, CoreWebView2HostResourceAccessKind.Allow);
+                        _browser.CoreWebView2.SetVirtualHostNameToFolderMapping(VirtualHostName, AssemblyDirectory, CoreWebView2HostResourceAccessKind.Deny);
                         _browser.CoreWebView2.Settings.AreDefaultScriptDialogsEnabled = false;
+                        _browser.CoreWebView2.Settings.AreDefaultContextMenusEnabled = false;
+                        _browser.CoreWebView2.Settings.AreDevToolsEnabled = false;
+                        _browser.CoreWebView2.Settings.AreHostObjectsAllowed = false;
+                        _browser.CoreWebView2.Settings.IsGeneralAutofillEnabled = false;
+                        _browser.CoreWebView2.Settings.IsPasswordAutosaveEnabled = false;
+                        _browser.CoreWebView2.Settings.IsScriptEnabled = false;
+                        _browser.CoreWebView2.Settings.IsWebMessageEnabled = false;
+
+                        // Don't load any resources.
+                        _browser.CoreWebView2.AddWebResourceRequestedFilter("*", CoreWebView2WebResourceContext.All);
+                        _browser.CoreWebView2.WebResourceRequested += CoreWebView2_BlockExternalResources;
 
                         // WebView2.NavigateToString() limitation
-                        // See https://docs.microsoft.com/en-us/dotnet/api/microsoft.web.webview2.core.corewebview2.navigatetostring?view=webview2-dotnet-1.0.864.35#remarks
+                        // See https://learn.microsoft.com/dotnet/api/microsoft.web.webview2.core.corewebview2.navigatetostring?view=webview2-dotnet-1.0.864.35#remarks
                         // While testing the limit, it turned out it is ~1.5MB, so to be on a safe side we go for 1.5m bytes
                         if (svgData.Length > 1_500_000)
                         {
                             string filename = _webView2UserDataFolder + "\\" + Guid.NewGuid().ToString() + ".html";
                             File.WriteAllText(filename, svgData);
-                            _browser.Source = new Uri(filename);
+                            _localFileURI = new Uri(filename);
+                            _browser.Source = _localFileURI;
                         }
                         else
                         {

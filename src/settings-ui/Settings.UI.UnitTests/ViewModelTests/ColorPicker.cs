@@ -4,9 +4,9 @@
 
 using System.Text.Json;
 using Microsoft.PowerToys.Settings.UI.Library;
-using Microsoft.PowerToys.Settings.UI.Library.ViewModels;
 using Microsoft.PowerToys.Settings.UI.UnitTests.BackwardsCompatibility;
 using Microsoft.PowerToys.Settings.UI.UnitTests.Mocks;
+using Microsoft.PowerToys.Settings.UI.ViewModels;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
 
@@ -36,10 +36,15 @@ namespace ViewModelTests
             var mockGeneralSettingsUtils = new SettingsUtils(mockGeneralIOProvider.Object, settingPathMock.Object);
             GeneralSettings originalGeneralSettings = mockGeneralSettingsUtils.GetSettingsOrDefault<GeneralSettings>();
             var generalSettingsRepository = new BackCompatTestProperties.MockSettingsRepository<GeneralSettings>(mockGeneralSettingsUtils);
+            var colorPickerSettingsRepository = new BackCompatTestProperties.MockSettingsRepository<ColorPickerSettings>(mockSettingsUtils);
 
             // Act
             // Initialise View Model with test Config files
-            using (var viewModel = new ColorPickerViewModel(mockSettingsUtils, generalSettingsRepository, ColorPickerIsEnabledByDefaultIPC))
+            using (var viewModel = new ColorPickerViewModel(
+                mockSettingsUtils,
+                generalSettingsRepository,
+                colorPickerSettingsRepository,
+                ColorPickerIsEnabledByDefaultIPC))
             {
                 // Assert
                 // Verify that the old settings persisted
@@ -58,7 +63,11 @@ namespace ViewModelTests
         public void ColorPickerIsEnabledByDefault()
         {
             var mockSettingsUtils = ISettingsUtilsMocks.GetStubSettingsUtils<ColorPickerSettings>();
-            using (var viewModel = new ColorPickerViewModel(ISettingsUtilsMocks.GetStubSettingsUtils<ColorPickerSettings>().Object, SettingsRepository<GeneralSettings>.GetInstance(ISettingsUtilsMocks.GetStubSettingsUtils<GeneralSettings>().Object), ColorPickerIsEnabledByDefaultIPC))
+            using (var viewModel = new ColorPickerViewModel(
+                ISettingsUtilsMocks.GetStubSettingsUtils<ColorPickerSettings>().Object,
+                SettingsRepository<GeneralSettings>.GetInstance(ISettingsUtilsMocks.GetStubSettingsUtils<GeneralSettings>().Object),
+                SettingsRepository<ColorPickerSettings>.GetInstance(new SettingsUtils()),
+                ColorPickerIsEnabledByDefaultIPC))
             {
                 Assert.IsTrue(viewModel.IsEnabled);
             }

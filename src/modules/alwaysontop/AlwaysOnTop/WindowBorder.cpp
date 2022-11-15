@@ -5,6 +5,7 @@
 #include "winrt/Windows.Foundation.h"
 
 #include <FrameDrawer.h>
+#include <ScalingUtils.h>
 #include <Settings.h>
 #include <WindowCornersUtil.h>
 
@@ -127,6 +128,9 @@ bool WindowBorder::Init(HINSTANCE hinstance)
         , windowRect.bottom - windowRect.top
         , SWP_NOMOVE | SWP_NOSIZE);
 
+    BOOL val = TRUE;
+    DwmSetWindowAttribute(m_window, DWMWA_EXCLUDED_FROM_PEEK, &val, sizeof(val));
+
     m_frameDrawer = FrameDrawer::Create(m_window);
     if (!m_frameDrawer)
     {
@@ -189,13 +193,15 @@ void WindowBorder::UpdateBorderProperties() const
         color = AlwaysOnTopSettings::settings().frameColor;
     }
 
-    int cornerRadius = 0;
+    float scalingFactor = ScalingUtils::ScalingFactor(m_trackingWindow);
+    float thickness = AlwaysOnTopSettings::settings().frameThickness * scalingFactor;
+    float cornerRadius = 0.0;
     if (AlwaysOnTopSettings::settings().roundCornersEnabled)
     {
-        cornerRadius = WindowBordersUtils::AreCornersRounded(m_trackingWindow) ? 8 : 0;
+        cornerRadius = WindowCornerUtils::CornersRadius(m_trackingWindow) * scalingFactor;
     }
     
-    m_frameDrawer->SetBorderRect(frameRect, color, AlwaysOnTopSettings::settings().frameThickness, cornerRadius);
+    m_frameDrawer->SetBorderRect(frameRect, color, static_cast<int>(thickness), cornerRadius);
 }
 
 LRESULT WindowBorder::WndProc(UINT message, WPARAM wparam, LPARAM lparam) noexcept

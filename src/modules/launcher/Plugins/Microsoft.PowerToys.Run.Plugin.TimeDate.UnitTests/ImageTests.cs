@@ -4,7 +4,6 @@
 
 using System.Globalization;
 using System.Linq;
-using System.Threading;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
 using Wox.Infrastructure;
