@@ -57,7 +57,7 @@ namespace
     vector<pair<wstring, wstring>> QueryValues(HKEY key)
     {
         DWORD cValues;
-        DWORD retCode = RegQueryInfoKeyW(key, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, &cValues, nullptr, nullptr, nullptr, nullptr);
+        RegQueryInfoKeyW(key, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, &cValues, nullptr, nullptr, nullptr, nullptr);
         TCHAR achValue[255];
         DWORD cchValue = 255;
         LPBYTE value;
@@ -282,7 +282,7 @@ void ReportRegistry(const filesystem::path& tmpDir)
                 {
                     DWORD data = 0;
                     DWORD dataSize = sizeof(data);
-                    LONG retCode = RegGetValueW(rootKey, subKey.c_str(), value.c_str(), flags, &type, &data, &dataSize);
+                    result = RegGetValueW(rootKey, subKey.c_str(), value.c_str(), flags, &type, &data, &dataSize);
                     if (result == ERROR_SUCCESS)
                     {
                         registryReport << "\t" << value << " > " << data << "\n";
