@@ -1,5 +1,5 @@
 ﻿<Page
-    x:Class="Microsoft.PowerToys.Settings.UI.OOBE.Views.BlankPage1"
+    x:Class="Microsoft.PowerToys.Settings.UI.OOBE.Views.OobeOverviewAlternate"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:local="using:Microsoft.PowerToys.Settings.UI.OOBE.Views"
@@ -9,6 +9,6 @@
     Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
 
     <Grid>
-
+        <TextBlock Text="Hello World"/>
     </Grid>
 </Page>

@@ -47,8 +47,14 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
 
         public ObservableCollection<OobePowerToysModule> Modules { get; }
 
+        public string LandingPageFlag { get; set; }
+
         public OobeShellPage()
         {
+            VariantService varServ = new VariantService();
+            varServ.VariantAssignmentProvider_Initialize();
+            LandingPageFlag = varServ.FeatureFlagValue;
+
             InitializeComponent();
 
             DataContext = ViewModel;
@@ -186,7 +192,17 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
             {
                 switch (selectedItem.Tag)
                 {
-                    case "Overview": NavigationFrame.Navigate(typeof(OobeOverview)); break;
+                    case "Overview":
+                        if (LandingPageFlag == "alternate")
+                        {
+                            NavigationFrame.Navigate(typeof(OobeOverviewAlternate));
+                        }
+                        else
+                        {
+                            NavigationFrame.Navigate(typeof(OobeOverview));
+                        }
+
+                        break;
                     case "WhatsNew": NavigationFrame.Navigate(typeof(OobeWhatsNew)); break;
                     case "AlwaysOnTop": NavigationFrame.Navigate(typeof(OobeAlwaysOnTop)); break;
                     case "Awake": NavigationFrame.Navigate(typeof(OobeAwake)); break;

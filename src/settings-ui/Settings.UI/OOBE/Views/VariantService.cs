@@ -1,15 +1,12 @@
 ﻿// Copyright (c) Microsoft Corporation
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
-using Microsoft.Extensions.Logging;
 using Microsoft.VariantAssignment.Client;
 using Microsoft.VariantAssignment.Contract;
 
 namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
 {
     using System;
-    using System.Collections.Generic;
-    using System.Threading.Tasks;
 
     public class VariantService
     {
@@ -17,7 +14,7 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
 
         // This is the call which will fetch the assignment response and store the result into a globally accessible variable
         // for the rest of our code to access.
-        public async Task VariantAssignmentProvider_Initialize()
+        public void VariantAssignmentProvider_Initialize()
         {
             // 1. Load configuration, e.g. bind from configuration, inject as IOptions<T>, etc.
             var vaSettings = new VariantAssignmentClientSettings
@@ -27,21 +24,30 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
                 ResponseCacheTime = TimeSpan.FromMinutes(5),
             };
 
-            // 2. Initialize a TAS client, dispose when finished.
-            // A TAS client is used as an endpoint client to query, refetch, and cache data from the Experimentation service.
-            using var httpHandler = new TestResponseHandler(); // test handler to avoid network calls
-            using var vaClient = httpHandler.GetTreatmentAssignmentServiceClient(vaSettings, disposeHandler: false);
+            var vaClient = vaSettings.GetTreatmentAssignmentServiceClient();
 
             // 3. Obtain variant assignments.
             // The VariantAssignmentRequest has parameters that detail the current user. What UserID are they? Market? Build?
             var vaRequest = GetVariantAssignmentRequest();
-            using var variantAssignments = await vaClient.GetVariantAssignmentsAsync(vaRequest).ConfigureAwait(false);
+            var task = vaClient.GetVariantAssignmentsAsync(vaRequest);
+            var result = task.Result;
 
             // 4. Use variant assignments.
-            FeatureVariables = variantAssignments.GetFeatureVariables();
+            var allFeatureFlags = result.GetFeatureVariables();
+            var featureNameSpace = allFeatureFlags[0].KeySegments[0];
+            var featureFlag = allFeatureFlags[0].KeySegments[1];
+            FeatureFlagValue = allFeatureFlags[0].GetStringValue();
+            /*var featureFlagFriendlyStrings = allFeatureFlags
+            .Select(f => new
+            {
+                featureNamespace = f.KeySegments[0],
+                featureFlag = f.KeySegments[1],
+                featureFlagValue = f.GetStringValue(), // assume all the flags are string types
+            })
+            .Select(f => $"{f.featureNamespace}.{f.featureFlag}={f.featureFlagValue}"); */
         }
 
-        public IReadOnlyList<IFeatureVariable> FeatureVariables { get; set; }
+        public string FeatureFlagValue { get; set; }
 
         // The response will be used to describe the user. Ideally ,this will get the exact data of the user that will then
         // help determine what experiments this user can be eligible for. I think this is pulling from telemetry of the user?
@@ -52,13 +58,14 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
             // Consumers of the package would typically reference only one implementation and thus avoid any ambiguities.
             return new VariantAssignmentRequest
             {
+                // Parameters are inputs used for evaluating filters, randomization units, etc.
                 Parameters =
                 {
                     // parameters may be used for traffic filtering
                     { "Application", "App1" },
 
                     // some parameters are designated as "assignment units" and used for randomization
-                    { "UserId", Guid.NewGuid().ToString() },
+                    { "clientid", Guid.NewGuid().ToString() },
                 },
             };
         }

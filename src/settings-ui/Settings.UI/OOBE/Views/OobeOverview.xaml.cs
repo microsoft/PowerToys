@@ -15,16 +15,10 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
 
         public OobeOverview()
         {
-            VariantService varServ = new VariantService();
-            var something = varServ.FeatureVariables[0].GetStringValue();
-            ExperimentText = something;
-
             this.InitializeComponent();
             ViewModel = new OobePowerToysModule(OobeShellPage.OobeShellHandler.Modules[(int)PowerToysModules.Overview]);
             DataContext = ViewModel;
         }
-
-        public string ExperimentText { get; set; }
 
         private void SettingsLaunchButton_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
         {

@@ -1481,10 +1481,12 @@ Made with 💗 by Microsoft and the PowerToys community.</value>
     <comment>Mouse as in the hardware peripheral</comment>
   </data>
   <data name="Oobe_Overview.Description" xml:space="preserve">
-    <value>HELP THIS TO CHANGE</value>
+    <value>Microsoft PowerToys is a set of utilities for power users to tune and streamline their Windows experience for greater productivity.
+
+Take a moment to preview the various utilities listed or view our comprehensive documentation.</value>
   </data>
   <data name="Oobe_Overview_DescriptionLinkText.Text" xml:space="preserve">
-    <value>HELLO THIS IS A TEST CHANGE IT. </value>
+    <value>Documentation on Microsoft Docs</value>
   </data>
   <data name="ReleaseNotes.Content" xml:space="preserve">
     <value>Release notes</value>
@@ -1611,7 +1613,8 @@ From there, simply click on one of the supported files in the File Explorer and 
     <comment>Do not localize this string</comment>
   </data>
   <data name="Oobe_Overview.Title" xml:space="preserve">
-    <value>Welcome</value>
+    <value>
+		Welcome!</value>
   </data>
   <data name="Oobe_WhatsNew.Text" xml:space="preserve">
     <value>What's new</value>
