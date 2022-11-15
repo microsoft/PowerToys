@@ -35,14 +35,14 @@
     <PreferredToolArchitecture>x64</PreferredToolArchitecture>
     <VcpkgEnabled>false</VcpkgEnabled>
     <ExternalIncludePath>$(MSBuildThisFileFullPath)\..\deps\;$(MSBuildThisFileFullPath)\..\packages\;$(ExternalIncludePath)</ExternalIncludePath>
-	<RunCodeAnalysis>true</RunCodeAnalysis>
-	<CodeAnalysisRuleSet>$(MsbuildThisFileDirectory)\CppRuleSet.ruleset</CodeAnalysisRuleSet>
+    <RunCodeAnalysis>true</RunCodeAnalysis>
+    <CodeAnalysisRuleSet>$(MsbuildThisFileDirectory)\CppRuleSet.ruleset</CodeAnalysisRuleSet>
   </PropertyGroup>
   <ItemDefinitionGroup>
     <ClCompile>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
       <WarningLevel>Level4</WarningLevel>
-      <DisableSpecificWarnings>26800;28251;4189;4239;4244;4245;4389;4456;4457;4701;6387;4458;4505;4515;4459;4679;4702;6031;6248;26451;28182;%(DisableSpecificWarnings)</DisableSpecificWarnings>
+      <DisableSpecificWarnings>26800;28251;4244;4245;4389;4456;4457;4679;4701;6387;4458;4505;4515;4459;4702;6031;6248;26451;28182;%(DisableSpecificWarnings)</DisableSpecificWarnings>
       <DisableAnalyzeExternal >true</DisableAnalyzeExternal>
       <ExternalWarningLevel>TurnOffAllWarnings</ExternalWarningLevel>
       <ConformanceMode>false</ConformanceMode>

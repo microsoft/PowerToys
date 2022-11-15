@@ -405,7 +405,7 @@ void notifications::update_toast_progress_bar(std::wstring_view tag, progress_ba
     map.Insert(L"progressTitle", params.progress_title);
 
     NotificationData data(map);
-    NotificationUpdateResult res = notifier.Update(data, tag, DEFAULT_TOAST_GROUP);
+    notifier.Update(data, tag, DEFAULT_TOAST_GROUP);
 }
 
 void notifications::remove_toasts_by_tag(std::wstring_view tag)
