@@ -57,6 +57,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="6.0.0" />
     <PackageReference Include="Microsoft.VariantAssignment.Client" Version="2.4.17140001" />
     <PackageReference Include="Microsoft.VariantAssignment.Contract" Version="3.0.16990001" />
     <PackageReference Include="Microsoft.Windows.CsWinRT" Version="2.0.0" />
