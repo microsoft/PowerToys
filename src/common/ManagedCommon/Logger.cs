@@ -31,14 +31,26 @@ namespace Microsoft.PowerToys.Common.Utils
 
             string applicationLogPath = Path.Combine(Constants.AppDataPath());
 
+            bool noLoggerDefined;
+
             if (location.Contains("ColorPicker"))
             {
                 applicationLogPath += "\\ColorPicker\\Logs";
             }
-            else
+            else if (location.Contains("FancyZones")
             {
                 applicationLogPath += "\\FancyZones\\Logs";
             }
+            else if (location.Contains("Monaco")
+            {
+                applicationLogPath = System.Environment.GetEnvironmentVariable("USERPROFILE") + "\\AppData\\LocalLow\\Microsoft\\PowerToys\\logs\\FileExplorer_localLow\\Monaco";
+            }
+            else
+            {
+                applicationLogPath += "\\Debug";
+                noLoggerDefined = true;
+            }
+
 
             applicationLogPath = Path.Combine(applicationLogPath, Version);
 
@@ -53,6 +65,11 @@ namespace Microsoft.PowerToys.Common.Utils
             Trace.Listeners.Add(new TextWriterTraceListener(logFilePath));
 
             Trace.AutoFlush = true;
+
+            if (noLoggerDefined)
+            {
+                LogError("No logger found for assembly: " + location)
+            }
         }
 
         public static void LogError(string message)
