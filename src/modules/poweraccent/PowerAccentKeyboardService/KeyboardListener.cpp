@@ -12,7 +12,7 @@
 namespace winrt::PowerToys::PowerAccentKeyboardService::implementation
 {
     KeyboardListener::KeyboardListener() :
-        m_toolbarVisible(false), m_triggeredWithSpace(false), m_shiftPressed(false)
+        m_toolbarVisible(false), m_triggeredWithSpace(false), m_leftShiftPressed(false), m_rightShiftPressed(false)
     {
         s_instance = this;
         LoggerHelpers::init_logger(L"PowerAccent", L"PowerAccentKeyboardService", "PowerAccent");
@@ -144,10 +144,16 @@ namespace winrt::PowerToys::PowerAccentKeyboardService::implementation
     bool KeyboardListener::OnKeyDown(KBDLLHOOKSTRUCT info) noexcept
     {
         auto letterKey = static_cast<LetterKey>(info.vkCode);
-        // Shift key detected only if the toolbar is already visible to avoid conflicts with uppercase
-        if (!m_shiftPressed && m_toolbarVisible && (info.vkCode == VK_LSHIFT || info.vkCode == VK_RSHIFT))
+
+        // Shift key is detected only if the toolbar is already visible to avoid conflicts with uppercase
+        if (!m_leftShiftPressed && m_toolbarVisible && info.vkCode == VK_LSHIFT)
         {
-            m_shiftPressed = true;
+            m_leftShiftPressed = true;
+        }
+
+        if (!m_rightShiftPressed && m_toolbarVisible && info.vkCode == VK_RSHIFT)
+        {
+            m_rightShiftPressed = true;
         }
 
         if (std::find(letters.begin(), letters.end(), letterKey) != cend(letters) && m_isLanguageLetterCb(letterKey))
@@ -187,17 +193,17 @@ namespace winrt::PowerToys::PowerAccentKeyboardService::implementation
             if (triggerPressed == VK_LEFT)
             {
                 Logger::info(L"Next toolbar position - left");
-                m_nextCharCb(TriggerKey::Left, m_shiftPressed);
+                m_nextCharCb(TriggerKey::Left, m_leftShiftPressed || m_rightShiftPressed);
             }
             else if (triggerPressed == VK_RIGHT)
             {
                 Logger::info(L"Next toolbar position - right");
-                m_nextCharCb(TriggerKey::Right, m_shiftPressed);
+                m_nextCharCb(TriggerKey::Right, m_leftShiftPressed || m_rightShiftPressed);
             }
             else if (triggerPressed == VK_SPACE)
             {
                 Logger::info(L"Next toolbar position - space");
-                m_nextCharCb(TriggerKey::Space, m_shiftPressed);
+                m_nextCharCb(TriggerKey::Space, m_leftShiftPressed || m_rightShiftPressed);
             }
 
             return true;
@@ -208,9 +214,13 @@ namespace winrt::PowerToys::PowerAccentKeyboardService::implementation
 
     bool KeyboardListener::OnKeyUp(KBDLLHOOKSTRUCT info) noexcept
     {
-        if (m_shiftPressed && (info.vkCode == VK_LSHIFT || info.vkCode == VK_RSHIFT))
+        if (m_leftShiftPressed && info.vkCode == VK_LSHIFT)
         {
-            m_shiftPressed = false;
+            m_leftShiftPressed = false;
+        }
+        else if (m_rightShiftPressed && info.vkCode == VK_RSHIFT)
+        {
+            m_rightShiftPressed = false;
         }
 
         if (std::find(std::begin(letters), end(letters), static_cast<LetterKey>(info.vkCode)) != end(letters) && m_isLanguageLetterCb(static_cast<LetterKey>(info.vkCode)))

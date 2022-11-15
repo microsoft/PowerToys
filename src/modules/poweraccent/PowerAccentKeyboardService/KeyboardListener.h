@@ -56,7 +56,8 @@ namespace winrt::PowerToys::PowerAccentKeyboardService::implementation
         std::function<bool(LetterKey)> m_isLanguageLetterCb;
         bool m_triggeredWithSpace;
         spdlog::stopwatch m_stopwatch;
-        bool m_shiftPressed;
+        bool m_leftShiftPressed;
+        bool m_rightShiftPressed;
 
         std::mutex m_mutex_excluded_apps;
         std::pair<HWND, bool> m_prevForegrndAppExcl{ NULL, false };
