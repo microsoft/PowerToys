@@ -1744,6 +1744,9 @@ From there, simply click on one of the supported files in the File Explorer and 
   <data name="General_UpToDate.Title" xml:space="preserve">
     <value>PowerToys is up to date</value>
   </data>
+  <data name="General_CantCheck.Title" xml:space="preserve">
+    <value>Network error. Please try again later</value>
+  </data>
   <data name="General_DownloadAndInstall.Content" xml:space="preserve">
     <value>Download &amp; install</value>
   </data>
@@ -2420,6 +2423,15 @@ Activate by holding the key for the character you want to add an accent to, then
     <value>Hold the key down for this much time to make the accent menu appear (ms)</value>
     <comment>ms = milliseconds</comment>
   </data>
+  <data name="QuickAccent_ExcludedApps.Description" xml:space="preserve">
+    <value>Prevents module activation if a foreground application is excluded. Add one application name per line.</value>
+  </data>
+  <data name="QuickAccent_ExcludedApps.Header" xml:space="preserve">
+    <value>Excluded apps</value>
+  </data>
+  <data name="QuickAccent_ExcludedApps_TextBoxControl.PlaceholderText" xml:space="preserve">
+    <value>Example: Teams.exe</value>
+  </data>
   <data name="LearnMore_TextExtractor.Text" xml:space="preserve">
     <value>Learn more about Text Extractor</value>
   </data>
@@ -2537,13 +2549,13 @@ Activate by holding the key for the character you want to add an accent to, then
     <value>Disable when Game Mode is On</value>
   </data>
   <data name="QuickAccent_Language.Header" xml:space="preserve">
-    <value>Language</value>
+    <value>Characters</value>
   </data>
   <data name="QuickAccent_SelectedLanguage.Header" xml:space="preserve">
-    <value>Choose language</value>
+    <value>Choose a character set</value>
   </data>
   <data name="QuickAccent_SelectedLanguage.Description" xml:space="preserve">
-    <value>Show only accented characters common to the selected language</value>
+    <value>Show only accented characters common to the selected set.</value>
   </data>
   <data name="QuickAccent_SelectedLanguage_All.Content" xml:space="preserve">
     <value>All available</value>
@@ -2621,11 +2633,11 @@ Activate by holding the key for the character you want to add an accent to, then
   </data>
   <data name="Hosts_LaunchButtonControl.Header" xml:space="preserve">
     <value>Launch Host File Editor</value>
-	<comment>"Host File Editor" is a product name</comment>
+    <comment>"Host File Editor" is a product name</comment>
   </data>
   <data name="Hosts_LaunchButton_Accessible.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
     <value>Launch Host File Editor</value>
-	<comment>"Host File Editor" is a product name</comment>
+    <comment>"Host File Editor" is a product name</comment>
   </data>
   <data name="Hosts_AdditionalLinesPosition.Header" xml:space="preserve">
     <value>Additional lines position</value>

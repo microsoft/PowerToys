@@ -22,12 +22,10 @@ std::unique_ptr<KeyboardManagerEditor> editor = nullptr;
 const std::wstring instanceMutexName = L"Local\\PowerToys_KBMEditor_InstanceMutex";
 
 int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
-                     _In_opt_ HINSTANCE hPrevInstance,
-                     _In_ LPWSTR    lpCmdLine,
-                     _In_ int       nCmdShow)
+                      _In_opt_ HINSTANCE /*hPrevInstance*/,
+                      _In_ LPWSTR /*lpCmdLine*/,
+                      _In_ int /*nCmdShow*/)
 {
-    UNREFERENCED_PARAMETER(hPrevInstance);
-
     LoggerHelpers::init_logger(KeyboardManagerConstants::ModuleName, L"Editor", LogSettings::keyboardManagerLoggerName);
 
     if (powertoys_gpo::getConfiguredKeyboardManagerEnabledValue() == powertoys_gpo::gpo_rule_configured_disabled)
@@ -78,7 +76,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
     {
         type = static_cast<KeyboardManagerEditorType>(_wtoi(cmdArgs[1]));
     }
-    
+
     if (numArgs == 3)
     {
         std::wstring pid = std::wstring(cmdArgs[2]);
@@ -106,12 +104,12 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
         auto errorMessage = get_last_error_message(errorCode);
         Logger::error(L"Unable to start keyboard hook: {}", errorMessage.has_value() ? errorMessage.value() : L"");
         Trace::Error(errorCode, errorMessage.has_value() ? errorMessage.value() : L"", L"start_lowlevel_keyboard_hook.SetWindowsHookEx");
-        
+
         return -1;
     }
-    
+
     editor->OpenEditorWindow(type);
-    
+
     editor = nullptr;
 
     Trace::UnregisterProvider();

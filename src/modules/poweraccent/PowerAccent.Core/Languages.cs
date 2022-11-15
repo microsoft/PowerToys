@@ -104,11 +104,11 @@ namespace PowerAccent.Core
                 case LetterKey.VK_L:
                     return new char[] { 'ĺ', 'ľ', 'ļ', 'ł', '₺', 'λ' };
                 case LetterKey.VK_M:
-                    return new char[] { 'ṁ' };
+                    return new char[] { 'ṁ', 'μ' };
                 case LetterKey.VK_N:
                     return new char[] { 'ñ', 'ń', 'ŋ', 'ň', 'ņ', 'ṅ', 'ⁿ', 'ν' };
                 case LetterKey.VK_O:
-                    return new char[] { 'ô', 'ó', 'ö', 'ő', 'ò', 'ō', 'ȯ', 'ø', 'õ', 'œ', 'ω' };
+                    return new char[] { 'ô', 'ó', 'ö', 'ő', 'ò', 'ō', 'ȯ', 'ø', 'õ', 'œ', 'ω', 'ο' };
                 case LetterKey.VK_P:
                     return new char[] { 'ṗ', '₽', 'π', 'φ', 'ψ' };
                 case LetterKey.VK_R:
@@ -116,9 +116,9 @@ namespace PowerAccent.Core
                 case LetterKey.VK_S:
                     return new char[] { 'ś', 'ş', 'š', 'ș', 'ṡ', 'ŝ', 'ß', 'σ', '$' };
                 case LetterKey.VK_T:
-                    return new char[] { 'ţ', 'ť', 'ț', 'ṫ', 'ŧ', 'θ', 'τ' };
+                    return new char[] { 'ţ', 'ť', 'ț', 'ṫ', 'ŧ', 'θ', 'τ', 'þ' };
                 case LetterKey.VK_U:
-                    return new char[] { 'û', 'ú', 'ü', 'ŭ', 'ű', 'ù', 'ů', 'ū', 'ų' };
+                    return new char[] { 'û', 'ú', 'ü', 'ŭ', 'ű', 'ù', 'ů', 'ū', 'ų', 'υ' };
                 case LetterKey.VK_W:
                     return new char[] { 'ẇ', 'ŵ', '₩' };
                 case LetterKey.VK_X:
@@ -128,7 +128,7 @@ namespace PowerAccent.Core
                 case LetterKey.VK_Z:
                     return new char[] { 'ź', 'ž', 'ż', 'ʒ', 'ǯ', 'ζ' };
                 case LetterKey.VK_COMMA:
-                    return new char[] { '¿', '¡', '∙', '₋', '⁻', '–', '≤', '≥', '≠', '≈', '≙', '±', '₊', '⁺', 'þ' };
+                    return new char[] { '¿', '¡', '∙', '₋', '⁻', '–', '≤', '≥', '≠', '≈', '≙', '±', '₊', '⁺' };
             }
 
             return Array.Empty<char>();
@@ -219,7 +219,7 @@ namespace PowerAccent.Core
                     return new char[] { 'ú' };
                 case LetterKey.VK_Y:
                     return new char[] { 'ý' };
-                case LetterKey.VK_COMMA:
+                case LetterKey.VK_T:
                     return new char[] { 'þ' };
             }
 
