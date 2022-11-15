@@ -2147,7 +2147,7 @@ From there, simply click on one of the supported files in the File Explorer and 
     <value>Zone appearance</value>
   </data>
   <data name="VideoConference_DeprecationWarning.Title" xml:space="preserve">
-    <value>Video Conference utility is reaching its end of life and will be unavailable in one of the future releases.</value>
+    <value>VCM is moving into legacy mode (maintenance only).</value>
   </data>
   <data name="VideoConference_DeprecationWarningButton.Content" xml:space="preserve">
     <value>Learn more</value>
