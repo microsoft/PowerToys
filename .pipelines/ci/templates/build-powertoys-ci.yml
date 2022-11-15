@@ -1,7 +1,7 @@
 parameters:
   configuration: 'Release'
   platform: ''
-  additionalBuildArguments: '-m:2'
+  additionalBuildArguments: '-m'
 
 jobs:
 - job: Build${{ parameters.platform }}${{ parameters.configuration }}
@@ -9,7 +9,6 @@ jobs:
   variables:
     BuildConfiguration: ${{ parameters.configuration }}
     BuildPlatform: ${{ parameters.platform }}
-    useAllCPUsWhileBuildingPowerToys: $[ne(variables['BuildPlatform'],'arm64')] # Multi processor build for arm64 is broken in the latest pipelines update
   pool:
     demands: ImageOverride -equals WinDevVS17-latest
     ${{ if eq(variables['System.CollectionUri'], 'https://dev.azure.com/ms/') }}:
