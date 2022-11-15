@@ -10,6 +10,7 @@ using Microsoft.PowerToys.Settings.UI.Library.Utilities;
 using PowerToys.PowerAccentKeyboardService;
 using System.IO.Abstractions;
 using System.Text.Json;
+using static Vanara.PInvoke.LANGID;
 
 public class SettingsService
 {
@@ -166,15 +167,6 @@ public class SettingsService
     private Language _selectedLang;
 
     public Language SelectedLang
-    private PowerAccentShowDescription _showDescription = PowerAccentShowDescription.SpecialCharacters;
-
-    public PowerAccentShowDescription ShowDescription
-    {
-        get { return _showDescription; }
-        set { _showDescription = value; }
-    }
-
-    public static char[] GetDefaultLetterKey(LetterKey letter)
     {
         get
         {
@@ -185,6 +177,14 @@ public class SettingsService
         {
             _selectedLang = value;
         }
+    }
+
+    private PowerAccentShowDescription _showDescription = PowerAccentShowDescription.SpecialCharacters;
+
+    public PowerAccentShowDescription ShowDescription
+    {
+        get { return _showDescription; }
+        set { _showDescription = value; }
     }
 }
 

@@ -31,6 +31,7 @@
 	<ItemGroup>
 		<ProjectReference Include="..\..\..\common\Common.UI\Common.UI.csproj" />
 		<ProjectReference Include="..\PowerAccent.Core\PowerAccent.Core.csproj" />
+		<ProjectReference Include="..\PowerAccentKeyboardService\PowerAccentKeyboardService.vcxproj" />
 	</ItemGroup>
 
 </Project>
