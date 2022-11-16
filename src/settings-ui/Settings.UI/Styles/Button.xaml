@@ -14,7 +14,6 @@
     <SolidColorBrush
         x:Key="SubtleButtonBackgroundDisabled"
         Color="{ThemeResource SubtleFillColorTransparent}" />
-
     <SolidColorBrush
         x:Key="SubtleButtonForeground"
         Color="{ThemeResource TextFillColorPrimary}" />
@@ -27,7 +26,6 @@
     <SolidColorBrush
         x:Key="SubtleButtonForegroundDisabled"
         Color="{ThemeResource TextFillColorDisabled}" />
-
 
     <Style
         x:Key="SubtleButtonStyle"

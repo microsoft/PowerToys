@@ -75,5 +75,18 @@ namespace Microsoft.PowerToys.Settings.UI.Views
                 Logger.LogError("Exception encountered when adding a new image size.", ex);
             }
         }
+
+        private void ImagesSizesListView_ContainerContentChanging(ListViewBase sender, ContainerContentChangingEventArgs args)
+        {
+            if (ViewModel.IsListViewFocusRequested)
+            {
+                // Set focus to the last item in the ListView
+                int size = ImagesSizesListView.Items.Count;
+                ((ListViewItem)ImagesSizesListView.ContainerFromIndex(size - 1)).Focus(FocusState.Programmatic);
+
+                // Reset the focus requested flag
+                ViewModel.IsListViewFocusRequested = false;
+            }
+        }
     }
 }
