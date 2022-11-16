@@ -2563,6 +2563,9 @@ Activate by holding the key for the character you want to add an accent to, then
   <data name="QuickAccent_SelectedLanguage_Currency.Content" xml:space="preserve">
     <value>Currency</value>
   </data>
+  <data name="QuickAccent_SelectedLanguage_Croatian.Content" xml:space="preserve">
+    <value>Croatian</value>
+  </data>
   <data name="QuickAccent_SelectedLanguage_Czech.Content" xml:space="preserve">
     <value>Czech</value>
   </data>
@@ -2574,6 +2577,9 @@ Activate by holding the key for the character you want to add an accent to, then
   </data>
   <data name="QuickAccent_SelectedLanguage_Maori.Content" xml:space="preserve">
     <value>Maori</value>
+  </data>
+  <data name="QuickAccent_SelectedLanguage_Dutch.Content" xml:space="preserve">
+    <value>Dutch</value>
   </data>
   <data name="QuickAccent_SelectedLanguage_Pinyin.Content" xml:space="preserve">
     <value>Pinyin</value>
@@ -2590,6 +2596,9 @@ Activate by holding the key for the character you want to add an accent to, then
   <data name="QuickAccent_SelectedLanguage_Spanish.Content" xml:space="preserve">
     <value>Spanish</value>
   </data>
+  <data name="QuickAccent_SelectedLanguage_Swedish.Content" xml:space="preserve">
+    <value>Swedish</value>
+  </data>
   <data name="QuickAccent_SelectedLanguage_Turkish.Content" xml:space="preserve">
     <value>Turkish</value>
   </data>
@@ -2604,6 +2613,9 @@ Activate by holding the key for the character you want to add an accent to, then
   </data>
   <data name="QuickAccent_SelectedLanguage_Italian.Content" xml:space="preserve">
     <value>Italian</value>
+  </data>
+  <data name="QuickAccent_SelectedLanguage_Welsh.Content" xml:space="preserve">
+    <value>Welsh</value>
   </data>
   <data name="Hosts.ModuleDescription" xml:space="preserve">
     <value>Quick and simple utility for managing hosts file.</value>
