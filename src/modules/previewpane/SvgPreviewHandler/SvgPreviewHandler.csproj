@@ -1,5 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <UseWindowsForms>true</UseWindowsForms>
     <UseWindowsForms>true</UseWindowsForms>
     <AssemblyTitle>PowerToys.SvgPreviewHandler</AssemblyTitle>
     <AssemblyDescription>PowerToys SvgPreviewHandler</AssemblyDescription>
@@ -12,12 +14,13 @@
     <GenerateSatelliteAssembliesForCore>true</GenerateSatelliteAssembliesForCore>
     <RuntimeIdentifiers>win10-x64;win10-arm64</RuntimeIdentifiers>
     <TargetFramework>net6.0-windows10.0.19041.0</TargetFramework>
+    <SelfContained>true</SelfContained>
+    <RuntimeIdentifier>win10-x64</RuntimeIdentifier>
   </PropertyGroup>
 
   <PropertyGroup>
     <ProjectGuid>{DA425894-6E13-404F-8DCB-78584EC0557A}</ProjectGuid>
     <RootNamespace>Microsoft.PowerToys.PreviewHandler.Svg</RootNamespace>
-    <EnableComHosting>true</EnableComHosting>
     <AssemblyName>PowerToys.SvgPreviewHandler</AssemblyName>
   </PropertyGroup>
 
@@ -41,10 +44,13 @@
   <PropertyGroup>
     <!-- Disable missing comment warning. WinRT/C++ libraries added won't have comments on thier reflections. -->
     <NoWarn>$(NoWarn);1591</NoWarn>
+    <OutputType>WinExe</OutputType>
   </PropertyGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\..\..\common\Common.UI\Common.UI.csproj" />
     <ProjectReference Include="..\..\..\common\GPOWrapper\GPOWrapper.vcxproj" />
+    <ProjectReference Include="..\..\..\common\interop\PowerToys.Interop.vcxproj" />
     <ProjectReference Include="..\..\..\common\ManagedTelemetry\Telemetry\ManagedTelemetry.csproj" />
     <ProjectReference Include="..\common\PreviewHandlerCommon.csproj" />
   </ItemGroup>

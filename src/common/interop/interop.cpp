@@ -222,5 +222,9 @@ public
         static String ^ PdfPreviewResizeEvent() {
             return gcnew String(CommonSharedConstants::PDF_PREVIEW_RESIZE_EVENT);
         }
+
+        static String ^ SvgPreviewResizeEvent() {
+            return gcnew String(CommonSharedConstants::SVG_PREVIEW_RESIZE_EVENT);
+        }
     };
 }
