@@ -146,7 +146,7 @@ IFACEMETHODIMP GcodePreviewHandler::DoPreview()
     try
     {
         STARTUPINFO info = { sizeof(info) };
-        std::wstring cmdLine{ m_filePath};
+        std::wstring cmdLine{ L"\"" + m_filePath + L"\"" };
         cmdLine += L" ";
         std::wostringstream ss;
         ss << std::hex << m_hwndParent;
