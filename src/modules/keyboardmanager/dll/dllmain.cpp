@@ -9,7 +9,7 @@
 #include <shellapi.h>
 #include <common/utils/logger_helper.h>
 
-BOOL APIENTRY DllMain(HMODULE hModule, DWORD ul_reason_for_call, LPVOID lpReserved)
+BOOL APIENTRY DllMain(HMODULE /*hModule*/, DWORD ul_reason_for_call, LPVOID /*lpReserved*/)
 {
     switch (ul_reason_for_call)
     {
@@ -23,6 +23,7 @@ BOOL APIENTRY DllMain(HMODULE hModule, DWORD ul_reason_for_call, LPVOID lpReserv
         Trace::UnregisterProvider();
         break;
     }
+
     return TRUE;
 }
 
@@ -40,12 +41,13 @@ private:
     std::wstring app_key = KeyboardManagerConstants::ModuleName;
 
     HANDLE m_hProcess = nullptr;
+
 public:
     // Constructor
     KeyboardManager()
     {
         LoggerHelpers::init_logger(KeyboardManagerConstants::ModuleName, L"ModuleInterface", LogSettings::keyboardManagerLoggerName);
-        
+
         std::filesystem::path oldLogPath(PTSettingsHelper::get_module_save_folder_location(app_key));
         oldLogPath.append("Logs");
         LoggerHelpers::delete_old_log_folder(oldLogPath);
@@ -89,7 +91,7 @@ public:
     }
 
     // Signal from the Settings editor to call a custom action.
-    virtual void call_custom_action(const wchar_t* action) override
+    virtual void call_custom_action(const wchar_t* /*action*/) override
     {
     }
 
@@ -118,7 +120,7 @@ public:
         m_enabled = true;
         // Log telemetry
         Trace::EnableKeyboardManager(true);
-        
+
         unsigned long powertoys_pid = GetCurrentProcessId();
         std::wstring executable_args = L"";
         executable_args.append(std::to_wstring(powertoys_pid));

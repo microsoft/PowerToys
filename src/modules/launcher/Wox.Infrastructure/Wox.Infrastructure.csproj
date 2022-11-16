@@ -41,10 +41,9 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="JetBrains.Annotations" Version="2021.3.0" />
     <PackageReference Include="NLog.Schema" Version="5.0.4" />
+    <PackageReference Include="hyjiacan.pinyin4net" Version="4.1.1" />
     <PackageReference Include="System.Drawing.Common" Version="6.0.0" />
     <PackageReference Include="System.IO.Abstractions" Version="17.2.3" />
-    <PackageReference Include="System.Runtime" Version="4.3.1" />
   </ItemGroup>
 </Project>

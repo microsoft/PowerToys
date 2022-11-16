@@ -10,6 +10,7 @@ namespace FileLocksmith::Interop
     {
         System::String^ name;
         System::UInt32 pid;
+        System::String^ user;
         array<System::String^>^ files;
     };
 
@@ -69,6 +70,7 @@ namespace FileLocksmith::Interop
 
                 item->name = from_wstring_view(result_cpp[i].name);
                 item->pid = result_cpp[i].pid;
+                item->user = from_wstring_view(result_cpp[i].user);
 
                 const int n_files = static_cast<int>(result_cpp[i].files.size());
                 item->files = gcnew array<System::String ^>(n_files);
@@ -81,12 +83,6 @@ namespace FileLocksmith::Interop
             }
 
             return result;
-        }
-
-        static System::String^ PidToUser(System::UInt32 pid)
-        {
-            auto user_cpp = pid_to_user(pid);
-            return from_wstring_view(user_cpp);
         }
 
         static System::String^ PidToFullPath(System::UInt32 pid)
@@ -179,6 +175,73 @@ namespace FileLocksmith::Interop
             }
 
             return false;
+        }
+
+        /* Adapted from "https://learn.microsoft.com/en-us/windows/win32/secauthz/enabling-and-disabling-privileges-in-c--" */
+        static System::Boolean SetDebugPrivilege()
+        {
+            HANDLE hToken;
+            TOKEN_PRIVILEGES tp;
+            LUID luid;
+
+            if (OpenProcessToken(GetCurrentProcess(), TOKEN_ADJUST_PRIVILEGES, &hToken) != 0)
+            {
+                if (!LookupPrivilegeValue(
+                        NULL, // lookup privilege on local system
+                        SE_DEBUG_NAME, // privilege to lookup
+                        &luid)) // receives LUID of privilege
+                {
+                    CloseHandle(hToken);
+                    return false;
+                }
+                tp.PrivilegeCount = 1;
+                tp.Privileges[0].Luid = luid;
+                tp.Privileges[0].Attributes = SE_PRIVILEGE_ENABLED;
+
+                if (!AdjustTokenPrivileges(
+                        hToken,
+                        FALSE,
+                        &tp,
+                        sizeof(TOKEN_PRIVILEGES),
+                        (PTOKEN_PRIVILEGES)NULL,
+                        (PDWORD)NULL))
+                {
+                    CloseHandle(hToken);
+                    return false;
+                }
+
+                if (GetLastError() == ERROR_NOT_ALL_ASSIGNED)
+                {
+                    CloseHandle(hToken);
+                    return false;
+                }
+
+                CloseHandle(hToken);
+                return true;
+            }
+            return false;
+        }
+
+        // adapted from common/utils/elevation.h. No need to bring all dependencies to this project, though.
+        // TODO: Make elevation.h lighter so that this function can be used without bringing dependencies like spdlog in.
+        static System::Boolean IsProcessElevated()
+        {
+            HANDLE token = nullptr;
+            bool elevated = false;
+            if (OpenProcessToken(GetCurrentProcess(), TOKEN_QUERY, &token))
+            {
+                TOKEN_ELEVATION elevation;
+                DWORD size;
+                if (GetTokenInformation(token, TokenElevation, &elevation, sizeof(elevation), &size))
+                {
+                    elevated = (elevation.TokenIsElevated != 0);
+                }
+            }
+            if (token)
+            {
+                CloseHandle(token);
+            }
+            return elevated;
         }
     };
 }

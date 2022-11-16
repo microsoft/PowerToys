@@ -40,9 +40,7 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<PackageReference Include="JetBrains.Annotations" Version="2021.3.0" />
 		<PackageReference Include="Microsoft.Data.Sqlite" Version="6.0.9" />
-		<PackageReference Include="System.Runtime" Version="4.3.1" />
 	</ItemGroup>
 
 	<ItemGroup>

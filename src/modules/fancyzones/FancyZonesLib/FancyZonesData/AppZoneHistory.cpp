@@ -305,12 +305,11 @@ void AppZoneHistory::AdjustWorkAreaIds(const std::vector<FancyZonesDataTypes::Mo
 {
     bool dirtyFlag = false;
 
-    for (auto iter = m_history.begin(); iter != m_history.end(); ++iter)
+    for (auto& [app, data] : m_history)
     {
-        auto& [app, data] = *iter;
-        for (auto& dataIter = data.begin(); dataIter != data.end(); ++dataIter)
+        for (auto& dataIter : data)
         {
-            auto& dataMonitorId = dataIter->workAreaId.monitorId;
+            auto& dataMonitorId = dataIter.workAreaId.monitorId;
             bool serialNumberNotSet = dataMonitorId.serialNumber.empty() && !dataMonitorId.deviceId.isDefault();
             bool monitorNumberNotSet = dataMonitorId.deviceId.number == 0;
             if (serialNumberNotSet || monitorNumberNotSet)
