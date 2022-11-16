@@ -36,7 +36,7 @@
                         <ContentPresenter
                             x:Name="DescriptionPresenter"
                             Grid.Row="1"
-                            Margin="1,4,0,0"
+                            Margin="1,0,0,0"
                             Content="{TemplateBinding Description}"
                             Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                             TextWrapping="WrapWholeWords">

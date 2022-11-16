@@ -98,30 +98,46 @@
                 <controls:SettingsGroup
                     x:Uid="ColorPicker_Editor"
                     IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}">
-                    <labs:SettingsExpander
+                    <labs:SettingsCard
                         x:Name="ColorFormatsSetting"
                         x:Uid="ColorPicker_ColorFormats"
                         HeaderIcon="{ui:FontIcon FontFamily={StaticResource SymbolThemeFontFamily},
-                                                 Glyph=&#xE762;}"
-                        IsExpanded="True"
+                                                 Glyph=&#xE762;}" />
+
+                    <!--  Disabled reordering by dragging  -->
+                    <!--  CanReorderItems="True" AllowDrop="True"  -->
+                    <ItemsRepeater
+                        HorizontalAlignment="Stretch"
+                        AutomationProperties.Name="{Binding ElementName=ColorFormatsSetting, Path=Header}"
                         ItemsSource="{Binding ColorFormats, Mode=TwoWay}">
-                        <labs:SettingsExpander.ItemTemplate>
+                        <ItemsRepeater.ItemTemplate>
                             <DataTemplate x:DataType="models:ColorFormatModel">
                                 <labs:SettingsCard
+                                    Margin="0,0,0,2"
                                     Description="{x:Bind Example}"
                                     Header="{x:Bind Name}">
-                                    <StackPanel
-                                        Orientation="Horizontal"
-                                        Spacing="4">
+                                    <labs:SettingsCard.Resources>
+                                        <x:Double x:Key="SettingsCardLeftIndention">42</x:Double>
+                                    </labs:SettingsCard.Resources>
+                                    <Grid
+                                        HorizontalAlignment="Right"
+                                        ColumnSpacing="8">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="Auto" />
+                                            <ColumnDefinition Width="Auto" />
+                                        </Grid.ColumnDefinitions>
                                         <ToggleSwitch
                                             x:Uid="Enable_ColorFormat"
+                                            HorizontalAlignment="Right"
                                             AutomationProperties.HelpText="{x:Bind Name}"
                                             IsOn="{x:Bind IsShown, Mode=TwoWay}"
                                             OffContent=""
                                             OnContent="" />
                                         <Button
                                             x:Uid="More_Options_Button"
-                                            Margin="0,0,-12,0"
+                                            Grid.Column="1"
+                                            VerticalAlignment="Center"
+                                            Background="Transparent"
                                             Content="&#xE712;"
                                             FontFamily="{ThemeResource SymbolThemeFontFamily}"
                                             Style="{StaticResource SubtleButtonStyle}">
@@ -130,26 +146,30 @@
                                                     <MenuFlyoutItem
                                                         x:Uid="MoveUp"
                                                         Click="ReorderButtonUp_Click"
-                                                        Icon="{ui:FontIcon FontFamily={StaticResource SymbolThemeFontFamily},
-                                                                           Glyph=&#xE74A;}"
-                                                        IsEnabled="{x:Bind CanMoveUp}" />
+                                                        IsEnabled="{x:Bind CanMoveUp}">
+                                                        <MenuFlyoutItem.Icon>
+                                                            <FontIcon Glyph="&#xE74A;" />
+                                                        </MenuFlyoutItem.Icon>
+                                                    </MenuFlyoutItem>
                                                     <MenuFlyoutItem
                                                         x:Uid="MoveDown"
                                                         Click="ReorderButtonDown_Click"
-                                                        Icon="{ui:FontIcon FontFamily={StaticResource SymbolThemeFontFamily},
-                                                                           Glyph=&#xE74B;}"
-                                                        IsEnabled="{x:Bind CanMoveDown}" />
+                                                        IsEnabled="{x:Bind CanMoveDown}">
+                                                        <MenuFlyoutItem.Icon>
+                                                            <FontIcon Glyph="&#xE74B;" />
+                                                        </MenuFlyoutItem.Icon>
+                                                    </MenuFlyoutItem>
                                                 </MenuFlyout>
                                             </Button.Flyout>
                                             <ToolTipService.ToolTip>
                                                 <TextBlock x:Uid="More_Options_ButtonTooltip" />
                                             </ToolTipService.ToolTip>
                                         </Button>
-                                    </StackPanel>
+                                    </Grid>
                                 </labs:SettingsCard>
                             </DataTemplate>
-                        </labs:SettingsExpander.ItemTemplate>
-                    </labs:SettingsExpander>
+                        </ItemsRepeater.ItemTemplate>
+                    </ItemsRepeater>
                 </controls:SettingsGroup>
             </StackPanel>
 

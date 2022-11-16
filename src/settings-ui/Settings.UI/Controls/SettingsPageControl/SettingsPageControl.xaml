@@ -39,7 +39,7 @@
 
         <ScrollViewer Grid.Row="1">
             <Grid
-                Padding="0,0,0,48"
+                Padding="0,0,20,48"
                 RowSpacing="24">
 
                 <Grid.RowDefinitions>
