@@ -5,6 +5,8 @@
 #define LoggingProviderKey "Microsoft.PowerToys"
 
 #define EventEnableAlwaysOnTopKey "AlwaysOnTop_EnableAlwaysOnTop"
+#define EventPinWindowKey "AlwaysOnTop_PinWindow"
+#define EventUnpinWindowKey "AlwaysOnTop_UnpinWindow"
 #define EventEnabledKey "Enabled"
 
 TRACELOGGING_DEFINE_PROVIDER(
@@ -32,4 +34,22 @@ void Trace::AlwaysOnTop::Enable(bool enabled) noexcept
         ProjectTelemetryPrivacyDataTag(ProjectTelemetryTag_ProductAndServicePerformance),
         TraceLoggingKeyword(PROJECT_KEYWORD_MEASURE),
         TraceLoggingBoolean(enabled, EventEnabledKey));
+}
+
+void Trace::AlwaysOnTop::PinWindow() noexcept
+{
+    TraceLoggingWrite(
+        g_hProvider,
+        EventPinWindowKey,
+        ProjectTelemetryPrivacyDataTag(ProjectTelemetryTag_ProductAndServicePerformance),
+        TraceLoggingKeyword(PROJECT_KEYWORD_MEASURE));
+}
+
+void Trace::AlwaysOnTop::UnpinWindow() noexcept
+{
+    TraceLoggingWrite(
+        g_hProvider,
+        EventUnpinWindowKey,
+        ProjectTelemetryPrivacyDataTag(ProjectTelemetryTag_ProductAndServicePerformance),
+        TraceLoggingKeyword(PROJECT_KEYWORD_MEASURE));
 }

@@ -8,8 +8,11 @@
 #include <common/utils/winapi_error.h>
 #include <common/utils/process_path.h>
 
-#include <WinHookEventIDs.h>
 #include <interop/shared_constants.h>
+
+#include <trace.h>
+#include <WinHookEventIDs.h>
+
 
 namespace NonLocalizable
 {
@@ -180,6 +183,8 @@ void AlwaysOnTop::ProcessCommand(HWND window)
             {
                 m_topmostWindows.erase(iter);
             }
+
+            Trace::AlwaysOnTop::UnpinWindow();
         }
     }
     else
@@ -188,6 +193,7 @@ void AlwaysOnTop::ProcessCommand(HWND window)
         {
             soundType = Sound::Type::On;
             AssignBorder(window);
+            Trace::AlwaysOnTop::PinWindow();
         }
     }
 
