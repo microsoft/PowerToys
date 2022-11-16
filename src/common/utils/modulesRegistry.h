@@ -107,12 +107,14 @@ inline registry::ChangeSet getMonacoPreviewHandlerChangeSet(const std::wstring i
 
     return generatePreviewHandler(PreviewHandlerType::preview,
                                   perUser,
-                                  L"{afbd5a44-2520-4ae0-9224-6cfce8fe4400}",
+                                  L"{D8034CFA-F34B-41FE-AD45-62FCBB52A6DA}",
                                   get_std_product_version(),
-                                  (fs::path{ installationDir } / LR"d(modules\FileExplorerPreview\PowerToys.MonacoPreviewHandler.comhost.dll)d").wstring(),
-                                  L"Microsoft.PowerToys.PreviewHandler.Monaco.MonacoPreviewHandler",
+                                  (fs::path{ installationDir } / LR"d(modules\FileExplorerPreview\MonacoPreviewHandlerCpp.dll)d").wstring(),
+                                  L"MonacoPreviewHandler",
                                   L"Monaco Preview Handler",
-                                  extensions);
+                                  extensions,
+                                  {},
+                                  /*App CLSID*/ L"{B8031B53-0BFC-4B49-85CD-27299E6F368A}");
 }
 
 inline registry::ChangeSet getPdfPreviewHandlerChangeSet(const std::wstring installationDir, const bool perUser)

@@ -211,6 +211,10 @@ public
             return gcnew String(CommonSharedConstants::GCODE_PREVIEW_RESIZE_EVENT);
         }
 
+        static String ^ DevFilesPreviewResizeEvent() {
+            return gcnew String(CommonSharedConstants::DEV_FILES_PREVIEW_RESIZE_EVENT);
+        }
+
         static String ^ MarkdownPreviewResizeEvent() {
             return gcnew String(CommonSharedConstants::MARKDOWN_PREVIEW_RESIZE_EVENT);
         }
