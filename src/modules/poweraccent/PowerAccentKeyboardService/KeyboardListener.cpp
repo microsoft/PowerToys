@@ -192,17 +192,17 @@ namespace winrt::PowerToys::PowerAccentKeyboardService::implementation
         {
             if (triggerPressed == VK_LEFT)
             {
-                Logger::info(L"Next toolbar position - left");
+                Logger::debug(L"Next toolbar position - left");
                 m_nextCharCb(TriggerKey::Left, m_leftShiftPressed || m_rightShiftPressed);
             }
             else if (triggerPressed == VK_RIGHT)
             {
-                Logger::info(L"Next toolbar position - right");
+                Logger::debug(L"Next toolbar position - right");
                 m_nextCharCb(TriggerKey::Right, m_leftShiftPressed || m_rightShiftPressed);
             }
             else if (triggerPressed == VK_SPACE)
             {
-                Logger::info(L"Next toolbar position - space");
+                Logger::debug(L"Next toolbar position - space");
                 m_nextCharCb(TriggerKey::Space, m_leftShiftPressed || m_rightShiftPressed);
             }
 
@@ -218,7 +218,8 @@ namespace winrt::PowerToys::PowerAccentKeyboardService::implementation
         {
             m_leftShiftPressed = false;
         }
-        else if (m_rightShiftPressed && info.vkCode == VK_RSHIFT)
+
+        if (m_rightShiftPressed && info.vkCode == VK_RSHIFT)
         {
             m_rightShiftPressed = false;
         }
