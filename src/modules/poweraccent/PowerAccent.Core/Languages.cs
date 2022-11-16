@@ -11,7 +11,7 @@ namespace PowerAccent.Core
     {
         ALL,
         CUR,
-        CYM,
+        CY,
         CZ,
         DE,
         FR,
@@ -27,7 +27,7 @@ namespace PowerAccent.Core
         RO,
         SK,
         SP,
-        SW,
+        SV,
         TK,
     }
 
@@ -39,7 +39,7 @@ namespace PowerAccent.Core
             {
                 case Language.ALL: return GetDefaultLetterKeyALL(letter); // ALL
                 case Language.CUR: return GetDefaultLetterKeyCUR(letter); // Currency
-                case Language.CYM: return GetDefaultLetterKeyCYM(letter); // Welsh
+                case Language.CY: return GetDefaultLetterKeyCY(letter); // Welsh
                 case Language.CZ: return GetDefaultLetterKeyCZ(letter); // Czech
                 case Language.DE: return GetDefaultLetterKeyDE(letter); // German
                 case Language.FR: return GetDefaultLetterKeyFR(letter); // French
@@ -55,7 +55,7 @@ namespace PowerAccent.Core
                 case Language.RO: return GetDefaultLetterKeyRO(letter); // Romanian
                 case Language.SK: return GetDefaultLetterKeySK(letter); // Slovak
                 case Language.SP: return GetDefaultLetterKeySP(letter); // Spain
-                case Language.SW: return GetDefaultLetterKeySW(letter); // Swedish
+                case Language.SV: return GetDefaultLetterKeySV(letter); // Swedish
                 case Language.TK: return GetDefaultLetterKeyTK(letter); // Turkish
             }
 
@@ -599,7 +599,7 @@ namespace PowerAccent.Core
         }
 
         // Welsh
-        private static char[] GetDefaultLetterKeyCYM(LetterKey letter)
+        private static char[] GetDefaultLetterKeyCY(LetterKey letter)
         {
             switch (letter)
             {
@@ -621,7 +621,7 @@ namespace PowerAccent.Core
         }
 
         // Swedish
-        private static char[] GetDefaultLetterKeySW(LetterKey letter)
+        private static char[] GetDefaultLetterKeySV(LetterKey letter)
         {
             switch (letter)
             {

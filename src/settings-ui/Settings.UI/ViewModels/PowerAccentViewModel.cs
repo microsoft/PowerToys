@@ -40,9 +40,9 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             "RO",
             "SK",
             "SP",
-            "SW",
+            "SV",
             "TK",
-            "CYM",
+            "CY",
         };
 
         private readonly string[] _toolbarOptions =
