@@ -101,8 +101,10 @@ namespace winrt::PowerToys::PowerAccentKeyboardService::implementation
             if (std::find(std::begin(triggers), end(triggers), static_cast<TriggerKey>(info.vkCode)) != end(triggers))
             {
                 triggerPressed = info.vkCode;
+                const bool isLetterReleased = (GetAsyncKeyState((int)letterPressed) & 0x8000) == 0;
 
-                if ((triggerPressed == VK_SPACE && m_settings.activationKey == PowerAccentActivationKey::LeftRightArrow) ||
+                if (isLetterReleased ||
+                    (triggerPressed == VK_SPACE && m_settings.activationKey == PowerAccentActivationKey::LeftRightArrow) ||
                     ((triggerPressed == VK_LEFT || triggerPressed == VK_RIGHT) && m_settings.activationKey == PowerAccentActivationKey::Space))
                 {
                     triggerPressed = 0;
@@ -114,13 +116,6 @@ namespace winrt::PowerToys::PowerAccentKeyboardService::implementation
         if (!m_toolbarVisible && letterPressed != LetterKey::None && triggerPressed)
         {
             Logger::info(L"Show toolbar. Letter: %d, Trigger: %d", letterPressed, triggerPressed);
-
-            if (((GetAsyncKeyState((int)letterPressed) & 0x8000) == 0))
-            {
-                triggerPressed = 0;
-                Logger::info(L"Reset trigger key");
-                return false;
-            }
 
             // Keep track if it was triggered with space so that it can be typed on false starts.
             m_triggeredWithSpace = triggerPressed == VK_SPACE;
