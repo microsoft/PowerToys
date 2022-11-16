@@ -10,8 +10,6 @@ using System.Text;
 
 using hyjiacan.py4n;
 
-using JetBrains.Annotations;
-
 using Wox.Infrastructure.Storage;
 using Wox.Infrastructure.UserSettings;
 using Wox.Plugin.Logger;
@@ -30,7 +28,7 @@ public class Alphabet : IAlphabet
     private PowerToysRunSettings _settings;
     private Dictionary<string, string[][]> __cache;
 
-    public void Initialize([NotNull] PowerToysRunSettings settings)
+    public void Initialize(PowerToysRunSettings settings)
     {
         _settings = settings ?? throw new ArgumentNullException(nameof(settings));
         InitializePinyinHelpers();
