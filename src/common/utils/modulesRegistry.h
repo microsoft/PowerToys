@@ -133,12 +133,14 @@ inline registry::ChangeSet getGcodePreviewHandlerChangeSet(const std::wstring in
     using namespace registry::shellex;
     return generatePreviewHandler(PreviewHandlerType::preview,
                                   perUser,
-                                  L"{ec52dea8-7c9f-4130-a77b-1737d0418507}",
+                                  L"{A0257634-8812-4CE8-AF11-FA69ACAEAFAE}",
                                   get_std_product_version(),
-                                  (fs::path{ installationDir } / LR"d(modules\FileExplorerPreview\PowerToys.GcodePreviewHandler.comhost.dll)d").wstring(),
-                                  L"Microsoft.PowerToys.PreviewHandler.Gcode.GcodePreviewHandler",
+                                  (fs::path{ installationDir } / LR"d(modules\FileExplorerPreview\GcodePreviewHandlerCpp.dll)d").wstring(),
+                                  L"GcodePreviewHandler",
                                   L"G-code Preview Handler",
-                                  NonLocalizable::ExtGCode);
+                                  NonLocalizable::ExtGCode,
+                                  {},
+                                  /*App CLSID*/ L"{7E29714F-F8B0-4D19-8D40-DB53C679C8BC}");
 }
 
 inline registry::ChangeSet getSvgThumbnailHandlerChangeSet(const std::wstring installationDir, const bool perUser)

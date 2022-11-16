@@ -46,52 +46,49 @@ namespace Microsoft.PowerToys.PreviewHandler.Gcode
             if (global::PowerToys.GPOWrapper.GPOWrapper.GetConfiguredGcodePreviewEnabledValue() == global::PowerToys.GPOWrapper.GpoRuleConfigured.Disabled)
             {
                 // GPO is disabling this utility. Show an error message instead.
-                InvokeOnControlThread(() =>
-                {
-                    _infoBarAdded = true;
-                    AddTextBoxControl(Properties.Resource.GpoDisabledErrorText);
-                    Resize += FormResized;
-                    base.DoPreview(dataSource);
-                });
+                _infoBarAdded = true;
+                AddTextBoxControl(Properties.Resource.GpoDisabledErrorText);
+                Resize += FormResized;
+                base.DoPreview(dataSource);
 
                 return;
             }
 
-            InvokeOnControlThread(() =>
+            try
             {
-                try
+                Bitmap thumbnail = null;
+                if (!(dataSource is string filePath))
                 {
-                    Bitmap thumbnail = null;
-
-                    using (var stream = new ReadonlyStream(dataSource as IStream))
-                    {
-                        using (var reader = new StreamReader(stream))
-                        {
-                            thumbnail = GetThumbnail(reader);
-                        }
-                    }
-
-                    _infoBarAdded = false;
-
-                    if (thumbnail == null)
-                    {
-                        _infoBarAdded = true;
-                        AddTextBoxControl(Properties.Resource.GcodeWithoutEmbeddedThumbnails);
-                    }
-                    else
-                    {
-                        AddPictureBoxControl(thumbnail);
-                    }
-
-                    Resize += FormResized;
-                    base.DoPreview(dataSource);
-                    PowerToysTelemetry.Log.WriteEvent(new GcodeFilePreviewed());
+                    throw new ArgumentException($"{nameof(dataSource)} for {nameof(GcodePreviewHandler)} must be a string but was a '{typeof(T)}'");
                 }
-                catch (Exception ex)
+
+                FileStream fs = new FileStream(filePath, FileMode.Open, FileAccess.Read);
+
+                using (var reader = new StreamReader(fs))
                 {
-                    PreviewError(ex, dataSource);
+                    thumbnail = GetThumbnail(reader);
                 }
-            });
+
+                _infoBarAdded = false;
+
+                if (thumbnail == null)
+                {
+                    _infoBarAdded = true;
+                    AddTextBoxControl(Properties.Resource.GcodeWithoutEmbeddedThumbnails);
+                }
+                else
+                {
+                    AddPictureBoxControl(thumbnail);
+                }
+
+                Resize += FormResized;
+                base.DoPreview(fs);
+                PowerToysTelemetry.Log.WriteEvent(new GcodeFilePreviewed());
+            }
+            catch (Exception ex)
+            {
+                PreviewError(ex, dataSource);
+            }
         }
 
         /// <summary>

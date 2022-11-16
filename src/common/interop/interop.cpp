@@ -207,6 +207,10 @@ public
             return gcnew String(CommonSharedConstants::POWERACCENT_EXIT_EVENT);
         }
 
+        static String ^ GcodePreviewResizeEvent() {
+            return gcnew String(CommonSharedConstants::GCODE_PREVIEW_RESIZE_EVENT);
+        }
+
         static String ^ MarkdownPreviewResizeEvent() {
             return gcnew String(CommonSharedConstants::MARKDOWN_PREVIEW_RESIZE_EVENT);
         }
