@@ -617,7 +617,7 @@ void D2DOverlayWindow::render(ID2D1DeviceContext5* d2d_dc)
     }
 
     d2d_dc->Clear();
-    int x_offset = 0, y_offset = 0, dimension = 0;
+    int x_offset = 0, y_offset = 0;
     auto current_anim_value = (float)animation.value(Animation::AnimFunctions::LINEAR);
     SetLayeredWindowAttributes(hwnd, 0, (int)(255 * current_anim_value), LWA_ALPHA);
     double pos_anim_value = 1 - animation.value(Animation::AnimFunctions::EASE_OUT_EXPO);

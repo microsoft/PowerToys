@@ -122,29 +122,31 @@ bool Layout::Init(const FancyZonesUtils::Rect& workArea, HMONITOR monitor) noexc
         return false;
     }
 
+    auto spacing = m_data.showSpacing ? m_data.spacing : 0; 
+
     switch (m_data.type)
     {
     case FancyZonesDataTypes::ZoneSetLayoutType::Focus:
         m_zones = LayoutConfigurator::Focus(workArea, m_data.zoneCount);
         break;
     case FancyZonesDataTypes::ZoneSetLayoutType::Columns:
-        m_zones = LayoutConfigurator::Columns(workArea, m_data.zoneCount, m_data.spacing);
+        m_zones = LayoutConfigurator::Columns(workArea, m_data.zoneCount, spacing);
         break;
     case FancyZonesDataTypes::ZoneSetLayoutType::Rows:
-        m_zones = LayoutConfigurator::Rows(workArea, m_data.zoneCount, m_data.spacing);
+        m_zones = LayoutConfigurator::Rows(workArea, m_data.zoneCount, spacing);
         break;
     case FancyZonesDataTypes::ZoneSetLayoutType::Grid:
-        m_zones = LayoutConfigurator::Grid(workArea, m_data.zoneCount, m_data.spacing);
+        m_zones = LayoutConfigurator::Grid(workArea, m_data.zoneCount, spacing);
         break;
     case FancyZonesDataTypes::ZoneSetLayoutType::PriorityGrid:
-        m_zones = LayoutConfigurator::PriorityGrid(workArea, m_data.zoneCount, m_data.spacing);
+        m_zones = LayoutConfigurator::PriorityGrid(workArea, m_data.zoneCount, spacing);
         break;
     case FancyZonesDataTypes::ZoneSetLayoutType::Custom:
     {
         const auto customLayoutData = CustomLayouts::instance().GetCustomLayoutData(m_data.uuid);
         if (customLayoutData.has_value())
         {
-            m_zones = LayoutConfigurator::Custom(workArea, monitor, customLayoutData.value(), m_data.spacing);
+            m_zones = LayoutConfigurator::Custom(workArea, monitor, customLayoutData.value(), spacing);
         }
         else
         {
