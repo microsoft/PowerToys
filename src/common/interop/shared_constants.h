@@ -53,6 +53,9 @@ namespace CommonSharedConstants
     // Path to the event used by MarkdownPreviewHandler
     const wchar_t MARKDOWN_PREVIEW_RESIZE_EVENT[] = L"Local\\PowerToysMarkdownPreviewResizeEvent-54c9ab69-11f3-49e9-a98f-53221cfef3ec";
 
+    // Path to the event used by MarkdownPreviewHandler
+    const wchar_t PDF_PREVIEW_RESIZE_EVENT[] = L"Local\\PowerToysPdfPreviewResizeEvent-5a2f162a-f728-45fe-8bda-ef3d5e434ce7";
+
     // Max DWORD for key code to disable keys.
     const DWORD VK_DISABLED = 0x100;
 }

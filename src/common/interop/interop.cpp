@@ -219,5 +219,8 @@ public
             return gcnew String(CommonSharedConstants::MARKDOWN_PREVIEW_RESIZE_EVENT);
         }
 
+        static String ^ PdfPreviewResizeEvent() {
+            return gcnew String(CommonSharedConstants::PDF_PREVIEW_RESIZE_EVENT);
+        }
     };
 }

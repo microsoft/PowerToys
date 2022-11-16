@@ -122,12 +122,14 @@ inline registry::ChangeSet getPdfPreviewHandlerChangeSet(const std::wstring inst
     using namespace registry::shellex;
     return generatePreviewHandler(PreviewHandlerType::preview,
                                   perUser,
-                                  L"{07665729-6243-4746-95b7-79579308d1b2}",
+                                  L"{A5A41CC7-02CB-41D4-8C9B-9087040D6098}",
                                   get_std_product_version(),
-                                  (fs::path{ installationDir } / LR"d(modules\FileExplorerPreview\PowerToys.PdfPreviewHandler.comhost.dll)d").wstring(),
-                                  L"Microsoft.PowerToys.PreviewHandler.Pdf.PdfPreviewHandler",
+                                  (fs::path{ installationDir } / LR"d(modules\FileExplorerPreview\PdfPreviewHandlerCpp.dll)d").wstring(),
+                                  L"PdfPreviewHandler",
                                   L"Pdf Preview Handler",
-                                  NonLocalizable::ExtPDF);
+                                  NonLocalizable::ExtPDF,
+                                  {},
+                                  /*App CLSID*/ L"{8AE034E1-F4D9-44AB-8929-B55357408B08}");
 }
 
 inline registry::ChangeSet getGcodePreviewHandlerChangeSet(const std::wstring installationDir, const bool perUser)

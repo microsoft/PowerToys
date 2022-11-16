@@ -1,5 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <UseWindowsForms>true</UseWindowsForms>
     <UseWindowsForms>true</UseWindowsForms>
     <AssemblyTitle>PowerToys.PdfPreviewHandler</AssemblyTitle>
     <AssemblyDescription>PowerToys PdfPreviewHandler</AssemblyDescription>
@@ -10,13 +12,14 @@
     <AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
     <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
     <GenerateSatelliteAssembliesForCore>true</GenerateSatelliteAssembliesForCore>
+    <SelfContained>true</SelfContained>
+    <RuntimeIdentifier>win10-x64</RuntimeIdentifier>
   </PropertyGroup>
 
   <PropertyGroup>
     <ProjectGuid>{69E1EE8D-143A-4060-9129-4658ACF14AAF}</ProjectGuid>
     <RootNamespace>Microsoft.PowerToys.PreviewHandler.Pdf</RootNamespace>
     <TargetFramework>net6.0-windows10.0.19041.0</TargetFramework>
-    <EnableComHosting>true</EnableComHosting>
     <AssemblyName>PowerToys.PdfPreviewHandler</AssemblyName>
   </PropertyGroup>
 
@@ -40,6 +43,7 @@
   <PropertyGroup>
     <!-- Disable missing comment warning. WinRT/C++ libraries added won't have comments on thier reflections. -->
     <NoWarn>$(NoWarn);1591</NoWarn>
+    <OutputType>WinExe</OutputType>
   </PropertyGroup>
 
   <ItemGroup>
@@ -48,7 +52,9 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\..\..\common\Common.UI\Common.UI.csproj" />
     <ProjectReference Include="..\..\..\common\GPOWrapper\GPOWrapper.vcxproj" />
+    <ProjectReference Include="..\..\..\common\interop\PowerToys.Interop.vcxproj" />
     <ProjectReference Include="..\..\..\common\ManagedTelemetry\Telemetry\ManagedTelemetry.csproj" />
     <ProjectReference Include="..\common\PreviewHandlerCommon.csproj" />
   </ItemGroup>

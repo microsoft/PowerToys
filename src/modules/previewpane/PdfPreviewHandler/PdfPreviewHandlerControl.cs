@@ -55,12 +55,9 @@ namespace Microsoft.PowerToys.PreviewHandler.Pdf
             if (global::PowerToys.GPOWrapper.GPOWrapper.GetConfiguredPdfPreviewEnabledValue() == global::PowerToys.GPOWrapper.GpoRuleConfigured.Disabled)
             {
                 // GPO is disabling this utility. Show an error message instead.
-                InvokeOnControlThread(() =>
-                {
-                    _infoBar = GetTextBoxControl(Resources.GpoDisabledErrorText);
-                    Controls.Add(_infoBar);
-                    base.DoPreview(dataSource);
-                });
+                _infoBar = GetTextBoxControl(Resources.GpoDisabledErrorText);
+                Controls.Add(_infoBar);
+                base.DoPreview(dataSource);
 
                 return;
             }
@@ -69,7 +66,12 @@ namespace Microsoft.PowerToys.PreviewHandler.Pdf
 
             try
             {
-                using (var dataStream = new ReadonlyStream(dataSource as IStream))
+                if (!(dataSource is string filePath))
+                {
+                    throw new ArgumentException($"{nameof(dataSource)} for {nameof(PdfPreviewHandler)} must be a string but was a '{typeof(T)}'");
+                }
+
+                using (var dataStream = new FileStream(filePath, FileMode.Open, FileAccess.Read))
                 {
                     var memStream = new MemoryStream();
                     dataStream.CopyTo(memStream);
@@ -82,77 +84,71 @@ namespace Microsoft.PowerToys.PreviewHandler.Pdf
 
                         if (pdf.PageCount > 0)
                         {
-                            InvokeOnControlThread(() =>
+                            _flowLayoutPanel = new FlowLayoutPanel
                             {
-                                _flowLayoutPanel = new FlowLayoutPanel
-                                {
-                                    AutoScroll = true,
-                                    AutoSize = true,
-                                    Dock = DockStyle.Fill,
-                                    FlowDirection = FlowDirection.TopDown,
-                                    WrapContents = false,
-                                };
-                                _flowLayoutPanel.Resize += FlowLayoutPanel_Resize;
+                                AutoScroll = true,
+                                AutoSize = true,
+                                Dock = DockStyle.Fill,
+                                FlowDirection = FlowDirection.TopDown,
+                                WrapContents = false,
+                            };
+                            _flowLayoutPanel.Resize += FlowLayoutPanel_Resize;
 
-                                // Only show first 10 pages.
-                                for (uint i = 0; i < pdf.PageCount && i < 10; i++)
+                            // Only show first 10 pages.
+                            for (uint i = 0; i < pdf.PageCount && i < 10; i++)
+                            {
+                                using (var page = pdf.GetPage(i))
                                 {
-                                    using (var page = pdf.GetPage(i))
+                                    var image = PageToImage(page);
+
+                                    var picturePanel = new Panel()
                                     {
-                                        var image = PageToImage(page);
-
-                                        var picturePanel = new Panel()
-                                        {
-                                            Name = "picturePanel",
-                                            Margin = new Padding(6, 6, 6, 0),
-                                            Size = CalculateSize(image),
-                                            BorderStyle = BorderStyle.FixedSingle,
-                                        };
-
-                                        var picture = new PictureBox
-                                        {
-                                            Dock = DockStyle.Fill,
-                                            Image = image,
-                                            SizeMode = PictureBoxSizeMode.Zoom,
-                                        };
-
-                                        picturePanel.Controls.Add(picture);
-                                        _flowLayoutPanel.Controls.Add(picturePanel);
-                                    }
-                                }
-
-                                if (pdf.PageCount > 10)
-                                {
-                                    var messageBox = new RichTextBox
-                                    {
-                                        Name = "messageBox",
-                                        Text = Resources.PdfMorePagesMessage,
-                                        BackColor = Color.LightYellow,
-                                        Dock = DockStyle.Fill,
-                                        Multiline = true,
-                                        ReadOnly = true,
-                                        ScrollBars = RichTextBoxScrollBars.None,
-                                        BorderStyle = BorderStyle.None,
+                                        Name = "picturePanel",
+                                        Margin = new Padding(6, 6, 6, 0),
+                                        Size = CalculateSize(image),
+                                        BorderStyle = BorderStyle.FixedSingle,
                                     };
-                                    messageBox.ContentsResized += RTBContentsResized;
 
-                                    _flowLayoutPanel.Controls.Add(messageBox);
+                                    var picture = new PictureBox
+                                    {
+                                        Dock = DockStyle.Fill,
+                                        Image = image,
+                                        SizeMode = PictureBoxSizeMode.Zoom,
+                                    };
+
+                                    picturePanel.Controls.Add(picture);
+                                    _flowLayoutPanel.Controls.Add(picturePanel);
                                 }
+                            }
 
-                                Controls.Add(_flowLayoutPanel);
-                            });
+                            if (pdf.PageCount > 10)
+                            {
+                                var messageBox = new RichTextBox
+                                {
+                                    Name = "messageBox",
+                                    Text = Resources.PdfMorePagesMessage,
+                                    BackColor = Color.LightYellow,
+                                    Dock = DockStyle.Fill,
+                                    Multiline = true,
+                                    ReadOnly = true,
+                                    ScrollBars = RichTextBoxScrollBars.None,
+                                    BorderStyle = BorderStyle.None,
+                                };
+                                messageBox.ContentsResized += RTBContentsResized;
+
+                                _flowLayoutPanel.Controls.Add(messageBox);
+                            }
+
+                            Controls.Add(_flowLayoutPanel);
                         }
                     }
                     catch (Exception ex)
                     {
                         if (ex.Message.Contains("Unable to update the password. The value provided as the current password is incorrect.", StringComparison.Ordinal))
                         {
-                            InvokeOnControlThread(() =>
-                            {
-                                Controls.Clear();
-                                _infoBar = GetTextBoxControl(Resources.PdfPasswordProtectedError);
-                                Controls.Add(_infoBar);
-                            });
+                            Controls.Clear();
+                            _infoBar = GetTextBoxControl(Resources.PdfPasswordProtectedError);
+                            Controls.Add(_infoBar);
                         }
                         else
                         {
@@ -171,12 +167,9 @@ namespace Microsoft.PowerToys.PreviewHandler.Pdf
             {
                 PowerToysTelemetry.Log.WriteEvent(new PdfFilePreviewError { Message = ex.Message });
 
-                InvokeOnControlThread(() =>
-                {
-                    Controls.Clear();
-                    _infoBar = GetTextBoxControl(Resources.PdfNotPreviewedError);
-                    Controls.Add(_infoBar);
-                });
+                Controls.Clear();
+                _infoBar = GetTextBoxControl(Resources.PdfNotPreviewedError);
+                Controls.Add(_infoBar);
             }
             finally
             {
