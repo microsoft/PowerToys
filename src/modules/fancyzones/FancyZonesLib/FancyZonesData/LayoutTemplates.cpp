@@ -10,11 +10,11 @@ namespace JsonUtils
 {
     struct TemplateLayoutJSON
     {
-        static std::optional<Layout> FromJson(const json::JsonObject& json)
+        static std::optional<LayoutData> FromJson(const json::JsonObject& json)
         {
             try
             {
-                Layout data;
+                LayoutData data;
                 
                 data.uuid = GUID_NULL;
                 data.type = FancyZonesDataTypes::TypeFromString(std::wstring{ json.GetNamedString(NonLocalizable::LayoutTemplatesIds::TypeID) });
@@ -32,9 +32,9 @@ namespace JsonUtils
         }
     };
 
-    std::vector<Layout> ParseJson(const json::JsonObject& json)
+    std::vector<LayoutData> ParseJson(const json::JsonObject& json)
     {
-        std::vector<Layout> vec{};
+        std::vector<LayoutData> vec{};
         auto layouts = json.GetNamedArray(NonLocalizable::LayoutTemplatesIds::LayoutTemplatesArrayID);
 
         for (uint32_t i = 0; i < layouts.Size(); ++i)
@@ -85,7 +85,7 @@ void LayoutTemplates::LoadData()
     }
 }
 
-std::optional<Layout> LayoutTemplates::GetLayout(FancyZonesDataTypes::ZoneSetLayoutType type) const noexcept
+std::optional<LayoutData> LayoutTemplates::GetLayout(FancyZonesDataTypes::ZoneSetLayoutType type) const noexcept
 {
     for (const auto& layout : m_layouts)
     {

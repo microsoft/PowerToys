@@ -17,7 +17,7 @@
 namespace 
 {
     // didn't use default constants since if they'll be changed later, it'll break this function
-    bool isLayoutDefault(const Layout& layout)
+    bool isLayoutDefault(const LayoutData& layout)
     {
         return layout.type == FancyZonesDataTypes::ZoneSetLayoutType::PriorityGrid &&
                layout.zoneCount == 3 &&
@@ -31,11 +31,11 @@ namespace JsonUtils
 {
     struct LayoutJSON
     {
-        static std::optional<Layout> FromJson(const json::JsonObject& json)
+        static std::optional<LayoutData> FromJson(const json::JsonObject& json)
         {
             try
             {
-                Layout data{};
+                LayoutData data{};
                 auto idStr = json.GetNamedString(NonLocalizable::AppliedLayoutsIds::UuidID);
                 auto id = FancyZonesUtils::GuidFromString(idStr.c_str());
                 if (!id.has_value())
@@ -58,7 +58,7 @@ namespace JsonUtils
             }
         }
 
-        static json::JsonObject ToJson(const Layout& data)
+        static json::JsonObject ToJson(const LayoutData& data)
         {
             json::JsonObject result{};
             result.SetNamedValue(NonLocalizable::AppliedLayoutsIds::UuidID, json::value(FancyZonesUtils::GuidToString(data.uuid).value()));
@@ -141,7 +141,7 @@ namespace JsonUtils
 
     public:
         FancyZonesDataTypes::WorkAreaId workAreaId;
-        Layout data{};
+        LayoutData data{};
         bool hasResolutionInId = false;
 
         static std::optional<AppliedLayoutsJSON> FromJson(const json::JsonObject& json)
@@ -427,7 +427,7 @@ void AppliedLayouts::RemoveDeletedVirtualDesktops(const std::vector<GUID>& activ
     }
 }
 
-std::optional<Layout> AppliedLayouts::GetDeviceLayout(const FancyZonesDataTypes::WorkAreaId& id) const noexcept
+std::optional<LayoutData> AppliedLayouts::GetDeviceLayout(const FancyZonesDataTypes::WorkAreaId& id) const noexcept
 {
     auto iter = m_layouts.find(id);
     if (iter != m_layouts.end())
@@ -449,7 +449,7 @@ bool AppliedLayouts::IsLayoutApplied(const FancyZonesDataTypes::WorkAreaId& id) 
     return iter != m_layouts.end();
 }
 
-bool AppliedLayouts::ApplyLayout(const FancyZonesDataTypes::WorkAreaId& deviceId, Layout layout)
+bool AppliedLayouts::ApplyLayout(const FancyZonesDataTypes::WorkAreaId& deviceId, LayoutData layout)
 {
     m_layouts[deviceId] = std::move(layout);
     return true;
@@ -467,8 +467,20 @@ bool AppliedLayouts::ApplyDefaultLayout(const FancyZonesDataTypes::WorkAreaId& d
         return false;
     }
 
-    // TODO: vertical or horizontal
-    m_layouts[deviceId] = DefaultLayouts::instance().GetDefaultLayout();
+    MonitorConfiguraionType type = MonitorConfiguraionType::Horizontal;
+    MONITORINFOEX monitorInfo;
+    monitorInfo.cbSize = sizeof(monitorInfo);
+    if (GetMonitorInfo(deviceId.monitorId.monitor, &monitorInfo))
+    {
+        LONG width = monitorInfo.rcMonitor.right - monitorInfo.rcMonitor.left;
+        LONG height = monitorInfo.rcMonitor.bottom - monitorInfo.rcMonitor.top;
+        if (height > width)
+        {
+            type = MonitorConfiguraionType::Vertical;
+        }
+    }
+
+    m_layouts[deviceId] = DefaultLayouts::instance().GetDefaultLayout(type);
     
     // Saving default layout data doesn't make sense, since it's ignored on parsing.
     // Given that default layouts are ignored when parsing, 

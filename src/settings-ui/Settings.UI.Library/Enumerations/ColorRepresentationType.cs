@@ -75,5 +75,10 @@ namespace Microsoft.PowerToys.Settings.UI.Library.Enumerations
         /// Color presentation as integer decimal value 0-16777215
         /// </summary>
         DecimalValue = 12,
+
+        /// <summary>
+        /// Color presentation as an 8-digit hexadecimal integer (0xFFFFFFFF)
+        /// </summary>
+        HexInteger = 13,
     }
 }

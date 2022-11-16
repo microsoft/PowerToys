@@ -136,6 +136,9 @@
     <value>Click to see the entire list of paths.</value>
     <comment>Paths as in file paths that were selected for the utility to check.</comment>
   </data>
+  <data name="ProcessIsSystemUserWarning.Text" xml:space="preserve">
+    <value>The process belongs to a system user. Closing it may cause the system to malfunction.</value>
+  </data>
   <data name="SelectedFilesListDialog.Title" xml:space="preserve">
     <value>Selected file paths</value>
     <comment>Paths as in file paths that were selected for the utility to check.</comment>

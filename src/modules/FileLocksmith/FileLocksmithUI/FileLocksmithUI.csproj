@@ -20,7 +20,7 @@
     <WindowsPackageType>None</WindowsPackageType>
     <WindowsAppSDKSelfContained>true</WindowsAppSDKSelfContained>
     <SupportedOSPlatformVersion>10.0.19041.0</SupportedOSPlatformVersion>
-    <ApplicationIcon>icon.ico</ApplicationIcon>
+    <ApplicationIcon>Assets/Icon.ico</ApplicationIcon>
   </PropertyGroup>
 
   <PropertyGroup>
@@ -28,6 +28,15 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Content Include="Assets\Icon.ico" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Remove="Assets\AppList.scale-100.png" />
+    <None Remove="Assets\AppList.scale-125.png" />
+    <None Remove="Assets\AppList.scale-150.png" />
+    <None Remove="Assets\AppList.scale-200.png" />
+    <None Remove="Assets\AppList.scale-400.png" />
     <None Remove="Views\MainPage.xaml" />
   </ItemGroup>
 
@@ -45,7 +54,7 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.Windows.CsWinRT" Version="2.0.0" />
-    <PackageReference Include="CommunityToolkit.Labs.WinUI.SettingsControls" Version="0.0.2" />
+    <PackageReference Include="CommunityToolkit.Labs.WinUI.SettingsControls" Version="0.0.7" />
     <PackageReference Include="CommunityToolkit.Mvvm" Version="8.0.0" />
     <PackageReference Include="CommunityToolkit.WinUI.UI" Version="7.1.2" />
     <PackageReference Include="Microsoft.WindowsAppSDK" Version="1.1.5" />
@@ -64,9 +73,6 @@
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Properties\" />
-  </ItemGroup>
-  <ItemGroup>
-    <Content Include="icon.ico" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\..\common\GPOWrapper\GPOWrapper.vcxproj" />

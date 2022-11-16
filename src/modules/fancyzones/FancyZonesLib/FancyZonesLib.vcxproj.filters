@@ -30,9 +30,6 @@
     <ClInclude Include="Zone.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="ZoneSet.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="WorkArea.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -99,6 +96,12 @@
     <ClInclude Include="ModuleConstants.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="FancyZonesData\LayoutTemplates.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="FancyZonesData\LayoutDefaults.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
     <ClInclude Include="ZoneIndexSetBitmask.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -129,9 +132,6 @@
     <ClInclude Include="FancyZonesData\DefaultLayouts.h">
       <Filter>Header Files\FancyZonesData</Filter>
     </ClInclude>
-    <ClInclude Include="FancyZonesData\Layout.h">
-      <Filter>Header Files\FancyZonesData</Filter>
-    </ClInclude>
     <ClInclude Include="FancyZonesData\LayoutDefaults.h">
       <Filter>Header Files\FancyZonesData</Filter>
     </ClInclude>
@@ -144,15 +144,21 @@
     <ClInclude Include="EditorParameters.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="LayoutAssignedWindows.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Layout.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="FancyZonesData\LayoutData.h">
+      <Filter>Header Files\FancyZonesData</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="pch.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Zone.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="ZoneSet.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="WorkArea.cpp">
@@ -235,6 +241,12 @@
     </ClCompile>
     <ClCompile Include="FancyZonesData\LayoutTemplates.cpp">
       <Filter>Source Files\FancyZonesData</Filter>
+    </ClCompile>
+    <ClCompile Include="Layout.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="LayoutAssignedWindows.cpp">
+      <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

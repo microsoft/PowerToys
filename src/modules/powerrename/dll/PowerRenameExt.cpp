@@ -272,7 +272,7 @@ HRESULT __stdcall CPowerRenameMenu::GetCanonicalName(GUID* pguidCommandName)
     return S_OK;
 }
 
-HRESULT __stdcall CPowerRenameMenu::GetState(IShellItemArray* psiItemArray, BOOL fOkToBeSlow, EXPCMDSTATE* pCmdState)
+HRESULT __stdcall CPowerRenameMenu::GetState(IShellItemArray* /*psiItemArray*/, BOOL /*fOkToBeSlow*/, EXPCMDSTATE* pCmdState)
 {
     *pCmdState = CSettingsInstance().GetEnabled() ? ECS_ENABLED : ECS_HIDDEN;
     return S_OK;

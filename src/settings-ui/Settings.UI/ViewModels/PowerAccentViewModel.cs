@@ -90,6 +90,8 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
             _inputTimeMs = _powerAccentSettings.Properties.InputTime.Value;
 
+            _excludedApps = _powerAccentSettings.Properties.ExcludedApps.Value;
+
             _selectedLangIndex = Array.IndexOf(_languageOptions, _powerAccentSettings.Properties.SelectedLang.Value);
 
             _toolbarPositionIndex = Array.IndexOf(_toolbarOptions, _powerAccentSettings.Properties.ToolbarPosition.Value);
@@ -160,6 +162,27 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                     _inputTimeMs = value;
                     _powerAccentSettings.Properties.InputTime.Value = value;
                     OnPropertyChanged(nameof(InputTimeMs));
+                    RaisePropertyChanged();
+                }
+            }
+        }
+
+        private string _excludedApps;
+
+        public string ExcludedApps
+        {
+            get
+            {
+                return _excludedApps;
+            }
+
+            set
+            {
+                if (value != _excludedApps)
+                {
+                    _excludedApps = value;
+                    _powerAccentSettings.Properties.ExcludedApps.Value = value;
+                    OnPropertyChanged(nameof(ExcludedApps));
                     RaisePropertyChanged();
                 }
             }

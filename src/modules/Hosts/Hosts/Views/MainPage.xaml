@@ -41,7 +41,9 @@
                 Height="36"
                 Margin="16,0,0,0"
                 Command="{x:Bind NewDialogCommand}">
-                <StackPanel Orientation="Horizontal" Spacing="12">
+                <StackPanel
+                    Orientation="Horizontal"
+                    Spacing="12">
                     <TextBlock
                         x:Name="Icon"
                         Margin="0,0,0,0"
@@ -49,7 +51,7 @@
                         FontFamily="{ThemeResource SymbolThemeFontFamily}"
                         FontSize="16"
                         Foreground="{ThemeResource AccentTextFillColorPrimaryBrush}"
-                        Text="&#xE109;" />
+                        Text="&#xe710;" />
                     <TextBlock x:Uid="AddEntry" />
                 </StackPanel>
             </Button>
@@ -124,7 +126,7 @@
                         </Flyout>
                     </Button.Flyout>
                 </Button>
-                
+
                 <Button
                     x:Uid="OpenHostsFileBtn"
                     Height="36"
@@ -135,7 +137,7 @@
                         FontSize="14"
                         Glyph="&#xe8a7;" />
                 </Button>
-                
+
                 <Button
                     x:Uid="SettingsBtn"
                     Height="36"
@@ -165,7 +167,9 @@
                 IsOpen="{x:Bind ViewModel.FileChanged, Mode=TwoWay}"
                 Severity="Informational">
                 <InfoBar.ActionButton>
-                    <Button x:Uid="Reload" Command="{x:Bind ViewModel.ReadHostsCommand}" />
+                    <Button
+                        x:Uid="Reload"
+                        Command="{x:Bind ViewModel.ReadHostsCommand}" />
                 </InfoBar.ActionButton>
             </InfoBar>
         </StackPanel>
@@ -177,8 +181,8 @@
             CanReorderItems="{x:Bind ViewModel.Filtered, Mode=OneWay, Converter={StaticResource BoolNegationConverter}}"
         -->
         <ListView
-            x:Uid="Entries"
             x:Name="Entries"
+            x:Uid="Entries"
             Grid.Row="1"
             Margin="16,8,16,16"
             Background="{ThemeResource LayerFillColorDefaultBrush}"
@@ -253,8 +257,8 @@
                             x:Name="PingIcon"
                             Grid.Column="2"
                             Margin="0,0,8,0"
-                            FontSize="18"
                             FontFamily="{ThemeResource SymbolThemeFontFamily}"
+                            FontSize="18"
                             Visibility="Collapsed">
                             <i:Interaction.Behaviors>
                                 <ic:DataTriggerBehavior
@@ -319,12 +323,15 @@
         <ContentDialog
             x:Name="EntryDialog"
             x:Uid="EntryDialog"
+            Loaded="ContentDialog_Loaded_ApplyMargin"
             IsPrimaryButtonEnabled="{Binding Valid, Mode=TwoWay}"
             PrimaryButtonStyle="{StaticResource AccentButtonStyle}">
             <ContentDialog.DataContext>
                 <models:Entry />
             </ContentDialog.DataContext>
-            <ScrollViewer HorizontalScrollMode="Auto" HorizontalScrollBarVisibility="Auto">
+            <ScrollViewer
+                HorizontalScrollBarVisibility="Auto"
+                HorizontalScrollMode="Auto">
                 <StackPanel
                     MinWidth="480"
                     Margin="0,12,0,0"
@@ -362,6 +369,7 @@
         <ContentDialog
             x:Name="AdditionalLinesDialog"
             x:Uid="AdditionalLinesDialog"
+            Loaded="ContentDialog_Loaded_ApplyMargin"
             PrimaryButtonCommand="{x:Bind UpdateAdditionalLinesCommand}"
             PrimaryButtonStyle="{StaticResource AccentButtonStyle}">
 
@@ -372,6 +380,9 @@
                 Margin="0,12,0,0"
                 HorizontalAlignment="Stretch"
                 AcceptsReturn="True"
+                ScrollViewer.IsVerticalRailEnabled="True"
+                ScrollViewer.VerticalScrollBarVisibility="Visible"
+                ScrollViewer.VerticalScrollMode="Enabled"
                 TextWrapping="Wrap" />
 
         </ContentDialog>

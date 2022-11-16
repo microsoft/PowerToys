@@ -21,7 +21,7 @@
 
                 <controls:Setting x:Uid="FileLocksmith_Enable_FileLocksmith" IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabledGpoConfigured, Converter={StaticResource BoolNegationConverter}}">
                     <controls:Setting.Icon>
-                        <BitmapIcon UriSource="ms-appx:///Assets/FluentIcons/FluentIconsPowerToys.png" ShowAsMonochrome="False" />
+                        <BitmapIcon UriSource="ms-appx:///Assets/FluentIcons/FluentIconsFileLocksmith.png" ShowAsMonochrome="False" />
                     </controls:Setting.Icon>
                     <controls:Setting.ActionContent>
                         <ToggleSwitch IsOn="{x:Bind ViewModel.IsFileLocksmithEnabled, Mode=TwoWay}" HorizontalAlignment="Right"/>
