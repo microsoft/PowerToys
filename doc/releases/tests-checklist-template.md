@@ -430,6 +430,7 @@ Mouse Pointer Crosshairs:
    - [ ] Language (for example, Currency has no accents for 'a' but has for 's')
    - [ ] Toolbar position (test every option, some had issues before)
    - [ ] Input delay
+   - [ ] Exclude some apps. Verify that Quick Accent is not activated for them.
 
 ### Text Extractor
  * Enable Text Extractor. Then:
