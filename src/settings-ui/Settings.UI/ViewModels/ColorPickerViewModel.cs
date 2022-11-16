@@ -9,12 +9,12 @@ using System.Globalization;
 using System.Linq;
 using System.Text.Json;
 using System.Timers;
-using System.Xml.Linq;
 using global::PowerToys.GPOWrapper;
 using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.PowerToys.Settings.UI.Library.Enumerations;
 using Microsoft.PowerToys.Settings.UI.Library.Helpers;
 using Microsoft.PowerToys.Settings.UI.Library.Interfaces;
+using Windows.ApplicationModel.Resources;
 
 namespace Microsoft.PowerToys.Settings.UI.ViewModels
 {
@@ -382,11 +382,14 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         internal ColorFormatModel GetNewColorFormatModel()
         {
+            var resourceLoader = ResourceLoader.GetForViewIndependentUse();
+            string defaultName = resourceLoader.GetString("CustomColorFormatDefaultName");
             ColorFormatModel newColorFormatModel = new ColorFormatModel();
+            newColorFormatModel.Name = defaultName;
             int extensionNumber = 1;
             while (ColorFormats.Any(x => x.Name.Equals(newColorFormatModel.Name, StringComparison.Ordinal)))
             {
-                newColorFormatModel.Name = ColorFormatModel.GetDefaulName() + " (" + extensionNumber + ")";
+                newColorFormatModel.Name = defaultName + " (" + extensionNumber + ")";
                 extensionNumber++;
             }
 

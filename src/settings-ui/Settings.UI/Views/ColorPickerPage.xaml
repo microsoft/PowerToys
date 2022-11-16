@@ -99,9 +99,9 @@
                             Padding="0,0,16,0"
                             MinHeight="68">
                         <Button Style="{ThemeResource AccentButtonStyle}"
+                                x:Uid="ColorPickerAddNewFormat"
                                 Margin="56,0,0,0"
                                 VerticalAlignment="Center"
-                                Content="Add new snippet"
                                 Click="NewFormatClick">
                         </Button>
                     </Grid>

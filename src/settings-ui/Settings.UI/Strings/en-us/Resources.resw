@@ -1286,10 +1286,34 @@ Made with 💗 by Microsoft and the PowerToys community.</value>
   <data name="MoveUp.Text" xml:space="preserve">
     <value>Move up</value>
   </data>
-  <data name="MoveDown.Text" xml:space="preserve">
+	<data name="MoveDown.Text" xml:space="preserve">
     <value>Move down</value>
   </data>
-  <data name="ColorPicker_ShowColorName.Header" xml:space="preserve">
+  <data name="ColorPickerAddNewFormat.Content" xml:space="preserve">
+    <value>Add custom format</value>
+  </data>
+  <data name="NewColorFormat.Header" xml:space="preserve">
+    <value>Format</value>
+  </data>
+  <data name="NewColorName.Header" xml:space="preserve">
+    <value>Name</value>
+  </data>
+  <data name="AddCustomColorFormat" xml:space="preserve">
+    <value>Add custom color format</value>
+  </data>
+  <data name="ColorFormatSave" xml:space="preserve">
+    <value>Save</value>
+  </data>
+  <data name="EditCustomColorFormat" xml:space="preserve">
+    <value>Edit custom color format</value>
+  </data>
+  <data name="ColorFormatUpdate" xml:space="preserve">
+    <value>Update</value>
+  </data>
+  <data name="CustomColorFormatDefaultName" xml:space="preserve">
+    <value>My Format</value>
+  </data>
+	<data name="ColorPicker_ShowColorName.Header" xml:space="preserve">
     <value>Show color name</value>
   </data>
   <data name="ColorPicker_ShowColorName.Description" xml:space="preserve">

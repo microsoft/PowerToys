@@ -2,7 +2,6 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-using System;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
 
@@ -10,7 +9,6 @@ namespace Microsoft.PowerToys.Settings.UI.Library
 {
     public class ColorFormatModel : INotifyPropertyChanged
     {
-        private static readonly string DefaultName = "My Format";
         private string _name;
         private string _example;
         private bool _isShown;
@@ -31,8 +29,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
 
         public ColorFormatModel()
         {
-            Name = DefaultName;
-            Example = "= new Color ();";
+            Example = "= new Color ( R =%Re, G = %Gr, B = %Bl);";
             IsShown = true;
             IsNew = true;
             IsUserDefined = true;
@@ -148,11 +145,6 @@ namespace Microsoft.PowerToys.Settings.UI.Library
                 _isUserDefined = value;
                 OnPropertyChanged();
             }
-        }
-
-        public static string GetDefaulName()
-        {
-            return DefaultName;
         }
 
         public event PropertyChangedEventHandler PropertyChanged;

@@ -3,8 +3,6 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
-using System.Drawing;
-using System.Globalization;
 using System.Windows.Input;
 using ManagedCommon;
 using Microsoft.PowerToys.Settings.UI.Helpers;
@@ -111,12 +109,12 @@ namespace Microsoft.PowerToys.Settings.UI.Views
         private async void NewFormatClick(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
         {
             var resourceLoader = ResourceLoader.GetForViewIndependentUse();
-            ColorFormatDialog.Title = "Add custom color format"; // resourceLoader.GetString("AddNewEntryDialog_Title");
+            ColorFormatDialog.Title = resourceLoader.GetString("AddCustomColorFormat");
             ColorFormatModel newColorFormatModel = ViewModel.GetNewColorFormatModel();
             ColorFormatDialog.DataContext = newColorFormatModel;
             ColorFormatDialog.Tag = string.Empty;
-            NewColorFormat.Description = ColorFormatHelper.GetStringRepresentation(null, newColorFormatModel.Example);
-            ColorFormatDialog.PrimaryButtonText = "Save"; // resourceLoader.GetString("AddBtn");
+            NewColorFormat.Description = " " + ColorFormatHelper.GetStringRepresentation(null, newColorFormatModel.Example);
+            ColorFormatDialog.PrimaryButtonText = resourceLoader.GetString("ColorFormatSave");
             ColorFormatDialog.PrimaryButtonCommand = AddCommand;
             await ColorFormatDialog.ShowAsync();
         }
@@ -128,7 +126,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
 
         private void NewColorFormat_TextChanged(object sender, TextChangedEventArgs e)
         {
-            NewColorFormat.Description = ColorFormatHelper.GetStringRepresentation(null, NewColorFormat.Text);
+            NewColorFormat.Description = " " + ColorFormatHelper.GetStringRepresentation(null, NewColorFormat.Text);
             ViewModel.SetValidity(ColorFormatDialog.DataContext as ColorFormatModel, ColorFormatDialog.Tag as string);
         }
 
@@ -146,14 +144,15 @@ namespace Microsoft.PowerToys.Settings.UI.Views
 
         private async void EditButton_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
         {
+            var resourceLoader = ResourceLoader.GetForViewIndependentUse();
             Button btn = sender as Button;
             string name = btn.Tag as string;
-            ColorFormatDialog.Title = "Edit custom color format"; // resourceLoader.GetString("AddNewEntryDialog_Title");
+            ColorFormatDialog.Title = resourceLoader.GetString("EditCustomColorFormat");
             ColorFormatModel colorFormatModel = ViewModel.GetColorFormatModelCopyByName(name);
             ColorFormatDialog.DataContext = colorFormatModel;
             ColorFormatDialog.Tag = name;
-            NewColorFormat.Description = ColorFormatHelper.GetStringRepresentation(null, colorFormatModel.Example);
-            ColorFormatDialog.PrimaryButtonText = "Update"; // resourceLoader.GetString("AddBtn");
+            NewColorFormat.Description = " " + ColorFormatHelper.GetStringRepresentation(null, colorFormatModel.Example);
+            ColorFormatDialog.PrimaryButtonText = resourceLoader.GetString("ColorFormatUpdate");
             ColorFormatDialog.PrimaryButtonCommand = UpdateCommand;
             await ColorFormatDialog.ShowAsync();
         }

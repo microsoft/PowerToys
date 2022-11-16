@@ -79,12 +79,14 @@ namespace ColorPicker.Controls
             var self = (ColorFormatControl)d;
             var colorText = self.ColorFormatModel.GetColorText((Color)e.NewValue);
             self.ColorTextRepresentationTextBlock.Text = colorText;
+            self.ColorTextRepresentationTextBlock.ToolTip = colorText;
             self.SelectedColorCopyHelperText = string.Format(CultureInfo.InvariantCulture, "{0} {1}", self.ColorFormatModel.FormatName, colorText);
         }
 
         private static void ColorFormatModelPropertyChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
         {
             ((ColorFormatControl)d).FormatNameTextBlock.Text = ((ColorFormatModel)e.NewValue).FormatName;
+            ((ColorFormatControl)d).FormatNameTextBlock.ToolTip = ((ColorFormatModel)e.NewValue).FormatName;
         }
 
         private static void ColorCopiedBorderPropertyChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
