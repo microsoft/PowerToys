@@ -62,7 +62,8 @@
                     HorizontalContentAlignment="Stretch"
                     VerticalContentAlignment="Stretch"
                     Background="Transparent"
-                    IsHitTestVisible="False">
+                    IsHitTestVisible="False"
+                    HorizontalAlignment="Center">
                     <ListBox.ItemContainerStyle>
                         <Style
                             TargetType="ListBoxItem">
