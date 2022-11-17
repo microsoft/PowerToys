@@ -329,28 +329,28 @@ namespace PowerAccent.Core
             {
                 case LetterKey.VK_A:
                     return new string[] { "ā", "á", "ǎ", "à", "a", "ɑ̄", "ɑ́", "ɑ̌", "ɑ̀" };
+                case LetterKey.VK_C:
+                    return new string[] { "ĉ", "c" };
                 case LetterKey.VK_E:
                     return new string[] { "ē", "é", "ě", "è", "e" };
                 case LetterKey.VK_I:
                     return new string[] { "ī", "í", "ǐ", "ì", "i" };
-                case LetterKey.VK_O:
-                    return new string[] { "ō", "ó", "ǒ", "ò", "o" };
-                case LetterKey.VK_U:
-                    return new string[] { "ū", "ú", "ǔ", "ù", "u" };
-                case LetterKey.VK_V:
-                    return new string[] { "ǖ", "ǘ", "ǚ", "ǜ", "ü" };
                 case LetterKey.VK_M:
                     return new string[] { "m̄", "ḿ", "m̌", "m̀", "m" };
                 case LetterKey.VK_N:
                     return new string[] { "n̄", "ń", "ň", "ǹ", "n", "ŋ", "ŋ̄", "ŋ́", "ŋ̌", "ŋ̀" };
+                case LetterKey.VK_O:
+                    return new string[] { "ō", "ó", "ǒ", "ò", "o" };
+                case LetterKey.VK_S:
+                    return new string[] { "ŝ", "s" };
+                case LetterKey.VK_U:
+                    return new string[] { "ū", "ú", "ǔ", "ù", "u" };
+                case LetterKey.VK_V:
+                    return new string[] { "ǖ", "ǘ", "ǚ", "ǜ", "ü" };
                 case LetterKey.VK_Y:
                     return new string[] { "¥", "y" };
                 case LetterKey.VK_Z:
                     return new string[] { "ẑ", "z" };
-                case LetterKey.VK_C:
-                    return new string[] { "ĉ", "c" };
-                case LetterKey.VK_S:
-                    return new string[] { "ŝ", "s" };
             }
 
             return Array.Empty<string>();
