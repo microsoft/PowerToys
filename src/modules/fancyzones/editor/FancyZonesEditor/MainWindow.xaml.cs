@@ -58,6 +58,9 @@ namespace FancyZonesEditor
             MaxWidth = workArea.Width;
             MaxHeight = workArea.Height;
             SizeToContent = SizeToContent.WidthAndHeight;
+
+            // reinit considering work area rect
+            _settings.InitModels();
         }
 
         public void Update()
