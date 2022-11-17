@@ -35,7 +35,8 @@
                     IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}">
                     <labs:SettingsCard
                         x:Uid="QuickAccent_Activation_Shortcut"
-                        HeaderIcon="{ui:FontIcon FontFamily={StaticResource SymbolThemeFontFamily}, Glyph=&#xEDA7;}">
+                        HeaderIcon="{ui:FontIcon FontFamily={StaticResource SymbolThemeFontFamily},
+                                                 Glyph=&#xEDA7;}">
                         <ComboBox
                             MinWidth="{StaticResource SettingActionControlMinWidth}"
                             SelectedIndex="{x:Bind Path=ViewModel.ActivationKey, Mode=TwoWay}">
@@ -51,31 +52,32 @@
                     IsEnabled="{Binding Mode=OneWay, Path=IsEnabled}">
                     <labs:SettingsCard
                         x:Uid="QuickAccent_SelectedLanguage"
-                        HeaderIcon="{ui:FontIcon FontFamily={StaticResource SymbolThemeFontFamily}, Glyph=&#xF2B7;}">
+                        HeaderIcon="{ui:FontIcon FontFamily={StaticResource SymbolThemeFontFamily},
+                                                 Glyph=&#xF2B7;}">
                         <ComboBox
                             MinWidth="{StaticResource SettingActionControlMinWidth}"
                             SelectedIndex="{x:Bind Path=ViewModel.SelectedLangIndex, Mode=TwoWay}">
                             <!--  These should be in the same order as the array items in PowerAccentViewModel.cs  -->
-  <ComboBoxItem x:Uid="QuickAccent_SelectedLanguage_All"/>
-                                <ComboBoxItem x:Uid="QuickAccent_SelectedLanguage_Currency"/>
-                                <ComboBoxItem x:Uid="QuickAccent_SelectedLanguage_Croatian"/>
-                                <ComboBoxItem x:Uid="QuickAccent_SelectedLanguage_Czech"/>
-                                <ComboBoxItem x:Uid="QuickAccent_SelectedLanguage_Dutch"/>
-                                <ComboBoxItem x:Uid="QuickAccent_SelectedLanguage_French"/>
-                                <ComboBoxItem x:Uid="QuickAccent_SelectedLanguage_German"/>
-                                <ComboBoxItem x:Uid="QuickAccent_SelectedLanguage_Hungarian"/>
-                                <ComboBoxItem x:Uid="QuickAccent_SelectedLanguage_Icelandic"/>
-                                <ComboBoxItem x:Uid="QuickAccent_SelectedLanguage_Italian"/>
-                                <ComboBoxItem x:Uid="QuickAccent_SelectedLanguage_Maori"/>
-                                <ComboBoxItem x:Uid="QuickAccent_SelectedLanguage_Pinyin"/>
-                                <ComboBoxItem x:Uid="QuickAccent_SelectedLanguage_Polish"/>
-                                <ComboBoxItem x:Uid="QuickAccent_SelectedLanguage_Portuguese"/>
-                                <ComboBoxItem x:Uid="QuickAccent_SelectedLanguage_Romanian"/>
-                                <ComboBoxItem x:Uid="QuickAccent_SelectedLanguage_Slovakian"/>
-                                <ComboBoxItem x:Uid="QuickAccent_SelectedLanguage_Spanish"/>
-                                <ComboBoxItem x:Uid="QuickAccent_SelectedLanguage_Swedish"/>
-                                <ComboBoxItem x:Uid="QuickAccent_SelectedLanguage_Turkish"/>
-                                <ComboBoxItem x:Uid="QuickAccent_SelectedLanguage_Welsh"/>
+                            <ComboBoxItem x:Uid="QuickAccent_SelectedLanguage_All" />
+                            <ComboBoxItem x:Uid="QuickAccent_SelectedLanguage_Currency" />
+                            <ComboBoxItem x:Uid="QuickAccent_SelectedLanguage_Croatian" />
+                            <ComboBoxItem x:Uid="QuickAccent_SelectedLanguage_Czech" />
+                            <ComboBoxItem x:Uid="QuickAccent_SelectedLanguage_Dutch" />
+                            <ComboBoxItem x:Uid="QuickAccent_SelectedLanguage_French" />
+                            <ComboBoxItem x:Uid="QuickAccent_SelectedLanguage_German" />
+                            <ComboBoxItem x:Uid="QuickAccent_SelectedLanguage_Hungarian" />
+                            <ComboBoxItem x:Uid="QuickAccent_SelectedLanguage_Icelandic" />
+                            <ComboBoxItem x:Uid="QuickAccent_SelectedLanguage_Italian" />
+                            <ComboBoxItem x:Uid="QuickAccent_SelectedLanguage_Maori" />
+                            <ComboBoxItem x:Uid="QuickAccent_SelectedLanguage_Pinyin" />
+                            <ComboBoxItem x:Uid="QuickAccent_SelectedLanguage_Polish" />
+                            <ComboBoxItem x:Uid="QuickAccent_SelectedLanguage_Portuguese" />
+                            <ComboBoxItem x:Uid="QuickAccent_SelectedLanguage_Romanian" />
+                            <ComboBoxItem x:Uid="QuickAccent_SelectedLanguage_Slovakian" />
+                            <ComboBoxItem x:Uid="QuickAccent_SelectedLanguage_Spanish" />
+                            <ComboBoxItem x:Uid="QuickAccent_SelectedLanguage_Swedish" />
+                            <ComboBoxItem x:Uid="QuickAccent_SelectedLanguage_Turkish" />
+                            <ComboBoxItem x:Uid="QuickAccent_SelectedLanguage_Welsh" />
                         </ComboBox>
                     </labs:SettingsCard>
                 </controls:SettingsGroup>
@@ -85,7 +87,8 @@
                     IsEnabled="{Binding Mode=OneWay, Path=IsEnabled}">
                     <labs:SettingsCard
                         x:Uid="QuickAccent_ToolbarPosition"
-                        HeaderIcon="{ui:FontIcon FontFamily={StaticResource SymbolThemeFontFamily}, Glyph=&#xEC12;}">
+                        HeaderIcon="{ui:FontIcon FontFamily={StaticResource SymbolThemeFontFamily},
+                                                 Glyph=&#xEC12;}">
                         <ComboBox
                             MinWidth="{StaticResource SettingActionControlMinWidth}"
                             SelectedIndex="{x:Bind Path=ViewModel.ToolbarPositionIndex, Mode=TwoWay}">
@@ -102,12 +105,11 @@
                     </labs:SettingsCard>
                 </controls:SettingsGroup>
 
-                <controls:SettingsGroup
-                    x:Uid="QuickAccent_Behavior"
-                    IsEnabled="{Binding Mode=OneWay, Path=IsEnabled}">
+                <controls:SettingsGroup x:Uid="QuickAccent_Behavior">
                     <labs:SettingsCard
                         x:Uid="QuickAccent_InputTimeMs"
-                        HeaderIcon="{ui:FontIcon FontFamily={StaticResource SymbolThemeFontFamily}, Glyph=&#xE916;}">
+                        HeaderIcon="{ui:FontIcon FontFamily={StaticResource SymbolThemeFontFamily},
+                                                 Glyph=&#xE916;}">
                         <NumberBox
                             MinWidth="{StaticResource SettingActionControlMinWidth}"
                             LargeChange="100"
@@ -117,24 +119,28 @@
                             Value="{x:Bind Mode=TwoWay, Path=ViewModel.InputTimeMs}" />
                     </labs:SettingsCard>
 
-                    <controls:SettingExpander IsExpanded="False">
-                        <controls:SettingExpander.Header>
-                            <controls:Setting x:Uid="QuickAccent_ExcludedApps" Icon="&#xECE4;" IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}" Style="{StaticResource ExpanderHeaderSettingStyle}"/>
-                        </controls:SettingExpander.Header>
-                        <controls:SettingExpander.Content>
-                            <TextBox x:Uid="QuickAccent_ExcludedApps_TextBoxControl"
-                                    Margin="{StaticResource ExpanderSettingMargin}"
-                                    Text="{x:Bind Mode=TwoWay, Path=ViewModel.ExcludedApps, UpdateSourceTrigger=PropertyChanged}"
-                                    ScrollViewer.VerticalScrollBarVisibility ="Visible"
-                                    ScrollViewer.VerticalScrollMode="Enabled"
-                                    ScrollViewer.IsVerticalRailEnabled="True"
-                                    TextWrapping="Wrap"
-                                    IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}"
-                                    AcceptsReturn="True"
+                    <labs:SettingsExpander
+                        x:Uid="QuickAccent_ExcludedApps"
+                        HeaderIcon="{ui:FontIcon FontFamily={StaticResource SymbolThemeFontFamily},
+                                                 Glyph=&#xECE4;}">
+                        <labs:SettingsExpander.Items>
+                            <labs:SettingsCard
+                                x:Uid="QuickAccent_ExcludedApps_TextBoxControl"
+                                HorizontalContentAlignment="Stretch"
+                                ContentAlignment="Vertical">
+                                <TextBox
                                     MinWidth="240"
-                                    MinHeight="160" />
-                        </controls:SettingExpander.Content>
-                    </controls:SettingExpander>
+                                    MinHeight="160"
+                                    AcceptsReturn="True"
+                                    IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}"
+                                    ScrollViewer.IsVerticalRailEnabled="True"
+                                    ScrollViewer.VerticalScrollBarVisibility="Visible"
+                                    ScrollViewer.VerticalScrollMode="Enabled"
+                                    Text="{x:Bind Mode=TwoWay, Path=ViewModel.ExcludedApps, UpdateSourceTrigger=PropertyChanged}"
+                                    TextWrapping="Wrap" />
+                            </labs:SettingsCard>
+                        </labs:SettingsExpander.Items>
+                    </labs:SettingsExpander>
                 </controls:SettingsGroup>
             </StackPanel>
         </controls:SettingsPageControl.ModuleContent>
