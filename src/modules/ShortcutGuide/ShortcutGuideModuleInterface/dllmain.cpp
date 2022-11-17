@@ -311,7 +311,7 @@ private:
                     m_hotkey.modifiersMask |= MOD_ALT;
                 }
 
-                m_hotkey.vkCode = hotkey.get_code();
+                m_hotkey.vkCode = static_cast<WORD>(hotkey.get_code());
             }
             catch (...)
             {
