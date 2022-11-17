@@ -2563,6 +2563,9 @@ Activate by holding the key for the character you want to add an accent to, then
   <data name="QuickAccent_SelectedLanguage_Currency.Content" xml:space="preserve">
     <value>Currency</value>
   </data>
+  <data name="QuickAccent_SelectedLanguage_Croatian.Content" xml:space="preserve">
+    <value>Croatian</value>
+  </data>
   <data name="QuickAccent_SelectedLanguage_Czech.Content" xml:space="preserve">
     <value>Czech</value>
   </data>
@@ -2574,6 +2577,9 @@ Activate by holding the key for the character you want to add an accent to, then
   </data>
   <data name="QuickAccent_SelectedLanguage_Maori.Content" xml:space="preserve">
     <value>Maori</value>
+  </data>
+  <data name="QuickAccent_SelectedLanguage_Dutch.Content" xml:space="preserve">
+    <value>Dutch</value>
   </data>
   <data name="QuickAccent_SelectedLanguage_Pinyin.Content" xml:space="preserve">
     <value>Pinyin</value>
@@ -2590,6 +2596,9 @@ Activate by holding the key for the character you want to add an accent to, then
   <data name="QuickAccent_SelectedLanguage_Spanish.Content" xml:space="preserve">
     <value>Spanish</value>
   </data>
+  <data name="QuickAccent_SelectedLanguage_Swedish.Content" xml:space="preserve">
+    <value>Swedish</value>
+  </data>
   <data name="QuickAccent_SelectedLanguage_Turkish.Content" xml:space="preserve">
     <value>Turkish</value>
   </data>
@@ -2604,6 +2613,9 @@ Activate by holding the key for the character you want to add an accent to, then
   </data>
   <data name="QuickAccent_SelectedLanguage_Italian.Content" xml:space="preserve">
     <value>Italian</value>
+  </data>
+  <data name="QuickAccent_SelectedLanguage_Welsh.Content" xml:space="preserve">
+    <value>Welsh</value>
   </data>
   <data name="Hosts.ModuleDescription" xml:space="preserve">
     <value>Quick and simple utility for managing hosts file.</value>
@@ -2640,7 +2652,7 @@ Activate by holding the key for the character you want to add an accent to, then
     <comment>"Host File Editor" is a product name</comment>
   </data>
   <data name="Hosts_AdditionalLinesPosition.Header" xml:space="preserve">
-    <value>Additional lines position</value>
+    <value>Position of additional content</value>
   </data>
   <data name="Hosts_AdditionalLinesPosition_Bottom.Content" xml:space="preserve">
     <value>Bottom</value>
@@ -2689,5 +2701,8 @@ Activate by holding the key for the character you want to add an accent to, then
   </data>
   <data name="GPO_IsSettingForced.Title" xml:space="preserve">
     <value>The systems administrator is forcing this setting.</value>
+  </data>
+  <data name="Hosts_AdditionalLinesPosition.Description" xml:space="preserve">
+    <value>Additional content includes the file header and lines that can't parse.</value>
   </data>
 </root>

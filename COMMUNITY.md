@@ -100,3 +100,15 @@ Find My Mouse is based on Raymond Chen's SuperSonar.
 ### Microsoft InVEST team
 
 This amazing team helped PowerToys develop PowerToys Run and Keyboard manager as well as update our Settings to v2.  @alekhyareddy28, @arjunbalgovind, @jyuwono @laviusmotileng-ms, @ryanbodrug-microsoft, @saahmedm, @somil55, @traies, @udit3333
+
+## PowerToys core team
+
+- [@crutkas](https://github.com/crutkas/) - Clint Rutkas - Lead
+- [@cinnamon-msft](https://github.com/cinnamon-msft) - Kayla Cinnamon - Product Manager
+- [@jaimecbernardo](https://github.com/jaimecbernardo) - Jaime Bernardo - Dev lead
+- [@donlaci](https://github.com/donlaci) - Laszlo Nemeth - Dev
+- [@SeraphimaZykova](https://github.com/SeraphimaZykova) - Seraphima Zykova - Dev
+- [@sosssego](https://github.com/sosssego) - Frederico Moron - Dev
+- [@stefansjfw](https://github.com/stefansjfw) - Stefan Markovic - Dev
+- [@taras-janea](https://github.com/taras-janea) - Taras Sich - Dev
+- [@yuyoyuppe](https://github.com/yuyoyuppe) - Andrey Nekrasov - Dev
