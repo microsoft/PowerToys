@@ -20,7 +20,7 @@ namespace notifications
         }
         const auto now = timeutil::now();
         const size_t buf_size = sizeof(now);
-        if (RegSetValueExW(key, nullptr, 0, REG_QWORD, reinterpret_cast<const BYTE*>(&now), sizeof(now)) != ERROR_SUCCESS)
+        if (RegSetValueExW(key, nullptr, 0, REG_QWORD, reinterpret_cast<const BYTE*>(&now), buf_size) != ERROR_SUCCESS)
         {
             RegCloseKey(key);
             return false;

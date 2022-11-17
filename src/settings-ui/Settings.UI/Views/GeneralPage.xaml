@@ -72,6 +72,13 @@
                         IsTabStop="{Binding IsNewVersionCheckedAndUpToDate, Mode=OneWay}"
                         Severity="Success" />
 
+ <!-- Network error while checking for new version -->
+                    <InfoBar x:Uid="General_CantCheck"
+                                  IsClosable="False"
+                                  Severity="Error"
+                                  IsTabStop="{Binding IsNoNetwork, Mode=OneWay}"
+                                  IsOpen="{Binding IsNoNetwork, Mode=OneWay}"/>
+
                     <!--  New version available  -->
                     <InfoBar
                         x:Uid="General_NewVersionAvailable"
@@ -80,6 +87,7 @@
                         IsTabStop="{Binding PowerToysUpdatingState, Mode=OneWay, Converter={StaticResource UpdateStateToBoolConverter}, ConverterParameter=ReadyToDownload}"
                         Message="{Binding PowerToysNewAvailableVersion, Mode=OneWay}"
                         Severity="Informational">
+
                         <InfoBar.Content>
                             <StackPanel Spacing="16">
                                 <Button

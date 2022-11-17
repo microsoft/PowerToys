@@ -40,7 +40,17 @@ namespace FileLocksmithUI
                 return;
             }
 
-            _window = new MainWindow(Environment.GetCommandLineArgs().Contains("--elevated"));
+            bool isElevated = FileLocksmith.Interop.NativeMethods.IsProcessElevated();
+
+            if (isElevated)
+            {
+                if (!FileLocksmith.Interop.NativeMethods.SetDebugPrivilege())
+                {
+                    Logger.LogWarning("Couldn't set debug privileges to see system processes.");
+                }
+            }
+
+            _window = new MainWindow(isElevated);
             _window.Activate();
         }
 

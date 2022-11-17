@@ -8,7 +8,6 @@
     xmlns:interactivity="using:Microsoft.Xaml.Interactivity"
     xmlns:interop="using:FileLocksmith.Interop"
     xmlns:labs="using:CommunityToolkit.Labs.WinUI"
-    xmlns:local="using:PowerToys.FileLocksmithUI.Views"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:toolkitConverters="using:CommunityToolkit.WinUI.UI.Converters"
     mc:Ignorable="d">
@@ -25,7 +24,7 @@
             TrueValue="Collapsed" />
         <converters:FileCountConverter x:Key="fileCountConverter" />
         <converters:PidToIconConverter x:Key="pidToIconConverter" />
-        <converters:PidToUserConverter x:Key="pidToUserConverter" />
+        <converters:UserToSystemWarningVisibilityConverter x:Key="userToSystemWarningVisibilityConverter" />
         <converters:FileListToDescriptionConverter x:Key="fileListToDescriptionConverter" />
     </Page.Resources>
 
@@ -41,23 +40,28 @@
             <RowDefinition Height="*" />
         </Grid.RowDefinitions>
 
-        <Grid Padding="18,0,18,4" VerticalAlignment="Bottom">
-            <!--<TextBlock Margin="0,2,0,0" Text="Current proccesses:" Style="{ThemeResource BodyStrongTextBlockStyle}"/>-->
-            <Button Content="{x:Bind ViewModel.Paths, Converter={StaticResource fileListToDescriptionConverter}}" Click="ShowSelectedPathsButton_Click">
+        <Grid
+            Padding="18,0,18,4"
+            VerticalAlignment="Bottom">
+            <Button
+                Click="ShowSelectedPathsButton_Click"
+                Content="{x:Bind ViewModel.Paths, Converter={StaticResource fileListToDescriptionConverter}}">
                 <Button.Template>
                     <ControlTemplate TargetType="Button">
-                        <TextBlock Margin="0,8,0,0"
+                        <TextBlock
+                            Margin="0,8,0,0"
                             HorizontalAlignment="Left"
                             Style="{ThemeResource BodyStrongTextBlockStyle}"
-                            Text="{TemplateBinding Content}" >
-                        </TextBlock>
+                            Text="{TemplateBinding Content}" />
                     </ControlTemplate>
                 </Button.Template>
                 <ToolTipService.ToolTip>
-                    <TextBlock x:Uid="PathsTooltipDescription" TextWrapping="WrapWholeWords"/>
+                    <TextBlock
+                        x:Uid="PathsTooltipDescription"
+                        TextWrapping="WrapWholeWords" />
                 </ToolTipService.ToolTip>
             </Button>
-            
+
             <StackPanel
                 HorizontalAlignment="Right"
                 VerticalAlignment="Bottom"
@@ -71,7 +75,7 @@
                     <FontIcon
                         FontFamily="{ThemeResource SymbolThemeFontFamily}"
                         FontSize="16"
-                        Glyph="&#xE149;" />
+                        Glyph="&#xe72c;" />
                     <ToolTipService.ToolTip>
                         <TextBlock x:Uid="Reload" />
                     </ToolTipService.ToolTip>
@@ -85,7 +89,7 @@
                     <FontIcon
                         FontFamily="{ThemeResource SymbolThemeFontFamily}"
                         FontSize="16"
-                        Glyph="&#xE1A7;" />
+                        Glyph="&#xe7ef;" />
                     <ToolTipService.ToolTip>
                         <TextBlock x:Uid="RestartAsAdmin" />
                     </ToolTipService.ToolTip>
@@ -98,75 +102,101 @@
                 <ListView
                     x:Name="ProcessesListView"
                     Grid.Row="1"
-                    ItemsSource="{x:Bind ViewModel.Processes}"
                     IncrementalLoadingThreshold="10"
+                    ItemsSource="{x:Bind ViewModel.Processes}"
                     SelectionMode="None">
                     <ListView.ItemTemplate>
                         <DataTemplate x:DataType="interop:ProcessResult">
-                                <labs:SettingsExpander Margin="0,3,0,0">
-                                    <labs:SettingsExpander.Header>
-                                        <!--  We can't use the HeaderIcon because it only support a BitmapIcon, which only supports UriSource - not a direct BitmapImage  -->
-                                        <StackPanel Orientation="Horizontal">
-                                            <Image
-                                                Width="16"
-                                                Height="16"
-                                                Margin="2,0,24,0"
-                                                Source="{x:Bind pid, Converter={StaticResource pidToIconConverter}}" />
-                                            <TextBlock IsTextSelectionEnabled="True" Text="{x:Bind name}" />
-                                        </StackPanel>
-                                    </labs:SettingsExpander.Header>
-                                    <labs:SettingsExpander.Content>
-                                        <Button Command="{Binding Path=DataContext.EndTaskCommand, ElementName=ProcessesListView}" CommandParameter="{Binding}">
-                                            <StackPanel Orientation="Horizontal" Spacing="6">
+                            <labs:SettingsExpander Margin="0,3,0,0">
+                                <labs:SettingsExpander.Resources>
+                                    <x:Double x:Key="SettingsCardWrapThreshold">0</x:Double>
+                                </labs:SettingsExpander.Resources>
+                                <labs:SettingsExpander.Header>
+                                    <!--  We can't use the HeaderIcon because it only support a BitmapIcon, which only supports UriSource - not a direct BitmapImage  -->
+                                    <StackPanel Orientation="Horizontal">
+                                        <Image
+                                            Width="16"
+                                            Height="16"
+                                            Margin="2,0,24,0"
+                                            Source="{x:Bind pid, Converter={StaticResource pidToIconConverter}}" />
+                                        <TextBlock
+                                            IsTextSelectionEnabled="True"
+                                            Text="{x:Bind name}" />
+                                    </StackPanel>
+                                </labs:SettingsExpander.Header>
+                                <labs:SettingsExpander.Content>
+                                    <StackPanel
+                                        Orientation="Horizontal"
+                                        Spacing="8">
+                                        <FontIcon
+                                            Foreground="{ThemeResource InfoBarWarningSeverityIconBackground}"
+                                            Glyph="&#xE7BA;"
+                                            Visibility="{x:Bind user, Mode=OneTime, Converter={StaticResource userToSystemWarningVisibilityConverter}}">
+                                            <ToolTipService.ToolTip>
+                                                <TextBlock
+                                                    x:Uid="ProcessIsSystemUserWarning"
+                                                    TextWrapping="Wrap" />
+                                            </ToolTipService.ToolTip>
+                                        </FontIcon>
+                                        <Button
+                                            MinWidth="132"
+                                            Command="{Binding Path=DataContext.EndTaskCommand, ElementName=ProcessesListView}"
+                                            CommandParameter="{Binding}">
+                                            <StackPanel
+                                                Orientation="Horizontal"
+                                                Spacing="6">
                                                 <FontIcon
                                                     FontFamily="{ThemeResource SymbolThemeFontFamily}"
                                                     FontSize="14"
                                                     Glyph="&#xf140;" />
-                                                <TextBlock x:Uid="EndTask" />
+                                                <TextBlock
+                                                    x:Uid="EndTask"
+                                                    FontSize="14" />
                                             </StackPanel>
                                         </Button>
-                                    </labs:SettingsExpander.Content>
-                                    <labs:SettingsExpander.Items>
-                                        <labs:SettingsCard x:Uid="ProcessID">
-                                            <TextBlock
-                                                Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                                                IsTextSelectionEnabled="True"
-                                                Text="{x:Bind pid}" />
-                                        </labs:SettingsCard>
-                                        <labs:SettingsCard x:Uid="User">
-                                            <TextBlock
-                                                Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                                                IsTextSelectionEnabled="True"
-                                                Text="{x:Bind pid, Converter={StaticResource pidToUserConverter}}" />
-                                        </labs:SettingsCard>
-                                        <labs:SettingsCard ContentAlignment="Vertical">
-                                            <labs:SettingsCard.Header>
-                                                <TextBlock>
-                                                    <Run x:Uid="Files" />
-                                                    <Run Text="(" /><Run Text="{x:Bind files, Converter={StaticResource fileCountConverter}}" /><Run Text=")" />
-                                                </TextBlock>
-                                            </labs:SettingsCard.Header>
-                                            <ListView
-                                                Margin="-16,0,0,0"
-                                                ItemsSource="{x:Bind files}"
-                                                SelectionMode="None">
-                                                <ListView.ItemTemplate>
-                                                    <DataTemplate x:DataType="x:String">
-                                                        <TextBlock
-                                                            FontSize="12"
-                                                            Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                                                            IsTextSelectionEnabled="True"
-                                                            Style="{StaticResource CaptionTextBlockStyle}"
-                                                            Text="{Binding}"
-                                                            TextTrimming="CharacterEllipsis"
-                                                            TextWrapping="NoWrap"
-                                                            ToolTipService.ToolTip="{Binding}" />
-                                                    </DataTemplate>
-                                                </ListView.ItemTemplate>
-                                            </ListView>
-                                        </labs:SettingsCard>
-                                    </labs:SettingsExpander.Items>
-                                </labs:SettingsExpander>
+                                    </StackPanel>
+                                </labs:SettingsExpander.Content>
+                                <labs:SettingsExpander.Items>
+                                    <labs:SettingsCard x:Uid="ProcessID">
+                                        <TextBlock
+                                            Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                            IsTextSelectionEnabled="True"
+                                            Text="{x:Bind pid}" />
+                                    </labs:SettingsCard>
+                                    <labs:SettingsCard x:Uid="User">
+                                        <TextBlock
+                                            Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                            IsTextSelectionEnabled="True"
+                                            Text="{x:Bind user}" />
+                                    </labs:SettingsCard>
+                                    <labs:SettingsCard ContentAlignment="Vertical">
+                                        <labs:SettingsCard.Header>
+                                            <TextBlock>
+                                                <Run x:Uid="Files" />
+                                                <Run Text="(" /><Run Text="{x:Bind files, Converter={StaticResource fileCountConverter}}" /><Run Text=")" />
+                                            </TextBlock>
+                                        </labs:SettingsCard.Header>
+                                        <ItemsRepeater
+                                            Margin="-16,0,0,0"
+                                            ItemsSource="{x:Bind files}">
+                                            <ItemsRepeater.ItemTemplate>
+                                                <DataTemplate x:DataType="x:String">
+                                                    <TextBlock
+                                                        Margin="16,0,0,4"
+                                                        FontSize="12"
+                                                        Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                                        IsTextSelectionEnabled="True"
+                                                        Style="{StaticResource CaptionTextBlockStyle}"
+                                                        Text="{Binding}"
+                                                        TextTrimming="CharacterEllipsis"
+                                                        TextWrapping="NoWrap"
+                                                        ToolTipService.ToolTip="{Binding}" />
+                                                </DataTemplate>
+                                            </ItemsRepeater.ItemTemplate>
+                                        </ItemsRepeater>
+                                    </labs:SettingsCard>
+                                </labs:SettingsExpander.Items>
+                            </labs:SettingsExpander>
                         </DataTemplate>
                     </ListView.ItemTemplate>
                 </ListView>
@@ -176,17 +206,23 @@
                     Orientation="Vertical"
                     Spacing="8"
                     Visibility="{x:Bind ViewModel.Processes.Count, Mode=OneWay, Converter={StaticResource doubleToVisibilityConverter}}">
-                    <Button HorizontalAlignment="Center" Command="{Binding LoadProcessesCommand}" >
+                    <Button
+                        HorizontalAlignment="Center"
+                        Command="{Binding LoadProcessesCommand}">
                         <Button.Template>
                             <ControlTemplate TargetType="Button">
-                                <FontIcon FontSize="32" Glyph="&#xE9F3;" />
+                                <FontIcon
+                                    FontSize="32"
+                                    Glyph="&#xE9F3;" />
                             </ControlTemplate>
                         </Button.Template>
                         <ToolTipService.ToolTip>
                             <TextBlock x:Uid="Reload" />
                         </ToolTipService.ToolTip>
                     </Button>
-                    <TextBlock x:Uid="EmptyListDescription" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                    <TextBlock
+                        x:Uid="EmptyListDescription"
+                        Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
                 </StackPanel>
             </Grid>
             <ProgressRing
@@ -196,10 +232,15 @@
         </Grid>
         <ContentDialog
             x:Name="SelectedFilesListDialog"
-            x:Uid="SelectedFilesListDialog"
-            >
-            <ScrollViewer HorizontalScrollBarVisibility="Auto" HorizontalScrollMode="Auto" VerticalScrollBarVisibility="Auto" VerticalScrollMode="Auto">
-                <TextBlock Text="{x:Bind ViewModel.PathsToString, Mode=OneWay}"/>
+            x:Uid="SelectedFilesListDialog">
+            <ScrollViewer
+                HorizontalScrollBarVisibility="Auto"
+                HorizontalScrollMode="Auto"
+                VerticalScrollBarVisibility="Auto"
+                VerticalScrollMode="Auto">
+                <TextBlock
+                    IsTextSelectionEnabled="True"
+                    Text="{x:Bind ViewModel.PathsToString, Mode=OneWay}" />
             </ScrollViewer>
         </ContentDialog>
     </Grid>

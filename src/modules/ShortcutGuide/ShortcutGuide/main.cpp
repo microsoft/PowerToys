@@ -12,12 +12,12 @@
 #include "shortcut_guide.h"
 #include "target_state.h"
 #include "ShortcutGuideConstants.h"
-#include "trace.h" 
+#include "trace.h"
 
 const std::wstring instanceMutexName = L"Local\\PowerToys_ShortcutGuide_InstanceMutex";
 
 // set current path to the executable path
-bool SetCurrentPath() 
+bool SetCurrentPath()
 {
     TCHAR buffer[MAX_PATH] = { 0 };
     if (!GetModuleFileName(NULL, buffer, MAX_PATH))
@@ -43,7 +43,7 @@ bool SetCurrentPath()
     return true;
 }
 
-int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _In_ PWSTR lpCmdLine, _In_ int nCmdShow)
+int WINAPI wWinMain(_In_ HINSTANCE /*hInstance*/, _In_opt_ HINSTANCE /*hPrevInstance*/, _In_ PWSTR lpCmdLine, _In_ int /*nCmdShow*/)
 {
     winrt::init_apartment();
     LoggerHelpers::init_logger(ShortcutGuideConstants::ModuleKey, L"ShortcutGuide", LogSettings::shortcutGuideLoggerName);

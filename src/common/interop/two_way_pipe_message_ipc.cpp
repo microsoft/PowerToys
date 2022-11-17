@@ -425,7 +425,7 @@ void TwoWayPipeMessageIPC::TwoWayPipeMessageIPCImpl::start_named_pipe_server(HAN
 
             if (token != NULL)
             {
-                int err = change_pipe_security_allow_restricted_token(connect_pipe_handle, token);
+                change_pipe_security_allow_restricted_token(connect_pipe_handle, token);
             }
             current_connect_pipe_handle = connect_pipe_handle;
         }

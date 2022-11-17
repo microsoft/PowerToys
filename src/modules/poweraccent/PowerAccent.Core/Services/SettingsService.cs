@@ -56,6 +56,9 @@ public class SettingsService
                         InputTime = settings.Properties.InputTime.Value;
                         _keyboardListener.UpdateInputTime(InputTime);
 
+                        ExcludedApps = settings.Properties.ExcludedApps.Value;
+                        _keyboardListener.UpdateExcludedApps(ExcludedApps);
+
                         SelectedLang = Enum.TryParse(settings.Properties.SelectedLang.Value, out Language selectedLangValue) ? selectedLangValue : Language.ALL;
 
                         switch (settings.Properties.ToolbarPosition.Value)
@@ -140,6 +143,21 @@ public class SettingsService
         set
         {
             _inputTime = value;
+        }
+    }
+
+    private string _excludedApps;
+
+    public string ExcludedApps
+    {
+        get
+        {
+            return _excludedApps;
+        }
+
+        set
+        {
+            _excludedApps = value;
         }
     }
 
