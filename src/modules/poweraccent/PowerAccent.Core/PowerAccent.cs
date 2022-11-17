@@ -14,12 +14,14 @@ public class PowerAccent : IDisposable
     private readonly SettingsService _settingService;
 
     private bool _visible;
-    private char[] _characters = Array.Empty<char>();
+
+    private string[] _characters = Array.Empty<string>();
+
     private int _selectedIndex = -1;
 
-    public event Action<bool, char[]> OnChangeDisplay;
+    public event Action<bool, string[]> OnChangeDisplay;
 
-    public event Action<int, char> OnSelectCharacter;
+    public event Action<int, string> OnSelectCharacter;
 
     private KeyboardListener _keyboardListener;
 
@@ -84,7 +86,7 @@ public class PowerAccent : IDisposable
         {
             case InputType.Space:
                 {
-                    WindowsFunctions.Insert(' ');
+                    WindowsFunctions.Insert(" ");
                     break;
                 }
 
@@ -191,18 +193,18 @@ public class PowerAccent : IDisposable
         GC.SuppressFinalize(this);
     }
 
-    public static char[] ToUpper(char[] array)
+    public static string[] ToUpper(string[] array)
     {
-        char[] result = new char[array.Length];
+        string[] result = new string[array.Length];
         for (int i = 0; i < array.Length; i++)
         {
-            if (array[i] == 'ß')
+            if (array[i].Contains('ß'))
             {
-                result[i] = 'ẞ';
+                result[i] = "ẞ";
             }
             else
             {
-                result[i] = char.ToUpper(array[i], System.Globalization.CultureInfo.InvariantCulture);
+                result[i] = array[i].ToUpper(System.Globalization.CultureInfo.InvariantCulture);
             }
         }
 
