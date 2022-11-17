@@ -262,7 +262,7 @@ HRESULT CContextMenuHandler::ResizePictures(CMINVOKECOMMANDINFO* pici, IShellIte
     startupInfo.dwFlags = STARTF_USESHOWWINDOW | STARTF_USESTDHANDLES;
     if (pici)
     {
-        startupInfo.wShowWindow = pici->nShow;
+        startupInfo.wShowWindow = static_cast<WORD>(pici->nShow);
     }
     else
     {
