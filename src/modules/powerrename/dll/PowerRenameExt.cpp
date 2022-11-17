@@ -165,7 +165,7 @@ HRESULT CPowerRenameMenu::RunPowerRename(CMINVOKECOMMANDINFO* pici, IShellItemAr
         startupInfo.dwFlags = STARTF_USESHOWWINDOW | STARTF_USESTDHANDLES;
         if (pici)
         {
-            startupInfo.wShowWindow = pici->nShow;
+            startupInfo.wShowWindow = static_cast<WORD>(pici->nShow);
         }
         else
         {
