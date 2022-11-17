@@ -255,7 +255,7 @@
                                                  Glyph=&#xE777;}">
                         <StackPanel
                             Orientation="Horizontal"
-                            Spacing="4">
+                            Spacing="8">
                             <Button
                                 x:Uid="General_SettingsBackupAndRestore_ButtonBackup"
                                 Command="{Binding BackupConfigsEventHandler}" />
@@ -268,7 +268,7 @@
                                 <StackPanel
                                     HorizontalAlignment="Right"
                                     Orientation="Horizontal"
-                                    Spacing="4">
+                                    Spacing="8">
                                     <TextBlock
                                         x:Name="pathTextBlock"
                                         Width="350"
@@ -320,16 +320,8 @@
                                         <RowDefinition Height="Auto" />
                                         <RowDefinition Height="Auto" />
                                     </Grid.RowDefinitions>
-                                    <TextBlock x:Uid="General_SettingsBackupInfo_DateHeader" />
+                                    <TextBlock x:Uid="General_SettingsBackupInfo_StatusHeader" />
                                     <TextBlock
-                                        Grid.Column="1"
-                                        Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                                        Text="{Binding LastSettingsBackupDate, Mode=OneWay}" />
-                                    <TextBlock
-                                        x:Uid="General_SettingsBackupInfo_StatusHeader"
-                                        Grid.Row="1" />
-                                    <TextBlock
-                                        Grid.Row="1"
                                         Grid.Column="1"
                                         Foreground="{ThemeResource TextFillColorSecondaryBrush}">
                                         <Run Text="{Binding CurrentSettingMatchText, Mode=OneWay}" />
@@ -339,6 +331,16 @@
                                             <Run x:Uid="General_SettingsBackupAndRestore_LinkRefresh" />
                                         </Hyperlink>
                                     </TextBlock>
+
+                                    <TextBlock
+                                        x:Uid="General_SettingsBackupInfo_FileNameHeader"
+                                        Grid.Row="1" />
+                                    <TextBlock
+                                        Grid.Row="1"
+                                        Grid.Column="1"
+                                        Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                        Text="{Binding LastSettingsBackupFileName, Mode=OneWay}" />
+
                                     <TextBlock
                                         x:Uid="General_SettingsBackupInfo_SourceHeader"
                                         Grid.Row="2" />
@@ -348,13 +350,13 @@
                                         Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                                         Text="{Binding LastSettingsBackupSource, Mode=OneWay}" />
                                     <TextBlock
-                                        x:Uid="General_SettingsBackupInfo_FileNameHeader"
+                                        x:Uid="General_SettingsBackupInfo_DateHeader"
                                         Grid.Row="3" />
                                     <TextBlock
                                         Grid.Row="3"
                                         Grid.Column="1"
                                         Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                                        Text="{Binding LastSettingsBackupFileName, Mode=OneWay}" />
+                                        Text="{Binding LastSettingsBackupDate, Mode=OneWay}" />
                                 </Grid>
                             </labs:SettingsCard>
                         </labs:SettingsExpander.Items>
