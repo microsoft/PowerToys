@@ -28,7 +28,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         [JsonPropertyName("use_legacy_press_win_key_behavior")]
         public BoolProperty UseLegacyPressWinKeyBehavior { get; set; }
 
-        [JsonPropertyName("press_time_for_global_windows_shortcuts")]
+        [JsonPropertyName("press_time")]
         public IntProperty PressTimeForGlobalWindowsShortcuts { get; set; }
 
         [JsonPropertyName("press_time_for_taskbar_icon_shortcuts")]

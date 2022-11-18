@@ -86,7 +86,7 @@ private:
 
     struct WindowsKeyPressTimeForGlobalWindowsShortcuts
     {
-        static inline PCWSTR name = L"press_time_for_global_windows_shortcuts";
+        static inline PCWSTR name = L"press_time";
         int value;
     } windowsKeyPressTimeForGlobalWindowsShortcuts;
 
