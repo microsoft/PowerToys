@@ -9,20 +9,27 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Windows;
+
 using Common.UI;
+
 using interop;
+
 using ManagedCommon;
+
 using Microsoft.PowerLauncher.Telemetry;
 using Microsoft.PowerToys.Telemetry;
+
 using PowerLauncher.Helper;
 using PowerLauncher.Plugin;
 using PowerLauncher.ViewModel;
+
 using Wox;
 using Wox.Infrastructure;
 using Wox.Infrastructure.Image;
 using Wox.Infrastructure.UserSettings;
 using Wox.Plugin;
 using Wox.Plugin.Logger;
+
 using Stopwatch = Wox.Infrastructure.Stopwatch;
 
 namespace PowerLauncher
@@ -30,6 +37,8 @@ namespace PowerLauncher
     public partial class App : IDisposable, ISingleInstanceApp
     {
         public static PublicAPIInstance API { get; private set; }
+
+        private readonly Alphabet _alphabet = new Alphabet();
 
         public static CancellationTokenSource NativeThreadCTS { get; private set; }
 
@@ -126,13 +135,14 @@ namespace PowerLauncher
                 _settings = _settingsVM.Settings;
                 _settings.StartedFromPowerToysRunner = e.Args.Contains("--started-from-runner");
 
-                _stringMatcher = new StringMatcher();
+                _alphabet.Initialize(_settings);
+                _stringMatcher = new StringMatcher(_alphabet);
                 StringMatcher.Instance = _stringMatcher;
                 _stringMatcher.UserSettingSearchPrecision = _settings.QuerySearchPrecision;
 
                 _mainVM = new MainViewModel(_settings, NativeThreadCTS.Token);
                 _mainWindow = new MainWindow(_settings, _mainVM, NativeThreadCTS.Token);
-                API = new PublicAPIInstance(_settingsVM, _mainVM, _themeManager);
+                API = new PublicAPIInstance(_settingsVM, _mainVM, _alphabet, _themeManager);
                 _settingsReader = new SettingsReader(_settings, _themeManager);
                 _settingsReader.ReadSettings();
 

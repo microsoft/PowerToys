@@ -6,12 +6,19 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Windows;
+
 using Common.UI;
+
 using ManagedCommon;
+
 using Microsoft.Toolkit.Uwp.Notifications;
+
 using PowerLauncher.Plugin;
 using PowerLauncher.ViewModel;
+
 using Windows.UI.Notifications;
+
+using Wox.Infrastructure;
 using Wox.Infrastructure.Image;
 using Wox.Plugin;
 
@@ -21,15 +28,17 @@ namespace Wox
     {
         private readonly SettingWindowViewModel _settingsVM;
         private readonly MainViewModel _mainVM;
+        private readonly Alphabet _alphabet;
         private readonly ThemeManager _themeManager;
         private bool _disposed;
 
         public event ThemeChangedHandler ThemeChanged;
 
-        public PublicAPIInstance(SettingWindowViewModel settingsVM, MainViewModel mainVM, ThemeManager themeManager)
+        public PublicAPIInstance(SettingWindowViewModel settingsVM, MainViewModel mainVM, Alphabet alphabet, ThemeManager themeManager)
         {
             _settingsVM = settingsVM ?? throw new ArgumentNullException(nameof(settingsVM));
             _mainVM = mainVM ?? throw new ArgumentNullException(nameof(mainVM));
+            _alphabet = alphabet ?? throw new ArgumentNullException(nameof(alphabet));
             _themeManager = themeManager ?? throw new ArgumentNullException(nameof(themeManager));
             _themeManager.ThemeChanged += OnThemeChanged;
 
@@ -60,6 +69,7 @@ namespace Wox
             _settingsVM.Save();
             PluginManager.Save();
             ImageLoader.Save();
+            _alphabet.Save();
         }
 
         public void ReloadAllPluginData()

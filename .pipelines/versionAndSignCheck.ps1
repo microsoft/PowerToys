@@ -37,6 +37,7 @@ $items | ForEach-Object {
 			(-not $_.Name.EndsWith("Microsoft.WindowsAppRuntime.Bootstrap.Net.dll")) -and
 			(-not $_.Name.EndsWith("Microsoft.Xaml.Interactions.dll")) -and
 			(-not $_.Name.EndsWith("Microsoft.Xaml.Interactivity.dll")) -and
+			(-not $_.Name.EndsWith("hyjiacan.py4n.dll")) -and
 			(-not $_.Name.EndsWith("Microsoft.WindowsAppRuntime.Release.Net.dll"))
 		)
 		{

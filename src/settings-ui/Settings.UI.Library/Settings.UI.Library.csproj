@@ -26,7 +26,6 @@
 
 	<ItemGroup>
 		<PackageReference Include="System.IO.Abstractions" Version="17.2.3" />
-		<PackageReference Include="System.Text.Json" Version="6.0.2" />
 	</ItemGroup>
 
 	<ItemGroup>

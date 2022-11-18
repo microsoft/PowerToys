@@ -10,5 +10,7 @@ public:
     {
     public:
         static void Enable(bool enabled) noexcept;
+        static void PinWindow() noexcept;
+        static void UnpinWindow() noexcept;
     };
 };
