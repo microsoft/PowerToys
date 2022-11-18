@@ -386,6 +386,10 @@
     <value>Shortcuts</value>
     <comment>Keyboard Manager remap keyboard header</comment>
   </data>
+  <data name="KeyboardManager_All_Apps_Description" xml:space="preserve">
+    <value>All Apps</value>
+    <comment>Should be the same as EditShortcuts_AllApps from keyboard manager editor</comment>
+  </data>
   <data name="Shortcuts.Header" xml:space="preserve">
     <value>Shortcuts</value>
   </data>
