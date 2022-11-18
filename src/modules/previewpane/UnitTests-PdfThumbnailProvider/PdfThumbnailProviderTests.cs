@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.Drawing;
 using System.IO;
 using System.Runtime.InteropServices;
 using System.Runtime.InteropServices.ComTypes;
@@ -21,73 +22,39 @@ namespace PdfThumbnailProviderUnitTests
         public void GetThumbnailValidStreamPDF()
         {
             // Act
-            var file = File.ReadAllBytes("HelperFiles/sample.pdf");
+            var filePath = "HelperFiles/sample.pdf";
 
-            PdfThumbnailProvider provider = new PdfThumbnailProvider();
+            PdfThumbnailProvider provider = new PdfThumbnailProvider(filePath);
 
-            provider.Initialize(GetMockStream(file), 0);
+            Bitmap bitmap = provider.GetThumbnail(256);
 
-            provider.GetThumbnail(256, out IntPtr bitmap, out WTS_ALPHATYPE alphaType);
-
-            Assert.IsTrue(bitmap != IntPtr.Zero);
-            Assert.IsTrue(alphaType == WTS_ALPHATYPE.WTSAT_RGB);
+            Assert.IsTrue(bitmap != null);
         }
 
         [TestMethod]
         public void GetThumbnailInValidSizePDF()
         {
             // Act
-            var file = File.ReadAllBytes("HelperFiles/sample.pdf");
+            var filePath = "HelperFiles/sample.pdf";
 
-            PdfThumbnailProvider provider = new PdfThumbnailProvider();
+            PdfThumbnailProvider provider = new PdfThumbnailProvider(filePath);
 
-            provider.Initialize(GetMockStream(file), 0);
+            Bitmap bitmap = provider.GetThumbnail(0);
 
-            provider.GetThumbnail(0, out IntPtr bitmap, out WTS_ALPHATYPE alphaType);
-
-            Assert.IsTrue(bitmap == IntPtr.Zero);
-            Assert.IsTrue(alphaType == WTS_ALPHATYPE.WTSAT_UNKNOWN);
+            Assert.IsTrue(bitmap == null);
         }
 
         [TestMethod]
         public void GetThumbnailToBigPDF()
         {
             // Act
-            var file = File.ReadAllBytes("HelperFiles/sample.pdf");
+            var filePath = "HelperFiles/sample.pdf";
 
-            PdfThumbnailProvider provider = new PdfThumbnailProvider();
+            PdfThumbnailProvider provider = new PdfThumbnailProvider(filePath);
 
-            provider.Initialize(GetMockStream(file), 0);
+            Bitmap bitmap = provider.GetThumbnail(10001);
 
-            provider.GetThumbnail(10001, out IntPtr bitmap, out WTS_ALPHATYPE alphaType);
-
-            Assert.IsTrue(bitmap == IntPtr.Zero);
-            Assert.IsTrue(alphaType == WTS_ALPHATYPE.WTSAT_UNKNOWN);
-        }
-
-        private static IStream GetMockStream(byte[] sourceArray)
-        {
-            var streamMock = new Mock<IStream>();
-            int bytesRead = 0;
-
-            streamMock
-                .Setup(x => x.Read(It.IsAny<byte[]>(), It.IsAny<int>(), It.IsAny<IntPtr>()))
-                .Callback<byte[], int, IntPtr>((buffer, countToRead, bytesReadPtr) =>
-                {
-                    int actualCountToRead = Math.Min(sourceArray.Length - bytesRead, countToRead);
-                    if (actualCountToRead > 0)
-                    {
-                        Array.Copy(sourceArray, bytesRead, buffer, 0, actualCountToRead);
-                        Marshal.WriteInt32(bytesReadPtr, actualCountToRead);
-                        bytesRead += actualCountToRead;
-                    }
-                    else
-                    {
-                        Marshal.WriteInt32(bytesReadPtr, 0);
-                    }
-                });
-
-            return streamMock.Object;
+            Assert.IsTrue(bitmap == null);
         }
     }
 }

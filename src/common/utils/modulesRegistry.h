@@ -168,10 +168,10 @@ inline registry::ChangeSet getPdfThumbnailHandlerChangeSet(const std::wstring in
     using namespace registry::shellex;
     return generatePreviewHandler(PreviewHandlerType::thumbnail,
                                   perUser,
-                                  L"{BCC13D15-9720-4CC4-8371-EA74A274741E}",
+                                  L"{D8BB9942-93BD-412D-87E4-33FAB214DC1A}",
                                   get_std_product_version(),
-                                  (fs::path{ installationDir } / LR"d(modules\FileExplorerPreview\PowerToys.PdfThumbnailProvider.comhost.dll)d").wstring(),
-                                  L"Microsoft.PowerToys.ThumbnailHandler.Pdf.PdfThumbnailProvider",
+                                  (fs::path{ installationDir } / LR"d(modules\FileExplorerPreview\PdfThumbnailProviderCpp.dll)d").wstring(),
+                                  L"PdfThumbnailProvider",
                                   L"Pdf Thumbnail Provider",
                                   NonLocalizable::ExtPDF);
 }
