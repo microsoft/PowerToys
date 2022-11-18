@@ -143,19 +143,18 @@ namespace Microsoft.PowerToys.Settings.UI.Views
         private void RemoveButton_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
         {
             Button btn = sender as Button;
-            string name = btn.Tag as string;
-            ViewModel.DeleteModelByName(name);
+            ColorFormatModel colorFormatModel = btn.DataContext as ColorFormatModel;
+            ViewModel.DeleteModel(colorFormatModel);
         }
 
         private async void EditButton_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
         {
             var resourceLoader = ResourceLoader.GetForViewIndependentUse();
             Button btn = sender as Button;
-            string name = btn.Tag as string;
+            ColorFormatModel colorFormatModel = btn.DataContext as ColorFormatModel;
             ColorFormatDialog.Title = resourceLoader.GetString("EditCustomColorFormat");
-            ColorFormatModel colorFormatModel = ViewModel.GetColorFormatModelCopyByName(name);
             ColorFormatDialog.DataContext = colorFormatModel;
-            ColorFormatDialog.Tag = name;
+            ColorFormatDialog.Tag = colorFormatModel.Name;
             NewColorFormat.Description = " " + ColorFormatHelper.GetStringRepresentation(null, colorFormatModel.Example);
             ColorFormatDialog.PrimaryButtonText = resourceLoader.GetString("ColorFormatUpdate");
             ColorFormatDialog.PrimaryButtonCommand = UpdateCommand;

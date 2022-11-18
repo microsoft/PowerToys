@@ -408,29 +408,13 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             }
             else
             {
-                colorFormatModel.IsValid = !ColorFormats.Any(x => x.Name.Equals(colorFormatModel.Name, StringComparison.Ordinal));
+                colorFormatModel.IsValid = ColorFormats.Count(x => x.Name.Equals(colorFormatModel.Name, StringComparison.Ordinal)) < 2;
             }
         }
 
-        internal void DeleteModelByName(string name)
+        internal void DeleteModel(ColorFormatModel colorFormatModel)
         {
-            List<ColorFormatModel> toRemove = ColorFormats.Where(x => x.Name.Equals(name, StringComparison.Ordinal)).ToList();  // should allways contain 1 element
-            foreach (ColorFormatModel colorFormatModel in toRemove)
-            {
-                ColorFormats.Remove(colorFormatModel);
-            }
-        }
-
-        internal ColorFormatModel GetColorFormatModelCopyByName(string name)
-        {
-            List<ColorFormatModel> candidates = ColorFormats.Where(x => x.Name.Equals(name, StringComparison.Ordinal)).ToList();  // should allways contain 1 element
-            if (candidates.Count != 1)
-            {
-                return new ColorFormatModel();
-            }
-
-            ColorFormatModel oldModel = candidates.Single();
-            return new ColorFormatModel(oldModel.Name, oldModel.Example, oldModel.IsShown, oldModel.IsUserDefined);
+            ColorFormats.Remove(colorFormatModel);
         }
 
         internal void UpdateColorFormat(string oldName, ColorFormatModel colorFormat)

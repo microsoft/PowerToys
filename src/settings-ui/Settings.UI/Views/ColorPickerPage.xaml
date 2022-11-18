@@ -144,7 +144,6 @@
                                         Margin="0,0,160,0"
                                         Content="&#xE70F;"
                                         Visibility="{x:Bind IsUserDefined, Converter={StaticResource BoolToVis}, Mode=TwoWay}"
-                                        Tag="{x:Bind Name}"
                                         Click="EditButton_Click">
                                         <ToolTipService.ToolTip>
                                             <TextBlock x:Uid="EditTooltip"/>
@@ -161,7 +160,6 @@
                                         HorizontalAlignment="Right"
                                         Margin="0,0,104,0"
                                         Visibility="{x:Bind IsUserDefined, Converter={StaticResource BoolToVis}, Mode=TwoWay}"
-                                        Tag="{x:Bind Name}"
                                         Click="RemoveButton_Click">
                                         <ToolTipService.ToolTip>
                                             <TextBlock x:Uid="RemoveTooltip"/>

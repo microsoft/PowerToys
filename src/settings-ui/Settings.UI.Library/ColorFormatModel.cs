@@ -29,7 +29,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
 
         public ColorFormatModel()
         {
-            Example = "= new Color ( R =%Re, G = %Gr, B = %Bl);";
+            Example = "Color ( R =%Re, G = %Gr, B = %Bl)";
             IsShown = true;
             IsNew = true;
             IsUserDefined = true;
