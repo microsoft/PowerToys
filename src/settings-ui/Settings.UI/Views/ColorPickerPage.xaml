@@ -106,11 +106,11 @@
 
                     <!--  Disabled reordering by dragging  -->
                     <!--  CanReorderItems="True" AllowDrop="True"  -->
-                    <ItemsRepeater
+                    <ItemsControl
                         HorizontalAlignment="Stretch"
                         AutomationProperties.Name="{Binding ElementName=ColorFormatsSetting, Path=Header}"
                         ItemsSource="{Binding ColorFormats, Mode=TwoWay}">
-                        <ItemsRepeater.ItemTemplate>
+                        <ItemsControl.ItemTemplate>
                             <DataTemplate x:DataType="models:ColorFormatModel">
                                 <labs:SettingsCard
                                     Margin="0,0,0,2"
@@ -168,8 +168,8 @@
                                     </Grid>
                                 </labs:SettingsCard>
                             </DataTemplate>
-                        </ItemsRepeater.ItemTemplate>
-                    </ItemsRepeater>
+                        </ItemsControl.ItemTemplate>
+                        </ItemsControl>
                 </controls:SettingsGroup>
             </StackPanel>
 

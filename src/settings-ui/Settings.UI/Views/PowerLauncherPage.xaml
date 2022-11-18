@@ -346,18 +346,17 @@
                                                     Text="{x:Bind Path=ActionKeyword, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
                                             </labs:SettingsCard>
                                             <labs:SettingsCard
-                                                Margin="0,0,0,0"
                                                 Padding="0,-4,0,0"
                                                 HorizontalContentAlignment="Left"
                                                 Background="{ThemeResource SystemFillColorCriticalBackgroundBrush}"
-                                                ContentAlignment="Vertical">
+                                                ContentAlignment="Vertical"
+                                                Visibility="{x:Bind ShowNotAccessibleWarning}">
                                                 <InfoBar
                                                     x:Uid="Run_NotAccessibleWarning"
                                                     Margin="3,0,0,0"
                                                     Background="Transparent"
                                                     BorderBrush="Transparent"
                                                     IsClosable="False"
-                                                    IsOpen="True"
                                                     IsTabStop="{x:Bind ShowNotAccessibleWarning}"
                                                     Severity="Error" />
                                             </labs:SettingsCard>
@@ -365,6 +364,7 @@
                                                 ContentAlignment="Left"
                                                 IsEnabled="{x:Bind Enabled, Mode=OneWay}">
                                                 <CheckBox
+                                                    Margin="0,-8,0,0"
                                                     AutomationProperties.Name="{Binding ElementName=IncludeInGlobalResultTitle, Path=Text}"
                                                     IsChecked="{x:Bind Path=IsGlobal, Mode=TwoWay}">
                                                     <StackPanel Orientation="Vertical">
@@ -406,37 +406,41 @@
                                                     ItemsSource="{x:Bind Path=AdditionalOptions}">
                                                     <ItemsControl.ItemTemplate>
                                                         <DataTemplate x:DataType="ViewModels:PluginAdditionalOptionViewModel">
-                                                            <StackPanel Orientation="Vertical" HorizontalAlignment="Stretch">
+                                                            <StackPanel
+                                                                HorizontalAlignment="Stretch"
+                                                                Orientation="Vertical">
                                                                 <labs:SettingsCard
+                                                                    MinHeight="0"
                                                                     Margin="1"
                                                                     Padding="0,6,0,12"
-                                                                    MinHeight="0"
                                                                     Background="Transparent"
                                                                     BorderThickness="0,0,0,0"
                                                                     ContentAlignment="Left"
                                                                     CornerRadius="0">
-                                                                   
-
-                                                                            <controls:CheckBoxWithDescriptionControl
+                                                                    <controls:CheckBoxWithDescriptionControl
+                                                                        Margin="56,0,0,0"
                                                                         Description="{x:Bind Path=DisplayDescription}"
                                                                         Header="{x:Bind Path=DisplayLabel}"
-                                                                        Margin="56,0,0,0"
                                                                         IsChecked="{x:Bind Path=Value, Mode=TwoWay}" />
                                                                 </labs:SettingsCard>
-                                                                <Rectangle HorizontalAlignment="Stretch" Height="1" Fill="{ThemeResource CardStrokeColorDefaultBrush}" />
+                                                                <Rectangle
+                                                                    Height="1"
+                                                                    HorizontalAlignment="Stretch"
+                                                                    Fill="{ThemeResource CardStrokeColorDefaultBrush}" />
                                                             </StackPanel>
                                                         </DataTemplate>
                                                     </ItemsControl.ItemTemplate>
                                                 </ItemsControl>
                                             </labs:SettingsCard>
-                                            <labs:SettingsCard BorderThickness="0"  ContentAlignment="Right" MinHeight="0">
+                                            <labs:SettingsCard
+                                                MinHeight="0"
+                                                BorderThickness="0"
+                                                ContentAlignment="Right">
                                                 <TextBlock
                                                     Opacity="{x:Bind DisabledOpacity}"
                                                     Style="{ThemeResource SecondaryTextStyle}">
                                                     <Run x:Uid="PowerLauncher_AuthoredBy" />
-                                                    <Run
-                                                        FontWeight="SemiBold"
-                                                        Text="{x:Bind Author}" />
+                                                    <Run FontWeight="SemiBold" Text="{x:Bind Author}" />
                                                 </TextBlock>
                                             </labs:SettingsCard>
                                         </labs:SettingsExpander.Items>

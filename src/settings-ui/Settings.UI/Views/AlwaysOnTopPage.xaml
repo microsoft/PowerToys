@@ -36,7 +36,8 @@
 
                     <labs:SettingsExpander
                         x:Uid="AlwaysOnTop_ActivationShortcut"
-                        HeaderIcon="{ui:FontIcon FontFamily={StaticResource SymbolThemeFontFamily}, Glyph=&#xEDA7;}"
+                        HeaderIcon="{ui:FontIcon FontFamily={StaticResource SymbolThemeFontFamily},
+                                                 Glyph=&#xEDA7;}"
                         IsExpanded="True">
                         <controls:ShortcutControl
                             MinWidth="{StaticResource SettingActionControlMinWidth}"
@@ -56,7 +57,8 @@
                     IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}">
                     <labs:SettingsExpander
                         x:Uid="AlwaysOnTop_FrameEnabled"
-                        HeaderIcon="{ui:FontIcon FontFamily={StaticResource SymbolThemeFontFamily}, Glyph=&#xEB3C;}"
+                        HeaderIcon="{ui:FontIcon FontFamily={StaticResource SymbolThemeFontFamily},
+                                                 Glyph=&#xEB3C;}"
                         IsExpanded="True">
                         <ToggleSwitch
                             x:Uid="ToggleSwitch"
@@ -80,8 +82,7 @@
                             </labs:SettingsCard>
                             <labs:SettingsCard
                                 x:Uid="AlwaysOnTop_FrameThickness"
-                                IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.FrameEnabled}"
-                                Visibility="{x:Bind Mode=OneWay, Path=ViewModel.FrameAccentColor, Converter={StaticResource ReverseBoolToVisibilityConverter}}">
+                                IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.FrameEnabled}">
                                 <Slider
                                     MinWidth="{StaticResource SettingActionControlMinWidth}"
                                     LargeChange="5"
@@ -90,18 +91,20 @@
                                     SmallChange="1"
                                     Value="{x:Bind ViewModel.FrameThickness, Mode=TwoWay}" />
                             </labs:SettingsCard>
-                            <labs:SettingsCard ContentAlignment="Left">
+                            <labs:SettingsCard
+                                ContentAlignment="Left"
+                                Visibility="{x:Bind Mode=OneWay, Path=ViewModel.Windows11, Converter={StaticResource BoolToVisibilityConverter}}">
                                 <CheckBox
                                     x:Uid="AlwaysOnTop_RoundCorners"
-                                    IsChecked="{x:Bind Mode=TwoWay, Path=ViewModel.RoundCornersEnabled}"
-                                    Visibility="{x:Bind Mode=OneWay, Path=ViewModel.Windows11, Converter={StaticResource BoolToVisibilityConverter}}" />
+                                    IsChecked="{x:Bind Mode=TwoWay, Path=ViewModel.RoundCornersEnabled}" />
                             </labs:SettingsCard>
                         </labs:SettingsExpander.Items>
                     </labs:SettingsExpander>
 
                     <labs:SettingsExpander
                         x:Uid="AlwaysOnTop_SoundTitle"
-                        HeaderIcon="{ui:FontIcon FontFamily={StaticResource SymbolThemeFontFamily}, Glyph=&#xE7F3;}"
+                        HeaderIcon="{ui:FontIcon FontFamily={StaticResource SymbolThemeFontFamily},
+                                                 Glyph=&#xE7F3;}"
                         IsExpanded="True">
                         <labs:SettingsExpander.Items>
                             <labs:SettingsCard ContentAlignment="Left">
@@ -118,10 +121,13 @@
                     IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}">
                     <labs:SettingsExpander
                         x:Uid="AlwaysOnTop_ExcludedApps"
-                        HeaderIcon="{ui:FontIcon FontFamily={StaticResource SymbolThemeFontFamily}, Glyph=&#xECE4;}"
+                        HeaderIcon="{ui:FontIcon FontFamily={StaticResource SymbolThemeFontFamily},
+                                                 Glyph=&#xECE4;}"
                         IsExpanded="True">
                         <labs:SettingsExpander.Items>
-                            <labs:SettingsCard ContentAlignment="Vertical" HorizontalContentAlignment="Stretch">
+                            <labs:SettingsCard
+                                HorizontalContentAlignment="Stretch"
+                                ContentAlignment="Vertical">
                                 <TextBox
                                     x:Uid="AlwaysOnTop_ExcludedApps_TextBoxControl"
                                     MinWidth="240"
