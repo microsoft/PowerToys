@@ -64,6 +64,13 @@
                                   IsTabStop="{Binding IsNewVersionCheckedAndUpToDate, Mode=OneWay}"
                                   IsOpen="{Binding IsNewVersionCheckedAndUpToDate, Mode=OneWay}"/>
 
+                    <!-- Network error while checking for new version -->
+                    <InfoBar x:Uid="General_CantCheck"
+                                  IsClosable="False"
+                                  Severity="Error"
+                                  IsTabStop="{Binding IsNoNetwork, Mode=OneWay}"
+                                  IsOpen="{Binding IsNoNetwork, Mode=OneWay}"/>
+
                     <!-- New version available -->
                     <InfoBar x:Uid="General_NewVersionAvailable"
                                   IsClosable="False"

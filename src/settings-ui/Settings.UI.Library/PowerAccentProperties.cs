@@ -21,12 +21,16 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         [JsonPropertyName("selected_lang")]
         public StringProperty SelectedLang { get; set; }
 
+        [JsonPropertyName("excluded_apps")]
+        public StringProperty ExcludedApps { get; set; }
+
         public PowerAccentProperties()
         {
             ActivationKey = PowerAccentActivationKey.Both;
             ToolbarPosition = "Top center";
             InputTime = new IntProperty(200);
             SelectedLang = "ALL";
+            ExcludedApps = new StringProperty();
         }
     }
 }

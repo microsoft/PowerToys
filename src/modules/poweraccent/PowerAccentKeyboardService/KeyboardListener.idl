@@ -60,7 +60,7 @@ namespace PowerToys
 
         [version(1.0), uuid(37197089-5438-4479-af57-30ab3f3c8be4)] delegate void ShowToolbar(LetterKey key);
         [version(1.0), uuid(8eb79d6b-1826-424f-9fbc-af21ae19725e)] delegate void HideToolbar(InputType inputType);
-        [version(1.0), uuid(db72d45c-a5a2-446f-bdc1-506e9121764a)] delegate void NextChar(TriggerKey inputSpace);
+        [version(1.0), uuid(db72d45c-a5a2-446f-bdc1-506e9121764a)] delegate void NextChar(TriggerKey inputSpace, boolean shiftPressed);
         [version(1.0), uuid(20be2919-2b91-4313-b6e0-4c3484fe91ef)] delegate void IsLanguageLetter(LetterKey key, [out] boolean* result);
 
         [default_interface] runtimeclass KeyboardListener {
@@ -73,6 +73,7 @@ namespace PowerToys
             void SetIsLanguageLetterDelegate(IsLanguageLetter isLanguageLetterDelegate);
             void UpdateActivationKey(Int32 activationKey);
             void UpdateInputTime(Int32 inputTime);
+            void UpdateExcludedApps(String excludedApps);
         }
     }
 }

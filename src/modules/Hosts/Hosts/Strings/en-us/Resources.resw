@@ -133,10 +133,10 @@
     <value>New entry</value>
   </data>
   <data name="AdditionalLinesBtn.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
-    <value>Additional lines</value>
+    <value>Additional content</value>
   </data>
   <data name="AdditionalLinesBtn.[using:Microsoft.UI.Xaml.Controls]ToolTipService.ToolTip" xml:space="preserve">
-    <value>Additional lines</value>
+    <value>Additional content</value>
   </data>
   <data name="AdditionalLinesDialog.CloseButtonText" xml:space="preserve">
     <value>Cancel</value>
@@ -145,7 +145,7 @@
     <value>Save</value>
   </data>
   <data name="AdditionalLinesDialog.Title" xml:space="preserve">
-    <value>Additional lines</value>
+    <value>Additional content</value>
   </data>
   <data name="AddNewEntryDialog_Title" xml:space="preserve">
     <value>Add new entry</value>

@@ -20,6 +20,13 @@ namespace Wox.Infrastructure
 
         public SearchPrecisionScore UserSettingSearchPrecision { get; set; }
 
+        private readonly IAlphabet _alphabet;
+
+        public StringMatcher(IAlphabet alphabet = null)
+        {
+            _alphabet = alphabet;
+        }
+
         public static StringMatcher Instance { get; internal set; }
 
         [Obsolete("This method is obsolete and should not be used. Please use the static function StringMatcher.FuzzySearch")]
@@ -89,6 +96,12 @@ namespace Wox.Infrastructure
             }
 
             query = query.Trim();
+
+            if (_alphabet != null)
+            {
+                query = _alphabet.Translate(query);
+                stringToCompare = _alphabet.Translate(stringToCompare);
+            }
 
             // Using InvariantCulture since this is internal
             var fullStringToCompareWithoutCase = opt.IgnoreCase ? stringToCompare.ToUpper(CultureInfo.InvariantCulture) : stringToCompare;

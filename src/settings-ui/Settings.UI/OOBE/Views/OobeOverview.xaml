@@ -26,5 +26,5 @@
                 </StackPanel>
             </StackPanel>
         </controls:OOBEPageControl.PageContent>
-    </controls:OOBEPageControl> 
+    </controls:OOBEPageControl>
 </Page>

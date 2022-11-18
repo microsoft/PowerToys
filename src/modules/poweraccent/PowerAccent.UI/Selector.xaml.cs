@@ -28,12 +28,12 @@ public partial class Selector : Window, IDisposable
         this.Visibility = Visibility.Hidden;
     }
 
-    private void PowerAccent_OnSelectionCharacter(int index, char character)
+    private void PowerAccent_OnSelectionCharacter(int index, string character)
     {
         characters.SelectedIndex = index;
     }
 
-    private void PowerAccent_OnChangeDisplay(bool isActive, char[] chars)
+    private void PowerAccent_OnChangeDisplay(bool isActive, string[] chars)
     {
         this.Visibility = isActive ? Visibility.Visible : Visibility.Collapsed;
         if (isActive)

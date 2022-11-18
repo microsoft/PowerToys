@@ -44,6 +44,7 @@
 
   <ItemGroup>
     <None Remove="OOBE\Views\OobeHosts.xaml" />
+    <None Remove="OOBE\Views\OobeOverviewAlternate.xaml" />
   </ItemGroup>
 
   <ItemGroup>
@@ -86,6 +87,9 @@
     </None>
     <Page Update="OOBE\Views\OobeHosts.xaml">
       <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Update="OOBE\Views\OobeOverviewAlternate.xaml">
+      <XamlRuntime>$(DefaultXamlRuntime)</XamlRuntime>
     </Page>
   </ItemGroup>
   <ItemGroup>
