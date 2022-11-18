@@ -480,6 +480,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "PdfPreviewHandlerCpp", "src
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "SvgPreviewHandlerCpp", "src\modules\previewpane\SvgPreviewHandlerCpp\SvgPreviewHandlerCpp.vcxproj", "{143F13E3-D2E3-4D83-B035-356612D99956}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "GcodeThumbnailProviderCpp", "src\modules\previewpane\GcodeThumbnailProviderCpp\GcodeThumbnailProviderCpp.vcxproj", "{56CC2F10-6E41-453D-BE16-C593A5E58482}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|ARM64 = Debug|ARM64
@@ -1985,6 +1987,18 @@ Global
 		{143F13E3-D2E3-4D83-B035-356612D99956}.Release|x64.Build.0 = Release|x64
 		{143F13E3-D2E3-4D83-B035-356612D99956}.Release|x86.ActiveCfg = Release|x64
 		{143F13E3-D2E3-4D83-B035-356612D99956}.Release|x86.Build.0 = Release|x64
+		{56CC2F10-6E41-453D-BE16-C593A5E58482}.Debug|ARM64.ActiveCfg = Debug|ARM64
+		{56CC2F10-6E41-453D-BE16-C593A5E58482}.Debug|ARM64.Build.0 = Debug|ARM64
+		{56CC2F10-6E41-453D-BE16-C593A5E58482}.Debug|x64.ActiveCfg = Debug|x64
+		{56CC2F10-6E41-453D-BE16-C593A5E58482}.Debug|x64.Build.0 = Debug|x64
+		{56CC2F10-6E41-453D-BE16-C593A5E58482}.Debug|x86.ActiveCfg = Debug|x64
+		{56CC2F10-6E41-453D-BE16-C593A5E58482}.Debug|x86.Build.0 = Debug|x64
+		{56CC2F10-6E41-453D-BE16-C593A5E58482}.Release|ARM64.ActiveCfg = Release|ARM64
+		{56CC2F10-6E41-453D-BE16-C593A5E58482}.Release|ARM64.Build.0 = Release|ARM64
+		{56CC2F10-6E41-453D-BE16-C593A5E58482}.Release|x64.ActiveCfg = Release|x64
+		{56CC2F10-6E41-453D-BE16-C593A5E58482}.Release|x64.Build.0 = Release|x64
+		{56CC2F10-6E41-453D-BE16-C593A5E58482}.Release|x86.ActiveCfg = Release|x64
+		{56CC2F10-6E41-453D-BE16-C593A5E58482}.Release|x86.Build.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -2152,6 +2166,7 @@ Global
 		{B3E869C4-8210-4EBD-A621-FF4C4AFCBFA9} = {2F305555-C296-497E-AC20-5FA1B237996A}
 		{54F7C616-FD41-4E62-BFF9-015686914F4D} = {2F305555-C296-497E-AC20-5FA1B237996A}
 		{143F13E3-D2E3-4D83-B035-356612D99956} = {2F305555-C296-497E-AC20-5FA1B237996A}
+		{56CC2F10-6E41-453D-BE16-C593A5E58482} = {2F305555-C296-497E-AC20-5FA1B237996A}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {C3A2F9D1-7930-4EF4-A6FC-7EE0A99821D0}

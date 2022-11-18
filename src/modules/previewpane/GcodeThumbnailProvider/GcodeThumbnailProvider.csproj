@@ -1,5 +1,6 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
+    <ImplicitUsings>enable</ImplicitUsings>
     <UseWindowsForms>true</UseWindowsForms>
     <ProjectGuid>{809AA252-E17A-4FA2-B0A1-0450976B763F}</ProjectGuid>
     <RootNamespace>Microsoft.PowerToys.ThumbnailHandler.Gcode</RootNamespace>
@@ -7,13 +8,14 @@
     <AssemblyTitle>PowerToys.GcodeThumbnailProvider</AssemblyTitle>
     <AssemblyDescription>PowerToys GcodePreviewHandler</AssemblyDescription>
     <TargetFramework>net6.0-windows10.0.19041.0</TargetFramework>
-    <EnableComHosting>true</EnableComHosting>
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
     <Description>PowerToys GcodePreviewHandler</Description>
     <OutputPath>$(SolutionDir)$(Platform)\$(Configuration)\modules\FileExplorerPreview\</OutputPath>
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
     <AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
     <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
+    <SelfContained>true</SelfContained>
+    <RuntimeIdentifier>win10-x64</RuntimeIdentifier>
   </PropertyGroup>
 
   <Import Project="..\..\..\Version.props" />
@@ -27,6 +29,7 @@
   <PropertyGroup>
     <!-- Disable missing comment warning. WinRT/C++ libraries added won't have comments on thier reflections. -->
     <NoWarn>$(NoWarn);1591</NoWarn>
+    <OutputType>WinExe</OutputType>
   </PropertyGroup>
 
   <ItemGroup>

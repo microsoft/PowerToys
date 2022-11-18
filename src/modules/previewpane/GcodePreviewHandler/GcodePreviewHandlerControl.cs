@@ -57,6 +57,7 @@ namespace Microsoft.PowerToys.PreviewHandler.Gcode
             try
             {
                 Bitmap thumbnail = null;
+
                 if (!(dataSource is string filePath))
                 {
                     throw new ArgumentException($"{nameof(dataSource)} for {nameof(GcodePreviewHandler)} must be a string but was a '{typeof(T)}'");

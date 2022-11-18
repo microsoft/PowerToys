@@ -181,10 +181,10 @@ inline registry::ChangeSet getGcodeThumbnailHandlerChangeSet(const std::wstring 
     using namespace registry::shellex;
     return generatePreviewHandler(PreviewHandlerType::thumbnail,
                                   perUser,
-                                  L"{BFEE99B4-B74D-4348-BCA5-E757029647FF}",
+                                  L"{F2847CBE-CD03-4C83-A359-1A8052C1B9D5}",
                                   get_std_product_version(),
-                                  (fs::path{ installationDir } / LR"d(modules\FileExplorerPreview\PowerToys.GcodeThumbnailProvider.comhost.dll)d").wstring(),
-                                  L"Microsoft.PowerToys.ThumbnailHandler.Gcode.GcodeThumbnailProvider",
+                                  (fs::path{ installationDir } / LR"d(modules\FileExplorerPreview\GcodeThumbnailProviderCpp.dll)d").wstring(),
+                                  L"GcodeThumbnailProvider",
                                   L"G-code Thumbnail Provider",
                                   NonLocalizable::ExtGCode);
 }
