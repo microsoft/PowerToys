@@ -109,6 +109,6 @@ private:
         System
     } theme_setting = System;
     bool light_mode = true;
-    UINT milliseconds_press_time_for_global_windows_shortcuts = 1000;
-    UINT milliseconds_press_time_for_taskbar_icon_shortcuts = 1000;
+    UINT milliseconds_press_time_for_global_windows_shortcuts = 900;
+    UINT milliseconds_press_time_for_taskbar_icon_shortcuts = 900;
 };
