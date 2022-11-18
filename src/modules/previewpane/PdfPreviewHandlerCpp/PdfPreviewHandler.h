@@ -19,7 +19,7 @@ public:
     IFACEMETHODIMP_(ULONG) AddRef();
     IFACEMETHODIMP_(ULONG) Release();
 
-    // IInitializeWithStream
+    // IInitializeWithFile
     IFACEMETHODIMP Initialize(LPCWSTR pszFilePath, DWORD grfMode);
 
     // IPreviewHandler
