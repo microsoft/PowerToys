@@ -12,11 +12,12 @@
 
     <Grid>
         <Grid.RowDefinitions>
-            <RowDefinition Height="280" />
+            <RowDefinition Height="Auto" />
             <RowDefinition Height="*" />
         </Grid.RowDefinitions>
 
         <Image x:Name="HeaderImage"
+               Height="{x:Bind HeroImageHeight}"
                Source="{x:Bind HeroImage}"
                Stretch="UniformToFill" />
 
