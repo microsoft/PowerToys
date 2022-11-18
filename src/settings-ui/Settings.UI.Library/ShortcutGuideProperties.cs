@@ -12,8 +12,8 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         {
             OverlayOpacity = new IntProperty(90);
             UseLegacyPressWinKeyBehavior = new BoolProperty(false);
-            PressTimeForGlobalWindowsShortcuts = new IntProperty(1000);
-            PressTimeForTaskbarIconShortcuts = new IntProperty(1000);
+            PressTimeForGlobalWindowsShortcuts = new IntProperty(900);
+            PressTimeForTaskbarIconShortcuts = new IntProperty(900);
             Theme = new StringProperty("system");
             DisabledApps = new StringProperty();
             OpenShortcutGuide = new HotkeySettings(true, false, false, true, 0xBF);
