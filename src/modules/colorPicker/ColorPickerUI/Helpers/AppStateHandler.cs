@@ -9,7 +9,7 @@ using System.Windows.Interop;
 using ColorPicker.Settings;
 using ColorPicker.ViewModelContracts;
 using Common.UI;
-using Microsoft.PowerToys.Common.Utils;
+using ManagedCommon;
 using Microsoft.PowerToys.Settings.UI.Library.Enumerations;
 
 namespace ColorPicker.Helpers

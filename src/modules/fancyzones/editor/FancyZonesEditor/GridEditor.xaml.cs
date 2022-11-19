@@ -11,7 +11,7 @@ using System.Windows.Controls;
 using System.Windows.Controls.Primitives;
 using System.Windows.Input;
 using FancyZonesEditor.Models;
-using Microsoft.PowerToys.Common.Utils;
+using ManagedCommon;
 
 namespace FancyZonesEditor
 {

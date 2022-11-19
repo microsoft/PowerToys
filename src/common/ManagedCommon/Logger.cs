@@ -11,7 +11,7 @@ using System.Reflection;
 using System.Runtime.Serialization;
 using interop;
 
-namespace Microsoft.PowerToys.Common.Utils
+namespace ManagedCommon
 {
     public static class Logger
     {
@@ -31,26 +31,33 @@ namespace Microsoft.PowerToys.Common.Utils
 
             string applicationLogPath = Path.Combine(Constants.AppDataPath());
 
-            bool noLoggerDefined;
+            bool noLoggerDefined = false;
 
             if (location.Contains("ColorPicker"))
             {
                 applicationLogPath += "\\ColorPicker\\Logs";
             }
-            else if (location.Contains("FancyZones")
+            else if (location.Contains("FancyZones"))
             {
                 applicationLogPath += "\\FancyZones\\Logs";
             }
-            else if (location.Contains("Monaco")
+            else if (location.Contains("Monaco"))
             {
                 applicationLogPath = System.Environment.GetEnvironmentVariable("USERPROFILE") + "\\AppData\\LocalLow\\Microsoft\\PowerToys\\logs\\FileExplorer_localLow\\Monaco";
+            }
+            else if (location.Contains("PowerAccent"))
+            {
+                applicationLogPath += "\\QuickAccent\\Logs";
+            }
+            else if (location.Contains("MeasureTool"))
+            {
+                applicationLogPath += "\\Measure Tool\\MeasureToolUI\\Logs";
             }
             else
             {
                 applicationLogPath += "\\Debug";
                 noLoggerDefined = true;
             }
-
 
             applicationLogPath = Path.Combine(applicationLogPath, Version);
 
@@ -68,7 +75,7 @@ namespace Microsoft.PowerToys.Common.Utils
 
             if (noLoggerDefined)
             {
-                LogError("No logger found for assembly: " + location)
+                LogError("No logger found for assembly: " + location);
             }
         }
 

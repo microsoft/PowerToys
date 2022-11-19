@@ -10,7 +10,6 @@ using ColorPicker.Helpers;
 using ColorPicker.Mouse;
 using Common.UI;
 using ManagedCommon;
-using Microsoft.PowerToys.Common.Utils;
 
 namespace ColorPickerUI
 {

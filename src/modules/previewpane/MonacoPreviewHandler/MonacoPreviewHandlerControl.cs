@@ -12,7 +12,7 @@ using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using Common;
-using Microsoft.PowerToys.Common.Utils;
+using ManagedCommon;
 using Microsoft.PowerToys.PreviewHandler.Monaco.Formatters;
 using Microsoft.PowerToys.PreviewHandler.Monaco.Properties;
 using Microsoft.Web.WebView2.Core;

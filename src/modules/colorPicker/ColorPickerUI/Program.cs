@@ -6,7 +6,7 @@ using System;
 using ColorPicker.Helpers;
 using ColorPicker.Mouse;
 using ColorPickerUI;
-using Microsoft.PowerToys.Common.Utils;
+using ManagedCommon;
 
 namespace ColorPicker
 {

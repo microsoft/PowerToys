@@ -4,7 +4,7 @@
 
 using System;
 using ColorPicker.Telemetry;
-using Microsoft.PowerToys.Common.Utils;
+using ManagedCommon;
 using Microsoft.PowerToys.Settings.UI.Library.Enumerations;
 using Microsoft.PowerToys.Telemetry;
 

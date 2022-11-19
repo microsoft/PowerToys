@@ -10,7 +10,6 @@ using System.Windows.Input;
 using Common.UI;
 using FancyZonesEditor.Utils;
 using ManagedCommon;
-using Microsoft.PowerToys.Common.Utils;
 
 namespace FancyZonesEditor
 {

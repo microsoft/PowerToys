@@ -5,7 +5,7 @@
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Windows;
-using Microsoft.PowerToys.Common.Utils;
+using ManagedCommon;
 using static ColorPicker.NativeMethods;
 
 namespace ColorPicker.Helpers

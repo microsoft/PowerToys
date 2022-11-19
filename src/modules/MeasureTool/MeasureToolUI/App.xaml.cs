@@ -4,7 +4,6 @@
 
 using System;
 using ManagedCommon;
-using MeasureToolUI.Helpers;
 using Microsoft.UI.Dispatching;
 using Microsoft.UI.Xaml;
 

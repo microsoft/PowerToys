@@ -13,7 +13,7 @@ using System.Text.Json;
 using System.Threading.Tasks;
 using System.Windows;
 using FancyZonesEditor.Models;
-using Microsoft.PowerToys.Common.Utils;
+using ManagedCommon;
 
 namespace FancyZonesEditor.Utils
 {

@@ -4,7 +4,7 @@
 
 using System;
 using System.IO.Abstractions;
-using Microsoft.PowerToys.Common.Utils;
+using ManagedCommon;
 using Microsoft.Win32;
 
 namespace ColorPicker.Mouse

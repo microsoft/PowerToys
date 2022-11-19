@@ -7,7 +7,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Windows.Controls;
 using FancyZonesEditor.Models;
-using Microsoft.PowerToys.Common.Utils;
+using ManagedCommon;
 
 namespace FancyZonesEditor
 {

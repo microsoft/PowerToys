@@ -13,7 +13,7 @@ using System.Windows.Input;
 using Common.UI;
 using FancyZonesEditor.Models;
 using FancyZonesEditor.Utils;
-using Microsoft.PowerToys.Common.Utils;
+using ManagedCommon;
 using ModernWpf.Controls;
 
 namespace FancyZonesEditor
