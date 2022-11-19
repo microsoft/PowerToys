@@ -123,7 +123,7 @@ namespace SvgThumbnailProviderUnitTests
         [TestMethod]
         public void GetThumbnailValidStreamHTML()
         {
-            var filePath = "HelperFiles/file1.svg";
+            var filePath = "HelperFiles/file2.svg";
 
             SvgThumbnailProvider svgThumbnailProvider = new SvgThumbnailProvider(filePath);
 
