@@ -9,12 +9,13 @@ using System.Linq;
 using System.Windows.Controls;
 using ManagedCommon;
 using Microsoft.Plugin.Folder.Sources;
+using Microsoft.PowerToys.Settings.UI.Library;
 using Wox.Infrastructure.Storage;
 using Wox.Plugin;
 
 namespace Microsoft.Plugin.Folder
 {
-    public class Main : IPlugin, IPluginI18n, ISavable, IContextMenu, IDisposable
+    public class Main : IPlugin, IPluginI18n, ISavable, IContextMenu, IDisposable, ISettingProvider
     {
         public const string FolderImagePath = "Images\\folder.dark.png";
         public const string FileImagePath = "Images\\file.dark.png";
@@ -39,14 +40,41 @@ namespace Microsoft.Plugin.Folder
         private static PluginInitContext _context;
         private IContextMenu _contextMenuLoader;
         private bool _disposed;
+        private static bool _updateQueryText;
 
         public string Name => Properties.Resources.wox_plugin_folder_plugin_name;
 
         public string Description => Properties.Resources.wox_plugin_folder_plugin_description;
 
+        internal static bool UpdateQueryText => _updateQueryText;
+
+        public IEnumerable<PluginAdditionalOption> AdditionalOptions => new List<PluginAdditionalOption>()
+        {
+            new PluginAdditionalOption()
+            {
+                Key = "UpdateQueryText",
+                DisplayLabel = Properties.Resources.wox_plugin_folder_select_update_query,
+                DisplayDescription = Properties.Resources.wox_plugin_folder_select_update_query_description,
+                Value = false,
+            },
+        };
+
         public void Save()
         {
             _storage.Save();
+        }
+
+        public void UpdateSettings(PowerLauncherPluginSettings settings)
+        {
+            var updateQueryText = true;
+
+            if (settings != null && settings.AdditionalOptions != null)
+            {
+                var optionUpdateQuery = settings.AdditionalOptions.FirstOrDefault(x => x.Key == "UpdateQueryText");
+                updateQueryText = optionUpdateQuery?.Value ?? updateQueryText;
+            }
+
+            _updateQueryText = updateQueryText;
         }
 
         public Control CreateSettingPanel()

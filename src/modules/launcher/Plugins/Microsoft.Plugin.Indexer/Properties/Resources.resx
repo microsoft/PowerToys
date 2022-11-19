@@ -165,4 +165,10 @@
   <data name="Microsoft_plugin_indexer_run_as_user" xml:space="preserve">
     <value>Run as different user (Ctrl+Shift+U)</value>
   </data>
+  <data name="update_query" xml:space="preserve">
+    <value>Selected result can update query text</value>
+  </data>
+  <data name="update_query_description" xml:space="preserve">
+    <value>Helps navigate folders, but may change display results.</value>
+  </data>
 </root>

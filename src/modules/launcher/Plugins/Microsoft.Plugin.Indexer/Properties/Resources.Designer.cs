@@ -203,5 +203,23 @@ namespace Microsoft.Plugin.Indexer.Properties {
                 return ResourceManager.GetString("Microsoft_plugin_indexer_subtitle_header", resourceCulture);
             }
         }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Selected result can update query text.
+        /// </summary>
+        public static string update_query {
+            get {
+                return ResourceManager.GetString("update_query", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Helps navigate folders, but may change display results..
+        /// </summary>
+        public static string update_query_description {
+            get {
+                return ResourceManager.GetString("update_query_description", resourceCulture);
+            }
+        }
     }
 }

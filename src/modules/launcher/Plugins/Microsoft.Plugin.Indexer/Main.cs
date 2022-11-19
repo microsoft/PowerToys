@@ -24,6 +24,7 @@ namespace Microsoft.Plugin.Indexer
     internal class Main : ISettingProvider, IPlugin, ISavable, IPluginI18n, IContextMenu, IDisposable, IDelayedExecutionPlugin
     {
         private const string DisableDriveDetectionWarning = nameof(DisableDriveDetectionWarning);
+        private const string UpdateQueryText = nameof(UpdateQueryText);
         private static readonly IFileSystem _fileSystem = new FileSystem();
 
         // This variable contains metadata about the Plugin
@@ -45,6 +46,8 @@ namespace Microsoft.Plugin.Indexer
         // Reserved keywords in oleDB
         private readonly string reservedStringPattern = @"^[\/\\\$\%]+$|^.*[<>].*$";
 
+        private bool _updateQueryText;
+
         private string WarningIconPath { get; set; }
 
         public string Name => Properties.Resources.Microsoft_plugin_indexer_plugin_name;
@@ -57,6 +60,13 @@ namespace Microsoft.Plugin.Indexer
             {
                 Key = DisableDriveDetectionWarning,
                 DisplayLabel = Properties.Resources.disable_drive_detection_warning,
+                Value = false,
+            },
+            new PluginAdditionalOption()
+            {
+                Key = UpdateQueryText,
+                DisplayLabel = Properties.Resources.update_query,
+                DisplayDescription = Properties.Resources.update_query_description,
                 Value = false,
             },
         };
@@ -148,7 +158,7 @@ namespace Microsoft.Plugin.Indexer
                             r.ContextData = searchResult;
 
                             // If the result is a directory, then it's display should show a directory.
-                            if (_fileSystem.Directory.Exists(path))
+                            if (_fileSystem.Directory.Exists(path) && _updateQueryText)
                             {
                                 r.QueryTextDisplay = path;
                             }
@@ -226,16 +236,22 @@ namespace Microsoft.Plugin.Indexer
 
         public void UpdateSettings(PowerLauncherPluginSettings settings)
         {
-            var driveDetection = false;
+            bool driveDetection = false,
+                updateQuery = true;
 
             if (settings.AdditionalOptions != null)
             {
                 var option = settings.AdditionalOptions.FirstOrDefault(x => x.Key == DisableDriveDetectionWarning);
 
                 driveDetection = option == null ? false : option.Value;
+
+                var optionUQ = settings.AdditionalOptions.FirstOrDefault(x => x.Key == UpdateQueryText);
+
+                updateQuery = optionUQ?.Value ?? updateQuery;
             }
 
             _driveDetection.IsDriveDetectionWarningCheckBoxSelected = driveDetection;
+            _updateQueryText = updateQuery;
         }
 
         public Control CreateSettingPanel()

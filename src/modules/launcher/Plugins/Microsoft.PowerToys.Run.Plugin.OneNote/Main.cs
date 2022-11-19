@@ -5,9 +5,11 @@
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Runtime.InteropServices;
+using System.Windows.Controls;
 using LazyCache;
 using ManagedCommon;
 using Microsoft.PowerToys.Run.Plugin.OneNote.Properties;
+using Microsoft.PowerToys.Settings.UI.Library;
 using ScipBe.Common.Office.OneNote;
 using Windows.Win32;
 using Windows.Win32.Foundation;
@@ -19,12 +21,16 @@ namespace Microsoft.PowerToys.Run.Plugin.OneNote
     /// <summary>
     /// A power launcher plugin to search across time zones.
     /// </summary>
-    public class Main : IPlugin, IDelayedExecutionPlugin, IPluginI18n
+    public class Main : IPlugin, IDelayedExecutionPlugin, IPluginI18n, ISettingProvider
     {
+        private const string UpdateQueryText = nameof(UpdateQueryText);
+
         /// <summary>
         /// A value indicating if the OneNote interop library was able to successfully initialize.
         /// </summary>
         private bool _oneNoteInstalled;
+
+        private bool _updateQueryText;
 
         /// <summary>
         /// LazyCache CachingService instance to speed up repeated queries.
@@ -40,6 +46,36 @@ namespace Microsoft.PowerToys.Run.Plugin.OneNote
         /// The path to the icon for each result
         /// </summary>
         private string _iconPath;
+
+        public IEnumerable<PluginAdditionalOption> AdditionalOptions => new List<PluginAdditionalOption>()
+        {
+            new PluginAdditionalOption()
+            {
+                Key = UpdateQueryText,
+                DisplayLabel = Properties.Resources.updateQuery,
+                DisplayDescription = Properties.Resources.updateQueryDescription,
+                Value = false,
+            },
+        };
+
+        public void UpdateSettings(PowerLauncherPluginSettings settings)
+        {
+            bool updateQuery = true;
+
+            if (settings.AdditionalOptions != null)
+            {
+                var option = settings.AdditionalOptions.FirstOrDefault(x => x.Key == UpdateQueryText);
+
+                updateQuery = option?.Value ?? updateQuery;
+            }
+
+            _updateQueryText = updateQuery;
+        }
+
+        public Control CreateSettingPanel()
+        {
+            throw new NotImplementedException();
+        }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="Main"/> class.
@@ -124,7 +160,7 @@ namespace Microsoft.PowerToys.Run.Plugin.OneNote
                 {
                     IcoPath = _iconPath,
                     Title = p.Name,
-                    QueryTextDisplay = p.Name,
+                    QueryTextDisplay = _updateQueryText ? p.Name : query.Search,
                     SubTitle = @$"{p.Notebook.Name}\{p.Section.Name}",
                     Action = (_) => OpenPageInOneNote(p),
                     ContextData = p,

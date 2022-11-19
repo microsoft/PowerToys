@@ -7,10 +7,12 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.CompilerServices;
+using System.Windows.Controls;
 using ManagedCommon;
 using Microsoft.PowerToys.Run.Plugin.Registry.Classes;
 using Microsoft.PowerToys.Run.Plugin.Registry.Helper;
 using Microsoft.PowerToys.Run.Plugin.Registry.Properties;
+using Microsoft.PowerToys.Settings.UI.Library;
 using Wox.Plugin;
 
 [assembly: InternalsVisibleTo("Microsoft.PowerToys.Run.Plugin.Registry.UnitTests")]
@@ -20,12 +22,16 @@ namespace Microsoft.PowerToys.Run.Plugin.Registry
     /// <summary>
     /// Main class of this plugin that implement all used interfaces
     /// </summary>
-    public class Main : IPlugin, IContextMenu, IPluginI18n, IDisposable
+    public class Main : IPlugin, IContextMenu, IPluginI18n, IDisposable, ISettingProvider
     {
+        private const string UpdateQueryText = nameof(UpdateQueryText);
+
         /// <summary>
         /// The name of this assembly
         /// </summary>
         private readonly string _assemblyName;
+
+        private bool _updateQueryText;
 
         /// <summary>
         /// The initial context for this plugin (contains API and meta-data)
@@ -45,6 +51,36 @@ namespace Microsoft.PowerToys.Run.Plugin.Registry
         public string Name => Resources.PluginTitle;
 
         public string Description => Resources.PluginDescription;
+
+        public IEnumerable<PluginAdditionalOption> AdditionalOptions => new List<PluginAdditionalOption>()
+        {
+            new PluginAdditionalOption()
+            {
+                Key = UpdateQueryText,
+                DisplayLabel = Resources.updateQuery,
+                DisplayDescription = Resources.updateQueryDescription,
+                Value = false,
+            },
+        };
+
+        public void UpdateSettings(PowerLauncherPluginSettings settings)
+        {
+            bool updateQuery = true;
+
+            if (settings.AdditionalOptions != null)
+            {
+                var option = settings.AdditionalOptions.FirstOrDefault(x => x.Key == UpdateQueryText);
+
+                updateQuery = option?.Value ?? updateQuery;
+            }
+
+            _updateQueryText = updateQuery;
+        }
+
+        public Control CreateSettingPanel()
+        {
+            throw new NotImplementedException();
+        }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="Main"/> class.
@@ -84,7 +120,7 @@ namespace Microsoft.PowerToys.Run.Plugin.Registry
             if (baseKeyList is null)
             {
                 // no base key found
-                return ResultHelper.GetResultList(RegistryHelper.GetAllBaseKeys(), _defaultIconPath);
+                return ResultHelper.GetResultList(RegistryHelper.GetAllBaseKeys(), _defaultIconPath, _updateQueryText ? null : query.Search);
             }
             else if (baseKeyList.Count() == 1)
             {
@@ -95,15 +131,15 @@ namespace Microsoft.PowerToys.Run.Plugin.Registry
                 // show the filtered list of values of one sub-key
                 if (searchForValueName && list.Count == 1)
                 {
-                    return ResultHelper.GetValuesFromKey(list.First().Key, _defaultIconPath, queryValueName);
+                    return ResultHelper.GetValuesFromKey(list.First().Key, _defaultIconPath, _updateQueryText ? null : query.Search, queryValueName);
                 }
 
-                return ResultHelper.GetResultList(list, _defaultIconPath);
+                return ResultHelper.GetResultList(list, _defaultIconPath, _updateQueryText ? null : query.Search);
             }
             else if (baseKeyList.Count() > 1)
             {
                 // more than one base key was found -> show results
-                return ResultHelper.GetResultList(baseKeyList.Select(found => new RegistryEntry(found)), _defaultIconPath);
+                return ResultHelper.GetResultList(baseKeyList.Select(found => new RegistryEntry(found)), _defaultIconPath, _updateQueryText ? null : query.Search);
             }
 
             return new List<Result>();

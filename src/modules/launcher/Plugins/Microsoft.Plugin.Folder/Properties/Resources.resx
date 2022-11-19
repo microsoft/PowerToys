@@ -163,4 +163,10 @@
     <value>Folder: {0}</value>
     <comment>the arg following is the folder path</comment>
   </data>
+  <data name="wox_plugin_folder_select_update_query" xml:space="preserve">
+    <value>Selected result can update query text</value>
+  </data>
+  <data name="wox_plugin_folder_select_update_query_description" xml:space="preserve">
+    <value>Helps navigate folders, but may change display results.</value>
+  </data>
 </root>

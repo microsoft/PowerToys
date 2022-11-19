@@ -185,5 +185,23 @@ namespace Microsoft.Plugin.Folder.Properties {
                 return ResourceManager.GetString("wox_plugin_folder_select_folder_result_subtitle", resourceCulture);
             }
         }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Selected result can update query text.
+        /// </summary>
+        public static string wox_plugin_folder_select_update_query {
+            get {
+                return ResourceManager.GetString("wox_plugin_folder_select_update_query", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Helps navigate folders, but may change display results..
+        /// </summary>
+        public static string wox_plugin_folder_select_update_query_description {
+            get {
+                return ResourceManager.GetString("wox_plugin_folder_select_update_query_description", resourceCulture);
+            }
+        }
     }
 }

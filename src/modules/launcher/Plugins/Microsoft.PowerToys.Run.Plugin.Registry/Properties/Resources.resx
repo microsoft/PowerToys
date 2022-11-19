@@ -179,4 +179,10 @@
   <data name="CopyValueData" xml:space="preserve">
     <value>Copy value data</value>
   </data>
+  <data name="updateQuery" xml:space="preserve">
+    <value>Selected result can update query text</value>
+  </data>
+  <data name="updateQueryDescription" xml:space="preserve">
+    <value>Helps find similar pages, but may make it difficult to scroll through results with arrow keys.</value>
+  </data>
 </root>

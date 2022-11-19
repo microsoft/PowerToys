@@ -77,5 +77,23 @@ namespace Microsoft.PowerToys.Run.Plugin.OneNote.Properties {
                 return ResourceManager.GetString("PluginTitle", resourceCulture);
             }
         }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Selected result can update query text.
+        /// </summary>
+        internal static string updateQuery {
+            get {
+                return ResourceManager.GetString("updateQuery", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Helps find similar pages, but may make it difficult to scroll through results with arrow keys..
+        /// </summary>
+        internal static string updateQueryDescription {
+            get {
+                return ResourceManager.GetString("updateQueryDescription", resourceCulture);
+            }
+        }
     }
 }

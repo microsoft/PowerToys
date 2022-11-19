@@ -25,7 +25,7 @@ namespace Microsoft.PowerToys.Run.Plugin.Registry.Helper
         /// <param name="list">The original result list to convert</param>
         /// <param name="iconPath">The path to the icon of each entry</param>
         /// <returns>A list with <see cref="Result"/></returns>
-        internal static List<Result> GetResultList(in IEnumerable<RegistryEntry> list, in string iconPath)
+        internal static List<Result> GetResultList(in IEnumerable<RegistryEntry> list, in string iconPath, string? search)
         {
             var resultList = new List<Result>();
 
@@ -39,20 +39,20 @@ namespace Microsoft.PowerToys.Run.Plugin.Registry.Helper
                 if (entry.Exception is null && !(entry.Key is null))
                 {
                     // when key contains keys or fields
-                    result.QueryTextDisplay = entry.Key.Name;
+                    result.QueryTextDisplay = search ?? entry.Key.Name;
                     result.SubTitle = RegistryHelper.GetSummary(entry.Key);
                     result.Title = GetTruncatedText(entry.Key.Name, MaxTextLength.MaximumTitleLengthWithTwoSymbols);
                 }
                 else if (entry.Key is null && !(entry.Exception is null))
                 {
                     // on error (e.g access denied)
-                    result.QueryTextDisplay = entry.KeyPath;
+                    result.QueryTextDisplay = search ?? entry.KeyPath;
                     result.SubTitle = GetTruncatedText(entry.Exception.Message, MaxTextLength.MaximumSubTitleLengthWithTwoSymbols, TruncateSide.OnlyFromRight);
                     result.Title = GetTruncatedText(entry.KeyPath, MaxTextLength.MaximumTitleLengthWithTwoSymbols);
                 }
                 else
                 {
-                    result.QueryTextDisplay = entry.KeyPath;
+                    result.QueryTextDisplay = search ?? entry.KeyPath;
                     result.Title = GetTruncatedText(entry.KeyPath, MaxTextLength.MaximumTitleLengthWithTwoSymbols);
                 }
 
@@ -73,7 +73,7 @@ namespace Microsoft.PowerToys.Run.Plugin.Registry.Helper
         /// <param name="iconPath">The path to the icon of each entry</param>
         /// <param name="searchValue">(optional) When not <see cref="string.Empty"/> filter the list for the given value name and value</param>
         /// <returns>A list with <see cref="Result"/></returns>
-        internal static List<Result> GetValuesFromKey(in RegistryKey? key, in string iconPath, string searchValue = "")
+        internal static List<Result> GetValuesFromKey(in RegistryKey? key, in string iconPath, string? search, string searchValue = "")
         {
             if (key is null)
             {
@@ -111,7 +111,7 @@ namespace Microsoft.PowerToys.Run.Plugin.Registry.Helper
                         Title = GetTruncatedText(key.Name, MaxTextLength.MaximumTitleLengthWithThreeSymbols),
                         ToolTipData = new ToolTipData(valueException.Message, valueException.ToString()),
                         Action = (_) => ContextMenuHelper.TryToOpenInRegistryEditor(registryEntry),
-                        QueryTextDisplay = key.Name,
+                        QueryTextDisplay = search ?? key.Name,
                     });
                 }
 
@@ -143,7 +143,7 @@ namespace Microsoft.PowerToys.Run.Plugin.Registry.Helper
                         Action = (_) => ContextMenuHelper.TryToOpenInRegistryEditor(registryEntry),
 
                         // Avoid user handling interrupt when move up/down inside the results of a registry key
-                        QueryTextDisplay = $"{key.Name}{QueryHelper.QuerySplitCharacter}",
+                        QueryTextDisplay = search ?? $"{key.Name}{QueryHelper.QuerySplitCharacter}",
                     });
                 }
             }
@@ -159,7 +159,7 @@ namespace Microsoft.PowerToys.Run.Plugin.Registry.Helper
                     Title = GetTruncatedText(key.Name, MaxTextLength.MaximumTitleLengthWithThreeSymbols),
                     ToolTipData = new ToolTipData(exception.Message, exception.ToString()),
                     Action = (_) => ContextMenuHelper.TryToOpenInRegistryEditor(registryEntry),
-                    QueryTextDisplay = key.Name,
+                    QueryTextDisplay = search ?? key.Name,
                 });
             }
 
