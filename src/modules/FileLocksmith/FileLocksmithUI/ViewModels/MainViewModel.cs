@@ -14,10 +14,7 @@ namespace PowerToys.FileLocksmithUI.ViewModels
     using CommunityToolkit.Mvvm.ComponentModel;
     using CommunityToolkit.Mvvm.Input;
     using FileLocksmith.Interop;
-    using global::FileLocksmithUI;
-    using global::FileLocksmithUI.Helpers;
-    using Microsoft.UI.Dispatching;
-    using Microsoft.UI.Xaml.Controls;
+    using ManagedCommon;
 
 #pragma warning disable CA1708 // Identifiers should differ by more than case
     public partial class MainViewModel : ObservableObject, IDisposable

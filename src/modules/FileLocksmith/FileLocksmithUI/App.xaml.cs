@@ -4,7 +4,6 @@
 
 using System;
 using System.Linq;
-using FileLocksmithUI.Helpers;
 using ManagedCommon;
 using Microsoft.UI.Dispatching;
 using Microsoft.UI.Xaml;

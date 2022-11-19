@@ -61,6 +61,10 @@ namespace ManagedCommon
             {
                 applicationLogPath += "\\Settings\\Logs";
             }
+            else if (location.Contains("FileLocksmith"))
+            {
+                applicationLogPath += "\\File Locksmith\\FileLocksmithUI\\Logs";
+            }
             else
             {
                 applicationLogPath += "\\Debug";
