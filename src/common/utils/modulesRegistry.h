@@ -154,10 +154,10 @@ inline registry::ChangeSet getSvgThumbnailHandlerChangeSet(const std::wstring in
     using namespace registry::shellex;
     return generatePreviewHandler(PreviewHandlerType::thumbnail,
                                   perUser,
-                                  L"{36B27788-A8BB-4698-A756-DF9F11F64F84}",
+                                  L"{10144713-1526-46C9-88DA-1FB52807A9FF}",
                                   get_std_product_version(),
-                                  (fs::path{ installationDir } / LR"d(modules\FileExplorerPreview\PowerToys.SvgThumbnailProvider.comhost.dll)d").wstring(),
-                                  L"Microsoft.PowerToys.ThumbnailHandler.Svg.SvgThumbnailProvider",
+                                  (fs::path{ installationDir } / LR"d(modules\FileExplorerPreview\SvgThumbnailProviderCpp.dll)d").wstring(),
+                                  L"SvgThumbnailProvider",
                                   L"Svg Thumbnail Provider",
                                   NonLocalizable::ExtSVG,
                                   L"Picture");
