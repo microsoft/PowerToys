@@ -4,7 +4,6 @@
 
 using System;
 using System.ComponentModel.Composition;
-using System.Runtime.InteropServices;
 using System.Threading;
 using System.Windows;
 using System.Windows.Media;
@@ -13,11 +12,9 @@ using ColorPicker.Helpers;
 using ColorPicker.Keyboard;
 using ColorPicker.Mouse;
 using ColorPicker.Settings;
-using ColorPicker.Telemetry;
 using ColorPicker.ViewModelContracts;
+using Common.UI;
 using interop;
-using Microsoft.PowerToys.Settings.UI.Library.Enumerations;
-using Microsoft.PowerToys.Telemetry;
 
 namespace ColorPicker.ViewModels
 {
@@ -49,16 +46,28 @@ namespace ColorPicker.ViewModels
             ZoomWindowHelper zoomWindowHelper,
             AppStateHandler appStateHandler,
             KeyboardMonitor keyboardMonitor,
-            IUserSettings userSettings)
+            IUserSettings userSettings,
+            CancellationToken exitToken)
         {
             _zoomWindowHelper = zoomWindowHelper;
             _appStateHandler = appStateHandler;
             _userSettings = userSettings;
-            NativeEventWaiter.WaitForEventLoop(Constants.ShowColorPickerSharedEvent(), _appStateHandler.StartUserSession);
-            NativeEventWaiter.WaitForEventLoop(Constants.ColorPickerSendSettingsTelemetryEvent(), _userSettings.SendSettingsTelemetry);
+
+            NativeEventWaiter.WaitForEventLoop(
+                Constants.ShowColorPickerSharedEvent(),
+                _appStateHandler.StartUserSession,
+                Application.Current.Dispatcher,
+                exitToken);
+
+            NativeEventWaiter.WaitForEventLoop(
+                Constants.ColorPickerSendSettingsTelemetryEvent(),
+                _userSettings.SendSettingsTelemetry,
+                Application.Current.Dispatcher,
+                exitToken);
 
             if (mouseInfoProvider != null)
             {
+                SetColorDetails(mouseInfoProvider.CurrentColor);
                 mouseInfoProvider.MouseColorChanged += Mouse_ColorChanged;
                 mouseInfoProvider.OnMouseDown += MouseInfoProvider_OnMouseDown;
                 mouseInfoProvider.OnMouseWheel += MouseInfoProvider_OnMouseWheel;
@@ -124,9 +133,7 @@ namespace ColorPicker.ViewModels
         /// <param name="color">The new <see cref="Color"/> under the mouse cursor</param>
         private void Mouse_ColorChanged(object sender, System.Drawing.Color color)
         {
-            ColorBrush = new SolidColorBrush(Color.FromArgb(color.A, color.R, color.G, color.B));
-            ColorText = ColorRepresentationHelper.GetStringRepresentation(color, _userSettings.CopiedColorRepresentation.Value);
-            ColorName = ColorNameHelper.GetColorName(color);
+            SetColorDetails(color);
         }
 
         /// <summary>
@@ -162,6 +169,13 @@ namespace ColorPicker.ViewModels
         {
             var color = ((SolidColorBrush)ColorBrush).Color;
             return color.A + "|" + color.R + "|" + color.G + "|" + color.B;
+        }
+
+        private void SetColorDetails(System.Drawing.Color color)
+        {
+            ColorBrush = new SolidColorBrush(Color.FromArgb(color.A, color.R, color.G, color.B));
+            ColorText = ColorRepresentationHelper.GetStringRepresentation(color, _userSettings.CopiedColorRepresentation.Value);
+            ColorName = ColorNameHelper.GetColorName(color);
         }
 
         /// <summary>

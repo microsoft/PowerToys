@@ -10,8 +10,8 @@ namespace PowerAccent.Core.Tools
     {
         public static Point GetRawCoordinatesFromCaret(Point caret, Rect screen, Size window)
         {
-            var left = caret.X - (window.Width / 2);
-            var top = caret.Y - window.Height - 20;
+            double left = caret.X - (window.Width / 2);
+            double top = caret.Y - window.Height - 20;
 
             return new Point(
                 left < screen.X ? screen.X : (left + window.Width > (screen.X + screen.Width) ? (screen.X + screen.Width) - window.Width : left),

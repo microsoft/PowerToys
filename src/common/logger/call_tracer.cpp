@@ -24,7 +24,7 @@ namespace
         }
         else
         {
-            return std::string(2 * min(level, 64) - 1, ' ') + " - ";
+            return std::string(static_cast<int64_t>(2) * min(level, 64) - 1, ' ') + " - ";
         }
     }
 

@@ -18,7 +18,7 @@
 #include <filesystem>
 #include <set>
 
-BOOL APIENTRY DllMain(HMODULE hModule, DWORD ul_reason_for_call, LPVOID lpReserved)
+BOOL APIENTRY DllMain(HMODULE /*hModule*/, DWORD ul_reason_for_call, LPVOID /*lpReserved*/)
 {
     switch (ul_reason_for_call)
     {
@@ -32,6 +32,7 @@ BOOL APIENTRY DllMain(HMODULE hModule, DWORD ul_reason_for_call, LPVOID lpReserv
         Trace::UnregisterProvider();
         break;
     }
+
     return TRUE;
 }
 
@@ -106,6 +107,12 @@ public:
     virtual const wchar_t* get_key() override
     {
         return app_key.c_str();
+    }
+
+    // Return the configured status for the gpo policy for the module
+    virtual powertoys_gpo::gpo_rule_configured_t gpo_policy_enabled_configuration() override
+    {
+        return powertoys_gpo::getConfiguredQuickAccentEnabledValue();
     }
 
     virtual void set_config(const wchar_t* config) override

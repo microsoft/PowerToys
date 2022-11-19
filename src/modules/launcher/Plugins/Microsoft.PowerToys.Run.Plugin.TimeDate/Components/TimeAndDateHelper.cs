@@ -19,7 +19,7 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.Components
         /// <param name="targetFormat">Type of format</param>
         /// <param name="timeLong">Show date with weekday and name of month (long format)</param>
         /// <param name="dateLong">Show time with seconds (long format)</param>
-        /// <returns>String that identifies the time/date format (<see href="https://docs.microsoft.com/en-us/dotnet/api/system.datetime.tostring"/>)</returns>
+        /// <returns>String that identifies the time/date format (<see href="https://learn.microsoft.com/dotnet/api/system.datetime.tostring"/>)</returns>
         internal static string GetStringFormat(FormatStringType targetFormat, bool timeLong, bool dateLong)
         {
             switch (targetFormat)

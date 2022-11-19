@@ -9,15 +9,15 @@ void MockedInput::SetHookProc(std::function<intptr_t(LowlevelKeyboardEvent*)> ho
     hookProc = hookProcedure;
 }
 
-// Function to simulate keyboard input - arguments and return value based on SendInput function (https://docs.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-sendinput)
-UINT MockedInput::SendVirtualInput(UINT cInputs, LPINPUT pInputs, int cbSize)
+// Function to simulate keyboard input - arguments and return value based on SendInput function (https://learn.microsoft.com/windows/win32/api/winuser/nf-winuser-sendinput)
+UINT MockedInput::SendVirtualInput(UINT cInputs, LPINPUT pInputs, int /*cbSize*/)
 {
     // Iterate over inputs
     for (UINT i = 0; i < cInputs; i++)
     {
         LowlevelKeyboardEvent keyEvent;
 
-        // Distinguish between key and sys key by checking if the key is either F10 (for syskeydown) or if the key message is sent while Alt is held down. SYSKEY messages are also sent if there is no window in focus, but that has not been mocked since it would require many changes. More details on key messages at https://docs.microsoft.com/en-us/windows/win32/inputdev/wm-syskeydown
+        // Distinguish between key and sys key by checking if the key is either F10 (for syskeydown) or if the key message is sent while Alt is held down. SYSKEY messages are also sent if there is no window in focus, but that has not been mocked since it would require many changes. More details on key messages at https://learn.microsoft.com/windows/win32/inputdev/wm-syskeydown
         if (pInputs[i].ki.dwFlags & KEYEVENTF_KEYUP)
         {
             if (keyboardState[VK_MENU] == true)

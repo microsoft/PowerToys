@@ -233,9 +233,7 @@ namespace ColorPicker.Controls
             DetailsFlyout.Hide();
         }
 
-#pragma warning disable CA1801 // Review unused parameters
         private void DetailsFlyout_Closed(object sender, object e)
-#pragma warning restore CA1801 // Review unused parameters
         {
             HideDetails();
             AppStateHandler.BlockEscapeKeyClosingColorPickerEditor = false;
@@ -247,11 +245,7 @@ namespace ColorPicker.Controls
             HexCode.Text = ColorToHex(_originalColor);
         }
 
-#pragma warning disable CA1822 // Mark members as static
-#pragma warning disable CA1801 // Review unused parameters
         private void DetailsFlyout_Opened(object sender, object e)
-#pragma warning restore CA1801 // Review unused parameters
-#pragma warning restore CA1822 // Mark members as static
         {
             AppStateHandler.BlockEscapeKeyClosingColorPickerEditor = true;
         }
@@ -331,10 +325,7 @@ namespace ColorPicker.Controls
         private static string ColorToHex(Color color, string oldValue = "")
         {
             string newHexString = BitConverter.ToString(new byte[] { color.R, color.G, color.B }).Replace("-", string.Empty, StringComparison.InvariantCulture);
-
-#pragma warning disable CA1308 // Normalize strings to uppercase - Supressed because we want to show hex value in lower case on all places
             newHexString = newHexString.ToLowerInvariant();
-#pragma warning restore CA1308 // Normalize strings to uppercase
 
             // Return only with hashtag if user typed it before
             bool addHashtag = oldValue.StartsWith("#", StringComparison.InvariantCulture);

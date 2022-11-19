@@ -11,7 +11,6 @@ namespace Common.ComInterlop
     /// The RECT structure defines a rectangle by the coordinates of its upper-left and lower-right corners.
     /// </summary>
     [StructLayout(LayoutKind.Sequential)]
-    [System.Diagnostics.CodeAnalysis.SuppressMessage("Performance", "CA1815:Override equals and operator equals on value types", Justification = "Interop")]
     public struct RECT
     {
         /// <summary>

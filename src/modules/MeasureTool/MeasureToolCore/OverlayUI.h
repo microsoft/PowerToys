@@ -1,7 +1,8 @@
 #pragma once
 
+#include "DxgiAPI.h"
 #include "D2DState.h"
-#include "latch.h"
+
 #include "ToolState.h"
 
 #include <common/display/monitors.h>
@@ -10,7 +11,8 @@
 class OverlayUIState final
 {
     template<typename StateT, typename TickFuncT>
-    OverlayUIState(StateT& toolState,
+    OverlayUIState(const DxgiAPI* dxgiAPI,
+                   StateT& toolState,
                    TickFuncT tickFunc,
                    const CommonState& commonState,
                    HWND window);
@@ -21,29 +23,27 @@ class OverlayUIState final
     D2DState _d2dState;
     std::function<void()> _tickFunc;
     std::thread _uiThread;
-    bool _cursorOnScreen = true;
-    bool _clearOnCursorLeavingScreen = false;
 
     template<typename ToolT, typename TickFuncT>
-    static std::unique_ptr<OverlayUIState> CreateInternal(ToolT& toolState,
+    static std::unique_ptr<OverlayUIState> CreateInternal(const DxgiAPI* dxgi,
+                                                          ToolT& toolState,
                                                           TickFuncT tickFunc,
                                                           CommonState& commonState,
-                                                          Latch& creationLatch,
                                                           const wchar_t* toolWindowClassName,
                                                           void* windowParam,
                                                           const MonitorInfo& monitor,
-                                                          const bool clearOnCursorLeavingScreen);
+                                                          const bool excludeFromCapture);
 
 public:
     OverlayUIState(OverlayUIState&&) noexcept = default;
     ~OverlayUIState();
 
-    static std::unique_ptr<OverlayUIState> Create(BoundsToolState& toolState,
-                                                  Latch& creationLatch,
+    static std::unique_ptr<OverlayUIState> Create(const DxgiAPI* dxgi,
+                                                  BoundsToolState& toolState,
                                                   CommonState& commonState,
                                                   const MonitorInfo& monitor);
-    static std::unique_ptr<OverlayUIState> Create(Serialized<MeasureToolState>& toolState,
-                                                  Latch& creationLatch,
+    static std::unique_ptr<OverlayUIState> Create(const DxgiAPI* dxgi,
+                                                  Serialized<MeasureToolState>& toolState,
                                                   CommonState& commonState,
                                                   const MonitorInfo& monitor);
     inline HWND overlayWindowHandle() const

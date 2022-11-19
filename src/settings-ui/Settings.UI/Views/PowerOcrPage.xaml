@@ -9,11 +9,15 @@
     AutomationProperties.LandmarkType="Main"
     mc:Ignorable="d">
 
+    <Page.Resources>
+        <converters:BoolNegationConverter x:Key="BoolNegationConverter"/>
+    </Page.Resources>
+
     <controls:SettingsPageControl x:Uid="TextExtractor" ModuleImageSource="ms-appx:///Assets/Modules/PowerOCR.png">
         <controls:SettingsPageControl.ModuleContent>
             <StackPanel Orientation="Vertical">
 
-                <controls:Setting x:Uid="TextExtractor_EnableToggleControl_HeaderText">
+                <controls:Setting x:Uid="TextExtractor_EnableToggleControl_HeaderText" IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabledGpoConfigured, Converter={StaticResource BoolNegationConverter}}">
                     <controls:Setting.Icon>
                         <BitmapIcon ShowAsMonochrome="False" UriSource="ms-appx:///Assets/FluentIcons/FluentIconsPowerOcr.png" />
                     </controls:Setting.Icon>
@@ -21,6 +25,21 @@
                         <ToggleSwitch x:Uid="ToggleSwitch" IsOn="{x:Bind ViewModel.IsEnabled, Mode=TwoWay}" />
                     </controls:Setting.ActionContent>
                 </controls:Setting>
+                <InfoBar x:Uid="GPO_IsSettingForced"
+                    Severity="Informational"
+                    IsClosable="False"
+                    IsOpen="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabledGpoConfigured}"
+                    IsTabStop="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabledGpoConfigured}" />
+
+                <InfoBar x:Uid="TextExtractor_SupportedLanguages"
+                        Severity="Informational"
+                        IsClosable="False"
+                        IsOpen="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}"
+                        IsTabStop="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}" >
+                    <InfoBar.ActionButton>
+                        <HyperlinkButton NavigateUri="https://aka.ms/PowerToysOverview_TextExtractor#supported-languages" x:Uid="TextExtractor_SupportedLanguages_Link"/>
+                    </InfoBar.ActionButton>
+                </InfoBar>
 
                 <controls:SettingsGroup x:Uid="Shortcut" IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}">
                     <controls:Setting x:Uid="Activation_Shortcut" Icon="&#xEDA7;">

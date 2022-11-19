@@ -18,7 +18,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         {
             Name = ModuleName;
             Properties = new MouseHighlighterProperties();
-            Version = "1.0";
+            Version = "1.1";
         }
 
         public string GetModuleName()
@@ -29,6 +29,14 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         // This can be utilized in the future if the settings.json file is to be modified/deleted.
         public bool UpgradeSettingsConfiguration()
         {
+            // Migrate settings from 1.0 to 1.1
+            if (Version == "1.0")
+            {
+                Version = "1.1";
+                Properties.HighlightOpacity = new IntProperty(Properties.HighlightOpacity.Value * 100 / 255);
+                return true;
+            }
+
             return false;
         }
     }

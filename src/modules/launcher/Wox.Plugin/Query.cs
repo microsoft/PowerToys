@@ -4,8 +4,8 @@
 
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Linq;
-using Mono.Collections.Generic;
 
 namespace Wox.Plugin
 {

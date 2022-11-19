@@ -10,6 +10,7 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Input;
@@ -137,9 +138,38 @@ internal class ImageMethods
 
             if (singlePoint == null)
             {
-                foreach (OcrLine line in ocrResult.Lines)
+                if (isCJKLang == false)
                 {
-                    text.AppendLine(line.Text);
+                    foreach (OcrLine line in ocrResult.Lines)
+                    {
+                        text.AppendLine(line.Text);
+                    }
+                }
+                else
+                {
+                    var cjkRegex = new Regex(@"\p{IsCJKUnifiedIdeographs}");
+
+                    foreach (OcrLine ocrLine in ocrResult.Lines)
+                    {
+                        bool isBeginning = true;
+                        bool isCJKPrev = false;
+                        foreach (OcrWord ocrWord in ocrLine.Words)
+                        {
+                            bool isCJK = cjkRegex.IsMatch(ocrWord.Text);
+
+                            // Use spaces to separate non-CJK words.
+                            if (!isBeginning && (!isCJK || !isCJKPrev))
+                            {
+                                _ = text.Append(' ');
+                            }
+
+                            _ = text.Append(ocrWord.Text);
+                            isCJKPrev = isCJK;
+                            isBeginning = false;
+                        }
+
+                        text.Append(Environment.NewLine);
+                    }
                 }
             }
             else

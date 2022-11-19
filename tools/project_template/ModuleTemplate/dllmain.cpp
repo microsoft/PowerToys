@@ -286,7 +286,7 @@ void $safeprojectname$::init_settings()
 //    // Save the PowerToyValues JSON to the power toy settings file.
 //    values.save_to_settings_file();
 //  }
-//  catch (std::exception ex) {
+//  catch (std::exception& ex) {
 //    // Couldn't save the settings.
 //  }
 //}

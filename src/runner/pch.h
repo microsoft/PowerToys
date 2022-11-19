@@ -23,6 +23,7 @@
 #include <stdexcept>
 #include <tuple>
 #include <unordered_set>
+#include <unordered_map>
 #include <string>
 #include <set>
 #include <ProjectTelemetry.h>

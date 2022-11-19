@@ -4,7 +4,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Text.RegularExpressions;
 using Microsoft.Plugin.Indexer.Interop;
 using Wox.Plugin.Logger;
 
@@ -124,7 +123,7 @@ namespace Microsoft.Plugin.Indexer.SearchHelper
 
             if (!displayHiddenFiles)
             {
-                // https://docs.microsoft.com/en-us/windows/win32/search/all-bitwise
+                // https://learn.microsoft.com/windows/win32/search/all-bitwise
                 queryHelper.QueryWhereRestrictions += " AND System.FileAttributes <> SOME BITWISE " + _fileAttributeHidden;
             }
 

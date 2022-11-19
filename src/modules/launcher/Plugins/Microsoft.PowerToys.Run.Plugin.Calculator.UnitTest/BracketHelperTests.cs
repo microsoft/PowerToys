@@ -32,11 +32,11 @@ namespace Microsoft.PowerToys.Run.Plugin.Calculator.UnitTests
         }
 
         [DataTestMethod]
-        [DataRow("((((",  "only opening brackets")]
-        [DataRow("]]]",  "only closing brackets")]
-        [DataRow("([)(])",  "inner bracket mismatch")]
-        [DataRow(")(",  "opening and closing reversed")]
-        [DataRow("(]",  "mismatch in bracket type")]
+        [DataRow("((((", "only opening brackets")]
+        [DataRow("]]]", "only closing brackets")]
+        [DataRow("([)(])", "inner bracket mismatch")]
+        [DataRow(")(", "opening and closing reversed")]
+        [DataRow("(]", "mismatch in bracket type")]
         public void IsBracketComplete_TestInvalid_WhenCalled(string input, string invalidReason)
         {
             // Arrange

@@ -19,7 +19,7 @@ namespace Microsoft.PowerToys.Run.Plugin.WindowsTerminal.Properties {
     // class via a tool like ResGen or Visual Studio.
     // To add or remove a member, edit your .ResX file then rerun ResGen
     // with the /str option, or rebuild your VS project.
-    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "16.0.0.0")]
+    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "17.0.0.0")]
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
     [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
     internal class Resources {
@@ -66,6 +66,24 @@ namespace Microsoft.PowerToys.Run.Plugin.WindowsTerminal.Properties {
         internal static string open_new_tab {
             get {
                 return ResourceManager.GetString("open_new_tab", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Open profiles in the quake window.
+        /// </summary>
+        internal static string open_quake {
+            get {
+                return ResourceManager.GetString("open_quake", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Windows Terminal supports a &quot;quake&quot; feature where a terminal window is accessible using a global hotkey. Enable this option to open profiles in this window..
+        /// </summary>
+        internal static string open_quake_description {
+            get {
+                return ResourceManager.GetString("open_quake_description", resourceCulture);
             }
         }
         

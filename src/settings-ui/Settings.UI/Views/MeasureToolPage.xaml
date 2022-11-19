@@ -5,11 +5,11 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     mc:Ignorable="d"
-    xmlns:muxc="using:Microsoft.UI.Xaml.Controls"
     xmlns:controls="using:Microsoft.PowerToys.Settings.UI.Controls"
     xmlns:converters="using:CommunityToolkit.WinUI.UI.Converters" 
     AutomationProperties.LandmarkType="Main">
     <Page.Resources>
+        <converters:BoolNegationConverter x:Key="BoolNegationConverter"/>
         <converters:BoolToObjectConverter x:Key="BoolToVisibilityConverter" TrueValue="Visible" FalseValue="Collapsed"/>
     </Page.Resources>
     
@@ -18,7 +18,7 @@
         <controls:SettingsPageControl.ModuleContent>
             <StackPanel Orientation="Vertical">
 
-                <controls:Setting x:Uid="MeasureTool_EnableMeasureTool">
+                <controls:Setting x:Uid="MeasureTool_EnableMeasureTool" IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabledGpoConfigured, Converter={StaticResource BoolNegationConverter}}">
                     <controls:Setting.Icon>
                         <BitmapIcon UriSource="ms-appx:///Assets/FluentIcons/FluentIconsScreenRuler.png" ShowAsMonochrome="False" />
                     </controls:Setting.Icon>
@@ -26,6 +26,11 @@
                         <ToggleSwitch IsOn="{x:Bind ViewModel.IsEnabled, Mode=TwoWay}" x:Uid="ToggleSwitch" HorizontalAlignment="Right"/>
                     </controls:Setting.ActionContent>
                 </controls:Setting>
+                <InfoBar x:Uid="GPO_IsSettingForced"
+                    Severity="Informational"
+                    IsClosable="False"
+                    IsOpen="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabledGpoConfigured}"
+                    IsTabStop="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabledGpoConfigured}" />
 
                 <controls:SettingsGroup x:Uid="MeasureTool_ActivationSettings" IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}">
                     <controls:Setting x:Uid="MeasureTool_ActivationShortcut" Icon="&#xEDA7;">
@@ -43,12 +48,13 @@
                             <ToggleSwitch IsOn="{x:Bind ViewModel.ContinuousCapture, Mode=TwoWay}" x:Uid="MeasureTool_ContinuousCapture_ToggleSwitch" />
                         </controls:Setting.ActionContent>
                     </controls:Setting>
-                    <muxc:InfoBar
+                    <InfoBar
                         Severity="Warning"
                         x:Uid="MeasureTool_ContinuousCapture_Information"
                         IsOpen="{x:Bind Mode=OneWay, Path=ViewModel.ShowContinuousCaptureWarning}"
                         IsTabStop="{x:Bind Mode=OneWay, Path=ViewModel.ShowContinuousCaptureWarning}"
                         IsClosable="False" />
+                    
                     <controls:Setting x:Uid="MeasureTool_PerColorChannelEdgeDetection" Icon="&#xE7FB;">
                         <controls:Setting.ActionContent>
                             <ToggleSwitch
@@ -56,6 +62,7 @@
                                     x:Uid="MeasureTool_PerColorChannelEdgeDetection_ToggleSwitch" />
                         </controls:Setting.ActionContent>
                     </controls:Setting>
+                    
                     <controls:Setting x:Uid="MeasureTool_PixelTolerance">
                         <controls:Setting.ActionContent>
                             <Slider Minimum="0"
@@ -64,6 +71,16 @@
                                     Value="{x:Bind Mode=TwoWay, Path=ViewModel.PixelTolerance}"/>
                         </controls:Setting.ActionContent>
                     </controls:Setting>
+
+                    <!--<controls:Setting x:Uid="MeasureTool_UnitsOfMeasure" Icon="&#xECC6;">
+                        <controls:Setting.ActionContent>
+                            <ComboBox SelectedIndex="{x:Bind Path=ViewModel.UnitsOfMeasure, Mode=TwoWay}" MinWidth="{StaticResource SettingActionControlMinWidth}">
+                                <ComboBoxItem x:Uid="MeasureTool_UnitsOfMeasure_Pixels" />
+                                <ComboBoxItem x:Uid="MeasureTool_UnitsOfMeasure_Inches" />
+                                <ComboBoxItem x:Uid="MeasureTool_UnitsOfMeasure_Centimeters" />
+                            </ComboBox>
+                        </controls:Setting.ActionContent>
+                    </controls:Setting>-->
 
                     <controls:Setting x:Uid="MeasureTool_DrawFeetOnCross">
                         <controls:Setting.ActionContent>
