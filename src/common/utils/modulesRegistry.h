@@ -194,10 +194,10 @@ inline registry::ChangeSet getStlThumbnailHandlerChangeSet(const std::wstring in
     using namespace registry::shellex;
     return generatePreviewHandler(PreviewHandlerType::thumbnail,
                                   perUser,
-                                  L"{8BC8AFC2-4E7C-4695-818E-8C1FFDCEA2AF}",
+                                  L"{77257004-6F25-4521-B602-50ECC6EC62A6}",
                                   get_std_product_version(),
-                                  (fs::path{ installationDir } / LR"d(modules\FileExplorerPreview\PowerToys.StlThumbnailProvider.comhost.dll)d").wstring(),
-                                  L"Microsoft.PowerToys.ThumbnailHandler.Stl.StlThumbnailProvider",
+                                  (fs::path{ installationDir } / LR"d(modules\FileExplorerPreview\StlThumbnailProviderCpp.dll)d").wstring(),
+                                  L"StlThumbnailProvider",
                                   L"Stl Thumbnail Provider",
                                   NonLocalizable::ExtSTL);
 }
