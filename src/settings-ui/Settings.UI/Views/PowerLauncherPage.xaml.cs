@@ -5,8 +5,8 @@
 using System;
 using System.Collections.ObjectModel;
 using System.IO;
+using ManagedCommon;
 using Microsoft.PowerToys.Settings.UI.Library;
-using Microsoft.PowerToys.Settings.UI.Library.Interfaces;
 using Microsoft.PowerToys.Settings.UI.Library.Utilities;
 using Microsoft.PowerToys.Settings.UI.ViewModels;
 using Microsoft.UI.Xaml.Controls;

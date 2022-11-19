@@ -4,6 +4,7 @@
 
 using System.Windows;
 using System.Windows.Forms;
+using ManagedCommon;
 using Microsoft.PowerToys.Telemetry;
 using PowerOCR.Helpers;
 
