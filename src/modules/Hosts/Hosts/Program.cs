@@ -4,7 +4,7 @@
 
 using System;
 using System.Threading;
-using Hosts.Helpers;
+using ManagedCommon;
 using Microsoft.UI.Dispatching;
 using Microsoft.Windows.AppLifecycle;
 
