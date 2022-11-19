@@ -53,6 +53,10 @@ namespace ManagedCommon
             {
                 applicationLogPath += "\\Measure Tool\\MeasureToolUI\\Logs";
             }
+            else if (location.Contains("settings"))
+            {
+                applicationLogPath += "\\Settings Logs";
+            }
             else
             {
                 applicationLogPath += "\\Debug";
