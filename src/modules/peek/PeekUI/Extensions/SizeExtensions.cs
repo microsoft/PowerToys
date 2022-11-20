@@ -1,4 +1,8 @@
-﻿using System.Windows;
+﻿// Copyright (c) Microsoft Corporation
+// The Microsoft Corporation licenses this file to you under the MIT license.
+// See the LICENSE file in the project root for more information.
+
+using System.Windows;
 
 namespace PeekUI.Extensions
 {
@@ -45,8 +49,8 @@ namespace PeekUI.Extensions
             double offsetX = (maxSize.Width - resultingWidth) / 2;
             double offsetY = (maxSize.Height - resultingHeight) / 2;
 
-            var maxWindowLeft = bounds.Left + (bounds.Right - bounds.Left - maxSize.Width) / 2;
-            var maxWindowTop = bounds.Top + (bounds.Bottom - bounds.Top - maxSize.Height) / 2;
+            var maxWindowLeft = bounds.Left + ((bounds.Right - bounds.Left - maxSize.Width) / 2);
+            var maxWindowTop = bounds.Top + ((bounds.Bottom - bounds.Top - maxSize.Height) / 2);
 
             var resultingLeft = maxWindowLeft + offsetX;
             var resultingTop = maxWindowTop + offsetY;

@@ -1,4 +1,8 @@
-﻿using System;
+﻿// Copyright (c) Microsoft Corporation
+// The Microsoft Corporation licenses this file to you under the MIT license.
+// See the LICENSE file in the project root for more information.
+
+using System;
 using System.Runtime.InteropServices;
 
 namespace PeekUI.Native
@@ -25,7 +29,7 @@ namespace PeekUI.Native
             NativeSupport = 0x0004,
             GdiPlus = 0x0010,
             WMSDK = 0x0020,
-            ZipFolder = 0x0040
+            ZipFolder = 0x0040,
         }
 
         public enum HResult
@@ -62,42 +66,42 @@ namespace PeekUI.Native
         public struct InputUnion
         {
             [FieldOffset(0)]
-            public MouseInput mi;
+            public MouseInput Mi;
 
             [FieldOffset(0)]
-            public KeybdInput ki;
+            public KeybdInput Ki;
 
             [FieldOffset(0)]
-            public HardwareInput hi;
+            public HardwareInput Hi;
         }
 
         [StructLayout(LayoutKind.Sequential)]
         public struct MouseInput
         {
-            public int dx;
-            public int dy;
-            public int mouseData;
-            public uint dwFlags;
-            public uint time;
-            public UIntPtr dwExtraInfo;
+            public int Dx;
+            public int Dy;
+            public int MouseData;
+            public uint DwFlags;
+            public uint Time;
+            public UIntPtr DwExtraInfo;
         }
 
         [StructLayout(LayoutKind.Sequential)]
         public struct KeybdInput
         {
-            public short wVk;
-            public short wScan;
-            public uint dwFlags;
-            public int time;
-            public UIntPtr dwExtraInfo;
+            public short WVk;
+            public short WScan;
+            public uint DwFlags;
+            public int Time;
+            public UIntPtr DwExtraInfo;
         }
 
         [StructLayout(LayoutKind.Sequential)]
         public struct HardwareInput
         {
-            public int uMsg;
-            public short wParamL;
-            public short wParamH;
+            public int UMsg;
+            public short WParamL;
+            public short WParamH;
         }
 
         public enum InputType : uint
@@ -121,7 +125,7 @@ namespace PeekUI.Native
 
         public enum DwmWindowAttributed
         {
-            DwmaWindowCornerPreference = 33
+            DwmaWindowCornerPreference = 33,
         }
 
         // The DWM_WINDOW_CORNER_PREFERENCE enum for DwmSetWindowAttribute's third parameter, which tells the function
@@ -131,7 +135,7 @@ namespace PeekUI.Native
             DwmCpDefault = 0,
             DwmCpDoNotRound = 1,
             DwmCpRound = 2,
-            DwmCpRoundSmall = 3
+            DwmCpRoundSmall = 3,
         }
 
         [Flags]
@@ -143,7 +147,7 @@ namespace PeekUI.Native
             IconOnly = 0x04,
             ThumbnailOnly = 0x08,
             InCacheOnly = 0x10,
-            ScaleUp = 0x100
+            ScaleUp = 0x100,
         }
 
         [ComImport]

@@ -1,5 +1,7 @@
-﻿using PeekUI.Models;
-using PeekUI.Native;
+﻿// Copyright (c) Microsoft Corporation
+// The Microsoft Corporation licenses this file to you under the MIT license.
+// See the LICENSE file in the project root for more information.
+
 using System;
 using System.IO;
 using System.Reflection;
@@ -7,6 +9,8 @@ using System.Runtime.InteropServices;
 using System.Windows;
 using System.Windows.Interop;
 using System.Windows.Media.Imaging;
+using PeekUI.Models;
+using PeekUI.Native;
 using static PeekUI.Native.NativeModels;
 
 namespace PeekUI.Helpers
@@ -72,10 +76,10 @@ namespace PeekUI.Helpers
                 throw Marshal.GetExceptionForHR(retCode)!;
             }
 
-            NativeSize Large = new NativeSize { Width = 256, Height = 256 };
+            NativeSize large = new NativeSize { Width = 256, Height = 256 };
             var options = ThumbnailOptions.BiggerSizeOk | ThumbnailOptions.IconOnly;
 
-            HResult hr = ((IShellItemImageFactory)nativeShellItem).GetImage(Large, options, out hbitmap);
+            HResult hr = ((IShellItemImageFactory)nativeShellItem).GetImage(large, options, out hbitmap);
 
             Marshal.ReleaseComObject(nativeShellItem);
 
@@ -92,28 +96,28 @@ namespace PeekUI.Helpers
                 throw Marshal.GetExceptionForHR(retCode)!;
             }
 
-            NativeSize ExtraLarge = new NativeSize { Width = 1024, Height = 1024, };
-            NativeSize Large = new NativeSize { Width = 256, Height = 256 };
-            NativeSize Medium = new NativeSize { Width = 96, Height = 96 };
-            NativeSize Small = new NativeSize { Width = 32, Height = 32 };
+            var extraLarge = new NativeSize { Width = 1024, Height = 1024, };
+            var large = new NativeSize { Width = 256, Height = 256 };
+            var medium = new NativeSize { Width = 96, Height = 96 };
+            var small = new NativeSize { Width = 32, Height = 32 };
 
             var options = ThumbnailOptions.BiggerSizeOk | ThumbnailOptions.ThumbnailOnly | ThumbnailOptions.ScaleUp;
 
-            HResult hr = ((IShellItemImageFactory)nativeShellItem).GetImage(ExtraLarge, options, out hbitmap);
+            HResult hr = ((IShellItemImageFactory)nativeShellItem).GetImage(extraLarge, options, out hbitmap);
 
             if (hr != HResult.Ok)
             {
-                hr = ((IShellItemImageFactory)nativeShellItem).GetImage(Large, options, out hbitmap);
+                hr = ((IShellItemImageFactory)nativeShellItem).GetImage(large, options, out hbitmap);
             }
 
             if (hr != HResult.Ok)
             {
-                hr = ((IShellItemImageFactory)nativeShellItem).GetImage(Medium, options, out hbitmap);
+                hr = ((IShellItemImageFactory)nativeShellItem).GetImage(medium, options, out hbitmap);
             }
 
             if (hr != HResult.Ok)
             {
-                hr = ((IShellItemImageFactory)nativeShellItem).GetImage(Small, options, out hbitmap);
+                hr = ((IShellItemImageFactory)nativeShellItem).GetImage(small, options, out hbitmap);
             }
 
             Marshal.ReleaseComObject(nativeShellItem);

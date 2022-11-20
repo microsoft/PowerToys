@@ -1,8 +1,12 @@
-﻿using Common.UI;
-using ManagedCommon;
+﻿// Copyright (c) Microsoft Corporation
+// The Microsoft Corporation licenses this file to you under the MIT license.
+// See the LICENSE file in the project root for more information.
+
 using System;
 using System.Threading;
 using System.Windows;
+using Common.UI;
+using ManagedCommon;
 
 namespace PeekUI
 {
