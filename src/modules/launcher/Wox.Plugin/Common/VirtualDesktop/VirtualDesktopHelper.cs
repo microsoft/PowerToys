@@ -22,8 +22,8 @@ namespace Wox.Plugin.Common.VirtualDesktop.Helper
     /// To use this helper you have to create an instance of it and access the method via the helper instance.
     /// We are only allowed to use public documented com interfaces.
     /// </remarks>
-    /// <SeeAlso href="https://docs.microsoft.com/en-us/windows/win32/api/shobjidl_core/nn-shobjidl_core-ivirtualdesktopmanager">Documentation of IVirtualDesktopManager interface</SeeAlso>
-    /// <SeeAlso href="https://docs.microsoft.com/en-us/archive/blogs/winsdk/virtual-desktop-switching-in-windows-10">CSharp example code for IVirtualDesktopManager</SeeAlso>
+    /// <SeeAlso href="https://learn.microsoft.com/windows/win32/api/shobjidl_core/nn-shobjidl_core-ivirtualdesktopmanager">Documentation of IVirtualDesktopManager interface</SeeAlso>
+    /// <SeeAlso href="https://learn.microsoft.com/archive/blogs/winsdk/virtual-desktop-switching-in-windows-10">CSharp example code for IVirtualDesktopManager</SeeAlso>
     public class VirtualDesktopHelper
     {
         /// <summary>
@@ -94,7 +94,7 @@ namespace Wox.Plugin.Common.VirtualDesktop.Helper
             string registryExplorerVirtualDesktops = "SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Explorer\\VirtualDesktops";
 
             // List of all desktops
-            byte[] allDeskValue = (byte[])Registry.CurrentUser.OpenSubKey(registryExplorerVirtualDesktops, false).GetValue("VirtualDesktopIDs", null);
+            byte[] allDeskValue = (byte[])Registry.CurrentUser.OpenSubKey(registryExplorerVirtualDesktops, false)?.GetValue("VirtualDesktopIDs", null);
             if (allDeskValue != null)
             {
                 // We clear only, if we can read from registry. Otherwise we keep the existing values.
@@ -115,8 +115,8 @@ namespace Wox.Plugin.Common.VirtualDesktop.Helper
             }
 
             // Guid for current desktop
-            var currentDeskSessionValue = Registry.CurrentUser.OpenSubKey(registrySessionVirtualDesktops, false).GetValue("CurrentVirtualDesktop", null); // Windows 10
-            var currentDeskExplorerValue = Registry.CurrentUser.OpenSubKey(registryExplorerVirtualDesktops, false).GetValue("CurrentVirtualDesktop", null); // Windows 11
+            var currentDeskSessionValue = Registry.CurrentUser.OpenSubKey(registrySessionVirtualDesktops, false)?.GetValue("CurrentVirtualDesktop", null); // Windows 10
+            var currentDeskExplorerValue = Registry.CurrentUser.OpenSubKey(registryExplorerVirtualDesktops, false)?.GetValue("CurrentVirtualDesktop", null); // Windows 11
             var currentDeskValue = _IsWindowsEleven ? currentDeskExplorerValue : currentDeskSessionValue;
             if (currentDeskValue != null)
             {
@@ -389,10 +389,10 @@ namespace Wox.Plugin.Common.VirtualDesktop.Helper
         /// </summary>
         /// <param name="hWindow">Handle of the window.</param>
         /// <param name="desktop">Optional the desktop id if known</param>
-        /// <returns>A value indicating if the window is cloaked by Virtual Desktop Manager, because it is moved to an other desktop.</returns>
+        /// <returns>A value indicating if the window is cloaked by Virtual Desktop Manager, because it is moved to another desktop.</returns>
         public bool IsWindowCloakedByVirtualDesktopManager(IntPtr hWindow, Guid? desktop = null)
         {
-            // If a window is hidden because it is moved to an other desktop, then DWM returns type "CloakedShell". If DWM returns an other type the window is not cloaked by shell or VirtualDesktopManager.
+            // If a window is hidden because it is moved to another desktop, then DWM returns type "CloakedShell". If DWM returns another type the window is not cloaked by shell or VirtualDesktopManager.
             _ = NativeMethods.DwmGetWindowAttribute(hWindow, (int)DwmWindowAttributes.Cloaked, out int dwmCloakedState, sizeof(uint));
             return GetWindowDesktopAssignmentType(hWindow, desktop) == VirtualDesktopAssignmentType.OtherDesktop && dwmCloakedState == (int)DwmWindowCloakStates.CloakedShell;
         }
@@ -414,7 +414,7 @@ namespace Wox.Plugin.Common.VirtualDesktop.Helper
             int hr = _virtualDesktopManager.MoveWindowToDesktop(hWindow, desktopId);
             if (hr != (int)HRESULT.S_OK)
             {
-                Log.Exception($"VirtualDesktopHelper.MoveWindowToDesktop() failed: An exception was thrown when moving the window ({hWindow}) to an other desktop ({desktopId}).", Marshal.GetExceptionForHR(hr), typeof(VirtualDesktopHelper));
+                Log.Exception($"VirtualDesktopHelper.MoveWindowToDesktop() failed: An exception was thrown when moving the window ({hWindow}) to another desktop ({desktopId}).", Marshal.GetExceptionForHR(hr), typeof(VirtualDesktopHelper));
                 return false;
             }
 
@@ -518,10 +518,10 @@ namespace Wox.Plugin.Common.VirtualDesktop.Helper
         /// <returns><see langword="True"/> if yes and <see langword="false"/> if no.</returns>
         private static bool IsWindowsElevenOrLater()
         {
-            var currentBuildString = Registry.LocalMachine.OpenSubKey("SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion", false).GetValue("CurrentBuild", uint.MinValue);
+            var currentBuildString = Registry.LocalMachine.OpenSubKey("SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion", false)?.GetValue("CurrentBuild", null) ?? uint.MinValue;
             uint currentBuild = uint.TryParse(currentBuildString as string, out var build) ? build : uint.MinValue;
 
-            var currentBuildNumberString = Registry.LocalMachine.OpenSubKey("SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion", false).GetValue("CurrentBuildNumber", uint.MinValue);
+            var currentBuildNumberString = Registry.LocalMachine.OpenSubKey("SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion", false)?.GetValue("CurrentBuildNumber", null) ?? uint.MinValue;
             uint currentBuildNumber = uint.TryParse(currentBuildNumberString as string, out var buildNumber) ? buildNumber : uint.MinValue;
 
             uint currentWindowsBuild = currentBuild != uint.MinValue ? currentBuild : currentBuildNumber;

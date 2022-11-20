@@ -4,11 +4,8 @@
 
 using System;
 using System.Globalization;
-using System.Text;
+using Microsoft.UI.Xaml.Data;
 using Windows.ApplicationModel.Resources;
-using Windows.UI.Xaml;
-using Windows.UI.Xaml.Data;
-using Windows.UI.Xaml.Media;
 
 namespace Microsoft.PowerToys.Settings.UI.Converters
 {
@@ -25,9 +22,9 @@ namespace Microsoft.PowerToys.Settings.UI.Converters
             string targetValue = string.Empty;
             switch (value)
             {
-                case 0: targetValue = ResourceLoader.GetForCurrentView().GetString("ImageResizer_Fit_Fill_ThirdPersonSingular"); break;
-                case 1: targetValue = ResourceLoader.GetForCurrentView().GetString("ImageResizer_Fit_Fit_ThirdPersonSingular"); break;
-                case 2: targetValue = ResourceLoader.GetForCurrentView().GetString("ImageResizer_Fit_Stretch_ThirdPersonSingular"); break;
+                case 0: targetValue = ResourceLoader.GetForViewIndependentUse().GetString("ImageResizer_Fit_Fill_ThirdPersonSingular"); break;
+                case 1: targetValue = ResourceLoader.GetForViewIndependentUse().GetString("ImageResizer_Fit_Fit_ThirdPersonSingular"); break;
+                case 2: targetValue = ResourceLoader.GetForViewIndependentUse().GetString("ImageResizer_Fit_Stretch_ThirdPersonSingular"); break;
             }
 
             if (toLower)

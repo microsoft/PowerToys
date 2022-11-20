@@ -143,7 +143,7 @@ TEST_METHOD(VerifyReplaceAll)
 {
     CComPtr<IPowerRenameRegEx> renameRegEx;
     Assert::IsTrue(CPowerRenameRegEx::s_CreateInstance(&renameRegEx) == S_OK);
-    DWORD flags = MatchAllOccurences;
+    DWORD flags = MatchAllOccurrences;
     Assert::IsTrue(renameRegEx->PutFlags(flags) == S_OK);
 
     SearchReplaceExpected sreTable[] = {
@@ -167,7 +167,7 @@ TEST_METHOD(VerifyReplaceAllCaseInsensitive)
 {
     CComPtr<IPowerRenameRegEx> renameRegEx;
     Assert::IsTrue(CPowerRenameRegEx::s_CreateInstance(&renameRegEx) == S_OK);
-    DWORD flags = MatchAllOccurences | CaseSensitive;
+    DWORD flags = MatchAllOccurrences | CaseSensitive;
     Assert::IsTrue(renameRegEx->PutFlags(flags) == S_OK);
 
     SearchReplaceExpected sreTable[] = {
@@ -216,7 +216,7 @@ TEST_METHOD(VerifyReplaceAllUseRegEx)
 {
     CComPtr<IPowerRenameRegEx> renameRegEx;
     Assert::IsTrue(CPowerRenameRegEx::s_CreateInstance(&renameRegEx) == S_OK);
-    DWORD flags = MatchAllOccurences | UseRegularExpressions;
+    DWORD flags = MatchAllOccurrences | UseRegularExpressions;
     Assert::IsTrue(renameRegEx->PutFlags(flags) == S_OK);
 
     SearchReplaceExpected sreTable[] = {
@@ -240,7 +240,7 @@ TEST_METHOD(VerifyReplaceAllUseRegExCaseSensitive)
 {
     CComPtr<IPowerRenameRegEx> renameRegEx;
     Assert::IsTrue(CPowerRenameRegEx::s_CreateInstance(&renameRegEx) == S_OK);
-    DWORD flags = MatchAllOccurences | UseRegularExpressions | CaseSensitive;
+    DWORD flags = MatchAllOccurrences | UseRegularExpressions | CaseSensitive;
     Assert::IsTrue(renameRegEx->PutFlags(flags) == S_OK);
 
     SearchReplaceExpected sreTable[] = {
@@ -264,7 +264,7 @@ TEST_METHOD(VerifyMatchAllWildcardUseRegEx)
 {
     CComPtr<IPowerRenameRegEx> renameRegEx;
     Assert::IsTrue(CPowerRenameRegEx::s_CreateInstance(&renameRegEx) == S_OK);
-    DWORD flags = MatchAllOccurences | UseRegularExpressions;
+    DWORD flags = MatchAllOccurrences | UseRegularExpressions;
     Assert::IsTrue(renameRegEx->PutFlags(flags) == S_OK);
 
     SearchReplaceExpected sreTable[] = {
@@ -314,7 +314,7 @@ TEST_METHOD(VerifyReplaceFirstWildCardUseRegexMatchAllOccurrences)
         //search, replace, test, result
         { L".*", L"Foo", L"AAAAAA", L"Foo" },
     };
-    VerifyReplaceFirstWildcard(sreTable, ARRAYSIZE(sreTable), UseRegularExpressions | MatchAllOccurences);
+    VerifyReplaceFirstWildcard(sreTable, ARRAYSIZE(sreTable), UseRegularExpressions | MatchAllOccurrences);
 }
 
 TEST_METHOD(VerifyReplaceFirstWildCardMatchAllOccurrences)
@@ -325,7 +325,7 @@ TEST_METHOD(VerifyReplaceFirstWildCardMatchAllOccurrences)
         { L".*", L"Foo", L".*", L"Foo" },
         { L".*", L"Foo", L".*Bar.*", L"FooBarFoo" },
     };
-    VerifyReplaceFirstWildcard(sreTable, ARRAYSIZE(sreTable), MatchAllOccurences);
+    VerifyReplaceFirstWildcard(sreTable, ARRAYSIZE(sreTable), MatchAllOccurrences);
 }
 
 TEST_METHOD(VerifyReplaceFirstWildNoFlags)
@@ -342,7 +342,7 @@ TEST_METHOD(VerifyHandleCapturingGroups)
 {
     CComPtr<IPowerRenameRegEx> renameRegEx;
     Assert::IsTrue(CPowerRenameRegEx::s_CreateInstance(&renameRegEx) == S_OK);
-    DWORD flags = MatchAllOccurences | UseRegularExpressions | CaseSensitive;
+    DWORD flags = MatchAllOccurrences | UseRegularExpressions | CaseSensitive;
     Assert::IsTrue(renameRegEx->PutFlags(flags) == S_OK);
 
     SearchReplaceExpected sreTable[] = {
@@ -373,7 +373,7 @@ TEST_METHOD (VerifyFileAttributesNoPadding)
 {
     CComPtr<IPowerRenameRegEx> renameRegEx;
     Assert::IsTrue(CPowerRenameRegEx::s_CreateInstance(&renameRegEx) == S_OK);
-    DWORD flags = MatchAllOccurences | UseRegularExpressions ;
+    DWORD flags = MatchAllOccurrences | UseRegularExpressions ;
     SYSTEMTIME fileTime = SYSTEMTIME{ 2020, 7, 3, 22, 15, 6, 42, 453 };
     Assert::IsTrue(renameRegEx->PutFlags(flags) == S_OK);
 
@@ -398,7 +398,7 @@ TEST_METHOD (VerifyFileAttributesPadding)
 {
     CComPtr<IPowerRenameRegEx> renameRegEx;
     Assert::IsTrue(CPowerRenameRegEx::s_CreateInstance(&renameRegEx) == S_OK);
-    DWORD flags = MatchAllOccurences | UseRegularExpressions;
+    DWORD flags = MatchAllOccurrences | UseRegularExpressions;
     Assert::IsTrue(renameRegEx->PutFlags(flags) == S_OK);
     SYSTEMTIME fileTime = SYSTEMTIME{ 2020, 7, 3, 22, 15, 6, 42, 453 };
     SearchReplaceExpected sreTable[] = {
@@ -422,7 +422,7 @@ TEST_METHOD (VerifyFileAttributesMonthandDayNames)
 {
     CComPtr<IPowerRenameRegEx> renameRegEx;
     Assert::IsTrue(CPowerRenameRegEx::s_CreateInstance(&renameRegEx) == S_OK);
-    DWORD flags = MatchAllOccurences | UseRegularExpressions;
+    DWORD flags = MatchAllOccurrences | UseRegularExpressions;
     Assert::IsTrue(renameRegEx->PutFlags(flags) == S_OK);
 
     std::locale::global(std::locale(""));
@@ -499,7 +499,7 @@ TEST_METHOD(VerifyEventsFire)
     Assert::IsTrue(mockEvents->QueryInterface(IID_PPV_ARGS(&regExEvents)) == S_OK);
     DWORD cookie = 0;
     Assert::IsTrue(renameRegEx->Advise(regExEvents, &cookie) == S_OK);
-    DWORD flags = MatchAllOccurences | UseRegularExpressions | CaseSensitive;
+    DWORD flags = MatchAllOccurrences | UseRegularExpressions | CaseSensitive;
     Assert::IsTrue(renameRegEx->PutFlags(flags) == S_OK);
     Assert::IsTrue(renameRegEx->PutSearchTerm(L"FOO") == S_OK);
     Assert::IsTrue(renameRegEx->PutReplaceTerm(L"BAR") == S_OK);

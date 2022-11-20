@@ -84,6 +84,12 @@ public:
         return MODULE_NAME;
     }
 
+    // Return the configured status for the gpo policy for the module
+    virtual powertoys_gpo::gpo_rule_configured_t gpo_policy_enabled_configuration() override
+    {
+        return powertoys_gpo::getConfiguredMouseHightlighterEnabledValue();
+    }
+
     // Return JSON with the configuration options.
     virtual bool get_config(wchar_t* buffer, int* buffer_size) override
     {
@@ -215,6 +221,13 @@ public:
             {
                 Logger::warn("Failed to initialize Opacity from settings. Will use default value");
             }
+
+            // Convert % to uint8_t
+            if ((std::wstring)settingsObject.GetNamedString(L"version") != L"1.0")
+            {
+                opacity = opacity * 255 / 100;
+            }
+
             try
             {
                 // Parse left button click color

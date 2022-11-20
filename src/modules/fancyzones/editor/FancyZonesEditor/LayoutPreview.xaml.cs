@@ -263,11 +263,10 @@ namespace FancyZonesEditor
 
         private void RenderCanvasPreview(CanvasLayoutModel canvas)
         {
-            var workArea = canvas.CanvasRect;
-            if (workArea.Width == 0 || workArea.Height == 0)
-            {
-                workArea = App.Overlay.WorkArea;
-            }
+            var screenWorkArea = App.Overlay.WorkArea;
+
+            var renderLayout = (CanvasLayoutModel)canvas.Clone();
+            renderLayout.ScaleLayout(workAreaWidth: screenWorkArea.Width, workAreaHeight: screenWorkArea.Height);
 
             Viewbox viewbox = new Viewbox
             {
@@ -276,12 +275,12 @@ namespace FancyZonesEditor
             Body.Children.Add(viewbox);
             Canvas frame = new Canvas
             {
-                Width = workArea.Width,
-                Height = workArea.Height,
+                Width = screenWorkArea.Width,
+                Height = screenWorkArea.Height,
             };
             viewbox.Child = frame;
 
-            foreach (Int32Rect zone in canvas.Zones)
+            foreach (Int32Rect zone in renderLayout.Zones)
             {
                 Border rect = new Border();
                 Canvas.SetTop(rect, zone.Y);
@@ -291,11 +290,11 @@ namespace FancyZonesEditor
 
                 if (IsActualSize)
                 {
-                   rect.Style = (Style)FindResource("CanvasLayoutActualScalePreviewStyle");
+                    rect.Style = (Style)FindResource("CanvasLayoutActualScalePreviewStyle");
                 }
                 else
                 {
-                   rect.Style = (Style)FindResource("CanvasLayoutSmallScalePreviewStyle");
+                    rect.Style = (Style)FindResource("CanvasLayoutSmallScalePreviewStyle");
                 }
 
                 frame.Children.Add(rect);

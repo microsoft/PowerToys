@@ -15,3 +15,5 @@
 *.rc diff
 
 *.gcode linguist-detectable=false
+
+*.vsconfig linguist-language=json

@@ -4,6 +4,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.IO.Abstractions.TestingHelpers;
 using System.Linq;
 using Microsoft.Plugin.Folder.Sources;
@@ -31,7 +32,7 @@ namespace Microsoft.Plugin.Folder.UnitTests
                 { @"c:\Test\b\", new MockDirectoryData() },
             });
 
-            _queryFileSystemInfoMock = new QueryFileSystemInfo(_fileSystem.DirectoryInfo);
+            _queryFileSystemInfoMock = new QueryFileSystemInfo(_fileSystem.DirectoryInfo, MatchType.Simple, FileAttributes.Hidden | FileAttributes.System);
         }
 
         [TestMethod]
@@ -52,6 +53,7 @@ namespace Microsoft.Plugin.Folder.UnitTests
         [DataRow(@"c:\not-exist", 2, 1, false, DisplayName = "Folder not exist, return root")]
         [DataRow(@"c:\not-exist\not-exist2", 0, 0, false, DisplayName = "Folder not exist, return root")]
         [DataRow(@"c:\bla.t", 2, 1, false, DisplayName = "Partial match file")]
+        [DataRow(@"c:/bla.t", 2, 1, false, DisplayName = "Partial match file with /")]
         public void Query_WhenCalled(string search, int folders, int files, bool truncated)
         {
             const int maxFolderSetting = 3;

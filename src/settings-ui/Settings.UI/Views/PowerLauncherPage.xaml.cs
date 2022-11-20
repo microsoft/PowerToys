@@ -6,9 +6,11 @@ using System;
 using System.Collections.ObjectModel;
 using System.IO;
 using Microsoft.PowerToys.Settings.UI.Library;
+using Microsoft.PowerToys.Settings.UI.Library.Interfaces;
 using Microsoft.PowerToys.Settings.UI.Library.Utilities;
-using Microsoft.PowerToys.Settings.UI.Library.ViewModels;
-using Windows.UI.Xaml.Controls;
+using Microsoft.PowerToys.Settings.UI.ViewModels;
+using Microsoft.UI.Xaml.Controls;
+using Windows.ApplicationModel.Resources;
 
 namespace Microsoft.PowerToys.Settings.UI.Views
 {
@@ -19,19 +21,36 @@ namespace Microsoft.PowerToys.Settings.UI.Views
         private readonly ObservableCollection<Tuple<string, string>> searchResultPreferencesOptions;
         private readonly ObservableCollection<Tuple<string, string>> searchTypePreferencesOptions;
 
+        private int _lastIPCMessageSentTick;
+
+        // Keep track of the last IPC Message that was sent.
+        private int SendDefaultIPCMessageTimed(string msg)
+        {
+            _lastIPCMessageSentTick = Environment.TickCount;
+            return ShellPage.SendDefaultIPCMessage(msg);
+        }
+
         public PowerLauncherPage()
         {
             InitializeComponent();
             var settingsUtils = new SettingsUtils();
-            PowerLauncherSettings settings = settingsUtils.GetSettingsOrDefault<PowerLauncherSettings>(PowerLauncherSettings.ModuleName);
-            ViewModel = new PowerLauncherViewModel(settings, SettingsRepository<GeneralSettings>.GetInstance(settingsUtils), ShellPage.SendDefaultIPCMessage, App.IsDarkTheme);
+            _lastIPCMessageSentTick = Environment.TickCount;
+
+            PowerLauncherSettings settings = SettingsRepository<PowerLauncherSettings>.GetInstance(settingsUtils)?.SettingsConfig;
+            ViewModel = new PowerLauncherViewModel(settings, SettingsRepository<GeneralSettings>.GetInstance(settingsUtils), SendDefaultIPCMessageTimed, App.IsDarkTheme);
             DataContext = ViewModel;
             _ = Helper.GetFileWatcher(PowerLauncherSettings.ModuleName, "settings.json", () =>
             {
+                if (Environment.TickCount < _lastIPCMessageSentTick + 500)
+                {
+                    // Don't try to update data from the file if we tried to write to it through IPC in the last 500 milliseconds.
+                    return;
+                }
+
                 PowerLauncherSettings powerLauncherSettings = null;
                 try
                 {
-                    powerLauncherSettings = settingsUtils.GetSettingsOrDefault<PowerLauncherSettings>(PowerLauncherSettings.ModuleName);
+                    powerLauncherSettings = SettingsRepository<PowerLauncherSettings>.GetInstance(settingsUtils)?.SettingsConfig;
                 }
                 catch (IOException ex)
                 {
@@ -40,7 +59,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
 
                 if (powerLauncherSettings != null && !ViewModel.IsUpToDate(powerLauncherSettings))
                 {
-                    _ = Dispatcher.RunAsync(Windows.UI.Core.CoreDispatcherPriority.Normal, () =>
+                    this.DispatcherQueue.TryEnqueue(() =>
                     {
                         DataContext = ViewModel = new PowerLauncherViewModel(powerLauncherSettings, SettingsRepository<GeneralSettings>.GetInstance(settingsUtils), ShellPage.SendDefaultIPCMessage, App.IsDarkTheme);
                         this.Bindings.Update();
@@ -48,7 +67,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
                 }
             });
 
-            var loader = Windows.ApplicationModel.Resources.ResourceLoader.GetForCurrentView();
+            var loader = ResourceLoader.GetForViewIndependentUse();
 
             searchResultPreferencesOptions = new ObservableCollection<Tuple<string, string>>();
             searchResultPreferencesOptions.Add(Tuple.Create(loader.GetString("PowerLauncher_SearchResultPreference_AlphabeticalOrder"), "alphabetical_order"));
@@ -61,7 +80,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             searchTypePreferencesOptions.Add(Tuple.Create(loader.GetString("PowerLauncher_SearchTypePreference_ExecutableName"), "executable_name"));
         }
 
-        private void OpenColorsSettings_Click(object sender, Windows.UI.Xaml.RoutedEventArgs e)
+        private void OpenColorsSettings_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
         {
             Helpers.StartProcessHelper.Start(Helpers.StartProcessHelper.ColorsSettings);
         }

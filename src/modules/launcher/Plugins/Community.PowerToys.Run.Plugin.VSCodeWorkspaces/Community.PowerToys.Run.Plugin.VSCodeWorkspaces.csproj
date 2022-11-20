@@ -11,37 +11,21 @@
 		<useWPF>true</useWPF>
 		<AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
 		<AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
-		<Platforms>x64</Platforms>
-		<EnableNETAnalyzers>true</EnableNETAnalyzers>
-		<AnalysisMode>Recommended</AnalysisMode>
-		<NeutralLanguage>en-US</NeutralLanguage>
+		<GenerateSatelliteAssembliesForCore>true</GenerateSatelliteAssembliesForCore>
+		<OutputPath>..\..\..\..\..\$(Platform)\$(Configuration)\modules\launcher\Plugins\VSCodeWorkspaces\</OutputPath>
 	</PropertyGroup>
 
-	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+	<PropertyGroup Condition="'$(Configuration)'=='Debug'">
 		<DebugSymbols>true</DebugSymbols>
-		<OutputPath>..\..\..\..\..\x64\Debug\modules\launcher\Plugins\VSCodeWorkspaces\</OutputPath>
 		<DefineConstants>DEBUG;TRACE</DefineConstants>
 		<DebugType>full</DebugType>
-		<PlatformTarget>x64</PlatformTarget>
-		<LangVersion>7.3</LangVersion>
-		<ErrorReport>prompt</ErrorReport>
-		<CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
-		<WarningLevel>4</WarningLevel>
 		<Optimize>false</Optimize>
-		<TreatWarningsAsErrors>true</TreatWarningsAsErrors>
 	</PropertyGroup>
 
-	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-		<OutputPath>..\..\..\..\..\x64\Release\modules\launcher\Plugins\VSCodeWorkspaces\</OutputPath>
+	<PropertyGroup Condition="'$(Configuration)'=='Release'">
 		<DefineConstants>TRACE</DefineConstants>
 		<Optimize>true</Optimize>
 		<DebugType>pdbonly</DebugType>
-		<PlatformTarget>x64</PlatformTarget>
-		<LangVersion>7.3</LangVersion>
-		<ErrorReport>prompt</ErrorReport>
-		<CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
-		<WarningLevel>4</WarningLevel>
-		<TreatWarningsAsErrors>true</TreatWarningsAsErrors>
 	</PropertyGroup>
 
 	<ItemGroup>
@@ -56,26 +40,7 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<Compile Include="..\..\..\..\codeAnalysis\GlobalSuppressions.cs">
-			<Link>GlobalSuppressions.cs</Link>
-		</Compile>
-		<AdditionalFiles Include="..\..\..\..\codeAnalysis\StyleCop.json">
-			<Link>StyleCop.json</Link>
-		</AdditionalFiles>
-	</ItemGroup>
-
-	<ItemGroup>
-		<PackageReference Include="JetBrains.Annotations" Version="2021.3.0" />
-		<PackageReference Include="Microsoft.CodeAnalysis.NetAnalyzers" Version="6.0.0">
-		  <PrivateAssets>all</PrivateAssets>
-		  <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-		</PackageReference>
-		<PackageReference Include="Microsoft.Data.Sqlite" Version="6.0.2" />
-		<PackageReference Include="StyleCop.Analyzers" Version="1.1.118">
-			<PrivateAssets>all</PrivateAssets>
-			<IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-		</PackageReference>
-		<PackageReference Include="System.Runtime" Version="4.3.1" />
+		<PackageReference Include="Microsoft.Data.Sqlite" Version="6.0.9" />
 	</ItemGroup>
 
 	<ItemGroup>

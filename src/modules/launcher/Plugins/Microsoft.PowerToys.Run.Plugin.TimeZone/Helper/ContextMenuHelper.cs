@@ -6,8 +6,6 @@ using System;
 using System.Collections.Generic;
 using System.Windows;
 using System.Windows.Input;
-using System.Windows.Media.Animation;
-using Microsoft.PowerToys.Run.Plugin.TimeZone.Classes;
 using Microsoft.PowerToys.Run.Plugin.TimeZone.Properties;
 using Wox.Plugin;
 using Wox.Plugin.Logger;
@@ -21,7 +19,7 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeZone.Helper
     {
         /// <summary>
         /// Return a list with all context menu entries for the given <see cref="Result"/>
-        /// <para>Symbols taken from <see href="https://docs.microsoft.com/en-us/windows/uwp/design/style/segoe-ui-symbol-font"/></para>
+        /// <para>Symbols taken from <see href="https://learn.microsoft.com/windows/uwp/design/style/segoe-ui-symbol-font"/></para>
         /// </summary>
         /// <param name="result">The result for the context menu entires</param>
         /// <param name="assemblyName">The name of the this assembly</param>
@@ -50,8 +48,6 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeZone.Helper
             return list;
         }
 
-#pragma warning disable CA1031 // Do not catch general exception types
-
         /// <summary>
         /// Copy the given text to the clipboard
         /// </summary>
@@ -71,7 +67,5 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeZone.Helper
                 return false;
             }
         }
-
-        #pragma warning restore CA1031 // Do not catch general exception types
     }
 }

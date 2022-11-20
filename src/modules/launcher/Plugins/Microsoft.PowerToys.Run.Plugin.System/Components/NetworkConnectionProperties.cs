@@ -4,7 +4,10 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Globalization;
+using System.Linq;
+using System.Net;
 using System.Net.NetworkInformation;
 using System.Net.Sockets;
 using Microsoft.PowerToys.Run.Plugin.System.Properties;
@@ -94,28 +97,29 @@ namespace Microsoft.PowerToys.Run.Plugin.System.Components
         /// <summary>
         /// Gets the list of gateway IPs as string
         /// </summary>
-        internal List<string> Gateways { get; private set; } = new List<string>();
+        internal List<IPAddress> Gateways { get; private set; } = new List<IPAddress>();
 
         /// <summary>
         /// Gets the list of DHCP server IPs as string
         /// </summary>
-        internal List<string> DhcpServers { get; private set; } = new List<string>();
+        internal IPAddressCollection DhcpServers { get; private set; }
 
         /// <summary>
         /// Gets the list of DNS server IPs as string
         /// </summary>
-        internal List<string> DnsServers { get; private set; } = new List<string>();
+        internal IPAddressCollection DnsServers { get; private set; }
 
         /// <summary>
         /// Gets the list of WINS server IPs as string
         /// </summary>
-        internal List<string> WinsServers { get; private set; } = new List<string>();
+        internal IPAddressCollection WinsServers { get; private set; }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="NetworkConnectionProperties"/> class.
+        /// This private constructor is used when we crete the list of adapter (properties) by calling <see cref="NetworkConnectionProperties.GetList()"/>.
         /// </summary>
         /// <param name="networkInterface">Network interface of the connection</param>
-        internal NetworkConnectionProperties(NetworkInterface networkInterface)
+        private NetworkConnectionProperties(NetworkInterface networkInterface)
         {
             // Setting adapter properties
             Adapter = networkInterface.Description;
@@ -131,6 +135,23 @@ namespace Microsoft.PowerToys.Run.Plugin.System.Components
                 Suffix = networkInterface.GetIPProperties().DnsSuffix;
                 SetIpProperties(networkInterface.GetIPProperties());
             }
+        }
+
+        /// <summary>
+        /// Creates a list with all network adapters and their properties
+        /// </summary>
+        /// <returns>List containing all network adapters</returns>
+        internal static List<NetworkConnectionProperties> GetList()
+        {
+            List<NetworkConnectionProperties> list = new List<NetworkConnectionProperties>();
+
+            var interfaces = NetworkInterface.GetAllNetworkInterfaces().Where(x => x.NetworkInterfaceType != NetworkInterfaceType.Loopback && x.GetPhysicalAddress() != null);
+            foreach (NetworkInterface i in interfaces)
+            {
+                list.Add(new NetworkConnectionProperties(i));
+            }
+
+            return list;
         }
 
         /// <summary>
@@ -179,64 +200,59 @@ namespace Microsoft.PowerToys.Run.Plugin.System.Components
         /// <param name="properties">Element of the type <see cref="IPInterfaceProperties"/>.</param>
         private void SetIpProperties(IPInterfaceProperties properties)
         {
-            var ipList = properties.UnicastAddresses;
+            DateTime t = DateTime.Now;
 
-            foreach (var ip in ipList)
+            UnicastIPAddressInformationCollection ipList = properties.UnicastAddresses;
+            GatewayIPAddressInformationCollection gwList = properties.GatewayAddresses;
+            DhcpServers = properties.DhcpServerAddresses;
+            DnsServers = properties.DnsAddresses;
+            WinsServers = properties.WinsServersAddresses;
+
+            for (int i = 0; i < ipList.Count; i++)
             {
-                if (ip.Address.AddressFamily == AddressFamily.InterNetwork)
+                IPAddress ip = ipList[i].Address;
+
+                if (ip.AddressFamily == AddressFamily.InterNetwork)
                 {
-                    IPv4 = ip.Address.ToString();
-                    IPv4Mask = ip.IPv4Mask.ToString();
+                    IPv4 = ip.ToString();
+                    IPv4Mask = ipList[i].IPv4Mask.ToString();
                 }
-                else if (ip.Address.AddressFamily == AddressFamily.InterNetworkV6)
+                else if (ip.AddressFamily == AddressFamily.InterNetworkV6)
                 {
                     if (string.IsNullOrEmpty(IPv6Primary))
                     {
-                        IPv6Primary = ip.Address.ToString();
+                        IPv6Primary = ip.ToString();
                     }
 
-                    if (ip.Address.IsIPv6LinkLocal)
+                    if (ip.IsIPv6LinkLocal)
                     {
-                        IPv6LinkLocal = ip.Address.ToString();
+                        IPv6LinkLocal = ip.ToString();
                     }
-                    else if (ip.Address.IsIPv6SiteLocal)
+                    else if (ip.IsIPv6SiteLocal)
                     {
-                        IPv6SiteLocal = ip.Address.ToString();
+                        IPv6SiteLocal = ip.ToString();
                     }
-                    else if (ip.Address.IsIPv6UniqueLocal)
+                    else if (ip.IsIPv6UniqueLocal)
                     {
-                        IPv6UniqueLocal = ip.Address.ToString();
+                        IPv6UniqueLocal = ip.ToString();
                     }
-                    else if (ip.SuffixOrigin == SuffixOrigin.Random)
+                    else if (ipList[i].SuffixOrigin == SuffixOrigin.Random)
                     {
-                       IPv6Temporary = ip.Address.ToString();
+                        IPv6Temporary = ip.ToString();
                     }
                     else
                     {
-                        IPv6Global = ip.Address.ToString();
+                        IPv6Global = ip.ToString();
                     }
                 }
             }
 
-            foreach (var ip in properties.GatewayAddresses)
+            for (int i = 0; i < gwList.Count; i++)
             {
-                Gateways.Add(ip.Address.ToString());
+                Gateways.Add(gwList[i].Address);
             }
 
-            foreach (var ip in properties.DhcpServerAddresses)
-            {
-                DhcpServers.Add(ip.ToString());
-            }
-
-            foreach (var ip in properties.DnsAddresses)
-            {
-                DnsServers.Add(ip.ToString());
-            }
-
-            foreach (var ip in properties.WinsServersAddresses)
-            {
-                WinsServers.Add(ip.ToString());
-            }
+            Debug.Print($"time for getting ips: {DateTime.Now - t}");
         }
 
         /// <summary>
@@ -284,21 +300,20 @@ namespace Microsoft.PowerToys.Run.Plugin.System.Components
         /// <exception cref="ArgumentException">If the parameter <paramref name="property"/> is not of the type <see cref="string"/> or <see cref="List{String}"/>.</exception>
         private static string CreateIpInfoForDetailsText(string title, dynamic property)
         {
-            if (property is string)
+            switch (property)
             {
-                return $"\n{title}{property}";
-            }
-            else if (property is List<string> list)
-            {
-                return list.Count == 0 ? string.Empty : $"\n{title}{string.Join("\n\t", property)}";
-            }
-            else if (property is null)
-            {
-                return string.Empty;
-            }
-            else
-            {
-                throw new ArgumentException($"'{property}' is not of type 'string' or 'List<string>'.", nameof(property));
+                case string:
+                    return $"\n{title}{property}";
+                case List<string> listString:
+                    return listString.Count == 0 ? string.Empty : $"\n{title}{string.Join("\n\t", property)}";
+                case List<IPAddress> listIP:
+                    return listIP.Count == 0 ? string.Empty : $"\n{title}{string.Join("\n\t", property)}";
+                case IPAddressCollection collectionIP:
+                    return collectionIP.Count == 0 ? string.Empty : $"\n{title}{string.Join("\n\t", property)}";
+                case null:
+                    return string.Empty;
+                default:
+                    throw new ArgumentException($"'{property}' is not of type 'string', 'List<string>', 'List<IPAddress>' or 'IPAddressCollection'.", nameof(property));
             }
         }
     }

@@ -9,10 +9,10 @@ struct UpdateState
 {
     enum State
     {
-      upToDate = 0,
-      errorDownloading = 1,
-      readyToDownload = 2,
-      readyToInstall = 3
+        upToDate = 0,
+        errorDownloading = 1,
+        readyToDownload = 2,
+        readyToInstall = 3
     } state = upToDate;
     std::wstring releasePageUrl;
     std::optional<std::time_t> githubUpdateLastCheckedDate;

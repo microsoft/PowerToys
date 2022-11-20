@@ -5,9 +5,9 @@
 using System;
 using System.Text.Json;
 using Microsoft.PowerToys.Settings.UI.Library;
-using Microsoft.PowerToys.Settings.UI.Library.ViewModels;
 using Microsoft.PowerToys.Settings.UI.UnitTests.BackwardsCompatibility;
 using Microsoft.PowerToys.Settings.UI.UnitTests.Mocks;
+using Microsoft.PowerToys.Settings.UI.ViewModels;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
 
@@ -70,6 +70,9 @@ namespace ViewModelTests
             Assert.AreEqual(originalSettings.Properties.FancyzonesZoneHighlightColor.Value, viewModel.ZoneHighlightColor);
             Assert.AreEqual(originalSettings.Properties.FancyzonesZoneSetChangeMoveWindows.Value, viewModel.ZoneSetChangeMoveWindows);
             Assert.AreEqual(originalSettings.Properties.UseCursorposEditorStartupscreen.Value, viewModel.UseCursorPosEditorStartupScreen);
+            Assert.AreEqual(originalSettings.Properties.FancyzonesAllowPopupWindowSnap.Value, viewModel.AllowPopupWindowSnap);
+            Assert.AreEqual(originalSettings.Properties.FancyzonesAllowChildWindowSnap.Value, viewModel.AllowChildWindowSnap);
+            Assert.AreEqual(originalSettings.Properties.FancyzonesDisableRoundCornersOnSnap.Value, viewModel.DisableRoundCornersOnWindowSnap);
 
             // Verify that the stub file was used
             var expectedCallCount = 2;  // once via the view model, and once by the test (GetSettings<T>)
@@ -425,6 +428,60 @@ namespace ViewModelTests
             // assert
             var expected = viewModel.OverlappingZonesAlgorithmIndex;
             var actual = SettingsRepository<FancyZonesSettings>.GetInstance(mockFancyZonesSettingsUtils.Object).SettingsConfig.Properties.FancyzonesOverlappingZonesAlgorithm.Value;
+            Assert.AreEqual(expected, actual);
+        }
+
+        [TestMethod]
+        public void AllowChildWindowsToSnapShouldSetValue2TrueWhenSuccessful()
+        {
+            Mock<SettingsUtils> mockSettingsUtils = new Mock<SettingsUtils>();
+
+            // arrange
+            FancyZonesViewModel viewModel = new FancyZonesViewModel(mockSettingsUtils.Object, SettingsRepository<GeneralSettings>.GetInstance(mockGeneralSettingsUtils.Object), SettingsRepository<FancyZonesSettings>.GetInstance(mockFancyZonesSettingsUtils.Object), sendMockIPCConfigMSG, FancyZonesTestFolderName);
+            Assert.IsFalse(viewModel.AllowChildWindowSnap); // check if value was initialized to false.
+
+            // act
+            viewModel.AllowChildWindowSnap = true;
+
+            // assert
+            var expected = viewModel.AllowChildWindowSnap;
+            var actual = SettingsRepository<FancyZonesSettings>.GetInstance(mockFancyZonesSettingsUtils.Object).SettingsConfig.Properties.FancyzonesAllowChildWindowSnap.Value;
+            Assert.AreEqual(expected, actual);
+        }
+
+        [TestMethod]
+        public void AllowPopupWindowsToSnapShouldSetValue2TrueWhenSuccessful()
+        {
+            Mock<SettingsUtils> mockSettingsUtils = new Mock<SettingsUtils>();
+
+            // arrange
+            FancyZonesViewModel viewModel = new FancyZonesViewModel(mockSettingsUtils.Object, SettingsRepository<GeneralSettings>.GetInstance(mockGeneralSettingsUtils.Object), SettingsRepository<FancyZonesSettings>.GetInstance(mockFancyZonesSettingsUtils.Object), sendMockIPCConfigMSG, FancyZonesTestFolderName);
+            Assert.IsFalse(viewModel.AllowPopupWindowSnap); // check if value was initialized to false.
+
+            // act
+            viewModel.AllowPopupWindowSnap = true;
+
+            // assert
+            var expected = viewModel.AllowPopupWindowSnap;
+            var actual = SettingsRepository<FancyZonesSettings>.GetInstance(mockFancyZonesSettingsUtils.Object).SettingsConfig.Properties.FancyzonesAllowPopupWindowSnap.Value;
+            Assert.AreEqual(expected, actual);
+        }
+
+        [TestMethod]
+        public void DisableRoundCornersOnSnapShouldSetValue2TrueWhenSuccessful()
+        {
+            Mock<SettingsUtils> mockSettingsUtils = new Mock<SettingsUtils>();
+
+            // arrange
+            FancyZonesViewModel viewModel = new FancyZonesViewModel(mockSettingsUtils.Object, SettingsRepository<GeneralSettings>.GetInstance(mockGeneralSettingsUtils.Object), SettingsRepository<FancyZonesSettings>.GetInstance(mockFancyZonesSettingsUtils.Object), sendMockIPCConfigMSG, FancyZonesTestFolderName);
+            Assert.IsFalse(viewModel.DisableRoundCornersOnWindowSnap); // check if value was initialized to false.
+
+            // act
+            viewModel.DisableRoundCornersOnWindowSnap = true;
+
+            // assert
+            var expected = viewModel.DisableRoundCornersOnWindowSnap;
+            var actual = SettingsRepository<FancyZonesSettings>.GetInstance(mockFancyZonesSettingsUtils.Object).SettingsConfig.Properties.FancyzonesDisableRoundCornersOnSnap.Value;
             Assert.AreEqual(expected, actual);
         }
 

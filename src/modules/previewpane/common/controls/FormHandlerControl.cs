@@ -4,7 +4,6 @@
 
 using System;
 using System.Drawing;
-using System.Runtime.InteropServices;
 using System.Windows.Forms;
 using PreviewHandlerCommon.ComInterop;
 
@@ -33,7 +32,7 @@ namespace Common
         {
             // Gets the handle of the control to create the control on the VI thread. Invoking the Control.Handle get accessor forces the creation of the underlying window for the control.
             // This is important, because the thread that instantiates the preview handler component and calls its constructor is a single-threaded apartment (STA) thread, but the thread that calls into the interface members later on is a multithreaded apartment (MTA) thread. Windows Forms controls are meant to run on STA threads.
-            // More details: https://docs.microsoft.com/en-us/archive/msdn-magazine/2007/january/windows-vista-and-office-writing-your-own-preview-handlers.
+            // More details: https://learn.microsoft.com/archive/msdn-magazine/2007/january/windows-vista-and-office-writing-your-own-preview-handlers.
             var forceCreation = this.Handle;
 
             this.FormBorderStyle = FormBorderStyle.None;
@@ -120,10 +119,10 @@ namespace Common
                 this.Controls.Clear();
             });
 
-            // Call garbage collection at the time of unloading of Preview. This is to mitigate issue with WebBrowser Control not able to dispose properly.
+            // Call garbage collection at the time of unloading of Preview.
             // Which is preventing prevhost.exe to exit at the time of closing File explorer.
             // Preview Handlers run in a separate process from PowerToys. This will not affect the performance of other modules.
-            // Mitigate the following Github issue: https://github.com/microsoft/PowerToys/issues/1468
+            // Mitigate the following GitHub issue: https://github.com/microsoft/PowerToys/issues/1468
             GC.Collect();
         }
 

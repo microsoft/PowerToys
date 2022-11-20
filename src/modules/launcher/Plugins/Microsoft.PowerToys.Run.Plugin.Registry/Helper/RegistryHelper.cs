@@ -13,8 +13,6 @@ using Microsoft.Win32;
 
 namespace Microsoft.PowerToys.Run.Plugin.Registry.Helper
 {
-#pragma warning disable CA1031 // Do not catch general exception types
-
     /// <summary>
     /// Helper class to easier work with the registry
     /// </summary>
@@ -145,7 +143,7 @@ namespace Microsoft.PowerToys.Run.Plugin.Registry.Helper
             Win32.Registry.SetValue(@"HKEY_Current_User\Software\Microsoft\Windows\CurrentVersion\Applets\Regedit", "LastKey", fullKey);
 
             // -m => allow multi-instance (hidden start option)
-            Wox.Infrastructure.Helper.OpenInShell("regedit.exe", "-m", null, true);
+            Wox.Infrastructure.Helper.OpenInShell("regedit.exe", "-m", null, Wox.Infrastructure.Helper.ShellRunAsType.Administrator);
         }
 
         /// <summary>
@@ -230,6 +228,4 @@ namespace Microsoft.PowerToys.Run.Plugin.Registry.Helper
             return list;
         }
     }
-
-    #pragma warning restore CA1031 // Do not catch general exception types
 }

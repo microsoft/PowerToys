@@ -5,6 +5,25 @@
 
 #include <common/SettingsAPI/settings_helpers.h>
 
+namespace NonLocalizable
+{
+    namespace AppZoneHistoryIds
+    {
+        const static wchar_t* AppZoneHistoryID = L"app-zone-history";
+        const static wchar_t* AppPathID = L"app-path";
+        const static wchar_t* HistoryID = L"history";
+        const static wchar_t* LayoutIndexesID = L"zone-index-set";
+        const static wchar_t* LayoutIdID = L"zoneset-uuid";
+        const static wchar_t* DeviceIdID = L"device-id";
+        const static wchar_t* DeviceID = L"device";
+        const static wchar_t* MonitorID = L"monitor";
+        const static wchar_t* MonitorInstanceID = L"monitor-instance";
+        const static wchar_t* MonitorSerialNumberID = L"serial-number";
+        const static wchar_t* MonitorNumberID = L"monitor-number";
+        const static wchar_t* VirtualDesktopID = L"virtual-desktop";
+    }
+}
+
 class AppZoneHistory
 {
 public:
@@ -23,21 +42,21 @@ public:
 
     void LoadData();
     void SaveData();
+    void AdjustWorkAreaIds(const std::vector<FancyZonesDataTypes::MonitorId>& ids);
 
-    bool SetAppLastZones(HWND window, const FancyZonesDataTypes::DeviceIdData& deviceId, const std::wstring& zoneSetId, const ZoneIndexSet& zoneIndexSet);
-    bool RemoveAppLastZone(HWND window, const FancyZonesDataTypes::DeviceIdData& deviceId, const std::wstring_view& zoneSetId);
+    bool SetAppLastZones(HWND window, const FancyZonesDataTypes::WorkAreaId& workAreaId, const std::wstring& zoneSetId, const ZoneIndexSet& zoneIndexSet);
+    bool RemoveAppLastZone(HWND window, const FancyZonesDataTypes::WorkAreaId& workAreaId, const std::wstring_view& zoneSetId);
 
     void RemoveApp(const std::wstring& appPath);
 
     const TAppZoneHistoryMap& GetFullAppZoneHistory() const noexcept;
-    std::optional<FancyZonesDataTypes::AppZoneHistoryData> GetZoneHistory(const std::wstring& appPath, const FancyZonesDataTypes::DeviceIdData& deviceId) const noexcept;
+    std::optional<FancyZonesDataTypes::AppZoneHistoryData> GetZoneHistory(const std::wstring& appPath, const FancyZonesDataTypes::WorkAreaId& workAreaId) const noexcept;
 
-    bool IsAnotherWindowOfApplicationInstanceZoned(HWND window, const FancyZonesDataTypes::DeviceIdData& deviceId) const noexcept;
-    void UpdateProcessIdToHandleMap(HWND window, const FancyZonesDataTypes::DeviceIdData& deviceId);
-    ZoneIndexSet GetAppLastZoneIndexSet(HWND window, const FancyZonesDataTypes::DeviceIdData& deviceId, const std::wstring_view& zoneSetId) const;
+    bool IsAnotherWindowOfApplicationInstanceZoned(HWND window, const FancyZonesDataTypes::WorkAreaId& workAreaId) const noexcept;
+    void UpdateProcessIdToHandleMap(HWND window, const FancyZonesDataTypes::WorkAreaId& workAreaId);
+    ZoneIndexSet GetAppLastZoneIndexSet(HWND window, const FancyZonesDataTypes::WorkAreaId& workAreaId, const std::wstring& zoneSetId) const;
 
-    void SetVirtualDesktopCheckCallback(std::function<bool(GUID)> callback);
-    void SyncVirtualDesktops(GUID currentVirtualDesktopId);
+    void SyncVirtualDesktops();
     void RemoveDeletedVirtualDesktops(const std::vector<GUID>& activeDesktops);
 
 private:
@@ -45,5 +64,4 @@ private:
     ~AppZoneHistory() = default;
 
     TAppZoneHistoryMap m_history;
-    std::function<bool(GUID)> m_virtualDesktopCheckCallback;
 };

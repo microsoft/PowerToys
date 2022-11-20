@@ -6,6 +6,7 @@ using System;
 using System.Drawing;
 using System.IO;
 using System.Reflection;
+using Microsoft.PowerToys.Settings.UI.Library;
 
 namespace Microsoft.PowerToys.PreviewHandler.Monaco
 {
@@ -14,17 +15,45 @@ namespace Microsoft.PowerToys.PreviewHandler.Monaco
     /// </summary>
     public class Settings
     {
-        /// <summary>
-        /// Word warping. Set by PT settings.
-        /// </summary>
-        private bool _wrap;
+        private static SettingsUtils moduleSettings = new SettingsUtils();
 
+        /// <summary>
+        /// Gets a value indicating whether word wrapping should be applied. Set by PT settings.
+        /// </summary>
         public bool Wrap
         {
-            get => _wrap;
-            set
+            get
             {
-                _wrap = value;
+                try
+                {
+                    return moduleSettings.GetSettings<PowerPreviewSettings>(PowerPreviewSettings.ModuleName).Properties.EnableMonacoPreviewWordWrap;
+                }
+                catch (FileNotFoundException)
+                {
+                    // Couldn't read the settings.
+                    // Assume default of true.
+                    return true;
+                }
+            }
+        }
+
+        /// <summary>
+        /// Gets a value indicating whether to try formatting the file. Set by PT settings.
+        /// </summary>
+        public bool TryFormat
+        {
+            get
+            {
+                try
+                {
+                    return moduleSettings.GetSettings<PowerPreviewSettings>(PowerPreviewSettings.ModuleName).Properties.MonacoPreviewTryFormat;
+                }
+                catch (FileNotFoundException)
+                {
+                    // Couldn't read the settings.
+                    // Assume default of false.
+                    return false;
+                }
             }
         }
 
@@ -44,7 +73,7 @@ namespace Microsoft.PowerToys.PreviewHandler.Monaco
             {
                 if (GetTheme() == "dark")
                 {
-                    return Color.DimGray;
+                    return System.Drawing.ColorTranslator.FromHtml("#1e1e1e");
                 }
                 else
                 {

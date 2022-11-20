@@ -9,13 +9,18 @@ std::vector<std::wstring> processes =
     L"PowerToys.Awake.exe",
     L"PowerToys.FancyZonesEditor.exe",
     L"PowerToys.FancyZones.exe",
+    L"PowerToys.FileLocksmithUI.exe",
     L"PowerToys.KeyboardManagerEngine.exe",
     L"PowerToys.KeyboardManagerEditor.exe",
+    L"PowerToys.PowerAccent.exe",
     L"PowerToys.PowerLauncher.exe",
+    L"PowerToys.PowerOCR.exe",
+    L"PowerToys.MeasureToolUI.exe",
     L"PowerToys.ShortcutGuide.exe",
     L"PowerToys.PowerRename.exe",
     L"PowerToys.ImageResizer.exe",
     L"PowerToys.Update.exe",
     L"PowerToys.ActionRunner.exe",
-    L"PowerToys.AlwaysOnTop.exe"
+    L"PowerToys.AlwaysOnTop.exe",
+    L"PowerToys.Hosts.exe"
 };

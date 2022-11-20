@@ -27,8 +27,12 @@ namespace SvgThumbnailProviderUnitTests
             svgBuilder.AppendLine("\t</circle>");
             svgBuilder.AppendLine("</svg>");
 
-            Bitmap thumbnail = SvgThumbnailProvider.GetThumbnail(svgBuilder.ToString(), 256);
-            Assert.IsTrue(thumbnail != null);
+            SvgThumbnailProvider svgThumbnailProvider = new SvgThumbnailProvider();
+            Bitmap thumbnail = svgThumbnailProvider.GetThumbnail(svgBuilder.ToString(), 256);
+
+            Assert.IsNotNull(thumbnail);
+            Assert.IsTrue(thumbnail.Width > 0);
+            Assert.IsTrue(thumbnail.Height > 0);
         }
 
         [TestMethod]
@@ -41,7 +45,8 @@ namespace SvgThumbnailProviderUnitTests
             svgBuilder.AppendLine("\t</circle>");
             svgBuilder.AppendLine("</svg>");
 
-            Bitmap thumbnail = SvgThumbnailProvider.GetThumbnail(svgBuilder.ToString(), 256);
+            SvgThumbnailProvider svgThumbnailProvider = new SvgThumbnailProvider();
+            Bitmap thumbnail = svgThumbnailProvider.GetThumbnail(svgBuilder.ToString(), 256);
             Assert.IsTrue(thumbnail != null);
         }
 
@@ -51,21 +56,24 @@ namespace SvgThumbnailProviderUnitTests
             var svgBuilder = new StringBuilder();
             svgBuilder.AppendLine("<p>foo</p>");
 
-            Bitmap thumbnail = SvgThumbnailProvider.GetThumbnail(svgBuilder.ToString(), 256);
+            SvgThumbnailProvider svgThumbnailProvider = new SvgThumbnailProvider();
+            Bitmap thumbnail = svgThumbnailProvider.GetThumbnail(svgBuilder.ToString(), 256);
             Assert.IsTrue(thumbnail == null);
         }
 
         [TestMethod]
         public void CheckNoSvgEmptyStringShouldReturnNullBitmap()
         {
-            Bitmap thumbnail = SvgThumbnailProvider.GetThumbnail(string.Empty, 256);
+            SvgThumbnailProvider svgThumbnailProvider = new SvgThumbnailProvider();
+            Bitmap thumbnail = svgThumbnailProvider.GetThumbnail(string.Empty, 256);
             Assert.IsTrue(thumbnail == null);
         }
 
         [TestMethod]
         public void CheckNoSvgNullStringShouldReturnNullBitmap()
         {
-            Bitmap thumbnail = SvgThumbnailProvider.GetThumbnail(null, 256);
+            SvgThumbnailProvider svgThumbnailProvider = new SvgThumbnailProvider();
+            Bitmap thumbnail = svgThumbnailProvider.GetThumbnail(null, 256);
             Assert.IsTrue(thumbnail == null);
         }
 
@@ -73,7 +81,8 @@ namespace SvgThumbnailProviderUnitTests
         public void CheckZeroSizedThumbnailShouldReturnNullBitmap()
         {
             string content = "<svg></svg>";
-            Bitmap thumbnail = SvgThumbnailProvider.GetThumbnail(content, 0);
+            SvgThumbnailProvider svgThumbnailProvider = new SvgThumbnailProvider();
+            Bitmap thumbnail = svgThumbnailProvider.GetThumbnail(content, 0);
             Assert.IsTrue(thumbnail == null);
         }
 
@@ -94,7 +103,8 @@ namespace SvgThumbnailProviderUnitTests
             svgBuilder.AppendLine("</body>");
             svgBuilder.AppendLine("</html>");
 
-            Bitmap thumbnail = SvgThumbnailProvider.GetThumbnail(svgBuilder.ToString(), 256);
+            SvgThumbnailProvider svgThumbnailProvider = new SvgThumbnailProvider();
+            Bitmap thumbnail = svgThumbnailProvider.GetThumbnail(svgBuilder.ToString(), 256);
             Assert.IsTrue(thumbnail != null);
         }
 

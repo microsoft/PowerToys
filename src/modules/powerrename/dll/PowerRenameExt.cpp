@@ -6,9 +6,10 @@
 #include <Settings.h>
 #include "Generated Files/resource.h"
 
-#include <common/utils/resources.h>
-#include <common/utils/process_path.h>
 #include <common/utils/HDropIterator.h>
+#include <common/utils/resources.h>
+#include <common/utils/package.h>
+#include <common/utils/process_path.h>
 
 extern HINSTANCE g_hInst;
 
@@ -63,12 +64,12 @@ HRESULT CPowerRenameMenu::QueryContextMenu(HMENU hMenu, UINT index, UINT uIDFirs
     if (!CSettingsInstance().GetEnabled())
         return E_FAIL;
 
-    // Check if we should only be on the extended context menu
-    if (CSettingsInstance().GetExtendedContextMenuOnly() && (!(uFlags & CMF_EXTENDEDVERBS)))
-        return E_FAIL;
-
     // Check if at least one of the selected items is actually renamable.
     if (!DataObjectContainsRenamableItem(m_spdo))
+        return E_FAIL;
+
+    // Check if we should only be on the extended context menu
+    if (CSettingsInstance().GetExtendedContextMenuOnly() && (!(uFlags & CMF_EXTENDEDVERBS)))
         return E_FAIL;
 
     HRESULT hr = E_UNEXPECTED;
@@ -164,7 +165,7 @@ HRESULT CPowerRenameMenu::RunPowerRename(CMINVOKECOMMANDINFO* pici, IShellItemAr
         startupInfo.dwFlags = STARTF_USESHOWWINDOW | STARTF_USESTDHANDLES;
         if (pici)
         {
-            startupInfo.wShowWindow = pici->nShow;
+            startupInfo.wShowWindow = static_cast<WORD>(pici->nShow);
         }
         else
         {
@@ -271,7 +272,7 @@ HRESULT __stdcall CPowerRenameMenu::GetCanonicalName(GUID* pguidCommandName)
     return S_OK;
 }
 
-HRESULT __stdcall CPowerRenameMenu::GetState(IShellItemArray* psiItemArray, BOOL fOkToBeSlow, EXPCMDSTATE* pCmdState)
+HRESULT __stdcall CPowerRenameMenu::GetState(IShellItemArray* /*psiItemArray*/, BOOL /*fOkToBeSlow*/, EXPCMDSTATE* pCmdState)
 {
     *pCmdState = CSettingsInstance().GetEnabled() ? ECS_ENABLED : ECS_HIDDEN;
     return S_OK;

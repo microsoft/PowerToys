@@ -113,10 +113,10 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="PropertySheet.props" />
-    <None Include="packages.config" />
     <None Include="ShortcutGuide.base.rc">
       <Filter>Resource Files</Filter>
     </None>
+    <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
     <CopyFileToFolders Include="svgs\0.svg">

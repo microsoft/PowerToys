@@ -152,29 +152,27 @@ LRESULT Toolbar::WindowProcessMessages(HWND hwnd, UINT msg, WPARAM wparam, LPARA
         const bool showOverlayTimeout = nowMillis - toolbar->lastTimeCamOrMicMuteStateChanged > OVERLAY_SHOW_TIME;
 
         static bool previousShow = false;
-        bool show = false;
+        bool show = toolbar->ToolbarHide == L"Never";
 
-        if (toolbar->cameraInUse)
+        const bool cameraJustStoppedInUse = toolbar->previouscameraInUse && !toolbar->cameraInUse;
+        bool shouldUnmuteAll = cameraJustStoppedInUse;
+
+        if (toolbar->ToolbarHide == L"When both camera and microphone are muted")
         {
-            show = toolbar->HideToolbarWhenUnmuted ? toolbar->microphoneMuted || toolbar->cameraMuted : true;
+            // We shouldn't unmute devices, since we'd like to only show the toolbar only
+            // when something is unmuted -> the use case is to keep everything muted by default and track it
+            shouldUnmuteAll = false;
+            show = (!toolbar->cameraMuted && toolbar->cameraInUse) || !toolbar->microphoneMuted;
         }
-        else if (toolbar->previouscameraInUse)
-        {
+        else if (toolbar->ToolbarHide == L"When both camera and microphone are unmuted")
+            show = (toolbar->cameraMuted && toolbar->cameraInUse) || toolbar->microphoneMuted;
+
+        if (shouldUnmuteAll && !toolbar->moduleSettingsUpdateScheduled)
             VideoConferenceModule::unmuteAll();
-        }
-        else
-        {
-            show = toolbar->microphoneMuted;
-        }
+
         show = show || !showOverlayTimeout;
-        if (show)
-        {
-            ShowWindow(hwnd, SW_SHOW);
-        }
-        else
-        {
-            ShowWindow(hwnd, SW_HIDE);
-        }
+        ShowWindow(hwnd, show ? SW_SHOW : SW_HIDE);
+
         if (previousShow != show)
         {
             previousShow = show;
@@ -232,38 +230,39 @@ void Toolbar::show(std::wstring position, std::wstring monitorString)
 
     for (auto& monitorInfo : monitorInfos)
     {
+        const auto screenSize = monitorInfo.GetScreenSize(false);
         int positionX = 0;
         int positionY = 0;
 
         if (position == L"Top left corner")
         {
-            positionX = monitorInfo.left() + BORDER_OFFSET;
-            positionY = monitorInfo.top() + BORDER_OFFSET;
+            positionX = screenSize.left() + BORDER_OFFSET;
+            positionY = screenSize.top() + BORDER_OFFSET;
         }
         else if (position == L"Top center")
         {
-            positionX = monitorInfo.middle().x - overlayWidth / 2;
-            positionY = monitorInfo.top() + BORDER_OFFSET;
+            positionX = screenSize.middle().x - overlayWidth / 2;
+            positionY = screenSize.top() + BORDER_OFFSET;
         }
         else if (position == L"Bottom left corner")
         {
-            positionX = monitorInfo.left() + BORDER_OFFSET;
-            positionY = monitorInfo.bottom() - overlayHeight - BORDER_OFFSET;
+            positionX = screenSize.left() + BORDER_OFFSET;
+            positionY = screenSize.bottom() - overlayHeight - BORDER_OFFSET;
         }
         else if (position == L"Bottom center")
         {
-            positionX = monitorInfo.middle().x - overlayWidth / 2;
-            positionY = monitorInfo.bottom() - overlayHeight - BORDER_OFFSET;
+            positionX = screenSize.middle().x - overlayWidth / 2;
+            positionY = screenSize.bottom() - overlayHeight - BORDER_OFFSET;
         }
         else if (position == L"Bottom right corner")
         {
-            positionX = monitorInfo.right() - overlayWidth - BORDER_OFFSET;
-            positionY = monitorInfo.bottom() - overlayHeight - BORDER_OFFSET;
+            positionX = screenSize.right() - overlayWidth - BORDER_OFFSET;
+            positionY = screenSize.bottom() - overlayHeight - BORDER_OFFSET;
         }
         else //"Top right corner" or non-present
         {
-            positionX = monitorInfo.right() - overlayWidth - BORDER_OFFSET;
-            positionY = monitorInfo.top() + TOP_RIGHT_BORDER_OFFSET;
+            positionX = screenSize.right() - overlayWidth - BORDER_OFFSET;
+            positionY = screenSize.top() + TOP_RIGHT_BORDER_OFFSET;
         }
 
         HWND hwnd;
@@ -331,9 +330,9 @@ void Toolbar::setMicrophoneMute(bool mute)
     microphoneMuted = mute;
 }
 
-void Toolbar::setHideToolbarWhenUnmuted(bool hide)
+void Toolbar::setToolbarHide(std::wstring hide)
 {
-    HideToolbarWhenUnmuted = hide;
+    ToolbarHide = hide;
 }
 
 void Toolbar::setTheme(std::wstring theme)

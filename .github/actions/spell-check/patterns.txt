@@ -1,4 +1,5 @@
 # See https://github.com/check-spelling/check-spelling/wiki/Configuration-Examples:-patterns
+
 https?://(?:(?:www\.|)youtube\.com|youtu.be)/[-a-zA-Z0-9?&=]*
 # GitHub SHAs
 \bapi.github\.com/repos/[^/]+/[^/]+/[^/]+/[0-9a-f]+\b
@@ -37,12 +38,12 @@ std::wregex\(L"[^"]*"\)
 
 # hash
 Hash="[0-9A-F]{40}"
+# SHA256 hash
+'[0-9A-F]{64}'
 
 # hex digits including css/html color classes:
 (?:[\\0][xX]|\\u|[uU]\+|#x?|\%23|L")[0-9a-fA-FgGrR_]{2,}(?:[uU]?[lL]{0,2}|u\d+)\b
 
-# ignore long runs of a single character:
-\b([A-Za-z])\g{-1}{3,}\b
 (?:L"[abAB]+", ){3}L"[abAB]+"
 "Lorem[^"]+?\."
 TestCase\("[^"]+"
@@ -71,6 +72,7 @@ TestCase\("[^"]+"
 \\restart
 \\restore
 \\result
+\\rotating
 \\runner
 \\runtimes
 \\Telemetry
@@ -102,3 +104,19 @@ http://tes/
 
 # tar arguments
 \b(?:\\n|)tar(?:\s+-[a-zA-Z]+|\s[a-z]+)+
+
+# fabricbot.json
+"id": "\S+"
+"commentPattern": ".*"
+
+# acceptable duplicates
+# ls directory listings
+# /bin/ls -l output
+[-bcdlpsw](?:[-r][-w][-sx]){3}\s+\d+\s+(\S+)\s+\g{-1}\s+\d+\s+
+# C types
+\s(long|LONG) \g{-1}\s
+# javadoc / .net
+(?:\@(?:groupname|param)|(?:public|private)(?:\s+static|\s+readonly)*)\s+(\w+)\s+\g{-1}\s
+
+# ignore long runs of a single character:
+\b([A-Za-z])\g{-1}{3,}\b

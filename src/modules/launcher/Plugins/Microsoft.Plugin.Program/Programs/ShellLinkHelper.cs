@@ -41,7 +41,6 @@ namespace Microsoft.Plugin.Program.Programs
         }
 
         [Flags]
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Naming", "CA1707:Identifiers should not contain underscores", Justification = "Represents flags specified in IShellLink interface")]
         public enum SLR_FLAGS
         {
             SLR_NO_UI = 0x1,
@@ -132,7 +131,6 @@ namespace Microsoft.Plugin.Program.Programs
         public bool HasArguments { get; set; }
 
         // Retrieve the target path using Shell Link
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "HRESULT E_FAIL is thrown while fetching description and E_FAIL does not relate to any specific exception.")]
         public string RetrieveTargetPath(string path)
         {
             var link = new ShellLink();

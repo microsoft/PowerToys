@@ -6,7 +6,9 @@ using System;
 using System.Collections.ObjectModel;
 using System.Drawing;
 using System.Text.Json.Serialization;
+
 using ManagedCommon;
+
 using Wox.Plugin;
 
 namespace Wox.Infrastructure.UserSettings
@@ -61,6 +63,120 @@ namespace Wox.Infrastructure.UserSettings
             }
         }
 
+        private bool _searchQueryResultsWithDelay = true;
+
+        public bool SearchQueryResultsWithDelay
+        {
+            get
+            {
+                return _searchQueryResultsWithDelay;
+            }
+
+            set
+            {
+                if (_searchQueryResultsWithDelay != value)
+                {
+                    _searchQueryResultsWithDelay = value;
+                    OnPropertyChanged(nameof(SearchQueryResultsWithDelay));
+                }
+            }
+        }
+
+        private int _searchInputDelay = 150;
+
+        private int _searchInputDelayFast = 30;
+
+        private int _searchClickedItemWeight = 5;
+
+        private bool _searchQueryTuningEnabled;
+
+        private bool _searchWaitForSlowResults;
+
+        public int SearchInputDelayFast
+        {
+            get
+            {
+                return _searchInputDelayFast;
+            }
+
+            set
+            {
+                if (_searchInputDelayFast != value)
+                {
+                    _searchInputDelayFast = value;
+                    OnPropertyChanged(nameof(SearchInputDelayFast));
+                }
+            }
+        }
+
+        public int SearchInputDelay
+        {
+            get
+            {
+                return _searchInputDelay;
+            }
+
+            set
+            {
+                if (_searchInputDelay != value)
+                {
+                    _searchInputDelay = value;
+                    OnPropertyChanged(nameof(SearchInputDelay));
+                }
+            }
+        }
+
+        public bool SearchQueryTuningEnabled
+        {
+            get
+            {
+                return _searchQueryTuningEnabled;
+            }
+
+            set
+            {
+                if (_searchQueryTuningEnabled != value)
+                {
+                    _searchQueryTuningEnabled = value;
+                    OnPropertyChanged(nameof(SearchQueryTuningEnabled));
+                }
+            }
+        }
+
+        public bool SearchWaitForSlowResults
+        {
+            get
+            {
+                return _searchWaitForSlowResults;
+            }
+
+            set
+            {
+                if (_searchWaitForSlowResults != value)
+                {
+                    _searchWaitForSlowResults = value;
+                    OnPropertyChanged(nameof(_searchWaitForSlowResults));
+                }
+            }
+        }
+
+        public int SearchClickedItemWeight
+        {
+            get
+            {
+                return _searchClickedItemWeight;
+            }
+
+            set
+            {
+                if (_searchClickedItemWeight != value)
+                {
+                    _searchClickedItemWeight = value;
+                    OnPropertyChanged(nameof(SearchClickedItemWeight));
+                }
+            }
+        }
+
         public string Language { get; set; } = "en";
 
         public Theme Theme { get; set; } = Theme.System;
@@ -73,6 +189,13 @@ namespace Wox.Infrastructure.UserSettings
 
         public string QueryBoxFontWeight { get; set; }
 
+        public bool PTRunNonDelayedSearchInParallel { get; set; } = true;
+
+        public string PTRunStartNewSearchAction { get; set; }
+
+        public bool PTRSearchQueryFastResultsWithDelay { get; set; }
+
+        // public bool PTRSearchQueryFastResultsWithPartialDelay { get; set; }
         public string QueryBoxFontStretch { get; set; }
 
         public string ResultFont { get; set; } = FontFamily.GenericSansSerif.Name;
@@ -82,6 +205,11 @@ namespace Wox.Infrastructure.UserSettings
         public string ResultFontWeight { get; set; }
 
         public string ResultFontStretch { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether when false Alphabet static service will always return empty results
+        /// </summary>
+        public bool ShouldUsePinyin { get; set; }
 
         internal StringMatcher.SearchPrecisionScore QuerySearchPrecision { get; private set; } = StringMatcher.SearchPrecisionScore.Regular;
 

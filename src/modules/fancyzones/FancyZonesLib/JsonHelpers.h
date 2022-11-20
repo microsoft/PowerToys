@@ -8,6 +8,36 @@
 #include <vector>
 #include <unordered_map>
 
+namespace BackwardsCompatibility
+{
+    struct DeviceIdData
+    {
+        std::wstring deviceName = L"FallbackDevice";
+        int width{};
+        int height{};
+        GUID virtualDesktopId{};
+        std::wstring monitorId;
+
+        static std::optional<DeviceIdData> ParseDeviceId(const std::wstring& str);
+        static bool IsValidDeviceId(const std::wstring& str);
+    };
+
+    inline bool operator==(const BackwardsCompatibility::DeviceIdData& lhs, const BackwardsCompatibility::DeviceIdData& rhs)
+    {
+        return lhs.deviceName.compare(rhs.deviceName) == 0 && lhs.width == rhs.width && lhs.height == rhs.height && (lhs.virtualDesktopId == rhs.virtualDesktopId || lhs.virtualDesktopId == GUID_NULL || rhs.virtualDesktopId == GUID_NULL) && lhs.monitorId.compare(rhs.monitorId) == 0;
+    }
+
+    inline bool operator!=(const BackwardsCompatibility::DeviceIdData& lhs, const BackwardsCompatibility::DeviceIdData& rhs)
+    {
+        return !(lhs == rhs);
+    }
+
+    inline bool operator<(const BackwardsCompatibility::DeviceIdData& lhs, const BackwardsCompatibility::DeviceIdData& rhs)
+    {
+        return lhs.deviceName.compare(rhs.deviceName) < 0 || lhs.width < rhs.width || lhs.height < rhs.height || lhs.monitorId.compare(rhs.monitorId) < 0;
+    }
+}
+
 namespace JSONHelpers
 {
     namespace CanvasLayoutInfoJSON
@@ -33,69 +63,30 @@ namespace JSONHelpers
 
     namespace ZoneSetDataJSON
     {
-        json::JsonObject ToJson(const FancyZonesDataTypes::ZoneSetData& zoneSet);
         std::optional<FancyZonesDataTypes::ZoneSetData> FromJson(const json::JsonObject& zoneSet);
-    };
-
-    struct AppZoneHistoryJSON
-    {
-        std::wstring appPath;
-        std::vector<FancyZonesDataTypes::AppZoneHistoryData> data;
-
-        static json::JsonObject ToJson(const AppZoneHistoryJSON& appZoneHistory);
-        static std::optional<AppZoneHistoryJSON> FromJson(const json::JsonObject& zoneSet);
     };
 
     struct DeviceInfoJSON
     {
-        FancyZonesDataTypes::DeviceIdData deviceId;
+        BackwardsCompatibility::DeviceIdData deviceId;
         FancyZonesDataTypes::DeviceInfoData data;
 
-        static json::JsonObject ToJson(const DeviceInfoJSON& device);
         static std::optional<DeviceInfoJSON> FromJson(const json::JsonObject& device);
     };
 
     struct LayoutQuickKeyJSON
     {
         std::wstring layoutUuid;
-        int key;
+        int key{};
 
-        static json::JsonObject ToJson(const LayoutQuickKeyJSON& device);
         static std::optional<LayoutQuickKeyJSON> FromJson(const json::JsonObject& device);
     };
 
-    using TAppZoneHistoryMap = std::unordered_map<std::wstring, std::vector<FancyZonesDataTypes::AppZoneHistoryData>>;
-    using TDeviceInfoMap = std::unordered_map<FancyZonesDataTypes::DeviceIdData, FancyZonesDataTypes::DeviceInfoData>;
+    using TDeviceInfoMap = std::unordered_map<BackwardsCompatibility::DeviceIdData, FancyZonesDataTypes::DeviceInfoData>;
     using TCustomZoneSetsMap = std::unordered_map<std::wstring, FancyZonesDataTypes::CustomLayoutData>;
     using TLayoutQuickKeysMap = std::unordered_map<std::wstring, int>;
 
-    struct MonitorInfo
-    {
-        int dpi;
-        std::wstring id;
-        int top;
-        int left;
-        int width;
-        int height;
-        bool isSelected = false;
-
-        static json::JsonObject ToJson(const MonitorInfo& monitor);
-    };
-    
-    struct EditorArgs
-    {
-        DWORD processId;
-        bool spanZonesAcrossMonitors;
-        std::vector<MonitorInfo> monitors;
-
-        static json::JsonObject ToJson(const EditorArgs& args);
-    };
-
     json::JsonObject GetPersistFancyZonesJSON(const std::wstring& zonesSettingsFileName, const std::wstring& appZoneHistoryFileName);
-
-    TAppZoneHistoryMap ParseAppZoneHistory(const json::JsonObject& fancyZonesDataJSON);
-    json::JsonArray SerializeAppZoneHistory(const TAppZoneHistoryMap& appZoneHistoryMap);
-    void SaveAppZoneHistory(const std::wstring& appZoneHistoryFileName, const TAppZoneHistoryMap& appZoneHistoryMap);
 
     // replace zones-settings: applied layouts
     std::optional<TDeviceInfoMap> ParseDeviceInfos(const json::JsonObject& fancyZonesDataJSON);
@@ -112,4 +103,16 @@ namespace JSONHelpers
     // replace zones-settings: custom layouts
     std::optional<TCustomZoneSetsMap> ParseCustomZoneSets(const json::JsonObject& fancyZonesDataJSON);
     void SaveCustomLayouts(const TCustomZoneSetsMap& map);
+}
+
+namespace std
+{
+    template<>
+    struct hash<BackwardsCompatibility::DeviceIdData>
+    {
+        size_t operator()(const BackwardsCompatibility::DeviceIdData& /*Value*/) const
+        {
+            return 0;
+        }
+    };
 }

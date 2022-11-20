@@ -90,7 +90,7 @@ public:
     }
 
     virtual HRESULT STDMETHODCALLTYPE Activate(
-        LPCWSTR appUserModelId,
+        LPCWSTR /*appUserModelId*/,
         LPCWSTR invokedArgs,
         const NOTIFICATION_USER_INPUT_DATA*,
         ULONG) override
@@ -244,7 +244,7 @@ void notifications::show_toast_with_activations(std::wstring message,
                                                 toast_params params)
 {
     // DO NOT LOCALIZE any string in this function, because they're XML tags and a subject to
-    // https://docs.microsoft.com/en-us/windows/uwp/design/shell/tiles-and-notifications/toast-xml-schema
+    // https://learn.microsoft.com/windows/uwp/design/shell/tiles-and-notifications/toast-xml-schema
 
     std::wstring toast_xml;
     toast_xml.reserve(2048);
@@ -405,7 +405,7 @@ void notifications::update_toast_progress_bar(std::wstring_view tag, progress_ba
     map.Insert(L"progressTitle", params.progress_title);
 
     NotificationData data(map);
-    NotificationUpdateResult res = notifier.Update(data, tag, DEFAULT_TOAST_GROUP);
+    notifier.Update(data, tag, DEFAULT_TOAST_GROUP);
 }
 
 void notifications::remove_toasts_by_tag(std::wstring_view tag)

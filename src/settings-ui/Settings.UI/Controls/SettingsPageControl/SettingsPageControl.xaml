@@ -6,7 +6,8 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     Loaded="UserControl_Loaded"
-    xmlns:converters="using:Microsoft.Toolkit.Uwp.UI.Converters" xmlns:controls="using:Microsoft.Toolkit.Uwp.UI.Controls"
+    xmlns:converters="using:CommunityToolkit.WinUI.UI.Converters"
+    xmlns:controls="using:CommunityToolkit.WinUI.UI.Controls"
     mc:Ignorable="d">
 
     <UserControl.Resources>

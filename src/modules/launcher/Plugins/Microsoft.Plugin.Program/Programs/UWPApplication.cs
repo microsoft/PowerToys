@@ -125,7 +125,6 @@ namespace Microsoft.Plugin.Program.Programs
             return result;
         }
 
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "Intentionally keeping the process alive.")]
         public List<ContextMenuResult> ContextMenus(string queryArguments, IPublicAPI api)
         {
             if (api == null)
@@ -158,6 +157,8 @@ namespace Microsoft.Plugin.Program.Programs
                                 return true;
                             },
                         });
+
+                // We don't add context menu to 'run as different user', because UWP applications normally installed per user and not for all users.
             }
 
             contextMenus.Add(
@@ -203,7 +204,6 @@ namespace Microsoft.Plugin.Program.Programs
             return contextMenus;
         }
 
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "Intentionally keeping the process alive, and showing the user an error message")]
         private async void Launch(IPublicAPI api, string queryArguments)
         {
             var appManager = new ApplicationActivationHelper.ApplicationActivationManager();
@@ -214,8 +214,9 @@ namespace Microsoft.Plugin.Program.Programs
                 {
                     appManager.ActivateApplication(UserModelId, queryArguments, noFlags, out var unusedPid);
                 }
-                catch (Exception)
+                catch (Exception ex)
                 {
+                    ProgramLogger.Exception($"Unable to launch UWP {DisplayName}", ex, MethodBase.GetCurrentMethod().DeclaringType, queryArguments);
                     var name = "Plugin: " + Properties.Resources.wox_plugin_program_plugin_name;
                     var message = $"{Properties.Resources.powertoys_run_plugin_program_uwp_failed}: {DisplayName}";
                     api.ShowMsg(name, message, string.Empty);
@@ -278,16 +279,14 @@ namespace Microsoft.Plugin.Program.Programs
                         var xmlRoot = xmlDoc.DocumentElement;
                         var namespaceManager = new XmlNamespaceManager(xmlDoc.NameTable);
                         namespaceManager.AddNamespace("uap10", "http://schemas.microsoft.com/appx/manifest/uap/windows10/10");
-                        var trustLevelNode = xmlRoot.SelectSingleNode("//*[local-name()='Application' and @uap10:TrustLevel]", namespaceManager); // According to https://docs.microsoft.com/en-us/windows/apps/desktop/modernize/grant-identity-to-nonpackaged-apps#create-a-package-manifest-for-the-sparse-package and https://docs.microsoft.com/en-us/uwp/schemas/appxpackage/uapmanifestschema/element-application#attributes
+                        var trustLevelNode = xmlRoot.SelectSingleNode("//*[local-name()='Application' and @uap10:TrustLevel]", namespaceManager); // According to https://learn.microsoft.com/windows/apps/desktop/modernize/grant-identity-to-nonpackaged-apps#create-a-package-manifest-for-the-sparse-package and https://learn.microsoft.com/uwp/schemas/appxpackage/uapmanifestschema/element-application#attributes
 
                         if (trustLevelNode?.Attributes["uap10:TrustLevel"]?.Value == "mediumIL")
                         {
                             return true;
                         }
                     }
-#pragma warning disable CA1031 // Do not catch general exception types
                     catch (Exception e)
-#pragma warning restore CA1031 // Do not catch general exception types
                     {
                         ProgramLogger.Exception($"Unable to parse manifest file for {DisplayName}", e, MethodBase.GetCurrentMethod().DeclaringType, manifest);
                     }
@@ -415,7 +414,7 @@ namespace Microsoft.Plugin.Program.Programs
             LogoPathFromUri(logoUri, theme);
         }
 
-        // scale factors on win10: https://docs.microsoft.com/en-us/windows/uwp/controls-and-patterns/tiles-and-notifications-app-assets#asset-size-tables,
+        // scale factors on win10: https://learn.microsoft.com/windows/uwp/controls-and-patterns/tiles-and-notifications-app-assets#asset-size-tables,
         private static readonly Dictionary<PackageVersion, List<int>> _scaleFactors = new Dictionary<PackageVersion, List<int>>
         {
             { PackageVersion.Windows10, new List<int> { 100, 125, 150, 200, 400 } },

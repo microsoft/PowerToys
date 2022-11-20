@@ -162,4 +162,7 @@
   <data name="disable_drive_detection_warning" xml:space="preserve">
     <value>Disable non-indexed files warning</value>
   </data>
+  <data name="Microsoft_plugin_indexer_run_as_user" xml:space="preserve">
+    <value>Run as different user (Ctrl+Shift+U)</value>
+  </data>
 </root>

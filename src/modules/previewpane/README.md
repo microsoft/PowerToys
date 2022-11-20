@@ -85,7 +85,7 @@ FileExplorerPreviewSettings(
 
 ### MSI (Recommended)
 
-To add a new Previewer update the `Product.wxs` file in `PowerToysSetup` similar to existing Previewer to register the Preview Handler. More details about registration of Preview Handlers can be [found here.](https://docs.microsoft.com/en-us/windows/win32/shell/how-to-register-a-preview-handler)
+To add a new Previewer update the `Product.wxs` file in `PowerToysSetup` similar to existing Previewer to register the Preview Handler. More details about registration of Preview Handlers can be [found here.](https://learn.microsoft.com/windows/win32/shell/how-to-register-a-preview-handler)
 
 ```xml
 <Component Id="Module_PowerPreview" Guid="FF1700D5-1B07-4E07-9A62-4D206645EEA9" Win64="yes">
@@ -127,7 +127,7 @@ To add a new Previewer update the `Product.wxs` file in `PowerToysSetup` similar
 **[Important] This method of registering Preview Handler DLL's is not recommended. It could lead to registry corruption.**
 #### Registering Preview Handler
 1. Restart Visual studio as administrator. 
-2. Sign `XYZPreviewHandler` and it's dependencies. To sign an assembly in VS, follow steps given [here](https://docs.microsoft.com/en-us/dotnet/standard/assembly/sign-strong-name#create-and-sign-an-assembly-with-a-strong-name-by-using-visual-studio).
+2. Sign `XYZPreviewHandler` and it's dependencies. To sign an assembly in VS, follow steps given [here](https://learn.microsoft.com/dotnet/standard/assembly/sign-strong-name#create-and-sign-an-assembly-with-a-strong-name-by-using-visual-studio).
 3. Build `XYZPreviewHandler` project.
 4. Open developer command prompt from `Tools > Command Line > Developer Command Prompt`.
 5. Run following command for each nuget and project dependency to add them to Global Assembly Cache(GAC). 

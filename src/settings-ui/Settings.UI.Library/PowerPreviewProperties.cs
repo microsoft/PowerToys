@@ -12,6 +12,8 @@ namespace Microsoft.PowerToys.Settings.UI.Library
 {
     public class PowerPreviewProperties
     {
+        public const string DefaultStlThumbnailColor = "#FFC924";
+
         private bool enableSvgPreview = true;
 
         [JsonPropertyName("svg-previewer-toggle-setting")]
@@ -80,7 +82,41 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             }
         }
 
-        private bool enablePdfPreview = true;
+        private bool monacoPreviewWordWrap = true;
+
+        [JsonPropertyName("monaco-previewer-toggle-setting-word-wrap")]
+        [JsonConverter(typeof(BoolPropertyJsonConverter))]
+        public bool EnableMonacoPreviewWordWrap
+        {
+            get => monacoPreviewWordWrap;
+            set
+            {
+                if (value != monacoPreviewWordWrap)
+                {
+                    LogTelemetryEvent(value);
+                    monacoPreviewWordWrap = value;
+                }
+            }
+        }
+
+        private bool monacoPreviewTryFormat;
+
+        [JsonPropertyName("monaco-previewer-toggle-try-format")]
+        [JsonConverter(typeof(BoolPropertyJsonConverter))]
+        public bool MonacoPreviewTryFormat
+        {
+            get => monacoPreviewTryFormat;
+            set
+            {
+                if (value != monacoPreviewTryFormat)
+                {
+                    LogTelemetryEvent(value);
+                    monacoPreviewTryFormat = value;
+                }
+            }
+        }
+
+        private bool enablePdfPreview;
 
         [JsonPropertyName("pdf-previewer-toggle-setting")]
         [JsonConverter(typeof(BoolPropertyJsonConverter))]
@@ -97,7 +133,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             }
         }
 
-        private bool enablePdfThumbnail = true;
+        private bool enablePdfThumbnail;
 
         [JsonPropertyName("pdf-thumbnail-toggle-setting")]
         [JsonConverter(typeof(BoolPropertyJsonConverter))]
@@ -165,8 +201,12 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             }
         }
 
+        [JsonPropertyName("stl-thumbnail-color-setting")]
+        public StringProperty StlThumbnailColor { get; set; }
+
         public PowerPreviewProperties()
         {
+            StlThumbnailColor = new StringProperty(DefaultStlThumbnailColor);
         }
 
         public override string ToString()

@@ -2,30 +2,50 @@
 
 <?define UpgradeCode="6341382d-c0a9-4238-9188-be9607e3fab2"?>
 <?define RepoDir="$(var.ProjectDir)..\..\" ?>
-<?define BinX64Dir="$(var.RepoDir)x64\$(var.Configuration)\" ?>
+<?if $(var.Platform) = x64?>
+    <?define BinDir="$(var.RepoDir)$(var.Platform)\$(var.Configuration)\" ?>
+    <?define PowerToysPlatform="x64"?>
+
+    <?define Dotnet6DownloadUrl="https://download.visualstudio.microsoft.com/download/pr/a6e878eb-d1da-40cb-8b6a-7f5b9390f09c/e4431ce2aa28b6c9956db672209be500/windowsdesktop-runtime-6.0.10-win-x64.exe"?>
+    <?define Dotnet6PayloadSize="57361520"?>
+    <?define Dotnet6PayloadHash="0978D0AB85DC6F4682BA18075200F15C1C74FE02"?>
+
+    <?define PlatformProgramFiles="[ProgramFiles64Folder]"?>
+<?else?>
+    <!-- stable WIX 3 doesn't support ARM64, so we build installers as x86 -->
+    <?define BinDir="$(var.RepoDir)ARM64\$(var.Configuration)\" ?>
+    <?define PowerToysPlatform="ARM64"?>
+
+    <?define Dotnet6DownloadUrl="https://download.visualstudio.microsoft.com/download/pr/b05a38ca-a434-473c-b031-07f05c75487e/0dfe9108f47050d81f1bc09002de6881/windowsdesktop-runtime-6.0.10-win-arm64.exe"?>
+    <?define Dotnet6PayloadSize="51265552"?>
+    <?define Dotnet6PayloadHash="A624592684361793BE6D913A9E324BA6CEE4984A"?>
+    
+<!--TODO: define to ARM64 Program files once it's available-->
+    <?define PlatformProgramFiles="[ProgramFiles6432Folder]"?> 
+
+<?endif?>
 
 <Wix xmlns="http://schemas.microsoft.com/wix/2006/wi"
     xmlns:util="http://schemas.microsoft.com/wix/UtilExtension"
     xmlns:bal="http://schemas.microsoft.com/wix/BalExtension">
-    <Bundle Name="PowerToys (Preview) $(sys.BUILDARCH)"
+    <Bundle Name="PowerToys (Preview) $(var.PowerToysPlatform)"
             Version="$(var.Version)"
             Manufacturer="Microsoft Corporation"
-            IconSourceFile="$(var.BinX64Dir)svgs\icon.ico"
+            IconSourceFile="$(var.BinDir)svgs\icon.ico"
             UpgradeCode="$(var.UpgradeCode)">
         <BootstrapperApplicationRef Id="WixStandardBootstrapperApplication.RtfLicense">
             <bal:WixStandardBootstrapperApplication 
               LicenseFile="$(var.RepoDir)\installer\License.rtf"
-              LogoFile="$(var.RepoDir)\installer\MSIX\Images\logo44.png"
+              LogoFile="$(var.RepoDir)\installer\PowerToysSetup\Images\logo44.png"
               SuppressOptionsUI="no"
               SuppressRepair="yes" />
         </BootstrapperApplicationRef>
 
-        <util:FileSearch Variable="HasDotnet3122" Path="[ProgramFiles64Folder]dotnet\shared\Microsoft.WindowsDesktop.App\3.1.22\System.Xaml.dll" Result="exists" />
-        <util:FileSearch Variable="HasDotnet603" Path="[ProgramFiles64Folder]dotnet\shared\Microsoft.WindowsDesktop.App\6.0.3\System.Xaml.dll" Result="exists" />
+        <util:FileSearch Variable="HasDotnet6010" Path="$(var.PlatformProgramFiles)dotnet\shared\Microsoft.WindowsDesktop.App\6.0.10\System.Xaml.dll" Result="exists" />
         <util:RegistrySearch Variable="HasWebView2PerMachine" Root="HKLM" Key="SOFTWARE\WOW6432Node\Microsoft\EdgeUpdate\Clients\{F3017226-FE2A-4295-8BDF-00C3A9A7E4C5}" Result="exists" />
         <util:RegistrySearch Variable="HasWebView2PerUser" Root="HKCU" Key="Software\Microsoft\EdgeUpdate\Clients\{F3017226-FE2A-4295-8BDF-00C3A9A7E4C5}" Result="exists" />
 
-        <Variable Name="InstallFolder" Type="string" Value="[ProgramFiles64Folder]PowerToys" bal:Overridable="yes"/>
+        <Variable Name="InstallFolder" Type="string" Value="$(var.PlatformProgramFiles)PowerToys" bal:Overridable="yes"/>
 
         <Variable Name="MsiLogFolder" Type="string" Value="[LocalAppDataFolder]\Microsoft\PowerToys\" /> 
         <Log Disable="no" Prefix='powertoys-bootstrapper-msi-$(var.Version)' Extension=".log" />
@@ -39,34 +59,27 @@
 
       <Variable Name="DetectedWindowsBuildNumber" Type="version" Value="0"/>
       <util:RegistrySearch Id="SearchWindowsBuildNumber" Root="HKLM" Key="SOFTWARE\Microsoft\Windows NT\CurrentVersion" Value="CurrentBuildNumber" Result="value" Format="raw" Variable="DetectedWindowsBuildNumber" />
-      <bal:Condition Message="This application is only supported on Windows 10 version 1903 (build 18362) or higher.">DetectedWindowsBuildNumber &gt;= 18362 OR WixBundleInstalled</bal:Condition>
-
+      <bal:Condition Message="This application is only supported on Windows 10 version v2004 (build 19041) or higher.">DetectedWindowsBuildNumber &gt;= 19041 OR WixBundleInstalled</bal:Condition>
+    
         <Chain>
             <ExePackage
-                Name="windowsdesktop-runtime-3.1.22-win-x64.exe"
-                Compressed="no"
-                Id="DotnetRuntime"
-                DetectCondition="HasDotnet3122"
-                DownloadUrl="https://download.visualstudio.microsoft.com/download/pr/1c14e24b-7f31-42dc-ba3c-83295a2d6f7e/41b93591162dfe556cc160ae44fbe75e/windowsdesktop-runtime-3.1.22-win-x64.exe"
-                InstallCommand="/install /quiet /norestart"
-                RepairCommand="/repair /passive /norestart"
+                DisplayName="Closing PowerToys application"
+                Name="terminate_powertoys.cmd"
+                Cache="no"
+                Compressed="yes"
+                Id="TerminatePowerToys"
+                SourceFile="terminate_powertoys.cmd"
                 Permanent="yes"
                 PerMachine="yes"
-                UninstallCommand="/uninstall /quiet /norestart">
-                <ExitCode Value="1638" Behavior="success"/>
-                <RemotePayload
-                    Description="Microsoft Windows Desktop Runtime - 3.1.22 (x64)"
-                    ProductName="Microsoft Windows Desktop Runtime - 3.1.22 (x64)"
-                    Size="54342024"
-                    Version="3.1.22.30721"
-                    Hash="08EF2F6CFDB33946061884B1CE13FA867EFBD576" />
+                Vital="no">
             </ExePackage>
             <ExePackage
-                Name="windowsdesktop-runtime-6.0.3-win-x64.exe"
+                DisplayName="Downloading and installing .NET 6 Desktop Runtime"
+                Name="windowsdesktop-runtime-6.0.10-win-$(var.PowerToysPlatform).exe"
                 Compressed="no"
                 Id="DotnetRuntime6"
-                DetectCondition="HasDotnet603"
-                DownloadUrl="https://download.visualstudio.microsoft.com/download/pr/7f3a766e-9516-4579-aaf2-2b150caa465c/d57665f880cdcce816b278a944092965/windowsdesktop-runtime-6.0.3-win-x64.exe"
+                DetectCondition="HasDotnet6010"
+                DownloadUrl="$(var.Dotnet6DownloadUrl)"
                 InstallCommand="/install /quiet /norestart"
                 RepairCommand="/repair /passive /norestart"
                 Permanent="yes"
@@ -74,13 +87,14 @@
                 UninstallCommand="/uninstall /quiet /norestart">
                 <ExitCode Value="1638" Behavior="success"/>
                 <RemotePayload
-                    Description="Microsoft Windows Desktop Runtime - 6.0.3 (x64)"
-                    ProductName="Microsoft Windows Desktop Runtime - 6.0.3 (x64)"
-                    Size="57153808"
-                    Version="6.0.3.31024"
-                    Hash="85EB71B760EBA108348824A4928ED2BA9775BE76" />
+                    Description="Microsoft Windows Desktop Runtime - 6.0.10 ($(var.PowerToysPlatform))"
+                    ProductName="Microsoft Windows Desktop Runtime - 6.0.10 ($(var.PowerToysPlatform))"
+                    Size="$(var.Dotnet6PayloadSize)"
+                    Version="6.0.10.31726"
+                    Hash="$(var.Dotnet6PayloadHash)" />
             </ExePackage>
             <ExePackage
+                DisplayName="Installing Microsoft Edge WebView2"
                 Name="MicrosoftEdgeWebview2Setup.exe"
                 Compressed="yes"
                 Id="WebView2"
@@ -93,7 +107,8 @@
                 UninstallCommand="/silent /uninstall">
             </ExePackage>
             <MsiPackage
-                SourceFile="x64\Release\PowerToysSetup-$(var.Version)-x64.msi"
+                DisplayName="Installing PowerToys"
+                SourceFile="$(var.PowerToysPlatform)\Release\PowerToysSetup-$(var.Version)-$(var.PowerToysPlatform).msi"
                 Compressed="yes"
                 DisplayInternalUI="no">
                 <MsiProperty Name="BOOTSTRAPPERINSTALLFOLDER" Value="[InstallFolder]" />

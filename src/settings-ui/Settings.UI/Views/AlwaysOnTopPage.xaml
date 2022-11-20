@@ -5,21 +5,22 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:controls="using:Microsoft.PowerToys.Settings.UI.Controls"
-    xmlns:converters="using:Microsoft.Toolkit.Uwp.UI.Converters"     
+    xmlns:converters="using:CommunityToolkit.WinUI.UI.Converters"
     mc:Ignorable="d"
     AutomationProperties.LandmarkType="Main">
 
     <Page.Resources>
+        <converters:BoolNegationConverter x:Key="BoolNegationConverter"/>
         <converters:BoolToObjectConverter x:Key="BoolToComboBoxIndexConverter" TrueValue="1" FalseValue="0"/>
         <converters:BoolToVisibilityConverter x:Key="FalseToVisibleConverter" TrueValue="Collapsed" FalseValue="Visible"/>
+        <converters:BoolToVisibilityConverter x:Key="TrueToVisibleConverter" TrueValue="Visible" FalseValue="Collapsed"/>
     </Page.Resources>
 
     <controls:SettingsPageControl x:Uid="AlwaysOnTop" IsTabStop="False"
                                   ModuleImageSource="ms-appx:///Assets/Modules/AlwaysOnTop.png">
         <controls:SettingsPageControl.ModuleContent>
             <StackPanel Orientation="Vertical">
-                
-                <controls:Setting x:Uid="AlwaysOnTop_EnableToggleControl_HeaderText">
+                <controls:Setting x:Uid="AlwaysOnTop_EnableToggleControl_HeaderText" IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabledGpoConfigured, Converter={StaticResource BoolNegationConverter}}">
                     <controls:Setting.Icon>
                         <BitmapIcon UriSource="ms-appx:///Assets/FluentIcons/FluentIconsAlwaysOnTop.png" ShowAsMonochrome="False" />
                     </controls:Setting.Icon>
@@ -27,6 +28,11 @@
                         <ToggleSwitch IsOn="{x:Bind ViewModel.IsEnabled, Mode=TwoWay}" x:Uid="ToggleSwitch"/>
                     </controls:Setting.ActionContent>
                 </controls:Setting>
+                <InfoBar x:Uid="GPO_IsSettingForced"
+                    Severity="Informational"
+                    IsClosable="False"
+                    IsOpen="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabledGpoConfigured}"
+                    IsTabStop="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabledGpoConfigured}" />
 
                 <controls:SettingsGroup x:Uid="AlwaysOnTop_Activation_GroupSettings" IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}">
                  
@@ -49,7 +55,7 @@
                 <controls:SettingsGroup x:Uid="AlwaysOnTop_Behavior_GroupSettings" IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}">
                     <controls:SettingExpander IsExpanded="True">
                         <controls:SettingExpander.Header>
-                            <controls:Setting Icon="&#xE790;" Style="{StaticResource ExpanderHeaderSettingStyle}" x:Uid="AlwaysOnTop_FrameEnabled">
+                            <controls:Setting Icon="&#xEB3C;" Style="{StaticResource ExpanderHeaderSettingStyle}" x:Uid="AlwaysOnTop_FrameEnabled">
                                 <controls:Setting.ActionContent>
                                     <ToggleSwitch IsOn="{x:Bind Mode=TwoWay, Path=ViewModel.FrameEnabled}" x:Uid="ToggleSwitch"/>
                                 </controls:Setting.ActionContent>
@@ -76,7 +82,7 @@
                                 <controls:Setting x:Uid="AlwaysOnTop_FrameThickness" Style="{StaticResource ExpanderContentSettingStyle}" IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.FrameEnabled}">
                                     <controls:Setting.ActionContent>
                                         <Slider Value="{x:Bind ViewModel.FrameThickness, Mode=TwoWay}"
-                                                Minimum="0"
+                                                Minimum="1"
                                                 MinWidth="{StaticResource SettingActionControlMinWidth}"
                                                 HorizontalAlignment="Right"
                                                 Maximum="30"
@@ -84,6 +90,12 @@
                                                 LargeChange="5"/>
                                     </controls:Setting.ActionContent>
                                 </controls:Setting>
+
+                                <CheckBox x:Uid="AlwaysOnTop_RoundCorners" 
+                                          IsChecked="{x:Bind Mode=TwoWay, Path=ViewModel.RoundCornersEnabled}" 
+                                          Margin="{StaticResource ExpanderSettingMargin}"
+                                          Visibility="{x:Bind Mode=OneWay, Path=ViewModel.Windows11, Converter={StaticResource TrueToVisibleConverter}}"/>
+
                             </StackPanel>
                         </controls:SettingExpander.Content>
                     </controls:SettingExpander>

@@ -98,9 +98,6 @@ namespace KeyboardEventHandlers
 
                 if (data->wParam == WM_KEYDOWN || data->wParam == WM_SYSKEYDOWN)
                 {
-                    // Log telemetry event when the key remap is invoked
-                    Trace::KeyRemapInvoked(remapToKey);
-
                     // If Caps Lock is being remapped to Ctrl/Alt/Shift, then reset the modifier key state to fix issues in certain IME keyboards where the IME shortcut gets invoked since it detects that the modifier and Caps Lock is pressed even though it is suppressed by the hook - More information at the GitHub issue https://github.com/microsoft/PowerToys/issues/3397
                     if (remapToKey)
                     {
@@ -318,9 +315,6 @@ namespace KeyboardEventHandlers
 
                     UINT res = ii.SendVirtualInput((UINT)key_count, keyEventList, sizeof(INPUT));
                     delete[] keyEventList;
-
-                    // Log telemetry event when shortcut remap is invoked
-                    Trace::ShortcutRemapInvoked(remapToShortcut, activatedApp.has_value());
 
                     return 1;
                 }
@@ -592,22 +586,39 @@ namespace KeyboardEventHandlers
                                 if (newRemapping.RemapToKey())
                                 {
                                     DWORD to = std::get<0>(newRemapping.targetShortcut);
-                                    key_count = from.Size() - 1 + 1;
+                                    bool isLastKeyStillPressed = ii.GetVirtualKeyState((WORD)from.actionKey);
+                                    key_count = static_cast<size_t>(from.Size()) - 1 + 1 + (isLastKeyStillPressed ? 1 : 0);
                                     keyEventList = new INPUT[key_count]();
                                     memset(keyEventList, 0, sizeof(keyEventList));
                                     int i = 0;
                                     Helpers::SetModifierKeyEvents(from, it->second.winKeyInvoked, keyEventList, i, false, KeyboardManagerConstants::KEYBOARDMANAGER_SHORTCUT_FLAG);
+                                    if (ii.GetVirtualKeyState((WORD)from.actionKey))
+                                    {
+                                        // If the action key from the last shortcut is still being pressed, release it.
+                                        Helpers::SetKeyEvent(keyEventList, i, INPUT_KEYBOARD, (WORD)from.actionKey, KEYEVENTF_KEYUP, KeyboardManagerConstants::KEYBOARDMANAGER_SHORTCUT_FLAG);
+                                        i++;
+                                    }
                                     Helpers::SetKeyEvent(keyEventList, i, INPUT_KEYBOARD, (WORD)to, 0, KeyboardManagerConstants::KEYBOARDMANAGER_SHORTCUT_FLAG);
                                 }else
                                 {
                                     Shortcut to = std::get<Shortcut>(newRemapping.targetShortcut);
-                                    key_count = from.Size() - 1 + to.Size() - 1 - 2* from.GetCommonModifiersCount(to) + 1;
+                                    bool isLastKeyStillPressed = ii.GetVirtualKeyState((WORD)from.actionKey);
+
+                                    size_t temp_key_count_calculation = static_cast<size_t>(from.Size()) - 1;
+                                    temp_key_count_calculation += static_cast<size_t>(to.Size()) - 1;
+                                    temp_key_count_calculation -= static_cast<size_t>(2) * from.GetCommonModifiersCount(to);
+                                    key_count = temp_key_count_calculation + 1 + (isLastKeyStillPressed ? 1 : 0);
                                     keyEventList = new INPUT[key_count]();
 
                                     int i = 0;
                                     Helpers::SetModifierKeyEvents(from, it->second.winKeyInvoked, keyEventList, i, false, KeyboardManagerConstants::KEYBOARDMANAGER_SHORTCUT_FLAG, to);
+                                    if (ii.GetVirtualKeyState((WORD)from.actionKey))
+                                    {
+                                        // If the action key from the last shortcut is still being pressed, release it.
+                                        Helpers::SetKeyEvent(keyEventList, i, INPUT_KEYBOARD, (WORD)from.actionKey, KEYEVENTF_KEYUP, KeyboardManagerConstants::KEYBOARDMANAGER_SHORTCUT_FLAG);
+                                        i++;
+                                    }
                                     Helpers::SetModifierKeyEvents(to, it->second.winKeyInvoked, keyEventList, i, true, KeyboardManagerConstants::KEYBOARDMANAGER_SHORTCUT_FLAG, from);
-
                                     Helpers::SetKeyEvent(keyEventList, i, INPUT_KEYBOARD, (WORD)to.actionKey, 0, KeyboardManagerConstants::KEYBOARDMANAGER_SHORTCUT_FLAG);
                                     newRemapping.isShortcutInvoked = true;
                                 }

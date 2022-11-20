@@ -1,18 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <!-- Project configurations -->
-  <Import Project="..\..\..\..\packages\Microsoft.Windows.CppWinRT.2.0.200729.8\build\native\Microsoft.Windows.CppWinRT.props" Condition="Exists('..\..\..\..\packages\Microsoft.Windows.CppWinRT.2.0.200729.8\build\native\Microsoft.Windows.CppWinRT.props')" />
-  <ItemGroup Label="ProjectConfigurations">
-    <ProjectConfiguration Include="Debug|x64">
-      <Configuration>Debug</Configuration>
-      <Platform>x64</Platform>
-    </ProjectConfiguration>
-    <ProjectConfiguration Include="Release|x64">
-      <Configuration>Release</Configuration>
-      <Platform>x64</Platform>
-    </ProjectConfiguration>
-  </ItemGroup>
   <!-- Props that should be disabled while building on CI server -->
+  <Import Project="..\..\..\..\packages\Microsoft.Windows.CppWinRT.2.0.220929.3\build\native\Microsoft.Windows.CppWinRT.props" Condition="Exists('..\..\..\..\packages\Microsoft.Windows.CppWinRT.2.0.220929.3\build\native\Microsoft.Windows.CppWinRT.props')" />
   <ItemDefinitionGroup Condition="'$(CIBuild)'!='true'">
     <ClCompile>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
@@ -38,7 +28,7 @@
     </Lib>
   </ItemDefinitionGroup>
   <!-- C++ source compile-specific things for Debug/Release configurations -->
-  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+  <ItemDefinitionGroup Condition="'$(Configuration)'=='Debug'">
     <ClCompile>
       <PreprocessorDefinitions>_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <Optimization>Disabled</Optimization>
@@ -49,7 +39,7 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
     </Link>
   </ItemDefinitionGroup>
-  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+  <ItemDefinitionGroup Condition="'$(Configuration)'=='Release'">
     <ClCompile>
       <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <Optimization>MaxSpeed</Optimization>
@@ -65,8 +55,7 @@
     </Link>
   </ItemDefinitionGroup>
   <!-- Global props -->
-  <PropertyGroup Label="Globals" Condition="'$(OverrideWindowsTargetPlatformVersion)'!='True'">
-    <WindowsTargetPlatformVersion>10.0.18362.0</WindowsTargetPlatformVersion>
+  <PropertyGroup Label="Globals">
     <VCProjectVersion>16.0</VCProjectVersion>
     <Keyword>Win32Proj</Keyword>
     <ProjectGuid>{1DC3BE92-CE89-43FB-8110-9C043A2FE7A2}</ProjectGuid>
@@ -81,11 +70,11 @@
     <SpectreMitigation>Spectre</SpectreMitigation>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
+  <PropertyGroup Condition="'$(Configuration)'=='Debug'" Label="Configuration">
     <UseDebugLibraries>true</UseDebugLibraries>
     <LinkIncremental>true</LinkIncremental>
   </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
+  <PropertyGroup Condition="'$(Configuration)'=='Release'" Label="Configuration">
     <UseDebugLibraries>false</UseDebugLibraries>
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <LinkIncremental>false</LinkIncremental>
@@ -95,24 +84,15 @@
   </ImportGroup>
   <ImportGroup Label="Shared">
   </ImportGroup>
-  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
-  </ImportGroup>
-  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+  <ImportGroup Label="PropertySheets">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <LinkIncremental>true</LinkIncremental>
+  <PropertyGroup>
     <TargetName>PowerToys.$(MSBuildProjectName)</TargetName>
     <OutDir>$(SolutionDir)$(Platform)\$(Configuration)\modules\AlwaysOnTop\</OutDir>
   </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-    <LinkIncremental>false</LinkIncremental>
-    <TargetName>PowerToys.$(MSBuildProjectName)</TargetName>
-    <OutDir>$(SolutionDir)$(Platform)\$(Configuration)\modules\AlwaysOnTop\</OutDir>
-  </PropertyGroup>
-  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+  <ItemDefinitionGroup Condition="'$(Configuration)'=='Debug'">
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
       <SDLCheck>true</SDLCheck>
@@ -126,7 +106,7 @@
       <AdditionalDependencies>winmm.lib;shcore.lib;shlwapi.lib;DbgHelp.lib;uxtheme.lib;dwmapi.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
-  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+  <ItemDefinitionGroup Condition="'$(Configuration)'=='Release'">
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
       <FunctionLevelLinking>true</FunctionLevelLinking>
@@ -149,13 +129,14 @@
     <ClCompile Include="FrameDrawer.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="pch.cpp">
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
+      <PrecompiledHeader>Create</PrecompiledHeader>
     </ClCompile>
+    <ClCompile Include="ScalingUtils.cpp" />
     <ClCompile Include="Settings.cpp" />
     <ClCompile Include="trace.cpp" />
     <ClCompile Include="VirtualDesktopUtils.cpp" />
     <ClCompile Include="WindowBorder.cpp" />
+    <ClCompile Include="WindowCornersUtil.cpp" />
     <ClCompile Include="WinHookEventIDs.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -163,6 +144,8 @@
     <ClInclude Include="FrameDrawer.h" />
     <ClInclude Include="ModuleConstants.h" />
     <ClInclude Include="pch.h" />
+    <ClInclude Include="resource.h" />
+    <ClInclude Include="ScalingUtils.h" />
     <ClInclude Include="Settings.h" />
     <ClInclude Include="SettingsConstants.h" />
     <ClInclude Include="SettingsObserver.h" />
@@ -170,6 +153,7 @@
     <ClInclude Include="trace.h" />
     <ClInclude Include="VirtualDesktopUtils.h" />
     <ClInclude Include="WindowBorder.h" />
+    <ClInclude Include="WindowCornersUtil.h" />
     <ClInclude Include="WinHookEventIDs.h" />
   </ItemGroup>
   <ItemGroup>
@@ -182,22 +166,25 @@
     <ProjectReference Include="..\..\..\common\logger\logger.vcxproj">
       <Project>{d9b8fc84-322a-4f9f-bbb9-20915c47ddfd}</Project>
     </ProjectReference>
-    <ProjectReference Include="..\..\..\common\SettingsAPI\SetttingsAPI.vcxproj">
+    <ProjectReference Include="..\..\..\common\SettingsAPI\SettingsAPI.vcxproj">
       <Project>{6955446d-23f7-4023-9bb3-8657f904af99}</Project>
     </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="AlwaysOnTop.rc" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <Import Project="..\..\..\..\deps\spdlog.props" />
   <ImportGroup Label="ExtensionTargets">
-    <Import Project="..\..\..\..\packages\Microsoft.Windows.ImplementationLibrary.1.0.211019.2\build\native\Microsoft.Windows.ImplementationLibrary.targets" Condition="Exists('..\..\..\..\packages\Microsoft.Windows.ImplementationLibrary.1.0.211019.2\build\native\Microsoft.Windows.ImplementationLibrary.targets')" />
-    <Import Project="..\..\..\..\packages\Microsoft.Windows.CppWinRT.2.0.200729.8\build\native\Microsoft.Windows.CppWinRT.targets" Condition="Exists('..\..\..\..\packages\Microsoft.Windows.CppWinRT.2.0.200729.8\build\native\Microsoft.Windows.CppWinRT.targets')" />
+    <Import Project="..\..\..\..\packages\Microsoft.Windows.CppWinRT.2.0.220929.3\build\native\Microsoft.Windows.CppWinRT.targets" Condition="Exists('..\..\..\..\packages\Microsoft.Windows.CppWinRT.2.0.220929.3\build\native\Microsoft.Windows.CppWinRT.targets')" />
+    <Import Project="..\..\..\..\packages\Microsoft.Windows.ImplementationLibrary.1.0.220914.1\build\native\Microsoft.Windows.ImplementationLibrary.targets" Condition="Exists('..\..\..\..\packages\Microsoft.Windows.ImplementationLibrary.1.0.220914.1\build\native\Microsoft.Windows.ImplementationLibrary.targets')" />
   </ImportGroup>
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
     <PropertyGroup>
       <ErrorText>This project references NuGet package(s) that are missing on this computer. Use NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.</ErrorText>
     </PropertyGroup>
-    <Error Condition="!Exists('..\..\..\..\packages\Microsoft.Windows.ImplementationLibrary.1.0.211019.2\build\native\Microsoft.Windows.ImplementationLibrary.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\..\..\..\packages\Microsoft.Windows.ImplementationLibrary.1.0.211019.2\build\native\Microsoft.Windows.ImplementationLibrary.targets'))" />
-    <Error Condition="!Exists('..\..\..\..\packages\Microsoft.Windows.CppWinRT.2.0.200729.8\build\native\Microsoft.Windows.CppWinRT.props')" Text="$([System.String]::Format('$(ErrorText)', '..\..\..\..\packages\Microsoft.Windows.CppWinRT.2.0.200729.8\build\native\Microsoft.Windows.CppWinRT.props'))" />
-    <Error Condition="!Exists('..\..\..\..\packages\Microsoft.Windows.CppWinRT.2.0.200729.8\build\native\Microsoft.Windows.CppWinRT.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\..\..\..\packages\Microsoft.Windows.CppWinRT.2.0.200729.8\build\native\Microsoft.Windows.CppWinRT.targets'))" />
+    <Error Condition="!Exists('..\..\..\..\packages\Microsoft.Windows.CppWinRT.2.0.220929.3\build\native\Microsoft.Windows.CppWinRT.props')" Text="$([System.String]::Format('$(ErrorText)', '..\..\..\..\packages\Microsoft.Windows.CppWinRT.2.0.220929.3\build\native\Microsoft.Windows.CppWinRT.props'))" />
+    <Error Condition="!Exists('..\..\..\..\packages\Microsoft.Windows.CppWinRT.2.0.220929.3\build\native\Microsoft.Windows.CppWinRT.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\..\..\..\packages\Microsoft.Windows.CppWinRT.2.0.220929.3\build\native\Microsoft.Windows.CppWinRT.targets'))" />
+    <Error Condition="!Exists('..\..\..\..\packages\Microsoft.Windows.ImplementationLibrary.1.0.220914.1\build\native\Microsoft.Windows.ImplementationLibrary.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\..\..\..\packages\Microsoft.Windows.ImplementationLibrary.1.0.220914.1\build\native\Microsoft.Windows.ImplementationLibrary.targets'))" />
   </Target>
 </Project>

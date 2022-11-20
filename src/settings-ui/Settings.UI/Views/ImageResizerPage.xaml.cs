@@ -3,16 +3,13 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
-using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
-using System.Linq;
 using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.PowerToys.Settings.UI.Library.Utilities;
-using Microsoft.PowerToys.Settings.UI.Library.ViewModels;
+using Microsoft.PowerToys.Settings.UI.ViewModels;
+using Microsoft.UI.Xaml;
+using Microsoft.UI.Xaml.Controls;
 using Windows.ApplicationModel.Resources;
-using Windows.UI.Popups;
-using Windows.UI.Xaml;
-using Windows.UI.Xaml.Controls;
 
 namespace Microsoft.PowerToys.Settings.UI.Views
 {
@@ -24,7 +21,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
         {
             InitializeComponent();
             var settingsUtils = new SettingsUtils();
-            var resourceLoader = Windows.ApplicationModel.Resources.ResourceLoader.GetForCurrentView();
+            var resourceLoader = ResourceLoader.GetForViewIndependentUse();
             Func<string, string> loader = (string name) =>
             {
                 return resourceLoader.GetString(name);
@@ -41,7 +38,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             if (deleteRowButton != null)
             {
                 ImageSize x = (ImageSize)deleteRowButton.DataContext;
-                ResourceLoader resourceLoader = ResourceLoader.GetForCurrentView();
+                ResourceLoader resourceLoader = ResourceLoader.GetForViewIndependentUse();
 
                 ContentDialog dialog = new ContentDialog();
                 dialog.XamlRoot = RootPage.XamlRoot;
@@ -52,9 +49,9 @@ namespace Microsoft.PowerToys.Settings.UI.Views
                 dialog.Content = new TextBlock() { Text = resourceLoader.GetString("Delete_Dialog_Description") };
                 dialog.PrimaryButtonClick += (s, args) =>
                 {
-                // Using InvariantCulture since this is internal and expected to be numerical
-                bool success = int.TryParse(deleteRowButton?.CommandParameter?.ToString(), NumberStyles.Integer, CultureInfo.InvariantCulture, out int rowNum);
-                if (success)
+                    // Using InvariantCulture since this is internal and expected to be numerical
+                    bool success = int.TryParse(deleteRowButton?.CommandParameter?.ToString(), NumberStyles.Integer, CultureInfo.InvariantCulture, out int rowNum);
+                    if (success)
                     {
                         ViewModel.DeleteImageSize(rowNum);
                     }
@@ -67,12 +64,11 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             }
         }
 
-        [SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "JSON exceptions from saving new settings should be caught and logged.")]
         private void AddSizeButton_Click(object sender, RoutedEventArgs e)
         {
             try
             {
-                ViewModel.AddRow(ResourceLoader.GetForCurrentView().GetString("ImageResizer_DefaultSize_NewSizePrefix"));
+                ViewModel.AddRow(ResourceLoader.GetForViewIndependentUse().GetString("ImageResizer_DefaultSize_NewSizePrefix"));
             }
             catch (Exception ex)
             {
@@ -80,7 +76,6 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             }
         }
 
-        [SuppressMessage("Usage", "CA1801:Review unused parameters", Justification = "Params are required for event handler signature requirements.")]
         private void ImagesSizesListView_ContainerContentChanging(ListViewBase sender, ContainerContentChangingEventArgs args)
         {
             if (ViewModel.IsListViewFocusRequested)

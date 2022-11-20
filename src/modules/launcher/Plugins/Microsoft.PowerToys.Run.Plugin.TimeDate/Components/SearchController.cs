@@ -42,12 +42,6 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.Components
             bool isEmptySearchInput = string.IsNullOrEmpty(query.Search);
             string searchTerm = query.Search;
 
-            // Empty search without keyword => return no results
-            if (!isKeywordSearch && isEmptySearchInput)
-            {
-                return results;
-            }
-
             // Conjunction search without keyword => return no results
             // (This improves the results on global queries.)
             if (!isKeywordSearch && _conjunctionList.Any(x => x.Equals(searchTerm, StringComparison.CurrentCultureIgnoreCase)))
@@ -56,9 +50,10 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.Components
             }
 
             // Switch search type
-            if (isEmptySearchInput)
+            if (isEmptySearchInput || (!isKeywordSearch && TimeDateSettings.Instance.OnlyDateTimeNowGlobal))
             {
                 // Return all results for system time/date on empty keyword search
+                // or only time, date and now results for system time on global queries if the corresponding setting is enabled
                 availableFormats.AddRange(AvailableResultsList.GetList(isKeywordSearch));
             }
             else if (Regex.IsMatch(searchTerm, @".+" + Regex.Escape(InputDelimiter) + @".+"))
@@ -79,7 +74,7 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.Components
             }
             else
             {
-                // Search for specified format with system time/date
+                // Search for specified format with system time/date (All other cases)
                 availableFormats.AddRange(AvailableResultsList.GetList(isKeywordSearch));
             }
 

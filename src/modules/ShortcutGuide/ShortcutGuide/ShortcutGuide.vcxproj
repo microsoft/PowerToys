@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-  <Import Project="..\..\..\..\packages\Microsoft.Windows.CppWinRT.2.0.200729.8\build\native\Microsoft.Windows.CppWinRT.props" Condition="Exists('..\..\..\..\packages\Microsoft.Windows.CppWinRT.2.0.200729.8\build\native\Microsoft.Windows.CppWinRT.props')" />
+  <Import Project="..\..\..\..\packages\Microsoft.Windows.CppWinRT.2.0.220929.3\build\native\Microsoft.Windows.CppWinRT.props" Condition="Exists('..\..\..\..\packages\Microsoft.Windows.CppWinRT.2.0.220929.3\build\native\Microsoft.Windows.CppWinRT.props')" />
   <Target Name="GenerateResourceFiles" BeforeTargets="PrepareForBuild">
     <Exec Command="powershell -NonInteractive -executionpolicy Unrestricted $(SolutionDir)tools\build\convert-resx-to-rc.ps1 $(MSBuildThisFileDirectory) resource.base.h resource.h ShortcutGuide.base.rc ShortcutGuide.rc" />
   </Target>
@@ -13,7 +13,7 @@
     <ProjectGuid>{2edb3eb4-fa92-4bff-b2d8-566584837231}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
     <RootNamespace>ShortcutGuide</RootNamespace>
-    <WindowsTargetPlatformMinVersion>10.0.18362.0</WindowsTargetPlatformMinVersion>
+    <WindowsTargetPlatformMinVersion>10.0.19041.0</WindowsTargetPlatformMinVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Label="Configuration">
@@ -157,7 +157,7 @@
     <ProjectReference Include="..\..\..\common\logger\logger.vcxproj">
       <Project>{d9b8fc84-322a-4f9f-bbb9-20915c47ddfd}</Project>
     </ProjectReference>
-    <ProjectReference Include="..\..\..\common\SettingsAPI\SetttingsAPI.vcxproj">
+    <ProjectReference Include="..\..\..\common\SettingsAPI\SettingsAPI.vcxproj">
       <Project>{6955446d-23f7-4023-9bb3-8657f904af99}</Project>
     </ProjectReference>
     <ProjectReference Include="..\..\..\common\Themes\Themes.vcxproj">
@@ -180,13 +180,13 @@
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <Import Project="..\..\..\..\deps\spdlog.props" />
   <ImportGroup Label="ExtensionTargets">
-    <Import Project="..\..\..\..\packages\Microsoft.Windows.CppWinRT.2.0.200729.8\build\native\Microsoft.Windows.CppWinRT.targets" Condition="Exists('..\..\..\..\packages\Microsoft.Windows.CppWinRT.2.0.200729.8\build\native\Microsoft.Windows.CppWinRT.targets')" />
+    <Import Project="..\..\..\..\packages\Microsoft.Windows.CppWinRT.2.0.220929.3\build\native\Microsoft.Windows.CppWinRT.targets" Condition="Exists('..\..\..\..\packages\Microsoft.Windows.CppWinRT.2.0.220929.3\build\native\Microsoft.Windows.CppWinRT.targets')" />
   </ImportGroup>
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
     <PropertyGroup>
       <ErrorText>This project references NuGet package(s) that are missing on this computer. Use NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.</ErrorText>
     </PropertyGroup>
-    <Error Condition="!Exists('..\..\..\..\packages\Microsoft.Windows.CppWinRT.2.0.200729.8\build\native\Microsoft.Windows.CppWinRT.props')" Text="$([System.String]::Format('$(ErrorText)', '..\..\..\..\packages\Microsoft.Windows.CppWinRT.2.0.200729.8\build\native\Microsoft.Windows.CppWinRT.props'))" />
-    <Error Condition="!Exists('..\..\..\..\packages\Microsoft.Windows.CppWinRT.2.0.200729.8\build\native\Microsoft.Windows.CppWinRT.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\..\..\..\packages\Microsoft.Windows.CppWinRT.2.0.200729.8\build\native\Microsoft.Windows.CppWinRT.targets'))" />
+    <Error Condition="!Exists('..\..\..\..\packages\Microsoft.Windows.CppWinRT.2.0.220929.3\build\native\Microsoft.Windows.CppWinRT.props')" Text="$([System.String]::Format('$(ErrorText)', '..\..\..\..\packages\Microsoft.Windows.CppWinRT.2.0.220929.3\build\native\Microsoft.Windows.CppWinRT.props'))" />
+    <Error Condition="!Exists('..\..\..\..\packages\Microsoft.Windows.CppWinRT.2.0.220929.3\build\native\Microsoft.Windows.CppWinRT.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\..\..\..\packages\Microsoft.Windows.CppWinRT.2.0.220929.3\build\native\Microsoft.Windows.CppWinRT.targets'))" />
   </Target>
 </Project>

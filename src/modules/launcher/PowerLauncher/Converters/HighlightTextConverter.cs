@@ -6,12 +6,9 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Data;
 using System.Windows.Documents;
-using System.Windows.Media;
 
 namespace PowerLauncher.Converters
 {
@@ -19,9 +16,7 @@ namespace PowerLauncher.Converters
     {
         public object Convert(object[] values, Type targetType, object parameter, CultureInfo culture)
         {
-#pragma warning disable CA1062 // Validate arguments of public methods
             var text = values[0] as string;
-#pragma warning restore CA1062 // Validate arguments of public methods
             var highlightData = values[1] as List<int>;
             var selected = values[2] as bool? == true;
 

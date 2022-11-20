@@ -15,20 +15,24 @@ namespace Microsoft.Plugin.WindowsTerminal.UnitTests
     public class TerminalHelperTests
     {
         [DataTestMethod]
-        [DataRow("Windows PowerShell", true, "--window 0 nt --profile \"Windows PowerShell\"")]
-        [DataRow("Windows PowerShell", false, "--profile \"Windows PowerShell\"")]
-        public void ArgumentsTest(string profile, bool openNewTab, string expectedArguments)
+        [DataRow("Windows PowerShell", true, true, "--window _quake --profile \"Windows PowerShell\"")]
+        [DataRow("Windows PowerShell", false, true, "--window _quake --profile \"Windows PowerShell\"")]
+        [DataRow("Windows PowerShell", true, false, "--window 0 nt --profile \"Windows PowerShell\"")]
+        [DataRow("Windows PowerShell", false, false, " --profile \"Windows PowerShell\"")]
+        public void ArgumentsTest(string profile, bool openNewTab, bool openQuake, string expectedArguments)
         {
-            var arguments = TerminalHelper.GetArguments(profile, openNewTab);
+            var arguments = TerminalHelper.GetArguments(profile, openNewTab, openQuake);
             Assert.AreEqual(arguments, expectedArguments);
         }
 
-        [TestMethod]
-        public void ParseSettingsTest()
+        [DataTestMethod]
+        [DataRow("settings 1.11.2421.0.json")]
+        [DataRow("settings 1.11.2421.0_2.json")]
+        public void ParseSettingsTest(string file)
         {
             var terminal = new TerminalPackage(string.Empty, new Version(), string.Empty, string.Empty, string.Empty);
 
-            var settingsPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "settings.json");
+            var settingsPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, file);
             var settings = File.ReadAllText(settingsPath);
             var profiles = TerminalHelper.ParseSettings(terminal, settings);
 

@@ -35,11 +35,10 @@ SingleKeyRemapControl::SingleKeyRemapControl(StackPanel table, StackPanel row, c
     // Hybrid column
     else
     {
-        hybridDropDownStackPanel = StackPanel();
-        hybridDropDownStackPanel.as<StackPanel>().Spacing(EditorConstants::ShortcutTableDropDownSpacing);
-        hybridDropDownStackPanel.as<StackPanel>().Orientation(Windows::UI::Xaml::Controls::Orientation::Horizontal);
-        KeyDropDownControl::AddDropDown(table, row, hybridDropDownStackPanel.as<StackPanel>(), colIndex, singleKeyRemapBuffer, keyDropDownControlObjects, nullptr, true, true);
-        singleKeyRemapControlLayout.as<StackPanel>().Children().Append(hybridDropDownStackPanel.as<StackPanel>());
+        hybridDropDownVariableSizedWrapGrid = VariableSizedWrapGrid();
+        hybridDropDownVariableSizedWrapGrid.as<VariableSizedWrapGrid>().Orientation(Windows::UI::Xaml::Controls::Orientation::Horizontal);
+        KeyDropDownControl::AddDropDown(table, row, hybridDropDownVariableSizedWrapGrid.as<VariableSizedWrapGrid>(), colIndex, singleKeyRemapBuffer, keyDropDownControlObjects, nullptr, true, true);
+        singleKeyRemapControlLayout.as<StackPanel>().Children().Append(hybridDropDownVariableSizedWrapGrid.as<VariableSizedWrapGrid>());
     }
 
     typeKey.as<Button>().Click([&, table, colIndex, row](winrt::Windows::Foundation::IInspectable const& sender, RoutedEventArgs const&) {
@@ -95,7 +94,7 @@ void SingleKeyRemapControl::AddNewControlKeyRemapRow(StackPanel& parent, std::ve
 
     // SingleKeyRemapControl for the original key.
     auto originalElement = keyboardRemapControlObjects.back()[0]->getSingleKeyRemapControl();
-    originalElement.Width(EditorConstants::RemapTableDropDownWidth);
+    originalElement.Width(EditorConstants::RemapTableDropDownWidth + EditorConstants::ShortcutTableDropDownSpacing);
     row.Children().Append(originalElement);
 
     // Arrow icon
@@ -125,7 +124,7 @@ void SingleKeyRemapControl::AddNewControlKeyRemapRow(StackPanel& parent, std::ve
         }
         else
         {
-            KeyDropDownControl::AddShortcutToControl(std::get<Shortcut>(newKey), parent, keyboardRemapControlObjects[keyboardRemapControlObjects.size() - 1][1]->hybridDropDownStackPanel.as<StackPanel>(), *keyboardManagerState, 1, keyboardRemapControlObjects[keyboardRemapControlObjects.size() - 1][1]->keyDropDownControlObjects, singleKeyRemapBuffer, row, nullptr, true, true);
+            KeyDropDownControl::AddShortcutToControl(std::get<Shortcut>(newKey), parent, keyboardRemapControlObjects[keyboardRemapControlObjects.size() - 1][1]->hybridDropDownVariableSizedWrapGrid.as<VariableSizedWrapGrid>(), *keyboardManagerState, 1, keyboardRemapControlObjects[keyboardRemapControlObjects.size() - 1][1]->keyDropDownControlObjects, singleKeyRemapBuffer, row, nullptr, true, true);
         }
     }
     else
@@ -148,7 +147,7 @@ void SingleKeyRemapControl::AddNewControlKeyRemapRow(StackPanel& parent, std::ve
         UIElementCollection children = parent.Children();
         bool indexFound = children.IndexOf(row, rowIndex);
 
-        // IndexOf could fail if the the row got deleted and the button handler was invoked twice. In this case it should return
+        // IndexOf could fail if the row got deleted and the button handler was invoked twice. In this case it should return
         if (!indexFound)
         {
             return;
@@ -222,7 +221,7 @@ void SingleKeyRemapControl::createDetectKeyWindow(winrt::Windows::Foundation::II
     // ContentDialog for detecting remap key. This is the parent UI element.
     ContentDialog detectRemapKeyBox;
 
-    // ContentDialog requires manually setting the XamlRoot (https://docs.microsoft.com/en-us/uwp/api/windows.ui.xaml.controls.contentdialog#contentdialog-in-appwindow-or-xaml-islands)
+    // ContentDialog requires manually setting the XamlRoot (https://learn.microsoft.com/uwp/api/windows.ui.xaml.controls.contentdialog#contentdialog-in-appwindow-or-xaml-islands)
     detectRemapKeyBox.XamlRoot(xamlRoot);
     detectRemapKeyBox.Title(box_value(GET_RESOURCE_STRING(IDS_TYPEKEY_TITLE)));
     detectRemapKeyBox.IsPrimaryButtonEnabled(false);

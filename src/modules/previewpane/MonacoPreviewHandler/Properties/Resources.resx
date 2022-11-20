@@ -118,22 +118,26 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="Max_File_Size_Error" xml:space="preserve">
-      <value>This file is too big to preview.
-Max file size: 50KB</value>
-      <comment>Error message which is shown when the file is too big.</comment>
+    <value>This file is too big to preview.
+Max file size: %1KB</value>
+    <comment>Error message which is shown when the file is too big. %1 gets replaced by a value. Leave KB (means Kilobyte)</comment>
   </data>
   <data name="Exception_Occurred" xml:space="preserve">
-      <value>Exception occurred:
+    <value>Exception occurred:
       </value>
-      <comment>Will be shown when an exception occurred.</comment>
+    <comment>Will be shown when an exception occurred.</comment>
   </data>
   <data name="Loading_Screen_Message" xml:space="preserve">
-      <value>Loading...</value>
+    <value>Loading...</value>
   </data>
   <data name="WebView2_Not_Installed_Message" xml:space="preserve">
-      <value>WebView2 not installed or found.</value>
+    <value>WebView2 not installed or found.</value>
   </data>
   <data name="Download_WebView2" xml:space="preserve">
-      <value>Download WebView2 to display this file.</value>
+    <value>Download WebView2 to display this file.</value>
+  </data>
+  <data name="GpoDisabledErrorText" xml:space="preserve">
+    <value>Tried to start with a GPO policy setting the utility to always be disabled. Please contact your systems administrator.</value>
+    <comment>GPO stands for the Windows Group Policy Object feature.</comment>
   </data>
 </root>

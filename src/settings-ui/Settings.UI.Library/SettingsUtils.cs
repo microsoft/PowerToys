@@ -3,7 +3,6 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
-using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.IO.Abstractions;
 using System.Text.Json;
@@ -109,7 +108,6 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         }
 
         // Save settings to a json file.
-        [SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "General exceptions will be logged until we can better understand runtime exception scenarios")]
         public void SaveSettings(string jsonSettings, string powertoy = DefaultModuleName, string fileName = DefaultFileName)
         {
             try
@@ -140,6 +138,31 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         public string GetSettingsFilePath(string powertoy = "", string fileName = "settings.json")
         {
             return _settingsPath.GetSettingsPath(powertoy, fileName);
+        }
+
+        /// <summary>
+        /// Method <c>BackupSettings</c> Mostly a wrapper for SettingsBackupAndRestoreUtils.BackupSettings
+        /// </summary>
+        public static (bool success, string message, string severity, bool lastBackupExists) BackupSettings()
+        {
+            var settingsBackupAndRestoreUtilsX = SettingsBackupAndRestoreUtils.Instance;
+            var settingsUtils = new SettingsUtils();
+            var appBasePath = Path.GetDirectoryName(settingsUtils._settingsPath.GetSettingsPath(string.Empty, string.Empty));
+            string settingsBackupAndRestoreDir = settingsBackupAndRestoreUtilsX.GetSettingsBackupAndRestoreDir();
+
+            return settingsBackupAndRestoreUtilsX.BackupSettings(appBasePath, settingsBackupAndRestoreDir, false);
+        }
+
+        /// <summary>
+        /// Method <c>RestoreSettings</c> Mostly a wrapper for SettingsBackupAndRestoreUtils.RestoreSettings
+        /// </summary>
+        public static (bool success, string message, string severity) RestoreSettings()
+        {
+            var settingsBackupAndRestoreUtilsX = SettingsBackupAndRestoreUtils.Instance;
+            var settingsUtils = new SettingsUtils();
+            var appBasePath = Path.GetDirectoryName(settingsUtils._settingsPath.GetSettingsPath(string.Empty, string.Empty));
+            string settingsBackupAndRestoreDir = settingsBackupAndRestoreUtilsX.GetSettingsBackupAndRestoreDir();
+            return settingsBackupAndRestoreUtilsX.RestoreSettings(appBasePath, settingsBackupAndRestoreDir);
         }
     }
 }

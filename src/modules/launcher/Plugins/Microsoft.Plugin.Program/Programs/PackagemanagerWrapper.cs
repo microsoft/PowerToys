@@ -30,7 +30,6 @@ namespace Microsoft.Plugin.Program.Programs
                 : Enumerable.Empty<IPackage>();
         }
 
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "We want to catch all exception to prevent error in a program from affecting loading of program plugin.")]
         private static PackageWrapper TryGetWrapperFromPackage(Package package)
         {
             try

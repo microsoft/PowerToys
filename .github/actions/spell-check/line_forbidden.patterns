@@ -1,0 +1,39 @@
+# reject `m_data` as there's a certain OS which has evil defines that break things if it's used elsewhere
+# \bm_data\b
+
+# s.b. GitHub
+\bGithub\b
+
+# s.b. GitLab
+\bGitlab\b
+
+# s.b. JavaScript
+\bJavascript\b
+
+# s.b. Microsoft
+\bMicroSoft\b
+
+# s.b. another
+\ban[- ]other\b
+
+# s.b. greater than
+\bgreater then\b
+
+# s.b. less than
+\bless then\b
+
+# s.b. otherwise
+\bother[- ]wise\b
+
+# s.b. nonexistent
+\bnon existing\b
+\b[Nn]o[nt][- ]existent\b
+
+# s.b. preexisting
+[Pp]re-existing
+
+# s.b. preemptively
+[Pp]re-emptively
+
+# Reject duplicate words
+\s([A-Z]{3,}|[A-Z][a-z]{2,}|[a-z]{3,})\s\g{-1}\s

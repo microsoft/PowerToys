@@ -4,7 +4,7 @@
 
 using System;
 using Microsoft.PowerToys.Settings.UI.Library;
-using Windows.UI.Xaml.Data;
+using Microsoft.UI.Xaml.Data;
 
 namespace Microsoft.PowerToys.Settings.UI.Converters
 {

@@ -83,6 +83,24 @@ std::optional<std::wstring> dispatch_json_action_to_module(const json::JsonObjec
                         PostQuitMessage(0);
                     }
                 }
+                else if (action == L"restart_maintain_elevation")
+                {
+                    // this was added to restart and maintain elevation, which is needed after settings are change from outside the normal process.
+                    // since a normal PostQuitMessage(0) would usually cause this process to save it's in memory settings to disk, we need to
+                    // send a PostQuitMessage(1) and check for that on exit, and skip the settings-flush.
+                    auto loaded = PTSettingsHelper::load_general_settings();
+
+                    if (is_process_elevated())
+                    {
+                        schedule_restart_as_elevated(true);
+                        PostQuitMessage(1);
+                    }
+                    else
+                    {
+                        schedule_restart_as_non_elevated(true);
+                        PostQuitMessage(1);
+                    }
+                }
                 else if (action == L"check_for_updates")
                 {
                     CheckForUpdatesCallback();
@@ -334,24 +352,16 @@ void run_settings_window(bool show_oobe_window, bool show_scoobe_window, std::op
     // 1. Run on start up.
     PTSettingsHelper::save_general_settings(save_settings.to_json());
 
-    std::wstring executable_args = L"\"";
-    executable_args.append(executable_path);
-    executable_args.append(L"\" ");
-    executable_args.append(powertoys_pipe_name);
-    executable_args.append(L" ");
-    executable_args.append(settings_pipe_name);
-    executable_args.append(L" ");
-    executable_args.append(std::to_wstring(powertoys_pid));
-    executable_args.append(L" ");
-    executable_args.append(settings_theme);
-    executable_args.append(L" ");
-    executable_args.append(settings_elevatedStatus);
-    executable_args.append(L" ");
-    executable_args.append(settings_isUserAnAdmin);
-    executable_args.append(L" ");
-    executable_args.append(settings_showOobe);
-    executable_args.append(L" ");
-    executable_args.append(settings_showScoobe);
+    std::wstring executable_args = fmt::format(L"\"{}\" {} {} {} {} {} {} {} {}",
+                                               executable_path,
+                                               powertoys_pipe_name,
+                                               settings_pipe_name,
+                                               std::to_wstring(powertoys_pid),
+                                               settings_theme,
+                                               settings_elevatedStatus,
+                                               settings_isUserAnAdmin,
+                                               settings_showOobe,
+                                               settings_showScoobe);
 
     if (settings_window.has_value())
     {
@@ -363,10 +373,14 @@ void run_settings_window(bool show_oobe_window, bool show_scoobe_window, std::op
 
     if (is_process_elevated())
     {
-        // TODO: Revisit this after switching to .NET 5
-        // Due to a bug in .NET, running the Settings process as non-elevated
-        // from an elevated process sometimes results in a crash.
-        // process_created = run_settings_non_elevated(executable_path.c_str(), executable_args.data(), &process_info);
+        auto res = RunNonElevatedFailsafe(executable_path, executable_args, get_module_folderpath());
+        process_created = res.has_value();
+        if (process_created)
+        {
+            process_info.dwProcessId = res->processID;
+            process_info.hProcess = res->processHandle.release();
+            g_isLaunchInProgress = false;
+        }
     }
 
     if (FALSE == process_created)
@@ -448,7 +462,7 @@ LExit:
 #define MAX_TITLE_LENGTH 100
 void bring_settings_to_front()
 {
-    auto callback = [](HWND hwnd, LPARAM data) -> BOOL {
+    auto callback = [](HWND hwnd, LPARAM /*data*/) -> BOOL {
         DWORD processId;
         if (GetWindowThreadProcessId(hwnd, &processId) && processId == g_settings_process_id)
         {
@@ -555,6 +569,8 @@ std::string ESettingsWindowNames_to_string(ESettingsWindowNames value)
         return "ShortcutGuide";
     case ESettingsWindowNames::VideoConference:
         return "VideoConference";
+    case ESettingsWindowNames::Hosts:
+        return "Hosts";
     default:
     {
         Logger::error(L"Can't convert ESettingsWindowNames value={} to string", static_cast<int>(value));
@@ -613,6 +629,10 @@ ESettingsWindowNames ESettingsWindowNames_from_string(std::string value)
     else if (value == "VideoConference")
     {
         return ESettingsWindowNames::VideoConference;
+    }
+    else if (value == "Hosts")
+    {
+        return ESettingsWindowNames::Hosts;
     }
     else
     {

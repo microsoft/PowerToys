@@ -34,7 +34,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             ActivationShortcut = new HotkeySettings(true, false, false, true, 0x48);
             LeftButtonClickColor = new StringProperty("#FFFF00");
             RightButtonClickColor = new StringProperty("#0000FF");
-            HighlightOpacity = new IntProperty(160);
+            HighlightOpacity = new IntProperty(65);
             HighlightRadius = new IntProperty(20);
             HighlightFadeDelayMs = new IntProperty(500);
             HighlightFadeDurationMs = new IntProperty(250);

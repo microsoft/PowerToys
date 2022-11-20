@@ -34,6 +34,15 @@ namespace CommonSharedConstants
 
     // Path to the event used by Awake
     const wchar_t AWAKE_EXIT_EVENT[] = L"Local\\PowerToysAwakeExitEvent-c0d5e305-35fc-4fb5-83ec-f6070cfaf7fe";
+    
+    // Path to the event used by AlwaysOnTop
+    const wchar_t ALWAYS_ON_TOP_PIN_EVENT[] = L"Local\\AlwaysOnTopPinEvent-892e0aa2-cfa8-4cc4-b196-ddeb32314ce8";
+
+    // Path to the event used by PowerAccent
+    const wchar_t POWERACCENT_EXIT_EVENT[] = L"Local\\PowerToysPowerAccentExitEvent-53e93389-d19a-4fbb-9b36-1981c8965e17";
+
+    // Path to the event used by PowerOCR
+    const wchar_t SHOW_POWEROCR_SHARED_EVENT[] = L"Local\\PowerOCREvent-dc864e06-e1af-4ecc-9078-f98bee745e3a";
 
     // Path to the event used to show Peek
     const wchar_t SHOW_PEEK_SHARED_EVENT[] = L"Local\\ShowPeekEvent";

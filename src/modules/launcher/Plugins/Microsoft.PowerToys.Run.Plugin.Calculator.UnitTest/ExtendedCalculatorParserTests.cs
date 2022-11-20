@@ -32,21 +32,21 @@ namespace Microsoft.PowerToys.Run.Plugin.Calculator.UnitTests
             var engine = new CalculateEngine();
 
             // Act
-            Assert.ThrowsException<ArgumentNullException>(() => engine.Interpret(input, CultureInfo.CurrentCulture));
+            Assert.ThrowsException<ArgumentNullException>(() => engine.Interpret(input, CultureInfo.CurrentCulture, out _));
         }
 
         [DataTestMethod]
-        [DataRow("42")]
         [DataRow("test")]
         [DataRow("pi(2)")] // Incorrect input, constant is being treated as a function.
         [DataRow("e(2)")]
+        [DataRow("[10,10]")] // '[10,10]' is interpreted as array by mages engine
         public void Interpret_NoResult_WhenCalled(string input)
         {
             // Arrange
             var engine = new CalculateEngine();
 
             // Act
-            var result = engine.Interpret(input, CultureInfo.CurrentCulture);
+            var result = engine.Interpret(input, CultureInfo.CurrentCulture, out _);
 
             // Assert
             Assert.AreEqual(default(CalculateResult), result);
@@ -87,7 +87,7 @@ namespace Microsoft.PowerToys.Run.Plugin.Calculator.UnitTests
 
             // Act
             // Using InvariantCulture since this is internal
-            var result = engine.Interpret(input, CultureInfo.InvariantCulture);
+            var result = engine.Interpret(input, CultureInfo.InvariantCulture, out _);
 
             // Assert
             Assert.IsNotNull(result);
@@ -97,8 +97,6 @@ namespace Microsoft.PowerToys.Run.Plugin.Calculator.UnitTests
         private static IEnumerable<object[]> Interpret_QuirkOutput_WhenCalled_Data =>
             new[]
             {
-                new object[] { "0.100000000000000000000", 0.00776627963145224M }, // BUG: Because data structure
-                new object[] { "0.200000000000000000000000", 0.000000400752841041379M }, // BUG: Because data structure
                 new object[] { "123 456", 56088M }, // BUG: Framework accepts ' ' as multiplication
             };
 
@@ -111,7 +109,30 @@ namespace Microsoft.PowerToys.Run.Plugin.Calculator.UnitTests
 
             // Act
             // Using InvariantCulture since this is internal
-            var result = engine.Interpret(input, CultureInfo.InvariantCulture);
+            var result = engine.Interpret(input, CultureInfo.InvariantCulture, out _);
+
+            // Assert
+            Assert.IsNotNull(result);
+            Assert.AreEqual(expectedResult, result.Result);
+        }
+
+        private static IEnumerable<object[]> Interpret_GreaterPrecision_WhenCalled_Data =>
+    new[]
+    {
+                new object[] { "0.100000000000000000000", 0.1M },
+                new object[] { "0.200000000000000000000000", 0.2M },
+    };
+
+        [DynamicData(nameof(Interpret_GreaterPrecision_WhenCalled_Data))]
+        [DataTestMethod]
+        public void Interpret_GreaterPrecision_WhenCalled(string input, decimal expectedResult)
+        {
+            // Arrange
+            var engine = new CalculateEngine();
+
+            // Act
+            // Using InvariantCulture since this is internal
+            var result = engine.Interpret(input, CultureInfo.InvariantCulture, out _);
 
             // Assert
             Assert.IsNotNull(result);
@@ -135,7 +156,7 @@ namespace Microsoft.PowerToys.Run.Plugin.Calculator.UnitTests
             var engine = new CalculateEngine();
 
             // Act
-            var result = engine.Interpret(input, cultureInfo);
+            var result = engine.Interpret(input, cultureInfo, out _);
 
             // Assert
             Assert.IsNotNull(result);
@@ -153,6 +174,8 @@ namespace Microsoft.PowerToys.Run.Plugin.Calculator.UnitTests
         [DataRow("abcde", false)]
         [DataRow("1 + 2 +", false)]
         [DataRow("1+2*", false)]
+        [DataRow("1+2/", false)]
+        [DataRow("1+2%", false)]
         [DataRow("1 && 3 &&", false)]
         [DataRow("sqrt( 36)", true)]
         [DataRow("max 4", false)]
@@ -184,7 +207,7 @@ namespace Microsoft.PowerToys.Run.Plugin.Calculator.UnitTests
 
             // Act
             // Using InvariantCulture since this is internal
-            var result = engine.Interpret(input, CultureInfo.InvariantCulture);
+            var result = engine.Interpret(input, CultureInfo.InvariantCulture, out _);
 
             // Assert
             Assert.IsNotNull(result);
@@ -199,6 +222,8 @@ namespace Microsoft.PowerToys.Run.Plugin.Calculator.UnitTests
                new object[] { "sign(2)", +1M },
                new object[] { "abs(-2)", 2M },
                new object[] { "abs(2)", 2M },
+               new object[] { "0+(1*2)/(0+1)", 2M }, // Validate that division by "(0+1)" is not interpret as division by zero.
+               new object[] { "0+(1*2)/0.5", 4M }, // Validate that division by  number with decimal digits is not interpret as division by zero.
            };
 
         [DataTestMethod]
@@ -209,8 +234,8 @@ namespace Microsoft.PowerToys.Run.Plugin.Calculator.UnitTests
             var engine = new CalculateEngine();
 
             // Act
-            // Using InvariantCulture since this is internal
-            var result = engine.Interpret(input, CultureInfo.InvariantCulture);
+            // Using en-us culture to have a fixed number style
+            var result = engine.Interpret(input, new CultureInfo("en-us"), out _);
 
             // Assert
             Assert.IsNotNull(result);

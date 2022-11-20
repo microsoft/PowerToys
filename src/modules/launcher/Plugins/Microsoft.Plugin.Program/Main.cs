@@ -4,7 +4,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Collections.Immutable;
 using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
@@ -14,15 +13,14 @@ using Microsoft.Plugin.Program.Programs;
 using Microsoft.Plugin.Program.Storage;
 using Wox.Infrastructure.Storage;
 using Wox.Plugin;
-using Wox.Plugin.Logger;
 using Stopwatch = Wox.Infrastructure.Stopwatch;
 
 namespace Microsoft.Plugin.Program
 {
-    public class Main : IPlugin, IPluginI18n, IContextMenu, ISavable, IReloadable, IDisposable
+    public class Main : IPlugin, IPluginI18n, IContextMenu, ISavable, IDisposable
     {
         // The order of this array is important! The Parsers will be checked in order (index 0 to index Length-1) and the first parser which is able to parse the Query will be used
-        // NoArgumentsArgumentParser does always succeed and therefor should always be last/fallback
+        // NoArgumentsArgumentParser does always succeed and therefore should always be last/fallback
         private static readonly IProgramArgumentParser[] _programArgumentParsers = new IProgramArgumentParser[]
         {
             new DoubleDashProgramArgumentParser(),
@@ -39,7 +37,7 @@ namespace Microsoft.Plugin.Program
         private static PluginInitContext _context;
         private readonly PluginJsonStorage<ProgramPluginSettings> _settingsStorage;
         private bool _disposed;
-        private PackageRepository _packageRepository = new PackageRepository(new PackageCatalogWrapper(), new BinaryStorage<IList<UWPApplication>>("UWP"));
+        private PackageRepository _packageRepository = new PackageRepository(new PackageCatalogWrapper());
         private static Win32ProgramFileSystemWatchers _win32ProgramRepositoryHelper;
         private static Win32ProgramRepository _win32ProgramRepository;
 
@@ -52,7 +50,7 @@ namespace Microsoft.Plugin.Program
             _win32ProgramRepositoryHelper = new Win32ProgramFileSystemWatchers();
 
             // Initialize the Win32ProgramRepository with the settings object
-            _win32ProgramRepository = new Win32ProgramRepository(_win32ProgramRepositoryHelper.FileSystemWatchers.Cast<IFileSystemWatcherWrapper>().ToList(), new BinaryStorage<IList<Programs.Win32Program>>("Win32"), Settings, _win32ProgramRepositoryHelper.PathsToWatch);
+            _win32ProgramRepository = new Win32ProgramRepository(_win32ProgramRepositoryHelper.FileSystemWatchers.Cast<IFileSystemWatcherWrapper>().ToList(), Settings, _win32ProgramRepositoryHelper.PathsToWatch);
         }
 
         public void Save()
@@ -168,7 +166,6 @@ namespace Microsoft.Plugin.Program
             return menuOptions;
         }
 
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "We want to keep the process alive and show the user a warning message")]
         public static void StartProcess(Func<ProcessStartInfo, Process> runProcess, ProcessStartInfo info)
         {
             try
@@ -185,17 +182,13 @@ namespace Microsoft.Plugin.Program
 
                 runProcess(info);
             }
-            catch (Exception)
+            catch (Exception ex)
             {
+                Logger.ProgramLogger.Exception($"Unable to start ", ex, System.Reflection.MethodBase.GetCurrentMethod().DeclaringType, info?.FileName);
                 var name = "Plugin: " + Properties.Resources.wox_plugin_program_plugin_name;
                 var message = $"{Properties.Resources.powertoys_run_plugin_program_start_failed}: {info?.FileName}";
                 _context.API.ShowMsg(name, message, string.Empty);
             }
-        }
-
-        public void ReloadData()
-        {
-            IndexPrograms();
         }
 
         public void Dispose()

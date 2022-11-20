@@ -5,8 +5,8 @@
 using Microsoft.PowerToys.Settings.UI.OOBE.Enums;
 using Microsoft.PowerToys.Settings.UI.OOBE.ViewModel;
 using Microsoft.PowerToys.Settings.UI.Views;
-using Windows.UI.Xaml.Controls;
-using Windows.UI.Xaml.Navigation;
+using Microsoft.UI.Xaml.Controls;
+using Microsoft.UI.Xaml.Navigation;
 
 namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
 {
@@ -20,11 +20,11 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
         public OobePowerRename()
         {
             this.InitializeComponent();
-            ViewModel = new OobePowerToysModule(OobeShellPage.OobeShellHandler.Modules[(int)PowerToysModulesEnum.PowerRename]);
+            ViewModel = new OobePowerToysModule(OobeShellPage.OobeShellHandler.Modules[(int)PowerToysModules.PowerRename]);
             DataContext = ViewModel;
         }
 
-        private void SettingsLaunchButton_Click(object sender, Windows.UI.Xaml.RoutedEventArgs e)
+        private void SettingsLaunchButton_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
         {
             if (OobeShellPage.OpenMainWindowCallback != null)
             {

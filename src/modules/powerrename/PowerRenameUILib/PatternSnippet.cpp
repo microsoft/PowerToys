@@ -2,7 +2,7 @@
 #include "PatternSnippet.h"
 #include "PatternSnippet.g.cpp"
 
-namespace winrt::PowerRenameUILib::implementation
+namespace winrt::PowerRenameUI::implementation
 {
     PatternSnippet::PatternSnippet(hstring const& code, hstring const& description) :
         m_code{ code }, m_description{ description }
@@ -19,7 +19,7 @@ namespace winrt::PowerRenameUILib::implementation
         if (m_code != value)
         {
             m_code = value;
-            m_propertyChanged(*this, Windows::UI::Xaml::Data::PropertyChangedEventArgs{ L"Code" });
+            m_propertyChanged(*this, Microsoft::UI::Xaml::Data::PropertyChangedEventArgs{ L"Code" });
         }
     }
 
@@ -33,11 +33,11 @@ namespace winrt::PowerRenameUILib::implementation
         if (m_description != value)
         {
             m_description = value;
-            m_propertyChanged(*this, Windows::UI::Xaml::Data::PropertyChangedEventArgs{ L"Description" });
+            m_propertyChanged(*this, Microsoft::UI::Xaml::Data::PropertyChangedEventArgs{ L"Description" });
         }
     }
 
-    winrt::event_token PatternSnippet::PropertyChanged(winrt::Windows::UI::Xaml::Data::PropertyChangedEventHandler const& handler)
+    winrt::event_token PatternSnippet::PropertyChanged(winrt::Microsoft::UI::Xaml::Data::PropertyChangedEventHandler const& handler)
     {
         return m_propertyChanged.add(handler);
     }

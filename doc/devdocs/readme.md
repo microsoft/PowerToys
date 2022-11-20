@@ -18,7 +18,7 @@ Once you've discussed your proposed feature/fix/etc. with a team member, and you
 - Package new ideas into classes or refactor existing ideas into a class as you extend.
 - When adding new classes/methods/changing existing code: add new unit tests or update the existing tests.
 
-## Github Workflow
+## GitHub Workflow
 
 - Before starting to work on a fix/feature, make sure there is an open issue to track the work.
 - Add the `In progress` label to the issue, if not already present also add a `Cost-Small/Medium/Large` estimate and make sure all appropriate labels are set.
@@ -39,7 +39,8 @@ Once you've discussed your proposed feature/fix/etc. with a team member, and you
 
 1. Windows 10 April 2018 Update (version 1803) or newer
 2. Visual Studio Community/Professional/Enterprise 2022
-3. Once you've cloned and started the `PowerToys.sln`, in the solution explorer, if you see a dialog that says `install extra components`, click `install`
+3. Install the [required Windows Apps SDK workloads](https://learn.microsoft.com/windows/apps/windows-app-sdk/set-up-your-development-environment?tabs=vs-2022-17-1-a%2Cvs-2022-17-1-b#required-workloads-and-components), the [Windows App SDK 1.0.3 C# Visual Studio 2022 extension](https://learn.microsoft.com/windows/apps/windows-app-sdk/downloads) and the [Windows Apps SDK 1.0.3 runtime](https://learn.microsoft.com/windows/apps/windows-app-sdk/downloads#windows-app-sdk-10).
+4. Once you've cloned and started the `PowerToys.sln`, in the solution explorer, if you see a dialog that says `install extra components`, click `install`
 
 ### Get Submodules to compile
 We have submodules that need to be initialized before you can compile most parts of PowerToys.  This should be a one time step.
@@ -65,12 +66,31 @@ The installer can only be compiled in `Release` mode, step 1 and 2 must be done 
 1. Compile `PowerToys.sln`. Instructions are listed above.
 2. Compile `BugReportTool.sln` tool. Path from root: `tools\BugReportTool\BugReportTool.sln` (details listed below)
 3. Compile `WebcamReportTool.sln` tool. Path from root: `tools\WebcamReportTool\WebcamReportTool.sln` (details listed below)
+3. Compile `StylesReportTool.sln` tool. Path from root: `tools\StylesReportTool\StylesReportTool.sln` (details listed below)
 4. Compile `PowerToysSetup.sln` Path from root: `installer\PowerToysSetup.sln` (details listed below)
 
 ### Prerequisites for building the MSI installer
 
 1. Install the [WiX Toolset Visual Studio 2022 Extension](https://marketplace.visualstudio.com/items?itemName=WixToolset.WixToolsetVisualStudio2022Extension).
-2. Install the [WiX Toolset build tools](https://wixtoolset.org/releases/).
+2. Install the [WiX Toolset build tools](https://wixtoolset.org/releases/v3-14-0-6526/).
+3. Download [WiX binaries](https://wixtoolset.org/downloads/v3.14.0.6526/wix314-binaries.zip) and extract `wix.targets` to `C:\Program Files (x86)\WiX Toolset v3.14`.
+
+### Locally building the installer prerequisite projects all at once from the command-line
+
+1. Open a `Developer Command Prompt for VS 2022`
+2. Ensure `nuget.exe` is in your `%path%`
+3. In the repo root, run these commands:
+  
+```
+nuget restore .\tools\BugReportTool\BugReportTool.sln
+msbuild -p:Platform=x64 -p:Configuration=Release .\tools\BugReportTool\BugReportTool.sln
+
+nuget restore .\tools\WebcamReportTool\WebcamReportTool.sln
+msbuild -p:Platform=x64 -p:Configuration=Release .\tools\WebcamReportTool\WebcamReportTool.sln
+
+nuget restore .\tools\StylesReportTool\StylesReportTool.sln
+msbuild -p:Platform=x64 -p:Configuration=Release .\tools\StylesReportTool\StylesReportTool.sln
+```
 
 ### Locally compiling the Bug reporting tool
 
@@ -81,6 +101,12 @@ The installer can only be compiled in `Release` mode, step 1 and 2 must be done 
 ### Locally compiling the Webcam reporting tool
 
 1. Open `tools\WebcamReportTool\WebcamReportTool.sln`
+2. In Visual Studio, in the `Solutions Configuration` drop-down menu select `Release`
+3. From the `Build` menu, choose `Build Solution`.
+
+### Locally compiling the Window styles reporting tool
+
+1. Open `tools\StylesReportTool\StylesReportTool.sln`
 2. In Visual Studio, in the `Solutions Configuration` drop-down menu select `Release`
 3. From the `Build` menu, choose `Build Solution`.
 

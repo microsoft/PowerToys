@@ -288,6 +288,22 @@
   <data name="Delete_Layout_Dialog_Announce" xml:space="preserve">
     <value>Delete layout dialog.</value>
   </data>
+  <data name="Zone_Name" xml:space="preserve">
+    <value>Zone</value>
+    <comment>The name of the zones.</comment>
+  </data>
+  <data name="Width_Name" xml:space="preserve">
+    <value>Width</value>
+    <comment>The name of dimension called width.</comment>
+  </data>
+  <data name="Height_Name" xml:space="preserve">
+    <value>Height</value>
+    <comment>The name of dimension called height.</comment>
+  </data>
+  <data name="Resizer_Thumb_Announce" xml:space="preserve">
+    <value>Use the arrow keys to resize, delete key to remove.</value>
+    <comment>Keys and key means the keyboard keys.</comment>
+  </data>
   <data name="Are_You_Sure" xml:space="preserve">
     <value>Are you sure?</value>
   </data>
@@ -391,5 +407,32 @@
   </data>
   <data name="Error_Parsing_Custom_Layouts_Message" xml:space="preserve">
     <value>An error occurred while parsing custom layouts.</value>
+  </data>
+  <data name="Custom_slider_announce" xml:space="preserve">
+    <value>{0} slider. Possible range is from {1} to {2}. Value is {3}.</value>
+  </data>
+  <data name="Pixel_Value" xml:space="preserve">
+    <value>{0} pixels</value>
+  </data>
+  <data name="Template_Zone_Count_Value" xml:space="preserve">
+    <value>{0} zones</value>
+  </data>
+  <data name="Zones" xml:space="preserve">
+    <value>zones</value>
+  </data>
+  <data name="Default_Layout_Horizontal" xml:space="preserve">
+    <value>Default layout for horizontal monitor orientation</value>
+  </data>
+  <data name="Set_Layout_As_Horizontal_Default" xml:space="preserve">
+    <value>Set layout as a default for horizontal monitor orientation</value>
+  </data>
+  <data name="Error_Parsing_Default_Layouts_Message" xml:space="preserve">
+    <value>An error occurred while parsing default layouts.</value>
+  </data>
+  <data name="Default_Layout_Vertical" xml:space="preserve">
+    <value>Default layout for vertical monitor orientation</value>
+  </data>
+  <data name="Set_Layout_As_Vertical_Default" xml:space="preserve">
+    <value>Set layout as a default for vertical monitor orientation</value>
   </data>
 </root>

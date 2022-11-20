@@ -7,7 +7,7 @@ Param(
 )
 
 $DirPath = $targetDir;  #this file is in pipeline, we need root.
-$items = Get-ChildItem -Path $DirPath -File -Include *.exe,*.dll,*.ttf -Recurse -Force -ErrorAction SilentlyContinue
+$items = Get-ChildItem -Path $DirPath -File -Include *.exe,*.dll,*.ttf,PTCustomActions -Recurse -Force -ErrorAction SilentlyContinue
 $totalFailure = 0;
 
 Write-Host $DirPath;
@@ -25,11 +25,49 @@ if($items.Count -eq 0)
 	exit 1;
 }
 
-$items | ForEach-Object { 
+$items | ForEach-Object {
     if($_.VersionInfo.FileVersion -eq "1.0.0.0" )
 	{
-		Write-Host "Version not set: " + $_.FullName
-		$totalFailure++;
+		# These items are exceptions that actually have the 1.0.0.0 version.
+		if ((-not $_.Name.EndsWith("Microsoft.Windows.ApplicationModel.DynamicDependency.Projection.dll")) -and
+			(-not $_.Name.EndsWith("Microsoft.Windows.ApplicationModel.Resources.Projection.dll")) -and
+			(-not $_.Name.EndsWith("Microsoft.Windows.ApplicationModel.WindowsAppRuntime.Projection.dll")) -and
+			(-not $_.Name.EndsWith("Microsoft.Windows.AppLifecycle.Projection.dll")) -and
+			(-not $_.Name.EndsWith("Microsoft.Windows.System.Power.Projection.dll")) -and
+			(-not $_.Name.EndsWith("Microsoft.WindowsAppRuntime.Bootstrap.Net.dll")) -and
+			(-not $_.Name.EndsWith("Microsoft.Xaml.Interactions.dll")) -and
+			(-not $_.Name.EndsWith("Microsoft.Xaml.Interactivity.dll")) -and
+			(-not $_.Name.EndsWith("hyjiacan.py4n.dll")) -and
+			(-not $_.Name.EndsWith("Microsoft.WindowsAppRuntime.Release.Net.dll"))
+		)
+		{
+			Write-Host "Version set to 1.0.0.0: " + $_.FullName
+			$totalFailure++;
+		}
+	}
+}
+
+$items | ForEach-Object {
+    if($_.VersionInfo.FileVersion -eq $null )
+	{
+		# These items are exceptions that actually a version not set.
+		if ((-not $_.Name.EndsWith("codicon.ttf")) -and
+			(-not $_.Name.EndsWith("e_sqlite3.dll")) -and
+			(-not $_.Name.EndsWith("vcamp140_app.dll")) -and
+			(-not $_.Name.EndsWith("marshal.dll")) -and
+			(-not $_.Name.EndsWith("Microsoft.UI.Composition.OSSupport.dll")) -and
+			(-not $_.Name.EndsWith("Microsoft.UI.Xaml.Internal.dll")) -and
+			(-not $_.Name.EndsWith("Microsoft.Windows.ApplicationModel.Resources.dll")) -and
+			(-not $_.Name.EndsWith("Microsoft.WindowsAppRuntime.dll")) -and
+			(-not $_.Name.EndsWith("Microsoft.WindowsAppRuntime.Bootstrap.dll")) -and
+			(-not $_.Name.EndsWith("MRM.dll")) -and
+			(-not $_.Name.EndsWith("PushNotificationsLongRunningTask.ProxyStub.dll")) -and
+			(-not $_.Name.EndsWith("WindowsAppSdk.AppxDeploymentExtensions.Desktop.dll"))
+		)
+		{
+			Write-Host "Version not set: " + $_.FullName
+			$totalFailure++;
+		}
 	}
 }
 

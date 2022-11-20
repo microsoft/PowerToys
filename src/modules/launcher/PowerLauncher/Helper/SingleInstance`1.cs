@@ -11,7 +11,6 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
-using interop;
 
 // http://blogs.microsoft.co.il/arik/2010/05/28/wpf-single-instance-application/
 // modified to allow single instance restart

@@ -17,6 +17,7 @@ struct Settings
     PowerToysSettings::HotkeyObject hotkey = PowerToysSettings::HotkeyObject::from_settings(true, true, false, false, 84); // win + ctrl + T
     bool enableFrame = true;
     bool enableSound = true;
+    bool roundCornersEnabled = true;
     bool blockInGameMode = true;
     bool frameAccentColor = true;
     int frameThickness = 15;

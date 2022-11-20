@@ -56,7 +56,9 @@ namespace ColorPicker.Settings
             if (!_loadingColorsHistory)
             {
                 var settings = _settingsUtils.GetSettingsOrDefault<ColorPickerSettings>(ColorPickerModuleName);
+                ColorHistory.CollectionChanged -= ColorHistory_CollectionChanged;
                 settings.Properties.ColorHistory = ColorHistory.ToList();
+                ColorHistory.CollectionChanged += ColorHistory_CollectionChanged;
                 settings.Save(_settingsUtils);
             }
         }
@@ -145,9 +147,7 @@ namespace ColorPicker.Settings
                             Logger.LogError("Failed to read changed settings", ex);
                             Thread.Sleep(500);
                         }
-#pragma warning disable CA1031 // Do not catch general exception types
                         catch (Exception ex)
-#pragma warning restore CA1031 // Do not catch general exception types
                         {
                             if (retryCount > MaxNumberOfRetry)
                             {

@@ -112,6 +112,13 @@ namespace FancyZonesEditor
             // using current culture as this is end user facing
             WidthLabel.Text = Math.Round(ActualWidth).ToString(CultureInfo.CurrentCulture);
             HeightLabel.Text = Math.Round(ActualHeight).ToString(CultureInfo.CurrentCulture);
+            System.Windows.Automation.AutomationProperties.SetName(
+                this,
+#pragma warning disable SA1118 // Parameter should not span multiple lines
+                Properties.Resources.Zone_Name + " " + (_zone.Index + 1).ToString(CultureInfo.CurrentCulture) + ". " +
+                Properties.Resources.Width_Name + ": " + WidthLabel.Text + ", " +
+                Properties.Resources.Height_Name + ": " + HeightLabel.Text);
+#pragma warning restore SA1118 // Parameter should not span multiple lines
         }
 
         public void UpdateShiftState(bool shiftState)

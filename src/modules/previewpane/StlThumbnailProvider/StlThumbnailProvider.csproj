@@ -1,25 +1,16 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <Platforms>x64</Platforms>
     <UseWindowsForms>true</UseWindowsForms>
     <ProjectGuid>{F7C8C0F1-5431-4347-89D0-8E5354F93CF2}</ProjectGuid>
     <RootNamespace>Microsoft.PowerToys.ThumbnailHandler.Stl</RootNamespace>
     <AssemblyName>PowerToys.StlThumbnailProvider</AssemblyName>
     <AssemblyTitle>PowerToys.StlThumbnailProvider</AssemblyTitle>
     <AssemblyDescription>PowerToys StlPreviewHandler</AssemblyDescription>
-    <AssemblyCompany>Microsoft Corporation</AssemblyCompany>
-    <AssemblyCopyright>Copyright (C) 2022 Microsoft Corporation</AssemblyCopyright>
-    <AssemblyProduct>PowerToys</AssemblyProduct>
-    <TargetFramework>net6.0-windows</TargetFramework>
+    <TargetFramework>net6.0-windows10.0.19041.0</TargetFramework>
     <EnableComHosting>true</EnableComHosting>
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
-    <Company>Microsoft Corporation</Company>
-    <Product>PowerToys</Product>
-    <NeutralLanguage>en-US</NeutralLanguage>
     <Description>PowerToys StlPreviewHandler</Description>
-    <Copyright>Copyright (C) 2022 Microsoft Corporation</Copyright>
     <OutputPath>$(SolutionDir)$(Platform)\$(Configuration)\modules\FileExplorerPreview\</OutputPath>
-    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
     <AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
     <UseWPF>true</UseWPF>
@@ -27,28 +18,27 @@
   </PropertyGroup>
 
   <Import Project="..\..\..\Version.props" />
+  <!-- See https://learn.microsoft.com/windows/apps/develop/platform/csharp-winrt/net-projection-from-cppwinrt-component for more info -->
+  <PropertyGroup>
+    <CsWinRTIncludes>PowerToys.GPOWrapper</CsWinRTIncludes>
+    <CsWinRTGeneratedFilesDir>$(OutDir)</CsWinRTGeneratedFilesDir>
+    <ErrorOnDuplicatePublishOutputFiles>false</ErrorOnDuplicatePublishOutputFiles>
+  </PropertyGroup>
+  <PropertyGroup>
+    <!-- Disable missing comment warning. WinRT/C++ libraries added won't have comments on thier reflections. -->
+    <NoWarn>$(NoWarn);1591</NoWarn>
+  </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="Microsoft.Windows.CsWinRT" Version="2.0.0" />
     <PackageReference Include="HelixToolkit" Version="2.20.2" />
     <PackageReference Include="HelixToolkit.Core.Wpf" Version="2.20.2" />
-    <PackageReference Include="Microsoft.CodeAnalysis.NetAnalyzers" Version="6.0.0">
-      <PrivateAssets>all</PrivateAssets>
-      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-    </PackageReference>
-    <PackageReference Include="StyleCop.Analyzers" Version="1.1.118">
-      <PrivateAssets>all</PrivateAssets>
-    </PackageReference>
   </ItemGroup>
+
   <ItemGroup>
-    <Compile Include="..\..\..\codeAnalysis\GlobalSuppressions.cs" Link="GlobalSuppressions.cs" />
-  </ItemGroup>
-  <ItemGroup>
+    <ProjectReference Include="..\..\..\common\GPOWrapper\GPOWrapper.vcxproj" />
     <ProjectReference Include="..\..\..\common\ManagedTelemetry\Telemetry\ManagedTelemetry.csproj" />
     <ProjectReference Include="..\Common\PreviewHandlerCommon.csproj" />
-  </ItemGroup>
-  <ItemGroup>
-    <AdditionalFiles Include="..\..\..\codeAnalysis\StyleCop.json">
-      <Link>StyleCop.json</Link>
-    </AdditionalFiles>
+    <ProjectReference Include="..\..\..\settings-ui\Settings.UI.Library\Settings.UI.Library.csproj" />
   </ItemGroup>
 </Project>

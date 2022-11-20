@@ -3,7 +3,6 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
-using System.Diagnostics.CodeAnalysis;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using Microsoft.PowerToys.Settings.UI.Library.Interfaces;
@@ -50,7 +49,6 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         [JsonPropertyName("download_updates_automatically")]
         public bool AutoDownloadUpdates { get; set; }
 
-        [SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "Any error from calling interop code should not prevent the program from loading.")]
         public GeneralSettings()
         {
             Startup = false;

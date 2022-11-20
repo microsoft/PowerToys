@@ -7,7 +7,6 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel.Composition;
-using System.Drawing.Drawing2D;
 using System.Globalization;
 using System.IO;
 using System.Linq;
@@ -177,10 +176,10 @@ namespace ColorPicker.ViewModels
             var colors = SerializationHelper.ConvertToDesiredColorFormats((IList)colorsToExport, ColorRepresentations, method);
 
             var dialog = new SaveFileDialog
-                  {
-                      Title = "Save selected colors to",
-                      Filter = "Text Files (*.txt)|*.txt|Json Files (*.json)|*.json",
-                  };
+            {
+                Title = "Save selected colors to",
+                Filter = "Text Files (*.txt)|*.txt|Json Files (*.json)|*.json",
+            };
 
             if (dialog.ShowDialog() == true)
             {
@@ -326,6 +325,12 @@ namespace ColorPicker.ViewModels
                 {
                     FormatName = "Decimal",
                     Convert = (Color color) => ColorRepresentationHelper.GetStringRepresentationFromMediaColor(color, ColorRepresentationType.DecimalValue),
+                });
+            _allColorRepresentations.Add(
+                new ColorFormatModel()
+                {
+                    FormatName = "HEX Int",
+                    Convert = (Color color) => ColorRepresentationHelper.GetStringRepresentationFromMediaColor(color, ColorRepresentationType.HexInteger),
                 });
 
             _userSettings.VisibleColorFormats.CollectionChanged += VisibleColorFormats_CollectionChanged;

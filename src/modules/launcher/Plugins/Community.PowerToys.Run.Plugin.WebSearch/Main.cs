@@ -60,10 +60,10 @@ namespace Community.PowerToys.Run.Plugin.WebSearch
 
             var results = new List<Result>();
 
-            // empty non-global query:
-            if (!AreResultsGlobal() && query.ActionKeyword == query.RawQuery)
+            // empty query
+            if (string.IsNullOrEmpty(query.Search))
             {
-                string arguments = "\"? \"";
+                string arguments = "? ";
                 results.Add(new Result
                 {
                     Title = Properties.Resources.plugin_description.Remove(Description.Length - 1, 1),
@@ -73,7 +73,7 @@ namespace Community.PowerToys.Run.Plugin.WebSearch
                     ProgramArguments = arguments,
                     Action = action =>
                     {
-                        if (!Helper.OpenInShell(BrowserInfo.Path ?? BrowserInfo.MSEdgePath, arguments))
+                        if (!Helper.OpenCommandInShell(BrowserInfo.Path, BrowserInfo.ArgumentsPattern, arguments))
                         {
                             onPluginError();
                             return false;
@@ -84,8 +84,7 @@ namespace Community.PowerToys.Run.Plugin.WebSearch
                 });
                 return results;
             }
-
-            if (!string.IsNullOrEmpty(query.Search))
+            else
             {
                 string searchTerm = query.Search;
 
@@ -105,37 +104,19 @@ namespace Community.PowerToys.Run.Plugin.WebSearch
                     IcoPath = _iconPath,
                 };
 
-                if (BrowserInfo.SupportsWebSearchByCmdLineArgument)
+                string arguments = $"? {searchTerm}";
+
+                result.ProgramArguments = arguments;
+                result.Action = action =>
                 {
-                    string arguments = $"\"? {searchTerm}\"";
-
-                    result.ProgramArguments = arguments;
-                    result.Action = action =>
+                    if (!Helper.OpenCommandInShell(BrowserInfo.Path, BrowserInfo.ArgumentsPattern, arguments))
                     {
-                        if (!Helper.OpenInShell(BrowserInfo.Path ?? BrowserInfo.MSEdgePath, arguments))
-                        {
-                            onPluginError();
-                            return false;
-                        }
+                        onPluginError();
+                        return false;
+                    }
 
-                        return true;
-                    };
-                }
-                else
-                {
-                    string url = string.Format(CultureInfo.InvariantCulture, BrowserInfo.SearchEngineUrl, searchTerm);
-
-                    result.Action = action =>
-                    {
-                        if (!Helper.OpenInShell(url))
-                        {
-                            onPluginError();
-                            return false;
-                        }
-
-                        return true;
-                    };
-                }
+                    return true;
+                };
 
                 results.Add(result);
             }

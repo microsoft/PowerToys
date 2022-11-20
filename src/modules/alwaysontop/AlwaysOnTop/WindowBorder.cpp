@@ -5,7 +5,9 @@
 #include "winrt/Windows.Foundation.h"
 
 #include <FrameDrawer.h>
+#include <ScalingUtils.h>
 #include <Settings.h>
+#include <WindowCornersUtil.h>
 
 // Non-Localizable strings
 namespace NonLocalizable
@@ -31,7 +33,7 @@ std::optional<RECT> GetFrameRect(HWND window)
 }
 
 WindowBorder::WindowBorder(HWND window) :
-    SettingsObserver({ SettingId::FrameColor, SettingId::FrameThickness, SettingId::FrameAccentColor }),
+    SettingsObserver({ SettingId::FrameColor, SettingId::FrameThickness, SettingId::FrameAccentColor, SettingId::RoundCornersEnabled }),
     m_window(nullptr),
     m_trackingWindow(window),
     m_frameDrawer(nullptr)
@@ -49,7 +51,7 @@ WindowBorder::~WindowBorder()
     if (m_window)
     {
         SetWindowLongPtrW(m_window, GWLP_USERDATA, 0);
-        ShowWindow(m_window, SW_HIDE);
+        DestroyWindow(m_window);
     }
 }
 
@@ -126,14 +128,18 @@ bool WindowBorder::Init(HINSTANCE hinstance)
         , windowRect.bottom - windowRect.top
         , SWP_NOMOVE | SWP_NOSIZE);
 
+    BOOL val = TRUE;
+    DwmSetWindowAttribute(m_window, DWMWA_EXCLUDED_FROM_PEEK, &val, sizeof(val));
+
     m_frameDrawer = FrameDrawer::Create(m_window);
     if (!m_frameDrawer)
     {
         return false;
     }
 
-    UpdateBorderProperties();
     m_frameDrawer->Show();
+    UpdateBorderPosition();
+    UpdateBorderProperties();
     m_timer_id = SetTimer(m_window, REFRESH_BORDER_TIMER_ID, REFRESH_BORDER_INTERVAL, nullptr);
 
     return true;
@@ -187,7 +193,15 @@ void WindowBorder::UpdateBorderProperties() const
         color = AlwaysOnTopSettings::settings().frameColor;
     }
 
-    m_frameDrawer->SetBorderRect(frameRect, color, AlwaysOnTopSettings::settings().frameThickness);
+    float scalingFactor = ScalingUtils::ScalingFactor(m_trackingWindow);
+    float thickness = AlwaysOnTopSettings::settings().frameThickness * scalingFactor;
+    float cornerRadius = 0.0;
+    if (AlwaysOnTopSettings::settings().roundCornersEnabled)
+    {
+        cornerRadius = WindowCornerUtils::CornersRadius(m_trackingWindow) * scalingFactor;
+    }
+    
+    m_frameDrawer->SetBorderRect(frameRect, color, static_cast<int>(thickness), cornerRadius);
 }
 
 LRESULT WindowBorder::WndProc(UINT message, WPARAM wparam, LPARAM lparam) noexcept
@@ -259,6 +273,12 @@ void WindowBorder::SettingsUpdate(SettingId id)
     break;
 
     case SettingId::FrameAccentColor:
+    {
+        UpdateBorderProperties();
+    }
+    break;
+
+    case SettingId::RoundCornersEnabled:
     {
         UpdateBorderProperties();
     }

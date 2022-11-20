@@ -44,7 +44,6 @@ namespace Microsoft.Plugin.Folder.Sources
             return query.Any(c => c.Equals('>'));
         }
 
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Globalization", "CA1308:Normalize strings to uppercase", Justification = "Do not want to change the behavior of the application, but want to enforce static analysis")]
         private (string search, string incompleteName) Process(string search)
         {
             string incompleteName = string.Empty;
@@ -52,7 +51,7 @@ namespace Microsoft.Plugin.Folder.Sources
             {
                 // if folder doesn't exist, we want to take the last part and use it afterwards to help the user
                 // find the right folder.
-                int index = search.LastIndexOf('\\');
+                int index = search.LastIndexOfAny(new char[] { '\\', '/' });
 
                 // No slashes found, so probably not a folder
                 if (index <= 0 || index >= search.Length - 1)

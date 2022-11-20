@@ -16,7 +16,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             Value = value;
         }
 
-        // Added a parameterless constructor because of an exception during deserialization. More details here: https://docs.microsoft.com/en-us/dotnet/standard/serialization/system-text-json-how-to#deserialization-behavior
+        // Added a parameterless constructor because of an exception during deserialization. More details here: https://learn.microsoft.com/dotnet/standard/serialization/system-text-json-how-to#deserialization-behavior
         public GenericProperty()
         {
         }

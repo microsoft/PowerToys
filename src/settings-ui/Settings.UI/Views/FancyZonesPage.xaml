@@ -4,16 +4,17 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    xmlns:muxc="using:Microsoft.UI.Xaml.Controls"
     xmlns:controls="using:Microsoft.PowerToys.Settings.UI.Controls"
-    xmlns:converters="using:Microsoft.Toolkit.Uwp.UI.Converters"     
+    xmlns:converters="using:CommunityToolkit.WinUI.UI.Converters"
     mc:Ignorable="d"
     AutomationProperties.LandmarkType="Main">
 
     <Page.Resources>
+        <converters:BoolNegationConverter x:Key="BoolNegationConverter"/>
         <converters:BoolToObjectConverter x:Key="BoolToComboBoxIndexConverter" TrueValue="1" FalseValue="0"/>
         <converters:StringFormatConverter x:Key="StringFormatConverter"/>
         <converters:BoolToVisibilityConverter x:Key="FalseToVisibleConverter" TrueValue="Collapsed" FalseValue="Visible"/>
+        <converters:BoolToVisibilityConverter x:Key="TrueToVisibleConverter" TrueValue="Visible" FalseValue="Collapsed"/>
     </Page.Resources>
 
     <controls:SettingsPageControl x:Uid="FancyZones"
@@ -21,7 +22,7 @@
         <controls:SettingsPageControl.ModuleContent>
             <StackPanel Orientation="Vertical">
 
-                <controls:Setting x:Uid="FancyZones_EnableToggleControl_HeaderText">
+                <controls:Setting x:Uid="FancyZones_EnableToggleControl_HeaderText" IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabledGpoConfigured, Converter={StaticResource BoolNegationConverter}}">
                     <controls:Setting.Icon>
                         <BitmapIcon UriSource="ms-appx:///Assets/FluentIcons/FluentIconsFancyZones.png" ShowAsMonochrome="False" />
                     </controls:Setting.Icon>
@@ -29,7 +30,11 @@
                         <ToggleSwitch IsOn="{x:Bind ViewModel.IsEnabled, Mode=TwoWay}" x:Uid="ToggleSwitch"/>
                     </controls:Setting.ActionContent>
                 </controls:Setting>
-
+                <InfoBar x:Uid="GPO_IsSettingForced"
+                    Severity="Informational"
+                    IsClosable="False"
+                    IsOpen="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabledGpoConfigured}"
+                    IsTabStop="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabledGpoConfigured}" />
 
                 <controls:SettingsGroup x:Uid="FancyZones_Editor_GroupSettings" IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}">
                     <Button Style="{StaticResource SettingButtonStyle}" x:Uid="FancyZones_LaunchEditorButton_Accessible" Command="{x:Bind ViewModel.LaunchEditorEventHandler}">
@@ -38,7 +43,7 @@
                                 <PathIcon Data="M45,48H25.5V45H45V25.5H25.5v-3H45V3H25.5V0H48V48ZM22.5,48H3V45H22.5V3H3V0H25.5V48ZM0,48V0H3V48Z"/>
                             </controls:Setting.Icon>-->
                             <controls:Setting.ActionContent>
-                                <FontIcon Glyph="&#xE2B4;" FontFamily="{ThemeResource SymbolThemeFontFamily}" />
+                                <FontIcon Glyph="&#xE8A7;" FontSize="18" FontFamily="{ThemeResource SymbolThemeFontFamily}" />
                             </controls:Setting.ActionContent>
                         </controls:Setting>
                     </Button>
@@ -50,7 +55,7 @@
                         </controls:Setting.ActionContent>
                     </controls:Setting>
 
-                    <controls:Setting x:Uid="FancyZones_UseCursorPosEditorStartupScreen" Icon="&#xE7F9;">
+                    <controls:Setting x:Uid="FancyZones_UseCursorPosEditorStartupScreen" Icon="&#xe7b5;">
                         <controls:Setting.ActionContent>
                             <ComboBox SelectedIndex="{x:Bind Mode=TwoWay, Path=ViewModel.UseCursorPosEditorStartupScreen, Converter={StaticResource BoolToComboBoxIndexConverter}}" MinWidth="{StaticResource SettingActionControlMinWidth}">
                                 <ComboBoxItem x:Uid="FancyZones_LaunchPositionScreen" />
@@ -64,7 +69,7 @@
                 <controls:SettingsGroup x:Uid="FancyZones_Zones" x:Name="ZonesSettingsGroup" IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}">
                     <controls:SettingExpander IsExpanded="True">
                         <controls:SettingExpander.Header>
-                            <controls:Setting x:Uid="FancyZones_ZoneBehavior_GroupSettings" Icon="&#xE620;" Style="{StaticResource ExpanderHeaderSettingStyle}" />
+                            <controls:Setting x:Uid="FancyZones_ZoneBehavior_GroupSettings" Style="{StaticResource ExpanderHeaderSettingStyle}" />
                         </controls:SettingExpander.Header>
                         <controls:SettingExpander.Content>
                             <StackPanel>
@@ -97,7 +102,7 @@
                     <controls:SettingExpander IsExpanded="True">
                         <controls:SettingExpander.Header>
 
-                            <controls:Setting x:Uid="FancyZones_Zone_Appearance" Icon="&#xE790;" Style="{StaticResource ExpanderHeaderSettingStyle}" >
+                            <controls:Setting x:Uid="FancyZones_Zone_Appearance" Icon="&#xEB3C;" Style="{StaticResource ExpanderHeaderSettingStyle}" >
                                 <controls:Setting.ActionContent>
                                     <ComboBox SelectedIndex="{x:Bind Mode=TwoWay, Path=ViewModel.SystemTheme, Converter={StaticResource BoolToComboBoxIndexConverter}}" MinWidth="{StaticResource SettingActionControlMinWidth}">
                                         <ComboBoxItem x:Uid="FancyZones_Radio_Custom_Colors"/>
@@ -168,7 +173,7 @@
 
                     <controls:SettingExpander IsExpanded="True">
                         <controls:SettingExpander.Header>
-                            <controls:Setting x:Uid="FancyZones_WindowBehavior_GroupSettings" Icon="&#xE737;" Style="{StaticResource ExpanderHeaderSettingStyle}" />
+                            <controls:Setting x:Uid="FancyZones_WindowBehavior_GroupSettings" Style="{StaticResource ExpanderHeaderSettingStyle}" />
                         </controls:SettingExpander.Header>
                         <controls:SettingExpander.Content>
                             <StackPanel>
@@ -189,6 +194,8 @@
                                                                  x:Uid="FancyZones_AllowPopupWindowSnap"/>
                                 <Rectangle Style="{StaticResource ExpanderSeparatorStyle}" />
                                 <CheckBox x:Uid="FancyZones_AllowChildWindowSnap" IsChecked="{x:Bind Mode=TwoWay, Path=ViewModel.AllowChildWindowSnap}" Margin="{StaticResource ExpanderSettingMargin}"/>
+                                <Rectangle Style="{StaticResource ExpanderSeparatorStyle}" Visibility="{x:Bind Mode=OneWay, Path=ViewModel.Windows11, Converter={StaticResource TrueToVisibleConverter}}"/>
+                                <CheckBox x:Uid="FancyZones_DisableRoundCornersOnWindowSnap" IsChecked="{x:Bind Mode=TwoWay, Path=ViewModel.DisableRoundCornersOnWindowSnap}" Margin="{StaticResource ExpanderSettingMargin}" Visibility="{x:Bind Mode=OneWay, Path=ViewModel.Windows11, Converter={StaticResource TrueToVisibleConverter}}"/>
                             </StackPanel>
 
                         </controls:SettingExpander.Content>
@@ -196,7 +203,7 @@
 
                     <controls:SettingExpander IsExpanded="True">
                         <controls:SettingExpander.Header>
-                            <controls:Setting x:Uid="FancyZones_WindowSwitching_GroupSettings" Icon="&#xE140;" Style="{StaticResource ExpanderHeaderSettingStyle}">
+                            <controls:Setting x:Uid="FancyZones_WindowSwitching_GroupSettings" Icon="&#xEDA7;" Style="{StaticResource ExpanderHeaderSettingStyle}">
                                 <controls:Setting.ActionContent>
                                     <ToggleSwitch IsOn="{x:Bind Mode=TwoWay, Path=ViewModel.WindowSwitching}" x:Uid="ToggleSwitch"/>
                                 </controls:Setting.ActionContent>
@@ -221,7 +228,7 @@
 
                     <controls:SettingExpander IsExpanded="True">
                         <controls:SettingExpander.Header>
-                            <controls:Setting x:Uid="FancyZones_OverrideSnapHotkeys" Icon="&#xE145;" Style="{StaticResource ExpanderHeaderSettingStyle}">
+                            <controls:Setting x:Uid="FancyZones_OverrideSnapHotkeys" Icon="&#xE90C;" Style="{StaticResource ExpanderHeaderSettingStyle}">
                                 <controls:Setting.ActionContent>
                                     <ToggleSwitch IsOn="{x:Bind Mode=TwoWay, Path=ViewModel.OverrideSnapHotkeys}" x:Uid="ToggleSwitch"/>
                                 </controls:Setting.ActionContent>
@@ -266,7 +273,7 @@
                 <controls:SettingsGroup x:Uid="FancyZones_Layouts" IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}">
                     <controls:SettingExpander IsExpanded="True">
                         <controls:SettingExpander.Header>
-                            <controls:Setting x:Uid="FancyZones_QuickLayoutSwitch" Icon="&#xE737;" Style="{StaticResource ExpanderHeaderSettingStyle}" >
+                            <controls:Setting x:Uid="FancyZones_QuickLayoutSwitch" Icon="&#xEDA7;" Style="{StaticResource ExpanderHeaderSettingStyle}" >
                                 <controls:Setting.ActionContent>
                                     <ToggleSwitch IsOn="{x:Bind Mode=TwoWay, Path=ViewModel.QuickLayoutSwitch}" x:Uid="ToggleSwitch"/>
                                 </controls:Setting.ActionContent>

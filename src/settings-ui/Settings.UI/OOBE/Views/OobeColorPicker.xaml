@@ -7,7 +7,7 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     mc:Ignorable="d"
     xmlns:controls="using:Microsoft.PowerToys.Settings.UI.Controls"
-    xmlns:toolkitcontrols="using:Microsoft.Toolkit.Uwp.UI.Controls">
+    xmlns:toolkitcontrols="using:CommunityToolkit.WinUI.UI.Controls">
 
     <controls:OOBEPageControl x:Uid="Oobe_ColorPicker"
                               HeroImage="ms-appx:///Assets/Modules/OOBE/ColorPicker.gif">

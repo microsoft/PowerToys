@@ -15,6 +15,8 @@
     <ClCompile Include="XmlDocumentEx.cpp" />
     <ClCompile Include="InstallationFolder.cpp" />
     <ClCompile Include="ProcessesList.cpp" />
+    <ClCompile Include="Package.cpp" />
+    <ClCompile Include="ReportGPOValues.cpp" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="ZipTools">
@@ -33,5 +35,11 @@
     <ClInclude Include="EventViewer.h" />
     <ClInclude Include="XmlDocumentEx.h" />
     <ClInclude Include="InstallationFolder.h" />
+    <ClInclude Include="Package.h" />
+    <ClInclude Include="resource.h" />
+    <ClInclude Include="ReportGPOValues.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="BugReportTool.rc" />
   </ItemGroup>
 </Project>

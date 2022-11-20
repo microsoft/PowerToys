@@ -3,6 +3,10 @@ LIBRARY "PowerToysSetupCustomActions"
 EXPORTS
 	ApplyModulesRegistryChangeSetsCA
 	CreateScheduledTaskCA
+	CreateWinAppSDKHardlinksCA
+	DeleteWinAppSDKHardlinksCA
+	CreatePTInteropHardlinksCA
+	DeletePTInteropHardlinksCA
 	DetectPrevInstallPathCA
 	RemoveScheduledTasksCA
 	TelemetryLogInstallSuccessCA
@@ -14,10 +18,10 @@ EXPORTS
 	TelemetryLogRepairCancelCA
 	TelemetryLogRepairFailCA
 	TerminateProcessesCA
-	TerminateProcessesCA
 	CertifyVirtualCameraDriverCA
 	InstallVirtualCameraDriverCA
 	InstallEmbeddedMSIXCA
 	UnApplyModulesRegistryChangeSetsCA
 	UninstallVirtualCameraDriverCA
+	UnRegisterContextMenuPackagesCA
 	UninstallEmbeddedMSIXCA

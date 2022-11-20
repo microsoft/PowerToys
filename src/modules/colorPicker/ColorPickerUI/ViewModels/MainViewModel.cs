@@ -4,7 +4,6 @@
 
 using System;
 using System.ComponentModel.Composition;
-using System.Runtime.InteropServices;
 using System.Threading;
 using System.Windows;
 using System.Windows.Media;
@@ -13,11 +12,9 @@ using ColorPicker.Helpers;
 using ColorPicker.Keyboard;
 using ColorPicker.Mouse;
 using ColorPicker.Settings;
-using ColorPicker.Telemetry;
 using ColorPicker.ViewModelContracts;
+using Common.UI;
 using interop;
-using Microsoft.PowerToys.Settings.UI.Library.Enumerations;
-using Microsoft.PowerToys.Telemetry;
 
 namespace ColorPicker.ViewModels
 {
@@ -49,23 +46,43 @@ namespace ColorPicker.ViewModels
             ZoomWindowHelper zoomWindowHelper,
             AppStateHandler appStateHandler,
             KeyboardMonitor keyboardMonitor,
-            IUserSettings userSettings)
+            IUserSettings userSettings,
+            CancellationToken exitToken)
         {
             _zoomWindowHelper = zoomWindowHelper;
             _appStateHandler = appStateHandler;
             _userSettings = userSettings;
-            NativeEventWaiter.WaitForEventLoop(Constants.ShowColorPickerSharedEvent(), _appStateHandler.StartUserSession);
-            NativeEventWaiter.WaitForEventLoop(Constants.ColorPickerSendSettingsTelemetryEvent(), _userSettings.SendSettingsTelemetry);
+
+            NativeEventWaiter.WaitForEventLoop(
+                Constants.ShowColorPickerSharedEvent(),
+                _appStateHandler.StartUserSession,
+                Application.Current.Dispatcher,
+                exitToken);
+
+            NativeEventWaiter.WaitForEventLoop(
+                Constants.ColorPickerSendSettingsTelemetryEvent(),
+                _userSettings.SendSettingsTelemetry,
+                Application.Current.Dispatcher,
+                exitToken);
 
             if (mouseInfoProvider != null)
             {
+                SetColorDetails(mouseInfoProvider.CurrentColor);
                 mouseInfoProvider.MouseColorChanged += Mouse_ColorChanged;
                 mouseInfoProvider.OnMouseDown += MouseInfoProvider_OnMouseDown;
                 mouseInfoProvider.OnMouseWheel += MouseInfoProvider_OnMouseWheel;
             }
 
             _userSettings.ShowColorName.PropertyChanged += (s, e) => { OnPropertyChanged(nameof(ShowColorName)); };
-            keyboardMonitor?.Start();
+
+            // Only start a local keyboard low level hook if running as a standalone.
+            // Otherwise, the global keyboard hook from runner will be used to activate Color Picker through ShowColorPickerSharedEvent
+            // and the Escape key will be registered as a shortcut by appStateHandler when ColorPicker is being used.
+            // This is much lighter than using a local low level keyboard hook.
+            if ((System.Windows.Application.Current as ColorPickerUI.App).IsRunningDetachedFromPowerToys())
+            {
+                keyboardMonitor?.Start();
+            }
         }
 
         /// <summary>
@@ -116,9 +133,7 @@ namespace ColorPicker.ViewModels
         /// <param name="color">The new <see cref="Color"/> under the mouse cursor</param>
         private void Mouse_ColorChanged(object sender, System.Drawing.Color color)
         {
-            ColorBrush = new SolidColorBrush(Color.FromArgb(color.A, color.R, color.G, color.B));
-            ColorText = ColorRepresentationHelper.GetStringRepresentation(color, _userSettings.CopiedColorRepresentation.Value);
-            ColorName = ColorNameHelper.GetColorName(color);
+            SetColorDetails(color);
         }
 
         /// <summary>
@@ -156,6 +171,13 @@ namespace ColorPicker.ViewModels
             return color.A + "|" + color.R + "|" + color.G + "|" + color.B;
         }
 
+        private void SetColorDetails(System.Drawing.Color color)
+        {
+            ColorBrush = new SolidColorBrush(Color.FromArgb(color.A, color.R, color.G, color.B));
+            ColorText = ColorRepresentationHelper.GetStringRepresentation(color, _userSettings.CopiedColorRepresentation.Value);
+            ColorName = ColorNameHelper.GetColorName(color);
+        }
+
         /// <summary>
         /// Tell the color picker that the user have used the mouse wheel
         /// </summary>
@@ -163,5 +185,10 @@ namespace ColorPicker.ViewModels
         /// <param name="e">The new values for the zoom</param>
         private void MouseInfoProvider_OnMouseWheel(object sender, Tuple<Point, bool> e)
             => _zoomWindowHelper.Zoom(e.Item1, e.Item2);
+
+        public void RegisterWindowHandle(System.Windows.Interop.HwndSource hwndSource)
+        {
+            _appStateHandler.RegisterWindowHandle(hwndSource);
+        }
     }
 }
