@@ -1099,7 +1099,7 @@ UINT __stdcall CreateDotnetRuntimeHardlinksCA(MSIHANDLE hInstall)
     HRESULT hr = S_OK;
     UINT er = ERROR_SUCCESS;
     std::wstring installationFolder, dotnetRuntimeFilesSrcDir, colorPickerDir, powerOCRDir, launcherDir, fancyZonesDir,
-      imageResizerDir, settingsDir, awakeDir, measureToolDir, powerAccentDir, fileExplorerAddOns;
+      imageResizerDir, settingsDir, awakeDir, measureToolDir, powerAccentDir, fileExplorerAddOnsDir, hostsDir, fileLocksmithDir;
 
     hr = WcaInitialize(hInstall, "CreateDotnetRuntimeHardlinksCA");
     ExitOnFailure(hr, "Failed to initialize");
@@ -1117,7 +1117,9 @@ UINT __stdcall CreateDotnetRuntimeHardlinksCA(MSIHANDLE hInstall)
     awakeDir = installationFolder + L"modules\\Awake\\";
     measureToolDir = installationFolder + L"modules\\MeasureTool\\";
     powerAccentDir = installationFolder + L"modules\\PowerAccent\\";
-    fileExplorerAddOns = installationFolder + L"modules\\FileExplorerPreview\\";
+    fileExplorerAddOnsDir = installationFolder + L"modules\\FileExplorerPreview\\";
+    hostsDir = installationFolder + L"modules\\Hosts\\";
+    fileLocksmithDir = installationFolder + L"modules\\FileLocksmith\\";
 
     for (auto file : dotnetRuntimeFiles)
     {
@@ -1131,7 +1133,9 @@ UINT __stdcall CreateDotnetRuntimeHardlinksCA(MSIHANDLE hInstall)
         std::filesystem::create_hard_link((dotnetRuntimeFilesSrcDir + file).c_str(), (awakeDir + file).c_str(), ec);
         std::filesystem::create_hard_link((dotnetRuntimeFilesSrcDir + file).c_str(), (measureToolDir + file).c_str(), ec);
         std::filesystem::create_hard_link((dotnetRuntimeFilesSrcDir + file).c_str(), (powerAccentDir + file).c_str(), ec);
-        std::filesystem::create_hard_link((dotnetRuntimeFilesSrcDir + file).c_str(), (fileExplorerAddOns + file).c_str(), ec);
+        std::filesystem::create_hard_link((dotnetRuntimeFilesSrcDir + file).c_str(), (fileExplorerAddOnsDir + file).c_str(), ec);
+        std::filesystem::create_hard_link((dotnetRuntimeFilesSrcDir + file).c_str(), (hostsDir + file).c_str(), ec);
+        std::filesystem::create_hard_link((dotnetRuntimeFilesSrcDir + file).c_str(), (fileLocksmithDir + file).c_str(), ec);
 
         if (ec.value() != S_OK)
         {
@@ -1152,7 +1156,8 @@ UINT __stdcall CreateDotnetRuntimeHardlinksCA(MSIHANDLE hInstall)
       std::filesystem::create_hard_link((dotnetRuntimeFilesSrcDir + file).c_str(), (fancyZonesDir + file).c_str(), ec);
       std::filesystem::create_hard_link((dotnetRuntimeFilesSrcDir + file).c_str(), (imageResizerDir + file).c_str(), ec);
       std::filesystem::create_hard_link((dotnetRuntimeFilesSrcDir + file).c_str(), (powerAccentDir + file).c_str(), ec);
-      std::filesystem::create_hard_link((dotnetRuntimeFilesSrcDir + file).c_str(), (fileExplorerAddOns + file).c_str(), ec);
+      std::filesystem::create_hard_link((dotnetRuntimeFilesSrcDir + file).c_str(), (fileExplorerAddOnsDir + file).c_str(), ec);
+      std::filesystem::create_hard_link((dotnetRuntimeFilesSrcDir + file).c_str(), (hostsDir + file).c_str(), ec);
 
       if (ec.value() != S_OK)
       {
@@ -1245,7 +1250,8 @@ UINT __stdcall DeleteDotnetRuntimeHardlinksCA(MSIHANDLE hInstall)
     HRESULT hr = S_OK;
     UINT er = ERROR_SUCCESS;
     std::wstring installationFolder, colorPickerDir, powerOCRDir, launcherDir, fancyZonesDir,
-      imageResizerDir, settingsDir, awakeDir, measureToolDir, powerAccentDir, fileExplorerAddOns;
+      imageResizerDir, settingsDir, awakeDir, measureToolDir, powerAccentDir, fileExplorerAddOnsDir,
+      hostsDir, fileLocksmithDir;
 
     hr = WcaInitialize(hInstall, "DeleteDotnetRuntimeHardlinksCA");
     ExitOnFailure(hr, "Failed to initialize");
@@ -1262,7 +1268,9 @@ UINT __stdcall DeleteDotnetRuntimeHardlinksCA(MSIHANDLE hInstall)
     awakeDir = installationFolder + L"modules\\Awake\\";
     measureToolDir = installationFolder + L"modules\\MeasureTool\\";
     powerAccentDir = installationFolder + L"modules\\PowerAccent\\";
-    fileExplorerAddOns = installationFolder + L"modules\\FileExplorerPreview\\";
+    fileExplorerAddOnsDir = installationFolder + L"modules\\FileExplorerPreview\\";
+    hostsDir = installationFolder + L"modules\\Hosts\\";
+    fileLocksmithDir = installationFolder + L"modules\\FileLocksmith\\";
 
     try
     {
@@ -1277,7 +1285,9 @@ UINT __stdcall DeleteDotnetRuntimeHardlinksCA(MSIHANDLE hInstall)
           DeleteFile((awakeDir + file).c_str());
           DeleteFile((measureToolDir + file).c_str());
           DeleteFile((powerAccentDir + file).c_str());
-          DeleteFile((fileExplorerAddOns + file).c_str());
+          DeleteFile((fileExplorerAddOnsDir + file).c_str());
+          DeleteFile((hostsDir + file).c_str());
+          DeleteFile((fileLocksmithDir + file).c_str());
         }
 
         for (auto file : dotnetRuntimeWPFFiles)
@@ -1289,7 +1299,8 @@ UINT __stdcall DeleteDotnetRuntimeHardlinksCA(MSIHANDLE hInstall)
           DeleteFile((fancyZonesDir + file).c_str());
           DeleteFile((imageResizerDir + file).c_str());
           DeleteFile((powerAccentDir + file).c_str());
-          DeleteFile((fileExplorerAddOns + file).c_str());
+          DeleteFile((fileExplorerAddOnsDir + file).c_str());
+          DeleteFile((hostsDir + file).c_str());
         }
     }
     catch (std::exception e)
