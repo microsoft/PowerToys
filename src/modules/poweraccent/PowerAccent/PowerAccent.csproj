@@ -12,7 +12,7 @@
 		<AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
 		<AssemblyName>PowerToys.PowerAccent</AssemblyName>
 		<SelfContained>true</SelfContained>
-		<RuntimeIdentifier>win10-x64</RuntimeIdentifier>
+		<RuntimeIdentifier>win10-$(Platform)</RuntimeIdentifier>
 	</PropertyGroup>
 	<ItemGroup>
 		<PackageReference Include="Microsoft.Windows.CsWinRT" Version="2.0.0" />

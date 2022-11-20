@@ -13,7 +13,7 @@
     <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
     <GenerateSatelliteAssembliesForCore>true</GenerateSatelliteAssembliesForCore>
     <SelfContained>true</SelfContained>
-    <RuntimeIdentifier>win10-x64</RuntimeIdentifier>
+    <RuntimeIdentifier>win10-$(Platform)</RuntimeIdentifier>
   </PropertyGroup>
 
   <PropertyGroup>

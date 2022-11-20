@@ -17,7 +17,7 @@
     <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
     <RuntimeIdentifiers>win10-x64;win10-arm64</RuntimeIdentifiers>
     <SelfContained>true</SelfContained>
-    <RuntimeIdentifier>win10-x64</RuntimeIdentifier>
+    <RuntimeIdentifier>win10-$(Platform)</RuntimeIdentifier>
   </PropertyGroup>
 
   <Import Project="..\..\..\Version.props" />

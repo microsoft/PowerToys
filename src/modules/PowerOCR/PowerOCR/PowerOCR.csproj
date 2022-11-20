@@ -11,7 +11,7 @@
     <UseWPF>true</UseWPF>
     <UseWindowsForms>true</UseWindowsForms>
     <SelfContained>true</SelfContained>
-    <RuntimeIdentifier>win10-x64</RuntimeIdentifier>
+    <RuntimeIdentifier>win10-$(Platform)</RuntimeIdentifier>
   </PropertyGroup>
 
   <PropertyGroup>

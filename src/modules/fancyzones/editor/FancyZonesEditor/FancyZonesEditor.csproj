@@ -13,7 +13,7 @@
     <GenerateSatelliteAssembliesForCore>true</GenerateSatelliteAssembliesForCore>
     <OutputPath>$(SolutionDir)$(Platform)\$(Configuration)\modules\FancyZones</OutputPath>
     <SelfContained>true</SelfContained>
-    <RuntimeIdentifier>win10-x64</RuntimeIdentifier>
+    <RuntimeIdentifier>win10-$(Platform)</RuntimeIdentifier>
   </PropertyGroup>
   
   <PropertyGroup>
