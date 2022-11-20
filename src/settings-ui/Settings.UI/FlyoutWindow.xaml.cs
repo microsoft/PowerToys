@@ -8,6 +8,7 @@ namespace Microsoft.PowerToys.Settings.UI
     using global::Windows.Graphics;
     using Microsoft.UI;
     using Microsoft.UI.Windowing;
+    using Microsoft.UI.Xaml;
     using WinUIEx;
 
     /// <summary>
@@ -16,7 +17,8 @@ namespace Microsoft.PowerToys.Settings.UI
     public sealed partial class FlyoutWindow : WindowEx
     {
         private const int WindowWidth = 360;
-        private const int WindowHeight = 340;
+        private const int WindowHeight = 380;
+        private const int WindowMargin = 12;
 
         public FlyoutWindow()
         {
@@ -25,8 +27,10 @@ namespace Microsoft.PowerToys.Settings.UI
             var hwnd = WinRT.Interop.WindowNative.GetWindowHandle(this);
             WindowId windowId = Win32Interop.GetWindowIdFromWindow(hwnd);
             DisplayArea displayArea = DisplayArea.GetFromWindowId(windowId, DisplayAreaFallback.Nearest);
-            double x = displayArea.WorkArea.Width - (WindowWidth + 204); // TO DO - HARDCODED, BUT THIS SHOULD BE DPI DEPENDEND?
-            double y = displayArea.WorkArea.Height - (WindowHeight + 186); // TO DO - HARDCODED, BUT THIS SHOULD BE DPI DEPENDEND?
+
+            double dpiScale = (float)this.GetDpiForWindow() / 96;
+            double x = displayArea.WorkArea.Width - (dpiScale * (WindowWidth + WindowMargin));
+            double y = displayArea.WorkArea.Height - (dpiScale * (WindowHeight + WindowMargin));
             this.MoveAndResize(x, y, WindowWidth, WindowHeight);
         }
 
