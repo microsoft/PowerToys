@@ -9,6 +9,7 @@ jobs:
   variables:
     BuildConfiguration: ${{ parameters.configuration }}
     BuildPlatform: ${{ parameters.platform }}
+    NUGET_RESTORE_MSBUILD_ARGS: /p:Platform=${{ parameters.platform }}
   pool:
       name: WinDevPool-L
   timeoutInMinutes: 120
