@@ -47,8 +47,6 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
 
         public ObservableCollection<OobePowerToysModule> Modules { get; }
 
-        public string LandingPageFlag { get; set; }
-
         public OobeShellPage()
         {
             Experiments exp = new Experiments();
