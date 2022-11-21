@@ -182,7 +182,7 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
             }
         }
 
-        private string landingPageFlag = "current"; // @Sophia, this needs to be wired up :)
+        private string landingPageFlag = "current";
 
         private void NavigationView_SelectionChanged(Microsoft.UI.Xaml.Controls.NavigationView sender, Microsoft.UI.Xaml.Controls.NavigationViewSelectionChangedEventArgs args)
         {
