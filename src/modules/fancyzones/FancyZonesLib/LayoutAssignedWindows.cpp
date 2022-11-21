@@ -15,7 +15,7 @@ void LayoutAssignedWindows::Assign(HWND window, const ZoneIndexSet& zones)
 {
     Dismiss(window);
 
-    // clear info about extention 
+    // clear info about extension 
     std::erase_if(m_extendData->windowInitialIndexSet, [window](const auto& item) { return item.first == window; });
     std::erase_if(m_extendData->windowFinalIndex, [window](const auto& item) { return item.first == window; });
 
