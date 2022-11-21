@@ -7,6 +7,9 @@ steps:
   submodules: true
   clean: true
 
+- script: set
+  displayName: List all vars
+
 - task: PowerShell@2
   displayName: Verify Arm64 configuration for PowerToys.sln
   inputs:
