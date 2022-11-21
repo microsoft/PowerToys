@@ -9,6 +9,8 @@
     <GenerateSatelliteAssembliesForCore>true</GenerateSatelliteAssembliesForCore>
     <UseWPF>true</UseWPF>
     <StartupObject>ColorPicker.Program</StartupObject>
+    <SelfContained>true</SelfContained>
+    <RuntimeIdentifier>win10-x64</RuntimeIdentifier>
   </PropertyGroup>
   <PropertyGroup>
     <ProjectGuid>{BA58206B-1493-4C75-BFEA-A85768A1E156}</ProjectGuid>

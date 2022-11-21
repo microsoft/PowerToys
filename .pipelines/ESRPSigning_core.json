@@ -239,6 +239,7 @@
                 "modules\\launcher\\Interop.Microsoft.Office.Interop.OneNote.dll",
                 "modules\\launcher\\hyjiacan.py4n.dll",
                 "Settings\\Microsoft.Graphics.Canvas.Interop.dll",
+                "Settings\\clrcompression.dll",
                 "ColorCode.Core.dll", 
                 "ColorCode.UWP.dll",
                 "UnitsNet.dll"

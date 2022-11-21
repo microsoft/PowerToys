@@ -2,15 +2,16 @@
 
 	<Import Project="..\..\Version.props" />
 
-	<PropertyGroup>
-		<TargetFramework>net6.0-windows</TargetFramework>
-		<Version>$(Version).0</Version>
-		<Authors>Microsoft Corporation</Authors>
-		<Product>PowerToys</Product>
-		<Description>PowerToys Settings UI Library</Description>
-		<AssemblyName>PowerToys.Settings.UI.Lib</AssemblyName>
-		<UseWindowsForms>false</UseWindowsForms>
-	</PropertyGroup>
+  <PropertyGroup>
+    <TargetFramework>net6.0-windows</TargetFramework>
+    <Version>$(Version).0</Version>
+    <Authors>Microsoft Corporation</Authors>
+    <Product>PowerToys</Product>
+    <Description>PowerToys Settings UI Library</Description>
+    <AssemblyName>PowerToys.Settings.UI.Lib</AssemblyName>
+    <SelfContained>true</SelfContained>
+    <RuntimeIdentifier>win10-x64</RuntimeIdentifier>
+  </PropertyGroup>
 
 	<PropertyGroup Condition="'$(Configuration)'=='Debug'">
 		<DefineConstants>DEBUG;TRACE</DefineConstants>

@@ -16,6 +16,16 @@
     <WindowsAppSDKSelfContained>true</WindowsAppSDKSelfContained>
     <!-- OutputPath looks like this because it has to be called both by settings and publish.cmd -->
     <OutputPath>..\..\..\$(Platform)\$(Configuration)\Settings</OutputPath>
+    <SelfContained>true</SelfContained>
+    <RuntimeIdentifier>win10-x64</RuntimeIdentifier>
+  </PropertyGroup>
+
+  <!-- SelfContained=true requires RuntimeIdentifier to be set -->
+  <PropertyGroup Condition="'$(Platform)'=='x64'">
+    <RuntimeIdentifier>win10-x64</RuntimeIdentifier>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Platform)'=='arm64'">
+    <RuntimeIdentifier>win10-arm64</RuntimeIdentifier>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)'=='Debug'">

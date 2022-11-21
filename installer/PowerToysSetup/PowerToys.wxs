@@ -6,21 +6,13 @@
     <?define BinDir="$(var.RepoDir)$(var.Platform)\$(var.Configuration)\" ?>
     <?define PowerToysPlatform="x64"?>
 
-    <?define Dotnet6DownloadUrl="https://download.visualstudio.microsoft.com/download/pr/a6e878eb-d1da-40cb-8b6a-7f5b9390f09c/e4431ce2aa28b6c9956db672209be500/windowsdesktop-runtime-6.0.10-win-x64.exe"?>
-    <?define Dotnet6PayloadSize="57361520"?>
-    <?define Dotnet6PayloadHash="0978D0AB85DC6F4682BA18075200F15C1C74FE02"?>
-
     <?define PlatformProgramFiles="[ProgramFiles64Folder]"?>
 <?else?>
     <!-- stable WIX 3 doesn't support ARM64, so we build installers as x86 -->
     <?define BinDir="$(var.RepoDir)ARM64\$(var.Configuration)\" ?>
     <?define PowerToysPlatform="ARM64"?>
 
-    <?define Dotnet6DownloadUrl="https://download.visualstudio.microsoft.com/download/pr/b05a38ca-a434-473c-b031-07f05c75487e/0dfe9108f47050d81f1bc09002de6881/windowsdesktop-runtime-6.0.10-win-arm64.exe"?>
-    <?define Dotnet6PayloadSize="51265552"?>
-    <?define Dotnet6PayloadHash="A624592684361793BE6D913A9E324BA6CEE4984A"?>
-    
-<!--TODO: define to ARM64 Program files once it's available-->
+    <!--TODO: define to ARM64 Program files once it's available-->
     <?define PlatformProgramFiles="[ProgramFiles6432Folder]"?> 
 
 <?endif?>
@@ -41,7 +33,6 @@
               SuppressRepair="yes" />
         </BootstrapperApplicationRef>
 
-        <util:FileSearch Variable="HasDotnet6010" Path="$(var.PlatformProgramFiles)dotnet\shared\Microsoft.WindowsDesktop.App\6.0.10\System.Xaml.dll" Result="exists" />
         <util:RegistrySearch Variable="HasWebView2PerMachine" Root="HKLM" Key="SOFTWARE\WOW6432Node\Microsoft\EdgeUpdate\Clients\{F3017226-FE2A-4295-8BDF-00C3A9A7E4C5}" Result="exists" />
         <util:RegistrySearch Variable="HasWebView2PerUser" Root="HKCU" Key="Software\Microsoft\EdgeUpdate\Clients\{F3017226-FE2A-4295-8BDF-00C3A9A7E4C5}" Result="exists" />
 
@@ -74,27 +65,6 @@
                 Vital="no">
             </ExePackage>
             <ExePackage
-                DisplayName="Downloading and installing .NET 6 Desktop Runtime"
-                Name="windowsdesktop-runtime-6.0.10-win-$(var.PowerToysPlatform).exe"
-                Compressed="no"
-                Id="DotnetRuntime6"
-                DetectCondition="HasDotnet6010"
-                DownloadUrl="$(var.Dotnet6DownloadUrl)"
-                InstallCommand="/install /quiet /norestart"
-                RepairCommand="/repair /passive /norestart"
-                Permanent="yes"
-                PerMachine="yes"
-                UninstallCommand="/uninstall /quiet /norestart">
-                <ExitCode Value="1638" Behavior="success"/>
-                <RemotePayload
-                    Description="Microsoft Windows Desktop Runtime - 6.0.10 ($(var.PowerToysPlatform))"
-                    ProductName="Microsoft Windows Desktop Runtime - 6.0.10 ($(var.PowerToysPlatform))"
-                    Size="$(var.Dotnet6PayloadSize)"
-                    Version="6.0.10.31726"
-                    Hash="$(var.Dotnet6PayloadHash)" />
-            </ExePackage>
-            <ExePackage
-                DisplayName="Installing Microsoft Edge WebView2"
                 Name="MicrosoftEdgeWebview2Setup.exe"
                 Compressed="yes"
                 Id="WebView2"

@@ -19,6 +19,8 @@
     <AssemblyName>PowerToys.PowerLauncher</AssemblyName>
     <OutputPath>..\..\..\..\$(Platform)\$(Configuration)\modules\launcher\</OutputPath>
     <GenerateSatelliteAssembliesForCore>true</GenerateSatelliteAssembliesForCore>
+    <SelfContained>true</SelfContained>
+    <RuntimeIdentifier>win10-x64</RuntimeIdentifier>
   </PropertyGroup>
 
 

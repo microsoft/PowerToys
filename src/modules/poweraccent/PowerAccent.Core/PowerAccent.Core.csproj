@@ -7,7 +7,9 @@
         <Nullable>disable</Nullable>
         <AllowUnsafeBlocks>True</AllowUnsafeBlocks>
         <UseWPF>true</UseWPF>
-	  <UseWindowsForms>true</UseWindowsForms>
+	    <UseWindowsForms>true</UseWindowsForms>
+        <SelfContained>true</SelfContained>
+        <RuntimeIdentifier>win10-x64</RuntimeIdentifier>
     </PropertyGroup>
     <PropertyGroup>
         <CsWinRTIncludes>PowerToys.GPOWrapper;PowerToys.PowerAccentKeyboardService</CsWinRTIncludes>

@@ -10,6 +10,8 @@
 		<ApplicationIcon>a-icon.ico</ApplicationIcon>
 		<AssemblyName>PowerAccent</AssemblyName>
 		<XamlDebuggingInformation>True</XamlDebuggingInformation>
+		<SelfContained>true</SelfContained>
+		<RuntimeIdentifier>win10-x64</RuntimeIdentifier>
 	</PropertyGroup>
 
 	<ItemGroup>

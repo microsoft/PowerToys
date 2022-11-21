@@ -19,6 +19,8 @@
     <RepositoryUrl>https://github.com/microsoft/powertoys</RepositoryUrl>
     <EnableNETAnalyzers>true</EnableNETAnalyzers>
     <AnalysisMode>Recommended</AnalysisMode>
+    <SelfContained>true</SelfContained>
+    <RuntimeIdentifier>win10-x64</RuntimeIdentifier>
   </PropertyGroup>
 
   <!-- See https://learn.microsoft.com/windows/apps/develop/platform/csharp-winrt/net-projection-from-cppwinrt-component for more info -->

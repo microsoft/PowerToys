@@ -8,6 +8,8 @@
     <AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
     <GenerateSatelliteAssembliesForCore>true</GenerateSatelliteAssembliesForCore>
     <UseWPF>true</UseWPF>
+	<SelfContained>true</SelfContained>
+	<RuntimeIdentifier>win10-x64</RuntimeIdentifier>
   </PropertyGroup>
   
   <PropertyGroup>

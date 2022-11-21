@@ -11,7 +11,9 @@
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
     <AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
     <GenerateSatelliteAssembliesForCore>true</GenerateSatelliteAssembliesForCore>
-    <OutputPath>$(SolutionDir)$(Platform)\$(Configuration)\modules\FancyZones</OutputPath> 
+    <OutputPath>$(SolutionDir)$(Platform)\$(Configuration)\modules\FancyZones</OutputPath>
+    <SelfContained>true</SelfContained>
+    <RuntimeIdentifier>win10-x64</RuntimeIdentifier>
   </PropertyGroup>
   
   <PropertyGroup>
