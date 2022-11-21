@@ -150,7 +150,7 @@ namespace Microsoft.PowerToys.PreviewHandler.Markdown
             {
                 if (!(dataSource is string filePath))
                 {
-                    throw new ArgumentException($"{nameof(dataSource)} for {nameof(MarkdownPreviewHandler)} must be a string but was a '{typeof(T)}'");
+                    throw new ArgumentException($"{nameof(dataSource)} for {nameof(MarkdownPreviewHandlerControl)} must be a string but was a '{typeof(T)}'");
                 }
 
                 string fileText = File.ReadAllText(filePath);

@@ -60,7 +60,7 @@ namespace Microsoft.PowerToys.PreviewHandler.Gcode
 
                 if (!(dataSource is string filePath))
                 {
-                    throw new ArgumentException($"{nameof(dataSource)} for {nameof(GcodePreviewHandler)} must be a string but was a '{typeof(T)}'");
+                    throw new ArgumentException($"{nameof(dataSource)} for {nameof(GcodePreviewHandlerControl)} must be a string but was a '{typeof(T)}'");
                 }
 
                 FileStream fs = new FileStream(filePath, FileMode.Open, FileAccess.Read);

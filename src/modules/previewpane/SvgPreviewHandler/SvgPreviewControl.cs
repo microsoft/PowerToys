@@ -97,7 +97,7 @@ namespace Microsoft.PowerToys.PreviewHandler.Svg
             {
                 if (!(dataSource is string filePath))
                 {
-                    throw new ArgumentException($"{nameof(dataSource)} for {nameof(SvgPreviewHandler)} must be a string but was a '{typeof(T)}'");
+                    throw new ArgumentException($"{nameof(dataSource)} for {nameof(SvgPreviewControl)} must be a string but was a '{typeof(T)}'");
                 }
 
                 using (var stream = new FileStream(filePath, FileMode.Open, FileAccess.Read))

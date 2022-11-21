@@ -68,7 +68,7 @@ namespace Microsoft.PowerToys.PreviewHandler.Pdf
             {
                 if (!(dataSource is string filePath))
                 {
-                    throw new ArgumentException($"{nameof(dataSource)} for {nameof(PdfPreviewHandler)} must be a string but was a '{typeof(T)}'");
+                    throw new ArgumentException($"{nameof(dataSource)} for {nameof(PdfPreviewHandlerControl)} must be a string but was a '{typeof(T)}'");
                 }
 
                 using (var dataStream = new FileStream(filePath, FileMode.Open, FileAccess.Read))

@@ -129,7 +129,7 @@ namespace Microsoft.PowerToys.PreviewHandler.Monaco
             // Checks if dataSource is a string
             if (!(dataSource is string filePath))
             {
-                throw new ArgumentException($"{nameof(dataSource)} for {nameof(MonacoPreviewHandler)} must be a string but was a '{typeof(T)}'");
+                throw new ArgumentException($"{nameof(dataSource)} for {nameof(MonacoPreviewHandlerControl)} must be a string but was a '{typeof(T)}'");
             }
 
             // Check if the file is too big.
