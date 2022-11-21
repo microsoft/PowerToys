@@ -33,6 +33,9 @@
   <PropertyGroup>
     <OutDir>$(SolutionDir)$(Platform)\$(Configuration)\modules\FileExplorerPreview\</OutDir>
   </PropertyGroup>
+  <PropertyGroup>
+    <TargetName>PowerToys.$(ProjectName)</TargetName>
+  </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)'=='Debug'">
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
