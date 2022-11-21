@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System.ComponentModel;
+using System.Drawing;
 using System.Runtime.CompilerServices;
 
 namespace Microsoft.PowerToys.Settings.UI.Library
@@ -29,7 +30,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
 
         public ColorFormatModel()
         {
-            Example = "Color ( R =%Re, G = %Gr, B = %Bl)";
+            Example = "new Color (R = %Re, G = %Gr, B = %Bl)";
             IsShown = true;
             IsNew = true;
             IsUserDefined = true;
