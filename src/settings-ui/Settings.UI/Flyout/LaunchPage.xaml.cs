@@ -9,6 +9,7 @@ namespace Microsoft.PowerToys.Settings.UI.Flyout
     using interop;
     using Microsoft.PowerToys.Settings.UI.Library;
     using Microsoft.PowerToys.Settings.UI.ViewModels;
+    using Microsoft.PowerToys.Settings.UI.Views;
     using Microsoft.UI.Xaml;
     using Microsoft.UI.Xaml.Controls;
 
@@ -24,10 +25,9 @@ namespace Microsoft.PowerToys.Settings.UI.Flyout
             DataContext = ViewModel;
         }
 
-        private void Options_Click(object sender, RoutedEventArgs e)
+        private void SettingsBtn_Click(object sender, RoutedEventArgs e)
         {
-            Button selectedButton = sender as Button;
-            Frame selectedFrame = this.Parent as Frame;
+            App.OpenSettingsWindow(typeof(GeneralPage));
         }
 
         private void ModuleButton_Click(object sender, RoutedEventArgs e)

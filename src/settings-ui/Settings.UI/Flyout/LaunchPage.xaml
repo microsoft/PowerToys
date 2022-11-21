@@ -242,25 +242,30 @@
                 Grid.Row="1"
                 Margin="0,0,10,0"
                 HorizontalAlignment="Right"
-                Orientation="Horizontal">
+                Orientation="Horizontal"
+                Spacing="8">
                 <Button
+                    Width="32"
                     Height="32"
                     Padding="6"
-                    ToolTipService.ToolTip="Documentation"
                     Background="Transparent"
                     BorderBrush="Transparent"
                     FontFamily="{ThemeResource SymbolThemeFontFamily}"
-                    >
-                    <FontIcon FontSize="14" Glyph="&#xE130;"/>
+                    ToolTipService.ToolTip="Documentation">
+                    <FontIcon
+                        FontSize="14"
+                        Glyph="&#xE130;" />
                 </Button>
                 <Button
+                    x:Name="settingsBtn"
+                    Width="32"
                     Height="32"
                     Padding="6"
-                    ToolTipService.ToolTip="Open Settings"
                     Background="Transparent"
                     BorderBrush="Transparent"
+                    Click="SettingsBtn_Click"
                     FontFamily="{ThemeResource SymbolThemeFontFamily}"
-                    >
+                    ToolTipService.ToolTip="Open Settings">
                     <muxc:AnimatedIcon x:Name="SearchAnimatedIcon">
                         <muxc:AnimatedIcon.Source>
                             <animatedVisuals:AnimatedSettingsVisualSource />
