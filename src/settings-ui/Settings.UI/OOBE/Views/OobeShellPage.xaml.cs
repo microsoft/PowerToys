@@ -47,13 +47,11 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
 
         public ObservableCollection<OobePowerToysModule> Modules { get; }
 
-        public string LandingPageFlag { get; set; }
-
         public OobeShellPage()
         {
             VariantService varServ = new VariantService();
             varServ.VariantAssignmentProvider_Initialize();
-            LandingPageFlag = varServ.FeatureFlagValue;
+            landingPageFlag = varServ.FeatureFlagValue;
 
             InitializeComponent();
 
@@ -184,7 +182,7 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
             }
         }
 
-        private static readonly bool IsExperiment = true; // @Sophia, this needs to be wired up :)
+        private string landingPageFlag = "current"; // @Sophia, this needs to be wired up :)
 
         private void NavigationView_SelectionChanged(Microsoft.UI.Xaml.Controls.NavigationView sender, Microsoft.UI.Xaml.Controls.NavigationViewSelectionChangedEventArgs args)
         {
@@ -195,7 +193,7 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
                 switch (selectedItem.Tag)
                 {
                     case "Overview":
-                        if (IsExperiment)
+                        if (landingPageFlag == "alternate")
                         {
                             NavigationFrame.Navigate(typeof(OobeOverviewAlternate));
                         }
