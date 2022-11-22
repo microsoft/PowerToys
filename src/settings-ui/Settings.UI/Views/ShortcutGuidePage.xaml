@@ -43,7 +43,8 @@
 
                     <labs:SettingsCard
                         x:Uid="Activation_Shortcut"
-                        HeaderIcon="{ui:FontIcon FontFamily={StaticResource SymbolThemeFontFamily}, Glyph=&#xEDA7;}"
+                        HeaderIcon="{ui:FontIcon FontFamily={StaticResource SymbolThemeFontFamily},
+                                                 Glyph=&#xEDA7;}"
                         Visibility="{x:Bind Mode=OneWay, Path=ViewModel.UseLegacyPressWinKeyBehavior, Converter={StaticResource ReverseBoolToVisibilityConverter}}">
                         <controls:ShortcutControl
                             MinWidth="{StaticResource SettingActionControlMinWidth}"
@@ -52,7 +53,8 @@
 
                     <labs:SettingsCard
                         x:Uid="ShortcutGuide_PressTimeForGlobalWindowsShortcuts"
-                        HeaderIcon="{ui:FontIcon FontFamily={StaticResource SymbolThemeFontFamily}, Glyph=&#xE916;}"
+                        HeaderIcon="{ui:FontIcon FontFamily={StaticResource SymbolThemeFontFamily},
+                                                 Glyph=&#xE916;}"
                         Visibility="{x:Bind Mode=OneWay, Path=ViewModel.UseLegacyPressWinKeyBehavior, Converter={StaticResource BoolToVisibilityConverter}}">
                         <NumberBox
                             MinWidth="{StaticResource SettingActionControlMinWidth}"
@@ -63,19 +65,19 @@
                             Value="{x:Bind Mode=TwoWay, Path=ViewModel.PressTime}" />
                     </labs:SettingsCard>
 
-                    <controls:Setting x:Uid="ShortcutGuide_PressTimeForTaskbarIconShortcuts" Icon="&#xE916;" Visibility="{x:Bind Mode=OneWay, Path=ViewModel.UseLegacyPressWinKeyBehavior, Converter={StaticResource TrueToVisibleConverter}}">
-                        <controls:Setting.ActionContent>
-                            <NumberBox
-                                Minimum="100"
-                                Value="{x:Bind Mode=TwoWay, Path=ViewModel.DelayTime}"
-                                MinWidth="{StaticResource SettingActionControlMinWidth}"
-                                SpinButtonPlacementMode="Compact"
-                                HorizontalAlignment="Left"
-                                SmallChange="50"
-                                LargeChange="100"
-                            />
-                        </controls:Setting.ActionContent>
-                    </controls:Setting>
+                    <labs:SettingsCard
+                        x:Uid="ShortcutGuide_PressTimeForTaskbarIconShortcuts"
+                        HeaderIcon="{ui:FontIcon FontFamily={StaticResource SymbolThemeFontFamily},
+                                                 Glyph=&#xE916;}"
+                        Visibility="{x:Bind Mode=OneWay, Path=ViewModel.UseLegacyPressWinKeyBehavior, Converter={StaticResource BoolToVisibilityConverter}}">
+                        <NumberBox
+                            MinWidth="{StaticResource SettingActionControlMinWidth}"
+                            LargeChange="100"
+                            Minimum="100"
+                            SmallChange="50"
+                            SpinButtonPlacementMode="Compact"
+                            Value="{x:Bind Mode=TwoWay, Path=ViewModel.DelayTime}" />
+                    </labs:SettingsCard>
 
                     <InfoBar
                         x:Uid="ShortcutGuide_PressWinKeyWarning"
@@ -91,7 +93,8 @@
                     IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}">
                     <labs:SettingsCard
                         x:Uid="ColorModeHeader"
-                        HeaderIcon="{ui:FontIcon FontFamily={StaticResource SymbolThemeFontFamily}, Glyph=&#xE790;}">
+                        HeaderIcon="{ui:FontIcon FontFamily={StaticResource SymbolThemeFontFamily},
+                                                 Glyph=&#xE790;}">
                         <labs:SettingsCard.Description>
                             <HyperlinkButton
                                 x:Uid="Windows_Color_Settings"
@@ -120,10 +123,13 @@
                     IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}">
                     <labs:SettingsExpander
                         x:Uid="ShortcutGuide_DisabledApps"
-                        HeaderIcon="{ui:FontIcon FontFamily={StaticResource SymbolThemeFontFamily}, Glyph=&#xECE4;}"
+                        HeaderIcon="{ui:FontIcon FontFamily={StaticResource SymbolThemeFontFamily},
+                                                 Glyph=&#xECE4;}"
                         IsExpanded="True">
                         <labs:SettingsExpander.Items>
-                            <labs:SettingsCard ContentAlignment="Vertical" HorizontalContentAlignment="Stretch">
+                            <labs:SettingsCard
+                                HorizontalContentAlignment="Stretch"
+                                ContentAlignment="Vertical">
                                 <TextBox
                                     x:Uid="ShortcutGuide_DisabledApps_TextBoxControl"
                                     MinWidth="240"
