@@ -58,7 +58,7 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
                 Parameters =
                 {
                     // TBD: Adding traffic filters to target specific audiences.
-                    { "clientid", Guid.NewGuid().ToString() },
+                    { "clientid", clientID },
                 },
             };
         }
