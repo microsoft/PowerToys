@@ -14,7 +14,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library.Telemetry.Events
     {
         public DateTime Date { get; set; }
 
-        public string FlightID { get; set; }
+        public string AssignmentContext { get; set; }
 
         public PartA_PrivTags PartA_PrivTags => PartA_PrivTags.ProductAndServiceUsage;
     }
