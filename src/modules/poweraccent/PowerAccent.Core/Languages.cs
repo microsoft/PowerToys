@@ -298,7 +298,7 @@ namespace PowerAccent.Core
                 case LetterKey.VK_U:
                     return new string[] { "ù", "ú", "ü" };
                 case LetterKey.VK_L:
-                    return new string[] { "l·l" };
+                    return new string[] { "·" };
                 case LetterKey.VK_COMMA:
                     return new string[] { "¿", "?" };
             }
