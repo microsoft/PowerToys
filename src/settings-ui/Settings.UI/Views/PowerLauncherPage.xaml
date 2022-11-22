@@ -357,6 +357,7 @@
                                                     Background="Transparent"
                                                     BorderBrush="Transparent"
                                                     IsClosable="False"
+                                                    IsOpen="True"
                                                     IsTabStop="{x:Bind ShowNotAccessibleWarning}"
                                                     Severity="Error" />
                                             </labs:SettingsCard>
