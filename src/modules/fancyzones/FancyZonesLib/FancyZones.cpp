@@ -324,7 +324,7 @@ std::pair<std::shared_ptr<WorkArea>, ZoneIndexSet> FancyZones::GetAppZoneHistory
     }
     else
     {
-        for (const auto& [monitor, workArea] : workAreaMap)
+        for (const auto& [mon, workArea] : workAreaMap)
         {
             auto zoneIndexSet = workArea->GetWindowZoneIndexes(window);
             if (!zoneIndexSet.empty())
@@ -714,11 +714,8 @@ void FancyZones::OnDisplayChange(DisplayChangeType changeType) noexcept
 
     UpdateWorkAreas();
 
-    if (FancyZonesSettings::settings().displayChange_moveWindows)
-    {
-        auto activeWorkAreas = m_workAreaHandler.GetWorkAreasByDesktopId(VirtualDesktop::instance().GetCurrentVirtualDesktopId());
-        m_windowMoveHandler.UpdateWindowsPositions(activeWorkAreas);
-    }
+    auto activeWorkAreas = m_workAreaHandler.GetWorkAreasByDesktopId(VirtualDesktop::instance().GetCurrentVirtualDesktopId());    
+    m_windowMoveHandler.AssignWindowsToZones(activeWorkAreas, FancyZonesSettings::settings().displayChange_moveWindows && changeType != DisplayChangeType::VirtualDesktop);
 }
 
 void FancyZones::AddWorkArea(HMONITOR monitor, const FancyZonesDataTypes::WorkAreaId& id) noexcept
@@ -1115,7 +1112,7 @@ void FancyZones::UpdateZoneSets() noexcept
     if (FancyZonesSettings::settings().zoneSetChange_moveWindows)
     {
         auto activeWorkAreas = m_workAreaHandler.GetWorkAreasByDesktopId(VirtualDesktop::instance().GetCurrentVirtualDesktopId());
-        m_windowMoveHandler.UpdateWindowsPositions(activeWorkAreas);
+        m_windowMoveHandler.AssignWindowsToZones(activeWorkAreas, true);
     }
 }
 

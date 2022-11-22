@@ -136,6 +136,7 @@ public:
 
     virtual void enable()
     {
+        Trace::EnableAwake(true);
         ResetEvent(send_telemetry_event);
         ResetEvent(m_hInvokeEvent);
         launch_process();
@@ -146,6 +147,7 @@ public:
     {
         if (m_enabled)
         {
+            Trace::EnableAwake(false);
             Logger::trace(L"Disabling Awake...");
             ResetEvent(send_telemetry_event);
             ResetEvent(m_hInvokeEvent);
