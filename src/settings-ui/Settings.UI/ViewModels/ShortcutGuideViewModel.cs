@@ -66,7 +66,8 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             }
 
             _useLegacyPressWinKeyBehavior = Settings.Properties.UseLegacyPressWinKeyBehavior.Value;
-            _pressTime = Settings.Properties.PressTime.Value;
+            _pressTimeForGlobalWindowsShortcuts = Settings.Properties.PressTimeForGlobalWindowsShortcuts.Value;
+            _pressTimeForTaskbarIconShortcuts = Settings.Properties.PressTimeForTaskbarIconShortcuts.Value;
             _opacity = Settings.Properties.OverlayOpacity.Value;
             _disabledApps = Settings.Properties.DisabledApps.Value;
 
@@ -83,7 +84,8 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         private bool _isEnabled;
         private int _themeIndex;
         private bool _useLegacyPressWinKeyBehavior;
-        private int _pressTime;
+        private int _pressTimeForGlobalWindowsShortcuts;
+        private int _pressTimeForTaskbarIconShortcuts;
         private int _opacity;
 
         public bool IsEnabled
@@ -201,15 +203,33 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         {
             get
             {
-                return _pressTime;
+                return _pressTimeForGlobalWindowsShortcuts;
             }
 
             set
             {
-                if (_pressTime != value)
+                if (_pressTimeForGlobalWindowsShortcuts != value)
                 {
-                    _pressTime = value;
-                    Settings.Properties.PressTime.Value = value;
+                    _pressTimeForGlobalWindowsShortcuts = value;
+                    Settings.Properties.PressTimeForGlobalWindowsShortcuts.Value = value;
+                    NotifyPropertyChanged();
+                }
+            }
+        }
+
+        public int DelayTime
+        {
+            get
+            {
+                return _pressTimeForTaskbarIconShortcuts;
+            }
+
+            set
+            {
+                if (_pressTimeForTaskbarIconShortcuts != value)
+                {
+                    _pressTimeForTaskbarIconShortcuts = value;
+                    Settings.Properties.PressTimeForTaskbarIconShortcuts.Value = value;
                     NotifyPropertyChanged();
                 }
             }
