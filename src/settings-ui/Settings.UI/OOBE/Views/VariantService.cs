@@ -9,6 +9,8 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
     using System;
     using System.Security.Cryptography;
     using System.Text;
+    using Microsoft.PowerToys.Settings.UI.Library.Telemetry.Events;
+    using Microsoft.PowerToys.Telemetry;
     using Microsoft.Win32;
 
     public class VariantService
@@ -31,9 +33,11 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
                 var result = task.Result;
                 var allFeatureFlags = result.GetFeatureVariables();
 
+                var assignmentContext = result.GetAssignmentContext();
                 var featureNameSpace = allFeatureFlags[0].KeySegments[0];
                 var featureFlag = allFeatureFlags[0].KeySegments[1];
                 FeatureFlagValue = allFeatureFlags[0].GetStringValue();
+                PowerToysTelemetry.Log.WriteEvent(new OobeVariantAssignmentEvent() { Date = DateTime.Today, FlightID = assignmentContext });
             }
             catch (Exception)
             {
@@ -54,8 +58,7 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
                 Parameters =
                 {
                     // TBD: Adding traffic filters to target specific audiences.
-
-                    { "clientid", clientID },
+                    { "clientid", Guid.NewGuid().ToString() },
                 },
             };
         }
