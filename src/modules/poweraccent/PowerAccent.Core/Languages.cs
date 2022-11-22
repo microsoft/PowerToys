@@ -305,7 +305,7 @@ namespace PowerAccent.Core
 
             return Array.Empty<string>();
         }
-        
+
         // Maori
         private static string[] GetDefaultLetterKeyMI(LetterKey letter)
         {
