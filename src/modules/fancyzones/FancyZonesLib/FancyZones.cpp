@@ -324,7 +324,7 @@ std::pair<std::shared_ptr<WorkArea>, ZoneIndexSet> FancyZones::GetAppZoneHistory
     }
     else
     {
-        for (const auto& [monitor, workArea] : workAreaMap)
+        for (const auto& [mon, workArea] : workAreaMap)
         {
             auto zoneIndexSet = workArea->GetWindowZoneIndexes(window);
             if (!zoneIndexSet.empty())
