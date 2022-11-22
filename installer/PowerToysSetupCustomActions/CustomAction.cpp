@@ -1143,6 +1143,7 @@ UINT __stdcall CreateDotnetRuntimeHardlinksCA(MSIHANDLE hInstall)
             errorMessage += file;
             errorMessage += L", error code: " + std::to_wstring(ec.value());
             Logger::error(errorMessage);
+            er = ERROR_INSTALL_FAILURE;
         }
     }
 
@@ -1165,6 +1166,7 @@ UINT __stdcall CreateDotnetRuntimeHardlinksCA(MSIHANDLE hInstall)
         errorMessage += file;
         errorMessage += L", error code: " + std::to_wstring(ec.value());
         Logger::error(errorMessage);
+        er = ERROR_INSTALL_FAILURE;
       }
     }
 
