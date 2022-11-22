@@ -123,7 +123,7 @@
                                             x:Uid="To"
                                             Margin="8,0,8,0"
                                             VerticalAlignment="Center"
-                                            Style="{StaticResource SecondaryTextStyle}" />
+                                            Style="{StaticResource SecondaryIsEnabledTextBlockStyle}" />
                                         <ItemsControl
                                             Name="KeyboardManager_RemappedTo"
                                             x:Uid="KeyboardManager_RemappedTo"
@@ -185,7 +185,7 @@
                                             x:Uid="To"
                                             Margin="8,0,8,0"
                                             VerticalAlignment="Center"
-                                            Style="{StaticResource SecondaryTextStyle}" />
+                                            Style="{StaticResource SecondaryIsEnabledTextBlockStyle}" />
 
                                         <ItemsControl
                                             Name="KeyboardManager_RemappedTo"
@@ -201,21 +201,18 @@
                                                 </ItemsPanelTemplate>
                                             </ItemsControl.ItemsPanel>
                                         </ItemsControl>
-
-                                        <StackPanel Orientation="Horizontal">
-                                            <Border
-                                                Margin="16,0,0,0"
-                                                Padding="12,4,12,6"
-                                                VerticalAlignment="Center"
-                                                CornerRadius="12">
-                                                <Border.Background>
-                                                    <SolidColorBrush
-                                                        Opacity="0.3"
-                                                        Color="{ThemeResource SystemAccentColor}" />
-                                                </Border.Background>
-                                                <TextBlock Text="{x:Bind TargetApp}" />
-                                            </Border>
-                                        </StackPanel>
+                                        <Border
+                                            Margin="16,0,0,0"
+                                            Padding="12,4,12,6"
+                                            VerticalAlignment="Center"
+                                            CornerRadius="12">
+                                            <Border.Background>
+                                                <SolidColorBrush
+                                                    Opacity="0.3"
+                                                    Color="{ThemeResource SystemAccentColor}" />
+                                            </Border.Background>
+                                            <TextBlock Text="{x:Bind TargetApp}" />
+                                        </Border>
                                     </StackPanel>
                                 </labs:SettingsCard>
                             </DataTemplate>
