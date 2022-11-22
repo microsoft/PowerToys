@@ -9,6 +9,7 @@ using System.IO;
 using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.PowerToys.Telemetry;
 using Microsoft.Win32;
 using NLog;
 using Windows.Win32;
@@ -83,6 +84,8 @@ namespace Awake.Core
 
         public static void SetIndefiniteKeepAwake(Action<bool> callback, Action failureCallback, bool keepDisplayOn = false)
         {
+            PowerToysTelemetry.Log.WriteEvent(new Awake.Telemetry.AwakeIndefinitelyKeepAwakeEvent());
+
             _tokenSource.Cancel();
 
             try
@@ -131,6 +134,8 @@ namespace Awake.Core
 
         public static void SetTimedKeepAwake(uint seconds, Action<bool> callback, Action failureCallback, bool keepDisplayOn = true)
         {
+            PowerToysTelemetry.Log.WriteEvent(new Awake.Telemetry.AwakeTimedKeepAwakeEvent());
+
             _tokenSource.Cancel();
 
             try

@@ -17,3 +17,14 @@ void Trace::UnregisterProvider()
 {
     TraceLoggingUnregister(g_hProvider);
 }
+
+// Log if the user has Awake enabled or disabled
+void Trace::EnableAwake(const bool enabled) noexcept
+{
+    TraceLoggingWrite(
+        g_hProvider,
+        "Awake_EnableAwake",
+        ProjectTelemetryPrivacyDataTag(ProjectTelemetryTag_ProductAndServicePerformance),
+        TraceLoggingKeyword(PROJECT_KEYWORD_MEASURE),
+        TraceLoggingBoolean(enabled, "Enabled"));
+}
