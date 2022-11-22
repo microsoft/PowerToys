@@ -350,7 +350,7 @@
                                                 HorizontalContentAlignment="Left"
                                                 Background="{ThemeResource SystemFillColorCriticalBackgroundBrush}"
                                                 ContentAlignment="Vertical"
-                                                Visibility="{x:Bind ShowNotAccessibleWarning}">
+                                                Visibility="{x:Bind ShowNotAccessibleWarning, Converter={StaticResource BoolToVisibilityConverter}}">
                                                 <InfoBar
                                                     x:Uid="Run_NotAccessibleWarning"
                                                     Margin="3,0,0,0"
