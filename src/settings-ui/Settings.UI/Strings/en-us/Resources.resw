@@ -386,6 +386,10 @@
     <value>Shortcuts</value>
     <comment>Keyboard Manager remap keyboard header</comment>
   </data>
+  <data name="KeyboardManager_All_Apps_Description" xml:space="preserve">
+    <value>All Apps</value>
+    <comment>Should be the same as EditShortcuts_AllApps from keyboard manager editor</comment>
+  </data>
   <data name="Shortcuts.Header" xml:space="preserve">
     <value>Shortcuts</value>
   </data>
@@ -814,12 +818,9 @@
   <data name="ShortcutGuide.ModuleDescription" xml:space="preserve">
     <value>Shows a help overlay with Windows shortcuts.</value>
   </data>
-  <data name="ShortcutGuide_PressTime.Header" xml:space="preserve">
-    <value>Press duration before showing (ms)</value>
+  <data name="ShortcutGuide_PressTimeForGlobalWindowsShortcuts.Header" xml:space="preserve">
+    <value>Press duration before showing global Windows shortcuts (ms)</value>
     <comment>ms = milliseconds</comment>
-  </data>
-  <data name="ShortcutGuide_PressTime.Description" xml:space="preserve">
-    <value>How long to press the Windows key to activate the module</value>
   </data>
   <data name="ShortcutGuide_ActivationMethod.Header" xml:space="preserve">
     <value>Activation method</value>
@@ -2684,6 +2685,10 @@ Activate by holding the key for the character you want to add an accent to, then
   </data>
   <data name="Hosts_Toggle_LaunchAdministrator.Header" xml:space="preserve">
     <value>Launch as administrator</value>
+  </data>
+  <data name="ShortcutGuide_PressTimeForTaskbarIconShortcuts.Header" xml:space="preserve">
+    <value>Press duration before showing taskbar icon shortcuts (ms)</value>
+    <comment>ms = milliseconds</comment>
   </data>
   <data name="FileLocksmith.ModuleDescription" xml:space="preserve">
     <value>A Windows shell extension to find out which processes are using the selected files and directories.</value>
