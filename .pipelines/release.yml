@@ -66,6 +66,8 @@ jobs:
     inputs:
       packageType: sdk
       version: '6.x'
+
+  - task: NuGetAuthenticate@0
       
   - task: NuGetToolInstaller@1
     displayName: Use NuGet Installer latest
