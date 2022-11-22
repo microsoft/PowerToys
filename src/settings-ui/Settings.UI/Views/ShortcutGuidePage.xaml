@@ -51,7 +51,7 @@
                     </labs:SettingsCard>
 
                     <labs:SettingsCard
-                        x:Uid="ShortcutGuide_PressTime"
+                        x:Uid="ShortcutGuide_PressTimeForGlobalWindowsShortcuts"
                         HeaderIcon="{ui:FontIcon FontFamily={StaticResource SymbolThemeFontFamily}, Glyph=&#xE916;}"
                         Visibility="{x:Bind Mode=OneWay, Path=ViewModel.UseLegacyPressWinKeyBehavior, Converter={StaticResource BoolToVisibilityConverter}}">
                         <NumberBox
@@ -62,6 +62,20 @@
                             SpinButtonPlacementMode="Compact"
                             Value="{x:Bind Mode=TwoWay, Path=ViewModel.PressTime}" />
                     </labs:SettingsCard>
+
+                    <controls:Setting x:Uid="ShortcutGuide_PressTimeForTaskbarIconShortcuts" Icon="&#xE916;" Visibility="{x:Bind Mode=OneWay, Path=ViewModel.UseLegacyPressWinKeyBehavior, Converter={StaticResource TrueToVisibleConverter}}">
+                        <controls:Setting.ActionContent>
+                            <NumberBox
+                                Minimum="100"
+                                Value="{x:Bind Mode=TwoWay, Path=ViewModel.DelayTime}"
+                                MinWidth="{StaticResource SettingActionControlMinWidth}"
+                                SpinButtonPlacementMode="Compact"
+                                HorizontalAlignment="Left"
+                                SmallChange="50"
+                                LargeChange="100"
+                            />
+                        </controls:Setting.ActionContent>
+                    </controls:Setting>
 
                     <InfoBar
                         x:Uid="ShortcutGuide_PressWinKeyWarning"

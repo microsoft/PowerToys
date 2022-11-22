@@ -212,7 +212,6 @@ void Trace::FancyZones::DataChanged() noexcept
             activeZoneSetInfo += L", custom zone data was deleted";
         }
     }
-
     TraceLoggingWrite(
         g_hProvider,
         EventZoneSettingsChangedKey,
@@ -220,7 +219,7 @@ void Trace::FancyZones::DataChanged() noexcept
         TraceLoggingKeyword(PROJECT_KEYWORD_MEASURE),
         TraceLoggingInt32(appsHistorySize, AppsInHistoryCountKey),
         TraceLoggingInt32(static_cast<int>(customZones.size()), CustomZoneSetCountKey),
-        TraceLoggingInt32Array(customZonesArray.get(), static_cast<int>(customZones.size()), NumberOfZonesForEachCustomZoneSetKey),
+        TraceLoggingInt32Array(customZonesArray.get(), static_cast<uint16_t>(customZones.size()), NumberOfZonesForEachCustomZoneSetKey),
         TraceLoggingInt32(static_cast<int>(layouts.size()), ActiveZoneSetsCountKey),
         TraceLoggingWideString(activeZoneSetInfo.c_str(), ActiveZoneSetsListKey),
         TraceLoggingInt32(static_cast<int>(quickKeysCount), LayoutUsingQuickKeyCountKey));
