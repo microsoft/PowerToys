@@ -7,11 +7,13 @@ using Microsoft.VariantAssignment.Contract;
 namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
 {
     using System;
+    using System.Collections.Generic;
+    using System.IO;
     using System.Security.Cryptography;
     using System.Text;
+    using System.Text.Json;
     using Microsoft.PowerToys.Settings.UI.Library.Telemetry.Events;
     using Microsoft.PowerToys.Telemetry;
-    using Microsoft.Win32;
 
     public class VariantService
     {
@@ -49,9 +51,20 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
 
         private static IVariantAssignmentRequest GetVariantAssignmentRequest()
         {
-            string sqmID = Registry.GetValue("HKEY_LOCAL_MACHINE\\SOFTWARE\\Microsoft\\SQMClient", "MachineID", null).ToString();
-            string machineName = ComputeSha256Hash(Environment.MachineName);
-            string clientID = sqmID + "_" + machineName;
+            string clientID = string.Empty;
+            string jsonFilePath = @"C:\Users\sophchen\Repos\PowerToys\src\settings-ui\Settings.UI.UnitTests\BackwardsCompatibility\TestFiles\v0.22.0\Microsoft\PowerToys\settings.json";
+
+            string json = File.ReadAllText(jsonFilePath);
+            var jsonDictionary = JsonSerializer.Deserialize<Dictionary<string, object>>(json);
+            var jsonClientID = jsonDictionary["clientid"].ToString();
+            if (jsonClientID == string.Empty)
+            {
+                jsonDictionary["clientid"] = Guid.NewGuid().ToString();
+                string output = JsonSerializer.Serialize(jsonDictionary);
+                File.WriteAllText(jsonFilePath, output);
+            }
+
+            clientID = jsonDictionary["clientid"].ToString();
 
             return new VariantAssignmentRequest
             {
