@@ -9,8 +9,6 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
     using System;
     using System.Collections.Generic;
     using System.IO;
-    using System.Security.Cryptography;
-    using System.Text;
     using System.Text.Json;
     using Microsoft.PowerToys.Settings.UI.Library.Telemetry.Events;
     using Microsoft.PowerToys.Telemetry;
@@ -52,6 +50,7 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
         private static IVariantAssignmentRequest GetVariantAssignmentRequest()
         {
             string clientID = string.Empty;
+
             string workingDirectory = Environment.CurrentDirectory;
             var exeDir = Directory.GetParent(workingDirectory).Parent.Parent.FullName;
             string settingsPath = @"src\settings-ui\Settings.UI.UnitTests\BackwardsCompatibility\TestFiles\v0.22.0\Microsoft\PowerToys\settings.json";
@@ -60,6 +59,7 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
             string json = File.ReadAllText(jsonFilePath);
             var jsonDictionary = JsonSerializer.Deserialize<Dictionary<string, object>>(json);
             var jsonClientID = jsonDictionary["clientid"].ToString();
+
             if (jsonClientID == string.Empty)
             {
                 jsonDictionary["clientid"] = Guid.NewGuid().ToString();
@@ -77,13 +77,6 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
                     { "clientid", clientID },
                 },
             };
-        }
-
-        public static string ComputeSha256Hash(string value)
-        {
-            using var hash = SHA256.Create();
-            var byteArray = hash.ComputeHash(Encoding.UTF8.GetBytes(value));
-            return Convert.ToHexString(byteArray);
         }
     }
 }
