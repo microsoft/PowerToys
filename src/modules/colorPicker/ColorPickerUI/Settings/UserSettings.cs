@@ -56,7 +56,9 @@ namespace ColorPicker.Settings
             if (!_loadingColorsHistory)
             {
                 var settings = _settingsUtils.GetSettingsOrDefault<ColorPickerSettings>(ColorPickerModuleName);
+                ColorHistory.CollectionChanged -= ColorHistory_CollectionChanged;
                 settings.Properties.ColorHistory = ColorHistory.ToList();
+                ColorHistory.CollectionChanged += ColorHistory_CollectionChanged;
                 settings.Save(_settingsUtils);
             }
         }

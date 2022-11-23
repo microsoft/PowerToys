@@ -168,8 +168,6 @@ private:
     std::wstring app_key;
 
 public:
-
-
     // Return the localized display name of the powertoy
     virtual PCWSTR get_name() override
     {
@@ -300,7 +298,7 @@ public:
 
     // Signal from the Settings editor to call a custom action.
     // This can be used to spawn more complex editors.
-    virtual void call_custom_action(const wchar_t* action) override
+    virtual void call_custom_action(const wchar_t* /*action*/) override
     {
     }
 

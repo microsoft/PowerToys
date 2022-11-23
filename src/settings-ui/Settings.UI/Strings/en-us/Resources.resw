@@ -366,10 +366,6 @@
     <value>Remap a key</value>
     <comment>Keyboard Manager remap keyboard button content</comment>
   </data>
-  <data name="KeyboardManager_RemapKeyboardButton_Accessible.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
-    <value>Remap a key</value>
-    <comment>Keyboard Manager remap keyboard button content</comment>
-  </data>
   <data name="KeyboardManager_Keys.Header" xml:space="preserve">
     <value>Keys</value>
     <comment>Keyboard Manager remap keyboard header</comment>
@@ -378,13 +374,13 @@
     <value>Remap a shortcut</value>
     <comment>Keyboard Manager remap shortcuts button</comment>
   </data>
-  <data name="KeyboardManager_RemapShortcutsButton_Accessible.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
-    <value>Remap a shortcut</value>
-    <comment>Keyboard Manager remap shortcuts button</comment>
-  </data>
   <data name="KeyboardManager_Shortcuts.Header" xml:space="preserve">
     <value>Shortcuts</value>
     <comment>Keyboard Manager remap keyboard header</comment>
+  </data>
+  <data name="KeyboardManager_All_Apps_Description" xml:space="preserve">
+    <value>All Apps</value>
+    <comment>Should be the same as EditShortcuts_AllApps from keyboard manager editor</comment>
   </data>
   <data name="Shortcuts.Header" xml:space="preserve">
     <value>Shortcuts</value>
@@ -584,10 +580,6 @@
     <value>Launch layout editor</value>
     <comment>launches the FancyZones layout editor application</comment>
   </data>
-  <data name="FancyZones_LaunchEditorButton_Accessible.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
-    <value>Launch layout editor</value>
-    <comment>launches the FancyZones layout editor application</comment>
-  </data>
   <data name="FancyZones_LaunchEditorButtonControl.Description" xml:space="preserve">
     <value>Set and manage your layouts</value>
     <comment>launches the FancyZones layout editor application</comment>
@@ -672,8 +664,8 @@
   <data name="General_SettingsBackupAndRestore_ButtonRestore.Content" xml:space="preserve">
     <value>Restore</value>
   </data>
-  <data name="General_SettingsBackupAndRestore_ButtonSelectLocation.Content" xml:space="preserve">
-    <value>Browse</value>
+  <data name="General_SettingsBackupAndRestore_ButtonSelectLocation.Text" xml:space="preserve">
+    <value>Select folder</value>
   </data>
   <data name="GeneralPage_UpdateNow.Content" xml:space="preserve">
     <value>Update now</value>
@@ -814,12 +806,9 @@
   <data name="ShortcutGuide.ModuleDescription" xml:space="preserve">
     <value>Shows a help overlay with Windows shortcuts.</value>
   </data>
-  <data name="ShortcutGuide_PressTime.Header" xml:space="preserve">
-    <value>Press duration before showing (ms)</value>
+  <data name="ShortcutGuide_PressTimeForGlobalWindowsShortcuts.Header" xml:space="preserve">
+    <value>Press duration before showing global Windows shortcuts (ms)</value>
     <comment>ms = milliseconds</comment>
-  </data>
-  <data name="ShortcutGuide_PressTime.Description" xml:space="preserve">
-    <value>How long to press the Windows key to activate the module</value>
   </data>
   <data name="ShortcutGuide_ActivationMethod.Header" xml:space="preserve">
     <value>Activation method</value>
@@ -844,6 +833,9 @@
   </data>
   <data name="General_SettingsBackupAndRestore.Header" xml:space="preserve">
     <value>Backup and restore your settings at any time</value>
+  </data>
+	<data name="General_SettingsBackupAndRestore.Description" xml:space="preserve">
+    <value>PowerToys will restart automatically if needed.</value>
   </data>
   <data name="ShortcutGuide_Enable.Header" xml:space="preserve">
     <value>Enable Shortcut Guide</value>
@@ -1024,6 +1016,9 @@
   <data name="GeneralSettings_AlwaysRunAsAdminText.Header" xml:space="preserve">
     <value>Always run as administrator</value>
   </data>
+	<data name="GeneralSettings_AlwaysRunAsAdminText.Description" xml:space="preserve">
+    <value>You need to run as administrator to use this setting</value>
+  </data>
   <data name="GeneralSettings_RunningAsUserText" xml:space="preserve">
     <value>Running as user</value>
   </data>
@@ -1081,9 +1076,6 @@
   <data name="General_SettingsBackupInfo_DateHeader.Text" xml:space="preserve">
     <value>Created at:</value>
   </data>
-  <data name="General_SettingsBackupAndRestoreDescription.Text" xml:space="preserve">
-    <value>PowerToys will restart automatically if needed.</value>
-  </data>
   <data name="General_SettingsBackupAndRestoreStatusInfo.Header" xml:space="preserve">
     <value>Backup information</value>
   </data>
@@ -1098,9 +1090,6 @@
   </data>
   <data name="Admin_mode.Header" xml:space="preserve">
     <value>Administrator mode</value>
-  </data>
-  <data name="General_RunAsAdminRequired.Title" xml:space="preserve">
-    <value>You need to run as administrator to use this setting.</value>
   </data>
   <data name="FancyZones_RestoreSize.Content" xml:space="preserve">
     <value>Restore the original size of windows when unsnapping</value>
@@ -1289,8 +1278,8 @@ Made with 💗 by Microsoft and the PowerToys community.</value>
 	<data name="MoveDown.Text" xml:space="preserve">
     <value>Move down</value>
   </data>
-  <data name="ColorPickerAddNewFormat.Content" xml:space="preserve">
-    <value>Add custom format</value>
+  <data name="ColorPickerAddNewFormat.Header" xml:space="preserve">
+    <value>Add custom color format</value>
   </data>
   <data name="NewColorFormat.Header" xml:space="preserve">
     <value>Format</value>
@@ -1876,6 +1865,9 @@ From there, simply click on one of the supported files in the File Explorer and 
   <data name="General_UpToDate.Title" xml:space="preserve">
     <value>PowerToys is up to date</value>
   </data>
+  <data name="General_CantCheck.Title" xml:space="preserve">
+    <value>Network error. Please try again later</value>
+  </data>
   <data name="General_DownloadAndInstall.Content" xml:space="preserve">
     <value>Download &amp; install</value>
   </data>
@@ -2279,7 +2271,7 @@ From there, simply click on one of the supported files in the File Explorer and 
     <value>Zone appearance</value>
   </data>
   <data name="VideoConference_DeprecationWarning.Title" xml:space="preserve">
-    <value>Video Conference utility is reaching its end of life and will be unavailable in one of the future releases.</value>
+    <value>VCM is moving into legacy mode (maintenance only).</value>
   </data>
   <data name="VideoConference_DeprecationWarningButton.Content" xml:space="preserve">
     <value>Learn more</value>
@@ -2552,6 +2544,15 @@ Activate by holding the key for the character you want to add an accent to, then
     <value>Hold the key down for this much time to make the accent menu appear (ms)</value>
     <comment>ms = milliseconds</comment>
   </data>
+  <data name="QuickAccent_ExcludedApps.Description" xml:space="preserve">
+    <value>Prevents module activation if a foreground application is excluded. Add one application name per line.</value>
+  </data>
+  <data name="QuickAccent_ExcludedApps.Header" xml:space="preserve">
+    <value>Excluded apps</value>
+  </data>
+  <data name="QuickAccent_ExcludedApps_TextBoxControl.PlaceholderText" xml:space="preserve">
+    <value>Example: Teams.exe</value>
+  </data>
   <data name="LearnMore_TextExtractor.Text" xml:space="preserve">
     <value>Learn more about Text Extractor</value>
   </data>
@@ -2669,19 +2670,22 @@ Activate by holding the key for the character you want to add an accent to, then
     <value>Disable when Game Mode is On</value>
   </data>
   <data name="QuickAccent_Language.Header" xml:space="preserve">
-    <value>Language</value>
+    <value>Characters</value>
   </data>
   <data name="QuickAccent_SelectedLanguage.Header" xml:space="preserve">
-    <value>Choose language</value>
+    <value>Choose a character set</value>
   </data>
   <data name="QuickAccent_SelectedLanguage.Description" xml:space="preserve">
-    <value>Show only accented characters common to the selected language</value>
+    <value>Show only accented characters common to the selected set.</value>
   </data>
   <data name="QuickAccent_SelectedLanguage_All.Content" xml:space="preserve">
     <value>All available</value>
   </data>
   <data name="QuickAccent_SelectedLanguage_Currency.Content" xml:space="preserve">
     <value>Currency</value>
+  </data>
+  <data name="QuickAccent_SelectedLanguage_Croatian.Content" xml:space="preserve">
+    <value>Croatian</value>
   </data>
   <data name="QuickAccent_SelectedLanguage_Czech.Content" xml:space="preserve">
     <value>Czech</value>
@@ -2694,6 +2698,9 @@ Activate by holding the key for the character you want to add an accent to, then
   </data>
   <data name="QuickAccent_SelectedLanguage_Maori.Content" xml:space="preserve">
     <value>Maori</value>
+  </data>
+  <data name="QuickAccent_SelectedLanguage_Dutch.Content" xml:space="preserve">
+    <value>Dutch</value>
   </data>
   <data name="QuickAccent_SelectedLanguage_Pinyin.Content" xml:space="preserve">
     <value>Pinyin</value>
@@ -2710,6 +2717,9 @@ Activate by holding the key for the character you want to add an accent to, then
   <data name="QuickAccent_SelectedLanguage_Spanish.Content" xml:space="preserve">
     <value>Spanish</value>
   </data>
+  <data name="QuickAccent_SelectedLanguage_Swedish.Content" xml:space="preserve">
+    <value>Swedish</value>
+  </data>
   <data name="QuickAccent_SelectedLanguage_Turkish.Content" xml:space="preserve">
     <value>Turkish</value>
   </data>
@@ -2724,6 +2734,9 @@ Activate by holding the key for the character you want to add an accent to, then
   </data>
   <data name="QuickAccent_SelectedLanguage_Italian.Content" xml:space="preserve">
     <value>Italian</value>
+  </data>
+  <data name="QuickAccent_SelectedLanguage_Welsh.Content" xml:space="preserve">
+    <value>Welsh</value>
   </data>
   <data name="Hosts.ModuleDescription" xml:space="preserve">
     <value>Quick and simple utility for managing hosts file.</value>
@@ -2753,14 +2766,10 @@ Activate by holding the key for the character you want to add an accent to, then
   </data>
   <data name="Hosts_LaunchButtonControl.Header" xml:space="preserve">
     <value>Launch Host File Editor</value>
-	<comment>"Host File Editor" is a product name</comment>
-  </data>
-  <data name="Hosts_LaunchButton_Accessible.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
-    <value>Launch Host File Editor</value>
-	<comment>"Host File Editor" is a product name</comment>
+    <comment>"Host File Editor" is a product name</comment>
   </data>
   <data name="Hosts_AdditionalLinesPosition.Header" xml:space="preserve">
-    <value>Additional lines position</value>
+    <value>Position of additional content</value>
   </data>
   <data name="Hosts_AdditionalLinesPosition_Bottom.Content" xml:space="preserve">
     <value>Bottom</value>
@@ -2793,6 +2802,10 @@ Activate by holding the key for the character you want to add an accent to, then
   <data name="Hosts_Toggle_LaunchAdministrator.Header" xml:space="preserve">
     <value>Launch as administrator</value>
   </data>
+  <data name="ShortcutGuide_PressTimeForTaskbarIconShortcuts.Header" xml:space="preserve">
+    <value>Press duration before showing taskbar icon shortcuts (ms)</value>
+    <comment>ms = milliseconds</comment>
+  </data>
   <data name="FileLocksmith.ModuleDescription" xml:space="preserve">
     <value>A Windows shell extension to find out which processes are using the selected files and directories.</value>
   </data>
@@ -2809,5 +2822,8 @@ Activate by holding the key for the character you want to add an accent to, then
   </data>
   <data name="GPO_IsSettingForced.Title" xml:space="preserve">
     <value>The systems administrator is forcing this setting.</value>
+  </data>
+  <data name="Hosts_AdditionalLinesPosition.Description" xml:space="preserve">
+    <value>Additional content includes the file header and lines that can't parse.</value>
   </data>
 </root>

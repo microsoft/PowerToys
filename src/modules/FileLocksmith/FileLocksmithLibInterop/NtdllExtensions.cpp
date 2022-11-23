@@ -238,6 +238,57 @@ std::vector<NtdllExtensions::HandleInfo> NtdllExtensions::handles() noexcept
 // Returns the list of all processes.
 // On failure, returns an empty vector.
 
+std::wstring NtdllExtensions::pid_to_user(DWORD pid)
+{
+    HANDLE process = OpenProcess(PROCESS_QUERY_LIMITED_INFORMATION, FALSE, pid);
+    std::wstring user;
+    std::wstring domain;
+
+    if (process == nullptr)
+    {
+        return user;
+    }
+
+    HANDLE token = nullptr;
+
+    if (!OpenProcessToken(process, TOKEN_QUERY, &token))
+    {
+        return user;
+    }
+
+    DWORD token_size = 0;
+    GetTokenInformation(token, TokenUser, nullptr, 0, &token_size);
+
+    if (token_size < 0)
+    {
+        return user;
+    }
+
+    std::vector<BYTE> token_buffer(token_size);
+    GetTokenInformation(token, TokenUser, token_buffer.data(), token_size, &token_size);
+    TOKEN_USER* user_ptr = (TOKEN_USER*)token_buffer.data();
+    PSID psid = user_ptr->User.Sid;
+    DWORD user_buf_size = 0;
+    DWORD domain_buf_size = 0;
+    SID_NAME_USE sid_name;
+    LookupAccountSidW(nullptr, psid, nullptr, &user_buf_size, nullptr, &domain_buf_size, &sid_name);
+    if (!user_buf_size || !domain_buf_size)
+    {
+        return user;
+    }
+
+    user.resize(user_buf_size);
+    domain.resize(domain_buf_size);
+    LookupAccountSidW(nullptr, psid, user.data(), &user_buf_size, domain.data(), &domain_buf_size, &sid_name);
+    user.resize(user.size() - 1);
+    domain.resize(domain.size() - 1);
+    CloseHandle(token);
+    CloseHandle(process);
+
+    return user;
+}
+
+
 std::vector<NtdllExtensions::ProcessInfo> NtdllExtensions::processes() noexcept
 {
     auto get_info_result = NtQuerySystemInformationMemoryLoop(SystemProcessInformation);
@@ -258,6 +309,7 @@ std::vector<NtdllExtensions::ProcessInfo> NtdllExtensions::processes() noexcept
         item.name = unicode_to_str(info_ptr->ImageName);
         item.pid = (DWORD)(uintptr_t)info_ptr->UniqueProcessId;
         item.modules = process_modules(item.pid);
+        item.user = pid_to_user(item.pid);
 
         result.push_back(item);
     }

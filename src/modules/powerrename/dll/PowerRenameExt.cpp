@@ -165,7 +165,7 @@ HRESULT CPowerRenameMenu::RunPowerRename(CMINVOKECOMMANDINFO* pici, IShellItemAr
         startupInfo.dwFlags = STARTF_USESHOWWINDOW | STARTF_USESTDHANDLES;
         if (pici)
         {
-            startupInfo.wShowWindow = pici->nShow;
+            startupInfo.wShowWindow = static_cast<WORD>(pici->nShow);
         }
         else
         {
@@ -272,7 +272,7 @@ HRESULT __stdcall CPowerRenameMenu::GetCanonicalName(GUID* pguidCommandName)
     return S_OK;
 }
 
-HRESULT __stdcall CPowerRenameMenu::GetState(IShellItemArray* psiItemArray, BOOL fOkToBeSlow, EXPCMDSTATE* pCmdState)
+HRESULT __stdcall CPowerRenameMenu::GetState(IShellItemArray* /*psiItemArray*/, BOOL /*fOkToBeSlow*/, EXPCMDSTATE* pCmdState)
 {
     *pCmdState = CSettingsInstance().GetEnabled() ? ECS_ENABLED : ECS_HIDDEN;
     return S_OK;

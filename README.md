@@ -37,8 +37,8 @@ Microsoft PowerToys is a set of utilities for power users to tune and streamline
 
 Go to [Microsoft PowerToys GitHub releases page][github-release-link], click on `Assets` at the bottom to show the files available in the release. Please use the appropriate the PowerToys installer that matches your machine's architecture. For most, it is `x64`.
  
- - **For x64 processors (most common):** [PowerToysSetup-0.64.0-x64.exe](https://github.com/microsoft/PowerToys/releases/download/v0.64.0/PowerToysSetup-0.64.0-x64.exe)
- - **For ARM64 processors:** [PowerToysSetup-0.64.0-arm64.exe](https://github.com/microsoft/PowerToys/releases/download/v0.64.0/PowerToysSetup-0.64.0-arm64.exe)
+ - **For x64 processors (most common):** [PowerToysSetup-0.64.1-x64.exe](https://github.com/microsoft/PowerToys/releases/download/v0.64.1/PowerToysSetup-0.64.1-x64.exe)
+ - **For ARM64 processors:** [PowerToysSetup-0.64.1-arm64.exe](https://github.com/microsoft/PowerToys/releases/download/v0.64.1/PowerToysSetup-0.64.1-arm64.exe)
 
 This is our preferred method.
 

@@ -16,7 +16,7 @@ namespace package {
     {
         OSVERSIONINFOEX osvi{};
         DWORDLONG dwlConditionMask = 0;
-        int op = VER_GREATER_EQUAL;
+        byte op = VER_GREATER_EQUAL;
 
         // Initialize the OSVERSIONINFOEX structure.
         osvi.dwOSVersionInfoSize = sizeof(OSVERSIONINFOEX);

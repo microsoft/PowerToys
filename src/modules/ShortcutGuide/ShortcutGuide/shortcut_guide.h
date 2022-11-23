@@ -84,10 +84,17 @@ private:
         bool value;
     } shouldReactToPressedWinKey;
 
-    struct WindowsKeyPressTime
+    struct WindowsKeyPressTimeForGlobalWindowsShortcuts
     {
         static inline PCWSTR name = L"press_time";
-    } windowsKeyPressTime;
+        int value;
+    } windowsKeyPressTimeForGlobalWindowsShortcuts;
+
+    struct WindowsKeyPressTimeForTaskbarIconShortcuts
+    {
+        static inline PCWSTR name = L"press_time_for_taskbar_icon_shortcuts";
+        int value;
+    } windowsKeyPressTimeForTaskbarIconShortcuts;
 
     struct OpenShortcut
     {
