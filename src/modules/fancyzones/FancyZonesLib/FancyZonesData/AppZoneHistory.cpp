@@ -129,8 +129,8 @@ namespace JsonUtils
                     auto appHistoryArray = json.GetNamedArray(NonLocalizable::AppZoneHistoryIds::HistoryID);
                     for (uint32_t i = 0; i < appHistoryArray.Size(); ++i)
                     {
-                        json::JsonObject json = appHistoryArray.GetObjectAt(i);
-                        if (auto data = ParseSingleAppZoneHistoryItem(json); data.has_value())
+                        json::JsonObject json_hist = appHistoryArray.GetObjectAt(i);
+                        if (auto data = ParseSingleAppZoneHistoryItem(json_hist); data.has_value())
                         {
                             result.data.push_back(std::move(data.value()));
                         }
