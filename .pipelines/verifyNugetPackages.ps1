@@ -1,18 +1,13 @@
 [CmdletBinding()]
 Param(
     [Parameter(Mandatory=$True,Position=1)]
-    [string]$solution,
-
-    [Parameter(Mandatory=$True,Position=2)]
-    [string]$tempDir
+    [string]$solution
 )
 
 Write-Host "Verifying Nuget packages for $solution"
 
-Set-Location $tempDir
-
-dotnet tool install dotnet-consolidate --tool-path $tempDir
-./dotnet-consolidate.exe -s $solution
+dotnet tool restore
+dotnet consolidate -s $solution
 
 if (-not $?)
 {

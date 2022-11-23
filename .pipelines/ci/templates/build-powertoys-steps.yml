@@ -11,7 +11,7 @@ steps:
   displayName: Verifying Nuget packages for PowerToys.sln
   inputs:
     filePath: '$(build.sourcesdirectory)\.pipelines\verifyNugetPackages.ps1'
-    arguments: -solution '$(build.sourcesdirectory)\PowerToys.sln' -tempDir '$(agent.TempDirectory)'
+    arguments: -solution '$(build.sourcesdirectory)\PowerToys.sln'
     pwsh: true
 
 - task: PowerShell@2
