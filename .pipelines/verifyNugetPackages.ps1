@@ -11,7 +11,7 @@ dotnet consolidate -s $solution
 
 if (-not $?)
 {
-    Write-Host -ForegroundColor Red "Nuget packages needs to be consolidated"
+    Write-Host -ForegroundColor Red "Nuget packages with the same name must all be the same version."
     exit 1
 }
 
