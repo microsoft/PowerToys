@@ -199,7 +199,7 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
                         }
                         else
                         {
-                            NavigationFrame.Navigate(typeof(OobeOverview));
+                            NavigationFrame.Navigate(typeof(OobeOverview);
                         }
 
                         break;
