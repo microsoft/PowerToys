@@ -9,6 +9,7 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
     using System;
     using System.Collections.Generic;
     using System.IO;
+    using System.Reflection;
     using System.Security.Cryptography;
     using System.Text;
     using System.Text.Json;
@@ -52,7 +53,10 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
         private static IVariantAssignmentRequest GetVariantAssignmentRequest()
         {
             string clientID = string.Empty;
-            string jsonFilePath = @"C:\Users\sophchen\Repos\PowerToys\src\settings-ui\Settings.UI.UnitTests\BackwardsCompatibility\TestFiles\v0.22.0\Microsoft\PowerToys\settings.json";
+            string workingDirectory = Environment.CurrentDirectory;
+            var exeDir = Directory.GetParent(workingDirectory).Parent.Parent.FullName;
+            string settingsPath = @"src\settings-ui\Settings.UI.UnitTests\BackwardsCompatibility\TestFiles\v0.22.0\Microsoft\PowerToys\settings.json";
+            string jsonFilePath = Path.Combine(exeDir, settingsPath);
 
             string json = File.ReadAllText(jsonFilePath);
             var jsonDictionary = JsonSerializer.Deserialize<Dictionary<string, object>>(json);
