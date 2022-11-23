@@ -12,8 +12,6 @@ namespace Microsoft.PowerToys.Settings.UI.Library.Telemetry.Events
     [EventData]
     public class OobeVariantAssignmentEvent : EventBase, IEvent
     {
-        public DateTime Date { get; set; }
-
         public string AssignmentContext { get; set; }
 
         public PartA_PrivTags PartA_PrivTags => PartA_PrivTags.ProductAndServiceUsage;

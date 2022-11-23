@@ -9,7 +9,6 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
     using System;
     using System.Collections.Generic;
     using System.IO;
-    using System.Reflection;
     using System.Security.Cryptography;
     using System.Text;
     using System.Text.Json;
@@ -40,7 +39,7 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
                 var featureNameSpace = allFeatureFlags[0].KeySegments[0];
                 var featureFlag = allFeatureFlags[0].KeySegments[1];
                 FeatureFlagValue = allFeatureFlags[0].GetStringValue();
-                PowerToysTelemetry.Log.WriteEvent(new OobeVariantAssignmentEvent() { Date = DateTime.Today, AssignmentContext = assignmentContext });
+                PowerToysTelemetry.Log.WriteEvent(new OobeVariantAssignmentEvent() { AssignmentContext = assignmentContext });
             }
             catch (Exception)
             {
