@@ -128,8 +128,8 @@
                             <DataTemplate x:DataType="models:ColorFormatModel">
                                 <labs:SettingsCard
                                     Margin="0,0,0,2"
-                                    Description="{x:Bind Example}"
-                                    Header="{x:Bind Name}">
+                                    Description="{x:Bind Example, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                    Header="{x:Bind Name, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}">
                                     <labs:SettingsCard.Resources>
                                         <x:Double x:Key="SettingsCardLeftIndention">42</x:Double>
                                     </labs:SettingsCard.Resources>
