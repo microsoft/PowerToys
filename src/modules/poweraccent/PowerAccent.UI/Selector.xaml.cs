@@ -55,7 +55,7 @@ public partial class Selector : Window, IDisposable, INotifyPropertyChanged
         this.Visibility = Visibility.Hidden;
     }
 
-    private void PowerAccent_OnSelectionCharacter(int index, char character)
+    private void PowerAccent_OnSelectionCharacter(int index, string character)
     {
         characters.SelectedIndex = index;
 
@@ -64,7 +64,7 @@ public partial class Selector : Window, IDisposable, INotifyPropertyChanged
         characterName.Text = characterNameInfoBoxText;
     }
 
-    private void PowerAccent_OnChangeDisplay(bool isActive, char[] chars)
+    private void PowerAccent_OnChangeDisplay(bool isActive, string[] chars)
     {
         if (_powerAccent.ShowDescription)
         {

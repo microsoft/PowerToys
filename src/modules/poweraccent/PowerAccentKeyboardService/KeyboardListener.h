@@ -52,10 +52,12 @@ namespace winrt::PowerToys::PowerAccentKeyboardService::implementation
         PowerAccentSettings m_settings;
         std::function<void(LetterKey)> m_showToolbarCb;
         std::function<void(InputType)> m_hideToolbarCb;
-        std::function<void(TriggerKey)> m_nextCharCb;
+        std::function<void(TriggerKey, bool)> m_nextCharCb;
         std::function<bool(LetterKey)> m_isLanguageLetterCb;
         bool m_triggeredWithSpace;
         spdlog::stopwatch m_stopwatch;
+        bool m_leftShiftPressed;
+        bool m_rightShiftPressed;
 
         std::mutex m_mutex_excluded_apps;
         std::pair<HWND, bool> m_prevForegrndAppExcl{ NULL, false };

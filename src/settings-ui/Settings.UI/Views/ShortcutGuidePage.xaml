@@ -53,11 +53,25 @@
                         </controls:Setting.ActionContent>
                     </controls:Setting>
 
-                    <controls:Setting x:Uid="ShortcutGuide_PressTime" Icon="&#xE916;" Visibility="{x:Bind Mode=OneWay, Path=ViewModel.UseLegacyPressWinKeyBehavior, Converter={StaticResource TrueToVisibleConverter}}">
+                    <controls:Setting x:Uid="ShortcutGuide_PressTimeForGlobalWindowsShortcuts" Icon="&#xE916;" Visibility="{x:Bind Mode=OneWay, Path=ViewModel.UseLegacyPressWinKeyBehavior, Converter={StaticResource TrueToVisibleConverter}}">
                         <controls:Setting.ActionContent>
                             <NumberBox
                                 Minimum="100"
                                 Value="{x:Bind Mode=TwoWay, Path=ViewModel.PressTime}"
+                                MinWidth="{StaticResource SettingActionControlMinWidth}"
+                                SpinButtonPlacementMode="Compact"
+                                HorizontalAlignment="Left"
+                                SmallChange="50"
+                                LargeChange="100"
+                            />
+                        </controls:Setting.ActionContent>
+                    </controls:Setting>
+
+                    <controls:Setting x:Uid="ShortcutGuide_PressTimeForTaskbarIconShortcuts" Icon="&#xE916;" Visibility="{x:Bind Mode=OneWay, Path=ViewModel.UseLegacyPressWinKeyBehavior, Converter={StaticResource TrueToVisibleConverter}}">
+                        <controls:Setting.ActionContent>
+                            <NumberBox
+                                Minimum="100"
+                                Value="{x:Bind Mode=TwoWay, Path=ViewModel.DelayTime}"
                                 MinWidth="{StaticResource SettingActionControlMinWidth}"
                                 SpinButtonPlacementMode="Compact"
                                 HorizontalAlignment="Left"

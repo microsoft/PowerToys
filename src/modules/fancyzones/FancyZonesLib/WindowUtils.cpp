@@ -318,18 +318,25 @@ void FancyZonesWindowUtils::SizeWindowToRect(HWND window, RECT rect) noexcept
         ::GetWindowPlacement(window, &placement);
     }
 
-    // Do not restore minimized windows. We change their placement though so they restore to the correct zone.
-    if ((placement.showCmd != SW_SHOWMINIMIZED) &&
-        (placement.showCmd != SW_MINIMIZE))
+    if (!IsWindowVisible(window))
     {
-        placement.showCmd = SW_RESTORE;
+        placement.showCmd = SW_HIDE;
     }
-
-    // Remove maximized show command to make sure window is moved to the correct zone.
-    if (placement.showCmd == SW_SHOWMAXIMIZED)
+    else
     {
-        placement.showCmd = SW_RESTORE;
-        placement.flags &= ~WPF_RESTORETOMAXIMIZED;
+        // Do not restore minimized windows. We change their placement though so they restore to the correct zone.
+        if ((placement.showCmd != SW_SHOWMINIMIZED) &&
+            (placement.showCmd != SW_MINIMIZE))
+        {
+            placement.showCmd = SW_RESTORE;
+        }
+
+        // Remove maximized show command to make sure window is moved to the correct zone.
+        if (placement.showCmd == SW_SHOWMAXIMIZED)
+        {
+            placement.showCmd = SW_RESTORE;
+            placement.flags &= ~WPF_RESTORETOMAXIMIZED;
+        }
     }
 
     ScreenToWorkAreaCoords(window, rect);
