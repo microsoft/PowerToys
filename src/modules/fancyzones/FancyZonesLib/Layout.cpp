@@ -267,7 +267,7 @@ ZoneIndexSet Layout::GetCombinedZoneRange(const ZoneIndexSet& initialZones, cons
     ZoneIndexSet combinedZones, result;
     std::set_union(begin(initialZones), end(initialZones), begin(finalZones), end(finalZones), std::back_inserter(combinedZones));
 
-    RECT boundingRect;
+    RECT boundingRect{};
     bool boundingRectEmpty = true;
 
     for (ZoneIndex zoneId : combinedZones)

@@ -160,7 +160,7 @@ void ReportWindowsVersion(const filesystem::path& tmpDir)
 {
     auto versionReportPath = tmpDir;
     versionReportPath = versionReportPath.append("windows-version.txt");
-    OSVERSIONINFOEXW osInfo;
+    OSVERSIONINFOEXW osInfo{};
 
     try
     {
