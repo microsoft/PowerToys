@@ -64,7 +64,7 @@ public:
     HRESULT MoveSizeUpdate(POINT const& ptScreen, bool dragEnabled, bool selectManyZones) noexcept;
     HRESULT MoveSizeEnd(HWND window) noexcept;
     void MoveWindowIntoZoneByIndex(HWND window, ZoneIndex index) noexcept;
-    void MoveWindowIntoZoneByIndexSet(HWND window, const ZoneIndexSet& indexSet) noexcept;
+    void MoveWindowIntoZoneByIndexSet(HWND window, const ZoneIndexSet& indexSet, bool updatePosition = true) noexcept;
     bool MoveWindowIntoZoneByDirectionAndIndex(HWND window, DWORD vkCode, bool cycle) noexcept;
     bool MoveWindowIntoZoneByDirectionAndPosition(HWND window, DWORD vkCode, bool cycle) noexcept;
     bool ExtendWindowByDirectionAndPosition(HWND window, DWORD vkCode) noexcept;
