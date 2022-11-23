@@ -747,7 +747,7 @@
                           Title="{x:Static props:Resources.Choose_layout_type}"
                           Opened="Dialog_Opened"
                           Closed="Dialog_Closed">
-            <StackPanel Margin="0,16,0,0">
+            <StackPanel Margin="0,16,24,0">
                 <TextBlock x:Name="NameHeaderText"
                            Text="{x:Static props:Resources.Name}" />
                 <TextBox Margin="3,6,3,0"

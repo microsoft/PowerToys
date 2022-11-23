@@ -281,7 +281,7 @@ void ReportRegistry(const filesystem::path& tmpDir)
                 else
                 {
                     DWORD data = 0;
-                    DWORD dataSize = sizeof(data);
+                    dataSize = sizeof(data);
                     result = RegGetValueW(rootKey, subKey.c_str(), value.c_str(), flags, &type, &data, &dataSize);
                     if (result == ERROR_SUCCESS)
                     {
