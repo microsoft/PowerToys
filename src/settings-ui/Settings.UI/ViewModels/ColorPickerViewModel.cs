@@ -36,10 +36,12 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         private GpoRuleConfigured _enabledGpoRuleConfiguration;
         private bool _enabledStateIsGPOConfigured;
         private bool _isEnabled;
+        private int _colorFormatPreviewIndex;
 
         private Func<string, int> SendConfigMSG { get; }
 
         private List<string> _predefinedColorNames;
+        private Dictionary<string, string> _colorFormatsPreview;
 
         public ColorPickerViewModel(
             ISettingsUtils settingsUtils,
@@ -52,24 +54,6 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             {
                 throw new ArgumentNullException(nameof(settingsRepository));
             }
-
-            SelectableColorRepresentations = new Dictionary<ColorRepresentationType, string>
-            {
-                { ColorRepresentationType.CMYK, "CMYK - cmyk(100%, 50%, 75%, 0%)" },
-                { ColorRepresentationType.HEX,  "HEX - ffaa00" },
-                { ColorRepresentationType.HSB,  "HSB - hsb(100, 50%, 75%)" },
-                { ColorRepresentationType.HSI,  "HSI - hsi(100, 50%, 75%)" },
-                { ColorRepresentationType.HSL,  "HSL - hsl(100, 50%, 75%)" },
-                { ColorRepresentationType.HSV,  "HSV - hsv(100, 50%, 75%)" },
-                { ColorRepresentationType.HWB,  "HWB - hwb(100, 50%, 75%)" },
-                { ColorRepresentationType.NCol, "NCol - R10, 50%, 75%" },
-                { ColorRepresentationType.RGB,  "RGB - rgb(100, 50, 75)" },
-                { ColorRepresentationType.CIELAB, "CIE LAB - CIELab(76, 21, 80)" },
-                { ColorRepresentationType.CIEXYZ, "CIE XYZ - xyz(56, 50, 7)" },
-                { ColorRepresentationType.VEC4, "VEC4 - (1.0f, 0.7f, 0f, 1f)" },
-                { ColorRepresentationType.DecimalValue, "Decimal - 16755200" },
-                { ColorRepresentationType.HexInteger, "HEX Integer - 0xFFAA00EE" },
-            };
 
             GeneralSettingsConfig = settingsRepository.SettingsConfig;
 
@@ -103,11 +87,6 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
             InitializeColorFormats();
         }
-
-        /// <summary>
-        /// Gets a list with all selectable <see cref="ColorRepresentationType"/>s
-        /// </summary>
-        public IReadOnlyDictionary<ColorRepresentationType, string> SelectableColorRepresentations { get; }
 
         public bool IsEnabled
         {
@@ -167,11 +146,16 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             }
         }
 
-        public ColorRepresentationType SelectedColorRepresentationValue
+        public string SelectedColorRepresentationValue
         {
             get => _colorPickerSettings.Properties.CopiedColorRepresentation;
             set
             {
+                if (value == null)
+                {
+                    return; // do not set null value, it occurs when the combobox itemsource gets modified. Right after it well be reset to the correct value
+                }
+
                 if (_colorPickerSettings.Properties.CopiedColorRepresentation != value)
                 {
                     _colorPickerSettings.Properties.CopiedColorRepresentation = value;
@@ -214,6 +198,33 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         }
 
         public ObservableCollection<ColorFormatModel> ColorFormats { get; } = new ObservableCollection<ColorFormatModel>();
+
+        public Dictionary<string, string> ColorFormatsPreview
+        {
+            get => _colorFormatsPreview;
+            set
+            {
+                _colorFormatsPreview = value;
+                OnPropertyChanged(nameof(ColorFormatsPreview));
+            }
+        }
+
+        public int ColorFormatsPreviewIndex
+        {
+            get
+            {
+                return _colorFormatPreviewIndex;
+            }
+
+            set
+            {
+                if (value != _colorFormatPreviewIndex)
+                {
+                    _colorFormatPreviewIndex = value;
+                    OnPropertyChanged(nameof(ColorFormatsPreviewIndex));
+                }
+            }
+        }
 
         private void InitializeColorFormats()
         {
@@ -280,7 +291,15 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             ColorFormats[0].CanMoveUp = false;
             ColorFormats[ColorFormats.Count - 1].CanMoveDown = false;
 
+            UpdateColorFormatPreview();
             ColorFormats.CollectionChanged += ColorFormats_CollectionChanged;
+        }
+
+        private void UpdateColorFormatPreview()
+        {
+            ColorFormatsPreview = ColorFormats.Select(x => new KeyValuePair<string, string>(x.Name, x.Name + " - " + x.Example)).ToDictionary(x => x.Key, x => x.Value);
+            SetPreviewSelectedIndex();
+            ScheduleSavingOfSettings();
         }
 
         private void ColorFormats_CollectionChanged(object sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
@@ -299,6 +318,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             }
 
             UpdateColorFormats();
+            UpdateColorFormatPreview();
             ScheduleSavingOfSettings();
         }
 
@@ -348,6 +368,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             }
 
             ColorFormats.Insert(0, new ColorFormatModel(newColorName, newColorFormat, isShown, true));
+            SetPreviewSelectedIndex();
         }
 
         private void NotifySettingsChanged()
@@ -415,19 +436,44 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         internal void DeleteModel(ColorFormatModel colorFormatModel)
         {
             ColorFormats.Remove(colorFormatModel);
+            SetPreviewSelectedIndex();
         }
 
         internal void UpdateColorFormat(string oldName, ColorFormatModel colorFormat)
         {
-            List<ColorFormatModel> candidates = ColorFormats.Where(x => x.Name.Equals(oldName, StringComparison.Ordinal)).ToList();  // should allways contain 1 element
-            if (candidates.Count != 1)
+            if (SelectedColorRepresentationValue == oldName)
             {
-                return;
+                SelectedColorRepresentationValue = colorFormat.Name;    // name might be changed by the user
             }
 
-            ColorFormatModel oldModel = candidates.Single();
-            oldModel.Name = colorFormat.Name;
-            oldModel.Example = colorFormat.Example;
+            UpdateColorFormatPreview();
+        }
+
+        internal void SetPreviewSelectedIndex()
+        {
+            int index = 0;
+            int defaultIndex = 0;
+
+            foreach (var item in ColorFormats)
+            {
+                if (item.Name == SelectedColorRepresentationValue)
+                {
+                    break;
+                }
+                else if (item.Name == "HEX")
+                {
+                    defaultIndex = index;
+                }
+
+                index++;
+            }
+
+            if (index >= ColorFormats.Count)
+            {
+                index = defaultIndex;
+            }
+
+            ColorFormatsPreviewIndex = index;
         }
     }
 }

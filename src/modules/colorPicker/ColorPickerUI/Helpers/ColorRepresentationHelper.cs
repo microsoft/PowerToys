@@ -21,10 +21,10 @@ namespace ColorPicker.Helpers
         /// <param name="color">The <see cref="Color"/> for the presentation</param>
         /// <param name="colorRepresentationType">The type of the representation</param>
         /// <returns>A <see cref="string"/> representation of a color</returns>
-        internal static string GetStringRepresentationFromMediaColor(System.Windows.Media.Color color, ColorRepresentationType colorRepresentationType)
+        internal static string GetStringRepresentationFromMediaColor(System.Windows.Media.Color color, string colorRepresentationType)
         {
             var drawingcolor = Color.FromArgb(color.A, color.R, color.G, color.B);
-            return GetStringRepresentation(drawingcolor, colorRepresentationType);
+            return GetStringRepresentation(drawingcolor, colorRepresentationType, string.Empty);
         }
 
         /// <summary>
@@ -33,26 +33,26 @@ namespace ColorPicker.Helpers
         /// <param name="color">The <see cref="Color"/> for the presentation</param>
         /// <param name="colorRepresentationType">The type of the representation</param>
         /// <returns>A <see cref="string"/> representation of a color</returns>
-        internal static string GetStringRepresentation(Color color, ColorRepresentationType colorRepresentationType)
+        internal static string GetStringRepresentation(Color color, string colorRepresentationType, string colorFormat)
             => colorRepresentationType switch
             {
-                ColorRepresentationType.CMYK => ColorToCMYK(color),
-                ColorRepresentationType.HEX => ColorToHex(color),
-                ColorRepresentationType.HSB => ColorToHSB(color),
-                ColorRepresentationType.HSI => ColorToHSI(color),
-                ColorRepresentationType.HSL => ColorToHSL(color),
-                ColorRepresentationType.HSV => ColorToHSV(color),
-                ColorRepresentationType.HWB => ColorToHWB(color),
-                ColorRepresentationType.NCol => ColorToNCol(color),
-                ColorRepresentationType.RGB => ColorToRGB(color),
-                ColorRepresentationType.CIELAB => ColorToCIELAB(color),
-                ColorRepresentationType.CIEXYZ => ColorToCIEXYZ(color),
-                ColorRepresentationType.VEC4 => ColorToFloat(color),
-                ColorRepresentationType.DecimalValue => ColorToDecimal(color),
-                ColorRepresentationType.HexInteger => ColorToHexInteger(color),
+                "CMYK" => ColorToCMYK(color),
+                "HEX" => ColorToHex(color),
+                "HSB" => ColorToHSB(color),
+                "HSI" => ColorToHSI(color),
+                "HSL" => ColorToHSL(color),
+                "HSV" => ColorToHSV(color),
+                "HWB" => ColorToHWB(color),
+                "NCol" => ColorToNCol(color),
+                "RGB" => ColorToRGB(color),
+                "CIELAB" => ColorToCIELAB(color),
+                "CIEXYZ" => ColorToCIEXYZ(color),
+                "VEC4" => ColorToFloat(color),
+                "Decimal" => ColorToDecimal(color),
+                "HEX Int" => ColorToHexInteger(color),
 
                 // Fall-back value, when "_userSettings.CopiedColorRepresentation.Value" is incorrect
-                _ => ColorToHex(color),
+                _ => string.IsNullOrEmpty(colorFormat) ? ColorToHex(color) : ColorFormatHelper.GetStringRepresentation(color, colorFormat),
             };
 
         /// <summary>

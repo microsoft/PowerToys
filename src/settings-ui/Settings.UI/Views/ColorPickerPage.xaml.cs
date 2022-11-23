@@ -3,16 +3,12 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
-using System.Collections.Generic;
 using System.Windows.Input;
 using ManagedCommon;
 using Microsoft.PowerToys.Settings.UI.Helpers;
 using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.PowerToys.Settings.UI.ViewModels;
-using Microsoft.UI.Text;
-using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
-using Microsoft.UI.Xaml.Documents;
 using Windows.ApplicationModel.Resources;
 using Windows.System;
 
@@ -51,19 +47,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
              * so after InitializeComponent() the ItemSource is still empty and can't automatically select a entry.
              * Selection via SelectedItem and SelectedValue is still not working too
              */
-            var index = 0;
-
-            foreach (var item in ViewModel.SelectableColorRepresentations)
-            {
-                if (item.Key == ViewModel.SelectedColorRepresentationValue)
-                {
-                    break;
-                }
-
-                index++;
-            }
-
-            ColorPicker_ComboBox.SelectedIndex = index;
+            ViewModel.SetPreviewSelectedIndex();
         }
 
         private void ReorderButtonUp_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)

@@ -14,7 +14,9 @@ namespace ColorPicker.Settings
 
         SettingItem<bool> ChangeCursor { get; }
 
-        SettingItem<ColorRepresentationType> CopiedColorRepresentation { get; set; }
+        SettingItem<string> CopiedColorRepresentation { get; set; }
+
+        SettingItem<string> CopiedColorRepresentationFormat { get; set; }
 
         SettingItem<ColorPickerActivationAction> ActivationAction { get; }
 

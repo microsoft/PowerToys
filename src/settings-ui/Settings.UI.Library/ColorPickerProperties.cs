@@ -23,6 +23,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             VisibleColorFormats.Add("HSL", new KeyValuePair<bool, string>(true, string.Empty));
             ShowColorName = false;
             ActivationAction = ColorPickerActivationAction.OpenColorPickerAndThenEditor;
+            CopiedColorRepresentation = "HEX";
         }
 
         public HotkeySettings ActivationShortcut { get; set; }
@@ -32,7 +33,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         public bool ChangeCursor { get; set; }
 
         [JsonPropertyName("copiedcolorrepresentation")]
-        public ColorRepresentationType CopiedColorRepresentation { get; set; }
+        public string CopiedColorRepresentation { get; set; }
 
         [JsonPropertyName("activationaction")]
         public ColorPickerActivationAction ActivationAction { get; set; }

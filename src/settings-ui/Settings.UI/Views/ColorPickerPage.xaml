@@ -6,7 +6,7 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:controls="using:Microsoft.PowerToys.Settings.UI.Controls"
     xmlns:converters="using:CommunityToolkit.WinUI.UI.Converters"
-    xmlns:models="using:Microsoft.PowerToys.Settings.UI.Library"
+    xmlns:models="using:Microsoft.PowerToys.Settings.UI.Library" xmlns:viewmodels="using:Microsoft.PowerToys.Settings.UI.ViewModels" d:DataContext="{d:DesignInstance Type=viewmodels:ColorPickerViewModel}"
     mc:Ignorable="d"
     x:Name="RootPage"
     AutomationProperties.LandmarkType="Main">
@@ -64,10 +64,12 @@
                                     x:Name="ColorPicker_ComboBox"
                                     HorizontalAlignment="Left"
                                     DisplayMemberPath="Value"
-                                    ItemsSource="{Binding SelectableColorRepresentations}"
+                                    ItemsSource="{Binding ColorFormatsPreview, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                                     Loaded="ColorPicker_ComboBox_Loaded"
+                                    SelectedIndex="{Binding ColorFormatsPreviewIndex, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"  
                                     SelectedValue="{Binding SelectedColorRepresentationValue, Mode=TwoWay}"
-                                    SelectedValuePath="Key" />
+                                    SelectedValuePath="Key">
+                            </ComboBox>
                         </controls:Setting.ActionContent>
                     </controls:Setting>
 
