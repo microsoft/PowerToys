@@ -46,7 +46,12 @@
 #include <common/utils/window.h>
 #include <common/version/version.h>
 #include <common/utils/string_utils.h>
+
+#pragma warning(push)
+#pragma warning(disable : 4458)
 #include <gdiplus.h>
+#pragma warning(pop)
+
 
 namespace
 {
