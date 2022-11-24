@@ -177,7 +177,7 @@
     <value>Capture screen continuously during measuring</value>
   </data>
   <data name="MeasureTool_ContinuousCapture.Description" xml:space="preserve">
-    <value>Refresh screen contexts in real-time instead of making a screenshot once. </value>
+    <value>Refresh screen contexts in real-time instead of making a screenshot once</value>
   </data>
   <data name="MeasureTool_PerColorChannelEdgeDetection.Header" xml:space="preserve">
     <value>Per color channel edge detection</value>
@@ -186,10 +186,10 @@
     <value>If enabled, test that all color channels are within a tolerance distance from each other. Otherwise, check that the sum of all color channels differences is smaller than the tolerance.</value>
   </data>
   <data name="MeasureTool_DrawFeetOnCross.Header" xml:space="preserve">
-    <value>Draw feet on cross</value>
+    <value>Draw serif on cross</value>
   </data>
   <data name="MeasureTool_DrawFeetOnCross.Description" xml:space="preserve">
-    <value>Adds feet to the end of cross lines.</value>
+    <value>Adds serif to the end of cross lines</value>
   </data>
   <data name="MeasureTool_EnableMeasureTool.Header" xml:space="preserve">
     <value>Enable Screen Ruler</value>
@@ -553,22 +553,13 @@
     <comment>Shortcut to launch the FancyZones layout editor application</comment>
   </data>
   <data name="FancyZones_WindowSwitching_GroupSettings.Header" xml:space="preserve">
-    <value>Window switching</value>
-  </data>
-  <data name="FancyZones_WindowSwitching_GroupSettings.Description" xml:space="preserve">
-    <value>Shortcuts for switching between windows in the current zone</value>
+    <value>Switch between windows in the current zone</value>
   </data>
   <data name="FancyZones_HotkeyNextTabControl.Header" xml:space="preserve">
     <value>Next window</value>
   </data>
-  <data name="FancyZones_HotkeyNextTabControl.Description" xml:space="preserve">
-    <value>Shortcut for switching to the next window in the current zone</value>
-  </data>
   <data name="FancyZones_HotkeyPrevTabControl.Header" xml:space="preserve">
     <value>Previous window</value>
-  </data>
-  <data name="FancyZones_HotkeyPrevTabControl.Description" xml:space="preserve">
-    <value>Shortcut for switching to the previous window in the current zone</value>
   </data>
   <data name="SettingsPage_SetShortcut.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
     <value>Shortcut setting</value>
@@ -825,21 +816,21 @@
   <data name="ShortcutGuide_PressWinKeyWarning.Title" xml:space="preserve">
     <value>In some edge cases Shortcut Guide might not function correctly when using this activation method</value>
   </data>
-  <data name="ShortcutGuide_Appearance_Behavior.Header" xml:space="preserve">
+  <data name="Appearance_Behavior.Header" xml:space="preserve">
     <value>Appearance &amp; behavior</value>
   </data>
   <data name="General_SettingsBackupAndRestoreTitle.Header" xml:space="preserve">
     <value>Backup &amp; restore</value>
   </data>
   <data name="General_SettingsBackupAndRestore.Header" xml:space="preserve">
-    <value>Backup and restore your settings at any time</value>
+    <value>Backup and restore your settings</value>
   </data>
 	<data name="General_SettingsBackupAndRestore.Description" xml:space="preserve">
-    <value>PowerToys will restart automatically if needed.</value>
+    <value>PowerToys will restart automatically if needed</value>
   </data>
   <data name="ShortcutGuide_Enable.Header" xml:space="preserve">
     <value>Enable Shortcut Guide</value>
-    <comment>do not loc the Product name.  Do you want this feature on / off</comment>
+    <comment>do not loc the Product name. Do you want this feature on / off</comment>
   </data>
   <data name="ShortcutGuide_OverlayOpacity.Header" xml:space="preserve">
     <value>Background opacity (%)</value>
@@ -2353,16 +2344,16 @@ Activate by holding the key for the character you want to add an accent to, then
     <comment>key refers to a physical key on a keyboard</comment>
   </data>
   <data name="QuickAccent_Activation_Shortcut.Description" xml:space="preserve">
-    <value>Press this key after holding down the target letter.</value>
+    <value>Press this key after holding down the target letter</value>
     <comment>key refers to a physical key on a keyboard</comment>
   </data>
   <data name="QuickAccent_Activation_Key_Arrows.Content" xml:space="preserve">
     <value>Left/Right Arrow</value>
-    <comment>Left/Right arrow keyboard keys.</comment>
+    <comment>Left/Right arrow keyboard keys</comment>
   </data>
   <data name="QuickAccent_Activation_Key_Space.Content" xml:space="preserve">
     <value>Space</value>
-    <comment>Space is the space keyboard key.</comment>
+    <comment>Space is the space keyboard key</comment>
   </data>
   <data name="QuickAccent_Activation_Key_Either.Content" xml:space="preserve">
     <value>Left, Right or Space</value>
@@ -2544,7 +2535,7 @@ Activate by holding the key for the character you want to add an accent to, then
     <value>Choose a character set</value>
   </data>
   <data name="QuickAccent_SelectedLanguage.Description" xml:space="preserve">
-    <value>Show only accented characters common to the selected set.</value>
+    <value>Show only accented characters common to the selected set</value>
   </data>
   <data name="QuickAccent_SelectedLanguage_All.Content" xml:space="preserve">
     <value>All available</value>
@@ -2692,6 +2683,6 @@ Activate by holding the key for the character you want to add an accent to, then
     <value>The systems administrator is forcing this setting.</value>
   </data>
   <data name="Hosts_AdditionalLinesPosition.Description" xml:space="preserve">
-    <value>Additional content includes the file header and lines that can't parse.</value>
+    <value>Additional content includes the file header and lines that can't parse</value>
   </data>
 </root>
