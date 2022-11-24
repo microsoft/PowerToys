@@ -10,6 +10,7 @@ namespace PowerAccent.Core
     public enum Language
     {
         ALL,
+        CA,
         CUR,
         CY,
         CZ,
@@ -27,7 +28,6 @@ namespace PowerAccent.Core
         RO,
         SK,
         SP,
-        CA,
         SV,
         TK,
     }
@@ -39,6 +39,7 @@ namespace PowerAccent.Core
             switch (lang)
             {
                 case Language.ALL: return GetDefaultLetterKeyALL(letter); // ALL
+                case Language.CA: return GetDefaultLetterKeyCA(letter); // Catalan
                 case Language.CUR: return GetDefaultLetterKeyCUR(letter); // Currency
                 case Language.CY: return GetDefaultLetterKeyCY(letter); // Welsh
                 case Language.CZ: return GetDefaultLetterKeyCZ(letter); // Czech
@@ -56,7 +57,6 @@ namespace PowerAccent.Core
                 case Language.RO: return GetDefaultLetterKeyRO(letter); // Romanian
                 case Language.SK: return GetDefaultLetterKeySK(letter); // Slovak
                 case Language.SP: return GetDefaultLetterKeySP(letter); // Spain
-                case Language.CA: return GetDefaultLetterKeyCA(letter); // Catalan
                 case Language.SV: return GetDefaultLetterKeySV(letter); // Swedish
                 case Language.TK: return GetDefaultLetterKeyTK(letter); // Turkish
             }
