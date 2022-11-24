@@ -3,7 +3,6 @@
 // See the LICENSE file in the project root for more information.
 
 using System.Windows;
-using Application = System.Windows.Application;
 
 namespace PowerAccent.UI;
 
@@ -12,8 +11,8 @@ public partial class Selector : Window
     public Selector(string[] selectedCharacters)
     {
         InitializeComponent();
-        Application.Current.MainWindow.ShowActivated = false;
-        Application.Current.MainWindow.Topmost = true;
+        this.ShowActivated = false;
+        this.Topmost = true;
         characters.ItemsSource = selectedCharacters;
         characters.SelectedIndex = 0;
     }

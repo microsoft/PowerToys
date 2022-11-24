@@ -2,7 +2,6 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-using System.Diagnostics;
 using System.Windows;
 using PowerAccent.Core.Services;
 using PowerAccent.Core.Tools;
@@ -47,10 +46,8 @@ public class PowerAccent : IDisposable
 
         _keyboardListener.SetHideToolbarEvent(new PowerToys.PowerAccentKeyboardService.HideToolbar((InputType inputType) =>
         {
-            Debug.WriteLine("HideToolbar");
             System.Windows.Application.Current.Dispatcher.Invoke(() =>
             {
-                Debug.WriteLine("HideToolbar Invoke");
                 SendInputAndHideToolbar(inputType);
             });
         }));
@@ -97,7 +94,6 @@ public class PowerAccent : IDisposable
                 {
                     if (_selectedIndex != -1)
                     {
-                        Debug.WriteLine("Insert " + _characters[_selectedIndex]);
                         WindowsFunctions.Insert(_characters[_selectedIndex], true);
                     }
 
