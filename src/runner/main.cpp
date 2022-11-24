@@ -477,8 +477,7 @@ int WINAPI WinMain(HINSTANCE /*hInstance*/, HINSTANCE /*hPrevInstance*/, LPSTR l
             if (result == 0)
             {
                 // Save settings on closing, if closed 'normal'
-                auto general_settings = get_general_settings();
-                PTSettingsHelper::save_general_settings(general_settings.to_json());
+                PTSettingsHelper::save_general_settings(get_general_settings().to_json());
             }
         }
         else

@@ -278,11 +278,11 @@ D2DOverlayWindow::D2DOverlayWindow() :
         while (running)
         {
             // Removing <std::mutex> causes C3538 on std::unique_lock lock(mutex); in show(..)
-            std::unique_lock<std::mutex> lock(tasklist_cv_mutex);
-            tasklist_cv.wait(lock, [&] { return !running || tasklist_update; });
+            std::unique_lock<std::mutex> task_list_lock(tasklist_cv_mutex);
+            tasklist_cv.wait(task_list_lock, [&] { return !running || tasklist_update; });
             if (!running)
                 return;
-            lock.unlock();
+            task_list_lock.unlock();
             while (running && tasklist_update)
             {
                 std::vector<TasklistButton> buttons;

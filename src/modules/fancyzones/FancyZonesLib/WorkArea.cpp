@@ -201,7 +201,7 @@ void WorkArea::MoveWindowIntoZoneByIndex(HWND window, ZoneIndex index) noexcept
     MoveWindowIntoZoneByIndexSet(window, { index });
 }
 
-void WorkArea::MoveWindowIntoZoneByIndexSet(HWND window, const ZoneIndexSet& indexSet) noexcept
+void WorkArea::MoveWindowIntoZoneByIndexSet(HWND window, const ZoneIndexSet& indexSet, bool updatePosition /* = true*/) noexcept
 {
     if (!m_layout || !m_layoutWindows || m_layout->Zones().empty() || indexSet.empty())
     {
@@ -209,10 +209,14 @@ void WorkArea::MoveWindowIntoZoneByIndexSet(HWND window, const ZoneIndexSet& ind
     }
 
     FancyZonesWindowUtils::SaveWindowSizeAndOrigin(window);
-    auto rect = m_layout->GetCombinedZonesRect(indexSet);
-    auto adjustedRect = FancyZonesWindowUtils::AdjustRectForSizeWindowToRect(window, rect, m_window);
-    FancyZonesWindowUtils::SizeWindowToRect(window, adjustedRect);
 
+    if (updatePosition)
+    {
+        auto rect = m_layout->GetCombinedZonesRect(indexSet);
+        auto adjustedRect = FancyZonesWindowUtils::AdjustRectForSizeWindowToRect(window, rect, m_window);
+        FancyZonesWindowUtils::SizeWindowToRect(window, adjustedRect);
+    }
+    
     m_layoutWindows->Assign(window, indexSet);
     FancyZonesWindowProperties::StampZoneIndexProperty(window, indexSet);
 
@@ -239,7 +243,7 @@ bool WorkArea::MoveWindowIntoZoneByDirectionAndIndex(HWND window, DWORD vkCode, 
         ZoneIndex oldId = zoneIndexes[0];
 
         // We reached the edge
-        if ((vkCode == VK_LEFT && oldId == 0) || (vkCode == VK_RIGHT && oldId == numZones - 1))
+        if ((vkCode == VK_LEFT && oldId == 0) || (vkCode == VK_RIGHT && oldId == static_cast<int64_t>(numZones) - 1))
         {
             if (!cycle)
             {
