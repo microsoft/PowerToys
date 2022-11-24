@@ -1,30 +1,31 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
-    <Import Project="..\..\..\Version.props" />
-    <PropertyGroup>
-        <TargetFramework>net6.0-windows10.0.19041.0</TargetFramework>
-        <RuntimeIdentifiers>win-x64;win-arm64</RuntimeIdentifiers>
-        <ImplicitUsings>enable</ImplicitUsings>
-        <Nullable>disable</Nullable>
-        <AllowUnsafeBlocks>True</AllowUnsafeBlocks>
-        <UseWPF>true</UseWPF>
-	  <UseWindowsForms>true</UseWindowsForms>
-    </PropertyGroup>
-    <PropertyGroup>
-        <CsWinRTIncludes>PowerToys.GPOWrapper;PowerToys.PowerAccentKeyboardService</CsWinRTIncludes>
-        <CsWinRTGeneratedFilesDir>$(OutDir)</CsWinRTGeneratedFilesDir>
-        <ErrorOnDuplicatePublishOutputFiles>false</ErrorOnDuplicatePublishOutputFiles>
-    </PropertyGroup>
+	<Import Project="..\..\..\Version.props" />
+	<PropertyGroup>
+		<TargetFramework>net6.0-windows10.0.19041.0</TargetFramework>
+		<SupportedOSPlatformVersion>10.0.19041.0</SupportedOSPlatformVersion>
+		<RuntimeIdentifiers>win-x64;win-arm64</RuntimeIdentifiers>
+		<ImplicitUsings>enable</ImplicitUsings>
+		<Nullable>disable</Nullable>
+		<AllowUnsafeBlocks>True</AllowUnsafeBlocks>
+		<UseWPF>true</UseWPF>
+		<UseWindowsForms>true</UseWindowsForms>
+	</PropertyGroup>
+	<PropertyGroup>
+		<CsWinRTIncludes>PowerToys.GPOWrapper;PowerToys.PowerAccentKeyboardService</CsWinRTIncludes>
+		<CsWinRTGeneratedFilesDir>$(OutDir)</CsWinRTGeneratedFilesDir>
+		<ErrorOnDuplicatePublishOutputFiles>false</ErrorOnDuplicatePublishOutputFiles>
+	</PropertyGroup>
 
-    <ItemGroup>
-        <PackageReference Include="Microsoft.Windows.CsWinRT" Version="2.0.0" />
-        <PackageReference Include="Vanara.PInvoke.User32" Version="3.3.15" />
-	<PackageReference Include="Vanara.PInvoke.Shell32" Version="3.3.15" />
-</ItemGroup>
+	<ItemGroup>
+		<PackageReference Include="Microsoft.Windows.CsWinRT" Version="2.0.0" />
+		<PackageReference Include="Vanara.PInvoke.User32" Version="3.3.15" />
+		<PackageReference Include="Vanara.PInvoke.Shell32" Version="3.3.15" />
+	</ItemGroup>
 
-    <ItemGroup>
-    <ProjectReference Include="..\..\..\common\GPOWrapper\GPOWrapper.vcxproj" />
-        <ProjectReference Include="..\..\..\settings-ui\Settings.UI.Library\Settings.UI.Library.csproj" />
-        <ProjectReference Include="..\PowerAccentKeyboardService\PowerAccentKeyboardService.vcxproj" />
-    </ItemGroup>
+	<ItemGroup>
+		<ProjectReference Include="..\..\..\common\GPOWrapper\GPOWrapper.vcxproj" />
+		<ProjectReference Include="..\..\..\settings-ui\Settings.UI.Library\Settings.UI.Library.csproj" />
+		<ProjectReference Include="..\PowerAccentKeyboardService\PowerAccentKeyboardService.vcxproj" />
+	</ItemGroup>
 
 </Project>
