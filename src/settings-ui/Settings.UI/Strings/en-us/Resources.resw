@@ -1507,13 +1507,13 @@ Take a moment to preview the various utilities listed or view our comprehensive 
     <value>Snap a window to multiple zones by holding the **Ctrl** key (while also holding **Shift**) when dragging a window.</value>
   </data>
   <data name="Oobe_FileLocksmith_HowToUse.Text" xml:space="preserve">
-    <value>In File Explorer, **right-clicking one or more selected files** and **clicking on "What's using this file?"** from the context menu.</value>
+    <value>In File Explorer, right-click one or more selected files and select **What's using this file?** from the context menu.</value>
   </data>
   <data name="Oobe_FileLocksmith_TipsAndTricks.Text" xml:space="preserve">
-    <value>Press the Restart Elevated button from the File Locksmith UI to also get information on elevated processes that might be using the files.</value>
+    <value>Press the **Restart Elevated** button from the File Locksmith UI to also get information on elevated processes that might be using the files.</value>
   </data>
   <data name="Oobe_FileExplorer_HowToEnable.Text" xml:space="preserve">
-    <value>Open File Explorer, **select the View tab** in the File Explorer ribbon, then **select Preview Pane**. 
+    <value>Open File Explorer, select the **View** tab in the File Explorer ribbon, then select **Preview Pane**. 
 From there, simply click on one of the supported files in the File Explorer and observe the content on the preview pane!</value>
   </data>
   <data name="Oobe_HowToCreateMappings.Text" xml:space="preserve">
@@ -1529,19 +1529,19 @@ From there, simply click on one of the supported files in the File Explorer and 
     <value>How to use</value>
   </data>
   <data name="Oobe_ImageResizer_HowToLaunch.Text" xml:space="preserve">
-    <value>In File Explorer, **right-clicking one or more image files** and **clicking on Resize pictures** from the context menu.</value>
+    <value>In File Explorer, right-click one or more image files and select **Resize pictures** from the context menu.</value>
   </data>
   <data name="Oobe_ImageResizer_TipsAndTricks.Text" xml:space="preserve">
     <value>Want a custom size? You can add them in the PowerToys Settings!</value>
   </data>
   <data name="Oobe_KBM_HowToCreateMappings.Text" xml:space="preserve">
-    <value>Launch **PowerToys settings**, navigate to the Keyboard Manager menu, and select either **Remap a key** or **Remap a shortcut**.</value>
+    <value>Launch **PowerToys Settings**, navigate to the Keyboard Manager menu, and select either **Remap a key** or **Remap a shortcut**.</value>
   </data>
   <data name="Oobe_KBM_TipsAndTricks.Text" xml:space="preserve">
     <value>Want to only have a shortcut work for a single application? Use the Target App field when creating the shortcut remapping.</value>
   </data>
   <data name="Oobe_PowerRename_HowToUse.Text" xml:space="preserve">
-    <value>In File Explorer, **right-clicking one or more selected files** and **clicking on PowerRename** from the context menu.</value>
+    <value>In File Explorer, right-clicking one or more selected files and select **PowerRename** from the context menu.</value>
   </data>
   <data name="Oobe_PowerRename_TipsAndTricks.Text" xml:space="preserve">
     <value>PowerRename supports searching for files using regular expressions to enable more advanced renaming functionalities.</value>
@@ -1550,7 +1550,7 @@ From there, simply click on one of the supported files in the File Explorer and 
     <value>to open Run and just start typing.</value>
   </data>
   <data name="Oobe_Run_TipsAndTricks.Text" xml:space="preserve">
-    <value>PowerToys Run supports various action keys to funnel search queries for a specific subset of results. Typing **&lt;** searches for running processes only, **?** will search only for file, or **.** for installed applications! See PowerToys documentation for the complete set of 'Action Keys' available.</value>
+    <value>PowerToys Run supports various action keys to funnel search queries for a specific subset of results. Typing `&lt;` searches for running processes only, `?` will search only for file, or `.` for installed applications! See PowerToys documentation for the complete set of 'Action Keys' available.</value>
   </data>
   <data name="Oobe_ShortcutGuide_HowToLaunch.Text" xml:space="preserve">
     <value>to open Shortcut Guide, press it again to close or press **Esc**.</value>
