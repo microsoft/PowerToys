@@ -2,12 +2,15 @@
 
 #define HKEY_WINDOWS_THEME L"Software\\Microsoft\\Windows\\CurrentVersion\\Themes\\Personalize"
 
+#pragma warning(push)
+#pragma warning(disable : 4702)
 DWORD WINAPI _checkTheme(LPVOID lpParam)
 {
     auto listener = (ThemeListener*)lpParam;
     listener->CheckTheme();
     return 0;
 }
+#pragma warning(pop)
 
 void ThemeListener::AddChangedHandler(THEME_HANDLE handle)
 {
