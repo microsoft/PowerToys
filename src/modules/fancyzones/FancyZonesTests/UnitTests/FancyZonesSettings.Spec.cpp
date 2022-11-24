@@ -2,7 +2,11 @@
 #include <filesystem>
 #include <fstream>
 
+#pragma warning(push)
+#pragma warning(disable : 4702)
 #include <FancyZonesLib/Settings.h>
+#pragma warning(pop)
+
 #include <FancyZonesLib/FancyZones.h>
 #include <FancyZonesLib/ModuleConstants.h>
 #include <common/SettingsAPI/settings_helpers.h>

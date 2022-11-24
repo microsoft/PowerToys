@@ -2,10 +2,15 @@
 #include <filesystem>
 
 #include <FancyZonesLib/FancyZonesData.h>
+
+#pragma warning(push)
+#pragma warning(disable : 4702)
 #include <FancyZonesLib/FancyZonesData/AppliedLayouts.h>
 #include <FancyZonesLib/FancyZonesData/CustomLayouts.h>
 #include <FancyZonesLib/FancyZonesData/LayoutHotkeys.h>
 #include <FancyZonesLib/FancyZonesData/LayoutTemplates.h>
+#pragma warning(pop)
+
 
 #include "util.h"
 

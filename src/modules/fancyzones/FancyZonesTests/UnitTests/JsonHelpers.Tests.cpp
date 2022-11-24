@@ -3,7 +3,11 @@
 #include <fstream>
 #include <utility>
 
+#pragma warning(push)
+#pragma warning(disable : 4702)
 #include <FancyZonesLib/FancyZonesData/AppZoneHistory.h>
+#pragma warning(pop)
+
 #include <FancyZonesLib/FancyZonesData/LayoutDefaults.h>
 #include <FancyZonesLib/FancyZonesDataTypes.h>
 #include <FancyZonesLib/JsonHelpers.h>

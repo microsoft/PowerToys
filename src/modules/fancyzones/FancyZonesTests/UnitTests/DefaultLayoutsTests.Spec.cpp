@@ -1,7 +1,11 @@
 #include "pch.h"
 #include <filesystem>
 
+#pragma warning(push)
+#pragma warning(disable : 4702)
 #include <FancyZonesLib/FancyZonesData/DefaultLayouts.h>
+#pragma warning(pop)
+
 #include <FancyZonesLib/FancyZonesData/LayoutDefaults.h>
 #include <FancyZonesLib/util.h>
 

@@ -3,10 +3,15 @@
 #include <filesystem>
 
 #include <FancyZonesLib/FancyZonesData/LayoutDefaults.h>
+
+#pragma warning(push)
+#pragma warning(disable : 4702)
 #include <FancyZonesLib/FancyZonesData/CustomLayouts.h>
+#include <FancyZonesLib/Settings.h>
+#pragma warning(pop)
+
 #include <FancyZonesLib/ZoneIndexSetBitmask.h>
 #include <FancyZonesLib/Layout.h>
-#include <FancyZonesLib/Settings.h>
 
 #include "Util.h"
 

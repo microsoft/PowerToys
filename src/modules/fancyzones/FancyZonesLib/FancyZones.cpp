@@ -1011,7 +1011,6 @@ bool FancyZones::OnSnapHotkey(DWORD vkCode) noexcept
     {
         return (vkCode == VK_LEFT || vkCode == VK_RIGHT) && OnSnapHotkeyBasedOnZoneNumber(window, vkCode);
     }
-    return false;
 }
 
 bool FancyZones::ProcessDirectedSnapHotkey(HWND window, DWORD vkCode, bool cycle, std::shared_ptr<WorkArea> workArea) noexcept
