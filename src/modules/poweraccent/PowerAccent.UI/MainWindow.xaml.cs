@@ -36,22 +36,23 @@ public partial class MainWindow : Window, IDisposable
     {
         if (isActive)
         {
-            _selector = new Selector(chars);
-            _selector.Show();
-            CenterWindow();
+            Selector selector = new Selector(chars);
+            selector.Show();
+            CenterWindow(selector);
+            _selector = selector;
             Microsoft.PowerToys.Telemetry.PowerToysTelemetry.Log.WriteEvent(new PowerAccent.Core.Telemetry.PowerAccentShowAccentMenuEvent());
         }
         else
         {
-            _selector.Close();
+            _selector?.Close();
         }
     }
 
-    private void CenterWindow()
+    private void CenterWindow(Selector selector)
     {
-        Size window = new Size(((System.Windows.Controls.Panel)_selector.Content).ActualWidth, ((System.Windows.Controls.Panel)_selector.Content).ActualHeight);
+        Size window = new Size(((System.Windows.Controls.Panel)selector.Content).ActualWidth, ((System.Windows.Controls.Panel)selector.Content).ActualHeight);
         Point position = _powerAccent.GetDisplayCoordinates(window);
-        _selector.SetPosition(position.X, position.Y);
+        selector.SetPosition(position.X, position.Y);
     }
 
     protected override void OnClosed(EventArgs e)
