@@ -34,6 +34,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             "HU",
             "IS",
             "IT",
+            "KU",
             "MI",
             "PI",
             "PL",
