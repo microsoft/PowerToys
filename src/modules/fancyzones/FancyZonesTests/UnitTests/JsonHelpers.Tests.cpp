@@ -3,6 +3,8 @@
 #include <fstream>
 #include <utility>
 
+// disabling warning 4702 - unreachable code to prevent the warning
+// on functions not used in tests.
 #pragma warning(push)
 #pragma warning(disable : 4702)
 #include <FancyZonesLib/FancyZonesData/AppZoneHistory.h>

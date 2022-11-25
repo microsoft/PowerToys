@@ -67,8 +67,10 @@ namespace updating
         throw std::runtime_error("Release object doesn't have the required asset");
     }
 
-    #pragma warning(push)
-    #pragma warning(disable : 4702)
+// disabling warning 4702 - unreachable code to prevent the warning
+// that may show up depend on the value of the constants (#defines)
+#pragma warning(push)
+#pragma warning(disable : 4702)
     std::future<nonstd::expected<github_version_info, std::wstring>> get_github_version_info_async(const bool prerelease)
     {
         // If the current version starts with 0.0.*, it means we're on a local build from a farm and shouldn't check for updates.
@@ -128,8 +130,7 @@ namespace updating
         }
         co_return nonstd::make_unexpected(NETWORK_ERROR);
     }
-    #pragma warning(pop)
-
+#pragma warning(pop)
 
     std::filesystem::path get_pending_updates_path()
     {
