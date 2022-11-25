@@ -25,9 +25,9 @@ namespace PowerAccent.Core
         PL,
         PT,
         RO,
-        RS,
         SK,
         SP,
+        SR,
         SV,
         TK,
     }
@@ -54,9 +54,9 @@ namespace PowerAccent.Core
                 case Language.PL: return GetDefaultLetterKeyPL(letter); // Polish
                 case Language.PT: return GetDefaultLetterKeyPT(letter); // Portuguese
                 case Language.RO: return GetDefaultLetterKeyRO(letter); // Romanian
-                case Language.RS: return GetDefaultLetterKeySR(letter); // Serbian
                 case Language.SK: return GetDefaultLetterKeySK(letter); // Slovak
                 case Language.SP: return GetDefaultLetterKeySP(letter); // Spain
+                case Language.SR: return GetDefaultLetterKeySR(letter); // Serbian
                 case Language.SV: return GetDefaultLetterKeySV(letter); // Swedish
                 case Language.TK: return GetDefaultLetterKeyTK(letter); // Turkish
             }
