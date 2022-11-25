@@ -10,6 +10,7 @@ namespace PowerAccent.Core
     public enum Language
     {
         ALL,
+        CA,
         CUR,
         CY,
         CZ,
@@ -38,6 +39,7 @@ namespace PowerAccent.Core
             switch (lang)
             {
                 case Language.ALL: return GetDefaultLetterKeyALL(letter); // ALL
+                case Language.CA: return GetDefaultLetterKeyCA(letter); // Catalan
                 case Language.CUR: return GetDefaultLetterKeyCUR(letter); // Currency
                 case Language.CY: return GetDefaultLetterKeyCY(letter); // Welsh
                 case Language.CZ: return GetDefaultLetterKeyCZ(letter); // Czech
@@ -269,6 +271,34 @@ namespace PowerAccent.Core
                     return new string[] { "ó" };
                 case LetterKey.VK_U:
                     return new string[] { "ú", "ü" };
+                case LetterKey.VK_COMMA:
+                    return new string[] { "¿", "?" };
+            }
+
+            return Array.Empty<string>();
+        }
+
+         // Catalan
+        private static string[] GetDefaultLetterKeyCA(LetterKey letter)
+        {
+            switch (letter)
+            {
+                case LetterKey.VK_A:
+                    return new string[] { "à", "á" };
+                case LetterKey.VK_C:
+                    return new string[] { "ç" };
+                case LetterKey.VK_E:
+                    return new string[] { "è", "é", "€" };
+                case LetterKey.VK_I:
+                    return new string[] { "ì", "í", "ï" };
+                case LetterKey.VK_N:
+                    return new string[] { "ñ" };
+                case LetterKey.VK_O:
+                    return new string[] { "ò", "ó" };
+                case LetterKey.VK_U:
+                    return new string[] { "ù", "ú", "ü" };
+                case LetterKey.VK_L:
+                    return new string[] { "·" };
                 case LetterKey.VK_COMMA:
                     return new string[] { "¿", "?" };
             }
