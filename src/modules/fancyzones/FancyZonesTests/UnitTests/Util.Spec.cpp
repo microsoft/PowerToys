@@ -1,5 +1,10 @@
 #include "pch.h"
+
+#pragma warning(push)
+#pragma warning(disable : 4505)
 #include "Util.h"
+#pragma warning(pop)
+
 #include "FancyZonesLib\util.h"
 #include "FancyZonesLib/JsonHelpers.h"
 

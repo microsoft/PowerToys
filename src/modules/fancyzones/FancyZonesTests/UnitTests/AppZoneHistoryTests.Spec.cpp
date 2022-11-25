@@ -3,7 +3,11 @@
 
 #include <FancyZonesLib/FancyZonesData/AppZoneHistory.h>
 
-#include "util.h"
+#pragma warning(push)
+#pragma warning(disable : 4505)
+#include "Util.h"
+#pragma warning(pop)
+
 #include <modules/fancyzones/FancyZonesLib/util.h>
 
 using namespace Microsoft::VisualStudio::CppUnitTestFramework;

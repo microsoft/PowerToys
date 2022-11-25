@@ -7,7 +7,11 @@
 #include <FancyZonesLib/FancyZonesData/AppZoneHistory.h>
 #include <FancyZonesLib/FancyZonesData/DefaultLayouts.h>
 #include <FancyZonesLib/LayoutAssignedWindows.h>
+
+#pragma warning(push)
+#pragma warning(disable : 4505)
 #include "Util.h"
+#pragma warning(pop)
 
 #include <common/utils/process_path.h>
 

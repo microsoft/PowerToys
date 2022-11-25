@@ -2,7 +2,10 @@
 #include "FancyZonesLib\Zone.h"
 #include "FancyZonesLib\Settings.h"
 
+#pragma warning(push)
+#pragma warning(disable : 4505)
 #include "Util.h"
+#pragma warning(pop)
 
 using namespace Microsoft::VisualStudio::CppUnitTestFramework;
 
