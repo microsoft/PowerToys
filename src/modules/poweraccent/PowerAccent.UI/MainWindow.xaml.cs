@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.Collections.Generic;
 using System.Windows;
 using Point = PowerAccent.Core.Point;
 using Size = PowerAccent.Core.Size;
@@ -13,6 +14,7 @@ public partial class MainWindow : Window, IDisposable
 {
     private Core.PowerAccent _powerAccent = new Core.PowerAccent();
     private Selector _selector;
+    private Stack<Selector> _selectorStack = new Stack<Selector>();
 
     public MainWindow()
     {
@@ -39,12 +41,16 @@ public partial class MainWindow : Window, IDisposable
             Selector selector = new Selector(chars);
             selector.Show();
             CenterWindow(selector);
+            _selectorStack.Push(selector);
             _selector = selector;
             Microsoft.PowerToys.Telemetry.PowerToysTelemetry.Log.WriteEvent(new PowerAccent.Core.Telemetry.PowerAccentShowAccentMenuEvent());
         }
         else
         {
-            _selector?.Close();
+            while (_selectorStack.Count > 0)
+            {
+                _selectorStack.Pop().Close();
+            }
         }
     }
 
