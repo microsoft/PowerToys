@@ -2,6 +2,9 @@
 
 #include <FancyZonesLib/FancyZonesDataTypes.h>
 #include <FancyZonesLib/util.h>
+
+// disable warning 4505 -'function' : unreferenced local function has been removed
+// as not all functions from Util.h
 #pragma warning(push)
 #pragma warning(disable : 4505)
 #include "Util.h"
