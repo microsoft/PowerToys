@@ -20,6 +20,7 @@ namespace PowerAccent.Core
         HU,
         IS,
         IT,
+        KU,
         MI,
         NL,
         PI,
@@ -49,6 +50,7 @@ namespace PowerAccent.Core
                 case Language.HU: return GetDefaultLetterKeyHU(letter); // Hungarian
                 case Language.IS: return GetDefaultLetterKeyIS(letter); // Iceland
                 case Language.IT: return GetDefaultLetterKeyIT(letter); // Italian
+                case Language.KU: return GetDefaultLetterKeyKU(letter); // Kurdish
                 case Language.MI: return GetDefaultLetterKeyMI(letter); // Maori
                 case Language.NL: return GetDefaultLetterKeyNL(letter); // Dutch
                 case Language.PI: return GetDefaultLetterKeyPI(letter); // Pinyin
@@ -635,6 +637,34 @@ namespace PowerAccent.Core
                     return new string[] { "ò", "ó" };
                 case LetterKey.VK_U:
                     return new string[] { "ù", "ú" };
+            }
+
+            return Array.Empty<string>();
+        }
+
+        // Kurdish
+        private static string[] GetDefaultLetterKeyKU(LetterKey letter)
+        {
+            switch (letter)
+            {
+                case LetterKey.VK_C:
+                    return new string[] { "ç" };
+                case LetterKey.VK_E:
+                    return new string[] { "ê", "€" };
+                case LetterKey.VK_I:
+                    return new string[] { "î" };
+                case LetterKey.VK_O:
+                    return new string[] { "ö", "ô" };
+                case LetterKey.VK_L:
+                    return new string[] { "ł" };
+                case LetterKey.VK_N:
+                    return new string[] { "ň" };
+                case LetterKey.VK_R:
+                    return new string[] { "ř" };
+                case LetterKey.VK_S:
+                    return new string[] { "ş" };
+                case LetterKey.VK_U:
+                    return new string[] { "û", "ü" };
             }
 
             return Array.Empty<string>();
