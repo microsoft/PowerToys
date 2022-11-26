@@ -237,7 +237,9 @@
                 "modules\\launcher\\SQLitePCLRaw.provider.e_sqlite3.dll",
                 "modules\\launcher\\ScipBe.Common.Office.OneNote.dll",
                 "modules\\launcher\\Interop.Microsoft.Office.Interop.OneNote.dll",
+                "modules\\launcher\\hyjiacan.py4n.dll",
                 "Settings\\Microsoft.Graphics.Canvas.Interop.dll",
+                "Settings\\CommunityToolkit.Labs.WinUI.SettingsControls.dll",
                 "ColorCode.Core.dll", 
                 "ColorCode.UWP.dll",
                 "UnitsNet.dll"

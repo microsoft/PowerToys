@@ -404,10 +404,10 @@ ZonesMap LayoutConfigurator::Custom(FancyZonesUtils::Rect workArea, HMONITOR mon
             DPIAware::Convert(monitor, x, y);
             DPIAware::Convert(monitor, zoneWidth, zoneHeight);
             
-            Zone zone(RECT{ static_cast<long>(x), static_cast<long>(y), static_cast<long>(x + zoneWidth), static_cast<long>(y + zoneHeight) }, zones.size());
-            if (zone.IsValid())
+            Zone zone_to_add(RECT{ static_cast<long>(x), static_cast<long>(y), static_cast<long>(x + zoneWidth), static_cast<long>(y + zoneHeight) }, zones.size());
+            if (zone_to_add.IsValid())
             {
-                if (!AddZone(zone, zones))
+                if (!AddZone(zone_to_add, zones))
                 {
                     Logger::error(L"Failed to create Custom layout. Invalid zone id");
                     return {};

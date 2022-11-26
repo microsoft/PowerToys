@@ -18,6 +18,7 @@ using Microsoft.PowerToys.Settings.UI.Library.Interfaces;
 using Microsoft.PowerToys.Settings.UI.Library.Utilities;
 using Microsoft.PowerToys.Settings.UI.Library.ViewModels.Commands;
 using Microsoft.PowerToys.Settings.Utilities;
+using Windows.ApplicationModel.Resources;
 
 namespace Microsoft.PowerToys.Settings.UI.ViewModels
 {
@@ -167,6 +168,17 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         public static List<AppSpecificKeysDataModel> CombineShortcutLists(List<KeysDataModel> globalShortcutList, List<AppSpecificKeysDataModel> appSpecificShortcutList)
         {
+            string allAppsDescription = "All Apps";
+            try
+            {
+                ResourceLoader resourceLoader = ResourceLoader.GetForViewIndependentUse();
+                allAppsDescription = resourceLoader.GetString("KeyboardManager_All_Apps_Description");
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError("Couldn't get translation for All Apps mention in KBM page.", ex);
+            }
+
             if (globalShortcutList == null && appSpecificShortcutList == null)
             {
                 return new List<AppSpecificKeysDataModel>();
@@ -177,11 +189,11 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             }
             else if (appSpecificShortcutList == null)
             {
-                return globalShortcutList.ConvertAll(x => new AppSpecificKeysDataModel { OriginalKeys = x.OriginalKeys, NewRemapKeys = x.NewRemapKeys, TargetApp = "All Apps" }).ToList();
+                return globalShortcutList.ConvertAll(x => new AppSpecificKeysDataModel { OriginalKeys = x.OriginalKeys, NewRemapKeys = x.NewRemapKeys, TargetApp = allAppsDescription }).ToList();
             }
             else
             {
-                return globalShortcutList.ConvertAll(x => new AppSpecificKeysDataModel { OriginalKeys = x.OriginalKeys, NewRemapKeys = x.NewRemapKeys, TargetApp = "All Apps" }).Concat(appSpecificShortcutList).ToList();
+                return globalShortcutList.ConvertAll(x => new AppSpecificKeysDataModel { OriginalKeys = x.OriginalKeys, NewRemapKeys = x.NewRemapKeys, TargetApp = allAppsDescription }).Concat(appSpecificShortcutList).ToList();
             }
         }
 
