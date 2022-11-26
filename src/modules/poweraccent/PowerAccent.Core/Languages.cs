@@ -29,6 +29,7 @@ namespace PowerAccent.Core
         RO,
         SK,
         SP,
+        SR,
         SV,
         TK,
     }
@@ -59,6 +60,7 @@ namespace PowerAccent.Core
                 case Language.RO: return GetDefaultLetterKeyRO(letter); // Romanian
                 case Language.SK: return GetDefaultLetterKeySK(letter); // Slovak
                 case Language.SP: return GetDefaultLetterKeySP(letter); // Spain
+                case Language.SR: return GetDefaultLetterKeySR(letter); // Serbian
                 case Language.SV: return GetDefaultLetterKeySV(letter); // Swedish
                 case Language.TK: return GetDefaultLetterKeyTK(letter); // Turkish
             }
@@ -701,6 +703,24 @@ namespace PowerAccent.Core
                     return new string[] { "å", "ä" };
                 case LetterKey.VK_O:
                     return new string[] { "ö" };
+            }
+
+            return Array.Empty<string>();
+        }
+
+        // Serbian
+        private static string[] GetDefaultLetterKeySR(LetterKey letter)
+        {
+            switch (letter)
+            {
+                case LetterKey.VK_C:
+                    return new string[] { "ć", "č" };
+                case LetterKey.VK_D:
+                    return new string[] { "đ" };
+                case LetterKey.VK_S:
+                    return new string[] { "š" };
+                case LetterKey.VK_Z:
+                    return new string[] { "ž" };
             }
 
             return Array.Empty<string>();

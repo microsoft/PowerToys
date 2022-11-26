@@ -2600,6 +2600,9 @@ Activate by holding the key for the character you want to add an accent to, then
   <data name="QuickAccent_SelectedLanguage_Romanian.Content" xml:space="preserve">
     <value>Romanian</value>
   </data>
+  <data name="QuickAccent_SelectedLanguage_Serbian.Content" xml:space="preserve">
+    <value>Serbian</value>
+  </data>
   <data name="QuickAccent_SelectedLanguage_Hungarian.Content" xml:space="preserve">
     <value>Hungarian</value>
   </data>
