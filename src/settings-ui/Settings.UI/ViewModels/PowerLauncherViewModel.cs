@@ -329,6 +329,19 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             }
         }
 
+        public bool SearchResultChangesQueryText
+        {
+            get => settings.Properties.SearchResultChangesQueryText;
+            set
+            {
+                if (settings.Properties.SearchResultChangesQueryText != value)
+                {
+                    settings.Properties.SearchResultChangesQueryText = value;
+                    UpdateSettings();
+                }
+            }
+        }
+
         public bool SearchQueryResultsWithDelay
         {
             get

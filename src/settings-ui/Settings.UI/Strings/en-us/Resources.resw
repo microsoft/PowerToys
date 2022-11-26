@@ -2705,4 +2705,10 @@ Activate by holding the key for the character you want to add an accent to, then
   <data name="Hosts_AdditionalLinesPosition.Description" xml:space="preserve">
     <value>Additional content includes the file header and lines that can't parse.</value>
   </data>
+  <data name="PowerLauncher_SearchResultChangesQueryText.Description" xml:space="preserve">
+    <value>Allow highlighted result to update query text in global search. This helps display more information but changes search results as you scroll thru them.</value>
+  </data>
+  <data name="PowerLauncher_SearchResultChangesQueryText.Header" xml:space="preserve">
+    <value>Update Query Text</value>
+  </data>
 </root>

@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO.Abstractions;
@@ -21,6 +22,7 @@ namespace Wox.Plugin
         private ToolTipData _toolTipData;
         private string _pluginDirectory;
         private string _icoPath;
+        private string _queryTextDisplay;
 
         public PluginMetadata Metadata { get; set; }
 
@@ -76,7 +78,17 @@ namespace Wox.Plugin
         /// <summary>
         /// Gets or sets the text that will get displayed in the Search text box, when this item is selected in the result list.
         /// </summary>
-        public string QueryTextDisplay { get; set; }
+        public string QueryTextDisplay
+        {
+            get => _queryTextDisplay;
+            set
+            {
+                if (Microsoft.PowerToys.Settings.UI.Library.PowerLauncherProperties.SearchResultChangesQueryText || OriginQuery.ActionKeyword != string.Empty)
+                {
+                    _queryTextDisplay = value;
+                }
+            }
+        }
 
         public string IcoPath
         {
