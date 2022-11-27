@@ -243,7 +243,7 @@ bool WorkArea::MoveWindowIntoZoneByDirectionAndIndex(HWND window, DWORD vkCode, 
         ZoneIndex oldId = zoneIndexes[0];
 
         // We reached the edge
-        if ((vkCode == VK_LEFT && oldId == 0) || (vkCode == VK_RIGHT && oldId == numZones - 1))
+        if ((vkCode == VK_LEFT && oldId == 0) || (vkCode == VK_RIGHT && oldId == static_cast<int64_t>(numZones) - 1))
         {
             if (!cycle)
             {
