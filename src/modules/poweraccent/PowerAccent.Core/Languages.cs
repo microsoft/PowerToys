@@ -10,6 +10,7 @@ namespace PowerAccent.Core
     public enum Language
     {
         ALL,
+        CA,
         CUR,
         CY,
         CZ,
@@ -19,6 +20,7 @@ namespace PowerAccent.Core
         HU,
         IS,
         IT,
+        KU,
         MI,
         NL,
         PI,
@@ -27,6 +29,7 @@ namespace PowerAccent.Core
         RO,
         SK,
         SP,
+        SR,
         SV,
         TK,
     }
@@ -38,6 +41,7 @@ namespace PowerAccent.Core
             switch (lang)
             {
                 case Language.ALL: return GetDefaultLetterKeyALL(letter); // ALL
+                case Language.CA: return GetDefaultLetterKeyCA(letter); // Catalan
                 case Language.CUR: return GetDefaultLetterKeyCUR(letter); // Currency
                 case Language.CY: return GetDefaultLetterKeyCY(letter); // Welsh
                 case Language.CZ: return GetDefaultLetterKeyCZ(letter); // Czech
@@ -47,6 +51,7 @@ namespace PowerAccent.Core
                 case Language.HU: return GetDefaultLetterKeyHU(letter); // Hungarian
                 case Language.IS: return GetDefaultLetterKeyIS(letter); // Iceland
                 case Language.IT: return GetDefaultLetterKeyIT(letter); // Italian
+                case Language.KU: return GetDefaultLetterKeyKU(letter); // Kurdish
                 case Language.MI: return GetDefaultLetterKeyMI(letter); // Maori
                 case Language.NL: return GetDefaultLetterKeyNL(letter); // Dutch
                 case Language.PI: return GetDefaultLetterKeyPI(letter); // Pinyin
@@ -55,6 +60,7 @@ namespace PowerAccent.Core
                 case Language.RO: return GetDefaultLetterKeyRO(letter); // Romanian
                 case Language.SK: return GetDefaultLetterKeySK(letter); // Slovak
                 case Language.SP: return GetDefaultLetterKeySP(letter); // Spain
+                case Language.SR: return GetDefaultLetterKeySR(letter); // Serbian
                 case Language.SV: return GetDefaultLetterKeySV(letter); // Swedish
                 case Language.TK: return GetDefaultLetterKeyTK(letter); // Turkish
             }
@@ -269,6 +275,34 @@ namespace PowerAccent.Core
                     return new string[] { "ó" };
                 case LetterKey.VK_U:
                     return new string[] { "ú", "ü" };
+                case LetterKey.VK_COMMA:
+                    return new string[] { "¿", "?" };
+            }
+
+            return Array.Empty<string>();
+        }
+
+         // Catalan
+        private static string[] GetDefaultLetterKeyCA(LetterKey letter)
+        {
+            switch (letter)
+            {
+                case LetterKey.VK_A:
+                    return new string[] { "à", "á" };
+                case LetterKey.VK_C:
+                    return new string[] { "ç" };
+                case LetterKey.VK_E:
+                    return new string[] { "è", "é", "€" };
+                case LetterKey.VK_I:
+                    return new string[] { "ì", "í", "ï" };
+                case LetterKey.VK_N:
+                    return new string[] { "ñ" };
+                case LetterKey.VK_O:
+                    return new string[] { "ò", "ó" };
+                case LetterKey.VK_U:
+                    return new string[] { "ù", "ú", "ü" };
+                case LetterKey.VK_L:
+                    return new string[] { "·" };
                 case LetterKey.VK_COMMA:
                     return new string[] { "¿", "?" };
             }
@@ -610,6 +644,34 @@ namespace PowerAccent.Core
             return Array.Empty<string>();
         }
 
+        // Kurdish
+        private static string[] GetDefaultLetterKeyKU(LetterKey letter)
+        {
+            switch (letter)
+            {
+                case LetterKey.VK_C:
+                    return new string[] { "ç" };
+                case LetterKey.VK_E:
+                    return new string[] { "ê", "€" };
+                case LetterKey.VK_I:
+                    return new string[] { "î" };
+                case LetterKey.VK_O:
+                    return new string[] { "ö", "ô" };
+                case LetterKey.VK_L:
+                    return new string[] { "ł" };
+                case LetterKey.VK_N:
+                    return new string[] { "ň" };
+                case LetterKey.VK_R:
+                    return new string[] { "ř" };
+                case LetterKey.VK_S:
+                    return new string[] { "ş" };
+                case LetterKey.VK_U:
+                    return new string[] { "û", "ü" };
+            }
+
+            return Array.Empty<string>();
+        }
+
         // Welsh
         private static string[] GetDefaultLetterKeyCY(LetterKey letter)
         {
@@ -641,6 +703,24 @@ namespace PowerAccent.Core
                     return new string[] { "å", "ä" };
                 case LetterKey.VK_O:
                     return new string[] { "ö" };
+            }
+
+            return Array.Empty<string>();
+        }
+
+        // Serbian
+        private static string[] GetDefaultLetterKeySR(LetterKey letter)
+        {
+            switch (letter)
+            {
+                case LetterKey.VK_C:
+                    return new string[] { "ć", "č" };
+                case LetterKey.VK_D:
+                    return new string[] { "đ" };
+                case LetterKey.VK_S:
+                    return new string[] { "š" };
+                case LetterKey.VK_Z:
+                    return new string[] { "ž" };
             }
 
             return Array.Empty<string>();

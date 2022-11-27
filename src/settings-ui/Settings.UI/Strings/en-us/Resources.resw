@@ -366,19 +366,11 @@
     <value>Remap a key</value>
     <comment>Keyboard Manager remap keyboard button content</comment>
   </data>
-  <data name="KeyboardManager_RemapKeyboardButton_Accessible.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
-    <value>Remap a key</value>
-    <comment>Keyboard Manager remap keyboard button content</comment>
-  </data>
   <data name="KeyboardManager_Keys.Header" xml:space="preserve">
     <value>Keys</value>
     <comment>Keyboard Manager remap keyboard header</comment>
   </data>
   <data name="KeyboardManager_RemapShortcutsButton.Header" xml:space="preserve">
-    <value>Remap a shortcut</value>
-    <comment>Keyboard Manager remap shortcuts button</comment>
-  </data>
-  <data name="KeyboardManager_RemapShortcutsButton_Accessible.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
     <value>Remap a shortcut</value>
     <comment>Keyboard Manager remap shortcuts button</comment>
   </data>
@@ -588,10 +580,6 @@
     <value>Launch layout editor</value>
     <comment>launches the FancyZones layout editor application</comment>
   </data>
-  <data name="FancyZones_LaunchEditorButton_Accessible.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
-    <value>Launch layout editor</value>
-    <comment>launches the FancyZones layout editor application</comment>
-  </data>
   <data name="FancyZones_LaunchEditorButtonControl.Description" xml:space="preserve">
     <value>Set and manage your layouts</value>
     <comment>launches the FancyZones layout editor application</comment>
@@ -676,8 +664,8 @@
   <data name="General_SettingsBackupAndRestore_ButtonRestore.Content" xml:space="preserve">
     <value>Restore</value>
   </data>
-  <data name="General_SettingsBackupAndRestore_ButtonSelectLocation.Content" xml:space="preserve">
-    <value>Browse</value>
+  <data name="General_SettingsBackupAndRestore_ButtonSelectLocation.Text" xml:space="preserve">
+    <value>Select folder</value>
   </data>
   <data name="GeneralPage_UpdateNow.Content" xml:space="preserve">
     <value>Update now</value>
@@ -845,6 +833,9 @@
   </data>
   <data name="General_SettingsBackupAndRestore.Header" xml:space="preserve">
     <value>Backup and restore your settings at any time</value>
+  </data>
+	<data name="General_SettingsBackupAndRestore.Description" xml:space="preserve">
+    <value>PowerToys will restart automatically if needed.</value>
   </data>
   <data name="ShortcutGuide_Enable.Header" xml:space="preserve">
     <value>Enable Shortcut Guide</value>
@@ -1025,6 +1016,9 @@
   <data name="GeneralSettings_AlwaysRunAsAdminText.Header" xml:space="preserve">
     <value>Always run as administrator</value>
   </data>
+	<data name="GeneralSettings_AlwaysRunAsAdminText.Description" xml:space="preserve">
+    <value>You need to run as administrator to use this setting</value>
+  </data>
   <data name="GeneralSettings_RunningAsUserText" xml:space="preserve">
     <value>Running as user</value>
   </data>
@@ -1082,9 +1076,6 @@
   <data name="General_SettingsBackupInfo_DateHeader.Text" xml:space="preserve">
     <value>Created at:</value>
   </data>
-  <data name="General_SettingsBackupAndRestoreDescription.Text" xml:space="preserve">
-    <value>PowerToys will restart automatically if needed.</value>
-  </data>
   <data name="General_SettingsBackupAndRestoreStatusInfo.Header" xml:space="preserve">
     <value>Backup information</value>
   </data>
@@ -1099,9 +1090,6 @@
   </data>
   <data name="Admin_mode.Header" xml:space="preserve">
     <value>Administrator mode</value>
-  </data>
-  <data name="General_RunAsAdminRequired.Title" xml:space="preserve">
-    <value>You need to run as administrator to use this setting.</value>
   </data>
   <data name="FancyZones_RestoreSize.Content" xml:space="preserve">
     <value>Restore the original size of windows when unsnapping</value>
@@ -2561,6 +2549,9 @@ Activate by holding the key for the character you want to add an accent to, then
   <data name="QuickAccent_SelectedLanguage_All.Content" xml:space="preserve">
     <value>All available</value>
   </data>
+  <data name="QuickAccent_SelectedLanguage_Catalan.Content" xml:space="preserve">
+    <value>Catalan</value>
+  </data>
   <data name="QuickAccent_SelectedLanguage_Currency.Content" xml:space="preserve">
     <value>Currency</value>
   </data>
@@ -2609,11 +2600,17 @@ Activate by holding the key for the character you want to add an accent to, then
   <data name="QuickAccent_SelectedLanguage_Romanian.Content" xml:space="preserve">
     <value>Romanian</value>
   </data>
+  <data name="QuickAccent_SelectedLanguage_Serbian.Content" xml:space="preserve">
+    <value>Serbian</value>
+  </data>
   <data name="QuickAccent_SelectedLanguage_Hungarian.Content" xml:space="preserve">
     <value>Hungarian</value>
   </data>
   <data name="QuickAccent_SelectedLanguage_Italian.Content" xml:space="preserve">
     <value>Italian</value>
+  </data>
+  <data name="QuickAccent_SelectedLanguage_Kurdish.Content" xml:space="preserve">
+    <value>Kurdish</value>
   </data>
   <data name="QuickAccent_SelectedLanguage_Welsh.Content" xml:space="preserve">
     <value>Welsh</value>
@@ -2645,10 +2642,6 @@ Activate by holding the key for the character you want to add an accent to, then
     <comment>"Hosts" refers to the system hosts file, do not loc</comment>
   </data>
   <data name="Hosts_LaunchButtonControl.Header" xml:space="preserve">
-    <value>Launch Host File Editor</value>
-    <comment>"Host File Editor" is a product name</comment>
-  </data>
-  <data name="Hosts_LaunchButton_Accessible.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
     <value>Launch Host File Editor</value>
     <comment>"Host File Editor" is a product name</comment>
   </data>

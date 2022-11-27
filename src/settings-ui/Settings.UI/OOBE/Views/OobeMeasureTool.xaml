@@ -9,23 +9,37 @@
     xmlns:toolkitcontrols="using:CommunityToolkit.WinUI.UI.Controls"
     mc:Ignorable="d">
 
-    <controls:OOBEPageControl x:Uid="Oobe_MeasureTool" HeroImage="ms-appx:///Assets/Modules/OOBE/ScreenRuler.gif">
+    <controls:OOBEPageControl
+        x:Uid="Oobe_MeasureTool"
+        HeroImage="ms-appx:///Assets/Modules/OOBE/ScreenRuler.gif">
 
         <controls:OOBEPageControl.PageContent>
             <StackPanel Orientation="Vertical">
-                <TextBlock x:Uid="Oobe_HowToLaunch" Style="{ThemeResource OobeSubtitleStyle}" />
+                <TextBlock
+                    x:Uid="Oobe_HowToLaunch"
+                    Style="{ThemeResource OobeSubtitleStyle}" />
 
-                <controls:ShortcutWithTextLabelControl x:Name="HotkeyActivation" x:Uid="Oobe_MeasureTool_Activation" />
+                <controls:ShortcutWithTextLabelControl
+                    x:Name="HotkeyActivation"
+                    x:Uid="Oobe_MeasureTool_Activation" />
 
-                <toolkitcontrols:MarkdownTextBlock x:Uid="Oobe_MeasureTool_HowToLaunch" Background="Transparent" />
+                <toolkitcontrols:MarkdownTextBlock
+                    x:Uid="Oobe_MeasureTool_HowToLaunch"
+                    Background="Transparent" />
 
                 <StackPanel
                     Margin="0,24,0,0"
                     Orientation="Horizontal"
                     Spacing="12">
-                    <Button x:Uid="OOBE_Settings" Click="SettingsLaunchButton_Click" />
-                    <HyperlinkButton NavigateUri="https://aka.ms/PowerToysOverview_ScreenRuler" Style="{StaticResource TextButtonStyle}">
-                        <TextBlock x:Uid="LearnMore_MeasureTool" TextWrapping="Wrap" />
+                    <Button
+                        x:Uid="OOBE_Settings"
+                        Click="SettingsLaunchButton_Click" />
+                    <HyperlinkButton
+                        NavigateUri="https://aka.ms/PowerToysOverview_ScreenRuler"
+                        Style="{StaticResource TextButtonStyle}">
+                        <TextBlock
+                            x:Uid="LearnMore_MeasureTool"
+                            TextWrapping="Wrap" />
                     </HyperlinkButton>
                 </StackPanel>
             </StackPanel>

@@ -1,0 +1,12 @@
+{
+    "version": 1,
+    "isRoot": true,
+    "tools": {
+        "dotnet-consolidate": {
+            "version": "2.0.0",
+            "commands": [
+                "dotnet-consolidate"
+            ]
+        }
+    }
+}
