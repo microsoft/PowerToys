@@ -17,7 +17,7 @@ namespace PowerAccent.UI;
 
 public partial class Selector : Window, IDisposable, INotifyPropertyChanged
 {
-    private Core.PowerAccent _powerAccent = new Core.PowerAccent();
+    private readonly Core.PowerAccent _powerAccent = new ();
 
     private Visibility _characterNameVisibility = Visibility.Visible;
 
@@ -33,10 +33,7 @@ public partial class Selector : Window, IDisposable, INotifyPropertyChanged
         set
         {
             _characterNameVisibility = value;
-            if (PropertyChanged != null)
-            {
-               PropertyChanged(this, new PropertyChangedEventArgs(nameof(CharacterNameVisibility)));
-            }
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(CharacterNameVisibility)));
         }
     }
 
@@ -59,21 +56,21 @@ public partial class Selector : Window, IDisposable, INotifyPropertyChanged
     {
         characters.SelectedIndex = index;
 
-        string charUnicodeNumber = _powerAccent.CharacterNames[index].CodePoint.ToString("X4", CultureInfo.InvariantCulture);
-        string characterNameInfoBoxText = "(U+" + charUnicodeNumber + ") " + _powerAccent.CharacterNames[index].Name;
-        characterName.Text = characterNameInfoBoxText;
+        if (_powerAccent.CharacterNames[index].CodePoint != 0)
+        {
+            string charUnicodeNumber = _powerAccent.CharacterNames[index].CodePoint.ToString("X4", CultureInfo.InvariantCulture);
+            string characterNameInfoBoxText = "(U+" + charUnicodeNumber + ") " + _powerAccent.CharacterNames[index].Name;
+            characterName.Text = characterNameInfoBoxText;
+        }
+        else
+        {
+            characterName.Text = "-";
+        }
     }
 
     private void PowerAccent_OnChangeDisplay(bool isActive, string[] chars)
     {
-        if (_powerAccent.ShowDescription)
-        {
-            CharacterNameVisibility = Visibility.Visible;
-        }
-        else
-        {
-            CharacterNameVisibility = Visibility.Collapsed;
-        }
+        CharacterNameVisibility = _powerAccent.ShowDescription ? Visibility.Visible : Visibility.Collapsed;
 
         this.Visibility = isActive ? Visibility.Visible : Visibility.Collapsed;
 
@@ -93,7 +90,7 @@ public partial class Selector : Window, IDisposable, INotifyPropertyChanged
     private void CenterWindow()
     {
         UpdateLayout();
-        Size window = new Size(((System.Windows.Controls.Panel)Application.Current.MainWindow.Content).ActualWidth, ((System.Windows.Controls.Panel)Application.Current.MainWindow.Content).ActualHeight);
+        Size window = new (((System.Windows.Controls.Panel)Application.Current.MainWindow.Content).ActualWidth, ((System.Windows.Controls.Panel)Application.Current.MainWindow.Content).ActualHeight);
         Point position = _powerAccent.GetDisplayCoordinates(window);
         this.Left = position.X;
         this.Top = position.Y;

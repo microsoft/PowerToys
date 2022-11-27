@@ -98,12 +98,14 @@ public class PowerAccent : IDisposable
         }, TaskScheduler.FromCurrentSynchronizationContext());
     }
 
-    private UnicodeCharInfo[] GetCharacterNames(char[] characters)
+    private UnicodeCharInfo[] GetCharacterNames(string[] characters)
     {
         UnicodeCharInfo[] charInfoCollection = Array.Empty<UnicodeCharInfo>();
-        foreach (char character in characters)
+        foreach (string character in characters)
         {
-            charInfoCollection = charInfoCollection.Append<UnicodeCharInfo>(UnicodeInfo.GetCharInfo(character)).ToArray<UnicodeCharInfo>();
+            charInfoCollection = character.Length == 1
+                ? charInfoCollection.Append<UnicodeCharInfo>(UnicodeInfo.GetCharInfo(character[0])).ToArray<UnicodeCharInfo>()
+                : charInfoCollection.Append<UnicodeCharInfo>(UnicodeInfo.GetCharInfo(0)).ToArray<UnicodeCharInfo>();
         }
 
         return charInfoCollection;
@@ -241,14 +243,7 @@ public class PowerAccent : IDisposable
         string[] result = new string[array.Length];
         for (int i = 0; i < array.Length; i++)
         {
-            if (array[i].Contains('ß'))
-            {
-                result[i] = "ẞ";
-            }
-            else
-            {
-                result[i] = array[i].ToUpper(System.Globalization.CultureInfo.InvariantCulture);
-            }
+            result[i] = array[i].Contains('ß') ? "ẞ" : array[i].ToUpper(System.Globalization.CultureInfo.InvariantCulture);
         }
 
         return result;
