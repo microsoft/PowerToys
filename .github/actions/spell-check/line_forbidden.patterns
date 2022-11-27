@@ -1,6 +1,11 @@
 # reject `m_data` as there's a certain OS which has evil defines that break things if it's used elsewhere
 # \bm_data\b
 
+# If you have a framework that uses `it()` for testing and `fit()` for debugging a specific test,
+# you might not want to check in code where you were debugging w/ `fit()`, in which case, you might want
+# to use this:
+#\bfit\(
+
 # s.b. GitHub
 \bGithub\b
 
@@ -19,6 +24,12 @@
 # s.b. greater than
 \bgreater then\b
 
+# s.b. into
+\sin to\s
+
+# s.b. opt-in
+\sopt in\s
+
 # s.b. less than
 \bless then\b
 
@@ -30,10 +41,22 @@
 \b[Nn]o[nt][- ]existent\b
 
 # s.b. preexisting
-[Pp]re-existing
+[Pp]re[- ]existing
+
+# s.b. preempt
+[Pp]re[- ]empt\b
 
 # s.b. preemptively
-[Pp]re-emptively
+[Pp]re[- ]emptively
+
+# s.b. reentrancy
+[Rr]e[- ]entrancy
+
+# s.b. reentrant
+[Rr]e[- ]entrant
+
+# s.b. workaround(s)
+#\bwork[- ]arounds?\b
 
 # Reject duplicate words
 \s([A-Z]{3,}|[A-Z][a-z]{2,}|[a-z]{3,})\s\g{-1}\s
