@@ -108,6 +108,15 @@
                             <ComboBoxItem x:Uid="QuickAccent_ToolbarPosition_Center" />
                         </ComboBox>
                     </labs:SettingsCard>
+                    <labs:SettingsCard x:Uid="QuickAccent_Description_Indicator" HeaderIcon="{ui:FontIcon FontFamily={StaticResource SymbolThemeFontFamily},
+                                                 Glyph=&#xE946;}">
+                        <ComboBox MinWidth="{StaticResource SettingActionControlMinWidth}"
+                                      SelectedIndex="{x:Bind Path=ViewModel.ShowDescription, Mode=TwoWay}" >
+                            <ComboBoxItem x:Uid="QuickAccent_Description_Always"/>
+                            <ComboBoxItem x:Uid="QuickAccent_Description_Special_Characters"/>
+                            <ComboBoxItem x:Uid="QuickAccent_Description_Never"/>
+                        </ComboBox>
+                    </labs:SettingsCard>
                 </controls:SettingsGroup>
 
                 <controls:SettingsGroup
@@ -142,39 +151,6 @@
                                     ScrollViewer.IsVerticalRailEnabled="True"
                                     ScrollViewer.VerticalScrollBarVisibility="Visible"
                                     ScrollViewer.VerticalScrollMode="Enabled"
-
-                <controls:SettingsGroup x:Uid="QuickAccent_Description" IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}">
-                    <controls:Setting x:Uid="QuickAccent_Description_Indicator" Icon="&#xE946;">
-                        <controls:Setting.ActionContent>
-                            <ComboBox MinWidth="{StaticResource SettingActionControlMinWidth}"
-                                      SelectedIndex="{x:Bind Path=ViewModel.ShowDescription, Mode=TwoWay}" >
-                                <ComboBoxItem x:Uid="QuickAccent_Description_Always"/>
-                                <ComboBoxItem x:Uid="QuickAccent_Description_Special_Characters"/>
-                                <ComboBoxItem x:Uid="QuickAccent_Description_Never"/>
-                            </ComboBox>
-                        </controls:Setting.ActionContent>
-                    </controls:Setting>
-                </controls:SettingsGroup>
-
-                <controls:SettingsGroup x:Uid="QuickAccent_Behavior" IsEnabled="{Binding Mode=OneWay, Path=IsEnabled}">
-                    <controls:Setting x:Uid="QuickAccent_InputTimeMs" Icon="&#xE916;">
-                        <controls:Setting.ActionContent>
-                            <NumberBox Minimum="100"
-                                            Value="{x:Bind Mode=TwoWay, Path=ViewModel.InputTimeMs}"
-                                            MinWidth="{StaticResource SettingActionControlMinWidth}"
-                                            SpinButtonPlacementMode="Compact"
-                                            HorizontalAlignment="Left"
-                                            SmallChange="10"
-                                            LargeChange="100"/>
-                        </controls:Setting.ActionContent>
-                    </controls:Setting>
-                    <controls:SettingExpander IsExpanded="False">
-                        <controls:SettingExpander.Header>
-                            <controls:Setting x:Uid="QuickAccent_ExcludedApps" Icon="&#xECE4;" IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}" Style="{StaticResource ExpanderHeaderSettingStyle}"/>
-                        </controls:SettingExpander.Header>
-                        <controls:SettingExpander.Content>
-                            <TextBox x:Uid="QuickAccent_ExcludedApps_TextBoxControl"
-                                    Margin="{StaticResource ExpanderSettingMargin}"
                                     Text="{x:Bind Mode=TwoWay, Path=ViewModel.ExcludedApps, UpdateSourceTrigger=PropertyChanged}"
                                     TextWrapping="Wrap" />
                             </labs:SettingsCard>
