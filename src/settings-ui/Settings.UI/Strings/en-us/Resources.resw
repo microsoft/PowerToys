@@ -186,10 +186,10 @@
     <value>If enabled, test that all color channels are within a tolerance distance from each other. Otherwise, check that the sum of all color channels differences is smaller than the tolerance.</value>
   </data>
   <data name="MeasureTool_DrawFeetOnCross.Header" xml:space="preserve">
-    <value>Draw serif on cross</value>
+    <value>Draw feet on cross</value>
   </data>
   <data name="MeasureTool_DrawFeetOnCross.Description" xml:space="preserve">
-    <value>Adds serif to the end of cross lines</value>
+    <value>Adds feet to the end of cross lines</value>
   </data>
   <data name="MeasureTool_EnableMeasureTool.Header" xml:space="preserve">
     <value>Enable Screen Ruler</value>
