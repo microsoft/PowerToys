@@ -8,7 +8,7 @@
 #include <FancyZonesLib/FancyZonesData/LayoutTemplates.h>
 
 // disable warning 4505 -'function' : unreferenced local function has been removed
-// as not all functions from Util.h
+// as not all functions from Util.h are used in this test
 #pragma warning(push)
 #pragma warning(disable : 4505)
 #include "Util.h"
