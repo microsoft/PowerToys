@@ -181,7 +181,7 @@ namespace
 OverlayWindow::OverlayWindow(HWND activeWindow)
 {
     overlay_window_instance = this;
-    this -> activeWindow = activeWindow;
+    this->activeWindow = activeWindow;
     app_name = GET_RESOURCE_STRING(IDS_SHORTCUT_GUIDE);
 
     Logger::info("Overlay Window is creating");
