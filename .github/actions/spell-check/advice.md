@@ -1,5 +1,5 @@
 <!-- See https://github.com/check-spelling/check-spelling/wiki/Configuration-Examples%3A-advice --> <!-- markdownlint-disable MD033 MD041 -->
-<details><summary>If the flagged items are false positives</summary>
+<details><summary>If the flagged items are :exploding_head: false positives</summary>
 
 If items relate to a ...
 * binary file (or some other file you wouldn't want to check at all).
