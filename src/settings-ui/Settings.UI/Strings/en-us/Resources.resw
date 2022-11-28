@@ -1278,7 +1278,7 @@ Made with 💗 by Microsoft and the PowerToys community.</value>
 	<data name="MoveDown.Text" xml:space="preserve">
     <value>Move down</value>
   </data>
-  <data name="ColorPickerAddNewFormat.Header" xml:space="preserve">
+  <data name="ColorPickerAddNewFormat.Content" xml:space="preserve">
     <value>Add custom color format</value>
   </data>
   <data name="NewColorFormat.Header" xml:space="preserve">

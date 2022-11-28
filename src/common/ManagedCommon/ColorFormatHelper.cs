@@ -362,11 +362,11 @@ namespace ManagedCommon
                     return blackness.ToString(CultureInfo.InvariantCulture);
                 case "Ca":
                     var (_, chromaticityA, _) = ConvertToCIELABColor(color);
-                    chromaticityA = Math.Round(chromaticityA * 100, 2);
+                    chromaticityA = Math.Round(chromaticityA, 2);
                     return chromaticityA.ToString(CultureInfo.InvariantCulture);
                 case "Cb":
                     var (_, _, chromaticityB) = ConvertToCIELABColor(color);
-                    chromaticityB = Math.Round(chromaticityB * 100, 2);
+                    chromaticityB = Math.Round(chromaticityB, 2);
                     return chromaticityB.ToString(CultureInfo.InvariantCulture);
                 case "Xv":
                     var (x, _, _) = ConvertToCIEXYZColor(color);
@@ -403,6 +403,28 @@ namespace ManagedCommon
                 case 'F':
                     return (colorByteValue / 255d).ToString(FormatTypeToStringFormatters[paramFormat], CultureInfo.InvariantCulture);
                 default: return colorByteValue.ToString(CultureInfo.InvariantCulture);
+            }
+        }
+
+        public static string GetDefaultFormat(string formatName)
+        {
+            switch (formatName)
+            {
+                case "HEX": return "%Rex%Grx%Blx";
+                case "RGB": return "rgb(%Re, %Gr, %Bl)";
+                case "HSL": return "hsl(%Hu, %Sa%, %Li%)";
+                case "HSV": return "hsv(%Hu, %Sa%, %Va%)";
+                case "CMYK": return "cmyk(%Cy%, %Ma%, %Ye%, %Bk%)";
+                case "HSB": return "hsb(%Hu, %Sa%, %Br%)";
+                case "HSI": return "hsi(%Hu, %Sa%, %In%)";
+                case "HWB": return "hwb(%Hu, %Wh%, %Bn%)";
+                case "NCOL": return "%Hu, %Wh%, %Bn%";
+                case "CIELAB": return "CIELab(%Li, %Ca, %Cb)";
+                case "CIEXYZ": return "XYZ(%Xv, %Yv, %Zv)";
+                case "VEC4": return "(%Reff, %Grff, %Blff, 1f)";
+                case "Decimal": return "%Dv";
+                case "HEX Int": return "0xFF%ReX%GrX%BlX";
+                default: return string.Empty;
             }
         }
     }

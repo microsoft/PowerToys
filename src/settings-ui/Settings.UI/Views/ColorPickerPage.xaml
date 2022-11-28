@@ -108,16 +108,14 @@
                         x:Name="ColorFormatsSetting"
                         x:Uid="ColorPicker_ColorFormats"
                         HeaderIcon="{ui:FontIcon FontFamily={StaticResource SymbolThemeFontFamily},
-                                                 Glyph=&#xE762;}" />
-                    <labs:SettingsCard
-                        x:Uid="ColorPickerAddNewFormat"
-                        ActionIcon="{ui:FontIcon FontFamily={StaticResource SymbolThemeFontFamily},
-                                                 FontSize=14,
-                                                 Glyph=&#xE8A7;}"
-                        Click="NewFormatClick"
-                        HeaderIcon="{ui:FontIcon FontFamily={StaticResource SymbolThemeFontFamily},
-                                                 Glyph=&#xED0E;}"
-                        IsClickEnabled="True" />
+                                                 Glyph=&#xE762;}" >
+                        <Button
+                            x:Uid="ColorPickerAddNewFormat"
+                            Click="NewFormatClick"
+                            Style="{StaticResource AccentButtonStyle}"
+                            HorizontalAlignment="Right"
+                        />
+                    </labs:SettingsCard>
                     <!--  Disabled reordering by dragging  -->
                     <!--  CanReorderItems="True" AllowDrop="True"  -->
                     <ItemsControl

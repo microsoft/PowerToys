@@ -10,6 +10,7 @@ using System.Linq;
 using System.Text.Json;
 using System.Timers;
 using global::PowerToys.GPOWrapper;
+using ManagedCommon;
 using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.PowerToys.Settings.UI.Library.Enumerations;
 using Microsoft.PowerToys.Settings.UI.Library.Helpers;
@@ -61,10 +62,14 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
             if (colorPickerSettingsRepository == null)
             {
-                throw new ArgumentNullException(nameof(colorPickerSettingsRepository));
+                // used in release. This method converts the settings stored in the previous form, so we have forwarts compatibilty
+                _colorPickerSettings = _settingsUtils.GetSettingsOrDefault<ColorPickerSettings, ColorPickerSettingsVersion1>(ColorPickerSettings.ModuleName, settingsUpgrader: ColorPickerSettings.UpgradeSettings);
+            }
+            else
+            {
+                _colorPickerSettings = colorPickerSettingsRepository.SettingsConfig; // used in the unit tests
             }
 
-            _colorPickerSettings = colorPickerSettingsRepository.SettingsConfig;
             _enabledGpoRuleConfiguration = GPOWrapper.GetConfiguredColorPickerEnabledValue();
             if (_enabledGpoRuleConfiguration == GpoRuleConfigured.Disabled || _enabledGpoRuleConfiguration == GpoRuleConfigured.Enabled)
             {

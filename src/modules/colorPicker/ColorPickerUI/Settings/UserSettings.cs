@@ -55,7 +55,7 @@ namespace ColorPicker.Settings
         {
             if (!_loadingColorsHistory)
             {
-                var settings = _settingsUtils.GetSettingsOrDefault<ColorPickerSettings>(ColorPickerModuleName);
+                var settings = _settingsUtils.GetSettingsOrDefault<ColorPickerSettings, ColorPickerSettingsVersion1>(ColorPickerModuleName, settingsUpgrader: ColorPickerSettings.UpgradeSettings);
                 ColorHistory.CollectionChanged -= ColorHistory_CollectionChanged;
                 settings.Properties.ColorHistory = ColorHistory.ToList();
                 ColorHistory.CollectionChanged += ColorHistory_CollectionChanged;
@@ -103,7 +103,7 @@ namespace ColorPicker.Settings
                                 defaultColorPickerSettings.Save(_settingsUtils);
                             }
 
-                            var settings = _settingsUtils.GetSettingsOrDefault<ColorPickerSettings>(ColorPickerModuleName);
+                            var settings = _settingsUtils.GetSettingsOrDefault<ColorPickerSettings, ColorPickerSettingsVersion1>(ColorPickerModuleName, settingsUpgrader: ColorPickerSettings.UpgradeSettings);
                             if (settings != null)
                             {
                                 ChangeCursor.Value = settings.Properties.ChangeCursor;
@@ -178,7 +178,7 @@ namespace ColorPicker.Settings
         public void SendSettingsTelemetry()
         {
             Logger.LogInfo("Sending settings telemetry");
-            var settings = _settingsUtils.GetSettingsOrDefault<ColorPickerSettings>(ColorPickerModuleName);
+            var settings = _settingsUtils.GetSettingsOrDefault<ColorPickerSettings, ColorPickerSettingsVersion1>(ColorPickerModuleName, settingsUpgrader: ColorPickerSettings.UpgradeSettings);
             var properties = settings?.Properties;
             if (properties == null)
             {
