@@ -67,8 +67,8 @@ namespace updating
         throw std::runtime_error("Release object doesn't have the required asset");
     }
 
-// disabling warning 4702 - unreachable code to prevent the warning
-// that may show up depend on the value of the constants (#defines)
+// disabling warning 4702 - unreachable code
+// prevent the warning that may show up depend on the value of the constants (#defines)
 #pragma warning(push)
 #pragma warning(disable : 4702)
     std::future<nonstd::expected<github_version_info, std::wstring>> get_github_version_info_async(const bool prerelease)
