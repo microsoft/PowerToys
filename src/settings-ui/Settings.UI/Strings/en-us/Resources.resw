@@ -1270,7 +1270,7 @@ Made with 💗 by Microsoft and the PowerToys community.</value>
     <value>Color formats</value>
   </data>
   <data name="ColorPicker_ColorFormats.Description" xml:space="preserve">
-    <value>Select which color formats (and in what order) should show up in the editor</value>
+    <value>Configure the color formats (edit, delete, hide, reorder them)</value>
   </data>
   <data name="MoveUp.Text" xml:space="preserve">
     <value>Move up</value>
