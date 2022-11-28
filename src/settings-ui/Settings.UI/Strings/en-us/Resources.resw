@@ -1541,7 +1541,7 @@ From there, simply click on one of the supported files in the File Explorer and 
     <value>Want to only have a shortcut work for a single application? Use the Target App field when creating the shortcut remapping.</value>
   </data>
   <data name="Oobe_PowerRename_HowToUse.Text" xml:space="preserve">
-    <value>In File Explorer, right-clicking one or more selected files and select **PowerRename** from the context menu.</value>
+    <value>In File Explorer, right-click one or more selected files and select **PowerRename** from the context menu.</value>
   </data>
   <data name="Oobe_PowerRename_TipsAndTricks.Text" xml:space="preserve">
     <value>PowerRename supports searching for files using regular expressions to enable more advanced renaming functionalities.</value>
