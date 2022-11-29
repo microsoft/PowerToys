@@ -858,7 +858,7 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeZone.Helper
         /// <returns><see langword="true"/>if the query match, otherwise <see langword="false"/>.</returns>
         internal static bool MatchStandardTimeNames(in TimeZoneProperties timeZoneProperties, Query query)
         {
-            var result = timeZoneProperties.TimeNamesDaylight.Any(x => x.Contains(query.Search, StringComparison.CurrentCultureIgnoreCase));
+            var result = timeZoneProperties.TimeNamesStandard.Any(x => x.Contains(query.Search, StringComparison.CurrentCultureIgnoreCase));
             return result;
         }
 
