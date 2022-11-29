@@ -12,20 +12,19 @@ namespace Experimentation
 
     public class Experiments
     {
+        private enum FeatureFlag
+        {
+            Current,
+            Alternate,
+        }
+
         public bool EnableLandingPageExperiment()
         {
             Experiments varServ = new Experiments();
             varServ.VariantAssignmentProvider_Initialize();
-            var landingPageFlag = varServ.FeatureFlagValue;
+            var landingPageExperiment = varServ.IsExperiment;
 
-            if (landingPageFlag == "alternate")
-            {
-                return true;
-            }
-            else
-            {
-                return false;
-            }
+            return landingPageExperiment;
         }
 
         private void VariantAssignmentProvider_Initialize()
@@ -49,17 +48,26 @@ namespace Experimentation
                 var assignmentContext = result.GetAssignmentContext();
                 var featureNameSpace = allFeatureFlags[0].KeySegments[0];
                 var featureFlag = allFeatureFlags[0].KeySegments[1];
-                FeatureFlagValue = allFeatureFlags[0].GetStringValue();
+                var featureFlagValue = allFeatureFlags[0].GetStringValue();
+
+                if (featureFlagValue == "alternate")
+                {
+                    IsExperiment = true;
+                }
+                else
+                {
+                    IsExperiment = false;
+                }
 
                 PowerToysTelemetry.Log.WriteEvent(new OobeVariantAssignmentEvent() { AssignmentContext = assignmentContext, ClientID = AssignmentUnit });
             }
             catch (Exception)
             {
-                FeatureFlagValue = "current";
+                IsExperiment = false;
             }
         }
 
-        public string? FeatureFlagValue { get; set; }
+        public bool IsExperiment { get; set; }
 
         private string? AssignmentUnit { get; set; }
 
