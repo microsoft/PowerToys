@@ -28,6 +28,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             "CUR",
             "HR",
             "CZ",
+            "GA",
             "NL",
             "FR",
             "DE",
