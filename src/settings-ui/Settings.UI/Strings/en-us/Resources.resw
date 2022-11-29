@@ -177,7 +177,7 @@
     <value>Capture screen continuously during measuring</value>
   </data>
   <data name="MeasureTool_ContinuousCapture.Description" xml:space="preserve">
-    <value>Refresh screen contexts in real-time instead of making a screenshot once. </value>
+    <value>Refresh screen contexts in real-time instead of making a screenshot once</value>
   </data>
   <data name="MeasureTool_PerColorChannelEdgeDetection.Header" xml:space="preserve">
     <value>Per color channel edge detection</value>
@@ -189,7 +189,7 @@
     <value>Draw feet on cross</value>
   </data>
   <data name="MeasureTool_DrawFeetOnCross.Description" xml:space="preserve">
-    <value>Adds feet to the end of cross lines.</value>
+    <value>Adds feet to the end of cross lines</value>
   </data>
   <data name="MeasureTool_EnableMeasureTool.Header" xml:space="preserve">
     <value>Enable Screen Ruler</value>
@@ -553,22 +553,13 @@
     <comment>Shortcut to launch the FancyZones layout editor application</comment>
   </data>
   <data name="FancyZones_WindowSwitching_GroupSettings.Header" xml:space="preserve">
-    <value>Window switching</value>
-  </data>
-  <data name="FancyZones_WindowSwitching_GroupSettings.Description" xml:space="preserve">
-    <value>Shortcuts for switching between windows in the current zone</value>
+    <value>Switch between windows in the current zone</value>
   </data>
   <data name="FancyZones_HotkeyNextTabControl.Header" xml:space="preserve">
     <value>Next window</value>
   </data>
-  <data name="FancyZones_HotkeyNextTabControl.Description" xml:space="preserve">
-    <value>Shortcut for switching to the next window in the current zone</value>
-  </data>
   <data name="FancyZones_HotkeyPrevTabControl.Header" xml:space="preserve">
     <value>Previous window</value>
-  </data>
-  <data name="FancyZones_HotkeyPrevTabControl.Description" xml:space="preserve">
-    <value>Shortcut for switching to the previous window in the current zone</value>
   </data>
   <data name="SettingsPage_SetShortcut.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
     <value>Shortcut setting</value>
@@ -825,21 +816,21 @@
   <data name="ShortcutGuide_PressWinKeyWarning.Title" xml:space="preserve">
     <value>In some edge cases Shortcut Guide might not function correctly when using this activation method</value>
   </data>
-  <data name="ShortcutGuide_Appearance_Behavior.Header" xml:space="preserve">
+  <data name="Appearance_Behavior.Header" xml:space="preserve">
     <value>Appearance &amp; behavior</value>
   </data>
   <data name="General_SettingsBackupAndRestoreTitle.Header" xml:space="preserve">
     <value>Backup &amp; restore</value>
   </data>
   <data name="General_SettingsBackupAndRestore.Header" xml:space="preserve">
-    <value>Backup and restore your settings at any time</value>
+    <value>Backup and restore your settings</value>
   </data>
 	<data name="General_SettingsBackupAndRestore.Description" xml:space="preserve">
-    <value>PowerToys will restart automatically if needed.</value>
+    <value>PowerToys will restart automatically if needed</value>
   </data>
   <data name="ShortcutGuide_Enable.Header" xml:space="preserve">
     <value>Enable Shortcut Guide</value>
-    <comment>do not loc the Product name.  Do you want this feature on / off</comment>
+    <comment>do not loc the Product name. Do you want this feature on / off</comment>
   </data>
   <data name="ShortcutGuide_OverlayOpacity.Header" xml:space="preserve">
     <value>Background opacity (%)</value>
@@ -1516,13 +1507,13 @@ Take a moment to preview the various utilities listed or view our comprehensive 
     <value>Snap a window to multiple zones by holding the **Ctrl** key (while also holding **Shift**) when dragging a window.</value>
   </data>
   <data name="Oobe_FileLocksmith_HowToUse.Text" xml:space="preserve">
-    <value>In File Explorer, **right-clicking one or more selected files** and **clicking on "What's using this file?"** from the context menu.</value>
+    <value>In File Explorer, right-click one or more selected files and select **What's using this file?** from the context menu.</value>
   </data>
   <data name="Oobe_FileLocksmith_TipsAndTricks.Text" xml:space="preserve">
-    <value>Press the Restart Elevated button from the File Locksmith UI to also get information on elevated processes that might be using the files.</value>
+    <value>Press the **Restart Elevated** button from the File Locksmith UI to also get information on elevated processes that might be using the files.</value>
   </data>
   <data name="Oobe_FileExplorer_HowToEnable.Text" xml:space="preserve">
-    <value>Open File Explorer, **select the View tab** in the File Explorer ribbon, then **select Preview Pane**. 
+    <value>Open File Explorer, select the **View** tab in the File Explorer ribbon, then select **Preview Pane**. 
 From there, simply click on one of the supported files in the File Explorer and observe the content on the preview pane!</value>
   </data>
   <data name="Oobe_HowToCreateMappings.Text" xml:space="preserve">
@@ -1538,19 +1529,19 @@ From there, simply click on one of the supported files in the File Explorer and 
     <value>How to use</value>
   </data>
   <data name="Oobe_ImageResizer_HowToLaunch.Text" xml:space="preserve">
-    <value>In File Explorer, **right-clicking one or more image files** and **clicking on Resize pictures** from the context menu.</value>
+    <value>In File Explorer, right-click one or more image files and select **Resize pictures** from the context menu.</value>
   </data>
   <data name="Oobe_ImageResizer_TipsAndTricks.Text" xml:space="preserve">
     <value>Want a custom size? You can add them in the PowerToys Settings!</value>
   </data>
   <data name="Oobe_KBM_HowToCreateMappings.Text" xml:space="preserve">
-    <value>Launch **PowerToys settings**, navigate to the Keyboard Manager menu, and select either **Remap a key** or **Remap a shortcut**.</value>
+    <value>Launch **PowerToys Settings**, navigate to the Keyboard Manager menu, and select either **Remap a key** or **Remap a shortcut**.</value>
   </data>
   <data name="Oobe_KBM_TipsAndTricks.Text" xml:space="preserve">
     <value>Want to only have a shortcut work for a single application? Use the Target App field when creating the shortcut remapping.</value>
   </data>
   <data name="Oobe_PowerRename_HowToUse.Text" xml:space="preserve">
-    <value>In File Explorer, **right-clicking one or more selected files** and **clicking on PowerRename** from the context menu.</value>
+    <value>In File Explorer, right-click one or more selected files and select **PowerRename** from the context menu.</value>
   </data>
   <data name="Oobe_PowerRename_TipsAndTricks.Text" xml:space="preserve">
     <value>PowerRename supports searching for files using regular expressions to enable more advanced renaming functionalities.</value>
@@ -1559,7 +1550,7 @@ From there, simply click on one of the supported files in the File Explorer and 
     <value>to open Run and just start typing.</value>
   </data>
   <data name="Oobe_Run_TipsAndTricks.Text" xml:space="preserve">
-    <value>PowerToys Run supports various action keys to funnel search queries for a specific subset of results. Typing **&lt;** searches for running processes only, **?** will search only for file, or **.** for installed applications! See PowerToys documentation for the complete set of 'Action Keys' available.</value>
+    <value>PowerToys Run supports various action keys to funnel search queries for a specific subset of results. Typing `&lt;` searches for running processes only, `?` will search only for file, or `.` for installed applications! See PowerToys documentation for the complete set of 'Action Keys' available.</value>
   </data>
   <data name="Oobe_ShortcutGuide_HowToLaunch.Text" xml:space="preserve">
     <value>to open Shortcut Guide, press it again to close or press **Esc**.</value>
@@ -2353,16 +2344,16 @@ Activate by holding the key for the character you want to add an accent to, then
     <comment>key refers to a physical key on a keyboard</comment>
   </data>
   <data name="QuickAccent_Activation_Shortcut.Description" xml:space="preserve">
-    <value>Press this key after holding down the target letter.</value>
+    <value>Press this key after holding down the target letter</value>
     <comment>key refers to a physical key on a keyboard</comment>
   </data>
   <data name="QuickAccent_Activation_Key_Arrows.Content" xml:space="preserve">
     <value>Left/Right Arrow</value>
-    <comment>Left/Right arrow keyboard keys.</comment>
+    <comment>Left/Right arrow keyboard keys</comment>
   </data>
   <data name="QuickAccent_Activation_Key_Space.Content" xml:space="preserve">
     <value>Space</value>
-    <comment>Space is the space keyboard key.</comment>
+    <comment>Space is the space keyboard key</comment>
   </data>
   <data name="QuickAccent_Activation_Key_Either.Content" xml:space="preserve">
     <value>Left, Right or Space</value>
@@ -2544,7 +2535,7 @@ Activate by holding the key for the character you want to add an accent to, then
     <value>Choose a character set</value>
   </data>
   <data name="QuickAccent_SelectedLanguage.Description" xml:space="preserve">
-    <value>Show only accented characters common to the selected set.</value>
+    <value>Show only accented characters common to the selected set</value>
   </data>
   <data name="QuickAccent_SelectedLanguage_All.Content" xml:space="preserve">
     <value>All available</value>
@@ -2701,6 +2692,6 @@ Activate by holding the key for the character you want to add an accent to, then
     <value>The systems administrator is forcing this setting.</value>
   </data>
   <data name="Hosts_AdditionalLinesPosition.Description" xml:space="preserve">
-    <value>Additional content includes the file header and lines that can't parse.</value>
+    <value>Additional content includes the file header and lines that can't parse</value>
   </data>
 </root>
