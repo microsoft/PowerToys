@@ -9,7 +9,7 @@
 #include "Generated Files/resource.h"
 
 // We support only one instance of the overlay
-extern class OverlayWindow* instance;
+extern class OverlayWindow* overlay_window_instance;
 
 class TargetState;
 

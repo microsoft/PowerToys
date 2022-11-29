@@ -646,7 +646,7 @@ void D2DOverlayWindow::hide_thumbnail()
 
 void D2DOverlayWindow::render(ID2D1DeviceContext5* d2d_device_context)
 {
-    if (!hidden && !instance->overlay_visible())
+    if (!hidden && !overlay_window_instance->overlay_visible())
     {
         hide();
         return;

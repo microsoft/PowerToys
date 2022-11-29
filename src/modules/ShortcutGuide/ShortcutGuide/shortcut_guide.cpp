@@ -20,7 +20,7 @@
 #include <common/hooks/LowlevelKeyboardEvent.h>
 
 // TODO: refactor singleton
-OverlayWindow* instance = nullptr;
+OverlayWindow* overlay_window_instance = nullptr;
 
 namespace
 {
@@ -136,13 +136,13 @@ namespace
             if (event.lParam->vkCode == VK_ESCAPE)
             {
                 Logger::trace(L"ESC key was pressed");
-                instance->CloseWindow(HideWindowType::ESC_PRESSED);
+                overlay_window_instance->CloseWindow(HideWindowType::ESC_PRESSED);
             }
 
             if (wasWinPressed && !isKeyDown(event) && isWin(event.lParam->vkCode))
             {
                 Logger::trace(L"Win key was released");
-                instance->CloseWindow(HideWindowType::WIN_RELEASED);
+                overlay_window_instance->CloseWindow(HideWindowType::WIN_RELEASED);
             }
 
             if (isKeyDown(event) && isWin(event.lParam->vkCode))
@@ -153,7 +153,7 @@ namespace
             if (onlyWinPressed() && isKeyDown(event) && !isWin(event.lParam->vkCode))
             {
                 Logger::trace(L"Shortcut with win key was pressed");
-                instance->CloseWindow(HideWindowType::WIN_SHORTCUT_PRESSED);
+                overlay_window_instance->CloseWindow(HideWindowType::WIN_SHORTCUT_PRESSED);
             }
         }
 
@@ -180,7 +180,7 @@ namespace
 
 OverlayWindow::OverlayWindow(HWND activeWindow)
 {
-    instance = this;
+    overlay_window_instance = this;
     this->activeWindow = activeWindow;
     app_name = GET_RESOURCE_STRING(IDS_SHORTCUT_GUIDE);
 
@@ -252,7 +252,7 @@ void OverlayWindow::CloseWindow(HideWindowType type, int mainThreadId)
 bool OverlayWindow::IsDisabled()
 {
     WCHAR exePath[MAX_PATH] = L"";
-    instance->get_exe_path(activeWindow, exePath);
+    overlay_window_instance->get_exe_path(activeWindow, exePath);
     if (wcslen(exePath) > 0)
     {
         return is_disabled_app(exePath);
