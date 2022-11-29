@@ -14,6 +14,8 @@ namespace Microsoft.PowerToys.Settings.UI.Library.Telemetry.Events
     {
         public string AssignmentContext { get; set; }
 
+        public string ClientID { get; set; }
+
         public PartA_PrivTags PartA_PrivTags => PartA_PrivTags.ProductAndServiceUsage;
     }
 }
