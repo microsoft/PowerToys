@@ -73,6 +73,11 @@ jobs:
       
   - task: NuGetToolInstaller@1
     displayName: Use NuGet Installer latest
+  
+  - task: PowerShell@2
+    displayName: Replace Stubbed Files
+    inputs:
+      filePath: 'Unstub.ps1'
 
 # this will restore the following nugets:
 # - main solution

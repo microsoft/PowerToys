@@ -4,6 +4,7 @@
 
 using System;
 using System.Collections.ObjectModel;
+using Experimentation;
 using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.PowerToys.Settings.UI.OOBE.Enums;
 using Microsoft.PowerToys.Settings.UI.OOBE.ViewModel;
