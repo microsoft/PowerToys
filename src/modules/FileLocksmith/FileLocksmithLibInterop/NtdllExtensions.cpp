@@ -1,6 +1,9 @@
 #include "pch.h"
 
 #include "NtdllExtensions.h"
+#include <future>
+#include <thread>
+#include <chrono>
 
 #define STATUS_INFO_LENGTH_MISMATCH ((LONG)0xC0000004)
 
@@ -115,6 +118,7 @@ NtdllExtensions::MemoryLoopResult NtdllExtensions::NtQuerySystemInformationMemor
 
 std::wstring NtdllExtensions::file_handle_to_kernel_name(HANDLE file_handle, std::vector<BYTE>& buffer)
 {
+
     if (GetFileType(file_handle) != FILE_TYPE_DISK)
     {
         return L"";
@@ -216,14 +220,14 @@ std::vector<NtdllExtensions::HandleInfo> NtdllExtensions::handles() noexcept
         auto object_type_info = (OBJECT_TYPE_INFORMATION*)object_info_buffer.data();
         auto type_name = unicode_to_str(object_type_info->Name);
 
-        std::wstring file_name = file_handle_to_kernel_name(handle_copy, object_info_buffer);
+        std::wstring file_name;
 
         if (type_name == L"File")
         {
             file_name = file_handle_to_kernel_name(handle_copy, object_info_buffer);
+            result.push_back(HandleInfo{ pid, handle_info->Handle, type_name, file_name });
         }
 
-        result.push_back(HandleInfo{ pid, handle_info->Handle, type_name, file_name });
         CloseHandle(handle_copy);
     }
 
