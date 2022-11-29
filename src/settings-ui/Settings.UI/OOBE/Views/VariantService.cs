@@ -52,16 +52,15 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
             string clientID = string.Empty;
 
             string workingDirectory = Environment.CurrentDirectory;
-            var exeDir = Directory.GetParent(workingDirectory).Parent.Parent.FullName;
-            string settingsPath = @"src\settings-ui\Settings.UI.UnitTests\BackwardsCompatibility\TestFiles\v0.22.0\Microsoft\PowerToys\settings.json";
+            var exeDir = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
+            string settingsPath = @"AppData\Local\Microsoft\PowerToys\settings.json";
             string jsonFilePath = Path.Combine(exeDir, settingsPath);
 
             string json = File.ReadAllText(jsonFilePath);
             var jsonDictionary = JsonSerializer.Deserialize<Dictionary<string, object>>(json);
-            var jsonClientID = jsonDictionary["clientid"].ToString();
-
-            if (jsonClientID == string.Empty)
+            if (!jsonDictionary.ContainsKey("clientid"))
             {
+                jsonDictionary.Add("clientid", string.Empty);
                 jsonDictionary["clientid"] = Guid.NewGuid().ToString();
                 string output = JsonSerializer.Serialize(jsonDictionary);
                 File.WriteAllText(jsonFilePath, output);
