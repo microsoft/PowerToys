@@ -15,6 +15,7 @@ namespace PowerAccent.Core
         CY,
         CZ,
         GA,
+        GD,
         DE,
         FR,
         HR,
@@ -46,7 +47,8 @@ namespace PowerAccent.Core
                 case Language.CUR: return GetDefaultLetterKeyCUR(letter); // Currency
                 case Language.CY: return GetDefaultLetterKeyCY(letter); // Welsh
                 case Language.CZ: return GetDefaultLetterKeyCZ(letter); // Czech
-                case Language.GA: return GetDefaultLetterKeyGA(letter); // Gaeilge (Irish language)
+                case Language.GA: return GetDefaultLetterKeyGA(letter); // Gaeilge (Irish Gaelic)
+                case Language.GD: return GetDefaultLetterKeyGD(letter); // Gàidhlig (Scottish Gaelic)
                 case Language.DE: return GetDefaultLetterKeyDE(letter); // German
                 case Language.FR: return GetDefaultLetterKeyFR(letter); // French
                 case Language.HR: return GetDefaultLetterKeyHR(letter); // Croatian
@@ -547,6 +549,26 @@ namespace PowerAccent.Core
                     return new string[] { "ó" };
                 case LetterKey.VK_U:
                     return new string[] { "ú" };
+            }
+
+            return Array.Empty<string>();
+        }
+
+        // Gàidhlig (Scottish Gaelic)
+        private static string[] GetDefaultLetterKeyGD(LetterKey letter)
+        {
+            switch (letter)
+            {
+                case LetterKey.VK_A:
+                    return new string[] { "à" };
+                case LetterKey.VK_E:
+                    return new string[] { "è" };
+                case LetterKey.VK_I:
+                    return new string[] { "ì" };
+                case LetterKey.VK_O:
+                    return new string[] { "ò" };
+                case LetterKey.VK_U:
+                    return new string[] { "ù" };
             }
 
             return Array.Empty<string>();
