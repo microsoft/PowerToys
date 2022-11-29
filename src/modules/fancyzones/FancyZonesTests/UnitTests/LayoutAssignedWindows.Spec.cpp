@@ -3,17 +3,10 @@
 #include <filesystem>
 
 #include <FancyZonesLib/FancyZonesData/LayoutDefaults.h>
-
-// disabling warning 4702 - unreachable code
-// prevent the warning on functions not used in tests.
-#pragma warning(push)
-#pragma warning(disable : 4702)
 #include <FancyZonesLib/FancyZonesData/CustomLayouts.h>
-#include <FancyZonesLib/Settings.h>
-#pragma warning(pop)
-
 #include <FancyZonesLib/ZoneIndexSetBitmask.h>
 #include <FancyZonesLib/LayoutAssignedWindows.h>
+#include <FancyZonesLib/Settings.h>
 #include <FancyZonesLib/util.h>
 
 #include "Util.h"

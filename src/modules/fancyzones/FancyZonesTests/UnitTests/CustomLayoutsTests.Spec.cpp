@@ -2,17 +2,10 @@
 #include <filesystem>
 
 #include <FancyZonesLib/FancyZonesData.h>
-
-// disabling warning 4702 - unreachable code 
-// prevent the warning on functions not used in tests.
-#pragma warning(push)
-#pragma warning(disable : 4702)
 #include <FancyZonesLib/FancyZonesData/AppliedLayouts.h>
 #include <FancyZonesLib/FancyZonesData/CustomLayouts.h>
 #include <FancyZonesLib/FancyZonesData/LayoutHotkeys.h>
 #include <FancyZonesLib/FancyZonesData/LayoutTemplates.h>
-#pragma warning(pop)
-
 #include <FancyZonesLib/util.h>
 
 using namespace Microsoft::VisualStudio::CppUnitTestFramework;

@@ -2,7 +2,6 @@
 
 #include <FancyZonesLib/FancyZonesData/LayoutData.h>
 #include <FancyZonesLib/ModuleConstants.h>
-
 #include <common/SettingsAPI/FileWatcher.h>
 #include <common/SettingsAPI/settings_helpers.h>
 
@@ -40,8 +39,9 @@ public:
         std::wstring saveFolderPath = PTSettingsHelper::get_module_save_folder_location(NonLocalizable::ModuleKey);
 #if defined(UNIT_TESTS)
         return saveFolderPath + L"\\test-default-layouts.json";
-#endif
+#else
         return saveFolderPath + L"\\default-layouts.json";
+#endif
     }
 
     void LoadData();

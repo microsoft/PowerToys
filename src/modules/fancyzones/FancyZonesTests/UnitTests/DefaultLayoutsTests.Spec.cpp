@@ -1,13 +1,7 @@
 #include "pch.h"
 #include <filesystem>
 
-// disabling warning 4702 - unreachable code 
-// prevent the warning on functions not used in tests.
-#pragma warning(push)
-#pragma warning(disable : 4702)
 #include <FancyZonesLib/FancyZonesData/DefaultLayouts.h>
-#pragma warning(pop)
-
 #include <FancyZonesLib/FancyZonesData/LayoutDefaults.h>
 #include <FancyZonesLib/util.h>
 
