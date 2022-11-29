@@ -37,7 +37,8 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
                 var featureNameSpace = allFeatureFlags[0].KeySegments[0];
                 var featureFlag = allFeatureFlags[0].KeySegments[1];
                 FeatureFlagValue = allFeatureFlags[0].GetStringValue();
-                PowerToysTelemetry.Log.WriteEvent(new OobeVariantAssignmentEvent() { AssignmentContext = assignmentContext });
+
+                PowerToysTelemetry.Log.WriteEvent(new OobeVariantAssignmentEvent() { AssignmentContext = assignmentContext, ClientID = AssignmentUnit });
             }
             catch (Exception)
             {
@@ -47,7 +48,9 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
 
         public string FeatureFlagValue { get; set; }
 
-        private static IVariantAssignmentRequest GetVariantAssignmentRequest()
+        private string AssignmentUnit { get; set; }
+
+        private IVariantAssignmentRequest GetVariantAssignmentRequest()
         {
             string clientID = string.Empty;
 
@@ -67,6 +70,7 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
             }
 
             clientID = jsonDictionary["clientid"].ToString();
+            AssignmentUnit = clientID;
 
             return new VariantAssignmentRequest
             {
