@@ -22,8 +22,8 @@ public:
 
     Animation(double duration = 1, double start = 0, double stop = 1);
     void reset();
-    void reset(double duration);
-    void reset(double duration, double start, double stop);
+    void reset(double animation_duration);
+    void reset(double animation_duration, double animation_start, double animation_stop);
     double value(AnimFunctions apply_function) const;
     bool done() const;
 
