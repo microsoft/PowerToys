@@ -192,9 +192,9 @@ void SingleKeyRemapControl::AddNewControlKeyRemapRow(StackPanel& parent, std::ve
     deleteRemapKeys.SetValue(Automation::AutomationProperties::NameProperty(), box_value(GET_RESOURCE_STRING(IDS_DELETE_REMAPPING_BUTTON)));
 
     // Add tooltip for delete button which would appear on hover
-    ToolTip deleteRemapKeystoolTip;
-    deleteRemapKeystoolTip.Content(box_value(GET_RESOURCE_STRING(IDS_DELETE_REMAPPING_BUTTON)));
-    ToolTipService::SetToolTip(deleteRemapKeys, deleteRemapKeystoolTip);
+    ToolTip deleteRemapKeysToolTip;
+    deleteRemapKeysToolTip.Content(box_value(GET_RESOURCE_STRING(IDS_DELETE_REMAPPING_BUTTON)));
+    ToolTipService::SetToolTip(deleteRemapKeys, deleteRemapKeysToolTip);
     row.Children().Append(deleteRemapKeys);
     try
     {

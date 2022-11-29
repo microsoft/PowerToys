@@ -467,7 +467,7 @@ bool AppliedLayouts::ApplyDefaultLayout(const FancyZonesDataTypes::WorkAreaId& d
         return false;
     }
 
-    MonitorConfiguraionType type = MonitorConfiguraionType::Horizontal;
+    MonitorConfigurationType type = MonitorConfigurationType::Horizontal;
     MONITORINFOEX monitorInfo;
     monitorInfo.cbSize = sizeof(monitorInfo);
     if (GetMonitorInfo(deviceId.monitorId.monitor, &monitorInfo))
@@ -476,7 +476,7 @@ bool AppliedLayouts::ApplyDefaultLayout(const FancyZonesDataTypes::WorkAreaId& d
         LONG height = monitorInfo.rcMonitor.bottom - monitorInfo.rcMonitor.top;
         if (height > width)
         {
-            type = MonitorConfiguraionType::Vertical;
+            type = MonitorConfigurationType::Vertical;
         }
     }
 

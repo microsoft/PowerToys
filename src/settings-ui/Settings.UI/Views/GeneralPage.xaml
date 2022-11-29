@@ -227,7 +227,7 @@
                 </controls:SettingsGroup>
 
                 <controls:SettingsGroup
-                    x:Uid="ShortcutGuide_Appearance_Behavior"
+                    x:Uid="Appearance_Behavior"
                     IsEnabled="True">
                     <labs:SettingsCard
                         x:Uid="ColorModeHeader"
