@@ -88,7 +88,7 @@ void FancyZonesWindowProperties::StampMovedOnOpeningProperty(HWND window)
     ::SetPropW(window, ZonedWindowProperties::PropertyMovedOnOpening, (HANDLE)1);
 }
 
-bool FancyZonesWindowProperties::RetreiveMovedOnOpeningProperty(HWND window)
+bool FancyZonesWindowProperties::RetrieveMovedOnOpeningProperty(HWND window)
 {
     HANDLE handle = ::GetProp(window, ZonedWindowProperties::PropertyMovedOnOpening);
     return handle != nullptr;
