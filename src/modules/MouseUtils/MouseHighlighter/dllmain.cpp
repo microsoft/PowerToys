@@ -87,7 +87,7 @@ public:
     // Return the configured status for the gpo policy for the module
     virtual powertoys_gpo::gpo_rule_configured_t gpo_policy_enabled_configuration() override
     {
-        return powertoys_gpo::getConfiguredMouseHightlighterEnabledValue();
+        return powertoys_gpo::getConfiguredMouseHighlighterEnabledValue();
     }
 
     // Return JSON with the configuration options.
