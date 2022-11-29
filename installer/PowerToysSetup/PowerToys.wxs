@@ -74,7 +74,7 @@
                 Vital="no">
             </ExePackage>
             <ExePackage
-                DisplayName="Downloading and installing .NET 7.0.0 Desktop Runtime"
+                DisplayName="Downloading and installing .NET 7 Desktop Runtime"
                 Name="windowsdesktop-runtime-7.0.0-win-$(var.PowerToysPlatform).exe"
                 Compressed="no"
                 Id="DotnetRuntime7"
