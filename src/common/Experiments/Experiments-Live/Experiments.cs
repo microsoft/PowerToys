@@ -4,6 +4,7 @@
 
 // The dependencies required to build this project are only availalble in the official build pipeline and are internal to Microsoft.
 // However, this project is not required to build a test version of the application.
+
 namespace Experimentation
 {
     using System;
@@ -64,11 +65,16 @@ namespace Experimentation
                         IsExperiment = true;
                     }
 
+                PowerToysTelemetry.Log.WriteEvent(new OobeVariantAssignmentEvent() { AssignmentContext = assignmentContext, ClientID = AssignmentUnit });
+            }
+            catch (Exception ex)
                     PowerToysTelemetry.Log.WriteEvent(new OobeVariantAssignmentEvent() { AssignmentContext = assignmentContext, ClientID = AssignmentUnit });
                 }
             }
             catch (Exception ex)
             {
+                IsExperiment = false;
+                Log.Exception("Error getting variant assignments for experiment", ex, typeof(Experiments));
                 Log.Exception("Error getting variant assignments for experiment", ex, typeof(Experiments));
             }
         }
