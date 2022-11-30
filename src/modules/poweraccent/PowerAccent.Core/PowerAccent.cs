@@ -39,11 +39,18 @@ public class PowerAccent : IDisposable
 
     public PowerAccent()
     {
+        LoadUnicodeInfoCache();
+
         _keyboardListener = new KeyboardListener();
         _keyboardListener.InitHook();
         _settingService = new SettingsService(_keyboardListener);
 
         SetEvents();
+    }
+
+    private void LoadUnicodeInfoCache()
+    {
+        UnicodeInfo.GetCharInfo(0);
     }
 
     private void SetEvents()
