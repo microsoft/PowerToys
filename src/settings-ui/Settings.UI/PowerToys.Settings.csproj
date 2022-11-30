@@ -70,15 +70,18 @@
   <!-- Defining the "Msix" ProjectCapability here allows the Single-project MSIX Packaging
        Tools extension to be activated for this project even if the Windows App SDK Nuget
        package has not yet been restored -->
+	
   <ItemGroup Condition="'$(DisableMsixProjectCapabilityAddedByProject)'!='true' and '$(EnablePreviewMsixTooling)'=='true'">
     <ProjectCapability Include="Msix" />
   </ItemGroup>
+	
   <ItemGroup>
     <ProjectReference Include="..\..\common\GPOWrapper\GPOWrapper.vcxproj" />
     <ProjectReference Include="..\..\common\ManagedCommon\ManagedCommon.csproj" />
     <ProjectReference Include="..\..\common\ManagedTelemetry\Telemetry\ManagedTelemetry.csproj" />
     <ProjectReference Include="..\Settings.UI.Library\Settings.UI.Library.csproj" />
   </ItemGroup>
+	
   <ItemGroup>
     <None Update="icon.ico">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
@@ -90,17 +93,21 @@
       <XamlRuntime>$(DefaultXamlRuntime)</XamlRuntime>
     </Page>
   </ItemGroup>
+	
   <ItemGroup>
     <Page Update="OOBE\Views\OobePowerOCR.xaml">
       <XamlRuntime>$(DefaultXamlRuntime)</XamlRuntime>
     </Page>
   </ItemGroup>
+	
   <PropertyGroup>
-	<ExperimentationLive>False</ExperimentationLive>
+	<ExperimentationLive Condition="'$(ExperimentationLive)' == ''">False</ExperimentationLive>
   </PropertyGroup>
+	
   <ItemGroup Condition="'$(ExperimentationLive)'=='True'">
 	<ProjectReference Include="..\..\common\Experiments\Experiments-Live\Experiments-Live.csproj" />
   </ItemGroup>
+	
   <ItemGroup Condition="'$(ExperimentationLive)'=='False'">
 	<ProjectReference Include="..\..\common\Experiments\Experiments-Inert\Experiments-Inert.csproj" />
   </ItemGroup>

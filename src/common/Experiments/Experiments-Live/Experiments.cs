@@ -48,7 +48,7 @@ namespace Experimentation
             try
             {
                 var task = vaClient.GetVariantAssignmentsAsync(vaRequest);
-                TimeSpan ts = TimeSpan.FromMilliseconds(1000);
+                TimeSpan ts = TimeSpan.FromMilliseconds(500);
                 if (task.Wait(ts))
                 {
                     var result = task.Result;
