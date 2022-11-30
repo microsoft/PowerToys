@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.Collections.Generic;
 using System.Windows.Input;
 using ManagedCommon;
 using Microsoft.PowerToys.Settings.UI.Helpers;
@@ -83,14 +84,14 @@ namespace Microsoft.PowerToys.Settings.UI.Views
         private void Add()
         {
             ColorFormatModel newColorFormat = ColorFormatDialog.DataContext as ColorFormatModel;
-            ViewModel.AddNewColorFormat(newColorFormat.Name, newColorFormat.Example, true);
+            ViewModel.AddNewColorFormat(newColorFormat.Name, newColorFormat.Format, true);
             ColorFormatDialog.Hide();
         }
 
         private void Update()
         {
             ColorFormatModel colorFormat = ColorFormatDialog.DataContext as ColorFormatModel;
-            string oldName = ColorFormatDialog.Tag as string;
+            string oldName = ((KeyValuePair<string, string>)ColorFormatDialog.Tag).Key;
             ViewModel.UpdateColorFormat(oldName, colorFormat);
             ColorFormatDialog.Hide();
         }
@@ -102,7 +103,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             ColorFormatModel newColorFormatModel = ViewModel.GetNewColorFormatModel();
             ColorFormatDialog.DataContext = newColorFormatModel;
             ColorFormatDialog.Tag = string.Empty;
-            NewColorFormat.Description = " " + ColorFormatHelper.GetStringRepresentation(null, newColorFormatModel.Example);
+            NewColorFormat.Description = " " + ColorFormatHelper.GetStringRepresentation(null, newColorFormatModel.Format);
             ColorFormatDialog.PrimaryButtonText = resourceLoader.GetString("ColorFormatSave");
             ColorFormatDialog.PrimaryButtonCommand = AddCommand;
             await ColorFormatDialog.ShowAsync();
@@ -110,6 +111,10 @@ namespace Microsoft.PowerToys.Settings.UI.Views
 
         private void ColorFormatDialog_CancelButtonClick(ContentDialog sender, ContentDialogButtonClickEventArgs args)
         {
+            ColorFormatModel modifiedColorFormat = ColorFormatDialog.DataContext as ColorFormatModel;
+            KeyValuePair<string, string> oldProperties = (KeyValuePair<string, string>)ColorFormatDialog.Tag;
+            modifiedColorFormat.Name = oldProperties.Key;
+            modifiedColorFormat.Format = oldProperties.Value;
             ColorFormatDialog.Hide();
         }
 
@@ -138,8 +143,8 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             ColorFormatModel colorFormatModel = btn.DataContext as ColorFormatModel;
             ColorFormatDialog.Title = resourceLoader.GetString("EditCustomColorFormat");
             ColorFormatDialog.DataContext = colorFormatModel;
-            ColorFormatDialog.Tag = colorFormatModel.Name;
-            NewColorFormat.Description = " " + ColorFormatHelper.GetStringRepresentation(null, colorFormatModel.Example);
+            ColorFormatDialog.Tag = new KeyValuePair<string, string>(colorFormatModel.Name, colorFormatModel.Format);
+            NewColorFormat.Description = " " + ColorFormatHelper.GetStringRepresentation(null, colorFormatModel.Format);
             ColorFormatDialog.PrimaryButtonText = resourceLoader.GetString("ColorFormatUpdate");
             ColorFormatDialog.PrimaryButtonCommand = UpdateCommand;
             await ColorFormatDialog.ShowAsync();

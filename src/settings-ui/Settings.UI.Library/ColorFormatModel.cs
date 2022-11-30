@@ -4,35 +4,33 @@
 
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
+using ManagedCommon;
 
 namespace Microsoft.PowerToys.Settings.UI.Library
 {
     public class ColorFormatModel : INotifyPropertyChanged
     {
         private string _name;
-        private string _example;
+        private string _format;
         private bool _isShown;
         private bool _canMoveUp = true;
         private bool _canMoveDown = true;
         private bool _isNew;
         private bool _isValid = true;
-        private bool _isUserDefined;
 
-        public ColorFormatModel(string name, string example, bool isShown, bool isUserDefined)
+        public ColorFormatModel(string name, string format, bool isShown)
         {
             Name = name;
-            Example = example;
+            Format = format;
             IsShown = isShown;
-            IsUserDefined = isUserDefined;
             IsNew = false;
         }
 
         public ColorFormatModel()
         {
-            Example = "new Color (R = %Re, G = %Gr, B = %Bl)";
+            Format = "new Color (R = %Re, G = %Gr, B = %Bl)";
             IsShown = true;
             IsNew = true;
-            IsUserDefined = true;
         }
 
         public string Name
@@ -45,21 +43,22 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             set
             {
                 _name = value;
-                OnPropertyChanged();
+                OnPropertyChanged(nameof(Name));
             }
         }
 
-        public string Example
+        public string Format
         {
             get
             {
-                return _example;
+                return _format;
             }
 
             set
             {
-                _example = value;
-                OnPropertyChanged();
+                _format = value;
+                OnPropertyChanged(nameof(Format));
+                OnPropertyChanged(nameof(Example));
             }
         }
 
@@ -73,7 +72,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             set
             {
                 _isShown = value;
-                OnPropertyChanged();
+                OnPropertyChanged(nameof(IsShown));
             }
         }
 
@@ -87,7 +86,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             set
             {
                 _canMoveUp = value;
-                OnPropertyChanged();
+                OnPropertyChanged(nameof(CanMoveUp));
             }
         }
 
@@ -101,7 +100,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             set
             {
                 _canMoveDown = value;
-                OnPropertyChanged();
+                OnPropertyChanged(nameof(CanMoveDown));
             }
         }
 
@@ -115,7 +114,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             set
             {
                 _isNew = value;
-                OnPropertyChanged();
+                OnPropertyChanged(nameof(IsNew));
             }
         }
 
@@ -129,21 +128,19 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             set
             {
                 _isValid = value;
-                OnPropertyChanged();
+                OnPropertyChanged(nameof(IsValid));
             }
         }
 
-        public bool IsUserDefined
+        public string Example
         {
             get
             {
-                return _isUserDefined;
+                return ColorFormatHelper.GetStringRepresentation(null, _format);
             }
 
             set
             {
-                _isUserDefined = value;
-                OnPropertyChanged();
             }
         }
 

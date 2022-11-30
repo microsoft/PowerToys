@@ -41,7 +41,6 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         private Func<string, int> SendConfigMSG { get; }
 
-        private List<string> _predefinedColorNames;
         private Dictionary<string, string> _colorFormatsPreview;
 
         public ColorPickerViewModel(
@@ -233,63 +232,17 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         private void InitializeColorFormats()
         {
-            var visibleFormats = _colorPickerSettings.Properties.VisibleColorFormats;
-            var formatsUnordered = new List<ColorFormatModel>();
-
-            var hexFormatName = ColorRepresentationType.HEX.ToString();
-            var rgbFormatName = ColorRepresentationType.RGB.ToString();
-            var hslFormatName = ColorRepresentationType.HSL.ToString();
-            var hsvFormatName = ColorRepresentationType.HSV.ToString();
-            var cmykFormatName = ColorRepresentationType.CMYK.ToString();
-            var hsbFormatName = ColorRepresentationType.HSB.ToString();
-            var hsiFormatName = ColorRepresentationType.HSI.ToString();
-            var hwbFormatName = ColorRepresentationType.HWB.ToString();
-            var ncolFormatName = ColorRepresentationType.NCol.ToString();
-            var cielabFormatName = ColorRepresentationType.CIELAB.ToString();
-            var ciexyzFormatName = ColorRepresentationType.CIEXYZ.ToString();
-            var vec4FormatName = ColorRepresentationType.VEC4.ToString();
-            var hexIntegerFormatName = "HEX Int";
-            var decimalFormatName = "Decimal";
-
-            formatsUnordered.Add(new ColorFormatModel(hexFormatName, "ef68ff", visibleFormats.ContainsKey(hexFormatName) && visibleFormats[hexFormatName].Key, false));
-            formatsUnordered.Add(new ColorFormatModel(rgbFormatName, "rgb(239, 104, 255)", visibleFormats.ContainsKey(rgbFormatName) && visibleFormats[rgbFormatName].Key, false));
-            formatsUnordered.Add(new ColorFormatModel(hslFormatName, "hsl(294, 100%, 70%)", visibleFormats.ContainsKey(hslFormatName) && visibleFormats[hslFormatName].Key, false));
-            formatsUnordered.Add(new ColorFormatModel(hsvFormatName, "hsv(294, 59%, 100%)", visibleFormats.ContainsKey(hsvFormatName) && visibleFormats[hsvFormatName].Key, false));
-            formatsUnordered.Add(new ColorFormatModel(cmykFormatName, "cmyk(6%, 59%, 0%, 0%)", visibleFormats.ContainsKey(cmykFormatName) && visibleFormats[cmykFormatName].Key, false));
-            formatsUnordered.Add(new ColorFormatModel(hsbFormatName, "hsb(100, 50%, 75%)", visibleFormats.ContainsKey(hsbFormatName) && visibleFormats[hsbFormatName].Key, false));
-            formatsUnordered.Add(new ColorFormatModel(hsiFormatName, "hsi(100, 50%, 75%)", visibleFormats.ContainsKey(hsiFormatName) && visibleFormats[hsiFormatName].Key, false));
-            formatsUnordered.Add(new ColorFormatModel(hwbFormatName, "hwb(100, 50%, 75%)", visibleFormats.ContainsKey(hwbFormatName) && visibleFormats[hwbFormatName].Key, false));
-            formatsUnordered.Add(new ColorFormatModel(ncolFormatName, "R10, 50%, 75%", visibleFormats.ContainsKey(ncolFormatName) && visibleFormats[ncolFormatName].Key, false));
-            formatsUnordered.Add(new ColorFormatModel(cielabFormatName, "CIELab(66, 72, -52)", visibleFormats.ContainsKey(cielabFormatName) && visibleFormats[cielabFormatName].Key, false));
-            formatsUnordered.Add(new ColorFormatModel(ciexyzFormatName, "XYZ(59, 35, 98)", visibleFormats.ContainsKey(ciexyzFormatName) && visibleFormats[ciexyzFormatName].Key, false));
-            formatsUnordered.Add(new ColorFormatModel(vec4FormatName, "(0.94f, 0.41f, 1.00f, 1f)", visibleFormats.ContainsKey(vec4FormatName) && visibleFormats[vec4FormatName].Key, false));
-            formatsUnordered.Add(new ColorFormatModel(decimalFormatName, "15689983", visibleFormats.ContainsKey(decimalFormatName) && visibleFormats[decimalFormatName].Key, false));
-            formatsUnordered.Add(new ColorFormatModel(hexIntegerFormatName, "0xFFAA00EE", visibleFormats.ContainsKey(hexIntegerFormatName) && visibleFormats[hexIntegerFormatName].Key, false));
-
-            _predefinedColorNames = formatsUnordered.Select(x => x.Name).ToList();
-
             foreach (var storedColorFormat in _colorPickerSettings.Properties.VisibleColorFormats)
             {
-                var predefinedFormat = formatsUnordered.FirstOrDefault(it => it.Name == storedColorFormat.Key);
-                if (predefinedFormat != null)
+                string format = storedColorFormat.Value.Value;
+                if (format == string.Empty)
                 {
-                    predefinedFormat.PropertyChanged += ColorFormat_PropertyChanged;
-                    ColorFormats.Add(predefinedFormat);
-                    formatsUnordered.Remove(predefinedFormat);
+                    format = ColorFormatHelper.GetDefaultFormat(storedColorFormat.Key);
                 }
-                else
-                {
-                    ColorFormatModel customColorFormat = new ColorFormatModel(storedColorFormat.Key, storedColorFormat.Value.Value, storedColorFormat.Value.Key, true);
-                    customColorFormat.PropertyChanged += ColorFormat_PropertyChanged;
-                    ColorFormats.Add(customColorFormat);
-                }
-            }
 
-            // settings file might not have all formats listed, add remaining ones we support
-            foreach (var remainingColorFormat in formatsUnordered)
-            {
-                remainingColorFormat.PropertyChanged += ColorFormat_PropertyChanged;
-                ColorFormats.Add(remainingColorFormat);
+                ColorFormatModel customColorFormat = new ColorFormatModel(storedColorFormat.Key, format, storedColorFormat.Value.Key);
+                customColorFormat.PropertyChanged += ColorFormat_PropertyChanged;
+                ColorFormats.Add(customColorFormat);
             }
 
             // Reordering colors with buttons: disable first and last buttons
@@ -360,8 +313,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             _colorPickerSettings.Properties.VisibleColorFormats.Clear();
             foreach (var colorFormat in ColorFormats)
             {
-                string formatText = _predefinedColorNames.Contains(colorFormat.Name) ? string.Empty : colorFormat.Example;
-                _colorPickerSettings.Properties.VisibleColorFormats.Add(colorFormat.Name, new KeyValuePair<bool, string>(colorFormat.IsShown, formatText));
+                _colorPickerSettings.Properties.VisibleColorFormats.Add(colorFormat.Name, new KeyValuePair<bool, string>(colorFormat.IsShown, colorFormat.Format));
             }
         }
 
@@ -372,7 +324,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 ColorFormats[0].CanMoveUp = true;
             }
 
-            ColorFormats.Insert(0, new ColorFormatModel(newColorName, newColorFormat, isShown, true));
+            ColorFormats.Insert(0, new ColorFormatModel(newColorName, newColorFormat, isShown));
             SetPreviewSelectedIndex();
         }
 
@@ -424,7 +376,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         internal void SetValidity(ColorFormatModel colorFormatModel, string oldName)
         {
-            if ((colorFormatModel.Example == string.Empty) || (colorFormatModel.Name == string.Empty))
+            if ((colorFormatModel.Format == string.Empty) || (colorFormatModel.Name == string.Empty))
             {
                 colorFormatModel.IsValid = false;
             }
@@ -434,7 +386,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             }
             else
             {
-                colorFormatModel.IsValid = ColorFormats.Count(x => x.Name.Equals(colorFormatModel.Name, StringComparison.Ordinal)) < 2;
+                colorFormatModel.IsValid = ColorFormats.Count(x => x.Name.ToUpperInvariant().Equals(colorFormatModel.Name.ToUpperInvariant(), StringComparison.Ordinal)) < 2;
             }
         }
 
@@ -457,7 +409,6 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         internal void SetPreviewSelectedIndex()
         {
             int index = 0;
-            int defaultIndex = 0;
 
             foreach (var item in ColorFormats)
             {
@@ -465,17 +416,13 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 {
                     break;
                 }
-                else if (item.Name == "HEX")
-                {
-                    defaultIndex = index;
-                }
 
                 index++;
             }
 
             if (index >= ColorFormats.Count)
             {
-                index = defaultIndex;
+                index = 0;
             }
 
             ColorFormatsPreviewIndex = index;

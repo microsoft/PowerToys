@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using ManagedCommon;
 using Microsoft.PowerToys.Settings.UI.Library.Interfaces;
 
 namespace Microsoft.PowerToys.Settings.UI.Library
@@ -62,7 +63,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             newSettings.Properties.VisibleColorFormats = new Dictionary<string, KeyValuePair<bool, string>>();
             foreach (KeyValuePair<string, bool> oldValue in oldSettings.Properties.VisibleColorFormats)
             {
-                newSettings.Properties.VisibleColorFormats.Add(oldValue.Key, new KeyValuePair<bool, string>(oldValue.Value, string.Empty));
+                newSettings.Properties.VisibleColorFormats.Add(oldValue.Key, new KeyValuePair<bool, string>(oldValue.Value, ColorFormatHelper.GetDefaultFormat(oldValue.Key)));
             }
 
             newSettings.Properties.CopiedColorRepresentation = newSettings.Properties.VisibleColorFormats.ElementAt((int)oldSettings.Properties.CopiedColorRepresentation).Key;

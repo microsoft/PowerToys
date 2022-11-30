@@ -418,7 +418,7 @@ namespace ManagedCommon
                 case "HSB": return "hsb(%Hu, %Sa%, %Br%)";
                 case "HSI": return "hsi(%Hu, %Sa%, %In%)";
                 case "HWB": return "hwb(%Hu, %Wh%, %Bn%)";
-                case "NCOL": return "%Hu, %Wh%, %Bn%";
+                case "NCol": return "%Hu, %Wh%, %Bn%";
                 case "CIELAB": return "CIELab(%Li, %Ca, %Cb)";
                 case "CIEXYZ": return "XYZ(%Xv, %Yv, %Zv)";
                 case "VEC4": return "(%Reff, %Grff, %Blff, 1f)";
