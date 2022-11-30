@@ -96,12 +96,12 @@
     </Page>
   </ItemGroup>
   <PropertyGroup>
-	  <ExperimentationLive>True</ExperimentationLive>
+	<ExperimentationLive>False</ExperimentationLive>
   </PropertyGroup>
   <ItemGroup Condition="'$(ExperimentationLive)'=='True'">
-	  <ProjectReference Include="..\..\common\Experiments\Experiments-Live\Experiments-Live.csproj" />
+	<ProjectReference Include="..\..\common\Experiments\Experiments-Live\Experiments-Live.csproj" />
   </ItemGroup>
   <ItemGroup Condition="'$(ExperimentationLive)'=='False'">
-	  <ProjectReference Include="..\..\common\Experiments\Experiments-Inert\Experiments-Inert.csproj" />
+	<ProjectReference Include="..\..\common\Experiments\Experiments-Inert\Experiments-Inert.csproj" />
   </ItemGroup>
 </Project>
