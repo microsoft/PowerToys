@@ -111,10 +111,14 @@ namespace Microsoft.PowerToys.Settings.UI.Views
 
         private void ColorFormatDialog_CancelButtonClick(ContentDialog sender, ContentDialogButtonClickEventArgs args)
         {
-            ColorFormatModel modifiedColorFormat = ColorFormatDialog.DataContext as ColorFormatModel;
-            KeyValuePair<string, string> oldProperties = (KeyValuePair<string, string>)ColorFormatDialog.Tag;
-            modifiedColorFormat.Name = oldProperties.Key;
-            modifiedColorFormat.Format = oldProperties.Value;
+            if (ColorFormatDialog.Tag is KeyValuePair<string, string>)
+            {
+                ColorFormatModel modifiedColorFormat = ColorFormatDialog.DataContext as ColorFormatModel;
+                KeyValuePair<string, string> oldProperties = (KeyValuePair<string, string>)ColorFormatDialog.Tag;
+                modifiedColorFormat.Name = oldProperties.Key;
+                modifiedColorFormat.Format = oldProperties.Value;
+            }
+
             ColorFormatDialog.Hide();
         }
 
