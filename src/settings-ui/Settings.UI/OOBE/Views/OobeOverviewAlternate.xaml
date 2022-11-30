@@ -58,7 +58,7 @@
                                 Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                                 TextWrapping="Wrap" />
                             <controls:ShortcutWithTextLabelControl
-                                x:Name="FZHotkeyControl"
+                                x:Name="FancyZonesHotkeyControl"
                                 Grid.Row="3"
                                 Margin="0,8,0,0" />
                         </Grid>
@@ -141,7 +141,7 @@
                                 Text="To pick a color:"
                                 TextWrapping="Wrap" />
                             <controls:ShortcutWithTextLabelControl
-                                x:Name="CPHotkeyControl"
+                                x:Name="ColorPickerHotkeyControl"
                                 Grid.Row="3"
                                 Margin="0,8,0,0" />
                         </Grid>
@@ -182,7 +182,7 @@
                                 Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                                 TextWrapping="Wrap" />
                             <controls:ShortcutWithTextLabelControl
-                                x:Name="AOTHotkeyControl"
+                                x:Name="AlwaysOnTopHotkeyControl"
                                 Grid.Row="3"
                                 Margin="0,8,0,0" />
                         </Grid>
