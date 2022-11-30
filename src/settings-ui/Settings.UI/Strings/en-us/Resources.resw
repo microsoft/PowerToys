@@ -2554,9 +2554,11 @@ Activate by holding the key for the character you want to add an accent to, then
   </data>
   <data name="QuickAccent_SelectedLanguage_Gaeilge.Content" xml:space="preserve">
     <value>Gaeilge</value>
+    <comment>Irish Gaelic</comment>
   </data>
   <data name="QuickAccent_SelectedLanguage_Gaidhlig.Content" xml:space="preserve">
     <value>Gàidhlig</value>
+    <comment>Scottish Gaelic</comment>
   </data>
   <data name="QuickAccent_SelectedLanguage_German.Content" xml:space="preserve">
     <value>German</value>
