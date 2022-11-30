@@ -4,7 +4,6 @@
 
 // The dependencies required to build this project are only availalble in the official build pipeline and are internal to Microsoft.
 // However, this project is not required to build a test version of the application.
-
 namespace Experimentation
 {
     using System;
@@ -34,6 +33,8 @@ namespace Experimentation
 
         private void VariantAssignmentProvider_Initialize()
         {
+            IsExperiment = false;
+
             var vaSettings = new VariantAssignmentClientSettings
             {
                 Endpoint = new Uri("https://default.exp-tas.com/exptas77/a7a397e7-6fbe-4f21-a4e9-3f542e4b000e-exppowertoys/api/v1/tas"),
@@ -47,28 +48,27 @@ namespace Experimentation
             try
             {
                 var task = vaClient.GetVariantAssignmentsAsync(vaRequest);
-                var result = task.Result;
-                var allFeatureFlags = result.GetFeatureVariables();
-
-                var assignmentContext = result.GetAssignmentContext();
-                var featureNameSpace = allFeatureFlags[0].KeySegments[0];
-                var featureFlag = allFeatureFlags[0].KeySegments[1];
-                var featureFlagValue = allFeatureFlags[0].GetStringValue();
-
-                if (featureFlagValue == "alternate")
+                TimeSpan ts = TimeSpan.FromMilliseconds(1000);
+                if (task.Wait(ts))
                 {
-                    IsExperiment = true;
-                }
-                else
-                {
-                    IsExperiment = false;
-                }
+                    var result = task.Result;
+                    var allFeatureFlags = result.GetFeatureVariables();
 
-                PowerToysTelemetry.Log.WriteEvent(new OobeVariantAssignmentEvent() { AssignmentContext = assignmentContext, ClientID = AssignmentUnit });
+                    var assignmentContext = result.GetAssignmentContext();
+                    var featureNameSpace = allFeatureFlags[0].KeySegments[0];
+                    var featureFlag = allFeatureFlags[0].KeySegments[1];
+                    var featureFlagValue = allFeatureFlags[0].GetStringValue();
+
+                    if (featureFlagValue == "alternate")
+                    {
+                        IsExperiment = true;
+                    }
+
+                    PowerToysTelemetry.Log.WriteEvent(new OobeVariantAssignmentEvent() { AssignmentContext = assignmentContext, ClientID = AssignmentUnit });
+                }
             }
             catch (Exception ex)
             {
-                IsExperiment = false;
                 Log.Exception("Error getting variant assignments for experiment", ex, typeof(Experiments));
             }
         }

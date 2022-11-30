@@ -10,8 +10,7 @@
 
     <controls:OOBEPageControl
         x:Uid="Oobe_Overview"
-        HeroImage="ms-appx:///Assets/Modules/OOBE/OOBEPTHero.png"
-        HeroImageHeight="120">
+        HeroImage="ms-appx:///Assets/Modules/OOBE/OOBEPTHero.png">
 
         <controls:OOBEPageControl.PageContent>
             <StackPanel Orientation="Vertical">
