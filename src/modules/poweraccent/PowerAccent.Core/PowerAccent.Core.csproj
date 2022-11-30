@@ -16,11 +16,11 @@
 		<ErrorOnDuplicatePublishOutputFiles>false</ErrorOnDuplicatePublishOutputFiles>
 	</PropertyGroup>
 
-	<ItemGroup>
-		<PackageReference Include="Microsoft.Windows.CsWinRT" Version="2.0.0" />
-		<PackageReference Include="Vanara.PInvoke.User32" Version="3.3.15" />
-		<PackageReference Include="Vanara.PInvoke.Shell32" Version="3.3.15" />
-	</ItemGroup>
+  <ItemGroup>
+        <PackageReference Include="Microsoft.Windows.CsWinRT" Version="2.0.0" />
+        <PackageReference Include="Vanara.PInvoke.User32" Version="3.4.11" />
+        <PackageReference Include="Vanara.PInvoke.Shell32" Version="3.4.11" />
+  </ItemGroup>
 
 	<ItemGroup>
 		<ProjectReference Include="..\..\..\common\GPOWrapper\GPOWrapper.vcxproj" />

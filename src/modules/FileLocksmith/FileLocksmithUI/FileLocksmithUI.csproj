@@ -47,8 +47,8 @@
     <ErrorOnDuplicatePublishOutputFiles>false</ErrorOnDuplicatePublishOutputFiles>
   </PropertyGroup>
 
-  <!-- Needed for CommunityToolkit.Labs.WinUI.SettingsControls. -->
-  <PropertyGroup>
+  <!-- Needed for CommunityToolkit.Labs.WinUI.SettingsControls, on local builds and PR CI. -->
+  <PropertyGroup Condition="'$(IsPipeline)' == ''">
     <RestoreAdditionalProjectSources>https://pkgs.dev.azure.com/dotnet/CommunityToolkit/_packaging/CommunityToolkit-Labs/nuget/v3/index.json</RestoreAdditionalProjectSources>
   </PropertyGroup>
 

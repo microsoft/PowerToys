@@ -33,7 +33,7 @@ void TargetState::toggle_force_shown()
     if (state != ForceShown)
     {
         state = ForceShown;
-        instance->on_held();
+        overlay_window_instance->on_held();
     }
     else
     {

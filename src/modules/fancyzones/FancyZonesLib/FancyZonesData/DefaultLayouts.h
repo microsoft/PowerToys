@@ -22,7 +22,7 @@ namespace NonLocalizable
     }
 }
 
-enum class MonitorConfiguraionType
+enum class MonitorConfigurationType
 {
     Horizontal = 0,
     Vertical
@@ -31,7 +31,7 @@ enum class MonitorConfiguraionType
 class DefaultLayouts
 {
 public:
-    using TDefaultLayoutsContainer = std::map<MonitorConfiguraionType, LayoutData>;
+    using TDefaultLayoutsContainer = std::map<MonitorConfigurationType, LayoutData>;
 
     static DefaultLayouts& instance();
 
@@ -46,7 +46,7 @@ public:
 
     void LoadData();
 
-    LayoutData GetDefaultLayout(MonitorConfiguraionType type = MonitorConfiguraionType::Horizontal) const noexcept;
+    LayoutData GetDefaultLayout(MonitorConfigurationType type = MonitorConfigurationType::Horizontal) const noexcept;
 
 private:
     DefaultLayouts();
