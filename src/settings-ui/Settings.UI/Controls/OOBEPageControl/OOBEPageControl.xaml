@@ -10,7 +10,7 @@
 
     <Grid>
         <Grid.RowDefinitions>
-            <RowDefinition Height="280" />
+            <RowDefinition Height="Auto" />
             <RowDefinition Height="*" />
         </Grid.RowDefinitions>
 
@@ -19,19 +19,16 @@
             Source="{x:Bind HeroImage}"
             Stretch="UniformToFill" />
 
-        <ScrollViewer
-            Grid.Row="1"
-            Padding="32,24,32,24"
-            VerticalScrollBarVisibility="Auto">
-            <StackPanel
-                VerticalAlignment="Top"
-                Orientation="Vertical">
-
-                <TextBlock
-                    x:Name="TitleTxt"
-                    AutomationProperties.HeadingLevel="Level1"
-                    Style="{StaticResource TitleTextBlockStyle}"
-                    Text="{x:Bind Title}" />
+        <ScrollViewer Grid.Row="1"
+                      VerticalScrollBarVisibility="Auto"
+                      Padding="32,24,32,24">
+            <StackPanel Orientation="Vertical"
+                        VerticalAlignment="Top">
+                
+                <TextBlock x:Name="TitleTxt"
+                           Text="{x:Bind Title}"
+                           AutomationProperties.HeadingLevel="Level1"
+                           Style="{StaticResource TitleTextBlockStyle}" />
 
                 <TextBlock
                     x:Name="DescriptionTxt"
