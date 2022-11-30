@@ -100,9 +100,9 @@ public class PowerAccent : IDisposable
     private string GetCharacterDescription(string character)
     {
         List<UnicodeCharInfo> unicodeList = new List<UnicodeCharInfo>();
-        foreach (var codepoint in character.AsCodePointEnumerable())
+        foreach (var codePoint in character.AsCodePointEnumerable())
         {
-            unicodeList.Add(UnicodeInfo.GetCharInfo(codepoint));
+            unicodeList.Add(UnicodeInfo.GetCharInfo(codePoint));
         }
 
         if (unicodeList.Count == 0)

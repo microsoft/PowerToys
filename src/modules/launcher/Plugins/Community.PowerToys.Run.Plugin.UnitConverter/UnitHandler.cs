@@ -48,8 +48,8 @@ namespace Community.PowerToys.Run.Plugin.UnitConverter
                 return enum_unit;
             }
 
-            var culinfo_en = new System.Globalization.CultureInfo("en-US");
-            if (UnitParser.Default.TryParse(unit, unitInfo.UnitType, culinfo_en, out Enum enum_unit_en))
+            var cultureInfoEn = new System.Globalization.CultureInfo("en-US");
+            if (UnitParser.Default.TryParse(unit, unitInfo.UnitType, cultureInfoEn, out Enum enum_unit_en))
             {
                 return enum_unit_en;
             }
