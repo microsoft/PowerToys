@@ -68,8 +68,6 @@ jobs:
       version: '6.x'
 
   - task: NuGetAuthenticate@0
-    inputs:
-      nuGetServiceConnections: PowerToysCDPxFeed
       
   - task: NuGetToolInstaller@1
     displayName: Use NuGet Installer latest
