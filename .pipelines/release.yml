@@ -75,7 +75,7 @@ jobs:
   - task: PowerShell@2
     displayName: Replace Stubbed Files
     inputs:
-      filePath: 'Unstub.ps1'
+      filePath: '.pipelines/Unstub.ps1'
 
 # this will restore the following nugets:
 # - main solution
