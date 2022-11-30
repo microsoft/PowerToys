@@ -92,4 +92,13 @@
       <XamlRuntime>$(DefaultXamlRuntime)</XamlRuntime>
     </Page>
   </ItemGroup>
+  <PropertyGroup>
+      <ExperimentationLive>False</ExperimentationLive>
+  </PropertyGroup>
+  <ItemGroup Condition="'$(ExperimentationLive)'=='True'">
+      <ProjectReference Include="..\..\common\Experiments\Experiments-Live\Experiments-Live.csproj" />
+  </ItemGroup>
+  <ItemGroup Condition="'$(ExperimentationLive)'=='False'">
+	  <ProjectReference Include="..\..\common\Experiments\Experiments-Inert\Experiments-Inert.csproj" />
+  </ItemGroup>
 </Project>
