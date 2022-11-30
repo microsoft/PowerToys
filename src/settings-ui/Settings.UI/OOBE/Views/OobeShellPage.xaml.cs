@@ -50,8 +50,8 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
 
         public OobeShellPage()
         {
-            Experiments exp = new Experiments();
-            experimentEnabled = exp.EnableLandingPageExperiment();
+            Experiments landingPageExp = new Experiments();
+            experimentEnabled = landingPageExp.EnableLandingPageExperiment();
 
             InitializeComponent();
 

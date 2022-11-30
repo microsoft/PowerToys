@@ -2,13 +2,18 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+// The dependencies required to build this project are only availalble in the official build pipeline and are internal to Microsoft.
+// However, this project is not required to build a test version of the application.
+
 namespace Experimentation
 {
+    using System;
     using System.Text.Json;
     using Microsoft.PowerToys.Settings.UI.Library.Telemetry.Events;
     using Microsoft.PowerToys.Telemetry;
     using Microsoft.VariantAssignment.Client;
     using Microsoft.VariantAssignment.Contract;
+    using Wox.Plugin.Logger;
 
     public class Experiments
     {
@@ -61,9 +66,10 @@ namespace Experimentation
 
                 PowerToysTelemetry.Log.WriteEvent(new OobeVariantAssignmentEvent() { AssignmentContext = assignmentContext, ClientID = AssignmentUnit });
             }
-            catch (Exception)
+            catch (Exception ex)
             {
                 IsExperiment = false;
+                Log.Exception("Error getting variant assignments for experiment", ex, typeof(Experiments));
             }
         }
 
