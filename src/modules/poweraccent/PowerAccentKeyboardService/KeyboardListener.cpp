@@ -108,7 +108,7 @@ namespace winrt::PowerToys::PowerAccentKeyboardService::implementation
         {
             std::lock_guard<std::mutex> lock(m_mutex_excluded_apps);
             m_settings.excludedApps = std::move(excludedApps);
-            m_prevForegrndAppExcl = { NULL, false };
+            m_prevForegroundAppExcl = { NULL, false };
         }
     }
 
@@ -118,25 +118,25 @@ namespace winrt::PowerToys::PowerAccentKeyboardService::implementation
 
         if (m_settings.excludedApps.empty())
         {
-            m_prevForegrndAppExcl = { NULL, false };
+            m_prevForegroundAppExcl = { NULL, false };
             return false;
         }
 
         if (HWND foregroundApp{ GetForegroundWindow() })
         {
-            if (m_prevForegrndAppExcl.first == foregroundApp)
+            if (m_prevForegroundAppExcl.first == foregroundApp)
             {
-                return m_prevForegrndAppExcl.second;
+                return m_prevForegroundAppExcl.second;
             }
             auto processPath = get_process_path(foregroundApp);
             CharUpperBuffW(processPath.data(), (DWORD)processPath.length());
-            m_prevForegrndAppExcl = { foregroundApp,
+            m_prevForegroundAppExcl = { foregroundApp,
                                       find_app_name_in_path(processPath, m_settings.excludedApps) };
 
-            return m_prevForegrndAppExcl.second;
+            return m_prevForegroundAppExcl.second;
         }
 
-        m_prevForegrndAppExcl = { NULL, false };
+        m_prevForegroundAppExcl = { NULL, false };
 
         return false;
     }

@@ -27,7 +27,7 @@
     <ErrorOnDuplicatePublishOutputFiles>false</ErrorOnDuplicatePublishOutputFiles>
   </PropertyGroup>
   <PropertyGroup>
-    <!-- Disable missing comment warning. WinRT/C++ libraries added won't have comments on thier reflections. -->
+    <!-- Disable missing comment warning. WinRT/C++ libraries added won't have comments on their reflections. -->
     <NoWarn>$(NoWarn);1591</NoWarn>
   </PropertyGroup>
 

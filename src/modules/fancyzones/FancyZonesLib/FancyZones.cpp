@@ -56,14 +56,14 @@ namespace NonLocalizable
 struct FancyZones : public winrt::implements<FancyZones, IFancyZones, IFancyZonesCallback>, public SettingsObserver
 {
 public:
-    FancyZones(HINSTANCE hinstance, std::function<void()> disableModuleCallback) noexcept :
+    FancyZones(HINSTANCE hinstance, std::function<void()> disableModuleCallbackFunction) noexcept :
         SettingsObserver({ SettingId::EditorHotkey, SettingId::PrevTabHotkey, SettingId::NextTabHotkey, SettingId::SpanZonesAcrossMonitors }),
         m_hinstance(hinstance),
         m_windowMoveHandler([this]() {
             PostMessageW(m_window, WM_PRIV_LOCATIONCHANGE, NULL, NULL);
         })
     {
-        this->disableModuleCallback = std::move(disableModuleCallback);
+        this->disableModuleCallback = std::move(disableModuleCallbackFunction);
 
         FancyZonesSettings::instance().LoadSettings();
 
@@ -324,7 +324,7 @@ std::pair<std::shared_ptr<WorkArea>, ZoneIndexSet> FancyZones::GetAppZoneHistory
     }
     else
     {
-        for (const auto& [monitor, workArea] : workAreaMap)
+        for (const auto& [mon, workArea] : workAreaMap)
         {
             auto zoneIndexSet = workArea->GetWindowZoneIndexes(window);
             if (!zoneIndexSet.empty())
@@ -435,7 +435,7 @@ void FancyZones::WindowCreated(HWND window) noexcept
     {
         // window is recreated after switching virtual desktop
         // avoid moving already opened windows after switching vd
-        bool isMoved = FancyZonesWindowProperties::RetreiveMovedOnOpeningProperty(window);
+        bool isMoved = FancyZonesWindowProperties::RetrieveMovedOnOpeningProperty(window);
         if (!isMoved)
         {
             FancyZonesWindowProperties::StampMovedOnOpeningProperty(window);

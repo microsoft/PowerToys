@@ -648,7 +648,7 @@
               "name": "commentContains",
               "parameters": {
                 "isRegex": true,
-                "commentPattern": "\\/feedbackHub"
+                "commentPattern": "\\/feedback[H|h]ub"
               }
             },
             {

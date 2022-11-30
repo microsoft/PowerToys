@@ -22,8 +22,3 @@
 #include <unordered_set>
 #include <ShObjIdl.h>
 #include <optional>
-
-namespace winrt
-{
-    using namespace ::winrt;
-}
