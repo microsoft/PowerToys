@@ -214,7 +214,7 @@ namespace ColorPicker.Helpers
         /// <returns>A <see cref="string"/> representation of a natural color</returns>
         private static string ColorToNCol(Color color)
         {
-            var (hue, whiteness, blackness) = ColorHelper.ConvertToNaturalColor(color);
+            var (hue, whiteness, blackness) = ColorFormatHelper.ConvertToNaturalColor(color);
 
             whiteness = Math.Round(whiteness * 100);
             blackness = Math.Round(blackness * 100);

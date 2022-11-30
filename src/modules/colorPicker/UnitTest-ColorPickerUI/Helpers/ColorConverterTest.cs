@@ -342,7 +342,7 @@ namespace Microsoft.ColorPicker.UnitTests
             var blue = int.Parse(hexValue.AsSpan(4, 2), NumberStyles.HexNumber, CultureInfo.InvariantCulture);
 
             var color = Color.FromArgb(255, red, green, blue);
-            var result = ColorHelper.ConvertToNaturalColor(color);
+            var result = ColorFormatHelper.ConvertToNaturalColor(color);
 
             // hue
             Assert.AreEqual(result.hue, hue);

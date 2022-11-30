@@ -210,6 +210,54 @@ namespace ManagedCommon
             return (l, a, b);
         }
 
+        /// <summary>
+        /// Convert a given <see cref="Color"/> to a natural color (hue, whiteness, blackness)
+        /// </summary>
+        /// <param name="color">The <see cref="Color"/> to convert</param>
+        /// <returns>The hue, whiteness [0..1] and blackness [0..1] of the converted color</returns>
+        public static (string hue, double whiteness, double blackness) ConvertToNaturalColor(Color color)
+        {
+            var min = Math.Min(Math.Min(color.R, color.G), color.B) / 255d;
+            var max = Math.Max(Math.Max(color.R, color.G), color.B) / 255d;
+
+            return (GetNaturalColorFromHue(color.GetHue()), min, 1 - max);
+        }
+
+        /// <summary>
+        /// Return the natural color for the given hue value
+        /// </summary>
+        /// <param name="hue">The hue value to convert</param>
+        /// <returns>A natural color</returns>
+        private static string GetNaturalColorFromHue(double hue)
+        {
+            if (hue < 60d)
+            {
+                return $"R{Math.Round(hue / 0.6d, 0)}";
+            }
+
+            if (hue < 120d)
+            {
+                return $"Y{Math.Round((hue - 60d) / 0.6d, 0)}";
+            }
+
+            if (hue < 180d)
+            {
+                return $"G{Math.Round((hue - 120d) / 0.6d, 0)}";
+            }
+
+            if (hue < 240d)
+            {
+                return $"C{Math.Round((hue - 180d) / 0.6d, 0)}";
+            }
+
+            if (hue < 300d)
+            {
+                return $"B{Math.Round((hue - 240d) / 0.6d, 0)}";
+            }
+
+            return $"M{Math.Round((hue - 300d) / 0.6d, 0)}";
+        }
+
         private static readonly Dictionary<string, char> DefaultFormatTypes = new Dictionary<string, char>()
         {
             { "Re", 'b' },   // red              byte
@@ -221,10 +269,14 @@ namespace ManagedCommon
             { "Ye", 'p' },   // yellow           percent
             { "Bk", 'p' },   // black key        percent
             { "Hu", 'i' },   // hue              int
-            { "Sa", 'p' },   // saturation       percent
+            { "Hn", 'i' },   // hue natural      string
+            { "Si", 'p' },   // saturation (HSI) percent
+            { "Sl", 'p' },   // saturation (HSL) percent
+            { "Sb", 'p' },   // saturation (HSB) percent
             { "Br", 'p' },   // brightnes        percent
             { "In", 'p' },   // intensity        percent
-            { "Li", 'p' },   // lightness        percent
+            { "Ll", 'p' },   // lightness (HSL)  percent
+            { "Lc", 'p' },   // lightness (CIEL) percent
             { "Va", 'p' },   // value            percent
             { "Wh", 'p' },   // whiteness        percent
             { "Bn", 'p' },   // blacknes         percent
@@ -335,10 +387,21 @@ namespace ManagedCommon
                     var (hue, _, _) = ConvertToHSBColor(color);
                     hue = Math.Round(hue);
                     return hue.ToString(CultureInfo.InvariantCulture);
-                case "Sa":
-                    var (_, saturation, _) = ConvertToHSBColor(color);
-                    saturation = Math.Round(saturation * 100);
-                    return saturation.ToString(CultureInfo.InvariantCulture);
+                case "Hn":
+                    var (hueNatural, _, _) = ConvertToNaturalColor(color);
+                    return hueNatural;
+                case "Sb":
+                    var (_, saturationB, _) = ConvertToHSBColor(color);
+                    saturationB = Math.Round(saturationB * 100);
+                    return saturationB.ToString(CultureInfo.InvariantCulture);
+                case "Si":
+                    var (_, saturationI, _) = ConvertToHSIColor(color);
+                    saturationI = Math.Round(saturationI * 100);
+                    return saturationI.ToString(CultureInfo.InvariantCulture);
+                case "Sl":
+                    var (_, saturationL, _) = ConvertToHSLColor(color);
+                    saturationL = Math.Round(saturationL * 100);
+                    return saturationL.ToString(CultureInfo.InvariantCulture);
                 case "Va": // value and brightness are the same values
                 case "Br":
                     var (_, _, brightness) = ConvertToHSBColor(color);
@@ -348,10 +411,14 @@ namespace ManagedCommon
                     var (_, _, intensity) = ConvertToHSIColor(color);
                     intensity = Math.Round(intensity * 100);
                     return intensity.ToString(CultureInfo.InvariantCulture);
-                case "Li":
-                    var (_, _, lightness) = ConvertToHSLColor(color);
-                    lightness = Math.Round(lightness * 100);
-                    return lightness.ToString(CultureInfo.InvariantCulture);
+                case "Ll":
+                    var (_, _, lightnessL) = ConvertToHSLColor(color);
+                    lightnessL = Math.Round(lightnessL * 100);
+                    return lightnessL.ToString(CultureInfo.InvariantCulture);
+                case "Lc":
+                    var (lightnessC, _, _) = ConvertToCIELABColor(color);
+                    lightnessC = Math.Round(lightnessC, 2);
+                    return lightnessC.ToString(CultureInfo.InvariantCulture);
                 case "Wh":
                     var (_, whiteness, _) = ConvertToHWBColor(color);
                     whiteness = Math.Round(whiteness * 100);
@@ -412,14 +479,14 @@ namespace ManagedCommon
             {
                 case "HEX": return "%Rex%Grx%Blx";
                 case "RGB": return "rgb(%Re, %Gr, %Bl)";
-                case "HSL": return "hsl(%Hu, %Sa%, %Li%)";
-                case "HSV": return "hsv(%Hu, %Sa%, %Va%)";
+                case "HSL": return "hsl(%Hu, %Sl%, %Ll%)";
+                case "HSV": return "hsv(%Hu, %Sb%, %Va%)";
                 case "CMYK": return "cmyk(%Cy%, %Ma%, %Ye%, %Bk%)";
-                case "HSB": return "hsb(%Hu, %Sa%, %Br%)";
-                case "HSI": return "hsi(%Hu, %Sa%, %In%)";
+                case "HSB": return "hsb(%Hu, %Sb%, %Br%)";
+                case "HSI": return "hsi(%Hu, %Si%, %In%)";
                 case "HWB": return "hwb(%Hu, %Wh%, %Bn%)";
-                case "NCol": return "%Hu, %Wh%, %Bn%";
-                case "CIELAB": return "CIELab(%Li, %Ca, %Cb)";
+                case "NCol": return "%Hn, %Wh%, %Bn%";
+                case "CIELAB": return "CIELab(%Lc, %Ca, %Cb)";
                 case "CIEXYZ": return "XYZ(%Xv, %Yv, %Zv)";
                 case "VEC4": return "(%Reff, %Grff, %Blff, 1f)";
                 case "Decimal": return "%Dv";
