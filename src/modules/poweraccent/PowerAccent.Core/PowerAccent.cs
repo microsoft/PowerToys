@@ -3,10 +3,9 @@
 // See the LICENSE file in the project root for more information.
 
 using System.Globalization;
-using System.Linq;
+using System.Text;
 using System.Unicode;
 using System.Windows;
-using System.Windows.Media.TextFormatting;
 using PowerAccent.Core.Services;
 using PowerAccent.Core.Tools;
 using PowerToys.PowerAccentKeyboardService;
@@ -22,7 +21,7 @@ public class PowerAccent : IDisposable
 
     private bool _visible;
     private string[] _characters = Array.Empty<string>();
-    private UnicodeCharInfo[] _characterNames = Array.Empty<UnicodeCharInfo>();
+    private string[] _characterDescriptions = Array.Empty<string>();
     private int _selectedIndex = -1;
     private bool _showDescription;
 
@@ -30,7 +29,7 @@ public class PowerAccent : IDisposable
 
     public bool ShowDescription => _showDescription;
 
-    public UnicodeCharInfo[] CharacterNames => _characterNames;
+    public string[] CharacterDescriptions => _characterDescriptions;
 
     public event Action<bool, string[]> OnChangeDisplay;
 
@@ -83,7 +82,7 @@ public class PowerAccent : IDisposable
     {
         _visible = true;
         _characters = (WindowsFunctions.IsCapsLockState() || WindowsFunctions.IsShiftState()) ? ToUpper(Languages.GetDefaultLetterKey(letterKey, _settingService.SelectedLang)) : Languages.GetDefaultLetterKey(letterKey, _settingService.SelectedLang);
-        _characterNames = GetCharacterNames(_characters);
+        _characterDescriptions = GetCharacterDescriptions(_characters);
 
         Microsoft.PowerToys.Settings.UI.Library.Enumerations.PowerAccentShowDescription characterInfoSetting = _settingService.ShowDescription;
         _showDescription = characterInfoSetting == Microsoft.PowerToys.Settings.UI.Library.Enumerations.PowerAccentShowDescription.Always || (characterInfoSetting == Microsoft.PowerToys.Settings.UI.Library.Enumerations.PowerAccentShowDescription.SpecialCharacters && ((IList<LetterKey>)_letterKeysShowingDescription).Contains(letterKey));
@@ -98,14 +97,62 @@ public class PowerAccent : IDisposable
         }, TaskScheduler.FromCurrentSynchronizationContext());
     }
 
-    private UnicodeCharInfo[] GetCharacterNames(string[] characters)
+    private string GetCharacterDescription(string character)
     {
-        UnicodeCharInfo[] charInfoCollection = Array.Empty<UnicodeCharInfo>();
+        List<UnicodeCharInfo> unicodeList = new List<UnicodeCharInfo>();
+        foreach (var codepoint in character.AsCodePointEnumerable())
+        {
+            unicodeList.Add(UnicodeInfo.GetCharInfo(codepoint));
+        }
+
+        if (unicodeList.Count == 0)
+        {
+            return string.Empty;
+        }
+
+        var description = new StringBuilder();
+        if (unicodeList.Count == 1)
+        {
+            var unicode = unicodeList.First();
+            var charUnicodeNumber = unicode.CodePoint.ToString("X4", CultureInfo.InvariantCulture);
+            description.AppendFormat(CultureInfo.InvariantCulture, "(U+{0}) {1} ", charUnicodeNumber, unicode.Name);
+
+            return description.ToString();
+        }
+
+        var displayTextAndCodes = new StringBuilder();
+        var names = new StringBuilder();
+        foreach (var unicode in unicodeList)
+        {
+            var charUnicodeNumber = unicode.CodePoint.ToString("X4", CultureInfo.InvariantCulture);
+            if (displayTextAndCodes.Length > 0)
+            {
+                displayTextAndCodes.Append(" - ");
+            }
+
+            displayTextAndCodes.AppendFormat(CultureInfo.InvariantCulture, "{0}: (U+{1})", unicode.GetDisplayText(), charUnicodeNumber);
+
+            if (names.Length > 0)
+            {
+                names.Append(", ");
+            }
+
+            names.Append(unicode.Name);
+        }
+
+        description.Append(displayTextAndCodes);
+        description.Append(": ");
+        description.Append(names);
+
+        return description.ToString();
+    }
+
+    private string[] GetCharacterDescriptions(string[] characters)
+    {
+        string[] charInfoCollection = Array.Empty<string>();
         foreach (string character in characters)
         {
-            charInfoCollection = character.Length == 1
-                ? charInfoCollection.Append<UnicodeCharInfo>(UnicodeInfo.GetCharInfo(character[0])).ToArray<UnicodeCharInfo>()
-                : charInfoCollection.Append<UnicodeCharInfo>(UnicodeInfo.GetCharInfo(0)).ToArray<UnicodeCharInfo>();
+            charInfoCollection = charInfoCollection.Append<string>(GetCharacterDescription(character)).ToArray<string>();
         }
 
         return charInfoCollection;

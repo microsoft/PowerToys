@@ -56,16 +56,7 @@ public partial class Selector : Window, IDisposable, INotifyPropertyChanged
     {
         characters.SelectedIndex = index;
 
-        if (_powerAccent.CharacterNames[index].CodePoint != 0)
-        {
-            string charUnicodeNumber = _powerAccent.CharacterNames[index].CodePoint.ToString("X4", CultureInfo.InvariantCulture);
-            string characterNameInfoBoxText = "(U+" + charUnicodeNumber + ") " + _powerAccent.CharacterNames[index].Name;
-            characterName.Text = characterNameInfoBoxText;
-        }
-        else
-        {
-            characterName.Text = "-";
-        }
+        characterName.Text = _powerAccent.CharacterDescriptions[index];
     }
 
     private void PowerAccent_OnChangeDisplay(bool isActive, string[] chars)
