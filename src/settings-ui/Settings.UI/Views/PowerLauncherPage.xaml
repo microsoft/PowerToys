@@ -20,7 +20,7 @@
 
             <StackPanel Orientation="Vertical">
                 <labs:SettingsCard
-                    x:Uid="QuickAccent_EnableQuickAccent"
+                    x:Uid="PowerLauncher_EnablePowerLauncher"
                     HeaderIcon="{ui:BitmapIcon Source=/Assets/FluentIcons/FluentIconsPowerToysRun.png}"
                     IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabledGpoConfigured, Converter={StaticResource BoolNegationConverter}}">
                     <ToggleSwitch
