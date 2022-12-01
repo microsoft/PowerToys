@@ -48,8 +48,8 @@ namespace PowerAccent.Core
                 Language.CUR => GetDefaultLetterKeyCUR(letter), // Currency
                 Language.CY => GetDefaultLetterKeyCY(letter), // Welsh
                 Language.CZ => GetDefaultLetterKeyCZ(letter), // Czech
-                Language.GA => GetDefaultLetterKeyGA(letter); // Gaeilge (Irish Gaelic)
-                Language.GD => GetDefaultLetterKeyGD(letter); // Gàidhlig (Scottish Gaelic)
+                Language.GA => GetDefaultLetterKeyGA(letter), // Gaeilge (Irish Gaelic)
+                Language.GD => GetDefaultLetterKeyGD(letter), // Gàidhlig (Scottish Gaelic)
                 Language.DE => GetDefaultLetterKeyDE(letter), // German
                 Language.FR => GetDefaultLetterKeyFR(letter), // French
                 Language.HR => GetDefaultLetterKeyHR(letter), // Croatian
@@ -362,41 +362,29 @@ namespace PowerAccent.Core
         // Gaeilge (Irish language)
         private static string[] GetDefaultLetterKeyGA(LetterKey letter)
         {
-            switch (letter)
+            return letter switch
             {
-                case LetterKey.VK_A:
-                    return new string[] { "á" };
-                case LetterKey.VK_E:
-                    return new string[] { "é" };
-                case LetterKey.VK_I:
-                    return new string[] { "í" };
-                case LetterKey.VK_O:
-                    return new string[] { "ó" };
-                case LetterKey.VK_U:
-                    return new string[] { "ú" };
-            }
-
-            return Array.Empty<string>();
+                LetterKey.VK_A => new string[] { "á" },
+                LetterKey.VK_E => new string[] { "é" },
+                LetterKey.VK_I => new string[] { "í" },
+                LetterKey.VK_O => new string[] { "ó" },
+                LetterKey.VK_U => new string[] { "ú" },
+                _ => Array.Empty<string>(),
+            };
         }
 
         // Gàidhlig (Scottish Gaelic)
         private static string[] GetDefaultLetterKeyGD(LetterKey letter)
         {
-            switch (letter)
+            return letter switch
             {
-                case LetterKey.VK_A:
-                    return new string[] { "à" };
-                case LetterKey.VK_E:
-                    return new string[] { "è" };
-                case LetterKey.VK_I:
-                    return new string[] { "ì" };
-                case LetterKey.VK_O:
-                    return new string[] { "ò" };
-                case LetterKey.VK_U:
-                    return new string[] { "ù" };
-            }
-
-            return Array.Empty<string>();
+                LetterKey.VK_A => new string[] { "à" },
+                LetterKey.VK_E => new string[] { "è" },
+                LetterKey.VK_I => new string[] { "ì" },
+                LetterKey.VK_O => new string[] { "ò" },
+                LetterKey.VK_U => new string[] { "ù" },
+                _ => Array.Empty<string>(),
+            };
         }
 
         // Czech
