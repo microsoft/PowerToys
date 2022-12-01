@@ -25,7 +25,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         public StringProperty ExcludedApps { get; set; }
 
         [JsonPropertyName("show_description")]
-        public PowerAccentShowDescription ShowDescription { get; set; }
+        public bool ShowUnicodeDescription { get; set; }
 
         public PowerAccentProperties()
         {
@@ -34,7 +34,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             InputTime = new IntProperty(200);
             SelectedLang = "ALL";
             ExcludedApps = new StringProperty();
-            ShowDescription = PowerAccentShowDescription.SpecialCharacters;
+            ShowUnicodeDescription = false;
         }
     }
 }

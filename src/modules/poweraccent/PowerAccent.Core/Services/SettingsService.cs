@@ -93,7 +93,7 @@ public class SettingsService
                                 break;
                         }
 
-                        ShowDescription = settings.Properties.ShowDescription;
+                        ShowUnicodeDescription = settings.Properties.ShowUnicodeDescription;
                     }
                 }
                 catch (Exception ex)
@@ -179,12 +179,19 @@ public class SettingsService
         }
     }
 
-    private PowerAccentShowDescription _showDescription = PowerAccentShowDescription.SpecialCharacters;
+    private bool _showUnicodeDescription;
 
-    public PowerAccentShowDescription ShowDescription
+    public bool ShowUnicodeDescription
     {
-        get { return _showDescription; }
-        set { _showDescription = value; }
+        get
+        {
+            return _showUnicodeDescription;
+        }
+
+        set
+        {
+            _showUnicodeDescription = value;
+        }
     }
 }
 

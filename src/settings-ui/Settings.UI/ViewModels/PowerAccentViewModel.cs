@@ -235,19 +235,19 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             }
         }
 
-        public int ShowDescription
+        public bool ShowUnicodeDescription
         {
             get
             {
-                return (int)_powerAccentSettings.Properties.ShowDescription;
+                return _powerAccentSettings.Properties.ShowUnicodeDescription;
             }
 
             set
             {
-                if (value != (int)_powerAccentSettings.Properties.ShowDescription)
+                if (value != _powerAccentSettings.Properties.ShowUnicodeDescription)
                 {
-                    _powerAccentSettings.Properties.ShowDescription = (PowerAccentShowDescription)value;
-                    OnPropertyChanged(nameof(ShowDescription));
+                    _powerAccentSettings.Properties.ShowUnicodeDescription = value;
+                    OnPropertyChanged(nameof(ShowUnicodeDescription));
                     RaisePropertyChanged();
                 }
             }

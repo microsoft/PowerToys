@@ -61,7 +61,7 @@ public partial class Selector : Window, IDisposable, INotifyPropertyChanged
 
     private void PowerAccent_OnChangeDisplay(bool isActive, string[] chars)
     {
-        CharacterNameVisibility = _powerAccent.ShowDescription ? Visibility.Visible : Visibility.Collapsed;
+        CharacterNameVisibility = _powerAccent.ShowUnicodeDescription ? Visibility.Visible : Visibility.Collapsed;
 
         this.Visibility = isActive ? Visibility.Visible : Visibility.Collapsed;
 

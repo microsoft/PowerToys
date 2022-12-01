@@ -23,11 +23,11 @@ public class PowerAccent : IDisposable
     private string[] _characters = Array.Empty<string>();
     private string[] _characterDescriptions = Array.Empty<string>();
     private int _selectedIndex = -1;
-    private bool _showDescription;
+    private bool _showUnicodeDescription;
 
     public LetterKey[] LetterKeysShowingDescription => _letterKeysShowingDescription;
 
-    public bool ShowDescription => _showDescription;
+    public bool ShowUnicodeDescription => _showUnicodeDescription;
 
     public string[] CharacterDescriptions => _characterDescriptions;
 
@@ -91,8 +91,7 @@ public class PowerAccent : IDisposable
         _characters = (WindowsFunctions.IsCapsLockState() || WindowsFunctions.IsShiftState()) ? ToUpper(Languages.GetDefaultLetterKey(letterKey, _settingService.SelectedLang)) : Languages.GetDefaultLetterKey(letterKey, _settingService.SelectedLang);
         _characterDescriptions = GetCharacterDescriptions(_characters);
 
-        Microsoft.PowerToys.Settings.UI.Library.Enumerations.PowerAccentShowDescription characterInfoSetting = _settingService.ShowDescription;
-        _showDescription = characterInfoSetting == Microsoft.PowerToys.Settings.UI.Library.Enumerations.PowerAccentShowDescription.Always || (characterInfoSetting == Microsoft.PowerToys.Settings.UI.Library.Enumerations.PowerAccentShowDescription.SpecialCharacters && ((IList<LetterKey>)_letterKeysShowingDescription).Contains(letterKey));
+        _showUnicodeDescription = _settingService.ShowUnicodeDescription;
 
         Task.Delay(_settingService.InputTime).ContinueWith(
         t =>
