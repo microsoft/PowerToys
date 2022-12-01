@@ -576,6 +576,8 @@ FZE
 gabime
 GAC
 gacutil
+Gaeilge
+Gaidhlig
 GBarm
 Gbits
 Gbps
