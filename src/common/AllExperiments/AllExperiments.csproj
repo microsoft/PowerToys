@@ -4,6 +4,7 @@
     <TargetFramework>net7.0-windows</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
+    <TargetName>PowerToys.AllExperiments</TargetName>
   </PropertyGroup>
 
   <PropertyGroup>
