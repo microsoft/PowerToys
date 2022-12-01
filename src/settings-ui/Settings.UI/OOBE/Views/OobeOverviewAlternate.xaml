@@ -10,7 +10,8 @@
 
     <controls:OOBEPageControl
         x:Uid="Oobe_Overview"
-        HeroImage="ms-appx:///Assets/Modules/OOBE/OOBEPTHero.png">
+        HeroImage="ms-appx:///Assets/Modules/OOBE/OOBEPTHero.png"
+        HeroImageHeight="120">
 
         <controls:OOBEPageControl.PageContent>
             <StackPanel Orientation="Vertical">
@@ -18,9 +19,7 @@
                     x:Uid="Alternate_OOBE_Description"
                     Margin="0,24,0,12"
                     FontWeight="SemiBold" />
-                <GridView
-                    Margin="-8,0,0,0"
-                    SelectionMode="None">
+                <GridView Margin="-8,0,0,0" SelectionMode="None">
                     <GridViewItem>
                         <Grid
                             Width="280"
