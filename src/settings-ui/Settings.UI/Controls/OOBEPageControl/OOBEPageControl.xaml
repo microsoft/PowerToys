@@ -10,12 +10,13 @@
 
     <Grid>
         <Grid.RowDefinitions>
-            <RowDefinition Height="280" />
+            <RowDefinition Height="Auto" />
             <RowDefinition Height="*" />
         </Grid.RowDefinitions>
 
         <Image
             x:Name="HeaderImage"
+            Height="{x:Bind HeroImageHeight}"
             Source="{x:Bind HeroImage}"
             Stretch="UniformToFill" />
 
@@ -23,9 +24,7 @@
             Grid.Row="1"
             Padding="32,24,32,24"
             VerticalScrollBarVisibility="Auto">
-            <StackPanel
-                VerticalAlignment="Top"
-                Orientation="Vertical">
+            <StackPanel VerticalAlignment="Top" Orientation="Vertical">
 
                 <TextBlock
                     x:Name="TitleTxt"
