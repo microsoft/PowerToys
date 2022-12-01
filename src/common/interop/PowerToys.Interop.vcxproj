@@ -27,7 +27,7 @@
   <PropertyGroup Label="Globals">
     <VCProjectVersion>16.0</VCProjectVersion>
     <ProjectGuid>{F055103B-F80B-4D0C-BF48-057C55620033}</ProjectGuid>
-    <TargetFramework>net6.0-windows</TargetFramework>
+    <TargetFramework>net7.0-windows</TargetFramework>
     <Keyword>ManagedCProj</Keyword>
     <RootNamespace>PowerToysInterop</RootNamespace>
     <ProjectName>PowerToys.Interop</ProjectName>

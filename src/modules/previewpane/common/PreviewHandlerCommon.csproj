@@ -13,7 +13,7 @@
 
   <PropertyGroup>
     <ProjectGuid>{AF2349B8-E5B6-4004-9502-687C1C7730B1}</ProjectGuid>
-    <TargetFramework>net6.0-windows</TargetFramework>
+    <TargetFramework>net7.0-windows</TargetFramework>
     <IntermediateOutputPath>..\..\..\..\$(Platform)\$(Configuration)\obj\$(AssemblyName)\</IntermediateOutputPath>
     <AssemblyName>PowerToys.PreviewHandlerCommon</AssemblyName>
   </PropertyGroup>
@@ -29,4 +29,5 @@
     <PackageReference Include="Microsoft.Web.WebView2" Version="1.0.1343.22" />
     <PackageReference Include="System.IO.Abstractions" Version="17.2.3" />
   </ItemGroup>
+
 </Project>

@@ -15,7 +15,7 @@
   <PropertyGroup>
     <ProjectGuid>{69E1EE8D-143A-4060-9129-4658ACF14AAF}</ProjectGuid>
     <RootNamespace>Microsoft.PowerToys.PreviewHandler.Pdf</RootNamespace>
-    <TargetFramework>net6.0-windows10.0.19041.0</TargetFramework>
+    <TargetFramework>net7.0-windows10.0.19041.0</TargetFramework>
     <EnableComHosting>true</EnableComHosting>
     <AssemblyName>PowerToys.PdfPreviewHandler</AssemblyName>
   </PropertyGroup>
@@ -52,4 +52,5 @@
     <ProjectReference Include="..\..\..\common\ManagedTelemetry\Telemetry\ManagedTelemetry.csproj" />
     <ProjectReference Include="..\common\PreviewHandlerCommon.csproj" />
   </ItemGroup>
+
 </Project>

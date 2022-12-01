@@ -2,7 +2,7 @@
   <Import Project="..\..\..\Version.props" />
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
-    <TargetFramework>net6.0-windows10.0.19041.0</TargetFramework>
+    <TargetFramework>net7.0-windows10.0.19041.0</TargetFramework>
     <RuntimeIdentifiers>win-x64;win-arm64</RuntimeIdentifiers>
     <OutputPath>$(SolutionDir)$(Platform)\$(Configuration)\modules\Awake</OutputPath>
     <Nullable>enable</Nullable>
@@ -56,7 +56,7 @@
     <PackageReference Include="NLog" Version="5.0.4" />
     <PackageReference Include="System.CommandLine" Version="2.0.0-beta1.20071.2" />
     <PackageReference Include="System.Reactive" Version="5.0.0" />
-    <PackageReference Include="System.Runtime.Caching" Version="6.0.0" />
+    <PackageReference Include="System.Runtime.Caching" Version="7.0.0" />
   </ItemGroup>
 
   <ItemGroup>
@@ -82,4 +82,5 @@
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
   </ItemGroup>
+
 </Project>

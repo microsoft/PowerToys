@@ -2,7 +2,7 @@
 	<Import Project="..\..\..\..\Version.props" />
 
 	<PropertyGroup>
-		<TargetFramework>net6.0-windows</TargetFramework>
+		<TargetFramework>net7.0-windows</TargetFramework>
 		<ProjectGuid>{4D971245-7A70-41D5-BAA0-DDB5684CAF51}</ProjectGuid>
 		<AppDesignerFolder>Properties</AppDesignerFolder>
 		<RootNamespace>Community.PowerToys.Run.Plugin.VSCodeWorkspaces</RootNamespace>
@@ -40,7 +40,7 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<PackageReference Include="Microsoft.Data.Sqlite" Version="6.0.9" />
+		<PackageReference Include="Microsoft.Data.Sqlite" Version="7.0.0" />
 	</ItemGroup>
 
 	<ItemGroup>
@@ -72,4 +72,5 @@
 			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
 		</None>
 	</ItemGroup>
+
 </Project>

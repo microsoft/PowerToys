@@ -15,7 +15,7 @@
     <OutputType>WinExe</OutputType>
     <RootNamespace>ColorPicker</RootNamespace>
     <AssemblyName>PowerToys.ColorPickerUI</AssemblyName>
-    <TargetFramework>net6.0-windows10.0.19041.0</TargetFramework>
+    <TargetFramework>net7.0-windows10.0.19041.0</TargetFramework>
     <ProjectTypeGuids>{60dc8134-eba5-43b8-bcc9-bb4bc16c2548};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)' == 'Debug'">
@@ -41,10 +41,10 @@
   <ItemGroup>
     <PackageReference Include="Microsoft.Windows.CsWinRT" Version="2.0.0" />
     <PackageReference Include="ModernWpfUI" Version="0.9.4" />
-    <PackageReference Include="System.ComponentModel.Composition" Version="6.0.0" />
+    <PackageReference Include="System.ComponentModel.Composition" Version="7.0.0" />
     <PackageReference Include="System.IO.Abstractions" Version="17.2.3" />
     <PackageReference Include="Microsoft.Xaml.Behaviors.Wpf" Version="1.1.39" />
-    <PackageReference Include="System.Drawing.Common" Version="6.0.0" />
+    <PackageReference Include="System.Drawing.Common" Version="7.0.0" />
   </ItemGroup>
   <ItemGroup>
     <None Update="Properties\Settings.settings">
