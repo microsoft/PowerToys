@@ -16,7 +16,7 @@ namespace Microsoft.PowerToys.Settings.UI
     /// </summary>
     public sealed partial class FlyoutWindow : WindowEx
     {
-        private const int WindowWidth = 360;
+        private const int WindowWidth = 358;
         private const int WindowHeight = 380;
         private const int WindowMargin = 12;
 

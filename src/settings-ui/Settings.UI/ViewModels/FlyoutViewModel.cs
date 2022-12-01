@@ -13,47 +13,67 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 {
     public class FlyoutViewModel : Observable
     {
-        private GeneralSettings GeneralSettingsConfig { get; set; }
+        public bool IsUpdateAvailable { get; set; }
 
         public ObservableCollection<FlyoutMenuItem> FlyoutMenuItems { get; set; }
 
+        private GeneralSettings generalSettingsConfig;
+        private UpdatingSettings updatingSettingsConfig;
+
         public FlyoutViewModel(ISettingsRepository<GeneralSettings> settingsRepository)
         {
-            GeneralSettingsConfig = settingsRepository.SettingsConfig;
+            generalSettingsConfig = settingsRepository.SettingsConfig;
+
             FlyoutMenuItems = new ObservableCollection<FlyoutMenuItem>();
-            if (GeneralSettingsConfig.Enabled.ColorPicker)
+            if (generalSettingsConfig.Enabled.ColorPicker)
             {
-                FlyoutMenuItems.Add(new FlyoutMenuItem() { Label = "ColorPicker", Tag = "ColorPicker", ToolTip = SettingsRepository<ColorPickerSettings>.GetInstance(new SettingsUtils()).SettingsConfig.Properties.ActivationShortcut.GetKeysList().ToString(), Icon = "ms-appx:///Assets/FluentIcons/FluentIconsColorPicker.png" });
+                FlyoutMenuItems.Add(new FlyoutMenuItem() { Label = "ColorPicker", Tag = "ColorPicker", ToolTip = SettingsRepository<ColorPickerSettings>.GetInstance(new SettingsUtils()).SettingsConfig.Properties.ActivationShortcut.ToString(), Icon = "ms-appx:///Assets/FluentIcons/FluentIconsColorPicker.png" });
             }
 
-            if (GeneralSettingsConfig.Enabled.FancyZones)
+            if (generalSettingsConfig.Enabled.FancyZones)
             {
-                FlyoutMenuItems.Add(new FlyoutMenuItem() { Label = "FancyZones Editor", Tag = "FancyZones", ToolTip = SettingsRepository<FancyZonesSettings>.GetInstance(new SettingsUtils()).SettingsConfig.Properties.FancyzonesEditorHotkey.Value.GetKeysList().ToString(), Icon = "ms-appx:///Assets/FluentIcons/FluentIconsFancyZones.png" });
+                FlyoutMenuItems.Add(new FlyoutMenuItem() { Label = "FancyZones Editor", Tag = "FancyZones", ToolTip = SettingsRepository<FancyZonesSettings>.GetInstance(new SettingsUtils()).SettingsConfig.Properties.FancyzonesEditorHotkey.Value.ToString(), Icon = "ms-appx:///Assets/FluentIcons/FluentIconsFancyZones.png" });
             }
 
-            if (GeneralSettingsConfig.Enabled.Hosts)
+            if (generalSettingsConfig.Enabled.Hosts)
             {
                 FlyoutMenuItems.Add(new FlyoutMenuItem() { Label = "Hosts File Editor", Tag = "Hosts", Icon = "ms-appx:///Assets/FluentIcons/FluentIconsHosts.png" });
             }
 
-            if (GeneralSettingsConfig.Enabled.PowerLauncher)
+            if (generalSettingsConfig.Enabled.PowerLauncher)
             {
-                FlyoutMenuItems.Add(new FlyoutMenuItem() { Label = "PowerToys Run", Tag = "PowerLauncher", ToolTip = SettingsRepository<PowerLauncherSettings>.GetInstance(new SettingsUtils()).SettingsConfig.Properties.OpenPowerLauncher.GetKeysList().ToString(), Icon = "ms-appx:///Assets/FluentIcons/FluentIconsPowerToysRun.png" });
+                FlyoutMenuItems.Add(new FlyoutMenuItem() { Label = "PowerToys Run", Tag = "PowerLauncher", ToolTip = SettingsRepository<PowerLauncherSettings>.GetInstance(new SettingsUtils()).SettingsConfig.Properties.OpenPowerLauncher.ToString(), Icon = "ms-appx:///Assets/FluentIcons/FluentIconsPowerToysRun.png" });
             }
 
-            if (GeneralSettingsConfig.Enabled.MeasureTool)
+            if (generalSettingsConfig.Enabled.PowerOCR)
             {
-                FlyoutMenuItems.Add(new FlyoutMenuItem() { Label = "Screen Ruler", Tag = "MeasureTool", ToolTip = SettingsRepository<MeasureToolSettings>.GetInstance(new SettingsUtils()).SettingsConfig.Properties.ActivationShortcut.GetKeysList().ToString(), Icon = "ms-appx:///Assets/FluentIcons/FluentIconsScreenRuler.png" });
+                FlyoutMenuItems.Add(new FlyoutMenuItem() { Label = "Text Extractor", Tag = "PowerOCR", ToolTip = SettingsRepository<PowerOcrSettings>.GetInstance(new SettingsUtils()).SettingsConfig.Properties.ActivationShortcut.ToString(), Icon = "ms-appx:///Assets/FluentIcons/FluentIconsPowerOcr.png" });
             }
 
-            if (GeneralSettingsConfig.Enabled.ShortcutGuide)
+            if (generalSettingsConfig.Enabled.MeasureTool)
             {
-                FlyoutMenuItems.Add(new FlyoutMenuItem() { Label = "Shortcut Guide", Tag = "ShortcutGuide", ToolTip = SettingsRepository<ShortcutGuideSettings>.GetInstance(new SettingsUtils()).SettingsConfig.Properties.OpenShortcutGuide.GetKeysList().ToString(), Icon = "ms-appx:///Assets/FluentIcons/FluentIconsShortcutGuide.png" });
+                FlyoutMenuItems.Add(new FlyoutMenuItem() { Label = "Screen Ruler", Tag = "MeasureTool", ToolTip = SettingsRepository<MeasureToolSettings>.GetInstance(new SettingsUtils()).SettingsConfig.Properties.ActivationShortcut.ToString(), Icon = "ms-appx:///Assets/FluentIcons/FluentIconsScreenRuler.png" });
             }
 
-            if (GeneralSettingsConfig.Enabled.PowerOCR)
+            if (generalSettingsConfig.Enabled.ShortcutGuide)
             {
-                FlyoutMenuItems.Add(new FlyoutMenuItem() { Label = "Text Extractor", Tag = "PowerOCR", ToolTip = SettingsRepository<PowerOcrSettings>.GetInstance(new SettingsUtils()).SettingsConfig.Properties.ActivationShortcut.GetKeysList().ToString(), Icon = "ms-appx:///Assets/FluentIcons/FluentIconsPowerOcr.png" });
+                FlyoutMenuItems.Add(new FlyoutMenuItem() { Label = "Shortcut Guide", Tag = "ShortcutGuide", ToolTip = SettingsRepository<ShortcutGuideSettings>.GetInstance(new SettingsUtils()).SettingsConfig.Properties.OpenShortcutGuide.ToString(), Icon = "ms-appx:///Assets/FluentIcons/FluentIconsShortcutGuide.png" });
+            }
+
+            if (updatingSettingsConfig == null)
+            {
+                updatingSettingsConfig = new UpdatingSettings();
+            }
+
+            updatingSettingsConfig = UpdatingSettings.LoadSettings();
+
+            if (updatingSettingsConfig.State == UpdatingSettings.UpdatingState.ReadyToInstall || updatingSettingsConfig.State == UpdatingSettings.UpdatingState.ReadyToDownload)
+            {
+                IsUpdateAvailable = true;
+            }
+            else
+            {
+                IsUpdateAvailable = false;
             }
         }
     }

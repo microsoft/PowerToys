@@ -4,8 +4,10 @@
 
 namespace Microsoft.PowerToys.Settings.UI.Flyout
 {
+    using System;
     using System.Collections.ObjectModel;
     using System.Threading;
+    using global::Windows.System;
     using interop;
     using Microsoft.PowerToys.Settings.UI.Library;
     using Microsoft.PowerToys.Settings.UI.ViewModels;
@@ -23,11 +25,6 @@ namespace Microsoft.PowerToys.Settings.UI.Flyout
             var settingsUtils = new SettingsUtils();
             ViewModel = new FlyoutViewModel(SettingsRepository<GeneralSettings>.GetInstance(settingsUtils));
             DataContext = ViewModel;
-        }
-
-        private void SettingsBtn_Click(object sender, RoutedEventArgs e)
-        {
-            App.OpenSettingsWindow(typeof(GeneralPage));
         }
 
         private void ModuleButton_Click(object sender, RoutedEventArgs e)
@@ -49,13 +46,8 @@ namespace Microsoft.PowerToys.Settings.UI.Flyout
                     }
 
                     break;
-                case "PowerLauncher": // Launch Run
-                    using (var eventHandle = new EventWaitHandle(false, EventResetMode.AutoReset, Constants.PowerLauncherSharedEvent()))
-                    {
-                        eventHandle.Set();
-                    }
 
-                    break;
+                // TO DO: ADD HOSTS
                 case "MeasureTool": // Launch Screen Ruler
                     using (var eventHandle = new EventWaitHandle(false, EventResetMode.AutoReset, Constants.MasureToolTriggerEvent()))
                     {
@@ -63,13 +55,15 @@ namespace Microsoft.PowerToys.Settings.UI.Flyout
                     }
 
                     break;
-                case "ShortcutGuide": // Launch Shortcut Guide
-                    using (var eventHandle = new EventWaitHandle(false, EventResetMode.AutoReset, Constants.ShortcutGuideTriggerEvent()))
+
+                case "PowerLauncher": // Launch Run
+                    using (var eventHandle = new EventWaitHandle(false, EventResetMode.AutoReset, Constants.PowerLauncherSharedEvent()))
                     {
                         eventHandle.Set();
                     }
 
                     break;
+
                 case "PowerOCR": // Launch Text Extractor
                     using (var eventHandle = new EventWaitHandle(false, EventResetMode.AutoReset, Constants.ShowPowerOCRSharedEvent()))
                     {
@@ -77,7 +71,25 @@ namespace Microsoft.PowerToys.Settings.UI.Flyout
                     }
 
                     break;
+
+                case "ShortcutGuide": // Launch Shortcut Guide
+                    using (var eventHandle = new EventWaitHandle(false, EventResetMode.AutoReset, Constants.ShortcutGuideTriggerEvent()))
+                    {
+                        eventHandle.Set();
+                    }
+
+                    break;
             }
+        }
+
+        private void SettingsBtn_Click(object sender, RoutedEventArgs e)
+        {
+            App.OpenSettingsWindow(typeof(GeneralPage));
+        }
+
+        private async void DocsBtn_Click(object sender, RoutedEventArgs e)
+        {
+            await Launcher.LaunchUriAsync(new Uri("https://aka.ms/PowerToysOverview"));
         }
     }
 }

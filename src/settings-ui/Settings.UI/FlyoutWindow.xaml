@@ -7,6 +7,7 @@
     xmlns:local="using:Microsoft.PowerToys.Settings.UI"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:winuiex="using:WinUIEx"
+    Title="PowerToys Settings"
     IsAlwaysOnTop="True"
     IsMaximizable="False"
     IsMinimizable="False"
