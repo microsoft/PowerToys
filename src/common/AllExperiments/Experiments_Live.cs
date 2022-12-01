@@ -2,7 +2,7 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-// The dependencies required to build this project are only availalble in the official build pipeline and are internal to Microsoft.
+// The dependencies required to build this project are only available in the official build pipeline and are internal to Microsoft.
 // However, this project is not required to build a test version of the application.
 namespace AllExperiments
 {
