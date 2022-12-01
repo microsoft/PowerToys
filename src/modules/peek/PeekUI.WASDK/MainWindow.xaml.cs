@@ -10,7 +10,6 @@ namespace PeekUI.WASDK
     using Microsoft.UI.Windowing;
     using Microsoft.UI.Xaml;
     using PeekUI.WASDK.Native;
-    using Windows.Devices.PointOfService.Provider;
     using WinUIEx;
 
     /// <summary>
