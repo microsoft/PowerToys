@@ -98,11 +98,11 @@ void Logger::init(std::string loggerName, std::wstring logFilePath, std::wstring
 
 void Logger::init(std::vector<spdlog::sink_ptr> sinks)
 {
-    auto logger = std::make_shared<spdlog::logger>("", begin(sinks), end(sinks));
-    if (!logger)
+    auto init_logger = std::make_shared<spdlog::logger>("", begin(sinks), end(sinks));
+    if (!init_logger)
     {
         return;
     }
 
-    Logger::logger = logger;
+    Logger::logger = init_logger;
 }

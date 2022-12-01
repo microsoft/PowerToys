@@ -48,7 +48,7 @@ class D2DOverlayWindow : public D2DWindow
 {
 public:
     D2DOverlayWindow();
-    void show(HWND active_window, bool snappable);
+    void show(HWND window, bool snappable);
     ~D2DOverlayWindow();
     void apply_overlay_opacity(float opacity);
     void apply_press_time_for_global_windows_shortcuts(int press_time);
@@ -57,9 +57,9 @@ public:
     void quick_hide();
 
     HWND get_window_handle();
-    void SetWindowCloseType(std::wstring windowCloseType)
+    void SetWindowCloseType(std::wstring wCloseType)
     {
-        this->windowCloseType = windowCloseType;
+        windowCloseType = wCloseType;
     }
 
 private:
@@ -68,7 +68,7 @@ private:
     void hide_thumbnail();
     virtual void init() override;
     virtual void resize() override;
-    virtual void render(ID2D1DeviceContext5* d2d_dc) override;
+    virtual void render(ID2D1DeviceContext5* d2dd2d_device_context_dc) override;
     virtual void on_show() override;
     virtual void on_hide() override;
     float get_overlay_opacity();

@@ -158,7 +158,7 @@ In this release, we focused on releasing new features and improvements.
 
 - Added a warning about how to install languages for OCR recognition.
 - Fixed the overlay not focusing after the first activation.
-- Added spaces between CJK and non-CKJ words. Thanks [@maggch97](https://github.com/maggch97)!
+- Added spaces between CJK and non-CJK words. Thanks [@maggch97](https://github.com/maggch97)!
 
 ### Video Conference Mute
 - Added a setting to hide the Video Conference Mute overlay when muted. Thanks [@akabhirav](https://github.com/akabhirav)!
