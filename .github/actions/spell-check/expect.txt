@@ -215,6 +215,7 @@ CLASSNOTAVAILABLE
 clickable
 clickonce
 CLIENTEDGE
+clientid
 clientside
 CLIPCHILDREN
 Clipperton
@@ -1878,6 +1879,7 @@ unmute
 UNORM
 unregistering
 unremapped
+Unstub
 unsubscribe
 unvirtualized
 Updatelayout

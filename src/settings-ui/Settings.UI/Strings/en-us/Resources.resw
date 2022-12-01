@@ -2706,31 +2706,31 @@ Activate by holding the key for the character you want to add an accent to, then
   <data name="Hosts_AdditionalLinesPosition.Description" xml:space="preserve">
     <value>Additional content includes the file header and lines that can't parse</value>
   </data>
-  <data name="AlternateOOBEAOTDescription.Text" xml:space="preserve">
+  <data name="Alternate_OOBE_AlwaysOnTop_Description.Text" xml:space="preserve">
     <value>Pin a window so that:</value>
   </data>
-  <data name="AlternateOOBEAOTTitle.Text" xml:space="preserve">
+  <data name="Alternate_OOBE_AlwaysOnTop_Title.Text" xml:space="preserve">
     <value>Always On Top</value>
   </data>
-  <data name="AlternateOOBECPDescription.Text" xml:space="preserve">
+  <data name="Alternate_OOBE_ColorPicker_Description.Text" xml:space="preserve">
     <value>To pick a color:</value>
   </data>
-  <data name="AlternateOOBECPTitle.Text" xml:space="preserve">
+  <data name="Alternate_OOBE_ColorPicker_Title.Text" xml:space="preserve">
     <value>Color Picker</value>
   </data>
-  <data name="AlternateOOBEDescription.Text" xml:space="preserve">
+  <data name="Alternate_OOBE_Description.Text" xml:space="preserve">
     <value>Here are a few shortcuts to get you started:</value>
   </data>
-  <data name="AlternateOOBEFZDescription.Text" xml:space="preserve">
+  <data name="Alternate_OOBE_FancyZones_Description.Text" xml:space="preserve">
     <value>To open the FancyZones editor, press:</value>
   </data>
-  <data name="AlternateOOBEFZTitle.Text" xml:space="preserve">
+  <data name="Alternate_OOBE_FancyZones_Title.Text" xml:space="preserve">
     <value>FancyZones</value>
   </data>
-  <data name="AlternateOOBERunDescription.Text" xml:space="preserve">
+  <data name="Alternate_OOBE_Run_Description.Text" xml:space="preserve">
     <value>Get access to your files and more:</value>
   </data>
-  <data name="AlternateOOBERunTitle.Text" xml:space="preserve">
+  <data name="Alternate_OOBE_Run_Title.Text" xml:space="preserve">
     <value>PowerToys Run</value>
   </data>
 </root>

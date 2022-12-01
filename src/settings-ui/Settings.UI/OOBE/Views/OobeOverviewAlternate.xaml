@@ -15,7 +15,7 @@
         <controls:OOBEPageControl.PageContent>
             <StackPanel Orientation="Vertical">
                 <TextBlock
-                    x:Uid="AlternateOOBEDescription"
+                    x:Uid="Alternate_OOBE_Description"
                     Margin="0,24,0,12"
                     FontWeight="SemiBold" />
                 <GridView
@@ -43,7 +43,7 @@
                                 HorizontalAlignment="Left"
                                 Source="ms-appx:///Assets/FluentIcons/FluentIconsFancyZones.png" />
                             <TextBlock
-                                x:Uid="AlternateOOBEFZTitle"
+                                x:Uid="Alternate_OOBE_FancyZones_Title"
                                 Grid.Row="1"
                                 Margin="0,12,0,6"
                                 HorizontalAlignment="Left"
@@ -51,13 +51,13 @@
                                 FontWeight="SemiBold"
                                 TextWrapping="Wrap" />
                             <TextBlock
-                                x:Uid="AlternateOOBEFZDescription"
+                                x:Uid="Alternate_OOBE_FancyZones_Description"
                                 Grid.Row="2"
                                 FontSize="12"
                                 Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                                 TextWrapping="Wrap" />
                             <controls:ShortcutWithTextLabelControl
-                                x:Name="FZHotkeyControl"
+                                x:Name="FancyZonesHotkeyControl"
                                 Grid.Row="3"
                                 Margin="0,8,0,0" />
                         </Grid>
@@ -84,7 +84,7 @@
                                 HorizontalAlignment="Left"
                                 Source="ms-appx:///Assets/FluentIcons/FluentIconsPowerToysRun.png" />
                             <TextBlock
-                                x:Uid="AlternateOOBERunTitle"
+                                x:Uid="Alternate_OOBE_Run_Title"
                                 Grid.Row="1"
                                 Margin="0,12,0,6"
                                 HorizontalAlignment="Left"
@@ -92,7 +92,7 @@
                                 FontWeight="SemiBold"
                                 TextWrapping="Wrap" />
                             <TextBlock
-                                x:Uid="AlternateOOBERunDescription"
+                                x:Uid="Alternate_OOBE_Run_Description"
                                 Grid.Row="2"
                                 FontSize="12"
                                 Foreground="{ThemeResource TextFillColorSecondaryBrush}"
@@ -125,7 +125,7 @@
                                 HorizontalAlignment="Left"
                                 Source="ms-appx:///Assets/FluentIcons/FluentIconsColorPicker.png" />
                             <TextBlock
-                                x:Uid="AlternateOOBECPTitle"
+                                x:Uid="Alternate_OOBE_ColorPicker_Title"
                                 Grid.Row="1"
                                 Margin="0,12,0,6"
                                 HorizontalAlignment="Left"
@@ -133,14 +133,14 @@
                                 FontWeight="SemiBold"
                                 TextWrapping="Wrap" />
                             <TextBlock
-                                x:Uid="AlternateOOBECPDescription"
+                                x:Uid="Alternate_OOBE_ColorPicker_Description"
                                 Grid.Row="2"
                                 FontSize="12"
                                 Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                                 Text="To pick a color:"
                                 TextWrapping="Wrap" />
                             <controls:ShortcutWithTextLabelControl
-                                x:Name="CPHotkeyControl"
+                                x:Name="ColorPickerHotkeyControl"
                                 Grid.Row="3"
                                 Margin="0,8,0,0" />
                         </Grid>
@@ -167,7 +167,7 @@
                                 HorizontalAlignment="Left"
                                 Source="ms-appx:///Assets/FluentIcons/FluentIconsAlwaysOnTop.png" />
                             <TextBlock
-                                x:Uid="AlternateOOBEAOTTitle"
+                                x:Uid="Alternate_OOBE_AlwaysOnTop_Title"
                                 Grid.Row="1"
                                 Margin="0,12,0,6"
                                 HorizontalAlignment="Left"
@@ -175,13 +175,13 @@
                                 FontWeight="SemiBold"
                                 TextWrapping="Wrap" />
                             <TextBlock
-                                x:Uid="AlternateOOBEAOTDescription"
+                                x:Uid="Alternate_OOBE_AlwaysOnTop_Description"
                                 Grid.Row="2"
                                 FontSize="12"
                                 Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                                 TextWrapping="Wrap" />
                             <controls:ShortcutWithTextLabelControl
-                                x:Name="AOTHotkeyControl"
+                                x:Name="AlwaysOnTopHotkeyControl"
                                 Grid.Row="3"
                                 Margin="0,8,0,0" />
                         </Grid>
