@@ -11,8 +11,6 @@
   </PropertyGroup>
 
   <ItemGroup Condition="'$(ExperimentationLive)'=='True'">
-    <None Remove="Microsoft.VariantAssignment.Client.dll" />
-    <None Remove="Microsoft.VariantAssignment.Contract.dll" />
     <ProjectReference Include="..\..\modules\launcher\Wox.Plugin\Wox.Plugin.csproj" />
     <ProjectReference Include="..\..\settings-ui\Settings.UI.Library\Settings.UI.Library.csproj" />
     <ProjectReference Include="..\ManagedTelemetry\Telemetry\ManagedTelemetry.csproj" />
@@ -22,12 +20,6 @@
   </ItemGroup>
 
   <ItemGroup Condition="'$(ExperimentationLive)'=='False'">
-    <Content Include="Microsoft.VariantAssignment.Contract.dll">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Microsoft.VariantAssignment.Client.dll">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
     <Compile Remove="..\..\common\AllExperiments\Experiments_Live.cs" />
   </ItemGroup>
 </Project>
