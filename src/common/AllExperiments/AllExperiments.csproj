@@ -7,11 +7,7 @@
     <TargetName>PowerToys.AllExperiments</TargetName>
   </PropertyGroup>
 
-  <PropertyGroup>
-    <ExperimentationLive Condition="'$(ExperimentationLive)' == ''">False</ExperimentationLive>
-  </PropertyGroup>
-
-  <ItemGroup Condition="'$(ExperimentationLive)'=='True'">
+  <ItemGroup Condition="'$(IsExperimentationLive)'!=''">
     <ProjectReference Include="..\..\modules\launcher\Wox.Plugin\Wox.Plugin.csproj" />
     <ProjectReference Include="..\..\settings-ui\Settings.UI.Library\Settings.UI.Library.csproj" />
     <ProjectReference Include="..\ManagedTelemetry\Telemetry\ManagedTelemetry.csproj" />
@@ -20,7 +16,7 @@
     <Compile Remove="..\..\common\AllExperiments\Experiments_Inert.cs" />
   </ItemGroup>
 
-  <ItemGroup Condition="'$(ExperimentationLive)'=='False'">
+  <ItemGroup Condition="'$(IsExperimentationLive)'==''">
     <Compile Remove="..\..\common\AllExperiments\Experiments_Live.cs" />
   </ItemGroup>
 </Project>

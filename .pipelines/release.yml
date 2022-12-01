@@ -22,7 +22,7 @@ parameters:
 
 variables:
   IsPipeline: 1 # The installer uses this to detect whether it should pick up localizations
-  ExperimentationLive: True # The build and installer use this to turn on experimentation
+  IsExperimentationLive: 1 # The build and installer use this to turn on experimentation
 
 name: $(BuildDefinitionName)_$(date:yyMM).$(date:dd)$(rev:rrr)
 resources:
@@ -133,7 +133,7 @@ jobs:
     inputs:
       solution: '**\PowerToys.sln'
       vsVersion: 17.0
-      msbuildArgs: /p:CIBuild=true /bl:$(Build.SourcesDirectory)\msbuild.binlog /p:ExperimentationLive=true
+      msbuildArgs: /p:CIBuild=true /bl:$(Build.SourcesDirectory)\msbuild.binlog
       platform: $(BuildPlatform)
       configuration: $(BuildConfiguration)
       clean: true

@@ -1199,7 +1199,7 @@
         <File Id="SV2_$(var.File)" Source="$(var.BinDir)Settings\$(var.File)" />
       </Component>
       <?endforeach?>
-      <?ifdef env.ExperimentationLive?>
+      <?ifdef env.IsExperimentationLive?>
       <?foreach File in $(var.PowerToysExperimentsFiles)?>
       <Component Id="SV2CE_$(var.File)" Win64="yes">
         <File Id="SV2E_$(var.File)" Source="$(var.BinDir)Settings\$(var.File)" />
@@ -1376,7 +1376,7 @@
       <?foreach File in $(var.SettingsV2Files)?>
       <ComponentRef Id="SV2C_$(var.File)" />
       <?endforeach?>
-      <?ifdef env.ExperimentationLive?>
+      <?ifdef env.IsExperimentationLive?>
       <?foreach File in $(var.PowerToysExperimentsFiles)?>
       <ComponentRef Id="SV2CE_$(var.File)" />
       <?endforeach?>
