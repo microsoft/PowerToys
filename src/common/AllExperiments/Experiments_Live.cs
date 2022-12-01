@@ -7,6 +7,7 @@
 namespace AllExperiments
 {
     using System.Text.Json;
+    using ControlzEx.Standard;
     using Microsoft.PowerToys.Settings.UI.Library.Telemetry.Events;
     using Microsoft.PowerToys.Telemetry;
     using Microsoft.VariantAssignment.Client;
@@ -77,24 +78,27 @@ namespace AllExperiments
             string? clientID = string.Empty;
 
             string workingDirectory = Environment.CurrentDirectory;
-            var exeDir = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
-            string settingsPath = @"AppData\Local\Microsoft\PowerToys\settings.json";
-            string jsonFilePath = Path.Combine(exeDir, settingsPath);
-
-            string json = File.ReadAllText(jsonFilePath);
-            var jsonDictionary = JsonSerializer.Deserialize<Dictionary<string, object>>(json);
-            if (jsonDictionary != null)
+            var exeDir = Directory.GetParent(workingDirectory)?.Parent?.Parent?.FullName;
+            string settingsPath = @"src\common\AllExperiments\settings.json";
+            if (exeDir != null)
             {
-                if (!jsonDictionary.ContainsKey("clientid"))
-                {
-                    jsonDictionary.Add("clientid", string.Empty);
-                    jsonDictionary["clientid"] = Guid.NewGuid().ToString();
-                    string output = JsonSerializer.Serialize(jsonDictionary);
-                    File.WriteAllText(jsonFilePath, output);
-                }
+                string jsonFilePath = Path.Combine(exeDir, settingsPath);
 
-                clientID = jsonDictionary["clientid"]?.ToString();
-                AssignmentUnit = clientID;
+                string json = File.ReadAllText(jsonFilePath);
+                var jsonDictionary = JsonSerializer.Deserialize<Dictionary<string, object>>(json);
+                if (jsonDictionary != null)
+                {
+                    if (!jsonDictionary.ContainsKey("clientid"))
+                    {
+                        jsonDictionary.Add("clientid", string.Empty);
+                        jsonDictionary["clientid"] = Guid.NewGuid().ToString();
+                        string output = JsonSerializer.Serialize(jsonDictionary);
+                        File.WriteAllText(jsonFilePath, output);
+                    }
+
+                    clientID = jsonDictionary["clientid"]?.ToString();
+                    AssignmentUnit = clientID;
+                }
             }
 
             return new VariantAssignmentRequest
