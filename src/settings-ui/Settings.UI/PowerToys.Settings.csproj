@@ -76,6 +76,7 @@
   </ItemGroup>
 	
   <ItemGroup>
+    <ProjectReference Include="..\..\common\AllExperiments\AllExperiments.csproj" />
     <ProjectReference Include="..\..\common\GPOWrapper\GPOWrapper.vcxproj" />
     <ProjectReference Include="..\..\common\ManagedCommon\ManagedCommon.csproj" />
     <ProjectReference Include="..\..\common\ManagedTelemetry\Telemetry\ManagedTelemetry.csproj" />
@@ -98,17 +99,5 @@
     <Page Update="OOBE\Views\OobePowerOCR.xaml">
       <XamlRuntime>$(DefaultXamlRuntime)</XamlRuntime>
     </Page>
-  </ItemGroup>
-	
-  <PropertyGroup>
-	<ExperimentationLive Condition="'$(ExperimentationLive)' == ''">False</ExperimentationLive>
-  </PropertyGroup>
-	
-  <ItemGroup Condition="'$(ExperimentationLive)'=='True'">
-	<ProjectReference Include="..\..\common\Experiments\Experiments-Live\Experiments-Live.csproj" />
-  </ItemGroup>
-	
-  <ItemGroup Condition="'$(ExperimentationLive)'=='False'">
-	<ProjectReference Include="..\..\common\Experiments\Experiments-Inert\Experiments-Inert.csproj" />
   </ItemGroup>
 </Project>
