@@ -7,7 +7,7 @@
   </PropertyGroup>
 
   <PropertyGroup>
-    <ExperimentationLive Condition="'$(ExperimentationLive)' == ''">True</ExperimentationLive>
+    <ExperimentationLive Condition="'$(ExperimentationLive)' == ''">False</ExperimentationLive>
   </PropertyGroup>
 
   <ItemGroup Condition="'$(ExperimentationLive)'=='True'">
