@@ -3,7 +3,7 @@
   <PropertyGroup>
     <TargetFramework>net7.0-windows10.0.19041.0</TargetFramework>
     <IsPackable>false</IsPackable>
-    
+    <RuntimeIdentifiers>win10-x64;win10-arm64</RuntimeIdentifiers>
     <Version>$(Version).0</Version>
   </PropertyGroup>
 
