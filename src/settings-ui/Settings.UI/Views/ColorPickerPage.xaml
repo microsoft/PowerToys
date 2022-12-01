@@ -259,6 +259,7 @@
                                         <RowDefinition />
                                         <RowDefinition />
                                         <RowDefinition />
+                                        <RowDefinition />
                                     </Grid.RowDefinitions>
                                     <Grid.ColumnDefinitions>
                                         <ColumnDefinition Width="40px"/>
@@ -286,34 +287,42 @@
                                     <TextBlock x:Uid="Help_black_key" Grid.Row="2" Grid.Column="3"/>
                                     <TextBlock Text = "%Hu" Grid.Row="2" Grid.Column="4" FontWeight="Bold"/>
                                     <TextBlock x:Uid="Help_hue" Grid.Row="2" Grid.Column="5"/>
-                                    <TextBlock Text = "%Sa" Grid.Row="3" FontWeight="Bold"/>
-                                    <TextBlock x:Uid="Help_saturation" Grid.Row="3" Grid.Column="1"/>
-                                    <TextBlock Text = "%Br" Grid.Row="3" Grid.Column="2" FontWeight="Bold"/>
-                                    <TextBlock x:Uid="Help_brightness" Grid.Row="3" Grid.Column="3"/>
-                                    <TextBlock Text = "%In" Grid.Row="3" Grid.Column="4" FontWeight="Bold"/>
-                                    <TextBlock x:Uid="Help_intensity" Grid.Row="3" Grid.Column="5"/>
-                                    <TextBlock Text = "%Li" Grid.Row="4" FontWeight="Bold"/>
-                                    <TextBlock x:Uid="Help_lightness" Grid.Row="4" Grid.Column="1"/>
-                                    <TextBlock Text = "%Va" Grid.Row="4" Grid.Column="2" FontWeight="Bold"/>
-                                    <TextBlock x:Uid="Help_value" Grid.Row="4" Grid.Column="3"/>
-                                    <TextBlock Text = "%Wh" Grid.Row="4" Grid.Column="4" FontWeight="Bold"/>
-                                    <TextBlock x:Uid="Help_whiteness" Grid.Row="4" Grid.Column="5"/>
-                                    <TextBlock Text = "%Bn" Grid.Row="5" FontWeight="Bold"/>
-                                    <TextBlock x:Uid="Help_blackness" Grid.Row="5" Grid.Column="1"/>
-                                    <TextBlock Text = "%Ca" Grid.Row="5" Grid.Column="2" FontWeight="Bold"/>
-                                    <TextBlock x:Uid="Help_chromacityA" Grid.Row="5" Grid.Column="3"/>
-                                    <TextBlock Text = "%Cb" Grid.Row="5" Grid.Column="4" FontWeight="Bold"/>
-                                    <TextBlock x:Uid="Help_chromacityB" Grid.Row="5" Grid.Column="5"/>
-                                    <TextBlock Text = "%Xv" Grid.Row="6" FontWeight="Bold"/>
-                                    <TextBlock x:Uid="Help_X_value" Grid.Row="6" Grid.Column="1"/>
-                                    <TextBlock Text = "%Yv" Grid.Row="6" Grid.Column="2" FontWeight="Bold"/>
-                                    <TextBlock x:Uid="Help_Y_value" Grid.Row="6" Grid.Column="3"/>
-                                    <TextBlock Text = "%Zv" Grid.Row="6" Grid.Column="4" FontWeight="Bold"/>
-                                    <TextBlock x:Uid="Help_Z_value" Grid.Row="6" Grid.Column="5"/>
-                                    <TextBlock Text = "%Dv" Grid.Row="7" FontWeight="Bold"/>
-                                    <TextBlock x:Uid="Help_decimal_value" Grid.Row="7" Grid.Column="1"/>
-                                    <TextBlock Text = "%Na" Grid.Row="7" Grid.Column="2" FontWeight="Bold"/>
-                                    <TextBlock x:Uid="Help_color_name" Grid.Row="7" Grid.Column="3"/>
+                                    <TextBlock Text = "%Si" Grid.Row="3" FontWeight="Bold"/>
+                                    <TextBlock x:Uid="Help_saturationI" Grid.Row="3" Grid.Column="1"/>
+                                    <TextBlock Text = "%Sl" Grid.Row="3" Grid.Column="2" FontWeight="Bold"/>
+                                    <TextBlock x:Uid="Help_saturationL" Grid.Row="3" Grid.Column="3"/>
+                                    <TextBlock Text = "%Sb" Grid.Row="3" Grid.Column="4"  FontWeight="Bold"/>
+                                    <TextBlock x:Uid="Help_saturationB" Grid.Row="3" Grid.Column="5"/>
+                                    <TextBlock Text = "%Br" Grid.Row="4" FontWeight="Bold"/>
+                                    <TextBlock x:Uid="Help_brightness" Grid.Row="4" Grid.Column="1"/>
+                                    <TextBlock Text = "%In" Grid.Row="4" Grid.Column="2" FontWeight="Bold"/>
+                                    <TextBlock x:Uid="Help_intensity" Grid.Row="4" Grid.Column="3"/>
+                                    <TextBlock Text = "%Hn" Grid.Row="4" Grid.Column="4" FontWeight="Bold"/>
+                                    <TextBlock x:Uid="Help_hueNat" Grid.Row="4" Grid.Column="5"/>
+                                    <TextBlock Text = "%Ll" Grid.Row="5" FontWeight="Bold"/>
+                                    <TextBlock x:Uid="Help_lightnessNat" Grid.Row="5" Grid.Column="1"/>
+                                    <TextBlock Text = "%Lc" Grid.Row="5"  Grid.Column="2" FontWeight="Bold"/>
+                                    <TextBlock x:Uid="Help_lightnessCIE" Grid.Row="5" Grid.Column="3"/>
+                                    <TextBlock Text = "%Va" Grid.Row="5" Grid.Column="4" FontWeight="Bold"/>
+                                    <TextBlock x:Uid="Help_value" Grid.Row="5" Grid.Column="5"/>
+                                    <TextBlock Text = "%Wh" Grid.Row="6" FontWeight="Bold"/>
+                                    <TextBlock x:Uid="Help_whiteness" Grid.Row="6" Grid.Column="1"/>
+                                    <TextBlock Text = "%Bn" Grid.Row="6" Grid.Column="2" FontWeight="Bold"/>
+                                    <TextBlock x:Uid="Help_blackness" Grid.Row="6" Grid.Column="3"/>
+                                    <TextBlock Text = "%Ca" Grid.Row="6" Grid.Column="4" FontWeight="Bold"/>
+                                    <TextBlock x:Uid="Help_chromacityA" Grid.Row="6" Grid.Column="5"/>
+                                    <TextBlock Text = "%Cb" Grid.Row="7" FontWeight="Bold"/>
+                                    <TextBlock x:Uid="Help_chromacityB" Grid.Row="7" Grid.Column="1"/>
+                                    <TextBlock Text = "%Xv" Grid.Row="7" Grid.Column="2" FontWeight="Bold"/>
+                                    <TextBlock x:Uid="Help_X_value" Grid.Row="7" Grid.Column="3"/>
+                                    <TextBlock Text = "%Yv" Grid.Row="7" Grid.Column="4" FontWeight="Bold"/>
+                                    <TextBlock x:Uid="Help_Y_value" Grid.Row="7" Grid.Column="5"/>
+                                    <TextBlock Text = "%Zv" Grid.Row="8" FontWeight="Bold"/>
+                                    <TextBlock x:Uid="Help_Z_value" Grid.Row="8" Grid.Column="1"/>
+                                    <TextBlock Text = "%Dv" Grid.Row="8" Grid.Column="2" FontWeight="Bold"/>
+                                    <TextBlock x:Uid="Help_decimal_value" Grid.Row="8" Grid.Column="3"/>
+                                    <TextBlock Text = "%Na" Grid.Row="8" Grid.Column="4" FontWeight="Bold"/>
+                                    <TextBlock x:Uid="Help_color_name" Grid.Row="8" Grid.Column="5"/>
                                 </Grid>
                                 <TextBlock 
                                     Grid.Row="2" 

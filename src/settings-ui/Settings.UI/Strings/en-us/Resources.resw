@@ -1335,8 +1335,17 @@ Made with 💗 by Microsoft and the PowerToys community.</value>
   <data name="Help_hue.Text" xml:space="preserve">
     <value>hue</value>
   </data>
-  <data name="Help_saturation.Text" xml:space="preserve">
-    <value>saturation</value>
+  <data name="Help_hueNat.Text" xml:space="preserve">
+    <value>hue (natural)</value>
+  </data>
+  <data name="Help_saturationI.Text" xml:space="preserve">
+    <value>saturation (HSI)</value>
+  </data>
+  <data name="Help_saturationL.Text" xml:space="preserve">
+    <value>saturation (HSL)</value>
+  </data>
+  <data name="Help_saturationB.Text" xml:space="preserve">
+    <value>saturation (HSB)</value>
   </data>
   <data name="Help_brightness.Text" xml:space="preserve">
     <value>brightness</value>
@@ -1344,8 +1353,11 @@ Made with 💗 by Microsoft and the PowerToys community.</value>
   <data name="Help_intensity.Text" xml:space="preserve">
     <value>intensity</value>
   </data>
-  <data name="Help_lightness.Text" xml:space="preserve">
-    <value>lightness</value>
+  <data name="Help_lightnessNat.Text" xml:space="preserve">
+    <value>lightness (nat)</value>
+  </data>
+  <data name="Help_lightnessCIE.Text" xml:space="preserve">
+    <value>lightness (CIE)</value>
   </data>
   <data name="Help_value.Text" xml:space="preserve">
     <value>value</value>
