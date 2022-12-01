@@ -50,10 +50,10 @@ steps:
     pwsh: true
 
 - task: UseDotNet@2
-  displayName: 'Use .NET 6 SDK'
+  displayName: 'Use .NET 7 SDK'
   inputs:
     packageType: sdk
-    version: '6.x'
+    version: '7.x'
 
 - task: NuGetToolInstaller@1
   displayName: Ensure NuGet Installer
