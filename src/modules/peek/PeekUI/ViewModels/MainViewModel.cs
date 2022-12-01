@@ -142,7 +142,7 @@ namespace PeekUI.ViewModels
         {
             ForegroundWindowHandle = NativeMethods.GetForegroundWindow();
 
-            // TODO: Get all neighborings files
+            // TODO: Get all neighborings files in correct sorted order
             var selectedItems = FileExplorerHelper.GetSelectedItems(ForegroundWindowHandle);
 
             var isDifferentSelectedItems = !SelectedFilePaths.SequenceEqual(selectedItems);
