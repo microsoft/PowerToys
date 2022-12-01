@@ -21,6 +21,7 @@ using PowerLauncher.Plugin;
 using PowerLauncher.Telemetry.Events;
 using PowerLauncher.ViewModel;
 using Wox.Infrastructure.UserSettings;
+using Wox.Plugin.Interfaces;
 using CancellationToken = System.Threading.CancellationToken;
 using KeyEventArgs = System.Windows.Input.KeyEventArgs;
 using Log = Wox.Plugin.Logger.Log;
@@ -40,6 +41,8 @@ namespace PowerLauncher
         private bool _coldStateHotkeyPressed;
         private bool _disposedValue;
         private IDisposable _reactiveSubscription;
+        private Point _mouseDownPosition;
+        private ResultViewModel _mouseDownResultViewModel;
 
         public MainWindow(PowerToysRunSettings settings, MainViewModel mainVM, CancellationToken nativeWaiterCancelToken)
             : this()
@@ -191,6 +194,8 @@ namespace PowerLauncher
             ListBox.DataContext = _viewModel;
             ListBox.SuggestionsList.SelectionChanged += SuggestionsList_SelectionChanged;
             ListBox.SuggestionsList.PreviewMouseLeftButtonUp += SuggestionsList_PreviewMouseLeftButtonUp;
+            ListBox.SuggestionsList.PreviewMouseLeftButtonDown += SuggestionsList_PreviewMouseLeftButtonDown;
+            ListBox.SuggestionsList.MouseMove += SuggestionsList_MouseMove;
             _viewModel.PropertyChanged += ViewModel_PropertyChanged;
             _viewModel.MainWindowVisibility = Visibility.Collapsed;
             _viewModel.LoadedAtLeastOnce = true;
@@ -278,6 +283,26 @@ namespace PowerLauncher
                 {
                     _viewModel.Results.SelectedItem = resultVM;
                     _viewModel.OpenResultWithMouseCommand.Execute(null);
+                }
+            }
+        }
+
+        private void SuggestionsList_PreviewMouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+        {
+            _mouseDownPosition = e.GetPosition(null);
+            _mouseDownResultViewModel = ((FrameworkElement)e.OriginalSource).DataContext as ResultViewModel;
+        }
+
+        private void SuggestionsList_MouseMove(object sender, MouseEventArgs e)
+        {
+            if (e.LeftButton == MouseButtonState.Pressed && _mouseDownResultViewModel?.Result?.ContextData is IFileDropResult fileDropResult)
+            {
+                Vector dragDistance = _mouseDownPosition - e.GetPosition(null);
+                if (Math.Abs(dragDistance.X) > SystemParameters.MinimumHorizontalDragDistance || Math.Abs(dragDistance.Y) > SystemParameters.MinimumVerticalDragDistance)
+                {
+                    _viewModel.Hide();
+                    DataObject dataObject = new DataObject(DataFormats.FileDrop, new[] { fileDropResult.Path });
+                    DragDrop.DoDragDrop(ListBox.SuggestionsList, dataObject, DragDropEffects.Copy);
                 }
             }
         }
