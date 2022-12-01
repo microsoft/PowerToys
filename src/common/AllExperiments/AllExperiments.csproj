@@ -8,7 +8,6 @@
   </PropertyGroup>
 
   <ItemGroup Condition="'$(IsExperimentationLive)'!=''">
-    <ProjectReference Include="..\..\modules\launcher\Wox.Plugin\Wox.Plugin.csproj" />
     <ProjectReference Include="..\..\settings-ui\Settings.UI.Library\Settings.UI.Library.csproj" />
     <ProjectReference Include="..\ManagedTelemetry\Telemetry\ManagedTelemetry.csproj" />
     <PackageReference Include="Microsoft.VariantAssignment.Client" Version="2.4.17140001" />
