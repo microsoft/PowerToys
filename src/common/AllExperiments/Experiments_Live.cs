@@ -117,7 +117,7 @@ namespace AllExperiments
             {
                 Parameters =
                 {
-                    // TBD: Adding traffic filters to target specific audiences.
+                    // TBD: Adding traffic filters to target region.
                     { "flightRing", flightRing },
                     { "clientid", clientID },
                 },
