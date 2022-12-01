@@ -16,7 +16,7 @@ namespace AllExperiments
     using Windows.System.Profile;
     using Wox.Plugin.Logger;
 
-#pragma warning disable SA1649 // File name should match first type name
+#pragma warning disable SA1649 // File name should match first type name. Suppressed because it needs to be the same class name as Experiments_Inert.cs
     public class Experiments
 #pragma warning restore SA1649 // File name should match first type name
     {
