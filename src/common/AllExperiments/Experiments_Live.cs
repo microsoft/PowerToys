@@ -6,12 +6,14 @@
 // However, this project is not required to build a test version of the application.
 namespace AllExperiments
 {
+    using System.IO.Pipes;
     using System.Text.Json;
-    using ControlzEx.Standard;
+    using System.Windows.Input;
     using Microsoft.PowerToys.Settings.UI.Library.Telemetry.Events;
     using Microsoft.PowerToys.Telemetry;
     using Microsoft.VariantAssignment.Client;
     using Microsoft.VariantAssignment.Contract;
+    using Windows.System.Profile;
     using Wox.Plugin.Logger;
 
 #pragma warning disable SA1649 // File name should match first type name
@@ -101,11 +103,22 @@ namespace AllExperiments
                 }
             }
 
+            var attrNames = new List<string> { "FlightRing" };
+            var attrData = AnalyticsInfo.GetSystemPropertiesAsync(attrNames).AsTask().GetAwaiter().GetResult();
+
+            var flightRing = string.Empty;
+
+            foreach (KeyValuePair<string, string> attr in attrData)
+            {
+                flightRing = attr.Value;
+            }
+
             return new VariantAssignmentRequest
             {
                 Parameters =
                 {
                     // TBD: Adding traffic filters to target specific audiences.
+                    { "flightRing", flightRing },
                     { "clientid", clientID },
                 },
             };
