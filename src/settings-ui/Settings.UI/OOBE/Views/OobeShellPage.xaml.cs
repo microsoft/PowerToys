@@ -50,9 +50,6 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
 
         public OobeShellPage()
         {
-            Experiments landingPageExp = new Experiments();
-            experimentEnabled = landingPageExp.EnableLandingPageExperiment();
-
             InitializeComponent();
 
             DataContext = ViewModel;
@@ -182,8 +179,6 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
             }
         }
 
-        private bool experimentEnabled;
-
         private void NavigationView_SelectionChanged(Microsoft.UI.Xaml.Controls.NavigationView sender, Microsoft.UI.Xaml.Controls.NavigationViewSelectionChangedEventArgs args)
         {
             Microsoft.UI.Xaml.Controls.NavigationViewItem selectedItem = args.SelectedItem as Microsoft.UI.Xaml.Controls.NavigationViewItem;
@@ -192,17 +187,7 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
             {
                 switch (selectedItem.Tag)
                 {
-                    case "Overview":
-                        if (experimentEnabled == true)
-                        {
-                            NavigationFrame.Navigate(typeof(OobeOverviewAlternate));
-                        }
-                        else
-                        {
-                            NavigationFrame.Navigate(typeof(OobeOverview));
-                        }
-
-                        break;
+                    case "Overview": NavigationFrame.Navigate(typeof(OobeOverviewPlaceholder)); break;
                     case "WhatsNew": NavigationFrame.Navigate(typeof(OobeWhatsNew)); break;
                     case "AlwaysOnTop": NavigationFrame.Navigate(typeof(OobeAlwaysOnTop)); break;
                     case "Awake": NavigationFrame.Navigate(typeof(OobeAwake)); break;

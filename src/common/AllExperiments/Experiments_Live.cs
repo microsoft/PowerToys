@@ -7,29 +7,32 @@
 namespace AllExperiments
 {
     using System.IO.Pipes;
+    using System.Text;
     using System.Text.Json;
     using System.Windows.Input;
     using Microsoft.PowerToys.Settings.UI.Library.Telemetry.Events;
     using Microsoft.PowerToys.Telemetry;
     using Microsoft.VariantAssignment.Client;
     using Microsoft.VariantAssignment.Contract;
+    using Newtonsoft.Json;
     using Windows.System.Profile;
+    using Wox.Plugin;
     using Wox.Plugin.Logger;
 
 #pragma warning disable SA1649 // File name should match first type name. Suppressed because it needs to be the same class name as Experiments_Inert.cs
     public class Experiments
 #pragma warning restore SA1649 // File name should match first type name
     {
-        public bool EnableLandingPageExperiment()
+        public async Task<bool> EnableLandingPageExperimentAsync()
         {
             Experiments varServ = new Experiments();
-            varServ.VariantAssignmentProvider_Initialize();
+            await varServ.VariantAssignmentProvider_Initialize();
             var landingPageExperiment = varServ.IsExperiment;
 
             return landingPageExperiment;
         }
 
-        private void VariantAssignmentProvider_Initialize()
+        private async Task VariantAssignmentProvider_Initialize()
         {
             IsExperiment = false;
 
@@ -40,30 +43,23 @@ namespace AllExperiments
                 ResponseCacheTime = TimeSpan.FromMinutes(5),
             };
 
-            var vaClient = vaSettings.GetTreatmentAssignmentServiceClient();
-            var vaRequest = GetVariantAssignmentRequest();
-
             try
             {
-                var task = vaClient.GetVariantAssignmentsAsync(vaRequest);
-                TimeSpan ts = TimeSpan.FromMilliseconds(500);
-                if (task.Wait(ts))
+                var vaClient = vaSettings.GetTreatmentAssignmentServiceClient();
+                var vaRequest = GetVariantAssignmentRequest();
+
+                using var variantAssignments = await vaClient.GetVariantAssignmentsAsync(vaRequest).ConfigureAwait(false);
+
+                var featureVariables = variantAssignments.GetFeatureVariables();
+                var assignmentContext = variantAssignments.GetAssignmentContext();
+                var featureFlagValue = featureVariables[0].GetStringValue();
+
+                if (featureFlagValue == "alternate" && assignmentContext != string.Empty)
                 {
-                    var result = task.Result;
-                    var allFeatureFlags = result.GetFeatureVariables();
-
-                    var assignmentContext = result.GetAssignmentContext();
-                    var featureNameSpace = allFeatureFlags[0].KeySegments[0];
-                    var featureFlag = allFeatureFlags[0].KeySegments[1];
-                    var featureFlagValue = allFeatureFlags[0].GetStringValue();
-
-                    if (featureFlagValue == "alternate")
-                    {
-                        IsExperiment = true;
-                    }
-
-                    PowerToysTelemetry.Log.WriteEvent(new OobeVariantAssignmentEvent() { AssignmentContext = assignmentContext, ClientID = AssignmentUnit });
+                    IsExperiment = true;
                 }
+
+                PowerToysTelemetry.Log.WriteEvent(new OobeVariantAssignmentEvent() { AssignmentContext = assignmentContext, ClientID = AssignmentUnit });
             }
             catch (Exception ex)
             {
@@ -77,30 +73,35 @@ namespace AllExperiments
 
         private IVariantAssignmentRequest GetVariantAssignmentRequest()
         {
-            string? clientID = string.Empty;
+            var exeDir = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
+            var settingsPath = @"Microsoft\PowerToys\experimentation.json";
+            string jsonFilePath = Path.Combine(exeDir, settingsPath);
 
-            string workingDirectory = Environment.CurrentDirectory;
-            var exeDir = Directory.GetParent(workingDirectory)?.Parent?.Parent?.FullName;
-            string settingsPath = @"src\common\AllExperiments\settings.json";
-            if (exeDir != null)
+            try
             {
-                string jsonFilePath = Path.Combine(exeDir, settingsPath);
-
-                string json = File.ReadAllText(jsonFilePath);
-                var jsonDictionary = JsonSerializer.Deserialize<Dictionary<string, object>>(json);
-                if (jsonDictionary != null)
+                if (!File.Exists(jsonFilePath))
                 {
-                    if (!jsonDictionary.ContainsKey("clientid"))
+                    AssignmentUnit = Guid.NewGuid().ToString();
+                    var data = new Dictionary<string, string>()
                     {
-                        jsonDictionary.Add("clientid", string.Empty);
-                        jsonDictionary["clientid"] = Guid.NewGuid().ToString();
-                        string output = JsonSerializer.Serialize(jsonDictionary);
-                        File.WriteAllText(jsonFilePath, output);
-                    }
-
-                    clientID = jsonDictionary["clientid"]?.ToString();
-                    AssignmentUnit = clientID;
+                        ["clientid"] = AssignmentUnit,
+                    };
+                    string jsonData = JsonConvert.SerializeObject(data);
+                    File.WriteAllText(jsonFilePath, jsonData);
                 }
+                else
+                {
+                    string json = File.ReadAllText(jsonFilePath);
+                    var jsonDictionary = System.Text.Json.JsonSerializer.Deserialize<Dictionary<string, object>>(json);
+                    if (jsonDictionary != null)
+                    {
+                        AssignmentUnit = jsonDictionary["clientid"]?.ToString();
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Log.Exception("Error creating/getting AssignmentUnit", ex, typeof(Experiments));
             }
 
             var attrNames = new List<string> { "FlightRing" };
@@ -119,7 +120,7 @@ namespace AllExperiments
                 {
                     // TBD: Adding traffic filters to target region.
                     { "flightRing", flightRing },
-                    { "clientid", clientID },
+                    { "clientid", AssignmentUnit },
                 },
             };
         }

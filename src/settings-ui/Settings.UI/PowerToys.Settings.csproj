@@ -46,6 +46,9 @@
 	<PropertyGroup>
 		<RestoreAdditionalProjectSources>https://pkgs.dev.azure.com/dotnet/CommunityToolkit/_packaging/CommunityToolkit-Labs/nuget/v3/index.json</RestoreAdditionalProjectSources>
 	</PropertyGroup>
+	<ItemGroup>
+	  <None Remove="OOBE\Views\OobeOverviewPlaceholder.xaml" />
+	</ItemGroup>
 
   <ItemGroup>
     <Content Include="Assets\SplashScreen.scale-200.png" />
@@ -87,6 +90,9 @@
     <None Update="icon.ico">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
+    <Page Update="OOBE\Views\OobeOverviewPlaceholder.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Update="OOBE\Views\OobeHosts.xaml">
       <Generator>MSBuild:Compile</Generator>
     </Page>
