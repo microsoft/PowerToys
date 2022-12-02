@@ -275,6 +275,18 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 ColorFormats[ColorFormats.Count - 1].CanMoveDown = false;
             }
 
+            if (ColorFormats.Count == 1)
+            {
+                ColorFormats.Single().CanBeDeleted = false;
+            }
+            else
+            {
+                foreach (var color in ColorFormats)
+                {
+                    color.CanBeDeleted = true;
+                }
+            }
+
             UpdateColorFormats();
             UpdateColorFormatPreview();
             ScheduleSavingOfSettings();

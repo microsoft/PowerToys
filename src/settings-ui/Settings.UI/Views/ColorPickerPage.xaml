@@ -163,6 +163,7 @@
                                             Content="&#xE74D;"
                                             HorizontalAlignment="Right"
                                             Margin="0,0,104,0"
+                                            IsEnabled="{x:Bind CanBeDeleted, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                                             Click="RemoveButton_Click">
                                             <ToolTipService.ToolTip>
                                                 <TextBlock x:Uid="RemoveTooltip"/>

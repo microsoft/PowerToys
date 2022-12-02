@@ -22,7 +22,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         public ColorPickerSettings()
         {
             Properties = new ColorPickerProperties();
-            Version = "1";
+            Version = "2";
             Name = ModuleName;
         }
 

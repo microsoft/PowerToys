@@ -15,6 +15,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         private bool _isShown;
         private bool _canMoveUp = true;
         private bool _canMoveDown = true;
+        private bool _canBeDeleted = true;
         private bool _isNew;
         private bool _isValid = true;
 
@@ -101,6 +102,23 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             {
                 _canMoveDown = value;
                 OnPropertyChanged(nameof(CanMoveDown));
+            }
+        }
+
+        public bool CanBeDeleted
+        {
+            get
+            {
+                return _canBeDeleted;
+            }
+
+            set
+            {
+                if (value != _canBeDeleted)
+                {
+                    _canBeDeleted = value;
+                    OnPropertyChanged(nameof(CanBeDeleted));
+                }
             }
         }
 
