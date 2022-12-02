@@ -273,13 +273,13 @@ namespace ManagedCommon
             { "Si", 'p' },   // saturation (HSI) percent
             { "Sl", 'p' },   // saturation (HSL) percent
             { "Sb", 'p' },   // saturation (HSB) percent
-            { "Br", 'p' },   // brightnes        percent
+            { "Br", 'p' },   // brightness       percent
             { "In", 'p' },   // intensity        percent
             { "Ll", 'p' },   // lightness (HSL)  percent
-            { "Lc", 'p' },   // lightness (CIEL) percent
+            { "Lc", 'p' },   // lightness(CIELAB)percent
             { "Va", 'p' },   // value            percent
             { "Wh", 'p' },   // whiteness        percent
-            { "Bn", 'p' },   // blacknes         percent
+            { "Bn", 'p' },   // blackness        percent
             { "Ca", 'p' },   // chromaticityA    percent
             { "Cb", 'p' },   // chromaticityB    percent
             { "Xv", 'i' },   // X value          int

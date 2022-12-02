@@ -117,7 +117,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             {
                 Logger.LogError($"Exception encountered while loading {powertoy} settings.", ex);
 
-                // try to deserialise to the old format, which is presented in T2
+                // try to deserialize to the old format, which is presented in T2
                 try
                 {
                     T2 oldSettings = GetSettings<T2>(powertoy, fileName);

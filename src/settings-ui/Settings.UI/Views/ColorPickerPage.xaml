@@ -310,9 +310,9 @@
                                     <TextBlock Text = "%Bn" Grid.Row="6" Grid.Column="2" FontWeight="Bold"/>
                                     <TextBlock x:Uid="Help_blackness" Grid.Row="6" Grid.Column="3"/>
                                     <TextBlock Text = "%Ca" Grid.Row="6" Grid.Column="4" FontWeight="Bold"/>
-                                    <TextBlock x:Uid="Help_chromacityA" Grid.Row="6" Grid.Column="5"/>
+                                    <TextBlock x:Uid="Help_chromaticityA" Grid.Row="6" Grid.Column="5"/>
                                     <TextBlock Text = "%Cb" Grid.Row="7" FontWeight="Bold"/>
-                                    <TextBlock x:Uid="Help_chromacityB" Grid.Row="7" Grid.Column="1"/>
+                                    <TextBlock x:Uid="Help_chromaticityB" Grid.Row="7" Grid.Column="1"/>
                                     <TextBlock Text = "%Xv" Grid.Row="7" Grid.Column="2" FontWeight="Bold"/>
                                     <TextBlock x:Uid="Help_X_value" Grid.Row="7" Grid.Column="3"/>
                                     <TextBlock Text = "%Yv" Grid.Row="7" Grid.Column="4" FontWeight="Bold"/>

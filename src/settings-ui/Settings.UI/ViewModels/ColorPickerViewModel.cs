@@ -61,7 +61,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
             if (colorPickerSettingsRepository == null)
             {
-                // used in release. This method converts the settings stored in the previous form, so we have forwarts compatibilty
+                // used in release. This method converts the settings stored in the previous form, so we have forwards compatibility
                 _colorPickerSettings = _settingsUtils.GetSettingsOrDefault<ColorPickerSettings, ColorPickerSettingsVersion1>(ColorPickerSettings.ModuleName, settingsUpgrader: ColorPickerSettings.UpgradeSettings);
             }
             else
@@ -157,7 +157,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             {
                 if (value == null)
                 {
-                    return; // do not set null value, it occurs when the combobox itemsource gets modified. Right after it well be reset to the correct value
+                    return; // do not set null value, it occurs when the combobox itemSource gets modified. Right after it well be reset to the correct value
                 }
 
                 if (_colorPickerSettings.Properties.CopiedColorRepresentation != value)
