@@ -6,11 +6,16 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:labs="using:CommunityToolkit.Labs.WinUI"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    xmlns:models="using:Microsoft.PowerToys.Settings.UI.Library"
+    xmlns:converters="using:CommunityToolkit.WinUI.UI.Converters"
+    xmlns:models="using:Microsoft.PowerToys.Settings.UI.Library" xmlns:viewmodels="using:Microsoft.PowerToys.Settings.UI.ViewModels" d:DataContext="{d:DesignInstance Type=viewmodels:ColorPickerViewModel}"
     xmlns:ui="using:CommunityToolkit.WinUI.UI"
     x:Name="RootPage"
     AutomationProperties.LandmarkType="Main"
     mc:Ignorable="d">
+
+    <Page.Resources>
+        <converters:BoolToVisibilityConverter x:Key="BoolToVis" />
+    </Page.Resources>
 
     <controls:SettingsPageControl
         x:Uid="ColorPicker"
@@ -73,8 +78,9 @@
                             x:Name="ColorPicker_ComboBox"
                             MinWidth="{StaticResource SettingActionControlMinWidth}"
                             DisplayMemberPath="Value"
-                            ItemsSource="{Binding SelectableColorRepresentations}"
+                            ItemsSource="{Binding ColorFormatsPreview, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                             Loaded="ColorPicker_ComboBox_Loaded"
+                            SelectedIndex="{Binding ColorFormatsPreviewIndex, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                             SelectedValue="{Binding SelectedColorRepresentationValue, Mode=TwoWay}"
                             SelectedValuePath="Key" />
                     </labs:SettingsCard>
@@ -102,8 +108,14 @@
                         x:Name="ColorFormatsSetting"
                         x:Uid="ColorPicker_ColorFormats"
                         HeaderIcon="{ui:FontIcon FontFamily={StaticResource SymbolThemeFontFamily},
-                                                 Glyph=&#xE762;}" />
-
+                                                 Glyph=&#xE762;}" >
+                        <Button
+                            x:Uid="ColorPickerAddNewFormat"
+                            Click="NewFormatClick"
+                            Style="{StaticResource AccentButtonStyle}"
+                            HorizontalAlignment="Right"
+                        />
+                    </labs:SettingsCard>
                     <!--  Disabled reordering by dragging  -->
                     <!--  CanReorderItems="True" AllowDrop="True"  -->
                     <ItemsControl
@@ -114,8 +126,8 @@
                             <DataTemplate x:DataType="models:ColorFormatModel">
                                 <labs:SettingsCard
                                     Margin="0,0,0,2"
-                                    Description="{x:Bind Example}"
-                                    Header="{x:Bind Name}">
+                                    Description="{x:Bind Example, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                    Header="{x:Bind Name, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}">
                                     <labs:SettingsCard.Resources>
                                         <x:Double x:Key="SettingsCardLeftIndention">42</x:Double>
                                     </labs:SettingsCard.Resources>
@@ -126,11 +138,42 @@
                                             <ColumnDefinition Width="Auto" />
                                             <ColumnDefinition Width="Auto" />
                                         </Grid.ColumnDefinitions>
+                                        <Button
+                                            x:Uid="EditButton"
+                                            Background="Transparent"
+                                            FontFamily="{ThemeResource SymbolThemeFontFamily}"
+                                            Grid.RowSpan="2"
+                                            Width="40"
+                                            Height="36"
+                                            HorizontalAlignment="Right"
+                                            Margin="0,0,160,0"
+                                            Content="&#xE70F;"
+                                            Click="EditButton_Click">
+                                            <ToolTipService.ToolTip>
+                                                <TextBlock x:Uid="EditTooltip"/>
+                                            </ToolTipService.ToolTip>
+                                        </Button>
+                                        <Button x:Name="RemoveButton"
+                                            x:Uid="RemoveButton"
+                                            Background="Transparent"
+                                            FontFamily="{ThemeResource SymbolThemeFontFamily}"
+                                            Grid.RowSpan="2"
+                                            Width="40"
+                                            Height="36"
+                                            Content="&#xE74D;"
+                                            HorizontalAlignment="Right"
+                                            Margin="0,0,104,0"
+                                            IsEnabled="{x:Bind CanBeDeleted, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                            Click="RemoveButton_Click">
+                                            <ToolTipService.ToolTip>
+                                                <TextBlock x:Uid="RemoveTooltip"/>
+                                            </ToolTipService.ToolTip>
+                                        </Button>
                                         <ToggleSwitch
                                             x:Uid="Enable_ColorFormat"
                                             HorizontalAlignment="Right"
                                             AutomationProperties.HelpText="{x:Bind Name}"
-                                            IsOn="{x:Bind IsShown, Mode=TwoWay}"
+                                            IsOn="{x:Bind IsShown, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                                             OffContent=""
                                             OnContent="" />
                                         <Button
@@ -169,10 +212,160 @@
                                 </labs:SettingsCard>
                             </DataTemplate>
                         </ItemsControl.ItemTemplate>
-                        </ItemsControl>
+                    </ItemsControl>
                 </controls:SettingsGroup>
+                <ContentDialog
+                    x:Name="ColorFormatDialog"
+                    x:Uid="ColorFormatDialog"
+                    PrimaryButtonStyle="{ThemeResource AccentButtonStyle}"
+                    SecondaryButtonClick="ColorFormatDialog_CancelButtonClick"
+                    IsPrimaryButtonEnabled="{Binding IsValid, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}">
+                    <ContentDialog.DataContext>
+                        <models:ColorFormatModel />
+                    </ContentDialog.DataContext>
+                    <ScrollViewer HorizontalScrollMode="Auto" HorizontalScrollBarVisibility="Auto">
+                        <StackPanel
+                                Margin="0,12,0,0"
+                                HorizontalAlignment="Stretch"
+                                Spacing="24">
+                            <TextBox
+                                x:Uid="NewColorName"
+                                x:Name="NewColorName"
+                                IsSpellCheckEnabled="False"
+                                TextChanged="NewColorName_TextChanged"
+                                Text="{Binding Name, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                            <TextBox 
+                                x:Uid="NewColorFormat"
+                                Name="NewColorFormat"
+                                IsSpellCheckEnabled="False"
+                                TextChanged="NewColorFormat_TextChanged"
+                                Text="{Binding Format, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                            <!-- The help block -->
+                            <Grid>
+                                <Grid.RowDefinitions>
+                                    <RowDefinition />
+                                    <RowDefinition />
+                                    <RowDefinition Height="30"/>
+                                    <RowDefinition />
+                                    <RowDefinition Height="30"/>
+                                </Grid.RowDefinitions>
+                                <TextBlock x:Uid="HelpLine1"/>
+                                <Grid Grid.Row="1">
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition />
+                                        <RowDefinition />
+                                        <RowDefinition />
+                                        <RowDefinition />
+                                        <RowDefinition />
+                                        <RowDefinition />
+                                        <RowDefinition />
+                                        <RowDefinition />
+                                        <RowDefinition />
+                                    </Grid.RowDefinitions>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="40px"/>
+                                        <ColumnDefinition Width="120px"/>
+                                        <ColumnDefinition Width="40px"/>
+                                        <ColumnDefinition Width="120px"/>
+                                        <ColumnDefinition Width="40px"/>
+                                        <ColumnDefinition Width="120px"/>
+                                    </Grid.ColumnDefinitions>
+                                    <TextBlock Text = "%Re" FontWeight="Bold"/>
+                                    <TextBlock x:Uid="Help_red" Grid.Column="1"/>
+                                    <TextBlock Text = "%Gr" Grid.Column="2" FontWeight="Bold"/>
+                                    <TextBlock x:Uid="Help_green" Grid.Column="3"/>
+                                    <TextBlock Text = "%Bl" Grid.Column="4" FontWeight="Bold"/>
+                                    <TextBlock x:Uid="Help_blue" Grid.Column="5"/>
+                                    <TextBlock Text = "%Al" Grid.Row="1" FontWeight="Bold"/>
+                                    <TextBlock x:Uid="Help_alpha" Grid.Row="1" Grid.Column="1"/>
+                                    <TextBlock Text = "%Cy" Grid.Row="1" Grid.Column="2" FontWeight="Bold"/>
+                                    <TextBlock x:Uid="Help_cyan" Grid.Row="1" Grid.Column="3"/>
+                                    <TextBlock Text = "%Ma" Grid.Row="1" Grid.Column="4" FontWeight="Bold"/>
+                                    <TextBlock x:Uid="Help_magenta" Grid.Row="1" Grid.Column="5"/>
+                                    <TextBlock Text = "%Ye" Grid.Row="2" FontWeight="Bold"/>
+                                    <TextBlock x:Uid="Help_yellow" Grid.Row="2" Grid.Column="1"/>
+                                    <TextBlock Text = "%Bk" Grid.Row="2" Grid.Column="2" FontWeight="Bold"/>
+                                    <TextBlock x:Uid="Help_black_key" Grid.Row="2" Grid.Column="3"/>
+                                    <TextBlock Text = "%Hu" Grid.Row="2" Grid.Column="4" FontWeight="Bold"/>
+                                    <TextBlock x:Uid="Help_hue" Grid.Row="2" Grid.Column="5"/>
+                                    <TextBlock Text = "%Si" Grid.Row="3" FontWeight="Bold"/>
+                                    <TextBlock x:Uid="Help_saturationI" Grid.Row="3" Grid.Column="1"/>
+                                    <TextBlock Text = "%Sl" Grid.Row="3" Grid.Column="2" FontWeight="Bold"/>
+                                    <TextBlock x:Uid="Help_saturationL" Grid.Row="3" Grid.Column="3"/>
+                                    <TextBlock Text = "%Sb" Grid.Row="3" Grid.Column="4"  FontWeight="Bold"/>
+                                    <TextBlock x:Uid="Help_saturationB" Grid.Row="3" Grid.Column="5"/>
+                                    <TextBlock Text = "%Br" Grid.Row="4" FontWeight="Bold"/>
+                                    <TextBlock x:Uid="Help_brightness" Grid.Row="4" Grid.Column="1"/>
+                                    <TextBlock Text = "%In" Grid.Row="4" Grid.Column="2" FontWeight="Bold"/>
+                                    <TextBlock x:Uid="Help_intensity" Grid.Row="4" Grid.Column="3"/>
+                                    <TextBlock Text = "%Hn" Grid.Row="4" Grid.Column="4" FontWeight="Bold"/>
+                                    <TextBlock x:Uid="Help_hueNat" Grid.Row="4" Grid.Column="5"/>
+                                    <TextBlock Text = "%Ll" Grid.Row="5" FontWeight="Bold"/>
+                                    <TextBlock x:Uid="Help_lightnessNat" Grid.Row="5" Grid.Column="1"/>
+                                    <TextBlock Text = "%Lc" Grid.Row="5"  Grid.Column="2" FontWeight="Bold"/>
+                                    <TextBlock x:Uid="Help_lightnessCIE" Grid.Row="5" Grid.Column="3"/>
+                                    <TextBlock Text = "%Va" Grid.Row="5" Grid.Column="4" FontWeight="Bold"/>
+                                    <TextBlock x:Uid="Help_value" Grid.Row="5" Grid.Column="5"/>
+                                    <TextBlock Text = "%Wh" Grid.Row="6" FontWeight="Bold"/>
+                                    <TextBlock x:Uid="Help_whiteness" Grid.Row="6" Grid.Column="1"/>
+                                    <TextBlock Text = "%Bn" Grid.Row="6" Grid.Column="2" FontWeight="Bold"/>
+                                    <TextBlock x:Uid="Help_blackness" Grid.Row="6" Grid.Column="3"/>
+                                    <TextBlock Text = "%Ca" Grid.Row="6" Grid.Column="4" FontWeight="Bold"/>
+                                    <TextBlock x:Uid="Help_chromaticityA" Grid.Row="6" Grid.Column="5"/>
+                                    <TextBlock Text = "%Cb" Grid.Row="7" FontWeight="Bold"/>
+                                    <TextBlock x:Uid="Help_chromaticityB" Grid.Row="7" Grid.Column="1"/>
+                                    <TextBlock Text = "%Xv" Grid.Row="7" Grid.Column="2" FontWeight="Bold"/>
+                                    <TextBlock x:Uid="Help_X_value" Grid.Row="7" Grid.Column="3"/>
+                                    <TextBlock Text = "%Yv" Grid.Row="7" Grid.Column="4" FontWeight="Bold"/>
+                                    <TextBlock x:Uid="Help_Y_value" Grid.Row="7" Grid.Column="5"/>
+                                    <TextBlock Text = "%Zv" Grid.Row="8" FontWeight="Bold"/>
+                                    <TextBlock x:Uid="Help_Z_value" Grid.Row="8" Grid.Column="1"/>
+                                    <TextBlock Text = "%Dv" Grid.Row="8" Grid.Column="2" FontWeight="Bold"/>
+                                    <TextBlock x:Uid="Help_decimal_value" Grid.Row="8" Grid.Column="3"/>
+                                    <TextBlock Text = "%Na" Grid.Row="8" Grid.Column="4" FontWeight="Bold"/>
+                                    <TextBlock x:Uid="Help_color_name" Grid.Row="8" Grid.Column="5"/>
+                                </Grid>
+                                <TextBlock 
+                                    Grid.Row="2" 
+                                    x:Uid="HelpLine2"
+                                    VerticalAlignment="Bottom"/>
+                                <Grid Grid.Row="3">
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition />
+                                        <RowDefinition />
+                                        <RowDefinition />
+                                        <RowDefinition />
+                                    </Grid.RowDefinitions>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="40px"/>
+                                        <ColumnDefinition Width="200px"/>
+                                        <ColumnDefinition Width="40px"/>
+                                        <ColumnDefinition Width="200px"/>
+                                    </Grid.ColumnDefinitions>
+                                    <TextBlock Text = "b" FontWeight="Bold"/>
+                                    <TextBlock x:Uid="Help_byte" Grid.Column="1"/>
+                                    <TextBlock Text = "h" Grid.Row="1" FontWeight="Bold"/>
+                                    <TextBlock x:Uid = "Help_hexL1" Grid.Row="1" Grid.Column="1"/>
+                                    <TextBlock Text = "H" Grid.Row="1" Grid.Column="2" FontWeight="Bold"/>
+                                    <TextBlock x:Uid = "Help_hexU1" Grid.Row="1" Grid.Column="3"/>
+                                    <TextBlock Text = "x" Grid.Row="2" FontWeight="Bold"/>
+                                    <TextBlock x:Uid = "Help_hexL2" Grid.Row="2" Grid.Column="1"/>
+                                    <TextBlock Text = "X" Grid.Row="2" Grid.Column="2" FontWeight="Bold"/>
+                                    <TextBlock x:Uid = "Help_hexU2" Grid.Row="2" Grid.Column="3"/>
+                                    <TextBlock Text = "f" Grid.Row="3" FontWeight="Bold"/>
+                                    <TextBlock x:Uid = "Help_floatWith" Grid.Row="3" Grid.Column="1"/>
+                                    <TextBlock Text = "F" Grid.Row="3" Grid.Column="2" FontWeight="Bold"/>
+                                    <TextBlock x:Uid = "Help_floatWithout" Grid.Row="3" Grid.Column="3"/>
+                                </Grid>
+                                <TextBlock 
+                                    Grid.Row="4" 
+                                    x:Uid = "HelpLine3"
+                                    VerticalAlignment="Bottom"/>
+                            </Grid>
+                        </StackPanel>
+                    </ScrollViewer>
+                </ContentDialog>
             </StackPanel>
-
         </controls:SettingsPageControl.ModuleContent>
 
         <controls:SettingsPageControl.PrimaryLinks>

@@ -10,10 +10,12 @@ using System.Linq;
 using System.Text.Json;
 using System.Timers;
 using global::PowerToys.GPOWrapper;
+using ManagedCommon;
 using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.PowerToys.Settings.UI.Library.Enumerations;
 using Microsoft.PowerToys.Settings.UI.Library.Helpers;
 using Microsoft.PowerToys.Settings.UI.Library.Interfaces;
+using Windows.ApplicationModel.Resources;
 
 namespace Microsoft.PowerToys.Settings.UI.ViewModels
 {
@@ -35,8 +37,11 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         private GpoRuleConfigured _enabledGpoRuleConfiguration;
         private bool _enabledStateIsGPOConfigured;
         private bool _isEnabled;
+        private int _colorFormatPreviewIndex;
 
         private Func<string, int> SendConfigMSG { get; }
+
+        private Dictionary<string, string> _colorFormatsPreview;
 
         public ColorPickerViewModel(
             ISettingsUtils settingsUtils,
@@ -50,34 +55,20 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 throw new ArgumentNullException(nameof(settingsRepository));
             }
 
-            SelectableColorRepresentations = new Dictionary<ColorRepresentationType, string>
-            {
-                { ColorRepresentationType.CMYK, "CMYK - cmyk(100%, 50%, 75%, 0%)" },
-                { ColorRepresentationType.HEX,  "HEX - ffaa00" },
-                { ColorRepresentationType.HSB,  "HSB - hsb(100, 50%, 75%)" },
-                { ColorRepresentationType.HSI,  "HSI - hsi(100, 50%, 75%)" },
-                { ColorRepresentationType.HSL,  "HSL - hsl(100, 50%, 75%)" },
-                { ColorRepresentationType.HSV,  "HSV - hsv(100, 50%, 75%)" },
-                { ColorRepresentationType.HWB,  "HWB - hwb(100, 50%, 75%)" },
-                { ColorRepresentationType.NCol, "NCol - R10, 50%, 75%" },
-                { ColorRepresentationType.RGB,  "RGB - rgb(100, 50, 75)" },
-                { ColorRepresentationType.CIELAB, "CIE LAB - CIELab(76, 21, 80)" },
-                { ColorRepresentationType.CIEXYZ, "CIE XYZ - xyz(56, 50, 7)" },
-                { ColorRepresentationType.VEC4, "VEC4 - (1.0f, 0.7f, 0f, 1f)" },
-                { ColorRepresentationType.DecimalValue, "Decimal - 16755200" },
-                { ColorRepresentationType.HexInteger, "HEX Integer - 0xFFAA00EE" },
-            };
-
             GeneralSettingsConfig = settingsRepository.SettingsConfig;
 
             _settingsUtils = settingsUtils ?? throw new ArgumentNullException(nameof(settingsUtils));
 
             if (colorPickerSettingsRepository == null)
             {
-                throw new ArgumentNullException(nameof(colorPickerSettingsRepository));
+                // used in release. This method converts the settings stored in the previous form, so we have forwards compatibility
+                _colorPickerSettings = _settingsUtils.GetSettingsOrDefault<ColorPickerSettings, ColorPickerSettingsVersion1>(ColorPickerSettings.ModuleName, settingsUpgrader: ColorPickerSettings.UpgradeSettings);
+            }
+            else
+            {
+                _colorPickerSettings = colorPickerSettingsRepository.SettingsConfig; // used in the unit tests
             }
 
-            _colorPickerSettings = colorPickerSettingsRepository.SettingsConfig;
             _enabledGpoRuleConfiguration = GPOWrapper.GetConfiguredColorPickerEnabledValue();
             if (_enabledGpoRuleConfiguration == GpoRuleConfigured.Disabled || _enabledGpoRuleConfiguration == GpoRuleConfigured.Enabled)
             {
@@ -100,11 +91,6 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
             InitializeColorFormats();
         }
-
-        /// <summary>
-        /// Gets a list with all selectable <see cref="ColorRepresentationType"/>s
-        /// </summary>
-        public IReadOnlyDictionary<ColorRepresentationType, string> SelectableColorRepresentations { get; }
 
         public bool IsEnabled
         {
@@ -164,11 +150,16 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             }
         }
 
-        public ColorRepresentationType SelectedColorRepresentationValue
+        public string SelectedColorRepresentationValue
         {
             get => _colorPickerSettings.Properties.CopiedColorRepresentation;
             set
             {
+                if (value == null)
+                {
+                    return; // do not set null value, it occurs when the combobox itemSource gets modified. Right after it well be reset to the correct value
+                }
+
                 if (_colorPickerSettings.Properties.CopiedColorRepresentation != value)
                 {
                     _colorPickerSettings.Properties.CopiedColorRepresentation = value;
@@ -212,64 +203,61 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         public ObservableCollection<ColorFormatModel> ColorFormats { get; } = new ObservableCollection<ColorFormatModel>();
 
-        private void InitializeColorFormats()
+        public Dictionary<string, string> ColorFormatsPreview
         {
-            var visibleFormats = _colorPickerSettings.Properties.VisibleColorFormats;
-            var formatsUnordered = new List<ColorFormatModel>();
-
-            var hexFormatName = ColorRepresentationType.HEX.ToString();
-            var rgbFormatName = ColorRepresentationType.RGB.ToString();
-            var hslFormatName = ColorRepresentationType.HSL.ToString();
-            var hsvFormatName = ColorRepresentationType.HSV.ToString();
-            var cmykFormatName = ColorRepresentationType.CMYK.ToString();
-            var hsbFormatName = ColorRepresentationType.HSB.ToString();
-            var hsiFormatName = ColorRepresentationType.HSI.ToString();
-            var hwbFormatName = ColorRepresentationType.HWB.ToString();
-            var ncolFormatName = ColorRepresentationType.NCol.ToString();
-            var cielabFormatName = ColorRepresentationType.CIELAB.ToString();
-            var ciexyzFormatName = ColorRepresentationType.CIEXYZ.ToString();
-            var vec4FormatName = ColorRepresentationType.VEC4.ToString();
-            var hexIntegerFormatName = "HEX Int";
-            var decimalFormatName = "Decimal";
-
-            formatsUnordered.Add(new ColorFormatModel(hexFormatName, "ef68ff", visibleFormats.ContainsKey(hexFormatName) && visibleFormats[hexFormatName]));
-            formatsUnordered.Add(new ColorFormatModel(rgbFormatName, "rgb(239, 104, 255)", visibleFormats.ContainsKey(rgbFormatName) && visibleFormats[rgbFormatName]));
-            formatsUnordered.Add(new ColorFormatModel(hslFormatName, "hsl(294, 100%, 70%)", visibleFormats.ContainsKey(hslFormatName) && visibleFormats[hslFormatName]));
-            formatsUnordered.Add(new ColorFormatModel(hsvFormatName, "hsv(294, 59%, 100%)", visibleFormats.ContainsKey(hsvFormatName) && visibleFormats[hsvFormatName]));
-            formatsUnordered.Add(new ColorFormatModel(cmykFormatName, "cmyk(6%, 59%, 0%, 0%)", visibleFormats.ContainsKey(cmykFormatName) && visibleFormats[cmykFormatName]));
-            formatsUnordered.Add(new ColorFormatModel(hsbFormatName, "hsb(100, 50%, 75%)", visibleFormats.ContainsKey(hsbFormatName) && visibleFormats[hsbFormatName]));
-            formatsUnordered.Add(new ColorFormatModel(hsiFormatName, "hsi(100, 50%, 75%)", visibleFormats.ContainsKey(hsiFormatName) && visibleFormats[hsiFormatName]));
-            formatsUnordered.Add(new ColorFormatModel(hwbFormatName, "hwb(100, 50%, 75%)", visibleFormats.ContainsKey(hwbFormatName) && visibleFormats[hwbFormatName]));
-            formatsUnordered.Add(new ColorFormatModel(ncolFormatName, "R10, 50%, 75%", visibleFormats.ContainsKey(ncolFormatName) && visibleFormats[ncolFormatName]));
-            formatsUnordered.Add(new ColorFormatModel(cielabFormatName, "CIELab(66, 72, -52)", visibleFormats.ContainsKey(cielabFormatName) && visibleFormats[cielabFormatName]));
-            formatsUnordered.Add(new ColorFormatModel(ciexyzFormatName, "XYZ(59, 35, 98)", visibleFormats.ContainsKey(ciexyzFormatName) && visibleFormats[ciexyzFormatName]));
-            formatsUnordered.Add(new ColorFormatModel(vec4FormatName, "(0.94f, 0.41f, 1.00f, 1f)", visibleFormats.ContainsKey(vec4FormatName) && visibleFormats[vec4FormatName]));
-            formatsUnordered.Add(new ColorFormatModel(decimalFormatName, "15689983", visibleFormats.ContainsKey(decimalFormatName) && visibleFormats[decimalFormatName]));
-            formatsUnordered.Add(new ColorFormatModel(hexIntegerFormatName, "0xFFAA00EE", visibleFormats.ContainsKey(hexIntegerFormatName) && visibleFormats[hexIntegerFormatName]));
-
-            foreach (var storedColorFormat in _colorPickerSettings.Properties.VisibleColorFormats)
+            get => _colorFormatsPreview;
+            set
             {
-                var predefinedFormat = formatsUnordered.FirstOrDefault(it => it.Name == storedColorFormat.Key);
-                if (predefinedFormat != null)
-                {
-                    predefinedFormat.PropertyChanged += ColorFormat_PropertyChanged;
-                    ColorFormats.Add(predefinedFormat);
-                    formatsUnordered.Remove(predefinedFormat);
-                }
+                _colorFormatsPreview = value;
+                OnPropertyChanged(nameof(ColorFormatsPreview));
+            }
+        }
+
+        public int ColorFormatsPreviewIndex
+        {
+            get
+            {
+                return _colorFormatPreviewIndex;
             }
 
-            // settings file might not have all formats listed, add remaining ones we support
-            foreach (var remainingColorFormat in formatsUnordered)
+            set
             {
-                remainingColorFormat.PropertyChanged += ColorFormat_PropertyChanged;
-                ColorFormats.Add(remainingColorFormat);
+                if (value != _colorFormatPreviewIndex)
+                {
+                    _colorFormatPreviewIndex = value;
+                    OnPropertyChanged(nameof(ColorFormatsPreviewIndex));
+                }
+            }
+        }
+
+        private void InitializeColorFormats()
+        {
+            foreach (var storedColorFormat in _colorPickerSettings.Properties.VisibleColorFormats)
+            {
+                string format = storedColorFormat.Value.Value;
+                if (format == string.Empty)
+                {
+                    format = ColorFormatHelper.GetDefaultFormat(storedColorFormat.Key);
+                }
+
+                ColorFormatModel customColorFormat = new ColorFormatModel(storedColorFormat.Key, format, storedColorFormat.Value.Key);
+                customColorFormat.PropertyChanged += ColorFormat_PropertyChanged;
+                ColorFormats.Add(customColorFormat);
             }
 
             // Reordering colors with buttons: disable first and last buttons
             ColorFormats[0].CanMoveUp = false;
             ColorFormats[ColorFormats.Count - 1].CanMoveDown = false;
 
+            UpdateColorFormatPreview();
             ColorFormats.CollectionChanged += ColorFormats_CollectionChanged;
+        }
+
+        private void UpdateColorFormatPreview()
+        {
+            ColorFormatsPreview = ColorFormats.Select(x => new KeyValuePair<string, string>(x.Name, x.Name + " - " + x.Example)).ToDictionary(x => x.Key, x => x.Value);
+            SetPreviewSelectedIndex();
+            ScheduleSavingOfSettings();
         }
 
         private void ColorFormats_CollectionChanged(object sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
@@ -287,7 +275,20 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 ColorFormats[ColorFormats.Count - 1].CanMoveDown = false;
             }
 
+            if (ColorFormats.Count == 1)
+            {
+                ColorFormats.Single().CanBeDeleted = false;
+            }
+            else
+            {
+                foreach (var color in ColorFormats)
+                {
+                    color.CanBeDeleted = true;
+                }
+            }
+
             UpdateColorFormats();
+            UpdateColorFormatPreview();
             ScheduleSavingOfSettings();
         }
 
@@ -324,8 +325,19 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             _colorPickerSettings.Properties.VisibleColorFormats.Clear();
             foreach (var colorFormat in ColorFormats)
             {
-                _colorPickerSettings.Properties.VisibleColorFormats.Add(colorFormat.Name, colorFormat.IsShown);
+                _colorPickerSettings.Properties.VisibleColorFormats.Add(colorFormat.Name, new KeyValuePair<bool, string>(colorFormat.IsShown, colorFormat.Format));
             }
+        }
+
+        internal void AddNewColorFormat(string newColorName, string newColorFormat, bool isShown)
+        {
+            if (ColorFormats.Count > 0)
+            {
+                ColorFormats[0].CanMoveUp = true;
+            }
+
+            ColorFormats.Insert(0, new ColorFormatModel(newColorName, newColorFormat, isShown));
+            SetPreviewSelectedIndex();
         }
 
         private void NotifySettingsChanged()
@@ -356,6 +368,76 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         {
             Dispose(disposing: true);
             GC.SuppressFinalize(this);
+        }
+
+        internal ColorFormatModel GetNewColorFormatModel()
+        {
+            var resourceLoader = ResourceLoader.GetForViewIndependentUse();
+            string defaultName = resourceLoader.GetString("CustomColorFormatDefaultName");
+            ColorFormatModel newColorFormatModel = new ColorFormatModel();
+            newColorFormatModel.Name = defaultName;
+            int extensionNumber = 1;
+            while (ColorFormats.Any(x => x.Name.Equals(newColorFormatModel.Name, StringComparison.Ordinal)))
+            {
+                newColorFormatModel.Name = defaultName + " (" + extensionNumber + ")";
+                extensionNumber++;
+            }
+
+            return newColorFormatModel;
+        }
+
+        internal void SetValidity(ColorFormatModel colorFormatModel, string oldName)
+        {
+            if ((colorFormatModel.Format == string.Empty) || (colorFormatModel.Name == string.Empty))
+            {
+                colorFormatModel.IsValid = false;
+            }
+            else if (colorFormatModel.Name == oldName)
+            {
+                colorFormatModel.IsValid = true;
+            }
+            else
+            {
+                colorFormatModel.IsValid = ColorFormats.Count(x => x.Name.ToUpperInvariant().Equals(colorFormatModel.Name.ToUpperInvariant(), StringComparison.Ordinal)) < 2;
+            }
+        }
+
+        internal void DeleteModel(ColorFormatModel colorFormatModel)
+        {
+            ColorFormats.Remove(colorFormatModel);
+            SetPreviewSelectedIndex();
+        }
+
+        internal void UpdateColorFormat(string oldName, ColorFormatModel colorFormat)
+        {
+            if (SelectedColorRepresentationValue == oldName)
+            {
+                SelectedColorRepresentationValue = colorFormat.Name;    // name might be changed by the user
+            }
+
+            UpdateColorFormatPreview();
+        }
+
+        internal void SetPreviewSelectedIndex()
+        {
+            int index = 0;
+
+            foreach (var item in ColorFormats)
+            {
+                if (item.Name == SelectedColorRepresentationValue)
+                {
+                    break;
+                }
+
+                index++;
+            }
+
+            if (index >= ColorFormats.Count)
+            {
+                index = 0;
+            }
+
+            ColorFormatsPreviewIndex = index;
         }
     }
 }

@@ -163,7 +163,7 @@ brucelindbloom
 bsd
 bstr
 bti
-Btn
+btn
 BTNFACE
 Bto
 buf
@@ -204,8 +204,8 @@ Chrzan
 CHT
 Chukotka
 Chuuk
-cielab
-ciexyz
+CIELAB
+CIEXYZ
 cim
 CImage
 cla
@@ -1119,7 +1119,7 @@ NCMBUTTONDOWN
 NCMBUTTONUP
 NCMOUSELEAVE
 NCMOUSEMOVE
-ncol
+NCol
 NCPAINT
 NCRBUTTONDBLCLK
 NCRBUTTONDOWN

@@ -1261,13 +1261,157 @@ Made with 💗 by Microsoft and the PowerToys community.</value>
     <value>Color formats</value>
   </data>
   <data name="ColorPicker_ColorFormats.Description" xml:space="preserve">
-    <value>Select which color formats (and in what order) should show up in the editor</value>
+    <value>Configure the color formats (edit, delete, hide, reorder them)</value>
   </data>
   <data name="MoveUp.Text" xml:space="preserve">
     <value>Move up</value>
   </data>
-  <data name="MoveDown.Text" xml:space="preserve">
+	<data name="MoveDown.Text" xml:space="preserve">
     <value>Move down</value>
+  </data>
+  <data name="ColorPickerAddNewFormat.Content" xml:space="preserve">
+    <value>Add custom color format</value>
+  </data>
+  <data name="NewColorFormat.Header" xml:space="preserve">
+    <value>Format</value>
+  </data>
+  <data name="NewColorName.Header" xml:space="preserve">
+    <value>Name</value>
+  </data>
+  <data name="AddCustomColorFormat" xml:space="preserve">
+    <value>Add custom color format</value>
+  </data>
+  <data name="ColorFormatSave" xml:space="preserve">
+    <value>Save</value>
+  </data>
+  <data name="EditCustomColorFormat" xml:space="preserve">
+    <value>Edit custom color format</value>
+  </data>
+  <data name="ColorFormatUpdate" xml:space="preserve">
+    <value>Update</value>
+  </data>
+  <data name="CustomColorFormatDefaultName" xml:space="preserve">
+    <value>My Format</value>
+  </data>
+  <data name="ColorFormatDialog.SecondaryButtonText" xml:space="preserve">
+    <value>Cancel</value>
+  </data>
+  <data name="HelpLine1.Text" xml:space="preserve">
+    <value>The following parameters can be used:</value>
+  </data>
+  <data name="Help_red.Text" xml:space="preserve">
+    <value>red</value>
+  </data>
+  <data name="Help_green.Text" xml:space="preserve">
+    <value>green</value>
+  </data>
+  <data name="Help_blue.Text" xml:space="preserve">
+    <value>blue</value>
+  </data>
+  <data name="Help_alpha.Text" xml:space="preserve">
+    <value>alpha</value>
+  </data>
+  <data name="Help_cyan.Text" xml:space="preserve">
+    <value>cyan</value>
+  </data>
+  <data name="Help_magenta.Text" xml:space="preserve">
+    <value>magenta</value>
+  </data>
+  <data name="Help_yellow.Text" xml:space="preserve">
+    <value>yellow</value>
+  </data>
+  <data name="Help_black_key.Text" xml:space="preserve">
+    <value>black key</value>
+  </data>
+  <data name="Help_hue.Text" xml:space="preserve">
+    <value>hue</value>
+  </data>
+  <data name="Help_hueNat.Text" xml:space="preserve">
+    <value>hue (natural)</value>
+  </data>
+  <data name="Help_saturationI.Text" xml:space="preserve">
+    <value>saturation (HSI)</value>
+  </data>
+  <data name="Help_saturationL.Text" xml:space="preserve">
+    <value>saturation (HSL)</value>
+  </data>
+  <data name="Help_saturationB.Text" xml:space="preserve">
+    <value>saturation (HSB)</value>
+  </data>
+  <data name="Help_brightness.Text" xml:space="preserve">
+    <value>brightness</value>
+  </data>
+  <data name="Help_intensity.Text" xml:space="preserve">
+    <value>intensity</value>
+  </data>
+  <data name="Help_lightnessNat.Text" xml:space="preserve">
+    <value>lightness (nat)</value>
+  </data>
+  <data name="Help_lightnessCIE.Text" xml:space="preserve">
+    <value>lightness (CIE)</value>
+  </data>
+  <data name="Help_value.Text" xml:space="preserve">
+    <value>value</value>
+  </data>
+  <data name="Help_whiteness.Text" xml:space="preserve">
+    <value>whiteness</value>
+  </data>
+  <data name="Help_blackness.Text" xml:space="preserve">
+    <value>blackness</value>
+  </data>
+  <data name="Help_chromaticityA.Text" xml:space="preserve">
+    <value>chromaticityA</value>
+  </data>
+  <data name="Help_chromaticityB.Text" xml:space="preserve">
+    <value>chromaticityB</value>
+  </data>
+  <data name="Help_X_value.Text" xml:space="preserve">
+    <value>X value</value>
+  </data>
+  <data name="Help_Y_value.Text" xml:space="preserve">
+    <value>Y value</value>
+  </data>
+  <data name="Help_Z_value.Text" xml:space="preserve">
+    <value>Z value</value>
+  </data>
+  <data name="Help_decimal_value.Text" xml:space="preserve">
+    <value>decimal value</value>
+  </data>
+  <data name="Help_color_name.Text" xml:space="preserve">
+    <value>color name</value>
+  </data>
+  <data name="HelpLine2.Text" xml:space="preserve">
+    <value>The red, green, blue and alpha values can be formatted to the following formats:</value>
+  </data>
+  <data name="Help_byte.Text" xml:space="preserve">
+    <value>byte value (default)</value>
+  </data>
+  <data name="Help_hexL1.Text" xml:space="preserve">
+    <value>hex lowercase one digit</value>
+  </data>
+  <data name="Help_hexU1.Text" xml:space="preserve">
+    <value>hex uppercase one digit</value>
+  </data>
+  <data name="Help_hexL2.Text" xml:space="preserve">
+    <value>hex lowercase two digits</value>
+  </data>
+  <data name="Help_hexU2.Text" xml:space="preserve">
+    <value>hex uppercase two digits</value>
+  </data>
+  <data name="Help_floatWith.Text" xml:space="preserve">
+    <value>float with leading zero</value>
+  </data>
+  <data name="Help_floatWithout.Text" xml:space="preserve">
+    <value>float without leading zero</value>
+  </data>
+  <data name="HelpLine3.Text" xml:space="preserve">
+    <value>Example:  %ReX means red value in hex uppercase two digits format.</value>
+  </data>
+  <data name="Help_blue.Text" xml:space="preserve">
+    <value>blue</value>
+  </data>
+  <data name="Help_blue.Text" xml:space="preserve">
+    <value>blue</value>
   </data>
   <data name="ColorPicker_ShowColorName.Header" xml:space="preserve">
     <value>Show color name</value>
@@ -1315,7 +1459,7 @@ Made with 💗 by Microsoft and the PowerToys community.</value>
     <value>Zone index</value>
   </data>
   <data name="ColorPicker_Editor.Header" xml:space="preserve">
-    <value>Editor</value>
+    <value>Color formats</value>
   </data>
   <data name="FancyZones_OverlappingZonesClosestCenter.Content" xml:space="preserve">
     <value>Activate the zone whose center is closest to the cursor</value>
