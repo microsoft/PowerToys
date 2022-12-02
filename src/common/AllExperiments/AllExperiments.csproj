@@ -10,6 +10,7 @@
   <ItemGroup Condition="'$(IsExperimentationLive)'!=''">
     <ProjectReference Include="..\..\settings-ui\Settings.UI.Library\Settings.UI.Library.csproj" />
     <ProjectReference Include="..\ManagedTelemetry\Telemetry\ManagedTelemetry.csproj" />
+    <PackageReference Include="System.IO.Abstractions" Version="17.2.3" />
     <PackageReference Include="Microsoft.VariantAssignment.Client" Version="2.4.17140001" />
     <PackageReference Include="Microsoft.VariantAssignment.Contract" Version="3.0.16990001" />
     <Compile Remove="..\..\common\AllExperiments\Experiments_Inert.cs" />
