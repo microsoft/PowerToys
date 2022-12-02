@@ -1859,6 +1859,7 @@ UIs
 Ulaanbaatar
 ULARGE
 ULONGLONG
+unassign
 uncompilable
 UNCPRIORITY
 UNDNAME
