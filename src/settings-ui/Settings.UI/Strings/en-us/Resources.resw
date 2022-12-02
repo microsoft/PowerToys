@@ -2525,6 +2525,9 @@ Activate by holding the key for the character you want to add an accent to, then
     <value>The continuous capture mode will consume more resources when in use. Also, measurements will be excluded from screenshots and screen capture.</value>
     <comment>pointer as in mouse pointer. Resources refer to things like CPU, GPU, RAM</comment>
   </data>
+  <data name="QuickAccent_Description_Indicator.Header" xml:space="preserve">
+    <value>Show the Unicode code and name of the currently selected character</value>
+  </data>
   <data name="QuickAccent_DisableFullscreen.Header" xml:space="preserve">
     <value>Disable when Game Mode is On</value>
   </data>

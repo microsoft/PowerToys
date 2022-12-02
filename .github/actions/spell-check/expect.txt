@@ -864,6 +864,7 @@ Kyrgyzstan
 Kyzylorda
 LAlt
 Lambson
+LANGID
 langword
 Lastdevice
 Laute
