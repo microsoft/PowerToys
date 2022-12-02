@@ -222,7 +222,7 @@
                     <ContentDialog.DataContext>
                         <models:ColorFormatModel />
                     </ContentDialog.DataContext>
-                    <ScrollViewer HorizontalScrollMode="Auto" HorizontalScrollBarVisibility="Auto" MinWidth="580">
+                    <ScrollViewer HorizontalScrollMode="Auto" HorizontalScrollBarVisibility="Auto">
                         <StackPanel
                                 Margin="0,12,0,0"
                                 HorizontalAlignment="Stretch"
