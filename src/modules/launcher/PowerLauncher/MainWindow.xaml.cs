@@ -4,6 +4,7 @@
 
 using System;
 using System.ComponentModel;
+using System.IO;
 using System.Linq;
 using System.Reactive.Linq;
 using System.Runtime.InteropServices;
@@ -21,8 +22,10 @@ using PowerLauncher.Plugin;
 using PowerLauncher.Telemetry.Events;
 using PowerLauncher.ViewModel;
 using Wox.Infrastructure.UserSettings;
+using Wox.Plugin;
 using Wox.Plugin.Interfaces;
 using CancellationToken = System.Threading.CancellationToken;
+using Image = Wox.Infrastructure.Image;
 using KeyEventArgs = System.Windows.Input.KeyEventArgs;
 using Log = Wox.Plugin.Logger.Log;
 using Screen = System.Windows.Forms.Screen;
@@ -301,8 +304,28 @@ namespace PowerLauncher
                 if (Math.Abs(dragDistance.X) > SystemParameters.MinimumHorizontalDragDistance || Math.Abs(dragDistance.Y) > SystemParameters.MinimumVerticalDragDistance)
                 {
                     _viewModel.Hide();
-                    DataObject dataObject = new DataObject(DataFormats.FileDrop, new[] { fileDropResult.Path });
-                    DragDrop.DoDragDrop(ListBox.SuggestionsList, dataObject, DragDropEffects.Copy);
+
+                    try
+                    {
+                        // DoDragDrop with file thumbnail as drag image
+                        var dataObject = DragDataObject.FromFile(fileDropResult.Path);
+                        IntPtr hBitmap = Image.WindowsThumbnailProvider.GetHBitmap(Path.GetFullPath(fileDropResult.Path), Constant.ThumbnailSize, Constant.ThumbnailSize, Image.ThumbnailOptions.None);
+                        try
+                        {
+                            dataObject.SetDragImage(hBitmap, Constant.ThumbnailSize, Constant.ThumbnailSize);
+                            DragDrop.DoDragDrop(ListBox.SuggestionsList, dataObject, DragDropEffects.Copy);
+                        }
+                        finally
+                        {
+                            Image.NativeMethods.DeleteObject(hBitmap);
+                        }
+                    }
+                    catch
+                    {
+                        // DoDragDrop without drag image
+                        IDataObject dataObject = new DataObject(DataFormats.FileDrop, new[] { fileDropResult.Path });
+                        DragDrop.DoDragDrop(ListBox.SuggestionsList, dataObject, DragDropEffects.Copy);
+                    }
                 }
             }
         }

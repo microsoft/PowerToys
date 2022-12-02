@@ -92,7 +92,7 @@ namespace Wox.Infrastructure.Image
             }
         }
 
-        private static IntPtr GetHBitmap(string fileName, int width, int height, ThumbnailOptions options)
+        public static IntPtr GetHBitmap(string fileName, int width, int height, ThumbnailOptions options)
         {
             Guid shellItem2Guid = new Guid(IShellItem2Guid);
             int retCode = NativeMethods.SHCreateItemFromParsingName(fileName, IntPtr.Zero, ref shellItem2Guid, out IShellItem nativeShellItem);
