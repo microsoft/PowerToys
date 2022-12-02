@@ -435,7 +435,7 @@ void FancyZones::WindowCreated(HWND window) noexcept
     {
         // window is recreated after switching virtual desktop
         // avoid moving already opened windows after switching vd
-        bool isMoved = FancyZonesWindowProperties::RetreiveMovedOnOpeningProperty(window);
+        bool isMoved = FancyZonesWindowProperties::RetrieveMovedOnOpeningProperty(window);
         if (!isMoved)
         {
             FancyZonesWindowProperties::StampMovedOnOpeningProperty(window);

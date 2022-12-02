@@ -23,7 +23,7 @@ namespace FancyZonesWindowProperties
     ZoneIndexSet RetrieveZoneIndexProperty(HWND window);
 
     void StampMovedOnOpeningProperty(HWND window);
-    bool RetreiveMovedOnOpeningProperty(HWND window);
+    bool RetrieveMovedOnOpeningProperty(HWND window);
 
     std::optional<size_t> GetTabSortKeyWithinZone(HWND window);
     void SetTabSortKeyWithinZone(HWND window, std::optional<size_t> tabSortKeyWithinZone);

@@ -46,7 +46,7 @@ void ReportGPOValues(const std::filesystem::path& tmpDir)
     report << "getConfiguredImageResizerEnabledValue: " << gpo_rule_configured_to_string(powertoys_gpo::getConfiguredImageResizerEnabledValue()) << std::endl;
     report << "getConfiguredKeyboardManagerEnabledValue: " << gpo_rule_configured_to_string(powertoys_gpo::getConfiguredKeyboardManagerEnabledValue()) << std::endl;
     report << "getConfiguredFindMyMouseEnabledValue: " << gpo_rule_configured_to_string(powertoys_gpo::getConfiguredFindMyMouseEnabledValue()) << std::endl;
-    report << "getConfiguredMouseHightlighterEnabledValue: " << gpo_rule_configured_to_string(powertoys_gpo::getConfiguredMouseHightlighterEnabledValue()) << std::endl;
+    report << "getConfiguredMouseHighlighterEnabledValue: " << gpo_rule_configured_to_string(powertoys_gpo::getConfiguredMouseHighlighterEnabledValue()) << std::endl;
     report << "getConfiguredMousePointerCrosshairsEnabledValue: " << gpo_rule_configured_to_string(powertoys_gpo::getConfiguredMousePointerCrosshairsEnabledValue()) << std::endl;
     report << "getConfiguredPowerRenameEnabledValue: " << gpo_rule_configured_to_string(powertoys_gpo::getConfiguredPowerRenameEnabledValue()) << std::endl;
     report << "getConfiguredPowerLauncherEnabledValue: " << gpo_rule_configured_to_string(powertoys_gpo::getConfiguredPowerLauncherEnabledValue()) << std::endl;

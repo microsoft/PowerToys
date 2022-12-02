@@ -6,9 +6,9 @@
     <?define BinDir="$(var.RepoDir)$(var.Platform)\$(var.Configuration)\" ?>
     <?define PowerToysPlatform="x64"?>
 
-    <?define Dotnet6DownloadUrl="https://download.visualstudio.microsoft.com/download/pr/0192a249-3ec8-4374-a827-e186dd58d55d/cec046575f3eb2247a10ba3d50f5cf6c/windowsdesktop-runtime-6.0.11-win-x64.exe"?>
-    <?define Dotnet6PayloadSize="57217584"?>
-    <?define Dotnet6PayloadHash="B9E3AB8E3048170D9E3EABF6761D423EB4C93C6D"?>
+    <?define Dotnet7DownloadUrl="https://download.visualstudio.microsoft.com/download/pr/5b2fbe00-507e-450e-8b52-43ab052aadf2/79d54c3a19ce3fce314f2367cf4e3b21/windowsdesktop-runtime-7.0.0-win-x64.exe"?>
+    <?define Dotnet7PayloadSize="57756472"?>
+    <?define Dotnet7PayloadHash="DB56882D3263C9E533EA7003D018CB7D65F11C10"?>
 
     <?define PlatformProgramFiles="[ProgramFiles64Folder]"?>
 <?else?>
@@ -16,9 +16,9 @@
     <?define BinDir="$(var.RepoDir)ARM64\$(var.Configuration)\" ?>
     <?define PowerToysPlatform="ARM64"?>
 
-    <?define Dotnet6DownloadUrl="https://download.visualstudio.microsoft.com/download/pr/70d9846e-7bae-496c-829d-dabfda93cddd/be9e28ef860bfc7f8f36db4af4ac7692/windowsdesktop-runtime-6.0.11-win-arm64.exe"?>
-    <?define Dotnet6PayloadSize="51124616"?>
-    <?define Dotnet6PayloadHash="5222A0F11071EB0806A9745A82F820E8B950BCE3"?>
+    <?define Dotnet7DownloadUrl="https://download.visualstudio.microsoft.com/download/pr/bce1b608-3a2a-45e6-ab7b-8c414b9e2c56/74703a44afc5f7550eba824143fc20a7/windowsdesktop-runtime-7.0.0-win-arm64.exe"?>
+    <?define Dotnet7PayloadSize="53133216"?>
+    <?define Dotnet7PayloadHash="8A7271390C2538268EFC71F3E49C80017F406C16"?>
     
 <!--TODO: define to ARM64 Program files once it's available-->
     <?define PlatformProgramFiles="[ProgramFiles6432Folder]"?> 
@@ -41,7 +41,7 @@
               SuppressRepair="yes" />
         </BootstrapperApplicationRef>
 
-        <util:FileSearch Variable="HasDotnet6011" Path="$(var.PlatformProgramFiles)dotnet\shared\Microsoft.WindowsDesktop.App\6.0.11\System.Xaml.dll" Result="exists" />
+        <util:FileSearch Variable="HasDotnet700" Path="$(var.PlatformProgramFiles)dotnet\shared\Microsoft.WindowsDesktop.App\7.0.0\System.Xaml.dll" Result="exists" />
         <util:RegistrySearch Variable="HasWebView2PerMachine" Root="HKLM" Key="SOFTWARE\WOW6432Node\Microsoft\EdgeUpdate\Clients\{F3017226-FE2A-4295-8BDF-00C3A9A7E4C5}" Result="exists" />
         <util:RegistrySearch Variable="HasWebView2PerUser" Root="HKCU" Key="Software\Microsoft\EdgeUpdate\Clients\{F3017226-FE2A-4295-8BDF-00C3A9A7E4C5}" Result="exists" />
 
@@ -74,12 +74,12 @@
                 Vital="no">
             </ExePackage>
             <ExePackage
-                DisplayName="Downloading and installing .NET 6 Desktop Runtime"
-                Name="windowsdesktop-runtime-6.0.11-win-$(var.PowerToysPlatform).exe"
+                DisplayName="Downloading and installing .NET 7 Desktop Runtime"
+                Name="windowsdesktop-runtime-7.0.0-win-$(var.PowerToysPlatform).exe"
                 Compressed="no"
-                Id="DotnetRuntime6"
-                DetectCondition="HasDotnet6011"
-                DownloadUrl="$(var.Dotnet6DownloadUrl)"
+                Id="DotnetRuntime7"
+                DetectCondition="HasDotnet700"
+                DownloadUrl="$(var.Dotnet7DownloadUrl)"
                 InstallCommand="/install /quiet /norestart"
                 RepairCommand="/repair /passive /norestart"
                 Permanent="yes"
@@ -87,11 +87,11 @@
                 UninstallCommand="/uninstall /quiet /norestart">
                 <ExitCode Value="1638" Behavior="success"/>
                 <RemotePayload
-                    Description="Microsoft Windows Desktop Runtime - 6.0.11 ($(var.PowerToysPlatform))"
-                    ProductName="Microsoft Windows Desktop Runtime - 6.0.11 ($(var.PowerToysPlatform))"
-                    Size="$(var.Dotnet6PayloadSize)"
-                    Version="6.0.11.31823"
-                    Hash="$(var.Dotnet6PayloadHash)" />
+                    Description="Microsoft Windows Desktop Runtime - 7.0.0 ($(var.PowerToysPlatform))"
+                    ProductName="Microsoft Windows Desktop Runtime - 7.0.0 ($(var.PowerToysPlatform))"
+                    Size="$(var.Dotnet7PayloadSize)"
+                    Version="7.0.0.31819"
+                    Hash="$(var.Dotnet7PayloadHash)" />
             </ExePackage>
             <ExePackage
                 DisplayName="Installing Microsoft Edge WebView2"
