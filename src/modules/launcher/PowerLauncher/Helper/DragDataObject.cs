@@ -72,7 +72,7 @@ namespace PowerLauncher.Helper
         private interface IDragSourceHelper
         {
             [PreserveSig]
-            int InitializeFromBitmap(ref ShDragImage pshdi, IDataObject pDataObject);
+            int InitializeFromBitmap(ref ShDragImage pShDrawImage, IDataObject pDataObject);
 
             // more methods available, but we don't need them
         }
