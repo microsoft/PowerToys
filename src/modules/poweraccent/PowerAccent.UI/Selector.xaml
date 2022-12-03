@@ -5,6 +5,7 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:local="clr-namespace:PowerAccent.UI"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:ui="http://schemas.modernwpf.com/2019"
     Title="MainWindow"
     Height="120"
     MinWidth="600"
@@ -42,7 +43,7 @@
         <Border
             HorizontalAlignment="Center"
             VerticalAlignment="Center"
-            Background="#F9F9F9"
+            Background="{DynamicResource PrimaryBackgroundBrush}"
             BorderBrush="#B6B6B6"
             BorderThickness="1"
             CornerRadius="8">
@@ -59,14 +60,13 @@
                 </Grid.RowDefinitions>
                 <ListBox
                     x:Name="characters"
+                    HorizontalAlignment="Center"
                     HorizontalContentAlignment="Stretch"
                     VerticalContentAlignment="Stretch"
                     Background="Transparent"
-                    IsHitTestVisible="False"
-                    HorizontalAlignment="Center">
+                    IsHitTestVisible="False">
                     <ListBox.ItemContainerStyle>
-                        <Style
-                            TargetType="ListBoxItem">
+                        <Style TargetType="ListBoxItem">
                             <Setter Property="ContentTemplate" Value="{StaticResource DefaultKeyTemplate}" />
                             <Setter Property="Template">
                                 <Setter.Value>
@@ -104,16 +104,12 @@
                     </ListBox.ItemContainerStyle>
                     <ListBox.ItemsPanel>
                         <ItemsPanelTemplate>
-                            <VirtualizingStackPanel
-                                IsItemsHost="False"
-                                Orientation="Horizontal" />
+                            <VirtualizingStackPanel IsItemsHost="False" Orientation="Horizontal" />
                         </ItemsPanelTemplate>
                     </ListBox.ItemsPanel>
 
                 </ListBox>
-                <Grid
-                    Grid.Row="1"
-                    Visibility="{Binding CharacterNameVisibility, UpdateSourceTrigger=PropertyChanged}">
+                <Grid Grid.Row="1" Visibility="{Binding CharacterNameVisibility, UpdateSourceTrigger=PropertyChanged}">
 
                     <Border
                         HorizontalAlignment="Stretch"
