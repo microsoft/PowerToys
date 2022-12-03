@@ -4,9 +4,8 @@
 
 using System;
 using System.Drawing;
-using ColorPicker.Properties;
 
-namespace ColorPicker.Helpers
+namespace ManagedCommon
 {
     public static class ColorNameHelper
     {
@@ -86,88 +85,88 @@ namespace ColorPicker.Helpers
         // of that color, which are defined as follows:
         private static string[] colorNamesLight =
         {
-            Resources.TEXT_COLOR_CORAL,
-            Resources.TEXT_COLOR_ROSE,
-            Resources.TEXT_COLOR_LIGHTORANGE,
-            Resources.TEXT_COLOR_TAN,
-            Resources.TEXT_COLOR_TAN,
-            Resources.TEXT_COLOR_LIGHTYELLOW,
-            Resources.TEXT_COLOR_LIGHTYELLOW,
-            Resources.TEXT_COLOR_TAN,
-            Resources.TEXT_COLOR_LIGHTGREEN,
-            Resources.TEXT_COLOR_LIME,
-            Resources.TEXT_COLOR_LIGHTGREEN,
-            Resources.TEXT_COLOR_LIGHTGREEN,
-            Resources.TEXT_COLOR_AQUA,
-            Resources.TEXT_COLOR_SKYBLUE,
-            Resources.TEXT_COLOR_LIGHTTURQUOISE,
-            Resources.TEXT_COLOR_PALEBLUE,
-            Resources.TEXT_COLOR_LIGHTBLUE,
-            Resources.TEXT_COLOR_ICEBLUE,
-            Resources.TEXT_COLOR_PERIWINKLE,
-            Resources.TEXT_COLOR_LAVENDER,
-            Resources.TEXT_COLOR_PINK,
-            Resources.TEXT_COLOR_TAN,
-            Resources.TEXT_COLOR_ROSE,
+            CommonResources.TEXT_COLOR_CORAL,
+            CommonResources.TEXT_COLOR_ROSE,
+            CommonResources.TEXT_COLOR_LIGHTORANGE,
+            CommonResources.TEXT_COLOR_TAN,
+            CommonResources.TEXT_COLOR_TAN,
+            CommonResources.TEXT_COLOR_LIGHTYELLOW,
+            CommonResources.TEXT_COLOR_LIGHTYELLOW,
+            CommonResources.TEXT_COLOR_TAN,
+            CommonResources.TEXT_COLOR_LIGHTGREEN,
+            CommonResources.TEXT_COLOR_LIME,
+            CommonResources.TEXT_COLOR_LIGHTGREEN,
+            CommonResources.TEXT_COLOR_LIGHTGREEN,
+            CommonResources.TEXT_COLOR_AQUA,
+            CommonResources.TEXT_COLOR_SKYBLUE,
+            CommonResources.TEXT_COLOR_LIGHTTURQUOISE,
+            CommonResources.TEXT_COLOR_PALEBLUE,
+            CommonResources.TEXT_COLOR_LIGHTBLUE,
+            CommonResources.TEXT_COLOR_ICEBLUE,
+            CommonResources.TEXT_COLOR_PERIWINKLE,
+            CommonResources.TEXT_COLOR_LAVENDER,
+            CommonResources.TEXT_COLOR_PINK,
+            CommonResources.TEXT_COLOR_TAN,
+            CommonResources.TEXT_COLOR_ROSE,
         };
 
         private static string[] colorNamesMid =
         {
-            Resources.TEXT_COLOR_CORAL,
-            Resources.TEXT_COLOR_RED,
-            Resources.TEXT_COLOR_ORANGE,
-            Resources.TEXT_COLOR_BROWN,
-            Resources.TEXT_COLOR_TAN,
-            Resources.TEXT_COLOR_GOLD,
-            Resources.TEXT_COLOR_YELLOW,
-            Resources.TEXT_COLOR_OLIVEGREEN,
-            Resources.TEXT_COLOR_OLIVEGREEN,
-            Resources.TEXT_COLOR_GREEN,
-            Resources.TEXT_COLOR_GREEN,
-            Resources.TEXT_COLOR_BRIGHTGREEN,
-            Resources.TEXT_COLOR_TEAL,
-            Resources.TEXT_COLOR_AQUA,
-            Resources.TEXT_COLOR_TURQUOISE,
-            Resources.TEXT_COLOR_PALEBLUE,
-            Resources.TEXT_COLOR_BLUE,
-            Resources.TEXT_COLOR_BLUEGRAY,
-            Resources.TEXT_COLOR_INDIGO,
-            Resources.TEXT_COLOR_PURPLE,
-            Resources.TEXT_COLOR_PINK,
-            Resources.TEXT_COLOR_BROWN,
-            Resources.TEXT_COLOR_RED,
+            CommonResources.TEXT_COLOR_CORAL,
+            CommonResources.TEXT_COLOR_RED,
+            CommonResources.TEXT_COLOR_ORANGE,
+            CommonResources.TEXT_COLOR_BROWN,
+            CommonResources.TEXT_COLOR_TAN,
+            CommonResources.TEXT_COLOR_GOLD,
+            CommonResources.TEXT_COLOR_YELLOW,
+            CommonResources.TEXT_COLOR_OLIVEGREEN,
+            CommonResources.TEXT_COLOR_OLIVEGREEN,
+            CommonResources.TEXT_COLOR_GREEN,
+            CommonResources.TEXT_COLOR_GREEN,
+            CommonResources.TEXT_COLOR_BRIGHTGREEN,
+            CommonResources.TEXT_COLOR_TEAL,
+            CommonResources.TEXT_COLOR_AQUA,
+            CommonResources.TEXT_COLOR_TURQUOISE,
+            CommonResources.TEXT_COLOR_PALEBLUE,
+            CommonResources.TEXT_COLOR_BLUE,
+            CommonResources.TEXT_COLOR_BLUEGRAY,
+            CommonResources.TEXT_COLOR_INDIGO,
+            CommonResources.TEXT_COLOR_PURPLE,
+            CommonResources.TEXT_COLOR_PINK,
+            CommonResources.TEXT_COLOR_BROWN,
+            CommonResources.TEXT_COLOR_RED,
         };
 
         private static string[] colorNamesDark =
         {
-            Resources.TEXT_COLOR_BROWN,
-            Resources.TEXT_COLOR_DARKRED,
-            Resources.TEXT_COLOR_BROWN,
-            Resources.TEXT_COLOR_BROWN,
-            Resources.TEXT_COLOR_BROWN,
-            Resources.TEXT_COLOR_DARKYELLOW,
-            Resources.TEXT_COLOR_DARKYELLOW,
-            Resources.TEXT_COLOR_BROWN,
-            Resources.TEXT_COLOR_DARKGREEN,
-            Resources.TEXT_COLOR_DARKGREEN,
-            Resources.TEXT_COLOR_DARKGREEN,
-            Resources.TEXT_COLOR_DARKGREEN,
-            Resources.TEXT_COLOR_DARKTEAL,
-            Resources.TEXT_COLOR_DARKTEAL,
-            Resources.TEXT_COLOR_DARKTEAL,
-            Resources.TEXT_COLOR_DARKBLUE,
-            Resources.TEXT_COLOR_DARKBLUE,
-            Resources.TEXT_COLOR_BLUEGRAY,
-            Resources.TEXT_COLOR_INDIGO,
-            Resources.TEXT_COLOR_DARKPURPLE,
-            Resources.TEXT_COLOR_PLUM,
-            Resources.TEXT_COLOR_BROWN,
-            Resources.TEXT_COLOR_DARKRED,
+            CommonResources.TEXT_COLOR_BROWN,
+            CommonResources.TEXT_COLOR_DARKRED,
+            CommonResources.TEXT_COLOR_BROWN,
+            CommonResources.TEXT_COLOR_BROWN,
+            CommonResources.TEXT_COLOR_BROWN,
+            CommonResources.TEXT_COLOR_DARKYELLOW,
+            CommonResources.TEXT_COLOR_DARKYELLOW,
+            CommonResources.TEXT_COLOR_BROWN,
+            CommonResources.TEXT_COLOR_DARKGREEN,
+            CommonResources.TEXT_COLOR_DARKGREEN,
+            CommonResources.TEXT_COLOR_DARKGREEN,
+            CommonResources.TEXT_COLOR_DARKGREEN,
+            CommonResources.TEXT_COLOR_DARKTEAL,
+            CommonResources.TEXT_COLOR_DARKTEAL,
+            CommonResources.TEXT_COLOR_DARKTEAL,
+            CommonResources.TEXT_COLOR_DARKBLUE,
+            CommonResources.TEXT_COLOR_DARKBLUE,
+            CommonResources.TEXT_COLOR_BLUEGRAY,
+            CommonResources.TEXT_COLOR_INDIGO,
+            CommonResources.TEXT_COLOR_DARKPURPLE,
+            CommonResources.TEXT_COLOR_PLUM,
+            CommonResources.TEXT_COLOR_BROWN,
+            CommonResources.TEXT_COLOR_DARKRED,
         };
 
         public static string GetColorName(Color color)
         {
-            var (hue, sat, lum) = ColorHelper.ConvertToHSLColor(color);
+            var (hue, sat, lum) = ColorFormatHelper.ConvertToHSLColor(color);
 
             hue = (hue == 0 ? 0 : hue / 360) * 255; // this implementation is using normalization to 0-255 instead of 0-360°
             sat = sat * 255;
@@ -176,26 +175,26 @@ namespace ColorPicker.Helpers
             // First, if we're in the achromatic state, return the appropriate achromatic color name.
             if (lum > 240)
             {
-                return Resources.TEXT_COLOR_WHITE;
+                return CommonResources.TEXT_COLOR_WHITE;
             }
             else if (lum < 20)
             {
-                return Resources.TEXT_COLOR_BLACK;
+                return CommonResources.TEXT_COLOR_BLACK;
             }
 
             if (sat <= 20)
             {
                 if (lum > 170)
                 {
-                    return Resources.TEXT_COLOR_LIGHTGRAY;
+                    return CommonResources.TEXT_COLOR_LIGHTGRAY;
                 }
                 else if (lum > 100)
                 {
-                    return Resources.TEXT_COLOR_GRAY;
+                    return CommonResources.TEXT_COLOR_GRAY;
                 }
                 else
                 {
-                    return Resources.TEXT_COLOR_DARKGRAY;
+                    return CommonResources.TEXT_COLOR_DARKGRAY;
                 }
             }
 

@@ -134,11 +134,7 @@ void WindowMoveHandler::MoveSizeStart(HWND window, HMONITOR monitor, POINT const
     auto workArea = workAreaMap.find(monitor);
     if (workArea != workAreaMap.end())
     {
-        const auto& layoutWindows = workArea->second->GetLayoutWindows();
-        if (layoutWindows)
-        {
-            layoutWindows->Dismiss(window);
-        }
+        workArea->second->UnsnapWindow(window);
     }
 }
 
@@ -289,6 +285,8 @@ void WindowMoveHandler::MoveSizeEnd(HWND window, const std::unordered_map<HMONIT
                         AppZoneHistory::instance().RemoveAppLastZone(window, workAreaPtr->UniqueId(), guidStr.value());
                     }
                 }
+
+                workAreaPtr->UnsnapWindow(window);
             }
         }
 

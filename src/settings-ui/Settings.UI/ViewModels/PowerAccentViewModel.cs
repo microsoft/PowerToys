@@ -28,6 +28,8 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             "CUR",
             "HR",
             "CZ",
+            "GA",
+            "GD",
             "NL",
             "FR",
             "DE",
@@ -42,6 +44,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             "RO",
             "SK",
             "SP",
+            "SR",
             "SV",
             "TK",
             "CY",
@@ -230,6 +233,24 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                     _selectedLangIndex = value;
                     _powerAccentSettings.Properties.SelectedLang.Value = _languageOptions[value];
                     RaisePropertyChanged(nameof(SelectedLangIndex));
+                }
+            }
+        }
+
+        public bool ShowUnicodeDescription
+        {
+            get
+            {
+                return _powerAccentSettings.Properties.ShowUnicodeDescription;
+            }
+
+            set
+            {
+                if (value != _powerAccentSettings.Properties.ShowUnicodeDescription)
+                {
+                    _powerAccentSettings.Properties.ShowUnicodeDescription = value;
+                    OnPropertyChanged(nameof(ShowUnicodeDescription));
+                    RaisePropertyChanged();
                 }
             }
         }

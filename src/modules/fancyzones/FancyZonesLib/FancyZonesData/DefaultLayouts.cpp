@@ -9,23 +9,23 @@
 
 namespace DefaultLayoutsJsonUtils
 {
-    MonitorConfiguraionType TypeFromString(const std::wstring& data)
+    MonitorConfigurationType TypeFromString(const std::wstring& data)
     {
         if (data == L"vertical")
         {
-            return MonitorConfiguraionType::Vertical;
+            return MonitorConfigurationType::Vertical;
         }
 
-        return MonitorConfiguraionType::Horizontal;
+        return MonitorConfigurationType::Horizontal;
     }
 
-    std::wstring TypeToString(MonitorConfiguraionType type)
+    std::wstring TypeToString(MonitorConfigurationType type)
     {
         switch (type)
         {
-        case MonitorConfiguraionType::Horizontal:
+        case MonitorConfigurationType::Horizontal:
             return L"horizontal";
-        case MonitorConfiguraionType::Vertical:
+        case MonitorConfigurationType::Vertical:
             return L"vertical";
         default:
             return L"horizontal";
@@ -80,7 +80,7 @@ namespace DefaultLayoutsJsonUtils
 
     struct DefaultLayoutJSON
     {
-        MonitorConfiguraionType monitorConfigurationType{ MonitorConfiguraionType::Horizontal };
+        MonitorConfigurationType monitorConfigurationType{ MonitorConfigurationType::Horizontal };
         LayoutData layout{};
 
         static std::optional<DefaultLayoutJSON> FromJson(const json::JsonObject& json)
@@ -117,7 +117,7 @@ namespace DefaultLayoutsJsonUtils
         {
             if (auto obj = DefaultLayoutJSON::FromJson(layouts.GetObjectAt(i)); obj.has_value())
             {
-                map[static_cast<MonitorConfiguraionType>(obj->monitorConfigurationType)] = std::move(obj->layout);
+                map[static_cast<MonitorConfigurationType>(obj->monitorConfigurationType)] = std::move(obj->layout);
             }
         }
 
@@ -163,7 +163,7 @@ void DefaultLayouts::LoadData()
     }
 }
 
-LayoutData DefaultLayouts::GetDefaultLayout(MonitorConfiguraionType type) const noexcept
+LayoutData DefaultLayouts::GetDefaultLayout(MonitorConfigurationType type) const noexcept
 {
     auto iter = m_layouts.find(type);
     if (iter != m_layouts.end())

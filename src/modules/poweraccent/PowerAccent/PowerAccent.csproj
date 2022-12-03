@@ -2,7 +2,7 @@
 	<Import Project="..\..\..\Version.props" />
 	<PropertyGroup>
 		<OutputType>WinExe</OutputType>
-		<TargetFramework>net6.0-windows10.0.19041.0</TargetFramework>
+		<TargetFramework>net7.0-windows10.0.19041.0</TargetFramework>
 		<RuntimeIdentifiers>win-x64;win-arm64</RuntimeIdentifiers>
 		<UseWPF>true</UseWPF>
 		<Nullable>disable</Nullable>
@@ -21,5 +21,7 @@
 		<ProjectReference Include="..\..\..\settings-ui\Settings.UI.Library\Settings.UI.Library.csproj" />
 		<ProjectReference Include="..\PowerAccent.UI\PowerAccent.UI.csproj" />
 	</ItemGroup>
+
+
 
 </Project>
