@@ -4,11 +4,13 @@
 
 namespace PeekUI.WASDK
 {
+    using System.Collections.Generic;
+    using System.Linq;
     using interop;
-    using ManagedCommon;
-    using Microsoft.UI;
     using Microsoft.UI.Windowing;
-    using Microsoft.UI.Xaml;
+    using Peek.Common.Models;
+    using Peek.FilePreviewer.Models;
+    using PeekUI.WASDK.Helpers;
     using PeekUI.WASDK.Native;
     using WinUIEx;
 
@@ -20,44 +22,56 @@ namespace PeekUI.WASDK
         public MainWindow()
         {
             InitializeComponent();
+
+            ViewModel = new MainWindowViewModel();
+
             NativeEventWaiter.WaitForEventLoop(Constants.ShowPeekEvent(), OnPeekHotkey);
-            SetTitleBar();
+
+            TitleBarControl.SetToWindow(this);
+
+            AppWindow.Closing += AppWindow_Closing;
         }
+
+        public MainWindowViewModel ViewModel { get; }
 
         private void OnPeekHotkey()
         {
-            if (Visible)
+            if (AppWindow.IsVisible)
             {
                 this.Hide();
+                ViewModel.Files = new List<File>();
+                ViewModel.CurrentFile = null;
             }
             else
             {
-                this.Show();
-                this.CenterOnScreen(1080, 720);
-                this.BringToFront();
+                var fileExplorerSelectedFiles = FileExplorerHelper.GetSelectedFileExplorerFiles();
+                if (fileExplorerSelectedFiles.Count == 0)
+                {
+                    return;
+                }
+
+                ViewModel.Files = fileExplorerSelectedFiles;
+                ViewModel.CurrentFile = fileExplorerSelectedFiles.First();
             }
         }
 
-        private void SetTitleBar()
+        private void FilePreviewer_PreviewSizeChanged(object sender, PreviewSizeChangedArgs e)
         {
-            if (AppWindowTitleBar.IsCustomizationSupported())
-            {
-                AppWindow window = this.GetAppWindow();
-                window.TitleBar.ExtendsContentIntoTitleBar = true;
-                window.TitleBar.ButtonBackgroundColor = Colors.Transparent;
-                SetTitleBar(TitleBarControl);
-            }
-            else
-            {
-                var hWnd = WinRT.Interop.WindowNative.GetWindowHandle(this);
-                ThemeHelpers.SetImmersiveDarkMode(hWnd, ThemeHelpers.GetAppTheme() == AppTheme.Dark);
-                TitleBarControl.Visibility = Visibility.Collapsed;
+            // TODO: Show window, center/resize it if necessary and bring to front.
+            this.Show();
+            this.CenterOnScreen(e.WindowSizeRequested.Width, e.WindowSizeRequested.Height);
+            this.BringToFront();
+        }
 
-                // Set window icon
-                WindowId windowId = Win32Interop.GetWindowIdFromWindow(hWnd);
-                AppWindow appWindow = AppWindow.GetFromWindowId(windowId);
-                appWindow.SetIcon("Assets/Peek.ico");
-            }
+        /// <summary>
+        /// Handle AppWindow closing to prevent app termination on close.
+        /// </summary>
+        /// <param name="sender">AppWindow</param>
+        /// <param name="args">AppWindowClosingEventArgs</param>
+        private void AppWindow_Closing(AppWindow sender, AppWindowClosingEventArgs args)
+        {
+            args.Cancel = true;
+            this.Hide();
         }
     }
 }

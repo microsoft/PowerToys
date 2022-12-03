@@ -50,9 +50,9 @@ namespace PeekUI.WASDK
             window = new MainWindow();
             window.Activate();
 
-            window.Hide();
+            // window.Hide();
         }
 
-        private Window window;
+        private Window? window;
     }
 }
