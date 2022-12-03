@@ -177,6 +177,21 @@ namespace Wox.Infrastructure.UserSettings
             }
         }
 
+        private bool _queryTextUpdate;
+
+        public bool SearchResultChangesQueryText
+        {
+            get => _queryTextUpdate;
+            set
+            {
+                if (_queryTextUpdate != value)
+                {
+                    _queryTextUpdate = value;
+                    OnPropertyChanged(nameof(SearchResultChangesQueryText));
+                }
+            }
+        }
+
         public string Language { get; set; } = "en";
 
         public Theme Theme { get; set; } = Theme.System;

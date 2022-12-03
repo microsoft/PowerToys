@@ -161,6 +161,11 @@ namespace PowerLauncher
                         _settings.StartupPosition = overloadSettings.Properties.Position;
                     }
 
+                    if (_settings.SearchResultChangesQueryText != overloadSettings.Properties.SearchResultChangesQueryText)
+                    {
+                        _settings.SearchResultChangesQueryText = overloadSettings.Properties.SearchResultChangesQueryText;
+                    }
+
                     retry = false;
                 }
 

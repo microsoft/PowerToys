@@ -7,6 +7,7 @@ using System.Collections.ObjectModel;
 using System.Globalization;
 using System.Windows.Input;
 using System.Windows.Media;
+using Microsoft.PowerToys.Settings.UI.Library;
 using PowerLauncher.Helper;
 using PowerLauncher.Plugin;
 using Wox.Infrastructure.Image;
@@ -280,7 +281,8 @@ namespace PowerLauncher.ViewModel
 
         public string SearchBoxDisplayText()
         {
-            return Result.QueryTextDisplay;
+            return (new SettingsUtils().GetSettingsOrDefault<PowerLauncherSettings>(PowerLauncherSettings.ModuleName).Properties.SearchResultChangesQueryText || Result.OriginQuery.ActionKeyword != string.Empty) ?
+                Result.QueryTextDisplay : Result.OriginQuery.Search;
         }
 
         public override string ToString()
