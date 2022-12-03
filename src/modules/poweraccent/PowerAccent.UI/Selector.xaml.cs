@@ -63,13 +63,16 @@ public partial class Selector : Window, IDisposable, INotifyPropertyChanged
     {
         CharacterNameVisibility = _powerAccent.ShowUnicodeDescription ? Visibility.Visible : Visibility.Collapsed;
 
-        this.Visibility = isActive ? Visibility.Visible : Visibility.Collapsed;
-
         if (isActive)
         {
             characters.ItemsSource = chars;
-            CenterWindow();
+            SetWindowPosition();
+            Show();
             Microsoft.PowerToys.Telemetry.PowerToysTelemetry.Log.WriteEvent(new PowerAccent.Core.Telemetry.PowerAccentShowAccentMenuEvent());
+        }
+        else
+        {
+            Hide();
         }
     }
 
@@ -78,11 +81,10 @@ public partial class Selector : Window, IDisposable, INotifyPropertyChanged
         Application.Current.Shutdown();
     }
 
-    private void CenterWindow()
+    private void SetWindowPosition()
     {
-        UpdateLayout();
-        Size window = new (((System.Windows.Controls.Panel)Application.Current.MainWindow.Content).ActualWidth, ((System.Windows.Controls.Panel)Application.Current.MainWindow.Content).ActualHeight);
-        Point position = _powerAccent.GetDisplayCoordinates(window);
+        Size windowSize = new (((System.Windows.Controls.Panel)Application.Current.MainWindow.Content).ActualWidth, ((System.Windows.Controls.Panel)Application.Current.MainWindow.Content).ActualHeight);
+        Point position = _powerAccent.GetDisplayCoordinates(windowSize);
         this.Left = position.X;
         this.Top = position.Y;
     }
