@@ -45,7 +45,7 @@
             HorizontalAlignment="Center"
             VerticalAlignment="Center"
             Background="{DynamicResource SecondaryBackgroundBrush}"
-            BorderBrush="{DynamicResource WindowsBorderBrush}" 
+            BorderBrush="{DynamicResource WindowsBorderBrush}"
             BorderThickness="1"
             CornerRadius="8">
             <Border.Effect>
@@ -59,7 +59,7 @@
                     <RowDefinition Height="Auto" />
                     <RowDefinition Height="Auto" />
                 </Grid.RowDefinitions>
-                <Border CornerRadius="8" Background="{DynamicResource PrimaryBackgroundBrush}">
+                <Border Background="{DynamicResource PrimaryBackgroundBrush}" CornerRadius="8">
                     <ListBox
                         x:Name="characters"
                         HorizontalAlignment="Center"
@@ -86,7 +86,7 @@
                                                     Margin="7"
                                                     HorizontalAlignment="Stretch"
                                                     VerticalAlignment="Stretch"
-                                                    Fill="#005FB8"
+                                                    Fill="{DynamicResource SystemControlBackgroundAccentBrush}"
                                                     RadiusX="4"
                                                     RadiusY="4"
                                                     Visibility="Collapsed" />
@@ -111,8 +111,8 @@
                         </ListBox.ItemsPanel>
                     </ListBox>
                 </Border>
-                <!--  Visibility="{Binding CharacterNameVisibility, UpdateSourceTrigger=PropertyChanged}"  -->
-                <Grid Grid.Row="1">
+
+                <Grid Grid.Row="1" Visibility="{Binding CharacterNameVisibility, UpdateSourceTrigger=PropertyChanged}">
                     <TextBlock
                         x:Name="characterName"
                         Margin="8"

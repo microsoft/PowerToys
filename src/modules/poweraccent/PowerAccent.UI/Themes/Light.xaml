@@ -12,9 +12,24 @@
     <Color x:Key="Theme.PrimaryAccentColor">White</Color>
 
     <SolidColorBrush x:Key="SecondaryBackgroundBrush" Color="#FFEEEEEE" />
-    <SolidColorBrush x:Key="PrimaryBackgroundBrush" Color="#FFFFFFFF" Opacity="0.25" />
-    <SolidColorBrush x:Key="WindowBorderBrush" Color="#FF757575" Opacity="0.4" />
-    <SolidColorBrush x:Key="DividerBorderBrush" Color="#FF000000" Opacity="0.0578" />
-    <SolidColorBrush x:Key="PrimaryForegroundBrush" Color="#FF000000" Opacity="0.8956" />
-    <SolidColorBrush x:Key="SecondaryForegroundBrush" Color="#FF000000" Opacity="0.6189" />
+    <SolidColorBrush
+        x:Key="PrimaryBackgroundBrush"
+        Opacity="0.25"
+        Color="#FFFFFFFF" />
+    <SolidColorBrush
+        x:Key="WindowBorderBrush"
+        Opacity="0.4"
+        Color="#FF757575" />
+    <SolidColorBrush
+        x:Key="DividerBorderBrush"
+        Opacity="0.0578"
+        Color="#FF000000" />
+    <SolidColorBrush
+        x:Key="PrimaryForegroundBrush"
+        Opacity="0.8956"
+        Color="#FF000000" />
+    <SolidColorBrush
+        x:Key="SecondaryForegroundBrush"
+        Opacity="0.6189"
+        Color="#FF000000" />
 </ResourceDictionary>
