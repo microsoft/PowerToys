@@ -147,7 +147,9 @@ internal class ImageMethods
                 }
                 else
                 {
-                    var cjkRegex = new Regex(@"\p{IsCJKUnifiedIdeographs}");
+                    // Kanji ,Hiragana, Katakana, Hankaku-Katakana do not need blank.(not only the symble in CJKUnifiedIdeographs).
+                    // Maybe there are more symbols that don't require spaces like \u3001 \u3002.
+                    var cjkRegex = new Regex(@"\p{IsCJKUnifiedIdeographs}|\p{IsHiragana}|\p{IsKatakana}|[\uFF61-\uFF9F]");
 
                     foreach (OcrLine ocrLine in ocrResult.Lines)
                     {
