@@ -38,7 +38,7 @@
 
 
     </Window.Resources>
-    <Grid Margin="24,24,24,24">
+    <Grid>
         <Border
             HorizontalAlignment="Center"
             VerticalAlignment="Center"
