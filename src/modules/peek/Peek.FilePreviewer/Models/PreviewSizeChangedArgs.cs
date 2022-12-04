@@ -4,7 +4,7 @@
 
 namespace Peek.FilePreviewer.Models
 {
-    using System.Drawing;
+    using Windows.Foundation;
 
     public class PreviewSizeChangedArgs
     {

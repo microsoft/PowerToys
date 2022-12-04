@@ -4,7 +4,7 @@
 
 namespace PeekUI.WASDK.Extensions
 {
-    using System.Drawing;
+    using Windows.Foundation;
 
     public static class SizeExtensions
     {
@@ -13,8 +13,8 @@ namespace PeekUI.WASDK.Extensions
             double fittedWidth = sizeToFit.Width;
             double fittedHeight = sizeToFit.Height;
 
-            double ratioWidth = (double)sizeToFit.Width / maxSize.Width;
-            double ratioHeight = (double)sizeToFit.Height / maxSize.Height;
+            double ratioWidth = sizeToFit.Width / maxSize.Width;
+            double ratioHeight = sizeToFit.Height / maxSize.Height;
 
             if (ratioWidth > ratioHeight)
             {
@@ -43,7 +43,7 @@ namespace PeekUI.WASDK.Extensions
                 fittedHeight = minSize.Height;
             }
 
-            return new Size((int)fittedWidth, (int)fittedHeight);
+            return new Size(fittedWidth, fittedHeight);
         }
     }
 }

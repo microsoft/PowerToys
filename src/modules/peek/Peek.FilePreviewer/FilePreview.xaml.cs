@@ -5,7 +5,6 @@
 namespace Peek.FilePreviewer
 {
     using System;
-    using System.Drawing;
     using System.Threading.Tasks;
     using CommunityToolkit.Mvvm.ComponentModel;
     using Microsoft.UI.Xaml;
@@ -13,6 +12,7 @@ namespace Peek.FilePreviewer
     using Peek.Common.Models;
     using Peek.FilePreviewer.Models;
     using Peek.FilePreviewer.Previewers;
+    using Windows.Foundation;
 
     [INotifyPropertyChanged]
     public sealed partial class FilePreview : UserControl

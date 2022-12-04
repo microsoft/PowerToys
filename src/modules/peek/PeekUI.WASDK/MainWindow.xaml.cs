@@ -5,7 +5,6 @@
 namespace PeekUI.WASDK
 {
     using System.Collections.Generic;
-    using System.Drawing;
     using System.Linq;
     using interop;
     using Microsoft.UI.Windowing;
@@ -15,6 +14,7 @@ namespace PeekUI.WASDK
     using PeekUI.WASDK.Extensions;
     using PeekUI.WASDK.Helpers;
     using PeekUI.WASDK.Native;
+    using Windows.Foundation;
     using WinUIEx;
 
     /// <summary>
@@ -63,12 +63,13 @@ namespace PeekUI.WASDK
             // TODO: Show window, center/resize it if necessary and bring to front.
             var requestedSize = e.WindowSizeRequested;
             var monitorSize = this.GetMonitorSize();
-            var maxWindowSize = new Size((int)(monitorSize.Width * 0.8), (int)(monitorSize.Height * 0.8));
-            var minWindowSize = new Size(500, 500);
-            var adjustedWindowSize = requestedSize.Fit(maxWindowSize, minWindowSize);
+            var titleBarHeight = TitleBarControl.ActualHeight;
+            var maxContentSize = new Size(monitorSize.Width * 0.8, (monitorSize.Height - titleBarHeight) * 0.8);
+            var minContentSize = new Size(500, 500 - titleBarHeight);
+            var adjustedContentSize = requestedSize.Fit(maxContentSize, minContentSize);
 
             this.Show();
-            this.CenterOnScreen(adjustedWindowSize.Width, adjustedWindowSize.Height + 32);
+            this.CenterOnScreen(adjustedContentSize.Width, adjustedContentSize.Height + titleBarHeight);
             this.BringToFront();
         }
 

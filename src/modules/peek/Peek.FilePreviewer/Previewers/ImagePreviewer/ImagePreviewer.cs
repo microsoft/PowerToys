@@ -5,7 +5,6 @@
 namespace Peek.FilePreviewer.Previewers
 {
     using System;
-    using System.Drawing;
     using System.IO;
     using System.Runtime.InteropServices;
     using System.Threading;
@@ -39,7 +38,7 @@ namespace Peek.FilePreviewer.Previewers
 
         private CancellationToken CancellationToken => _cancellationTokenSource.Token;
 
-        public Task<System.Drawing.Size> GetPreviewSizeAsync()
+        public Task<Windows.Foundation.Size> GetPreviewSizeAsync()
         {
             IWICImagingFactory factory = (IWICImagingFactory)new WICImagingFactoryClass();
             var decoder = factory.CreateDecoderFromFilename(File.Path, IntPtr.Zero, StreamAccessMode.GENERIC_READ, WICDecodeOptions.WICDecodeMetadataCacheOnLoad);
@@ -48,7 +47,7 @@ namespace Peek.FilePreviewer.Previewers
             int height = 0;
             frame?.GetSize(out width, out height);
 
-            return Task.FromResult(new System.Drawing.Size(width, height));
+            return Task.FromResult(new Windows.Foundation.Size(width, height));
         }
 
         public Task LoadPreviewAsync()
@@ -117,7 +116,7 @@ namespace Peek.FilePreviewer.Previewers
 
             try
             {
-                var bitmap = Image.FromHbitmap(hbitmap);
+                var bitmap = System.Drawing.Image.FromHbitmap(hbitmap);
                 var bitmapImage = new BitmapImage();
                 using (var stream = new MemoryStream())
                 {
