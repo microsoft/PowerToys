@@ -20,7 +20,7 @@ namespace PowerAccent.Core.Tools
 
         public static Point GetRawCoordinatesFromPosition(Position position, Rect screen, Size window)
         {
-            int offset = 10;
+            int offset = 20;
 
             double pointX = position switch
             {
