@@ -66,6 +66,7 @@ public partial class Selector : Window, IDisposable, INotifyPropertyChanged
         if (isActive)
         {
             characters.ItemsSource = chars;
+            this.UpdateLayout(); // Required for filling the actual width/height before positioning.
             SetWindowPosition();
             Show();
             Microsoft.PowerToys.Telemetry.PowerToysTelemetry.Log.WriteEvent(new PowerAccent.Core.Telemetry.PowerAccentShowAccentMenuEvent());
