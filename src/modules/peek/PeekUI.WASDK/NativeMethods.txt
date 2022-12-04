@@ -1,2 +1,2 @@
-﻿GetTickCount
-IWICBitmapDecoder
+﻿MonitorFromWindow
+GetMonitorInfo

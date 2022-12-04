@@ -478,9 +478,11 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Peek", "src\modules\peek\pe
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PeekUI.WASDK", "src\modules\peek\PeekUI.WASDK\PeekUI.WASDK.csproj", "{9D7A6DE0-7D27-424D-ABAE-41B2161F9A03}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Peek.Common", "src\modules\peek\Peek.Common\Peek.Common.csproj", "{17A99C7C-0BFF-45BB-A9FD-63A0DDC105BB}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Peek.Common", "src\modules\peek\Peek.Common\Peek.Common.csproj", "{17A99C7C-0BFF-45BB-A9FD-63A0DDC105BB}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Peek.FilePreviewer", "src\modules\peek\Peek.FilePreviewer\Peek.FilePreviewer.csproj", "{AA9F0AF8-7924-4D59-BAA1-E36F1304E0DC}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Peek.FilePreviewer", "src\modules\peek\Peek.FilePreviewer\Peek.FilePreviewer.csproj", "{AA9F0AF8-7924-4D59-BAA1-E36F1304E0DC}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "WIC", "src\modules\peek\WIC\WIC.csproj", "{21B69DE5-59FD-4C5D-A142-EF1C1C430EAF}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -1993,6 +1995,18 @@ Global
 		{AA9F0AF8-7924-4D59-BAA1-E36F1304E0DC}.Release|x64.Build.0 = Release|x64
 		{AA9F0AF8-7924-4D59-BAA1-E36F1304E0DC}.Release|x86.ActiveCfg = Release|x64
 		{AA9F0AF8-7924-4D59-BAA1-E36F1304E0DC}.Release|x86.Build.0 = Release|x64
+		{21B69DE5-59FD-4C5D-A142-EF1C1C430EAF}.Debug|ARM64.ActiveCfg = Debug|ARM64
+		{21B69DE5-59FD-4C5D-A142-EF1C1C430EAF}.Debug|ARM64.Build.0 = Debug|ARM64
+		{21B69DE5-59FD-4C5D-A142-EF1C1C430EAF}.Debug|x64.ActiveCfg = Debug|x64
+		{21B69DE5-59FD-4C5D-A142-EF1C1C430EAF}.Debug|x64.Build.0 = Debug|x64
+		{21B69DE5-59FD-4C5D-A142-EF1C1C430EAF}.Debug|x86.ActiveCfg = Debug|x64
+		{21B69DE5-59FD-4C5D-A142-EF1C1C430EAF}.Debug|x86.Build.0 = Debug|x64
+		{21B69DE5-59FD-4C5D-A142-EF1C1C430EAF}.Release|ARM64.ActiveCfg = Release|ARM64
+		{21B69DE5-59FD-4C5D-A142-EF1C1C430EAF}.Release|ARM64.Build.0 = Release|ARM64
+		{21B69DE5-59FD-4C5D-A142-EF1C1C430EAF}.Release|x64.ActiveCfg = Release|x64
+		{21B69DE5-59FD-4C5D-A142-EF1C1C430EAF}.Release|x64.Build.0 = Release|x64
+		{21B69DE5-59FD-4C5D-A142-EF1C1C430EAF}.Release|x86.ActiveCfg = Release|x64
+		{21B69DE5-59FD-4C5D-A142-EF1C1C430EAF}.Release|x86.Build.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -2161,6 +2175,7 @@ Global
 		{9D7A6DE0-7D27-424D-ABAE-41B2161F9A03} = {17B4FA70-001E-4D33-BBBB-0D142DBC2E20}
 		{17A99C7C-0BFF-45BB-A9FD-63A0DDC105BB} = {17B4FA70-001E-4D33-BBBB-0D142DBC2E20}
 		{AA9F0AF8-7924-4D59-BAA1-E36F1304E0DC} = {17B4FA70-001E-4D33-BBBB-0D142DBC2E20}
+		{21B69DE5-59FD-4C5D-A142-EF1C1C430EAF} = {17B4FA70-001E-4D33-BBBB-0D142DBC2E20}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {C3A2F9D1-7930-4EF4-A6FC-7EE0A99821D0}
