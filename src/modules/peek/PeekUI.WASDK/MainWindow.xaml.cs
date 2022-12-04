@@ -68,8 +68,8 @@ namespace PeekUI.WASDK
             var minContentSize = new Size(500, 500 - titleBarHeight);
             var adjustedContentSize = requestedSize.Fit(maxContentSize, minContentSize);
 
-            this.Show();
             this.CenterOnScreen(adjustedContentSize.Width, adjustedContentSize.Height + titleBarHeight);
+            this.Show();
             this.BringToFront();
         }
 
