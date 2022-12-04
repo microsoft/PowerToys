@@ -60,7 +60,6 @@ namespace PeekUI.WASDK
 
         private void FilePreviewer_PreviewSizeChanged(object sender, PreviewSizeChangedArgs e)
         {
-            // TODO: Show window, center/resize it if necessary and bring to front.
             var requestedSize = e.WindowSizeRequested;
             var monitorSize = this.GetMonitorSize();
             var titleBarHeight = TitleBarControl.ActualHeight;
@@ -68,6 +67,8 @@ namespace PeekUI.WASDK
             var minContentSize = new Size(500, 500 - titleBarHeight);
             var adjustedContentSize = requestedSize.Fit(maxContentSize, minContentSize);
 
+            // TODO: Only re-center if window has not been resized by user.
+            // TODO: Investigate why portrait images do not perfectly fit edge-to-edge
             this.CenterOnScreen(adjustedContentSize.Width, adjustedContentSize.Height + titleBarHeight);
             this.Show();
             this.BringToFront();
