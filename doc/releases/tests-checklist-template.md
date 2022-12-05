@@ -17,7 +17,7 @@
  - [ ] https://github.com/microsoft/PowerToys/issues/1524
 
 ## Localization
- Change the Winodws language to a language different than English. Then verify if the following screens change their language:
+ Change the Windows language to a language different than English. Then verify if the following screens change their language:
  - [ ] System tray menu items
  - [ ] Settings
  - [ ] OOBE (What's new)

@@ -21,6 +21,9 @@ All:
 - Screen Ruler
 - Quick Accent
 - Text Extractor
+- Hosts File Editor
+- File Locksmith
+- GPO
 ```
 
 ```
@@ -31,47 +34,52 @@ Group 1:
 - General
 - Keyboard Manager
 - Screen Ruler
-- Quick Accent
+- File Locksmith
+- GPO
 ```
 ```
 Group 2:
-- Color Picker
 - PowerRename
+- PowerToys Run
 - Shortcut Guide
 - OOBE
 - Mouse Utils
 - VCM
 - AlwaysOnTop
+- Hosts File Editor
 ```
 ```
 Group 3:
 - Image Resizer
-- Keyboard Manager
+- PowerRename
 - PowerToys Run
 - OOBE
 - Mouse Utils
 - Awake
-- Screen Ruler
+- Text Extractor
+- GPO
 ```
 ```
 Group 4:
+- Functional
+- Color Picker
+- Image Resizer
+- Keyboard Manager
+- Shortcut Guide
+- AlwaysOnTop
+- Screen Ruler
+- Quick Accent
+```
+```
+Group 5:
 - Install
+- Localization
 - General
 - FZ Editor
 - FZ
 - File Explorer Add-ons
 - Awake
-- Text Extractor
-```
-```
-Group 5:
-- Functional
-- Localization
-- Image Resizer
-- PowerRename
-- PowerToys Run
-- AlwaysOnTop
-- Quick Accent
+- File Locksmith
 ```
 ```
 Group 6:
@@ -79,7 +87,8 @@ Group 6:
 - FZ Editor
 - FZ
 - File Explorer Add-ons
-- Shortcut Guide
 - VCM
+- Quick Accent
 - Text Extractor
+- Hosts File Editor
 ```
