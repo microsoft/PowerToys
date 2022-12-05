@@ -10,7 +10,7 @@ namespace Peek.UI.Helpers
 {
     public static class FileExplorerHelper
     {
-        public static List<File> GetSelectedFileExplorerFiles()
+        public static Shell32.IShellFolderViewDual2? GetCurrentFolderView()
         {
             var foregroundWindowHandle = NativeMethods.GetForegroundWindow();
 
@@ -20,18 +20,11 @@ namespace Peek.UI.Helpers
             {
                 if (window.HWND == (int)foregroundWindowHandle)
                 {
-                    Shell32.FolderItems items = ((Shell32.IShellFolderViewDual2)window.Document).SelectedItems();
-                    if (items != null && items.Count > 0)
-                    {
-                        foreach (Shell32.FolderItem item in items)
-                        {
-                            selectedItems.Add(new File(item.Path));
-                        }
-                    }
+                    return (Shell32.IShellFolderViewDual2)window.Document;
                 }
             }
 
-            return selectedItems;
+            return null;
         }
     }
 }

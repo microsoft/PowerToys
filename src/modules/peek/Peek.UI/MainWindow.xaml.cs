@@ -4,14 +4,10 @@
 
 namespace Peek.UI
 {
-    using System.Collections.Generic;
-    using System.Linq;
     using interop;
     using Microsoft.UI.Windowing;
-    using Peek.Common.Models;
     using Peek.FilePreviewer.Models;
     using Peek.UI.Extensions;
-    using Peek.UI.Helpers;
     using Peek.UI.Native;
     using Windows.Foundation;
     using WinUIEx;
@@ -44,19 +40,11 @@ namespace Peek.UI
             if (AppWindow.IsVisible)
             {
                 this.Hide();
-                ViewModel.Files = new List<File>();
-                ViewModel.CurrentFile = null;
+                ViewModel.ClearFileData();
             }
             else
             {
-                var fileExplorerSelectedFiles = FileExplorerHelper.GetSelectedFileExplorerFiles();
-                if (fileExplorerSelectedFiles.Count == 0)
-                {
-                    return;
-                }
-
-                ViewModel.Files = fileExplorerSelectedFiles;
-                ViewModel.CurrentFile = fileExplorerSelectedFiles.First();
+                ViewModel.InitializeFileData();
             }
         }
 
@@ -93,6 +81,7 @@ namespace Peek.UI
         {
             args.Cancel = true;
             this.Hide();
+            ViewModel.ClearFileData();
         }
     }
 }
