@@ -14,14 +14,14 @@ namespace Peek.FilePreviewer.Previewers
         {
             return Task.Run(() =>
             {
-                // TODO: Find a way to get file metadata without hydrating files.
+                // TODO: Find a way to get file metadata without hydrating files. Look into Shell API/Windows Property System, e.g., IPropertyStore
                 IWICImagingFactory factory = (IWICImagingFactory)new WICImagingFactoryClass();
                 var decoder = factory.CreateDecoderFromFilename(filePath, IntPtr.Zero, StreamAccessMode.GENERIC_READ, WICDecodeOptions.WICDecodeMetadataCacheOnLoad);
                 var frame = decoder?.GetFrame(0);
                 int width = 0;
                 int height = 0;
 
-                // TODO: Respect EXIF data and find correct orientation if JPG
+                // TODO: Respect EXIF data and find correct orientation
                 frame?.GetSize(out width, out height);
 
                 return new Windows.Foundation.Size(width, height);

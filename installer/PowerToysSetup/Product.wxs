@@ -1043,7 +1043,7 @@
         <DirectoryRef Id="PeekInstallFolder" FileSource="$(var.BinX64Dir)modules\$(var.PeekProjectName)">
             <!-- !Warning! Make sure to change Component Guid if you update the file list -->
             <Component Id="Module_Peek" Guid="6520F12A-C255-4C3E-862B-0589897BEE21" Win64="yes">
-                <?foreach File in PowerToys.Peek.dll;PowerToys.PeekUI.exe;PowerToys.PeekUI.dll;PowerToys.PeekUI.deps.json;PowerToys.PeekUI.runtimeconfig.json;PowerToys.Interop.dll;PowerToys.ManagedTelemetry.dll;PowerToys.ManagedCommon.dll;ControlzEx.dll;Microsoft.Xaml.Behaviors.dll;ModernWpf.Controls.dll;ModernWpf.dll;PowerToys.Common.UI.dll;WinRT.Runtime.dll;Microsoft.Windows.SDK.NET.dll;WpfScreenHelper.dll?>
+                <?foreach File in PowerToys.Peek.dll;PowerToys.Peek.UI.exe;PowerToys.Peek.UI.dll;PowerToys.Peek.UI.deps.json;PowerToys.Peek.UI.runtimeconfig.json;PowerToys.Interop.dll;PowerToys.ManagedTelemetry.dll;PowerToys.ManagedCommon.dll;ControlzEx.dll;Microsoft.Xaml.Behaviors.dll;ModernWpf.Controls.dll;ModernWpf.dll;PowerToys.Common.UI.dll;WinRT.Runtime.dll;Microsoft.Windows.SDK.NET.dll;WpfScreenHelper.dll?>
                 <File Id="PeekFile_$(var.File)" Source="$(var.BinX64Dir)modules\$(var.PeekProjectName)\$(var.File)" />
                 <?endforeach?>
             </Component>
@@ -1600,7 +1600,7 @@
           Id="Peek_$(var.IdSafeLanguage)_Component"
           Directory="Resource$(var.IdSafeLanguage)PeekInstallFolder"
           Guid="$(var.CompGUIDPrefix)03">
-          <File Id="Peek_$(var.IdSafeLanguage)_File" Source="$(var.BinX64Dir)modules\$(var.PeekProjectName)\$(var.Language)\PowerToys.PeekUI.resources.dll" />
+          <File Id="Peek_$(var.IdSafeLanguage)_File" Source="$(var.BinX64Dir)modules\$(var.PeekProjectName)\$(var.Language)\PowerToys.Peek.UI.resources.dll" />
       </Component>
       <Component
           Id="MarkdownPreviewHandler_$(var.IdSafeLanguage)_Component"

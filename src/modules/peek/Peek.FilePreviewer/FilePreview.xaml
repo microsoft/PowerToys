@@ -5,9 +5,11 @@
     x:Class="Peek.FilePreviewer.FilePreview"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:animations="using:CommunityToolkit.WinUI.UI.Animations"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:local="using:Peek.FilePreviewer"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:media="using:CommunityToolkit.WinUI.UI.Media"
     mc:Ignorable="d">
 
     <Grid>
@@ -15,6 +17,9 @@
             HorizontalAlignment="Center"
             VerticalAlignment="Center"
             IsActive="{x:Bind IsPreviewLoading(Previewer.Preview), Mode=OneWay}" />
-        <Image Source="{x:Bind Previewer.Preview, Mode=OneWay}" />
+
+        <Image x:Name="PreviewImage" Source="{x:Bind Previewer.Preview, Mode=OneWay}" />
+
+        <!--  TODO: Add WebView2 support.  -->
     </Grid>
 </UserControl>

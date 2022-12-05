@@ -7,6 +7,7 @@ namespace Peek.FilePreviewer
     using System;
     using System.Threading.Tasks;
     using CommunityToolkit.Mvvm.ComponentModel;
+    using CommunityToolkit.WinUI.UI.Media.Pipelines;
     using Microsoft.UI.Xaml;
     using Microsoft.UI.Xaml.Controls;
     using Microsoft.UI.Xaml.Media.Imaging;
