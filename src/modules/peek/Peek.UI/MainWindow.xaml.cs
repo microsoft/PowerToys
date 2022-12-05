@@ -8,8 +8,6 @@ namespace Peek.UI
     using System.Linq;
     using interop;
     using Microsoft.UI.Windowing;
-    using Microsoft.UI.Xaml;
-    using Peek.Common;
     using Peek.Common.Models;
     using Peek.FilePreviewer.Models;
     using Peek.UI.Extensions;
