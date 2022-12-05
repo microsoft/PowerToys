@@ -336,7 +336,9 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 ColorFormats[0].CanMoveUp = true;
             }
 
-            ColorFormats.Insert(0, new ColorFormatModel(newColorName, newColorFormat, isShown));
+            ColorFormatModel newModel = new ColorFormatModel(newColorName, newColorFormat, isShown);
+            newModel.PropertyChanged += ColorFormat_PropertyChanged;
+            ColorFormats.Insert(0, newModel);
             SetPreviewSelectedIndex();
         }
 
