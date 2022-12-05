@@ -189,7 +189,7 @@
                                                     <MenuFlyoutItem
                                                         x:Uid="MoveUp"
                                                         Click="ReorderButtonUp_Click"
-                                                        IsEnabled="{x:Bind CanMoveUp}">
+                                                        IsEnabled="{x:Bind CanMoveUp, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}">
                                                         <MenuFlyoutItem.Icon>
                                                             <FontIcon Glyph="&#xE74A;" />
                                                         </MenuFlyoutItem.Icon>
@@ -197,7 +197,7 @@
                                                     <MenuFlyoutItem
                                                         x:Uid="MoveDown"
                                                         Click="ReorderButtonDown_Click"
-                                                        IsEnabled="{x:Bind CanMoveDown}">
+                                                        IsEnabled="{x:Bind CanMoveDown, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}">
                                                         <MenuFlyoutItem.Icon>
                                                             <FontIcon Glyph="&#xE74B;" />
                                                         </MenuFlyoutItem.Icon>
