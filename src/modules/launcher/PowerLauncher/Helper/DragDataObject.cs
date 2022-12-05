@@ -6,9 +6,10 @@ namespace PowerLauncher.Helper
 {
     using System;
     using System.Drawing;
-    using System.Drawing.Imaging;
     using System.Runtime.InteropServices;
     using System.Runtime.InteropServices.ComTypes;
+    using DrawingImaging = System.Drawing.Imaging;
+    using MediaImaging = System.Windows.Media.Imaging;
 
     // based on: https://stackoverflow.com/questions/61041282/showing-image-thumbnail-with-mouse-cursor-while-dragging/61148788#61148788
     public static class DragDataObject
@@ -78,17 +79,16 @@ namespace PowerLauncher.Helper
             // more methods available, but we don't need them
         }
 
-        // https://weblog.west-wind.com/posts/2020/Sep/16/Retrieving-Images-from-the-Clipboard-and-WPF-Image-Control-Woes
-        public static Bitmap BitmapSourceToBitmap(System.Windows.Media.Imaging.BitmapSource source)
+        // https://stackoverflow.com/a/2897325
+        public static Bitmap BitmapSourceToBitmap(MediaImaging.BitmapSource source)
         {
             if (source == null)
             {
                 return null;
             }
 
-            PixelFormat pixelFormat = PixelFormat.Format32bppArgb; // Bgr32 equiv default
-            Bitmap bitmap = new Bitmap(source.PixelWidth, source.PixelHeight, pixelFormat);
-            BitmapData bitmapData = bitmap.LockBits(new Rectangle(Point.Empty, bitmap.Size), ImageLockMode.WriteOnly, pixelFormat);
+            Bitmap bitmap = new Bitmap(source.PixelWidth, source.PixelHeight, DrawingImaging.PixelFormat.Format32bppArgb);
+            DrawingImaging.BitmapData bitmapData = bitmap.LockBits(new Rectangle(Point.Empty, bitmap.Size), DrawingImaging.ImageLockMode.WriteOnly, DrawingImaging.PixelFormat.Format32bppArgb);
 
             source.CopyPixels(System.Windows.Int32Rect.Empty, bitmapData.Scan0, bitmapData.Height * bitmapData.Stride, bitmapData.Stride);
             bitmap.UnlockBits(bitmapData);
