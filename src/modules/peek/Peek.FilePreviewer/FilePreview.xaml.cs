@@ -9,6 +9,7 @@ namespace Peek.FilePreviewer
     using CommunityToolkit.Mvvm.ComponentModel;
     using Microsoft.UI.Xaml;
     using Microsoft.UI.Xaml.Controls;
+    using Microsoft.UI.Xaml.Media.Imaging;
     using Peek.Common.Models;
     using Peek.FilePreviewer.Models;
     using Peek.FilePreviewer.Previewers;
@@ -40,6 +41,11 @@ namespace Peek.FilePreviewer
             set => SetValue(FilesProperty, value);
         }
 
+        public bool IsPreviewLoading(BitmapSource? bitmapSource)
+        {
+            return bitmapSource == null;
+        }
+
         private async Task OnFilePropertyChanged()
         {
             if (File == null)
@@ -62,7 +68,7 @@ namespace Peek.FilePreviewer
         }
 
         // TODO: Find all supported file types
-        public static bool IsSupportedImage(string extension) => extension switch
+        private static bool IsSupportedImage(string extension) => extension switch
         {
             ".bmp" => true,
             ".gif" => true,

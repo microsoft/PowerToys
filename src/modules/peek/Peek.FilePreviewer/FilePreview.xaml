@@ -11,6 +11,10 @@
     mc:Ignorable="d">
 
     <Grid>
+        <ProgressRing
+            HorizontalAlignment="Center"
+            VerticalAlignment="Center"
+            IsActive="{x:Bind IsPreviewLoading(Previewer.Preview), Mode=OneWay}" />
         <Image Source="{x:Bind Previewer.Preview, Mode=OneWay}" />
     </Grid>
 </UserControl>
