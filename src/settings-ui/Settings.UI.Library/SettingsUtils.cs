@@ -128,7 +128,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
                 catch (Exception)
                 {
                     // do nothing, the problem wasn't that the settings was stored in the previous format, continue with the default settings
-                    Logger.LogError($"Exception encountered while loading {powertoy} settings.", ex);
+                    Logger.LogError($"{powertoy} settings are corrupt or the format is not supported any longer. Using default settings instead.", ex);
                 }
             }
             catch (FileNotFoundException)
