@@ -24,15 +24,19 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         private readonly string[] _languageOptions =
         {
             "ALL",
+            "CA",
             "CUR",
             "HR",
             "CZ",
+            "GA",
+            "GD",
             "NL",
             "FR",
             "DE",
             "HU",
             "IS",
             "IT",
+            "KU",
             "MI",
             "PI",
             "PL",
@@ -40,6 +44,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             "RO",
             "SK",
             "SP",
+            "SR",
             "SV",
             "TK",
             "CY",
@@ -228,6 +233,24 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                     _selectedLangIndex = value;
                     _powerAccentSettings.Properties.SelectedLang.Value = _languageOptions[value];
                     RaisePropertyChanged(nameof(SelectedLangIndex));
+                }
+            }
+        }
+
+        public bool ShowUnicodeDescription
+        {
+            get
+            {
+                return _powerAccentSettings.Properties.ShowUnicodeDescription;
+            }
+
+            set
+            {
+                if (value != _powerAccentSettings.Properties.ShowUnicodeDescription)
+                {
+                    _powerAccentSettings.Properties.ShowUnicodeDescription = value;
+                    OnPropertyChanged(nameof(ShowUnicodeDescription));
+                    RaisePropertyChanged();
                 }
             }
         }

@@ -783,7 +783,7 @@ bool Shortcut::IsKeyboardStateClearExceptShortcut(KeyboardManagerInput::InputInt
                 }
             }
             // If any other key is pressed check if it is the action key
-            else if (keyVal != actionKey)
+            else if (keyVal != static_cast<int>(actionKey))
             {
                 return false;
             }

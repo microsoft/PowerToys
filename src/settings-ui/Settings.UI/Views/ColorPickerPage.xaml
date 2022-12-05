@@ -2,171 +2,384 @@
     x:Class="Microsoft.PowerToys.Settings.UI.Views.ColorPickerPage"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:controls="using:Microsoft.PowerToys.Settings.UI.Controls"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:labs="using:CommunityToolkit.Labs.WinUI"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:converters="using:CommunityToolkit.WinUI.UI.Converters"
-    xmlns:models="using:Microsoft.PowerToys.Settings.UI.Library"
-    mc:Ignorable="d"
+    xmlns:models="using:Microsoft.PowerToys.Settings.UI.Library" xmlns:viewmodels="using:Microsoft.PowerToys.Settings.UI.ViewModels" d:DataContext="{d:DesignInstance Type=viewmodels:ColorPickerViewModel}"
+    xmlns:ui="using:CommunityToolkit.WinUI.UI"
     x:Name="RootPage"
-    AutomationProperties.LandmarkType="Main">
+    AutomationProperties.LandmarkType="Main"
+    mc:Ignorable="d">
 
     <Page.Resources>
-        <converters:BoolNegationConverter x:Key="BoolNegationConverter"/>
+        <converters:BoolToVisibilityConverter x:Key="BoolToVis" />
     </Page.Resources>
 
-    <controls:SettingsPageControl x:Uid="ColorPicker"
-                                  ModuleImageSource="ms-appx:///Assets/Modules/ColorPicker.png">
+    <controls:SettingsPageControl
+        x:Uid="ColorPicker"
+        ModuleImageSource="ms-appx:///Assets/Modules/ColorPicker.png">
         <controls:SettingsPageControl.ModuleContent>
 
-        <StackPanel Orientation="Vertical"
-                    x:Name="ColorPickerView">
+            <StackPanel
+                x:Name="ColorPickerView"
+                Orientation="Vertical">
+                <labs:SettingsCard
+                    x:Uid="ColorPicker_EnableColorPicker"
+                    HeaderIcon="{ui:BitmapIcon Source=/Assets/FluentIcons/FluentIconsColorPicker.png}"
+                    IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabledGpoConfigured, Converter={StaticResource BoolNegationConverter}}">
+                    <ToggleSwitch
+                        x:Uid="ToggleSwitch"
+                        IsOn="{x:Bind ViewModel.IsEnabled, Mode=TwoWay}" />
+                </labs:SettingsCard>
+                <InfoBar
+                    x:Uid="GPO_IsSettingForced"
+                    IsClosable="False"
+                    IsOpen="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabledGpoConfigured}"
+                    IsTabStop="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabledGpoConfigured}"
+                    Severity="Informational" />
 
-            <controls:Setting x:Uid="ColorPicker_EnableColorPicker" IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabledGpoConfigured, Converter={StaticResource BoolNegationConverter}}">
-                <controls:Setting.Icon>
-                    <BitmapIcon UriSource="ms-appx:///Assets/FluentIcons/FluentIconsColorPicker.png" ShowAsMonochrome="False" />
-                </controls:Setting.Icon>
-                <controls:Setting.ActionContent>
-                    <ToggleSwitch IsOn="{x:Bind ViewModel.IsEnabled, Mode=TwoWay}" x:Uid="ToggleSwitch" />
-                </controls:Setting.ActionContent>
-            </controls:Setting>
-            <InfoBar x:Uid="GPO_IsSettingForced"
-                Severity="Informational"
-                IsClosable="False"
-                IsOpen="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabledGpoConfigured}"
-                IsTabStop="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabledGpoConfigured}" />
+                <controls:SettingsGroup
+                    x:Uid="Shortcut"
+                    IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}">
+                    <labs:SettingsCard
+                        x:Uid="Activation_Shortcut"
+                        HeaderIcon="{ui:FontIcon FontFamily={StaticResource SymbolThemeFontFamily},
+                                                 Glyph=&#xEDA7;}">
+                        <controls:ShortcutControl
+                            MinWidth="{StaticResource SettingActionControlMinWidth}"
+                            HotkeySettings="{x:Bind Path=ViewModel.ActivationShortcut, Mode=TwoWay}" />
+                    </labs:SettingsCard>
 
-            <controls:SettingsGroup x:Uid="Shortcut" IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}">
-                <controls:Setting x:Uid="Activation_Shortcut" Icon="&#xEDA7;">
-                    <controls:Setting.ActionContent>
-                        <controls:ShortcutControl MinWidth="{StaticResource SettingActionControlMinWidth}"
-                                                    HotkeySettings="{x:Bind Path=ViewModel.ActivationShortcut, Mode=TwoWay}"/>
-                    </controls:Setting.ActionContent>
-                </controls:Setting>
+                    <labs:SettingsCard
+                        x:Uid="ColorPicker_ActivationAction"
+                        HeaderIcon="{ui:FontIcon FontFamily={StaticResource SymbolThemeFontFamily},
+                                                 Glyph=&#xEC4E;}">
+                        <ComboBox
+                            MinWidth="{StaticResource SettingActionControlMinWidth}"
+                            SelectedIndex="{x:Bind Path=ViewModel.ActivationBehavior, Mode=TwoWay}">
+                            <ComboBoxItem x:Uid="EditorFirst" />
+                            <ComboBoxItem x:Uid="ColorPickerFirst" />
+                            <ComboBoxItem x:Uid="ColorPickerOnly" />
+                        </ComboBox>
+                    </labs:SettingsCard>
 
-                        <controls:Setting x:Uid="ColorPicker_ActivationAction" Icon="&#xEC4E;" >
-                            <controls:Setting.ActionContent>
-                        <ComboBox MinWidth="{StaticResource SettingActionControlMinWidth}"
-                                    SelectedIndex="{x:Bind Path=ViewModel.ActivationBehavior, Mode=TwoWay}" >
-                                    <ComboBoxItem x:Uid="EditorFirst"/>
-                                    <ComboBoxItem x:Uid="ColorPickerFirst"/>
-                                    <ComboBoxItem x:Uid="ColorPickerOnly"/>
-                                </ComboBox>
-                            </controls:Setting.ActionContent>
-                        </controls:Setting>
-            </controls:SettingsGroup>
+                </controls:SettingsGroup>
 
-            <controls:SettingsGroup x:Uid="ColorFormats" IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}">
-                <controls:Setting x:Uid="ColorPicker_CopiedColorRepresentation" Icon="&#xF0E3;">
-                    <controls:Setting.ActionContent>
-                        <ComboBox MinWidth="{StaticResource SettingActionControlMinWidth}"
-                                    x:Name="ColorPicker_ComboBox"
-                                    HorizontalAlignment="Left"
-                                    DisplayMemberPath="Value"
-                                    ItemsSource="{Binding SelectableColorRepresentations}"
-                                    Loaded="ColorPicker_ComboBox_Loaded"
-                                    SelectedValue="{Binding SelectedColorRepresentationValue, Mode=TwoWay}"
-                                    SelectedValuePath="Key" />
-                    </controls:Setting.ActionContent>
-                </controls:Setting>
+                <controls:SettingsGroup
+                    x:Uid="ColorFormats"
+                    IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}">
+                    <labs:SettingsCard
+                        x:Uid="ColorPicker_CopiedColorRepresentation"
+                        HeaderIcon="{ui:FontIcon FontFamily={StaticResource SymbolThemeFontFamily},
+                                                 Glyph=&#xF0E3;}">
+                        <ComboBox
+                            x:Name="ColorPicker_ComboBox"
+                            MinWidth="{StaticResource SettingActionControlMinWidth}"
+                            DisplayMemberPath="Value"
+                            ItemsSource="{Binding ColorFormatsPreview, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                            Loaded="ColorPicker_ComboBox_Loaded"
+                            SelectedIndex="{Binding ColorFormatsPreviewIndex, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                            SelectedValue="{Binding SelectedColorRepresentationValue, Mode=TwoWay}"
+                            SelectedValuePath="Key" />
+                    </labs:SettingsCard>
 
-
-                <controls:Setting x:Uid="ColorPicker_ShowColorName">
-                    <controls:Setting.ActionContent>
-                        <ToggleSwitch IsOn="{Binding ShowColorName, Mode=TwoWay}" x:Uid="ToggleSwitch"/>
-                    </controls:Setting.ActionContent>
-                </controls:Setting>
-                <!--
-                Disabling this until we have a safer way to reset cursor as 
+                    <labs:SettingsCard x:Uid="ColorPicker_ShowColorName">
+                        <ToggleSwitch
+                            x:Uid="ToggleSwitch"
+                            IsOn="{Binding ShowColorName, Mode=TwoWay}" />
+                    </labs:SettingsCard>
+                    <!--
+                Disabling this until we have a safer way to reset cursor as
                 we can hit a state where the cursor doesn't reset
-                
-                <CheckBox x:Uid="ColorPicker_ChangeCursor" 
+
+                <CheckBox x:Uid="ColorPicker_ChangeCursor"
                         IsChecked="{Binding ChangeCursor, Mode=TwoWay}"
                         Margin="{StaticResource SmallTopMargin}"
                         IsEnabled="{Binding IsEnabled}"/>
-                        -->
-            </controls:SettingsGroup>
+                    -->
+                </controls:SettingsGroup>
 
-            <controls:SettingsGroup x:Uid="ColorPicker_Editor" IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}">
-                <controls:Setting x:Name="ColorFormatsSetting" x:Uid="ColorPicker_ColorFormats" Icon="&#xE762;"/>
-
-                <!-- Disabled reordering by dragging -->
-                <!-- CanReorderItems="True" AllowDrop="True" -->
-                <ListView ItemsSource="{Binding ColorFormats, Mode=TwoWay}"
-                            AutomationProperties.Name="{Binding ElementName=ColorFormatsSetting, Path=Header}"
-                            SelectionMode="None"
-                            HorizontalAlignment="Stretch">
-                    <ListView.ItemTemplate>
-                        <DataTemplate x:DataType="models:ColorFormatModel">
-                            <Grid AutomationProperties.Name="{x:Bind Name}"
-                                    HorizontalAlignment="Stretch"
-                                    Background="{ThemeResource CardBackgroundBrush}"
-                                    BorderThickness="{ThemeResource CardBorderThickness}"
-                                    BorderBrush="{ThemeResource CardBorderBrush}"
-                                    CornerRadius="{ThemeResource ControlCornerRadius}"
-                                    Padding="0,0,16,0"
-                                    MinHeight="68">
-                                <Grid.RowDefinitions>
-                                    <RowDefinition/>
-                                    <RowDefinition/>
-                                </Grid.RowDefinitions>
-                                <TextBlock FontWeight="SemiBold"
-                                    FontSize="16"
-                                    Margin="56,8,0,0"
-                                    Text="{x:Bind Name}"/>
-                                <TextBlock Style="{StaticResource SecondaryTextStyle}"
-                                    Text="{x:Bind Example}"
-                                    Grid.Row="1"
-                                    Margin="56,0,0,8"/>
-                                <ToggleSwitch IsOn="{x:Bind IsShown, Mode=TwoWay}"
-                                                OnContent=""
-                                                OffContent=""
-                                                Grid.RowSpan="2"
-                                                x:Uid="Enable_ColorFormat"
-                                                AutomationProperties.HelpText="{x:Bind Name}"
-                                                HorizontalAlignment="Right"
-                                                Margin="0,0,56,0"/>
-
-                                <Button Background="Transparent"
-                                        FontFamily="{ThemeResource SymbolThemeFontFamily}"
+                <controls:SettingsGroup
+                    x:Uid="ColorPicker_Editor"
+                    IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}">
+                    <labs:SettingsCard
+                        x:Name="ColorFormatsSetting"
+                        x:Uid="ColorPicker_ColorFormats"
+                        HeaderIcon="{ui:FontIcon FontFamily={StaticResource SymbolThemeFontFamily},
+                                                 Glyph=&#xE762;}" >
+                        <Button
+                            x:Uid="ColorPickerAddNewFormat"
+                            Click="NewFormatClick"
+                            Style="{StaticResource AccentButtonStyle}"
+                            HorizontalAlignment="Right"
+                        />
+                    </labs:SettingsCard>
+                    <!--  Disabled reordering by dragging  -->
+                    <!--  CanReorderItems="True" AllowDrop="True"  -->
+                    <ItemsControl
+                        HorizontalAlignment="Stretch"
+                        AutomationProperties.Name="{Binding ElementName=ColorFormatsSetting, Path=Header}"
+                        ItemsSource="{Binding ColorFormats, Mode=TwoWay}">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate x:DataType="models:ColorFormatModel">
+                                <labs:SettingsCard
+                                    Margin="0,0,0,2"
+                                    Description="{x:Bind Example, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                    Header="{x:Bind Name, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}">
+                                    <labs:SettingsCard.Resources>
+                                        <x:Double x:Key="SettingsCardLeftIndention">42</x:Double>
+                                    </labs:SettingsCard.Resources>
+                                    <Grid
                                         HorizontalAlignment="Right"
-                                        VerticalAlignment="Center"
-                                        Grid.RowSpan="2"
-                                        x:Uid="More_Options_Button"
-                                        Content="&#xE712;">
-                                    <Button.Flyout>
-                                            <MenuFlyout>
-                                                <MenuFlyoutItem x:Uid="MoveUp" IsEnabled="{x:Bind CanMoveUp}" Click="ReorderButtonUp_Click">
-                                                    <MenuFlyoutItem.Icon>
-                                                        <FontIcon Glyph="&#xE74A;" />
-                                                    </MenuFlyoutItem.Icon>
-                                                </MenuFlyoutItem>
-                                                <MenuFlyoutItem x:Uid="MoveDown" IsEnabled="{x:Bind CanMoveDown}" Click="ReorderButtonDown_Click">
-                                                    <MenuFlyoutItem.Icon>
-                                                        <FontIcon Glyph="&#xE74B;" />
-                                                    </MenuFlyoutItem.Icon>
-                                                </MenuFlyoutItem>
-                                            </MenuFlyout>
-                                        </Button.Flyout>
-                                    <ToolTipService.ToolTip>
-                                        <TextBlock x:Uid="More_Options_ButtonTooltip" />
-                                    </ToolTipService.ToolTip>
-                                </Button>
+                                        ColumnSpacing="8">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="Auto" />
+                                            <ColumnDefinition Width="Auto" />
+                                        </Grid.ColumnDefinitions>
+                                        <Button
+                                            x:Uid="EditButton"
+                                            Background="Transparent"
+                                            FontFamily="{ThemeResource SymbolThemeFontFamily}"
+                                            Grid.RowSpan="2"
+                                            Width="40"
+                                            Height="36"
+                                            HorizontalAlignment="Right"
+                                            Margin="0,0,160,0"
+                                            Content="&#xE70F;"
+                                            Click="EditButton_Click">
+                                            <ToolTipService.ToolTip>
+                                                <TextBlock x:Uid="EditTooltip"/>
+                                            </ToolTipService.ToolTip>
+                                        </Button>
+                                        <Button x:Name="RemoveButton"
+                                            x:Uid="RemoveButton"
+                                            Background="Transparent"
+                                            FontFamily="{ThemeResource SymbolThemeFontFamily}"
+                                            Grid.RowSpan="2"
+                                            Width="40"
+                                            Height="36"
+                                            Content="&#xE74D;"
+                                            HorizontalAlignment="Right"
+                                            Margin="0,0,104,0"
+                                            IsEnabled="{x:Bind CanBeDeleted, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                            Click="RemoveButton_Click">
+                                            <ToolTipService.ToolTip>
+                                                <TextBlock x:Uid="RemoveTooltip"/>
+                                            </ToolTipService.ToolTip>
+                                        </Button>
+                                        <ToggleSwitch
+                                            x:Uid="Enable_ColorFormat"
+                                            HorizontalAlignment="Right"
+                                            AutomationProperties.HelpText="{x:Bind Name}"
+                                            IsOn="{x:Bind IsShown, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                            OffContent=""
+                                            OnContent="" />
+                                        <Button
+                                            x:Uid="More_Options_Button"
+                                            Grid.Column="1"
+                                            VerticalAlignment="Center"
+                                            Background="Transparent"
+                                            Content="&#xE712;"
+                                            FontFamily="{ThemeResource SymbolThemeFontFamily}"
+                                            Style="{StaticResource SubtleButtonStyle}">
+                                            <Button.Flyout>
+                                                <MenuFlyout>
+                                                    <MenuFlyoutItem
+                                                        x:Uid="MoveUp"
+                                                        Click="ReorderButtonUp_Click"
+                                                        IsEnabled="{x:Bind CanMoveUp}">
+                                                        <MenuFlyoutItem.Icon>
+                                                            <FontIcon Glyph="&#xE74A;" />
+                                                        </MenuFlyoutItem.Icon>
+                                                    </MenuFlyoutItem>
+                                                    <MenuFlyoutItem
+                                                        x:Uid="MoveDown"
+                                                        Click="ReorderButtonDown_Click"
+                                                        IsEnabled="{x:Bind CanMoveDown}">
+                                                        <MenuFlyoutItem.Icon>
+                                                            <FontIcon Glyph="&#xE74B;" />
+                                                        </MenuFlyoutItem.Icon>
+                                                    </MenuFlyoutItem>
+                                                </MenuFlyout>
+                                            </Button.Flyout>
+                                            <ToolTipService.ToolTip>
+                                                <TextBlock x:Uid="More_Options_ButtonTooltip" />
+                                            </ToolTipService.ToolTip>
+                                        </Button>
+                                    </Grid>
+                                </labs:SettingsCard>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </controls:SettingsGroup>
+                <ContentDialog
+                    x:Name="ColorFormatDialog"
+                    x:Uid="ColorFormatDialog"
+                    PrimaryButtonStyle="{ThemeResource AccentButtonStyle}"
+                    SecondaryButtonClick="ColorFormatDialog_CancelButtonClick"
+                    IsPrimaryButtonEnabled="{Binding IsValid, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}">
+                    <ContentDialog.DataContext>
+                        <models:ColorFormatModel />
+                    </ContentDialog.DataContext>
+                    <ScrollViewer HorizontalScrollMode="Auto" HorizontalScrollBarVisibility="Auto">
+                        <StackPanel
+                                Margin="0,12,0,0"
+                                HorizontalAlignment="Stretch"
+                                Spacing="24">
+                            <TextBox
+                                x:Uid="NewColorName"
+                                x:Name="NewColorName"
+                                IsSpellCheckEnabled="False"
+                                TextChanged="NewColorName_TextChanged"
+                                Text="{Binding Name, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                            <TextBox 
+                                x:Uid="NewColorFormat"
+                                Name="NewColorFormat"
+                                IsSpellCheckEnabled="False"
+                                TextChanged="NewColorFormat_TextChanged"
+                                Text="{Binding Format, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                            <!-- The help block -->
+                            <Grid>
+                                <Grid.RowDefinitions>
+                                    <RowDefinition />
+                                    <RowDefinition />
+                                    <RowDefinition Height="30"/>
+                                    <RowDefinition />
+                                    <RowDefinition Height="30"/>
+                                </Grid.RowDefinitions>
+                                <TextBlock x:Uid="HelpLine1"/>
+                                <Grid Grid.Row="1">
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition />
+                                        <RowDefinition />
+                                        <RowDefinition />
+                                        <RowDefinition />
+                                        <RowDefinition />
+                                        <RowDefinition />
+                                        <RowDefinition />
+                                        <RowDefinition />
+                                        <RowDefinition />
+                                    </Grid.RowDefinitions>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="40px"/>
+                                        <ColumnDefinition Width="120px"/>
+                                        <ColumnDefinition Width="40px"/>
+                                        <ColumnDefinition Width="120px"/>
+                                        <ColumnDefinition Width="40px"/>
+                                        <ColumnDefinition Width="120px"/>
+                                    </Grid.ColumnDefinitions>
+                                    <TextBlock Text = "%Re" FontWeight="Bold"/>
+                                    <TextBlock x:Uid="Help_red" Grid.Column="1"/>
+                                    <TextBlock Text = "%Gr" Grid.Column="2" FontWeight="Bold"/>
+                                    <TextBlock x:Uid="Help_green" Grid.Column="3"/>
+                                    <TextBlock Text = "%Bl" Grid.Column="4" FontWeight="Bold"/>
+                                    <TextBlock x:Uid="Help_blue" Grid.Column="5"/>
+                                    <TextBlock Text = "%Al" Grid.Row="1" FontWeight="Bold"/>
+                                    <TextBlock x:Uid="Help_alpha" Grid.Row="1" Grid.Column="1"/>
+                                    <TextBlock Text = "%Cy" Grid.Row="1" Grid.Column="2" FontWeight="Bold"/>
+                                    <TextBlock x:Uid="Help_cyan" Grid.Row="1" Grid.Column="3"/>
+                                    <TextBlock Text = "%Ma" Grid.Row="1" Grid.Column="4" FontWeight="Bold"/>
+                                    <TextBlock x:Uid="Help_magenta" Grid.Row="1" Grid.Column="5"/>
+                                    <TextBlock Text = "%Ye" Grid.Row="2" FontWeight="Bold"/>
+                                    <TextBlock x:Uid="Help_yellow" Grid.Row="2" Grid.Column="1"/>
+                                    <TextBlock Text = "%Bk" Grid.Row="2" Grid.Column="2" FontWeight="Bold"/>
+                                    <TextBlock x:Uid="Help_black_key" Grid.Row="2" Grid.Column="3"/>
+                                    <TextBlock Text = "%Hu" Grid.Row="2" Grid.Column="4" FontWeight="Bold"/>
+                                    <TextBlock x:Uid="Help_hue" Grid.Row="2" Grid.Column="5"/>
+                                    <TextBlock Text = "%Si" Grid.Row="3" FontWeight="Bold"/>
+                                    <TextBlock x:Uid="Help_saturationI" Grid.Row="3" Grid.Column="1"/>
+                                    <TextBlock Text = "%Sl" Grid.Row="3" Grid.Column="2" FontWeight="Bold"/>
+                                    <TextBlock x:Uid="Help_saturationL" Grid.Row="3" Grid.Column="3"/>
+                                    <TextBlock Text = "%Sb" Grid.Row="3" Grid.Column="4"  FontWeight="Bold"/>
+                                    <TextBlock x:Uid="Help_saturationB" Grid.Row="3" Grid.Column="5"/>
+                                    <TextBlock Text = "%Br" Grid.Row="4" FontWeight="Bold"/>
+                                    <TextBlock x:Uid="Help_brightness" Grid.Row="4" Grid.Column="1"/>
+                                    <TextBlock Text = "%In" Grid.Row="4" Grid.Column="2" FontWeight="Bold"/>
+                                    <TextBlock x:Uid="Help_intensity" Grid.Row="4" Grid.Column="3"/>
+                                    <TextBlock Text = "%Hn" Grid.Row="4" Grid.Column="4" FontWeight="Bold"/>
+                                    <TextBlock x:Uid="Help_hueNat" Grid.Row="4" Grid.Column="5"/>
+                                    <TextBlock Text = "%Ll" Grid.Row="5" FontWeight="Bold"/>
+                                    <TextBlock x:Uid="Help_lightnessNat" Grid.Row="5" Grid.Column="1"/>
+                                    <TextBlock Text = "%Lc" Grid.Row="5"  Grid.Column="2" FontWeight="Bold"/>
+                                    <TextBlock x:Uid="Help_lightnessCIE" Grid.Row="5" Grid.Column="3"/>
+                                    <TextBlock Text = "%Va" Grid.Row="5" Grid.Column="4" FontWeight="Bold"/>
+                                    <TextBlock x:Uid="Help_value" Grid.Row="5" Grid.Column="5"/>
+                                    <TextBlock Text = "%Wh" Grid.Row="6" FontWeight="Bold"/>
+                                    <TextBlock x:Uid="Help_whiteness" Grid.Row="6" Grid.Column="1"/>
+                                    <TextBlock Text = "%Bn" Grid.Row="6" Grid.Column="2" FontWeight="Bold"/>
+                                    <TextBlock x:Uid="Help_blackness" Grid.Row="6" Grid.Column="3"/>
+                                    <TextBlock Text = "%Ca" Grid.Row="6" Grid.Column="4" FontWeight="Bold"/>
+                                    <TextBlock x:Uid="Help_chromaticityA" Grid.Row="6" Grid.Column="5"/>
+                                    <TextBlock Text = "%Cb" Grid.Row="7" FontWeight="Bold"/>
+                                    <TextBlock x:Uid="Help_chromaticityB" Grid.Row="7" Grid.Column="1"/>
+                                    <TextBlock Text = "%Xv" Grid.Row="7" Grid.Column="2" FontWeight="Bold"/>
+                                    <TextBlock x:Uid="Help_X_value" Grid.Row="7" Grid.Column="3"/>
+                                    <TextBlock Text = "%Yv" Grid.Row="7" Grid.Column="4" FontWeight="Bold"/>
+                                    <TextBlock x:Uid="Help_Y_value" Grid.Row="7" Grid.Column="5"/>
+                                    <TextBlock Text = "%Zv" Grid.Row="8" FontWeight="Bold"/>
+                                    <TextBlock x:Uid="Help_Z_value" Grid.Row="8" Grid.Column="1"/>
+                                    <TextBlock Text = "%Dv" Grid.Row="8" Grid.Column="2" FontWeight="Bold"/>
+                                    <TextBlock x:Uid="Help_decimal_value" Grid.Row="8" Grid.Column="3"/>
+                                    <TextBlock Text = "%Na" Grid.Row="8" Grid.Column="4" FontWeight="Bold"/>
+                                    <TextBlock x:Uid="Help_color_name" Grid.Row="8" Grid.Column="5"/>
+                                </Grid>
+                                <TextBlock 
+                                    Grid.Row="2" 
+                                    x:Uid="HelpLine2"
+                                    VerticalAlignment="Bottom"/>
+                                <Grid Grid.Row="3">
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition />
+                                        <RowDefinition />
+                                        <RowDefinition />
+                                        <RowDefinition />
+                                    </Grid.RowDefinitions>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="40px"/>
+                                        <ColumnDefinition Width="200px"/>
+                                        <ColumnDefinition Width="40px"/>
+                                        <ColumnDefinition Width="200px"/>
+                                    </Grid.ColumnDefinitions>
+                                    <TextBlock Text = "b" FontWeight="Bold"/>
+                                    <TextBlock x:Uid="Help_byte" Grid.Column="1"/>
+                                    <TextBlock Text = "h" Grid.Row="1" FontWeight="Bold"/>
+                                    <TextBlock x:Uid = "Help_hexL1" Grid.Row="1" Grid.Column="1"/>
+                                    <TextBlock Text = "H" Grid.Row="1" Grid.Column="2" FontWeight="Bold"/>
+                                    <TextBlock x:Uid = "Help_hexU1" Grid.Row="1" Grid.Column="3"/>
+                                    <TextBlock Text = "x" Grid.Row="2" FontWeight="Bold"/>
+                                    <TextBlock x:Uid = "Help_hexL2" Grid.Row="2" Grid.Column="1"/>
+                                    <TextBlock Text = "X" Grid.Row="2" Grid.Column="2" FontWeight="Bold"/>
+                                    <TextBlock x:Uid = "Help_hexU2" Grid.Row="2" Grid.Column="3"/>
+                                    <TextBlock Text = "f" Grid.Row="3" FontWeight="Bold"/>
+                                    <TextBlock x:Uid = "Help_floatWith" Grid.Row="3" Grid.Column="1"/>
+                                    <TextBlock Text = "F" Grid.Row="3" Grid.Column="2" FontWeight="Bold"/>
+                                    <TextBlock x:Uid = "Help_floatWithout" Grid.Row="3" Grid.Column="3"/>
+                                </Grid>
+                                <TextBlock 
+                                    Grid.Row="4" 
+                                    x:Uid = "HelpLine3"
+                                    VerticalAlignment="Bottom"/>
                             </Grid>
-                        </DataTemplate>
-                    </ListView.ItemTemplate>
-                </ListView>
-            </controls:SettingsGroup>
-        </StackPanel>
+                        </StackPanel>
+                    </ScrollViewer>
+                </ContentDialog>
+            </StackPanel>
+        </controls:SettingsPageControl.ModuleContent>
 
-</controls:SettingsPageControl.ModuleContent>
-
-<controls:SettingsPageControl.PrimaryLinks>
-            <controls:PageLink x:Uid="LearnMore_ColorPicker" Link="https://aka.ms/PowerToysOverview_ColorPicker"/>
+        <controls:SettingsPageControl.PrimaryLinks>
+            <controls:PageLink
+                x:Uid="LearnMore_ColorPicker"
+                Link="https://aka.ms/PowerToysOverview_ColorPicker" />
         </controls:SettingsPageControl.PrimaryLinks>
-<controls:SettingsPageControl.SecondaryLinks>
-            <controls:PageLink Text="Martin Chrzan's Color Picker" Link="https://github.com/martinchrzan/ColorPicker/"/>
-            <controls:PageLink Text="Niels Laute's UX concept" Link="https://medium.com/@Niels9001/a-fluent-color-meter-for-powertoys-20407ededf0c"/>
-</controls:SettingsPageControl.SecondaryLinks>
-</controls:SettingsPageControl>
+        <controls:SettingsPageControl.SecondaryLinks>
+            <controls:PageLink
+                Link="https://github.com/martinchrzan/ColorPicker/"
+                Text="Martin Chrzan's Color Picker" />
+            <controls:PageLink
+                Link="https://medium.com/@Niels9001/a-fluent-color-meter-for-powertoys-20407ededf0c"
+                Text="Niels Laute's UX concept" />
+        </controls:SettingsPageControl.SecondaryLinks>
+    </controls:SettingsPageControl>
 </Page>

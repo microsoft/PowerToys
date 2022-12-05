@@ -100,6 +100,7 @@ namespace Hosts.Views
                 flyoutBase.ShowAt(owner, new FlyoutShowOptions
                 {
                     Position = e.GetPosition(owner),
+                    ShowMode = FlyoutShowMode.Transient, // https://github.com/microsoft/PowerToys/issues/21263
                 });
             }
         }

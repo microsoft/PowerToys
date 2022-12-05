@@ -12,6 +12,7 @@ using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Animation;
 using ColorPicker.Helpers;
+using ManagedCommon;
 using ModernWpf.Controls;
 using ModernWpf.Controls.Primitives;
 
@@ -81,7 +82,7 @@ namespace ColorPicker.Controls
             control._ignoreRGBChanges = false;
             control._ignoreHexChanges = false;
 
-            var hsv = ColorHelper.ConvertToHSVColor(System.Drawing.Color.FromArgb(newColor.R, newColor.G, newColor.B));
+            var hsv = ColorFormatHelper.ConvertToHSVColor(System.Drawing.Color.FromArgb(newColor.R, newColor.G, newColor.B));
 
             SetColorVariationsForCurrentColor(d, hsv);
         }
@@ -309,7 +310,7 @@ namespace ColorPicker.Controls
         {
             if (!_ignoreGradientsChanges)
             {
-                var hsv = ColorHelper.ConvertToHSVColor(color);
+                var hsv = ColorFormatHelper.ConvertToHSVColor(color);
 
                 var huePosition = (hsv.hue / 360) * HueGradientSlider.Maximum;
                 var saturationPosition = hsv.saturation * SaturationGradientSlider.Maximum;

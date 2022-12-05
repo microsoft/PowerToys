@@ -1,7 +1,7 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
   <Import Project="..\..\..\..\Version.props" />
   <PropertyGroup>
-    <TargetFramework>net6.0-windows</TargetFramework>
+    <TargetFramework>net7.0-windows</TargetFramework>
     <RootNamespace>Microsoft.PowerToys.Run.Plugin.OneNote</RootNamespace>
     <AssemblyName>Microsoft.PowerToys.Run.Plugin.OneNote</AssemblyName>
     <ImplicitUsings>enable</ImplicitUsings>
@@ -26,6 +26,10 @@
     <DebugType>pdbonly</DebugType>
   </PropertyGroup>
 
+  <PropertyGroup>
+	<NoWarn>8981</NoWarn>
+  </PropertyGroup>
+	
   <ItemGroup>
     <ProjectReference Include="..\..\Wox.Infrastructure\Wox.Infrastructure.csproj">
       <Private>false</Private>
@@ -83,5 +87,6 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
   </ItemGroup>
+
 
 </Project>

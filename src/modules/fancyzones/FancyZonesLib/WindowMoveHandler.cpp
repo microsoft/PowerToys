@@ -134,11 +134,7 @@ void WindowMoveHandler::MoveSizeStart(HWND window, HMONITOR monitor, POINT const
     auto workArea = workAreaMap.find(monitor);
     if (workArea != workAreaMap.end())
     {
-        const auto& layoutWindows = workArea->second->GetLayoutWindows();
-        if (layoutWindows)
-        {
-            layoutWindows->Dismiss(window);
-        }
+        workArea->second->UnsnapWindow(window);
     }
 }
 
@@ -289,6 +285,8 @@ void WindowMoveHandler::MoveSizeEnd(HWND window, const std::unordered_map<HMONIT
                         AppZoneHistory::instance().RemoveAppLastZone(window, workAreaPtr->UniqueId(), guidStr.value());
                     }
                 }
+
+                workAreaPtr->UnsnapWindow(window);
             }
         }
 
@@ -333,7 +331,7 @@ bool WindowMoveHandler::ExtendWindowByDirectionAndPosition(HWND window, DWORD vk
     return workArea && workArea->ExtendWindowByDirectionAndPosition(window, vkCode);
 }
 
-void WindowMoveHandler::UpdateWindowsPositions(const std::unordered_map<HMONITOR, std::shared_ptr<WorkArea>>& activeWorkAreas) noexcept
+void WindowMoveHandler::AssignWindowsToZones(const std::unordered_map<HMONITOR, std::shared_ptr<WorkArea>>& activeWorkAreas, bool updatePositions) noexcept
 {
     for (const auto& window : VirtualDesktop::instance().GetWindowsFromCurrentDesktop())
     {
@@ -346,7 +344,7 @@ void WindowMoveHandler::UpdateWindowsPositions(const std::unordered_map<HMONITOR
         auto monitor = MonitorFromWindow(window, MONITOR_DEFAULTTONULL);
         if (monitor && activeWorkAreas.contains(monitor))
         {
-            activeWorkAreas.at(monitor)->MoveWindowIntoZoneByIndexSet(window, zoneIndexSet);
+            activeWorkAreas.at(monitor)->MoveWindowIntoZoneByIndexSet(window, zoneIndexSet, updatePositions);
         }
     }
 }

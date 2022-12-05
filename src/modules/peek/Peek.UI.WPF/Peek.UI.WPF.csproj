@@ -2,8 +2,7 @@
 
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
-    <TargetFramework>net6.0-windows10.0.18362.0</TargetFramework>
-    <LangVersion>8.0</LangVersion>
+    <TargetFramework>net7.0-windows10.0.19041.0</TargetFramework>
 	<AssemblyName>PowerToys.Peek.UI</AssemblyName>
     <Nullable>enable</Nullable>
     <UseWPF>true</UseWPF>

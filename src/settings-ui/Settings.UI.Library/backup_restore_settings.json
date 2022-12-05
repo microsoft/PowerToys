@@ -1,8 +1,9 @@
 {
-  "RestartAfterRestore": true,  
+  "RestartAfterRestore": true,
   "IncludeFiles": [
     "*Keyboard Manager\\default.json",
     "*settings.json",
+    "*FancyZones\\custom-layouts.json",
     "*FancyZones\\layout-hotkeys.json",
     "*FancyZones\\layout-templates.json"
   ],

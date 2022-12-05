@@ -28,6 +28,7 @@
 #define BUFSIZE 1024
 
 TwoWayPipeMessageIPC* current_settings_ipc = NULL;
+std::mutex ipc_mutex;
 std::atomic_bool g_isLaunchInProgress = false;
 
 json::JsonObject get_power_toys_settings()
@@ -165,11 +166,6 @@ void dispatch_received_json(const std::wstring& json_to_parse)
 
     for (const auto& base_element : j)
     {
-        if (!current_settings_ipc)
-        {
-            continue;
-        }
-
         const auto name = base_element.Key();
         const auto value = base_element.Value();
 
@@ -177,25 +173,41 @@ void dispatch_received_json(const std::wstring& json_to_parse)
         {
             apply_general_settings(value.GetObjectW());
             const std::wstring settings_string{ get_all_settings().Stringify().c_str() };
-            current_settings_ipc->send(settings_string);
+            {
+                std::unique_lock lock{ ipc_mutex };
+                if(current_settings_ipc)
+                    current_settings_ipc->send(settings_string);
+            }
         }
         else if (name == L"powertoys")
         {
             dispatch_json_config_to_modules(value.GetObjectW());
             const std::wstring settings_string{ get_all_settings().Stringify().c_str() };
-            current_settings_ipc->send(settings_string);
+            {
+                std::unique_lock lock{ ipc_mutex };
+                if(current_settings_ipc)
+                    current_settings_ipc->send(settings_string);
+            }
         }
         else if (name == L"refresh")
         {
             const std::wstring settings_string{ get_all_settings().Stringify().c_str() };
-            current_settings_ipc->send(settings_string);
+            {
+                std::unique_lock lock{ ipc_mutex };
+                if(current_settings_ipc)
+                    current_settings_ipc->send(settings_string);
+            }
         }
         else if (name == L"action")
         {
             auto result = dispatch_json_action_to_module(value.GetObjectW());
             if (result.has_value())
             {
-                current_settings_ipc->send(result.value());
+                {
+                    std::unique_lock lock{ ipc_mutex };
+                    if(current_settings_ipc)
+                        current_settings_ipc->send(result.value());
+                }
             }
         }
     }
@@ -414,8 +426,11 @@ void run_settings_window(bool show_oobe_window, bool show_scoobe_window, std::op
         goto LExit;
     }
 
-    current_settings_ipc = new TwoWayPipeMessageIPC(powertoys_pipe_name, settings_pipe_name, receive_json_send_to_main_thread);
-    current_settings_ipc->start(hToken);
+    {
+        std::unique_lock lock{ ipc_mutex };
+        current_settings_ipc = new TwoWayPipeMessageIPC(powertoys_pipe_name, settings_pipe_name, receive_json_send_to_main_thread);
+        current_settings_ipc->start(hToken);
+    }
     g_settings_process_id = process_info.dwProcessId;
 
     if (process_info.hProcess)
@@ -443,12 +458,14 @@ LExit:
     {
         CloseHandle(process_info.hThread);
     }
-
-    if (current_settings_ipc)
     {
-        current_settings_ipc->end();
-        delete current_settings_ipc;
-        current_settings_ipc = nullptr;
+        std::unique_lock lock{ ipc_mutex };
+        if (current_settings_ipc)
+        {
+            current_settings_ipc->end();
+            delete current_settings_ipc;
+            current_settings_ipc = nullptr;
+        }
     }
 
     if (hToken)

@@ -15,6 +15,7 @@ using ColorPicker.Settings;
 using ColorPicker.ViewModelContracts;
 using Common.UI;
 using interop;
+using ManagedCommon;
 
 namespace ColorPicker.ViewModels
 {
@@ -174,7 +175,7 @@ namespace ColorPicker.ViewModels
         private void SetColorDetails(System.Drawing.Color color)
         {
             ColorBrush = new SolidColorBrush(Color.FromArgb(color.A, color.R, color.G, color.B));
-            ColorText = ColorRepresentationHelper.GetStringRepresentation(color, _userSettings.CopiedColorRepresentation.Value);
+            ColorText = ColorRepresentationHelper.GetStringRepresentation(color, _userSettings.CopiedColorRepresentation.Value, _userSettings.CopiedColorRepresentationFormat.Value);
             ColorName = ColorNameHelper.GetColorName(color);
         }
 

@@ -26,13 +26,13 @@ internal static class WindowsFunctions
                 System.Threading.Thread.Sleep(1); // Some apps, like Terminal, need a little wait to process the sent backspace or they'll ignore it.
             }
 
-            for (int i = 0; i < s.Length; i++)
+            foreach (char c in s)
             {
                 // Letter
                 var inputsInsert = new User32.INPUT[]
                 {
-                new User32.INPUT { type = User32.INPUTTYPE.INPUT_KEYBOARD, ki = new User32.KEYBDINPUT { wVk = 0, dwFlags = User32.KEYEVENTF.KEYEVENTF_UNICODE, wScan = (char)i } },
-                new User32.INPUT { type = User32.INPUTTYPE.INPUT_KEYBOARD, ki = new User32.KEYBDINPUT { wVk = 0, dwFlags = User32.KEYEVENTF.KEYEVENTF_UNICODE | User32.KEYEVENTF.KEYEVENTF_KEYUP, wScan = (char)i } },
+                new User32.INPUT { type = User32.INPUTTYPE.INPUT_KEYBOARD, ki = new User32.KEYBDINPUT { wVk = 0, dwFlags = User32.KEYEVENTF.KEYEVENTF_UNICODE, wScan = c } },
+                new User32.INPUT { type = User32.INPUTTYPE.INPUT_KEYBOARD, ki = new User32.KEYBDINPUT { wVk = 0, dwFlags = User32.KEYEVENTF.KEYEVENTF_UNICODE | User32.KEYEVENTF.KEYEVENTF_KEYUP, wScan = c } },
                 };
                 var temp2 = User32.SendInput((uint)inputsInsert.Length, inputsInsert, sizeof(User32.INPUT));
             }
@@ -44,12 +44,12 @@ internal static class WindowsFunctions
         User32.GUITHREADINFO guiInfo = new ();
         guiInfo.cbSize = (uint)Marshal.SizeOf(guiInfo);
         User32.GetGUIThreadInfo(0, ref guiInfo);
-        System.Drawing.Point caretPosition = new System.Drawing.Point(guiInfo.rcCaret.left, guiInfo.rcCaret.top);
+        POINT caretPosition = new POINT(guiInfo.rcCaret.left, guiInfo.rcCaret.top);
         User32.ClientToScreen(guiInfo.hwndCaret, ref caretPosition);
 
         if (caretPosition.X == 0)
         {
-            System.Drawing.Point testPoint;
+            POINT testPoint;
             User32.GetCaretPos(out testPoint);
             return testPoint;
         }

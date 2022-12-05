@@ -119,7 +119,7 @@ public:
 
     virtual bool is_enabled_by_default() const { return true; }
 
-    /* Provides the GPO configuration value for the module. This should be overriden by the module interface to get the proper gpo policy setting. */
+    /* Provides the GPO configuration value for the module. This should be overridden by the module interface to get the proper gpo policy setting. */
     virtual powertoys_gpo::gpo_rule_configured_t gpo_policy_enabled_configuration()
     {
         return powertoys_gpo::gpo_rule_configured_not_configured;

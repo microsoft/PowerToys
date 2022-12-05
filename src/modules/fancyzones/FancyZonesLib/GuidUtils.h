@@ -1,6 +1,12 @@
 #pragma once
 
+// disabling warning 4458 - declaration of 'identifier' hides class member
+// to avoid warnings from GDI files - can't add winRT directory to external code
+// in the Cpp.Build.props
+#pragma warning(push)
+#pragma warning(disable : 4458)
 #include "gdiplus.h"
+#pragma warning(pop)
 
 namespace std
 {
