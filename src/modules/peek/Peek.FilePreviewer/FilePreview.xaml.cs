@@ -54,6 +54,7 @@ namespace Peek.FilePreviewer
                 return;
             }
 
+            // TODO: Implement plugin pattern to support any file types.
             if (IsSupportedImage(File.Extension))
             {
                 Previewer = new ImagePreviewer(File);
@@ -68,7 +69,7 @@ namespace Peek.FilePreviewer
             }
         }
 
-        // TODO: Find all supported file types
+        // TODO: Find all supported file types for the image previewer
         private static bool IsSupportedImage(string extension) => extension switch
         {
             ".bmp" => true,

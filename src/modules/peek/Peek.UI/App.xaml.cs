@@ -48,9 +48,9 @@ namespace Peek.UI
             }
 
             window = new MainWindow();
-            window.Activate();
 
-            // window.Hide();
+            window.Activate();
+            window.Hide();
         }
 
         private Window? window;

@@ -21,5 +21,7 @@
         <Image x:Name="PreviewImage" Source="{x:Bind Previewer.Preview, Mode=OneWay}" />
 
         <!--  TODO: Add WebView2 support.  -->
+
+        <!--  TODO: Add UnsupportedFilePreview control  -->
     </Grid>
 </UserControl>

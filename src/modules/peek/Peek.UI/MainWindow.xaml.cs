@@ -8,6 +8,7 @@ namespace Peek.UI
     using System.Linq;
     using interop;
     using Microsoft.UI.Windowing;
+    using Microsoft.UI.Xaml;
     using Peek.Common;
     using Peek.Common.Models;
     using Peek.FilePreviewer.Models;
@@ -37,6 +38,9 @@ namespace Peek.UI
 
         public MainWindowViewModel ViewModel { get; }
 
+        /// <summary>
+        /// Handle Peek hotkey, by toggling the window visibility and querying files when necessary.
+        /// </summary>
         private void OnPeekHotkey()
         {
             if (AppWindow.IsVisible)
@@ -58,16 +62,24 @@ namespace Peek.UI
             }
         }
 
+        /// <summary>
+        /// Handle FilePreviewerSizeChanged event to adjust window size and position accordingly.
+        /// </summary>
+        /// <param name="sender">object</param>
+        /// <param name="e">PreviewSizeChangedArgs</param>
         private void FilePreviewer_PreviewSizeChanged(object sender, PreviewSizeChangedArgs e)
         {
             var requestedSize = e.WindowSizeRequested;
             var monitorSize = this.GetMonitorSize();
+
+            // TODO: Use design-defined rules for adjusted window size
             var titleBarHeight = TitleBarControl.ActualHeight;
             var maxContentSize = new Size(monitorSize.Width * 0.8, (monitorSize.Height - titleBarHeight) * 0.8);
             var minContentSize = new Size(500, 500 - titleBarHeight);
+
             var adjustedContentSize = requestedSize.Fit(maxContentSize, minContentSize);
 
-            // TODO: Only re-center if window has not been resized by user.
+            // TODO: Only re-center if window has not been resized by user (or use design-defined logic).
             // TODO: Investigate why portrait images do not perfectly fit edge-to-edge
             this.CenterOnScreen(adjustedContentSize.Width, adjustedContentSize.Height + titleBarHeight);
             this.Show();
