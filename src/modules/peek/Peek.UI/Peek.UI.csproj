@@ -26,6 +26,11 @@
     <Content Remove="Assets\Peek.ico" />
   </ItemGroup>
   <ItemGroup>
+    <None Remove="Assets\AppList.scale-100.png" />
+    <None Remove="Assets\AppList.scale-125.png" />
+    <None Remove="Assets\AppList.scale-150.png" />
+    <None Remove="Assets\AppList.scale-200.png" />
+    <None Remove="Assets\AppList.scale-400.png" />
     <None Remove="Assets\Peek.ico" />
     <None Remove="Views\TitleBar.xaml" />
   </ItemGroup>
@@ -48,16 +53,6 @@
       <Isolated>false</Isolated>
       <EmbedInteropTypes>true</EmbedInteropTypes>
     </COMReference>
-  </ItemGroup>
-
-  <ItemGroup>
-    <Content Include="Assets\SplashScreen.scale-200.png" />
-    <Content Include="Assets\LockScreenLogo.scale-200.png" />
-    <Content Include="Assets\Square150x150Logo.scale-200.png" />
-    <Content Include="Assets\Square44x44Logo.scale-200.png" />
-    <Content Include="Assets\Square44x44Logo.targetsize-24_altform-unplated.png" />
-    <Content Include="Assets\StoreLogo.png" />
-    <Content Include="Assets\Wide310x150Logo.scale-200.png" />
   </ItemGroup>
 
   <ItemGroup>

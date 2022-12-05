@@ -9,6 +9,7 @@
   <?define PowerAccentProjectName="PowerAccent"?>
   <?define PowerRenameProjectName="PowerRename"?>
   <?define FileLocksmithProjectName="FileLocksmith"?>
+  <?define PeekProjectName="Peek"?>
   <?define ColorPickerProjectName="ColorPicker"?>
   <?define PowerOCRProjectName="PowerOCR"?>
   <?define VideoConferenceProjectName="VideoConference"?>
@@ -17,7 +18,6 @@
   <?define AlwaysOnTopProjectName="AlwaysOnTop"?>
   <?define MeasureToolProjectName="MeasureTool"?>
   <?define HostsProjectName="Hosts"?>
-  <?define PeekProjectName="Peek"?>
 
   <?define RepoDir="$(var.ProjectDir)..\..\" ?>
   <?if $(var.Platform) = x64?>
@@ -121,6 +121,10 @@
   <?define FileLocksmithFiles=Microsoft.Win32.SystemEvents.dll;Microsoft.Xaml.Interactions.dll;Microsoft.Xaml.Interactivity.dll;CommunityToolkit.WinUI.dll;CommunityToolkit.WinUI.UI.dll;CommunityToolkit.Common.dll;CommunityToolkit.Mvvm.dll;CommunityToolkit.Labs.WinUI.SettingsControls.dll;Ijwhost.dll;Microsoft.InteractiveExperiences.Projection.dll;Microsoft.Windows.ApplicationModel.DynamicDependency.Projection.dll;Microsoft.Windows.ApplicationModel.Resources.Projection.dll;Microsoft.Windows.ApplicationModel.WindowsAppRuntime.Projection.dll;Microsoft.Windows.AppLifecycle.Projection.dll;Microsoft.Windows.SDK.NET.dll;Microsoft.Windows.System.Power.Projection.dll;Microsoft.WindowsAppRuntime.Bootstrap.Net.dll;Microsoft.WinUI.dll;PowerToys.ManagedCommon.dll;PowerToys.ManagedTelemetry.dll;PowerToys.FileLocksmithExt.dll;PowerToys.FileLocksmithLib.Interop.dll;PowerToys.FileLocksmithUI.exe;PowerToys.FileLocksmithUI.dll;PowerToys.FileLocksmithUI.deps.json;PowerToys.FileLocksmithUI.runtimeconfig.json;System.CodeDom.dll;System.Drawing.Common.dll;System.Management.dll;WinRT.Runtime.dll;WinUIEx.dll;resources.pri;PowerToys.GPOWrapper.dll?>
 
   <?define FileLocksmithAssetsFiles=Icon.ico?>
+
+  <?define PeekFiles=CommunityToolkit.Mvvm.dll;Microsoft.Win32.SystemEvents.dll;Microsoft.Windows.ApplicationModel.DynamicDependency.Projection.dll;Microsoft.Windows.ApplicationModel.Resources.Projection.dll;Microsoft.Windows.ApplicationModel.WindowsAppRuntime.Projection.dll;Microsoft.Windows.AppLifecycle.Projection.dll;Microsoft.Windows.SDK.NET.dll;Microsoft.Windows.System.Power.Projection.dll;Microsoft.WindowsAppRuntime.Bootstrap.Net.dll;Microsoft.WinUI.dll;PowerToys.ManagedCommon.dll;PowerToys.ManagedTelemetry.dll;Peek.Common.dll;Peek.FilePreviewer.dll;Powertoys.Peek.UI.dll;Powertoys.Peek.UI.exe;Powertoys.Peek.UI.deps.json;Powertoys.Peek.UI.runtimeconfig.json;resources.pri;System.CodeDom.dll;System.Drawing.Common.dll;System.Management.dll;WIC.dll;WinUIEx.dll?>
+
+  <?define PeekAssetsFiles=Icon.ico?>
 
   <?define PowerRenameSparsePackageAssets=LargeTile.png;SmallTile.png;SplashScreen.png;Square150x150Logo.png;Square44x44Logo.png;storelogo.png;Wide310x150Logo.png?>
 
@@ -541,12 +545,6 @@
             <!-- Color Picker -->
             <Directory Id="ColorPickerInstallFolder" Name="$(var.ColorPickerProjectName)">
               <Directory Id="ColorPickerResourcesFolder" Name="Resources"/>
-            </Directory>
-
-            <!-- Peek -->
-            <Directory Id="PeekInstallFolder" Name="$(var.PeekProjectName)">
-              <Directory Id="PeekResourcesFolder" Name="Resources"/>
-              <Directory Id="PeekAssetsFolder" Name="Assets" />
             </Directory>
 
             <!-- Mouse Utils -->
@@ -1039,30 +1037,38 @@
       </Component>
     </DirectoryRef>
 
-        <!-- Peek -->
-        <DirectoryRef Id="PeekInstallFolder" FileSource="$(var.BinX64Dir)modules\$(var.PeekProjectName)">
-            <!-- !Warning! Make sure to change Component Guid if you update the file list -->
-            <Component Id="Module_Peek" Guid="6520F12A-C255-4C3E-862B-0589897BEE21" Win64="yes">
-                <?foreach File in PowerToys.Peek.dll;PowerToys.Peek.UI.exe;PowerToys.Peek.UI.dll;PowerToys.Peek.UI.deps.json;PowerToys.Peek.UI.runtimeconfig.json;PowerToys.Interop.dll;PowerToys.ManagedTelemetry.dll;PowerToys.ManagedCommon.dll;ControlzEx.dll;Microsoft.Xaml.Behaviors.dll;ModernWpf.Controls.dll;ModernWpf.dll;PowerToys.Common.UI.dll;WinRT.Runtime.dll;Microsoft.Windows.SDK.NET.dll;WpfScreenHelper.dll?>
-                <File Id="PeekFile_$(var.File)" Source="$(var.BinX64Dir)modules\$(var.PeekProjectName)\$(var.File)" />
-                <?endforeach?>
-            </Component>
-        </DirectoryRef>
+    <!-- Peek -->
+    <DirectoryRef Id="PeekInstallFolder" FileSource="$(var.BinDir)modules\$(var.PeekProjectName)">
+      <?foreach File in $(var.PeekFiles)?>
+      <Component Id="Peek_$(var.File)" Win64="yes">
+        <File Id="PeekFile_$(var.File)" Source="$(var.BinDir)modules\$(var.PeekProjectName)\$(var.File)" />
+      </Component>
+      <?endforeach?>
+    </DirectoryRef>
 
-        <!-- Peek Resources -->
-        <DirectoryRef Id="PeekResourcesFolder" FileSource="$(var.BinX64Dir)modules\$(var.PeekProjectName)\Resources">
-            <Component Id="Module_Peek_Icon">
-                <File Id="PeekFile_icon.ico" Source="$(var.BinX64Dir)modules\$(var.PeekProjectName)\Resources\Peek.ico" />
-            </Component>
-        </DirectoryRef>
-        
-        <!-- Peek Assets -->
-        <DirectoryRef Id="PeekAssetsFolder" FileSource="$(var.BinX64Dir)modules\$(var.PeekProjectName)\Assets">
-			<!-- !Warning! Make sure to change Component Guid if you update the file list -->
-            <Component Id="Module_Peek_Assets" Guid="7E781723-60AB-4027-B634-AFCEDDB2B1CD" Win64="yes">
-                <File Source="$(var.BinX64Dir)modules\$(var.PeekProjectName)\Assets\error.png" />
-            </Component>
-        </DirectoryRef>
+    <!-- Peek Assets -->
+    <DirectoryRef Id="PeekAssetsInstallFolder" FileSource="$(var.BinDir)modules\$(var.PeekProjectName)\Assets">
+      <?foreach File in $(var.PeekAssetsFiles)?>
+      <Component Id="Peek_Assets_$(var.File)" Win64="yes">
+        <File Id="PeekAssetsFile_$(var.File)" Source="$(var.BinDir)modules\$(var.PeekProjectName)\Assets\$(var.File)" />
+      </Component>
+      <?endforeach?>
+      <Component Id="Peek_Assets_Applist_Scale100" Win64="yes">
+        <File Id="Peek_AppList_Scale100" Source="$(var.BinDir)modules\$(var.PeekProjectName)\Assets\AppList.scale-100.png" />
+      </Component>
+      <Component Id="Peek_Assets_Applist_Scale125" Win64="yes">
+        <File Id="Peek_AppList_Scale125" Source="$(var.BinDir)modules\$(var.PeekProjectName)\Assets\AppList.scale-125.png" />
+      </Component>
+      <Component Id="Peek_Assets_Applist_Scale150" Win64="yes">
+        <File Id="Peek_AppList_Scale150" Source="$(var.BinDir)modules\$(var.PeekProjectName)\Assets\AppList.scale-150.png" />
+      </Component>
+      <Component Id="Peek_Assets_Applist_Scale200" Win64="yes">
+        <File Id="Peek_AppList_Scale200" Source="$(var.BinDir)modules\$(var.PeekProjectName)\Assets\AppList.scale-200.png" />
+      </Component>
+      <Component Id="Peek_Assets_Applist_Scale400" Win64="yes">
+        <File Id="Peek_AppList_Scale400" Source="$(var.BinDir)modules\$(var.PeekProjectName)\Assets\AppList.scale-400.png" />
+      </Component>
+    </DirectoryRef>
 
     <!-- KBM -->
     <DirectoryRef Id="KeyboardManagerInstallFolder" FileSource="$(var.BinDir)modules\$(var.KeyboardManagerProjectName)\">
@@ -1339,6 +1345,18 @@
       <ComponentRef Id="FileLocksmith_Assets_Applist_Scale150" />
       <ComponentRef Id="FileLocksmith_Assets_Applist_Scale200" />
       <ComponentRef Id="FileLocksmith_Assets_Applist_Scale400" />
+      <ComponentRef Id="Module_Peek" />
+      <?foreach File in $(var.PeekFiles)?>
+      <ComponentRef Id="Peek_$(var.File)" />
+      <?endforeach?>
+      <?foreach File in $(var.PeekAssetsFiles)?>
+        <ComponentRef Id="Peek_Assets_$(var.File)" />
+      <?endforeach?>
+      <ComponentRef Id="Peek_Assets_Applist_Scale100" />
+      <ComponentRef Id="Peek_Assets_Applist_Scale125" />
+      <ComponentRef Id="Peek_Assets_Applist_Scale150" />
+      <ComponentRef Id="Peek_Assets_Applist_Scale200" />
+      <ComponentRef Id="Peek_Assets_Applist_Scale400" />
       <?foreach File in $(var.PowerAccentFiles)?>
       <ComponentRef Id="PowerAccent_$(var.File)" />
       <?endforeach?>
@@ -1364,9 +1382,6 @@
       <ComponentRef Id="Module_KeyboardManager_Editor" />
       <ComponentRef Id="Module_KeyboardManager_Engine" />
       <ComponentRef Id="Module_PowerOCR" />
-      <ComponentRef Id="Module_Peek" />
-      <ComponentRef Id="Module_Peek_Icon"/>
-      <ComponentRef Id="Module_Peek_Assets" />
       <ComponentRef Id="Module_ColorPicker" />
       <ComponentRef Id="Module_ColorPicker_Icon"/>
       <ComponentRef Id="Module_ColorPicker_Cursor"/>
@@ -1597,12 +1612,6 @@
         <File Id="ColorPicker_$(var.IdSafeLanguage)_File" Source="$(var.BinDir)modules\$(var.ColorPickerProjectName)\$(var.Language)\PowerToys.ColorPickerUI.resources.dll" />
       </Component>
       <Component
-          Id="Peek_$(var.IdSafeLanguage)_Component"
-          Directory="Resource$(var.IdSafeLanguage)PeekInstallFolder"
-          Guid="$(var.CompGUIDPrefix)03">
-          <File Id="Peek_$(var.IdSafeLanguage)_File" Source="$(var.BinX64Dir)modules\$(var.PeekProjectName)\$(var.Language)\PowerToys.Peek.UI.resources.dll" />
-      </Component>
-      <Component
           Id="MarkdownPreviewHandler_$(var.IdSafeLanguage)_Component"
           Directory="Resource$(var.IdSafeLanguage)FileExplorerPreviewInstallFolder"
           Guid="$(var.CompGUIDPrefix)04">
@@ -1756,7 +1765,7 @@
     <!-- Localization languages shipped with WinAppSDK. We should ship these as well. -->
     <?define WinAppSDKLocLanguageList = af-ZA;ar-SA;az-Latn-AZ;bg-BG;bs-Latn-BA;ca-ES;cs-CZ;cy-GB;da-DK;de-DE;el-GR;en-GB;en-us;es-ES;es-MX;et-EE;eu-ES;fa-IR;fi-FI;fr-CA;fr-FR;gl-ES;he-IL;hi-IN;hr-HR;hu-HU;id-ID;is-IS;it-IT;ja-JP;ka-GE;kk-KZ;ko-KR;lt-LT;lv-LV;ms-MY;nb-NO;nl-NL;nn-NO;pl-PL;pt-BR;pt-PT;ro-RO;ru-RU;sk-SK;sl-SI;sq-AL;sr-Cyrl-RS;sr-Latn-RS;sv-SE;th-TH;tr-TR;uk-UA;vi-VN;zh-CN;zh-TW?>
   <Fragment>
-        <?foreach ParentDirectory in SettingsV2InstallFolder;PowerRenameInstallFolder;MeasureToolInstallFolder;HostsInstallFolder;FileLocksmithInstallFolder?>
+        <?foreach ParentDirectory in SettingsV2InstallFolder;PowerRenameInstallFolder;MeasureToolInstallFolder;HostsInstallFolder;FileLocksmithInstallFolder;PeekInstallFolder?>
         <DirectoryRef Id="$(var.ParentDirectory)">
             <?foreach Language in $(var.WinAppSDKLocLanguageList)?>
             <?if $(var.Language) = af-ZA?>
@@ -2088,6 +2097,13 @@
               Guid="$(var.CompGUIDPrefix)05">
             <File Id="FileLocksmith_WinAppSDKLoc_$(var.IdSafeLanguage)_XamlMui_File" Source="$(var.BinDir)modules\$(var.FileLocksmithProjectName)\$(var.Language)\Microsoft.ui.xaml.dll.mui" />
             <File Id="FileLocksmith_WinAppSDKLoc_$(var.IdSafeLanguage)_XamlPhoneMui_File" Source="$(var.BinDir)modules\$(var.FileLocksmithProjectName)\$(var.Language)\Microsoft.UI.Xaml.Phone.dll.mui" />
+          </Component>
+          <Component
+            Id="Peek_WinAppSDKLoc_$(var.IdSafeLanguage)_Component"
+            Directory="WinAppSDKLoc$(var.IdSafeLanguage)PeekInstallFolder"
+            Guid="$(var.CompGUIDPrefix)05">
+            <File Id="Peek_WinAppSDKLoc_$(var.IdSafeLanguage)_XamlMui_File" Source="$(var.BinDir)modules\$(var.PeekProjectName)\$(var.Language)\Microsoft.ui.xaml.dll.mui" />
+            <File Id="Peek_WinAppSDKLoc_$(var.IdSafeLanguage)_XamlPhoneMui_File" Source="$(var.BinDir)modules\$(var.PeekProjectName)\$(var.Language)\Microsoft.UI.Xaml.Phone.dll.mui" />
           </Component>
           <?undef IdSafeLanguage?>
           <?undef CompGUIDPrefix?>
