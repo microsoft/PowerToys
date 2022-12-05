@@ -8,8 +8,12 @@
 		<UseWPF>true</UseWPF>
 		<AllowUnsafeBlocks>True</AllowUnsafeBlocks>
 		<ApplicationIcon>icon.ico</ApplicationIcon>
-		<AssemblyName>PowerAccent</AssemblyName>
+		<AssemblyName>PowerToys.PowerAccent</AssemblyName>
 		<XamlDebuggingInformation>True</XamlDebuggingInformation>
+    <StartupObject>PowerAccent.UI.Program</StartupObject>
+    <OutputPath>$(SolutionDir)$(Platform)\$(Configuration)\modules\PowerAccent</OutputPath>
+    <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+    <AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
 	</PropertyGroup>
 
 	<ItemGroup>
