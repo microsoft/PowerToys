@@ -6,6 +6,7 @@ namespace PowerLauncher.Helper
 {
     using System;
     using System.Drawing;
+    using System.Drawing.Imaging;
     using System.Runtime.InteropServices;
     using System.Runtime.InteropServices.ComTypes;
 
@@ -75,6 +76,24 @@ namespace PowerLauncher.Helper
             int InitializeFromBitmap(ref ShDragImage pShDrawImage, IDataObject pDataObject);
 
             // more methods available, but we don't need them
+        }
+
+        // https://weblog.west-wind.com/posts/2020/Sep/16/Retrieving-Images-from-the-Clipboard-and-WPF-Image-Control-Woes
+        public static Bitmap BitmapSourceToBitmap(System.Windows.Media.Imaging.BitmapSource source)
+        {
+            if (source == null)
+            {
+                return null;
+            }
+
+            PixelFormat pixelFormat = PixelFormat.Format32bppArgb; // Bgr32 equiv default
+            Bitmap bitmap = new Bitmap(source.PixelWidth, source.PixelHeight, pixelFormat);
+            BitmapData bitmapData = bitmap.LockBits(new Rectangle(Point.Empty, bitmap.Size), ImageLockMode.WriteOnly, pixelFormat);
+
+            source.CopyPixels(System.Windows.Int32Rect.Empty, bitmapData.Scan0, bitmapData.Height * bitmapData.Stride, bitmapData.Stride);
+            bitmap.UnlockBits(bitmapData);
+
+            return bitmap;
         }
     }
 }

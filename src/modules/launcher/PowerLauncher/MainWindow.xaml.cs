@@ -13,6 +13,7 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Interop;
+using System.Windows.Media.Imaging;
 using Common.UI;
 using interop;
 using Microsoft.PowerLauncher.Telemetry;
@@ -309,7 +310,9 @@ namespace PowerLauncher
                     {
                         // DoDragDrop with file thumbnail as drag image
                         var dataObject = DragDataObject.FromFile(fileDropResult.Path);
-                        IntPtr hBitmap = Image.WindowsThumbnailProvider.GetHBitmap(Path.GetFullPath(fileDropResult.Path), Constant.ThumbnailSize, Constant.ThumbnailSize, Image.ThumbnailOptions.None);
+                        using var bitmap = DragDataObject.BitmapSourceToBitmap((BitmapSource)_mouseDownResultViewModel?.Image);
+                        IntPtr hBitmap = bitmap.GetHbitmap();
+
                         try
                         {
                             dataObject.SetDragImage(hBitmap, Constant.ThumbnailSize, Constant.ThumbnailSize);
