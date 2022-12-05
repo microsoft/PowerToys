@@ -30,7 +30,7 @@ Microsoft PowerToys is a set of utilities for power users to tune and streamline
 
 - Windows 11 or Windows 10 version 2004 (code name 20H1 / build number 19041) or newer.
 - Our installer will install the following items:
-   - [.NET 7.0.0 Desktop Runtime](https://dotnet.microsoft.com/en-us/download/dotnet/7.0#runtime-desktop-7.0.0).
+   - [.NET 7.0.0 Desktop Runtime](https://dotnet.microsoft.com/download/dotnet/7.0#runtime-desktop-7.0.0).
    - [Microsoft Edge WebView2 Runtime](https://go.microsoft.com/fwlink/p/?LinkId=2124703) bootstrapper. This will install the latest version.
 
 ### Via GitHub with EXE [Recommended]
@@ -150,7 +150,7 @@ In this release, we focused on stability and improvements.
 - Added mappings for the mu, omicron, upsilon and thorn characters.
 - Added a setting to exclude apps from activating Quick Accent.
 - Fixed an issue causing the selector to trigger when leaving the lock screen. Thanks [@damienleroy](https://github.com/damienleroy)!
-- Added the croatian, netherlands, swedish and welsh character sets. Thanks [@damienleroy](https://github.com/damienleroy)!
+- Added the Croatian, Netherlands, Swedish and Welsh character sets. Thanks [@damienleroy](https://github.com/damienleroy)!
 - Added support for more unicode characters. Thanks [@char-46](https://github.com/char-46)!
 - Shift-space can now navigate backwards in the selector. Thanks [@davidegiacometti](https://github.com/davidegiacometti)!
 - Added the Catalan accented characters. Thanks [@ivocarbajo](https://github.com/ivocarbajo) and [@codingneko](https://github.com/codingneko)!
