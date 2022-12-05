@@ -49,6 +49,7 @@ namespace Peek.UI
 
             window = new MainWindow();
 
+            // TODO: Find way to not briefly show the window.
             window.Activate();
             window.Hide();
         }
