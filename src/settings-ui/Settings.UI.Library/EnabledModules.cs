@@ -319,6 +319,22 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             }
         }
 
+        private bool peek = true;
+
+        [JsonPropertyName("Peek")]
+        public bool Peek
+        {
+            get => peek;
+            set
+            {
+                if (peek != value)
+                {
+                    LogTelemetryEvent(value);
+                    peek = value;
+                }
+            }
+        }
+
         public string ToJsonString()
         {
             return JsonSerializer.Serialize(this);

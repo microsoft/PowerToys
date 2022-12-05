@@ -99,6 +99,11 @@
                     helpers:NavHelper.NavigateTo="views:MouseUtilsPage"
                     Icon="{ui:BitmapIcon Source=/Assets/FluentIcons/FluentIconsMouseUtils.png}" />
 
+                <NavigationViewItem 
+                    x:Uid="Shell_Peek" 
+                    helpers:NavHelper.NavigateTo="views:PeekPage" 
+                    Icon="{ui:BitmapIcon Source=/Assets/FluentIcons/FluentIconsPeek.png}"/>
+
                 <NavigationViewItem
                     x:Uid="Shell_PowerRename"
                     helpers:NavHelper.NavigateTo="views:PowerRenamePage"

@@ -17,6 +17,7 @@
   <?define AlwaysOnTopProjectName="AlwaysOnTop"?>
   <?define MeasureToolProjectName="MeasureTool"?>
   <?define HostsProjectName="Hosts"?>
+  <?define PeekProjectName="Peek"?>
 
   <?define RepoDir="$(var.ProjectDir)..\..\" ?>
   <?if $(var.Platform) = x64?>
@@ -53,7 +54,7 @@
 
   <?define SettingsV2Files=backup_restore_settings.json;Ijwhost.dll;ColorCode.Core.dll;ColorCode.WinUI.dll;CommunityToolkit.Common.dll;CommunityToolkit.Labs.WinUI.SettingsControls.dll;CommunityToolkit.WinUI.dll;CommunityToolkit.WinUI.UI.Controls.Core.dll;CommunityToolkit.WinUI.UI.Controls.DataGrid.dll;CommunityToolkit.WinUI.UI.Controls.Input.dll;CommunityToolkit.WinUI.UI.Controls.Layout.dll;CommunityToolkit.WinUI.UI.Controls.Markdown.dll;CommunityToolkit.WinUI.UI.Controls.Media.dll;CommunityToolkit.WinUI.UI.Controls.Primitives.dll;CommunityToolkit.WinUI.UI.dll;icon.ico;Microsoft.Graphics.Canvas.Interop.dll;Microsoft.InteractiveExperiences.Projection.dll;Microsoft.Windows.ApplicationModel.DynamicDependency.Projection.dll;Microsoft.Windows.ApplicationModel.Resources.Projection.dll;Microsoft.Windows.ApplicationModel.WindowsAppRuntime.Projection.dll;Microsoft.Windows.AppLifecycle.Projection.dll;Microsoft.Windows.SDK.NET.dll;Microsoft.Windows.System.Power.Projection.dll;Microsoft.WindowsAppRuntime.Bootstrap.Net.dll;Microsoft.WinUI.dll;Microsoft.Xaml.Interactions.dll;Microsoft.Xaml.Interactivity.dll;PowerToys.ManagedCommon.dll;PowerToys.ManagedTelemetry.dll;PowerToys.Settings.deps.json;PowerToys.Settings.dll;PowerToys.Settings.exe;PowerToys.Settings.runtimeconfig.json;PowerToys.Settings.UI.Lib.dll;resources.pri;System.CodeDom.dll;System.IO.Abstractions.dll;WinRT.Runtime.dll;Microsoft.Graphics.Canvas.dll;System.Management.dll;PowerToys.GPOWrapper.dll?>
 
-  <?define SettingsV2AssetsModulesFiles=ColorPicker.png;FancyZones.png;FileLocksmith.png;AlwaysOnTop.png;HostsFileEditor.png;Awake.png;ImageResizer.png;KBM.png;MouseUtils.png;PowerAccent.png;PowerOCR.png;PowerLauncher.png;PowerPreview.png;PowerRename.png;PT.png;ScreenRuler.png;ShortcutGuide.png;VideoConference.png?>
+  <?define SettingsV2AssetsModulesFiles=ColorPicker.png;FancyZones.png;FileLocksmith.png;AlwaysOnTop.png;HostsFileEditor.png;Awake.png;ImageResizer.png;KBM.png;MouseUtils.png;PowerAccent.png;PowerOCR.png;PowerLauncher.png;PowerPreview.png;PowerRename.png;PT.png;ScreenRuler.png;ShortcutGuide.png;VideoConference.png;Peek.png?>
 
   <?define SettingsV2OOBEAssetsModulesFiles=ColorPicker.gif;AlwaysOnTop.png;HostsFileEditor.png;Awake.png;FancyZones.gif;FileExplorer.png;FileLocksmith.gif;ImageResizer.gif;KBM.gif;MouseUtils.gif;PowerAccent.gif;PowerOCR.gif;PowerRename.gif;Run.gif;ScreenRuler.gif;OOBEShortcutGuide.png;VideoConferenceMute.png;OOBEPTHero.png?>
 
@@ -540,6 +541,12 @@
             <!-- Color Picker -->
             <Directory Id="ColorPickerInstallFolder" Name="$(var.ColorPickerProjectName)">
               <Directory Id="ColorPickerResourcesFolder" Name="Resources"/>
+            </Directory>
+
+            <!-- Peek -->
+            <Directory Id="PeekInstallFolder" Name="$(var.PeekProjectName)">
+              <Directory Id="PeekResourcesFolder" Name="Resources"/>
+              <Directory Id="PeekAssetsFolder" Name="Assets" />
             </Directory>
 
             <!-- Mouse Utils -->
@@ -1032,6 +1039,31 @@
       </Component>
     </DirectoryRef>
 
+        <!-- Peek -->
+        <DirectoryRef Id="PeekInstallFolder" FileSource="$(var.BinX64Dir)modules\$(var.PeekProjectName)">
+            <!-- !Warning! Make sure to change Component Guid if you update the file list -->
+            <Component Id="Module_Peek" Guid="6520F12A-C255-4C3E-862B-0589897BEE21" Win64="yes">
+                <?foreach File in PowerToys.Peek.dll;PowerToys.Peek.UI.exe;PowerToys.Peek.UI.dll;PowerToys.Peek.UI.deps.json;PowerToys.Peek.UI.runtimeconfig.json;PowerToys.Interop.dll;PowerToys.ManagedTelemetry.dll;PowerToys.ManagedCommon.dll;ControlzEx.dll;Microsoft.Xaml.Behaviors.dll;ModernWpf.Controls.dll;ModernWpf.dll;PowerToys.Common.UI.dll;WinRT.Runtime.dll;Microsoft.Windows.SDK.NET.dll;WpfScreenHelper.dll?>
+                <File Id="PeekFile_$(var.File)" Source="$(var.BinX64Dir)modules\$(var.PeekProjectName)\$(var.File)" />
+                <?endforeach?>
+            </Component>
+        </DirectoryRef>
+
+        <!-- Peek Resources -->
+        <DirectoryRef Id="PeekResourcesFolder" FileSource="$(var.BinX64Dir)modules\$(var.PeekProjectName)\Resources">
+            <Component Id="Module_Peek_Icon">
+                <File Id="PeekFile_icon.ico" Source="$(var.BinX64Dir)modules\$(var.PeekProjectName)\Resources\Peek.ico" />
+            </Component>
+        </DirectoryRef>
+        
+        <!-- Peek Assets -->
+        <DirectoryRef Id="PeekAssetsFolder" FileSource="$(var.BinX64Dir)modules\$(var.PeekProjectName)\Assets">
+			<!-- !Warning! Make sure to change Component Guid if you update the file list -->
+            <Component Id="Module_Peek_Assets" Guid="7E781723-60AB-4027-B634-AFCEDDB2B1CD" Win64="yes">
+                <File Source="$(var.BinX64Dir)modules\$(var.PeekProjectName)\Assets\error.png" />
+            </Component>
+        </DirectoryRef>
+
     <!-- KBM -->
     <DirectoryRef Id="KeyboardManagerInstallFolder" FileSource="$(var.BinDir)modules\$(var.KeyboardManagerProjectName)\">
       <Component Id="Module_KeyboardManager" Win64="yes">
@@ -1332,6 +1364,9 @@
       <ComponentRef Id="Module_KeyboardManager_Editor" />
       <ComponentRef Id="Module_KeyboardManager_Engine" />
       <ComponentRef Id="Module_PowerOCR" />
+      <ComponentRef Id="Module_Peek" />
+      <ComponentRef Id="Module_Peek_Icon"/>
+      <ComponentRef Id="Module_Peek_Assets" />
       <ComponentRef Id="Module_ColorPicker" />
       <ComponentRef Id="Module_ColorPicker_Icon"/>
       <ComponentRef Id="Module_ColorPicker_Cursor"/>
@@ -1407,7 +1442,7 @@
   <Fragment>
     <!-- Resource directories should be added only if the installer is built on the build farm -->
     <?ifdef env.IsPipeline?>
-    <?foreach ParentDirectory in LauncherInstallFolder;FancyZonesInstallFolder;ImageResizerInstallFolder;ColorPickerInstallFolder;FileExplorerPreviewInstallFolder;HistoryPluginFolder;CalculatorPluginFolder;FolderPluginFolder;ProgramPluginFolder;ShellPluginFolder;IndexerPluginFolder;UnitConverterPluginFolder;UriPluginFolder;WindowWalkerPluginFolder;OneNotePluginFolder;RegistryPluginFolder;VSCodeWorkspacesPluginFolder;ServicePluginFolder;SystemPluginFolder;TimeDatePluginFolder;TimeZonePluginFolder;WindowsSettingsPluginFolder;WindowsTerminalPluginFolder;WebSearchPluginFolder?>
+    <?foreach ParentDirectory in LauncherInstallFolder;FancyZonesInstallFolder;ImageResizerInstallFolder;ColorPickerInstallFolder;PeekInstallFolder;FileExplorerPreviewInstallFolder;HistoryPluginFolder;CalculatorPluginFolder;FolderPluginFolder;ProgramPluginFolder;ShellPluginFolder;IndexerPluginFolder;UnitConverterPluginFolder;UriPluginFolder;WindowWalkerPluginFolder;OneNotePluginFolder;RegistryPluginFolder;VSCodeWorkspacesPluginFolder;ServicePluginFolder;SystemPluginFolder;TimeDatePluginFolder;TimeZonePluginFolder;WindowsSettingsPluginFolder;WindowsTerminalPluginFolder;WebSearchPluginFolder?>
     <DirectoryRef Id="$(var.ParentDirectory)">
       <!-- Resource file directories -->
       <?foreach Language in $(var.LocLanguageList)?>
@@ -1560,6 +1595,12 @@
           Directory="Resource$(var.IdSafeLanguage)ColorPickerInstallFolder"
           Guid="$(var.CompGUIDPrefix)03">
         <File Id="ColorPicker_$(var.IdSafeLanguage)_File" Source="$(var.BinDir)modules\$(var.ColorPickerProjectName)\$(var.Language)\PowerToys.ColorPickerUI.resources.dll" />
+      </Component>
+      <Component
+          Id="Peek_$(var.IdSafeLanguage)_Component"
+          Directory="Resource$(var.IdSafeLanguage)PeekInstallFolder"
+          Guid="$(var.CompGUIDPrefix)03">
+          <File Id="Peek_$(var.IdSafeLanguage)_File" Source="$(var.BinX64Dir)modules\$(var.PeekProjectName)\$(var.Language)\PowerToys.Peek.UI.resources.dll" />
       </Component>
       <Component
           Id="MarkdownPreviewHandler_$(var.IdSafeLanguage)_Component"

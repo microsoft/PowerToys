@@ -165,6 +165,7 @@ int runner(bool isProcessElevated, bool openSettings, std::string settingsWindow
             L"modules/FileLocksmith/PowerToys.FileLocksmithExt.dll",
             L"modules/MeasureTool/PowerToys.MeasureToolModuleInterface.dll",
             L"modules/Hosts/PowerToys.HostsModuleInterface.dll",
+            L"modules/Peek/PowerToys.Peek.dll",
         };
         const auto VCM_PATH = L"modules/VideoConference/PowerToys.VideoConferenceModule.dll";
         if (const auto mf = LoadLibraryA("mf.dll"))
