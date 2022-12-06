@@ -42,7 +42,7 @@
             Margin="4,4,144,-4"
             HorizontalAlignment="Right"
             VerticalAlignment="Top">
-            <Button>
+            <Button Click="Button_Click">
                 <StackPanel Orientation="Horizontal">
                     <FontIcon
                         Margin="4,0"
@@ -51,7 +51,7 @@
                     <TextBlock
                         Margin="4,0"
                         Style="{StaticResource CaptionTextBlockStyle}"
-                        Text="Open in Photos" />
+                        Text="{x:Bind OpenWithApp, Mode=OneWay}" />
                 </StackPanel>
             </Button>
         </Grid>

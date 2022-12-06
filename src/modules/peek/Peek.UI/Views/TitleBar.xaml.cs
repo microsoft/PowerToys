@@ -5,18 +5,41 @@
 namespace Peek.UI.Views
 {
     using System;
+    using CommunityToolkit.Mvvm.ComponentModel;
     using ManagedCommon;
     using Microsoft.UI;
     using Microsoft.UI.Windowing;
+    using Microsoft.UI.Xaml;
     using Microsoft.UI.Xaml.Controls;
+    using Peek.Common.Models;
+    using Peek.UI.Helpers;
+    using Windows.Storage;
+    using Windows.System;
     using WinUIEx;
-    using MUX = Microsoft.UI.Xaml;
 
+    [INotifyPropertyChanged]
     public sealed partial class TitleBar : UserControl
     {
+        public static readonly DependencyProperty FileProperty =
+        DependencyProperty.Register(
+            nameof(File),
+            typeof(File),
+            typeof(TitleBar),
+            new PropertyMetadata(null, (d, e) => ((TitleBar)d).OnFilePropertyChanged()));
+
+        [ObservableProperty]
+        private string openWithApp = "Open With";
+        private string? currentDefaultApp;
+
         public TitleBar()
         {
             InitializeComponent();
+        }
+
+        public File File
+        {
+            get => (File)GetValue(FileProperty);
+            set => SetValue(FileProperty, value);
         }
 
         public void SetToWindow(MainWindow mainWindow)
@@ -32,13 +55,33 @@ namespace Peek.UI.Views
             {
                 var hWnd = WinRT.Interop.WindowNative.GetWindowHandle(this);
                 ThemeHelpers.SetImmersiveDarkMode(hWnd, ThemeHelpers.GetAppTheme() == AppTheme.Dark);
-                Visibility = MUX.Visibility.Collapsed;
+                Visibility = Visibility.Collapsed;
 
                 // Set window icon
                 WindowId windowId = Win32Interop.GetWindowIdFromWindow(hWnd);
                 AppWindow appWindow = AppWindow.GetFromWindowId(windowId);
                 appWindow.SetIcon("Assets/Peek.ico");
             }
+        }
+
+        private void OnFilePropertyChanged()
+        {
+            // Update app name
+            currentDefaultApp = DefaultAppHelper.TryGetDefaultAppName(File.Extension);
+            OpenWithApp = "Open With " + currentDefaultApp;
+        }
+
+        private async void Button_Click(object sender, RoutedEventArgs e)
+        {
+            StorageFile storageFile = await File.GetStorageFileAsync();
+            var options = new LauncherOptions();
+
+            if (currentDefaultApp != null)
+            {
+                options.DisplayApplicationPicker = true;
+            }
+
+            await Launcher.LaunchFileAsync(storageFile, options);
         }
     }
 }
