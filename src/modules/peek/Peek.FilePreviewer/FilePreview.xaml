@@ -10,6 +10,7 @@
     xmlns:local="using:Peek.FilePreviewer"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:media="using:CommunityToolkit.WinUI.UI.Media"
+    xmlns:controls="using:Microsoft.UI.Xaml.Controls"
     mc:Ignorable="d">
 
     <Grid>
@@ -18,9 +19,19 @@
             VerticalAlignment="Center"
             IsActive="{x:Bind IsPreviewLoading(Previewer.Preview), Mode=OneWay}" />
 
-        <Image x:Name="PreviewImage" Source="{x:Bind Previewer.Preview, Mode=OneWay}" />
+        <Image x:Name="PreviewImage" Source="{x:Bind Previewer.Preview, Mode=OneWay}" Visibility="Collapsed" />
 
         <!--  TODO: Add WebView2 support.  -->
+        <controls:WebView2 x:Name="PreviewBrowser"
+                           Grid.Row="1"
+                           Grid.ColumnSpan="2"
+                           Visibility="Collapsed"
+                           x:Load="True"
+                           Loaded="PreviewWV2_Loaded"
+                           CoreWebView2Initialized="PreviewWV2_CoreWebView2Initialized"
+                           NavigationCompleted="PreviewWV2_NavigationCompleted"
+                           NavigationStarting="PreviewBrowser_NavigationStarting"/>
+        
 
         <!--  TODO: Add UnsupportedFilePreview control  -->
     </Grid>
