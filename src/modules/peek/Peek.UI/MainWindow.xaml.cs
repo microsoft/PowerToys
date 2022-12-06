@@ -39,13 +39,21 @@ namespace Peek.UI
         {
             if (AppWindow.IsVisible)
             {
-                this.Hide();
-                ViewModel.ClearFileData();
+                ExecuteHide();
             }
             else
             {
-                ViewModel.InitializeFileData();
+                // TODO: move into general ViewModel methods when needed
+                ViewModel.FileManager.Initialize();
             }
+        }
+
+        private void ExecuteHide()
+        {
+            this.Hide();
+
+            // TODO: move into general ViewModel methods when needed
+            ViewModel.FileManager.Uninitialize();
         }
 
         /// <summary>
@@ -80,8 +88,7 @@ namespace Peek.UI
         private void AppWindow_Closing(AppWindow sender, AppWindowClosingEventArgs args)
         {
             args.Cancel = true;
-            this.Hide();
-            ViewModel.ClearFileData();
+            ExecuteHide();
         }
     }
 }
