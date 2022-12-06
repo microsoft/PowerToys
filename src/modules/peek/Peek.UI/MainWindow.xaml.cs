@@ -6,10 +6,13 @@ namespace Peek.UI
 {
     using interop;
     using Microsoft.UI.Windowing;
+    using Microsoft.UI.Xaml.Input;
     using Peek.FilePreviewer.Models;
     using Peek.UI.Extensions;
     using Peek.UI.Native;
     using Windows.Foundation;
+    using Windows.System;
+    using Windows.UI.Core;
     using WinUIEx;
 
     /// <summary>
@@ -39,12 +42,32 @@ namespace Peek.UI
         {
             if (AppWindow.IsVisible)
             {
-                ExecuteHide();
+                ViewModel.AttemptLeftNavigation();
             }
             else
             {
                 // TODO: move into general ViewModel methods when needed
                 ViewModel.FileManager.Initialize();
+            }
+        }
+
+        private void OnPointerEntered(object sender, PointerRoutedEventArgs e)
+        {
+            ViewModel.AttemptLeftNavigation();
+        }
+
+        private void OnKeyDown(object sender, KeyRoutedEventArgs e)
+        {
+            switch (e.Key)
+            {
+                case VirtualKey.Left:
+                    ViewModel.AttemptLeftNavigation();
+                    break;
+                case VirtualKey.Right:
+                    ViewModel.AttemptRightNavigation();
+                    break;
+                default:
+                    break;
             }
         }
 

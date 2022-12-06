@@ -15,7 +15,7 @@
         <winuiex:MicaSystemBackdrop />
     </winuiex:WindowEx.Backdrop>
 
-    <Grid>
+    <Grid x:Name="LayoutRoot">
         <Grid.RowDefinitions>
             <RowDefinition Height="32" />
             <RowDefinition Height="*" />

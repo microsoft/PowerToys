@@ -8,6 +8,7 @@ namespace Peek.UI
     using CommunityToolkit.Mvvm.ComponentModel;
     using Peek.Common.Models;
     using Peek.UI.Helpers;
+    using Windows.Media.Devices;
 
     public partial class FileManager : ObservableObject
     {
@@ -15,8 +16,20 @@ namespace Peek.UI
         {
             currentFile = null;
 
-            // folderItems = null;
-            // currentItemIndex = -1;
+            folderItems = null;
+            currentItemIndex = -1;
+        }
+
+        public void UpdateCurrentItemIndex(int desiredIndex)
+        {
+            // TODO: add processing check
+            if (folderItems == null)
+            {
+                return;
+            }
+
+            currentItemIndex = desiredIndex % folderItems.Count;
+            CurrentFile = new File(folderItems.Item(currentItemIndex).Path);
         }
 
         public void Initialize()
@@ -34,25 +47,39 @@ namespace Peek.UI
                 return;
             }
 
+            // Prioritize setting CurrentFile, which notifies UI
             var firstSelectedItem = selectedItems.Item(0);
-            Debug.WriteLine("!~ Setting cur item to " + firstSelectedItem.Name);
             CurrentFile = new File(firstSelectedItem.Path);
 
-            var items = selectedItems.Count > 1 ? selectedItems : folderView.Folder?.Items();
-            if (items == null)
+            // Since parent folder can contain 1000s of items, process them on bg thread
+            // TODO: kick off background task processing items (to find idx)
+            // TODO: double check how lb resolves cur activated file (is just a manual search)
+            folderItems = selectedItems.Count > 1 ? selectedItems : folderView.Folder?.Items();
+            if (folderItems == null)
             {
                 return;
             }
 
-            // TODO:
-            // folderItems = items;
+            // TODO: refactor to bg task
+            for (int i = 0; i < folderItems.Count; i++)
+            {
+                if (folderItems.Item(i).Name.ToLower() == firstSelectedItem.Name.ToLower())
+                {
+                    currentItemIndex = i;
+                    break;
+                }
+            }
+
+            Debug.WriteLine("!~ Setting cur item to " + firstSelectedItem.Name);
         }
 
         [ObservableProperty]
         private File? currentFile;
 
-        // private Shell32.FolderItems? folderItems;
+        private Shell32.FolderItems? folderItems;
 
-        // private int currentItemIndex = -1;
+        private int currentItemIndex = -1;
+
+        public int CurrentItemIndex { get => currentItemIndex; }
     }
 }

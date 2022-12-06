@@ -11,5 +11,8 @@ namespace Peek.UI.Native
     {
         [DllImport("user32.dll", CharSet = CharSet.Auto, ExactSpelling = true)]
         internal static extern IntPtr GetForegroundWindow();
+
+        [DllImport("user32.dll", CharSet = CharSet.Auto, ExactSpelling = true)]
+        internal static extern IntPtr GetTopWindow([In] IntPtr hWnd);
     }
 }

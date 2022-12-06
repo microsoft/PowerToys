@@ -11,6 +11,16 @@ namespace Peek.UI
 
     public partial class MainWindowViewModel : ObservableObject
     {
+        public void AttemptLeftNavigation()
+        {
+            fileManager.UpdateCurrentItemIndex(fileManager.CurrentItemIndex + 1);
+        }
+
+        public void AttemptRightNavigation()
+        {
+            fileManager.UpdateCurrentItemIndex(fileManager.CurrentItemIndex - 1);
+        }
+
         [ObservableProperty]
         private FileManager fileManager = new ();
     }
