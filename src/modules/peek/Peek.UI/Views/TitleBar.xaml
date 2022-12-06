@@ -10,16 +10,50 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     mc:Ignorable="d">
 
-    <Grid x:Name="titleBar">
+    <Grid x:Name="TitleBarRootContainer">
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="Auto" />
+            <ColumnDefinition Width="*" />
+        </Grid.ColumnDefinitions>
         <StackPanel
+            x:Name="AppIconAndName"
+            Grid.Column="0"
             Margin="16,8,8,8"
+            HorizontalAlignment="Left"
             VerticalAlignment="Top"
             Orientation="Horizontal">
-            <Image Source="../Assets/AppList.png" />
+
+            <!--  Todo P1: Use Peek's logo  -->
+            <!--  Todo P2: Use default app's logo  -->
+            <Image
+                x:Name="PeekLogo"
+                x:Uid="PeekLogo"
+                Source="../Assets/AppList.png" />
+
+            <!--  Todo P1: Change AppTitleText to reflect file name  -->
             <TextBlock
                 x:Uid="AppTitleText"
                 Margin="12,0,0,0"
                 Style="{StaticResource CaptionTextBlockStyle}" />
         </StackPanel>
+
+        <Grid
+            Grid.Column="1"
+            Margin="4,4,144,-4"
+            HorizontalAlignment="Right"
+            VerticalAlignment="Top">
+            <Button>
+                <StackPanel Orientation="Horizontal">
+                    <FontIcon
+                        Margin="4,0"
+                        FontSize="{StaticResource CaptionTextBlockFontSize}"
+                        Glyph="&#xE8E5;" />
+                    <TextBlock
+                        Margin="4,0"
+                        Style="{StaticResource CaptionTextBlockStyle}"
+                        Text="Open in Photos" />
+                </StackPanel>
+            </Button>
+        </Grid>
     </Grid>
 </UserControl>
