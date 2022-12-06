@@ -11,15 +11,16 @@ namespace Peek.FilePreviewer.Previewers
     using System.Threading.Tasks;
     using CommunityToolkit.Mvvm.ComponentModel;
     using Microsoft.UI.Dispatching;
+    using Microsoft.UI.Xaml.Controls;
     using Microsoft.UI.Xaml.Media.Imaging;
     using Peek.Common;
     using Windows.Foundation;
     using File = Peek.Common.Models.File;
 
-    [INotifyPropertyChanged]
-    public partial class ImagePreviewer : IDisposable
+    public partial class ImagePreviewer : ObservableObject, IBitmapPreviewer, IDisposable
     {
         [ObservableProperty]
+        [NotifyPropertyChangedFor(nameof(IsPreviewLoaded))]
         private BitmapSource? preview;
 
         public ImagePreviewer(File file)
@@ -27,6 +28,8 @@ namespace Peek.FilePreviewer.Previewers
             File = file;
             Dispatcher = DispatcherQueue.GetForCurrentThread();
         }
+
+        public bool IsPreviewLoaded => preview != null;
 
         private File File { get; }
 
