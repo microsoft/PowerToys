@@ -49,9 +49,15 @@ namespace Peek.FilePreviewer.Previewers
             GC.SuppressFinalize(this);
         }
 
-        public Task<Size> GetPreviewSizeAsync()
+        public async Task<Size> GetPreviewSizeAsync()
         {
-            return WICHelper.GetImageSize(File.Path);
+            var propertyImageSize = await PropertyHelper.GetImageSize(File.Path);
+            if (propertyImageSize != Size.Empty)
+            {
+                return propertyImageSize;
+            }
+
+            return await WICHelper.GetImageSize(File.Path);
         }
 
         public Task LoadPreviewAsync()
