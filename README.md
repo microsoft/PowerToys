@@ -120,7 +120,7 @@ In this release, we focused on stability and improvements.
 
 ### File explorer add-ons
 
-- Added .log file support to the Monaco preview handler.
+- Added .log file support to the Monaco preview handler. Thanks [@Eagle3386](https://github.com/Eagle3386)!
 
 ### File Locksmith
 
