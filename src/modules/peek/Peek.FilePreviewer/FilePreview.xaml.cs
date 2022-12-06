@@ -106,6 +106,9 @@ namespace Peek.FilePreviewer
         private void NavigateWithWV2(File file)
         {
             _localFileURI = new Uri(file.Path);
+
+            /* CoreWebView2.Navigate() will always trigger a navigation even if the content/URI is the same.
+             * Use WebView2.Source to avoid re-navigating to the same content. */
             PreviewBrowser.CoreWebView2.Navigate(_localFileURI.ToString());
 
             PreviewSizeChanged?.Invoke(this, new PreviewSizeChangedArgs(new Size(1280, 720)));
@@ -113,31 +116,32 @@ namespace Peek.FilePreviewer
 
         private async void PreviewWV2_Loaded(object sender, RoutedEventArgs e)
         {
-            // This call might take ~300ms to complete
-            await PreviewBrowser.EnsureCoreWebView2Async();
+            try
+            {
+                // This call might take ~300ms to complete
+                await PreviewBrowser.EnsureCoreWebView2Async();
 
-            PreviewBrowser.CoreWebView2.Settings.AreDefaultScriptDialogsEnabled = false;
-            PreviewBrowser.CoreWebView2.Settings.AreDefaultContextMenusEnabled = false;
-            PreviewBrowser.CoreWebView2.Settings.AreDevToolsEnabled = false;
-            PreviewBrowser.CoreWebView2.Settings.AreHostObjectsAllowed = false;
-            PreviewBrowser.CoreWebView2.Settings.IsGeneralAutofillEnabled = false;
-            PreviewBrowser.CoreWebView2.Settings.IsPasswordAutosaveEnabled = false;
-            PreviewBrowser.CoreWebView2.Settings.IsScriptEnabled = false;
-            PreviewBrowser.CoreWebView2.Settings.IsWebMessageEnabled = false;
+                PreviewBrowser.CoreWebView2.Settings.AreDefaultScriptDialogsEnabled = false;
+                PreviewBrowser.CoreWebView2.Settings.AreDefaultContextMenusEnabled = false;
+                PreviewBrowser.CoreWebView2.Settings.AreDevToolsEnabled = false;
+                PreviewBrowser.CoreWebView2.Settings.AreHostObjectsAllowed = false;
+                PreviewBrowser.CoreWebView2.Settings.IsGeneralAutofillEnabled = false;
+                PreviewBrowser.CoreWebView2.Settings.IsPasswordAutosaveEnabled = false;
+                PreviewBrowser.CoreWebView2.Settings.IsScriptEnabled = false;
+                PreviewBrowser.CoreWebView2.Settings.IsWebMessageEnabled = false;
 
-            // Don't load any resources.
-            PreviewBrowser.CoreWebView2.AddWebResourceRequestedFilter("*", Microsoft.Web.WebView2.Core.CoreWebView2WebResourceContext.All);
+                // Don't load any resources.
+                PreviewBrowser.CoreWebView2.AddWebResourceRequestedFilter("*", Microsoft.Web.WebView2.Core.CoreWebView2WebResourceContext.All);
+            }
+            catch
+            {
+                // TODO: exception / log hanlder?
+            }
         }
 
         private void PreviewWV2_CoreWebView2Initialized(WebView2 sender, CoreWebView2InitializedEventArgs args)
         {
             _isWebView2CoreInit = true;
-        }
-
-        private void PreviewWV2_NavigationCompleted(WebView2 sender, Microsoft.Web.WebView2.Core.CoreWebView2NavigationCompletedEventArgs args)
-        {
-            PreviewImage.Visibility = Visibility.Collapsed;
-            PreviewBrowser.Visibility = Visibility.Visible;
         }
 
         private async void PreviewBrowser_NavigationStarting(WebView2 sender, Microsoft.Web.WebView2.Core.CoreWebView2NavigationStartingEventArgs args)
@@ -148,6 +152,13 @@ namespace Peek.FilePreviewer
                 args.Cancel = true;
                 await Launcher.LaunchUriAsync(new Uri(args.Uri));
             }
+        }
+
+        private void PreviewWV2_NavigationCompleted(WebView2 sender, Microsoft.Web.WebView2.Core.CoreWebView2NavigationCompletedEventArgs args)
+        {
+            // TODO: replace with proper control visibility change
+            PreviewImage.Visibility = Visibility.Collapsed;
+            PreviewBrowser.Visibility = Visibility.Visible;
         }
     }
 }

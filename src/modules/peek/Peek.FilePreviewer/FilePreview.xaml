@@ -21,10 +21,7 @@
 
         <Image x:Name="PreviewImage" Source="{x:Bind Previewer.Preview, Mode=OneWay}" Visibility="Collapsed" />
 
-        <!--  TODO: Add WebView2 support.  -->
         <controls:WebView2 x:Name="PreviewBrowser"
-                           Grid.Row="1"
-                           Grid.ColumnSpan="2"
                            Visibility="Collapsed"
                            x:Load="True"
                            Loaded="PreviewWV2_Loaded"
@@ -32,7 +29,7 @@
                            NavigationCompleted="PreviewWV2_NavigationCompleted"
                            NavigationStarting="PreviewBrowser_NavigationStarting"/>
         
-
+        
         <!--  TODO: Add UnsupportedFilePreview control  -->
     </Grid>
 </UserControl>
