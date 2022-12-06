@@ -101,7 +101,7 @@ In this release, we focused on stability and improvements.
 ### Awake
 
 - Added telemetry.
-- Don't allow exiting awake from the tray icon when starting from the runner.
+- Removed exiting Awake from the tray icon when starting from the runner. Utilities started from the runner should be disabled in the Settings to avoid discrepancies.
 
 ### Color Picker
 
