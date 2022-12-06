@@ -10,7 +10,7 @@
     xmlns:local="using:Peek.FilePreviewer"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:media="using:CommunityToolkit.WinUI.UI.Media"
-    xmlns:controls="using:Microsoft.UI.Xaml.Controls"
+    xmlns:controls="using:Peek.FilePreviewer.Controls"
     mc:Ignorable="d">
 
     <Grid>
@@ -21,15 +21,9 @@
 
         <Image x:Name="PreviewImage" Source="{x:Bind Previewer.Preview, Mode=OneWay}" Visibility="Collapsed" />
 
-        <controls:WebView2 x:Name="PreviewBrowser"
-                           Visibility="Collapsed"
-                           x:Load="True"
-                           Loaded="PreviewWV2_Loaded"
-                           CoreWebView2Initialized="PreviewWV2_CoreWebView2Initialized"
-                           NavigationCompleted="PreviewWV2_NavigationCompleted"
-                           NavigationStarting="PreviewBrowser_NavigationStarting"/>
-        
-        
+        <!-- TODO: add "Source" dprop -->
+        <controls:BrowserControl x:Name="PreviewBrowser"
+                                 x:Load="True"/>
         <!--  TODO: Add UnsupportedFilePreview control  -->
     </Grid>
 </UserControl>

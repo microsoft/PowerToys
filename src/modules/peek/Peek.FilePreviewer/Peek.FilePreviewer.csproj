@@ -8,6 +8,7 @@
     <Nullable>enable</Nullable>
   </PropertyGroup>
   <ItemGroup>
+    <None Remove="Controls\BrowserControl.xaml" />
     <None Remove="FilePreview.xaml" />
     <None Remove="Previewers\ImagePreviewer\ImagePreviewer.cs~RFfdea838.TMP" />
   </ItemGroup>
@@ -29,5 +30,15 @@
     <Page Update="FilePreview.xaml">
       <Generator>MSBuild:Compile</Generator>
     </Page>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Page Update="Controls\BrowserControl.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Themes\" />
   </ItemGroup>
 </Project>

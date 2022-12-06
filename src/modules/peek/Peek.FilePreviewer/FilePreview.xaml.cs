@@ -20,15 +20,6 @@ namespace Peek.FilePreviewer
     [INotifyPropertyChanged]
     public sealed partial class FilePreview : UserControl
     {
-        private bool _isWebView2CoreInit = false;
-
-        /// <summary>
-        /// Cached the current URI used to navigate so we can
-        /// evaluate internal vs external user navigation within
-        /// the local HTML.
-        /// </summary>
-        private Uri _localFileURI = default!;
-
         public event EventHandler<PreviewSizeChangedArgs>? PreviewSizeChanged;
 
         public static readonly DependencyProperty FilesProperty =
@@ -65,9 +56,12 @@ namespace Peek.FilePreviewer
             }
 
             // TODO: Implement plugin pattern to support any file types.
-            if (File.Extension.ToLower() == ".html" && _isWebView2CoreInit)
+            if (File.Extension.ToLower() == ".html")
             {
-                NavigateWithWV2(File);
+                PreviewBrowser.Navigate(File);
+                PreviewSizeChanged?.Invoke(this, new PreviewSizeChangedArgs(new Size(1280, 720)));
+                PreviewBrowser.Visibility = Visibility.Visible;
+                PreviewImage.Visibility = Visibility.Collapsed;
             }
             else if (IsSupportedImage(File.Extension))
             {
@@ -102,63 +96,5 @@ namespace Peek.FilePreviewer
             ".tiff" => true,
             _ => false,
         };
-
-        private void NavigateWithWV2(File file)
-        {
-            _localFileURI = new Uri(file.Path);
-
-            /* CoreWebView2.Navigate() will always trigger a navigation even if the content/URI is the same.
-             * Use WebView2.Source to avoid re-navigating to the same content. */
-            PreviewBrowser.CoreWebView2.Navigate(_localFileURI.ToString());
-
-            PreviewSizeChanged?.Invoke(this, new PreviewSizeChangedArgs(new Size(1280, 720)));
-        }
-
-        private async void PreviewWV2_Loaded(object sender, RoutedEventArgs e)
-        {
-            try
-            {
-                // This call might take ~300ms to complete
-                await PreviewBrowser.EnsureCoreWebView2Async();
-
-                PreviewBrowser.CoreWebView2.Settings.AreDefaultScriptDialogsEnabled = false;
-                PreviewBrowser.CoreWebView2.Settings.AreDefaultContextMenusEnabled = false;
-                PreviewBrowser.CoreWebView2.Settings.AreDevToolsEnabled = false;
-                PreviewBrowser.CoreWebView2.Settings.AreHostObjectsAllowed = false;
-                PreviewBrowser.CoreWebView2.Settings.IsGeneralAutofillEnabled = false;
-                PreviewBrowser.CoreWebView2.Settings.IsPasswordAutosaveEnabled = false;
-                PreviewBrowser.CoreWebView2.Settings.IsScriptEnabled = false;
-                PreviewBrowser.CoreWebView2.Settings.IsWebMessageEnabled = false;
-
-                // Don't load any resources.
-                PreviewBrowser.CoreWebView2.AddWebResourceRequestedFilter("*", Microsoft.Web.WebView2.Core.CoreWebView2WebResourceContext.All);
-            }
-            catch
-            {
-                // TODO: exception / log hanlder?
-            }
-        }
-
-        private void PreviewWV2_CoreWebView2Initialized(WebView2 sender, CoreWebView2InitializedEventArgs args)
-        {
-            _isWebView2CoreInit = true;
-        }
-
-        private async void PreviewBrowser_NavigationStarting(WebView2 sender, Microsoft.Web.WebView2.Core.CoreWebView2NavigationStartingEventArgs args)
-        {
-            // In case user starts or tries to navigate from within the HTML file we launch default web browser for navigation.
-            if (args.Uri != null && args.Uri != _localFileURI?.ToString() && args.IsUserInitiated)
-            {
-                args.Cancel = true;
-                await Launcher.LaunchUriAsync(new Uri(args.Uri));
-            }
-        }
-
-        private void PreviewWV2_NavigationCompleted(WebView2 sender, Microsoft.Web.WebView2.Core.CoreWebView2NavigationCompletedEventArgs args)
-        {
-            // TODO: replace with proper control visibility change
-            PreviewImage.Visibility = Visibility.Collapsed;
-            PreviewBrowser.Visibility = Visibility.Visible;
-        }
     }
 }
