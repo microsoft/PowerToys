@@ -21,7 +21,10 @@
             <RowDefinition Height="*" />
         </Grid.RowDefinitions>
 
-        <views:TitleBar x:Name="TitleBarControl" Grid.Row="0" />
+        <views:TitleBar
+            x:Name="TitleBarControl"
+            Grid.Row="0"
+            File="{x:Bind ViewModel.CurrentFile, Mode=OneWay}" />
 
         <fp:FilePreview
             Grid.Row="1"
