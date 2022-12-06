@@ -11,7 +11,7 @@ namespace Peek.Common.Models
     using System.Runtime.InteropServices;
     using System.Text;
 
-    public static class ShellApi
+    public static class PropertyStoreShellApi
     {
         /// <summary>
         /// Gets the path to the given known folder.
@@ -35,26 +35,26 @@ namespace Peek.Common.Models
         /// <returns>an IPropertyStroe interface</returns>
         public static IPropertyStore GetPropertyStoreFromPath(string path, PropertyStoreFlags flags = PropertyStoreFlags.EXTRINSICPROPERTIES)
         {
-            ShellApi.IShellItem2? shellItem2 = null;
+            PropertyStoreShellApi.IShellItem2? shellItem2 = null;
             IntPtr ppPropertyStore = IntPtr.Zero;
 
             try
             {
-                ShellApi.SHCreateItemFromParsingName(path, IntPtr.Zero, typeof(ShellApi.IShellItem2).GUID, out shellItem2);
+                PropertyStoreShellApi.SHCreateItemFromParsingName(path, IntPtr.Zero, typeof(PropertyStoreShellApi.IShellItem2).GUID, out shellItem2);
 
                 if (shellItem2 == null)
                 {
                     throw new InvalidOperationException(string.Format("Unable to get an IShellItem2 reference from file {0}.", path));
                 }
 
-                int hr = shellItem2.GetPropertyStore((int)flags, typeof(ShellApi.IPropertyStore).GUID, out ppPropertyStore);
+                int hr = shellItem2.GetPropertyStore((int)flags, typeof(PropertyStoreShellApi.IPropertyStore).GUID, out ppPropertyStore);
 
                 if (hr != 0)
                 {
                     throw new InvalidOperationException(string.Format("GetPropertyStore retunred hresult={0}", hr));
                 }
 
-                return (ShellApi.IPropertyStore)Marshal.GetObjectForIUnknown(ppPropertyStore);
+                return (PropertyStoreShellApi.IPropertyStore)Marshal.GetObjectForIUnknown(ppPropertyStore);
             }
             finally
             {
@@ -601,6 +601,9 @@ namespace Peek.Common.Models
             {
                 return FormatId.GetHashCode() ^ PropertyId;
             }
+
+            public static readonly PropertyKey ImageHorizontalSize = new PropertyKey(new Guid(0x6444048F, 0x4C8B, 0x11D1, 0x8B, 0x70, 0x08, 0x00, 0x36, 0xB1, 0x1A, 0x03), 3);
+            public static readonly PropertyKey ImageVerticalSize = new PropertyKey(new Guid(0x6444048F, 0x4C8B, 0x11D1, 0x8B, 0x70, 0x08, 0x00, 0x36, 0xB1, 0x1A, 0x03), 4);
         }
 
         [DllImport("shlwapi.dll", CharSet = CharSet.Unicode)]
