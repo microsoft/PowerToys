@@ -15,7 +15,6 @@ namespace Peek.FilePreviewer
     using Peek.FilePreviewer.Models;
     using Peek.FilePreviewer.Previewers;
     using Windows.Foundation;
-    using Windows.System;
 
     [INotifyPropertyChanged]
     public sealed partial class FilePreview : UserControl
