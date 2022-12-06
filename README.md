@@ -139,6 +139,9 @@ In this release, we focused on stability and improvements.
 - Updated the name for the additional lines feature. Thanks [@htcfreek](https://github.com/htcfreek)!
 - Added a workaround for an issue causing the context menu not opening on right-click. Thanks [@davidegiacometti](https://github.com/davidegiacometti)!
 
+### Image Resizer
+- Fixed a silent crash when trying to show the tier 1 context menu on Windows 11.
+
 ### PowerToys Run
 
 - Added pinyin support to the search. Thanks [@frg2089](https://github.com/frg2089)!
