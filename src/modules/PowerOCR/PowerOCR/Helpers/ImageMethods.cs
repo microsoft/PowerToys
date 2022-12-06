@@ -147,7 +147,7 @@ internal class ImageMethods
                 }
                 else
                 {
-                    // Kanji ,Hiragana, Katakana, Hankaku-Katakana do not need blank.(not only the symble in CJKUnifiedIdeographs).
+                    // Kanji ,Hiragana, Katakana, Hankaku-Katakana do not need blank.(not only the symbol in CJKUnifiedIdeographs).
                     // Maybe there are more symbols that don't require spaces like \u3001 \u3002.
                     var cjkRegex = new Regex(@"\p{IsCJKUnifiedIdeographs}|\p{IsHiragana}|\p{IsKatakana}|[\uFF61-\uFF9F]");
 
