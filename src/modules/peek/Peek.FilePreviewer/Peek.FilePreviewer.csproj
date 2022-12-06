@@ -9,7 +9,6 @@
   </PropertyGroup>
   <ItemGroup>
     <None Remove="FilePreview.xaml" />
-    <None Remove="Previewers\ImagePreviewer\ImagePreviewer.cs~RFfdea838.TMP" />
   </ItemGroup>
 
   <ItemGroup>
