@@ -23,7 +23,7 @@
     <Nullable>Enable</Nullable>
   </PropertyGroup>
   <ItemGroup>
-    <Content Remove="Assets\Peek.ico" />
+      <Content Include="Assets\Icon.ico" />
   </ItemGroup>
   <ItemGroup>
     <None Remove="Assets\AppList.scale-100.png" />
@@ -31,7 +31,7 @@
     <None Remove="Assets\AppList.scale-150.png" />
     <None Remove="Assets\AppList.scale-200.png" />
     <None Remove="Assets\AppList.scale-400.png" />
-    <None Remove="Assets\Peek.ico" />
+    <None Remove="Assets\Icon.ico" />
     <None Remove="Views\TitleBar.xaml" />
   </ItemGroup>
   <ItemGroup>
@@ -82,7 +82,7 @@
     <ProjectReference Include="..\Peek.FilePreviewer\Peek.FilePreviewer.csproj" />
   </ItemGroup>
   <ItemGroup>
-    <Resource Include="Assets\Peek.ico" />
+    <Resource Include="Assets\Icon.ico" />
   </ItemGroup>
   <ItemGroup>
     <Page Update="Views\TitleBar.xaml">

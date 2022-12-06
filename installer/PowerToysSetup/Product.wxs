@@ -569,8 +569,13 @@
                 <Directory Id="HostsMicrosoftUIXamlAssetsInstallFolder" Name="Assets" />
               </Directory>
             </Directory>
-            
-            <!-- Launcher -->
+
+            <!-- Hosts -->
+            <Directory Id="PeekInstallFolder" Name="$(var.PeekProjectName)">
+              <Directory Id="PeekAssetsInstallFolder" Name="Assets" />
+            </Directory>
+
+              <!-- Launcher -->
             <Directory Id="LauncherInstallFolder" Name="launcher">
               <Directory Id="LauncherImagesFolder" Name="Images" />
               <Directory Id="LauncherPropertiesFolder" Name="Properties" />
@@ -1037,12 +1042,16 @@
       </Component>
     </DirectoryRef>
 
-    <!-- Peek -->
+      <!-- Peek -->
     <DirectoryRef Id="PeekInstallFolder" FileSource="$(var.BinDir)modules\$(var.PeekProjectName)">
-      <?foreach File in $(var.PeekFiles)?>
-      <Component Id="Peek_$(var.File)" Win64="yes">
-        <File Id="PeekFile_$(var.File)" Source="$(var.BinDir)modules\$(var.PeekProjectName)\$(var.File)" />
+      <Component Id="Module_Peek" Win64="yes">
+        <File Source="$(var.BinDir)modules\$(var.PeekProjectName)\PowerToys.Peek.dll" />
       </Component>
+
+      <?foreach File in $(var.PeekFiles)?>
+        <Component Id="Peek_$(var.File)" Win64="yes">
+          <File Id="PeekFile_$(var.File)" Source="$(var.BinDir)modules\$(var.PeekProjectName)\$(var.File)" />
+        </Component>
       <?endforeach?>
     </DirectoryRef>
 
@@ -1457,7 +1466,7 @@
   <Fragment>
     <!-- Resource directories should be added only if the installer is built on the build farm -->
     <?ifdef env.IsPipeline?>
-    <?foreach ParentDirectory in LauncherInstallFolder;FancyZonesInstallFolder;ImageResizerInstallFolder;ColorPickerInstallFolder;PeekInstallFolder;FileExplorerPreviewInstallFolder;HistoryPluginFolder;CalculatorPluginFolder;FolderPluginFolder;ProgramPluginFolder;ShellPluginFolder;IndexerPluginFolder;UnitConverterPluginFolder;UriPluginFolder;WindowWalkerPluginFolder;OneNotePluginFolder;RegistryPluginFolder;VSCodeWorkspacesPluginFolder;ServicePluginFolder;SystemPluginFolder;TimeDatePluginFolder;TimeZonePluginFolder;WindowsSettingsPluginFolder;WindowsTerminalPluginFolder;WebSearchPluginFolder?>
+    <?foreach ParentDirectory in LauncherInstallFolder;FancyZonesInstallFolder;ImageResizerInstallFolder;ColorPickerInstallFolder;FileExplorerPreviewInstallFolder;HistoryPluginFolder;CalculatorPluginFolder;FolderPluginFolder;ProgramPluginFolder;ShellPluginFolder;IndexerPluginFolder;UnitConverterPluginFolder;UriPluginFolder;WindowWalkerPluginFolder;OneNotePluginFolder;RegistryPluginFolder;VSCodeWorkspacesPluginFolder;ServicePluginFolder;SystemPluginFolder;TimeDatePluginFolder;TimeZonePluginFolder;WindowsSettingsPluginFolder;WindowsTerminalPluginFolder;WebSearchPluginFolder?>
     <DirectoryRef Id="$(var.ParentDirectory)">
       <!-- Resource file directories -->
       <?foreach Language in $(var.LocLanguageList)?>
@@ -2101,7 +2110,7 @@
           <Component
             Id="Peek_WinAppSDKLoc_$(var.IdSafeLanguage)_Component"
             Directory="WinAppSDKLoc$(var.IdSafeLanguage)PeekInstallFolder"
-            Guid="$(var.CompGUIDPrefix)05">
+            Guid="$(var.CompGUIDPrefix)06">
             <File Id="Peek_WinAppSDKLoc_$(var.IdSafeLanguage)_XamlMui_File" Source="$(var.BinDir)modules\$(var.PeekProjectName)\$(var.Language)\Microsoft.ui.xaml.dll.mui" />
             <File Id="Peek_WinAppSDKLoc_$(var.IdSafeLanguage)_XamlPhoneMui_File" Source="$(var.BinDir)modules\$(var.PeekProjectName)\$(var.Language)\Microsoft.UI.Xaml.Phone.dll.mui" />
           </Component>
