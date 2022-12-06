@@ -5,6 +5,7 @@
 namespace Peek.FilePreviewer
 {
     using System;
+    using System.Diagnostics;
     using System.Threading.Tasks;
     using CommunityToolkit.Mvvm.ComponentModel;
     using CommunityToolkit.WinUI.UI.Media.Pipelines;
@@ -49,6 +50,7 @@ namespace Peek.FilePreviewer
 
         private async Task OnFilePropertyChanged()
         {
+            Debug.WriteLine("!~ file property changed");
             if (File == null)
             {
                 return;
@@ -64,6 +66,7 @@ namespace Peek.FilePreviewer
                 var size = await Previewer.GetPreviewSizeAsync();
                 PreviewSizeChanged?.Invoke(this, new PreviewSizeChangedArgs(size));
                 await Previewer.LoadPreviewAsync();
+                Debug.WriteLine("!~ finishedl loading all tasks");
             }
             else
             {

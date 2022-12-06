@@ -85,6 +85,7 @@
     <ProjectReference Include="..\..\..\common\ManagedCommon\ManagedCommon.csproj" />
     <ProjectReference Include="..\Peek.Common\Peek.Common.csproj" />
     <ProjectReference Include="..\Peek.FilePreviewer\Peek.FilePreviewer.csproj" />
+    <ProjectReference Include="..\peek\peek.vcxproj" />
   </ItemGroup>
   <ItemGroup>
     <Resource Include="Assets\Peek.ico" />

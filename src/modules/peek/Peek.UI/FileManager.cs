@@ -4,6 +4,7 @@
 
 namespace Peek.UI
 {
+    using System.Collections.Generic;
     using System.Diagnostics;
     using CommunityToolkit.Mvvm.ComponentModel;
     using Peek.Common.Models;
@@ -18,20 +19,31 @@ namespace Peek.UI
         {
             currentFile = null;
 
-            folderItems = null;
+            files = new List<File>();
             currentItemIndex = UninitializedItemIndex;
         }
 
         public void UpdateCurrentItemIndex(int desiredIndex)
         {
             // TODO: add processing check
-            if (folderItems == null || currentItemIndex == UninitializedItemIndex)
+            if (files == null || currentItemIndex == UninitializedItemIndex)
             {
                 return;
             }
 
-            currentItemIndex = desiredIndex % folderItems.Count;
-            CurrentFile = new File(folderItems.Item(currentItemIndex).Path);
+            // Current index wraps around when reaching min/max folder item indices
+            desiredIndex %= files.Count;
+            currentItemIndex = desiredIndex < 0 ? files.Count + desiredIndex : desiredIndex;
+
+            if (currentItemIndex < 0 || currentItemIndex >= files.Count)
+            {
+                Debug.Assert(false, "Out of bounds folder item index detected.");
+                currentItemIndex = 0;
+            }
+
+            Debug.WriteLine("!~ updating cur item index " + currentItemIndex);
+            CurrentFile = files[currentItemIndex];
+            Debug.WriteLine("!~ Finished updating cur item idx " + currentItemIndex);
         }
 
         public void Initialize()
@@ -55,21 +67,32 @@ namespace Peek.UI
 
             // Since parent folder can contain 1000s of items, process them on bg thread
             // TODO: kick off background task processing items (to find idx)
-            folderItems = selectedItems.Count > 1 ? selectedItems : folderView.Folder?.Items();
-            if (folderItems == null)
+            var items = selectedItems.Count > 1 ? selectedItems : folderView.Folder?.Items();
+            if (items == null)
             {
                 return;
             }
 
-            // TODO: refactor to bg task
-            for (int i = 0; i < folderItems.Count; i++)
+            // TODO: refactor to bg task, give better name
+            var tempFiles = new List<File>(items.Count);
+
+            for (int i = 0; i < items.Count; i++)
             {
-                if (folderItems.Item(i).Name.ToLower() == firstSelectedItem.Name.ToLower())
+                var item = items.Item(i);
+                if (item == null)
+                {
+                    continue;
+                }
+
+                if (item.Name.ToLower() == firstSelectedItem.Name.ToLower())
                 {
                     currentItemIndex = i;
-                    break;
                 }
+
+                tempFiles.Add(new File(item.Path));
             }
+
+            files = tempFiles;
 
             Debug.WriteLine("!~ Setting cur item to " + firstSelectedItem.Name);
         }
@@ -77,10 +100,10 @@ namespace Peek.UI
         [ObservableProperty]
         private File? currentFile;
 
-        private Shell32.FolderItems? folderItems;
+        private List<File> files = new ();
 
         private int currentItemIndex = UninitializedItemIndex;
 
-        public int CurrentItemIndex { get => currentItemIndex; }
+        public int CurrentItemIndex => currentItemIndex;
     }
 }

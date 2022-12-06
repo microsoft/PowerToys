@@ -15,7 +15,12 @@
         <winuiex:MicaSystemBackdrop />
     </winuiex:WindowEx.Backdrop>
 
-    <Grid x:Name="LayoutRoot">
+    <Grid KeyboardAcceleratorPlacementMode="Hidden">
+        <Grid.KeyboardAccelerators>
+            <KeyboardAccelerator Key="Left" Invoked="LeftNavigationInvoked" />
+            <KeyboardAccelerator Key="Right" Invoked="RightNavigationInvoked" />
+        </Grid.KeyboardAccelerators>
+
         <Grid.RowDefinitions>
             <RowDefinition Height="32" />
             <RowDefinition Height="*" />

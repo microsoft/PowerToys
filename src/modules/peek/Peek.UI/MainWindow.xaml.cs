@@ -42,7 +42,7 @@ namespace Peek.UI
         {
             if (AppWindow.IsVisible)
             {
-                ViewModel.AttemptLeftNavigation();
+                ExecuteHide();
             }
             else
             {
@@ -51,24 +51,14 @@ namespace Peek.UI
             }
         }
 
-        private void OnPointerEntered(object sender, PointerRoutedEventArgs e)
+        private void LeftNavigationInvoked(KeyboardAccelerator sender, KeyboardAcceleratorInvokedEventArgs args)
         {
             ViewModel.AttemptLeftNavigation();
         }
 
-        private void OnKeyDown(object sender, KeyRoutedEventArgs e)
+        private void RightNavigationInvoked(KeyboardAccelerator sender, KeyboardAcceleratorInvokedEventArgs args)
         {
-            switch (e.Key)
-            {
-                case VirtualKey.Left:
-                    ViewModel.AttemptLeftNavigation();
-                    break;
-                case VirtualKey.Right:
-                    ViewModel.AttemptRightNavigation();
-                    break;
-                default:
-                    break;
-            }
+            ViewModel.AttemptRightNavigation();
         }
 
         private void ExecuteHide()

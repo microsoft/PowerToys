@@ -13,12 +13,12 @@ namespace Peek.UI
     {
         public void AttemptLeftNavigation()
         {
-            fileManager.UpdateCurrentItemIndex(fileManager.CurrentItemIndex + 1);
+            fileManager.UpdateCurrentItemIndex(fileManager.CurrentItemIndex - 1);
         }
 
         public void AttemptRightNavigation()
         {
-            fileManager.UpdateCurrentItemIndex(fileManager.CurrentItemIndex - 1);
+            fileManager.UpdateCurrentItemIndex(fileManager.CurrentItemIndex + 1);
         }
 
         [ObservableProperty]
