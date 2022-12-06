@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <TargetFramework>net7.0-windows10.0.19041.0</TargetFramework>
-    <TargetPlatformMinVersion>10.0.17763.0</TargetPlatformMinVersion>
+    <TargetPlatformMinVersion>10.0.19041.0</TargetPlatformMinVersion>
     <RootNamespace>Peek.Common</RootNamespace>
     <RuntimeIdentifiers>win10-x86;win10-x64;win10-arm64</RuntimeIdentifiers>
     <UseWinUI>true</UseWinUI>
@@ -10,6 +10,6 @@
 
   <ItemGroup>
       <PackageReference Include="Microsoft.WindowsAppSDK" Version="1.1.5" />
-      <PackageReference Include="Microsoft.Windows.SDK.BuildTools" Version="10.0.22000.194" />
+      <PackageReference Include="Microsoft.Windows.SDK.BuildTools" Version="10.0.22621.1" />
   </ItemGroup>
 </Project>
