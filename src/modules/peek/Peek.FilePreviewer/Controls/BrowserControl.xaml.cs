@@ -7,24 +7,33 @@ namespace Peek.FilePreviewer.Controls
     using System;
     using Microsoft.UI.Xaml;
     using Microsoft.UI.Xaml.Controls;
-    using Peek.Common.Models;
+    using Microsoft.Web.WebView2.Core;
     using Windows.System;
 
     public sealed partial class BrowserControl : UserControl
     {
+        public delegate void NavigationInitializedHandler(WebView2 sender, CoreWebView2InitializedEventArgs args);
+
+        public delegate void NavigationCompletedHandler(WebView2 sender, CoreWebView2NavigationCompletedEventArgs args);
+
+        public event NavigationInitializedHandler NavigationInitialized = (sender, args) => { };
+
+        public event NavigationCompletedHandler NavigationCompleted = (sender, args) => { };
+
         public static readonly DependencyProperty SourceProperty = DependencyProperty.Register("Source", typeof(Uri), typeof(BrowserControl), new PropertyMetadata(null, new PropertyChangedCallback(SourcePropertyChanged)));
 
-        /// <summary>
-        /// Cached the current URI used to navigate so we can
-        /// evaluate internal vs external user navigation within
-        /// the local HTML.
-        /// </summary>
-        private Uri _localFileURI = default!;
+        public static readonly DependencyProperty IsNavigationCompletedProperty = DependencyProperty.Register("IsNavigationCompleted", typeof(bool), typeof(BrowserControl), new PropertyMetadata(null));
 
         public Uri Source
         {
             get { return (Uri)GetValue(SourceProperty); }
             set { SetValue(SourceProperty, value); }
+        }
+
+        public bool IsNavigationCompleted
+        {
+            get { return (bool)GetValue(IsNavigationCompletedProperty); }
+            set { SetValue(IsNavigationCompletedProperty, value); }
         }
 
         public BrowserControl()
@@ -34,12 +43,25 @@ namespace Peek.FilePreviewer.Controls
 
         private static void SourcePropertyChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
         {
-            // TODO:
+            var browserControl = (BrowserControl)d;
+            browserControl.Navigate();
         }
 
-        public void Navigate(File file)
+        /// <summary>
+        /// If <see cref="Source"/> is set, it will navigate to (refresh) the same/current
+        /// HTML page loaded.
+        /// </summary>
+        public void Navigate()
         {
-            NavigateWithWV2(file);
+            if (Source != null)
+            {
+                NavigateWithWV2(Source);
+            }
+        }
+
+        public void Navigate(Uri uri)
+        {
+            NavigateWithWV2(uri);
         }
 
         private async void PreviewWV2_Loaded(object sender, RoutedEventArgs e)
@@ -67,24 +89,24 @@ namespace Peek.FilePreviewer.Controls
             }
         }
 
-        private void NavigateWithWV2(File file)
+        private void NavigateWithWV2(Uri uri)
         {
-            _localFileURI = new Uri(file.Path);
-
             /* CoreWebView2.Navigate() will always trigger a navigation even if the content/URI is the same.
              * Use WebView2.Source to avoid re-navigating to the same content. */
-            PreviewBrowser.CoreWebView2.Navigate(_localFileURI.ToString());
+            PreviewBrowser.CoreWebView2.Navigate(uri.ToString());
         }
 
         private void PreviewWV2_CoreWebView2Initialized(WebView2 sender, CoreWebView2InitializedEventArgs args)
         {
-            // TODO:
+            NavigationInitialized?.Invoke(sender, args);
         }
 
         private async void PreviewBrowser_NavigationStarting(WebView2 sender, Microsoft.Web.WebView2.Core.CoreWebView2NavigationStartingEventArgs args)
         {
+            IsNavigationCompleted = false;
+
             // In case user starts or tries to navigate from within the HTML file we launch default web browser for navigation.
-            if (args.Uri != null && args.Uri != _localFileURI?.ToString() && args.IsUserInitiated)
+            if (args.Uri != null && args.Uri != Source?.ToString() && args.IsUserInitiated)
             {
                 args.Cancel = true;
                 await Launcher.LaunchUriAsync(new Uri(args.Uri));
@@ -93,9 +115,9 @@ namespace Peek.FilePreviewer.Controls
 
         private void PreviewWV2_NavigationCompleted(WebView2 sender, Microsoft.Web.WebView2.Core.CoreWebView2NavigationCompletedEventArgs args)
         {
-            // TODO: replace with proper control visibility change
-            // PreviewImage.Visibility = Visibility.Collapsed;
-            // PreviewBrowser.Visibility = Visibility.Visible;
+            NavigationCompleted?.Invoke(sender, args);
+
+            IsNavigationCompleted = true;
         }
     }
 }

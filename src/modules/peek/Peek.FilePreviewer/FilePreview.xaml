@@ -24,7 +24,11 @@
 
         <!-- TODO: add "Source" dprop -->
         <controls:BrowserControl x:Name="PreviewBrowser"
-                                 x:Load="True"/>
+                                 x:Load="True"
+                                 Source="{x:Bind BrowserPreviewer.Preview, Mode=OneWay}"
+                                 IsNavigationCompleted="{x:Bind BrowserPreviewer.IsPreviewLoaded, Mode=TwoWay}"
+                                 Visibility="{x:Bind IsBrowserVisible, Mode=OneWay}"/>
+
         <!--  TODO: Add UnsupportedFilePreview control  -->
     </Grid>
 </UserControl>

@@ -33,6 +33,8 @@ namespace Peek.FilePreviewer
         [ObservableProperty]
         [NotifyPropertyChangedFor(nameof(BitmapPreviewer))]
         [NotifyPropertyChangedFor(nameof(IsImageVisible))]
+        [NotifyPropertyChangedFor(nameof(BrowserPreviewer))]
+        [NotifyPropertyChangedFor(nameof(IsBrowserVisible))]
         private IPreviewer? previewer;
 
         public FilePreview()
@@ -42,7 +44,11 @@ namespace Peek.FilePreviewer
 
         public IBitmapPreviewer? BitmapPreviewer => Previewer as IBitmapPreviewer;
 
+        public IBrowserPreview? BrowserPreviewer => Previewer as IBrowserPreview;
+
         public bool IsImageVisible => BitmapPreviewer != null;
+
+        public bool IsBrowserVisible => !IsImageVisible;
 
         public File File
         {

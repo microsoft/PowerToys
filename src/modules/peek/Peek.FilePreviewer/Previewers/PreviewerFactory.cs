@@ -25,6 +25,8 @@ namespace Peek.FilePreviewer.Previewers
                 case ".tif":
                 case ".tiff":
                     return new ImagePreviewer(file);
+                case ".html":
+                    return new HtmlPreviewer(file);
                 default:
                     return null;
             }

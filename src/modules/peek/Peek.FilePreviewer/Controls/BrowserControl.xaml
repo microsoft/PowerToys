@@ -15,7 +15,7 @@
         <controls:WebView2 x:Name="PreviewBrowser"
                            Loaded="PreviewWV2_Loaded"
                            CoreWebView2Initialized="PreviewWV2_CoreWebView2Initialized"
-                           NavigationCompleted="PreviewWV2_NavigationCompleted"
-                           NavigationStarting="PreviewBrowser_NavigationStarting"/>
+                           NavigationStarting="PreviewBrowser_NavigationStarting"
+                           NavigationCompleted="PreviewWV2_NavigationCompleted"/>
     </Grid>
 </UserControl>
