@@ -7,6 +7,7 @@ namespace Peek.FilePreviewer.Previewers
     using System;
     using System.Drawing.Imaging;
     using System.IO;
+    using System.Linq;
     using System.Threading;
     using System.Threading.Tasks;
     using CommunityToolkit.Mvvm.ComponentModel;
@@ -168,5 +169,75 @@ namespace Peek.FilePreviewer.Previewers
                 NativeMethods.DeleteObject(hbitmap);
             }
         }
+
+        public static bool IsFileTypeSupported(string fileExt)
+        {
+            return _supportedFileTypes.Contains(fileExt.ToLower());
+        }
+
+        private static readonly string[] _supportedFileTypes = new string[]
+        {
+                // Image types
+                ".bmp",
+                ".gif",
+                ".jpg",
+                ".jfif",
+                ".jfi",
+                ".jif",
+                ".jpeg",
+                ".jpe",
+                ".png",
+                ".tif",
+                ".tiff",
+                ".dib",
+
+                // ".heic", // Error in System.Drawing.Image.FromHbitmap(hbitmap);
+                ".heif",
+                ".hif",
+                ".avif",
+                ".jxr",
+                ".wdp",
+                ".ico",
+                ".thumb",
+
+                // Raw types
+                ".arw",
+                ".cr2",
+
+                // ".crw", // Error in WICImageFactory.CreateDecoderFromFilename
+                // ".erf", // Error in WICImageFactory.CreateDecoderFromFilename
+                ".kdc",
+                ".mrw",
+                ".nef",
+                ".nrw",
+                ".orf",
+                ".pef",
+                ".raf",
+                ".raw",
+                ".rw2",
+                ".rwl",
+                ".sr2",
+                ".srw",
+                ".srf",
+                ".dcs",
+                ".dcr",
+                ".drf",
+                ".k25",
+                ".3fr",
+                ".ari",
+                ".bay",
+                ".cap",
+                ".iiq",
+                ".eip",
+                ".fff",
+                ".mef",
+                ".mdc",
+                ".mos",
+                ".R3D",
+                ".rwz",
+                ".x3f",
+                ".ori",
+                ".cr3",
+        };
     }
 }
