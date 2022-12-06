@@ -19,6 +19,8 @@ namespace Peek.FilePreviewer
     [INotifyPropertyChanged]
     public sealed partial class FilePreview : UserControl
     {
+        private readonly PreviewerFactory previewerFactory = new ();
+
         public event EventHandler<PreviewSizeChangedArgs>? PreviewSizeChanged;
 
         public static readonly DependencyProperty FilesProperty =
@@ -29,12 +31,18 @@ namespace Peek.FilePreviewer
             new PropertyMetadata(false, async (d, e) => await ((FilePreview)d).OnFilePropertyChanged()));
 
         [ObservableProperty]
-        private ImagePreviewer? previewer;
+        [NotifyPropertyChangedFor(nameof(BitmapPreviewer))]
+        [NotifyPropertyChangedFor(nameof(IsImageVisible))]
+        private IPreviewer? previewer;
 
         public FilePreview()
         {
             InitializeComponent();
         }
+
+        public IBitmapPreviewer? BitmapPreviewer => Previewer as IBitmapPreviewer;
+
+        public bool IsImageVisible => BitmapPreviewer != null;
 
         public File File
         {
@@ -54,46 +62,18 @@ namespace Peek.FilePreviewer
                 return;
             }
 
-            // TODO: Implement plugin pattern to support any file types.
-            if (File.Extension.ToLower() == ".html")
+            Previewer = previewerFactory.Create(File);
+            if (Previewer != null)
             {
-                PreviewBrowser.Navigate(File);
-                PreviewSizeChanged?.Invoke(this, new PreviewSizeChangedArgs(new Size(1280, 720)));
-                PreviewBrowser.Visibility = Visibility.Visible;
-                PreviewImage.Visibility = Visibility.Collapsed;
-            }
-            else if (IsSupportedImage(File.Extension))
-            {
-                PreviewBrowser.Visibility = Visibility.Collapsed;
-                PreviewImage.Visibility = Visibility.Visible;
-
-                Previewer = new ImagePreviewer(File);
                 var size = await Previewer.GetPreviewSizeAsync();
                 PreviewSizeChanged?.Invoke(this, new PreviewSizeChangedArgs(size));
                 await Previewer.LoadPreviewAsync();
             }
             else
             {
-                Previewer = null;
+                // TODO: figure out optimal window size for unsupported control
                 PreviewSizeChanged?.Invoke(this, new PreviewSizeChangedArgs(new Size(1280, 720)));
             }
         }
-
-        // TODO: Find all supported file types for the image previewer
-        private static bool IsSupportedImage(string extension) => extension switch
-        {
-            ".bmp" => true,
-            ".gif" => true,
-            ".jpg" => true,
-            ".jfif" => true,
-            ".jfi" => true,
-            ".jif" => true,
-            ".jpeg" => true,
-            ".jpe" => true,
-            ".png" => true,
-            ".tif" => true,
-            ".tiff" => true,
-            _ => false,
-        };
     }
 }
