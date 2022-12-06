@@ -54,6 +54,9 @@ namespace Peek.FilePreviewer
                 return;
             }
 
+            // TODO: track and cancel existing async preview tasks
+            // https://github.com/microsoft/PowerToys/issues/22480
+
             // TODO: Implement plugin pattern to support any file types.
             if (IsSupportedImage(File.Extension))
             {

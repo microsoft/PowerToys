@@ -12,18 +12,20 @@ namespace Peek.UI
 
     public partial class FileManager : ObservableObject
     {
+        private const int UninitializedItemIndex = -1;
+
         public void Uninitialize()
         {
             currentFile = null;
 
             folderItems = null;
-            currentItemIndex = -1;
+            currentItemIndex = UninitializedItemIndex;
         }
 
         public void UpdateCurrentItemIndex(int desiredIndex)
         {
             // TODO: add processing check
-            if (folderItems == null)
+            if (folderItems == null || currentItemIndex == UninitializedItemIndex)
             {
                 return;
             }
@@ -53,7 +55,6 @@ namespace Peek.UI
 
             // Since parent folder can contain 1000s of items, process them on bg thread
             // TODO: kick off background task processing items (to find idx)
-            // TODO: double check how lb resolves cur activated file (is just a manual search)
             folderItems = selectedItems.Count > 1 ? selectedItems : folderView.Folder?.Items();
             if (folderItems == null)
             {
@@ -78,7 +79,7 @@ namespace Peek.UI
 
         private Shell32.FolderItems? folderItems;
 
-        private int currentItemIndex = -1;
+        private int currentItemIndex = UninitializedItemIndex;
 
         public int CurrentItemIndex { get => currentItemIndex; }
     }
