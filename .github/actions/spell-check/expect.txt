@@ -618,6 +618,7 @@ HACCEL
 handlekeyboardhookevent
 handlerroutine
 hangeul
+Hankaku
 hanselman
 Hanzi
 Hardlines
