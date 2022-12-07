@@ -76,12 +76,12 @@ namespace Peek.UI.Views
             OpenWithApp = "Open With " + currentDefaultApp;
         }
 
-        private async void Button_Click(object sender, RoutedEventArgs e)
+        private async void LaunchAppButton_Click(object sender, RoutedEventArgs e)
         {
             StorageFile storageFile = await File.GetStorageFileAsync();
             var options = new LauncherOptions();
 
-            if (currentDefaultApp != null)
+            if (currentDefaultApp == null)
             {
                 options.DisplayApplicationPicker = true;
             }

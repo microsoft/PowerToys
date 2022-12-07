@@ -52,7 +52,7 @@
             Margin="4,4,144,4"
             HorizontalAlignment="Right"
             VerticalAlignment="Top">
-            <Button x:Name="LaunchAppButton" Click="Button_Click">
+            <Button x:Name="LaunchAppButton" Click="LaunchAppButton_Click">
                 <Button.Content>
                     <StackPanel Orientation="Horizontal">
                         <FontIcon
