@@ -21,40 +21,40 @@ namespace Peek.UI
         {
             CurrentFile = null;
 
-            if (initializeFilesTask != null && initializeFilesTask.Status == TaskStatus.Running)
+            if (InitializeFilesTask != null && InitializeFilesTask.Status == TaskStatus.Running)
             {
                 Debug.WriteLine("Detected existing initializeFilesTask running. Cancelling it..");
-                cancellationTokenSource.Cancel();
+                CancellationTokenSource.Cancel();
             }
 
-            initializeFilesTask = null;
+            InitializeFilesTask = null;
 
-            lock (mutateQueryDataLock)
+            lock (_mutateQueryDataLock)
             {
-                files = new List<File>();
-                currentItemIndex = UninitializedItemIndex;
+                Files = new List<File>();
+                _currentItemIndex = UninitializedItemIndex;
             }
         }
 
         public void UpdateCurrentItemIndex(int desiredIndex)
         {
-            if (files == null || files.Count <= 1 || currentItemIndex == UninitializedItemIndex ||
-                (initializeFilesTask != null && initializeFilesTask.Status == TaskStatus.Running))
+            if (Files == null || Files.Count <= 1 || _currentItemIndex == UninitializedItemIndex ||
+                (InitializeFilesTask != null && InitializeFilesTask.Status == TaskStatus.Running))
             {
                 return;
             }
 
             // Current index wraps around when reaching min/max folder item indices
-            desiredIndex %= files.Count;
-            currentItemIndex = desiredIndex < 0 ? files.Count + desiredIndex : desiredIndex;
+            desiredIndex %= Files.Count;
+            _currentItemIndex = desiredIndex < 0 ? Files.Count + desiredIndex : desiredIndex;
 
-            if (currentItemIndex < 0 || currentItemIndex >= files.Count)
+            if (_currentItemIndex < 0 || _currentItemIndex >= Files.Count)
             {
                 Debug.Assert(false, "Out of bounds folder item index detected.");
-                currentItemIndex = 0;
+                _currentItemIndex = 0;
             }
 
-            CurrentFile = files[currentItemIndex];
+            CurrentFile = Files[_currentItemIndex];
         }
 
         public void Start()
@@ -83,17 +83,17 @@ namespace Peek.UI
 
             try
             {
-                if (initializeFilesTask != null && initializeFilesTask.Status == TaskStatus.Running)
+                if (InitializeFilesTask != null && InitializeFilesTask.Status == TaskStatus.Running)
                 {
                     Debug.WriteLine("Detected unexpected existing initializeFilesTask running. Cancelling it..");
-                    cancellationTokenSource.Cancel();
+                    CancellationTokenSource.Cancel();
                 }
 
-                cancellationTokenSource = new CancellationTokenSource();
-                initializeFilesTask = new Task(() => InitializeFiles(items, firstSelectedItem, cancellationTokenSource.Token));
+                CancellationTokenSource = new CancellationTokenSource();
+                InitializeFilesTask = new Task(() => InitializeFiles(items, firstSelectedItem, CancellationTokenSource.Token));
 
                 // Execute file initialization/querying on background thread
-                initializeFilesTask.Start();
+                InitializeFilesTask.Start();
             }
             catch (Exception e)
             {
@@ -144,27 +144,27 @@ namespace Peek.UI
 
             cancellationToken.ThrowIfCancellationRequested();
 
-            lock (mutateQueryDataLock)
+            lock (_mutateQueryDataLock)
             {
                 cancellationToken.ThrowIfCancellationRequested();
-                files = tempFiles;
-                currentItemIndex = tempCurIndex;
+                Files = tempFiles;
+                _currentItemIndex = tempCurIndex;
             }
         }
 
-        private readonly object mutateQueryDataLock = new ();
+        private readonly object _mutateQueryDataLock = new ();
 
         [ObservableProperty]
-        private File? currentFile;
+        private File? _currentFile;
 
-        private List<File> files = new ();
+        private List<File> Files { get; set; } = new ();
 
-        private int currentItemIndex = UninitializedItemIndex;
+        private int _currentItemIndex = UninitializedItemIndex;
 
-        public int CurrentItemIndex => currentItemIndex;
+        public int CurrentItemIndex => _currentItemIndex;
 
-        private CancellationTokenSource cancellationTokenSource = new CancellationTokenSource();
+        private CancellationTokenSource CancellationTokenSource { get; set; } = new CancellationTokenSource();
 
-        private Task? initializeFilesTask = null;
+        private Task? InitializeFilesTask { get; set; } = null;
     }
 }
