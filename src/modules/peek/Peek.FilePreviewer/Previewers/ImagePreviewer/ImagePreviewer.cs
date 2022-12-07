@@ -5,6 +5,7 @@
 namespace Peek.FilePreviewer.Previewers
 {
     using System;
+    using System.Collections.Generic;
     using System.Diagnostics;
     using System.Drawing.Imaging;
     using System.IO;
@@ -12,15 +13,16 @@ namespace Peek.FilePreviewer.Previewers
     using System.Threading.Tasks;
     using CommunityToolkit.Mvvm.ComponentModel;
     using Microsoft.UI.Dispatching;
+    using Microsoft.UI.Xaml.Controls;
     using Microsoft.UI.Xaml.Media.Imaging;
     using Peek.Common;
     using Windows.Foundation;
     using File = Peek.Common.Models.File;
 
-    [INotifyPropertyChanged]
-    public partial class ImagePreviewer : IDisposable
+    public partial class ImagePreviewer : ObservableObject, IBitmapPreviewer, IDisposable
     {
         [ObservableProperty]
+        [NotifyPropertyChangedFor(nameof(IsPreviewLoaded))]
         private BitmapSource? preview;
 
         public ImagePreviewer(File file)
@@ -28,6 +30,8 @@ namespace Peek.FilePreviewer.Previewers
             File = file;
             Dispatcher = DispatcherQueue.GetForCurrentThread();
         }
+
+        public bool IsPreviewLoaded => preview != null;
 
         private File File { get; }
 
@@ -47,9 +51,15 @@ namespace Peek.FilePreviewer.Previewers
             GC.SuppressFinalize(this);
         }
 
-        public Task<Size> GetPreviewSizeAsync()
+        public async Task<Size> GetPreviewSizeAsync()
         {
-            return WICHelper.GetImageSize(File.Path);
+            var propertyImageSize = await PropertyHelper.GetImageSize(File.Path);
+            if (propertyImageSize != Size.Empty)
+            {
+                return propertyImageSize;
+            }
+
+            return await WICHelper.GetImageSize(File.Path);
         }
 
         public Task LoadPreviewAsync()
@@ -184,5 +194,75 @@ namespace Peek.FilePreviewer.Previewers
                 NativeMethods.DeleteObject(hbitmap);
             }
         }
+
+        public static bool IsFileTypeSupported(string fileExt)
+        {
+            return _supportedFileTypes.Contains(fileExt);
+        }
+
+        private static readonly HashSet<string> _supportedFileTypes = new HashSet<string>
+        {
+                // Image types
+                ".bmp",
+                ".gif",
+                ".jpg",
+                ".jfif",
+                ".jfi",
+                ".jif",
+                ".jpeg",
+                ".jpe",
+                ".png",
+                ".tif",
+                ".tiff",
+                ".dib",
+
+                // ".heic", // Error in System.Drawing.Image.FromHbitmap(hbitmap);
+                ".heif",
+                ".hif",
+                ".avif",
+                ".jxr",
+                ".wdp",
+                ".ico",
+                ".thumb",
+
+                // Raw types
+                ".arw",
+                ".cr2",
+
+                // ".crw", // Error in WICImageFactory.CreateDecoderFromFilename
+                // ".erf", // Error in WICImageFactory.CreateDecoderFromFilename
+                ".kdc",
+                ".mrw",
+                ".nef",
+                ".nrw",
+                ".orf",
+                ".pef",
+                ".raf",
+                ".raw",
+                ".rw2",
+                ".rwl",
+                ".sr2",
+                ".srw",
+                ".srf",
+                ".dcs",
+                ".dcr",
+                ".drf",
+                ".k25",
+                ".3fr",
+                ".ari",
+                ".bay",
+                ".cap",
+                ".iiq",
+                ".eip",
+                ".fff",
+                ".mef",
+                ".mdc",
+                ".mos",
+                ".R3D",
+                ".rwz",
+                ".x3f",
+                ".ori",
+                ".cr3",
+        };
     }
 }

@@ -4,8 +4,8 @@
 
 namespace Peek.UI.Extensions
 {
-    using System.Drawing;
     using Microsoft.UI.Xaml;
+    using Windows.Foundation;
     using Windows.Win32;
     using Windows.Win32.Foundation;
     using Windows.Win32.Graphics.Gdi;
@@ -20,10 +20,19 @@ namespace Peek.UI.Extensions
             MONITORINFO info = new ();
             info.cbSize = 40;
             PInvoke.GetMonitorInfo(hwndDesktop, ref info);
-            var monitorWidth = info.rcMonitor.left + info.rcMonitor.right;
-            var monitorHeight = info.rcMonitor.bottom + info.rcMonitor.top;
+            double monitorWidth = info.rcMonitor.left + info.rcMonitor.right;
+            double monitorHeight = info.rcMonitor.bottom + info.rcMonitor.top;
 
             return new Size(monitorWidth, monitorHeight);
+        }
+
+        public static double GetMonitorScale(this Window window)
+        {
+            var hwnd = new HWND(window.GetWindowHandle());
+            var dpi = PInvoke.GetDpiForWindow(new HWND(hwnd));
+            double scalingFactor = dpi / 96d;
+
+            return scalingFactor;
         }
     }
 }

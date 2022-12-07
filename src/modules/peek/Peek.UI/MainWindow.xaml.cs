@@ -20,6 +20,12 @@ namespace Peek.UI
     /// </summary>
     public sealed partial class MainWindow : WindowEx
     {
+        private const double MaxWindowToMonitorRatio = 0.80;
+        private const double MinWindowHeight = 500;
+        private const double MinWindowWidth = 680;
+        private const double WindowWidthContentPadding = 7;
+        private const double WindowHeightContentPadding = 16;
+
         public MainWindow()
         {
             InitializeComponent();
@@ -81,14 +87,17 @@ namespace Peek.UI
 
             // TODO: Use design-defined rules for adjusted window size
             var titleBarHeight = TitleBarControl.ActualHeight;
-            var maxContentSize = new Size(monitorSize.Width * 0.8, (monitorSize.Height - titleBarHeight) * 0.8);
-            var minContentSize = new Size(500, 500 - titleBarHeight);
+            var maxContentSize = new Size(monitorSize.Width * MaxWindowToMonitorRatio, (monitorSize.Height - titleBarHeight) * MaxWindowToMonitorRatio);
+            var minContentSize = new Size(MinWindowWidth, MinWindowHeight - titleBarHeight);
 
             var adjustedContentSize = requestedSize.Fit(maxContentSize, minContentSize);
 
             // TODO: Only re-center if window has not been resized by user (or use design-defined logic).
             // TODO: Investigate why portrait images do not perfectly fit edge-to-edge
-            this.CenterOnScreen(adjustedContentSize.Width, adjustedContentSize.Height + titleBarHeight);
+            var monitorScale = this.GetMonitorScale();
+            var scaledWindowWidth = adjustedContentSize.Width / monitorScale;
+            var scaledWindowHeight = adjustedContentSize.Height / monitorScale;
+            this.CenterOnScreen(scaledWindowWidth + WindowHeightContentPadding, scaledWindowHeight + titleBarHeight + WindowWidthContentPadding);
             this.Show();
             this.BringToFront();
         }

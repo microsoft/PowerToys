@@ -12,7 +12,6 @@ namespace Peek.UI
     using CommunityToolkit.Mvvm.ComponentModel;
     using Peek.Common.Models;
     using Peek.UI.Helpers;
-    using Windows.Media.Devices;
 
     public partial class FileQuery : ObservableObject
     {

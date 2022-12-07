@@ -8,7 +8,6 @@ namespace Peek.FilePreviewer
     using System.Diagnostics;
     using System.Threading.Tasks;
     using CommunityToolkit.Mvvm.ComponentModel;
-    using CommunityToolkit.WinUI.UI.Media.Pipelines;
     using Microsoft.UI.Xaml;
     using Microsoft.UI.Xaml.Controls;
     using Microsoft.UI.Xaml.Media.Imaging;
@@ -20,6 +19,8 @@ namespace Peek.FilePreviewer
     [INotifyPropertyChanged]
     public sealed partial class FilePreview : UserControl
     {
+        private readonly PreviewerFactory previewerFactory = new ();
+
         public event EventHandler<PreviewSizeChangedArgs>? PreviewSizeChanged;
 
         public static readonly DependencyProperty FilesProperty =
@@ -30,12 +31,18 @@ namespace Peek.FilePreviewer
             new PropertyMetadata(false, async (d, e) => await ((FilePreview)d).OnFilePropertyChanged()));
 
         [ObservableProperty]
-        private ImagePreviewer? previewer;
+        [NotifyPropertyChangedFor(nameof(BitmapPreviewer))]
+        [NotifyPropertyChangedFor(nameof(IsImageVisible))]
+        private IPreviewer? previewer;
 
         public FilePreview()
         {
             InitializeComponent();
         }
+
+        public IBitmapPreviewer? BitmapPreviewer => Previewer as IBitmapPreviewer;
+
+        public bool IsImageVisible => BitmapPreviewer != null;
 
         public File File
         {
@@ -50,19 +57,17 @@ namespace Peek.FilePreviewer
 
         private async Task OnFilePropertyChanged()
         {
+            // TODO: track and cancel existing async preview tasks
+            // https://github.com/microsoft/PowerToys/issues/22480
             Debug.WriteLine("!~ file property changed");
             if (File == null)
             {
                 return;
             }
 
-            // TODO: track and cancel existing async preview tasks
-            // https://github.com/microsoft/PowerToys/issues/22480
-
-            // TODO: Implement plugin pattern to support any file types.
-            if (IsSupportedImage(File.Extension))
+            Previewer = previewerFactory.Create(File);
+            if (Previewer != null)
             {
-                Previewer = new ImagePreviewer(File);
                 var size = await Previewer.GetPreviewSizeAsync();
                 PreviewSizeChanged?.Invoke(this, new PreviewSizeChangedArgs(size));
                 await Previewer.LoadPreviewAsync();
@@ -70,26 +75,9 @@ namespace Peek.FilePreviewer
             }
             else
             {
-                Previewer = null;
+                // TODO: figure out optimal window size for unsupported control
                 PreviewSizeChanged?.Invoke(this, new PreviewSizeChangedArgs(new Size(1280, 720)));
             }
         }
-
-        // TODO: Find all supported file types for the image previewer
-        private static bool IsSupportedImage(string extension) => extension switch
-        {
-            ".bmp" => true,
-            ".gif" => true,
-            ".jpg" => true,
-            ".jfif" => true,
-            ".jfi" => true,
-            ".jif" => true,
-            ".jpeg" => true,
-            ".jpe" => true,
-            ".png" => true,
-            ".tif" => true,
-            ".tiff" => true,
-            _ => false,
-        };
     }
 }

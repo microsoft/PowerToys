@@ -1,4 +1,5 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
+  <Import Project="..\..\..\Version.props" />
   <PropertyGroup>
     <AssemblyName>PowerToys.Peek.UI</AssemblyName>
     <AssemblyTitle>PowerToys.Peek.UI</AssemblyTitle>
@@ -21,12 +22,17 @@
     <WindowsAppSDKSelfContained>true</WindowsAppSDKSelfContained>
     <SupportedOSPlatformVersion>10.0.19041.0</SupportedOSPlatformVersion>
     <Nullable>Enable</Nullable>
+    <ApplicationIcon>Assets\Icon.ico</ApplicationIcon>
   </PropertyGroup>
   <ItemGroup>
-    <Content Remove="Assets\Peek.ico" />
+      <Content Include="Assets\Icon.ico" />
   </ItemGroup>
   <ItemGroup>
-    <None Remove="Assets\Peek.ico" />
+    <None Remove="Assets\AppList.scale-100.png" />
+    <None Remove="Assets\AppList.scale-125.png" />
+    <None Remove="Assets\AppList.scale-150.png" />
+    <None Remove="Assets\AppList.scale-200.png" />
+    <None Remove="Assets\AppList.scale-400.png" />
     <None Remove="Views\TitleBar.xaml" />
   </ItemGroup>
   <ItemGroup>
@@ -51,23 +57,13 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Content Include="Assets\SplashScreen.scale-200.png" />
-    <Content Include="Assets\LockScreenLogo.scale-200.png" />
-    <Content Include="Assets\Square150x150Logo.scale-200.png" />
-    <Content Include="Assets\Square44x44Logo.scale-200.png" />
-    <Content Include="Assets\Square44x44Logo.targetsize-24_altform-unplated.png" />
-    <Content Include="Assets\StoreLogo.png" />
-    <Content Include="Assets\Wide310x150Logo.scale-200.png" />
-  </ItemGroup>
-
-  <ItemGroup>
     <PackageReference Include="Microsoft.Windows.CsWin32" Version="0.2.46-beta">
         <PrivateAssets>all</PrivateAssets>
         <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
     <PackageReference Include="CommunityToolkit.Mvvm" Version="8.0.0" />
     <PackageReference Include="Microsoft.WindowsAppSDK" Version="1.1.5" />
-    <PackageReference Include="Microsoft.Windows.SDK.BuildTools" Version="10.0.22000.194" />
+    <PackageReference Include="Microsoft.Windows.SDK.BuildTools" Version="10.0.22621.1" />
     <PackageReference Include="WinUIEx" Version="1.8.0" />
     <Manifest Include="$(ApplicationManifest)" />
   </ItemGroup>
@@ -88,7 +84,7 @@
     <ProjectReference Include="..\peek\peek.vcxproj" />
   </ItemGroup>
   <ItemGroup>
-    <Resource Include="Assets\Peek.ico" />
+    <Resource Include="Assets\Icon.ico" />
   </ItemGroup>
   <ItemGroup>
     <Page Update="Views\TitleBar.xaml">
