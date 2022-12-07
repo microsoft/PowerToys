@@ -45,11 +45,6 @@ namespace Peek.FilePreviewer.Controls
             this.InitializeComponent();
         }
 
-        private void SourcePropertyChanged()
-        {
-            Navigate();
-        }
-
         /// <summary>
         /// Navigate to the to the <see cref="Uri"/> set in <see cref="Source"/>.
         /// Calling <see cref="Navigate"/> will always trigger a navigation/refresh
@@ -65,6 +60,11 @@ namespace Peek.FilePreviewer.Controls
                  * Use WebView2.Source to avoid re-navigating to the same content. */
                 PreviewBrowser.CoreWebView2.Navigate(Source.ToString());
             }
+        }
+
+        private void SourcePropertyChanged()
+        {
+            Navigate();
         }
 
         private async void PreviewWV2_Loaded(object sender, RoutedEventArgs e)
