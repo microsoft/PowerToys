@@ -120,7 +120,4 @@
   <data name="AppTitle.Title" xml:space="preserve">
     <value>Peek</value>
   </data>
-  <data name="AppTitleText.Text" xml:space="preserve">
-    <value>Peek</value>
-  </data>
 </root>
