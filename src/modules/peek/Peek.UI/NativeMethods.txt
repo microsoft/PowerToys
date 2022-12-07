@@ -1,2 +1,3 @@
 ﻿MonitorFromWindow
 GetMonitorInfo
+GetDpiForWindow
