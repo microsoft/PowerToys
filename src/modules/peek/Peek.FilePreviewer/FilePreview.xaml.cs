@@ -32,6 +32,8 @@ namespace Peek.FilePreviewer
         [ObservableProperty]
         [NotifyPropertyChangedFor(nameof(BitmapPreviewer))]
         [NotifyPropertyChangedFor(nameof(IsImageVisible))]
+        [NotifyPropertyChangedFor(nameof(UnsupportedFilePreviewer))]
+        [NotifyPropertyChangedFor(nameof(IsUnsupportedPreviewVisible))]
         [NotifyPropertyChangedFor(nameof(BrowserPreviewer))]
         [NotifyPropertyChangedFor(nameof(IsBrowserVisible))]
         private IPreviewer? previewer;
@@ -46,6 +48,10 @@ namespace Peek.FilePreviewer
         public IBrowserPreview? BrowserPreviewer => Previewer as IBrowserPreview;
 
         public bool IsImageVisible => BitmapPreviewer != null;
+
+        public IUnsupportedFilePreviewer? UnsupportedFilePreviewer => Previewer as IUnsupportedFilePreviewer;
+
+        public bool IsUnsupportedPreviewVisible => UnsupportedFilePreviewer != null;
 
         /* TODO: need a better way to switch visibility according to the Preview.
          * Could use Enum + Converter to switch according to the current preview. */
@@ -81,11 +87,6 @@ namespace Peek.FilePreviewer
                 var size = await Previewer.GetPreviewSizeAsync();
                 PreviewSizeChanged?.Invoke(this, new PreviewSizeChangedArgs(size));
                 await Previewer.LoadPreviewAsync();
-            }
-            else
-            {
-                // TODO: figure out optimal window size for unsupported control
-                PreviewSizeChanged?.Invoke(this, new PreviewSizeChangedArgs(new Size(1280, 720)));
             }
         }
 

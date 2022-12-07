@@ -7,6 +7,7 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:conv="using:Peek.Common.Converters"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:local="using:Peek.FilePreviewer"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:controls="using:Peek.FilePreviewer.Controls"
     mc:Ignorable="d">
@@ -29,6 +30,13 @@
                                  Visibility="{x:Bind IsBrowserVisible, Mode=OneWay, FallbackValue=Collapsed}"
                                  NavigationCompleted="PreviewBrowser_NavigationCompleted"/>
 
-        <!--  TODO: Add UnsupportedFilePreview control  -->
+        <local:UnsupportedFilePreview
+            DateModified="{x:Bind UnsupportedFilePreviewer.DateModified, Mode=OneWay}"
+            FileName="{x:Bind UnsupportedFilePreviewer.FileName, Mode=OneWay}"
+            FileSize="{x:Bind UnsupportedFilePreviewer.FileSize, Mode=OneWay}"
+            FileType="{x:Bind UnsupportedFilePreviewer.FileType, Mode=OneWay}"
+            IconPreview="{x:Bind UnsupportedFilePreviewer.IconPreview, Mode=OneWay}"
+            Visibility="{x:Bind IsUnsupportedPreviewVisible, Mode=OneWay}" />
+
     </Grid>
 </UserControl>
