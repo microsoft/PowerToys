@@ -30,7 +30,7 @@ namespace Peek.FilePreviewer.Previewers
 
         public Task<Size> GetPreviewSizeAsync()
         {
-            // TODO: size impl
+            // TODO: define how to proper window size on HTML content.
             var size = new Size(1280, 720);
             return Task.FromResult(size);
         }
