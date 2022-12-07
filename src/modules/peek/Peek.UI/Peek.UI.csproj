@@ -22,6 +22,7 @@
     <WindowsAppSDKSelfContained>true</WindowsAppSDKSelfContained>
     <SupportedOSPlatformVersion>10.0.19041.0</SupportedOSPlatformVersion>
     <Nullable>Enable</Nullable>
+    <ApplicationIcon>Assets\Icon.ico</ApplicationIcon>
   </PropertyGroup>
   <ItemGroup>
       <Content Include="Assets\Icon.ico" />
@@ -32,7 +33,6 @@
     <None Remove="Assets\AppList.scale-150.png" />
     <None Remove="Assets\AppList.scale-200.png" />
     <None Remove="Assets\AppList.scale-400.png" />
-    <None Remove="Assets\Icon.ico" />
     <None Remove="Views\TitleBar.xaml" />
   </ItemGroup>
   <ItemGroup>
