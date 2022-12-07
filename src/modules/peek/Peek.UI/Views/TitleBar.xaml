@@ -41,7 +41,8 @@
                 VerticalAlignment="Center"
                 FontWeight="Bold"
                 Style="{StaticResource CaptionTextBlockStyle}"
-                Text="{x:Bind FileCountText, Mode=OneWay}" />
+                Text="{x:Bind FileCountText, Mode=OneWay}"
+                Visibility="Collapsed" />
 
             <TextBlock
                 x:Name="AppTitle_FileName"
