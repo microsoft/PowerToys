@@ -21,7 +21,7 @@
             Grid.Column="0"
             Margin="8,4"
             HorizontalAlignment="Left"
-            VerticalAlignment="Top"
+            VerticalAlignment="Center"
             Orientation="Horizontal">
 
             <Image
@@ -29,7 +29,7 @@
                 x:Uid="PeekLogo"
                 Width="24"
                 Height="24"
-                Margin="0"
+                Margin="4,0"
                 VerticalAlignment="Center"
                 Source="../Assets/AppList.png"
                 Stretch="UniformToFill" />
@@ -46,10 +46,12 @@
             <TextBlock
                 x:Name="AppTitle_FileName"
                 x:Uid="AppTitle_FileName"
+                MaxWidth="100"
                 Margin="4,0,0,0"
                 VerticalAlignment="Center"
                 Style="{StaticResource CaptionTextBlockStyle}"
-                Text="{x:Bind File.FileName, Mode=OneWay}" />
+                Text="{x:Bind File.FileName, Mode=OneWay}"
+                TextWrapping="NoWrap" />
         </StackPanel>
 
         <Grid
@@ -57,7 +59,7 @@
             Grid.Column="1"
             Margin="4,4,144,4"
             HorizontalAlignment="Right"
-            VerticalAlignment="Top">
+            VerticalAlignment="Center">
             <Button
                 x:Name="LaunchAppButton"
                 x:Uid="LaunchAppButton"
@@ -83,11 +85,22 @@
 
         <VisualStateManager.VisualStateGroups>
             <VisualStateGroup x:Name="AdaptiveWidth">
+                <VisualState x:Name="MaximumLayout">
+                    <VisualState.StateTriggers>
+                        <AdaptiveTrigger MinWindowWidth="720" />
+                    </VisualState.StateTriggers>
+                    <VisualState.Setters>
+                        <Setter Target="AppTitle_FileName.MaxWidth" Value="560" />
+                        <Setter Target="AppTitle_FileCount.Visibility" Value="Visible" />
+                        <Setter Target="LaunchAppButton_Text.Visibility" Value="Visible" />
+                    </VisualState.Setters>
+                </VisualState>
                 <VisualState x:Name="WideLayout">
                     <VisualState.StateTriggers>
                         <AdaptiveTrigger MinWindowWidth="560" />
                     </VisualState.StateTriggers>
                     <VisualState.Setters>
+                        <Setter Target="AppTitle_FileName.MaxWidth" Value="400" />
                         <Setter Target="AppTitle_FileCount.Visibility" Value="Visible" />
                         <Setter Target="LaunchAppButton_Text.Visibility" Value="Visible" />
                     </VisualState.Setters>
@@ -97,6 +110,7 @@
                         <AdaptiveTrigger MinWindowWidth="480" />
                     </VisualState.StateTriggers>
                     <VisualState.Setters>
+                        <Setter Target="AppTitle_FileName.MaxWidth" Value="320" />
                         <Setter Target="AppTitle_FileCount.Visibility" Value="Visible" />
                         <Setter Target="LaunchAppButton_Text.Visibility" Value="Collapsed" />
                     </VisualState.Setters>
@@ -106,6 +120,7 @@
                         <AdaptiveTrigger MinWindowWidth="0" />
                     </VisualState.StateTriggers>
                     <VisualState.Setters>
+                        <Setter Target="AppTitle_FileName.MaxWidth" Value="160" />
                         <Setter Target="AppTitle_FileCount.Visibility" Value="Collapsed" />
                         <Setter Target="LaunchAppButton_Text.Visibility" Value="Collapsed" />
                     </VisualState.Setters>
