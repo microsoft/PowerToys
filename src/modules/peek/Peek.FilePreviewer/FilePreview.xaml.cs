@@ -31,6 +31,9 @@ namespace Peek.FilePreviewer
 
         [ObservableProperty]
         [NotifyPropertyChangedFor(nameof(BitmapPreviewer))]
+        [NotifyPropertyChangedFor(nameof(IsImageVisible))]
+        [NotifyPropertyChangedFor(nameof(UnsupportedFilePreviewer))]
+        [NotifyPropertyChangedFor(nameof(IsUnsupportedPreviewVisible))]
         private IPreviewer? previewer;
 
         public FilePreview()
@@ -39,6 +42,12 @@ namespace Peek.FilePreviewer
         }
 
         public IBitmapPreviewer? BitmapPreviewer => Previewer as IBitmapPreviewer;
+
+        public bool IsImageVisible => BitmapPreviewer != null;
+
+        public IUnsupportedFilePreviewer? UnsupportedFilePreviewer => Previewer as IUnsupportedFilePreviewer;
+
+        public bool IsUnsupportedPreviewVisible => UnsupportedFilePreviewer != null;
 
         public File File
         {
@@ -70,11 +79,6 @@ namespace Peek.FilePreviewer
                 var size = await Previewer.GetPreviewSizeAsync();
                 PreviewSizeChanged?.Invoke(this, new PreviewSizeChangedArgs(size));
                 await Previewer.LoadPreviewAsync();
-            }
-            else
-            {
-                // TODO: figure out optimal window size for unsupported control
-                PreviewSizeChanged?.Invoke(this, new PreviewSizeChangedArgs(new Size(1280, 720)));
             }
         }
     }

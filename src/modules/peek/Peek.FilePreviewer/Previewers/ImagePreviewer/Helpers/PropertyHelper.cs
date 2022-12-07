@@ -29,5 +29,34 @@ namespace Peek.FilePreviewer.Previewers
                 return Size.Empty;
             });
         }
+
+        public static Task<ulong> GetFileSizeInBytes(string filePath)
+        {
+            ulong bytes = 0;
+            var propertyStore = PropertyStoreShellApi.GetPropertyStoreFromPath(filePath, PropertyStoreShellApi.PropertyStoreFlags.OPENSLOWITEM);
+            if (propertyStore != null)
+            {
+                bytes = PropertyStoreShellApi.GetULongFromPropertyStore(propertyStore, PropertyStoreShellApi.PropertyKey.FileSizeBytes);
+
+                Marshal.ReleaseComObject(propertyStore);
+            }
+
+            return Task.FromResult(bytes);
+        }
+
+        public static Task<string> GetFileType(string filePath)
+        {
+            var type = string.Empty;
+            var propertyStore = PropertyStoreShellApi.GetPropertyStoreFromPath(filePath, PropertyStoreShellApi.PropertyStoreFlags.OPENSLOWITEM);
+            if (propertyStore != null)
+            {
+                // TODO: find a way to get user friendly description
+                type = PropertyStoreShellApi.GetStringFromPropertyStore(propertyStore, PropertyStoreShellApi.PropertyKey.FileType);
+
+                Marshal.ReleaseComObject(propertyStore);
+            }
+
+            return Task.FromResult(type);
+        }
     }
 }

@@ -10,6 +10,7 @@
   </PropertyGroup>
   <ItemGroup>
     <None Remove="FilePreview.xaml" />
+    <None Remove="UnsupportedFilePreview.xaml" />
   </ItemGroup>
 
   <ItemGroup>
@@ -26,6 +27,12 @@
 
   <ItemGroup>
     <Page Update="FilePreview.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Page Update="UnsupportedFilePreview.xaml">
       <Generator>MSBuild:Compile</Generator>
     </Page>
   </ItemGroup>
