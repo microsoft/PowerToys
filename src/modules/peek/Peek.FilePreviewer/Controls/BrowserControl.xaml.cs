@@ -70,7 +70,6 @@ namespace Peek.FilePreviewer.Controls
         {
             try
             {
-                // This call might take ~300ms to complete
                 await PreviewBrowser.EnsureCoreWebView2Async();
 
                 PreviewBrowser.CoreWebView2.Settings.AreDefaultScriptDialogsEnabled = false;
@@ -81,13 +80,10 @@ namespace Peek.FilePreviewer.Controls
                 PreviewBrowser.CoreWebView2.Settings.IsPasswordAutosaveEnabled = false;
                 PreviewBrowser.CoreWebView2.Settings.IsScriptEnabled = false;
                 PreviewBrowser.CoreWebView2.Settings.IsWebMessageEnabled = false;
-
-                // Don't load any resources.
-                // PreviewBrowser.CoreWebView2.AddWebResourceRequestedFilter("*", Microsoft.Web.WebView2.Core.CoreWebView2WebResourceContext.All);
             }
             catch
             {
-                // TODO: exception / log hanlder?
+                // TODO: exception / telemetry log?
             }
         }
 
