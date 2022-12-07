@@ -52,7 +52,7 @@ namespace Peek.UI
             }
             else
             {
-                // TODO: move into general ViewModel methods when needed
+                // TODO: move into general ViewModel method when needed
                 ViewModel.FileQuery.Initialize();
             }
         }
@@ -71,7 +71,7 @@ namespace Peek.UI
         {
             this.Hide();
 
-            // TODO: move into general ViewModel methods when needed
+            // TODO: move into general ViewModel method when needed
             ViewModel.FileQuery.Uninitialize();
         }
 

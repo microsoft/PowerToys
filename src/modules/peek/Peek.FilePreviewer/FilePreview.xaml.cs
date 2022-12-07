@@ -5,7 +5,6 @@
 namespace Peek.FilePreviewer
 {
     using System;
-    using System.Diagnostics;
     using System.Threading.Tasks;
     using CommunityToolkit.Mvvm.ComponentModel;
     using Microsoft.UI.Xaml;

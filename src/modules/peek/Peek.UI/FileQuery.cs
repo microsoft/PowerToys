@@ -138,7 +138,7 @@ namespace Peek.UI
 
             if (tempCurIndex == UninitializedItemIndex)
             {
-                Debug.WriteLine("Folder data initialization: selectedItem index not found. Navigation remains disabled.");
+                Debug.WriteLine("File query initialization: selectedItem index not found. Navigation remains disabled.");
                 return;
             }
 
@@ -157,7 +157,6 @@ namespace Peek.UI
         [ObservableProperty]
         private File? currentFile;
 
-        // Add underscores when applicable?
         private List<File> files = new ();
 
         private int currentItemIndex = UninitializedItemIndex;
