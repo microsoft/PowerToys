@@ -9,9 +9,9 @@
 
 extern "C" IMAGE_DOS_HEADER __ImageBase;
 
-BOOL APIENTRY DllMain(HMODULE hModule, 
+BOOL APIENTRY DllMain(HMODULE /*hModule*/, 
                       DWORD ul_reason_for_call, 
-                      LPVOID lpReserved)
+                      LPVOID /*lpReserved*/)
 {
     switch (ul_reason_for_call)
     {
@@ -358,7 +358,7 @@ public:
         }
     }
 
-    virtual bool on_hotkey(size_t hotkeyId) override
+    virtual bool on_hotkey(size_t /*hotkeyId*/) override
     {
         if (m_enabled)
         {

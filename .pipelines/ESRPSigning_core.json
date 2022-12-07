@@ -76,6 +76,13 @@
                 "modules\\FileLocksmith\\PowerToys.FileLocksmithUI.exe",
                 "modules\\FileLocksmith\\PowerToys.FileLocksmithUI.dll",
 
+                "modules\\Peek\\Peek.Common.dll",
+                "modules\\Peek\\Peek.FilePreviewer.dll",
+                "modules\\Peek\\Powertoys.Peek.UI.dll",
+                "modules\\Peek\\Powertoys.Peek.UI.exe",
+                "modules\\Peek\\WIC.dll",
+                "modules\\Peek\\Powertoys.Peek.dll",
+
                 "modules\\ImageResizer\\PowerToys.ImageResizer.exe",
                 "modules\\ImageResizer\\PowerToys.ImageResizer.dll",
                 "modules\\ImageResizer\\PowerToys.ImageResizerExt.dll",
