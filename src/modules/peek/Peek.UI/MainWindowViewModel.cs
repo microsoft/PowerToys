@@ -52,6 +52,7 @@ namespace Peek.UI
 
         [ObservableProperty]
         private FileQuery fileQuery = new ();
+
         private DispatcherTimer navigationThrottleTimer = new ();
     }
 }

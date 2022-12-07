@@ -21,9 +21,6 @@ namespace Peek.UI
         {
             CurrentFile = null;
 
-            files = new List<File>();
-            currentItemIndex = UninitializedItemIndex;
-
             if (initializeFilesTask != null && initializeFilesTask.Status == TaskStatus.Running)
             {
                 Debug.WriteLine("Detected existing initializeFilesTask running. Cancelling it..");
@@ -31,6 +28,12 @@ namespace Peek.UI
             }
 
             initializeFilesTask = null;
+
+            lock (mutateQueryDataLock)
+            {
+                files = new List<File>();
+                currentItemIndex = UninitializedItemIndex;
+            }
         }
 
         public void UpdateCurrentItemIndex(int desiredIndex)
@@ -91,7 +94,9 @@ namespace Peek.UI
                 }
 
                 cancellationTokenSource = new CancellationTokenSource();
-                initializeFilesTask = new Task(() => InitializeFiles(items, firstSelectedItem), cancellationTokenSource.Token);
+                initializeFilesTask = new Task(() => InitializeFiles(items, firstSelectedItem, cancellationTokenSource.Token));
+
+                // Execute file initialization/querying on background thread
                 initializeFilesTask.Start();
             }
             catch (Exception e)
@@ -109,13 +114,18 @@ namespace Peek.UI
         //  we can leverage faster APIs like Windows.Storage when 1 item is selected, and navigation is scoped to
         //  the entire folder. We can then avoid iterating through all items here, and maintain a dynamic window of
         //  loaded items around the current item index.
-        private void InitializeFiles(Shell32.FolderItems items, Shell32.FolderItem firstSelectedItem)
+        private void InitializeFiles(
+            Shell32.FolderItems items,
+            Shell32.FolderItem firstSelectedItem,
+            CancellationToken cancellationToken)
         {
             var tempFiles = new List<File>(items.Count);
             var tempCurIndex = UninitializedItemIndex;
 
             for (int i = 0; i < items.Count; i++)
             {
+                cancellationToken.ThrowIfCancellationRequested();
+
                 var item = items.Item(i);
                 if (item == null)
                 {
@@ -136,13 +146,22 @@ namespace Peek.UI
                 return;
             }
 
-            files = tempFiles;
-            currentItemIndex = tempCurIndex;
+            cancellationToken.ThrowIfCancellationRequested();
+
+            lock (mutateQueryDataLock)
+            {
+                cancellationToken.ThrowIfCancellationRequested();
+                files = tempFiles;
+                currentItemIndex = tempCurIndex;
+            }
         }
+
+        private readonly object mutateQueryDataLock = new ();
 
         [ObservableProperty]
         private File? currentFile;
 
+        // Add underscores when applicable?
         private List<File> files = new ();
 
         private int currentItemIndex = UninitializedItemIndex;
