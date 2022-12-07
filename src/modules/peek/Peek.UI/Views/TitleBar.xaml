@@ -10,11 +10,12 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     mc:Ignorable="d">
 
-    <Grid x:Name="TitleBarRootContainer">
+    <Grid x:Name="TitleBarRootContainer" Height="48">
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="Auto" />
             <ColumnDefinition Width="*" />
         </Grid.ColumnDefinitions>
+
         <StackPanel
             x:Name="AppIconAndName"
             Grid.Column="0"
@@ -24,7 +25,6 @@
             Orientation="Horizontal">
 
             <!--  Todo P1: Use Peek's logo  -->
-            <!--  Todo P2: Use default app's logo  -->
             <Image
                 x:Name="PeekLogo"
                 x:Uid="PeekLogo"
@@ -34,25 +34,32 @@
             <TextBlock
                 x:Uid="AppTitleText"
                 Margin="12,0,0,0"
-                Style="{StaticResource CaptionTextBlockStyle}" />
+                Style="{StaticResource CaptionTextBlockStyle}"
+                Text="{x:Bind File.FileName, Mode=OneWay}" />
         </StackPanel>
 
+        <!--  Todo P0: Make button clickable  -->
+        <!--  Todo P2: Adaptive width - shrink text?  -->
+        <!--  Todo P2: Localization  -->
         <Grid
+            x:Name="LaunchAppButtonContainer"
             Grid.Column="1"
-            Margin="4,4,144,-4"
+            Margin="4,4,144,4"
             HorizontalAlignment="Right"
             VerticalAlignment="Top">
-            <Button Click="Button_Click">
-                <StackPanel Orientation="Horizontal">
-                    <FontIcon
-                        Margin="4,0"
-                        FontSize="{StaticResource CaptionTextBlockFontSize}"
-                        Glyph="&#xE8E5;" />
-                    <TextBlock
-                        Margin="4,0"
-                        Style="{StaticResource CaptionTextBlockStyle}"
-                        Text="{x:Bind OpenWithApp, Mode=OneWay}" />
-                </StackPanel>
+            <Button x:Name="LaunchAppButton" Click="Button_Click">
+                <Button.Content>
+                    <StackPanel Orientation="Horizontal">
+                        <FontIcon
+                            Margin="4,0"
+                            FontSize="{StaticResource CaptionTextBlockFontSize}"
+                            Glyph="&#xE8E5;" />
+                        <TextBlock
+                            Margin="4,0"
+                            Style="{StaticResource CaptionTextBlockStyle}"
+                            Text="{x:Bind OpenWithApp, Mode=OneWay}" />
+                    </StackPanel>
+                </Button.Content>
             </Button>
         </Grid>
     </Grid>
