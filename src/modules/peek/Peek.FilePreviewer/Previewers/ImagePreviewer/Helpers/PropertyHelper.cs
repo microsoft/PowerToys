@@ -16,9 +16,7 @@ namespace Peek.FilePreviewer.Previewers
         {
             return Task.Run(() =>
             {
-                Guid iPropertyStoreGuid = typeof(PropertyStoreShellApi.IPropertyStore).GUID;
-                PropertyStoreShellApi.IPropertyStore? propertyStore;
-                PropertyStoreShellApi.SHGetPropertyStoreFromParsingName(filePath, IntPtr.Zero, PropertyStoreShellApi.PropertyStoreFlags.READWRITE, ref iPropertyStoreGuid, out propertyStore);
+                var propertyStore = PropertyStoreShellApi.GetPropertyStoreFromPath(filePath, PropertyStoreShellApi.PropertyStoreFlags.OPENSLOWITEM);
                 if (propertyStore != null)
                 {
                     var width = (int)PropertyStoreShellApi.GetUIntFromPropertyStore(propertyStore, PropertyStoreShellApi.PropertyKey.ImageHorizontalSize);
@@ -30,6 +28,35 @@ namespace Peek.FilePreviewer.Previewers
 
                 return Size.Empty;
             });
+        }
+
+        public static Task<ulong> GetFileSizeInBytes(string filePath)
+        {
+            ulong bytes = 0;
+            var propertyStore = PropertyStoreShellApi.GetPropertyStoreFromPath(filePath, PropertyStoreShellApi.PropertyStoreFlags.OPENSLOWITEM);
+            if (propertyStore != null)
+            {
+                bytes = PropertyStoreShellApi.GetULongFromPropertyStore(propertyStore, PropertyStoreShellApi.PropertyKey.FileSizeBytes);
+
+                Marshal.ReleaseComObject(propertyStore);
+            }
+
+            return Task.FromResult(bytes);
+        }
+
+        public static Task<string> GetFileType(string filePath)
+        {
+            var type = string.Empty;
+            var propertyStore = PropertyStoreShellApi.GetPropertyStoreFromPath(filePath, PropertyStoreShellApi.PropertyStoreFlags.OPENSLOWITEM);
+            if (propertyStore != null)
+            {
+                // TODO: find a way to get user friendly description
+                type = PropertyStoreShellApi.GetStringFromPropertyStore(propertyStore, PropertyStoreShellApi.PropertyKey.FileType);
+
+                Marshal.ReleaseComObject(propertyStore);
+            }
+
+            return Task.FromResult(type);
         }
     }
 }
