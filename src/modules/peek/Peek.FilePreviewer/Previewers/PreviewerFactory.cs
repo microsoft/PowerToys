@@ -26,7 +26,7 @@ namespace Peek.FilePreviewer.Previewers
                 case ".tiff":
                     return new ImagePreviewer(file);
                 default:
-                    return null;
+                    return new UnsupportedFilePreviewer(file);
             }
         }
     }

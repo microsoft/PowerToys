@@ -7,6 +7,7 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:conv="using:Peek.Common.Converters"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:local="using:Peek.FilePreviewer"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     mc:Ignorable="d">
 
@@ -23,6 +24,10 @@
 
         <!--  TODO: Add WebView2 support.  -->
 
-        <!--  TODO: Add UnsupportedFilePreview control  -->
+        <local:UnsupportedFilePreview
+            FileName="{x:Bind UnsupportedFilePreviewer.FileName, Mode=OneWay}"
+            IconPreview="{x:Bind UnsupportedFilePreviewer.IconPreview, Mode=OneWay}"
+            Visibility="{x:Bind IsUnsupportedPreviewVisible, Mode=OneWay}" />
+
     </Grid>
 </UserControl>
