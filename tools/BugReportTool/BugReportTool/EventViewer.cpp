@@ -95,7 +95,7 @@ namespace
         }
 
         // Enumerate all the events in the result set. 
-        void PrintResults(EVT_HANDLE hResults)
+        void PrintResults(EVT_HANDLE results)
         {
             DWORD status = ERROR_SUCCESS;
             EVT_HANDLE hEvents[BATCH_SIZE];
@@ -104,7 +104,7 @@ namespace
             while (true)
             {
                 // Get a block of events from the result set.
-                if (!EvtNext(hResults, BATCH_SIZE, hEvents, INFINITE, 0, &dwReturned))
+                if (!EvtNext(results, BATCH_SIZE, hEvents, INFINITE, 0, &dwReturned))
                 {
                     if (ERROR_NO_MORE_ITEMS != (status = GetLastError()))
                     {

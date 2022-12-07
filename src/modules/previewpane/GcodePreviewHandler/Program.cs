@@ -51,7 +51,7 @@ namespace Microsoft.PowerToys.PreviewHandler.Gcode
                 }
                 else
                 {
-                    MessageBox.Show("aaaa number of args: " + args.Length.ToString(CultureInfo.InvariantCulture));
+                    MessageBox.Show("Wrong number of args: " + args.Length.ToString(CultureInfo.InvariantCulture));
                 }
             }
 

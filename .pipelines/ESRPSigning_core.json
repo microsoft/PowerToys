@@ -222,6 +222,7 @@
                 "vcruntime140_1_app.dll",
                 "vcruntime140_app.dll",
                 "modules\\FileLocksmith\\CommunityToolkit.Labs.WinUI.SettingsControls.dll",
+                "modules\\PowerAccent\\UnicodeInformation.dll",
                 "modules\\PowerAccent\\Vanara.Core.dll",
                 "modules\\PowerAccent\\Vanara.PInvoke.ComCtl32.dll",
                 "modules\\PowerAccent\\Vanara.PInvoke.Cryptography.dll",
@@ -249,6 +250,7 @@
                 "modules\\launcher\\hyjiacan.py4n.dll",
                 "Settings\\Microsoft.Graphics.Canvas.Interop.dll",
                 "Settings\\clrcompression.dll",
+                "Settings\\CommunityToolkit.Labs.WinUI.SettingsControls.dll",
                 "ColorCode.Core.dll", 
                 "ColorCode.UWP.dll",
                 "UnitsNet.dll"

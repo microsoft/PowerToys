@@ -2,7 +2,7 @@
   <Import Project="..\..\..\Version.props" />
 
   <PropertyGroup>
-    <TargetFramework>net6.0-windows</TargetFramework>
+    <TargetFramework>net7.0-windows</TargetFramework>
     <IsPackable>false</IsPackable>
 
     <RuntimeIdentifiers>win-x64;win-arm64</RuntimeIdentifiers>
@@ -56,5 +56,6 @@
   <ItemGroup>
     <ProjectReference Include="..\PowerToys.Interop.vcxproj" />
   </ItemGroup>
+
 
 </Project>

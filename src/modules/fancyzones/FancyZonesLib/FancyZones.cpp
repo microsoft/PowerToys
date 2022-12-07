@@ -56,14 +56,14 @@ namespace NonLocalizable
 struct FancyZones : public winrt::implements<FancyZones, IFancyZones, IFancyZonesCallback>, public SettingsObserver
 {
 public:
-    FancyZones(HINSTANCE hinstance, std::function<void()> disableModuleCallback) noexcept :
+    FancyZones(HINSTANCE hinstance, std::function<void()> disableModuleCallbackFunction) noexcept :
         SettingsObserver({ SettingId::EditorHotkey, SettingId::PrevTabHotkey, SettingId::NextTabHotkey, SettingId::SpanZonesAcrossMonitors }),
         m_hinstance(hinstance),
         m_windowMoveHandler([this]() {
             PostMessageW(m_window, WM_PRIV_LOCATIONCHANGE, NULL, NULL);
         })
     {
-        this->disableModuleCallback = std::move(disableModuleCallback);
+        this->disableModuleCallback = std::move(disableModuleCallbackFunction);
 
         FancyZonesSettings::instance().LoadSettings();
 
@@ -435,7 +435,7 @@ void FancyZones::WindowCreated(HWND window) noexcept
     {
         // window is recreated after switching virtual desktop
         // avoid moving already opened windows after switching vd
-        bool isMoved = FancyZonesWindowProperties::RetreiveMovedOnOpeningProperty(window);
+        bool isMoved = FancyZonesWindowProperties::RetrieveMovedOnOpeningProperty(window);
         if (!isMoved)
         {
             FancyZonesWindowProperties::StampMovedOnOpeningProperty(window);
@@ -808,6 +808,15 @@ bool FancyZones::OnSnapHotkeyBasedOnZoneNumber(HWND window, DWORD vkCode) noexce
             auto workArea = m_workAreaHandler.GetWorkArea(VirtualDesktop::instance().GetCurrentVirtualDesktopId(), *currMonitorInfo);
             if (m_windowMoveHandler.MoveWindowIntoZoneByDirectionAndIndex(window, vkCode, false /* cycle through zones */, workArea))
             {
+                // unassign from previous work area
+                for (auto& prevWorkArea : m_workAreaHandler.GetAllWorkAreas())
+                {
+                    if (workArea != prevWorkArea)
+                    {
+                        prevWorkArea->UnsnapWindow(window);
+                    }
+                }
+                
                 Trace::FancyZones::KeyboardSnapWindowToZone(workArea->GetLayout().get(), workArea->GetLayoutWindows().get());
                 return true;
             }

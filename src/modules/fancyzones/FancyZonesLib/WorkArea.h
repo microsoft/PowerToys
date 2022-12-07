@@ -69,6 +69,7 @@ public:
     bool MoveWindowIntoZoneByDirectionAndPosition(HWND window, DWORD vkCode, bool cycle) noexcept;
     bool ExtendWindowByDirectionAndPosition(HWND window, DWORD vkCode) noexcept;
     void SaveWindowProcessToZoneIndex(HWND window) noexcept;
+    bool UnsnapWindow(HWND window) noexcept;
 
     void UpdateActiveZoneSet() noexcept;
 

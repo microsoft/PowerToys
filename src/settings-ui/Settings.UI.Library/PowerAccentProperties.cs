@@ -24,6 +24,9 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         [JsonPropertyName("excluded_apps")]
         public StringProperty ExcludedApps { get; set; }
 
+        [JsonPropertyName("show_description")]
+        public bool ShowUnicodeDescription { get; set; }
+
         public PowerAccentProperties()
         {
             ActivationKey = PowerAccentActivationKey.Both;
@@ -31,6 +34,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             InputTime = new IntProperty(200);
             SelectedLang = "ALL";
             ExcludedApps = new StringProperty();
+            ShowUnicodeDescription = false;
         }
     }
 }

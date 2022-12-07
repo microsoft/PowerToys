@@ -163,7 +163,7 @@ brucelindbloom
 bsd
 bstr
 bti
-Btn
+btn
 BTNFACE
 Bto
 buf
@@ -204,8 +204,8 @@ Chrzan
 CHT
 Chukotka
 Chuuk
-cielab
-ciexyz
+CIELAB
+CIEXYZ
 cim
 CImage
 cla
@@ -576,6 +576,8 @@ FZE
 gabime
 GAC
 gacutil
+Gaeilge
+Gaidhlig
 GBarm
 Gbits
 Gbps
@@ -862,6 +864,7 @@ Kyrgyzstan
 Kyzylorda
 LAlt
 Lambson
+LANGID
 langword
 Lastdevice
 Laute
@@ -1116,7 +1119,7 @@ NCMBUTTONDOWN
 NCMBUTTONUP
 NCMOUSELEAVE
 NCMOUSEMOVE
-ncol
+NCol
 NCPAINT
 NCRBUTTONDBLCLK
 NCRBUTTONDOWN
@@ -1857,6 +1860,7 @@ UIs
 Ulaanbaatar
 ULARGE
 ULONGLONG
+unassign
 uncompilable
 UNCPRIORITY
 UNDNAME
@@ -2132,5 +2136,6 @@ zonable
 zoneset
 Zoneszonabletester
 Zonev
+zopfli
 Zykova
 zzz

@@ -6,6 +6,7 @@
     xmlns:local="using:Microsoft.PowerToys.Settings.UI.OOBE.Views"
     xmlns:localModels="using:Microsoft.PowerToys.Settings.UI.OOBE.ViewModel"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:ui="using:CommunityToolkit.WinUI.UI"
     HighContrastAdjustment="None"
     mc:Ignorable="d">
     <!--
@@ -23,103 +24,84 @@
             PaneDisplayMode="Left"
             SelectionChanged="NavigationView_SelectionChanged">
             <NavigationView.MenuItems>
-                <NavigationViewItem x:Uid="Shell_General" Tag="Overview">
-                    <NavigationViewItem.Icon>
-                        <BitmapIcon ShowAsMonochrome="False" UriSource="ms-appx:///Assets/FluentIcons/FluentIconsPowerToys.png" />
-                    </NavigationViewItem.Icon>
-                </NavigationViewItem>
-                <NavigationViewItem x:Uid="Shell_AlwaysOnTop" Tag="AlwaysOnTop">
-                    <NavigationViewItem.Icon>
-                        <BitmapIcon ShowAsMonochrome="False" UriSource="ms-appx:///Assets/FluentIcons/FluentIconsAlwaysOnTop.png" />
-                    </NavigationViewItem.Icon>
-                </NavigationViewItem>
-                <NavigationViewItem x:Uid="Shell_Awake" Tag="Awake">
-                    <NavigationViewItem.Icon>
-                        <BitmapIcon ShowAsMonochrome="False" UriSource="ms-appx:///Assets/FluentIcons/FluentIconsAwake.png" />
-                    </NavigationViewItem.Icon>
-                </NavigationViewItem>
-                <NavigationViewItem x:Uid="Shell_ColorPicker" Tag="ColorPicker">
-                    <NavigationViewItem.Icon>
-                        <BitmapIcon ShowAsMonochrome="False" UriSource="ms-appx:///Assets/FluentIcons/FluentIconsColorPicker.png" />
-                    </NavigationViewItem.Icon>
-                </NavigationViewItem>
-                <NavigationViewItem x:Uid="Shell_FancyZones" Tag="FancyZones">
-                    <NavigationViewItem.Icon>
-                        <BitmapIcon ShowAsMonochrome="False" UriSource="ms-appx:///Assets/FluentIcons/FluentIconsFancyZones.png" />
-                    </NavigationViewItem.Icon>
-                </NavigationViewItem>
-                <NavigationViewItem x:Uid="Shell_FileLocksmith" Tag="FileLocksmith">
-                    <NavigationViewItem.Icon>
-                        <BitmapIcon ShowAsMonochrome="False" UriSource="ms-appx:///Assets/FluentIcons/FluentIconsFileLocksmith.png" />
-                    </NavigationViewItem.Icon>
-                </NavigationViewItem>
-                <NavigationViewItem x:Uid="Shell_PowerPreview" Tag="FileExplorer">
-                    <NavigationViewItem.Icon>
-                        <BitmapIcon ShowAsMonochrome="False" UriSource="ms-appx:///Assets/FluentIcons/FluentIconsFileExplorerPreview.png" />
-                    </NavigationViewItem.Icon>
-                </NavigationViewItem>
-                <NavigationViewItem x:Uid="Shell_Hosts" Tag="Hosts">
-                    <NavigationViewItem.Icon>
-                        <BitmapIcon ShowAsMonochrome="False" UriSource="ms-appx:///Assets/FluentIcons/FluentIconsHosts.png" />
-                    </NavigationViewItem.Icon>
-                </NavigationViewItem>
-                <NavigationViewItem x:Uid="Shell_ImageResizer" Tag="ImageResizer">
-                    <NavigationViewItem.Icon>
-                        <BitmapIcon ShowAsMonochrome="False" UriSource="ms-appx:///Assets/FluentIcons/FluentIconsImageResizer.png" />
-                    </NavigationViewItem.Icon>
-                </NavigationViewItem>
-                <NavigationViewItem x:Uid="Shell_KeyboardManager" Tag="KBM">
-                    <NavigationViewItem.Icon>
-                        <BitmapIcon ShowAsMonochrome="False" UriSource="ms-appx:///Assets/FluentIcons/FluentIconsKeyboardManager.png" />
-                    </NavigationViewItem.Icon>
-                </NavigationViewItem>
-                <NavigationViewItem x:Uid="Shell_MouseUtilities" Tag="MouseUtils">
-                    <NavigationViewItem.Icon>
-                        <BitmapIcon ShowAsMonochrome="False" UriSource="ms-appx:///Assets/FluentIcons/FluentIconsMouseUtils.png" />
-                    </NavigationViewItem.Icon>
-                </NavigationViewItem>
-                <NavigationViewItem x:Uid="Shell_PowerRename" Tag="PowerRename">
-                    <NavigationViewItem.Icon>
-                        <BitmapIcon ShowAsMonochrome="False" UriSource="ms-appx:///Assets/FluentIcons/FluentIconsPowerRename.png" />
-                    </NavigationViewItem.Icon>
-                </NavigationViewItem>
-                <NavigationViewItem x:Uid="Shell_PowerLauncher" Tag="Run">
-                    <NavigationViewItem.Icon>
-                        <BitmapIcon ShowAsMonochrome="False" UriSource="ms-appx:///Assets/FluentIcons/FluentIconsPowerToysRun.png" />
-                    </NavigationViewItem.Icon>
-                </NavigationViewItem>
-                <NavigationViewItem x:Uid="Shell_QuickAccent" Tag="QuickAccent">
-                    <NavigationViewItem.Icon>
-                        <BitmapIcon ShowAsMonochrome="False" UriSource="ms-appx:///Assets/FluentIcons/FluentIconsPowerAccent.png" />
-                    </NavigationViewItem.Icon>
-                </NavigationViewItem>
-                <NavigationViewItem x:Uid="Shell_MeasureTool" Tag="MeasureTool">
-                    <NavigationViewItem.Icon>
-                        <BitmapIcon ShowAsMonochrome="False" UriSource="ms-appx:///Assets/FluentIcons/FluentIconsScreenRuler.png" />
-                    </NavigationViewItem.Icon>
-                </NavigationViewItem>
-                <NavigationViewItem x:Uid="Shell_ShortcutGuide" Tag="ShortcutGuide">
-                    <NavigationViewItem.Icon>
-                        <BitmapIcon ShowAsMonochrome="False" UriSource="ms-appx:///Assets/FluentIcons/FluentIconsShortcutGuide.png" />
-                    </NavigationViewItem.Icon>
-                </NavigationViewItem>
-                <NavigationViewItem x:Uid="Shell_TextExtractor" Tag="TextExtractor">
-                    <NavigationViewItem.Icon>
-                        <BitmapIcon ShowAsMonochrome="False" UriSource="ms-appx:///Assets/FluentIcons/FluentIconsPowerOCR.png" />
-                    </NavigationViewItem.Icon>
-                </NavigationViewItem>
-                <NavigationViewItem x:Uid="Shell_VideoConference" Tag="VideoConference">
-                    <NavigationViewItem.Icon>
-                        <BitmapIcon ShowAsMonochrome="False" UriSource="ms-appx:///Assets/FluentIcons/FluentIconsVideoConferenceMute.png" />
-                    </NavigationViewItem.Icon>
-                </NavigationViewItem>
+                <NavigationViewItem
+                    x:Uid="Shell_General"
+                    Icon="{ui:BitmapIcon Source=/Assets/FluentIcons/FluentIconsPowerToys.png}"
+                    Tag="Overview" />
+                <NavigationViewItem
+                    x:Uid="Shell_AlwaysOnTop"
+                    Icon="{ui:BitmapIcon Source=/Assets/FluentIcons/FluentIconsAlwaysOnTop.png}"
+                    Tag="AlwaysOnTop" />
+                <NavigationViewItem
+                    x:Uid="Shell_Awake"
+                    Icon="{ui:BitmapIcon Source=/Assets/FluentIcons/FluentIconsAwake.png}"
+                    Tag="Awake" />
+                <NavigationViewItem
+                    x:Uid="Shell_ColorPicker"
+                    Icon="{ui:BitmapIcon Source=/Assets/FluentIcons/FluentIconsColorPicker.png}"
+                    Tag="ColorPicker" />
+                <NavigationViewItem
+                    x:Uid="Shell_FancyZones"
+                    Icon="{ui:BitmapIcon Source=/Assets/FluentIcons/FluentIconsFancyZones.png}"
+                    Tag="FancyZones" />
+                <NavigationViewItem
+                    x:Uid="Shell_FileLocksmith"
+                    Icon="{ui:BitmapIcon Source=/Assets/FluentIcons/FluentIconsFileLocksmith.png}"
+                    Tag="FileLocksmith" />
+                <NavigationViewItem
+                    x:Uid="Shell_PowerPreview"
+                    Icon="{ui:BitmapIcon Source=/Assets/FluentIcons/FluentIconsFileExplorerPreview.png}"
+                    Tag="FileExplorer" />
+                <NavigationViewItem
+                    x:Uid="Shell_Hosts"
+                    Icon="{ui:BitmapIcon Source=/Assets/FluentIcons/FluentIconsHosts.png}"
+                    Tag="Hosts" />
+                <NavigationViewItem
+                    x:Uid="Shell_ImageResizer"
+                    Icon="{ui:BitmapIcon Source=/Assets/FluentIcons/FluentIconsImageResizer.png}"
+                    Tag="ImageResizer" />
+                <NavigationViewItem
+                    x:Uid="Shell_KeyboardManager"
+                    Icon="{ui:BitmapIcon Source=/Assets/FluentIcons/FluentIconsKeyboardManager.png}"
+                    Tag="KBM" />
+                <NavigationViewItem
+                    x:Uid="Shell_MouseUtilities"
+                    Icon="{ui:BitmapIcon Source=/Assets/FluentIcons/FluentIconsMouseUtils.png}"
+                    Tag="MouseUtils" />
+                <NavigationViewItem
+                    x:Uid="Shell_PowerRename"
+                    Icon="{ui:BitmapIcon Source=/Assets/FluentIcons/FluentIconsPowerRename.png}"
+                    Tag="PowerRename" />
+                <NavigationViewItem
+                    x:Uid="Shell_PowerLauncher"
+                    Icon="{ui:BitmapIcon Source=/Assets/FluentIcons/FluentIconsPowerToysRun.png}"
+                    Tag="Run" />
+                <NavigationViewItem
+                    x:Uid="Shell_QuickAccent"
+                    Icon="{ui:BitmapIcon Source=/Assets/FluentIcons/FluentIconsPowerAccent.png}"
+                    Tag="QuickAccent" />
+                <NavigationViewItem
+                    x:Uid="Shell_MeasureTool"
+                    Icon="{ui:BitmapIcon Source=/Assets/FluentIcons/FluentIconsScreenRuler.png}"
+                    Tag="MeasureTool" />
+                <NavigationViewItem
+                    x:Uid="Shell_ShortcutGuide"
+                    Icon="{ui:BitmapIcon Source=/Assets/FluentIcons/FluentIconsShortcutGuide.png}"
+                    Tag="ShortcutGuide" />
+                <NavigationViewItem
+                    x:Uid="Shell_TextExtractor"
+                    Icon="{ui:BitmapIcon Source=/Assets/FluentIcons/FluentIconsPowerOCR.png}"
+                    Tag="TextExtractor" />
+                <NavigationViewItem
+                    x:Uid="Shell_VideoConference"
+                    Icon="{ui:BitmapIcon Source=/Assets/FluentIcons/FluentIconsVideoConferenceMute.png}"
+                    Tag="VideoConference" />
             </NavigationView.MenuItems>
             <NavigationView.FooterMenuItems>
-                <NavigationViewItem x:Uid="Shell_WhatsNew" Tag="WhatsNew">
-                    <NavigationViewItem.Icon>
-                        <FontIcon Glyph="&#xF133;" />
-                    </NavigationViewItem.Icon>
-                </NavigationViewItem>
+                <NavigationViewItem
+                    x:Uid="Shell_WhatsNew"
+                    Icon="{ui:FontIcon FontFamily={StaticResource SymbolThemeFontFamily}, Glyph=&#xF133;}"
+                    Tag="WhatsNew" />
             </NavigationView.FooterMenuItems>
             <NavigationView.Content>
                 <Frame x:Name="NavigationFrame" />

@@ -7,6 +7,7 @@
     xmlns:i="using:Microsoft.Xaml.Interactivity"
     xmlns:ic="using:Microsoft.Xaml.Interactions.Core"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:ui="using:CommunityToolkit.WinUI.UI"
     xmlns:views="using:Microsoft.PowerToys.Settings.UI.Views"
     HighContrastAdjustment="None"
     mc:Ignorable="d">
@@ -21,7 +22,9 @@
         </ic:EventTriggerBehavior>
     </i:Interaction.Behaviors>
 
-    <Grid x:Name="RootGrid" Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
+    <Grid
+        x:Name="RootGrid"
+        Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
 
         <NavigationView
             x:Name="navigationView"
@@ -35,129 +38,112 @@
             PaneOpened="NavigationView_PaneOpened"
             SelectedItem="{x:Bind ViewModel.Selected, Mode=OneWay}">
             <NavigationView.Resources>
-                <SolidColorBrush x:Key="NavigationViewContentBackground" Color="Transparent" />
-                <SolidColorBrush x:Key="NavigationViewContentGridBorderBrush" Color="Transparent" />
-
+                <SolidColorBrush
+                    x:Key="NavigationViewContentBackground"
+                    Color="Transparent" />
+                <SolidColorBrush
+                    x:Key="NavigationViewContentGridBorderBrush"
+                    Color="Transparent" />
             </NavigationView.Resources>
             <NavigationView.MenuItems>
-                <NavigationViewItem x:Uid="Shell_General" helpers:NavHelper.NavigateTo="views:GeneralPage">
-                    <NavigationViewItem.Icon>
-                        <BitmapIcon ShowAsMonochrome="False" UriSource="ms-appx:///Assets/FluentIcons/FluentIconsSettings.png" />
-                    </NavigationViewItem.Icon>
-                </NavigationViewItem>
+                <NavigationViewItem
+                    x:Uid="Shell_General"
+                    helpers:NavHelper.NavigateTo="views:GeneralPage"
+                    Icon="{ui:BitmapIcon Source=/Assets/FluentIcons/FluentIconsSettings.png}" />
 
-                <NavigationViewItem x:Uid="Shell_AlwaysOnTop" helpers:NavHelper.NavigateTo="views:AlwaysOnTopPage">
-                    <NavigationViewItem.Icon>
-                        <BitmapIcon ShowAsMonochrome="False" UriSource="ms-appx:///Assets/FluentIcons/FluentIconsAlwaysOnTop.png" />
-                    </NavigationViewItem.Icon>
-                </NavigationViewItem>
+                <NavigationViewItem
+                    x:Uid="Shell_AlwaysOnTop"
+                    helpers:NavHelper.NavigateTo="views:AlwaysOnTopPage"
+                    Icon="{ui:BitmapIcon Source=/Assets/FluentIcons/FluentIconsAlwaysOnTop.png}" />
 
-                <NavigationViewItem x:Uid="Shell_Awake" helpers:NavHelper.NavigateTo="views:AwakePage">
-                    <NavigationViewItem.Icon>
-                        <BitmapIcon ShowAsMonochrome="False" UriSource="ms-appx:///Assets/FluentIcons/FluentIconsAwake.png" />
-                    </NavigationViewItem.Icon>
-                </NavigationViewItem>
+                <NavigationViewItem
+                    x:Uid="Shell_Awake"
+                    helpers:NavHelper.NavigateTo="views:AwakePage"
+                    Icon="{ui:BitmapIcon Source=/Assets/FluentIcons/FluentIconsAwake.png}" />
 
-                <NavigationViewItem x:Uid="Shell_ColorPicker" helpers:NavHelper.NavigateTo="views:ColorPickerPage">
-                    <NavigationViewItem.Icon>
-                        <BitmapIcon ShowAsMonochrome="False" UriSource="ms-appx:///Assets/FluentIcons/FluentIconsColorPicker.png" />
-                    </NavigationViewItem.Icon>
-                </NavigationViewItem>
+                <NavigationViewItem
+                    x:Uid="Shell_ColorPicker"
+                    helpers:NavHelper.NavigateTo="views:ColorPickerPage"
+                    Icon="{ui:BitmapIcon Source=/Assets/FluentIcons/FluentIconsColorPicker.png}" />
 
-                <NavigationViewItem x:Uid="Shell_FancyZones" helpers:NavHelper.NavigateTo="views:FancyZonesPage">
-                    <NavigationViewItem.Icon>
-                        <BitmapIcon ShowAsMonochrome="False" UriSource="ms-appx:///Assets/FluentIcons/FluentIconsFancyZones.png" />
-                    </NavigationViewItem.Icon>
-                </NavigationViewItem>
+                <NavigationViewItem
+                    x:Uid="Shell_FancyZones"
+                    helpers:NavHelper.NavigateTo="views:FancyZonesPage"
+                    Icon="{ui:BitmapIcon Source=/Assets/FluentIcons/FluentIconsFancyZones.png}" />
+                <NavigationViewItem
+                    x:Uid="Shell_FileLocksmith"
+                    helpers:NavHelper.NavigateTo="views:FileLocksmithPage"
+                    Icon="{ui:BitmapIcon Source=/Assets/FluentIcons/FluentIconsFileLocksmith.png}" />
+                <NavigationViewItem
+                    x:Uid="Shell_PowerPreview"
+                    helpers:NavHelper.NavigateTo="views:PowerPreviewPage"
+                    Icon="{ui:BitmapIcon Source=/Assets/FluentIcons/FluentIconsFileExplorerPreview.png}" />
 
-                <NavigationViewItem x:Uid="Shell_FileLocksmith" helpers:NavHelper.NavigateTo="views:FileLocksmithPage">
-                    <NavigationViewItem.Icon>
-                        <BitmapIcon ShowAsMonochrome="False" UriSource="ms-appx:///Assets/FluentIcons/FluentIconsFileLocksmith.png" />
-                    </NavigationViewItem.Icon>
-                </NavigationViewItem>
+                <NavigationViewItem
+                    x:Uid="Shell_Hosts"
+                    helpers:NavHelper.NavigateTo="views:HostsPage"
+                    Icon="{ui:BitmapIcon Source=/Assets/FluentIcons/FluentIconsHosts.png}" />
 
-                <NavigationViewItem x:Uid="Shell_PowerPreview" helpers:NavHelper.NavigateTo="views:PowerPreviewPage">
-                    <NavigationViewItem.Icon>
-                        <BitmapIcon ShowAsMonochrome="False" UriSource="ms-appx:///Assets/FluentIcons/FluentIconsFileExplorerPreview.png" />
-                    </NavigationViewItem.Icon>
-                </NavigationViewItem>
+                <NavigationViewItem
+                    x:Uid="Shell_ImageResizer"
+                    helpers:NavHelper.NavigateTo="views:ImageResizerPage"
+                    Icon="{ui:BitmapIcon Source=/Assets/FluentIcons/FluentIconsImageResizer.png}" />
 
-                <NavigationViewItem x:Uid="Shell_Hosts" helpers:NavHelper.NavigateTo="views:HostsPage">
-                    <NavigationViewItem.Icon>
-                        <BitmapIcon ShowAsMonochrome="False" UriSource="ms-appx:///Assets/FluentIcons/FluentIconsHosts.png" />
-                    </NavigationViewItem.Icon>
-                </NavigationViewItem>
+                <NavigationViewItem
+                    x:Uid="Shell_KeyboardManager"
+                    helpers:NavHelper.NavigateTo="views:KeyboardManagerPage"
+                    Icon="{ui:BitmapIcon Source=/Assets/FluentIcons/FluentIconsKeyboardManager.png}" />
 
-                <NavigationViewItem x:Uid="Shell_ImageResizer" helpers:NavHelper.NavigateTo="views:ImageResizerPage">
-                    <NavigationViewItem.Icon>
-                        <BitmapIcon ShowAsMonochrome="False" UriSource="ms-appx:///Assets/FluentIcons/FluentIconsImageResizer.png" />
-                    </NavigationViewItem.Icon>
-                </NavigationViewItem>
+                <NavigationViewItem
+                    x:Uid="Shell_MouseUtilities"
+                    helpers:NavHelper.NavigateTo="views:MouseUtilsPage"
+                    Icon="{ui:BitmapIcon Source=/Assets/FluentIcons/FluentIconsMouseUtils.png}" />
 
-                <NavigationViewItem x:Uid="Shell_KeyboardManager" helpers:NavHelper.NavigateTo="views:KeyboardManagerPage">
-                    <NavigationViewItem.Icon>
-                        <BitmapIcon ShowAsMonochrome="False" UriSource="ms-appx:///Assets/FluentIcons/FluentIconsKeyboardManager.png" />
-                    </NavigationViewItem.Icon>
-                </NavigationViewItem>
+                <NavigationViewItem
+                    x:Uid="Shell_PowerRename"
+                    helpers:NavHelper.NavigateTo="views:PowerRenamePage"
+                    Icon="{ui:BitmapIcon Source=/Assets/FluentIcons/FluentIconsPowerRename.png}" />
+                <NavigationViewItem
+                    x:Uid="Shell_PowerLauncher"
+                    helpers:NavHelper.NavigateTo="views:PowerLauncherPage"
+                    Icon="{ui:BitmapIcon Source=/Assets/FluentIcons/FluentIconsPowerToysRun.png}" />
 
-                <NavigationViewItem x:Uid="Shell_MouseUtilities" helpers:NavHelper.NavigateTo="views:MouseUtilsPage">
-                    <NavigationViewItem.Icon>
-                        <BitmapIcon ShowAsMonochrome="False" UriSource="ms-appx:///Assets/FluentIcons/FluentIconsMouseUtils.png" />
-                    </NavigationViewItem.Icon>
-                </NavigationViewItem>
+                <NavigationViewItem
+                    x:Uid="Shell_QuickAccent"
+                    helpers:NavHelper.NavigateTo="views:PowerAccentPage"
+                    Icon="{ui:BitmapIcon Source=/Assets/FluentIcons/FluentIconsPowerAccent.png}" />
 
-                <NavigationViewItem x:Uid="Shell_PowerRename" helpers:NavHelper.NavigateTo="views:PowerRenamePage">
-                    <NavigationViewItem.Icon>
-                        <BitmapIcon ShowAsMonochrome="False" UriSource="ms-appx:///Assets/FluentIcons/FluentIconsPowerRename.png" />
-                    </NavigationViewItem.Icon>
-                </NavigationViewItem>
-                <NavigationViewItem x:Uid="Shell_PowerLauncher" helpers:NavHelper.NavigateTo="views:PowerLauncherPage">
-                    <NavigationViewItem.Icon>
-                        <BitmapIcon ShowAsMonochrome="False" UriSource="ms-appx:///Assets/FluentIcons/FluentIconsPowerToysRun.png" />
-                    </NavigationViewItem.Icon>
-                </NavigationViewItem>
-                <NavigationViewItem x:Uid="Shell_QuickAccent" helpers:NavHelper.NavigateTo="views:PowerAccentPage">
-                    <NavigationViewItem.Icon>
-                        <BitmapIcon ShowAsMonochrome="False" UriSource="ms-appx:///Assets/FluentIcons/FluentIconsPowerAccent.png" />
-                    </NavigationViewItem.Icon>
-                </NavigationViewItem>
-                <NavigationViewItem x:Uid="Shell_MeasureTool" helpers:NavHelper.NavigateTo="views:MeasureToolPage">
-                    <NavigationViewItem.Icon>
-                        <BitmapIcon ShowAsMonochrome="False" UriSource="ms-appx:///Assets/FluentIcons/FluentIconsScreenRuler.png" />
-                    </NavigationViewItem.Icon>
-                </NavigationViewItem>
-                <NavigationViewItem x:Uid="Shell_ShortcutGuide" helpers:NavHelper.NavigateTo="views:ShortcutGuidePage">
-                    <NavigationViewItem.Icon>
-                        <BitmapIcon ShowAsMonochrome="False" UriSource="ms-appx:///Assets/FluentIcons/FluentIconsShortcutGuide.png" />
-                    </NavigationViewItem.Icon>
-                </NavigationViewItem>
-                <NavigationViewItem x:Uid="Shell_TextExtractor" helpers:NavHelper.NavigateTo="views:PowerOcrPage">
-                    <NavigationViewItem.Icon>
-                        <BitmapIcon ShowAsMonochrome="False" UriSource="ms-appx:///Assets/FluentIcons/FluentIconsPowerOcr.png" />
-                    </NavigationViewItem.Icon>
-                </NavigationViewItem>
+                <NavigationViewItem
+                    x:Uid="Shell_MeasureTool"
+                    helpers:NavHelper.NavigateTo="views:MeasureToolPage"
+                    Icon="{ui:BitmapIcon Source=/Assets/FluentIcons/FluentIconsScreenRuler.png}" />
+
+                <NavigationViewItem
+                    x:Uid="Shell_ShortcutGuide"
+                    helpers:NavHelper.NavigateTo="views:ShortcutGuidePage"
+                    Icon="{ui:BitmapIcon Source=/Assets/FluentIcons/FluentIconsShortcutGuide.png}" />
+
+                <NavigationViewItem
+                    x:Uid="Shell_TextExtractor"
+                    helpers:NavHelper.NavigateTo="views:PowerOcrPage"
+                    Icon="{ui:BitmapIcon Source=/Assets/FluentIcons/FluentIconsPowerOcr.png}" />
 
                 <NavigationViewItem
                     x:Uid="Shell_VideoConference"
                     helpers:NavHelper.NavigateTo="views:VideoConferencePage"
-                    IsEnabled="{x:Bind ViewModel.IsVideoConferenceBuild, Mode=OneWay}">
-                    <NavigationViewItem.Icon>
-                        <BitmapIcon ShowAsMonochrome="False" UriSource="ms-appx:///Assets/FluentIcons/FluentIconsVideoConferenceMute.png" />
-                    </NavigationViewItem.Icon>
-                </NavigationViewItem>
+                    Icon="{ui:BitmapIcon Source=/Assets/FluentIcons/FluentIconsVideoConferenceMute.png}"
+                    IsEnabled="{x:Bind ViewModel.IsVideoConferenceBuild, Mode=OneWay}" />
             </NavigationView.MenuItems>
             <NavigationView.PaneFooter>
                 <StackPanel Orientation="Vertical">
-                    <NavigationViewItem x:Uid="OOBE_NavViewItem" Tapped="OOBEItem_Tapped">
-                        <NavigationViewItem.Icon>
-                            <FontIcon Glyph="&#xF133;" />
-                        </NavigationViewItem.Icon>
-                    </NavigationViewItem>
-                    <NavigationViewItem x:Uid="Feedback_NavViewItem" Tapped="FeedbackItem_Tapped">
-                        <NavigationViewItem.Icon>
-                            <FontIcon Glyph="&#xED15;" />
-                        </NavigationViewItem.Icon>
-                    </NavigationViewItem>
+                    <NavigationViewItem
+                        x:Uid="OOBE_NavViewItem"
+                        Icon="{ui:FontIcon FontFamily={StaticResource SymbolThemeFontFamily}, Glyph=&#xF133;}"
+                        Tapped="OOBEItem_Tapped" />
+                    <NavigationViewItem
+                        x:Uid="Feedback_NavViewItem"
+                        Icon="{ui:FontIcon FontFamily={StaticResource SymbolThemeFontFamily}, Glyph=&#xED15;}"
+                        Tapped="FeedbackItem_Tapped" />
                 </StackPanel>
             </NavigationView.PaneFooter>
             <i:Interaction.Behaviors>

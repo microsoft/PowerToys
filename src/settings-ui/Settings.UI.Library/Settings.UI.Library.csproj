@@ -2,23 +2,23 @@
 
 	<Import Project="..\..\Version.props" />
 
-  <PropertyGroup>
-    <TargetFramework>net6.0-windows</TargetFramework>
-    <Version>$(Version).0</Version>
-    <Authors>Microsoft Corporation</Authors>
-    <Product>PowerToys</Product>
-    <Description>PowerToys Settings UI Library</Description>
-    <AssemblyName>PowerToys.Settings.UI.Lib</AssemblyName>
-    <SelfContained>true</SelfContained>
-  </PropertyGroup>
+    <PropertyGroup>
+        <TargetFramework>net7.0-windows</TargetFramework>
+        <Version>$(Version).0</Version>
+        <Authors>Microsoft Corporation</Authors>
+        <Product>PowerToys</Product>
+        <Description>PowerToys Settings UI Library</Description>
+        <AssemblyName>PowerToys.Settings.UI.Lib</AssemblyName>
+        <SelfContained>true</SelfContained>
+    </PropertyGroup>
 
-  <!-- SelfContained=true requires RuntimeIdentifier to be set -->
-  <PropertyGroup Condition="'$(Platform)'=='x64'">
-    <RuntimeIdentifier>win10-x64</RuntimeIdentifier>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Platform)'=='ARM64'">
-    <RuntimeIdentifier>win10-arm64</RuntimeIdentifier>
-  </PropertyGroup>
+    <!-- SelfContained=true requires RuntimeIdentifier to be set -->
+    <PropertyGroup Condition="'$(Platform)'=='x64'">
+        <RuntimeIdentifier>win10-x64</RuntimeIdentifier>
+    </PropertyGroup>
+    <PropertyGroup Condition="'$(Platform)'=='ARM64'">
+        <RuntimeIdentifier>win10-arm64</RuntimeIdentifier>
+    </PropertyGroup>
 
 	<PropertyGroup Condition="'$(Configuration)'=='Debug'">
 		<DefineConstants>DEBUG;TRACE</DefineConstants>
@@ -26,7 +26,7 @@
 		<DebugSymbols>true</DebugSymbols>
 	</PropertyGroup>
 
-	<ItemGroup>
+    <ItemGroup>
 		<None Include="backup_restore_settings.json">
 			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
 		</None>

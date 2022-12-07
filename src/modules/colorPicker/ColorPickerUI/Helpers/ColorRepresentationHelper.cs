@@ -5,6 +5,7 @@
 using System;
 using System.Drawing;
 using System.Globalization;
+using ManagedCommon;
 using Microsoft.PowerToys.Settings.UI.Library.Enumerations;
 
 namespace ColorPicker.Helpers
@@ -12,7 +13,7 @@ namespace ColorPicker.Helpers
     /// <summary>
     /// Helper class to easier work with color representation
     /// </summary>
-    internal static class ColorRepresentationHelper
+    public static class ColorRepresentationHelper
     {
         /// <summary>
         /// Return a <see cref="string"/> representation of a given <see cref="Color"/>
@@ -20,10 +21,10 @@ namespace ColorPicker.Helpers
         /// <param name="color">The <see cref="Color"/> for the presentation</param>
         /// <param name="colorRepresentationType">The type of the representation</param>
         /// <returns>A <see cref="string"/> representation of a color</returns>
-        internal static string GetStringRepresentationFromMediaColor(System.Windows.Media.Color color, ColorRepresentationType colorRepresentationType)
+        internal static string GetStringRepresentationFromMediaColor(System.Windows.Media.Color color, string colorRepresentationType)
         {
             var drawingcolor = Color.FromArgb(color.A, color.R, color.G, color.B);
-            return GetStringRepresentation(drawingcolor, colorRepresentationType);
+            return GetStringRepresentation(drawingcolor, colorRepresentationType, string.Empty);
         }
 
         /// <summary>
@@ -32,26 +33,26 @@ namespace ColorPicker.Helpers
         /// <param name="color">The <see cref="Color"/> for the presentation</param>
         /// <param name="colorRepresentationType">The type of the representation</param>
         /// <returns>A <see cref="string"/> representation of a color</returns>
-        internal static string GetStringRepresentation(Color color, ColorRepresentationType colorRepresentationType)
+        internal static string GetStringRepresentation(Color color, string colorRepresentationType, string colorFormat)
             => colorRepresentationType switch
             {
-                ColorRepresentationType.CMYK => ColorToCMYK(color),
-                ColorRepresentationType.HEX => ColorToHex(color),
-                ColorRepresentationType.HSB => ColorToHSB(color),
-                ColorRepresentationType.HSI => ColorToHSI(color),
-                ColorRepresentationType.HSL => ColorToHSL(color),
-                ColorRepresentationType.HSV => ColorToHSV(color),
-                ColorRepresentationType.HWB => ColorToHWB(color),
-                ColorRepresentationType.NCol => ColorToNCol(color),
-                ColorRepresentationType.RGB => ColorToRGB(color),
-                ColorRepresentationType.CIELAB => ColorToCIELAB(color),
-                ColorRepresentationType.CIEXYZ => ColorToCIEXYZ(color),
-                ColorRepresentationType.VEC4 => ColorToFloat(color),
-                ColorRepresentationType.DecimalValue => ColorToDecimal(color),
-                ColorRepresentationType.HexInteger => ColorToHexInteger(color),
+                "CMYK" => ColorToCMYK(color),
+                "HEX" => ColorToHex(color),
+                "HSB" => ColorToHSB(color),
+                "HSI" => ColorToHSI(color),
+                "HSL" => ColorToHSL(color),
+                "HSV" => ColorToHSV(color),
+                "HWB" => ColorToHWB(color),
+                "NCol" => ColorToNCol(color),
+                "RGB" => ColorToRGB(color),
+                "CIELAB" => ColorToCIELAB(color),
+                "CIEXYZ" => ColorToCIEXYZ(color),
+                "VEC4" => ColorToFloat(color),
+                "Decimal" => ColorToDecimal(color),
+                "HEX Int" => ColorToHexInteger(color),
 
                 // Fall-back value, when "_userSettings.CopiedColorRepresentation.Value" is incorrect
-                _ => ColorToHex(color),
+                _ => string.IsNullOrEmpty(colorFormat) ? ColorToHex(color) : ColorFormatHelper.GetStringRepresentation(color, colorFormat),
             };
 
         /// <summary>
@@ -61,7 +62,7 @@ namespace ColorPicker.Helpers
         /// <returns>A <see cref="string"/> representation of a CMYK color</returns>
         private static string ColorToCMYK(Color color)
         {
-            var (cyan, magenta, yellow, blackKey) = ColorHelper.ConvertToCMYKColor(color);
+            var (cyan, magenta, yellow, blackKey) = ColorFormatHelper.ConvertToCMYKColor(color);
 
             cyan = Math.Round(cyan * 100);
             magenta = Math.Round(magenta * 100);
@@ -95,7 +96,7 @@ namespace ColorPicker.Helpers
         /// <returns>A <see cref="string"/> representation of a HSB color</returns>
         private static string ColorToHSB(Color color)
         {
-            var (hue, saturation, brightness) = ColorHelper.ConvertToHSBColor(color);
+            var (hue, saturation, brightness) = ColorFormatHelper.ConvertToHSBColor(color);
 
             hue = Math.Round(hue);
             saturation = Math.Round(saturation * 100);
@@ -139,7 +140,7 @@ namespace ColorPicker.Helpers
         /// <returns>A <see cref="string"/> representation of a HSI color</returns>
         private static string ColorToHSI(Color color)
         {
-            var (hue, saturation, intensity) = ColorHelper.ConvertToHSIColor(color);
+            var (hue, saturation, intensity) = ColorFormatHelper.ConvertToHSIColor(color);
 
             hue = Math.Round(hue);
             saturation = Math.Round(saturation * 100);
@@ -157,7 +158,7 @@ namespace ColorPicker.Helpers
         /// <returns>A <see cref="string"/> representation of a HSL color</returns>
         private static string ColorToHSL(Color color)
         {
-            var (hue, saturation, lightness) = ColorHelper.ConvertToHSLColor(color);
+            var (hue, saturation, lightness) = ColorFormatHelper.ConvertToHSLColor(color);
 
             hue = Math.Round(hue);
             saturation = Math.Round(saturation * 100);
@@ -176,7 +177,7 @@ namespace ColorPicker.Helpers
         /// <returns>A <see cref="string"/> representation of a HSV color</returns>
         private static string ColorToHSV(Color color)
         {
-            var (hue, saturation, value) = ColorHelper.ConvertToHSVColor(color);
+            var (hue, saturation, value) = ColorFormatHelper.ConvertToHSVColor(color);
 
             hue = Math.Round(hue);
             saturation = Math.Round(saturation * 100);
@@ -195,7 +196,7 @@ namespace ColorPicker.Helpers
         /// <returns>A <see cref="string"/> representation of a HWB color</returns>
         private static string ColorToHWB(Color color)
         {
-            var (hue, whiteness, blackness) = ColorHelper.ConvertToHWBColor(color);
+            var (hue, whiteness, blackness) = ColorFormatHelper.ConvertToHWBColor(color);
 
             hue = Math.Round(hue);
             whiteness = Math.Round(whiteness * 100);
@@ -213,7 +214,7 @@ namespace ColorPicker.Helpers
         /// <returns>A <see cref="string"/> representation of a natural color</returns>
         private static string ColorToNCol(Color color)
         {
-            var (hue, whiteness, blackness) = ColorHelper.ConvertToNaturalColor(color);
+            var (hue, whiteness, blackness) = ColorFormatHelper.ConvertToNaturalColor(color);
 
             whiteness = Math.Round(whiteness * 100);
             blackness = Math.Round(blackness * 100);
@@ -240,7 +241,7 @@ namespace ColorPicker.Helpers
         /// <returns>A <see cref="string"/> representation of a CIE LAB color</returns>
         private static string ColorToCIELAB(Color color)
         {
-            var (lightness, chromaticityA, chromaticityB) = ColorHelper.ConvertToCIELABColor(color);
+            var (lightness, chromaticityA, chromaticityB) = ColorFormatHelper.ConvertToCIELABColor(color);
             lightness = Math.Round(lightness, 2);
             chromaticityA = Math.Round(chromaticityA, 2);
             chromaticityB = Math.Round(chromaticityB, 2);
@@ -257,7 +258,7 @@ namespace ColorPicker.Helpers
         /// <returns>A <see cref="string"/> representation of a CIE XYZ color</returns>
         private static string ColorToCIEXYZ(Color color)
         {
-            var (x, y, z) = ColorHelper.ConvertToCIEXYZColor(color);
+            var (x, y, z) = ColorFormatHelper.ConvertToCIEXYZColor(color);
 
             x = Math.Round(x * 100, 4);
             y = Math.Round(y * 100, 4);

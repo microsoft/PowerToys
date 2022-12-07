@@ -17,11 +17,11 @@ namespace PowerAccent;
 
 internal static class Program
 {
+    private static readonly CancellationTokenSource _tokenSource = new ();
     private const string PROGRAM_NAME = "QuickAccent";
     private const string PROGRAM_APP_NAME = "PowerToys.PowerAccent";
     private static App _application;
     private static int _powerToysRunnerPid;
-    private static CancellationTokenSource _tokenSource = new CancellationTokenSource();
 
     [STAThread]
     public static void Main(string[] args)
@@ -55,7 +55,7 @@ internal static class Program
         Task.Run(
             () =>
             {
-                EventWaitHandle eventHandle = new EventWaitHandle(false, EventResetMode.AutoReset, Constants.PowerAccentExitEvent());
+                EventWaitHandle eventHandle = new (false, EventResetMode.AutoReset, Constants.PowerAccentExitEvent());
                 if (eventHandle.WaitOne())
                 {
                     Terminate();

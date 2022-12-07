@@ -51,11 +51,7 @@ namespace Microsoft.PowerToys.PreviewHandler.Monaco
                 }
                 else
                 {
-                    MessageBox.Show("aaaa number of args: " + args.Length.ToString(CultureInfo.InvariantCulture));
-                    foreach (var asd in args)
-                    {
-                        MessageBox.Show(asd);
-                    }
+                    MessageBox.Show("Wrong number of args: " + args.Length.ToString(CultureInfo.InvariantCulture));
                 }
             }
 

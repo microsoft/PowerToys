@@ -2,10 +2,8 @@
     x:Class="Microsoft.PowerToys.Settings.UI.Controls.FancyZonesPreviewControl"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-    xmlns:local="using:Microsoft.PowerToys.Settings.UI.Controls"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    xmlns:converters="using:CommunityToolkit.WinUI.UI.Converters"
     Loaded="FancyZonesPreviewControl_Loaded"
     RequestedTheme="Dark"
     mc:Ignorable="d">
@@ -13,37 +11,118 @@
         <ResourceDictionary>
             <ResourceDictionary.ThemeDictionaries>
                 <ResourceDictionary x:Key="Dark">
-                    <SolidColorBrush x:Key="SolidBackgroundBrush" Color="Black" />
-                    <SolidColorBrush x:Key="SolidZoneNumberBrush" Color="White" />
+                    <SolidColorBrush
+                        x:Key="SolidBackgroundBrush"
+                        Color="Black" />
+                    <SolidColorBrush
+                        x:Key="SolidZoneNumberBrush"
+                        Color="White" />
                 </ResourceDictionary>
                 <ResourceDictionary x:Key="Light">
-                    <SolidColorBrush x:Key="SolidBackgroundBrush" Color="White" />
-                    <SolidColorBrush x:Key="SolidZoneNumberBrush" Color="Black" />
+                    <SolidColorBrush
+                        x:Key="SolidBackgroundBrush"
+                        Color="White" />
+                    <SolidColorBrush
+                        x:Key="SolidZoneNumberBrush"
+                        Color="Black" />
                 </ResourceDictionary>
                 <ResourceDictionary x:Key="HighContrast">
-                    <SolidColorBrush x:Key="SolidBackgroundBrush" Color="Black" />
-                    <SolidColorBrush x:Key="SolidZoneNumberBrush" Color="White" />
+                    <SolidColorBrush
+                        x:Key="SolidBackgroundBrush"
+                        Color="Black" />
+                    <SolidColorBrush
+                        x:Key="SolidZoneNumberBrush"
+                        Color="White" />
                 </ResourceDictionary>
             </ResourceDictionary.ThemeDictionaries>
-            <SolidColorBrush x:Key="DefaultAccentBrush" Color="{ThemeResource SystemAccentColor}"/>
-            <SolidColorBrush x:Key="DefaultBorderBrush" Color="{ThemeResource SystemAccentColor}"/>
-            <converters:BoolToObjectConverter x:Key="BoolToVisibilityConverter" TrueValue="Visible" FalseValue="Collapsed"/>
+            <SolidColorBrush
+                x:Key="DefaultAccentBrush"
+                Color="{ThemeResource SystemAccentColor}" />
+            <SolidColorBrush
+                x:Key="DefaultBorderBrush"
+                Color="{ThemeResource SystemAccentColor}" />
         </ResourceDictionary>
-      
+
     </UserControl.Resources>
-    <Grid x:Name="RootGrid" CornerRadius="4" BorderBrush="Black" Background="Black" BorderThickness="6" HorizontalAlignment="Center" MinWidth="170" MinHeight="86">
+    <Grid
+        x:Name="RootGrid"
+        MinWidth="170"
+        MinHeight="86"
+        HorizontalAlignment="Center"
+        Background="Black"
+        BorderBrush="Black"
+        BorderThickness="6"
+        CornerRadius="4">
         <Grid.RowDefinitions>
-            <RowDefinition Height="*"/>
-            <RowDefinition Height="*"/>
-            <RowDefinition Height="auto"/>
+            <RowDefinition Height="*" />
+            <RowDefinition Height="*" />
+            <RowDefinition Height="auto" />
         </Grid.RowDefinitions>
         <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="*"/>
-            <ColumnDefinition Width="*"/>
+            <ColumnDefinition Width="*" />
+            <ColumnDefinition Width="*" />
         </Grid.ColumnDefinitions>
+        <Border
+            Grid.RowSpan="3"
+            Grid.ColumnSpan="2"
+            CornerRadius="2"
+            Opacity="0.8">
+            <Image
+                AutomationProperties.AccessibilityView="Raw"
+                Source="{x:Bind WallpaperPath, Mode=OneWay}"
+                Stretch="UniformToFill" />
+        </Border>
+
+        <Grid
+            Grid.Row="2"
+            Grid.ColumnSpan="2"
+            Background="{ThemeResource SystemControlAcrylicElementBrush}" />
+        <Border
+            x:Name="Zone1"
+            Grid.RowSpan="2"
+            Margin="4,4,2,4"
+            BorderThickness="1"
+            CornerRadius="2">
+            <TextBlock
+                x:Name="Zone1Number"
+                HorizontalAlignment="Center"
+                VerticalAlignment="Center"
+                FontWeight="SemiBold"
+                Text="1"
+                Visibility="{x:Bind ShowZoneNumber, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}" />
+        </Border>
+        <Border
+            x:Name="Zone2"
+            Grid.Column="1"
+            Margin="2,4,4,2"
+            BorderThickness="1"
+            CornerRadius="2">
+            <TextBlock
+                x:Name="Zone2Number"
+                HorizontalAlignment="Center"
+                VerticalAlignment="Center"
+                FontWeight="SemiBold"
+                Text="2"
+                Visibility="{x:Bind ShowZoneNumber, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}" />
+        </Border>
+        <Border
+            x:Name="Zone3"
+            Grid.Row="1"
+            Grid.Column="1"
+            Margin="2,2,4,4"
+            BorderThickness="1"
+            CornerRadius="2">
+            <TextBlock
+                x:Name="Zone3Number"
+                HorizontalAlignment="Center"
+                VerticalAlignment="Center"
+                FontWeight="SemiBold"
+                Text="3"
+                Visibility="{x:Bind ShowZoneNumber, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}" />
+        </Border>
         <VisualStateManager.VisualStateGroups>
             <VisualStateGroup x:Name="CommonStates">
-                <VisualState x:Name="Normal"/>
+                <VisualState x:Name="Normal" />
                 <VisualState x:Name="Disabled">
                     <VisualState.Setters>
                         <Setter Target="RootGrid.Opacity" Value="0.4" />
@@ -51,19 +130,5 @@
                 </VisualState>
             </VisualStateGroup>
         </VisualStateManager.VisualStateGroups>
-        <Border Opacity="0.8" Grid.ColumnSpan="2" Grid.RowSpan="3" CornerRadius="2" >
-            <Image Source="{x:Bind WallpaperPath, Mode=OneWay}" Stretch="UniformToFill" AutomationProperties.AccessibilityView="Raw"/>
-        </Border>
-     
-        <Grid Background="{ThemeResource SystemControlAcrylicElementBrush}" Grid.Row="2"  Grid.ColumnSpan="2"/>
-        <Border x:Name="Zone1" Margin="4,4,2,4" CornerRadius="2" Grid.RowSpan="2" BorderThickness="1">
-            <TextBlock x:Name="Zone1Number" Text="1" FontWeight="SemiBold" VerticalAlignment="Center" HorizontalAlignment="Center" Visibility="{x:Bind ShowZoneNumber, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}"/>
-        </Border>
-        <Border x:Name="Zone2" Margin="2,4,4,2" CornerRadius="2" Grid.Column="1" BorderThickness="1">
-            <TextBlock x:Name="Zone2Number" Text="2" FontWeight="SemiBold" VerticalAlignment="Center" HorizontalAlignment="Center" Visibility="{x:Bind ShowZoneNumber, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}"/>
-        </Border>
-        <Border x:Name="Zone3" Margin="2,2,4,4" CornerRadius="2" Grid.Row="1" Grid.Column="1" BorderThickness="1">
-            <TextBlock x:Name="Zone3Number" Text="3" FontWeight="SemiBold" VerticalAlignment="Center" HorizontalAlignment="Center" Visibility="{x:Bind ShowZoneNumber, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}"/>
-        </Border>
     </Grid>
 </UserControl>
