@@ -50,17 +50,23 @@ namespace Peek.FilePreviewer
 
         /* TODO: need a better way to switch visibility according to the Preview.
          * Could use Enum + Converter to switch according to the current preview. */
-        public bool IsBrowserVisible => !IsImageVisible;
+        public bool IsBrowserVisible
+        {
+            get
+            {
+                if (BrowserPreviewer != null)
+                {
+                    return BrowserPreviewer.IsPreviewLoaded;
+                }
+
+                return false;
+            }
+        }
 
         public File File
         {
             get => (File)GetValue(FilesProperty);
             set => SetValue(FilesProperty, value);
-        }
-
-        public bool IsPreviewLoading(BitmapSource? bitmapSource)
-        {
-            return bitmapSource == null;
         }
 
         private async Task OnFilePropertyChanged()
@@ -82,6 +88,12 @@ namespace Peek.FilePreviewer
                 // TODO: figure out optimal window size for unsupported control
                 PreviewSizeChanged?.Invoke(this, new PreviewSizeChangedArgs(new Size(1280, 720)));
             }
+        }
+
+        private void PreviewBrowser_NavigationCompleted(WebView2 sender, Microsoft.Web.WebView2.Core.CoreWebView2NavigationCompletedEventArgs args)
+        {
+            // Once browser has completed navigation it is ready to be visible
+            OnPropertyChanged(nameof(IsBrowserVisible));
         }
     }
 }

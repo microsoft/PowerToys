@@ -26,7 +26,8 @@
                                  x:Load="True"
                                  Source="{x:Bind BrowserPreviewer.Preview, Mode=OneWay}"
                                  IsNavigationCompleted="{x:Bind BrowserPreviewer.IsPreviewLoaded, Mode=TwoWay}"
-                                 Visibility="{x:Bind IsBrowserVisible, Mode=OneWay}"/>
+                                 Visibility="{x:Bind IsBrowserVisible, Mode=OneWay, FallbackValue=Collapsed}"
+                                 NavigationCompleted="PreviewBrowser_NavigationCompleted"/>
 
         <!--  TODO: Add UnsupportedFilePreview control  -->
     </Grid>

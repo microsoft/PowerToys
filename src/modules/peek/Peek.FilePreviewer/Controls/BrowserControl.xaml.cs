@@ -58,6 +58,8 @@ namespace Peek.FilePreviewer.Controls
         /// </summary>
         public void Navigate()
         {
+            IsNavigationCompleted = false;
+
             if (Source != null)
             {
                 /* CoreWebView2.Navigate() will always trigger a navigation even if the content/URI is the same.
@@ -89,8 +91,6 @@ namespace Peek.FilePreviewer.Controls
 
         private async void PreviewBrowser_NavigationStarting(WebView2 sender, Microsoft.Web.WebView2.Core.CoreWebView2NavigationStartingEventArgs args)
         {
-            IsNavigationCompleted = false;
-
             // In case user starts or tries to navigate from within the HTML file we launch default web browser for navigation.
             if (args.Uri != null && args.Uri != Source?.ToString() && args.IsUserInitiated)
             {
@@ -101,9 +101,9 @@ namespace Peek.FilePreviewer.Controls
 
         private void PreviewWV2_NavigationCompleted(WebView2 sender, Microsoft.Web.WebView2.Core.CoreWebView2NavigationCompletedEventArgs args)
         {
-            NavigationCompleted?.Invoke(sender, args);
-
             IsNavigationCompleted = true;
+
+            NavigationCompleted?.Invoke(sender, args);
         }
     }
 }
