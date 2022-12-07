@@ -17,13 +17,13 @@ namespace Peek.FilePreviewer.Controls
         public event NavigationCompletedHandler NavigationCompleted = (sender, args) => { };
 
         public static readonly DependencyProperty SourceProperty = DependencyProperty.Register(
-                "Source",
+                nameof(Source),
                 typeof(Uri),
                 typeof(BrowserControl),
                 new PropertyMetadata(null, new PropertyChangedCallback((d, e) => ((BrowserControl)d).SourcePropertyChanged())));
 
         public static readonly DependencyProperty IsNavigationCompletedProperty = DependencyProperty.Register(
-                "IsNavigationCompleted",
+                nameof(IsNavigationCompleted),
                 typeof(bool),
                 typeof(BrowserControl),
                 new PropertyMetadata(null));
