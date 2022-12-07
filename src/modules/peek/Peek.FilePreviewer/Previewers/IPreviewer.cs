@@ -10,10 +10,17 @@ namespace Peek.FilePreviewer.Previewers
 
     public interface IPreviewer : INotifyPropertyChanged
     {
-        bool IsPreviewLoaded { get; }
+        PreviewState? State { get; }
 
         public Task<Size> GetPreviewSizeAsync();
 
         Task LoadPreviewAsync();
+    }
+
+    public enum PreviewState
+    {
+        Loading,
+        Loaded,
+        Error,
     }
 }

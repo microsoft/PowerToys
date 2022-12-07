@@ -20,16 +20,16 @@ namespace Peek.FilePreviewer.Previewers
     public partial class ImagePreviewer : ObservableObject, IBitmapPreviewer, IDisposable
     {
         [ObservableProperty]
-        [NotifyPropertyChangedFor(nameof(IsPreviewLoaded))]
         private BitmapSource? preview;
+
+        [ObservableProperty]
+        private PreviewState? state;
 
         public ImagePreviewer(File file)
         {
             File = file;
             Dispatcher = DispatcherQueue.GetForCurrentThread();
         }
-
-        public bool IsPreviewLoaded => preview != null;
 
         private File File { get; }
 
@@ -54,13 +54,16 @@ namespace Peek.FilePreviewer.Previewers
             return WICHelper.GetImageSize(File.Path);
         }
 
-        public Task LoadPreviewAsync()
+        public async Task LoadPreviewAsync()
         {
+            State = PreviewState.Loading;
             var lowQualityThumbnailTask = LoadLowQualityThumbnailAsync();
             var highQualityThumbnailTask = LoadHighQualityThumbnailAsync();
             var fullImageTask = LoadFullQualityImageAsync();
 
-            return Task.WhenAll(lowQualityThumbnailTask, highQualityThumbnailTask, fullImageTask);
+            await Task.WhenAll(lowQualityThumbnailTask, highQualityThumbnailTask, fullImageTask);
+
+            State = preview != null ? PreviewState.Loaded : PreviewState.Error;
         }
 
         private Task LoadLowQualityThumbnailAsync()

@@ -32,7 +32,6 @@ namespace Peek.FilePreviewer
 
         [ObservableProperty]
         [NotifyPropertyChangedFor(nameof(BitmapPreviewer))]
-        [NotifyPropertyChangedFor(nameof(IsImageVisible))]
         private IPreviewer? previewer;
 
         public FilePreview()
@@ -42,17 +41,21 @@ namespace Peek.FilePreviewer
 
         public IBitmapPreviewer? BitmapPreviewer => Previewer as IBitmapPreviewer;
 
-        public bool IsImageVisible => BitmapPreviewer != null;
-
         public File File
         {
             get => (File)GetValue(FilesProperty);
             set => SetValue(FilesProperty, value);
         }
 
-        public bool IsPreviewLoading(BitmapSource? bitmapSource)
+        public bool MatchPreviewState(PreviewState? value, PreviewState stateToMatch)
         {
-            return bitmapSource == null;
+            return value == stateToMatch;
+        }
+
+        public Visibility IsImageVisible(IBitmapPreviewer? bitmapPreviewer, PreviewState? state)
+        {
+            var isValidPreview = bitmapPreviewer != null && MatchPreviewState(state, PreviewState.Loaded);
+            return isValidPreview ? Visibility.Visible : Visibility.Collapsed;
         }
 
         private async Task OnFilePropertyChanged()
