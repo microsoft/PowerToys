@@ -128,10 +128,21 @@ namespace Peek.UI.Views
 
             if (string.IsNullOrEmpty(currentDefaultApp))
             {
+                // If there's no default app found, open the App picker
                 options.DisplayApplicationPicker = true;
             }
+            else
+            {
+                // Try to launch the default app for current file format
+                bool result = await Launcher.LaunchFileAsync(storageFile, options);
 
-            await Launcher.LaunchFileAsync(storageFile, options);
+                if (!result)
+                {
+                    // If we couldn't successfully open the default app, open the App picker as a fallback
+                    options.DisplayApplicationPicker = true;
+                    await Launcher.LaunchFileAsync(storageFile, options);
+                }
+            }
         }
     }
 }
