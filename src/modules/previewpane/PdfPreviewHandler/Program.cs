@@ -36,7 +36,7 @@ namespace Microsoft.PowerToys.PreviewHandler.Pdf
                     int bottom = Convert.ToInt32(args[5], 10);
 
                     _previewHandlerControl = new PdfPreviewHandlerControl();
-                    _previewHandlerControl.SetWindow2((IntPtr)hwnd, s);
+                    _previewHandlerControl.SetWindow((IntPtr)hwnd, s);
                     _previewHandlerControl.DoPreview(filePath);
 
                     NativeEventWaiter.WaitForEventLoop(
@@ -44,7 +44,7 @@ namespace Microsoft.PowerToys.PreviewHandler.Pdf
                         () =>
                         {
                             Rectangle s = default(Rectangle);
-                            _previewHandlerControl.SetRect2(s);
+                            _previewHandlerControl.SetRect(s);
                         },
                         Dispatcher.CurrentDispatcher,
                         _tokenSource.Token);

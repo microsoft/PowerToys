@@ -85,17 +85,9 @@ namespace Common
         }
 
         /// <inheritdoc />
-        public void SetRect(Rectangle windowBounds)
+        public void SetRect(Rectangle rect)
         {
-            this.UpdateWindowBounds(windowBounds);
-        }
-
-        /// <summary>
-        ///  sss
-        /// </summary>
-        public void SetRect2(Rectangle rect)
-        {
-            this.UpdateWindowBounds2(parentHwnd, rect);
+            this.UpdateWindowBounds(parentHwnd, rect);
         }
 
         /// <inheritdoc />
@@ -111,16 +103,7 @@ namespace Common
         public void SetWindow(IntPtr hwnd, Rectangle rect)
         {
             this.parentHwnd = hwnd;
-            this.UpdateWindowBounds(rect);
-        }
-
-        /// <summary>
-        ///  sss
-        /// </summary>
-        public void SetWindow2(IntPtr hwnd, Rectangle rect)
-        {
-            this.parentHwnd = hwnd;
-            this.UpdateWindowBounds2(hwnd, rect);
+            this.UpdateWindowBounds(hwnd, rect);
         }
 
         /// <inheritdoc />
@@ -162,24 +145,7 @@ namespace Common
         /// <summary>
         /// Update the Form Control window with the passed rectangle.
         /// </summary>
-        /// <param name="windowBounds">An instance of rectangle.</param>
-        public void UpdateWindowBounds(Rectangle windowBounds)
-        {
-            // We must set the WS_CHILD style to change the form to a control within the Explorer preview pane
-            int windowStyle = NativeMethods.GetWindowLong(Handle, gwlStyle);
-            if ((windowStyle & wsChild) == 0)
-            {
-                _ = NativeMethods.SetWindowLong(Handle, gwlStyle, windowStyle | wsChild);
-            }
-
-            NativeMethods.SetParent(Handle, parentHwnd);
-            Bounds = windowBounds;
-        }
-
-        /// <summary>
-        /// Update the Form Control window with the passed rectangle.
-        /// </summary>
-        public void UpdateWindowBounds2(IntPtr hwnd, Rectangle windowBounds)
+        public void UpdateWindowBounds(IntPtr hwnd, Rectangle windowBounds)
         {
             // We must set the WS_CHILD style to change the form to a control within the Explorer preview pane
             int windowStyle = NativeMethods.GetWindowLong(Handle, gwlStyle);
