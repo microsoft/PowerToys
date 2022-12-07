@@ -12,17 +12,21 @@ namespace Peek.FilePreviewer.Controls
 
     public sealed partial class BrowserControl : UserControl
     {
-        public delegate void NavigationInitializedHandler(WebView2 sender, CoreWebView2InitializedEventArgs args);
-
         public delegate void NavigationCompletedHandler(WebView2 sender, CoreWebView2NavigationCompletedEventArgs args);
-
-        public event NavigationInitializedHandler NavigationInitialized = (sender, args) => { };
 
         public event NavigationCompletedHandler NavigationCompleted = (sender, args) => { };
 
-        public static readonly DependencyProperty SourceProperty = DependencyProperty.Register("Source", typeof(Uri), typeof(BrowserControl), new PropertyMetadata(null, new PropertyChangedCallback(SourcePropertyChanged)));
+        public static readonly DependencyProperty SourceProperty = DependencyProperty.Register(
+                "Source",
+                typeof(Uri),
+                typeof(BrowserControl),
+                new PropertyMetadata(null, new PropertyChangedCallback(SourcePropertyChanged)));
 
-        public static readonly DependencyProperty IsNavigationCompletedProperty = DependencyProperty.Register("IsNavigationCompleted", typeof(bool), typeof(BrowserControl), new PropertyMetadata(null));
+        public static readonly DependencyProperty IsNavigationCompletedProperty = DependencyProperty.Register(
+                "IsNavigationCompleted",
+                typeof(bool),
+                typeof(BrowserControl),
+                new PropertyMetadata(null));
 
         public Uri Source
         {
@@ -48,20 +52,18 @@ namespace Peek.FilePreviewer.Controls
         }
 
         /// <summary>
-        /// If <see cref="Source"/> is set, it will navigate to (refresh) the same/current
-        /// HTML page loaded.
+        /// Navigate to the to the <see cref="Uri"/> set in <see cref="Source"/>.
+        /// Calling <see cref="Navigate"/> will always trigger a navigation/refresh
+        /// even if web target file is the same.
         /// </summary>
         public void Navigate()
         {
             if (Source != null)
             {
-                NavigateWithWV2(Source);
+                /* CoreWebView2.Navigate() will always trigger a navigation even if the content/URI is the same.
+                 * Use WebView2.Source to avoid re-navigating to the same content. */
+                PreviewBrowser.CoreWebView2.Navigate(Source.ToString());
             }
-        }
-
-        public void Navigate(Uri uri)
-        {
-            NavigateWithWV2(uri);
         }
 
         private async void PreviewWV2_Loaded(object sender, RoutedEventArgs e)
@@ -81,24 +83,12 @@ namespace Peek.FilePreviewer.Controls
                 PreviewBrowser.CoreWebView2.Settings.IsWebMessageEnabled = false;
 
                 // Don't load any resources.
-                PreviewBrowser.CoreWebView2.AddWebResourceRequestedFilter("*", Microsoft.Web.WebView2.Core.CoreWebView2WebResourceContext.All);
+                // PreviewBrowser.CoreWebView2.AddWebResourceRequestedFilter("*", Microsoft.Web.WebView2.Core.CoreWebView2WebResourceContext.All);
             }
             catch
             {
                 // TODO: exception / log hanlder?
             }
-        }
-
-        private void NavigateWithWV2(Uri uri)
-        {
-            /* CoreWebView2.Navigate() will always trigger a navigation even if the content/URI is the same.
-             * Use WebView2.Source to avoid re-navigating to the same content. */
-            PreviewBrowser.CoreWebView2.Navigate(uri.ToString());
-        }
-
-        private void PreviewWV2_CoreWebView2Initialized(WebView2 sender, CoreWebView2InitializedEventArgs args)
-        {
-            NavigationInitialized?.Invoke(sender, args);
         }
 
         private async void PreviewBrowser_NavigationStarting(WebView2 sender, Microsoft.Web.WebView2.Core.CoreWebView2NavigationStartingEventArgs args)

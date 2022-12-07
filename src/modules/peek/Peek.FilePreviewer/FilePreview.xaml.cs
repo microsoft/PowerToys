@@ -48,6 +48,8 @@ namespace Peek.FilePreviewer
 
         public bool IsImageVisible => BitmapPreviewer != null;
 
+        /* TODO: need a better way to switch visibility according to the Preview.
+         * Could use Enum + Converter to switch according to the current preview. */
         public bool IsBrowserVisible => !IsImageVisible;
 
         public File File
