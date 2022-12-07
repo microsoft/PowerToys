@@ -122,10 +122,8 @@
   </data>
   <data name="LaunchAppButton_OpenWith_Text" xml:space="preserve">
     <value>Open with</value>
-    <comment>Tool tip of title bar Settings button</comment>
   </data>
 	<data name="LaunchAppButton_OpenWithApp_Text" xml:space="preserve">
     <value>Open with {0}</value>
-    <comment>Tool tip of title bar Settings button</comment>
   </data>
 </root>

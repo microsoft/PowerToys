@@ -59,19 +59,11 @@ namespace Peek.UI.Views
             set => SetValue(NumberOfFilesProperty, value);
         }
 
-        public void SetToWindow(MainWindow mainWindow)
+        public void SetTitleBarToWindow(MainWindow mainWindow)
         {
             if (AppWindowTitleBar.IsCustomizationSupported())
             {
-                AppWindow window = mainWindow.GetAppWindow();
-                window.TitleBar.ExtendsContentIntoTitleBar = true;
-                window.TitleBar.ButtonBackgroundColor = Colors.Transparent;
-                window.TitleBar.SetDragRectangles(new Windows.Graphics.RectInt32[]
-                {
-                    new Windows.Graphics.RectInt32(0, 0, (int)TitleBarRootContainer.ActualWidth, (int)TitleBarRootContainer.ActualHeight),
-                });
-
-                mainWindow.SetTitleBar(this);
+                UpdateTitleBarCustomization(mainWindow);
             }
             else
             {
@@ -83,6 +75,22 @@ namespace Peek.UI.Views
                 WindowId windowId = Win32Interop.GetWindowIdFromWindow(hWnd);
                 AppWindow appWindow = AppWindow.GetFromWindowId(windowId);
                 appWindow.SetIcon("Assets/Icon.ico");
+            }
+        }
+
+        public void UpdateTitleBarCustomization(MainWindow mainWindow)
+        {
+            if (AppWindowTitleBar.IsCustomizationSupported())
+            {
+                AppWindow appWindow = mainWindow.GetAppWindow();
+                appWindow.TitleBar.ExtendsContentIntoTitleBar = true;
+                appWindow.TitleBar.ButtonBackgroundColor = Colors.Transparent;
+                appWindow.TitleBar.SetDragRectangles(new Windows.Graphics.RectInt32[]
+                {
+                    new Windows.Graphics.RectInt32(0, 0, (int)TitleBarRootContainer.ActualWidth, (int)TitleBarRootContainer.ActualHeight),
+                });
+
+                mainWindow.SetTitleBar(this);
             }
         }
 
