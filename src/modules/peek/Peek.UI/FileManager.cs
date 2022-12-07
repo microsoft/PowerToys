@@ -24,12 +24,14 @@ namespace Peek.UI
 
             files = new List<File>();
             currentItemIndex = UninitializedItemIndex;
+
+            // TODO: cancel ongoing fileinit task
         }
 
         public void UpdateCurrentItemIndex(int desiredIndex)
         {
             // TODO: add processing check
-            if (files == null || currentItemIndex == UninitializedItemIndex)
+            if (files == null || files.Count <= 1 || currentItemIndex == UninitializedItemIndex)
             {
                 Debug.WriteLine("!~ navigtion disabled");
                 return;
@@ -79,20 +81,27 @@ namespace Peek.UI
             try
             {
                 // Check if cancellationTokenSource is used? else create a new one
-                initializeFolderDataTask = new Task(() => InitializeFolderData(items, firstSelectedItem), cancellationTokenSource.Token);
-                initializeFolderDataTask.Start();
+                initializeFilesTask = new Task(() => InitializeFiles(items, firstSelectedItem), cancellationTokenSource.Token);
+                initializeFilesTask.Start();
             }
             catch (Exception e)
             {
-                Debug.WriteLine("Exception trying to run initializeFolderDataTask:\n" + e.ToString());
+                Debug.WriteLine("Exception trying to run initializeFilesTask:\n" + e.ToString());
             }
         }
 
-        // Can take a few seconds for folders with 1000s of files
+        // Can take a few seconds for folders with 1000s of files.
         // TODO: figure out what happens if user deletes/adds files in a very large folder while this loop runs
-        private void InitializeFolderData(Shell32.FolderItems items, Shell32.FolderItem firstSelectedItem)
+        // TODO [link optimization task]:
+        //      - note about just storing SHell32.FolderItems not being reliable as a field for long(running into issues where it'll populate the rest of
+        //          items with other files only for the first item of a folder)
+        //      - note about not being able to leverage much folder api, due to having to accommodate multi-file selections
+        //          -> might be worth handling those differently
+        //      - can leverage FE sorted order to binary search for currnet index,
+        private void InitializeFiles(Shell32.FolderItems items, Shell32.FolderItem firstSelectedItem)
         {
             var tempFiles = new List<File>(items.Count);
+            var tempCurIndex = UninitializedItemIndex;
 
             for (int i = 0; i < items.Count; i++)
             {
@@ -104,21 +113,22 @@ namespace Peek.UI
 
                 if (item.Name.ToLower() == firstSelectedItem.Name.ToLower())
                 {
-                    currentItemIndex = i;
+                    tempCurIndex = i;
                 }
 
                 tempFiles.Add(new File(item.Path));
             }
 
-            if (currentItemIndex == UninitializedItemIndex)
+            if (tempCurIndex == UninitializedItemIndex)
             {
                 Debug.WriteLine("Folder data initialization: selectedItem index not found. Disabling navigation.");
                 return;
             }
 
             files = tempFiles;
+            currentItemIndex = tempCurIndex;
 
-            // TODO: enable nav?
+            // TODO: enable nav explicitly?
             Debug.WriteLine("!~ navigation " + firstSelectedItem.Name);
         }
 
@@ -133,6 +143,6 @@ namespace Peek.UI
 
         private CancellationTokenSource cancellationTokenSource = new CancellationTokenSource();
 
-        private Task? initializeFolderDataTask = null;
+        private Task? initializeFilesTask = null;
     }
 }
