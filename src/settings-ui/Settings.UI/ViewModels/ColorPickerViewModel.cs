@@ -400,7 +400,8 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             }
             else
             {
-                colorFormatModel.IsValid = ColorFormats.Count(x => x.Name.ToUpperInvariant().Equals(colorFormatModel.Name.ToUpperInvariant(), StringComparison.Ordinal)) < 2;
+                colorFormatModel.IsValid = ColorFormats.Count(x => x.Name.ToUpperInvariant().Equals(colorFormatModel.Name.ToUpperInvariant(), StringComparison.Ordinal))
+                    < (colorFormatModel.IsNew ? 1 : 2);
             }
         }
 
