@@ -15,8 +15,6 @@ namespace Peek.UI.Helpers
             var shell = new Shell32.Shell();
             foreach (SHDocVw.InternetExplorer window in shell.Windows())
             {
-                // TODO: figure out which window is the active explorer tab
-                // https://github.com/microsoft/PowerToys/issues/22507
                 if (window.HWND == (int)handle)
                 {
                     Shell32.FolderItems items = ((Shell32.IShellFolderViewDual2)window.Document).SelectedItems();

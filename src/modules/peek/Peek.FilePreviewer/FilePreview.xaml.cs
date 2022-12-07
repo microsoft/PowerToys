@@ -59,7 +59,6 @@ namespace Peek.FilePreviewer
         {
             // TODO: track and cancel existing async preview tasks
             // https://github.com/microsoft/PowerToys/issues/22480
-            Debug.WriteLine("!~ file property changed");
             if (File == null)
             {
                 return;
@@ -71,7 +70,6 @@ namespace Peek.FilePreviewer
                 var size = await Previewer.GetPreviewSizeAsync();
                 PreviewSizeChanged?.Invoke(this, new PreviewSizeChangedArgs(size));
                 await Previewer.LoadPreviewAsync();
-                Debug.WriteLine("!~ finishedl loading all tasks");
             }
             else
             {

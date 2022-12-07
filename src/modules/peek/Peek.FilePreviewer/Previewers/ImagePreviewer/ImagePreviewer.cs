@@ -173,14 +173,12 @@ namespace Peek.FilePreviewer.Previewers
         {
             try
             {
-                Debug.WriteLine("!~ fetching bitmap: " + hbitmap);
                 var bitmap = System.Drawing.Image.FromHbitmap(hbitmap);
                 var bitmapImage = new BitmapImage();
                 using (var stream = new MemoryStream())
                 {
                     bitmap.Save(stream, ImageFormat.Bmp);
                     stream.Position = 0;
-                    Debug.WriteLine("!~ about to await setting bitmap: " + hbitmap);
                     await bitmapImage.SetSourceAsync(stream.AsRandomAccessStream());
                 }
 
@@ -188,8 +186,6 @@ namespace Peek.FilePreviewer.Previewers
             }
             finally
             {
-                Debug.WriteLine("!~ deleting " + hbitmap);
-
                 // delete HBitmap to avoid memory leaks
                 NativeMethods.DeleteObject(hbitmap);
             }

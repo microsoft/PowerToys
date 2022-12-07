@@ -41,7 +41,6 @@ namespace Peek.UI
             if (files == null || files.Count <= 1 || currentItemIndex == UninitializedItemIndex ||
                 (initializeFilesTask != null && initializeFilesTask.Status == TaskStatus.Running))
             {
-                Debug.WriteLine("!~ navigtion disabled");
                 return;
             }
 
@@ -55,14 +54,11 @@ namespace Peek.UI
                 currentItemIndex = 0;
             }
 
-            Debug.WriteLine("!~ updating cur item index " + currentItemIndex);
             CurrentFile = files[currentItemIndex];
-            Debug.WriteLine("!~ Finished updating cur item idx " + currentItemIndex);
         }
 
         public void Initialize()
         {
-            Debug.WriteLine("!~ Initializing file data");
             var folderView = FileExplorerHelper.GetCurrentFolderView();
             if (folderView == null)
             {
@@ -142,7 +138,7 @@ namespace Peek.UI
 
             if (tempCurIndex == UninitializedItemIndex)
             {
-                Debug.WriteLine("Folder data initialization: selectedItem index not found. Disabling navigation.");
+                Debug.WriteLine("Folder data initialization: selectedItem index not found. Navigation remains disabled.");
                 return;
             }
 
