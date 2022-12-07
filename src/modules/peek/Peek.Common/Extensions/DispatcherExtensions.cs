@@ -10,18 +10,20 @@ namespace Peek.Common.Extensions
 
     public static class DispatcherExtensions
     {
-        public static Task TryEnqueueSafe(this DispatcherQueue dispatcher, Func<TaskCompletionSource, Task> work)
+        public static Task<TaskStatus> TryEnqueueSafe(this DispatcherQueue dispatcher, Func<Task> work)
         {
-            var tcs = new TaskCompletionSource();
+            var tcs = new TaskCompletionSource<TaskStatus>();
             dispatcher.TryEnqueue(async () =>
             {
                 try
                 {
-                    await work(tcs);
+                    await work();
+
+                    tcs.SetResult(TaskStatus.RanToCompletion);
                 }
-                catch (Exception ex)
+                catch (Exception)
                 {
-                    tcs.TrySetException(ex);
+                    tcs.SetResult(TaskStatus.Faulted);
                 }
             });
 
