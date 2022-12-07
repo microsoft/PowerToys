@@ -87,7 +87,7 @@ namespace Common
         /// <inheritdoc />
         public void SetRect(Rectangle rect)
         {
-            this.UpdateWindowBounds(parentHwnd, rect);
+            this.UpdateWindowBounds(parentHwnd);
         }
 
         /// <inheritdoc />
@@ -103,7 +103,7 @@ namespace Common
         public void SetWindow(IntPtr hwnd, Rectangle rect)
         {
             this.parentHwnd = hwnd;
-            this.UpdateWindowBounds(hwnd, rect);
+            this.UpdateWindowBounds(hwnd);
         }
 
         /// <inheritdoc />
@@ -145,7 +145,7 @@ namespace Common
         /// <summary>
         /// Update the Form Control window with the passed rectangle.
         /// </summary>
-        public void UpdateWindowBounds(IntPtr hwnd, Rectangle windowBounds)
+        public void UpdateWindowBounds(IntPtr hwnd)
         {
             // We must set the WS_CHILD style to change the form to a control within the Explorer preview pane
             int windowStyle = NativeMethods.GetWindowLong(Handle, gwlStyle);
@@ -159,7 +159,6 @@ namespace Common
             RECT s = default(RECT);
             NativeMethods.GetClientRect(hwnd, ref s);
             NativeMethods.GetClientRect(hwnd, ref s);
-            windowBounds = s.ToRectangle();
 
             Bounds = s.ToRectangle();
         }
