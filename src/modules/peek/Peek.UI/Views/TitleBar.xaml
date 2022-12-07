@@ -19,7 +19,7 @@
         <StackPanel
             x:Name="AppIconAndName"
             Grid.Column="0"
-            Margin="16,8,8,8"
+            Margin="8"
             HorizontalAlignment="Left"
             VerticalAlignment="Top"
             Orientation="Horizontal">
@@ -28,12 +28,17 @@
             <Image
                 x:Name="PeekLogo"
                 x:Uid="PeekLogo"
-                Source="../Assets/AppList.png" />
+                Width="24"
+                Height="24"
+                Margin="12,0"
+                VerticalAlignment="Center"
+                Source="../Assets/AppList.png"
+                Stretch="UniformToFill" />
 
             <!--  Todo P1: Change AppTitleText to reflect file name  -->
             <TextBlock
                 x:Uid="AppTitleText"
-                Margin="12,0,0,0"
+                VerticalAlignment="Center"
                 Style="{StaticResource CaptionTextBlockStyle}"
                 Text="{x:Bind File.FileName, Mode=OneWay}" />
         </StackPanel>

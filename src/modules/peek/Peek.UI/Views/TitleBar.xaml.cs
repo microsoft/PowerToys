@@ -49,6 +49,11 @@ namespace Peek.UI.Views
                 AppWindow window = mainWindow.GetAppWindow();
                 window.TitleBar.ExtendsContentIntoTitleBar = true;
                 window.TitleBar.ButtonBackgroundColor = Colors.Transparent;
+                window.TitleBar.SetDragRectangles(new Windows.Graphics.RectInt32[]
+                {
+                    new Windows.Graphics.RectInt32(0, 0, (int)TitleBarRootContainer.ActualWidth, (int)TitleBarRootContainer.ActualHeight),
+                });
+
                 mainWindow.SetTitleBar(this);
             }
             else
