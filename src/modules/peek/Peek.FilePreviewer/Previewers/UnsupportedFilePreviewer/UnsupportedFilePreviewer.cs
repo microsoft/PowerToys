@@ -37,6 +37,8 @@ namespace Peek.FilePreviewer.Previewers
         public UnsupportedFilePreviewer(File file)
         {
             File = file;
+            FileName = file.FileName;
+            DateModified = file.DateModified.ToString();
             Dispatcher = DispatcherQueue.GetForCurrentThread();
         }
 
@@ -61,11 +63,20 @@ namespace Peek.FilePreviewer.Previewers
         {
             return Task.Run(() =>
             {
+                // TODO: This is the min size. Calculate a 20-25% of the screen.
                 return new Size(680, 500);
             });
         }
 
         public Task LoadPreviewAsync()
+        {
+            var iconPreviewTask = LoadIconPreviewAsync();
+            var displayInfoTask = LoadDisplayInfoAsync();
+
+            return Task.WhenAll(iconPreviewTask, displayInfoTask);
+        }
+
+        public Task LoadIconPreviewAsync()
         {
             var iconTCS = new TaskCompletionSource();
             Dispatcher.TryEnqueue(async () =>
@@ -80,12 +91,34 @@ namespace Peek.FilePreviewer.Previewers
                 var iconBitmap = await GetBitmapFromHBitmapAsync(hbitmap);
                 IconPreview = iconBitmap;
 
-                FileName = "Test.mp3";
-
                 iconTCS.SetResult();
             });
 
             return iconTCS.Task;
+        }
+
+        public Task LoadDisplayInfoAsync()
+        {
+            var displayInfoTCS = new TaskCompletionSource();
+            Dispatcher.TryEnqueue(async () =>
+            {
+                if (CancellationToken.IsCancellationRequested)
+                {
+                    _cancellationTokenSource = new CancellationTokenSource();
+                    return;
+                }
+
+                // File Properties
+                var bytes = await PropertyHelper.GetFileSizeInBytes(File.Path);
+                FileSize = ReadableStringHelper.BytesToReadableString(bytes);
+
+                var type = await PropertyHelper.GetFileType(File.Path);
+                FileType = type;
+
+                displayInfoTCS.SetResult();
+            });
+
+            return displayInfoTCS.Task;
         }
 
         // TODO: Move this to a helper file (ImagePrevier uses the same code)

@@ -25,7 +25,9 @@
         <!--  TODO: Add WebView2 support.  -->
 
         <local:UnsupportedFilePreview
+            DateModified="{x:Bind UnsupportedFilePreviewer.DateModified, Mode=OneWay}"
             FileName="{x:Bind UnsupportedFilePreviewer.FileName, Mode=OneWay}"
+            FileSize="{x:Bind UnsupportedFilePreviewer.FileSize, Mode=OneWay}"
             IconPreview="{x:Bind UnsupportedFilePreviewer.IconPreview, Mode=OneWay}"
             Visibility="{x:Bind IsUnsupportedPreviewVisible, Mode=OneWay}" />
 

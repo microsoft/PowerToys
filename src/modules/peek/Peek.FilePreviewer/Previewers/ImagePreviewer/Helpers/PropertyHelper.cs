@@ -31,5 +31,45 @@ namespace Peek.FilePreviewer.Previewers
                 return Size.Empty;
             });
         }
+
+        public static Task<int> GetFileSizeInBytes(string filePath)
+        {
+            return Task.Run(() =>
+            {
+                // TODO: find out why property store is null
+                Guid iPropertyStoreGuid = typeof(PropertyStoreShellApi.IPropertyStore).GUID;
+                PropertyStoreShellApi.IPropertyStore? propertyStore;
+                PropertyStoreShellApi.SHGetPropertyStoreFromParsingName(filePath, IntPtr.Zero, PropertyStoreShellApi.PropertyStoreFlags.READWRITE, ref iPropertyStoreGuid, out propertyStore);
+                if (propertyStore != null)
+                {
+                    var bytes = (int)PropertyStoreShellApi.GetUIntFromPropertyStore(propertyStore, PropertyStoreShellApi.PropertyKey.FileSizeBytes);
+
+                    Marshal.ReleaseComObject(propertyStore);
+                    return bytes;
+                }
+
+                return 0;
+            });
+        }
+
+        public static Task<string> GetFileType(string filePath)
+        {
+            return Task.Run(() =>
+            {
+                // TODO: find out why property store is null
+                Guid iPropertyStoreGuid = typeof(PropertyStoreShellApi.IPropertyStore).GUID;
+                PropertyStoreShellApi.IPropertyStore? propertyStore;
+                PropertyStoreShellApi.SHGetPropertyStoreFromParsingName(filePath, IntPtr.Zero, PropertyStoreShellApi.PropertyStoreFlags.READWRITE, ref iPropertyStoreGuid, out propertyStore);
+                if (propertyStore != null)
+                {
+                    var type = PropertyStoreShellApi.GetStringFromPropertyStore(propertyStore, PropertyStoreShellApi.PropertyKey.FileType);
+
+                    Marshal.ReleaseComObject(propertyStore);
+                    return type;
+                }
+
+                return string.Empty;
+            });
+        }
     }
 }
