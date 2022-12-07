@@ -26,7 +26,7 @@ namespace Peek.FilePreviewer.Controls
                 nameof(IsNavigationCompleted),
                 typeof(bool),
                 typeof(BrowserControl),
-                new PropertyMetadata(null));
+                new PropertyMetadata(false));
 
         public Uri Source
         {
