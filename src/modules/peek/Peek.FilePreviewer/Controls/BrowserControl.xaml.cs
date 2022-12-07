@@ -20,7 +20,7 @@ namespace Peek.FilePreviewer.Controls
                 "Source",
                 typeof(Uri),
                 typeof(BrowserControl),
-                new PropertyMetadata(null, new PropertyChangedCallback(SourcePropertyChanged)));
+                new PropertyMetadata(null, new PropertyChangedCallback((d, e) => ((BrowserControl)d).SourcePropertyChanged())));
 
         public static readonly DependencyProperty IsNavigationCompletedProperty = DependencyProperty.Register(
                 "IsNavigationCompleted",
@@ -45,10 +45,9 @@ namespace Peek.FilePreviewer.Controls
             this.InitializeComponent();
         }
 
-        private static void SourcePropertyChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+        private void SourcePropertyChanged()
         {
-            var browserControl = (BrowserControl)d;
-            browserControl.Navigate();
+            Navigate();
         }
 
         /// <summary>
