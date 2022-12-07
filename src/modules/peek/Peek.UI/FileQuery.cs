@@ -17,7 +17,7 @@ namespace Peek.UI
     {
         private const int UninitializedItemIndex = -1;
 
-        public void Uninitialize()
+        public void Clear()
         {
             CurrentFile = null;
 
@@ -57,7 +57,7 @@ namespace Peek.UI
             CurrentFile = files[currentItemIndex];
         }
 
-        public void Initialize()
+        public void Start()
         {
             var folderView = FileExplorerHelper.GetCurrentFolderView();
             if (folderView == null)

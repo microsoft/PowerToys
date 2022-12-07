@@ -48,12 +48,11 @@ namespace Peek.UI
         {
             if (AppWindow.IsVisible)
             {
-                ExecuteHide();
+                Uninitialize();
             }
             else
             {
-                // TODO: move into general ViewModel method when needed
-                ViewModel.FileQuery.Initialize();
+                Initialize();
             }
         }
 
@@ -67,12 +66,17 @@ namespace Peek.UI
             ViewModel.AttemptRightNavigation();
         }
 
-        private void ExecuteHide()
+        private void Initialize()
+        {
+            ViewModel.FileQuery.Start();
+        }
+
+        private void Uninitialize()
         {
             this.Hide();
 
             // TODO: move into general ViewModel method when needed
-            ViewModel.FileQuery.Uninitialize();
+            ViewModel.FileQuery.Clear();
         }
 
         /// <summary>
@@ -110,7 +114,7 @@ namespace Peek.UI
         private void AppWindow_Closing(AppWindow sender, AppWindowClosingEventArgs args)
         {
             args.Cancel = true;
-            ExecuteHide();
+            Uninitialize();
         }
     }
 }
