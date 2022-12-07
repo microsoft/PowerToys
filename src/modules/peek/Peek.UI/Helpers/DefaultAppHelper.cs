@@ -10,10 +10,10 @@ namespace Peek.UI.Helpers
 {
     public static class DefaultAppHelper
     {
-        public static string? TryGetDefaultAppName(string extension)
+        public static string TryGetDefaultAppName(string extension)
         {
             const int S_OK = 0, S_FALSE = 1;
-            string? appName = null;
+            string appName = string.Empty;
 
             // Get the length of the app name
             uint length = 0;

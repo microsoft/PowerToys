@@ -24,7 +24,6 @@
             VerticalAlignment="Top"
             Orientation="Horizontal">
 
-            <!--  Todo P1: Use Peek's logo  -->
             <Image
                 x:Name="PeekLogo"
                 x:Uid="PeekLogo"
@@ -37,6 +36,7 @@
 
             <!--  Todo P1: Change AppTitleText to reflect file name  -->
             <TextBlock
+                x:Name="AppTitleText"
                 x:Uid="AppTitleText"
                 VerticalAlignment="Center"
                 Style="{StaticResource CaptionTextBlockStyle}"
@@ -52,7 +52,10 @@
             Margin="4,4,144,4"
             HorizontalAlignment="Right"
             VerticalAlignment="Top">
-            <Button x:Name="LaunchAppButton" Click="LaunchAppButton_Click">
+            <Button
+                x:Name="LaunchAppButton"
+                x:Uid="LaunchAppButton"
+                Click="LaunchAppButton_Click">
                 <Button.Content>
                     <StackPanel Orientation="Horizontal">
                         <FontIcon
@@ -62,7 +65,7 @@
                         <TextBlock
                             Margin="4,0"
                             Style="{StaticResource CaptionTextBlockStyle}"
-                            Text="{x:Bind OpenWithApp, Mode=OneWay}" />
+                            Text="{x:Bind OpenWithAppText, Mode=OneWay}" />
                     </StackPanel>
                 </Button.Content>
             </Button>

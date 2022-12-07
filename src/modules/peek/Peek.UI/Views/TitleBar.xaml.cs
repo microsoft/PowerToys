@@ -13,6 +13,7 @@ namespace Peek.UI.Views
     using Microsoft.UI.Xaml.Controls;
     using Peek.Common.Models;
     using Peek.UI.Helpers;
+    using Windows.ApplicationModel.Resources;
     using Windows.Storage;
     using Windows.System;
     using WinUIEx;
@@ -28,8 +29,8 @@ namespace Peek.UI.Views
             new PropertyMetadata(null, (d, e) => ((TitleBar)d).OnFilePropertyChanged()));
 
         [ObservableProperty]
-        private string openWithApp = "Open With";
-        private string? currentDefaultApp;
+        private string openWithAppText = ResourceLoader.GetForViewIndependentUse().GetString("LaunchAppButton_OpenWith_Text");
+        private string currentDefaultApp = string.Empty;
 
         public TitleBar()
         {
@@ -71,9 +72,10 @@ namespace Peek.UI.Views
 
         private void OnFilePropertyChanged()
         {
-            // Update app name
+            // Update the name of default app to launch
             currentDefaultApp = DefaultAppHelper.TryGetDefaultAppName(File.Extension);
-            OpenWithApp = "Open With " + currentDefaultApp;
+            string openWithAppTextFormat = ResourceLoader.GetForViewIndependentUse().GetString("LaunchAppButton_OpenWithApp_Text");
+            OpenWithAppText = string.Format(openWithAppTextFormat, currentDefaultApp);
         }
 
         private async void LaunchAppButton_Click(object sender, RoutedEventArgs e)
@@ -81,7 +83,7 @@ namespace Peek.UI.Views
             StorageFile storageFile = await File.GetStorageFileAsync();
             var options = new LauncherOptions();
 
-            if (currentDefaultApp == null)
+            if (currentDefaultApp == string.Empty)
             {
                 options.DisplayApplicationPicker = true;
             }
