@@ -3,7 +3,9 @@
 // See the LICENSE file in the project root for more information.
 
 using System.Diagnostics;
+using System.Runtime.InteropServices;
 using System.Text;
+using Peek.Common.Models;
 using Peek.UI.Native;
 
 namespace Peek.UI.Helpers
@@ -12,24 +14,23 @@ namespace Peek.UI.Helpers
     {
         public static string TryGetDefaultAppName(string extension)
         {
-            const int S_OK = 0, S_FALSE = 1;
             string appName = string.Empty;
 
             // Get the length of the app name
             uint length = 0;
-            uint ret = NativeMethods.AssocQueryString(NativeMethods.AssocF.Verify, NativeMethods.AssocStr.FriendlyAppName, extension, null, null, ref length);
-            if (ret != S_FALSE)
+            HResult ret = NativeMethods.AssocQueryString(NativeMethods.AssocF.Verify, NativeMethods.AssocStr.FriendlyAppName, extension, null, null, ref length);
+            if (ret != HResult.False)
             {
-                Debug.WriteLine("Error when getting accessString for {0} file", extension);
+                Debug.WriteLine($"Error when getting accessString for {extension} file: {Marshal.GetExceptionForHR((int)ret)!.Message}");
                 return appName;
             }
 
             // Get the the app name
-            var sb = new StringBuilder((int)length);
+            StringBuilder sb = new ((int)length);
             ret = NativeMethods.AssocQueryString(NativeMethods.AssocF.Verify, NativeMethods.AssocStr.FriendlyAppName, extension, null, sb, ref length);
-            if (ret != S_OK)
+            if (ret != HResult.Ok)
             {
-                Debug.WriteLine("Error when getting accessString for {0} file", extension);
+                Debug.WriteLine($"Error when getting accessString for {extension} file: {Marshal.GetExceptionForHR((int)ret)!.Message}" );
                 return appName;
             }
 

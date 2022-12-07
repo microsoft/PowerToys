@@ -38,10 +38,10 @@ namespace Peek.UI.Views
 
         [ObservableProperty]
         private string openWithAppText = ResourceLoader.GetForViewIndependentUse().GetString("LaunchAppButton_OpenWith_Text");
-        private string currentDefaultApp = string.Empty;
+        private string? currentDefaultApp;
 
         [ObservableProperty]
-        private string fileCountText = string.Empty;
+        private string? fileCountText;
 
         public TitleBar()
         {
@@ -124,9 +124,9 @@ namespace Peek.UI.Views
         private async void LaunchAppButton_Click(object sender, RoutedEventArgs e)
         {
             StorageFile storageFile = await File.GetStorageFileAsync();
-            var options = new LauncherOptions();
+            LauncherOptions options = new ();
 
-            if (currentDefaultApp == string.Empty)
+            if (string.IsNullOrEmpty(currentDefaultApp))
             {
                 options.DisplayApplicationPicker = true;
             }
