@@ -359,8 +359,7 @@ namespace registry
                               { scope, inprocServerPath, std::nullopt, fullPathToHandler },
                               { scope, inprocServerPath, L"Assembly", assemblyKeyValue },
                               { scope, inprocServerPath, L"Class", className },
-                              { scope, inprocServerPath, L"ThreadingModel", L"Apartment" },
-                              { scope, appIdPath, L"DllSurrogate", L"%SystemRoot%\\system32\\prevhost.exe" } };
+                              { scope, inprocServerPath, L"ThreadingModel", L"Apartment" } };
 
             for (const auto& fileType : fileTypes)
             {

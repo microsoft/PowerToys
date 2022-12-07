@@ -65,6 +65,7 @@
                 Vital="no">
             </ExePackage>
             <ExePackage
+                DisplayName="Installing Microsoft Edge WebView2"
                 Name="MicrosoftEdgeWebview2Setup.exe"
                 Compressed="yes"
                 Id="WebView2"
