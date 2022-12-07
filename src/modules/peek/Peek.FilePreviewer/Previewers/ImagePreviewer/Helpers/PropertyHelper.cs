@@ -30,44 +30,33 @@ namespace Peek.FilePreviewer.Previewers
             });
         }
 
-        public static Task<int> GetFileSizeInBytes(string filePath)
+        public static Task<ulong> GetFileSizeInBytes(string filePath)
         {
-            return Task.Run(() =>
+            ulong bytes = 0;
+            var propertyStore = PropertyStoreShellApi.GetPropertyStoreFromPath(filePath, PropertyStoreShellApi.PropertyStoreFlags.OPENSLOWITEM);
+            if (propertyStore != null)
             {
-                // TODO: find out why property store is null
-                Guid iPropertyStoreGuid = typeof(PropertyStoreShellApi.IPropertyStore).GUID;
-                PropertyStoreShellApi.IPropertyStore? propertyStore;
-                PropertyStoreShellApi.SHGetPropertyStoreFromParsingName(filePath, IntPtr.Zero, PropertyStoreShellApi.PropertyStoreFlags.READWRITE, ref iPropertyStoreGuid, out propertyStore);
-                if (propertyStore != null)
-                {
-                    var bytes = (int)PropertyStoreShellApi.GetUIntFromPropertyStore(propertyStore, PropertyStoreShellApi.PropertyKey.FileSizeBytes);
+                bytes = PropertyStoreShellApi.GetULongFromPropertyStore(propertyStore, PropertyStoreShellApi.PropertyKey.FileSizeBytes);
 
-                    Marshal.ReleaseComObject(propertyStore);
-                    return bytes;
-                }
+                Marshal.ReleaseComObject(propertyStore);
+            }
 
-                return 0;
-            });
+            return Task.FromResult(bytes);
         }
 
         public static Task<string> GetFileType(string filePath)
         {
-            return Task.Run(() =>
+            var type = string.Empty;
+            var propertyStore = PropertyStoreShellApi.GetPropertyStoreFromPath(filePath, PropertyStoreShellApi.PropertyStoreFlags.OPENSLOWITEM);
+            if (propertyStore != null)
             {
-                // TODO: find out why property store is null
-                Guid iPropertyStoreGuid = typeof(PropertyStoreShellApi.IPropertyStore).GUID;
-                PropertyStoreShellApi.IPropertyStore? propertyStore;
-                PropertyStoreShellApi.SHGetPropertyStoreFromParsingName(filePath, IntPtr.Zero, PropertyStoreShellApi.PropertyStoreFlags.READWRITE, ref iPropertyStoreGuid, out propertyStore);
-                if (propertyStore != null)
-                {
-                    var type = PropertyStoreShellApi.GetStringFromPropertyStore(propertyStore, PropertyStoreShellApi.PropertyKey.FileType);
+                // TODO: find a way to get user friendly description
+                type = PropertyStoreShellApi.GetStringFromPropertyStore(propertyStore, PropertyStoreShellApi.PropertyKey.FileType);
 
-                    Marshal.ReleaseComObject(propertyStore);
-                    return type;
-                }
+                Marshal.ReleaseComObject(propertyStore);
+            }
 
-                return string.Empty;
-            });
+            return Task.FromResult(type);
         }
     }
 }

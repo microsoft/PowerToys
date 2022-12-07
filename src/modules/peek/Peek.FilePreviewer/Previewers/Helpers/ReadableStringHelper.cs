@@ -11,7 +11,7 @@ namespace Peek.FilePreviewer.Previewers
     {
         private const int DecimalPercision = 10;
 
-        public static string BytesToReadableString(int bytes)
+        public static string BytesToReadableString(ulong bytes)
         {
             // TODO: get string from resources
             List<string> format = new List<string>
