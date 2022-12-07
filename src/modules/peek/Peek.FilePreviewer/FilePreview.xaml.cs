@@ -34,6 +34,8 @@ namespace Peek.FilePreviewer
         [NotifyPropertyChangedFor(nameof(IsImageVisible))]
         [NotifyPropertyChangedFor(nameof(UnsupportedFilePreviewer))]
         [NotifyPropertyChangedFor(nameof(IsUnsupportedPreviewVisible))]
+        [NotifyPropertyChangedFor(nameof(BrowserPreviewer))]
+        [NotifyPropertyChangedFor(nameof(IsBrowserVisible))]
         private IPreviewer? previewer;
 
         public FilePreview()
@@ -43,21 +45,33 @@ namespace Peek.FilePreviewer
 
         public IBitmapPreviewer? BitmapPreviewer => Previewer as IBitmapPreviewer;
 
+        public IBrowserPreview? BrowserPreviewer => Previewer as IBrowserPreview;
+
         public bool IsImageVisible => BitmapPreviewer != null;
 
         public IUnsupportedFilePreviewer? UnsupportedFilePreviewer => Previewer as IUnsupportedFilePreviewer;
 
         public bool IsUnsupportedPreviewVisible => UnsupportedFilePreviewer != null;
 
+        /* TODO: need a better way to switch visibility according to the Preview.
+         * Could use Enum + Converter to switch according to the current preview. */
+        public bool IsBrowserVisible
+        {
+            get
+            {
+                if (BrowserPreviewer != null)
+                {
+                    return BrowserPreviewer.IsPreviewLoaded;
+                }
+
+                return false;
+            }
+        }
+
         public File File
         {
             get => (File)GetValue(FilesProperty);
             set => SetValue(FilesProperty, value);
-        }
-
-        public bool IsPreviewLoading(BitmapSource? bitmapSource)
-        {
-            return bitmapSource == null;
         }
 
         private async Task OnFilePropertyChanged()
@@ -74,6 +88,12 @@ namespace Peek.FilePreviewer
                 PreviewSizeChanged?.Invoke(this, new PreviewSizeChangedArgs(size));
                 await Previewer.LoadPreviewAsync();
             }
+        }
+
+        private void PreviewBrowser_NavigationCompleted(WebView2 sender, Microsoft.Web.WebView2.Core.CoreWebView2NavigationCompletedEventArgs args)
+        {
+            // Once browser has completed navigation it is ready to be visible
+            OnPropertyChanged(nameof(IsBrowserVisible));
         }
     }
 }
