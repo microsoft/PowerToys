@@ -14,29 +14,29 @@ namespace Peek.UI
 
         public MainWindowViewModel()
         {
-            navigationThrottleTimer.Tick += NavigationThrottleTimer_Tick;
-            navigationThrottleTimer.Interval = TimeSpan.FromMilliseconds(NavigationThrottleDelayMs);
+            NavigationThrottleTimer.Tick += NavigationThrottleTimer_Tick;
+            NavigationThrottleTimer.Interval = TimeSpan.FromMilliseconds(NavigationThrottleDelayMs);
         }
 
         public void AttemptLeftNavigation()
         {
-            if (navigationThrottleTimer.IsEnabled)
+            if (NavigationThrottleTimer.IsEnabled)
             {
                 return;
             }
 
-            navigationThrottleTimer.Start();
+            NavigationThrottleTimer.Start();
             FolderItemsQuery.UpdateCurrentItemIndex(FolderItemsQuery.CurrentItemIndex - 1);
         }
 
         public void AttemptRightNavigation()
         {
-            if (navigationThrottleTimer.IsEnabled)
+            if (NavigationThrottleTimer.IsEnabled)
             {
                 return;
             }
 
-            navigationThrottleTimer.Start();
+            NavigationThrottleTimer.Start();
             FolderItemsQuery.UpdateCurrentItemIndex(FolderItemsQuery.CurrentItemIndex + 1);
         }
 
@@ -51,8 +51,8 @@ namespace Peek.UI
         }
 
         [ObservableProperty]
-        private FolderItemsQuery folderItemsQuery = new ();
+        private FolderItemsQuery _folderItemsQuery = new ();
 
-        private DispatcherTimer navigationThrottleTimer = new ();
+        private DispatcherTimer NavigationThrottleTimer { get; set; } = new ();
     }
 }

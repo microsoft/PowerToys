@@ -38,7 +38,7 @@ namespace Peek.UI
 
         public void UpdateCurrentItemIndex(int desiredIndex)
         {
-            if (Files == null || Files.Count <= 1 || _currentItemIndex == UninitializedItemIndex ||
+            if (Files.Count <= 1 || _currentItemIndex == UninitializedItemIndex ||
                 (InitializeFilesTask != null && InitializeFilesTask.Status == TaskStatus.Running))
             {
                 return;
