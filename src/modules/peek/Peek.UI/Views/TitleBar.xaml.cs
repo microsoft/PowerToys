@@ -37,7 +37,7 @@ namespace Peek.UI.Views
                 // Set window icon
                 WindowId windowId = Win32Interop.GetWindowIdFromWindow(hWnd);
                 AppWindow appWindow = AppWindow.GetFromWindowId(windowId);
-                appWindow.SetIcon("Assets/Peek.ico");
+                appWindow.SetIcon("Assets/Icon.ico");
             }
         }
     }

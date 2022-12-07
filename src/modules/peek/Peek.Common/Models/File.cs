@@ -25,6 +25,8 @@ namespace Peek.Common.Models
 
         public string Extension => System.IO.Path.GetExtension(Path);
 
+        public string Extension => System.IO.Path.GetExtension(Path).ToLower();
+
         public DateTime DateModified => System.IO.File.GetCreationTime(Path);
 
         public async Task<StorageFile> GetStorageFileAsync()
