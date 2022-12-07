@@ -9,6 +9,7 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:local="using:Peek.FilePreviewer"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:controls="using:Peek.FilePreviewer.Controls"
     mc:Ignorable="d">
 
     <Grid>
@@ -22,7 +23,12 @@
             Source="{x:Bind BitmapPreviewer.Preview, Mode=OneWay}"
             Visibility="{x:Bind IsImageVisible, Mode=OneWay}" />
 
-        <!--  TODO: Add WebView2 support.  -->
+        <controls:BrowserControl x:Name="PreviewBrowser"
+                                 x:Load="True"
+                                 Source="{x:Bind BrowserPreviewer.Preview, Mode=OneWay}"
+                                 IsNavigationCompleted="{x:Bind BrowserPreviewer.IsPreviewLoaded, Mode=TwoWay}"
+                                 Visibility="{x:Bind IsBrowserVisible, Mode=OneWay, FallbackValue=Collapsed}"
+                                 NavigationCompleted="PreviewBrowser_NavigationCompleted"/>
 
         <local:UnsupportedFilePreview
             DateModified="{x:Bind UnsupportedFilePreviewer.DateModified, Mode=OneWay}"
