@@ -34,6 +34,7 @@
     <None Remove="Assets\AppList.scale-200.png" />
     <None Remove="Assets\AppList.scale-400.png" />
     <None Remove="Views\TitleBar.xaml" />
+    <None Remove="Views\UnsupportedFile.xaml" />
   </ItemGroup>
   <ItemGroup>
     <COMReference Include="Shell32">
@@ -84,6 +85,11 @@
   </ItemGroup>
   <ItemGroup>
     <Resource Include="Assets\Icon.ico" />
+  </ItemGroup>
+  <ItemGroup>
+    <Page Update="Views\UnsupportedFile.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
   </ItemGroup>
   <ItemGroup>
     <Page Update="Views\TitleBar.xaml">
