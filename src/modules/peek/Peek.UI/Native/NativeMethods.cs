@@ -7,6 +7,7 @@ namespace Peek.UI.Native
     using System;
     using System.Runtime.InteropServices;
     using System.Text;
+    using Peek.Common.Models;
 
     public static class NativeMethods
     {
@@ -14,7 +15,7 @@ namespace Peek.UI.Native
         internal static extern IntPtr GetForegroundWindow();
 
         [DllImport("Shlwapi.dll", SetLastError = true, CharSet = CharSet.Auto)]
-        internal static extern uint AssocQueryString(AssocF flags, AssocStr str, string pszAssoc, string? pszExtra, [Out] StringBuilder? pszOut, [In][Out] ref uint pcchOut);
+        internal static extern HResult AssocQueryString(AssocF flags, AssocStr str, string pszAssoc, string? pszExtra, [Out] StringBuilder? pszOut, [In][Out] ref uint pcchOut);
 
         [Flags]
         public enum AssocF
