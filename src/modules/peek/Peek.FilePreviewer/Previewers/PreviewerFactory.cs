@@ -10,24 +10,13 @@ namespace Peek.FilePreviewer.Previewers
     {
         public IPreviewer? Create(File file)
         {
-            // TODO: investigate performance of reflection to resolve previewer type
-            switch (file.Extension)
+            if (ImagePreviewer.IsFileTypeSupported(file.Extension))
             {
-                case ".bmp":
-                case ".gif":
-                case ".jpg":
-                case ".jfif":
-                case ".jfi":
-                case ".jif":
-                case ".jpeg":
-                case ".jpe":
-                case ".png":
-                case ".tif":
-                case ".tiff":
-                    return new ImagePreviewer(file);
-                default:
-                    return null;
+                return new ImagePreviewer(file);
             }
+
+            // Other previewer types check their supported file types here
+            return null;
         }
     }
 }
