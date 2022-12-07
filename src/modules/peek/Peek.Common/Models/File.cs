@@ -21,7 +21,7 @@ namespace Peek.Common.Models
 
         public string Path { get; init; }
 
-        public string Extension => System.IO.Path.GetExtension(Path);
+        public string Extension => System.IO.Path.GetExtension(Path).ToLower();
 
         public async Task<StorageFile> GetStorageFileAsync()
         {

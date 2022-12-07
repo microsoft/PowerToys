@@ -4,6 +4,7 @@
 
 namespace Peek.FilePreviewer.Previewers
 {
+    using System;
     using System.ComponentModel;
     using System.Threading.Tasks;
     using Windows.Foundation;
@@ -11,6 +12,8 @@ namespace Peek.FilePreviewer.Previewers
     public interface IPreviewer : INotifyPropertyChanged
     {
         bool IsPreviewLoaded { get; }
+
+        public static bool IsFileTypeSupported(string fileExt) => throw new NotImplementedException();
 
         public Task<Size> GetPreviewSizeAsync();
 

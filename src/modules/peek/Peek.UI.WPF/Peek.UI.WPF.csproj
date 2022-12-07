@@ -3,7 +3,7 @@
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
     <TargetFramework>net7.0-windows10.0.19041.0</TargetFramework>
-	<AssemblyName>PowerToys.Peek.UI</AssemblyName>
+	<AssemblyName>PowerToys.Peek.UI.WPF</AssemblyName>
     <Nullable>enable</Nullable>
     <UseWPF>true</UseWPF>
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
