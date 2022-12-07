@@ -20,7 +20,7 @@ namespace Peek.UI.Helpers
             uint ret = NativeMethods.AssocQueryString(NativeMethods.AssocF.Verify, NativeMethods.AssocStr.FriendlyAppName, extension, null, null, ref length);
             if (ret != S_FALSE)
             {
-                Debug.WriteLine("Error when getting accessString for {2} file", extension);
+                Debug.WriteLine("Error when getting accessString for {0} file", extension);
                 return appName;
             }
 
@@ -29,7 +29,7 @@ namespace Peek.UI.Helpers
             ret = NativeMethods.AssocQueryString(NativeMethods.AssocF.Verify, NativeMethods.AssocStr.FriendlyAppName, extension, null, sb, ref length);
             if (ret != S_OK)
             {
-                Debug.WriteLine("Error when getting accessString for {2} file", extension);
+                Debug.WriteLine("Error when getting accessString for {0} file", extension);
                 return appName;
             }
 
