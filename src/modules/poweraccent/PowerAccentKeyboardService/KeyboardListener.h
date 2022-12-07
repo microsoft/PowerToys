@@ -60,7 +60,7 @@ namespace winrt::PowerToys::PowerAccentKeyboardService::implementation
         bool m_rightShiftPressed;
 
         std::mutex m_mutex_excluded_apps;
-        std::pair<HWND, bool> m_prevForegrndAppExcl{ NULL, false };
+        std::pair<HWND, bool> m_prevForegroundAppExcl{ NULL, false };
 
         static inline const std::vector<LetterKey> letters = { LetterKey::VK_0,
                                                                LetterKey::VK_1,

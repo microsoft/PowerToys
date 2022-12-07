@@ -6,6 +6,7 @@ using System;
 using System.Drawing;
 using System.Globalization;
 using ColorPicker.Helpers;
+using ManagedCommon;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Microsoft.ColorPicker.UnitTests
@@ -53,7 +54,7 @@ namespace Microsoft.ColorPicker.UnitTests
             blue = Convert.ToInt32(Math.Round(255d / 100d * blue));    // [0%..100%] to [0..255]
 
             var color = Color.FromArgb(255, red, green, blue);
-            var result = ColorHelper.ConvertToHSLColor(color);
+            var result = ColorFormatHelper.ConvertToHSLColor(color);
 
             // hue[0°..360°]
             Assert.AreEqual(result.hue, hue, 0.2d);
@@ -102,7 +103,7 @@ namespace Microsoft.ColorPicker.UnitTests
             blue = Convert.ToInt32(Math.Round(255d / 100d * blue));        // [0%..100%] to [0..255]
 
             var color = Color.FromArgb(255, red, green, blue);
-            var result = ColorHelper.ConvertToHSVColor(color);
+            var result = ColorFormatHelper.ConvertToHSVColor(color);
 
             // hue [0°..360°]
             Assert.AreEqual(result.hue, hue, 0.2d);
@@ -151,7 +152,7 @@ namespace Microsoft.ColorPicker.UnitTests
             blue = Convert.ToInt32(Math.Round(255d / 100d * blue));        // [0%..100%] to [0..255]
 
             var color = Color.FromArgb(255, red, green, blue);
-            var result = ColorHelper.ConvertToHSBColor(color);
+            var result = ColorFormatHelper.ConvertToHSBColor(color);
 
             // hue [0°..360°]
             Assert.AreEqual(result.hue, hue, 0.2d);
@@ -195,7 +196,7 @@ namespace Microsoft.ColorPicker.UnitTests
         public void ColorRGBtoCMYKTest(int cyan, int magenta, int yellow, int blackKey, int red, int green, int blue)
         {
             var color = Color.FromArgb(255, red, green, blue);
-            var result = ColorHelper.ConvertToCMYKColor(color);
+            var result = ColorFormatHelper.ConvertToCMYKColor(color);
 
             // cyan[0..1]
             Assert.AreEqual(result.cyan * 100d, cyan, 0.5d);
@@ -245,7 +246,7 @@ namespace Microsoft.ColorPicker.UnitTests
             var blue = int.Parse(hexValue.AsSpan(4, 2), NumberStyles.HexNumber, CultureInfo.InvariantCulture);
 
             var color = Color.FromArgb(255, red, green, blue);
-            var result = ColorHelper.ConvertToHSIColor(color);
+            var result = ColorFormatHelper.ConvertToHSIColor(color);
 
             // hue[0°..360°]
             Assert.AreEqual(result.hue, hue, 0.5d);
@@ -293,7 +294,7 @@ namespace Microsoft.ColorPicker.UnitTests
             var blue = int.Parse(hexValue.AsSpan(4, 2), NumberStyles.HexNumber, CultureInfo.InvariantCulture);
 
             var color = Color.FromArgb(255, red, green, blue);
-            var result = ColorHelper.ConvertToHWBColor(color);
+            var result = ColorFormatHelper.ConvertToHWBColor(color);
 
             // hue[0°..360°]
             Assert.AreEqual(result.hue, hue, 0.5d);
@@ -341,7 +342,7 @@ namespace Microsoft.ColorPicker.UnitTests
             var blue = int.Parse(hexValue.AsSpan(4, 2), NumberStyles.HexNumber, CultureInfo.InvariantCulture);
 
             var color = Color.FromArgb(255, red, green, blue);
-            var result = ColorHelper.ConvertToNaturalColor(color);
+            var result = ColorFormatHelper.ConvertToNaturalColor(color);
 
             // hue
             Assert.AreEqual(result.hue, hue);
@@ -397,7 +398,7 @@ namespace Microsoft.ColorPicker.UnitTests
             var blue = int.Parse(hexValue.AsSpan(4, 2), NumberStyles.HexNumber, CultureInfo.InvariantCulture);
 
             var color = Color.FromArgb(255, red, green, blue);
-            var result = ColorHelper.ConvertToCIELABColor(color);
+            var result = ColorFormatHelper.ConvertToCIELABColor(color);
 
             // lightness[0..100]
             Assert.AreEqual(Math.Round(result.lightness, 2), lightness);
@@ -461,7 +462,7 @@ namespace Microsoft.ColorPicker.UnitTests
             var blue = int.Parse(hexValue.AsSpan(4, 2), NumberStyles.HexNumber, CultureInfo.InvariantCulture);
 
             var color = Color.FromArgb(255, red, green, blue);
-            var result = ColorHelper.ConvertToCIEXYZColor(color);
+            var result = ColorFormatHelper.ConvertToCIEXYZColor(color);
 
             // x[0..0.95047]
             Assert.AreEqual(Math.Round(result.x * 100, 4), x);
@@ -488,7 +489,7 @@ namespace Microsoft.ColorPicker.UnitTests
 
                         try
                         {
-                            _ = ColorHelper.ConvertToCMYKColor(color);
+                            _ = ColorFormatHelper.ConvertToCMYKColor(color);
                         }
 
                         // intentionally trying to catch

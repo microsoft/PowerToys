@@ -26,7 +26,7 @@
 
   <PropertyGroup>
     <RootNamespace>Microsoft.PowerToys.PreviewHandler.Monaco</RootNamespace>
-    <TargetFramework>net6.0-windows10.0.19041.0</TargetFramework>
+	  <TargetFramework>net7.0-windows10.0.19041.0</TargetFramework>
     <AssemblyName>PowerToys.MonacoPreviewHandler</AssemblyName>
   </PropertyGroup>
 
@@ -43,7 +43,7 @@
     <ErrorOnDuplicatePublishOutputFiles>false</ErrorOnDuplicatePublishOutputFiles>
   </PropertyGroup>
   <PropertyGroup>
-    <!-- Disable missing comment warning. WinRT/C++ libraries added won't have comments on thier reflections. -->
+    <!-- Disable missing comment warning. WinRT/C++ libraries added won't have comments on their reflections. -->
     <NoWarn>$(NoWarn);1591</NoWarn>
     <OutputType>WinExe</OutputType>
   </PropertyGroup>
@@ -99,4 +99,5 @@
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
   </ItemGroup>
+
 </Project>

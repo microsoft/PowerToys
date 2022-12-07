@@ -26,7 +26,7 @@
   <PropertyGroup>
     <ProjectGuid>{805306FF-A562-4415-8DEF-E493BDC45918}</ProjectGuid>
     <RootNamespace>Microsoft.PowerToys.PreviewHandler.Gcode</RootNamespace>
-    <TargetFramework>net6.0-windows10.0.19041.0</TargetFramework>
+    <TargetFramework>net7.0-windows10.0.19041.0</TargetFramework>
   </PropertyGroup>
 
   <Import Project="..\..\..\Version.props" />
@@ -47,7 +47,7 @@
     <ErrorOnDuplicatePublishOutputFiles>false</ErrorOnDuplicatePublishOutputFiles>
   </PropertyGroup>
   <PropertyGroup>
-    <!-- Disable missing comment warning. WinRT/C++ libraries added won't have comments on thier reflections. -->
+    <!-- Disable missing comment warning. WinRT/C++ libraries added won't have comments on their reflections. -->
     <NoWarn>$(NoWarn);1591</NoWarn>
     <OutputType>WinExe</OutputType>
   </PropertyGroup>
@@ -71,4 +71,5 @@
       <LastGenOutput>Resource.Designer.cs</LastGenOutput>
     </EmbeddedResource>
   </ItemGroup>
+
 </Project>
