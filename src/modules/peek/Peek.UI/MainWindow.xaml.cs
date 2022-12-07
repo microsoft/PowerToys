@@ -68,7 +68,7 @@ namespace Peek.UI
 
         private void Initialize()
         {
-            ViewModel.FileQuery.Start();
+            ViewModel.FolderItemsQuery.Start();
         }
 
         private void Uninitialize()
@@ -76,7 +76,7 @@ namespace Peek.UI
             this.Hide();
 
             // TODO: move into general ViewModel method when needed
-            ViewModel.FileQuery.Clear();
+            ViewModel.FolderItemsQuery.Clear();
         }
 
         /// <summary>

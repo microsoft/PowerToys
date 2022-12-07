@@ -13,7 +13,7 @@ namespace Peek.UI
     using Peek.Common.Models;
     using Peek.UI.Helpers;
 
-    public partial class FileQuery : ObservableObject
+    public partial class FolderItemsQuery : ObservableObject
     {
         private const int UninitializedItemIndex = -1;
 

@@ -26,7 +26,7 @@ namespace Peek.UI
             }
 
             navigationThrottleTimer.Start();
-            fileQuery.UpdateCurrentItemIndex(fileQuery.CurrentItemIndex - 1);
+            FolderItemsQuery.UpdateCurrentItemIndex(FolderItemsQuery.CurrentItemIndex - 1);
         }
 
         public void AttemptRightNavigation()
@@ -37,7 +37,7 @@ namespace Peek.UI
             }
 
             navigationThrottleTimer.Start();
-            fileQuery.UpdateCurrentItemIndex(fileQuery.CurrentItemIndex + 1);
+            FolderItemsQuery.UpdateCurrentItemIndex(FolderItemsQuery.CurrentItemIndex + 1);
         }
 
         private void NavigationThrottleTimer_Tick(object? sender, object e)
@@ -51,7 +51,7 @@ namespace Peek.UI
         }
 
         [ObservableProperty]
-        private FileQuery fileQuery = new ();
+        private FolderItemsQuery folderItemsQuery = new ();
 
         private DispatcherTimer navigationThrottleTimer = new ();
     }
