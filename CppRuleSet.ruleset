@@ -1,5 +1,5 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<RuleSet Name="Cpp Rule Set" Description="Based on Microsoft Native Recommended Rules. These rules focus on the most critical and common problems in your native code, including potential security holes and application crashes.  You should include this rule set in any custom rule set you create for your native projects.  This ruleset is designed to work with Visual Studio Professional edition and higher." ToolsVersion="17.0">
+<RuleSet Name="Cpp Rule Set" Description="Based on Microsoft Native Recommended Rules and CPP core guideline rules." ToolsVersion="17.0">
   <Rules AnalyzerId="Microsoft.Analyzers.NativeCodeAnalysis" RuleNamespace="Microsoft.Rules.Native">
     <Rule Id="C26100" Action="Info" />
     <Rule Id="C26101" Action="Info" />
@@ -10,31 +10,97 @@
     <Rule Id="C26116" Action="Info" />
     <Rule Id="C26117" Action="Info" />
     <Rule Id="C26140" Action="Info" />
-    <Rule Id="C26437" Action="Info" />
-    <Rule Id="C26439" Action="Info" />
-    <Rule Id="C26441" Action="Info" />
-    <Rule Id="C26444" Action="Info" />
-    <Rule Id="C26449" Action="Info" />
-    <Rule Id="C26450" Action="Info" />
+    <Rule Id="C26400" Action="Info" />
+    <Rule Id="C26401" Action="Info" />
+    <Rule Id="C26402" Action="Error" />
+    <Rule Id="C26403" Action="Info" />
+    <Rule Id="C26404" Action="Error" />
+    <Rule Id="C26405" Action="Error" />
+    <Rule Id="C26406" Action="Error" />
+    <Rule Id="C26407" Action="Error" />
+    <Rule Id="C26408" Action="Info" />
+    <Rule Id="C26409" Action="Info" />
+    <Rule Id="C26410" Action="Info" />
+    <Rule Id="C26411" Action="Error" />
+    <Rule Id="C26414" Action="Info" />
+    <Rule Id="C26415" Action="Info" />
+    <Rule Id="C26416" Action="Error" />
+    <Rule Id="C26417" Action="Info" />
+    <Rule Id="C26418" Action="Info" />
+    <Rule Id="C26426" Action="Info" />
+    <Rule Id="C26427" Action="Info" />
+    <Rule Id="C26429" Action="Info" />
+    <Rule Id="C26430" Action="Info" />
+    <Rule Id="C26431" Action="Info" />
+    <Rule Id="C26432" Action="Info" />
+    <Rule Id="C26433" Action="Info" />
+    <Rule Id="C26434" Action="Info" />
+    <Rule Id="C26435" Action="Info" />
+    <Rule Id="C26436" Action="Info" />
+    <Rule Id="C26437" Action="Error" />
+    <Rule Id="C26438" Action="Info" />
+    <Rule Id="C26439" Action="Error" />
+    <Rule Id="C26440" Action="Info" />
+    <Rule Id="C26441" Action="Error" />
+    <Rule Id="C26443" Action="Error" />
+    <Rule Id="C26444" Action="Error" />
+    <Rule Id="C26445" Action="Info" />
+    <Rule Id="C26446" Action="Info" />
+    <Rule Id="C26447" Action="Info" />
+    <Rule Id="C26448" Action="Info" />
+    <Rule Id="C26449" Action="Error" />
+    <Rule Id="C26450" Action="Error" />
     <Rule Id="C26451" Action="Error" />
-    <Rule Id="C26452" Action="Info" />
-    <Rule Id="C26453" Action="Info" />
-    <Rule Id="C26454" Action="Info" />
-    <Rule Id="C26478" Action="Info" />
-    <Rule Id="C26479" Action="Info" />
+    <Rule Id="C26452" Action="Error" />
+    <Rule Id="C26453" Action="Error" />
+    <Rule Id="C26454" Action="Error" />
+    <Rule Id="C26455" Action="Info" />
+    <Rule Id="C26456" Action="Info" />
+    <Rule Id="C26459" Action="Info" />
+    <Rule Id="C26460" Action="Info" />
+    <Rule Id="C26461" Action="Info" />
+    <Rule Id="C26462" Action="Info" />
+    <Rule Id="C26463" Action="Error" />
+    <Rule Id="C26464" Action="Error" />
+    <Rule Id="C26465" Action="Info" />
+    <Rule Id="C26466" Action="Info" />
+    <Rule Id="C26471" Action="Info" />
+    <Rule Id="C26472" Action="Info" />
+    <Rule Id="C26473" Action="Info" />
+    <Rule Id="C26474" Action="Info" />
+    <Rule Id="C26475" Action="Info" />
+    <Rule Id="C26476" Action="Info" />
+    <Rule Id="C26477" Action="Info" />
+    <Rule Id="C26478" Action="Error" />
+    <Rule Id="C26479" Action="Error" />
+    <Rule Id="C26481" Action="Info" />
+    <Rule Id="C26482" Action="Info" />
+    <Rule Id="C26483" Action="Error" />
+    <Rule Id="C26485" Action="Info" />
+    <Rule Id="C26490" Action="Info" />
+    <Rule Id="C26491" Action="Info" />
+    <Rule Id="C26492" Action="Info" />
+    <Rule Id="C26493" Action="Info" />
+    <Rule Id="C26494" Action="Info" />
     <Rule Id="C26495" Action="Error" />
-    <Rule Id="C26498" Action="Info" />
+    <Rule Id="C26496" Action="Info" />
+    <Rule Id="C26497" Action="Info" />
+    <Rule Id="C26498" Action="Error" />
     <Rule Id="C26800" Action="Info" />
-    <Rule Id="C26810" Action="Info" />
+    <Rule Id="C26810" Action="Error" />
     <Rule Id="C26811" Action="Info" />
+    <Rule Id="C26812" Action="Info" />
     <Rule Id="C26813" Action="Info" />
+    <Rule Id="C26814" Action="Info" />
     <Rule Id="C26815" Action="Info" />
     <Rule Id="C26816" Action="Info" />
     <Rule Id="C26817" Action="Info" />
+    <Rule Id="C26818" Action="Info" />
     <Rule Id="C26819" Action="Info" />
-    <Rule Id="C26820" Action="Info" />
-    <Rule Id="C26827" Action="Info" />
-    <Rule Id="C26828" Action="Info" />
+    <Rule Id="C26820" Action="Error" />
+    <Rule Id="C26826" Action="Info" />
+    <Rule Id="C26827" Action="Error" />
+    <Rule Id="C26828" Action="Error" />
     <Rule Id="C28020" Action="Info" />
     <Rule Id="C28021" Action="Info" />
     <Rule Id="C28022" Action="Info" />
