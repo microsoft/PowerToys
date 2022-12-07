@@ -42,7 +42,6 @@ namespace Peek.FilePreviewer.Previewers
             Dispatcher = DispatcherQueue.GetForCurrentThread();
         }
 
-        // TODO: File info
         public bool IsPreviewLoaded => iconPreview != null;
 
         private File File { get; }
@@ -87,6 +86,7 @@ namespace Peek.FilePreviewer.Previewers
                     return;
                 }
 
+                // TODO: Get icon with transparency
                 IconHelper.GetIcon(Path.GetFullPath(File.Path), out IntPtr hbitmap);
                 var iconBitmap = await GetBitmapFromHBitmapAsync(hbitmap);
                 IconPreview = iconBitmap;
