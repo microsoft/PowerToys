@@ -10,8 +10,6 @@ namespace Peek.FilePreviewer.Previewers
     {
         public IPreviewer? Create(File file)
         {
-            // TODO: investigate performance of reflection to resolve previewer type
-            switch (file.Extension.ToLower())
             if (ImagePreviewer.IsFileTypeSupported(file.Extension))
             {
                 return new ImagePreviewer(file);
