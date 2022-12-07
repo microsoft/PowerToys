@@ -10,7 +10,7 @@ namespace Peek.FilePreviewer.Previewers
     {
         public IPreviewer? Create(File file)
         {
-            if (ImagePreviewer.IsFileTypeSupported(file.Extension.ToLower()))
+            if (ImagePreviewer.IsFileTypeSupported(file.Extension))
             {
                 return new ImagePreviewer(file);
             }

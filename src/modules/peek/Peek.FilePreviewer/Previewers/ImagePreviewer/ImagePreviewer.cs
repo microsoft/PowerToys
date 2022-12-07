@@ -5,9 +5,9 @@
 namespace Peek.FilePreviewer.Previewers
 {
     using System;
+    using System.Collections.Generic;
     using System.Drawing.Imaging;
     using System.IO;
-    using System.Linq;
     using System.Threading;
     using System.Threading.Tasks;
     using CommunityToolkit.Mvvm.ComponentModel;
@@ -172,10 +172,10 @@ namespace Peek.FilePreviewer.Previewers
 
         public static bool IsFileTypeSupported(string fileExt)
         {
-            return _supportedFileTypes.Contains(fileExt.ToLower());
+            return _supportedFileTypes.Contains(fileExt);
         }
 
-        private static readonly string[] _supportedFileTypes = new string[]
+        private static readonly HashSet<string> _supportedFileTypes = new HashSet<string>
         {
                 // Image types
                 ".bmp",
