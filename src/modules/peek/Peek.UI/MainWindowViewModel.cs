@@ -4,16 +4,59 @@
 
 namespace Peek.UI
 {
-    using System.Collections.Generic;
+    using System;
     using CommunityToolkit.Mvvm.ComponentModel;
-    using Peek.Common.Models;
+    using Microsoft.UI.Xaml;
 
     public partial class MainWindowViewModel : ObservableObject
     {
-        [ObservableProperty]
-        private File? currentFile;
+        private const int NavigationThrottleDelayMs = 100;
+
+        public MainWindowViewModel()
+        {
+            NavigationThrottleTimer.Tick += NavigationThrottleTimer_Tick;
+            NavigationThrottleTimer.Interval = TimeSpan.FromMilliseconds(NavigationThrottleDelayMs);
+        }
+
+        public void AttemptLeftNavigation()
+        {
+            if (NavigationThrottleTimer.IsEnabled)
+            {
+                return;
+            }
+
+            NavigationThrottleTimer.Start();
+
+            // TODO: return a bool so UI can give feedback in case navigation is unavailable
+            FolderItemsQuery.UpdateCurrentItemIndex(FolderItemsQuery.CurrentItemIndex - 1);
+        }
+
+        public void AttemptRightNavigation()
+        {
+            if (NavigationThrottleTimer.IsEnabled)
+            {
+                return;
+            }
+
+            NavigationThrottleTimer.Start();
+
+            // TODO: return a bool so UI can give feedback in case navigation is unavailable
+            FolderItemsQuery.UpdateCurrentItemIndex(FolderItemsQuery.CurrentItemIndex + 1);
+        }
+
+        private void NavigationThrottleTimer_Tick(object? sender, object e)
+        {
+            if (sender == null)
+            {
+                return;
+            }
+
+            ((DispatcherTimer)sender).Stop();
+        }
 
         [ObservableProperty]
-        private List<File> files = new ();
+        private FolderItemsQuery _folderItemsQuery = new ();
+
+        private DispatcherTimer NavigationThrottleTimer { get; set; } = new ();
     }
 }

@@ -6,6 +6,7 @@ namespace Peek.FilePreviewer.Previewers
 {
     using System;
     using System.Collections.Generic;
+    using System.Diagnostics;
     using System.Drawing.Imaging;
     using System.IO;
     using System.Threading;
@@ -83,10 +84,17 @@ namespace Peek.FilePreviewer.Previewers
 
                 if (!IsFullImageLoaded && !IsHighQualityThumbnailLoaded)
                 {
-                    // TODO: Handle thumbnail errors
-                    ThumbnailHelper.GetThumbnail(Path.GetFullPath(File.Path), out IntPtr hbitmap, ThumbnailHelper.LowQualityThumbnailSize);
-                    var thumbnailBitmap = await GetBitmapFromHBitmapAsync(hbitmap);
-                    Preview = thumbnailBitmap;
+                    var hr = ThumbnailHelper.GetThumbnail(Path.GetFullPath(File.Path), out IntPtr hbitmap, ThumbnailHelper.LowQualityThumbnailSize);
+                    if (hr == Common.Models.HResult.Ok)
+                    {
+                        var thumbnailBitmap = await GetBitmapFromHBitmapAsync(hbitmap);
+                        Preview = thumbnailBitmap;
+                    }
+                    else
+                    {
+                        // TODO: handle thumbnail errors
+                        Debug.WriteLine("Error loading thumbnail - hresult: " + hr);
+                    }
                 }
 
                 thumbnailTCS.SetResult();
@@ -108,11 +116,18 @@ namespace Peek.FilePreviewer.Previewers
 
                 if (!IsFullImageLoaded)
                 {
-                    // TODO: Handle thumbnail errors
-                    ThumbnailHelper.GetThumbnail(Path.GetFullPath(File.Path), out IntPtr hbitmap, ThumbnailHelper.HighQualityThumbnailSize);
-                    var thumbnailBitmap = await GetBitmapFromHBitmapAsync(hbitmap);
-                    IsHighQualityThumbnailLoaded = true;
-                    Preview = thumbnailBitmap;
+                    var hr = ThumbnailHelper.GetThumbnail(Path.GetFullPath(File.Path), out IntPtr hbitmap, ThumbnailHelper.HighQualityThumbnailSize);
+                    if (hr == Common.Models.HResult.Ok)
+                    {
+                        var thumbnailBitmap = await GetBitmapFromHBitmapAsync(hbitmap);
+                        IsHighQualityThumbnailLoaded = true;
+                        Preview = thumbnailBitmap;
+                    }
+                    else
+                    {
+                        // TODO: handle thumbnail errors
+                        Debug.WriteLine("Error loading thumbnail - hresult: " + hr);
+                    }
                 }
 
                 thumbnailTCS.SetResult();
