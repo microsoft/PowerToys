@@ -28,9 +28,19 @@ namespace Peek.UI.Views
             typeof(TitleBar),
             new PropertyMetadata(null, (d, e) => ((TitleBar)d).OnFilePropertyChanged()));
 
+        public static readonly DependencyProperty NumberOfFilesProperty =
+        DependencyProperty.Register(
+           nameof(NumberOfFiles),
+           typeof(int),
+           typeof(TitleBar),
+           new PropertyMetadata(null, null));
+
         [ObservableProperty]
         private string openWithAppText = ResourceLoader.GetForViewIndependentUse().GetString("LaunchAppButton_OpenWith_Text");
         private string currentDefaultApp = string.Empty;
+
+        [ObservableProperty]
+        private string? fileName;
 
         public TitleBar()
         {
@@ -41,6 +51,12 @@ namespace Peek.UI.Views
         {
             get => (File)GetValue(FileProperty);
             set => SetValue(FileProperty, value);
+        }
+
+        public int NumberOfFiles
+        {
+            get => (int)GetValue(NumberOfFilesProperty);
+            set => SetValue(NumberOfFilesProperty, value);
         }
 
         public void SetToWindow(MainWindow mainWindow)
@@ -72,6 +88,17 @@ namespace Peek.UI.Views
 
         private void OnFilePropertyChanged()
         {
+            // Update file name
+            if (NumberOfFiles > 1)
+            {
+                // TODO: Update the hardcoded fileIndex when the NFQ PR gets merged
+                FileName = string.Format("{0}/{1} {2}", 1, NumberOfFiles, File.FileName);
+            }
+            else
+            {
+                FileName = File.FileName;
+            }
+
             // Update the name of default app to launch
             currentDefaultApp = DefaultAppHelper.TryGetDefaultAppName(File.Extension);
             string openWithAppTextFormat = ResourceLoader.GetForViewIndependentUse().GetString("LaunchAppButton_OpenWithApp_Text");

@@ -40,7 +40,7 @@
                 x:Uid="AppTitleText"
                 VerticalAlignment="Center"
                 Style="{StaticResource CaptionTextBlockStyle}"
-                Text="{x:Bind File.FileName, Mode=OneWay}" />
+                Text="{x:Bind FileName, Mode=OneWay}" />
         </StackPanel>
 
         <!--  Todo P0: Make button clickable  -->
