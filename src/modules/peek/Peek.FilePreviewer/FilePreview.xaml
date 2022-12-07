@@ -22,7 +22,6 @@
             Source="{x:Bind BitmapPreviewer.Preview, Mode=OneWay}"
             Visibility="{x:Bind IsImageVisible, Mode=OneWay}" />
 
-        <!-- TODO: add "Source" dprop -->
         <controls:BrowserControl x:Name="PreviewBrowser"
                                  x:Load="True"
                                  Source="{x:Bind BrowserPreviewer.Preview, Mode=OneWay}"
