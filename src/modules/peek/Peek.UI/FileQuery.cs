@@ -24,7 +24,6 @@ namespace Peek.UI
             files = new List<File>();
             currentItemIndex = UninitializedItemIndex;
 
-            // try catch?
             if (initializeFilesTask != null && initializeFilesTask.Status == TaskStatus.Running)
             {
                 Debug.WriteLine("Detected existing initializeFilesTask running. Cancelling it..");
@@ -36,8 +35,8 @@ namespace Peek.UI
 
         public void UpdateCurrentItemIndex(int desiredIndex)
         {
-            // TODO: add processing check
-            if (files == null || files.Count <= 1 || currentItemIndex == UninitializedItemIndex)
+            if (files == null || files.Count <= 1 || currentItemIndex == UninitializedItemIndex ||
+                (initializeFilesTask != null && initializeFilesTask.Status == TaskStatus.Running))
             {
                 Debug.WriteLine("!~ navigtion disabled");
                 return;

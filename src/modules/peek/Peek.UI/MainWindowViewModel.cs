@@ -4,24 +4,54 @@
 
 namespace Peek.UI
 {
-    using System.Collections.Generic;
+    using System;
     using CommunityToolkit.Mvvm.ComponentModel;
-    using Peek.Common.Models;
-    using Peek.UI.Helpers;
+    using Microsoft.UI.Xaml;
 
     public partial class MainWindowViewModel : ObservableObject
     {
+        private const int NavigationThrottleDelayMs = 100;
+
+        public MainWindowViewModel()
+        {
+            navigationThrottleTimer.Tick += NavigationThrottleTimer_Tick;
+            navigationThrottleTimer.Interval = TimeSpan.FromMilliseconds(NavigationThrottleDelayMs);
+        }
+
         public void AttemptLeftNavigation()
         {
+            if (navigationThrottleTimer.IsEnabled)
+            {
+                return;
+            }
+
+            navigationThrottleTimer.Start();
             fileQuery.UpdateCurrentItemIndex(fileQuery.CurrentItemIndex - 1);
         }
 
         public void AttemptRightNavigation()
         {
+            if (navigationThrottleTimer.IsEnabled)
+            {
+                return;
+            }
+
+            navigationThrottleTimer.Start();
             fileQuery.UpdateCurrentItemIndex(fileQuery.CurrentItemIndex + 1);
+        }
+
+        private void NavigationThrottleTimer_Tick(object? sender, object e)
+        {
+            if (sender == null)
+            {
+                return;
+            }
+
+            ((DispatcherTimer)sender).Stop();
         }
 
         [ObservableProperty]
         private FileQuery fileQuery = new ();
+        private DispatcherTimer navigationThrottleTimer = new ();
     }
 }

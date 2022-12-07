@@ -57,7 +57,7 @@ namespace Peek.FilePreviewer
 
         private async Task OnFilePropertyChanged()
         {
-            // TODO: track and cancel existing async preview tasks
+            // TODO: track and cancel existing async preview FilePropertyChanged tasks
             // https://github.com/microsoft/PowerToys/issues/22480
             Debug.WriteLine("!~ file property changed");
             if (File == null)
