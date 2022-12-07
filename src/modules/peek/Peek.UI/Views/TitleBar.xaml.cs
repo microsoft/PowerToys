@@ -17,6 +17,7 @@ namespace Peek.UI.Views
     using Windows.Storage;
     using Windows.System;
     using WinUIEx;
+    using static Peek.Common.Models.PropertyStoreShellApi;
 
     [INotifyPropertyChanged]
     public sealed partial class TitleBar : UserControl
@@ -40,7 +41,7 @@ namespace Peek.UI.Views
         private string currentDefaultApp = string.Empty;
 
         [ObservableProperty]
-        private string? fileName;
+        private string fileCountText = string.Empty;
 
         public TitleBar()
         {
@@ -96,17 +97,24 @@ namespace Peek.UI.Views
 
         private void OnFilePropertyChanged()
         {
-            // Update file name
+            UpdateFileCountText();
+            UpdateDefaultAppToLaunch();
+        }
+
+        private void UpdateFileCountText()
+        {
+            // Update file count
             if (NumberOfFiles > 1)
             {
                 // TODO: Update the hardcoded fileIndex when the NFQ PR gets merged
-                FileName = string.Format("{0}/{1} {2}", 1, NumberOfFiles, File.FileName);
+                int currentFileIndex = 1;
+                string fileCountTextFormat = ResourceLoader.GetForViewIndependentUse().GetString("AppTitle_FileCounts_Text");
+                FileCountText = string.Format(fileCountTextFormat, currentFileIndex, NumberOfFiles);
             }
-            else
-            {
-                FileName = File.FileName;
-            }
+        }
 
+        private void UpdateDefaultAppToLaunch()
+        {
             // Update the name of default app to launch
             currentDefaultApp = DefaultAppHelper.TryGetDefaultAppName(File.Extension);
             string openWithAppTextFormat = ResourceLoader.GetForViewIndependentUse().GetString("LaunchAppButton_OpenWithApp_Text");

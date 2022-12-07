@@ -120,10 +120,13 @@
   <data name="AppTitle.Title" xml:space="preserve">
     <value>Peek</value>
   </data>
+  <data name="AppTitle_FileCounts_Text" xml:space="preserve">
+    <value>({0}/{1} files)</value>
+  </data>
   <data name="LaunchAppButton_OpenWith_Text" xml:space="preserve">
     <value>Open with</value>
   </data>
-	<data name="LaunchAppButton_OpenWithApp_Text" xml:space="preserve">
+  <data name="LaunchAppButton_OpenWithApp_Text" xml:space="preserve">
     <value>Open with {0}</value>
   </data>
 </root>

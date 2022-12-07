@@ -19,7 +19,7 @@
         <StackPanel
             x:Name="AppIconAndName"
             Grid.Column="0"
-            Margin="8"
+            Margin="8,4"
             HorizontalAlignment="Left"
             VerticalAlignment="Top"
             Orientation="Horizontal">
@@ -29,20 +29,29 @@
                 x:Uid="PeekLogo"
                 Width="24"
                 Height="24"
-                Margin="12,0"
+                Margin="0"
                 VerticalAlignment="Center"
                 Source="../Assets/AppList.png"
                 Stretch="UniformToFill" />
 
             <TextBlock
-                x:Name="AppTitleText"
-                x:Uid="AppTitleText"
+                x:Name="AppTitle_FileCount"
+                x:Uid="AppTitle_FileCount"
+                Margin="4,0,0,0"
+                VerticalAlignment="Center"
+                FontWeight="Bold"
+                Style="{StaticResource CaptionTextBlockStyle}"
+                Text="{x:Bind FileCountText, Mode=OneWay}" />
+
+            <TextBlock
+                x:Name="AppTitle_FileName"
+                x:Uid="AppTitle_FileName"
+                Margin="4,0,0,0"
                 VerticalAlignment="Center"
                 Style="{StaticResource CaptionTextBlockStyle}"
-                Text="{x:Bind FileName, Mode=OneWay}" />
+                Text="{x:Bind File.FileName, Mode=OneWay}" />
         </StackPanel>
 
-        <!--  Todo P2: Adaptive width - shrink text?  -->
         <Grid
             x:Name="LaunchAppButtonContainer"
             Grid.Column="1"
@@ -59,13 +68,12 @@
                         <FontIcon
                             x:Name="LaunchAppButton_Icon"
                             x:Uid="LaunchAppButton_Icon"
-                            Margin="4,0"
                             FontSize="{StaticResource CaptionTextBlockFontSize}"
                             Glyph="&#xE8E5;" />
                         <TextBlock
                             x:Name="LaunchAppButton_Text"
                             x:Uid="LaunchAppButton_Text"
-                            Margin="4,0"
+                            Margin="4,0,0,0"
                             Style="{StaticResource CaptionTextBlockStyle}"
                             Text="{x:Bind OpenWithAppText, Mode=OneWay}" />
                     </StackPanel>
@@ -77,17 +85,28 @@
             <VisualStateGroup x:Name="AdaptiveWidth">
                 <VisualState x:Name="WideLayout">
                     <VisualState.StateTriggers>
-                        <AdaptiveTrigger MinWindowWidth="480" />
+                        <AdaptiveTrigger MinWindowWidth="560" />
                     </VisualState.StateTriggers>
                     <VisualState.Setters>
+                        <Setter Target="AppTitle_FileCount.Visibility" Value="Visible" />
                         <Setter Target="LaunchAppButton_Text.Visibility" Value="Visible" />
                     </VisualState.Setters>
                 </VisualState>
-                <VisualState x:Name="SmallLayout">
+                <VisualState x:Name="MediumLayout">
+                    <VisualState.StateTriggers>
+                        <AdaptiveTrigger MinWindowWidth="480" />
+                    </VisualState.StateTriggers>
+                    <VisualState.Setters>
+                        <Setter Target="AppTitle_FileCount.Visibility" Value="Visible" />
+                        <Setter Target="LaunchAppButton_Text.Visibility" Value="Collapsed" />
+                    </VisualState.Setters>
+                </VisualState>
+                <VisualState x:Name="MinimumLayout">
                     <VisualState.StateTriggers>
                         <AdaptiveTrigger MinWindowWidth="0" />
                     </VisualState.StateTriggers>
                     <VisualState.Setters>
+                        <Setter Target="AppTitle_FileCount.Visibility" Value="Collapsed" />
                         <Setter Target="LaunchAppButton_Text.Visibility" Value="Collapsed" />
                     </VisualState.Setters>
                 </VisualState>
