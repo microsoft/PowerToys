@@ -14,7 +14,7 @@ namespace Peek.FilePreviewer.Controls
     {
         public delegate void NavigationCompletedHandler(WebView2 sender, CoreWebView2NavigationCompletedEventArgs args);
 
-        public event NavigationCompletedHandler NavigationCompleted = (sender, args) => { };
+        public event NavigationCompletedHandler? NavigationCompleted;
 
         public static readonly DependencyProperty SourceProperty = DependencyProperty.Register(
                 nameof(Source),
