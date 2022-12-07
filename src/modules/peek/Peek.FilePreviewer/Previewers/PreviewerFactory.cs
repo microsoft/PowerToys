@@ -16,7 +16,7 @@ namespace Peek.FilePreviewer.Previewers
             }
 
             // Other previewer types check their supported file types here
-            return null;
+            return new UnsupportedFilePreviewer(file);
         }
     }
 }
