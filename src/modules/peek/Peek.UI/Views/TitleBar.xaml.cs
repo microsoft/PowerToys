@@ -6,6 +6,7 @@ namespace Peek.UI.Views
 {
     using System;
     using CommunityToolkit.Mvvm.ComponentModel;
+    using CommunityToolkit.Mvvm.Input;
     using ManagedCommon;
     using Microsoft.UI;
     using Microsoft.UI.Windowing;
@@ -17,7 +18,6 @@ namespace Peek.UI.Views
     using Windows.Storage;
     using Windows.System;
     using WinUIEx;
-    using static Peek.Common.Models.PropertyStoreShellApi;
 
     [INotifyPropertyChanged]
     public sealed partial class TitleBar : UserControl
@@ -79,7 +79,7 @@ namespace Peek.UI.Views
             }
         }
 
-        public void UpdateTitleBarCustomization(MainWindow mainWindow)
+        private void UpdateTitleBarCustomization(MainWindow mainWindow)
         {
             if (AppWindowTitleBar.IsCustomizationSupported())
             {
@@ -121,7 +121,8 @@ namespace Peek.UI.Views
             OpenWithAppText = string.Format(openWithAppTextFormat, currentDefaultApp);
         }
 
-        private async void LaunchAppButton_Click(object sender, RoutedEventArgs e)
+        [RelayCommand]
+        private async void LaunchDefaultAppButtonAsync()
         {
             StorageFile storageFile = await File.GetStorageFileAsync();
             LauncherOptions options = new ();

@@ -63,7 +63,7 @@
             <Button
                 x:Name="LaunchAppButton"
                 x:Uid="LaunchAppButton"
-                Click="LaunchAppButton_Click"
+                Command="{x:Bind LaunchDefaultAppButtonAsyncCommand, Mode=OneWay}"
                 ToolTipService.ToolTip="{x:Bind OpenWithAppText, Mode=OneWay}">
                 <Button.Content>
                     <StackPanel Orientation="Horizontal">
@@ -80,6 +80,9 @@
                             Text="{x:Bind OpenWithAppText, Mode=OneWay}" />
                     </StackPanel>
                 </Button.Content>
+                <Button.KeyboardAccelerators>
+                    <KeyboardAccelerator Key="Enter" />
+                </Button.KeyboardAccelerators>
             </Button>
         </Grid>
 
