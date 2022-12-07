@@ -28,7 +28,7 @@ namespace Peek.FilePreviewer.Controls
                 typeof(BrowserControl),
                 new PropertyMetadata(false));
 
-        public Uri Source
+        public Uri? Source
         {
             get { return (Uri)GetValue(SourceProperty); }
             set { SetValue(SourceProperty, value); }
