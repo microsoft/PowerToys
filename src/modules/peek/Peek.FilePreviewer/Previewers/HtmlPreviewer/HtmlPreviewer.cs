@@ -5,6 +5,7 @@
 namespace Peek.FilePreviewer.Previewers
 {
     using System;
+    using System.Collections.Generic;
     using System.Threading;
     using System.Threading.Tasks;
     using CommunityToolkit.Mvvm.ComponentModel;
@@ -15,6 +16,12 @@ namespace Peek.FilePreviewer.Previewers
 
     public partial class HtmlPreviewer : ObservableObject, IBrowserPreview
     {
+        private static readonly HashSet<string> _supportedFileTypes = new HashSet<string>
+        {
+            ".html",
+            ".htm",
+        };
+
         [ObservableProperty]
         private Uri? preview;
 
@@ -40,6 +47,11 @@ namespace Peek.FilePreviewer.Previewers
             Preview = new Uri(File.Path);
 
             return Task.CompletedTask;
+        }
+
+        public static bool IsFileTypeSupported(string fileExt)
+        {
+            return _supportedFileTypes.Contains(fileExt);
         }
     }
 }
