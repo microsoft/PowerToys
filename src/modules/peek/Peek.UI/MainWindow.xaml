@@ -30,7 +30,7 @@
 
         <fp:FilePreview
             Grid.Row="1"
-            File="{x:Bind ViewModel.FileManager.CurrentFile, Mode=OneWay}"
+            File="{x:Bind ViewModel.FileQuery.CurrentFile, Mode=OneWay}"
             PreviewSizeChanged="FilePreviewer_PreviewSizeChanged" />
     </Grid>
 </winuiex:WindowEx>

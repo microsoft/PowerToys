@@ -13,15 +13,15 @@ namespace Peek.UI
     {
         public void AttemptLeftNavigation()
         {
-            fileManager.UpdateCurrentItemIndex(fileManager.CurrentItemIndex - 1);
+            fileQuery.UpdateCurrentItemIndex(fileQuery.CurrentItemIndex - 1);
         }
 
         public void AttemptRightNavigation()
         {
-            fileManager.UpdateCurrentItemIndex(fileManager.CurrentItemIndex + 1);
+            fileQuery.UpdateCurrentItemIndex(fileQuery.CurrentItemIndex + 1);
         }
 
         [ObservableProperty]
-        private FileManager fileManager = new ();
+        private FileQuery fileQuery = new ();
     }
 }

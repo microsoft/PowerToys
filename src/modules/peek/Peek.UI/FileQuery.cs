@@ -14,18 +14,25 @@ namespace Peek.UI
     using Peek.UI.Helpers;
     using Windows.Media.Devices;
 
-    public partial class FileManager : ObservableObject
+    public partial class FileQuery : ObservableObject
     {
         private const int UninitializedItemIndex = -1;
 
         public void Uninitialize()
         {
-            currentFile = null;
+            CurrentFile = null;
 
             files = new List<File>();
             currentItemIndex = UninitializedItemIndex;
 
-            // TODO: cancel ongoing fileinit task
+            // try catch?
+            if (initializeFilesTask != null && initializeFilesTask.Status == TaskStatus.Running)
+            {
+                Debug.WriteLine("Detected existing initializeFilesTask running. Cancelling it..");
+                cancellationTokenSource.Cancel();
+            }
+
+            initializeFilesTask = null;
         }
 
         public void UpdateCurrentItemIndex(int desiredIndex)
@@ -54,7 +61,6 @@ namespace Peek.UI
 
         public void Initialize()
         {
-            // TODO: check if task is running for whatever reason????
             Debug.WriteLine("!~ Initializing file data");
             var folderView = FileExplorerHelper.GetCurrentFolderView();
             if (folderView == null)
@@ -80,7 +86,13 @@ namespace Peek.UI
 
             try
             {
-                // Check if cancellationTokenSource is used? else create a new one
+                if (initializeFilesTask != null && initializeFilesTask.Status == TaskStatus.Running)
+                {
+                    Debug.WriteLine("Detected unexpected existing initializeFilesTask running. Cancelling it..");
+                    cancellationTokenSource.Cancel();
+                }
+
+                cancellationTokenSource = new CancellationTokenSource();
                 initializeFilesTask = new Task(() => InitializeFiles(items, firstSelectedItem), cancellationTokenSource.Token);
                 initializeFilesTask.Start();
             }
@@ -90,14 +102,15 @@ namespace Peek.UI
             }
         }
 
-        // Can take a few seconds for folders with 1000s of files.
-        // TODO: figure out what happens if user deletes/adds files in a very large folder while this loop runs
-        // TODO [link optimization task]:
-        //      - note about just storing SHell32.FolderItems not being reliable as a field for long(running into issues where it'll populate the rest of
-        //          items with other files only for the first item of a folder)
-        //      - note about not being able to leverage much folder api, due to having to accommodate multi-file selections
-        //          -> might be worth handling those differently
-        //      - can leverage FE sorted order to binary search for currnet index,
+        // Finds index of firstSelectedItem either amongst folder items, initializing our internal File list
+        //  since storing Shell32.FolderItems as a field isn't reliable.
+        // Can take a few seconds for folders with 1000s of items; ensure it runs on a background thread.
+        //
+        // TODO optimization:
+        //  Handle case where selected items count > 1 separately. Although it'll still be slow for 1000s of items selected,
+        //  we can leverage faster APIs like Windows.Storage when 1 item is selected, and navigation is scoped to
+        //  the entire folder. We can then avoid iterating through all items here, and maintain a dynamic window of
+        //  loaded items around the current item index.
         private void InitializeFiles(Shell32.FolderItems items, Shell32.FolderItem firstSelectedItem)
         {
             var tempFiles = new List<File>(items.Count);
@@ -111,7 +124,7 @@ namespace Peek.UI
                     continue;
                 }
 
-                if (item.Name.ToLower() == firstSelectedItem.Name.ToLower())
+                if (item.Name == firstSelectedItem.Name)
                 {
                     tempCurIndex = i;
                 }
@@ -127,9 +140,6 @@ namespace Peek.UI
 
             files = tempFiles;
             currentItemIndex = tempCurIndex;
-
-            // TODO: enable nav explicitly?
-            Debug.WriteLine("!~ navigation " + firstSelectedItem.Name);
         }
 
         [ObservableProperty]
