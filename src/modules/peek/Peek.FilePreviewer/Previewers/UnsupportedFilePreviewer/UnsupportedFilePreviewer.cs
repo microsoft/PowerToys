@@ -77,6 +77,8 @@ namespace Peek.FilePreviewer.Previewers
 
         public async Task LoadPreviewAsync()
         {
+            CancellationToken.ThrowIfCancellationRequested();
+
             State = PreviewState.Loading;
 
             IconPreviewTask = LoadIconPreviewAsync();
@@ -100,7 +102,7 @@ namespace Peek.FilePreviewer.Previewers
                 IconHelper.GetIcon(Path.GetFullPath(File.Path), out IntPtr hbitmap);
                 await Dispatcher.RunOnUiThread(async () =>
                 {
-                    var iconBitmap = await GetBitmapFromHBitmapAsync(hbitmap);
+                    var iconBitmap = await GetBitmapFromHBitmapAsync(hbitmap, CancellationToken);
                     IconPreview = iconBitmap;
                 });
             });
@@ -110,10 +112,11 @@ namespace Peek.FilePreviewer.Previewers
         {
             return TaskExtension.RunSafe(async () =>
             {
-                CancellationToken.ThrowIfCancellationRequested();
-
                 // File Properties
+                CancellationToken.ThrowIfCancellationRequested();
                 var bytes = await PropertyHelper.GetFileSizeInBytes(File.Path);
+
+                CancellationToken.ThrowIfCancellationRequested();
                 var type = await PropertyHelper.GetFileType(File.Path);
 
                 await Dispatcher.RunOnUiThread(() =>
@@ -145,16 +148,21 @@ namespace Peek.FilePreviewer.Previewers
         }
 
         // TODO: Move this to a helper file (ImagePrevier uses the same code)
-        private static async Task<BitmapSource> GetBitmapFromHBitmapAsync(IntPtr hbitmap)
+        private static async Task<BitmapSource> GetBitmapFromHBitmapAsync(IntPtr hbitmap, CancellationToken cancellationToken)
         {
             try
             {
+                cancellationToken.ThrowIfCancellationRequested();
                 var bitmap = System.Drawing.Image.FromHbitmap(hbitmap);
                 var bitmapImage = new BitmapImage();
+
+                cancellationToken.ThrowIfCancellationRequested();
                 using (var stream = new MemoryStream())
                 {
                     bitmap.Save(stream, ImageFormat.Bmp);
                     stream.Position = 0;
+
+                    cancellationToken.ThrowIfCancellationRequested();
                     await bitmapImage.SetSourceAsync(stream.AsRandomAccessStream());
                 }
 
