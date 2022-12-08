@@ -22,11 +22,17 @@
         </Grid.KeyboardAccelerators>
 
         <Grid.RowDefinitions>
-            <RowDefinition Height="32" />
+            <RowDefinition Height="48" />
             <RowDefinition Height="*" />
         </Grid.RowDefinitions>
 
-        <views:TitleBar x:Name="TitleBarControl" Grid.Row="0" />
+        <views:TitleBar
+            x:Name="TitleBarControl"
+            Grid.Row="0"
+            File="{x:Bind ViewModel.FolderItemsQuery.CurrentFile, Mode=OneWay}"
+            FileIndex="{x:Bind ViewModel.FolderItemsQuery.CurrentItemIndex, Mode=OneWay}"
+            IsMultiSelection="{x:Bind ViewModel.FolderItemsQuery.IsMultiSelection, Mode=OneWay}"
+            NumberOfFiles="{x:Bind ViewModel.FolderItemsQuery.Files.Count, Mode=OneWay}" />
 
         <fp:FilePreview
             Grid.Row="1"

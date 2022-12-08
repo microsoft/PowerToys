@@ -10,16 +10,36 @@ namespace Peek.UI
     using System.Threading;
     using System.Threading.Tasks;
     using CommunityToolkit.Mvvm.ComponentModel;
+    using Microsoft.UI.Dispatching;
     using Peek.Common.Models;
     using Peek.UI.Helpers;
 
     public partial class FolderItemsQuery : ObservableObject
     {
         private const int UninitializedItemIndex = -1;
+        private readonly object _mutateQueryDataLock = new ();
+        private readonly DispatcherQueue _dispatcherQueue = DispatcherQueue.GetForCurrentThread();
+
+        [ObservableProperty]
+        private File? currentFile;
+
+        [ObservableProperty]
+        private List<File> files = new ();
+
+        [ObservableProperty]
+        private bool isMultiSelection;
+
+        [ObservableProperty]
+        private int currentItemIndex = UninitializedItemIndex;
+
+        private CancellationTokenSource CancellationTokenSource { get; set; } = new CancellationTokenSource();
+
+        private Task? InitializeFilesTask { get; set; } = null;
 
         public void Clear()
         {
             CurrentFile = null;
+            IsMultiSelection = false;
 
             if (InitializeFilesTask != null && InitializeFilesTask.Status == TaskStatus.Running)
             {
@@ -31,14 +51,17 @@ namespace Peek.UI
 
             lock (_mutateQueryDataLock)
             {
-                Files = new List<File>();
-                _currentItemIndex = UninitializedItemIndex;
+                _dispatcherQueue.TryEnqueue(() =>
+                {
+                    Files = new List<File>();
+                    CurrentItemIndex = UninitializedItemIndex;
+                });
             }
         }
 
         public void UpdateCurrentItemIndex(int desiredIndex)
         {
-            if (Files.Count <= 1 || _currentItemIndex == UninitializedItemIndex ||
+            if (Files.Count <= 1 || CurrentItemIndex == UninitializedItemIndex ||
                 (InitializeFilesTask != null && InitializeFilesTask.Status == TaskStatus.Running))
             {
                 return;
@@ -46,15 +69,15 @@ namespace Peek.UI
 
             // Current index wraps around when reaching min/max folder item indices
             desiredIndex %= Files.Count;
-            _currentItemIndex = desiredIndex < 0 ? Files.Count + desiredIndex : desiredIndex;
+            CurrentItemIndex = desiredIndex < 0 ? Files.Count + desiredIndex : desiredIndex;
 
-            if (_currentItemIndex < 0 || _currentItemIndex >= Files.Count)
+            if (CurrentItemIndex < 0 || CurrentItemIndex >= Files.Count)
             {
                 Debug.Assert(false, "Out of bounds folder item index detected.");
-                _currentItemIndex = 0;
+                CurrentItemIndex = 0;
             }
 
-            CurrentFile = Files[_currentItemIndex];
+            CurrentFile = Files[CurrentItemIndex];
         }
 
         public void Start()
@@ -70,6 +93,8 @@ namespace Peek.UI
             {
                 return;
             }
+
+            IsMultiSelection = selectedItems.Count > 1;
 
             // Prioritize setting CurrentFile, which notifies UI
             var firstSelectedItem = selectedItems.Item(0);
@@ -147,24 +172,13 @@ namespace Peek.UI
             lock (_mutateQueryDataLock)
             {
                 cancellationToken.ThrowIfCancellationRequested();
-                Files = tempFiles;
-                _currentItemIndex = tempCurIndex;
+
+                _dispatcherQueue.TryEnqueue(() =>
+                {
+                    Files = tempFiles;
+                    CurrentItemIndex = tempCurIndex;
+                });
             }
         }
-
-        private readonly object _mutateQueryDataLock = new ();
-
-        [ObservableProperty]
-        private File? _currentFile;
-
-        private List<File> Files { get; set; } = new ();
-
-        private int _currentItemIndex = UninitializedItemIndex;
-
-        public int CurrentItemIndex => _currentItemIndex;
-
-        private CancellationTokenSource CancellationTokenSource { get; set; } = new CancellationTokenSource();
-
-        private Task? InitializeFilesTask { get; set; } = null;
     }
 }
