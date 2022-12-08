@@ -6,6 +6,7 @@ namespace Peek.UI.Native
 {
     using System;
     using System.Runtime.InteropServices;
+    using System.Runtime.Versioning;
     using System.Text;
     using Peek.Common.Models;
 
@@ -98,5 +99,8 @@ namespace Peek.UI.Native
 
         [DllImport("user32.dll")]
         internal static extern int SetForegroundWindow(IntPtr hWnd);
+
+        [DllImport("user32.dll")]
+        internal static extern int GetWindowText(Windows.Win32.Foundation.HWND hWnd, StringBuilder lpString, int nMaxCount);
     }
 }
