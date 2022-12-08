@@ -14,9 +14,9 @@ namespace Peek.FilePreviewer.Previewers
             {
                 return new ImagePreviewer(file);
             }
-            else if (HtmlPreviewer.IsFileTypeSupported(file.Extension))
+            else if (WebBrowserPreviewer.IsFileTypeSupported(file.Extension))
             {
-                return new HtmlPreviewer(file);
+                return new WebBrowserPreviewer(file);
             }
 
             // Other previewer types check their supported file types here
