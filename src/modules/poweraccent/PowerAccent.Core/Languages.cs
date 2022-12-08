@@ -257,15 +257,19 @@ namespace PowerAccent.Core
         {
             return letter switch
             {
-                LetterKey.VK_A => new string[] { "ā", "á", "ǎ", "à", "a", "ɑ̄", "ɑ́", "ɑ̌", "ɑ̀" },
+                LetterKey.VK_1 => new string[] { "̄", "1" },
+                LetterKey.VK_2 => new string[] { "́", "2" },
+                LetterKey.VK_3 => new string[] { "̌", "3" },
+                LetterKey.VK_4 => new string[] { "̀", "4" },
+                LetterKey.VK_A => new string[] { "ā", "á", "ǎ", "à", "a", "ɑ", "ɑ̄", "ɑ́", "ɑ̌", "ɑ̀" },
                 LetterKey.VK_C => new string[] { "ĉ", "c" },
-                LetterKey.VK_E => new string[] { "ē", "é", "ě", "è", "e" },
+                LetterKey.VK_E => new string[] { "ē", "é", "ě", "è", "e", "ê", "ê̄", "ế", "ê̌", "ề" },
                 LetterKey.VK_I => new string[] { "ī", "í", "ǐ", "ì", "i" },
                 LetterKey.VK_M => new string[] { "m̄", "ḿ", "m̌", "m̀", "m" },
                 LetterKey.VK_N => new string[] { "n̄", "ń", "ň", "ǹ", "n", "ŋ", "ŋ̄", "ŋ́", "ŋ̌", "ŋ̀" },
                 LetterKey.VK_O => new string[] { "ō", "ó", "ǒ", "ò", "o" },
                 LetterKey.VK_S => new string[] { "ŝ", "s" },
-                LetterKey.VK_U => new string[] { "ū", "ú", "ǔ", "ù", "u" },
+                LetterKey.VK_U => new string[] { "ū", "ú", "ǔ", "ù", "u", "ü", "ǖ", "ǘ", "ǚ", "ǜ" },
                 LetterKey.VK_V => new string[] { "ǖ", "ǘ", "ǚ", "ǜ", "ü" },
                 LetterKey.VK_Y => new string[] { "¥", "y" },
                 LetterKey.VK_Z => new string[] { "ẑ", "z" },
