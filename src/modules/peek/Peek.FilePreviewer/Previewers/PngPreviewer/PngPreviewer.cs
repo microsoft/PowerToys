@@ -27,10 +27,15 @@ namespace Peek.FilePreviewer.Previewers
         [NotifyPropertyChangedFor(nameof(IsPreviewLoaded))]
         private BitmapSource? preview;
 
+        [ObservableProperty]
+        private PreviewState state;
+
         public PngPreviewer(File file)
         {
             File = file;
             Dispatcher = DispatcherQueue.GetForCurrentThread();
+
+            PropertyChanged += OnPropertyChanged;
         }
 
         public bool IsPreviewLoaded => preview != null;
@@ -60,16 +65,34 @@ namespace Peek.FilePreviewer.Previewers
             return await WICHelper.GetImageSize(File.Path);
         }
 
-        public Task LoadPreviewAsync()
+        public async Task LoadPreviewAsync()
         {
+            State = PreviewState.Loading;
+
             var previewTask = LoadPreviewImageAsync();
 
-            return Task.WhenAll(previewTask);
+            await Task.WhenAll(previewTask);
+
+            if (Preview == null)
+            {
+                State = PreviewState.Error;
+            }
         }
 
         public static bool IsFileTypeSupported(string fileExt)
         {
             return fileExt == ".png" ? true : false;
+        }
+
+        private void OnPropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
+        {
+            if (e.PropertyName == nameof(Preview))
+            {
+                if (Preview != null)
+                {
+                    State = PreviewState.Loaded;
+                }
+            }
         }
 
         private Task LoadPreviewImageAsync()
