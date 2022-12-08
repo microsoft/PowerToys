@@ -102,6 +102,11 @@ namespace Peek.UI.Views
 
         private void OnFilePropertyChanged()
         {
+            if (File == null)
+            {
+                return;
+            }
+
             UpdateFileCountText();
             UpdateDefaultAppToLaunch();
         }

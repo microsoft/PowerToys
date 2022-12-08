@@ -29,8 +29,8 @@
         <views:TitleBar
             x:Name="TitleBarControl"
             Grid.Row="0"
-            File="{x:Bind ViewModel.CurrentFile, Mode=OneWay}"
-            NumberOfFiles="{x:Bind ViewModel.Files.Count, Mode=OneWay}" />
+            File="{x:Bind ViewModel.FolderItemsQuery.CurrentFile, Mode=OneWay}"
+            NumberOfFiles="{x:Bind ViewModel.FolderItemsQuery.Files.Count, Mode=OneWay}" />
 
         <fp:FilePreview
             Grid.Row="1"

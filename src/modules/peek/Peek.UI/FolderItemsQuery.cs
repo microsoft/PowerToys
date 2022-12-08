@@ -16,6 +16,19 @@ namespace Peek.UI
     public partial class FolderItemsQuery : ObservableObject
     {
         private const int UninitializedItemIndex = -1;
+        private readonly object _mutateQueryDataLock = new ();
+
+        [ObservableProperty]
+        private File? currentFile;
+
+        [ObservableProperty]
+        private List<File> files = new ();
+
+        public int CurrentItemIndex { get; set; } = UninitializedItemIndex;
+
+        private CancellationTokenSource CancellationTokenSource { get; set; } = new CancellationTokenSource();
+
+        private Task? InitializeFilesTask { get; set; } = null;
 
         public void Clear()
         {
@@ -32,13 +45,13 @@ namespace Peek.UI
             lock (_mutateQueryDataLock)
             {
                 Files = new List<File>();
-                _currentItemIndex = UninitializedItemIndex;
+                CurrentItemIndex = UninitializedItemIndex;
             }
         }
 
         public void UpdateCurrentItemIndex(int desiredIndex)
         {
-            if (Files.Count <= 1 || _currentItemIndex == UninitializedItemIndex ||
+            if (Files.Count <= 1 || CurrentItemIndex == UninitializedItemIndex ||
                 (InitializeFilesTask != null && InitializeFilesTask.Status == TaskStatus.Running))
             {
                 return;
@@ -46,15 +59,15 @@ namespace Peek.UI
 
             // Current index wraps around when reaching min/max folder item indices
             desiredIndex %= Files.Count;
-            _currentItemIndex = desiredIndex < 0 ? Files.Count + desiredIndex : desiredIndex;
+            CurrentItemIndex = desiredIndex < 0 ? Files.Count + desiredIndex : desiredIndex;
 
-            if (_currentItemIndex < 0 || _currentItemIndex >= Files.Count)
+            if (CurrentItemIndex < 0 || CurrentItemIndex >= Files.Count)
             {
                 Debug.Assert(false, "Out of bounds folder item index detected.");
-                _currentItemIndex = 0;
+                CurrentItemIndex = 0;
             }
 
-            CurrentFile = Files[_currentItemIndex];
+            CurrentFile = Files[CurrentItemIndex];
         }
 
         public void Start()
@@ -148,23 +161,8 @@ namespace Peek.UI
             {
                 cancellationToken.ThrowIfCancellationRequested();
                 Files = tempFiles;
-                _currentItemIndex = tempCurIndex;
+                CurrentItemIndex = tempCurIndex;
             }
         }
-
-        private readonly object _mutateQueryDataLock = new ();
-
-        [ObservableProperty]
-        private File? _currentFile;
-
-        private List<File> Files { get; set; } = new ();
-
-        private int _currentItemIndex = UninitializedItemIndex;
-
-        public int CurrentItemIndex => _currentItemIndex;
-
-        private CancellationTokenSource CancellationTokenSource { get; set; } = new CancellationTokenSource();
-
-        private Task? InitializeFilesTask { get; set; } = null;
     }
 }
