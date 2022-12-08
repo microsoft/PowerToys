@@ -101,7 +101,7 @@ namespace Peek.UI
                 maxContentSize = new Size(monitorSize.Width * requestedSize.Width, (monitorSize.Height - titleBarHeight) * requestedSize.Height);
                 minContentSize = new Size(MinWindowWidth, MinWindowHeight - titleBarHeight);
 
-                adjustedContentSize = monitorSize.Fit(maxContentSize, minContentSize);
+                adjustedContentSize = maxContentSize.Fit(maxContentSize, minContentSize);
             }
             else if (e.WindowSizeFormat == SizeFormat.Pixels)
             {
