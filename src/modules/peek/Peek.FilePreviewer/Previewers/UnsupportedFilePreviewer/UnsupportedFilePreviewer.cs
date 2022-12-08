@@ -13,6 +13,8 @@ namespace Peek.FilePreviewer.Previewers
     using Microsoft.UI.Dispatching;
     using Microsoft.UI.Xaml.Media.Imaging;
     using Peek.Common;
+    using Peek.Common.Helpers;
+    using Peek.FilePreviewer.Previewers.Helpers;
     using Windows.Foundation;
     using File = Peek.Common.Models.File;
 

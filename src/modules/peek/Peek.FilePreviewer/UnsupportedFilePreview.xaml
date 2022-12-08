@@ -35,22 +35,9 @@
                 FontSize="26"
                 FontWeight="SemiBold"
                 Text="{x:Bind FileName, Mode=OneWay}" />
-
-            <!--  TODO: move strings to resw  -->
-            <StackPanel Orientation="Horizontal">
-                <TextBlock Text="File Type: " />
-                <TextBlock Text="{x:Bind FileType, Mode=OneWay}" />
-            </StackPanel>
-
-            <StackPanel Orientation="Horizontal">
-                <TextBlock Text="Size: " />
-                <TextBlock Text="{x:Bind FileSize, Mode=OneWay}" />
-            </StackPanel>
-
-            <StackPanel Orientation="Horizontal">
-                <TextBlock Text="Date Modified: " />
-                <TextBlock Text="{x:Bind DateModified, Mode=OneWay}" />
-            </StackPanel>
+            <TextBlock Text="{x:Bind FormattedFileType, Mode=OneWay}" />
+            <TextBlock Text="{x:Bind FormattedFileSize, Mode=OneWay}" />
+            <TextBlock Text="{x:Bind FormattedDateModified, Mode=OneWay}" />
         </StackPanel>
     </Grid>
 </UserControl>
