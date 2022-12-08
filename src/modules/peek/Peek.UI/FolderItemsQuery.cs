@@ -26,7 +26,7 @@ namespace Peek.UI
         [ObservableProperty]
         private List<File> files = new ();
 
-        public int CurrentItemIndex { get; set; } = UninitializedItemIndex;
+        public int CurrentItemIndex { get; private set; } = UninitializedItemIndex;
 
         private CancellationTokenSource CancellationTokenSource { get; set; } = new CancellationTokenSource();
 
