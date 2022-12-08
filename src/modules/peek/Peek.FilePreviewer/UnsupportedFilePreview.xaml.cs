@@ -7,7 +7,7 @@ namespace Peek.FilePreviewer
     using CommunityToolkit.Mvvm.ComponentModel;
     using Microsoft.UI.Xaml.Controls;
     using Microsoft.UI.Xaml.Media.Imaging;
-    using Peek.FilePreviewer.Previewers.Helpers;
+    using Peek.Common.Helpers;
 
     [INotifyPropertyChanged]
     public sealed partial class UnsupportedFilePreview : UserControl
