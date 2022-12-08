@@ -2420,7 +2420,7 @@ From there, simply click on one of the supported files in the File Explorer and 
     <value>Peek</value>
   </data>
   <data name="Peek.ModuleDescription" xml:space="preserve">
-    <value>A quick and easy way to preview files</value>
+    <value>Peek is a quick and easy way to preview files.</value>
   </data>
   <data name="Peek_EnablePeek.Header" xml:space="preserve">
     <value>Enable Peek</value>
