@@ -58,9 +58,6 @@
     </None>
   </ItemGroup>
   <ItemGroup>
-    <Natvis Include="$(MSBuildThisFileDirectory)..\..\natvis\wil.natvis" />
-  </ItemGroup>
-  <ItemGroup>
     <ResourceCompile Include="Generated Files/markdownpreviewhandler.rc">
       <Filter>Resource Files</Filter>
     </ResourceCompile>

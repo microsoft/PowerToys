@@ -2,12 +2,14 @@
 #include "MarkdownPreviewHandler.h"
 #include "Generated Files/resource.h"
 
+#include <shellapi.h>
 #include <Shlwapi.h>
 #include <string>
 
-#include <common/utils/process_path.h>
-#include <shellapi.h>
 #include <common/interop/shared_constants.h>
+#include <common/logger/logger.h>
+#include <common/SettingsAPI/settings_helpers.h>
+#include <common/utils/process_path.h>
 
 extern HINSTANCE g_hInst;
 extern long g_cDllRef;
@@ -16,6 +18,10 @@ MarkdownPreviewHandler::MarkdownPreviewHandler() :
     m_cRef(1), m_hwndParent(NULL), m_rcParent(), m_punkSite(NULL), m_process(NULL)
 {
     m_resizeEvent = CreateEvent(nullptr, false, false, CommonSharedConstants::MARKDOWN_PREVIEW_RESIZE_EVENT);
+
+    std::filesystem::path logFilePath(PTSettingsHelper::get_local_low_folder_location());
+    logFilePath.append(LogSettings::mdPrevLogPath);
+    Logger::init(LogSettings::mdPrevLoggerName, logFilePath.wstring(), PTSettingsHelper::get_log_settings_file_location());
 
     InterlockedIncrement(&g_cDllRef);
 }
@@ -124,7 +130,7 @@ IFACEMETHODIMP MarkdownPreviewHandler::SetRect(const RECT* prc)
     {
         if (!m_resizeEvent)
         {
-            // Logger::warn(L"Failed to create exit event for {}", get_last_error_or_default(GetLastError()));
+            Logger::error(L"Failed to create resize event for MDPreviewHandler");
         }
         else
         {
@@ -132,11 +138,7 @@ IFACEMETHODIMP MarkdownPreviewHandler::SetRect(const RECT* prc)
             {
                 if (!SetEvent(m_resizeEvent))
                 {
-                    // Logger::warn(L"Failed to signal exit event for  {}", get_last_error_or_default(GetLastError()));
-
-                    // For some reason, we couldn't process the signal correctly, so we still
-                    // need to terminate the PowerAccent process.
-                    // TerminateProcess(m_process, 0);
+                    Logger::error(L"Failed to signal resize event for MDPreviewHandler");
                 }
             }
         }
@@ -150,6 +152,8 @@ IFACEMETHODIMP MarkdownPreviewHandler::DoPreview()
 {
     try
     {
+        Logger::info(L"Starting MarkdownPreviewHandler.exe");
+
         STARTUPINFO info = { sizeof(info) };
         std::wstring cmdLine{ L"\"" + m_filePath + L"\"" };
         cmdLine += L" ";
@@ -175,16 +179,20 @@ IFACEMETHODIMP MarkdownPreviewHandler::DoPreview()
         ShellExecuteEx(&sei);
         m_process = sei.hProcess;
     }
-    catch (std::exception&)
+    catch (std::exception& e)
     {
-        // PreviewError
+        std::wstring errorMessage = std::wstring{ winrt::to_hstring(e.what()) };
+        Logger::error(L"Failed to start MarkdownPreviewHandler.exe. Error: {}", errorMessage);
     }
 
     return S_OK;
 }
 
 IFACEMETHODIMP MarkdownPreviewHandler::Unload()
+
 {
+    Logger::info(L"Unload and terminate .exe");
+
     TerminateProcess(m_process, 0);
     return S_OK;
 }

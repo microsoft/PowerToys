@@ -9,9 +9,10 @@
 
 #include <wil/com.h>
 
-#include <common/utils/process_path.h>
 #include <common/interop/shared_constants.h>
+#include <common/logger/logger.h>
 #include <common/SettingsAPI/settings_helpers.h>
+#include <common/utils/process_path.h>
 
 extern HINSTANCE g_hInst;
 extern long g_cDllRef;
@@ -19,6 +20,10 @@ extern long g_cDllRef;
 StlThumbnailProvider::StlThumbnailProvider() :
     m_cRef(1), m_pStream(NULL), m_process(NULL)
 {
+    std::filesystem::path logFilePath(PTSettingsHelper::get_local_low_folder_location());
+    logFilePath.append(LogSettings::stlThumbLogPath);
+    Logger::init(LogSettings::stlThumbLoggerName, logFilePath.wstring(), PTSettingsHelper::get_log_settings_file_location());
+
     InterlockedIncrement(&g_cDllRef);
 }
 
@@ -90,12 +95,16 @@ IFACEMETHODIMP StlThumbnailProvider::GetThumbnail(UINT cx, HBITMAP* phbmp, WTS_A
     char buffer[4096];
     ULONG cbRead;
 
+    Logger::trace(L"Begin");
+
     GUID guid;
     if (CoCreateGuid(&guid) == S_OK)
     {
         wil::unique_cotaskmem_string guidString;
         if (SUCCEEDED(StringFromCLSID(guid, &guidString)))
         {
+            Logger::info(L"Read stream and save to tmp file.");
+            
             // {CLSID} -> CLSID
             std::wstring guid = std::wstring(guidString.get()).substr(1, std::wstring(guidString.get()).size() - 2);
             std::wstring filePath = PTSettingsHelper::get_local_low_folder_location() + L"\\StlThumbnail-Temp\\";
@@ -129,6 +138,8 @@ IFACEMETHODIMP StlThumbnailProvider::GetThumbnail(UINT cx, HBITMAP* phbmp, WTS_A
 
             try
             {
+                Logger::info(L"Start StlThumbnailProvider.exe");
+                
                 STARTUPINFO info = { sizeof(info) };
                 std::wstring cmdLine{ L"\"" + fileName + L"\"" };
                 cmdLine += L" ";
@@ -152,9 +163,10 @@ IFACEMETHODIMP StlThumbnailProvider::GetThumbnail(UINT cx, HBITMAP* phbmp, WTS_A
 
                 std::filesystem::remove(fileNameBmp);
             }
-            catch (std::exception&)
+            catch (std::exception& e)
             {
-                // PreviewError
+                std::wstring errorMessage = std::wstring{ winrt::to_hstring(e.what()) };
+                Logger::error(L"Failed to start StlThumbnailProvider.exe. Error: {}", errorMessage);
             }
         }
     }
