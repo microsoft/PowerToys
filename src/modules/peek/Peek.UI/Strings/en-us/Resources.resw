@@ -119,14 +119,18 @@
   </resheader>
   <data name="AppTitle.Title" xml:space="preserve">
     <value>Peek</value>
+    <comment>Name of application.</comment>
   </data>
   <data name="AppTitle_FileCounts_Text" xml:space="preserve">
     <value>({0}/{1} files)</value>
+    <comment>Text for the file count in the titlebar. 0: the index of the current file. 1: the total number of files selected.</comment>
   </data>
   <data name="LaunchAppButton_OpenWith_Text" xml:space="preserve">
     <value>Open with</value>
+    <comment>Text for button to launch the system default application picker.</comment>
   </data>
   <data name="LaunchAppButton_OpenWithApp_Text" xml:space="preserve">
     <value>Open with {0}</value>
+    <comment>Text for button to launch default application. 0: name of the default application.</comment>
   </data>
 </root>

@@ -38,7 +38,7 @@ namespace Peek.UI.Views
 
         [ObservableProperty]
         private string openWithAppText = ResourceLoader.GetForViewIndependentUse().GetString("LaunchAppButton_OpenWith_Text");
-        private string? currentDefaultApp;
+        private string? defaultAppName;
 
         [ObservableProperty]
         private string? fileCountText;
@@ -117,9 +117,9 @@ namespace Peek.UI.Views
         private void UpdateDefaultAppToLaunch()
         {
             // Update the name of default app to launch
-            currentDefaultApp = DefaultAppHelper.TryGetDefaultAppName(File.Extension);
+            defaultAppName = DefaultAppHelper.TryGetDefaultAppName(File.Extension);
             string openWithAppTextFormat = ResourceLoader.GetForViewIndependentUse().GetString("LaunchAppButton_OpenWithApp_Text");
-            OpenWithAppText = string.Format(openWithAppTextFormat, currentDefaultApp);
+            OpenWithAppText = string.Format(openWithAppTextFormat, defaultAppName);
         }
 
         [RelayCommand]
@@ -128,7 +128,7 @@ namespace Peek.UI.Views
             StorageFile storageFile = await File.GetStorageFileAsync();
             LauncherOptions options = new ();
 
-            if (string.IsNullOrEmpty(currentDefaultApp))
+            if (string.IsNullOrEmpty(defaultAppName))
             {
                 // If there's no default app found, open the App picker
                 options.DisplayApplicationPicker = true;
