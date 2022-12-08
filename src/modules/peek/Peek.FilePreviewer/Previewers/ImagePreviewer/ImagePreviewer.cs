@@ -64,93 +64,11 @@ namespace Peek.FilePreviewer.Previewers
 
         public Task LoadPreviewAsync()
         {
-            if (this.File.Extension == ".png")
-            {
-                var pngLowTask = LoadLowQualityPngAsync();
-                var pngFullTask = LoadFullQualityPngAsync();
-
-                return Task.WhenAll(pngLowTask, pngFullTask);
-            }
-
             var lowQualityThumbnailTask = LoadLowQualityThumbnailAsync();
             var highQualityThumbnailTask = LoadHighQualityThumbnailAsync();
             var fullImageTask = LoadFullQualityImageAsync();
 
             return Task.WhenAll(lowQualityThumbnailTask, highQualityThumbnailTask, fullImageTask);
-        }
-
-        private Task LoadLowQualityPngAsync()
-        {
-            var thumbnailTCS = new TaskCompletionSource();
-
-            Dispatcher.TryEnqueue(async () =>
-            {
-                if (CancellationToken.IsCancellationRequested)
-                {
-                    _cancellationTokenSource = new CancellationTokenSource();
-                    return;
-                }
-
-                if (!IsFullImageLoaded && !IsHighQualityThumbnailLoaded)
-                {
-                    // TODO: Handle thumbnail errors
-                    // Open a Stream and decode a PNG image
-                    Stream stream = new FileStream(File.Path, FileMode.Open, FileAccess.Read, FileShare.Read);
-                    IRandomAccessStream randomAccessStream = stream.AsRandomAccessStream();
-
-                    // Create an encoder with the desired format
-                    var encoder = await BitmapDecoder.CreateAsync(BitmapDecoder.PngDecoderId, randomAccessStream);
-
-                    // preview image
-                    var file = await Windows.Storage.StorageFile.GetFileFromPathAsync(File.Path);
-                    var imageStream = await file.GetThumbnailAsync(
-                        Windows.Storage.FileProperties.ThumbnailMode.SingleItem,
-                        1280,
-                        Windows.Storage.FileProperties.ThumbnailOptions.None);
-
-                    BitmapImage bitmapImage = new BitmapImage();
-                    bitmapImage.SetSource(imageStream);
-
-                    Preview = bitmapImage;
-                }
-
-                thumbnailTCS.SetResult();
-            });
-
-            return thumbnailTCS.Task;
-        }
-
-        private Task LoadFullQualityPngAsync()
-        {
-            var thumbnailTCS = new TaskCompletionSource();
-            Dispatcher.TryEnqueue(async () =>
-            {
-                if (CancellationToken.IsCancellationRequested)
-                {
-                    _cancellationTokenSource = new CancellationTokenSource();
-                    return;
-                }
-
-                // TODO: Handle thumbnail errors
-                Stream stream = new FileStream(File.Path, FileMode.Open, FileAccess.Read, FileShare.Read);
-                IRandomAccessStream randomAccessStream = stream.AsRandomAccessStream();
-
-                // Create an encoder with the desired format
-                var encoder = await BitmapDecoder.CreateAsync(BitmapDecoder.PngDecoderId, randomAccessStream);
-
-                // full quality image
-                var softwareBitmap = await encoder.GetSoftwareBitmapAsync();
-                WriteableBitmap bitmap = new WriteableBitmap(softwareBitmap.PixelWidth, softwareBitmap.PixelHeight);
-                softwareBitmap.CopyToBuffer(bitmap.PixelBuffer);
-
-                IsFullImageLoaded = true;
-
-                Preview = bitmap;
-
-                thumbnailTCS.SetResult();
-            });
-
-            return thumbnailTCS.Task;
         }
 
         private Task LoadLowQualityThumbnailAsync()
@@ -166,10 +84,18 @@ namespace Peek.FilePreviewer.Previewers
 
                 if (!IsFullImageLoaded && !IsHighQualityThumbnailLoaded)
                 {
-                    // TODO: Handle thumbnail errors
-                    ThumbnailHelper.GetThumbnail(Path.GetFullPath(File.Path), out IntPtr hbitmap, ThumbnailHelper.LowQualityThumbnailSize);
-                    var thumbnailBitmap = await GetBitmapFromHBitmapAsync(hbitmap);
-                    Preview = thumbnailBitmap;
+                    if (File.Extension == ".png")
+                    {
+                        // TODO: special condition for PNG for faster rendering using WinRT APIs
+                        Preview = await ThumbnailHelper.GetThumbnailAsync(File.Path, 256);
+                    }
+                    else
+                    {
+                        // TODO: Handle thumbnail errors
+                        ThumbnailHelper.GetThumbnail(Path.GetFullPath(File.Path), out IntPtr hbitmap, ThumbnailHelper.LowQualityThumbnailSize);
+                        var thumbnailBitmap = await GetBitmapFromHBitmapAsync(hbitmap);
+                        Preview = thumbnailBitmap;
+                    }
                 }
 
                 thumbnailTCS.SetResult();
@@ -191,11 +117,18 @@ namespace Peek.FilePreviewer.Previewers
 
                 if (!IsFullImageLoaded)
                 {
-                    // TODO: Handle thumbnail errors
-                    ThumbnailHelper.GetThumbnail(Path.GetFullPath(File.Path), out IntPtr hbitmap, ThumbnailHelper.HighQualityThumbnailSize);
-                    var thumbnailBitmap = await GetBitmapFromHBitmapAsync(hbitmap);
-                    IsHighQualityThumbnailLoaded = true;
-                    Preview = thumbnailBitmap;
+                    if (File.Extension == ".png")
+                    {
+                        Preview = await ThumbnailHelper.GetThumbnailAsync(File.Path, 720);
+                    }
+                    else
+                    {
+                        // TODO: Handle thumbnail errors
+                        ThumbnailHelper.GetThumbnail(Path.GetFullPath(File.Path), out IntPtr hbitmap, ThumbnailHelper.HighQualityThumbnailSize);
+                        var thumbnailBitmap = await GetBitmapFromHBitmapAsync(hbitmap);
+                        IsHighQualityThumbnailLoaded = true;
+                        Preview = thumbnailBitmap;
+                    }
                 }
 
                 thumbnailTCS.SetResult();
@@ -209,8 +142,18 @@ namespace Peek.FilePreviewer.Previewers
             var fullImageTCS = new TaskCompletionSource();
             Dispatcher.TryEnqueue(async () =>
             {
-                // TODO: Check if this is performant
-                var bitmap = await GetFullBitmapFromPathAsync(File.Path);
+                BitmapSource bitmap;
+
+                if (File.Extension == ".png")
+                {
+                    bitmap = await GetDecodedImageAsync(File.Path, File.Extension);
+                }
+                else
+                {
+                    // TODO: Check if this is performant
+                    bitmap = await GetFullBitmapFromPathAsync(File.Path);
+                }
+
                 IsFullImageLoaded = true;
 
                 if (CancellationToken.IsCancellationRequested)
@@ -257,6 +200,30 @@ namespace Peek.FilePreviewer.Previewers
                 // delete HBitmap to avoid memory leaks
                 NativeMethods.DeleteObject(hbitmap);
             }
+        }
+
+        private static async Task<WriteableBitmap> GetDecodedImageAsync(string path, string extension)
+        {
+            Guid decoderId = BitmapDecoder.JpegDecoderId;
+
+            // Check extension and auto select decoder id
+            if (extension == ".png")
+            {
+                decoderId = BitmapDecoder.PngDecoderId;
+            }
+
+            // TODO: consider StorageFile instead
+            Stream stream = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.Read);
+            IRandomAccessStream randomAccessStream = stream.AsRandomAccessStream();
+
+            // Create an encoder with the desired format
+            var encoder = await BitmapDecoder.CreateAsync(decoderId, randomAccessStream);
+            var softwareBitmap = await encoder.GetSoftwareBitmapAsync();
+
+            var wBitmap = new WriteableBitmap(softwareBitmap.PixelWidth, softwareBitmap.PixelHeight);
+            softwareBitmap.CopyToBuffer(wBitmap.PixelBuffer);
+
+            return wBitmap;
         }
 
         public static bool IsFileTypeSupported(string fileExt)
