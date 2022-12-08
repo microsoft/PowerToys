@@ -173,7 +173,7 @@ int runner(bool isProcessElevated, bool openSettings, std::string settingsWindow
             knownModules.emplace_back(VCM_PATH);
         }
 
-        for (const auto& moduleSubdir : knownModules)
+        for (auto moduleSubdir : knownModules)
         {
             try
             {
