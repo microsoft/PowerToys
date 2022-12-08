@@ -181,4 +181,24 @@
     <value>{0} EB</value>
     <comment>Abbrivation for the size unit exabyte.</comment>
   </data>
+  <data name="PreviewTooltip_FileName" xml:space="preserve">
+    <value>Filename: {0}</value>
+    <comment>Filename for the tooltip of preview. {0} is the name.</comment>
+  </data>
+  <data name="PreviewTooltip_FileType" xml:space="preserve">
+    <value>Item Type: {0}</value>
+    <comment>Item Type for the tooltip of preview. {0} is the type.</comment>
+  </data>
+	<data name="PreviewTooltip_DateModified" xml:space="preserve">
+    <value>Date Modified: {0}</value>
+    <comment>Date Modified label for the tooltip of preview. {0} is the date.</comment>
+  </data>
+  <data name="PreviewTooltip_Dimensions" xml:space="preserve">
+    <value>Dimensions: {0} x {1}</value>
+    <comment>Dimensions label for the tooltip of preview. {0} is the width, {1} is the height.</comment>
+  </data>
+  <data name="PreviewTooltip_FileSize" xml:space="preserve">
+    <value>Size: {0}</value>
+    <comment>File Size label for the tooltip of preview. {0} is the size.</comment>
+  </data>
 </root>

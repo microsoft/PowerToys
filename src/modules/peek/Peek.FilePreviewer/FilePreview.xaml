@@ -5,11 +5,11 @@
     x:Class="Peek.FilePreviewer.FilePreview"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:controls="using:Peek.FilePreviewer.Controls"
     xmlns:conv="using:Peek.Common.Converters"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:local="using:Peek.FilePreviewer"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    xmlns:controls="using:Peek.FilePreviewer.Controls"
     mc:Ignorable="d">
 
     <Grid>
@@ -21,14 +21,16 @@
         <Image
             x:Name="PreviewImage"
             Source="{x:Bind BitmapPreviewer.Preview, Mode=OneWay}"
+            ToolTipService.ToolTip="{x:Bind ImageInfoTooltip, Mode=OneWay}"
             Visibility="{x:Bind IsImageVisible, Mode=OneWay}" />
 
-        <controls:BrowserControl x:Name="PreviewBrowser"
-                                 x:Load="True"
-                                 Source="{x:Bind BrowserPreviewer.Preview, Mode=OneWay}"
-                                 IsNavigationCompleted="{x:Bind BrowserPreviewer.IsPreviewLoaded, Mode=TwoWay}"
-                                 Visibility="{x:Bind IsBrowserVisible, Mode=OneWay, FallbackValue=Collapsed}"
-                                 NavigationCompleted="PreviewBrowser_NavigationCompleted"/>
+        <controls:BrowserControl
+            x:Name="PreviewBrowser"
+            x:Load="True"
+            IsNavigationCompleted="{x:Bind BrowserPreviewer.IsPreviewLoaded, Mode=TwoWay}"
+            NavigationCompleted="PreviewBrowser_NavigationCompleted"
+            Source="{x:Bind BrowserPreviewer.Preview, Mode=OneWay}"
+            Visibility="{x:Bind IsBrowserVisible, Mode=OneWay, FallbackValue=Collapsed}" />
 
         <local:UnsupportedFilePreview
             DateModified="{x:Bind UnsupportedFilePreviewer.DateModified, Mode=OneWay}"

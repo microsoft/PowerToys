@@ -45,5 +45,13 @@ namespace Peek.Common.Helpers
 
             return formattedString;
         }
+
+        public static string FormatResourceString(string resourceId, object? args0, object? args1)
+        {
+            var formatString = ResourceLoader.GetForViewIndependentUse().GetString(resourceId);
+            var formattedString = string.Format(formatString, args0, args1);
+
+            return formattedString;
+        }
     }
 }
