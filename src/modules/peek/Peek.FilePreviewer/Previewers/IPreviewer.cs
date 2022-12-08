@@ -11,12 +11,20 @@ namespace Peek.FilePreviewer.Previewers
 
     public interface IPreviewer : INotifyPropertyChanged
     {
-        bool IsPreviewLoaded { get; }
+        PreviewState State { get; set; }
 
         public static bool IsFileTypeSupported(string fileExt) => throw new NotImplementedException();
 
         public Task<Size> GetPreviewSizeAsync();
 
         Task LoadPreviewAsync();
+    }
+
+    public enum PreviewState
+    {
+        Uninitialized,
+        Loading,
+        Loaded,
+        Error,
     }
 }

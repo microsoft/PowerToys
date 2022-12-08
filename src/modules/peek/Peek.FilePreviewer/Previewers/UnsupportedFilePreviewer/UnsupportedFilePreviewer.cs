@@ -11,8 +11,10 @@ namespace Peek.FilePreviewer.Previewers
     using System.Threading.Tasks;
     using CommunityToolkit.Mvvm.ComponentModel;
     using Microsoft.UI.Dispatching;
+    using Microsoft.UI.Xaml.Controls;
     using Microsoft.UI.Xaml.Media.Imaging;
     using Peek.Common;
+    using Peek.Common.Extensions;
     using Peek.Common.Helpers;
     using Peek.FilePreviewer.Previewers.Helpers;
     using Windows.Foundation;
@@ -21,7 +23,6 @@ namespace Peek.FilePreviewer.Previewers
     public partial class UnsupportedFilePreviewer : ObservableObject, IUnsupportedFilePreviewer, IDisposable
     {
         [ObservableProperty]
-        [NotifyPropertyChangedFor(nameof(IsPreviewLoaded))]
         private BitmapSource? iconPreview;
 
         [ObservableProperty]
@@ -36,15 +37,18 @@ namespace Peek.FilePreviewer.Previewers
         [ObservableProperty]
         private string? dateModified;
 
+        [ObservableProperty]
+        private PreviewState state;
+
         public UnsupportedFilePreviewer(File file)
         {
             File = file;
             FileName = file.FileName;
             DateModified = file.DateModified.ToString();
             Dispatcher = DispatcherQueue.GetForCurrentThread();
-        }
 
-        public bool IsPreviewLoaded => iconPreview != null;
+            PropertyChanged += OnPropertyChanged;
+        }
 
         private File File { get; }
 
@@ -53,6 +57,10 @@ namespace Peek.FilePreviewer.Previewers
         private CancellationTokenSource _cancellationTokenSource = new CancellationTokenSource();
 
         private CancellationToken CancellationToken => _cancellationTokenSource.Token;
+
+        private Task<bool>? IconPreviewTask { get; set; }
+
+        private Task<bool>? DisplayInfoTask { get; set; }
 
         public void Dispose()
         {
@@ -69,18 +77,24 @@ namespace Peek.FilePreviewer.Previewers
             });
         }
 
-        public Task LoadPreviewAsync()
+        public async Task LoadPreviewAsync()
         {
-            var iconPreviewTask = LoadIconPreviewAsync();
-            var displayInfoTask = LoadDisplayInfoAsync();
+            State = PreviewState.Loading;
 
-            return Task.WhenAll(iconPreviewTask, displayInfoTask);
+            IconPreviewTask = LoadIconPreviewAsync();
+            DisplayInfoTask = LoadDisplayInfoAsync();
+
+            await Task.WhenAll(IconPreviewTask, DisplayInfoTask);
+
+            if (HasFailedLoadingPreview())
+            {
+                State = PreviewState.Error;
+            }
         }
 
-        public Task LoadIconPreviewAsync()
+        public Task<bool> LoadIconPreviewAsync()
         {
-            var iconTCS = new TaskCompletionSource();
-            Dispatcher.TryEnqueue(async () =>
+            return TaskExtension.RunSafe(async () =>
             {
                 if (CancellationToken.IsCancellationRequested)
                 {
@@ -90,19 +104,17 @@ namespace Peek.FilePreviewer.Previewers
 
                 // TODO: Get icon with transparency
                 IconHelper.GetIcon(Path.GetFullPath(File.Path), out IntPtr hbitmap);
-                var iconBitmap = await GetBitmapFromHBitmapAsync(hbitmap);
-                IconPreview = iconBitmap;
-
-                iconTCS.SetResult();
+                await Dispatcher.RunOnUiThread(async () =>
+                {
+                    var iconBitmap = await GetBitmapFromHBitmapAsync(hbitmap);
+                    IconPreview = iconBitmap;
+                });
             });
-
-            return iconTCS.Task;
         }
 
-        public Task LoadDisplayInfoAsync()
+        public Task<bool> LoadDisplayInfoAsync()
         {
-            var displayInfoTCS = new TaskCompletionSource();
-            Dispatcher.TryEnqueue(async () =>
+            return TaskExtension.RunSafe(async () =>
             {
                 if (CancellationToken.IsCancellationRequested)
                 {
@@ -112,15 +124,34 @@ namespace Peek.FilePreviewer.Previewers
 
                 // File Properties
                 var bytes = await PropertyHelper.GetFileSizeInBytes(File.Path);
-                FileSize = ReadableStringHelper.BytesToReadableString(bytes);
-
                 var type = await PropertyHelper.GetFileType(File.Path);
-                FileType = type;
 
-                displayInfoTCS.SetResult();
+                await Dispatcher.RunOnUiThread(() =>
+                {
+                    FileSize = ReadableStringHelper.BytesToReadableString(bytes);
+                    FileType = type;
+                    return Task.CompletedTask;
+                });
             });
+        }
 
-            return displayInfoTCS.Task;
+        private void OnPropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
+        {
+            if (e.PropertyName == nameof(IconPreview))
+            {
+                if (IconPreview != null)
+                {
+                    State = PreviewState.Loaded;
+                }
+            }
+        }
+
+        private bool HasFailedLoadingPreview()
+        {
+            var hasFailedLoadingIconPreview = !(IconPreviewTask?.Result ?? true);
+            var hasFailedLoadingDisplayInfo = !(DisplayInfoTask?.Result ?? true);
+
+            return hasFailedLoadingIconPreview && hasFailedLoadingDisplayInfo;
         }
 
         // TODO: Move this to a helper file (ImagePrevier uses the same code)

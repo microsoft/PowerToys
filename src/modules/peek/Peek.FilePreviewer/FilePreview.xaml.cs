@@ -31,11 +31,8 @@ namespace Peek.FilePreviewer
 
         [ObservableProperty]
         [NotifyPropertyChangedFor(nameof(BitmapPreviewer))]
-        [NotifyPropertyChangedFor(nameof(IsImageVisible))]
-        [NotifyPropertyChangedFor(nameof(UnsupportedFilePreviewer))]
-        [NotifyPropertyChangedFor(nameof(IsUnsupportedPreviewVisible))]
         [NotifyPropertyChangedFor(nameof(BrowserPreviewer))]
-        [NotifyPropertyChangedFor(nameof(IsBrowserVisible))]
+        [NotifyPropertyChangedFor(nameof(UnsupportedFilePreviewer))]
         private IPreviewer? previewer;
 
         public FilePreview()
@@ -43,9 +40,22 @@ namespace Peek.FilePreviewer
             InitializeComponent();
         }
 
+        private async void Previewer_PropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
+        {
+            // Fallback on DefaultPreviewer if we fail to load the correct Preview
+            if (e.PropertyName == nameof(IPreviewer.State))
+            {
+                if (Previewer?.State == PreviewState.Error)
+                {
+                    Previewer = previewerFactory.CreateDefaultPreviewer(File);
+                    await UpdatePreviewAsync();
+                }
+            }
+        }
+
         public IBitmapPreviewer? BitmapPreviewer => Previewer as IBitmapPreviewer;
 
-        public IBrowserPreview? BrowserPreviewer => Previewer as IBrowserPreview;
+        public IBrowserPreviewer? BrowserPreviewer => Previewer as IBrowserPreviewer;
 
         public bool IsImageVisible => BitmapPreviewer != null;
 
@@ -53,25 +63,21 @@ namespace Peek.FilePreviewer
 
         public bool IsUnsupportedPreviewVisible => UnsupportedFilePreviewer != null;
 
-        /* TODO: need a better way to switch visibility according to the Preview.
-         * Could use Enum + Converter to switch according to the current preview. */
-        public bool IsBrowserVisible
-        {
-            get
-            {
-                if (BrowserPreviewer != null)
-                {
-                    return BrowserPreviewer.IsPreviewLoaded;
-                }
-
-                return false;
-            }
-        }
-
         public File File
         {
             get => (File)GetValue(FilesProperty);
             set => SetValue(FilesProperty, value);
+        }
+
+        public bool MatchPreviewState(PreviewState? value, PreviewState stateToMatch)
+        {
+            return value == stateToMatch;
+        }
+
+        public Visibility IsPreviewVisible(IPreviewer? previewer, PreviewState? state)
+        {
+            var isValidPreview = previewer != null && MatchPreviewState(state, PreviewState.Loaded);
+            return isValidPreview ? Visibility.Visible : Visibility.Collapsed;
         }
 
         private async Task OnFilePropertyChanged()
@@ -80,10 +86,19 @@ namespace Peek.FilePreviewer
             // https://github.com/microsoft/PowerToys/issues/22480
             if (File == null)
             {
+                Previewer = null;
+                ImagePreview.Visibility = Visibility.Collapsed;
+                BrowserPreview.Visibility = Visibility.Collapsed;
+                UnsupportedFilePreview.Visibility = Visibility.Collapsed;
                 return;
             }
 
             Previewer = previewerFactory.Create(File);
+            await UpdatePreviewAsync();
+        }
+
+        private async Task UpdatePreviewAsync()
+        {
             if (Previewer != null)
             {
                 var size = await Previewer.GetPreviewSizeAsync();
@@ -92,10 +107,26 @@ namespace Peek.FilePreviewer
             }
         }
 
+        partial void OnPreviewerChanging(IPreviewer? value)
+        {
+            if (Previewer != null)
+            {
+                Previewer.PropertyChanged -= Previewer_PropertyChanged;
+            }
+
+            if (value != null)
+            {
+                value.PropertyChanged += Previewer_PropertyChanged;
+            }
+        }
+
         private void PreviewBrowser_NavigationCompleted(WebView2 sender, Microsoft.Web.WebView2.Core.CoreWebView2NavigationCompletedEventArgs args)
         {
             // Once browser has completed navigation it is ready to be visible
-            OnPropertyChanged(nameof(IsBrowserVisible));
+            if (BrowserPreviewer != null)
+            {
+                BrowserPreviewer.State = PreviewState.Loaded;
+            }
         }
     }
 }
