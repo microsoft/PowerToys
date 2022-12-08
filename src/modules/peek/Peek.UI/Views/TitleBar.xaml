@@ -25,7 +25,7 @@
             Margin="8,0"
             HorizontalAlignment="Left"
             VerticalAlignment="Center"
-            ColumnSpacing="8">
+            ColumnSpacing="4">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition x:Name="AppIconColumn" Width="32" />
                 <ColumnDefinition x:Name="FileTitleColumn" Width="*" />
@@ -105,27 +105,15 @@
                         <AdaptiveTrigger MinWindowWidth="560" />
                     </VisualState.StateTriggers>
                     <VisualState.Setters>
-                        <Setter Target="AppTitle_FileCount.Visibility" Value="Visible" />
                         <Setter Target="LaunchAppButton_Text.Visibility" Value="Visible" />
-                        <Setter Target="LaunchAppButton.Visibility" Value="Visible" />
-                    </VisualState.Setters>
-                </VisualState>
-                <VisualState x:Name="WideLayout">
-                    <VisualState.StateTriggers>
-                        <AdaptiveTrigger MinWindowWidth="420" />
-                    </VisualState.StateTriggers>
-                    <VisualState.Setters>
-                        <Setter Target="AppTitle_FileCount.Visibility" Value="Visible" />
-                        <Setter Target="LaunchAppButton_Text.Visibility" Value="Collapsed" />
                         <Setter Target="LaunchAppButton.Visibility" Value="Visible" />
                     </VisualState.Setters>
                 </VisualState>
                 <VisualState x:Name="MediumLayout">
                     <VisualState.StateTriggers>
-                        <AdaptiveTrigger MinWindowWidth="360" />
+                        <AdaptiveTrigger MinWindowWidth="340" />
                     </VisualState.StateTriggers>
                     <VisualState.Setters>
-                        <Setter Target="AppTitle_FileCount.Visibility" Value="Collapsed" />
                         <Setter Target="LaunchAppButton_Text.Visibility" Value="Collapsed" />
                         <Setter Target="LaunchAppButton.Visibility" Value="Visible" />
                     </VisualState.Setters>
@@ -135,7 +123,6 @@
                         <AdaptiveTrigger MinWindowWidth="0" />
                     </VisualState.StateTriggers>
                     <VisualState.Setters>
-                        <Setter Target="AppTitle_FileCount.Visibility" Value="Collapsed" />
                         <Setter Target="LaunchAppButton_Text.Visibility" Value="Collapsed" />
                         <Setter Target="LaunchAppButton.Visibility" Value="Collapsed" />
                     </VisualState.Setters>
