@@ -88,6 +88,7 @@ namespace Peek.FilePreviewer
             {
                 Previewer = null;
                 ImagePreview.Visibility = Visibility.Collapsed;
+                BrowserPreview.Visibility = Visibility.Collapsed;
                 UnsupportedFilePreview.Visibility = Visibility.Collapsed;
                 return;
             }

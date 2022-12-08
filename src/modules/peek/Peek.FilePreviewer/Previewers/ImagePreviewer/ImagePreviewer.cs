@@ -110,7 +110,6 @@ namespace Peek.FilePreviewer.Previewers
 
                 if (!IsFullImageLoaded && !IsHighQualityThumbnailLoaded)
                 {
-                    // TODO: Handle thumbnail errors
                     var hr = ThumbnailHelper.GetThumbnail(Path.GetFullPath(File.Path), out IntPtr hbitmap, ThumbnailHelper.LowQualityThumbnailSize);
                     if (hr != Common.Models.HResult.Ok)
                     {

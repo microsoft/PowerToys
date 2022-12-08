@@ -10,6 +10,10 @@ namespace Peek.Common.Extensions
 
     public static class DispatcherExtensions
     {
+        /// <summary>
+        /// Run work on UI thread safely.
+        /// </summary>
+        /// <returns>True if the work was run successfully, False otherwise.</returns>
         public static Task RunOnUiThread(this DispatcherQueue dispatcher, Func<Task> work)
         {
             var tcs = new TaskCompletionSource();

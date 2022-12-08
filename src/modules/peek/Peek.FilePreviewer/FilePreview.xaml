@@ -24,7 +24,7 @@
             Visibility="{x:Bind IsPreviewVisible(BitmapPreviewer, Previewer.State), Mode=OneWay}" />
 
         <controls:BrowserControl
-            x:Name="PreviewBrowser"
+            x:Name="BrowserPreview"
             x:Load="True"
             NavigationCompleted="PreviewBrowser_NavigationCompleted"
             Source="{x:Bind BrowserPreviewer.Preview, Mode=OneWay}"
