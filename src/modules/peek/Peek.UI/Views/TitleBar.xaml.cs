@@ -36,12 +36,13 @@ namespace Peek.UI.Views
            typeof(TitleBar),
            new PropertyMetadata(null, null));
 
+        private string? defaultAppName;
+
         [ObservableProperty]
         private string openWithAppText = ResourceLoader.GetForViewIndependentUse().GetString("LaunchAppButton_OpenWith_Text");
 
         [ObservableProperty]
         private string openWithAppToolTip = ResourceLoader.GetForViewIndependentUse().GetString("LaunchAppButton_OpenWith_ToolTip");
-        private string? defaultAppName;
 
         [ObservableProperty]
         private string? fileCountText;
@@ -121,6 +122,10 @@ namespace Peek.UI.Views
         {
             // Update the name of default app to launch
             defaultAppName = DefaultAppHelper.TryGetDefaultAppName(File.Extension);
+
+            string openWithAppTextFormat = ResourceLoader.GetForViewIndependentUse().GetString("LaunchAppButton_OpenWithApp_Text");
+            OpenWithAppText = string.Format(openWithAppTextFormat, defaultAppName);
+
             string openWithAppToolTipFormat = ResourceLoader.GetForViewIndependentUse().GetString("LaunchAppButton_OpenWithApp_ToolTip");
             OpenWithAppToolTip = string.Format(openWithAppToolTipFormat, defaultAppName);
         }
