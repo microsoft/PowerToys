@@ -31,6 +31,7 @@ namespace Peek.FilePreviewer
 
         [ObservableProperty]
         [NotifyPropertyChangedFor(nameof(BitmapPreviewer))]
+        [NotifyPropertyChangedFor(nameof(BrowserPreviewer))]
         [NotifyPropertyChangedFor(nameof(UnsupportedFilePreviewer))]
         private IPreviewer? previewer;
 
@@ -54,7 +55,13 @@ namespace Peek.FilePreviewer
 
         public IBitmapPreviewer? BitmapPreviewer => Previewer as IBitmapPreviewer;
 
+        public IBrowserPreviewer? BrowserPreviewer => Previewer as IBrowserPreviewer;
+
+        public bool IsImageVisible => BitmapPreviewer != null;
+
         public IUnsupportedFilePreviewer? UnsupportedFilePreviewer => Previewer as IUnsupportedFilePreviewer;
+
+        public bool IsUnsupportedPreviewVisible => UnsupportedFilePreviewer != null;
 
         public File File
         {
@@ -75,6 +82,8 @@ namespace Peek.FilePreviewer
 
         private async Task OnFilePropertyChanged()
         {
+            // TODO: track and cancel existing async preview tasks
+            // https://github.com/microsoft/PowerToys/issues/22480
             if (File == null)
             {
                 Previewer = null;
@@ -107,6 +116,15 @@ namespace Peek.FilePreviewer
             if (value != null)
             {
                 value.PropertyChanged += Previewer_PropertyChanged;
+            }
+        }
+
+        private void PreviewBrowser_NavigationCompleted(WebView2 sender, Microsoft.Web.WebView2.Core.CoreWebView2NavigationCompletedEventArgs args)
+        {
+            // Once browser has completed navigation it is ready to be visible
+            if (BrowserPreviewer != null)
+            {
+                BrowserPreviewer.State = PreviewState.Loaded;
             }
         }
     }

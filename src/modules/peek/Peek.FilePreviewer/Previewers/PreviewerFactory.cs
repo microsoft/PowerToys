@@ -14,6 +14,10 @@ namespace Peek.FilePreviewer.Previewers
             {
                 return new ImagePreviewer(file);
             }
+            else if (HtmlPreviewer.IsFileTypeSupported(file.Extension))
+            {
+                return new HtmlPreviewer(file);
+            }
 
             // Other previewer types check their supported file types here
             return CreateDefaultPreviewer(file);

@@ -6,6 +6,7 @@ namespace Peek.FilePreviewer.Previewers
 {
     using System;
     using System.Collections.Generic;
+    using System.Diagnostics;
     using System.Drawing.Imaging;
     using System.IO;
     using System.Threading;
@@ -110,9 +111,11 @@ namespace Peek.FilePreviewer.Previewers
                 if (!IsFullImageLoaded && !IsHighQualityThumbnailLoaded)
                 {
                     // TODO: Handle thumbnail errors
-                    var result = ThumbnailHelper.GetThumbnail(Path.GetFullPath(File.Path), out IntPtr hbitmap, ThumbnailHelper.LowQualityThumbnailSize);
-                    if (result != Common.Models.HResult.Ok)
+                    var hr = ThumbnailHelper.GetThumbnail(Path.GetFullPath(File.Path), out IntPtr hbitmap, ThumbnailHelper.LowQualityThumbnailSize);
+                    if (hr != Common.Models.HResult.Ok)
                     {
+                        Debug.WriteLine("Error loading low quality thumbnail - hresult: " + hr);
+
                         throw new ArgumentNullException(nameof(hbitmap));
                     }
 
@@ -133,10 +136,17 @@ namespace Peek.FilePreviewer.Previewers
 
                 if (!IsFullImageLoaded && !IsHighQualityThumbnailLoaded)
                 {
-                    // TODO: Handle thumbnail errors
-                    ThumbnailHelper.GetThumbnail(Path.GetFullPath(File.Path), out IntPtr hbitmap, ThumbnailHelper.LowQualityThumbnailSize);
-                    var thumbnailBitmap = await GetBitmapFromHBitmapAsync(hbitmap);
-                    Preview = thumbnailBitmap;
+                    var hr = ThumbnailHelper.GetThumbnail(Path.GetFullPath(File.Path), out IntPtr hbitmap, ThumbnailHelper.LowQualityThumbnailSize);
+                    if (hr == Common.Models.HResult.Ok)
+                    {
+                        var thumbnailBitmap = await GetBitmapFromHBitmapAsync(hbitmap);
+                        Preview = thumbnailBitmap;
+                    }
+                    else
+                    {
+                        // TODO: handle thumbnail errors
+                        Debug.WriteLine("Error loading thumbnail - hresult: " + hr);
+                    }
                 }
             }); */
         }
@@ -153,8 +163,13 @@ namespace Peek.FilePreviewer.Previewers
 
                 if (!IsFullImageLoaded)
                 {
-                    // TODO: Handle thumbnail errors
-                    ThumbnailHelper.GetThumbnail(Path.GetFullPath(File.Path), out IntPtr hbitmap, ThumbnailHelper.HighQualityThumbnailSize);
+                    var hr = ThumbnailHelper.GetThumbnail(Path.GetFullPath(File.Path), out IntPtr hbitmap, ThumbnailHelper.HighQualityThumbnailSize);
+                    if (hr != Common.Models.HResult.Ok)
+                    {
+                        Debug.WriteLine("Error loading high quality thumbnail - hresult: " + hr);
+
+                        throw new ArgumentNullException(nameof(hbitmap));
+                    }
 
                     await Dispatcher.RunOnUiThread(async () =>
                     {

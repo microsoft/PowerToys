@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System.Collections.Generic;
+using System.Diagnostics;
 using Peek.Common.Models;
 using Peek.UI.Native;
 
@@ -10,28 +11,22 @@ namespace Peek.UI.Helpers
 {
     public static class FileExplorerHelper
     {
-        public static List<File> GetSelectedFileExplorerFiles()
+        public static Shell32.IShellFolderViewDual2? GetCurrentFolderView()
         {
             var foregroundWindowHandle = NativeMethods.GetForegroundWindow();
 
-            var selectedItems = new List<File>();
             var shell = new Shell32.Shell();
             foreach (SHDocVw.InternetExplorer window in shell.Windows())
             {
+                // TODO: figure out which window is the active explorer tab
+                // https://github.com/microsoft/PowerToys/issues/22507
                 if (window.HWND == (int)foregroundWindowHandle)
                 {
-                    Shell32.FolderItems items = ((Shell32.IShellFolderViewDual2)window.Document).SelectedItems();
-                    if (items != null && items.Count > 0)
-                    {
-                        foreach (Shell32.FolderItem item in items)
-                        {
-                            selectedItems.Add(new File(item.Path));
-                        }
-                    }
+                    return (Shell32.IShellFolderViewDual2)window.Document;
                 }
             }
 
-            return selectedItems;
+            return null;
         }
     }
 }

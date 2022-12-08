@@ -5,6 +5,7 @@
     x:Class="Peek.FilePreviewer.FilePreview"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:controls="using:Peek.FilePreviewer.Controls"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:local="using:Peek.FilePreviewer"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
@@ -22,7 +23,12 @@
             Source="{x:Bind BitmapPreviewer.Preview, Mode=OneWay}"
             Visibility="{x:Bind IsPreviewVisible(BitmapPreviewer, Previewer.State), Mode=OneWay}" />
 
-        <!--  TODO: Add WebView2 support.  -->
+        <controls:BrowserControl
+            x:Name="PreviewBrowser"
+            x:Load="True"
+            NavigationCompleted="PreviewBrowser_NavigationCompleted"
+            Source="{x:Bind BrowserPreviewer.Preview, Mode=OneWay}"
+            Visibility="{x:Bind IsPreviewVisible(BrowserPreviewer, Previewer.State), Mode=OneWay, FallbackValue=Collapsed}" />
 
         <local:UnsupportedFilePreview
             x:Name="UnsupportedFilePreview"

@@ -15,7 +15,12 @@
         <winuiex:MicaSystemBackdrop />
     </winuiex:WindowEx.Backdrop>
 
-    <Grid>
+    <Grid KeyboardAcceleratorPlacementMode="Hidden">
+        <Grid.KeyboardAccelerators>
+            <KeyboardAccelerator Key="Left" Invoked="LeftNavigationInvoked" />
+            <KeyboardAccelerator Key="Right" Invoked="RightNavigationInvoked" />
+        </Grid.KeyboardAccelerators>
+
         <Grid.RowDefinitions>
             <RowDefinition Height="32" />
             <RowDefinition Height="*" />
@@ -25,7 +30,7 @@
 
         <fp:FilePreview
             Grid.Row="1"
-            File="{x:Bind ViewModel.CurrentFile, Mode=OneWay}"
+            File="{x:Bind ViewModel.FolderItemsQuery.CurrentFile, Mode=OneWay}"
             PreviewSizeChanged="FilePreviewer_PreviewSizeChanged" />
     </Grid>
 </winuiex:WindowEx>
