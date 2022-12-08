@@ -127,10 +127,18 @@
   </data>
   <data name="LaunchAppButton_OpenWith_Text" xml:space="preserve">
     <value>Open with</value>
-    <comment>Text for button to launch the system default application picker.</comment>
+    <comment>Text for button to launch the application picker.</comment>
+  </data>
+  <data name="LaunchAppButton_OpenWith_ToolTip" xml:space="preserve">
+    <value>Open with (Enter)</value>
+    <comment>Tooltip for button to launch the application picker.</comment>
   </data>
   <data name="LaunchAppButton_OpenWithApp_Text" xml:space="preserve">
     <value>Open with {0}</value>
     <comment>Text for button to launch default application. 0: name of the default application.</comment>
+  </data>
+  <data name="LaunchAppButton_OpenWithApp_ToolTip" xml:space="preserve">
+    <value>Open with {0} (Enter)</value>
+    <comment>Tooltip for button to launch default application. 0: name of the default application.</comment>
   </data>
 </root>
