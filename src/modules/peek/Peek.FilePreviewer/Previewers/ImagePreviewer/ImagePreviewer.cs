@@ -12,10 +12,11 @@ namespace Peek.FilePreviewer.Previewers
     using System.Threading.Tasks;
     using CommunityToolkit.Mvvm.ComponentModel;
     using Microsoft.UI.Dispatching;
-    using Microsoft.UI.Xaml.Controls;
     using Microsoft.UI.Xaml.Media.Imaging;
     using Peek.Common;
     using Windows.Foundation;
+    using Windows.Graphics.Imaging;
+    using Windows.Storage.Streams;
     using File = Peek.Common.Models.File;
 
     public partial class ImagePreviewer : ObservableObject, IBitmapPreviewer, IDisposable
@@ -63,11 +64,93 @@ namespace Peek.FilePreviewer.Previewers
 
         public Task LoadPreviewAsync()
         {
+            if (this.File.Extension == ".png")
+            {
+                var pngLowTask = LoadLowQualityPngAsync();
+                var pngFullTask = LoadFullQualityPngAsync();
+
+                return Task.WhenAll(pngLowTask, pngFullTask);
+            }
+
             var lowQualityThumbnailTask = LoadLowQualityThumbnailAsync();
             var highQualityThumbnailTask = LoadHighQualityThumbnailAsync();
             var fullImageTask = LoadFullQualityImageAsync();
 
             return Task.WhenAll(lowQualityThumbnailTask, highQualityThumbnailTask, fullImageTask);
+        }
+
+        private Task LoadLowQualityPngAsync()
+        {
+            var thumbnailTCS = new TaskCompletionSource();
+
+            Dispatcher.TryEnqueue(async () =>
+            {
+                if (CancellationToken.IsCancellationRequested)
+                {
+                    _cancellationTokenSource = new CancellationTokenSource();
+                    return;
+                }
+
+                if (!IsFullImageLoaded && !IsHighQualityThumbnailLoaded)
+                {
+                    // TODO: Handle thumbnail errors
+                    // Open a Stream and decode a PNG image
+                    Stream stream = new FileStream(File.Path, FileMode.Open, FileAccess.Read, FileShare.Read);
+                    IRandomAccessStream randomAccessStream = stream.AsRandomAccessStream();
+
+                    // Create an encoder with the desired format
+                    var encoder = await BitmapDecoder.CreateAsync(BitmapDecoder.PngDecoderId, randomAccessStream);
+
+                    // preview image
+                    var file = await Windows.Storage.StorageFile.GetFileFromPathAsync(File.Path);
+                    var imageStream = await file.GetThumbnailAsync(
+                        Windows.Storage.FileProperties.ThumbnailMode.SingleItem,
+                        1280,
+                        Windows.Storage.FileProperties.ThumbnailOptions.None);
+
+                    BitmapImage bitmapImage = new BitmapImage();
+                    bitmapImage.SetSource(imageStream);
+
+                    Preview = bitmapImage;
+                }
+
+                thumbnailTCS.SetResult();
+            });
+
+            return thumbnailTCS.Task;
+        }
+
+        private Task LoadFullQualityPngAsync()
+        {
+            var thumbnailTCS = new TaskCompletionSource();
+            Dispatcher.TryEnqueue(async () =>
+            {
+                if (CancellationToken.IsCancellationRequested)
+                {
+                    _cancellationTokenSource = new CancellationTokenSource();
+                    return;
+                }
+
+                // TODO: Handle thumbnail errors
+                Stream stream = new FileStream(File.Path, FileMode.Open, FileAccess.Read, FileShare.Read);
+                IRandomAccessStream randomAccessStream = stream.AsRandomAccessStream();
+
+                // Create an encoder with the desired format
+                var encoder = await BitmapDecoder.CreateAsync(BitmapDecoder.PngDecoderId, randomAccessStream);
+
+                // full quality image
+                var softwareBitmap = await encoder.GetSoftwareBitmapAsync();
+                WriteableBitmap bitmap = new WriteableBitmap(softwareBitmap.PixelWidth, softwareBitmap.PixelHeight);
+                softwareBitmap.CopyToBuffer(bitmap.PixelBuffer);
+
+                IsFullImageLoaded = true;
+
+                Preview = bitmap;
+
+                thumbnailTCS.SetResult();
+            });
+
+            return thumbnailTCS.Task;
         }
 
         private Task LoadLowQualityThumbnailAsync()
