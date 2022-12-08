@@ -37,8 +37,10 @@ namespace Peek.UI.Extensions
             return scalingFactor;
         }
 
-        public static void BringToForeground(this Window window, IntPtr windowHandle)
+        public static void BringToForeground(this Window window)
         {
+            var windowHandle = window.GetWindowHandle();
+
             // Restore the window.
             _ = NativeMethods.SendMessage(windowHandle, NativeMethods.WM_SYSCOMMAND, NativeMethods.SC_RESTORE, -2);
 
