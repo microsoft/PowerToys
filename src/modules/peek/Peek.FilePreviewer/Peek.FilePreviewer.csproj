@@ -22,6 +22,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\..\..\settings-ui\Settings.UI.Library\Settings.UI.Library.csproj" />
     <ProjectReference Include="..\Peek.Common\Peek.Common.csproj" />
     <ProjectReference Include="..\WIC\WIC.csproj" />
   </ItemGroup>
