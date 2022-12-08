@@ -126,29 +126,6 @@ namespace Peek.FilePreviewer.Previewers
                     });
                 }
             });
-            /* return Dispatcher.TryEnqueueSafe(async () =>
-            {
-                if (CancellationToken.IsCancellationRequested)
-                {
-                    _cancellationTokenSource = new CancellationTokenSource();
-                    return;
-                }
-
-                if (!IsFullImageLoaded && !IsHighQualityThumbnailLoaded)
-                {
-                    var hr = ThumbnailHelper.GetThumbnail(Path.GetFullPath(File.Path), out IntPtr hbitmap, ThumbnailHelper.LowQualityThumbnailSize);
-                    if (hr == Common.Models.HResult.Ok)
-                    {
-                        var thumbnailBitmap = await GetBitmapFromHBitmapAsync(hbitmap);
-                        Preview = thumbnailBitmap;
-                    }
-                    else
-                    {
-                        // TODO: handle thumbnail errors
-                        Debug.WriteLine("Error loading thumbnail - hresult: " + hr);
-                    }
-                }
-            }); */
         }
 
         private Task<bool> LoadHighQualityThumbnailAsync()
