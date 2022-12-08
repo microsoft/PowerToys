@@ -125,15 +125,15 @@
   </data>
   <data name="UnsupportedFile_FileType" xml:space="preserve">
     <value>File Type: {0}</value>
-    <comment>File Type label for the unsupported files view. {0} is the type,</comment>
+    <comment>File Type label for the unsupported files view. {0} is the type.</comment>
   </data>
   <data name="UnsupportedFile_FileSize" xml:space="preserve">
     <value>Size: {0}</value>
-    <comment>File Size label for the unsupported files view. {0} is the size,</comment>
+    <comment>File Size label for the unsupported files view. {0} is the size.</comment>
   </data>
   <data name="UnsupportedFile_DateModified" xml:space="preserve">
     <value>Date Modified: {0}</value>
-    <comment>Date Modified label for the unsupported files view. {0} is the date</comment>
+    <comment>Date Modified label for the unsupported files view. {0} is the date.</comment>
   </data>
   <data name="ReadableString_ByteAbbreviationFormat" xml:space="preserve">
     <value>{0} B</value>
