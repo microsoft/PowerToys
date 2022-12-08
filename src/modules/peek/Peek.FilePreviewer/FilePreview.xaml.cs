@@ -35,8 +35,11 @@ namespace Peek.FilePreviewer
         [NotifyPropertyChangedFor(nameof(BitmapPreviewer))]
         [NotifyPropertyChangedFor(nameof(BrowserPreviewer))]
         [NotifyPropertyChangedFor(nameof(UnsupportedFilePreviewer))]
+
         private IPreviewer? previewer;
-        private string imageTooltip = ResourceLoader.GetForViewIndependentUse().GetString("PreviewTooltip_Blank");
+
+        [ObservableProperty]
+        private string imageInfoTooltip = ResourceLoader.GetForViewIndependentUse().GetString("PreviewTooltip_Blank");
 
         public FilePreview()
         {
@@ -61,8 +64,6 @@ namespace Peek.FilePreviewer
         public IBrowserPreviewer? BrowserPreviewer => Previewer as IBrowserPreviewer;
 
         public bool IsImageVisible => BitmapPreviewer != null;
-
-        public string ImageInfoTooltip => imageTooltip;
 
         public IUnsupportedFilePreviewer? UnsupportedFilePreviewer => Previewer as IUnsupportedFilePreviewer;
 
@@ -143,25 +144,25 @@ namespace Peek.FilePreviewer
                 return;
             }
 
-            imageTooltip = string.Empty;
+            string formattedTooltip = string.Empty;
 
             // Fetch and format available file properties
-            imageTooltip += ReadableStringHelper.FormatResourceString("PreviewTooltip_FileName", File.FileName);
+            formattedTooltip += ReadableStringHelper.FormatResourceString("PreviewTooltip_FileName", File.FileName);
 
             string fileType = await PropertyHelper.GetFileType(File.Path);
-            imageTooltip += string.IsNullOrEmpty(fileType) ? string.Empty : "\n" + ReadableStringHelper.FormatResourceString("PreviewTooltip_FileType", fileType);
+            formattedTooltip += string.IsNullOrEmpty(fileType) ? string.Empty : "\n" + ReadableStringHelper.FormatResourceString("PreviewTooltip_FileType", fileType);
 
             string dateModified = File.DateModified.ToString();
-            imageTooltip += string.IsNullOrEmpty(dateModified) ? string.Empty : "\n" + ReadableStringHelper.FormatResourceString("PreviewTooltip_DateModified", dateModified);
+            formattedTooltip += string.IsNullOrEmpty(dateModified) ? string.Empty : "\n" + ReadableStringHelper.FormatResourceString("PreviewTooltip_DateModified", dateModified);
 
             Size dimensions = await PropertyHelper.GetImageSize(File.Path);
-            imageTooltip += dimensions.IsEmpty ? string.Empty : "\n" + ReadableStringHelper.FormatResourceString("PreviewTooltip_Dimensions", dimensions.Width, dimensions.Height);
+            formattedTooltip += dimensions.IsEmpty ? string.Empty : "\n" + ReadableStringHelper.FormatResourceString("PreviewTooltip_Dimensions", dimensions.Width, dimensions.Height);
 
             ulong bytes = await PropertyHelper.GetFileSizeInBytes(File.Path);
             string fileSize = ReadableStringHelper.BytesToReadableString(bytes);
-            imageTooltip += string.IsNullOrEmpty(fileSize) ? string.Empty : "\n" + ReadableStringHelper.FormatResourceString("PreviewTooltip_FileSize", fileSize);
+            formattedTooltip += string.IsNullOrEmpty(fileSize) ? string.Empty : "\n" + ReadableStringHelper.FormatResourceString("PreviewTooltip_FileSize", fileSize);
 
-            OnPropertyChanged(nameof(ImageInfoTooltip));
+            ImageInfoTooltip = formattedTooltip;
         }
     }
 }
