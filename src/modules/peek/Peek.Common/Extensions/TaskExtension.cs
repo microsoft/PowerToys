@@ -6,24 +6,23 @@ namespace Peek.Common.Extensions
 {
     using System;
     using System.Threading.Tasks;
-    using Microsoft.UI.Dispatching;
 
-    public static class DispatcherExtensions
+    public static class TaskExtension
     {
-        public static Task RunOnUiThread(this DispatcherQueue dispatcher, Func<Task> work)
+        public static Task<bool> RunSafe(Func<Task> work)
         {
-            var tcs = new TaskCompletionSource();
-            dispatcher.TryEnqueue(async () =>
+            var tcs = new TaskCompletionSource<bool>();
+            Task.Run(async () =>
             {
                 try
                 {
                     await work();
 
-                    tcs.SetResult();
+                    tcs.SetResult(true);
                 }
-                catch (Exception e)
+                catch (Exception)
                 {
-                    tcs.SetException(e);
+                    tcs.SetResult(false);
                 }
             });
 

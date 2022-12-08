@@ -25,7 +25,7 @@ namespace Peek.FilePreviewer.Previewers
         private BitmapSource? preview;
 
         [ObservableProperty]
-        private PreviewState? state;
+        private PreviewState state;
 
         public ImagePreviewer(File file)
         {
@@ -39,11 +39,11 @@ namespace Peek.FilePreviewer.Previewers
 
         private DispatcherQueue Dispatcher { get; }
 
-        private Task<TaskStatus>? LowQualityThumbnailTask { get; set; }
+        private Task<bool>? LowQualityThumbnailTask { get; set; }
 
-        private Task<TaskStatus>? HighQualityThumbnailTask { get; set; }
+        private Task<bool>? HighQualityThumbnailTask { get; set; }
 
-        private Task<TaskStatus>? FullQualityImageTask { get; set; }
+        private Task<bool>? FullQualityImageTask { get; set; }
 
         private bool IsHighQualityThumbnailLoaded => HighQualityThumbnailTask?.Status == TaskStatus.RanToCompletion;
 
@@ -73,6 +73,7 @@ namespace Peek.FilePreviewer.Previewers
         public async Task LoadPreviewAsync()
         {
             State = PreviewState.Loading;
+
             LowQualityThumbnailTask = LoadLowQualityThumbnailAsync();
             HighQualityThumbnailTask = LoadHighQualityThumbnailAsync();
             FullQualityImageTask = LoadFullQualityImageAsync();
@@ -96,9 +97,33 @@ namespace Peek.FilePreviewer.Previewers
             }
         }
 
-        private Task<TaskStatus> LoadLowQualityThumbnailAsync()
+        private Task<bool> LoadLowQualityThumbnailAsync()
         {
-            return Dispatcher.TryEnqueueSafe(async () =>
+            return TaskExtension.RunSafe(async () =>
+            {
+                if (CancellationToken.IsCancellationRequested)
+                {
+                    _cancellationTokenSource = new CancellationTokenSource();
+                    return;
+                }
+
+                if (!IsFullImageLoaded && !IsHighQualityThumbnailLoaded)
+                {
+                    // TODO: Handle thumbnail errors
+                    var result = ThumbnailHelper.GetThumbnail(Path.GetFullPath(File.Path), out IntPtr hbitmap, ThumbnailHelper.LowQualityThumbnailSize);
+                    if (result != Common.Models.HResult.Ok)
+                    {
+                        throw new ArgumentNullException(nameof(hbitmap));
+                    }
+
+                    await Dispatcher.RunOnUiThread(async () =>
+                    {
+                        var thumbnailBitmap = await GetBitmapFromHBitmapAsync(hbitmap);
+                        Preview = thumbnailBitmap;
+                    });
+                }
+            });
+            /* return Dispatcher.TryEnqueueSafe(async () =>
             {
                 if (CancellationToken.IsCancellationRequested)
                 {
@@ -113,12 +138,12 @@ namespace Peek.FilePreviewer.Previewers
                     var thumbnailBitmap = await GetBitmapFromHBitmapAsync(hbitmap);
                     Preview = thumbnailBitmap;
                 }
-            });
+            }); */
         }
 
-        private Task<TaskStatus> LoadHighQualityThumbnailAsync()
+        private Task<bool> LoadHighQualityThumbnailAsync()
         {
-            return Dispatcher.TryEnqueueSafe(async () =>
+            return TaskExtension.RunSafe(async () =>
             {
                 if (CancellationToken.IsCancellationRequested)
                 {
@@ -130,34 +155,40 @@ namespace Peek.FilePreviewer.Previewers
                 {
                     // TODO: Handle thumbnail errors
                     ThumbnailHelper.GetThumbnail(Path.GetFullPath(File.Path), out IntPtr hbitmap, ThumbnailHelper.HighQualityThumbnailSize);
-                    var thumbnailBitmap = await GetBitmapFromHBitmapAsync(hbitmap);
-                    Preview = thumbnailBitmap;
+
+                    await Dispatcher.RunOnUiThread(async () =>
+                    {
+                        var thumbnailBitmap = await GetBitmapFromHBitmapAsync(hbitmap);
+                        Preview = thumbnailBitmap;
+                    });
                 }
             });
         }
 
-        private Task<TaskStatus> LoadFullQualityImageAsync()
+        private Task<bool> LoadFullQualityImageAsync()
         {
-            return Dispatcher.TryEnqueueSafe(async () =>
+            return TaskExtension.RunSafe(async () =>
             {
-                // TODO: Check if this is performant
-                var bitmap = await GetFullBitmapFromPathAsync(File.Path);
-
                 if (CancellationToken.IsCancellationRequested)
                 {
                     _cancellationTokenSource = new CancellationTokenSource();
                     return;
                 }
 
-                Preview = bitmap;
+                // TODO: Check if this is performant
+                await Dispatcher.RunOnUiThread(async () =>
+                {
+                    var bitmap = await GetFullBitmapFromPathAsync(File.Path);
+                    Preview = bitmap;
+                });
             });
         }
 
         private bool HasFailedLoadingPreview()
         {
-            var hasFailedLoadingLowQualityThumbnail = LowQualityThumbnailTask?.Result == TaskStatus.Faulted;
-            var hasFailedLoadingHighQualityThumbnail = HighQualityThumbnailTask?.Result == TaskStatus.Faulted;
-            var hasFailedLoadingFullQualityImage = FullQualityImageTask?.Result == TaskStatus.Faulted;
+            var hasFailedLoadingLowQualityThumbnail = !(LowQualityThumbnailTask?.Result ?? true);
+            var hasFailedLoadingHighQualityThumbnail = !(HighQualityThumbnailTask?.Result ?? true);
+            var hasFailedLoadingFullQualityImage = !(FullQualityImageTask?.Result ?? true);
 
             return hasFailedLoadingLowQualityThumbnail && hasFailedLoadingHighQualityThumbnail && hasFailedLoadingFullQualityImage;
         }

@@ -18,19 +18,20 @@
             IsActive="{x:Bind MatchPreviewState(Previewer.State, previewers:PreviewState.Loading), Mode=OneWay}" />
 
         <Image
-            x:Name="PreviewImage"
+            x:Name="ImagePreview"
             Source="{x:Bind BitmapPreviewer.Preview, Mode=OneWay}"
-            Visibility="{x:Bind IsImageVisible(BitmapPreviewer, Previewer.State), Mode=OneWay}" />
+            Visibility="{x:Bind IsPreviewVisible(BitmapPreviewer, Previewer.State), Mode=OneWay}" />
 
         <!--  TODO: Add WebView2 support.  -->
 
         <local:UnsupportedFilePreview
+            x:Name="UnsupportedFilePreview"
             DateModified="{x:Bind UnsupportedFilePreviewer.DateModified, Mode=OneWay}"
             FileName="{x:Bind UnsupportedFilePreviewer.FileName, Mode=OneWay}"
             FileSize="{x:Bind UnsupportedFilePreviewer.FileSize, Mode=OneWay}"
             FileType="{x:Bind UnsupportedFilePreviewer.FileType, Mode=OneWay}"
             IconPreview="{x:Bind UnsupportedFilePreviewer.IconPreview, Mode=OneWay}"
-            Visibility="{x:Bind IsUnsupportedPreviewVisible, Mode=OneWay}" />
+            Visibility="{x:Bind IsPreviewVisible(UnsupportedFilePreviewer, Previewer.State), Mode=OneWay}" />
 
     </Grid>
 </UserControl>

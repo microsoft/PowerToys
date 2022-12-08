@@ -31,9 +31,7 @@ namespace Peek.FilePreviewer
 
         [ObservableProperty]
         [NotifyPropertyChangedFor(nameof(BitmapPreviewer))]
-        [NotifyPropertyChangedFor(nameof(IsImageVisible))]
         [NotifyPropertyChangedFor(nameof(UnsupportedFilePreviewer))]
-        [NotifyPropertyChangedFor(nameof(IsUnsupportedPreviewVisible))]
         private IPreviewer? previewer;
 
         public FilePreview()
@@ -41,13 +39,22 @@ namespace Peek.FilePreviewer
             InitializeComponent();
         }
 
+        private async void Previewer_PropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
+        {
+            // Fallback on DefaultPreviewer if we fail to load the correct Preview
+            if (e.PropertyName == nameof(IPreviewer.State))
+            {
+                if (Previewer?.State == PreviewState.Error)
+                {
+                    Previewer = previewerFactory.CreateDefaultPreviewer(File);
+                    await UpdatePreviewAsync();
+                }
+            }
+        }
+
         public IBitmapPreviewer? BitmapPreviewer => Previewer as IBitmapPreviewer;
 
-        public bool IsImageVisible => BitmapPreviewer != null;
-
         public IUnsupportedFilePreviewer? UnsupportedFilePreviewer => Previewer as IUnsupportedFilePreviewer;
-
-        public bool IsUnsupportedPreviewVisible => UnsupportedFilePreviewer != null;
 
         public File File
         {
@@ -60,9 +67,9 @@ namespace Peek.FilePreviewer
             return value == stateToMatch;
         }
 
-        public Visibility IsImageVisible(IBitmapPreviewer? bitmapPreviewer, PreviewState? state)
+        public Visibility IsPreviewVisible(IPreviewer? previewer, PreviewState? state)
         {
-            var isValidPreview = bitmapPreviewer != null && MatchPreviewState(state, PreviewState.Loaded);
+            var isValidPreview = previewer != null && MatchPreviewState(state, PreviewState.Loaded);
             return isValidPreview ? Visibility.Visible : Visibility.Collapsed;
         }
 
@@ -70,15 +77,36 @@ namespace Peek.FilePreviewer
         {
             if (File == null)
             {
+                Previewer = null;
+                ImagePreview.Visibility = Visibility.Collapsed;
+                UnsupportedFilePreview.Visibility = Visibility.Collapsed;
                 return;
             }
 
             Previewer = previewerFactory.Create(File);
+            await UpdatePreviewAsync();
+        }
+
+        private async Task UpdatePreviewAsync()
+        {
             if (Previewer != null)
             {
                 var size = await Previewer.GetPreviewSizeAsync();
                 PreviewSizeChanged?.Invoke(this, new PreviewSizeChangedArgs(size));
                 await Previewer.LoadPreviewAsync();
+            }
+        }
+
+        partial void OnPreviewerChanging(IPreviewer? value)
+        {
+            if (Previewer != null)
+            {
+                Previewer.PropertyChanged -= Previewer_PropertyChanged;
+            }
+
+            if (value != null)
+            {
+                value.PropertyChanged += Previewer_PropertyChanged;
             }
         }
     }
