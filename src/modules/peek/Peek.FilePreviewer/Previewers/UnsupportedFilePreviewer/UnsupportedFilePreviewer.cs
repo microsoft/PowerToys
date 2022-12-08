@@ -10,6 +10,7 @@ namespace Peek.FilePreviewer.Previewers
     using System.Threading;
     using System.Threading.Tasks;
     using CommunityToolkit.Mvvm.ComponentModel;
+    using Microsoft.PowerToys.Settings.UI.Library;
     using Microsoft.UI.Dispatching;
     using Microsoft.UI.Xaml.Controls;
     using Microsoft.UI.Xaml.Media.Imaging;
@@ -18,6 +19,7 @@ namespace Peek.FilePreviewer.Previewers
     using Peek.Common.Helpers;
     using Peek.FilePreviewer.Previewers.Helpers;
     using Windows.Foundation;
+
     using File = Peek.Common.Models.File;
 
     public partial class UnsupportedFilePreviewer : ObservableObject, IUnsupportedFilePreviewer, IDisposable
@@ -46,9 +48,23 @@ namespace Peek.FilePreviewer.Previewers
             FileName = file.FileName;
             DateModified = file.DateModified.ToString();
             Dispatcher = DispatcherQueue.GetForCurrentThread();
-
             PropertyChanged += OnPropertyChanged;
+
+            var settingsUtils = new SettingsUtils();
+            var settings = settingsUtils.GetSettingsOrDefault<PeekSettings>(PeekSettings.ModuleName);
+
+            if (settings != null)
+            {
+                UnsupportedFileWidthPercent = settings.Properties.UnsupportedFileWidthPercent / 100.0;
+                UnsupportedFileHeightPercent = settings.Properties.UnsupportedFileHeightPercent / 100.0;
+            }
         }
+
+        private double UnsupportedFileWidthPercent { get; set; }
+
+        private double UnsupportedFileHeightPercent { get; set; }
+
+        public bool IsPreviewLoaded => iconPreview != null;
 
         private File File { get; }
 
@@ -72,8 +88,7 @@ namespace Peek.FilePreviewer.Previewers
         {
             return Task.Run(() =>
             {
-                // TODO: This is the min size. Calculate a 20-25% of the screen.
-                return new Size(680, 500);
+                return new Size(UnsupportedFileWidthPercent, UnsupportedFileHeightPercent);
             });
         }
 

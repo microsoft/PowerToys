@@ -102,7 +102,8 @@ namespace Peek.FilePreviewer
             if (Previewer != null)
             {
                 var size = await Previewer.GetPreviewSizeAsync();
-                PreviewSizeChanged?.Invoke(this, new PreviewSizeChangedArgs(size));
+                SizeFormat windowSizeFormat = UnsupportedFilePreviewer != null ? SizeFormat.Percentage : SizeFormat.Pixels;
+                PreviewSizeChanged?.Invoke(this, new PreviewSizeChangedArgs(size, windowSizeFormat));
                 await Previewer.LoadPreviewAsync();
             }
         }

@@ -22,6 +22,24 @@
                     <controls:ShortcutControl MinWidth="{StaticResource SettingActionControlMinWidth}" HotkeySettings="{x:Bind Path=ViewModel.ActivationShortcut, Mode=TwoWay}" />
                 </labs:SettingsCard>
 
+                <!--  Temporary internal setting.  -->
+                <labs:SettingsCard x:Uid="Peek_UnsupportedFileWindowWidth">
+                    <Slider
+                        MinWidth="{StaticResource SettingActionControlMinWidth}"
+                        Maximum="100"
+                        Minimum="20"
+                        Value="{x:Bind Mode=TwoWay, Path=ViewModel.UnsupportedFileWidthPercent}" />
+                </labs:SettingsCard>
+
+                <!--  Temporary internal setting.  -->
+                <labs:SettingsCard x:Uid="Peek_UnsupportedFileWindowHeight">
+                    <Slider
+                        MinWidth="{StaticResource SettingActionControlMinWidth}"
+                        Maximum="100"
+                        Minimum="20"
+                        Value="{x:Bind Mode=TwoWay, Path=ViewModel.UnsupportedFileHeightPercent}" />
+                </labs:SettingsCard>
+
             </StackPanel>
         </controls:SettingsPageControl.ModuleContent>
     </controls:SettingsPageControl>
