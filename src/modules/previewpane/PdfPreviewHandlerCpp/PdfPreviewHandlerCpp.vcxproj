@@ -78,6 +78,7 @@
     <ClInclude Include="ClassFactory.h" />
     <ClInclude Include="pch.h" />
     <ClInclude Include="PdfPreviewHandler.h" />
+    <ClInclude Include="resource.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="ClassFactory.cpp" />
@@ -89,6 +90,9 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="GlobalExportFunctions.def" />
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="PdfPreviewHandlerCpp.rc" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

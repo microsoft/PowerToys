@@ -78,6 +78,7 @@
     <ClInclude Include="ClassFactory.h" />
     <ClInclude Include="MonacoPreviewHandler.h" />
     <ClInclude Include="pch.h" />
+    <ClInclude Include="resource.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="ClassFactory.cpp" />
@@ -89,6 +90,9 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="GlobalExportFunctions.def" />
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="MonacoPreviewHandlerCpp.rc" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
