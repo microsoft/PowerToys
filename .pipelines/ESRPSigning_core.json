@@ -213,6 +213,7 @@
                 "vcruntime140_1_app.dll",
                 "vcruntime140_app.dll",
                 "modules\\FileLocksmith\\CommunityToolkit.Labs.WinUI.SettingsControls.dll",
+                "modules\\PowerAccent\\UnicodeInformation.dll",
                 "modules\\PowerAccent\\Vanara.Core.dll",
                 "modules\\PowerAccent\\Vanara.PInvoke.ComCtl32.dll",
                 "modules\\PowerAccent\\Vanara.PInvoke.Cryptography.dll",
