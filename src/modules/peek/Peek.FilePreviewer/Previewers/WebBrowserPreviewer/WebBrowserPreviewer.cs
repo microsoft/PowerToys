@@ -30,7 +30,7 @@ namespace Peek.FilePreviewer.Previewers
         private Uri? preview;
 
         [ObservableProperty]
-        private bool isPreviewLoaded;
+        private PreviewState state;
 
         public WebBrowserPreviewer(File file)
         {
@@ -48,6 +48,8 @@ namespace Peek.FilePreviewer.Previewers
 
         public Task LoadPreviewAsync()
         {
+            State = PreviewState.Loading;
+
             Preview = new Uri(File.Path);
 
             return Task.CompletedTask;

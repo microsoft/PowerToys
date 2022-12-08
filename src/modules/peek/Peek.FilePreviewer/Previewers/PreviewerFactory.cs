@@ -8,7 +8,7 @@ namespace Peek.FilePreviewer.Previewers
 
     public class PreviewerFactory
     {
-        public IPreviewer? Create(File file)
+        public IPreviewer Create(File file)
         {
             if (ImagePreviewer.IsFileTypeSupported(file.Extension))
             {
@@ -20,6 +20,11 @@ namespace Peek.FilePreviewer.Previewers
             }
 
             // Other previewer types check their supported file types here
+            return CreateDefaultPreviewer(file);
+        }
+
+        public IPreviewer CreateDefaultPreviewer(File file)
+        {
             return new UnsupportedFilePreviewer(file);
         }
     }

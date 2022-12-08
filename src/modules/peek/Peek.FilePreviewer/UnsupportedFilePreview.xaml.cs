@@ -7,6 +7,7 @@ namespace Peek.FilePreviewer
     using CommunityToolkit.Mvvm.ComponentModel;
     using Microsoft.UI.Xaml.Controls;
     using Microsoft.UI.Xaml.Media.Imaging;
+    using Peek.Common.Helpers;
 
     [INotifyPropertyChanged]
     public sealed partial class UnsupportedFilePreview : UserControl
@@ -18,13 +19,22 @@ namespace Peek.FilePreviewer
         private string? fileName;
 
         [ObservableProperty]
+        [NotifyPropertyChangedFor(nameof(FormattedFileType))]
         private string? fileType;
 
         [ObservableProperty]
+        [NotifyPropertyChangedFor(nameof(FormattedFileSize))]
         private string? fileSize;
 
         [ObservableProperty]
+        [NotifyPropertyChangedFor(nameof(FormattedDateModified))]
         private string? dateModified;
+
+        public string FormattedFileType => ReadableStringHelper.FormatResourceString("UnsupportedFile_FileType", FileType);
+
+        public string FormattedFileSize => ReadableStringHelper.FormatResourceString("UnsupportedFile_FileSize", FileSize);
+
+        public string FormattedDateModified => ReadableStringHelper.FormatResourceString("UnsupportedFile_DateModified", DateModified);
 
         public UnsupportedFilePreview()
         {
