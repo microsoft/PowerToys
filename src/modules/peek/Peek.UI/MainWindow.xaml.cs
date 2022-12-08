@@ -101,9 +101,9 @@ namespace Peek.UI
             var monitorScale = this.GetMonitorScale();
             var scaledWindowWidth = adjustedContentSize.Width / monitorScale;
             var scaledWindowHeight = adjustedContentSize.Height / monitorScale;
+
             this.CenterOnScreen(scaledWindowWidth + WindowHeightContentPadding, scaledWindowHeight + titleBarHeight + WindowWidthContentPadding);
-            this.Show();
-            this.BringToFront();
+            this.BringToForeground();
         }
 
         /// <summary>
