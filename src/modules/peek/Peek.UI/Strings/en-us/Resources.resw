@@ -122,7 +122,7 @@
     <comment>Name of application.</comment>
   </data>
   <data name="AppTitle_FileCounts_Text" xml:space="preserve">
-    <value>({0}/{1} files)</value>
+    <value>({0}/{1})</value>
     <comment>Text for the file count in the titlebar. 0: the index of the current file. 1: the total number of files selected.</comment>
   </data>
   <data name="LaunchAppButton_OpenWith_Text" xml:space="preserve">

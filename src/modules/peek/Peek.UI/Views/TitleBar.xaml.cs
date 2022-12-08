@@ -23,18 +23,32 @@ namespace Peek.UI.Views
     public sealed partial class TitleBar : UserControl
     {
         public static readonly DependencyProperty FileProperty =
-        DependencyProperty.Register(
-            nameof(File),
-            typeof(File),
-            typeof(TitleBar),
-            new PropertyMetadata(null, (d, e) => ((TitleBar)d).OnFilePropertyChanged()));
+            DependencyProperty.Register(
+                nameof(File),
+                typeof(File),
+                typeof(TitleBar),
+                new PropertyMetadata(null, (d, e) => ((TitleBar)d).OnFilePropertyChanged()));
+
+        public static readonly DependencyProperty FileIndexProperty =
+            DependencyProperty.Register(
+                nameof(FileIndex),
+                typeof(int),
+                typeof(TitleBar),
+                new PropertyMetadata(-1, (d, e) => ((TitleBar)d).OnFileIndexPropertyChanged()));
+
+        public static readonly DependencyProperty IsMultiSelectionProperty =
+            DependencyProperty.Register(
+                nameof(IsMultiSelection),
+                typeof(bool),
+                typeof(TitleBar),
+                new PropertyMetadata(false));
 
         public static readonly DependencyProperty NumberOfFilesProperty =
-        DependencyProperty.Register(
-           nameof(NumberOfFiles),
-           typeof(int),
-           typeof(TitleBar),
-           new PropertyMetadata(null, null));
+            DependencyProperty.Register(
+               nameof(NumberOfFiles),
+               typeof(int),
+               typeof(TitleBar),
+               new PropertyMetadata(null, null));
 
         private string? defaultAppName;
 
@@ -56,6 +70,18 @@ namespace Peek.UI.Views
         {
             get => (File)GetValue(FileProperty);
             set => SetValue(FileProperty, value);
+        }
+
+        public int FileIndex
+        {
+            get => (int)GetValue(FileIndexProperty);
+            set => SetValue(FileIndexProperty, value);
+        }
+
+        public bool IsMultiSelection
+        {
+            get => (bool)GetValue(IsMultiSelectionProperty);
+            set => SetValue(IsMultiSelectionProperty, value);
         }
 
         public int NumberOfFiles
@@ -80,6 +106,31 @@ namespace Peek.UI.Views
                 WindowId windowId = Win32Interop.GetWindowIdFromWindow(hWnd);
                 AppWindow appWindow = AppWindow.GetFromWindowId(windowId);
                 appWindow.SetIcon("Assets/Icon.ico");
+            }
+        }
+
+        [RelayCommand]
+        private async void LaunchDefaultAppButtonAsync()
+        {
+            StorageFile storageFile = await File.GetStorageFileAsync();
+            LauncherOptions options = new ();
+
+            if (string.IsNullOrEmpty(defaultAppName))
+            {
+                // If there's no default app found, open the App picker
+                options.DisplayApplicationPicker = true;
+            }
+            else
+            {
+                // Try to launch the default app for current file format
+                bool result = await Launcher.LaunchFileAsync(storageFile, options);
+
+                if (!result)
+                {
+                    // If we couldn't successfully open the default app, open the App picker as a fallback
+                    options.DisplayApplicationPicker = true;
+                    await Launcher.LaunchFileAsync(storageFile, options);
+                }
             }
         }
 
@@ -111,15 +162,18 @@ namespace Peek.UI.Views
             UpdateDefaultAppToLaunch();
         }
 
+        private void OnFileIndexPropertyChanged()
+        {
+            UpdateFileCountText();
+        }
+
         private void UpdateFileCountText()
         {
             // Update file count
             if (NumberOfFiles > 1)
             {
-                // TODO: Update the hardcoded fileIndex when the NFQ PR gets merged
-                int currentFileIndex = 1;
                 string fileCountTextFormat = ResourceLoader.GetForViewIndependentUse().GetString("AppTitle_FileCounts_Text");
-                FileCountText = string.Format(fileCountTextFormat, currentFileIndex, NumberOfFiles);
+                FileCountText = string.Format(fileCountTextFormat, FileIndex + 1, NumberOfFiles);
             }
         }
 
@@ -133,31 +187,6 @@ namespace Peek.UI.Views
 
             string openWithAppToolTipFormat = ResourceLoader.GetForViewIndependentUse().GetString("LaunchAppButton_OpenWithApp_ToolTip");
             OpenWithAppToolTip = string.Format(openWithAppToolTipFormat, defaultAppName);
-        }
-
-        [RelayCommand]
-        private async void LaunchDefaultAppButtonAsync()
-        {
-            StorageFile storageFile = await File.GetStorageFileAsync();
-            LauncherOptions options = new ();
-
-            if (string.IsNullOrEmpty(defaultAppName))
-            {
-                // If there's no default app found, open the App picker
-                options.DisplayApplicationPicker = true;
-            }
-            else
-            {
-                // Try to launch the default app for current file format
-                bool result = await Launcher.LaunchFileAsync(storageFile, options);
-
-                if (!result)
-                {
-                    // If we couldn't successfully open the default app, open the App picker as a fallback
-                    options.DisplayApplicationPicker = true;
-                    await Launcher.LaunchFileAsync(storageFile, options);
-                }
-            }
         }
     }
 }

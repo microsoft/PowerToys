@@ -42,7 +42,7 @@
                 FontWeight="Bold"
                 Style="{StaticResource CaptionTextBlockStyle}"
                 Text="{x:Bind FileCountText, Mode=OneWay}"
-                Visibility="Collapsed" />
+                Visibility="{x:Bind IsMultiSelection, Mode=OneWay}" />
 
             <TextBlock
                 x:Name="AppTitle_FileName"
@@ -95,7 +95,6 @@
                     </VisualState.StateTriggers>
                     <VisualState.Setters>
                         <Setter Target="AppTitle_FileName.MaxWidth" Value="560" />
-                        <Setter Target="AppTitle_FileCount.Visibility" Value="Visible" />
                         <Setter Target="LaunchAppButton_Text.Visibility" Value="Visible" />
                     </VisualState.Setters>
                 </VisualState>
@@ -105,7 +104,6 @@
                     </VisualState.StateTriggers>
                     <VisualState.Setters>
                         <Setter Target="AppTitle_FileName.MaxWidth" Value="400" />
-                        <Setter Target="AppTitle_FileCount.Visibility" Value="Visible" />
                         <Setter Target="LaunchAppButton_Text.Visibility" Value="Visible" />
                     </VisualState.Setters>
                 </VisualState>
@@ -115,7 +113,6 @@
                     </VisualState.StateTriggers>
                     <VisualState.Setters>
                         <Setter Target="AppTitle_FileName.MaxWidth" Value="320" />
-                        <Setter Target="AppTitle_FileCount.Visibility" Value="Visible" />
                         <Setter Target="LaunchAppButton_Text.Visibility" Value="Collapsed" />
                     </VisualState.Setters>
                 </VisualState>

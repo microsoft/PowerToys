@@ -30,6 +30,8 @@
             x:Name="TitleBarControl"
             Grid.Row="0"
             File="{x:Bind ViewModel.FolderItemsQuery.CurrentFile, Mode=OneWay}"
+            FileIndex="{x:Bind ViewModel.FolderItemsQuery.CurrentItemIndex, Mode=OneWay}"
+            IsMultiSelection="{x:Bind ViewModel.FolderItemsQuery.IsMultiSelection, Mode=OneWay}"
             NumberOfFiles="{x:Bind ViewModel.FolderItemsQuery.Files.Count, Mode=OneWay}" />
 
         <fp:FilePreview
