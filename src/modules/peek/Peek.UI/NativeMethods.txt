@@ -1,3 +1,4 @@
 ﻿MonitorFromWindow
 GetMonitorInfo
 GetDpiForWindow
+GetWindowTextLength
