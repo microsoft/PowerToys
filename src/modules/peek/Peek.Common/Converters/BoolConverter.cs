@@ -4,7 +4,7 @@
 
 namespace Peek.Common.Converters
 {
-    public class BoolConverter
+    public static class BoolConverter
     {
         public static bool Invert(bool value)
         {

@@ -6,6 +6,7 @@ namespace Peek.FilePreviewer.Previewers
 {
     using System;
     using System.Collections.Generic;
+    using System.Diagnostics;
     using System.Drawing.Imaging;
     using System.IO;
     using System.Threading;
@@ -14,6 +15,7 @@ namespace Peek.FilePreviewer.Previewers
     using Microsoft.UI.Dispatching;
     using Microsoft.UI.Xaml.Media.Imaging;
     using Peek.Common;
+    using Peek.Common.Extensions;
     using Windows.Foundation;
     using Windows.Graphics.Imaging;
     using Windows.Storage.Streams;
@@ -22,24 +24,32 @@ namespace Peek.FilePreviewer.Previewers
     public partial class ImagePreviewer : ObservableObject, IBitmapPreviewer, IDisposable
     {
         [ObservableProperty]
-        [NotifyPropertyChangedFor(nameof(IsPreviewLoaded))]
         private BitmapSource? preview;
+
+        [ObservableProperty]
+        private PreviewState state;
 
         public ImagePreviewer(File file)
         {
             File = file;
             Dispatcher = DispatcherQueue.GetForCurrentThread();
-        }
 
-        public bool IsPreviewLoaded => preview != null;
+            PropertyChanged += OnPropertyChanged;
+        }
 
         private File File { get; }
 
         private DispatcherQueue Dispatcher { get; }
 
-        private bool IsHighQualityThumbnailLoaded { get; set; }
+        private Task<bool>? LowQualityThumbnailTask { get; set; }
 
-        private bool IsFullImageLoaded { get; set; }
+        private Task<bool>? HighQualityThumbnailTask { get; set; }
+
+        private Task<bool>? FullQualityImageTask { get; set; }
+
+        private bool IsHighQualityThumbnailLoaded => HighQualityThumbnailTask?.Status == TaskStatus.RanToCompletion;
+
+        private bool IsFullImageLoaded => FullQualityImageTask?.Status == TaskStatus.RanToCompletion;
 
         private CancellationTokenSource _cancellationTokenSource = new CancellationTokenSource();
 
@@ -62,19 +72,36 @@ namespace Peek.FilePreviewer.Previewers
             return await WICHelper.GetImageSize(File.Path);
         }
 
-        public Task LoadPreviewAsync()
+        public async Task LoadPreviewAsync()
         {
-            var lowQualityThumbnailTask = LoadLowQualityThumbnailAsync();
-            var highQualityThumbnailTask = LoadHighQualityThumbnailAsync();
-            var fullImageTask = LoadFullQualityImageAsync();
+            State = PreviewState.Loading;
 
-            return Task.WhenAll(lowQualityThumbnailTask, highQualityThumbnailTask, fullImageTask);
+            LowQualityThumbnailTask = LoadLowQualityThumbnailAsync();
+            HighQualityThumbnailTask = LoadHighQualityThumbnailAsync();
+            FullQualityImageTask = LoadFullQualityImageAsync();
+
+            await Task.WhenAll(LowQualityThumbnailTask, HighQualityThumbnailTask, FullQualityImageTask);
+
+            if (Preview == null && HasFailedLoadingPreview())
+            {
+                State = PreviewState.Error;
+            }
         }
 
-        private Task LoadLowQualityThumbnailAsync()
+        private void OnPropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
         {
-            var thumbnailTCS = new TaskCompletionSource();
-            Dispatcher.TryEnqueue(async () =>
+            if (e.PropertyName == nameof(Preview))
+            {
+                if (Preview != null)
+                {
+                    State = PreviewState.Loaded;
+                }
+            }
+        }
+
+        private Task<bool> LoadLowQualityThumbnailAsync()
+        {
+            return TaskExtension.RunSafe(async () =>
             {
                 if (CancellationToken.IsCancellationRequested)
                 {
@@ -84,30 +111,26 @@ namespace Peek.FilePreviewer.Previewers
 
                 if (!IsFullImageLoaded && !IsHighQualityThumbnailLoaded)
                 {
-                    if (File.Extension == ".png")
+                    var hr = ThumbnailHelper.GetThumbnail(Path.GetFullPath(File.Path), out IntPtr hbitmap, ThumbnailHelper.LowQualityThumbnailSize);
+                    if (hr != Common.Models.HResult.Ok)
                     {
-                        // TODO: special condition for PNG for faster rendering using WinRT APIs
-                        Preview = await ThumbnailHelper.GetThumbnailAsync(File.Path, 256);
+                        Debug.WriteLine("Error loading low quality thumbnail - hresult: " + hr);
+
+                        throw new ArgumentNullException(nameof(hbitmap));
                     }
-                    else
+
+                    await Dispatcher.RunOnUiThread(async () =>
                     {
-                        // TODO: Handle thumbnail errors
-                        ThumbnailHelper.GetThumbnail(Path.GetFullPath(File.Path), out IntPtr hbitmap, ThumbnailHelper.LowQualityThumbnailSize);
                         var thumbnailBitmap = await GetBitmapFromHBitmapAsync(hbitmap);
                         Preview = thumbnailBitmap;
-                    }
+                    });
                 }
-
-                thumbnailTCS.SetResult();
             });
-
-            return thumbnailTCS.Task;
         }
 
-        private Task LoadHighQualityThumbnailAsync()
+        private Task<bool> LoadHighQualityThumbnailAsync()
         {
-            var thumbnailTCS = new TaskCompletionSource();
-            Dispatcher.TryEnqueue(async () =>
+            return TaskExtension.RunSafe(async () =>
             {
                 if (CancellationToken.IsCancellationRequested)
                 {
@@ -117,56 +140,49 @@ namespace Peek.FilePreviewer.Previewers
 
                 if (!IsFullImageLoaded)
                 {
-                    if (File.Extension == ".png")
+                    var hr = ThumbnailHelper.GetThumbnail(Path.GetFullPath(File.Path), out IntPtr hbitmap, ThumbnailHelper.HighQualityThumbnailSize);
+                    if (hr != Common.Models.HResult.Ok)
                     {
-                        Preview = await ThumbnailHelper.GetThumbnailAsync(File.Path, 720);
+                        Debug.WriteLine("Error loading high quality thumbnail - hresult: " + hr);
+
+                        throw new ArgumentNullException(nameof(hbitmap));
                     }
-                    else
+
+                    await Dispatcher.RunOnUiThread(async () =>
                     {
-                        // TODO: Handle thumbnail errors
-                        ThumbnailHelper.GetThumbnail(Path.GetFullPath(File.Path), out IntPtr hbitmap, ThumbnailHelper.HighQualityThumbnailSize);
                         var thumbnailBitmap = await GetBitmapFromHBitmapAsync(hbitmap);
-                        IsHighQualityThumbnailLoaded = true;
                         Preview = thumbnailBitmap;
-                    }
+                    });
                 }
-
-                thumbnailTCS.SetResult();
             });
-
-            return thumbnailTCS.Task;
         }
 
-        private Task LoadFullQualityImageAsync()
+        private Task<bool> LoadFullQualityImageAsync()
         {
-            var fullImageTCS = new TaskCompletionSource();
-            Dispatcher.TryEnqueue(async () =>
+            return TaskExtension.RunSafe(async () =>
             {
-                BitmapSource bitmap;
-
-                if (File.Extension == ".png")
-                {
-                    bitmap = await GetDecodedImageAsync(File.Path, File.Extension);
-                }
-                else
-                {
-                    // TODO: Check if this is performant
-                    bitmap = await GetFullBitmapFromPathAsync(File.Path);
-                }
-
-                IsFullImageLoaded = true;
-
                 if (CancellationToken.IsCancellationRequested)
                 {
                     _cancellationTokenSource = new CancellationTokenSource();
                     return;
                 }
 
-                Preview = bitmap;
-                fullImageTCS.SetResult();
+                // TODO: Check if this is performant
+                await Dispatcher.RunOnUiThread(async () =>
+                {
+                    var bitmap = await GetFullBitmapFromPathAsync(File.Path);
+                    Preview = bitmap;
+                });
             });
+        }
 
-            return fullImageTCS.Task;
+        private bool HasFailedLoadingPreview()
+        {
+            var hasFailedLoadingLowQualityThumbnail = !(LowQualityThumbnailTask?.Result ?? true);
+            var hasFailedLoadingHighQualityThumbnail = !(HighQualityThumbnailTask?.Result ?? true);
+            var hasFailedLoadingFullQualityImage = !(FullQualityImageTask?.Result ?? true);
+
+            return hasFailedLoadingLowQualityThumbnail && hasFailedLoadingHighQualityThumbnail && hasFailedLoadingFullQualityImage;
         }
 
         private static async Task<BitmapImage> GetFullBitmapFromPathAsync(string path)
@@ -247,7 +263,7 @@ namespace Peek.FilePreviewer.Previewers
                 ".tiff",
                 ".dib",
 
-                // ".heic", // Error in System.Drawing.Image.FromHbitmap(hbitmap);
+                ".heic", // Error in System.Drawing.Image.FromHbitmap(hbitmap);
                 ".heif",
                 ".hif",
                 ".avif",

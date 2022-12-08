@@ -4,16 +4,15 @@
 
 namespace Peek.UI
 {
-    using System.Collections.Generic;
-    using System.Linq;
     using interop;
     using Microsoft.UI.Windowing;
-    using Peek.Common.Models;
+    using Microsoft.UI.Xaml.Input;
     using Peek.FilePreviewer.Models;
     using Peek.UI.Extensions;
-    using Peek.UI.Helpers;
     using Peek.UI.Native;
     using Windows.Foundation;
+    using Windows.System;
+    using Windows.UI.Core;
     using WinUIEx;
 
     /// <summary>
@@ -35,7 +34,7 @@ namespace Peek.UI
 
             NativeEventWaiter.WaitForEventLoop(Constants.ShowPeekEvent(), OnPeekHotkey);
 
-            TitleBarControl.SetToWindow(this);
+            TitleBarControl.SetTitleBarToWindow(this);
 
             AppWindow.Closing += AppWindow_Closing;
         }
@@ -49,21 +48,35 @@ namespace Peek.UI
         {
             if (AppWindow.IsVisible)
             {
-                this.Hide();
-                ViewModel.Files = new List<File>();
-                ViewModel.CurrentFile = null;
+                Uninitialize();
             }
             else
             {
-                var fileExplorerSelectedFiles = FileExplorerHelper.GetSelectedFileExplorerFiles();
-                if (fileExplorerSelectedFiles.Count == 0)
-                {
-                    return;
-                }
-
-                ViewModel.Files = fileExplorerSelectedFiles;
-                ViewModel.CurrentFile = fileExplorerSelectedFiles.First();
+                Initialize();
             }
+        }
+
+        private void LeftNavigationInvoked(KeyboardAccelerator sender, KeyboardAcceleratorInvokedEventArgs args)
+        {
+            ViewModel.AttemptLeftNavigation();
+        }
+
+        private void RightNavigationInvoked(KeyboardAccelerator sender, KeyboardAcceleratorInvokedEventArgs args)
+        {
+            ViewModel.AttemptRightNavigation();
+        }
+
+        private void Initialize()
+        {
+            ViewModel.FolderItemsQuery.Start();
+        }
+
+        private void Uninitialize()
+        {
+            this.Hide();
+
+            // TODO: move into general ViewModel method when needed
+            ViewModel.FolderItemsQuery.Clear();
         }
 
         /// <summary>
@@ -88,9 +101,9 @@ namespace Peek.UI
             var monitorScale = this.GetMonitorScale();
             var scaledWindowWidth = adjustedContentSize.Width / monitorScale;
             var scaledWindowHeight = adjustedContentSize.Height / monitorScale;
+
             this.CenterOnScreen(scaledWindowWidth + WindowHeightContentPadding, scaledWindowHeight + titleBarHeight + WindowWidthContentPadding);
-            this.Show();
-            this.BringToFront();
+            this.BringToForeground();
         }
 
         /// <summary>
@@ -101,7 +114,7 @@ namespace Peek.UI
         private void AppWindow_Closing(AppWindow sender, AppWindowClosingEventArgs args)
         {
             args.Cancel = true;
-            this.Hide();
+            Uninitialize();
         }
     }
 }
