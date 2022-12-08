@@ -17,8 +17,6 @@ namespace Peek.FilePreviewer.Previewers
     using Peek.Common;
     using Peek.Common.Extensions;
     using Windows.Foundation;
-    using Windows.Graphics.Imaging;
-    using Windows.Storage.Streams;
     using File = Peek.Common.Models.File;
 
     public partial class ImagePreviewer : ObservableObject, IBitmapPreviewer, IDisposable
@@ -218,30 +216,6 @@ namespace Peek.FilePreviewer.Previewers
             }
         }
 
-        private static async Task<WriteableBitmap> GetDecodedImageAsync(string path, string extension)
-        {
-            Guid decoderId = BitmapDecoder.JpegDecoderId;
-
-            // Check extension and auto select decoder id
-            if (extension == ".png")
-            {
-                decoderId = BitmapDecoder.PngDecoderId;
-            }
-
-            // TODO: consider StorageFile instead
-            Stream stream = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.Read);
-            IRandomAccessStream randomAccessStream = stream.AsRandomAccessStream();
-
-            // Create an encoder with the desired format
-            var encoder = await BitmapDecoder.CreateAsync(decoderId, randomAccessStream);
-            var softwareBitmap = await encoder.GetSoftwareBitmapAsync();
-
-            var wBitmap = new WriteableBitmap(softwareBitmap.PixelWidth, softwareBitmap.PixelHeight);
-            softwareBitmap.CopyToBuffer(wBitmap.PixelBuffer);
-
-            return wBitmap;
-        }
-
         public static bool IsFileTypeSupported(string fileExt)
         {
             return _supportedFileTypes.Contains(fileExt);
@@ -258,7 +232,8 @@ namespace Peek.FilePreviewer.Previewers
                 ".jif",
                 ".jpeg",
                 ".jpe",
-                ".png",
+
+                // ".png", // The current ImagePreviewer logic does not support transparency so PNG has it's own logic in PngPreviewer
                 ".tif",
                 ".tiff",
                 ".dib",
