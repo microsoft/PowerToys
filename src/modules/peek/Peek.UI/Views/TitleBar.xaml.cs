@@ -86,6 +86,7 @@ namespace Peek.UI.Views
                 AppWindow appWindow = mainWindow.GetAppWindow();
                 appWindow.TitleBar.ExtendsContentIntoTitleBar = true;
                 appWindow.TitleBar.ButtonBackgroundColor = Colors.Transparent;
+                appWindow.TitleBar.ButtonInactiveBackgroundColor = Colors.Transparent;
                 appWindow.TitleBar.SetDragRectangles(new Windows.Graphics.RectInt32[]
                 {
                     new Windows.Graphics.RectInt32(0, 0, (int)TitleBarRootContainer.ActualWidth, (int)TitleBarRootContainer.ActualHeight),
