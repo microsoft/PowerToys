@@ -13,7 +13,7 @@ namespace Peek.UI.Helpers
 {
     public static class FileExplorerHelper
     {
-        public static unsafe Shell32.IShellFolderViewDual2? GetCurrentFolderView()
+        public static Shell32.IShellFolderViewDual2? GetCurrentFolderView()
         {
             var foregroundWindowHandle = NativeMethods.GetForegroundWindow();
 
