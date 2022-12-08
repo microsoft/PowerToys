@@ -14,6 +14,7 @@ namespace Peek.FilePreviewer
     using Peek.Common.Models;
     using Peek.FilePreviewer.Models;
     using Peek.FilePreviewer.Previewers;
+    using Windows.ApplicationModel.Resources;
     using Windows.Foundation;
 
     [INotifyPropertyChanged]
@@ -34,9 +35,8 @@ namespace Peek.FilePreviewer
         [NotifyPropertyChangedFor(nameof(BitmapPreviewer))]
         [NotifyPropertyChangedFor(nameof(BrowserPreviewer))]
         [NotifyPropertyChangedFor(nameof(UnsupportedFilePreviewer))]
-        [NotifyPropertyChangedFor(nameof(ImageInfoTooltip))]
         private IPreviewer? previewer;
-        private string imageTooltip = "No file yet";
+        private string imageTooltip = ResourceLoader.GetForViewIndependentUse().GetString("PreviewTooltip_Blank");
 
         public FilePreview()
         {

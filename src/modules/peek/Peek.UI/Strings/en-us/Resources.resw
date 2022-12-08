@@ -201,4 +201,8 @@
     <value>Size: {0}</value>
     <comment>File Size label for the tooltip of preview. {0} is the size.</comment>
   </data>
+  <data name="PreviewTooltip_Blank" xml:space="preserve">
+    <value>File preview</value>
+    <comment>Tooltip of preview when there's no file info available.</comment>
+  </data>
 </root>
