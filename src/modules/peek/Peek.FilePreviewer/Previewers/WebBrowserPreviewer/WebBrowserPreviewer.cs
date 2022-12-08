@@ -14,12 +14,16 @@ namespace Peek.FilePreviewer.Previewers
     using Windows.Foundation;
     using File = Peek.Common.Models.File;
 
-    public partial class HtmlPreviewer : ObservableObject, IBrowserPreviewer
+    public partial class WebBrowserPreviewer : ObservableObject, IBrowserPreviewer
     {
         private static readonly HashSet<string> _supportedFileTypes = new HashSet<string>
         {
+            // Web
             ".html",
             ".htm",
+
+            // Document
+            ".pdf",
         };
 
         [ObservableProperty]
@@ -28,7 +32,7 @@ namespace Peek.FilePreviewer.Previewers
         [ObservableProperty]
         private PreviewState state;
 
-        public HtmlPreviewer(File file)
+        public WebBrowserPreviewer(File file)
         {
             File = file;
         }
