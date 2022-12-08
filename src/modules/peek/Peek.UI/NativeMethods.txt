@@ -1,3 +1,9 @@
 ﻿MonitorFromWindow
 GetMonitorInfo
 GetDpiForWindow
+GetForegroundWindow
+GetWindowThreadProcessId
+GetCurrentThreadId
+AttachThreadInput
+BringWindowToTop
+ShowWindow

@@ -73,6 +73,7 @@ namespace Peek.UI
 
         private void Uninitialize()
         {
+            this.Restore();
             this.Hide();
 
             // TODO: move into general ViewModel method when needed
@@ -103,6 +104,7 @@ namespace Peek.UI
             var scaledWindowHeight = adjustedContentSize.Height / monitorScale;
 
             this.CenterOnScreen(scaledWindowWidth + WindowHeightContentPadding, scaledWindowHeight + titleBarHeight + WindowWidthContentPadding);
+            this.Show();
             this.BringToForeground();
         }
 

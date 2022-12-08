@@ -39,29 +39,21 @@ namespace Peek.UI.Extensions
 
         public static void BringToForeground(this Window window)
         {
-            var windowHandle = window.GetWindowHandle();
+            var foregroundWindowHandle = PInvoke.GetForegroundWindow();
 
-            // Restore the window.
-            _ = NativeMethods.SendMessage(windowHandle, NativeMethods.WM_SYSCOMMAND, NativeMethods.SC_RESTORE, -2);
-
-            // Bring the window to the front.
-            if (!NativeMethods.SetWindowPos(
-                windowHandle,
-                NativeMethods.HWND_TOP,
-                0,
-                0,
-                0,
-                0,
-                NativeMethods.SWP_NOMOVE | NativeMethods.SWP_DRAWFRAME | NativeMethods.SWP_NOSIZE | NativeMethods.SWP_SHOWWINDOW))
+            uint targetProcessId = 0;
+            uint windowThreadProcessId = 0;
+            unsafe
             {
-                throw new InvalidOperationException("Failed to set window position.");
+                windowThreadProcessId = PInvoke.GetWindowThreadProcessId(foregroundWindowHandle, &targetProcessId);
             }
 
-            // Grab the SetForegroundWindow privilege from the shell process.
-            AcquireForegroundPrivilege();
-
-            // Make our window the foreground window.
-            _ = NativeMethods.SetForegroundWindow(windowHandle);
+            var windowHandle = window.GetWindowHandle();
+            var currentThreadId = PInvoke.GetCurrentThreadId();
+            PInvoke.AttachThreadInput(windowThreadProcessId, currentThreadId, true);
+            PInvoke.BringWindowToTop(new HWND(windowHandle));
+            PInvoke.ShowWindow(new HWND(windowHandle), Windows.Win32.UI.WindowsAndMessaging.SHOW_WINDOW_CMD.SW_SHOW);
+            PInvoke.AttachThreadInput(windowThreadProcessId, currentThreadId, false);
         }
 
         private static void AcquireForegroundPrivilege()
