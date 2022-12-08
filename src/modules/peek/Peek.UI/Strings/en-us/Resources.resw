@@ -123,4 +123,44 @@
   <data name="AppTitleText.Text" xml:space="preserve">
     <value>Peek</value>
   </data>
+  <data name="UnsupportedFile_FileType" xml:space="preserve">
+    <value>File Type: {0}</value>
+    <comment>File Type label for the unsupported files view. {0} is the type,</comment>
+  </data>
+  <data name="UnsupportedFile_FileSize" xml:space="preserve">
+    <value>Size: {0}</value>
+    <comment>File Size label for the unsupported files view. {0} is the size,</comment>
+  </data>
+  <data name="UnsupportedFile_DateModified" xml:space="preserve">
+    <value>Date Modified: {0}</value>
+    <comment>Date Modified label for the unsupported files view. {0} is the date</comment>
+  </data>
+  <data name="ReadableString_ByteAbbreviationFormat" xml:space="preserve">
+    <value>{0} B</value>
+    <comment>Abbrivation for the size unit byte.</comment>
+  </data>
+  <data name="ReadableString_KiloByteAbbreviationFormat" xml:space="preserve">
+    <value>{0} KB</value>
+    <comment>Abbrivation for the size unit kilobyte.</comment>
+  </data>
+  <data name="ReadableString_MegaByteAbbreviationFormat" xml:space="preserve">
+    <value>{0} MB</value>
+    <comment>Abbrivation for the size unit megabyte.</comment>
+  </data>
+  <data name="ReadableString_GigaByteAbbreviationFormat" xml:space="preserve">
+    <value>{0} GB</value>
+    <comment>Abbrivation for the size unit gigabyte.</comment>
+  </data>
+  <data name="ReadableString_TeraByteAbbreviationFormat" xml:space="preserve">
+    <value>{0} TB</value>
+    <comment>Abbrivation for the size unit terabyte.</comment>
+  </data>
+  <data name="ReadableString_PetaByteAbbreviationFormat" xml:space="preserve">
+    <value>{0} PB</value>
+    <comment>Abbrivation for the size unit petabyte.</comment>
+  </data>
+  <data name="ReadableString_ExaByteAbbreviationFormat" xml:space="preserve">
+    <value>{0} EB</value>
+    <comment>Abbrivation for the size unit exabyte.</comment>
+  </data>
 </root>
