@@ -34,7 +34,7 @@ namespace Peek.UI
 
             NativeEventWaiter.WaitForEventLoop(Constants.ShowPeekEvent(), OnPeekHotkey);
 
-            TitleBarControl.SetToWindow(this);
+            TitleBarControl.SetTitleBarToWindow(this);
 
             AppWindow.Closing += AppWindow_Closing;
         }
