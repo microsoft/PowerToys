@@ -318,8 +318,7 @@ namespace registry
                                                           std::wstring className,
                                                           std::wstring displayName,
                                                           std::vector<std::wstring> fileTypes,
-                                                          std::wstring fileKindType = L"",
-                                                          std::wstring appClsid = L"")
+                                                          std::wstring fileKindType = L"")
         {
             const HKEY scope = perUser ? HKEY_CURRENT_USER : HKEY_LOCAL_MACHINE;
 
@@ -348,9 +347,6 @@ namespace registry
             std::wstring versionPath = inprocServerPath;
             versionPath += L'\\';
             versionPath += powertoysVersion;
-
-            std::wstring appIdPath = L"Software\\Classes\\AppID\\";
-            appIdPath += appClsid;
 
             using vec_t = std::vector<registry::ValueChange>;
             // TODO: verify that we actually need all of those
