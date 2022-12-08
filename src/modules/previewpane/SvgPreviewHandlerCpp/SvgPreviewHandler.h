@@ -65,4 +65,5 @@ private:
     IUnknown* m_punkSite;
 
     HANDLE m_process;
+    HANDLE m_resizeEvent;
 };

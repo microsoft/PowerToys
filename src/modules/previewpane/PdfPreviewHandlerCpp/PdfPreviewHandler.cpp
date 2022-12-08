@@ -14,6 +14,8 @@ extern long g_cDllRef;
 PdfPreviewHandler::PdfPreviewHandler() :
     m_cRef(1), m_hwndParent(NULL), m_rcParent(), m_punkSite(NULL), m_process(NULL)
 {
+    m_resizeEvent = CreateEvent(nullptr, false, false, CommonSharedConstants::PDF_PREVIEW_RESIZE_EVENT);
+
     InterlockedIncrement(&g_cDllRef);
 }
 
@@ -119,21 +121,22 @@ IFACEMETHODIMP PdfPreviewHandler::SetRect(const RECT* prc)
     HRESULT hr = E_INVALIDARG;
     if (prc != NULL)
     {
-        m_rcParent = *prc;
-        auto resizeEvent = CreateEvent(nullptr, false, false, CommonSharedConstants::PDF_PREVIEW_RESIZE_EVENT);
-        if (!resizeEvent)
+        if (!m_resizeEvent)
         {
             // Logger::warn(L"Failed to create exit event for {}", get_last_error_or_default(GetLastError()));
         }
         else
         {
-            if (!SetEvent(resizeEvent))
+            if (m_rcParent.right != prc->right || m_rcParent.left != prc->left || m_rcParent.top != prc->top || m_rcParent.bottom != prc->bottom)
             {
-                // Logger::warn(L"Failed to signal exit event for  {}", get_last_error_or_default(GetLastError()));
+                if (!SetEvent(m_resizeEvent))
+                {
+                    // Logger::warn(L"Failed to signal exit event for  {}", get_last_error_or_default(GetLastError()));
 
-                // For some reason, we couldn't process the signal correctly, so we still
-                // need to terminate the PowerAccent process.
-                // TerminateProcess(m_process, 0);
+                    // For some reason, we couldn't process the signal correctly, so we still
+                    // need to terminate the PowerAccent process.
+                    // TerminateProcess(m_process, 0);
+                }
             }
         }
         hr = S_OK;
@@ -180,6 +183,7 @@ IFACEMETHODIMP PdfPreviewHandler::DoPreview()
 
 IFACEMETHODIMP PdfPreviewHandler::Unload()
 {
+    m_hwndParent = NULL;
     TerminateProcess(m_process, 0);
     return S_OK;
 }

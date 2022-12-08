@@ -158,9 +158,11 @@ namespace Common
 
             RECT s = default(RECT);
             NativeMethods.GetClientRect(hwnd, ref s);
-            NativeMethods.GetClientRect(hwnd, ref s);
 
-            Bounds = s.ToRectangle();
+            if (Bounds.Right != s.Right || Bounds.Bottom != s.Bottom || Bounds.Left != s.Left || Bounds.Top != s.Top)
+            {
+                Bounds = s.ToRectangle();
+            }
         }
     }
 }
