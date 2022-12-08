@@ -9,8 +9,6 @@ namespace Peek.FilePreviewer.Previewers
     using System.Threading;
     using System.Threading.Tasks;
     using CommunityToolkit.Mvvm.ComponentModel;
-    using Microsoft.UI.Dispatching;
-    using Peek.FilePreviewer.Controls;
     using Windows.Foundation;
     using File = Peek.Common.Models.File;
 
@@ -28,12 +26,15 @@ namespace Peek.FilePreviewer.Previewers
         [ObservableProperty]
         private PreviewState state;
 
-        public HtmlPreviewer(File file)
+        public HtmlPreviewer(File file, CancellationToken cancellationToken)
         {
             File = file;
+            CancellationToken = cancellationToken;
         }
 
         private File File { get; }
+
+        private CancellationToken CancellationToken { get; }
 
         public Task<Size> GetPreviewSizeAsync()
         {

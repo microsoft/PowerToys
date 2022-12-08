@@ -40,9 +40,10 @@ namespace Peek.FilePreviewer.Previewers
         [ObservableProperty]
         private PreviewState state;
 
-        public UnsupportedFilePreviewer(File file)
+        public UnsupportedFilePreviewer(File file, CancellationToken cancellationToken)
         {
             File = file;
+            CancellationToken = cancellationToken;
             FileName = file.FileName;
             DateModified = file.DateModified.ToString();
             Dispatcher = DispatcherQueue.GetForCurrentThread();
@@ -52,11 +53,9 @@ namespace Peek.FilePreviewer.Previewers
 
         private File File { get; }
 
+        private CancellationToken CancellationToken { get; }
+
         private DispatcherQueue Dispatcher { get; }
-
-        private CancellationTokenSource _cancellationTokenSource = new CancellationTokenSource();
-
-        private CancellationToken CancellationToken => _cancellationTokenSource.Token;
 
         private Task<bool>? IconPreviewTask { get; set; }
 
@@ -64,7 +63,6 @@ namespace Peek.FilePreviewer.Previewers
 
         public void Dispose()
         {
-            _cancellationTokenSource.Dispose();
             GC.SuppressFinalize(this);
         }
 
@@ -96,11 +94,7 @@ namespace Peek.FilePreviewer.Previewers
         {
             return TaskExtension.RunSafe(async () =>
             {
-                if (CancellationToken.IsCancellationRequested)
-                {
-                    _cancellationTokenSource = new CancellationTokenSource();
-                    return;
-                }
+                CancellationToken.ThrowIfCancellationRequested();
 
                 // TODO: Get icon with transparency
                 IconHelper.GetIcon(Path.GetFullPath(File.Path), out IntPtr hbitmap);
@@ -116,11 +110,7 @@ namespace Peek.FilePreviewer.Previewers
         {
             return TaskExtension.RunSafe(async () =>
             {
-                if (CancellationToken.IsCancellationRequested)
-                {
-                    _cancellationTokenSource = new CancellationTokenSource();
-                    return;
-                }
+                CancellationToken.ThrowIfCancellationRequested();
 
                 // File Properties
                 var bytes = await PropertyHelper.GetFileSizeInBytes(File.Path);

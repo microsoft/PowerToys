@@ -6,6 +6,7 @@ namespace Peek.FilePreviewer.Previewers
 {
     using System;
     using System.ComponentModel;
+    using System.Threading;
     using System.Threading.Tasks;
     using Windows.Foundation;
 

@@ -5,15 +5,14 @@
 namespace Peek.FilePreviewer
 {
     using System;
+    using System.Threading;
     using System.Threading.Tasks;
     using CommunityToolkit.Mvvm.ComponentModel;
     using Microsoft.UI.Xaml;
     using Microsoft.UI.Xaml.Controls;
-    using Microsoft.UI.Xaml.Media.Imaging;
     using Peek.Common.Models;
     using Peek.FilePreviewer.Models;
     using Peek.FilePreviewer.Previewers;
-    using Windows.Foundation;
 
     [INotifyPropertyChanged]
     public sealed partial class FilePreview : UserControl
@@ -35,6 +34,8 @@ namespace Peek.FilePreviewer
         [NotifyPropertyChangedFor(nameof(UnsupportedFilePreviewer))]
         private IPreviewer? previewer;
 
+        private CancellationTokenSource _cancellationTokenSource = new ();
+
         public FilePreview()
         {
             InitializeComponent();
@@ -47,7 +48,7 @@ namespace Peek.FilePreviewer
             {
                 if (Previewer?.State == PreviewState.Error)
                 {
-                    Previewer = previewerFactory.CreateDefaultPreviewer(File);
+                    Previewer = previewerFactory.CreateDefaultPreviewer(File, _cancellationTokenSource.Token);
                     await UpdatePreviewAsync();
                 }
             }
@@ -93,7 +94,11 @@ namespace Peek.FilePreviewer
                 return;
             }
 
-            Previewer = previewerFactory.Create(File);
+            // Cancel previous loading task
+            _cancellationTokenSource.Cancel();
+            _cancellationTokenSource = new ();
+
+            Previewer = previewerFactory.Create(File, _cancellationTokenSource.Token);
             await UpdatePreviewAsync();
         }
 
