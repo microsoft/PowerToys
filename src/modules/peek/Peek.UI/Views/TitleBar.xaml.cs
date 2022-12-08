@@ -5,6 +5,7 @@
 namespace Peek.UI.Views
 {
     using System;
+    using System.Collections.Generic;
     using CommunityToolkit.Mvvm.ComponentModel;
     using CommunityToolkit.Mvvm.Input;
     using ManagedCommon;
@@ -13,8 +14,10 @@ namespace Peek.UI.Views
     using Microsoft.UI.Xaml;
     using Microsoft.UI.Xaml.Controls;
     using Peek.Common.Models;
+    using Peek.UI.Extensions;
     using Peek.UI.Helpers;
     using Windows.ApplicationModel.Resources;
+    using Windows.Graphics;
     using Windows.Storage;
     using Windows.System;
     using WinUIEx;
@@ -50,8 +53,6 @@ namespace Peek.UI.Views
                typeof(TitleBar),
                new PropertyMetadata(null, null));
 
-        private string? defaultAppName;
-
         [ObservableProperty]
         private string openWithAppText = ResourceLoader.GetForViewIndependentUse().GetString("LaunchAppButton_OpenWith_Text");
 
@@ -64,6 +65,7 @@ namespace Peek.UI.Views
         public TitleBar()
         {
             InitializeComponent();
+            TitleBarRootContainer.SizeChanged += TitleBarRootContainer_SizeChanged;
         }
 
         public File File
@@ -90,8 +92,14 @@ namespace Peek.UI.Views
             set => SetValue(NumberOfFilesProperty, value);
         }
 
+        private string? DefaultAppName { get; set; }
+
+        private Window? MainWindow { get; set; }
+
         public void SetTitleBarToWindow(MainWindow mainWindow)
         {
+            MainWindow = mainWindow;
+
             if (AppWindowTitleBar.IsCustomizationSupported())
             {
                 UpdateTitleBarCustomization(mainWindow);
@@ -115,7 +123,7 @@ namespace Peek.UI.Views
             StorageFile storageFile = await File.GetStorageFileAsync();
             LauncherOptions options = new ();
 
-            if (string.IsNullOrEmpty(defaultAppName))
+            if (string.IsNullOrEmpty(DefaultAppName))
             {
                 // If there's no default app found, open the App picker
                 options.DisplayApplicationPicker = true;
@@ -134,6 +142,47 @@ namespace Peek.UI.Views
             }
         }
 
+        private void TitleBarRootContainer_SizeChanged(object sender, SizeChangedEventArgs e)
+        {
+            UpdateDragRegion();
+        }
+
+        private void UpdateDragRegion()
+        {
+            if (MainWindow == null)
+            {
+                return;
+            }
+
+            var appWindow = MainWindow.GetAppWindow();
+            if (AppWindowTitleBar.IsCustomizationSupported() && appWindow != null && appWindow.TitleBar.ExtendsContentIntoTitleBar)
+            {
+                var scale = MainWindow.GetMonitorScale();
+
+                SystemRightPaddingColumn.Width = new GridLength(appWindow.TitleBar.RightInset / scale);
+                SystemLeftPaddingColumn.Width = new GridLength(appWindow.TitleBar.LeftInset / scale);
+
+                var dragRectsList = new List<RectInt32>();
+
+                RectInt32 dragRectangleLeft;
+                dragRectangleLeft.X = (int)(SystemLeftPaddingColumn.ActualWidth * scale);
+                dragRectangleLeft.Y = 0;
+                dragRectangleLeft.Height = (int)(TitleBarRootContainer.ActualHeight * scale);
+                dragRectangleLeft.Width = (int)(DraggableColumn.ActualWidth * scale);
+
+                RectInt32 dragRectangleRight;
+                dragRectangleRight.X = (int)((SystemLeftPaddingColumn.ActualWidth + DraggableColumn.ActualWidth + LaunchAppButtonColumn.ActualWidth) * scale);
+                dragRectangleRight.Y = 0;
+                dragRectangleRight.Height = (int)(TitleBarRootContainer.ActualHeight * scale);
+                dragRectangleRight.Width = (int)(AppRightPaddingColumn.ActualWidth * scale);
+
+                dragRectsList.Add(dragRectangleLeft);
+                dragRectsList.Add(dragRectangleRight);
+
+                appWindow.TitleBar.SetDragRectangles(dragRectsList.ToArray());
+            }
+        }
+
         private void UpdateTitleBarCustomization(MainWindow mainWindow)
         {
             if (AppWindowTitleBar.IsCustomizationSupported())
@@ -142,10 +191,6 @@ namespace Peek.UI.Views
                 appWindow.TitleBar.ExtendsContentIntoTitleBar = true;
                 appWindow.TitleBar.ButtonBackgroundColor = Colors.Transparent;
                 appWindow.TitleBar.ButtonInactiveBackgroundColor = Colors.Transparent;
-                appWindow.TitleBar.SetDragRectangles(new Windows.Graphics.RectInt32[]
-                {
-                    new Windows.Graphics.RectInt32(0, 0, (int)TitleBarRootContainer.ActualWidth, (int)TitleBarRootContainer.ActualHeight),
-                });
 
                 mainWindow.SetTitleBar(this);
             }
@@ -180,13 +225,13 @@ namespace Peek.UI.Views
         private void UpdateDefaultAppToLaunch()
         {
             // Update the name of default app to launch
-            defaultAppName = DefaultAppHelper.TryGetDefaultAppName(File.Extension);
+            DefaultAppName = DefaultAppHelper.TryGetDefaultAppName(File.Extension);
 
             string openWithAppTextFormat = ResourceLoader.GetForViewIndependentUse().GetString("LaunchAppButton_OpenWithApp_Text");
-            OpenWithAppText = string.Format(openWithAppTextFormat, defaultAppName);
+            OpenWithAppText = string.Format(openWithAppTextFormat, DefaultAppName);
 
             string openWithAppToolTipFormat = ResourceLoader.GetForViewIndependentUse().GetString("LaunchAppButton_OpenWithApp_ToolTip");
-            OpenWithAppToolTip = string.Format(openWithAppToolTipFormat, defaultAppName);
+            OpenWithAppToolTip = string.Format(openWithAppToolTipFormat, DefaultAppName);
         }
     }
 }

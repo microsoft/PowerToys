@@ -12,80 +12,84 @@
 
     <Grid x:Name="TitleBarRootContainer" Height="48">
         <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="Auto" />
-            <ColumnDefinition Width="*" />
+            <ColumnDefinition x:Name="SystemLeftPaddingColumn" Width="0" />
+            <ColumnDefinition x:Name="DraggableColumn" Width="*" />
+            <ColumnDefinition x:Name="LaunchAppButtonColumn" Width="Auto" />
+            <ColumnDefinition x:Name="AppRightPaddingColumn" Width="65" />
+            <ColumnDefinition x:Name="SystemRightPaddingColumn" Width="0" />
         </Grid.ColumnDefinitions>
 
         <StackPanel
             x:Name="AppIconAndName"
-            Grid.Column="0"
-            Margin="8,4"
+            Grid.Column="1"
+            Margin="8,0,0,0"
             HorizontalAlignment="Left"
             VerticalAlignment="Center"
-            Orientation="Horizontal">
+            Orientation="Horizontal"
+            Spacing="4">
 
             <Image
                 x:Name="PeekLogo"
                 x:Uid="PeekLogo"
                 Width="24"
                 Height="24"
-                Margin="4,0"
+                Margin="4,0,0,0"
                 VerticalAlignment="Center"
-                Source="../Assets/AppList.png"
+                Source="../Assets/AppList.scale-400.png"
                 Stretch="UniformToFill" />
 
-            <TextBlock
-                x:Name="AppTitle_FileCount"
-                x:Uid="AppTitle_FileCount"
-                Margin="4,0,0,0"
+            <StackPanel
+                Margin="8,0,0,0"
+                HorizontalAlignment="Left"
                 VerticalAlignment="Center"
-                FontWeight="Bold"
-                Style="{StaticResource CaptionTextBlockStyle}"
-                Text="{x:Bind FileCountText, Mode=OneWay}"
-                Visibility="{x:Bind IsMultiSelection, Mode=OneWay}" />
+                Orientation="Horizontal">
+                <TextBlock
+                    x:Name="AppTitle_FileCount"
+                    x:Uid="AppTitle_FileCount"
+                    Margin="0,0,4,0"
+                    VerticalAlignment="Center"
+                    FontWeight="Bold"
+                    Style="{StaticResource CaptionTextBlockStyle}"
+                    Text="{x:Bind FileCountText, Mode=OneWay}"
+                    Visibility="{x:Bind IsMultiSelection, Mode=OneWay}" />
 
-            <TextBlock
-                x:Name="AppTitle_FileName"
-                x:Uid="AppTitle_FileName"
-                MaxWidth="100"
-                Margin="4,0,0,0"
-                VerticalAlignment="Center"
-                Style="{StaticResource CaptionTextBlockStyle}"
-                Text="{x:Bind File.FileName, Mode=OneWay}"
-                TextWrapping="NoWrap" />
+                <TextBlock
+                    x:Name="AppTitle_FileName"
+                    x:Uid="AppTitle_FileName"
+                    MaxWidth="100"
+                    VerticalAlignment="Center"
+                    Style="{StaticResource CaptionTextBlockStyle}"
+                    Text="{x:Bind File.FileName, Mode=OneWay}"
+                    TextWrapping="NoWrap" />
+            </StackPanel>
         </StackPanel>
 
-        <Grid
-            x:Name="LaunchAppButtonContainer"
-            Grid.Column="1"
-            Margin="4,4,144,4"
-            HorizontalAlignment="Right"
-            VerticalAlignment="Center">
-            <Button
-                x:Name="LaunchAppButton"
-                x:Uid="LaunchAppButton"
-                Command="{x:Bind LaunchDefaultAppButtonAsyncCommand, Mode=OneWay}"
-                ToolTipService.ToolTip="{x:Bind OpenWithAppToolTip, Mode=OneWay}">
-                <Button.Content>
-                    <StackPanel Orientation="Horizontal">
-                        <FontIcon
-                            x:Name="LaunchAppButton_Icon"
-                            x:Uid="LaunchAppButton_Icon"
-                            FontSize="{StaticResource CaptionTextBlockFontSize}"
-                            Glyph="&#xE8E5;" />
-                        <TextBlock
-                            x:Name="LaunchAppButton_Text"
-                            x:Uid="LaunchAppButton_Text"
-                            Margin="4,0,0,0"
-                            Style="{StaticResource CaptionTextBlockStyle}"
-                            Text="{x:Bind OpenWithAppText, Mode=OneWay}" />
-                    </StackPanel>
-                </Button.Content>
-                <Button.KeyboardAccelerators>
-                    <KeyboardAccelerator Key="Enter" />
-                </Button.KeyboardAccelerators>
-            </Button>
-        </Grid>
+        <Button
+            x:Name="LaunchAppButton"
+            x:Uid="LaunchAppButton"
+            Grid.Column="2"
+            VerticalAlignment="Center"
+            Command="{x:Bind LaunchDefaultAppButtonAsyncCommand, Mode=OneWay}"
+            ToolTipService.ToolTip="{x:Bind OpenWithAppToolTip, Mode=OneWay}">
+            <Button.Content>
+                <StackPanel Orientation="Horizontal">
+                    <FontIcon
+                        x:Name="LaunchAppButton_Icon"
+                        x:Uid="LaunchAppButton_Icon"
+                        FontSize="{StaticResource CaptionTextBlockFontSize}"
+                        Glyph="&#xE8E5;" />
+                    <TextBlock
+                        x:Name="LaunchAppButton_Text"
+                        x:Uid="LaunchAppButton_Text"
+                        Margin="4,0,0,0"
+                        Style="{StaticResource CaptionTextBlockStyle}"
+                        Text="{x:Bind OpenWithAppText, Mode=OneWay}" />
+                </StackPanel>
+            </Button.Content>
+            <Button.KeyboardAccelerators>
+                <KeyboardAccelerator Key="Enter" />
+            </Button.KeyboardAccelerators>
+        </Button>
 
         <VisualStateManager.VisualStateGroups>
             <VisualStateGroup x:Name="AdaptiveWidth">
