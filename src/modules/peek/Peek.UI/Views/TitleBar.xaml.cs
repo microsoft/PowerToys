@@ -38,6 +38,8 @@ namespace Peek.UI.Views
 
         [ObservableProperty]
         private string openWithAppText = ResourceLoader.GetForViewIndependentUse().GetString("LaunchAppButton_OpenWith_Text");
+        [ObservableProperty]
+        private string openWithAppToolTip = ResourceLoader.GetForViewIndependentUse().GetString("LaunchAppButton_OpenWith_ToolTip");
         private string? currentDefaultApp;
 
         [ObservableProperty]
@@ -120,6 +122,8 @@ namespace Peek.UI.Views
             currentDefaultApp = DefaultAppHelper.TryGetDefaultAppName(File.Extension);
             string openWithAppTextFormat = ResourceLoader.GetForViewIndependentUse().GetString("LaunchAppButton_OpenWithApp_Text");
             OpenWithAppText = string.Format(openWithAppTextFormat, currentDefaultApp);
+            string openWithAppToolTipFormat = ResourceLoader.GetForViewIndependentUse().GetString("LaunchAppButton_OpenWithApp_ToolTip");
+            OpenWithAppToolTip = string.Format(openWithAppToolTipFormat, currentDefaultApp);
         }
 
         [RelayCommand]

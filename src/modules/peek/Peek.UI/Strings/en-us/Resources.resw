@@ -126,7 +126,13 @@
   <data name="LaunchAppButton_OpenWith_Text" xml:space="preserve">
     <value>Open with</value>
   </data>
+  <data name="LaunchAppButton_OpenWith_ToolTip" xml:space="preserve">
+    <value>Open with (Enter)</value>
+  </data>
   <data name="LaunchAppButton_OpenWithApp_Text" xml:space="preserve">
     <value>Open with {0}</value>
+  </data>
+  <data name="LaunchAppButton_OpenWithApp_ToolTip" xml:space="preserve">
+    <value>Open with {0} (Enter)</value>
   </data>
 </root>

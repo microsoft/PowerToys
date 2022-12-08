@@ -65,7 +65,7 @@
                 x:Name="LaunchAppButton"
                 x:Uid="LaunchAppButton"
                 Command="{x:Bind LaunchDefaultAppButtonAsyncCommand, Mode=OneWay}"
-                ToolTipService.ToolTip="{x:Bind OpenWithAppText, Mode=OneWay}">
+                ToolTipService.ToolTip="{x:Bind OpenWithAppToolTip, Mode=OneWay}">
                 <Button.Content>
                     <StackPanel Orientation="Horizontal">
                         <FontIcon
