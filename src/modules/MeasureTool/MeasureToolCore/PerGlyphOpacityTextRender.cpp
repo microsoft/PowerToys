@@ -74,7 +74,7 @@ HRESULT __stdcall PerGlyphOpacityTextRender::DrawGlyphRun(void* /*clientDrawingC
     auto opacityEffect = clientDrawingEffect.try_query<IDrawingEffect>();
 
     if (opacityEffect)
-        _baseBrush->SetOpacity(static_cast<OpacityEffect*>(opacityEffect.get())->alpha);
+        _baseBrush->SetOpacity(dynamic_cast<OpacityEffect*>(opacityEffect.get())->alpha);
 
     if (SUCCEEDED(hr))
     {
