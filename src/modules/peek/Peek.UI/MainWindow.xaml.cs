@@ -4,6 +4,7 @@
 
 namespace Peek.UI
 {
+    using System.Diagnostics;
     using interop;
     using Microsoft.UI.Windowing;
     using Microsoft.UI.Xaml.Input;
@@ -12,8 +13,6 @@ namespace Peek.UI
     using Peek.UI.Helpers;
     using Peek.UI.Native;
     using Windows.Foundation;
-    using Windows.System;
-    using Windows.UI.Core;
     using WinUIEx;
 
     /// <summary>
@@ -95,15 +94,38 @@ namespace Peek.UI
         /// <param name="e">PreviewSizeChangedArgs</param>
         private void FilePreviewer_PreviewSizeChanged(object sender, PreviewSizeChangedArgs e)
         {
+            // TODO: Use design-defined rules for adjusted window size
             var requestedSize = e.WindowSizeRequested;
             var monitorSize = this.GetMonitorSize();
 
-            // TODO: Use design-defined rules for adjusted window size
             var titleBarHeight = TitleBarControl.ActualHeight;
-            var maxContentSize = new Size(monitorSize.Width * MaxWindowToMonitorRatio, (monitorSize.Height - titleBarHeight) * MaxWindowToMonitorRatio);
+
+            var maxContentSize = new Size(0, 0);
             var minContentSize = new Size(MinWindowWidth, MinWindowHeight - titleBarHeight);
 
-            var adjustedContentSize = requestedSize.Fit(maxContentSize, minContentSize);
+            var adjustedContentSize = new Size(0, 0);
+
+            if (e.WindowSizeFormat == SizeFormat.Percentage)
+            {
+                maxContentSize = new Size(monitorSize.Width * requestedSize.Width, (monitorSize.Height - titleBarHeight) * requestedSize.Height);
+                minContentSize = new Size(MinWindowWidth, MinWindowHeight - titleBarHeight);
+
+                adjustedContentSize = maxContentSize.Fit(maxContentSize, minContentSize);
+            }
+            else if (e.WindowSizeFormat == SizeFormat.Pixels)
+            {
+                maxContentSize = new Size(monitorSize.Width * MaxWindowToMonitorRatio, (monitorSize.Height - titleBarHeight) * MaxWindowToMonitorRatio);
+                minContentSize = new Size(MinWindowWidth, MinWindowHeight - titleBarHeight);
+
+                adjustedContentSize = requestedSize.Fit(maxContentSize, minContentSize);
+            }
+            else
+            {
+                Debug.Assert(false, "Unknown SizeFormat set for resizing window.");
+                adjustedContentSize = minContentSize;
+
+                return;
+            }
 
             // TODO: Only re-center if window has not been resized by user (or use design-defined logic).
             // TODO: Investigate why portrait images do not perfectly fit edge-to-edge

@@ -7,3 +7,4 @@ GetCurrentThreadId
 AttachThreadInput
 BringWindowToTop
 ShowWindow
+GetWindowTextLength

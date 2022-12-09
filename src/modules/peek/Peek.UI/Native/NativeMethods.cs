@@ -6,6 +6,7 @@ namespace Peek.UI.Native
 {
     using System;
     using System.Runtime.InteropServices;
+    using System.Runtime.Versioning;
     using System.Text;
     using Peek.Common.Models;
 
@@ -47,5 +48,8 @@ namespace Peek.UI.Native
 
         [DllImport("Shlwapi.dll", SetLastError = true, CharSet = CharSet.Auto)]
         internal static extern HResult AssocQueryString(AssocF flags, AssocStr str, string pszAssoc, string? pszExtra, [Out] StringBuilder? pszOut, [In][Out] ref uint pcchOut);
+
+        [DllImport("user32.dll")]
+        internal static extern int GetWindowText(Windows.Win32.Foundation.HWND hWnd, StringBuilder lpString, int nMaxCount);
     }
 }

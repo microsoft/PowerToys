@@ -12,7 +12,14 @@ namespace Peek.FilePreviewer.Controls
 
     public sealed partial class BrowserControl : UserControl
     {
-        public delegate void NavigationCompletedHandler(WebView2 sender, CoreWebView2NavigationCompletedEventArgs args);
+        /// <summary>
+        /// Helper private Uri where we cache the last navigated page
+        /// so we can redirect internal PDF or Webpage links to external
+        /// webbrowser, avoiding WebView internal navigation.
+        /// </summary>
+        private Uri? _navigatedUri;
+
+        public delegate void NavigationCompletedHandler(WebView2? sender, CoreWebView2NavigationCompletedEventArgs? args);
 
         public event NavigationCompletedHandler? NavigationCompleted;
 
@@ -53,6 +60,7 @@ namespace Peek.FilePreviewer.Controls
         public void Navigate()
         {
             IsNavigationCompleted = false;
+            _navigatedUri = null;
 
             if (Source != null)
             {
@@ -90,8 +98,13 @@ namespace Peek.FilePreviewer.Controls
 
         private async void PreviewBrowser_NavigationStarting(WebView2 sender, Microsoft.Web.WebView2.Core.CoreWebView2NavigationStartingEventArgs args)
         {
+            if (_navigatedUri == null)
+            {
+                return;
+            }
+
             // In case user starts or tries to navigate from within the HTML file we launch default web browser for navigation.
-            if (args.Uri != null && args.Uri != Source?.ToString() && args.IsUserInitiated)
+            if (args.Uri != null && args.Uri != _navigatedUri?.ToString() && args.IsUserInitiated)
             {
                 args.Cancel = true;
                 await Launcher.LaunchUriAsync(new Uri(args.Uri));
@@ -100,7 +113,12 @@ namespace Peek.FilePreviewer.Controls
 
         private void PreviewWV2_NavigationCompleted(WebView2 sender, Microsoft.Web.WebView2.Core.CoreWebView2NavigationCompletedEventArgs args)
         {
-            IsNavigationCompleted = true;
+            if (args.IsSuccess)
+            {
+                IsNavigationCompleted = true;
+
+                _navigatedUri = Source;
+            }
 
             NavigationCompleted?.Invoke(sender, args);
         }

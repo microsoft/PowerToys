@@ -7,6 +7,8 @@ namespace Peek.FilePreviewer.Previewers
     using System;
     using System.Collections.Generic;
     using System.Runtime.InteropServices;
+    using System.Threading.Tasks;
+    using Microsoft.UI.Xaml.Media.Imaging;
     using Peek.Common;
     using Peek.Common.Models;
 
@@ -58,6 +60,33 @@ namespace Peek.FilePreviewer.Previewers
             Marshal.ReleaseComObject(nativeShellItem);
 
             return hr;
+        }
+
+        public static async Task<BitmapImage?> GetThumbnailAsync(string path, uint size)
+        {
+            BitmapImage? bitmapImage = null;
+
+            // preview image
+            var file = await Windows.Storage.StorageFile.GetFileFromPathAsync(path);
+            if (file == null)
+            {
+                return bitmapImage;
+            }
+
+            var imageStream = await file.GetThumbnailAsync(
+                Windows.Storage.FileProperties.ThumbnailMode.SingleItem,
+                size,
+                Windows.Storage.FileProperties.ThumbnailOptions.None);
+
+            if (imageStream == null)
+            {
+                return bitmapImage;
+            }
+
+            bitmapImage = new BitmapImage();
+            bitmapImage.SetSource(imageStream);
+
+            return bitmapImage;
         }
     }
 }
