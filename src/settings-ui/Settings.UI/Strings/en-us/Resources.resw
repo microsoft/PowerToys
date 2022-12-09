@@ -1407,12 +1407,6 @@ Made with 💗 by Microsoft and the PowerToys community.</value>
   <data name="HelpLine3.Text" xml:space="preserve">
     <value>Example:  %ReX means red value in hex uppercase two digits format.</value>
   </data>
-  <data name="Help_blue.Text" xml:space="preserve">
-    <value>blue</value>
-  </data>
-  <data name="Help_blue.Text" xml:space="preserve">
-    <value>blue</value>
-  </data>
   <data name="ColorPicker_ShowColorName.Header" xml:space="preserve">
     <value>Show color name</value>
   </data>

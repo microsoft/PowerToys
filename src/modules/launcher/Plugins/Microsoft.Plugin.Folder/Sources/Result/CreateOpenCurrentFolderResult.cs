@@ -36,7 +36,7 @@ namespace Microsoft.Plugin.Folder.Sources.Result
                 IcoPath = Search,
                 Score = 500,
                 Action = c => _shellAction.ExecuteSanitized(Search, contextApi),
-                ContextData = new SearchResult { Type = ResultType.Folder, FullPath = Search },
+                ContextData = new SearchResult { Type = ResultType.Folder, Path = Search },
             };
         }
     }

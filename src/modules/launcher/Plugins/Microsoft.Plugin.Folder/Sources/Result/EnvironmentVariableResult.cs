@@ -38,7 +38,7 @@ namespace Microsoft.Plugin.Folder.Sources.Result
                 SubTitle = string.Format(CultureInfo.CurrentCulture, Properties.Resources.wox_plugin_folder_select_folder_result_subtitle, Path),
                 ToolTipData = new ToolTipData(Title, string.Format(CultureInfo.CurrentCulture, Properties.Resources.wox_plugin_folder_select_folder_result_subtitle, Path)),
                 QueryTextDisplay = Path,
-                ContextData = new SearchResult { Type = ResultType.Folder, FullPath = Path },
+                ContextData = new SearchResult { Type = ResultType.Folder, Path = Path },
                 Action = c => _shellAction.Execute(Path, contextApi),
             };
         }

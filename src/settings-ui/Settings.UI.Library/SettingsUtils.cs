@@ -115,18 +115,20 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             // This is different from the case where we have trailing zeros following a valid json file, which we have handled by trimming the trailing zeros.
             catch (JsonException ex)
             {
-                Logger.LogError($"Exception encountered while loading {powertoy} settings.", ex);
+                Logger.LogInfo($"Settings file {fileName} for {powertoy} was unrecognized. Possibly containing an older version. Trying to read again.");
 
                 // try to deserialize to the old format, which is presented in T2
                 try
                 {
                     T2 oldSettings = GetSettings<T2>(powertoy, fileName);
                     T newSettings = (T)settingsUpgrader(oldSettings);
+                    Logger.LogInfo($"Settings file {fileName} for {powertoy} was read successfully in the old format.");
                     return newSettings;
                 }
                 catch (Exception)
                 {
                     // do nothing, the problem wasn't that the settings was stored in the previous format, continue with the default settings
+                    Logger.LogError($"{powertoy} settings are corrupt or the format is not supported any longer. Using default settings instead.", ex);
                 }
             }
             catch (FileNotFoundException)

@@ -234,13 +234,20 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         {
             foreach (var storedColorFormat in _colorPickerSettings.Properties.VisibleColorFormats)
             {
+                // skip entries with empty name or duplicated name, it should never occur
+                string storedName = storedColorFormat.Key;
+                if (storedName == string.Empty || ColorFormats.Count(x => x.Name.ToUpperInvariant().Equals(storedName.ToUpperInvariant(), StringComparison.Ordinal)) > 0)
+                {
+                    continue;
+                }
+
                 string format = storedColorFormat.Value.Value;
                 if (format == string.Empty)
                 {
-                    format = ColorFormatHelper.GetDefaultFormat(storedColorFormat.Key);
+                    format = ColorFormatHelper.GetDefaultFormat(storedName);
                 }
 
-                ColorFormatModel customColorFormat = new ColorFormatModel(storedColorFormat.Key, format, storedColorFormat.Value.Key);
+                ColorFormatModel customColorFormat = new ColorFormatModel(storedName, format, storedColorFormat.Value.Key);
                 customColorFormat.PropertyChanged += ColorFormat_PropertyChanged;
                 ColorFormats.Add(customColorFormat);
             }
@@ -336,7 +343,9 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 ColorFormats[0].CanMoveUp = true;
             }
 
-            ColorFormats.Insert(0, new ColorFormatModel(newColorName, newColorFormat, isShown));
+            ColorFormatModel newModel = new ColorFormatModel(newColorName, newColorFormat, isShown);
+            newModel.PropertyChanged += ColorFormat_PropertyChanged;
+            ColorFormats.Insert(0, newModel);
             SetPreviewSelectedIndex();
         }
 
@@ -398,7 +407,8 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             }
             else
             {
-                colorFormatModel.IsValid = ColorFormats.Count(x => x.Name.ToUpperInvariant().Equals(colorFormatModel.Name.ToUpperInvariant(), StringComparison.Ordinal)) < 2;
+                colorFormatModel.IsValid = ColorFormats.Count(x => x.Name.ToUpperInvariant().Equals(colorFormatModel.Name.ToUpperInvariant(), StringComparison.Ordinal))
+                    < (colorFormatModel.IsNew ? 1 : 2);
             }
         }
 
