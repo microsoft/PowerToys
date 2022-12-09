@@ -151,7 +151,7 @@ namespace Peek.FilePreviewer.Previewers
             return hasFailedLoadingIconPreview && hasFailedLoadingDisplayInfo;
         }
 
-        // TODO: Move this to a helper file (ImagePrevier uses the same code)
+        // TODO: Move this to a helper file (ImagePreviewer uses the same code)
         private static async Task<BitmapSource> GetBitmapFromHBitmapAsync(IntPtr hbitmap, CancellationToken cancellationToken)
         {
             try
