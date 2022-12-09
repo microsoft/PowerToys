@@ -14,8 +14,11 @@ namespace Peek.FilePreviewer.Previewers
     using Microsoft.UI.Dispatching;
     using Microsoft.UI.Xaml.Media.Imaging;
     using Peek.Common;
+    using Peek.Common.Extensions;
+    using Windows.ApplicationModel.DataTransfer;
     using Windows.Foundation;
     using Windows.Graphics.Imaging;
+    using Windows.Storage;
     using Windows.Storage.Streams;
     using File = Peek.Common.Models.File;
 
@@ -77,6 +80,23 @@ namespace Peek.FilePreviewer.Previewers
             {
                 State = PreviewState.Error;
             }
+        }
+
+        public async Task CopyAsync()
+        {
+            await Dispatcher.RunOnUiThread(async () =>
+            {
+                var storageFile = await StorageFile.GetFileFromPathAsync(File.Path);
+
+                var dataPackage = new DataPackage();
+                dataPackage.SetStorageItems(new StorageFile[1] { storageFile }, false);
+
+                RandomAccessStreamReference imageStreamRef = RandomAccessStreamReference.CreateFromFile(storageFile);
+                dataPackage.Properties.Thumbnail = imageStreamRef;
+                dataPackage.SetBitmap(imageStreamRef);
+
+                Clipboard.SetContent(dataPackage);
+            });
         }
 
         public static bool IsFileTypeSupported(string fileExt)

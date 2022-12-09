@@ -10,10 +10,14 @@ namespace Peek.FilePreviewer
     using Microsoft.UI.Xaml;
     using Microsoft.UI.Xaml.Controls;
     using Microsoft.UI.Xaml.Media.Imaging;
+    using Peek.Common.Extensions;
     using Peek.Common.Models;
     using Peek.FilePreviewer.Models;
     using Peek.FilePreviewer.Previewers;
+    using Windows.ApplicationModel.DataTransfer;
     using Windows.Foundation;
+    using Windows.Storage;
+    using Windows.Storage.Streams;
 
     [INotifyPropertyChanged]
     public sealed partial class FilePreview : UserControl
@@ -126,6 +130,14 @@ namespace Peek.FilePreviewer
             if (BrowserPreviewer != null)
             {
                 BrowserPreviewer.State = PreviewState.Loaded;
+            }
+        }
+
+        private async void KeyboardAccelerator_CtrlC_Invoked(Microsoft.UI.Xaml.Input.KeyboardAccelerator sender, Microsoft.UI.Xaml.Input.KeyboardAcceleratorInvokedEventArgs args)
+        {
+            if (Previewer != null)
+            {
+                await Previewer.CopyAsync();
             }
         }
     }

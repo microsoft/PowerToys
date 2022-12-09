@@ -18,6 +18,8 @@ namespace Peek.FilePreviewer.Previewers
         public Task<Size> GetPreviewSizeAsync();
 
         Task LoadPreviewAsync();
+
+        Task CopyAsync();
     }
 
     public enum PreviewState

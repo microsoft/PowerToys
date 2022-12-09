@@ -38,6 +38,11 @@
             FileType="{x:Bind UnsupportedFilePreviewer.FileType, Mode=OneWay}"
             IconPreview="{x:Bind UnsupportedFilePreviewer.IconPreview, Mode=OneWay}"
             Visibility="{x:Bind IsPreviewVisible(UnsupportedFilePreviewer, Previewer.State), Mode=OneWay}" />
-
     </Grid>
+    <UserControl.KeyboardAccelerators>
+        <KeyboardAccelerator
+            Key="C"
+            Invoked="KeyboardAccelerator_CtrlC_Invoked"
+            Modifiers="Control" />
+    </UserControl.KeyboardAccelerators>
 </UserControl>
