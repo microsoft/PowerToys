@@ -104,7 +104,7 @@ public class SettingsService
         }
     }
 
-    private PowerAccentActivationKey _activationKey = PowerAccentActivationKey.Both;
+    private PowerAccentActivationKey _activationKey = PowerAccentActivationKey.LeftRightArrow;
 
     public PowerAccentActivationKey ActivationKey
     {
@@ -134,7 +134,7 @@ public class SettingsService
         }
     }
 
-    private int _inputTime = 200;
+    private int _inputTime = 300;
 
     public int InputTime
     {

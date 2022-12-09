@@ -155,7 +155,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             }
         }
 
-        private int _inputTimeMs = 200;
+        private int _inputTimeMs = 300;
 
         public int InputTimeMs
         {

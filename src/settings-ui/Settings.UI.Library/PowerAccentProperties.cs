@@ -29,9 +29,9 @@ namespace Microsoft.PowerToys.Settings.UI.Library
 
         public PowerAccentProperties()
         {
-            ActivationKey = PowerAccentActivationKey.Both;
+            ActivationKey = PowerAccentActivationKey.LeftRightArrow;
             ToolbarPosition = "Top center";
-            InputTime = new IntProperty(200);
+            InputTime = new IntProperty(300);
             SelectedLang = "ALL";
             ExcludedApps = new StringProperty();
             ShowUnicodeDescription = false;
