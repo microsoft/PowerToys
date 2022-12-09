@@ -23,13 +23,10 @@ namespace Peek.Common
 
         // See the whole list of icons here: https://learn.microsoft.com/en-us/windows/win32/api/shellapi/ne-shellapi-shstockiconid?WT.mc_id=DT-MVP-5003235
         // and https://stackoverflow.com/questions/65590783/system-icons-windows-10-style
+        // Add more to the icon list below if need to retrieve more icons in the future
         public enum SHSTOCKICONID : uint
         {
             SIID_DOCNOASSOC = 0,          // Blank document icon (Document of a type with no associated application).
-            SIID_DOCASSOC = 1,            // Application-associated document icon (Document of a type with an associated application).
-            SIID_APPLICATION = 2,         // Generic application with no custom icon.
-            SIID_FOLDER = 3,              // Folder (generic, unspecified state).
-            SIID_DEVICEVIDEOCAMERA = 101, // A digital video camera.
         }
 
         [Flags]
