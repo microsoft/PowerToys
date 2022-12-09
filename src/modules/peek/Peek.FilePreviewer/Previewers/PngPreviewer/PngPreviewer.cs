@@ -5,18 +5,16 @@
 namespace Peek.FilePreviewer.Previewers
 {
     using System;
-    using System.Collections.Generic;
-    using System.Drawing.Imaging;
     using System.IO;
     using System.Threading;
     using System.Threading.Tasks;
     using CommunityToolkit.Mvvm.ComponentModel;
     using Microsoft.UI.Dispatching;
     using Microsoft.UI.Xaml.Media.Imaging;
-    using Peek.Common;
+    using Peek.Common.Extensions;
     using Windows.Foundation;
     using Windows.Graphics.Imaging;
-    using Windows.Storage.Streams;
+    using Windows.Storage;
     using File = Peek.Common.Models.File;
 
     public partial class PngPreviewer : ObservableObject, IBitmapPreviewer
@@ -44,17 +42,18 @@ namespace Peek.FilePreviewer.Previewers
 
         private DispatcherQueue Dispatcher { get; }
 
-        private CancellationTokenSource _cancellationTokenSource = new CancellationTokenSource();
+        private Task<bool>? PreviewQualityThumbnailTask { get; set; }
 
-        private CancellationToken CancellationToken => _cancellationTokenSource.Token;
+        private Task<bool>? FullQualityImageTask { get; set; }
+
+        private bool IsFullImageLoaded => FullQualityImageTask?.Status == TaskStatus.RanToCompletion;
 
         public void Dispose()
         {
-            _cancellationTokenSource.Dispose();
             GC.SuppressFinalize(this);
         }
 
-        public async Task<Size> GetPreviewSizeAsync()
+        public async Task<Size> GetPreviewSizeAsync(CancellationToken cancellationToken)
         {
             var propertyImageSize = await PropertyHelper.GetImageSize(File.Path);
             if (propertyImageSize != Size.Empty)
@@ -62,16 +61,19 @@ namespace Peek.FilePreviewer.Previewers
                 return propertyImageSize;
             }
 
+            cancellationToken.ThrowIfCancellationRequested();
             return await WICHelper.GetImageSize(File.Path);
         }
 
-        public async Task LoadPreviewAsync()
+        public async Task LoadPreviewAsync(CancellationToken cancellationToken)
         {
             State = PreviewState.Loading;
 
-            var previewTask = LoadPreviewImageAsync();
+            PreviewQualityThumbnailTask = LoadPreviewImageAsync(cancellationToken);
+            FullQualityImageTask = LoadFullImageAsync(cancellationToken);
 
-            await Task.WhenAll(previewTask);
+            cancellationToken.ThrowIfCancellationRequested();
+            await Task.WhenAll(PreviewQualityThumbnailTask, FullQualityImageTask);
 
             if (Preview == null)
             {
@@ -95,23 +97,60 @@ namespace Peek.FilePreviewer.Previewers
             }
         }
 
-        private Task LoadPreviewImageAsync()
+        private Task<bool> LoadPreviewImageAsync(CancellationToken cancellationToken)
         {
             var thumbnailTCS = new TaskCompletionSource();
-            Dispatcher.TryEnqueue(async () =>
+            return TaskExtension.RunSafe(async () =>
             {
-                if (CancellationToken.IsCancellationRequested)
+                cancellationToken.ThrowIfCancellationRequested();
+
+                if (!IsFullImageLoaded)
                 {
-                    _cancellationTokenSource = new CancellationTokenSource();
-                    return;
+                    await Dispatcher.RunOnUiThread(async () =>
+                    {
+                        cancellationToken.ThrowIfCancellationRequested();
+                        Preview = await ThumbnailHelper.GetThumbnailAsync(File.Path, _png_image_size);
+                    });
                 }
-
-                Preview = await ThumbnailHelper.GetThumbnailAsync(File.Path, _png_image_size);
-
-                thumbnailTCS.SetResult();
             });
+        }
 
-            return thumbnailTCS.Task;
+        private Task<bool> LoadFullImageAsync(CancellationToken cancellationToken)
+        {
+            var thumbnailTCS = new TaskCompletionSource();
+            return TaskExtension.RunSafe(async () =>
+            {
+                cancellationToken.ThrowIfCancellationRequested();
+                await Dispatcher.RunOnUiThread(async () =>
+                {
+                    WriteableBitmap? bitmap = null;
+
+                    cancellationToken.ThrowIfCancellationRequested();
+                    var sFile = await StorageFile.GetFileFromPathAsync(File.Path);
+
+                    cancellationToken.ThrowIfCancellationRequested();
+                    using (var randomAccessStream = await sFile.OpenStreamForReadAsync())
+                    {
+                        // Create an encoder with the desired format
+                        cancellationToken.ThrowIfCancellationRequested();
+                        var decoder = await BitmapDecoder.CreateAsync(
+                            BitmapDecoder.PngDecoderId,
+                            randomAccessStream.AsRandomAccessStream());
+
+                        cancellationToken.ThrowIfCancellationRequested();
+                        var softwareBitmap = await decoder.GetSoftwareBitmapAsync(
+                            BitmapPixelFormat.Bgra8,
+                            BitmapAlphaMode.Premultiplied);
+
+                        // full quality image
+                        bitmap = new WriteableBitmap((int)decoder.PixelWidth, (int)decoder.PixelHeight);
+                        cancellationToken.ThrowIfCancellationRequested();
+                        softwareBitmap?.CopyToBuffer(bitmap.PixelBuffer);
+                    }
+
+                    Preview = bitmap;
+                });
+            });
         }
     }
 }
