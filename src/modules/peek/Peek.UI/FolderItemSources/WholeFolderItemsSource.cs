@@ -100,6 +100,7 @@ namespace Peek.UI.FolderItemSources
 
                 // TODO: pass & throw cancellation token (not essential, but may free thread resources earlier)
                 result.ItemsCount = await ItemQuery.GetItemCountAsync();
+                result.FirstItemIndex = firstItemIndex;
                 return result;
             }
             catch (Exception)
