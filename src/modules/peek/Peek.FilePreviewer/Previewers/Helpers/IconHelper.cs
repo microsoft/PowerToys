@@ -40,12 +40,14 @@ namespace Peek.FilePreviewer.Previewers.Helpers
         {
             hbitmap = IntPtr.Zero;
 
+            // Retrieve system stock icon's system index
             NativeMethods.SHSTOCKICONINFO sii = new ();
             sii.cbSize = (uint)Marshal.SizeOf(typeof(NativeMethods.SHSTOCKICONINFO));
             HResult hr = NativeMethods.SHGetStockIconInfo(systemIconId, NativeMethods.SHGSI.SHGSI_SYSICONINDEX, ref sii);
 
             if (hr == HResult.Ok)
             {
+                // Based on the index, retrieve the jumbo (256x256) version of the icon
                 // I think any of the two ids works but putting both of them in case we need them in the future
                 // const string IID_IImageList = "46EB5926-582E-4017-9FDF-E8998DAA0950";
                 const string IID_IImageList2 = "192B9D83-50FC-457B-90A0-2B82A8B5DAE1";
