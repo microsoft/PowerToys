@@ -5,6 +5,7 @@
 namespace Peek.FilePreviewer.Previewers
 {
     using System;
+    using System.Diagnostics;
     using System.Runtime.InteropServices;
     using System.Threading.Tasks;
     using Peek.Common.Models;
@@ -16,14 +17,21 @@ namespace Peek.FilePreviewer.Previewers
         {
             return Task.Run(() =>
             {
-                var propertyStore = PropertyStoreShellApi.GetPropertyStoreFromPath(filePath, PropertyStoreShellApi.PropertyStoreFlags.OPENSLOWITEM);
-                if (propertyStore != null)
+                try
                 {
-                    var width = (int)PropertyStoreShellApi.GetUIntFromPropertyStore(propertyStore, PropertyStoreShellApi.PropertyKey.ImageHorizontalSize);
-                    var height = (int)PropertyStoreShellApi.GetUIntFromPropertyStore(propertyStore, PropertyStoreShellApi.PropertyKey.ImageVerticalSize);
+                    var propertyStore = PropertyStoreShellApi.GetPropertyStoreFromPath(filePath, PropertyStoreShellApi.PropertyStoreFlags.OPENSLOWITEM);
+                    if (propertyStore != null)
+                    {
+                        var width = (int)PropertyStoreShellApi.GetUIntFromPropertyStore(propertyStore, PropertyStoreShellApi.PropertyKey.ImageHorizontalSize);
+                        var height = (int)PropertyStoreShellApi.GetUIntFromPropertyStore(propertyStore, PropertyStoreShellApi.PropertyKey.ImageVerticalSize);
 
-                    Marshal.ReleaseComObject(propertyStore);
-                    return new Size(width, height);
+                        Marshal.ReleaseComObject(propertyStore);
+                        return new Size(width, height);
+                    }
+                }
+                catch (Exception e)
+                {
+                    Debug.Write("Error getting image dimensions:\n" + e.ToString());
                 }
 
                 return Size.Empty;
@@ -33,12 +41,19 @@ namespace Peek.FilePreviewer.Previewers
         public static Task<ulong> GetFileSizeInBytes(string filePath)
         {
             ulong bytes = 0;
-            var propertyStore = PropertyStoreShellApi.GetPropertyStoreFromPath(filePath, PropertyStoreShellApi.PropertyStoreFlags.OPENSLOWITEM);
-            if (propertyStore != null)
+            try
             {
-                bytes = PropertyStoreShellApi.GetULongFromPropertyStore(propertyStore, PropertyStoreShellApi.PropertyKey.FileSizeBytes);
+                var propertyStore = PropertyStoreShellApi.GetPropertyStoreFromPath(filePath, PropertyStoreShellApi.PropertyStoreFlags.OPENSLOWITEM);
+                if (propertyStore != null)
+                {
+                    bytes = PropertyStoreShellApi.GetULongFromPropertyStore(propertyStore, PropertyStoreShellApi.PropertyKey.FileSizeBytes);
 
-                Marshal.ReleaseComObject(propertyStore);
+                    Marshal.ReleaseComObject(propertyStore);
+                }
+            }
+            catch (Exception e)
+            {
+                Debug.WriteLine("Error getting folder item size:\n", e.ToString());
             }
 
             return Task.FromResult(bytes);
@@ -47,13 +62,20 @@ namespace Peek.FilePreviewer.Previewers
         public static Task<string> GetFileType(string filePath)
         {
             var type = string.Empty;
-            var propertyStore = PropertyStoreShellApi.GetPropertyStoreFromPath(filePath, PropertyStoreShellApi.PropertyStoreFlags.OPENSLOWITEM);
-            if (propertyStore != null)
+            try
             {
-                // TODO: find a way to get user friendly description
-                type = PropertyStoreShellApi.GetStringFromPropertyStore(propertyStore, PropertyStoreShellApi.PropertyKey.FileType);
+                var propertyStore = PropertyStoreShellApi.GetPropertyStoreFromPath(filePath, PropertyStoreShellApi.PropertyStoreFlags.OPENSLOWITEM);
+                if (propertyStore != null)
+                {
+                    // TODO: find a way to get user friendly description
+                    type = PropertyStoreShellApi.GetStringFromPropertyStore(propertyStore, PropertyStoreShellApi.PropertyKey.FileType);
 
-                Marshal.ReleaseComObject(propertyStore);
+                    Marshal.ReleaseComObject(propertyStore);
+                }
+            }
+            catch (Exception e)
+            {
+                Debug.WriteLine("Failed to get file type:\n" + e.ToString());
             }
 
             return Task.FromResult(type);

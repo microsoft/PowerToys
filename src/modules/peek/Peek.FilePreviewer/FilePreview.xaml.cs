@@ -6,11 +6,11 @@ namespace Peek.FilePreviewer
 {
     using System;
     using System.Text;
+    using System.Threading;
     using System.Threading.Tasks;
     using CommunityToolkit.Mvvm.ComponentModel;
     using Microsoft.UI.Xaml;
     using Microsoft.UI.Xaml.Controls;
-    using Microsoft.UI.Xaml.Media.Imaging;
     using Peek.Common.Helpers;
     using Peek.Common.Models;
     using Peek.FilePreviewer.Models;
@@ -42,6 +42,8 @@ namespace Peek.FilePreviewer
         [ObservableProperty]
         private string imageInfoTooltip = ResourceLoader.GetForViewIndependentUse().GetString("PreviewTooltip_Blank");
 
+        private CancellationTokenSource _cancellationTokenSource = new ();
+
         public FilePreview()
         {
             InitializeComponent();
@@ -54,8 +56,12 @@ namespace Peek.FilePreviewer
             {
                 if (Previewer?.State == PreviewState.Error)
                 {
+                    // Cancel previous loading task
+                    _cancellationTokenSource.Cancel();
+                    _cancellationTokenSource = new ();
+
                     Previewer = previewerFactory.CreateDefaultPreviewer(File);
-                    await UpdatePreviewAsync();
+                    await UpdatePreviewAsync(_cancellationTokenSource.Token);
                 }
             }
         }
@@ -89,6 +95,10 @@ namespace Peek.FilePreviewer
 
         private async Task OnFilePropertyChanged()
         {
+            // Cancel previous loading task
+            _cancellationTokenSource.Cancel();
+            _cancellationTokenSource = new ();
+
             // TODO: track and cancel existing async preview tasks
             // https://github.com/microsoft/PowerToys/issues/22480
             if (File == null)
@@ -101,20 +111,30 @@ namespace Peek.FilePreviewer
             }
 
             Previewer = previewerFactory.Create(File);
-            await UpdatePreviewAsync();
+
+            await UpdatePreviewAsync(_cancellationTokenSource.Token);
         }
 
-        private async Task UpdatePreviewAsync()
+        private async Task UpdatePreviewAsync(CancellationToken cancellationToken)
         {
             if (Previewer != null)
             {
-                var size = await Previewer.GetPreviewSizeAsync();
-                SizeFormat windowSizeFormat = UnsupportedFilePreviewer != null ? SizeFormat.Percentage : SizeFormat.Pixels;
-                PreviewSizeChanged?.Invoke(this, new PreviewSizeChangedArgs(size, windowSizeFormat));
-                await Previewer.LoadPreviewAsync();
+                try
+                {
+                    cancellationToken.ThrowIfCancellationRequested();
+                    var size = await Previewer.GetPreviewSizeAsync(cancellationToken);
+                    SizeFormat windowSizeFormat = UnsupportedFilePreviewer != null ? SizeFormat.Percentage : SizeFormat.Pixels;
+                    PreviewSizeChanged?.Invoke(this, new PreviewSizeChangedArgs(size, windowSizeFormat));
+                    cancellationToken.ThrowIfCancellationRequested();
+                    await Previewer.LoadPreviewAsync(cancellationToken);
+                    cancellationToken.ThrowIfCancellationRequested();
+                    await UpdateImageTooltipAsync();
+                }
+                catch (OperationCanceledException)
+                {
+                    // TODO: Log task cancelled exception?
+                }
             }
-
-            await UpdateImageTooltipAsync();
         }
 
         partial void OnPreviewerChanging(IPreviewer? value)

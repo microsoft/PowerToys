@@ -70,21 +70,16 @@ namespace Peek.FilePreviewer.Previewers
 
         private DispatcherQueue Dispatcher { get; }
 
-        private CancellationTokenSource _cancellationTokenSource = new CancellationTokenSource();
-
-        private CancellationToken CancellationToken => _cancellationTokenSource.Token;
-
         private Task<bool>? IconPreviewTask { get; set; }
 
         private Task<bool>? DisplayInfoTask { get; set; }
 
         public void Dispose()
         {
-            _cancellationTokenSource.Dispose();
             GC.SuppressFinalize(this);
         }
 
-        public Task<Size> GetPreviewSizeAsync()
+        public Task<Size> GetPreviewSizeAsync(CancellationToken cancellationToken)
         {
             return Task.Run(() =>
             {
@@ -92,12 +87,14 @@ namespace Peek.FilePreviewer.Previewers
             });
         }
 
-        public async Task LoadPreviewAsync()
+        public async Task LoadPreviewAsync(CancellationToken cancellationToken)
         {
+            cancellationToken.ThrowIfCancellationRequested();
+
             State = PreviewState.Loading;
 
-            IconPreviewTask = LoadIconPreviewAsync();
-            DisplayInfoTask = LoadDisplayInfoAsync();
+            IconPreviewTask = LoadIconPreviewAsync(cancellationToken);
+            DisplayInfoTask = LoadDisplayInfoAsync(cancellationToken);
 
             await Task.WhenAll(IconPreviewTask, DisplayInfoTask);
 
@@ -107,38 +104,34 @@ namespace Peek.FilePreviewer.Previewers
             }
         }
 
-        public Task<bool> LoadIconPreviewAsync()
+        public Task<bool> LoadIconPreviewAsync(CancellationToken cancellationToken)
         {
             return TaskExtension.RunSafe(async () =>
             {
-                if (CancellationToken.IsCancellationRequested)
-                {
-                    _cancellationTokenSource = new CancellationTokenSource();
-                    return;
-                }
+                cancellationToken.ThrowIfCancellationRequested();
 
                 // TODO: Get icon with transparency
                 IconHelper.GetIcon(Path.GetFullPath(File.Path), out IntPtr hbitmap);
+
+                cancellationToken.ThrowIfCancellationRequested();
                 await Dispatcher.RunOnUiThread(async () =>
                 {
-                    var iconBitmap = await GetBitmapFromHBitmapAsync(hbitmap);
+                    cancellationToken.ThrowIfCancellationRequested();
+                    var iconBitmap = await GetBitmapFromHBitmapAsync(hbitmap, cancellationToken);
                     IconPreview = iconBitmap;
                 });
             });
         }
 
-        public Task<bool> LoadDisplayInfoAsync()
+        public Task<bool> LoadDisplayInfoAsync(CancellationToken cancellationToken)
         {
             return TaskExtension.RunSafe(async () =>
             {
-                if (CancellationToken.IsCancellationRequested)
-                {
-                    _cancellationTokenSource = new CancellationTokenSource();
-                    return;
-                }
-
                 // File Properties
+                cancellationToken.ThrowIfCancellationRequested();
                 var bytes = await PropertyHelper.GetFileSizeInBytes(File.Path);
+
+                cancellationToken.ThrowIfCancellationRequested();
                 var type = await PropertyHelper.GetFileType(File.Path);
 
                 await Dispatcher.RunOnUiThread(() =>
@@ -169,17 +162,22 @@ namespace Peek.FilePreviewer.Previewers
             return hasFailedLoadingIconPreview && hasFailedLoadingDisplayInfo;
         }
 
-        // TODO: Move this to a helper file (ImagePrevier uses the same code)
-        private static async Task<BitmapSource> GetBitmapFromHBitmapAsync(IntPtr hbitmap)
+        // TODO: Move this to a helper file (ImagePreviewer uses the same code)
+        private static async Task<BitmapSource> GetBitmapFromHBitmapAsync(IntPtr hbitmap, CancellationToken cancellationToken)
         {
             try
             {
+                cancellationToken.ThrowIfCancellationRequested();
                 var bitmap = System.Drawing.Image.FromHbitmap(hbitmap);
                 var bitmapImage = new BitmapImage();
+
+                cancellationToken.ThrowIfCancellationRequested();
                 using (var stream = new MemoryStream())
                 {
                     bitmap.Save(stream, ImageFormat.Bmp);
                     stream.Position = 0;
+
+                    cancellationToken.ThrowIfCancellationRequested();
                     await bitmapImage.SetSourceAsync(stream.AsRandomAccessStream());
                 }
 

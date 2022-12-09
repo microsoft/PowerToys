@@ -88,9 +88,13 @@ namespace Peek.UI
                 return;
             }
 
-            // TODO: safety checks + bounds checks + refactor int field to uint for extra safety
-            // TODO: add note about time taken
-            CurrentFile = await FolderItemsSource.GetItemAt((uint)CurrentItemIndex); // TODO: fix uint declarations
+            var temp = await FolderItemsSource.GetItemAt((uint)CurrentItemIndex); // TODO: fix uint declarations
+            if (temp != null)
+            {
+                Debug.WriteLine("Navigated to " + temp.FileName);
+            }
+
+            CurrentFile = temp;
         }
 
         // Must be called from UI thread
