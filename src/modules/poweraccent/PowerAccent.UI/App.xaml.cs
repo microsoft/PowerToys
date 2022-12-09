@@ -16,7 +16,7 @@ namespace PowerAccent.UI
     public partial class App : Application, IDisposable
     {
         private static Mutex _mutex;
-        private bool disposedValue;
+        private bool _disposed;
         private ThemeManager _themeManager;
 
         protected override void OnStartup(StartupEventArgs e)
@@ -41,20 +41,22 @@ namespace PowerAccent.UI
 
         protected virtual void Dispose(bool disposing)
         {
-            if (!disposedValue)
+            if (_disposed)
+            {
+                return;
+            }
+
+            if (disposing)
             {
                 _mutex?.Dispose();
                 _themeManager?.Dispose();
-
-                // TODO: free unmanaged resources (unmanaged objects) and override finalizer
-                // TODO: set large fields to null
-                disposedValue = true;
             }
+
+            _disposed = true;
         }
 
         public void Dispose()
         {
-            // Do not change this code. Put cleanup code in 'Dispose(bool disposing)' method
             Dispose(disposing: true);
             GC.SuppressFinalize(this);
         }
