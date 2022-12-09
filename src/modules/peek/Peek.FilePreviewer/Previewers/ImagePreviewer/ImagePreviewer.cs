@@ -231,7 +231,8 @@ namespace Peek.FilePreviewer.Previewers
                 ".jif",
                 ".jpeg",
                 ".jpe",
-                ".png",
+
+                // ".png", // The current ImagePreviewer logic does not support transparency so PNG has it's own logic in PngPreviewer
                 ".tif",
                 ".tiff",
                 ".dib",

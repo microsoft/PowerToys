@@ -19,35 +19,44 @@
             <ColumnDefinition x:Name="SystemRightPaddingColumn" Width="0" />
         </Grid.ColumnDefinitions>
 
-        <StackPanel
-            x:Name="AppIconAndName"
+        <Grid
+            x:Name="AppIconAndFileTitleContainer"
             Grid.Column="1"
-            Margin="8,0,0,0"
+            Margin="8,0"
             HorizontalAlignment="Left"
             VerticalAlignment="Center"
-            Orientation="Horizontal"
-            Spacing="4">
+            ColumnSpacing="4">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition x:Name="AppIconColumn" Width="32" />
+                <ColumnDefinition x:Name="FileTitleColumn" Width="*" />
+            </Grid.ColumnDefinitions>
 
             <Image
                 x:Name="PeekLogo"
                 x:Uid="PeekLogo"
+                Grid.Column="0"
                 Width="24"
                 Height="24"
-                Margin="4,0,0,0"
+                HorizontalAlignment="Center"
                 VerticalAlignment="Center"
                 Source="../Assets/AppList.scale-400.png"
                 Stretch="UniformToFill" />
 
-            <StackPanel
-                Margin="8,0,0,0"
+            <Grid
+                x:Name="FileCountAndNameContainer"
+                Grid.Column="1"
                 HorizontalAlignment="Left"
                 VerticalAlignment="Center"
-                Orientation="Horizontal">
+                ColumnSpacing="4">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition x:Name="FileCountColumn" Width="auto" />
+                    <ColumnDefinition x:Name="FileNameColumn" Width="*" />
+                </Grid.ColumnDefinitions>
+
                 <TextBlock
                     x:Name="AppTitle_FileCount"
                     x:Uid="AppTitle_FileCount"
-                    Margin="0,0,4,0"
-                    VerticalAlignment="Center"
+                    Grid.Column="0"
                     FontWeight="Bold"
                     Style="{StaticResource CaptionTextBlockStyle}"
                     Text="{x:Bind FileCountText, Mode=OneWay}"
@@ -56,13 +65,12 @@
                 <TextBlock
                     x:Name="AppTitle_FileName"
                     x:Uid="AppTitle_FileName"
-                    MaxWidth="100"
-                    VerticalAlignment="Center"
+                    Grid.Column="1"
                     Style="{StaticResource CaptionTextBlockStyle}"
                     Text="{x:Bind File.FileName, Mode=OneWay}"
                     TextWrapping="NoWrap" />
-            </StackPanel>
-        </StackPanel>
+            </Grid>
+        </Grid>
 
         <Button
             x:Name="LaunchAppButton"
@@ -72,7 +80,7 @@
             Command="{x:Bind LaunchDefaultAppButtonAsyncCommand, Mode=OneWay}"
             ToolTipService.ToolTip="{x:Bind OpenWithAppToolTip, Mode=OneWay}">
             <Button.Content>
-                <StackPanel Orientation="Horizontal">
+                <StackPanel Orientation="Horizontal" Spacing="4">
                     <FontIcon
                         x:Name="LaunchAppButton_Icon"
                         x:Uid="LaunchAppButton_Icon"
@@ -81,7 +89,6 @@
                     <TextBlock
                         x:Name="LaunchAppButton_Text"
                         x:Uid="LaunchAppButton_Text"
-                        Margin="4,0,0,0"
                         Style="{StaticResource CaptionTextBlockStyle}"
                         Text="{x:Bind OpenWithAppText, Mode=OneWay}" />
                 </StackPanel>
@@ -95,29 +102,20 @@
             <VisualStateGroup x:Name="AdaptiveWidth">
                 <VisualState x:Name="MaximumLayout">
                     <VisualState.StateTriggers>
-                        <AdaptiveTrigger MinWindowWidth="720" />
-                    </VisualState.StateTriggers>
-                    <VisualState.Setters>
-                        <Setter Target="AppTitle_FileName.MaxWidth" Value="560" />
-                        <Setter Target="LaunchAppButton_Text.Visibility" Value="Visible" />
-                    </VisualState.Setters>
-                </VisualState>
-                <VisualState x:Name="WideLayout">
-                    <VisualState.StateTriggers>
                         <AdaptiveTrigger MinWindowWidth="560" />
                     </VisualState.StateTriggers>
                     <VisualState.Setters>
-                        <Setter Target="AppTitle_FileName.MaxWidth" Value="400" />
                         <Setter Target="LaunchAppButton_Text.Visibility" Value="Visible" />
+                        <Setter Target="LaunchAppButton.Visibility" Value="Visible" />
                     </VisualState.Setters>
                 </VisualState>
                 <VisualState x:Name="MediumLayout">
                     <VisualState.StateTriggers>
-                        <AdaptiveTrigger MinWindowWidth="480" />
+                        <AdaptiveTrigger MinWindowWidth="340" />
                     </VisualState.StateTriggers>
                     <VisualState.Setters>
-                        <Setter Target="AppTitle_FileName.MaxWidth" Value="320" />
                         <Setter Target="LaunchAppButton_Text.Visibility" Value="Collapsed" />
+                        <Setter Target="LaunchAppButton.Visibility" Value="Visible" />
                     </VisualState.Setters>
                 </VisualState>
                 <VisualState x:Name="MinimumLayout">
@@ -125,9 +123,8 @@
                         <AdaptiveTrigger MinWindowWidth="0" />
                     </VisualState.StateTriggers>
                     <VisualState.Setters>
-                        <Setter Target="AppTitle_FileName.MaxWidth" Value="160" />
-                        <Setter Target="AppTitle_FileCount.Visibility" Value="Collapsed" />
                         <Setter Target="LaunchAppButton_Text.Visibility" Value="Collapsed" />
+                        <Setter Target="LaunchAppButton.Visibility" Value="Collapsed" />
                     </VisualState.Setters>
                 </VisualState>
             </VisualStateGroup>
