@@ -5,18 +5,16 @@
 namespace Peek.FilePreviewer.Previewers
 {
     using System;
-    using System.Collections.Generic;
-    using System.Drawing.Imaging;
     using System.IO;
     using System.Threading;
     using System.Threading.Tasks;
     using CommunityToolkit.Mvvm.ComponentModel;
     using Microsoft.UI.Dispatching;
     using Microsoft.UI.Xaml.Media.Imaging;
-    using Peek.Common;
+    using Peek.Common.Extensions;
     using Windows.Foundation;
     using Windows.Graphics.Imaging;
-    using Windows.Storage.Streams;
+    using Windows.Storage;
     using File = Peek.Common.Models.File;
 
     public partial class PngPreviewer : ObservableObject, IBitmapPreviewer
@@ -44,9 +42,15 @@ namespace Peek.FilePreviewer.Previewers
 
         private DispatcherQueue Dispatcher { get; }
 
+        private Task<bool>? PreviewQualityThumbnailTask { get; set; }
+
+        private Task<bool>? FullQualityImageTask { get; set; }
+
         private CancellationTokenSource _cancellationTokenSource = new CancellationTokenSource();
 
         private CancellationToken CancellationToken => _cancellationTokenSource.Token;
+
+        private bool IsFullImageLoaded => FullQualityImageTask?.Status == TaskStatus.RanToCompletion;
 
         public void Dispose()
         {
@@ -69,9 +73,10 @@ namespace Peek.FilePreviewer.Previewers
         {
             State = PreviewState.Loading;
 
-            var previewTask = LoadPreviewImageAsync();
+            PreviewQualityThumbnailTask = LoadPreviewImageAsync();
+            FullQualityImageTask = LoadFullImageAsync();
 
-            await Task.WhenAll(previewTask);
+            await Task.WhenAll(PreviewQualityThumbnailTask, FullQualityImageTask);
 
             if (Preview == null)
             {
@@ -95,10 +100,10 @@ namespace Peek.FilePreviewer.Previewers
             }
         }
 
-        private Task LoadPreviewImageAsync()
+        private Task<bool> LoadPreviewImageAsync()
         {
             var thumbnailTCS = new TaskCompletionSource();
-            Dispatcher.TryEnqueue(async () =>
+            return TaskExtension.RunSafe(async () =>
             {
                 if (CancellationToken.IsCancellationRequested)
                 {
@@ -106,12 +111,51 @@ namespace Peek.FilePreviewer.Previewers
                     return;
                 }
 
-                Preview = await ThumbnailHelper.GetThumbnailAsync(File.Path, _png_image_size);
-
-                thumbnailTCS.SetResult();
+                if (!IsFullImageLoaded)
+                {
+                    await Dispatcher.RunOnUiThread(async () =>
+                    {
+                        Preview = await ThumbnailHelper.GetThumbnailAsync(File.Path, _png_image_size);
+                    });
+                }
             });
+        }
 
-            return thumbnailTCS.Task;
+        private Task<bool> LoadFullImageAsync()
+        {
+            var thumbnailTCS = new TaskCompletionSource();
+            return TaskExtension.RunSafe(async () =>
+            {
+                if (CancellationToken.IsCancellationRequested)
+                {
+                    _cancellationTokenSource = new CancellationTokenSource();
+                    return;
+                }
+
+                await Dispatcher.RunOnUiThread(async () =>
+                {
+                    WriteableBitmap? bitmap = null;
+
+                    var sFile = await StorageFile.GetFileFromPathAsync(File.Path);
+                    using (var randomAccessStream = await sFile.OpenStreamForReadAsync())
+                    {
+                        // Create an encoder with the desired format
+                        var decoder = await BitmapDecoder.CreateAsync(
+                            BitmapDecoder.PngDecoderId,
+                            randomAccessStream.AsRandomAccessStream());
+
+                        var softwareBitmap = await decoder.GetSoftwareBitmapAsync(
+                            BitmapPixelFormat.Bgra8,
+                            BitmapAlphaMode.Premultiplied);
+
+                        // full quality image
+                        bitmap = new WriteableBitmap((int)decoder.PixelWidth, (int)decoder.PixelHeight);
+                        softwareBitmap?.CopyToBuffer(bitmap.PixelBuffer);
+                    }
+
+                    Preview = bitmap;
+                });
+            });
         }
     }
 }
