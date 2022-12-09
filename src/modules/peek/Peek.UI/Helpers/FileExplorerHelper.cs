@@ -2,10 +2,12 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-using System.Collections.Generic;
-using System.Diagnostics;
-using Peek.Common.Models;
+using System;
+using System.Runtime.InteropServices;
+using System.Text;
 using Peek.UI.Native;
+using Windows.Win32;
+using Windows.Win32.Foundation;
 
 namespace Peek.UI.Helpers
 {
@@ -15,14 +17,21 @@ namespace Peek.UI.Helpers
         {
             var foregroundWindowHandle = NativeMethods.GetForegroundWindow();
 
+            int capacity = PInvoke.GetWindowTextLength(new HWND(foregroundWindowHandle)) * 2;
+            StringBuilder foregroundWindowTitleBuffer = new StringBuilder(capacity);
+            NativeMethods.GetWindowText(new HWND(foregroundWindowHandle), foregroundWindowTitleBuffer, foregroundWindowTitleBuffer.Capacity);
+
+            string foregroundWindowTitle = foregroundWindowTitleBuffer.ToString();
+
             var shell = new Shell32.Shell();
             foreach (SHDocVw.InternetExplorer window in shell.Windows())
             {
-                // TODO: figure out which window is the active explorer tab
-                // https://github.com/microsoft/PowerToys/issues/22507
-                if (window.HWND == (int)foregroundWindowHandle)
+                var shellFolderView = (Shell32.IShellFolderViewDual3)window.Document;
+                var folderTitle = shellFolderView.Folder.Title;
+
+                if (window.HWND == (int)foregroundWindowHandle && folderTitle == foregroundWindowTitle)
                 {
-                    return (Shell32.IShellFolderViewDual3)window.Document;
+                    return shellFolderView;
                 }
             }
 

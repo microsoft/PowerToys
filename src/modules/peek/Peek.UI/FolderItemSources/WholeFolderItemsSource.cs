@@ -14,6 +14,7 @@ namespace Peek.UI.FolderItemSources
     using Windows.Storage;
     using Windows.Storage.Search;
 
+    // Provides folder items across an entire folder
     public class WholeFolderItemsSource : IFolderItemsSource
     {
         private StorageItemQueryResult? ItemQuery { get; set; } = null;
