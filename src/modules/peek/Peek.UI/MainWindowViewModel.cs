@@ -7,16 +7,22 @@ namespace Peek.UI
     using System;
     using CommunityToolkit.Mvvm.ComponentModel;
     using Microsoft.UI.Xaml;
+    using Peek.UI.FileSystem;
 
     public partial class MainWindowViewModel : ObservableObject
     {
         private const int NavigationThrottleDelayMs = 100;
+
+        [ObservableProperty]
+        private FolderItemsQuery _folderItemsQuery = new ();
 
         public MainWindowViewModel()
         {
             NavigationThrottleTimer.Tick += NavigationThrottleTimer_Tick;
             NavigationThrottleTimer.Interval = TimeSpan.FromMilliseconds(NavigationThrottleDelayMs);
         }
+
+        private DispatcherTimer NavigationThrottleTimer { get; set; } = new ();
 
         public void AttemptLeftNavigation()
         {
@@ -53,10 +59,5 @@ namespace Peek.UI
 
             ((DispatcherTimer)sender).Stop();
         }
-
-        [ObservableProperty]
-        private FolderItemsQuery _folderItemsQuery = new ();
-
-        private DispatcherTimer NavigationThrottleTimer { get; set; } = new ();
     }
 }

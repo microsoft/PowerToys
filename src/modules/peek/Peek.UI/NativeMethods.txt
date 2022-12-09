@@ -2,3 +2,5 @@
 GetMonitorInfo
 GetDpiForWindow
 GetWindowTextLength
+SetWinEventHook
+UnhookWinEvent

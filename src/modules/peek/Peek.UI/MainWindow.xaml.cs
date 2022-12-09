@@ -12,6 +12,7 @@ namespace Peek.UI
     using Peek.UI.Extensions;
     using Peek.UI.Native;
     using Windows.Foundation;
+    using Windows.Win32;
     using WinUIEx;
 
     /// <summary>
