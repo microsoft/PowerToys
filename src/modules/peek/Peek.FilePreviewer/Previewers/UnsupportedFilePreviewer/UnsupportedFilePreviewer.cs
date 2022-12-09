@@ -121,7 +121,7 @@ namespace Peek.FilePreviewer.Previewers
                 IconHelper.GetIcon(Path.GetFullPath(File.Path), out IntPtr hbitmap);
                 await Dispatcher.RunOnUiThread(async () =>
                 {
-                    var iconBitmap = await GetBitmapFromHBitmapAsync(hbitmap);
+                    var iconBitmap = await GetBitmapFromHBitmapWithTransparencyAsync(hbitmap);
                     IconPreview = iconBitmap;
                 });
             });
@@ -169,16 +169,18 @@ namespace Peek.FilePreviewer.Previewers
             return hasFailedLoadingIconPreview && hasFailedLoadingDisplayInfo;
         }
 
-        // TODO: Move this to a helper file (ImagePrevier uses the same code)
-        private static async Task<BitmapSource> GetBitmapFromHBitmapAsync(IntPtr hbitmap)
+        // TODO: Move this to a common helper file and make transparency a parameter (ImagePrevier uses the same code)
+        private static async Task<BitmapSource> GetBitmapFromHBitmapWithTransparencyAsync(IntPtr hbitmap)
         {
             try
             {
                 var bitmap = System.Drawing.Image.FromHbitmap(hbitmap);
+                bitmap.MakeTransparent();
+
                 var bitmapImage = new BitmapImage();
                 using (var stream = new MemoryStream())
                 {
-                    bitmap.Save(stream, ImageFormat.Bmp);
+                    bitmap.Save(stream, ImageFormat.Png);
                     stream.Position = 0;
                     await bitmapImage.SetSourceAsync(stream.AsRandomAccessStream());
                 }
