@@ -62,7 +62,7 @@
         <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
     <PackageReference Include="CommunityToolkit.Mvvm" Version="8.0.0" />
-    <PackageReference Include="Microsoft.WindowsAppSDK" Version="1.1.5" />
+    <PackageReference Include="Microsoft.WindowsAppSDK" Version="1.2.221116.1" />
     <PackageReference Include="Microsoft.Windows.SDK.BuildTools" Version="10.0.22621.1" />
     <PackageReference Include="WinUIEx" Version="1.8.0" />
     <Manifest Include="$(ApplicationManifest)" />

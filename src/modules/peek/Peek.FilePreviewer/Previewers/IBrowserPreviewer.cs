@@ -6,10 +6,8 @@ namespace Peek.FilePreviewer.Previewers
 {
     using System;
 
-    public interface IBrowserPreview : IPreviewer
+    public interface IBrowserPreviewer : IPreviewer
     {
         public Uri? Preview { get; }
-
-        public new bool IsPreviewLoaded { get; set; }
     }
 }

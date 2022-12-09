@@ -26,7 +26,11 @@ namespace Peek.UI
         [ObservableProperty]
         private List<File> files = new ();
 
-        public int CurrentItemIndex { get; private set; } = UninitializedItemIndex;
+        [ObservableProperty]
+        private bool isMultiSelection;
+
+        [ObservableProperty]
+        private int currentItemIndex = UninitializedItemIndex;
 
         private CancellationTokenSource CancellationTokenSource { get; set; } = new CancellationTokenSource();
 
@@ -35,6 +39,7 @@ namespace Peek.UI
         public void Clear()
         {
             CurrentFile = null;
+            IsMultiSelection = false;
 
             if (InitializeFilesTask != null && InitializeFilesTask.Status == TaskStatus.Running)
             {
@@ -88,6 +93,8 @@ namespace Peek.UI
             {
                 return;
             }
+
+            IsMultiSelection = selectedItems.Count > 1;
 
             // Prioritize setting CurrentFile, which notifies UI
             var firstSelectedItem = selectedItems.Item(0);

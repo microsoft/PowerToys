@@ -122,7 +122,7 @@
     <comment>Name of application.</comment>
   </data>
   <data name="AppTitle_FileCounts_Text" xml:space="preserve">
-    <value>({0}/{1} files)</value>
+    <value>({0}/{1})</value>
     <comment>Text for the file count in the titlebar. 0: the index of the current file. 1: the total number of files selected.</comment>
   </data>
   <data name="LaunchAppButton_OpenWith_Text" xml:space="preserve">
@@ -140,5 +140,69 @@
   <data name="LaunchAppButton_OpenWithApp_ToolTip" xml:space="preserve">
     <value>Open with {0} (Enter)</value>
     <comment>Tooltip for button to launch default application. 0: name of the default application.</comment>
+  </data>
+  <data name="UnsupportedFile_FileType" xml:space="preserve">
+    <value>File Type: {0}</value>
+    <comment>File Type label for the unsupported files view. {0} is the type.</comment>
+  </data>
+  <data name="UnsupportedFile_FileSize" xml:space="preserve">
+    <value>Size: {0}</value>
+    <comment>File Size label for the unsupported files view. {0} is the size.</comment>
+  </data>
+  <data name="UnsupportedFile_DateModified" xml:space="preserve">
+    <value>Date Modified: {0}</value>
+    <comment>Date Modified label for the unsupported files view. {0} is the date.</comment>
+  </data>
+  <data name="ReadableString_ByteAbbreviationFormat" xml:space="preserve">
+    <value>{0} B</value>
+    <comment>Abbrivation for the size unit byte.</comment>
+  </data>
+  <data name="ReadableString_KiloByteAbbreviationFormat" xml:space="preserve">
+    <value>{0} KB</value>
+    <comment>Abbrivation for the size unit kilobyte.</comment>
+  </data>
+  <data name="ReadableString_MegaByteAbbreviationFormat" xml:space="preserve">
+    <value>{0} MB</value>
+    <comment>Abbrivation for the size unit megabyte.</comment>
+  </data>
+  <data name="ReadableString_GigaByteAbbreviationFormat" xml:space="preserve">
+    <value>{0} GB</value>
+    <comment>Abbrivation for the size unit gigabyte.</comment>
+  </data>
+  <data name="ReadableString_TeraByteAbbreviationFormat" xml:space="preserve">
+    <value>{0} TB</value>
+    <comment>Abbrivation for the size unit terabyte.</comment>
+  </data>
+  <data name="ReadableString_PetaByteAbbreviationFormat" xml:space="preserve">
+    <value>{0} PB</value>
+    <comment>Abbrivation for the size unit petabyte.</comment>
+  </data>
+  <data name="ReadableString_ExaByteAbbreviationFormat" xml:space="preserve">
+    <value>{0} EB</value>
+    <comment>Abbrivation for the size unit exabyte.</comment>
+  </data>
+  <data name="PreviewTooltip_FileName" xml:space="preserve">
+    <value>Filename: {0}</value>
+    <comment>Filename for the tooltip of preview. {0} is the name.</comment>
+  </data>
+  <data name="PreviewTooltip_FileType" xml:space="preserve">
+    <value>Item Type: {0}</value>
+    <comment>Item Type for the tooltip of preview. {0} is the type.</comment>
+  </data>
+	<data name="PreviewTooltip_DateModified" xml:space="preserve">
+    <value>Date Modified: {0}</value>
+    <comment>Date Modified label for the tooltip of preview. {0} is the date.</comment>
+  </data>
+  <data name="PreviewTooltip_Dimensions" xml:space="preserve">
+    <value>Dimensions: {0} x {1}</value>
+    <comment>Dimensions label for the tooltip of preview. {0} is the width, {1} is the height.</comment>
+  </data>
+  <data name="PreviewTooltip_FileSize" xml:space="preserve">
+    <value>Size: {0}</value>
+    <comment>File Size label for the tooltip of preview. {0} is the size.</comment>
+  </data>
+  <data name="PreviewTooltip_Blank" xml:space="preserve">
+    <value>File preview</value>
+    <comment>Tooltip of preview when there's no file info available.</comment>
   </data>
 </root>

@@ -79,6 +79,35 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
             }
         }
 
+        public double UnsupportedFileWidthPercent
+        {
+            get => _peekSettings.Properties.UnsupportedFileWidthPercent;
+            set
+            {
+                if (_peekSettings.Properties.UnsupportedFileWidthPercent != value)
+                {
+                    _peekSettings.Properties.UnsupportedFileWidthPercent = value;
+                    OnPropertyChanged(nameof(UnsupportedFileWidthPercent));
+                    NotifySettingsChanged();
+                }
+            }
+        }
+
+        public double UnsupportedFileHeightPercent
+        {
+            get => _peekSettings.Properties.UnsupportedFileHeightPercent;
+
+            set
+            {
+                if (_peekSettings.Properties.UnsupportedFileHeightPercent != value)
+                {
+                    _peekSettings.Properties.UnsupportedFileHeightPercent = value;
+                    OnPropertyChanged(nameof(UnsupportedFileHeightPercent));
+                    NotifySettingsChanged();
+                }
+            }
+        }
+
         private void NotifySettingsChanged()
         {
             // Using InvariantCulture as this is an IPC message

@@ -10,16 +10,21 @@ namespace Peek.FilePreviewer.Previewers
     using System.Threading;
     using System.Threading.Tasks;
     using CommunityToolkit.Mvvm.ComponentModel;
+    using Microsoft.PowerToys.Settings.UI.Library;
     using Microsoft.UI.Dispatching;
+    using Microsoft.UI.Xaml.Controls;
     using Microsoft.UI.Xaml.Media.Imaging;
     using Peek.Common;
+    using Peek.Common.Extensions;
+    using Peek.Common.Helpers;
+    using Peek.FilePreviewer.Previewers.Helpers;
     using Windows.Foundation;
+
     using File = Peek.Common.Models.File;
 
     public partial class UnsupportedFilePreviewer : ObservableObject, IUnsupportedFilePreviewer, IDisposable
     {
         [ObservableProperty]
-        [NotifyPropertyChangedFor(nameof(IsPreviewLoaded))]
         private BitmapSource? iconPreview;
 
         [ObservableProperty]
@@ -34,13 +39,30 @@ namespace Peek.FilePreviewer.Previewers
         [ObservableProperty]
         private string? dateModified;
 
+        [ObservableProperty]
+        private PreviewState state;
+
         public UnsupportedFilePreviewer(File file)
         {
             File = file;
             FileName = file.FileName;
             DateModified = file.DateModified.ToString();
             Dispatcher = DispatcherQueue.GetForCurrentThread();
+            PropertyChanged += OnPropertyChanged;
+
+            var settingsUtils = new SettingsUtils();
+            var settings = settingsUtils.GetSettingsOrDefault<PeekSettings>(PeekSettings.ModuleName);
+
+            if (settings != null)
+            {
+                UnsupportedFileWidthPercent = settings.Properties.UnsupportedFileWidthPercent / 100.0;
+                UnsupportedFileHeightPercent = settings.Properties.UnsupportedFileHeightPercent / 100.0;
+            }
         }
+
+        private double UnsupportedFileWidthPercent { get; set; }
+
+        private double UnsupportedFileHeightPercent { get; set; }
 
         public bool IsPreviewLoaded => iconPreview != null;
 
@@ -52,6 +74,10 @@ namespace Peek.FilePreviewer.Previewers
 
         private CancellationToken CancellationToken => _cancellationTokenSource.Token;
 
+        private Task<bool>? IconPreviewTask { get; set; }
+
+        private Task<bool>? DisplayInfoTask { get; set; }
+
         public void Dispose()
         {
             _cancellationTokenSource.Dispose();
@@ -62,23 +88,28 @@ namespace Peek.FilePreviewer.Previewers
         {
             return Task.Run(() =>
             {
-                // TODO: This is the min size. Calculate a 20-25% of the screen.
-                return new Size(680, 500);
+                return new Size(UnsupportedFileWidthPercent, UnsupportedFileHeightPercent);
             });
         }
 
-        public Task LoadPreviewAsync()
+        public async Task LoadPreviewAsync()
         {
-            var iconPreviewTask = LoadIconPreviewAsync();
-            var displayInfoTask = LoadDisplayInfoAsync();
+            State = PreviewState.Loading;
 
-            return Task.WhenAll(iconPreviewTask, displayInfoTask);
+            IconPreviewTask = LoadIconPreviewAsync();
+            DisplayInfoTask = LoadDisplayInfoAsync();
+
+            await Task.WhenAll(IconPreviewTask, DisplayInfoTask);
+
+            if (HasFailedLoadingPreview())
+            {
+                State = PreviewState.Error;
+            }
         }
 
-        public Task LoadIconPreviewAsync()
+        public Task<bool> LoadIconPreviewAsync()
         {
-            var iconTCS = new TaskCompletionSource();
-            Dispatcher.TryEnqueue(async () =>
+            return TaskExtension.RunSafe(async () =>
             {
                 if (CancellationToken.IsCancellationRequested)
                 {
@@ -88,19 +119,17 @@ namespace Peek.FilePreviewer.Previewers
 
                 // TODO: Get icon with transparency
                 IconHelper.GetIcon(Path.GetFullPath(File.Path), out IntPtr hbitmap);
-                var iconBitmap = await GetBitmapFromHBitmapAsync(hbitmap);
-                IconPreview = iconBitmap;
-
-                iconTCS.SetResult();
+                await Dispatcher.RunOnUiThread(async () =>
+                {
+                    var iconBitmap = await GetBitmapFromHBitmapAsync(hbitmap);
+                    IconPreview = iconBitmap;
+                });
             });
-
-            return iconTCS.Task;
         }
 
-        public Task LoadDisplayInfoAsync()
+        public Task<bool> LoadDisplayInfoAsync()
         {
-            var displayInfoTCS = new TaskCompletionSource();
-            Dispatcher.TryEnqueue(async () =>
+            return TaskExtension.RunSafe(async () =>
             {
                 if (CancellationToken.IsCancellationRequested)
                 {
@@ -110,15 +139,34 @@ namespace Peek.FilePreviewer.Previewers
 
                 // File Properties
                 var bytes = await PropertyHelper.GetFileSizeInBytes(File.Path);
-                FileSize = ReadableStringHelper.BytesToReadableString(bytes);
-
                 var type = await PropertyHelper.GetFileType(File.Path);
-                FileType = type;
 
-                displayInfoTCS.SetResult();
+                await Dispatcher.RunOnUiThread(() =>
+                {
+                    FileSize = ReadableStringHelper.BytesToReadableString(bytes);
+                    FileType = type;
+                    return Task.CompletedTask;
+                });
             });
+        }
 
-            return displayInfoTCS.Task;
+        private void OnPropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
+        {
+            if (e.PropertyName == nameof(IconPreview))
+            {
+                if (IconPreview != null)
+                {
+                    State = PreviewState.Loaded;
+                }
+            }
+        }
+
+        private bool HasFailedLoadingPreview()
+        {
+            var hasFailedLoadingIconPreview = !(IconPreviewTask?.Result ?? true);
+            var hasFailedLoadingDisplayInfo = !(DisplayInfoTask?.Result ?? true);
+
+            return hasFailedLoadingIconPreview && hasFailedLoadingDisplayInfo;
         }
 
         // TODO: Move this to a helper file (ImagePrevier uses the same code)

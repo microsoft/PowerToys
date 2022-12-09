@@ -16,12 +16,13 @@
 
   <ItemGroup>
       <PackageReference Include="CommunityToolkit.Mvvm" Version="8.0.0" />
-      <PackageReference Include="Microsoft.WindowsAppSDK" Version="1.1.5" />
+      <PackageReference Include="Microsoft.WindowsAppSDK" Version="1.2.221116.1" />
       <PackageReference Include="Microsoft.Windows.SDK.BuildTools" Version="10.0.22621.1" />
       <PackageReference Include="System.Drawing.Common" Version="7.0.0" />
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\..\..\settings-ui\Settings.UI.Library\Settings.UI.Library.csproj" />
     <ProjectReference Include="..\Peek.Common\Peek.Common.csproj" />
     <ProjectReference Include="..\WIC\WIC.csproj" />
   </ItemGroup>
