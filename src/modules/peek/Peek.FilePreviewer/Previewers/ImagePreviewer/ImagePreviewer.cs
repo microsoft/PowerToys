@@ -49,18 +49,14 @@ namespace Peek.FilePreviewer.Previewers
 
         private bool IsFullImageLoaded => FullQualityImageTask?.Status == TaskStatus.RanToCompletion;
 
-        private CancellationTokenSource _cancellationTokenSource = new CancellationTokenSource();
-
-        private CancellationToken CancellationToken => _cancellationTokenSource.Token;
-
         public void Dispose()
         {
-            _cancellationTokenSource.Dispose();
             GC.SuppressFinalize(this);
         }
 
-        public async Task<Size> GetPreviewSizeAsync()
+        public async Task<Size> GetPreviewSizeAsync(CancellationToken cancellationToken)
         {
+            cancellationToken.ThrowIfCancellationRequested();
             var propertyImageSize = await PropertyHelper.GetImageSize(File.Path);
             if (propertyImageSize != Size.Empty)
             {
@@ -70,13 +66,14 @@ namespace Peek.FilePreviewer.Previewers
             return await WICHelper.GetImageSize(File.Path);
         }
 
-        public async Task LoadPreviewAsync()
+        public async Task LoadPreviewAsync(CancellationToken cancellationToken)
         {
             State = PreviewState.Loading;
 
-            LowQualityThumbnailTask = LoadLowQualityThumbnailAsync();
-            HighQualityThumbnailTask = LoadHighQualityThumbnailAsync();
-            FullQualityImageTask = LoadFullQualityImageAsync();
+            LowQualityThumbnailTask = LoadLowQualityThumbnailAsync(cancellationToken);
+            HighQualityThumbnailTask = LoadHighQualityThumbnailAsync(cancellationToken);
+            FullQualityImageTask = LoadFullQualityImageAsync(cancellationToken);
+            cancellationToken.ThrowIfCancellationRequested();
 
             await Task.WhenAll(LowQualityThumbnailTask, HighQualityThumbnailTask, FullQualityImageTask);
 
@@ -97,15 +94,11 @@ namespace Peek.FilePreviewer.Previewers
             }
         }
 
-        private Task<bool> LoadLowQualityThumbnailAsync()
+        private Task<bool> LoadLowQualityThumbnailAsync(CancellationToken cancellationToken)
         {
             return TaskExtension.RunSafe(async () =>
             {
-                if (CancellationToken.IsCancellationRequested)
-                {
-                    _cancellationTokenSource = new CancellationTokenSource();
-                    return;
-                }
+                cancellationToken.ThrowIfCancellationRequested();
 
                 if (!IsFullImageLoaded && !IsHighQualityThumbnailLoaded)
                 {
@@ -117,24 +110,23 @@ namespace Peek.FilePreviewer.Previewers
                         throw new ArgumentNullException(nameof(hbitmap));
                     }
 
+                    cancellationToken.ThrowIfCancellationRequested();
+
                     await Dispatcher.RunOnUiThread(async () =>
                     {
-                        var thumbnailBitmap = await GetBitmapFromHBitmapAsync(hbitmap);
+                        cancellationToken.ThrowIfCancellationRequested();
+                        var thumbnailBitmap = await GetBitmapFromHBitmapAsync(hbitmap, cancellationToken);
                         Preview = thumbnailBitmap;
                     });
                 }
             });
         }
 
-        private Task<bool> LoadHighQualityThumbnailAsync()
+        private Task<bool> LoadHighQualityThumbnailAsync(CancellationToken cancellationToken)
         {
             return TaskExtension.RunSafe(async () =>
             {
-                if (CancellationToken.IsCancellationRequested)
-                {
-                    _cancellationTokenSource = new CancellationTokenSource();
-                    return;
-                }
+                cancellationToken.ThrowIfCancellationRequested();
 
                 if (!IsFullImageLoaded)
                 {
@@ -146,29 +138,29 @@ namespace Peek.FilePreviewer.Previewers
                         throw new ArgumentNullException(nameof(hbitmap));
                     }
 
+                    cancellationToken.ThrowIfCancellationRequested();
+
                     await Dispatcher.RunOnUiThread(async () =>
                     {
-                        var thumbnailBitmap = await GetBitmapFromHBitmapAsync(hbitmap);
+                        cancellationToken.ThrowIfCancellationRequested();
+                        var thumbnailBitmap = await GetBitmapFromHBitmapAsync(hbitmap, cancellationToken);
                         Preview = thumbnailBitmap;
                     });
                 }
             });
         }
 
-        private Task<bool> LoadFullQualityImageAsync()
+        private Task<bool> LoadFullQualityImageAsync(CancellationToken cancellationToken)
         {
             return TaskExtension.RunSafe(async () =>
             {
-                if (CancellationToken.IsCancellationRequested)
-                {
-                    _cancellationTokenSource = new CancellationTokenSource();
-                    return;
-                }
+                cancellationToken.ThrowIfCancellationRequested();
 
                 // TODO: Check if this is performant
                 await Dispatcher.RunOnUiThread(async () =>
                 {
-                    var bitmap = await GetFullBitmapFromPathAsync(File.Path);
+                    cancellationToken.ThrowIfCancellationRequested();
+                    var bitmap = await GetFullBitmapFromPathAsync(File.Path, cancellationToken);
                     Preview = bitmap;
                 });
             });
@@ -183,27 +175,34 @@ namespace Peek.FilePreviewer.Previewers
             return hasFailedLoadingLowQualityThumbnail && hasFailedLoadingHighQualityThumbnail && hasFailedLoadingFullQualityImage;
         }
 
-        private static async Task<BitmapImage> GetFullBitmapFromPathAsync(string path)
+        private static async Task<BitmapImage> GetFullBitmapFromPathAsync(string path, CancellationToken cancellationToken)
         {
             var bitmap = new BitmapImage();
+
+            cancellationToken.ThrowIfCancellationRequested();
             using (FileStream stream = System.IO.File.OpenRead(path))
             {
+                cancellationToken.ThrowIfCancellationRequested();
                 await bitmap.SetSourceAsync(stream.AsRandomAccessStream());
             }
 
             return bitmap;
         }
 
-        private static async Task<BitmapSource> GetBitmapFromHBitmapAsync(IntPtr hbitmap)
+        private static async Task<BitmapSource> GetBitmapFromHBitmapAsync(IntPtr hbitmap, CancellationToken cancellationToken)
         {
             try
             {
                 var bitmap = System.Drawing.Image.FromHbitmap(hbitmap);
                 var bitmapImage = new BitmapImage();
+
+                cancellationToken.ThrowIfCancellationRequested();
                 using (var stream = new MemoryStream())
                 {
                     bitmap.Save(stream, ImageFormat.Bmp);
                     stream.Position = 0;
+
+                    cancellationToken.ThrowIfCancellationRequested();
                     await bitmapImage.SetSourceAsync(stream.AsRandomAccessStream());
                 }
 
