@@ -733,7 +733,17 @@ void FancyZones::AddWorkArea(HMONITOR monitor, const FancyZonesDataTypes::WorkAr
             parentId = parentArea->UniqueId();
         }
 
-        auto workArea = MakeWorkArea(m_hinstance, monitor, id, parentId);
+        FancyZonesUtils::Rect rect{};
+        if (monitor)
+        {
+            rect = MonitorUtils::GetWorkAreaRect(monitor);
+        }
+        else
+        {
+            rect = FancyZonesUtils::GetAllMonitorsCombinedRect<&MONITORINFO::rcWork>();
+        }
+        
+        auto workArea = MakeWorkArea(m_hinstance, id, parentId, rect);
         if (workArea)
         {
             m_workAreaHandler.AddWorkArea(VirtualDesktop::instance().GetCurrentVirtualDesktopId(), monitor, workArea);

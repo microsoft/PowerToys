@@ -109,8 +109,9 @@ namespace
     WindowPool windowPool;
 }
 
-WorkArea::WorkArea(HINSTANCE hinstance, const FancyZonesDataTypes::WorkAreaId& uniqueId) :
-    m_uniqueId(uniqueId)
+WorkArea::WorkArea(HINSTANCE hinstance, const FancyZonesDataTypes::WorkAreaId& uniqueId, const FancyZonesUtils::Rect& workAreaRect) :
+    m_uniqueId(uniqueId),
+    m_workAreaRect(workAreaRect)
 {
     WNDCLASSEXW wcex{};
     wcex.cbSize = sizeof(WNDCLASSEX);
@@ -609,7 +610,7 @@ void WorkArea::CalculateZoneSet() noexcept
     }
 
     m_layout = std::make_unique<Layout>(appliedLayout.value());
-    m_layout->Init(m_workAreaRect, m_monitor);
+    m_layout->Init(m_workAreaRect, m_uniqueId.monitorId.monitor);
 
     if (!m_layoutWindows)
     {
