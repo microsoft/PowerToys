@@ -52,8 +52,8 @@ namespace Peek.FilePreviewer
                     _cancellationTokenSource.Cancel();
                     _cancellationTokenSource = new ();
 
-                    Previewer = previewerFactory.CreateDefaultPreviewer(File, _cancellationTokenSource.Token);
-                    await UpdatePreviewAsync();
+                    Previewer = previewerFactory.CreateDefaultPreviewer(File);
+                    await UpdatePreviewAsync(_cancellationTokenSource.Token);
                 }
             }
         }
@@ -102,22 +102,22 @@ namespace Peek.FilePreviewer
                 return;
             }
 
-            Previewer = previewerFactory.Create(File, _cancellationTokenSource.Token);
+            Previewer = previewerFactory.Create(File);
 
-            await UpdatePreviewAsync();
+            await UpdatePreviewAsync(_cancellationTokenSource.Token);
         }
 
-        private async Task UpdatePreviewAsync()
+        private async Task UpdatePreviewAsync(CancellationToken cancellationToken)
         {
             if (Previewer != null)
             {
                 try
                 {
-                    _cancellationTokenSource.Token.ThrowIfCancellationRequested();
-                    var size = await Previewer.GetPreviewSizeAsync();
+                    cancellationToken.ThrowIfCancellationRequested();
+                    var size = await Previewer.GetPreviewSizeAsync(cancellationToken);
                     PreviewSizeChanged?.Invoke(this, new PreviewSizeChangedArgs(size));
-                    _cancellationTokenSource.Token.ThrowIfCancellationRequested();
-                    await Previewer.LoadPreviewAsync();
+                    cancellationToken.ThrowIfCancellationRequested();
+                    await Previewer.LoadPreviewAsync(cancellationToken);
                 }
                 catch (OperationCanceledException)
                 {

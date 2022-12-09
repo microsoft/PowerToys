@@ -40,10 +40,9 @@ namespace Peek.FilePreviewer.Previewers
         [ObservableProperty]
         private PreviewState state;
 
-        public UnsupportedFilePreviewer(File file, CancellationToken cancellationToken)
+        public UnsupportedFilePreviewer(File file)
         {
             File = file;
-            CancellationToken = cancellationToken;
             FileName = file.FileName;
             DateModified = file.DateModified.ToString();
             Dispatcher = DispatcherQueue.GetForCurrentThread();
@@ -52,8 +51,6 @@ namespace Peek.FilePreviewer.Previewers
         }
 
         private File File { get; }
-
-        private CancellationToken CancellationToken { get; }
 
         private DispatcherQueue Dispatcher { get; }
 
@@ -66,7 +63,7 @@ namespace Peek.FilePreviewer.Previewers
             GC.SuppressFinalize(this);
         }
 
-        public Task<Size> GetPreviewSizeAsync()
+        public Task<Size> GetPreviewSizeAsync(CancellationToken cancellationToken)
         {
             return Task.Run(() =>
             {
@@ -75,14 +72,14 @@ namespace Peek.FilePreviewer.Previewers
             });
         }
 
-        public async Task LoadPreviewAsync()
+        public async Task LoadPreviewAsync(CancellationToken cancellationToken)
         {
-            CancellationToken.ThrowIfCancellationRequested();
+            cancellationToken.ThrowIfCancellationRequested();
 
             State = PreviewState.Loading;
 
-            IconPreviewTask = LoadIconPreviewAsync();
-            DisplayInfoTask = LoadDisplayInfoAsync();
+            IconPreviewTask = LoadIconPreviewAsync(cancellationToken);
+            DisplayInfoTask = LoadDisplayInfoAsync(cancellationToken);
 
             await Task.WhenAll(IconPreviewTask, DisplayInfoTask);
 
@@ -92,35 +89,34 @@ namespace Peek.FilePreviewer.Previewers
             }
         }
 
-        public Task<bool> LoadIconPreviewAsync()
+        public Task<bool> LoadIconPreviewAsync(CancellationToken cancellationToken)
         {
             return TaskExtension.RunSafe(async () =>
             {
-                CancellationToken.ThrowIfCancellationRequested();
+                cancellationToken.ThrowIfCancellationRequested();
 
                 // TODO: Get icon with transparency
                 IconHelper.GetIcon(Path.GetFullPath(File.Path), out IntPtr hbitmap);
 
-                CancellationToken.ThrowIfCancellationRequested();
-
+                cancellationToken.ThrowIfCancellationRequested();
                 await Dispatcher.RunOnUiThread(async () =>
                 {
-                    CancellationToken.ThrowIfCancellationRequested();
-                    var iconBitmap = await GetBitmapFromHBitmapAsync(hbitmap, CancellationToken);
+                    cancellationToken.ThrowIfCancellationRequested();
+                    var iconBitmap = await GetBitmapFromHBitmapAsync(hbitmap, cancellationToken);
                     IconPreview = iconBitmap;
                 });
             });
         }
 
-        public Task<bool> LoadDisplayInfoAsync()
+        public Task<bool> LoadDisplayInfoAsync(CancellationToken cancellationToken)
         {
             return TaskExtension.RunSafe(async () =>
             {
                 // File Properties
-                CancellationToken.ThrowIfCancellationRequested();
+                cancellationToken.ThrowIfCancellationRequested();
                 var bytes = await PropertyHelper.GetFileSizeInBytes(File.Path);
 
-                CancellationToken.ThrowIfCancellationRequested();
+                cancellationToken.ThrowIfCancellationRequested();
                 var type = await PropertyHelper.GetFileType(File.Path);
 
                 await Dispatcher.RunOnUiThread(() =>

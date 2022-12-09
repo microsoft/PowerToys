@@ -30,24 +30,21 @@ namespace Peek.FilePreviewer.Previewers
         [ObservableProperty]
         private PreviewState state;
 
-        public WebBrowserPreviewer(File file, CancellationToken cancellationToken)
+        public WebBrowserPreviewer(File file)
         {
             File = file;
-            CancellationToken = cancellationToken;
         }
 
         private File File { get; }
 
-        private CancellationToken CancellationToken { get; }
-
-        public Task<Size> GetPreviewSizeAsync()
+        public Task<Size> GetPreviewSizeAsync(CancellationToken cancellationToken)
         {
             // TODO: define how to proper window size on HTML content.
             var size = new Size(1280, 720);
             return Task.FromResult(size);
         }
 
-        public Task LoadPreviewAsync()
+        public Task LoadPreviewAsync(CancellationToken cancellationToken)
         {
             State = PreviewState.Loading;
 

@@ -9,24 +9,24 @@ namespace Peek.FilePreviewer.Previewers
 
     public class PreviewerFactory
     {
-        public IPreviewer Create(File file, CancellationToken cancellationToken)
+        public IPreviewer Create(File file)
         {
             if (ImagePreviewer.IsFileTypeSupported(file.Extension))
             {
-                return new ImagePreviewer(file, cancellationToken);
+                return new ImagePreviewer(file);
             }
             else if (WebBrowserPreviewer.IsFileTypeSupported(file.Extension))
             {
-                return new WebBrowserPreviewer(file, cancellationToken);
+                return new WebBrowserPreviewer(file);
             }
 
             // Other previewer types check their supported file types here
-            return CreateDefaultPreviewer(file, cancellationToken);
+            return CreateDefaultPreviewer(file);
         }
 
-        public IPreviewer CreateDefaultPreviewer(File file, CancellationToken cancellationToken)
+        public IPreviewer CreateDefaultPreviewer(File file)
         {
-            return new UnsupportedFilePreviewer(file, cancellationToken);
+            return new UnsupportedFilePreviewer(file);
         }
     }
 }
