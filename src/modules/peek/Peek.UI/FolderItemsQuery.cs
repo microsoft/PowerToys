@@ -126,18 +126,6 @@ namespace Peek.UI
             }
         }
 
-        public static File? GetFileExplorerSelectedFile()
-        {
-            var shellItems = FileExplorerHelper.GetSelectedItems();
-            var firstSelectedItem = shellItems?.Item(0);
-            if (shellItems == null || firstSelectedItem == null)
-            {
-                return null;
-            }
-
-            return new File(firstSelectedItem.Path);
-        }
-
         // Finds index of firstSelectedItem either amongst folder items, initializing our internal File list
         //  since storing Shell32.FolderItems as a field isn't reliable.
         // Can take a few seconds for folders with 1000s of items; ensure it runs on a background thread.
