@@ -117,7 +117,6 @@ namespace Peek.FilePreviewer.Previewers
                     return;
                 }
 
-                // TODO: Get icon with transparency
                 IconHelper.GetIcon(Path.GetFullPath(File.Path), out IntPtr hbitmap);
                 await Dispatcher.RunOnUiThread(async () =>
                 {
