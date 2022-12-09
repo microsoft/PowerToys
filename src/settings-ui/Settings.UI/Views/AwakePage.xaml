@@ -83,7 +83,7 @@
                     <labs:SettingsCard
                         x:Uid="Awake_EnableDisplayKeepAwake"
                         HeaderIcon="{ui:FontIcon FontFamily={StaticResource SymbolThemeFontFamily}, Glyph=&#xE7FB;}"
-                        Visibility="{x:Bind ViewModel.IsTimeConfigurationEnabled, Mode=OneWay}">
+                        Visibility="{x:Bind ViewModel.IsScreenConfigurationPossibleEnabled, Mode=OneWay}">
                         <ToggleSwitch
                             x:Uid="ToggleSwitch"
                             IsOn="{x:Bind ViewModel.KeepDisplayOn, Mode=TwoWay}" />
