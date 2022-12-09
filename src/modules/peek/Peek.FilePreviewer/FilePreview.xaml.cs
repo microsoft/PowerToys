@@ -123,14 +123,14 @@ namespace Peek.FilePreviewer
                 try
                 {
                     cancellationToken.ThrowIfCancellationRequested();
-                    var size = await Previewer.GetPreviewSizeAsync();
+                    var size = await Previewer.GetPreviewSizeAsync(cancellationToken);
                     SizeFormat windowSizeFormat = UnsupportedFilePreviewer != null ? SizeFormat.Percentage : SizeFormat.Pixels;
                     PreviewSizeChanged?.Invoke(this, new PreviewSizeChangedArgs(size, windowSizeFormat));
                     cancellationToken.ThrowIfCancellationRequested();
-                    await Previewer.LoadPreviewAsync();
+                    await Previewer.LoadPreviewAsync(cancellationToken);
 
                     cancellationToken.ThrowIfCancellationRequested();
-                    await UpdateImageTooltipAsync();
+                    await UpdateImageTooltipAsync(cancellationToken);
                 }
                 catch (OperationCanceledException)
                 {
