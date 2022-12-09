@@ -13,6 +13,7 @@ namespace Peek.UI
     using CommunityToolkit.Mvvm.ComponentModel;
     using Microsoft.UI.Dispatching;
     using Peek.Common.Models;
+    using Peek.UI.FolderItemSources;
     using Peek.UI.Helpers;
     using Windows.Storage;
     using Windows.Storage.Search;
@@ -35,11 +36,11 @@ namespace Peek.UI
         [ObservableProperty]
         private int currentItemIndex = UninitializedItemIndex;
 
-        private StorageItemQueryResult? ItemQuery { get; set; } = null;
-
         private CancellationTokenSource CancellationTokenSource { get; set; } = new CancellationTokenSource();
 
-        private Task? InitializeFilesTask { get; set; } = null;
+        private Task? InitializeQueryTask { get; set; } = null;
+
+        private IFolderItemsSource? FolderItemsSource { get; set; } = null;
 
         // Must be called from UI thread
         public void Clear()
@@ -47,13 +48,13 @@ namespace Peek.UI
             CurrentFile = null;
             IsMultiSelection = false;
 
-            if (InitializeFilesTask != null && InitializeFilesTask.Status == TaskStatus.Running)
+            if (InitializeQueryTask != null && InitializeQueryTask.Status == TaskStatus.Running)
             {
-                Debug.WriteLine("Detected existing initializeFilesTask running. Cancelling it..");
+                Debug.WriteLine("Detected existing InitializeQueryTask running. Cancelling it..");
                 CancellationTokenSource.Cancel();
             }
 
-            InitializeFilesTask = null;
+            InitializeQueryTask = null;
 
             lock (_mutateQueryDataLock)
             {
@@ -63,11 +64,11 @@ namespace Peek.UI
         }
 
         // Must be called from UI thread
-        public async void UpdateCurrentItemIndex(int desiredIndex)
+        public async Task UpdateCurrentItemIndex(int desiredIndex)
         {
             // TODO: add items count check
-            if (CurrentItemIndex == UninitializedItemIndex ||
-                (InitializeFilesTask != null && InitializeFilesTask.Status == TaskStatus.Running))
+            if (ItemsCount <= 1 || CurrentItemIndex == UninitializedItemIndex || FolderItemsSource == null ||
+                (InitializeQueryTask != null && InitializeQueryTask.Status == TaskStatus.Running))
             {
                 return;
             }
@@ -82,17 +83,14 @@ namespace Peek.UI
                 CurrentItemIndex = 0;
             }
 
-            if (ItemQuery == null)
+            if (FolderItemsSource == null)
             {
                 return;
             }
 
             // TODO: safety checks + bounds checks + refactor int field to uint for extra safety
             // TODO: add note about time taken
-            var items = await ItemQuery.GetItemsAsync((uint)currentItemIndex, 1);
-
-            // TODO: optimize by passing in storageitem immediately
-            CurrentFile = new File(items.First().Path);
+            CurrentFile = await FolderItemsSource.GetItemAt((uint)CurrentItemIndex); // TODO: fix uint declarations
         }
 
         // Must be called from UI thread
@@ -124,95 +122,54 @@ namespace Peek.UI
 
             try
             {
-                if (InitializeFilesTask != null && InitializeFilesTask.Status == TaskStatus.Running)
+                if (InitializeQueryTask != null && InitializeQueryTask.Status == TaskStatus.Running)
                 {
-                    Debug.WriteLine("Detected unexpected existing initializeFilesTask running. Cancelling it..");
+                    Debug.WriteLine("Detected unexpected existing InitializeQueryTask running. Cancelling it..");
                     CancellationTokenSource.Cancel();
                 }
 
                 CancellationTokenSource = new CancellationTokenSource();
-                InitializeFilesTask = new Task(() => InitializeFiles(folderView, items, firstSelectedItem, CancellationTokenSource.Token));
+                InitializeQueryTask = new Task(() => InitializeQuery(folderView, items, firstSelectedItem, CancellationTokenSource.Token));
 
                 // Execute file initialization/querying on background thread
-                InitializeFilesTask.Start();
+                InitializeQueryTask.Start();
             }
             catch (Exception e)
             {
-                Debug.WriteLine("Exception trying to run initializeFilesTask:\n" + e.ToString());
+                Debug.WriteLine("Exception trying to run InitializeQueryTask:\n" + e.ToString());
             }
         }
 
-        // Finds index of firstSelectedItem either amongst folder items, initializing our internal File list
-        //  since storing Shell32.FolderItems as a field isn't reliable.
-        // Can take a few seconds for folders with 1000s of items; ensure it runs on a background thread.
-        //
-        // TODO optimization:
-        //  Handle case where selected items count > 1 separately. Although it'll still be slow for 1000s of items selected,
-        //  we can leverage faster APIs like Windows.Storage when 1 item is selected, and navigation is scoped to
-        //  the entire folder. We can then avoid iterating through all items here, and maintain a dynamic window of
-        //  loaded items around the current item index.
-        private async void InitializeFiles(
+        private async void InitializeQuery(
             Shell32.IShellFolderViewDual3 folderView, // TODO: remove
             Shell32.FolderItems items,
             Shell32.FolderItem firstSelectedItem,
             CancellationToken cancellationToken)
         {
-            // TODO: handle selected items separately
-            var tempFiles = new List<File>(items.Count);
-            var tempCurIndex = UninitializedItemIndex;
+            FolderItemsSource = IsMultiSelection ? new SelectedItemsSource() : new WholeFolderItemsSource();
 
-            // TODO: dealing with hidden/system items
-            var parentPath = System.IO.Directory.GetParent(firstSelectedItem.Path); // TODO: rename/optimize/try+catch
-            if (parentPath == null)
+            InitialQueryData? initialQueryData = await FolderItemsSource.Initialize(folderView);
+            if (initialQueryData == null || !initialQueryData.HasValue)
             {
                 return;
             }
 
-            var folder = await StorageFolder.GetFolderFromPathAsync(parentPath.FullName);
-
-            // TODO: check if query options are supported (member helpers)
-            // TODO: ensure correct query option is set <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
-            var queryOptions = new QueryOptions();
-
-            // queryOptions.IndexerOption
-            try
-            {
-                queryOptions.SortOrder.Clear();
-                queryOptions.SortOrder.Add(new SortEntry("System.Size", false));
-
-                // queryOptions.SortOrder.Clear();
-                // queryOptions.SortOrder.Add(new SortEntry("System.ItemNameDisplay", false));
-                ItemQuery = folder.CreateItemQuery();
-                ItemQuery.ApplyNewQueryOptions(queryOptions);
-
-                Debug.WriteLine(firstSelectedItem.Name);
-
-                // TODO: property passed in depends on sort order passed to query
-                var idx = await ItemQuery.FindStartIndexAsync(firstSelectedItem.Size);
-                if (idx == uint.MaxValue)
-                {
-                    Debug.WriteLine("File not found");
-                    return;
-                }
-
-                tempCurIndex = (int)idx;
-
-                Debug.WriteLine("selected index: " + tempCurIndex);
-            }
-            catch (Exception)
-            {
-            }
+            InitialQueryData y = new ();
+            y.FirstItemIndex = 0;
 
             cancellationToken.ThrowIfCancellationRequested();
 
+            // Lock to prevent race conditions with UI thread's Clear calls upon Peek deactivation/hide
             lock (_mutateQueryDataLock)
             {
                 cancellationToken.ThrowIfCancellationRequested();
 
                 _dispatcherQueue.TryEnqueue(() =>
                 {
-                    ItemsCount = items.Count; // TODO: don't need to set this here anymore? Not reliable
-                    CurrentItemIndex = tempCurIndex;
+                    cancellationToken.ThrowIfCancellationRequested();
+
+                    ItemsCount = (int)initialQueryData.Value.ItemsCount; // TODO: remove cast
+                    CurrentItemIndex = (int)initialQueryData.Value.FirstItemIndex;
                 });
             }
         }

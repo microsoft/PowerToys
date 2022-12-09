@@ -12,36 +12,39 @@ namespace Peek.UI
     {
         private const int NavigationThrottleDelayMs = 100;
 
+        private bool IsNavigating { get; set; } = false;
+
         public MainWindowViewModel()
         {
             NavigationThrottleTimer.Tick += NavigationThrottleTimer_Tick;
             NavigationThrottleTimer.Interval = TimeSpan.FromMilliseconds(NavigationThrottleDelayMs);
         }
 
-        public void AttemptLeftNavigation()
+        private async void AttemptNavigation(bool goToNextItem)
         {
-            if (NavigationThrottleTimer.IsEnabled)
+            if (NavigationThrottleTimer.IsEnabled && !IsNavigating)
             {
                 return;
             }
 
+            IsNavigating = true;
             NavigationThrottleTimer.Start();
 
-            // TODO: await + return a bool so UI can give feedback in case navigation is unavailable
-            FolderItemsQuery.UpdateCurrentItemIndex(FolderItemsQuery.CurrentItemIndex - 1);
+            var desiredItemIndex = FolderItemsQuery.CurrentItemIndex + (goToNextItem ? 1 : -1);
+
+            // TODO: return a bool so UI can give feedback in case navigation is unavailable?
+            await FolderItemsQuery.UpdateCurrentItemIndex(desiredItemIndex);
+            IsNavigating = false;
+        }
+
+        public void AttemptLeftNavigation()
+        {
+            AttemptNavigation(false);
         }
 
         public void AttemptRightNavigation()
         {
-            if (NavigationThrottleTimer.IsEnabled)
-            {
-                return;
-            }
-
-            NavigationThrottleTimer.Start();
-
-            // TODO: await + return a bool so UI can give feedback in case navigation is unavailable
-            FolderItemsQuery.UpdateCurrentItemIndex(FolderItemsQuery.CurrentItemIndex + 1);
+            AttemptNavigation(true);
         }
 
         private void NavigationThrottleTimer_Tick(object? sender, object e)
