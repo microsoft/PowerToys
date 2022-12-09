@@ -235,9 +235,8 @@ namespace Peek.FilePreviewer.Previewers
                 ".tif",  // very slow for large files: no thumbnail?
                 ".tiff", // NEED TO TEST
                 ".dib",  // NEED TO TEST
-
-                ".heic", // Crash in bitmap.SetSourceAsync() due to missing codec
-                ".heif", // NEED TO TEST
+                ".heic",
+                ".heif",
                 ".hif",  // NEED TO TEST
                 ".avif", // NEED TO TEST
                 ".jxr",
@@ -248,9 +247,8 @@ namespace Peek.FilePreviewer.Previewers
                 // Raw types
                 ".arw",
                 ".cr2",
-
-                // ".crw", // Crashes in WICImageFactory.CreateDecoderFromFilename
-                // ".erf", // Crashes in WICImageFactory.CreateDecoderFromFilename
+                ".crw",
+                ".erf",
                 ".kdc", // NEED TO TEST
                 ".mrw",
                 ".nef",
@@ -274,16 +272,14 @@ namespace Peek.FilePreviewer.Previewers
                 ".cap", // NEED TO TEST
                 ".iiq",
                 ".eip", // NEED TO TEST
-
-                // ".fff", // Crashes getting imageSize, either through PropertyStore or WIC
+                ".fff",
                 ".mef",
 
                 // ".mdc", // Crashes in GetFullBitmapFromPathAsync
                 ".mos",
                 ".R3D",
                 ".rwz", // NEED TO TEST
-
-                // ".x3f", // Crashes in CreateDecoderFromFilename
+                ".x3f",
                 ".ori",
                 ".cr3",
         };
