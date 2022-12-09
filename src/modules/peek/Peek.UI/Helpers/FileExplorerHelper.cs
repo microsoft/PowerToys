@@ -11,7 +11,7 @@ namespace Peek.UI.Helpers
 {
     public static class FileExplorerHelper
     {
-        public static Shell32.IShellFolderViewDual2? GetCurrentFolderView()
+        public static Shell32.IShellFolderViewDual3? GetCurrentFolderView()
         {
             var foregroundWindowHandle = NativeMethods.GetForegroundWindow();
 
@@ -22,7 +22,7 @@ namespace Peek.UI.Helpers
                 // https://github.com/microsoft/PowerToys/issues/22507
                 if (window.HWND == (int)foregroundWindowHandle)
                 {
-                    return (Shell32.IShellFolderViewDual2)window.Document;
+                    return (Shell32.IShellFolderViewDual3)window.Document;
                 }
             }
 

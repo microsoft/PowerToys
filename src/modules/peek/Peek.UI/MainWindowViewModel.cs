@@ -27,7 +27,7 @@ namespace Peek.UI
 
             NavigationThrottleTimer.Start();
 
-            // TODO: return a bool so UI can give feedback in case navigation is unavailable
+            // TODO: await + return a bool so UI can give feedback in case navigation is unavailable
             FolderItemsQuery.UpdateCurrentItemIndex(FolderItemsQuery.CurrentItemIndex - 1);
         }
 
@@ -40,7 +40,7 @@ namespace Peek.UI
 
             NavigationThrottleTimer.Start();
 
-            // TODO: return a bool so UI can give feedback in case navigation is unavailable
+            // TODO: await + return a bool so UI can give feedback in case navigation is unavailable
             FolderItemsQuery.UpdateCurrentItemIndex(FolderItemsQuery.CurrentItemIndex + 1);
         }
 
