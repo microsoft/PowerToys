@@ -13,7 +13,6 @@ namespace Peek.FilePreviewer.Previewers
     using System.Threading.Tasks;
     using CommunityToolkit.Mvvm.ComponentModel;
     using Microsoft.UI.Dispatching;
-    using Microsoft.UI.Xaml.Controls;
     using Microsoft.UI.Xaml.Media.Imaging;
     using Peek.Common;
     using Peek.Common.Extensions;

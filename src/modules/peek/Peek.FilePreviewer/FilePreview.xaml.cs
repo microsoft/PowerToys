@@ -48,6 +48,10 @@ namespace Peek.FilePreviewer
             {
                 if (Previewer?.State == PreviewState.Error)
                 {
+                    // Cancel previous loading task
+                    _cancellationTokenSource.Cancel();
+                    _cancellationTokenSource = new ();
+
                     Previewer = previewerFactory.CreateDefaultPreviewer(File, _cancellationTokenSource.Token);
                     await UpdatePreviewAsync();
                 }
@@ -83,6 +87,10 @@ namespace Peek.FilePreviewer
 
         private async Task OnFilePropertyChanged()
         {
+            // Cancel previous loading task
+            _cancellationTokenSource.Cancel();
+            _cancellationTokenSource = new ();
+
             // TODO: track and cancel existing async preview tasks
             // https://github.com/microsoft/PowerToys/issues/22480
             if (File == null)
@@ -94,11 +102,8 @@ namespace Peek.FilePreviewer
                 return;
             }
 
-            // Cancel previous loading task
-            _cancellationTokenSource.Cancel();
-            _cancellationTokenSource = new ();
-
             Previewer = previewerFactory.Create(File, _cancellationTokenSource.Token);
+
             await UpdatePreviewAsync();
         }
 
@@ -106,9 +111,18 @@ namespace Peek.FilePreviewer
         {
             if (Previewer != null)
             {
-                var size = await Previewer.GetPreviewSizeAsync();
-                PreviewSizeChanged?.Invoke(this, new PreviewSizeChangedArgs(size));
-                await Previewer.LoadPreviewAsync();
+                try
+                {
+                    _cancellationTokenSource.Token.ThrowIfCancellationRequested();
+                    var size = await Previewer.GetPreviewSizeAsync();
+                    PreviewSizeChanged?.Invoke(this, new PreviewSizeChangedArgs(size));
+                    _cancellationTokenSource.Token.ThrowIfCancellationRequested();
+                    await Previewer.LoadPreviewAsync();
+                }
+                catch (OperationCanceledException)
+                {
+                    // TODO: Log task cancelled exception?
+                }
             }
         }
 
