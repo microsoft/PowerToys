@@ -12,11 +12,11 @@ namespace Peek.FilePreviewer.Previewers
     using CommunityToolkit.Mvvm.ComponentModel;
     using Microsoft.PowerToys.Settings.UI.Library;
     using Microsoft.UI.Dispatching;
-    using Microsoft.UI.Xaml.Controls;
     using Microsoft.UI.Xaml.Media.Imaging;
     using Peek.Common;
     using Peek.Common.Extensions;
     using Peek.Common.Helpers;
+    using Peek.Common.Models;
     using Peek.FilePreviewer.Previewers.Helpers;
     using Windows.Foundation;
 
@@ -111,13 +111,21 @@ namespace Peek.FilePreviewer.Previewers
                 cancellationToken.ThrowIfCancellationRequested();
 
                 // TODO: Get icon with transparency
-                IconHelper.GetIcon(Path.GetFullPath(File.Path), out IntPtr hbitmap);
+                IntPtr hbitmap = IntPtr.Zero;
+                bool usingSystemIcon = false;
+                HResult hr = IconHelper.GetIcon(Path.GetFullPath(File.Path), out hbitmap);
+                if (hr != HResult.Ok)
+                {
+                    // Try get system icon (File icon)
+                    usingSystemIcon = true;
+                    IconHelper.GetSystemIcon(NativeMethods.SHSTOCKICONID.SIID_DOCNOASSOC, out hbitmap);
+                }
 
                 cancellationToken.ThrowIfCancellationRequested();
                 await Dispatcher.RunOnUiThread(async () =>
                 {
                     cancellationToken.ThrowIfCancellationRequested();
-                    var iconBitmap = await GetBitmapFromHBitmapAsync(hbitmap, cancellationToken);
+                    var iconBitmap = await GetBitmapFromHBitmapAsync(hbitmap, usingSystemIcon, cancellationToken);
                     IconPreview = iconBitmap;
                 });
             });
@@ -163,12 +171,23 @@ namespace Peek.FilePreviewer.Previewers
         }
 
         // TODO: Move this to a helper file (ImagePreviewer uses the same code)
-        private static async Task<BitmapSource> GetBitmapFromHBitmapAsync(IntPtr hbitmap, CancellationToken cancellationToken)
+        private static async Task<BitmapSource> GetBitmapFromHBitmapAsync(IntPtr hbitmap, bool usingSystemIcon, CancellationToken cancellationToken)
         {
             try
             {
                 cancellationToken.ThrowIfCancellationRequested();
-                var bitmap = System.Drawing.Image.FromHbitmap(hbitmap);
+
+                System.Drawing.Bitmap bitmap;
+
+                if (usingSystemIcon)
+                {
+                    bitmap = System.Drawing.Bitmap.FromHicon(hbitmap);
+                }
+                else
+                {
+                    bitmap = System.Drawing.Image.FromHbitmap(hbitmap);
+                }
+
                 var bitmapImage = new BitmapImage();
 
                 cancellationToken.ThrowIfCancellationRequested();

@@ -5,7 +5,6 @@
 namespace Peek.FilePreviewer.Previewers.Helpers
 {
     using System;
-    using System.Drawing;
     using System.Runtime.InteropServices;
     using Peek.Common;
     using Peek.Common.Models;
@@ -30,12 +29,36 @@ namespace Peek.FilePreviewer.Previewers.Helpers
 
             HResult hr = ((IShellItemImageFactory)nativeShellItem).GetImage(large, options, out hbitmap);
 
-            if (hr != HResult.Ok)
-            {
-                // TODO: fallback to a generic icon
-            }
-
             Marshal.ReleaseComObject(nativeShellItem);
+
+            return hr;
+        }
+
+        // Based on https://stackoverflow.com/questions/24257506/how-can-i-get-messagebox-icons-in-windows-8-1
+        // and https://stackoverflow.com/questions/28525925/get-icon-128128-file-type-c-sharp
+        public static HResult GetSystemIcon(NativeMethods.SHSTOCKICONID systemIconId, out IntPtr hbitmap)
+        {
+            hbitmap = IntPtr.Zero;
+
+            NativeMethods.SHSTOCKICONINFO sii = new ();
+            sii.cbSize = (uint)Marshal.SizeOf(typeof(NativeMethods.SHSTOCKICONINFO));
+            HResult hr = NativeMethods.SHGetStockIconInfo(systemIconId, NativeMethods.SHGSI.SHGSI_SYSICONINDEX, ref sii);
+
+            if (hr == HResult.Ok)
+            {
+                // I think any of the two ids works but putting both of them in case we need them in the future
+                // const string IID_IImageList = "46EB5926-582E-4017-9FDF-E8998DAA0950";
+                const string IID_IImageList2 = "192B9D83-50FC-457B-90A0-2B82A8B5DAE1";
+                const int SHIL_JUMBO = 0x4; // 256x256
+                const int ILD_TRANSPARENT = 0x00000001;
+                const int ILD_IMAGE = 0x00000020;
+
+                NativeMethods.IImageList? spiml = null;
+                Guid guil = new Guid(IID_IImageList2);
+
+                hr = NativeMethods.SHGetImageList(SHIL_JUMBO, ref guil, ref spiml!);
+                spiml.GetIcon(sii.iSysIconIndex, ILD_TRANSPARENT | ILD_IMAGE, ref hbitmap);
+            }
 
             return hr;
         }
