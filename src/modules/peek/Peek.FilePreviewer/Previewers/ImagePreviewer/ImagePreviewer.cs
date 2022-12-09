@@ -231,28 +231,27 @@ namespace Peek.FilePreviewer.Previewers
                 ".jif",
                 ".jpeg",
                 ".jpe",
+                ".png",
+                ".tif",  // very slow for large files: no thumbnail?
+                ".tiff", // NEED TO TEST
+                ".dib",  // NEED TO TEST
 
-                // ".png", // The current ImagePreviewer logic does not support transparency so PNG has it's own logic in PngPreviewer
-                ".tif",
-                ".tiff",
-                ".dib",
-
-                ".heic", // Error in System.Drawing.Image.FromHbitmap(hbitmap);
-                ".heif",
-                ".hif",
-                ".avif",
+                ".heic", // Crash in bitmap.SetSourceAsync() due to missing codec
+                ".heif", // NEED TO TEST
+                ".hif",  // NEED TO TEST
+                ".avif", // NEED TO TEST
                 ".jxr",
                 ".wdp",
-                ".ico",
-                ".thumb",
+                ".ico",  // NEED TO TEST
+                ".thumb", // NEED TO TEST
 
                 // Raw types
                 ".arw",
                 ".cr2",
 
-                // ".crw", // Error in WICImageFactory.CreateDecoderFromFilename
-                // ".erf", // Error in WICImageFactory.CreateDecoderFromFilename
-                ".kdc",
+                // ".crw", // Crashes in WICImageFactory.CreateDecoderFromFilename
+                // ".erf", // Crashes in WICImageFactory.CreateDecoderFromFilename
+                ".kdc", // NEED TO TEST
                 ".mrw",
                 ".nef",
                 ".nrw",
@@ -265,23 +264,26 @@ namespace Peek.FilePreviewer.Previewers
                 ".sr2",
                 ".srw",
                 ".srf",
-                ".dcs",
+                ".dcs", // NEED TO TEST
                 ".dcr",
-                ".drf",
+                ".drf", // NEED TO TEST
                 ".k25",
                 ".3fr",
-                ".ari",
-                ".bay",
-                ".cap",
+                ".ari", // NEED TO TEST
+                ".bay", // NEED TO TEST
+                ".cap", // NEED TO TEST
                 ".iiq",
-                ".eip",
-                ".fff",
+                ".eip", // NEED TO TEST
+
+                // ".fff", // Crashes getting imageSize, either through PropertyStore or WIC
                 ".mef",
-                ".mdc",
+
+                // ".mdc", // Crashes in GetFullBitmapFromPathAsync
                 ".mos",
                 ".R3D",
-                ".rwz",
-                ".x3f",
+                ".rwz", // NEED TO TEST
+
+                // ".x3f", // Crashes in CreateDecoderFromFilename
                 ".ori",
                 ".cr3",
         };
