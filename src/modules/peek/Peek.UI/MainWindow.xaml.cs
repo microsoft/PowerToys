@@ -4,12 +4,14 @@
 
 namespace Peek.UI
 {
+    using System;
     using System.Diagnostics;
     using interop;
     using Microsoft.UI.Windowing;
     using Microsoft.UI.Xaml.Input;
     using Peek.FilePreviewer.Models;
     using Peek.UI.Extensions;
+    using Peek.UI.Helpers;
     using Peek.UI.Native;
     using Windows.Foundation;
     using WinUIEx;
@@ -47,12 +49,43 @@ namespace Peek.UI
         {
             if (AppWindow.IsVisible)
             {
-                Uninitialize();
+                if (IsNewSingleSelectedItem())
+                {
+                    Initialize();
+                }
+                else
+                {
+                    Uninitialize();
+                }
             }
             else
             {
                 Initialize();
             }
+        }
+
+        private bool IsNewSingleSelectedItem()
+        {
+            var folderView = FileExplorerHelper.GetCurrentFolderView();
+            if (folderView == null)
+            {
+                return false;
+            }
+
+            Shell32.FolderItems selectedItems = folderView.SelectedItems();
+            if (selectedItems.Count > 1)
+            {
+                return false;
+            }
+
+            var fileExplorerSelectedItemPath = selectedItems.Item(0)?.Path;
+            var currentFilePath = ViewModel.FolderItemsQuery.CurrentFile?.Path;
+            if (fileExplorerSelectedItemPath == null || currentFilePath == null || fileExplorerSelectedItemPath == currentFilePath)
+            {
+                return false;
+            }
+
+            return true;
         }
 
         private void LeftNavigationInvoked(KeyboardAccelerator sender, KeyboardAcceleratorInvokedEventArgs args)
