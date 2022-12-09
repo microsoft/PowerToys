@@ -5,6 +5,7 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:local="clr-namespace:PowerAccent.UI"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:ui="http://schemas.modernwpf.com/2019"
     Title="MainWindow"
     Height="120"
     MinWidth="600"
@@ -23,6 +24,7 @@
             <TextBlock
                 VerticalAlignment="Center"
                 FontSize="18"
+                Foreground="{DynamicResource PrimaryForegroundBrush}"
                 Text="{Binding}"
                 TextAlignment="Center" />
         </DataTemplate>
@@ -42,8 +44,8 @@
         <Border
             HorizontalAlignment="Center"
             VerticalAlignment="Center"
-            Background="#F9F9F9"
-            BorderBrush="#B6B6B6"
+            Background="{DynamicResource SecondaryBackgroundBrush}"
+            BorderBrush="{DynamicResource WindowsBorderBrush}"
             BorderThickness="1"
             CornerRadius="8">
             <Border.Effect>
@@ -57,82 +59,72 @@
                     <RowDefinition Height="Auto" />
                     <RowDefinition Height="Auto" />
                 </Grid.RowDefinitions>
-                <ListBox
-                    x:Name="characters"
-                    HorizontalContentAlignment="Stretch"
-                    VerticalContentAlignment="Stretch"
-                    Background="Transparent"
-                    IsHitTestVisible="False"
-                    HorizontalAlignment="Center">
-                    <ListBox.ItemContainerStyle>
-                        <Style
-                            TargetType="ListBoxItem">
-                            <Setter Property="ContentTemplate" Value="{StaticResource DefaultKeyTemplate}" />
-                            <Setter Property="Template">
-                                <Setter.Value>
-                                    <ControlTemplate TargetType="{x:Type ListBoxItem}">
-                                        <Grid
-                                            Width="48"
-                                            Height="48"
-                                            Margin="0"
-                                            HorizontalAlignment="Center"
-                                            VerticalAlignment="Center"
-                                            SnapsToDevicePixels="true"
-                                            Style="{DynamicResource borderContent}">
-                                            <Rectangle
-                                                x:Name="SelectionIndicator"
-                                                Margin="7"
-                                                HorizontalAlignment="Stretch"
-                                                VerticalAlignment="Stretch"
-                                                Fill="#005FB8"
-                                                RadiusX="4"
-                                                RadiusY="4"
-                                                Visibility="Collapsed" />
-                                            <ContentPresenter Margin="12" />
+                <Border Background="{DynamicResource PrimaryBackgroundBrush}" CornerRadius="8">
+                    <ListBox
+                        x:Name="characters"
+                        HorizontalAlignment="Center"
+                        HorizontalContentAlignment="Stretch"
+                        VerticalContentAlignment="Stretch"
+                        Background="Transparent"
+                        IsHitTestVisible="False">
+                        <ListBox.ItemContainerStyle>
+                            <Style TargetType="ListBoxItem">
+                                <Setter Property="ContentTemplate" Value="{StaticResource DefaultKeyTemplate}" />
+                                <Setter Property="Template">
+                                    <Setter.Value>
+                                        <ControlTemplate TargetType="{x:Type ListBoxItem}">
+                                            <Grid
+                                                Width="48"
+                                                Height="48"
+                                                Margin="0"
+                                                HorizontalAlignment="Center"
+                                                VerticalAlignment="Center"
+                                                SnapsToDevicePixels="true"
+                                                Style="{DynamicResource borderContent}">
+                                                <Rectangle
+                                                    x:Name="SelectionIndicator"
+                                                    Margin="7"
+                                                    HorizontalAlignment="Stretch"
+                                                    VerticalAlignment="Stretch"
+                                                    Fill="{DynamicResource SystemControlBackgroundAccentBrush}"
+                                                    RadiusX="4"
+                                                    RadiusY="4"
+                                                    Visibility="Collapsed" />
+                                                <ContentPresenter Margin="12" />
 
-                                        </Grid>
-                                        <ControlTemplate.Triggers>
-                                            <Trigger Property="IsSelected" Value="true">
-                                                <Setter TargetName="SelectionIndicator" Property="Visibility" Value="Visible" />
-                                                <Setter Property="ContentTemplate" Value="{StaticResource SelectedKeyTemplate}" />
-                                            </Trigger>
-                                        </ControlTemplate.Triggers>
-                                    </ControlTemplate>
-                                </Setter.Value>
-                            </Setter>
-                        </Style>
-                    </ListBox.ItemContainerStyle>
-                    <ListBox.ItemsPanel>
-                        <ItemsPanelTemplate>
-                            <VirtualizingStackPanel
-                                IsItemsHost="False"
-                                Orientation="Horizontal" />
-                        </ItemsPanelTemplate>
-                    </ListBox.ItemsPanel>
+                                            </Grid>
+                                            <ControlTemplate.Triggers>
+                                                <Trigger Property="IsSelected" Value="true">
+                                                    <Setter TargetName="SelectionIndicator" Property="Visibility" Value="Visible" />
+                                                    <Setter Property="ContentTemplate" Value="{StaticResource SelectedKeyTemplate}" />
+                                                </Trigger>
+                                            </ControlTemplate.Triggers>
+                                        </ControlTemplate>
+                                    </Setter.Value>
+                                </Setter>
+                            </Style>
+                        </ListBox.ItemContainerStyle>
+                        <ListBox.ItemsPanel>
+                            <ItemsPanelTemplate>
+                                <VirtualizingStackPanel IsItemsHost="False" Orientation="Horizontal" />
+                            </ItemsPanelTemplate>
+                        </ListBox.ItemsPanel>
+                    </ListBox>
+                </Border>
 
-                </ListBox>
-                <Grid
-                    Grid.Row="1"
-                    Visibility="{Binding CharacterNameVisibility, UpdateSourceTrigger=PropertyChanged}">
-
-                    <Border
-                        HorizontalAlignment="Stretch"
-                        VerticalAlignment="Stretch"
-                        Background="#F3F3F3"
-                        CornerRadius="0,0,8,8">
-                        <TextBlock
-                            x:Name="characterName"
-                            Margin="8"
-                            FontSize="12"
-                            Foreground="#8D8D8D"
-                            Text="(U+0000) A COOL LETTER NAME COMES HERE"
-                            TextAlignment="Center" />
-                    </Border>
+                <Grid Grid.Row="1" Visibility="{Binding CharacterNameVisibility, UpdateSourceTrigger=PropertyChanged}">
+                    <TextBlock
+                        x:Name="characterName"
+                        Margin="8"
+                        FontSize="12"
+                        Foreground="{DynamicResource SecondaryForegroundBrush}"
+                        Text="(U+0000) A COOL LETTER NAME COMES HERE"
+                        TextAlignment="Center" />
                     <Rectangle
                         Height="1"
                         HorizontalAlignment="Stretch"
                         VerticalAlignment="Top"
-                        Fill="#E5E5E5" />
+                        Fill="{DynamicResource DividerBorderBrush}" />
                 </Grid>
             </Grid>
         </Border>
