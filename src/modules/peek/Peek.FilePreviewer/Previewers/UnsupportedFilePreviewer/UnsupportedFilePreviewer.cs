@@ -110,14 +110,13 @@ namespace Peek.FilePreviewer.Previewers
             {
                 cancellationToken.ThrowIfCancellationRequested();
 
-                // TODO: Get icon with transparency
                 IconHelper.GetIcon(Path.GetFullPath(File.Path), out IntPtr hbitmap);
 
                 cancellationToken.ThrowIfCancellationRequested();
                 await Dispatcher.RunOnUiThread(async () =>
                 {
                     cancellationToken.ThrowIfCancellationRequested();
-                    var iconBitmap = await GetBitmapFromHBitmapAsync(hbitmap, cancellationToken);
+                    var iconBitmap = await GetBitmapFromHBitmapWithTransparencyAsync(hbitmap, cancellationToken);
                     IconPreview = iconBitmap;
                 });
             });
@@ -162,19 +161,21 @@ namespace Peek.FilePreviewer.Previewers
             return hasFailedLoadingIconPreview && hasFailedLoadingDisplayInfo;
         }
 
-        // TODO: Move this to a helper file (ImagePreviewer uses the same code)
-        private static async Task<BitmapSource> GetBitmapFromHBitmapAsync(IntPtr hbitmap, CancellationToken cancellationToken)
+        // TODO: Move this to a common helper file and make transparency a parameter (ImagePrevier uses the same code)
+        private static async Task<BitmapSource> GetBitmapFromHBitmapWithTransparencyAsync(IntPtr hbitmap, CancellationToken cancellationToken)
         {
             try
             {
                 cancellationToken.ThrowIfCancellationRequested();
                 var bitmap = System.Drawing.Image.FromHbitmap(hbitmap);
+                bitmap.MakeTransparent();
+
                 var bitmapImage = new BitmapImage();
 
                 cancellationToken.ThrowIfCancellationRequested();
                 using (var stream = new MemoryStream())
                 {
-                    bitmap.Save(stream, ImageFormat.Bmp);
+                    bitmap.Save(stream, ImageFormat.Png);
                     stream.Position = 0;
 
                     cancellationToken.ThrowIfCancellationRequested();
