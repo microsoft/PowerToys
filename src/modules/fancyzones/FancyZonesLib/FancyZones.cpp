@@ -808,6 +808,15 @@ bool FancyZones::OnSnapHotkeyBasedOnZoneNumber(HWND window, DWORD vkCode) noexce
             auto workArea = m_workAreaHandler.GetWorkArea(VirtualDesktop::instance().GetCurrentVirtualDesktopId(), *currMonitorInfo);
             if (m_windowMoveHandler.MoveWindowIntoZoneByDirectionAndIndex(window, vkCode, false /* cycle through zones */, workArea))
             {
+                // unassign from previous work area
+                for (auto& prevWorkArea : m_workAreaHandler.GetAllWorkAreas())
+                {
+                    if (workArea != prevWorkArea)
+                    {
+                        prevWorkArea->UnsnapWindow(window);
+                    }
+                }
+                
                 Trace::FancyZones::KeyboardSnapWindowToZone(workArea->GetLayout().get(), workArea->GetLayoutWindows().get());
                 return true;
             }

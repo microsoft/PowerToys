@@ -10,6 +10,7 @@ using Microsoft.PowerToys.Settings.UI.Library.Utilities;
 using PowerToys.PowerAccentKeyboardService;
 using System.IO.Abstractions;
 using System.Text.Json;
+using static Vanara.PInvoke.LANGID;
 
 public class SettingsService
 {
@@ -91,6 +92,8 @@ public class SettingsService
                                 Position = Position.Center;
                                 break;
                         }
+
+                        ShowUnicodeDescription = settings.Properties.ShowUnicodeDescription;
                     }
                 }
                 catch (Exception ex)
@@ -173,6 +176,21 @@ public class SettingsService
         set
         {
             _selectedLang = value;
+        }
+    }
+
+    private bool _showUnicodeDescription;
+
+    public bool ShowUnicodeDescription
+    {
+        get
+        {
+            return _showUnicodeDescription;
+        }
+
+        set
+        {
+            _showUnicodeDescription = value;
         }
     }
 }

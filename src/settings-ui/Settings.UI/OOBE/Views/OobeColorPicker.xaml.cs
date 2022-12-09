@@ -49,7 +49,9 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
         protected override void OnNavigatedTo(NavigationEventArgs e)
         {
             ViewModel.LogOpeningModuleEvent();
-            HotkeyControl.Keys = SettingsRepository<ColorPickerSettings>.GetInstance(new SettingsUtils()).SettingsConfig.Properties.ActivationShortcut.GetKeysList();
+            ColorPickerSettings settings = new SettingsUtils().GetSettingsOrDefault<ColorPickerSettings, ColorPickerSettingsVersion1>(ColorPickerSettings.ModuleName, settingsUpgrader: ColorPickerSettings.UpgradeSettings);
+
+            HotkeyControl.Keys = settings.Properties.ActivationShortcut.GetKeysList();
         }
 
         protected override void OnNavigatedFrom(NavigationEventArgs e)

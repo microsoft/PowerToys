@@ -6,6 +6,7 @@ namespace PowerAccent.Core
 {
     using System;
     using PowerToys.PowerAccentKeyboardService;
+    using Windows.Globalization;
 
     public enum Language
     {
@@ -40,734 +41,484 @@ namespace PowerAccent.Core
     {
         public static string[] GetDefaultLetterKey(LetterKey letter, Language lang)
         {
-            switch (lang)
+            return lang switch
             {
-                case Language.ALL: return GetDefaultLetterKeyALL(letter); // ALL
-                case Language.CA: return GetDefaultLetterKeyCA(letter); // Catalan
-                case Language.CUR: return GetDefaultLetterKeyCUR(letter); // Currency
-                case Language.CY: return GetDefaultLetterKeyCY(letter); // Welsh
-                case Language.CZ: return GetDefaultLetterKeyCZ(letter); // Czech
-                case Language.GA: return GetDefaultLetterKeyGA(letter); // Gaeilge (Irish Gaelic)
-                case Language.GD: return GetDefaultLetterKeyGD(letter); // Gàidhlig (Scottish Gaelic)
-                case Language.DE: return GetDefaultLetterKeyDE(letter); // German
-                case Language.FR: return GetDefaultLetterKeyFR(letter); // French
-                case Language.HR: return GetDefaultLetterKeyHR(letter); // Croatian
-                case Language.HU: return GetDefaultLetterKeyHU(letter); // Hungarian
-                case Language.IS: return GetDefaultLetterKeyIS(letter); // Iceland
-                case Language.IT: return GetDefaultLetterKeyIT(letter); // Italian
-                case Language.KU: return GetDefaultLetterKeyKU(letter); // Kurdish
-                case Language.MI: return GetDefaultLetterKeyMI(letter); // Maori
-                case Language.NL: return GetDefaultLetterKeyNL(letter); // Dutch
-                case Language.PI: return GetDefaultLetterKeyPI(letter); // Pinyin
-                case Language.PL: return GetDefaultLetterKeyPL(letter); // Polish
-                case Language.PT: return GetDefaultLetterKeyPT(letter); // Portuguese
-                case Language.RO: return GetDefaultLetterKeyRO(letter); // Romanian
-                case Language.SK: return GetDefaultLetterKeySK(letter); // Slovak
-                case Language.SP: return GetDefaultLetterKeySP(letter); // Spain
-                case Language.SR: return GetDefaultLetterKeySR(letter); // Serbian
-                case Language.SV: return GetDefaultLetterKeySV(letter); // Swedish
-                case Language.TK: return GetDefaultLetterKeyTK(letter); // Turkish
-            }
-
-            throw new ArgumentException("The language {0} is not know in this context", lang.ToString());
+                Language.ALL => GetDefaultLetterKeyALL(letter), // ALL
+                Language.CA => GetDefaultLetterKeyCA(letter), // Catalan
+                Language.CUR => GetDefaultLetterKeyCUR(letter), // Currency
+                Language.CY => GetDefaultLetterKeyCY(letter), // Welsh
+                Language.CZ => GetDefaultLetterKeyCZ(letter), // Czech
+                Language.GA => GetDefaultLetterKeyGA(letter), // Gaeilge (Irish Gaelic)
+                Language.GD => GetDefaultLetterKeyGD(letter), // Gàidhlig (Scottish Gaelic)
+                Language.DE => GetDefaultLetterKeyDE(letter), // German
+                Language.FR => GetDefaultLetterKeyFR(letter), // French
+                Language.HR => GetDefaultLetterKeyHR(letter), // Croatian
+                Language.HU => GetDefaultLetterKeyHU(letter), // Hungarian
+                Language.IS => GetDefaultLetterKeyIS(letter), // Iceland
+                Language.IT => GetDefaultLetterKeyIT(letter), // Italian
+                Language.KU => GetDefaultLetterKeyKU(letter), // Kurdish
+                Language.MI => GetDefaultLetterKeyMI(letter), // Maori
+                Language.NL => GetDefaultLetterKeyNL(letter), // Dutch
+                Language.PI => GetDefaultLetterKeyPI(letter), // Pinyin
+                Language.PL => GetDefaultLetterKeyPL(letter), // Polish
+                Language.PT => GetDefaultLetterKeyPT(letter), // Portuguese
+                Language.RO => GetDefaultLetterKeyRO(letter), // Romanian
+                Language.SK => GetDefaultLetterKeySK(letter), // Slovak
+                Language.SP => GetDefaultLetterKeySP(letter), // Spain
+                Language.SR => GetDefaultLetterKeySR(letter), // Serbian
+                Language.SV => GetDefaultLetterKeySV(letter), // Swedish
+                Language.TK => GetDefaultLetterKeyTK(letter), // Turkish
+                _ => throw new ArgumentException("The language {0} is not know in this context", lang.ToString()),
+            };
         }
 
         // All
         private static string[] GetDefaultLetterKeyALL(LetterKey letter)
         {
-            switch (letter)
+            return letter switch
             {
-                case LetterKey.VK_0:
-                    return new string[] { "₀", "⁰" };
-                case LetterKey.VK_1:
-                    return new string[] { "₁", "¹" };
-                case LetterKey.VK_2:
-                    return new string[] { "₂", "²" };
-                case LetterKey.VK_3:
-                    return new string[] { "₃", "³" };
-                case LetterKey.VK_4:
-                    return new string[] { "₄", "⁴" };
-                case LetterKey.VK_5:
-                    return new string[] { "₅", "⁵" };
-                case LetterKey.VK_6:
-                    return new string[] { "₆", "⁶" };
-                case LetterKey.VK_7:
-                    return new string[] { "₇", "⁷" };
-                case LetterKey.VK_8:
-                    return new string[] { "₈", "⁸" };
-                case LetterKey.VK_9:
-                    return new string[] { "₉", "⁹" };
-                case LetterKey.VK_A:
-                    return new string[] { "á", "à", "ä", "â", "ă", "å", "α", "ā", "ą", "ȧ", "ã", "æ" };
-                case LetterKey.VK_B:
-                    return new string[] { "ḃ", "β" };
-                case LetterKey.VK_C:
-                    return new string[] { "ç", "ć", "ĉ", "č", "ċ", "¢", "χ" };
-                case LetterKey.VK_D:
-                    return new string[] { "ď", "ḋ", "đ", "δ", "ð" };
-                case LetterKey.VK_E:
-                    return new string[] { "é", "è", "ê", "ë", "ě", "ē", "ę", "ė", "ε", "η", "€" };
-                case LetterKey.VK_F:
-                    return new string[] { "ƒ", "ḟ" };
-                case LetterKey.VK_G:
-                    return new string[] { "ğ", "ģ", "ǧ", "ġ", "ĝ", "ǥ", "γ" };
-                case LetterKey.VK_H:
-                    return new string[] { "ḣ", "ĥ", "ħ" };
-                case LetterKey.VK_I:
-                    return new string[] { "ï", "î", "í", "ì", "ī", "į", "i", "ı", "İ", "ι" };
-                case LetterKey.VK_J:
-                    return new string[] { "ĵ" };
-                case LetterKey.VK_K:
-                    return new string[] { "ķ", "ǩ", "κ" };
-                case LetterKey.VK_L:
-                    return new string[] { "ĺ", "ľ", "ļ", "ł", "₺", "λ" };
-                case LetterKey.VK_M:
-                    return new string[] { "ṁ", "μ" };
-                case LetterKey.VK_N:
-                    return new string[] { "ñ", "ń", "ŋ", "ň", "ņ", "ṅ", "ⁿ", "ν" };
-                case LetterKey.VK_O:
-                    return new string[] { "ô", "ó", "ö", "ő", "ò", "ō", "ȯ", "ø", "õ", "œ", "ω", "ο" };
-                case LetterKey.VK_P:
-                    return new string[] { "ṗ", "₽", "π", "φ", "ψ" };
-                case LetterKey.VK_R:
-                    return new string[] { "ŕ", "ř", "ṙ", "₹", "ρ" };
-                case LetterKey.VK_S:
-                    return new string[] { "ś", "ş", "š", "ș", "ṡ", "ŝ", "ß", "σ", "$" };
-                case LetterKey.VK_T:
-                    return new string[] { "ţ", "ť", "ț", "ṫ", "ŧ", "θ", "τ", "þ" };
-                case LetterKey.VK_U:
-                    return new string[] { "û", "ú", "ü", "ŭ", "ű", "ù", "ů", "ū", "ų", "υ" };
-                case LetterKey.VK_W:
-                    return new string[] { "ẇ", "ŵ", "₩" };
-                case LetterKey.VK_X:
-                    return new string[] { "ẋ", "ξ" };
-                case LetterKey.VK_Y:
-                    return new string[] { "ÿ", "ŷ", "ý", "ẏ" };
-                case LetterKey.VK_Z:
-                    return new string[] { "ź", "ž", "ż", "ʒ", "ǯ", "ζ" };
-                case LetterKey.VK_COMMA:
-                    return new string[] { "¿", "¡", "∙", "₋", "⁻", "–", "≤", "≥", "≠", "≈", "≙", "±", "₊", "⁺" };
-            }
-
-            return Array.Empty<string>();
+                LetterKey.VK_0 => new string[] { "₀", "⁰" },
+                LetterKey.VK_1 => new string[] { "₁", "¹" },
+                LetterKey.VK_2 => new string[] { "₂", "²" },
+                LetterKey.VK_3 => new string[] { "₃", "³" },
+                LetterKey.VK_4 => new string[] { "₄", "⁴" },
+                LetterKey.VK_5 => new string[] { "₅", "⁵" },
+                LetterKey.VK_6 => new string[] { "₆", "⁶" },
+                LetterKey.VK_7 => new string[] { "₇", "⁷" },
+                LetterKey.VK_8 => new string[] { "₈", "⁸" },
+                LetterKey.VK_9 => new string[] { "₉", "⁹" },
+                LetterKey.VK_A => new string[] { "á", "à", "ä", "â", "ă", "å", "α", "ā", "ą", "ȧ", "ã", "æ" },
+                LetterKey.VK_B => new string[] { "ḃ", "β" },
+                LetterKey.VK_C => new string[] { "ç", "ć", "ĉ", "č", "ċ", "¢", "χ" },
+                LetterKey.VK_D => new string[] { "ď", "ḋ", "đ", "δ", "ð" },
+                LetterKey.VK_E => new string[] { "é", "è", "ê", "ë", "ě", "ē", "ę", "ė", "ε", "η", "€" },
+                LetterKey.VK_F => new string[] { "ƒ", "ḟ" },
+                LetterKey.VK_G => new string[] { "ğ", "ģ", "ǧ", "ġ", "ĝ", "ǥ", "γ" },
+                LetterKey.VK_H => new string[] { "ḣ", "ĥ", "ħ" },
+                LetterKey.VK_I => new string[] { "ï", "î", "í", "ì", "ī", "į", "i", "ı", "İ", "ι" },
+                LetterKey.VK_J => new string[] { "ĵ" },
+                LetterKey.VK_K => new string[] { "ķ", "ǩ", "κ" },
+                LetterKey.VK_L => new string[] { "ĺ", "ľ", "ļ", "ł", "₺", "λ" },
+                LetterKey.VK_M => new string[] { "ṁ", "μ" },
+                LetterKey.VK_N => new string[] { "ñ", "ń", "ŋ", "ň", "ņ", "ṅ", "ⁿ", "ν" },
+                LetterKey.VK_O => new string[] { "ô", "ó", "ö", "ő", "ò", "ō", "ȯ", "ø", "õ", "œ", "ω", "ο" },
+                LetterKey.VK_P => new string[] { "ṗ", "₽", "π", "φ", "ψ" },
+                LetterKey.VK_R => new string[] { "ŕ", "ř", "ṙ", "₹", "ρ" },
+                LetterKey.VK_S => new string[] { "ś", "ş", "š", "ș", "ṡ", "ŝ", "ß", "σ", "$" },
+                LetterKey.VK_T => new string[] { "ţ", "ť", "ț", "ṫ", "ŧ", "θ", "τ", "þ" },
+                LetterKey.VK_U => new string[] { "û", "ú", "ü", "ŭ", "ű", "ù", "ů", "ū", "ų", "υ" },
+                LetterKey.VK_W => new string[] { "ẇ", "ŵ", "₩" },
+                LetterKey.VK_X => new string[] { "ẋ", "ξ" },
+                LetterKey.VK_Y => new string[] { "ÿ", "ŷ", "ý", "ẏ" },
+                LetterKey.VK_Z => new string[] { "ź", "ž", "ż", "ʒ", "ǯ", "ζ" },
+                LetterKey.VK_COMMA => new string[] { "¿", "¡", "∙", "₋", "⁻", "–", "≤", "≥", "≠", "≈", "≙", "±", "₊", "⁺" },
+                _ => Array.Empty<string>(),
+            };
         }
 
         // Currencies (source: https://www.eurochange.co.uk/travel-money/world-currency-abbreviations-symbols-and-codes-travel-money)
         private static string[] GetDefaultLetterKeyCUR(LetterKey letter)
         {
-            switch (letter)
+            return letter switch
             {
-                case LetterKey.VK_B:
-                    return new string[] { "฿", "в" };
-                case LetterKey.VK_C:
-                    return new string[] { "¢", "₡", "č" };
-                case LetterKey.VK_D:
-                    return new string[] { "₫" };
-                case LetterKey.VK_E:
-                    return new string[] { "€" };
-                case LetterKey.VK_F:
-                    return new string[] { "ƒ" };
-                case LetterKey.VK_H:
-                    return new string[] { "₴" };
-                case LetterKey.VK_K:
-                    return new string[] { "₭" };
-                case LetterKey.VK_L:
-                    return new string[] { "ł" };
-                case LetterKey.VK_N:
-                    return new string[] { "л" };
-                case LetterKey.VK_M:
-                    return new string[] { "₼" };
-                case LetterKey.VK_P:
-                    return new string[] { "£", "₽" };
-                case LetterKey.VK_R:
-                    return new string[] { "₹", "៛", "﷼" };
-                case LetterKey.VK_S:
-                    return new string[] { "$", "₪" };
-                case LetterKey.VK_T:
-                    return new string[] { "₮", "₺" };
-                case LetterKey.VK_W:
-                    return new string[] { "₩" };
-                case LetterKey.VK_Y:
-                    return new string[] { "¥" };
-                case LetterKey.VK_Z:
-                    return new string[] { "z" };
-            }
-
-            return Array.Empty<string>();
+                LetterKey.VK_B => new string[] { "฿", "в" },
+                LetterKey.VK_C => new string[] { "¢", "₡", "č" },
+                LetterKey.VK_D => new string[] { "₫" },
+                LetterKey.VK_E => new string[] { "€" },
+                LetterKey.VK_F => new string[] { "ƒ" },
+                LetterKey.VK_H => new string[] { "₴" },
+                LetterKey.VK_K => new string[] { "₭" },
+                LetterKey.VK_L => new string[] { "ł" },
+                LetterKey.VK_N => new string[] { "л" },
+                LetterKey.VK_M => new string[] { "₼" },
+                LetterKey.VK_P => new string[] { "£", "₽" },
+                LetterKey.VK_R => new string[] { "₹", "៛", "﷼" },
+                LetterKey.VK_S => new string[] { "$", "₪" },
+                LetterKey.VK_T => new string[] { "₮", "₺" },
+                LetterKey.VK_W => new string[] { "₩" },
+                LetterKey.VK_Y => new string[] { "¥" },
+                LetterKey.VK_Z => new string[] { "z" },
+                _ => Array.Empty<string>(),
+            };
         }
 
         // Croatian
         private static string[] GetDefaultLetterKeyHR(LetterKey letter)
         {
-            switch (letter)
+            return letter switch
             {
-                case LetterKey.VK_C:
-                    return new string[] { "ć", "č" };
-                case LetterKey.VK_D:
-                    return new string[] { "đ" };
-                case LetterKey.VK_S:
-                    return new string[] { "š" };
-                case LetterKey.VK_Z:
-                    return new string[] { "ž" };
-            }
-
-            return Array.Empty<string>();
+                LetterKey.VK_C => new string[] { "ć", "č" },
+                LetterKey.VK_D => new string[] { "đ" },
+                LetterKey.VK_S => new string[] { "š" },
+                LetterKey.VK_Z => new string[] { "ž" },
+                _ => Array.Empty<string>(),
+            };
         }
 
         // French
         private static string[] GetDefaultLetterKeyFR(LetterKey letter)
         {
-            switch (letter)
+            return letter switch
             {
-                case LetterKey.VK_A:
-                    return new string[] { "à", "â", "á", "ä", "ã", "æ" };
-                case LetterKey.VK_C:
-                    return new string[] { "ç" };
-                case LetterKey.VK_E:
-                    return new string[] { "é", "è", "ê", "ë", "€" };
-                case LetterKey.VK_I:
-                    return new string[] { "î", "ï", "í", "ì" };
-                case LetterKey.VK_O:
-                    return new string[] { "ô", "ö", "ó", "ò", "õ", "œ" };
-                case LetterKey.VK_U:
-                    return new string[] { "û", "ù", "ü", "ú" };
-                case LetterKey.VK_Y:
-                    return new string[] { "ÿ", "ý" };
-            }
-
-            return Array.Empty<string>();
+                LetterKey.VK_A => new string[] { "à", "â", "á", "ä", "ã", "æ" },
+                LetterKey.VK_C => new string[] { "ç" },
+                LetterKey.VK_E => new string[] { "é", "è", "ê", "ë", "€" },
+                LetterKey.VK_I => new string[] { "î", "ï", "í", "ì" },
+                LetterKey.VK_O => new string[] { "ô", "ö", "ó", "ò", "õ", "œ" },
+                LetterKey.VK_U => new string[] { "û", "ù", "ü", "ú" },
+                LetterKey.VK_Y => new string[] { "ÿ", "ý" },
+                _ => Array.Empty<string>(),
+            };
         }
 
         // Iceland
         private static string[] GetDefaultLetterKeyIS(LetterKey letter)
         {
-            switch (letter)
+            return letter switch
             {
-                case LetterKey.VK_A:
-                    return new string[] { "á", "æ" };
-                case LetterKey.VK_D:
-                    return new string[] { "ð" };
-                case LetterKey.VK_E:
-                    return new string[] { "é" };
-                case LetterKey.VK_O:
-                    return new string[] { "ó", "ö" };
-                case LetterKey.VK_U:
-                    return new string[] { "ú" };
-                case LetterKey.VK_Y:
-                    return new string[] { "ý" };
-                case LetterKey.VK_T:
-                    return new string[] { "þ" };
-            }
-
-            return Array.Empty<string>();
+                LetterKey.VK_A => new string[] { "á", "æ" },
+                LetterKey.VK_D => new string[] { "ð" },
+                LetterKey.VK_E => new string[] { "é" },
+                LetterKey.VK_O => new string[] { "ó", "ö" },
+                LetterKey.VK_U => new string[] { "ú" },
+                LetterKey.VK_Y => new string[] { "ý" },
+                LetterKey.VK_T => new string[] { "þ" },
+                _ => Array.Empty<string>(),
+            };
         }
 
         // Spain
         private static string[] GetDefaultLetterKeySP(LetterKey letter)
         {
-            switch (letter)
+            return letter switch
             {
-                case LetterKey.VK_A:
-                    return new string[] { "á" };
-                case LetterKey.VK_E:
-                    return new string[] { "é", "€" };
-                case LetterKey.VK_I:
-                    return new string[] { "í" };
-                case LetterKey.VK_N:
-                    return new string[] { "ñ" };
-                case LetterKey.VK_O:
-                    return new string[] { "ó" };
-                case LetterKey.VK_U:
-                    return new string[] { "ú", "ü" };
-                case LetterKey.VK_COMMA:
-                    return new string[] { "¿", "?" };
-            }
-
-            return Array.Empty<string>();
+                LetterKey.VK_A => new string[] { "á" },
+                LetterKey.VK_E => new string[] { "é", "€" },
+                LetterKey.VK_I => new string[] { "í" },
+                LetterKey.VK_N => new string[] { "ñ" },
+                LetterKey.VK_O => new string[] { "ó" },
+                LetterKey.VK_U => new string[] { "ú", "ü" },
+                LetterKey.VK_COMMA => new string[] { "¿", "?" },
+                _ => Array.Empty<string>(),
+            };
         }
 
-         // Catalan
+        // Catalan
         private static string[] GetDefaultLetterKeyCA(LetterKey letter)
         {
-            switch (letter)
+            return letter switch
             {
-                case LetterKey.VK_A:
-                    return new string[] { "à", "á" };
-                case LetterKey.VK_C:
-                    return new string[] { "ç" };
-                case LetterKey.VK_E:
-                    return new string[] { "è", "é", "€" };
-                case LetterKey.VK_I:
-                    return new string[] { "ì", "í", "ï" };
-                case LetterKey.VK_N:
-                    return new string[] { "ñ" };
-                case LetterKey.VK_O:
-                    return new string[] { "ò", "ó" };
-                case LetterKey.VK_U:
-                    return new string[] { "ù", "ú", "ü" };
-                case LetterKey.VK_L:
-                    return new string[] { "·" };
-                case LetterKey.VK_COMMA:
-                    return new string[] { "¿", "?" };
-            }
-
-            return Array.Empty<string>();
+                LetterKey.VK_A => new string[] { "à", "á" },
+                LetterKey.VK_C => new string[] { "ç" },
+                LetterKey.VK_E => new string[] { "è", "é", "€" },
+                LetterKey.VK_I => new string[] { "ì", "í", "ï" },
+                LetterKey.VK_N => new string[] { "ñ" },
+                LetterKey.VK_O => new string[] { "ò", "ó" },
+                LetterKey.VK_U => new string[] { "ù", "ú", "ü" },
+                LetterKey.VK_L => new string[] { "·" },
+                LetterKey.VK_COMMA => new string[] { "¿", "?" },
+                _ => Array.Empty<string>(),
+            };
         }
 
         // Maori
         private static string[] GetDefaultLetterKeyMI(LetterKey letter)
         {
-            switch (letter)
+            return letter switch
             {
-                case LetterKey.VK_A:
-                    return new string[] { "ā" };
-                case LetterKey.VK_E:
-                    return new string[] { "ē" };
-                case LetterKey.VK_I:
-                    return new string[] { "ī" };
-                case LetterKey.VK_O:
-                    return new string[] { "ō" };
-                case LetterKey.VK_S:
-                    return new string[] { "$" };
-                case LetterKey.VK_U:
-                    return new string[] { "ū" };
-            }
-
-            return Array.Empty<string>();
+                LetterKey.VK_A => new string[] { "ā" },
+                LetterKey.VK_E => new string[] { "ē" },
+                LetterKey.VK_I => new string[] { "ī" },
+                LetterKey.VK_O => new string[] { "ō" },
+                LetterKey.VK_S => new string[] { "$" },
+                LetterKey.VK_U => new string[] { "ū" },
+                _ => Array.Empty<string>(),
+            };
         }
 
         // Dutch
         private static string[] GetDefaultLetterKeyNL(LetterKey letter)
         {
-            switch (letter)
+            return letter switch
             {
-                case LetterKey.VK_A:
-                    return new string[] { "á", "à", "ä" };
-                case LetterKey.VK_C:
-                    return new string[] { "ç" };
-                case LetterKey.VK_E:
-                    return new string[] { "é", "è", "ë", "ê", "€" };
-                case LetterKey.VK_I:
-                    return new string[] { "í", "ï", "î" };
-                case LetterKey.VK_N:
-                    return new string[] { "ñ" };
-                case LetterKey.VK_O:
-                    return new string[] { "ó", "ö", "ô" };
-                case LetterKey.VK_U:
-                    return new string[] { "ú", "ü", "û" };
-            }
-
-            return Array.Empty<string>();
+                LetterKey.VK_A => new string[] { "á", "à", "ä" },
+                LetterKey.VK_C => new string[] { "ç" },
+                LetterKey.VK_E => new string[] { "é", "è", "ë", "ê", "€" },
+                LetterKey.VK_I => new string[] { "í", "ï", "î" },
+                LetterKey.VK_N => new string[] { "ñ" },
+                LetterKey.VK_O => new string[] { "ó", "ö", "ô" },
+                LetterKey.VK_U => new string[] { "ú", "ü", "û" },
+                _ => Array.Empty<string>(),
+            };
         }
 
         // Pinyin
         private static string[] GetDefaultLetterKeyPI(LetterKey letter)
         {
-            switch (letter)
+            return letter switch
             {
-                case LetterKey.VK_A:
-                    return new string[] { "ā", "á", "ǎ", "à", "a", "ɑ̄", "ɑ́", "ɑ̌", "ɑ̀" };
-                case LetterKey.VK_C:
-                    return new string[] { "ĉ", "c" };
-                case LetterKey.VK_E:
-                    return new string[] { "ē", "é", "ě", "è", "e" };
-                case LetterKey.VK_I:
-                    return new string[] { "ī", "í", "ǐ", "ì", "i" };
-                case LetterKey.VK_M:
-                    return new string[] { "m̄", "ḿ", "m̌", "m̀", "m" };
-                case LetterKey.VK_N:
-                    return new string[] { "n̄", "ń", "ň", "ǹ", "n", "ŋ", "ŋ̄", "ŋ́", "ŋ̌", "ŋ̀" };
-                case LetterKey.VK_O:
-                    return new string[] { "ō", "ó", "ǒ", "ò", "o" };
-                case LetterKey.VK_S:
-                    return new string[] { "ŝ", "s" };
-                case LetterKey.VK_U:
-                    return new string[] { "ū", "ú", "ǔ", "ù", "u" };
-                case LetterKey.VK_V:
-                    return new string[] { "ǖ", "ǘ", "ǚ", "ǜ", "ü" };
-                case LetterKey.VK_Y:
-                    return new string[] { "¥", "y" };
-                case LetterKey.VK_Z:
-                    return new string[] { "ẑ", "z" };
-            }
-
-            return Array.Empty<string>();
+                LetterKey.VK_A => new string[] { "ā", "á", "ǎ", "à", "a", "ɑ̄", "ɑ́", "ɑ̌", "ɑ̀" },
+                LetterKey.VK_C => new string[] { "ĉ", "c" },
+                LetterKey.VK_E => new string[] { "ē", "é", "ě", "è", "e" },
+                LetterKey.VK_I => new string[] { "ī", "í", "ǐ", "ì", "i" },
+                LetterKey.VK_M => new string[] { "m̄", "ḿ", "m̌", "m̀", "m" },
+                LetterKey.VK_N => new string[] { "n̄", "ń", "ň", "ǹ", "n", "ŋ", "ŋ̄", "ŋ́", "ŋ̌", "ŋ̀" },
+                LetterKey.VK_O => new string[] { "ō", "ó", "ǒ", "ò", "o" },
+                LetterKey.VK_S => new string[] { "ŝ", "s" },
+                LetterKey.VK_U => new string[] { "ū", "ú", "ǔ", "ù", "u" },
+                LetterKey.VK_V => new string[] { "ǖ", "ǘ", "ǚ", "ǜ", "ü" },
+                LetterKey.VK_Y => new string[] { "¥", "y" },
+                LetterKey.VK_Z => new string[] { "ẑ", "z" },
+                _ => Array.Empty<string>(),
+            };
         }
 
         // Turkish
         private static string[] GetDefaultLetterKeyTK(LetterKey letter)
         {
-            switch (letter)
+            return letter switch
             {
-                case LetterKey.VK_A:
-                    return new string[] { "â" };
-                case LetterKey.VK_C:
-                    return new string[] { "ç" };
-                case LetterKey.VK_E:
-                    return new string[] { "ë", "€" };
-                case LetterKey.VK_G:
-                    return new string[] { "ğ" };
-                case LetterKey.VK_I:
-                    return new string[] { "ı", "İ", "î", };
-                case LetterKey.VK_O:
-                    return new string[] { "ö", "ô" };
-                case LetterKey.VK_S:
-                    return new string[] { "ş" };
-                case LetterKey.VK_T:
-                    return new string[] { "₺" };
-                case LetterKey.VK_U:
-                    return new string[] { "ü", "û" };
-            }
-
-            return Array.Empty<string>();
+                LetterKey.VK_A => new string[] { "â" },
+                LetterKey.VK_C => new string[] { "ç" },
+                LetterKey.VK_E => new string[] { "ë", "€" },
+                LetterKey.VK_G => new string[] { "ğ" },
+                LetterKey.VK_I => new string[] { "ı", "İ", "î", },
+                LetterKey.VK_O => new string[] { "ö", "ô" },
+                LetterKey.VK_S => new string[] { "ş" },
+                LetterKey.VK_T => new string[] { "₺" },
+                LetterKey.VK_U => new string[] { "ü", "û" },
+                _ => Array.Empty<string>(),
+            };
         }
 
         // Polish
         private static string[] GetDefaultLetterKeyPL(LetterKey letter)
         {
-            switch (letter)
+            return letter switch
             {
-                case LetterKey.VK_A:
-                    return new string[] { "ą" };
-                case LetterKey.VK_C:
-                    return new string[] { "ć" };
-                case LetterKey.VK_E:
-                    return new string[] { "ę", "€" };
-                case LetterKey.VK_L:
-                    return new string[] { "ł" };
-                case LetterKey.VK_N:
-                    return new string[] { "ń" };
-                case LetterKey.VK_O:
-                    return new string[] { "ó" };
-                case LetterKey.VK_S:
-                    return new string[] { "ś" };
-                case LetterKey.VK_Z:
-                    return new string[] { "ż", "ź" };
-            }
-
-            return Array.Empty<string>();
+                LetterKey.VK_A => new string[] { "ą" },
+                LetterKey.VK_C => new string[] { "ć" },
+                LetterKey.VK_E => new string[] { "ę", "€" },
+                LetterKey.VK_L => new string[] { "ł" },
+                LetterKey.VK_N => new string[] { "ń" },
+                LetterKey.VK_O => new string[] { "ó" },
+                LetterKey.VK_S => new string[] { "ś" },
+                LetterKey.VK_Z => new string[] { "ż", "ź" },
+                _ => Array.Empty<string>(),
+            };
         }
 
         // Portuguese
         private static string[] GetDefaultLetterKeyPT(LetterKey letter)
         {
-            switch (letter)
+            return letter switch
             {
-                case LetterKey.VK_0:
-                    return new string[] { "₀", "⁰" };
-                case LetterKey.VK_1:
-                    return new string[] { "₁", "¹" };
-                case LetterKey.VK_2:
-                    return new string[] { "₂", "²" };
-                case LetterKey.VK_3:
-                    return new string[] { "₃", "³" };
-                case LetterKey.VK_4:
-                    return new string[] { "₄", "⁴" };
-                case LetterKey.VK_5:
-                    return new string[] { "₅", "⁵" };
-                case LetterKey.VK_6:
-                    return new string[] { "₆", "⁶" };
-                case LetterKey.VK_7:
-                    return new string[] { "₇", "⁷" };
-                case LetterKey.VK_8:
-                    return new string[] { "₈", "⁸" };
-                case LetterKey.VK_9:
-                    return new string[] { "₉", "⁹" };
-                case LetterKey.VK_A:
-                    return new string[] { "á", "à", "â", "ã" };
-                case LetterKey.VK_C:
-                    return new string[] { "ç" };
-                case LetterKey.VK_E:
-                    return new string[] { "é", "ê", "€" };
-                case LetterKey.VK_I:
-                    return new string[] { "í" };
-                case LetterKey.VK_O:
-                    return new string[] { "ô", "ó", "õ" };
-                case LetterKey.VK_P:
-                    return new string[] { "π" };
-                case LetterKey.VK_S:
-                    return new string[] { "$" };
-                case LetterKey.VK_U:
-                    return new string[] { "ú" };
-                case LetterKey.VK_COMMA:
-                    return new string[] { "≤", "≥", "≠", "≈", "≙", "±", "₊", "⁺" };
-            }
-
-            return Array.Empty<string>();
+                LetterKey.VK_0 => new string[] { "₀", "⁰" },
+                LetterKey.VK_1 => new string[] { "₁", "¹" },
+                LetterKey.VK_2 => new string[] { "₂", "²" },
+                LetterKey.VK_3 => new string[] { "₃", "³" },
+                LetterKey.VK_4 => new string[] { "₄", "⁴" },
+                LetterKey.VK_5 => new string[] { "₅", "⁵" },
+                LetterKey.VK_6 => new string[] { "₆", "⁶" },
+                LetterKey.VK_7 => new string[] { "₇", "⁷" },
+                LetterKey.VK_8 => new string[] { "₈", "⁸" },
+                LetterKey.VK_9 => new string[] { "₉", "⁹" },
+                LetterKey.VK_A => new string[] { "á", "à", "â", "ã" },
+                LetterKey.VK_C => new string[] { "ç" },
+                LetterKey.VK_E => new string[] { "é", "ê", "€" },
+                LetterKey.VK_I => new string[] { "í" },
+                LetterKey.VK_O => new string[] { "ô", "ó", "õ" },
+                LetterKey.VK_P => new string[] { "π" },
+                LetterKey.VK_S => new string[] { "$" },
+                LetterKey.VK_U => new string[] { "ú" },
+                LetterKey.VK_COMMA => new string[] { "≤", "≥", "≠", "≈", "≙", "±", "₊", "⁺" },
+                _ => Array.Empty<string>(),
+            };
         }
 
         // Slovak
         private static string[] GetDefaultLetterKeySK(LetterKey letter)
         {
-            switch (letter)
+            return letter switch
             {
-                case LetterKey.VK_A:
-                    return new string[] { "á", "ä" };
-                case LetterKey.VK_C:
-                    return new string[] { "č" };
-                case LetterKey.VK_D:
-                    return new string[] { "ď" };
-                case LetterKey.VK_E:
-                    return new string[] { "é", "€" };
-                case LetterKey.VK_I:
-                    return new string[] { "í" };
-                case LetterKey.VK_L:
-                    return new string[] { "ľ", "ĺ" };
-                case LetterKey.VK_N:
-                    return new string[] { "ň" };
-                case LetterKey.VK_O:
-                    return new string[] { "ó", "ô" };
-                case LetterKey.VK_R:
-                    return new string[] { "ŕ" };
-                case LetterKey.VK_S:
-                    return new string[] { "š" };
-                case LetterKey.VK_T:
-                    return new string[] { "ť" };
-                case LetterKey.VK_U:
-                    return new string[] { "ú" };
-                case LetterKey.VK_Y:
-                    return new string[] { "ý" };
-                case LetterKey.VK_Z:
-                    return new string[] { "ž" };
-            }
-
-            return Array.Empty<string>();
+                LetterKey.VK_A => new string[] { "á", "ä" },
+                LetterKey.VK_C => new string[] { "č" },
+                LetterKey.VK_D => new string[] { "ď" },
+                LetterKey.VK_E => new string[] { "é", "€" },
+                LetterKey.VK_I => new string[] { "í" },
+                LetterKey.VK_L => new string[] { "ľ", "ĺ" },
+                LetterKey.VK_N => new string[] { "ň" },
+                LetterKey.VK_O => new string[] { "ó", "ô" },
+                LetterKey.VK_R => new string[] { "ŕ" },
+                LetterKey.VK_S => new string[] { "š" },
+                LetterKey.VK_T => new string[] { "ť" },
+                LetterKey.VK_U => new string[] { "ú" },
+                LetterKey.VK_Y => new string[] { "ý" },
+                LetterKey.VK_Z => new string[] { "ž" },
+                _ => Array.Empty<string>(),
+            };
         }
 
         // Gaeilge (Irish language)
         private static string[] GetDefaultLetterKeyGA(LetterKey letter)
         {
-            switch (letter)
+            return letter switch
             {
-                case LetterKey.VK_A:
-                    return new string[] { "á" };
-                case LetterKey.VK_E:
-                    return new string[] { "é" };
-                case LetterKey.VK_I:
-                    return new string[] { "í" };
-                case LetterKey.VK_O:
-                    return new string[] { "ó" };
-                case LetterKey.VK_U:
-                    return new string[] { "ú" };
-            }
-
-            return Array.Empty<string>();
+                LetterKey.VK_A => new string[] { "á" },
+                LetterKey.VK_E => new string[] { "é" },
+                LetterKey.VK_I => new string[] { "í" },
+                LetterKey.VK_O => new string[] { "ó" },
+                LetterKey.VK_U => new string[] { "ú" },
+                _ => Array.Empty<string>(),
+            };
         }
 
         // Gàidhlig (Scottish Gaelic)
         private static string[] GetDefaultLetterKeyGD(LetterKey letter)
         {
-            switch (letter)
+            return letter switch
             {
-                case LetterKey.VK_A:
-                    return new string[] { "à" };
-                case LetterKey.VK_E:
-                    return new string[] { "è" };
-                case LetterKey.VK_I:
-                    return new string[] { "ì" };
-                case LetterKey.VK_O:
-                    return new string[] { "ò" };
-                case LetterKey.VK_U:
-                    return new string[] { "ù" };
-            }
-
-            return Array.Empty<string>();
+                LetterKey.VK_A => new string[] { "à" },
+                LetterKey.VK_E => new string[] { "è" },
+                LetterKey.VK_I => new string[] { "ì" },
+                LetterKey.VK_O => new string[] { "ò" },
+                LetterKey.VK_U => new string[] { "ù" },
+                _ => Array.Empty<string>(),
+            };
         }
 
         // Czech
         private static string[] GetDefaultLetterKeyCZ(LetterKey letter)
         {
-            switch (letter)
+            return letter switch
             {
-                case LetterKey.VK_A:
-                    return new string[] { "á" };
-                case LetterKey.VK_C:
-                    return new string[] { "č" };
-                case LetterKey.VK_D:
-                    return new string[] { "ď" };
-                case LetterKey.VK_E:
-                    return new string[] { "ě", "é" };
-                case LetterKey.VK_I:
-                    return new string[] { "í" };
-                case LetterKey.VK_N:
-                    return new string[] { "ň" };
-                case LetterKey.VK_O:
-                    return new string[] { "ó" };
-                case LetterKey.VK_R:
-                    return new string[] { "ř" };
-                case LetterKey.VK_S:
-                    return new string[] { "š" };
-                case LetterKey.VK_T:
-                    return new string[] { "ť" };
-                case LetterKey.VK_U:
-                    return new string[] { "ů", "ú" };
-                case LetterKey.VK_Y:
-                    return new string[] { "ý" };
-                case LetterKey.VK_Z:
-                    return new string[] { "ž" };
-            }
-
-            return Array.Empty<string>();
+                LetterKey.VK_A => new string[] { "á" },
+                LetterKey.VK_C => new string[] { "č" },
+                LetterKey.VK_D => new string[] { "ď" },
+                LetterKey.VK_E => new string[] { "ě", "é" },
+                LetterKey.VK_I => new string[] { "í" },
+                LetterKey.VK_N => new string[] { "ň" },
+                LetterKey.VK_O => new string[] { "ó" },
+                LetterKey.VK_R => new string[] { "ř" },
+                LetterKey.VK_S => new string[] { "š" },
+                LetterKey.VK_T => new string[] { "ť" },
+                LetterKey.VK_U => new string[] { "ů", "ú" },
+                LetterKey.VK_Y => new string[] { "ý" },
+                LetterKey.VK_Z => new string[] { "ž" },
+                _ => Array.Empty<string>(),
+            };
         }
 
         // German
         private static string[] GetDefaultLetterKeyDE(LetterKey letter)
         {
-            switch (letter)
+            return letter switch
             {
-                case LetterKey.VK_A:
-                    return new string[] { "ä" };
-                case LetterKey.VK_E:
-                    return new string[] { "€" };
-                case LetterKey.VK_O:
-                    return new string[] { "ö" };
-                case LetterKey.VK_S:
-                    return new string[] { "ß" };
-                case LetterKey.VK_U:
-                    return new string[] { "ü" };
-            }
-
-            return Array.Empty<string>();
+                LetterKey.VK_A => new string[] { "ä" },
+                LetterKey.VK_E => new string[] { "€" },
+                LetterKey.VK_O => new string[] { "ö" },
+                LetterKey.VK_S => new string[] { "ß" },
+                LetterKey.VK_U => new string[] { "ü" },
+                _ => Array.Empty<string>(),
+            };
         }
 
         // Hungarian
         private static string[] GetDefaultLetterKeyHU(LetterKey letter)
         {
-            switch (letter)
+            return letter switch
             {
-                case LetterKey.VK_A:
-                    return new string[] { "á" };
-                case LetterKey.VK_E:
-                    return new string[] { "é" };
-                case LetterKey.VK_I:
-                    return new string[] { "í" };
-                case LetterKey.VK_O:
-                    return new string[] { "ó", "ő", "ö" };
-                case LetterKey.VK_U:
-                    return new string[] { "ú", "ű", "ü" };
-            }
-
-            return Array.Empty<string>();
+                LetterKey.VK_A => new string[] { "á" },
+                LetterKey.VK_E => new string[] { "é" },
+                LetterKey.VK_I => new string[] { "í" },
+                LetterKey.VK_O => new string[] { "ó", "ő", "ö" },
+                LetterKey.VK_U => new string[] { "ú", "ű", "ü" },
+                _ => Array.Empty<string>(),
+            };
         }
 
         // Romanian
         private static string[] GetDefaultLetterKeyRO(LetterKey letter)
         {
-            switch (letter)
+            return letter switch
             {
-                case LetterKey.VK_A:
-                    return new string[] { "ă", "â" };
-                case LetterKey.VK_I:
-                    return new string[] { "î" };
-                case LetterKey.VK_S:
-                    return new string[] { "ș" };
-                case LetterKey.VK_T:
-                    return new string[] { "ț" };
-            }
-
-            return Array.Empty<string>();
+                LetterKey.VK_A => new string[] { "ă", "â" },
+                LetterKey.VK_I => new string[] { "î" },
+                LetterKey.VK_S => new string[] { "ș" },
+                LetterKey.VK_T => new string[] { "ț" },
+                _ => Array.Empty<string>(),
+            };
         }
 
         // Italian
         private static string[] GetDefaultLetterKeyIT(LetterKey letter)
         {
-            switch (letter)
+            return letter switch
             {
-                case LetterKey.VK_A:
-                    return new string[] { "à" };
-                case LetterKey.VK_E:
-                    return new string[] { "è", "é", "€" };
-                case LetterKey.VK_I:
-                    return new string[] { "ì", "í" };
-                case LetterKey.VK_O:
-                    return new string[] { "ò", "ó" };
-                case LetterKey.VK_U:
-                    return new string[] { "ù", "ú" };
-            }
-
-            return Array.Empty<string>();
+                LetterKey.VK_A => new string[] { "à" },
+                LetterKey.VK_E => new string[] { "è", "é", "€" },
+                LetterKey.VK_I => new string[] { "ì", "í" },
+                LetterKey.VK_O => new string[] { "ò", "ó" },
+                LetterKey.VK_U => new string[] { "ù", "ú" },
+                _ => Array.Empty<string>(),
+            };
         }
 
         // Kurdish
         private static string[] GetDefaultLetterKeyKU(LetterKey letter)
         {
-            switch (letter)
+            return letter switch
             {
-                case LetterKey.VK_C:
-                    return new string[] { "ç" };
-                case LetterKey.VK_E:
-                    return new string[] { "ê", "€" };
-                case LetterKey.VK_I:
-                    return new string[] { "î" };
-                case LetterKey.VK_O:
-                    return new string[] { "ö", "ô" };
-                case LetterKey.VK_L:
-                    return new string[] { "ł" };
-                case LetterKey.VK_N:
-                    return new string[] { "ň" };
-                case LetterKey.VK_R:
-                    return new string[] { "ř" };
-                case LetterKey.VK_S:
-                    return new string[] { "ş" };
-                case LetterKey.VK_U:
-                    return new string[] { "û", "ü" };
-            }
-
-            return Array.Empty<string>();
+                LetterKey.VK_C => new string[] { "ç" },
+                LetterKey.VK_E => new string[] { "ê", "€" },
+                LetterKey.VK_I => new string[] { "î" },
+                LetterKey.VK_O => new string[] { "ö", "ô" },
+                LetterKey.VK_L => new string[] { "ł" },
+                LetterKey.VK_N => new string[] { "ň" },
+                LetterKey.VK_R => new string[] { "ř" },
+                LetterKey.VK_S => new string[] { "ş" },
+                LetterKey.VK_U => new string[] { "û", "ü" },
+                _ => Array.Empty<string>(),
+            };
         }
 
         // Welsh
         private static string[] GetDefaultLetterKeyCY(LetterKey letter)
         {
-            switch (letter)
+            return letter switch
             {
-                case LetterKey.VK_A:
-                    return new string[] { "â" };
-                case LetterKey.VK_E:
-                    return new string[] { "ê" };
-                case LetterKey.VK_I:
-                    return new string[] { "î" };
-                case LetterKey.VK_O:
-                    return new string[] { "ô" };
-                case LetterKey.VK_U:
-                    return new string[] { "û" };
-                case LetterKey.VK_Y:
-                    return new string[] { "ŷ" };
-            }
-
-            return Array.Empty<string>();
+                LetterKey.VK_A => new string[] { "â" },
+                LetterKey.VK_E => new string[] { "ê" },
+                LetterKey.VK_I => new string[] { "î" },
+                LetterKey.VK_O => new string[] { "ô" },
+                LetterKey.VK_U => new string[] { "û" },
+                LetterKey.VK_Y => new string[] { "ŷ" },
+                _ => Array.Empty<string>(),
+            };
         }
 
         // Swedish
         private static string[] GetDefaultLetterKeySV(LetterKey letter)
         {
-            switch (letter)
+            return letter switch
             {
-                case LetterKey.VK_A:
-                    return new string[] { "å", "ä" };
-                case LetterKey.VK_O:
-                    return new string[] { "ö" };
-            }
-
-            return Array.Empty<string>();
+                LetterKey.VK_A => new string[] { "å", "ä" },
+                LetterKey.VK_O => new string[] { "ö" },
+                _ => Array.Empty<string>(),
+            };
         }
 
         // Serbian
         private static string[] GetDefaultLetterKeySR(LetterKey letter)
         {
-            switch (letter)
+            return letter switch
             {
-                case LetterKey.VK_C:
-                    return new string[] { "ć", "č" };
-                case LetterKey.VK_D:
-                    return new string[] { "đ" };
-                case LetterKey.VK_S:
-                    return new string[] { "š" };
-                case LetterKey.VK_Z:
-                    return new string[] { "ž" };
-            }
-
-            return Array.Empty<string>();
+                LetterKey.VK_C => new string[] { "ć", "č" },
+                LetterKey.VK_D => new string[] { "đ" },
+                LetterKey.VK_S => new string[] { "š" },
+                LetterKey.VK_Z => new string[] { "ž" },
+                _ => Array.Empty<string>(),
+            };
         }
     }
 }
