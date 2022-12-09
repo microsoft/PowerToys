@@ -10,6 +10,7 @@ namespace Peek.UI
     using Microsoft.UI.Xaml.Input;
     using Peek.FilePreviewer.Models;
     using Peek.UI.Extensions;
+    using Peek.UI.Helpers;
     using Peek.UI.Native;
     using Windows.Foundation;
     using WinUIEx;
@@ -47,7 +48,14 @@ namespace Peek.UI
         {
             if (AppWindow.IsVisible)
             {
-                Uninitialize();
+                if (IsNewSingleSelectedItem())
+                {
+                    Initialize();
+                }
+                else
+                {
+                    Uninitialize();
+                }
             }
             else
             {
@@ -72,6 +80,7 @@ namespace Peek.UI
 
         private void Uninitialize()
         {
+            this.Restore();
             this.Hide();
 
             // TODO: move into general ViewModel method when needed
@@ -125,6 +134,7 @@ namespace Peek.UI
             var scaledWindowHeight = adjustedContentSize.Height / monitorScale;
 
             this.CenterOnScreen(scaledWindowWidth + WindowHeightContentPadding, scaledWindowHeight + titleBarHeight + WindowWidthContentPadding);
+            this.Show();
             this.BringToForeground();
         }
 
@@ -137,6 +147,30 @@ namespace Peek.UI
         {
             args.Cancel = true;
             Uninitialize();
+        }
+
+        private bool IsNewSingleSelectedItem()
+        {
+            var folderView = FileExplorerHelper.GetCurrentFolderView();
+            if (folderView == null)
+            {
+                return false;
+            }
+
+            Shell32.FolderItems selectedItems = folderView.SelectedItems();
+            if (selectedItems.Count > 1)
+            {
+                return false;
+            }
+
+            var fileExplorerSelectedItemPath = selectedItems.Item(0)?.Path;
+            var currentFilePath = ViewModel.FolderItemsQuery.CurrentFile?.Path;
+            if (fileExplorerSelectedItemPath == null || currentFilePath == null || fileExplorerSelectedItemPath == currentFilePath)
+            {
+                return false;
+            }
+
+            return true;
         }
     }
 }
