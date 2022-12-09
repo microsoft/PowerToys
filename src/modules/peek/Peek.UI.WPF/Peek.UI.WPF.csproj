@@ -8,7 +8,7 @@
     <UseWPF>true</UseWPF>
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
     <AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
-    <OutputPath>..\..\..\..\$(Platform)\$(Configuration)\modules\Peek\</OutputPath>
+    <OutputPath>..\..\..\..\$(Platform)\$(Configuration)\modules\Peek.WPF\</OutputPath>
     <UseWindowsForms>True</UseWindowsForms>
     <ApplicationIcon>Resources\FluentIconsPeek.ico</ApplicationIcon>
   </PropertyGroup>

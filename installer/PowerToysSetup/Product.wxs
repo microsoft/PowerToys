@@ -54,11 +54,11 @@
 
   <?define SettingsV2Files=backup_restore_settings.json;Ijwhost.dll;ColorCode.Core.dll;ColorCode.WinUI.dll;CommunityToolkit.Common.dll;CommunityToolkit.Labs.WinUI.SettingsControls.dll;CommunityToolkit.WinUI.dll;CommunityToolkit.WinUI.UI.Controls.Core.dll;CommunityToolkit.WinUI.UI.Controls.DataGrid.dll;CommunityToolkit.WinUI.UI.Controls.Input.dll;CommunityToolkit.WinUI.UI.Controls.Layout.dll;CommunityToolkit.WinUI.UI.Controls.Markdown.dll;CommunityToolkit.WinUI.UI.Controls.Media.dll;CommunityToolkit.WinUI.UI.Controls.Primitives.dll;CommunityToolkit.WinUI.UI.dll;icon.ico;Microsoft.Graphics.Canvas.Interop.dll;Microsoft.InteractiveExperiences.Projection.dll;Microsoft.Windows.ApplicationModel.DynamicDependency.Projection.dll;Microsoft.Windows.ApplicationModel.Resources.Projection.dll;Microsoft.Windows.ApplicationModel.WindowsAppRuntime.Projection.dll;Microsoft.Windows.AppLifecycle.Projection.dll;Microsoft.Windows.SDK.NET.dll;Microsoft.Windows.System.Power.Projection.dll;Microsoft.WindowsAppRuntime.Bootstrap.Net.dll;Microsoft.WinUI.dll;Microsoft.Xaml.Interactions.dll;Microsoft.Xaml.Interactivity.dll;PowerToys.ManagedCommon.dll;PowerToys.ManagedTelemetry.dll;PowerToys.Settings.deps.json;PowerToys.Settings.dll;PowerToys.Settings.exe;PowerToys.Settings.runtimeconfig.json;PowerToys.Settings.UI.Lib.dll;resources.pri;System.CodeDom.dll;System.IO.Abstractions.dll;WinRT.Runtime.dll;Microsoft.Graphics.Canvas.dll;System.Management.dll;PowerToys.GPOWrapper.dll?>
 
-  <?define SettingsV2AssetsModulesFiles=ColorPicker.png;FancyZones.png;FileLocksmith.png;AlwaysOnTop.png;HostsFileEditor.png;Awake.png;ImageResizer.png;KBM.png;MouseUtils.png;PowerAccent.png;PowerOCR.png;PowerLauncher.png;PowerPreview.png;PowerRename.png;PT.png;ScreenRuler.png;ShortcutGuide.png;VideoConference.png;Peek.png?>
+  <?define SettingsV2AssetsModulesFiles=ColorPicker.png;FancyZones.png;FileLocksmith.png;Peek.png;AlwaysOnTop.png;HostsFileEditor.png;Awake.png;ImageResizer.png;KBM.png;MouseUtils.png;PowerAccent.png;PowerOCR.png;PowerLauncher.png;PowerPreview.png;PowerRename.png;PT.png;ScreenRuler.png;ShortcutGuide.png;VideoConference.png?>
 
   <?define SettingsV2OOBEAssetsModulesFiles=ColorPicker.gif;AlwaysOnTop.png;HostsFileEditor.png;Awake.png;FancyZones.gif;FileExplorer.png;FileLocksmith.gif;ImageResizer.gif;KBM.gif;MouseUtils.gif;PowerAccent.gif;PowerOCR.gif;PowerRename.gif;Run.gif;ScreenRuler.gif;OOBEShortcutGuide.png;VideoConferenceMute.png;OOBEPTHero.png?>
 
-  <?define SettingsV2OOBEAssetsFluentIconsFiles=ColorPicker.png;FancyZones.png;FileLocksmith.png;AlwaysOnTop.png;Awake.png;FileExplorerPreview.png;FindMyMouse.png;Hosts.png;ImageResizer.png;KeyboardManager.png;MouseHighlighter.png;MouseCrosshairs.png;MouseUtils.png;PowerAccent.png;PowerOcr.png;PowerRename.png;PowerToys.png;PowerToysRun.png;ScreenRuler.png;Settings.png;ShortcutGuide.png;VideoConferenceMute.png?>
+  <?define SettingsV2OOBEAssetsFluentIconsFiles=ColorPicker.png;FancyZones.png;FileLocksmith.png;Peek.png;AlwaysOnTop.png;Awake.png;FileExplorerPreview.png;FindMyMouse.png;Hosts.png;ImageResizer.png;KeyboardManager.png;MouseHighlighter.png;MouseCrosshairs.png;MouseUtils.png;PowerAccent.png;PowerOcr.png;PowerRename.png;PowerToys.png;PowerToysRun.png;ScreenRuler.png;Settings.png;ShortcutGuide.png;VideoConferenceMute.png?>
 
 	<?define SettingsV2MicrosoftUIXamlAssetsInstallFiles=NoiseAsset_256x256_PNG.png?>
 
@@ -122,7 +122,7 @@
 
   <?define FileLocksmithAssetsFiles=Icon.ico?>
 
-  <?define PeekFiles=CommunityToolkit.Mvvm.dll;Microsoft.Win32.SystemEvents.dll;Microsoft.Windows.ApplicationModel.DynamicDependency.Projection.dll;Microsoft.Windows.ApplicationModel.Resources.Projection.dll;Microsoft.Windows.ApplicationModel.WindowsAppRuntime.Projection.dll;Microsoft.Windows.AppLifecycle.Projection.dll;Microsoft.Windows.SDK.NET.dll;Microsoft.Windows.System.Power.Projection.dll;Microsoft.WindowsAppRuntime.Bootstrap.Net.dll;Microsoft.WinUI.dll;PowerToys.ManagedCommon.dll;PowerToys.ManagedTelemetry.dll;Peek.Common.dll;Peek.FilePreviewer.dll;Powertoys.Peek.UI.dll;Powertoys.Peek.UI.exe;Powertoys.Peek.UI.deps.json;Powertoys.Peek.UI.runtimeconfig.json;resources.pri;System.CodeDom.dll;System.Drawing.Common.dll;System.Management.dll;WIC.dll;WinUIEx.dll?>
+  <?define PeekFiles=CommunityToolkit.Mvvm.dll;Microsoft.InteractiveExperiences.Projection.dll;WinRT.Runtime.dll;Ijwhost.dll;Microsoft.Win32.SystemEvents.dll;Microsoft.Windows.ApplicationModel.DynamicDependency.Projection.dll;Microsoft.Windows.ApplicationModel.Resources.Projection.dll;Microsoft.Windows.ApplicationModel.WindowsAppRuntime.Projection.dll;Microsoft.Windows.AppLifecycle.Projection.dll;Microsoft.Windows.SDK.NET.dll;Microsoft.Windows.System.Power.Projection.dll;Microsoft.WindowsAppRuntime.Bootstrap.Net.dll;Microsoft.WinUI.dll;PowerToys.ManagedCommon.dll;PowerToys.ManagedTelemetry.dll;Powertoys.Interop.dll;Peek.Common.dll;Peek.FilePreviewer.dll;Powertoys.Peek.UI.dll;Powertoys.Peek.UI.exe;Powertoys.Peek.UI.deps.json;Powertoys.Peek.UI.runtimeconfig.json;resources.pri;System.CodeDom.dll;System.Drawing.Common.dll;System.Management.dll;WIC.dll;WinUIEx.dll?>
 
   <?define PeekAssetsFiles=Icon.ico?>
 
@@ -143,8 +143,10 @@
   <?define MeasureToolMicrosoftUIXamlAssetsInstallFiles=NoiseAsset_256x256_PNG.png?>
   
   <?define HostsMicrosoftUIXamlAssetsInstallFiles=NoiseAsset_256x256_PNG.png?>
+    
+  <?define PeekMicrosoftUIXamlAssetsInstallFiles=NoiseAsset_256x256_PNG.png?>
 
-  <?define PowerAccentFiles=ControlzEx.dll;Ijwhost.dll;MahApps.Metro.dll;Microsoft.Xaml.Behaviors.dll;PowerAccent.Core.dll;PowerAccent.deps.json;PowerAccent.dll;PowerAccent.exe;PowerAccent.runtimeconfig.json;PowerToys.PowerAccentModuleInterface.dll;PowerToys.ManagedCommon.dll;PowerToys.ManagedTelemetry.dll;PowerToys.PowerAccent.deps.json;PowerToys.PowerAccent.dll;PowerToys.PowerAccent.exe;PowerToys.PowerAccent.runtimeconfig.json;PowerToys.Settings.UI.Lib.dll;System.IO.Abstractions.dll;System.Management.dll;Vanara.Core.dll;Vanara.PInvoke.ComCtl32.dll;Vanara.PInvoke.Cryptography.dll;Vanara.PInvoke.Gdi32.dll;Vanara.PInvoke.Kernel32.dll;Vanara.PInvoke.Ole.dll;Vanara.PInvoke.Rpc.dll;Vanara.PInvoke.Security.dll;Vanara.PInvoke.Shared.dll;Vanara.PInvoke.Shell32.dll;Vanara.PInvoke.ShlwApi.dll;Vanara.PInvoke.User32.dll;PowerToys.PowerAccentKeyboardService.dll;Microsoft.Windows.SDK.NET.dll;WinRT.Runtime.dll;PowerToys.GPOWrapper.dll;UnicodeInformation.dll?>
+   <?define PowerAccentFiles=ControlzEx.dll;Ijwhost.dll;MahApps.Metro.dll;Microsoft.Xaml.Behaviors.dll;PowerAccent.Core.dll;PowerAccent.deps.json;PowerAccent.dll;PowerAccent.exe;PowerAccent.runtimeconfig.json;PowerToys.PowerAccentModuleInterface.dll;PowerToys.ManagedCommon.dll;PowerToys.ManagedTelemetry.dll;PowerToys.PowerAccent.deps.json;PowerToys.PowerAccent.dll;PowerToys.PowerAccent.exe;PowerToys.PowerAccent.runtimeconfig.json;PowerToys.Settings.UI.Lib.dll;System.IO.Abstractions.dll;System.Management.dll;Vanara.Core.dll;Vanara.PInvoke.ComCtl32.dll;Vanara.PInvoke.Cryptography.dll;Vanara.PInvoke.Gdi32.dll;Vanara.PInvoke.Kernel32.dll;Vanara.PInvoke.Ole.dll;Vanara.PInvoke.Rpc.dll;Vanara.PInvoke.Security.dll;Vanara.PInvoke.Shared.dll;Vanara.PInvoke.Shell32.dll;Vanara.PInvoke.ShlwApi.dll;Vanara.PInvoke.User32.dll;PowerToys.PowerAccentKeyboardService.dll;Microsoft.Windows.SDK.NET.dll;WinRT.Runtime.dll;PowerToys.GPOWrapper.dll;UnicodeInformation.dll?>
 
   <Product Id="*"
        Name="PowerToys (Preview)"
@@ -570,9 +572,12 @@
               </Directory>
             </Directory>
 
-            <!-- Hosts -->
+            <!-- Peek -->
             <Directory Id="PeekInstallFolder" Name="$(var.PeekProjectName)">
               <Directory Id="PeekAssetsInstallFolder" Name="Assets" />
+                <Directory Id="PeekMicrosoftUIXamlInstallFolder" Name="Microsoft.UI.Xaml">
+                    <Directory Id="PeekMicrosoftUIXamlAssetsInstallFolder" Name="Assets" />
+                </Directory>
             </Directory>
 
               <!-- Launcher -->
@@ -1079,7 +1084,15 @@
       </Component>
     </DirectoryRef>
 
-    <!-- KBM -->
+      <DirectoryRef Id="PeekMicrosoftUIXamlAssetsInstallFolder" FileSource="$(var.BinDir)modules\$(var.PeekProjectName)\Microsoft.UI.Xaml\Assets">
+        <?foreach File in $(var.PeekMicrosoftUIXamlAssetsInstallFiles)?>
+        <Component Id="PeekMicrosoftUIXamlAssets_$(var.File)" Win64="yes">
+          <File Id="PeekMicrosoftUIXamlAssetsFile_$(var.File)" Source="$(var.BinDir)modules\$(var.PeekProjectName)\Microsoft.UI.Xaml\Assets\$(var.File)" />
+        </Component>
+        <?endforeach?>
+      </DirectoryRef>
+
+      <!-- KBM -->
     <DirectoryRef Id="KeyboardManagerInstallFolder" FileSource="$(var.BinDir)modules\$(var.KeyboardManagerProjectName)\">
       <Component Id="Module_KeyboardManager" Win64="yes">
         <File Source="$(var.BinDir)modules\$(var.KeyboardManagerProjectName)\PowerToys.KeyboardManager.dll" />
@@ -1206,7 +1219,7 @@
       <?endforeach?>
     </DirectoryRef>
 
-    <DirectoryRef Id="HostsMicrosoftUIXamlAssetsInstallFolder" FileSource="$(var.BinDir)modules\$(var.HostsProjectName)\Microsoft.UI.Xaml\Assets">
+      <DirectoryRef Id="HostsMicrosoftUIXamlAssetsInstallFolder" FileSource="$(var.BinDir)modules\$(var.HostsProjectName)\Microsoft.UI.Xaml\Assets">
       <?foreach File in $(var.HostsMicrosoftUIXamlAssetsInstallFiles)?>
       <Component Id="HostsMicrosoftUIXamlAssets_$(var.File)" Win64="yes">
         <File Id="HostsMicrosoftUIXamlAssetsFile_$(var.File)" Source="$(var.BinDir)modules\$(var.HostsProjectName)\Microsoft.UI.Xaml\Assets\$(var.File)" />
@@ -1360,6 +1373,9 @@
       <?endforeach?>
       <?foreach File in $(var.PeekAssetsFiles)?>
         <ComponentRef Id="Peek_Assets_$(var.File)" />
+      <?endforeach?>
+      <?foreach File in $(var.PeekMicrosoftUIXamlAssetsInstallFiles)?>
+      <ComponentRef Id="PeekMicrosoftUIXamlAssets_$(var.File)" />
       <?endforeach?>
       <ComponentRef Id="Peek_Assets_Applist_Scale100" />
       <ComponentRef Id="Peek_Assets_Applist_Scale125" />
@@ -2113,10 +2129,10 @@
             Guid="$(var.CompGUIDPrefix)06">
             <File Id="Peek_WinAppSDKLoc_$(var.IdSafeLanguage)_XamlMui_File" Source="$(var.BinDir)modules\$(var.PeekProjectName)\$(var.Language)\Microsoft.ui.xaml.dll.mui" />
             <File Id="Peek_WinAppSDKLoc_$(var.IdSafeLanguage)_XamlPhoneMui_File" Source="$(var.BinDir)modules\$(var.PeekProjectName)\$(var.Language)\Microsoft.UI.Xaml.Phone.dll.mui" />
-          </Component>
-          <?undef IdSafeLanguage?>
-          <?undef CompGUIDPrefix?>
-          <?endforeach?>
+           </Component>
+           <?undef IdSafeLanguage?>
+           <?undef CompGUIDPrefix?>
+           <?endforeach?>
         </ComponentGroup>
     </Fragment>
     <Fragment>
