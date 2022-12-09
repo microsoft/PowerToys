@@ -117,6 +117,7 @@ namespace Peek.FilePreviewer.Previewers
 
                     await Dispatcher.RunOnUiThread(async () =>
                     {
+                        CancellationToken.ThrowIfCancellationRequested();
                         var thumbnailBitmap = await GetBitmapFromHBitmapAsync(hbitmap, CancellationToken);
                         Preview = thumbnailBitmap;
                     });
@@ -145,7 +146,6 @@ namespace Peek.FilePreviewer.Previewers
                     await Dispatcher.RunOnUiThread(async () =>
                     {
                         CancellationToken.ThrowIfCancellationRequested();
-
                         var thumbnailBitmap = await GetBitmapFromHBitmapAsync(hbitmap, CancellationToken);
                         Preview = thumbnailBitmap;
                     });

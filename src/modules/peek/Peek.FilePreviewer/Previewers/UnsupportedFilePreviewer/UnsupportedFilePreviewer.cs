@@ -100,8 +100,12 @@ namespace Peek.FilePreviewer.Previewers
 
                 // TODO: Get icon with transparency
                 IconHelper.GetIcon(Path.GetFullPath(File.Path), out IntPtr hbitmap);
+
+                CancellationToken.ThrowIfCancellationRequested();
+
                 await Dispatcher.RunOnUiThread(async () =>
                 {
+                    CancellationToken.ThrowIfCancellationRequested();
                     var iconBitmap = await GetBitmapFromHBitmapAsync(hbitmap, CancellationToken);
                     IconPreview = iconBitmap;
                 });
