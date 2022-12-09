@@ -261,7 +261,7 @@ namespace PowerAccent.Core
                 LetterKey.VK_2 => new string[] { "́", "ˊ", "2" },
                 LetterKey.VK_3 => new string[] { "̌", "ˇ", "3" },
                 LetterKey.VK_4 => new string[] { "̀", "ˋ", "4" },
-                LetterKey.VK_5 => new string[] { "˙", "5"}
+                LetterKey.VK_5 => new string[] { "˙", "5"},
                 LetterKey.VK_A => new string[] { "ā", "á", "ǎ", "à", "a", "ɑ", "ɑ̄", "ɑ́", "ɑ̌", "ɑ̀" },
                 LetterKey.VK_C => new string[] { "ĉ", "c" },
                 LetterKey.VK_E => new string[] { "ē", "é", "ě", "è", "e", "ê", "ê̄", "ế", "ê̌", "ề" },
