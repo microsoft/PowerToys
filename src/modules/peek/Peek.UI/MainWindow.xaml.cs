@@ -9,6 +9,7 @@ namespace Peek.UI
     using Microsoft.UI.Xaml.Input;
     using Peek.FilePreviewer.Models;
     using Peek.UI.Extensions;
+    using Peek.UI.Helpers;
     using Peek.UI.Native;
     using Windows.Foundation;
     using Windows.System;
@@ -48,7 +49,14 @@ namespace Peek.UI
         {
             if (AppWindow.IsVisible)
             {
-                Uninitialize();
+                if (IsNewSingleSelectedItem())
+                {
+                    Initialize();
+                }
+                else
+                {
+                    Uninitialize();
+                }
             }
             else
             {
@@ -117,6 +125,30 @@ namespace Peek.UI
         {
             args.Cancel = true;
             Uninitialize();
+        }
+
+        private bool IsNewSingleSelectedItem()
+        {
+            var folderView = FileExplorerHelper.GetCurrentFolderView();
+            if (folderView == null)
+            {
+                return false;
+            }
+
+            Shell32.FolderItems selectedItems = folderView.SelectedItems();
+            if (selectedItems.Count > 1)
+            {
+                return false;
+            }
+
+            var fileExplorerSelectedItemPath = selectedItems.Item(0)?.Path;
+            var currentFilePath = ViewModel.FolderItemsQuery.CurrentFile?.Path;
+            if (fileExplorerSelectedItemPath == null || currentFilePath == null || fileExplorerSelectedItemPath == currentFilePath)
+            {
+                return false;
+            }
+
+            return true;
         }
     }
 }
