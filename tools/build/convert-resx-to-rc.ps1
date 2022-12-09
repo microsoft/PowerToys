@@ -66,6 +66,7 @@ $languageHashTable = @{ "en" = @("ENU", "ENGLISH", "ENGLISH_US", "English (Unite
                         "eu-ES" = @("EUQ", "BASQUE", "DEFAULT", "Basque (Basque)");
                         "tr" = @("TRK", "TURKISH", "NEUTRAL", "Turkish");
                         "he" = @("HEB", "HEBREW", "NEUTRAL", "Hebrew");
+                        "fa" = @("PER", "PERSIAN", "NEUTRAL", "Persian");
                         "ar" = @("ARA", "ARABIC", "NEUTRAL", "Arabic");
                         "ja" = @("JPN", "JAPANESE", "NEUTRAL", "Japanese");
                         "ko" = @("KOR", "KOREAN", "NEUTRAL", "Korean");

@@ -1402,7 +1402,7 @@
 
   <!-- Languages for localization on build farm -->
   <!-- qps-ploc;qps-ploca;qps-plocm; -->
-  <?define LocLanguageList = cs-CZ;de-DE;es-ES;fr-FR;hu-HU;it-IT;ja-JP;ko-KR;nl-NL;pl-PL;pt-BR;pt-PT;ru-RU;sv-SE;tr-TR;zh-CN;zh-TW?>
+  <?define LocLanguageList = cs-CZ;de-DE;es-ES;fr-FR;hu-HU;it-IT;ja-JP;ko-KR;nl-NL;pl-PL;pt-BR;pt-PT;ru-RU;sv-SE;tr-TR;zh-CN;zh-TW;fa-IR?>
 
   <Fragment>
     <!-- Resource directories should be added only if the installer is built on the build farm -->
