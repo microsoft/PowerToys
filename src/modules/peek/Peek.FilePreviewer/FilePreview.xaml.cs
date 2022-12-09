@@ -43,6 +43,8 @@ namespace Peek.FilePreviewer
         [ObservableProperty]
         private string imageInfoTooltip = ResourceLoader.GetForViewIndependentUse().GetString("PreviewTooltip_Blank");
 
+        private CancellationTokenSource _cancellationTokenSource = new ();
+
         public FilePreview()
         {
             InitializeComponent();
