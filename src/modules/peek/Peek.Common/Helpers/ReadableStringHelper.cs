@@ -40,8 +40,16 @@ namespace Peek.Common.Helpers
 
         public static string FormatResourceString(string resourceId, object? args)
         {
-            var formatString = ResourceLoader.GetForViewIndependentUse().GetString(resourceId);
-            var formattedString = string.Format(formatString, args);
+            var formatString = ResourceLoader.GetForViewIndependentUse()?.GetString(resourceId);
+            var formattedString = string.IsNullOrEmpty(formatString) ? string.Empty : string.Format(formatString, args);
+
+            return formattedString;
+        }
+
+        public static string FormatResourceString(string resourceId, object? args0, object? args1)
+        {
+            var formatString = ResourceLoader.GetForViewIndependentUse()?.GetString(resourceId);
+            var formattedString = string.IsNullOrEmpty(formatString) ? string.Empty : string.Format(formatString, args0, args1);
 
             return formattedString;
         }

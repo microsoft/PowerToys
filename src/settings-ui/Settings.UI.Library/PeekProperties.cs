@@ -10,12 +10,21 @@ namespace Microsoft.PowerToys.Settings.UI.Library
 {
     public class PeekProperties
     {
+        public const double DefaultUnsupportedFileWidthPercent = 40.0;
+        public const double DefaultUnsupportedFileHeightPercent = 40.0;
+
         public PeekProperties()
         {
             ActivationShortcut = new HotkeySettings(false, true, false, false, 0x20);
+            UnsupportedFileWidthPercent = DefaultUnsupportedFileWidthPercent;
+            UnsupportedFileHeightPercent = DefaultUnsupportedFileHeightPercent;
         }
 
         public HotkeySettings ActivationShortcut { get; set; }
+
+        public double UnsupportedFileWidthPercent { get; set; }
+
+        public double UnsupportedFileHeightPercent { get; set; }
 
         public override string ToString()
             => JsonSerializer.Serialize(this);

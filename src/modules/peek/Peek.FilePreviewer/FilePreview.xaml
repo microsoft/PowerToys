@@ -21,6 +21,7 @@
         <Image
             x:Name="ImagePreview"
             Source="{x:Bind BitmapPreviewer.Preview, Mode=OneWay}"
+            ToolTipService.ToolTip="{x:Bind ImageInfoTooltip, Mode=OneWay}"
             Visibility="{x:Bind IsPreviewVisible(BitmapPreviewer, Previewer.State), Mode=OneWay}" />
 
         <controls:BrowserControl
