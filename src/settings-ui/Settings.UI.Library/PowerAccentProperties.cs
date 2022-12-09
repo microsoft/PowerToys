@@ -29,7 +29,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
 
         public PowerAccentProperties()
         {
-            ActivationKey = PowerAccentActivationKey.LeftRightArrow;
+            ActivationKey = PowerAccentActivationKey.Both;
             ToolbarPosition = "Top center";
             InputTime = new IntProperty(300);
             SelectedLang = "ALL";

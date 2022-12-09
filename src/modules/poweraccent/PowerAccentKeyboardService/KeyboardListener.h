@@ -15,7 +15,7 @@ namespace winrt::PowerToys::PowerAccentKeyboardService::implementation
 
     struct PowerAccentSettings
     {
-        PowerAccentActivationKey activationKey{ PowerAccentActivationKey::LeftRightArrow };
+        PowerAccentActivationKey activationKey{ PowerAccentActivationKey::Both };
         std::chrono::milliseconds inputTime{ 300 };
         std::vector<std::wstring> excludedApps;
     };
