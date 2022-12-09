@@ -125,7 +125,7 @@ namespace Peek.FilePreviewer.Previewers
                 await Dispatcher.RunOnUiThread(async () =>
                 {
                     cancellationToken.ThrowIfCancellationRequested();
-                    var iconBitmap = await GetBitmapFromHBitmapAsync(hbitmap, usingSystemIcon, cancellationToken);
+                    var iconBitmap = await GetBitmapFromHBitmapWithTransparencyAsync(hbitmap, usingSystemIcon, cancellationToken);
                     IconPreview = iconBitmap;
                 });
             });
@@ -171,7 +171,7 @@ namespace Peek.FilePreviewer.Previewers
         }
 
         // TODO: Move this to a helper file (ImagePreviewer uses the same code)
-        private static async Task<BitmapSource> GetBitmapFromHBitmapAsync(IntPtr hbitmap, bool usingSystemIcon, CancellationToken cancellationToken)
+        private static async Task<BitmapSource> GetBitmapFromHBitmapWithTransparencyAsync(IntPtr hbitmap, bool usingSystemIcon, CancellationToken cancellationToken)
         {
             try
             {
@@ -188,12 +188,14 @@ namespace Peek.FilePreviewer.Previewers
                     bitmap = System.Drawing.Image.FromHbitmap(hbitmap);
                 }
 
+                bitmap.MakeTransparent();
+
                 var bitmapImage = new BitmapImage();
 
                 cancellationToken.ThrowIfCancellationRequested();
                 using (var stream = new MemoryStream())
                 {
-                    bitmap.Save(stream, ImageFormat.Bmp);
+                    bitmap.Save(stream, ImageFormat.Png);
                     stream.Position = 0;
 
                     cancellationToken.ThrowIfCancellationRequested();

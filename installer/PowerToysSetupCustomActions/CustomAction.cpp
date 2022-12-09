@@ -1052,6 +1052,7 @@ const std::wstring WinAppSDKConsumers[] =
     L"modules\\MeasureTool",
     L"modules\\FileLocksmith",
     L"modules\\Hosts",
+    L"modules\\Peek",
 };
 
 UINT __stdcall CreateWinAppSDKHardlinksCA(MSIHANDLE hInstall)
@@ -1103,6 +1104,7 @@ const std::wstring PTInteropConsumers[] =
     L"modules\\PowerAccent",
     L"modules\\FileLocksmith",
     L"modules\\Hosts",
+    L"modules\\Peek",
 };
 
 UINT __stdcall CreatePTInteropHardlinksCA(MSIHANDLE hInstall)
@@ -1239,7 +1241,7 @@ UINT __stdcall TerminateProcessesCA(MSIHANDLE hInstall)
         L"PowerToys.FileLocksmithUI.exe",
         L"PowerToys.ColorPickerUI.exe",
         L"PowerToys.AlwaysOnTop.exe",
-        L"PowerToys.PeekUI.exe",
+        L"PowerToys.Peek.UI.exe",
         L"PowerToys.exe"
     };
 
