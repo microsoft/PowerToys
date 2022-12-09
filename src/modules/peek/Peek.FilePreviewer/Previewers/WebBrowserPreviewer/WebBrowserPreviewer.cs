@@ -39,8 +39,9 @@ namespace Peek.FilePreviewer.Previewers
 
         public Task<Size> GetPreviewSizeAsync(CancellationToken cancellationToken)
         {
-            // TODO: define how to proper window size on HTML content.
-            var size = new Size(1280, 720);
+            /* The idea here is to always open at the max size possible (monitor)
+             * and let the logic in the Peek UI max out to limit. */
+            var size = Common.Extensions.WindowExtensions.GetMainMonitorSize();
             return Task.FromResult(size);
         }
 
