@@ -2,16 +2,14 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-namespace PowerAccent.Core.Services;
-
+using System.IO.Abstractions;
+using System.Text.Json;
 using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.PowerToys.Settings.UI.Library.Enumerations;
 using Microsoft.PowerToys.Settings.UI.Library.Utilities;
 using PowerToys.PowerAccentKeyboardService;
-using System.IO.Abstractions;
-using System.Text.Json;
-using static Vanara.PInvoke.LANGID;
 
+namespace PowerAccent.Core.Services;
 public class SettingsService
 {
     private const string PowerAccentModuleName = "QuickAccent";

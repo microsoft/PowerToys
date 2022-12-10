@@ -53,7 +53,7 @@ namespace Microsoft.PowerToys.Run.Plugin.Calculator
             return !trailTest.Any();
         }
 
-        private static (TrailDirection direction, TrailType type) BracketTrail(char @char)
+        private static (TrailDirection Direction, TrailType Type) BracketTrail(char @char)
         {
             switch (@char)
             {

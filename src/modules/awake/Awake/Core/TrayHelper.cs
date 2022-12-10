@@ -57,7 +57,8 @@ namespace Awake.Core
                         _log.Error($"An error occurred initializing the tray. {ex.Message}");
                         _log.Error($"{ex.StackTrace}");
                     }
-                }, TrayIcon);
+                },
+                TrayIcon);
         }
 
         /// <summary>

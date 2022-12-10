@@ -3,13 +3,8 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
-using System.Collections;
 using System.ComponentModel;
-using System.Globalization;
-using System.Linq;
-using System.Unicode;
 using System.Windows;
-using PowerToys.PowerAccentKeyboardService;
 using Point = PowerAccent.Core.Point;
 using Size = PowerAccent.Core.Size;
 
@@ -17,7 +12,7 @@ namespace PowerAccent.UI;
 
 public partial class Selector : Window, IDisposable, INotifyPropertyChanged
 {
-    private readonly Core.PowerAccent _powerAccent = new ();
+    private readonly Core.PowerAccent _powerAccent = new();
 
     private Visibility _characterNameVisibility = Visibility.Visible;
 
@@ -84,7 +79,7 @@ public partial class Selector : Window, IDisposable, INotifyPropertyChanged
 
     private void SetWindowPosition()
     {
-        Size windowSize = new (((System.Windows.Controls.Panel)Application.Current.MainWindow.Content).ActualWidth, ((System.Windows.Controls.Panel)Application.Current.MainWindow.Content).ActualHeight);
+        Size windowSize = new(((System.Windows.Controls.Panel)Application.Current.MainWindow.Content).ActualWidth, ((System.Windows.Controls.Panel)Application.Current.MainWindow.Content).ActualHeight);
         Point position = _powerAccent.GetDisplayCoordinates(windowSize);
         this.Left = position.X;
         this.Top = position.Y;

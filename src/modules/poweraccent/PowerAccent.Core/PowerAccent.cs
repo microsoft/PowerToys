@@ -100,7 +100,8 @@ public class PowerAccent : IDisposable
             {
                 OnChangeDisplay?.Invoke(true, _characters);
             }
-        }, TaskScheduler.FromCurrentSynchronizationContext());
+        },
+        TaskScheduler.FromCurrentSynchronizationContext());
     }
 
     private string GetCharacterDescription(string character)

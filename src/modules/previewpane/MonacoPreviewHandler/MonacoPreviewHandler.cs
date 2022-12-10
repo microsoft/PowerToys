@@ -2,12 +2,12 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System;
+using System.Runtime.InteropServices;
+using Common;
+
 namespace Microsoft.PowerToys.PreviewHandler.Monaco
 {
-    using System;
-    using System.Runtime.InteropServices;
-    using Common;
-
     /// <summary>
     /// Implementation of preview handler for files with source code.
     /// </summary>
