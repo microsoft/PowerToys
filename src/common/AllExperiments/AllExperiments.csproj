@@ -8,15 +8,15 @@
   </PropertyGroup>
 
   <ItemGroup Condition="'$(IsExperimentationLive)'!=''">
-    <ProjectReference Include="..\..\modules\launcher\Wox.Plugin\Wox.Plugin.csproj" />
     <ProjectReference Include="..\..\settings-ui\Settings.UI.Library\Settings.UI.Library.csproj" />
     <ProjectReference Include="..\ManagedTelemetry\Telemetry\ManagedTelemetry.csproj" />
     <PackageReference Include="Microsoft.VariantAssignment.Client" Version="2.4.17140001" />
     <PackageReference Include="Microsoft.VariantAssignment.Contract" Version="3.0.16990001" />
-    <Compile Remove="..\..\common\AllExperiments\Experiments_Inert.cs" />
+    <Compile Remove=".\Experiments_Inert.cs" />
   </ItemGroup>
 
   <ItemGroup Condition="'$(IsExperimentationLive)'==''">
-    <Compile Remove="..\..\common\AllExperiments\Experiments_Live.cs" />
+    <Compile Remove=".\Logger.cs" />
+    <Compile Remove=".\Experiments_Live.cs" />
   </ItemGroup>
 </Project>

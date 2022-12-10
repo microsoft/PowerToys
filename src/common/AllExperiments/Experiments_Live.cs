@@ -16,8 +16,6 @@ namespace AllExperiments
     using Microsoft.VariantAssignment.Contract;
     using Newtonsoft.Json;
     using Windows.System.Profile;
-    using Wox.Plugin;
-    using Wox.Plugin.Logger;
 
 #pragma warning disable SA1649 // File name should match first type name. Suppressed because it needs to be the same class name as Experiments_Inert.cs
     public class Experiments
@@ -63,7 +61,7 @@ namespace AllExperiments
             }
             catch (Exception ex)
             {
-                Log.Exception("Error getting variant assignments for experiment", ex, typeof(Experiments));
+                Logger.LogError("Error getting variant assignments for experiment", ex);
             }
         }
 
