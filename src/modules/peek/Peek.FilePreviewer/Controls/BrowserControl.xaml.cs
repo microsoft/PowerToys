@@ -10,7 +10,7 @@ namespace Peek.FilePreviewer.Controls
     using Microsoft.Web.WebView2.Core;
     using Windows.System;
 
-    public sealed partial class BrowserControl : UserControl
+    public sealed partial class BrowserControl : UserControl, IDisposable
     {
         /// <summary>
         /// Helper private Uri where we cache the last navigated page
@@ -21,7 +21,11 @@ namespace Peek.FilePreviewer.Controls
 
         public delegate void NavigationCompletedHandler(WebView2? sender, CoreWebView2NavigationCompletedEventArgs? args);
 
+        public delegate void DOMContentLoadedHandler(CoreWebView2? sender, CoreWebView2DOMContentLoadedEventArgs? args);
+
         public event NavigationCompletedHandler? NavigationCompleted;
+
+        public event DOMContentLoadedHandler? DOMContentLoaded;
 
         public static readonly DependencyProperty SourceProperty = DependencyProperty.Register(
                 nameof(Source),
@@ -40,6 +44,14 @@ namespace Peek.FilePreviewer.Controls
             this.InitializeComponent();
         }
 
+        public void Dispose()
+        {
+            if (PreviewBrowser.CoreWebView2 != null)
+            {
+                PreviewBrowser.CoreWebView2.DOMContentLoaded -= CoreWebView2_DOMContentLoaded;
+            }
+        }
+
         /// <summary>
         /// Navigate to the to the <see cref="Uri"/> set in <see cref="Source"/>.
         /// Calling <see cref="Navigate"/> will always trigger a navigation/refresh
@@ -47,6 +59,8 @@ namespace Peek.FilePreviewer.Controls
         /// </summary>
         public void Navigate()
         {
+            var value = Environment.GetEnvironmentVariable("WEBVIEW2_ADDITIONAL_BROWSER_ARGUMENTS");
+
             _navigatedUri = null;
 
             if (Source != null)
@@ -76,11 +90,18 @@ namespace Peek.FilePreviewer.Controls
                 PreviewBrowser.CoreWebView2.Settings.IsPasswordAutosaveEnabled = false;
                 PreviewBrowser.CoreWebView2.Settings.IsScriptEnabled = false;
                 PreviewBrowser.CoreWebView2.Settings.IsWebMessageEnabled = false;
+
+                PreviewBrowser.CoreWebView2.DOMContentLoaded += CoreWebView2_DOMContentLoaded;
             }
             catch
             {
                 // TODO: exception / telemetry log?
             }
+        }
+
+        private void CoreWebView2_DOMContentLoaded(CoreWebView2 sender, CoreWebView2DOMContentLoadedEventArgs args)
+        {
+            DOMContentLoaded?.Invoke(sender, args);
         }
 
         private async void PreviewBrowser_NavigationStarting(WebView2 sender, Microsoft.Web.WebView2.Core.CoreWebView2NavigationStartingEventArgs args)

@@ -152,12 +152,40 @@ namespace Peek.FilePreviewer
             }
         }
 
-        private void PreviewBrowser_NavigationCompleted(WebView2 sender, Microsoft.Web.WebView2.Core.CoreWebView2NavigationCompletedEventArgs args)
+        private void BrowserPreview_DOMContentLoaded(Microsoft.Web.WebView2.Core.CoreWebView2 sender, Microsoft.Web.WebView2.Core.CoreWebView2DOMContentLoadedEventArgs args)
         {
-            // Once browser has completed navigation it is ready to be visible
+            /*
+             * There is an odd behavior where the WebView2 would not raise the NavigationCompleted event
+             * for certain HTML files, even though it has already been loaded. Probably related to certain
+             * extra module that require more time to load. One example is saving and opening google.com locally.
+             *
+             * So to address this, we will make the Browser visible and display it as "Loaded" as soon the HTML document
+             * has been parsed and loaded with the DOMContentLoaded event.
+             *
+             * Similar issue: https://github.com/MicrosoftEdge/WebView2Feedback/issues/998
+             */
             if (BrowserPreviewer != null)
             {
                 BrowserPreviewer.State = PreviewState.Loaded;
+            }
+        }
+
+        private void PreviewBrowser_NavigationCompleted(WebView2 sender, Microsoft.Web.WebView2.Core.CoreWebView2NavigationCompletedEventArgs args)
+        {
+            /*
+             * In theory most of navigation should work after DOM is loaded.
+             * But in case something fails we check NavigationCompleted event
+             * for failure and switch visibility accordingly.
+             *
+             * As an alternative, in the future, the preview Browser control
+             * could also display error content.
+             */
+            if (!args.IsSuccess)
+            {
+                if (BrowserPreviewer != null)
+                {
+                    BrowserPreviewer.State = PreviewState.Error;
+                }
             }
         }
 
