@@ -7,6 +7,9 @@
     <TargetName>PowerToys.AllExperiments</TargetName>
   </PropertyGroup>
 
+	<PropertyGroup>
+		<IsExperimentationLive>""</IsExperimentationLive>
+	</PropertyGroup>
   <ItemGroup Condition="'$(IsExperimentationLive)'!=''">
     <ProjectReference Include="..\..\settings-ui\Settings.UI.Library\Settings.UI.Library.csproj" />
     <ProjectReference Include="..\ManagedTelemetry\Telemetry\ManagedTelemetry.csproj" />
