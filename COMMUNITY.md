@@ -18,10 +18,6 @@ Damien has helped out by developing and contributing the Quick Accent utility.
 ### [@davidegiacometti](https://github.com/davidegiacometti) - [Davide Giacometti](https://www.linkedin.com/in/davidegiacometti/)
 Davide has helped fix multiple bugs, added new utilities, features, as well as help us with the ARM64 effort by porting applications to .NET Core.
 
-### [@dend](https://github.com/dend/) - Den Delimarsky
-
-PowerToys Awake is a tool to keep your computer awake.
-
 ### [@franky920920](https://github.com/franky920920) - [Franky Chen](https://frankychen.net)
 Franky has helped triaging, discussing, and creating a substantial number of issues and contributed features/fixes to PowerToys.
 
@@ -87,7 +83,11 @@ Image Resizer is from Brice.
 
 ### [@chrdavis](https://github.com/chrdavis/) - Chris Davis
 
-PowerRename is from Chris's SmartRename and icon rendering for SVGs in File Explorer
+PowerRename is from Chris's SmartRename and icon rendering for SVGs in File Explorer.
+
+### [@dend](https://github.com/dend/) - Den Delimarsky
+
+PowerToys Awake is a tool to keep your computer awake.
 
 ### [@Niels9001](https://github.com/niels9001/) - [Niels Laute](https://nielslaute.com/)
 

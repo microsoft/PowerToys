@@ -462,6 +462,22 @@ void WorkArea::SaveWindowProcessToZoneIndex(HWND window) noexcept
     }
 }
 
+bool WorkArea::UnsnapWindow(HWND window) noexcept
+{
+    if (!m_layoutWindows)
+    {
+        return false;    
+    }
+    
+    if (!m_layoutWindows->GetZoneIndexSetFromWindow(window).empty())
+    {
+        m_layoutWindows->Dismiss(window);
+        return true;
+    }
+
+    return false;
+}
+
 ZoneIndexSet WorkArea::GetWindowZoneIndexes(HWND window) const noexcept
 {
     if (m_layout)

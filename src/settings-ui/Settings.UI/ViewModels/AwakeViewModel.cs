@@ -76,6 +76,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                     GeneralSettingsConfig.Enabled.Awake = value;
                     OnPropertyChanged(nameof(IsEnabled));
                     OnPropertyChanged(nameof(IsTimeConfigurationEnabled));
+                    OnPropertyChanged(nameof(IsScreenConfigurationPossibleEnabled));
 
                     OutGoingGeneralSettings outgoing = new OutGoingGeneralSettings(GeneralSettingsConfig);
                     SendConfigMSG(outgoing.ToString());
@@ -94,6 +95,11 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             get => _mode == AwakeMode.TIMED && _isEnabled;
         }
 
+        public bool IsScreenConfigurationPossibleEnabled
+        {
+            get => _mode != AwakeMode.PASSIVE && _isEnabled;
+        }
+
         public AwakeMode Mode
         {
             get => _mode;
@@ -104,6 +110,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                     _mode = value;
                     OnPropertyChanged(nameof(Mode));
                     OnPropertyChanged(nameof(IsTimeConfigurationEnabled));
+                    OnPropertyChanged(nameof(IsScreenConfigurationPossibleEnabled));
 
                     Settings.Properties.Mode = value;
                     NotifyPropertyChanged();

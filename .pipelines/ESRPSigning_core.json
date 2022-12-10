@@ -124,8 +124,6 @@
                 "modules\\MouseUtils\\PowerToys.MousePointerCrosshairs.dll",
 
                 "modules\\PowerAccent\\PowerAccent.Core.dll",
-                "modules\\PowerAccent\\PowerAccent.dll",
-                "modules\\PowerAccent\\PowerAccent.exe",
                 "modules\\PowerAccent\\PowerToys.PowerAccent.dll",
                 "modules\\PowerAccent\\PowerToys.PowerAccent.exe",
                 "modules\\PowerAccent\\PowerToys.PowerAccentModuleInterface.dll",
@@ -214,6 +212,7 @@
                 "vcruntime140_1_app.dll",
                 "vcruntime140_app.dll",
                 "modules\\FileLocksmith\\CommunityToolkit.Labs.WinUI.SettingsControls.dll",
+                "modules\\PowerAccent\\UnicodeInformation.dll",
                 "modules\\PowerAccent\\Vanara.Core.dll",
                 "modules\\PowerAccent\\Vanara.PInvoke.ComCtl32.dll",
                 "modules\\PowerAccent\\Vanara.PInvoke.Cryptography.dll",

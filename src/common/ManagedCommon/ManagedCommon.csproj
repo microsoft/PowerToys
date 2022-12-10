@@ -20,4 +20,19 @@
     <ProjectReference Include="..\ManagedTelemetry\Telemetry\ManagedTelemetry.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Compile Update="CommonResources.Designer.cs">
+      <DependentUpon>CommonResources.resx</DependentUpon>
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+    </Compile>
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Update="CommonResources.resx">
+      <SubType>Designer</SubType>
+      <LastGenOutput>CommonResources.Designer.cs</LastGenOutput>
+      <Generator>PublicResXFileCodeGenerator</Generator>
+    </EmbeddedResource>
+  </ItemGroup>
 </Project>

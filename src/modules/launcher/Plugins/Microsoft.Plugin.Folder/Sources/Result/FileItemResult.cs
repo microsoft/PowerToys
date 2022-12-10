@@ -42,7 +42,7 @@ namespace Microsoft.Plugin.Folder.Sources.Result
                 ToolTipData = new ToolTipData(Title, string.Format(CultureInfo.CurrentCulture, Properties.Resources.wox_plugin_folder_select_file_result_subtitle, FilePath)),
                 IcoPath = FilePath,
                 Action = c => ShellAction.Execute(FilePath, contextApi),
-                ContextData = new SearchResult { Type = ResultType.File, FullPath = FilePath },
+                ContextData = new SearchResult { Type = ResultType.File, Path = FilePath },
             };
             return result;
         }

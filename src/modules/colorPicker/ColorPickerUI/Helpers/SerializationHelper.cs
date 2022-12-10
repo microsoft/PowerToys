@@ -38,7 +38,7 @@ namespace ColorPicker.Helpers
                             var tmp = new Dictionary<string, string>();
                             foreach (var colorFormatModel in colorFormatModels)
                             {
-                                var colorInSpecificFormat = colorFormatModel.Convert(color);
+                                var colorInSpecificFormat = colorFormatModel.GetColorText(color);
                                 if (colorFormatModel.FormatName == "HEX")
                                 {
                                     colorInSpecificFormat = "#" + colorInSpecificFormat;
@@ -65,7 +65,7 @@ namespace ColorPicker.Helpers
                             i = 1;
                             foreach (Color color in (IList)colorsToExport)
                             {
-                                var colorInSpecificFormat = colorFormatModel.Convert(color);
+                                var colorInSpecificFormat = colorFormatModel.GetColorText(color);
                                 if (colorFormatModel.FormatName == "HEX")
                                 {
                                     colorInSpecificFormat = "#" + colorInSpecificFormat;

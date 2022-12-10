@@ -237,6 +237,24 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             }
         }
 
+        public bool ShowUnicodeDescription
+        {
+            get
+            {
+                return _powerAccentSettings.Properties.ShowUnicodeDescription;
+            }
+
+            set
+            {
+                if (value != _powerAccentSettings.Properties.ShowUnicodeDescription)
+                {
+                    _powerAccentSettings.Properties.ShowUnicodeDescription = value;
+                    OnPropertyChanged(nameof(ShowUnicodeDescription));
+                    RaisePropertyChanged();
+                }
+            }
+        }
+
         private void RaisePropertyChanged([CallerMemberName] string propertyName = null)
         {
             // Notify UI of property change
