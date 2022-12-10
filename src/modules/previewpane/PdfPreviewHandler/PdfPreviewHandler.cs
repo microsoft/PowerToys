@@ -56,8 +56,6 @@ namespace Microsoft.PowerToys.PreviewHandler.Pdf
                     _pdfPreviewHandlerControl.Dispose();
                 }
 
-                // TODO: free unmanaged resources (unmanaged objects) and override finalizer
-                // TODO: set large fields to null
                 _disposedValue = true;
             }
         }
