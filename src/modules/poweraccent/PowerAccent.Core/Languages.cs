@@ -111,7 +111,9 @@ namespace PowerAccent.Core
                 LetterKey.VK_X => new string[] { "ẋ", "ξ" },
                 LetterKey.VK_Y => new string[] { "ÿ", "ŷ", "ý", "ẏ" },
                 LetterKey.VK_Z => new string[] { "ź", "ž", "ż", "ʒ", "ǯ", "ζ" },
-                LetterKey.VK_COMMA => new string[] { "¿", "¡", "∙", "₋", "⁻", "–", "≤", "≥", "≠", "≈", "≙", "±", "₊", "⁺" },
+                LetterKey.VK_PLUS => new string[] { "±", "₊", "⁺", "†", "≠", "≈", "≙" },
+                LetterKey.VK_COMMA => new string[] { "¿", "¡", "∙", "§", "≤", "≥" },
+                LetterKey.VK_MINUS => new string[] { "–", "—", "_", "₋", "⁻", "|", "¦" },
                 _ => Array.Empty<string>(),
             };
         }
