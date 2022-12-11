@@ -134,7 +134,7 @@ public class SettingsService
         }
     }
 
-    private int _inputTime = 300;
+    private int _inputTime = PowerAccentSettings.DefaultInputTimeMs;
 
     public int InputTime
     {

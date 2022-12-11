@@ -11,6 +11,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
     {
         public const string ModuleName = "QuickAccent";
         public const string ModuleVersion = "0.0.1";
+        public const int DefaultInputTimeMs = 300;
 
         [JsonPropertyName("properties")]
         public PowerAccentProperties Properties { get; set; }
