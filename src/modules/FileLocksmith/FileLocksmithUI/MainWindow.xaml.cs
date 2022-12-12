@@ -22,24 +22,10 @@ namespace FileLocksmithUI
 
         private void SetTitleBar()
         {
-            if (AppWindowTitleBar.IsCustomizationSupported())
-            {
-                AppWindow window = this.GetAppWindow();
-                window.TitleBar.ExtendsContentIntoTitleBar = true;
-                window.TitleBar.ButtonBackgroundColor = Colors.Transparent;
-                SetTitleBar(titleBar);
-            }
-            else
-            {
-                var hWnd = WinRT.Interop.WindowNative.GetWindowHandle(this);
-                ThemeHelpers.SetImmersiveDarkMode(hWnd, ThemeHelpers.GetAppTheme() == AppTheme.Dark);
-                titleBar.Visibility = Visibility.Collapsed;
-
-                // Set window icon
-                WindowId windowId = Win32Interop.GetWindowIdFromWindow(hWnd);
-                AppWindow appWindow = AppWindow.GetFromWindowId(windowId);
-                appWindow.SetIcon("Assets/Icon.ico");
-            }
+            AppWindow window = this.GetAppWindow();
+            window.TitleBar.ExtendsContentIntoTitleBar = true;
+            window.TitleBar.ButtonBackgroundColor = Colors.Transparent;
+            SetTitleBar(titleBar);
         }
 
         public void Dispose()

@@ -17,25 +17,7 @@ namespace Hosts
         {
             InitializeComponent();
 
-            if (AppWindowTitleBar.IsCustomizationSupported())
-            {
-                SetTitleBar();
-            }
-            else
-            {
-                titleBar.Visibility = Visibility.Collapsed;
-
-                // Set window icon
-                var hWnd = WinRT.Interop.WindowNative.GetWindowHandle(this);
-                WindowId windowId = Win32Interop.GetWindowIdFromWindow(hWnd);
-                AppWindow appWindow = AppWindow.GetFromWindowId(windowId);
-                appWindow.SetIcon("Assets/Hosts.ico");
-
-                if (ThemeHelpers.GetAppTheme() == AppTheme.Dark)
-                {
-                    ThemeHelpers.SetImmersiveDarkMode(hWnd, true);
-                }
-            }
+            SetTitleBar();
 
             BringToForeground();
         }
