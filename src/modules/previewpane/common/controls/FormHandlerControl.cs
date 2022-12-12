@@ -50,38 +50,26 @@ namespace Common
         public void QueryFocus(out IntPtr result)
         {
             var getResult = IntPtr.Zero;
-            this.InvokeOnControlThread(() =>
-            {
-                getResult = NativeMethods.GetFocus();
-            });
+            getResult = NativeMethods.GetFocus();
             result = getResult;
         }
 
         /// <inheritdoc />
         public void SetBackgroundColor(Color argbColor)
         {
-            this.InvokeOnControlThread(() =>
-            {
-                this.BackColor = argbColor;
-            });
+            this.BackColor = argbColor;
         }
 
         /// <inheritdoc />
         public void SetFocus()
         {
-            this.InvokeOnControlThread(() =>
-            {
-                this.Focus();
-            });
+            this.Focus();
         }
 
         /// <inheritdoc />
         public void SetFont(Font font)
         {
-            this.InvokeOnControlThread(() =>
-            {
-                this.Font = font;
-            });
+            this.Font = font;
         }
 
         /// <inheritdoc />
@@ -93,10 +81,7 @@ namespace Common
         /// <inheritdoc />
         public void SetTextColor(Color color)
         {
-            this.InvokeOnControlThread(() =>
-            {
-                this.ForeColor = color;
-            });
+            this.ForeColor = color;
         }
 
         /// <inheritdoc />
@@ -109,16 +94,13 @@ namespace Common
         /// <inheritdoc />
         public virtual void Unload()
         {
-            this.InvokeOnControlThread(() =>
+            this.Visible = false;
+            foreach (Control c in this.Controls)
             {
-                this.Visible = false;
-                foreach (Control c in this.Controls)
-                {
-                    c.Dispose();
-                }
+                c.Dispose();
+            }
 
-                this.Controls.Clear();
-            });
+            this.Controls.Clear();
 
             // Call garbage collection at the time of unloading of Preview.
             // Which is preventing prevhost.exe to exit at the time of closing File explorer.
@@ -131,15 +113,6 @@ namespace Common
         public virtual void DoPreview<T>(T dataSource)
         {
             this.Visible = true;
-        }
-
-        /// <summary>
-        /// Executes the specified delegate on the thread that owns the control's underlying window handle.
-        /// </summary>
-        /// <param name="func">Delegate to run.</param>
-        public void InvokeOnControlThread(MethodInvoker func)
-        {
-            this.Invoke(func);
         }
 
         /// <summary>
