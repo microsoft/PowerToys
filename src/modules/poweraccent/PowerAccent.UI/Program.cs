@@ -1,7 +1,6 @@
 ﻿// Copyright (c) Microsoft Corporation
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
-#pragma warning disable SA1310 // FieldNamesMustNotContainUnderscore
 
 using System;
 using System.Diagnostics;
@@ -11,43 +10,31 @@ using System.Windows;
 using interop;
 using ManagedCommon;
 using PowerAccent.Core.Tools;
-using PowerAccent.UI;
 
-namespace PowerAccent;
+namespace PowerAccent.UI;
 
 internal static class Program
 {
-    private static readonly CancellationTokenSource _tokenSource = new ();
-    private const string PROGRAM_NAME = "QuickAccent";
-    private const string PROGRAM_APP_NAME = "PowerToys.PowerAccent";
+    private static readonly CancellationTokenSource _tokenSource = new CancellationTokenSource();
     private static App _application;
     private static int _powerToysRunnerPid;
 
     [STAThread]
     public static void Main(string[] args)
     {
-        _ = new Mutex(true, PROGRAM_APP_NAME, out bool instantiated);
-
         if (PowerToys.GPOWrapper.GPOWrapper.GetConfiguredQuickAccentEnabledValue() == PowerToys.GPOWrapper.GpoRuleConfigured.Disabled)
         {
             Logger.LogWarning("Tried to start with a GPO policy setting the utility to always be disabled. Please contact your systems administrator.");
             return;
         }
 
-        if (instantiated)
-        {
-            Arguments(args);
+        Arguments(args);
 
-            InitEvents();
+        InitEvents();
 
-            _application = new App();
-            _application.InitializeComponent();
-            _application.Run();
-        }
-        else
-        {
-            Logger.LogWarning("Another running QuickAccent instance was detected. Exiting QuickAccent");
-        }
+        _application = new App();
+        _application.InitializeComponent();
+        _application.Run();
     }
 
     private static void InitEvents()
@@ -55,7 +42,7 @@ internal static class Program
         Task.Run(
             () =>
             {
-                EventWaitHandle eventHandle = new (false, EventResetMode.AutoReset, Constants.PowerAccentExitEvent());
+                EventWaitHandle eventHandle = new EventWaitHandle(false, EventResetMode.AutoReset, Constants.PowerAccentExitEvent());
                 if (eventHandle.WaitOne())
                 {
                     Terminate();
@@ -69,15 +56,16 @@ internal static class Program
         {
             try
             {
-                _ = int.TryParse(args[0], out _powerToysRunnerPid);
-
-                Logger.LogInfo($"QuickAccent started from the PowerToys Runner. Runner pid={_powerToysRunnerPid}");
-
-                RunnerHelper.WaitForPowerToysRunner(_powerToysRunnerPid, () =>
+                if (int.TryParse(args[0], out _powerToysRunnerPid))
                 {
-                    Logger.LogInfo("PowerToys Runner exited. Exiting QuickAccent");
-                    Terminate();
-                });
+                    Logger.LogInfo($"QuickAccent started from the PowerToys Runner. Runner pid={_powerToysRunnerPid}");
+
+                    RunnerHelper.WaitForPowerToysRunner(_powerToysRunnerPid, () =>
+                    {
+                        Logger.LogInfo("PowerToys Runner exited. Exiting QuickAccent");
+                        Terminate();
+                    });
+                }
             }
             catch (Exception ex)
             {
