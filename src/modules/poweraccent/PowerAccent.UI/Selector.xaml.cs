@@ -69,7 +69,7 @@ public partial class Selector : Window, IDisposable, INotifyPropertyChanged
             characters.ItemsSource = chars;
             this.UpdateLayout(); // Required for filling the actual width/height before positioning.
             SetWindowPosition();
-            SetWindowAllignment();
+            SetWindowAlignment();
             Show();
             Microsoft.PowerToys.Telemetry.PowerToysTelemetry.Log.WriteEvent(new PowerAccent.Core.Telemetry.PowerAccentShowAccentMenuEvent());
         }
@@ -92,7 +92,7 @@ public partial class Selector : Window, IDisposable, INotifyPropertyChanged
         this.Top = position.Y;
     }
 
-    private void SetWindowAllignment()
+    private void SetWindowAlignment()
     {
         gridBorder.HorizontalAlignment = _powerAccent.GetToolbarPosition() switch
         {
