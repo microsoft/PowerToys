@@ -874,7 +874,7 @@
             {
               "name": "commentContains",
               "parameters": {
-                "commentPattern": "\\/loc",
+                "commentPattern": "\\/loc\\b",
                 "isRegex": true
               }
             },
@@ -891,12 +891,6 @@
                   "name": "activitySenderHasAssociation",
                   "parameters": {
                     "association": "MEMBER"
-                  }
-                },
-                {
-                  "name": "activitySenderHasAssociation",
-                  "parameters": {
-                    "association": "COLLABORATOR"
                   }
                 }
               ]
