@@ -36,8 +36,9 @@ public:
         std::wstring saveFolderPath = PTSettingsHelper::get_module_save_folder_location(NonLocalizable::ModuleKey);
 #if defined(UNIT_TESTS)
         return saveFolderPath + L"\\test-app-zone-history.json";
-#endif
+#else
         return saveFolderPath + L"\\app-zone-history.json";
+#endif
     }
 
     void LoadData();
