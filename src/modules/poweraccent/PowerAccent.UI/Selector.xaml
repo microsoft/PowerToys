@@ -8,7 +8,7 @@
     xmlns:ui="http://schemas.modernwpf.com/2019"
     Title="MainWindow"
     Height="120"
-    MinWidth="600"
+    MinWidth="120"
     AllowsTransparency="True"
     Background="Transparent"
     DataContext="{Binding RelativeSource={RelativeSource Self}}"
