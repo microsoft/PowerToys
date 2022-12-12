@@ -8,7 +8,7 @@
     xmlns:ui="http://schemas.modernwpf.com/2019"
     Title="MainWindow"
     Height="120"
-    MinWidth="120"
+    MinWidth="600"
     AllowsTransparency="True"
     Background="Transparent"
     DataContext="{Binding RelativeSource={RelativeSource Self}}"
@@ -42,6 +42,7 @@
     </Window.Resources>
     <Grid>
         <Border
+            x:Name="gridBorder"
             HorizontalAlignment="Center"
             VerticalAlignment="Center"
             Background="{DynamicResource SecondaryBackgroundBrush}"
