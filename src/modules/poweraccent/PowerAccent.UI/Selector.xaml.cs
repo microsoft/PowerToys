@@ -66,6 +66,7 @@ public partial class Selector : Window, IDisposable, INotifyPropertyChanged
         if (isActive)
         {
             characters.ItemsSource = chars;
+            characters.SelectedIndex = 0;
             this.UpdateLayout(); // Required for filling the actual width/height before positioning.
             SetWindowPosition();
             Show();
