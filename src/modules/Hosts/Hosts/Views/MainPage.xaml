@@ -117,8 +117,8 @@
                                     </i:Interaction.Behaviors>
                                 </AutoSuggestBox>
                                 <ToggleSwitch
-                                    x:Uid="ShowDuplicates"
-                                    IsOn="{x:Bind ViewModel.ShowDuplicates, Mode=TwoWay}" />
+                                    x:Uid="ShowOnlyDuplicates"
+                                    IsOn="{x:Bind ViewModel.ShowOnlyDuplicates, Mode=TwoWay}" />
                                 <Button
                                     x:Uid="ClearFiltersBtn"
                                     Margin="0,6,0,0"

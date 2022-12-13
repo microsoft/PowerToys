@@ -47,14 +47,14 @@ namespace Hosts.ViewModels
 
         [ObservableProperty]
         [NotifyPropertyChangedFor(nameof(Entries))]
-        private bool _showDuplicates;
+        private bool _showOnlyDuplicates;
 
         [ObservableProperty]
         private string _additionalLines;
 
         private ObservableCollection<Entry> _entries;
 
-        public ObservableCollection<Entry> Entries => _filtered || _showDuplicates ? GetFilteredEntries() : _entries;
+        public ObservableCollection<Entry> Entries => _filtered || _showOnlyDuplicates ? GetFilteredEntries() : _entries;
 
         public ICommand ReadHostsCommand => new RelayCommand(ReadHosts);
 
@@ -165,7 +165,7 @@ namespace Hosts.ViewModels
             AddressFilter = null;
             HostsFilter = null;
             CommentFilter = null;
-            ShowDuplicates = false;
+            ShowOnlyDuplicates = false;
         }
 
         public async Task PingSelectedAsync()
@@ -273,7 +273,7 @@ namespace Hosts.ViewModels
                 filter = filter.Where(e => e.Comment.Contains(_commentFilter, StringComparison.OrdinalIgnoreCase));
             }
 
-            if (_showDuplicates)
+            if (_showOnlyDuplicates)
             {
                 filter = filter.Where(e => e.Duplicate);
             }

@@ -250,8 +250,8 @@
   <data name="SettingsBtn.[using:Microsoft.UI.Xaml.Controls]ToolTipService.ToolTip" xml:space="preserve">
     <value>Settings</value>
   </data>
-  <data name="ShowDuplicates.Header" xml:space="preserve">
-    <value>Show duplicates</value>
+  <data name="ShowOnlyDuplicates.Header" xml:space="preserve">
+    <value>Show only duplicates</value>
   </data>
   <data name="UpdateBtn" xml:space="preserve">
     <value>Update</value>
