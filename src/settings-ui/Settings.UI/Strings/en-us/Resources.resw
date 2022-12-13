@@ -2707,6 +2707,9 @@ Activate by holding the key for the character you want to add an accent to, then
   <data name="QuickAccent_SelectedLanguage_French.Content" xml:space="preserve">
     <value>French</value>
   </data>
+  <data name="QuickAccent_SelectedLanguage_Macedonian.Content" xml:space="preserve">
+    <value>Macedonian</value>
+  </data>
   <data name="QuickAccent_SelectedLanguage_Maori.Content" xml:space="preserve">
     <value>Maori</value>
   </data>
@@ -2842,8 +2845,5 @@ Activate by holding the key for the character you want to add an accent to, then
   </data>
   <data name="Hosts_AdditionalLinesPosition.Description" xml:space="preserve">
     <value>Additional content includes the file header and lines that can't parse</value>
-  </data>
-  <data name="QuickAccent_SelectedLanguage_Macedonian.Content" xml:space="preserve">
-    <value>Macedonian</value>
   </data>
 </root>

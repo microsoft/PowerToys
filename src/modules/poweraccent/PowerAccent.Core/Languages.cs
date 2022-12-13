@@ -58,8 +58,8 @@ namespace PowerAccent.Core
                 Language.IS => GetDefaultLetterKeyIS(letter), // Iceland
                 Language.IT => GetDefaultLetterKeyIT(letter), // Italian
                 Language.KU => GetDefaultLetterKeyKU(letter), // Kurdish
-                Language.MI => GetDefaultLetterKeyMI(letter), // Maori
                 Language.MK => GetDefaultLetterKeyMK(letter), // Macedonian
+                Language.MI => GetDefaultLetterKeyMI(letter), // Maori
                 Language.NL => GetDefaultLetterKeyNL(letter), // Dutch
                 Language.PI => GetDefaultLetterKeyPI(letter), // Pinyin
                 Language.PL => GetDefaultLetterKeyPL(letter), // Polish
