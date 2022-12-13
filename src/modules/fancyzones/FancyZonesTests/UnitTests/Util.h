@@ -1,5 +1,8 @@
 #pragma once
-
+// disable warning 4505 -'function' : unreferenced local function has been removed
+// as not all functions from Util.h are used in this test
+#pragma warning(push)
+#pragma warning(disable : 4505)
 #include "FancyZonesLib/FancyZonesDataTypes.h"
 
 namespace CustomAssert
@@ -145,3 +148,5 @@ std::wstring Microsoft::VisualStudio::CppUnitTestFramework::ToString(const std::
     str += L"}";
     return str;
 }
+
+#pragma warning(pop)

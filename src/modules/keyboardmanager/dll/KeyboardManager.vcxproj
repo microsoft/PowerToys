@@ -26,7 +26,6 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup>
     <OutDir>$(SolutionDir)$(Platform)\$(Configuration)\modules\$(ProjectName)\</OutDir>
-    <RunCodeAnalysis>true</RunCodeAnalysis>
     <TargetName>PowerToys.KeyboardManager</TargetName>
   </PropertyGroup>
   <ItemDefinitionGroup>
