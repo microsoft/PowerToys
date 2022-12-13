@@ -36,6 +36,7 @@
             IsTitleBarAutoPaddingEnabled="False"
             PaneClosed="NavigationView_PaneClosed"
             PaneOpened="NavigationView_PaneOpened"
+            SelectionChanged="NavigationView_SelectionChanged"
             SelectedItem="{x:Bind ViewModel.Selected, Mode=OneWay}">
             <NavigationView.Resources>
                 <SolidColorBrush
