@@ -120,7 +120,7 @@ namespace ColorPicker.Helpers
         /// <returns>a string value number</returns>
         private static string ColorToDecimal(Color color)
         {
-            return $"{color.R + (color.G * 256) + (color.B * 65536)}";
+            return $"{(color.R * 65536) + (color.G * 256) + color.B}";
         }
 
         /// <summary>
