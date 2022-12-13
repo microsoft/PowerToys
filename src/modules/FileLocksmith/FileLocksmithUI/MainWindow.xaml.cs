@@ -3,10 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
-using ManagedCommon;
-using Microsoft.UI;
 using Microsoft.UI.Windowing;
-using Microsoft.UI.Xaml;
 using WinUIEx;
 
 namespace FileLocksmithUI
@@ -22,9 +19,7 @@ namespace FileLocksmithUI
 
         private void SetTitleBar()
         {
-            AppWindow window = this.GetAppWindow();
-            window.TitleBar.ExtendsContentIntoTitleBar = true;
-            window.TitleBar.ButtonBackgroundColor = Colors.Transparent;
+            ExtendsContentIntoTitleBar = true;
             SetTitleBar(titleBar);
         }
 
