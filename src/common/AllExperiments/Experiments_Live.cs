@@ -6,17 +6,12 @@
 // However, this project is not required to build a test version of the application.
 namespace AllExperiments
 {
-    using System.IO.Pipes;
-    using System.Text;
-    using System.Text.Json;
-    using System.Windows.Input;
     using Microsoft.PowerToys.Settings.UI.Library.Telemetry.Events;
     using Microsoft.PowerToys.Telemetry;
     using Microsoft.VariantAssignment.Client;
     using Microsoft.VariantAssignment.Contract;
     using Newtonsoft.Json;
     using Windows.System.Profile;
-    using Wox.Plugin.Logger;
 
 #pragma warning disable SA1649 // File name should match first type name. Suppressed because it needs to be the same class name as Experiments_Inert.cs
     public class Experiments
@@ -44,24 +39,20 @@ namespace AllExperiments
 
             try
             {
-                // Will make the HTTP request only once, when the user gets its clientID assigned to them
-                if (!File.Exists(CreateFilePath()))
+                var vaClient = vaSettings.GetTreatmentAssignmentServiceClient();
+                var vaRequest = GetVariantAssignmentRequest();
+                using var variantAssignments = await vaClient.GetVariantAssignmentsAsync(vaRequest).ConfigureAwait(false);
+
+                var featureVariables = variantAssignments.GetFeatureVariables();
+                var assignmentContext = variantAssignments.GetAssignmentContext();
+                var featureFlagValue = featureVariables[0].GetStringValue();
+
+                if (featureFlagValue == "alternate" && assignmentContext != string.Empty)
                 {
-                    var vaClient = vaSettings.GetTreatmentAssignmentServiceClient();
-                    var vaRequest = GetVariantAssignmentRequest();
-                    using var variantAssignments = await vaClient.GetVariantAssignmentsAsync(vaRequest).ConfigureAwait(false);
-
-                    var featureVariables = variantAssignments.GetFeatureVariables();
-                    var assignmentContext = variantAssignments.GetAssignmentContext();
-                    var featureFlagValue = featureVariables[0].GetStringValue();
-
-                    if (featureFlagValue == "alternate" && assignmentContext != string.Empty)
-                    {
-                        IsExperiment = true;
-                    }
-
-                    PowerToysTelemetry.Log.WriteEvent(new OobeVariantAssignmentEvent() { AssignmentContext = assignmentContext, ClientID = AssignmentUnit });
+                    IsExperiment = true;
                 }
+
+                PowerToysTelemetry.Log.WriteEvent(new OobeVariantAssignmentEvent() { AssignmentContext = assignmentContext, ClientID = AssignmentUnit });
             }
             catch (Exception ex)
             {

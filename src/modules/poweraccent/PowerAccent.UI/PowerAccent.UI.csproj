@@ -10,10 +10,19 @@
 		<ApplicationIcon>icon.ico</ApplicationIcon>
 		<AssemblyName>PowerToys.PowerAccent</AssemblyName>
 		<XamlDebuggingInformation>True</XamlDebuggingInformation>
-    <StartupObject>PowerAccent.UI.Program</StartupObject>
-    <OutputPath>$(SolutionDir)$(Platform)\$(Configuration)\modules\PowerAccent</OutputPath>
-    <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
-    <AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
+		<StartupObject>PowerAccent.UI.Program</StartupObject>
+		<OutputPath>$(SolutionDir)$(Platform)\$(Configuration)\modules\PowerAccent</OutputPath>
+		<AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+		<AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
+		<SelfContained>true</SelfContained>
+	</PropertyGroup>
+
+	<!-- SelfContained=true requires RuntimeIdentifier to be set -->
+	<PropertyGroup Condition="'$(Platform)'=='x64'">
+		<RuntimeIdentifier>win10-x64</RuntimeIdentifier>
+	</PropertyGroup>
+	<PropertyGroup Condition="'$(Platform)'=='ARM64'">
+		<RuntimeIdentifier>win10-arm64</RuntimeIdentifier>
 	</PropertyGroup>
 
 	<ItemGroup>

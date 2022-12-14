@@ -116,6 +116,9 @@
                                         </ic:EventTriggerBehavior>
                                     </i:Interaction.Behaviors>
                                 </AutoSuggestBox>
+                                <ToggleSwitch
+                                    x:Uid="ShowOnlyDuplicates"
+                                    IsOn="{x:Bind ViewModel.ShowOnlyDuplicates, Mode=TwoWay}" />
                                 <Button
                                     x:Uid="ClearFiltersBtn"
                                     Margin="0,6,0,0"
@@ -150,7 +153,6 @@
                 </Button>
             </StackPanel>
         </Grid>
-
 
         <StackPanel
             Grid.Row="2"
@@ -205,6 +207,7 @@
                             <ColumnDefinition Width="*" />
                             <ColumnDefinition Width="Auto" />
                             <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="Auto" />
                         </Grid.ColumnDefinitions>
                         <FlyoutBase.AttachedFlyout>
                             <MenuFlyout>
@@ -254,6 +257,7 @@
                             Margin="0,0,8,0"
                             IsActive="{x:Bind Pinging, Mode=OneWay}" />
                         <FontIcon
+                            x:Uid="PingIcon"
                             x:Name="PingIcon"
                             Grid.Column="2"
                             Margin="0,0,8,0"
@@ -306,9 +310,18 @@
                                 </ic:DataTriggerBehavior>
                             </i:Interaction.Behaviors>
                         </FontIcon>
+                        <FontIcon
+                            x:Uid="DuplicateEntryIcon"
+                            Grid.Column="3"
+                            Margin="0,0,8,0"
+                            Foreground="{StaticResource SystemControlErrorTextForegroundBrush}"
+                            FontFamily="{ThemeResource SymbolThemeFontFamily}"
+                            FontSize="18"
+                            Glyph="&#xe7BA;"
+                            Visibility="{x:Bind Duplicate, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}" />
                         <ToggleSwitch
                             x:Uid="ActiveToggle"
-                            Grid.Column="3"
+                            Grid.Column="4"
                             Width="40"
                             MinWidth="0"
                             HorizontalAlignment="Right"
@@ -384,7 +397,6 @@
                 ScrollViewer.VerticalScrollBarVisibility="Visible"
                 ScrollViewer.VerticalScrollMode="Enabled"
                 TextWrapping="Wrap" />
-
         </ContentDialog>
     </Grid>
 </Page>

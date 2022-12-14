@@ -8,9 +8,9 @@ namespace AllExperiments
     public class Experiments
 #pragma warning restore SA1649 // File name should match first type name
     {
-        public bool EnableLandingPageExperiment()
+        public Task<bool> EnableLandingPageExperimentAsync()
         {
-            return false;
+            return Task.FromResult(false);
         }
     }
 }

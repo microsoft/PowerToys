@@ -63,6 +63,7 @@ APPIDS
 appium
 Applets
 Applicationcan
+applicationconfiguration
 applicationframehost
 Applist
 applog
@@ -87,9 +88,11 @@ ARRAYSIZE
 arsinh
 artanh
 Artsakh
+asd
 asdf
 AShortcut
 ASingle
+Asn
 ASSOCCHANGED
 ASYNCWINDOWPLACEMENT
 ASYNCWINDOWPOS
@@ -158,8 +161,8 @@ bpmf
 bpp
 bricelam
 BRIGHTGREEN
+Brotli
 Browsable
-brucelindbloom
 bsd
 Bson
 bstr
@@ -200,9 +203,8 @@ CHILDACTIVATE
 CHILDWINDOW
 Choibalsan
 chrdavis
-chromaticities
 Chrzan
-CHT
+cht
 Chukotka
 Chuuk
 CIELAB
@@ -222,6 +224,10 @@ CLIPCHILDREN
 Clipperton
 CLIPSIBLINGS
 clrcall
+clrcompression
+clretwrc
+clrgc
+clrjit
 Cls
 CLSCTX
 clsid
@@ -236,6 +242,7 @@ CMock
 CMONITORS
 cmpgt
 cmyk
+Cng
 cnt
 Cocklebiddy
 coclass
@@ -256,13 +263,11 @@ comctl
 COMDAT
 comdef
 comdlg
-comhost
 cominterop
 commandline
 COMMANDTITLE
 commctrl
 Comoros
-companding
 COMPOSITIONFULL
 comsupp
 comsuppw
@@ -283,6 +288,7 @@ CONTROLL
 CONTROLPARENT
 Controlz
 copiedcolorrepresentation
+coreclr
 corewebview
 cortana
 cotaskmem
@@ -327,12 +333,10 @@ cwd
 cxfksword
 CXSMICON
 CXVIRTUALSCREEN
-cxxopts
 cyberrex
 CYSMICON
 CYVIRTUALSCREEN
 cziplib
-cziplob
 Dac
 dacl
 damienleroy
@@ -348,6 +352,7 @@ davidegiacometti
 Dayof
 Dbg
 Dbghelp
+dbgshim
 DBLCLKS
 DBLEPSILON
 DCapture
@@ -356,6 +361,7 @@ DCOM
 dcommon
 dcomp
 dcompi
+DCompiler
 DComposition
 DCR
 DDevice
@@ -390,7 +396,7 @@ DESKTOPABSOLUTEEDITING
 DESKTOPABSOLUTEPARSING
 desktopshorcutinstalled
 desktopwindowxamlsource
-DEU
+deu
 devblogs
 devdocs
 devenum
@@ -478,12 +484,11 @@ ENABLEDPOPUP
 endpointvolume
 endregion
 ENTERSIZEMOVE
-ENU
+enu
 enumerationoptions
 EOAC
 epicgames
 epu
-Eqn
 ERASEBKGND
 EREOF
 EResize
@@ -492,6 +497,7 @@ ERRORLEVEL
 ERRORTITLE
 ESettings
 esize
+esn
 esrp
 Eswatini
 etl
@@ -535,7 +541,6 @@ Faroe
 FARPROC
 fdw
 feimage
-ffaa
 fff
 fileapi
 FILEEXPLORER
@@ -681,6 +686,8 @@ HOMEPATH
 homljgmgpmcbpjbnjpfijnhipfkiclkd
 HOOKPROC
 Hostbackdropbrush
+hostfxr
+hostpolicy
 hotkeycontrol
 hotkeys
 hotlight
@@ -752,6 +759,7 @@ IMAGERESIZEREXT
 imageresizerinput
 imageresizersettings
 imagingdevices
+Imc
 ime
 imeutil
 inetcpl
@@ -788,17 +796,15 @@ Intelli
 interactable
 Interlop
 INTRESOURCE
+Intrinsics
 INVALIDARG
 invalidoperatioexception
-iobjectwithsitesetsite
-iolewindowcontextsensitivehelp
 ipc
 ipcmanager
 IPlugin
 IPower
-ipreview
+IPREVIEW
 ipreviewhandler
-ipreviewhandlertranslateaccelerator
 ipreviewhandlervisualssetfont
 IProperty
 IPublic
@@ -826,7 +832,7 @@ jgeosdfsdsgmkedfgdfgdfgbkmhcgcflmi
 jjw
 jobject
 jpe
-JPN
+jpn
 jpnime
 JSONOf
 Jsons
@@ -849,7 +855,6 @@ keyevent
 KEYEVENTF
 keynum
 keyremaps
-keystokes
 Keytool
 keyup
 Khakassia
@@ -908,6 +913,7 @@ lmcons
 LMEM
 LMENU
 lnk
+LOADFROMFILE
 LOADLIBRARYASDATAFILE
 LOBYTE
 LOCALAPPDATA
@@ -919,6 +925,7 @@ LOCATIONCHANGE
 logconsole
 logfile
 LOGFONT
+LOGFONTW
 LOGMSG
 logon
 LOGPIXELSX
@@ -985,6 +992,8 @@ MAPPEDTOSAMEKEY
 MAPTOSAMESHORTCUT
 MAPVK
 Markdig
+markdownpreviewhandler
+MARKDOWNPREVIEWHANDLERCPP
 Markovic
 Marquesas
 martinchrzan
@@ -1017,6 +1026,7 @@ Metadatas
 metafile
 mfapi
 mfc
+mfcm
 mfidl
 mfobjects
 mfplat
@@ -1076,8 +1086,11 @@ mru
 msbuild
 msc
 msclr
+mscordaccore
+mscordbi
 mscoree
 mscorlib
+mscorrc
 msdata
 msedge
 MSGFLT
@@ -1090,6 +1103,7 @@ MSIXCA
 MSLLHOOKSTRUCT
 Mso
 msp
+msquic
 msrc
 msstore
 mst
@@ -1139,6 +1153,7 @@ netcpl
 netframework
 netsetup
 netsh
+netstandard
 Neue
 newcolor
 newdev
@@ -1315,6 +1330,7 @@ pinvoke
 pipename
 Pitcairn
 PKBDLLHOOKSTRUCT
+Pkcs
 PKEY
 plib
 PLK
@@ -1415,6 +1431,7 @@ QUERYENDSESSION
 queryfocus
 QUERYOPEN
 QUEUESYNC
+Quic
 Quickime
 QUNS
 qwertyuiopasdfghjklzxcvbnm
@@ -1532,7 +1549,7 @@ runtimeclass
 runtimeconfig
 runtimeobject
 runtimes
-RUS
+rus
 Rutkas
 RValue
 rvm
@@ -1576,7 +1593,6 @@ SETFOCUS
 SETFOREGROUND
 SETICON
 setlocal
-Setrect
 SETREDRAW
 SETTEXT
 SETTINGCHANGE
@@ -1684,6 +1700,8 @@ srw
 srwlock
 sse
 ssf
+Ssl
+sss
 STACKFRAME
 stackoverflow
 stackpanel
@@ -1801,6 +1819,7 @@ THH
 THICKFRAME
 THISCOMPONENT
 THotkey
+thumbcache
 TILEDWINDOW
 timedate
 timediff
@@ -1875,7 +1894,7 @@ uniquifier
 Uniquifies
 unitconverter
 unittests
-unk
+Unk
 unknwn
 UNLEN
 Unmap
@@ -2011,7 +2030,6 @@ WINDOWPOSCHANGING
 Windowsapp
 WINDOWSBUILDNUMBER
 Windowscodecs
-windowsdesktop
 windowssearch
 windowssettings
 WINDOWSTYLES
@@ -2074,6 +2092,7 @@ workspaces
 wox
 wparam
 wpf
+wpfgfx
 wpftmp
 wpr
 wprp

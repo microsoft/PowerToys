@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft Corporation
+// Copyright (c) Microsoft Corporation
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
@@ -24,6 +24,7 @@ namespace PowerAccent.Core
         IS,
         IT,
         KU,
+        MK,
         MI,
         NL,
         PI,
@@ -57,6 +58,7 @@ namespace PowerAccent.Core
                 Language.IS => GetDefaultLetterKeyIS(letter), // Iceland
                 Language.IT => GetDefaultLetterKeyIT(letter), // Italian
                 Language.KU => GetDefaultLetterKeyKU(letter), // Kurdish
+                Language.MK => GetDefaultLetterKeyMK(letter), // Macedonian
                 Language.MI => GetDefaultLetterKeyMI(letter), // Maori
                 Language.NL => GetDefaultLetterKeyNL(letter), // Dutch
                 Language.PI => GetDefaultLetterKeyPI(letter), // Pinyin
@@ -257,15 +259,20 @@ namespace PowerAccent.Core
         {
             return letter switch
             {
-                LetterKey.VK_A => new string[] { "ā", "á", "ǎ", "à", "a", "ɑ̄", "ɑ́", "ɑ̌", "ɑ̀" },
+                LetterKey.VK_1 => new string[] { "̄", "ˉ", "1" },
+                LetterKey.VK_2 => new string[] { "́", "ˊ", "2" },
+                LetterKey.VK_3 => new string[] { "̌", "ˇ", "3" },
+                LetterKey.VK_4 => new string[] { "̀", "ˋ", "4" },
+                LetterKey.VK_5 => new string[] { "˙", "5" },
+                LetterKey.VK_A => new string[] { "ā", "á", "ǎ", "à", "a", "ɑ", "ɑ̄", "ɑ́", "ɑ̌", "ɑ̀" },
                 LetterKey.VK_C => new string[] { "ĉ", "c" },
-                LetterKey.VK_E => new string[] { "ē", "é", "ě", "è", "e" },
+                LetterKey.VK_E => new string[] { "ē", "é", "ě", "è", "e", "ê", "ê̄", "ế", "ê̌", "ề" },
                 LetterKey.VK_I => new string[] { "ī", "í", "ǐ", "ì", "i" },
                 LetterKey.VK_M => new string[] { "m̄", "ḿ", "m̌", "m̀", "m" },
                 LetterKey.VK_N => new string[] { "n̄", "ń", "ň", "ǹ", "n", "ŋ", "ŋ̄", "ŋ́", "ŋ̌", "ŋ̀" },
                 LetterKey.VK_O => new string[] { "ō", "ó", "ǒ", "ò", "o" },
                 LetterKey.VK_S => new string[] { "ŝ", "s" },
-                LetterKey.VK_U => new string[] { "ū", "ú", "ǔ", "ù", "u" },
+                LetterKey.VK_U => new string[] { "ū", "ú", "ǔ", "ù", "u", "ü", "ǖ", "ǘ", "ǚ", "ǜ" },
                 LetterKey.VK_V => new string[] { "ǖ", "ǘ", "ǚ", "ǜ", "ü" },
                 LetterKey.VK_Y => new string[] { "¥", "y" },
                 LetterKey.VK_Z => new string[] { "ẑ", "z" },
@@ -517,6 +524,17 @@ namespace PowerAccent.Core
                 LetterKey.VK_D => new string[] { "đ" },
                 LetterKey.VK_S => new string[] { "š" },
                 LetterKey.VK_Z => new string[] { "ž" },
+                _ => Array.Empty<string>(),
+            };
+        }
+
+        // Macedonian
+        private static string[] GetDefaultLetterKeyMK(LetterKey letter)
+        {
+            return letter switch
+            {
+                LetterKey.VK_E => new string[] { "ѐ" },
+                LetterKey.VK_I => new string[] { "ѝ" },
                 _ => Array.Empty<string>(),
             };
         }
