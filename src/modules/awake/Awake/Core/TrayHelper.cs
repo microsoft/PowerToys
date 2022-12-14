@@ -132,7 +132,7 @@ namespace Awake.Core
             TrayIcon.Text = text;
         }
 
-        private class CheckButtonToolStripMenuItemAccessibleObject : ToolStripItem.ToolStripItemAccessibleObject
+        private sealed class CheckButtonToolStripMenuItemAccessibleObject : ToolStripItem.ToolStripItemAccessibleObject
         {
             private CheckButtonToolStripMenuItem _menuItem;
 
@@ -153,7 +153,7 @@ namespace Awake.Core
             public override string Name => _menuItem.Text + ", " + Role + ", " + (_menuItem.Checked ? "Checked" : "Unchecked");
         }
 
-        private class CheckButtonToolStripMenuItem : ToolStripMenuItem
+        private sealed class CheckButtonToolStripMenuItem : ToolStripMenuItem
         {
             public CheckButtonToolStripMenuItem()
             {

@@ -448,7 +448,7 @@ namespace ManagedCommon
                     z = Math.Round(z * 100, 4);
                     return z.ToString(CultureInfo.InvariantCulture);
                 case "Dv":
-                    return (color.R + (color.G * 256) + (color.B * 65536)).ToString(CultureInfo.InvariantCulture);
+                    return ((color.R * 65536) + (color.G * 256) + color.B).ToString(CultureInfo.InvariantCulture);
                 case "Na":
                     return ColorNameHelper.GetColorName(color);
                 default: return string.Empty;

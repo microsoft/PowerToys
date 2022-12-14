@@ -4,6 +4,7 @@
 
 using System;
 using System.Collections.Generic;
+using Microsoft.PowerToys.Settings.UI.Helpers;
 using Microsoft.PowerToys.Settings.UI.Services;
 using Microsoft.PowerToys.Settings.UI.ViewModels;
 using Microsoft.UI.Xaml;
@@ -224,6 +225,16 @@ namespace Microsoft.PowerToys.Settings.UI.Views
         private async void FeedbackItem_Tapped(object sender, Microsoft.UI.Xaml.Input.TappedRoutedEventArgs e)
         {
             await Launcher.LaunchUriAsync(new Uri("https://aka.ms/powerToysGiveFeedback"));
+        }
+
+        private void NavigationView_SelectionChanged(NavigationView sender, NavigationViewSelectionChangedEventArgs args)
+        {
+            NavigationViewItem selectedItem = args.SelectedItem as NavigationViewItem;
+            if (selectedItem != null)
+            {
+                Type pageType = selectedItem.GetValue(NavHelper.NavigateToProperty) as Type;
+                NavigationService.Navigate(pageType);
+            }
         }
     }
 }

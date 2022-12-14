@@ -285,6 +285,11 @@ public class PowerAccent : IDisposable
         return Calculation.GetRawCoordinatesFromPosition(position, screen, window);
     }
 
+    public Position GetToolbarPosition()
+    {
+        return _settingService.Position;
+    }
+
     public void Dispose()
     {
         _keyboardListener.UnInitHook();

@@ -6,21 +6,13 @@
     <?define BinDir="$(var.RepoDir)$(var.Platform)\$(var.Configuration)\" ?>
     <?define PowerToysPlatform="x64"?>
 
-    <?define Dotnet7DownloadUrl="https://download.visualstudio.microsoft.com/download/pr/5b2fbe00-507e-450e-8b52-43ab052aadf2/79d54c3a19ce3fce314f2367cf4e3b21/windowsdesktop-runtime-7.0.0-win-x64.exe"?>
-    <?define Dotnet7PayloadSize="57756472"?>
-    <?define Dotnet7PayloadHash="DB56882D3263C9E533EA7003D018CB7D65F11C10"?>
-
     <?define PlatformProgramFiles="[ProgramFiles64Folder]"?>
 <?else?>
     <!-- stable WIX 3 doesn't support ARM64, so we build installers as x86 -->
     <?define BinDir="$(var.RepoDir)ARM64\$(var.Configuration)\" ?>
     <?define PowerToysPlatform="ARM64"?>
 
-    <?define Dotnet7DownloadUrl="https://download.visualstudio.microsoft.com/download/pr/bce1b608-3a2a-45e6-ab7b-8c414b9e2c56/74703a44afc5f7550eba824143fc20a7/windowsdesktop-runtime-7.0.0-win-arm64.exe"?>
-    <?define Dotnet7PayloadSize="53133216"?>
-    <?define Dotnet7PayloadHash="8A7271390C2538268EFC71F3E49C80017F406C16"?>
-    
-<!--TODO: define to ARM64 Program files once it's available-->
+    <!--TODO: define to ARM64 Program files once it's available-->
     <?define PlatformProgramFiles="[ProgramFiles6432Folder]"?> 
 
 <?endif?>
@@ -41,7 +33,6 @@
               SuppressRepair="yes" />
         </BootstrapperApplicationRef>
 
-        <util:FileSearch Variable="HasDotnet700" Path="$(var.PlatformProgramFiles)dotnet\shared\Microsoft.WindowsDesktop.App\7.0.0\System.Xaml.dll" Result="exists" />
         <util:RegistrySearch Variable="HasWebView2PerMachine" Root="HKLM" Key="SOFTWARE\WOW6432Node\Microsoft\EdgeUpdate\Clients\{F3017226-FE2A-4295-8BDF-00C3A9A7E4C5}" Result="exists" />
         <util:RegistrySearch Variable="HasWebView2PerUser" Root="HKCU" Key="Software\Microsoft\EdgeUpdate\Clients\{F3017226-FE2A-4295-8BDF-00C3A9A7E4C5}" Result="exists" />
 
@@ -72,26 +63,6 @@
                 Permanent="yes"
                 PerMachine="yes"
                 Vital="no">
-            </ExePackage>
-            <ExePackage
-                DisplayName="Downloading and installing .NET 7 Desktop Runtime"
-                Name="windowsdesktop-runtime-7.0.0-win-$(var.PowerToysPlatform).exe"
-                Compressed="no"
-                Id="DotnetRuntime7"
-                DetectCondition="HasDotnet700"
-                DownloadUrl="$(var.Dotnet7DownloadUrl)"
-                InstallCommand="/install /quiet /norestart"
-                RepairCommand="/repair /passive /norestart"
-                Permanent="yes"
-                PerMachine="yes"
-                UninstallCommand="/uninstall /quiet /norestart">
-                <ExitCode Value="1638" Behavior="success"/>
-                <RemotePayload
-                    Description="Microsoft Windows Desktop Runtime - 7.0.0 ($(var.PowerToysPlatform))"
-                    ProductName="Microsoft Windows Desktop Runtime - 7.0.0 ($(var.PowerToysPlatform))"
-                    Size="$(var.Dotnet7PayloadSize)"
-                    Version="7.0.0.31819"
-                    Hash="$(var.Dotnet7PayloadHash)" />
             </ExePackage>
             <ExePackage
                 DisplayName="Installing Microsoft Edge WebView2"

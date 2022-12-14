@@ -1,5 +1,6 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
+    <ImplicitUsings>enable</ImplicitUsings>
     <UseWindowsForms>true</UseWindowsForms>
     <ProjectGuid>{8FFE09DA-FA4F-4EE1-B3A2-AD5497FBD1AD}</ProjectGuid>
     <RootNamespace>Microsoft.PowerToys.ThumbnailHandler.Svg</RootNamespace>
@@ -7,7 +8,6 @@
     <AssemblyTitle>PowerToys.SvgThumbnailProvider</AssemblyTitle>
     <AssemblyDescription>PowerToys SvgPreviewHandler</AssemblyDescription>
     <TargetFramework>net7.0-windows10.0.19041.0</TargetFramework>
-    <EnableComHosting>true</EnableComHosting>
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
     <Description>PowerToys SvgPreviewHandler</Description>
     <OutputPath>..\..\..\..\$(Platform)\$(Configuration)\modules\FileExplorerPreview\</OutputPath>
@@ -16,6 +16,15 @@
     <AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
     <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
     <RuntimeIdentifiers>win10-x64;win10-arm64</RuntimeIdentifiers>
+    <SelfContained>true</SelfContained>
+  </PropertyGroup>
+
+  <!-- SelfContained=true requires RuntimeIdentifier to be set -->
+  <PropertyGroup Condition="'$(Platform)'=='x64'">
+    <RuntimeIdentifier>win10-x64</RuntimeIdentifier>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Platform)'=='ARM64'">
+    <RuntimeIdentifier>win10-arm64</RuntimeIdentifier>
   </PropertyGroup>
 
   <Import Project="..\..\..\Version.props" />
@@ -29,6 +38,7 @@
   <PropertyGroup>
     <!-- Disable missing comment warning. WinRT/C++ libraries added won't have comments on their reflections. -->
     <NoWarn>$(NoWarn);1591</NoWarn>
+    <OutputType>WinExe</OutputType>
   </PropertyGroup>
 
   <ItemGroup>
