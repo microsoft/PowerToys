@@ -16,6 +16,7 @@ namespace AllExperiments
     using Microsoft.VariantAssignment.Contract;
     using Newtonsoft.Json;
     using Windows.System.Profile;
+    using Wox.Plugin.Logger;
 
 #pragma warning disable SA1649 // File name should match first type name. Suppressed because it needs to be the same class name as Experiments_Inert.cs
     public class Experiments
@@ -43,21 +44,24 @@ namespace AllExperiments
 
             try
             {
-                var vaClient = vaSettings.GetTreatmentAssignmentServiceClient();
-                var vaRequest = GetVariantAssignmentRequest();
-
-                using var variantAssignments = await vaClient.GetVariantAssignmentsAsync(vaRequest).ConfigureAwait(false);
-
-                var featureVariables = variantAssignments.GetFeatureVariables();
-                var assignmentContext = variantAssignments.GetAssignmentContext();
-                var featureFlagValue = featureVariables[0].GetStringValue();
-
-                if (featureFlagValue == "alternate" && assignmentContext != string.Empty)
+                // Will make the HTTP request only once, when the user gets its clientID assigned to them
+                if (!File.Exists(CreateFilePath()))
                 {
-                    IsExperiment = true;
-                }
+                    var vaClient = vaSettings.GetTreatmentAssignmentServiceClient();
+                    var vaRequest = GetVariantAssignmentRequest();
+                    using var variantAssignments = await vaClient.GetVariantAssignmentsAsync(vaRequest).ConfigureAwait(false);
 
-                PowerToysTelemetry.Log.WriteEvent(new OobeVariantAssignmentEvent() { AssignmentContext = assignmentContext, ClientID = AssignmentUnit });
+                    var featureVariables = variantAssignments.GetFeatureVariables();
+                    var assignmentContext = variantAssignments.GetAssignmentContext();
+                    var featureFlagValue = featureVariables[0].GetStringValue();
+
+                    if (featureFlagValue == "alternate" && assignmentContext != string.Empty)
+                    {
+                        IsExperiment = true;
+                    }
+
+                    PowerToysTelemetry.Log.WriteEvent(new OobeVariantAssignmentEvent() { AssignmentContext = assignmentContext, ClientID = AssignmentUnit });
+                }
             }
             catch (Exception ex)
             {
@@ -71,10 +75,7 @@ namespace AllExperiments
 
         private IVariantAssignmentRequest GetVariantAssignmentRequest()
         {
-            var exeDir = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
-            var settingsPath = @"Microsoft\PowerToys\experimentation.json";
-            string jsonFilePath = Path.Combine(exeDir, settingsPath);
-
+            var jsonFilePath = CreateFilePath();
             try
             {
                 if (!File.Exists(jsonFilePath))
@@ -121,6 +122,14 @@ namespace AllExperiments
                     { "clientid", AssignmentUnit },
                 },
             };
+        }
+
+        private string CreateFilePath()
+        {
+            var exeDir = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
+            var settingsPath = @"Microsoft\PowerToys\experimentation.json";
+            var filePath = Path.Combine(exeDir, settingsPath);
+            return filePath;
         }
     }
 }
