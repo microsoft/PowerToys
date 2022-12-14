@@ -53,7 +53,7 @@ namespace Peek.FilePreviewer.Previewers
             GC.SuppressFinalize(this);
         }
 
-        public async Task<Size> GetPreviewSizeAsync(CancellationToken cancellationToken)
+        public async Task<Size?> GetPreviewSizeAsync(CancellationToken cancellationToken)
         {
             var propertyImageSize = await PropertyHelper.GetImageSize(File.Path);
             if (propertyImageSize != Size.Empty)

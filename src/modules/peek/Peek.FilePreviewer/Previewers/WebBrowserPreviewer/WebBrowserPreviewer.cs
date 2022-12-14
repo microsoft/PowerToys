@@ -37,11 +37,9 @@ namespace Peek.FilePreviewer.Previewers
 
         private File File { get; }
 
-        public Task<Size> GetPreviewSizeAsync(CancellationToken cancellationToken)
+        public Task<Size?> GetPreviewSizeAsync(CancellationToken cancellationToken)
         {
-            /* The idea here is to always open at the max size possible (monitor)
-             * and let the logic in the Peek UI max out to limit. */
-            var size = Common.Extensions.WindowExtensions.GetMainMonitorSize();
+            Size? size = null;
             return Task.FromResult(size);
         }
 

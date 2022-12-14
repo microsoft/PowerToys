@@ -1,2 +1,0 @@
-﻿GetMonitorInfo
-MonitorFromPoint

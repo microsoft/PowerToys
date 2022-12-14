@@ -14,13 +14,13 @@ namespace Peek.FilePreviewer.Models
 
     public class PreviewSizeChangedArgs
     {
-        public PreviewSizeChangedArgs(Size windowSizeRequested, SizeFormat sizeFormat = SizeFormat.Pixels)
+        public PreviewSizeChangedArgs(Size? windowSizeRequested, SizeFormat sizeFormat = SizeFormat.Pixels)
         {
             WindowSizeRequested = windowSizeRequested;
             WindowSizeFormat = sizeFormat;
         }
 
-        public Size WindowSizeRequested { get; init; }
+        public Size? WindowSizeRequested { get; init; }
 
         public SizeFormat WindowSizeFormat { get; init; }
     }
