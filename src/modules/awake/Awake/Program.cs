@@ -30,7 +30,7 @@ using Windows.Win32.System.Power;
 
 namespace Awake
 {
-    internal class Program
+    internal sealed class Program
     {
         // PowerToys Awake build code name. Used for exact logging
         // that does not map to PowerToys broad version schema to pinpoint
