@@ -11,7 +11,8 @@ namespace Peek.FilePreviewer
     using CommunityToolkit.Mvvm.ComponentModel;
     using Microsoft.UI.Xaml;
     using Microsoft.UI.Xaml.Controls;
-    using Microsoft.UI.Xaml.Media.Imaging;
+    using Microsoft.UI.Xaml.Input;
+    using Microsoft.Web.WebView2.Core;
     using Peek.Common.Helpers;
     using Peek.Common.Models;
     using Peek.FilePreviewer.Models;
@@ -170,7 +171,7 @@ namespace Peek.FilePreviewer
             }
         }
 
-        private void PreviewBrowser_NavigationCompleted(WebView2 sender, Microsoft.Web.WebView2.Core.CoreWebView2NavigationCompletedEventArgs args)
+        private void PreviewBrowser_NavigationCompleted(WebView2 sender, CoreWebView2NavigationCompletedEventArgs args)
         {
             /*
              * In theory most of navigation should work after DOM is loaded.
@@ -186,6 +187,14 @@ namespace Peek.FilePreviewer
                 {
                     BrowserPreviewer.State = PreviewState.Error;
                 }
+            }
+        }
+
+        private async void KeyboardAccelerator_CtrlC_Invoked(KeyboardAccelerator sender, KeyboardAcceleratorInvokedEventArgs args)
+        {
+            if (Previewer != null)
+            {
+                await Previewer.CopyAsync();
             }
         }
 

@@ -11,10 +11,13 @@ namespace Peek.FilePreviewer.Previewers
     using CommunityToolkit.Mvvm.ComponentModel;
     using Microsoft.UI.Dispatching;
     using Microsoft.UI.Xaml.Media.Imaging;
+    using Peek.Common;
     using Peek.Common.Extensions;
+    using Windows.ApplicationModel.DataTransfer;
     using Windows.Foundation;
     using Windows.Graphics.Imaging;
     using Windows.Storage;
+    using Windows.Storage.Streams;
     using File = Peek.Common.Models.File;
 
     public partial class PngPreviewer : ObservableObject, IBitmapPreviewer
@@ -81,6 +84,23 @@ namespace Peek.FilePreviewer.Previewers
             }
         }
 
+        public async Task CopyAsync()
+        {
+            await Dispatcher.RunOnUiThread(async () =>
+            {
+                var storageFile = await File.GetStorageFileAsync();
+
+                var dataPackage = new DataPackage();
+                dataPackage.SetStorageItems(new StorageFile[1] { storageFile }, false);
+
+                RandomAccessStreamReference imageStreamRef = RandomAccessStreamReference.CreateFromFile(storageFile);
+                dataPackage.Properties.Thumbnail = imageStreamRef;
+                dataPackage.SetBitmap(imageStreamRef);
+
+                Clipboard.SetContent(dataPackage);
+            });
+        }
+
         public static bool IsFileTypeSupported(string fileExt)
         {
             return fileExt == ".png" ? true : false;
@@ -109,7 +129,7 @@ namespace Peek.FilePreviewer.Previewers
                     await Dispatcher.RunOnUiThread(async () =>
                     {
                         cancellationToken.ThrowIfCancellationRequested();
-                        Preview = await ThumbnailHelper.GetThumbnailAsync(File.Path, _png_image_size);
+                        Preview = await ThumbnailHelper.GetThumbnailAsync(File, _png_image_size);
                     });
                 }
             });

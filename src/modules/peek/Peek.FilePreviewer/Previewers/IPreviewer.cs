@@ -19,6 +19,8 @@ namespace Peek.FilePreviewer.Previewers
         public Task<Size?> GetPreviewSizeAsync(CancellationToken cancellationToken);
 
         Task LoadPreviewAsync(CancellationToken cancellationToken);
+
+        Task CopyAsync();
     }
 
     public enum PreviewState

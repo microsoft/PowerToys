@@ -18,8 +18,9 @@ namespace Peek.FilePreviewer.Previewers
     using Peek.Common.Extensions;
     using Peek.Common.Helpers;
     using Peek.FilePreviewer.Previewers.Helpers;
+    using Windows.ApplicationModel.DataTransfer;
     using Windows.Foundation;
-
+    using Windows.Storage;
     using File = Peek.Common.Models.File;
 
     public partial class UnsupportedFilePreviewer : ObservableObject, IUnsupportedFilePreviewer, IDisposable
@@ -103,6 +104,19 @@ namespace Peek.FilePreviewer.Previewers
             {
                 State = PreviewState.Error;
             }
+        }
+
+        public async Task CopyAsync()
+        {
+            await Dispatcher.RunOnUiThread(async () =>
+            {
+                var storageFile = await File.GetStorageFileAsync();
+
+                var dataPackage = new DataPackage();
+                dataPackage.SetStorageItems(new StorageFile[1] { storageFile }, false);
+
+                Clipboard.SetContent(dataPackage);
+            });
         }
 
         public Task<bool> LoadIconPreviewAsync(CancellationToken cancellationToken)
