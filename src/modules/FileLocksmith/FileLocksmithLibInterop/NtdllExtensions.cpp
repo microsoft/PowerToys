@@ -1,9 +1,7 @@
 #include "pch.h"
 
 #include "NtdllExtensions.h"
-#include <future>
 #include <thread>
-#include <chrono>
 #include <atomic>
 
 #define STATUS_INFO_LENGTH_MISMATCH ((LONG)0xC0000004)
@@ -119,7 +117,6 @@ NtdllExtensions::MemoryLoopResult NtdllExtensions::NtQuerySystemInformationMemor
 
 std::wstring NtdllExtensions::file_handle_to_kernel_name(HANDLE file_handle, std::vector<BYTE>& buffer)
 {
-
     if (GetFileType(file_handle) != FILE_TYPE_DISK)
     {
         return L"";

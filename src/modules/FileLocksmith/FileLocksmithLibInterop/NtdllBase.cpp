@@ -2,12 +2,6 @@
 
 #include "NtdllBase.h"
 
-#include <future>
-#include <thread>
-#include <chrono>
-
-#define STATUS_UNSUCCESSFUL ((NTSTATUS)0xC0000001L)
-
 Ntdll::Ntdll()
 {
     m_module = GetModuleHandleW(L"ntdll.dll");
