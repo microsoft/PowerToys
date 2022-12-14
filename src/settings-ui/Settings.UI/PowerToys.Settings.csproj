@@ -55,6 +55,9 @@
 	<PropertyGroup>
 		<RestoreAdditionalProjectSources>https://pkgs.dev.azure.com/dotnet/CommunityToolkit/_packaging/CommunityToolkit-Labs/nuget/v3/index.json</RestoreAdditionalProjectSources>
 	</PropertyGroup>
+	<ItemGroup>
+	  <None Remove="Controls\ColorFormatEditor.xaml" />
+	</ItemGroup>
 
   <ItemGroup>
     <Content Include="Assets\SplashScreen.scale-200.png" />
@@ -89,6 +92,9 @@
     <ProjectReference Include="..\Settings.UI.Library\Settings.UI.Library.csproj" />
   </ItemGroup>
   <ItemGroup>
+    <Page Update="Controls\ColorFormatEditor.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <None Update="icon.ico">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
