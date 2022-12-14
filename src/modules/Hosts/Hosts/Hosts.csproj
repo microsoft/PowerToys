@@ -20,6 +20,15 @@
     <AssemblyName>PowerToys.Hosts</AssemblyName>
     <DefineConstants>DISABLE_XAML_GENERATED_MAIN,TRACE</DefineConstants>
     <ApplicationIcon>Assets/Hosts.ico</ApplicationIcon>
+    <SelfContained>true</SelfContained>
+  </PropertyGroup>
+
+  <!-- SelfContained=true requires RuntimeIdentifier to be set -->
+  <PropertyGroup Condition="'$(Platform)'=='x64'">
+    <RuntimeIdentifier>win10-x64</RuntimeIdentifier>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Platform)'=='ARM64'">
+    <RuntimeIdentifier>win10-arm64</RuntimeIdentifier>
   </PropertyGroup>
 
   <!-- See https://learn.microsoft.com/windows/apps/develop/platform/csharp-winrt/net-projection-from-cppwinrt-component for more info -->

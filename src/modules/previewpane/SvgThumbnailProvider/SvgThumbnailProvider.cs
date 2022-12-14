@@ -1,17 +1,10 @@
 ﻿// Copyright (c) Microsoft Corporation
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
-using System;
-using System.Drawing;
 using System.Drawing.Drawing2D;
 using System.Globalization;
-using System.IO;
 using System.Reflection;
 using System.Runtime.CompilerServices;
-using System.Runtime.InteropServices;
-using System.Runtime.InteropServices.ComTypes;
-using System.Windows.Forms;
-using Common.ComInterlop;
 using Common.Utilities;
 using Microsoft.Web.WebView2.Core;
 using Microsoft.Web.WebView2.WinForms;
@@ -21,15 +14,26 @@ namespace Microsoft.PowerToys.ThumbnailHandler.Svg
     /// <summary>
     /// SVG Thumbnail Provider.
     /// </summary>
-    [Guid("36B27788-A8BB-4698-A756-DF9F11F64F84")]
-    [ClassInterface(ClassInterfaceType.None)]
-    [ComVisible(true)]
-    public class SvgThumbnailProvider : IInitializeWithStream, IThumbnailProvider, IDisposable
+    public class SvgThumbnailProvider : IDisposable
     {
+        public SvgThumbnailProvider(string filePath)
+        {
+            FilePath = filePath;
+            if (FilePath != null && File.Exists(FilePath))
+            {
+                Stream = new FileStream(filePath, FileMode.Open, FileAccess.Read);
+            }
+        }
+
+        /// <summary>
+        /// Gets the file path to the file creating thumbnail for.
+        /// </summary>
+        public string FilePath { get; private set; }
+
         /// <summary>
         /// Gets the stream object to access file.
         /// </summary>
-        public IStream Stream { get; private set; }
+        public Stream Stream { get; private set; }
 
         /// <summary>
         ///  The maximum dimension (width or height) thumbnail we will generate.
@@ -254,47 +258,38 @@ namespace Microsoft.PowerToys.ThumbnailHandler.Svg
             return destImage;
         }
 
-        /// <inheritdoc/>
-        public void Initialize(IStream pstream, uint grfMode)
+        /// <summary>
+        /// Generate thumbnail bitmap for provided Gcode file/stream.
+        /// </summary>
+        /// <param name="cx">Maximum thumbnail size, in pixels.</param>
+        /// <returns>Generated bitmap</returns>
+        public Bitmap GetThumbnail(uint cx)
         {
-            // Ignore the grfMode always use read mode to access the file.
-            this.Stream = pstream;
-        }
-
-        /// <inheritdoc/>
-        public void GetThumbnail(uint cx, out IntPtr phbmp, out WTS_ALPHATYPE pdwAlpha)
-        {
-            phbmp = IntPtr.Zero;
-            pdwAlpha = WTS_ALPHATYPE.WTSAT_UNKNOWN;
-
             if (cx == 0 || cx > MaxThumbnailSize)
             {
-                return;
+                return null;
             }
 
             if (global::PowerToys.GPOWrapper.GPOWrapper.GetConfiguredSvgThumbnailsEnabledValue() == global::PowerToys.GPOWrapper.GpoRuleConfigured.Disabled)
             {
                 // GPO is disabling this utility.
-                return;
+                return null;
             }
 
             string svgData = null;
-            using (var stream = new ReadonlyStream(this.Stream as IStream))
+            using (var reader = new StreamReader(this.Stream))
             {
-                using (var reader = new StreamReader(stream))
+                svgData = reader.ReadToEnd();
+                try
                 {
-                    svgData = reader.ReadToEnd();
-                    try
-                    {
-                        // Fixes #17527 - Inkscape v1.1 swapped order of default and svg namespaces in svg file (default first, svg after).
-                        // That resulted in parser being unable to parse it correctly and instead of svg, text was previewed.
-                        // MS Edge and Firefox also couldn't preview svg files with mentioned order of namespaces definitions.
-                        svgData = SvgPreviewHandlerHelper.SwapNamespaces(svgData);
-                        svgData = SvgPreviewHandlerHelper.AddStyleSVG(svgData);
-                    }
-                    catch (Exception)
-                    {
-                    }
+                    // Fixes #17527 - Inkscape v1.1 swapped order of default and svg namespaces in svg file (default first, svg after).
+                    // That resulted in parser being unable to parse it correctly and instead of svg, text was previewed.
+                    // MS Edge and Firefox also couldn't preview svg files with mentioned order of namespaces definitions.
+                    svgData = SvgPreviewHandlerHelper.SwapNamespaces(svgData);
+                    svgData = SvgPreviewHandlerHelper.AddStyleSVG(svgData);
+                }
+                catch (Exception)
+                {
                 }
             }
 
@@ -304,11 +299,12 @@ namespace Microsoft.PowerToys.ThumbnailHandler.Svg
                 {
                     if (thumbnail != null && thumbnail.Size.Width > 0 && thumbnail.Size.Height > 0)
                     {
-                        phbmp = thumbnail.GetHbitmap();
-                        pdwAlpha = WTS_ALPHATYPE.WTSAT_RGB;
+                        return (Bitmap)thumbnail.Clone();
                     }
                 }
             }
+
+            return null;
         }
 
         public void Dispose()
