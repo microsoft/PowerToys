@@ -68,6 +68,8 @@ public partial class OCROverlay : Window
         }
 
         CanvasContextMenu.Items.Add(new Separator());
+
+        // ResourceLoader resourceLoader = ResourceLoader.GetForViewIndependentUse(); // resourceLoader.GetString("TextExtractor_Cancel")
         cancelMenuItem = new MenuItem() { Header = "cancel" };
         cancelMenuItem.Click += CancelMenuItem_Click;
         CanvasContextMenu.Items.Add(cancelMenuItem);
