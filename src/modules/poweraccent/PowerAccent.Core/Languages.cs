@@ -430,7 +430,12 @@ namespace PowerAccent.Core
         {
             return letter switch
             {
-                LetterKey.VK_MINUS => new string[] { "־", "–" },
+                LetterKey.VK_A => new string[] { "שׂ", "שׁ" },
+                LetterKey.VK_G => new string[] { "ױ" },
+                LetterKey.VK_H => new string[] { "ײ" },
+                LetterKey.VK_U => new string[] { "וֹ", "וּ" },
+                LetterKey.VK_Y => new string[] { "װ" },
+                LetterKey.VK_COMMA => new string[] { "”", "״", "־", "–", "֫", "ֽ", "ֿ" },
                 _ => Array.Empty<string>(),
             };
         }
