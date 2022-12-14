@@ -197,13 +197,9 @@ std::unique_ptr<D3DCaptureState> D3DCaptureState::Create(DxgiAPI* dxgiAPI,
                                                                                             swapChain.put()));
 
     // We must create the object in a heap, since we need to pin it in memory to receive callbacks
-    auto statePtr = new D3DCaptureState{ dxgiAPI,
-                                         std::move(swapChain),
-                                         pixelFormat,
-                                         std::move(monitorInfo),
-                                         continuousCapture };
+    auto statePtr = std::unique_ptr<D3DCaptureState>(new D3DCaptureState{ dxgiAPI, std::move(swapChain), pixelFormat, std::move(monitorInfo), continuousCapture });
 
-    return std::unique_ptr<D3DCaptureState>{ statePtr };
+    return statePtr;
 }
 
 D3DCaptureState::~D3DCaptureState()
