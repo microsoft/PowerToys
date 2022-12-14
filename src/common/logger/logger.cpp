@@ -91,8 +91,8 @@ void Logger::init(std::string loggerName, std::wstring logFilePath, std::wstring
 
     logger->set_level(logLevel);
     logger->set_pattern("[%Y-%m-%d %H:%M:%S.%f] [p-%P] [t-%t] [%l] %v");
+    logger->flush_on(logLevel); // Auto flush on every log message.
     spdlog::register_logger(logger);
-    spdlog::flush_every(std::chrono::seconds(3));
     logger->info("{} logger is initialized", loggerName);
 }
 
