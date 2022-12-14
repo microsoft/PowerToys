@@ -1,5 +1,6 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
+    <ImplicitUsings>enable</ImplicitUsings>
     <UseWindowsForms>true</UseWindowsForms>
     <ProjectGuid>{11491FD8-F921-48BF-880C-7FEA185B80A1}</ProjectGuid>
     <RootNamespace>Microsoft.PowerToys.ThumbnailHandler.Pdf</RootNamespace>
@@ -7,13 +8,21 @@
     <AssemblyTitle>PowerToys.PdfThumbnailProvider</AssemblyTitle>
     <AssemblyDescription>PowerToys PdfPreviewHandler</AssemblyDescription>
     <TargetFramework>net7.0-windows10.0.19041.0</TargetFramework>
-    <EnableComHosting>true</EnableComHosting>
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
     <Description>PowerToys PdfPreviewHandler</Description>
     <OutputPath>$(SolutionDir)$(Platform)\$(Configuration)\modules\FileExplorerPreview\</OutputPath>
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
     <AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
     <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
+    <SelfContained>true</SelfContained>
+  </PropertyGroup>
+
+  <!-- SelfContained=true requires RuntimeIdentifier to be set -->
+  <PropertyGroup Condition="'$(Platform)'=='x64'">
+    <RuntimeIdentifier>win10-x64</RuntimeIdentifier>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Platform)'=='ARM64'">
+    <RuntimeIdentifier>win10-arm64</RuntimeIdentifier>
   </PropertyGroup>
 
   <Import Project="..\..\..\Version.props" />
@@ -26,6 +35,7 @@
   <PropertyGroup>
     <!-- Disable missing comment warning. WinRT/C++ libraries added won't have comments on their reflections. -->
     <NoWarn>$(NoWarn);1591</NoWarn>
+    <OutputType>WinExe</OutputType>
   </PropertyGroup>
 
   <ItemGroup>

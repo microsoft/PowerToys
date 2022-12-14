@@ -7,6 +7,8 @@ EXPORTS
 	DeleteWinAppSDKHardlinksCA
 	CreatePTInteropHardlinksCA
 	DeletePTInteropHardlinksCA
+	CreateDotnetRuntimeHardlinksCA
+	DeleteDotnetRuntimeHardlinksCA
 	DetectPrevInstallPathCA
 	RemoveScheduledTasksCA
 	TelemetryLogInstallSuccessCA

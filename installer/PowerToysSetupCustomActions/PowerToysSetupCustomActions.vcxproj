@@ -109,6 +109,7 @@
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="DepsFilesLists.h" />
     <ClInclude Include="RcResource.h" />
     <ClInclude Include="resource.h" />
     <ClInclude Include="stdafx.h" />
