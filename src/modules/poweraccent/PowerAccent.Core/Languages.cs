@@ -24,6 +24,7 @@ namespace PowerAccent.Core
         IS,
         IT,
         KU,
+        MK,
         MI,
         NL,
         PI,
@@ -57,6 +58,7 @@ namespace PowerAccent.Core
                 Language.IS => GetDefaultLetterKeyIS(letter), // Iceland
                 Language.IT => GetDefaultLetterKeyIT(letter), // Italian
                 Language.KU => GetDefaultLetterKeyKU(letter), // Kurdish
+                Language.MK => GetDefaultLetterKeyMK(letter), // Macedonian
                 Language.MI => GetDefaultLetterKeyMI(letter), // Maori
                 Language.NL => GetDefaultLetterKeyNL(letter), // Dutch
                 Language.PI => GetDefaultLetterKeyPI(letter), // Pinyin
@@ -522,6 +524,17 @@ namespace PowerAccent.Core
                 LetterKey.VK_D => new string[] { "đ" },
                 LetterKey.VK_S => new string[] { "š" },
                 LetterKey.VK_Z => new string[] { "ž" },
+                _ => Array.Empty<string>(),
+            };
+        }
+
+        // Macedonian
+        private static string[] GetDefaultLetterKeyMK(LetterKey letter)
+        {
+            return letter switch
+            {
+                LetterKey.VK_E => new string[] { "ѐ" },
+                LetterKey.VK_I => new string[] { "ѝ" },
                 _ => Array.Empty<string>(),
             };
         }
