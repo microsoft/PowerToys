@@ -55,8 +55,6 @@ namespace Microsoft.PowerToys.PreviewHandler.Monaco
                     _monacoPreviewHandlerControl.Dispose();
                 }
 
-                // TODO: free unmanaged resources (unmanaged objects) and override finalizer
-                // TODO: set large fields to null
                 _disposedValue = true;
                 this.Unload();
             }

@@ -100,7 +100,7 @@ namespace AllExperiments
             }
             catch (Exception ex)
             {
-                Log.Exception("Error creating/getting AssignmentUnit", ex, typeof(Experiments));
+                Logger.LogError("Error creating/getting AssignmentUnit", ex);
             }
 
             var attrNames = new List<string> { "FlightRing" };

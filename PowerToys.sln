@@ -421,8 +421,6 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "PowerAccent", "PowerAccent"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "PowerAccentModuleInterface", "src\modules\poweraccent\PowerAccentModuleInterface\PowerAccentModuleInterface.vcxproj", "{34A354C5-23C7-4343-916C-C52DAF4FC39D}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PowerAccent", "src\modules\poweraccent\PowerAccent\PowerAccent.csproj", "{7B4CDB0D-28C9-4F95-88AA-73FCC06E354C}"
-EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PowerAccent.Core", "src\modules\poweraccent\PowerAccent.Core\PowerAccent.Core.csproj", "{3264DF53-C805-4B0C-867C-FCEAF7AEF762}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PowerAccent.UI", "src\modules\poweraccent\PowerAccent.UI\PowerAccent.UI.csproj", "{31CAD28E-778A-441C-85BC-40AB3EAA2A10}"
