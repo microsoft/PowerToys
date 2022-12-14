@@ -9,6 +9,7 @@ using System.Globalization;
 using System.Linq;
 using System.Unicode;
 using System.Windows;
+using PowerAccent.Core.Services;
 using PowerToys.PowerAccentKeyboardService;
 using Point = PowerAccent.Core.Point;
 using Size = PowerAccent.Core.Size;
@@ -69,6 +70,7 @@ public partial class Selector : Window, IDisposable, INotifyPropertyChanged
             characters.SelectedIndex = 0;
             this.UpdateLayout(); // Required for filling the actual width/height before positioning.
             SetWindowPosition();
+            SetWindowAlignment();
             Show();
             Microsoft.PowerToys.Telemetry.PowerToysTelemetry.Log.WriteEvent(new PowerAccent.Core.Telemetry.PowerAccentShowAccentMenuEvent());
         }
@@ -89,6 +91,17 @@ public partial class Selector : Window, IDisposable, INotifyPropertyChanged
         Point position = _powerAccent.GetDisplayCoordinates(windowSize);
         this.Left = position.X;
         this.Top = position.Y;
+    }
+
+    private void SetWindowAlignment()
+    {
+        gridBorder.HorizontalAlignment = _powerAccent.GetToolbarPosition() switch
+        {
+            Position.Left or Position.TopLeft or Position.BottomLeft => HorizontalAlignment.Left,
+            Position.Right or Position.TopRight or Position.BottomRight => HorizontalAlignment.Right,
+            Position.Center or Position.Top or Position.Bottom => HorizontalAlignment.Center,
+            _ => HorizontalAlignment.Center
+        };
     }
 
     protected override void OnClosed(EventArgs e)

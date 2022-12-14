@@ -42,6 +42,7 @@
     </Window.Resources>
     <Grid>
         <Border
+            x:Name="gridBorder"
             HorizontalAlignment="Center"
             VerticalAlignment="Center"
             Background="{DynamicResource SecondaryBackgroundBrush}"
