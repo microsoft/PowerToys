@@ -38,9 +38,10 @@ Once you've discussed your proposed feature/fix/etc. with a team member, and you
 ### Prerequisites for Compiling PowerToys
 
 1. Windows 10 April 2018 Update (version 1803) or newer
-2. Visual Studio Community/Professional/Enterprise 2022
-3. Install the [required Windows Apps SDK workloads](https://learn.microsoft.com/windows/apps/windows-app-sdk/set-up-your-development-environment?tabs=vs-2022-17-1-a%2Cvs-2022-17-1-b#required-workloads-and-components), the [Windows App SDK 1.0.3 C# Visual Studio 2022 extension](https://learn.microsoft.com/windows/apps/windows-app-sdk/downloads) and the [Windows Apps SDK 1.0.3 runtime](https://learn.microsoft.com/windows/apps/windows-app-sdk/downloads#windows-app-sdk-10).
-4. Once you've cloned and started the `PowerToys.sln`, in the solution explorer, if you see a dialog that says `install extra components`, click `install`
+2. Visual Studio Community/Professional/Enterprise 2022 17.4 or newer
+3. Git clone PowerToys repository 
+4. Open started the `PowerToys.sln`
+5, If you see a dialog that says `install extra components` in the solution explorer pane, click `install`
 
 ### Get Submodules to compile
 We have submodules that need to be initialized before you can compile most parts of PowerToys.  This should be a one time step.

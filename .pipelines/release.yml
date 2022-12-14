@@ -22,6 +22,7 @@ parameters:
 
 variables:
   IsPipeline: 1 # The installer uses this to detect whether it should pick up localizations
+  SkipCppCodeAnalysis: 1 # Skip the code analysis to speed up release CI. It runs on PR CI, anyway
 
 name: $(BuildDefinitionName)_$(date:yyMM).$(date:dd)$(rev:rrr)
 resources:
@@ -38,6 +39,7 @@ jobs:
           ${{ config }}_${{ platform }}:
             BuildConfiguration: ${{ config }}
             BuildPlatform: ${{ platform }}
+            NUGET_RESTORE_MSBUILD_ARGS: /p:Platform=${{ platform }} # Required for nuget to work due to self contained
   displayName: Build
   timeoutInMinutes: 120 # Some of the loc stuff adds quite a bit of time.
   cancelTimeoutInMinutes: 1

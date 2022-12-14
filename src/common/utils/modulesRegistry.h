@@ -28,13 +28,12 @@ inline registry::ChangeSet getSvgPreviewHandlerChangeSet(const std::wstring inst
     using namespace registry::shellex;
     return generatePreviewHandler(PreviewHandlerType::preview,
                                   perUser,
-                                  L"{ddee2b8a-6807-48a6-bb20-2338174ff779}",
+                                  L"{FCDD4EED-41AA-492F-8A84-31A1546226E0}",
                                   get_std_product_version(),
                                   (fs::path{ installationDir } /
-                                   LR"d(modules\FileExplorerPreview\PowerToys.SvgPreviewHandler.comhost.dll)d")
+                                   LR"d(modules\FileExplorerPreview\PowerToys.SvgPreviewHandlerCpp.dll)d")
                                       .wstring(),
-                                  registry::DOTNET_COMPONENT_CATEGORY_CLSID,
-                                  L"Microsoft.PowerToys.PreviewHandler.Svg.SvgPreviewHandler",
+                                  L"SvgPreviewHandler",
                                   L"Svg Preview Handler",
                                   NonLocalizable::ExtSVG);
 }
@@ -44,11 +43,10 @@ inline registry::ChangeSet getMdPreviewHandlerChangeSet(const std::wstring insta
     using namespace registry::shellex;
     return generatePreviewHandler(PreviewHandlerType::preview,
                                   perUser,
-                                  L"{45769bcc-e8fd-42d0-947e-02beef77a1f5}",
+                                  L"{60789D87-9C3C-44AF-B18C-3DE2C2820ED3}",
                                   get_std_product_version(),
-                                  (fs::path{ installationDir } / LR"d(modules\FileExplorerPreview\PowerToys.MarkdownPreviewHandler.comhost.dll)d").wstring(),
-                                  registry::DOTNET_COMPONENT_CATEGORY_CLSID,
-                                  L"Microsoft.PowerToys.PreviewHandler.Markdown.MarkdownPreviewHandler",
+                                  (fs::path{ installationDir } / LR"d(modules\FileExplorerPreview\PowerToys.MarkdownPreviewHandlerCpp.dll)d").wstring(),
+                                  L"MarkdownPreviewHandler",
                                   L"Markdown Preview Handler",
                                   NonLocalizable::ExtMarkdown);
 }
@@ -107,11 +105,10 @@ inline registry::ChangeSet getMonacoPreviewHandlerChangeSet(const std::wstring i
 
     return generatePreviewHandler(PreviewHandlerType::preview,
                                   perUser,
-                                  L"{afbd5a44-2520-4ae0-9224-6cfce8fe4400}",
+                                  L"{D8034CFA-F34B-41FE-AD45-62FCBB52A6DA}",
                                   get_std_product_version(),
-                                  (fs::path{ installationDir } / LR"d(modules\FileExplorerPreview\PowerToys.MonacoPreviewHandler.comhost.dll)d").wstring(),
-                                  registry::DOTNET_COMPONENT_CATEGORY_CLSID,
-                                  L"Microsoft.PowerToys.PreviewHandler.Monaco.MonacoPreviewHandler",
+                                  (fs::path{ installationDir } / LR"d(modules\FileExplorerPreview\PowerToys.MonacoPreviewHandlerCpp.dll)d").wstring(),
+                                  L"MonacoPreviewHandler",
                                   L"Monaco Preview Handler",
                                   extensions);
 }
@@ -121,11 +118,10 @@ inline registry::ChangeSet getPdfPreviewHandlerChangeSet(const std::wstring inst
     using namespace registry::shellex;
     return generatePreviewHandler(PreviewHandlerType::preview,
                                   perUser,
-                                  L"{07665729-6243-4746-95b7-79579308d1b2}",
+                                  L"{A5A41CC7-02CB-41D4-8C9B-9087040D6098}",
                                   get_std_product_version(),
-                                  (fs::path{ installationDir } / LR"d(modules\FileExplorerPreview\PowerToys.PdfPreviewHandler.comhost.dll)d").wstring(),
-                                  registry::DOTNET_COMPONENT_CATEGORY_CLSID,
-                                  L"Microsoft.PowerToys.PreviewHandler.Pdf.PdfPreviewHandler",
+                                  (fs::path{ installationDir } / LR"d(modules\FileExplorerPreview\PowerToys.PdfPreviewHandlerCpp.dll)d").wstring(),
+                                  L"PdfPreviewHandler",
                                   L"Pdf Preview Handler",
                                   NonLocalizable::ExtPDF);
 }
@@ -135,11 +131,10 @@ inline registry::ChangeSet getGcodePreviewHandlerChangeSet(const std::wstring in
     using namespace registry::shellex;
     return generatePreviewHandler(PreviewHandlerType::preview,
                                   perUser,
-                                  L"{ec52dea8-7c9f-4130-a77b-1737d0418507}",
+                                  L"{A0257634-8812-4CE8-AF11-FA69ACAEAFAE}",
                                   get_std_product_version(),
-                                  (fs::path{ installationDir } / LR"d(modules\FileExplorerPreview\PowerToys.GcodePreviewHandler.comhost.dll)d").wstring(),
-                                  registry::DOTNET_COMPONENT_CATEGORY_CLSID,
-                                  L"Microsoft.PowerToys.PreviewHandler.Gcode.GcodePreviewHandler",
+                                  (fs::path{ installationDir } / LR"d(modules\FileExplorerPreview\PowerToys.GcodePreviewHandlerCpp.dll)d").wstring(),
+                                  L"GcodePreviewHandler",
                                   L"G-code Preview Handler",
                                   NonLocalizable::ExtGCode);
 }
@@ -149,11 +144,10 @@ inline registry::ChangeSet getSvgThumbnailHandlerChangeSet(const std::wstring in
     using namespace registry::shellex;
     return generatePreviewHandler(PreviewHandlerType::thumbnail,
                                   perUser,
-                                  L"{36B27788-A8BB-4698-A756-DF9F11F64F84}",
+                                  L"{10144713-1526-46C9-88DA-1FB52807A9FF}",
                                   get_std_product_version(),
-                                  (fs::path{ installationDir } / LR"d(modules\FileExplorerPreview\PowerToys.SvgThumbnailProvider.comhost.dll)d").wstring(),
-                                  registry::DOTNET_COMPONENT_CATEGORY_CLSID,
-                                  L"Microsoft.PowerToys.ThumbnailHandler.Svg.SvgThumbnailProvider",
+                                  (fs::path{ installationDir } / LR"d(modules\FileExplorerPreview\PowerToys.SvgThumbnailProviderCpp.dll)d").wstring(),
+                                  L"SvgThumbnailProvider",
                                   L"Svg Thumbnail Provider",
                                   NonLocalizable::ExtSVG,
                                   L"Picture");
@@ -164,11 +158,10 @@ inline registry::ChangeSet getPdfThumbnailHandlerChangeSet(const std::wstring in
     using namespace registry::shellex;
     return generatePreviewHandler(PreviewHandlerType::thumbnail,
                                   perUser,
-                                  L"{BCC13D15-9720-4CC4-8371-EA74A274741E}",
+                                  L"{D8BB9942-93BD-412D-87E4-33FAB214DC1A}",
                                   get_std_product_version(),
-                                  (fs::path{ installationDir } / LR"d(modules\FileExplorerPreview\PowerToys.PdfThumbnailProvider.comhost.dll)d").wstring(),
-                                  registry::DOTNET_COMPONENT_CATEGORY_CLSID,
-                                  L"Microsoft.PowerToys.ThumbnailHandler.Pdf.PdfThumbnailProvider",
+                                  (fs::path{ installationDir } / LR"d(modules\FileExplorerPreview\PowerToys.PdfThumbnailProviderCpp.dll)d").wstring(),
+                                  L"PdfThumbnailProvider",
                                   L"Pdf Thumbnail Provider",
                                   NonLocalizable::ExtPDF);
 }
@@ -178,11 +171,10 @@ inline registry::ChangeSet getGcodeThumbnailHandlerChangeSet(const std::wstring 
     using namespace registry::shellex;
     return generatePreviewHandler(PreviewHandlerType::thumbnail,
                                   perUser,
-                                  L"{BFEE99B4-B74D-4348-BCA5-E757029647FF}",
+                                  L"{F2847CBE-CD03-4C83-A359-1A8052C1B9D5}",
                                   get_std_product_version(),
-                                  (fs::path{ installationDir } / LR"d(modules\FileExplorerPreview\PowerToys.GcodeThumbnailProvider.comhost.dll)d").wstring(),
-                                  registry::DOTNET_COMPONENT_CATEGORY_CLSID,
-                                  L"Microsoft.PowerToys.ThumbnailHandler.Gcode.GcodeThumbnailProvider",
+                                  (fs::path{ installationDir } / LR"d(modules\FileExplorerPreview\PowerToys.GcodeThumbnailProviderCpp.dll)d").wstring(),
+                                  L"GcodeThumbnailProvider",
                                   L"G-code Thumbnail Provider",
                                   NonLocalizable::ExtGCode);
 }
@@ -192,11 +184,10 @@ inline registry::ChangeSet getStlThumbnailHandlerChangeSet(const std::wstring in
     using namespace registry::shellex;
     return generatePreviewHandler(PreviewHandlerType::thumbnail,
                                   perUser,
-                                  L"{8BC8AFC2-4E7C-4695-818E-8C1FFDCEA2AF}",
+                                  L"{77257004-6F25-4521-B602-50ECC6EC62A6}",
                                   get_std_product_version(),
-                                  (fs::path{ installationDir } / LR"d(modules\FileExplorerPreview\PowerToys.StlThumbnailProvider.comhost.dll)d").wstring(),
-                                  registry::DOTNET_COMPONENT_CATEGORY_CLSID,
-                                  L"Microsoft.PowerToys.ThumbnailHandler.Stl.StlThumbnailProvider",
+                                  (fs::path{ installationDir } / LR"d(modules\FileExplorerPreview\PowerToys.StlThumbnailProviderCpp.dll)d").wstring(),
+                                  L"StlThumbnailProvider",
                                   L"Stl Thumbnail Provider",
                                   NonLocalizable::ExtSTL);
 }

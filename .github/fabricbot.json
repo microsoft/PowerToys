@@ -860,6 +860,69 @@
         ],
         "taskName": "Author Response needed"
       }
+    },
+    {
+      "taskType": "trigger",
+      "capabilityId": "IssueResponder",
+      "subCapability": "IssueCommentResponder",
+      "version": "1.0",
+      "id": "mgZxIoqeF7GWUo7-t3773",
+      "config": {
+        "conditions": {
+          "operator": "and",
+          "operands": [
+            {
+              "name": "commentContains",
+              "parameters": {
+                "commentPattern": "\\/loc\\b",
+                "isRegex": true
+              }
+            },
+            {
+              "operator": "or",
+              "operands": [
+                {
+                  "name": "activitySenderHasAssociation",
+                  "parameters": {
+                    "association": "OWNER"
+                  }
+                },
+                {
+                  "name": "activitySenderHasAssociation",
+                  "parameters": {
+                    "association": "MEMBER"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        "eventType": "issue",
+        "eventNames": [
+          "issue_comment"
+        ],
+        "actions": [
+          {
+            "name": "removeLabel",
+            "parameters": {
+              "label": "Needs-Triage"
+            }
+          },
+          {
+            "name": "addLabel",
+            "parameters": {
+              "label": "Loc-Sent To Team"
+            }
+          },
+          {
+            "name": "addReply",
+            "parameters": {
+              "comment": "Hi! Thanks for making us aware of the problem. We raised the issue with our internal localization team. This issue should be fixed hopefully in the next version of PowerToys."
+            }
+          }
+        ],
+        "taskName": "Filed ADO item with Localization team"
+      }
     }
   ],
   "userGroups": []

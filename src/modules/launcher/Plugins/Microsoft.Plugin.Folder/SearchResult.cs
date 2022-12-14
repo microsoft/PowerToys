@@ -4,9 +4,11 @@
 
 namespace Microsoft.Plugin.Folder
 {
-    public class SearchResult
+    using Wox.Plugin.Interfaces;
+
+    public class SearchResult : IFileDropResult
     {
-        public string FullPath { get; set; }
+        public string Path { get; set; }
 
         public ResultType Type { get; set; }
     }
