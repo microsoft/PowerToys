@@ -80,11 +80,12 @@ namespace Peek.FilePreviewer.Previewers
             GC.SuppressFinalize(this);
         }
 
-        public Task<Size> GetPreviewSizeAsync(CancellationToken cancellationToken)
+        public Task<Size?> GetPreviewSizeAsync(CancellationToken cancellationToken)
         {
             return Task.Run(() =>
             {
-                return new Size(UnsupportedFileWidthPercent, UnsupportedFileHeightPercent);
+                Size? size = new Size(UnsupportedFileWidthPercent, UnsupportedFileHeightPercent);
+                return size;
             });
         }
 

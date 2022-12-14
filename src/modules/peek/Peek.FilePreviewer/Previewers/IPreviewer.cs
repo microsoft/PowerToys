@@ -16,7 +16,7 @@ namespace Peek.FilePreviewer.Previewers
 
         public static bool IsFileTypeSupported(string fileExt) => throw new NotImplementedException();
 
-        public Task<Size> GetPreviewSizeAsync(CancellationToken cancellationToken);
+        public Task<Size?> GetPreviewSizeAsync(CancellationToken cancellationToken);
 
         Task LoadPreviewAsync(CancellationToken cancellationToken);
 
