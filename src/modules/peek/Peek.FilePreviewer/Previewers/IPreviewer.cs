@@ -6,6 +6,7 @@ namespace Peek.FilePreviewer.Previewers
 {
     using System;
     using System.ComponentModel;
+    using System.Threading;
     using System.Threading.Tasks;
     using Windows.Foundation;
 
@@ -15,9 +16,9 @@ namespace Peek.FilePreviewer.Previewers
 
         public static bool IsFileTypeSupported(string fileExt) => throw new NotImplementedException();
 
-        public Task<Size> GetPreviewSizeAsync();
+        public Task<Size> GetPreviewSizeAsync(CancellationToken cancellationToken);
 
-        Task LoadPreviewAsync();
+        Task LoadPreviewAsync(CancellationToken cancellationToken);
 
         Task CopyAsync();
     }

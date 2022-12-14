@@ -45,14 +45,14 @@ namespace Peek.FilePreviewer.Previewers
 
         private DispatcherQueue Dispatcher { get; }
 
-        public Task<Size> GetPreviewSizeAsync()
+        public Task<Size> GetPreviewSizeAsync(CancellationToken cancellationToken)
         {
             // TODO: define how to proper window size on HTML content.
             var size = new Size(1280, 720);
             return Task.FromResult(size);
         }
 
-        public Task LoadPreviewAsync()
+        public Task LoadPreviewAsync(CancellationToken cancellationToken)
         {
             State = PreviewState.Loading;
 

@@ -4,6 +4,7 @@
 
 namespace Peek.FilePreviewer.Previewers
 {
+    using System.Threading;
     using Peek.Common.Models;
 
     public class PreviewerFactory

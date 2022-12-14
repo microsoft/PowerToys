@@ -13,6 +13,23 @@ namespace Peek.UI.Helpers
 {
     public static class FileExplorerHelper
     {
+        public static Shell32.FolderItems? GetSelectedItems()
+        {
+            var folderView = GetCurrentFolderView();
+            if (folderView == null)
+            {
+                return null;
+            }
+
+            Shell32.FolderItems selectedItems = folderView.SelectedItems();
+            if (selectedItems == null || selectedItems.Count == 0)
+            {
+                return null;
+            }
+
+            return selectedItems;
+        }
+
         public static Shell32.IShellFolderViewDual2? GetCurrentFolderView()
         {
             var foregroundWindowHandle = NativeMethods.GetForegroundWindow();
