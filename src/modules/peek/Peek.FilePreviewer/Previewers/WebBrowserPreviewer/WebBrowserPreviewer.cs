@@ -65,7 +65,7 @@ namespace Peek.FilePreviewer.Previewers
         {
             await Dispatcher.RunOnUiThread(async () =>
             {
-                var storageFile = await StorageFile.GetFileFromPathAsync(File.Path);
+                var storageFile = await File.GetStorageFileAsync();
 
                 var dataPackage = new DataPackage();
                 dataPackage.SetStorageItems(new StorageFile[1] { storageFile }, false);
