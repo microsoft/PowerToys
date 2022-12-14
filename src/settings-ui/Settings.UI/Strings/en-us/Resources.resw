@@ -890,7 +890,7 @@
     <comment>Removes a user defined setting group for Image Resizer</comment>
   </data>
 	<data name="RemoveItem.Text" xml:space="preserve">
-    <value>Remove</value>
+    <value>Delete</value>
   </data>
   <data name="ImageResizer_Image.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
     <value>Image Resizer</value>
