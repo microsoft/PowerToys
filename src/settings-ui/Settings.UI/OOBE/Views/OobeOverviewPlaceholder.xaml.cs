@@ -17,6 +17,8 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
     {
         public OobePowerToysModule ViewModel { get; set; }
 
+        private static bool? ExperimentEnabled { get; set; }
+
         public OobeOverviewPlaceholder()
         {
             this.InitializeComponent();
@@ -26,9 +28,14 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
 
         private static async Task<bool> GetIsExperiment()
         {
+            if (ExperimentEnabled != null)
+            {
+                return (bool)ExperimentEnabled;
+            }
+
             Experiments landingPageExp = new Experiments();
-            var experimentEnabled = await landingPageExp.EnableLandingPageExperimentAsync();
-            return experimentEnabled;
+            ExperimentEnabled = await landingPageExp.EnableLandingPageExperimentAsync();
+            return (bool)ExperimentEnabled;
         }
 
         private async void Reload()
