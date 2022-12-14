@@ -62,18 +62,18 @@ namespace Peek.FilePreviewer.Previewers
             return hr;
         }
 
-        public static async Task<BitmapImage?> GetThumbnailAsync(string path, uint size)
+        public static async Task<BitmapImage?> GetThumbnailAsync(File file, uint size)
         {
             BitmapImage? bitmapImage = null;
 
             // preview image
-            var file = await Windows.Storage.StorageFile.GetFileFromPathAsync(path);
-            if (file == null)
+            var storageFile = await file.GetStorageFileAsync();
+            if (storageFile == null)
             {
                 return bitmapImage;
             }
 
-            var imageStream = await file.GetThumbnailAsync(
+            var imageStream = await storageFile.GetThumbnailAsync(
                 Windows.Storage.FileProperties.ThumbnailMode.SingleItem,
                 size,
                 Windows.Storage.FileProperties.ThumbnailOptions.None);

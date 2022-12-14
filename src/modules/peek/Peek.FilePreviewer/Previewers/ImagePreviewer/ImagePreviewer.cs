@@ -16,7 +16,10 @@ namespace Peek.FilePreviewer.Previewers
     using Microsoft.UI.Xaml.Media.Imaging;
     using Peek.Common;
     using Peek.Common.Extensions;
+    using Windows.ApplicationModel.DataTransfer;
     using Windows.Foundation;
+    using Windows.Storage;
+    using Windows.Storage.Streams;
     using File = Peek.Common.Models.File;
 
     public partial class ImagePreviewer : ObservableObject, IBitmapPreviewer, IDisposable
@@ -81,6 +84,23 @@ namespace Peek.FilePreviewer.Previewers
             {
                 State = PreviewState.Error;
             }
+        }
+
+        public async Task CopyAsync()
+        {
+            await Dispatcher.RunOnUiThread(async () =>
+            {
+                var storageFile = await File.GetStorageFileAsync();
+
+                var dataPackage = new DataPackage();
+                dataPackage.SetStorageItems(new StorageFile[1] { storageFile }, false);
+
+                RandomAccessStreamReference imageStreamRef = RandomAccessStreamReference.CreateFromFile(storageFile);
+                dataPackage.Properties.Thumbnail = imageStreamRef;
+                dataPackage.SetBitmap(imageStreamRef);
+
+                Clipboard.SetContent(dataPackage);
+            });
         }
 
         private void OnPropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
