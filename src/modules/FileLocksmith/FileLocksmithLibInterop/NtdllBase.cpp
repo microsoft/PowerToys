@@ -63,22 +63,5 @@ NTSTATUS Ntdll::NtQueryObject(
     ULONG ObjectInformationLength,
     PULONG ReturnLength)
 {
-    // On very specific cases, NtQueryObject seems to hang.
-    // "file object opened by a kernel-mode driver with FILE_SYNCHRONOUS_IO_NONALERT" and handles opened with certain permissions were examples I could find being reported on other sources.
-    // Given this, lets do this call in a thread we can cancel.
-    std::packaged_task<NTSTATUS()> task([=]() {
-        return m_NtQueryObject(ObjectHandle, ObjectInformationClass, ObjectInformation, ObjectInformationLength, ReturnLength);
-    });
-    std::future<NTSTATUS> future = task.get_future();
-    std::thread myThread(std::move(task));
-    myThread.detach();
-
-    std::future_status status = future.wait_for(std::chrono::milliseconds(100));
-    if (status != std::future_status::ready)
-    {
-        return STATUS_UNSUCCESSFUL;
-        TerminateThread(myThread.native_handle(), 1);
-    }
-    return future.get();
-
+    return m_NtQueryObject(ObjectHandle, ObjectInformationClass, ObjectInformation, ObjectInformationLength, ReturnLength);
 }
