@@ -39,6 +39,7 @@ jobs:
           ${{ config }}_${{ platform }}:
             BuildConfiguration: ${{ config }}
             BuildPlatform: ${{ platform }}
+            NUGET_RESTORE_MSBUILD_ARGS: /p:Platform=${{ platform }} # Required for nuget to work due to self contained
   displayName: Build
   timeoutInMinutes: 120 # Some of the loc stuff adds quite a bit of time.
   cancelTimeoutInMinutes: 1

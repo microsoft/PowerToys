@@ -35,6 +35,7 @@ namespace Hosts.Models
             {
                 SetProperty(ref _hosts, value);
                 OnPropertyChanged(nameof(Valid));
+                SplittedHosts = _hosts.Split(' ');
             }
         }
 
@@ -50,7 +51,12 @@ namespace Hosts.Models
         [ObservableProperty]
         private bool _pinging;
 
+        [ObservableProperty]
+        private bool _duplicate;
+
         public bool Valid => ValidationHelper.ValidHosts(_hosts) && (ValidationHelper.ValidIPv4(_address) || ValidationHelper.ValidIPv6(_address));
+
+        public string[] SplittedHosts { get; private set; }
 
         public Entry()
         {
