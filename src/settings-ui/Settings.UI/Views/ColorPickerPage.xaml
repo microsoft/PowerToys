@@ -261,14 +261,15 @@
                                         <RowDefinition />
                                         <RowDefinition />
                                         <RowDefinition />
+                                        <RowDefinition />
                                     </Grid.RowDefinitions>
                                     <Grid.ColumnDefinitions>
-                                        <ColumnDefinition Width="40px"/>
-                                        <ColumnDefinition Width="120px"/>
-                                        <ColumnDefinition Width="40px"/>
-                                        <ColumnDefinition Width="120px"/>
-                                        <ColumnDefinition Width="40px"/>
-                                        <ColumnDefinition Width="120px"/>
+                                        <ColumnDefinition Width="37px"/>
+                                        <ColumnDefinition Width="127px"/>
+                                        <ColumnDefinition Width="37px"/>
+                                        <ColumnDefinition Width="127px"/>
+                                        <ColumnDefinition Width="37px"/>
+                                        <ColumnDefinition Width="127px"/>
                                     </Grid.ColumnDefinitions>
                                     <TextBlock Text = "%Re" FontWeight="Bold"/>
                                     <TextBlock x:Uid="Help_red" Grid.Column="1"/>
@@ -321,9 +322,11 @@
                                     <TextBlock Text = "%Zv" Grid.Row="8" FontWeight="Bold"/>
                                     <TextBlock x:Uid="Help_Z_value" Grid.Row="8" Grid.Column="1"/>
                                     <TextBlock Text = "%Dv" Grid.Row="8" Grid.Column="2" FontWeight="Bold"/>
-                                    <TextBlock x:Uid="Help_decimal_value" Grid.Row="8" Grid.Column="3"/>
-                                    <TextBlock Text = "%Na" Grid.Row="8" Grid.Column="4" FontWeight="Bold"/>
-                                    <TextBlock x:Uid="Help_color_name" Grid.Row="8" Grid.Column="5"/>
+                                    <TextBlock x:Uid="Help_decimal_value_BGR" Grid.Row="8" Grid.Column="3"/>
+                                    <TextBlock Text = "%Dr" Grid.Row="8" Grid.Column="4" FontWeight="Bold"/>
+                                    <TextBlock x:Uid="Help_decimal_value_RGB" Grid.Row="8" Grid.Column="5"/>
+                                    <TextBlock Text = "%Na" Grid.Row="9" FontWeight="Bold"/>
+                                    <TextBlock x:Uid="Help_color_name" Grid.Row="9" Grid.Column="1"/>
                                 </Grid>
                                 <TextBlock 
                                     Grid.Row="2" 

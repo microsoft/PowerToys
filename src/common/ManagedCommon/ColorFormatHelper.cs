@@ -285,7 +285,8 @@ namespace ManagedCommon
             { "Xv", 'i' },   // X value          int
             { "Yv", 'i' },   // Y value          int
             { "Zv", 'i' },   // Z value          int
-            { "Dv", 'i' },   // Decimal value    int
+            { "Dr", 'i' },   // Decimal value (RGB)   int
+            { "Dv", 'i' },   // Decimal value (BGR)   int
             { "Na", 's' },   // Color name       string
         };
 
@@ -447,8 +448,10 @@ namespace ManagedCommon
                     var (_, _, z) = ConvertToCIEXYZColor(color);
                     z = Math.Round(z * 100, 4);
                     return z.ToString(CultureInfo.InvariantCulture);
-                case "Dv":
+                case "Dr":
                     return ((color.R * 65536) + (color.G * 256) + color.B).ToString(CultureInfo.InvariantCulture);
+                case "Dv":
+                    return (color.R + (color.G * 256) + (color.B * 65536)).ToString(CultureInfo.InvariantCulture);
                 case "Na":
                     return ColorNameHelper.GetColorName(color);
                 default: return string.Empty;
