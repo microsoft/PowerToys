@@ -1374,8 +1374,11 @@ Made with 💗 by Microsoft and the PowerToys community.</value>
   <data name="Help_Z_value.Text" xml:space="preserve">
     <value>Z value</value>
   </data>
-  <data name="Help_decimal_value.Text" xml:space="preserve">
-    <value>decimal value</value>
+  <data name="Help_decimal_value_RGB.Text" xml:space="preserve">
+    <value>decimal value (RGB)</value>
+  </data>
+  <data name="Help_decimal_value_BGR.Text" xml:space="preserve">
+    <value>decimal value (BGR)</value>
   </data>
   <data name="Help_color_name.Text" xml:space="preserve">
     <value>color name</value>

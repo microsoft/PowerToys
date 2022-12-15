@@ -21,6 +21,8 @@
             <SolidColorBrush x:Key="SubtleButtonForegroundPressed" Color="{ThemeResource TextFillColorSecondary}" />
             <SolidColorBrush x:Key="SubtleButtonForegroundDisabled" Color="{ThemeResource TextFillColorDisabled}" />
 
+            <SolidColorBrush x:Key="WindowCaptionBackground">Transparent</SolidColorBrush>
+            <SolidColorBrush x:Key="WindowCaptionBackgroundDisabled">Transparent</SolidColorBrush>
 
             <Style x:Key="SubtleButtonStyle" TargetType="Button">
                 <Setter Property="Background" Value="{ThemeResource SubtleButtonBackground}" />
@@ -40,20 +42,20 @@
                     <Setter.Value>
                         <ControlTemplate TargetType="Button">
                             <ContentPresenter
-                                    x:Name="ContentPresenter"
-                                    Padding="{TemplateBinding Padding}"
-                                    HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}"
-                                    VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}"
-                                    AnimatedIcon.State="Normal"
-                                    AutomationProperties.AccessibilityView="Raw"
-                                    Background="{TemplateBinding Background}"
-                                    BackgroundSizing="{TemplateBinding BackgroundSizing}"
-                                    BorderBrush="{TemplateBinding BorderBrush}"
-                                    BorderThickness="{TemplateBinding BorderThickness}"
-                                    Content="{TemplateBinding Content}"
-                                    ContentTemplate="{TemplateBinding ContentTemplate}"
-                                    ContentTransitions="{TemplateBinding ContentTransitions}"
-                                    CornerRadius="{TemplateBinding CornerRadius}">
+                                x:Name="ContentPresenter"
+                                Padding="{TemplateBinding Padding}"
+                                HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}"
+                                VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}"
+                                AnimatedIcon.State="Normal"
+                                AutomationProperties.AccessibilityView="Raw"
+                                Background="{TemplateBinding Background}"
+                                BackgroundSizing="{TemplateBinding BackgroundSizing}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                Content="{TemplateBinding Content}"
+                                ContentTemplate="{TemplateBinding ContentTemplate}"
+                                ContentTransitions="{TemplateBinding ContentTransitions}"
+                                CornerRadius="{TemplateBinding CornerRadius}">
                                 <ContentPresenter.BackgroundTransition>
                                     <BrushTransition Duration="0:0:0.083" />
                                 </ContentPresenter.BackgroundTransition>
