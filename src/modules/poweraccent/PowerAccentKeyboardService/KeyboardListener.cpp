@@ -52,8 +52,8 @@ namespace winrt::PowerToys::PowerAccentKeyboardService::implementation
 
     void KeyboardListener::SetShowToolbarEvent(ShowToolbar showToolbarEvent)
     {
-        m_showToolbarCb = [trigger = std::move(showToolbarEvent)](LetterKey key) {
-            trigger(key);
+        m_showToolbarCb = [trigger = std::move(showToolbarEvent)](LetterKey key, bool triggeredBySpace) {
+            trigger(key, triggeredBySpace);
         };
     }
 
@@ -187,7 +187,7 @@ namespace winrt::PowerToys::PowerAccentKeyboardService::implementation
             // Keep track if it was triggered with space so that it can be typed on false starts.
             m_triggeredWithSpace = triggerPressed == VK_SPACE;
             m_toolbarVisible = true;
-            m_showToolbarCb(letterPressed);
+            m_showToolbarCb(letterPressed, m_triggeredWithSpace);
         }
 
         if (m_toolbarVisible && triggerPressed)

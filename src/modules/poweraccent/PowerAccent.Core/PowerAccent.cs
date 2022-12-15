@@ -23,6 +23,7 @@ public class PowerAccent : IDisposable
     private string[] _characters = Array.Empty<string>();
     private string[] _characterDescriptions = Array.Empty<string>();
     private int _selectedIndex = -1;
+    private bool _toolbarTriggeredBySpace = false;
     private bool _showUnicodeDescription;
 
     public LetterKey[] LetterKeysShowingDescription => _letterKeysShowingDescription;
@@ -37,6 +38,8 @@ public class PowerAccent : IDisposable
 
     private readonly KeyboardListener _keyboardListener;
 
+    private readonly CharactersUsageInfo _usageInfo;
+
     public PowerAccent()
     {
         LoadUnicodeInfoCache();
@@ -44,6 +47,7 @@ public class PowerAccent : IDisposable
         _keyboardListener = new KeyboardListener();
         _keyboardListener.InitHook();
         _settingService = new SettingsService(_keyboardListener);
+        _usageInfo = new CharactersUsageInfo();
 
         SetEvents();
     }
@@ -55,11 +59,11 @@ public class PowerAccent : IDisposable
 
     private void SetEvents()
     {
-        _keyboardListener.SetShowToolbarEvent(new PowerToys.PowerAccentKeyboardService.ShowToolbar((LetterKey letterKey) =>
+        _keyboardListener.SetShowToolbarEvent(new PowerToys.PowerAccentKeyboardService.ShowToolbar((LetterKey letterKey, bool triggeredBySpace) =>
         {
             System.Windows.Application.Current.Dispatcher.Invoke(() =>
             {
-                ShowToolbar(letterKey);
+                ShowToolbar(letterKey, triggeredBySpace);
             });
         }));
 
@@ -85,12 +89,13 @@ public class PowerAccent : IDisposable
         }));
     }
 
-    private void ShowToolbar(LetterKey letterKey)
+    private void ShowToolbar(LetterKey letterKey, bool triggeredBySpace)
     {
         _visible = true;
-        _characters = (WindowsFunctions.IsCapsLockState() || WindowsFunctions.IsShiftState()) ? ToUpper(Languages.GetDefaultLetterKey(letterKey, _settingService.SelectedLang)) : Languages.GetDefaultLetterKey(letterKey, _settingService.SelectedLang);
-        _characterDescriptions = GetCharacterDescriptions(_characters);
 
+        _toolbarTriggeredBySpace = triggeredBySpace;
+        _characters = GetCharacters(letterKey, triggeredBySpace);
+        _characterDescriptions = GetCharacterDescriptions(_characters);
         _showUnicodeDescription = _settingService.ShowUnicodeDescription;
 
         Task.Delay(_settingService.InputTime).ContinueWith(
@@ -101,6 +106,31 @@ public class PowerAccent : IDisposable
                 OnChangeDisplay?.Invoke(true, _characters);
             }
         }, TaskScheduler.FromCurrentSynchronizationContext());
+    }
+
+    private string[] GetCharacters(LetterKey letterKey, bool triggeredBySpace)
+    {
+        var characters = Languages.GetDefaultLetterKey(letterKey, _settingService.SelectedLang);
+        if (_settingService.SortByUsageFrequency)
+        {
+            if (triggeredBySpace)
+            {
+                characters = characters.OrderByDescending(character => _usageInfo.GetUsageFrequency(character))
+                    .ThenByDescending(character => _usageInfo.GetLastUsageTimestamp(character)).
+                    ToArray<string>();
+            }
+        }
+        else if (!_usageInfo.Empty())
+        {
+            _usageInfo.Clear();
+        }
+
+        if (WindowsFunctions.IsCapsLockState() || WindowsFunctions.IsShiftState())
+        {
+            return ToUpper(characters);
+        }
+
+        return characters;
     }
 
     private string GetCharacterDescription(string character)
@@ -179,6 +209,10 @@ public class PowerAccent : IDisposable
                     if (_selectedIndex != -1)
                     {
                         WindowsFunctions.Insert(_characters[_selectedIndex], true);
+                        if (_toolbarTriggeredBySpace)
+                        {
+                            _usageInfo.IncrementUsageFrequency(_characters[_selectedIndex]);
+                        }
                     }
 
                     break;

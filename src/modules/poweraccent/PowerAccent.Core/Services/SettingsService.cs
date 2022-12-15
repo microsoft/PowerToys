@@ -94,6 +94,7 @@ public class SettingsService
                         }
 
                         ShowUnicodeDescription = settings.Properties.ShowUnicodeDescription;
+                        SortByUsageFrequency = settings.Properties.SortByUsageFrequency;
                     }
                 }
                 catch (Exception ex)
@@ -191,6 +192,21 @@ public class SettingsService
         set
         {
             _showUnicodeDescription = value;
+        }
+    }
+
+    private bool _sortByUsageFrequency;
+
+    public bool SortByUsageFrequency
+    {
+        get
+        {
+            return _sortByUsageFrequency;
+        }
+
+        set
+        {
+            _sortByUsageFrequency = value;
         }
     }
 }

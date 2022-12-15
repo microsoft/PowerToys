@@ -256,6 +256,24 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             }
         }
 
+        public bool SortByUsageFrequency
+        {
+            get
+            {
+                return _powerAccentSettings.Properties.SortByUsageFrequency;
+            }
+
+            set
+            {
+                if (value != _powerAccentSettings.Properties.SortByUsageFrequency)
+                {
+                    _powerAccentSettings.Properties.SortByUsageFrequency = value;
+                    OnPropertyChanged(nameof(SortByUsageFrequency));
+                    RaisePropertyChanged();
+                }
+            }
+        }
+
         private void RaisePropertyChanged([CallerMemberName] string propertyName = null)
         {
             // Notify UI of property change
