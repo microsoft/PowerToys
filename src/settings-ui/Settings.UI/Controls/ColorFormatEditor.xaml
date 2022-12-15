@@ -16,8 +16,8 @@
         <DataTemplate x:Key="FormatParameterTemplate" x:DataType="local:ColorFormatParameter">
             <Grid>
                 <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="36" />
-                    <ColumnDefinition Width="96" />
+                    <ColumnDefinition Width="34" />
+                    <ColumnDefinition Width="110" />
                 </Grid.ColumnDefinitions>
 
                 <TextBlock
