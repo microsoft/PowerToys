@@ -6,11 +6,11 @@
 // However, this project is not required to build a test version of the application.
 namespace AllExperiments
 {
+    using System.Text.Json;
     using Microsoft.PowerToys.Settings.UI.Library.Telemetry.Events;
     using Microsoft.PowerToys.Telemetry;
     using Microsoft.VariantAssignment.Client;
     using Microsoft.VariantAssignment.Contract;
-    using Newtonsoft.Json;
     using Windows.System.Profile;
 
 #pragma warning disable SA1649 // File name should match first type name. Suppressed because it needs to be the same class name as Experiments_Inert.cs
@@ -43,16 +43,19 @@ namespace AllExperiments
                 var vaRequest = GetVariantAssignmentRequest();
                 using var variantAssignments = await vaClient.GetVariantAssignmentsAsync(vaRequest).ConfigureAwait(false);
 
-                var featureVariables = variantAssignments.GetFeatureVariables();
-                var assignmentContext = variantAssignments.GetAssignmentContext();
-                var featureFlagValue = featureVariables[0].GetStringValue();
-
-                if (featureFlagValue == "alternate" && assignmentContext != string.Empty)
+                if (variantAssignments.AssignedVariants.Count != 0)
                 {
-                    IsExperiment = true;
-                }
+                    var featureVariables = variantAssignments.GetFeatureVariables();
+                    var assignmentContext = variantAssignments.GetAssignmentContext();
+                    var featureFlagValue = featureVariables[0].GetStringValue();
 
-                PowerToysTelemetry.Log.WriteEvent(new OobeVariantAssignmentEvent() { AssignmentContext = assignmentContext, ClientID = AssignmentUnit });
+                    if (featureFlagValue == "alternate" && assignmentContext != string.Empty)
+                    {
+                        IsExperiment = true;
+                    }
+
+                    PowerToysTelemetry.Log.WriteEvent(new OobeVariantAssignmentEvent() { AssignmentContext = assignmentContext, ClientID = AssignmentUnit });
+                }
             }
             catch (Exception ex)
             {
@@ -76,7 +79,7 @@ namespace AllExperiments
                     {
                         ["clientid"] = AssignmentUnit,
                     };
-                    string jsonData = JsonConvert.SerializeObject(data);
+                    string jsonData = JsonSerializer.Serialize(data);
                     File.WriteAllText(jsonFilePath, jsonData);
                 }
                 else
