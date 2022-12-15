@@ -76,6 +76,7 @@ appxpackage
 APSTUDIO
 AQS
 Aqtobe
+ARCHITEW
 arcosh
 ARemapped
 argb
