@@ -25,7 +25,7 @@ namespace Microsoft.PowerToys.Settings.UI.Converters
 
         public object ConvertBack(object value, Type targetType, object parameter, string language)
         {
-            return (AwakeMode)Enum.ToObject(typeof(AwakeMode), (int)value);
+            return value;
         }
     }
 }
