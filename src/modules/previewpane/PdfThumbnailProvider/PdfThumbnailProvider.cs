@@ -16,49 +16,50 @@ namespace Microsoft.PowerToys.ThumbnailHandler.Pdf
     /// <summary>
     /// PDF Thumbnail Provider.
     /// </summary>
-    [Guid("BCC13D15-9720-4CC4-8371-EA74A274741E")]
-    [ClassInterface(ClassInterfaceType.None)]
-    [ComVisible(true)]
-    public class PdfThumbnailProvider : IInitializeWithStream, IThumbnailProvider
+    public class PdfThumbnailProvider
     {
+        public PdfThumbnailProvider(string filePath)
+        {
+            FilePath = filePath;
+            Stream = new FileStream(filePath, FileMode.Open, FileAccess.Read);
+        }
+
+        /// <summary>
+        /// Gets the file path to the file creating thumbnail for.
+        /// </summary>
+        public string FilePath { get; private set; }
+
         /// <summary>
         /// Gets the stream object to access file.
         /// </summary>
-        public IStream Stream { get; private set; }
+        public Stream Stream { get; private set; }
 
         /// <summary>
         ///  The maximum dimension (width or height) thumbnail we will generate.
         /// </summary>
         private const uint MaxThumbnailSize = 10000;
 
-        /// <inheritdoc/>
-        public void Initialize(IStream pstream, uint grfMode)
+        /// <summary>
+        /// Generate thumbnail bitmap for provided Pdf file/stream.
+        /// </summary>
+        /// <param name="cx">Maximum thumbnail size, in pixels.</param>
+        /// <returns>Generated bitmap</returns>
+        public Bitmap GetThumbnail(uint cx)
         {
-            // Ignore the grfMode always use read mode to access the file.
-            this.Stream = pstream;
-        }
-
-        /// <inheritdoc/>
-        public void GetThumbnail(uint cx, out IntPtr phbmp, out WTS_ALPHATYPE pdwAlpha)
-        {
-            phbmp = IntPtr.Zero;
-            pdwAlpha = WTS_ALPHATYPE.WTSAT_UNKNOWN;
-
             if (cx == 0 || cx > MaxThumbnailSize)
             {
-                return;
+                return null;
             }
 
             if (global::PowerToys.GPOWrapper.GPOWrapper.GetConfiguredPdfThumbnailsEnabledValue() == global::PowerToys.GPOWrapper.GpoRuleConfigured.Disabled)
             {
                 // GPO is disabling this utility.
-                return;
+                return null;
             }
 
-            using var dataStream = new ReadonlyStream(this.Stream as IStream);
             using var memStream = new MemoryStream();
 
-            dataStream.CopyTo(memStream);
+            this.Stream.CopyTo(memStream);
             memStream.Position = 0;
 
             // AsRandomAccessStream() extension method from System.Runtime.WindowsRuntime
@@ -72,9 +73,10 @@ namespace Microsoft.PowerToys.ThumbnailHandler.Pdf
 
                 using Bitmap thumbnail = new Bitmap(image);
 
-                phbmp = thumbnail.GetHbitmap();
-                pdwAlpha = WTS_ALPHATYPE.WTSAT_RGB;
+                return (Bitmap)thumbnail.Clone();
             }
+
+            return null;
         }
 
         /// <summary>

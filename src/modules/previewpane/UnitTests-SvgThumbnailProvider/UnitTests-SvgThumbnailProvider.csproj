@@ -20,6 +20,11 @@
   <Import Project="..\..\..\Version.props" />
 
   <ItemGroup>
+    <None Remove="HelperFiles\file1.svg" />
+    <None Remove="HelperFiles\file2.svg" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="Microsoft.Windows.CsWinRT" Version="2.0.0" />
     <PackageReference Include="Moq" Version="4.16.1" />
     <PackageReference Include="MSTest.TestAdapter" Version="2.2.3" />
@@ -34,5 +39,13 @@
   <ItemGroup>
     <Compile Include="..\STATestClassAttribute.cs" Link="STATestClassAttribute.cs" />
     <Compile Include="..\STATestMethodAttribute.cs" Link="STATestMethodAttribute.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="HelperFiles\file1.svg">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="HelperFiles\file2.svg">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
   </ItemGroup>
 </Project>
