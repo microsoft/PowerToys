@@ -102,9 +102,9 @@ namespace AllExperiments
 
             var flightRing = string.Empty;
 
-            foreach (KeyValuePair<string, string> attr in attrData)
+            if (attrData.ContainsKey("FlightRing"))
             {
-                flightRing = attr.Value;
+                flightRing = attrData["FlightRing"];
             }
 
             return new VariantAssignmentRequest
