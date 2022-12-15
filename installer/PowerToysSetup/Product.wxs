@@ -140,7 +140,7 @@
   <?define PowerToysInteropFiles=concrt140.dll;msvcp140.dll;msvcp140_1.dll;msvcp140_2.dll;msvcp140_atomic_wait.dll;msvcp140_codecvt_ids.dll;PowerToys.Interop.dll;vcamp140.dll;vccorlib140.dll;vcomp140.dll;vcruntime140.dll;vcruntime140_1.dll?>
 
   <!-- These files are needed for release builds to contain the experimentation DLLs -->
-  <?define PowerToysExperimentsFiles=Microsoft.VariantAssignment.Client.dll;Microsoft.VariantAssignment.Contract.dll;System.Net.Http.Formatting.dll;Microsoft.Extensions.Configuration.dll;Microsoft.Extensions.Configuration.Abstractions.dll;Microsoft.Extensions.Configuration.Binder.dll;Microsoft.Extensions.DependencyInjection.Abstractions.dll;Microsoft.Extensions.Http.dll;Microsoft.Extensions.Logging.dll;Microsoft.Extensions.Logging.Abstractions.dll;Microsoft.Extensions.Options.dll;Microsoft.Extensions.Primitives.dll;?>
+  <?define PowerToysExperimentsFiles=Microsoft.VariantAssignment.Client.dll;Microsoft.VariantAssignment.Contract.dll;System.Net.Http.Formatting.dll;Microsoft.Extensions.Configuration.dll;Microsoft.Extensions.Configuration.Abstractions.dll;Microsoft.Extensions.Configuration.Binder.dll;Microsoft.Extensions.DependencyInjection.Abstractions.dll;Microsoft.Extensions.Http.dll;Microsoft.Extensions.Logging.dll;Microsoft.Extensions.Logging.Abstractions.dll;Microsoft.Extensions.Options.dll;Microsoft.Extensions.Primitives.dll?>
 
   <?define MeasureToolMicrosoftUIXamlAssetsInstallFiles=NoiseAsset_256x256_PNG.png?>
   
