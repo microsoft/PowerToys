@@ -85,86 +85,86 @@ namespace ManagedCommon
         // of that color, which are defined as follows:
         private static string[] colorNamesLight =
         {
-            CommonResources.TEXT_COLOR_CORAL,
-            CommonResources.TEXT_COLOR_ROSE,
-            CommonResources.TEXT_COLOR_LIGHTORANGE,
-            CommonResources.TEXT_COLOR_TAN,
-            CommonResources.TEXT_COLOR_TAN,
-            CommonResources.TEXT_COLOR_LIGHTYELLOW,
-            CommonResources.TEXT_COLOR_LIGHTYELLOW,
-            CommonResources.TEXT_COLOR_TAN,
-            CommonResources.TEXT_COLOR_LIGHTGREEN,
-            CommonResources.TEXT_COLOR_LIME,
-            CommonResources.TEXT_COLOR_LIGHTGREEN,
-            CommonResources.TEXT_COLOR_LIGHTGREEN,
-            CommonResources.TEXT_COLOR_AQUA,
-            CommonResources.TEXT_COLOR_SKYBLUE,
-            CommonResources.TEXT_COLOR_LIGHTTURQUOISE,
-            CommonResources.TEXT_COLOR_PALEBLUE,
-            CommonResources.TEXT_COLOR_LIGHTBLUE,
-            CommonResources.TEXT_COLOR_ICEBLUE,
-            CommonResources.TEXT_COLOR_PERIWINKLE,
-            CommonResources.TEXT_COLOR_LAVENDER,
-            CommonResources.TEXT_COLOR_PINK,
-            CommonResources.TEXT_COLOR_TAN,
-            CommonResources.TEXT_COLOR_ROSE,
+            "TEXT_COLOR_CORAL",
+            "TEXT_COLOR_ROSE",
+            "TEXT_COLOR_LIGHTORANGE",
+            "TEXT_COLOR_TAN",
+            "TEXT_COLOR_TAN",
+            "TEXT_COLOR_LIGHTYELLOW",
+            "TEXT_COLOR_LIGHTYELLOW",
+            "TEXT_COLOR_TAN",
+            "TEXT_COLOR_LIGHTGREEN",
+            "TEXT_COLOR_LIME",
+            "TEXT_COLOR_LIGHTGREEN",
+            "TEXT_COLOR_LIGHTGREEN",
+            "TEXT_COLOR_AQUA",
+            "TEXT_COLOR_SKYBLUE",
+            "TEXT_COLOR_LIGHTTURQUOISE",
+            "TEXT_COLOR_PALEBLUE",
+            "TEXT_COLOR_LIGHTBLUE",
+            "TEXT_COLOR_ICEBLUE",
+            "TEXT_COLOR_PERIWINKLE",
+            "TEXT_COLOR_LAVENDER",
+            "TEXT_COLOR_PINK",
+            "TEXT_COLOR_TAN",
+            "TEXT_COLOR_ROSE",
         };
 
         private static string[] colorNamesMid =
         {
-            CommonResources.TEXT_COLOR_CORAL,
-            CommonResources.TEXT_COLOR_RED,
-            CommonResources.TEXT_COLOR_ORANGE,
-            CommonResources.TEXT_COLOR_BROWN,
-            CommonResources.TEXT_COLOR_TAN,
-            CommonResources.TEXT_COLOR_GOLD,
-            CommonResources.TEXT_COLOR_YELLOW,
-            CommonResources.TEXT_COLOR_OLIVEGREEN,
-            CommonResources.TEXT_COLOR_OLIVEGREEN,
-            CommonResources.TEXT_COLOR_GREEN,
-            CommonResources.TEXT_COLOR_GREEN,
-            CommonResources.TEXT_COLOR_BRIGHTGREEN,
-            CommonResources.TEXT_COLOR_TEAL,
-            CommonResources.TEXT_COLOR_AQUA,
-            CommonResources.TEXT_COLOR_TURQUOISE,
-            CommonResources.TEXT_COLOR_PALEBLUE,
-            CommonResources.TEXT_COLOR_BLUE,
-            CommonResources.TEXT_COLOR_BLUEGRAY,
-            CommonResources.TEXT_COLOR_INDIGO,
-            CommonResources.TEXT_COLOR_PURPLE,
-            CommonResources.TEXT_COLOR_PINK,
-            CommonResources.TEXT_COLOR_BROWN,
-            CommonResources.TEXT_COLOR_RED,
+            "TEXT_COLOR_CORAL",
+            "TEXT_COLOR_RED",
+            "TEXT_COLOR_ORANGE",
+            "TEXT_COLOR_BROWN",
+            "TEXT_COLOR_TAN",
+            "TEXT_COLOR_GOLD",
+            "TEXT_COLOR_YELLOW",
+            "TEXT_COLOR_OLIVEGREEN",
+            "TEXT_COLOR_OLIVEGREEN",
+            "TEXT_COLOR_GREEN",
+            "TEXT_COLOR_GREEN",
+            "TEXT_COLOR_BRIGHTGREEN",
+            "TEXT_COLOR_TEAL",
+            "TEXT_COLOR_AQUA",
+            "TEXT_COLOR_TURQUOISE",
+            "TEXT_COLOR_PALEBLUE",
+            "TEXT_COLOR_BLUE",
+            "TEXT_COLOR_BLUEGRAY",
+            "TEXT_COLOR_INDIGO",
+            "TEXT_COLOR_PURPLE",
+            "TEXT_COLOR_PINK",
+            "TEXT_COLOR_BROWN",
+            "TEXT_COLOR_RED",
         };
 
         private static string[] colorNamesDark =
         {
-            CommonResources.TEXT_COLOR_BROWN,
-            CommonResources.TEXT_COLOR_DARKRED,
-            CommonResources.TEXT_COLOR_BROWN,
-            CommonResources.TEXT_COLOR_BROWN,
-            CommonResources.TEXT_COLOR_BROWN,
-            CommonResources.TEXT_COLOR_DARKYELLOW,
-            CommonResources.TEXT_COLOR_DARKYELLOW,
-            CommonResources.TEXT_COLOR_BROWN,
-            CommonResources.TEXT_COLOR_DARKGREEN,
-            CommonResources.TEXT_COLOR_DARKGREEN,
-            CommonResources.TEXT_COLOR_DARKGREEN,
-            CommonResources.TEXT_COLOR_DARKGREEN,
-            CommonResources.TEXT_COLOR_DARKTEAL,
-            CommonResources.TEXT_COLOR_DARKTEAL,
-            CommonResources.TEXT_COLOR_DARKTEAL,
-            CommonResources.TEXT_COLOR_DARKBLUE,
-            CommonResources.TEXT_COLOR_DARKBLUE,
-            CommonResources.TEXT_COLOR_BLUEGRAY,
-            CommonResources.TEXT_COLOR_INDIGO,
-            CommonResources.TEXT_COLOR_DARKPURPLE,
-            CommonResources.TEXT_COLOR_PLUM,
-            CommonResources.TEXT_COLOR_BROWN,
-            CommonResources.TEXT_COLOR_DARKRED,
+            "TEXT_COLOR_BROWN",
+            "TEXT_COLOR_DARKRED",
+            "TEXT_COLOR_BROWN",
+            "TEXT_COLOR_BROWN",
+            "TEXT_COLOR_BROWN",
+            "TEXT_COLOR_DARKYELLOW",
+            "TEXT_COLOR_DARKYELLOW",
+            "TEXT_COLOR_BROWN",
+            "TEXT_COLOR_DARKGREEN",
+            "TEXT_COLOR_DARKGREEN",
+            "TEXT_COLOR_DARKGREEN",
+            "TEXT_COLOR_DARKGREEN",
+            "TEXT_COLOR_DARKTEAL",
+            "TEXT_COLOR_DARKTEAL",
+            "TEXT_COLOR_DARKTEAL",
+            "TEXT_COLOR_DARKBLUE",
+            "TEXT_COLOR_DARKBLUE",
+            "TEXT_COLOR_BLUEGRAY",
+            "TEXT_COLOR_INDIGO",
+            "TEXT_COLOR_DARKPURPLE",
+            "TEXT_COLOR_PLUM",
+            "TEXT_COLOR_BROWN",
+            "TEXT_COLOR_DARKRED",
         };
 
-        public static string GetColorName(Color color)
+        public static string GetColorNameIdentifier(Color color)
         {
             var (hue, sat, lum) = ColorFormatHelper.ConvertToHSLColor(color);
 
@@ -175,26 +175,26 @@ namespace ManagedCommon
             // First, if we're in the achromatic state, return the appropriate achromatic color name.
             if (lum > 240)
             {
-                return CommonResources.TEXT_COLOR_WHITE;
+                return "TEXT_COLOR_WHITE";
             }
             else if (lum < 20)
             {
-                return CommonResources.TEXT_COLOR_BLACK;
+                return "TEXT_COLOR_BLACK";
             }
 
             if (sat <= 20)
             {
                 if (lum > 170)
                 {
-                    return CommonResources.TEXT_COLOR_LIGHTGRAY;
+                    return "TEXT_COLOR_LIGHTGRAY";
                 }
                 else if (lum > 100)
                 {
-                    return CommonResources.TEXT_COLOR_GRAY;
+                    return "TEXT_COLOR_GRAY";
                 }
                 else
                 {
-                    return CommonResources.TEXT_COLOR_DARKGRAY;
+                    return "TEXT_COLOR_DARKGRAY";
                 }
             }
 

@@ -450,7 +450,7 @@ namespace ManagedCommon
                 case "Dv":
                     return ((color.R * 65536) + (color.G * 256) + color.B).ToString(CultureInfo.InvariantCulture);
                 case "Na":
-                    return ColorNameHelper.GetColorName(color);
+                    return ColorNameHelper.GetColorNameIdentifier(color);
                 default: return string.Empty;
             }
         }
