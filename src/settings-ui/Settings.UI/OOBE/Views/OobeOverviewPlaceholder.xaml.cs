@@ -44,18 +44,21 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
 
             if (isExperiment)
             {
-                LoadingProgressRing.Visibility = Microsoft.UI.Xaml.Visibility.Collapsed;
                 this.Frame.Navigate(typeof(OobeOverviewAlternate));
             }
             else
             {
-                LoadingProgressRing.Visibility = Microsoft.UI.Xaml.Visibility.Collapsed;
                 this.Frame.Navigate(typeof(OobeOverview));
             }
         }
 
         private void Page_Loaded(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
         {
+            if (ExperimentEnabled != null)
+            {
+                LoadingProgressRing.Visibility = Microsoft.UI.Xaml.Visibility.Collapsed;
+            }
+
             Reload();
         }
 
