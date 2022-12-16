@@ -286,8 +286,11 @@ namespace ManagedCommon
             { "Yv", 'i' },   // Y value          int
             { "Zv", 'i' },   // Z value          int
             { "Dv", 'i' },   // Decimal value    int
-            { "Na", 's' },   // Color name       string
+
+            // { "Na", 's' },   // Color name       string
         };
+
+        public static string GetColorNameParameter() => "%Na";
 
         private static readonly Dictionary<char, string> FormatTypeToStringFormatters = new Dictionary<char, string>()
         {
@@ -449,8 +452,9 @@ namespace ManagedCommon
                     return z.ToString(CultureInfo.InvariantCulture);
                 case "Dv":
                     return ((color.R * 65536) + (color.G * 256) + color.B).ToString(CultureInfo.InvariantCulture);
-                case "Na":
-                    return ColorNameHelper.GetColorNameIdentifier(color);
+
+                // case "Na":
+                //    return ColorNameHelper.GetColorNameIdentifier(color);
                 default: return string.Empty;
             }
         }

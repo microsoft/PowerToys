@@ -160,7 +160,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         {
             get
             {
-                return ColorFormatHelper.GetStringRepresentation(null, _format);
+                return Helpers.ColorNameHelper.ReplaceName(ColorFormatHelper.GetStringRepresentation(null, _format), null);
             }
 
             set

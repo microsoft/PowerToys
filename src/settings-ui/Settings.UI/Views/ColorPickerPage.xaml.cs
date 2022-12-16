@@ -11,7 +11,6 @@ using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.PowerToys.Settings.UI.ViewModels;
 using Microsoft.UI.Xaml.Controls;
 using Windows.ApplicationModel.Resources;
-using Windows.System;
 
 namespace Microsoft.PowerToys.Settings.UI.Views
 {
@@ -103,7 +102,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             ColorFormatModel newColorFormatModel = ViewModel.GetNewColorFormatModel();
             ColorFormatDialog.DataContext = newColorFormatModel;
             ColorFormatDialog.Tag = string.Empty;
-            NewColorFormat.Description = " " + ColorFormatHelper.GetStringRepresentation(null, newColorFormatModel.Format);
+            NewColorFormat.Description = " " + Library.Helpers.ColorNameHelper.ReplaceName(ColorFormatHelper.GetStringRepresentation(null, newColorFormatModel.Format), null);
             ColorFormatDialog.PrimaryButtonText = resourceLoader.GetString("ColorFormatSave");
             ColorFormatDialog.PrimaryButtonCommand = AddCommand;
             await ColorFormatDialog.ShowAsync();
@@ -124,7 +123,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
 
         private void NewColorFormat_TextChanged(object sender, TextChangedEventArgs e)
         {
-            NewColorFormat.Description = " " + ColorFormatHelper.GetStringRepresentation(null, NewColorFormat.Text);
+            NewColorFormat.Description = " " + Library.Helpers.ColorNameHelper.ReplaceName(ColorFormatHelper.GetStringRepresentation(null, NewColorFormat.Text), null);
             ViewModel.SetValidity(ColorFormatDialog.DataContext as ColorFormatModel, ColorFormatDialog.Tag as string);
         }
 
@@ -148,7 +147,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             ColorFormatDialog.Title = resourceLoader.GetString("EditCustomColorFormat");
             ColorFormatDialog.DataContext = colorFormatModel;
             ColorFormatDialog.Tag = new KeyValuePair<string, string>(colorFormatModel.Name, colorFormatModel.Format);
-            NewColorFormat.Description = " " + ColorFormatHelper.GetStringRepresentation(null, colorFormatModel.Format);
+            NewColorFormat.Description = " " + Library.Helpers.ColorNameHelper.ReplaceName(ColorFormatHelper.GetStringRepresentation(null, colorFormatModel.Format), null);
             ColorFormatDialog.PrimaryButtonText = resourceLoader.GetString("ColorFormatUpdate");
             ColorFormatDialog.PrimaryButtonCommand = UpdateCommand;
             await ColorFormatDialog.ShowAsync();
