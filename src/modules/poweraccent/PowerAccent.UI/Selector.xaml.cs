@@ -3,14 +3,9 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
-using System.Collections;
 using System.ComponentModel;
-using System.Globalization;
-using System.Linq;
-using System.Unicode;
 using System.Windows;
 using PowerAccent.Core.Services;
-using PowerToys.PowerAccentKeyboardService;
 using Point = PowerAccent.Core.Point;
 using Size = PowerAccent.Core.Size;
 
@@ -21,6 +16,8 @@ public partial class Selector : Window, IDisposable, INotifyPropertyChanged
     private readonly Core.PowerAccent _powerAccent = new ();
 
     private Visibility _characterNameVisibility = Visibility.Visible;
+
+    private int _selectedIndex = 0;
 
     public event PropertyChangedEventHandler PropertyChanged;
 
@@ -55,9 +52,9 @@ public partial class Selector : Window, IDisposable, INotifyPropertyChanged
 
     private void PowerAccent_OnSelectionCharacter(int index, string character)
     {
-        characters.SelectedIndex = index;
-
-        characterName.Text = _powerAccent.CharacterDescriptions[index];
+        _selectedIndex = index;
+        characters.SelectedIndex = _selectedIndex;
+        characterName.Text = _powerAccent.CharacterDescriptions[_selectedIndex];
     }
 
     private void PowerAccent_OnChangeDisplay(bool isActive, string[] chars)
@@ -67,7 +64,7 @@ public partial class Selector : Window, IDisposable, INotifyPropertyChanged
         if (isActive)
         {
             characters.ItemsSource = chars;
-            characters.SelectedIndex = 0;
+            characters.SelectedIndex = _selectedIndex;
             this.UpdateLayout(); // Required for filling the actual width/height before positioning.
             SetWindowPosition();
             SetWindowAlignment();

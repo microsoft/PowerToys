@@ -27,7 +27,7 @@ private:
 public:
     struct ProcessInfo
     {
-        DWORD pid;
+        DWORD pid = 0;
         std::wstring name;
         std::wstring user;
         std::vector<std::wstring> modules;

@@ -58,6 +58,9 @@
 	<ItemGroup>
 	  <None Remove="OOBE\Views\OobeOverviewPlaceholder.xaml" />
 	</ItemGroup>
+	<ItemGroup>
+	  <None Remove="Controls\ColorFormatEditor.xaml" />
+	</ItemGroup>
 
   <ItemGroup>
     <Content Include="Assets\SplashScreen.scale-200.png" />
@@ -96,6 +99,9 @@
   </ItemGroup>
 	
   <ItemGroup>
+    <Page Update="Controls\ColorFormatEditor.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <None Update="icon.ico">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>

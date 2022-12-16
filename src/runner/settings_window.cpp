@@ -383,17 +383,22 @@ void run_settings_window(bool show_oobe_window, bool show_scoobe_window, std::op
 
     BOOL process_created = false;
 
-    if (is_process_elevated())
-    {
-        auto res = RunNonElevatedFailsafe(executable_path, executable_args, get_module_folderpath());
-        process_created = res.has_value();
-        if (process_created)
-        {
-            process_info.dwProcessId = res->processID;
-            process_info.hProcess = res->processHandle.release();
-            g_isLaunchInProgress = false;
-        }
-    }
+    // Commented out to fix #22659
+    // Running settings non-elevated and modules elevated when PowerToys is running elevated results
+    // in settings making changes in one file (non-elevated user dir) and modules are reading settings
+    // from different (elevated user) dir
+    //if (is_process_elevated())
+    //{
+
+    //    auto res = RunNonElevatedFailsafe(executable_path, executable_args, get_module_folderpath());
+    //    process_created = res.has_value();
+    //    if (process_created)
+    //    {
+    //        process_info.dwProcessId = res->processID;
+    //        process_info.hProcess = res->processHandle.release();
+    //        g_isLaunchInProgress = false;
+    //    }
+    //}
 
     if (FALSE == process_created)
     {

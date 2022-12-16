@@ -889,11 +889,14 @@
     <value>Remove</value>
     <comment>Removes a user defined setting group for Image Resizer</comment>
   </data>
+	<data name="RemoveItem.Text" xml:space="preserve">
+    <value>Delete</value>
+  </data>
   <data name="ImageResizer_Image.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
     <value>Image Resizer</value>
   </data>
   <data name="ImageResizer_AddSizeButton.Content" xml:space="preserve">
-    <value>Add a size</value>
+    <value>Add new size</value>
   </data>
   <data name="ImageResizer_SaveSizeButton.Label" xml:space="preserve">
     <value>Save sizes</value>
@@ -1270,7 +1273,7 @@ Made with 💗 by Microsoft and the PowerToys community.</value>
     <value>Move down</value>
   </data>
   <data name="ColorPickerAddNewFormat.Content" xml:space="preserve">
-    <value>Add custom color format</value>
+    <value>Add new format</value>
   </data>
   <data name="NewColorFormat.Header" xml:space="preserve">
     <value>Format</value>
@@ -1296,118 +1299,118 @@ Made with 💗 by Microsoft and the PowerToys community.</value>
   <data name="ColorFormatDialog.SecondaryButtonText" xml:space="preserve">
     <value>Cancel</value>
   </data>
-  <data name="HelpLine1.Text" xml:space="preserve">
+  <data name="ColorFormatEditorHelpline1.Text" xml:space="preserve">
     <value>The following parameters can be used:</value>
   </data>
-  <data name="Help_red.Text" xml:space="preserve">
+  <data name="Help_red" xml:space="preserve">
     <value>red</value>
   </data>
-  <data name="Help_green.Text" xml:space="preserve">
+  <data name="Help_green" xml:space="preserve">
     <value>green</value>
   </data>
-  <data name="Help_blue.Text" xml:space="preserve">
+  <data name="Help_blue" xml:space="preserve">
     <value>blue</value>
   </data>
-  <data name="Help_alpha.Text" xml:space="preserve">
+  <data name="Help_alpha" xml:space="preserve">
     <value>alpha</value>
   </data>
-  <data name="Help_cyan.Text" xml:space="preserve">
+  <data name="Help_cyan" xml:space="preserve">
     <value>cyan</value>
   </data>
-  <data name="Help_magenta.Text" xml:space="preserve">
+  <data name="Help_magenta" xml:space="preserve">
     <value>magenta</value>
   </data>
-  <data name="Help_yellow.Text" xml:space="preserve">
+  <data name="Help_yellow" xml:space="preserve">
     <value>yellow</value>
   </data>
-  <data name="Help_black_key.Text" xml:space="preserve">
+  <data name="Help_black_key" xml:space="preserve">
     <value>black key</value>
   </data>
-  <data name="Help_hue.Text" xml:space="preserve">
+  <data name="Help_hue" xml:space="preserve">
     <value>hue</value>
   </data>
-  <data name="Help_hueNat.Text" xml:space="preserve">
+  <data name="Help_hueNat" xml:space="preserve">
     <value>hue (natural)</value>
   </data>
-  <data name="Help_saturationI.Text" xml:space="preserve">
+  <data name="Help_saturationI" xml:space="preserve">
     <value>saturation (HSI)</value>
   </data>
-  <data name="Help_saturationL.Text" xml:space="preserve">
+  <data name="Help_saturationL" xml:space="preserve">
     <value>saturation (HSL)</value>
   </data>
-  <data name="Help_saturationB.Text" xml:space="preserve">
+  <data name="Help_saturationB" xml:space="preserve">
     <value>saturation (HSB)</value>
   </data>
-  <data name="Help_brightness.Text" xml:space="preserve">
+  <data name="Help_brightness" xml:space="preserve">
     <value>brightness</value>
   </data>
-  <data name="Help_intensity.Text" xml:space="preserve">
+  <data name="Help_intensity" xml:space="preserve">
     <value>intensity</value>
   </data>
-  <data name="Help_lightnessNat.Text" xml:space="preserve">
+  <data name="Help_lightnessNat" xml:space="preserve">
     <value>lightness (nat)</value>
   </data>
-  <data name="Help_lightnessCIE.Text" xml:space="preserve">
+  <data name="Help_lightnessCIE" xml:space="preserve">
     <value>lightness (CIE)</value>
   </data>
-  <data name="Help_value.Text" xml:space="preserve">
+  <data name="Help_value" xml:space="preserve">
     <value>value</value>
   </data>
-  <data name="Help_whiteness.Text" xml:space="preserve">
+  <data name="Help_whiteness" xml:space="preserve">
     <value>whiteness</value>
   </data>
-  <data name="Help_blackness.Text" xml:space="preserve">
+  <data name="Help_blackness" xml:space="preserve">
     <value>blackness</value>
   </data>
-  <data name="Help_chromaticityA.Text" xml:space="preserve">
+  <data name="Help_chromaticityA" xml:space="preserve">
     <value>chromaticityA</value>
   </data>
-  <data name="Help_chromaticityB.Text" xml:space="preserve">
+  <data name="Help_chromaticityB" xml:space="preserve">
     <value>chromaticityB</value>
   </data>
-  <data name="Help_X_value.Text" xml:space="preserve">
+  <data name="Help_X_value" xml:space="preserve">
     <value>X value</value>
   </data>
-  <data name="Help_Y_value.Text" xml:space="preserve">
+  <data name="Help_Y_value" xml:space="preserve">
     <value>Y value</value>
   </data>
-  <data name="Help_Z_value.Text" xml:space="preserve">
+  <data name="Help_Z_value" xml:space="preserve">
     <value>Z value</value>
   </data>
-  <data name="Help_decimal_value_RGB.Text" xml:space="preserve">
+  <data name="Help_decimal_value_RGB" xml:space="preserve">
     <value>decimal value (RGB)</value>
   </data>
-  <data name="Help_decimal_value_BGR.Text" xml:space="preserve">
+  <data name="Help_decimal_value_BGR" xml:space="preserve">
     <value>decimal value (BGR)</value>
   </data>
-  <data name="Help_color_name.Text" xml:space="preserve">
+  <data name="Help_color_name" xml:space="preserve">
     <value>color name</value>
   </data>
-  <data name="HelpLine2.Text" xml:space="preserve">
+  <data name="ColorFormatEditorHelpline2.Text" xml:space="preserve">
     <value>The red, green, blue and alpha values can be formatted to the following formats:</value>
   </data>
-  <data name="Help_byte.Text" xml:space="preserve">
+  <data name="Help_byte" xml:space="preserve">
     <value>byte value (default)</value>
   </data>
-  <data name="Help_hexL1.Text" xml:space="preserve">
+  <data name="Help_hexL1" xml:space="preserve">
     <value>hex lowercase one digit</value>
   </data>
-  <data name="Help_hexU1.Text" xml:space="preserve">
+  <data name="Help_hexU1" xml:space="preserve">
     <value>hex uppercase one digit</value>
   </data>
-  <data name="Help_hexL2.Text" xml:space="preserve">
+  <data name="Help_hexL2" xml:space="preserve">
     <value>hex lowercase two digits</value>
   </data>
-  <data name="Help_hexU2.Text" xml:space="preserve">
+  <data name="Help_hexU2" xml:space="preserve">
     <value>hex uppercase two digits</value>
   </data>
-  <data name="Help_floatWith.Text" xml:space="preserve">
+  <data name="Help_floatWith" xml:space="preserve">
     <value>float with leading zero</value>
   </data>
-  <data name="Help_floatWithout.Text" xml:space="preserve">
+  <data name="Help_floatWithout" xml:space="preserve">
     <value>float without leading zero</value>
   </data>
-  <data name="HelpLine3.Text" xml:space="preserve">
+  <data name="ColorFormatEditorHelpline3.Text" xml:space="preserve">
     <value>Example:  %ReX means red value in hex uppercase two digits format.</value>
   </data>
   <data name="ColorPicker_ShowColorName.Header" xml:space="preserve">
