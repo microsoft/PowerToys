@@ -76,6 +76,7 @@ appxpackage
 APSTUDIO
 AQS
 Aqtobe
+ARCHITEW
 arcosh
 ARemapped
 argb
@@ -648,6 +649,7 @@ hdc
 hdrop
 HEB
 Heiko
+Helpline
 helptext
 Heure
 HGFE
