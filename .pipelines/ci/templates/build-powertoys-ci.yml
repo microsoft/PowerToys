@@ -9,6 +9,7 @@ jobs:
   variables:
     BuildConfiguration: ${{ parameters.configuration }}
     BuildPlatform: ${{ parameters.platform }}
+    NUGET_RESTORE_MSBUILD_ARGS: /p:Platform=${{ parameters.platform }} # Required for nuget to work due to self contained
   pool:
     demands: ImageOverride -equals WinDevVS17-latest
     ${{ if eq(variables['System.CollectionUri'], 'https://dev.azure.com/ms/') }}:

@@ -102,6 +102,7 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
             shortcutDialog.PrimaryButtonClick += ShortcutDialog_PrimaryButtonClick;
             shortcutDialog.Opened += ShortcutDialog_Opened;
             shortcutDialog.Closing += ShortcutDialog_Closing;
+            AutomationProperties.SetName(EditButton, resourceLoader.GetString("Activation_Shortcut_Title"));
         }
 
         private void ShortcutControl_Unloaded(object sender, RoutedEventArgs e)
@@ -373,12 +374,9 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
             {
                 if (disposing)
                 {
-                    // TODO: dispose managed state (managed objects)
                     hook.Dispose();
                 }
 
-                // TODO: free unmanaged resources (unmanaged objects) and override finalizer
-                // TODO: set large fields to null
                 disposedValue = true;
             }
         }

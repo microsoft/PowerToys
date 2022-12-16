@@ -37,6 +37,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             "IS",
             "IT",
             "KU",
+            "MK",
             "MI",
             "PI",
             "PL",
@@ -155,7 +156,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             }
         }
 
-        private int _inputTimeMs = 200;
+        private int _inputTimeMs = PowerAccentSettings.DefaultInputTimeMs;
 
         public int InputTimeMs
         {
