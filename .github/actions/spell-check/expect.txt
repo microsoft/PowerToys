@@ -89,7 +89,6 @@ ARRAYSIZE
 arsinh
 artanh
 Artsakh
-asd
 asdf
 AShortcut
 ASingle
@@ -558,7 +557,6 @@ FILEVERSION
 Filtergraph
 Filterkeyboard
 Filterx
-finalizer
 findfast
 firefox
 FIXEDFILEINFO
@@ -1088,7 +1086,6 @@ msc
 msclr
 mscordaccore
 mscordbi
-mscoree
 mscorlib
 mscorrc
 msdata
@@ -1160,7 +1157,7 @@ newdev
 newitem
 newpath
 newrow
-newtonsoft
+Newtonsoft
 niels
 nielslaute
 NIF
@@ -1701,7 +1698,6 @@ srwlock
 sse
 ssf
 Ssl
-sss
 STACKFRAME
 stackoverflow
 stackpanel
