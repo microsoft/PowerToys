@@ -649,6 +649,7 @@ hdc
 hdrop
 HEB
 Heiko
+Helpline
 helptext
 Heure
 HGFE

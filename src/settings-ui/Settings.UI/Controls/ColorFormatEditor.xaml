@@ -1,0 +1,119 @@
+<!--  Copyright (c) Microsoft Corporation. All rights reserved.  -->
+<!--  Licensed under the MIT License. See LICENSE in the project root for license information.  -->
+
+<UserControl
+    x:Class="Microsoft.PowerToys.Settings.UI.Controls.ColorFormatEditor"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:CommunityToolkit="using:CommunityToolkit.WinUI.UI.Controls"
+    xmlns:converters="using:Microsoft.PowerToys.Settings.UI.Converters"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:local="using:Microsoft.PowerToys.Settings.UI.Controls"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d">
+    <UserControl.Resources>
+        <converters:ColorFormatConverter x:Key="ColorFormatConverter" />
+        <DataTemplate x:Key="FormatParameterTemplate" x:DataType="local:ColorFormatParameter">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="34" />
+                    <ColumnDefinition Width="110" />
+                </Grid.ColumnDefinitions>
+
+                <TextBlock
+                    FontWeight="SemiBold"
+                    IsTextSelectionEnabled="True"
+                    Style="{StaticResource CaptionTextBlockStyle}"
+                    Text="{x:Bind Parameter}" />
+                <TextBlock
+                    Grid.Column="1"
+                    VerticalAlignment="Center"
+                    Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                    Style="{StaticResource CaptionTextBlockStyle}"
+                    Text="{x:Bind Description}"
+                    TextTrimming="CharacterEllipsis"
+                    TextWrapping="NoWrap" />
+            </Grid>
+        </DataTemplate>
+
+        <DataTemplate x:Key="ColorParameterTemplate" x:DataType="local:ColorFormatParameter">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="18" />
+                    <ColumnDefinition Width="186" />
+                </Grid.ColumnDefinitions>
+
+                <TextBlock
+                    FontWeight="SemiBold"
+                    IsTextSelectionEnabled="True"
+                    Style="{StaticResource CaptionTextBlockStyle}"
+                    Text="{x:Bind Parameter}" />
+                <TextBlock
+                    Grid.Column="1"
+                    VerticalAlignment="Center"
+                    Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                    Style="{StaticResource CaptionTextBlockStyle}"
+                    Text="{x:Bind Description}"
+                    TextTrimming="CharacterEllipsis"
+                    TextWrapping="NoWrap" />
+            </Grid>
+        </DataTemplate>
+
+        <ItemsPanelTemplate x:Key="ItemPanelTemplate">
+            <CommunityToolkit:WrapPanel
+                HorizontalSpacing="20"
+                Orientation="Horizontal"
+                VerticalSpacing="4" />
+        </ItemsPanelTemplate>
+    </UserControl.Resources>
+    <Grid>
+        <StackPanel Spacing="12">
+            <TextBox
+                x:Name="NewColorName"
+                x:Uid="NewColorName"
+                IsSpellCheckEnabled="False"
+                Text="{Binding Name, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                TextChanged="NewColorName_TextChanged" />
+
+            <TextBox
+                x:Name="NewColorFormatTextBox"
+                x:Uid="NewColorFormat"
+                IsSpellCheckEnabled="False"
+                Text="{Binding Format, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                TextChanged="NewColorFormatTextBox_TextChanged" />
+
+            <TextBlock
+                Margin="12,0,0,0"
+                FontWeight="SemiBold"
+                Foreground="{ThemeResource AccentTextFillColorPrimaryBrush}"
+                Style="{StaticResource CaptionTextBlockStyle}"
+                Text="{Binding ElementName=NewColorFormatTextBox, Path=Text, Converter={StaticResource ColorFormatConverter}}" />
+
+            <TextBlock
+                x:Uid="ColorFormatEditorHelpline1"
+                Margin="0,12,0,0"
+                Style="{StaticResource CaptionTextBlockStyle}" />
+
+            <ItemsControl
+                x:Name="ParametersItemsControl"
+                ItemTemplate="{StaticResource FormatParameterTemplate}"
+                ItemsPanel="{StaticResource ItemPanelTemplate}" />
+
+            <TextBlock
+                x:Uid="ColorFormatEditorHelpline2"
+                Margin="0,12,0,0"
+                VerticalAlignment="Bottom"
+                Style="{StaticResource CaptionTextBlockStyle}" />
+
+            <ItemsControl
+                x:Name="ColorParametersItemsControl"
+                ItemTemplate="{StaticResource ColorParameterTemplate}"
+                ItemsPanel="{StaticResource ItemPanelTemplate}" />
+
+            <TextBlock
+                x:Uid="ColorFormatEditorHelpline3"
+                VerticalAlignment="Bottom"
+                Style="{StaticResource CaptionTextBlockStyle}" />
+        </StackPanel>
+    </Grid>
+</UserControl>
