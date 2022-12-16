@@ -10,7 +10,6 @@ namespace Microsoft.PowerToys.Settings.UI.Library
     public abstract class BasePTModuleSettings
     {
         // Gets or sets name of the powertoy module.
-        [JsonRequired]
         [JsonPropertyName("name")]
         public string Name { get; set; }
 
