@@ -25,7 +25,6 @@
   <ItemGroup>
     <PackageReference Include="Microsoft.Windows.CsWinRT" Version="2.0.0" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.2.0" />
-    <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Moq" Version="4.16.1" />
