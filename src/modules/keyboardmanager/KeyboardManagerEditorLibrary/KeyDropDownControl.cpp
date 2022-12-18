@@ -268,7 +268,7 @@ void KeyDropDownControl::SetSelectionHandler(StackPanel& table, StackPanel row, 
             if (targetApp != nullptr)
             {
                 std::wstring newText = targetApp.Text().c_str();
-                std::wstring lowercaseDefAppName = KeyboardManagerEditorStrings::DefaultAppName;
+                std::wstring lowercaseDefAppName = KeyboardManagerEditorStrings::DefaultAppName();
                 std::transform(newText.begin(), newText.end(), newText.begin(), towlower);
                 std::transform(lowercaseDefAppName.begin(), lowercaseDefAppName.end(), lowercaseDefAppName.begin(), towlower);
                 if (newText == lowercaseDefAppName)
