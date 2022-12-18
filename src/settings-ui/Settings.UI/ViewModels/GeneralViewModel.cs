@@ -418,16 +418,16 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
                     var resultText = string.Empty;
 
-                    if (!results.lastRan.HasValue)
+                    if (!results.LastRan.HasValue)
                     {
                         // not ran since started.
                         return GetResourceString("General_SettingsBackupAndRestore_CurrentSettingsNoChecked"); // "Current Settings Unknown";
                     }
                     else
                     {
-                        if (results.success)
+                        if (results.Success)
                         {
-                            if (results.lastBackupExists)
+                            if (results.LastBackupExists)
                             {
                                 // if true, it means a backup would have been made
                                 resultText = GetResourceString("General_SettingsBackupAndRestore_CurrentSettingsDiffer"); // "Current Settings Differ";
@@ -440,7 +440,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                         }
                         else
                         {
-                            if (results.hadError)
+                            if (results.HadError)
                             {
                                 // if false and error we don't really know
                                 resultText = GetResourceString("General_SettingsBackupAndRestore_CurrentSettingsUnknown"); // "Current Settings Unknown";
@@ -452,7 +452,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                             }
                         }
 
-                        return $"{resultText} {GetResourceString("General_SettingsBackupAndRestore_CurrentSettingsStatusAt")} {results.lastRan.Value.ToLocalTime().ToString("G", CultureInfo.CurrentCulture)}";
+                        return $"{resultText} {GetResourceString("General_SettingsBackupAndRestore_CurrentSettingsStatusAt")} {results.LastRan.Value.ToLocalTime().ToString("G", CultureInfo.CurrentCulture)}";
                     }
                 }
                 catch (Exception e)
@@ -683,13 +683,13 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             }
 
             var results = SettingsUtils.RestoreSettings();
-            _backupRestoreMessageSeverity = results.severity;
+            _backupRestoreMessageSeverity = results.Severity;
 
-            if (!results.success)
+            if (!results.Success)
             {
                 _settingsBackupRestoreMessageVisible = true;
 
-                _settingsBackupMessage = GetResourceString(results.message);
+                _settingsBackupMessage = GetResourceString(results.Message);
 
                 NotifyAllBackupAndRestoreProperties();
 
@@ -720,8 +720,8 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             var results = SettingsUtils.BackupSettings();
 
             _settingsBackupRestoreMessageVisible = true;
-            _backupRestoreMessageSeverity = results.severity;
-            _settingsBackupMessage = GetResourceString(results.message);
+            _backupRestoreMessageSeverity = results.Severity;
+            _settingsBackupMessage = GetResourceString(results.Message);
 
             // now we do a dry run to get the results for "setting match"
             var settingsUtils = new SettingsUtils();

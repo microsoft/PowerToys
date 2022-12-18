@@ -2,10 +2,10 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System.Globalization;
+
 namespace Microsoft.PowerToys.ThumbnailHandler.Svg
 {
-    using System.Globalization;
-
     internal static class Program
     {
         private static SvgThumbnailProvider _thumbnailProvider;

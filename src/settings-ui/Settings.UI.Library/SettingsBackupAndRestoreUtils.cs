@@ -22,7 +22,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
     public class SettingsBackupAndRestoreUtils
     {
         private static SettingsBackupAndRestoreUtils instance;
-        private (bool success, string severity, bool lastBackupExists, DateTime? lastRan) lastBackupSettingsResults;
+        private (bool Success, string Severity, bool LastBackupExists, DateTime? LastRan) lastBackupSettingsResults;
         private static object backupSettingsInternalLock = new object();
         private static object removeOldBackupsLock = new object();
 
@@ -262,7 +262,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         /// A tuple that indicates if the backup was done or not, and a message.
         /// The message usually is a localized reference key.
         /// </returns>
-        public (bool success, string message, string severity) RestoreSettings(string appBasePath, string settingsBackupAndRestoreDir)
+        public (bool Success, string Message, string Severity) RestoreSettings(string appBasePath, string settingsBackupAndRestoreDir)
         {
             try
             {
@@ -554,26 +554,26 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         /// <remarks>
         /// This is a wrapper for BackupSettingsInternal, so we can check the time to run.
         /// </remarks>
-        public (bool success, string message, string severity, bool lastBackupExists) BackupSettings(string appBasePath, string settingsBackupAndRestoreDir, bool dryRun)
+        public (bool Success, string Message, string Severity, bool LastBackupExists) BackupSettings(string appBasePath, string settingsBackupAndRestoreDir, bool dryRun)
         {
             var sw = Stopwatch.StartNew();
             var results = BackupSettingsInternal(appBasePath, settingsBackupAndRestoreDir, dryRun);
             sw.Stop();
             Logger.LogInfo($"BackupSettings took {sw.ElapsedMilliseconds}");
-            lastBackupSettingsResults = (results.success, results.severity, results.lastBackupExists, DateTime.UtcNow);
+            lastBackupSettingsResults = (results.Success, results.Severity, results.LastBackupExists, DateTime.UtcNow);
             return results;
         }
 
         /// <summary>
         /// Method <c>DryRunBackup</c> wrapper function to do a dry-run backup
         /// </summary>
-        public (bool success, string message, string severity, bool lastBackupExists) DryRunBackup()
+        public (bool Success, string Message, string Severity, bool LastBackupExists) DryRunBackup()
         {
             var settingsUtils = new SettingsUtils();
             var appBasePath = Path.GetDirectoryName(settingsUtils.GetSettingsFilePath());
             string settingsBackupAndRestoreDir = GetSettingsBackupAndRestoreDir();
             var results = BackupSettings(appBasePath, settingsBackupAndRestoreDir, true);
-            lastBackupSettingsResults = (results.success, results.severity, results.lastBackupExists, DateTime.UtcNow);
+            lastBackupSettingsResults = (results.Success, results.Severity, results.LastBackupExists, DateTime.UtcNow);
             return results;
         }
 
@@ -583,9 +583,9 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         /// <returns>
         /// A tuple that indicates if the backup was done or not, and other information
         /// </returns>
-        public (bool success, bool hadError, bool lastBackupExists, DateTime? lastRan) GetLastBackupSettingsResults()
+        public (bool Success, bool HadError, bool LastBackupExists, DateTime? LastRan) GetLastBackupSettingsResults()
         {
-            return (lastBackupSettingsResults.success, lastBackupSettingsResults.severity == "Error", lastBackupSettingsResults.lastBackupExists, lastBackupSettingsResults.lastRan);
+            return (lastBackupSettingsResults.Success, lastBackupSettingsResults.Severity == "Error", lastBackupSettingsResults.LastBackupExists, lastBackupSettingsResults.LastRan);
         }
 
         /// <summary>
@@ -595,7 +595,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         /// A tuple that indicates if the backup was done or not, and a message.
         /// The message usually is a localized reference key.
         /// </returns>
-        private (bool success, string message, string severity, bool lastBackupExists) BackupSettingsInternal(string appBasePath, string settingsBackupAndRestoreDir, bool dryRun)
+        private (bool Success, string Message, string Severity, bool LastBackupExists) BackupSettingsInternal(string appBasePath, string settingsBackupAndRestoreDir, bool dryRun)
         {
             var lastBackupExists = false;
 
@@ -650,7 +650,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
                     }
 
                     var anyFileBackedUp = false;
-                    var skippedSettingsFiles = new Dictionary<string, (string path, string settings)>();
+                    var skippedSettingsFiles = new Dictionary<string, (string Path, string Settings)>();
                     var updatedSettingsFiles = new Dictionary<string, string>();
 
                     foreach (var currentFile in currentSettingsFiles)
@@ -717,7 +717,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
                     {
                         // if we did do a backup, we need to copy in all the settings files we skipped so the backup is complete.
                         // this is needed since we might use the backup on another machine/
-                        var relativePath = currentFile.Value.path.Substring(appBasePath.Length + 1);
+                        var relativePath = currentFile.Value.Path.Substring(appBasePath.Length + 1);
                         var backupFullPath = Path.Combine(fullBackupDir, relativePath);
 
                         Logger.LogInfo($"BackupSettings writing, {backupFullPath}, dryRun:{dryRun}");
@@ -726,7 +726,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
                             TryCreateDirectory(fullBackupDir);
                             TryCreateDirectory(Path.GetDirectoryName(backupFullPath));
 
-                            File.WriteAllText(backupFullPath, currentFile.Value.settings);
+                            File.WriteAllText(backupFullPath, currentFile.Value.Settings);
                         }
                     }
 

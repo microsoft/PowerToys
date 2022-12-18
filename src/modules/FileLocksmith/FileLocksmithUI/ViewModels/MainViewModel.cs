@@ -2,23 +2,20 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.Diagnostics;
+using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
+using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.Input;
+using FileLocksmith.Interop;
+using global::FileLocksmithUI.Helpers;
+
 namespace PowerToys.FileLocksmithUI.ViewModels
 {
-    using System;
-    using System.Collections.Generic;
-    using System.Collections.ObjectModel;
-    using System.Diagnostics;
-    using System.Linq;
-    using System.Threading;
-    using System.Threading.Tasks;
-    using CommunityToolkit.Mvvm.ComponentModel;
-    using CommunityToolkit.Mvvm.Input;
-    using FileLocksmith.Interop;
-    using global::FileLocksmithUI;
-    using global::FileLocksmithUI.Helpers;
-    using Microsoft.UI.Dispatching;
-    using Microsoft.UI.Xaml.Controls;
-
 #pragma warning disable CA1708 // Identifiers should differ by more than case
     public partial class MainViewModel : ObservableObject, IDisposable
 #pragma warning restore CA1708 // Identifiers should differ by more than case
@@ -31,7 +28,7 @@ namespace PowerToys.FileLocksmithUI.ViewModels
         private bool _disposed;
         private CancellationTokenSource _cancelProcessWatching;
 
-        public ObservableCollection<ProcessResult> Processes { get; } = new ();
+        public ObservableCollection<ProcessResult> Processes { get; } = new();
 
         public bool IsLoading
         {

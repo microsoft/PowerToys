@@ -29,8 +29,8 @@ namespace Microsoft.PowerToys.Run.Plugin.Calculator.UnitTests
         public void ErrorResultOnInvalidKeywordQuery(string typedString, string expectedResult)
         {
             // Setup
-            Mock<Main> main = new ();
-            Query expectedQuery = new (typedString, "=");
+            Mock<Main> main = new();
+            Query expectedQuery = new(typedString, "=");
 
             // Act
             var result = main.Object.Query(expectedQuery).FirstOrDefault().SubTitle;
@@ -56,8 +56,8 @@ namespace Microsoft.PowerToys.Run.Plugin.Calculator.UnitTests
         public void NoResultOnInvalidGlobalQuery(string typedString)
         {
             // Setup
-            Mock<Main> main = new ();
-            Query expectedQuery = new (typedString);
+            Mock<Main> main = new();
+            Query expectedQuery = new(typedString);
 
             // Act
             var result = main.Object.Query(expectedQuery).Count;
@@ -80,9 +80,9 @@ namespace Microsoft.PowerToys.Run.Plugin.Calculator.UnitTests
         public void NoResultIfQueryEndsWithBinaryOperator(string typedString)
         {
             // Setup
-            Mock<Main> main = new ();
-            Query expectedQuery = new (typedString);
-            Query expectedQueryWithKeyword = new ("=" + typedString, "=");
+            Mock<Main> main = new();
+            Query expectedQuery = new(typedString);
+            Query expectedQueryWithKeyword = new("=" + typedString, "=");
 
             // Act
             var result = main.Object.Query(expectedQuery).Count;
@@ -101,9 +101,9 @@ namespace Microsoft.PowerToys.Run.Plugin.Calculator.UnitTests
         public void NoErrorForDivisionByNumberWithDecimalDigits(string typedString)
         {
             // Setup
-            Mock<Main> main = new ();
-            Query expectedQuery = new (typedString);
-            Query expectedQueryWithKeyword = new ("=" + typedString, "=");
+            Mock<Main> main = new();
+            Query expectedQuery = new(typedString);
+            Query expectedQueryWithKeyword = new("=" + typedString, "=");
 
             // Act
             var result = main.Object.Query(expectedQuery).FirstOrDefault().SubTitle;
