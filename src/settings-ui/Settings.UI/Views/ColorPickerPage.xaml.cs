@@ -4,10 +4,13 @@
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Windows.Input;
+using CommunityToolkit.Labs.WinUI;
 using ManagedCommon;
 using Microsoft.PowerToys.Settings.UI.Helpers;
 using Microsoft.PowerToys.Settings.UI.Library;
+using Microsoft.PowerToys.Settings.UI.Library.Utilities;
 using Microsoft.PowerToys.Settings.UI.ViewModels;
 using Microsoft.UI.Xaml.Controls;
 using Windows.ApplicationModel.Resources;
@@ -22,6 +25,8 @@ namespace Microsoft.PowerToys.Settings.UI.Views
         public ICommand AddCommand => new RelayCommand(Add);
 
         public ICommand UpdateCommand => new RelayCommand(Update);
+
+        private ResourceLoader resourceLoader = ResourceLoader.GetForViewIndependentUse();
 
         public ColorPickerPage()
         {
@@ -81,6 +86,24 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             }
         }
 
+        private async void RemoveButton_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
+        {
+            ColorFormatModel color = ((MenuFlyoutItem)sender).DataContext as ColorFormatModel;
+
+            ContentDialog dialog = new ContentDialog();
+            dialog.XamlRoot = RootPage.XamlRoot;
+            dialog.Title = color.Name;
+            dialog.PrimaryButtonText = resourceLoader.GetString("Yes");
+            dialog.CloseButtonText = resourceLoader.GetString("No");
+            dialog.DefaultButton = ContentDialogButton.Primary;
+            dialog.Content = new TextBlock() { Text = resourceLoader.GetString("Delete_Dialog_Description") };
+            dialog.PrimaryButtonClick += (s, args) =>
+            {
+                    ViewModel.DeleteModel(color);
+            };
+            var result = await dialog.ShowAsync();
+        }
+
         private void Add()
         {
             ColorFormatModel newColorFormat = ColorFormatDialog.DataContext as ColorFormatModel;
@@ -98,12 +121,11 @@ namespace Microsoft.PowerToys.Settings.UI.Views
 
         private async void NewFormatClick(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
         {
-            var resourceLoader = ResourceLoader.GetForViewIndependentUse();
             ColorFormatDialog.Title = resourceLoader.GetString("AddCustomColorFormat");
             ColorFormatModel newColorFormatModel = ViewModel.GetNewColorFormatModel();
             ColorFormatDialog.DataContext = newColorFormatModel;
             ColorFormatDialog.Tag = string.Empty;
-            NewColorFormat.Description = " " + ColorFormatHelper.GetStringRepresentation(null, newColorFormatModel.Format);
+
             ColorFormatDialog.PrimaryButtonText = resourceLoader.GetString("ColorFormatSave");
             ColorFormatDialog.PrimaryButtonCommand = AddCommand;
             await ColorFormatDialog.ShowAsync();
@@ -122,36 +144,22 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             ColorFormatDialog.Hide();
         }
 
-        private void NewColorFormat_TextChanged(object sender, TextChangedEventArgs e)
-        {
-            NewColorFormat.Description = " " + ColorFormatHelper.GetStringRepresentation(null, NewColorFormat.Text);
-            ViewModel.SetValidity(ColorFormatDialog.DataContext as ColorFormatModel, ColorFormatDialog.Tag as string);
-        }
-
-        private void NewColorName_TextChanged(object sender, TextChangedEventArgs e)
-        {
-            ViewModel.SetValidity(ColorFormatDialog.DataContext as ColorFormatModel, ColorFormatDialog.Tag as string);
-        }
-
-        private void RemoveButton_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
-        {
-            Button btn = sender as Button;
-            ColorFormatModel colorFormatModel = btn.DataContext as ColorFormatModel;
-            ViewModel.DeleteModel(colorFormatModel);
-        }
-
         private async void EditButton_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
         {
-            var resourceLoader = ResourceLoader.GetForViewIndependentUse();
-            Button btn = sender as Button;
+            SettingsCard btn = sender as SettingsCard;
             ColorFormatModel colorFormatModel = btn.DataContext as ColorFormatModel;
             ColorFormatDialog.Title = resourceLoader.GetString("EditCustomColorFormat");
             ColorFormatDialog.DataContext = colorFormatModel;
             ColorFormatDialog.Tag = new KeyValuePair<string, string>(colorFormatModel.Name, colorFormatModel.Format);
-            NewColorFormat.Description = " " + ColorFormatHelper.GetStringRepresentation(null, colorFormatModel.Format);
+
             ColorFormatDialog.PrimaryButtonText = resourceLoader.GetString("ColorFormatUpdate");
             ColorFormatDialog.PrimaryButtonCommand = UpdateCommand;
             await ColorFormatDialog.ShowAsync();
+        }
+
+        private void ColorFormatEditor_PropertyChanged(object sender, EventArgs e)
+        {
+            ColorFormatDialog.IsPrimaryButtonEnabled = ViewModel.SetValidity(ColorFormatDialog.DataContext as ColorFormatModel, ColorFormatDialog.Tag as string);
         }
     }
 }

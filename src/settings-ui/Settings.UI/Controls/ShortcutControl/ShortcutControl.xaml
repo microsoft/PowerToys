@@ -15,11 +15,10 @@
             <Button
                 x:Name="EditButton"
                 Padding="0"
-                Background="Transparent"
-                BorderBrush="Transparent"
-                Click="OpenDialogButton_Click">
+                Click="OpenDialogButton_Click"
+                CornerRadius="8">
                 <StackPanel
-                    Margin="6,0,6,0"
+                    Margin="12,6,12,6"
                     Orientation="Horizontal"
                     Spacing="16">
                     <ItemsControl
@@ -29,9 +28,7 @@
                         IsTabStop="False">
                         <ItemsControl.ItemsPanel>
                             <ItemsPanelTemplate>
-                                <StackPanel
-                                    Orientation="Horizontal"
-                                    Spacing="4" />
+                                <StackPanel Orientation="Horizontal" Spacing="4" />
                             </ItemsPanelTemplate>
                         </ItemsControl.ItemsPanel>
                         <ItemsControl.ItemTemplate>

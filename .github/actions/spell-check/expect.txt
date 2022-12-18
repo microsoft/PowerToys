@@ -76,6 +76,7 @@ appxpackage
 APSTUDIO
 AQS
 Aqtobe
+ARCHITEW
 arcosh
 ARemapped
 argb
@@ -88,7 +89,6 @@ ARRAYSIZE
 arsinh
 artanh
 Artsakh
-asd
 asdf
 AShortcut
 ASingle
@@ -557,7 +557,6 @@ FILEVERSION
 Filtergraph
 Filterkeyboard
 Filterx
-finalizer
 findfast
 firefox
 FIXEDFILEINFO
@@ -648,6 +647,7 @@ hdc
 hdrop
 HEB
 Heiko
+Helpline
 helptext
 Heure
 HGFE
@@ -1086,7 +1086,6 @@ msc
 msclr
 mscordaccore
 mscordbi
-mscoree
 mscorlib
 mscorrc
 msdata
@@ -1158,7 +1157,7 @@ newdev
 newitem
 newpath
 newrow
-newtonsoft
+Newtonsoft
 niels
 nielslaute
 NIF
@@ -1699,7 +1698,6 @@ srwlock
 sse
 ssf
 Ssl
-sss
 STACKFRAME
 stackoverflow
 stackpanel
