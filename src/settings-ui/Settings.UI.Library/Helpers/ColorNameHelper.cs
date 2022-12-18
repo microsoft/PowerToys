@@ -2,12 +2,12 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System.Drawing;
+using global::Settings.UI.Library.Resources;
+using ManagedCommon;
+
 namespace Microsoft.PowerToys.Settings.UI.Library.Helpers
 {
-    using System.Drawing;
-    using global::Settings.UI.Library.Resources;
-    using ManagedCommon;
-
     public static class ColorNameHelper
     {
         public static string GetColorNameFromColorIdentifier(string colorIdentifier)
