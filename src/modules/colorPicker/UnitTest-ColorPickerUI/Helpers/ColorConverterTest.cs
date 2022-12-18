@@ -5,7 +5,6 @@
 using System;
 using System.Drawing;
 using System.Globalization;
-using ColorPicker.Helpers;
 using ManagedCommon;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
@@ -57,13 +56,13 @@ namespace Microsoft.ColorPicker.UnitTests
             var result = ColorFormatHelper.ConvertToHSLColor(color);
 
             // hue[0°..360°]
-            Assert.AreEqual(result.hue, hue, 0.2d);
+            Assert.AreEqual(result.Hue, hue, 0.2d);
 
             // saturation[0..1]
-            Assert.AreEqual(result.saturation * 100d, saturation, 0.2d);
+            Assert.AreEqual(result.Saturation * 100d, saturation, 0.2d);
 
             // lightness[0..1]
-            Assert.AreEqual(result.lightness * 100d, lightness, 0.2d);
+            Assert.AreEqual(result.Lightness * 100d, lightness, 0.2d);
         }
 
         // test values taken from https://de.wikipedia.org/wiki/HSV-Farbraum
@@ -106,13 +105,13 @@ namespace Microsoft.ColorPicker.UnitTests
             var result = ColorFormatHelper.ConvertToHSVColor(color);
 
             // hue [0°..360°]
-            Assert.AreEqual(result.hue, hue, 0.2d);
+            Assert.AreEqual(result.Hue, hue, 0.2d);
 
             // saturation[0..1]
-            Assert.AreEqual(result.saturation * 100d, saturation, 0.2d);
+            Assert.AreEqual(result.Saturation * 100d, saturation, 0.2d);
 
             // value[0..1]
-            Assert.AreEqual(result.value * 100d, value, 0.2d);
+            Assert.AreEqual(result.Value * 100d, value, 0.2d);
         }
 
         // test values taken from https://de.wikipedia.org/wiki/HSV-Farbraum
@@ -155,13 +154,13 @@ namespace Microsoft.ColorPicker.UnitTests
             var result = ColorFormatHelper.ConvertToHSBColor(color);
 
             // hue [0°..360°]
-            Assert.AreEqual(result.hue, hue, 0.2d);
+            Assert.AreEqual(result.Hue, hue, 0.2d);
 
             // saturation[0..1]
-            Assert.AreEqual(result.saturation * 100d, saturation, 0.2d);
+            Assert.AreEqual(result.Saturation * 100d, saturation, 0.2d);
 
             // value[0..1]
-            Assert.AreEqual(result.brightness * 100d, value, 0.2d);
+            Assert.AreEqual(result.Brightness * 100d, value, 0.2d);
         }
 
         [TestMethod]
@@ -199,16 +198,16 @@ namespace Microsoft.ColorPicker.UnitTests
             var result = ColorFormatHelper.ConvertToCMYKColor(color);
 
             // cyan[0..1]
-            Assert.AreEqual(result.cyan * 100d, cyan, 0.5d);
+            Assert.AreEqual(result.Cyan * 100d, cyan, 0.5d);
 
             // magenta[0..1]
-            Assert.AreEqual(result.magenta * 100d, magenta, 0.5d);
+            Assert.AreEqual(result.Magenta * 100d, magenta, 0.5d);
 
             // yellow[0..1]
-            Assert.AreEqual(result.yellow * 100d, yellow, 0.5d);
+            Assert.AreEqual(result.Yellow * 100d, yellow, 0.5d);
 
             // black[0..1]
-            Assert.AreEqual(result.blackKey * 100d, blackKey, 0.5d);
+            Assert.AreEqual(result.BlackKey * 100d, blackKey, 0.5d);
         }
 
         // values taken from https://en.wikipedia.org/wiki/HSL_and_HSV#Examples
@@ -249,13 +248,13 @@ namespace Microsoft.ColorPicker.UnitTests
             var result = ColorFormatHelper.ConvertToHSIColor(color);
 
             // hue[0°..360°]
-            Assert.AreEqual(result.hue, hue, 0.5d);
+            Assert.AreEqual(result.Hue, hue, 0.5d);
 
             // saturation[0..1]
-            Assert.AreEqual(result.saturation * 100d, saturation, 0.5d);
+            Assert.AreEqual(result.Saturation * 100d, saturation, 0.5d);
 
             // intensity[0..1]
-            Assert.AreEqual(result.intensity * 100d, intensity, 0.5d);
+            Assert.AreEqual(result.Intensity * 100d, intensity, 0.5d);
         }
 
         // values taken from https://en.wikipedia.org/wiki/HSL_and_HSV#Examples
@@ -297,13 +296,13 @@ namespace Microsoft.ColorPicker.UnitTests
             var result = ColorFormatHelper.ConvertToHWBColor(color);
 
             // hue[0°..360°]
-            Assert.AreEqual(result.hue, hue, 0.5d);
+            Assert.AreEqual(result.Hue, hue, 0.5d);
 
             // whiteness[0..1]
-            Assert.AreEqual(result.whiteness * 100d, whiteness, 0.5d);
+            Assert.AreEqual(result.Whiteness * 100d, whiteness, 0.5d);
 
             // blackness[0..1]
-            Assert.AreEqual(result.blackness * 100d, blackness, 0.5d);
+            Assert.AreEqual(result.Blackness * 100d, blackness, 0.5d);
         }
 
         // values taken from https://en.wikipedia.org/wiki/HSL_and_HSV#Examples
@@ -345,13 +344,13 @@ namespace Microsoft.ColorPicker.UnitTests
             var result = ColorFormatHelper.ConvertToNaturalColor(color);
 
             // hue
-            Assert.AreEqual(result.hue, hue);
+            Assert.AreEqual(result.Hue, hue);
 
             // whiteness[0..1]
-            Assert.AreEqual(result.whiteness * 100d, whiteness, 0.5d);
+            Assert.AreEqual(result.Whiteness * 100d, whiteness, 0.5d);
 
             // blackness[0..1]
-            Assert.AreEqual(result.blackness * 100d, blackness, 0.5d);
+            Assert.AreEqual(result.Blackness * 100d, blackness, 0.5d);
         }
 
         [TestMethod]
@@ -401,13 +400,13 @@ namespace Microsoft.ColorPicker.UnitTests
             var result = ColorFormatHelper.ConvertToCIELABColor(color);
 
             // lightness[0..100]
-            Assert.AreEqual(Math.Round(result.lightness, 2), lightness);
+            Assert.AreEqual(Math.Round(result.Lightness, 2), lightness);
 
             // chromaticityA[-128..127]
-            Assert.AreEqual(Math.Round(result.chromaticityA, 2), chromaticityA);
+            Assert.AreEqual(Math.Round(result.ChromaticityA, 2), chromaticityA);
 
             // chromaticityB[-128..127]
-            Assert.AreEqual(Math.Round(result.chromaticityB, 2), chromaticityB);
+            Assert.AreEqual(Math.Round(result.ChromaticityB, 2), chromaticityB);
         }
 
         // The following results are computed using LittleCMS2, an open-source color management engine,
@@ -465,13 +464,13 @@ namespace Microsoft.ColorPicker.UnitTests
             var result = ColorFormatHelper.ConvertToCIEXYZColor(color);
 
             // x[0..0.95047]
-            Assert.AreEqual(Math.Round(result.x * 100, 4), x);
+            Assert.AreEqual(Math.Round(result.X * 100, 4), x);
 
             // y[0..1]
-            Assert.AreEqual(Math.Round(result.y * 100, 4), y);
+            Assert.AreEqual(Math.Round(result.Y * 100, 4), y);
 
             // z[0..1.08883]
-            Assert.AreEqual(Math.Round(result.z * 100, 4), z);
+            Assert.AreEqual(Math.Round(result.Z * 100, 4), z);
         }
 
         [TestMethod]
