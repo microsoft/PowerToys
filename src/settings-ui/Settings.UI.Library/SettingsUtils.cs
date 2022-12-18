@@ -189,7 +189,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         /// <summary>
         /// Method <c>BackupSettings</c> Mostly a wrapper for SettingsBackupAndRestoreUtils.BackupSettings
         /// </summary>
-        public static (bool success, string message, string severity, bool lastBackupExists) BackupSettings()
+        public static (bool Success, string Message, string Severity, bool LastBackupExists) BackupSettings()
         {
             var settingsBackupAndRestoreUtilsX = SettingsBackupAndRestoreUtils.Instance;
             var settingsUtils = new SettingsUtils();
@@ -202,7 +202,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         /// <summary>
         /// Method <c>RestoreSettings</c> Mostly a wrapper for SettingsBackupAndRestoreUtils.RestoreSettings
         /// </summary>
-        public static (bool success, string message, string severity) RestoreSettings()
+        public static (bool Success, string Message, string Severity) RestoreSettings()
         {
             var settingsBackupAndRestoreUtilsX = SettingsBackupAndRestoreUtils.Instance;
             var settingsUtils = new SettingsUtils();

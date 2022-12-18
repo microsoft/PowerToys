@@ -2,12 +2,12 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System.Globalization;
+using System.Windows.Automation.Peers;
+using System.Windows.Controls;
+
 namespace FancyZonesEditor.Controls
 {
-    using System.Globalization;
-    using System.Windows.Automation.Peers;
-    using System.Windows.Controls;
-
     internal class CustomSliderAutomationPeer : SliderAutomationPeer
     {
         private string name = string.Empty;

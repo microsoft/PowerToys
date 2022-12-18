@@ -41,8 +41,8 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.UnitTests
         public void CountWithoutPluginKeyword(string typedString, int expectedResultCount)
         {
             // Setup
-            Mock<Main> main = new ();
-            Query expectedQuery = new (typedString);
+            Mock<Main> main = new();
+            Query expectedQuery = new(typedString);
 
             // Act
             var result = main.Object.Query(expectedQuery).Count;
@@ -63,8 +63,8 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.UnitTests
         public void CountWithPluginKeyword(string typedString, int expectedResultCount)
         {
             // Setup
-            Mock<Main> main = new ();
-            Query expectedQuery = new (typedString, "(");
+            Mock<Main> main = new();
+            Query expectedQuery = new(typedString, "(");
 
             // Act
             var result = main.Object.Query(expectedQuery);
@@ -87,8 +87,8 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.UnitTests
         public void ValidateBehaviorOnGlobalQueries(string typedString, int expectedResultCount)
         {
             // Setup
-            Mock<Main> main = new ();
-            Query expectedQuery = new (typedString);
+            Mock<Main> main = new();
+            Query expectedQuery = new(typedString);
 
             // Act
             var result = main.Object.Query(expectedQuery);
@@ -141,8 +141,8 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.UnitTests
         public void CanFindFormatResult(string typedString, string expectedResult)
         {
             // Setup
-            Mock<Main> main = new ();
-            Query expectedQuery = new (typedString, "(");
+            Mock<Main> main = new();
+            Query expectedQuery = new(typedString, "(");
 
             // Act
             var result = main.Object.Query(expectedQuery).FirstOrDefault(x => x.SubTitle.StartsWith(expectedResult, StringComparison.CurrentCulture));
@@ -160,8 +160,8 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.UnitTests
         public void DateTimeNumberOnlyInput(string typedString, string expectedResult)
         {
             // Setup
-            Mock<Main> main = new ();
-            Query expectedQuery = new (typedString, "(");
+            Mock<Main> main = new();
+            Query expectedQuery = new(typedString, "(");
 
             // Act
             var result = main.Object.Query(expectedQuery).FirstOrDefault(x => x.SubTitle.StartsWith(expectedResult, StringComparison.CurrentCulture));
@@ -188,8 +188,8 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.UnitTests
         public void InvalidInputNotShowsResults(string typedString)
         {
             // Setup
-            Mock<Main> main = new ();
-            Query expectedQuery = new (typedString, "(");
+            Mock<Main> main = new();
+            Query expectedQuery = new(typedString, "(");
 
             // Act
             var result = main.Object.Query(expectedQuery).FirstOrDefault();
@@ -206,8 +206,8 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.UnitTests
         public void InvalidNumberInputShowsErrorMessage(string typedString)
         {
             // Setup
-            Mock<Main> main = new ();
-            Query expectedQuery = new (typedString, "(");
+            Mock<Main> main = new();
+            Query expectedQuery = new(typedString, "(");
 
             // Act
             var result = main.Object.Query(expectedQuery).FirstOrDefault().Title;
@@ -224,8 +224,8 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.UnitTests
         public void InvalidInputNotShowsErrorMessage(string typedString)
         {
             // Setup
-            Mock<Main> main = new ();
-            Query expectedQuery = new (typedString, "(");
+            Mock<Main> main = new();
+            Query expectedQuery = new(typedString, "(");
 
             // Act
             var result = main.Object.Query(expectedQuery).FirstOrDefault();

@@ -44,7 +44,7 @@ namespace Microsoft.Plugin.Folder.Sources
             return query.Any(c => c.Equals('>'));
         }
 
-        private (string search, string incompleteName) Process(string search)
+        private (string Search, string IncompleteName) Process(string search)
         {
             string incompleteName = string.Empty;
             if (HasSpecialChars(search) || !_directory.Exists($@"{search}\"))

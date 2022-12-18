@@ -86,7 +86,7 @@ namespace ImageResizer.Models
             var batch = CreateBatch(_ => { });
             batch.Files.Add("Image1.jpg");
             batch.Files.Add("Image2.jpg");
-            var calls = new ConcurrentBag<(int i, double count)>();
+            var calls = new ConcurrentBag<(int I, double Count)>();
 
             batch.Process(
                 (i, count) => calls.Add((i, count)),

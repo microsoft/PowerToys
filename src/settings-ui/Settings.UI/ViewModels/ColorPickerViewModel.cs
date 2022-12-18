@@ -395,7 +395,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             return newColorFormatModel;
         }
 
-        internal void SetValidity(ColorFormatModel colorFormatModel, string oldName)
+        internal bool SetValidity(ColorFormatModel colorFormatModel, string oldName)
         {
             if ((colorFormatModel.Format == string.Empty) || (colorFormatModel.Name == string.Empty))
             {
@@ -410,6 +410,8 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 colorFormatModel.IsValid = ColorFormats.Count(x => x.Name.ToUpperInvariant().Equals(colorFormatModel.Name.ToUpperInvariant(), StringComparison.Ordinal))
                     < (colorFormatModel.IsNew ? 1 : 2);
             }
+
+            return colorFormatModel.IsValid;
         }
 
         internal void DeleteModel(ColorFormatModel colorFormatModel)
