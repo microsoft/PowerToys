@@ -4,7 +4,7 @@
 
 using System;
 using ManagedCommon;
-using Microsoft.PowerToys.Settings.UI.Library;
+using Microsoft.PowerToys.Settings.UI.Library.Helpers;
 using Microsoft.UI.Xaml.Data;
 
 namespace Microsoft.PowerToys.Settings.UI.Converters
@@ -15,7 +15,8 @@ namespace Microsoft.PowerToys.Settings.UI.Converters
         {
             if (value != null)
             {
-                return ColorFormatHelper.GetStringRepresentation(null, (string)value);
+                // get string representation in 2 steps. First replace all color specific number values then in 2nd step replace color name with localisation
+                return Library.Helpers.ColorNameHelper.ReplaceName(ColorFormatHelper.GetStringRepresentation(null, (string)value), null);
             }
             else
             {
