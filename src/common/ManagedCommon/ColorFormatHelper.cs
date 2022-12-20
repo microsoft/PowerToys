@@ -348,7 +348,7 @@ namespace ManagedCommon
                     formatString = string.Concat(formatString.AsSpan(0, formatterPosition), GetStringRepresentation(color.Value, paramFormat, paramType), formatString.AsSpan(formatterPosition + paramCount + 1));
                 }
 
-                // search for the next occurence of the formatter char
+                // search for the next occurrence of the formatter char
                 formatterPosition = formatString.IndexOf('%', formatterPosition + 1);
             }
 
