@@ -15,6 +15,7 @@ namespace Microsoft.PowerToys.Settings.UI.Converters
         {
             if (value != null)
             {
+                // get string representation in 2 steps. First replace all color specific number values then in 2nd step replace color name with localisation
                 return Library.Helpers.ColorNameHelper.ReplaceName(ColorFormatHelper.GetStringRepresentation(null, (string)value), null);
             }
             else

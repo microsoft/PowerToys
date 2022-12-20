@@ -288,6 +288,7 @@ namespace ManagedCommon
             { "Dr", 'i' },   // Decimal value (RGB)   int
             { "Dv", 'i' },   // Decimal value (BGR)   int
 
+            // Removed Parameter Na, as the color name gets replaced separately, in localised way
             // { "Na", 's' },   // Color name       string
         };
 
@@ -456,6 +457,7 @@ namespace ManagedCommon
                 case "Dv":
                     return (color.R + (color.G * 256) + (color.B * 65536)).ToString(CultureInfo.InvariantCulture);
 
+                // Removed Parameter Na, as the color name gets replaced separately, in localised way
                 // case "Na":
                 //     return ColorNameHelper.GetColorName(color);
                 default: return string.Empty;
