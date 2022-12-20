@@ -234,7 +234,7 @@ public class PowerAccent : IDisposable
                 _selectedIndex = _characters.Length / 2;
             }
 
-            if (triggerKey == TriggerKey.Space)
+            if (triggerKey == TriggerKey.Space || _settingService.StartSelectionFromTheLeft)
             {
                 _selectedIndex = 0;
             }

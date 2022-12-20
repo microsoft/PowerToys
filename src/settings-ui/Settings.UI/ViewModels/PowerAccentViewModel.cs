@@ -274,6 +274,24 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             }
         }
 
+        public bool StartSelectionFromTheLeft
+        {
+            get
+            {
+                return _powerAccentSettings.Properties.StartSelectionFromTheLeft;
+            }
+
+            set
+            {
+                if (value != _powerAccentSettings.Properties.StartSelectionFromTheLeft)
+                {
+                    _powerAccentSettings.Properties.StartSelectionFromTheLeft = value;
+                    OnPropertyChanged(nameof(StartSelectionFromTheLeft));
+                    RaisePropertyChanged();
+                }
+            }
+        }
+
         private void RaisePropertyChanged([CallerMemberName] string propertyName = null)
         {
             // Notify UI of property change

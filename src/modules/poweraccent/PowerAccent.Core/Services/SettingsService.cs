@@ -95,6 +95,7 @@ public class SettingsService
 
                         ShowUnicodeDescription = settings.Properties.ShowUnicodeDescription;
                         SortByUsageFrequency = settings.Properties.SortByUsageFrequency;
+                        StartSelectionFromTheLeft = settings.Properties.StartSelectionFromTheLeft;
                     }
                 }
                 catch (Exception ex)
@@ -207,6 +208,21 @@ public class SettingsService
         set
         {
             _sortByUsageFrequency = value;
+        }
+    }
+
+    private bool _startSelectionFromTheLeft;
+
+    public bool StartSelectionFromTheLeft
+    {
+        get
+        {
+            return _startSelectionFromTheLeft;
+        }
+
+        set
+        {
+            _startSelectionFromTheLeft = value;
         }
     }
 }
