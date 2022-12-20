@@ -6,8 +6,8 @@ namespace PowerAccent.Core.Tools
 {
     public class CharactersUsageInfo
     {
-        private Dictionary<string, uint> _characterUsageCounters = new ();
-        private Dictionary<string, long> _characterUsageTimestamp = new ();
+        private Dictionary<string, uint> _characterUsageCounters = new();
+        private Dictionary<string, long> _characterUsageTimestamp = new();
 
         public bool Empty()
         {
