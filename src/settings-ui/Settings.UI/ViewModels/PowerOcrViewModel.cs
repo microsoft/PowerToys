@@ -3,13 +3,18 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Globalization;
+using System.Linq;
 using System.Text.Json;
 using System.Timers;
 using global::PowerToys.GPOWrapper;
 using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.PowerToys.Settings.UI.Library.Helpers;
 using Microsoft.PowerToys.Settings.UI.Library.Interfaces;
+using Windows.Globalization;
+using Windows.Media.Ocr;
 
 namespace Microsoft.PowerToys.Settings.UI.ViewModels
 {
@@ -31,6 +36,33 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         private GpoRuleConfigured _enabledGpoRuleConfiguration;
         private bool _enabledStateIsGPOConfigured;
         private bool _isEnabled;
+        private int _languageIndex;
+        private List<Language> possibleOcrLanguages;
+
+        public ObservableCollection<string> AvailableLanguages { get; } = new ObservableCollection<string>();
+
+        public int LanguageIndex
+        {
+            get
+            {
+                return _languageIndex;
+            }
+
+            set
+            {
+                if (value != _languageIndex)
+                {
+                    _languageIndex = value;
+                    if (_powerOcrSettings != null && _languageIndex < possibleOcrLanguages.Count)
+                    {
+                        _powerOcrSettings.Properties.PreferredLanguage = possibleOcrLanguages[_languageIndex].DisplayName;
+                    }
+
+                    OnPropertyChanged(nameof(LanguageIndex));
+                    NotifySettingsChanged();
+                }
+            }
+        }
 
         private Func<string, int> SendConfigMSG { get; }
 
@@ -82,6 +114,8 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             _delayedTimer.Interval = SaveSettingsDelayInMs;
             _delayedTimer.Elapsed += DelayedTimer_Tick;
             _delayedTimer.AutoReset = false;
+
+            InitializeLanguages();
         }
 
         public bool IsEnabled
@@ -128,6 +162,45 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                     NotifySettingsChanged();
                 }
             }
+        }
+
+        private void InitializeLanguages()
+        {
+            possibleOcrLanguages = OcrEngine.AvailableRecognizerLanguages.ToList();
+        }
+
+        internal void SetLanguageSelectedIndex()
+        {
+            int preferredIndex = -1;
+            int systemLanguageIndex = -1;
+            CultureInfo systemCulture = CultureInfo.CurrentUICulture;
+            possibleOcrLanguages = OcrEngine.AvailableRecognizerLanguages.ToList();
+            foreach (Language language in possibleOcrLanguages.OrderBy(x => x.NativeName))
+            {
+                if (_powerOcrSettings.Properties.PreferredLanguage?.Equals(language.DisplayName) == true)
+                {
+                    preferredIndex = AvailableLanguages.Count;
+                }
+
+                if (systemCulture.DisplayName.Equals(language.DisplayName) || systemCulture.Parent.DisplayName.Equals(language.DisplayName))
+                {
+                    systemLanguageIndex = AvailableLanguages.Count;
+                }
+
+                AvailableLanguages.Add(language.NativeName);
+            }
+
+            if (preferredIndex == -1)
+            {
+                preferredIndex = systemLanguageIndex;
+            }
+
+            if (preferredIndex == -1)
+            {
+                preferredIndex = 0;
+            }
+
+            LanguageIndex = preferredIndex;
         }
 
         private void ScheduleSavingOfSettings()
