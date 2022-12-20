@@ -23,7 +23,6 @@ public class PowerAccent : IDisposable
     private string[] _characters = Array.Empty<string>();
     private string[] _characterDescriptions = Array.Empty<string>();
     private int _selectedIndex = -1;
-    private bool _toolbarTriggeredBySpace = false;
     private bool _showUnicodeDescription;
 
     public LetterKey[] LetterKeysShowingDescription => _letterKeysShowingDescription;
@@ -59,11 +58,11 @@ public class PowerAccent : IDisposable
 
     private void SetEvents()
     {
-        _keyboardListener.SetShowToolbarEvent(new PowerToys.PowerAccentKeyboardService.ShowToolbar((LetterKey letterKey, bool triggeredBySpace) =>
+        _keyboardListener.SetShowToolbarEvent(new PowerToys.PowerAccentKeyboardService.ShowToolbar((LetterKey letterKey) =>
         {
             System.Windows.Application.Current.Dispatcher.Invoke(() =>
             {
-                ShowToolbar(letterKey, triggeredBySpace);
+                ShowToolbar(letterKey);
             });
         }));
 
@@ -89,12 +88,11 @@ public class PowerAccent : IDisposable
         }));
     }
 
-    private void ShowToolbar(LetterKey letterKey, bool triggeredBySpace)
+    private void ShowToolbar(LetterKey letterKey)
     {
         _visible = true;
 
-        _toolbarTriggeredBySpace = triggeredBySpace;
-        _characters = GetCharacters(letterKey, triggeredBySpace);
+        _characters = GetCharacters(letterKey);
         _characterDescriptions = GetCharacterDescriptions(_characters);
         _showUnicodeDescription = _settingService.ShowUnicodeDescription;
 
@@ -108,17 +106,14 @@ public class PowerAccent : IDisposable
         }, TaskScheduler.FromCurrentSynchronizationContext());
     }
 
-    private string[] GetCharacters(LetterKey letterKey, bool triggeredBySpace)
+    private string[] GetCharacters(LetterKey letterKey)
     {
         var characters = Languages.GetDefaultLetterKey(letterKey, _settingService.SelectedLang);
         if (_settingService.SortByUsageFrequency)
         {
-            if (triggeredBySpace)
-            {
-                characters = characters.OrderByDescending(character => _usageInfo.GetUsageFrequency(character))
-                    .ThenByDescending(character => _usageInfo.GetLastUsageTimestamp(character)).
-                    ToArray<string>();
-            }
+            characters = characters.OrderByDescending(character => _usageInfo.GetUsageFrequency(character))
+                .ThenByDescending(character => _usageInfo.GetLastUsageTimestamp(character)).
+                ToArray<string>();
         }
         else if (!_usageInfo.Empty())
         {
@@ -209,7 +204,8 @@ public class PowerAccent : IDisposable
                     if (_selectedIndex != -1)
                     {
                         WindowsFunctions.Insert(_characters[_selectedIndex], true);
-                        if (_toolbarTriggeredBySpace)
+
+                        if (_settingService.SortByUsageFrequency)
                         {
                             _usageInfo.IncrementUsageFrequency(_characters[_selectedIndex]);
                         }

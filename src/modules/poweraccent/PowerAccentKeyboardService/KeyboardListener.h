@@ -50,7 +50,7 @@ namespace winrt::PowerToys::PowerAccentKeyboardService::implementation
         HHOOK s_llKeyboardHook = nullptr;
         bool m_toolbarVisible;
         PowerAccentSettings m_settings;
-        std::function<void(LetterKey, bool)> m_showToolbarCb;
+        std::function<void(LetterKey)> m_showToolbarCb;
         std::function<void(InputType)> m_hideToolbarCb;
         std::function<void(TriggerKey, bool)> m_nextCharCb;
         std::function<bool(LetterKey)> m_isLanguageLetterCb;
