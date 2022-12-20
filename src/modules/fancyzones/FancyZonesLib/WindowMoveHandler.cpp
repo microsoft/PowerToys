@@ -12,32 +12,6 @@
 
 namespace WindowMoveHandlerUtils
 {
-    bool IsCursorTypeIndicatingSizeEvent()
-    {
-        CURSORINFO cursorInfo = { 0 };
-        cursorInfo.cbSize = sizeof(cursorInfo);
-
-        if (::GetCursorInfo(&cursorInfo))
-        {
-            if (::LoadCursor(NULL, IDC_SIZENS) == cursorInfo.hCursor)
-            {
-                return true;
-            }
-            if (::LoadCursor(NULL, IDC_SIZEWE) == cursorInfo.hCursor)
-            {
-                return true;
-            }
-            if (::LoadCursor(NULL, IDC_SIZENESW) == cursorInfo.hCursor)
-            {
-                return true;
-            }
-            if (::LoadCursor(NULL, IDC_SIZENWSE) == cursorInfo.hCursor)
-            {
-                return true;
-            }
-        }
-        return false;
-    }
 }
 
 WindowMoveHandler::WindowMoveHandler(const std::function<void()>& keyUpdateCallback) :
