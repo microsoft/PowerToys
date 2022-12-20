@@ -60,7 +60,6 @@ private:
         bool hasNoVisibleOwner = false;
     };
 
-    void WarnIfElevationIsRequired(HWND window) noexcept;
     void UpdateDragState() noexcept;
 
     void SetWindowTransparency(HWND window) noexcept;
