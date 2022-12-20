@@ -65,7 +65,6 @@ private:
 
     void SetWindowTransparency(HWND window) noexcept;
     void ResetWindowTransparency() noexcept;
-    void SwallowKey(const WORD key) noexcept;
 
     bool m_inDragging{}; // Whether or not a move/size operation is currently active
     HWND m_draggedWindow{}; // The window that is being moved/sized
