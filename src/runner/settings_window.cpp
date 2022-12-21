@@ -28,6 +28,7 @@
 #define BUFSIZE 1024
 
 TwoWayPipeMessageIPC* current_settings_ipc = NULL;
+std::mutex ipc_mutex;
 std::atomic_bool g_isLaunchInProgress = false;
 
 json::JsonObject get_power_toys_settings()
@@ -81,6 +82,24 @@ std::optional<std::wstring> dispatch_json_action_to_module(const json::JsonObjec
                     {
                         schedule_restart_as_elevated(true);
                         PostQuitMessage(0);
+                    }
+                }
+                else if (action == L"restart_maintain_elevation")
+                {
+                    // this was added to restart and maintain elevation, which is needed after settings are change from outside the normal process.
+                    // since a normal PostQuitMessage(0) would usually cause this process to save it's in memory settings to disk, we need to
+                    // send a PostQuitMessage(1) and check for that on exit, and skip the settings-flush.
+                    auto loaded = PTSettingsHelper::load_general_settings();
+
+                    if (is_process_elevated())
+                    {
+                        schedule_restart_as_elevated(true);
+                        PostQuitMessage(1);
+                    }
+                    else
+                    {
+                        schedule_restart_as_non_elevated(true);
+                        PostQuitMessage(1);
                     }
                 }
                 else if (action == L"check_for_updates")
@@ -147,11 +166,6 @@ void dispatch_received_json(const std::wstring& json_to_parse)
 
     for (const auto& base_element : j)
     {
-        if (!current_settings_ipc)
-        {
-            continue;
-        }
-
         const auto name = base_element.Key();
         const auto value = base_element.Value();
 
@@ -159,25 +173,41 @@ void dispatch_received_json(const std::wstring& json_to_parse)
         {
             apply_general_settings(value.GetObjectW());
             const std::wstring settings_string{ get_all_settings().Stringify().c_str() };
-            current_settings_ipc->send(settings_string);
+            {
+                std::unique_lock lock{ ipc_mutex };
+                if(current_settings_ipc)
+                    current_settings_ipc->send(settings_string);
+            }
         }
         else if (name == L"powertoys")
         {
             dispatch_json_config_to_modules(value.GetObjectW());
             const std::wstring settings_string{ get_all_settings().Stringify().c_str() };
-            current_settings_ipc->send(settings_string);
+            {
+                std::unique_lock lock{ ipc_mutex };
+                if(current_settings_ipc)
+                    current_settings_ipc->send(settings_string);
+            }
         }
         else if (name == L"refresh")
         {
             const std::wstring settings_string{ get_all_settings().Stringify().c_str() };
-            current_settings_ipc->send(settings_string);
+            {
+                std::unique_lock lock{ ipc_mutex };
+                if(current_settings_ipc)
+                    current_settings_ipc->send(settings_string);
+            }
         }
         else if (name == L"action")
         {
             auto result = dispatch_json_action_to_module(value.GetObjectW());
             if (result.has_value())
             {
-                current_settings_ipc->send(result.value());
+                {
+                    std::unique_lock lock{ ipc_mutex };
+                    if(current_settings_ipc)
+                        current_settings_ipc->send(result.value());
+                }
             }
         }
     }
@@ -353,17 +383,22 @@ void run_settings_window(bool show_oobe_window, bool show_scoobe_window, std::op
 
     BOOL process_created = false;
 
-    if (is_process_elevated())
-    {
-        auto res = RunNonElevatedFailsafe(executable_path, executable_args, get_module_folderpath());
-        process_created = res.has_value();
-        if (process_created)
-        {
-            process_info.dwProcessId = res->processID;
-            process_info.hProcess = res->processHandle.release();
-            g_isLaunchInProgress = false;
-        }
-    }
+    // Commented out to fix #22659
+    // Running settings non-elevated and modules elevated when PowerToys is running elevated results
+    // in settings making changes in one file (non-elevated user dir) and modules are reading settings
+    // from different (elevated user) dir
+    //if (is_process_elevated())
+    //{
+
+    //    auto res = RunNonElevatedFailsafe(executable_path, executable_args, get_module_folderpath());
+    //    process_created = res.has_value();
+    //    if (process_created)
+    //    {
+    //        process_info.dwProcessId = res->processID;
+    //        process_info.hProcess = res->processHandle.release();
+    //        g_isLaunchInProgress = false;
+    //    }
+    //}
 
     if (FALSE == process_created)
     {
@@ -396,8 +431,11 @@ void run_settings_window(bool show_oobe_window, bool show_scoobe_window, std::op
         goto LExit;
     }
 
-    current_settings_ipc = new TwoWayPipeMessageIPC(powertoys_pipe_name, settings_pipe_name, receive_json_send_to_main_thread);
-    current_settings_ipc->start(hToken);
+    {
+        std::unique_lock lock{ ipc_mutex };
+        current_settings_ipc = new TwoWayPipeMessageIPC(powertoys_pipe_name, settings_pipe_name, receive_json_send_to_main_thread);
+        current_settings_ipc->start(hToken);
+    }
     g_settings_process_id = process_info.dwProcessId;
 
     if (process_info.hProcess)
@@ -425,12 +463,14 @@ LExit:
     {
         CloseHandle(process_info.hThread);
     }
-
-    if (current_settings_ipc)
     {
-        current_settings_ipc->end();
-        delete current_settings_ipc;
-        current_settings_ipc = nullptr;
+        std::unique_lock lock{ ipc_mutex };
+        if (current_settings_ipc)
+        {
+            current_settings_ipc->end();
+            delete current_settings_ipc;
+            current_settings_ipc = nullptr;
+        }
     }
 
     if (hToken)
@@ -444,7 +484,7 @@ LExit:
 #define MAX_TITLE_LENGTH 100
 void bring_settings_to_front()
 {
-    auto callback = [](HWND hwnd, LPARAM data) -> BOOL {
+    auto callback = [](HWND hwnd, LPARAM /*data*/) -> BOOL {
         DWORD processId;
         if (GetWindowThreadProcessId(hwnd, &processId) && processId == g_settings_process_id)
         {
@@ -551,6 +591,8 @@ std::string ESettingsWindowNames_to_string(ESettingsWindowNames value)
         return "ShortcutGuide";
     case ESettingsWindowNames::VideoConference:
         return "VideoConference";
+    case ESettingsWindowNames::Hosts:
+        return "Hosts";
     default:
     {
         Logger::error(L"Can't convert ESettingsWindowNames value={} to string", static_cast<int>(value));
@@ -609,6 +651,10 @@ ESettingsWindowNames ESettingsWindowNames_from_string(std::string value)
     else if (value == "VideoConference")
     {
         return ESettingsWindowNames::VideoConference;
+    }
+    else if (value == "Hosts")
+    {
+        return ESettingsWindowNames::Hosts;
     }
     else
     {

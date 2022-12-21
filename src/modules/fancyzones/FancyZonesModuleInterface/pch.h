@@ -9,9 +9,3 @@
 #include <TraceLoggingActivity.h>
 #include <wil\common.h>
 #include <wil\result.h>
-
-
-namespace winrt
-{
-    using namespace ::winrt;
-}

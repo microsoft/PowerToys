@@ -93,7 +93,7 @@ LRESULT CALLBACK MeasureToolWndProc(HWND window, UINT message, WPARAM wparam, LP
         if (auto state = GetWindowParam<Serialized<MeasureToolState>*>(window))
         {
             state->Read([](const MeasureToolState& s) { s.commonState->overlayBoxText.Read([](const OverlayBoxText& text) {
-                                                            SetClipBoardToText(text.buffer);
+                                                            SetClipBoardToText(text.buffer.data());
                                                         }); });
         }
         PostMessageW(window, WM_CLOSE, {}, {});
@@ -158,7 +158,7 @@ void DrawMeasureToolTick(const CommonState& commonState,
             }
         }
     });
-    
+
     if (!gotMeasurement)
         return;
 
@@ -257,8 +257,7 @@ void DrawMeasureToolTick(const CommonState& commonState,
     d2dState.DrawTextBox(text.buffer.data(),
                          measureStringBufLen,
                          crossSymbolPos,
-                         static_cast<float>(cursorPos.x),
-                         static_cast<float>(cursorPos.y),
+                         D2D_POINT_2F{ static_cast<float>(cursorPos.x), static_cast<float>(cursorPos.y) },
                          true,
                          window);
 }

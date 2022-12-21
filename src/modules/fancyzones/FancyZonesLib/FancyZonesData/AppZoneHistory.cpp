@@ -129,8 +129,8 @@ namespace JsonUtils
                     auto appHistoryArray = json.GetNamedArray(NonLocalizable::AppZoneHistoryIds::HistoryID);
                     for (uint32_t i = 0; i < appHistoryArray.Size(); ++i)
                     {
-                        json::JsonObject json = appHistoryArray.GetObjectAt(i);
-                        if (auto data = ParseSingleAppZoneHistoryItem(json); data.has_value())
+                        json::JsonObject json_hist = appHistoryArray.GetObjectAt(i);
+                        if (auto data = ParseSingleAppZoneHistoryItem(json_hist); data.has_value())
                         {
                             result.data.push_back(std::move(data.value()));
                         }
@@ -305,12 +305,11 @@ void AppZoneHistory::AdjustWorkAreaIds(const std::vector<FancyZonesDataTypes::Mo
 {
     bool dirtyFlag = false;
 
-    for (auto iter = m_history.begin(); iter != m_history.end(); ++iter)
+    for (auto& [app, data] : m_history)
     {
-        auto& [app, data] = *iter;
-        for (auto& dataIter = data.begin(); dataIter != data.end(); ++dataIter)
+        for (auto& dataIter : data)
         {
-            auto& dataMonitorId = dataIter->workAreaId.monitorId;
+            auto& dataMonitorId = dataIter.workAreaId.monitorId;
             bool serialNumberNotSet = dataMonitorId.serialNumber.empty() && !dataMonitorId.deviceId.isDefault();
             bool monitorNumberNotSet = dataMonitorId.deviceId.number == 0;
             if (serialNumberNotSet || monitorNumberNotSet)
@@ -556,7 +555,7 @@ void AppZoneHistory::UpdateProcessIdToHandleMap(HWND window, const FancyZonesDat
     }
 }
 
-ZoneIndexSet AppZoneHistory::GetAppLastZoneIndexSet(HWND window, const FancyZonesDataTypes::WorkAreaId& workAreaId, const std::wstring_view& zoneSetId) const
+ZoneIndexSet AppZoneHistory::GetAppLastZoneIndexSet(HWND window, const FancyZonesDataTypes::WorkAreaId& workAreaId, const std::wstring& zoneSetId) const
 {
     auto processPath = get_process_path_waiting_uwp(window);
     if (processPath.empty())

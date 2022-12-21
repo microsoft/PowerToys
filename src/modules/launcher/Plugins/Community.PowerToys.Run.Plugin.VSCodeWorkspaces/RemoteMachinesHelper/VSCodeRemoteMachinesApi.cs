@@ -47,8 +47,8 @@ namespace Community.PowerToys.Run.Plugin.VSCodeWorkspaces.RemoteMachinesHelper
                                         var machine = new VSCodeRemoteMachine();
                                         machine.Host = h.Host;
                                         machine.VSCodeInstance = vscodeInstance;
-                                        machine.HostName = h.HostName != null ? h.HostName : string.Empty;
-                                        machine.User = h.User != null ? h.User : string.Empty;
+                                        machine.HostName = h.HostName ?? string.Empty;
+                                        machine.User = h.User ?? string.Empty;
 
                                         results.Add(machine);
                                     }

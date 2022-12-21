@@ -80,7 +80,7 @@ void KeyDropDownControl::SetDefaultProperties(bool isShortcut, bool renderDisabl
     // Attach flyout to the drop down
     warningFlyout.as<Flyout>().Content(warningMessage.as<TextBlock>());
 
-    // Enable narrator for Content of FlyoutPresenter. For details https://docs.microsoft.com/en-us/uwp/api/windows.ui.xaml.controls.flyout?view=winrt-19041#accessibility
+    // Enable narrator for Content of FlyoutPresenter. For details https://learn.microsoft.com/uwp/api/windows.ui.xaml.controls.flyout?view=winrt-19041#accessibility
     Style style = Style(winrt::xaml_typename<FlyoutPresenter>());
     style.Setters().Append(Setter(Windows::UI::Xaml::Controls::Control::IsTabStopProperty(), winrt::box_value(true)));
     style.Setters().Append(Setter(Windows::UI::Xaml::Controls::Control::TabNavigationProperty(), winrt::box_value(Windows::UI::Xaml::Input::KeyboardNavigationMode::Cycle)));
@@ -268,7 +268,7 @@ void KeyDropDownControl::SetSelectionHandler(StackPanel& table, StackPanel row, 
             if (targetApp != nullptr)
             {
                 std::wstring newText = targetApp.Text().c_str();
-                std::wstring lowercaseDefAppName = KeyboardManagerEditorStrings::DefaultAppName;
+                std::wstring lowercaseDefAppName = KeyboardManagerEditorStrings::DefaultAppName();
                 std::transform(newText.begin(), newText.end(), newText.begin(), towlower);
                 std::transform(lowercaseDefAppName.begin(), lowercaseDefAppName.end(), lowercaseDefAppName.begin(), towlower);
                 if (newText == lowercaseDefAppName)

@@ -14,7 +14,9 @@ namespace ColorPicker.Settings
 
         SettingItem<bool> ChangeCursor { get; }
 
-        SettingItem<ColorRepresentationType> CopiedColorRepresentation { get; set; }
+        SettingItem<string> CopiedColorRepresentation { get; set; }
+
+        SettingItem<string> CopiedColorRepresentationFormat { get; set; }
 
         SettingItem<ColorPickerActivationAction> ActivationAction { get; }
 
@@ -22,7 +24,7 @@ namespace ColorPicker.Settings
 
         SettingItem<int> ColorHistoryLimit { get; }
 
-        ObservableCollection<string> VisibleColorFormats { get; }
+        ObservableCollection<System.Collections.Generic.KeyValuePair<string, string>> VisibleColorFormats { get; }
 
         SettingItem<bool> ShowColorName { get; }
 

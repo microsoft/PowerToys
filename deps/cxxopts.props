@@ -1,7 +1,0 @@
-<Project>
-	<ItemDefinitionGroup>
-		<ClCompile>
-			<AdditionalIncludeDirectories>$(MSBuildThisFileDirectory)cxxopts\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-		</ClCompile>
-	</ItemDefinitionGroup>
-</Project>

@@ -128,7 +128,7 @@ HRESULT VideoCaptureProxyPin::ConnectionMediaType(AM_MEDIA_TYPE* pmt)
         return VFW_E_NOT_CONNECTED;
     }
 
-    *pmt = *CopyMediaType(_mediaFormat).release();
+    *pmt = *CopyMediaType(_mediaFormat.get()).release();
     return S_OK;
 }
 
@@ -196,7 +196,7 @@ HRESULT VideoCaptureProxyPin::EnumMediaTypes(IEnumMediaTypes** ppEnum)
     *ppEnum = nullptr;
 
     auto enumerator = winrt::make_self<MediaTypeEnumerator>();
-    enumerator->_objects.emplace_back(CopyMediaType(_mediaFormat));
+    enumerator->_objects.emplace_back(CopyMediaType(_mediaFormat.get()));
     *ppEnum = enumerator.detach();
 
     return S_OK;
@@ -251,7 +251,7 @@ HRESULT VideoCaptureProxyPin::GetFormat(AM_MEDIA_TYPE** ppmt)
         LOG("VideoCaptureProxyPin::GetFormat FAILED ppmt");
         return E_POINTER;
     }
-    *ppmt = CopyMediaType(_mediaFormat).release();
+    *ppmt = CopyMediaType(_mediaFormat.get()).release();
     return S_OK;
 }
 
@@ -299,7 +299,7 @@ HRESULT VideoCaptureProxyPin::GetStreamCaps(int iIndex, AM_MEDIA_TYPE** ppmt, BY
     caps.MinBitsPerSecond = vih->dwBitRate;
     caps.MaxBitsPerSecond = caps.MinBitsPerSecond;
 
-    *ppmt = CopyMediaType(_mediaFormat).release();
+    *ppmt = CopyMediaType(_mediaFormat.get()).release();
 
     const auto caps_begin = reinterpret_cast<const char*>(&caps);
     std::copy(caps_begin, caps_begin + sizeof(caps), pSCC);
@@ -765,7 +765,7 @@ HRESULT VideoCaptureProxyFilter::EnumPins(IEnumPins** ppEnum)
 
         auto& webcam = webcams[*selectedCamIdx];
         auto pin = winrt::make_self<VideoCaptureProxyPin>();
-        pin->_mediaFormat = CopyMediaType(webcam.bestFormat.mediaType);
+        pin->_mediaFormat = CopyMediaType(webcam.bestFormat.mediaType.get());
         pin->_owningFilter = this;
         _outPin.attach(pin.detach());
 

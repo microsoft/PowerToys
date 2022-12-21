@@ -58,18 +58,24 @@ bool Logger::wasLogFailedShown()
 void Logger::init(std::string loggerName, std::wstring logFilePath, std::wstring_view logSettingsPath)
 {
     auto logLevel = getLogLevel(logSettingsPath);
+    bool newLoggerCreated = false;
     try
     {
-        auto sink = make_shared<daily_file_sink_mt>(logFilePath, 0, 0, false, LogSettings::retention);
-        if (IsDebuggerPresent())
+        logger = spdlog::get(loggerName);
+        if (logger == nullptr)
         {
-            auto msvc_sink = make_shared<msvc_sink_mt>();
-            msvc_sink->set_pattern("[%Y-%m-%d %H:%M:%S.%f] [%n] [t-%t] [%l] %v");
-            logger = make_shared<spdlog::logger>(loggerName, sinks_init_list{ sink, msvc_sink });
-        }
-        else
-        {
-            logger = make_shared<spdlog::logger>(loggerName, sink);
+            auto sink = make_shared<daily_file_sink_mt>(logFilePath, 0, 0, false, LogSettings::retention);
+            if (IsDebuggerPresent())
+            {
+                auto msvc_sink = make_shared<msvc_sink_mt>();
+                msvc_sink->set_pattern("[%Y-%m-%d %H:%M:%S.%f] [%n] [t-%t] [%l] %v");
+                logger = make_shared<spdlog::logger>(loggerName, sinks_init_list{ sink, msvc_sink });
+            }
+            else
+            {
+                logger = make_shared<spdlog::logger>(loggerName, sink);
+            }
+            newLoggerCreated = true;
         }
     }
     catch (...)
@@ -89,20 +95,24 @@ void Logger::init(std::string loggerName, std::wstring logFilePath, std::wstring
         return;
     }
 
-    logger->set_level(logLevel);
-    logger->set_pattern("[%Y-%m-%d %H:%M:%S.%f] [p-%P] [t-%t] [%l] %v");
-    spdlog::register_logger(logger);
-    spdlog::flush_every(std::chrono::seconds(3));
+    if (newLoggerCreated)
+    {
+        logger->set_level(logLevel);
+        logger->set_pattern("[%Y-%m-%d %H:%M:%S.%f] [p-%P] [t-%t] [%l] %v");
+        logger->flush_on(logLevel); // Auto flush on every log message.
+        spdlog::register_logger(logger);
+    }
+
     logger->info("{} logger is initialized", loggerName);
 }
 
 void Logger::init(std::vector<spdlog::sink_ptr> sinks)
 {
-    auto logger = std::make_shared<spdlog::logger>("", begin(sinks), end(sinks));
-    if (!logger)
+    auto init_logger = std::make_shared<spdlog::logger>("", begin(sinks), end(sinks));
+    if (!init_logger)
     {
         return;
     }
 
-    Logger::logger = logger;
+    Logger::logger = init_logger;
 }

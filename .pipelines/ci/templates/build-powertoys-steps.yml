@@ -8,6 +8,13 @@ steps:
   clean: true
 
 - task: PowerShell@2
+  displayName: Verifying Nuget packages for PowerToys.sln
+  inputs:
+    filePath: '$(build.sourcesdirectory)\.pipelines\verifyNugetPackages.ps1'
+    arguments: -solution '$(build.sourcesdirectory)\PowerToys.sln'
+    pwsh: true
+
+- task: PowerShell@2
   displayName: Verify Arm64 configuration for PowerToys.sln
   inputs:
     filePath: '$(build.sourcesdirectory)\.pipelines\verifyArm64Configuration.ps1'
@@ -43,10 +50,10 @@ steps:
     pwsh: true
 
 - task: UseDotNet@2
-  displayName: 'Use .NET 6 SDK'
+  displayName: 'Use .NET 7 SDK'
   inputs:
     packageType: sdk
-    version: '6.x'
+    version: '7.x'
 
 - task: NuGetToolInstaller@1
   displayName: Ensure NuGet Installer
@@ -197,13 +204,12 @@ steps:
       **\Microsoft.PowerToys.Run.Plugin.TimeZone.UnitTests.dll
       **\Microsoft.Plugin.WindowsTerminal.UnitTests.dll
       **\Microsoft.Plugin.WindowWalker.UnitTests.dll
+      **\PreviewPaneUnitTests.dll
+      **\UnitTests-SvgThumbnailProvider.dll
+      **\UnitTests-SvgPreviewHandler.dll
+      **\PowerToys.Hosts.Tests.dll
       !**\obj\**
       !**\ref\**
-
-# TODO: Enable these tests after figuring out what caused the tests that depend on WebView2 to start timing out in CI.
-#  **\PreviewPaneUnitTests.dll # It's UnitTests-MarkdownPreviewHandler
-#  **\UnitTests-SvgThumbnailProvider.dll
-#  **\UnitTests-SvgPreviewHandler.dll
 
 # Native dlls
 - task: VSTest@2

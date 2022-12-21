@@ -6,6 +6,7 @@
 
 #include <FancyZonesLib/GuidUtils.h>
 #include <FancyZonesLib/FancyZonesData/CustomLayouts.h>
+#include <FancyZonesLib/FancyZonesData/DefaultLayouts.h>
 #include <FancyZonesLib/FancyZonesData/LayoutDefaults.h>
 #include <FancyZonesLib/FancyZonesWinHookEventIDs.h>
 #include <FancyZonesLib/JsonHelpers.h>
@@ -16,7 +17,7 @@
 namespace 
 {
     // didn't use default constants since if they'll be changed later, it'll break this function
-    bool isLayoutDefault(const Layout& layout)
+    bool isLayoutDefault(const LayoutData& layout)
     {
         return layout.type == FancyZonesDataTypes::ZoneSetLayoutType::PriorityGrid &&
                layout.zoneCount == 3 &&
@@ -30,11 +31,11 @@ namespace JsonUtils
 {
     struct LayoutJSON
     {
-        static std::optional<Layout> FromJson(const json::JsonObject& json)
+        static std::optional<LayoutData> FromJson(const json::JsonObject& json)
         {
             try
             {
-                Layout data{};
+                LayoutData data{};
                 auto idStr = json.GetNamedString(NonLocalizable::AppliedLayoutsIds::UuidID);
                 auto id = FancyZonesUtils::GuidFromString(idStr.c_str());
                 if (!id.has_value())
@@ -57,7 +58,7 @@ namespace JsonUtils
             }
         }
 
-        static json::JsonObject ToJson(const Layout& data)
+        static json::JsonObject ToJson(const LayoutData& data)
         {
             json::JsonObject result{};
             result.SetNamedValue(NonLocalizable::AppliedLayoutsIds::UuidID, json::value(FancyZonesUtils::GuidToString(data.uuid).value()));
@@ -73,7 +74,7 @@ namespace JsonUtils
     struct AppliedLayoutsJSON
     {
     private:
-        static std::optional<FancyZonesDataTypes::WorkAreaId> WorkAreaIdFromJson(const json::JsonObject& json)
+        static std::pair<std::optional<FancyZonesDataTypes::WorkAreaId>, bool> WorkAreaIdFromJson(const json::JsonObject& json)
         {
             try
             {
@@ -89,7 +90,7 @@ namespace JsonUtils
                     auto virtualDesktopGuid = FancyZonesUtils::GuidFromString(virtualDesktop);
                     if (!virtualDesktopGuid)
                     {
-                        return std::nullopt;
+                        return { std::nullopt, false };
                     }
 
                     FancyZonesDataTypes::DeviceId deviceId{};
@@ -104,16 +105,17 @@ namespace JsonUtils
                         deviceId.instanceId = monitorInstance;
                         deviceId.number = monitorNumber;
                     }
-                    
+
                     FancyZonesDataTypes::MonitorId monitorId{
                         .deviceId = deviceId,
                         .serialNumber = monitorSerialNumber
                     };
 
-                    return FancyZonesDataTypes::WorkAreaId{
-                        .monitorId = monitorId,
-                        .virtualDesktopId = virtualDesktopGuid.value(),
-                    };
+                    return { FancyZonesDataTypes::WorkAreaId{
+                                 .monitorId = monitorId,
+                                 .virtualDesktopId = virtualDesktopGuid.value(),
+                             },
+                             false };
                 }
                 else
                 {
@@ -121,24 +123,26 @@ namespace JsonUtils
                     auto bcDeviceId = BackwardsCompatibility::DeviceIdData::ParseDeviceId(deviceIdStr);
                     if (!bcDeviceId)
                     {
-                        return std::nullopt;
+                        return { std::nullopt, false };
                     }
 
-                    return FancyZonesDataTypes::WorkAreaId{
-                        .monitorId = { .deviceId = MonitorUtils::Display::ConvertObsoleteDeviceId(bcDeviceId->deviceName) },
-                        .virtualDesktopId = bcDeviceId->virtualDesktopId,
-                    };
+                    return { FancyZonesDataTypes::WorkAreaId{
+                                 .monitorId = { .deviceId = MonitorUtils::Display::ConvertObsoleteDeviceId(bcDeviceId->deviceName) },
+                                 .virtualDesktopId = bcDeviceId->virtualDesktopId,
+                             },
+                             true };
                 }
             }
             catch (const winrt::hresult_error&)
             {
-                return std::nullopt;
+                return { std::nullopt, false };
             }
         }
 
     public:
         FancyZonesDataTypes::WorkAreaId workAreaId;
-        Layout data{};
+        LayoutData data{};
+        bool hasResolutionInId = false;
 
         static std::optional<AppliedLayoutsJSON> FromJson(const json::JsonObject& json)
         {
@@ -147,7 +151,7 @@ namespace JsonUtils
                 AppliedLayoutsJSON result;
 
                 auto deviceIdOpt = WorkAreaIdFromJson(json);
-                if (!deviceIdOpt.has_value())
+                if (!deviceIdOpt.first.has_value())
                 {
                     return std::nullopt;
                 }
@@ -158,8 +162,10 @@ namespace JsonUtils
                     return std::nullopt;
                 }
                 
-                result.workAreaId = std::move(deviceIdOpt.value());
+                result.workAreaId = std::move(deviceIdOpt.first.value());
                 result.data = std::move(layout.value());
+                result.hasResolutionInId = deviceIdOpt.second;
+
                 return result;
             }
             catch (const winrt::hresult_error&)
@@ -200,8 +206,13 @@ namespace JsonUtils
             if (auto obj = AppliedLayoutsJSON::FromJson(layouts.GetObjectAt(i)); obj.has_value())
             {
                 // skip default layouts in case if they were applied to different resolutions on the same monitor.
-                // NOTE: keep the default layout check for users who update PT version from the v0.57 
-                if (!map.contains(obj->workAreaId) && !isLayoutDefault(obj->data))
+                // NOTE: keep the default layout check for users who update PT version from the v0.57
+                if (obj->hasResolutionInId && isLayoutDefault(obj->data))
+                {
+                    continue;
+                }
+
+                if (!map.contains(obj->workAreaId))
                 {
                     map[obj->workAreaId] = std::move(obj->data);
                 }
@@ -416,7 +427,7 @@ void AppliedLayouts::RemoveDeletedVirtualDesktops(const std::vector<GUID>& activ
     }
 }
 
-std::optional<Layout> AppliedLayouts::GetDeviceLayout(const FancyZonesDataTypes::WorkAreaId& id) const noexcept
+std::optional<LayoutData> AppliedLayouts::GetDeviceLayout(const FancyZonesDataTypes::WorkAreaId& id) const noexcept
 {
     auto iter = m_layouts.find(id);
     if (iter != m_layouts.end())
@@ -438,7 +449,7 @@ bool AppliedLayouts::IsLayoutApplied(const FancyZonesDataTypes::WorkAreaId& id) 
     return iter != m_layouts.end();
 }
 
-bool AppliedLayouts::ApplyLayout(const FancyZonesDataTypes::WorkAreaId& deviceId, Layout layout)
+bool AppliedLayouts::ApplyLayout(const FancyZonesDataTypes::WorkAreaId& deviceId, LayoutData layout)
 {
     m_layouts[deviceId] = std::move(layout);
     return true;
@@ -456,16 +467,20 @@ bool AppliedLayouts::ApplyDefaultLayout(const FancyZonesDataTypes::WorkAreaId& d
         return false;
     }
 
-    Layout layout{
-        .uuid = guid,
-        .type = FancyZonesDataTypes::ZoneSetLayoutType::PriorityGrid,
-        .showSpacing = DefaultValues::ShowSpacing,
-        .spacing = DefaultValues::Spacing,
-        .zoneCount = DefaultValues::ZoneCount,
-        .sensitivityRadius = DefaultValues::SensitivityRadius
-    };
+    MonitorConfigurationType type = MonitorConfigurationType::Horizontal;
+    MONITORINFOEX monitorInfo;
+    monitorInfo.cbSize = sizeof(monitorInfo);
+    if (GetMonitorInfo(deviceId.monitorId.monitor, &monitorInfo))
+    {
+        LONG width = monitorInfo.rcMonitor.right - monitorInfo.rcMonitor.left;
+        LONG height = monitorInfo.rcMonitor.bottom - monitorInfo.rcMonitor.top;
+        if (height > width)
+        {
+            type = MonitorConfigurationType::Vertical;
+        }
+    }
 
-    m_layouts[deviceId] = std::move(layout);
+    m_layouts[deviceId] = DefaultLayouts::instance().GetDefaultLayout(type);
     
     // Saving default layout data doesn't make sense, since it's ignored on parsing.
     // Given that default layouts are ignored when parsing, 

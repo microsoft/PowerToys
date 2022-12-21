@@ -28,6 +28,16 @@ namespace ImageResizer
         {
             // Fix for .net 3.1.19 making Image Resizer not adapt to DPI changes.
             NativeMethods.SetProcessDPIAware();
+
+            if (PowerToys.GPOWrapperProjection.GPOWrapper.GetConfiguredImageResizerEnabledValue() == PowerToys.GPOWrapperProjection.GpoRuleConfigured.Disabled)
+            {
+                /* TODO: Add logs to ImageResizer.
+                 * Logger.LogWarning("Tried to start with a GPO policy setting the utility to always be disabled. Please contact your systems administrator.");
+                 */
+                Environment.Exit(0); // Current.Exit won't work until there's a window opened.
+                return;
+            }
+
             var batch = ResizeBatch.FromCommandLine(Console.In, e?.Args);
 
             // TODO: Add command-line parameters that can be used in lieu of the input page (issue #14)
@@ -57,8 +67,6 @@ namespace ImageResizer
                     _themeManager?.Dispose();
                 }
 
-                // TODO: free unmanaged resources (unmanaged objects) and override finalizer
-                // TODO: set large fields to null
                 _isDisposed = true;
             }
         }

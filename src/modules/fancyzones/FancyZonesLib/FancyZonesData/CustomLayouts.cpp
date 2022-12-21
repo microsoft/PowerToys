@@ -70,7 +70,7 @@ namespace JsonUtils
                 json::JsonArray columnsPercentage = infoJson.GetNamedArray(NonLocalizable::CustomLayoutsIds::ColumnsPercentageID);
                 json::JsonArray cellChildMap = infoJson.GetNamedArray(NonLocalizable::CustomLayoutsIds::CellChildMapID);
 
-                if (rowsPercentage.Size() != info.m_rows || columnsPercentage.Size() != info.m_columns || cellChildMap.Size() != info.m_rows)
+                if (static_cast<int>(rowsPercentage.Size()) != info.m_rows || static_cast<int>(columnsPercentage.Size()) != info.m_columns || static_cast<int>(cellChildMap.Size()) != info.m_rows)
                 {
                     return std::nullopt;
                 }
@@ -80,7 +80,7 @@ namespace JsonUtils
                 for (const auto& cellsRow : cellChildMap)
                 {
                     const auto cellsArray = cellsRow.GetArray();
-                    if (cellsArray.Size() != info.m_columns)
+                    if (static_cast<int>(cellsArray.Size()) != info.m_columns)
                     {
                         return std::nullopt;
                     }
@@ -102,7 +102,7 @@ namespace JsonUtils
     
     struct CustomLayoutJSON
     {
-        GUID layoutId;
+        GUID layoutId{};
         FancyZonesDataTypes::CustomLayoutData data;
 
         static std::optional<CustomLayoutJSON> FromJson(const json::JsonObject& json)
@@ -216,7 +216,7 @@ void CustomLayouts::LoadData()
     }
 }
 
-std::optional<Layout> CustomLayouts::GetLayout(const GUID& id) const noexcept
+std::optional<LayoutData> CustomLayouts::GetLayout(const GUID& id) const noexcept
 {
     auto iter = m_layouts.find(id);
     if (iter == m_layouts.end())
@@ -225,13 +225,9 @@ std::optional<Layout> CustomLayouts::GetLayout(const GUID& id) const noexcept
     }
     
     FancyZonesDataTypes::CustomLayoutData customLayout = iter->second;
-    Layout layout{
+    LayoutData layout{
         .uuid = id,
-        .type = FancyZonesDataTypes::ZoneSetLayoutType::Custom,
-        .showSpacing = DefaultValues::ShowSpacing,
-        .spacing = DefaultValues::Spacing,
-        .zoneCount = DefaultValues::ZoneCount,
-        .sensitivityRadius = DefaultValues::SensitivityRadius
+        .type = FancyZonesDataTypes::ZoneSetLayoutType::Custom
     };
 
     if (customLayout.type == FancyZonesDataTypes::CustomLayoutType::Grid)

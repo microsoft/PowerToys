@@ -30,7 +30,7 @@ namespace
     const wchar_t JSON_KEY_VALUE[] = L"value";
 }
 
-BOOL APIENTRY DllMain(HMODULE hModule, DWORD ul_reason_for_call, LPVOID lpReserved)
+BOOL APIENTRY DllMain(HMODULE /*hModule*/, DWORD ul_reason_for_call, LPVOID /*lpReserved*/)
 {
     switch (ul_reason_for_call)
     {
@@ -64,11 +64,16 @@ public:
         return app_key.c_str();
     }
 
+    // Return the configured status for the gpo policy for the module
+    virtual powertoys_gpo::gpo_rule_configured_t gpo_policy_enabled_configuration() override
+    {
+        return powertoys_gpo::getConfiguredAlwaysOnTopEnabledValue();
+    }
+
     // Return JSON with the configuration options.
     // These are the settings shown on the settings page along with their current values.
     virtual bool get_config(wchar_t* buffer, int* buffer_size) override
     {
-        return false;
         HINSTANCE hinstance = reinterpret_cast<HINSTANCE>(&__ImageBase);
 
         // Create a Settings object.
@@ -94,13 +99,13 @@ public:
             // Otherwise call a custom function to process the settings before saving them to disk:
             // save_settings();
         }
-        catch (std::exception ex)
+        catch (std::exception&)
         {
             // Improper JSON.
         }
     }
 
-    virtual bool on_hotkey(size_t hotkeyId) override
+    virtual bool on_hotkey(size_t /*hotkeyId*/) override
     {
         if (m_enabled)
         {
@@ -117,7 +122,7 @@ public:
 
         return false;
     }
-    
+
     virtual size_t get_hotkeys(Hotkey* hotkeys, size_t buffer_size) override
     {
         if (m_hotkey.key)
@@ -273,7 +278,7 @@ private:
 
             parse_hotkey(settings);
         }
-        catch (std::exception ex)
+        catch (std::exception&)
         {
             Logger::warn(L"An exception occurred while loading the settings file");
             // Error while loading from the settings file. Let default values stay as they are.

@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <Import Project="..\..\..\..\Version.props" />
   <PropertyGroup>
-    <TargetFramework>net6.0-windows</TargetFramework>
+    <TargetFramework>net7.0-windows</TargetFramework>
     <RootNamespace>Microsoft.PowerToys.Run.Plugin.TimeZone</RootNamespace>
     <AssemblyName>Microsoft.PowerToys.Run.Plugin.TimeZone</AssemblyName>
     <Version>$(Version).0</Version>
@@ -76,5 +76,6 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
   </ItemGroup>
+
 
 </Project>

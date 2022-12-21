@@ -4,7 +4,7 @@
 #include <memory>
 #include <optional>
 
-#include <FancyZonesLib/FancyZonesData/Layout.h>
+#include <FancyZonesLib/FancyZonesData/LayoutData.h>
 #include <FancyZonesLib/ModuleConstants.h>
 
 #include <common/SettingsAPI/FileWatcher.h>
@@ -35,8 +35,8 @@ namespace NonLocalizable
 class AppliedLayouts
 {
 public:
-    using TAppliedLayoutsMap = std::unordered_map<FancyZonesDataTypes::WorkAreaId, Layout>;
-    
+    using TAppliedLayoutsMap = std::unordered_map<FancyZonesDataTypes::WorkAreaId, LayoutData>;
+
     static AppliedLayouts& instance();
 
     inline static std::wstring AppliedLayoutsFileName()
@@ -44,8 +44,9 @@ public:
         std::wstring saveFolderPath = PTSettingsHelper::get_module_save_folder_location(NonLocalizable::ModuleKey);
 #if defined(UNIT_TESTS)
         return saveFolderPath + L"\\test-applied-layouts.json";
-#endif
+#else
         return saveFolderPath + L"\\applied-layouts.json";
+#endif
     }
 
     void LoadData();
@@ -55,12 +56,12 @@ public:
     void SyncVirtualDesktops();
     void RemoveDeletedVirtualDesktops(const std::vector<GUID>& activeDesktops);
 
-    std::optional<Layout> GetDeviceLayout(const FancyZonesDataTypes::WorkAreaId& id) const noexcept;
+    std::optional<LayoutData> GetDeviceLayout(const FancyZonesDataTypes::WorkAreaId& id) const noexcept;
     const TAppliedLayoutsMap& GetAppliedLayoutMap() const noexcept;
 
     bool IsLayoutApplied(const FancyZonesDataTypes::WorkAreaId& id) const noexcept;
 
-    bool ApplyLayout(const FancyZonesDataTypes::WorkAreaId& deviceId, Layout layout);
+    bool ApplyLayout(const FancyZonesDataTypes::WorkAreaId& deviceId, LayoutData layout);
     bool ApplyDefaultLayout(const FancyZonesDataTypes::WorkAreaId& deviceId);
     bool CloneLayout(const FancyZonesDataTypes::WorkAreaId& srcId, const FancyZonesDataTypes::WorkAreaId& dstId);
 

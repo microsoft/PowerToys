@@ -202,7 +202,7 @@
                                FontWeight="SemiBold"
                                FontSize="24" />
 
-                    <ui:GridView ItemsSource="{Binding DefaultModels}"
+                    <ui:GridView ItemsSource="{Binding TemplateModels}"
                                  Grid.Row="1"
                                  ItemTemplate="{StaticResource LayoutItemTemplate}"
                                  AutomationProperties.LabeledBy="{Binding ElementName=TemplatesHeaderBlock}"
@@ -461,7 +461,8 @@
                                        Foreground="{DynamicResource SystemControlBackgroundAccentBrush}"
                                        Text="&#xE946;"
                                        AutomationProperties.Name="{x:Static props:Resources.QuickKey_Description}"
-                                       ToolTip="{x:Static props:Resources.QuickKey_Description}" />
+                                       ToolTip="{x:Static props:Resources.QuickKey_Description}"
+                                       ToolTipService.InitialShowDelay="0"/>
                         </StackPanel>
 
 
@@ -527,16 +528,42 @@
                                    ToolTip="{x:Static props:Resources.Number_of_zones}"
                                    Text="&#xECA5;" />
 
-                        <ui:NumberBox Minimum="1"
-                                      Maximum="128"
-                                      Width="216"
-                                      KeyDown="EditDialogNumberBox_KeyDown"
-                                      Margin="12,0,0,0"
-                                      Header="{x:Static props:Resources.Number_of_zones}"
-                                      Loaded="NumberBox_Loaded"
-                                      AutomationProperties.Name="{x:Static props:Resources.Number_of_zones}"
-                                      SpinButtonPlacementMode="Compact"
-                                      Text="{Binding TemplateZoneCount}" />
+                        <StackPanel Orientation="Vertical">
+                            <TextBlock Text="{x:Static props:Resources.Number_of_zones}"
+                                   x:Name="templateZoneCountTitle"
+                                   Margin="12,0,0,4"
+                                   TextWrapping="Wrap" />
+
+                            <StackPanel Orientation="Horizontal">
+                                <fancyZonesControls:CustomSlider x:Name="TemplateZoneCount"
+                                    Value="{Binding TemplateZoneCount}"
+                                    Minimum="{Binding TemplateZoneCountMinimum}"
+                                    Maximum="{Binding TemplateZoneCountMaximum}"
+                                    IsMoveToPointEnabled="True"
+                                    AutomationProperties.HelpText="{x:Static props:Resources.Number_of_zones}"
+                                    ToolTip="{Binding TemplateZoneCount}"
+                                    ValueChanged="TemplateZoneCount_ValueChanged"
+                                    MinWidth="216"
+                                    Margin="12,0,0,0"
+                                    HorizontalAlignment="Left"
+                                    SmallChange="1" 
+                                    LargeChange="10"/>
+
+                                <TextBlock Text="{Binding TemplateZoneCount}"
+                                    Margin="6,0,0,0"
+                                    FontSize="12"
+                                    Foreground="{DynamicResource SecondaryForegroundBrush}"
+                                    TextWrapping="Wrap"
+                                    VerticalAlignment="Center" />
+
+                                <TextBlock Text="{x:Static props:Resources.Zones}"
+                                       Margin="6,0,0,0"
+                                       FontSize="12"
+                                       Foreground="{DynamicResource SecondaryForegroundBrush}"
+                                       TextWrapping="Wrap"
+                                       VerticalAlignment="Center" />
+                            </StackPanel>
+                        </StackPanel>
                     </StackPanel>
 
                     <StackPanel Margin="0, 12, 0, 0"
@@ -553,25 +580,36 @@
                                        ToolTip="{x:Static props:Resources.Space_Around_Zones}"
                                        Text="&#xE91B;" />
 
-                            <ui:NumberBox Margin="12,0,0,0"
-                                          IsEnabled="{Binding ShowSpacing}"
-                                          Text="{Binding Spacing}"
-                                          Width="216"
-                                          Minimum="-20"
-                                          Maximum="1000"
-                                          KeyDown="EditDialogNumberBox_KeyDown"
-                                          SpinButtonPlacementMode="Compact"
-                                          HorizontalAlignment="Left"
-                                          VerticalAlignment="Center"
-                                          Loaded="NumberBox_Loaded"
-                                          AutomationProperties.Name="{x:Static props:Resources.Space_Around_Zones}"
-                                          AutomationProperties.LabeledBy="{Binding ElementName=spacingTitle}" />
-                            <TextBlock Text="{x:Static props:Resources.Pixels}"
-                                       Margin="6,-4,0,0"
+                            <StackPanel Orientation="Horizontal">
+                                <fancyZonesControls:CustomSlider x:Name="Spacing"
+                                    Value="{Binding Spacing}"
+                                    Minimum="{Binding SpacingMinimum}"
+                                    Maximum="{Binding SpacingMaximum}"
+                                    IsMoveToPointEnabled="True"
+                                    AutomationProperties.HelpText="{x:Static props:Resources.Space_Around_Zones}"
+                                    ToolTip="{Binding Spacing}"
+                                    ValueChanged="Spacing_ValueChanged"
+                                    IsEnabled="{Binding ShowSpacing}"
+                                    MinWidth="216"
+                                    Margin="12,0,0,0"
+                                    HorizontalAlignment="Left"
+                                    SmallChange="1" 
+                                    LargeChange="10"/>
+
+                                <TextBlock Text="{Binding Spacing}"
+                                    Margin="6,0,0,0"
+                                    FontSize="12"
+                                    Foreground="{DynamicResource SecondaryForegroundBrush}"
+                                    TextWrapping="Wrap"
+                                    VerticalAlignment="Center"/>
+
+                                <TextBlock Text="{x:Static props:Resources.Pixels}"
+                                       Margin="6,0,0,0"
                                        FontSize="12"
                                        Foreground="{DynamicResource SecondaryForegroundBrush}"
                                        TextWrapping="Wrap"
                                        VerticalAlignment="Center" />
+                            </StackPanel>
 
                             <ui:ToggleSwitch x:Name="spaceAroundSetting"
                                              IsOn="{Binding ShowSpacing}"
@@ -585,12 +623,9 @@
                                     <sys:Double x:Key="ToggleSwitchThemeMinWidth">0</sys:Double>
                                 </ui:ToggleSwitch.Resources>
                             </ui:ToggleSwitch>
-                               
+
                         </StackPanel>
                     </StackPanel>
-
-
-
 
                     <StackPanel Margin="0, 12, 0, 0">
                         <TextBlock Text="{x:Static props:Resources.Distance_adjacent_zones}"
@@ -609,8 +644,7 @@
                                 Minimum="{Binding SensitivityRadiusMinimum}"
                                 Maximum="{Binding SensitivityRadiusMaximum}"
                                 IsMoveToPointEnabled="True"
-                                AutomationProperties.Name="{x:Static props:Resources.Distance_adjacent_zones}"
-                                AutomationProperties.HelpText="{Binding SensitivityRadius}"
+                                AutomationProperties.HelpText="{x:Static props:Resources.Distance_adjacent_zones}"
                                 ToolTip="{Binding SensitivityRadius}"
                                 ValueChanged="SensitivityInput_ValueChanged"
                                 MinWidth="216"
@@ -622,18 +656,83 @@
 
                                 <TextBlock
                                     Text="{Binding SensitivityRadius}"
-                                    Margin="6,8,0,0"
+                                    Margin="6,0,0,0"
                                     FontSize="12"
                                     Foreground="{DynamicResource SecondaryForegroundBrush}"
-                                    TextWrapping="Wrap" />
+                                    TextWrapping="Wrap"
+                                    VerticalAlignment="Center"/>
 
                                 <TextBlock Text="{x:Static props:Resources.Pixels}"
-                                       Margin="6,-4,0,0"
+                                       Margin="6,0,0,0"
                                        FontSize="12"
                                        Foreground="{DynamicResource SecondaryForegroundBrush}"
                                        TextWrapping="Wrap"
                                        VerticalAlignment="Center" />
                         </StackPanel>
+                    </StackPanel>
+
+                    <StackPanel Orientation="Vertical"
+                                HorizontalAlignment="Left"
+                                Margin="0,16,0,0">
+
+                        <Button x:Name="SetLayoutAsHorizontalDefaultButton"
+                            Click="SetLayoutAsHorizontalDefaultButton_Click"
+                            AutomationProperties.Name="{x:Static props:Resources.Set_Layout_As_Horizontal_Default}"
+                            ToolTip="{x:Static props:Resources.Set_Layout_As_Horizontal_Default}"
+                            Style="{StaticResource IconOnlyButtonStyle}"
+                            Visibility="{Binding CanBeSetAsHorizontalDefault, Converter={StaticResource BooleanToVisibilityConverter}}">
+                            <Button.Content>
+                                <TextBlock AutomationProperties.Name="{x:Static props:Resources.Set_Layout_As_Horizontal_Default}"
+                                       FontSize="14">
+                                    <Run Text="&#xE734;" FontFamily="Segoe MDL2 Assets"/>
+                                    <Run Text="{x:Static props:Resources.Default_Layout_Horizontal}"/>
+                                </TextBlock>
+                            </Button.Content>
+                        </Button>
+                        <Button x:Name="HorizontalDefaultLayoutButton"
+                            Click="HorizontalDefaultLayoutButton_Click"
+                            ToolTip="{x:Static props:Resources.Default_Layout_Horizontal}"
+                            AutomationProperties.Name="{x:Static props:Resources.Default_Layout_Horizontal}"
+                            Style="{StaticResource IconOnlyButtonStyle}"
+                            Visibility="{Binding IsHorizontalDefault, Converter={StaticResource BooleanToVisibilityConverter}}">
+                            <Button.Content>
+                                <TextBlock AutomationProperties.Name="{x:Static props:Resources.Default_Layout_Horizontal}"
+                                       FontSize="14">
+                                    <Run Text="&#xE735;" FontFamily="Segoe MDL2 Assets"/>
+                                    <Run Text="{x:Static props:Resources.Default_Layout_Horizontal}"/>
+                                </TextBlock>
+                            </Button.Content>
+                        </Button>
+
+                        <Button x:Name="SetLayoutAsVerticalDefaultButton"
+                            Click="SetLayoutAsVerticalDefaultButton_Click"
+                            AutomationProperties.Name="{x:Static props:Resources.Set_Layout_As_Vertical_Default}"
+                            ToolTip="{x:Static props:Resources.Set_Layout_As_Vertical_Default}"
+                            Style="{StaticResource IconOnlyButtonStyle}"
+                            Visibility="{Binding CanBeSetAsVerticalDefault, Converter={StaticResource BooleanToVisibilityConverter}}">
+                            <Button.Content>
+                                <TextBlock AutomationProperties.Name="{x:Static props:Resources.Set_Layout_As_Vertical_Default}"
+                                       FontSize="14">
+                                    <Run Text="&#xE734;" FontFamily="Segoe MDL2 Assets"/>
+                                    <Run Text="{x:Static props:Resources.Default_Layout_Vertical}"/>
+                                </TextBlock>
+                            </Button.Content>
+                        </Button>
+                        <Button x:Name="VerticalDefaultLayoutButton"
+                            Click="VerticalDefaultLayoutButton_Click"
+                            ToolTip="{x:Static props:Resources.Default_Layout_Vertical}"
+                            AutomationProperties.Name="{x:Static props:Resources.Default_Layout_Vertical}"
+                            Style="{StaticResource IconOnlyButtonStyle}"
+                            Visibility="{Binding IsVerticalDefault, Converter={StaticResource BooleanToVisibilityConverter}}">
+                            <Button.Content>
+                                <TextBlock AutomationProperties.Name="{x:Static props:Resources.Default_Layout_Vertical}"
+                                       FontSize="14">
+                                    <Run Text="&#xE735;" FontFamily="Segoe MDL2 Assets"/>
+                                    <Run Text="{x:Static props:Resources.Default_Layout_Vertical}"/>
+                                </TextBlock>
+                            </Button.Content>
+                        </Button>
+
                     </StackPanel>
                 </StackPanel>
             </Grid>
@@ -649,7 +748,7 @@
                           Title="{x:Static props:Resources.Choose_layout_type}"
                           Opened="Dialog_Opened"
                           Closed="Dialog_Closed">
-            <StackPanel Margin="0,16,0,0">
+            <StackPanel Margin="0,16,24,0">
                 <TextBlock x:Name="NameHeaderText"
                            Text="{x:Static props:Resources.Name}" />
                 <TextBox Margin="3,6,3,0"

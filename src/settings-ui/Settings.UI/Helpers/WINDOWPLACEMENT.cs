@@ -9,7 +9,6 @@ namespace Microsoft.PowerToys.Settings.UI.Helpers
 {
     [Serializable]
     [StructLayout(LayoutKind.Sequential)]
-    [System.Diagnostics.CodeAnalysis.SuppressMessage("Performance", "CA1815:Override equals and operator equals on value types", Justification = "Interop")]
     public struct WINDOWPLACEMENT
     {
         public int Length { get; set; }

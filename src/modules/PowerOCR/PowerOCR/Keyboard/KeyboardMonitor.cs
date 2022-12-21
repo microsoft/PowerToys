@@ -5,7 +5,6 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.Composition;
-using System.Windows.Input;
 using Microsoft.PowerToys.Settings.UI.Library.Utilities;
 using PowerOCR.Settings;
 using PowerOCR.Utilities;
@@ -152,12 +151,9 @@ public class KeyboardMonitor : IDisposable
         {
             if (disposing)
             {
-                // TODO: dispose managed state (managed objects)
                 _keyboardHook?.Dispose();
             }
 
-            // TODO: free unmanaged resources (unmanaged objects) and override finalizer
-            // TODO: set large fields to null
             disposedValue = true;
         }
     }

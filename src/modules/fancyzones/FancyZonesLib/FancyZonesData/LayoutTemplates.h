@@ -1,6 +1,6 @@
 #pragma once
 
-#include <FancyZonesLib/FancyZonesData/Layout.h>
+#include <FancyZonesLib/FancyZonesData/LayoutData.h>
 #include <FancyZonesLib/ModuleConstants.h>
 
 #include <common/SettingsAPI/FileWatcher.h>
@@ -29,18 +29,19 @@ public:
         std::wstring saveFolderPath = PTSettingsHelper::get_module_save_folder_location(NonLocalizable::ModuleKey);
 #if defined(UNIT_TESTS)
         return saveFolderPath + L"\\test-layout-templates.json";
-#endif
+#else
         return saveFolderPath + L"\\layout-templates.json";
+#endif
     }
 
     void LoadData();
 
-    std::optional<Layout> GetLayout(FancyZonesDataTypes::ZoneSetLayoutType type) const noexcept;
+    std::optional<LayoutData> GetLayout(FancyZonesDataTypes::ZoneSetLayoutType type) const noexcept;
 
 private:
     LayoutTemplates();
     ~LayoutTemplates() = default;
 
     std::unique_ptr<FileWatcher> m_fileWatcher;
-    std::vector<Layout> m_layouts;
+    std::vector<LayoutData> m_layouts;
 };

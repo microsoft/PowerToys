@@ -4,8 +4,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Globalization;
-using System.Linq;
 using UnitsNet;
 
 namespace Community.PowerToys.Run.Plugin.UnitConverter
@@ -48,6 +46,12 @@ namespace Community.PowerToys.Run.Plugin.UnitConverter
             if (UnitParser.Default.TryParse(unit, unitInfo.UnitType, out Enum enum_unit))
             {
                 return enum_unit;
+            }
+
+            var cultureInfoEnglish = new System.Globalization.CultureInfo("en-US");
+            if (UnitParser.Default.TryParse(unit, unitInfo.UnitType, cultureInfoEnglish, out Enum enum_unit_en))
+            {
+                return enum_unit_en;
             }
 
             return null;

@@ -1,5 +1,7 @@
 #pragma once
 
+#include <common/utils/gpo.h>
+
 class CSettings
 {
 public:
@@ -7,6 +9,11 @@ public:
 
     inline bool GetEnabled()
     {
+        auto gpoSetting = powertoys_gpo::getConfiguredImageResizerEnabledValue();
+        if (gpoSetting == powertoys_gpo::gpo_rule_configured_enabled)
+            return true;
+        if (gpoSetting == powertoys_gpo::gpo_rule_configured_disabled)
+            return false;
         Reload();
         return settings.enabled;
     }

@@ -5,6 +5,7 @@
 using System.Collections.Generic;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using ManagedCommon;
 using Microsoft.PowerToys.Settings.UI.Library.Enumerations;
 
 namespace Microsoft.PowerToys.Settings.UI.Library
@@ -17,12 +18,24 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             ChangeCursor = false;
             ColorHistory = new List<string>();
             ColorHistoryLimit = 20;
-            VisibleColorFormats = new Dictionary<string, bool>();
-            VisibleColorFormats.Add("HEX", true);
-            VisibleColorFormats.Add("RGB", true);
-            VisibleColorFormats.Add("HSL", true);
+            VisibleColorFormats = new Dictionary<string, KeyValuePair<bool, string>>();
+            VisibleColorFormats.Add("HEX", new KeyValuePair<bool, string>(true, ColorFormatHelper.GetDefaultFormat("HEX")));
+            VisibleColorFormats.Add("RGB", new KeyValuePair<bool, string>(true, ColorFormatHelper.GetDefaultFormat("RGB")));
+            VisibleColorFormats.Add("HSL", new KeyValuePair<bool, string>(true, ColorFormatHelper.GetDefaultFormat("HSL")));
+            VisibleColorFormats.Add("HSV", new KeyValuePair<bool, string>(false, ColorFormatHelper.GetDefaultFormat("HSV")));
+            VisibleColorFormats.Add("CMYK", new KeyValuePair<bool, string>(false, ColorFormatHelper.GetDefaultFormat("CMYK")));
+            VisibleColorFormats.Add("HSB", new KeyValuePair<bool, string>(false, ColorFormatHelper.GetDefaultFormat("HSB")));
+            VisibleColorFormats.Add("HSI", new KeyValuePair<bool, string>(false, ColorFormatHelper.GetDefaultFormat("HSI")));
+            VisibleColorFormats.Add("HWB", new KeyValuePair<bool, string>(false, ColorFormatHelper.GetDefaultFormat("HWB")));
+            VisibleColorFormats.Add("NCol", new KeyValuePair<bool, string>(false, ColorFormatHelper.GetDefaultFormat("NCol")));
+            VisibleColorFormats.Add("CIELAB", new KeyValuePair<bool, string>(false, ColorFormatHelper.GetDefaultFormat("CIELAB")));
+            VisibleColorFormats.Add("CIEXYZ", new KeyValuePair<bool, string>(false, ColorFormatHelper.GetDefaultFormat("CIEXYZ")));
+            VisibleColorFormats.Add("VEC4", new KeyValuePair<bool, string>(false, ColorFormatHelper.GetDefaultFormat("VEC4")));
+            VisibleColorFormats.Add("Decimal", new KeyValuePair<bool, string>(false, ColorFormatHelper.GetDefaultFormat("Decimal")));
+            VisibleColorFormats.Add("HEX Int", new KeyValuePair<bool, string>(false, ColorFormatHelper.GetDefaultFormat("HEX Int")));
             ShowColorName = false;
             ActivationAction = ColorPickerActivationAction.OpenColorPickerAndThenEditor;
+            CopiedColorRepresentation = "HEX";
         }
 
         public HotkeySettings ActivationShortcut { get; set; }
@@ -32,21 +45,19 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         public bool ChangeCursor { get; set; }
 
         [JsonPropertyName("copiedcolorrepresentation")]
-        public ColorRepresentationType CopiedColorRepresentation { get; set; }
+        public string CopiedColorRepresentation { get; set; }
 
         [JsonPropertyName("activationaction")]
         public ColorPickerActivationAction ActivationAction { get; set; }
 
         [JsonPropertyName("colorhistory")]
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Usage", "CA2227:Collection properties should be read only", Justification = "Need to change this collection")]
         public List<string> ColorHistory { get; set; }
 
         [JsonPropertyName("colorhistorylimit")]
         public int ColorHistoryLimit { get; set; }
 
         [JsonPropertyName("visiblecolorformats")]
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Usage", "CA2227:Collection properties should be read only", Justification = "Need to change this collection")]
-        public Dictionary<string, bool> VisibleColorFormats { get; set; }
+        public Dictionary<string, KeyValuePair<bool, string>> VisibleColorFormats { get; set; }
 
         [JsonPropertyName("showcolorname")]
         [JsonConverter(typeof(BoolPropertyJsonConverter))]

@@ -24,7 +24,7 @@ HotkeyManager::~HotkeyManager()
 }
 
 // When all Shortcut keys are pressed, fire the HotkeyCallback event.
-void HotkeyManager::KeyboardEventProc(KeyboardEvent ^ ev)
+void HotkeyManager::KeyboardEventProc(KeyboardEvent ^ /*ev*/)
 {
     // pressedKeys always stores the latest keyboard state
     auto pressedKeysHandle = GetHotkeyHandle(pressedKeys);
@@ -56,7 +56,7 @@ bool HotkeyManager::FilterKeyboardProc(KeyboardEvent ^ ev)
     pressedKeys->Ctrl = GetAsyncKeyState(VK_CONTROL) & 0x8000;
     pressedKeys->Alt = GetAsyncKeyState(VK_MENU) & 0x8000;
     pressedKeys->Shift = GetAsyncKeyState(VK_SHIFT) & 0x8000;
-    pressedKeys->Key = ev->key;
+    pressedKeys->Key = static_cast<unsigned char>(ev->key);
 
     // Convert to hotkey handle
     auto pressedKeysHandle = GetHotkeyHandle(pressedKeys);

@@ -42,9 +42,7 @@ namespace Microsoft.Plugin.WindowWalker.Components
                             return false;
                         }
 
-                        // As a workaround to close PT Run after executing the context menu command, we switch to the window before closing it (Issue #16601).
-                        // We use the setting OpenAfterKillAndClose to detect if we have to switch.
-                        windowData.CloseThisWindow(!WindowWalkerSettings.Instance.OpenAfterKillAndClose);
+                        windowData.CloseThisWindow();
 
                         return !WindowWalkerSettings.Instance.OpenAfterKillAndClose;
                     },
@@ -78,7 +76,7 @@ namespace Microsoft.Plugin.WindowWalker.Components
         private static bool KillProcessCommand(Window window)
         {
             // Validate process
-            if (!window.IsWindow || !window.Process.DoesExist || !window.Process.Name.Equals(WindowProcess.GetProcessNameFromProcessID(window.Process.ProcessID), StringComparison.Ordinal) )
+            if (!window.IsWindow || !window.Process.DoesExist || !window.Process.Name.Equals(WindowProcess.GetProcessNameFromProcessID(window.Process.ProcessID), StringComparison.Ordinal))
             {
                 Log.Debug($"Can not kill process '{window.Process.Name}' ({window.Process.ProcessID}) of the window '{window.Title}' ({window.Hwnd}), because it doesn't exist.", typeof(ContextMenuHelper));
                 return false;
@@ -100,12 +98,6 @@ namespace Microsoft.Plugin.WindowWalker.Components
                 {
                     return false;
                 }
-            }
-
-            // As a workaround to close PT Run before executing the command, we switch to the window before killing it's process
-            if (!WindowWalkerSettings.Instance.OpenAfterKillAndClose)
-            {
-                window.SwitchToWindow();
             }
 
             // Kill process

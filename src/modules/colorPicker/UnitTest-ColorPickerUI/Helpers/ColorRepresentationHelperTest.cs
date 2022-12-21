@@ -4,7 +4,7 @@
 
 using System.Drawing;
 using ColorPicker.Helpers;
-using Microsoft.PowerToys.Settings.UI.Library.Enumerations;
+using ManagedCommon;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Microsoft.ColorPicker.UnitTests
@@ -13,23 +13,24 @@ namespace Microsoft.ColorPicker.UnitTests
     public class ColorRepresentationHelperTest
     {
         [TestMethod]
-        [DataRow(ColorRepresentationType.CMYK, "cmyk(0%, 0%, 0%, 100%)")]
-        [DataRow(ColorRepresentationType.HEX, "000000")]
-        [DataRow(ColorRepresentationType.NCol, "R0, 0%, 100%")]
-        [DataRow(ColorRepresentationType.HSB, "hsb(0, 0%, 0%)")]
-        [DataRow(ColorRepresentationType.HSI, "hsi(0, 0%, 0%)")]
-        [DataRow(ColorRepresentationType.HSL, "hsl(0, 0%, 0%)")]
-        [DataRow(ColorRepresentationType.HSV, "hsv(0, 0%, 0%)")]
-        [DataRow(ColorRepresentationType.HWB, "hwb(0, 0%, 100%)")]
-        [DataRow(ColorRepresentationType.RGB, "rgb(0, 0, 0)")]
-        [DataRow(ColorRepresentationType.CIELAB, "CIELab(0, 0, 0)")]
-        [DataRow(ColorRepresentationType.CIEXYZ, "XYZ(0, 0, 0)")]
-        [DataRow(ColorRepresentationType.VEC4, "(0f, 0f, 0f, 1f)")]
-        [DataRow(ColorRepresentationType.DecimalValue, "0")]
+        [DataRow("CMYK", "cmyk(0%, 0%, 0%, 100%)")]
+        [DataRow("HEX", "000000")]
+        [DataRow("NCol", "R0, 0%, 100%")]
+        [DataRow("HSB", "hsb(0, 0%, 0%)")]
+        [DataRow("HSI", "hsi(0, 0%, 0%)")]
+        [DataRow("HSL", "hsl(0, 0%, 0%)")]
+        [DataRow("HSV", "hsv(0, 0%, 0%)")]
+        [DataRow("HWB", "hwb(0, 0%, 100%)")]
+        [DataRow("RGB", "rgb(0, 0, 0)")]
+        [DataRow("CIELAB", "CIELab(0, 0, 0)")]
+        [DataRow("CIEXYZ", "XYZ(0, 0, 0)")]
+        [DataRow("VEC4", "(0f, 0f, 0f, 1f)")]
+        [DataRow("Decimal", "0")]
+        [DataRow("HEX Int", "0xFF000000")]
 
-        public void GetStringRepresentationTest(ColorRepresentationType type, string expected)
+        public void GetStringRepresentationTest(string type, string expected)
         {
-            var result = ColorRepresentationHelper.GetStringRepresentation(Color.Black, type);
+            var result = ColorRepresentationHelper.GetStringRepresentation(Color.Black, type, ColorFormatHelper.GetDefaultFormat(type));
             Assert.AreEqual(result, expected);
         }
     }

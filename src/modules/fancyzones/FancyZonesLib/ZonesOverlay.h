@@ -9,9 +9,9 @@
 
 #include "util.h"
 #include "Zone.h"
-#include "ZoneSet.h"
 #include "FancyZones.h"
 #include "Colors.h"
+#include "LayoutConfigurator.h"
 
 class ZonesOverlay
 {

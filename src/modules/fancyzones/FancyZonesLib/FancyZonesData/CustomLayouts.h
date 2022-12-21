@@ -5,7 +5,7 @@
 #include <memory>
 #include <optional>
 
-#include <FancyZonesLib/FancyZonesData/Layout.h>
+#include <FancyZonesLib/FancyZonesData/LayoutData.h>
 #include <FancyZonesLib/FancyZonesDataTypes.h>
 #include <FancyZonesLib/GuidUtils.h>
 #include <FancyZonesLib/ModuleConstants.h>
@@ -58,13 +58,14 @@ public:
         std::wstring saveFolderPath = PTSettingsHelper::get_module_save_folder_location(NonLocalizable::ModuleKey);
 #if defined(UNIT_TESTS)
         return saveFolderPath + L"\\test-custom-layouts.json";
-#endif
+#else
         return saveFolderPath + L"\\custom-layouts.json";
+#endif
     }
 
     void LoadData();
 
-    std::optional<Layout> GetLayout(const GUID& id) const noexcept;
+    std::optional<LayoutData> GetLayout(const GUID& id) const noexcept;
     std::optional<FancyZonesDataTypes::CustomLayoutData> GetCustomLayoutData(const GUID& id) const noexcept;
     const TCustomLayoutMap& GetAllLayouts() const noexcept;
 

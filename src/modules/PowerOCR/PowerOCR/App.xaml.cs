@@ -3,7 +3,6 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
-using System.Diagnostics;
 using System.Threading;
 using System.Windows;
 using ManagedCommon;
@@ -23,6 +22,13 @@ public partial class App : Application, IDisposable
     private Mutex? _instanceMutex;
     private int _powerToysRunnerPid;
 
+    private CancellationTokenSource NativeThreadCTS { get; set; }
+
+    public App()
+    {
+        NativeThreadCTS = new CancellationTokenSource();
+    }
+
     public void Dispose()
     {
         GC.SuppressFinalize(this);
@@ -31,13 +37,20 @@ public partial class App : Application, IDisposable
 
     private void Application_Startup(object sender, StartupEventArgs e)
     {
+        if (PowerToys.GPOWrapperProjection.GPOWrapper.GetConfiguredTextExtractorEnabledValue() == PowerToys.GPOWrapperProjection.GpoRuleConfigured.Disabled)
+        {
+            Logger.LogWarning("Tried to start with a GPO policy setting the utility to always be disabled. Please contact your systems administrator.");
+            Shutdown();
+            return;
+        }
+
         // allow only one instance of PowerOCR
         _instanceMutex = new Mutex(true, @"Local\PowerToys_PowerOCR_InstanceMutex", out bool createdNew);
         if (!createdNew)
         {
             Logger.LogWarning("Another running TextExtractor instance was detected. Exiting TextExtractor");
             _instanceMutex = null;
-            Environment.Exit(0);
+            Shutdown();
             return;
         }
 
@@ -51,10 +64,11 @@ public partial class App : Application, IDisposable
                 RunnerHelper.WaitForPowerToysRunner(_powerToysRunnerPid, () =>
                 {
                     Logger.LogInfo("PowerToys Runner exited. Exiting TextExtractor");
-                    Environment.Exit(0);
+                    NativeThreadCTS.Cancel();
+                    Application.Current.Dispatcher.Invoke(() => Shutdown());
                 });
                 var userSettings = new UserSettings(new Helpers.ThrottledActionInvoker());
-                eventMonitor = new EventMonitor();
+                eventMonitor = new EventMonitor(Application.Current.Dispatcher, NativeThreadCTS.Token);
             }
             catch (Exception ex)
             {

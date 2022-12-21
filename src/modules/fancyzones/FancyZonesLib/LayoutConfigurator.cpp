@@ -92,15 +92,15 @@ namespace
     };
 }
 
-bool AddZone(winrt::com_ptr<IZone> zone, ZonesMap& zones) noexcept
+bool AddZone(Zone zone, ZonesMap& zones) noexcept
 {
-    auto zoneId = zone->Id();
+    auto zoneId = zone.Id();
     if (zones.contains(zoneId))
     {
         return false;
     }
 
-    zones[zoneId] = zone;
+    zones.insert({ zoneId, std::move(zone) });
     return true;
 }
 
@@ -139,9 +139,9 @@ ZonesMap CalculateGridZones(FancyZonesUtils::Rect workArea, FancyZonesDataTypes:
         columnInfo[col].Extent = columnInfo[col].End - columnInfo[col].Start;
     }
 
-    for (int row = 0; row < gridLayoutInfo.rows(); row++)
+    for (int64_t row = 0; row < gridLayoutInfo.rows(); row++)
     {
-        for (int col = 0; col < gridLayoutInfo.columns(); col++)
+        for (int64_t col = 0; col < gridLayoutInfo.columns(); col++)
         {
             int i = gridLayoutInfo.cellChildMap()[row][col];
             if (((row == 0) || (gridLayoutInfo.cellChildMap()[row - 1][col] != i)) &&
@@ -150,12 +150,12 @@ ZonesMap CalculateGridZones(FancyZonesUtils::Rect workArea, FancyZonesDataTypes:
                 long left = columnInfo[col].Start;
                 long top = rowInfo[row].Start;
 
-                int maxRow = row;
+                int64_t maxRow = row;
                 while (((maxRow + 1) < gridLayoutInfo.rows()) && (gridLayoutInfo.cellChildMap()[maxRow + 1][col] == i))
                 {
                     maxRow++;
                 }
-                int maxCol = col;
+                int64_t maxCol = col;
                 while (((maxCol + 1) < gridLayoutInfo.columns()) && (gridLayoutInfo.cellChildMap()[row][maxCol + 1] == i))
                 {
                     maxCol++;
@@ -165,12 +165,12 @@ ZonesMap CalculateGridZones(FancyZonesUtils::Rect workArea, FancyZonesDataTypes:
                 long bottom = rowInfo[maxRow].End;
 
                 top += row == 0 ? spacing : spacing / 2;
-                bottom -= maxRow == gridLayoutInfo.rows() - 1 ? spacing : spacing / 2;
+                bottom -= maxRow == static_cast<int64_t>(gridLayoutInfo.rows()) - 1 ? spacing : spacing / 2;
                 left += col == 0 ? spacing : spacing / 2;
-                right -= maxCol == gridLayoutInfo.columns() - 1 ? spacing : spacing / 2;
+                right -= maxCol == static_cast<int64_t>(gridLayoutInfo.columns()) - 1 ? spacing : spacing / 2;
 
-                auto zone = MakeZone(RECT{ left, top, right, bottom }, i);
-                if (zone)
+                Zone zone(RECT{ left, top, right, bottom }, i);
+                if (zone.IsValid())
                 {
                     if (!AddZone(zone, zones))
                     {
@@ -207,8 +207,8 @@ ZonesMap LayoutConfigurator::Focus(FancyZonesUtils::Rect workArea, int zoneCount
 
     for (int i = 0; i < zoneCount; i++)
     {
-        auto zone = MakeZone(focusZoneRect, zones.size());
-        if (zone)
+        Zone zone(focusZoneRect, zones.size());
+        if (zone.IsValid())
         {
             if (!AddZone(zone, zones))
             {
@@ -251,8 +251,8 @@ ZonesMap LayoutConfigurator::Rows(FancyZonesUtils::Rect workArea, int zoneCount,
         right = totalWidth + spacing;
         bottom = top + (zoneIndex + 1) * totalHeight / zoneCount - zoneIndex * totalHeight / zoneCount;
 
-        auto zone = MakeZone(RECT{ left, top, right, bottom }, zones.size());
-        if (zone)
+        Zone zone(RECT{ left, top, right, bottom }, zones.size());
+        if (zone.IsValid())
         {
             if (!AddZone(zone, zones))
             {
@@ -292,8 +292,8 @@ ZonesMap LayoutConfigurator::Columns(FancyZonesUtils::Rect workArea, int zoneCou
         right = left + (zoneIndex + 1) * totalWidth / zoneCount - zoneIndex * totalWidth / zoneCount;
         bottom = totalHeight + spacing;
 
-        auto zone = MakeZone(RECT{ left, top, right, bottom }, zones.size());
-        if (zone)
+        Zone zone(RECT{ left, top, right, bottom }, zones.size());
+        if (zone.IsValid())
         {
             if (!AddZone(zone, zones))
             {
@@ -404,10 +404,10 @@ ZonesMap LayoutConfigurator::Custom(FancyZonesUtils::Rect workArea, HMONITOR mon
             DPIAware::Convert(monitor, x, y);
             DPIAware::Convert(monitor, zoneWidth, zoneHeight);
             
-            auto zone = MakeZone(RECT{ static_cast<long>(x), static_cast<long>(y), static_cast<long>(x + zoneWidth), static_cast<long>(y + zoneHeight) }, zones.size());
-            if (zone)
+            Zone zone_to_add(RECT{ static_cast<long>(x), static_cast<long>(y), static_cast<long>(x + zoneWidth), static_cast<long>(y + zoneHeight) }, zones.size());
+            if (zone_to_add.IsValid())
             {
-                if (!AddZone(zone, zones))
+                if (!AddZone(zone_to_add, zones))
                 {
                     Logger::error(L"Failed to create Custom layout. Invalid zone id");
                     return {};

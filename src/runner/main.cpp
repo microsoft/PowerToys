@@ -46,7 +46,14 @@
 #include <common/utils/window.h>
 #include <common/version/version.h>
 #include <common/utils/string_utils.h>
+
+// disabling warning 4458 - declaration of 'identifier' hides class member
+// to avoid warnings from GDI files - can't add winRT directory to external code
+// in the Cpp.Build.props
+#pragma warning(push)
+#pragma warning(disable : 4458)
 #include <gdiplus.h>
+#pragma warning(pop)
 
 namespace
 {
@@ -149,14 +156,15 @@ int runner(bool isProcessElevated, bool openSettings, std::string settingsWindow
             L"modules/ShortcutGuide/ShortcutGuideModuleInterface/PowerToys.ShortcutGuideModuleInterface.dll",
             L"modules/ColorPicker/PowerToys.ColorPicker.dll",
             L"modules/Awake/PowerToys.AwakeModuleInterface.dll",
-            L"modules/MouseUtils/PowerToys.FindMyMouse.dll" ,
+            L"modules/MouseUtils/PowerToys.FindMyMouse.dll",
             L"modules/MouseUtils/PowerToys.MouseHighlighter.dll",
             L"modules/AlwaysOnTop/PowerToys.AlwaysOnTopModuleInterface.dll",
             L"modules/MouseUtils/PowerToys.MousePointerCrosshairs.dll",
             L"modules/PowerAccent/PowerToys.PowerAccentModuleInterface.dll",
             L"modules/PowerOCR/PowerToys.PowerOCRModuleInterface.dll",
-
+            L"modules/FileLocksmith/PowerToys.FileLocksmithExt.dll",
             L"modules/MeasureTool/PowerToys.MeasureToolModuleInterface.dll",
+            L"modules/Hosts/PowerToys.HostsModuleInterface.dll",
         };
         const auto VCM_PATH = L"modules/VideoConference/PowerToys.VideoConferenceModule.dll";
         if (const auto mf = LoadLibraryA("mf.dll"))
@@ -165,7 +173,7 @@ int runner(bool isProcessElevated, bool openSettings, std::string settingsWindow
             knownModules.emplace_back(VCM_PATH);
         }
 
-        for (const auto& moduleSubdir : knownModules)
+        for (auto moduleSubdir : knownModules)
         {
             try
             {
@@ -324,7 +332,7 @@ void cleanup_updates()
             }
         }
     }
-	
+
     // Log files
     auto rootPath{ PTSettingsHelper::get_root_save_folder_location() };
     auto currentVersion = left_trim<wchar_t>(get_product_version(), L"v");
@@ -347,7 +355,7 @@ void cleanup_updates()
     }
 }
 
-int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow)
+int WINAPI WinMain(HINSTANCE /*hInstance*/, HINSTANCE /*hPrevInstance*/, LPSTR lpCmdLine, int /*nCmdShow*/)
 {
     Gdiplus::GdiplusStartupInput gpStartupInput;
     ULONG_PTR gpToken;
@@ -381,6 +389,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
         case toast_notification_handler_result::exit_success:
             return 0;
         }
+        [[fallthrough]];
     case SpecialMode::ReportSuccessfulUpdate:
     {
         notifications::remove_toasts_by_tag(notifications::UPDATING_PROCESS_TOAST_TAG);
@@ -459,7 +468,6 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 
         // Apply the general settings but don't save it as the modules() variable has not been loaded yet
         apply_general_settings(general_settings, false);
-        int rvalue = 0;
         const bool elevated = is_process_elevated();
         const bool with_dont_elevate_arg = cmdLine.find("--dont-elevate") != std::string::npos;
         const bool run_elevated_setting = general_settings.GetNamedBoolean(L"run_elevated", false);
@@ -474,9 +482,11 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
         {
             result = runner(elevated, open_settings, settings_window, openOobe, openScoobe);
 
-            // Save settings on closing
-            auto general_settings = get_general_settings();
-            PTSettingsHelper::save_general_settings(general_settings.to_json());
+            if (result == 0)
+            {
+                // Save settings on closing, if closed 'normal'
+                PTSettingsHelper::save_general_settings(get_general_settings().to_json());
+            }
         }
         else
         {

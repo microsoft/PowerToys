@@ -6,7 +6,6 @@ using System.Linq;
 using Microsoft.PowerToys.Run.Plugin.TimeZone.Classes;
 using Microsoft.PowerToys.Run.Plugin.TimeZone.Helper;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using NLog;
 using Wox.Plugin;
 
 namespace Microsoft.PowerToys.Run.Plugin.TimeZone.UnitTests

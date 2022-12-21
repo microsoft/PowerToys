@@ -3,7 +3,7 @@
   <Import Project="..\..\..\..\Version.props" />
 
   <PropertyGroup>
-    <TargetFramework>net6.0-windows10.0.19041.0</TargetFramework>
+    <TargetFramework>net7.0-windows10.0.19041.0</TargetFramework>
     <RootNamespace>Microsoft.PowerToys.Run.Plugin.WindowsTerminal</RootNamespace>
     <AssemblyName>Microsoft.PowerToys.Run.Plugin.WindowsTerminal</AssemblyName>
     <Version>$(Version).0</Version>

@@ -2,15 +2,14 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-namespace PowerAccent.Core.Services;
-
+using System.IO.Abstractions;
+using System.Text.Json;
 using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.PowerToys.Settings.UI.Library.Enumerations;
 using Microsoft.PowerToys.Settings.UI.Library.Utilities;
 using PowerToys.PowerAccentKeyboardService;
-using System.IO.Abstractions;
-using System.Text.Json;
 
+namespace PowerAccent.Core.Services;
 public class SettingsService
 {
     private const string PowerAccentModuleName = "QuickAccent";
@@ -55,6 +54,12 @@ public class SettingsService
 
                         InputTime = settings.Properties.InputTime.Value;
                         _keyboardListener.UpdateInputTime(InputTime);
+
+                        ExcludedApps = settings.Properties.ExcludedApps.Value;
+                        _keyboardListener.UpdateExcludedApps(ExcludedApps);
+
+                        SelectedLang = Enum.TryParse(settings.Properties.SelectedLang.Value, out Language selectedLangValue) ? selectedLangValue : Language.ALL;
+
                         switch (settings.Properties.ToolbarPosition.Value)
                         {
                             case "Top center":
@@ -86,7 +91,7 @@ public class SettingsService
                                 break;
                         }
 
-                        _keyboardListener.UpdateInputTime(InputTime);
+                        ShowUnicodeDescription = settings.Properties.ShowUnicodeDescription;
                     }
                 }
                 catch (Exception ex)
@@ -127,7 +132,7 @@ public class SettingsService
         }
     }
 
-    private int _inputTime = 200;
+    private int _inputTime = PowerAccentSettings.DefaultInputTimeMs;
 
     public int InputTime
     {
@@ -142,34 +147,49 @@ public class SettingsService
         }
     }
 
-    public static char[] GetDefaultLetterKey(LetterKey letter)
+    private string _excludedApps;
+
+    public string ExcludedApps
     {
-        switch (letter)
+        get
         {
-            case LetterKey.VK_A:
-                return new char[] { 'à', 'â', 'á', 'ä', 'ã', 'å', 'æ' };
-            case LetterKey.VK_C:
-                return new char[] { 'ć', 'ĉ', 'č', 'ċ', 'ç', 'ḉ' };
-            case LetterKey.VK_E:
-                return new char[] { 'é', 'è', 'ê', 'ë', 'ē', 'ė', '€' };
-            case LetterKey.VK_I:
-                return new char[] { 'î', 'ï', 'í', 'ì', 'ī' };
-            case LetterKey.VK_N:
-                return new char[] { 'ñ', 'ń' };
-            case LetterKey.VK_O:
-                return new char[] { 'ô', 'ö', 'ó', 'ò', 'õ', 'ø', 'œ' };
-            case LetterKey.VK_S:
-                return new char[] { 'š', 'ß', 'ś' };
-            case LetterKey.VK_U:
-                return new char[] { 'û', 'ù', 'ü', 'ú', 'ū' };
-            case LetterKey.VK_Y:
-                return new char[] { 'ÿ', 'ý' };
-            case LetterKey.VK_MINUS:
-                // Left to right: Underscore(U+005F), figure dash (U+2012), en dash (U+2013), em dash (U+2014), horizontal bar (U+2015)
-                return new char[] { '_', '‒', '–', '—', '―' };
+            return _excludedApps;
         }
 
-        throw new ArgumentException("Letter {0} is missing", letter.ToString());
+        set
+        {
+            _excludedApps = value;
+        }
+    }
+
+    private Language _selectedLang;
+
+    public Language SelectedLang
+    {
+        get
+        {
+            return _selectedLang;
+        }
+
+        set
+        {
+            _selectedLang = value;
+        }
+    }
+
+    private bool _showUnicodeDescription;
+
+    public bool ShowUnicodeDescription
+    {
+        get
+        {
+            return _showUnicodeDescription;
+        }
+
+        set
+        {
+            _showUnicodeDescription = value;
+        }
     }
 }
 

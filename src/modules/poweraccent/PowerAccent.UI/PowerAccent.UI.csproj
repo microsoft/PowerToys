@@ -2,35 +2,43 @@
 	<Import Project="..\..\..\Version.props" />
 	<PropertyGroup>
 		<OutputType>WinExe</OutputType>
-		<TargetFramework>net6.0-windows10.0.19041.0</TargetFramework>
+		<TargetFramework>net7.0-windows10.0.19041.0</TargetFramework>
 		<RuntimeIdentifiers>win-x64;win-arm64</RuntimeIdentifiers>
 		<Nullable>disable</Nullable>
 		<UseWPF>true</UseWPF>
 		<AllowUnsafeBlocks>True</AllowUnsafeBlocks>
-		<ApplicationIcon>a-icon.ico</ApplicationIcon>
-		<AssemblyName>PowerAccent</AssemblyName>
+		<ApplicationIcon>icon.ico</ApplicationIcon>
+		<AssemblyName>PowerToys.PowerAccent</AssemblyName>
 		<XamlDebuggingInformation>True</XamlDebuggingInformation>
+		<StartupObject>PowerAccent.UI.Program</StartupObject>
+		<OutputPath>$(SolutionDir)$(Platform)\$(Configuration)\modules\PowerAccent</OutputPath>
+		<AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+		<AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
+		<SelfContained>true</SelfContained>
+	</PropertyGroup>
+
+	<!-- SelfContained=true requires RuntimeIdentifier to be set -->
+	<PropertyGroup Condition="'$(Platform)'=='x64'">
+		<RuntimeIdentifier>win10-x64</RuntimeIdentifier>
+	</PropertyGroup>
+	<PropertyGroup Condition="'$(Platform)'=='ARM64'">
+		<RuntimeIdentifier>win10-arm64</RuntimeIdentifier>
 	</PropertyGroup>
 
 	<ItemGroup>
-		<None Remove="win11desktop.jpg" />
-	</ItemGroup>
-
-	<ItemGroup>
-		<Resource Include="a-icon.ico">
+		<Resource Include="icon.ico">
 			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
 		</Resource>
-		<Resource Include="win11desktop.jpg" />
 	</ItemGroup>
 
 	<ItemGroup>
-		<PackageReference Include="gong-wpf-dragdrop" Version="3.1.1" />
-		<PackageReference Include="MahApps.Metro" Version="2.4.9" />
 		<PackageReference Include="Microsoft.Windows.CsWinRT" Version="2.0.0" />
+		<PackageReference Include="ModernWpfUI" Version="0.9.4" />
 	</ItemGroup>
 
 	<ItemGroup>
+		<ProjectReference Include="..\..\..\common\Common.UI\Common.UI.csproj" />
 		<ProjectReference Include="..\PowerAccent.Core\PowerAccent.Core.csproj" />
+		<ProjectReference Include="..\PowerAccentKeyboardService\PowerAccentKeyboardService.vcxproj" />
 	</ItemGroup>
-
 </Project>

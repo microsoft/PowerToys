@@ -36,13 +36,22 @@ struct CommonState
     std::atomic_bool closeOnOtherMonitors = false;
 };
 
+struct CursorDrag
+{
+    D2D_POINT_2F startPos = {};
+    D2D_POINT_2F currentPos = {};
+    DWORD touchID = 0; // indicate whether the drag belongs to a touch input sequence
+};
+
 struct BoundsToolState
 {
     struct PerScreen
     {
-        std::optional<D2D_POINT_2F> currentRegionStart;
+        std::optional<CursorDrag> currentBounds;
         std::vector<Measurement> measurements;
     };
+
+    // TODO: refactor so we don't need unordered_map
     std::unordered_map<HWND, PerScreen> perScreen;
 
     CommonState* commonState = nullptr; // required for WndProc
@@ -60,7 +69,7 @@ struct MeasureToolState
     struct Global
     {
         uint8_t pixelTolerance = 30;
-        bool continuousCapture = true;
+        bool continuousCapture = false;
         bool drawFeetOnCross = true;
         bool perColorChannelEdgeDetection = false;
         Mode mode = Mode::Cross;

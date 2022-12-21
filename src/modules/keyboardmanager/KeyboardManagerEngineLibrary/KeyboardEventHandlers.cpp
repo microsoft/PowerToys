@@ -587,7 +587,7 @@ namespace KeyboardEventHandlers
                                 {
                                     DWORD to = std::get<0>(newRemapping.targetShortcut);
                                     bool isLastKeyStillPressed = ii.GetVirtualKeyState((WORD)from.actionKey);
-                                    key_count = from.Size() - 1 + 1 + (isLastKeyStillPressed ? 1 : 0);
+                                    key_count = static_cast<size_t>(from.Size()) - 1 + 1 + (isLastKeyStillPressed ? 1 : 0);
                                     keyEventList = new INPUT[key_count]();
                                     memset(keyEventList, 0, sizeof(keyEventList));
                                     int i = 0;
@@ -604,7 +604,10 @@ namespace KeyboardEventHandlers
                                     Shortcut to = std::get<Shortcut>(newRemapping.targetShortcut);
                                     bool isLastKeyStillPressed = ii.GetVirtualKeyState((WORD)from.actionKey);
 
-                                    key_count = from.Size() - 1 + to.Size() - 1 - 2* from.GetCommonModifiersCount(to) + 1 + (isLastKeyStillPressed ? 1 : 0);
+                                    size_t temp_key_count_calculation = static_cast<size_t>(from.Size()) - 1;
+                                    temp_key_count_calculation += static_cast<size_t>(to.Size()) - 1;
+                                    temp_key_count_calculation -= static_cast<size_t>(2) * from.GetCommonModifiersCount(to);
+                                    key_count = temp_key_count_calculation + 1 + (isLastKeyStillPressed ? 1 : 0);
                                     keyEventList = new INPUT[key_count]();
 
                                     int i = 0;

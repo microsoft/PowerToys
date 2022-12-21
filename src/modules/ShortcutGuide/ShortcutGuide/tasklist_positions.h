@@ -8,7 +8,11 @@
 struct TasklistButton
 {
     std::wstring name;
-    long x, y, width, height, keynum;
+    long x{};
+    long y{};
+    long width{};
+    long height{};
+    long keynum{};
 };
 
 class Tasklist
