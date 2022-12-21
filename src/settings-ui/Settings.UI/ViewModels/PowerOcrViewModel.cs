@@ -195,7 +195,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             // if the previously stored preferred language is not available (has been deleted or this is the first run with language preference)
             if (preferredLanguageIndex == -1)
             {
-                // try to use the current ui langueage. If it is also not available, set the first language as preferred (to have any selected language)
+                // try to use the current ui language. If it is also not available, set the first language as preferred (to have any selected language)
                 if (systemLanguageIndex >= 0)
                 {
                     preferredLanguageIndex = systemLanguageIndex;
