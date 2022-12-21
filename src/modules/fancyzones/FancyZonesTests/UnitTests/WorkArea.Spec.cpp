@@ -22,11 +22,12 @@ namespace FancyZonesUnitTests
     {
         FancyZonesDataTypes::WorkAreaId m_uniqueId;
         FancyZonesDataTypes::WorkAreaId m_emptyUniqueId;
+        FancyZonesUtils::Rect m_workAreaRect{ RECT(0,0,1920,1080) };
 
         HINSTANCE m_hInst{};
         HMONITOR m_monitor{};
 
-        TEST_METHOD_INITIALIZE(Init)
+        TEST_METHOD_INITIALIZE(Init) noexcept
         {
             m_uniqueId.monitorId.deviceId.id = L"DELA026";
             m_uniqueId.monitorId.deviceId.instanceId = L"5&10a58c63&0&UID16777488";
@@ -38,7 +39,7 @@ namespace FancyZonesUnitTests
             DefaultLayouts::instance().LoadData();
         }
 
-        TEST_METHOD_CLEANUP(CleanUp)
+        TEST_METHOD_CLEANUP(CleanUp) noexcept
         {
             std::filesystem::remove(AppliedLayouts::AppliedLayoutsFileName());
             std::filesystem::remove(AppZoneHistory::AppZoneHistoryFileName());
@@ -50,7 +51,7 @@ namespace FancyZonesUnitTests
         {
             const auto defaultLayout = DefaultLayouts::instance().GetDefaultLayout();
 
-            auto workArea = MakeWorkArea({}, Mocks::Monitor(), m_uniqueId, m_emptyUniqueId);
+            auto workArea = MakeWorkArea({}, m_uniqueId, m_emptyUniqueId, m_workAreaRect);
             Assert::IsFalse(workArea == nullptr);
             Assert::IsTrue(m_uniqueId == workArea->UniqueId());
 
@@ -65,7 +66,7 @@ namespace FancyZonesUnitTests
         {
             const auto defaultLayout = DefaultLayouts::instance().GetDefaultLayout();
 
-            auto workArea = MakeWorkArea({}, {}, m_uniqueId, m_emptyUniqueId);
+            auto workArea = MakeWorkArea({}, m_uniqueId, m_emptyUniqueId, m_workAreaRect);
             Assert::IsFalse(workArea == nullptr);
             Assert::IsTrue(m_uniqueId == workArea->UniqueId());
 
@@ -95,10 +96,10 @@ namespace FancyZonesUnitTests
                 .sensitivityRadius = 20,
             };
 
-            auto parentWorkArea = MakeWorkArea(m_hInst, m_monitor, parentUniqueId, m_emptyUniqueId);
+            auto parentWorkArea = MakeWorkArea(m_hInst, parentUniqueId, m_emptyUniqueId, m_workAreaRect);
             AppliedLayouts::instance().ApplyLayout(parentUniqueId, layout);
 
-            auto actualWorkArea = MakeWorkArea(m_hInst, m_monitor, m_uniqueId, parentUniqueId);
+            auto actualWorkArea = MakeWorkArea(m_hInst, m_uniqueId, parentUniqueId, m_workAreaRect);
             Assert::IsNotNull(actualWorkArea->GetLayout().get());
             Assert::IsNotNull(actualWorkArea->GetLayoutWindows().get());
 
@@ -131,7 +132,7 @@ namespace FancyZonesUnitTests
             DefaultLayouts::instance().LoadData();
 
             // test
-            auto workArea = MakeWorkArea({}, Mocks::Monitor(), m_uniqueId, m_emptyUniqueId);
+            auto workArea = MakeWorkArea({}, m_uniqueId, m_emptyUniqueId, m_workAreaRect);
             Assert::IsFalse(workArea == nullptr);
             Assert::IsTrue(m_uniqueId == workArea->UniqueId());
 
@@ -164,7 +165,7 @@ namespace FancyZonesUnitTests
             DefaultLayouts::instance().LoadData();
 
             // test
-            auto workArea = MakeWorkArea({}, Mocks::Monitor(), m_uniqueId, m_emptyUniqueId);
+            auto workArea = MakeWorkArea({}, m_uniqueId, m_emptyUniqueId, m_workAreaRect);
             Assert::IsFalse(workArea == nullptr);
             Assert::IsTrue(m_uniqueId == workArea->UniqueId());
 
@@ -181,11 +182,11 @@ namespace FancyZonesUnitTests
     {
         FancyZonesDataTypes::WorkAreaId m_uniqueId;
         FancyZonesDataTypes::WorkAreaId m_parentUniqueId; // default empty
+        FancyZonesUtils::Rect m_workAreaRect{ RECT(0, 0, 1920, 1080) };
 
         HINSTANCE m_hInst{};
-        HMONITOR m_monitor{};
 
-        TEST_METHOD_INITIALIZE(Init)
+        TEST_METHOD_INITIALIZE(Init) noexcept
         {
             m_uniqueId.monitorId.deviceId.id = L"DELA026";
             m_uniqueId.monitorId.deviceId.instanceId = L"5&10a58c63&0&UID16777488";
@@ -196,7 +197,7 @@ namespace FancyZonesUnitTests
             AppliedLayouts::instance().LoadData();
         }
 
-        TEST_METHOD_CLEANUP(CleanUp)
+        TEST_METHOD_CLEANUP(CleanUp) noexcept
         {
             std::filesystem::remove(AppZoneHistory::AppZoneHistoryFileName());
             std::filesystem::remove(AppliedLayouts::AppliedLayoutsFileName());
@@ -205,9 +206,9 @@ namespace FancyZonesUnitTests
     public:
             TEST_METHOD (MoveSizeEnter)
             {
-                auto workArea = MakeWorkArea(m_hInst, m_monitor, m_uniqueId, m_parentUniqueId);
+            auto workArea = MakeWorkArea(m_hInst, m_uniqueId, m_parentUniqueId, m_workAreaRect);
 
-                const auto expected = S_OK;
+                constexpr auto expected = S_OK;
                 const auto actual = workArea->MoveSizeEnter(Mocks::Window());
 
                 Assert::AreEqual(expected, actual);
@@ -215,9 +216,9 @@ namespace FancyZonesUnitTests
 
             TEST_METHOD (MoveSizeEnterTwice)
             {
-                auto workArea = MakeWorkArea(m_hInst, m_monitor, m_uniqueId, m_parentUniqueId);
+                auto workArea = MakeWorkArea(m_hInst, m_uniqueId, m_parentUniqueId, m_workAreaRect);
 
-                const auto expected = S_OK;
+                constexpr auto expected = S_OK;
 
                 workArea->MoveSizeEnter(Mocks::Window());
                 const auto actual = workArea->MoveSizeEnter(Mocks::Window());
@@ -227,9 +228,9 @@ namespace FancyZonesUnitTests
 
             TEST_METHOD (MoveSizeUpdate)
             {
-                auto workArea = MakeWorkArea(m_hInst, m_monitor, m_uniqueId, m_parentUniqueId);
+                auto workArea = MakeWorkArea(m_hInst, m_uniqueId, m_parentUniqueId, m_workAreaRect);
 
-                const auto expected = S_OK;
+                constexpr auto expected = S_OK;
                 const auto actual = workArea->MoveSizeUpdate(POINT{ 0, 0 }, true, false);
 
                 Assert::AreEqual(expected, actual);
@@ -237,9 +238,9 @@ namespace FancyZonesUnitTests
 
             TEST_METHOD (MoveSizeUpdatePointNegativeCoordinates)
             {
-                auto workArea = MakeWorkArea(m_hInst, m_monitor, m_uniqueId, m_parentUniqueId);
+                auto workArea = MakeWorkArea(m_hInst, m_uniqueId, m_parentUniqueId, m_workAreaRect);
 
-                const auto expected = S_OK;
+                constexpr auto expected = S_OK;
                 const auto actual = workArea->MoveSizeUpdate(POINT{ -10, -10 }, true, false);
 
                 Assert::AreEqual(expected, actual);
@@ -247,9 +248,9 @@ namespace FancyZonesUnitTests
 
             TEST_METHOD (MoveSizeUpdatePointBigCoordinates)
             {
-                auto workArea = MakeWorkArea(m_hInst, m_monitor, m_uniqueId, m_parentUniqueId);
+                auto workArea = MakeWorkArea(m_hInst, m_uniqueId, m_parentUniqueId, m_workAreaRect);
 
-                const auto expected = S_OK;
+                constexpr auto expected = S_OK;
                 const auto actual = workArea->MoveSizeUpdate(POINT{ LONG_MAX, LONG_MAX }, true, false);
 
                 Assert::AreEqual(expected, actual);
@@ -257,13 +258,13 @@ namespace FancyZonesUnitTests
 
             TEST_METHOD (MoveSizeEnd)
             {
-                auto workArea = MakeWorkArea(m_hInst, m_monitor, m_uniqueId, m_parentUniqueId);
+                auto workArea = MakeWorkArea(m_hInst, m_uniqueId, m_parentUniqueId, m_workAreaRect);
 
                 const auto window = Mocks::Window();
                 workArea->MoveSizeEnter(window);
                 workArea->MoveSizeUpdate({ 20, 20 }, true, true);
 
-                const auto expected = S_OK;
+                constexpr auto expected = S_OK;
                 const auto actual = workArea->MoveSizeEnd(window);
                 Assert::AreEqual(expected, actual);
 
@@ -274,12 +275,12 @@ namespace FancyZonesUnitTests
 
             TEST_METHOD (MoveSizeEndDifferentWindows)
             {
-                auto workArea = MakeWorkArea(m_hInst, m_monitor, m_uniqueId, m_parentUniqueId);
+                auto workArea = MakeWorkArea(m_hInst, m_uniqueId, m_parentUniqueId, m_workAreaRect);
 
                 const auto window = Mocks::Window();
                 workArea->MoveSizeEnter(window);
 
-                const auto expected = E_INVALIDARG;
+                constexpr auto expected = E_INVALIDARG;
                 const auto actual = workArea->MoveSizeEnd(Mocks::Window());
 
                 Assert::AreEqual(expected, actual);
@@ -287,9 +288,9 @@ namespace FancyZonesUnitTests
 
             TEST_METHOD (MoveSizeEndWindowNotSet)
             {
-                auto workArea = MakeWorkArea(m_hInst, m_monitor, m_uniqueId, m_parentUniqueId);
+                auto workArea = MakeWorkArea(m_hInst, m_uniqueId, m_parentUniqueId, m_workAreaRect);
 
-                const auto expected = E_INVALIDARG;
+                constexpr auto expected = E_INVALIDARG;
                 const auto actual = workArea->MoveSizeEnd(Mocks::Window());
 
                 Assert::AreEqual(expected, actual);
@@ -297,7 +298,7 @@ namespace FancyZonesUnitTests
 
             TEST_METHOD (SaveWindowProcessToZoneIndexNullptrWindow)
             {
-                auto workArea = MakeWorkArea(m_hInst, m_monitor, m_uniqueId, m_parentUniqueId);
+                auto workArea = MakeWorkArea(m_hInst, m_uniqueId, m_parentUniqueId, m_workAreaRect);
 
                 workArea->SaveWindowProcessToZoneIndex(nullptr);
 
@@ -307,7 +308,7 @@ namespace FancyZonesUnitTests
 
             TEST_METHOD (SaveWindowProcessToZoneIndexNoWindowAdded)
             {
-                auto workArea = MakeWorkArea(m_hInst, m_monitor, m_uniqueId, m_parentUniqueId);
+                auto workArea = MakeWorkArea(m_hInst, m_uniqueId, m_parentUniqueId, m_workAreaRect);
 
                 auto window = Mocks::WindowCreate(m_hInst);
                 workArea->GetLayout()->Init(RECT{ 0, 0, 1920, 1080 }, Mocks::Monitor());
@@ -320,7 +321,7 @@ namespace FancyZonesUnitTests
 
             TEST_METHOD (SaveWindowProcessToZoneIndexNoWindowAddedWithFilledAppZoneHistory)
             {
-                auto workArea = MakeWorkArea(m_hInst, m_monitor, m_uniqueId, m_parentUniqueId);
+                auto workArea = MakeWorkArea(m_hInst, m_uniqueId, m_parentUniqueId, m_workAreaRect);
                 
                 const auto window = Mocks::WindowCreate(m_hInst);
                 const auto processPath = get_process_path(window);
@@ -332,7 +333,7 @@ namespace FancyZonesUnitTests
                 Assert::AreEqual((size_t)1, AppZoneHistory::instance().GetFullAppZoneHistory().size());
                 const auto& appHistoryArray1 = AppZoneHistory::instance().GetFullAppZoneHistory().at(processPath);
                 Assert::AreEqual((size_t)1, appHistoryArray1.size());
-                Assert::IsTrue(std::vector<ZoneIndex>{ 0 } == appHistoryArray1[0].zoneIndexSet);
+                Assert::IsTrue(std::vector<ZoneIndex>{ 0 } == appHistoryArray1.at(0).zoneIndexSet);
 
                 // add zone without window
                 workArea->GetLayout()->Init(RECT{ 0, 0, 1920, 1080 }, Mocks::Monitor());
@@ -341,12 +342,12 @@ namespace FancyZonesUnitTests
                 Assert::AreEqual((size_t)1, AppZoneHistory::instance().GetFullAppZoneHistory().size());
                 const auto& appHistoryArray2 = AppZoneHistory::instance().GetFullAppZoneHistory().at(processPath);
                 Assert::AreEqual((size_t)1, appHistoryArray2.size());
-                Assert::IsTrue(std::vector<ZoneIndex>{ 0 } == appHistoryArray2[0].zoneIndexSet);
+                Assert::IsTrue(std::vector<ZoneIndex>{ 0 } == appHistoryArray2.at(0).zoneIndexSet);
             }
 
             TEST_METHOD (SaveWindowProcessToZoneIndexWindowAdded)
             {
-                auto workArea = MakeWorkArea(m_hInst, m_monitor, m_uniqueId, m_parentUniqueId);
+                auto workArea = MakeWorkArea(m_hInst, m_uniqueId, m_parentUniqueId, m_workAreaRect);
                 
                 auto window = Mocks::WindowCreate(m_hInst);
                 const auto processPath = get_process_path(window);
@@ -360,25 +361,25 @@ namespace FancyZonesUnitTests
                 Assert::AreEqual((size_t)1, AppZoneHistory::instance().GetFullAppZoneHistory().size());
                 const auto& appHistoryArray = AppZoneHistory::instance().GetFullAppZoneHistory().at(processPath);
                 Assert::AreEqual((size_t)1, appHistoryArray.size());
-                Assert::IsTrue(std::vector<ZoneIndex>{ 2 } == appHistoryArray[0].zoneIndexSet);
+                Assert::IsTrue(std::vector<ZoneIndex>{ 2 } == appHistoryArray.at(0).zoneIndexSet);
 
                 workArea->SaveWindowProcessToZoneIndex(window);
 
                 const auto& actualAppZoneHistory = AppZoneHistory::instance().GetFullAppZoneHistory();
                 Assert::AreEqual((size_t)1, actualAppZoneHistory.size());
                 const auto& expected = workArea->GetLayoutWindows()->GetZoneIndexSetFromWindow(window);
-                const auto& actual = appHistoryArray[0].zoneIndexSet;
+                const auto& actual = appHistoryArray.at(0).zoneIndexSet;
                 Assert::IsTrue(expected == actual);
             }
 
             TEST_METHOD (WhenWindowIsNotResizablePlacingItIntoTheZoneShouldNotResizeIt)
             {
-                auto workArea = MakeWorkArea(m_hInst, m_monitor, m_uniqueId, m_parentUniqueId);
+                auto workArea = MakeWorkArea(m_hInst, m_uniqueId, m_parentUniqueId, m_workAreaRect);
                 
                 auto window = Mocks::WindowCreate(m_hInst);
 
-                int originalWidth = 450;
-                int originalHeight = 550;
+                const int originalWidth = 450;
+                const int originalHeight = 550;
 
                 SetWindowPos(window, nullptr, 150, 150, originalWidth, originalHeight, SWP_SHOWWINDOW);
                 SetWindowLong(window, GWL_STYLE, GetWindowLong(window, GWL_STYLE) & ~WS_SIZEBOX);
@@ -412,7 +413,7 @@ namespace FancyZonesUnitTests
         FancyZonesDataTypes::WorkAreaId m_parentUniqueId; // default empty
 
         HINSTANCE m_hInst{};
-        HMONITOR m_monitor{};
+        FancyZonesUtils::Rect m_workAreaRect{ RECT(0, 0, 1920, 1080) };
 
         void PrepareEmptyLayout()
         {
@@ -482,13 +483,13 @@ namespace FancyZonesUnitTests
             AppliedLayouts::instance().LoadData();
         }
 
-        TEST_METHOD_INITIALIZE(Init)
+        TEST_METHOD_INITIALIZE(Init) noexcept
         {
             AppZoneHistory::instance().LoadData();
             AppliedLayouts::instance().LoadData();
         }
 
-        TEST_METHOD_CLEANUP(CleanUp)
+        TEST_METHOD_CLEANUP(CleanUp) noexcept
         {
             std::filesystem::remove(AppZoneHistory::AppZoneHistoryFileName());
             std::filesystem::remove(AppliedLayouts::AppliedLayoutsFileName());
@@ -498,7 +499,7 @@ namespace FancyZonesUnitTests
         {
             // prepare
             PrepareEmptyLayout();
-            auto workArea = MakeWorkArea(m_hInst, m_uniqueId.monitorId.monitor, m_uniqueId, m_parentUniqueId);
+            auto workArea = MakeWorkArea(m_hInst, m_uniqueId, m_parentUniqueId, m_workAreaRect);
             const auto window = Mocks::WindowCreate(m_hInst);
 
             // test
@@ -515,7 +516,7 @@ namespace FancyZonesUnitTests
         {
             // prepare
             PrepareEmptyLayout();
-            auto workArea = MakeWorkArea(m_hInst, m_uniqueId.monitorId.monitor, m_uniqueId, m_parentUniqueId);
+            auto workArea = MakeWorkArea(m_hInst, m_uniqueId, m_parentUniqueId, m_workAreaRect);
             const auto window = Mocks::WindowCreate(m_hInst);
 
             // test
@@ -532,7 +533,7 @@ namespace FancyZonesUnitTests
         {
             // prepare
             PrepareGridLayout();
-            auto workArea = MakeWorkArea(m_hInst, m_uniqueId.monitorId.monitor, m_uniqueId, m_parentUniqueId);
+            auto workArea = MakeWorkArea(m_hInst, m_uniqueId, m_parentUniqueId, m_workAreaRect);
             const auto window = Mocks::WindowCreate(m_hInst);
 
             // test
@@ -549,7 +550,7 @@ namespace FancyZonesUnitTests
         {
             // prepare
             PrepareGridLayout();
-            auto workArea = MakeWorkArea(m_hInst, m_uniqueId.monitorId.monitor, m_uniqueId, m_parentUniqueId);
+            auto workArea = MakeWorkArea(m_hInst, m_uniqueId, m_parentUniqueId, m_workAreaRect);
             const auto window = Mocks::WindowCreate(m_hInst);
 
             // test
@@ -566,7 +567,7 @@ namespace FancyZonesUnitTests
         {
             // prepare
             PrepareGridLayout();
-            auto workArea = MakeWorkArea(m_hInst, m_uniqueId.monitorId.monitor, m_uniqueId, m_parentUniqueId);
+            auto workArea = MakeWorkArea(m_hInst, m_uniqueId, m_parentUniqueId, m_workAreaRect);
             const auto window = Mocks::WindowCreate(m_hInst);
             const auto& layoutWindows = workArea->GetLayoutWindows();
             
@@ -585,7 +586,7 @@ namespace FancyZonesUnitTests
         {
             // prepare
             PrepareGridLayout();
-            auto workArea = MakeWorkArea(m_hInst, m_uniqueId.monitorId.monitor, m_uniqueId, m_parentUniqueId);
+            auto workArea = MakeWorkArea(m_hInst, m_uniqueId, m_parentUniqueId, m_workAreaRect);
             const auto window = Mocks::WindowCreate(m_hInst);
             workArea->MoveWindowIntoZoneByDirectionAndIndex(window, VK_RIGHT, true); // apply to 1st zone
 
@@ -596,14 +597,14 @@ namespace FancyZonesUnitTests
             Assert::AreEqual((size_t)1, actualAppZoneHistory.size());
 
             const auto& layoutWindows = workArea->GetLayoutWindows();
-            Assert::IsTrue(ZoneIndexSet{ (ZoneIndex)workArea->GetLayout()->Zones().size() - 1 } == layoutWindows->GetZoneIndexSetFromWindow(window));
+            Assert::IsTrue(ZoneIndexSet{ static_cast<ZoneIndex>(workArea->GetLayout()->Zones().size()) - 1 } == layoutWindows->GetZoneIndexSetFromWindow(window));
         }
 
         TEST_METHOD (MoveAppliedWindowByIndexNoCycle)
         {
             // prepare
             PrepareGridLayout();
-            auto workArea = MakeWorkArea(m_hInst, m_uniqueId.monitorId.monitor, m_uniqueId, m_parentUniqueId);
+            auto workArea = MakeWorkArea(m_hInst, m_uniqueId, m_parentUniqueId, m_workAreaRect);
             const auto window = Mocks::WindowCreate(m_hInst);
             workArea->MoveWindowIntoZoneByDirectionAndIndex(window, VK_RIGHT, true); // apply to 1st zone
 
@@ -621,7 +622,7 @@ namespace FancyZonesUnitTests
         {
             // prepare
             PrepareEmptyLayout();
-            auto workArea = MakeWorkArea(m_hInst, m_uniqueId.monitorId.monitor, m_uniqueId, m_parentUniqueId);
+            auto workArea = MakeWorkArea(m_hInst, m_uniqueId, m_parentUniqueId, m_workAreaRect);
             const auto window = Mocks::WindowCreate(m_hInst);
 
             // test
@@ -638,7 +639,7 @@ namespace FancyZonesUnitTests
         {
             // prepare
             PrepareGridLayout();
-            auto workArea = MakeWorkArea(m_hInst, m_uniqueId.monitorId.monitor, m_uniqueId, m_parentUniqueId);
+            auto workArea = MakeWorkArea(m_hInst, m_uniqueId, m_parentUniqueId, m_workAreaRect);
             const auto window = Mocks::WindowCreate(m_hInst);
 
             // test
@@ -655,7 +656,7 @@ namespace FancyZonesUnitTests
         {
             // prepare
             PrepareGridLayout();
-            auto workArea = MakeWorkArea(m_hInst, m_uniqueId.monitorId.monitor, m_uniqueId, m_parentUniqueId);
+            auto workArea = MakeWorkArea(m_hInst, m_uniqueId, m_parentUniqueId, m_workAreaRect);
             const auto window = Mocks::WindowCreate(m_hInst);
 
             // test
@@ -672,7 +673,7 @@ namespace FancyZonesUnitTests
         {
             // prepare
             PrepareGridLayout();
-            auto workArea = MakeWorkArea(m_hInst, m_uniqueId.monitorId.monitor, m_uniqueId, m_parentUniqueId);
+            auto workArea = MakeWorkArea(m_hInst, m_uniqueId, m_parentUniqueId, m_workAreaRect);
             const auto window = Mocks::WindowCreate(m_hInst);
             workArea->MoveWindowIntoZoneByDirectionAndIndex(window, VK_RIGHT, true); // apply to 1st zone
 
@@ -690,7 +691,7 @@ namespace FancyZonesUnitTests
         {
             // prepare
             PrepareGridLayout();
-            auto workArea = MakeWorkArea(m_hInst, m_uniqueId.monitorId.monitor, m_uniqueId, m_parentUniqueId);
+            auto workArea = MakeWorkArea(m_hInst, m_uniqueId, m_parentUniqueId, m_workAreaRect);
             const auto window = Mocks::WindowCreate(m_hInst);
             workArea->MoveWindowIntoZoneByDirectionAndIndex(window, VK_RIGHT, true); // apply to 1st zone
 
@@ -708,7 +709,7 @@ namespace FancyZonesUnitTests
         {
             // prepare
             PrepareGridLayout();
-            auto workArea = MakeWorkArea(m_hInst, m_uniqueId.monitorId.monitor, m_uniqueId, m_parentUniqueId);
+            auto workArea = MakeWorkArea(m_hInst, m_uniqueId, m_parentUniqueId, m_workAreaRect);
             const auto window = Mocks::WindowCreate(m_hInst);
             workArea->MoveWindowIntoZoneByDirectionAndIndex(window, VK_RIGHT, true); // apply to 1st zone
 
@@ -726,7 +727,7 @@ namespace FancyZonesUnitTests
         {
             // prepare
             PrepareGridLayout();
-            auto workArea = MakeWorkArea(m_hInst, m_uniqueId.monitorId.monitor, m_uniqueId, m_parentUniqueId);
+            auto workArea = MakeWorkArea(m_hInst, m_uniqueId, m_parentUniqueId, m_workAreaRect);
             const auto window = Mocks::WindowCreate(m_hInst);
             workArea->MoveWindowIntoZoneByDirectionAndIndex(window, VK_RIGHT, true); // apply to 1st zone
 
@@ -744,7 +745,7 @@ namespace FancyZonesUnitTests
         {
             // prepare
             PrepareGridLayout();
-            auto workArea = MakeWorkArea(m_hInst, m_uniqueId.monitorId.monitor, m_uniqueId, m_parentUniqueId);
+            auto workArea = MakeWorkArea(m_hInst, m_uniqueId, m_parentUniqueId, m_workAreaRect);
             const auto window = Mocks::WindowCreate(m_hInst);
             const auto& layoutWindows = workArea->GetLayoutWindows();
             workArea->MoveWindowIntoZoneByDirectionAndIndex(window, VK_RIGHT, true); // apply to 1st zone
@@ -763,7 +764,7 @@ namespace FancyZonesUnitTests
         {
             // prepare
             PrepareGridLayout();
-            auto workArea = MakeWorkArea(m_hInst, m_uniqueId.monitorId.monitor, m_uniqueId, m_parentUniqueId);
+            auto workArea = MakeWorkArea(m_hInst, m_uniqueId, m_parentUniqueId, m_workAreaRect);
             const auto window = Mocks::WindowCreate(m_hInst);
             workArea->MoveWindowIntoZoneByDirectionAndIndex(window, VK_RIGHT, true); // apply to 1st zone
 
@@ -781,7 +782,7 @@ namespace FancyZonesUnitTests
         {
             // prepare
             PrepareGridLayout();
-            auto workArea = MakeWorkArea(m_hInst, m_uniqueId.monitorId.monitor, m_uniqueId, m_parentUniqueId);
+            auto workArea = MakeWorkArea(m_hInst, m_uniqueId, m_parentUniqueId, m_workAreaRect);
             const auto window = Mocks::WindowCreate(m_hInst);
             workArea->MoveWindowIntoZoneByDirectionAndIndex(window, VK_RIGHT, true); // apply to 1st zone
 
@@ -799,7 +800,7 @@ namespace FancyZonesUnitTests
         {
             // prepare
             PrepareGridLayout();
-            auto workArea = MakeWorkArea(m_hInst, m_uniqueId.monitorId.monitor, m_uniqueId, m_parentUniqueId);
+            auto workArea = MakeWorkArea(m_hInst, m_uniqueId, m_parentUniqueId, m_workAreaRect);
             const auto window = Mocks::WindowCreate(m_hInst);
             workArea->MoveWindowIntoZoneByDirectionAndIndex(window, VK_RIGHT, true); // apply to 1st zone
 
