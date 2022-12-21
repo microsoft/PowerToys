@@ -51,8 +51,6 @@ public:
     void ClearSelectedZones() noexcept;
     
     void CycleWindows(HWND window, bool reverse) noexcept;
-    
-    void LogInitializationError();
 
 protected:
     static LRESULT CALLBACK s_WndProc(HWND window, UINT message, WPARAM wparam, LPARAM lparam) noexcept;

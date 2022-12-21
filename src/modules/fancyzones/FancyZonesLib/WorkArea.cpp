@@ -668,11 +668,6 @@ void WorkArea::SetAsTopmostWindow() noexcept
     SetWindowPos(m_window, windowInsertAfter, 0, 0, 0, 0, flags);
 }
 
-void WorkArea::LogInitializationError()
-{
-    Logger::error(L"Unable to get monitor info, {}", get_last_error_or_default(GetLastError()));
-}
-
 #pragma endregion
 
 LRESULT CALLBACK WorkArea::s_WndProc(HWND window, UINT message, WPARAM wparam, LPARAM lparam) noexcept
