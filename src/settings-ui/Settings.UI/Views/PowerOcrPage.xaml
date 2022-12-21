@@ -63,7 +63,8 @@
                             ItemsSource="{x:Bind Path=ViewModel.AvailableLanguages, Mode=OneWay}"
                             SelectedIndex="{x:Bind Path=ViewModel.LanguageIndex, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                             SelectedValue="{Binding SelectedColorRepresentationValue, Mode=TwoWay}"
-                            Loaded="TextExtractor_ComboBox_Loaded">
+                            Loaded="TextExtractor_ComboBox_Loaded"
+                            DropDownOpened="TextExtractor_ComboBox_DropDownOpened">
                         </ComboBox>
                     </labs:SettingsCard>
                 </controls:SettingsGroup>

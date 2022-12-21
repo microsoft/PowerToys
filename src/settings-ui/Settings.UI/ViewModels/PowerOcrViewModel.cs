@@ -53,13 +53,13 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 if (value != _languageIndex)
                 {
                     _languageIndex = value;
-                    if (_powerOcrSettings != null && _languageIndex < possibleOcrLanguages.Count)
+                    if (_powerOcrSettings != null && _languageIndex < possibleOcrLanguages.Count && _languageIndex >= 0)
                     {
                         _powerOcrSettings.Properties.PreferredLanguage = possibleOcrLanguages[_languageIndex].DisplayName;
+                        NotifySettingsChanged();
                     }
 
                     OnPropertyChanged(nameof(LanguageIndex));
-                    NotifySettingsChanged();
                 }
             }
         }
@@ -171,15 +171,17 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         internal void SetLanguageSelectedIndex()
         {
-            int preferredIndex = -1;
+            int preferredLanguageIndex = -1;
             int systemLanguageIndex = -1;
             CultureInfo systemCulture = CultureInfo.CurrentUICulture;
+
+            // get the list of all installed OCR languages. While processing them, search for the previously preferred language and also for the current ui language
             possibleOcrLanguages = OcrEngine.AvailableRecognizerLanguages.ToList();
             foreach (Language language in possibleOcrLanguages.OrderBy(x => x.NativeName))
             {
                 if (_powerOcrSettings.Properties.PreferredLanguage?.Equals(language.DisplayName) == true)
                 {
-                    preferredIndex = AvailableLanguages.Count;
+                    preferredLanguageIndex = AvailableLanguages.Count;
                 }
 
                 if (systemCulture.DisplayName.Equals(language.DisplayName) || systemCulture.Parent.DisplayName.Equals(language.DisplayName))
@@ -190,17 +192,28 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 AvailableLanguages.Add(language.NativeName);
             }
 
-            if (preferredIndex == -1)
+            // if the previously stored preferred language is not available (has been deleted or this is the first run with language preference)
+            if (preferredLanguageIndex == -1)
             {
-                preferredIndex = systemLanguageIndex;
+                // try to use the current ui langueage. If it is also not available, set the first language as preferred (to have any selected language)
+                if (systemLanguageIndex >= 0)
+                {
+                    preferredLanguageIndex = systemLanguageIndex;
+                }
+                else
+                {
+                    preferredLanguageIndex = 0;
+                }
             }
 
-            if (preferredIndex == -1)
-            {
-                preferredIndex = 0;
-            }
+            // set the language index -> the preferred language gets selected in the combo box
+            LanguageIndex = preferredLanguageIndex;
+        }
 
-            LanguageIndex = preferredIndex;
+        internal void UpdateLanguages()
+        {
+            AvailableLanguages.Clear();
+            SetLanguageSelectedIndex();
         }
 
         private void ScheduleSavingOfSettings()

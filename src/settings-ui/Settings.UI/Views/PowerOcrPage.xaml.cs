@@ -34,5 +34,10 @@ namespace Microsoft.PowerToys.Settings.UI.Views
           */
             ViewModel.SetLanguageSelectedIndex();
         }
+
+        private void TextExtractor_ComboBox_DropDownOpened(object sender, object e)
+        {
+            ViewModel.UpdateLanguages();
+        }
     }
 }
