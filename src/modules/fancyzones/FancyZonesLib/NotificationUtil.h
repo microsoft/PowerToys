@@ -13,7 +13,7 @@ namespace FancyZonesNotifications
         const wchar_t ToastNotificationButtonUrl[] = L"powertoys://cant_drag_elevated_disable/";
     }
 
-    inline void WarnIfElevationIsRequired() noexcept
+    inline void WarnIfElevationIsRequired()
     {
         using namespace notifications;
         using namespace NonLocalizable;

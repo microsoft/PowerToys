@@ -2,17 +2,16 @@
 #include "WindowMoveHandler.h"
 
 #include <common/display/dpi_aware.h>
+#include <common/logger/logger.h>
+#include <common/utils/elevation.h>
+#include <common/utils/winapi_error.h>
 
 #include "FancyZonesData/AppZoneHistory.h"
 #include "Settings.h"
 #include "WorkArea.h"
 #include <FancyZonesLib/FancyZonesWindowProcessing.h>
+#include <FancyZonesLib/NotificationUtil.h>
 #include <FancyZonesLib/WindowUtils.h>
-
-
-namespace WindowMoveHandlerUtils
-{
-}
 
 WindowMoveHandler::WindowMoveHandler(const std::function<void()>& keyUpdateCallback) :
     m_mouseState(false),
@@ -31,7 +30,7 @@ void WindowMoveHandler::MoveSizeStart(HWND window, HMONITOR monitor, POINT const
         return;
     }
 
-    if (!FancyZonesWindowUtils::IsCandidateForZoning(window) || WindowMoveHandlerUtils::IsCursorTypeIndicatingSizeEvent())
+    if (!FancyZonesWindowUtils::IsCandidateForZoning(window) || FancyZonesWindowUtils::IsCursorTypeIndicatingSizeEvent())
     {
         return;
     }
@@ -60,9 +59,12 @@ void WindowMoveHandler::MoveSizeStart(HWND window, HMONITOR monitor, POINT const
     // This updates m_dragEnabled depending on if the shift key is being held down
     UpdateDragState();
 
-    // Notifies user if unable to drag elevated window
-    WarnIfElevationIsRequired(window);
-
+    if (!is_process_elevated() && FancyZonesWindowUtils::IsProcessOfWindowElevated(window))
+    {
+        // Notifies user if unable to drag elevated window
+        FancyZonesNotifications::WarnIfElevationIsRequired();
+    }
+    
     if (m_dragEnabled)
     {
         m_draggedWindowWorkArea = iter->second;
@@ -205,12 +207,12 @@ void WindowMoveHandler::MoveSizeEnd(HWND window, const std::unordered_map<HMONIT
             {
                 if (leftShiftPressed)
                 {
-                    SwallowKey(VK_LSHIFT);
+                    FancyZonesUtils::SwallowKey(VK_LSHIFT);
                 }
 
                 if (rightShiftPressed)
                 {
-                    SwallowKey(VK_RSHIFT);
+                    FancyZonesUtils::SwallowKey(VK_RSHIFT);
                 }
             }
 
@@ -221,7 +223,7 @@ void WindowMoveHandler::MoveSizeEnd(HWND window, const std::unordered_map<HMONIT
     {
         if (FancyZonesSettings::settings().restoreSize)
         {
-            if (WindowMoveHandlerUtils::IsCursorTypeIndicatingSizeEvent())
+            if (FancyZonesWindowUtils::IsCursorTypeIndicatingSizeEvent())
             {
                 ::RemoveProp(window, ZonedWindowProperties::PropertyRestoreSizeID);
             }
