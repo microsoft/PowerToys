@@ -32,7 +32,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
           * so after InitializeComponent() the ItemSource is still empty and can't automatically select a entry.
           * Selection via SelectedItem and SelectedValue is still not working too
           */
-            ViewModel.SetLanguageSelectedIndex();
+            ViewModel.UpdateLanguages();
         }
 
         private void TextExtractor_ComboBox_DropDownOpened(object sender, object e)

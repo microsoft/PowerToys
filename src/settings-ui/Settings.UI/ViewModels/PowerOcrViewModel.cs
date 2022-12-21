@@ -114,8 +114,6 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             _delayedTimer.Interval = SaveSettingsDelayInMs;
             _delayedTimer.Elapsed += DelayedTimer_Tick;
             _delayedTimer.AutoReset = false;
-
-            InitializeLanguages();
         }
 
         public bool IsEnabled
@@ -164,20 +162,16 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             }
         }
 
-        private void InitializeLanguages()
-        {
-            possibleOcrLanguages = OcrEngine.AvailableRecognizerLanguages.ToList();
-        }
-
-        internal void SetLanguageSelectedIndex()
+        internal void UpdateLanguages()
         {
             int preferredLanguageIndex = -1;
             int systemLanguageIndex = -1;
             CultureInfo systemCulture = CultureInfo.CurrentUICulture;
 
             // get the list of all installed OCR languages. While processing them, search for the previously preferred language and also for the current ui language
-            possibleOcrLanguages = OcrEngine.AvailableRecognizerLanguages.ToList();
-            foreach (Language language in possibleOcrLanguages.OrderBy(x => x.NativeName))
+            possibleOcrLanguages = OcrEngine.AvailableRecognizerLanguages.OrderBy(x => x.NativeName).ToList();
+            AvailableLanguages.Clear();
+            foreach (Language language in possibleOcrLanguages)
             {
                 if (_powerOcrSettings.Properties.PreferredLanguage?.Equals(language.DisplayName) == true)
                 {
@@ -208,12 +202,6 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
             // set the language index -> the preferred language gets selected in the combo box
             LanguageIndex = preferredLanguageIndex;
-        }
-
-        internal void UpdateLanguages()
-        {
-            AvailableLanguages.Clear();
-            SetLanguageSelectedIndex();
         }
 
         private void ScheduleSavingOfSettings()
