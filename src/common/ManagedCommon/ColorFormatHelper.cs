@@ -287,8 +287,12 @@ namespace ManagedCommon
             { "Zv", 'i' },   // Z value          int
             { "Dr", 'i' },   // Decimal value (RGB)   int
             { "Dv", 'i' },   // Decimal value (BGR)   int
-            { "Na", 's' },   // Color name       string
+
+            // Removed Parameter Na, as the color name gets replaced separately, in localised way
+            // { "Na", 's' },   // Color name       string
         };
+
+        public static string GetColorNameParameter() => "%Na";
 
         private static readonly Dictionary<char, string> FormatTypeToStringFormatters = new Dictionary<char, string>()
         {
@@ -348,7 +352,7 @@ namespace ManagedCommon
                     formatString = string.Concat(formatString.AsSpan(0, formatterPosition), GetStringRepresentation(color.Value, paramFormat, paramType), formatString.AsSpan(formatterPosition + paramCount + 1));
                 }
 
-                // search for the next occurence of the formatter char
+                // search for the next occurrence of the formatter char
                 formatterPosition = formatString.IndexOf('%', formatterPosition + 1);
             }
 
@@ -452,8 +456,10 @@ namespace ManagedCommon
                     return ((color.R * 65536) + (color.G * 256) + color.B).ToString(CultureInfo.InvariantCulture);
                 case "Dv":
                     return (color.R + (color.G * 256) + (color.B * 65536)).ToString(CultureInfo.InvariantCulture);
-                case "Na":
-                    return ColorNameHelper.GetColorName(color);
+
+                // Removed Parameter Na, as the color name gets replaced separately, in localised way
+                // case "Na":
+                //     return ColorNameHelper.GetColorName(color);
                 default: return string.Empty;
             }
         }
