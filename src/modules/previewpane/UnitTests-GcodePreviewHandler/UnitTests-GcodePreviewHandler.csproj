@@ -28,7 +28,7 @@
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Moq" Version="4.18.3" />
-    <PackageReference Include="MSTest.TestAdapter" Version="2.2.3" />
+    <PackageReference Include="MSTest.TestAdapter" Version="3.0.1" />
     <PackageReference Include="MSTest.TestFramework" Version="3.0.1" />
   </ItemGroup>
   <ItemGroup>
