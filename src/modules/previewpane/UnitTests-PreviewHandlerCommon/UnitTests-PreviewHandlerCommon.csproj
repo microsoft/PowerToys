@@ -29,7 +29,7 @@
     <Compile Include="..\STATestMethodAttribute.cs" Link="STATestMethodAttribute.cs" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="Moq" Version="4.16.1" />
+    <PackageReference Include="Moq" Version="4.18.3" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Common\PreviewHandlerCommon.csproj" />
