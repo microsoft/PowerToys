@@ -56,6 +56,11 @@
                                     x:Uid="PowerLauncher_IgnoreHotkeysInFullScreen"
                                     IsChecked="{x:Bind Mode=TwoWay, Path=ViewModel.IgnoreHotkeysInFullScreen}" />
                             </labs:SettingsCard>
+                            <labs:SettingsCard ContentAlignment="Left">
+                                <controls:CheckBoxWithDescriptionControl
+                                    x:Uid="PowerLauncher_TabSelectsContextButtons"
+                                    IsChecked="{x:Bind Mode=TwoWay, Path=ViewModel.TabSelectsContextButtons}" />
+                            </labs:SettingsCard>
                         </labs:SettingsExpander.Items>
                     </labs:SettingsExpander>
                 </controls:SettingsGroup>
