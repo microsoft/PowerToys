@@ -56,11 +56,6 @@
                                     x:Uid="PowerLauncher_IgnoreHotkeysInFullScreen"
                                     IsChecked="{x:Bind Mode=TwoWay, Path=ViewModel.IgnoreHotkeysInFullScreen}" />
                             </labs:SettingsCard>
-                            <labs:SettingsCard ContentAlignment="Left">
-                                <controls:CheckBoxWithDescriptionControl
-                                    x:Uid="PowerLauncher_TabSelectsContextButtons"
-                                    IsChecked="{x:Bind Mode=TwoWay, Path=ViewModel.TabSelectsContextButtons}" />
-                            </labs:SettingsCard>
                         </labs:SettingsExpander.Items>
                     </labs:SettingsExpander>
                 </controls:SettingsGroup>
@@ -181,6 +176,15 @@
                             </labs:SettingsCard>
                         </labs:SettingsExpander.Items>
                     </labs:SettingsExpander>
+
+                    <labs:SettingsCard
+                        x:Uid="PowerLauncher_TabSelectsContextButtons"
+                        HeaderIcon="{ui:FontIcon FontFamily={StaticResource SymbolThemeFontFamily}, Glyph=&#xE7FD;}">
+                        <ToggleSwitch
+                            x:Uid="ToggleSwitch"
+                            IsOn="{x:Bind ViewModel.TabSelectsContextButtons, Mode=TwoWay}" />
+                    </labs:SettingsCard>
+
                 </controls:SettingsGroup>
 
                 <!--<ComboBox x:Uid="PowerLauncher_SearchResultPreference"
