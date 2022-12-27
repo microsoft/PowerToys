@@ -13,13 +13,8 @@
 #include <FancyZonesLib/NotificationUtil.h>
 #include <FancyZonesLib/WindowUtils.h>
 
-WindowMoveHandler::WindowMoveHandler(const std::function<void()>& keyUpdateCallback) :
-    m_mouseState(false),
-    m_mouseHook(std::bind(&WindowMoveHandler::OnMouseDown, this)),
-    m_leftShiftKeyState(keyUpdateCallback),
-    m_rightShiftKeyState(keyUpdateCallback),
-    m_ctrlKeyState(keyUpdateCallback),
-    m_keyUpdateCallback(keyUpdateCallback)
+
+WindowMoveHandler::WindowMoveHandler()
 {
 }
 
@@ -316,17 +311,6 @@ void WindowMoveHandler::AssignWindowsToZones(const std::unordered_map<HMONITOR, 
     }
 }
 
-void WindowMoveHandler::UpdateDragState() noexcept
-{
-    if (FancyZonesSettings::settings().shiftDrag)
-    {
-        m_dragEnabled = ((m_leftShiftKeyState.state() || m_rightShiftKeyState.state()) ^ m_mouseState);
-    }
-    else
-    {
-        m_dragEnabled = !((m_leftShiftKeyState.state() || m_rightShiftKeyState.state()) ^ m_mouseState);
-    }
-}
 
 void WindowMoveHandler::SetWindowTransparency(HWND window) noexcept
 {
