@@ -76,13 +76,4 @@ private:
     std::unique_ptr<ZonesOverlay> m_zonesOverlay;
 };
 
-inline std::shared_ptr<WorkArea> MakeWorkArea(HINSTANCE hinstance, const FancyZonesDataTypes::WorkAreaId& uniqueId, const FancyZonesDataTypes::WorkAreaId& parentUniqueId, const FancyZonesUtils::Rect& workAreaRect) noexcept
-{
-    auto self = std::make_shared<WorkArea>(hinstance, uniqueId, workAreaRect);
-    if (!self->Init(hinstance, parentUniqueId))
-    {
-        return nullptr;
-    }
-
-    return self;
-}
+std::shared_ptr<WorkArea> MakeWorkArea(HINSTANCE hinstance, const FancyZonesDataTypes::WorkAreaId& uniqueId, const FancyZonesDataTypes::WorkAreaId& parentUniqueId, const FancyZonesUtils::Rect& workAreaRect) noexcept;
