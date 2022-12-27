@@ -59,7 +59,7 @@ bool WindowDrag::MoveSizeStart(HMONITOR monitor, bool isDragging)
     {
         m_currentWorkArea = iter->second;
         SetWindowTransparency();
-        m_currentWorkArea->MoveSizeEnter(m_window);
+        m_currentWorkArea->MoveSizeEnter();
         if (FancyZonesSettings::settings().showZonesOnAllMonitors)
         {
             for (const auto& [keyMonitor, workArea] : m_activeWorkAreas)
@@ -137,7 +137,7 @@ void WindowDrag::MoveSizeUpdate(HMONITOR monitor, POINT const& ptScreen, bool is
                     }
 
                     m_currentWorkArea = iter->second;
-                    m_currentWorkArea->MoveSizeEnter(m_window);
+                    m_currentWorkArea->MoveSizeEnter();
                 }
 
                 for (auto& [_, workArea] : m_activeWorkAreas)

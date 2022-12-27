@@ -33,7 +33,7 @@ public:
     
     ZoneIndexSet GetWindowZoneIndexes(HWND window) const noexcept;
 
-    HRESULT MoveSizeEnter(HWND window) noexcept;
+    HRESULT MoveSizeEnter() noexcept;
     HRESULT MoveSizeUpdate(POINT const& ptScreen, bool dragEnabled, bool selectManyZones) noexcept;
     HRESULT MoveSizeEnd(HWND window) noexcept;
     void MoveWindowIntoZoneByIndex(HWND window, ZoneIndex index) noexcept;
@@ -70,8 +70,6 @@ private:
     std::unique_ptr<LayoutAssignedWindows> m_layoutWindows;
     std::unique_ptr<ZonesOverlay> m_zonesOverlay;
     HighlightedZones m_highlightedZones;
-
-    HWND m_windowMoveSize{};
 };
 
 inline std::shared_ptr<WorkArea> MakeWorkArea(HINSTANCE hinstance, const FancyZonesDataTypes::WorkAreaId& uniqueId, const FancyZonesDataTypes::WorkAreaId& parentUniqueId, const FancyZonesUtils::Rect& workAreaRect)

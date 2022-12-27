@@ -127,9 +127,8 @@ WorkArea::~WorkArea()
     windowPool.FreeZonesOverlayWindow(m_window);
 }
 
-HRESULT WorkArea::MoveSizeEnter(HWND window) noexcept
+HRESULT WorkArea::MoveSizeEnter() noexcept
 {
-    m_windowMoveSize = window;
     m_highlightedZones.Reset();
     ShowZonesOverlay();
     Trace::WorkArea::MoveOrResizeStarted(m_layout.get(), m_layoutWindows.get());
@@ -168,18 +167,12 @@ HRESULT WorkArea::MoveSizeUpdate(POINT const& ptScreen, bool dragEnabled, bool s
 
 HRESULT WorkArea::MoveSizeEnd(HWND window) noexcept
 {
-    if (m_windowMoveSize != window)
-    {
-        return E_INVALIDARG;
-    }
-
     MoveWindowIntoZoneByIndexSet(window, m_highlightedZones.Zones());
     m_highlightedZones.Reset();
 
     Trace::WorkArea::MoveOrResizeEnd(m_layout.get(), m_layoutWindows.get());
 
     HideZonesOverlay();
-    m_windowMoveSize = nullptr;
     return S_OK;
 }
 
@@ -497,7 +490,6 @@ void WorkArea::HideZonesOverlay() noexcept
     if (m_window)
     {
         m_zonesOverlay->Hide();
-        m_windowMoveSize = nullptr;
     }
 }
 
@@ -626,14 +618,7 @@ void WorkArea::SetAsTopmostWindow() noexcept
     }
 
     UINT flags = SWP_NOSIZE | SWP_NOMOVE | SWP_NOACTIVATE;
-
-    HWND windowInsertAfter = m_windowMoveSize;
-    if (windowInsertAfter == nullptr)
-    {
-        windowInsertAfter = HWND_TOPMOST;
-    }
-
-    SetWindowPos(m_window, windowInsertAfter, 0, 0, 0, 0, flags);
+    SetWindowPos(m_window, HWND_TOPMOST, 0, 0, 0, 0, flags);
 }
 
 #pragma endregion
