@@ -2,17 +2,17 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-// The dependencies required to build this project are only available in the official build pipeline and are internal to Microsoft.
-// However, this project is not required to build a test version of the application.
+using System.Text.Json;
+using Microsoft.PowerToys.Settings.UI.Library.Telemetry.Events;
+using Microsoft.PowerToys.Telemetry;
+using Microsoft.VariantAssignment.Client;
+using Microsoft.VariantAssignment.Contract;
+using Windows.System.Profile;
+
 namespace AllExperiments
 {
-    using System.Text.Json;
-    using Microsoft.PowerToys.Settings.UI.Library.Telemetry.Events;
-    using Microsoft.PowerToys.Telemetry;
-    using Microsoft.VariantAssignment.Client;
-    using Microsoft.VariantAssignment.Contract;
-    using Windows.System.Profile;
-
+// The dependencies required to build this project are only available in the official build pipeline and are internal to Microsoft.
+// However, this project is not required to build a test version of the application.
 #pragma warning disable SA1649 // File name should match first type name. Suppressed because it needs to be the same class name as Experiments_Inert.cs
     public class Experiments
 #pragma warning restore SA1649 // File name should match first type name
