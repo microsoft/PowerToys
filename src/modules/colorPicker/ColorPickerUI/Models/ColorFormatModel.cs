@@ -4,6 +4,7 @@
 
 using System;
 using System.Windows.Media;
+using ColorPicker.Helpers;
 using ManagedCommon;
 
 namespace ColorPicker.Models
@@ -23,7 +24,10 @@ namespace ColorPicker.Models
                 return Convert(color);
             }
 
-            return ColorFormatHelper.GetStringRepresentation(System.Drawing.Color.FromArgb(color.A, color.R, color.G, color.B), FormatString);
+            System.Drawing.Color drawingColor = System.Drawing.Color.FromArgb(color.A, color.R, color.G, color.B);
+
+            // get string representation in 2 steps. First replace all color specific number values then in 2nd step replace color name with localisation
+            return ColorRepresentationHelper.ReplaceName(ColorFormatHelper.GetStringRepresentation(drawingColor, FormatString), drawingColor);
         }
     }
 }

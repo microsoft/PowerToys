@@ -3,6 +3,8 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
@@ -10,6 +12,8 @@ using System.Windows.Media;
 using Microsoft.PowerToys.Telemetry;
 using PowerOCR.Helpers;
 using PowerOCR.Utilities;
+using Windows.Globalization;
+using Windows.Media.Ocr;
 
 namespace PowerOCR;
 
@@ -30,6 +34,9 @@ public partial class OCROverlay : Window
 
     private Point GetMousePos() => PointToScreen(Mouse.GetPosition(this));
 
+    private Language? selectedLanguage = null;
+    private MenuItem cancelMenuItem;
+
     private System.Windows.Forms.Screen? CurrentScreen
     {
         get;
@@ -47,6 +54,40 @@ public partial class OCROverlay : Window
     public OCROverlay()
     {
         InitializeComponent();
+
+        // build context menu
+        selectedLanguage = ImageMethods.GetOCRLanguage();
+        string? selectedLanguageName = selectedLanguage?.DisplayName;
+        List<Language> possibleOcrLanguages = OcrEngine.AvailableRecognizerLanguages.ToList();
+        foreach (Language language in possibleOcrLanguages)
+        {
+            MenuItem menuItem = new MenuItem() { Header = language.DisplayName, Tag = language, IsCheckable = true };
+            menuItem.IsChecked = language.DisplayName.Equals(selectedLanguageName);
+            menuItem.Click += LanguageMenuItem_Click;
+            CanvasContextMenu.Items.Add(menuItem);
+        }
+
+        CanvasContextMenu.Items.Add(new Separator());
+
+        // ResourceLoader resourceLoader = ResourceLoader.GetForViewIndependentUse(); // resourceLoader.GetString("TextExtractor_Cancel")
+        cancelMenuItem = new MenuItem() { Header = "cancel" };
+        cancelMenuItem.Click += CancelMenuItem_Click;
+        CanvasContextMenu.Items.Add(cancelMenuItem);
+    }
+
+    private void LanguageMenuItem_Click(object sender, RoutedEventArgs e)
+    {
+        MenuItem menuItem = (MenuItem)sender;
+        foreach (var item in CanvasContextMenu.Items)
+        {
+            if (item is MenuItem)
+            {
+                MenuItem menuItemLoop = (MenuItem)item;
+                menuItemLoop.IsChecked = item.Equals(menuItem);
+            }
+        }
+
+        selectedLanguage = menuItem.Tag as Language;
     }
 
     private void Window_Loaded(object sender, RoutedEventArgs e)
@@ -78,7 +119,7 @@ public partial class OCROverlay : Window
         RegionClickCanvas.MouseUp -= RegionClickCanvas_MouseUp;
         RegionClickCanvas.MouseMove -= RegionClickCanvas_MouseMove;
 
-        CancelMenuItem.Click -= CancelMenuItem_Click;
+        cancelMenuItem.Click -= CancelMenuItem_Click;
     }
 
     private void MainWindow_KeyUp(object sender, KeyEventArgs e)
@@ -259,11 +300,11 @@ public partial class OCROverlay : Window
 
         if (regionScaled.Width < 3 || regionScaled.Height < 3)
         {
-            grabbedText = await ImageMethods.GetClickedWord(this, new Point(xDimScaled, yDimScaled));
+            grabbedText = await ImageMethods.GetClickedWord(this, new Point(xDimScaled, yDimScaled), selectedLanguage);
         }
         else
         {
-            grabbedText = await ImageMethods.GetRegionsText(this, regionScaled);
+            grabbedText = await ImageMethods.GetRegionsText(this, regionScaled, selectedLanguage);
         }
 
         if (string.IsNullOrWhiteSpace(grabbedText) == false)
