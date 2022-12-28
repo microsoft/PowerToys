@@ -55,6 +55,18 @@
                             MinWidth="{StaticResource SettingActionControlMinWidth}"
                             HotkeySettings="{x:Bind Path=ViewModel.ActivationShortcut, Mode=TwoWay}" />
                     </labs:SettingsCard>
+                    <labs:SettingsCard
+                        x:Uid="TextExtractor_Languages">
+                        <ComboBox
+                            x:Name="TextExtractor_ComboBox"
+                            MinWidth="{StaticResource SettingActionControlMinWidth}"
+                            ItemsSource="{x:Bind Path=ViewModel.AvailableLanguages, Mode=OneWay}"
+                            SelectedIndex="{x:Bind Path=ViewModel.LanguageIndex, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                            SelectedValue="{Binding SelectedColorRepresentationValue, Mode=TwoWay}"
+                            Loaded="TextExtractor_ComboBox_Loaded"
+                            DropDownOpened="TextExtractor_ComboBox_DropDownOpened">
+                        </ComboBox>
+                    </labs:SettingsCard>
                 </controls:SettingsGroup>
             </StackPanel>
         </controls:SettingsPageControl.ModuleContent>

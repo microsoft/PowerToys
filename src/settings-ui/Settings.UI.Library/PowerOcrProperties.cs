@@ -15,6 +15,8 @@ namespace Microsoft.PowerToys.Settings.UI.Library
 
         public HotkeySettings ActivationShortcut { get; set; }
 
+        public string PreferredLanguage { get; set; }
+
         public override string ToString()
             => JsonSerializer.Serialize(this);
     }
