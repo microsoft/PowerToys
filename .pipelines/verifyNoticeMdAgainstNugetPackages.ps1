@@ -4,6 +4,10 @@ Param(
     [string]$path
 )
 
+$noticeFile = Get-Content -Raw "NOTICE.md"
+
+Write-Host $noticeFile
+
 Write-Host "Verifying NuGet packages"
 
 $projFiles = Get-ChildItem $path -Include *.csproj -force -Recurse
@@ -51,7 +55,6 @@ foreach($p in $totalList)
 
 Write-Host $returnList
 
-$noticeFile = Get-Content -Raw "notice.md"
 if (!$noticeFile.Trim().EndsWith($returnList.Trim()))
 {
 	Write-Host -ForegroundColor Red "Notice.md does not match NuGet list."
