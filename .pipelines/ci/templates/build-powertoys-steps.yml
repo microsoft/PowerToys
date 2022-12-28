@@ -14,14 +14,6 @@ steps:
     arguments: -solution '$(build.sourcesdirectory)\PowerToys.sln'
     pwsh: true
 
-
-- task: PowerShell@2
-  displayName: Verifying Notice.md and Nuget packages match
-  inputs:
-    filePath: '$(build.sourcesdirectory)\.pipelines\verifyNoticeMdAgainstNugetPackages.ps1'
-    arguments: -path '$(build.sourcesdirectory)\'
-    pwsh: true
-    
 - task: PowerShell@2
   displayName: Verify Arm64 configuration for PowerToys.sln
   inputs:
@@ -77,6 +69,22 @@ steps:
     configPath: NuGet.config
     restoreSolution: PowerToys.sln
     restoreDirectory: '$(Build.SourcesDirectory)\packages'
+
+- task: NuGetCommand@2
+  displayName: Restore NuGet packages for PowerToysSetup.sln
+  inputs:
+    command: restore
+    feedsToUse: config
+    configPath: NuGet.config
+    restoreSolution: installer\PowerToysSetup.sln
+    restoreDirectory: '$(Build.SourcesDirectory)\installer\packages'
+    
+- task: PowerShell@2
+  displayName: Verifying Notice.md and Nuget packages match
+  inputs:
+    filePath: '$(build.sourcesdirectory)\.pipelines\verifyNoticeMdAgainstNugetPackages.ps1'
+    arguments: -path '$(build.sourcesdirectory)\'
+    pwsh: true
 
 - task: VSBuild@1
   displayName: 'Build PowerToys.sln'
@@ -150,15 +158,6 @@ steps:
   inputs:
     targetType: filePath
     filePath: '$(build.sourcesdirectory)\.pipelines\installWiX.ps1'
-
-- task: NuGetCommand@2
-  displayName: Restore NuGet packages for PowerToysSetup.sln
-  inputs:
-    command: restore
-    feedsToUse: config
-    configPath: NuGet.config
-    restoreSolution: installer\PowerToysSetup.sln
-    restoreDirectory: '$(Build.SourcesDirectory)\installer\packages'
 
 - task: VSBuild@1
   displayName: 'Build PowerToys MSI'
