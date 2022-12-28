@@ -1,14 +1,11 @@
 #include "pch.h"
 #include "FancyZones.h"
 
-#include <common/display/dpi_aware.h>
 #include <common/interop/shared_constants.h>
 #include <common/logger/logger.h>
 #include <common/logger/call_tracer.h>
 #include <common/utils/EventWaiter.h>
-#include <common/utils/resources.h>
 #include <common/utils/winapi_error.h>
-#include <common/utils/window.h>
 #include <common/SettingsAPI/FileWatcher.h>
 
 #include <FancyZonesLib/DraggingState.h>
@@ -24,20 +21,13 @@
 #include <FancyZonesLib/FancyZonesWindowProperties.h>
 #include <FancyZonesLib/FancyZonesWinHookEventIDs.h>
 #include <FancyZonesLib/MonitorUtils.h>
+#include <FancyZonesLib/MonitorWorkAreaHandler.h>
+#include <FancyZonesLib/on_thread_executor.h>
 #include <FancyZonesLib/Settings.h>
 #include <FancyZonesLib/SettingsObserver.h>
+#include <FancyZonesLib/trace.h>
 #include <FancyZonesLib/WindowDrag.h>
-#include <FancyZonesLib/WindowUtils.h>
 #include <FancyZonesLib/WorkArea.h>
-#include <FancyZonesLib/util.h>
-
-#include "on_thread_executor.h"
-#include "trace.h"
-#include "VirtualDesktop.h"
-#include "MonitorWorkAreaHandler.h"
-#include "util.h"
-
-#include <FancyZonesLib/SecondaryMouseButtonsHook.h>
 
 enum class DisplayChangeType
 {
@@ -83,45 +73,6 @@ public:
     IFACEMETHODIMP_(void)
     Destroy() noexcept;
 
-    void MoveSizeStart(HWND window, HMONITOR monitor)
-    {
-        m_windowDrag = WindowDrag::Create(window, m_workAreaHandler.GetWorkAreasByDesktopId(VirtualDesktop::instance().GetCurrentVirtualDesktopId()));
-        if (m_windowDrag)
-        {
-            if (FancyZonesSettings::settings().spanZonesAcrossMonitors)
-            {
-                monitor = NULL;
-            }
-
-            m_draggingState.UpdateDragState();
-            m_windowDrag->MoveSizeStart(monitor, m_draggingState.IsDragging());
-        }
-    }
-
-    void MoveSizeUpdate(HMONITOR monitor, POINT const& ptScreen)
-    {
-        if (m_windowDrag)
-        {
-            if (FancyZonesSettings::settings().spanZonesAcrossMonitors)
-            {
-                monitor = NULL;
-            }
-
-            m_draggingState.UpdateDragState();
-            m_windowDrag->MoveSizeUpdate(monitor, ptScreen, m_draggingState.IsDragging(), m_draggingState.IsSelectManyZonesState());
-        }
-    }
-
-    void MoveSizeEnd()
-    {
-        if (m_windowDrag)
-        {
-            m_windowDrag->MoveSizeEnd();
-            m_draggingState.Reset();
-            m_windowDrag = nullptr;
-        }
-    }
-
     IFACEMETHODIMP_(void)
     HandleWinHookEvent(const WinHookEvent* data) noexcept
     {
@@ -157,6 +108,10 @@ public:
     VirtualDesktopChanged() noexcept;
     IFACEMETHODIMP_(bool)
     OnKeyDown(PKBDLLHOOKSTRUCT info) noexcept;
+
+    void MoveSizeStart(HWND window, HMONITOR monitor);
+    void MoveSizeUpdate(HMONITOR monitor, POINT const& ptScreen);
+    void MoveSizeEnd();
 
     void WindowCreated(HWND window) noexcept;
     void ToggleEditor() noexcept;
@@ -324,6 +279,45 @@ FancyZones::VirtualDesktopChanged() noexcept
     // VirtualDesktopChanged is called from a reentrant WinHookProc function, therefore we must postpone the actual logic
     // until we're in FancyZones::WndProc, which is not reentrant.
     PostMessage(m_window, WM_PRIV_VD_SWITCH, 0, 0);
+}
+
+void FancyZones::MoveSizeStart(HWND window, HMONITOR monitor)
+{
+    m_windowDrag = WindowDrag::Create(window, m_workAreaHandler.GetWorkAreasByDesktopId(VirtualDesktop::instance().GetCurrentVirtualDesktopId()));
+    if (m_windowDrag)
+    {
+        if (FancyZonesSettings::settings().spanZonesAcrossMonitors)
+        {
+            monitor = NULL;
+        }
+
+        m_draggingState.UpdateDragState();
+        m_windowDrag->MoveSizeStart(monitor, m_draggingState.IsDragging());
+    }
+}
+
+void FancyZones::MoveSizeUpdate(HMONITOR monitor, POINT const& ptScreen)
+{
+    if (m_windowDrag)
+    {
+        if (FancyZonesSettings::settings().spanZonesAcrossMonitors)
+        {
+            monitor = NULL;
+        }
+
+        m_draggingState.UpdateDragState();
+        m_windowDrag->MoveSizeUpdate(monitor, ptScreen, m_draggingState.IsDragging(), m_draggingState.IsSelectManyZonesState());
+    }
+}
+
+void FancyZones::MoveSizeEnd()
+{
+    if (m_windowDrag)
+    {
+        m_windowDrag->MoveSizeEnd();
+        m_draggingState.Reset();
+        m_windowDrag = nullptr;
+    }
 }
 
 std::pair<std::shared_ptr<WorkArea>, ZoneIndexSet> FancyZones::GetAppZoneHistoryInfo(HWND window, HMONITOR monitor, const std::unordered_map<HMONITOR, std::shared_ptr<WorkArea>>& workAreaMap) noexcept
