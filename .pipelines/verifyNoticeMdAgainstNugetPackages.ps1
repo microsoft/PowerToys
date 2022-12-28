@@ -52,7 +52,7 @@ foreach($p in $totalList)
 Write-Host $returnList
 
 $noticeFile = Get-Content -Raw "notice.md"
-if (!$noticeFile.EndsWith($returnList.Trim()))
+if (!$noticeFile.Trim().EndsWith($returnList.Trim()))
 {
 	Write-Host -ForegroundColor Red "Notice.md does not match NuGet list."
 	exit 1
