@@ -291,7 +291,7 @@ void FancyZones::MoveSizeStart(HWND window, HMONITOR monitor)
             monitor = NULL;
         }
 
-        m_draggingState.UpdateDragState();
+        m_draggingState.UpdateDraggingState();
         m_windowDrag->MoveSizeStart(monitor, m_draggingState.IsDragging());
     }
 }
@@ -305,7 +305,7 @@ void FancyZones::MoveSizeUpdate(HMONITOR monitor, POINT const& ptScreen)
             monitor = NULL;
         }
 
-        m_draggingState.UpdateDragState();
+        m_draggingState.UpdateDraggingState();
         m_windowDrag->MoveSizeUpdate(monitor, ptScreen, m_draggingState.IsDragging(), m_draggingState.IsSelectManyZonesState());
     }
 }

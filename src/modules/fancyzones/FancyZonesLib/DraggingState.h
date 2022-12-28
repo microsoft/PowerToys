@@ -11,10 +11,7 @@ public:
 
     void Enable();
     void Reset() noexcept;
-
-    void UpdateDragState() noexcept;
-
-    void OnMouseDown();
+    void UpdateDraggingState() noexcept;
 
     bool IsDragging() const noexcept;
     bool IsSelectManyZonesState() const noexcept;
