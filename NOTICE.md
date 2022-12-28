@@ -277,7 +277,10 @@ SOFTWARE.
 
 ## NuGet Packages used by PowerToys
 
-
+- CommunityToolkit.Labs.WinUI.SettingsControls 0.0.7
+- CommunityToolkit.Mvvm 8.0.0
+- CommunityToolkit.WinUI.UI 7.1.2
+- CommunityToolkit.WinUI.UI.Controls 7.1.2
 - ControlzEx 5.0.1
 - HelixToolkit 2.20.2
 - HelixToolkit.Core.Wpf 2.20.2
