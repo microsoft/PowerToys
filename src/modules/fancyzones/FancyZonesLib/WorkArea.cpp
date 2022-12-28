@@ -426,11 +426,11 @@ ZoneIndexSet WorkArea::GetWindowZoneIndexes(HWND window) const noexcept
     return {};
 }
 
-void WorkArea::ShowZonesOverlay(const ZoneIndexSet& highlight)
+void WorkArea::ShowZonesOverlay(const ZoneIndexSet& highlight, HWND draggedWindow/* = nullptr*/)
 {
     if (m_layout && m_zonesOverlay)
     {
-        SetWorkAreaWindowAsTopmost();
+        SetWorkAreaWindowAsTopmost(draggedWindow);
         m_zonesOverlay->DrawActiveZoneSet(m_layout->Zones(), highlight, Colors::GetZoneColors(), FancyZonesSettings::settings().showZoneNumber);
         m_zonesOverlay->Show();
     }
@@ -448,7 +448,7 @@ void WorkArea::FlashZones()
 {
     if (m_layout && m_zonesOverlay)
     {
-        SetWorkAreaWindowAsTopmost();
+        SetWorkAreaWindowAsTopmost(nullptr);
         m_zonesOverlay->DrawActiveZoneSet(m_layout->Zones(), {}, Colors::GetZoneColors(), FancyZonesSettings::settings().showZoneNumber);
         m_zonesOverlay->Flash();
     }
@@ -552,15 +552,17 @@ LRESULT WorkArea::WndProc(UINT message, WPARAM wparam, LPARAM lparam) noexcept
     return 0;
 }
 
-void WorkArea::SetWorkAreaWindowAsTopmost() noexcept
+void WorkArea::SetWorkAreaWindowAsTopmost(HWND draggedWindow) noexcept
 {
     if (!m_window)
     {
         return;
     }
 
+    HWND windowInsertAfter = draggedWindow ? draggedWindow : HWND_TOPMOST;
+
     const UINT flags = SWP_NOSIZE | SWP_NOMOVE | SWP_NOACTIVATE;
-    SetWindowPos(m_window, HWND_TOPMOST, 0, 0, 0, 0, flags);
+    SetWindowPos(m_window, windowInsertAfter, 0, 0, 0, 0, flags);
 }
 
 #pragma endregion

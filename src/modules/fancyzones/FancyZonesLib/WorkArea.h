@@ -43,7 +43,7 @@ public:
 
     void UpdateActiveZoneSet() noexcept;
 
-    void ShowZonesOverlay(const ZoneIndexSet& highlight);
+    void ShowZonesOverlay(const ZoneIndexSet& highlight, HWND draggedWindow = nullptr);
     void HideZonesOverlay();
     void FlashZones();
     
@@ -57,7 +57,7 @@ private:
     void InitLayout(const FancyZonesDataTypes::WorkAreaId& parentUniqueId) noexcept;
     void CalculateZoneSet() noexcept;
     LRESULT WndProc(UINT message, WPARAM wparam, LPARAM lparam) noexcept;
-    void SetWorkAreaWindowAsTopmost() noexcept;
+    void SetWorkAreaWindowAsTopmost(HWND draggedWindow) noexcept;
 
     const FancyZonesUtils::Rect m_workAreaRect{};
     const FancyZonesDataTypes::WorkAreaId m_uniqueId;

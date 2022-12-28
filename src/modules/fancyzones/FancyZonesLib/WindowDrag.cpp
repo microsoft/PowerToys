@@ -84,7 +84,7 @@ void WindowDrag::MoveSizeUpdate(HMONITOR monitor, POINT const& ptScreen, bool is
                 }
                 else
                 {
-                    m_currentWorkArea->ShowZonesOverlay({});
+                    m_currentWorkArea->ShowZonesOverlay({}, m_window);
                 }
             }
             
@@ -98,7 +98,7 @@ void WindowDrag::MoveSizeUpdate(HMONITOR monitor, POINT const& ptScreen, bool is
             const bool redraw = m_highlightedZones.Update(m_currentWorkArea->GetLayout().get(), ptClient, isSelectManyZonesState);
             if (redraw)
             {
-                m_currentWorkArea->ShowZonesOverlay(m_highlightedZones.Zones());
+                m_currentWorkArea->ShowZonesOverlay(m_highlightedZones.Zones(), m_window);
             }
         }
     }
@@ -157,13 +157,13 @@ void WindowDrag::SwitchSnappingMode(bool isSnapping)
             {
                 if (workArea)
                 {
-                    workArea->ShowZonesOverlay({});
+                    workArea->ShowZonesOverlay({}, m_window);
                 }
             }
         }
         else if (m_currentWorkArea)
         {
-            m_currentWorkArea->ShowZonesOverlay({});
+            m_currentWorkArea->ShowZonesOverlay({}, m_window);
         }
 
         if (m_currentWorkArea)
