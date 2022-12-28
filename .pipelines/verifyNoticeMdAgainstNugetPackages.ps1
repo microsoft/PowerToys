@@ -14,29 +14,29 @@ Write-Host "Going through all csproj files"
 
 foreach($csproj in $projFiles) 
 {
-	$nugetTemp = dotnet list $csproj package
+    $nugetTemp = dotnet list $csproj package
 
-	if($nugetTemp -is [array] -and $nugetTemp.count -gt 3)
-	{
-	  	$temp = New-Object System.Collections.ArrayList
-		$temp.AddRange($nugetTemp)
-		$temp.RemoveRange(0, 3)
+    if($nugetTemp -is [array] -and $nugetTemp.count -gt 3)
+    {
+        $temp = New-Object System.Collections.ArrayList
+        $temp.AddRange($nugetTemp)
+        $temp.RemoveRange(0, 3)
 
-		foreach($p in $temp) 
-		{
-			# breaking item down to usable array and getting 1 and 2, see below of a sample output
-			#    > PACKAGE      VERSION            VERSION
-			
-			$p = -split $p
-			$p = $p[1, 2]
-			$tempString = $p[0] + " " + $p[1]
+        foreach($p in $temp) 
+        {
+            # breaking item down to usable array and getting 1 and 2, see below of a sample output
+            #    > PACKAGE      VERSION            VERSION
 
-			if(![string]::IsNullOrWhiteSpace($tempString))
-			{
-				$totalList.Add($tempString)
-			}
-		}
-	}
+            $p = -split $p
+            $p = $p[1, 2]
+            $tempString = $p[0] + " " + $p[1]
+
+            if(![string]::IsNullOrWhiteSpace($tempString))
+            {
+                $totalList.Add($tempString)
+            }
+        }
+    }
 }
 
 Write-Host "Removing duplicates"
@@ -46,15 +46,16 @@ $returnList = ""
 
 foreach($p in $totalList) 
 {
-	$returnList += "- " + $p + "`r`n"
+    $returnList += "- " + $p + "`r`n"
 }
 
 Write-Host $returnList
 
-# if (-not $?)
-# {
-#     Write-Host -ForegroundColor Red "Notice.md does not match NuGet list."
-#     exit 1
-# }
+$noticeFile = Get-Content -Raw "notice.md"
+if (!$noticeFile.EndsWith($returnList.Trim()))
+{
+	Write-Host -ForegroundColor Red "Notice.md does not match NuGet list."
+	exit 1
+}
 
 exit 0
