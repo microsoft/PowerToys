@@ -19,7 +19,7 @@ steps:
   displayName: Verifying Notice.md and Nuget packages match
   inputs:
     filePath: '$(build.sourcesdirectory)\.pipelines\verifyNoticeMdAgainstNugetPackages.ps1'
-    arguments: -solution '$(build.sourcesdirectory)\'
+    arguments: -path '$(build.sourcesdirectory)\'
     pwsh: true
     
 - task: PowerShell@2
