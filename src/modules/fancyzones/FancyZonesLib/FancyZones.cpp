@@ -457,9 +457,19 @@ void FancyZones::WindowCreated(HWND window) noexcept
     }
 
     bool movedToAppLastZone = false;
-    if (moveToAppLastZone)
+    if (FancyZonesSettings::settings().spanZonesAcrossMonitors)
     {
-        movedToAppLastZone = MoveToAppLastZone(window, active, primary);
+        if (moveToAppLastZone)
+        {
+            movedToAppLastZone = MoveToAppLastZone(window, nullptr, nullptr);
+        }
+    }
+    else
+    {
+        if (moveToAppLastZone)
+        {
+            movedToAppLastZone = MoveToAppLastZone(window, active, primary);
+        }
     }
 
     // Open on active monitor if window wasn't zoned
