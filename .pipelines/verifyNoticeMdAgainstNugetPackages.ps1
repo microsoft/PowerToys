@@ -6,7 +6,7 @@ Param(
 
 Write-Host "Verifying NuGet packages"
 
-$projFiles = Get-ChildItem -Include *.csproj -force -Recurse
+$projFiles = Get-ChildItem $path -Include *.csproj -force -Recurse
 $projFiles.Count
 $totalList = New-Object System.Collections.ArrayList
 
