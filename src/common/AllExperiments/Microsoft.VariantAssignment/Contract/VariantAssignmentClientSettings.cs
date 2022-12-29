@@ -13,13 +13,13 @@ namespace Microsoft.VariantAssignment.Contract
     public class VariantAssignmentClientSettings
     {
         /// <summary>
-        /// Gets or sets getr or sets the variant assignment service endpoint URL.
+        /// Gets or sets the variant assignment service endpoint URL.
         /// </summary>
         [Required]
         public Uri? Endpoint { get; set; }
 
         /// <summary>
-        /// Gets or sets a value indicating whether gets or sets a value inidcating whether client side request caching should be enabled.
+        /// Gets or sets a value indicating whether gets or sets a value whether client side request caching should be enabled.
         /// </summary>
         public bool EnableCaching { get; set; }
 

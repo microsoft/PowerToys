@@ -22,10 +22,6 @@ namespace Microsoft.VariantAssignment.Contract
             throw new NotImplementedException();
         }
 
-        /// <summary>
-        /// Implements the <a href="https://docs.microsoft.com/en-us/dotnet/standard/garbage-collection/implementing-dispose">dispose pattern</a>.
-        /// </summary>
-        /// <param name="disposing">True when invoked by <see cref="IDisposable.Dispose"/>, and false if invoked by the object finalizer.</param>
         protected virtual void Dispose(bool disposing)
         {
         }
