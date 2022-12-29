@@ -4,7 +4,7 @@
 
 using System.ComponentModel.DataAnnotations;
 
-// The goal of this class is to just mock out the Microsoft.VariantAssignment close sourced objects
+// The goal of this class is to just mock out the Microsoft.VariantAssignment close source objects
 namespace Microsoft.VariantAssignment.Contract
 {
     /// <summary>

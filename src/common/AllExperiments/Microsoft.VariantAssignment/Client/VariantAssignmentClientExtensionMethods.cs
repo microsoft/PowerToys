@@ -4,7 +4,7 @@
 
 using Microsoft.VariantAssignment.Contract;
 
-// The goal of this class is to just mock out the Microsoft.VariantAssignment close sourced objects
+// The goal of this class is to just mock out the Microsoft.VariantAssignment close source objects
 namespace Microsoft.VariantAssignment.Client
 {
 #pragma warning disable SA1200 // Using directives should be placed correctly
