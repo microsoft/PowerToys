@@ -13,10 +13,8 @@ namespace AllExperiments
 {
 // The dependencies required to build this project are only available in the official build pipeline and are internal to Microsoft.
 // However, this project is not required to build a test version of the application.
-#pragma warning disable SA1649 // File name should match first type name. Suppressed because it needs to be the same class name as Experiments_Inert.cs
     public class Experiments
-#pragma warning restore SA1649 // File name should match first type name
-    {
+   {
         public async Task<bool> EnableLandingPageExperimentAsync()
         {
             Experiments varServ = new Experiments();

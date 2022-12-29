@@ -5,20 +5,26 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <TargetName>PowerToys.AllExperiments</TargetName>
+    <MockDirectory>.\Microsoft.VariantAssignment\</MockDirectory>
   </PropertyGroup>
-	
-  <ItemGroup Condition="'$(IsExperimentationLive)'!=''">
-    <ProjectReference Include="..\..\settings-ui\Settings.UI.Library\Settings.UI.Library.csproj" />
+
+  <!-- Force Newtonsoft.Json version to avoid older one with vulnerabilities -->
+  <ItemGroup>
     <ProjectReference Include="..\ManagedTelemetry\Telemetry\ManagedTelemetry.csproj" />
-    <PackageReference Include="Microsoft.VariantAssignment.Client" Version="2.4.17140001" />
-    <PackageReference Include="Microsoft.VariantAssignment.Contract" Version="3.0.16990001" />
-    <!-- Force Newtonsoft.Json version to avoid older one with vulnerabilities -->
-    <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
-    <Compile Remove=".\Experiments_Inert.cs" />
+    <ProjectReference Include="..\..\settings-ui\Settings.UI.Library\Settings.UI.Library.csproj" />
   </ItemGroup>
 
+  <!-- Experimentation is live, forcing inclusion -->
+  <ItemGroup Condition="'$(IsExperimentationLive)'!=''">
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
+    <PackageReference Include="Microsoft.VariantAssignment.Client" Version="2.4.17140001" />
+    <PackageReference Include="Microsoft.VariantAssignment.Contract" Version="3.0.16990001" />
+    <Compile Remove=".\$(MockDirectory)\Client\*.cs" />
+    <Compile Remove=".\$(MockDirectory)\Contract\*.cs" />
+  </ItemGroup>
+
+  <!-- Experimentation is not live, forcing inclusion -->
   <ItemGroup Condition="'$(IsExperimentationLive)'==''">
-    <Compile Remove=".\Logger.cs" />
-    <Compile Remove=".\Experiments_Live.cs" />
+
   </ItemGroup>
 </Project>
