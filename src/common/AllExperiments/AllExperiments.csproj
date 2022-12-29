@@ -8,7 +8,7 @@
     <MockDirectory>.\Microsoft.VariantAssignment\</MockDirectory>
   </PropertyGroup>
 
-  <!-- Force Newtonsoft.Json version to avoid older one with vulnerabilities -->
+  
   <ItemGroup>
     <ProjectReference Include="..\ManagedTelemetry\Telemetry\ManagedTelemetry.csproj" />
     <ProjectReference Include="..\..\settings-ui\Settings.UI.Library\Settings.UI.Library.csproj" />
@@ -16,6 +16,7 @@
 
   <!-- Experimentation is live, forcing inclusion -->
   <ItemGroup Condition="'$(IsExperimentationLive)'!=''">
+    <!-- Force Newtonsoft.Json version to avoid older one with vulnerabilities -->
     <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
     <PackageReference Include="Microsoft.VariantAssignment.Client" Version="2.4.17140001" />
     <PackageReference Include="Microsoft.VariantAssignment.Contract" Version="3.0.16990001" />
