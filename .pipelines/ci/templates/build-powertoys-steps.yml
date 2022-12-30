@@ -7,7 +7,7 @@ steps:
   submodules: true
   clean: true
 
-- task: verify-ARM64.yml
+- template: verify-ARM64.yml
   parameters:
     additionalBuildArguments: ${{ parameters.additionalBuildArguments }}
 
