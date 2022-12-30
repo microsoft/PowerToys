@@ -67,7 +67,6 @@ steps:
     command: restore
     feedsToUse: config
     configPath: NuGet.config
-    restoreSolution: PowerToys.sln
     restoreDirectory: '$(Build.SourcesDirectory)\packages'
 
 - task: VSBuild@1
@@ -80,15 +79,6 @@ steps:
     msbuildArgs: ${{ parameters.additionalBuildArguments }}
     maximumCpuCount: true
 
-- task: NuGetCommand@2
-  displayName: Restore NuGet packages for BugReportTool.sln
-  inputs:
-    command: restore
-    feedsToUse: config
-    configPath: NuGet.config
-    restoreSolution: tools\BugReportTool\BugReportTool.sln
-    restoreDirectory: '$(Build.SourcesDirectory)\tools\BugReportTool\packages'
-
 - task: VSBuild@1
   displayName: 'Build BugReportTool.sln'
   inputs:
@@ -99,15 +89,6 @@ steps:
     msbuildArgs: ${{ parameters.additionalBuildArguments }}
     maximumCpuCount: true
 
-- task: NuGetCommand@2
-  displayName: Restore NuGet packages for WebcamReportTool.sln
-  inputs:
-    command: restore
-    feedsToUse: config
-    configPath: NuGet.config
-    restoreSolution: tools\WebcamReportTool\WebcamReportTool.sln
-    restoreDirectory: '$(Build.SourcesDirectory)\tools\WebcamReportTool\packages'
-
 - task: VSBuild@1
   displayName: 'Build WebcamReportTool.sln'
   inputs:
@@ -117,15 +98,6 @@ steps:
     configuration: '$(BuildConfiguration)'
     msbuildArgs: ${{ parameters.additionalBuildArguments }}
     maximumCpuCount: true
-
-- task: NuGetCommand@2
-  displayName: Restore NuGet packages for StylesReportTool.sln
-  inputs:
-    command: restore
-    feedsToUse: config
-    configPath: NuGet.config
-    restoreSolution: tools\StylesReportTool\StylesReportTool.sln
-    restoreDirectory: '$(Build.SourcesDirectory)\tools\StylesReportTool\packages'
 
 - task: VSBuild@1
   displayName: 'Build StylesReportTool.sln'
