@@ -1,6 +1,7 @@
 #pragma once
 
 #include <FancyZonesLib/FancyZonesDataTypes.h>
+#include <FancyZonesLib/HighlightedZones.h>
 #include <FancyZonesLib/Layout.h>
 #include <FancyZonesLib/LayoutAssignedWindows.h>
 #include <FancyZonesLib/util.h>
@@ -60,20 +61,17 @@ private:
     void InitLayout(const FancyZonesDataTypes::WorkAreaId& parentUniqueId) noexcept;
     void CalculateZoneSet() noexcept;
     LRESULT WndProc(UINT message, WPARAM wparam, LPARAM lparam) noexcept;
-    ZoneIndexSet ZonesFromPoint(POINT pt) noexcept;
     void SetAsTopmostWindow() noexcept;
 
     const FancyZonesUtils::Rect m_workAreaRect{};
     const FancyZonesDataTypes::WorkAreaId m_uniqueId;
     HWND m_window{}; // Hidden tool window used to represent current monitor desktop work area.
-    HWND m_windowMoveSize{};
     std::unique_ptr<Layout> m_layout;
     std::unique_ptr<LayoutAssignedWindows> m_layoutWindows;
-    ZoneIndexSet m_initialHighlightZone;
-    ZoneIndexSet m_highlightZone;
-    WPARAM m_keyLast{};
-    size_t m_keyCycle{};
     std::unique_ptr<ZonesOverlay> m_zonesOverlay;
+    HighlightedZones m_highlightedZones;
+
+    HWND m_windowMoveSize{};
 };
 
 std::shared_ptr<WorkArea> MakeWorkArea(HINSTANCE hinstance, const FancyZonesDataTypes::WorkAreaId& uniqueId, const FancyZonesDataTypes::WorkAreaId& parentUniqueId, const FancyZonesUtils::Rect& workAreaRect) noexcept;
