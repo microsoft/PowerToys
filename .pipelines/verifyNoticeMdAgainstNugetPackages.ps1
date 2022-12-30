@@ -17,7 +17,24 @@ Write-Host "Going through all csproj files"
 
 $totalList = $projFiles | ForEach-Object -Parallel {
     $csproj = $_
-    $nugetTemp = dotnet list $csproj package
+    $nugetTemp = @();
+    
+    #Workaround for preventing exit code from dotnet process from reflecting exit code in PowerShell
+    $procInfo = New-Object System.Diagnostics.ProcessStartInfo -Property @{ 
+        FileName               = "dotnet.exe"; 
+        Arguments              = "list $csproj package"; 
+        RedirectStandardOutput = $true; 
+        RedirectStandardError  = $true; 
+    }
+    
+    $proc = [System.Diagnostics.Process]::Start($procInfo);
+
+    while (!$proc.StandardOutput.EndOfStream) {
+        $nugetTemp += $proc.StandardOutput.ReadLine();
+    }
+    
+    $proc = $null;
+    $procInfo = $null;
 
     if($nugetTemp -is [array] -and $nugetTemp.count -gt 3)
     {
