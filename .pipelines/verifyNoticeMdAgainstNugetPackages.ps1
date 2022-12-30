@@ -12,7 +12,6 @@ Write-Host "Verifying NuGet packages"
 
 $projFiles = Get-ChildItem $path -Filter *.csproj -force -Recurse
 $projFiles.Count
-$totalList = New-Object System.Collections.ArrayList
 
 Write-Host "Going through all csproj files"
 
