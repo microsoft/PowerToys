@@ -7,10 +7,9 @@ steps:
   submodules: true
   clean: true
 
-- uses: verify-ARM64.yml
-  with:
-    parameters:
-      additionalBuildArguments: ${{ parameters.additionalBuildArguments }}
+- task: verify-ARM64.yml
+  parameters:
+    additionalBuildArguments: ${{ parameters.additionalBuildArguments }}
 
 - task: PowerShell@2
   displayName: Verifying Nuget packages for PowerToys.sln
