@@ -170,18 +170,6 @@ void WindowDrag::SwitchSnappingMode(bool isSnapping)
         if (m_currentWorkArea)
         {
             m_currentWorkArea->UnsnapWindow(m_window);
-            FancyZonesWindowProperties::RemoveZoneIndexProperty(m_window);
-
-            const auto& layout = m_currentWorkArea->GetLayout();
-            if (layout)
-            {
-                auto guidStr = FancyZonesUtils::GuidToString(layout->Id());
-                if (guidStr.has_value())
-                {
-                    AppZoneHistory::instance().RemoveAppLastZone(m_window, m_currentWorkArea->UniqueId(), guidStr.value());
-                }
-            }
-
             Trace::WorkArea::MoveOrResizeStarted(m_currentWorkArea->GetLayout().get(), m_currentWorkArea->GetLayoutWindows().get());
         }
     }

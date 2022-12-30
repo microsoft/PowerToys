@@ -148,10 +148,7 @@ void WorkArea::MoveWindowIntoZoneByIndexSet(HWND window, const ZoneIndexSet& ind
         FancyZonesWindowUtils::SizeWindowToRect(window, adjustedRect);
     }
 
-    m_layoutWindows->Assign(window, indexSet);
-    FancyZonesWindowProperties::StampZoneIndexProperty(window, indexSet);
-
-    SaveWindowProcessToZoneIndex(window);
+    SnapWindow(window, indexSet);
 }
 
 bool WorkArea::MoveWindowIntoZoneByDirectionAndIndex(HWND window, DWORD vkCode, bool cycle)
@@ -195,11 +192,6 @@ bool WorkArea::MoveWindowIntoZoneByDirectionAndIndex(HWND window, DWORD vkCode, 
                 MoveWindowIntoZoneByIndex(window, oldId + 1);
             }
         }
-    }
-
-    if (!FancyZonesWindowUtils::HasVisibleOwner(window))
-    {
-        SaveWindowProcessToZoneIndex(window);
     }
 
     return true;
@@ -250,7 +242,6 @@ bool WorkArea::MoveWindowIntoZoneByDirectionAndPosition(HWND window, DWORD vkCod
     if (result < zoneRects.size())
     {
         MoveWindowIntoZoneByIndex(window, freeZoneIndices[result]);
-        SaveWindowProcessToZoneIndex(window);
         Trace::FancyZones::KeyboardSnapWindowToZone(m_layout.get(), m_layoutWindows.get());
         return true;
     }
@@ -266,7 +257,6 @@ bool WorkArea::MoveWindowIntoZoneByDirectionAndPosition(HWND window, DWORD vkCod
         if (result < zoneRects.size())
         {
             MoveWindowIntoZoneByIndex(window, result);
-            SaveWindowProcessToZoneIndex(window);
             Trace::FancyZones::KeyboardSnapWindowToZone(m_layout.get(), m_layoutWindows.get());
             return true;
         }
@@ -362,9 +352,8 @@ bool WorkArea::ExtendWindowByDirectionAndPosition(HWND window, DWORD vkCode)
         FancyZonesWindowUtils::SizeWindowToRect(window, adjustedRect);
 
         m_layoutWindows->Extend(window, resultIndexSet);
-        FancyZonesWindowProperties::StampZoneIndexProperty(window, resultIndexSet);
 
-        SaveWindowProcessToZoneIndex(window);
+        SnapWindow(window, resultIndexSet);
 
         return true;
     }
@@ -372,36 +361,40 @@ bool WorkArea::ExtendWindowByDirectionAndPosition(HWND window, DWORD vkCode)
     return false;
 }
 
-void WorkArea::SaveWindowProcessToZoneIndex(HWND window) noexcept
+void WorkArea::SnapWindow(HWND window, const ZoneIndexSet& zones)
 {
-    if (m_layout && m_layoutWindows)
+    if (!m_layoutWindows || !m_layout)
     {
-        auto zoneIndexSet = m_layoutWindows->GetZoneIndexSetFromWindow(window);
-        if (zoneIndexSet.size())
-        {
-            auto guidStr = FancyZonesUtils::GuidToString(m_layout->Id());
-            if (guidStr.has_value())
-            {
-                AppZoneHistory::instance().SetAppLastZones(window, m_uniqueId, guidStr.value(), zoneIndexSet);
-            }
-        }
+        return;
     }
+
+    m_layoutWindows->Assign(window, zones);
+
+    auto guidStr = FancyZonesUtils::GuidToString(m_layout->Id());
+    if (guidStr.has_value())
+    {
+        AppZoneHistory::instance().SetAppLastZones(window, m_uniqueId, guidStr.value(), zones);
+    }
+
+    FancyZonesWindowProperties::StampZoneIndexProperty(window, zones);
 }
 
 void WorkArea::UnsnapWindow(HWND window)
 {
-    if (!m_layoutWindows)
+    if (!m_layoutWindows || !m_layout)
     {
-        return false;    
+        return;
     }
     
-    if (!m_layoutWindows->GetZoneIndexSetFromWindow(window).empty())
+    m_layoutWindows->Dismiss(window);
+
+    auto guidStr = FancyZonesUtils::GuidToString(m_layout->Id());
+    if (guidStr.has_value())
     {
-        m_layoutWindows->Dismiss(window);
-        return true;
+        AppZoneHistory::instance().RemoveAppLastZone(window, m_uniqueId, guidStr.value());
     }
 
-    return false;
+    FancyZonesWindowProperties::RemoveZoneIndexProperty(window);
 }
 
 ZoneIndexSet WorkArea::GetWindowZoneIndexes(HWND window) const

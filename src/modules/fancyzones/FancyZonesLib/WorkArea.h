@@ -48,8 +48,9 @@ public:
     bool MoveWindowIntoZoneByDirectionAndIndex(HWND window, DWORD vkCode, bool cycle);
     bool MoveWindowIntoZoneByDirectionAndPosition(HWND window, DWORD vkCode, bool cycle);
     bool ExtendWindowByDirectionAndPosition(HWND window, DWORD vkCode);
-    void SaveWindowProcessToZoneIndex(HWND window) noexcept;
-    bool UnsnapWindow(HWND window) noexcept;
+
+    void SnapWindow(HWND window, const ZoneIndexSet& zones);
+    void UnsnapWindow(HWND window);
 
     void UpdateActiveZoneSet();
 
