@@ -16,8 +16,8 @@ $totalList = New-Object System.Collections.ArrayList
 
 Write-Host "Going through all csproj files"
 
-foreach($csproj in $projFiles) 
-{
+$totalList = $projFiles | ForEach-Object -Parallel {
+    $csproj = $_
     $nugetTemp = dotnet list $csproj package
 
     if($nugetTemp -is [array] -and $nugetTemp.count -gt 3)
@@ -37,21 +37,14 @@ foreach($csproj in $projFiles)
 
             if(![string]::IsNullOrWhiteSpace($tempString))
             {
-                $totalList.Add($tempString)
+		   echo "- $tempString";
             }
         }
+	$csproj = $null;
     }
-}
+} -ThrottleLimit 4 | Sort-Object
 
-Write-Host "Removing duplicates"
-
-$totalList = $totalList | Sort-Object | Get-Unique
-$returnList = ""
-
-foreach($p in $totalList) 
-{
-    $returnList += "- " + $p + "`r`n"
-}
+$returnList = [System.Collections.Generic.HashSet[string]]($totalList) -join "`r`n"
 
 Write-Host $returnList
 
