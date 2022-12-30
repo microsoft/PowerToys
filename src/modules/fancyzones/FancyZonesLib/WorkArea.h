@@ -3,7 +3,6 @@
 #include <FancyZonesLib/FancyZonesDataTypes.h>
 #include <FancyZonesLib/Layout.h>
 #include <FancyZonesLib/LayoutAssignedWindows.h>
-#include <FancyZonesLib/util.h>
 
 class ZonesOverlay;
 
@@ -42,31 +41,31 @@ public:
     const std::unique_ptr<LayoutAssignedWindows>& GetLayoutWindows() const noexcept { return m_layoutWindows; }
     const HWND GetWorkAreaWindow() const noexcept { return m_window; }
     
-    ZoneIndexSet GetWindowZoneIndexes(HWND window) const noexcept;
+    ZoneIndexSet GetWindowZoneIndexes(HWND window) const;
 
-    void MoveWindowIntoZoneByIndex(HWND window, ZoneIndex index) noexcept;
-    void MoveWindowIntoZoneByIndexSet(HWND window, const ZoneIndexSet& indexSet, bool updatePosition = true) noexcept;
-    bool MoveWindowIntoZoneByDirectionAndIndex(HWND window, DWORD vkCode, bool cycle) noexcept;
-    bool MoveWindowIntoZoneByDirectionAndPosition(HWND window, DWORD vkCode, bool cycle) noexcept;
-    bool ExtendWindowByDirectionAndPosition(HWND window, DWORD vkCode) noexcept;
+    void MoveWindowIntoZoneByIndex(HWND window, ZoneIndex index);
+    void MoveWindowIntoZoneByIndexSet(HWND window, const ZoneIndexSet& indexSet, bool updatePosition = true);
+    bool MoveWindowIntoZoneByDirectionAndIndex(HWND window, DWORD vkCode, bool cycle);
+    bool MoveWindowIntoZoneByDirectionAndPosition(HWND window, DWORD vkCode, bool cycle);
+    bool ExtendWindowByDirectionAndPosition(HWND window, DWORD vkCode);
     void SaveWindowProcessToZoneIndex(HWND window) noexcept;
     bool UnsnapWindow(HWND window) noexcept;
 
-    void UpdateActiveZoneSet() noexcept;
+    void UpdateActiveZoneSet();
 
     void ShowZonesOverlay(const ZoneIndexSet& highlight, HWND draggedWindow = nullptr);
     void HideZonesOverlay();
     void FlashZones();
     
-    void CycleWindows(HWND window, bool reverse) noexcept;
+    void CycleWindows(HWND window, bool reverse);
 
 protected:
     static LRESULT CALLBACK s_WndProc(HWND window, UINT message, WPARAM wparam, LPARAM lparam) noexcept;
 
 private:
-    bool InitWindow(HINSTANCE hinstance) noexcept;
-    void InitLayout(const FancyZonesDataTypes::WorkAreaId& parentUniqueId) noexcept;
-    void CalculateZoneSet() noexcept;
+    bool InitWindow(HINSTANCE hinstance);
+    void InitLayout(const FancyZonesDataTypes::WorkAreaId& parentUniqueId);
+    void CalculateZoneSet();
     LRESULT WndProc(UINT message, WPARAM wparam, LPARAM lparam) noexcept;
     void SetWorkAreaWindowAsTopmost(HWND draggedWindow) noexcept;
 
