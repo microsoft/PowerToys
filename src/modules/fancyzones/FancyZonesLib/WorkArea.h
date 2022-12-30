@@ -33,6 +33,8 @@ public:
         }
 #endif
         InitLayout(parentUniqueId);
+        InitSnappedWindows();
+
         return true;
     }
     
@@ -66,10 +68,13 @@ protected:
 private:
     bool InitWindow(HINSTANCE hinstance);
     void InitLayout(const FancyZonesDataTypes::WorkAreaId& parentUniqueId);
+    void InitSnappedWindows();
+
     void CalculateZoneSet();
-    LRESULT WndProc(UINT message, WPARAM wparam, LPARAM lparam) noexcept;
     void SetWorkAreaWindowAsTopmost(HWND draggedWindow) noexcept;
 
+    LRESULT WndProc(UINT message, WPARAM wparam, LPARAM lparam) noexcept;
+    
     const FancyZonesUtils::Rect m_workAreaRect{};
     const FancyZonesDataTypes::WorkAreaId m_uniqueId;
     HWND m_window{}; // Hidden tool window used to represent current monitor desktop work area.

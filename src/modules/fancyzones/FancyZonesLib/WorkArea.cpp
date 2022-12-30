@@ -505,6 +505,36 @@ void WorkArea::InitLayout(const FancyZonesDataTypes::WorkAreaId& parentUniqueId)
     CalculateZoneSet();
 }
 
+void WorkArea::InitSnappedWindows()
+{
+    static bool updatePositionOnceOnStartFlag = true;
+    Logger::info(L"Init work area windows, update positions = {}", updatePositionOnceOnStartFlag);
+
+    for (const auto& window : VirtualDesktop::instance().GetWindowsFromCurrentDesktop())
+    {
+        auto zoneIndexSet = FancyZonesWindowProperties::RetrieveZoneIndexProperty(window);
+        if (zoneIndexSet.size() == 0)
+        {
+            continue;
+        }
+
+        if (!m_uniqueId.monitorId.monitor) // one work area across monitors
+        {
+            MoveWindowIntoZoneByIndexSet(window, zoneIndexSet, updatePositionOnceOnStartFlag);
+        }
+        else
+        {
+            const auto monitor = MonitorFromWindow(window, MONITOR_DEFAULTTONULL);
+            if (monitor && m_uniqueId.monitorId.monitor == monitor)
+            {
+                MoveWindowIntoZoneByIndexSet(window, zoneIndexSet, updatePositionOnceOnStartFlag);
+            }
+        }
+    }
+
+    updatePositionOnceOnStartFlag = false;
+}
+
 void WorkArea::CalculateZoneSet()
 {
     const auto appliedLayout = AppliedLayouts::instance().GetDeviceLayout(m_uniqueId);
