@@ -7,46 +7,15 @@ steps:
   submodules: true
   clean: true
 
+- template: verify-ARM64.yml
+    parameters:
+      additionalBuildArguments: ${{ parameters.additionalBuildArguments }}
+
 - task: PowerShell@2
   displayName: Verifying Nuget packages for PowerToys.sln
   inputs:
     filePath: '$(build.sourcesdirectory)\.pipelines\verifyNugetPackages.ps1'
     arguments: -solution '$(build.sourcesdirectory)\PowerToys.sln'
-    pwsh: true
-
-- task: PowerShell@2
-  displayName: Verify Arm64 configuration for PowerToys.sln
-  inputs:
-    filePath: '$(build.sourcesdirectory)\.pipelines\verifyArm64Configuration.ps1'
-    arguments: -solution '$(build.sourcesdirectory)\PowerToys.sln'
-    pwsh: true
-
-- task: PowerShell@2
-  displayName: Verify Arm64 configuration for BugReportTool.sln
-  inputs:
-    filePath: '$(build.sourcesdirectory)\.pipelines\verifyArm64Configuration.ps1'
-    arguments: -solution '$(build.sourcesdirectory)\tools\BugReportTool\BugReportTool.sln'
-    pwsh: true
-
-- task: PowerShell@2
-  displayName: Verify Arm64 configuration for WebcamReportTool.sln
-  inputs:
-    filePath: '$(build.sourcesdirectory)\.pipelines\verifyArm64Configuration.ps1'
-    arguments: -solution '$(build.sourcesdirectory)\tools\WebcamReportTool\WebcamReportTool.sln'
-    pwsh: true
-
-- task: PowerShell@2
-  displayName: Verify Arm64 configuration for StylesReportTool.sln
-  inputs:
-    filePath: '$(build.sourcesdirectory)\.pipelines\verifyArm64Configuration.ps1'
-    arguments: -solution '$(build.sourcesdirectory)\tools\StylesReportTool\StylesReportTool.sln'
-    pwsh: true
-
-- task: PowerShell@2
-  displayName: Verify Arm64 configuration for PowerToysSetup.sln
-  inputs:
-    filePath: '$(build.sourcesdirectory)\.pipelines\verifyArm64Configuration.ps1'
-    arguments: -solution '$(build.sourcesdirectory)\installer\PowerToysSetup.sln'
     pwsh: true
 
 - task: UseDotNet@2
