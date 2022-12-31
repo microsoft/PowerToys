@@ -10,15 +10,31 @@ Write-Host $noticeFile
 
 Write-Host "Verifying NuGet packages"
 
-$projFiles = Get-ChildItem $path -Include *.csproj -force -Recurse
+$projFiles = Get-ChildItem $path -Filter *.csproj -force -Recurse
 $projFiles.Count
-$totalList = New-Object System.Collections.ArrayList
 
 Write-Host "Going through all csproj files"
 
-foreach($csproj in $projFiles) 
-{
-    $nugetTemp = dotnet list $csproj package
+$totalList = $projFiles | ForEach-Object -Parallel {
+    $csproj = $_
+    $nugetTemp = @();
+    
+    #Workaround for preventing exit code from dotnet process from reflecting exit code in PowerShell
+    $procInfo = New-Object System.Diagnostics.ProcessStartInfo -Property @{ 
+        FileName               = "dotnet.exe"; 
+        Arguments              = "list $csproj package"; 
+        RedirectStandardOutput = $true; 
+        RedirectStandardError  = $true; 
+    }
+    
+    $proc = [System.Diagnostics.Process]::Start($procInfo);
+
+    while (!$proc.StandardOutput.EndOfStream) {
+        $nugetTemp += $proc.StandardOutput.ReadLine();
+    }
+    
+    $proc = $null;
+    $procInfo = $null;
 
     if($nugetTemp -is [array] -and $nugetTemp.count -gt 3)
     {
@@ -37,21 +53,14 @@ foreach($csproj in $projFiles)
 
             if(![string]::IsNullOrWhiteSpace($tempString))
             {
-                $totalList.Add($tempString)
+		   echo "- $tempString";
             }
         }
+	$csproj = $null;
     }
-}
+} -ThrottleLimit 4 | Sort-Object
 
-Write-Host "Removing duplicates"
-
-$totalList = $totalList | Sort-Object | Get-Unique
-$returnList = ""
-
-foreach($p in $totalList) 
-{
-    $returnList += "- " + $p + "`r`n"
-}
+$returnList = [System.Collections.Generic.HashSet[string]]($totalList) -join "`r`n"
 
 Write-Host $returnList
 
