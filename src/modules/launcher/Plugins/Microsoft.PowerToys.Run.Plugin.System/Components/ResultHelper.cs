@@ -114,8 +114,8 @@ namespace Microsoft.PowerToys.Run.Plugin.System.Components
         {
             executingEmptyRecycleBinTask = true;
 
-            // https://learn.microsoft.com/en-us/windows/win32/api/shellapi/nf-shellapi-shemptyrecyclebina
-            // http://www.pinvoke.net/default.aspx/shell32/SHEmptyRecycleBin.html
+            // https://learn.microsoft.com/en-us/windows/win32/api/shellapi/nf-shellapi-shemptyrecyclebina/
+            // http://www.pinvoke.net/default.aspx/shell32/SHEmptyRecycleBin.html/
             // If the recycle bin is already empty, it will return -2147418113 (0x8000FFFF (E_UNEXPECTED))
             // If the user canceled the deletion task it will return 2147943623 (0x800704C7 (E_CANCELLED - The operation was canceled by the user.))
             // On success it will return 0 (S_OK)

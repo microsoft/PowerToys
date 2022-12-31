@@ -46,7 +46,7 @@ namespace Wox.Plugin.Common.Win32
         }
 
         /// <summary>
-        /// Gets the descriuption for an HRESULT error code.
+        /// Gets the description for an HRESULT error code.
         /// </summary>
         /// <param name="hr">The HRESULT number</param>
         /// <returns>A string containing the description.</returns>

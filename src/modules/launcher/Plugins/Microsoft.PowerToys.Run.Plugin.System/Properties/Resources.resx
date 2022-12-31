@@ -242,7 +242,7 @@
   </data>
   <data name="Microsoft_plugin_sys_RecycleBin" xml:space="preserve">
     <value>Recycle Bin</value>
-    <comment>Means the recycle bin foleder in Explorer.</comment>
+    <comment>Means the recycle bin folder in Explorer.</comment>
   </data>
   <data name="Microsoft_plugin_sys_RecycleBin_contextMenu" xml:space="preserve">
     <value>Empty Recycle Bin (Shift+Delete)</value>
@@ -254,14 +254,14 @@
   </data>
   <data name="Microsoft_plugin_sys_RecycleBin_EmptyTaskRunning" xml:space="preserve">
     <value>The task to empty the Recycle Bin is already running ...</value>
-    <comment>Means the recycle bin foleder in Explorer.</comment>
+    <comment>Means the recycle bin folder in Explorer.</comment>
   </data>
   <data name="Microsoft_plugin_sys_RecycleBin_ErrorMsg" xml:space="preserve">
     <value>Failed to empty the Recycle Bin:</value>
   </data>
   <data name="Microsoft_plugin_sys_RecycleBin_IsEmpty" xml:space="preserve">
     <value>Recycle Bin is empty.</value>
-    <comment>Means the recycle bin foleder in Explorer.</comment>
+    <comment>Means the recycle bin folder in Explorer.</comment>
   </data>
   <data name="Microsoft_plugin_sys_RecycleBin_searchTag" xml:space="preserve">
     <value>Empty Recycle Bin</value>

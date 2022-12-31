@@ -206,8 +206,8 @@ namespace Wox.Plugin.Common.Win32
         /// <summary>
         /// The operation was canceled by the user. (Error source 7 means Win32.)
         /// </summary>
-        /// <seealso href="https://learn.microsoft.com/en-us/windows/win32/debug/system-error-codes--1000-1299-"/>
-        /// <seealso href="https://en.wikipedia.org/wiki/HRESULT"/>
+        /// <SeeAlso href="https://learn.microsoft.com/en-us/windows/win32/debug/system-error-codes--1000-1299-"/>
+        /// <SeeAlso href="https://en.wikipedia.org/wiki/HRESULT"/>
         E_CANCELLED = 0x800704C7,
     }
 
