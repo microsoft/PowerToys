@@ -91,7 +91,9 @@ public:
             monitor = NULL;
         }
 
-        m_windowMoveHandler.MoveSizeStart(window, monitor, ptScreen, m_workAreaHandler.GetWorkAreasByDesktopId(VirtualDesktop::instance().GetCurrentVirtualDesktopId()));
+        m_draggingState.Enable();
+        m_draggingState.UpdateDraggingState();
+        m_windowMoveHandler.MoveSizeStart(window, monitor, ptScreen, m_workAreaHandler.GetWorkAreasByDesktopId(VirtualDesktop::instance().GetCurrentVirtualDesktopId()), m_draggingState.IsDragging());
     }
 
     void MoveSizeUpdate(HMONITOR monitor, POINT const& ptScreen) noexcept
@@ -100,12 +102,16 @@ public:
         {
             monitor = NULL;
         }
-        m_windowMoveHandler.MoveSizeUpdate(monitor, ptScreen, m_workAreaHandler.GetWorkAreasByDesktopId(VirtualDesktop::instance().GetCurrentVirtualDesktopId()));
+
+        m_draggingState.UpdateDraggingState();
+        m_windowMoveHandler.MoveSizeUpdate(monitor, ptScreen, m_workAreaHandler.GetWorkAreasByDesktopId(VirtualDesktop::instance().GetCurrentVirtualDesktopId()), m_draggingState.IsDragging(), m_draggingState.IsSelectManyZonesState());
     }
 
     void MoveSizeEnd(HWND window) noexcept
     {
+        m_draggingState.UpdateDraggingState();
         m_windowMoveHandler.MoveSizeEnd(window, m_workAreaHandler.GetWorkAreasByDesktopId(VirtualDesktop::instance().GetCurrentVirtualDesktopId()));
+        m_draggingState.Disable();
     }
 
     IFACEMETHODIMP_(void)
@@ -641,12 +647,9 @@ LRESULT FancyZones::WndProc(HWND window, UINT message, WPARAM wparam, LPARAM lpa
         }
         else if (message == WM_PRIV_LOCATIONCHANGE)
         {
-            if (m_draggingState.IsDragging())
+            if (auto monitor = MonitorFromPoint(ptScreen, MONITOR_DEFAULTTONULL))
             {
-                if (auto monitor = MonitorFromPoint(ptScreen, MONITOR_DEFAULTTONULL))
-                {
-                    MoveSizeUpdate(monitor, ptScreen);
-                }
+                MoveSizeUpdate(monitor, ptScreen);
             }
         }
         else if (message == WM_PRIV_WINDOWCREATED)

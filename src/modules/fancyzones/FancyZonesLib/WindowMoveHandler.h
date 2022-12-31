@@ -14,8 +14,8 @@ class WindowMoveHandler
 public:
     WindowMoveHandler();
 
-    void MoveSizeStart(HWND window, HMONITOR monitor, POINT const& ptScreen, const std::unordered_map<HMONITOR, std::shared_ptr<WorkArea>>& workAreaMap) noexcept;
-    void MoveSizeUpdate(HMONITOR monitor, POINT const& ptScreen, const std::unordered_map<HMONITOR, std::shared_ptr<WorkArea>>& workAreaMap) noexcept;
+    void MoveSizeStart(HWND window, HMONITOR monitor, POINT const& ptScreen, const std::unordered_map<HMONITOR, std::shared_ptr<WorkArea>>& workAreaMap, bool dragEnabled) noexcept;
+    void MoveSizeUpdate(HMONITOR monitor, POINT const& ptScreen, const std::unordered_map<HMONITOR, std::shared_ptr<WorkArea>>& workAreaMap, bool dragEnabled, bool multipleZones) noexcept;
     void MoveSizeEnd(HWND window, const std::unordered_map<HMONITOR, std::shared_ptr<WorkArea>>& workAreaMap) noexcept;
 
     void MoveWindowIntoZoneByIndexSet(HWND window, const ZoneIndexSet& indexSet, std::shared_ptr<WorkArea> workArea) noexcept;
