@@ -51,19 +51,19 @@ namespace ManagedCommon
             }
             else if (location.Contains("MeasureTool"))
             {
-                applicationLogPath += "\\Measure Tool\\MeasureToolUI\\Logs";
+                applicationLogPath += "\\Measure Tool\\Logs";
             }
-            else if (location.Contains("hosts"))
+            else if (location.Contains("Hosts"))
             {
                 applicationLogPath += "\\Hosts\\Logs";
             }
-            else if (location.Contains("settings"))
+            else if (location.Contains("Settings"))
             {
                 applicationLogPath += "\\Settings\\Logs";
             }
             else if (location.Contains("FileLocksmith"))
             {
-                applicationLogPath += "\\File Locksmith\\FileLocksmithUI\\Logs";
+                applicationLogPath += "\\File Locksmith\\Logs";
             }
             else
             {
