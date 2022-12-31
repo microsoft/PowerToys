@@ -7,25 +7,25 @@ steps:
   submodules: true
   clean: true
 
-- template: verify-ARM64.yml
-  parameters:
-    additionalBuildArguments: ${{ parameters.additionalBuildArguments }}
+# commenting out for  speed, shaves 2 min
+# START COMMENTING
+#- template: verify-ARM64.yml
+#  parameters:
+#    additionalBuildArguments: ${{ parameters.additionalBuildArguments }}
 
-- task: PowerShell@2
-  displayName: Verifying Nuget packages for PowerToys.sln
-  inputs:
-    filePath: '$(build.sourcesdirectory)\.pipelines\verifyNugetPackages.ps1'
-    arguments: -solution '$(build.sourcesdirectory)\PowerToys.sln'
-    pwsh: true
+#- task: PowerShell@2
+#  displayName: Verifying Nuget packages for PowerToys.sln
+#  inputs:
+#    filePath: '$(build.sourcesdirectory)\.pipelines\verifyNugetPackages.ps1'
+#    arguments: -solution '$(build.sourcesdirectory)\PowerToys.sln'
+#    pwsh: true
 
-- task: VisualStudioTestPlatformInstaller@1
-  displayName: Ensure VSTest Platform
-
-- task: UseDotNet@2
-  displayName: 'Use .NET Core 2.1 SDK'
-  inputs:
-    packageType: sdk
-    version: '2.1.x'
+#- task: UseDotNet@2
+#  displayName: 'Use .NET Core 2.1 SDK'
+#  inputs:
+#    packageType: sdk
+#    version: '2.1.x'
+# END COMMENTING
 
 - task: UseDotNet@2
   displayName: 'Use .NET 7 SDK'
@@ -33,7 +33,7 @@ steps:
     packageType: sdk
     version: '7.x'
 
-- task: NuGetAuthenticate@0
+# - task: NuGetAuthenticate@1
       
 - task: NuGetToolInstaller@1
   displayName: Use NuGet Installer latest
@@ -44,11 +44,9 @@ steps:
 # - Webcam report tool
 # - Installer
 # - Bootstrapper Installer
-- task: NuGetCommand@2
+- task: NuGetRestore@1
   displayName: NuGet restore solutions dependencies
   inputs:
-    command: restore
-    restoreSolution: '**/*.sln'
     selectOrConfig: config
     nugetConfigPath: NuGet.config
       
@@ -118,6 +116,10 @@ steps:
     msbuildArgs: /t:PowerToysBootstrapper ${{ parameters.additionalBuildArguments }}
     clean: false
     maximumCpuCount: true
+
+    
+- task: VisualStudioTestPlatformInstaller@1
+  displayName: Ensure VSTest Platform
 
 # directly not doing WinAppDriver testing
 - task: VSTest@2
