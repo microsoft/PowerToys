@@ -475,7 +475,6 @@ EFile
 ekus
 emmintrin
 Emoji
-emptyrecyclebin
 ENABLEDELAYEDEXPANSION
 enabledisable
 ENABLEDPOPUP
