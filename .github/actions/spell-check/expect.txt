@@ -1609,6 +1609,7 @@ shellex
 SHELLEXECUTEINFO
 SHELLEXECUTEINFOW
 shellscalingapi
+shemptyrecyclebina
 SHFILEINFO
 SHGFI
 Shl
