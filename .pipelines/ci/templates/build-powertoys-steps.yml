@@ -47,6 +47,7 @@ steps:
 - task: NuGetRestore@1
   displayName: NuGet restore solutions dependencies
   inputs:
+    solution: '**/*.sln'
     selectOrConfig: config
     nugetConfigPath: NuGet.config
       
