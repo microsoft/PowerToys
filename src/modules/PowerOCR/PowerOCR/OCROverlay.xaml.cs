@@ -11,6 +11,7 @@ using System.Windows.Input;
 using System.Windows.Media;
 using Microsoft.PowerToys.Telemetry;
 using PowerOCR.Helpers;
+using PowerOCR.Settings;
 using PowerOCR.Utilities;
 using Windows.Globalization;
 using Windows.Media.Ocr;
@@ -55,14 +56,26 @@ public partial class OCROverlay : Window
     {
         InitializeComponent();
 
+        var userSettings = new UserSettings(new Helpers.ThrottledActionInvoker());
+        string? selectedLanguageName = userSettings.PreferredLanguage.Value;
+
         // build context menu
-        selectedLanguage = ImageMethods.GetOCRLanguage();
-        string? selectedLanguageName = selectedLanguage?.DisplayName;
+        if (string.IsNullOrEmpty(selectedLanguageName))
+        {
+            selectedLanguage = ImageMethods.GetOCRLanguage();
+            selectedLanguageName = selectedLanguage?.DisplayName;
+        }
+
         List<Language> possibleOcrLanguages = OcrEngine.AvailableRecognizerLanguages.ToList();
         foreach (Language language in possibleOcrLanguages)
         {
-            MenuItem menuItem = new MenuItem() { Header = language.DisplayName, Tag = language, IsCheckable = true };
+            MenuItem menuItem = new MenuItem() { Header = language.NativeName, Tag = language, IsCheckable = true };
             menuItem.IsChecked = language.DisplayName.Equals(selectedLanguageName);
+            if (language.DisplayName.Equals(selectedLanguageName))
+            {
+                selectedLanguage = language;
+            }
+
             menuItem.Click += LanguageMenuItem_Click;
             CanvasContextMenu.Items.Add(menuItem);
         }
