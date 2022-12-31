@@ -403,7 +403,7 @@ namespace Microsoft.PowerToys.Run.Plugin.System.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Opens the Recycle Bin in Explorer.
+        ///   Looks up a localized string similar to Open the Recycle Bin.
         /// </summary>
         internal static string Microsoft_plugin_sys_RecycleBin_description {
             get {

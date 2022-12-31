@@ -249,7 +249,7 @@
     <comment>This should align to the action in Windows of emptying the recycle bin on your computer.</comment>
   </data>
   <data name="Microsoft_plugin_sys_RecycleBin_description" xml:space="preserve">
-    <value>Opens the Recycle Bin in Explorer</value>
+    <value>Open the Recycle Bin</value>
     <comment>This should align to the action in Windows of emptying the recycle bin on your computer.</comment>
   </data>
   <data name="Microsoft_plugin_sys_RecycleBin_EmptyTaskRunning" xml:space="preserve">
