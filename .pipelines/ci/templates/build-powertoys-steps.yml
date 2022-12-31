@@ -38,8 +38,6 @@ steps:
 - task: NuGetToolInstaller@1
   displayName: Use NuGet Installer latest
 
-
-
 # this will restore the following nugets:
 # - main solution
 # - Bug report tool
