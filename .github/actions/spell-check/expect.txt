@@ -1220,6 +1220,7 @@ nullonfailure
 numberbox
 NUMLOCK
 NUMPAD
+NUMPADKEY
 Nunavut
 Nusa
 nwc
