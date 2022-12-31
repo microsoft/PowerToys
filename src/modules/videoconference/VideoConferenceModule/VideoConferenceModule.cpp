@@ -311,11 +311,7 @@ void VideoConferenceModule::onMicrophoneConfigurationChanged()
     }
 }
 
-VideoConferenceModule::VideoConferenceModule() :
-    _generalSettingsWatcher{ PTSettingsHelper::get_powertoys_general_save_file_location(), [this] {
-                                toolbar.scheduleGeneralSettingsUpdate();
-                            } },
-    _moduleSettingsWatcher{ PTSettingsHelper::get_module_save_file_location(get_key()), [this] { toolbar.scheduleModuleSettingsUpdate(); } }
+VideoConferenceModule::VideoConferenceModule()
 {
     init_settings();
     _settingsUpdateChannel =
@@ -524,6 +520,15 @@ void VideoConferenceModule::enable()
 {
     if (!_enabled)
     {
+        _generalSettingsWatcher = std::make_unique<FileWatcher> (
+            PTSettingsHelper::get_powertoys_general_save_file_location(), [this] {
+            toolbar.scheduleGeneralSettingsUpdate();
+            });
+        _moduleSettingsWatcher = std::make_unique<FileWatcher> (
+            PTSettingsHelper::get_module_save_file_location(get_key()), [this] {
+                toolbar.scheduleModuleSettingsUpdate();
+            });
+
         toggleProxyCamRegistration(true);
         toolbar.setMicrophoneMute(getMicrophoneMuteState());
         toolbar.setCameraMute(getVirtualCameraMuteState());
@@ -572,6 +577,8 @@ void VideoConferenceModule::disable()
 {
     if (_enabled)
     {
+        _generalSettingsWatcher.reset();
+        _moduleSettingsWatcher.reset();
         toggleProxyCamRegistration(false);
         if (hook_handle)
         {

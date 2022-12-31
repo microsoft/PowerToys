@@ -255,6 +255,11 @@ namespace FancyZonesEditor
 
         private void UpdateFromSnappyHelpers()
         {
+            if (ZoneIndex >= Model.Zones.Count)
+            {
+                return;
+            }
+
             Int32Rect rect = Model.Zones[ZoneIndex];
 
             if (snappyX != null)

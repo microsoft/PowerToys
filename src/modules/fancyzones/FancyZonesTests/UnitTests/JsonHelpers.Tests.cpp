@@ -239,8 +239,8 @@ namespace FancyZonesUnitTests
 
         TEST_METHOD (FromJsonInvalidTypes)
         {
-            json::JsonObject m_json = json::JsonObject::Parse(L"{\"ref-width\": true, \"ref-height\": \"string\", \"zones\": [{\"X\": \"11\", \"Y\": \"22\", \"width\": \".\", \"height\": \"*\"}, {\"X\": null, \"Y\": {}, \"width\": [], \"height\": \"абвгд\"}]}");
-            Assert::IsFalse(CanvasLayoutInfoJSON::FromJson(m_json).has_value());
+            json::JsonObject local_json = json::JsonObject::Parse(L"{\"ref-width\": true, \"ref-height\": \"string\", \"zones\": [{\"X\": \"11\", \"Y\": \"22\", \"width\": \".\", \"height\": \"*\"}, {\"X\": null, \"Y\": {}, \"width\": [], \"height\": \"абвгд\"}]}");
+            Assert::IsFalse(CanvasLayoutInfoJSON::FromJson(local_json).has_value());
         }
     };
 

@@ -21,7 +21,13 @@
 #include <mutex>
 #include <fileapi.h>
 
+// disabling warning 4458 - declaration of 'identifier' hides class member
+// to avoid warnings from GDI files - can't add winRT directory to external code
+// in the Cpp.Build.props
+#pragma warning(push)
+#pragma warning(disable : 4458)
 #include <gdiplus.h>
+#pragma warning(pop)
 
 // Non-Localizable strings
 namespace NonLocalizable
@@ -58,7 +64,6 @@ namespace
         }
 
     public:
-
         HWND NewZonesOverlayWindow(Rect position, HINSTANCE hinstance, WorkArea* owner)
         {
             HWND windowFromPool = ExtractWindow();
@@ -201,7 +206,7 @@ void WorkArea::MoveWindowIntoZoneByIndex(HWND window, ZoneIndex index) noexcept
     MoveWindowIntoZoneByIndexSet(window, { index });
 }
 
-void WorkArea::MoveWindowIntoZoneByIndexSet(HWND window, const ZoneIndexSet& indexSet) noexcept
+void WorkArea::MoveWindowIntoZoneByIndexSet(HWND window, const ZoneIndexSet& indexSet, bool updatePosition /* = true*/) noexcept
 {
     if (!m_layout || !m_layoutWindows || m_layout->Zones().empty() || indexSet.empty())
     {
@@ -209,9 +214,13 @@ void WorkArea::MoveWindowIntoZoneByIndexSet(HWND window, const ZoneIndexSet& ind
     }
 
     FancyZonesWindowUtils::SaveWindowSizeAndOrigin(window);
-    auto rect = m_layout->GetCombinedZonesRect(indexSet);
-    auto adjustedRect = FancyZonesWindowUtils::AdjustRectForSizeWindowToRect(window, rect, m_window);
-    FancyZonesWindowUtils::SizeWindowToRect(window, adjustedRect);
+
+    if (updatePosition)
+    {
+        auto rect = m_layout->GetCombinedZonesRect(indexSet);
+        auto adjustedRect = FancyZonesWindowUtils::AdjustRectForSizeWindowToRect(window, rect, m_window);
+        FancyZonesWindowUtils::SizeWindowToRect(window, adjustedRect);
+    }
 
     m_layoutWindows->Assign(window, indexSet);
     FancyZonesWindowProperties::StampZoneIndexProperty(window, indexSet);
@@ -239,7 +248,7 @@ bool WorkArea::MoveWindowIntoZoneByDirectionAndIndex(HWND window, DWORD vkCode, 
         ZoneIndex oldId = zoneIndexes[0];
 
         // We reached the edge
-        if ((vkCode == VK_LEFT && oldId == 0) || (vkCode == VK_RIGHT && oldId == numZones - 1))
+        if ((vkCode == VK_LEFT && oldId == 0) || (vkCode == VK_RIGHT && oldId == static_cast<int64_t>(numZones) - 1))
         {
             if (!cycle)
             {
@@ -266,7 +275,7 @@ bool WorkArea::MoveWindowIntoZoneByDirectionAndIndex(HWND window, DWORD vkCode, 
     {
         SaveWindowProcessToZoneIndex(window);
     }
-    
+
     return true;
 }
 
@@ -280,7 +289,7 @@ bool WorkArea::MoveWindowIntoZoneByDirectionAndPosition(HWND window, DWORD vkCod
     const auto& zones = m_layout->Zones();
     std::vector<bool> usedZoneIndices(zones.size(), false);
     auto windowZones = m_layoutWindows->GetZoneIndexSetFromWindow(window);
-    
+
     for (ZoneIndex id : windowZones)
     {
         usedZoneIndices[id] = true;
@@ -453,6 +462,22 @@ void WorkArea::SaveWindowProcessToZoneIndex(HWND window) noexcept
     }
 }
 
+bool WorkArea::UnsnapWindow(HWND window) noexcept
+{
+    if (!m_layoutWindows)
+    {
+        return false;    
+    }
+    
+    if (!m_layoutWindows->GetZoneIndexSetFromWindow(window).empty())
+    {
+        m_layoutWindows->Dismiss(window);
+        return true;
+    }
+
+    return false;
+}
+
 ZoneIndexSet WorkArea::GetWindowZoneIndexes(HWND window) const noexcept
 {
     if (m_layout)
@@ -557,7 +582,7 @@ bool WorkArea::InitWindow(HINSTANCE hinstance) noexcept
 void WorkArea::InitLayout(const FancyZonesDataTypes::WorkAreaId& parentUniqueId) noexcept
 {
     Logger::info(L"Initialize layout on {}", m_uniqueId.toString());
-    
+
     bool isLayoutAlreadyApplied = AppliedLayouts::instance().IsLayoutApplied(m_uniqueId);
     if (!isLayoutAlreadyApplied)
     {
@@ -570,7 +595,7 @@ void WorkArea::InitLayout(const FancyZonesDataTypes::WorkAreaId& parentUniqueId)
             AppliedLayouts::instance().ApplyDefaultLayout(m_uniqueId);
         }
     }
-    
+
     CalculateZoneSet();
 }
 
@@ -662,4 +687,3 @@ LRESULT CALLBACK WorkArea::s_WndProc(HWND window, UINT message, WPARAM wparam, L
     return (thisRef != nullptr) ? thisRef->WndProc(message, wparam, lparam) :
                                   DefWindowProc(window, message, wparam, lparam);
 }
-

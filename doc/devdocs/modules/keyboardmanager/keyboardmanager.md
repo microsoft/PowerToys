@@ -1,24 +1,27 @@
 # Keyboard Manager module
 This file contains the documentation for the KeyboardManager PowerToy module which is called by the runner.
 ## Table of Contents:
-1. [Class members](#Class-members)
-2. [Enable/Disable](#Enable/disable)
-3. [Settings format](#Settings-format)
-4. [Loading settings](#Loading-settings)
-5. [Low level keyboard hook handler](#Low-level-keyboard-hook-handler)
-6. [Custom Action to launch KBM UI](#Custom-Action-to-launch-KBM-UI)
-7. [SendInput Special Scenarios](#SendInput-Special-Scenarios)
-    1. [Extended keys](#Extended-keys)
-    2. [Scan code](#Scan-code)
-8. [Special Scenarios](#Special-Scenarios)
-    1. [Dummy key events](#Dummy-key-events)
-    2. [Suppressing Num Lock in a keyboard hook](#Suppressing-Num-Lock-in-a-keyboard-hook)
-    3. [Modifier-Caps Lock interaction on Japanese IME keyboards](#Modifier-Caps-Lock-interaction-on-Japanese-IME-keyboards)
-    4. [UIPI Issues (not resolved)](#UIPI-Issues-(not-resolved))
-9. [Other remapping approaches](#Other-remapping-approaches)
-    1. [Registry approach](#Registry-approach)
-    2. [Driver approach](#Driver-approach)
-10. [Telemetry](#Telemetry)
+- [Keyboard Manager module](#keyboard-manager-module)
+  - [Table of Contents:](#table-of-contents)
+  - [Class members](#class-members)
+  - [Enable/Disable](#enabledisable)
+  - [Settings format](#settings-format)
+  - [Loading settings](#loading-settings)
+  - [Low level keyboard hook handler](#low-level-keyboard-hook-handler)
+  - [HandleKeyboardHookEvent](#handlekeyboardhookevent)
+  - [Custom Action to launch KBM UI](#custom-action-to-launch-kbm-ui)
+  - [SendInput Special Scenarios](#sendinput-special-scenarios)
+    - [Extended keys](#extended-keys)
+    - [Scan code](#scan-code)
+  - [Special Scenarios](#special-scenarios)
+    - [Dummy key events](#dummy-key-events)
+    - [Suppressing Num Lock in a keyboard hook](#suppressing-num-lock-in-a-keyboard-hook)
+    - [Modifier-Caps Lock interaction on Japanese IME keyboards](#modifier-caps-lock-interaction-on-japanese-ime-keyboards)
+    - [UIPI Issues (not resolved)](#uipi-issues-not-resolved)
+  - [Other remapping approaches](#other-remapping-approaches)
+    - [Registry approach](#registry-approach)
+    - [Driver approach](#driver-approach)
+  - [Telemetry](#telemetry)
 
 ## Class members
 The `KeyboardManager` module has [3 main class members](https://github.com/microsoft/PowerToys/blob/b80578b1b9a4b24c9945bddac33c771204280107/src/modules/keyboardmanager/dll/dllmain.cpp#L54-L61):
@@ -179,7 +182,7 @@ While the above work around fixes most of the cases, there are still some scenar
 Other approaches for remapping which were deprioritized are:
 
 ### Registry approach
-This method is used by [SharpKeys](https://github.com/randyrants/sharpkeys) and involves using the [Microsoft Keyboard Scancode mapper registry key](https://github.com/randyrants/sharpkeys) to remap keys based on their scan codes. This has the advantage of being applied in all scenarios and not facing any elevation or UAC issues, however the disadvantages are that for modifying the settings the process must run elevated (as it modifies HKLM registry) and it requires a reboot to get applied. Another issue which is an advantage/disadvantage for users is that the process does not need to be running, so the remaps are applied all the time, including at the password prompt on logging in to the user's Windows account, which could get a user stuck if they orphaned a key in their password. This registry doesn't have any support for remapping shortcuts either, so the hook approach was prioritized over this.
+This method is used by [SharpKeys](https://github.com/randyrants/sharpkeys) and involves using the [Microsoft Keyboard Scancode mapper registry key](https://github.com/randyrants/sharpkeys) to remap keys based on their scan codes. This has the advantage of being applied in all scenarios and not facing any elevation or UAC issues, however the disadvantages are that for modifying the settings the process must run elevated (as it modifies HKLM registry) and it requires a reboot to get applied. Another issue which is an advantage/disadvantage for users is that the process does not need to be running, so the remaps are applied all the time, including at the password prompt on logging into the user's Windows account, which could get a user stuck if they orphaned a key in their password. This registry doesn't have any support for remapping shortcuts either, so the hook approach was prioritized over this.
 
 ### Driver approach
 Using a driver approach has the benefit of not depending on precedence orders as KBM could always run before low level hooks, and it also has the benefit of differentiating between different keyboards, allowing [multi keyboard-specific remaps](https://github.com/microsoft/PowerToys/issues/1460). The disadvantages are however that any bug or crash could have system level consequences. [Interception](https://github.com/oblitum/Interception) is an open source driver that could be used for implementing this. The approach was deprioritized due to the potential side effects.

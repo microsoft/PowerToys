@@ -53,7 +53,8 @@ namespace WindowMoveHandlerUtils
 WindowMoveHandler::WindowMoveHandler(const std::function<void()>& keyUpdateCallback) :
     m_mouseState(false),
     m_mouseHook(std::bind(&WindowMoveHandler::OnMouseDown, this)),
-    m_shiftKeyState(keyUpdateCallback),
+    m_leftShiftKeyState(keyUpdateCallback),
+    m_rightShiftKeyState(keyUpdateCallback),
     m_ctrlKeyState(keyUpdateCallback),
     m_keyUpdateCallback(keyUpdateCallback)
 {
@@ -88,7 +89,8 @@ void WindowMoveHandler::MoveSizeStart(HWND window, HMONITOR monitor, POINT const
         m_mouseHook.enable();
     }
 
-    m_shiftKeyState.enable();
+    m_leftShiftKeyState.enable();
+    m_rightShiftKeyState.enable();
     m_ctrlKeyState.enable();
 
     // This updates m_dragEnabled depending on if the shift key is being held down
@@ -132,11 +134,7 @@ void WindowMoveHandler::MoveSizeStart(HWND window, HMONITOR monitor, POINT const
     auto workArea = workAreaMap.find(monitor);
     if (workArea != workAreaMap.end())
     {
-        const auto& layoutWindows = workArea->second->GetLayoutWindows();
-        if (layoutWindows)
-        {
-            layoutWindows->Dismiss(window);
-        }
+        workArea->second->UnsnapWindow(window);
     }
 }
 
@@ -214,8 +212,12 @@ void WindowMoveHandler::MoveSizeEnd(HWND window, const std::unordered_map<HMONIT
         return;
     }
 
+    bool leftShiftPressed = m_leftShiftKeyState.state();
+    bool rightShiftPressed = m_rightShiftKeyState.state();
+
     m_mouseHook.disable();
-    m_shiftKeyState.disable();
+    m_leftShiftKeyState.disable();
+    m_rightShiftKeyState.disable();
     m_ctrlKeyState.disable();
 
     if (m_draggedWindowWorkArea)
@@ -235,6 +237,19 @@ void WindowMoveHandler::MoveSizeEnd(HWND window, const std::unordered_map<HMONIT
         }
         else
         {
+            if (FancyZonesSettings::settings().shiftDrag)
+            {
+                if (leftShiftPressed)
+                {
+                    SwallowKey(VK_LSHIFT);
+                }
+
+                if (rightShiftPressed)
+                {
+                    SwallowKey(VK_RSHIFT);
+                }
+            }
+
             workArea->MoveSizeEnd(m_draggedWindow);
         }
     }
@@ -270,6 +285,8 @@ void WindowMoveHandler::MoveSizeEnd(HWND window, const std::unordered_map<HMONIT
                         AppZoneHistory::instance().RemoveAppLastZone(window, workAreaPtr->UniqueId(), guidStr.value());
                     }
                 }
+
+                workAreaPtr->UnsnapWindow(window);
             }
         }
 
@@ -314,7 +331,7 @@ bool WindowMoveHandler::ExtendWindowByDirectionAndPosition(HWND window, DWORD vk
     return workArea && workArea->ExtendWindowByDirectionAndPosition(window, vkCode);
 }
 
-void WindowMoveHandler::UpdateWindowsPositions(const std::unordered_map<HMONITOR, std::shared_ptr<WorkArea>>& activeWorkAreas) noexcept
+void WindowMoveHandler::AssignWindowsToZones(const std::unordered_map<HMONITOR, std::shared_ptr<WorkArea>>& activeWorkAreas, bool updatePositions) noexcept
 {
     for (const auto& window : VirtualDesktop::instance().GetWindowsFromCurrentDesktop())
     {
@@ -327,7 +344,7 @@ void WindowMoveHandler::UpdateWindowsPositions(const std::unordered_map<HMONITOR
         auto monitor = MonitorFromWindow(window, MONITOR_DEFAULTTONULL);
         if (monitor && activeWorkAreas.contains(monitor))
         {
-            activeWorkAreas.at(monitor)->MoveWindowIntoZoneByIndexSet(window, zoneIndexSet);
+            activeWorkAreas.at(monitor)->MoveWindowIntoZoneByIndexSet(window, zoneIndexSet, updatePositions);
         }
     }
 }
@@ -360,11 +377,11 @@ void WindowMoveHandler::UpdateDragState() noexcept
 {
     if (FancyZonesSettings::settings().shiftDrag)
     {
-        m_dragEnabled = (m_shiftKeyState.state() ^ m_mouseState);
+        m_dragEnabled = ((m_leftShiftKeyState.state() || m_rightShiftKeyState.state()) ^ m_mouseState);
     }
     else
     {
-        m_dragEnabled = !(m_shiftKeyState.state() ^ m_mouseState);
+        m_dragEnabled = !((m_leftShiftKeyState.state() || m_rightShiftKeyState.state()) ^ m_mouseState);
     }
 }
 
@@ -409,4 +426,13 @@ void WindowMoveHandler::ResetWindowTransparency() noexcept
 
         m_windowTransparencyProperties.draggedWindow = nullptr;
     }
+}
+
+void WindowMoveHandler::SwallowKey(const WORD key) noexcept
+{
+    INPUT inputKey[1] = {};
+    inputKey[0].type = INPUT_KEYBOARD;
+    inputKey[0].ki.wVk = key;
+    inputKey[0].ki.dwFlags = KEYEVENTF_KEYUP;
+    SendInput(1, inputKey, sizeof(INPUT));
 }

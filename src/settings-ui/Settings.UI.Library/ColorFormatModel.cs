@@ -4,22 +4,34 @@
 
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
+using ManagedCommon;
 
 namespace Microsoft.PowerToys.Settings.UI.Library
 {
     public class ColorFormatModel : INotifyPropertyChanged
     {
         private string _name;
-        private string _example;
+        private string _format;
         private bool _isShown;
         private bool _canMoveUp = true;
         private bool _canMoveDown = true;
+        private bool _canBeDeleted = true;
+        private bool _isNew;
+        private bool _isValid = true;
 
-        public ColorFormatModel(string name, string example, bool isShown)
+        public ColorFormatModel(string name, string format, bool isShown)
         {
             Name = name;
-            Example = example;
+            Format = format;
             IsShown = isShown;
+            IsNew = false;
+        }
+
+        public ColorFormatModel()
+        {
+            Format = "new Color (R = %Re, G = %Gr, B = %Bl)";
+            IsShown = true;
+            IsNew = true;
         }
 
         public string Name
@@ -32,21 +44,22 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             set
             {
                 _name = value;
-                OnPropertyChanged();
+                OnPropertyChanged(nameof(Name));
             }
         }
 
-        public string Example
+        public string Format
         {
             get
             {
-                return _example;
+                return _format;
             }
 
             set
             {
-                _example = value;
-                OnPropertyChanged();
+                _format = value;
+                OnPropertyChanged(nameof(Format));
+                OnPropertyChanged(nameof(Example));
             }
         }
 
@@ -60,7 +73,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             set
             {
                 _isShown = value;
-                OnPropertyChanged();
+                OnPropertyChanged(nameof(IsShown));
             }
         }
 
@@ -73,8 +86,11 @@ namespace Microsoft.PowerToys.Settings.UI.Library
 
             set
             {
-                _canMoveUp = value;
-                OnPropertyChanged();
+                if (value != _canMoveUp)
+                {
+                    _canMoveUp = value;
+                    OnPropertyChanged(nameof(CanMoveUp));
+                }
             }
         }
 
@@ -87,8 +103,69 @@ namespace Microsoft.PowerToys.Settings.UI.Library
 
             set
             {
-                _canMoveDown = value;
-                OnPropertyChanged();
+                if (value != _canMoveDown)
+                {
+                    _canMoveDown = value;
+                    OnPropertyChanged(nameof(CanMoveDown));
+                }
+            }
+        }
+
+        public bool CanBeDeleted
+        {
+            get
+            {
+                return _canBeDeleted;
+            }
+
+            set
+            {
+                if (value != _canBeDeleted)
+                {
+                    _canBeDeleted = value;
+                    OnPropertyChanged(nameof(CanBeDeleted));
+                }
+            }
+        }
+
+        public bool IsNew
+        {
+            get
+            {
+                return _isNew;
+            }
+
+            set
+            {
+                _isNew = value;
+                OnPropertyChanged(nameof(IsNew));
+            }
+        }
+
+        public bool IsValid
+        {
+            get
+            {
+                return _isValid;
+            }
+
+            set
+            {
+                _isValid = value;
+                OnPropertyChanged(nameof(IsValid));
+            }
+        }
+
+        public string Example
+        {
+            get
+            {
+                // get string representation in 2 steps. First replace all color specific number values then in 2nd step replace color name with localisation
+                return Helpers.ColorNameHelper.ReplaceName(ColorFormatHelper.GetStringRepresentation(null, _format), null);
+            }
+
+            set
+            {
             }
         }
 

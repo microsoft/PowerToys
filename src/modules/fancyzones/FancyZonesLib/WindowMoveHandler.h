@@ -23,7 +23,7 @@ public:
     bool MoveWindowIntoZoneByDirectionAndPosition(HWND window, DWORD vkCode, bool cycle, std::shared_ptr<WorkArea> workArea) noexcept;
     bool ExtendWindowByDirectionAndPosition(HWND window, DWORD vkCode, std::shared_ptr<WorkArea> workArea) noexcept;
 
-    void UpdateWindowsPositions(const std::unordered_map<HMONITOR, std::shared_ptr<WorkArea>>& activeWorkAreas) noexcept;
+    void AssignWindowsToZones(const std::unordered_map<HMONITOR, std::shared_ptr<WorkArea>>& activeWorkAreas, bool updatePositions) noexcept;
     
     inline void OnMouseDown() noexcept
     {
@@ -65,6 +65,7 @@ private:
 
     void SetWindowTransparency(HWND window) noexcept;
     void ResetWindowTransparency() noexcept;
+    void SwallowKey(const WORD key) noexcept;
 
     bool m_inDragging{}; // Whether or not a move/size operation is currently active
     HWND m_draggedWindow{}; // The window that is being moved/sized
@@ -76,7 +77,8 @@ private:
 
     std::atomic<bool> m_mouseState;
     SecondaryMouseButtonsHook m_mouseHook;
-    KeyState<VK_LSHIFT, VK_RSHIFT> m_shiftKeyState;
+    KeyState<VK_LSHIFT> m_leftShiftKeyState;
+    KeyState<VK_RSHIFT> m_rightShiftKeyState;
     KeyState<VK_LCONTROL, VK_RCONTROL> m_ctrlKeyState;
     std::function<void()> m_keyUpdateCallback;
 };

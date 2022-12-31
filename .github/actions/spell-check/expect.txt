@@ -63,6 +63,7 @@ APPIDS
 appium
 Applets
 Applicationcan
+applicationconfiguration
 applicationframehost
 Applist
 applog
@@ -75,6 +76,7 @@ appxpackage
 APSTUDIO
 AQS
 Aqtobe
+ARCHITEW
 arcosh
 ARemapped
 argb
@@ -90,6 +92,7 @@ Artsakh
 asdf
 AShortcut
 ASingle
+Asn
 ASSOCCHANGED
 ASYNCWINDOWPLACEMENT
 ASYNCWINDOWPOS
@@ -158,12 +161,12 @@ bpmf
 bpp
 bricelam
 BRIGHTGREEN
+Brotli
 Browsable
-brucelindbloom
 bsd
 bstr
 bti
-Btn
+btn
 BTNFACE
 Bto
 buf
@@ -199,13 +202,12 @@ CHILDACTIVATE
 CHILDWINDOW
 Choibalsan
 chrdavis
-chromaticities
 Chrzan
-CHT
+cht
 Chukotka
 Chuuk
-cielab
-ciexyz
+CIELAB
+CIEXYZ
 cim
 CImage
 cla
@@ -220,6 +222,10 @@ CLIPCHILDREN
 Clipperton
 CLIPSIBLINGS
 clrcall
+clrcompression
+clretwrc
+clrgc
+clrjit
 Cls
 CLSCTX
 clsid
@@ -234,6 +240,7 @@ CMock
 CMONITORS
 cmpgt
 cmyk
+Cng
 cnt
 Cocklebiddy
 coclass
@@ -254,13 +261,11 @@ comctl
 COMDAT
 comdef
 comdlg
-comhost
 cominterop
 commandline
 COMMANDTITLE
 commctrl
 Comoros
-companding
 COMPOSITIONFULL
 comsupp
 comsuppw
@@ -281,6 +286,7 @@ CONTROLL
 CONTROLPARENT
 Controlz
 copiedcolorrepresentation
+coreclr
 corewebview
 cortana
 cotaskmem
@@ -325,12 +331,10 @@ cwd
 cxfksword
 CXSMICON
 CXVIRTUALSCREEN
-cxxopts
 cyberrex
 CYSMICON
 CYVIRTUALSCREEN
 cziplib
-cziplob
 Dac
 dacl
 damienleroy
@@ -346,6 +350,7 @@ davidegiacometti
 Dayof
 Dbg
 Dbghelp
+dbgshim
 DBLCLKS
 DBLEPSILON
 DCapture
@@ -354,6 +359,7 @@ DCOM
 dcommon
 dcomp
 dcompi
+DCompiler
 DComposition
 DCR
 DDevice
@@ -388,7 +394,7 @@ DESKTOPABSOLUTEEDITING
 DESKTOPABSOLUTEPARSING
 desktopshorcutinstalled
 desktopwindowxamlsource
-DEU
+deu
 devblogs
 devdocs
 devenum
@@ -476,12 +482,11 @@ ENABLEDPOPUP
 endpointvolume
 endregion
 ENTERSIZEMOVE
-ENU
+enu
 enumerationoptions
 EOAC
 epicgames
 epu
-Eqn
 ERASEBKGND
 EREOF
 EResize
@@ -490,6 +495,7 @@ ERRORLEVEL
 ERRORTITLE
 ESettings
 esize
+esn
 esrp
 Eswatini
 etl
@@ -533,7 +539,6 @@ Faroe
 FARPROC
 fdw
 feimage
-ffaa
 fff
 fileapi
 FILEEXPLORER
@@ -552,7 +557,6 @@ FILEVERSION
 Filtergraph
 Filterkeyboard
 Filterx
-finalizer
 findfast
 firefox
 FIXEDFILEINFO
@@ -576,6 +580,8 @@ FZE
 gabime
 GAC
 gacutil
+Gaeilge
+Gaidhlig
 GBarm
 Gbits
 Gbps
@@ -616,6 +622,7 @@ HACCEL
 handlekeyboardhookevent
 handlerroutine
 hangeul
+Hankaku
 hanselman
 Hanzi
 Hardlines
@@ -640,6 +647,7 @@ hdc
 hdrop
 HEB
 Heiko
+Helpline
 helptext
 Heure
 HGFE
@@ -676,6 +684,8 @@ HOMEPATH
 homljgmgpmcbpjbnjpfijnhipfkiclkd
 HOOKPROC
 Hostbackdropbrush
+hostfxr
+hostpolicy
 hotkeycontrol
 hotkeys
 hotlight
@@ -747,6 +757,7 @@ IMAGERESIZEREXT
 imageresizerinput
 imageresizersettings
 imagingdevices
+Imc
 ime
 imeutil
 inetcpl
@@ -783,17 +794,15 @@ Intelli
 interactable
 Interlop
 INTRESOURCE
+Intrinsics
 INVALIDARG
 invalidoperatioexception
-iobjectwithsitesetsite
-iolewindowcontextsensitivehelp
 ipc
 ipcmanager
 IPlugin
 IPower
-ipreview
+IPREVIEW
 ipreviewhandler
-ipreviewhandlertranslateaccelerator
 ipreviewhandlervisualssetfont
 IProperty
 IPublic
@@ -821,7 +830,7 @@ jgeosdfsdsgmkedfgdfgdfgbkmhcgcflmi
 jjw
 jobject
 jpe
-JPN
+jpn
 jpnime
 JSONOf
 Jsons
@@ -844,7 +853,6 @@ keyevent
 KEYEVENTF
 keynum
 keyremaps
-keystokes
 Keytool
 keyup
 Khakassia
@@ -862,6 +870,7 @@ Kyrgyzstan
 Kyzylorda
 LAlt
 Lambson
+LANGID
 langword
 Lastdevice
 Laute
@@ -902,6 +911,7 @@ lmcons
 LMEM
 LMENU
 lnk
+LOADFROMFILE
 LOADLIBRARYASDATAFILE
 LOBYTE
 LOCALAPPDATA
@@ -913,6 +923,7 @@ LOCATIONCHANGE
 logconsole
 logfile
 LOGFONT
+LOGFONTW
 LOGMSG
 logon
 LOGPIXELSX
@@ -979,6 +990,8 @@ MAPPEDTOSAMEKEY
 MAPTOSAMESHORTCUT
 MAPVK
 Markdig
+markdownpreviewhandler
+MARKDOWNPREVIEWHANDLERCPP
 Markovic
 Marquesas
 martinchrzan
@@ -1011,6 +1024,7 @@ Metadatas
 metafile
 mfapi
 mfc
+mfcm
 mfidl
 mfobjects
 mfplat
@@ -1070,8 +1084,10 @@ mru
 msbuild
 msc
 msclr
-mscoree
+mscordaccore
+mscordbi
 mscorlib
+mscorrc
 msdata
 msedge
 MSGFLT
@@ -1084,6 +1100,7 @@ MSIXCA
 MSLLHOOKSTRUCT
 Mso
 msp
+msquic
 msrc
 msstore
 mst
@@ -1116,7 +1133,7 @@ NCMBUTTONDOWN
 NCMBUTTONUP
 NCMOUSELEAVE
 NCMOUSEMOVE
-ncol
+NCol
 NCPAINT
 NCRBUTTONDBLCLK
 NCRBUTTONDOWN
@@ -1133,13 +1150,14 @@ netcpl
 netframework
 netsetup
 netsh
+netstandard
 Neue
 newcolor
 newdev
 newitem
 newpath
 newrow
-newtonsoft
+Newtonsoft
 niels
 nielslaute
 NIF
@@ -1309,6 +1327,7 @@ pinvoke
 pipename
 Pitcairn
 PKBDLLHOOKSTRUCT
+Pkcs
 PKEY
 plib
 PLK
@@ -1409,6 +1428,7 @@ QUERYENDSESSION
 queryfocus
 QUERYOPEN
 QUEUESYNC
+Quic
 Quickime
 QUNS
 qwertyuiopasdfghjklzxcvbnm
@@ -1526,7 +1546,7 @@ runtimeclass
 runtimeconfig
 runtimeobject
 runtimes
-RUS
+rus
 Rutkas
 RValue
 rvm
@@ -1570,7 +1590,6 @@ SETFOCUS
 SETFOREGROUND
 SETICON
 setlocal
-Setrect
 SETREDRAW
 SETTEXT
 SETTINGCHANGE
@@ -1678,6 +1697,7 @@ srw
 srwlock
 sse
 ssf
+Ssl
 STACKFRAME
 stackoverflow
 stackpanel
@@ -1795,6 +1815,7 @@ THH
 THICKFRAME
 THISCOMPONENT
 THotkey
+thumbcache
 TILEDWINDOW
 timedate
 timediff
@@ -1857,6 +1878,7 @@ UIs
 Ulaanbaatar
 ULARGE
 ULONGLONG
+unassign
 uncompilable
 UNCPRIORITY
 UNDNAME
@@ -1868,7 +1890,7 @@ uniquifier
 Uniquifies
 unitconverter
 unittests
-unk
+Unk
 unknwn
 UNLEN
 Unmap
@@ -2003,7 +2025,6 @@ WINDOWPOSCHANGING
 Windowsapp
 WINDOWSBUILDNUMBER
 Windowscodecs
-windowsdesktop
 windowssearch
 windowssettings
 WINDOWSTYLES
@@ -2066,6 +2087,7 @@ workspaces
 wox
 wparam
 wpf
+wpfgfx
 wpftmp
 wpr
 wprp
@@ -2132,5 +2154,6 @@ zonable
 zoneset
 Zoneszonabletester
 Zonev
+zopfli
 Zykova
 zzz

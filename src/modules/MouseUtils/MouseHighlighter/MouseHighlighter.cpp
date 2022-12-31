@@ -204,6 +204,12 @@ void Highlighter::StartDrawingPointFading(MouseButton button)
 
 void Highlighter::ClearDrawing()
 {
+    if (nullptr == m_shape || nullptr == m_shape.Shapes())
+    {
+        // Guard against m_shape not being initialized.
+        return;
+    }
+
     m_shape.Shapes().Clear();
 }
 

@@ -31,7 +31,7 @@ using Logger = NLog.Logger;
 
 namespace Awake
 {
-    internal class Program
+    internal sealed class Program
     {
         // PowerToys Awake build code name. Used for exact logging
         // that does not map to PowerToys broad version schema to pinpoint
@@ -44,6 +44,8 @@ namespace Awake
         private static Mutex? _mutex;
         private static FileSystemWatcher? _watcher;
         private static SettingsUtils? _settingsUtils;
+
+        private static bool _startedFromPowerToys;
 
         public static Mutex LockMutex { get => _mutex; set => _mutex = value; }
 
@@ -189,6 +191,10 @@ namespace Awake
                 _log.Info("No PID specified. Allocating console...");
                 APIHelper.AllocateConsole();
             }
+            else
+            {
+                _startedFromPowerToys = true;
+            }
 
             _log.Info($"The value for --use-pt-config is: {usePtConfig}");
             _log.Info($"The value for --display-on is: {displayOn}");
@@ -239,7 +245,7 @@ namespace Awake
                         .Select(e => e.EventArgs)
                         .Subscribe(HandleAwakeConfigChange);
 
-                    TrayHelper.SetTray(InternalConstants.FullAppName, new AwakeSettings());
+                    TrayHelper.SetTray(InternalConstants.FullAppName, new AwakeSettings(), _startedFromPowerToys);
 
                     // Initially the file might not be updated, so we need to start processing
                     // settings right away.
@@ -331,7 +337,7 @@ namespace Awake
                             }
                     }
 
-                    TrayHelper.SetTray(InternalConstants.FullAppName, settings);
+                    TrayHelper.SetTray(InternalConstants.FullAppName, settings, _startedFromPowerToys);
                 }
                 else
                 {

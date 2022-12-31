@@ -20,7 +20,7 @@ namespace Wox.Test.Plugins
             var mock = new Mock<IPublicAPI>();
             var pluginInitContext = new PluginInitContext() { API = mock.Object };
             var contextMenuLoader = new ContextMenuLoader(pluginInitContext);
-            var searchResult = new SearchResult() { Type = ResultType.Folder, FullPath = "C:/DummyFolder" };
+            var searchResult = new SearchResult() { Type = ResultType.Folder, Path = "C:/DummyFolder" };
             var result = new Result() { ContextData = searchResult };
 
             // Act
@@ -39,7 +39,7 @@ namespace Wox.Test.Plugins
             var mock = new Mock<IPublicAPI>();
             var pluginInitContext = new PluginInitContext() { API = mock.Object };
             var contextMenuLoader = new ContextMenuLoader(pluginInitContext);
-            var searchResult = new SearchResult() { Type = ResultType.File, FullPath = "C:/DummyFile.cs" };
+            var searchResult = new SearchResult() { Type = ResultType.File, Path = "C:/DummyFile.cs" };
             var result = new Result() { ContextData = searchResult };
 
             // Act

@@ -7,6 +7,7 @@ using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 using System.IO.Abstractions;
+using System.Net.NetworkInformation;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Text.Json;
@@ -160,6 +161,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         private bool _isNewVersionDownloading;
         private bool _isNewVersionChecked;
+        private bool _isNoNetwork;
 
         private bool _settingsBackupRestoreMessageVisible;
         private string _settingsBackupMessage;
@@ -417,16 +419,16 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
                     var resultText = string.Empty;
 
-                    if (!results.lastRan.HasValue)
+                    if (!results.LastRan.HasValue)
                     {
                         // not ran since started.
                         return GetResourceString("General_SettingsBackupAndRestore_CurrentSettingsNoChecked"); // "Current Settings Unknown";
                     }
                     else
                     {
-                        if (results.success)
+                        if (results.Success)
                         {
-                            if (results.lastBackupExists)
+                            if (results.LastBackupExists)
                             {
                                 // if true, it means a backup would have been made
                                 resultText = GetResourceString("General_SettingsBackupAndRestore_CurrentSettingsDiffer"); // "Current Settings Differ";
@@ -439,7 +441,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                         }
                         else
                         {
-                            if (results.hadError)
+                            if (results.HadError)
                             {
                                 // if false and error we don't really know
                                 resultText = GetResourceString("General_SettingsBackupAndRestore_CurrentSettingsUnknown"); // "Current Settings Unknown";
@@ -451,7 +453,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                             }
                         }
 
-                        return $"{resultText} {GetResourceString("General_SettingsBackupAndRestore_CurrentSettingsStatusAt")} {results.lastRan.Value.ToLocalTime().ToString("G", CultureInfo.CurrentCulture)}";
+                        return $"{resultText} {GetResourceString("General_SettingsBackupAndRestore_CurrentSettingsStatusAt")} {results.LastRan.Value.ToLocalTime().ToString("G", CultureInfo.CurrentCulture)}";
                     }
                 }
                 catch (Exception e)
@@ -593,6 +595,14 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             }
         }
 
+        public bool IsNoNetwork
+        {
+            get
+            {
+                return _isNoNetwork;
+            }
+        }
+
         public bool SettingsBackupRestoreMessageVisible
         {
             get
@@ -674,13 +684,13 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             }
 
             var results = SettingsUtils.RestoreSettings();
-            _backupRestoreMessageSeverity = results.severity;
+            _backupRestoreMessageSeverity = results.Severity;
 
-            if (!results.success)
+            if (!results.Success)
             {
                 _settingsBackupRestoreMessageVisible = true;
 
-                _settingsBackupMessage = GetResourceString(results.message);
+                _settingsBackupMessage = GetResourceString(results.Message);
 
                 NotifyAllBackupAndRestoreProperties();
 
@@ -711,8 +721,8 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             var results = SettingsUtils.BackupSettings();
 
             _settingsBackupRestoreMessageVisible = true;
-            _backupRestoreMessageSeverity = results.severity;
-            _settingsBackupMessage = GetResourceString(results.message);
+            _backupRestoreMessageSeverity = results.Severity;
+            _settingsBackupMessage = GetResourceString(results.Message);
 
             // now we do a dry run to get the results for "setting match"
             var settingsUtils = new SettingsUtils();
@@ -738,6 +748,23 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         // callback function to launch the URL to check for updates.
         private void CheckForUpdatesClick()
         {
+            // check if network is available
+            bool isNetAvailable = IsNetworkAvailable();
+
+            // check if the state changed
+            bool prevState = _isNoNetwork;
+            _isNoNetwork = !isNetAvailable;
+            if (prevState != _isNoNetwork)
+            {
+                NotifyPropertyChanged(nameof(IsNoNetwork));
+            }
+
+            if (!isNetAvailable)
+            {
+                _isNewVersionDownloading = false;
+                return;
+            }
+
             RefreshUpdatingState();
             IsNewVersionDownloading = string.IsNullOrEmpty(UpdatingSettingsConfig.DownloadedInstallerFilename);
             NotifyPropertyChanged(nameof(IsDownloadAllowed));
@@ -886,6 +913,49 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
                 NotifyPropertyChanged(nameof(IsDownloadAllowed));
             }
+        }
+
+        /// <summary>
+        /// Indicates whether any network connection is available
+        /// Filter virtual network cards.
+        /// </summary>
+        /// <returns>
+        ///     <c>true</c> if a network connection is available; otherwise, <c>false</c>.
+        /// </returns>
+        public static bool IsNetworkAvailable()
+        {
+            if (!NetworkInterface.GetIsNetworkAvailable())
+            {
+                return false;
+            }
+
+            foreach (NetworkInterface ni in NetworkInterface.GetAllNetworkInterfaces())
+            {
+                // discard because of standard reasons
+                if ((ni.OperationalStatus != OperationalStatus.Up) ||
+                    (ni.NetworkInterfaceType == NetworkInterfaceType.Loopback) ||
+                    (ni.NetworkInterfaceType == NetworkInterfaceType.Tunnel))
+                {
+                    continue;
+                }
+
+                // discard virtual cards (virtual box, virtual pc, etc.)
+                if (ni.Description.Contains("virtual", StringComparison.OrdinalIgnoreCase) ||
+                    ni.Name.Contains("virtual", StringComparison.OrdinalIgnoreCase))
+                {
+                    continue;
+                }
+
+                // discard "Microsoft Loopback Adapter", it will not show as NetworkInterfaceType.Loopback but as Ethernet Card.
+                if (ni.Description.Equals("Microsoft Loopback Adapter", StringComparison.OrdinalIgnoreCase))
+                {
+                    continue;
+                }
+
+                return true;
+            }
+
+            return false;
         }
     }
 }

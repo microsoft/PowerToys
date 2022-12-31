@@ -2,7 +2,7 @@
   <Import Project="..\..\Version.props" />
   
   <PropertyGroup>
-    <TargetFramework>net6.0-windows</TargetFramework>
+    <TargetFramework>net7.0-windows</TargetFramework>
 	<RuntimeIdentifiers>win-x64;win-arm64</RuntimeIdentifiers>
     <UseWPF>true</UseWPF>
     <AssemblyName>PowerToys.Common.UI</AssemblyName>
@@ -15,5 +15,6 @@
   <ItemGroup>
     <ProjectReference Include="..\ManagedCommon\ManagedCommon.csproj" />
   </ItemGroup>
+
 
 </Project>

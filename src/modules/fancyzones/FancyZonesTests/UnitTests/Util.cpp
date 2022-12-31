@@ -81,7 +81,7 @@ DWORD WINAPI ThreadProc(LPVOID lpParam)
     MSG messages;
     Mocks::HwndCreator* creator = reinterpret_cast<Mocks::HwndCreator*>(lpParam);
     if (!creator)
-        return -1;
+        return static_cast<DWORD>(-1);
 
     if (RegisterDLLWindowClass((LPCWSTR)creator->getWindowClassName().c_str(), creator) != 0)
     {

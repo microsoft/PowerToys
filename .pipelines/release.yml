@@ -22,6 +22,7 @@ parameters:
 
 variables:
   IsPipeline: 1 # The installer uses this to detect whether it should pick up localizations
+  SkipCppCodeAnalysis: 1 # Skip the code analysis to speed up release CI. It runs on PR CI, anyway
 
 name: $(BuildDefinitionName)_$(date:yyMM).$(date:dd)$(rev:rrr)
 resources:
@@ -38,7 +39,8 @@ jobs:
           ${{ config }}_${{ platform }}:
             BuildConfiguration: ${{ config }}
             BuildPlatform: ${{ platform }}
-            useAllCPUsWhileBuildingPowerToys: ${{ ne(platform, 'arm64') }} # Multi processor build for arm64 is broken in the latest pipelines update
+            NUGET_RESTORE_MSBUILD_ARGS: /p:Platform=${{ platform }} # Required for nuget to work due to self contained
+            NODE_OPTIONS: --max_old_space_size=16384
   displayName: Build
   timeoutInMinutes: 120 # Some of the loc stuff adds quite a bit of time.
   cancelTimeoutInMinutes: 1
@@ -63,14 +65,12 @@ jobs:
       version: '2.1.x'
 
   - task: UseDotNet@2
-    displayName: 'Use .NET 6 SDK'
+    displayName: 'Use .NET 7 SDK'
     inputs:
       packageType: sdk
-      version: '6.x'
+      version: '7.x'
 
   - task: NuGetAuthenticate@0
-    inputs:
-      nuGetServiceConnections: PowerToysCDPxFeed
       
   - task: NuGetToolInstaller@1
     displayName: Use NuGet Installer latest
@@ -135,11 +135,11 @@ jobs:
     inputs:
       solution: '**\PowerToys.sln'
       vsVersion: 17.0
-      msbuildArgs: /p:CIBuild=true /bl:$(Build.SourcesDirectory)\msbuild.binlog -m:2
+      msbuildArgs: /p:CIBuild=true /bl:$(Build.SourcesDirectory)\msbuild.binlog
       platform: $(BuildPlatform)
       configuration: $(BuildConfiguration)
       clean: true
-      maximumCpuCount: '$(useAllCPUsWhileBuildingPowerToys)'
+      maximumCpuCount: true
 
   - task: VSBuild@1
     displayName: Build BugReportTool
@@ -548,7 +548,7 @@ jobs:
   - task: PublishBuildArtifacts@1
     displayName: 'Publish Artifact: GPO Files'
     inputs:
-      PathtoPublish: doc\gpo\assets
+      PathtoPublish: src\gpo\assets
       ArtifactName: GroupPolicyObjectsFiles
 
 

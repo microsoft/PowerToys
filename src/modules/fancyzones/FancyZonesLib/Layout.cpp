@@ -69,7 +69,7 @@ namespace ZoneSelectionAlgorithms
             zoneIndex = (static_cast<ZoneIndex>(pt.x) - overlap.left) * capturedZones.size() / width;
         }
 
-        zoneIndex = std::clamp(zoneIndex, ZoneIndex(0), static_cast<ZoneIndex>(capturedZones.size()) - 1);
+        zoneIndex = std::clamp(zoneIndex, static_cast<ZoneIndex>(0), static_cast<ZoneIndex>(capturedZones.size()) - 1);
 
         return { capturedZones[zoneIndex] };
     }
@@ -267,7 +267,7 @@ ZoneIndexSet Layout::GetCombinedZoneRange(const ZoneIndexSet& initialZones, cons
     ZoneIndexSet combinedZones, result;
     std::set_union(begin(initialZones), end(initialZones), begin(finalZones), end(finalZones), std::back_inserter(combinedZones));
 
-    RECT boundingRect;
+    RECT boundingRect{};
     bool boundingRectEmpty = true;
 
     for (ZoneIndex zoneId : combinedZones)

@@ -1,7 +1,10 @@
-﻿// Copyright (c) Microsoft Corporation
+// Copyright (c) Microsoft Corporation
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System.Globalization;
+using System.Text;
+using System.Unicode;
 using System.Windows;
 using PowerAccent.Core.Services;
 using PowerAccent.Core.Tools;
@@ -13,23 +16,41 @@ public class PowerAccent : IDisposable
 {
     private readonly SettingsService _settingService;
 
+    // Keys that show a description (like dashes) when ShowCharacterInfoSetting is 1
+    private readonly LetterKey[] _letterKeysShowingDescription = new LetterKey[] { LetterKey.VK_O };
+
     private bool _visible;
-    private char[] _characters = Array.Empty<char>();
+    private string[] _characters = Array.Empty<string>();
+    private string[] _characterDescriptions = Array.Empty<string>();
     private int _selectedIndex = -1;
+    private bool _showUnicodeDescription;
 
-    public event Action<bool, char[]> OnChangeDisplay;
+    public LetterKey[] LetterKeysShowingDescription => _letterKeysShowingDescription;
 
-    public event Action<int, char> OnSelectCharacter;
+    public bool ShowUnicodeDescription => _showUnicodeDescription;
 
-    private KeyboardListener _keyboardListener;
+    public string[] CharacterDescriptions => _characterDescriptions;
+
+    public event Action<bool, string[]> OnChangeDisplay;
+
+    public event Action<int, string> OnSelectCharacter;
+
+    private readonly KeyboardListener _keyboardListener;
 
     public PowerAccent()
     {
+        LoadUnicodeInfoCache();
+
         _keyboardListener = new KeyboardListener();
         _keyboardListener.InitHook();
         _settingService = new SettingsService(_keyboardListener);
 
         SetEvents();
+    }
+
+    private void LoadUnicodeInfoCache()
+    {
+        UnicodeInfo.GetCharInfo(0);
     }
 
     private void SetEvents()
@@ -50,11 +71,11 @@ public class PowerAccent : IDisposable
             });
         }));
 
-        _keyboardListener.SetNextCharEvent(new PowerToys.PowerAccentKeyboardService.NextChar((TriggerKey triggerKey) =>
+        _keyboardListener.SetNextCharEvent(new PowerToys.PowerAccentKeyboardService.NextChar((TriggerKey triggerKey, bool shiftPressed) =>
         {
             System.Windows.Application.Current.Dispatcher.Invoke(() =>
             {
-                ProcessNextChar(triggerKey);
+                ProcessNextChar(triggerKey, shiftPressed);
             });
         }));
 
@@ -68,14 +89,80 @@ public class PowerAccent : IDisposable
     {
         _visible = true;
         _characters = (WindowsFunctions.IsCapsLockState() || WindowsFunctions.IsShiftState()) ? ToUpper(Languages.GetDefaultLetterKey(letterKey, _settingService.SelectedLang)) : Languages.GetDefaultLetterKey(letterKey, _settingService.SelectedLang);
+        _characterDescriptions = GetCharacterDescriptions(_characters);
+
+        _showUnicodeDescription = _settingService.ShowUnicodeDescription;
+
         Task.Delay(_settingService.InputTime).ContinueWith(
-            t =>
+        t =>
+        {
+            if (_visible)
             {
-                if (_visible)
-                {
-                    OnChangeDisplay?.Invoke(true, _characters);
-                }
-            }, TaskScheduler.FromCurrentSynchronizationContext());
+                OnChangeDisplay?.Invoke(true, _characters);
+            }
+        },
+        TaskScheduler.FromCurrentSynchronizationContext());
+    }
+
+    private string GetCharacterDescription(string character)
+    {
+        List<UnicodeCharInfo> unicodeList = new List<UnicodeCharInfo>();
+        foreach (var codePoint in character.AsCodePointEnumerable())
+        {
+            unicodeList.Add(UnicodeInfo.GetCharInfo(codePoint));
+        }
+
+        if (unicodeList.Count == 0)
+        {
+            return string.Empty;
+        }
+
+        var description = new StringBuilder();
+        if (unicodeList.Count == 1)
+        {
+            var unicode = unicodeList.First();
+            var charUnicodeNumber = unicode.CodePoint.ToString("X4", CultureInfo.InvariantCulture);
+            description.AppendFormat(CultureInfo.InvariantCulture, "(U+{0}) {1} ", charUnicodeNumber, unicode.Name);
+
+            return description.ToString();
+        }
+
+        var displayTextAndCodes = new StringBuilder();
+        var names = new StringBuilder();
+        foreach (var unicode in unicodeList)
+        {
+            var charUnicodeNumber = unicode.CodePoint.ToString("X4", CultureInfo.InvariantCulture);
+            if (displayTextAndCodes.Length > 0)
+            {
+                displayTextAndCodes.Append(" - ");
+            }
+
+            displayTextAndCodes.AppendFormat(CultureInfo.InvariantCulture, "{0}: (U+{1})", unicode.GetDisplayText(), charUnicodeNumber);
+
+            if (names.Length > 0)
+            {
+                names.Append(", ");
+            }
+
+            names.Append(unicode.Name);
+        }
+
+        description.Append(displayTextAndCodes);
+        description.Append(": ");
+        description.Append(names);
+
+        return description.ToString();
+    }
+
+    private string[] GetCharacterDescriptions(string[] characters)
+    {
+        string[] charInfoCollection = Array.Empty<string>();
+        foreach (string character in characters)
+        {
+            charInfoCollection = charInfoCollection.Append<string>(GetCharacterDescription(character)).ToArray<string>();
+        }
+
+        return charInfoCollection;
     }
 
     private void SendInputAndHideToolbar(InputType inputType)
@@ -84,7 +171,7 @@ public class PowerAccent : IDisposable
         {
             case InputType.Space:
                 {
-                    WindowsFunctions.Insert(' ');
+                    WindowsFunctions.Insert(" ");
                     break;
                 }
 
@@ -104,7 +191,7 @@ public class PowerAccent : IDisposable
         _visible = false;
     }
 
-    private void ProcessNextChar(TriggerKey triggerKey)
+    private void ProcessNextChar(TriggerKey triggerKey, bool shiftPressed)
     {
         if (_visible && _selectedIndex == -1)
         {
@@ -139,13 +226,27 @@ public class PowerAccent : IDisposable
 
         if (triggerKey == TriggerKey.Space)
         {
-            if (_selectedIndex < _characters.Length - 1)
+            if (shiftPressed)
             {
-                ++_selectedIndex;
+                if (_selectedIndex == 0)
+                {
+                    _selectedIndex = _characters.Length - 1;
+                }
+                else
+                {
+                    --_selectedIndex;
+                }
             }
             else
             {
-                _selectedIndex = 0;
+                if (_selectedIndex < _characters.Length - 1)
+                {
+                    ++_selectedIndex;
+                }
+                else
+                {
+                    _selectedIndex = 0;
+                }
             }
         }
 
@@ -185,25 +286,23 @@ public class PowerAccent : IDisposable
         return Calculation.GetRawCoordinatesFromPosition(position, screen, window);
     }
 
+    public Position GetToolbarPosition()
+    {
+        return _settingService.Position;
+    }
+
     public void Dispose()
     {
         _keyboardListener.UnInitHook();
         GC.SuppressFinalize(this);
     }
 
-    public static char[] ToUpper(char[] array)
+    public static string[] ToUpper(string[] array)
     {
-        char[] result = new char[array.Length];
+        string[] result = new string[array.Length];
         for (int i = 0; i < array.Length; i++)
         {
-            if (array[i] == 'ß')
-            {
-                result[i] = 'ẞ';
-            }
-            else
-            {
-                result[i] = char.ToUpper(array[i], System.Globalization.CultureInfo.InvariantCulture);
-            }
+            result[i] = array[i].Contains('ß') ? "ẞ" : array[i].ToUpper(System.Globalization.CultureInfo.InvariantCulture);
         }
 
         return result;
