@@ -133,7 +133,7 @@ namespace Microsoft.PowerToys.Run.Plugin.System.Components
                 _ = MessageBox.Show(message, name, MessageBoxButton.OK, MessageBoxImage.Error);
             }
 
-            if (settingEmptyRBSuccesMsg)
+            if (result == (uint)HRESULT.S_OK && settingEmptyRBSuccesMsg)
             {
                 _ = MessageBox.Show(Resources.Microsoft_plugin_sys_RecycleBin_EmptySuccessMessage, "Plugin: " + Resources.Microsoft_plugin_sys_plugin_name, MessageBoxButton.OK, MessageBoxImage.Information);
             }
