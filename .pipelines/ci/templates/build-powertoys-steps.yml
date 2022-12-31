@@ -44,13 +44,14 @@ steps:
 # - Webcam report tool
 # - Installer
 # - Bootstrapper Installer
-- task: NuGetRestore@1
-  displayName: NuGet restore solutions dependencies
+- task: NuGetCommand@2
+  displayName: Restore NuGet packages
   inputs:
-    solution: '**/*.sln'
-    selectOrConfig: config
-    nugetConfigPath: NuGet.config
-      
+    command: restore
+    restoreSolution: '**/*.sln'
+    feedsToUse: config
+    configPath: NuGet.config
+
 - task: VSBuild@1
   displayName: 'Build PowerToys.sln'
   inputs:
