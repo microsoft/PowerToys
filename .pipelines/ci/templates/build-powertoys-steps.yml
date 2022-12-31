@@ -18,27 +18,42 @@ steps:
     arguments: -solution '$(build.sourcesdirectory)\PowerToys.sln'
     pwsh: true
 
+- task: VisualStudioTestPlatformInstaller@1
+  displayName: Ensure VSTest Platform
+
+- task: UseDotNet@2
+  displayName: 'Use .NET Core 2.1 SDK'
+  inputs:
+    packageType: sdk
+    version: '2.1.x'
+
 - task: UseDotNet@2
   displayName: 'Use .NET 7 SDK'
   inputs:
     packageType: sdk
     version: '7.x'
 
+- task: NuGetAuthenticate@0
+      
 - task: NuGetToolInstaller@1
-  displayName: Ensure NuGet Installer
+  displayName: Use NuGet Installer latest
 
-- task: VisualStudioTestPlatformInstaller@1
-  displayName: Ensure VSTest Platform
 
+
+# this will restore the following nugets:
+# - main solution
+# - Bug report tool
+# - Webcam report tool
+# - Installer
+# - Bootstrapper Installer
 - task: NuGetCommand@2
-  displayName: Restore NuGet packages for PowerToys.sln
+  displayName: NuGet restore solutions dependencies
   inputs:
     command: restore
-    feedsToUse: config
-    configPath: NuGet.config
-    restoreSolution: PowerToys.sln
-    restoreDirectory: '$(Build.SourcesDirectory)\packages'
-
+    restoreSolution: '**/*.sln'
+    selectOrConfig: config
+    nugetConfigPath: NuGet.config
+      
 - task: VSBuild@1
   displayName: 'Build PowerToys.sln'
   inputs:
@@ -48,15 +63,6 @@ steps:
     configuration: '$(BuildConfiguration)'
     msbuildArgs: ${{ parameters.additionalBuildArguments }}
     maximumCpuCount: true
-
-- task: NuGetCommand@2
-  displayName: Restore NuGet packages for BugReportTool.sln
-  inputs:
-    command: restore
-    feedsToUse: config
-    configPath: NuGet.config
-    restoreSolution: tools\BugReportTool\BugReportTool.sln
-    restoreDirectory: '$(Build.SourcesDirectory)\tools\BugReportTool\packages'
 
 - task: VSBuild@1
   displayName: 'Build BugReportTool.sln'
@@ -68,15 +74,6 @@ steps:
     msbuildArgs: ${{ parameters.additionalBuildArguments }}
     maximumCpuCount: true
 
-- task: NuGetCommand@2
-  displayName: Restore NuGet packages for WebcamReportTool.sln
-  inputs:
-    command: restore
-    feedsToUse: config
-    configPath: NuGet.config
-    restoreSolution: tools\WebcamReportTool\WebcamReportTool.sln
-    restoreDirectory: '$(Build.SourcesDirectory)\tools\WebcamReportTool\packages'
-
 - task: VSBuild@1
   displayName: 'Build WebcamReportTool.sln'
   inputs:
@@ -86,15 +83,6 @@ steps:
     configuration: '$(BuildConfiguration)'
     msbuildArgs: ${{ parameters.additionalBuildArguments }}
     maximumCpuCount: true
-
-- task: NuGetCommand@2
-  displayName: Restore NuGet packages for StylesReportTool.sln
-  inputs:
-    command: restore
-    feedsToUse: config
-    configPath: NuGet.config
-    restoreSolution: tools\StylesReportTool\StylesReportTool.sln
-    restoreDirectory: '$(Build.SourcesDirectory)\tools\StylesReportTool\packages'
 
 - task: VSBuild@1
   displayName: 'Build StylesReportTool.sln'
@@ -111,15 +99,6 @@ steps:
   inputs:
     targetType: filePath
     filePath: '$(build.sourcesdirectory)\.pipelines\installWiX.ps1'
-
-- task: NuGetCommand@2
-  displayName: Restore NuGet packages for PowerToysSetup.sln
-  inputs:
-    command: restore
-    feedsToUse: config
-    configPath: NuGet.config
-    restoreSolution: installer\PowerToysSetup.sln
-    restoreDirectory: '$(Build.SourcesDirectory)\installer\packages'
 
 - task: VSBuild@1
   displayName: 'Build PowerToys MSI'
