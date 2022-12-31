@@ -331,6 +331,7 @@ cwd
 cxfksword
 CXSMICON
 CXVIRTUALSCREEN
+cxxopts
 cyberrex
 CYSMICON
 CYVIRTUALSCREEN
