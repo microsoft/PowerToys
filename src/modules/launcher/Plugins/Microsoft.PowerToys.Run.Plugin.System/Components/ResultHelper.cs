@@ -54,7 +54,7 @@ namespace Microsoft.PowerToys.Run.Plugin.System.Components
             }
         }
 
-        internal static async void EmptyRecycleBinAsync()
+        internal static async void EmptyRecycleBinAsync(bool settingEmptyRBSuccesMsg)
         {
             if (executingEmptyRecycleBinTask)
             {
@@ -62,10 +62,10 @@ namespace Microsoft.PowerToys.Run.Plugin.System.Components
                 return;
             }
 
-            await Task.Run(() => EmptyRecycleBinTask());
+            await Task.Run(() => EmptyRecycleBinTask(settingEmptyRBSuccesMsg));
         }
 
-        internal static List<ContextMenuResult> GetContextMenuForResult(Result result)
+        internal static List<ContextMenuResult> GetContextMenuForResult(Result result, bool settingEmptyRBSuccesMsg)
         {
             var contextMenu = new List<ContextMenuResult>();
 
@@ -98,7 +98,7 @@ namespace Microsoft.PowerToys.Run.Plugin.System.Components
                     Title = Resources.Microsoft_plugin_sys_RecycleBin_contextMenu,
                     Action = _ =>
                     {
-                        EmptyRecycleBinAsync();
+                        EmptyRecycleBinAsync(settingEmptyRBSuccesMsg);
                         return true;
                     },
                 });
@@ -110,7 +110,7 @@ namespace Microsoft.PowerToys.Run.Plugin.System.Components
         /// <summary>
         /// Method to process the empty recycle bin command in a separate task
         /// </summary>
-        private static void EmptyRecycleBinTask()
+        private static void EmptyRecycleBinTask(bool settingEmptyRBSuccesMsg)
         {
             executingEmptyRecycleBinTask = true;
 
@@ -131,6 +131,11 @@ namespace Microsoft.PowerToys.Run.Plugin.System.Components
                 var message = $"{Resources.Microsoft_plugin_sys_RecycleBin_ErrorMsg} {errorDesc}";
                 Log.Error(message + " - Please refer to https://msdn.microsoft.com/en-us/library/windows/desktop/aa378137 for more information.", typeof(Commands));
                 _ = MessageBox.Show(message, name, MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+
+            if (settingEmptyRBSuccesMsg)
+            {
+                _ = MessageBox.Show(Resources.Microsoft_plugin_sys_RecycleBin_EmptySuccessMessage, "Plugin: " + Resources.Microsoft_plugin_sys_plugin_name, MessageBoxButton.OK, MessageBoxImage.Information);
             }
 
             executingEmptyRecycleBinTask = false;

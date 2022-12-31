@@ -23,6 +23,7 @@ namespace Microsoft.PowerToys.Run.Plugin.System
         private PluginInitContext _context;
 
         private bool _confirmSystemCommands;
+        private bool _showSuccessOnEmptyRB;
         private bool _localizeSystemCommands;
         private bool _reduceNetworkResultScore;
 
@@ -40,6 +41,12 @@ namespace Microsoft.PowerToys.Run.Plugin.System
             {
                 Key = "ConfirmSystemCommands",
                 DisplayLabel = Resources.confirm_system_commands,
+                Value = false,
+            },
+            new PluginAdditionalOption()
+            {
+                Key = "ShowSuccessOnEmptyRB",
+                DisplayLabel = Resources.Microsoft_plugin_sys_RecycleBin_ShowEmptySuccessMessage,
                 Value = false,
             },
             new PluginAdditionalOption()
@@ -161,7 +168,7 @@ namespace Microsoft.PowerToys.Run.Plugin.System
 
         public List<ContextMenuResult> LoadContextMenus(Result selectedResult)
         {
-            return ResultHelper.GetContextMenuForResult(selectedResult);
+            return ResultHelper.GetContextMenuForResult(selectedResult, _showSuccessOnEmptyRB);
         }
 
         private void UpdateIconTheme(Theme theme)
@@ -199,6 +206,7 @@ namespace Microsoft.PowerToys.Run.Plugin.System
         public void UpdateSettings(PowerLauncherPluginSettings settings)
         {
             var confirmSystemCommands = false;
+            var showSuccessOnEmptyRB = false;
             var localizeSystemCommands = true;
             var reduceNetworkResultScore = true;
 
@@ -206,6 +214,9 @@ namespace Microsoft.PowerToys.Run.Plugin.System
             {
                 var optionConfirm = settings.AdditionalOptions.FirstOrDefault(x => x.Key == "ConfirmSystemCommands");
                 confirmSystemCommands = optionConfirm?.Value ?? confirmSystemCommands;
+
+                var optionEmptyRBSuccessMsg = settings.AdditionalOptions.FirstOrDefault(x => x.Key == "ShowSuccessOnEmptyRB");
+                showSuccessOnEmptyRB = optionEmptyRBSuccessMsg?.Value ?? showSuccessOnEmptyRB;
 
                 var optionLocalize = settings.AdditionalOptions.FirstOrDefault(x => x.Key == "LocalizeSystemCommands");
                 localizeSystemCommands = optionLocalize?.Value ?? localizeSystemCommands;
@@ -215,6 +226,7 @@ namespace Microsoft.PowerToys.Run.Plugin.System
             }
 
             _confirmSystemCommands = confirmSystemCommands;
+            _showSuccessOnEmptyRB = showSuccessOnEmptyRB;
             _localizeSystemCommands = localizeSystemCommands;
             _reduceNetworkResultScore = reduceNetworkResultScore;
         }

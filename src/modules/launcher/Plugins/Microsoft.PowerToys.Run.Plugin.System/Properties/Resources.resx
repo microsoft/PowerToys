@@ -252,8 +252,12 @@
     <value>Open the Recycle Bin</value>
     <comment>This should align to the action in Windows of emptying the recycle bin on your computer.</comment>
   </data>
+  <data name="Microsoft_plugin_sys_RecycleBin_EmptySuccessMessage" xml:space="preserve">
+    <value>Recycle Bin was emptied successfully.</value>
+    <comment>Means the recycle bin folder in Explorer.</comment>
+  </data>
   <data name="Microsoft_plugin_sys_RecycleBin_EmptyTaskRunning" xml:space="preserve">
-    <value>The task to empty the Recycle Bin is already running ...</value>
+    <value>The task to empty the Recycle Bin is already running.</value>
     <comment>Means the recycle bin folder in Explorer.</comment>
   </data>
   <data name="Microsoft_plugin_sys_RecycleBin_ErrorMsg" xml:space="preserve">
@@ -266,6 +270,10 @@
   <data name="Microsoft_plugin_sys_RecycleBin_searchTag" xml:space="preserve">
     <value>Empty Recycle Bin</value>
     <comment>This should align to the action in Windows of emptying the recycle bin on your computer.</comment>
+  </data>
+  <data name="Microsoft_plugin_sys_RecycleBin_ShowEmptySuccessMessage" xml:space="preserve">
+    <value>Show a success message after emptying the Recycle Bin</value>
+    <comment>Means the recycle bin folder in Explorer and "empty" referes to "Empty Recycle Bin" command.</comment>
   </data>
   <data name="Microsoft_plugin_sys_restart_computer" xml:space="preserve">
     <value>Restart</value>

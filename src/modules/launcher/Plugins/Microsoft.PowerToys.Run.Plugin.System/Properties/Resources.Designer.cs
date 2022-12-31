@@ -412,7 +412,16 @@ namespace Microsoft.PowerToys.Run.Plugin.System.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to The task to empty the Recycle Bin is already running ....
+        ///   Looks up a localized string similar to Recycle Bin was emptied successfully..
+        /// </summary>
+        internal static string Microsoft_plugin_sys_RecycleBin_EmptySuccessMessage {
+            get {
+                return ResourceManager.GetString("Microsoft_plugin_sys_RecycleBin_EmptySuccessMessage", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The task to empty the Recycle Bin is already running..
         /// </summary>
         internal static string Microsoft_plugin_sys_RecycleBin_EmptyTaskRunning {
             get {
@@ -444,6 +453,15 @@ namespace Microsoft.PowerToys.Run.Plugin.System.Properties {
         internal static string Microsoft_plugin_sys_RecycleBin_searchTag {
             get {
                 return ResourceManager.GetString("Microsoft_plugin_sys_RecycleBin_searchTag", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Show a success message after emptying the Recycle Bin.
+        /// </summary>
+        internal static string Microsoft_plugin_sys_RecycleBin_ShowEmptySuccessMessage {
+            get {
+                return ResourceManager.GetString("Microsoft_plugin_sys_RecycleBin_ShowEmptySuccessMessage", resourceCulture);
             }
         }
         
