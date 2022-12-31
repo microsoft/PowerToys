@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Windows.Controls;
+using ControlzEx.Standard;
 using ManagedCommon;
 using Microsoft.PowerToys.Run.Plugin.System.Components;
 using Microsoft.PowerToys.Run.Plugin.System.Properties;
@@ -92,6 +93,15 @@ namespace Microsoft.PowerToys.Run.Plugin.System
                     c.TitleHighlightData = resultMatch.MatchData;
                     results.Add(c);
                 }
+                else if (c?.ContextData is SystemPluginContext contextData)
+                {
+                    var searchTagMatch = StringMatcher.FuzzySearch(query.Search, contextData.SearchTag);
+                    if (searchTagMatch.Score > 0)
+                    {
+                        c.Score = resultMatch.Score;
+                        results.Add(c);
+                    }
+                }
             }
 
             // The following information result is not returned because delayed queries doesn't clear output if no results are available.
@@ -133,6 +143,15 @@ namespace Microsoft.PowerToys.Run.Plugin.System
                         r.Score = _reduceNetworkResultScore ? (int)(resultMatch.Score * 65 / 100) : resultMatch.Score; // Adjust score to improve user experience and priority order
                         r.SubTitleHighlightData = resultMatch.MatchData;
                         results.Add(r);
+                    }
+                    else if (r?.ContextData is SystemPluginContext contextData)
+                    {
+                        var searchTagMatch = StringMatcher.FuzzySearch(query.Search, contextData.SearchTag);
+                        if (searchTagMatch.Score > 0)
+                        {
+                            r.Score = resultMatch.Score;
+                            results.Add(r);
+                        }
                     }
                 }
             }
