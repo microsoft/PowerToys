@@ -412,7 +412,7 @@ namespace Microsoft.PowerToys.Run.Plugin.System.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Recycle Bin was emptied successfully..
+        ///   Looks up a localized string similar to Recycle Bin emptied successfully..
         /// </summary>
         internal static string Microsoft_plugin_sys_RecycleBin_EmptySuccessMessage {
             get {
@@ -457,7 +457,7 @@ namespace Microsoft.PowerToys.Run.Plugin.System.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Show a success message after emptying the Recycle Bin.
+        ///   Looks up a localized string similar to Show a success message after empty the Recycle Bin.
         /// </summary>
         internal static string Microsoft_plugin_sys_RecycleBin_ShowEmptySuccessMessage {
             get {
