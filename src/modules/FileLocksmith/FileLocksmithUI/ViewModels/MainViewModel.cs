@@ -13,7 +13,6 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using FileLocksmith.Interop;
 using ManagedCommon;
-using global::FileLocksmithUI.Helpers;
 
 namespace PowerToys.FileLocksmithUI.ViewModels
 {
