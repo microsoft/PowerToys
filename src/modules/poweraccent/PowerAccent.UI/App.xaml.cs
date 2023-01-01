@@ -6,6 +6,7 @@ using System;
 using System.Threading;
 using System.Windows;
 using Common.UI;
+using ManagedCommon;
 using PowerAccent.Core.Tools;
 
 namespace PowerAccent.UI
