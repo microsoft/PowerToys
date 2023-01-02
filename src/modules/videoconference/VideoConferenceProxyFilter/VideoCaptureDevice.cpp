@@ -247,6 +247,10 @@ struct VideoCaptureReceiverPin : winrt::implements<VideoCaptureReceiverPin, IPin
 
         if (_captureInputPin)
         {
+// disable warning 26492 - Don't use const_cast to cast away const
+// reset needs 'pmt' to be non-const, we can't easily change the query accept prototype
+// because of the inheritance.
+#pragma warning(suppress : 26492)
             _inputCaptureMediaType.reset(const_cast<AM_MEDIA_TYPE*>(pmt));
         }
 

@@ -294,8 +294,9 @@ inline bool run_non_elevated(const std::wstring& file, const std::wstring& param
     siex.StartupInfo.cb = sizeof(siex);
 
     PROCESS_INFORMATION pi = { 0 };
+
     auto succeeded = CreateProcessW(file.c_str(),
-                                    const_cast<LPWSTR>(executable_args.c_str()),
+                                    &executable_args[0],
                                     nullptr,
                                     nullptr,
                                     FALSE,
@@ -395,8 +396,9 @@ inline bool run_same_elevation(const std::wstring& file, const std::wstring& par
 
     STARTUPINFO si = { sizeof(STARTUPINFO) };
     PROCESS_INFORMATION pi = { 0 };
+
     auto succeeded = CreateProcessW(file.c_str(),
-                                    const_cast<LPWSTR>(executable_args.c_str()),
+                                    &executable_args[0],
                                     nullptr,
                                     nullptr,
                                     FALSE,
