@@ -389,6 +389,8 @@ DENORMAL
 Deondre
 depersist
 deprioritized
+depsfileslistspath
+depsjsonpath
 deref
 DESKTOPABSOLUTEEDITING
 DESKTOPABSOLUTEPARSING
@@ -1545,6 +1547,7 @@ runsettings
 runtimeclass
 runtimeconfig
 runtimeobject
+runtimepack
 runtimes
 rus
 Rutkas
