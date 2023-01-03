@@ -2859,6 +2859,9 @@ Activate by holding the key for the character you want to add an accent to, then
   <data name="Hosts_AdditionalLinesPosition.Description" xml:space="preserve">
     <value>Additional content includes the file header and lines that can't parse</value>
   </data>
+  <data name="TextExtractor_Languages.Header" xml:space="preserve">
+    <value>Preferred language</value>
+  </data>
   <data name="Alternate_OOBE_AlwaysOnTop_Description.Text" xml:space="preserve">
     <value>Pin a window so that:</value>
   </data>
