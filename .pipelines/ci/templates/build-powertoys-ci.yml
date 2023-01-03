@@ -11,9 +11,6 @@ jobs:
     BuildPlatform: ${{ parameters.platform }}
     NUGET_RESTORE_MSBUILD_ARGS: /p:Platform=${{ parameters.platform }} # Required for nuget to work due to self contained
     NODE_OPTIONS: --max_old_space_size=16384
-    PipelineFolder: $(variables.Build.SourcesDirectory)\.pipelines
-    PipelineScriptFolder: $(variables.PipelineFolder)\scripts
-    PipelineStepFolder: $(variables.PipelineFolder)\steps
   pool:
     demands: ImageOverride -equals WinDevVS17-latest
     ${{ if eq(variables['System.CollectionUri'], 'https://dev.azure.com/ms/') }}:
@@ -27,6 +24,9 @@ jobs:
   - template: build-powertoys-steps.yml
     parameters:
       additionalBuildArguments: ${{ parameters.additionalBuildArguments }}
+      PipelineFolder: $(variables.Build.SourcesDirectory)\.pipelines
+      PipelineScriptFolder: $(variables.PipelineFolder)\scripts
+      PipelineStepFolder: $(variables.PipelineFolder)\steps
 
   # It appears that the Component Governance build task that gets automatically injected stopped working
   # when we renamed our main branch.
