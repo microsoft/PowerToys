@@ -431,6 +431,8 @@ Mouse Pointer Crosshairs:
    - [ ] Toolbar position (test every option, some had issues before)
    - [ ] Input delay
    - [ ] Exclude some apps. Verify that Quick Accent is not activated for them.
+   - [ ] Sort characters by frequency.
+   - [ ] Always start on the first character when using left/right arrows as activation method.
 
 ### Text Extractor
  * Enable Text Extractor. Then:
@@ -441,10 +443,12 @@ Mouse Pointer Crosshairs:
    - [ ] Disable Text Extractor and verify that the activation shortuct no longer activates the utility.
  * With Text Extractor enabled and activated:
    - [ ] Try to select text and verify it is copied to the clipboard.
+   - [ ] Try to select a different OCR language by right-clicking and verify the change is applied.
  * In a multi-monitor setup with different dpis on each monitor:
    - [ ] Verify text is correctly captured on all monitors.
  * Test the different settings and verify they are applied:
    - [ ] Activation shortcut
+   - [ ] OCR Language
 
 ### Hosts File Editor
  * Launch Host File Editor:
