@@ -9,9 +9,9 @@ steps:
 
 # commenting out for  speed, shaves 2 min
 # START COMMENTING
-#- template: verify-ARM64.yml
-#  parameters:
-#    additionalBuildArguments: ${{ parameters.additionalBuildArguments }}
+- template: ../steps/verify-ARM64.yml
+ parameters:
+   additionalBuildArguments: ${{ parameters.additionalBuildArguments }}
 
 #- task: PowerShell@2
 #  displayName: Verifying Nuget packages for PowerToys.sln
