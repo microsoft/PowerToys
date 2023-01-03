@@ -9,7 +9,7 @@ steps:
 
 # commenting out for  speed, shaves 2 min
 # START COMMENTING
-- template: $(PipelineStepFolder)\verify-ARM64.yml
+- template: ${{ PipelineStepFolder }}\verify-ARM64.yml
   parameters:
     additionalBuildArguments: ${{ parameters.additionalBuildArguments }}
 
