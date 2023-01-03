@@ -50,19 +50,19 @@
 
 ## FancyZones Editor
 
-- [ ] Open editor from the settings
-- [ ] Open editor with a shortcut
-- [ ] Create a new layout (grid and canvas)
-- [ ] Duplicate a template and a custom layout
-- [ ] Delete layout
-- [ ] Edit templates (number of zones, spacing, distance to highlight adjacent zones). Verify after reopening the editor that saved settings are kept the same.
-- [ ] Edit canvas layout: zones size and position, create or delete zones.
-- [ ] Edit grid layout: split, merge, resize zones.
-- [ ] Check `Save and apply` and `Cancel` buttons behavior after editing.
-- [ ] Assign a layout to each monitor.
-- [ ] Assign keys to quickly switch layouts (custom layouts only), `Win + Ctrl + Alt + number`.
-- [ ] Assign horizontal and vertical default layouts
-- [ ] Test duplicate layout focus
+- [x] Open editor from the settings
+- [x] Open editor with a shortcut
+- [x] Create a new layout (grid and canvas)
+- [x] Duplicate a template and a custom layout
+- [x] Delete layout
+- [x] Edit templates (number of zones, spacing, distance to highlight adjacent zones). Verify after reopening the editor that saved settings are kept the same.
+- [x] Edit canvas layout: zones size and position, create or delete zones.
+- [x] Edit grid layout: split, merge, resize zones.
+- [x] Check `Save and apply` and `Cancel` buttons behavior after editing.
+- [x] Assign a layout to each monitor.
+- [x] Assign keys to quickly switch layouts (custom layouts only), `Win + Ctrl + Alt + number`.
+- [x] Assign horizontal and vertical default layouts
+- [x] Test duplicate layout focus
    * Select any layout X in 'Templates' or 'Custom' section by click left mouse button
    * Mouse right button click on any layout Y in 'Templates' or 'Custom' sections
    * Duplicate it by clicking 'Create custom layout' (Templates section) or 'Duplicate' in 'Custom' section
