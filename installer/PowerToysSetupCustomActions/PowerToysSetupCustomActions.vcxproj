@@ -44,6 +44,12 @@
     <IncludePath>..\..\src\common\Telemetry;$(IncludePath)</IncludePath>
   </PropertyGroup>
   <ItemDefinitionGroup>
+    <PreBuildEvent>
+    <Command>pwsh.exe -File parseRuntimes.ps1 -depsjsonpath "$(ProjectDir)..\..\$(Platform)\$(Configuration)\PowerToys.ColorPickerUI.deps.json" -depsfileslistspath "$(ProjectDir)DepsFilesLists.h"</Command>
+    <Message>Populating .NET and WPF Runtime dependencies </Message>
+  </PreBuildEvent>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup>
     <ClCompile>
       <AdditionalIncludeDirectories>inc;..\..\src\;..\..\src\common\Telemetry;telemetry;$(WixSdkPath)VS2017\inc;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <AdditionalOptions>/await /Zc:twoPhase- /Wv:18 %(AdditionalOptions)</AdditionalOptions>
