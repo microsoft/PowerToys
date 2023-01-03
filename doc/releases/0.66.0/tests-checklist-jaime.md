@@ -263,7 +263,7 @@ Mouse Pointer Crosshairs:
     - [x] Crosshairs border size
 
 ## Awake
- - [ ] Try out the features and see if they work, no list at this time.
+ - [x] Try out the features and see if they work, no list at this time.
 
 ### File Locksmith
  * Start the PowerToys installer executable and let it stay in the initial screen.
