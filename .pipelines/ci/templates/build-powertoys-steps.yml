@@ -1,11 +1,6 @@
 parameters:
   additionalBuildArguments: ''
 
-variables:
-  pipelineFolder: $(build.sourcesdirectory)\.pipelines
-  scriptFolder: $(pipelineFolder)\scripts
-  stepFolder: $(pipelineFolder)\steps
-
 steps:
 - checkout: self
   fetchDepth: 1
@@ -14,7 +9,7 @@ steps:
 
 # commenting out for  speed, shaves 2 min
 # START COMMENTING
-- template: $(stepFolder)\verify-ARM64.yml
+- template: $(PipelineStepFolder)\verify-ARM64.yml
   parameters:
     additionalBuildArguments: ${{ parameters.additionalBuildArguments }}
 
