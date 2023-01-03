@@ -56,4 +56,5 @@ inline const std::vector<std::wstring> powerToysInteropFiles = {
 };
 
 inline const std::vector<std::wstring> dotnetRuntimeFiles = { };
+
 inline const std::vector<std::wstring> dotnetRuntimeWPFFiles = { };
