@@ -29,24 +29,24 @@
 ## General Settings
 
 **Admin mode:**
- - [ ] restart PT and verify it runs as user
- - [ ] restart as admin and set "Always run as admin"
- - [ ] restart PT and verify it  runs as admin
+ - [x] restart PT and verify it runs as user
+ - [x] restart as admin and set "Always run as admin"
+ - [x] restart PT and verify it  runs as admin
  * if it's not on, turn on "Run at startup"
- - [ ] reboot the machine and verify PT runs as admin (it should not prompt the UAC dialog)
+ - [x] reboot the machine and verify PT runs as admin (it should not prompt the UAC dialog)
  * turn Always run as admin" off
- - [ ] reboot the machine and verify it now runs as user
+ - [x] reboot the machine and verify it now runs as user
 
 **Modules on/off:**
- - [ ] turn off all the modules and verify all module are off
- - [ ] restart PT and verify that all module are still off in the settings page and they are actually inactive
- - [ ] turn on all the module, all module are now working
- - [ ] restart PT and verify that all module are still on in the settings page and they are actually working
+ - [x] turn off all the modules and verify all module are off
+ - [x] restart PT and verify that all module are still off in the settings page and they are actually inactive
+ - [x] turn on all the module, all module are now working
+ - [x] restart PT and verify that all module are still on in the settings page and they are actually working
 
 **Settings backup/restore:**
- - [ ] In the General tab, create a backup of the settings.
- - [ ] Change some settings in some PowerToys.
- - [ ] Restore the settings in the General tab and verify the Settings you've applied were reset.
+ - [x] In the General tab, create a backup of the settings.
+ - [x] Change some settings in some PowerToys.
+ - [x] Restore the settings in the General tab and verify the Settings you've applied were reset.
 
 ## FancyZones Editor
 
