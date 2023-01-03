@@ -1,5 +1,6 @@
 parameters:
   additionalBuildArguments: ''
+  pipelineRootDir: '../../'
 
 steps:
 - checkout: self
@@ -9,7 +10,7 @@ steps:
 
 # commenting out for  speed, shaves 2 min
 # START COMMENTING
-- template: ../steps/verify-ARM64.yml
+- template: ./${{ parameters.pipelineRootDir }}steps/verify-ARM64.yml
   parameters:
     additionalBuildArguments: ${{ parameters.additionalBuildArguments }}
 
