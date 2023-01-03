@@ -9,7 +9,7 @@ steps:
 
 # commenting out for  speed, shaves 2 min
 # START COMMENTING
-- template: $(build.sourcesdirectory)\pipeline\steps\verify-ARM64.yml
+- template: $(build.sourcesdirectory)\.pipelines\steps\verify-ARM64.yml
   parameters:
     additionalBuildArguments: ${{ parameters.additionalBuildArguments }}
 
