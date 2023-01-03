@@ -18,53 +18,71 @@ All:
 - Mouse Utils
 - VCM
 - AlwaysOnTop
+- Screen Ruler
+- Quick Accent
+- Text Extractor
+- Hosts File Editor
+- File Locksmith
+- GPO
 ```
 
 ```
-Group 1:
-- Install
+Group 1: 
 - Functional
 - Localization
 - General
-- Color Picker
-- FZ Editor
-- FZ
-- Shortcut Guide
+- PowerRename
+- PowerToys Run
+- OOBE
+- Mouse Utils
 - VCM
 - AlwaysOnTop
+- Screen Ruler
+- Hosts File Editor
+- File Locksmith
 ```
 ```
 Group 2:
-- File Explorer Add-ons
-- Image Resizer
-- Keyboard Manager
-- PowerRename
-- PowerToys Run
-- OOBE
-- Mouse Utils
-- Awake
-```
-```
-Group 3:
 - Install
+- Localization
 - General
 - FZ Editor
 - FZ
 - File Explorer Add-ons
+- Image Resizer
 - Keyboard Manager
 - Mouse Utils
 - Awake
+- File Locksmith
+- GPO
 ```
 ```
-Group 4:
+Group 3:
 - Functional
-- Localization
 - Color Picker
 - Image Resizer
+- Keyboard Manager
 - PowerRename
 - PowerToys Run
 - Shortcut Guide
 - OOBE
-- VCM
 - AlwaysOnTop
+- Screen Ruler
+- Quick Accent
+- Text Extractor
+```
+```
+Group 4:
+- Install
+- Color Picker
+- FZ Editor
+- FZ
+- File Explorer Add-ons
+- Shortcut Guide
+- VCM
+- Awake
+- Quick Accent
+- Text Extractor
+- Hosts File Editor
+- GPO
 ```
