@@ -1,6 +1,6 @@
 parameters:
   additionalBuildArguments: ''
-  PipelineFolder: $(Build.SourcesDirectory)\.pipelines
+  PipelineFolder: .\.pipelines
   PipelineScriptFolder: $(parameters.PipelineFolder)\scripts
   PipelineStepFolder: $(parameters.PipelineFolder)\steps
 steps:
@@ -11,7 +11,7 @@ steps:
 
 # commenting out for  speed, shaves 2 min
 # START COMMENTING
-- template: '${{ parameters.PipelineStepFolder }}\verify-ARM64.yml'
+- template: $(parameters.PipelineStepFolder)\verify-ARM64.yml
   parameters:
     additionalBuildArguments: ${{ parameters.additionalBuildArguments }}
 
