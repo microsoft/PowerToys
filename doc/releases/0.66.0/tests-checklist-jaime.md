@@ -267,18 +267,18 @@ Mouse Pointer Crosshairs:
 
 ### File Locksmith
  * Start the PowerToys installer executable and let it stay in the initial screen.
-   - [ ] Right-click the executable file, select "What's using this file?" and verify it shows up. (2 entries will show, since the installer starts two processes)
-   - [ ] End the tasks in File Locksmith UI and verify that closes the installer.
-   - [ ] Start the installer executable again and press the Refresh button in File Locksmith UI. It should find new processes using the files.
-   - [ ] Close the installer window and verify the processes are delisted from the File Locksmith UI. Close the window
+   - [x] Right-click the executable file, select "What's using this file?" and verify it shows up. (2 entries will show, since the installer starts two processes)
+   - [x] End the tasks in File Locksmith UI and verify that closes the installer.
+   - [x] Start the installer executable again and press the Refresh button in File Locksmith UI. It should find new processes using the files.
+   - [x] Close the installer window and verify the processes are delisted from the File Locksmith UI. Close the window
  * Start the PowerToys installer executable again and let it stay in the initial screen.
-   - [ ] Right click the directory where the executable is located, select "What's using this file?" and verify it shows up. 
-   - [ ] Right click the drive where the executable is located, select "What's using this file?" and verify it shows up. You can close the PowerToys installer now.
+   - [x] Right click the directory where the executable is located, select "What's using this file?" and verify it shows up. 
+   - [x] Right click the drive where the executable is located, select "What's using this file?" and verify it shows up. You can close the PowerToys installer now.
  * Restart PowerToys as admin.
-   - [ ] Right click "Program Files", select "What's using this file?" and verify "PowerToys.exe" doesn't show up.
-   - [ ] Press the File Locksmith "Restart as an administrator" button and verify "PowerToys.exe" shows up.
- - [ ] Right-click the drive where Windows is installed, select "What's using this file?" and scroll down and up, verify File Locksmith doesn't crash with all those entries being shown. Repeat after clicking the File Locksmith "Restart as an administrator" button.
- - [ ] Disable File Locksmith in Settings and verify the context menu entry no longer appears.
+   - [x] Right click "Program Files", select "What's using this file?" and verify "PowerToys.exe" doesn't show up.
+   - [x] Press the File Locksmith "Restart as an administrator" button and verify "PowerToys.exe" shows up.
+ - [x] Right-click the drive where Windows is installed, select "What's using this file?" and scroll down and up, verify File Locksmith doesn't crash with all those entries being shown. Repeat after clicking the File Locksmith "Restart as an administrator" button.
+ - [x] Disable File Locksmith in Settings and verify the context menu entry no longer appears.
 
 ### GPO
  * Copy the "PowerToys.admx" file to your Policy Definition template folder. (Example: C:\Windows\PolicyDefinitions) and copy the "PowerToys.adml" file to the matching language folder in your Policy Definition folder. (Example: C:\Windows\PolicyDefinitions\en-US)
