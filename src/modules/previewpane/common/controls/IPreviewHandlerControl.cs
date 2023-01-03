@@ -8,7 +8,7 @@ using System.Drawing;
 namespace Common
 {
     /// <summary>
-    /// Interface defining methods requirement by the <see cref="PreviewHandlerBase"/> control.
+    /// Interface defining preview handler control.
     /// </summary>
     public interface IPreviewHandlerControl
     {

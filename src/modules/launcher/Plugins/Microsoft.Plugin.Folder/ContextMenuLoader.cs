@@ -47,7 +47,7 @@ namespace Microsoft.Plugin.Folder
                     {
                         try
                         {
-                            Clipboard.SetText(record.FullPath);
+                            Clipboard.SetText(record.Path);
                             return true;
                         }
                         catch (Exception e)
@@ -75,18 +75,18 @@ namespace Microsoft.Plugin.Folder
                         {
                             if (record.Type == ResultType.File)
                             {
-                                Helper.OpenInConsole(_fileSystem.Path.GetDirectoryName(record.FullPath));
+                                Helper.OpenInConsole(_fileSystem.Path.GetDirectoryName(record.Path));
                             }
                             else
                             {
-                                Helper.OpenInConsole(record.FullPath);
+                                Helper.OpenInConsole(record.Path);
                             }
 
                             return true;
                         }
                         catch (Exception e)
                         {
-                            Log.Exception($"Failed to open {record.FullPath} in console, {e.Message}", e, GetType());
+                            Log.Exception($"Failed to open {record.Path} in console, {e.Message}", e, GetType());
 
                             return false;
                         }
@@ -109,9 +109,9 @@ namespace Microsoft.Plugin.Folder
                 AcceleratorModifiers = ModifierKeys.Control | ModifierKeys.Shift,
                 Action = _ =>
                 {
-                    if (!Helper.OpenInShell("explorer.exe", $"/select,\"{record.FullPath}\""))
+                    if (!Helper.OpenInShell("explorer.exe", $"/select,\"{record.Path}\""))
                     {
-                        var message = $"{Properties.Resources.Microsoft_plugin_folder_file_open_failed} {record.FullPath}";
+                        var message = $"{Properties.Resources.Microsoft_plugin_folder_file_open_failed} {record.Path}";
                         _context.API.ShowMsg(message);
                         return false;
                     }

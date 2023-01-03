@@ -27,6 +27,9 @@ namespace Peek.FilePreviewer.Controls
 
         public event DOMContentLoadedHandler? DOMContentLoaded;
 
+        private string previewBrowserUserDataFolder = System.Environment.GetEnvironmentVariable("USERPROFILE") +
+                        "\\AppData\\LocalLow\\Microsoft\\PowerToys\\Peek-Temp";
+
         public static readonly DependencyProperty SourceProperty = DependencyProperty.Register(
                 nameof(Source),
                 typeof(Uri),
@@ -42,6 +45,7 @@ namespace Peek.FilePreviewer.Controls
         public BrowserControl()
         {
             this.InitializeComponent();
+            Environment.SetEnvironmentVariable("WEBVIEW2_USER_DATA_FOLDER", previewBrowserUserDataFolder, EnvironmentVariableTarget.Process);
         }
 
         public void Dispose()

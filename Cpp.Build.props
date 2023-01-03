@@ -30,19 +30,24 @@
     </ClCompile>
   </ItemDefinitionGroup>
 
+  <!-- Run code analysis locally and in PR CI, but not on release CI -->
+  <PropertyGroup Condition="'$(SkipCppCodeAnalysis)' == ''">
+    <RunCodeAnalysis>true</RunCodeAnalysis>
+    <CodeAnalysisRuleSet>$(MsbuildThisFileDirectory)\CppRuleSet.ruleset</CodeAnalysisRuleSet>
+  </PropertyGroup>
+
   <!-- C++ source compile-specific things for all configurations -->
   <PropertyGroup>
     <PreferredToolArchitecture>x64</PreferredToolArchitecture>
+    <PreferredToolArchitecture Condition="'$(PROCESSOR_ARCHITECTURE)' == 'ARM64' or '$(PROCESSOR_ARCHITEW6432)' == 'ARM64'">arm64</PreferredToolArchitecture>
     <VcpkgEnabled>false</VcpkgEnabled>
     <ExternalIncludePath>$(MSBuildThisFileFullPath)\..\deps\;$(MSBuildThisFileFullPath)\..\packages\;$(ExternalIncludePath)</ExternalIncludePath>
-    <RunCodeAnalysis>true</RunCodeAnalysis>
-    <CodeAnalysisRuleSet>$(MsbuildThisFileDirectory)\CppRuleSet.ruleset</CodeAnalysisRuleSet>
   </PropertyGroup>
   <ItemDefinitionGroup>
     <ClCompile>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
       <WarningLevel>Level4</WarningLevel>
-      <DisableSpecificWarnings>26800;28251;6387;4505;4679;4702;6248;%(DisableSpecificWarnings)</DisableSpecificWarnings>
+      <DisableSpecificWarnings>4679;%(DisableSpecificWarnings)</DisableSpecificWarnings>
       <DisableAnalyzeExternal >true</DisableAnalyzeExternal>
       <ExternalWarningLevel>TurnOffAllWarnings</ExternalWarningLevel>
       <ConformanceMode>false</ConformanceMode>

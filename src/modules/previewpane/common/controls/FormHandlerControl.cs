@@ -5,6 +5,7 @@
 using System;
 using System.Drawing;
 using System.Windows.Forms;
+using Common.ComInterlop;
 using PreviewHandlerCommon.ComInterop;
 
 namespace Common
@@ -49,75 +50,57 @@ namespace Common
         public void QueryFocus(out IntPtr result)
         {
             var getResult = IntPtr.Zero;
-            this.InvokeOnControlThread(() =>
-            {
-                getResult = NativeMethods.GetFocus();
-            });
+            getResult = NativeMethods.GetFocus();
             result = getResult;
         }
 
         /// <inheritdoc />
         public void SetBackgroundColor(Color argbColor)
         {
-            this.InvokeOnControlThread(() =>
-            {
-                this.BackColor = argbColor;
-            });
+            this.BackColor = argbColor;
         }
 
         /// <inheritdoc />
         public void SetFocus()
         {
-            this.InvokeOnControlThread(() =>
-            {
-                this.Focus();
-            });
+            this.Focus();
         }
 
         /// <inheritdoc />
         public void SetFont(Font font)
         {
-            this.InvokeOnControlThread(() =>
-            {
-                this.Font = font;
-            });
+            this.Font = font;
         }
 
         /// <inheritdoc />
-        public void SetRect(Rectangle windowBounds)
+        public void SetRect(Rectangle rect)
         {
-            this.UpdateWindowBounds(windowBounds);
+            this.UpdateWindowBounds(parentHwnd);
         }
 
         /// <inheritdoc />
         public void SetTextColor(Color color)
         {
-            this.InvokeOnControlThread(() =>
-            {
-                this.ForeColor = color;
-            });
+            this.ForeColor = color;
         }
 
         /// <inheritdoc />
         public void SetWindow(IntPtr hwnd, Rectangle rect)
         {
             this.parentHwnd = hwnd;
-            this.UpdateWindowBounds(rect);
+            this.UpdateWindowBounds(hwnd);
         }
 
         /// <inheritdoc />
         public virtual void Unload()
         {
-            this.InvokeOnControlThread(() =>
+            this.Visible = false;
+            foreach (Control c in this.Controls)
             {
-                this.Visible = false;
-                foreach (Control c in this.Controls)
-                {
-                    c.Dispose();
-                }
+                c.Dispose();
+            }
 
-                this.Controls.Clear();
-            });
+            this.Controls.Clear();
 
             // Call garbage collection at the time of unloading of Preview.
             // Which is preventing prevhost.exe to exit at the time of closing File explorer.
@@ -133,32 +116,26 @@ namespace Common
         }
 
         /// <summary>
-        /// Executes the specified delegate on the thread that owns the control's underlying window handle.
-        /// </summary>
-        /// <param name="func">Delegate to run.</param>
-        public void InvokeOnControlThread(MethodInvoker func)
-        {
-            this.Invoke(func);
-        }
-
-        /// <summary>
         /// Update the Form Control window with the passed rectangle.
         /// </summary>
-        /// <param name="windowBounds">An instance of rectangle.</param>
-        private void UpdateWindowBounds(Rectangle windowBounds)
+        public void UpdateWindowBounds(IntPtr hwnd)
         {
-            this.InvokeOnControlThread(() =>
+            // We must set the WS_CHILD style to change the form to a control within the Explorer preview pane
+            int windowStyle = NativeMethods.GetWindowLong(Handle, gwlStyle);
+            if ((windowStyle & wsChild) == 0)
             {
-                // We must set the WS_CHILD style to change the form to a control within the Explorer preview pane
-                int windowStyle = NativeMethods.GetWindowLong(Handle, gwlStyle);
-                if ((windowStyle & wsChild) == 0)
-                {
-                    _ = NativeMethods.SetWindowLong(Handle, gwlStyle, windowStyle | wsChild);
-                }
+                _ = NativeMethods.SetWindowLong(Handle, gwlStyle, windowStyle | wsChild);
+            }
 
-                NativeMethods.SetParent(Handle, parentHwnd);
-                Bounds = windowBounds;
-            });
+            NativeMethods.SetParent(Handle, hwnd);
+
+            RECT s = default(RECT);
+            NativeMethods.GetClientRect(hwnd, ref s);
+
+            if (Bounds.Right != s.Right || Bounds.Bottom != s.Bottom || Bounds.Left != s.Left || Bounds.Top != s.Top)
+            {
+                Bounds = s.ToRectangle();
+            }
         }
     }
 }

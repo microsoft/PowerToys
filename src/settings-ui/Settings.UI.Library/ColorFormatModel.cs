@@ -86,8 +86,11 @@ namespace Microsoft.PowerToys.Settings.UI.Library
 
             set
             {
-                _canMoveUp = value;
-                OnPropertyChanged(nameof(CanMoveUp));
+                if (value != _canMoveUp)
+                {
+                    _canMoveUp = value;
+                    OnPropertyChanged(nameof(CanMoveUp));
+                }
             }
         }
 
@@ -100,8 +103,11 @@ namespace Microsoft.PowerToys.Settings.UI.Library
 
             set
             {
-                _canMoveDown = value;
-                OnPropertyChanged(nameof(CanMoveDown));
+                if (value != _canMoveDown)
+                {
+                    _canMoveDown = value;
+                    OnPropertyChanged(nameof(CanMoveDown));
+                }
             }
         }
 

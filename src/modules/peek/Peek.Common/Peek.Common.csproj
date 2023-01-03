@@ -11,6 +11,6 @@
 
   <ItemGroup>
       <PackageReference Include="Microsoft.WindowsAppSDK" Version="1.2.221116.1" />
-      <PackageReference Include="Microsoft.Windows.SDK.BuildTools" Version="10.0.22621.1" />
+      <PackageReference Include="Microsoft.Windows.SDK.BuildTools" Version="10.0.22621.755" />
   </ItemGroup>
 </Project>

@@ -35,6 +35,7 @@ namespace FileLocksmith::Interop
 
     std::wstring paths_file()
     {
+#pragma warning(suppress : 4691) // Weird warning about System::String from referenced library not being the one expected (?!)
         std::wstring path = from_system_string(interop::Constants::AppDataPath());
         path += L"\\";
         path += constants::nonlocalizable::PowerToyName;
@@ -102,7 +103,7 @@ namespace FileLocksmith::Interop
 
             while (!finished)
             {
-                WCHAR ch;
+                WCHAR ch{};
                 // We have to read data like this
                 if (!stream.read(reinterpret_cast<char*>(&ch), 2))
                 {
@@ -157,7 +158,7 @@ namespace FileLocksmith::Interop
 
             auto exec_path = executable_path();
 
-            SHELLEXECUTEINFOW exec_info;
+            SHELLEXECUTEINFOW exec_info{};
             exec_info.cbSize = sizeof(exec_info);
             exec_info.fMask = SEE_MASK_NOCLOSEPROCESS;
             exec_info.hwnd = NULL;
@@ -181,7 +182,7 @@ namespace FileLocksmith::Interop
         static System::Boolean SetDebugPrivilege()
         {
             HANDLE hToken;
-            TOKEN_PRIVILEGES tp;
+            TOKEN_PRIVILEGES tp{};
             LUID luid;
 
             if (OpenProcessToken(GetCurrentProcess(), TOKEN_ADJUST_PRIVILEGES, &hToken) != 0)
@@ -230,7 +231,7 @@ namespace FileLocksmith::Interop
             bool elevated = false;
             if (OpenProcessToken(GetCurrentProcess(), TOKEN_QUERY, &token))
             {
-                TOKEN_ELEVATION elevation;
+                TOKEN_ELEVATION elevation{};
                 DWORD size;
                 if (GetTokenInformation(token, TokenElevation, &elevation, sizeof(elevation), &size))
                 {

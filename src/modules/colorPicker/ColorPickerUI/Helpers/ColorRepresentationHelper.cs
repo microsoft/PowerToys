@@ -34,26 +34,16 @@ namespace ColorPicker.Helpers
         /// <param name="colorRepresentationType">The type of the representation</param>
         /// <returns>A <see cref="string"/> representation of a color</returns>
         internal static string GetStringRepresentation(Color color, string colorRepresentationType, string colorFormat)
-            => colorRepresentationType switch
+        {
+            if (string.IsNullOrEmpty(colorFormat))
             {
-                "CMYK" => ColorToCMYK(color),
-                "HEX" => ColorToHex(color),
-                "HSB" => ColorToHSB(color),
-                "HSI" => ColorToHSI(color),
-                "HSL" => ColorToHSL(color),
-                "HSV" => ColorToHSV(color),
-                "HWB" => ColorToHWB(color),
-                "NCol" => ColorToNCol(color),
-                "RGB" => ColorToRGB(color),
-                "CIELAB" => ColorToCIELAB(color),
-                "CIEXYZ" => ColorToCIEXYZ(color),
-                "VEC4" => ColorToFloat(color),
-                "Decimal" => ColorToDecimal(color),
-                "HEX Int" => ColorToHexInteger(color),
-
-                // Fall-back value, when "_userSettings.CopiedColorRepresentation.Value" is incorrect
-                _ => string.IsNullOrEmpty(colorFormat) ? ColorToHex(color) : ColorFormatHelper.GetStringRepresentation(color, colorFormat),
-            };
+                return ColorToHex(color);
+            }
+            else
+            {
+                return ColorFormatHelper.GetStringRepresentation(color, colorFormat);
+            }
+        }
 
         /// <summary>
         /// Return a <see cref="string"/> representation of a CMYK color
@@ -130,7 +120,7 @@ namespace ColorPicker.Helpers
         /// <returns>a string value number</returns>
         private static string ColorToDecimal(Color color)
         {
-            return $"{color.R + (color.G * 256) + (color.B * 65536)}";
+            return $"{(color.R * 65536) + (color.G * 256) + color.B}";
         }
 
         /// <summary>
