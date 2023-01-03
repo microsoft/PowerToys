@@ -1,8 +1,8 @@
 parameters:
   additionalBuildArguments: ''
   PipelineFolder: .\.pipelines
-  PipelineScriptFolder: ${{ parameters.PipelineFolder)\scripts }}
-  PipelineStepFolder: ${{ parameters.PipelineFolder)\steps }}
+  PipelineScriptFolder: ${{ parameters.PipelineFolder }}\scripts }}
+  PipelineStepFolder: ${{ parameters.PipelineFolder }}\steps }}
 steps:
 - checkout: self
   fetchDepth: 1
