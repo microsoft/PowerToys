@@ -1,6 +1,8 @@
 parameters:
   additionalBuildArguments: ''
-
+  PipelineFolder: $(Build.SourcesDirectory)\.pipelines
+  PipelineScriptFolder: $(parameters.PipelineFolder)\scripts
+  PipelineStepFolder: $(parameters.PipelineFolder)\steps
 steps:
 - checkout: self
   fetchDepth: 1
