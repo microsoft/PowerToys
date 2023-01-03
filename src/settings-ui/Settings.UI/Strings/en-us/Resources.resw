@@ -2675,6 +2675,18 @@ Activate by holding the key for the character you want to add an accent to, then
   <data name="QuickAccent_Description_Indicator.Header" xml:space="preserve">
     <value>Show the Unicode code and name of the currently selected character</value>
   </data>
+  <data name="QuickAccent_SortByUsageFrequency_Indicator.Header" xml:space="preserve">
+    <value>Sort characters by usage frequency</value>
+  </data>
+  <data name="QuickAccent_SortByUsageFrequency_Indicator.Description" xml:space="preserve">
+    <value>Track characters usage frequency and sort them accordingly</value>
+  </data>
+  <data name="QuickAccent_StartSelectionFromTheLeft_Indicator.Header" xml:space="preserve">
+    <value>Start selection from the left</value>
+  </data>
+	<data name="QuickAccent_StartSelectionFromTheLeft_Indicator.Description" xml:space="preserve">
+    <value>Start selection from the leftmost character for all activation keys, including left and right arrows</value>
+  </data>
   <data name="QuickAccent_DisableFullscreen.Header" xml:space="preserve">
     <value>Disable when Game Mode is On</value>
   </data>
