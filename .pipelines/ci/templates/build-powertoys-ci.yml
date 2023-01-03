@@ -12,7 +12,7 @@ jobs:
     NUGET_RESTORE_MSBUILD_ARGS: /p:Platform=${{ parameters.platform }} # Required for nuget to work due to self contained
     NODE_OPTIONS: --max_old_space_size=16384
     PipelineFolder: ${{ variables.Build.SourcesDirectory }}\.pipelines
-    PipelineScriptFolder: $({{ variables.PipelineFolder }}\scripts
+    PipelineScriptFolder: ${{ variables.PipelineFolder }}\scripts
     PipelineStepFolder: ${{ variables.PipelineFolder }}\steps
   pool:
     demands: ImageOverride -equals WinDevVS17-latest
