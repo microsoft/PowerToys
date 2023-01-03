@@ -1,5 +1,11 @@
 #include "pch.h"
+
+// Suppressing 26466 - Don't use static_cast downcasts - in CppUnitTest.h
+#pragma warning(push)
+#pragma warning(disable : 26466)
 #include "CppUnitTest.h"
+#pragma warning(pop)
+
 #include <keyboardmanager/KeyboardManagerEditorLibrary/ShortcutErrorType.h>
 #include <keyboardmanager/common/Helpers.h>
 #include <common/interop/keyboard_layout.h>
