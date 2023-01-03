@@ -2,7 +2,7 @@
 Param(
     [Parameter(Mandatory = $True, Position = 1)]
     [string]$depsjsonpath,
-    [Paramter(Mandatory = $True, Position = 2)]
+    [Parameter(Mandatory = $True, Position = 2)]
     [string]$depsfileslistspath
 )
 
@@ -43,6 +43,6 @@ Write-Host "Writing Microsoft.WindowsDesktop.App.Runtime files"
 $depsFilesLists = Update-RuntimeFileList "dotnetRuntimeWPFFiles" "Microsoft.WindowsDesktop.App.Runtime"
 
 Write-Host "Updating $depsfileslistspath"
-Set-Content $depsjsonpath
+Set-Content -Path $depsfileslistspath -Value $depsFilesLists
 
 
