@@ -5,16 +5,16 @@ parameters:
 
 steps:
 - task: PowerShell@2
-  displayName: 'Verify Arm64 configuration for $(parameters.solutionFile)'
+  displayName: 'Verify Arm64 configuration for ${{ parameters.solutionFile }}'
   inputs:
     filePath: '$(System.DefaultWorkingDirectory)\.pipelines\verifyArm64Configuration.ps1'
-    arguments: -solution '$(parameters.solutionFile)'
+    arguments: -solution '${{ parameters.solutionFile }}'
     pwsh: true
 
 - task: VSBuild@1
-  displayName: 'Build $(parameters.solutionFile)'
+  displayName: 'Build ${{ parameters.solutionFile }}'
   inputs:
-    solution: '$(parameters.solutionFile)'
+    solution: '${{ parameters.solutionFile }}'
     vsVersion: 17.0
     platform: '$(BuildPlatform)'
     configuration: '$(BuildConfiguration)'
