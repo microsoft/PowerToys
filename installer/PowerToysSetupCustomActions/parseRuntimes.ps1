@@ -3,22 +3,31 @@ Param(
     [Parameter(Mandatory = $True, Position = 1)]
     [string]$depsjsonpath,
     [Parameter(Mandatory = $True, Position = 2)]
-    [string]$depsfileslistspath
+    [string]$depsfileslistspath,
+    [Parameter(Mandatory = $True, Position = 3)]
+    [string]$productwxspath
 )
 
 function Update-RuntimeFileList($runtimeToken, $runtimeKey) {
-   $depsFilesLists -replace "($runtimeToken = )(.*);", "`$1 {`r`n$(($runtimes[$runtimeKey] | ForEach-Object {'    L"'+$_+'"'} | Sort-Object) -join ",`r`n") };"    
-    
-    }
+    $depsFilesLists -replace "($runtimeToken = )(.*);", "`$1 {`r`n$(($runtimes[$runtimeKey] | ForEach-Object {'    L"'+$_+'"'} | Sort-Object) -join ",`r`n") };"        
+}
+
+function Update-ProductWxsRuntimeFileList($runtimeToken, $runtimeKey) {
+    $productWxs -replace "(define $runtimeToken=)(.*)?>", "`$1$($runtimes[$runtimeKey] -join ';')?>"
+}
 
 # Read the DepsFilesLists.h file
 $depsFilesLists = Get-Content $depsfileslistspath;
 
+# Read Product.wxs file
+$productWxs = Get-Content $productwxspath;
+
+# Read the deps.json file and convert it to a JSON object
 $runtimeFile = Get-Content $depsjsonpath | ConvertFrom-Json;
 
 $runtimes = @{}
 
-Write-Host "Parsing .NET Runtimes from $path `r`n"
+Write-Host "Parsing .NET Runtimes from $depsjsonpath `r`n"
 
 $runtimeList = ([array]$runtimeFile.targets.PSObject.Properties)[-1].Value.PSObject.Properties | Where-Object { $_.Name -match "runtimepack" };
 
@@ -34,15 +43,19 @@ $runtimeList | ForEach-Object {
         }
     } 
 } 
-Write-Host "Updating DepsFilesLists.h"
 
 Write-Host "Writing Microsoft.NETCore.App.Runtime files"
 $depsFilesLists = Update-RuntimeFileList "dotnetRuntimeFiles" "Microsoft.NETCore.App.Runtime"
+$productWxs = Update-ProductWxsRuntimeFileList "DotnetRuntimeFiles" "Microsoft.NETCore.App.Runtime"
 
 Write-Host "Writing Microsoft.WindowsDesktop.App.Runtime files"
 $depsFilesLists = Update-RuntimeFileList "dotnetRuntimeWPFFiles" "Microsoft.WindowsDesktop.App.Runtime"
+$productWxs = Update-ProductWxsRuntimeFileList "DotnetRuntimeWPFFiles" "Microsoft.WindowsDesktop.App.Runtime"
 
 Write-Host "Updating $depsfileslistspath"
 Set-Content -Path $depsfileslistspath -Value $depsFilesLists
+
+Write-Host "Updating $productwxspath"
+Set-Content -Path $productwxspath -Value $productWxs
 
 

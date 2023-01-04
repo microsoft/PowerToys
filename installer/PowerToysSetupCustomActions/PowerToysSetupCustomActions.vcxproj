@@ -45,7 +45,7 @@
   </PropertyGroup>
   <ItemDefinitionGroup>
     <PreBuildEvent>
-    <Command>pwsh.exe -File parseRuntimes.ps1 -depsjsonpath "$(ProjectDir)..\..\$(Platform)\$(Configuration)\PowerToys.ColorPickerUI.deps.json" -depsfileslistspath "$(ProjectDir)DepsFilesLists.h"</Command>
+    <Command>pwsh.exe -File parseRuntimes.ps1 -depsjsonpath "$(ProjectDir)..\..\$(Platform)\$(Configuration)\PowerToys.ColorPickerUI.deps.json" -depsfileslistspath "$(ProjectDir)DepsFilesLists.h" -productwxspath "$(ProjectDir)..\PowerToysSetup\Product.wxs"</Command>
     <Message>Populating .NET and WPF Runtime dependencies </Message>
   </PreBuildEvent>
   </ItemDefinitionGroup>
