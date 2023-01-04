@@ -153,7 +153,7 @@ In this release, we focused on stability and improvements.
 - Cleaned up "to-do" comments referring to disposing memory on C#. Thanks [@davidegiacometti](https://github.com/davidegiacometti)!
 - Added a fabric bot rule for localization issues.
 - Fixed a CI build error after a .NET tools update.
-- Update the windows app sdk dependency version to 1.2.
+- Update the Windows App SDK dependency version to 1.2.
 - When building for arm64, the arm64 build tools are now preferred when building on an arm64 device. Thanks [@snickler](https://github.com/snickler)!
 - Updated the C# test framework and removed unused Newtonsoft.Json package references.
 - Updated StyleCop and fixed/enabled more warnings. Thanks [@davidegiacometti](https://github.com/davidegiacometti)!
