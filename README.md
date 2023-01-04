@@ -134,7 +134,7 @@ In this release, we focused on stability and improvements.
 
 ### Text Extractor
 
-- Improve behavior for CJK languages by not adding spaces for some characters that don't need it. Thanks [@AO2233](https://github.com/AO2233)!
+- Improve behavior for CJK languages by not adding spaces for some characters that don't need them. Thanks [@AO2233](https://github.com/AO2233)!
 - OCR language can now be picked in the right-click context menu.
 
 ### Video Conference Mute
