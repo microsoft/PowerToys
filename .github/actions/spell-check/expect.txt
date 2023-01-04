@@ -1387,6 +1387,7 @@ proactively
 PROCESSKEY
 PRODEXT
 PRODUCTVERSION
+productwxspath
 Progman
 programdata
 PROGRAMFILES
