@@ -2,8 +2,7 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-using System;
-using System.Runtime.InteropServices;
+using System.IO;
 using System.Text;
 using Peek.UI.Native;
 using Windows.Win32;
@@ -39,6 +38,8 @@ namespace Peek.UI.Helpers
             NativeMethods.GetWindowText(new HWND(foregroundWindowHandle), foregroundWindowTitleBuffer, foregroundWindowTitleBuffer.Capacity);
 
             string foregroundWindowTitle = foregroundWindowTitleBuffer.ToString();
+            var directoryInfo = new DirectoryInfo(foregroundWindowTitle);
+            string windowFolderName = directoryInfo.Name;
 
             var shell = new Shell32.Shell();
             foreach (SHDocVw.InternetExplorer window in shell.Windows())
@@ -46,7 +47,7 @@ namespace Peek.UI.Helpers
                 var shellFolderView = (Shell32.IShellFolderViewDual2)window.Document;
                 var folderTitle = shellFolderView.Folder.Title;
 
-                if (window.HWND == (int)foregroundWindowHandle && folderTitle == foregroundWindowTitle)
+                if (window.HWND == (int)foregroundWindowHandle && folderTitle == windowFolderName)
                 {
                     return shellFolderView;
                 }
