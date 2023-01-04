@@ -124,7 +124,7 @@ In this release, we focused on stability and improvements.
 
 ### Settings
 
-- Show the option to keep the display on when using the "Indefinitely Awake" mode.
+- Fixed an error that hid the option to keep the display on when using the "Indefinitely Awake" mode.
 - Fixed an accessibility issue causing the navigation bar to not work with narrator in scan mode.
 - Fixed an accessibility issue where the name for the shortcut control was not being read correctly.
 - Tweaked the Color Picker custom color format UI. Thanks [@niels9001](https://github.com/niels9001)!
