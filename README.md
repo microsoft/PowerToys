@@ -167,6 +167,7 @@ In this release, we focused on stability and improvements.
 For [v0.67][github-next-release-work], we'll work on below:
 
 - Allow installing without UAC.
+- Add a flyout menu to the system tray icon for quick access.
 - Stability / bug fixes
 
 ## PowerToys Community
