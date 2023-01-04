@@ -64,7 +64,7 @@
     <Rule Id="C26464" Action="Error" />
     <Rule Id="C26465" Action="Hidden" />
     <Rule Id="C26466" Action="Error" />
-    <Rule Id="C26471" Action="Hidden" />
+    <Rule Id="C26471" Action="Error" />
     <Rule Id="C26472" Action="Hidden" />
     <Rule Id="C26473" Action="Hidden" />
     <Rule Id="C26474" Action="Hidden" />
