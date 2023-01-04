@@ -120,25 +120,25 @@ namespace Peek.FilePreviewer.Previewers
             {
                 cancellationToken.ThrowIfCancellationRequested();
 
-                if (!IsFullImageLoaded && !IsHighQualityThumbnailLoaded)
+                var hr = ThumbnailHelper.GetThumbnail(Path.GetFullPath(File.Path), out IntPtr hbitmap, ThumbnailHelper.LowQualityThumbnailSize);
+                if (hr != Common.Models.HResult.Ok)
                 {
-                    var hr = ThumbnailHelper.GetThumbnail(Path.GetFullPath(File.Path), out IntPtr hbitmap, ThumbnailHelper.LowQualityThumbnailSize);
-                    if (hr != Common.Models.HResult.Ok)
-                    {
-                        Debug.WriteLine("Error loading low quality thumbnail - hresult: " + hr);
+                    Debug.WriteLine("Error loading low quality thumbnail - hresult: " + hr);
 
-                        throw new ArgumentNullException(nameof(hbitmap));
-                    }
-
-                    cancellationToken.ThrowIfCancellationRequested();
-
-                    await Dispatcher.RunOnUiThread(async () =>
-                    {
-                        cancellationToken.ThrowIfCancellationRequested();
-                        var thumbnailBitmap = await GetBitmapFromHBitmapAsync(hbitmap, cancellationToken);
-                        Preview = thumbnailBitmap;
-                    });
+                    throw new ArgumentNullException(nameof(hbitmap));
                 }
+
+                cancellationToken.ThrowIfCancellationRequested();
+
+                await Dispatcher.RunOnUiThread(async () =>
+                {
+                    cancellationToken.ThrowIfCancellationRequested();
+                    var thumbnailBitmap = await GetBitmapFromHBitmapAsync(hbitmap, cancellationToken);
+                    if (!IsFullImageLoaded && !IsHighQualityThumbnailLoaded)
+                    {
+                        Preview = thumbnailBitmap;
+                    }
+                });
             });
         }
 
@@ -148,25 +148,25 @@ namespace Peek.FilePreviewer.Previewers
             {
                 cancellationToken.ThrowIfCancellationRequested();
 
-                if (!IsFullImageLoaded)
+                var hr = ThumbnailHelper.GetThumbnail(Path.GetFullPath(File.Path), out IntPtr hbitmap, ThumbnailHelper.HighQualityThumbnailSize);
+                if (hr != Common.Models.HResult.Ok)
                 {
-                    var hr = ThumbnailHelper.GetThumbnail(Path.GetFullPath(File.Path), out IntPtr hbitmap, ThumbnailHelper.HighQualityThumbnailSize);
-                    if (hr != Common.Models.HResult.Ok)
-                    {
-                        Debug.WriteLine("Error loading high quality thumbnail - hresult: " + hr);
+                    Debug.WriteLine("Error loading high quality thumbnail - hresult: " + hr);
 
-                        throw new ArgumentNullException(nameof(hbitmap));
-                    }
-
-                    cancellationToken.ThrowIfCancellationRequested();
-
-                    await Dispatcher.RunOnUiThread(async () =>
-                    {
-                        cancellationToken.ThrowIfCancellationRequested();
-                        var thumbnailBitmap = await GetBitmapFromHBitmapAsync(hbitmap, cancellationToken);
-                        Preview = thumbnailBitmap;
-                    });
+                    throw new ArgumentNullException(nameof(hbitmap));
                 }
+
+                cancellationToken.ThrowIfCancellationRequested();
+
+                await Dispatcher.RunOnUiThread(async () =>
+                {
+                    cancellationToken.ThrowIfCancellationRequested();
+                    var thumbnailBitmap = await GetBitmapFromHBitmapAsync(hbitmap, cancellationToken);
+                    if (!IsFullImageLoaded)
+                    {
+                        Preview = thumbnailBitmap;
+                    }
+                });
             });
         }
 
