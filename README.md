@@ -116,7 +116,7 @@ In this release, we focused on stability and improvements.
 - Added support for dark theme. Thanks [@niels9001](https://github.com/niels9001)!
 - Increased default input delay to improve out of the box experience.
 - Fixed a bug causing the first character to not be selected when opening the overlay. Thanks [@davidegiacometti](https://github.com/davidegiacometti)!
-- Fixed the positioning of the overlay when showing in the diagonal corners.
+- Fixed the positioning of the overlay when showing near the horizontal edges of the screen.
 - Added additional Pinyin characters. Thanks [@char-46](https://github.com/char-46)!
 - Added Macedonian characters. Thanks [@ad-mca-mk](https://github.com/ad-mca-mk)!
 - Added a setting to sort characters by usage frequency.
