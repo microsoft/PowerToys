@@ -130,7 +130,7 @@ In this release, we focused on stability and improvements.
 - Tweaked the Color Picker custom color format UI. Thanks [@niels9001](https://github.com/niels9001)!
 - Improved the shortcut control visibility and accessibility. Thanks [@niels9001](https://github.com/niels9001)!
 - Fixed an issue causing the Settings to not be saved correctly on scenarios where the admin user would be different then the user running PowerToys.
-- Added a setting to pick which language should be picked by default for Text Extractor.
+- Added a setting to pick which language should be used by default when using Text Extractor.
 
 ### Text Extractor
 
