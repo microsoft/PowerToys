@@ -78,7 +78,7 @@ In this release, we focused on stability and improvements.
 
 **Highlights**
 
-- PowerToy utilities now ship with self-contained .NET 7, meaning it's unnecessary to install .NET as part of the installer and it's easier to keep up to date.
+- PowerToy utilities now ship with self-contained .NET 7, meaning it's not necessary to install .NET as part of the installer and it's easier to keep up to date.
 - It's possible to pick which of the installed OCR languages is used by Text Extractor by selecting it in the right-click context menu.
 - Added a setting to sort the order of the accented characters by usage frequency in Quick Accent.
 
