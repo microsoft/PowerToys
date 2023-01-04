@@ -120,7 +120,7 @@ In this release, we focused on stability and improvements.
 - Added additional Pinyin characters. Thanks [@char-46](https://github.com/char-46)!
 - Added Macedonian characters. Thanks [@ad-mca-mk](https://github.com/ad-mca-mk)!
 - Added a setting to sort characters by usage frequency.
-- Added a setting to always start selection in the first character, even if using the arrow keys as the activation method.
+- Added a setting to always start selection in the first character, even when using the arrow keys as the activation method.
 
 ### Settings
 
