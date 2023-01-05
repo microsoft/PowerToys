@@ -319,7 +319,14 @@ VideoConferenceModule::VideoConferenceModule()
     if (_settingsUpdateChannel)
     {
         _settingsUpdateChannel->access([](auto memory) {
+
+// Suppress warning 26403 -  Reset or explicitly delete an owner<T> pointer 'variable' (r.3)
+// the video conference class should be only instantiated once and it is using placement new
+// the access to the data can be done through memory._data
+#pragma warning(push)
+#pragma warning(disable : 26403)
             auto updatesChannel = new (memory._data) CameraSettingsUpdateChannel{};
+#pragma warning(pop)
         });
     }
     sendSourceCameraNameUpdate();
@@ -520,11 +527,11 @@ void VideoConferenceModule::enable()
 {
     if (!_enabled)
     {
-        _generalSettingsWatcher = std::make_unique<FileWatcher> (
+        _generalSettingsWatcher = std::make_unique<FileWatcher>(
             PTSettingsHelper::get_powertoys_general_save_file_location(), [this] {
-            toolbar.scheduleGeneralSettingsUpdate();
+                toolbar.scheduleGeneralSettingsUpdate();
             });
-        _moduleSettingsWatcher = std::make_unique<FileWatcher> (
+        _moduleSettingsWatcher = std::make_unique<FileWatcher>(
             PTSettingsHelper::get_module_save_file_location(get_key()), [this] {
                 toolbar.scheduleModuleSettingsUpdate();
             });
