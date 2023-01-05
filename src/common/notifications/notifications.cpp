@@ -206,6 +206,9 @@ void notifications::show_toast(std::wstring message, std::wstring title, toast_p
     show_toast_with_activations(std::move(message), std::move(title), {}, {}, std::move(params));
 }
 
+// Disable 26497 this function should be evaluated at compile time
+#pragma warning(push)
+#pragma warning(disable: 26497)
 inline void xml_escape(std::wstring data)
 {
     std::wstring buffer;
@@ -236,6 +239,7 @@ inline void xml_escape(std::wstring data)
     }
     data.swap(buffer);
 }
+#pragma warning(pop)
 
 void notifications::show_toast_with_activations(std::wstring message,
                                                 std::wstring title,

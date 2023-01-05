@@ -115,12 +115,12 @@ namespace
         return true;
     }
 
-    bool isWin(int key)
+    constexpr bool isWin(int key)
     {
         return key == VK_LWIN || key == VK_RWIN;
     }
 
-    bool isKeyDown(LowlevelKeyboardEvent event)
+    constexpr bool isKeyDown(LowlevelKeyboardEvent event)
     {
         return event.wParam == WM_KEYDOWN || event.wParam == WM_SYSKEYDOWN;
     }

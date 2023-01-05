@@ -93,7 +93,7 @@ namespace FancyZonesUtils
         }
     }
 
-    inline BYTE OpacitySettingToAlpha(int opacity)
+    constexpr inline BYTE OpacitySettingToAlpha(int opacity)
     {
         return static_cast<BYTE>(opacity * 2.55);
     }

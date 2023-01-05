@@ -207,7 +207,7 @@ namespace MonitorUtils
             return { .id = str.substr(0, dividerPos), .instanceId = str.substr(dividerPos + 1) };
         }
 
-        inline bool not_digit(wchar_t ch)
+        constexpr inline bool not_digit(wchar_t ch)
         {
             return '0' <= ch && ch <= '9';
         }
