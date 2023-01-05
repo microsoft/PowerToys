@@ -51,7 +51,7 @@ namespace AllExperiments
                     var assignmentContext = variantAssignments.GetAssignmentContext();
                     var featureFlagValue = featureVariables[0].GetStringValue();
 
-                    if (featureFlagValue == "alternate" && assignmentContext != string.Empty)
+                    if (featureFlagValue == "alternate" && AssignmentUnit != string.Empty)
                     {
                         IsExperiment = true;
                     }
@@ -94,7 +94,7 @@ namespace AllExperiments
 
                 if (jsonDictionary != null && jsonDictionary.ContainsKey("variantassignment"))
                 {
-                    if (jsonDictionary["variantassignment"].ToString() == "alternate")
+                    if (jsonDictionary["variantassignment"].ToString() == "alternate" && AssignmentUnit != string.Empty)
                     {
                         IsExperiment = true;
                     }
