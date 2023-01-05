@@ -187,7 +187,18 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
             {
                 switch (selectedItem.Tag)
                 {
-                    case "Overview": NavigationFrame.Navigate(typeof(OobeOverviewPlaceholder)); break;
+                    case "Overview":
+                            switch (AllExperiments.Experiments.LandingPageExperiment)
+                            {
+                                case Experiments.ExperimentState.Enabled:
+                                    NavigationFrame.Navigate(typeof(OobeOverviewAlternate)); break;
+                                case Experiments.ExperimentState.Disabled:
+                                    NavigationFrame.Navigate(typeof(OobeOverview)); break;
+                                case Experiments.ExperimentState.NotLoaded:
+                                    NavigationFrame.Navigate(typeof(OobeOverviewPlaceholder)); break;
+                            }
+
+                            break;
                     case "WhatsNew": NavigationFrame.Navigate(typeof(OobeWhatsNew)); break;
                     case "AlwaysOnTop": NavigationFrame.Navigate(typeof(OobeAlwaysOnTop)); break;
                     case "Awake": NavigationFrame.Navigate(typeof(OobeAwake)); break;

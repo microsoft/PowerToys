@@ -17,11 +17,29 @@ namespace AllExperiments
     public class Experiments
 #pragma warning restore SA1649 // File name should match first type name
     {
+        public enum ExperimentState
+        {
+            Enabled,
+            Disabled,
+            NotLoaded,
+        }
+
+#pragma warning disable SA1401 // Need to use LandingPageExperiment as a static property in OobeShellPage.xaml.cs
+        public static ExperimentState LandingPageExperiment = ExperimentState.NotLoaded;
+#pragma warning restore SA1401
+
         public async Task<bool> EnableLandingPageExperimentAsync()
         {
+            if (Experiments.LandingPageExperiment != ExperimentState.NotLoaded)
+            {
+                return Experiments.LandingPageExperiment == ExperimentState.Enabled;
+            }
+
             Experiments varServ = new Experiments();
             await varServ.VariantAssignmentProvider_Initialize();
             var landingPageExperiment = varServ.IsExperiment;
+
+            Experiments.LandingPageExperiment = landingPageExperiment ? ExperimentState.Enabled : ExperimentState.Disabled;
 
             return landingPageExperiment;
         }
