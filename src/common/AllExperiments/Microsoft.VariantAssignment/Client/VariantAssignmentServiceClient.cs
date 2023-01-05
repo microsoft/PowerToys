@@ -17,7 +17,7 @@ namespace Microsoft.VariantAssignment.Client
 
         public Task<IVariantAssignmentResponse> GetVariantAssignmentsAsync(IVariantAssignmentRequest request, CancellationToken ct = default)
         {
-            throw new NotImplementedException();
+            return Task.FromResult(EmptyVariantAssignmentResponse.Instance);
         }
     }
 }
