@@ -14,12 +14,12 @@ steps:
     arguments: -solution '$(build.sourcesdirectory)\PowerToys.sln'
     pwsh: true
 
-- task: UseDotNet@2
-  displayName: 'Use .NET Core 2.1 SDK'
-  inputs:
-    packageType: sdk
-    version: '2.1.x'
-
+# this is needed for release, not CI, focusing on CI right now.
+# - task: UseDotNet@2
+#   displayName: 'Use .NET Core 2.1 SDK'
+#   inputs:
+#     packageType: sdk
+#     version: '2.1.x'
 
 - task: UseDotNet@2
   displayName: 'Use .NET 7 SDK'
@@ -27,7 +27,7 @@ steps:
     packageType: sdk
     version: '7.x'
 
- - task: NuGetAuthenticate@1
+- task: NuGetAuthenticate@1
       
 - task: NuGetToolInstaller@1
   displayName: Use NuGet Installer latest
@@ -46,6 +46,7 @@ steps:
     feedsToUse: config
     configPath: NuGet.config
 
+# building solutions
 - template: ${{variables['System.DefaultWorkingDirectory']}}\.pipelines\steps\build-solution.yml
   parameters:
     additionalBuildArguments: ${{ parameters.additionalBuildArguments }}
