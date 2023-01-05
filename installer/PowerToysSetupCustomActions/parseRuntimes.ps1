@@ -18,7 +18,7 @@ function Update-ProductWxsRuntimeFileList($runtimeToken, $runtimeKey) {
 
 function Update-DotnetFilesComponentGuid()
 {
-    $productWxs -replace "(?!Dlls_DotnetFiles_Component"" Guid="")([{]?[0-9a-fA-F]{8}-([0-9a-fA-F]{4}-){3}[0-9a-fA-F]{12}[}]?)", "$((New-Guid).ToString().ToUpper())"
+    $productWxs -replace "Dlls_DotnetFiles_Component"" Guid=""([{]?[0-9a-fA-F]{8}-([0-9a-fA-F]{4}-){3}[0-9a-fA-F]{12}[}]?)""", "Dlls_DotnetFiles_Component"" Guid=""$((New-Guid).ToString().ToUpper())"""
 }
 
 # Read the DepsFilesLists.h file
