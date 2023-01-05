@@ -29,6 +29,7 @@ namespace AllExperiments
         private async Task VariantAssignmentProvider_Initialize()
         {
             IsExperiment = false;
+            string jsonFilePath = CreateFilePath();
 
             var vaSettings = new VariantAssignmentClientSettings
             {
@@ -45,6 +46,7 @@ namespace AllExperiments
 
                 if (variantAssignments.AssignedVariants.Count != 0)
                 {
+                    var dataVersion = variantAssignments.DataVersion;
                     var featureVariables = variantAssignments.GetFeatureVariables();
                     var assignmentContext = variantAssignments.GetAssignmentContext();
                     var featureFlagValue = featureVariables[0].GetStringValue();
@@ -54,8 +56,51 @@ namespace AllExperiments
                         IsExperiment = true;
                     }
 
+                    string json = File.ReadAllText(jsonFilePath);
+                    var jsonDictionary = JsonSerializer.Deserialize<Dictionary<string, object>>(json);
+
+                    if (jsonDictionary != null)
+                    {
+                        if (!jsonDictionary.ContainsKey("dataversion"))
+                        {
+                            jsonDictionary.Add("dataversion", dataVersion);
+                        }
+
+                        if (!jsonDictionary.ContainsKey("variantassignment"))
+                        {
+                            jsonDictionary.Add("variantassignment", featureFlagValue);
+                        }
+                        else
+                        {
+                            var jsonDataVersion = jsonDictionary["dataversion"].ToString();
+                            if (jsonDataVersion != null && int.Parse(jsonDataVersion) < dataVersion)
+                            {
+                                jsonDictionary["dataversion"] = dataVersion;
+                                jsonDictionary["variantassignment"] = featureFlagValue;
+                            }
+                        }
+
+                        string output = JsonSerializer.Serialize(jsonDictionary);
+                        File.WriteAllText(jsonFilePath, output);
+                    }
+
                     PowerToysTelemetry.Log.WriteEvent(new OobeVariantAssignmentEvent() { AssignmentContext = assignmentContext, ClientID = AssignmentUnit });
                 }
+            }
+            catch (HttpRequestException ex)
+            {
+                string json = File.ReadAllText(jsonFilePath);
+                var jsonDictionary = JsonSerializer.Deserialize<Dictionary<string, object>>(json);
+
+                if (jsonDictionary != null && jsonDictionary.ContainsKey("variantassignment"))
+                {
+                    if (jsonDictionary["variantassignment"].ToString() == "alternate")
+                    {
+                        IsExperiment = true;
+                    }
+                }
+
+                Logger.LogError("Error getting to TAS endpoint", ex);
             }
             catch (Exception ex)
             {
