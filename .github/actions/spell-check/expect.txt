@@ -347,6 +347,7 @@ DARKYELLOW
 datareader
 datatemplate
 Datavalue
+dataversion
 DATAW
 davidegiacometti
 Dayof
@@ -1926,6 +1927,7 @@ UYVY
 vabdq
 validmodulename
 Vanara
+variantassignment
 vcamp
 vccorlib
 vcdl
