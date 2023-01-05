@@ -55,7 +55,6 @@
     <PostBuildEvent>
       <Command>
       call cmd /C "move /Y ""$(ProjectDir)DepsFilesLists.h.bk"" ""$(ProjectDir)DepsFilesLists.h"""
-      call cmd /C "move /Y ""$(ProjectDir)..\PowerToysSetup\Product.wxs.bk"" ""$(ProjectDir)..\PowerToysSetup\Product.wxs""""
       </Command>
       <Message>Reverting original files</Message>
     </PostBuildEvent>
