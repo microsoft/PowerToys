@@ -17,8 +17,6 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
     {
         public OobePowerToysModule ViewModel { get; set; }
 
-        private static bool? ExperimentEnabled { get; set; }
-
         public OobeOverviewPlaceholder()
         {
             this.InitializeComponent();
@@ -28,14 +26,9 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
 
         private static async Task<bool> GetIsExperiment()
         {
-            if (ExperimentEnabled != null)
-            {
-                return (bool)ExperimentEnabled;
-            }
-
             Experiments landingPageExp = new Experiments();
-            ExperimentEnabled = await landingPageExp.EnableLandingPageExperimentAsync();
-            return (bool)ExperimentEnabled;
+            var experimentEnabled = await landingPageExp.EnableLandingPageExperimentAsync();
+            return experimentEnabled;
         }
 
         private async void Reload()
@@ -54,11 +47,6 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
 
         private void Page_Loaded(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
         {
-            if (ExperimentEnabled != null)
-            {
-                LoadingProgressRing.Visibility = Microsoft.UI.Xaml.Visibility.Collapsed;
-            }
-
             Reload();
         }
 
