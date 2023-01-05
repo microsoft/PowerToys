@@ -27,7 +27,7 @@ call "..\..\publish.cmd" arm64
   <PropertyGroup>
     <RunPostBuildEvent>Always</RunPostBuildEvent>
     <PostBuildEvent>
-    call cmd /C "move /Y ""$(ProjectDir)..\PowerToysSetup\Product.wxs.bk"" ""$(ProjectDir)..\PowerToysSetup\Product.wxs""""
+    call cmd /C "move /Y ""$(ProjectDir)Product.wxs.bk"" ""$(ProjectDir)Product.wxs""""
     </PostBuildEvent>
   </PropertyGroup>
   <PropertyGroup>
