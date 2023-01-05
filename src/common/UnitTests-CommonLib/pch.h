@@ -12,6 +12,11 @@
 #include <winrt/base.h>
 #include <winrt/Windows.Foundation.h>
 #include <winrt/Windows.Foundation.Collections.h>
+
+// Suppressing 26466 - Don't use static_cast downcasts - in CppUnitTest.h
+#pragma warning(push)
+#pragma warning(disable : 26466)
 #include "CppUnitTest.h"
+#pragma warning(pop)
 
 #endif //PCH_H

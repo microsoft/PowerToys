@@ -27,6 +27,12 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         [JsonPropertyName("show_description")]
         public bool ShowUnicodeDescription { get; set; }
 
+        [JsonPropertyName("sort_by_usage_frequency")]
+        public bool SortByUsageFrequency { get; set; }
+
+        [JsonPropertyName("start_selection_from_the_left")]
+        public bool StartSelectionFromTheLeft { get; set; }
+
         public PowerAccentProperties()
         {
             ActivationKey = PowerAccentActivationKey.Both;
@@ -35,6 +41,8 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             SelectedLang = "ALL";
             ExcludedApps = new StringProperty();
             ShowUnicodeDescription = false;
+            SortByUsageFrequency = false;
+            StartSelectionFromTheLeft = false;
         }
     }
 }
