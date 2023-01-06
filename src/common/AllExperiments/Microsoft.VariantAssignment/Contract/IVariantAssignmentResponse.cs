@@ -13,7 +13,7 @@ namespace Microsoft.VariantAssignment.Contract
         ///// <summary>
         ///// Gets the serial number of variant assignment configuration snapshot used when assigning variants.
         ///// </summary>
-        // long DataVersion { get; }
+        long DataVersion { get; }
 
         ///// <summary>
         ///// Get a hash of the response suitable for caching.

@@ -10,6 +10,9 @@ namespace Microsoft.VariantAssignment.Contract
     /// </summary>
     internal class VariantAssignmentServiceResponse : IVariantAssignmentResponse, IDisposable
     {
+        /// <inheritdoc />
+        public virtual long DataVersion { get; set; }
+
         public virtual IReadOnlyCollection<IAssignedVariant> AssignedVariants { get; set; } = Array.Empty<IAssignedVariant>();
 
         public IFeatureVariable GetFeatureVariable(IReadOnlyList<string> path)
