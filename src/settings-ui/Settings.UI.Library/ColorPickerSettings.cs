@@ -56,7 +56,6 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             newSettings.Properties.ActivationShortcut = oldSettings.Properties.ActivationShortcut;
             newSettings.Properties.ChangeCursor = oldSettings.Properties.ChangeCursor;
             newSettings.Properties.ActivationAction = oldSettings.Properties.ActivationAction;
-            newSettings.Properties.ColorHistory = new List<string>(oldSettings.Properties.ColorHistory);
             newSettings.Properties.ColorHistoryLimit = oldSettings.Properties.ColorHistoryLimit;
             newSettings.Properties.ShowColorName = oldSettings.Properties.ShowColorName;
             newSettings.Properties.ActivationShortcut = oldSettings.Properties.ActivationShortcut;
