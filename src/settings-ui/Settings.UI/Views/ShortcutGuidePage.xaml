@@ -14,7 +14,7 @@
         x:Uid="ShortcutGuide"
         ModuleImageSource="ms-appx:///Assets/Modules/ShortcutGuide.png">
         <controls:SettingsPageControl.ModuleContent>
-            <StackPanel Orientation="Vertical">
+            <StackPanel Orientation="Vertical" ChildrenTransitions="{StaticResource SettingsCardsAnimations}">
                 <labs:SettingsCard
                     x:Uid="ShortcutGuide_Enable"
                     HeaderIcon="{ui:BitmapIcon Source=/Assets/FluentIcons/FluentIconsShortcutGuide.png}"

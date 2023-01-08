@@ -14,7 +14,7 @@
         x:Uid="FileExplorerPreview"
         ModuleImageSource="ms-appx:///Assets/Modules/PowerPreview.png">
         <controls:SettingsPageControl.ModuleContent>
-            <StackPanel Orientation="Vertical">
+            <StackPanel Orientation="Vertical" ChildrenTransitions="{StaticResource SettingsCardsAnimations}">
                 <controls:SettingsGroup x:Uid="FileExplorerPreview_PreviewPane">
                     <InfoBar
                         x:Uid="FileExplorerPreview_PreviewHandlerOutlookIncompatibility"
