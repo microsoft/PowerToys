@@ -18,6 +18,7 @@ namespace PowerAccent.Core
         GA,
         GD,
         DE,
+        EST,
         FR,
         HR,
         HU,
@@ -52,6 +53,7 @@ namespace PowerAccent.Core
                 Language.GA => GetDefaultLetterKeyGA(letter), // Gaeilge (Irish Gaelic)
                 Language.GD => GetDefaultLetterKeyGD(letter), // Gàidhlig (Scottish Gaelic)
                 Language.DE => GetDefaultLetterKeyDE(letter), // German
+                Language.EST => GetDefaultLetterKeyEST(letter), // Estonian
                 Language.FR => GetDefaultLetterKeyFR(letter), // French
                 Language.HR => GetDefaultLetterKeyHR(letter), // Croatian
                 Language.HU => GetDefaultLetterKeyHU(letter), // Hungarian
@@ -154,6 +156,21 @@ namespace PowerAccent.Core
                 LetterKey.VK_D => new string[] { "đ" },
                 LetterKey.VK_S => new string[] { "š" },
                 LetterKey.VK_Z => new string[] { "ž" },
+                _ => Array.Empty<string>(),
+            };
+        }
+
+        // Estonian
+        private static string[] GetDefaultLetterKeyEST(LetterKey letter)
+        {
+            return letter switch
+            {
+                LetterKey.VK_A => new string[] { "ä" },
+                LetterKey.VK_E => new string[] { "€" },
+                LetterKey.VK_O => new string[] { "ö", "õ" },
+                LetterKey.VK_U => new string[] { "ü" },
+                LetterKey.VK_Z => new string[] { "ž" },
+                LetterKey.VK_S => new string[] { "š" },
                 _ => Array.Empty<string>(),
             };
         }
