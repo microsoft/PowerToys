@@ -1,6 +1,7 @@
 #include "pch.h"
 #include "general_settings.h"
 #include "auto_start_helper.h"
+#include "tray_icon.h"
 #include "Generated files/resource.h"
 
 #include <common/SettingsAPI/settings_helpers.h>
@@ -14,6 +15,7 @@
 
 // TODO: would be nice to get rid of these globals, since they're basically cached json settings
 static std::wstring settings_theme = L"system";
+static bool hide_tray_icon = false;
 static bool run_as_elevated = false;
 static bool show_new_updates_toast_notification = true;
 static bool download_updates_automatically = true;
@@ -75,10 +77,9 @@ json::JsonObject load_general_settings()
 GeneralSettings get_general_settings()
 {
     const bool is_user_admin = check_user_is_admin();
-    bool hide_system_tray_icon = PTSettingsHelper::load_general_settings().GetNamedBoolean(L"hide_tray_icon");
     GeneralSettings settings
     {
-        .hideSystemTrayIcon = hide_system_tray_icon,
+        .hideSystemTrayIcon = hide_tray_icon,
         .isElevated = is_process_elevated(),
         .isRunElevated = run_as_elevated,
         .isAdmin = is_user_admin,
@@ -202,6 +203,13 @@ void apply_general_settings(const json::JsonObject& general_configs, bool save)
     if (json::has(general_configs, L"theme", json::JsonValueType::String))
     {
         settings_theme = general_configs.GetNamedString(L"theme");
+    }
+
+    if (json::has(general_configs, L"hide_tray_icon", json::JsonValueType::Boolean))
+    {
+        hide_tray_icon = general_configs.GetNamedBoolean(L"hide_tray_icon");
+        // Update tray icon visibility when setting is toggled
+        set_tray_icon_visible(!hide_tray_icon);
     }
 
     if (save)

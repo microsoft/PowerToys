@@ -218,7 +218,6 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 {
                     _hideSysTrayIcon = value;
                     GeneralSettingsConfig.HideSysTrayIcon = value;
-                    SaveGeneralSettingsConfig();
                     NotifyPropertyChanged();
                 }
             }
@@ -788,11 +787,6 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             {
                 DoBackupAndRestoreDryRun(500);
             }
-        }
-
-        private void SaveGeneralSettingsConfig()
-        {
-            new SettingsUtils().SaveSettings(GeneralSettingsConfig.ToJsonString());
         }
 
         /// <summary>
