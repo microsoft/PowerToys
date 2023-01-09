@@ -102,6 +102,7 @@ int runner(bool isProcessElevated, bool openSettings, std::string settingsWindow
 #endif
     Trace::RegisterProvider();
     start_tray_icon(isProcessElevated);
+    set_tray_icon_visible(!get_general_settings().hideSystemTrayIcon);
     CentralizedKeyboardHook::Start();
 
     int result = -1;

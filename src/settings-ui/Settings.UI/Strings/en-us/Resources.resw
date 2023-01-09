@@ -4008,6 +4008,12 @@ Activate by holding the key for the character you want to add an accent to, then
   <data name="GeneralPage_ShowWhatsNewAfterUpdates.Content" xml:space="preserve">
     <value>Show the release notes after an update</value>
   </data>
+  <data name="GeneralPage_HideSystemTrayIcon.Description" xml:space="preserve">
+    <value>You will not be able to access PowerToys settings once you do this.</value>
+  </data>
+  <data name="GeneralPage_HideSystemTrayIcon.Header" xml:space="preserve">
+    <value>Hide system tray icon</value>
+  </data>
   <data name="CmdNotFound_Arm64ArchBar.Title" xml:space="preserve">
     <value>Command Not Found is not supported on the ARM64 architecture currently. We are actively working on a solution.</value>
   </data>

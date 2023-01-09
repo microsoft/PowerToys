@@ -4,6 +4,8 @@
 
 // Start the Tray Icon
 void start_tray_icon(bool isProcessElevated);
+// Change the Tray Icon visibility
+void set_tray_icon_visible(bool shouldIconBeVisible);
 // Stop the Tray Icon
 void stop_tray_icon();
 // Open the Settings Window

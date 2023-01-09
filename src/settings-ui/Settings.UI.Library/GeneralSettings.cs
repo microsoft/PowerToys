@@ -17,6 +17,10 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         [JsonPropertyName("startup")]
         public bool Startup { get; set; }
 
+        // Gets or sets a value indicating whether the powertoys system tray icon should be hidden.
+        [JsonPropertyName("hide_tray_icon")]
+        public bool HideSysTrayIcon { get; set; }
+
         // Gets or sets a value indicating whether the powertoy elevated.
         [JsonPropertyName("is_elevated")]
         public bool IsElevated { get; set; }
@@ -66,6 +70,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         public GeneralSettings()
         {
             Startup = false;
+            HideSysTrayIcon = false;
             IsAdmin = false;
             EnableWarningsElevatedApps = true;
             IsElevated = false;

@@ -38,6 +38,7 @@ json::JsonObject GeneralSettings::to_json()
     }
     result.SetNamedValue(L"enabled", std::move(enabled));
 
+    result.SetNamedValue(L"hide_tray_icon", json::value(hideSystemTrayIcon));
     result.SetNamedValue(L"is_elevated", json::value(isElevated));
     result.SetNamedValue(L"run_elevated", json::value(isRunElevated));
     result.SetNamedValue(L"show_new_updates_toast_notification", json::value(showNewUpdatesToastNotification));
@@ -74,7 +75,10 @@ json::JsonObject load_general_settings()
 GeneralSettings get_general_settings()
 {
     const bool is_user_admin = check_user_is_admin();
-    GeneralSettings settings{
+    bool hide_system_tray_icon = PTSettingsHelper::load_general_settings().GetNamedBoolean(L"hide_tray_icon");
+    GeneralSettings settings
+    {
+        .hideSystemTrayIcon = hide_system_tray_icon,
         .isElevated = is_process_elevated(),
         .isRunElevated = run_as_elevated,
         .isAdmin = is_user_admin,

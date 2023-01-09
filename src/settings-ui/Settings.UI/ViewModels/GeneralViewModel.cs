@@ -123,7 +123,8 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             _isDevBuild = Helper.GetProductVersion() == "v0.0.1";
 
             _startup = GeneralSettingsConfig.Startup;
-            _showNewUpdatesToastNotification = GeneralSettingsConfig.ShowNewUpdatesToastNotification;
+			_hideSysTrayIcon = GeneralSettingsConfig.HideSysTrayIcon;
+			_showNewUpdatesToastNotification = GeneralSettingsConfig.ShowNewUpdatesToastNotification;
             _autoDownloadUpdates = GeneralSettingsConfig.AutoDownloadUpdates;
             _showWhatsNewAfterUpdates = GeneralSettingsConfig.ShowWhatsNewAfterUpdates;
             _enableExperimentation = GeneralSettingsConfig.EnableExperimentation;
@@ -155,6 +156,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         private static bool _isDevBuild;
         private bool _startup;
+        private bool _hideSysTrayIcon;
         private bool _isElevated;
         private bool _runElevated;
         private bool _isAdmin;
@@ -197,6 +199,26 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 {
                     _startup = value;
                     GeneralSettingsConfig.Startup = value;
+                    NotifyPropertyChanged();
+                }
+            }
+        }
+
+        // Gets or sets a value indicating whether the PowerToys icon should be hidden in the system tray.
+        public bool HideSysTrayIcon
+        {
+            get
+            {
+                return _hideSysTrayIcon;
+            }
+
+            set
+            {
+                if (_hideSysTrayIcon != value)
+                {
+                    _hideSysTrayIcon = value;
+                    GeneralSettingsConfig.HideSysTrayIcon = value;
+                    SaveGeneralSettingsConfig();
                     NotifyPropertyChanged();
                 }
             }
@@ -766,6 +788,11 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             {
                 DoBackupAndRestoreDryRun(500);
             }
+        }
+
+        private void SaveGeneralSettingsConfig()
+        {
+            new SettingsUtils().SaveSettings(GeneralSettingsConfig.ToJsonString());
         }
 
         /// <summary>

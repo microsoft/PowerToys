@@ -298,6 +298,14 @@ void start_tray_icon(bool isProcessElevated)
     }
 }
 
+void set_tray_icon_visible(bool shouldIconBeVisible)
+{
+    tray_icon_data.uFlags |= NIF_STATE;
+    tray_icon_data.dwState = shouldIconBeVisible ? 0 : NIS_HIDDEN;
+    tray_icon_data.dwStateMask = NIS_HIDDEN;
+    Shell_NotifyIcon(NIM_MODIFY, &tray_icon_data);
+}
+
 void stop_tray_icon()
 {
     if (tray_icon_created)
