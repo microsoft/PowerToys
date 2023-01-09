@@ -30,15 +30,14 @@ Microsoft PowerToys is a set of utilities for power users to tune and streamline
 
 - Windows 11 or Windows 10 version 2004 (code name 20H1 / build number 19041) or newer.
 - Our installer will install the following items:
-   - [.NET 7.0.0 Desktop Runtime](https://dotnet.microsoft.com/download/dotnet/7.0#runtime-desktop-7.0.0).
    - [Microsoft Edge WebView2 Runtime](https://go.microsoft.com/fwlink/p/?LinkId=2124703) bootstrapper. This will install the latest version.
 
 ### Via GitHub with EXE [Recommended]
 
 Go to [Microsoft PowerToys GitHub releases page][github-release-link], click on `Assets` at the bottom to show the files available in the release. Please use the appropriate the PowerToys installer that matches your machine's architecture. For most, it is `x64`.
  
- - **For x64 processors (most common):** [PowerToysSetup-0.65.0-x64.exe](https://github.com/microsoft/PowerToys/releases/download/v0.65.0/PowerToysSetup-0.65.0-x64.exe)
- - **For ARM64 processors:** [PowerToysSetup-0.65.0-arm64.exe](https://github.com/microsoft/PowerToys/releases/download/v0.65.0/PowerToysSetup-0.65.0-arm64.exe)
+ - **For x64 processors (most common):** [PowerToysSetup-0.66.0-x64.exe](https://github.com/microsoft/PowerToys/releases/download/v0.66.0/PowerToysSetup-0.66.0-x64.exe)
+ - **For ARM64 processors:** [PowerToysSetup-0.66.0-arm64.exe](https://github.com/microsoft/PowerToys/releases/download/v0.66.0/PowerToysSetup-0.66.0-arm64.exe)
 
 This is our preferred method.
 
@@ -73,145 +72,102 @@ For guidance on developing for PowerToys, please read the [developer docs](/doc/
 
 Our [prioritized roadmap][roadmap] of features and utilities that the core team is focusing on.
 
-### 0.65 - November 2022 Update
+### 0.66 - December 2022 Update
 
 In this release, we focused on stability and improvements.
 
 **Highlights**
 
-- The codebase was upgraded to work with .NET 7. Thanks [@snickler](https://github.com/snickler)!
-- Quick Accent can now show a description of the selected character. Thanks [@Aaron-Junker](https://github.com/Aaron-Junker)!
-- ColorPicker now supports adding custom formats.
-
-### Known issues
-
-- The Text Extractor utility [fails to recognize text in some cases on ARM64 devices running Windows 10](https://github.com/microsoft/PowerToys/issues/20278).
-- After installing PowerToys, [the new Windows 11 context menu entries for PowerRename and Image Resizer might not appear before a system restart](https://github.com/microsoft/PowerToys/issues/19124).
-- There are reports of users who are [unable to open the Settings window](https://github.com/microsoft/PowerToys/issues/18015). This is being caused by incompatibilities with some applications (RTSS RivaTuner Statistics Server is a known examples of this). If you're affected by this, please check the  linked issue to verify if any of the presented solutions works for you.
+- PowerToy utilities now ship with self-contained .NET 7, meaning it's not necessary to install .NET as part of the installer and it's easier to keep up to date.
+- It's possible to pick which of the installed OCR languages is used by Text Extractor by selecting it in the right-click context menu.
+- Added a setting to sort the order of the accented characters by usage frequency in Quick Accent.
 
 ### General
 
-- Downgraded the ModernWPF dependency to 0.9.4 to avoid issues on certain virtualization technologies. (This was a hotfix for 0.64)
-- Upgraded and fixed the code to work with .NET 7. Thanks [@snickler](https://github.com/snickler)!
-
-### Always on Top
-
-- Added telemetry for the pinning/unpinning events.
-
-### Awake
-
-- Added telemetry.
-- Removed exiting Awake from the tray icon when starting from the runner. Utilities started from the runner should be disabled in the Settings to avoid discrepancies.
+- Reduced resource consumption caused by logging. A thread for each logger was being created even for disabled utilities.
+- The .NET 7 dependency is now shipped self-contained within the utilities, using deep links to reduce storage space usage.
 
 ### Color Picker
 
-- Fixed an infinite loop due to a looping UI refresh. (This was a hotfix for 0.64)
-- Added a feature to allow users to create their own color formats.
+- Fixed an issue where the custom color formats were not working when picking colors without using the editor.
+- Fixed a crash when using duplicated names for color formats.
+- Added two decimal formats, to distinguish between RGB and BGR.
+- Fixed color name localization, which was not working correctly on 0.65.
 
 ### FancyZones
 
-- Fixed an issue that caused turning off spaces between zones to not apply correctly. (This was a hotfix for 0.64)
-- Prevent the shift key press from trickling down to the focused window. Thanks [@davidegiacometti](https://github.com/davidegiacometti)!
-- Fixed a bug causing FancyZones to try resizing hidden windows.
-- Fixed the focus layout preview being empty on first run in the editor.
-- Fixed UI margin in the "Create new layout" dialog.
-- Fixed window positioning issues when switching between virtual desktops.
-- Fixed snapping by hotkey in single zone layouts.
-
-### File explorer add-ons
-
-- Added .log file support to the Monaco preview handler. Thanks [@Eagle3386](https://github.com/Eagle3386)!
+- Fixed an editor crash caused by deleting a zone while trying to move it.
+- Reduce the time it takes the tooltip for layout shortcut setting to appear in the editor.
 
 ### File Locksmith
 
-- Query system and other users processes when elevated. (This was a hotfix for 0.64)
-- Icon and UI fixes. Thanks [@niels9001](https://github.com/niels9001)! (This was a hotfix for 0.64)
-
-### Group Policy Objects
-
-- Removed a obsolete dependency from the admx file to fix importing on Intune. Thanks [@htcfreek](https://github.com/htcfreek)! (This was a hotfix for 0.64)
+- Fixed an issue causing File Locksmith to hang when looking for open handles in some machines.
 
 ### Hosts File Editor
 
-- Added a scrollbar to the additional lines dialog. Thanks [@davidegiacometti](https://github.com/davidegiacometti)! (This was a hotfix for 0.64)
-- Updated the plus icon. Thanks [@niels9001](https://github.com/niels9001)! (This was a hotfix for 0.64)
-- Prevent the new entry content dialog from overlapping the title bar.
-- Updated the name for the additional lines feature. Thanks [@htcfreek](https://github.com/htcfreek)!
-- Added a workaround for an issue causing the context menu not opening on right-click. Thanks [@davidegiacometti](https://github.com/davidegiacometti)!
-
-### Image Resizer
-- Fixed a silent crash when trying to show the tier 1 context menu on Windows 11.
+- Added a warning when duplicated entries are detected. Thanks [@davidegiacometti](https://github.com/davidegiacometti)!
 
 ### PowerToys Run
 
-- Added pinyin support to the search. Thanks [@frg2089](https://github.com/frg2089)!
-- Fixed an error in the TimeZone plugin preventing searching for standard time zones. Thanks [@Tantalus13A98B5F](https://github.com/Tantalus13A98B5F)!
-- Added the English abbreviations as fallbacks in the UnitConverter plugin. Thanks [@Tantalus13A98B5F](https://github.com/Tantalus13A98B5F)!
+- Support drag and dropping for file results. Thanks [@daniel-richter](https://github.com/daniel-richter)!
 
 ### Quick Accent
 
-- Added mappings for the mu, omicron, upsilon and thorn characters.
-- Added a setting to exclude apps from activating Quick Accent.
-- Fixed an issue causing the selector to trigger when leaving the lock screen. Thanks [@damienleroy](https://github.com/damienleroy)!
-- Added the Croatian, Netherlands, Swedish and Welsh character sets. Thanks [@damienleroy](https://github.com/damienleroy)!
-- Added support for more unicode characters. Thanks [@char-46](https://github.com/char-46)!
-- Shift-space can now navigate backwards in the selector. Thanks [@davidegiacometti](https://github.com/davidegiacometti)!
-- Added the Catalan accented characters. Thanks [@ivocarbajo](https://github.com/ivocarbajo) and [@codingneko](https://github.com/codingneko)!
-- Added the Kurdish accented characters.
-- Added the Serbian accented characters. Thanks [@damienleroy](https://github.com/damienleroy)!
-- Added the Irish and Scottish accented characters.
-- Added the description for the currently selected character in the selector.
-- Fixed a bug causing the selector window to appear blank.
-
-### Runner
-
-- Fixed a crash on a racing condition accessing the IPC communication with Settings.
+- Added support for dark theme. Thanks [@niels9001](https://github.com/niels9001)!
+- Increased default input delay to improve out of the box experience.
+- Fixed a bug causing the first character to not be selected when opening the overlay. Thanks [@davidegiacometti](https://github.com/davidegiacometti)!
+- Fixed the positioning of the overlay when showing near the horizontal edges of the screen.
+- Added additional Pinyin characters. Thanks [@char-46](https://github.com/char-46)!
+- Added Macedonian characters. Thanks [@ad-mca-mk](https://github.com/ad-mca-mk)!
+- Added a setting to sort characters by usage frequency.
+- Added a setting to always start selection in the first character, even when using the arrow keys as the activation method.
 
 ### Settings
 
-- Fixed settings name in the QuickAccent page. Thanks [@htcfreek](https://github.com/htcfreek)!
-- Added a message indicating there's no network available when looking for updates.
-- Fixed an error causing the backup/restore feature to not find the backup file. Thanks [@jefflord](https://github.com/jefflord)!
-- Fixed localization for the "All apps" expression in the keyboard manager page.
-- UI refactoring, clean-up and bringing in modern controls. Thanks [@niels9001](https://github.com/niels9001)!
-- Improved settings/OOBE screens text. Thanks [@Jay-o-Way](https://github.com/Jay-o-Way)!
-- The backup/restore feature also backs up FancyZones layouts.
+- Fixed an error that hid the option to keep the display on when using the "Indefinitely Awake" mode.
+- Fixed an accessibility issue causing the navigation bar to not work with narrator in scan mode.
+- Fixed an accessibility issue where the name for the shortcut control was not being read correctly.
+- Tweaked the Color Picker custom color format UI. Thanks [@niels9001](https://github.com/niels9001)!
+- Improved the shortcut control visibility and accessibility. Thanks [@niels9001](https://github.com/niels9001)!
+- Fixed an issue causing the Settings to not be saved correctly on scenarios where the admin user would be different then the user running PowerToys.
+- Added a setting to pick which language should be used by default when using Text Extractor.
 
-### Shortcut Guide
-- Added a setting to make the shortcuts and taskbar icons have different configurable response times. Thanks [@OkamiWong](https://github.com/OkamiWong)!
+### Text Extractor
+
+- Improve behavior for CJK languages by not adding spaces for some characters that don't need them. Thanks [@AO2233](https://github.com/AO2233)!
+- OCR language can now be picked in the right-click context menu.
 
 ### Video Conference Mute
 
-- Changed the warning about deprecating Video Conference Mute to saying it's going to go into legacy mode, thanks to community feedback.  (This was a hotfix for 0.64)
+- Reduced resource consumption by not starting the File Watchers when the utility is disabled.
 
 ### Documentation
 
-- Added the core team to COMMUNITY.md
+- Updated the development setup documentation.
+- Improved the Markdown documentation lists numbering in many docs. Thanks [@sanidhyas3s](https://github.com/sanidhyas3s)!
 
 ### Development
 
-- Fixed some errors in the GitHub issue templates. Thanks [@Aaron-Junker](https://github.com/Aaron-Junker)!
-- Updated the Windows implementation library. Thanks [@AtariDreams](https://github.com/AtariDreams)!
-- Added Hosts File Editor to the issue templates. Thanks [@davidegiacometti](https://github.com/davidegiacometti)!
 - Turned on C++ code analysis and incrementally fixing warnings.
-- Cleaned up unused dependencies. Thanks [@davidegiacometti](https://github.com/davidegiacometti)!
-- Fixed building on the latest MSVC.
-- Fixed multi-processor build on the latest MSBuild.
-- Added a message to suggest the feedback hub to the fabric bot triggers.
-- Optimized every png file with the zopfli algorithm. Thanks [@pea-sys](https://github.com/pea-sys)!
-- Updated the .vsconfig file for a quicker development setup. Thanks [@ChaseKnowlden](https://github.com/ChaseKnowlden)!
+- C++ code analysis no longer runs on release CI to speed up building release candidates. It still runs on GitHub CI and when building locally to maintain code quality.
+- Cleaned up "to-do" comments referring to disposing memory on C#. Thanks [@davidegiacometti](https://github.com/davidegiacometti)!
+- Added a fabric bot rule for localization issues.
+- Fixed a CI build error after a .NET tools update.
+- Update the Windows App SDK dependency version to 1.2.
+- When building for arm64, the arm64 build tools are now preferred when building on an arm64 device. Thanks [@snickler](https://github.com/snickler)!
+- Updated the C# test framework and removed unused Newtonsoft.Json package references.
+- Updated StyleCop and fixed/enabled more warnings. Thanks [@davidegiacometti](https://github.com/davidegiacometti)!
 - Fixed a language typo in the code. Thanks [@eltociear](https://github.com/eltociear)!
-- Fixed wrong x86 target in the solution file.
-- Added a script to fail building when the nuget packages aren't consolidated. Thanks [@davidegiacometti](https://github.com/davidegiacometti)!
-- Upgraded the Vanara.Invoke dependencies.
-- Upgraded and brought back the spell-checker. Thanks [@jsoref](https://github.com/jsoref)!
-- Added a new dependencies feed and fixed release CI. Thanks [@Aaron-Junker](https://github.com/Aaron-Junker)!
+- Improved code quality around some silent crashes that were being reported to Microsoft servers.
+- Moved the GPO asset files to source instead of docs in the repo.
+- Upgraded the unit test NuGet packages.
 
-#### What is being planned for version 0.66
+#### What is being planned for version 0.67
 
-For [v0.66][github-next-release-work], we'll work on below:
+For [v0.67][github-next-release-work], we'll work on below:
 
-- Ship .NET self contained and shared between utilities
+- Allow installing without UAC.
+- Add a flyout menu to the system tray icon for quick access.
 - Stability / bug fixes
 
 ## PowerToys Community
@@ -239,5 +195,5 @@ The application logs basic telemetry. Our Telemetry Data page (Coming Soon) has 
 [usingPowerToys-docs-link]: https://aka.ms/powertoys-docs
 
 <!-- items that need to be updated release to release -->
-[github-next-release-work]: https://github.com/microsoft/PowerToys/issues?q=is%3Aopen+is%3Aissue+project%3Amicrosoft%2FPowerToys%2F39
-[github-current-release-work]: https://github.com/microsoft/PowerToys/issues?q=is%3Aopen+is%3Aissue+project%3Amicrosoft%2FPowerToys%2F38
+[github-next-release-work]: https://github.com/microsoft/PowerToys/issues?q=is%3Aopen+is%3Aissue+project%3Amicrosoft%2FPowerToys%2F40
+[github-current-release-work]: https://github.com/microsoft/PowerToys/issues?q=is%3Aopen+is%3Aissue+project%3Amicrosoft%2FPowerToys%2F39

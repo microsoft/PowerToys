@@ -23,5 +23,21 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             DataContext = ViewModel;
             InitializeComponent();
         }
+
+        private void TextExtractor_ComboBox_Loaded(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
+        {
+            /**
+          * UWP hack
+          * because UWP load the bound ItemSource of the ComboBox asynchronous,
+          * so after InitializeComponent() the ItemSource is still empty and can't automatically select a entry.
+          * Selection via SelectedItem and SelectedValue is still not working too
+          */
+            ViewModel.UpdateLanguages();
+        }
+
+        private void TextExtractor_ComboBox_DropDownOpened(object sender, object e)
+        {
+            ViewModel.UpdateLanguages();
+        }
     }
 }

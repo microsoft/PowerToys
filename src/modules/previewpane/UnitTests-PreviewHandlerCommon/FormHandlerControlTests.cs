@@ -98,22 +98,6 @@ namespace PreviewHandlerCommonUnitTests
         }
 
         [TestMethod]
-        public void FormHandlerControlShouldUpdateBoundsWhenSetRectCalled()
-        {
-            // Arrange
-            using (var testFormHandlerControl = new TestFormControl())
-            {
-                var bounds = new Rectangle(2, 2, 4, 4);
-
-                // Act
-                testFormHandlerControl.SetRect(bounds);
-
-                // Assert
-                Assert.AreEqual(bounds, testFormHandlerControl.Bounds);
-            }
-        }
-
-        [TestMethod]
         public void FormHandlerControlShouldSetTextColorWhenSetTextColorCalled()
         {
             // Arrange

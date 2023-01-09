@@ -88,8 +88,8 @@ private:
     std::optional<SerializedSharedMemory> _imageOverlayChannel;
     std::optional<SerializedSharedMemory> _settingsUpdateChannel;
 
-    FileWatcher _generalSettingsWatcher;
-    FileWatcher _moduleSettingsWatcher;
+    std::unique_ptr<FileWatcher> _generalSettingsWatcher;
+    std::unique_ptr<FileWatcher> _moduleSettingsWatcher;
 
     static VideoConferenceSettings settings;
     static Toolbar toolbar;

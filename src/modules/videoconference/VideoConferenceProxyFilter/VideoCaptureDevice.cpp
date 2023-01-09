@@ -187,7 +187,7 @@ struct VideoCaptureReceiverPin : winrt::implements<VideoCaptureReceiverPin, IPin
             return VFW_E_NOT_CONNECTED;
         }
 
-        *pmt = *CopyMediaType(_inputCaptureMediaType).release();
+        *pmt = *CopyMediaType(_inputCaptureMediaType.get()).release();
         return S_OK;
     }
 
@@ -261,7 +261,7 @@ struct VideoCaptureReceiverPin : winrt::implements<VideoCaptureReceiverPin, IPin
         }
 
         auto enumerator = winrt::make_self<MediaTypeEnumerator>();
-        enumerator->_objects.emplace_back(CopyMediaType(_expectedMediaType));
+        enumerator->_objects.emplace_back(CopyMediaType(_expectedMediaType.get()));
         *ppEnum = enumerator.detach();
 
         return S_OK;

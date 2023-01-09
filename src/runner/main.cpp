@@ -173,7 +173,7 @@ int runner(bool isProcessElevated, bool openSettings, std::string settingsWindow
             knownModules.emplace_back(VCM_PATH);
         }
 
-        for (const auto& moduleSubdir : knownModules)
+        for (auto moduleSubdir : knownModules)
         {
             try
             {
@@ -389,6 +389,7 @@ int WINAPI WinMain(HINSTANCE /*hInstance*/, HINSTANCE /*hPrevInstance*/, LPSTR l
         case toast_notification_handler_result::exit_success:
             return 0;
         }
+        [[fallthrough]];
     case SpecialMode::ReportSuccessfulUpdate:
     {
         notifications::remove_toasts_by_tag(notifications::UPDATING_PROCESS_TOAST_TAG);

@@ -9,7 +9,15 @@
         <Product>PowerToys</Product>
         <Description>PowerToys Settings UI Library</Description>
         <AssemblyName>PowerToys.Settings.UI.Lib</AssemblyName>
-	    <UseWindowsForms>false</UseWindowsForms>
+        <SelfContained>true</SelfContained>
+    </PropertyGroup>
+
+    <!-- SelfContained=true requires RuntimeIdentifier to be set -->
+    <PropertyGroup Condition="'$(Platform)'=='x64'">
+        <RuntimeIdentifier>win10-x64</RuntimeIdentifier>
+    </PropertyGroup>
+    <PropertyGroup Condition="'$(Platform)'=='ARM64'">
+        <RuntimeIdentifier>win10-arm64</RuntimeIdentifier>
     </PropertyGroup>
 
 	<PropertyGroup Condition="'$(Configuration)'=='Debug'">
@@ -32,6 +40,22 @@
 		<ProjectReference Include="..\..\common\interop\PowerToys.Interop.vcxproj" />
 		<ProjectReference Include="..\..\common\ManagedCommon\ManagedCommon.csproj" />
 		<ProjectReference Include="..\..\common\ManagedTelemetry\Telemetry\ManagedTelemetry.csproj" />
+	</ItemGroup>
+
+	<ItemGroup>
+	  <Compile Update="Resources\Resources.Designer.cs">
+	    <DependentUpon>Resources.resx</DependentUpon>
+	    <DesignTime>True</DesignTime>
+	    <AutoGen>True</AutoGen>
+	  </Compile>
+	</ItemGroup>
+
+	<ItemGroup>
+	  <EmbeddedResource Update="Resources\Resources.resx">
+	    <SubType>Designer</SubType>
+	    <LastGenOutput>Resources.Designer.cs</LastGenOutput>
+	    <Generator>PublicResXFileCodeGenerator</Generator>
+	  </EmbeddedResource>
 	</ItemGroup>
 
 </Project>

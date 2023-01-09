@@ -34,7 +34,7 @@ namespace
     {
         CComPtr<IShellWindows> spShellWindows;
         auto result = spShellWindows.CoCreateInstance(CLSID_ShellWindows);
-        if (result != S_OK)
+        if (result != S_OK || spShellWindows == nullptr)
         {
             Logger::warn(L"Failed to create instance. {}", GetErrorString(result));
             return false;
@@ -47,7 +47,7 @@ namespace
         result = spShellWindows->FindWindowSW(
             &vtLoc, &vtEmpty, SWC_DESKTOP, &lhwnd, SWFO_NEEDDISPATCH, &spdisp);
 
-        if (result != S_OK)
+        if (result != S_OK || spdisp == nullptr)
         {
             Logger::warn(L"Failed to find the window. {}", GetErrorString(result));
             return false;
@@ -56,7 +56,7 @@ namespace
         CComPtr<IShellBrowser> spBrowser;
         result = CComQIPtr<IServiceProvider>(spdisp)->QueryService(SID_STopLevelBrowser,
                                                                    IID_PPV_ARGS(&spBrowser));
-        if (result != S_OK)
+        if (result != S_OK || spBrowser == nullptr)
         {
             Logger::warn(L"Failed to query service. {}", GetErrorString(result));
             return false;
@@ -64,14 +64,14 @@ namespace
 
         CComPtr<IShellView> spView;
         result = spBrowser->QueryActiveShellView(&spView);
-        if (result != S_OK)
+        if (result != S_OK || spView == nullptr)
         {
             Logger::warn(L"Failed to query active shell window. {}", GetErrorString(result));
             return false;
         }
 
         result = spView->QueryInterface(riid, ppv);
-        if (result != S_OK)
+        if (result != S_OK || ppv == nullptr || *ppv == nullptr )
         {
             Logger::warn(L"Failed to query interface. {}", GetErrorString(result));
             return false;
