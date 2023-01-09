@@ -11,9 +11,12 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         public PowerOcrProperties()
         {
             ActivationShortcut = new HotkeySettings(true, false, false, true, 0x54); // Win+Shift+T
+            PreferredLanguage = string.Empty;
         }
 
         public HotkeySettings ActivationShortcut { get; set; }
+
+        public string PreferredLanguage { get; set; }
 
         public override string ToString()
             => JsonSerializer.Serialize(this);
