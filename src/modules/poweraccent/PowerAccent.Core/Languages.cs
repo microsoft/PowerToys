@@ -115,6 +115,7 @@ namespace PowerAccent.Core
                 LetterKey.VK_Z => new string[] { "ź", "ž", "ż", "ʒ", "ǯ", "ζ" },
                 LetterKey.VK_COMMA => new string[] { "¿", "¡", "∙", "₋", "⁻", "–", "≤", "≥", "≠", "≈", "≙", "±", "₊", "⁺" },
                 LetterKey.VK_NUMPADKEY0 => new string[] { "\u0300", "\u0301", "\u0302", "\u0303", "\u0304", "\u0308", "\u030C" },
+                LetterKey.VK_MINUS => new string[] { "~", "‐", "‑", "‒", "–", "—", "―", "⁓", "−", "⸺", "⸻" },
                 _ => Array.Empty<string>(),
             };
         }

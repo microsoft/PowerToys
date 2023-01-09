@@ -4,7 +4,13 @@
 #include <dcomp.h>
 #include <dxgi1_3.h>
 #include <inspectable.h>
+
+// Suppressing 26466 - Don't use static_cast downcasts - in base.h
+#pragma warning(push)
+#pragma warning(disable : 26466)
 #include <winrt/base.h>
+#pragma warning(pop)
+
 
 struct DxgiWindowState
 {
