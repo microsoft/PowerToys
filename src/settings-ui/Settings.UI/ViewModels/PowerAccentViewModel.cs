@@ -34,6 +34,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             "EST",
             "FR",
             "DE",
+            "HE",
             "HU",
             "IS",
             "IT",

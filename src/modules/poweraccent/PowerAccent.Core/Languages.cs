@@ -21,6 +21,7 @@ namespace PowerAccent.Core
         EST,
         FR,
         HR,
+        HE,
         HU,
         IS,
         IT,
@@ -56,6 +57,7 @@ namespace PowerAccent.Core
                 Language.EST => GetDefaultLetterKeyEST(letter), // Estonian
                 Language.FR => GetDefaultLetterKeyFR(letter), // French
                 Language.HR => GetDefaultLetterKeyHR(letter), // Croatian
+                Language.HE => GetDefaultLetterKeyHE(letter), // Hebrew
                 Language.HU => GetDefaultLetterKeyHU(letter), // Hungarian
                 Language.IS => GetDefaultLetterKeyIS(letter), // Iceland
                 Language.IT => GetDefaultLetterKeyIT(letter), // Italian
@@ -444,6 +446,21 @@ namespace PowerAccent.Core
                 LetterKey.VK_O => new string[] { "ö" },
                 LetterKey.VK_S => new string[] { "ß" },
                 LetterKey.VK_U => new string[] { "ü" },
+                _ => Array.Empty<string>(),
+            };
+        }
+
+        // Hebrew
+        private static string[] GetDefaultLetterKeyHE(LetterKey letter)
+        {
+            return letter switch
+            {
+                LetterKey.VK_A => new string[] { "שׂ", "שׁ" },
+                LetterKey.VK_G => new string[] { "ױ" },
+                LetterKey.VK_H => new string[] { "ײ" },
+                LetterKey.VK_U => new string[] { "וֹ", "וּ" },
+                LetterKey.VK_Y => new string[] { "װ" },
+                LetterKey.VK_COMMA => new string[] { "”", "״", "־", "–", "֫", "ֽ", "ֿ" },
                 _ => Array.Empty<string>(),
             };
         }
