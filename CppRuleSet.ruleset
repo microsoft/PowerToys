@@ -13,7 +13,7 @@
     <Rule Id="C26400" Action="Info" />
     <Rule Id="C26401" Action="Info" />
     <Rule Id="C26402" Action="Error" />
-    <Rule Id="C26403" Action="Info" />
+    <Rule Id="C26403" Action="Error" />
     <Rule Id="C26404" Action="Error" />
     <Rule Id="C26405" Action="Error" />
     <Rule Id="C26406" Action="Error" />
@@ -63,7 +63,7 @@
     <Rule Id="C26463" Action="Error" />
     <Rule Id="C26464" Action="Error" />
     <Rule Id="C26465" Action="Info" />
-    <Rule Id="C26466" Action="Info" />
+    <Rule Id="C26466" Action="Error" />
     <Rule Id="C26471" Action="Info" />
     <Rule Id="C26472" Action="Info" />
     <Rule Id="C26473" Action="Info" />
