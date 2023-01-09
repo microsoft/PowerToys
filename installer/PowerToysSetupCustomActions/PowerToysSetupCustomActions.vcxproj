@@ -52,13 +52,11 @@
       </Command>
       <Message>Backing up original files and populating .NET and WPF Runtime dependencies </Message>
     </PreBuildEvent>
-    <PostBuildEvent>
-      <Command>
-      call cmd /C "move /Y ""$(ProjectDir)DepsFilesLists.h.bk"" ""$(ProjectDir)DepsFilesLists.h"""
-      </Command>
-      <Message>Reverting original files</Message>
-    </PostBuildEvent>
   </ItemDefinitionGroup>
+  <PropertyGroup Condition="'$(RunBuildEvents)'=='false'">
+    <PreBuildEventUseInBuild>false</PreBuildEventUseInBuild>
+    <PostBuildEventUseInBuild>false</PostBuildEventUseInBuild>
+  </PropertyGroup>
   <ItemDefinitionGroup>
     <ClCompile>
       <AdditionalIncludeDirectories>inc;..\..\src\;..\..\src\common\Telemetry;telemetry;$(WixSdkPath)VS2017\inc;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
