@@ -31,10 +31,6 @@ call "..\..\publish.cmd" arm64
     call move /Y ..\..\..\PowerToysSetupCustomActions\DepsFilesLists.h.bk ..\..\..\PowerToysSetupCustomActions\DepsFilesLists.h
     </PostBuildEvent>
   </PropertyGroup>
-  <PropertyGroup Condition="'$(RunBuildEvents)'=='false'">
-    <PreBuildEventUseInBuild>false</PreBuildEventUseInBuild>
-    <PostBuildEventUseInBuild>false</PostBuildEventUseInBuild>
-  </PropertyGroup>
   <PropertyGroup>
     <Name>PowerToysInstaller</Name>
   </PropertyGroup>
