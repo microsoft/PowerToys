@@ -32,7 +32,7 @@ Real disk usage of PowerToys is shown by inspecting disk usage after installing 
 
 ## PowerShell command calculating size of non-hardlinks files
 
-Size of regular files (non-hard-links) can also be obtanied by running following PowerShell command in PowerToys installation dir:
+Size of regular files (non-hard-links) can also be obtained by running following PowerShell command in PowerToys installation dir:
 
 ```
 Regular files:

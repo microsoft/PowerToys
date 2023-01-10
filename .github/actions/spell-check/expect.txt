@@ -832,7 +832,6 @@ jobject
 jpe
 jpn
 jpnime
-JSONOf
 Jsons
 jsonval
 junja
@@ -870,7 +869,6 @@ Kyrgyzstan
 Kyzylorda
 LAlt
 Lambson
-LANGID
 langword
 Lastdevice
 Laute
@@ -1213,7 +1211,7 @@ NPH
 NResize
 NTAPI
 ntdll
-NTFS
+ntfs
 NTSTATUS
 nugets
 nullonfailure
@@ -1535,7 +1533,6 @@ Rsp
 Rstrtmgr
 RTB
 RTLREADING
-RTSS
 ruleset
 runas
 rundll
@@ -2154,6 +2151,5 @@ zonable
 zoneset
 Zoneszonabletester
 Zonev
-zopfli
 Zykova
 zzz
