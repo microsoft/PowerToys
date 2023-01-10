@@ -67,11 +67,7 @@ namespace AllExperiments
                     var assignmentContext = variantAssignments.GetAssignmentContext();
                     var featureFlagValue = featureVariables[0].GetStringValue();
 
-                    if (featureFlagValue == "alternate" && AssignmentUnit != string.Empty)
-                    {
-                        IsExperiment = true;
-                    }
-
+                    var experimentGroup = string.Empty;
                     string json = File.ReadAllText(jsonFilePath);
                     var jsonDictionary = JsonSerializer.Deserialize<Dictionary<string, object>>(json);
 
@@ -96,8 +92,15 @@ namespace AllExperiments
                             }
                         }
 
+                        experimentGroup = jsonDictionary["variantassignment"].ToString();
+
                         string output = JsonSerializer.Serialize(jsonDictionary);
                         File.WriteAllText(jsonFilePath, output);
+                    }
+
+                    if (experimentGroup == "alternate" && AssignmentUnit != string.Empty)
+                    {
+                        IsExperiment = true;
                     }
 
                     PowerToysTelemetry.Log.WriteEvent(new OobeVariantAssignmentEvent() { AssignmentContext = assignmentContext, ClientID = AssignmentUnit });
@@ -108,13 +111,23 @@ namespace AllExperiments
                 string json = File.ReadAllText(jsonFilePath);
                 var jsonDictionary = JsonSerializer.Deserialize<Dictionary<string, object>>(json);
 
-                if (jsonDictionary != null && jsonDictionary.ContainsKey("variantassignment"))
+                if (jsonDictionary != null)
                 {
-                    if (jsonDictionary["variantassignment"].ToString() == "alternate" && AssignmentUnit != string.Empty)
+                    if (jsonDictionary.ContainsKey("variantassignment"))
                     {
-                        IsExperiment = true;
+                        if (jsonDictionary["variantassignment"].ToString() == "alternate" && AssignmentUnit != string.Empty)
+                        {
+                            IsExperiment = true;
+                        }
+                    }
+                    else
+                    {
+                        jsonDictionary["variantassignment"] = "current";
                     }
                 }
+
+                string output = JsonSerializer.Serialize(jsonDictionary);
+                File.WriteAllText(jsonFilePath, output);
 
                 Logger.LogError("Error getting to TAS endpoint", ex);
             }
