@@ -272,8 +272,8 @@
     <comment>This should align to the action in Windows of emptying the recycle bin on your computer.</comment>
   </data>
   <data name="Microsoft_plugin_sys_RecycleBin_ShowEmptySuccessMessage" xml:space="preserve">
-    <value>Show a success message after empty the Recycle Bin</value>
-    <comment>Means the recycle bin folder in Explorer and "empty" refers to "Empty Recycle Bin" command.</comment>
+    <value>Show a success message after emptying the Recycle Bin</value>
+    <comment>Means the recycle bin folder in Explorer and "emptying" refers to "Empty Recycle Bin" command.</comment>
   </data>
   <data name="Microsoft_plugin_sys_restart_computer" xml:space="preserve">
     <value>Restart</value>
