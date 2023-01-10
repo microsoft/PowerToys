@@ -42,6 +42,11 @@ Hard-links
 ls -Recurse -File -force -ErrorAction SilentlyContinue | ? LinkType -e HardLink | Measure-Object -Property Length -Sum
 ```
 
-Running these commands for PowerToys v0.66 shows that size of regular files is way less than size of hard-links pointing to some of those regular files. Not much sense there, right?
+Running these commands for PowerToys v0.66 shows that size of regular files is way less than size of hard-links pointing to some of those regular files because PowerShell (same as File Explorer) also takes the size of hard-links as of regular files.
 
 <img src="../images/disk-usage/pwsh_v0.66.png">
+
+# Conclusion
+
+- Size of PowerToys installation directory shown by File Explorer is > 2GB
+- The real disk usage of PowerToys installation directory is ~660MB
