@@ -475,7 +475,6 @@ EFile
 ekus
 emmintrin
 Emoji
-emptyrecyclebin
 ENABLEDELAYEDEXPANSION
 enabledisable
 ENABLEDPOPUP
@@ -1610,6 +1609,7 @@ shellex
 SHELLEXECUTEINFO
 SHELLEXECUTEINFOW
 shellscalingapi
+shemptyrecyclebina
 SHFILEINFO
 SHGFI
 Shl

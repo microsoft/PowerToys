@@ -14,12 +14,18 @@ namespace Microsoft.PowerToys.Run.Plugin.System.Components
         /// <summary>
         /// Gets or sets the context data for the command/results
         /// </summary>
-        public string Data { get; set; }
+        public string Data { get; set; } = string.Empty;
+
+        /// <summary>
+        /// Gets or sets an additional result name for searching
+        /// </summary>
+        public string SearchTag { get; set; } = string.Empty;
     }
 
     internal enum ResultContextType
     {
         Command, // Reserved for later usage
         NetworkAdapterInfo,
+        RecycleBinCommand,
     }
 }
