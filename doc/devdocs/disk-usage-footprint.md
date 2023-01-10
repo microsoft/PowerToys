@@ -2,6 +2,10 @@
 
 Starting with the release v0.66 of PowerToys, .NET runtime dlls are being shipped self-contained as a part of PowerToys. .NET dlls are being installed in `<PowerToysInstallDir>/dll/dotnet`. During the installation process, hard-links are being created for every module that needs .NET libraries.
 
+This adds .NET to the list of dependencies we are shipping self-contained (together with WinAppSDK and VC Redistributable) in PowerToys by using the hard-links technology to share the dlls between the modules in a way that saves disk space when compared to having actual copies for each module. Our main motivation for doing this is to eventually reach a point where PowerToys can be installed without requiring UAC elevation and without installing additional dependencies like .NET.
+
+The main goal of this document is to show how PowerToys has a lower disk space impact than shown in File Explorer.
+
 File Explorer treats hard-links the same as "original"/regular files/directories (https://learn.microsoft.com/en-us/troubleshoot/windows-server/backup-and-storage/disk-space-problems-on-ntfs-volumes#other-ntfs-features-that-may-cause-file-allocation-confusion), not as links. This results in File Explorer reporting size of PowerToys installation directory bigger than it is (more than 2GB). Shown bellow is real disk usage footprint of PowerToys v0.66 obtained by installing PowerToys on empty disk:
 
 # Steps
