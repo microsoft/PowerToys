@@ -42,6 +42,9 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         [JsonPropertyName("clear_input_on_launch")]
         public bool ClearInputOnLaunch { get; set; }
 
+        [JsonPropertyName("tab_selects_context_buttons")]
+        public bool TabSelectsContextButtons { get; set; }
+
         [JsonPropertyName("theme")]
         public Theme Theme { get; set; }
 
@@ -79,6 +82,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             SearchTypePreference = "application_name";
             IgnoreHotkeysInFullscreen = false;
             ClearInputOnLaunch = false;
+            TabSelectsContextButtons = true;
             MaximumNumberOfResults = 4;
             Theme = Theme.System;
             Position = StartupPosition.Cursor;
