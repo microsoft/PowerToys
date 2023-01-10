@@ -49,4 +49,4 @@ Running these commands for PowerToys v0.66 shows that size of regular files is w
 # Conclusion
 
 - Size of PowerToys installation directory shown by File Explorer is > 2GB
-- The real disk usage of PowerToys installation directory is ~660MB
+- The real disk usage of PowerToys v0.66 installation directory is ~660MB
