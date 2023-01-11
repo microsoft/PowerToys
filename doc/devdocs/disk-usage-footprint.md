@@ -39,7 +39,7 @@ When we were prototyping and validating, here was our running table of results a
 
 ## Our process to verify current install footprint
 
-We created a quick virtual machine.  We opt'ed to use one of our Windows 10 test virtual machines here.
+We created a quick virtual machine.  We chose to use our fresh Windows 10 test virtual machines here.
 
 ### Empty disk details
 
