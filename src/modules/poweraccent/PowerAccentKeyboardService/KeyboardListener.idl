@@ -41,7 +41,8 @@ namespace PowerToys
             VK_X = 0x58,
             VK_Y = 0x59,
             VK_Z = 0x5A,
-            VK_COMMA = 0xBC
+            VK_COMMA = 0xBC,
+            VK_MINUS = 0xBD
         };
 
         enum TriggerKey

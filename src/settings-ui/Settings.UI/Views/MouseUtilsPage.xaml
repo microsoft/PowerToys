@@ -66,7 +66,7 @@
                     </labs:SettingsExpander>
 
                     <labs:SettingsExpander
-                        x:Uid="ShortcutGuide_Appearance_Behavior"
+                        x:Uid="Appearance_Behavior"
                         HeaderIcon="{ui:FontIcon FontFamily={StaticResource SymbolThemeFontFamily}, Glyph=&#xEB3C;}"
                         IsEnabled="{x:Bind ViewModel.IsFindMyMouseEnabled, Mode=OneWay}"
                         IsExpanded="False">
@@ -158,7 +158,7 @@
                             HotkeySettings="{x:Bind Path=ViewModel.MouseHighlighterActivationShortcut, Mode=TwoWay}" />
                     </labs:SettingsCard>
                     <labs:SettingsExpander
-                        x:Uid="ShortcutGuide_Appearance_Behavior"
+                        x:Uid="Appearance_Behavior"
                         HeaderIcon="{ui:FontIcon FontFamily={StaticResource SymbolThemeFontFamily}, Glyph=&#xEB3C;}"
                         IsEnabled="{x:Bind ViewModel.IsMouseHighlighterEnabled, Mode=OneWay}">
                         <labs:SettingsExpander.Items>
@@ -231,7 +231,7 @@
                     </labs:SettingsCard>
 
                     <labs:SettingsExpander
-                        x:Uid="ShortcutGuide_Appearance_Behavior"
+                        x:Uid="Appearance_Behavior"
                         HeaderIcon="{ui:FontIcon FontFamily={StaticResource SymbolThemeFontFamily}, Glyph=&#xEB3C;}"
                         IsEnabled="{x:Bind ViewModel.IsMousePointerCrosshairsEnabled, Mode=OneWay}">
                         <labs:SettingsExpander.Items>

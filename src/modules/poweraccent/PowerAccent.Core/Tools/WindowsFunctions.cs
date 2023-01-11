@@ -41,15 +41,15 @@ internal static class WindowsFunctions
 
     public static Point GetCaretPosition()
     {
-        User32.GUITHREADINFO guiInfo = new ();
+        User32.GUITHREADINFO guiInfo = default;
         guiInfo.cbSize = (uint)Marshal.SizeOf(guiInfo);
         User32.GetGUIThreadInfo(0, ref guiInfo);
-        System.Drawing.Point caretPosition = new System.Drawing.Point(guiInfo.rcCaret.left, guiInfo.rcCaret.top);
+        POINT caretPosition = new POINT(guiInfo.rcCaret.left, guiInfo.rcCaret.top);
         User32.ClientToScreen(guiInfo.hwndCaret, ref caretPosition);
 
         if (caretPosition.X == 0)
         {
-            System.Drawing.Point testPoint;
+            POINT testPoint;
             User32.GetCaretPos(out testPoint);
             return testPoint;
         }
@@ -59,12 +59,12 @@ internal static class WindowsFunctions
 
     public static (Point Location, Size Size, double Dpi) GetActiveDisplay()
     {
-        User32.GUITHREADINFO guiInfo = new ();
+        User32.GUITHREADINFO guiInfo = default;
         guiInfo.cbSize = (uint)Marshal.SizeOf(guiInfo);
         User32.GetGUIThreadInfo(0, ref guiInfo);
         var res = User32.MonitorFromWindow(guiInfo.hwndActive, User32.MonitorFlags.MONITOR_DEFAULTTONEAREST);
 
-        User32.MONITORINFO monitorInfo = new ();
+        User32.MONITORINFO monitorInfo = default;
         monitorInfo.cbSize = (uint)Marshal.SizeOf(monitorInfo);
         User32.GetMonitorInfo(res, ref monitorInfo);
 

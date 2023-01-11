@@ -1,5 +1,4 @@
 #include "pch.h"
-#include "CppUnitTest.h"
 #include "powerrename/lib/Settings.h"
 #include <PowerRenameInterfaces.h>
 #include <PowerRenameRegEx.h>

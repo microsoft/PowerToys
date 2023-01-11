@@ -69,7 +69,7 @@ namespace ZoneSelectionAlgorithms
             zoneIndex = (static_cast<ZoneIndex>(pt.x) - overlap.left) * capturedZones.size() / width;
         }
 
-        zoneIndex = std::clamp(zoneIndex, ZoneIndex(0), static_cast<ZoneIndex>(capturedZones.size()) - 1);
+        zoneIndex = std::clamp(zoneIndex, static_cast<ZoneIndex>(0), static_cast<ZoneIndex>(capturedZones.size()) - 1);
 
         return { capturedZones[zoneIndex] };
     }

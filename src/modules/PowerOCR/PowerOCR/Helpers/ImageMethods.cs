@@ -53,7 +53,7 @@ internal class ImageMethods
         return BitmapToImageSource(bmp);
     }
 
-    internal static async Task<string> GetRegionsText(Window? passedWindow, Rectangle selectedRegion)
+    internal static async Task<string> GetRegionsText(Window? passedWindow, Rectangle selectedRegion, Language? preferredLanguage)
     {
         using Bitmap bmp = new Bitmap(selectedRegion.Width, selectedRegion.Height, System.Drawing.Imaging.PixelFormat.Format32bppArgb);
         using Graphics g = Graphics.FromImage(bmp);
@@ -66,12 +66,12 @@ internal class ImageMethods
         g.CopyFromScreen(thisCorrectedLeft, thisCorrectedTop, 0, 0, bmp.Size, CopyPixelOperation.SourceCopy);
 
         // bmp = PadImage(bmp);
-        string? resultText = await ExtractText(bmp);
+        string? resultText = await ExtractText(bmp, preferredLanguage);
 
         return resultText != null ? resultText.Trim() : string.Empty;
     }
 
-    internal static async Task<string> GetClickedWord(Window passedWindow, System.Windows.Point clickedPoint)
+    internal static async Task<string> GetClickedWord(Window passedWindow, System.Windows.Point clickedPoint, Language? preferredLanguage)
     {
         DpiScale dpi = VisualTreeHelper.GetDpi(passedWindow);
         Bitmap bmp = new Bitmap((int)(passedWindow.ActualWidth * dpi.DpiScaleX), (int)(passedWindow.ActualHeight * dpi.DpiScaleY), System.Drawing.Imaging.PixelFormat.Format32bppArgb);
@@ -85,13 +85,18 @@ internal class ImageMethods
 
         System.Windows.Point adjustedPoint = new System.Windows.Point(clickedPoint.X, clickedPoint.Y);
 
-        string resultText = await ExtractText(bmp, adjustedPoint);
+        string resultText = await ExtractText(bmp, preferredLanguage, adjustedPoint);
         return resultText.Trim();
     }
 
-    public static async Task<string> ExtractText(Bitmap bmp, System.Windows.Point? singlePoint = null)
+    public static async Task<string> ExtractText(Bitmap bmp, Language? preferredLanguage, System.Windows.Point? singlePoint = null)
     {
-        Language? selectedLanguage = GetOCRLanguage();
+        Language? selectedLanguage = preferredLanguage;
+        if (selectedLanguage == null)
+        {
+            selectedLanguage = GetOCRLanguage();
+        }
+
         if (selectedLanguage == null)
         {
             return string.Empty;
@@ -147,7 +152,10 @@ internal class ImageMethods
                 }
                 else
                 {
-                    var cjkRegex = new Regex(@"\p{IsCJKUnifiedIdeographs}");
+                    // Kanji, Hiragana, Katakana, Hankaku-Katakana do not need blank.(not only the symbol in CJKUnifiedIdeographs).
+                    // Maybe there are more symbols that don't require spaces like \u3001 \u3002.
+                    // var cjkRegex = new Regex(@"\p{IsCJKUnifiedIdeographs}|\p{IsHiragana}|\p{IsKatakana}|[\uFF61-\uFF9F]|[\u3000-\u3003]");
+                    var cjkRegex = new Regex(@"\p{IsCJKUnifiedIdeographs}|\p{IsHiragana}|\p{IsKatakana}|[\uFF61-\uFF9F]");
 
                     foreach (OcrLine ocrLine in ocrResult.Lines)
                     {

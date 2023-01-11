@@ -5,7 +5,7 @@
     <AssemblyTitle>PowerToys.FileLocksmith</AssemblyTitle>
     <AssemblyDescription>PowerToys File Locksmith</AssemblyDescription>
     <OutputType>WinExe</OutputType>
-    <TargetFramework>net6.0-windows10.0.19041.0</TargetFramework>
+    <TargetFramework>net7.0-windows10.0.19041.0</TargetFramework>
     <TargetPlatformMinVersion>10.0.19041.0</TargetPlatformMinVersion>
     <OutputPath>..\..\..\..\$(Platform)\$(Configuration)\modules\FileLocksmith</OutputPath>
     <RootNamespace>PowerToys.FileLocksmithUI</RootNamespace>
@@ -21,6 +21,15 @@
     <WindowsAppSDKSelfContained>true</WindowsAppSDKSelfContained>
     <SupportedOSPlatformVersion>10.0.19041.0</SupportedOSPlatformVersion>
     <ApplicationIcon>Assets/Icon.ico</ApplicationIcon>
+    <SelfContained>true</SelfContained>
+  </PropertyGroup>
+
+  <!-- SelfContained=true requires RuntimeIdentifier to be set -->
+  <PropertyGroup Condition="'$(Platform)'=='x64'">
+    <RuntimeIdentifier>win10-x64</RuntimeIdentifier>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Platform)'=='ARM64'">
+    <RuntimeIdentifier>win10-arm64</RuntimeIdentifier>
   </PropertyGroup>
 
   <PropertyGroup>
@@ -47,8 +56,8 @@
     <ErrorOnDuplicatePublishOutputFiles>false</ErrorOnDuplicatePublishOutputFiles>
   </PropertyGroup>
 
-  <!-- Needed for CommunityToolkit.Labs.WinUI.SettingsControls. -->
-  <PropertyGroup>
+  <!-- Needed for CommunityToolkit.Labs.WinUI.SettingsControls, on local builds and PR CI. -->
+  <PropertyGroup Condition="'$(IsPipeline)' == ''">
     <RestoreAdditionalProjectSources>https://pkgs.dev.azure.com/dotnet/CommunityToolkit/_packaging/CommunityToolkit-Labs/nuget/v3/index.json</RestoreAdditionalProjectSources>
   </PropertyGroup>
 
@@ -57,10 +66,10 @@
     <PackageReference Include="CommunityToolkit.Labs.WinUI.SettingsControls" Version="0.0.7" />
     <PackageReference Include="CommunityToolkit.Mvvm" Version="8.0.0" />
     <PackageReference Include="CommunityToolkit.WinUI.UI" Version="7.1.2" />
-    <PackageReference Include="Microsoft.WindowsAppSDK" Version="1.1.5" />
+    <PackageReference Include="Microsoft.WindowsAppSDK" Version="1.2.221116.1" />
     <PackageReference Include="Microsoft.Xaml.Behaviors.WinUI.Managed" Version="2.0.9" />
-    <PackageReference Include="Microsoft.Windows.SDK.BuildTools" Version="10.0.22621.1" />
-    <PackageReference Include="System.Drawing.Common" Version="6.0.0" />
+    <PackageReference Include="Microsoft.Windows.SDK.BuildTools" Version="10.0.22621.755" />
+    <PackageReference Include="System.Drawing.Common" Version="7.0.0" />
     <PackageReference Include="WinUIEx" Version="1.8.0" />
     <Manifest Include="$(ApplicationManifest)" />
   </ItemGroup>

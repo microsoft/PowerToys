@@ -89,8 +89,6 @@ namespace ColorPickerUI
 
                 _themeManager?.Dispose();
 
-                // TODO: free unmanaged resources (unmanaged objects) and override finalizer
-                // TODO: set large fields to null
                 disposedValue = true;
             }
         }

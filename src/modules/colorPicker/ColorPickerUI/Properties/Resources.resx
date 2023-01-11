@@ -205,6 +205,33 @@
     <value>Value slider</value>
     <comment>Tool tip that appears when hovering over a slider that represents the color value (from HSV)</comment>
   </data>
+  <data name="Select_color" xml:space="preserve">
+    <value>Select color</value>
+  </data>
+  <data name="Color_Code" xml:space="preserve">
+    <value>Color code</value>
+  </data>
+  <data name="Color_History" xml:space="preserve">
+    <value>Color history</value>
+  </data>
+  <data name="Color_Palette" xml:space="preserve">
+    <value>Color palette</value>
+  </data>
+  <data name="Color_Picker_Control" xml:space="preserve">
+    <value>Color picker control</value>
+  </data>
+  <data name="Darker_color" xml:space="preserve">
+    <value>Color dark 1</value>
+  </data>
+  <data name="Darkest_color" xml:space="preserve">
+    <value>Color dark 2</value>
+  </data>
+  <data name="Lighter_color" xml:space="preserve">
+    <value>Color light 1</value>
+  </data>
+  <data name="Lightest color" xml:space="preserve">
+    <value>Color light 2</value>
+  </data>
   <data name="TEXT_COLOR_WHITE" xml:space="preserve">
     <value>White</value>
     <comment>White color</comment>
@@ -372,32 +399,5 @@
   <data name="TEXT_COLOR_PLUM" xml:space="preserve">
     <value>Plum</value>
     <comment>Plum color</comment>
-  </data>
-  <data name="Select_color" xml:space="preserve">
-    <value>Select color</value>
-  </data>
-  <data name="Color_Code" xml:space="preserve">
-    <value>Color code</value>
-  </data>
-  <data name="Color_History" xml:space="preserve">
-    <value>Color history</value>
-  </data>
-  <data name="Color_Palette" xml:space="preserve">
-    <value>Color palette</value>
-  </data>
-  <data name="Color_Picker_Control" xml:space="preserve">
-    <value>Color picker control</value>
-  </data>
-  <data name="Darker_color" xml:space="preserve">
-    <value>Color dark 1</value>
-  </data>
-  <data name="Darkest_color" xml:space="preserve">
-    <value>Color dark 2</value>
-  </data>
-  <data name="Lighter_color" xml:space="preserve">
-    <value>Color light 1</value>
-  </data>
-  <data name="Lightest color" xml:space="preserve">
-    <value>Color light 2</value>
   </data>
 </root>

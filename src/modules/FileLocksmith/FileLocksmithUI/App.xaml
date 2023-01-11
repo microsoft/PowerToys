@@ -20,6 +20,8 @@
             <SolidColorBrush x:Key="SubtleButtonForegroundPressed" Color="{ThemeResource TextFillColorSecondary}" />
             <SolidColorBrush x:Key="SubtleButtonForegroundDisabled" Color="{ThemeResource TextFillColorDisabled}" />
 
+            <SolidColorBrush x:Key="WindowCaptionBackground">Transparent</SolidColorBrush>
+            <SolidColorBrush x:Key="WindowCaptionBackgroundDisabled">Transparent</SolidColorBrush>
 
             <Style x:Key="SubtleButtonStyle" TargetType="Button">
                 <Setter Property="Background" Value="{ThemeResource SubtleButtonBackground}" />

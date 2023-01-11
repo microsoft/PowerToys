@@ -96,6 +96,52 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             return newSettingsItem;
         }
 
+        /// <summary>
+        /// Get a Deserialized object of the json settings string.
+        /// This function creates a file in the powertoy folder if it does not exist and returns an object with default properties.
+        /// </summary>
+        /// <returns>Deserialized json settings object.</returns>
+        public T GetSettingsOrDefault<T, T2>(string powertoy = DefaultModuleName, string fileName = DefaultFileName, Func<object, object> settingsUpgrader = null)
+            where T : ISettingsConfig, new()
+            where T2 : ISettingsConfig, new()
+        {
+            try
+            {
+                return GetSettings<T>(powertoy, fileName);
+            }
+
+            // Catch json deserialization exceptions when the file is corrupt and has an invalid json.
+            // If there are any deserialization issues like in https://github.com/microsoft/PowerToys/issues/7500, log the error and create a new settings.json file.
+            // This is different from the case where we have trailing zeros following a valid json file, which we have handled by trimming the trailing zeros.
+            catch (JsonException ex)
+            {
+                Logger.LogInfo($"Settings file {fileName} for {powertoy} was unrecognized. Possibly containing an older version. Trying to read again.");
+
+                // try to deserialize to the old format, which is presented in T2
+                try
+                {
+                    T2 oldSettings = GetSettings<T2>(powertoy, fileName);
+                    T newSettings = (T)settingsUpgrader(oldSettings);
+                    Logger.LogInfo($"Settings file {fileName} for {powertoy} was read successfully in the old format.");
+                    return newSettings;
+                }
+                catch (Exception)
+                {
+                    // do nothing, the problem wasn't that the settings was stored in the previous format, continue with the default settings
+                    Logger.LogError($"{powertoy} settings are corrupt or the format is not supported any longer. Using default settings instead.", ex);
+                }
+            }
+            catch (FileNotFoundException)
+            {
+                Logger.LogInfo($"Settings file {fileName} for {powertoy} was not found.");
+            }
+
+            // If the settings file does not exist or if the file is corrupt, to create a new object with default parameters and save it to a newly created settings file.
+            T newSettingsItem = new T();
+            SaveSettings(newSettingsItem.ToJsonString(), powertoy, fileName);
+            return newSettingsItem;
+        }
+
         // Given the powerToy folder name and filename to be accessed, this function deserializes and returns the file.
         private T GetFile<T>(string powertoyFolderName = DefaultModuleName, string fileName = DefaultFileName)
         {
@@ -143,7 +189,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         /// <summary>
         /// Method <c>BackupSettings</c> Mostly a wrapper for SettingsBackupAndRestoreUtils.BackupSettings
         /// </summary>
-        public static (bool success, string message, string severity, bool lastBackupExists) BackupSettings()
+        public static (bool Success, string Message, string Severity, bool LastBackupExists) BackupSettings()
         {
             var settingsBackupAndRestoreUtilsX = SettingsBackupAndRestoreUtils.Instance;
             var settingsUtils = new SettingsUtils();
@@ -156,7 +202,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         /// <summary>
         /// Method <c>RestoreSettings</c> Mostly a wrapper for SettingsBackupAndRestoreUtils.RestoreSettings
         /// </summary>
-        public static (bool success, string message, string severity) RestoreSettings()
+        public static (bool Success, string Message, string Severity) RestoreSettings()
         {
             var settingsBackupAndRestoreUtilsX = SettingsBackupAndRestoreUtils.Instance;
             var settingsUtils = new SettingsUtils();

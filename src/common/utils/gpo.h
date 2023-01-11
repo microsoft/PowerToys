@@ -190,7 +190,7 @@ namespace powertoys_gpo {
         return getConfiguredValue(POLICY_CONFIGURE_ENABLED_FIND_MY_MOUSE);
     }
 
-    inline gpo_rule_configured_t getConfiguredMouseHightlighterEnabledValue()
+    inline gpo_rule_configured_t getConfiguredMouseHighlighterEnabledValue()
     {
         return getConfiguredValue(POLICY_CONFIGURE_ENABLED_MOUSE_HIGHLIGHTER);
     }

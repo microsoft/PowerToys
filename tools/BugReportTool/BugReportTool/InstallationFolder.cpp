@@ -162,8 +162,8 @@ private:
 	{
 		auto path = tmpDir;
 		path += "installationFolderStructure.txt";
-		std::wofstream os = std::wofstream(path);
-		return os;
+		std::wofstream out_s = std::wofstream(path);
+		return out_s;
 	}
 public:
 	Reporter(const path& tmpDir)

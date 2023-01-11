@@ -12,6 +12,7 @@ using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Animation;
 using ColorPicker.Helpers;
+using ManagedCommon;
 using ModernWpf.Controls;
 using ModernWpf.Controls.Primitives;
 
@@ -81,7 +82,7 @@ namespace ColorPicker.Controls
             control._ignoreRGBChanges = false;
             control._ignoreHexChanges = false;
 
-            var hsv = ColorHelper.ConvertToHSVColor(System.Drawing.Color.FromArgb(newColor.R, newColor.G, newColor.B));
+            var hsv = ColorFormatHelper.ConvertToHSVColor(System.Drawing.Color.FromArgb(newColor.R, newColor.G, newColor.B));
 
             SetColorVariationsForCurrentColor(d, hsv);
         }
@@ -102,28 +103,28 @@ namespace ColorPicker.Controls
             HueGradientSlider.Background = gradientBrush;
         }
 
-        private static void SetColorVariationsForCurrentColor(DependencyObject d, (double hue, double saturation, double value) hsv)
+        private static void SetColorVariationsForCurrentColor(DependencyObject d, (double Hue, double Saturation, double Value) hsv)
         {
             var hueCoefficient = 0;
             var hueCoefficient2 = 0;
-            if (1 - hsv.value < 0.15)
+            if (1 - hsv.Value < 0.15)
             {
                 hueCoefficient = 1;
             }
 
-            if (hsv.value - 0.3 < 0)
+            if (hsv.Value - 0.3 < 0)
             {
                 hueCoefficient2 = 1;
             }
 
-            var s = hsv.saturation;
+            var s = hsv.Saturation;
             var control = (ColorPickerControl)d;
 
-            control.colorVariation1Button.Background = new SolidColorBrush(HSVColor.RGBFromHSV(Math.Min(hsv.hue + (hueCoefficient * 8), 360), s, Math.Min(hsv.value + 0.3, 1)));
-            control.colorVariation2Button.Background = new SolidColorBrush(HSVColor.RGBFromHSV(Math.Min(hsv.hue + (hueCoefficient * 4), 360), s, Math.Min(hsv.value + 0.15, 1)));
+            control.colorVariation1Button.Background = new SolidColorBrush(HSVColor.RGBFromHSV(Math.Min(hsv.Hue + (hueCoefficient * 8), 360), s, Math.Min(hsv.Value + 0.3, 1)));
+            control.colorVariation2Button.Background = new SolidColorBrush(HSVColor.RGBFromHSV(Math.Min(hsv.Hue + (hueCoefficient * 4), 360), s, Math.Min(hsv.Value + 0.15, 1)));
 
-            control.colorVariation3Button.Background = new SolidColorBrush(HSVColor.RGBFromHSV(Math.Max(hsv.hue - (hueCoefficient2 * 4), 0), s, Math.Max(hsv.value - 0.2, 0)));
-            control.colorVariation4Button.Background = new SolidColorBrush(HSVColor.RGBFromHSV(Math.Max(hsv.hue - (hueCoefficient2 * 8), 0), s, Math.Max(hsv.value - 0.3, 0)));
+            control.colorVariation3Button.Background = new SolidColorBrush(HSVColor.RGBFromHSV(Math.Max(hsv.Hue - (hueCoefficient2 * 4), 0), s, Math.Max(hsv.Value - 0.2, 0)));
+            control.colorVariation4Button.Background = new SolidColorBrush(HSVColor.RGBFromHSV(Math.Max(hsv.Hue - (hueCoefficient2 * 8), 0), s, Math.Max(hsv.Value - 0.3, 0)));
         }
 
         private void UpdateValueColorGradient(double posX)
@@ -309,11 +310,11 @@ namespace ColorPicker.Controls
         {
             if (!_ignoreGradientsChanges)
             {
-                var hsv = ColorHelper.ConvertToHSVColor(color);
+                var hsv = ColorFormatHelper.ConvertToHSVColor(color);
 
-                var huePosition = (hsv.hue / 360) * HueGradientSlider.Maximum;
-                var saturationPosition = hsv.saturation * SaturationGradientSlider.Maximum;
-                var valuePosition = hsv.value * ValueGradientSlider.Maximum;
+                var huePosition = (hsv.Hue / 360) * HueGradientSlider.Maximum;
+                var saturationPosition = hsv.Saturation * SaturationGradientSlider.Maximum;
+                var valuePosition = hsv.Value * ValueGradientSlider.Maximum;
                 UpdateHueColorGradient(huePosition);
                 UpdateSaturationColorGradient(saturationPosition);
                 UpdateValueColorGradient(valuePosition);

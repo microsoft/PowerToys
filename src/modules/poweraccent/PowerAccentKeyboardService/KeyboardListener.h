@@ -16,7 +16,7 @@ namespace winrt::PowerToys::PowerAccentKeyboardService::implementation
     struct PowerAccentSettings
     {
         PowerAccentActivationKey activationKey{ PowerAccentActivationKey::Both };
-        std::chrono::milliseconds inputTime{ 200 };
+        std::chrono::milliseconds inputTime{ 300 }; // Should match with UI.Library.PowerAccentSettings.DefaultInputTimeMs
         std::vector<std::wstring> excludedApps;
     };
 
@@ -60,7 +60,7 @@ namespace winrt::PowerToys::PowerAccentKeyboardService::implementation
         bool m_rightShiftPressed;
 
         std::mutex m_mutex_excluded_apps;
-        std::pair<HWND, bool> m_prevForegrndAppExcl{ NULL, false };
+        std::pair<HWND, bool> m_prevForegroundAppExcl{ NULL, false };
 
         static inline const std::vector<LetterKey> letters = { LetterKey::VK_0,
                                                                LetterKey::VK_1,
@@ -98,7 +98,8 @@ namespace winrt::PowerToys::PowerAccentKeyboardService::implementation
                                                                LetterKey::VK_X,
                                                                LetterKey::VK_Y,
                                                                LetterKey::VK_Z,
-                                                               LetterKey::VK_COMMA };
+                                                               LetterKey::VK_COMMA,
+                                                               LetterKey::VK_MINUS };
         LetterKey letterPressed{};
 
         static inline const std::vector<TriggerKey> triggers = { TriggerKey::Right, TriggerKey::Left, TriggerKey::Space };

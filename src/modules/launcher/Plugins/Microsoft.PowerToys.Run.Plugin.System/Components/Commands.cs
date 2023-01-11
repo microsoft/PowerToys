@@ -5,6 +5,7 @@
 using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.Runtime;
 using System.Windows;
 using System.Windows.Interop;
 using Microsoft.PowerToys.Run.Plugin.System.Properties;
@@ -107,25 +108,13 @@ namespace Microsoft.PowerToys.Run.Plugin.System.Components
                 },
                 new Result
                 {
-                    Title = Resources.ResourceManager.GetString("Microsoft_plugin_sys_emptyrecyclebin", culture),
-                    SubTitle = Resources.ResourceManager.GetString("Microsoft_plugin_sys_emptyrecyclebin_description", culture),
+                    Title = Resources.ResourceManager.GetString("Microsoft_plugin_sys_RecycleBin", culture),
+                    SubTitle = Resources.ResourceManager.GetString("Microsoft_plugin_sys_RecycleBin_description", culture),
                     IcoPath = $"Images\\recyclebin.{iconTheme}.png",
+                    ContextData = new SystemPluginContext { Type = ResultContextType.RecycleBinCommand, SearchTag = Resources.ResourceManager.GetString("Microsoft_plugin_sys_RecycleBin_searchTag", culture) },
                     Action = c =>
                     {
-                        // http://www.pinvoke.net/default.aspx/shell32/SHEmptyRecycleBin.html
-                        // FYI, couldn't find documentation for this but if the recycle bin is already empty, it will return -2147418113 (0x8000FFFF (E_UNEXPECTED))
-                        // 0 for nothing
-                        var result = NativeMethods.SHEmptyRecycleBin(new WindowInteropHelper(Application.Current.MainWindow).Handle, 0);
-                        if (result != (uint)HRESULT.S_OK && result != 0x8000FFFF)
-                        {
-                            var name = "Plugin: " + Resources.Microsoft_plugin_sys_plugin_name;
-                            var message = $"Error emptying recycle bin, error code: {result}\n" +
-                                          "please refer to https://msdn.microsoft.com/en-us/library/windows/desktop/aa378137";
-                            Log.Error(message, typeof(Commands));
-                            _ = MessageBox.Show(message, name);
-                        }
-
-                        return true;
+                        return Helper.OpenInShell("explorer.exe", "shell:RecycleBinFolder");
                     },
                 },
             });

@@ -297,13 +297,13 @@ D2DOverlayWindow::D2DOverlayWindow() :
     });
 }
 
-void D2DOverlayWindow::show(HWND active_window, bool snappable)
+void D2DOverlayWindow::show(HWND window, bool snappable)
 {
     std::unique_lock lock(mutex);
     hidden = false;
     tasklist_buttons.clear();
-    this->active_window = active_window;
-    this->active_window_snappable = snappable;
+    active_window = window;
+    active_window_snappable = snappable;
     auto old_bck = colors.start_color_menu;
     auto colors_updated = colors.update();
     auto new_light_mode = (theme_setting == Light) || (theme_setting == System && colors.light_mode);
@@ -355,10 +355,10 @@ void D2DOverlayWindow::show(HWND active_window, bool snappable)
     total_screen.rect.top += monitor_dy;
     total_screen.rect.bottom += monitor_dy;
     tasklist.update();
-    if (active_window)
+    if (window)
     {
         // Ignore errors, if this fails we will just not show the thumbnail
-        DwmRegisterThumbnail(hwnd, active_window, &thumbnail);
+        DwmRegisterThumbnail(hwnd, window, &thumbnail);
     }
 
     background_animation.reset();
@@ -644,15 +644,15 @@ void D2DOverlayWindow::hide_thumbnail()
     DwmUpdateThumbnailProperties(thumbnail, &thumb_properties);
 }
 
-void D2DOverlayWindow::render(ID2D1DeviceContext5* d2d_dc)
+void D2DOverlayWindow::render(ID2D1DeviceContext5* d2d_device_context)
 {
-    if (!hidden && !instance->overlay_visible())
+    if (!hidden && !overlay_window_instance->overlay_visible())
     {
         hide();
         return;
     }
 
-    d2d_dc->Clear();
+    d2d_device_context->Clear();
     int taskbar_icon_shortcuts_x_offset = 0, taskbar_icon_shortcuts_y_offset = 0;
 
     float current_background_anim_value = (float)background_animation.value(Animation::AnimFunctions::LINEAR);
@@ -665,12 +665,12 @@ void D2DOverlayWindow::render(ID2D1DeviceContext5* d2d_dc)
     winrt::com_ptr<ID2D1SolidColorBrush> brush;
     float brush_opacity = get_overlay_opacity();
     D2D1_COLOR_F brushColor = light_mode ? D2D1::ColorF(1.0f, 1.0f, 1.0f, brush_opacity) : D2D1::ColorF(0, 0, 0, brush_opacity);
-    winrt::check_hresult(d2d_dc->CreateSolidColorBrush(brushColor, brush.put()));
+    winrt::check_hresult(d2d_device_context->CreateSolidColorBrush(brushColor, brush.put()));
     D2D1_RECT_F background_rect = {};
     background_rect.bottom = (float)window_height;
     background_rect.right = (float)window_width;
-    d2d_dc->SetTransform(D2D1::Matrix3x2F::Identity());
-    d2d_dc->FillRectangle(background_rect, brush.get());
+    d2d_device_context->SetTransform(D2D1::Matrix3x2F::Identity());
+    d2d_device_context->FillRectangle(background_rect, brush.get());
 
     // Draw the taskbar shortcuts (the arrows with numbers)
     if (taskbar_icon_shortcuts_shown)
@@ -703,7 +703,7 @@ void D2DOverlayWindow::render(ID2D1DeviceContext5* d2d_dc)
                 {
                     continue;
                 }
-                render_arrow(arrows[(size_t)(button.keynum) - 1], button, window_rect, use_overlay->get_scale(), d2d_dc, taskbar_icon_shortcuts_x_offset, taskbar_icon_shortcuts_y_offset);
+                render_arrow(arrows[(size_t)(button.keynum) - 1], button, window_rect, use_overlay->get_scale(), d2d_device_context, taskbar_icon_shortcuts_x_offset, taskbar_icon_shortcuts_y_offset);
             }
         }
     }
@@ -793,7 +793,7 @@ void D2DOverlayWindow::render(ID2D1DeviceContext5* d2d_dc)
         {
             brushColor = D2D1::ColorF(colors.start_color_menu, miniature_shown ? current_global_windows_shortcuts_anim_value * 0.9f : current_global_windows_shortcuts_anim_value * 0.3f);
             brush = nullptr;
-            winrt::check_hresult(d2d_dc->CreateSolidColorBrush(brushColor, brush.put()));
+            winrt::check_hresult(d2d_device_context->CreateSolidColorBrush(brushColor, brush.put()));
             for (auto& monitor : monitors)
             {
                 D2D1_RECT_F monitor_rect;
@@ -802,22 +802,22 @@ void D2DOverlayWindow::render(ID2D1DeviceContext5* d2d_dc)
                 monitor_rect.top = (float)((monitor_size.top() + monitor_dy) * rect_and_scale.scale + rect_and_scale.rect.top);
                 monitor_rect.right = (float)((monitor_size.right() + monitor_dx) * rect_and_scale.scale + rect_and_scale.rect.left);
                 monitor_rect.bottom = (float)((monitor_size.bottom() + monitor_dy) * rect_and_scale.scale + rect_and_scale.rect.top);
-                d2d_dc->SetTransform(D2D1::Matrix3x2F::Identity());
-                d2d_dc->FillRectangle(monitor_rect, brush.get());
+                d2d_device_context->SetTransform(D2D1::Matrix3x2F::Identity());
+                d2d_device_context->FillRectangle(monitor_rect, brush.get());
             }
         }
         // Finalize the overlay - dimm the buttons if no thumbnail is present and show "No active window"
         use_overlay->toggle_window_group(miniature_shown || window_state == MINIMIZED);
         if (!miniature_shown && window_state != MINIMIZED)
         {
-            no_active.render(d2d_dc);
+            no_active.render(d2d_device_context);
             window_state = UNKNOWN;
         }
 
         // Set the animation - move the draw window according to animation step
         int global_windows_shortcuts_y_offset = (int)(pos_global_windows_shortcuts_anim_value * use_overlay->height() * use_overlay->get_scale());
         auto popIn = D2D1::Matrix3x2F::Translation(0, (float)global_windows_shortcuts_y_offset);
-        d2d_dc->SetTransform(popIn);
+        d2d_device_context->SetTransform(popIn);
 
         // Animate keys
         for (unsigned id = 0; id < key_animations.size();)
@@ -846,7 +846,7 @@ void D2DOverlayWindow::render(ID2D1DeviceContext5* d2d_dc)
             ++id;
         }
         // Finally: render the overlay...
-        use_overlay->render(d2d_dc);
+        use_overlay->render(d2d_device_context);
         // ... window arrows texts ...
         std::wstring left, right, up, down;
         bool left_disabled = false;
@@ -925,13 +925,13 @@ void D2DOverlayWindow::render(ID2D1DeviceContext5* d2d_dc)
         }
         auto text_color = D2D1::ColorF(light_mode ? 0x222222 : 0xDDDDDD, active_window_snappable && (miniature_shown || window_state == MINIMIZED) ? 1.0f : 0.3f);
         use_overlay->find_element(L"KeyUpGroup")->SetAttributeValue(L"fill-opacity", up_disabled ? 0.3f : 1.0f);
-        text.set_alignment_center().write(d2d_dc, text_color, use_overlay->get_maximize_label(), up);
+        text.set_alignment_center().write(d2d_device_context, text_color, use_overlay->get_maximize_label(), up);
         use_overlay->find_element(L"KeyDownGroup")->SetAttributeValue(L"fill-opacity", down_disabled ? 0.3f : 1.0f);
-        text.write(d2d_dc, text_color, use_overlay->get_minimize_label(), down);
+        text.write(d2d_device_context, text_color, use_overlay->get_minimize_label(), down);
         use_overlay->find_element(L"KeyLeftGroup")->SetAttributeValue(L"fill-opacity", left_disabled ? 0.3f : 1.0f);
-        text.set_alignment_right().write(d2d_dc, text_color, use_overlay->get_snap_left(), left);
+        text.set_alignment_right().write(d2d_device_context, text_color, use_overlay->get_snap_left(), left);
         use_overlay->find_element(L"KeyRightGroup")->SetAttributeValue(L"fill-opacity", right_disabled ? 0.3f : 1.0f);
-        text.set_alignment_left().write(d2d_dc, text_color, use_overlay->get_snap_right(), right);
+        text.set_alignment_left().write(d2d_device_context, text_color, use_overlay->get_snap_right(), right);
     }
     else
     {

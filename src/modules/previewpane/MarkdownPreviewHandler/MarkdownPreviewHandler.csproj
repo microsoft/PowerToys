@@ -1,5 +1,6 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
+    <ImplicitUsings>enable</ImplicitUsings>
     <UseWindowsForms>true</UseWindowsForms>
     <AssemblyTitle>PowerToys.MarkdownPreviewHandler</AssemblyTitle>
     <AssemblyDescription>PowerToys MarkdownPreviewHandler</AssemblyDescription>
@@ -11,13 +12,21 @@
     <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
     <GenerateSatelliteAssembliesForCore>true</GenerateSatelliteAssembliesForCore>
     <RuntimeIdentifiers>win10-x64;win10-arm64</RuntimeIdentifiers>
-    <TargetFramework>net6.0-windows10.0.19041.0</TargetFramework>
+    <TargetFramework>net7.0-windows10.0.19041.0</TargetFramework>
+    <SelfContained>true</SelfContained>
+  </PropertyGroup>
+
+  <!-- SelfContained=true requires RuntimeIdentifier to be set -->
+  <PropertyGroup Condition="'$(Platform)'=='x64'">
+    <RuntimeIdentifier>win10-x64</RuntimeIdentifier>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Platform)'=='ARM64'">
+    <RuntimeIdentifier>win10-arm64</RuntimeIdentifier>
   </PropertyGroup>
 
   <PropertyGroup>
     <ProjectGuid>{6A71162E-FC4C-4A2C-B90F-3CF94F59A9BB}</ProjectGuid>
     <RootNamespace>Microsoft.PowerToys.PreviewHandler.Markdown</RootNamespace>
-    <EnableComHosting>true</EnableComHosting>
     <AssemblyName>PowerToys.MarkdownPreviewHandler</AssemblyName>
   </PropertyGroup>
 
@@ -44,8 +53,9 @@
     <ErrorOnDuplicatePublishOutputFiles>false</ErrorOnDuplicatePublishOutputFiles>
   </PropertyGroup>
   <PropertyGroup>
-    <!-- Disable missing comment warning. WinRT/C++ libraries added won't have comments on thier reflections. -->
+    <!-- Disable missing comment warning. WinRT/C++ libraries added won't have comments on their reflections. -->
     <NoWarn>$(NoWarn);1591</NoWarn>
+    <OutputType>WinExe</OutputType>
   </PropertyGroup>
 
   <ItemGroup>
@@ -58,6 +68,7 @@
   <ItemGroup>
     <ProjectReference Include="..\..\..\common\GPOWrapper\GPOWrapper.vcxproj" />
     <ProjectReference Include="..\..\..\common\Common.UI\Common.UI.csproj" />
+    <ProjectReference Include="..\..\..\common\interop\PowerToys.Interop.vcxproj" />
     <ProjectReference Include="..\..\..\common\ManagedTelemetry\Telemetry\ManagedTelemetry.csproj" />
     <ProjectReference Include="..\common\PreviewHandlerCommon.csproj" />
   </ItemGroup>
@@ -68,4 +79,5 @@
       <LastGenOutput>Settings.Designer.cs</LastGenOutput>
     </None>
   </ItemGroup>
+
 </Project>

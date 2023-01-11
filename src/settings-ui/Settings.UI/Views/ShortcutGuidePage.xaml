@@ -89,7 +89,7 @@
                 </controls:SettingsGroup>
 
                 <controls:SettingsGroup
-                    x:Uid="ShortcutGuide_Appearance_Behavior"
+                    x:Uid="Appearance_Behavior"
                     IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}">
                     <labs:SettingsCard
                         x:Uid="ColorModeHeader"

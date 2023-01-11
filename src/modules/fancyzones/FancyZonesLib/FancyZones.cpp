@@ -56,14 +56,14 @@ namespace NonLocalizable
 struct FancyZones : public winrt::implements<FancyZones, IFancyZones, IFancyZonesCallback>, public SettingsObserver
 {
 public:
-    FancyZones(HINSTANCE hinstance, std::function<void()> disableModuleCallback) noexcept :
+    FancyZones(HINSTANCE hinstance, std::function<void()> disableModuleCallbackFunction) noexcept :
         SettingsObserver({ SettingId::EditorHotkey, SettingId::PrevTabHotkey, SettingId::NextTabHotkey, SettingId::SpanZonesAcrossMonitors }),
         m_hinstance(hinstance),
         m_windowMoveHandler([this]() {
             PostMessageW(m_window, WM_PRIV_LOCATIONCHANGE, NULL, NULL);
         })
     {
-        this->disableModuleCallback = std::move(disableModuleCallback);
+        this->disableModuleCallback = std::move(disableModuleCallbackFunction);
 
         FancyZonesSettings::instance().LoadSettings();
 
@@ -163,7 +163,7 @@ private:
     void RegisterVirtualDesktopUpdates() noexcept;
 
     void UpdateHotkey(int hotkeyId, const PowerToysSettings::HotkeyObject& hotkeyObject, bool enable) noexcept;
-    
+
     std::pair<std::shared_ptr<WorkArea>, ZoneIndexSet> GetAppZoneHistoryInfo(HWND window, HMONITOR monitor, const std::unordered_map<HMONITOR, std::shared_ptr<WorkArea>>& workAreaMap) noexcept;
     void MoveWindowIntoZone(HWND window, std::shared_ptr<WorkArea> workArea, const ZoneIndexSet& zoneIndexSet) noexcept;
     bool MoveToAppLastZone(HWND window, HMONITOR active, HMONITOR primary) noexcept;
@@ -333,7 +333,7 @@ std::pair<std::shared_ptr<WorkArea>, ZoneIndexSet> FancyZones::GetAppZoneHistory
             }
         }
     }
-    
+
     return std::pair<std::shared_ptr<WorkArea>, ZoneIndexSet>{ nullptr, {} };
 }
 
@@ -341,7 +341,7 @@ void FancyZones::MoveWindowIntoZone(HWND window, std::shared_ptr<WorkArea> workA
 {
     if (workArea)
     {
-        Trace::FancyZones::SnapNewWindowIntoZone(workArea->GetLayout().get(), workArea->GetLayoutWindows().get()); 
+        Trace::FancyZones::SnapNewWindowIntoZone(workArea->GetLayout().get(), workArea->GetLayoutWindows().get());
     }
     m_windowMoveHandler.MoveWindowIntoZoneByIndexSet(window, zoneIndexSet, workArea);
     AppZoneHistory::instance().UpdateProcessIdToHandleMap(window, workArea->UniqueId());
@@ -413,7 +413,6 @@ void FancyZones::WindowCreated(HWND window) noexcept
     {
         return;
     }
-    
 
     HMONITOR primary = MonitorFromWindow(nullptr, MONITOR_DEFAULTTOPRIMARY);
     HMONITOR active = primary;
@@ -435,7 +434,7 @@ void FancyZones::WindowCreated(HWND window) noexcept
     {
         // window is recreated after switching virtual desktop
         // avoid moving already opened windows after switching vd
-        bool isMoved = FancyZonesWindowProperties::RetreiveMovedOnOpeningProperty(window);
+        bool isMoved = FancyZonesWindowProperties::RetrieveMovedOnOpeningProperty(window);
         if (!isMoved)
         {
             FancyZonesWindowProperties::StampMovedOnOpeningProperty(window);
@@ -505,7 +504,7 @@ FancyZones::OnKeyDown(PKBDLLHOOKSTRUCT info) noexcept
 void FancyZones::ToggleEditor() noexcept
 {
     _TRACER_;
-    
+
     if (m_terminateEditorEvent)
     {
         SetEvent(m_terminateEditorEvent.get());
@@ -519,7 +518,7 @@ void FancyZones::ToggleEditor() noexcept
         Logger::error(L"Failed to save editor startup parameters");
         return;
     }
-    
+
     SHELLEXECUTEINFO sei{ sizeof(sei) };
     sei.fMask = { SEE_MASK_NOCLOSEPROCESS | SEE_MASK_FLAG_NO_UI };
     sei.lpFile = NonLocalizable::FZEditorExecutablePath;
@@ -552,7 +551,6 @@ void FancyZones::ToggleEditor() noexcept
 
     waitForEditorThread.detach();
 }
-
 
 LRESULT FancyZones::WndProc(HWND window, UINT message, WPARAM wparam, LPARAM lparam) noexcept
 {
@@ -714,7 +712,7 @@ void FancyZones::OnDisplayChange(DisplayChangeType changeType) noexcept
 
     UpdateWorkAreas();
 
-    auto activeWorkAreas = m_workAreaHandler.GetWorkAreasByDesktopId(VirtualDesktop::instance().GetCurrentVirtualDesktopId());    
+    auto activeWorkAreas = m_workAreaHandler.GetWorkAreasByDesktopId(VirtualDesktop::instance().GetCurrentVirtualDesktopId());
     m_windowMoveHandler.AssignWindowsToZones(activeWorkAreas, FancyZonesSettings::settings().displayChange_moveWindows && changeType != DisplayChangeType::VirtualDesktop);
 }
 
@@ -727,7 +725,7 @@ void FancyZones::AddWorkArea(HMONITOR monitor, const FancyZonesDataTypes::WorkAr
         {
             Logger::debug(L"Add new work area on virtual desktop {}", virtualDesktopIdStr.get());
         }
-        
+
         FancyZonesDataTypes::WorkAreaId parentId{};
         auto parentArea = m_workAreaHandler.GetWorkArea(VirtualDesktop::instance().GetPreviousVirtualDesktopId(), monitor);
         if (parentArea)
@@ -808,6 +806,15 @@ bool FancyZones::OnSnapHotkeyBasedOnZoneNumber(HWND window, DWORD vkCode) noexce
             auto workArea = m_workAreaHandler.GetWorkArea(VirtualDesktop::instance().GetCurrentVirtualDesktopId(), *currMonitorInfo);
             if (m_windowMoveHandler.MoveWindowIntoZoneByDirectionAndIndex(window, vkCode, false /* cycle through zones */, workArea))
             {
+                // unassign from previous work area
+                for (auto& prevWorkArea : m_workAreaHandler.GetAllWorkAreas())
+                {
+                    if (workArea != prevWorkArea)
+                    {
+                        prevWorkArea->UnsnapWindow(window);
+                    }
+                }
+                
                 Trace::FancyZones::KeyboardSnapWindowToZone(workArea->GetLayout().get(), workArea->GetLayoutWindows().get());
                 return true;
             }
@@ -998,11 +1005,8 @@ bool FancyZones::OnSnapHotkey(DWORD vkCode) noexcept
     {
         return OnSnapHotkeyBasedOnPosition(window, vkCode);
     }
-    else
-    {
-        return (vkCode == VK_LEFT || vkCode == VK_RIGHT) && OnSnapHotkeyBasedOnZoneNumber(window, vkCode);
-    }
-    return false;
+
+    return (vkCode == VK_LEFT || vkCode == VK_RIGHT) && OnSnapHotkeyBasedOnZoneNumber(window, vkCode);
 }
 
 bool FancyZones::ProcessDirectedSnapHotkey(HWND window, DWORD vkCode, bool cycle, std::shared_ptr<WorkArea> workArea) noexcept
@@ -1011,7 +1015,7 @@ bool FancyZones::ProcessDirectedSnapHotkey(HWND window, DWORD vkCode, bool cycle
     if (GetAsyncKeyState(VK_MENU) & 0x8000)
     {
         bool result = m_windowMoveHandler.ExtendWindowByDirectionAndPosition(window, vkCode, workArea);
-        if (result) 
+        if (result)
         {
             Trace::FancyZones::KeyboardSnapWindowToZone(workArea->GetLayout().get(), workArea->GetLayoutWindows().get());
         }
@@ -1119,12 +1123,12 @@ void FancyZones::UpdateZoneSets() noexcept
 bool FancyZones::ShouldProcessSnapHotkey(DWORD vkCode) noexcept
 {
     auto window = GetForegroundWindow();
-    
+
     if (!FancyZonesWindowProcessing::IsProcessable(window))
     {
         return false;
     }
-    
+
     if (FancyZonesSettings::settings().overrideSnapHotkeys && FancyZonesWindowUtils::IsCandidateForZoning(window))
     {
         HMONITOR monitor = WorkAreaKeyFromWindow(window);

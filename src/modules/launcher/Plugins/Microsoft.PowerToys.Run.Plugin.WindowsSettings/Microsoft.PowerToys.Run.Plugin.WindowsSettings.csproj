@@ -2,7 +2,7 @@
   <Import Project="..\..\..\..\Version.props" />
 
   <PropertyGroup>
-    <TargetFramework>net6.0-windows</TargetFramework>
+    <TargetFramework>net7.0-windows</TargetFramework>
     <ProjectGuid>{5043CECE-E6A7-4867-9CBE-02D27D83747A}</ProjectGuid>
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>Microsoft.PowerToys.Run.Plugin.WindowsSettings</RootNamespace>
@@ -77,5 +77,6 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
   </ItemGroup>
+
 
 </Project>
