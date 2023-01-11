@@ -68,8 +68,10 @@
                             <ComboBoxItem x:Uid="QuickAccent_SelectedLanguage_Gaeilge" />
                             <ComboBoxItem x:Uid="QuickAccent_SelectedLanguage_Gaidhlig" />
                             <ComboBoxItem x:Uid="QuickAccent_SelectedLanguage_Dutch" />
+                            <ComboBoxItem x:Uid="QuickAccent_SelectedLanguage_Estonian" />
                             <ComboBoxItem x:Uid="QuickAccent_SelectedLanguage_French" />
                             <ComboBoxItem x:Uid="QuickAccent_SelectedLanguage_German" />
+                            <ComboBoxItem x:Uid="QuickAccent_SelectedLanguage_Hebrew" />
                             <ComboBoxItem x:Uid="QuickAccent_SelectedLanguage_Hungarian" />
                             <ComboBoxItem x:Uid="QuickAccent_SelectedLanguage_Icelandic" />
                             <ComboBoxItem x:Uid="QuickAccent_SelectedLanguage_Italian" />
