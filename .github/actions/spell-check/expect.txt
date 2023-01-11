@@ -1455,7 +1455,7 @@ rectp
 rects
 recyclebin
 redirectedfrom
-Redist
+redist
 redistributable
 reencode
 reencoded
