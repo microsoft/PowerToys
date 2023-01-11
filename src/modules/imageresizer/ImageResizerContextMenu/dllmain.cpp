@@ -106,8 +106,20 @@ public:
         }
         LPTSTR pszPath;
         // Retrieves the entire file system path of the file from its shell item
-        shellItem->GetDisplayName(SIGDN_FILESYSPATH, &pszPath);
+        HRESULT getDisplayResult = shellItem->GetDisplayName(SIGDN_FILESYSPATH, &pszPath);
+        if (S_OK != getDisplayResult || nullptr == pszPath)
+        {
+            // Avoid crashes in the following code.
+            return E_FAIL;
+        }
+
         LPTSTR pszExt = PathFindExtension(pszPath);
+        if (nullptr == pszExt)
+        {
+            CoTaskMemFree(pszPath);
+            // Avoid crashes in the following code.
+            return E_FAIL;
+        }
 
         // TODO: Instead, detect whether there's a WIC codec installed that can handle this file
         AssocGetPerceivedType(pszExt, &type, &flag, NULL);

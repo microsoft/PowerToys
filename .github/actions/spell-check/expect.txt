@@ -347,6 +347,7 @@ DARKYELLOW
 datareader
 datatemplate
 Datavalue
+dataversion
 DATAW
 davidegiacometti
 Dayof
@@ -477,7 +478,6 @@ EFile
 ekus
 emmintrin
 Emoji
-emptyrecyclebin
 ENABLEDELAYEDEXPANSION
 enabledisable
 ENABLEDPOPUP
@@ -1612,6 +1612,7 @@ shellex
 SHELLEXECUTEINFO
 SHELLEXECUTEINFOW
 shellscalingapi
+shemptyrecyclebina
 SHFILEINFO
 SHGFI
 Shl
@@ -1848,6 +1849,7 @@ TRAYMOUSEMESSAGE
 triaging
 TRK
 trl
+TServer
 Tshuapa
 TStr
 Tuva
@@ -1926,6 +1928,7 @@ UYVY
 vabdq
 validmodulename
 Vanara
+variantassignment
 vcamp
 vccorlib
 vcdl

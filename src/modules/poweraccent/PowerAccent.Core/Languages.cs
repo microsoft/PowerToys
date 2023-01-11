@@ -18,8 +18,10 @@ namespace PowerAccent.Core
         GA,
         GD,
         DE,
+        EST,
         FR,
         HR,
+        HE,
         HU,
         IS,
         IT,
@@ -52,8 +54,10 @@ namespace PowerAccent.Core
                 Language.GA => GetDefaultLetterKeyGA(letter), // Gaeilge (Irish Gaelic)
                 Language.GD => GetDefaultLetterKeyGD(letter), // Gàidhlig (Scottish Gaelic)
                 Language.DE => GetDefaultLetterKeyDE(letter), // German
+                Language.EST => GetDefaultLetterKeyEST(letter), // Estonian
                 Language.FR => GetDefaultLetterKeyFR(letter), // French
                 Language.HR => GetDefaultLetterKeyHR(letter), // Croatian
+                Language.HE => GetDefaultLetterKeyHE(letter), // Hebrew
                 Language.HU => GetDefaultLetterKeyHU(letter), // Hungarian
                 Language.IS => GetDefaultLetterKeyIS(letter), // Iceland
                 Language.IT => GetDefaultLetterKeyIT(letter), // Italian
@@ -114,6 +118,7 @@ namespace PowerAccent.Core
                 LetterKey.VK_Y => new string[] { "ÿ", "ŷ", "ý", "ẏ" },
                 LetterKey.VK_Z => new string[] { "ź", "ž", "ż", "ʒ", "ǯ", "ζ" },
                 LetterKey.VK_COMMA => new string[] { "¿", "¡", "∙", "₋", "⁻", "–", "≤", "≥", "≠", "≈", "≙", "±", "₊", "⁺" },
+                LetterKey.VK_MINUS => new string[] { "~", "‐", "‑", "‒", "–", "—", "―", "⁓", "−", "⸺", "⸻" },
                 _ => Array.Empty<string>(),
             };
         }
@@ -153,6 +158,21 @@ namespace PowerAccent.Core
                 LetterKey.VK_D => new string[] { "đ" },
                 LetterKey.VK_S => new string[] { "š" },
                 LetterKey.VK_Z => new string[] { "ž" },
+                _ => Array.Empty<string>(),
+            };
+        }
+
+        // Estonian
+        private static string[] GetDefaultLetterKeyEST(LetterKey letter)
+        {
+            return letter switch
+            {
+                LetterKey.VK_A => new string[] { "ä" },
+                LetterKey.VK_E => new string[] { "€" },
+                LetterKey.VK_O => new string[] { "ö", "õ" },
+                LetterKey.VK_U => new string[] { "ü" },
+                LetterKey.VK_Z => new string[] { "ž" },
+                LetterKey.VK_S => new string[] { "š" },
                 _ => Array.Empty<string>(),
             };
         }
@@ -426,6 +446,21 @@ namespace PowerAccent.Core
                 LetterKey.VK_O => new string[] { "ö" },
                 LetterKey.VK_S => new string[] { "ß" },
                 LetterKey.VK_U => new string[] { "ü" },
+                _ => Array.Empty<string>(),
+            };
+        }
+
+        // Hebrew
+        private static string[] GetDefaultLetterKeyHE(LetterKey letter)
+        {
+            return letter switch
+            {
+                LetterKey.VK_A => new string[] { "שׂ", "שׁ" },
+                LetterKey.VK_G => new string[] { "ױ" },
+                LetterKey.VK_H => new string[] { "ײ" },
+                LetterKey.VK_U => new string[] { "וֹ", "וּ" },
+                LetterKey.VK_Y => new string[] { "װ" },
+                LetterKey.VK_COMMA => new string[] { "”", "״", "־", "–", "֫", "ֽ", "ֿ" },
                 _ => Array.Empty<string>(),
             };
         }

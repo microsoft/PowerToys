@@ -13,15 +13,31 @@ namespace AllExperiments
 {
 // The dependencies required to build this project are only available in the official build pipeline and are internal to Microsoft.
 // However, this project is not required to build a test version of the application.
-#pragma warning disable SA1649 // File name should match first type name. Suppressed because it needs to be the same class name as Experiments_Inert.cs
     public class Experiments
-#pragma warning restore SA1649 // File name should match first type name
-    {
+   {
+        public enum ExperimentState
+        {
+            Enabled,
+            Disabled,
+            NotLoaded,
+        }
+
+#pragma warning disable SA1401 // Need to use LandingPageExperiment as a static property in OobeShellPage.xaml.cs
+        public static ExperimentState LandingPageExperiment = ExperimentState.NotLoaded;
+#pragma warning restore SA1401
+
         public async Task<bool> EnableLandingPageExperimentAsync()
         {
+            if (Experiments.LandingPageExperiment != ExperimentState.NotLoaded)
+            {
+                return Experiments.LandingPageExperiment == ExperimentState.Enabled;
+            }
+
             Experiments varServ = new Experiments();
             await varServ.VariantAssignmentProvider_Initialize();
             var landingPageExperiment = varServ.IsExperiment;
+
+            Experiments.LandingPageExperiment = landingPageExperiment ? ExperimentState.Enabled : ExperimentState.Disabled;
 
             return landingPageExperiment;
         }
@@ -29,6 +45,7 @@ namespace AllExperiments
         private async Task VariantAssignmentProvider_Initialize()
         {
             IsExperiment = false;
+            string jsonFilePath = CreateFilePath();
 
             var vaSettings = new VariantAssignmentClientSettings
             {
@@ -45,17 +62,74 @@ namespace AllExperiments
 
                 if (variantAssignments.AssignedVariants.Count != 0)
                 {
+                    var dataVersion = variantAssignments.DataVersion;
                     var featureVariables = variantAssignments.GetFeatureVariables();
                     var assignmentContext = variantAssignments.GetAssignmentContext();
                     var featureFlagValue = featureVariables[0].GetStringValue();
 
-                    if (featureFlagValue == "alternate" && assignmentContext != string.Empty)
+                    var experimentGroup = string.Empty;
+                    string json = File.ReadAllText(jsonFilePath);
+                    var jsonDictionary = JsonSerializer.Deserialize<Dictionary<string, object>>(json);
+
+                    if (jsonDictionary != null)
+                    {
+                        if (!jsonDictionary.ContainsKey("dataversion"))
+                        {
+                            jsonDictionary.Add("dataversion", dataVersion);
+                        }
+
+                        if (!jsonDictionary.ContainsKey("variantassignment"))
+                        {
+                            jsonDictionary.Add("variantassignment", featureFlagValue);
+                        }
+                        else
+                        {
+                            var jsonDataVersion = jsonDictionary["dataversion"].ToString();
+                            if (jsonDataVersion != null && int.Parse(jsonDataVersion) < dataVersion)
+                            {
+                                jsonDictionary["dataversion"] = dataVersion;
+                                jsonDictionary["variantassignment"] = featureFlagValue;
+                            }
+                        }
+
+                        experimentGroup = jsonDictionary["variantassignment"].ToString();
+
+                        string output = JsonSerializer.Serialize(jsonDictionary);
+                        File.WriteAllText(jsonFilePath, output);
+                    }
+
+                    if (experimentGroup == "alternate" && AssignmentUnit != string.Empty)
                     {
                         IsExperiment = true;
                     }
 
                     PowerToysTelemetry.Log.WriteEvent(new OobeVariantAssignmentEvent() { AssignmentContext = assignmentContext, ClientID = AssignmentUnit });
                 }
+            }
+            catch (HttpRequestException ex)
+            {
+                string json = File.ReadAllText(jsonFilePath);
+                var jsonDictionary = JsonSerializer.Deserialize<Dictionary<string, object>>(json);
+
+                if (jsonDictionary != null)
+                {
+                    if (jsonDictionary.ContainsKey("variantassignment"))
+                    {
+                        if (jsonDictionary["variantassignment"].ToString() == "alternate" && AssignmentUnit != string.Empty)
+                        {
+                            IsExperiment = true;
+                        }
+                    }
+                    else
+                    {
+                        jsonDictionary["variantassignment"] = "current";
+                    }
+                }
+
+                string output = JsonSerializer.Serialize(jsonDictionary);
+                File.WriteAllText(jsonFilePath, output);
+
+                Logger.LogError("Error getting to TAS endpoint", ex);
             }
             catch (Exception ex)
             {
