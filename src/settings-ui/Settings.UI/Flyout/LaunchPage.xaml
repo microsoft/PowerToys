@@ -60,13 +60,13 @@
                         <ItemsPanelTemplate>
                             <toolkitControls:WrapPanel VerticalSpacing="12" />
                         </ItemsPanelTemplate>
-
                     </ItemsControl.ItemsPanel>
                     <ItemsControl.ItemTemplate>
                         <DataTemplate x:DataType="viewModels:FlyoutMenuItem">
                             <controls:FlyoutMenuButton
                                 Click="ModuleButton_Click"
                                 Tag="{x:Bind Tag}"
+                                Visibility="{x:Bind Visible, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                                 ToolTipService.ToolTip="{x:Bind ToolTip}">
                                 <controls:FlyoutMenuButton.Content>
                                     <TextBlock
