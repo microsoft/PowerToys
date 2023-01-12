@@ -11,6 +11,7 @@
     xmlns:viewModels="using:Microsoft.PowerToys.Settings.UI.ViewModels"
     mc:Ignorable="d">
     <Page.Resources>
+        <!--<BooleanToVisibilityConverter x:Key="Boolean2VisibilityConverter" />-->
         <Style x:Key="FlyoutButtonStyle" TargetType="Button">
             <Setter Property="Background" Value="{ThemeResource ButtonBackground}" />
             <Setter Property="BackgroundSizing" Value="InnerBorderEdge" />
@@ -153,7 +154,9 @@
                         <Grid
                             Width="96"
                             Height="72"
-                            IsTabStop="False">
+                            IsTabStop="False"
+                            Visibility="{x:Bind Visible, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}">
+                            <!--, Converter={StaticResource Boolean2VisibilityConverter}-->
                             <Grid.RowDefinitions>
                                 <RowDefinition Height="*" />
                                 <RowDefinition Height="24" />
