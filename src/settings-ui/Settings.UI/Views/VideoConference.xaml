@@ -22,7 +22,7 @@
         ModuleImageSource="ms-appx:///Assets/Modules/VideoConference.png">
         <controls:SettingsPageControl.ModuleContent>
 
-            <StackPanel Orientation="Vertical">
+            <StackPanel Orientation="Vertical" ChildrenTransitions="{StaticResource SettingsCardsAnimations}">
                 <InfoBar
                     x:Uid="VideoConference_DeprecationWarning"
                     IsClosable="False"

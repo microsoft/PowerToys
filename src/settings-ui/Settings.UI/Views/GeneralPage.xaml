@@ -20,7 +20,7 @@
         x:Uid="General"
         ModuleImageSource="ms-appx:///Assets/Modules/PT.png">
         <controls:SettingsPageControl.ModuleContent>
-            <StackPanel Orientation="Vertical">
+            <StackPanel Orientation="Vertical" ChildrenTransitions="{StaticResource SettingsCardsAnimations}">
                 <controls:SettingsGroup
                     x:Uid="General_Version"
                     Margin="0,-32,0,0">

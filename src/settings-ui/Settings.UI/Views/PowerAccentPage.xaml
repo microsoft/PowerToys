@@ -15,7 +15,7 @@
         IsTabStop="False"
         ModuleImageSource="ms-appx:///Assets/Modules/PowerAccent.png">
         <controls:SettingsPageControl.ModuleContent>
-            <StackPanel Orientation="Vertical">
+            <StackPanel Orientation="Vertical" ChildrenTransitions="{StaticResource SettingsCardsAnimations}">
                 <labs:SettingsCard
                     x:Uid="QuickAccent_EnableQuickAccent"
                     HeaderIcon="{ui:BitmapIcon Source=/Assets/FluentIcons/FluentIconsPowerAccent.png}"
@@ -68,8 +68,10 @@
                             <ComboBoxItem x:Uid="QuickAccent_SelectedLanguage_Gaeilge" />
                             <ComboBoxItem x:Uid="QuickAccent_SelectedLanguage_Gaidhlig" />
                             <ComboBoxItem x:Uid="QuickAccent_SelectedLanguage_Dutch" />
+                            <ComboBoxItem x:Uid="QuickAccent_SelectedLanguage_Estonian" />
                             <ComboBoxItem x:Uid="QuickAccent_SelectedLanguage_French" />
                             <ComboBoxItem x:Uid="QuickAccent_SelectedLanguage_German" />
+                            <ComboBoxItem x:Uid="QuickAccent_SelectedLanguage_Hebrew" />
                             <ComboBoxItem x:Uid="QuickAccent_SelectedLanguage_Hungarian" />
                             <ComboBoxItem x:Uid="QuickAccent_SelectedLanguage_Icelandic" />
                             <ComboBoxItem x:Uid="QuickAccent_SelectedLanguage_Italian" />

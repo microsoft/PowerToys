@@ -17,7 +17,7 @@
         x:Uid="MouseUtils"
         ModuleImageSource="ms-appx:///Assets/Modules/MouseUtils.png">
         <controls:SettingsPageControl.ModuleContent>
-            <StackPanel Orientation="Vertical">
+            <StackPanel Orientation="Vertical" ChildrenTransitions="{StaticResource SettingsCardsAnimations}">
                 <controls:SettingsGroup x:Uid="MouseUtils_FindMyMouse">
                     <labs:SettingsCard
                         x:Uid="MouseUtils_Enable_FindMyMouse"
