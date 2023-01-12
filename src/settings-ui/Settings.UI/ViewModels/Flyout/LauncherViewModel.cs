@@ -127,39 +127,4 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             }
         }
     }
-
-#pragma warning disable SA1402 // File may only contain a single type
-    public class FlyoutMenuItem : INotifyPropertyChanged
-#pragma warning restore SA1402 // File may only contain a single type
-    {
-        private Visibility _visible;
-
-        public string Label { get; set; }
-
-        public string Icon { get; set; }
-
-        public string ToolTip { get; set; }
-
-        public string Tag { get; set; }
-
-        public Visibility Visible
-        {
-            get => _visible;
-            set
-            {
-                if (_visible != value)
-                {
-                    _visible = value;
-                    OnPropertyChanged();
-                }
-            }
-        }
-
-        public event PropertyChangedEventHandler PropertyChanged;
-
-        private void OnPropertyChanged([CallerMemberName] string propertyName = null)
-        {
-            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
-        }
-    }
 }

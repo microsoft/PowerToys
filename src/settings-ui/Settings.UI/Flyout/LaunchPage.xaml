@@ -10,6 +10,17 @@
     xmlns:toolkitControls="using:CommunityToolkit.WinUI.UI.Controls"
     xmlns:viewModels="using:Microsoft.PowerToys.Settings.UI.ViewModels"
     mc:Ignorable="d">
+    <Page.Resources>
+        <Style
+            x:Key="FlyoutButtonStyle"
+            BasedOn="{StaticResource SubtleButtonStyle}"
+            TargetType="Button">
+            <Setter Property="Padding" Value="6" />
+            <Setter Property="Width" Value="32" />
+            <Setter Property="Height" Value="32" />
+            <Setter Property="FontFamily" Value="{ThemeResource SymbolThemeFontFamily}" />
+        </Style>
+    </Page.Resources>
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="*" />
@@ -66,8 +77,8 @@
                             <controls:FlyoutMenuButton
                                 Click="ModuleButton_Click"
                                 Tag="{x:Bind Tag}"
-                                Visibility="{x:Bind Visible, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                                ToolTipService.ToolTip="{x:Bind ToolTip}">
+                                ToolTipService.ToolTip="{x:Bind ToolTip}"
+                                Visibility="{x:Bind Visible, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}">
                                 <controls:FlyoutMenuButton.Content>
                                     <TextBlock
                                         Style="{StaticResource CaptionTextBlockStyle}"
@@ -99,32 +110,38 @@
                 Spacing="8">
                 <Button
                     x:Name="DocsBtn"
-                    Width="32"
-                    Height="32"
-                    Padding="6"
                     Click="DocsBtn_Click"
-                    FontFamily="{ThemeResource SymbolThemeFontFamily}"
-                    Style="{StaticResource SubtleButtonStyle}"
+                    Style="{StaticResource FlyoutButtonStyle}"
                     ToolTipService.ToolTip="Documentation">
                     <FontIcon FontSize="14" Glyph="&#xE130;" />
                 </Button>
                 <Button
+                    x:Name="ReportBugBtn"
+                    Style="{StaticResource FlyoutButtonStyle}"
+                    ToolTipService.ToolTip="Report a bug">
+                    <FontIcon FontSize="14" Glyph="&#xebe8;" />
+                </Button>
+                <Button
                     x:Name="SettingsBtn"
-                    Width="32"
-                    Height="32"
                     Padding="8"
                     Click="SettingsBtn_Click"
-                    FontFamily="{ThemeResource SymbolThemeFontFamily}"
-                    Style="{StaticResource SubtleButtonStyle}"
+                    Style="{StaticResource FlyoutButtonStyle}"
                     ToolTipService.ToolTip="Settings">
-                    <muxc:AnimatedIcon x:Name="SearchAnimatedIcon">
-                        <muxc:AnimatedIcon.Source>
+                    <AnimatedIcon x:Name="SearchAnimatedIcon">
+                        <AnimatedIcon.Source>
                             <animatedVisuals:AnimatedSettingsVisualSource />
-                        </muxc:AnimatedIcon.Source>
-                        <muxc:AnimatedIcon.FallbackIconSource>
-                            <muxc:SymbolIconSource Symbol="Setting" />
-                        </muxc:AnimatedIcon.FallbackIconSource>
-                    </muxc:AnimatedIcon>
+                        </AnimatedIcon.Source>
+                        <AnimatedIcon.FallbackIconSource>
+                            <SymbolIconSource Symbol="Setting" />
+                        </AnimatedIcon.FallbackIconSource>
+                    </AnimatedIcon>
+                </Button>
+                <AppBarSeparator />
+                <Button
+                    x:Name="QuitBtn"
+                    Style="{StaticResource FlyoutButtonStyle}"
+                    ToolTipService.ToolTip="Quit">
+                    <FontIcon FontSize="14" Glyph="&#xe894;" />
                 </Button>
             </StackPanel>
         </Grid>
