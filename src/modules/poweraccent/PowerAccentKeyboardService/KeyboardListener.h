@@ -99,7 +99,7 @@ namespace winrt::PowerToys::PowerAccentKeyboardService::implementation
                                                                LetterKey::VK_Y,
                                                                LetterKey::VK_Z,
                                                                LetterKey::VK_COMMA,
-                                                               LetterKey::VK_NUMPADKEY0,
+                                                               LetterKey::VK_PERIOD,
                                                                LetterKey::VK_MINUS };
         LetterKey letterPressed{};
 
