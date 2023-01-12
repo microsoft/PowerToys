@@ -11,7 +11,7 @@ using Microsoft.PowerToys.Settings.UI.Library.Interfaces;
 
 namespace Microsoft.PowerToys.Settings.UI.ViewModels
 {
-    public class FlyoutViewModel : Observable
+    public class LauncherViewModel : Observable
     {
         public bool IsUpdateAvailable { get; set; }
 
@@ -20,7 +20,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         private GeneralSettings generalSettingsConfig;
         private UpdatingSettings updatingSettingsConfig;
 
-        public FlyoutViewModel(ISettingsRepository<GeneralSettings> settingsRepository)
+        public LauncherViewModel(ISettingsRepository<GeneralSettings> settingsRepository)
         {
             generalSettingsConfig = settingsRepository.SettingsConfig;
 
@@ -76,18 +76,5 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 IsUpdateAvailable = false;
             }
         }
-    }
-
-#pragma warning disable SA1402 // File may only contain a single type
-    public class FlyoutMenuItem
-#pragma warning restore SA1402 // File may only contain a single type
-    {
-        public string Label { get; set; }
-
-        public string Icon { get; set; }
-
-        public string ToolTip { get; set; }
-
-        public string Tag { get; set; }
     }
 }

@@ -6,29 +6,31 @@ using System.Collections.ObjectModel;
 using System.Threading;
 using global::Windows.System;
 using interop;
+using Microsoft.PowerToys.Settings.UI.Controls;
 using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.PowerToys.Settings.UI.ViewModels;
 using Microsoft.PowerToys.Settings.UI.Views;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
+using Microsoft.UI.Xaml.Media.Animation;
 
 namespace Microsoft.PowerToys.Settings.UI.Flyout
 {
     public sealed partial class LaunchPage : Page
     {
-        private FlyoutViewModel ViewModel { get; set; }
+        private LauncherViewModel ViewModel { get; set; }
 
         public LaunchPage()
         {
             this.InitializeComponent();
             var settingsUtils = new SettingsUtils();
-            ViewModel = new FlyoutViewModel(SettingsRepository<GeneralSettings>.GetInstance(settingsUtils));
+            ViewModel = new LauncherViewModel(SettingsRepository<GeneralSettings>.GetInstance(settingsUtils));
             DataContext = ViewModel;
         }
 
         private void ModuleButton_Click(object sender, RoutedEventArgs e)
         {
-            Button selectedModuleBtn = sender as Button;
+            FlyoutMenuButton selectedModuleBtn = sender as FlyoutMenuButton;
             switch ((string)selectedModuleBtn.Tag)
             {
                 case "ColorPicker": // Launch ColorPicker
@@ -89,6 +91,11 @@ namespace Microsoft.PowerToys.Settings.UI.Flyout
         private async void DocsBtn_Click(object sender, RoutedEventArgs e)
         {
             await Launcher.LaunchUriAsync(new Uri("https://aka.ms/PowerToysOverview"));
+        }
+
+        private void Button_Click(object sender, RoutedEventArgs e)
+        {
+            Frame.Navigate(typeof(AppsListPage), null, new SlideNavigationTransitionInfo() { Effect = SlideNavigationTransitionEffect.FromRight });
         }
     }
 }

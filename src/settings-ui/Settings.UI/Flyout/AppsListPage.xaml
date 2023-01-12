@@ -1,0 +1,82 @@
+<!--  Copyright (c) Microsoft Corporation and Contributors.  -->
+<!--  Licensed under the MIT License.  -->
+
+<Page
+    x:Class="Microsoft.PowerToys.Settings.UI.Flyout.AppsListPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:local="using:Microsoft.PowerToys.Settings.UI.Flyout"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:viewmodels="using:Microsoft.PowerToys.Settings.UI.ViewModels"
+    mc:Ignorable="d">
+
+    <Grid Background="{ThemeResource LayerOnAcrylicFillColorDefaultBrush}">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+        <Grid Padding="24,24,24,0">
+            <TextBlock
+                VerticalAlignment="Center"
+                Style="{StaticResource BodyStrongTextBlockStyle}"
+                Text="All apps" />
+            <Button
+                Padding="8,4,8,4"
+                HorizontalAlignment="Right"
+                VerticalAlignment="Center"
+                Click="Button_Click">
+                <Button.Content>
+                    <StackPanel
+                        VerticalAlignment="Center"
+                        Orientation="Horizontal"
+                        Spacing="12">
+                        <FontIcon
+                            Margin="0,2,0,0"
+                            FontSize="12"
+                            Glyph="&#xe76b;" />
+                        <TextBlock Style="{StaticResource CaptionTextBlockStyle}" Text="Back" />
+                    </StackPanel>
+                </Button.Content>
+            </Button>
+        </Grid>
+        <ListView SelectionMode="None" Grid.Row="1" Margin="0,16,0,0" ItemsSource="{x:Bind ViewModel.FlyoutMenuItems}">
+            <ListView.ItemsPanel>
+                <ItemsPanelTemplate>
+                    <StackPanel Orientation="Vertical" Padding="0,0,0,16"/>
+                </ItemsPanelTemplate>
+            </ListView.ItemsPanel>
+            
+            <ListView.ItemTemplate>
+                <DataTemplate x:DataType="viewmodels:FlyoutMenuItem">
+                    <Grid Height="36">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+                        <!--<ViewBox VerticalAlignment="Center">-->
+                        <BitmapIcon
+                            Width="20"
+                            Margin="24,0,16,0"
+                            ShowAsMonochrome="False"
+                            UriSource="{x:Bind Icon, Mode=OneWay}" />
+                        <!--</ViewBox>-->
+                        <TextBlock
+                            Grid.Column="1"
+                            VerticalAlignment="Center"
+                            TextTrimming="CharacterEllipsis"
+                          
+                            Text="{x:Bind Label, Mode=OneWay}" />
+                        <ToggleSwitch
+                            Grid.Column="2"
+                            Margin="0,0,24,0"
+                            HorizontalAlignment="Right"
+                            IsOn="{x:Bind IsEnabled, Mode=TwoWay}"
+                            Style="{StaticResource RightAlignedCompactToggleSwitchStyle}" />
+                    </Grid>
+                </DataTemplate>
+            </ListView.ItemTemplate>
+        </ListView>
+    </Grid>
+</Page>

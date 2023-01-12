@@ -9,16 +9,6 @@
     mc:Ignorable="d">
 
     <Grid>
-        <Grid.RowDefinitions>
-            <RowDefinition Height="*" />
-            <RowDefinition Height="48" />
-        </Grid.RowDefinitions>
-        <Border
-            Background="{ThemeResource LayerOnAcrylicFillColorDefaultBrush}"
-            BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
-            BorderThickness="0,0,0,1" />
-        <Frame
-            x:Name="ContentFrame"
-            Grid.RowSpan="2" />
+        <Frame x:Name="ContentFrame" />
     </Grid>
 </Page>
