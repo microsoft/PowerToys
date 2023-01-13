@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft Corporation
+﻿// Copyright (c) Microsoft Corporation
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
@@ -11,7 +11,7 @@ using System.Runtime.InteropServices;
 using System.Runtime.InteropServices.ComTypes;
 using System.Xml.Linq;
 using Microsoft.Plugin.Program.Logger;
-using Microsoft.Plugin.Program.Win32;
+using Wox.Plugin.Common.Win32;
 using Wox.Plugin.Logger;
 
 namespace Microsoft.Plugin.Program.Programs
@@ -20,6 +20,13 @@ namespace Microsoft.Plugin.Program.Programs
     public partial class UWP
     {
         private static readonly IPath Path = new FileSystem().Path;
+
+        private static readonly Dictionary<string, PackageVersion> _versionFromNamespace = new Dictionary<string, PackageVersion>
+        {
+            { "http://schemas.microsoft.com/appx/manifest/foundation/windows10", PackageVersion.Windows10 },
+            { "http://schemas.microsoft.com/appx/2013/manifest", PackageVersion.Windows81 },
+            { "http://schemas.microsoft.com/appx/2010/manifest", PackageVersion.Windows8 },
+        };
 
         public string Name { get; }
 
@@ -56,21 +63,12 @@ namespace Microsoft.Plugin.Program.Programs
             InitPackageVersion(namespaces);
 
             const uint noAttribute = 0x80;
-            const Stgm exclusiveRead = Stgm.Read;
+            const STGM exclusiveRead = STGM.READ;
             var hResult = NativeMethods.SHCreateStreamOnFileEx(path, exclusiveRead, noAttribute, false, null, out IStream stream);
 
-            if (hResult == Hresult.Ok)
+            if (hResult == HRESULT.S_OK)
             {
-                var apps = new List<UWPApplication>();
-
-                List<IAppxManifestApplication> appsViaManifests = AppxPackageHelper.GetAppsFromManifest(stream);
-                foreach (var appInManifest in appsViaManifests)
-                {
-                    var app = new UWPApplication(appInManifest, this);
-                    apps.Add(app);
-                }
-
-                Apps = apps.Where(a =>
+                Apps = AppxPackageHelper.GetAppsFromManifest(stream).Select(appInManifest => new UWPApplication(appInManifest, this)).Where(a =>
                 {
                     var valid =
                     !string.IsNullOrEmpty(a.UserModelId) &&
@@ -78,14 +76,19 @@ namespace Microsoft.Plugin.Program.Programs
                     a.AppListEntry != "none";
 
                     return valid;
-                }).ToArray();
+                }).ToList();
+
+                if (Marshal.ReleaseComObject(stream) > 0)
+                {
+                    Log.Error("AppxManifest.xml was leaked", MethodBase.GetCurrentMethod().DeclaringType);
+                }
             }
             else
             {
                 var e = Marshal.GetExceptionForHR((int)hResult);
                 ProgramLogger.Exception("Error caused while trying to get the details of the UWP program", e, GetType(), path);
 
-                Apps = new List<UWPApplication>().ToArray();
+                Apps = Array.Empty<UWPApplication>();
             }
         }
 
@@ -113,20 +116,10 @@ namespace Microsoft.Plugin.Program.Programs
 
         private void InitPackageVersion(string[] namespaces)
         {
-            var versionFromNamespace = new Dictionary<string, PackageVersion>
+            foreach (var n in _versionFromNamespace.Keys.Where(namespaces.Contains))
             {
-                { "http://schemas.microsoft.com/appx/manifest/foundation/windows10", PackageVersion.Windows10 },
-                { "http://schemas.microsoft.com/appx/2013/manifest", PackageVersion.Windows81 },
-                { "http://schemas.microsoft.com/appx/2010/manifest", PackageVersion.Windows8 },
-            };
-
-            foreach (var n in versionFromNamespace.Keys)
-            {
-                if (namespaces.Contains(n))
-                {
-                    Version = versionFromNamespace[n];
-                    return;
-                }
+                Version = _versionFromNamespace[n];
+                return;
             }
 
             ProgramLogger.Exception($"|Trying to get the package version of the UWP program, but a unknown UWP appmanifest version {FullName} from location {Location} is returned.", new FormatException(), GetType(), Location);
@@ -134,7 +127,6 @@ namespace Microsoft.Plugin.Program.Programs
             Version = PackageVersion.Unknown;
         }
 
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "Intentionally keeping the process alive.")]
         public static UWPApplication[] All()
         {
             var windows10 = new Version(10, 0);
@@ -157,11 +149,10 @@ namespace Microsoft.Plugin.Program.Programs
                     }
 
                     return u.Apps;
-                }).ToArray();
+                });
 
                 var updatedListWithoutDisabledApps = applications
-                                                        .Where(t1 => !Main.Settings.DisabledProgramSources
-                                                                        .Any(x => x.UniqueIdentifier == t1.UniqueIdentifier))
+                                                        .Where(t1 => Main.Settings.DisabledProgramSources.All(x => x.UniqueIdentifier != t1.UniqueIdentifier))
                                                         .Select(x => x);
 
                 return updatedListWithoutDisabledApps.ToArray();
@@ -172,29 +163,22 @@ namespace Microsoft.Plugin.Program.Programs
             }
         }
 
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "Intentionally keeping the process alive.")]
         private static IEnumerable<IPackage> CurrentUserPackages()
         {
-            var ps = PackageManagerWrapper.FindPackagesForCurrentUser();
-            ps = ps.Where(p =>
+            return PackageManagerWrapper.FindPackagesForCurrentUser().Where(p =>
             {
-                bool valid;
                 try
                 {
                     var f = p.IsFramework;
                     var path = p.InstalledLocation;
-                    valid = !f && !string.IsNullOrEmpty(path);
+                    return !f && !string.IsNullOrEmpty(path);
                 }
                 catch (Exception e)
                 {
                     ProgramLogger.Exception("An unexpected error occurred and unable to verify if package is valid", e, MethodBase.GetCurrentMethod().DeclaringType, "id");
                     return false;
                 }
-
-                return valid;
             });
-
-            return ps;
         }
 
         public override string ToString()
@@ -202,6 +186,7 @@ namespace Microsoft.Plugin.Program.Programs
             return FamilyName;
         }
 
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Globalization", "CA1309:Use ordinal string comparison", Justification = "Using CurrentCultureIgnoreCase since this is used with FamilyName")]
         public override bool Equals(object obj)
         {
             if (obj is UWP uwp)
@@ -227,18 +212,6 @@ namespace Microsoft.Plugin.Program.Programs
             Windows81,
             Windows8,
             Unknown,
-        }
-
-        [Flags]
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Naming", "CA1714:Flags enums should have plural names", Justification = "This name is consistent with the corresponding win32 flags: https://docs.microsoft.com/en-us/windows/win32/stg/stgm-constants ")]
-        public enum Stgm : long
-        {
-            Read = 0x00000000L,
-        }
-
-        public enum Hresult : int
-        {
-            Ok = 0x0,
         }
     }
 }

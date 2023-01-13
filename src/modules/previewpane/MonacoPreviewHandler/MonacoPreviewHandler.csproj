@@ -1,0 +1,103 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <UseWindowsForms>true</UseWindowsForms>
+    <AssemblyTitle>PowerToys.MonacoPreviewHandler</AssemblyTitle>
+    <AssemblyDescription>PowerToys MonacoPreviewHandler</AssemblyDescription>
+    <Description>PowerToys MonacoPreviewHandler</Description>
+    <OutputPath>..\..\..\..\$(Platform)\$(Configuration)\modules\FileExplorerPreview\</OutputPath>
+    <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+    <AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
+    <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
+    <GenerateSatelliteAssembliesForCore>true</GenerateSatelliteAssembliesForCore>
+    <RuntimeIdentifiers>win10-x64;win10-arm64</RuntimeIdentifiers>
+    <SelfContained>true</SelfContained>
+  </PropertyGroup>
+
+  <!-- SelfContained=true requires RuntimeIdentifier to be set -->
+  <PropertyGroup Condition="'$(Platform)'=='x64'">
+    <RuntimeIdentifier>win10-x64</RuntimeIdentifier>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Platform)'=='ARM64'">
+    <RuntimeIdentifier>win10-arm64</RuntimeIdentifier>
+  </PropertyGroup>
+
+  <Import Project="..\..\..\Version.props" />
+
+  <PropertyGroup>
+    <RootNamespace>Microsoft.PowerToys.PreviewHandler.Monaco</RootNamespace>
+	  <TargetFramework>net7.0-windows10.0.19041.0</TargetFramework>
+    <AssemblyName>PowerToys.MonacoPreviewHandler</AssemblyName>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)'=='Debug'">
+    <WarningsAsErrors>;NU1605</WarningsAsErrors>
+    <WarningLevel>4</WarningLevel>
+    <NoWarn>1701;1702</NoWarn>
+  </PropertyGroup>
+
+  <!-- See https://learn.microsoft.com/windows/apps/develop/platform/csharp-winrt/net-projection-from-cppwinrt-component for more info -->
+  <PropertyGroup>
+    <CsWinRTIncludes>PowerToys.GPOWrapper</CsWinRTIncludes>
+    <CsWinRTGeneratedFilesDir>$(OutDir)</CsWinRTGeneratedFilesDir>
+    <ErrorOnDuplicatePublishOutputFiles>false</ErrorOnDuplicatePublishOutputFiles>
+  </PropertyGroup>
+  <PropertyGroup>
+    <!-- Disable missing comment warning. WinRT/C++ libraries added won't have comments on their reflections. -->
+    <NoWarn>$(NoWarn);1591</NoWarn>
+    <OutputType>WinExe</OutputType>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Windows.CsWinRT" Version="2.0.0" />
+    <PackageReference Include="Microsoft.Web.WebView2" Version="1.0.1343.22" />
+    <PackageReference Include="System.IO.Abstractions" Version="17.2.3" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Update="MonacoPreviewHandlerControl.cs" />
+    <Compile Update="Properties\Resources.Designer.cs">
+    <DesignTime>True</DesignTime>
+    <AutoGen>True</AutoGen>
+    <DependentUpon>Resources.resx</DependentUpon>
+    </Compile>
+  </ItemGroup>
+  
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\common\GPOWrapper\GPOWrapper.vcxproj" />
+    <ProjectReference Include="..\..\..\common\Common.UI\Common.UI.csproj" />
+    <ProjectReference Include="..\common\PreviewHandlerCommon.csproj" />
+    <ProjectReference Include="..\..\..\settings-ui\Settings.UI.Library\Settings.UI.Library.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="index.html">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+  
+  <ItemGroup>
+    <None Update="monacoSRC\**\*.*">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="customLanguages\**\*.*">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="monaco_languages.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="monacoSpecialLanguages.js">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
+</Project>

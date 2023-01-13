@@ -9,7 +9,7 @@ namespace PreviewHandlerCommonUnitTests
 {
     public static class NativeMethods
     {
-        // Gets the ancestor window: https://docs.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-getancestor
+        // Gets the ancestor window: https://learn.microsoft.com/windows/win32/api/winuser/nf-winuser-getancestor
         [DllImport("user32.dll")]
         internal static extern IntPtr GetAncestor(IntPtr hWnd, uint gaFlags);
     }

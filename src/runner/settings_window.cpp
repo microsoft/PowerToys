@@ -5,25 +5,30 @@
 #include <aclapi.h>
 
 #include "powertoy_module.h"
-#include <common/two_way_pipe_message_ipc.h>
+#include <common/interop/two_way_pipe_message_ipc.h>
 #include "tray_icon.h"
 #include "general_settings.h"
-#include "common/windows_colors.h"
-#include "common/common.h"
 #include "restart_elevated.h"
-#include "update_utils.h"
+#include "UpdateUtils.h"
 #include "centralized_kb_hook.h"
 
-#include <common/json.h>
-#include <common\settings_helpers.cpp>
-#include <common/os-detect.h>
-#include <common/version.h>
-#include <common/VersionHelper.h>
+#include <common/utils/json.h>
+#include <common/SettingsAPI/settings_helpers.cpp>
+#include <common/version/version.h>
+#include <common/version/helper.h>
 #include <common/logger/logger.h>
+#include <common/utils/elevation.h>
+#include <common/utils/process_path.h>
+#include <common/utils/timeutil.h>
+#include <common/utils/winapi_error.h>
+#include <common/updating/updateState.h>
+#include <common/themes/windows_colors.h>
+#include "settings_window.h"
 
 #define BUFSIZE 1024
 
 TwoWayPipeMessageIPC* current_settings_ipc = NULL;
+std::mutex ipc_mutex;
 std::atomic_bool g_isLaunchInProgress = false;
 
 json::JsonObject get_power_toys_settings()
@@ -37,7 +42,7 @@ json::JsonObject get_power_toys_settings()
         }
         catch (...)
         {
-            // TODO: handle malformed JSON.
+            Logger::error(L"get_power_toys_settings(): got malformed json for {} module", name);
         }
     }
     return result;
@@ -75,19 +80,42 @@ std::optional<std::wstring> dispatch_json_action_to_module(const json::JsonObjec
                     }
                     else
                     {
-                        schedule_restart_as_elevated();
+                        schedule_restart_as_elevated(true);
                         PostQuitMessage(0);
+                    }
+                }
+                else if (action == L"restart_maintain_elevation")
+                {
+                    // this was added to restart and maintain elevation, which is needed after settings are change from outside the normal process.
+                    // since a normal PostQuitMessage(0) would usually cause this process to save it's in memory settings to disk, we need to
+                    // send a PostQuitMessage(1) and check for that on exit, and skip the settings-flush.
+                    auto loaded = PTSettingsHelper::load_general_settings();
+
+                    if (is_process_elevated())
+                    {
+                        schedule_restart_as_elevated(true);
+                        PostQuitMessage(1);
+                    }
+                    else
+                    {
+                        schedule_restart_as_non_elevated(true);
+                        PostQuitMessage(1);
                     }
                 }
                 else if (action == L"check_for_updates")
                 {
-                    std::wstring latestVersion = check_for_updates();
-                    VersionHelper current_version(VERSION_MAJOR, VERSION_MINOR, VERSION_REVISION);
-                    bool isRunningLatest = latestVersion.compare(current_version.toWstring()) == 0;
-
+                    CheckForUpdatesCallback();
+                }
+                else if (action == L"request_update_state_date")
+                {
                     json::JsonObject json;
-                    json.SetNamedValue(L"version", json::JsonValue::CreateStringValue(latestVersion));
-                    json.SetNamedValue(L"isVersionLatest", json::JsonValue::CreateBooleanValue(isRunningLatest));
+
+                    auto update_state = UpdateState::read();
+                    if (update_state.githubUpdateLastCheckedDate)
+                    {
+                        const time_t date = *update_state.githubUpdateLastCheckedDate;
+                        json.SetNamedValue(L"updateStateDate", json::value(std::to_wstring(date)));
+                    }
 
                     result.emplace(json.Stringify());
                 }
@@ -113,6 +141,7 @@ void send_json_config_to_module(const std::wstring& module_key, const std::wstri
     {
         moduleIt->second->set_config(settings.c_str());
         moduleIt->second.update_hotkeys();
+        moduleIt->second.UpdateHotkeyEx();
     }
 }
 
@@ -127,7 +156,14 @@ void dispatch_json_config_to_modules(const json::JsonObject& powertoys_configs)
 
 void dispatch_received_json(const std::wstring& json_to_parse)
 {
-    const json::JsonObject j = json::JsonObject::Parse(json_to_parse);
+    json::JsonObject j;
+    const bool ok = json::JsonObject::TryParse(json_to_parse, j);
+    if (!ok)
+    {
+        Logger::error(L"dispatch_received_json: got malformed json: {}", json_to_parse);
+        return;
+    }
+
     for (const auto& base_element : j)
     {
         const auto name = base_element.Key();
@@ -136,27 +172,30 @@ void dispatch_received_json(const std::wstring& json_to_parse)
         if (name == L"general")
         {
             apply_general_settings(value.GetObjectW());
-            if (current_settings_ipc != nullptr)
+            const std::wstring settings_string{ get_all_settings().Stringify().c_str() };
             {
-                const std::wstring settings_string{ get_all_settings().Stringify().c_str() };
-                current_settings_ipc->send(settings_string);
+                std::unique_lock lock{ ipc_mutex };
+                if(current_settings_ipc)
+                    current_settings_ipc->send(settings_string);
             }
         }
         else if (name == L"powertoys")
         {
             dispatch_json_config_to_modules(value.GetObjectW());
-            if (current_settings_ipc != nullptr)
+            const std::wstring settings_string{ get_all_settings().Stringify().c_str() };
             {
-                const std::wstring settings_string{ get_all_settings().Stringify().c_str() };
-                current_settings_ipc->send(settings_string);
+                std::unique_lock lock{ ipc_mutex };
+                if(current_settings_ipc)
+                    current_settings_ipc->send(settings_string);
             }
         }
         else if (name == L"refresh")
         {
-            if (current_settings_ipc != nullptr)
+            const std::wstring settings_string{ get_all_settings().Stringify().c_str() };
             {
-                const std::wstring settings_string{ get_all_settings().Stringify().c_str() };
-                current_settings_ipc->send(settings_string);
+                std::unique_lock lock{ ipc_mutex };
+                if(current_settings_ipc)
+                    current_settings_ipc->send(settings_string);
             }
         }
         else if (name == L"action")
@@ -164,7 +203,11 @@ void dispatch_received_json(const std::wstring& json_to_parse)
             auto result = dispatch_json_action_to_module(value.GetObjectW());
             if (result.has_value())
             {
-                current_settings_ipc->send(result.value());
+                {
+                    std::unique_lock lock{ ipc_mutex };
+                    if(current_settings_ipc)
+                        current_settings_ipc->send(result.value());
+                }
             }
         }
     }
@@ -236,7 +279,7 @@ BOOL run_settings_non_elevated(LPCWSTR executable_path, LPWSTR executable_args, 
                                           nullptr,
                                           nullptr,
                                           FALSE,
-                                          0,
+                                          EXTENDED_STARTUPINFO_PRESENT,
                                           nullptr,
                                           nullptr,
                                           &siex.StartupInfo,
@@ -247,7 +290,7 @@ BOOL run_settings_non_elevated(LPCWSTR executable_path, LPWSTR executable_args, 
 
 DWORD g_settings_process_id = 0;
 
-void run_settings_window()
+void run_settings_window(bool show_oobe_window, bool show_scoobe_window, std::optional<std::wstring> settings_window)
 {
     g_isLaunchInProgress = true;
 
@@ -264,16 +307,9 @@ void run_settings_window()
     // Arg 1: executable path.
     std::wstring executable_path = get_module_folderpath();
 
-    if (UseNewSettings())
-    {
-        executable_path.append(L"\\SettingsUIRunner\\Microsoft.PowerToys.Settings.UI.Runner.exe");
-    }
-    else
-    {
-        executable_path.append(L"\\PowerToysSettings.exe");
-    }
+    executable_path.append(L"\\Settings\\PowerToys.Settings.exe");
 
-    // Arg 2: pipe server. Generate unique names for the pipes, if getting a UUID is possible.
+    // Args 2,3: pipe server. Generate unique names for the pipes, if getting a UUID is possible.
     std::wstring powertoys_pipe_name(L"\\\\.\\pipe\\powertoys_runner_");
     std::wstring settings_pipe_name(L"\\\\.\\pipe\\powertoys_settings_");
     UUID temp_uuid;
@@ -297,10 +333,10 @@ void run_settings_window()
         uuid_chars = nullptr;
     }
 
-    // Arg 3: process pid.
+    // Arg 4: process pid.
     DWORD powertoys_pid = GetCurrentProcessId();
 
-    // Arg 4: settings theme.
+    // Arg 5: settings theme.
     const std::wstring settings_theme_setting{ get_general_settings().theme };
     std::wstring settings_theme = L"system";
     if (settings_theme_setting == L"dark" || (settings_theme_setting == L"system" && WindowsColors::is_dark_mode()))
@@ -308,58 +344,61 @@ void run_settings_window()
         settings_theme = L"dark";
     }
 
-    // Arg 4: settings theme.
     GeneralSettings save_settings = get_general_settings();
 
+    // Arg 6: elevated status
     bool isElevated{ get_general_settings().isElevated };
-    std::wstring settings_elevatedStatus;
-    settings_elevatedStatus = isElevated;
+    std::wstring settings_elevatedStatus = isElevated ? L"true" : L"false";
 
-    if (isElevated)
-    {
-        settings_elevatedStatus = L"true";
-    }
-    else
-    {
-        settings_elevatedStatus = L"false";
-    }
-
+    // Arg 7: is user an admin
     bool isAdmin{ get_general_settings().isAdmin };
-    std::wstring settings_isUserAnAdmin;
+    std::wstring settings_isUserAnAdmin = isAdmin ? L"true" : L"false";
 
-    if (isAdmin)
-    {
-        settings_isUserAnAdmin = L"true";
-    }
-    else
-    {
-        settings_isUserAnAdmin = L"false";
-    }
+    // Arg 8: should oobe window be shown
+    std::wstring settings_showOobe = show_oobe_window ? L"true" : L"false";
+
+    // Arg 9: should scoobe window be shown
+    std::wstring settings_showScoobe = show_scoobe_window ? L"true" : L"false";
 
     // create general settings file to initialize the settings file with installation configurations like :
     // 1. Run on start up.
     PTSettingsHelper::save_general_settings(save_settings.to_json());
 
-    std::wstring executable_args = L"\"";
-    executable_args.append(executable_path);
-    executable_args.append(L"\" ");
-    executable_args.append(powertoys_pipe_name);
-    executable_args.append(L" ");
-    executable_args.append(settings_pipe_name);
-    executable_args.append(L" ");
-    executable_args.append(std::to_wstring(powertoys_pid));
-    executable_args.append(L" ");
-    executable_args.append(settings_theme);
-    executable_args.append(L" ");
-    executable_args.append(settings_elevatedStatus);
-    executable_args.append(L" ");
-    executable_args.append(settings_isUserAnAdmin);
+    std::wstring executable_args = fmt::format(L"\"{}\" {} {} {} {} {} {} {} {}",
+                                               executable_path,
+                                               powertoys_pipe_name,
+                                               settings_pipe_name,
+                                               std::to_wstring(powertoys_pid),
+                                               settings_theme,
+                                               settings_elevatedStatus,
+                                               settings_isUserAnAdmin,
+                                               settings_showOobe,
+                                               settings_showScoobe);
+
+    if (settings_window.has_value())
+    {
+        executable_args.append(L" ");
+        executable_args.append(settings_window.value());
+    }
 
     BOOL process_created = false;
-    if (is_process_elevated())
-    {
-        process_created = run_settings_non_elevated(executable_path.c_str(), executable_args.data(), &process_info);
-    }
+
+    // Commented out to fix #22659
+    // Running settings non-elevated and modules elevated when PowerToys is running elevated results
+    // in settings making changes in one file (non-elevated user dir) and modules are reading settings
+    // from different (elevated user) dir
+    //if (is_process_elevated())
+    //{
+
+    //    auto res = RunNonElevatedFailsafe(executable_path, executable_args, get_module_folderpath());
+    //    process_created = res.has_value();
+    //    if (process_created)
+    //    {
+    //        process_info.dwProcessId = res->processID;
+    //        process_info.hProcess = res->processHandle.release();
+    //        g_isLaunchInProgress = false;
+    //    }
+    //}
 
     if (FALSE == process_created)
     {
@@ -392,8 +431,11 @@ void run_settings_window()
         goto LExit;
     }
 
-    current_settings_ipc = new TwoWayPipeMessageIPC(powertoys_pipe_name, settings_pipe_name, receive_json_send_to_main_thread);
-    current_settings_ipc->start(hToken);
+    {
+        std::unique_lock lock{ ipc_mutex };
+        current_settings_ipc = new TwoWayPipeMessageIPC(powertoys_pipe_name, settings_pipe_name, receive_json_send_to_main_thread);
+        current_settings_ipc->start(hToken);
+    }
     g_settings_process_id = process_info.dwProcessId;
 
     if (process_info.hProcess)
@@ -421,12 +463,14 @@ LExit:
     {
         CloseHandle(process_info.hThread);
     }
-
-    if (current_settings_ipc)
     {
-        current_settings_ipc->end();
-        delete current_settings_ipc;
-        current_settings_ipc = nullptr;
+        std::unique_lock lock{ ipc_mutex };
+        if (current_settings_ipc)
+        {
+            current_settings_ipc->end();
+            delete current_settings_ipc;
+            current_settings_ipc = nullptr;
+        }
     }
 
     if (hToken)
@@ -440,7 +484,7 @@ LExit:
 #define MAX_TITLE_LENGTH 100
 void bring_settings_to_front()
 {
-    auto callback = [](HWND hwnd, LPARAM data) -> BOOL {
+    auto callback = [](HWND hwnd, LPARAM /*data*/) -> BOOL {
         DWORD processId;
         if (GetWindowThreadProcessId(hwnd, &processId) && processId == g_settings_process_id)
         {
@@ -454,7 +498,17 @@ void bring_settings_to_front()
             }
             if (wcsncmp(title, windowTitle.c_str(), len) == 0)
             {
-                ShowWindow(hwnd, SW_RESTORE);
+                auto lStyles = GetWindowLong(hwnd, GWL_STYLE);
+
+                if (lStyles & WS_MAXIMIZE)
+                {
+                    ShowWindow(hwnd, SW_MAXIMIZE);
+                }
+                else
+                {
+                    ShowWindow(hwnd, SW_RESTORE);
+                }
+
                 SetForegroundWindow(hwnd);
                 return FALSE;
             }
@@ -466,7 +520,7 @@ void bring_settings_to_front()
     EnumWindows(callback, 0);
 }
 
-void open_settings_window()
+void open_settings_window(std::optional<std::wstring> settings_window)
 {
     if (g_settings_process_id != 0)
     {
@@ -476,7 +530,9 @@ void open_settings_window()
     {
         if (!g_isLaunchInProgress)
         {
-            std::thread(run_settings_window).detach();
+            std::thread([settings_window]() {
+                run_settings_window(false, false, settings_window);
+            }).detach();
         }
     }
 }
@@ -491,4 +547,120 @@ void close_settings_window()
             TerminateProcess(proc, 0);
         }
     }
+}
+
+void open_oobe_window()
+{
+    std::thread([]() {
+        run_settings_window(true, false, std::nullopt);
+    }).detach();
+}
+
+void open_scoobe_window()
+{
+    std::thread([]() {
+        run_settings_window(false, true, std::nullopt);
+    }).detach();
+}
+
+std::string ESettingsWindowNames_to_string(ESettingsWindowNames value)
+{
+    switch (value)
+    {
+    case ESettingsWindowNames::Overview:
+        return "Overview";
+    case ESettingsWindowNames::Awake:
+        return "Awake";
+    case ESettingsWindowNames::ColorPicker:
+        return "ColorPicker";
+    case ESettingsWindowNames::FancyZones:
+        return "FancyZones";
+    case ESettingsWindowNames::Run:
+        return "Run";
+    case ESettingsWindowNames::ImageResizer:
+        return "ImageResizer";
+    case ESettingsWindowNames::KBM:
+        return "KBM";
+    case ESettingsWindowNames::MouseUtils:
+        return "MouseUtils";
+    case ESettingsWindowNames::PowerRename:
+        return "PowerRename";
+    case ESettingsWindowNames::FileExplorer:
+        return "FileExplorer";
+    case ESettingsWindowNames::ShortcutGuide:
+        return "ShortcutGuide";
+    case ESettingsWindowNames::VideoConference:
+        return "VideoConference";
+    case ESettingsWindowNames::Hosts:
+        return "Hosts";
+    default:
+    {
+        Logger::error(L"Can't convert ESettingsWindowNames value={} to string", static_cast<int>(value));
+        assert(false);
+    }
+    }
+    return "";
+}
+
+ESettingsWindowNames ESettingsWindowNames_from_string(std::string value)
+{
+    if (value == "Overview")
+    {
+        return ESettingsWindowNames::Overview;
+    }
+    else if (value == "Awake")
+    {
+        return ESettingsWindowNames::Awake;
+    }
+    else if (value == "ColorPicker")
+    {
+        return ESettingsWindowNames::ColorPicker;
+    }
+    else if (value == "FancyZones")
+    {
+        return ESettingsWindowNames::FancyZones;
+    }
+    else if (value == "Run")
+    {
+        return ESettingsWindowNames::Run;
+    }
+    else if (value == "ImageResizer")
+    {
+        return ESettingsWindowNames::ImageResizer;
+    }
+    else if (value == "KBM")
+    {
+        return ESettingsWindowNames::KBM;
+    }
+    else if (value == "MouseUtils")
+    {
+        return ESettingsWindowNames::MouseUtils;
+    }
+    else if (value == "PowerRename")
+    {
+        return ESettingsWindowNames::PowerRename;
+    }
+    else if (value == "FileExplorer")
+    {
+        return ESettingsWindowNames::FileExplorer;
+    }
+    else if (value == "ShortcutGuide")
+    {
+        return ESettingsWindowNames::ShortcutGuide;
+    }
+    else if (value == "VideoConference")
+    {
+        return ESettingsWindowNames::VideoConference;
+    }
+    else if (value == "Hosts")
+    {
+        return ESettingsWindowNames::Hosts;
+    }
+    else
+    {
+        Logger::error(L"Can't convert string value={} to ESettingsWindowNames", winrt::to_hstring(value));
+        assert(false);
+    }
+
+    return ESettingsWindowNames::Overview;
 }

@@ -1,0 +1,82 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <Import Project="..\..\..\..\Version.props" />
+
+  <PropertyGroup>
+    <TargetFramework>net7.0-windows</TargetFramework>
+    <ProjectGuid>{5043CECE-E6A7-4867-9CBE-02D27D83747A}</ProjectGuid>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>Microsoft.PowerToys.Run.Plugin.WindowsSettings</RootNamespace>
+    <AssemblyName>Microsoft.PowerToys.Run.Plugin.WindowsSettings</AssemblyName>
+    <Version>$(Version).0</Version>
+    <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+    <AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
+    <UseWindowsForms>true</UseWindowsForms>
+    <Nullable>enable</Nullable>
+    <GenerateSatelliteAssembliesForCore>true</GenerateSatelliteAssembliesForCore>
+    <OutputPath>..\..\..\..\..\$(Platform)\$(Configuration)\modules\launcher\Plugins\WindowsSettings\</OutputPath>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)'=='Debug'">
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <Optimize>false</Optimize>
+    <DebugType>full</DebugType>
+    <DebugSymbols>true</DebugSymbols>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)'=='Release'">
+    <DefineConstants>TRACE</DefineConstants>
+    <Optimize>true</Optimize>
+    <DebugType>pdbonly</DebugType>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Remove="WindowsSettings.json" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\Wox.Infrastructure\Wox.Infrastructure.csproj">
+      <Private>false</Private>
+    </ProjectReference>
+    <ProjectReference Include="..\..\Wox.Plugin\Wox.Plugin.csproj">
+      <Private>false</Private>
+    </ProjectReference>
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="plugin.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Include="WindowsSettings.json">
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </EmbeddedResource>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Update="Properties\Resources.Designer.cs">
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+      <DependentUpon>Resources.resx</DependentUpon>
+    </Compile>
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Update="Properties\Resources.resx">
+      <Generator>ResXFileCodeGenerator</Generator>
+      <LastGenOutput>Resources.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="Images\WindowsSettings.dark.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="Images\WindowsSettings.light.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
+
+</Project>

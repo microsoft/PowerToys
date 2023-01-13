@@ -17,13 +17,3 @@ void Trace::UnregisterProvider()
 {
     TraceLoggingUnregister(g_hProvider);
 }
-
-void Trace::MyEvent()
-{
-    TraceLoggingWrite(
-        g_hProvider,
-        "PowerToyName::Event::MyEvent",
-        ProjectTelemetryPrivacyDataTag(ProjectTelemetryTag_ProductAndServicePerformance),
-        TraceLoggingBoolean(TRUE, "UTCReplace_AppSessionGuid"),
-        TraceLoggingKeyword(PROJECT_KEYWORD_MEASURE));
-}

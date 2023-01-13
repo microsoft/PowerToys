@@ -10,8 +10,8 @@
     <system:String x:Key="Theme.ColorScheme">Accent5</system:String>
     <Color x:Key="Theme.PrimaryAccentColor">White</Color>
 
-    <SolidColorBrush x:Key="SecondaryBackgroundBrush" Color="#FFe5e5e5" />
-    <SolidColorBrush x:Key="PrimaryBackgroundBrush" Color="#FFf5f5f5" />
+    <SolidColorBrush x:Key="SecondaryBackgroundBrush" Color="#FFf3f3f3" />
+    <SolidColorBrush x:Key="PrimaryBackgroundBrush" Color="#FFffffff" />
     <SolidColorBrush x:Key="PrimaryForegroundBrush" Color="#FF000000" />
     <SolidColorBrush x:Key="SecondaryForegroundBrush" Color="#FF676666" />
     <SolidColorBrush x:Key="PrimaryBorderBrush" Color="Black"/>

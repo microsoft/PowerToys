@@ -2,16 +2,16 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-using NUnit.Framework;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 using PowerLauncher.ViewModel;
 
 namespace Wox.Test
 {
-    [TestFixture]
-    internal class MainViewModelTest
+    [TestClass]
+    public class MainViewModelTest
     {
-        [Test]
-        public void MainViewModel_GetAutoCompleteTextReturnsEmptyString_WhenInputIsNull()
+        [TestMethod]
+        public void MainViewModelGetAutoCompleteTextReturnsEmptyStringWhenInputIsNull()
         {
             // Arrange
             int index = 0;
@@ -25,8 +25,8 @@ namespace Wox.Test
             Assert.AreEqual(string.Empty, autoCompleteText);
         }
 
-        [Test]
-        public void MainViewModel_GetAutoCompleteTextReturnsEmptyString_WhenInputIsEmpty()
+        [TestMethod]
+        public void MainViewModelGetAutoCompleteTextReturnsEmptyStringWhenInputIsEmpty()
         {
             // Arrange
             int index = 0;
@@ -40,8 +40,8 @@ namespace Wox.Test
             Assert.AreEqual(string.Empty, autoCompleteText);
         }
 
-        [Test]
-        public void MainViewModel_GetAutoCompleteTextReturnsEmptyString_WhenQueryIsNull()
+        [TestMethod]
+        public void MainViewModelGetAutoCompleteTextReturnsEmptyStringWhenQueryIsNull()
         {
             // Arrange
             int index = 0;
@@ -55,8 +55,8 @@ namespace Wox.Test
             Assert.AreEqual(string.Empty, autoCompleteText);
         }
 
-        [Test]
-        public void MainViewModel_GetAutoCompleteTextReturnsEmptyString_WhenQueryIsEmpty()
+        [TestMethod]
+        public void MainViewModelGetAutoCompleteTextReturnsEmptyStringWhenQueryIsEmpty()
         {
             // Arrange
             int index = 0;
@@ -70,8 +70,8 @@ namespace Wox.Test
             Assert.AreEqual(string.Empty, autoCompleteText);
         }
 
-        [Test]
-        public void MainViewModel_GetAutoCompleteTextReturnsEmptyString_WhenIndexIsNonZero()
+        [TestMethod]
+        public void MainViewModelGetAutoCompleteTextReturnsEmptyStringWhenIndexIsNonZero()
         {
             // Arrange
             int index = 2;
@@ -85,8 +85,8 @@ namespace Wox.Test
             Assert.AreEqual(string.Empty, autoCompleteText);
         }
 
-        [Test]
-        public void MainViewModel_GetAutoCompleteTextReturnsMatchingString_WhenIndexIsZeroAndMatch()
+        [TestMethod]
+        public void MainViewModelGetAutoCompleteTextReturnsMatchingStringWhenIndexIsZeroAndMatch()
         {
             // Arrange
             int index = 0;
@@ -101,8 +101,8 @@ namespace Wox.Test
             Assert.AreEqual(expectedAutoCompleteText, autoCompleteText);
         }
 
-        [Test]
-        public void MainViewModel_GetAutoCompleteTextReturnsEmptyString_WhenIndexIsZeroAndNoMatch()
+        [TestMethod]
+        public void MainViewModelGetAutoCompleteTextReturnsEmptyStringWhenIndexIsZeroAndNoMatch()
         {
             // Arrange
             int index = 0;
@@ -117,8 +117,8 @@ namespace Wox.Test
             Assert.AreEqual(expectedAutoCompleteText, autoCompleteText);
         }
 
-        [Test]
-        public void MainViewModel_GetSearchTextReturnsEmptyString_WhenInputIsNull()
+        [TestMethod]
+        public void MainViewModelGetSearchTextReturnsEmptyStringWhenInputIsNull()
         {
             // Arrange
             int index = 0;
@@ -132,8 +132,8 @@ namespace Wox.Test
             Assert.AreEqual(string.Empty, autoCompleteText);
         }
 
-        [Test]
-        public void MainViewModel_GetSearchTextReturnsEmptyString_WhenInputIsEmpty()
+        [TestMethod]
+        public void MainViewModelGetSearchTextReturnsEmptyStringWhenInputIsEmpty()
         {
             // Arrange
             int index = 0;
@@ -147,8 +147,8 @@ namespace Wox.Test
             Assert.AreEqual(string.Empty, autoCompleteText);
         }
 
-        [Test]
-        public void MainViewModel_GetSearchTextReturnsInputString_WhenQueryIsNull()
+        [TestMethod]
+        public void MainViewModelGetSearchTextReturnsInputStringWhenQueryIsNull()
         {
             // Arrange
             int index = 0;
@@ -162,8 +162,8 @@ namespace Wox.Test
             Assert.AreEqual(input, autoCompleteText);
         }
 
-        [Test]
-        public void MainViewModel_GetSearchTextReturnsInputString_WhenQueryIsEmpty()
+        [TestMethod]
+        public void MainViewModelGetSearchTextReturnsInputStringWhenQueryIsEmpty()
         {
             // Arrange
             int index = 0;
@@ -177,8 +177,8 @@ namespace Wox.Test
             Assert.AreEqual(input, autoCompleteText);
         }
 
-        [Test]
-        public void MainViewModel_GetSearchTextReturnsMatchingStringWithCase_WhenIndexIsZeroAndMatch()
+        [TestMethod]
+        public void MainViewModelGetSearchTextReturnsMatchingStringWithCaseWhenIndexIsZeroAndMatch()
         {
             // Arrange
             int index = 0;
@@ -193,8 +193,8 @@ namespace Wox.Test
             Assert.AreEqual(expectedAutoCompleteText, autoCompleteText);
         }
 
-        [Test]
-        public void MainViewModel_GetSearchTextReturnsInput_WhenIndexIsZeroAndNoMatch()
+        [TestMethod]
+        public void MainViewModelGetSearchTextReturnsInputWhenIndexIsZeroAndNoMatch()
         {
             // Arrange
             int index = 0;
@@ -208,8 +208,8 @@ namespace Wox.Test
             Assert.AreEqual(input, autoCompleteText);
         }
 
-        [Test]
-        public void ShouldAutoCompleteTextBeEmpty_ShouldReturnFalse_WhenAutoCompleteTextIsEmpty()
+        [TestMethod]
+        public void ShouldAutoCompleteTextBeEmptyShouldReturnFalseWhenAutoCompleteTextIsEmpty()
         {
             // Arrange
             string queryText = "Te";
@@ -222,8 +222,8 @@ namespace Wox.Test
             Assert.AreEqual(false, result);
         }
 
-        [Test]
-        public void ShouldAutoCompleteTextBeEmpty_ShouldReturnTrue_WhenQueryTextMatchAutoCompleteText()
+        [TestMethod]
+        public void ShouldAutoCompleteTextBeEmptyShouldReturnTrueWhenQueryTextMatchAutoCompleteText()
         {
             // Arrange
             string queryText = "Te";
@@ -236,8 +236,8 @@ namespace Wox.Test
             Assert.AreEqual(false, result);
         }
 
-        [Test]
-        public void ShouldAutoCompleteTextBeEmpty_ShouldReturnTrue_WhenQueryTextIsEmpty()
+        [TestMethod]
+        public void ShouldAutoCompleteTextBeEmptyShouldReturnTrueWhenQueryTextIsEmpty()
         {
             // Arrange
             string queryText = string.Empty;
@@ -250,8 +250,8 @@ namespace Wox.Test
             Assert.AreEqual(true, result);
         }
 
-        [Test]
-        public void ShouldAutoCompleteTextBeEmpty_ShouldReturnTrue_WhenQueryTextDoesNotMatchAutoCompleteText()
+        [TestMethod]
+        public void ShouldAutoCompleteTextBeEmptyShouldReturnTrueWhenQueryTextDoesNotMatchAutoCompleteText()
         {
             // Arrange
             string queryText = "TE";

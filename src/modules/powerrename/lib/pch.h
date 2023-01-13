@@ -7,6 +7,7 @@
 #include <windows.h>
 
 // C RunTime Header Files
+#include <algorithm>
 #include <cstdlib>
 #include <malloc.h>
 #include <memory.h>
@@ -17,7 +18,7 @@
 #include <shobjidl.h>
 #include <shellapi.h>
 #include <shlwapi.h>
+#include <ShlObj_core.h>
 
 #include <ProjectTelemetry.h>
 
-#pragma comment(lib, "windowsapp")

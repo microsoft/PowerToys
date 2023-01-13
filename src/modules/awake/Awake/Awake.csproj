@@ -1,0 +1,93 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <Import Project="..\..\..\Version.props" />
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net7.0-windows10.0.19041.0</TargetFramework>
+    <RuntimeIdentifiers>win-x64;win-arm64</RuntimeIdentifiers>
+    <OutputPath>$(SolutionDir)$(Platform)\$(Configuration)\modules\Awake</OutputPath>
+    <Nullable>enable</Nullable>
+    <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+    <AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
+    <UseWindowsForms>true</UseWindowsForms>
+    <!--Per documentation: https://learn.microsoft.com/dotnet/core/compatibility/windows-forms/5.0/automatically-infer-winexe-output-type#outputtype-set-to-winexe-for-wpf-and-winforms-apps -->
+    <DisableWinExeOutputInference>true</DisableWinExeOutputInference>
+    <AssemblyName>PowerToys.Awake</AssemblyName>
+    <Version>$(Version).0</Version>
+    <ApplicationIcon>Images\Awake.ico</ApplicationIcon>
+    <SupportedOSPlatformVersion>10.0.19041.0</SupportedOSPlatformVersion>
+    <PackageProjectUrl>https://awake.den.dev</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/microsoft/powertoys</RepositoryUrl>
+    <SelfContained>true</SelfContained>
+  </PropertyGroup>
+
+  <!-- SelfContained=true requires RuntimeIdentifier to be set -->
+  <PropertyGroup Condition="'$(Platform)'=='x64'">
+    <RuntimeIdentifier>win10-x64</RuntimeIdentifier>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Platform)'=='ARM64'">
+    <RuntimeIdentifier>win10-arm64</RuntimeIdentifier>
+  </PropertyGroup>
+
+  <!-- See https://learn.microsoft.com/windows/apps/develop/platform/csharp-winrt/net-projection-from-cppwinrt-component for more info -->
+  <PropertyGroup>
+    <CsWinRTIncludes>PowerToys.GPOWrapper</CsWinRTIncludes>
+    <CsWinRTGeneratedFilesDir>$(OutDir)</CsWinRTGeneratedFilesDir>
+    <ErrorOnDuplicatePublishOutputFiles>false</ErrorOnDuplicatePublishOutputFiles>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)'=='Debug'">
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <DebugType>full</DebugType>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <Optimize>false</Optimize>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)'=='Release'">
+    <DefineConstants>TRACE;RELEASE</DefineConstants>
+    <Optimize>true</Optimize>
+    <DebugType>pdbonly</DebugType>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Remove="Images\Awake.ico" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Windows.CsWin32" Version="0.2.46-beta">
+      <PrivateAssets>all</PrivateAssets>
+    </PackageReference>
+    <PackageReference Include="Microsoft.Windows.CsWinRT" Version="2.0.0" />
+    <PackageReference Include="NLog" Version="5.0.4" />
+    <PackageReference Include="System.CommandLine" Version="2.0.0-beta1.20071.2" />
+    <PackageReference Include="System.Reactive" Version="5.0.0" />
+    <PackageReference Include="System.Runtime.Caching" Version="7.0.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\common\GPOWrapper\GPOWrapper.vcxproj" />
+    <ProjectReference Include="..\..\..\common\ManagedCommon\ManagedCommon.csproj" />
+    <ProjectReference Include="..\..\..\settings-ui\Settings.UI.Library\Settings.UI.Library.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Update="Program.cs">
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </Compile>
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="NLog.config">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="Images\Awake.ico">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+
+</Project>

@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft Corporation
+// Copyright (c) Microsoft Corporation
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
@@ -7,6 +7,7 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Windows.Media;
+using Wox.Infrastructure.Storage;
 using Wox.Plugin;
 
 namespace Wox.Infrastructure.Image
@@ -18,8 +19,15 @@ namespace Wox.Infrastructure.Image
         private const int PermissibleFactor = 2;
 
         private readonly ConcurrentDictionary<string, ImageSource> _data = new ConcurrentDictionary<string, ImageSource>();
+        private readonly WoxJsonStorage<ConcurrentDictionary<string, int>> _storage;
 
         public ConcurrentDictionary<string, int> Usage { get; private set; } = new ConcurrentDictionary<string, int>();
+
+        public ImageCache()
+        {
+            _storage = new WoxJsonStorage<ConcurrentDictionary<string, int>>("ImageCache");
+            Usage = _storage.Load();
+        }
 
         public ImageSource this[string path]
         {
@@ -87,9 +95,9 @@ namespace Wox.Infrastructure.Image
             return new Dictionary<string, int>(Usage);
         }
 
-        public void SetUsageAsDictionary(Dictionary<string, int> usage)
+        public void Save()
         {
-            Usage = new ConcurrentDictionary<string, int>(usage);
+            _storage.Save();
         }
     }
 }

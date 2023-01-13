@@ -1,15 +1,16 @@
 #include "pch.h"
 #include "PowerRenameItem.h"
-#include "icon_helpers.h"
 
 int CPowerRenameItem::s_id = 0;
 
-IFACEMETHODIMP_(ULONG) CPowerRenameItem::AddRef()
+IFACEMETHODIMP_(ULONG)
+CPowerRenameItem::AddRef()
 {
     return InterlockedIncrement(&m_refCount);
 }
 
-IFACEMETHODIMP_(ULONG) CPowerRenameItem::Release()
+IFACEMETHODIMP_(ULONG)
+CPowerRenameItem::Release()
 {
     long refCount = InterlockedDecrement(&m_refCount);
 
@@ -30,23 +31,41 @@ IFACEMETHODIMP CPowerRenameItem::QueryInterface(_In_ REFIID riid, _Outptr_ void*
     return QISearch(this, qit, riid, ppv);
 }
 
+IFACEMETHODIMP CPowerRenameItem::PutPath(_In_opt_ PCWSTR newPath)
+{
+    CSRWSharedAutoLock lock(&m_lock);
+    CoTaskMemFree(m_path);
+    m_path = nullptr;
+    HRESULT hr = S_OK;
+    if (newPath != nullptr)
+    {
+        hr = SHStrDup(newPath, &m_path);
+    }
+    return hr;
+}
+
 IFACEMETHODIMP CPowerRenameItem::GetPath(_Outptr_ PWSTR* path)
 {
     *path = nullptr;
     CSRWSharedAutoLock lock(&m_lock);
-    HRESULT hr = m_path ? S_OK : E_FAIL;
-    if (SUCCEEDED(hr))
+    HRESULT hr = E_FAIL;
+    if (m_path)
     {
         hr = SHStrDup(m_path, path);
     }
     return hr;
 }
 
-IFACEMETHODIMP CPowerRenameItem::GetDate(_Outptr_ SYSTEMTIME* date)
+IFACEMETHODIMP CPowerRenameItem::GetTime(_Outptr_ SYSTEMTIME* time)
 {
     CSRWSharedAutoLock lock(&m_lock);
-    HRESULT hr = m_isDateParsed ? S_OK : E_FAIL ;
-    if (!m_isDateParsed)
+    HRESULT hr = E_FAIL;
+
+    if (m_isTimeParsed)
+    {
+        hr = S_OK;
+    }
+    else
     {
         HANDLE hFile = CreateFileW(m_path, GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, FILE_FLAG_BACKUP_SEMANTICS, NULL);
         if (hFile != INVALID_HANDLE_VALUE)
@@ -59,8 +78,8 @@ IFACEMETHODIMP CPowerRenameItem::GetDate(_Outptr_ SYSTEMTIME* date)
                 {
                     if (SystemTimeToTzSpecificLocalTime(NULL, &SystemTime, &LocalTime))
                     {
-                        m_date = LocalTime;
-                        m_isDateParsed = true;
+                        m_time = LocalTime;
+                        m_isTimeParsed = true;
                         hr = S_OK;
                     }
                 }
@@ -68,7 +87,7 @@ IFACEMETHODIMP CPowerRenameItem::GetDate(_Outptr_ SYSTEMTIME* date)
         }
         CloseHandle(hFile);
     }
-    *date = m_date;
+    *time = m_time;
     return hr;
 }
 
@@ -77,11 +96,24 @@ IFACEMETHODIMP CPowerRenameItem::GetShellItem(_Outptr_ IShellItem** ppsi)
     return SHCreateItemFromParsingName(m_path, nullptr, IID_PPV_ARGS(ppsi));
 }
 
+IFACEMETHODIMP CPowerRenameItem::PutOriginalName(_In_opt_ PCWSTR originalName)
+{
+    CSRWSharedAutoLock lock(&m_lock);
+    CoTaskMemFree(m_originalName);
+    m_originalName = nullptr;
+    HRESULT hr = S_OK;
+    if (originalName != nullptr)
+    {
+        hr = SHStrDup(originalName, &m_originalName);
+    }
+    return hr;
+}
+
 IFACEMETHODIMP CPowerRenameItem::GetOriginalName(_Outptr_ PWSTR* originalName)
 {
     CSRWSharedAutoLock lock(&m_lock);
-    HRESULT hr = m_originalName ? S_OK : E_FAIL;
-    if (SUCCEEDED(hr))
+    HRESULT hr = E_FAIL;
+    if (m_originalName)
     {
         hr = SHStrDup(m_originalName, originalName);
     }
@@ -104,8 +136,8 @@ IFACEMETHODIMP CPowerRenameItem::PutNewName(_In_opt_ PCWSTR newName)
 IFACEMETHODIMP CPowerRenameItem::GetNewName(_Outptr_ PWSTR* newName)
 {
     CSRWSharedAutoLock lock(&m_lock);
-    HRESULT hr = m_newName ? S_OK : E_FAIL;
-    if (SUCCEEDED(hr))
+    HRESULT hr = S_OK;
+    if (m_newName)
     {
         hr = SHStrDup(m_newName, newName);
     }
@@ -147,16 +179,6 @@ IFACEMETHODIMP CPowerRenameItem::GetId(_Out_ int* id)
     return S_OK;
 }
 
-IFACEMETHODIMP CPowerRenameItem::GetIconIndex(_Out_ int* iconIndex)
-{
-    if (m_iconIndex == -1)
-    {
-        GetIconIndexFromPath((PCWSTR)m_path, &m_iconIndex);
-    }
-    *iconIndex = m_iconIndex;
-    return S_OK;
-}
-
 IFACEMETHODIMP CPowerRenameItem::GetDepth(_Out_ UINT* depth)
 {
     *depth = m_depth;
@@ -169,16 +191,28 @@ IFACEMETHODIMP CPowerRenameItem::PutDepth(_In_ int depth)
     return S_OK;
 }
 
+IFACEMETHODIMP CPowerRenameItem::GetStatus(_Out_ PowerRenameItemRenameStatus* status)
+{
+    *status = m_status;
+    return S_OK;
+}
+
+IFACEMETHODIMP CPowerRenameItem::PutStatus(_In_ PowerRenameItemRenameStatus status)
+{
+    m_status = status;
+    return S_OK;
+}
+
 IFACEMETHODIMP CPowerRenameItem::ShouldRenameItem(_In_ DWORD flags, _Out_ bool* shouldRename)
 {
     // Should we perform a rename on this item given its
     // state and the options that were set?
-    bool hasChanged = m_newName != nullptr && (lstrcmp(m_originalName, m_newName) != 0);
+    bool hasChanged = m_newName != nullptr && (lstrcmp(m_originalName, m_newName) != 0) && (lstrcmp(L"", m_newName) != 0);
     bool excludeBecauseFolder = (m_isFolder && (flags & PowerRenameFlags::ExcludeFolders));
     bool excludeBecauseFile = (!m_isFolder && (flags & PowerRenameFlags::ExcludeFiles));
     bool excludeBecauseSubFolderContent = (m_depth > 0 && (flags & PowerRenameFlags::ExcludeSubfolders));
     *shouldRename = (m_selected && m_canRename && hasChanged && !excludeBecauseFile &&
-                     !excludeBecauseFolder && !excludeBecauseSubFolderContent);
+                     !excludeBecauseFolder && !excludeBecauseSubFolderContent && m_status == PowerRenameItemRenameStatus::ShouldRename);
     return S_OK;
 }
 
@@ -193,9 +227,9 @@ IFACEMETHODIMP CPowerRenameItem::IsItemVisible(_In_ DWORD filter, _In_ DWORD fla
         GetSelected(isItemVisible);
         break;
     case PowerRenameFilters::FlagsApplicable:
-        *isItemVisible = !((m_isFolder && (flags & PowerRenameFlags::ExcludeFolders)) || 
-            (!m_isFolder && (flags & PowerRenameFlags::ExcludeFiles)) || 
-            (m_depth > 0 && (flags & PowerRenameFlags::ExcludeSubfolders)));
+        *isItemVisible = !((m_isFolder && (flags & PowerRenameFlags::ExcludeFolders)) ||
+                           (!m_isFolder && (flags & PowerRenameFlags::ExcludeFiles)) ||
+                           (m_depth > 0 && (flags & PowerRenameFlags::ExcludeSubfolders)));
         break;
     case PowerRenameFilters::ShouldRename:
         ShouldRenameItem(flags, isItemVisible);
@@ -216,10 +250,11 @@ HRESULT CPowerRenameItem::s_CreateInstance(_In_opt_ IShellItem* psi, _In_ REFIID
 {
     *resultInterface = nullptr;
 
-    CPowerRenameItem *newRenameItem = new CPowerRenameItem();
-    HRESULT hr = newRenameItem ? S_OK : E_OUTOFMEMORY;
-    if (SUCCEEDED(hr))
+    CPowerRenameItem* newRenameItem = new CPowerRenameItem();
+    HRESULT hr = E_OUTOFMEMORY;
+    if (newRenameItem)
     {
+        hr = S_OK;
         if (psi != nullptr)
         {
             hr = newRenameItem->_Init(psi);

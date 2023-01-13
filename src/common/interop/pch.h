@@ -10,5 +10,6 @@
 #define WIN32_LEAN_AND_MEAN
 // add headers that you want to pre-compile here
 #include <Windows.h>
+#include <Endpointvolume.h>
 
 #endif //PCH_H

@@ -114,6 +114,7 @@ namespace ColorPicker.Mouse
                     {
                         MouseDevice mouseDev = InputManager.Current.PrimaryMouseDevice;
                         MouseWheel.Invoke(null, new MouseWheelEventArgs(mouseDev, Environment.TickCount, (int)mouseHookStruct.mouseData >> 16));
+                        return new IntPtr(-1);
                     }
                 }
             }

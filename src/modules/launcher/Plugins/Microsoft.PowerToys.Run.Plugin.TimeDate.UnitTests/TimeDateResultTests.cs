@@ -1,0 +1,313 @@
+// Copyright (c) Microsoft Corporation
+// The Microsoft Corporation licenses this file to you under the MIT license.
+// See the LICENSE file in the project root for more information.
+
+using System;
+using System.Globalization;
+using System.Linq;
+using Microsoft.PowerToys.Run.Plugin.TimeDate.Components;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
+
+namespace Microsoft.PowerToys.Run.Plugin.TimeDate.UnitTests
+{
+    [TestClass]
+    public class TimeDateResultTests
+    {
+        private CultureInfo originalCulture;
+        private CultureInfo originalUiCulture;
+
+        [TestInitialize]
+        public void Setup()
+        {
+            // Set culture to 'en-us'
+            originalCulture = CultureInfo.CurrentCulture;
+            CultureInfo.CurrentCulture = new CultureInfo("en-us");
+            originalUiCulture = CultureInfo.CurrentUICulture;
+            CultureInfo.CurrentUICulture = new CultureInfo("en-us");
+        }
+
+        [DataTestMethod]
+        [DataRow("time", "10:30 AM")]
+        [DataRow("date", "3/2/2022")]
+        [DataRow("date and time", "3/2/2022 10:30 AM")]
+        [DataRow("hour", "10")]
+        [DataRow("minute", "30")]
+        [DataRow("second", "45")]
+        [DataRow("millisecond", "0")]
+        [DataRow("day (week day)", "Wednesday")]
+        [DataRow("day of the week (week day)", "4")]
+        [DataRow("day of the month", "2")]
+        [DataRow("day of the year", "61")]
+        [DataRow("week of the month", "1")]
+        [DataRow("week of the year (calendar week, week number)", "10")]
+        [DataRow("month", "March")]
+        [DataRow("month of the year", "3")]
+        [DataRow("month and day", "March 2")]
+        [DataRow("year", "2022")]
+        [DataRow("month and year", "March 2022")]
+        [DataRow("ISO 8601", "2022-03-02T10:30:45")]
+        [DataRow("ISO 8601 with time zone", "2022-03-02T10:30:45")]
+        [DataRow("RFC1123", "Wed, 02 Mar 2022 10:30:45 GMT")]
+        public void LocalFormatsWithShortTimeAndShortDate(string formatLabel, string expectedResult)
+        {
+            // Setup
+            var helperResults = AvailableResultsList.GetList(true, false, false, new DateTime(2022, 03, 02, 10, 30, 45));
+
+            // Act
+            var result = helperResults.FirstOrDefault(x => x.Label.Equals(formatLabel, StringComparison.OrdinalIgnoreCase));
+
+            // Assert
+            Assert.AreEqual(expectedResult, result?.Value, $"Culture {CultureInfo.CurrentCulture.Name}, Culture UI: {CultureInfo.CurrentUICulture.Name}, Calendar: {CultureInfo.CurrentCulture.Calendar}, Region: {RegionInfo.CurrentRegion.Name}");
+        }
+
+        [DataTestMethod]
+        [DataRow("time", "10:30 AM")]
+        [DataRow("date", "Wednesday, March 2, 2022")]
+        [DataRow("date and time", "Wednesday, March 2, 2022 10:30 AM")]
+        [DataRow("hour", "10")]
+        [DataRow("minute", "30")]
+        [DataRow("second", "45")]
+        [DataRow("millisecond", "0")]
+        [DataRow("day (week day)", "Wednesday")]
+        [DataRow("day of the week (week day)", "4")]
+        [DataRow("day of the month", "2")]
+        [DataRow("day of the year", "61")]
+        [DataRow("week of the month", "1")]
+        [DataRow("week of the year (calendar week, week number)", "10")]
+        [DataRow("month", "March")]
+        [DataRow("month of the year", "3")]
+        [DataRow("month and day", "March 2")]
+        [DataRow("year", "2022")]
+        [DataRow("month and year", "March 2022")]
+        [DataRow("ISO 8601", "2022-03-02T10:30:45")]
+        [DataRow("ISO 8601 with time zone", "2022-03-02T10:30:45")]
+        [DataRow("RFC1123", "Wed, 02 Mar 2022 10:30:45 GMT")]
+        public void LocalFormatsWithShortTimeAndLongDate(string formatLabel, string expectedResult)
+        {
+            // Setup
+            var helperResults = AvailableResultsList.GetList(true, false, true, new DateTime(2022, 03, 02, 10, 30, 45));
+
+            // Act
+            var result = helperResults.FirstOrDefault(x => x.Label.Equals(formatLabel, StringComparison.OrdinalIgnoreCase));
+
+            // Assert
+            Assert.AreEqual(expectedResult, result?.Value);
+        }
+
+        [DataTestMethod]
+        [DataRow("time", "10:30:45 AM")]
+        [DataRow("date", "3/2/2022")]
+        [DataRow("date and time", "3/2/2022 10:30:45 AM")]
+        [DataRow("hour", "10")]
+        [DataRow("minute", "30")]
+        [DataRow("second", "45")]
+        [DataRow("millisecond", "0")]
+        [DataRow("day (week day)", "Wednesday")]
+        [DataRow("day of the week (week day)", "4")]
+        [DataRow("day of the month", "2")]
+        [DataRow("day of the year", "61")]
+        [DataRow("week of the month", "1")]
+        [DataRow("week of the year (calendar week, week number)", "10")]
+        [DataRow("month", "March")]
+        [DataRow("month of the year", "3")]
+        [DataRow("month and day", "March 2")]
+        [DataRow("year", "2022")]
+        [DataRow("month and year", "March 2022")]
+        [DataRow("ISO 8601", "2022-03-02T10:30:45")]
+        [DataRow("ISO 8601 with time zone", "2022-03-02T10:30:45")]
+        [DataRow("RFC1123", "Wed, 02 Mar 2022 10:30:45 GMT")]
+        public void LocalFormatsWithLongTimeAndShortDate(string formatLabel, string expectedResult)
+        {
+            // Setup
+            var helperResults = AvailableResultsList.GetList(true, true, false, new DateTime(2022, 03, 02, 10, 30, 45));
+
+            // Act
+            var result = helperResults.FirstOrDefault(x => x.Label.Equals(formatLabel, StringComparison.OrdinalIgnoreCase));
+
+            // Assert
+            Assert.AreEqual(expectedResult, result?.Value);
+        }
+
+        [DataTestMethod]
+        [DataRow("time", "10:30:45 AM")]
+        [DataRow("date", "Wednesday, March 2, 2022")]
+        [DataRow("date and time", "Wednesday, March 2, 2022 10:30:45 AM")]
+        [DataRow("hour", "10")]
+        [DataRow("minute", "30")]
+        [DataRow("second", "45")]
+        [DataRow("millisecond", "0")]
+        [DataRow("day (week day)", "Wednesday")]
+        [DataRow("day of the week (week day)", "4")]
+        [DataRow("day of the month", "2")]
+        [DataRow("day of the year", "61")]
+        [DataRow("week of the month", "1")]
+        [DataRow("week of the year (calendar week, week number)", "10")]
+        [DataRow("month", "March")]
+        [DataRow("month of the year", "3")]
+        [DataRow("month and day", "March 2")]
+        [DataRow("year", "2022")]
+        [DataRow("month and year", "March 2022")]
+        [DataRow("ISO 8601", "2022-03-02T10:30:45")]
+        [DataRow("ISO 8601 with time zone", "2022-03-02T10:30:45")]
+        [DataRow("RFC1123", "Wed, 02 Mar 2022 10:30:45 GMT")]
+        public void LocalFormatsWithLongTimeAndLongDate(string formatLabel, string expectedResult)
+        {
+            // Setup
+            var helperResults = AvailableResultsList.GetList(true, true, true, new DateTime(2022, 03, 02, 10, 30, 45));
+
+            // Act
+            var result = helperResults.FirstOrDefault(x => x.Label.Equals(formatLabel, StringComparison.OrdinalIgnoreCase));
+
+            // Assert
+            Assert.AreEqual(expectedResult, result?.Value);
+        }
+
+        [DataTestMethod]
+        [DataRow("time utc", "t")]
+        [DataRow("date and time utc", "g")]
+        [DataRow("ISO 8601 UTC", "yyyy-MM-ddTHH:mm:ss")]
+        [DataRow("ISO 8601 UTC with time zone", "yyyy-MM-ddTHH:mm:ss'Z'")]
+        [DataRow("Universal time format: YYYY-MM-DD hh:mm:ss", "u")]
+        public void UtcFormatsWithShortTimeAndShortDate(string formatLabel, string expectedFormat)
+        {
+            // Setup
+            var helperResults = AvailableResultsList.GetList(true, false, false, new DateTime(2022, 03, 02, 10, 30, 45));
+            var expectedResult = new DateTime(2022, 03, 02, 10, 30, 45).ToUniversalTime().ToString(expectedFormat, CultureInfo.CurrentCulture);
+
+            // Act
+            var result = helperResults.FirstOrDefault(x => x.Label.Equals(formatLabel, StringComparison.OrdinalIgnoreCase));
+
+            // Assert
+            Assert.AreEqual(expectedResult, result?.Value);
+        }
+
+        [DataTestMethod]
+        [DataRow("time utc", "t")]
+        [DataRow("date and time utc", "f")]
+        [DataRow("ISO 8601 UTC", "yyyy-MM-ddTHH:mm:ss")]
+        [DataRow("ISO 8601 UTC with time zone", "yyyy-MM-ddTHH:mm:ss'Z'")]
+        [DataRow("Universal time format: YYYY-MM-DD hh:mm:ss", "u")]
+        public void UtcFormatsWithShortTimeAndLongDate(string formatLabel, string expectedFormat)
+        {
+            // Setup
+            var helperResults = AvailableResultsList.GetList(true, false, true, new DateTime(2022, 03, 02, 10, 30, 45));
+            var expectedResult = new DateTime(2022, 03, 02, 10, 30, 45).ToUniversalTime().ToString(expectedFormat, CultureInfo.CurrentCulture);
+
+            // Act
+            var result = helperResults.FirstOrDefault(x => x.Label.Equals(formatLabel, StringComparison.OrdinalIgnoreCase));
+
+            // Assert
+            Assert.AreEqual(expectedResult, result?.Value);
+        }
+
+        [DataTestMethod]
+        [DataRow("time utc", "T")]
+        [DataRow("date and time utc", "G")]
+        [DataRow("ISO 8601 UTC", "yyyy-MM-ddTHH:mm:ss")]
+        [DataRow("ISO 8601 UTC with time zone", "yyyy-MM-ddTHH:mm:ss'Z'")]
+        [DataRow("Universal time format: YYYY-MM-DD hh:mm:ss", "u")]
+        public void UtcFormatsWithLongTimeAndShortDate(string formatLabel, string expectedFormat)
+        {
+            // Setup
+            var helperResults = AvailableResultsList.GetList(true, true, false, new DateTime(2022, 03, 02, 10, 30, 45));
+            var expectedResult = new DateTime(2022, 03, 02, 10, 30, 45).ToUniversalTime().ToString(expectedFormat, CultureInfo.CurrentCulture);
+
+            // Act
+            var result = helperResults.FirstOrDefault(x => x.Label.Equals(formatLabel, StringComparison.OrdinalIgnoreCase));
+
+            // Assert
+            Assert.AreEqual(expectedResult, result?.Value);
+        }
+
+        [DataTestMethod]
+        [DataRow("time utc", "T")]
+        [DataRow("date and time utc", "F")]
+        [DataRow("ISO 8601 UTC", "yyyy-MM-ddTHH:mm:ss")]
+        [DataRow("ISO 8601 UTC with time zone", "yyyy-MM-ddTHH:mm:ss'Z'")]
+        [DataRow("Universal time format: YYYY-MM-DD hh:mm:ss", "u")]
+        public void UtcFormatsWithLongTimeAndLongDate(string formatLabel, string expectedFormat)
+        {
+            // Setup
+            var helperResults = AvailableResultsList.GetList(true, true, true, new DateTime(2022, 03, 02, 10, 30, 45));
+            var expectedResult = new DateTime(2022, 03, 02, 10, 30, 45).ToUniversalTime().ToString(expectedFormat, CultureInfo.CurrentCulture);
+
+            // Act
+            var result = helperResults.FirstOrDefault(x => x.Label.Equals(formatLabel, StringComparison.OrdinalIgnoreCase));
+
+            // Assert
+            Assert.AreEqual(expectedResult, result?.Value);
+        }
+
+        [TestMethod]
+        public void UnixTimestampFormat()
+        {
+            // Setup
+            string formatLabel = "Unix epoch time";
+            DateTime timeValue = DateTime.Now.ToUniversalTime();
+            var helperResults = AvailableResultsList.GetList(true, false, false, timeValue);
+            var expectedResult = (long)timeValue.Subtract(new DateTime(1970, 1, 1)).TotalSeconds;
+
+            // Act
+            var result = helperResults.FirstOrDefault(x => x.Label.Equals(formatLabel, StringComparison.OrdinalIgnoreCase));
+
+            // Assert
+            Assert.AreEqual(expectedResult.ToString(CultureInfo.CurrentCulture), result?.Value);
+        }
+
+        [TestMethod]
+        public void WindowsFileTimeFormat()
+        {
+            // Setup
+            string formatLabel = "Windows file time (Int64 number)";
+            DateTime timeValue = DateTime.Now;
+            var helperResults = AvailableResultsList.GetList(true, false, false, timeValue);
+            var expectedResult = timeValue.Ticks.ToString(CultureInfo.CurrentCulture);
+
+            // Act
+            var result = helperResults.FirstOrDefault(x => x.Label.Equals(formatLabel, StringComparison.OrdinalIgnoreCase));
+
+            // Assert
+            Assert.AreEqual(expectedResult, result?.Value);
+        }
+
+        [TestMethod]
+        public void ValidateEraResult()
+        {
+            // Setup
+            string formatLabel = "Era";
+            DateTime timeValue = DateTime.Now;
+            var helperResults = AvailableResultsList.GetList(true, false, false, timeValue);
+            var expectedResult = DateTimeFormatInfo.CurrentInfo.GetEraName(CultureInfo.CurrentCulture.Calendar.GetEra(timeValue));
+
+            // Act
+            var result = helperResults.FirstOrDefault(x => x.Label.Equals(formatLabel, StringComparison.OrdinalIgnoreCase));
+
+            // Assert
+            Assert.AreEqual(expectedResult, result?.Value);
+        }
+
+        [TestMethod]
+        public void ValidateEraAbbreviationResult()
+        {
+            // Setup
+            string formatLabel = "Era abbreviation";
+            DateTime timeValue = DateTime.Now;
+            var helperResults = AvailableResultsList.GetList(true, false, false, timeValue);
+            var expectedResult = DateTimeFormatInfo.CurrentInfo.GetAbbreviatedEraName(CultureInfo.CurrentCulture.Calendar.GetEra(timeValue));
+
+            // Act
+            var result = helperResults.FirstOrDefault(x => x.Label.Equals(formatLabel, StringComparison.OrdinalIgnoreCase));
+
+            // Assert
+            Assert.AreEqual(expectedResult, result?.Value);
+        }
+
+        [TestCleanup]
+        public void CleanUp()
+        {
+            // Set culture to original value
+            CultureInfo.CurrentCulture = originalCulture;
+            CultureInfo.CurrentUICulture = originalUiCulture;
+        }
+    }
+}

@@ -1,0 +1,20 @@
+; Disable default limits
+.option EXPLICIT
+.set CabinetFileCountThreshold=0
+.set FolderFileCountThreshold=0
+.set FolderSizeThreshold=0
+.set MaxCabinetSize=0
+.set MaxDiskFileCount=0
+.set MaxDiskSize=0
+
+.set GenerateInf=ON
+.set Compress=OFF
+.set Cabinet=ON
+.set CabinetNameTemplate=driver.cab
+.set DestinationDir=cab_output
+.set DiskDirectoryTemplate=driver
+
+VideoConferenceCustomMediaSource.dll
+videoconferencevirtualdriver.cat
+VideoConferenceVirtualDriver.dll
+VideoConferenceVirtualDriver.inf

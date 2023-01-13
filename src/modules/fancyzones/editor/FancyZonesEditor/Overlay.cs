@@ -6,6 +6,7 @@ using System;
 using System.Collections.Generic;
 using System.Windows;
 using System.Windows.Controls;
+using FancyZonesEditor.Logs;
 using FancyZonesEditor.Models;
 
 namespace FancyZonesEditor
@@ -13,9 +14,9 @@ namespace FancyZonesEditor
     public class Overlay
     {
         private MainWindow _mainWindow;
-
         private LayoutPreview _layoutPreview;
-        private UserControl _editor;
+        private UserControl _editorLayout;
+        private EditorWindow _editorWindow;
 
         public List<Monitor> Monitors { get; private set; }
 
@@ -28,7 +29,7 @@ namespace FancyZonesEditor
                     return Monitors[CurrentDesktop].Device.WorkAreaRect;
                 }
 
-                return default(Rect);
+                return default;
             }
         }
 
@@ -54,7 +55,7 @@ namespace FancyZonesEditor
                     return Monitors[CurrentDesktop].Window;
                 }
 
-                return default(Window);
+                return default;
             }
         }
 
@@ -100,14 +101,13 @@ namespace FancyZonesEditor
                         return;
                     }
 
-                    var prevSettings = CurrentLayoutSettings;
                     _currentDesktop = value;
 
                     MainWindowSettingsModel settings = ((App)Application.Current).MainWindowSettings;
                     if (settings != null)
                     {
-                        settings.ResetAppliedModel();
-                        settings.UpdateDesktopDependantProperties(prevSettings);
+                        settings.SetAppliedModel(null);
+                        settings.UpdateTemplateModels();
                     }
 
                     Update();
@@ -117,35 +117,7 @@ namespace FancyZonesEditor
 
         private int _currentDesktop;
 
-        public bool SpanZonesAcrossMonitors
-        {
-            get
-            {
-                return _spanZonesAcrossMonitors;
-            }
-
-            set
-            {
-                _spanZonesAcrossMonitors = value;
-
-                if (_spanZonesAcrossMonitors)
-                {
-                    Rect workArea = default(Rect);
-                    Rect bounds = default(Rect);
-
-                    foreach (Monitor monitor in Monitors)
-                    {
-                        workArea = Rect.Union(workArea, monitor.Device.WorkAreaRect);
-                        bounds = Rect.Union(bounds, monitor.Device.ScaledBounds);
-                    }
-
-                    Monitors.Clear();
-                    Monitors.Add(new Monitor(bounds, workArea, true));
-                }
-            }
-        }
-
-        private bool _spanZonesAcrossMonitors;
+        public bool SpanZonesAcrossMonitors { get; set; }
 
         public bool MultiMonitorMode
         {
@@ -159,23 +131,25 @@ namespace FancyZonesEditor
         {
             WorkAreas = new List<Rect>();
             Monitors = new List<Monitor>();
-
-            var screens = System.Windows.Forms.Screen.AllScreens;
-            foreach (System.Windows.Forms.Screen screen in screens)
-            {
-                Rect bounds = new Rect(screen.Bounds.X, screen.Bounds.Y, screen.Bounds.Width, screen.Bounds.Height);
-                Rect workArea = new Rect(screen.WorkingArea.X, screen.WorkingArea.Y, screen.WorkingArea.Width, screen.WorkingArea.Height);
-                Add(bounds, workArea, screen.Primary);
-            }
         }
 
         public void Show()
         {
+            Logger.LogTrace();
+
+            var mainWindowSettings = ((App)Application.Current).MainWindowSettings;
+            if (_layoutPreview != null)
+            {
+                mainWindowSettings.PropertyChanged -= _layoutPreview.ZoneSettings_PropertyChanged;
+            }
+
             _layoutPreview = new LayoutPreview
             {
                 IsActualSize = true,
-                Opacity = 0.5,
+                Opacity = 1,
             };
+
+            mainWindowSettings.PropertyChanged += _layoutPreview.ZoneSettings_PropertyChanged;
 
             ShowLayout();
             OpenMainWindow();
@@ -183,6 +157,8 @@ namespace FancyZonesEditor
 
         public void ShowLayout()
         {
+            Logger.LogTrace();
+
             MainWindowSettingsModel settings = ((App)Application.Current).MainWindowSettings;
             CurrentDataContext = settings.UpdateSelectedLayoutModel();
 
@@ -197,61 +173,116 @@ namespace FancyZonesEditor
 
             for (int i = 0; i < DesktopsCount; i++)
             {
-                Monitors[i].Window.Show();
+                if (!Monitors[i].Window.IsVisible)
+                {
+                    Monitors[i].Window.Show();
+                }
+            }
+        }
+
+        public void SetLayoutSettings(Monitor monitor, LayoutModel model)
+        {
+            if (model == null)
+            {
+                return;
+            }
+
+            monitor.Settings.ZonesetUuid = model.Uuid;
+            monitor.Settings.Type = model.Type;
+            monitor.Settings.SensitivityRadius = model.SensitivityRadius;
+            monitor.Settings.ZoneCount = model.TemplateZoneCount;
+
+            if (model is GridLayoutModel grid)
+            {
+                monitor.Settings.ShowSpacing = grid.ShowSpacing;
+                monitor.Settings.Spacing = grid.Spacing;
+            }
+            else
+            {
+                monitor.Settings.ShowSpacing = false;
+                monitor.Settings.Spacing = 0;
             }
         }
 
         public void OpenEditor(LayoutModel model)
         {
+            Logger.LogTrace();
+
             _layoutPreview = null;
             if (CurrentDataContext is GridLayoutModel)
             {
-                _editor = new GridEditor();
+                _editorLayout = new GridEditor();
             }
             else if (CurrentDataContext is CanvasLayoutModel)
             {
-                _editor = new CanvasEditor();
+                _editorLayout = new CanvasEditor();
             }
 
-            CurrentLayoutWindow.Content = _editor;
+            CurrentLayoutWindow.Content = _editorLayout;
 
-            EditorWindow window;
-            bool isGrid = false;
             if (model is GridLayoutModel)
             {
-                window = new GridEditorWindow();
-                isGrid = true;
+                _editorWindow = new GridEditorWindow();
             }
             else
             {
-                window = new CanvasEditorWindow();
+                _editorWindow = new CanvasEditorWindow();
             }
 
-            window.Owner = Monitors[App.Overlay.CurrentDesktop].Window;
-            window.DataContext = model;
-            window.Show();
-
-            if (isGrid)
-            {
-                (window as GridEditorWindow).NameTextBox().Focus();
-            }
-
-            window.LeftWindowCommands = null;
-            window.RightWindowCommands = null;
+            _editorWindow.Owner = Monitors[App.Overlay.CurrentDesktop].Window;
+            _editorWindow.DataContext = model;
+            _editorWindow.Show();
         }
 
         public void CloseEditor()
         {
-            _editor = null;
+            Logger.LogTrace();
+
+            var mainWindowSettings = ((App)Application.Current).MainWindowSettings;
+
+            _editorLayout = null;
+
+            if (_layoutPreview != null)
+            {
+                mainWindowSettings.PropertyChanged -= _layoutPreview.ZoneSettings_PropertyChanged;
+            }
+
             _layoutPreview = new LayoutPreview
             {
                 IsActualSize = true,
-                Opacity = 0.5,
+                Opacity = 1,
             };
+
+            mainWindowSettings.PropertyChanged += _layoutPreview.ZoneSettings_PropertyChanged;
 
             CurrentLayoutWindow.Content = _layoutPreview;
 
             OpenMainWindow();
+        }
+
+        public void FocusEditor()
+        {
+            if (_editorLayout == null)
+            {
+                return;
+            }
+
+            if (_editorLayout is CanvasEditor canvasEditor)
+            {
+                canvasEditor.FocusZone();
+            }
+            else if (_editorLayout is GridEditor gridEditor)
+            {
+                gridEditor.FocusZone();
+            }
+        }
+
+        public void FocusEditorWindow()
+        {
+            if (_editorWindow != null)
+            {
+                _editorWindow.Focus();
+            }
         }
 
         public void CloseLayoutWindow()
@@ -318,20 +349,16 @@ namespace FancyZonesEditor
             _mainWindow.ShowActivated = true;
             _mainWindow.Topmost = true;
             _mainWindow.Show();
-            _mainWindow.LeftWindowCommands = null;
-            _mainWindow.RightWindowCommands = null;
 
             // window is set to topmost to make sure it shows on top of PowerToys settings page
             // we can reset topmost flag now
             _mainWindow.Topmost = false;
         }
 
-        private void Add(Rect bounds, Rect workArea, bool primary)
+        public void AddMonitor(Monitor monitor)
         {
-            var monitor = new Monitor(bounds, workArea, primary);
-
             bool inserted = false;
-            var workAreaRect = workArea;
+            var workAreaRect = monitor.Device.WorkAreaRect;
             for (int i = 0; i < Monitors.Count && !inserted; i++)
             {
                 var rect = Monitors[i].Device.WorkAreaRect;
@@ -351,47 +378,6 @@ namespace FancyZonesEditor
             {
                 Monitors.Add(monitor);
             }
-        }
-
-        public Int32Rect[] GetZoneRects()
-        {
-            if (_editor != null)
-            {
-                if (_editor is GridEditor gridEditor)
-                {
-                    return ZoneRectsFromPanel(gridEditor.PreviewPanel);
-                }
-                else
-                {
-                    // CanvasEditor
-                    return ZoneRectsFromPanel(((CanvasEditor)_editor).Preview);
-                }
-            }
-            else
-            {
-                // One of the predefined zones (neither grid or canvas editor used).
-                return _layoutPreview.GetZoneRects();
-            }
-        }
-
-        private Int32Rect[] ZoneRectsFromPanel(Panel previewPanel)
-        {
-            // TODO: the ideal here is that the ArrangeRects logic is entirely inside the model, so we don't have to walk the UIElement children to get the rect info
-            int count = previewPanel.Children.Count;
-            Int32Rect[] zones = new Int32Rect[count];
-
-            for (int i = 0; i < count; i++)
-            {
-                FrameworkElement child = (FrameworkElement)previewPanel.Children[i];
-                Point topLeft = child.TransformToAncestor(previewPanel).Transform(default);
-
-                zones[i].X = (int)topLeft.X;
-                zones[i].Y = (int)topLeft.Y;
-                zones[i].Width = (int)child.ActualWidth;
-                zones[i].Height = (int)child.ActualHeight;
-            }
-
-            return zones;
         }
     }
 }

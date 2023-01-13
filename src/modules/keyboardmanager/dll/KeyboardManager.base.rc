@@ -1,12 +1,10 @@
 #include <windows.h>
 #include "resource.h"
-#include "../../../../common/version.h"
+#include "../../../../common/version/version.h"
 
 #define APSTUDIO_READONLY_SYMBOLS
 #include "winres.h"
 #undef APSTUDIO_READONLY_SYMBOLS
-
-IDS_KEYBOARDMANAGER_ICON    ICON    L"../Keyboard.ico"
 
 1 VERSIONINFO
 FILEVERSION FILE_VERSION

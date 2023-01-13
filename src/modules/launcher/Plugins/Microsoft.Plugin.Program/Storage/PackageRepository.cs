@@ -3,12 +3,12 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using Microsoft.Plugin.Program.Logger;
 using Microsoft.Plugin.Program.Programs;
 using Windows.ApplicationModel;
 using Wox.Infrastructure.Storage;
+using Wox.Plugin.Logger;
 
 namespace Microsoft.Plugin.Program.Storage
 {
@@ -18,13 +18,10 @@ namespace Microsoft.Plugin.Program.Storage
     /// </summary>
     internal class PackageRepository : ListRepository<UWPApplication>, IProgramRepository
     {
-        private IStorage<IList<UWPApplication>> _storage;
-
         private IPackageCatalog _packageCatalog;
 
-        public PackageRepository(IPackageCatalog packageCatalog, IStorage<IList<UWPApplication>> storage)
+        public PackageRepository(IPackageCatalog packageCatalog)
         {
-            _storage = storage ?? throw new ArgumentNullException(nameof(storage), "StorageRepository requires an initialized storage interface");
             _packageCatalog = packageCatalog ?? throw new ArgumentNullException(nameof(packageCatalog), "PackageRepository expects an interface to be able to subscribe to package events");
             _packageCatalog.PackageInstalling += OnPackageInstalling;
             _packageCatalog.PackageUninstalling += OnPackageUninstalling;
@@ -80,18 +77,8 @@ namespace Microsoft.Plugin.Program.Storage
             var support = Environment.OSVersion.Version.Major >= windows10.Major;
 
             var applications = support ? Programs.UWP.All() : Array.Empty<UWPApplication>();
+            Log.Info($"Indexed {applications.Length} packaged applications", GetType());
             SetList(applications);
-        }
-
-        public void Save()
-        {
-            _storage.Save(Items);
-        }
-
-        public void Load()
-        {
-            var items = _storage.TryLoad(Array.Empty<UWPApplication>());
-            SetList(items);
         }
     }
 }

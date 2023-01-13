@@ -5,13 +5,9 @@
 using System.Windows;
 using System.Windows.Input;
 using FancyZonesEditor.Models;
-using FancyZonesEditor.Utils;
 
 namespace FancyZonesEditor
 {
-    /// <summary>
-    /// Interaction logic for Window2.xaml
-    /// </summary>
     public partial class GridEditorWindow : EditorWindow
     {
         public GridEditorWindow()
@@ -43,14 +39,10 @@ namespace FancyZonesEditor
 
         private GridLayoutModel _stashedModel;
 
-        private void NameTextBox_GotFocus(object sender, RoutedEventArgs e)
+        // This is required to fix a WPF rendering bug when using custom chrome
+        private void EditorWindow_ContentRendered(object sender, System.EventArgs e)
         {
-            customLayoutNameTextBox.CaretIndex = customLayoutNameTextBox.Text.Length;
-        }
-
-        public System.Windows.Controls.TextBox NameTextBox()
-        {
-            return customLayoutNameTextBox;
+            InvalidateVisual();
         }
     }
 }

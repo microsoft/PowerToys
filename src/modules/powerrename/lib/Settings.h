@@ -1,16 +1,20 @@
 #pragma once
 
-#include "json.h"
+#include <common/utils/json.h>
+#include <common/utils/gpo.h>
 
 class CSettings
 {
 public:
-    static const int MAX_INPUT_STRING_LEN = 1024;
-
     CSettings();
 
     inline bool GetEnabled()
     {
+        auto gpoSetting = powertoys_gpo::getConfiguredPowerRenameEnabledValue();
+        if (gpoSetting == powertoys_gpo::gpo_rule_configured_enabled)
+            return true;
+        if (gpoSetting == powertoys_gpo::gpo_rule_configured_disabled)
+            return false;
         Reload();
         return settings.enabled;
     }
@@ -146,6 +150,3 @@ private:
 };
 
 CSettings& CSettingsInstance();
-
-HRESULT CRenameMRUSearch_CreateInstance(_Outptr_ IUnknown** ppUnk);
-HRESULT CRenameMRUReplace_CreateInstance(_Outptr_ IUnknown** ppUnk);

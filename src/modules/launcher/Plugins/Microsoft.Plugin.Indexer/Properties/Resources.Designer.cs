@@ -19,7 +19,7 @@ namespace Microsoft.Plugin.Indexer.Properties {
     // class via a tool like ResGen or Visual Studio.
     // To add or remove a member, edit your .ResX file then rerun ResGen
     // with the /str option, or rebuild your VS project.
-    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "16.0.0.0")]
+    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "17.0.0.0")]
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
     [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
     public class Resources {
@@ -57,6 +57,15 @@ namespace Microsoft.Plugin.Indexer.Properties {
             }
             set {
                 resourceCulture = value;
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Disable non-indexed files warning.
+        /// </summary>
+        public static string disable_drive_detection_warning {
+            get {
+                return ResourceManager.GetString("disable_drive_detection_warning", resourceCulture);
             }
         }
         
@@ -151,7 +160,7 @@ namespace Microsoft.Plugin.Indexer.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Returns files and folders.
+        ///   Looks up a localized string similar to Searches files and folders..
         /// </summary>
         public static string Microsoft_plugin_indexer_plugin_description {
             get {
@@ -160,7 +169,7 @@ namespace Microsoft.Plugin.Indexer.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Windows Indexer.
+        ///   Looks up a localized string similar to Windows Search.
         /// </summary>
         public static string Microsoft_plugin_indexer_plugin_name {
             get {
@@ -174,6 +183,15 @@ namespace Microsoft.Plugin.Indexer.Properties {
         public static string Microsoft_plugin_indexer_run_as_administrator {
             get {
                 return ResourceManager.GetString("Microsoft_plugin_indexer_run_as_administrator", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Run as different user (Ctrl+Shift+U).
+        /// </summary>
+        public static string Microsoft_plugin_indexer_run_as_user {
+            get {
+                return ResourceManager.GetString("Microsoft_plugin_indexer_run_as_user", resourceCulture);
             }
         }
         

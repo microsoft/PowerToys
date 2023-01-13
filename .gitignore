@@ -19,6 +19,7 @@
 [Rr]eleases/
 x64/
 x86/
+ARM64/
 bld/
 [Bb]in/
 [Oo]bj/
@@ -342,3 +343,8 @@ src/common/Telemetry/*.etl
 !**/MergeModules/Release/
 !**/MergeModules/Debug/
 /src/modules/previewpane/SvgThumbnailProvider/$(SolutionDir)$(Platform)/$(Configuration)/modules/FileExplorerPreview/SvgThumbnailProvider.xml
+/src/modules/powerrename/ui/RCa24464
+/src/modules/powerrename/ui/RCb24464
+
+# Generated installer file for Monaco source files.
+/installer/PowerToysSetup/MonacoSRC.wxs

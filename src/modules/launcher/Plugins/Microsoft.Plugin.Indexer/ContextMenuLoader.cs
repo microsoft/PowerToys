@@ -4,7 +4,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO.Abstractions;
 using System.Reflection;
 using System.Threading.Tasks;
@@ -29,7 +28,7 @@ namespace Microsoft.Plugin.Indexer
             File,
         }
 
-        // Extensions for adding run as admin context menu item for applications
+        // Extensions for adding run as admin and run as other user context menu item for applications
         private readonly string[] appExtensions = { ".exe", ".bat", ".appref-ms", ".lnk" };
 
         public ContextMenuLoader(PluginInitContext context)
@@ -37,7 +36,6 @@ namespace Microsoft.Plugin.Indexer
             _context = context;
         }
 
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "We want to keep the process alive, and instead log and show an error message")]
         public List<ContextMenuResult> LoadContextMenus(Result selectedResult)
         {
             var contextMenus = new List<ContextMenuResult>();
@@ -54,6 +52,7 @@ namespace Microsoft.Plugin.Indexer
                 if (CanFileBeRunAsAdmin(record.Path))
                 {
                     contextMenus.Add(CreateRunAsAdminContextMenu(record));
+                    contextMenus.Add(CreateRunAsUserContextMenu(record));
                 }
 
                 contextMenus.Add(new ContextMenuResult
@@ -119,7 +118,6 @@ namespace Microsoft.Plugin.Indexer
         }
 
         // Function to add the context menu item to run as admin
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "We want to keep the process alive, and instead log the exception message")]
         private static ContextMenuResult CreateRunAsAdminContextMenu(SearchResult record)
         {
             return new ContextMenuResult
@@ -146,6 +144,33 @@ namespace Microsoft.Plugin.Indexer
             };
         }
 
+        // Function to add the context menu item to run as admin
+        private static ContextMenuResult CreateRunAsUserContextMenu(SearchResult record)
+        {
+            return new ContextMenuResult
+            {
+                PluginName = Assembly.GetExecutingAssembly().GetName().Name,
+                Title = Properties.Resources.Microsoft_plugin_indexer_run_as_user,
+                Glyph = "\xE7EE",
+                FontFamily = "Segoe MDL2 Assets",
+                AcceleratorKey = Key.U,
+                AcceleratorModifiers = ModifierKeys.Control | ModifierKeys.Shift,
+                Action = _ =>
+                {
+                    try
+                    {
+                        Task.Run(() => Helper.RunAsUser(record.Path));
+                        return true;
+                    }
+                    catch (Exception e)
+                    {
+                        Log.Exception($"Failed to run {record.Path} as different user, {e.Message}", e, MethodBase.GetCurrentMethod().DeclaringType);
+                        return false;
+                    }
+                },
+            };
+        }
+
         // Function to test if the file can be run as admin
         private bool CanFileBeRunAsAdmin(string path)
         {
@@ -162,7 +187,6 @@ namespace Microsoft.Plugin.Indexer
             return false;
         }
 
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "We want to keep the process alive, and instead log and show an error message")]
         private ContextMenuResult CreateOpenContainingFolderResult(SearchResult record)
         {
             return new ContextMenuResult
@@ -175,15 +199,9 @@ namespace Microsoft.Plugin.Indexer
                 AcceleratorModifiers = ModifierKeys.Control | ModifierKeys.Shift,
                 Action = _ =>
                 {
-                    try
-                    {
-                        Process.Start("explorer.exe", $" /select,\"{record.Path}\"");
-                    }
-                    catch (Exception e)
+                    if (!Helper.OpenInShell("explorer.exe", $"/select,\"{record.Path}\""))
                     {
                         var message = $"{Properties.Resources.Microsoft_plugin_indexer_folder_open_failed} {record.Path}";
-                        Log.Exception(message, e, GetType());
-
                         _context.API.ShowMsg(message);
                         return false;
                     }

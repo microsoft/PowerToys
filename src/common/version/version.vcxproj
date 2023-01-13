@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="..\..\Version.props" />
+  <Target Name="GenerateVersionData" BeforeTargets="PrepareForBuild">
+    <ItemGroup>
+      <HeaderLines Include="#pragma once" />
+      <HeaderLines Include="#define VERSION_MAJOR $(Version.Split('.')[0])" />
+      <HeaderLines Include="#define VERSION_MINOR $(Version.Split('.')[1])" />
+      <HeaderLines Include="#define VERSION_REVISION $(Version.Split('.')[2])" />
+    </ItemGroup>
+    <WriteLinesToFile File="Generated Files\version_gen.h" Lines="@(HeaderLines)" Overwrite="true" Encoding="Unicode" WriteOnlyWhenDifferent="true" />
+  </Target>
+  <PropertyGroup Label="Globals">
+    <VCProjectVersion>16.0</VCProjectVersion>
+    <ProjectGuid>{CC6E41AC-8174-4E8A-8D22-85DD7F4851DF}</ProjectGuid>
+    <Keyword>Win32Proj</Keyword>
+    <RootNamespace>Version</RootNamespace>
+    <ProjectName>Version</ProjectName>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <PlatformToolset>v143</PlatformToolset>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Label="Shared">
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <ItemDefinitionGroup>
+    <ClCompile>
+      <AdditionalIncludeDirectories>..\;..\..\;..\..\..\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+    </ClCompile>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClInclude Include="version.h" />
+    <ClInclude Include="helper.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="version.cpp" />
+    <ClCompile Include="helper.cpp" />
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+</Project>

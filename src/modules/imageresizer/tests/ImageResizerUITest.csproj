@@ -1,45 +1,27 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <Import Project="..\..\..\Version.props" />
-  
+
   <PropertyGroup>
-    <TargetFramework>netcoreapp3.1</TargetFramework>
+    <TargetFramework>net7.0-windows10.0.19041.0</TargetFramework>
     <ProjectGuid>{E0CC7526-D85E-43AC-844F-D5DF0D2F5AB8}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>ImageResizer</RootNamespace>
     <AssemblyName>ImageResizer.Test</AssemblyName>
-    <AssemblyCompany>Microsoft Corp.</AssemblyCompany>
-    <AssemblyCopyright>Copyright (C) 2020 Microsoft Corp.</AssemblyCopyright>
     <Version>$(Version).0</Version>
     <OutputPath>$(SolutionDir)$(Platform)\$(Configuration)\modules\ImageResizer\$(AssemblyName)\</OutputPath>
-    <CodeAnalysisRuleSet>..\..\..\codeAnalysis\Rules.ruleset</CodeAnalysisRuleSet>
-    <Platforms>x64</Platforms>
-  </PropertyGroup>
-  
-  <PropertyGroup>
-    <Platform Condition="'$(Platform)'==''">x64</Platform>
-    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     <IntermediateOutputPath>$(SolutionDir)$(Platform)\$(Configuration)\obj\$(AssemblyName)\</IntermediateOutputPath>
   </PropertyGroup>
-    
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-    <PlatformTarget>x64</PlatformTarget>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <PlatformTarget>x64</PlatformTarget>
-  </PropertyGroup>
-  
+
+  <ItemGroup>
+    <None Remove="TestMetadataIssue1928.jpg" />
+    <None Remove="TestMetadataIssue1928_NoMetadata.jpg" />
+  </ItemGroup>
+
   <ItemGroup>
     <ProjectReference Include="..\ui\ImageResizerUI.csproj" />
   </ItemGroup>
-  <ItemGroup>
-    <AdditionalFiles Include="..\..\..\codeAnalysis\StyleCop.json">
-      <Link>StyleCop.json</Link>
-    </AdditionalFiles>
-  </ItemGroup>
-  <ItemGroup>
-    <Compile Include="..\codeAnalysis\GlobalSuppressions.cs" Link="GlobalSuppressions.cs" />
-  </ItemGroup>
+
   <ItemGroup>
     <Content Include="Test.gif">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
@@ -53,6 +35,12 @@
     <Content Include="Test.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
+    <Content Include="TestMetadataIssue1928.jpg">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="TestMetadataIssue1928_NoMetadata.jpg">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
     <Content Include="TestMetadataIssue2447.jpg">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
@@ -61,19 +49,11 @@
     </Content>
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="Microsoft.CodeAnalysis.FxCopAnalyzers" Version="3.3.0">
-      <PrivateAssets>all</PrivateAssets>
-    </PackageReference>
-    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="16.7.1" />
-    <PackageReference Include="Moq" Version="4.14.7" />
-    <PackageReference Include="StyleCop.Analyzers" Version="1.1.118">
-      <PrivateAssets>all</PrivateAssets>
-    </PackageReference>
-    <PackageReference Include="System.IO.Abstractions" Version="12.2.5" />
-    <PackageReference Include="System.ValueTuple" Version="4.5.0" />
-    <PackageReference Include="xunit" Version="2.4.1" />
-    <PackageReference Include="xunit.runner.visualstudio" Version="2.4.3">
-      <PrivateAssets>all</PrivateAssets>
-    </PackageReference>
+    <PackageReference Include="Microsoft.Windows.CsWinRT" Version="2.0.0" />
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.4.1" />
+    <PackageReference Include="Moq" Version="4.18.3" />
+    <PackageReference Include="MSTest.TestAdapter" Version="3.0.1" />
+    <PackageReference Include="MSTest.TestFramework" Version="3.0.1" />
+    <PackageReference Include="System.IO.Abstractions" Version="17.2.3" />
   </ItemGroup>
 </Project>

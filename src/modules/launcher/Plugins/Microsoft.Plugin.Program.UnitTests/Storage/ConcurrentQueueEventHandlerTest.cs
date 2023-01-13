@@ -5,14 +5,15 @@
 using System.Collections.Concurrent;
 using System.Threading.Tasks;
 using Microsoft.Plugin.Program.Storage;
-using NUnit.Framework;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Microsoft.Plugin.Program.UnitTests.Storage
 {
-    [TestFixture]
+    [TestClass]
     public class ConcurrentQueueEventHandlerTest
     {
-        [TestCase]
+        [DataTestMethod]
+        [DataRow]
         public async Task EventHandlerMustReturnEmptyPathForEmptyQueueAsync()
         {
             // Arrange
@@ -23,11 +24,12 @@ namespace Microsoft.Plugin.Program.UnitTests.Storage
             string appPath = await EventHandler.GetAppPathFromQueueAsync(eventHandlingQueue, dequeueDelay).ConfigureAwait(false);
 
             // Assert
-            Assert.IsEmpty(appPath);
+            Assert.IsTrue(string.IsNullOrEmpty(appPath));
         }
 
-        [TestCase(1)]
-        [TestCase(10)]
+        [DataTestMethod]
+        [DataRow(1)]
+        [DataRow(10)]
         public async Task EventHandlerMustReturnPathForConcurrentQueueWithSameFilePathsAsync(int itemCount)
         {
             // Arrange
@@ -47,7 +49,8 @@ namespace Microsoft.Plugin.Program.UnitTests.Storage
             Assert.AreEqual(0, eventHandlingQueue.Count);
         }
 
-        [TestCase(5)]
+        [DataTestMethod]
+        [DataRow(5)]
         public async Task EventHandlerMustReturnPathAndRetainDifferentFilePathsInQueueAsync(int itemCount)
         {
             // Arrange
@@ -73,7 +76,8 @@ namespace Microsoft.Plugin.Program.UnitTests.Storage
             Assert.AreEqual(itemCount, eventHandlingQueue.Count);
         }
 
-        [TestCase(5)]
+        [DataTestMethod]
+        [DataRow(5)]
         public async Task EventHandlerMustReturnPathAndRetainAllPathsAfterEncounteringADifferentPathAsync(int itemCount)
         {
             // Arrange

@@ -4,16 +4,15 @@
 
 using System;
 using System.Linq;
-using Newtonsoft.Json;
+using System.Text.Json.Serialization;
 
 namespace Microsoft.Plugin.Folder
 {
-    [JsonObject(MemberSerialization.OptIn)]
     public class FolderLink
     {
-        [JsonProperty]
         public string Path { get; set; }
 
+        [JsonIgnore]
         public string Nickname =>
            Path.Split(new[] { System.IO.Path.DirectorySeparatorChar }, StringSplitOptions.None)
                .Last()

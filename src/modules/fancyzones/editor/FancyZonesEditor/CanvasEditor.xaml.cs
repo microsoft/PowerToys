@@ -4,8 +4,8 @@
 
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Input;
 using FancyZonesEditor.Models;
-using FancyZonesEditor.Utils;
 
 namespace FancyZonesEditor
 {
@@ -23,6 +23,26 @@ namespace FancyZonesEditor
         {
             InitializeComponent();
             Loaded += OnLoaded;
+            Unloaded += OnUnloaded;
+            KeyDown += CanvasEditor_KeyDown;
+        }
+
+        private void CanvasEditor_KeyDown(object sender, System.Windows.Input.KeyEventArgs e)
+        {
+            if (e.Key == Key.Tab && (Keyboard.IsKeyDown(Key.LeftCtrl) || Keyboard.IsKeyDown(Key.RightCtrl)))
+            {
+                e.Handled = true;
+                App.Overlay.FocusEditorWindow();
+            }
+        }
+
+        public void FocusZone()
+        {
+            if (Preview.Children.Count > 0)
+            {
+                var canvas = Preview.Children[0] as CanvasZone;
+                canvas.FocusZone();
+            }
         }
 
         private void OnLoaded(object sender, RoutedEventArgs e)
@@ -31,9 +51,20 @@ namespace FancyZonesEditor
             if (model != null)
             {
                 _model = model;
+
+                var workArea = App.Overlay.WorkArea;
+
                 UpdateZoneRects();
 
-                model.PropertyChanged += OnModelChanged;
+                _model.PropertyChanged += OnModelChanged;
+            }
+        }
+
+        private void OnUnloaded(object sender, RoutedEventArgs e)
+        {
+            if (_model != null)
+            {
+                _model.PropertyChanged -= OnModelChanged;
             }
         }
 
@@ -50,6 +81,8 @@ namespace FancyZonesEditor
             var workArea = App.Overlay.WorkArea;
             Preview.Width = workArea.Width;
             Preview.Height = workArea.Height;
+
+            _model.ScaleLayout(workAreaWidth: workArea.Width, workAreaHeight: workArea.Height);
 
             UIElementCollection previewChildren = Preview.Children;
             int previewChildrenCount = previewChildren.Count;

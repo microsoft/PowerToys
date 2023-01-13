@@ -1,169 +1,43 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-  <Import Project="..\..\..\..\packages\Microsoft.Windows.CppWinRT.2.0.200729.8\build\native\Microsoft.Windows.CppWinRT.props" Condition="Exists('..\..\..\..\packages\Microsoft.Windows.CppWinRT.2.0.200729.8\build\native\Microsoft.Windows.CppWinRT.props')" />
-  <ItemGroup Label="ProjectConfigurations">
-    <ProjectConfiguration Include="Debug|Win32">
-      <Configuration>Debug</Configuration>
-      <Platform>Win32</Platform>
-    </ProjectConfiguration>
-    <ProjectConfiguration Include="Release|Win32">
-      <Configuration>Release</Configuration>
-      <Platform>Win32</Platform>
-    </ProjectConfiguration>
-    <ProjectConfiguration Include="Debug|x64">
-      <Configuration>Debug</Configuration>
-      <Platform>x64</Platform>
-    </ProjectConfiguration>
-    <ProjectConfiguration Include="Release|x64">
-      <Configuration>Release</Configuration>
-      <Platform>x64</Platform>
-    </ProjectConfiguration>
-  </ItemGroup>
+  <Import Project="..\..\..\..\packages\Microsoft.Windows.CppWinRT.2.0.220929.3\build\native\Microsoft.Windows.CppWinRT.props" Condition="Exists('..\..\..\..\packages\Microsoft.Windows.CppWinRT.2.0.220929.3\build\native\Microsoft.Windows.CppWinRT.props')" />
   <PropertyGroup Label="Globals">
     <ProjectGuid>{51920F1F-C28C-4ADF-8660-4238766796C2}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
     <RootNamespace>PowerRenameLib</RootNamespace>
-    <WindowsTargetPlatformVersion>10.0.17134.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
+  <PropertyGroup Label="Configuration">
     <ConfigurationType>StaticLibrary</ConfigurationType>
-    <UseDebugLibraries>true</UseDebugLibraries>
-    <PlatformToolset>v142</PlatformToolset>
-    <CharacterSet>Unicode</CharacterSet>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
-    <ConfigurationType>StaticLibrary</ConfigurationType>
-    <UseDebugLibraries>false</UseDebugLibraries>
-    <PlatformToolset>v142</PlatformToolset>
-    <WholeProgramOptimization>true</WholeProgramOptimization>
-    <CharacterSet>Unicode</CharacterSet>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
-    <ConfigurationType>StaticLibrary</ConfigurationType>
-    <UseDebugLibraries>true</UseDebugLibraries>
-    <PlatformToolset>v142</PlatformToolset>
-    <CharacterSet>Unicode</CharacterSet>
-    <SpectreMitigation>Spectre</SpectreMitigation>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
-    <ConfigurationType>StaticLibrary</ConfigurationType>
-    <UseDebugLibraries>false</UseDebugLibraries>
-    <PlatformToolset>v142</PlatformToolset>
-    <WholeProgramOptimization>true</WholeProgramOptimization>
-    <CharacterSet>Unicode</CharacterSet>
-    <SpectreMitigation>Spectre</SpectreMitigation>
+    <PlatformToolset>v143</PlatformToolset>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
   <ImportGroup Label="ExtensionSettings">
   </ImportGroup>
   <ImportGroup Label="Shared">
   </ImportGroup>
-  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
-    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
-  </ImportGroup>
-  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
-    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
-  </ImportGroup>
-  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
-  </ImportGroup>
-  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+  <ImportGroup Label="PropertySheets">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
-    <OutDir>$(SolutionDir)$(Platform)\$(Configuration)\</OutDir>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
-    <OutDir>$(SolutionDir)$(Platform)\$(Configuration)\</OutDir>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+  <PropertyGroup>
     <OutDir>$(SolutionDir)$(Platform)\$(Configuration)\modules\PowerRename\</OutDir>
-    <IntDir>$(SolutionDir)$(Platform)\$(Configuration)\obj\$(ProjectName)\</IntDir>
   </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-    <OutDir>$(SolutionDir)$(Platform)\$(Configuration)\modules\PowerRename\</OutDir>
-    <IntDir>$(SolutionDir)$(Platform)\$(Configuration)\obj\$(ProjectName)\</IntDir>
-  </PropertyGroup>
-  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
-    <ClCompile>
-      <WarningLevel>Level4</WarningLevel>
-      <Optimization>Disabled</Optimization>
-      <PreprocessorDefinitions>WIN32;_DEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <SDLCheck>true</SDLCheck>
-      <LanguageStandard>stdcpp17</LanguageStandard>
-      <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
-    </ClCompile>
-    <Link>
-      <SubSystem>Windows</SubSystem>
-    </Link>
-  </ItemDefinitionGroup>
-  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <ClCompile>
-      <WarningLevel>Level4</WarningLevel>
-      <Optimization>Disabled</Optimization>
-      <PreprocessorDefinitions>_DEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <SDLCheck>true</SDLCheck>
-      <LanguageStandard>stdcpp17</LanguageStandard>
-      <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
-      <AdditionalIncludeDirectories>$(ProjectDir)..\;$(ProjectDir)..\ui;$(ProjectDir)..\dll;$(ProjectDir)..\lib;$(ProjectDir)..\..\..\common;$(ProjectDir)..\..\..\common\Telemetry;%(AdditionalIncludeDirectories);$(GeneratedFilesDir)</AdditionalIncludeDirectories>
-    </ClCompile>
-    <Link>
-      <SubSystem>Windows</SubSystem>
-    </Link>
-    <Lib />
-  </ItemDefinitionGroup>
-  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+  <ItemDefinitionGroup>
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
-      <Optimization>MaxSpeed</Optimization>
-      <FunctionLevelLinking>true</FunctionLevelLinking>
-      <IntrinsicFunctions>true</IntrinsicFunctions>
-      <PreprocessorDefinitions>WIN32;NDEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <SDLCheck>true</SDLCheck>
-      <LanguageStandard>stdcpp17</LanguageStandard>
-      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
-    </ClCompile>
-    <Link>
-      <SubSystem>Windows</SubSystem>
-      <EnableCOMDATFolding>true</EnableCOMDATFolding>
-      <OptimizeReferences>true</OptimizeReferences>
-    </Link>
-  </ItemDefinitionGroup>
-  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-    <ClCompile>
-      <WarningLevel>Level3</WarningLevel>
-      <Optimization>MaxSpeed</Optimization>
-      <FunctionLevelLinking>true</FunctionLevelLinking>
-      <IntrinsicFunctions>true</IntrinsicFunctions>
-      <PreprocessorDefinitions>NDEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <SDLCheck>true</SDLCheck>
-      <LanguageStandard>stdcpp17</LanguageStandard>
-      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
-      <AdditionalIncludeDirectories>$(ProjectDir)..\;$(ProjectDir)..\ui;$(ProjectDir)..\dll;$(ProjectDir)..\lib;$(ProjectDir)..\..\..\common;$(ProjectDir)..\..\..\common\Telemetry;%(AdditionalIncludeDirectories);$(GeneratedFilesDir)</AdditionalIncludeDirectories>
-    </ClCompile>
-    <Link>
-      <SubSystem>Windows</SubSystem>
-      <EnableCOMDATFolding>true</EnableCOMDATFolding>
-      <OptimizeReferences>true</OptimizeReferences>
-    </Link>
-    <Lib />
-  </ItemDefinitionGroup>
-  <ItemDefinitionGroup Condition="'$(CIBuild)'!='true'">
-    <ClCompile>
-      <PrecompiledHeader>Use</PrecompiledHeader>
-      <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
-      <MultiProcessorCompilation>true</MultiProcessorCompilation>
-      <TreatWarningAsError Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</TreatWarningAsError>
-      <TreatWarningAsError Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</TreatWarningAsError>
+      <PreprocessorDefinitions>WIN32;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>$(ProjectDir)..\;$(ProjectDir)..\ui;$(ProjectDir)..\dll;$(ProjectDir)..\lib;$(ProjectDir)..\..\..\;$(ProjectDir)..\..\..\common\Telemetry;%(AdditionalIncludeDirectories);$(GeneratedFilesDir)</AdditionalIncludeDirectories>
     </ClCompile>
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="Helpers.h" />
+    <ClInclude Include="MRUListHandler.h" />
+    <ClInclude Include="PowerRenameEnum.h" />
     <ClInclude Include="PowerRenameItem.h" />
     <ClInclude Include="PowerRenameInterfaces.h" />
     <ClInclude Include="PowerRenameManager.h" />
+    <ClInclude Include="PowerRenameMRU.h" />
     <ClInclude Include="PowerRenameRegEx.h" />
     <ClInclude Include="Settings.h" />
     <ClInclude Include="srwlock.h" />
@@ -173,8 +47,11 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Helpers.cpp" />
+    <ClCompile Include="MRUListHandler.cpp" />
+    <ClCompile Include="PowerRenameEnum.cpp" />
     <ClCompile Include="PowerRenameItem.cpp" />
     <ClCompile Include="PowerRenameManager.cpp" />
+    <ClCompile Include="PowerRenameMRU.cpp" />
     <ClCompile Include="PowerRenameRegEx.cpp" />
     <ClCompile Include="Settings.cpp" />
     <ClCompile Include="pch.cpp">
@@ -185,19 +62,27 @@
   <ItemGroup>
     <None Include="packages.config" />
   </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\common\SettingsAPI\SettingsAPI.vcxproj">
+      <Project>{6955446d-23f7-4023-9bb3-8657f904af99}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\..\..\common\Themes\Themes.vcxproj">
+      <Project>{98537082-0fdb-40de-abd8-0dc5a4269bab}</Project>
+    </ProjectReference>
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
-    <Import Project="..\..\..\..\packages\Microsoft.Windows.CppWinRT.2.0.200729.8\build\native\Microsoft.Windows.CppWinRT.targets" Condition="Exists('..\..\..\..\packages\Microsoft.Windows.CppWinRT.2.0.200729.8\build\native\Microsoft.Windows.CppWinRT.targets')" />
-    <Import Project="..\..\..\..\packages\boost.1.72.0.0\build\boost.targets" Condition="Exists('..\..\..\..\packages\boost.1.72.0.0\build\boost.targets')" />
-    <Import Project="..\..\..\..\packages\boost_regex-vc142.1.72.0.0\build\boost_regex-vc142.targets" Condition="Exists('..\..\..\..\packages\boost_regex-vc142.1.72.0.0\build\boost_regex-vc142.targets')" />
+    <Import Project="..\..\..\..\packages\Microsoft.Windows.CppWinRT.2.0.220929.3\build\native\Microsoft.Windows.CppWinRT.targets" Condition="Exists('..\..\..\..\packages\Microsoft.Windows.CppWinRT.2.0.220929.3\build\native\Microsoft.Windows.CppWinRT.targets')" />
+    <Import Project="..\..\..\..\packages\boost.1.80.0\build\boost.targets" Condition="Exists('..\..\..\..\packages\boost.1.80.0\build\boost.targets')" />
+    <Import Project="..\..\..\..\packages\boost_regex-vc143.1.80.0\build\boost_regex-vc143.targets" Condition="Exists('..\..\..\..\packages\boost_regex-vc143.1.80.0\build\boost_regex-vc143.targets')" />
   </ImportGroup>
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
     <PropertyGroup>
       <ErrorText>This project references NuGet package(s) that are missing on this computer. Use NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.</ErrorText>
     </PropertyGroup>
-    <Error Condition="!Exists('..\..\..\..\packages\Microsoft.Windows.CppWinRT.2.0.200729.8\build\native\Microsoft.Windows.CppWinRT.props')" Text="$([System.String]::Format('$(ErrorText)', '..\..\..\..\packages\Microsoft.Windows.CppWinRT.2.0.200729.8\build\native\Microsoft.Windows.CppWinRT.props'))" />
-    <Error Condition="!Exists('..\..\..\..\packages\Microsoft.Windows.CppWinRT.2.0.200729.8\build\native\Microsoft.Windows.CppWinRT.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\..\..\..\packages\Microsoft.Windows.CppWinRT.2.0.200729.8\build\native\Microsoft.Windows.CppWinRT.targets'))" />
-    <Error Condition="!Exists('..\..\..\..\packages\boost.1.72.0.0\build\boost.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\..\..\..\packages\boost.1.72.0.0\build\boost.targets'))" />
-    <Error Condition="!Exists('..\..\..\..\packages\boost_regex-vc142.1.72.0.0\build\boost_regex-vc142.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\..\..\..\packages\boost_regex-vc142.1.72.0.0\build\boost_regex-vc142.targets'))" />
+    <Error Condition="!Exists('..\..\..\..\packages\Microsoft.Windows.CppWinRT.2.0.220929.3\build\native\Microsoft.Windows.CppWinRT.props')" Text="$([System.String]::Format('$(ErrorText)', '..\..\..\..\packages\Microsoft.Windows.CppWinRT.2.0.220929.3\build\native\Microsoft.Windows.CppWinRT.props'))" />
+    <Error Condition="!Exists('..\..\..\..\packages\Microsoft.Windows.CppWinRT.2.0.220929.3\build\native\Microsoft.Windows.CppWinRT.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\..\..\..\packages\Microsoft.Windows.CppWinRT.2.0.220929.3\build\native\Microsoft.Windows.CppWinRT.targets'))" />
+    <Error Condition="!Exists('..\..\..\..\packages\boost.1.80.0\build\boost.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\..\..\..\packages\boost.1.80.0\build\boost.targets'))" />
+    <Error Condition="!Exists('..\..\..\..\packages\boost_regex-vc143.1.80.0\build\boost_regex-vc143.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\..\..\..\packages\boost_regex-vc143.1.80.0\build\boost_regex-vc143.targets'))" />
   </Target>
 </Project>

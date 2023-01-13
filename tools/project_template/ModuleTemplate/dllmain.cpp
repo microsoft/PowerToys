@@ -1,6 +1,6 @@
 #include "pch.h"
 #include <interface/powertoy_module_interface.h>
-#include <common/settings_objects.h>
+#include <common/SettingsAPI/settings_objects.h>
 #include "trace.h"
 
 extern "C" IMAGE_DOS_HEADER __ImageBase;
@@ -286,7 +286,7 @@ void $safeprojectname$::init_settings()
 //    // Save the PowerToyValues JSON to the power toy settings file.
 //    values.save_to_settings_file();
 //  }
-//  catch (std::exception ex) {
+//  catch (std::exception& ex) {
 //    // Couldn't save the settings.
 //  }
 //}

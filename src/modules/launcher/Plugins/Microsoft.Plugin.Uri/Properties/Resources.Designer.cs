@@ -61,7 +61,43 @@ namespace Microsoft.Plugin.Uri.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Handles urls.
+        ///   Looks up a localized string similar to Failed to open default browser.
+        /// </summary>
+        public static string Microsoft_plugin_default_browser_open_failed {
+            get {
+                return ResourceManager.GetString("Microsoft_plugin_default_browser_open_failed", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Open default browser.
+        /// </summary>
+        public static string Microsoft_plugin_uri_default_browser {
+            get {
+                return ResourceManager.GetString("Microsoft_plugin_uri_default_browser", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Open URI.
+        /// </summary>
+        public static string Microsoft_plugin_uri_open {
+            get {
+                return ResourceManager.GetString("Microsoft_plugin_uri_open", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Failed to open URI.
+        /// </summary>
+        public static string Microsoft_plugin_uri_open_failed {
+            get {
+                return ResourceManager.GetString("Microsoft_plugin_uri_open_failed", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Opens URLs and UNC network shares..
         /// </summary>
         public static string Microsoft_plugin_uri_plugin_description {
             get {
@@ -70,7 +106,7 @@ namespace Microsoft.Plugin.Uri.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Url Handler.
+        ///   Looks up a localized string similar to URI Handler.
         /// </summary>
         public static string Microsoft_plugin_uri_plugin_name {
             get {
@@ -79,7 +115,7 @@ namespace Microsoft.Plugin.Uri.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Open in browser.
+        ///   Looks up a localized string similar to Open in default browser.
         /// </summary>
         public static string Microsoft_plugin_uri_website {
             get {

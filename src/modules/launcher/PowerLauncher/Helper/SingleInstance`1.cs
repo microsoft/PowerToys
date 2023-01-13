@@ -43,26 +43,31 @@ namespace PowerLauncher.Helper
         /// Suffix to the channel name.
         /// </summary>
         private const string ChannelNameSuffix = "SingeInstanceIPCChannel";
+        private const string InstanceMutexName = @"Local\PowerToys_Run_InstanceMutex";
 
         /// <summary>
         /// Gets or sets application mutex.
         /// </summary>
         internal static Mutex SingleInstanceMutex { get; set; }
 
+        internal static void CreateInstanceMutex()
+        {
+            SingleInstanceMutex = new Mutex(true, InstanceMutexName, out bool firstInstance);
+        }
+
         /// <summary>
         /// Checks if the instance of the application attempting to start is the first instance.
         /// If not, activates the first instance.
         /// </summary>
         /// <returns>True if this is the first instance of the application.</returns>
-        internal static bool InitializeAsFirstInstance(string uniqueName)
+        internal static bool InitializeAsFirstInstance()
         {
             // Build unique application Id and the IPC channel name.
-            string applicationIdentifier = uniqueName + Environment.UserName;
+            string applicationIdentifier = InstanceMutexName + Environment.UserName;
 
             string channelName = string.Concat(applicationIdentifier, Delimiter, ChannelNameSuffix);
 
-            // Create mutex based on unique application Id to check if this is the first instance of the application.
-            SingleInstanceMutex = new Mutex(true, applicationIdentifier, out bool firstInstance);
+            SingleInstanceMutex = new Mutex(true, InstanceMutexName, out bool firstInstance);
             if (firstInstance)
             {
                 _ = CreateRemoteService(channelName);

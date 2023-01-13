@@ -1,0 +1,94 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <Import Project="..\..\..\Version.props" />
+
+  <PropertyGroup>
+    <AssemblyTitle>PowerToys.MeasureTool</AssemblyTitle>
+    <AssemblyDescription>PowerToys MeasureTool</AssemblyDescription>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net7.0-windows10.0.20348.0</TargetFramework>
+    <TargetPlatformMinVersion>10.0.19041.0</TargetPlatformMinVersion>
+    <OutputPath>$(SolutionDir)$(Platform)\$(Configuration)\modules\MeasureTool</OutputPath>
+    <RootNamespace>PowerToys.MeasureToolUI</RootNamespace>
+    <AssemblyName>PowerToys.MeasureToolUI</AssemblyName>
+    <ApplicationManifest>app.manifest</ApplicationManifest>
+    <Platforms>x86;x64;arm64</Platforms>
+    <RuntimeIdentifiers>win10-x86;win10-x64;win10-arm64</RuntimeIdentifiers>
+    <UseWinUI>true</UseWinUI>
+    <GenerateSatelliteAssembliesForCore>true</GenerateSatelliteAssembliesForCore>    
+    <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+    <AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
+    <EnablePreviewMsixTooling>true</EnablePreviewMsixTooling>
+    <WindowsPackageType>None</WindowsPackageType>
+    <WindowsAppSDKSelfContained>true</WindowsAppSDKSelfContained>
+    <SupportedOSPlatformVersion>10.0.19041.0</SupportedOSPlatformVersion>
+    <SelfContained>true</SelfContained>
+  </PropertyGroup>
+  <!-- SelfContained=true requires RuntimeIdentifier to be set -->
+  <PropertyGroup Condition="'$(Platform)'=='x64'">
+    <RuntimeIdentifier>win10-x64</RuntimeIdentifier>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Platform)'=='ARM64'">
+    <RuntimeIdentifier>win10-arm64</RuntimeIdentifier>
+  </PropertyGroup>
+
+  <!-- See https://learn.microsoft.com/windows/apps/develop/platform/csharp-winrt/net-projection-from-cppwinrt-component for more info -->
+  <PropertyGroup>
+    <CsWinRTIncludes>PowerToys.MeasureToolCore;PowerToys.GPOWrapper</CsWinRTIncludes>
+    <CsWinRTGeneratedFilesDir>$(OutDir)</CsWinRTGeneratedFilesDir>
+    <ErrorOnDuplicatePublishOutputFiles>false</ErrorOnDuplicatePublishOutputFiles>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <NoWarn>0436</NoWarn>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Update="Properties\Resources.resx">
+      <Generator>PublicResXFileCodeGenerator</Generator>
+      <LastGenOutput>Resources.Designer.cs</LastGenOutput>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Update="Properties\Resources.Designer.cs">
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+      <DependentUpon>Resources.resx</DependentUpon>
+    </Compile>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="Assets\SplashScreen.scale-200.png" />
+    <Content Include="Assets\LockScreenLogo.scale-200.png" />
+    <Content Include="Assets\Square150x150Logo.scale-200.png" />
+    <Content Include="Assets\Square44x44Logo.scale-200.png" />
+    <Content Include="Assets\Square44x44Logo.targetsize-24_altform-unplated.png" />
+    <Content Include="Assets\StoreLogo.png" />
+    <Content Include="Assets\Wide310x150Logo.scale-200.png" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Windows.CsWinRT" Version="2.0.0" />
+    <PackageReference Include="Microsoft.WindowsAppSDK" Version="1.2.221116.1" />
+    <PackageReference Include="Microsoft.Windows.SDK.BuildTools" Version="10.0.22621.755" />
+    <PackageReference Include="WinUIEx" Version="1.8.0" />
+    <Manifest Include="$(ApplicationManifest)" />
+  </ItemGroup>
+
+  <!-- Defining the "Msix" ProjectCapability here allows the Single-project MSIX Packaging
+       Tools extension to be activated for this project even if the Windows App SDK Nuget
+       package has not yet been restored -->
+  <ItemGroup Condition="'$(DisableMsixProjectCapabilityAddedByProject)'!='true' and '$(EnablePreviewMsixTooling)'=='true'">
+    <ProjectCapability Include="Msix" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Assets\Icons\" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\common\GPOWrapper\GPOWrapper.vcxproj" />
+    <ProjectReference Include="..\..\..\common\interop\PowerToys.Interop.vcxproj" />
+    <ProjectReference Include="..\..\..\common\ManagedCommon\ManagedCommon.csproj" />
+    <ProjectReference Include="..\MeasureToolCore\PowerToys.MeasureToolCore.vcxproj" />
+  </ItemGroup>
+</Project>

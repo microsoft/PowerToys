@@ -1,19 +1,20 @@
-﻿// Copyright (c) Brice Lambson
+// Copyright (c) Brice Lambson
 // The Brice Lambson licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.  Code forked from Brice Lambson's https://github.com/bricelam/ImageResizer/
 
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using ImageResizer.Properties;
 using ImageResizer.Test;
-using Xunit;
-using Xunit.Extensions;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace ImageResizer.Models
 {
+    [TestClass]
     public class ResizeSizeTests
     {
-        [Fact]
+        [TestMethod]
         public void NameWorks()
         {
             var size = new ResizeSize();
@@ -23,11 +24,11 @@ namespace ImageResizer.Models
                 h => size.PropertyChanged -= h,
                 () => size.Name = "Test");
 
-            Assert.Equal("Test", size.Name);
-            Assert.Equal(nameof(ResizeSize.Name), e.Arguments.PropertyName);
+            Assert.AreEqual("Test", size.Name);
+            Assert.AreEqual(nameof(ResizeSize.Name), e.Arguments.PropertyName);
         }
 
-        [Fact]
+        [TestMethod]
         public void NameReplacesTokens()
         {
             var args = new List<(string, string)>
@@ -44,11 +45,11 @@ namespace ImageResizer.Models
                     Name = name,
                 };
 
-                Assert.Equal(expected, size.Name);
+                Assert.AreEqual(expected, size.Name);
             }
         }
 
-        [Fact]
+        [TestMethod]
         public void FitWorks()
         {
             var size = new ResizeSize();
@@ -58,11 +59,11 @@ namespace ImageResizer.Models
                 h => size.PropertyChanged -= h,
                 () => size.Fit = ResizeFit.Stretch);
 
-            Assert.Equal(ResizeFit.Stretch, size.Fit);
-            Assert.Equal(nameof(ResizeSize.Fit), e.Arguments.PropertyName);
+            Assert.AreEqual(ResizeFit.Stretch, size.Fit);
+            Assert.AreEqual(nameof(ResizeSize.Fit), e.Arguments.PropertyName);
         }
 
-        [Fact]
+        [TestMethod]
         public void WidthWorks()
         {
             var size = new ResizeSize();
@@ -72,11 +73,11 @@ namespace ImageResizer.Models
                 h => size.PropertyChanged -= h,
                 () => size.Width = 42);
 
-            Assert.Equal(42, size.Width);
-            Assert.Equal(nameof(ResizeSize.Width), e.Arguments.PropertyName);
+            Assert.AreEqual(42, size.Width);
+            Assert.AreEqual(nameof(ResizeSize.Width), e.Arguments.PropertyName);
         }
 
-        [Fact]
+        [TestMethod]
         public void HeightWorks()
         {
             var size = new ResizeSize();
@@ -86,11 +87,11 @@ namespace ImageResizer.Models
                 h => size.PropertyChanged -= h,
                 () => size.Height = 42);
 
-            Assert.Equal(42, size.Height);
-            Assert.Equal(nameof(ResizeSize.Height), e.Arguments.PropertyName);
+            Assert.AreEqual(42, size.Height);
+            Assert.AreEqual(nameof(ResizeSize.Height), e.Arguments.PropertyName);
         }
 
-        [Fact]
+        [TestMethod]
         public void HasAutoReturnsTrueWhenWidthUnset()
         {
             var size = new ResizeSize
@@ -99,10 +100,10 @@ namespace ImageResizer.Models
                 Height = 42,
             };
 
-            Assert.True(size.HasAuto);
+            Assert.IsTrue(size.HasAuto);
         }
 
-        [Fact]
+        [TestMethod]
         public void HasAutoReturnsTrueWhenHeightUnset()
         {
             var size = new ResizeSize
@@ -111,10 +112,10 @@ namespace ImageResizer.Models
                 Height = 0,
             };
 
-            Assert.True(size.HasAuto);
+            Assert.IsTrue(size.HasAuto);
         }
 
-        [Fact]
+        [TestMethod]
         public void HasAutoReturnsFalseWhenWidthAndHeightSet()
         {
             var size = new ResizeSize
@@ -123,10 +124,10 @@ namespace ImageResizer.Models
                 Height = 42,
             };
 
-            Assert.False(size.HasAuto);
+            Assert.IsFalse(size.HasAuto);
         }
 
-        [Fact]
+        [TestMethod]
         public void UnitWorks()
         {
             var size = new ResizeSize();
@@ -136,11 +137,11 @@ namespace ImageResizer.Models
                 h => size.PropertyChanged -= h,
                 () => size.Unit = ResizeUnit.Inch);
 
-            Assert.Equal(ResizeUnit.Inch, size.Unit);
-            Assert.Equal(nameof(ResizeSize.Unit), e.Arguments.PropertyName);
+            Assert.AreEqual(ResizeUnit.Inch, size.Unit);
+            Assert.AreEqual(nameof(ResizeSize.Unit), e.Arguments.PropertyName);
         }
 
-        [Fact]
+        [TestMethod]
         public void GetPixelWidthWorks()
         {
             var size = new ResizeSize
@@ -151,10 +152,10 @@ namespace ImageResizer.Models
 
             var result = size.GetPixelWidth(100, 96);
 
-            Assert.Equal(96, result);
+            Assert.AreEqual(96, result);
         }
 
-        [Fact]
+        [TestMethod]
         public void GetPixelHeightWorks()
         {
             var size = new ResizeSize
@@ -165,12 +166,12 @@ namespace ImageResizer.Models
 
             var result = size.GetPixelHeight(100, 96);
 
-            Assert.Equal(96, result);
+            Assert.AreEqual(96, result);
         }
 
-        [Theory]
-        [InlineData(ResizeFit.Fit)]
-        [InlineData(ResizeFit.Fill)]
+        [DataTestMethod]
+        [DataRow(ResizeFit.Fit)]
+        [DataRow(ResizeFit.Fill)]
         public void GetPixelHeightUsesWidthWhenScaleByPercent(ResizeFit fit)
         {
             var size = new ResizeSize
@@ -183,10 +184,10 @@ namespace ImageResizer.Models
 
             var result = size.GetPixelHeight(100, 96);
 
-            Assert.Equal(100, result);
+            Assert.AreEqual(100, result);
         }
 
-        [Fact]
+        [TestMethod]
         public void ConvertToPixelsWorksWhenAutoAndFit()
         {
             var size = new ResizeSize
@@ -197,10 +198,10 @@ namespace ImageResizer.Models
 
             var result = size.GetPixelWidth(100, 96);
 
-            Assert.Equal(double.PositiveInfinity, result);
+            Assert.AreEqual(double.PositiveInfinity, result);
         }
 
-        [Fact]
+        [TestMethod]
         public void ConvertToPixelsWorksWhenAutoAndNotFit()
         {
             var size = new ResizeSize
@@ -211,10 +212,10 @@ namespace ImageResizer.Models
 
             var result = size.GetPixelWidth(100, 96);
 
-            Assert.Equal(100, result);
+            Assert.AreEqual(100, result);
         }
 
-        [Fact]
+        [TestMethod]
         public void ConvertToPixelsWorksWhenInches()
         {
             var size = new ResizeSize
@@ -225,10 +226,10 @@ namespace ImageResizer.Models
 
             var result = size.GetPixelWidth(100, 96);
 
-            Assert.Equal(48, result);
+            Assert.AreEqual(48, result);
         }
 
-        [Fact]
+        [TestMethod]
         public void ConvertToPixelsWorksWhenCentimeters()
         {
             var size = new ResizeSize
@@ -239,10 +240,10 @@ namespace ImageResizer.Models
 
             var result = size.GetPixelWidth(100, 96);
 
-            Assert.Equal(38, result, 0);
+            Assert.AreEqual(38, Math.Ceiling(result));
         }
 
-        [Fact]
+        [TestMethod]
         public void ConvertToPixelsWorksWhenPercent()
         {
             var size = new ResizeSize
@@ -253,10 +254,10 @@ namespace ImageResizer.Models
 
             var result = size.GetPixelWidth(200, 96);
 
-            Assert.Equal(100, result);
+            Assert.AreEqual(100, result);
         }
 
-        [Fact]
+        [TestMethod]
         public void ConvertToPixelsWorksWhenPixels()
         {
             var size = new ResizeSize
@@ -267,7 +268,43 @@ namespace ImageResizer.Models
 
             var result = size.GetPixelWidth(100, 96);
 
-            Assert.Equal(50, result);
+            Assert.AreEqual(50, result);
+        }
+
+        [DataTestMethod]
+        [DataRow(ResizeFit.Fill, ResizeUnit.Centimeter)]
+        [DataRow(ResizeFit.Fill, ResizeUnit.Inch)]
+        [DataRow(ResizeFit.Fill, ResizeUnit.Pixel)]
+        [DataRow(ResizeFit.Fit, ResizeUnit.Centimeter)]
+        [DataRow(ResizeFit.Fit, ResizeUnit.Inch)]
+        [DataRow(ResizeFit.Fit, ResizeUnit.Pixel)]
+        [DataRow(ResizeFit.Stretch, ResizeUnit.Centimeter)]
+        [DataRow(ResizeFit.Stretch, ResizeUnit.Inch)]
+        [DataRow(ResizeFit.Stretch, ResizeUnit.Percent)]
+        [DataRow(ResizeFit.Stretch, ResizeUnit.Pixel)]
+        public void HeightVisible(ResizeFit fit, ResizeUnit unit)
+        {
+            var size = new ResizeSize
+            {
+                Fit = fit,
+                Unit = unit,
+            };
+
+            Assert.IsTrue(size.ShowHeight);
+        }
+
+        [DataTestMethod]
+        [DataRow(ResizeFit.Fill, ResizeUnit.Percent)]
+        [DataRow(ResizeFit.Fit, ResizeUnit.Percent)]
+        public void HeightNotVisible(ResizeFit fit, ResizeUnit unit)
+        {
+            var size = new ResizeSize
+            {
+                Fit = fit,
+                Unit = unit,
+            };
+
+            Assert.IsFalse(size.ShowHeight);
         }
     }
 }

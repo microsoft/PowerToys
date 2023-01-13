@@ -15,7 +15,7 @@ TODO
 #### [`ZoneSet.cpp`](/src/modules/fancyzones/lib/ZoneSet.cpp)
 TODO
 
-#### [`ZoneWindow.cpp`](/src/modules/fancyzones/lib/ZoneWindow.cpp)
+#### [`WorkArea.cpp`](/src/modules/fancyzones/lib/WorkArea.cpp)
 TODO
 
 ## FancyZones Editor

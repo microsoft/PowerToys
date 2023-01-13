@@ -9,13 +9,12 @@ using System.Linq;
 using System.Windows.Controls;
 using ManagedCommon;
 using Microsoft.Plugin.Folder.Sources;
-using Microsoft.PowerToys.Settings.UI.Library;
 using Wox.Infrastructure.Storage;
 using Wox.Plugin;
 
 namespace Microsoft.Plugin.Folder
 {
-    public class Main : IPlugin, ISettingProvider, IPluginI18n, ISavable, IContextMenu, IDisposable
+    public class Main : IPlugin, IPluginI18n, ISavable, IContextMenu, IDisposable
     {
         public const string FolderImagePath = "Images\\folder.dark.png";
         public const string FileImagePath = "Images\\file.dark.png";
@@ -27,16 +26,23 @@ namespace Microsoft.Plugin.Folder
         private static readonly FolderSettings _settings = _storage.Load();
         private static readonly IQueryInternalDirectory _internalDirectory = new QueryInternalDirectory(_settings, new QueryFileSystemInfo(_fileSystem.DirectoryInfo), _fileSystem.Directory);
         private static readonly FolderHelper _folderHelper = new FolderHelper(new DriveInformation(), new FolderLinksSettings(_settings));
+        private static readonly IEnvironmentHelper _environmentHelper = new EnvironmentHelper();
+        private static readonly IQueryEnvironmentVariable _queryEnvironmentVariable = new QueryEnvironmentVariable(_fileSystem.Directory, _environmentHelper);
 
         private static readonly ICollection<IFolderProcessor> _processors = new IFolderProcessor[]
         {
             new UserFolderProcessor(_folderHelper),
             new InternalDirectoryProcessor(_folderHelper, _internalDirectory),
+            new EnvironmentVariableProcessor(_environmentHelper, _queryEnvironmentVariable),
         };
 
         private static PluginInitContext _context;
         private IContextMenu _contextMenuLoader;
         private bool _disposed;
+
+        public string Name => Properties.Resources.wox_plugin_folder_plugin_name;
+
+        public string Description => Properties.Resources.wox_plugin_folder_plugin_description;
 
         public void Save()
         {
@@ -119,10 +125,6 @@ namespace Microsoft.Plugin.Folder
             return _contextMenuLoader.LoadContextMenus(selectedResult);
         }
 
-        public void UpdateSettings(PowerLauncherSettings settings)
-        {
-        }
-
         public void Dispose()
         {
             Dispose(disposing: true);
@@ -135,7 +137,11 @@ namespace Microsoft.Plugin.Folder
             {
                 if (disposing)
                 {
-                    _context.API.ThemeChanged -= OnThemeChanged;
+                    if (_context != null && _context.API != null)
+                    {
+                        _context.API.ThemeChanged -= OnThemeChanged;
+                    }
+
                     _disposed = true;
                 }
             }

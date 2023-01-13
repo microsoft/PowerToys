@@ -1,4 +1,4 @@
-﻿// Copyright (c) Brice Lambson
+// Copyright (c) Brice Lambson
 // The Brice Lambson licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.  Code forked from Brice Lambson's https://github.com/bricelam/ImageResizer/
 
@@ -8,7 +8,6 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Threading;
-using Xunit;
 using IOPath = System.IO.Path;
 
 namespace ImageResizer
@@ -32,8 +31,7 @@ namespace ImageResizer
         public IEnumerable<string> FileNames
             => Files.Select(IOPath.GetFileName);
 
-        public string File()
-            => Assert.Single(Files);
+        public string File() => Files.Single();
 
         public static implicit operator string(TestDirectory directory)
         {
@@ -59,17 +57,13 @@ namespace ImageResizer
                             Directory.Delete(_path, recursive: true);
                             break;
                         }
-#pragma warning disable CA1031 // Do not catch general exception types
                         catch
-#pragma warning restore CA1031 // Do not catch general exception types
                         {
                             Thread.Sleep(150);
                         }
                     }
                 }
 
-                // TODO: free unmanaged resources (unmanaged objects) and override finalizer
-                // TODO: set large fields to null
                 disposedValue = true;
             }
         }

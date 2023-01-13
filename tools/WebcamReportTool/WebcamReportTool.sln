@@ -1,0 +1,31 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.1.32414.318
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "WebcamReportTool", "WebcamReportTool.vcxproj", "{FC9599B4-68CD-E14B-71D7-456FDD8D0845}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|ARM64 = Debug|ARM64
+		Debug|x64 = Debug|x64
+		Release|ARM64 = Release|ARM64
+		Release|x64 = Release|x64
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{FC9599B4-68CD-E14B-71D7-456FDD8D0845}.Debug|ARM64.ActiveCfg = Debug|ARM64
+		{FC9599B4-68CD-E14B-71D7-456FDD8D0845}.Debug|ARM64.Build.0 = Debug|ARM64
+		{FC9599B4-68CD-E14B-71D7-456FDD8D0845}.Debug|x64.ActiveCfg = Debug|x64
+		{FC9599B4-68CD-E14B-71D7-456FDD8D0845}.Debug|x64.Build.0 = Debug|x64
+		{FC9599B4-68CD-E14B-71D7-456FDD8D0845}.Release|ARM64.ActiveCfg = Release|ARM64
+		{FC9599B4-68CD-E14B-71D7-456FDD8D0845}.Release|ARM64.Build.0 = Release|ARM64
+		{FC9599B4-68CD-E14B-71D7-456FDD8D0845}.Release|x64.ActiveCfg = Release|x64
+		{FC9599B4-68CD-E14B-71D7-456FDD8D0845}.Release|x64.Build.0 = Release|x64
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {536C9E03-09C5-4CAA-AA5E-D62D34A5C09A}
+	EndGlobalSection
+EndGlobal

@@ -3,9 +3,10 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.Globalization;
 using System.Windows;
+using System.Windows.Automation.Peers;
 using System.Windows.Controls;
-using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Animation;
 using ColorPicker.Helpers;
@@ -21,6 +22,8 @@ namespace ColorPicker.Controls
         public static readonly DependencyProperty ColorFormatModelProperty = DependencyProperty.Register("ColorFormatModel", typeof(ColorFormatModel), typeof(ColorFormatControl), new PropertyMetadata(ColorFormatModelPropertyChanged));
 
         public static readonly DependencyProperty SelectedColorProperty = DependencyProperty.Register("SelectedColor", typeof(Color), typeof(ColorFormatControl), new PropertyMetadata(SelectedColorPropertyChanged));
+
+        public static readonly DependencyProperty SelectedColorCopyHelperTextProperty = DependencyProperty.Register("SelectedColorCopyHelperText", typeof(string), typeof(ColorFormatControl));
 
         public static readonly DependencyProperty ColorCopiedNotificationBorderProperty = DependencyProperty.Register("ColorCopiedNotificationBorder", typeof(FrameworkElement), typeof(ColorFormatControl), new PropertyMetadata(ColorCopiedBorderPropertyChanged));
 
@@ -46,6 +49,12 @@ namespace ColorPicker.Controls
             set { SetValue(ColorCopiedNotificationBorderProperty, value); }
         }
 
+        public string SelectedColorCopyHelperText
+        {
+            get { return (string)GetValue(SelectedColorCopyHelperTextProperty); }
+            set { SetValue(SelectedColorCopyHelperTextProperty, value); }
+        }
+
         public ColorFormatControl()
         {
             InitializeComponent();
@@ -56,6 +65,7 @@ namespace ColorPicker.Controls
         private void CopyToClipboardButton_Click(object sender, RoutedEventArgs e)
         {
             ClipboardHelper.CopyToClipboard(ColorTextRepresentationTextBlock.Text);
+            SessionEventHelper.Event.EditorColorCopiedToClipboard = true;
             if (!_copyIndicatorVisible)
             {
                 AppearCopiedIndicator();
@@ -66,12 +76,17 @@ namespace ColorPicker.Controls
 
         private static void SelectedColorPropertyChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
         {
-            ((ColorFormatControl)d).ColorTextRepresentationTextBlock.Text = ((ColorFormatControl)d).ColorFormatModel.Convert((Color)e.NewValue);
+            var self = (ColorFormatControl)d;
+            var colorText = self.ColorFormatModel.GetColorText((Color)e.NewValue);
+            self.ColorTextRepresentationTextBlock.Text = colorText;
+            self.ColorTextRepresentationTextBlock.ToolTip = colorText;
+            self.SelectedColorCopyHelperText = string.Format(CultureInfo.InvariantCulture, "{0} {1}", self.ColorFormatModel.FormatName, colorText);
         }
 
         private static void ColorFormatModelPropertyChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
         {
             ((ColorFormatControl)d).FormatNameTextBlock.Text = ((ColorFormatModel)e.NewValue).FormatName;
+            ((ColorFormatControl)d).FormatNameTextBlock.ToolTip = ((ColorFormatModel)e.NewValue).FormatName;
         }
 
         private static void ColorCopiedBorderPropertyChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
@@ -89,6 +104,20 @@ namespace ColorPicker.Controls
             resize.EasingFunction = new CubicEase() { EasingMode = EasingMode.EaseInOut };
             ColorCopiedNotificationBorder.BeginAnimation(Border.OpacityProperty, opacityAppear);
             ColorCopiedNotificationBorder.BeginAnimation(Border.HeightProperty, resize);
+
+            var clipboardNotification = ((Decorator)ColorCopiedNotificationBorder).Child;
+            if (clipboardNotification == null)
+            {
+                return;
+            }
+
+            var peer = UIElementAutomationPeer.FromElement(clipboardNotification);
+            if (peer == null)
+            {
+                peer = UIElementAutomationPeer.CreatePeerForElement(clipboardNotification);
+            }
+
+            peer.RaiseAutomationEvent(AutomationEvents.MenuOpened);
         }
 
         private void HideCopiedIndicator()

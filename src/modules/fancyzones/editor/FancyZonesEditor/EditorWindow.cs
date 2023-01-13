@@ -4,15 +4,16 @@
 
 using System;
 using System.Windows;
+using FancyZonesEditor.Logs;
 using FancyZonesEditor.Models;
-using MahApps.Metro.Controls;
 
 namespace FancyZonesEditor
 {
-    public class EditorWindow : MetroWindow
+    public class EditorWindow : Window
     {
         protected void OnSaveApplyTemplate(object sender, RoutedEventArgs e)
         {
+            Logger.LogTrace();
             var mainEditor = App.Overlay;
             if (mainEditor.CurrentDataContext is LayoutModel model)
             {
@@ -24,29 +25,27 @@ namespace FancyZonesEditor
                 }
 
                 model.Persist();
+
+                MainWindowSettingsModel settings = ((App)Application.Current).MainWindowSettings;
+                settings.SetAppliedModel(model);
+                App.Overlay.SetLayoutSettings(App.Overlay.Monitors[App.Overlay.CurrentDesktop], model);
             }
 
-            LayoutModel.SerializeDeletedCustomZoneSets();
+            App.FancyZonesEditorIO.SerializeLayoutTemplates();
+            App.FancyZonesEditorIO.SerializeCustomLayouts();
+            App.FancyZonesEditorIO.SerializeAppliedLayouts();
 
-            _backToLayoutPicker = false;
             Close();
-            mainEditor.CloseEditor();
         }
 
         protected void OnClosed(object sender, EventArgs e)
         {
-            if (_backToLayoutPicker)
-            {
-                App.Overlay.CloseEditor();
-            }
+            App.Overlay.CloseEditor();
         }
 
         protected void OnCancel(object sender, RoutedEventArgs e)
         {
-            _backToLayoutPicker = true;
             Close();
         }
-
-        private bool _backToLayoutPicker = true;
     }
 }

@@ -1,5 +1,15 @@
 # Dev Documentation
 
+## Fork, Clone, Branch and Create your PR
+
+Once you've discussed your proposed feature/fix/etc. with a team member, and you've agreed an approach or a spec has been written and approved, it's time to start development:
+
+1. Fork the repo if you haven't already
+1. Clone your fork locally
+1. Create & push a feature branch
+1. Create a [Draft Pull Request (PR)](https://github.blog/2019-02-14-introducing-draft-pull-requests/)
+1. Work on your changes
+
 ## Rules
 
 - **Follow the pattern of what you already see in the code.**
@@ -8,13 +18,14 @@
 - Package new ideas into classes or refactor existing ideas into a class as you extend.
 - When adding new classes/methods/changing existing code: add new unit tests or update the existing tests.
 
-## Github Workflow
+## GitHub Workflow
 
 - Before starting to work on a fix/feature, make sure there is an open issue to track the work.
 - Add the `In progress` label to the issue, if not already present also add a `Cost-Small/Medium/Large` estimate and make sure all appropriate labels are set.
 - If you are a community contributor, you will not be able to add labels to the issue, in that case just add a comment saying that you started to work on the issue and try to give an estimate for the delivery date.
 - If the work item has a medium/large cost, using the markdown task list, list each sub item and update the list with a check mark after completing each sub item.
 - When opening a PR, follow the PR template.
+- When you'd like the team to take a look, (even if the work is not yet fully-complete), mark the PR as 'Ready For Review' so that the team can review your work and provide comments, suggestions, and request changes. It may take several cycles, but the end result will be solid, testable, conformant code that is safe for us to merge.
 - When the PR is approved, let the owner of the PR merge it. For community contributions the reviewer that approved the PR can also merge it.
 - Use the `Squash and merge` option to merge a PR, if you don't want to squash it because there are logically different commits, use `Rebase and merge`.
 - We don't close issues automatically when referenced in a PR, so after the PR is merged:
@@ -22,89 +33,95 @@
   - don't close the issue if it's a bug in the current released version since users tend to not search for closed issues, we will close the resolved issues when a new version is released.
   - if it's not a code fix that effects the end user, the issue can be closed (for example a fix in the build or a code refactoring and so on).
 
-## Repository Overview
-
-General project organization:
-
-### The [`doc`](/doc) folder
-
-Documentation for the project.
-
-### The [`Wiki`](https://github.com/microsoft/PowerToys/wiki)
-
-The Wiki contains the current specs for the project.
-
-### The [`installer`](/installer) folder
-
-Contains the source code of the PowerToys installer.
-
-### The [`src`](/src) folder
-
-Contains the source code of the PowerToys runner and of all of the PowerToys modules. **This is where most of the magic happens.**
-
-### The [`tools`](/tools) folder
-
-Various tools used by PowerToys. Includes the Visual Studio 2019 project template for new PowerToys.
-
 ## Compiling PowerToys
 
 ### Prerequisites for Compiling PowerToys
 
 1. Windows 10 April 2018 Update (version 1803) or newer
-2. Visual Studio Community/Professional/Enterprise 2019
-3. Run the command below in cmd/terminal to install all the workloads and components for VS.
+1. Visual Studio Community/Professional/Enterprise 2022 17.4 or newer
+1. Git clone PowerToys repository 
+1. Open started the `PowerToys.sln`
+1. If you see a dialog that says `install extra components` in the solution explorer pane, click `install`
 
-```shell
-cd "%ProgramFiles(x86)%\Microsoft Visual Studio\2019"
-SET targetFolder="\"
-IF EXIST Preview\NUL (SET targetFolder=Preview)
-IF EXIST Enterprise\NUL (SET targetFolder=Enterprise)
-IF EXIST Professional\NUL (SET targetFolder=Professional)
-IF EXIST Community\NUL (SET targetFolder=Community)
+### Get Submodules to compile
+We have submodules that need to be initialized before you can compile most parts of PowerToys.  This should be a one time step.
 
-ECHO %targetFolder%
-
-"%ProgramFiles(x86)%\Microsoft Visual Studio\Installer\vs_installer.exe" ^
-modify --installpath "%ProgramFiles(x86)%\Microsoft Visual Studio\2019\%targetFolder%" ^
---add Microsoft.VisualStudio.Workload.NativeDesktop ^
---add Microsoft.VisualStudio.Workload.ManagedDesktop ^
---add Microsoft.VisualStudio.Workload.Universal ^
---add Microsoft.VisualStudio.Component.Windows10SDK.17134 ^
---add Microsoft.VisualStudio.ComponentGroup.UWP.VC ^
---add Microsoft.VisualStudio.Component.VC.Runtimes.x86.x64.Spectre ^
---add Microsoft.VisualStudio.Component.VC.ATL.Spectre
-```
+1. Open a terminal
+1. Navigate to the folder you cloned PowerToys to.
+1. Run `git submodule update --init --recursive`
 
 ### Compiling Source Code
 
-- Open `powertoys.sln` in Visual Studio, in the `Solutions Configuration` drop-down menu select `Release` or `Debug`, from the `Build` menu choose `Build Solution`.
-- The PowerToys binaries will be in your repo under `x64\Release`.
-- If you want to copy the `PowerToys.exe` binary to a different location, you'll also need to copy the `modules` and the `svgs` folders.
+- Open `PowerToys.sln` in Visual Studio, in the `Solutions Configuration` drop-down menu select `Release` or `Debug`, from the `Build` menu choose `Build Solution`.
+- The PowerToys binaries will be in your repo under `x64\Release\`.
+- You can run `x64\Release\PowerToys.exe` directly without installing PowerToys, but some modules (i.e. PowerRename, ImageResizer, File Explorer extension etc.) will not be available unless you also build the installer and install PowerToys.
 
-## Building the Installers
+## Compile the installer
 
-Our installer is two parts, an EXE and an MSI.  The EXE contains the MSI and handles more complex install logic. 
-- The EXE installs all prerequisites and installs PowerToys via the MSI. Also has additional features, such as silent installation flags
-- The MSI installs PowerToys.
+Our installer is two parts, an EXE and an MSI.  The EXE (Bootstrapper) contains the MSI and handles more complex installation logic. 
+- The EXE installs all prerequisites and installs PowerToys via the MSI. It has additional features such as the installation flags (see below).
+- The MSI installs the PowerToys binaries.
 
-### Prerequisites Building the Installer (.MSI)
+The installer can only be compiled in `Release` mode, step 1 and 2 must be done before the MSI will be able to be compiled.
 
-1. Install the [WiX Toolset Visual Studio 2019 Extension](https://marketplace.visualstudio.com/items?itemName=RobMensching.WiXToolset).
-2. Install the [WiX Toolset build tools](https://wixtoolset.org/releases/).
+1. Compile `PowerToys.sln`. Instructions are listed above.
+1. Compile `BugReportTool.sln` tool. Path from root: `tools\BugReportTool\BugReportTool.sln` (details listed below)
+1. Compile `WebcamReportTool.sln` tool. Path from root: `tools\WebcamReportTool\WebcamReportTool.sln` (details listed below)
+1. Compile `StylesReportTool.sln` tool. Path from root: `tools\StylesReportTool\StylesReportTool.sln` (details listed below)
+1. Compile `PowerToysSetup.sln` Path from root: `installer\PowerToysSetup.sln` (details listed below)
 
-### Compiling Installer (.MSI)
+### Prerequisites for building the MSI installer
 
-- From the `installer` folder open `PowerToysSetup.sln` in Visual Studio, in the `Solutions Configuration` drop-down menu select `Release`, from the `Build` menu choose `Build Solution`.
-- The resulting `PowerToysSetup.msi` installer will be available in the `installer\PowerToysSetup\x64\Release\` folder.
+1. Install the [WiX Toolset Visual Studio 2022 Extension](https://marketplace.visualstudio.com/items?itemName=WixToolset.WixToolsetVisualStudio2022Extension).
+1. Install the [WiX Toolset build tools](https://wixtoolset.org/releases/v3-14-0-6526/).
+1. Download [WiX binaries](https://wixtoolset.org/downloads/v3.14.0.6526/wix314-binaries.zip) and extract `wix.targets` to `C:\Program Files (x86)\WiX Toolset v3.14`.
 
-### Compiling Bootstrapper Installer (.EXE)
+### Locally building the installer prerequisite projects all at once from the command-line
 
-- MSI Installer needs to be built in release mode
-- Build `PowerToysBootstrapper` solution (`installer\PowerToysBootstrapper\`)
+1. Open a `Developer Command Prompt for VS 2022`
+1. Ensure `nuget.exe` is in your `%path%`
+1. In the repo root, run these commands:
+  
+```
+nuget restore .\tools\BugReportTool\BugReportTool.sln
+msbuild -p:Platform=x64 -p:Configuration=Release .\tools\BugReportTool\BugReportTool.sln
 
-#### Supported arguments for EXE installer:
+nuget restore .\tools\WebcamReportTool\WebcamReportTool.sln
+msbuild -p:Platform=x64 -p:Configuration=Release .\tools\WebcamReportTool\WebcamReportTool.sln
 
-Head over to the wiki to get the [full list of supported installer arguments][installerArgWiki].
+nuget restore .\tools\StylesReportTool\StylesReportTool.sln
+msbuild -p:Platform=x64 -p:Configuration=Release .\tools\StylesReportTool\StylesReportTool.sln
+```
+
+### Locally compiling the Bug reporting tool
+
+1. Open `tools\BugReportTool\BugReportTool.sln`
+1. In Visual Studio, in the `Solutions Configuration` drop-down menu select `Release`
+1. From the `Build` menu, choose `Build Solution`.
+
+### Locally compiling the Webcam reporting tool
+
+1. Open `tools\WebcamReportTool\WebcamReportTool.sln`
+1. In Visual Studio, in the `Solutions Configuration` drop-down menu select `Release`
+1. From the `Build` menu, choose `Build Solution`.
+
+### Locally compiling the Window styles reporting tool
+
+1. Open `tools\StylesReportTool\StylesReportTool.sln`
+1. In Visual Studio, in the `Solutions Configuration` drop-down menu select `Release`
+1. From the `Build` menu, choose `Build Solution`.
+
+### Locally compiling the installer
+
+1. Open `installer\PowerToysSetup.sln`
+1. In Visual Studio, in the `Solutions Configuration` drop-down menu select `Release`
+1. From the `Build` menu choose `Build Solution`.
+
+The resulting `PowerToysSetup.msi` installer will be available in the `installer\PowerToysSetup\x64\Release\` folder.
+
+#### Supported arguments for the .EXE Bootstrapper installer
+
+Head over to the wiki to see the [full list of supported installer arguments][installerArgWiki].
 
 ## Debugging
 
@@ -144,39 +161,6 @@ Definition of the interface used by the [`runner`](/src/runner) to manage the Po
 
 The common lib, as the name suggests, contains code shared by multiple PowerToys components and modules, e.g. [json parsing](/src/common/json.h) and [IPC primitives](/src/common/two_way_pipe_message_ipc.h).
 
-### [`Settings`](settings.md)
+### [`Settings`](settingsv2/)
 
-WebView project for editing the PowerToys settings.
-
-The html portion of the project that is shown in the WebView is contained in [`settings-html`](/src/settings/settings-html).
-Instructions on how build a new version and update this project are in the [Web project for the Settings UI](./settings-web.md).
-
-While developing, it's possible to connect the WebView to the development server running in localhost by setting the `_DEBUG_WITH_LOCALHOST` flag to `1` and following the instructions near it in `./main.cpp`.
-
-### [`Settings-web`](settings-web.md)
-This project generates the web UI shown in the [PowerToys Settings](/src/editor).
-It's a `ReactJS` project created using [Fluent UI](https://developer.microsoft.com/en-us/fluentui#/).
-
-## Current modules
-### [`FancyZones`](modules/fancyzones.md)
-The FancyZones PowerToy that allows users to create custom zones on the screen, to which the windows will snap when moved.
-
-### [`PowerRename`](modules/powerrename.md)
-PowerRename is a Windows Shell Context Menu Extension for advanced bulk renaming using simple search and replace or more powerful regular expression matching.
-
-### [`Shortcut Guide`](modules/shortcut_guide.md)
-The Windows Shortcut Guide, displayed when the WinKey is held for some time.
-
-#### Options
-
-This module has a setting to serve as an example for each of the currently implemented settings property:
-
-- BoolToggle property
-- IntSpinner property
-- String property
-- ColorPicker property
-- CustomAction property
-
-![Image of the Options](/doc/images/settings/example_settings.png)
-
-[installerArgWiki]: https://github.com/microsoft/PowerToys/wiki/Installer-arguments-for-exe
+Settings v2 is our current settings implementation.  Please head over to the dev docs that goes into the current settings system.

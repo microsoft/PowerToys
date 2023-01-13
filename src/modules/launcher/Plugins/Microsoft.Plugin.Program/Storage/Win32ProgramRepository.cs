@@ -6,7 +6,6 @@ using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.Globalization;
 using System.IO;
 using System.IO.Abstractions;
 using System.Threading.Tasks;
@@ -24,7 +23,6 @@ namespace Microsoft.Plugin.Program.Storage
         private const string LnkExtension = ".lnk";
         private const string UrlExtension = ".url";
 
-        private IStorage<IList<Programs.Win32Program>> _storage;
         private ProgramPluginSettings _settings;
         private IList<IFileSystemWatcherWrapper> _fileSystemWatcherHelpers;
         private string[] _pathsToWatch;
@@ -33,10 +31,9 @@ namespace Microsoft.Plugin.Program.Storage
 
         private static ConcurrentQueue<string> commonEventHandlingQueue = new ConcurrentQueue<string>();
 
-        public Win32ProgramRepository(IList<IFileSystemWatcherWrapper> fileSystemWatcherHelpers, IStorage<IList<Win32Program>> storage, ProgramPluginSettings settings, string[] pathsToWatch)
+        public Win32ProgramRepository(IList<IFileSystemWatcherWrapper> fileSystemWatcherHelpers, ProgramPluginSettings settings, string[] pathsToWatch)
         {
             _fileSystemWatcherHelpers = fileSystemWatcherHelpers;
-            _storage = storage ?? throw new ArgumentNullException(nameof(storage), "Win32ProgramRepository requires an initialized storage interface");
             _settings = settings ?? throw new ArgumentNullException(nameof(settings), "Win32ProgramRepository requires an initialized settings object");
             _pathsToWatch = pathsToWatch;
             _numberOfPathsToWatch = pathsToWatch.Length;
@@ -92,15 +89,14 @@ namespace Microsoft.Plugin.Program.Storage
             }
         }
 
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "Intentionally keeping the process alive>")]
         private void OnAppRenamed(object sender, RenamedEventArgs e)
         {
             string oldPath = e.OldFullPath;
             string newPath = e.FullPath;
 
             string extension = Path.GetExtension(newPath);
-            Win32Program.ApplicationType appType = Win32Program.GetAppTypeFromPath(newPath);
-            Programs.Win32Program newApp = Programs.Win32Program.GetAppFromPath(newPath);
+            Win32Program.ApplicationType oldAppType = Win32Program.GetAppTypeFromPath(oldPath);
+            Programs.Win32Program newApp = Win32Program.GetAppFromPath(newPath);
             Programs.Win32Program oldApp = null;
 
             // Once the shortcut application is renamed, the old app does not exist and therefore when we try to get the FullPath we get the lnk path instead of the exe path
@@ -109,13 +105,9 @@ namespace Microsoft.Plugin.Program.Storage
             // This situation is not encountered for other application types because the fullPath is the path itself, instead of being computed by using the path to the app.
             try
             {
-                if (appType == Win32Program.ApplicationType.ShortcutApplication)
+                if (oldAppType == Win32Program.ApplicationType.ShortcutApplication || oldAppType == Win32Program.ApplicationType.InternetShortcutApplication)
                 {
-                    oldApp = new Win32Program() { Name = Path.GetFileNameWithoutExtension(e.OldName), ExecutableName = newApp.ExecutableName, FullPath = newApp.FullPath };
-                }
-                else if (appType == Win32Program.ApplicationType.InternetShortcutApplication)
-                {
-                    oldApp = new Win32Program() { Name = Path.GetFileNameWithoutExtension(e.OldName), ExecutableName = Path.GetFileName(e.OldName), FullPath = newApp.FullPath };
+                    oldApp = new Win32Program() { Name = Path.GetFileNameWithoutExtension(e.OldName), ExecutableName = Path.GetFileName(e.OldName), FullPath = newApp?.FullPath ?? oldPath };
                 }
                 else
                 {
@@ -124,13 +116,20 @@ namespace Microsoft.Plugin.Program.Storage
             }
             catch (Exception ex)
             {
-                Log.Exception($"OnAppRenamed-{extension}Program|{oldPath}|Unable to create program from {oldPath}", ex, GetType());
+                Log.Exception($"OnAppRenamed-{extension} Program|{e.OldName}|Unable to create program from {oldPath}", ex, GetType());
             }
 
             // To remove the old app which has been renamed and to add the new application.
             if (oldApp != null)
             {
-                Remove(oldApp);
+                if (string.IsNullOrWhiteSpace(oldApp.Name) || string.IsNullOrWhiteSpace(oldApp.ExecutableName) || string.IsNullOrWhiteSpace(oldApp.FullPath))
+                {
+                    Log.Warn($"Old app data was not initialized properly for removal after file renaming. This likely means it was not a valid app to begin with and removal is not needed. OldFullPath: {e.OldFullPath}; OldName: {e.OldName}; FullPath: {e.FullPath}", GetType());
+                }
+                else
+                {
+                    Remove(oldApp);
+                }
             }
 
             if (newApp != null)
@@ -139,7 +138,6 @@ namespace Microsoft.Plugin.Program.Storage
             }
         }
 
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "Intentionally keeping the process alive")]
         private void OnAppDeleted(object sender, FileSystemEventArgs e)
         {
             string path = e.FullPath;
@@ -153,6 +151,11 @@ namespace Microsoft.Plugin.Program.Storage
                 if (extension.Equals(LnkExtension, StringComparison.OrdinalIgnoreCase))
                 {
                     app = GetAppWithSameLnkResolvedPath(path);
+                    if (app == null)
+                    {
+                        // Cancelled links won't have a resolved path.
+                        app = GetAppWithSameNameAndExecutable(Path.GetFileNameWithoutExtension(path), Path.GetFileName(path));
+                    }
                 }
                 else if (extension.Equals(UrlExtension, StringComparison.OrdinalIgnoreCase))
                 {
@@ -175,6 +178,7 @@ namespace Microsoft.Plugin.Program.Storage
         }
 
         // When a URL application is deleted, we can no longer get the HashCode directly from the path because the FullPath a Url app is the URL obtained from reading the file
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Globalization", "CA1309:Use ordinal string comparison", Justification = "Using CurrentCultureIgnoreCase since application names could be dependent on currentculture See: https://github.com/microsoft/PowerToys/pull/5847/files#r468245190")]
         private Win32Program GetAppWithSameNameAndExecutable(string name, string executableName)
         {
             foreach (Win32Program app in Items)
@@ -236,18 +240,8 @@ namespace Microsoft.Plugin.Program.Storage
         public void IndexPrograms()
         {
             var applications = Programs.Win32Program.All(_settings);
+            Log.Info($"Indexed {applications.Count} win32 applications", GetType());
             SetList(applications);
-        }
-
-        public void Save()
-        {
-            _storage.Save(Items);
-        }
-
-        public void Load()
-        {
-            var items = _storage.TryLoad(Array.Empty<Win32Program>());
-            SetList(items);
         }
     }
 }

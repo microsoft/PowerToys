@@ -2,20 +2,22 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-using System;
 using FancyZonesEditor.Models;
 
 namespace FancyZonesEditor
 {
     public class LayoutSettings
     {
-        public static bool DefaultShowSpacing => true;
+        // TODO: share the constants b/w C# Editor and FancyZoneLib
+        public const bool DefaultShowSpacing = true;
 
-        public static int DefaultSpacing => 16;
+        public const int DefaultSpacing = 16;
 
-        public static int DefaultZoneCount => 3;
+        public const int DefaultZoneCount = 3;
 
-        public static int DefaultSensitivityRadius => 20;
+        public const int DefaultSensitivityRadius = 20;
+
+        public const int MaxZones = 128;
 
         public string ZonesetUuid { get; set; } = string.Empty;
 

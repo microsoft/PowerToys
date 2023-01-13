@@ -3,7 +3,7 @@
 
 
 ## Debugging Prerequisite
-Setup development environment for PowerToys by following instruction [here.](https://github.com/microsoft/PowerToys/tree/master/doc/devdocs#prerequisites-for-compiling-powertoys)
+Setup development environment for PowerToys by following instruction [here.](https://github.com/microsoft/PowerToys/tree/main/doc/devdocs#prerequisites-for-compiling-powertoys)
 
 ## Direct debugging
 This approach is used to test UI, plugins, and core `PowerToys Run` functionality. This **cannot** be used to test `PowerToys Run` settings. The approach is significantly faster compared to `Debugging with runner`, as it requires compiling projects relevant to `PowerToys Run`. Please follow the steps below for direct debugging.

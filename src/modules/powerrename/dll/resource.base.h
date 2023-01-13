@@ -6,8 +6,8 @@
 // Non-localizable
 
 #define FILE_DESCRIPTION "PowerToys PowerRenameExt"
-#define INTERNAL_NAME "PowerRenameExt"
-#define ORIGINAL_FILENAME "PowerRenameExt.dll"
+#define INTERNAL_NAME "PowerToys.PowerRenameExt"
+#define ORIGINAL_FILENAME "PowerToys.PowerRenameExt.dll"
 #define IDI_RENAME                      2001
 #define IDS_OVERVIEW_LINK               2002
 

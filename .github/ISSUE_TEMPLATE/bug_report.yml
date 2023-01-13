@@ -1,0 +1,107 @@
+name: "🕷️ Bug report"
+description: Report errors or unexpected behavior
+labels:
+- Issue-Bug
+- Needs-Triage
+body:
+- type: markdown
+  attributes:
+    value: Please make sure to [search for existing issues](https://github.com/microsoft/PowerToys/issues) before filing a new one!
+- type: input
+  attributes:
+    label: Microsoft PowerToys version
+    placeholder: 0.63.0
+    description: Hover over system tray icon or look at Settings
+  validations:
+    required: true
+
+- type: dropdown
+  attributes:
+    label: Installation method
+    description: How / Where was PowerToys installed from?
+    multiple: true
+    options:
+      - GitHub
+      - PowerToys auto-update
+      - Microsoft Store
+      - WinGet
+      - Chocolatey
+      - Scoop
+      - Dev build in Visual Studio
+      - Other (please specify in "Steps to Reproduce")
+  validations:
+    required: true
+
+- type: dropdown
+  attributes:
+    label: Running as admin
+    description: Are you running PowerToys as Admin?
+    options:
+      - "Yes"
+      - "No"
+
+- type: dropdown
+  attributes:
+    label: Area(s) with issue?
+    description: What things had an issue? Check all that apply.
+    multiple: true
+    options:
+      - General
+      - Always on Top
+      - Awake
+      - ColorPicker
+      - FancyZones
+      - FancyZones Editor 
+      - File Locksmith 
+      - "File Explorer: Preview Pane"
+      - "File Explorer: Thumbnail preview"
+      - Hosts File Editor
+      - Image Resizer
+      - Installer
+      - Keyboard Manager
+      - Mouse Utilities
+      - PowerRename
+      - PowerToys Run
+      - Quick Accent
+      - Screen ruler
+      - Settings
+      - Shortcut Guide
+      - System tray interaction
+      - TextExtractor
+      - Video Conference Mute
+      - Welcome / PowerToys Tour window
+  validations:
+    required: true
+
+- type: textarea
+  attributes:
+    label: Steps to reproduce
+    description: We highly suggest including screenshots and a bug report log (System tray > Report bug).
+    placeholder: Having detailed steps helps us reproduce the bug. 
+  validations:
+    required: true
+
+- type: textarea
+  attributes:
+    label: ✔️ Expected Behavior
+    placeholder: What were you expecting?
+  validations:
+    required: false
+
+- type: textarea
+  attributes:
+    label: ❌ Actual Behavior
+    placeholder: What happened instead?
+  validations:
+    required: false
+
+- type: textarea
+  attributes:
+    label: Other Software
+    description: If you're reporting a bug about our interaction with other software, what software? What versions?
+    placeholder: |
+      vim 8.2 (inside WSL)
+      OpenSSH_for_Windows_8.1p1
+      My Cool Application v0.3 (include a code snippet if it would help!)
+  validations:
+    required: false

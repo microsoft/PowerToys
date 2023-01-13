@@ -5,14 +5,16 @@
 using System;
 using System.Diagnostics;
 using System.Globalization;
+using System.IO;
 using System.IO.Abstractions;
+using interop;
 
 namespace ColorPicker.Helpers
 {
     public static class Logger
     {
         private static readonly IFileSystem _fileSystem = new FileSystem();
-        private static readonly string ApplicationLogPath = _fileSystem.Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "ColorPicker");
+        private static readonly string ApplicationLogPath = Path.Combine(Constants.AppDataPath(), "ColorPicker\\Logs");
 
         static Logger()
         {

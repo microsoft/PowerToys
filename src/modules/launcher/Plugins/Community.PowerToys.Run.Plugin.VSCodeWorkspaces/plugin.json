@@ -1,0 +1,14 @@
+{
+  "ID": "525995402BEF4A8CA860D92F6D108092",
+  "Disabled": true,
+  "ActionKeyword": "{",
+  "Name": "VS Code Workspaces",
+  "Author": "ricardosantos9521",
+  "Version": "1.1.0",
+  "Language": "csharp",
+  "Website": "https://github.com/ricardosantos9521/PowerToys/",
+  "ExecuteFileName": "Community.PowerToys.Run.Plugin.VSCodeWorkspaces.dll",
+  "IsGlobal": false,
+  "IcoPathDark": "Images\\code-dark.png",
+  "IcoPathLight": "Images\\code-light.png"
+}

@@ -3,8 +3,8 @@
 // See the LICENSE file in the project root for more information.
 
 using System.Windows;
-using System.Windows.Interactivity;
 using ColorPicker.Helpers;
+using Microsoft.Xaml.Behaviors;
 
 namespace ColorPicker.Behaviors
 {

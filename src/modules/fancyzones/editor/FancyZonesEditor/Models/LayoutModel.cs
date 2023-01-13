@@ -4,10 +4,9 @@
 
 using System;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.ComponentModel;
+using System.Globalization;
 using System.Runtime.CompilerServices;
-using System.Text.Json;
 
 namespace FancyZonesEditor.Models
 {
@@ -19,6 +18,8 @@ namespace FancyZonesEditor.Models
         {
             _guid = Guid.NewGuid();
             Type = LayoutType.Custom;
+
+            MainWindowSettingsModel.DefaultLayouts.PropertyChanged += DefaultLayouts_PropertyChanged;
         }
 
         protected LayoutModel(string name)
@@ -42,6 +43,18 @@ namespace FancyZonesEditor.Models
             Type = type;
         }
 
+        protected LayoutModel(LayoutModel other)
+        {
+            _guid = other._guid;
+            _name = other._name;
+            Type = other.Type;
+            _isSelected = other._isSelected;
+            _isApplied = other._isApplied;
+            _sensitivityRadius = other._sensitivityRadius;
+            _zoneCount = other._zoneCount;
+            _quickKey = other._quickKey;
+        }
+
         // Name - the display name for this layout model - is also used as the key in the registry
         public string Name
         {
@@ -55,7 +68,7 @@ namespace FancyZonesEditor.Models
                 if (_name != value)
                 {
                     _name = value;
-                    FirePropertyChanged();
+                    FirePropertyChanged(nameof(Name));
                 }
             }
         }
@@ -64,7 +77,9 @@ namespace FancyZonesEditor.Models
 
         public LayoutType Type { get; set; }
 
+#pragma warning disable CA1720 // Identifier contains type name (Not worth the effort to change this now.)
         public Guid Guid
+#pragma warning restore CA1720 // Identifier contains type name
         {
             get
             {
@@ -82,6 +97,14 @@ namespace FancyZonesEditor.Models
             }
         }
 
+        public bool IsCustom
+        {
+            get
+            {
+                return Type == LayoutType.Custom;
+            }
+        }
+
         // IsSelected (not-persisted) - tracks whether or not this LayoutModel is selected in the picker
         // TODO: once we switch to a picker per monitor, we need to move this state to the view
         public bool IsSelected
@@ -96,13 +119,14 @@ namespace FancyZonesEditor.Models
                 if (_isSelected != value)
                 {
                     _isSelected = value;
-                    FirePropertyChanged();
+                    FirePropertyChanged(nameof(IsSelected));
                 }
             }
         }
 
         private bool _isSelected;
 
+        // IsApplied (not-persisted) - tracks whether or not this LayoutModel is applied in the picker
         public bool IsApplied
         {
             get
@@ -115,12 +139,180 @@ namespace FancyZonesEditor.Models
                 if (_isApplied != value)
                 {
                     _isApplied = value;
-                    FirePropertyChanged();
+                    FirePropertyChanged(nameof(IsApplied));
                 }
             }
         }
 
         private bool _isApplied;
+
+        public bool IsHorizontalDefault
+        {
+            get
+            {
+                return MainWindowSettingsModel.DefaultLayouts.DefaultLayouts[(int)MonitorConfigurationType.Horizontal].Uuid == this.Uuid;
+            }
+        }
+
+        public bool CanBeSetAsHorizontalDefault
+        {
+            get
+            {
+                return MainWindowSettingsModel.DefaultLayouts.DefaultLayouts[(int)MonitorConfigurationType.Horizontal].Uuid != this.Uuid;
+            }
+        }
+
+        public bool IsVerticalDefault
+        {
+            get
+            {
+                return MainWindowSettingsModel.DefaultLayouts.DefaultLayouts[(int)MonitorConfigurationType.Vertical].Uuid == this.Uuid;
+            }
+        }
+
+        public bool CanBeSetAsVerticalDefault
+        {
+            get
+            {
+                return MainWindowSettingsModel.DefaultLayouts.DefaultLayouts[(int)MonitorConfigurationType.Vertical].Uuid != this.Uuid;
+            }
+        }
+
+        public int SensitivityRadius
+        {
+            get
+            {
+                return _sensitivityRadius;
+            }
+
+            set
+            {
+                if (value != _sensitivityRadius)
+                {
+                    _sensitivityRadius = value;
+                    FirePropertyChanged(nameof(SensitivityRadius));
+                }
+            }
+        }
+
+        private int _sensitivityRadius = LayoutSettings.DefaultSensitivityRadius;
+
+        public int SensitivityRadiusMinimum
+        {
+            get
+            {
+                return 0;
+            }
+        }
+
+        public int SensitivityRadiusMaximum
+        {
+            get
+            {
+                return 1000;
+            }
+        }
+
+        public List<string> QuickKeysAvailable
+        {
+            get
+            {
+                List<string> result = new List<string>();
+                foreach (var pair in MainWindowSettingsModel.LayoutHotkeys.SelectedKeys)
+                {
+                    if (string.IsNullOrEmpty(pair.Value) || pair.Value == Uuid)
+                    {
+                        result.Add(pair.Key);
+                    }
+                }
+
+                return result;
+            }
+        }
+
+        public string QuickKey
+        {
+            get
+            {
+                return _quickKey == -1 ? Properties.Resources.Quick_Key_None : _quickKey.ToString(CultureInfo.CurrentCulture);
+            }
+
+            set
+            {
+                var intValue = -1;
+                string none = Properties.Resources.Quick_Key_None;
+
+                if (value != none && int.TryParse(value, out var parsedInt))
+                {
+                    intValue = parsedInt;
+                }
+
+                if (intValue != _quickKey)
+                {
+                    string prev = _quickKey == -1 ? none : _quickKey.ToString(CultureInfo.CurrentCulture);
+                    _quickKey = intValue;
+
+                    if (intValue != -1)
+                    {
+                        MainWindowSettingsModel.LayoutHotkeys.SelectKey(value, Uuid);
+                    }
+                    else
+                    {
+                        MainWindowSettingsModel.LayoutHotkeys.FreeKey(prev);
+                    }
+
+                    FirePropertyChanged(nameof(QuickKey));
+                }
+            }
+        }
+
+        private int _quickKey = -1;
+
+        // TemplateZoneCount - number of zones selected in the picker window for template layouts
+        public int TemplateZoneCount
+        {
+            get
+            {
+                return _zoneCount;
+            }
+
+            set
+            {
+                if (value != _zoneCount)
+                {
+                    _zoneCount = value;
+                    InitTemplateZones();
+                    FirePropertyChanged(nameof(TemplateZoneCount));
+                    FirePropertyChanged(nameof(IsZoneAddingAllowed));
+                }
+            }
+        }
+
+        public int TemplateZoneCountMinimum
+        {
+            get
+            {
+                return 1;
+            }
+        }
+
+        public int TemplateZoneCountMaximum
+        {
+            get
+            {
+                return 128;
+            }
+        }
+
+        private int _zoneCount = LayoutSettings.DefaultZoneCount;
+
+        public bool IsZoneAddingAllowed
+        {
+            get
+            {
+                return TemplateZoneCount < LayoutSettings.MaxZones;
+            }
+        }
 
         // implementation of INotifyPropertyChanged
         public event PropertyChangedEventHandler PropertyChanged;
@@ -134,11 +326,16 @@ namespace FancyZonesEditor.Models
         // Removes this Layout from the registry and the loaded CustomModels list
         public void Delete()
         {
-            int i = _customModels.IndexOf(this);
+            if (_quickKey != -1)
+            {
+                MainWindowSettingsModel.LayoutHotkeys.FreeKey(QuickKey);
+            }
+
+            var customModels = MainWindowSettingsModel.CustomModels;
+            int i = customModels.IndexOf(this);
             if (i != -1)
             {
-                _customModels.RemoveAt(i);
-                _deletedCustomModels.Add(Guid.ToString().ToUpper());
+                customModels.RemoveAt(i);
             }
         }
 
@@ -146,48 +343,25 @@ namespace FancyZonesEditor.Models
         public void AddCustomLayout(LayoutModel model)
         {
             bool updated = false;
-            for (int i = 0; i < _customModels.Count && !updated; i++)
+            var customModels = MainWindowSettingsModel.CustomModels;
+            for (int i = 0; i < customModels.Count && !updated; i++)
             {
-                if (_customModels[i].Uuid == model.Uuid)
+                if (customModels[i].Uuid == model.Uuid)
                 {
-                    _customModels[i] = model;
+                    customModels[i] = model;
                     updated = true;
                 }
             }
 
             if (!updated)
             {
-                _customModels.Add(model);
+                customModels.Add(model);
             }
         }
 
-        // Add custom layouts json data that would be serialized to a temp file
-        public void AddCustomLayoutJson(JsonElement json)
-        {
-            _createdCustomLayouts.Add(json);
-        }
-
-        public static void SerializeDeletedCustomZoneSets()
-        {
-            App.FancyZonesEditorIO.SerializeDeletedCustomZoneSets(_deletedCustomModels);
-        }
-
-        public static void SerializeCreatedCustomZonesets()
-        {
-            App.FancyZonesEditorIO.SerializeCreatedCustomZonesets(_createdCustomLayouts);
-        }
-
-        // Loads all the custom Layouts from tmp file passed by FancyZonesLib
-        public static ObservableCollection<LayoutModel> LoadCustomModels()
-        {
-            _customModels = new ObservableCollection<LayoutModel>();
-            App.FancyZonesEditorIO.ParseLayouts(ref _customModels, ref _deletedCustomModels);
-            return _customModels;
-        }
-
-        private static ObservableCollection<LayoutModel> _customModels;
-        private static List<string> _deletedCustomModels = new List<string>();
-        private static List<JsonElement> _createdCustomLayouts = new List<JsonElement>();
+        // InitTemplateZones
+        // Creates zones based on template zones count
+        public abstract void InitTemplateZones();
 
         // Callbacks that the base LayoutModel makes to derived types
         protected abstract void PersistData();
@@ -197,21 +371,26 @@ namespace FancyZonesEditor.Models
         public void Persist()
         {
             PersistData();
-            Apply();
         }
 
-        public void Apply()
+        public void LayoutHotkeys_PropertyChanged(object sender, PropertyChangedEventArgs e)
         {
-            MainWindowSettingsModel settings = ((App)App.Current).MainWindowSettings;
-            settings.ResetAppliedModel();
-            IsApplied = true;
+            foreach (var pair in MainWindowSettingsModel.LayoutHotkeys.SelectedKeys)
+            {
+                if (pair.Value == Uuid)
+                {
+                    QuickKey = pair.Key.ToString();
+                    break;
+                }
+            }
+        }
 
-            // update settings
-            App.Overlay.CurrentLayoutSettings.ZonesetUuid = Uuid;
-            App.Overlay.CurrentLayoutSettings.Type = Type;
-
-            // update temp file
-            App.FancyZonesEditorIO.SerializeAppliedLayouts();
+        public void DefaultLayouts_PropertyChanged(object sender, PropertyChangedEventArgs e)
+        {
+            FirePropertyChanged(nameof(IsHorizontalDefault));
+            FirePropertyChanged(nameof(IsVerticalDefault));
+            FirePropertyChanged(nameof(CanBeSetAsHorizontalDefault));
+            FirePropertyChanged(nameof(CanBeSetAsVerticalDefault));
         }
     }
 }

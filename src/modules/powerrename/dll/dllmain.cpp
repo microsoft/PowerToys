@@ -1,18 +1,25 @@
 #include "pch.h"
+
+#include "Generated Files/resource.h"
+#include "PowerRenameConstants.h"
 #include "PowerRenameExt.h"
+
 #include <interface/powertoy_module_interface.h>
 #include <settings.h>
 #include <trace.h>
-#include <common/settings_objects.h>
-#include <common/common.h>
-#include "Generated Files/resource.h"
+#include <VersionHelpers.h>
+
+#include <common/SettingsAPI/settings_objects.h>
+#include <common/logger/logger.h>
+#include <common/utils/logger_helper.h>
+#include <common/utils/package.h>
+#include <common/utils/process_path.h>
+#include <common/utils/resources.h>
+
 #include <atomic>
-#include <dll/PowerRenameConstants.h>
 
 std::atomic<DWORD> g_dwModuleRefCount = 0;
 HINSTANCE g_hInst = 0;
-
-extern "C" IMAGE_DOS_HEADER __ImageBase;
 
 class CPowerRenameClassFactory : public IClassFactory
 {
@@ -123,9 +130,10 @@ STDAPI DllCanUnloadNow(void)
 //
 STDAPI DllGetClassObject(_In_ REFCLSID clsid, _In_ REFIID riid, _Outptr_ void** ppv)
 {
+    HRESULT hr = E_FAIL;
     *ppv = NULL;
     CPowerRenameClassFactory* pClassFactory = new CPowerRenameClassFactory(clsid);
-    HRESULT hr = pClassFactory->QueryInterface(riid, ppv);
+    hr = pClassFactory->QueryInterface(riid, ppv);
     pClassFactory->Release();
     return hr;
 }
@@ -172,16 +180,36 @@ public:
         return app_key.c_str();
     }
 
+    // Return the configured status for the gpo policy for the module
+    virtual powertoys_gpo::gpo_rule_configured_t gpo_policy_enabled_configuration() override
+    {
+        return powertoys_gpo::getConfiguredPowerRenameEnabledValue();
+    }
+
     // Enable the powertoy
     virtual void enable()
     {
+        Logger::info(L"PowerRename enabled");
         m_enabled = true;
+
+        if (package::IsWin11OrGreater())
+        {
+            std::wstring path = get_module_folderpath(g_hInst);
+            std::wstring packageUri = path + L"\\PowerRenameContextMenuPackage.msix";
+
+            if (!package::IsPackageRegistered(PowerRenameConstants::ModulePackageDisplayName))
+            {
+                package::RegisterSparsePackage(path, packageUri);
+            }
+        }
+
         save_settings();
     }
 
     // Disable the powertoy
     virtual void disable()
     {
+        Logger::info(L"PowerRename disabled");
         m_enabled = false;
         save_settings();
     }
@@ -262,15 +290,15 @@ public:
 
             Trace::SettingsChanged();
         }
-        catch (std::exception)
+        catch (std::exception& e)
         {
-            // Improper JSON.
+            Logger::error("Configuration parsing failed: {}", std::string{ e.what() });
         }
     }
 
     // Signal from the Settings editor to call a custom action.
     // This can be used to spawn more complex editors.
-    virtual void call_custom_action(const wchar_t* action) override
+    virtual void call_custom_action(const wchar_t* /*action*/) override
     {
     }
 
@@ -298,6 +326,7 @@ public:
         init_settings();
         app_name = GET_RESOURCE_STRING(IDS_POWERRENAME_APP_NAME);
         app_key = PowerRenameConstants::ModuleKey;
+        LoggerHelpers::init_logger(app_key, L"ModuleInterface", LogSettings::powerRenameLoggerName);
     }
 
     ~PowerRenameModule(){};

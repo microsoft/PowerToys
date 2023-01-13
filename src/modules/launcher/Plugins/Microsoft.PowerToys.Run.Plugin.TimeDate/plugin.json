@@ -1,0 +1,13 @@
+{
+  "ID": "5D69806A5A474115821C3E4C56B9C793",
+  "ActionKeyword": ")",
+  "IsGlobal": true,
+  "Name": "Time and date",
+  "Author": "htcfreek",
+  "Version": "1.0.0",
+  "Language": "csharp",
+  "Website": "https://aka.ms/powertoys",
+  "ExecuteFileName": "Microsoft.PowerToys.Run.Plugin.TimeDate.dll",
+  "IcoPathDark": "Images\\timeDate.dark.png",
+  "IcoPathLight": "Images\\timeDate.light.png"
+}

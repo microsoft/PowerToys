@@ -1,55 +1,50 @@
-﻿<Project Sdk="Microsoft.NET.Sdk.WindowsDesktop">
+﻿<Project Sdk="Microsoft.NET.Sdk">
   <Import Project="..\..\..\Version.props" />
   <PropertyGroup>
+    <AssemblyTitle>PowerToys.Run</AssemblyTitle>
     <OutputType>WinExe</OutputType>
-    <TargetFramework>netcoreapp3.1</TargetFramework>
+    <TargetFramework>net7.0-windows10.0.19041.0</TargetFramework>
     <UseWPF>true</UseWPF>
     <UseWindowsForms>true</UseWindowsForms>
     <StartupObject>PowerLauncher.App</StartupObject>
-    <ApplicationIcon>Resources\placeholderLauncher.ico</ApplicationIcon>
-    <ApplicationManifest>app.manifest</ApplicationManifest>    
-    <RuntimeIdentifiers>win-x64</RuntimeIdentifiers>
+    <ApplicationIcon>Images\RunResource.ico</ApplicationIcon>
+    <ApplicationManifest>app.manifest</ApplicationManifest>
+    <RuntimeIdentifiers>win-x64;win-arm64</RuntimeIdentifiers>
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
     <AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
-    <Platforms>x64</Platforms>
     <AssetTargetFallback>uap10.0.18362</AssetTargetFallback>
     <Version>$(Version).0</Version>
     <Authors>Microsoft Corporation</Authors>
-    <Product>PowerToys</Product>
     <Description>PowerToys PowerLauncher</Description>
-    <Copyright>Copyright (C) 2020 Microsoft Corporation</Copyright>
-    <RepositoryUrl>https://github.com/microsoft/PowerToys</RepositoryUrl>
-    <RepositoryType>Github</RepositoryType>
-    <PackageTags>PowerToys</PackageTags>
-    <NeutralLanguage>en-US</NeutralLanguage>
+    <AssemblyName>PowerToys.PowerLauncher</AssemblyName>
+    <OutputPath>..\..\..\..\$(Platform)\$(Configuration)\modules\launcher\</OutputPath>
+    <GenerateSatelliteAssembliesForCore>true</GenerateSatelliteAssembliesForCore>
+    <SelfContained>true</SelfContained>
   </PropertyGroup>
 
+  <!-- SelfContained=true requires RuntimeIdentifier to be set -->
+  <PropertyGroup Condition="'$(Platform)'=='x64'">
+    <RuntimeIdentifier>win10-x64</RuntimeIdentifier>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Platform)'=='ARM64'">
+    <RuntimeIdentifier>win10-arm64</RuntimeIdentifier>
+  </PropertyGroup>
 
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <OutputPath>..\..\..\..\$(Platform)\$(Configuration)\modules\launcher\</OutputPath>
+  <PropertyGroup Condition="'$(Configuration)'=='Debug'">
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <DebugType>full</DebugType>
-    <PlatformTarget>x64</PlatformTarget>
-    <LangVersion>7.3</LangVersion>
     <ErrorReport>prompt</ErrorReport>
-    <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
     <WarningLevel>4</WarningLevel>
     <Optimize>false</Optimize>
-    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
   </PropertyGroup>
 
 
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-    <OutputPath>..\..\..\..\$(Platform)\$(Configuration)\modules\launcher\</OutputPath>
+  <PropertyGroup Condition="'$(Configuration)'=='Release'">
     <DefineConstants>TRACE;RELEASE</DefineConstants>
     <Optimize>true</Optimize>
     <DebugType>pdbonly</DebugType>
-    <PlatformTarget>x64</PlatformTarget>
-    <LangVersion>7.3</LangVersion>
     <ErrorReport>prompt</ErrorReport>
-    <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
     <WarningLevel>4</WarningLevel>
-    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
   </PropertyGroup>
 
   <ItemGroup>
@@ -63,65 +58,53 @@
     <None Remove="Images\app.light1.png" />
     <None Remove="Images\app_error.dark.png" />
     <None Remove="Images\app_error.light.png" />
+    <None Remove="Images\RunResource.ico" />
   </ItemGroup>
 
   <ItemGroup>
     <Content Include="app.png">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
     <Content Include="Images\app.dark.png">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
     <Content Include="Images\app.light.png">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
     <Content Include="Images\app_error.dark.png">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
     <Content Include="Images\app_error.light.png">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
   </ItemGroup>
-  
+
   <ItemGroup>
     <Page Include="App.xaml" />
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Fody" Version="6.3.0">
-      <PrivateAssets>all</PrivateAssets>
-      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-    </PackageReference>
-    <PackageReference Include="JetBrains.Annotations" Version="2020.1.0" />
-    <PackageReference Include="Mages" Version="1.6.0">
-       <NoWarn>NU1701</NoWarn>
-    </PackageReference>
-    <PackageReference Include="Microsoft.CodeAnalysis.FxCopAnalyzers" Version="3.3.0">
-      <PrivateAssets>all</PrivateAssets>
-      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-    </PackageReference>
-    <PackageReference Include="Microsoft.Xaml.Behaviors.Wpf" Version="1.1.19" />
-    <PackageReference Include="Newtonsoft.Json" Version="12.0.3" />
-    <PackageReference Include="NuGet.CommandLine" Version="5.7.0">
-      <PrivateAssets>all</PrivateAssets>
-      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-    </PackageReference>
-    <PackageReference Include="PropertyChanged.Fody" Version="3.3.1">
-      <PrivateAssets>all</PrivateAssets>
-    </PackageReference>
-    <PackageReference Include="SharpZipLib" Version="1.2.0" />
-    <PackageReference Include="System.Runtime" Version="4.3.1" />    
-    <PackageReference Include="Microsoft.VCRTForwarders.140" Version="1.0.6" />
-    <PackageReference Include="System.Data.OleDb" Version="4.7.1" />
-    <PackageReference Include="tlbimp-Microsoft.Search.Interop" Version="1.0.0">
-      <NoWarn>NU1701</NoWarn>
-    </PackageReference>
+    <PackageReference Include="Microsoft.Windows.CsWinRT" Version="2.0.0" />
+    <PackageReference Include="Interop.Microsoft.Office.Interop.OneNote" Version="1.1.0.2" />
+    <PackageReference Include="Mages" Version="2.0.1" />
+    <PackageReference Include="LazyCache" Version="2.4.0" />
+    <PackageReference Include="Microsoft.Data.Sqlite" Version="7.0.0" />
+    <PackageReference Include="Microsoft.Toolkit.Uwp.Notifications" Version="7.1.2" />
+    <PackageReference Include="Microsoft.Xaml.Behaviors.Wpf" Version="1.1.39" />
+    <PackageReference Include="ModernWpfUI" Version="0.9.4" />
+    <PackageReference Include="ScipBe.Common.Office.OneNote" Version="3.0.1" />
+    <PackageReference Include="System.Reactive" Version="5.0.0" />
+    <PackageReference Include="System.Data.OleDb" Version="7.0.0" />
+    <PackageReference Include="System.ServiceProcess.ServiceController" Version="7.0.0" />
+    <PackageReference Include="UnitsNet" Version="4.145.0" />
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\..\common\interop\interop.vcxproj" />
+    <ProjectReference Include="..\..\..\common\GPOWrapperProjection\GPOWrapperProjection.csproj" />
+    <ProjectReference Include="..\..\..\common\interop\PowerToys.Interop.vcxproj" />
     <ProjectReference Include="..\..\..\common\ManagedCommon\ManagedCommon.csproj" />
-    <ProjectReference Include="..\..\..\core\Microsoft.PowerToys.Settings.UI.Library\Microsoft.PowerToys.Settings.UI.Library.csproj" />
+    <ProjectReference Include="..\..\..\common\Common.UI\Common.UI.csproj" />
+    <ProjectReference Include="..\..\..\settings-ui\Settings.UI.Library\Settings.UI.Library.csproj" />
     <ProjectReference Include="..\PowerLauncher.Telemetry\PowerLauncher.Telemetry.csproj" />
     <ProjectReference Include="..\Wox.Infrastructure\Wox.Infrastructure.csproj" />
     <ProjectReference Include="..\Wox.Plugin\Wox.Plugin.csproj" />
@@ -135,94 +118,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <None Update="Images\Browser.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Update="Images\calculator.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Update="Images\cancel.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Update="Images\close.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Update="Images\cmd.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Update="Images\color.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Update="Images\copy.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Update="Images\down.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Update="Images\EXE.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Update="Images\file.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Update="Images\find.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Update="Images\folder.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Update="Images\history.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Update="Images\image.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Update="Images\Link.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Update="Images\lock.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Update="Images\logoff.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Update="Images\New Message.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Update="Images\ok.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Update="Images\open.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Update="Images\plugin.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Update="Images\recyclebin.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Update="Images\restart.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Update="Images\search.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Update="Images\settings.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Update="Images\shutdown.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Update="Images\sleep.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Update="Images\up.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Update="Images\update.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Update="Images\warning.png">
+    <None Update="Images\RunAsset.ico">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
     <None Update="Properties\Settings.settings">
@@ -252,19 +148,7 @@
     </Page>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="..\..\..\codeAnalysis\GlobalSuppressions.cs">
-      <Link>GlobalSuppressions.cs</Link>
-    </Compile>
-    <AdditionalFiles Include="..\..\..\codeAnalysis\StyleCop.json">
-      <Link>StyleCop.json</Link>
-    </AdditionalFiles>
-  </ItemGroup>
-  <ItemGroup>
-    <PackageReference Include="StyleCop.Analyzers">
-      <Version>1.1.118</Version>
-      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-      <PrivateAssets>all</PrivateAssets>
-    </PackageReference>
+    <Resource Include="Images\RunResource.ico" />
   </ItemGroup>
   <ItemGroup>
     <Compile Update="Properties\Resources.Designer.cs">
@@ -272,8 +156,5 @@
       <AutoGen>True</AutoGen>
       <DependentUpon>Resources.resx</DependentUpon>
     </Compile>
-  </ItemGroup>
-  <ItemGroup>
-    <Folder Include="Resources\" />
   </ItemGroup>
 </Project>

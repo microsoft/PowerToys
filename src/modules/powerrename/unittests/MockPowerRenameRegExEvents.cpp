@@ -56,12 +56,18 @@ IFACEMETHODIMP CMockPowerRenameRegExEvents::OnFlagsChanged(_In_ DWORD flags)
     return S_OK;
 }
 
+IFACEMETHODIMP CMockPowerRenameRegExEvents::OnFileTimeChanged(_In_ SYSTEMTIME fileTime)
+{
+    m_fileTime = fileTime;
+    return S_OK;
+}
+
 HRESULT CMockPowerRenameRegExEvents::s_CreateInstance(_Outptr_ IPowerRenameRegExEvents** ppsrree)
 {
     *ppsrree = nullptr;
     CMockPowerRenameRegExEvents* psrree = new CMockPowerRenameRegExEvents();
-    HRESULT hr = psrree ? S_OK : E_OUTOFMEMORY;
-    if (SUCCEEDED(hr))
+    HRESULT hr = E_OUTOFMEMORY;
+    if (psrree)
     {
         hr = psrree->QueryInterface(IID_PPV_ARGS(ppsrree));
         psrree->Release();

@@ -1,0 +1,29 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net7.0-windows10.0.19041.0</TargetFramework>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <IsPackable>false</IsPackable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.4.1" />
+    <PackageReference Include="MSTest.TestAdapter" Version="3.0.1" />
+    <PackageReference Include="MSTest.TestFramework" Version="3.0.1" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Microsoft.PowerToys.Run.Plugin.WindowsTerminal\Microsoft.PowerToys.Run.Plugin.WindowsTerminal.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="settings 1.11.2421.0.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="settings 1.11.2421.0_2.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
+
+</Project>

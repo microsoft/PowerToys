@@ -1,6 +1,6 @@
 #include <windows.h>
 #include "resource.h"
-#include "../version.h"
+#include "../version/version.h"
 
 1 VERSIONINFO
 FILEVERSION FILE_VERSION

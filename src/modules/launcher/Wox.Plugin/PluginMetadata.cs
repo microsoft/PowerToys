@@ -2,14 +2,11 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-using System;
-using System.Collections.Generic;
 using System.IO.Abstractions;
-using Newtonsoft.Json;
+using System.Text.Json.Serialization;
 
 namespace Wox.Plugin
 {
-    [JsonObject(MemberSerialization.OptOut)]
     public class PluginMetadata : BaseModel
     {
         private static readonly IFileSystem FileSystem = new FileSystem();
@@ -17,11 +14,8 @@ namespace Wox.Plugin
 
         private string _pluginDirectory;
 
-        private List<string> _actionKeywords;
-
-        public PluginMetadata(List<string> actionKeywords = null)
+        public PluginMetadata()
         {
-            _actionKeywords = actionKeywords;
         }
 
         public string ID { get; set; }
@@ -34,12 +28,11 @@ namespace Wox.Plugin
 
         public string Language { get; set; }
 
-        public string Description { get; set; }
-
         public string Website { get; set; }
 
         public bool Disabled { get; set; }
 
+        [JsonInclude]
         public string ExecuteFilePath { get; private set; }
 
         public string ExecuteFileName { get; set; }
@@ -55,31 +48,23 @@ namespace Wox.Plugin
             {
                 _pluginDirectory = value;
                 ExecuteFilePath = Path.Combine(value, ExecuteFileName);
-                IcoPath = Path.Combine(value, IcoPath);
             }
         }
 
         public string ActionKeyword { get; set; }
 
-        public List<string> GetActionKeywords()
-        {
-            return _actionKeywords;
-        }
+        public int WeightBoost { get; set; }
 
-        public void SetActionKeywords(List<string> value)
-        {
-            _actionKeywords = value;
-        }
+        public bool IsGlobal { get; set; }
 
-        public string IcoPath { get; set; }
+        public string IcoPathDark { get; set; }
+
+        public string IcoPathLight { get; set; }
 
         public override string ToString()
         {
             return Name;
         }
-
-        [Obsolete("Use IcoPath")]
-        public string FullIcoPath => IcoPath;
 
         /// <summary>
         /// Gets or sets init time include both plugin load time and init time

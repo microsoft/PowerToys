@@ -28,7 +28,8 @@
                     <x:Type Type="{x:Type m:ResizeUnit}"/>
                 </ObjectDataProvider.MethodParameters>
             </ObjectDataProvider>
-            
+
+            <v:SizeTypeToVisibilityConverter x:Key="SizeTypeToVisibilityConverter"/>
             <v:EnumValueConverter x:Key="EnumValueConverter"/>
             <v:AutoDoubleConverter x:Key="AutoDoubleConverter"/>
             <v:BoolValueConverter x:Key="BoolValueConverter"/>

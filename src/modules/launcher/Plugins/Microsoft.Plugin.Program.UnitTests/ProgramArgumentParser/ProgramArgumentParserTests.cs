@@ -3,25 +3,25 @@
 // See the LICENSE file in the project root for more information.
 
 using Microsoft.Plugin.Program.ProgramArgumentParser;
-using Mono.Collections.Generic;
-using NUnit.Framework;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Wox.Plugin;
 
 namespace Microsoft.Plugin.Program.UnitTests.ProgramArgumentParser
 {
-    [TestFixture]
+    [TestClass]
     public class ProgramArgumentParserTests
     {
-        [TestCase("Microsoft Edge", "Microsoft Edge", null)]
-        [TestCase("Microsoft Edge ---inprivate", "Microsoft Edge ---inprivate", null)]
-        [TestCase("Microsoft Edge -- -inprivate", "Microsoft Edge", "-inprivate")]
-        [TestCase("Microsoft Edge -inprivate", "Microsoft Edge", "-inprivate")]
-        [TestCase("Microsoft Edge /inprivate", "Microsoft Edge", "/inprivate")]
-        [TestCase("edge.exe --inprivate", "edge.exe", "--inprivate")]
-        [TestCase("edge.exe -- --inprivate", "edge.exe", "--inprivate")]
-        [TestCase("edge.exe", "edge.exe", null)]
-        [TestCase("edge", "edge", null)]
-        [TestCase("cmd /c \"ping 1.1.1.1\"", "cmd", "/c \"ping 1.1.1.1\"")]
+        [DataTestMethod]
+        [DataRow("Microsoft Edge", "Microsoft Edge", null)]
+        [DataRow("Microsoft Edge ---inprivate", "Microsoft Edge ---inprivate", null)]
+        [DataRow("Microsoft Edge -- -inprivate", "Microsoft Edge", "-inprivate")]
+        [DataRow("Microsoft Edge -inprivate", "Microsoft Edge", "-inprivate")]
+        [DataRow("Microsoft Edge /inprivate", "Microsoft Edge", "/inprivate")]
+        [DataRow("edge.exe --inprivate", "edge.exe", "--inprivate")]
+        [DataRow("edge.exe -- --inprivate", "edge.exe", "--inprivate")]
+        [DataRow("edge.exe", "edge.exe", null)]
+        [DataRow("edge", "edge", null)]
+        [DataRow("cmd /c \"ping 1.1.1.1\"", "cmd", "/c \"ping 1.1.1.1\"")]
         public void ProgramArgumentParserTestsCanParseQuery(string inputQuery, string expectedProgram, string expectedProgramArguments)
         {
             // Arrange
@@ -32,10 +32,7 @@ namespace Microsoft.Plugin.Program.UnitTests.ProgramArgumentParser
                 new NoArgumentsArgumentParser(),
            };
 
-            // basic version of the Quey parser which can be found at Wox.Core.Plugin.QueryBuilder but did not want to create a project reference
-            var splittedSearchString = inputQuery?.Split(Query.TermSeparator, System.StringSplitOptions.RemoveEmptyEntries);
-            var cleanQuery = string.Join(Query.TermSeparator, splittedSearchString);
-            var query = new Query(cleanQuery, cleanQuery, new ReadOnlyCollection<string>(splittedSearchString), string.Empty);
+            var query = new Query(inputQuery);
 
             // Act
             string program = null, programArguments = null;

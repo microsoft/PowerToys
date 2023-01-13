@@ -4,47 +4,44 @@
 
 using System.Windows;
 using System.Windows.Input;
+using FancyZonesEditor.Logs;
 using FancyZonesEditor.Models;
 
 namespace FancyZonesEditor
 {
-    /// <summary>
-    /// Interaction logic for windowEditor.xaml
-    /// </summary>
     public partial class CanvasEditorWindow : EditorWindow
     {
+        private CanvasLayoutModel _model;
+        private CanvasLayoutModel _stashedModel;
+
         public CanvasEditorWindow()
         {
             InitializeComponent();
 
             KeyUp += CanvasEditorWindow_KeyUp;
+            KeyDown += CanvasEditorWindow_KeyDown;
 
             _model = App.Overlay.CurrentDataContext as CanvasLayoutModel;
             _stashedModel = (CanvasLayoutModel)_model.Clone();
         }
 
+        public LayoutModel Model
+        {
+            get
+            {
+                return _model;
+            }
+        }
+
         private void OnAddZone(object sender, RoutedEventArgs e)
         {
-            Rect workingArea = App.Overlay.WorkArea;
-            int offset = (int)App.Overlay.ScaleCoordinateWithCurrentMonitorDpi(_offset);
-
-            if (offset + (int)(workingArea.Width * 0.4) < (int)workingArea.Width
-                && offset + (int)(workingArea.Height * 0.4) < (int)workingArea.Height)
-            {
-                _model.AddZone(new Int32Rect(offset, offset, (int)(workingArea.Width * 0.4), (int)(workingArea.Height * 0.4)));
-            }
-            else
-            {
-                _offset = 100;
-                offset = (int)App.Overlay.ScaleCoordinateWithCurrentMonitorDpi(_offset);
-                _model.AddZone(new Int32Rect(offset, offset, (int)(workingArea.Width * 0.4), (int)(workingArea.Height * 0.4)));
-            }
-
-            _offset += 50; // TODO: replace hardcoded numbers
+            Logger.LogInfo("Add zone");
+            _model.AddZone();
         }
 
         protected new void OnCancel(object sender, RoutedEventArgs e)
         {
+            Logger.LogInfo("Cancel changes");
             base.OnCancel(sender, e);
             _stashedModel.RestoreTo(_model);
         }
@@ -57,8 +54,19 @@ namespace FancyZonesEditor
             }
         }
 
-        private int _offset = 100;
-        private CanvasLayoutModel _model;
-        private CanvasLayoutModel _stashedModel;
+        private void CanvasEditorWindow_KeyDown(object sender, KeyEventArgs e)
+        {
+            if (e.Key == Key.Tab && (Keyboard.IsKeyDown(Key.LeftCtrl) || Keyboard.IsKeyDown(Key.RightCtrl)))
+            {
+                e.Handled = true;
+                App.Overlay.FocusEditor();
+            }
+        }
+
+        // This is required to fix a WPF rendering bug when using custom chrome
+        private void EditorWindow_ContentRendered(object sender, System.EventArgs e)
+        {
+            InvalidateVisual();
+        }
     }
 }

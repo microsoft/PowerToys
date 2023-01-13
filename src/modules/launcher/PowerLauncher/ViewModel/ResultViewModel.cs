@@ -4,6 +4,7 @@
 
 using System;
 using System.Collections.ObjectModel;
+using System.Globalization;
 using System.Windows.Input;
 using System.Windows.Media;
 using PowerLauncher.Helper;
@@ -24,25 +25,47 @@ namespace PowerLauncher.ViewModel
 
         public ObservableCollection<ContextMenuItemViewModel> ContextMenuItems { get; } = new ObservableCollection<ContextMenuItemViewModel>();
 
-        public ICommand ActivateContextButtonsHoverCommand { get; set; }
+        public ICommand ActivateContextButtonsHoverCommand { get; }
 
-        public ICommand ActivateContextButtonsSelectionCommand { get; set; }
+        public ICommand DeactivateContextButtonsHoverCommand { get; }
 
-        public ICommand DeactivateContextButtonsHoverCommand { get; set; }
+        public bool IsSelected { get; private set; }
 
-        public ICommand DeactivateContextButtonsSelectionCommand { get; set; }
+        public bool IsHovered { get; private set; }
 
-        public bool IsSelected { get; set; }
+        private bool _areContextButtonsActive;
 
-        public bool IsHovered { get; set; }
+        public bool AreContextButtonsActive
+        {
+            get => _areContextButtonsActive;
+            set
+            {
+                if (_areContextButtonsActive != value)
+                {
+                    _areContextButtonsActive = value;
+                    OnPropertyChanged(nameof(AreContextButtonsActive));
+                }
+            }
+        }
 
-        public bool AreContextButtonsActive { get; set; }
+        private int _contextMenuSelectedIndex;
 
-        public int ContextMenuSelectedIndex { get; set; }
+        public int ContextMenuSelectedIndex
+        {
+            get => _contextMenuSelectedIndex;
+            set
+            {
+                if (_contextMenuSelectedIndex != value)
+                {
+                    _contextMenuSelectedIndex = value;
+                    OnPropertyChanged(nameof(ContextMenuSelectedIndex));
+                }
+            }
+        }
 
         public const int NoSelectionIndex = -1;
 
-        public ResultViewModel(Result result)
+        public ResultViewModel(Result result, IMainViewModel mainViewModel)
         {
             if (result != null)
             {
@@ -53,19 +76,13 @@ namespace PowerLauncher.ViewModel
             LoadContextMenu();
 
             ActivateContextButtonsHoverCommand = new RelayCommand(ActivateContextButtonsHoverAction);
-            ActivateContextButtonsSelectionCommand = new RelayCommand(ActivateContextButtonsSelectionAction);
             DeactivateContextButtonsHoverCommand = new RelayCommand(DeactivateContextButtonsHoverAction);
-            DeactivateContextButtonsSelectionCommand = new RelayCommand(DeactivateContextButtonsSelectionAction);
+            MainViewModel = mainViewModel;
         }
 
         private void ActivateContextButtonsHoverAction(object sender)
         {
             ActivateContextButtons(ActivationType.Hover);
-        }
-
-        private void ActivateContextButtonsSelectionAction(object sender)
-        {
-            ActivateContextButtons(ActivationType.Selection);
         }
 
         public void ActivateContextButtons(ActivationType activationType)
@@ -94,11 +111,6 @@ namespace PowerLauncher.ViewModel
         private void DeactivateContextButtonsHoverAction(object sender)
         {
             DeactivateContextButtons(ActivationType.Hover);
-        }
-
-        private void DeactivateContextButtonsSelectionAction(object sender)
-        {
-            DeactivateContextButtons(ActivationType.Selection);
         }
 
         public void DeactivateContextButtons(ActivationType activationType)
@@ -130,31 +142,27 @@ namespace PowerLauncher.ViewModel
             ContextMenuItems.Clear();
             foreach (var r in results)
             {
-                ContextMenuItems.Add(new ContextMenuItemViewModel()
-                {
-                    PluginName = r.PluginName,
-                    Title = r.Title,
-                    Glyph = r.Glyph,
-                    FontFamily = r.FontFamily,
-                    AcceleratorKey = r.AcceleratorKey,
-                    AcceleratorModifiers = r.AcceleratorModifiers,
-                    Command = new RelayCommand(_ =>
+                ContextMenuItems.Add(new ContextMenuItemViewModel(
+                    r.PluginName,
+                    r.Title,
+                    r.Glyph,
+                    r.FontFamily,
+                    r.AcceleratorKey,
+                    r.AcceleratorModifiers,
+                    new RelayCommand(_ =>
                     {
                         bool hideWindow =
                             r.Action != null &&
-                            r.Action(
-                                new ActionContext
-                                {
-                                    SpecialKeyState = KeyboardHelper.CheckModifiers(),
-                                });
+                            r.Action(new ActionContext
+                            {
+                                SpecialKeyState = KeyboardHelper.CheckModifiers(),
+                            });
 
                         if (hideWindow)
                         {
-                            // TODO - Do we hide the window
-                            // MainWindowVisibility = Visibility.Collapsed;
+                            MainViewModel.Hide();
                         }
-                    }),
-                });
+                    })));
             }
         }
 
@@ -185,9 +193,7 @@ namespace PowerLauncher.ViewModel
                     {
                         return Result.Icon();
                     }
-#pragma warning disable CA1031 // Do not catch general exception types
                     catch (Exception e)
-#pragma warning restore CA1031 // Do not catch general exception types
                     {
                         Log.Exception($"IcoPath is empty and exception when calling Icon() for result <{Result.Title}> of plugin <{Result.PluginDirectory}>", e, GetType());
                         imagePath = ImageLoader.ErrorIconPath;
@@ -252,6 +258,8 @@ namespace PowerLauncher.ViewModel
 
         public Result Result { get; }
 
+        public IMainViewModel MainViewModel { get; }
+
         public override bool Equals(object obj)
         {
             var r = obj as ResultViewModel;
@@ -277,7 +285,9 @@ namespace PowerLauncher.ViewModel
 
         public override string ToString()
         {
-            return Result.ToString();
+            // Using CurrentCulture since this is user facing
+            var contextMenuInfo = ContextMenuItems.Count > 0 ? string.Format(CultureInfo.CurrentCulture, "{0} {1}", ContextMenuItems.Count, Properties.Resources.ContextMenuItemsAvailable) : string.Empty;
+            return string.Format(CultureInfo.CurrentCulture, "{0}, {1}", Result.ToString(), contextMenuInfo);
         }
     }
 }

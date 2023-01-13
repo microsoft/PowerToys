@@ -13,16 +13,15 @@ using System.Linq;
 using System.Reflection;
 using System.Windows.Input;
 using ManagedCommon;
-using Microsoft.PowerToys.Settings.UI.Library;
 using Wox.Infrastructure.Storage;
 using Wox.Plugin;
+using Wox.Plugin.Common;
 using Wox.Plugin.Logger;
-using Wox.Plugin.SharedCommands;
 using Control = System.Windows.Controls.Control;
 
 namespace Microsoft.Plugin.Shell
 {
-    public class Main : IPlugin, ISettingProvider, IPluginI18n, IContextMenu, ISavable
+    public class Main : IPlugin, IPluginI18n, IContextMenu, ISavable
     {
         private static readonly IFileSystem FileSystem = new FileSystem();
         private static readonly IPath Path = FileSystem.Path;
@@ -33,6 +32,10 @@ namespace Microsoft.Plugin.Shell
         private readonly PluginJsonStorage<ShellPluginSettings> _storage;
 
         private string IconPath { get; set; }
+
+        public string Name => Properties.Resources.wox_plugin_cmd_plugin_name;
+
+        public string Description => Properties.Resources.wox_plugin_cmd_plugin_description;
 
         private PluginInitContext _context;
 
@@ -47,7 +50,6 @@ namespace Microsoft.Plugin.Shell
             _storage.Save();
         }
 
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "Keeping the process alive, but logging the exception")]
         public List<Result> Query(Query query)
         {
             if (query == null)
@@ -150,19 +152,29 @@ namespace Microsoft.Plugin.Shell
             return history.ToList();
         }
 
-        private ProcessStartInfo PrepareProcessStartInfo(string command, bool runAsAdministrator = false)
+        private ProcessStartInfo PrepareProcessStartInfo(string command, RunAsType runAs = RunAsType.None)
         {
-            command = command.Trim();
-            command = Environment.ExpandEnvironmentVariables(command);
+            string trimmedCommand = command.Trim();
+            command = Environment.ExpandEnvironmentVariables(trimmedCommand);
             var workingDirectory = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
-            var runAsAdministratorArg = !runAsAdministrator && !_settings.RunAsAdministrator ? string.Empty : "runas";
+
+            // Set runAsArg
+            string runAsVerbArg = string.Empty;
+            if (runAs == RunAsType.OtherUser)
+            {
+                runAsVerbArg = "runAsUser";
+            }
+            else if (runAs == RunAsType.Administrator || _settings.RunAsAdministrator)
+            {
+                runAsVerbArg = "runAs";
+            }
 
             ProcessStartInfo info;
             if (_settings.Shell == ExecutionShell.Cmd)
             {
                 var arguments = _settings.LeaveShellOpen ? $"/k \"{command}\"" : $"/c \"{command}\" & pause";
 
-                info = ShellCommand.SetProcessStartInfo("cmd.exe", workingDirectory, arguments, runAsAdministratorArg);
+                info = ShellCommand.SetProcessStartInfo("cmd.exe", workingDirectory, arguments, runAsVerbArg);
             }
             else if (_settings.Shell == ExecutionShell.Powershell)
             {
@@ -176,14 +188,14 @@ namespace Microsoft.Plugin.Shell
                     arguments = $"\"{command} ; Read-Host -Prompt \\\"Press Enter to continue\\\"\"";
                 }
 
-                info = ShellCommand.SetProcessStartInfo("powershell.exe", workingDirectory, arguments, runAsAdministratorArg);
+                info = ShellCommand.SetProcessStartInfo("powershell.exe", workingDirectory, arguments, runAsVerbArg);
             }
             else if (_settings.Shell == ExecutionShell.RunCommand)
             {
                 // Open explorer if the path is a file or directory
                 if (Directory.Exists(command) || File.Exists(command))
                 {
-                    info = ShellCommand.SetProcessStartInfo("explorer.exe", arguments: command, verb: runAsAdministratorArg);
+                    info = ShellCommand.SetProcessStartInfo("explorer.exe", arguments: command, verb: runAsVerbArg);
                 }
                 else
                 {
@@ -194,16 +206,16 @@ namespace Microsoft.Plugin.Shell
                         if (ExistInPath(filename))
                         {
                             var arguments = parts[1];
-                            info = ShellCommand.SetProcessStartInfo(filename, workingDirectory, arguments, runAsAdministratorArg);
+                            info = ShellCommand.SetProcessStartInfo(filename, workingDirectory, arguments, runAsVerbArg);
                         }
                         else
                         {
-                            info = ShellCommand.SetProcessStartInfo(command, verb: runAsAdministratorArg);
+                            info = ShellCommand.SetProcessStartInfo(command, verb: runAsVerbArg);
                         }
                     }
                     else
                     {
-                        info = ShellCommand.SetProcessStartInfo(command, verb: runAsAdministratorArg);
+                        info = ShellCommand.SetProcessStartInfo(command, verb: runAsVerbArg);
                     }
                 }
             }
@@ -214,9 +226,16 @@ namespace Microsoft.Plugin.Shell
 
             info.UseShellExecute = true;
 
-            _settings.AddCmdHistory(command);
+            _settings.AddCmdHistory(trimmedCommand);
 
             return info;
+        }
+
+        private enum RunAsType
+        {
+            None,
+            Administrator,
+            OtherUser,
         }
 
         private void Execute(Func<ProcessStartInfo, Process> startProcess, ProcessStartInfo info)
@@ -323,17 +342,27 @@ namespace Microsoft.Plugin.Shell
                     AcceleratorModifiers = ModifierKeys.Control | ModifierKeys.Shift,
                     Action = c =>
                     {
-                        Execute(Process.Start, PrepareProcessStartInfo(selectedResult.Title, true));
+                        Execute(Process.Start, PrepareProcessStartInfo(selectedResult.Title, RunAsType.Administrator));
+                        return true;
+                    },
+                },
+                new ContextMenuResult
+                {
+                    PluginName = Assembly.GetExecutingAssembly().GetName().Name,
+                    Title = Properties.Resources.wox_plugin_cmd_run_as_user,
+                    Glyph = "\xE7EE",
+                    FontFamily = "Segoe MDL2 Assets",
+                    AcceleratorKey = Key.U,
+                    AcceleratorModifiers = ModifierKeys.Control | ModifierKeys.Shift,
+                    Action = _ =>
+                    {
+                        Execute(Process.Start, PrepareProcessStartInfo(selectedResult.Title, RunAsType.OtherUser));
                         return true;
                     },
                 },
             };
 
             return resultlist;
-        }
-
-        public void UpdateSettings(PowerLauncherSettings settings)
-        {
         }
     }
 }

@@ -1,23 +1,26 @@
 #pragma once
 #include "ModifierKey.h"
 #include <variant>
-class InputInterface;
-class LayoutMap;
-namespace KeyboardManagerHelper
+
+namespace KeyboardManagerInput
 {
-    enum class ErrorType;
+    class InputInterface;
 }
+class LayoutMap;
 
 class Shortcut
 {
 private:
+    // Function to split a wstring based on a delimiter and return a vector of split strings
+    std::vector<std::wstring> splitwstring(const std::wstring& input, wchar_t delimiter);
+
+public:
     ModifierKey winKey;
     ModifierKey ctrlKey;
     ModifierKey altKey;
     ModifierKey shiftKey;
     DWORD actionKey;
 
-public:
     // By default create an empty shortcut
     Shortcut() :
         winKey(ModifierKey::Disabled), ctrlKey(ModifierKey::Disabled), altKey(ModifierKey::Disabled), shiftKey(ModifierKey::Disabled), actionKey(NULL)
@@ -107,9 +110,6 @@ public:
     // Function to reset all the keys in the shortcut
     void Reset();
 
-    // Function to return true if the shortcut is valid. A valid shortcut has atleast one modifier, as well as an action key
-    bool IsValidShortcut() const;
-
     // Function to return the action key
     DWORD GetActionKey() const;
 
@@ -146,9 +146,6 @@ public:
     // Function to return the string representation of the shortcut in virtual key codes appended in a string by ";" separator.
     winrt::hstring ToHstringVK() const;
 
-    // Function to return a vector of hstring for each key in the display order
-    std::vector<winrt::hstring> GetKeyVector(LayoutMap& keyboardMap) const;
-
     // Function to return a vector of key codes in the display order
     std::vector<DWORD> GetKeyCodes();
 
@@ -156,19 +153,13 @@ public:
     void SetKeyCodes(const std::vector<int32_t>& keys);
 
     // Function to check if all the modifiers in the shortcut have been pressed down
-    bool CheckModifiersKeyboardState(InputInterface& ii) const;
+    bool CheckModifiersKeyboardState(KeyboardManagerInput::InputInterface& ii) const;
 
     // Function to check if any keys are pressed down except those in the shortcut
-    bool IsKeyboardStateClearExceptShortcut(InputInterface& ii) const;
+    bool IsKeyboardStateClearExceptShortcut(KeyboardManagerInput::InputInterface& ii) const;
 
     // Function to get the number of modifiers that are common between the current shortcut and the shortcut in the argument
     int GetCommonModifiersCount(const Shortcut& input) const;
-
-    // Function to check if the two shortcuts are equal or cover the same set of keys. Return value depends on type of overlap
-    static KeyboardManagerHelper::ErrorType DoKeysOverlap(const Shortcut& first, const Shortcut& second);
-
-    // Function to check if the shortcut is illegal (i.e. Win+L or Ctrl+Alt+Del)
-    KeyboardManagerHelper::ErrorType IsShortcutIllegal() const;
 };
 
 using KeyShortcutUnion = std::variant<DWORD, Shortcut>;

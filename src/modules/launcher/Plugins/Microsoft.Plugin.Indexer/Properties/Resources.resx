@@ -151,12 +151,18 @@
     <value>Fail to open folder at</value>
   </data>
   <data name="Microsoft_plugin_indexer_plugin_description" xml:space="preserve">
-    <value>Returns files and folders</value>
+    <value>Searches files and folders.</value>
   </data>
   <data name="Microsoft_plugin_indexer_plugin_name" xml:space="preserve">
-    <value>Windows Indexer</value>
+    <value>Windows Search</value>
   </data>
   <data name="Microsoft_plugin_indexer_subtitle_header" xml:space="preserve">
     <value>Search</value>
+  </data>
+  <data name="disable_drive_detection_warning" xml:space="preserve">
+    <value>Disable non-indexed files warning</value>
+  </data>
+  <data name="Microsoft_plugin_indexer_run_as_user" xml:space="preserve">
+    <value>Run as different user (Ctrl+Shift+U)</value>
   </data>
 </root>

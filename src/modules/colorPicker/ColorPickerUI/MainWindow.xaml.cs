@@ -4,6 +4,7 @@
 
 using System.ComponentModel.Composition;
 using System.Windows;
+using System.Windows.Interop;
 using ColorPicker.ViewModelContracts;
 
 namespace ColorPicker
@@ -19,6 +20,7 @@ namespace ColorPicker
             Bootstrapper.InitializeContainer(this);
             InitializeComponent();
             DataContext = this;
+            Show(); // Call show just to make sure source is initialized at startup.
             Hide();
         }
 
@@ -29,6 +31,11 @@ namespace ColorPicker
         {
             Closing -= MainWindow_Closing;
             Bootstrapper.Dispose();
+        }
+
+        private void MainWindowSourceInitialized(object sender, System.EventArgs e)
+        {
+            this.MainViewModel.RegisterWindowHandle(HwndSource.FromHwnd(new WindowInteropHelper(this).Handle));
         }
     }
 }

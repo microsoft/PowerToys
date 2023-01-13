@@ -4,8 +4,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.ComponentModel;
-using System.Diagnostics;
 using System.Globalization;
 using System.IO.Abstractions;
 using System.Linq;
@@ -13,9 +11,10 @@ using System.Text.RegularExpressions;
 using System.Windows.Controls;
 using ManagedCommon;
 using Microsoft.Plugin.Indexer.DriveDetection;
+using Microsoft.Plugin.Indexer.Interop;
 using Microsoft.Plugin.Indexer.SearchHelper;
 using Microsoft.PowerToys.Settings.UI.Library;
-using Microsoft.Search.Interop;
+using Wox.Infrastructure;
 using Wox.Infrastructure.Storage;
 using Wox.Plugin;
 using Wox.Plugin.Logger;
@@ -24,6 +23,7 @@ namespace Microsoft.Plugin.Indexer
 {
     internal class Main : ISettingProvider, IPlugin, ISavable, IPluginI18n, IContextMenu, IDisposable, IDelayedExecutionPlugin
     {
+        private const string DisableDriveDetectionWarning = nameof(DisableDriveDetectionWarning);
         private static readonly IFileSystem _fileSystem = new FileSystem();
 
         // This variable contains metadata about the Plugin
@@ -47,17 +47,30 @@ namespace Microsoft.Plugin.Indexer
 
         private string WarningIconPath { get; set; }
 
+        public string Name => Properties.Resources.Microsoft_plugin_indexer_plugin_name;
+
+        public string Description => Properties.Resources.Microsoft_plugin_indexer_plugin_description;
+
+        public IEnumerable<PluginAdditionalOption> AdditionalOptions => new List<PluginAdditionalOption>()
+        {
+            new PluginAdditionalOption()
+            {
+                Key = DisableDriveDetectionWarning,
+                DisplayLabel = Properties.Resources.disable_drive_detection_warning,
+                Value = false,
+            },
+        };
+
         private IContextMenu _contextMenuLoader;
         private bool disposedValue;
 
         // To save the configurations of plugins
         public void Save()
         {
-            _storage.Save();
+            _storage?.Save();
         }
 
         // This function uses the Windows indexer and returns the list of results obtained
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "We want to keep the process alive but will log the exception")]
         public List<Result> Query(Query query, bool isFullQuery)
         {
             var results = new List<Result>();
@@ -85,15 +98,7 @@ namespace Microsoft.Plugin.Indexer
                                 IcoPath = WarningIconPath,
                                 Action = e =>
                                 {
-                                    try
-                                    {
-                                        Process.Start(GetWindowsSearchSettingsProcessInfo());
-                                    }
-                                    catch (Exception ex)
-                                    {
-                                        Log.Exception($"Unable to launch Windows Search Settings: {ex.Message}", ex, GetType());
-                                    }
-
+                                    Helper.OpenInShell("ms-settings:cortana-windowssearch");
                                     return true;
                                 },
                             });
@@ -101,7 +106,7 @@ namespace Microsoft.Plugin.Indexer
 
                         // This uses the Microsoft.Search.Interop assembly
                         var searchManager = new CSearchManager();
-                        var searchResultsList = _api.Search(searchQuery, searchManager, isFullQuery, maxCount: _settings.MaxSearchCount).ToList();
+                        var searchResultsList = _api.Search(searchQuery, searchManager, maxCount: _settings.MaxSearchCount).ToList();
 
                         // If the delayed execution query is not required (since the SQL query is fast) return empty results
                         if (searchResultsList.Count == 0 && isFullQuery)
@@ -129,23 +134,13 @@ namespace Microsoft.Plugin.Indexer
                             r.ToolTipData = new ToolTipData(toolTipTitle, toolTipText);
                             r.Action = c =>
                             {
-                                bool hide;
-                                try
+                                bool hide = true;
+                                if (!Helper.OpenInShell(path, null, workingDir))
                                 {
-                                    Process.Start(new ProcessStartInfo
-                                    {
-                                        FileName = path,
-                                        UseShellExecute = true,
-                                        WorkingDirectory = workingDir,
-                                    });
-                                    hide = true;
-                                }
-                                catch (Win32Exception)
-                                {
+                                    hide = false;
                                     var name = $"Plugin: {_context.CurrentPluginMetadata.Name}";
                                     var msg = Properties.Resources.Microsoft_plugin_indexer_file_open_failed;
                                     _context.API.ShowMsg(name, msg, string.Empty);
-                                    hide = false;
                                 }
 
                                 return hide;
@@ -179,7 +174,8 @@ namespace Microsoft.Plugin.Indexer
         // This function uses the Windows indexer and returns the list of results obtained. This version is required to implement the interface
         public List<Result> Query(Query query)
         {
-            return Query(query, false);
+            // All plugins have to implement IPlugin interface. We return empty collection as we do not want any computation with constant search plugins.
+            return new List<Result>();
         }
 
         public void Init(PluginInitContext context)
@@ -228,26 +224,23 @@ namespace Microsoft.Plugin.Indexer
             return _contextMenuLoader.LoadContextMenus(selectedResult);
         }
 
-        public void UpdateSettings(PowerLauncherSettings settings)
+        public void UpdateSettings(PowerLauncherPluginSettings settings)
         {
-            _driveDetection.IsDriveDetectionWarningCheckBoxSelected = settings.Properties.DisableDriveDetectionWarning;
+            var driveDetection = false;
+
+            if (settings.AdditionalOptions != null)
+            {
+                var option = settings.AdditionalOptions.FirstOrDefault(x => x.Key == DisableDriveDetectionWarning);
+
+                driveDetection = option == null ? false : option.Value;
+            }
+
+            _driveDetection.IsDriveDetectionWarningCheckBoxSelected = driveDetection;
         }
 
         public Control CreateSettingPanel()
         {
             throw new NotImplementedException();
-        }
-
-        // Returns the Process Start Information for the new Windows Search Settings
-        public static ProcessStartInfo GetWindowsSearchSettingsProcessInfo()
-        {
-            var ps = new ProcessStartInfo("ms-settings:cortana-windowssearch")
-            {
-                UseShellExecute = true,
-                Verb = "open",
-            };
-
-            return ps;
         }
 
         protected virtual void Dispose(bool disposing)

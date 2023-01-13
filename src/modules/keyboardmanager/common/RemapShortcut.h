@@ -26,4 +26,9 @@ public:
     {
         return targetShortcut == sc.targetShortcut && isShortcutInvoked == sc.isShortcutInvoked && winKeyInvoked == sc.winKeyInvoked;
     }
+
+    bool RemapToKey()
+    {
+        return targetShortcut.index() == 0;
+    }
 };

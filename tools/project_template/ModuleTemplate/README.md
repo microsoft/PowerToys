@@ -6,7 +6,7 @@ This project is used to generate the Visual Studio PowerToys Module Template
 # Instruction
 In Visual Studio from the menu Project->Export Template... generate the template.
 Set the name `PowerToys Module`, add a description `A project for creating a PowerToys module` and an icon.
-Open the resulting .zip file in `%USERNAME%\Documents\Visual Studio 2019\Templates\ProjectTemplates`
+Open the resulting .zip file in `%USERNAME%\Documents\Visual Studio 2022\Templates\ProjectTemplates`
 and edit `MyTemplate.vstemplate` to make the necessary changes, the resulting template should look like this:
 
 ```xml

@@ -10,6 +10,9 @@
 #include <unknwn.h>
 #include <shlwapi.h>
 #include <atlbase.h>
+#include <atlcom.h>
+#include <atlfile.h>
+#include <atlstr.h>
 #include <Shobjidl.h>
 #include <Shlobj.h>
 #include "CLSID.h"

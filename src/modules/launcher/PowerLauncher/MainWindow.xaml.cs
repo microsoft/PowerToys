@@ -4,16 +4,28 @@
 
 using System;
 using System.ComponentModel;
+using System.Linq;
+using System.Reactive.Linq;
+using System.Runtime.InteropServices;
 using System.Timers;
 using System.Windows;
-using System.Windows.Automation.Peers;
 using System.Windows.Controls;
 using System.Windows.Input;
+using System.Windows.Interop;
+using System.Windows.Media.Imaging;
+using Common.UI;
+using interop;
 using Microsoft.PowerLauncher.Telemetry;
 using Microsoft.PowerToys.Telemetry;
 using PowerLauncher.Helper;
+using PowerLauncher.Plugin;
+using PowerLauncher.Telemetry.Events;
 using PowerLauncher.ViewModel;
 using Wox.Infrastructure.UserSettings;
+using Wox.Plugin;
+using Wox.Plugin.Interfaces;
+using CancellationToken = System.Threading.CancellationToken;
+using Image = Wox.Infrastructure.Image;
 using KeyEventArgs = System.Windows.Input.KeyEventArgs;
 using Log = Wox.Plugin.Logger.Log;
 using Screen = System.Windows.Forms.Screen;
@@ -24,22 +36,63 @@ namespace PowerLauncher
     {
         private readonly PowerToysRunSettings _settings;
         private readonly MainViewModel _viewModel;
+        private readonly CancellationToken _nativeWaiterCancelToken;
         private bool _isTextSetProgrammatically;
         private bool _deletePressed;
+        private HwndSource _hwndSource;
         private Timer _firstDeleteTimer = new Timer();
         private bool _coldStateHotkeyPressed;
+        private bool _disposedValue;
+        private IDisposable _reactiveSubscription;
+        private Point _mouseDownPosition;
+        private ResultViewModel _mouseDownResultViewModel;
 
-        public MainWindow(PowerToysRunSettings settings, MainViewModel mainVM)
+        public MainWindow(PowerToysRunSettings settings, MainViewModel mainVM, CancellationToken nativeWaiterCancelToken)
             : this()
         {
             DataContext = mainVM;
             _viewModel = mainVM;
+            _nativeWaiterCancelToken = nativeWaiterCancelToken;
             _settings = settings;
 
             InitializeComponent();
 
             _firstDeleteTimer.Elapsed += CheckForFirstDelete;
             _firstDeleteTimer.Interval = 1000;
+            NativeEventWaiter.WaitForEventLoop(
+                Constants.RunSendSettingsTelemetryEvent(),
+                SendSettingsTelemetry,
+                Application.Current.Dispatcher,
+                _nativeWaiterCancelToken);
+        }
+
+        private void SendSettingsTelemetry()
+        {
+            try
+            {
+                Log.Info("Send Run settings telemetry", this.GetType());
+                var plugins = PluginManager.AllPlugins.ToDictionary(x => x.Metadata.Name + " " + x.Metadata.ID, x => new PluginModel()
+                {
+                    ID = x.Metadata.ID,
+                    Name = x.Metadata.Name,
+                    Disabled = x.Metadata.Disabled,
+                    ActionKeyword = x.Metadata.ActionKeyword,
+                    IsGlobal = x.Metadata.IsGlobal,
+                });
+
+                var telemetryEvent = new RunPluginsSettingsEvent(plugins);
+                PowerToysTelemetry.Log.WriteEvent(telemetryEvent);
+            }
+            catch (Exception ex)
+            {
+                Log.Exception("Unhandled exception when trying to send PowerToys Run settings telemetry.", ex, GetType());
+            }
+        }
+
+        protected override void OnSourceInitialized(EventArgs e)
+        {
+            base.OnSourceInitialized(e);
+            WindowsInteropHelper.SetToolWindowStyle(this);
         }
 
         private void CheckForFirstDelete(object sender, ElapsedEventArgs e)
@@ -75,6 +128,42 @@ namespace PowerLauncher
             Activate();
         }
 
+        private const string EnvironmentChangeType = "Environment";
+
+        public IntPtr ProcessWindowMessages(IntPtr hwnd, int msg, IntPtr wparam, IntPtr lparam, ref bool handled)
+        {
+            switch ((WM)msg)
+            {
+                case WM.SETTINGCHANGE:
+                    string changeType = Marshal.PtrToStringUni(lparam);
+                    if (changeType == EnvironmentChangeType)
+                    {
+                        Log.Info("Reload environment: Updating environment variables for PT Run's process", typeof(EnvironmentHelper));
+                        EnvironmentHelper.UpdateEnvironment();
+                        handled = true;
+                    }
+
+                    break;
+                case WM.HOTKEY:
+                    handled = _viewModel.ProcessHotKeyMessages(wparam, lparam);
+                    break;
+            }
+
+            return IntPtr.Zero;
+        }
+
+        private void OnSourceInitialized(object sender, EventArgs e)
+        {
+            // Initialize protected environment variables before register the WindowMessage
+            EnvironmentHelper.GetProtectedEnvironmentVariables();
+
+            _hwndSource = HwndSource.FromHwnd(new WindowInteropHelper(this).Handle);
+            _hwndSource.AddHook(ProcessWindowMessages);
+
+            // Call RegisterHotKey only after a window handle can be used, so that a global hotkey can be registered.
+            _viewModel.RegisterHotkey(_hwndSource.Handle);
+        }
+
         private void OnLoaded(object sender, RoutedEventArgs e)
         {
             WindowsInteropHelper.DisableControlBox(this);
@@ -82,7 +171,19 @@ namespace PowerLauncher
 
             SearchBox.QueryTextBox.DataContext = _viewModel;
             SearchBox.QueryTextBox.PreviewKeyDown += Launcher_KeyDown;
-            SearchBox.QueryTextBox.TextChanged += QueryTextBox_TextChanged;
+
+            SetupSearchTextBoxReactiveness(_viewModel.GetSearchQueryResultsWithDelaySetting());
+            _viewModel.RegisterSettingsChangeListener(
+                (s, prop_e) =>
+                {
+                    if (prop_e.PropertyName == nameof(PowerToysRunSettings.SearchQueryResultsWithDelay) || prop_e.PropertyName == nameof(PowerToysRunSettings.SearchInputDelay) || prop_e.PropertyName == nameof(PowerToysRunSettings.SearchInputDelayFast))
+                    {
+                        Application.Current.Dispatcher.Invoke(() =>
+                        {
+                            SetupSearchTextBoxReactiveness(_viewModel.GetSearchQueryResultsWithDelaySetting());
+                        });
+                    }
+                });
 
             // Set initial language flow direction
             SearchBox_UpdateFlowDirection();
@@ -96,9 +197,83 @@ namespace PowerLauncher
             ListBox.DataContext = _viewModel;
             ListBox.SuggestionsList.SelectionChanged += SuggestionsList_SelectionChanged;
             ListBox.SuggestionsList.PreviewMouseLeftButtonUp += SuggestionsList_PreviewMouseLeftButtonUp;
+            ListBox.SuggestionsList.PreviewMouseLeftButtonDown += SuggestionsList_PreviewMouseLeftButtonDown;
+            ListBox.SuggestionsList.MouseMove += SuggestionsList_MouseMove;
             _viewModel.PropertyChanged += ViewModel_PropertyChanged;
+            _viewModel.MainWindowVisibility = Visibility.Collapsed;
+            _viewModel.LoadedAtLeastOnce = true;
 
             BringProcessToForeground();
+        }
+
+        private void SetupSearchTextBoxReactiveness(bool showResultsWithDelay)
+        {
+            if (_reactiveSubscription != null)
+            {
+                _reactiveSubscription.Dispose();
+                _reactiveSubscription = null;
+            }
+
+            SearchBox.QueryTextBox.TextChanged -= QueryTextBox_TextChanged;
+
+            if (showResultsWithDelay)
+            {
+                _reactiveSubscription = Observable.FromEventPattern<TextChangedEventHandler, TextChangedEventArgs>(
+                    add => SearchBox.QueryTextBox.TextChanged += add,
+                    remove => SearchBox.QueryTextBox.TextChanged -= remove)
+                    .Do(@event => ClearAutoCompleteText((TextBox)@event.Sender))
+                    .Throttle(TimeSpan.FromMilliseconds(_settings.SearchInputDelayFast))
+                    .Do(@event => Dispatcher.InvokeAsync(() => PerformSearchQuery((TextBox)@event.Sender, false)))
+                    .Throttle(TimeSpan.FromMilliseconds(_settings.SearchInputDelay))
+                    .Do(@event => Dispatcher.InvokeAsync(() => PerformSearchQuery((TextBox)@event.Sender, true)))
+                    .Subscribe();
+
+                /*
+                if (_settings.PTRSearchQueryFastResultsWithDelay)
+                {
+                    // old mode, delay fast and delayed execution
+                    _reactiveSubscription = Observable.FromEventPattern<TextChangedEventHandler, TextChangedEventArgs>(
+                        add => SearchBox.QueryTextBox.TextChanged += add,
+                        remove => SearchBox.QueryTextBox.TextChanged -= remove)
+                        .Do(@event => ClearAutoCompleteText((TextBox)@event.Sender))
+                        .Throttle(TimeSpan.FromMilliseconds(searchInputDelayMs))
+                        .Do(@event => Dispatcher.InvokeAsync(() => PerformSearchQuery((TextBox)@event.Sender)))
+                        .Subscribe();
+                }
+                else
+                {
+                    if (_settings.PTRSearchQueryFastResultsWithPartialDelay)
+                    {
+                        // new mode, fire non-delayed right away, and then later the delayed execution
+                        _reactiveSubscription = Observable.FromEventPattern<TextChangedEventHandler, TextChangedEventArgs>(
+                            add => SearchBox.QueryTextBox.TextChanged += add,
+                            remove => SearchBox.QueryTextBox.TextChanged -= remove)
+                            .Do(@event => ClearAutoCompleteText((TextBox)@event.Sender))
+                            .Do(@event => Dispatcher.InvokeAsync(() => PerformSearchQuery((TextBox)@event.Sender, false)))
+                            .Throttle(TimeSpan.FromMilliseconds(searchInputDelayMs))
+                            .Do(@event => Dispatcher.InvokeAsync(() => PerformSearchQuery((TextBox)@event.Sender, true)))
+                            .Subscribe();
+                    }
+                    else
+                    {
+                        // new mode, fire non-delayed after short delay, and then later the delayed execution
+                        _reactiveSubscription = Observable.FromEventPattern<TextChangedEventHandler, TextChangedEventArgs>(
+                            add => SearchBox.QueryTextBox.TextChanged += add,
+                            remove => SearchBox.QueryTextBox.TextChanged -= remove)
+                            .Do(@event => ClearAutoCompleteText((TextBox)@event.Sender))
+                            .Throttle(TimeSpan.FromMilliseconds(_settings.SearchInputDelayFast))
+                            .Do(@event => Dispatcher.InvokeAsync(() => PerformSearchQuery((TextBox)@event.Sender, false)))
+                            .Throttle(TimeSpan.FromMilliseconds(searchInputDelayMs))
+                            .Do(@event => Dispatcher.InvokeAsync(() => PerformSearchQuery((TextBox)@event.Sender, true)))
+                            .Subscribe();
+                    }
+                }
+                */
+            }
+            else
+            {
+                SearchBox.QueryTextBox.TextChanged += QueryTextBox_TextChanged;
+            }
         }
 
         private void SuggestionsList_PreviewMouseLeftButtonUp(object sender, MouseButtonEventArgs e)
@@ -115,6 +290,48 @@ namespace PowerLauncher
             }
         }
 
+        private void SuggestionsList_PreviewMouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+        {
+            _mouseDownPosition = e.GetPosition(null);
+            _mouseDownResultViewModel = ((FrameworkElement)e.OriginalSource).DataContext as ResultViewModel;
+        }
+
+        private void SuggestionsList_MouseMove(object sender, MouseEventArgs e)
+        {
+            if (e.LeftButton == MouseButtonState.Pressed && _mouseDownResultViewModel?.Result?.ContextData is IFileDropResult fileDropResult)
+            {
+                Vector dragDistance = _mouseDownPosition - e.GetPosition(null);
+                if (Math.Abs(dragDistance.X) > SystemParameters.MinimumHorizontalDragDistance || Math.Abs(dragDistance.Y) > SystemParameters.MinimumVerticalDragDistance)
+                {
+                    _viewModel.Hide();
+
+                    try
+                    {
+                        // DoDragDrop with file thumbnail as drag image
+                        var dataObject = DragDataObject.FromFile(fileDropResult.Path);
+                        using var bitmap = DragDataObject.BitmapSourceToBitmap((BitmapSource)_mouseDownResultViewModel?.Image);
+                        IntPtr hBitmap = bitmap.GetHbitmap();
+
+                        try
+                        {
+                            dataObject.SetDragImage(hBitmap, Constant.ThumbnailSize, Constant.ThumbnailSize);
+                            DragDrop.DoDragDrop(ListBox.SuggestionsList, dataObject, DragDropEffects.Copy);
+                        }
+                        finally
+                        {
+                            Image.NativeMethods.DeleteObject(hBitmap);
+                        }
+                    }
+                    catch
+                    {
+                        // DoDragDrop without drag image
+                        IDataObject dataObject = new DataObject(DataFormats.FileDrop, new[] { fileDropResult.Path });
+                        DragDrop.DoDragDrop(ListBox.SuggestionsList, dataObject, DragDropEffects.Copy);
+                    }
+                }
+            }
+        }
+
         private void ViewModel_PropertyChanged(object sender, PropertyChangedEventArgs e)
         {
             if (e.PropertyName == nameof(MainViewModel.MainWindowVisibility))
@@ -125,6 +342,10 @@ namespace PowerLauncher
                     // Called when window is made visible by hotkey. Not called when the window is deactivated by clicking away
                     UpdatePosition();
                     BringProcessToForeground();
+
+                    // HACK: Setting focus here again fixes some focus issues, like on first run or after showing a message box.
+                    SearchBox.QueryTextBox.Focus();
+                    Keyboard.Focus(SearchBox.QueryTextBox);
 
                     if (!_viewModel.LastQuerySelected)
                     {
@@ -161,20 +382,12 @@ namespace PowerLauncher
             _settings.WindowLeft = Left;
         }
 
-        private void OnActivated(object sender, EventArgs e)
-        {
-            if (_settings.ClearInputOnLaunch)
-            {
-                _viewModel.ClearQueryCommand.Execute(null);
-            }
-        }
-
         private void OnDeactivated(object sender, EventArgs e)
         {
             if (_settings.HideWhenDeactivated)
             {
                 // (this.FindResource("OutroStoryboard") as Storyboard).Begin();
-                Hide();
+                _viewModel.Hide();
             }
         }
 
@@ -207,7 +420,7 @@ namespace PowerLauncher
         /// <returns>X co-ordinate of main window top left corner</returns>
         private double WindowLeft()
         {
-            var screen = Screen.FromPoint(System.Windows.Forms.Cursor.Position);
+            var screen = GetScreen();
             var dip1 = WindowsInteropHelper.TransformPixelsToDIP(this, screen.WorkingArea.X, 0);
             var dip2 = WindowsInteropHelper.TransformPixelsToDIP(this, screen.WorkingArea.Width, 0);
             var left = ((dip2.X - ActualWidth) / 2) + dip1.X;
@@ -216,11 +429,28 @@ namespace PowerLauncher
 
         private double WindowTop()
         {
-            var screen = Screen.FromPoint(System.Windows.Forms.Cursor.Position);
+            var screen = GetScreen();
             var dip1 = WindowsInteropHelper.TransformPixelsToDIP(this, 0, screen.WorkingArea.Y);
             var dip2 = WindowsInteropHelper.TransformPixelsToDIP(this, 0, screen.WorkingArea.Height);
             var top = ((dip2.Y - SearchBox.ActualHeight) / 4) + dip1.Y;
             return top;
+        }
+
+        private Screen GetScreen()
+        {
+            ManagedCommon.StartupPosition position = _settings.StartupPosition;
+            switch (position)
+            {
+                case ManagedCommon.StartupPosition.PrimaryMonitor:
+                    return Screen.PrimaryScreen;
+                case ManagedCommon.StartupPosition.Focus:
+                    IntPtr foregroundWindowHandle = NativeMethods.GetForegroundWindow();
+                    Screen activeScreen = Screen.FromHandle(foregroundWindowHandle);
+                    return activeScreen;
+                case ManagedCommon.StartupPosition.Cursor:
+                default:
+                    return Screen.FromPoint(System.Windows.Forms.Cursor.Position);
+            }
         }
 
         private void Launcher_KeyDown(object sender, KeyEventArgs e)
@@ -321,7 +551,7 @@ namespace PowerLauncher
 
             // To populate the AutoCompleteTextBox as soon as the selection is changed or set.
             // Setting it here instead of when the text is changed as there is a delay in executing the query and populating the result
-            if (_viewModel.Results != null)
+            if (_viewModel.Results != null && !string.IsNullOrEmpty(SearchBox.QueryTextBox.Text))
             {
                 SearchBox.AutoCompleteTextBlock.Text = MainViewModel.GetAutoCompleteText(
                     _viewModel.Results.SelectedIndex,
@@ -330,11 +560,15 @@ namespace PowerLauncher
             }
         }
 
-        private bool disposedValue;
-
         private void QueryTextBox_TextChanged(object sender, TextChangedEventArgs e)
         {
             var textBox = (TextBox)sender;
+            ClearAutoCompleteText(textBox);
+            PerformSearchQuery(textBox);
+        }
+
+        private void ClearAutoCompleteText(TextBox textBox)
+        {
             var text = textBox.Text;
             var autoCompleteText = SearchBox.AutoCompleteTextBlock.Text;
 
@@ -343,15 +577,79 @@ namespace PowerLauncher
                 SearchBox.AutoCompleteTextBlock.Text = string.Empty;
             }
 
+            var showResultsWithDelay = _viewModel.GetSearchQueryResultsWithDelaySetting();
+
+            // only if we are using throttled search and throttled 'fast' search, do we need to do anything different with the current results.
+            if (showResultsWithDelay && _settings.PTRSearchQueryFastResultsWithDelay)
+            {
+                // Default means we don't do anything we did not do before... leave the results as is, they will be changed as needed when results are returned
+                var pTRunStartNewSearchAction = _settings.PTRunStartNewSearchAction ?? "Default";
+
+                if (pTRunStartNewSearchAction == "DeSelect")
+                {
+                    // leave the results, be deselect anything to it will not be activated by <enter> key, can still be arrow-key or clicked though
+                    if (!_isTextSetProgrammatically)
+                    {
+                        DeselectAllResults();
+                    }
+                }
+                else if (pTRunStartNewSearchAction == "Clear")
+                {
+                    // remove all results to prepare for new results, this causes flashing usually and is not cool
+                    if (!_isTextSetProgrammatically)
+                    {
+                        ClearResults();
+                    }
+                }
+            }
+        }
+
+        private void ClearResults()
+        {
+            _viewModel.Results.SelectedItem = null;
+            System.Threading.Tasks.Task.Run(() =>
+            {
+                Application.Current.Dispatcher.BeginInvoke(System.Windows.Threading.DispatcherPriority.Normal, new Action(() =>
+                {
+                    _viewModel.Results.Clear();
+                    _viewModel.Results.Results.NotifyChanges();
+                }));
+            });
+        }
+
+        private void DeselectAllResults()
+        {
+            Application.Current.Dispatcher.BeginInvoke(System.Windows.Threading.DispatcherPriority.Normal, new Action(() =>
+            {
+                _viewModel.Results.SelectedIndex = -1;
+            }));
+        }
+
+        private void PerformSearchQuery(TextBox textBox)
+        {
+            PerformSearchQuery(textBox, null);
+        }
+
+        private void PerformSearchQuery(TextBox textBox, bool? delayedExecution)
+        {
+            var text = textBox.Text;
+
             if (_isTextSetProgrammatically)
             {
                 textBox.SelectionStart = textBox.Text.Length;
-                _isTextSetProgrammatically = false;
+
+                // because IF this is delayedExecution = false (run fast queries) we know this will be called again with delayedExecution = true
+                // if we don't do this, the second (partner) call will not be called _isTextSetProgrammatically = true also, and we need it to.
+                // Also, if search query delay is disabled, second call won't come, so reset _isTextSetProgrammatically anyway
+                if ((delayedExecution.HasValue && delayedExecution.Value) || !_viewModel.GetSearchQueryResultsWithDelaySetting())
+                {
+                    _isTextSetProgrammatically = false;
+                }
             }
             else
             {
                 _viewModel.QueryText = text;
-                _viewModel.Query();
+                _viewModel.Query(delayedExecution);
             }
         }
 
@@ -422,7 +720,7 @@ namespace PowerLauncher
 
         protected virtual void Dispose(bool disposing)
         {
-            if (!disposedValue)
+            if (!_disposedValue)
             {
                 if (disposing)
                 {
@@ -430,26 +728,34 @@ namespace PowerLauncher
                     {
                         _firstDeleteTimer.Dispose();
                     }
+
+                    _hwndSource?.Dispose();
                 }
 
-                // TODO: free unmanaged resources (unmanaged objects) and override finalizer
-                // TODO: set large fields to null
                 _firstDeleteTimer = null;
-                disposedValue = true;
+                _disposedValue = true;
             }
         }
 
-        // // TODO: override finalizer only if 'Dispose(bool disposing)' has code to free unmanaged resources
-        // ~MainWindow()
-        // {
-        //     // Do not change this code. Put cleanup code in 'Dispose(bool disposing)' method
-        //     Dispose(disposing: false);
-        // }
         public void Dispose()
         {
             // Do not change this code. Put cleanup code in 'Dispose(bool disposing)' method
             Dispose(disposing: true);
             GC.SuppressFinalize(this);
+        }
+
+        private void OnClosed(object sender, EventArgs e)
+        {
+            try
+            {
+                _hwndSource.RemoveHook(ProcessWindowMessages);
+            }
+            catch (Exception ex)
+            {
+                Log.Exception($"Exception when trying to Remove hook", ex, ex.GetType());
+            }
+
+            _hwndSource = null;
         }
     }
 }

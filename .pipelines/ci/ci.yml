@@ -2,7 +2,7 @@ trigger:
   batch: true
   branches:
     include:
-      - master
+      - main
       - stable
   paths:
     exclude:
@@ -13,7 +13,7 @@ trigger:
 pr:
   branches:
     include:
-      - master
+      - main
       - stable
 
 #     0.0.yyMM.dd##
@@ -24,3 +24,6 @@ jobs:
   - template: ./templates/build-powertoys-ci.yml
     parameters:
       platform: x64
+  - template: ./templates/build-powertoys-ci.yml
+    parameters:
+      platform: arm64

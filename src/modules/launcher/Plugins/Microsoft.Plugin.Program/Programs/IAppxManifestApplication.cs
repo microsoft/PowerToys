@@ -4,7 +4,7 @@
 
 using System;
 using System.Runtime.InteropServices;
-using static Microsoft.Plugin.Program.Programs.UWP;
+using Wox.Plugin.Common.Win32;
 
 namespace Microsoft.Plugin.Program.Programs
 {
@@ -13,9 +13,9 @@ namespace Microsoft.Plugin.Program.Programs
     public interface IAppxManifestApplication
     {
         [PreserveSig]
-        Hresult GetStringValue([MarshalAs(UnmanagedType.LPWStr)] string name, [MarshalAs(UnmanagedType.LPWStr)] out string value);
+        HRESULT GetStringValue([MarshalAs(UnmanagedType.LPWStr)] string name, [MarshalAs(UnmanagedType.LPWStr)] out string value);
 
         [PreserveSig]
-        Hresult GetAppUserModelId([MarshalAs(UnmanagedType.LPWStr)] out string value);
+        HRESULT GetAppUserModelId([MarshalAs(UnmanagedType.LPWStr)] out string value);
     }
 }

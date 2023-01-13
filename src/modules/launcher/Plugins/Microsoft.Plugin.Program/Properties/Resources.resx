@@ -130,7 +130,7 @@
     <value>Program</value>
   </data>
   <data name="wox_plugin_program_plugin_description" xml:space="preserve">
-    <value>Search programs in PowerToys Run</value>
+    <value>Searches programs.</value>
   </data>
   <data name="powertoys_run_plugin_program_win32_application" xml:space="preserve">
     <value>Application</value>
@@ -164,5 +164,8 @@
   </data>
   <data name="powertoys_run_plugin_program_uwp_failed" xml:space="preserve">
     <value>Can't start UWP</value>
+  </data>
+  <data name="wox_plugin_program_run_as_user" xml:space="preserve">
+    <value>Run as different user (Ctrl+Shift+U)</value>
   </data>
 </root>

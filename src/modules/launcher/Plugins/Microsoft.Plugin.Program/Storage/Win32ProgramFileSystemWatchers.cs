@@ -1,10 +1,13 @@
-﻿// Copyright (c) Microsoft Corporation
+// Copyright (c) Microsoft Corporation
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
 using System;
 using System.Collections.Generic;
+using System.IO;
+using System.Linq;
 using Wox.Infrastructure.Storage;
+using Wox.Plugin.Logger;
 
 namespace Microsoft.Plugin.Program.Storage
 {
@@ -33,7 +36,22 @@ namespace Microsoft.Plugin.Program.Storage
                                Environment.GetFolderPath(Environment.SpecialFolder.Desktop),
                                Environment.GetFolderPath(Environment.SpecialFolder.CommonDesktopDirectory),
                             };
-            return paths;
+
+            var invalidPaths = new List<string>();
+            foreach (var path in paths)
+            {
+                try
+                {
+                    Directory.GetFiles(path);
+                }
+                catch (Exception ex)
+                {
+                    Log.Exception($"Failed to get files in {path}", ex, typeof(Win32ProgramFileSystemWatchers));
+                    invalidPaths.Add(path);
+                }
+            }
+
+            return paths.Except(invalidPaths).ToArray();
         }
 
         // Initializes the FileSystemWatchers

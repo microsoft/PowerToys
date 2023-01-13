@@ -3,16 +3,16 @@
 // See the LICENSE file in the project root for more information.
 
 using System.Windows;
-using NUnit.Framework;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Wox.Plugin;
 
 namespace Wox.Test.Plugins
 {
-    [TestFixture]
-    internal class ResultTest
+    [TestClass]
+    public class ResultTest
     {
-        [Test]
-        public void Result_UpdatesToolTipVisibilityToVisible_WhenToolTipDataIsSet()
+        [TestMethod]
+        public void ResultUpdatesToolTipVisibilityToVisibleWhenToolTipDataIsSet()
         {
             // Arrange
             Result res = new Result();
@@ -25,8 +25,8 @@ namespace Wox.Test.Plugins
             Assert.AreEqual(Visibility.Visible, res.ToolTipVisibility);
         }
 
-        [Test]
-        public void Result_UpdatesToolTipVisibilityToCollapsed_WhenToolTipDataIsNotSet()
+        [TestMethod]
+        public void ResultUpdatesToolTipVisibilityToCollapsedWhenToolTipDataIsNotSet()
         {
             // Act
             Result res = new Result();

@@ -1,0 +1,43 @@
+namespace PowerToys
+{
+    namespace GPOWrapper
+    {
+        enum GpoRuleConfigured
+        {
+            WrongValue = -3,
+            Unavailable = -2,
+            NotConfigured = -1,
+            Disabled = 0,
+            Enabled = 1
+        };
+        [default_interface] static runtimeclass GPOWrapper {
+            static GpoRuleConfigured GetConfiguredAlwaysOnTopEnabledValue();
+            static GpoRuleConfigured GetConfiguredAwakeEnabledValue();
+            static GpoRuleConfigured GetConfiguredColorPickerEnabledValue();
+            static GpoRuleConfigured GetConfiguredFancyZonesEnabledValue();
+            static GpoRuleConfigured GetConfiguredFileLocksmithEnabledValue();
+            static GpoRuleConfigured GetConfiguredSvgPreviewEnabledValue();
+            static GpoRuleConfigured GetConfiguredMarkdownPreviewEnabledValue();
+            static GpoRuleConfigured GetConfiguredMonacoPreviewEnabledValue();
+            static GpoRuleConfigured GetConfiguredPdfPreviewEnabledValue();
+            static GpoRuleConfigured GetConfiguredGcodePreviewEnabledValue();
+            static GpoRuleConfigured GetConfiguredSvgThumbnailsEnabledValue();
+            static GpoRuleConfigured GetConfiguredPdfThumbnailsEnabledValue();
+            static GpoRuleConfigured GetConfiguredGcodeThumbnailsEnabledValue();
+            static GpoRuleConfigured GetConfiguredStlThumbnailsEnabledValue();
+            static GpoRuleConfigured GetConfiguredHostsFileEditorEnabledValue();
+            static GpoRuleConfigured GetConfiguredImageResizerEnabledValue();
+            static GpoRuleConfigured GetConfiguredKeyboardManagerEnabledValue();
+            static GpoRuleConfigured GetConfiguredFindMyMouseEnabledValue();
+            static GpoRuleConfigured GetConfiguredMouseHighlighterEnabledValue();
+            static GpoRuleConfigured GetConfiguredMousePointerCrosshairsEnabledValue();
+            static GpoRuleConfigured GetConfiguredPowerRenameEnabledValue();
+            static GpoRuleConfigured GetConfiguredPowerLauncherEnabledValue();
+            static GpoRuleConfigured GetConfiguredQuickAccentEnabledValue();
+            static GpoRuleConfigured GetConfiguredScreenRulerEnabledValue();
+            static GpoRuleConfigured GetConfiguredShortcutGuideEnabledValue();
+            static GpoRuleConfigured GetConfiguredTextExtractorEnabledValue();
+            static GpoRuleConfigured GetConfiguredVideoConferenceMuteEnabledValue();
+        }
+    }
+}

@@ -2,17 +2,14 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-using System;
-using System.Drawing;
-using System.IO;
-using System.Runtime.InteropServices.ComTypes;
-using System.Windows.Forms;
+using System.Reflection;
+using System.Runtime.CompilerServices;
 using Common;
 using Common.Utilities;
 using Microsoft.PowerToys.PreviewHandler.Svg.Telemetry.Events;
-using Microsoft.PowerToys.PreviewHandler.Svg.Utilities;
 using Microsoft.PowerToys.Telemetry;
-using PreviewHandlerCommon;
+using Microsoft.Web.WebView2.Core;
+using Microsoft.Web.WebView2.WinForms;
 
 namespace Microsoft.PowerToys.PreviewHandler.Svg
 {
@@ -22,9 +19,41 @@ namespace Microsoft.PowerToys.PreviewHandler.Svg
     public class SvgPreviewControl : FormHandlerControl
     {
         /// <summary>
-        /// Extended Browser Control to display Svg.
+        /// WebView2 Control to display Svg.
         /// </summary>
-        private WebBrowserExt _browser;
+        private WebView2 _browser;
+
+        /// <summary>
+        /// WebView2 Environment
+        /// </summary>
+        private CoreWebView2Environment _webView2Environment;
+
+        /// <summary>
+        /// Name of the virtual host
+        /// </summary>
+        private const string VirtualHostName = "PowerToysLocalSvg";
+
+        /// <summary>
+        /// URI of the local file saved with the contents
+        /// </summary>
+        private Uri _localFileURI;
+
+        /// <summary>
+        /// Gets the path of the current assembly.
+        /// </summary>
+        /// <remarks>
+        /// Source: https://stackoverflow.com/a/283917/14774889
+        /// </remarks>
+        private static string AssemblyDirectory
+        {
+            get
+            {
+                string codeBase = Assembly.GetExecutingAssembly().Location;
+                UriBuilder uri = new UriBuilder(codeBase);
+                string path = Uri.UnescapeDataString(uri.Path);
+                return Path.GetDirectoryName(path);
+            }
+        }
 
         /// <summary>
         /// Text box to display the information about blocked elements from Svg.
@@ -37,48 +66,89 @@ namespace Microsoft.PowerToys.PreviewHandler.Svg
         private bool _infoBarAdded;
 
         /// <summary>
+        /// Represent WebView2 user data folder path.
+        /// </summary>
+        private string _webView2UserDataFolder = System.Environment.GetEnvironmentVariable("USERPROFILE") +
+                                "\\AppData\\LocalLow\\Microsoft\\PowerToys\\SvgPreview-Temp";
+
+        /// <summary>
         /// Start the preview on the Control.
         /// </summary>
         /// <param name="dataSource">Stream reference to access source file.</param>
         public override void DoPreview<T>(T dataSource)
         {
-            InvokeOnControlThread(() =>
+            if (global::PowerToys.GPOWrapper.GPOWrapper.GetConfiguredSvgPreviewEnabledValue() == global::PowerToys.GPOWrapper.GpoRuleConfigured.Disabled)
             {
-                try
+                // GPO is disabling this utility. Show an error message instead.
+                _infoBarAdded = true;
+                AddTextBoxControl(Properties.Resource.GpoDisabledErrorText);
+                Resize += FormResized;
+                base.DoPreview(dataSource);
+
+                return;
+            }
+
+            CleanupWebView2UserDataFolder();
+
+            string svgData = null;
+            bool blocked = false;
+
+            try
+            {
+                if (!(dataSource is string filePath))
                 {
-                    _infoBarAdded = false;
-                    string svgData = null;
-                    using (var stream = new ReadonlyStream(dataSource as IStream))
-                    {
-                        using (var reader = new StreamReader(stream))
-                        {
-                            svgData = reader.ReadToEnd();
-                        }
-                    }
-
-                    // Add a info bar on top of the Preview if any blocked element is present.
-                    if (SvgPreviewHandlerHelper.CheckBlockedElements(svgData))
-                    {
-                        _infoBarAdded = true;
-                        AddTextBoxControl(Resource.BlockedElementInfoText);
-                    }
-
-                    AddBrowserControl(svgData);
-                    Resize += FormResized;
-                    base.DoPreview(dataSource);
-                    PowerToysTelemetry.Log.WriteEvent(new SvgFilePreviewed());
+                    throw new ArgumentException($"{nameof(dataSource)} for {nameof(SvgPreviewControl)} must be a string but was a '{typeof(T)}'");
                 }
-#pragma warning disable CA1031 // Do not catch general exception types
-                catch (Exception ex)
-#pragma warning restore CA1031 // Do not catch general exception types
+
+                using (var stream = new FileStream(filePath, FileMode.Open, FileAccess.Read))
                 {
-                    PowerToysTelemetry.Log.WriteEvent(new SvgFilePreviewError { Message = ex.Message });
-                    Controls.Clear();
+                    using (var reader = new StreamReader(stream))
+                    {
+                        svgData = reader.ReadToEnd();
+                    }
+                }
+
+                blocked = SvgPreviewHandlerHelper.CheckBlockedElements(svgData);
+            }
+            catch (Exception ex)
+            {
+                PreviewError(ex, dataSource);
+                return;
+            }
+
+            try
+            {
+                // Fixes #17527 - Inkscape v1.1 swapped order of default and svg namespaces in svg file (default first, svg after).
+                // That resulted in parser being unable to parse it correctly and instead of svg, text was previewed.
+                // MS Edge and Firefox also couldn't preview svg files with mentioned order of namespaces definitions.
+                svgData = SvgPreviewHandlerHelper.SwapNamespaces(svgData);
+                svgData = SvgPreviewHandlerHelper.AddStyleSVG(svgData);
+            }
+            catch (Exception ex)
+            {
+                PowerToysTelemetry.Log.WriteEvent(new SvgFilePreviewError { Message = ex.Message });
+            }
+
+            try
+            {
+                _infoBarAdded = false;
+
+                // Add a info bar on top of the Preview if any blocked element is present.
+                if (blocked)
+                {
                     _infoBarAdded = true;
-                    AddTextBoxControl(Resource.SvgNotPreviewedError);
-                    base.DoPreview(dataSource);
+                    AddTextBoxControl(Properties.Resource.BlockedElementInfoText);
                 }
-            });
+
+                AddWebViewControl(svgData);
+                Resize += FormResized;
+                base.DoPreview(dataSource);
+                PowerToysTelemetry.Log.WriteEvent(new SvgFilePreviewed());
+            }
+            catch (Exception ex)
+            {
+                PreviewError(ex, dataSource);
+            }
         }
 
         /// <summary>
@@ -105,20 +175,72 @@ namespace Microsoft.PowerToys.PreviewHandler.Svg
             }
         }
 
+        // Disable loading resources.
+        private void CoreWebView2_BlockExternalResources(object sender, CoreWebView2WebResourceRequestedEventArgs e)
+        {
+            // Show local file we've saved with the svg contents. Block all else.
+            if (new Uri(e.Request.Uri) != _localFileURI)
+            {
+                e.Response = _browser.CoreWebView2.Environment.CreateWebResourceResponse(null, 403, "Forbidden", null);
+            }
+        }
+
         /// <summary>
-        /// Adds a Web Browser Control to Control Collection.
+        /// Adds a WebView2 Control to Control Collection.
         /// </summary>
         /// <param name="svgData">Svg to display on Browser Control.</param>
-        private void AddBrowserControl(string svgData)
+        private void AddWebViewControl(string svgData)
         {
-            _browser = new WebBrowserExt();
-            _browser.DocumentText = svgData;
+            _browser = new WebView2();
             _browser.Dock = DockStyle.Fill;
-            _browser.IsWebBrowserContextMenuEnabled = false;
-            _browser.ScriptErrorsSuppressed = true;
-            _browser.ScrollBarsEnabled = true;
-            _browser.AllowNavigation = false;
-            Controls.Add(_browser);
+
+            // Prevent new windows from being opened.
+            var webView2Options = new CoreWebView2EnvironmentOptions("--block-new-web-contents");
+            ConfiguredTaskAwaitable<CoreWebView2Environment>.ConfiguredTaskAwaiter
+               webView2EnvironmentAwaiter = CoreWebView2Environment
+                   .CreateAsync(userDataFolder: _webView2UserDataFolder, options: webView2Options)
+                   .ConfigureAwait(true).GetAwaiter();
+            webView2EnvironmentAwaiter.OnCompleted(async () =>
+            {
+                try
+                {
+                    _webView2Environment = webView2EnvironmentAwaiter.GetResult();
+                    await _browser.EnsureCoreWebView2Async(_webView2Environment).ConfigureAwait(true);
+                    _browser.CoreWebView2.SetVirtualHostNameToFolderMapping(VirtualHostName, AssemblyDirectory, CoreWebView2HostResourceAccessKind.Deny);
+                    _browser.CoreWebView2.Settings.AreDefaultScriptDialogsEnabled = false;
+                    _browser.CoreWebView2.Settings.AreDefaultContextMenusEnabled = false;
+                    _browser.CoreWebView2.Settings.AreDevToolsEnabled = false;
+                    _browser.CoreWebView2.Settings.AreHostObjectsAllowed = false;
+                    _browser.CoreWebView2.Settings.IsGeneralAutofillEnabled = false;
+                    _browser.CoreWebView2.Settings.IsPasswordAutosaveEnabled = false;
+                    _browser.CoreWebView2.Settings.IsScriptEnabled = false;
+                    _browser.CoreWebView2.Settings.IsWebMessageEnabled = false;
+
+                    // Don't load any resources.
+                    _browser.CoreWebView2.AddWebResourceRequestedFilter("*", CoreWebView2WebResourceContext.All);
+                    _browser.CoreWebView2.WebResourceRequested += CoreWebView2_BlockExternalResources;
+
+                    // WebView2.NavigateToString() limitation
+                    // See https://learn.microsoft.com/dotnet/api/microsoft.web.webview2.core.corewebview2.navigatetostring?view=webview2-dotnet-1.0.864.35#remarks
+                    // While testing the limit, it turned out it is ~1.5MB, so to be on a safe side we go for 1.5m bytes
+                    if (svgData.Length > 1_500_000)
+                    {
+                        string filename = _webView2UserDataFolder + "\\" + Guid.NewGuid().ToString() + ".html";
+                        File.WriteAllText(filename, svgData);
+                        _localFileURI = new Uri(filename);
+                        _browser.Source = _localFileURI;
+                    }
+                    else
+                    {
+                        _browser.NavigateToString(svgData);
+                    }
+
+                    Controls.Add(_browser);
+                }
+                catch (Exception)
+                {
+                }
+            });
         }
 
         /// <summary>
@@ -137,6 +259,40 @@ namespace Microsoft.PowerToys.PreviewHandler.Svg
             _textBox.ScrollBars = RichTextBoxScrollBars.None;
             _textBox.BorderStyle = BorderStyle.None;
             Controls.Add(_textBox);
+        }
+
+        /// <summary>
+        /// Called when an error occurs during preview.
+        /// </summary>
+        /// <param name="exception">The exception which occurred.</param>
+        /// <param name="dataSource">Stream reference to access source file.</param>
+        private void PreviewError<T>(Exception exception, T dataSource)
+        {
+            PowerToysTelemetry.Log.WriteEvent(new SvgFilePreviewError { Message = exception.Message });
+            Controls.Clear();
+            _infoBarAdded = true;
+            AddTextBoxControl(Properties.Resource.SvgNotPreviewedError);
+            base.DoPreview(dataSource);
+        }
+
+        /// <summary>
+        /// Cleanup the previously created tmp html files from svg files bigger than 2MB.
+        /// </summary>
+        private void CleanupWebView2UserDataFolder()
+        {
+            try
+            {
+                // Cleanup temp dir
+                var dir = new DirectoryInfo(_webView2UserDataFolder);
+
+                foreach (var file in dir.EnumerateFiles("*.html"))
+                {
+                    file.Delete();
+                }
+            }
+            catch (Exception)
+            {
+            }
         }
     }
 }

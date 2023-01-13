@@ -1,0 +1,28 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <Import Project="..\..\Version.props" />
+  <PropertyGroup>
+    <TargetFramework>net7.0-windows10.0.19041.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <TargetName>PowerToys.GPOWrapperProjection</TargetName>
+    <RootNamespace>PowerToys.GPOWrapperProjection</RootNamespace>
+    <AssemblyName>PowerToys.GPOWrapperProjection</AssemblyName>
+  </PropertyGroup>
+
+  <!-- See https://learn.microsoft.com/windows/apps/develop/platform/csharp-winrt/net-projection-from-cppwinrt-component for more info -->
+  <PropertyGroup>
+    <CsWinRTIncludes>PowerToys.GPOWrapper</CsWinRTIncludes>
+    <CsWinRTGeneratedFilesDir>$(OutDir)</CsWinRTGeneratedFilesDir>
+    <ErrorOnDuplicatePublishOutputFiles>false</ErrorOnDuplicatePublishOutputFiles>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Windows.CsWinRT" Version="2.0.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\GPOWrapper\GPOWrapper.vcxproj">
+    </ProjectReference>
+  </ItemGroup>
+
+</Project>

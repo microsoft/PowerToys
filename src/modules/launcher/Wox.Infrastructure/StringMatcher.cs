@@ -9,7 +9,8 @@ using System.Linq;
 using System.Runtime.CompilerServices;
 
 [assembly: InternalsVisibleTo("Microsoft.Plugin.Program.UnitTests")]
-[assembly: InternalsVisibleTo("Microsoft.Plugin.Sys.UnitTests")]
+[assembly: InternalsVisibleTo("Microsoft.PowerToys.Run.Plugin.System.UnitTests")]
+[assembly: InternalsVisibleTo("Microsoft.PowerToys.Run.Plugin.TimeDate.UnitTests")]
 
 namespace Wox.Infrastructure
 {
@@ -18,6 +19,13 @@ namespace Wox.Infrastructure
         private readonly MatchOption _defaultMatchOption = new MatchOption();
 
         public SearchPrecisionScore UserSettingSearchPrecision { get; set; }
+
+        private readonly IAlphabet _alphabet;
+
+        public StringMatcher(IAlphabet alphabet = null)
+        {
+            _alphabet = alphabet;
+        }
 
         public static StringMatcher Instance { get; internal set; }
 
@@ -56,6 +64,27 @@ namespace Wox.Infrastructure
         /// </summary>
         public MatchResult FuzzyMatch(string query, string stringToCompare, MatchOption opt)
         {
+            if (string.IsNullOrEmpty(stringToCompare))
+            {
+                return new MatchResult(false, UserSettingSearchPrecision);
+            }
+
+            var bestResult = new MatchResult(false, UserSettingSearchPrecision);
+
+            for (int startIndex = 0; startIndex < stringToCompare.Length; startIndex++)
+            {
+                MatchResult result = FuzzyMatch(query, stringToCompare, opt, startIndex);
+                if (result.Success && (!bestResult.Success || result.Score > bestResult.Score))
+                {
+                    bestResult = result;
+                }
+            }
+
+            return bestResult;
+        }
+
+        private MatchResult FuzzyMatch(string query, string stringToCompare, MatchOption opt, int startIndex)
+        {
             if (string.IsNullOrEmpty(stringToCompare) || string.IsNullOrEmpty(query))
             {
                 return new MatchResult(false, UserSettingSearchPrecision);
@@ -67,6 +96,12 @@ namespace Wox.Infrastructure
             }
 
             query = query.Trim();
+
+            if (_alphabet != null)
+            {
+                query = _alphabet.Translate(query);
+                stringToCompare = _alphabet.Translate(stringToCompare);
+            }
 
             // Using InvariantCulture since this is internal
             var fullStringToCompareWithoutCase = opt.IgnoreCase ? stringToCompare.ToUpper(CultureInfo.InvariantCulture) : stringToCompare;
@@ -87,7 +122,7 @@ namespace Wox.Infrastructure
             var indexList = new List<int>();
             List<int> spaceIndices = new List<int>();
 
-            for (var compareStringIndex = 0; compareStringIndex < fullStringToCompareWithoutCase.Length; compareStringIndex++)
+            for (var compareStringIndex = startIndex; compareStringIndex < fullStringToCompareWithoutCase.Length; compareStringIndex++)
             {
                 // To maintain a list of indices which correspond to spaces in the string to compare
                 // To populate the list only for the first query substring
@@ -96,7 +131,21 @@ namespace Wox.Infrastructure
                     spaceIndices.Add(compareStringIndex);
                 }
 
-                if (fullStringToCompareWithoutCase[compareStringIndex] != currentQuerySubstring[currentQuerySubstringCharacterIndex])
+                bool compareResult;
+                if (opt.IgnoreCase)
+                {
+                    var fullStringToCompare = fullStringToCompareWithoutCase[compareStringIndex].ToString();
+                    var querySubstring = currentQuerySubstring[currentQuerySubstringCharacterIndex].ToString();
+#pragma warning disable CA1309 // Use ordinal string comparison (We are looking for a fuzzy match here)
+                    compareResult = string.Compare(fullStringToCompare, querySubstring, CultureInfo.CurrentCulture, CompareOptions.IgnoreCase | CompareOptions.IgnoreNonSpace) != 0;
+#pragma warning restore CA1309 // Use ordinal string comparison
+                }
+                else
+                {
+                    compareResult = fullStringToCompareWithoutCase[compareStringIndex] != currentQuerySubstring[currentQuerySubstringCharacterIndex];
+                }
+
+                if (compareResult)
                 {
                     matchFoundInPreviousLoop = false;
                     continue;
@@ -224,7 +273,12 @@ namespace Wox.Infrastructure
             // A match found near the beginning of a string is scored more than a match found near the end
             // A match is scored more if the characters in the patterns are closer to each other,
             // while the score is lower if they are more spread out
-            var score = 100 * (query.Length + 1) / ((1 + firstIndex) + (matchLen + 1));
+
+            // The length of the match is assigned a larger weight factor.
+            // I.e. the length is more important than where in the string a match is found.
+            const int matchLenWeightFactor = 2;
+
+            var score = 100 * (query.Length + 1) * matchLenWeightFactor / ((1 + firstIndex) + (matchLenWeightFactor * (matchLen + 1)));
 
             // A match with less characters assigning more weights
             if (stringToCompare.Length - query.Length < 5)
@@ -250,12 +304,13 @@ namespace Wox.Infrastructure
                 }
             }
 
-            // Using CurrentCultureIgnoreCase since this relates to queries input by user
+#pragma warning disable CA1309 // Use ordinal string comparison (Using CurrentCultureIgnoreCase since this relates to queries input by user)
             if (string.Equals(query, stringToCompare, StringComparison.CurrentCultureIgnoreCase))
             {
                 var bonusForExactMatch = 10;
                 score += bonusForExactMatch;
             }
+#pragma warning restore CA1309 // Use ordinal string comparison
 
             return score;
         }

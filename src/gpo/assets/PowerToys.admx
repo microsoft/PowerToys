@@ -1,0 +1,290 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright (c) Microsoft Corporation.
+     Licensed under the MIT License. -->
+<policyDefinitions xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" revision="1.0" schemaVersion="1.0" xmlns="http://schemas.microsoft.com/GroupPolicy/2006/07/PolicyDefinitions">
+  <policyNamespaces>
+    <target prefix="powertoys" namespace="Microsoft.Policies.PowerToys" />
+  </policyNamespaces>
+  <resources minRequiredRevision="1.0"/><!-- PowerToys v0.64.0 -->
+  <supportedOn>
+    <definitions>
+      <definition name="SUPPORTED_POWERTOYS_0_64_0" displayName="$(string.SUPPORTED_POWERTOYS_0_64_0)"/>
+    </definitions>
+  </supportedOn>
+  <categories>
+    <category name="PowerToys" displayName="$(string.PowerToys)">
+    </category>
+  </categories>
+  <policies>
+    <policy name="ConfigureEnabledUtilityAlwaysOnTop" class="Both" displayName="$(string.ConfigureEnabledUtilityAlwaysOnTop)" explainText="$(string.ConfigureEnabledUtilityDescription)" key="Software\Policies\PowerToys" valueName="ConfigureEnabledUtilityAlwaysOnTop">
+      <parentCategory ref="PowerToys" />
+      <supportedOn ref="SUPPORTED_POWERTOYS_0_64_0" />
+      <enabledValue>
+        <decimal value="1" />
+      </enabledValue>
+      <disabledValue>
+        <decimal value="0" />
+      </disabledValue>
+    </policy>
+    <policy name="ConfigureEnabledUtilityAwake" class="Both" displayName="$(string.ConfigureEnabledUtilityAwake)" explainText="$(string.ConfigureEnabledUtilityDescription)" key="Software\Policies\PowerToys" valueName="ConfigureEnabledUtilityAwake">
+      <parentCategory ref="PowerToys" />
+      <supportedOn ref="SUPPORTED_POWERTOYS_0_64_0" />
+      <enabledValue>
+        <decimal value="1" />
+      </enabledValue>
+      <disabledValue>
+        <decimal value="0" />
+      </disabledValue>
+    </policy>
+    <policy name="ConfigureEnabledUtilityColorPicker" class="Both" displayName="$(string.ConfigureEnabledUtilityColorPicker)" explainText="$(string.ConfigureEnabledUtilityDescription)" key="Software\Policies\PowerToys" valueName="ConfigureEnabledUtilityColorPicker">
+      <parentCategory ref="PowerToys" />
+      <supportedOn ref="SUPPORTED_POWERTOYS_0_64_0" />
+      <enabledValue>
+        <decimal value="1" />
+      </enabledValue>
+      <disabledValue>
+        <decimal value="0" />
+      </disabledValue>
+    </policy>
+    <policy name="ConfigureEnabledUtilityFancyZones" class="Both" displayName="$(string.ConfigureEnabledUtilityFancyZones)" explainText="$(string.ConfigureEnabledUtilityDescription)" key="Software\Policies\PowerToys" valueName="ConfigureEnabledUtilityFancyZones">
+      <parentCategory ref="PowerToys" />
+      <supportedOn ref="SUPPORTED_POWERTOYS_0_64_0" />
+      <enabledValue>
+        <decimal value="1" />
+      </enabledValue>
+      <disabledValue>
+        <decimal value="0" />
+      </disabledValue>
+    </policy>
+    <policy name="ConfigureEnabledUtilityFileLocksmith" class="Both" displayName="$(string.ConfigureEnabledUtilityFileLocksmith)" explainText="$(string.ConfigureEnabledUtilityDescription)" key="Software\Policies\PowerToys" valueName="ConfigureEnabledUtilityFileLocksmith">
+      <parentCategory ref="PowerToys" />
+      <supportedOn ref="SUPPORTED_POWERTOYS_0_64_0" />
+      <enabledValue>
+        <decimal value="1" />
+      </enabledValue>
+      <disabledValue>
+        <decimal value="0" />
+      </disabledValue>
+    </policy>
+    <policy name="ConfigureEnabledUtilityFileExplorerSVGPreview" class="Both" displayName="$(string.ConfigureEnabledUtilityFileExplorerSVGPreview)" explainText="$(string.ConfigureEnabledUtilityDescription)" key="Software\Policies\PowerToys" valueName="ConfigureEnabledUtilityFileExplorerSVGPreview">
+      <parentCategory ref="PowerToys" />
+      <supportedOn ref="SUPPORTED_POWERTOYS_0_64_0" />
+      <enabledValue>
+        <decimal value="1" />
+      </enabledValue>
+      <disabledValue>
+        <decimal value="0" />
+      </disabledValue>
+    </policy>
+    <policy name="ConfigureEnabledUtilityFileExplorerMarkdownPreview" class="Both" displayName="$(string.ConfigureEnabledUtilityFileExplorerMarkdownPreview)" explainText="$(string.ConfigureEnabledUtilityDescription)" key="Software\Policies\PowerToys" valueName="ConfigureEnabledUtilityFileExplorerMarkdownPreview">
+      <parentCategory ref="PowerToys" />
+      <supportedOn ref="SUPPORTED_POWERTOYS_0_64_0" />
+      <enabledValue>
+        <decimal value="1" />
+      </enabledValue>
+      <disabledValue>
+        <decimal value="0" />
+      </disabledValue>
+    </policy>
+    <policy name="ConfigureEnabledUtilityFileExplorerMonacoPreview" class="Both" displayName="$(string.ConfigureEnabledUtilityFileExplorerMonacoPreview)" explainText="$(string.ConfigureEnabledUtilityDescription)" key="Software\Policies\PowerToys" valueName="ConfigureEnabledUtilityFileExplorerMonacoPreview">
+      <parentCategory ref="PowerToys" />
+      <supportedOn ref="SUPPORTED_POWERTOYS_0_64_0" />
+      <enabledValue>
+        <decimal value="1" />
+      </enabledValue>
+      <disabledValue>
+        <decimal value="0" />
+      </disabledValue>
+    </policy>
+    <policy name="ConfigureEnabledUtilityFileExplorerPDFPreview" class="Both" displayName="$(string.ConfigureEnabledUtilityFileExplorerPDFPreview)" explainText="$(string.ConfigureEnabledUtilityDescriptionPDFPreviewHandler)" key="Software\Policies\PowerToys" valueName="ConfigureEnabledUtilityFileExplorerPDFPreview">
+      <parentCategory ref="PowerToys" />
+      <supportedOn ref="SUPPORTED_POWERTOYS_0_64_0" />
+      <enabledValue>
+        <decimal value="1" />
+      </enabledValue>
+      <disabledValue>
+        <decimal value="0" />
+      </disabledValue>
+    </policy>
+    <policy name="ConfigureEnabledUtilityFileExplorerGcodePreview" class="Both" displayName="$(string.ConfigureEnabledUtilityFileExplorerGcodePreview)" explainText="$(string.ConfigureEnabledUtilityDescription)" key="Software\Policies\PowerToys" valueName="ConfigureEnabledUtilityFileExplorerGcodePreview">
+      <parentCategory ref="PowerToys" />
+      <supportedOn ref="SUPPORTED_POWERTOYS_0_64_0" />
+      <enabledValue>
+        <decimal value="1" />
+      </enabledValue>
+      <disabledValue>
+        <decimal value="0" />
+      </disabledValue>
+    </policy>
+    <policy name="ConfigureEnabledUtilityFileExplorerSVGThumbnails" class="Both" displayName="$(string.ConfigureEnabledUtilityFileExplorerSVGThumbnails)" explainText="$(string.ConfigureEnabledUtilityDescription)" key="Software\Policies\PowerToys" valueName="ConfigureEnabledUtilityFileExplorerSVGThumbnails">
+      <parentCategory ref="PowerToys" />
+      <supportedOn ref="SUPPORTED_POWERTOYS_0_64_0" />
+      <enabledValue>
+        <decimal value="1" />
+      </enabledValue>
+      <disabledValue>
+        <decimal value="0" />
+      </disabledValue>
+    </policy>
+    <policy name="ConfigureEnabledUtilityFileExplorerPDFThumbnails" class="Both" displayName="$(string.ConfigureEnabledUtilityFileExplorerPDFThumbnails)" explainText="$(string.ConfigureEnabledUtilityDescription)" key="Software\Policies\PowerToys" valueName="ConfigureEnabledUtilityFileExplorerPDFThumbnails">
+      <parentCategory ref="PowerToys" />
+      <supportedOn ref="SUPPORTED_POWERTOYS_0_64_0" />
+      <enabledValue>
+        <decimal value="1" />
+      </enabledValue>
+      <disabledValue>
+        <decimal value="0" />
+      </disabledValue>
+    </policy>
+    <policy name="ConfigureEnabledUtilityFileExplorerGcodeThumbnails" class="Both" displayName="$(string.ConfigureEnabledUtilityFileExplorerGcodeThumbnails)" explainText="$(string.ConfigureEnabledUtilityDescription)" key="Software\Policies\PowerToys" valueName="ConfigureEnabledUtilityFileExplorerGcodeThumbnails">
+      <parentCategory ref="PowerToys" />
+      <supportedOn ref="SUPPORTED_POWERTOYS_0_64_0" />
+      <enabledValue>
+        <decimal value="1" />
+      </enabledValue>
+      <disabledValue>
+        <decimal value="0" />
+      </disabledValue>
+    </policy>
+    <policy name="ConfigureEnabledUtilityFileExplorerSTLThumbnails" class="Both" displayName="$(string.ConfigureEnabledUtilityFileExplorerSTLThumbnails)" explainText="$(string.ConfigureEnabledUtilityDescription)" key="Software\Policies\PowerToys" valueName="ConfigureEnabledUtilityFileExplorerSTLThumbnails">
+      <parentCategory ref="PowerToys" />
+      <supportedOn ref="SUPPORTED_POWERTOYS_0_64_0" />
+      <enabledValue>
+        <decimal value="1" />
+      </enabledValue>
+      <disabledValue>
+        <decimal value="0" />
+      </disabledValue>
+    </policy>
+    <policy name="ConfigureEnabledUtilityHostsFileEditor" class="Both" displayName="$(string.ConfigureEnabledUtilityHostsFileEditor)" explainText="$(string.ConfigureEnabledUtilityDescription)" key="Software\Policies\PowerToys" valueName="ConfigureEnabledUtilityHostsFileEditor">
+      <parentCategory ref="PowerToys" />
+      <supportedOn ref="SUPPORTED_POWERTOYS_0_64_0" />
+      <enabledValue>
+        <decimal value="1" />
+      </enabledValue>
+      <disabledValue>
+        <decimal value="0" />
+      </disabledValue>
+    </policy>
+    <policy name="ConfigureEnabledUtilityImageResizer" class="Both" displayName="$(string.ConfigureEnabledUtilityImageResizer)" explainText="$(string.ConfigureEnabledUtilityDescription)" key="Software\Policies\PowerToys" valueName="ConfigureEnabledUtilityImageResizer">
+      <parentCategory ref="PowerToys" />
+      <supportedOn ref="SUPPORTED_POWERTOYS_0_64_0" />
+      <enabledValue>
+        <decimal value="1" />
+      </enabledValue>
+      <disabledValue>
+        <decimal value="0" />
+      </disabledValue>
+    </policy>
+    <policy name="ConfigureEnabledUtilityKeyboardManager" class="Both" displayName="$(string.ConfigureEnabledUtilityKeyboardManager)" explainText="$(string.ConfigureEnabledUtilityDescription)" key="Software\Policies\PowerToys" valueName="ConfigureEnabledUtilityKeyboardManager">
+      <parentCategory ref="PowerToys" />
+      <supportedOn ref="SUPPORTED_POWERTOYS_0_64_0" />
+      <enabledValue>
+        <decimal value="1" />
+      </enabledValue>
+      <disabledValue>
+        <decimal value="0" />
+      </disabledValue>
+    </policy>
+    <policy name="ConfigureEnabledUtilityFindMyMouse" class="Both" displayName="$(string.ConfigureEnabledUtilityFindMyMouse)" explainText="$(string.ConfigureEnabledUtilityDescription)" key="Software\Policies\PowerToys" valueName="ConfigureEnabledUtilityFindMyMouse">
+      <parentCategory ref="PowerToys" />
+      <supportedOn ref="SUPPORTED_POWERTOYS_0_64_0" />
+      <enabledValue>
+        <decimal value="1" />
+      </enabledValue>
+      <disabledValue>
+        <decimal value="0" />
+      </disabledValue>
+    </policy>
+    <policy name="ConfigureEnabledUtilityMouseHighlighter" class="Both" displayName="$(string.ConfigureEnabledUtilityMouseHighlighter)" explainText="$(string.ConfigureEnabledUtilityDescription)" key="Software\Policies\PowerToys" valueName="ConfigureEnabledUtilityMouseHighlighter">
+      <parentCategory ref="PowerToys" />
+      <supportedOn ref="SUPPORTED_POWERTOYS_0_64_0" />
+      <enabledValue>
+        <decimal value="1" />
+      </enabledValue>
+      <disabledValue>
+        <decimal value="0" />
+      </disabledValue>
+    </policy>
+    <policy name="ConfigureEnabledUtilityMousePointerCrosshairs" class="Both" displayName="$(string.ConfigureEnabledUtilityMousePointerCrosshairs)" explainText="$(string.ConfigureEnabledUtilityDescription)" key="Software\Policies\PowerToys" valueName="ConfigureEnabledUtilityMousePointerCrosshairs">
+      <parentCategory ref="PowerToys" />
+      <supportedOn ref="SUPPORTED_POWERTOYS_0_64_0" />
+      <enabledValue>
+        <decimal value="1" />
+      </enabledValue>
+      <disabledValue>
+        <decimal value="0" />
+      </disabledValue>
+    </policy>
+    <policy name="ConfigureEnabledUtilityPowerRename" class="Both" displayName="$(string.ConfigureEnabledUtilityPowerRename)" explainText="$(string.ConfigureEnabledUtilityDescription)" key="Software\Policies\PowerToys" valueName="ConfigureEnabledUtilityPowerRename">
+      <parentCategory ref="PowerToys" />
+      <supportedOn ref="SUPPORTED_POWERTOYS_0_64_0" />
+      <enabledValue>
+        <decimal value="1" />
+      </enabledValue>
+      <disabledValue>
+        <decimal value="0" />
+      </disabledValue>
+    </policy>
+    <policy name="ConfigureEnabledUtilityPowerLauncher" class="Both" displayName="$(string.ConfigureEnabledUtilityPowerLauncher)" explainText="$(string.ConfigureEnabledUtilityDescription)" key="Software\Policies\PowerToys" valueName="ConfigureEnabledUtilityPowerLauncher">
+      <parentCategory ref="PowerToys" />
+      <supportedOn ref="SUPPORTED_POWERTOYS_0_64_0" />
+      <enabledValue>
+        <decimal value="1" />
+      </enabledValue>
+      <disabledValue>
+        <decimal value="0" />
+      </disabledValue>
+    </policy>
+    <policy name="ConfigureEnabledUtilityQuickAccent" class="Both" displayName="$(string.ConfigureEnabledUtilityQuickAccent)" explainText="$(string.ConfigureEnabledUtilityDescription)" key="Software\Policies\PowerToys" valueName="ConfigureEnabledUtilityQuickAccent">
+      <parentCategory ref="PowerToys" />
+      <supportedOn ref="SUPPORTED_POWERTOYS_0_64_0" />
+      <enabledValue>
+        <decimal value="1" />
+      </enabledValue>
+      <disabledValue>
+        <decimal value="0" />
+      </disabledValue>
+    </policy>
+    <policy name="ConfigureEnabledUtilityScreenRuler" class="Both" displayName="$(string.ConfigureEnabledUtilityScreenRuler)" explainText="$(string.ConfigureEnabledUtilityDescription)" key="Software\Policies\PowerToys" valueName="ConfigureEnabledUtilityScreenRuler">
+      <parentCategory ref="PowerToys" />
+      <supportedOn ref="SUPPORTED_POWERTOYS_0_64_0" />
+      <enabledValue>
+        <decimal value="1" />
+      </enabledValue>
+      <disabledValue>
+        <decimal value="0" />
+      </disabledValue>
+    </policy>
+    <policy name="ConfigureEnabledUtilityShortcutGuide" class="Both" displayName="$(string.ConfigureEnabledUtilityShortcutGuide)" explainText="$(string.ConfigureEnabledUtilityDescription)" key="Software\Policies\PowerToys" valueName="ConfigureEnabledUtilityShortcutGuide">
+      <parentCategory ref="PowerToys" />
+      <supportedOn ref="SUPPORTED_POWERTOYS_0_64_0" />
+      <enabledValue>
+        <decimal value="1" />
+      </enabledValue>
+      <disabledValue>
+        <decimal value="0" />
+      </disabledValue>
+    </policy>
+    <policy name="ConfigureEnabledUtilityTextExtractor" class="Both" displayName="$(string.ConfigureEnabledUtilityTextExtractor)" explainText="$(string.ConfigureEnabledUtilityDescription)" key="Software\Policies\PowerToys" valueName="ConfigureEnabledUtilityTextExtractor">
+      <parentCategory ref="PowerToys" />
+      <supportedOn ref="SUPPORTED_POWERTOYS_0_64_0" />
+      <enabledValue>
+        <decimal value="1" />
+      </enabledValue>
+      <disabledValue>
+        <decimal value="0" />
+      </disabledValue>
+    </policy>
+    <policy name="ConfigureEnabledUtilityVideoConferenceMute" class="Both" displayName="$(string.ConfigureEnabledUtilityVideoConferenceMute)" explainText="$(string.ConfigureEnabledUtilityDescription)" key="Software\Policies\PowerToys" valueName="ConfigureEnabledUtilityVideoConferenceMute">
+      <parentCategory ref="PowerToys" />
+      <supportedOn ref="SUPPORTED_POWERTOYS_0_64_0" />
+      <enabledValue>
+        <decimal value="1" />
+      </enabledValue>
+      <disabledValue>
+        <decimal value="0" />
+      </disabledValue>
+    </policy>
+  </policies>
+</policyDefinitions>

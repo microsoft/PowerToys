@@ -6,3 +6,6 @@
 #include <stdexcept>
 #include <unordered_set>
 #include <winrt/base.h>
+#include <filesystem>
+#include <common/SettingsAPI/settings_helpers.h>
+#include <common/logger/logger.h>

@@ -21,6 +21,3 @@ TODO
 
 #### [`trace.cpp`](/src/modules/powerrename/lib/trace.cpp)
 TODO
-
-#### [`PowerRenameUI.cpp`](/src/modules/powerrename/ui/PowerRenameUI.cpp)
-TODO

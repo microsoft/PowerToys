@@ -6,8 +6,8 @@
 // Non-localizable
 
 #define FILE_DESCRIPTION "PowerToys ColorPicker"
-#define INTERNAL_NAME "ColorPicker"
-#define ORIGINAL_FILENAME "ColorPicker.dll"
+#define INTERNAL_NAME "PowerToys.ColorPicker"
+#define ORIGINAL_FILENAME "PowerToys.ColorPicker.dll"
 
 // Non-localizable
 //////////////////////////////

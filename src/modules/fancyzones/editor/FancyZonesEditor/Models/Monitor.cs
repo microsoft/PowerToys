@@ -5,7 +5,6 @@
 using System;
 using System.Reflection;
 using System.Windows;
-using System.Windows.Input;
 using System.Windows.Media;
 using FancyZonesEditor.Utils;
 
@@ -19,11 +18,18 @@ namespace FancyZonesEditor.Models
 
         public Device Device { get; set; }
 
-        public Monitor(Rect bounds, Rect workArea, bool primary)
+        public Monitor(Rect workArea, Size monitorSize)
         {
             Window = new LayoutOverlayWindow();
             Settings = new LayoutSettings();
-            Device = new Device(bounds, workArea, primary);
+
+            // provide a good default for vertical monitors
+            if (monitorSize.Height > monitorSize.Width)
+            {
+                Settings.Type = LayoutType.Rows;
+            }
+
+            Device = new Device(workArea, monitorSize);
 
             if (App.DebugMode)
             {
@@ -42,10 +48,10 @@ namespace FancyZonesEditor.Models
             Window.Height = workArea.Height;
         }
 
-        public Monitor(string id, int dpi, Rect bounds, Rect workArea, bool primary)
-            : this(bounds, workArea, primary)
+        public Monitor(string monitorName, string monitorInstanceId, string monitorSerialNumber, string virtualDesktop, int dpi, Rect workArea, Size monitorSize)
+            : this(workArea, monitorSize)
         {
-            Device = new Device(id, dpi, bounds, workArea, primary);
+            Device = new Device(monitorName, monitorInstanceId, monitorSerialNumber, virtualDesktop, dpi, workArea, monitorSize);
         }
 
         public void Scale(double scaleFactor)

@@ -1,0 +1,40 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <Import Project="..\..\Version.props" />
+  <PropertyGroup>
+    <TargetFramework>net7.0-windows10.0.19041.0</TargetFramework>
+    <IsPackable>false</IsPackable>
+    
+    <Version>$(Version).0</Version>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <OutputPath>..\..\..\x64\Debug\SettingsTests\</OutputPath>
+    <DebugType>full</DebugType>
+    <DebugSymbols>true</DebugSymbols>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <OutputPath>..\..\..\x64\Release\SettingsTest\</OutputPath>
+  </PropertyGroup>
+
+  <!-- Needed for CommunityToolkit.Labs.WinUI.SettingsControls, on local builds and PR CI. -->
+  <PropertyGroup Condition="'$(IsPipeline)' == ''">
+    <RestoreAdditionalProjectSources>https://pkgs.dev.azure.com/dotnet/CommunityToolkit/_packaging/CommunityToolkit-Labs/nuget/v3/index.json</RestoreAdditionalProjectSources>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Windows.CsWinRT" Version="2.0.0" />
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.4.1" />
+    <PackageReference Include="Moq" Version="4.18.3" />
+    <PackageReference Include="MSTest.TestAdapter" Version="3.0.1" />
+    <PackageReference Include="MSTest.TestFramework" Version="3.0.1" />
+    <PackageReference Include="System.IO.Abstractions.TestingHelpers" Version="17.2.3" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Settings.UI.Library\Settings.UI.Library.csproj" />
+    <ProjectReference Include="..\Settings.UI\PowerToys.Settings.csproj" />
+  </ItemGroup>
+
+</Project>

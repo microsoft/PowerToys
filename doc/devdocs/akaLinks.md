@@ -1,0 +1,47 @@
+# Full list of aka links
+
+| ShortUrl | TargetUrl |
+|----------|----------|
+| getpowertoys | ms-windows-store://pdp/?productid=XP89DCGQ3K6VLD |
+| installpowertoys | https://github.com/microsoft/PowerToys/releases/latest |
+| powertoys-license | https://github.com/microsoft/PowerToys/blob/main/LICENSE |
+| powertoys | https://github.com/microsoft/PowerToys |
+| PowerToysAppCompat | https://github.com/microsoft/PowerToys/wiki/Application-Compatibility |
+| powerToysCannotRemapKeys | https://learn.microsoft.com/windows/powertoys/keyboard-manager#keys-that-cannot-be-remapped |
+| powerToysColorPickerImageSmall | https://github.com/microsoft/PowerToys/wiki/images/overview/ColorPicker_small.png |
+| powerToysColorPickerSettingImage | https://raw.githubusercontent.com/microsoft/PowerToys/main/doc/images/overview/ColorPicker_large.png |
+| powertoysDetectedElevatedHelp | https://learn.microsoft.com/windows/powertoys/administrator |
+| powertoys-docs | https://learn.microsoft.com/windows/powertoys |
+| powerToysFancyZoneImageSmall | https://github.com/microsoft/PowerToys/wiki/images/overview/FancyZones_small.png |
+| powerToysFancyZoneSettingImage | https://raw.githubusercontent.com/microsoft/PowerToys/main/doc/images/overview/FancyZones_large.png |
+| powerToysGiveFeedback | https://github.com/microsoft/PowerToys/issues |
+| powerToysImageResizerImageSmall | https://github.com/microsoft/PowerToys/wiki/images/overview/ImageResizer_small.png |
+| powerToysImageResizerSettingImage | https://raw.githubusercontent.com/microsoft/PowerToys/main/doc/images/overview/ImageResizer_large.png |
+| powerToysKBMImageSmall | https://github.com/microsoft/PowerToys/wiki/images/overview/KBM_small.png |
+| powerToysKBMSettingImage | https://raw.githubusercontent.com/microsoft/PowerToys/main/doc/images/overview/KBM_large.png |
+| PowerToysOverview | https://learn.microsoft.com/windows/powertoys/ |
+| PowerToysOverview_ColorPicker | https://learn.microsoft.com/windows/powertoys/color-picker |
+| PowerToysOverview_FancyZones | https://learn.microsoft.com/windows/powertoys/fancyzones |
+| PowerToysOverview_FileExplorerAddOns | https://learn.microsoft.com/windows/powertoys/file-explorer |
+| PowerToysOverview_ImageResizer | https://learn.microsoft.com/windows/powertoys/image-resizer |
+| PowerToysOverview_KeyboardManager | https://learn.microsoft.com/windows/powertoys/keyboard-manager |
+| PowerToysOverview_MouseUtilities | https://learn.microsoft.com/windows/powertoys/mouse-utilities |
+| PowerToysOverview_PowerRename | https://learn.microsoft.com/windows/powertoys/powerrename |
+| PowerToysOverview_PowerToysRun | https://learn.microsoft.com/windows/powertoys/run |
+| PowerToysOverview_ShortcutGuide | https://learn.microsoft.com/windows/powertoys/shortcut-guide |
+| PowerToysOverview_VideoConference | https://learn.microsoft.com/windows/powertoys/video-conference-mute |
+| powerToysPowerLauncherImageSmall | https://github.com/microsoft/PowerToys/wiki/images/overview/PowerLauncher_small.png |
+| powerToysPowerLauncherSettingImage | https://raw.githubusercontent.com/microsoft/PowerToys/main/doc/images/overview/PowerLauncher_large.png |
+| powerToysPowerPreviewImageSmall | https://github.com/microsoft/PowerToys/wiki/images/overview/PowerPreview_small.png |
+| powerToysPowerPreviewSettingImage | https://raw.githubusercontent.com/microsoft/PowerToys/main/doc/images/overview/PowerPreview_large.png |
+| powerToysPowerRenameImageSmall | https://github.com/microsoft/PowerToys/wiki/images/overview/PowerRename_small.png |
+| powerToysPowerRenameSettingImage | https://raw.githubusercontent.com/microsoft/PowerToys/main/doc/images/overview/PowerRename_large.png |
+| powerToysPTImageSmall | https://github.com/microsoft/PowerToys/wiki/images/overview/PT_small.png |
+| powerToysPTSettingImage | https://raw.githubusercontent.com/microsoft/PowerToys/main/doc/images/overview/PT_large.png |
+| powerToysReportBug | https://github.com/microsoft/PowerToys/issues/new?assignees=&labels=Issue-Bug%2CTriage-Needed&template=bug_report.yml&title= |
+| powerToysRequestFeature | https://github.com/microsoft/PowerToys/issues/new?assignees=&labels=&template=feature_request.md&title= |
+| powerToysShortcutGuideImageSmall | https://github.com/microsoft/PowerToys/wiki/images/overview/ShortcutGuide_small.png |
+| powerToysShortcutGuideSettingImage | https://raw.githubusercontent.com/microsoft/PowerToys/main/doc/images/overview/ShortcutGuide_large.png |
+| powerToysVideoConferenceImageSmall | https://github.com/microsoft/PowerToys/wiki/images/overview/VideoConference_small.png |
+| powerToysVideoConferenceSettingImage | https://github.com/microsoft/PowerToys/wiki/images/overview/VideoConference_large.png |
+| powertoyswiki | https://github.com/microsoft/PowerToys/wiki |

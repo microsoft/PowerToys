@@ -2,8 +2,8 @@
 // The Brice Lambson licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.  Code forked from Brice Lambson's https://github.com/bricelam/ImageResizer/
 
+using System.Text.Json.Serialization;
 using ImageResizer.Properties;
-using Newtonsoft.Json;
 
 namespace ImageResizer.Models
 {
@@ -16,6 +16,7 @@ namespace ImageResizer.Models
             set { /* no-op */ }
         }
 
+        [JsonConstructor]
         public CustomSize(ResizeFit fit, double width, double height, ResizeUnit unit)
         {
             Fit = fit;

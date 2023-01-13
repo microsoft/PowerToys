@@ -2,43 +2,58 @@
 #include <ShellScalingApi.h>
 #include <lmcons.h>
 #include <filesystem>
+#include <sstream>
 #include "tray_icon.h"
 #include "powertoy_module.h"
 #include "trace.h"
 #include "general_settings.h"
 #include "restart_elevated.h"
+#include "RestartManagement.h"
 #include "Generated files/resource.h"
+#include "settings_telemetry.h"
 
-#include <common/appMutex.h>
-#include <common/common.h>
-#include <common/comUtils.h>
-#include <common/dpi_aware.h>
-#include <common/notifications.h>
-#include <common/processApi.h>
-#include <common/RestartManagement.h>
-#include <common/toast_dont_show_again.h>
+#include <common/comUtils/comUtils.h>
+#include <common/display/dpi_aware.h>
+#include <common/notifications/notifications.h>
+#include <common/notifications/dont_show_again.h>
 #include <common/updating/installer.h>
 #include <common/updating/updating.h>
-#include <common/winstore.h>
+#include <common/updating/updateState.h>
+#include <common/utils/appMutex.h>
+#include <common/utils/elevation.h>
+#include <common/utils/os-detect.h>
+#include <common/utils/processApi.h>
+#include <common/utils/resources.h>
 
-#include "update_state.h"
-#include "update_utils.h"
-#include "action_runner_utils.h"
+#include "UpdateUtils.h"
+#include "ActionRunnerUtils.h"
 
 #include <winrt/Windows.System.h>
 
 #include <Psapi.h>
 #include <RestartManager.h>
 #include "centralized_kb_hook.h"
+#include "centralized_hotkeys.h"
 
 #if _DEBUG && _WIN64
 #include "unhandled_exception_handler.h"
 #endif
-#include <common/settings_helpers.h>
 #include <common/logger/logger.h>
+#include <common/SettingsAPI/settings_helpers.h>
+#include <runner/settings_window.h>
+#include <common/utils/process_path.h>
+#include <common/utils/winapi_error.h>
+#include <common/utils/window.h>
+#include <common/version/version.h>
+#include <common/utils/string_utils.h>
 
-extern "C" IMAGE_DOS_HEADER __ImageBase;
-extern updating::notifications::strings Strings;
+// disabling warning 4458 - declaration of 'identifier' hides class member
+// to avoid warnings from GDI files - can't add winRT directory to external code
+// in the Cpp.Build.props
+#pragma warning(push)
+#pragma warning(disable : 4458)
+#include <gdiplus.h>
+#pragma warning(pop)
 
 namespace
 {
@@ -63,29 +78,49 @@ inline wil::unique_mutex_nothrow create_msi_mutex()
     return createAppMutex(POWERTOYS_MSI_MUTEX_NAME);
 }
 
-inline wil::unique_mutex_nothrow create_msix_mutex()
-{
-    return createAppMutex(POWERTOYS_MSIX_MUTEX_NAME);
-}
-
-void open_menu_from_another_instance()
+void open_menu_from_another_instance(std::optional<std::string> settings_window)
 {
     const HWND hwnd_main = FindWindowW(L"PToyTrayIconWindow", nullptr);
-    PostMessageW(hwnd_main, WM_COMMAND, ID_SETTINGS_MENU_COMMAND, 0);
+    LPARAM msg = static_cast<LPARAM>(ESettingsWindowNames::Overview);
+    if (settings_window.has_value())
+    {
+        msg = static_cast<LPARAM>(ESettingsWindowNames_from_string(settings_window.value()));
+    }
+    PostMessageW(hwnd_main, WM_COMMAND, ID_SETTINGS_MENU_COMMAND, msg);
 }
 
-int runner(bool isProcessElevated)
+void debug_verify_launcher_assets()
 {
-    std::filesystem::path logFilePath(PTSettingsHelper::get_root_save_folder_location());
-    logFilePath.append(LogSettings::runnerLogPath);
-    Logger::init(LogSettings::runnerLoggerName, logFilePath.wstring(), PTSettingsHelper::get_log_settings_file_location());
+    try
+    {
+        namespace fs = std::filesystem;
+        const fs::path powertoysRoot = get_module_folderpath();
+        constexpr std::array<std::string_view, 4> assetsToCheck = { "modules\\launcher\\Images\\app.dark.png",
+                                                                    "modules\\launcher\\Images\\app.light.png",
+                                                                    "modules\\launcher\\Images\\app_error.dark.png",
+                                                                    "modules\\launcher\\Images\\app_error.light.png" };
+        for (const auto asset : assetsToCheck)
+        {
+            const auto assetPath = powertoysRoot / asset;
+            if (!fs::is_regular_file(assetPath))
+            {
+                Logger::error("{} couldn't be found.", assetPath.string());
+            }
+        }
+    }
+    catch (...)
+    {
+    }
+}
 
+int runner(bool isProcessElevated, bool openSettings, std::string settingsWindow, bool openOobe, bool openScoobe)
+{
     Logger::info("Runner is starting. Elevated={}", isProcessElevated);
     DPIAware::EnableDPIAwarenessForThisProcess();
 
 #if _DEBUG && _WIN64
 //Global error handlers to diagnose errors.
-//We prefer this not not show any longer until there's a bug to diagnose.
+//We prefer this not to show any longer until there's a bug to diagnose.
 //init_global_error_handlers();
 #endif
     Trace::RegisterProvider();
@@ -95,48 +130,55 @@ int runner(bool isProcessElevated)
     int result = -1;
     try
     {
+        debug_verify_launcher_assets();
+
         std::thread{ [] {
-            github_update_worker();
+            PeriodicUpdateWorker();
         } }.detach();
 
-        if (winstore::running_as_packaged())
-        {
-            std::thread{ [] {
-                start_msi_uninstallation_sequence();
-            } }.detach();
-        }
-        else
-        {
-            std::thread{ [] {
-                if (updating::uninstall_previous_msix_version_async().get())
-                {
-                    notifications::show_toast(GET_RESOURCE_STRING(IDS_OLDER_MSIX_UNINSTALLED).c_str(), L"PowerToys");
-                }
-            } }.detach();
-        }
-
-        notifications::register_background_toast_handler();
+        std::thread{ [] {
+            if (updating::uninstall_previous_msix_version_async().get())
+            {
+                notifications::show_toast(GET_RESOURCE_STRING(IDS_OLDER_MSIX_UNINSTALLED).c_str(), L"PowerToys");
+            }
+        } }.detach();
 
         chdir_current_executable();
         // Load Powertoys DLLs
 
-        const std::array<std::wstring_view, 8> knownModules = {
-            L"modules/FancyZones/fancyzones.dll",
-            L"modules/FileExplorerPreview/powerpreview.dll",
-            L"modules/ImageResizer/ImageResizerExt.dll",
-            L"modules/KeyboardManager/KeyboardManager.dll",
-            L"modules/Launcher/Microsoft.Launcher.dll",
-            L"modules/PowerRename/PowerRenameExt.dll",
-            L"modules/ShortcutGuide/ShortcutGuide.dll",
-            L"modules/ColorPicker/ColorPicker.dll",
+        std::vector<std::wstring_view> knownModules = {
+            L"modules/FancyZones/PowerToys.FancyZonesModuleInterface.dll",
+            L"modules/FileExplorerPreview/PowerToys.powerpreview.dll",
+            L"modules/ImageResizer/PowerToys.ImageResizerExt.dll",
+            L"modules/KeyboardManager/PowerToys.KeyboardManager.dll",
+            L"modules/Launcher/PowerToys.Launcher.dll",
+            L"modules/PowerRename/PowerToys.PowerRenameExt.dll",
+            L"modules/ShortcutGuide/ShortcutGuideModuleInterface/PowerToys.ShortcutGuideModuleInterface.dll",
+            L"modules/ColorPicker/PowerToys.ColorPicker.dll",
+            L"modules/Awake/PowerToys.AwakeModuleInterface.dll",
+            L"modules/MouseUtils/PowerToys.FindMyMouse.dll",
+            L"modules/MouseUtils/PowerToys.MouseHighlighter.dll",
+            L"modules/AlwaysOnTop/PowerToys.AlwaysOnTopModuleInterface.dll",
+            L"modules/MouseUtils/PowerToys.MousePointerCrosshairs.dll",
+            L"modules/PowerAccent/PowerToys.PowerAccentModuleInterface.dll",
+            L"modules/PowerOCR/PowerToys.PowerOCRModuleInterface.dll",
+            L"modules/FileLocksmith/PowerToys.FileLocksmithExt.dll",
+            L"modules/MeasureTool/PowerToys.MeasureToolModuleInterface.dll",
+            L"modules/Hosts/PowerToys.HostsModuleInterface.dll",
         };
+        const auto VCM_PATH = L"modules/VideoConference/PowerToys.VideoConferenceModule.dll";
+        if (const auto mf = LoadLibraryA("mf.dll"))
+        {
+            FreeLibrary(mf);
+            knownModules.emplace_back(VCM_PATH);
+        }
 
-        for (const auto& moduleSubdir : knownModules)
+        for (auto moduleSubdir : knownModules)
         {
             try
             {
-                auto module = load_powertoy(moduleSubdir);
-                modules().emplace(module->get_key(), std::move(module));
+                auto pt_module = load_powertoy(moduleSubdir);
+                modules().emplace(pt_module->get_key(), std::move(pt_module));
             }
             catch (...)
             {
@@ -149,10 +191,32 @@ int runner(bool isProcessElevated)
             }
         }
         // Start initial powertoys
-        start_initial_powertoys();
+        start_enabled_powertoys();
+        std::wstring product_version = get_product_version();
+        Trace::EventLaunch(product_version, isProcessElevated);
+        PTSettingsHelper::save_last_version_run(product_version);
 
-        Trace::EventLaunch(get_product_version(), isProcessElevated);
+        if (openSettings)
+        {
+            std::optional<std::wstring> window;
+            if (!settingsWindow.empty())
+            {
+                window = winrt::to_hstring(settingsWindow);
+            }
+            open_settings_window(window);
+        }
 
+        if (openOobe)
+        {
+            PTSettingsHelper::save_oobe_opened_state();
+            open_oobe_window();
+        }
+        else if (openScoobe)
+        {
+            open_scoobe_window();
+        }
+
+        settings_telemetry::init();
         result = run_message_loop();
     }
     catch (std::runtime_error& err)
@@ -187,7 +251,7 @@ SpecialMode should_run_in_special_mode(const int n_cmd_args, LPWSTR* cmd_arg_lis
         {
             return SpecialMode::ToastNotificationHandler;
         }
-        else if (n_cmd_args == 2 && !wcscmp(UPDATE_REPORT_SUCCESS, cmd_arg_list[i]))
+        else if (n_cmd_args == 2 && !wcscmp(cmdArg::UPDATE_REPORT_SUCCESS, cmd_arg_list[i]))
         {
             return SpecialMode::ReportSuccessfulUpdate;
         }
@@ -212,9 +276,7 @@ toast_notification_handler_result toast_notification_handler(const std::wstring_
 {
     const std::wstring_view cant_drag_elevated_disable = L"cant_drag_elevated_disable/";
     const std::wstring_view couldnt_toggle_powerpreview_modules_disable = L"couldnt_toggle_powerpreview_modules_disable/";
-    const std::wstring_view download_and_install_update = L"download_and_install_update/";
     const std::wstring_view open_settings = L"open_settings/";
-    const std::wstring_view schedule_update = L"schedule_update/";
     const std::wstring_view update_now = L"update_now/";
 
     if (param == cant_drag_elevated_disable)
@@ -223,45 +285,9 @@ toast_notification_handler_result toast_notification_handler(const std::wstring_
     }
     else if (param.starts_with(update_now))
     {
-        std::wstring args{ UPDATE_NOW_LAUNCH_STAGE1_CMDARG };
-        const auto installerFilename = param.data() + size(update_now);
-        args += L' ';
-        args += installerFilename;
-        launch_action_runner(args.c_str());
+        std::wstring args{ cmdArg::UPDATE_NOW_LAUNCH_STAGE1 };
+        LaunchPowerToysUpdate(args.c_str());
         return toast_notification_handler_result::exit_success;
-    }
-    else if (param.starts_with(schedule_update))
-    {
-        const auto installerFilename = param.data() + size(schedule_update);
-        UpdateState::store([=](UpdateState& state) {
-            state.pending_update = true;
-            state.pending_installer_filename = installerFilename;
-        });
-
-        return toast_notification_handler_result::exit_success;
-    }
-    else if (param.starts_with(download_and_install_update))
-    {
-        try
-        {
-            std::wstring installer_filename = updating::download_update(Strings).get();
-
-            std::wstring args{ UPDATE_NOW_LAUNCH_STAGE1_CMDARG };
-            args += L' ';
-            args += installer_filename;
-            launch_action_runner(args.c_str());
-
-            return toast_notification_handler_result::exit_success;
-        }
-        catch (...)
-        {
-            MessageBoxW(nullptr,
-                        GET_RESOURCE_STRING(IDS_DOWNLOAD_UPDATE_ERROR).c_str(),
-                        L"PowerToys",
-                        MB_ICONWARNING | MB_OK);
-
-            return toast_notification_handler_result::exit_error;
-        }
     }
     else if (param == couldnt_toggle_powerpreview_modules_disable)
     {
@@ -269,7 +295,7 @@ toast_notification_handler_result toast_notification_handler(const std::wstring_
     }
     else if (param == open_settings)
     {
-        open_menu_from_another_instance();
+        open_menu_from_another_instance(std::nullopt);
         return toast_notification_handler_result::exit_success;
     }
     else
@@ -278,8 +304,63 @@ toast_notification_handler_result toast_notification_handler(const std::wstring_
     }
 }
 
-int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow)
+void cleanup_updates()
 {
+    auto state = UpdateState::read();
+    if (state.state != UpdateState::upToDate)
+    {
+        return;
+    }
+
+    auto update_dir = updating::get_pending_updates_path();
+    if (std::filesystem::exists(update_dir))
+    {
+        // Msi and exe files
+        for (const auto& entry : std::filesystem::directory_iterator(update_dir))
+        {
+            auto entryPath = entry.path().wstring();
+            std::transform(entryPath.begin(), entryPath.end(), entryPath.begin(), ::towlower);
+
+            if (entryPath.ends_with(L".msi") || entryPath.ends_with(L".exe"))
+            {
+                std::error_code err;
+                std::filesystem::remove(entry, err);
+                if (err.value())
+                {
+                    Logger::warn("Failed to delete installer file {}. {}", entry.path().string(), err.message());
+                }
+            }
+        }
+    }
+
+    // Log files
+    auto rootPath{ PTSettingsHelper::get_root_save_folder_location() };
+    auto currentVersion = left_trim<wchar_t>(get_product_version(), L"v");
+    if (std::filesystem::exists(rootPath))
+    {
+        for (const auto& entry : std::filesystem::directory_iterator(rootPath))
+        {
+            auto entryPath = entry.path().wstring();
+            std::transform(entryPath.begin(), entryPath.end(), entryPath.begin(), ::towlower);
+            if (entry.is_regular_file() && entryPath.ends_with(L".log") && entryPath.find(currentVersion) == std::string::npos)
+            {
+                std::error_code err;
+                std::filesystem::remove(entry, err);
+                if (err.value())
+                {
+                    Logger::warn("Failed to delete log file {}. {}", entry.path().string(), err.message());
+                }
+            }
+        }
+    }
+}
+
+int WINAPI WinMain(HINSTANCE /*hInstance*/, HINSTANCE /*hPrevInstance*/, LPSTR lpCmdLine, int /*nCmdShow*/)
+{
+    Gdiplus::GdiplusStartupInput gpStartupInput;
+    ULONG_PTR gpToken;
+    GdiplusStartup(&gpToken, &gpStartupInput, NULL);
+
     winrt::init_apartment();
     const wchar_t* securityDescriptor =
         L"O:BA" // Owner: Builtin (local) administrator
@@ -293,11 +374,6 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
         L"S:"
         L"(ML;;NX;;;LW)"; // Integrity label on No execute up for Low mandatory level
     initializeCOMSecurity(securityDescriptor);
-
-    if (launch_pending_update())
-    {
-        return 0;
-    }
 
     int n_cmd_args = 0;
     LPWSTR* cmd_arg_list = CommandLineToArgvW(GetCommandLineW(), &n_cmd_args);
@@ -313,9 +389,11 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
         case toast_notification_handler_result::exit_success:
             return 0;
         }
+        [[fallthrough]];
     case SpecialMode::ReportSuccessfulUpdate:
     {
-        notifications::remove_toasts(notifications::UPDATING_PROCESS_TOAST_TAG);
+        notifications::remove_toasts_by_tag(notifications::UPDATING_PROCESS_TOAST_TAG);
+        notifications::remove_all_scheduled_toasts();
         notifications::show_toast(GET_RESOURCE_STRING(IDS_PT_UPDATE_MESSAGE_BOX_TEXT),
                                   L"PowerToys",
                                   notifications::toast_params{ notifications::UPDATING_PROCESS_TOAST_TAG });
@@ -327,69 +405,52 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
         break;
     }
 
-    wil::unique_mutex_nothrow msi_mutex;
-    wil::unique_mutex_nothrow msix_mutex;
+    std::filesystem::path logFilePath(PTSettingsHelper::get_root_save_folder_location());
+    logFilePath.append(LogSettings::runnerLogPath);
+    Logger::init(LogSettings::runnerLoggerName, logFilePath.wstring(), PTSettingsHelper::get_log_settings_file_location());
 
-    if (winstore::running_as_packaged())
+    const std::string cmdLine{ lpCmdLine };
+    Logger::info("Running powertoys with cmd args: {}", cmdLine);
+
+    auto open_settings_it = cmdLine.find("--open-settings");
+    const bool open_settings = open_settings_it != std::string::npos;
+    // Check if opening specific settings window
+    open_settings_it = cmdLine.find("--open-settings=");
+    std::string settings_window;
+    if (open_settings_it != std::string::npos)
     {
-        msix_mutex = create_msix_mutex();
-        if (!msix_mutex)
-        {
-            // The MSIX version is already running.
-            open_menu_from_another_instance();
-            return 0;
-        }
-
-        // Check if the MSI version is running, if not, hold the
-        // mutex to prevent the old MSI versions to start.
-        msi_mutex = create_msi_mutex();
-        if (!msi_mutex)
-        {
-            // The MSI version is running, warn the user and offer to uninstall it.
-            const bool declined_uninstall = !start_msi_uninstallation_sequence();
-            if (declined_uninstall)
-            {
-                // Check again if the MSI version is still running.
-                msi_mutex = create_msi_mutex();
-                if (!msi_mutex)
-                {
-                    open_menu_from_another_instance();
-                    return 0;
-                }
-            }
-        }
-        else
-        {
-            // Older MSI versions are not aware of the MSIX mutex, therefore
-            // hold the MSI mutex to prevent an old instance to start.
-        }
+        std::string rest_of_cmd_line{ cmdLine, open_settings_it + std::string{ "--open-settings=" }.size() };
+        std::istringstream iss(rest_of_cmd_line);
+        iss >> settings_window;
     }
-    else
-    {
-        // Check if another instance of the MSI version is already running.
-        msi_mutex = create_msi_mutex();
-        if (!msi_mutex)
-        {
-            // The MSI version is already running.
-            open_menu_from_another_instance();
-            return 0;
-        }
 
-        // Check if an instance of the MSIX version is already running.
-        // Note: this check should always be negative since the MSIX version
-        // is holding both mutexes.
-        msix_mutex = create_msix_mutex();
-        if (!msix_mutex)
-        {
-            // The MSIX version is already running.
-            open_menu_from_another_instance();
-            return 0;
-        }
-        else
-        {
-            // The MSIX version isn't running, release the mutex.
-            msix_mutex.reset(nullptr);
-        }
+    // Check if another instance is already running.
+    wil::unique_mutex_nothrow msi_mutex = create_msi_mutex();
+    if (!msi_mutex)
+    {
+        open_menu_from_another_instance(settings_window);
+        return 0;
+    }
+
+    bool openOobe = false;
+    try
+    {
+        openOobe = !PTSettingsHelper::get_oobe_opened_state();
+    }
+    catch (const std::exception& e)
+    {
+        Logger::error("Failed to get or save OOBE state with an exception: {}", e.what());
+    }
+
+    bool openScoobe = false;
+    try
+    {
+        std::wstring last_version_run = PTSettingsHelper::get_last_version_run();
+        openScoobe = last_version_run != get_product_version();
+    }
+    catch (const std::exception& e)
+    {
+        Logger::error("Failed to get last version with an exception: {}", e.what());
     }
 
     int result = 0;
@@ -399,21 +460,38 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
         // then modules to guarantee the reverse destruction order.
         modules();
 
+        std::thread{ [] {
+            cleanup_updates();
+        } }.detach();
+
         auto general_settings = load_general_settings();
 
         // Apply the general settings but don't save it as the modules() variable has not been loaded yet
         apply_general_settings(general_settings, false);
-        int rvalue = 0;
         const bool elevated = is_process_elevated();
-        if ((elevated ||
-             general_settings.GetNamedBoolean(L"run_elevated", false) == false ||
-             strcmp(lpCmdLine, "--dont-elevate") == 0))
+        const bool with_dont_elevate_arg = cmdLine.find("--dont-elevate") != std::string::npos;
+        const bool run_elevated_setting = general_settings.GetNamedBoolean(L"run_elevated", false);
+
+        if (elevated && with_dont_elevate_arg && !run_elevated_setting)
         {
-            result = runner(elevated);
+            Logger::info("Scheduling restart as non elevated");
+            schedule_restart_as_non_elevated();
+            result = 0;
+        }
+        else if (elevated || !run_elevated_setting || with_dont_elevate_arg)
+        {
+            result = runner(elevated, open_settings, settings_window, openOobe, openScoobe);
+
+            if (result == 0)
+            {
+                // Save settings on closing, if closed 'normal'
+                PTSettingsHelper::save_general_settings(get_general_settings().to_json());
+            }
         }
         else
         {
-            schedule_restart_as_elevated();
+            Logger::info("Scheduling restart as elevated");
+            schedule_restart_as_elevated(open_settings);
             result = 0;
         }
     }
@@ -430,21 +508,12 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
         msi_mutex.reset(nullptr);
     }
 
-    if (msix_mutex)
-    {
-        msix_mutex.reset(nullptr);
-    }
-
     if (is_restart_scheduled())
     {
-        if (restart_if_scheduled() == false)
+        if (!restart_if_scheduled())
         {
-            auto text = is_process_elevated() ? GET_RESOURCE_STRING(IDS_COULDNOT_RESTART_NONELEVATED) :
-                                                GET_RESOURCE_STRING(IDS_COULDNOT_RESTART_ELEVATED);
-            MessageBoxW(nullptr, text.c_str(), GET_RESOURCE_STRING(IDS_ERROR).c_str(), MB_OK | MB_ICONERROR | MB_SETFOREGROUND);
-
-            restart_same_elevation();
-            result = -1;
+            // If it's not possible to restart non-elevated due to some condition in the user's configuration, user should start PowerToys manually.
+            Logger::warn("Scheduled restart failed. Couldn't restart non-elevated. PowerToys exits here because retrying it would just mean failing in a loop.");
         }
     }
     stop_tray_icon();

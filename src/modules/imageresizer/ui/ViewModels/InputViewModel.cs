@@ -1,9 +1,10 @@
 ﻿// Copyright (c) Brice Lambson
 // The Brice Lambson licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.  Code forked from Brice Lambson's https://github.com/bricelam/ImageResizer/
-// ShowAdvancedCommand = new RelayCommand(ShowAdvanced);
 
+using System.Linq;
 using System.Windows.Input;
+using Common.UI;
 using ImageResizer.Helpers;
 using ImageResizer.Models;
 using ImageResizer.Properties;
@@ -35,12 +36,8 @@ namespace ImageResizer.ViewModels
 
             ResizeCommand = new RelayCommand(Resize);
             CancelCommand = new RelayCommand(Cancel);
-            ShowAdvancedCommand = new RelayCommand(ShowAdvanced);
-
-            ShowAdvancedSettings = !AdvancedSettings.UseNewSettings();
+            OpenSettingsCommand = new RelayCommand(OpenSettings);
         }
-
-        public bool ShowAdvancedSettings { get; }
 
         public Settings Settings { get; }
 
@@ -48,7 +45,16 @@ namespace ImageResizer.ViewModels
 
         public ICommand CancelCommand { get; }
 
-        public ICommand ShowAdvancedCommand { get; }
+        public ICommand OpenSettingsCommand { get; }
+
+        public bool TryingToResizeGifFiles
+        {
+            get
+            {
+                // Any of the files is a gif.
+                return _batch.Files.Any(filename => filename.EndsWith(".gif", System.StringComparison.InvariantCultureIgnoreCase));
+            }
+        }
 
         public void Resize()
         {
@@ -56,10 +62,12 @@ namespace ImageResizer.ViewModels
             _mainViewModel.CurrentPage = new ProgressViewModel(_batch, _mainViewModel, _mainView);
         }
 
+        public static void OpenSettings()
+        {
+            SettingsDeepLink.OpenSettings(SettingsDeepLink.SettingsWindow.ImageResizer);
+        }
+
         public void Cancel()
             => _mainView.Close();
-
-        public void ShowAdvanced()
-            => _mainView.ShowAdvanced(new AdvancedViewModel(Settings));
     }
 }

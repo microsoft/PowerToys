@@ -74,7 +74,7 @@ int GetHighlightedZoneIdx(const std::vector<RECT>& zones, const POINT& cursorPos
     return -1;
 }
 
-void ShowZoneWindow()
+void ShowZonesOverlay()
 {
     // InvalidateRect will essentially send WM_PAINT to main window.
     UINT flags = SWP_NOSIZE | SWP_NOMOVE | SWP_NOACTIVATE;
@@ -86,7 +86,7 @@ void ShowZoneWindow()
     } }.detach();
 }
 
-void HideZoneWindow()
+void HideZonesOverlay()
 {
     highlighted = std::vector<bool>(ZONE_COUNT, false);
     ShowWindow(mainWindow, SW_HIDE);
@@ -114,7 +114,7 @@ void RefreshMainWindow()
                         highlighted = std::vector<bool>(ZONE_COUNT, false);
                         highlighted[idx] = true;
 
-                        ShowZoneWindow();
+                        ShowZonesOverlay();
                     }
                 }
             }
@@ -138,11 +138,11 @@ LRESULT CALLBACK LowLevelKeyboardProc(int nCode, WPARAM wParam, LPARAM lParam)
             showZoneLayout = !showZoneLayout;
             if (showZoneLayout)
             {
-                ShowZoneWindow();
+                ShowZonesOverlay();
             }
             else
             {
-                HideZoneWindow();
+                HideZonesOverlay();
             }
             return 1;
         }
