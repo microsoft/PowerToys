@@ -124,14 +124,15 @@ namespace Peek.FilePreviewer.Previewers
             {
                 cancellationToken.ThrowIfCancellationRequested();
 
-                if (!IsFullImageLoaded)
+                await Dispatcher.RunOnUiThread(async () =>
                 {
-                    await Dispatcher.RunOnUiThread(async () =>
+                    cancellationToken.ThrowIfCancellationRequested();
+                    var thumbnail = await ThumbnailHelper.GetThumbnailAsync(File, _png_image_size);
+                    if (!IsFullImageLoaded)
                     {
-                        cancellationToken.ThrowIfCancellationRequested();
-                        Preview = await ThumbnailHelper.GetThumbnailAsync(File, _png_image_size);
-                    });
-                }
+                        Preview = thumbnail;
+                    }
+                });
             });
         }
 
