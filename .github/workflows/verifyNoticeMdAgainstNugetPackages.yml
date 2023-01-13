@@ -26,8 +26,10 @@ jobs:
       uses: actions/checkout@v3
       with:
         ref: ${{ github.ref }}
-    - name: "Download dotnet sdk"
+    - name: "Setup dotnet"
       uses: actions/setup-dotnet@v3
+      with:
+        dotnet-version: 7.0.102
     - name: "Check against notice.md"
       shell: pwsh
       run: |
@@ -48,7 +50,7 @@ jobs:
 
             #Workaround for preventing exit code from dotnet process from reflecting exit code in PowerShell
             $procInfo = New-Object System.Diagnostics.ProcessStartInfo -Property @{ 
-                FileName               = "dotnet.exe"; 
+                FileName               = "dotnet"; 
                 Arguments              = "list $csproj package"; 
                 RedirectStandardOutput = $true; 
                 RedirectStandardError  = $true; 
