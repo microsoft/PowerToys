@@ -281,7 +281,6 @@ SOFTWARE.
 - CommunityToolkit.Mvvm 8.0.0
 - CommunityToolkit.WinUI.UI 7.1.2
 - CommunityToolkit.WinUI.UI.Controls 7.1.2
-- ControlzEx 5.0.1
 - HelixToolkit 2.20.2
 - HelixToolkit.Core.Wpf 2.20.2
 - hyjiacan.pinyin4net 4.1.1
@@ -290,7 +289,6 @@ SOFTWARE.
 - Mages 2.0.1
 - Markdig.Signed 0.27.0
 - Microsoft.CodeAnalysis.NetAnalyzers 7.0.0
-- Microsoft.Data.Sqlite 7.0.0
 - Microsoft.Extensions.Hosting 7.0.0
 - Microsoft.NET.Test.Sdk 17.4.1
 - Microsoft.Toolkit.Uwp.Notifications 7.1.2
