@@ -14,89 +14,89 @@ on:
     
 jobs:
   verify:
+    runs-on: ubuntu-latest
     name: "Verify notice.md against NuGet packages"
     permissions:
       contents: read
       pull-requests: read
       actions: read
-      runs-on: ubuntu-latest
-      if: "contains(github.event_name, 'pull_request') || github.event_name == 'push'"
-      steps:
-      - name: "Checkout Github Repository"
-        uses: actions/checkout@v3
-        with:
-          ref: ${{ github.ref }}
-      - name: "Check against notice.md"
-        shell: pwsh
-        run: |
-          $noticeFile = Get-Content -Raw "NOTICE.md"
+    if: "contains(github.event_name, 'pull_request') || github.event_name == 'push'"
+    steps:
+    - name: "Checkout Github Repository"
+      uses: actions/checkout@v3
+      with:
+        ref: ${{ github.ref }}
+    - name: "Check against notice.md"
+      shell: pwsh
+      run: |
+        $noticeFile = Get-Content -Raw "NOTICE.md"
 
-          Write-Host $noticeFile
+        Write-Host $noticeFile
 
-          Write-Host "Verifying NuGet packages"
+        Write-Host "Verifying NuGet packages"
 
-          $projFiles = Get-ChildItem $path -Filter *.csproj -force -Recurse
-          $projFiles.Count
+        $projFiles = Get-ChildItem "." -Filter *.csproj -force -Recurse
+        $projFiles.Count
 
-          Write-Host "Going through all csproj files"
+        Write-Host "Going through all csproj files"
 
-          $totalList = $projFiles | ForEach-Object -Parallel {
-              $csproj = $_
-              $nugetTemp = @();
+        $totalList = $projFiles | ForEach-Object -Parallel {
+            $csproj = $_
+            $nugetTemp = @();
 
-              #Workaround for preventing exit code from dotnet process from reflecting exit code in PowerShell
-              $procInfo = New-Object System.Diagnostics.ProcessStartInfo -Property @{ 
-                  FileName               = "dotnet.exe"; 
-                  Arguments              = "list $csproj package"; 
-                  RedirectStandardOutput = $true; 
-                  RedirectStandardError  = $true; 
-              }
+            #Workaround for preventing exit code from dotnet process from reflecting exit code in PowerShell
+            $procInfo = New-Object System.Diagnostics.ProcessStartInfo -Property @{ 
+                FileName               = "dotnet.exe"; 
+                Arguments              = "list $csproj package"; 
+                RedirectStandardOutput = $true; 
+                RedirectStandardError  = $true; 
+            }
 
-              $proc = [System.Diagnostics.Process]::Start($procInfo);
+            $proc = [System.Diagnostics.Process]::Start($procInfo);
 
-              while (!$proc.StandardOutput.EndOfStream) {
-                  $nugetTemp += $proc.StandardOutput.ReadLine();
-              }
+            while (!$proc.StandardOutput.EndOfStream) {
+                $nugetTemp += $proc.StandardOutput.ReadLine();
+            }
 
-              $proc = $null;
-              $procInfo = $null;
+            $proc = $null;
+            $procInfo = $null;
 
-              if($nugetTemp -is [array] -and $nugetTemp.count -gt 3)
-              {
-                  $temp = New-Object System.Collections.ArrayList
-                  $temp.AddRange($nugetTemp)
-                  $temp.RemoveRange(0, 3)
+            if($nugetTemp -is [array] -and $nugetTemp.count -gt 3)
+            {
+                $temp = New-Object System.Collections.ArrayList
+                $temp.AddRange($nugetTemp)
+                $temp.RemoveRange(0, 3)
 
-                  foreach($p in $temp) 
-                  {
-                      # breaking item down to usable array and getting 1 and 2, see below of a sample output
-                      #    > PACKAGE      VERSION            VERSION
+                foreach($p in $temp) 
+                {
+                    # breaking item down to usable array and getting 1 and 2, see below of a sample output
+                    #    > PACKAGE      VERSION            VERSION
 
-                      $p = -split $p
-                      $p = $p[1, 2]
-                      $tempString = $p[0] + " " + $p[1]
+                    $p = -split $p
+                    $p = $p[1, 2]
+                    $tempString = $p[0] + " " + $p[1]
 
-                      if(![string]::IsNullOrWhiteSpace($tempString))
-                      {
-                 echo "- $tempString";
-                      }
-                  }
-            $csproj = $null;
-              }
-          } -ThrottleLimit 4 | Sort-Object
+                    if(![string]::IsNullOrWhiteSpace($tempString))
+                    {
+               echo "- $tempString";
+                    }
+                }
+          $csproj = $null;
+            }
+        } -ThrottleLimit 4 | Sort-Object
 
-          $returnList = [System.Collections.Generic.HashSet[string]]($totalList) -join "`r`n"
+        $returnList = [System.Collections.Generic.HashSet[string]]($totalList) -join "`r`n"
 
-          Write-Host $returnList
+        Write-Host $returnList
 
-          if (!$noticeFile.Trim().EndsWith($returnList.Trim()))
-          {
-            Write-Host -ForegroundColor Red "Notice.md does not match NuGet list."
-            exit 1
-          }
+        if (!$noticeFile.Trim().EndsWith($returnList.Trim()))
+        {
+          Write-Host -ForegroundColor Red "Notice.md does not match NuGet list."
+          exit 1
+        }
 
-          exit 0
-        
-        
+        exit 0
+
+
     
     
