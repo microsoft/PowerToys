@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Wix xmlns="http://schemas.microsoft.com/wix/2006/wi"
+     xmlns:util="http://schemas.microsoft.com/wix/UtilExtension" >
+
+  <?include $(sys.CURRENTDIR)\Common.wxi?>
+
+  <?define ShortcutGuideExecutable=$(var.BinDir)\modules\ShortcutGuide\ShortcutGuide?>
+  <?define ShortcutGuideModuleInterface=$(var.BinDir)\modules\ShortcutGuide\ShortcutGuideModuleInterface?>
+  <?define ShortcutGuideSvgsFiles=0.svg;1.svg;2.svg;3.svg;4.svg;5.svg;6.svg;7.svg;8.svg;9.svg;no_active_window.svg;overlay.svg;overlay_portrait.svg?>
+
+  <Fragment>
+      <!-- Shortcut guide files -->
+    <DirectoryRef Id="ShortcutGuideSvgsInstallFolder" FileSource="$(var.ShortcutGuideExecutable)\svgs\">
+      <?foreach File in $(var.ShortcutGuideSvgsFiles)?>
+        <Component Id="ShortcutGuideSvgs_$(var.File)" Win64="yes">
+          <File Source="$(var.ShortcutGuideExecutable)\svgs\$(var.File)" />
+        </Component>
+      <?endforeach?>
+    </DirectoryRef>
+
+    <!-- Shortcut guide -->
+    <DirectoryRef Id="ShortcutGuideModuleInterfaceInstallFolder" FileSource="$(var.ShortcutGuideModuleInterface)">
+      <Component Id="Module_ShortcutGuideModuleInterface" Win64="yes">
+        <File Source="$(var.ShortcutGuideModuleInterface)\PowerToys.ShortcutGuideModuleInterface.dll" KeyPath="yes" />
+      </Component>
+    </DirectoryRef>
+
+    <DirectoryRef Id="ShortcutGuideExecutableInstallFolder" FileSource="$(var.ShortcutGuideExecutable)">
+      <Component Id="Module_ShortcutGuideExecutable" Win64="yes">
+        <File Source="$(var.ShortcutGuideExecutable)\PowerToys.ShortcutGuide.exe" KeyPath="yes" />
+      </Component>
+    </DirectoryRef>
+
+    <ComponentGroup Id="ShortcutGuideComponentGroup" Directory="INSTALLFOLDER">
+      <?foreach File in $(var.ShortcutGuideSvgsFiles)?>
+        <ComponentRef Id="ShortcutGuideSvgs_$(var.File)" />
+      <?endforeach?>
+      <ComponentRef Id="Module_ShortcutGuideModuleInterface" />
+      <ComponentRef Id="Module_ShortcutGuideExecutable" />
+    </ComponentGroup>
+
+  </Fragment>
+</Wix>

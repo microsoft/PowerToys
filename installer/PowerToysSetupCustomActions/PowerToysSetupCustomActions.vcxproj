@@ -47,8 +47,8 @@
     <PreBuildEvent>
       <Command>
       call cmd /C "copy ""$(ProjectDir)DepsFilesLists.h"" ""$(ProjectDir)DepsFilesLists.h.bk"""
-      call cmd /C "copy ""$(ProjectDir)..\PowerToysSetup\Product.wxs"" ""$(ProjectDir)..\PowerToysSetup\Product.wxs.bk""""
-      call powershell.exe -File parseRuntimes.ps1 -depsjsonpath "$(ProjectDir)..\..\$(Platform)\$(Configuration)\modules\ColorPicker\PowerToys.ColorPickerUI.deps.json" -depsfileslistspath "$(ProjectDir)DepsFilesLists.h" -productwxspath "$(ProjectDir)..\PowerToysSetup\Product.wxs"
+      call cmd /C "copy ""$(ProjectDir)..\PowerToysSetup\Core.wxs"" ""$(ProjectDir)..\PowerToysSetup\Core.wxs.bk""""
+      call powershell.exe -File parseRuntimes.ps1 -depsjsonpath "$(ProjectDir)..\..\$(Platform)\$(Configuration)\modules\ColorPicker\PowerToys.ColorPickerUI.deps.json" -depsfileslistspath "$(ProjectDir)DepsFilesLists.h" -productwxspath "$(ProjectDir)..\PowerToysSetup\Core.wxs"
       </Command>
       <Message>Backing up original files and populating .NET and WPF Runtime dependencies </Message>
     </PreBuildEvent>
