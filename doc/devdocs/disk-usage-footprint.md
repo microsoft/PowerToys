@@ -14,7 +14,7 @@ Our main motivations for doing are the following:
 
 These dll's are installed in `<PowerToysInstallDir>/dll/<Item>` folder structure.
 
-- [Windows Application SDK runtime](https://learn.microsoft.com/en-us/windows/apps/windows-app-sdk/downloads)
+- [Windows Application SDK runtime](https://learn.microsoft.com/windows/apps/windows-app-sdk/downloads)
 - [.NET Desktop Runtime 7](https://dotnet.microsoft.com/en-us/download/dotnet/7.0)
 - [Microsoft Visual C++ Runtime](https://learn.microsoft.com/en-us/cpp/windows/latest-supported-vc-redist?view=msvc-170)
 
