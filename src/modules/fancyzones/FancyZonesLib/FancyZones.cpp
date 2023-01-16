@@ -26,7 +26,7 @@
 #include <FancyZonesLib/Settings.h>
 #include <FancyZonesLib/SettingsObserver.h>
 #include <FancyZonesLib/trace.h>
-#include <FancyZonesLib/WindowDrag.h>
+#include <FancyZonesLib/WindowMouseSnap.h>
 #include <FancyZonesLib/WorkArea.h>
 
 enum class DisplayChangeType
@@ -167,7 +167,7 @@ private:
     const HINSTANCE m_hinstance{};
 
     HWND m_window{};
-    std::unique_ptr<WindowDrag> m_windowDrag{};
+    std::unique_ptr<WindowMouseSnap> m_windowDrag{};
     MonitorWorkAreaMap m_workAreaHandler;
     DraggingState m_draggingState;
 
@@ -288,7 +288,7 @@ FancyZones::VirtualDesktopChanged() noexcept
 
 void FancyZones::MoveSizeStart(HWND window, HMONITOR monitor)
 {
-    m_windowDrag = WindowDrag::Create(window, m_workAreaHandler.GetAllWorkAreas());
+    m_windowDrag = WindowMouseSnap::Create(window, m_workAreaHandler.GetAllWorkAreas());
     if (m_windowDrag)
     {
         if (FancyZonesSettings::settings().spanZonesAcrossMonitors)

@@ -4,13 +4,13 @@
 
 class WorkArea;
 
-class WindowDrag
+class WindowMouseSnap
 {
-    WindowDrag(HWND window, const std::unordered_map<HMONITOR, std::unique_ptr<WorkArea>>& activeWorkAreas);
+    WindowMouseSnap(HWND window, const std::unordered_map<HMONITOR, std::unique_ptr<WorkArea>>& activeWorkAreas);
 
 public:
-    static std::unique_ptr<WindowDrag> Create(HWND window, const std::unordered_map<HMONITOR, std::unique_ptr<WorkArea>>& activeWorkAreas);
-    ~WindowDrag();
+    static std::unique_ptr<WindowMouseSnap> Create(HWND window, const std::unordered_map<HMONITOR, std::unique_ptr<WorkArea>>& activeWorkAreas);
+    ~WindowMouseSnap();
 
     bool MoveSizeStart(HMONITOR monitor, bool isSnapping);
     void MoveSizeUpdate(HMONITOR monitor, POINT const& ptScreen, bool isSnapping, bool isSelectManyZonesState);
