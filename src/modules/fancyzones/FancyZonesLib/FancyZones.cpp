@@ -158,8 +158,6 @@ private:
     void ApplyQuickLayout(int key) noexcept;
     void FlashZones() noexcept;
 
-    std::vector<std::pair<HMONITOR, RECT>> GetRawMonitorData() noexcept;
-    std::vector<HMONITOR> GetMonitorsSorted() noexcept;
     HMONITOR WorkAreaKeyFromWindow(HWND window) noexcept;
 
     virtual void SettingsUpdate(SettingId type) override;
@@ -1281,32 +1279,6 @@ void FancyZones::FlashZones() noexcept
             }
         }
     }
-}
-
-std::vector<HMONITOR> FancyZones::GetMonitorsSorted() noexcept
-{
-    auto monitorInfo = GetRawMonitorData();
-    FancyZonesUtils::OrderMonitors(monitorInfo);
-    std::vector<HMONITOR> output;
-    std::transform(std::begin(monitorInfo), std::end(monitorInfo), std::back_inserter(output), [](const auto& info) { return info.first; });
-    return output;
-}
-
-std::vector<std::pair<HMONITOR, RECT>> FancyZones::GetRawMonitorData() noexcept
-{
-    std::vector<std::pair<HMONITOR, RECT>> monitorInfo;
-    const auto& activeWorkAreaMap = m_workAreaHandler.GetAllWorkAreas();
-    for (const auto& [monitor, workArea] : activeWorkAreaMap)
-    {
-        if (workArea && workArea->GetLayout() != nullptr)
-        {
-            MONITORINFOEX mi;
-            mi.cbSize = sizeof(mi);
-            GetMonitorInfo(monitor, &mi);
-            monitorInfo.push_back({ monitor, mi.rcMonitor });
-        }
-    }
-    return monitorInfo;
 }
 
 HMONITOR FancyZones::WorkAreaKeyFromWindow(HWND window) noexcept
