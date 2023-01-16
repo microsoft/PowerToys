@@ -31,8 +31,10 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             "GA",
             "GD",
             "NL",
+            "EST",
             "FR",
             "DE",
+            "HE",
             "HU",
             "IS",
             "IT",
@@ -251,6 +253,42 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 {
                     _powerAccentSettings.Properties.ShowUnicodeDescription = value;
                     OnPropertyChanged(nameof(ShowUnicodeDescription));
+                    RaisePropertyChanged();
+                }
+            }
+        }
+
+        public bool SortByUsageFrequency
+        {
+            get
+            {
+                return _powerAccentSettings.Properties.SortByUsageFrequency;
+            }
+
+            set
+            {
+                if (value != _powerAccentSettings.Properties.SortByUsageFrequency)
+                {
+                    _powerAccentSettings.Properties.SortByUsageFrequency = value;
+                    OnPropertyChanged(nameof(SortByUsageFrequency));
+                    RaisePropertyChanged();
+                }
+            }
+        }
+
+        public bool StartSelectionFromTheLeft
+        {
+            get
+            {
+                return _powerAccentSettings.Properties.StartSelectionFromTheLeft;
+            }
+
+            set
+            {
+                if (value != _powerAccentSettings.Properties.StartSelectionFromTheLeft)
+                {
+                    _powerAccentSettings.Properties.StartSelectionFromTheLeft = value;
+                    OnPropertyChanged(nameof(StartSelectionFromTheLeft));
                     RaisePropertyChanged();
                 }
             }

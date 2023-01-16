@@ -8,7 +8,7 @@ steps:
   clean: true
 
 - task: PowerShell@2
-  displayName: Verifying Nuget packages for PowerToys.sln
+  displayName: Verifying Nuget package versions for PowerToys.sln
   inputs:
     filePath: '$(build.sourcesdirectory)\.pipelines\verifyNugetPackages.ps1'
     arguments: -solution '$(build.sourcesdirectory)\PowerToys.sln'
@@ -69,7 +69,7 @@ steps:
     configPath: NuGet.config
     restoreSolution: PowerToys.sln
     restoreDirectory: '$(Build.SourcesDirectory)\packages'
-
+    
 - task: VSBuild@1
   displayName: 'Build PowerToys.sln'
   inputs:
@@ -137,12 +137,6 @@ steps:
     msbuildArgs: ${{ parameters.additionalBuildArguments }}
     maximumCpuCount: true
 
-- task: PowerShell@2
-  displayName: Download and install WiX 3.14 development build
-  inputs:
-    targetType: filePath
-    filePath: '$(build.sourcesdirectory)\.pipelines\installWiX.ps1'
-
 - task: NuGetCommand@2
   displayName: Restore NuGet packages for PowerToysSetup.sln
   inputs:
@@ -151,6 +145,12 @@ steps:
     configPath: NuGet.config
     restoreSolution: installer\PowerToysSetup.sln
     restoreDirectory: '$(Build.SourcesDirectory)\installer\packages'
+
+- task: PowerShell@2
+  displayName: Download and install WiX 3.14 development build
+  inputs:
+    targetType: filePath
+    filePath: '$(build.sourcesdirectory)\.pipelines\installWiX.ps1'
 
 - task: VSBuild@1
   displayName: 'Build PowerToys MSI'
@@ -227,3 +227,10 @@ steps:
       **\powerpreviewTest.dll
       **\UnitTests-FancyZones.dll
       !**\obj\**
+  
+- task: PowerShell@2
+  displayName: Verifying Notice.md and Nuget packages match
+  inputs:
+    filePath: '$(build.sourcesdirectory)\.pipelines\verifyNoticeMdAgainstNugetPackages.ps1'
+    arguments: -path '$(build.sourcesdirectory)\'
+    pwsh: true

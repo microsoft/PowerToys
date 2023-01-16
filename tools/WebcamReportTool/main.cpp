@@ -5,7 +5,12 @@
 #include <dshow.h>
 #include <cguid.h>
 
+// disable warning 26471 - Don't use reinterpret_cast. A cast from void* can use static_cast
+#pragma warning(push)
+#pragma warning(disable: 26471)
 #include <wil/com.h>
+#pragma warning(push)
+
 #include <wil/resource.h>
 
 #include <iostream>
