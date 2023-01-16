@@ -121,8 +121,15 @@ namespace ColorPicker.Settings
                                 try
                                 {
                                     string filePath = _settingsUtils.GetSettingsFilePath(ColorPickerModuleName, ColorPickerHistoryFilename);
-                                    string jsonSettingsString = System.IO.File.ReadAllText(filePath).Trim('\0');
-                                    savedColorHistory = JsonSerializer.Deserialize<List<string>>(jsonSettingsString);
+                                    if (!File.Exists(filePath))
+                                    {
+                                        savedColorHistory = settings.Properties.ColorHistory;
+                                    }
+                                    else
+                                    {
+                                        string jsonSettingsString = System.IO.File.ReadAllText(filePath).Trim('\0');
+                                        savedColorHistory = JsonSerializer.Deserialize<List<string>>(jsonSettingsString);
+                                    }
                                 }
                                 catch (Exception)
                                 {
