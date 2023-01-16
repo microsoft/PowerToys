@@ -715,16 +715,16 @@
     <DirectoryRef Id="INSTALLFOLDER" FileSource="$(var.BinDir)">
       <Component Id="powertoys_toast_clsid" Win64="yes">
         <RemoveFolder Id='Remove_powertoys_toast_clsid' On='uninstall' />
-        <RegistryKey Root="HKCR" Key="Software\Classes\CLSID\{DD5CACDA-7C2E-4997-A62A-04A597B58F76}">
+        <RegistryKey Root="HKCU" Key="Software\Classes\CLSID\{DD5CACDA-7C2E-4997-A62A-04A597B58F76}">
           <RegistryValue Type="string" Value="PowerToys Toast Notifications Background Activator" />
           <RegistryValue Type="string" Key="LocalServer32" Value="[INSTALLFOLDER]PowerToys.exe -ToastActivated" />
           <RegistryValue Type="string" Key="LocalServer32" Name="ThreadingModel" Value="Apartment" />
         </RegistryKey>
       </Component>
-      <Component Id="powertoys_exe" Win64="yes">
-        <File Id="PowerToys.exe" KeyPath="yes" Checksum="yes" />
-        <RegistryKey Root="HKLM" Key="Software\Classes\powertoys">
-          <RegistryValue Type="string" Name="URL Protocol" Value=""/>
+      <Component Id="powertoys_exe" Win64="yes" Guid="30261594-41A6-4509-AD09-FBC4E692F441">
+        <File Id="PowerToys.exe" Checksum="yes" />
+        <RegistryKey Root="HKCU" Key="Software\Classes\powertoys">
+          <RegistryValue Type="string" Name="URL Protocol" Value="" KeyPath="yes"/>
           <RegistryValue Type="string" Value="URL:PowerToys custom internal URI protocol"/>
           <RegistryKey Key="DefaultIcon">
             <RegistryValue Type="string" Value="PowerToys.exe" />
@@ -829,11 +829,11 @@
     <DirectoryRef Id="ModulesInstallFolder" FileSource="$(var.BinDir)modules\">
       <Component Id="Module_PowerPreview_Registry" Win64="yes">
         <!-- Update Key to use IE11 for prevhost.exe -->
-        <RegistryKey Root="HKLM" Key="Software\Microsoft\Internet Explorer\Main\FeatureControl\FEATURE_BROWSER_EMULATION">
+        <RegistryKey Root="HKCU" Key="Software\Microsoft\Internet Explorer\Main\FeatureControl\FEATURE_BROWSER_EMULATION">
           <RegistryValue Type="integer" Name="prevhost.exe" Value="11000" />
         </RegistryKey>
         <!-- Update Key to use IE11 for dllhost.exe -->
-        <RegistryKey Root="HKLM" Key="Software\Microsoft\Internet Explorer\Main\FeatureControl\FEATURE_BROWSER_EMULATION">
+        <RegistryKey Root="HKCU" Key="Software\Microsoft\Internet Explorer\Main\FeatureControl\FEATURE_BROWSER_EMULATION">
           <RegistryValue Type="integer" Name="dllhost.exe" Value="11000" />
         </RegistryKey>
       </Component>
@@ -847,7 +847,7 @@
       </Component>
       <?endforeach?>
       <Component Id="Module_ImageResizer_Registry" Win64="yes">
-        <RegistryKey Root="HKLM" Key="Software\Classes\CLSID\{51B4D7E5-7568-4234-B4BB-47FB3C016A69}\InprocServer32">
+        <RegistryKey Root="HKCU" Key="Software\Classes\CLSID\{51B4D7E5-7568-4234-B4BB-47FB3C016A69}\InprocServer32">
           <RegistryValue Value="[ImageResizerInstallFolder]PowerToys.ImageResizerExt.dll" Type="string" />
           <RegistryValue Name="ThreadingModel" Value="Apartment" Type="string" />
         </RegistryKey>
@@ -859,61 +859,61 @@
                                Value="{51B4D7E5-7568-4234-B4BB-47FB3C016A69}"
                                Type="string" />
                                -->
-        <RegistryValue Root="HKCR"
-                       Key="Directory\ShellEx\DragDropHandlers\ImageResizer"
+        <RegistryValue Root="HKCU"
+                       Key="SOFTWARE\Classes\Directory\ShellEx\DragDropHandlers\ImageResizer"
                        Value="{51B4D7E5-7568-4234-B4BB-47FB3C016A69}"
                        Type="string" />
         <!-- Registry Keys for the context menu handler for each of the following image formats: bmp, dib, gif, jfif, jpe, jpeg, jpg, jxr, png, rle, tif, tiff, wdp  -->
-        <RegistryValue Root="HKCR"
-                         Key="SystemFileAssociations\.bmp\ShellEx\ContextMenuHandlers\ImageResizer"
+        <RegistryValue Root="HKCU"
+                         Key="SOFTWARE\Classes\SystemFileAssociations\.bmp\ShellEx\ContextMenuHandlers\ImageResizer"
                          Value="{51B4D7E5-7568-4234-B4BB-47FB3C016A69}"
                          Type="string" />
-        <RegistryValue Root="HKCR"
-                       Key="SystemFileAssociations\.dib\ShellEx\ContextMenuHandlers\ImageResizer"
+        <RegistryValue Root="HKCU"
+                       Key="SOFTWARE\Classes\SystemFileAssociations\.dib\ShellEx\ContextMenuHandlers\ImageResizer"
                        Value="{51B4D7E5-7568-4234-B4BB-47FB3C016A69}"
                        Type="string" />
-        <RegistryValue Root="HKCR"
-                       Key="SystemFileAssociations\.gif\ShellEx\ContextMenuHandlers\ImageResizer"
+        <RegistryValue Root="HKCU"
+                       Key="SOFTWARE\Classes\SystemFileAssociations\.gif\ShellEx\ContextMenuHandlers\ImageResizer"
                        Value="{51B4D7E5-7568-4234-B4BB-47FB3C016A69}"
                        Type="string" />
-        <RegistryValue Root="HKCR"
-                       Key="SystemFileAssociations\.jfif\ShellEx\ContextMenuHandlers\ImageResizer"
+        <RegistryValue Root="HKCU"
+                       Key="SOFTWARE\Classes\SystemFileAssociations\.jfif\ShellEx\ContextMenuHandlers\ImageResizer"
                        Value="{51B4D7E5-7568-4234-B4BB-47FB3C016A69}"
                        Type="string" />
-        <RegistryValue Root="HKCR"
-                       Key="SystemFileAssociations\.jpe\ShellEx\ContextMenuHandlers\ImageResizer"
+        <RegistryValue Root="HKCU"
+                       Key="SOFTWARE\Classes\SystemFileAssociations\.jpe\ShellEx\ContextMenuHandlers\ImageResizer"
                        Value="{51B4D7E5-7568-4234-B4BB-47FB3C016A69}"
                        Type="string" />
-        <RegistryValue Root="HKCR"
-                       Key="SystemFileAssociations\.jpeg\ShellEx\ContextMenuHandlers\ImageResizer"
+        <RegistryValue Root="HKCU"
+                       Key="SOFTWARE\Classes\SystemFileAssociations\.jpeg\ShellEx\ContextMenuHandlers\ImageResizer"
                        Value="{51B4D7E5-7568-4234-B4BB-47FB3C016A69}"
                        Type="string" />
-        <RegistryValue Root="HKCR"
-                       Key="SystemFileAssociations\.jpg\ShellEx\ContextMenuHandlers\ImageResizer"
+        <RegistryValue Root="HKCU"
+                       Key="SOFTWARE\Classes\SystemFileAssociations\.jpg\ShellEx\ContextMenuHandlers\ImageResizer"
                        Value="{51B4D7E5-7568-4234-B4BB-47FB3C016A69}"
                        Type="string" />
-        <RegistryValue Root="HKCR"
-                       Key="SystemFileAssociations\.jxr\ShellEx\ContextMenuHandlers\ImageResizer"
+        <RegistryValue Root="HKCU"
+                       Key="SOFTWARE\Classes\SystemFileAssociations\.jxr\ShellEx\ContextMenuHandlers\ImageResizer"
                        Value="{51B4D7E5-7568-4234-B4BB-47FB3C016A69}"
                        Type="string" />
-        <RegistryValue Root="HKCR"
-                       Key="SystemFileAssociations\.png\ShellEx\ContextMenuHandlers\ImageResizer"
+        <RegistryValue Root="HKCU"
+                       Key="SOFTWARE\Classes\SystemFileAssociations\.png\ShellEx\ContextMenuHandlers\ImageResizer"
                        Value="{51B4D7E5-7568-4234-B4BB-47FB3C016A69}"
                        Type="string" />
-        <RegistryValue Root="HKCR"
-                       Key="SystemFileAssociations\.rle\ShellEx\ContextMenuHandlers\ImageResizer"
+        <RegistryValue Root="HKCU"
+                       Key="SOFTWARE\Classes\SystemFileAssociations\.rle\ShellEx\ContextMenuHandlers\ImageResizer"
                        Value="{51B4D7E5-7568-4234-B4BB-47FB3C016A69}"
                        Type="string" />
-        <RegistryValue Root="HKCR"
-                       Key="SystemFileAssociations\.tif\ShellEx\ContextMenuHandlers\ImageResizer"
+        <RegistryValue Root="HKCU"
+                       Key="SOFTWARE\Classes\SystemFileAssociations\.tif\ShellEx\ContextMenuHandlers\ImageResizer"
                        Value="{51B4D7E5-7568-4234-B4BB-47FB3C016A69}"
                        Type="string" />
-        <RegistryValue Root="HKCR"
-                       Key="SystemFileAssociations\.tiff\ShellEx\ContextMenuHandlers\ImageResizer"
+        <RegistryValue Root="HKCU"
+                       Key="SOFTWARE\Classes\SystemFileAssociations\.tiff\ShellEx\ContextMenuHandlers\ImageResizer"
                        Value="{51B4D7E5-7568-4234-B4BB-47FB3C016A69}"
                        Type="string" />
-        <RegistryValue Root="HKCR"
-                       Key="SystemFileAssociations\.wdp\ShellEx\ContextMenuHandlers\ImageResizer"
+        <RegistryValue Root="HKCU"
+                       Key="SOFTWARE\Classes\SystemFileAssociations\.wdp\ShellEx\ContextMenuHandlers\ImageResizer"
                        Value="{51B4D7E5-7568-4234-B4BB-47FB3C016A69}"
                        Type="string" />
       </Component>
@@ -946,16 +946,16 @@
       <?endforeach?>
       <!-- !Warning! Make sure to change Component Guid if you update something here -->
       <Component Id="Module_FileLocksmith" Guid="108D3EC1-E6E0-4E81-88EF-25966133CB41" Win64="yes">
-        <RegistryKey Root="HKLM" Key="Software\Classes\CLSID\{84D68575-E186-46AD-B0CB-BAEB45EE29C0}">
+        <RegistryKey Root="HKCU" Key="Software\Classes\CLSID\{84D68575-E186-46AD-B0CB-BAEB45EE29C0}">
           <RegistryValue Type="string" Value="File Locksmith Shell Extension" />
           <RegistryValue Type="string" Name="ContextMenuOptIn" Value="" />
           <RegistryValue Type="string" Key="InprocServer32" Value="[FileLocksmithInstallFolder]PowerToys.FileLocksmithExt.dll" />
           <RegistryValue Type="string" Key="InprocServer32" Name="ThreadingModel" Value="Apartment" />
         </RegistryKey>
-        <RegistryKey Root="HKLM" Key="Software\Classes\AllFileSystemObjects\ShellEx\ContextMenuHandlers\FileLocksmithExt">
+        <RegistryKey Root="HKCU" Key="Software\Classes\AllFileSystemObjects\ShellEx\ContextMenuHandlers\FileLocksmithExt">
           <RegistryValue Type="string" Value="{84D68575-E186-46AD-B0CB-BAEB45EE29C0}"/>
         </RegistryKey>
-        <RegistryKey Root="HKLM" Key="Software\Classes\Drive\ShellEx\ContextMenuHandlers\FileLocksmithExt">
+        <RegistryKey Root="HKCU" Key="Software\Classes\Drive\ShellEx\ContextMenuHandlers\FileLocksmithExt">
           <RegistryValue Type="string" Value="{84D68575-E186-46AD-B0CB-BAEB45EE29C0}"/>
         </RegistryKey>
         </Component>
@@ -992,15 +992,16 @@
       <?endforeach?>
       <!-- !Warning! Make sure to change Component Guid if you update something here -->
       <Component Id="Module_PowerRename" Guid="40D43079-240E-402D-8CE8-571BFFA71175" Win64="yes">
-        <RegistryKey Root="HKLM" Key="Software\Classes\CLSID\{0440049F-D1DC-4E46-B27B-98393D79486B}">
+        <RegistryKey Root="HKCU" Key="Software\Classes\CLSID\{0440049F-D1DC-4E46-B27B-98393D79486B}">
           <RegistryValue Type="string" Value="PowerRename Shell Extension" />
           <RegistryValue Type="string" Name="ContextMenuOptIn" Value="" />
           <RegistryValue Type="string" Key="InprocServer32" Value="[PowerRenameInstallFolder]PowerToys.PowerRenameExt.dll" />
           <RegistryValue Type="string" Key="InprocServer32" Name="ThreadingModel" Value="Apartment" />
         </RegistryKey>
-        <RegistryKey Root="HKLM" Key="Software\Classes\AllFileSystemObjects\ShellEx\ContextMenuHandlers\PowerRenameExt">
+        <RegistryKey Root="HKCU" Key="SOFTWARE\Classes\AllFileSystemObjects\ShellEx\ContextMenuHandlers\PowerRenameExt">
           <RegistryValue Type="string" Value="{0440049F-D1DC-4E46-B27B-98393D79486B}"/>
         </RegistryKey>
+
       </Component>
     </DirectoryRef>
 
@@ -2110,7 +2111,7 @@
     <ComponentGroup Id="LauncherComponents">
       <Component Id="launcherShortcutComponent" Directory="LauncherInstallFolder" >
         <!-- Toast Notification AUMID -->
-        <RegistryKey Root="HKLM" Key="SOFTWARE\Classes\AppUserModelId\PowerToysRun">
+        <RegistryKey Root="HKCU" Key="SOFTWARE\Classes\AppUserModelId\PowerToysRun">
           <RegistryValue Type="string" Name="DisplayName" Value="PowerToys Run" />
           <RegistryValue Type="string" Name="IconUri" Value="[LauncherImagesFolder]RunAsset.ico" />
         </RegistryKey>
