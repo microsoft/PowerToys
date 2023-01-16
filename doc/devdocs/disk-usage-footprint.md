@@ -12,7 +12,7 @@ Our main motivations for doing are the following:
 
 ## Current self-contained runtimes 
 
-These dll's installed in `<PowerToysInstallDir>/dll/<Item>` folder structure.
+These dll's are installed in `<PowerToysInstallDir>/dll/<Item>` folder structure.
 
 - [Windows Application SDK runtime](https://learn.microsoft.com/en-us/windows/apps/windows-app-sdk/downloads)
 - [.NET Desktop Runtime 7](https://dotnet.microsoft.com/en-us/download/dotnet/7.0)
