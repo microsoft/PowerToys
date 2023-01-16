@@ -456,12 +456,21 @@ namespace PowerAccent.Core
         {
             return letter switch
             {
-                LetterKey.VK_A => new string[] { "שׂ", "שׁ" },
+                LetterKey.VK_A => new string[] { "שׂ", "שׁ", "ְ" },
+                LetterKey.VK_B => new string[] { "׆" },
+                LetterKey.VK_E => new string[] { "ָ", "ֳ", "ֻ" },
                 LetterKey.VK_G => new string[] { "ױ" },
-                LetterKey.VK_H => new string[] { "ײ" },
-                LetterKey.VK_U => new string[] { "וֹ", "וּ" },
-                LetterKey.VK_Y => new string[] { "װ" },
-                LetterKey.VK_COMMA => new string[] { "”", "״", "־", "–", "֫", "ֽ", "ֿ" },
+                LetterKey.VK_H => new string[] { "ײ", "ײַ", "ׯ", "ִ" },
+                LetterKey.VK_M => new string[] { "ֵ" },
+                LetterKey.VK_P => new string[] { "ַ", "ֲ" },
+                LetterKey.VK_S => new string[] { "ּ" },
+                LetterKey.VK_T => new string[] { "ﭏ" },
+                LetterKey.VK_U => new string[] { "וֹ", "וּ", "װ", "ֹ" },
+                LetterKey.VK_X => new string[] { "ֶ", "ֱ" },
+                LetterKey.VK_Y => new string[] { "ױ" },
+                LetterKey.VK_COMMA => new string[] { "”", "’", "״", "׳" },
+                LetterKey.VK_PERIOD => new string[] { "֫", "ֽ", "ֿ" },
+                LetterKey.VK_MINUS => new string[] { "–", "־" },
                 _ => Array.Empty<string>(),
             };
         }
