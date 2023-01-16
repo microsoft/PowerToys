@@ -748,7 +748,7 @@ LRESULT CALLBACK FancyZones::s_WndProc(HWND window, UINT message, WPARAM wparam,
     if (!thisRef && (message == WM_CREATE))
     {
         const auto createStruct = reinterpret_cast<LPCREATESTRUCT>(lparam);
-        thisRef = reinterpret_cast<FancyZones*>(createStruct->lpCreateParams);
+        thisRef = static_cast<FancyZones*>(createStruct->lpCreateParams);
         SetWindowLongPtr(window, GWLP_USERDATA, reinterpret_cast<LONG_PTR>(thisRef));
     }
 
