@@ -389,6 +389,8 @@ DENORMAL
 Deondre
 depersist
 deprioritized
+depsfileslistspath
+depsjsonpath
 deref
 DESKTOPABSOLUTEEDITING
 DESKTOPABSOLUTEPARSING
@@ -475,7 +477,6 @@ EFile
 ekus
 emmintrin
 Emoji
-emptyrecyclebin
 ENABLEDELAYEDEXPANSION
 enabledisable
 ENABLEDPOPUP
@@ -1385,6 +1386,7 @@ proactively
 PROCESSKEY
 PRODEXT
 PRODUCTVERSION
+productwxspath
 Progman
 programdata
 PROGRAMFILES
@@ -1545,6 +1547,7 @@ runsettings
 runtimeclass
 runtimeconfig
 runtimeobject
+runtimepack
 runtimes
 rus
 Rutkas
@@ -1610,6 +1613,7 @@ shellex
 SHELLEXECUTEINFO
 SHELLEXECUTEINFOW
 shellscalingapi
+shemptyrecyclebina
 SHFILEINFO
 SHGFI
 Shl

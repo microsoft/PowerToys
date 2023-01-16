@@ -14,7 +14,7 @@
         x:Uid="FancyZones"
         ModuleImageSource="ms-appx:///Assets/Modules/FancyZones.png">
         <controls:SettingsPageControl.ModuleContent>
-            <StackPanel Orientation="Vertical">
+            <StackPanel Orientation="Vertical" ChildrenTransitions="{StaticResource SettingsCardsAnimations}">
                 <labs:SettingsCard
                     x:Uid="FancyZones_EnableToggleControl_HeaderText"
                     HeaderIcon="{ui:BitmapIcon Source=/Assets/FluentIcons/FluentIconsFancyZones.png}"

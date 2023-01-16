@@ -79,7 +79,7 @@ BOOL RegisterDLLWindowClass(LPCWSTR szClassName, Mocks::HwndCreator* creator)
 DWORD WINAPI ThreadProc(LPVOID lpParam)
 {
     MSG messages;
-    Mocks::HwndCreator* creator = reinterpret_cast<Mocks::HwndCreator*>(lpParam);
+    Mocks::HwndCreator* creator = static_cast<Mocks::HwndCreator*>(lpParam);
     if (!creator)
         return static_cast<DWORD>(-1);
 

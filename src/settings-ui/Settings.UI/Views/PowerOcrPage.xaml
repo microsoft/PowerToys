@@ -14,9 +14,8 @@
         x:Uid="TextExtractor"
         ModuleImageSource="ms-appx:///Assets/Modules/PowerOCR.png">
         <controls:SettingsPageControl.ModuleContent>
-            <StackPanel
-                Orientation="Vertical"
-                Spacing="2">
+            <StackPanel ChildrenTransitions="{StaticResource SettingsCardsAnimations}"
+                Orientation="Vertical" Spacing="2">
                 <labs:SettingsCard
                     x:Uid="TextExtractor_EnableToggleControl_HeaderText"
                     HeaderIcon="{ui:BitmapIcon Source=/Assets/FluentIcons/FluentIconsPowerOcr.png}"

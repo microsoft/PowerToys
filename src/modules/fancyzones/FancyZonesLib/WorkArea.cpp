@@ -680,7 +680,7 @@ LRESULT CALLBACK WorkArea::s_WndProc(HWND window, UINT message, WPARAM wparam, L
     if ((thisRef == nullptr) && (message == WM_CREATE))
     {
         auto createStruct = reinterpret_cast<LPCREATESTRUCT>(lparam);
-        thisRef = reinterpret_cast<WorkArea*>(createStruct->lpCreateParams);
+        thisRef = static_cast<WorkArea*>(createStruct->lpCreateParams);
         SetWindowLongPtr(window, GWLP_USERDATA, reinterpret_cast<LONG_PTR>(thisRef));
     }
 

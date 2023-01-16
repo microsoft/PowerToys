@@ -493,6 +493,12 @@
   <data name="PowerLauncher_ClearInputOnLaunch.Content" xml:space="preserve">
     <value>Clear the previous query on launch</value>
   </data>
+  <data name="PowerLauncher_TabSelectsContextButtons.Header" xml:space="preserve">
+    <value>Tab through context buttons</value>
+  </data>
+  <data name="PowerLauncher_TabSelectsContextButtons.Description" xml:space="preserve">
+    <value>Pressing tab will first select through the available context buttons of the current selection before moving onto the next result</value>
+  </data>
   <data name="PowerLauncher_SearchQueryResultsWithDelay.Header" xml:space="preserve">
     <value>Input Smoothing</value>
     <comment>This is about adding a delay to wait for more input before executing a search</comment>
@@ -2725,8 +2731,14 @@ Activate by holding the key for the character you want to add an accent to, then
   <data name="QuickAccent_SelectedLanguage_German.Content" xml:space="preserve">
     <value>German</value>
   </data>
+  <data name="QuickAccent_SelectedLanguage_Hebrew.Content" xml:space="preserve">
+    <value>Hebrew</value>
+  </data>
   <data name="QuickAccent_SelectedLanguage_French.Content" xml:space="preserve">
     <value>French</value>
+  </data>
+  <data name="QuickAccent_SelectedLanguage_Estonian.Content" xml:space="preserve">
+    <value>Estonian</value>
   </data>
   <data name="QuickAccent_SelectedLanguage_Macedonian.Content" xml:space="preserve">
     <value>Macedonian</value>

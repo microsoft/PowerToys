@@ -22,7 +22,7 @@
     <controls:SettingsPageControl x:Uid="ColorPicker" ModuleImageSource="ms-appx:///Assets/Modules/ColorPicker.png">
         <controls:SettingsPageControl.ModuleContent>
 
-            <StackPanel x:Name="ColorPickerView" Orientation="Vertical">
+            <StackPanel x:Name="ColorPickerView" Orientation="Vertical" ChildrenTransitions="{StaticResource SettingsCardsAnimations}">
                 <labs:SettingsCard
                     x:Uid="ColorPicker_EnableColorPicker"
                     HeaderIcon="{ui:BitmapIcon Source=/Assets/FluentIcons/FluentIconsColorPicker.png}"

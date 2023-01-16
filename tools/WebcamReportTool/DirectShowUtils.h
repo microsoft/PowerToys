@@ -5,7 +5,12 @@
 #include <windows.h>
 #include <dshow.h>
 
+// disable warning 26471 - Don't use reinterpret_cast. A cast from void* can use static_cast
+#pragma warning(push)
+#pragma warning(disable: 26471)
 #include <wil/com.h>
+#pragma warning(push)
+
 #include <winrt/Windows.Foundation.h>
 
 #include <vector>

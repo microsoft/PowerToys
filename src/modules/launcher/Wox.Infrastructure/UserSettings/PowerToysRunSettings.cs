@@ -315,6 +315,8 @@ namespace Wox.Infrastructure.UserSettings
 
         public bool ClearInputOnLaunch { get; set; }
 
+        public bool TabSelectsContextButtons { get; set; }
+
         public bool RememberLastLaunchLocation { get; set; }
 
         public bool IgnoreHotkeysOnFullscreen { get; set; }

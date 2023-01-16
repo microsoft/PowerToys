@@ -44,5 +44,15 @@ namespace Wox.Plugin.Common.Win32
 
             return NativeMethods.CloseHandle(handle);
         }
+
+        /// <summary>
+        /// Gets the description for an HRESULT error code.
+        /// </summary>
+        /// <param name="hr">The HRESULT number</param>
+        /// <returns>A string containing the description.</returns>
+        public static string MessageFromHResult(int hr)
+        {
+            return Marshal.GetExceptionForHR(hr).Message;
+        }
     }
 }
