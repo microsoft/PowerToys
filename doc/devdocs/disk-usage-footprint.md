@@ -49,7 +49,7 @@ We created a quick virtual machine.  We chose to use our fresh Windows 10 test v
 
 <img src="../images/disk-usage/PowerToys_install_dir.png">
 
-### PowerToys install directory size shown by File Explorer
+### PowerToys installation directory size shown by File Explorer
 
 As mentioned above, File Explorer shows size of PowerToys installation dir as every hard-link is a regular file for itself
 
