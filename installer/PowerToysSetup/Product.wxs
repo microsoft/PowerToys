@@ -47,7 +47,9 @@
     </Condition>
 
     <Icon Id="powertoys.exe" SourceFile="$(var.BinDir)svgs\icon.ico"/>
+
     <Property Id="ARPPRODUCTICON" Value="powertoys.exe" />
+
     <Feature Id="CoreFeature" Title="PowerToys" AllowAdvertise="no" Absent="disallow" TypicalDefault="install"
              Description="Contains the Shortcut Guide and Fancy Zones features.">
       <ComponentGroupRef Id="CoreComponents" />
@@ -76,6 +78,7 @@
       <ComponentGroupRef Id="ToolComponentGroup" />
       <ComponentGroupRef Id="MonacoSRCHeatGenerated" />
     </Feature>
+
     <SetProperty Id="ARPINSTALLLOCATION" Value="[INSTALLFOLDER]" After="CostFinalize" />
 
     <Property Id="WIXUI_INSTALLDIR" Value="INSTALLFOLDER" />
@@ -417,6 +420,7 @@
     <Binary Id="PTCustomActions" SourceFile="$(var.PowerToysSetupCustomActions.TargetPath)" />
   </Fragment>
 
+  <!-- Installation directory structure -->
   <Fragment>
     <Directory Id="TARGETDIR" Name="SourceDir">
       <Directory Id="ProgramFiles64Folder">
