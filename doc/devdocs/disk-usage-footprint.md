@@ -20,7 +20,7 @@ These dll's are installed in `<PowerToysInstallDir>/dll/<Item>` folder structure
 
 ## So why does PowerToys have a larger footprint now?
 
-Before the hard-link work was done, each of these runtimes had to be installed so there was more items being installed outside just the PowerToys install directory. This space would not have been accounted, 
+Before the hard-link work was done, each of these runtimes had to be installed, so there were more items being installed outside just the PowerToys install directory. This space would not have been accounted.
 
 File Explorer treats hard-links the same as "original"/regular files/directories (https://learn.microsoft.com/en-us/troubleshoot/windows-server/backup-and-storage/disk-space-problems-on-ntfs-volumes#other-ntfs-features-that-may-cause-file-allocation-confusion), not as links. This results in File Explorer reporting size of PowerToys installation directory bigger than it is (more than 2GB). 
 
