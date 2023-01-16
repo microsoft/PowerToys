@@ -71,6 +71,7 @@
     <ClInclude Include="trace.h" />
     <ClInclude Include="util.h" />
     <ClInclude Include="VirtualDesktop.h" />
+    <ClInclude Include="WindowKeyboardSnap.h" />
     <ClInclude Include="WindowMouseSnap.h" />
     <ClInclude Include="FancyZonesWindowProperties.h" />
     <ClInclude Include="WindowUtils.h" />
@@ -123,6 +124,7 @@
     <ClCompile Include="trace.cpp" />
     <ClCompile Include="util.cpp" />
     <ClCompile Include="VirtualDesktop.cpp" />
+    <ClCompile Include="WindowKeyboardSnap.cpp" />
     <ClCompile Include="WindowMouseSnap.cpp" />
     <ClCompile Include="WindowUtils.cpp" />
     <ClCompile Include="Zone.cpp" />
