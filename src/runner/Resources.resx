@@ -116,8 +116,11 @@
     <value>Exit</value>
     <comment>Exit as a verb, as in Exit the application</comment>
   </data>
+  <data name="HIDE_TRAY_ICON_MENU_TEXT" xml:space="preserve">
+	<value>Hide Icon</value>
+  </data>
   <data name="SUBMIT_BUG_TEXT" xml:space="preserve">
-    <value>Report bug</value>
+    <value>Report Bug</value>
   </data>
   <data name="BUGREPORT_SUCCESS" xml:space="preserve">
     <value>Bug report .zip file has been created on your Desktop.</value>

@@ -88,6 +88,7 @@ void open_menu_from_another_instance(std::optional<std::string> settings_window)
         msg = static_cast<LPARAM>(ESettingsWindowNames_from_string(settings_window.value()));
     }
     PostMessageW(hwnd_main, WM_COMMAND, ID_SETTINGS_MENU_COMMAND, msg);
+    SetForegroundWindow(hwnd_main); // Bring the settings window to the front
 }
 
 int runner(bool isProcessElevated, bool openSettings, std::string settingsWindow, bool openOobe, bool openScoobe, bool showRestartNotificationAfterUpdate)
