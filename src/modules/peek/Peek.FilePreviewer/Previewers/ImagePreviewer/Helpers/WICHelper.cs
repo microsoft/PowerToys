@@ -2,12 +2,12 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System;
+using System.Threading.Tasks;
+using WIC;
+
 namespace Peek.FilePreviewer.Previewers
 {
-    using System;
-    using System.Threading.Tasks;
-    using WIC;
-
     public static class WICHelper
     {
         public static Task<Windows.Foundation.Size> GetImageSize(string filePath)

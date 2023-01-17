@@ -456,7 +456,7 @@ LExit:
     {
         PMSIHANDLE hRecord = MsiCreateRecord(0);
         MsiRecordSetString(hRecord, 0, TEXT("Failed to create a scheduled task to start PowerToys at user login. You can re-try to create the scheduled task using the PowerToys settings."));
-        MsiProcessMessage(hInstall, INSTALLMESSAGE(INSTALLMESSAGE_WARNING + MB_OK), hRecord);
+        MsiProcessMessage(hInstall, static_cast<INSTALLMESSAGE>(INSTALLMESSAGE_WARNING + MB_OK), hRecord);
     }
 
     er = SUCCEEDED(hr) ? ERROR_SUCCESS : ERROR_INSTALL_FAILURE;
@@ -573,7 +573,7 @@ LExit:
     {
         PMSIHANDLE hRecord = MsiCreateRecord(0);
         MsiRecordSetString(hRecord, 0, TEXT("Failed to remove the PowerToys folder from the scheduled task. These can be removed manually later."));
-        MsiProcessMessage(hInstall, INSTALLMESSAGE(INSTALLMESSAGE_WARNING + MB_OK), hRecord);
+        MsiProcessMessage(hInstall, static_cast<INSTALLMESSAGE>(INSTALLMESSAGE_WARNING + MB_OK), hRecord);
     }
 
     er = SUCCEEDED(hr) ? ERROR_SUCCESS : ERROR_INSTALL_FAILURE;
@@ -846,7 +846,7 @@ LExit:
     {
         PMSIHANDLE hRecord = MsiCreateRecord(0);
         MsiRecordSetString(hRecord, 0, TEXT("Failed to add certificate to store"));
-        MsiProcessMessage(hInstall, INSTALLMESSAGE(INSTALLMESSAGE_WARNING + MB_OK), hRecord);
+        MsiProcessMessage(hInstall, static_cast<INSTALLMESSAGE>(INSTALLMESSAGE_WARNING + MB_OK), hRecord);
     }
 
     er = SUCCEEDED(hr) ? ERROR_SUCCESS : ERROR_INSTALL_FAILURE;
@@ -878,7 +878,7 @@ LExit:
     {
         PMSIHANDLE hRecord = MsiCreateRecord(0);
         MsiRecordSetString(hRecord, 0, TEXT("Failed to install virtual camera driver"));
-        MsiProcessMessage(hInstall, INSTALLMESSAGE(INSTALLMESSAGE_WARNING + MB_OK), hRecord);
+        MsiProcessMessage(hInstall, static_cast<INSTALLMESSAGE>(INSTALLMESSAGE_WARNING + MB_OK), hRecord);
     }
 
     er = SUCCEEDED(hr) ? ERROR_SUCCESS : ERROR_INSTALL_FAILURE;
@@ -919,7 +919,7 @@ LExit:
     {
         PMSIHANDLE hRecord = MsiCreateRecord(0);
         MsiRecordSetString(hRecord, 0, TEXT("Failed to uninstall virtual camera driver"));
-        MsiProcessMessage(hInstall, INSTALLMESSAGE(INSTALLMESSAGE_WARNING + MB_OK), hRecord);
+        MsiProcessMessage(hInstall, static_cast<INSTALLMESSAGE>(INSTALLMESSAGE_WARNING + MB_OK), hRecord);
     }
 
     er = SUCCEEDED(hr) ? ERROR_SUCCESS : ERROR_INSTALL_FAILURE;
@@ -1092,6 +1092,87 @@ UINT __stdcall CreatePTInteropHardlinksCA(MSIHANDLE hInstall)
     }
 
 LExit:
+    er = SUCCEEDED(hr) ? ERROR_SUCCESS : ERROR_INSTALL_FAILURE;
+    return WcaFinalize(er);
+}
+
+UINT __stdcall CreateDotnetRuntimeHardlinksCA(MSIHANDLE hInstall)
+{
+    HRESULT hr = S_OK;
+    UINT er = ERROR_SUCCESS;
+    std::wstring installationFolder, dotnetRuntimeFilesSrcDir, colorPickerDir, powerOCRDir, launcherDir, fancyZonesDir,
+      imageResizerDir, settingsDir, awakeDir, measureToolDir, powerAccentDir, fileExplorerAddOnsDir, hostsDir, fileLocksmithDir;
+
+    hr = WcaInitialize(hInstall, "CreateDotnetRuntimeHardlinksCA");
+    ExitOnFailure(hr, "Failed to initialize");
+
+    hr = getInstallFolder(hInstall, installationFolder);
+    ExitOnFailure(hr, "Failed to get installation folder");
+
+    dotnetRuntimeFilesSrcDir = installationFolder + L"dll\\dotnet\\";
+    colorPickerDir = installationFolder + L"modules\\ColorPicker\\";
+    powerOCRDir = installationFolder + L"modules\\PowerOCR\\";
+    launcherDir = installationFolder + L"modules\\launcher\\";
+    fancyZonesDir = installationFolder + L"modules\\FancyZones\\";
+    imageResizerDir = installationFolder + L"modules\\ImageResizer\\";
+    settingsDir = installationFolder + L"Settings\\";
+    awakeDir = installationFolder + L"modules\\Awake\\";
+    measureToolDir = installationFolder + L"modules\\MeasureTool\\";
+    powerAccentDir = installationFolder + L"modules\\PowerAccent\\";
+    fileExplorerAddOnsDir = installationFolder + L"modules\\FileExplorerPreview\\";
+    hostsDir = installationFolder + L"modules\\Hosts\\";
+    fileLocksmithDir = installationFolder + L"modules\\FileLocksmith\\";
+
+    for (auto file : dotnetRuntimeFiles)
+    {
+        std::error_code ec;
+        std::filesystem::create_hard_link((dotnetRuntimeFilesSrcDir + file).c_str(), (colorPickerDir + file).c_str(), ec);
+        std::filesystem::create_hard_link((dotnetRuntimeFilesSrcDir + file).c_str(), (powerOCRDir + file).c_str(), ec);
+        std::filesystem::create_hard_link((dotnetRuntimeFilesSrcDir + file).c_str(), (launcherDir + file).c_str(), ec);
+        std::filesystem::create_hard_link((dotnetRuntimeFilesSrcDir + file).c_str(), (fancyZonesDir + file).c_str(), ec);
+        std::filesystem::create_hard_link((dotnetRuntimeFilesSrcDir + file).c_str(), (imageResizerDir + file).c_str(), ec);
+        std::filesystem::create_hard_link((dotnetRuntimeFilesSrcDir + file).c_str(), (settingsDir + file).c_str(), ec);
+        std::filesystem::create_hard_link((dotnetRuntimeFilesSrcDir + file).c_str(), (awakeDir + file).c_str(), ec);
+        std::filesystem::create_hard_link((dotnetRuntimeFilesSrcDir + file).c_str(), (measureToolDir + file).c_str(), ec);
+        std::filesystem::create_hard_link((dotnetRuntimeFilesSrcDir + file).c_str(), (powerAccentDir + file).c_str(), ec);
+        std::filesystem::create_hard_link((dotnetRuntimeFilesSrcDir + file).c_str(), (fileExplorerAddOnsDir + file).c_str(), ec);
+        std::filesystem::create_hard_link((dotnetRuntimeFilesSrcDir + file).c_str(), (hostsDir + file).c_str(), ec);
+        std::filesystem::create_hard_link((dotnetRuntimeFilesSrcDir + file).c_str(), (fileLocksmithDir + file).c_str(), ec);
+
+        if (ec.value() != S_OK)
+        {
+            std::wstring errorMessage{ L"Error creating hard link for: " };
+            errorMessage += file;
+            errorMessage += L", error code: " + std::to_wstring(ec.value());
+            Logger::error(errorMessage);
+            er = ERROR_INSTALL_FAILURE;
+        }
+    }
+
+    for (auto file : dotnetRuntimeWPFFiles)
+    {
+      std::error_code ec;
+      std::filesystem::create_hard_link((dotnetRuntimeFilesSrcDir + file).c_str(), (awakeDir + file).c_str(), ec);
+      std::filesystem::create_hard_link((dotnetRuntimeFilesSrcDir + file).c_str(), (colorPickerDir + file).c_str(), ec);
+      std::filesystem::create_hard_link((dotnetRuntimeFilesSrcDir + file).c_str(), (powerOCRDir + file).c_str(), ec);
+      std::filesystem::create_hard_link((dotnetRuntimeFilesSrcDir + file).c_str(), (launcherDir + file).c_str(), ec);
+      std::filesystem::create_hard_link((dotnetRuntimeFilesSrcDir + file).c_str(), (fancyZonesDir + file).c_str(), ec);
+      std::filesystem::create_hard_link((dotnetRuntimeFilesSrcDir + file).c_str(), (imageResizerDir + file).c_str(), ec);
+      std::filesystem::create_hard_link((dotnetRuntimeFilesSrcDir + file).c_str(), (powerAccentDir + file).c_str(), ec);
+      std::filesystem::create_hard_link((dotnetRuntimeFilesSrcDir + file).c_str(), (fileExplorerAddOnsDir + file).c_str(), ec);
+      std::filesystem::create_hard_link((dotnetRuntimeFilesSrcDir + file).c_str(), (hostsDir + file).c_str(), ec);
+
+      if (ec.value() != S_OK)
+      {
+        std::wstring errorMessage{ L"Error creating hard link for: " };
+        errorMessage += file;
+        errorMessage += L", error code: " + std::to_wstring(ec.value());
+        Logger::error(errorMessage);
+        er = ERROR_INSTALL_FAILURE;
+      }
+    }
+
+    LExit:
     er = SUCCEEDED(hr) ? ERROR_SUCCESS : ERROR_INSTALL_FAILURE;
     return WcaFinalize(er);
 }

@@ -13,7 +13,7 @@ namespace PowerAccent.UI;
 
 public partial class Selector : Window, IDisposable, INotifyPropertyChanged
 {
-    private readonly Core.PowerAccent _powerAccent = new ();
+    private readonly Core.PowerAccent _powerAccent = new();
 
     private Visibility _characterNameVisibility = Visibility.Visible;
 
@@ -84,7 +84,7 @@ public partial class Selector : Window, IDisposable, INotifyPropertyChanged
 
     private void SetWindowPosition()
     {
-        Size windowSize = new (((System.Windows.Controls.Panel)Application.Current.MainWindow.Content).ActualWidth, ((System.Windows.Controls.Panel)Application.Current.MainWindow.Content).ActualHeight);
+        Size windowSize = new(((System.Windows.Controls.Panel)Application.Current.MainWindow.Content).ActualWidth, ((System.Windows.Controls.Panel)Application.Current.MainWindow.Content).ActualHeight);
         Point position = _powerAccent.GetDisplayCoordinates(windowSize);
         this.Left = position.X;
         this.Top = position.Y;
@@ -97,7 +97,7 @@ public partial class Selector : Window, IDisposable, INotifyPropertyChanged
             Position.Left or Position.TopLeft or Position.BottomLeft => HorizontalAlignment.Left,
             Position.Right or Position.TopRight or Position.BottomRight => HorizontalAlignment.Right,
             Position.Center or Position.Top or Position.Bottom => HorizontalAlignment.Center,
-            _ => HorizontalAlignment.Center
+            _ => HorizontalAlignment.Center,
         };
     }
 

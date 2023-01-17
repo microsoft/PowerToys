@@ -47,7 +47,8 @@ internal static class Program
                 {
                     Terminate();
                 }
-            }, _tokenSource.Token);
+            },
+            _tokenSource.Token);
     }
 
     private static void Arguments(string[] args)

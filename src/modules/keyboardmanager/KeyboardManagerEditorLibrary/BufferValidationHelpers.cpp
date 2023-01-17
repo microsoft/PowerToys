@@ -233,7 +233,7 @@ namespace BufferValidationHelpers
 
             // Convert app name to lower case
             std::transform(appName.begin(), appName.end(), appName.begin(), towlower);
-            std::wstring lowercaseDefAppName = KeyboardManagerEditorStrings::DefaultAppName;
+            std::wstring lowercaseDefAppName = KeyboardManagerEditorStrings::DefaultAppName();
             std::transform(lowercaseDefAppName.begin(), lowercaseDefAppName.end(), lowercaseDefAppName.begin(), towlower);
             if (appName == lowercaseDefAppName)
             {

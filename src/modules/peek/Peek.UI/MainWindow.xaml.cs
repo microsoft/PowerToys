@@ -2,19 +2,19 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System.Diagnostics;
+using interop;
+using Microsoft.UI.Windowing;
+using Microsoft.UI.Xaml.Input;
+using Peek.FilePreviewer.Models;
+using Peek.UI.Extensions;
+using Peek.UI.Helpers;
+using Peek.UI.Native;
+using Windows.Foundation;
+using WinUIEx;
+
 namespace Peek.UI
 {
-    using System.Diagnostics;
-    using interop;
-    using Microsoft.UI.Windowing;
-    using Microsoft.UI.Xaml.Input;
-    using Peek.FilePreviewer.Models;
-    using Peek.UI.Extensions;
-    using Peek.UI.Helpers;
-    using Peek.UI.Native;
-    using Windows.Foundation;
-    using WinUIEx;
-
     /// <summary>
     /// An empty window that can be used on its own or navigated to within a Frame.
     /// </summary>

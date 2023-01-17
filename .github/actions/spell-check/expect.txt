@@ -212,7 +212,6 @@ CHILDACTIVATE
 CHILDWINDOW
 Choibalsan
 chrdavis
-Chromakey
 Chrzan
 cht
 Chukotka
@@ -409,6 +408,8 @@ DENORMAL
 Deondre
 depersist
 deprioritized
+depsfileslistspath
+depsjsonpath
 deref
 DESKTOPABSOLUTEEDITING
 DESKTOPABSOLUTEPARSING
@@ -498,7 +499,6 @@ eip
 ekus
 emmintrin
 Emoji
-emptyrecyclebin
 ENABLEDELAYEDEXPANSION
 enabledisable
 ENABLEDPOPUP
@@ -587,7 +587,6 @@ FILEVERSION
 Filtergraph
 Filterkeyboard
 Filterx
-finalizer
 findfast
 firefox
 FIXEDFILEINFO
@@ -843,12 +842,11 @@ INTRESOURCE
 Intrinsics
 INVALIDARG
 invalidoperatioexception
-IPalette
 ipc
 ipcmanager
 IPlugin
 IPower
-ipreview
+IPREVIEW
 ipreviewhandler
 ipreviewhandlervisualssetfont
 IProperty
@@ -1221,7 +1219,7 @@ newdev
 newitem
 newpath
 newrow
-newtonsoft
+Newtonsoft
 niels
 nielslaute
 NIF
@@ -1409,7 +1407,7 @@ pipename
 Pitcairn
 PKBDLLHOOKSTRUCT
 Pkcs
-pkey
+PKEY
 plib
 PLK
 ploc
@@ -1471,6 +1469,7 @@ proactively
 PROCESSKEY
 PRODEXT
 PRODUCTVERSION
+productwxspath
 Progman
 programdata
 PROGRAMFILES
@@ -1645,6 +1644,7 @@ runsettings
 runtimeclass
 runtimeconfig
 runtimeobject
+runtimepack
 runtimes
 rus
 Rutkas
@@ -1718,6 +1718,7 @@ shellex
 SHELLEXECUTEINFO
 SHELLEXECUTEINFOW
 shellscalingapi
+shemptyrecyclebina
 SHFILEINFO
 SHGFI
 Shgno

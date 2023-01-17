@@ -2,27 +2,27 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System;
+using System.Drawing.Imaging;
+using System.IO;
+using System.Threading;
+using System.Threading.Tasks;
+using CommunityToolkit.Mvvm.ComponentModel;
+using Microsoft.PowerToys.Settings.UI.Library;
+using Microsoft.UI.Dispatching;
+using Microsoft.UI.Xaml.Controls;
+using Microsoft.UI.Xaml.Media.Imaging;
+using Peek.Common;
+using Peek.Common.Extensions;
+using Peek.Common.Helpers;
+using Peek.FilePreviewer.Previewers.Helpers;
+using Windows.ApplicationModel.DataTransfer;
+using Windows.Foundation;
+using Windows.Storage;
+using File = Peek.Common.Models.File;
+
 namespace Peek.FilePreviewer.Previewers
 {
-    using System;
-    using System.Drawing.Imaging;
-    using System.IO;
-    using System.Threading;
-    using System.Threading.Tasks;
-    using CommunityToolkit.Mvvm.ComponentModel;
-    using Microsoft.PowerToys.Settings.UI.Library;
-    using Microsoft.UI.Dispatching;
-    using Microsoft.UI.Xaml.Controls;
-    using Microsoft.UI.Xaml.Media.Imaging;
-    using Peek.Common;
-    using Peek.Common.Extensions;
-    using Peek.Common.Helpers;
-    using Peek.FilePreviewer.Previewers.Helpers;
-    using Windows.ApplicationModel.DataTransfer;
-    using Windows.Foundation;
-    using Windows.Storage;
-    using File = Peek.Common.Models.File;
-
     public partial class UnsupportedFilePreviewer : ObservableObject, IUnsupportedFilePreviewer, IDisposable
     {
         [ObservableProperty]

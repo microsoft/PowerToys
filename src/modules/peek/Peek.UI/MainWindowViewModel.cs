@@ -2,12 +2,12 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System;
+using CommunityToolkit.Mvvm.ComponentModel;
+using Microsoft.UI.Xaml;
+
 namespace Peek.UI
 {
-    using System;
-    using CommunityToolkit.Mvvm.ComponentModel;
-    using Microsoft.UI.Xaml;
-
     public partial class MainWindowViewModel : ObservableObject
     {
         private const int NavigationThrottleDelayMs = 100;
@@ -55,8 +55,8 @@ namespace Peek.UI
         }
 
         [ObservableProperty]
-        private FolderItemsQuery _folderItemsQuery = new ();
+        private FolderItemsQuery _folderItemsQuery = new();
 
-        private DispatcherTimer NavigationThrottleTimer { get; set; } = new ();
+        private DispatcherTimer NavigationThrottleTimer { get; set; } = new();
     }
 }

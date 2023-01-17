@@ -189,7 +189,7 @@ namespace ColorPicker.ViewModels
                 {
                     ".TXT" => colors.ToTxt(';'),
                     ".JSON" => colors.ToJson(),
-                    _ => string.Empty
+                    _ => string.Empty,
                 };
 
                 File.WriteAllText(dialog.FileName, contentToWrite);

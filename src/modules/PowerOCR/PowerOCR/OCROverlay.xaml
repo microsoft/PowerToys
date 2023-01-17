@@ -45,12 +45,7 @@
                     Color="Black" />
             </Canvas.Background>
             <Canvas.ContextMenu>
-                <ContextMenu>
-                    <MenuItem
-                        Name="CancelMenuItem"
-                        Click="CancelMenuItem_Click"
-                        Header="Cancel" />
-                </ContextMenu>
+                <ContextMenu x:Name="CanvasContextMenu" />
             </Canvas.ContextMenu>
         </Canvas>
     </Grid>

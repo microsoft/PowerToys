@@ -461,7 +461,8 @@
                                        Foreground="{DynamicResource SystemControlBackgroundAccentBrush}"
                                        Text="&#xE946;"
                                        AutomationProperties.Name="{x:Static props:Resources.QuickKey_Description}"
-                                       ToolTip="{x:Static props:Resources.QuickKey_Description}" />
+                                       ToolTip="{x:Static props:Resources.QuickKey_Description}"
+                                       ToolTipService.InitialShowDelay="0"/>
                         </StackPanel>
 
 

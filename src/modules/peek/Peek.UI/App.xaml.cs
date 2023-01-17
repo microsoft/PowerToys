@@ -2,16 +2,13 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System;
+using ManagedCommon;
+using Microsoft.UI.Xaml;
+using WinUIEx;
+
 namespace Peek.UI
 {
-    using System;
-    using System.Diagnostics;
-    using System.Threading;
-    using ManagedCommon;
-    using Microsoft.UI.Dispatching;
-    using Microsoft.UI.Xaml;
-    using WinUIEx;
-
     /// <summary>
     /// Provides application-specific behavior to supplement the default Application class.
     /// </summary>

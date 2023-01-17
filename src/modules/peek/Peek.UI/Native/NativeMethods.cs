@@ -2,14 +2,14 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System;
+using System.Runtime.InteropServices;
+using System.Runtime.Versioning;
+using System.Text;
+using Peek.Common.Models;
+
 namespace Peek.UI.Native
 {
-    using System;
-    using System.Runtime.InteropServices;
-    using System.Runtime.Versioning;
-    using System.Text;
-    using Peek.Common.Models;
-
     public static class NativeMethods
     {
         [Flags]

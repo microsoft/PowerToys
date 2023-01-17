@@ -2,16 +2,16 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System;
+using System.Collections.Generic;
+using System.Runtime.InteropServices;
+using System.Threading.Tasks;
+using Microsoft.UI.Xaml.Media.Imaging;
+using Peek.Common;
+using Peek.Common.Models;
+
 namespace Peek.FilePreviewer.Previewers
 {
-    using System;
-    using System.Collections.Generic;
-    using System.Runtime.InteropServices;
-    using System.Threading.Tasks;
-    using Microsoft.UI.Xaml.Media.Imaging;
-    using Peek.Common;
-    using Peek.Common.Models;
-
     public static class ThumbnailHelper
     {
         // Based on https://stackoverflow.com/questions/21751747/extract-thumbnail-for-any-file-in-windows

@@ -13,11 +13,10 @@ using Microsoft.UI.Xaml.Controls.Primitives;
 using Microsoft.UI.Xaml.Input;
 using Windows.Graphics;
 using WinUIEx;
+using static NativeMethods;
 
 namespace MeasureToolUI
 {
-    using static NativeMethods;
-
     /// <summary>
     /// An empty window that can be used on its own or navigated to within a Frame.
     /// </summary>

@@ -26,7 +26,7 @@ namespace Peek.UI.Helpers
             }
 
             // Get the app name
-            StringBuilder sb = new ((int)length);
+            StringBuilder sb = new((int)length);
             ret = NativeMethods.AssocQueryString(NativeMethods.AssocF.Verify, NativeMethods.AssocStr.FriendlyAppName, extension, null, sb, ref length);
             if (ret != HResult.Ok)
             {

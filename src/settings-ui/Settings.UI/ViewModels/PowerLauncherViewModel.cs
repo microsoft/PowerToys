@@ -533,6 +533,23 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             }
         }
 
+        public bool TabSelectsContextButtons
+        {
+            get
+            {
+                return settings.Properties.TabSelectsContextButtons;
+            }
+
+            set
+            {
+                if (settings.Properties.TabSelectsContextButtons != value)
+                {
+                    settings.Properties.TabSelectsContextButtons = value;
+                    UpdateSettings();
+                }
+            }
+        }
+
         private ObservableCollection<PowerLauncherPluginViewModel> _plugins;
 
         public ObservableCollection<PowerLauncherPluginViewModel> Plugins

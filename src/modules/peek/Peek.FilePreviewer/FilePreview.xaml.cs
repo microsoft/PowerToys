@@ -2,28 +2,28 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System;
+using System.Text;
+using System.Threading;
+using System.Threading.Tasks;
+using CommunityToolkit.Mvvm.ComponentModel;
+using Microsoft.UI.Xaml;
+using Microsoft.UI.Xaml.Controls;
+using Microsoft.UI.Xaml.Input;
+using Microsoft.Web.WebView2.Core;
+using Peek.Common.Helpers;
+using Peek.Common.Models;
+using Peek.FilePreviewer.Models;
+using Peek.FilePreviewer.Previewers;
+using Windows.ApplicationModel.Resources;
+using Windows.Foundation;
+
 namespace Peek.FilePreviewer
 {
-    using System;
-    using System.Text;
-    using System.Threading;
-    using System.Threading.Tasks;
-    using CommunityToolkit.Mvvm.ComponentModel;
-    using Microsoft.UI.Xaml;
-    using Microsoft.UI.Xaml.Controls;
-    using Microsoft.UI.Xaml.Input;
-    using Microsoft.Web.WebView2.Core;
-    using Peek.Common.Helpers;
-    using Peek.Common.Models;
-    using Peek.FilePreviewer.Models;
-    using Peek.FilePreviewer.Previewers;
-    using Windows.ApplicationModel.Resources;
-    using Windows.Foundation;
-
     [INotifyPropertyChanged]
     public sealed partial class FilePreview : UserControl
     {
-        private readonly PreviewerFactory previewerFactory = new ();
+        private readonly PreviewerFactory previewerFactory = new();
 
         public event EventHandler<PreviewSizeChangedArgs>? PreviewSizeChanged;
 
@@ -44,7 +44,7 @@ namespace Peek.FilePreviewer
         [ObservableProperty]
         private string imageInfoTooltip = ResourceLoader.GetForViewIndependentUse().GetString("PreviewTooltip_Blank");
 
-        private CancellationTokenSource _cancellationTokenSource = new ();
+        private CancellationTokenSource _cancellationTokenSource = new();
 
         public FilePreview()
         {
@@ -60,7 +60,7 @@ namespace Peek.FilePreviewer
                 {
                     // Cancel previous loading task
                     _cancellationTokenSource.Cancel();
-                    _cancellationTokenSource = new ();
+                    _cancellationTokenSource = new();
 
                     Previewer = previewerFactory.CreateDefaultPreviewer(File);
                     await UpdatePreviewAsync(_cancellationTokenSource.Token);
@@ -99,7 +99,7 @@ namespace Peek.FilePreviewer
         {
             // Cancel previous loading task
             _cancellationTokenSource.Cancel();
-            _cancellationTokenSource = new ();
+            _cancellationTokenSource = new();
 
             // TODO: track and cancel existing async preview tasks
             // https://github.com/microsoft/PowerToys/issues/22480

@@ -19,6 +19,7 @@ BOOL APIENTRY DllMain(HMODULE /*hModule*/, DWORD ul_reason_for_call, LPVOID /*lp
     {
     case DLL_PROCESS_ATTACH:
         Trace::RegisterProvider();
+        [[fallthrough]];
     case DLL_THREAD_ATTACH:
     case DLL_THREAD_DETACH:
         break;

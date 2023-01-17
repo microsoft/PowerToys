@@ -44,8 +44,6 @@ namespace CommonSharedConstants
     // Path to the event used by PowerOCR
     const wchar_t SHOW_POWEROCR_SHARED_EVENT[] = L"Local\\PowerOCREvent-dc864e06-e1af-4ecc-9078-f98bee745e3a";
 
-    // Path to the event used to show Peek
-    const wchar_t SHOW_PEEK_SHARED_EVENT[] = L"Local\\ShowPeekEvent";
     // Path to the event used by GcodePreviewHandler
     const wchar_t GCODE_PREVIEW_RESIZE_EVENT[] = L"Local\\PowerToysGcodePreviewResizeEvent-6ff1f9bd-ccbd-4b24-a79f-40a34fb0317d";
 
@@ -60,6 +58,9 @@ namespace CommonSharedConstants
 
     // Path to the event used by MarkdownPreviewHandler
     const wchar_t SVG_PREVIEW_RESIZE_EVENT[] = L"Local\\PowerToysSvgPreviewResizeEvent-0701a4fc-d5a1-4ee7-b885-f83982c62a0d";
+
+    // Path to the event used to show Peek
+    const wchar_t SHOW_PEEK_SHARED_EVENT[] = L"Local\\ShowPeekEvent";
 
     // Max DWORD for key code to disable keys.
     const DWORD VK_DISABLED = 0x100;

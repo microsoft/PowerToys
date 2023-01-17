@@ -2,29 +2,29 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System;
+using System.Collections.Generic;
+using System.Diagnostics;
+using System.Threading;
+using System.Threading.Tasks;
+using CommunityToolkit.Mvvm.ComponentModel;
+using Microsoft.UI.Dispatching;
+using Peek.Common.Models;
+using Peek.UI.Helpers;
+
 namespace Peek.UI
 {
-    using System;
-    using System.Collections.Generic;
-    using System.Diagnostics;
-    using System.Threading;
-    using System.Threading.Tasks;
-    using CommunityToolkit.Mvvm.ComponentModel;
-    using Microsoft.UI.Dispatching;
-    using Peek.Common.Models;
-    using Peek.UI.Helpers;
-
     public partial class FolderItemsQuery : ObservableObject
     {
         private const int UninitializedItemIndex = -1;
-        private readonly object _mutateQueryDataLock = new ();
+        private readonly object _mutateQueryDataLock = new();
         private readonly DispatcherQueue _dispatcherQueue = DispatcherQueue.GetForCurrentThread();
 
         [ObservableProperty]
         private File? currentFile;
 
         [ObservableProperty]
-        private List<File> files = new ();
+        private List<File> files = new();
 
         [ObservableProperty]
         private bool isMultiSelection;

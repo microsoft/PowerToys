@@ -64,7 +64,6 @@ $items | ForEach-Object {
 			(-not $_.Name.EndsWith("MRM.dll")) -and
 			(-not $_.Name.EndsWith("PushNotificationsLongRunningTask.ProxyStub.dll")) -and
 			(-not $_.Name.EndsWith("WindowsAppSdk.AppxDeploymentExtensions.Desktop.dll")) -and
-			(-not $_.Name.EndsWith("Microsoft.Windows.Widgets.dll")) -and
 			(-not $_.Name.EndsWith("System.Diagnostics.EventLog.Messages.dll"))
 		)
 		{

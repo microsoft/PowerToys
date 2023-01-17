@@ -24,7 +24,13 @@ SET PTRoot=..\..\..\..
 call "..\..\publish.cmd" arm64
 )</PreBuildEvent>
   </PropertyGroup>
-
+  <PropertyGroup>
+    <RunPostBuildEvent>Always</RunPostBuildEvent>
+    <PostBuildEvent>
+    call move /Y ..\..\Product.wxs.bk ..\..\Product.wxs
+    call move /Y ..\..\..\PowerToysSetupCustomActions\DepsFilesLists.h.bk ..\..\..\PowerToysSetupCustomActions\DepsFilesLists.h
+    </PostBuildEvent>
+  </PropertyGroup>
   <PropertyGroup>
     <Name>PowerToysInstaller</Name>
   </PropertyGroup>
