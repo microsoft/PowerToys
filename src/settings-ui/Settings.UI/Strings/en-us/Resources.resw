@@ -889,7 +889,7 @@
     <value>Remove</value>
     <comment>Removes a user defined setting group for Image Resizer</comment>
   </data>
-	<data name="RemoveItem.Text" xml:space="preserve">
+  <data name="RemoveItem.Text" xml:space="preserve">
     <value>Delete</value>
   </data>
   <data name="ImageResizer_Image.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
@@ -2684,7 +2684,7 @@ Activate by holding the key for the character you want to add an accent to, then
   <data name="QuickAccent_StartSelectionFromTheLeft_Indicator.Header" xml:space="preserve">
     <value>Start selection from the left</value>
   </data>
-	<data name="QuickAccent_StartSelectionFromTheLeft_Indicator.Description" xml:space="preserve">
+  <data name="QuickAccent_StartSelectionFromTheLeft_Indicator.Description" xml:space="preserve">
     <value>Start selection from the leftmost character for all activation keys, including left and right arrows</value>
   </data>
   <data name="QuickAccent_DisableFullscreen.Header" xml:space="preserve">
@@ -2900,5 +2900,11 @@ Activate by holding the key for the character you want to add an accent to, then
   </data>
   <data name="Alternate_OOBE_Run_Title.Text" xml:space="preserve">
     <value>PowerToys Run</value>
+  </data>
+  <data name="GeneralPage_EnableExperimentation.Description" xml:space="preserve">
+    <value>Insert description here</value>
+  </data>
+  <data name="GeneralPage_EnableExperimentation.Header" xml:space="preserve">
+    <value>Enable experimentation</value>
   </data>
 </root>
