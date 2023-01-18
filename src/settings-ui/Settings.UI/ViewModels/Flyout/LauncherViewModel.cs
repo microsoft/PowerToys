@@ -36,7 +36,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 {
                     Label = "ColorPicker",
                     Tag = "ColorPicker",
-                    Visible = BoolToVisibility(generalSettingsConfig.Enabled.ColorPicker),
+                    Visible = generalSettingsConfig.Enabled.ColorPicker,
                     ToolTip = SettingsRepository<ColorPickerSettings>.GetInstance(new SettingsUtils()).SettingsConfig.Properties.ActivationShortcut.ToString(),
                     Icon = "ms-appx:///Assets/FluentIcons/FluentIconsColorPicker.png",
                 },
@@ -44,7 +44,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 {
                     Label = "FancyZones Editor",
                     Tag = "FancyZones",
-                    Visible = BoolToVisibility(generalSettingsConfig.Enabled.FancyZones),
+                    Visible = generalSettingsConfig.Enabled.FancyZones,
                     ToolTip = SettingsRepository<FancyZonesSettings>.GetInstance(new SettingsUtils()).SettingsConfig.Properties.FancyzonesEditorHotkey.Value.ToString(),
                     Icon = "ms-appx:///Assets/FluentIcons/FluentIconsFancyZones.png",
                 },
@@ -52,14 +52,14 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 {
                     Label = "Hosts File Editor",
                     Tag = "Hosts",
-                    Visible = BoolToVisibility(generalSettingsConfig.Enabled.Hosts),
+                    Visible = generalSettingsConfig.Enabled.Hosts,
                     Icon = "ms-appx:///Assets/FluentIcons/FluentIconsHosts.png",
                 },
                 new FlyoutMenuItem()
                 {
                     Label = "PowerToys Run",
                     Tag = "PowerLauncher",
-                    Visible = BoolToVisibility(generalSettingsConfig.Enabled.PowerLauncher),
+                    Visible = generalSettingsConfig.Enabled.PowerLauncher,
                     ToolTip = SettingsRepository<PowerLauncherSettings>.GetInstance(new SettingsUtils()).SettingsConfig.Properties.OpenPowerLauncher.ToString(),
                     Icon = "ms-appx:///Assets/FluentIcons/FluentIconsPowerToysRun.png",
                 },
@@ -67,7 +67,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 {
                     Label = "Text Extractor",
                     Tag = "PowerOCR",
-                    Visible = BoolToVisibility(generalSettingsConfig.Enabled.PowerOCR),
+                    Visible = generalSettingsConfig.Enabled.PowerOCR,
                     ToolTip = SettingsRepository<PowerOcrSettings>.GetInstance(new SettingsUtils()).SettingsConfig.Properties.ActivationShortcut.ToString(),
                     Icon = "ms-appx:///Assets/FluentIcons/FluentIconsPowerOcr.png",
                 },
@@ -75,7 +75,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 {
                     Label = "Screen Ruler",
                     Tag = "MeasureTool",
-                    Visible = BoolToVisibility(generalSettingsConfig.Enabled.MeasureTool),
+                    Visible = generalSettingsConfig.Enabled.MeasureTool,
                     ToolTip = SettingsRepository<MeasureToolSettings>.GetInstance(new SettingsUtils()).SettingsConfig.Properties.ActivationShortcut.ToString(),
                     Icon = "ms-appx:///Assets/FluentIcons/FluentIconsScreenRuler.png",
                 },
@@ -83,7 +83,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 {
                     Label = "Shortcut Guide",
                     Tag = "ShortcutGuide",
-                    Visible = BoolToVisibility(generalSettingsConfig.Enabled.ShortcutGuide),
+                    Visible = generalSettingsConfig.Enabled.ShortcutGuide,
                     ToolTip = SettingsRepository<ShortcutGuideSettings>.GetInstance(new SettingsUtils()).SettingsConfig.Properties.OpenShortcutGuide.ToString(),
                     Icon = "ms-appx:///Assets/FluentIcons/FluentIconsShortcutGuide.png",
                 },
@@ -106,8 +106,6 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             }
         }
 
-        private Visibility BoolToVisibility(bool value) => value ? Visibility.Visible : Visibility.Collapsed;
-
         private void ModuleEnabledChanged()
         {
             generalSettingsConfig = _settingsRepository.SettingsConfig;
@@ -116,13 +114,13 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             {
                 switch (item.Tag)
                 {
-                    case "ColorPicker": item.Visible = BoolToVisibility(generalSettingsConfig.Enabled.ColorPicker); break;
-                    case "FancyZones": item.Visible = BoolToVisibility(generalSettingsConfig.Enabled.FancyZones); break;
-                    case "Hosts": item.Visible = BoolToVisibility(generalSettingsConfig.Enabled.Hosts); break;
-                    case "PowerLauncher": item.Visible = BoolToVisibility(generalSettingsConfig.Enabled.PowerLauncher); break;
-                    case "PowerOCR": item.Visible = BoolToVisibility(generalSettingsConfig.Enabled.PowerOCR); break;
-                    case "MeasureTool": item.Visible = BoolToVisibility(generalSettingsConfig.Enabled.MeasureTool); break;
-                    case "ShortcutGuide": item.Visible = BoolToVisibility(generalSettingsConfig.Enabled.ShortcutGuide); break;
+                    case "ColorPicker": item.Visible = generalSettingsConfig.Enabled.ColorPicker; break;
+                    case "FancyZones": item.Visible = generalSettingsConfig.Enabled.FancyZones; break;
+                    case "Hosts": item.Visible = generalSettingsConfig.Enabled.Hosts; break;
+                    case "PowerLauncher": item.Visible = generalSettingsConfig.Enabled.PowerLauncher; break;
+                    case "PowerOCR": item.Visible = generalSettingsConfig.Enabled.PowerOCR; break;
+                    case "MeasureTool": item.Visible = generalSettingsConfig.Enabled.MeasureTool; break;
+                    case "ShortcutGuide": item.Visible = generalSettingsConfig.Enabled.ShortcutGuide; break;
                 }
             }
         }

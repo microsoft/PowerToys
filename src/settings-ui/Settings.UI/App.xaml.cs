@@ -92,11 +92,8 @@ namespace Microsoft.PowerToys.Settings.UI
         /// <param name="args">Details about the launch request and process.</param>
         protected override void OnLaunched(Microsoft.UI.Xaml.LaunchActivatedEventArgs args)
         {
-            string[] cmdArgs =
-            {
-                "PowerToys.Settings.exe", "pipe1",
-                "pipe2", "12244", "dark", "false", "true", "false", "false", "true",
-            };
+            var cmdArgs = Environment.GetCommandLineArgs();
+
             var isDark = IsDarkTheme();
 
             if (cmdArgs != null && cmdArgs.Length >= RequiredArgumentsQty)
@@ -116,7 +113,7 @@ namespace Microsoft.PowerToys.Settings.UI
                 ShowScoobe = cmdArgs[(int)Arguments.ShowScoobeWindow] == "true";
                 ShowFlyout = cmdArgs[(int)Arguments.ShowFlyout] == "true";
 
-                if (cmdArgs.Length >= RequiredAndOptionalArgumentsQty)
+                if (cmdArgs.Length == RequiredAndOptionalArgumentsQty)
                 {
                     // open specific window
                     switch (cmdArgs[(int)Arguments.SettingsWindow])
@@ -148,9 +145,15 @@ namespace Microsoft.PowerToys.Settings.UI
                     Environment.Exit(0);
                 });
 
-                ipcmanager = null;
+                ipcmanager = new TwoWayPipeMessageIPCManaged(cmdArgs[(int)Arguments.SettingsPipeName], cmdArgs[(int)Arguments.PTPipeName], (string message) =>
+                {
+                    if (IPCMessageReceivedCallback != null && message.Length > 0)
+                    {
+                        IPCMessageReceivedCallback(message);
+                    }
+                });
+                ipcmanager.Start();
 
-                // ipcmanager.Start();
                 if (ShowFlyout)
                 {
                     FlyoutWindow flyoutWindow = new FlyoutWindow();

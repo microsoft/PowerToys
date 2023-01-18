@@ -524,9 +524,9 @@ void bring_settings_to_front()
     EnumWindows(callback, 0);
 }
 
-void open_settings_window(std::optional<std::wstring> settings_window, bool show_flyout)
+void open_settings_window(std::optional<std::wstring> settings_window, bool show_flyout = false)
 {
-    if (g_settings_process_id != 0)
+    if ((g_settings_process_id != 0) && !show_flyout)
     {
         bring_settings_to_front();
     }

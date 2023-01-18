@@ -35,7 +35,7 @@ namespace Microsoft.PowerToys.Settings.UI
         {
             if (args.WindowActivationState == Microsoft.UI.Xaml.WindowActivationState.Deactivated)
             {
-                this.Hide();
+                this.Close();
             }
         }
     }

@@ -69,7 +69,7 @@ void handle_tray_command(HWND window, const WPARAM command_id, LPARAM lparam)
     case ID_SETTINGS_MENU_COMMAND:
         {
             std::wstring settings_window{ winrt::to_hstring(ESettingsWindowNames_to_string(static_cast<ESettingsWindowNames>(lparam))) };
-            open_settings_window(settings_window);
+            open_settings_window(settings_window, false);
         }
         break;
     case ID_EXIT_MENU_COMMAND:

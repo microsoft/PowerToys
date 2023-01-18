@@ -84,7 +84,7 @@ namespace Microsoft.PowerToys.Settings.UI
                 App.GetOobeWindow().Activate();
             });
 
-            // open oobe
+            // open flyout
             ShellPage.SetOpenFlyoutCallback(() =>
             {
                 if (App.GetFlyoutWindow() == null)

@@ -24,7 +24,7 @@ namespace Microsoft.PowerToys.Settings.UI.Flyout
             this.InitializeComponent();
 
             var settingsUtils = new SettingsUtils();
-            ViewModel = new AllAppsViewModel(SettingsRepository<GeneralSettings>.GetInstance(settingsUtils));
+            ViewModel = new AllAppsViewModel(SettingsRepository<GeneralSettings>.GetInstance(settingsUtils), Views.ShellPage.SendDefaultIPCMessage);
             DataContext = ViewModel;
         }
 

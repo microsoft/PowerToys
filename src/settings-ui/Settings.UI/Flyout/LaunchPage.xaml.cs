@@ -97,5 +97,13 @@ namespace Microsoft.PowerToys.Settings.UI.Flyout
         {
             Frame.Navigate(typeof(AppsListPage), null, new SlideNavigationTransitionInfo() { Effect = SlideNavigationTransitionEffect.FromRight });
         }
+
+        private void QuitButton_Click(object sender, RoutedEventArgs e)
+        {
+            this.DispatcherQueue.TryEnqueue(Microsoft.UI.Dispatching.DispatcherQueuePriority.Normal, () =>
+            {
+                Application.Current.Exit();
+            });
+        }
     }
 }

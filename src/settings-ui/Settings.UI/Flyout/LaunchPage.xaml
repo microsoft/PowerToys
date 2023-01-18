@@ -78,7 +78,7 @@
                                 Click="ModuleButton_Click"
                                 Tag="{x:Bind Tag}"
                                 ToolTipService.ToolTip="{x:Bind ToolTip}"
-                                Visibility="{x:Bind Visible, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}">
+                                Visibility="{x:Bind Visible, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged, Converter={StaticResource BoolToVisibilityConverter}}">
                                 <controls:FlyoutMenuButton.Content>
                                     <TextBlock
                                         Style="{StaticResource CaptionTextBlockStyle}"
@@ -140,7 +140,8 @@
                 <Button
                     x:Name="QuitBtn"
                     Style="{StaticResource FlyoutButtonStyle}"
-                    ToolTipService.ToolTip="Quit">
+                    ToolTipService.ToolTip="Quit"
+                    Click="QuitButton_Click">
                     <FontIcon FontSize="14" Glyph="&#xe894;" />
                 </Button>
             </StackPanel>

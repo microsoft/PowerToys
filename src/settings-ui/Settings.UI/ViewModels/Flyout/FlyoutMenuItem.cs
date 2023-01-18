@@ -2,6 +2,7 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using Microsoft.UI.Xaml;
@@ -10,7 +11,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 {
     public class FlyoutMenuItem : INotifyPropertyChanged
     {
-        private Visibility _visible;
+        private bool _visible;
         private bool _isEnabled;
 
         public string Label { get; set; }
@@ -30,11 +31,14 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 {
                     _isEnabled = value;
                     OnPropertyChanged();
+                    EnabledChangedCallback?.Invoke(this);
                 }
             }
         }
 
-        public Visibility Visible
+        public Action<FlyoutMenuItem> EnabledChangedCallback { get; set; } = null;
+
+        public bool Visible
         {
             get => _visible;
             set
