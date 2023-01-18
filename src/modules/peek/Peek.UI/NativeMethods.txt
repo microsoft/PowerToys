@@ -8,3 +8,4 @@ AttachThreadInput
 BringWindowToTop
 ShowWindow
 GetWindowTextLength
+FindWindowEx
