@@ -35,26 +35,26 @@ namespace Peek.Common.Models
         /// <returns>an IPropertyStroe interface</returns>
         public static IPropertyStore GetPropertyStoreFromPath(string path, PropertyStoreFlags flags = PropertyStoreFlags.EXTRINSICPROPERTIES)
         {
-            PropertyStoreShellApi.IShellItem2? shellItem2 = null;
+            IShellItem2? shellItem2 = null;
             IntPtr ppPropertyStore = IntPtr.Zero;
 
             try
             {
-                PropertyStoreShellApi.SHCreateItemFromParsingName(path, IntPtr.Zero, typeof(PropertyStoreShellApi.IShellItem2).GUID, out shellItem2);
+                SHCreateItemFromParsingName(path, IntPtr.Zero, typeof(IShellItem2).GUID, out shellItem2);
 
                 if (shellItem2 == null)
                 {
                     throw new InvalidOperationException(string.Format("Unable to get an IShellItem2 reference from file {0}.", path));
                 }
 
-                int hr = shellItem2.GetPropertyStore((int)flags, typeof(PropertyStoreShellApi.IPropertyStore).GUID, out ppPropertyStore);
+                int hr = shellItem2.GetPropertyStore((int)flags, typeof(IPropertyStore).GUID, out ppPropertyStore);
 
                 if (hr != 0)
                 {
                     throw new InvalidOperationException(string.Format("GetPropertyStore retunred hresult={0}", hr));
                 }
 
-                return (PropertyStoreShellApi.IPropertyStore)Marshal.GetObjectForIUnknown(ppPropertyStore);
+                return (IPropertyStore)Marshal.GetObjectForIUnknown(ppPropertyStore);
             }
             finally
             {

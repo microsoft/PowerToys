@@ -36,18 +36,6 @@ namespace Peek.UI
 
         private Task? InitializeFilesTask { get; set; } = null;
 
-        public static File? GetFileExplorerSelectedFile()
-        {
-            var shellItems = FileExplorerHelper.GetSelectedItems();
-            var firstSelectedItem = shellItems?.Item(0);
-            if (shellItems == null || firstSelectedItem == null)
-            {
-                return null;
-            }
-
-            return new File(firstSelectedItem.Path);
-        }
-
         public void Clear()
         {
             CurrentFile = null;

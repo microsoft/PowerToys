@@ -9,3 +9,4 @@ BringWindowToTop
 ShowWindow
 GetWindowTextLength
 FindWindowEx
+SID_STopLevelBrowser
