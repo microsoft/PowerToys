@@ -38,7 +38,8 @@ $items | ForEach-Object {
 			(-not $_.Name.EndsWith("Microsoft.Xaml.Interactions.dll")) -and
 			(-not $_.Name.EndsWith("Microsoft.Xaml.Interactivity.dll")) -and
 			(-not $_.Name.EndsWith("hyjiacan.py4n.dll")) -and
-			(-not $_.Name.EndsWith("Microsoft.WindowsAppRuntime.Release.Net.dll"))
+			(-not $_.Name.EndsWith("Microsoft.WindowsAppRuntime.Release.Net.dll")) -and
+			(-not $_.Name.EndsWith("Microsoft.Windows.Widgets.Projection.dll"))
 		)
 		{
 			Write-Host "Version set to 1.0.0.0: " + $_.FullName
@@ -63,7 +64,8 @@ $items | ForEach-Object {
 			(-not $_.Name.EndsWith("MRM.dll")) -and
 			(-not $_.Name.EndsWith("PushNotificationsLongRunningTask.ProxyStub.dll")) -and
 			(-not $_.Name.EndsWith("WindowsAppSdk.AppxDeploymentExtensions.Desktop.dll")) -and
-			(-not $_.Name.EndsWith("System.Diagnostics.EventLog.Messages.dll"))
+			(-not $_.Name.EndsWith("System.Diagnostics.EventLog.Messages.dll")) -and
+			(-not $_.Name.EndsWith("Microsoft.Windows.Widgets.dll"))
 		)
 		{
 			Write-Host "Version not set: " + $_.FullName

@@ -17,11 +17,24 @@
 
   <?define RepoDir="$(var.ProjectDir)..\..\" ?>
   <?if $(var.Platform) = x64?>
-          <?define PlatformLK="x64" ?>
-  <?define BinDir="$(var.RepoDir)x64\$(var.Configuration)\" ?>
+        <?define PlatformLK="x64" ?>
+        <?define BinDir="$(var.RepoDir)x64\$(var.Configuration)\" ?>
   <?else?>
-          <?define PlatformLK="arm64" ?>
-  <?define BinDir="$(var.RepoDir)ARM64\$(var.Configuration)\" ?>
+        <?define PlatformLK="arm64" ?>
+        <?define BinDir="$(var.RepoDir)ARM64\$(var.Configuration)\" ?>
   <?endif?>
+
+  <?if $(var.PerUser) = "true"?>
+        <?define DefaultInstallDir="LocalAppDataFolder" ?>
+        <?define RegistryScope="HKCU" ?>
+        <?define InstallScope="perUser" ?>
+        <?define InstallPrivileges="limited" ?>
+  <?else?>
+        <?define DefaultInstallDir="ProgramFiles64Folder" ?>
+        <?define RegistryScope="HKLM" ?>
+        <?define InstallScope="perMachine" ?>
+        <?define InstallPrivileges="elevated" ?>
+  <?endif?>
+
   <?define BinX32Dir="$(var.RepoDir)x86\$(var.Configuration)\" ?>
 </Include>

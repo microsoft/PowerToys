@@ -40,7 +40,6 @@ ALPHATYPE
 Altdown
 alwaysontop
 amd
-AMF
 AModifier
 AMPROPERTY
 AMPROPSETID
@@ -52,6 +51,7 @@ ansicolor
 ANull
 AOC
 aocfnapldcnfbofgmbbllojgocaelgdd
+AOT
 APARTMENTTHREADED
 APeriod
 APIENTRY
@@ -64,8 +64,8 @@ appium
 Applets
 Applicationcan
 applicationconfiguration
+applicationconfiguration
 applicationframehost
-Applist
 applog
 appmanifest
 appref
@@ -203,7 +203,7 @@ Choibalsan
 chrdavis
 chromaticities
 Chrzan
-cht
+CHT
 Chukotka
 Chuuk
 CIELAB
@@ -237,6 +237,7 @@ CMONITORS
 cmpgt
 cmyk
 cne
+Cng
 cnt
 Cocklebiddy
 coclass
@@ -293,6 +294,7 @@ cppruntime
 cppstd
 cppwinrt
 CProj
+createdump
 CREATESCHEDULEDTASK
 CREATESTRUCT
 CREATEWINDOWFAILED
@@ -307,7 +309,6 @@ CSRW
 CStyle
 CSY
 CTest
-Ctl
 CTRLALTDEL
 Ctrls
 Ctx
@@ -390,7 +391,7 @@ DESKTOPABSOLUTEEDITING
 DESKTOPABSOLUTEPARSING
 desktopshorcutinstalled
 desktopwindowxamlsource
-deu
+DEU
 devblogs
 devdocs
 devenum
@@ -477,7 +478,7 @@ ENABLEDPOPUP
 endpointvolume
 endregion
 ENTERSIZEMOVE
-enu
+ENU
 enumerationoptions
 EOAC
 epicgames
@@ -490,7 +491,6 @@ ERRORLEVEL
 ERRORTITLE
 ESettings
 esize
-esn
 esrp
 Eswatini
 etl
@@ -599,7 +599,6 @@ GETTEXT
 GETTEXTLENGTH
 GHND
 globalassemblycache
-Globbing
 GMEM
 GNumber
 google
@@ -793,6 +792,7 @@ ipcmanager
 IPlugin
 IPower
 IPREVIEW
+IPREVIEW
 ipreviewhandler
 ipreviewhandlervisualssetfont
 IProperty
@@ -821,7 +821,7 @@ jgeosdfsdsgmkedfgdfgdfgbkmhcgcflmi
 jjw
 jobject
 jpe
-jpn
+JPN
 jpnime
 Jsons
 jsonval
@@ -845,6 +845,7 @@ keynum
 keyremaps
 Keytool
 keyup
+Kfiles
 Khakassia
 Khanty
 Khovd
@@ -862,6 +863,7 @@ Kyzylorda
 LAlt
 Lambson
 langword
+lastcodeanalysissucceeded
 Lastdevice
 Laute
 laviusmotileng
@@ -902,6 +904,7 @@ LMEM
 LMENU
 lnk
 LOADFROMFILE
+LOADFROMFILE
 LOADLIBRARYASDATAFILE
 LOBYTE
 LOCALAPPDATA
@@ -914,12 +917,14 @@ logconsole
 logfile
 LOGFONT
 LOGFONTW
+LOGFONTW
 LOGMSG
 logon
 LOGPIXELSX
 LOn
 longdate
 LONGLONG
+louncher
 lowlevel
 LOWORD
 lparam
@@ -981,6 +986,8 @@ MAPTOSAMESHORTCUT
 MAPVK
 Markdig
 markdownpreviewhandler
+markdownpreviewhandler
+MARKDOWNPREVIEWHANDLERCPP
 MARKDOWNPREVIEWHANDLERCPP
 Markovic
 Marquesas
@@ -1014,7 +1021,6 @@ Metadatas
 metafile
 mfapi
 mfc
-mfcm
 mfidl
 mfobjects
 mfplat
@@ -1439,7 +1445,6 @@ RECTDESTINATION
 RECTL
 rectp
 rects
-recyclebin
 redirectedfrom
 redist
 redistributable
@@ -1533,7 +1538,7 @@ runtimedepsjsonpath
 runtimeobject
 runtimepack
 runtimes
-rus
+RUS
 Rutkas
 RValue
 rvm
@@ -1603,7 +1608,6 @@ SHGFI
 Shl
 shldisp
 shlobj
-Shlw
 shlwapi
 shmem
 shobjidl
@@ -1803,6 +1807,7 @@ THICKFRAME
 THISCOMPONENT
 THotkey
 thumbcache
+thumbcache
 TILEDWINDOW
 timedate
 timediff
@@ -1877,6 +1882,7 @@ uniquifier
 Uniquifies
 unitconverter
 unittests
+Unk
 Unk
 unknwn
 UNLEN
@@ -2075,6 +2081,7 @@ wox
 wparam
 wpf
 wpfdepsjsonpath
+wpfgfx
 wpftmp
 wpr
 wprp

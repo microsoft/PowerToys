@@ -2,6 +2,13 @@
 
 <?define UpgradeCode="6341382d-c0a9-4238-9188-be9607e3fab2"?>
 <?define RepoDir="$(var.ProjectDir)..\..\" ?>
+<?if $(var.PerUser) = "true" ?>
+    <?define PerMachineYesNo="no"?>
+    <?define MSISufix="perUser"?>
+<?else?>
+    <?define PerMachineYesNo="yes"?>
+    <?define MSISufix="perMachine"?>
+<?endif?>
 <?if $(var.Platform) = x64?>
     <?define BinDir="$(var.RepoDir)$(var.Platform)\$(var.Configuration)\" ?>
     <?define PowerToysPlatform="x64"?>
@@ -36,7 +43,11 @@
         <util:RegistrySearch Variable="HasWebView2PerMachine" Root="HKLM" Key="SOFTWARE\WOW6432Node\Microsoft\EdgeUpdate\Clients\{F3017226-FE2A-4295-8BDF-00C3A9A7E4C5}" Result="exists" />
         <util:RegistrySearch Variable="HasWebView2PerUser" Root="HKCU" Key="Software\Microsoft\EdgeUpdate\Clients\{F3017226-FE2A-4295-8BDF-00C3A9A7E4C5}" Result="exists" />
 
-        <Variable Name="InstallFolder" Type="string" Value="$(var.PlatformProgramFiles)PowerToys" bal:Overridable="yes"/>
+        <?if $(var.PerUser) = "true" ?>
+            <Variable Name="InstallFolder" Type="string" Value="[LocalAppDataFolder]PowerToys" bal:Overridable="yes"/>
+        <?else?>
+            <Variable Name="InstallFolder" Type="string" Value="$(var.PlatformProgramFiles)PowerToys" bal:Overridable="yes"/>
+        <?endif?>
 
         <Variable Name="MsiLogFolder" Type="string" Value="[LocalAppDataFolder]\Microsoft\PowerToys\" /> 
         <Log Disable="no" Prefix='powertoys-bootstrapper-msi-$(var.Version)' Extension=".log" />
@@ -61,7 +72,7 @@
                 Id="TerminatePowerToys"
                 SourceFile="terminate_powertoys.cmd"
                 Permanent="yes"
-                PerMachine="yes"
+                PerMachine="$(var.PerMachineYesNo)"
                 Vital="no">
             </ExePackage>
             <ExePackage
@@ -74,12 +85,12 @@
                 InstallCommand="/silent /install"
                 RepairCommand="/repair /passive"
                 Permanent="yes"
-                PerMachine="yes"
+                PerMachine="$(var.PerMachineYesNo)"
                 UninstallCommand="/silent /uninstall">
             </ExePackage>
             <MsiPackage
                 DisplayName="Installing PowerToys"
-                SourceFile="$(var.PowerToysPlatform)\Release\PowerToysSetup-$(var.Version)-$(var.PowerToysPlatform).msi"
+                SourceFile="$(var.PowerToysPlatform)\Release\$(var.MSISufix)\PowerToysSetup-$(var.Version)-$(var.PowerToysPlatform)-$(var.MSISufix).msi"
                 Compressed="yes"
                 DisplayInternalUI="no">
                 <MsiProperty Name="BOOTSTRAPPERINSTALLFOLDER" Value="[InstallFolder]" />

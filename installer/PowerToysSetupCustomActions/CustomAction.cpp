@@ -8,6 +8,7 @@
 #include "../../src/common/logger/logger.h"
 #include "../../src/common/utils/MsiUtils.h"
 #include "../../src/common/utils/modulesRegistry.h"
+#include "../../src/common/utils/registry.h"
 #include "../../src/common/updating/installer.h"
 #include "../../src/common/version/version.h"
 
@@ -759,6 +760,33 @@ UINT __stdcall DetectPrevInstallPathCA(MSIHANDLE hInstall)
         if (auto install_path = GetMsiPackageInstalledPath())
         {
             MsiSetPropertyW(hInstall, L"PREVIOUSINSTALLFOLDER", install_path->data());
+        }
+    }
+    catch (...)
+    {
+    }
+    er = SUCCEEDED(hr) ? ERROR_SUCCESS : ERROR_INSTALL_FAILURE;
+    return WcaFinalize(er);
+}
+
+UINT __stdcall DetectPrevInstallScopeCA(MSIHANDLE hInstall)
+{
+    HRESULT hr = S_OK;
+    UINT er = ERROR_SUCCESS;
+    hr = WcaInitialize(hInstall, "DetectPrevInstallScopeCA");
+
+    LPWSTR currentScope = nullptr;
+    hr = WcaGetProperty(L"InstallScope", &currentScope);
+
+    try
+    {
+        auto install_scope = registry::install_scope::get_current_install_scope();
+        if (install_scope == registry::install_scope::InstallScope::PerMachine && std::wstring{ currentScope } == L"perUser")
+        {
+            PMSIHANDLE hRecord = MsiCreateRecord(0);
+            MsiRecordSetString(hRecord, 0, TEXT("PowerToys is already installed on this system for all users. We recommend first uninstalling that version before installing this one.'"));
+            MsiProcessMessage(hInstall, static_cast<INSTALLMESSAGE>(INSTALLMESSAGE_ERROR + MB_OK), hRecord);
+            hr = E_FAIL;
         }
     }
     catch (...)

@@ -8,11 +8,14 @@
 
 #include <common/SettingsAPI/settings_helpers.h>
 #include <common/utils/json.h>
+#include <common/utils/registry.h>
+
+using namespace registry::install_scope;
 
 namespace // Strings in this namespace should not be localized
 {
-    const wchar_t LATEST_RELEASE_ENDPOINT[] = L"https://api.github.com/repos/microsoft/PowerToys/releases/latest";
-    const wchar_t ALL_RELEASES_ENDPOINT[] = L"https://api.github.com/repos/microsoft/PowerToys/releases";
+    const wchar_t LATEST_RELEASE_ENDPOINT[] = L"https://api.github.com/repos/microsoft/PowerToys/stefansjfw/latest";
+    const wchar_t ALL_RELEASES_ENDPOINT[] = L"https://api.github.com/repos/microsoft/PowerToys/stefansjfw";
 
     const wchar_t LOCAL_BUILD_ERROR[] = L"Local build cannot be updated";
     const wchar_t NETWORK_ERROR[] = L"Network error";
@@ -45,6 +48,14 @@ namespace updating
         constexpr const std::wstring_view required_filename_pattern = updating::INSTALLER_FILENAME_PATTERN;
         // Desc-sorted by its priority
         const std::array<std::wstring_view, 2> asset_extensions = { L".exe", L".msi" };
+
+        const InstallScope current_install_scope = get_current_install_scope();
+        std::wstring install_scope = L"permachine";
+        if (current_install_scope == InstallScope::PerUser)
+        {
+            install_scope = L"peruser";
+        }
+
         for (const auto asset_extension : asset_extensions)
         {
             for (auto asset_elem : release_object.GetNamedArray(L"assets"))
@@ -56,7 +67,8 @@ namespace updating
                 const bool extension_matched = filename_lower.ends_with(asset_extension);
                 const bool architecture_matched = filename_lower.find(required_architecture) != std::wstring::npos;
                 const bool filename_matched = filename_lower.find(required_filename_pattern) != std::wstring::npos;
-                const bool asset_matched = extension_matched && architecture_matched && filename_matched;
+                const bool scope_matched = filename_lower.find(install_scope) != std::wstring::npos;
+                const bool asset_matched = extension_matched && architecture_matched && filename_matched && scope_matched;
                 if (asset_matched)
                 {
                     return std::make_pair(Uri{ asset.GetNamedString(L"browser_download_url") }, std::move(filename_lower));

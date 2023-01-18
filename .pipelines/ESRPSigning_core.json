@@ -238,6 +238,7 @@
                 "modules\\FileExplorerPreview\\Microsoft.Web.WebView2.Wpf.dll",
                 "modules\\FileExplorerPreview\\WebView2Loader.dll",
                 "modules\\Hosts\\Microsoft.Graphics.Canvas.Interop.dll",
+                "modules\\Hosts\\clrcompression.dll",
                 "modules\\launcher\\e_sqlite3.dll",
                 "modules\\launcher\\LazyCache.dll",
                 "modules\\launcher\\SQLitePCLRaw.batteries_v2.dll",
