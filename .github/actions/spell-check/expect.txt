@@ -392,6 +392,8 @@ DENORMAL
 Deondre
 depersist
 deprioritized
+depsfileslistspath
+depsjsonpath
 deref
 DESKTOPABSOLUTEEDITING
 DESKTOPABSOLUTEPARSING
@@ -1387,6 +1389,7 @@ proactively
 PROCESSKEY
 PRODEXT
 PRODUCTVERSION
+productwxspath
 Progman
 programdata
 PROGRAMFILES
@@ -1547,6 +1550,7 @@ runsettings
 runtimeclass
 runtimeconfig
 runtimeobject
+runtimepack
 runtimes
 rus
 Rutkas
