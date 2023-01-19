@@ -2902,7 +2902,7 @@ Activate by holding the key for the character you want to add an accent to, then
     <value>PowerToys Run</value>
   </data>
   <data name="GeneralPage_EnableExperimentation.Description" xml:space="preserve">
-    <value>Insert description here</value>
+    <value>Only affects Windows Insider builds</value>
   </data>
   <data name="GeneralPage_EnableExperimentation.Header" xml:space="preserve">
     <value>Enable experimentation</value>

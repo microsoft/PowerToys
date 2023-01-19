@@ -4,6 +4,7 @@
 
 using System;
 using System.Collections.ObjectModel;
+using System.Globalization;
 using AllExperiments;
 using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.PowerToys.Settings.UI.OOBE.Enums;
@@ -48,9 +49,15 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
 
         public ObservableCollection<OobePowerToysModule> Modules { get; }
 
+        private static ISettingsUtils settingsUtils = new SettingsUtils();
+
+        private bool ExperimentationToggleSwitchEnabled { get; set; } = true;
+
         public OobeShellPage()
         {
             InitializeComponent();
+
+            ExperimentationToggleSwitchEnabled = SettingsRepository<GeneralSettings>.GetInstance(settingsUtils).SettingsConfig.EnableExperimentation;
 
             DataContext = ViewModel;
             OobeShellHandler = this;
@@ -188,6 +195,8 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
                 switch (selectedItem.Tag)
                 {
                     case "Overview":
+                        if (ExperimentationToggleSwitchEnabled)
+                        {
                             switch (AllExperiments.Experiments.LandingPageExperiment)
                             {
                                 case Experiments.ExperimentState.Enabled:
@@ -199,6 +208,13 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
                             }
 
                             break;
+                        }
+                        else
+                        {
+                            NavigationFrame.Navigate(typeof(OobeOverview));
+                            break;
+                        }
+
                     case "WhatsNew": NavigationFrame.Navigate(typeof(OobeWhatsNew)); break;
                     case "AlwaysOnTop": NavigationFrame.Navigate(typeof(OobeAlwaysOnTop)); break;
                     case "Awake": NavigationFrame.Navigate(typeof(OobeAwake)); break;
