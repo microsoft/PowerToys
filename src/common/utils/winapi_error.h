@@ -35,7 +35,7 @@ inline void show_last_error_message(const wchar_t* functionName, DWORD dw, const
     {
         return;
     }
-    LPWSTR lpDisplayBuf = (LPWSTR)LocalAlloc(LMEM_ZEROINIT, (system_message->size() + lstrlenW(functionName) + 40) * sizeof(WCHAR));
+    LPWSTR lpDisplayBuf = static_cast<LPWSTR>(LocalAlloc(LMEM_ZEROINIT, (system_message->size() + lstrlenW(functionName) + 40) * sizeof(WCHAR)));
     if (lpDisplayBuf != NULL)
     {
         StringCchPrintfW(lpDisplayBuf,
@@ -44,7 +44,7 @@ inline void show_last_error_message(const wchar_t* functionName, DWORD dw, const
                          functionName,
                          system_message->c_str(),
                          dw);
-        MessageBoxW(NULL, (LPCTSTR)lpDisplayBuf, errorTitle, MB_OK | MB_ICONERROR);
+        MessageBoxW(NULL, lpDisplayBuf, errorTitle, MB_OK | MB_ICONERROR);
         LocalFree(lpDisplayBuf);
     }
 }

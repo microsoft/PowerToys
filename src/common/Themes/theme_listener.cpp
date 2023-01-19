@@ -8,7 +8,7 @@
 #pragma warning(disable : 4702)
 DWORD WINAPI _checkTheme(LPVOID lpParam)
 {
-    auto listener = (ThemeListener*)lpParam;
+    auto listener = static_cast<ThemeListener*>(lpParam);
     listener->CheckTheme();
     return 0;
 }

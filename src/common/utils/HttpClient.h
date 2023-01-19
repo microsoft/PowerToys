@@ -57,7 +57,7 @@ namespace http
                 totalBytesRead += buffer.Length();
                 if (progressUpdateCallback)
                 {
-                    float percentage = (float)totalBytesRead / totalBytes;
+                    float percentage = static_cast<float>(totalBytesRead) / totalBytes;
                     progressUpdateCallback(percentage);
                 }
 

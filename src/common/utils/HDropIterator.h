@@ -19,7 +19,7 @@ public:
 
         if (SUCCEEDED(pDataObject->GetData(&formatetc, &m_medium)))
         {
-            _listCount = DragQueryFile((HDROP)m_medium.hGlobal, 0xFFFFFFFF, NULL, 0);
+            _listCount = DragQueryFile(static_cast<HDROP>(m_medium.hGlobal), 0xFFFFFFFF, NULL, 0);
         }
         else
         {
@@ -52,10 +52,10 @@ public:
 
     LPTSTR CurrentItem() const
     {
-        UINT cch = DragQueryFile((HDROP)m_medium.hGlobal, _current, NULL, 0) + 1;
-        LPTSTR pszPath = (LPTSTR)malloc(sizeof(TCHAR) * cch);
+        UINT cch = DragQueryFile(static_cast<HDROP>(m_medium.hGlobal), _current, NULL, 0) + 1;
+        LPTSTR pszPath = static_cast<LPTSTR>(malloc(sizeof(TCHAR) * cch));
 
-        DragQueryFile((HDROP)m_medium.hGlobal, _current, pszPath, cch);
+        DragQueryFile(static_cast<HDROP>(m_medium.hGlobal), _current, pszPath, cch);
 
         return pszPath;
     }

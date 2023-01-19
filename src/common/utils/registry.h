@@ -241,7 +241,7 @@ namespace registry
             switch (type)
             {
             case REG_DWORD:
-                return *(DWORD*)buffer;
+                return *reinterpret_cast<const DWORD*>(buffer);
             case REG_SZ:
             {
                 if (!valueSize)

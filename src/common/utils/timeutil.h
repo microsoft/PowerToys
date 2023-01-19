@@ -60,7 +60,7 @@ namespace timeutil
 
         inline int64_t in_days(const std::time_t to, const std::time_t from)
         {
-            return static_cast<int64_t>(std::difftime(to, from) / (3600 * (int64_t)24));
+            return static_cast<int64_t>(std::difftime(to, from) / (3600 * 24LL));
         }
     }
 }

@@ -14,7 +14,7 @@ HRESULT GetIconIndexFromPath(_In_ PCWSTR path, _Out_ int* index)
     if (!PathIsRelative(path))
     {
         DWORD attrib = GetFileAttributes(path);
-        HIMAGELIST himl = (HIMAGELIST)SHGetFileInfo(path, attrib, &shFileInfo, sizeof(shFileInfo), (SHGFI_SYSICONINDEX | SHGFI_SMALLICON | SHGFI_USEFILEATTRIBUTES));
+        auto himl =SHGetFileInfo(path, attrib, &shFileInfo, sizeof(shFileInfo), (SHGFI_SYSICONINDEX | SHGFI_SMALLICON | SHGFI_USEFILEATTRIBUTES));
         if (himl)
         {
             *index = shFileInfo.iIcon;
@@ -61,14 +61,14 @@ HBITMAP CreateBitmapFromIcon(_In_ HICON hIcon, _In_opt_ UINT width, _In_opt_ UIN
         if (hBitmap != NULL)
         {
             // Select bitmap into DC
-            HBITMAP hBitmapOld = (HBITMAP)SelectObject(hDC, hBitmap);
+            HBITMAP hBitmapOld = static_cast<HBITMAP>(SelectObject(hDC, hBitmap));
             if (hBitmapOld != NULL)
             {
                 // Draw icon into DC
                 if (DrawIconEx(hDC, 0, 0, hIcon, rc.right, rc.bottom, 0, NULL, DI_NORMAL))
                 {
                     // Restore original bitmap in DC
-                    hBitmapResult = (HBITMAP)SelectObject(hDC, hBitmapOld);
+                    hBitmapResult = static_cast<HBITMAP>(SelectObject(hDC, hBitmapOld));
                     hBitmapOld = NULL;
                     hBitmap = NULL;
                 }
