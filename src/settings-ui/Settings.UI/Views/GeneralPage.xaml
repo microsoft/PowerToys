@@ -369,8 +369,13 @@
                             </labs:SettingsCard>
                         </labs:SettingsExpander.Items>
                     </labs:SettingsExpander>
+                    <labs:SettingsCard x:Uid="GeneralPage_EnableExperimentation"
+                                       HeaderIcon="{ui:BitmapIcon Source=/Assets/FluentIcons/FluentIconsExperimentation.png}">
+                        <ToggleSwitch
+                            x:Uid="ToggleSwitch"
+                            IsOn="{Binding Mode=TwoWay, Path=EnableExperimentation}" />
+                    </labs:SettingsCard>
                 </controls:SettingsGroup>
-
                 <InfoBar
                     x:Uid="General_SettingsBackupMessageResults"
                     Title="{Binding SettingsBackupMessage}"
