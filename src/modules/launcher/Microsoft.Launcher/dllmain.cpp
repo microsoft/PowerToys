@@ -349,7 +349,7 @@ public:
         DWORD windowPid;
         GetWindowThreadProcessId(nextWindow, &windowPid);
 
-        if (windowPid == (DWORD)closePid)
+        if (windowPid == static_cast<DWORD>(closePid))
             ::PostMessage(nextWindow, WM_CLOSE, 0, 0);
 
         return true;
@@ -401,7 +401,7 @@ void Microsoft_Launcher::parse_hotkey(PowerToysSettings::PowerToyValues& setting
         try
         {
             auto jsonPropertiesObject = settingsObject.GetNamedObject(JSON_KEY_PROPERTIES);
-            m_use_centralized_keyboard_hook = (bool)jsonPropertiesObject.GetNamedBoolean(JSON_KEY_USE_CENTRALIZED_KEYBOARD_HOOK);
+            m_use_centralized_keyboard_hook =jsonPropertiesObject.GetNamedBoolean(JSON_KEY_USE_CENTRALIZED_KEYBOARD_HOOK);
         }
         catch (...)
         {

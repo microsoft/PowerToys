@@ -222,7 +222,15 @@ public:
             {
                 // Parse Opacity
                 auto jsonPropertiesObject = settingsObject.GetNamedObject(JSON_KEY_PROPERTIES).GetNamedObject(JSON_KEY_CROSSHAIRS_OPACITY);
-                inclusiveCrosshairsSettings.crosshairsOpacity = (uint8_t)jsonPropertiesObject.GetNamedNumber(JSON_KEY_VALUE);
+                int value = static_cast<uint8_t>(jsonPropertiesObject.GetNamedNumber(JSON_KEY_VALUE));
+                if (value >= 0)
+                {
+                    inclusiveCrosshairsSettings.crosshairsOpacity = value;
+                }
+                else
+                {
+                    throw;
+                }
             }
             catch (...)
             {
@@ -251,7 +259,16 @@ public:
             {
                 // Parse Radius
                 auto jsonPropertiesObject = settingsObject.GetNamedObject(JSON_KEY_PROPERTIES).GetNamedObject(JSON_KEY_CROSSHAIRS_RADIUS);
-                inclusiveCrosshairsSettings.crosshairsRadius = (UINT)jsonPropertiesObject.GetNamedNumber(JSON_KEY_VALUE);
+                int value = static_cast<int>(jsonPropertiesObject.GetNamedNumber(JSON_KEY_VALUE));
+                if (value >= 0)
+                {
+                    inclusiveCrosshairsSettings.crosshairsRadius = value;
+                }
+                else
+                {
+                    throw;
+                }
+                
             }
             catch (...)
             {
@@ -261,7 +278,16 @@ public:
             {
                 // Parse Thickness
                 auto jsonPropertiesObject = settingsObject.GetNamedObject(JSON_KEY_PROPERTIES).GetNamedObject(JSON_KEY_CROSSHAIRS_THICKNESS);
-                inclusiveCrosshairsSettings.crosshairsThickness = (UINT)jsonPropertiesObject.GetNamedNumber(JSON_KEY_VALUE);
+                int value = static_cast<int>(jsonPropertiesObject.GetNamedNumber(JSON_KEY_VALUE));
+                if (value >= 0)
+                {
+                    inclusiveCrosshairsSettings.crosshairsThickness = value;
+                }
+                else
+                {
+                    throw;
+                }
+                
             }
             catch (...)
             {
@@ -290,7 +316,15 @@ public:
             {
                 // Parse border size
                 auto jsonPropertiesObject = settingsObject.GetNamedObject(JSON_KEY_PROPERTIES).GetNamedObject(JSON_KEY_CROSSHAIRS_BORDER_SIZE);
-                inclusiveCrosshairsSettings.crosshairsBorderSize = (UINT)jsonPropertiesObject.GetNamedNumber(JSON_KEY_VALUE);
+                int value = static_cast <int>(jsonPropertiesObject.GetNamedNumber(JSON_KEY_VALUE));
+                if (value >= 0)
+                {
+                    inclusiveCrosshairsSettings.crosshairsBorderSize = value;
+                }
+                else
+                {
+                    throw;
+                }
             }
             catch (...)
             {

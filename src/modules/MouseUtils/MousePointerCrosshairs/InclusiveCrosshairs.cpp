@@ -212,25 +212,25 @@ void InclusiveCrosshairs::UpdateCrosshairsPosition()
     float halfPixelAdjustment = m_crosshairs_thickness % 2 == 1 ? 0.5f : 0.0f;
 
     // Position crosshairs components around the mouse pointer.
-    m_left_crosshairs_border.Offset({ (float)ptCursor.x - m_crosshairs_radius + m_crosshairs_border_size + halfPixelAdjustment * 2, (float)ptCursor.y + halfPixelAdjustment, .0f });
-    m_left_crosshairs_border.Size({ (float)ptCursor.x - (float)ptMonitorUpperLeft.x - m_crosshairs_radius + m_crosshairs_border_size + halfPixelAdjustment * 2, (float)m_crosshairs_thickness + m_crosshairs_border_size * 2 });
-    m_left_crosshairs.Offset({ (float)ptCursor.x - m_crosshairs_radius + halfPixelAdjustment * 2, (float)ptCursor.y + halfPixelAdjustment, .0f });
-    m_left_crosshairs.Size({ (float)ptCursor.x - (float)ptMonitorUpperLeft.x - m_crosshairs_radius + halfPixelAdjustment * 2, (float)m_crosshairs_thickness });
+    m_left_crosshairs_border.Offset({ ptCursor.x - m_crosshairs_radius + m_crosshairs_border_size + halfPixelAdjustment * 2, ptCursor.y + halfPixelAdjustment, .0f });
+    m_left_crosshairs_border.Size({ ptCursor.x - ptMonitorUpperLeft.x - m_crosshairs_radius + m_crosshairs_border_size + halfPixelAdjustment * 2, m_crosshairs_thickness + m_crosshairs_border_size * 2.f });
+    m_left_crosshairs.Offset({ ptCursor.x - m_crosshairs_radius + halfPixelAdjustment * 2.f, ptCursor.y + halfPixelAdjustment, .0f });
+    m_left_crosshairs.Size({ ptCursor.x - ptMonitorUpperLeft.x - m_crosshairs_radius + halfPixelAdjustment * 2, static_cast<float>(m_crosshairs_thickness) });
 
-    m_right_crosshairs_border.Offset({ (float)ptCursor.x + m_crosshairs_radius - m_crosshairs_border_size, (float)ptCursor.y + halfPixelAdjustment, .0f });
-    m_right_crosshairs_border.Size({ (float)ptMonitorBottomRight.x - (float)ptCursor.x - m_crosshairs_radius + m_crosshairs_border_size, (float)m_crosshairs_thickness + m_crosshairs_border_size * 2 });
-    m_right_crosshairs.Offset({ (float)ptCursor.x + m_crosshairs_radius, (float)ptCursor.y + halfPixelAdjustment, .0f });
-    m_right_crosshairs.Size({ (float)ptMonitorBottomRight.x - (float)ptCursor.x - m_crosshairs_radius, (float)m_crosshairs_thickness });
+    m_right_crosshairs_border.Offset({static_cast<float>(ptCursor.x) + m_crosshairs_radius - m_crosshairs_border_size, ptCursor.y + halfPixelAdjustment, .0f });
+    m_right_crosshairs_border.Size({ static_cast<float>(ptMonitorBottomRight.x) - ptCursor.x - m_crosshairs_radius + m_crosshairs_border_size, m_crosshairs_thickness + m_crosshairs_border_size * 2.f });
+    m_right_crosshairs.Offset({ static_cast<float>(ptCursor.x) + m_crosshairs_radius, ptCursor.y + halfPixelAdjustment, .0f });
+    m_right_crosshairs.Size({ static_cast<float>(ptMonitorBottomRight.x) - ptCursor.x - m_crosshairs_radius, static_cast<float>(m_crosshairs_thickness) });
 
-    m_top_crosshairs_border.Offset({ (float)ptCursor.x + halfPixelAdjustment, (float)ptCursor.y - m_crosshairs_radius + m_crosshairs_border_size + halfPixelAdjustment * 2, .0f });
-    m_top_crosshairs_border.Size({ (float)m_crosshairs_thickness + m_crosshairs_border_size * 2, (float)ptCursor.y - (float)ptMonitorUpperLeft.y - m_crosshairs_radius + m_crosshairs_border_size + halfPixelAdjustment * 2 });
-    m_top_crosshairs.Offset({ (float)ptCursor.x + halfPixelAdjustment, (float)ptCursor.y - m_crosshairs_radius + halfPixelAdjustment * 2, .0f });
-    m_top_crosshairs.Size({ (float)m_crosshairs_thickness, (float)ptCursor.y - (float)ptMonitorUpperLeft.y - m_crosshairs_radius + halfPixelAdjustment * 2 });
+    m_top_crosshairs_border.Offset({ ptCursor.x + halfPixelAdjustment, ptCursor.y - m_crosshairs_radius + m_crosshairs_border_size + halfPixelAdjustment * 2, .0f });
+    m_top_crosshairs_border.Size({ m_crosshairs_thickness + m_crosshairs_border_size * 2.f, ptCursor.y - ptMonitorUpperLeft.y - m_crosshairs_radius + m_crosshairs_border_size + halfPixelAdjustment * 2 });
+    m_top_crosshairs.Offset({ ptCursor.x + halfPixelAdjustment, ptCursor.y - m_crosshairs_radius + halfPixelAdjustment * 2, .0f });
+    m_top_crosshairs.Size({ static_cast<float>(m_crosshairs_thickness), ptCursor.y - ptMonitorUpperLeft.y - m_crosshairs_radius + halfPixelAdjustment * 2 });
 
-    m_bottom_crosshairs_border.Offset({ (float)ptCursor.x + halfPixelAdjustment, (float)ptCursor.y + m_crosshairs_radius - m_crosshairs_border_size, .0f });
-    m_bottom_crosshairs_border.Size({ (float)m_crosshairs_thickness + m_crosshairs_border_size * 2, (float)ptMonitorBottomRight.y - (float)ptCursor.y - m_crosshairs_radius + m_crosshairs_border_size });
-    m_bottom_crosshairs.Offset({ (float)ptCursor.x + halfPixelAdjustment, (float)ptCursor.y + m_crosshairs_radius, .0f });
-    m_bottom_crosshairs.Size({ (float)m_crosshairs_thickness, (float)ptMonitorBottomRight.y - (float)ptCursor.y - m_crosshairs_radius });
+    m_bottom_crosshairs_border.Offset({ ptCursor.x + halfPixelAdjustment,  static_cast<float>(ptCursor.y) + m_crosshairs_radius - m_crosshairs_border_size, .0f });
+    m_bottom_crosshairs_border.Size({ m_crosshairs_thickness + m_crosshairs_border_size * 2.f,  static_cast<float>(ptMonitorBottomRight.y) - ptCursor.y - m_crosshairs_radius + m_crosshairs_border_size });
+    m_bottom_crosshairs.Offset({ ptCursor.x + halfPixelAdjustment,  static_cast<float>(ptCursor.y) + m_crosshairs_radius, .0f });
+    m_bottom_crosshairs.Size({  static_cast<float>(m_crosshairs_thickness),  static_cast<float>(ptMonitorBottomRight.y) - ptCursor.y - m_crosshairs_radius });
 
 }
 
@@ -238,7 +238,7 @@ LRESULT CALLBACK InclusiveCrosshairs::MouseHookProc(int nCode, WPARAM wParam, LP
 {
     if (nCode >= 0)
     {
-        MSLLHOOKSTRUCT* hookData = (MSLLHOOKSTRUCT*)lParam;
+        MSLLHOOKSTRUCT* hookData = reinterpret_cast<MSLLHOOKSTRUCT*>(lParam);
         if (wParam == WM_MOUSEMOVE) {
             instance->UpdateCrosshairsPosition();
         }
@@ -362,7 +362,7 @@ bool InclusiveCrosshairs::MyRegisterClass(HINSTANCE hInstance)
         wc.hInstance = hInstance;
         wc.hIcon = LoadIcon(hInstance, IDI_APPLICATION);
         wc.hCursor = LoadCursor(nullptr, IDC_ARROW);
-        wc.hbrBackground = (HBRUSH)GetStockObject(NULL_BRUSH);
+        wc.hbrBackground = static_cast<HBRUSH>(GetStockObject(NULL_BRUSH));
         wc.lpszClassName = m_className;
 
         if (!RegisterClassW(&wc))

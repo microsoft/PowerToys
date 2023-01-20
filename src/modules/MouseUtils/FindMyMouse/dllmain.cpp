@@ -185,11 +185,16 @@ void FindMyMouse::parse_settings(PowerToysSettings::PowerToyValues& settings)
         {
             // Parse Activation Method
             auto jsonPropertiesObject = settingsObject.GetNamedObject(JSON_KEY_PROPERTIES).GetNamedObject(JSON_KEY_ACTIVATION_METHOD);
-            UINT value = (UINT)jsonPropertiesObject.GetNamedNumber(JSON_KEY_VALUE);
-            if (value < (int)FindMyMouseActivationMethod::EnumElements)
+            int value = static_cast<int>(jsonPropertiesObject.GetNamedNumber(JSON_KEY_VALUE));
+            if (value < static_cast<int>(FindMyMouseActivationMethod::EnumElements) && value >= 0)
             {
-                findMyMouseSettings.activationMethod = (FindMyMouseActivationMethod)value;
+                findMyMouseSettings.activationMethod = static_cast<FindMyMouseActivationMethod>(value);
             }
+            else
+            {
+                throw;
+            }
+                
         }
         catch (...)
         {
@@ -198,7 +203,7 @@ void FindMyMouse::parse_settings(PowerToysSettings::PowerToyValues& settings)
         try
         {
             auto jsonPropertiesObject = settingsObject.GetNamedObject(JSON_KEY_PROPERTIES).GetNamedObject(JSON_KEY_DO_NOT_ACTIVATE_ON_GAME_MODE);
-            findMyMouseSettings.doNotActivateOnGameMode = (bool)jsonPropertiesObject.GetNamedBoolean(JSON_KEY_VALUE);
+            findMyMouseSettings.doNotActivateOnGameMode = jsonPropertiesObject.GetNamedBoolean(JSON_KEY_VALUE);
         }
         catch (...)
         {
@@ -246,7 +251,15 @@ void FindMyMouse::parse_settings(PowerToysSettings::PowerToyValues& settings)
         {
             // Parse Overlay Opacity
             auto jsonPropertiesObject = settingsObject.GetNamedObject(JSON_KEY_PROPERTIES).GetNamedObject(JSON_KEY_OVERLAY_OPACITY);
-            findMyMouseSettings.overlayOpacity = (UINT)jsonPropertiesObject.GetNamedNumber(JSON_KEY_VALUE);
+            int value = static_cast<int>(jsonPropertiesObject.GetNamedNumber(JSON_KEY_VALUE));
+            if (value >= 0)
+            {
+                findMyMouseSettings.overlayOpacity = value;
+            }
+            else
+            {
+                throw;
+            }
         }
         catch (...)
         {
@@ -256,7 +269,15 @@ void FindMyMouse::parse_settings(PowerToysSettings::PowerToyValues& settings)
         {
             // Parse Spotlight Radius
             auto jsonPropertiesObject = settingsObject.GetNamedObject(JSON_KEY_PROPERTIES).GetNamedObject(JSON_KEY_SPOTLIGHT_RADIUS);
-            findMyMouseSettings.spotlightRadius = (UINT)jsonPropertiesObject.GetNamedNumber(JSON_KEY_VALUE);
+            int value = static_cast<int>(jsonPropertiesObject.GetNamedNumber(JSON_KEY_VALUE));
+            if (value >= 0)
+            {
+                findMyMouseSettings.spotlightRadius = value;
+            }
+            else
+            {
+                throw;
+            }
         }
         catch (...)
         {
@@ -266,7 +287,15 @@ void FindMyMouse::parse_settings(PowerToysSettings::PowerToyValues& settings)
         {
             // Parse Animation Duration
             auto jsonPropertiesObject = settingsObject.GetNamedObject(JSON_KEY_PROPERTIES).GetNamedObject(JSON_KEY_ANIMATION_DURATION_MS);
-            findMyMouseSettings.animationDurationMs = (UINT)jsonPropertiesObject.GetNamedNumber(JSON_KEY_VALUE);
+            int value = static_cast<int>(jsonPropertiesObject.GetNamedNumber(JSON_KEY_VALUE));
+            if (value >= 0)
+            {
+                findMyMouseSettings.animationDurationMs = value;
+            }
+            else
+            {
+                throw;
+            }
         }
         catch (...)
         {
@@ -276,7 +305,15 @@ void FindMyMouse::parse_settings(PowerToysSettings::PowerToyValues& settings)
         {
             // Parse Spotlight Initial Zoom
             auto jsonPropertiesObject = settingsObject.GetNamedObject(JSON_KEY_PROPERTIES).GetNamedObject(JSON_KEY_SPOTLIGHT_INITIAL_ZOOM);
-            findMyMouseSettings.spotlightInitialZoom = (UINT)jsonPropertiesObject.GetNamedNumber(JSON_KEY_VALUE);
+            int value = static_cast<int>(jsonPropertiesObject.GetNamedNumber(JSON_KEY_VALUE));
+            if (value >= 0)
+            {
+                findMyMouseSettings.spotlightInitialZoom = value;
+            }
+            else
+            {
+                throw;
+            }
         }
         catch (...)
         {
@@ -289,7 +326,7 @@ void FindMyMouse::parse_settings(PowerToysSettings::PowerToyValues& settings)
             std::wstring apps = jsonPropertiesObject.GetNamedString(JSON_KEY_VALUE).c_str();
             std::vector<std::wstring> excludedApps;
             auto excludedUppercase = apps;
-            CharUpperBuffW(excludedUppercase.data(), (DWORD)excludedUppercase.length());
+            CharUpperBuffW(excludedUppercase.data(), static_cast<DWORD>(excludedUppercase.length()));
             std::wstring_view view(excludedUppercase);
             view = left_trim<wchar_t>(trim<wchar_t>(view));
 
@@ -311,7 +348,15 @@ void FindMyMouse::parse_settings(PowerToysSettings::PowerToyValues& settings)
         {
             // Parse Shaking Minimum Distance
             auto jsonPropertiesObject = settingsObject.GetNamedObject(JSON_KEY_PROPERTIES).GetNamedObject(JSON_KEY_SHAKING_MINIMUM_DISTANCE);
-            findMyMouseSettings.shakeMinimumDistance = (UINT)jsonPropertiesObject.GetNamedNumber(JSON_KEY_VALUE);
+            int value = static_cast<int>(jsonPropertiesObject.GetNamedNumber(JSON_KEY_VALUE));
+            if (value >= 0)
+            {
+                findMyMouseSettings.shakeMinimumDistance = value;
+            }
+            else
+            {
+                throw;
+            }
         }
         catch (...)
         {
