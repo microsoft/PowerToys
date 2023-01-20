@@ -597,7 +597,7 @@ namespace FancyZonesUnitTests
             Assert::AreEqual((size_t)1, actualAppZoneHistory.size());
 
             const auto& layoutWindows = workArea->GetLayoutWindows();
-            Assert::IsTrue(ZoneIndexSet{ static_cast<ZoneIndex>(workArea->GetLayout()->Zones().size()) - 1 } == layoutWindows->GetZoneIndexSetFromWindow(window));
+            Assert::IsTrue(ZoneIndexSet{ static_cast<ZoneIndex>(workArea->GetLayout()->Zones().size() - 1) } == layoutWindows->GetZoneIndexSetFromWindow(window));
         }
 
         TEST_METHOD (MoveAppliedWindowByIndexNoCycle)

@@ -23,7 +23,7 @@ namespace NonLocalizable
 bool isExcluded(HWND window)
 {
     auto processPath = get_process_path(window);
-    CharUpperBuffW(processPath.data(), (DWORD)processPath.length());
+    CharUpperBuffW(processPath.data(), static_cast<DWORD>(processPath.length()));
     return find_app_name_in_path(processPath, AlwaysOnTopSettings::settings().excludedApps);
 }
 
@@ -381,7 +381,7 @@ bool AlwaysOnTop::IsPinned(HWND window) const noexcept
 
 bool AlwaysOnTop::PinTopmostWindow(HWND window) const noexcept
 {
-    if (!SetProp(window, NonLocalizable::WINDOW_IS_PINNED_PROP, (HANDLE)1))
+    if (!SetProp(window, NonLocalizable::WINDOW_IS_PINNED_PROP, reinterpret_cast<HANDLE>(1)))
     {
         Logger::error(L"SetProp failed, {}", get_last_error_or_default(GetLastError()));
     }

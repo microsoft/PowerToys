@@ -85,7 +85,7 @@ ZoneIndexSet FancyZonesWindowProperties::RetrieveZoneIndexProperty(HWND window)
 
 void FancyZonesWindowProperties::StampMovedOnOpeningProperty(HWND window)
 {
-    ::SetPropW(window, ZonedWindowProperties::PropertyMovedOnOpening, (HANDLE)1);
+    ::SetPropW(window, ZonedWindowProperties::PropertyMovedOnOpening, reinterpret_cast<HANDLE>(1));
 }
 
 bool FancyZonesWindowProperties::RetrieveMovedOnOpeningProperty(HWND window)
