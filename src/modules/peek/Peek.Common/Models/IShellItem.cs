@@ -4,6 +4,7 @@
 
 using System;
 using System.Runtime.InteropServices;
+using static Peek.Common.Models.PropertyStoreShellApi;
 
 namespace Peek.Common.Models
 {
@@ -20,7 +21,8 @@ namespace Peek.Common.Models
 
         void GetParent(out IShellItem ppsi);
 
-        void GetDisplayName(Sigdn sigdnName, out IntPtr ppszName);
+        [return: MarshalAs(UnmanagedType.LPWStr)]
+        string GetDisplayName(SIGDN sigdnName);
 
         void GetAttributes(uint sfgaoMask, out uint psfgaoAttribs);
 

@@ -48,5 +48,8 @@ namespace Peek.UI.Native
 
         [DllImport("user32.dll")]
         internal static extern int GetWindowText(Windows.Win32.Foundation.HWND hWnd, StringBuilder lpString, int nMaxCount);
+
+        [DllImport("user32.dll")]
+        public static extern int GetClassName(IntPtr hWnd, StringBuilder buf, int nMaxCount);
     }
 }

@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System.Diagnostics;
+using System.Linq;
 using interop;
 using Microsoft.UI.Windowing;
 using Microsoft.UI.Xaml.Input;
@@ -152,19 +153,13 @@ namespace Peek.UI
 
         private bool IsNewSingleSelectedItem()
         {
-            var folderView = FileExplorerHelper.GetCurrentFolderView();
-            if (folderView == null)
+            var selectedItems = FileExplorerHelper.GetSelectedItems();
+            if (!selectedItems.Any() || selectedItems.Skip(1).Any())
             {
                 return false;
             }
 
-            Shell32.FolderItems selectedItems = folderView.SelectedItems();
-            if (selectedItems.Count > 1)
-            {
-                return false;
-            }
-
-            var fileExplorerSelectedItemPath = selectedItems.Item(0)?.Path;
+            var fileExplorerSelectedItemPath = selectedItems.First().Path;
             var currentFilePath = ViewModel.FolderItemsQuery.CurrentFile?.Path;
             if (fileExplorerSelectedItemPath == null || currentFilePath == null || fileExplorerSelectedItemPath == currentFilePath)
             {

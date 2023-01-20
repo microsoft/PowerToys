@@ -36,7 +36,8 @@ namespace Peek.Common.Models
 
         void SendControlMsg(uint id, uint uMsg, uint wParam, uint lParam, IntPtr pret);
 
-        void QueryActiveShellView(ref IShellView ppshv);
+        [return: MarshalAs(UnmanagedType.IUnknown)]
+        object QueryActiveShellView();
 
         void OnViewWindowActive(IShellView ppshv);
 
