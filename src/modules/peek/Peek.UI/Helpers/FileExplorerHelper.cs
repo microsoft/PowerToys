@@ -4,8 +4,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Runtime.CompilerServices;
-using System.Runtime.InteropServices;
 using Peek.Common.Models;
 using Peek.UI.Extensions;
 using SHDocVw;
@@ -13,7 +11,6 @@ using Shell32;
 using Windows.Win32;
 using Windows.Win32.Foundation;
 using Windows.Win32.UI.Shell;
-using static Peek.Common.Models.PropertyStoreShellApi;
 using IServiceProvider = Peek.Common.Models.IServiceProvider;
 
 namespace Peek.UI.Helpers
@@ -99,7 +96,7 @@ namespace Peek.UI.Helpers
             for (var i = 0; i < array.GetCount(); i++)
             {
                 var item = array.GetItemAt(i);
-                var path = item.GetDisplayName(SIGDN.FILESYSPATH);
+                var path = item.GetDisplayName(SIGDN.SIGDN_FILESYSPATH);
                 yield return new File(path);
             }
         }
@@ -111,32 +108,5 @@ namespace Peek.UI.Helpers
                 yield return new File(item.Path);
             }
         }
-    }
-
-    [ComImport]
-    [Guid("B63EA76D-1F85-456F-A19C-48159EFA858B")]
-    [InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
-    internal interface IShellItemArray
-    {
-        [MethodImpl(MethodImplOptions.InternalCall, MethodCodeType = MethodCodeType.Runtime)]
-        void BindToHandler([In, MarshalAs(UnmanagedType.Interface)] IntPtr pbc, [In] ref Guid rbhid, [In] ref Guid riid, out IntPtr ppvOut);
-
-        [MethodImpl(MethodImplOptions.InternalCall, MethodCodeType = MethodCodeType.Runtime)]
-        void GetPropertyStore([In] int flags, [In] ref Guid riid, out IntPtr ppv);
-
-        [MethodImpl(MethodImplOptions.InternalCall, MethodCodeType = MethodCodeType.Runtime)]
-        void GetPropertyDescriptionList([In] ref PropertyKey keyType, [In] ref Guid riid, out IntPtr ppv);
-
-        [MethodImpl(MethodImplOptions.InternalCall, MethodCodeType = MethodCodeType.Runtime)]
-        void GetAttributes([In] SIATTRIBFLAGS dwAttribFlags, [In] uint sfgaoMask, out uint psfgaoAttribs);
-
-        [MethodImpl(MethodImplOptions.InternalCall, MethodCodeType = MethodCodeType.Runtime)]
-        int GetCount();
-
-        [MethodImpl(MethodImplOptions.InternalCall, MethodCodeType = MethodCodeType.Runtime)]
-        Common.Models.IShellItem GetItemAt(int dwIndex);
-
-        [MethodImpl(MethodImplOptions.InternalCall, MethodCodeType = MethodCodeType.Runtime)]
-        void EnumItems([MarshalAs(UnmanagedType.Interface)] out IntPtr ppenumShellItems);
     }
 }

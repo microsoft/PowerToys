@@ -12,4 +12,3 @@ FindWindowEx
 SID_STopLevelBrowser
 GetClassName
 _SVGIO
-SIATTRIBFLAGS
