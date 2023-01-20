@@ -137,14 +137,14 @@ inline void CreateEditKeyboardWindowImpl(HINSTANCE hInst, KBMEditor::KeyboardMan
         windowClass.lpfnWndProc = EditKeyboardWindowProc;
         windowClass.hInstance = hInst;
         windowClass.lpszClassName = szWindowClass;
-        windowClass.hbrBackground = (HBRUSH)(COLOR_WINDOW);
-        windowClass.hIcon = (HICON)LoadImageW(
+        windowClass.hbrBackground = reinterpret_cast<HBRUSH>(COLOR_WINDOW);
+        windowClass.hIcon = static_cast<HICON>(LoadImageW(
             windowClass.hInstance,
             MAKEINTRESOURCE(IDS_KEYBOARDMANAGER_ICON),
             IMAGE_ICON,
             48,
             48,
-            LR_DEFAULTCOLOR);
+            LR_DEFAULTCOLOR));
 
         if (RegisterClassEx(&windowClass) == NULL)
         {
@@ -433,7 +433,7 @@ LRESULT CALLBACK EditKeyboardWindowProc(HWND hWnd, UINT messageCode, WPARAM wPar
     // To avoid UI elements overlapping on making the window smaller enforce a minimum window size
     case WM_GETMINMAXINFO:
     {
-        LPMINMAXINFO mmi = (LPMINMAXINFO)lParam;
+        LPMINMAXINFO mmi = reinterpret_cast<LPMINMAXINFO>(lParam);
         float minWidth = EditorConstants::MinimumEditKeyboardWindowWidth;
         float minHeight = EditorConstants::MinimumEditKeyboardWindowHeight;
         DPIAware::Convert(MonitorFromWindow(hWnd, MONITOR_DEFAULTTONULL), minWidth, minHeight);

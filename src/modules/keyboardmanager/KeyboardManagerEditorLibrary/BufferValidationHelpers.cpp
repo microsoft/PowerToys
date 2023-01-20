@@ -29,9 +29,9 @@ namespace BufferValidationHelpers
         if (selectedKeyCode != -1)
         {
             // Check if the value being set is the same as the other column
-            if (remapBuffer[rowIndex].first[std::abs(int(colIndex) - 1)].index() == 0)
+            if (remapBuffer[rowIndex].first[std::abs(colIndex - 1)].index() == 0)
             {
-                DWORD otherColumnKeyCode = std::get<DWORD>(remapBuffer[rowIndex].first[std::abs(int(colIndex) - 1)]);
+                DWORD otherColumnKeyCode = std::get<DWORD>(remapBuffer[rowIndex].first[std::abs(colIndex - 1)]);
                 if (otherColumnKeyCode == selectedKeyCode || IsKeyRemappingToItsCombinedKey(selectedKeyCode, otherColumnKeyCode))
                 {
                     errorType = ShortcutErrorType::MapToSameKey;
@@ -189,7 +189,7 @@ namespace BufferValidationHelpers
                     // If the user tries to set an action key check if all drop down menus after this are empty if it is not the first key.
                     // If it is a hybrid control, this can be done even on the first key
                     bool isClear = true;
-                    for (int i = dropDownIndex + 1; i < (int)dropDownCount; i++)
+                    for (int i = dropDownIndex + 1; i < static_cast<int>(dropDownCount); i++)
                     {
                         if (selectedCodes[i] != -1)
                         {
@@ -244,9 +244,9 @@ namespace BufferValidationHelpers
             if (tempShortcut.index() == 1)
             {
                 // If shortcut to shortcut
-                if (remapBuffer[rowIndex].first[std::abs(int(colIndex) - 1)].index() == 1)
+                if (remapBuffer[rowIndex].first[std::abs(colIndex - 1)].index() == 1)
                 {
-                    auto& shortcut = std::get<Shortcut>(remapBuffer[rowIndex].first[std::abs(int(colIndex) - 1)]);
+                    auto& shortcut = std::get<Shortcut>(remapBuffer[rowIndex].first[std::abs(colIndex - 1)]);
                     if (shortcut == std::get<Shortcut>(tempShortcut) && EditorHelpers::IsValidShortcut(shortcut) && EditorHelpers::IsValidShortcut(std::get<Shortcut>(tempShortcut)))
                     {
                         errorType = ShortcutErrorType::MapToSameShortcut;
@@ -258,9 +258,9 @@ namespace BufferValidationHelpers
             else
             {
                 // If key to key
-                if (remapBuffer[rowIndex].first[std::abs(int(colIndex) - 1)].index() == 0)
+                if (remapBuffer[rowIndex].first[std::abs(colIndex - 1)].index() == 0)
                 {
-                    DWORD otherColumnKeyCode = std::get<DWORD>(remapBuffer[rowIndex].first[std::abs(int(colIndex) - 1)]);
+                    DWORD otherColumnKeyCode = std::get<DWORD>(remapBuffer[rowIndex].first[std::abs(colIndex - 1)]);
                     DWORD shortcutKeyCode = std::get<DWORD>(tempShortcut);
                     if ((otherColumnKeyCode == shortcutKeyCode || IsKeyRemappingToItsCombinedKey(otherColumnKeyCode, shortcutKeyCode)) && otherColumnKeyCode != NULL && shortcutKeyCode != NULL)
                     {

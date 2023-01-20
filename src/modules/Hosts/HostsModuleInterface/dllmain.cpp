@@ -57,7 +57,7 @@ private:
     void bring_process_to_front()
     {
         auto enum_windows = [](HWND hwnd, LPARAM param) -> BOOL {
-            HANDLE process_handle = (HANDLE)param;
+            HANDLE process_handle = reinterpret_cast<HANDLE>(param);
             DWORD window_process_id = 0;
 
             GetWindowThreadProcessId(hwnd, &window_process_id);
