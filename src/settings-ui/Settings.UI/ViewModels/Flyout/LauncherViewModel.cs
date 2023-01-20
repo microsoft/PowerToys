@@ -4,9 +4,6 @@
 
 using System;
 using System.Collections.ObjectModel;
-using System.ComponentModel;
-using System.Runtime.CompilerServices;
-using global::PowerToys.GPOWrapper;
 using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.PowerToys.Settings.UI.Library.Helpers;
 using Microsoft.PowerToys.Settings.UI.Library.Interfaces;
@@ -24,11 +21,16 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         private UpdatingSettings updatingSettingsConfig;
         private ISettingsRepository<GeneralSettings> _settingsRepository;
 
-        public LauncherViewModel(ISettingsRepository<GeneralSettings> settingsRepository)
+        private Func<string, int> SendIPCMessage { get; }
+
+        public LauncherViewModel(ISettingsRepository<GeneralSettings> settingsRepository, Func<string, int> ipcMSGCallBackFunc)
         {
             _settingsRepository = settingsRepository;
             generalSettingsConfig = settingsRepository.SettingsConfig;
             generalSettingsConfig.AddEnabledModuleChangeNotification(ModuleEnabledChanged);
+
+            // set the callback functions value to hangle outgoing IPC message.
+            SendIPCMessage = ipcMSGCallBackFunc;
 
             FlyoutMenuItems = new ObservableCollection<FlyoutMenuItem>()
             {
@@ -123,6 +125,11 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                     case "ShortcutGuide": item.Visible = generalSettingsConfig.Enabled.ShortcutGuide; break;
                 }
             }
+        }
+
+        internal void StartBugReport()
+        {
+            SendIPCMessage("{\"bugreport\": 0 }");
         }
     }
 }

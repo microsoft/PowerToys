@@ -11,12 +11,14 @@
 #include "restart_elevated.h"
 #include "UpdateUtils.h"
 #include "centralized_kb_hook.h"
+#include "Generated files/resource.h"
 
 #include <common/utils/json.h>
 #include <common/SettingsAPI/settings_helpers.cpp>
 #include <common/version/version.h>
 #include <common/version/helper.h>
 #include <common/logger/logger.h>
+#include <common/utils/resources.h>
 #include <common/utils/elevation.h>
 #include <common/utils/process_path.h>
 #include <common/utils/timeutil.h>
@@ -175,7 +177,7 @@ void dispatch_received_json(const std::wstring& json_to_parse)
             const std::wstring settings_string{ get_all_settings().Stringify().c_str() };
             {
                 std::unique_lock lock{ ipc_mutex };
-                if(current_settings_ipc)
+                if (current_settings_ipc)
                     current_settings_ipc->send(settings_string);
             }
         }
@@ -185,7 +187,7 @@ void dispatch_received_json(const std::wstring& json_to_parse)
             const std::wstring settings_string{ get_all_settings().Stringify().c_str() };
             {
                 std::unique_lock lock{ ipc_mutex };
-                if(current_settings_ipc)
+                if (current_settings_ipc)
                     current_settings_ipc->send(settings_string);
             }
         }
@@ -194,7 +196,7 @@ void dispatch_received_json(const std::wstring& json_to_parse)
             const std::wstring settings_string{ get_all_settings().Stringify().c_str() };
             {
                 std::unique_lock lock{ ipc_mutex };
-                if(current_settings_ipc)
+                if (current_settings_ipc)
                     current_settings_ipc->send(settings_string);
             }
         }
@@ -205,10 +207,26 @@ void dispatch_received_json(const std::wstring& json_to_parse)
             {
                 {
                     std::unique_lock lock{ ipc_mutex };
-                    if(current_settings_ipc)
+                    if (current_settings_ipc)
                         current_settings_ipc->send(result.value());
                 }
             }
+        }
+        else if (name == L"bugreport")
+        {
+            // std::wstring bug_report_path = get_module_folderpath();
+            // bug_report_path += L"\\Tools\\PowerToys.BugReportTool.exe";
+            // SHELLEXECUTEINFOW sei{ sizeof(sei) };
+            // sei.fMask = { SEE_MASK_FLAG_NO_UI | SEE_MASK_NOASYNC | SEE_MASK_NOCLOSEPROCESS | SEE_MASK_NO_CONSOLE };
+            // sei.lpFile = bug_report_path.c_str();
+            // sei.nShow = SW_HIDE;
+            // if (ShellExecuteExW(&sei))
+            // {
+            //    WaitForSingleObject(sei.hProcess, INFINITE);
+            //    CloseHandle(sei.hProcess);
+            //    static const std::wstring bugreport_success = GET_RESOURCE_STRING(IDS_BUGREPORT_SUCCESS);
+            //    MessageBoxW(nullptr, bugreport_success.c_str(), L"PowerToys", MB_OK);
+            // }
         }
     }
     return;
@@ -526,9 +544,24 @@ void bring_settings_to_front()
 
 void open_settings_window(std::optional<std::wstring> settings_window, bool show_flyout = false)
 {
-    if ((g_settings_process_id != 0) && !show_flyout)
+    if (g_settings_process_id != 0)
     {
-        bring_settings_to_front();
+        if (show_flyout)
+        {
+            if (current_settings_ipc)
+            {
+                current_settings_ipc->send(L"{\"ShowYourself\":\"flyout\"}");
+            }
+        }
+        else
+        {
+            // nl instead of showing the window, send message to it (flyout might need to be hidden, main setting window activated)
+            // bring_settings_to_front();
+            if (current_settings_ipc)
+            {
+                current_settings_ipc->send(L"{\"ShowYourself\":\"mainpage\"}");
+            }
+        }
     }
     else
     {

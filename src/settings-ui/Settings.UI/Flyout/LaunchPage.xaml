@@ -117,6 +117,7 @@
                 </Button>
                 <Button
                     x:Name="ReportBugBtn"
+                    Click="ReportBugBtn_Click"
                     Style="{StaticResource FlyoutButtonStyle}"
                     ToolTipService.ToolTip="Report a bug">
                     <FontIcon FontSize="14" Glyph="&#xebe8;" />

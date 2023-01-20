@@ -13,6 +13,7 @@ using Microsoft.PowerToys.Settings.UI.Helpers;
 using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.PowerToys.Settings.UI.Library.Telemetry.Events;
 using Microsoft.PowerToys.Settings.UI.Library.Utilities;
+using Microsoft.PowerToys.Settings.UI.Views;
 using Microsoft.PowerToys.Telemetry;
 using Microsoft.UI.Xaml;
 using Windows.UI.Popups;
@@ -74,15 +75,19 @@ namespace Microsoft.PowerToys.Settings.UI
             this.InitializeComponent();
         }
 
-        public static void OpenSettingsWindow(Type type)
+        public static void OpenSettingsWindow(Type type = null)
         {
             if (settingsWindow == null)
             {
                 settingsWindow = new MainWindow(IsDarkTheme());
+                type = typeof(GeneralPage);
             }
 
             settingsWindow.Activate();
-            settingsWindow.NavigateToSection(type);
+            if (type != null)
+            {
+                settingsWindow.NavigateToSection(type);
+            }
         }
 
         /// <summary>
@@ -154,41 +159,36 @@ namespace Microsoft.PowerToys.Settings.UI
                 });
                 ipcmanager.Start();
 
-                if (ShowFlyout)
+                if (!ShowOobe && !ShowScoobe && !ShowFlyout)
                 {
-                    FlyoutWindow flyoutWindow = new FlyoutWindow();
-                    flyoutWindow.Activate();
-                    SetFlyoutWindow(flyoutWindow);
+                    settingsWindow = new MainWindow(isDark);
+                    settingsWindow.Activate();
+                    settingsWindow.NavigateToSection(StartupPage);
                 }
                 else
                 {
-                    if (!ShowOobe && !ShowScoobe)
-                    {
-                        settingsWindow = new MainWindow(isDark);
-                        settingsWindow.Activate();
-                        settingsWindow.NavigateToSection(StartupPage);
-                    }
-                    else
-                    {
-                        // Create the Settings window hidden so that it's fully initialized and
-                        // it will be ready to receive the notification if the user opens
-                        // the Settings from the tray icon.
-                        settingsWindow = new MainWindow(isDark, true);
+                    // Create the Settings window hidden so that it's fully initialized and
+                    // it will be ready to receive the notification if the user opens
+                    // the Settings from the tray icon.
+                    settingsWindow = new MainWindow(isDark, true);
 
-                        if (ShowOobe)
-                        {
-                            PowerToysTelemetry.Log.WriteEvent(new OobeStartedEvent());
-                            OobeWindow oobeWindow = new OobeWindow(OOBE.Enums.PowerToysModules.Overview, isDark);
-                            oobeWindow.Activate();
-                            SetOobeWindow(oobeWindow);
-                        }
-                        else if (ShowScoobe)
-                        {
-                            PowerToysTelemetry.Log.WriteEvent(new ScoobeStartedEvent());
-                            OobeWindow scoobeWindow = new OobeWindow(OOBE.Enums.PowerToysModules.WhatsNew, isDark);
-                            scoobeWindow.Activate();
-                            SetOobeWindow(scoobeWindow);
-                        }
+                    if (ShowOobe)
+                    {
+                        PowerToysTelemetry.Log.WriteEvent(new OobeStartedEvent());
+                        OobeWindow oobeWindow = new OobeWindow(OOBE.Enums.PowerToysModules.Overview, isDark);
+                        oobeWindow.Activate();
+                        SetOobeWindow(oobeWindow);
+                    }
+                    else if (ShowScoobe)
+                    {
+                        PowerToysTelemetry.Log.WriteEvent(new ScoobeStartedEvent());
+                        OobeWindow scoobeWindow = new OobeWindow(OOBE.Enums.PowerToysModules.WhatsNew, isDark);
+                        scoobeWindow.Activate();
+                        SetOobeWindow(scoobeWindow);
+                    }
+                    else if (ShowFlyout)
+                    {
+                        ShellPage.OpenFlyoutCallback();
                     }
                 }
             }

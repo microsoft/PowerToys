@@ -27,6 +27,6 @@
             LightTintOpacity="0" />
     </winuiex:WindowEx.Backdrop>
     <Grid>
-        <flyout:ShellPage />
+        <flyout:ShellPage x:Name="FlyoutShellPage"/>
     </Grid>
 </winuiex:WindowEx>

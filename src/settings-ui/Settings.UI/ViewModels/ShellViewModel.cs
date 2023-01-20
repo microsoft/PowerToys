@@ -25,9 +25,6 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         private readonly KeyboardAccelerator backKeyboardAccelerator = BuildKeyboardAccelerator(VirtualKey.GoBack);
 
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("CodeQuality", "IDE0052:Remove unread private members", Justification = "Actually, call back is LoadSettingsFromJson")]
-        private readonly IFileSystemWatcher _watcher;
-
         private bool isBackEnabled;
         private IList<KeyboardAccelerator> keyboardAccelerators;
         private NavigationView navigationView;
@@ -68,7 +65,6 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         public ShellViewModel()
         {
-            _watcher = Library.Utilities.Helper.GetFileWatcher(string.Empty, "settings.json", () => LoadSettingsFromJson());
         }
 
         public void Initialize(Frame frame, NavigationView navigationView, IList<KeyboardAccelerator> keyboardAccelerators)
@@ -79,14 +75,6 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             NavigationService.NavigationFailed += Frame_NavigationFailed;
             NavigationService.Navigated += Frame_Navigated;
             this.navigationView.BackRequested += OnBackRequested;
-        }
-
-        private void LoadSettingsFromJson()
-        {
-            if (Selected != null)
-            {
-                GeneralSettings generalSettings = new SettingsUtils().GetSettingsOrDefault<GeneralSettings>(string.Empty);
-            }
         }
 
         private static KeyboardAccelerator BuildKeyboardAccelerator(VirtualKey key, VirtualKeyModifiers? modifiers = null)

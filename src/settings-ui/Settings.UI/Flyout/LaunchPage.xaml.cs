@@ -24,7 +24,7 @@ namespace Microsoft.PowerToys.Settings.UI.Flyout
         {
             this.InitializeComponent();
             var settingsUtils = new SettingsUtils();
-            ViewModel = new LauncherViewModel(SettingsRepository<GeneralSettings>.GetInstance(settingsUtils));
+            ViewModel = new LauncherViewModel(SettingsRepository<GeneralSettings>.GetInstance(settingsUtils), Views.ShellPage.SendDefaultIPCMessage);
             DataContext = ViewModel;
         }
 
@@ -85,7 +85,7 @@ namespace Microsoft.PowerToys.Settings.UI.Flyout
 
         private void SettingsBtn_Click(object sender, RoutedEventArgs e)
         {
-            App.OpenSettingsWindow(typeof(GeneralPage));
+            App.OpenSettingsWindow();
         }
 
         private async void DocsBtn_Click(object sender, RoutedEventArgs e)
@@ -104,6 +104,11 @@ namespace Microsoft.PowerToys.Settings.UI.Flyout
             {
                 Application.Current.Exit();
             });
+        }
+
+        private void ReportBugBtn_Click(object sender, RoutedEventArgs e)
+        {
+            ViewModel.StartBugReport();
         }
     }
 }

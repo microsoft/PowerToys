@@ -28,6 +28,16 @@ namespace Microsoft.PowerToys.Settings.UI.Views
         public delegate void IPCMessageCallback(string msg);
 
         /// <summary>
+        /// Declaration for the opening main window callback function.
+        /// </summary>
+        public delegate void MainOpeningCallback();
+
+        /// <summary>
+        /// Declaration for the updateing the general settings callback function.
+        /// </summary>
+        public delegate void UpdatingGeneralSettingsCallback(string module, bool isEnabled);
+
+        /// <summary>
         /// Declaration for the opening oobe window callback function.
         /// </summary>
         public delegate void OobeOpeningCallback();
@@ -56,6 +66,16 @@ namespace Microsoft.PowerToys.Settings.UI.Views
         /// Gets or sets iPC callback function for checking updates.
         /// </summary>
         public static IPCMessageCallback CheckForUpdatesMsgCallback { get; set; }
+
+        /// <summary>
+        /// Gets or sets callback function for opening main window
+        /// </summary>
+        public static MainOpeningCallback OpenMainWindowCallback { get; set; }
+
+        /// <summary>
+        /// Gets or sets callback function for updating the general settings
+        /// </summary>
+        public static UpdatingGeneralSettingsCallback UpdateGeneralSettingsCallback { get; set; }
 
         /// <summary>
         /// Gets or sets callback function for opening oobe window
@@ -93,6 +113,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             ShellHandler = this;
             ViewModel.Initialize(shellFrame, navigationView, KeyboardAccelerators);
             shellFrame.Navigate(typeof(GeneralPage));
+            IPCResponseHandleList.Add(ReceiveMessage);
         }
 
         public static int SendDefaultIPCMessage(string msg)
@@ -139,6 +160,24 @@ namespace Microsoft.PowerToys.Settings.UI.Views
         public static void SetCheckForUpdatesMessageCallback(IPCMessageCallback implementation)
         {
             CheckForUpdatesMsgCallback = implementation;
+        }
+
+        /// <summary>
+        /// Set main window opening callback function
+        /// </summary>
+        /// <param name="implementation">delegate function implementation.</param>
+        public static void SetOpenMainWindowCallback(MainOpeningCallback implementation)
+        {
+            OpenMainWindowCallback = implementation;
+        }
+
+        /// <summary>
+        /// Set updating the general settings callback function
+        /// </summary>
+        /// <param name="implementation">delegate function implementation.</param>
+        public static void SetUpdatingGeneralSettingsCallback(UpdatingGeneralSettingsCallback implementation)
+        {
+            UpdateGeneralSettingsCallback = implementation;
         }
 
         /// <summary>
@@ -253,6 +292,24 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             {
                 Type pageType = selectedItem.GetValue(NavHelper.NavigateToProperty) as Type;
                 NavigationService.Navigate(pageType);
+            }
+        }
+
+        private void ReceiveMessage(JsonObject json)
+        {
+            if (json != null)
+            {
+                if (json.ToString().StartsWith("{\"ShowYourself\":"))
+                {
+                    if (json.ToString().EndsWith("\"flyout\"}"))
+                    {
+                        OpenFlyoutCallback();
+                    }
+                    else if (json.ToString().EndsWith("\"mainpage\"}"))
+                    {
+                        OpenMainWindowCallback();
+                    }
+                }
             }
         }
     }
