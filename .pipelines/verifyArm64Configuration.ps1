@@ -41,7 +41,7 @@ foreach ($project in $projects) {
     foreach ($slnConfig in $arm64SlnConfigs.FullName) {
         if ($project.ProjectConfigurations.$slnConfig.FullName -cne $slnConfig) {
             $errorTable[$project.ProjectName] += @(""`
-                | Select-Object @{n = "Configuration"; e = { $project.ProjectConfigurations.$slnConfig.FullName } },
+                | Select-Object @{n = "Configuration"; e = { $project.ProjectConfigurations.$slnConfig.FullName ?? "Missing platform" } },
                 @{n = "ExpectedConfiguration"; e = { $slnConfig } })
         }
     }
