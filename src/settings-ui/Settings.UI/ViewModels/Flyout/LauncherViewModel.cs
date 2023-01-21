@@ -131,5 +131,10 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         {
             SendIPCMessage("{\"bugreport\": 0 }");
         }
+
+        internal void KillRunner()
+        {
+            SendIPCMessage("{\"killrunner\": 0 }");
+        }
     }
 }

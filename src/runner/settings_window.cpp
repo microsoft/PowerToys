@@ -228,6 +228,14 @@ void dispatch_received_json(const std::wstring& json_to_parse)
             //    MessageBoxW(nullptr, bugreport_success.c_str(), L"PowerToys", MB_OK);
             // }
         }
+        else if (name == L"killrunner")
+        {
+            const auto pt_main_window = FindWindowW(pt_tray_icon_window_class, nullptr);
+            if (pt_main_window != nullptr)
+            {
+                SendMessageW(pt_main_window, WM_CLOSE, 0, 0);
+            }
+        }
     }
     return;
 }
