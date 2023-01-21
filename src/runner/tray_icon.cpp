@@ -30,6 +30,8 @@ namespace
 
     HMENU h_menu = nullptr;
     HMENU h_sub_menu = nullptr;
+    bool double_click_timer_running = false;
+    bool double_clicked = false;
 }
 
 // Struct to fill with callback and the data. The window_proc is responsible for cleaning it.
@@ -116,6 +118,15 @@ void handle_tray_command(HWND window, const WPARAM command_id, LPARAM lparam)
     }
 }
 
+void click_timer_elapsed()
+{
+    double_click_timer_running = false;
+    if (!double_clicked)
+    {
+        open_settings_window(std::nullopt, true);
+    }
+}
+
 LRESULT __stdcall tray_icon_window_proc(HWND window, UINT message, WPARAM wparam, LPARAM lparam)
 {
     switch (message)
@@ -170,11 +181,24 @@ LRESULT __stdcall tray_icon_window_proc(HWND window, UINT message, WPARAM wparam
             {
             case WM_LBUTTONUP:
             {
-                open_settings_window(std::nullopt, true);
+                // ignore event if this is the second click of a double click
+                if (!double_click_timer_running)
+                {
+                    // start timer for detecting single or double click
+                    double_click_timer_running = true;
+                    double_clicked = false;
+                    
+                    UINT doubleClickTime = GetDoubleClickTime();
+                    std::thread([doubleClickTime]() {
+                        std::this_thread::sleep_for(std::chrono::milliseconds(doubleClickTime));
+                        click_timer_elapsed();
+                    }).detach();
+                }
                 break;
             }
             case WM_LBUTTONDBLCLK:
             {
+                double_clicked = true;
                 open_settings_window(std::nullopt, false);
                 break;
             }

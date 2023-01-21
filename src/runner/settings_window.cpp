@@ -214,19 +214,19 @@ void dispatch_received_json(const std::wstring& json_to_parse)
         }
         else if (name == L"bugreport")
         {
-            // std::wstring bug_report_path = get_module_folderpath();
-            // bug_report_path += L"\\Tools\\PowerToys.BugReportTool.exe";
-            // SHELLEXECUTEINFOW sei{ sizeof(sei) };
-            // sei.fMask = { SEE_MASK_FLAG_NO_UI | SEE_MASK_NOASYNC | SEE_MASK_NOCLOSEPROCESS | SEE_MASK_NO_CONSOLE };
-            // sei.lpFile = bug_report_path.c_str();
-            // sei.nShow = SW_HIDE;
-            // if (ShellExecuteExW(&sei))
-            // {
-            //    WaitForSingleObject(sei.hProcess, INFINITE);
-            //    CloseHandle(sei.hProcess);
-            //    static const std::wstring bugreport_success = GET_RESOURCE_STRING(IDS_BUGREPORT_SUCCESS);
-            //    MessageBoxW(nullptr, bugreport_success.c_str(), L"PowerToys", MB_OK);
-            // }
+             std::wstring bug_report_path = get_module_folderpath();
+             bug_report_path += L"\\Tools\\PowerToys.BugReportTool.exe";
+             SHELLEXECUTEINFOW sei{ sizeof(sei) };
+             sei.fMask = { SEE_MASK_FLAG_NO_UI | SEE_MASK_NOASYNC | SEE_MASK_NOCLOSEPROCESS | SEE_MASK_NO_CONSOLE };
+             sei.lpFile = bug_report_path.c_str();
+             sei.nShow = SW_HIDE;
+             if (ShellExecuteExW(&sei))
+             {
+                WaitForSingleObject(sei.hProcess, INFINITE);
+                CloseHandle(sei.hProcess);
+                static const std::wstring bugreport_success = GET_RESOURCE_STRING(IDS_BUGREPORT_SUCCESS);
+                MessageBoxW(nullptr, bugreport_success.c_str(), L"PowerToys", MB_OK);
+             }
         }
         else if (name == L"killrunner")
         {

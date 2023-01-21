@@ -169,13 +169,15 @@ namespace Microsoft.PowerToys.Settings.UI
             // open flyout
             ShellPage.SetOpenFlyoutCallback(() =>
             {
-                if (App.GetFlyoutWindow() == null)
-                {
-                    App.SetFlyoutWindow(new FlyoutWindow());
-                }
-
                 this.DispatcherQueue.TryEnqueue(Microsoft.UI.Dispatching.DispatcherQueuePriority.Normal, () =>
-                    App.GetFlyoutWindow().Activate());
+                {
+                    if (App.GetFlyoutWindow() == null)
+                    {
+                        App.SetFlyoutWindow(new FlyoutWindow());
+                    }
+
+                    App.GetFlyoutWindow().Activate();
+                });
             });
 
             this.InitializeComponent();
