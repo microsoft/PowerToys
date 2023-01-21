@@ -194,6 +194,7 @@ CDeclaration
 CDEF
 cdpx
 CENTERALIGN
+ceq
 cguid
 changecursor
 Changemove
@@ -240,6 +241,7 @@ CMock
 CMONITORS
 cmpgt
 cmyk
+cne
 Cng
 cnt
 Cocklebiddy
