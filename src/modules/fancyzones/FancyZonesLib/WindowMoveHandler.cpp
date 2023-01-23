@@ -46,7 +46,6 @@ void WindowMoveHandler::MoveSizeStart(HWND window, HMONITOR monitor, POINT const
     {
         // Notifies user if unable to drag elevated window
         FancyZonesNotifications::WarnIfElevationIsRequired();
-        m_dragEnabled = false;
     }
     
     if (dragEnabled)

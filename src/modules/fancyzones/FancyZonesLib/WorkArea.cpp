@@ -651,14 +651,3 @@ LRESULT CALLBACK WorkArea::s_WndProc(HWND window, UINT message, WPARAM wparam, L
     return (thisRef != nullptr) ? thisRef->WndProc(message, wparam, lparam) :
                                   DefWindowProc(window, message, wparam, lparam);
 }
-
-std::shared_ptr<WorkArea> MakeWorkArea(HINSTANCE hinstance, const FancyZonesDataTypes::WorkAreaId& uniqueId, const FancyZonesDataTypes::WorkAreaId& parentUniqueId, const FancyZonesUtils::Rect& workAreaRect) noexcept
-{
-    auto self = std::make_shared<WorkArea>(hinstance, uniqueId, workAreaRect);
-    if (!self->Init(hinstance, parentUniqueId))
-    {
-        return nullptr;
-    }
-
-    return self;
-}
