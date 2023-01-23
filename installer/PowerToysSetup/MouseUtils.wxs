@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Wix xmlns="http://schemas.microsoft.com/wix/2006/wi"
+     xmlns:util="http://schemas.microsoft.com/wix/UtilExtension" >
+
+  <?include $(sys.CURRENTDIR)\Common.wxi?>
+
+  <Fragment>
+    <!-- MouseUtils -->
+    <DirectoryRef Id="MouseUtilsInstallFolder" FileSource="$(var.BinDir)modules\$(var.MouseUtilsProjectName)">
+      <Component Id="Module_FindMyMouse" Win64="yes">
+        <File Source="$(var.BinDir)modules\$(var.MouseUtilsProjectName)\PowerToys.FindMyMouse.dll" KeyPath="yes" />
+      </Component>
+      <Component Id="Module_MouseHighlighter" Win64="yes">
+        <File Source="$(var.BinDir)modules\$(var.MouseUtilsProjectName)\PowerToys.MouseHighlighter.dll" KeyPath="yes" />
+      </Component>
+      <Component Id="Module_MousePointerCrosshairs" Win64="yes">
+        <File Source="$(var.BinDir)modules\$(var.MouseUtilsProjectName)\PowerToys.MousePointerCrosshairs.dll" KeyPath="yes" />
+      </Component>
+    </DirectoryRef>
+
+    <ComponentGroup Id="MouseUtilsComponentGroup" Directory="INSTALLFOLDER">
+      <ComponentRef Id="Module_FindMyMouse"/>
+      <ComponentRef Id="Module_MouseHighlighter"/>
+      <ComponentRef Id="Module_MousePointerCrosshairs" />
+    </ComponentGroup>
+
+  </Fragment>
+</Wix>
