@@ -8,16 +8,16 @@ void Animation::reset()
 {
     start = std::chrono::high_resolution_clock::now();
 }
-void Animation::reset(double duration)
+void Animation::reset(double animation_duration)
 {
-    this->duration = duration;
+    duration = animation_duration;
     reset();
 }
-void Animation::reset(double duration, double start, double stop)
+void Animation::reset(double animation_duration, double animation_start, double animation_stop)
 {
-    start_value = start;
-    end_value = stop;
-    reset(duration);
+    start_value = animation_start;
+    end_value = animation_stop;
+    reset(animation_duration);
 }
 
 static double ease_out_expo(double t)

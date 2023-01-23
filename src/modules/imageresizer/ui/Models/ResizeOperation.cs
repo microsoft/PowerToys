@@ -27,7 +27,7 @@ namespace ImageResizer.Models
         private readonly string _destinationDirectory;
         private readonly Settings _settings;
 
-        // Filenames to avoid according to https://docs.microsoft.com/en-us/windows/win32/fileio/naming-a-file#file-and-directory-names
+        // Filenames to avoid according to https://learn.microsoft.com/windows/win32/fileio/naming-a-file#file-and-directory-names
         private static readonly string[] _avoidFilenames =
             {
                 "CON", "PRN", "AUX", "NUL",
@@ -85,10 +85,10 @@ namespace ImageResizer.Models
                     {
                         BitmapMetadata originalMetadata = (BitmapMetadata)originalFrame.Metadata;
 
-    #if DEBUG
+#if DEBUG
                         Debug.WriteLine($"### Processing metadata of file {_file}");
                         originalMetadata.PrintsAllMetadataToDebugOutput();
-    #endif
+#endif
 
                         var metadata = GetValidMetadata(originalMetadata, transformedBitmap, containerFormat);
 

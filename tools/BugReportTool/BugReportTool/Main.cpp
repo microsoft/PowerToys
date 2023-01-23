@@ -19,6 +19,7 @@
 #include "RegistryUtils.h"
 #include "EventViewer.h"
 #include "InstallationFolder.h"
+#include "ReportGPOValues.h"
 
 using namespace std;
 using namespace std::filesystem;
@@ -159,7 +160,7 @@ void ReportWindowsVersion(const filesystem::path& tmpDir)
 {
     auto versionReportPath = tmpDir;
     versionReportPath = versionReportPath.append("windows-version.txt");
-    OSVERSIONINFOEXW osInfo;
+    OSVERSIONINFOEXW osInfo{};
 
     try
     {
@@ -307,7 +308,6 @@ int wmain(int argc, wchar_t* argv[], wchar_t*)
     if (!DeleteFolder(reportDir))
     {
         printf("Failed to delete temp folder\n");
-        return 1;
     }
 
     try
@@ -332,7 +332,6 @@ int wmain(int argc, wchar_t* argv[], wchar_t*)
     catch (...)
     {
         printf("Failed to copy logs saved in LocalLow\n");
-        return 1;
     }
 
 #ifndef _DEBUG
@@ -356,6 +355,9 @@ int wmain(int argc, wchar_t* argv[], wchar_t*)
 
     // Write registry to the temporary folder
     ReportRegistry(reportDir);
+
+    // Write gpo policies to the temporary folder
+    ReportGPOValues(reportDir);
 
     // Write compatibility tab info to the temporary folder
     ReportCompatibilityTab(reportDir);

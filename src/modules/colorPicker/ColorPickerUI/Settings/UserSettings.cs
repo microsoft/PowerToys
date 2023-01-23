@@ -39,7 +39,7 @@ namespace ColorPicker.Settings
             _settingsUtils = new SettingsUtils();
             ChangeCursor = new SettingItem<bool>(true);
             ActivationShortcut = new SettingItem<string>(DefaultActivationShortcut);
-            CopiedColorRepresentation = new SettingItem<ColorRepresentationType>(ColorRepresentationType.HEX);
+            CopiedColorRepresentation = new SettingItem<string>(ColorRepresentationType.HEX.ToString());
             ActivationAction = new SettingItem<ColorPickerActivationAction>(ColorPickerActivationAction.OpenEditor);
             ColorHistoryLimit = new SettingItem<int>(20);
             ColorHistory.CollectionChanged += ColorHistory_CollectionChanged;
@@ -55,8 +55,10 @@ namespace ColorPicker.Settings
         {
             if (!_loadingColorsHistory)
             {
-                var settings = _settingsUtils.GetSettingsOrDefault<ColorPickerSettings>(ColorPickerModuleName);
+                var settings = _settingsUtils.GetSettingsOrDefault<ColorPickerSettings, ColorPickerSettingsVersion1>(ColorPickerModuleName, settingsUpgrader: ColorPickerSettings.UpgradeSettings);
+                ColorHistory.CollectionChanged -= ColorHistory_CollectionChanged;
                 settings.Properties.ColorHistory = ColorHistory.ToList();
+                ColorHistory.CollectionChanged += ColorHistory_CollectionChanged;
                 settings.Save(_settingsUtils);
             }
         }
@@ -65,7 +67,9 @@ namespace ColorPicker.Settings
 
         public SettingItem<bool> ChangeCursor { get; private set; }
 
-        public SettingItem<ColorRepresentationType> CopiedColorRepresentation { get; set; }
+        public SettingItem<string> CopiedColorRepresentation { get; set; }
+
+        public SettingItem<string> CopiedColorRepresentationFormat { get; set; }
 
         public SettingItem<ColorPickerActivationAction> ActivationAction { get; private set; }
 
@@ -73,7 +77,7 @@ namespace ColorPicker.Settings
 
         public SettingItem<int> ColorHistoryLimit { get; }
 
-        public ObservableCollection<string> VisibleColorFormats { get; private set; } = new ObservableCollection<string>();
+        public ObservableCollection<System.Collections.Generic.KeyValuePair<string, string>> VisibleColorFormats { get; private set; } = new ObservableCollection<System.Collections.Generic.KeyValuePair<string, string>>();
 
         public SettingItem<bool> ShowColorName { get; }
 
@@ -99,12 +103,18 @@ namespace ColorPicker.Settings
                                 defaultColorPickerSettings.Save(_settingsUtils);
                             }
 
-                            var settings = _settingsUtils.GetSettingsOrDefault<ColorPickerSettings>(ColorPickerModuleName);
+                            var settings = _settingsUtils.GetSettingsOrDefault<ColorPickerSettings, ColorPickerSettingsVersion1>(ColorPickerModuleName, settingsUpgrader: ColorPickerSettings.UpgradeSettings);
                             if (settings != null)
                             {
                                 ChangeCursor.Value = settings.Properties.ChangeCursor;
                                 ActivationShortcut.Value = settings.Properties.ActivationShortcut.ToString();
+                                if (settings.Properties.CopiedColorRepresentation == null)
+                                {
+                                    settings.Properties.CopiedColorRepresentation = "HEX";
+                                }
+
                                 CopiedColorRepresentation.Value = settings.Properties.CopiedColorRepresentation;
+                                CopiedColorRepresentationFormat = new SettingItem<string>(string.Empty);
                                 ActivationAction.Value = settings.Properties.ActivationAction;
                                 ColorHistoryLimit.Value = settings.Properties.ColorHistoryLimit;
                                 ShowColorName.Value = settings.Properties.ShowColorName;
@@ -126,9 +136,14 @@ namespace ColorPicker.Settings
                                 VisibleColorFormats.Clear();
                                 foreach (var item in settings.Properties.VisibleColorFormats)
                                 {
-                                    if (item.Value)
+                                    if (item.Value.Key)
                                     {
-                                        VisibleColorFormats.Add(item.Key);
+                                        VisibleColorFormats.Add(new System.Collections.Generic.KeyValuePair<string, string>(item.Key, item.Value.Value));
+                                    }
+
+                                    if (item.Key == CopiedColorRepresentation.Value)
+                                    {
+                                        CopiedColorRepresentationFormat.Value = item.Value.Value;
                                     }
                                 }
                             }
@@ -163,7 +178,7 @@ namespace ColorPicker.Settings
         public void SendSettingsTelemetry()
         {
             Logger.LogInfo("Sending settings telemetry");
-            var settings = _settingsUtils.GetSettingsOrDefault<ColorPickerSettings>(ColorPickerModuleName);
+            var settings = _settingsUtils.GetSettingsOrDefault<ColorPickerSettings, ColorPickerSettingsVersion1>(ColorPickerModuleName, settingsUpgrader: ColorPickerSettings.UpgradeSettings);
             var properties = settings?.Properties;
             if (properties == null)
             {

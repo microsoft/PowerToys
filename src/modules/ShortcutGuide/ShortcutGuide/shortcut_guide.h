@@ -9,7 +9,7 @@
 #include "Generated Files/resource.h"
 
 // We support only one instance of the overlay
-extern class OverlayWindow* instance;
+extern class OverlayWindow* overlay_window_instance;
 
 class TargetState;
 
@@ -58,7 +58,7 @@ private:
         static inline PCWSTR name = L"overlay_opacity";
         int value;
         int resourceId = IDS_SETTING_DESCRIPTION_OVERLAY_OPACITY;
-    } overlayOpacity;
+    } overlayOpacity{};
 
     struct Theme
     {
@@ -84,10 +84,17 @@ private:
         bool value;
     } shouldReactToPressedWinKey;
 
-    struct WindowsKeyPressTime
+    struct WindowsKeyPressTimeForGlobalWindowsShortcuts
     {
         static inline PCWSTR name = L"press_time";
-    } windowsKeyPressTime;
+        int value;
+    } windowsKeyPressTimeForGlobalWindowsShortcuts;
+
+    struct WindowsKeyPressTimeForTaskbarIconShortcuts
+    {
+        static inline PCWSTR name = L"press_time_for_taskbar_icon_shortcuts";
+        int value;
+    } windowsKeyPressTimeForTaskbarIconShortcuts;
 
     struct OpenShortcut
     {

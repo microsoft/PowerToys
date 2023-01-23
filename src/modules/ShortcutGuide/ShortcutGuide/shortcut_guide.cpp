@@ -20,7 +20,7 @@
 #include <common/hooks/LowlevelKeyboardEvent.h>
 
 // TODO: refactor singleton
-OverlayWindow* instance = nullptr;
+OverlayWindow* overlay_window_instance = nullptr;
 
 namespace
 {
@@ -86,7 +86,7 @@ namespace
     }
 
     const LPARAM eventActivateWindow = 1;
-    
+
     bool wasWinPressed = false;
     bool isWinPressed()
     {
@@ -132,17 +132,17 @@ namespace
         {
             event.lParam = reinterpret_cast<KBDLLHOOKSTRUCT*>(lParam);
             event.wParam = wParam;
-            
+
             if (event.lParam->vkCode == VK_ESCAPE)
             {
                 Logger::trace(L"ESC key was pressed");
-                instance->CloseWindow(HideWindowType::ESC_PRESSED);
+                overlay_window_instance->CloseWindow(HideWindowType::ESC_PRESSED);
             }
 
             if (wasWinPressed && !isKeyDown(event) && isWin(event.lParam->vkCode))
             {
                 Logger::trace(L"Win key was released");
-                instance->CloseWindow(HideWindowType::WIN_RELEASED);
+                overlay_window_instance->CloseWindow(HideWindowType::WIN_RELEASED);
             }
 
             if (isKeyDown(event) && isWin(event.lParam->vkCode))
@@ -153,7 +153,7 @@ namespace
             if (onlyWinPressed() && isKeyDown(event) && !isWin(event.lParam->vkCode))
             {
                 Logger::trace(L"Shortcut with win key was pressed");
-                instance->CloseWindow(HideWindowType::WIN_SHORTCUT_PRESSED);
+                overlay_window_instance->CloseWindow(HideWindowType::WIN_SHORTCUT_PRESSED);
             }
         }
 
@@ -164,14 +164,14 @@ namespace
     {
         switch (type)
         {
-            case HideWindowType::ESC_PRESSED:
-                return L"ESC_PRESSED";
-            case HideWindowType::WIN_RELEASED:
-                return L"WIN_RELEASED";
-            case HideWindowType::WIN_SHORTCUT_PRESSED:
-                return L"WIN_SHORTCUT_PRESSED";
-            case HideWindowType::THE_SHORTCUT_PRESSED:
-                return L"THE_SHORTCUT_PRESSED";
+        case HideWindowType::ESC_PRESSED:
+            return L"ESC_PRESSED";
+        case HideWindowType::WIN_RELEASED:
+            return L"WIN_RELEASED";
+        case HideWindowType::WIN_SHORTCUT_PRESSED:
+            return L"WIN_SHORTCUT_PRESSED";
+        case HideWindowType::THE_SHORTCUT_PRESSED:
+            return L"THE_SHORTCUT_PRESSED";
         }
 
         return L"";
@@ -180,8 +180,8 @@ namespace
 
 OverlayWindow::OverlayWindow(HWND activeWindow)
 {
-    instance = this;
-    this -> activeWindow = activeWindow;
+    overlay_window_instance = this;
+    this->activeWindow = activeWindow;
     app_name = GET_RESOURCE_STRING(IDS_SHORTCUT_GUIDE);
 
     Logger::info("Overlay Window is creating");
@@ -198,6 +198,19 @@ void OverlayWindow::ShowWindow()
     winkey_popup = std::make_unique<D2DOverlayWindow>();
     winkey_popup->apply_overlay_opacity(((float)overlayOpacity.value) / 100.0f);
     winkey_popup->set_theme(theme.value);
+
+    // The press time only takes effect when the shortcut guide is activated by pressing the win key.
+    if (shouldReactToPressedWinKey.value)
+    {
+        winkey_popup->apply_press_time_for_global_windows_shortcuts(windowsKeyPressTimeForGlobalWindowsShortcuts.value);
+        winkey_popup->apply_press_time_for_taskbar_icon_shortcuts(windowsKeyPressTimeForTaskbarIconShortcuts.value);
+    }
+    else
+    {
+        winkey_popup->apply_press_time_for_global_windows_shortcuts(0);
+        winkey_popup->apply_press_time_for_taskbar_icon_shortcuts(0);
+    }
+
     target_state = std::make_unique<TargetState>();
     try
     {
@@ -239,7 +252,7 @@ void OverlayWindow::CloseWindow(HideWindowType type, int mainThreadId)
 bool OverlayWindow::IsDisabled()
 {
     WCHAR exePath[MAX_PATH] = L"";
-    instance->get_exe_path(activeWindow, exePath);
+    overlay_window_instance->get_exe_path(activeWindow, exePath);
     if (wcslen(exePath) > 0)
     {
         return is_disabled_app(exePath);
@@ -254,12 +267,12 @@ OverlayWindow::~OverlayWindow()
     {
         event_waiter.reset();
     }
-    
+
     if (winkey_popup)
     {
         winkey_popup->hide();
     }
-    
+
     if (target_state)
     {
         target_state->exit();
@@ -270,7 +283,7 @@ OverlayWindow::~OverlayWindow()
     {
         winkey_popup.reset();
     }
-    
+
     if (keyboardHook)
     {
         UnhookWindowsHookEx(keyboardHook);
@@ -310,6 +323,8 @@ void OverlayWindow::init_settings()
     theme.value = settings.theme;
     disabledApps.value = settings.disabledApps;
     shouldReactToPressedWinKey.value = settings.shouldReactToPressedWinKey;
+    windowsKeyPressTimeForGlobalWindowsShortcuts.value = settings.windowsKeyPressTimeForGlobalWindowsShortcuts;
+    windowsKeyPressTimeForTaskbarIconShortcuts.value = settings.windowsKeyPressTimeForTaskbarIconShortcuts;
     update_disabled_apps();
 }
 
@@ -419,7 +434,15 @@ ShortcutGuideSettings OverlayWindow::GetSettings() noexcept
 
     try
     {
-        settings.windowsKeyPressTime = (int)properties.GetNamedObject(WindowsKeyPressTime::name).GetNamedNumber(L"value");
+        settings.windowsKeyPressTimeForGlobalWindowsShortcuts = (int)properties.GetNamedObject(WindowsKeyPressTimeForGlobalWindowsShortcuts::name).GetNamedNumber(L"value");
+    }
+    catch (...)
+    {
+    }
+
+    try
+    {
+        settings.windowsKeyPressTimeForTaskbarIconShortcuts = (int)properties.GetNamedObject(WindowsKeyPressTimeForTaskbarIconShortcuts::name).GetNamedNumber(L"value");
     }
     catch (...)
     {

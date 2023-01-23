@@ -1,24 +1,27 @@
 # Keyboard Manager module
 This file contains the documentation for the KeyboardManager PowerToy module which is called by the runner.
 ## Table of Contents:
-1. [Class members](#Class-members)
-2. [Enable/Disable](#Enable/disable)
-3. [Settings format](#Settings-format)
-4. [Loading settings](#Loading-settings)
-5. [Low level keyboard hook handler](#Low-level-keyboard-hook-handler)
-6. [Custom Action to launch KBM UI](#Custom-Action-to-launch-KBM-UI)
-7. [SendInput Special Scenarios](#SendInput-Special-Scenarios)
-    1. [Extended keys](#Extended-keys)
-    2. [Scan code](#Scan-code)
-8. [Special Scenarios](#Special-Scenarios)
-    1. [Dummy key events](#Dummy-key-events)
-    2. [Suppressing Num Lock in a keyboard hook](#Suppressing-Num-Lock-in-a-keyboard-hook)
-    3. [Modifier-Caps Lock interaction on Japanese IME keyboards](#Modifier-Caps-Lock-interaction-on-Japanese-IME-keyboards)
-    4. [UIPI Issues (not resolved)](#UIPI-Issues-(not-resolved))
-9. [Other remapping approaches](#Other-remapping-approaches)
-    1. [Registry approach](#Registry-approach)
-    2. [Driver approach](#Driver-approach)
-10. [Telemetry](#Telemetry)
+- [Keyboard Manager module](#keyboard-manager-module)
+  - [Table of Contents:](#table-of-contents)
+  - [Class members](#class-members)
+  - [Enable/Disable](#enabledisable)
+  - [Settings format](#settings-format)
+  - [Loading settings](#loading-settings)
+  - [Low level keyboard hook handler](#low-level-keyboard-hook-handler)
+  - [HandleKeyboardHookEvent](#handlekeyboardhookevent)
+  - [Custom Action to launch KBM UI](#custom-action-to-launch-kbm-ui)
+  - [SendInput Special Scenarios](#sendinput-special-scenarios)
+    - [Extended keys](#extended-keys)
+    - [Scan code](#scan-code)
+  - [Special Scenarios](#special-scenarios)
+    - [Dummy key events](#dummy-key-events)
+    - [Suppressing Num Lock in a keyboard hook](#suppressing-num-lock-in-a-keyboard-hook)
+    - [Modifier-Caps Lock interaction on Japanese IME keyboards](#modifier-caps-lock-interaction-on-japanese-ime-keyboards)
+    - [UIPI Issues (not resolved)](#uipi-issues-not-resolved)
+  - [Other remapping approaches](#other-remapping-approaches)
+    - [Registry approach](#registry-approach)
+    - [Driver approach](#driver-approach)
+  - [Telemetry](#telemetry)
 
 ## Class members
 The `KeyboardManager` module has [3 main class members](https://github.com/microsoft/PowerToys/blob/b80578b1b9a4b24c9945bddac33c771204280107/src/modules/keyboardmanager/dll/dllmain.cpp#L54-L61):
@@ -27,7 +30,7 @@ The `KeyboardManager` module has [3 main class members](https://github.com/micro
 - An object of type `KeyboardManagerState`. This object contains all the data related to remappings and is also used in the sense of a View Model as it used to communicate common data that is shared between the KBM UI and the backend. This class is described in more detail [here](keyboardmanagercommon.md#keyboardmanagerstate).
 
 ## Enable/Disable
-On enabling KBM, the low level keyboard hook is started, and it is unhooked on disable. This is done to allow users to manually restart KBM if some other application which registers a keyboard hook was launched after PowerToys, so that it can be brought back to the highest priority hook (as the last hook to be registered receives the input first as mentioned [here](https://docs.microsoft.com/en-us/windows/win32/winmsg/about-hooks#hook-procedures)).
+On enabling KBM, the low level keyboard hook is started, and it is unhooked on disable. This is done to allow users to manually restart KBM if some other application which registers a keyboard hook was launched after PowerToys, so that it can be brought back to the highest priority hook (as the last hook to be registered receives the input first as mentioned [here](https://learn.microsoft.com/windows/win32/winmsg/about-hooks#hook-procedures)).
 
 In addition to stopping the hook, any active KBM UI windows are also closed on disabling. This is done because the KBM UI uses the same keyboard hook for the Type button where you can type a key/shortcut, so if KBM is disabled the windows would not be completely functional.
 
@@ -96,7 +99,7 @@ KBM uses two sets of settings files.
         }
 
     - `originalKeys` stores the key/shortcut which is to be pressed for the remap, and `newKeys` stores the key/shortcut which is to be executed.
-    - Both contain semi-colon separated virtual key codes. For `remapKeys`, `originalKeys` must have only one key code, whereas for `remapShortcuts` it must have atleast two key codes.
+    - Both contain semi-colon separated virtual key codes. For `remapKeys`, `originalKeys` must have only one key code, whereas for `remapShortcuts` it must have at least two key codes.
     - `inProcess` sub-key was added in `remapKeys` because there was a possibility of adding the registry based remapping approach (used by [SharpKeys](https://github.com/randyrants/sharpkeys)), so that would be under a separate sub-key while `inProcess` would be for keyboard hook based remaps. This was deprioritized as there weren't enough requests for it.
     - `remapShortcuts` is split into `global` and `appSpecific`, where `global` remaps would apply to all applications, whereas `appSpecific` would apply on when the `targetApp` is in focus. `targetApp` must be the process name of the app (with or without it's extension), e.g. `msedge` or `msedge.exe` for Microsoft Edge.
 
@@ -129,7 +132,7 @@ KBM uses the [`call_custom_action`](https://github.com/microsoft/PowerToys/blob/
 ## SendInput Special Scenarios
 
 ### Extended keys
-Certain keys such as the arrow keys, <kbd>right Ctrl/Alt</kbd>, and <kbd>Del/Home/Ins</kbd>, etc need to be sent with the `KEYEVENTF_EXTENDEDKEY` flag because otherwise the NumPad versions get sent, which can cause weird behavior when NumLock is on. The code can be found [here](https://github.com/microsoft/PowerToys/blob/b80578b1b9a4b24c9945bddac33c771204280107/src/modules/keyboardmanager/common/Helpers.cpp#L190-L194) and the list of extended keys in code can be found [here](https://github.com/microsoft/PowerToys/blob/b80578b1b9a4b24c9945bddac33c771204280107/src/modules/keyboardmanager/common/Helpers.cpp#L73-L98). Docs about extended keys can be found [here](https://docs.microsoft.com/en-us/windows/win32/inputdev/about-keyboard-input#extended-key-flag). 
+Certain keys such as the arrow keys, <kbd>right Ctrl/Alt</kbd>, and <kbd>Del/Home/Ins</kbd>, etc need to be sent with the `KEYEVENTF_EXTENDEDKEY` flag because otherwise the NumPad versions get sent, which can cause weird behavior when NumLock is on. The code can be found [here](https://github.com/microsoft/PowerToys/blob/b80578b1b9a4b24c9945bddac33c771204280107/src/modules/keyboardmanager/common/Helpers.cpp#L190-L194) and the list of extended keys in code can be found [here](https://github.com/microsoft/PowerToys/blob/b80578b1b9a4b24c9945bddac33c771204280107/src/modules/keyboardmanager/common/Helpers.cpp#L73-L98). Docs about extended keys can be found [here](https://learn.microsoft.com/windows/win32/inputdev/about-keyboard-input#extended-key-flag). 
 
 The weird behavior that is caused by this can be found at these issues:
 - https://github.com/microsoft/PowerToys/issues/3478
@@ -173,13 +176,13 @@ For example, while [remapping <kbd>Ctrl</kbd> to <kbd>Caps Lock</kbd>](https://g
 While the above work around fixes most of the cases, there are still some scenarios where the modifier can get stuck, mentioned at this [comment](https://github.com/microsoft/PowerToys/issues/3397#issuecomment-663729278), which is why the issue is still open. This occurs if a modifier is pressed after the remap has been invoked before releasing the remapped key and it is a harder scenario to solve which requires refactoring the single key remap code.
 
 ### UIPI Issues (not resolved)
-`SendInput` does not work directly with certain key codes such as Play/Pause Media, Calculator key, etc as it requires UAC privileges to be injected to the OS and accordingly play the active media app or launch the Calculator app. In order to resolve this the correct approach is that the executable which calls `SendInput` needs to have the [UIAccess flag](https://docs.microsoft.com/en-us/windows/win32/winauto/uiauto-securityoverview) set to true, which will also avoid the requirement of KBM having to run as administrator to intercept key events when an elevated window is in focus. The UIAccess flag has many constraints such as it must be a signed executable and must be located in a protected path like Program Files. Since KBM currently runs out of the runner process, it would make more sense to do this work after KBM is moved to a separate executable, and it could be enabled by a separate toggle in settings only if PowerToys is installed in Program Files. [This comment](https://github.com/microsoft/PowerToys/issues/3192#issuecomment-646323661) has more details on this approach and (this)[https://github.com/microsoft/PowerToys/issues/3255] is the tracking issue.
+`SendInput` does not work directly with certain key codes such as Play/Pause Media, Calculator key, etc as it requires UAC privileges to be injected to the OS and accordingly play the active media app or launch the Calculator app. In order to resolve this the correct approach is that the executable which calls `SendInput` needs to have the [UIAccess flag](https://learn.microsoft.com/windows/win32/winauto/uiauto-securityoverview) set to true, which will also avoid the requirement of KBM having to run as administrator to intercept key events when an elevated window is in focus. The UIAccess flag has many constraints such as it must be a signed executable and must be located in a protected path like Program Files. Since KBM currently runs out of the runner process, it would make more sense to do this work after KBM is moved to a separate executable, and it could be enabled by a separate toggle in settings only if PowerToys is installed in Program Files. [This comment](https://github.com/microsoft/PowerToys/issues/3192#issuecomment-646323661) has more details on this approach and (this)[https://github.com/microsoft/PowerToys/issues/3255] is the tracking issue.
 
 ## Other remapping approaches
 Other approaches for remapping which were deprioritized are:
 
 ### Registry approach
-This method is used by [SharpKeys](https://github.com/randyrants/sharpkeys) and involves using the [Microsoft Keyboard Scancode mapper registry key](https://github.com/randyrants/sharpkeys) to remap keys based on their scan codes. This has the advantage of being applied in all scenarios and not facing any elevation or UAC issues, however the disadvantages are that for modifying the settings the process must run elevated (as it modifies HKLM registry) and it requires a reboot to get applied. Another issue which is an advantage/disadvantage for users is that the process does not need to be running, so the remaps are applied all the time, including at the password prompt on logging in to the user's Windows account, which could get a user stuck if they orphaned a key in their password. This registry doesn't have any support for remapping shortcuts either, so the hook approach was prioritized over this.
+This method is used by [SharpKeys](https://github.com/randyrants/sharpkeys) and involves using the [Microsoft Keyboard Scancode mapper registry key](https://github.com/randyrants/sharpkeys) to remap keys based on their scan codes. This has the advantage of being applied in all scenarios and not facing any elevation or UAC issues, however the disadvantages are that for modifying the settings the process must run elevated (as it modifies HKLM registry) and it requires a reboot to get applied. Another issue which is an advantage/disadvantage for users is that the process does not need to be running, so the remaps are applied all the time, including at the password prompt on logging into the user's Windows account, which could get a user stuck if they orphaned a key in their password. This registry doesn't have any support for remapping shortcuts either, so the hook approach was prioritized over this.
 
 ### Driver approach
 Using a driver approach has the benefit of not depending on precedence orders as KBM could always run before low level hooks, and it also has the benefit of differentiating between different keyboards, allowing [multi keyboard-specific remaps](https://github.com/microsoft/PowerToys/issues/1460). The disadvantages are however that any bug or crash could have system level consequences. [Interception](https://github.com/oblitum/Interception) is an open source driver that could be used for implementing this. The approach was deprioritized due to the potential side effects.

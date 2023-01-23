@@ -18,7 +18,7 @@ namespace KeyboardEventHandlers
         // Use the suppress flag to ensure these are not intercepted by any remapped keys or shortcuts
         Helpers::SetKeyEvent(keyEventList, 0, INPUT_KEYBOARD, VK_NUMLOCK, KEYEVENTF_KEYUP, KeyboardManagerConstants::KEYBOARDMANAGER_SUPPRESS_FLAG);
         Helpers::SetKeyEvent(keyEventList, 1, INPUT_KEYBOARD, VK_NUMLOCK, 0, KeyboardManagerConstants::KEYBOARDMANAGER_SUPPRESS_FLAG);
-        UINT res = ii.SendVirtualInput((UINT)key_count, keyEventList, sizeof(INPUT));
+        ii.SendVirtualInput((UINT)key_count, keyEventList, sizeof(INPUT));
         delete[] keyEventList;
     }
 }

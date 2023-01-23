@@ -330,6 +330,12 @@
   <data name="FileCreationButton.[using:Microsoft.UI.Xaml.Controls]ToolTipService.ToolTip" xml:space="preserve">
     <value>File creation date and time help</value>
   </data>
+  <data name="ErrorMessage_FileNameTooLong" xml:space="preserve">
+    <value>File name is too long</value>
+  </data>
+  <data name="ErrorMessage_InvalidChar" xml:space="preserve">
+    <value>File name contains invalid character(s):&#xD;&#xA; &gt; &lt; | " : ? * \ /</value>
+  </data>
 
 
 </root>

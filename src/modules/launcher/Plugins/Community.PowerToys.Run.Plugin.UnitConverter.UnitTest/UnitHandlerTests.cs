@@ -14,7 +14,7 @@ namespace Community.PowerToys.Run.Plugin.UnitConverter.UnitTest
         public void HandleTemperature()
         {
             var convertModel = new ConvertModel(1, "DegreeCelsius", "DegreeFahrenheit");
-            double result = UnitHandler.ConvertInput(convertModel, UnitsNet.QuantityType.Temperature);
+            double result = UnitHandler.ConvertInput(convertModel, UnitsNet.Temperature.Info);
             Assert.AreEqual(33.79999999999999d, result);
         }
 
@@ -22,7 +22,7 @@ namespace Community.PowerToys.Run.Plugin.UnitConverter.UnitTest
         public void HandleLength()
         {
             var convertModel = new ConvertModel(1, "meter", "centimeter");
-            double result = UnitHandler.ConvertInput(convertModel, UnitsNet.QuantityType.Length);
+            double result = UnitHandler.ConvertInput(convertModel, UnitsNet.Length.Info);
             Assert.AreEqual(100, result);
         }
 
@@ -30,15 +30,23 @@ namespace Community.PowerToys.Run.Plugin.UnitConverter.UnitTest
         public void HandleNanometerToKilometer()
         {
             var convertModel = new ConvertModel(1, "nanometer", "kilometer");
-            double result = UnitHandler.ConvertInput(convertModel, UnitsNet.QuantityType.Length);
+            double result = UnitHandler.ConvertInput(convertModel, UnitsNet.Length.Info);
             Assert.AreEqual(1E-12, result);
+        }
+
+        [TestMethod]
+        public void HandlePlurals()
+        {
+            var convertModel = new ConvertModel(1, "meters", "centimeters");
+            double result = UnitHandler.ConvertInput(convertModel, UnitsNet.Length.Info);
+            Assert.AreEqual(100, result);
         }
 
         [TestMethod]
         public void HandlesByteCapitals()
         {
             var convertModel = new ConvertModel(1, "kB", "kb");
-            double result = UnitHandler.ConvertInput(convertModel, UnitsNet.QuantityType.Information);
+            double result = UnitHandler.ConvertInput(convertModel, UnitsNet.Information.Info);
             Assert.AreEqual(8, result);
         }
 

@@ -19,7 +19,8 @@ namespace Microsoft.PowerToys.Run.Plugin.Calculator
             @"pi|" +
             @"==|~=|&&|\|\||" +
             @"e|[0-9]|0x[0-9a-fA-F]+|0b[01]+|[\+\-\*\/\^\., ""]|[\(\)\|\!\[\]]" +
-            @")+$", RegexOptions.Compiled);
+            @")+$",
+            RegexOptions.Compiled);
 
         public static bool InputValid(string input)
         {
@@ -38,9 +39,9 @@ namespace Microsoft.PowerToys.Run.Plugin.Calculator
                 return false;
             }
 
-            // If the input ends with a binary operator then it is not a valid input to mages and the Interpret function would throw an exception.
+            // If the input ends with a binary operator then it is not a valid input to mages and the Interpret function would throw an exception. Because we expect here that the user has not finished typing we block those inputs.
             string trimmedInput = input.TrimEnd();
-            if (trimmedInput.EndsWith('+') || trimmedInput.EndsWith('-') || trimmedInput.EndsWith('*') || trimmedInput.EndsWith('|') || trimmedInput.EndsWith('\\') || trimmedInput.EndsWith('^') || trimmedInput.EndsWith('=') || trimmedInput.EndsWith('&'))
+            if (trimmedInput.EndsWith('+') || trimmedInput.EndsWith('-') || trimmedInput.EndsWith('*') || trimmedInput.EndsWith('|') || trimmedInput.EndsWith('\\') || trimmedInput.EndsWith('^') || trimmedInput.EndsWith('=') || trimmedInput.EndsWith('&') || trimmedInput.EndsWith('/') || trimmedInput.EndsWith('%'))
             {
                 return false;
             }

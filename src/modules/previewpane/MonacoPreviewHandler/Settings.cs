@@ -38,6 +38,26 @@ namespace Microsoft.PowerToys.PreviewHandler.Monaco
         }
 
         /// <summary>
+        /// Gets a value indicating whether to try formatting the file. Set by PT settings.
+        /// </summary>
+        public bool TryFormat
+        {
+            get
+            {
+                try
+                {
+                    return moduleSettings.GetSettings<PowerPreviewSettings>(PowerPreviewSettings.ModuleName).Properties.MonacoPreviewTryFormat;
+                }
+                catch (FileNotFoundException)
+                {
+                    // Couldn't read the settings.
+                    // Assume default of false.
+                    return false;
+                }
+            }
+        }
+
+        /// <summary>
         /// Max file size for displaying (in bytes).
         /// </summary>
         private readonly long _maxFileSize = 50000;

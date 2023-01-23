@@ -16,14 +16,14 @@ public:
 
     void MoveSizeStart(HWND window, HMONITOR monitor, POINT const& ptScreen, const std::unordered_map<HMONITOR, std::shared_ptr<WorkArea>>& workAreaMap) noexcept;
     void MoveSizeUpdate(HMONITOR monitor, POINT const& ptScreen, const std::unordered_map<HMONITOR, std::shared_ptr<WorkArea>>& workAreaMap) noexcept;
-    void MoveSizeEnd(HWND window, POINT const& ptScreen, const std::unordered_map<HMONITOR, std::shared_ptr<WorkArea>>& workAreaMap) noexcept;
+    void MoveSizeEnd(HWND window, const std::unordered_map<HMONITOR, std::shared_ptr<WorkArea>>& workAreaMap) noexcept;
 
     void MoveWindowIntoZoneByIndexSet(HWND window, const ZoneIndexSet& indexSet, std::shared_ptr<WorkArea> workArea) noexcept;
     bool MoveWindowIntoZoneByDirectionAndIndex(HWND window, DWORD vkCode, bool cycle, std::shared_ptr<WorkArea> workArea) noexcept;
     bool MoveWindowIntoZoneByDirectionAndPosition(HWND window, DWORD vkCode, bool cycle, std::shared_ptr<WorkArea> workArea) noexcept;
     bool ExtendWindowByDirectionAndPosition(HWND window, DWORD vkCode, std::shared_ptr<WorkArea> workArea) noexcept;
 
-    void UpdateWindowsPositions(const std::unordered_map<HMONITOR, std::shared_ptr<WorkArea>>& activeWorkAreas) noexcept;
+    void AssignWindowsToZones(const std::unordered_map<HMONITOR, std::shared_ptr<WorkArea>>& activeWorkAreas, bool updatePositions) noexcept;
     
     inline void OnMouseDown() noexcept
     {
@@ -60,7 +60,6 @@ private:
         bool hasNoVisibleOwner = false;
     };
 
-    void WarnIfElevationIsRequired(HWND window) noexcept;
     void UpdateDragState() noexcept;
 
     void SetWindowTransparency(HWND window) noexcept;
@@ -76,7 +75,8 @@ private:
 
     std::atomic<bool> m_mouseState;
     SecondaryMouseButtonsHook m_mouseHook;
-    KeyState<VK_LSHIFT, VK_RSHIFT> m_shiftKeyState;
+    KeyState<VK_LSHIFT> m_leftShiftKeyState;
+    KeyState<VK_RSHIFT> m_rightShiftKeyState;
     KeyState<VK_LCONTROL, VK_RCONTROL> m_ctrlKeyState;
     std::function<void()> m_keyUpdateCallback;
 };

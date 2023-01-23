@@ -6,6 +6,7 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO.Abstractions;
+using System.Text.Json.Serialization;
 using System.Windows;
 using System.Windows.Media;
 
@@ -41,6 +42,12 @@ namespace Wox.Plugin
                 _title = value.Replace("\n", " ", StringComparison.Ordinal);
             }
         }
+
+        public bool FromHistory { get; set; }
+
+        public string HistoryPluginID { get; set; }
+
+        public string HistoryTitle { get; set; }
 
         public string SubTitle { get; set; }
 
@@ -96,8 +103,10 @@ namespace Wox.Plugin
         public IconDelegate Icon { get; set; }
 
         /// <summary>
-        /// Gets or sets return true to hide wox after select result
+        /// Gets or sets the result action.
+        /// Return <c>true</c> to hide PowerToys Run after the result has been selected.
         /// </summary>
+        [JsonIgnore]
         public Func<ActionContext, bool> Action { get; set; }
 
         public int Score { get; set; }
@@ -112,16 +121,12 @@ namespace Wox.Plugin
             SubTitleHighlightData = subTitleHighlightData;
         }
 
-#pragma warning disable CA2227 // Collection properties should be read only
         public IList<int> TitleHighlightData { get; set; }
-#pragma warning restore CA2227 // Collection properties should be read only
 
         /// <summary>
         /// Gets or sets a list of indexes for the characters to be highlighted in SubTitle
         /// </summary>
-#pragma warning disable CA2227 // Collection properties should be read only
         public IList<int> SubTitleHighlightData { get; set; }
-#pragma warning restore CA2227 // Collection properties should be read only
 
         /// <summary>
         /// Gets or sets only results that originQuery match with current query will be displayed in the panel

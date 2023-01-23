@@ -7,11 +7,13 @@
 
 #include <common/utils/modulesRegistry.h>
 #include <common/SettingsAPI/settings_objects.h>
+#include <common/utils/gpo.h>
 
 struct FileExplorerModule
 {
     std::wstring settingName;
     std::wstring settingDescription;
+    powertoys_gpo::gpo_rule_configured_t (*checkModuleGPOEnabledRuleFunction)();
     registry::ChangeSet registryChanges;
 };
 

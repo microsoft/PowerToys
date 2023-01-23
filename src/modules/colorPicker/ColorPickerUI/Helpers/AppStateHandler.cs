@@ -212,9 +212,7 @@ namespace ColorPicker.Helpers
             _hwndSource = hwndSource;
         }
 
-#pragma warning disable CA1801 // Review unused parameters
         public IntPtr ProcessWindowMessages(IntPtr hwnd, int msg, IntPtr wparam, IntPtr lparam, ref bool handled)
-#pragma warning restore CA1801 // Review unused parameters
         {
             switch (msg)
             {
@@ -227,11 +225,14 @@ namespace ColorPicker.Helpers
                     {
                         // If escape key is blocked it means a submenu is open.
                         // Send the escape key to the Window to close that submenu.
-                        // Description for LPARAM in https://docs.microsoft.com/en-us/windows/win32/inputdev/wm-keyup#parameters
+                        // Description for LPARAM in https://learn.microsoft.com/windows/win32/inputdev/wm-keyup#parameters
                         // It's basically some modifiers + scancode for escape (1) + number of repetitions (1)
                         handled = true;
                         handled &= NativeMethods.PostMessage(_hwndSource.Handle, NativeMethods.WM_KEYDOWN, (IntPtr)NativeMethods.VK_ESCAPE, (IntPtr)0x00010001);
-                        handled &= NativeMethods.PostMessage(_hwndSource.Handle, NativeMethods.WM_KEYUP, (IntPtr)NativeMethods.VK_ESCAPE, (IntPtr)0xC0010001);
+
+                        // Need to make the value unchecked as a workaround for changes introduced in .NET 7
+                        // https://github.com/dotnet/roslyn/blob/main/docs/compilers/CSharp/Compiler%20Breaking%20Changes%20-%20DotNet%207.md#checked-operators-on-systemintptr-and-systemuintptr
+                        handled &= NativeMethods.PostMessage(_hwndSource.Handle, NativeMethods.WM_KEYUP, (IntPtr)NativeMethods.VK_ESCAPE, unchecked((IntPtr)0xC0010001));
                     }
 
                     break;

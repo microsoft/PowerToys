@@ -4,7 +4,7 @@
 #include <FancyZonesLib/util.h>
 
 // Mapping zone id to zone
-using ZonesMap = std::map<ZoneIndex, winrt::com_ptr<IZone>>;
+using ZonesMap = std::map<ZoneIndex, Zone>;
 
 namespace FancyZonesDataTypes
 {

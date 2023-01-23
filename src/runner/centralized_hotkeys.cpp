@@ -103,7 +103,7 @@ namespace CentralizedHotkeys
             {
                 actions[shortcut].begin()->action(shortcut.modifiersMask, shortcut.vkCode);
             }
-            catch(std::exception ex)
+            catch(std::exception& ex)
             {
                 Logger::error("Failed to execute hotkey's action. {}", ex.what());
             }

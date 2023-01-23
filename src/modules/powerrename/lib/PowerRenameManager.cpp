@@ -727,7 +727,7 @@ DWORD WINAPI CPowerRenameManager::s_fileOpWorkerThread(_In_ void* pv)
 {
     if (SUCCEEDED(CoInitializeEx(nullptr, COINIT_APARTMENTTHREADED | COINIT_DISABLE_OLE1DDE)))
     {
-        WorkerThreadData* pwtd = reinterpret_cast<WorkerThreadData*>(pv);
+        WorkerThreadData* pwtd = static_cast<WorkerThreadData*>(pv);
         if (pwtd)
         {
             bool closeUIWindowAfterRenaming = true;
@@ -914,7 +914,7 @@ DWORD WINAPI CPowerRenameManager::s_regexWorkerThread(_In_ void* pv)
     try
     {
         winrt::check_hresult(CoInitializeEx(nullptr, COINIT_APARTMENTTHREADED | COINIT_DISABLE_OLE1DDE));
-        WorkerThreadData* pwtd = reinterpret_cast<WorkerThreadData*>(pv);
+        WorkerThreadData* pwtd = static_cast<WorkerThreadData*>(pv);
         if (pwtd)
         {
             PostMessage(pwtd->hwndManager, SRM_REGEX_STARTED, GetCurrentThreadId(), 0);
@@ -1113,6 +1113,36 @@ DWORD WINAPI CPowerRenameManager::s_regexWorkerThread(_In_ void* pv)
                             newNameToUse = uniqueName;
                         }
                         itemEnumIndex++;
+                    }
+
+                    spItem->PutStatus(PowerRenameItemRenameStatus::ShouldRename);
+                    if (newNameToUse != nullptr)
+                    {
+                        std::wstring newNameToUseWstr{ newNameToUse };
+                        PWSTR path = nullptr;
+                        spItem->GetPath(&path);
+
+                        // Following characters cannot be used for file names.
+                        // Ref https://learn.microsoft.com/windows/win32/fileio/naming-a-file#naming-conventions
+                        if (newNameToUseWstr.contains('<') ||
+                            newNameToUseWstr.contains('>') ||
+                            newNameToUseWstr.contains(':') ||
+                            newNameToUseWstr.contains('"') ||
+                            newNameToUseWstr.contains('\\') ||
+                            newNameToUseWstr.contains('/') ||
+                            newNameToUseWstr.contains('|') ||
+                            newNameToUseWstr.contains('?') ||
+                            newNameToUseWstr.contains('*'))
+                        {
+                            spItem->PutStatus(PowerRenameItemRenameStatus::ItemNameInvalidChar);
+                        }
+                        // Max file path is 260 and max folder path is 247.
+                        // Ref https://learn.microsoft.com/windows/win32/fileio/maximum-file-path-limitation?tabs=registry
+                        else if ((isFolder && lstrlen(path) + (lstrlen(newNameToUse) - lstrlen(originalName)) > 247) ||
+                            lstrlen(path) + (lstrlen(newNameToUse) - lstrlen(originalName)) > 260)
+                        {
+                            spItem->PutStatus(PowerRenameItemRenameStatus::ItemNameTooLong);
+                        }
                     }
 
                     winrt::check_hresult(spItem->PutNewName(newNameToUse));

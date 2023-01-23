@@ -120,7 +120,7 @@ void ShortcutControl::AddNewShortcutControlRow(StackPanel& parent, std::vector<s
     row.Children().Append(target);
 
     targetAppTextBox.Width(EditorConstants::ShortcutTableDropDownWidth);
-    targetAppTextBox.PlaceholderText(KeyboardManagerEditorStrings::DefaultAppName);
+    targetAppTextBox.PlaceholderText(KeyboardManagerEditorStrings::DefaultAppName());
     targetAppTextBox.Text(targetAppName);
 
     // GotFocus handler will be called whenever the user tabs into or clicks on the textbox
@@ -167,7 +167,7 @@ void ShortcutControl::AddNewShortcutControlRow(StackPanel& parent, std::vector<s
             shortcutRemapBuffer[rowIndex].first[1] = tempShortcut;
         }
         std::wstring newText = targetAppTextBox.Text().c_str();
-        std::wstring lowercaseDefAppName = KeyboardManagerEditorStrings::DefaultAppName;
+        std::wstring lowercaseDefAppName = KeyboardManagerEditorStrings::DefaultAppName();
         std::transform(newText.begin(), newText.end(), newText.begin(), towlower);
         std::transform(lowercaseDefAppName.begin(), lowercaseDefAppName.end(), lowercaseDefAppName.begin(), towlower);
         if (newText == lowercaseDefAppName)
@@ -291,7 +291,7 @@ void ShortcutControl::CreateDetectShortcutWindow(winrt::Windows::Foundation::IIn
     // ContentDialog for detecting shortcuts. This is the parent UI element.
     ContentDialog detectShortcutBox;
 
-    // ContentDialog requires manually setting the XamlRoot (https://docs.microsoft.com/en-us/uwp/api/windows.ui.xaml.controls.contentdialog#contentdialog-in-appwindow-or-xaml-islands)
+    // ContentDialog requires manually setting the XamlRoot (https://learn.microsoft.com/uwp/api/windows.ui.xaml.controls.contentdialog#contentdialog-in-appwindow-or-xaml-islands)
     detectShortcutBox.XamlRoot(xamlRoot);
     detectShortcutBox.Title(box_value(GET_RESOURCE_STRING(IDS_TYPESHORTCUT_TITLE)));
     detectShortcutBox.IsPrimaryButtonEnabled(false);

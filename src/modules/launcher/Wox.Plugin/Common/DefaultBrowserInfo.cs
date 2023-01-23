@@ -114,6 +114,18 @@ namespace Wox.Plugin.Common
                         commandPattern = GetIndirectString(commandPattern);
                     }
 
+                    // HACK: for firefox installed through Microsoft store
+                    // When installed through Microsoft Firefox the commandPattern does not have
+                    // quotes for the path. As the Program Files does have a space
+                    // the extracted path would be invalid, here we add the quotes to fix it
+                    const string FirefoxExecutableName = "firefox.exe";
+                    if (commandPattern.Contains(FirefoxExecutableName) && commandPattern.Contains(@"\WindowsApps\") && (!commandPattern.StartsWith('\"')))
+                    {
+                        var pathEndIndex = commandPattern.IndexOf(FirefoxExecutableName, StringComparison.Ordinal) + FirefoxExecutableName.Length;
+                        commandPattern = commandPattern.Insert(pathEndIndex, "\"");
+                        commandPattern = commandPattern.Insert(0, "\"");
+                    }
+
                     if (commandPattern.StartsWith('\"'))
                     {
                         var endQuoteIndex = commandPattern.IndexOf('\"', 1);

@@ -273,4 +273,13 @@ namespace FancyZonesUtils
 
         return windowRect;
     }
+
+    void SwallowKey(const WORD key) noexcept
+    {
+        INPUT inputKey[1] = {};
+        inputKey[0].type = INPUT_KEYBOARD;
+        inputKey[0].ki.wVk = key;
+        inputKey[0].ki.dwFlags = KEYEVENTF_KEYUP;
+        SendInput(1, inputKey, sizeof(INPUT));
+    }
 }

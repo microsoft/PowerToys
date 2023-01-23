@@ -1,0 +1,61 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Midl Include="PowerToys.MeasureToolCore.idl" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="pch.cpp" />
+    <ClCompile Include="$(GeneratedFilesDir)module.g.cpp" />
+    <ClCompile Include="ScreenCapturing.cpp" />
+    <ClCompile Include="OverlayUI.cpp" />
+    <ClCompile Include="BGRATextureView.cpp" />
+    <ClCompile Include="EdgeDetection.cpp" />
+    <ClCompile Include="Settings.cpp" />
+    <ClCompile Include="D2DState.cpp" />
+    <ClCompile Include="BoundsToolOverlayUI.cpp" />
+    <ClCompile Include="MeasureToolOverlayUI.cpp" />
+    <ClCompile Include="..\MeasureToolModuleInterface\trace.cpp" />
+    <ClCompile Include="Clipboard.cpp" />
+    <ClCompile Include="PerGlyphOpacityTextRender.cpp" />
+    <ClCompile Include="Measurement.cpp" />
+    <ClCompile Include="DxgiAPI.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="pch.h" />
+    <ClInclude Include="ScreenCapturing.h" />
+    <ClInclude Include="OverlayUI.h" />
+    <ClInclude Include="BGRATextureView.h" />
+    <ClInclude Include="EdgeDetection.h" />
+    <ClInclude Include="ToolState.h" />
+    <ClInclude Include="Settings.h" />
+    <ClInclude Include="BoundsToolOverlayUI.h" />
+    <ClInclude Include="D2DState.h" />
+    <ClInclude Include="MeasureToolOverlayUI.h" />
+    <ClInclude Include="constants.h" />
+    <ClInclude Include="..\MeasureToolModuleInterface\trace.h" />
+    <ClInclude Include="Clipboard.h" />
+    <ClInclude Include="PerGlyphOpacityTextRender.h" />
+    <ClInclude Include="resource.h" />
+    <ClInclude Include="CoordinateSystemConversion.h" />
+    <ClInclude Include="Measurement.h" />
+    <ClInclude Include="DxgiAPI.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="Assets">
+      <UniqueIdentifier>{e48dc53e-40b1-40cb-970a-f89935452892}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <Manifest Include="app.manifest" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="packages.config" />
+    <None Include="MeasureToolCore.def" />
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="PowerToys.MeasureToolCore.rc" />
+  </ItemGroup>
+  <ItemGroup>
+    <Natvis Include="$(MSBuildThisFileDirectory)..\..\natvis\wil.natvis" />
+  </ItemGroup>
+</Project>

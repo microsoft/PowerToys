@@ -2,71 +2,35 @@
 #include "WindowMoveHandler.h"
 
 #include <common/display/dpi_aware.h>
-#include <common/notifications/notifications.h>
-#include <common/notifications/dont_show_again.h>
+#include <common/logger/logger.h>
 #include <common/utils/elevation.h>
-#include <common/utils/resources.h>
+#include <common/utils/winapi_error.h>
 
 #include "FancyZonesData/AppZoneHistory.h"
 #include "Settings.h"
 #include "WorkArea.h"
 #include <FancyZonesLib/FancyZonesWindowProcessing.h>
+#include <FancyZonesLib/NotificationUtil.h>
 #include <FancyZonesLib/WindowUtils.h>
-
-// Non-Localizable strings
-namespace NonLocalizable
-{
-    const wchar_t FancyZonesRunAsAdminInfoPage[] = L"https://aka.ms/powertoysDetectedElevatedHelp";
-    const wchar_t ToastNotificationButtonUrl[] = L"powertoys://cant_drag_elevated_disable/";
-}
-
-namespace WindowMoveHandlerUtils
-{
-    bool IsCursorTypeIndicatingSizeEvent()
-    {
-        CURSORINFO cursorInfo = { 0 };
-        cursorInfo.cbSize = sizeof(cursorInfo);
-
-        if (::GetCursorInfo(&cursorInfo))
-        {
-            if (::LoadCursor(NULL, IDC_SIZENS) == cursorInfo.hCursor)
-            {
-                return true;
-            }
-            if (::LoadCursor(NULL, IDC_SIZEWE) == cursorInfo.hCursor)
-            {
-                return true;
-            }
-            if (::LoadCursor(NULL, IDC_SIZENESW) == cursorInfo.hCursor)
-            {
-                return true;
-            }
-            if (::LoadCursor(NULL, IDC_SIZENWSE) == cursorInfo.hCursor)
-            {
-                return true;
-            }
-        }
-        return false;
-    }
-}
 
 WindowMoveHandler::WindowMoveHandler(const std::function<void()>& keyUpdateCallback) :
     m_mouseState(false),
     m_mouseHook(std::bind(&WindowMoveHandler::OnMouseDown, this)),
-    m_shiftKeyState(keyUpdateCallback),
+    m_leftShiftKeyState(keyUpdateCallback),
+    m_rightShiftKeyState(keyUpdateCallback),
     m_ctrlKeyState(keyUpdateCallback),
     m_keyUpdateCallback(keyUpdateCallback)
 {
 }
 
-void WindowMoveHandler::MoveSizeStart(HWND window, HMONITOR monitor, POINT const& ptScreen, const std::unordered_map<HMONITOR, std::shared_ptr<WorkArea>>& workAreaMap) noexcept
+void WindowMoveHandler::MoveSizeStart(HWND window, HMONITOR monitor, POINT const& /*ptScreen*/, const std::unordered_map<HMONITOR, std::shared_ptr<WorkArea>>& workAreaMap) noexcept
 {
     if (!FancyZonesWindowProcessing::IsProcessable(window))
     {
         return;
     }
 
-    if (!FancyZonesWindowUtils::IsCandidateForZoning(window) || WindowMoveHandlerUtils::IsCursorTypeIndicatingSizeEvent())
+    if (!FancyZonesWindowUtils::IsCandidateForZoning(window) || FancyZonesWindowUtils::IsCursorTypeIndicatingSizeEvent())
     {
         return;
     }
@@ -88,15 +52,20 @@ void WindowMoveHandler::MoveSizeStart(HWND window, HMONITOR monitor, POINT const
         m_mouseHook.enable();
     }
 
-    m_shiftKeyState.enable();
+    m_leftShiftKeyState.enable();
+    m_rightShiftKeyState.enable();
     m_ctrlKeyState.enable();
 
     // This updates m_dragEnabled depending on if the shift key is being held down
     UpdateDragState();
 
-    // Notifies user if unable to drag elevated window
-    WarnIfElevationIsRequired(window);
-
+    if (!is_process_elevated() && FancyZonesWindowUtils::IsProcessOfWindowElevated(window))
+    {
+        // Notifies user if unable to drag elevated window
+        FancyZonesNotifications::WarnIfElevationIsRequired();
+        m_dragEnabled = false;
+    }
+    
     if (m_dragEnabled)
     {
         m_draggedWindowWorkArea = iter->second;
@@ -132,11 +101,7 @@ void WindowMoveHandler::MoveSizeStart(HWND window, HMONITOR monitor, POINT const
     auto workArea = workAreaMap.find(monitor);
     if (workArea != workAreaMap.end())
     {
-        const auto zoneSet = workArea->second->ZoneSet();
-        if (zoneSet)
-        {
-            zoneSet->DismissWindow(window);
-        }
+        workArea->second->UnsnapWindow(window);
     }
 }
 
@@ -207,15 +172,19 @@ void WindowMoveHandler::MoveSizeUpdate(HMONITOR monitor, POINT const& ptScreen, 
     }
 }
 
-void WindowMoveHandler::MoveSizeEnd(HWND window, POINT const& ptScreen, const std::unordered_map<HMONITOR, std::shared_ptr<WorkArea>>& workAreaMap) noexcept
+void WindowMoveHandler::MoveSizeEnd(HWND window, const std::unordered_map<HMONITOR, std::shared_ptr<WorkArea>>& workAreaMap) noexcept
 {
     if (window != m_draggedWindow)
     {
         return;
     }
 
+    bool leftShiftPressed = m_leftShiftKeyState.state();
+    bool rightShiftPressed = m_rightShiftKeyState.state();
+
     m_mouseHook.disable();
-    m_shiftKeyState.disable();
+    m_leftShiftKeyState.disable();
+    m_rightShiftKeyState.disable();
     m_ctrlKeyState.disable();
 
     if (m_draggedWindowWorkArea)
@@ -235,14 +204,27 @@ void WindowMoveHandler::MoveSizeEnd(HWND window, POINT const& ptScreen, const st
         }
         else
         {
-            workArea->MoveSizeEnd(m_draggedWindow, ptScreen);
+            if (FancyZonesSettings::settings().shiftDrag)
+            {
+                if (leftShiftPressed)
+                {
+                    FancyZonesUtils::SwallowKey(VK_LSHIFT);
+                }
+
+                if (rightShiftPressed)
+                {
+                    FancyZonesUtils::SwallowKey(VK_RSHIFT);
+                }
+            }
+
+            workArea->MoveSizeEnd(m_draggedWindow);
         }
     }
     else
     {
         if (FancyZonesSettings::settings().restoreSize)
         {
-            if (WindowMoveHandlerUtils::IsCursorTypeIndicatingSizeEvent())
+            if (FancyZonesWindowUtils::IsCursorTypeIndicatingSizeEvent())
             {
                 ::RemoveProp(window, ZonedWindowProperties::PropertyRestoreSizeID);
             }
@@ -261,18 +243,20 @@ void WindowMoveHandler::MoveSizeEnd(HWND window, POINT const& ptScreen, const st
             if (workArea != workAreaMap.end())
             {
                 const auto workAreaPtr = workArea->second;
-                const auto zoneSet = workAreaPtr->ZoneSet();
-                if (zoneSet)
+                const auto& layout = workAreaPtr->GetLayout();
+                if (layout)
                 {
-                    wil::unique_cotaskmem_string guidString;
-                    if (SUCCEEDED_LOG(StringFromCLSID(zoneSet->Id(), &guidString)))
+                    auto guidStr = FancyZonesUtils::GuidToString(layout->Id());
+                    if (guidStr.has_value())
                     {
-                        AppZoneHistory::instance().RemoveAppLastZone(window, workAreaPtr->UniqueId(), guidString.get());
+                        AppZoneHistory::instance().RemoveAppLastZone(window, workAreaPtr->UniqueId(), guidStr.value());
                     }
                 }
+
+                workAreaPtr->UnsnapWindow(window);
             }
         }
-        
+
         FancyZonesWindowProperties::RemoveZoneIndexProperty(window);
     }
 
@@ -314,7 +298,7 @@ bool WindowMoveHandler::ExtendWindowByDirectionAndPosition(HWND window, DWORD vk
     return workArea && workArea->ExtendWindowByDirectionAndPosition(window, vkCode);
 }
 
-void WindowMoveHandler::UpdateWindowsPositions(const std::unordered_map<HMONITOR, std::shared_ptr<WorkArea>>& activeWorkAreas) noexcept
+void WindowMoveHandler::AssignWindowsToZones(const std::unordered_map<HMONITOR, std::shared_ptr<WorkArea>>& activeWorkAreas, bool updatePositions) noexcept
 {
     for (const auto& window : VirtualDesktop::instance().GetWindowsFromCurrentDesktop())
     {
@@ -324,36 +308,10 @@ void WindowMoveHandler::UpdateWindowsPositions(const std::unordered_map<HMONITOR
             continue;
         }
 
-        for (const auto& [monitor, workArea] : activeWorkAreas)
+        auto monitor = MonitorFromWindow(window, MONITOR_DEFAULTTONULL);
+        if (monitor && activeWorkAreas.contains(monitor))
         {
-            if (MonitorFromWindow(window, MONITOR_DEFAULTTONULL) == monitor)
-            {
-                workArea->MoveWindowIntoZoneByIndexSet(window, zoneIndexSet);
-            }
-        }
-    }
-}
-
-void WindowMoveHandler::WarnIfElevationIsRequired(HWND window) noexcept
-{
-    using namespace notifications;
-    using namespace NonLocalizable;
-
-    static bool warning_shown = false;
-    if (!is_process_elevated() && FancyZonesWindowUtils::IsProcessOfWindowElevated(window))
-    {
-        m_dragEnabled = false;
-        if (!warning_shown && !is_toast_disabled(CantDragElevatedDontShowAgainRegistryPath, CantDragElevatedDisableIntervalInDays))
-        {
-            std::vector<action_t> actions = {
-                link_button{ GET_RESOURCE_STRING(IDS_CANT_DRAG_ELEVATED_LEARN_MORE), FancyZonesRunAsAdminInfoPage },
-                link_button{ GET_RESOURCE_STRING(IDS_CANT_DRAG_ELEVATED_DIALOG_DONT_SHOW_AGAIN), ToastNotificationButtonUrl }
-            };
-            show_toast_with_activations(GET_RESOURCE_STRING(IDS_CANT_DRAG_ELEVATED),
-                                        GET_RESOURCE_STRING(IDS_FANCYZONES),
-                                        {},
-                                        std::move(actions));
-            warning_shown = true;
+            activeWorkAreas.at(monitor)->MoveWindowIntoZoneByIndexSet(window, zoneIndexSet, updatePositions);
         }
     }
 }
@@ -362,11 +320,11 @@ void WindowMoveHandler::UpdateDragState() noexcept
 {
     if (FancyZonesSettings::settings().shiftDrag)
     {
-        m_dragEnabled = (m_shiftKeyState.state() ^ m_mouseState);
+        m_dragEnabled = ((m_leftShiftKeyState.state() || m_rightShiftKeyState.state()) ^ m_mouseState);
     }
     else
     {
-        m_dragEnabled = !(m_shiftKeyState.state() ^ m_mouseState);
+        m_dragEnabled = !((m_leftShiftKeyState.state() || m_rightShiftKeyState.state()) ^ m_mouseState);
     }
 }
 
@@ -375,7 +333,7 @@ void WindowMoveHandler::SetWindowTransparency(HWND window) noexcept
     if (FancyZonesSettings::settings().makeDraggedWindowTransparent)
     {
         m_windowTransparencyProperties.draggedWindowExstyle = GetWindowLong(window, GWL_EXSTYLE);
-        
+
         SetWindowLong(window,
                       GWL_EXSTYLE,
                       m_windowTransparencyProperties.draggedWindowExstyle | WS_EX_LAYERED);
@@ -403,7 +361,7 @@ void WindowMoveHandler::ResetWindowTransparency() noexcept
         {
             Logger::error(L"Window transparency: SetLayeredWindowAttributes failed");
         }
-        
+
         if (SetWindowLong(m_windowTransparencyProperties.draggedWindow, GWL_EXSTYLE, m_windowTransparencyProperties.draggedWindowExstyle) == 0)
         {
             Logger::error(L"Window transparency: SetWindowLong failed, {}", get_last_error_or_default(GetLastError()));

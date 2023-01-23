@@ -1,5 +1,4 @@
 #include "pch.h"
-#include "CppUnitTest.h"
 #include "powerrename/lib/Settings.h"
 #include <PowerRenameInterfaces.h>
 #include <PowerRenameRegEx.h>
@@ -428,30 +427,30 @@ TEST_METHOD (VerifyFileAttributesMonthandDayNames)
     std::locale::global(std::locale(""));
     SYSTEMTIME fileTime = { 2020, 1, 3, 1, 15, 6, 42, 453 };
     wchar_t localeName[LOCALE_NAME_MAX_LENGTH];
-    wchar_t result[MAX_PATH] = L"bar";
+    wchar_t dest[MAX_PATH] = L"bar";
     wchar_t formattedDate[MAX_PATH];
     if (GetUserDefaultLocaleName(localeName, LOCALE_NAME_MAX_LENGTH) == 0)
         StringCchCopy(localeName, LOCALE_NAME_MAX_LENGTH, L"en_US");
 
     GetDateFormatEx(localeName, NULL, &fileTime, L"MMM", formattedDate, MAX_PATH, NULL);
     formattedDate[0] = towupper(formattedDate[0]);
-    StringCchPrintf(result, MAX_PATH, TEXT("%s%s"), result, formattedDate);
+    StringCchPrintf(dest, MAX_PATH, TEXT("%s%s"), dest, formattedDate);
 
     GetDateFormatEx(localeName, NULL, &fileTime, L"MMMM", formattedDate, MAX_PATH, NULL);
     formattedDate[0] = towupper(formattedDate[0]);
-    StringCchPrintf(result, MAX_PATH, TEXT("%s-%s"), result, formattedDate);
+    StringCchPrintf(dest, MAX_PATH, TEXT("%s-%s"), dest, formattedDate);
 
     GetDateFormatEx(localeName, NULL, &fileTime, L"ddd", formattedDate, MAX_PATH, NULL);
     formattedDate[0] = towupper(formattedDate[0]);
-    StringCchPrintf(result, MAX_PATH, TEXT("%s-%s"), result, formattedDate);
+    StringCchPrintf(dest, MAX_PATH, TEXT("%s-%s"), dest, formattedDate);
 
     GetDateFormatEx(localeName, NULL, &fileTime, L"dddd", formattedDate, MAX_PATH, NULL);
     formattedDate[0] = towupper(formattedDate[0]);
-    StringCchPrintf(result, MAX_PATH, TEXT("%s-%s"), result, formattedDate);
+    StringCchPrintf(dest, MAX_PATH, TEXT("%s-%s"), dest, formattedDate);
 
     SearchReplaceExpected sreTable[] = {
         //search, replace, test, result
-        { L"foo", L"bar$MMM-$MMMM-$DDD-$DDDD", L"foo", result },
+        { L"foo", L"bar$MMM-$MMMM-$DDD-$DDDD", L"foo", dest },
     };
 
     for (int i = 0; i < ARRAYSIZE(sreTable); i++)

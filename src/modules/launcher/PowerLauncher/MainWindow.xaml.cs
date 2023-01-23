@@ -12,6 +12,8 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Interop;
+using System.Windows.Media.Imaging;
+using Common.UI;
 using interop;
 using Microsoft.PowerLauncher.Telemetry;
 using Microsoft.PowerToys.Telemetry;
@@ -20,6 +22,10 @@ using PowerLauncher.Plugin;
 using PowerLauncher.Telemetry.Events;
 using PowerLauncher.ViewModel;
 using Wox.Infrastructure.UserSettings;
+using Wox.Plugin;
+using Wox.Plugin.Interfaces;
+using CancellationToken = System.Threading.CancellationToken;
+using Image = Wox.Infrastructure.Image;
 using KeyEventArgs = System.Windows.Input.KeyEventArgs;
 using Log = Wox.Plugin.Logger.Log;
 using Screen = System.Windows.Forms.Screen;
@@ -30,6 +36,7 @@ namespace PowerLauncher
     {
         private readonly PowerToysRunSettings _settings;
         private readonly MainViewModel _viewModel;
+        private readonly CancellationToken _nativeWaiterCancelToken;
         private bool _isTextSetProgrammatically;
         private bool _deletePressed;
         private HwndSource _hwndSource;
@@ -37,19 +44,26 @@ namespace PowerLauncher
         private bool _coldStateHotkeyPressed;
         private bool _disposedValue;
         private IDisposable _reactiveSubscription;
+        private Point _mouseDownPosition;
+        private ResultViewModel _mouseDownResultViewModel;
 
-        public MainWindow(PowerToysRunSettings settings, MainViewModel mainVM)
+        public MainWindow(PowerToysRunSettings settings, MainViewModel mainVM, CancellationToken nativeWaiterCancelToken)
             : this()
         {
             DataContext = mainVM;
             _viewModel = mainVM;
+            _nativeWaiterCancelToken = nativeWaiterCancelToken;
             _settings = settings;
 
             InitializeComponent();
 
             _firstDeleteTimer.Elapsed += CheckForFirstDelete;
             _firstDeleteTimer.Interval = 1000;
-            NativeEventWaiter.WaitForEventLoop(Constants.RunSendSettingsTelemetryEvent(), SendSettingsTelemetry);
+            NativeEventWaiter.WaitForEventLoop(
+                Constants.RunSendSettingsTelemetryEvent(),
+                SendSettingsTelemetry,
+                Application.Current.Dispatcher,
+                _nativeWaiterCancelToken);
         }
 
         private void SendSettingsTelemetry()
@@ -116,9 +130,7 @@ namespace PowerLauncher
 
         private const string EnvironmentChangeType = "Environment";
 
-#pragma warning disable CA1801 // Review unused parameters
         public IntPtr ProcessWindowMessages(IntPtr hwnd, int msg, IntPtr wparam, IntPtr lparam, ref bool handled)
-#pragma warning restore CA1801 // Review unused parameters
         {
             switch ((WM)msg)
             {
@@ -185,6 +197,8 @@ namespace PowerLauncher
             ListBox.DataContext = _viewModel;
             ListBox.SuggestionsList.SelectionChanged += SuggestionsList_SelectionChanged;
             ListBox.SuggestionsList.PreviewMouseLeftButtonUp += SuggestionsList_PreviewMouseLeftButtonUp;
+            ListBox.SuggestionsList.PreviewMouseLeftButtonDown += SuggestionsList_PreviewMouseLeftButtonDown;
+            ListBox.SuggestionsList.MouseMove += SuggestionsList_MouseMove;
             _viewModel.PropertyChanged += ViewModel_PropertyChanged;
             _viewModel.MainWindowVisibility = Visibility.Collapsed;
             _viewModel.LoadedAtLeastOnce = true;
@@ -272,6 +286,48 @@ namespace PowerLauncher
                 {
                     _viewModel.Results.SelectedItem = resultVM;
                     _viewModel.OpenResultWithMouseCommand.Execute(null);
+                }
+            }
+        }
+
+        private void SuggestionsList_PreviewMouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+        {
+            _mouseDownPosition = e.GetPosition(null);
+            _mouseDownResultViewModel = ((FrameworkElement)e.OriginalSource).DataContext as ResultViewModel;
+        }
+
+        private void SuggestionsList_MouseMove(object sender, MouseEventArgs e)
+        {
+            if (e.LeftButton == MouseButtonState.Pressed && _mouseDownResultViewModel?.Result?.ContextData is IFileDropResult fileDropResult)
+            {
+                Vector dragDistance = _mouseDownPosition - e.GetPosition(null);
+                if (Math.Abs(dragDistance.X) > SystemParameters.MinimumHorizontalDragDistance || Math.Abs(dragDistance.Y) > SystemParameters.MinimumVerticalDragDistance)
+                {
+                    _viewModel.Hide();
+
+                    try
+                    {
+                        // DoDragDrop with file thumbnail as drag image
+                        var dataObject = DragDataObject.FromFile(fileDropResult.Path);
+                        using var bitmap = DragDataObject.BitmapSourceToBitmap((BitmapSource)_mouseDownResultViewModel?.Image);
+                        IntPtr hBitmap = bitmap.GetHbitmap();
+
+                        try
+                        {
+                            dataObject.SetDragImage(hBitmap, Constant.ThumbnailSize, Constant.ThumbnailSize);
+                            DragDrop.DoDragDrop(ListBox.SuggestionsList, dataObject, DragDropEffects.Copy);
+                        }
+                        finally
+                        {
+                            Image.NativeMethods.DeleteObject(hBitmap);
+                        }
+                    }
+                    catch
+                    {
+                        // DoDragDrop without drag image
+                        IDataObject dataObject = new DataObject(DataFormats.FileDrop, new[] { fileDropResult.Path });
+                        DragDrop.DoDragDrop(ListBox.SuggestionsList, dataObject, DragDropEffects.Copy);
+                    }
                 }
             }
         }
@@ -584,7 +640,8 @@ namespace PowerLauncher
 
                 // because IF this is delayedExecution = false (run fast queries) we know this will be called again with delayedExecution = true
                 // if we don't do this, the second (partner) call will not be called _isTextSetProgrammatically = true also, and we need it to.
-                if (delayedExecution.HasValue && delayedExecution.Value)
+                // Also, if search query delay is disabled, second call won't come, so reset _isTextSetProgrammatically anyway
+                if ((delayedExecution.HasValue && delayedExecution.Value) || !_viewModel.GetSearchQueryResultsWithDelaySetting())
                 {
                     _isTextSetProgrammatically = false;
                 }
@@ -675,19 +732,11 @@ namespace PowerLauncher
                     _hwndSource?.Dispose();
                 }
 
-                // TODO: free unmanaged resources (unmanaged objects) and override finalizer
-                // TODO: set large fields to null
                 _firstDeleteTimer = null;
                 _disposedValue = true;
             }
         }
 
-        // // TODO: override finalizer only if 'Dispose(bool disposing)' has code to free unmanaged resources
-        // ~MainWindow()
-        // {
-        //     // Do not change this code. Put cleanup code in 'Dispose(bool disposing)' method
-        //     Dispose(disposing: false);
-        // }
         public void Dispose()
         {
             // Do not change this code. Put cleanup code in 'Dispose(bool disposing)' method
@@ -697,7 +746,15 @@ namespace PowerLauncher
 
         private void OnClosed(object sender, EventArgs e)
         {
-            _hwndSource.RemoveHook(ProcessWindowMessages);
+            try
+            {
+                _hwndSource.RemoveHook(ProcessWindowMessages);
+            }
+            catch (Exception ex)
+            {
+                Log.Exception($"Exception when trying to Remove hook", ex, ex.GetType());
+            }
+
             _hwndSource = null;
         }
     }

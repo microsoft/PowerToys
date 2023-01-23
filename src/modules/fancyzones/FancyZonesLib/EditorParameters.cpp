@@ -25,15 +25,15 @@ namespace JsonUtils
         std::wstring monitorName;
         std::wstring monitorInstanceId;
         std::wstring monitorSerialNumber;
-        int monitorNumber;
+        int monitorNumber{};
         std::wstring virtualDesktop;
-        int dpi;
-        int top;
-        int left;
-        int workAreaWidth;
-        int workAreaHeight;
-        int monitorWidth;
-        int monitorHeight;
+        int dpi{};
+        int top{};
+        int left{};
+        int workAreaWidth{};
+        int workAreaHeight{};
+        int monitorWidth{};
+        int monitorHeight{};
         bool isSelected = false;
 
         static json::JsonObject ToJson(const MonitorInfo& monitor)
@@ -60,8 +60,8 @@ namespace JsonUtils
 
     struct EditorArgs
     {
-        DWORD processId;
-        bool spanZonesAcrossMonitors;
+        DWORD processId{};
+        bool spanZonesAcrossMonitors{};
         std::vector<MonitorInfo> monitors;
 
         static json::JsonObject ToJson(const EditorArgs& args)

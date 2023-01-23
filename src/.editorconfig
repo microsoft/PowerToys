@@ -8,7 +8,6 @@ dotnet_diagnostic.CA1303.severity = suggestion
 
 # CA1051: Do not declare visible instance fields
 dotnet_code_quality.ca1051.exclude_structs = true
-csharp_using_directive_placement = inside_namespace:warning
 csharp_prefer_simple_using_statement = true:suggestion
 csharp_prefer_braces = true:silent
 csharp_style_namespace_declarations = block_scoped:silent

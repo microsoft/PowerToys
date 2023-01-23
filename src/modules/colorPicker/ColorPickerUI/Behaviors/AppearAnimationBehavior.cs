@@ -19,7 +19,6 @@ namespace ColorPicker.Behaviors
 
         private void AssociatedObject_Loaded(object sender, RoutedEventArgs e)
         {
-            Appear();
             AssociatedObject.IsVisibleChanged += AssociatedObject_IsVisibleChanged;
         }
 

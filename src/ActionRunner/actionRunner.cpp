@@ -79,7 +79,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
             hMapFile = OpenFileMappingW(FILE_MAP_WRITE, FALSE, pidFile.data());
             if (hMapFile)
             {
-                pidBuffer = reinterpret_cast<PDWORD>(MapViewOfFile(hMapFile, FILE_MAP_ALL_ACCESS, 0, 0, sizeof(DWORD)));
+                pidBuffer = static_cast<PDWORD>(MapViewOfFile(hMapFile, FILE_MAP_ALL_ACCESS, 0, 0, sizeof(DWORD)));
                 if (pidBuffer)
                 {
                     *pidBuffer = 0;

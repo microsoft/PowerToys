@@ -25,7 +25,7 @@ using namespace System;
 using namespace System::Runtime::InteropServices;
 using System::Collections::Generic::List;
 
-// https://docs.microsoft.com/en-us/cpp/dotnet/how-to-wrap-native-class-for-use-by-csharp?view=vs-2019
+// https://learn.microsoft.com/cpp/dotnet/how-to-wrap-native-class-for-use-by-csharp?view=vs-2019
 namespace interop
 {
 public
@@ -195,8 +195,36 @@ public
             return gcnew String(CommonSharedConstants::SHOW_COLOR_PICKER_SHARED_EVENT);
         }
 
+        static String ^ ShowPowerOCRSharedEvent() {
+            return gcnew String(CommonSharedConstants::SHOW_POWEROCR_SHARED_EVENT);
+        }
+
         static String ^ AwakeExitEvent() {
             return gcnew String(CommonSharedConstants::AWAKE_EXIT_EVENT);
+        }
+
+        static String ^ PowerAccentExitEvent() {
+            return gcnew String(CommonSharedConstants::POWERACCENT_EXIT_EVENT);
+        }
+
+        static String ^ GcodePreviewResizeEvent() {
+            return gcnew String(CommonSharedConstants::GCODE_PREVIEW_RESIZE_EVENT);
+        }
+
+        static String ^ DevFilesPreviewResizeEvent() {
+            return gcnew String(CommonSharedConstants::DEV_FILES_PREVIEW_RESIZE_EVENT);
+        }
+
+        static String ^ MarkdownPreviewResizeEvent() {
+            return gcnew String(CommonSharedConstants::MARKDOWN_PREVIEW_RESIZE_EVENT);
+        }
+
+        static String ^ PdfPreviewResizeEvent() {
+            return gcnew String(CommonSharedConstants::PDF_PREVIEW_RESIZE_EVENT);
+        }
+
+        static String ^ SvgPreviewResizeEvent() {
+            return gcnew String(CommonSharedConstants::SVG_PREVIEW_RESIZE_EVENT);
         }
     };
 }

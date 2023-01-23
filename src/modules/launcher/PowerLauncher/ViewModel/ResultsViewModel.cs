@@ -21,6 +21,7 @@ namespace PowerLauncher.ViewModel
         private readonly object _collectionLock = new object();
 
         private readonly PowerToysRunSettings _settings;
+        private readonly IMainViewModel _mainViewModel;
 
         public ResultsViewModel()
         {
@@ -28,10 +29,11 @@ namespace PowerLauncher.ViewModel
             BindingOperations.EnableCollectionSynchronization(Results, _collectionLock);
         }
 
-        public ResultsViewModel(PowerToysRunSettings settings)
+        public ResultsViewModel(PowerToysRunSettings settings, IMainViewModel mainViewModel)
             : this()
         {
             _settings = settings ?? throw new ArgumentNullException(nameof(settings));
+            _mainViewModel = mainViewModel;
             _settings.PropertyChanged += (s, e) =>
             {
                 if (e.PropertyName == nameof(_settings.MaxResultsToShow))
@@ -184,21 +186,45 @@ namespace PowerLauncher.ViewModel
 
         public void SelectNextTabItem()
         {
-            // Do nothing if there is no selected item or we've selected the next context button
-            if (!SelectedItem?.SelectNextContextButton() ?? true)
+            if (_settings.TabSelectsContextButtons)
             {
-                SelectNextResult();
+                // Do nothing if there is no selected item or we've selected the next context button
+                if (!SelectedItem?.SelectNextContextButton() ?? true)
+                {
+                    SelectNextResult();
+                }
+            }
+            else
+            {
+                // Do nothing if there is no selected item
+                if (SelectedItem != null)
+                {
+                    SelectNextResult();
+                }
             }
         }
 
         public void SelectPrevTabItem()
         {
-            // Do nothing if there is no selected item or we've selected the previous context button
-            if (!SelectedItem?.SelectPrevContextButton() ?? true)
+            if (_settings.TabSelectsContextButtons)
             {
-                // Tabbing backwards should highlight the last item of the previous row
-                SelectPrevResult();
-                SelectedItem?.SelectLastContextButton();
+                // Do nothing if there is no selected item or we've selected the previous context button
+                if (!SelectedItem?.SelectPrevContextButton() ?? true)
+                {
+                    // Tabbing backwards should highlight the last item of the previous row
+                    SelectPrevResult();
+                    SelectedItem?.SelectLastContextButton();
+                }
+            }
+            else
+            {
+                // Do nothing if there is no selected item
+                if (SelectedItem != null)
+                {
+                    // Tabbing backwards should highlight the last item of the previous row
+                    SelectPrevResult();
+                    SelectedItem?.SelectLastContextButton();
+                }
             }
         }
 
@@ -246,7 +272,7 @@ namespace PowerLauncher.ViewModel
             List<ResultViewModel> newResults = new List<ResultViewModel>(newRawResults.Count);
             foreach (Result r in newRawResults)
             {
-                newResults.Add(new ResultViewModel(r));
+                newResults.Add(new ResultViewModel(r, _mainViewModel));
                 ct.ThrowIfCancellationRequested();
             }
 
@@ -264,6 +290,16 @@ namespace PowerLauncher.ViewModel
             else
             {
                 sorted = Results.OrderByDescending(x => (x.Result.Metadata.WeightBoost + x.Result.Score + (x.Result.SelectedCount * 5))).ToList();
+            }
+
+            // remove history items in they are in the list as non-history items
+            foreach (var nonHistoryResult in sorted.Where(x => x.Result.Metadata.Name != "History").ToList())
+            {
+                var historyToRemove = sorted.FirstOrDefault(x => x.Result.Metadata.Name == "History" && x.Result.Title == nonHistoryResult.Result.Title && x.Result.SubTitle == nonHistoryResult.Result.SubTitle);
+                if (historyToRemove != null)
+                {
+                    sorted.Remove(historyToRemove);
+                }
             }
 
             Clear();

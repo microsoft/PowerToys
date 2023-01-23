@@ -6,12 +6,17 @@
   <?define FancyZonesProjectName="FancyZones"?>
   <?define ImageResizerProjectName="ImageResizer"?>
   <?define KeyboardManagerProjectName="KeyboardManager"?>
+  <?define PowerAccentProjectName="PowerAccent"?>
   <?define PowerRenameProjectName="PowerRename"?>
+  <?define FileLocksmithProjectName="FileLocksmith"?>
   <?define ColorPickerProjectName="ColorPicker"?>
+  <?define PowerOCRProjectName="PowerOCR"?>
   <?define VideoConferenceProjectName="VideoConference"?>
   <?define AwakeProjectName="Awake"?>
   <?define MouseUtilsProjectName="MouseUtils"?>
   <?define AlwaysOnTopProjectName="AlwaysOnTop"?>
+  <?define MeasureToolProjectName="MeasureTool"?>
+  <?define HostsProjectName="Hosts"?>
 
   <?define RepoDir="$(var.ProjectDir)..\..\" ?>
   <?if $(var.Platform) = x64?>
@@ -40,19 +45,23 @@
            -->
   <?define ShortcutGuideSvgsFiles=0.svg;1.svg;2.svg;3.svg;4.svg;5.svg;6.svg;7.svg;8.svg;9.svg;no_active_window.svg;overlay.svg;overlay_portrait.svg?>
 
-  <?define FancyZonesFiles=PowerToys.FancyZonesModuleInterface.dll;PowerToys.FancyZonesEditor.dll;PowerToys.FancyZonesEditor.runtimeconfig.json;PowerToys.FancyZonesEditor.deps.json;PowerToys.FancyZonesEditor.exe;PowerToys.FancyZones.exe;ControlzEx.dll;Microsoft.Xaml.Behaviors.dll;ModernWpf.dll;ModernWpf.Controls.dll;System.Text.Json.dll;PowerToys.Interop.dll;PowerToys.ManagedCommon.dll;System.Management.dll;PowerToys.Common.UI.dll;PowerToys.ManagedTelemetry.dll;System.IO.Abstractions.dll;Microsoft.Windows.SDK.NET.dll;WinRT.Runtime.dll;Ijwhost.dll?>
+  <?define FancyZonesFiles=PowerToys.FancyZonesModuleInterface.dll;PowerToys.FancyZonesEditor.dll;PowerToys.FancyZonesEditor.runtimeconfig.json;PowerToys.FancyZonesEditor.deps.json;PowerToys.FancyZonesEditor.exe;PowerToys.FancyZones.exe;ControlzEx.dll;Microsoft.Xaml.Behaviors.dll;ModernWpf.dll;ModernWpf.Controls.dll;PowerToys.ManagedCommon.dll;PowerToys.Common.UI.dll;PowerToys.ManagedTelemetry.dll;System.IO.Abstractions.dll;Microsoft.Windows.SDK.NET.dll;WinRT.Runtime.dll;Ijwhost.dll;PowerToys.GPOWrapper.dll;PowerToys.GPOWrapperProjection.dll?>
 
-  <?define ImageResizerFiles=ImageResizer.ico;PowerToys.ImageResizer.exe;PowerToys.ImageResizerExt.dll;PowerToys.ImageResizer.dll;PowerToys.ImageResizer.deps.json;PowerToys.ImageResizer.runtimeconfig.json;PowerToys.ManagedCommon.dll;System.Management.dll;PowerToys.ManagedTelemetry.dll;PowerToys.Common.UI.dll;ControlzEx.dll;ModernWpf.Controls.dll;ModernWpf.dll;System.Text.Json.dll;Microsoft.Xaml.Behaviors.dll;PowerToys.Interop.dll;System.IO.Abstractions.dll;WinRT.Runtime.dll;Microsoft.Windows.SDK.NET.dll;Ijwhost.dll;ImageResizerContextMenuPackage.msix;PowerToys.ImageResizerContextMenu.dll ?>
+  <?define ImageResizerFiles=ImageResizer.ico;PowerToys.ImageResizer.exe;PowerToys.ImageResizerExt.dll;PowerToys.ImageResizer.dll;PowerToys.ImageResizer.deps.json;PowerToys.ImageResizer.runtimeconfig.json;PowerToys.ManagedCommon.dll;PowerToys.ManagedTelemetry.dll;PowerToys.Common.UI.dll;ControlzEx.dll;ModernWpf.Controls.dll;ModernWpf.dll;Microsoft.Xaml.Behaviors.dll;System.IO.Abstractions.dll;WinRT.Runtime.dll;Microsoft.Windows.SDK.NET.dll;Ijwhost.dll;ImageResizerContextMenuPackage.msix;PowerToys.ImageResizerContextMenu.dll;PowerToys.GPOWrapper.dll;PowerToys.GPOWrapperProjection.dll ?>
 
-  <?define PowerPreviewFiles=PowerToys.powerpreview.dll;PowerToys.PreviewHandlerCommon.dll;PowerToys.PreviewHandlerCommon.deps.json;PowerToys.ManagedCommon.dll;System.Management.dll;PowerToys.ManagedTelemetry.dll;PowerToys.SvgPreviewHandler.dll;PowerToys.SvgPreviewHandler.comhost.dll;PowerToys.SvgPreviewHandler.runtimeconfig.json;PowerToys.SvgPreviewHandler.deps.json;PowerToys.SvgThumbnailProvider.dll;PowerToys.SvgThumbnailProvider.comhost.dll;PowerToys.SvgThumbnailProvider.runtimeconfig.json;PowerToys.SvgThumbnailProvider.deps.json;PowerToys.MarkdownPreviewHandler.dll;PowerToys.MarkdownPreviewHandler.comhost.dll;PowerToys.MarkdownPreviewHandler.runtimeconfig.json;PowerToys.MarkdownPreviewHandler.deps.json;Markdig.Signed.dll;HtmlAgilityPack.dll;System.IO.Abstractions.dll;monaco_languages.json;monacoSpecialLanguages.js;PowerToys.Common.UI.dll;PowerToys.Settings.UI.Lib.dll;PowerToys.MonacoPreviewHandler.dll;PowerToys.MonacoPreviewHandler.comhost.dll;PowerToys.MonacoPreviewHandler.runtimeconfig.json;PowerToys.MonacoPreviewHandler.deps.json;ControlzEx.dll;Microsoft.Web.WebView2.Core.dll;Microsoft.Web.WebView2.WinForms.dll;Microsoft.Web.WebView2.Wpf.dll;WebView2Loader.dll;System.Runtime.WindowsRuntime.dll;index.html;PowerToys.PdfPreviewHandler.dll;PowerToys.PdfPreviewHandler.comhost.dll;PowerToys.PdfPreviewHandler.runtimeconfig.json;PowerToys.PdfPreviewHandler.deps.json;Microsoft.Windows.SDK.NET.dll;WinRT.Runtime.dll;PowerToys.PdfThumbnailProvider.dll;PowerToys.PdfThumbnailProvider.comhost.dll;PowerToys.PdfThumbnailProvider.runtimeconfig.json;PowerToys.PdfThumbnailProvider.deps.json;PowerToys.GcodePreviewHandler.dll;PowerToys.GcodePreviewHandler.comhost.dll;PowerToys.GcodePreviewHandler.runtimeconfig.json;PowerToys.GcodePreviewHandler.deps.json;PowerToys.GcodeThumbnailProvider.dll;PowerToys.GcodeThumbnailProvider.comhost.dll;PowerToys.GcodeThumbnailProvider.runtimeconfig.json;PowerToys.GcodeThumbnailProvider.deps.json;PowerToys.StlThumbnailProvider.dll;PowerToys.StlThumbnailProvider.comhost.dll;PowerToys.StlThumbnailProvider.runtimeconfig.json;PowerToys.StlThumbnailProvider.deps.json;HelixToolkit.dll;HelixToolkit.Core.Wpf.dll;Ijwhost.dll;Microsoft.Xaml.Behaviors.dll;System.Text.Json.dll?>
+  <?if $(var.Platform) = x64?>
+    <?define PowerPreviewFiles=mfc140.dll;mfc140chs.dll;mfc140cht.dll;mfc140deu.dll;mfc140enu.dll;mfc140esn.dll;mfc140fra.dll;mfc140ita.dll;mfc140jpn.dll;mfc140kor.dll;mfc140rus.dll;mfc140u.dll;mfcm140.dll;mfcm140u.dll;PowerToys.MarkdownPreviewHandlerCpp.dll;PowerToys.powerpreview.dll;PowerToys.PreviewHandlerCommon.dll;PowerToys.PreviewHandlerCommon.deps.json;PowerToys.ManagedCommon.dll;PowerToys.ManagedTelemetry.dll;PowerToys.SvgPreviewHandlerCpp.dll;PowerToys.SvgPreviewHandler.dll;PowerToys.SvgPreviewHandler.exe;PowerToys.SvgPreviewHandler.runtimeconfig.json;PowerToys.SvgPreviewHandler.deps.json;PowerToys.SvgThumbnailProvider.exe;PowerToys.SvgThumbnailProvider.dll;PowerToys.SvgThumbnailProviderCpp.dll;PowerToys.SvgThumbnailProvider.runtimeconfig.json;PowerToys.SvgThumbnailProvider.deps.json;PowerToys.MarkdownPreviewHandler.dll;PowerToys.MarkdownPreviewHandler.exe;PowerToys.MarkdownPreviewHandler.runtimeconfig.json;PowerToys.MarkdownPreviewHandler.deps.json;Markdig.Signed.dll;System.IO.Abstractions.dll;monaco_languages.json;monacoSpecialLanguages.js;PowerToys.Common.UI.dll;PowerToys.Settings.UI.Lib.dll;PowerToys.MonacoPreviewHandlerCpp.dll;PowerToys.MonacoPreviewHandler.dll;PowerToys.MonacoPreviewHandler.exe;PowerToys.MonacoPreviewHandler.runtimeconfig.json;PowerToys.MonacoPreviewHandler.deps.json;ControlzEx.dll;Microsoft.Web.WebView2.Core.dll;Microsoft.Web.WebView2.WinForms.dll;Microsoft.Web.WebView2.Wpf.dll;WebView2Loader.dll;index.html;PowerToys.PdfPreviewHandlerCpp.dll;PowerToys.PdfPreviewHandler.dll;PowerToys.PdfPreviewHandler.exe;PowerToys.PdfPreviewHandler.runtimeconfig.json;PowerToys.PdfPreviewHandler.deps.json;Microsoft.Windows.SDK.NET.dll;WinRT.Runtime.dll;PowerToys.PdfThumbnailProvider.exe;PowerToys.PdfThumbnailProvider.dll;PowerToys.PdfThumbnailProviderCpp.dll;PowerToys.PdfThumbnailProvider.runtimeconfig.json;PowerToys.PdfThumbnailProvider.deps.json;PowerToys.GcodePreviewHandler.dll;PowerToys.GcodePreviewHandlerCpp.dll;PowerToys.GcodePreviewHandler.exe;PowerToys.GcodePreviewHandler.runtimeconfig.json;PowerToys.GcodePreviewHandler.deps.json;PowerToys.GcodeThumbnailProvider.dll;PowerToys.GcodeThumbnailProvider.exe;PowerToys.GcodeThumbnailProviderCpp.dll;PowerToys.GcodeThumbnailProvider.runtimeconfig.json;PowerToys.GcodeThumbnailProvider.deps.json;PowerToys.StlThumbnailProvider.exe;PowerToys.StlThumbnailProvider.dll;PowerToys.StlThumbnailProviderCpp.dll;PowerToys.StlThumbnailProvider.runtimeconfig.json;PowerToys.StlThumbnailProvider.deps.json;HelixToolkit.dll;HelixToolkit.Core.Wpf.dll;Ijwhost.dll;Microsoft.Xaml.Behaviors.dll;PowerToys.GPOWrapper.dll?>
+  <?else?>
+    <?define PowerPreviewFiles=PowerToys.MarkdownPreviewHandlerCpp.dll;PowerToys.powerpreview.dll;PowerToys.PreviewHandlerCommon.dll;PowerToys.PreviewHandlerCommon.deps.json;PowerToys.ManagedCommon.dll;PowerToys.ManagedTelemetry.dll;PowerToys.SvgPreviewHandlerCpp.dll;PowerToys.SvgPreviewHandler.dll;PowerToys.SvgPreviewHandler.exe;PowerToys.SvgPreviewHandler.runtimeconfig.json;PowerToys.SvgPreviewHandler.deps.json;PowerToys.SvgThumbnailProvider.exe;PowerToys.SvgThumbnailProvider.dll;PowerToys.SvgThumbnailProviderCpp.dll;PowerToys.SvgThumbnailProvider.runtimeconfig.json;PowerToys.SvgThumbnailProvider.deps.json;PowerToys.MarkdownPreviewHandler.dll;PowerToys.MarkdownPreviewHandler.exe;PowerToys.MarkdownPreviewHandler.runtimeconfig.json;PowerToys.MarkdownPreviewHandler.deps.json;Markdig.Signed.dll;System.IO.Abstractions.dll;monaco_languages.json;monacoSpecialLanguages.js;PowerToys.Common.UI.dll;PowerToys.Settings.UI.Lib.dll;PowerToys.MonacoPreviewHandlerCpp.dll;PowerToys.MonacoPreviewHandler.dll;PowerToys.MonacoPreviewHandler.exe;PowerToys.MonacoPreviewHandler.runtimeconfig.json;PowerToys.MonacoPreviewHandler.deps.json;ControlzEx.dll;Microsoft.Web.WebView2.Core.dll;Microsoft.Web.WebView2.WinForms.dll;Microsoft.Web.WebView2.Wpf.dll;WebView2Loader.dll;index.html;PowerToys.PdfPreviewHandlerCpp.dll;PowerToys.PdfPreviewHandler.dll;PowerToys.PdfPreviewHandler.exe;PowerToys.PdfPreviewHandler.runtimeconfig.json;PowerToys.PdfPreviewHandler.deps.json;Microsoft.Windows.SDK.NET.dll;WinRT.Runtime.dll;PowerToys.PdfThumbnailProvider.exe;PowerToys.PdfThumbnailProvider.dll;PowerToys.PdfThumbnailProviderCpp.dll;PowerToys.PdfThumbnailProvider.runtimeconfig.json;PowerToys.PdfThumbnailProvider.deps.json;PowerToys.GcodePreviewHandler.dll;PowerToys.GcodePreviewHandlerCpp.dll;PowerToys.GcodePreviewHandler.exe;PowerToys.GcodePreviewHandler.runtimeconfig.json;PowerToys.GcodePreviewHandler.deps.json;PowerToys.GcodeThumbnailProvider.dll;PowerToys.GcodeThumbnailProvider.exe;PowerToys.GcodeThumbnailProviderCpp.dll;PowerToys.GcodeThumbnailProvider.runtimeconfig.json;PowerToys.GcodeThumbnailProvider.deps.json;PowerToys.StlThumbnailProvider.exe;PowerToys.StlThumbnailProvider.dll;PowerToys.StlThumbnailProviderCpp.dll;PowerToys.StlThumbnailProvider.runtimeconfig.json;PowerToys.StlThumbnailProvider.deps.json;HelixToolkit.dll;HelixToolkit.Core.Wpf.dll;Ijwhost.dll;Microsoft.Xaml.Behaviors.dll;PowerToys.GPOWrapper.dll?>
+  <?endif?>
 
-  <?define SettingsV2Files=Ijwhost.dll;ColorCode.Core.dll;ColorCode.WinUI.dll;CommunityToolkit.Common.dll;CommunityToolkit.WinUI.dll;CommunityToolkit.WinUI.UI.Controls.Core.dll;CommunityToolkit.WinUI.UI.Controls.DataGrid.dll;CommunityToolkit.WinUI.UI.Controls.Input.dll;CommunityToolkit.WinUI.UI.Controls.Layout.dll;CommunityToolkit.WinUI.UI.Controls.Markdown.dll;CommunityToolkit.WinUI.UI.Controls.Media.dll;CommunityToolkit.WinUI.UI.Controls.Primitives.dll;CommunityToolkit.WinUI.UI.dll;icon.ico;Microsoft.Graphics.Canvas.Interop.dll;Microsoft.InteractiveExperiences.Projection.dll;Microsoft.Windows.ApplicationModel.DynamicDependency.Projection.dll;Microsoft.Windows.ApplicationModel.Resources.Projection.dll;Microsoft.Windows.ApplicationModel.WindowsAppRuntime.Projection.dll;Microsoft.Windows.AppLifecycle.Projection.dll;Microsoft.Windows.SDK.NET.dll;Microsoft.Windows.System.Power.Projection.dll;Microsoft.WindowsAppRuntime.Bootstrap.Net.dll;Microsoft.WinUI.dll;Microsoft.Xaml.Interactions.dll;Microsoft.Xaml.Interactivity.dll;PowerToys.Interop.dll;PowerToys.ManagedCommon.dll;System.Management.dll;PowerToys.ManagedTelemetry.dll;PowerToys.Settings.deps.json;PowerToys.Settings.dll;PowerToys.Settings.exe;PowerToys.Settings.runtimeconfig.json;PowerToys.Settings.UI.Lib.dll;resources.pri;System.IO.Abstractions.dll;System.Text.Json.dll;WinRT.Runtime.dll;Microsoft.Graphics.Canvas.dll;Microsoft.WindowsAppRuntime.Bootstrap.dll;CoreMessagingXP.dll;dcompi.dll;dwmcorei.dll;DwmSceneI.dll;DWriteCore.dll;marshal.dll;Microsoft.DirectManipulation.dll;Microsoft.InputStateManager.dll;Microsoft.Internal.FrameworkUdk.dll;Microsoft.UI.Composition.OSSupport.dll;Microsoft.UI.Input.dll;Microsoft.UI.Windowing.Core.dll;Microsoft.UI.Xaml.Controls.dll;Microsoft.UI.Xaml.Controls.pri;Microsoft.ui.xaml.dll;Microsoft.UI.Xaml.Internal.dll;Microsoft.UI.Xaml.Phone.dll;Microsoft.ui.xaml.resources.19h1.dll;Microsoft.ui.xaml.resources.common.dll;Microsoft.Web.WebView2.Core.dll;Microsoft.Windows.ApplicationModel.Resources.dll;Microsoft.Windows.AppNotifications.Projection.dll;Microsoft.Windows.PushNotifications.Projection.dll;Microsoft.Windows.System.Projection.dll;Microsoft.WindowsAppRuntime.dll;Microsoft.WindowsAppRuntime.Insights.Resource.dll;Microsoft.WindowsAppRuntime.Release.Net.dll;MRM.dll;PushNotificationsLongRunningTask.ProxyStub.dll;WindowsAppRuntime.png;WindowsAppSdk.AppxDeploymentExtensions.Desktop.dll;WinUIEdit.dll;wuceffectsi.dll?>
+  <?define SettingsV2Files=backup_restore_settings.json;Ijwhost.dll;ColorCode.Core.dll;ColorCode.WinUI.dll;CommunityToolkit.Common.dll;CommunityToolkit.Labs.WinUI.SettingsControls.dll;CommunityToolkit.WinUI.dll;CommunityToolkit.WinUI.UI.Controls.Core.dll;CommunityToolkit.WinUI.UI.Controls.DataGrid.dll;CommunityToolkit.WinUI.UI.Controls.Input.dll;CommunityToolkit.WinUI.UI.Controls.Layout.dll;CommunityToolkit.WinUI.UI.Controls.Markdown.dll;CommunityToolkit.WinUI.UI.Controls.Media.dll;CommunityToolkit.WinUI.UI.Controls.Primitives.dll;CommunityToolkit.WinUI.UI.dll;icon.ico;Microsoft.Graphics.Canvas.Interop.dll;Microsoft.InteractiveExperiences.Projection.dll;Microsoft.Windows.ApplicationModel.DynamicDependency.Projection.dll;Microsoft.Windows.ApplicationModel.Resources.Projection.dll;Microsoft.Windows.ApplicationModel.WindowsAppRuntime.Projection.dll;Microsoft.Windows.AppLifecycle.Projection.dll;Microsoft.Windows.SDK.NET.dll;Microsoft.Windows.System.Power.Projection.dll;Microsoft.WindowsAppRuntime.Bootstrap.Net.dll;Microsoft.WinUI.dll;Microsoft.Xaml.Interactions.dll;Microsoft.Xaml.Interactivity.dll;PowerToys.ManagedCommon.dll;PowerToys.ManagedTelemetry.dll;PowerToys.Settings.deps.json;PowerToys.Settings.dll;PowerToys.Settings.exe;PowerToys.Settings.runtimeconfig.json;PowerToys.Settings.UI.Lib.dll;resources.pri;System.IO.Abstractions.dll;WinRT.Runtime.dll;Microsoft.Graphics.Canvas.dll;PowerToys.GPOWrapper.dll?>
 
-  <?define SettingsV2AssetsModulesFiles=ColorPicker.png;FancyZones.png;AlwaysOnTop.png;Awake.png;ImageResizer.png;KBM.png;MouseUtils.png;PowerLauncher.png;PowerPreview.png;PowerRename.png;PT.png;ShortcutGuide.png;VideoConference.png?>
+  <?define SettingsV2AssetsModulesFiles=ColorPicker.png;FancyZones.png;FileLocksmith.png;AlwaysOnTop.png;HostsFileEditor.png;Awake.png;ImageResizer.png;KBM.png;MouseUtils.png;PowerAccent.png;PowerOCR.png;PowerLauncher.png;PowerPreview.png;PowerRename.png;PT.png;ScreenRuler.png;ShortcutGuide.png;VideoConference.png?>
 
-  <?define SettingsV2OOBEAssetsModulesFiles=ColorPicker.gif;AlwaysOnTop.png;Awake.png;FancyZones.gif;FileExplorer.png;ImageResizer.gif;KBM.gif;MouseUtils.gif;PowerRename.gif;Run.gif;OOBEShortcutGuide.png;VideoConferenceMute.png;OOBEPTHero.png?>
+  <?define SettingsV2OOBEAssetsModulesFiles=ColorPicker.gif;AlwaysOnTop.png;HostsFileEditor.png;Awake.png;FancyZones.gif;FileExplorer.png;FileLocksmith.gif;ImageResizer.gif;KBM.gif;MouseUtils.gif;PowerAccent.gif;PowerOCR.gif;PowerRename.gif;Run.gif;ScreenRuler.gif;OOBEShortcutGuide.png;VideoConferenceMute.png;OOBEPTHero.png?>
 
-  <?define SettingsV2OOBEAssetsFluentIconsFiles=ColorPicker.png;FancyZones.png;AlwaysOnTop.png;Awake.png;FileExplorerPreview.png;FindMyMouse.png;ImageResizer.png;KeyboardManager.png;MouseHighlighter.png;MouseCrosshairs.png;MouseUtils.png;PowerRename.png;PowerToys.png;PowerToysRun.png;Settings.png;ShortcutGuide.png;VideoConferenceMute.png?>
+  <?define SettingsV2OOBEAssetsFluentIconsFiles=ColorPicker.png;FancyZones.png;FileLocksmith.png;AlwaysOnTop.png;Awake.png;FileExplorerPreview.png;FindMyMouse.png;Hosts.png;ImageResizer.png;KeyboardManager.png;MouseHighlighter.png;MouseCrosshairs.png;MouseUtils.png;PowerAccent.png;PowerOcr.png;PowerRename.png;PowerToys.png;PowerToysRun.png;ScreenRuler.png;Settings.png;ShortcutGuide.png;VideoConferenceMute.png?>
 
 	<?define SettingsV2MicrosoftUIXamlAssetsInstallFiles=NoiseAsset_256x256_PNG.png?>
 
@@ -69,6 +78,8 @@
   <?define ProgramImagesComponentFiles=app.dark.png;app.light.png;disable.light.png;disable.dark.png;folder.light.png;folder.dark.png;shell.light.png;shell.dark.png;user.light.png;user.dark.png?>
 
   <?define ShellComponentFiles=plugin.json;Microsoft.Plugin.Shell.deps.json;Microsoft.Plugin.Shell.dll;PowerToys.ManagedTelemetry.dll?>
+
+  <?define HistoryPluginComponentFiles=plugin.json;Microsoft.PowerToys.Run.Plugin.History.deps.json;Microsoft.PowerToys.Run.Plugin.History.dll?>
 
   <?define ShellImagesComponentFiles=shell.light.png;shell.dark.png;user.light.png;user.dark.png?>
 
@@ -108,13 +119,35 @@
 
   <?define WinTermCmpFiles=plugin.json;Microsoft.PowerToys.Run.Plugin.WindowsTerminal.deps.json;Microsoft.PowerToys.Run.Plugin.WindowsTerminal.dll;PowerToys.ManagedTelemetry.dll?>
 
-  <?define PowerRenameFiles=PowerRenameUI.ico;Microsoft.WindowsAppRuntime.Bootstrap.dll;PowerToys.PowerRename.exe;resources.pri;PowerToys.PowerRenameExt.dll;CoreMessagingXP.dll;dcompi.dll;dwmcorei.dll;DwmSceneI.dll;DWriteCore.dll;marshal.dll;Microsoft.DirectManipulation.dll;Microsoft.InputStateManager.dll;Microsoft.Internal.FrameworkUdk.dll;Microsoft.UI.Composition.OSSupport.dll;Microsoft.UI.Input.dll;Microsoft.UI.Windowing.Core.dll;Microsoft.UI.Xaml.Controls.dll;Microsoft.UI.Xaml.Controls.pri;Microsoft.ui.xaml.dll;Microsoft.UI.Xaml.Internal.dll;Microsoft.UI.Xaml.Phone.dll;Microsoft.ui.xaml.resources.19h1.dll;Microsoft.ui.xaml.resources.common.dll;Microsoft.Web.WebView2.Core.dll;Microsoft.Windows.ApplicationModel.Resources.dll;Microsoft.WindowsAppRuntime.dll;Microsoft.WindowsAppRuntime.Insights.Resource.dll;Microsoft.WindowsAppRuntime.Release.Net.dll;MRM.dll;PushNotificationsLongRunningTask.ProxyStub.dll;WindowsAppRuntime.png;WindowsAppSdk.AppxDeploymentExtensions.Desktop.dll;WinUIEdit.dll;wuceffectsi.dll;PowerRenameContextMenuPackage.msix;PowerToys.PowerRenameContextMenu.dll?>
+  <?define PowerRenameFiles=PowerRenameUI.ico;PowerToys.PowerRename.exe;resources.pri;PowerToys.PowerRenameExt.dll;PowerRenameContextMenuPackage.msix;PowerToys.PowerRenameContextMenu.dll?>
+
+  <?define FileLocksmithFiles=Microsoft.Xaml.Interactions.dll;Microsoft.Xaml.Interactivity.dll;CommunityToolkit.WinUI.dll;CommunityToolkit.WinUI.UI.dll;CommunityToolkit.Common.dll;CommunityToolkit.Mvvm.dll;CommunityToolkit.Labs.WinUI.SettingsControls.dll;Ijwhost.dll;Microsoft.InteractiveExperiences.Projection.dll;Microsoft.Windows.ApplicationModel.DynamicDependency.Projection.dll;Microsoft.Windows.ApplicationModel.Resources.Projection.dll;Microsoft.Windows.ApplicationModel.WindowsAppRuntime.Projection.dll;Microsoft.Windows.AppLifecycle.Projection.dll;Microsoft.Windows.SDK.NET.dll;Microsoft.Windows.System.Power.Projection.dll;Microsoft.WindowsAppRuntime.Bootstrap.Net.dll;Microsoft.WinUI.dll;PowerToys.ManagedCommon.dll;PowerToys.ManagedTelemetry.dll;PowerToys.FileLocksmithExt.dll;PowerToys.FileLocksmithLib.Interop.dll;PowerToys.FileLocksmithUI.exe;PowerToys.FileLocksmithUI.dll;PowerToys.FileLocksmithUI.deps.json;PowerToys.FileLocksmithUI.runtimeconfig.json;System.Drawing.Common.dll;WinRT.Runtime.dll;WinUIEx.dll;resources.pri;PowerToys.GPOWrapper.dll?>
+
+  <?define FileLocksmithAssetsFiles=Icon.ico?>
 
   <?define PowerRenameSparsePackageAssets=LargeTile.png;SmallTile.png;SplashScreen.png;Square150x150Logo.png;Square44x44Logo.png;storelogo.png;Wide310x150Logo.png?>
 
   <?define ImageResizerSparsePackageAssets=LargeTile.png;SmallTile.png;SplashScreen.png;Square150x150Logo.png;Square44x44Logo.png;storelogo.png;Wide310x150Logo.png?>
 
-	<?define PowerRenameMicrosoftUIXamlAssetsInstallFiles=NoiseAsset_256x256_PNG.png?>
+  <?define MeasureToolFiles=Ijwhost.dll;Microsoft.InteractiveExperiences.Projection.dll;Microsoft.Windows.ApplicationModel.DynamicDependency.Projection.dll;Microsoft.Windows.ApplicationModel.Resources.Projection.dll;Microsoft.Windows.ApplicationModel.WindowsAppRuntime.Projection.dll;Microsoft.Windows.AppLifecycle.Projection.dll;Microsoft.Windows.SDK.NET.dll;Microsoft.Windows.System.Power.Projection.dll;Microsoft.WindowsAppRuntime.Bootstrap.Net.dll;Microsoft.WinUI.dll;PowerToys.ManagedCommon.dll;PowerToys.ManagedTelemetry.dll;PowerToys.MeasureToolCore.dll;PowerToys.MeasureToolUI.deps.json;PowerToys.MeasureToolUI.dll;PowerToys.MeasureToolUI.exe;PowerToys.MeasureToolUI.runtimeconfig.json;resources.pri;WinRT.Runtime.dll;WinUIEx.dll;PowerToys.GPOWrapper.dll?>
+
+  <?define HostsFiles=ColorCode.Core.dll;ColorCode.WinUI.dll;CommunityToolkit.Common.dll;CommunityToolkit.Mvvm.dll;CommunityToolkit.WinUI.dll;CommunityToolkit.WinUI.UI.Controls.Core.dll;CommunityToolkit.WinUI.UI.Controls.DataGrid.dll;CommunityToolkit.WinUI.UI.Controls.Input.dll;CommunityToolkit.WinUI.UI.Controls.Layout.dll;CommunityToolkit.WinUI.UI.Controls.Markdown.dll;CommunityToolkit.WinUI.UI.Controls.Media.dll;CommunityToolkit.WinUI.UI.Controls.Primitives.dll;CommunityToolkit.WinUI.UI.dll;ControlzEx.dll;Ijwhost.dll;Microsoft.Extensions.Configuration.Abstractions.dll;Microsoft.Extensions.Configuration.Binder.dll;Microsoft.Extensions.Configuration.CommandLine.dll;Microsoft.Extensions.Configuration.dll;Microsoft.Extensions.Configuration.EnvironmentVariables.dll;Microsoft.Extensions.Configuration.FileExtensions.dll;Microsoft.Extensions.Configuration.Json.dll;Microsoft.Extensions.Configuration.UserSecrets.dll;Microsoft.Extensions.DependencyInjection.Abstractions.dll;Microsoft.Extensions.DependencyInjection.dll;Microsoft.Extensions.FileProviders.Abstractions.dll;Microsoft.Extensions.FileProviders.Physical.dll;Microsoft.Extensions.FileSystemGlobbing.dll;Microsoft.Extensions.Hosting.Abstractions.dll;Microsoft.Extensions.Hosting.dll;Microsoft.Extensions.Logging.Abstractions.dll;Microsoft.Extensions.Logging.Configuration.dll;Microsoft.Extensions.Logging.Console.dll;Microsoft.Extensions.Logging.Debug.dll;Microsoft.Extensions.Logging.dll;Microsoft.Extensions.Logging.EventLog.dll;Microsoft.Extensions.Logging.EventSource.dll;Microsoft.Extensions.Options.ConfigurationExtensions.dll;Microsoft.Extensions.Options.dll;Microsoft.Extensions.Primitives.dll;Microsoft.Graphics.Canvas.Interop.dll;Microsoft.InteractiveExperiences.Projection.dll;Microsoft.Windows.ApplicationModel.DynamicDependency.Projection.dll;Microsoft.Windows.ApplicationModel.Resources.Projection.dll;Microsoft.Windows.ApplicationModel.WindowsAppRuntime.Projection.dll;Microsoft.Windows.AppLifecycle.Projection.dll;Microsoft.Windows.SDK.NET.dll;Microsoft.Windows.System.Power.Projection.dll;Microsoft.WindowsAppRuntime.Bootstrap.Net.dll;Microsoft.WinUI.dll;Microsoft.Xaml.Behaviors.dll;Microsoft.Xaml.Interactions.dll;Microsoft.Xaml.Interactivity.dll;PowerToys.Common.UI.dll;PowerToys.Hosts.deps.json;PowerToys.Hosts.dll;PowerToys.Hosts.exe;PowerToys.Hosts.runtimeconfig.json;PowerToys.ManagedCommon.dll;PowerToys.ManagedTelemetry.dll;PowerToys.Settings.UI.Lib.dll;resources.pri;System.IO.Abstractions.dll;WinRT.Runtime.dll;WinUIEx.dll;PowerToys.GPOWrapper.dll?>
+
+  <?define PowerRenameMicrosoftUIXamlAssetsInstallFiles=NoiseAsset_256x256_PNG.png?>
+
+  <?define WinAppSDKFiles=CoreMessagingXP.dll;DWriteCore.dll;DwmSceneI.dll;MRM.dll;Microsoft.DirectManipulation.dll;Microsoft.InputStateManager.dll;Microsoft.Internal.FrameworkUdk.dll;Microsoft.UI.Composition.OSSupport.dll;Microsoft.UI.Input.dll;Microsoft.UI.Windowing.Core.dll;Microsoft.UI.Xaml.Controls.dll;Microsoft.UI.Xaml.Controls.pri;Microsoft.UI.Xaml.Internal.dll;Microsoft.UI.Xaml.Phone.dll;Microsoft.Web.WebView2.Core.dll;Microsoft.Windows.AppNotifications.Projection.dll;Microsoft.Windows.ApplicationModel.Resources.dll;Microsoft.WindowsAppRuntime.Bootstrap.dll;Microsoft.Windows.PushNotifications.Projection.dll;Microsoft.Windows.System.Projection.dll;Microsoft.WindowsAppRuntime.Insights.Resource.dll;Microsoft.WindowsAppRuntime.Release.Net.dll;Microsoft.WindowsAppRuntime.dll;Microsoft.ui.xaml.dll;Microsoft.ui.xaml.resources.19h1.dll;Microsoft.ui.xaml.resources.common.dll;PushNotificationsLongRunningTask.ProxyStub.dll;WinUIEdit.dll;WindowsAppRuntime.png;WindowsAppSdk.AppxDeploymentExtensions.Desktop.dll;dcompi.dll;dwmcorei.dll;marshal.dll;wuceffectsi.dll?>
+
+  <?define PowerToysInteropFiles=concrt140.dll;msvcp140.dll;msvcp140_1.dll;msvcp140_2.dll;msvcp140_atomic_wait.dll;msvcp140_codecvt_ids.dll;PowerToys.Interop.dll;vcamp140.dll;vccorlib140.dll;vcomp140.dll;vcruntime140.dll;vcruntime140_1.dll?>
+
+  <?define MeasureToolMicrosoftUIXamlAssetsInstallFiles=NoiseAsset_256x256_PNG.png?>
+  
+  <?define HostsMicrosoftUIXamlAssetsInstallFiles=NoiseAsset_256x256_PNG.png?>
+
+	<?define PowerAccentFiles=ControlzEx.dll;Ijwhost.dll;Microsoft.Xaml.Behaviors.dll;PowerAccent.Core.dll;PowerToys.PowerAccentModuleInterface.dll;PowerToys.ManagedCommon.dll;PowerToys.ManagedTelemetry.dll;PowerToys.PowerAccent.deps.json;PowerToys.PowerAccent.dll;PowerToys.PowerAccent.exe;PowerToys.PowerAccent.runtimeconfig.json;PowerToys.Common.UI.dll;PowerToys.Settings.UI.Lib.dll;System.IO.Abstractions.dll;Vanara.Core.dll;Vanara.PInvoke.ComCtl32.dll;Vanara.PInvoke.Cryptography.dll;Vanara.PInvoke.Gdi32.dll;Vanara.PInvoke.Kernel32.dll;Vanara.PInvoke.Ole.dll;Vanara.PInvoke.Rpc.dll;Vanara.PInvoke.Security.dll;Vanara.PInvoke.Shared.dll;Vanara.PInvoke.Shell32.dll;Vanara.PInvoke.ShlwApi.dll;Vanara.PInvoke.User32.dll;PowerToys.PowerAccentKeyboardService.dll;Microsoft.Windows.SDK.NET.dll;WinRT.Runtime.dll;PowerToys.GPOWrapper.dll;UnicodeInformation.dll;ModernWpf.dll;ModernWpf.Controls.dll?>
+  
+  <?define DotnetRuntimeFiles= ?>
+
+  <?define DotnetRuntimeWPFFiles= ?>
 
   <Product Id="*"
        Name="PowerToys (Preview)"
@@ -209,10 +242,25 @@
       <Custom Action="SetRegisterPowerToysSchTaskParam" Before="RegisterPowerToysSchTask" />
       <Custom Action="SetApplyModulesRegistryChangeSetsParam" Before="ApplyModulesRegistryChangeSets" />
       <Custom Action="SetUnApplyModulesRegistryChangeSetsParam" Before="UnApplyModulesRegistryChangeSets" />
+      <Custom Action="SetCreateWinAppSDKHardlinksParam" Before="CreateWinAppSDKHardlinks" />
+      <Custom Action="SetDeleteWinAppSDKHardlinksParam" Before="DeleteWinAppSDKHardlinks" />
+      <Custom Action="SetCreatePTInteropHardlinksParam" Before="CreatePTInteropHardlinks" />
+      <Custom Action="SetDeletePTInteropHardlinksParam" Before="DeletePTInteropHardlinks" />
+      <Custom Action="SetCreateDotnetRuntimeHardlinksParam" Before="CreateDotnetRuntimeHardlinks" />
+      <Custom Action="SetDeleteDotnetRuntimeHardlinksParam" Before="DeleteDotnetRuntimeHardlinks" />
       <Custom Action="RegisterPowerToysSchTask" After="InstallFiles">
         NOT Installed and CREATESCHEDULEDTASK = 1
       </Custom>
       <Custom Action="ApplyModulesRegistryChangeSets" After="InstallFiles">
+        NOT Installed
+      </Custom>
+      <Custom Action="CreateWinAppSDKHardlinks" After="InstallFiles">
+        NOT Installed
+      </Custom>
+      <Custom Action="CreatePTInteropHardlinks" After="InstallFiles">
+        NOT Installed
+      </Custom>
+      <Custom Action="CreateDotnetRuntimeHardlinks" After="InstallFiles">
         NOT Installed
       </Custom>
       <Custom Action="WixCloseApplications" Before="RemoveFiles" />
@@ -231,6 +279,16 @@
         Installed AND (REMOVE="ALL")
       </Custom>
       <Custom Action="UnRegisterContextMenuPackages" Before="RemoveFiles">
+        Installed AND (REMOVE="ALL")
+      </Custom>
+      <Custom Action="DeleteWinAppSDKHardlinks" Before="RemoveFiles">
+        Installed AND (REMOVE="ALL")
+      </Custom>
+      <Custom Action="DeletePTInteropHardlinks" Before="RemoveFiles">
+        Installed AND (REMOVE="ALL")
+      </Custom>
+
+      <Custom Action="DeleteDotnetRuntimeHardlinks" Before="RemoveFiles">
         Installed AND (REMOVE="ALL")
       </Custom>
 
@@ -271,6 +329,30 @@
                     Property="UnApplyModulesRegistryChangeSets"
                     Value="[INSTALLFOLDER]" />
 
+    <CustomAction Id="SetCreateWinAppSDKHardlinksParam"
+                    Property="CreateWinAppSDKHardlinks"
+                    Value="[INSTALLFOLDER]" />
+
+    <CustomAction Id="SetDeleteWinAppSDKHardlinksParam"
+                    Property="DeleteWinAppSDKHardlinks"
+                    Value="[INSTALLFOLDER]" />
+
+    <CustomAction Id="SetCreatePTInteropHardlinksParam"
+                    Property="CreatePTInteropHardlinks"
+                    Value="[INSTALLFOLDER]" />
+
+    <CustomAction Id="SetDeletePTInteropHardlinksParam"
+                    Property="DeletePTInteropHardlinks"
+                    Value="[INSTALLFOLDER]" />
+
+    <CustomAction Id="SetCreateDotnetRuntimeHardlinksParam"
+                    Property="CreateDotnetRuntimeHardlinks"
+                    Value="[INSTALLFOLDER]" />
+
+    <CustomAction Id="SetDeleteDotnetRuntimeHardlinksParam"
+                    Property="DeleteDotnetRuntimeHardlinks"
+                    Value="[INSTALLFOLDER]" />
+
     <!-- Needs to Impersonate="no" and Execute="deferred" in order to run elevated. -->
     <CustomAction Id="RegisterPowerToysSchTask"
                   Return="ignore"
@@ -279,6 +361,52 @@
                   BinaryKey="PTCustomActions"
                   DllEntry="CreateScheduledTaskCA"
                    />
+
+    <CustomAction Id="DeleteWinAppSDKHardlinks"
+                      Return="ignore"
+                Impersonate="no"
+                Execute="deferred"
+                BinaryKey="PTCustomActions"
+                DllEntry="DeleteWinAppSDKHardlinksCA"
+                  />
+
+    <CustomAction Id="CreateWinAppSDKHardlinks"
+                      Return="ignore"
+                Impersonate="no"
+                Execute="deferred"
+                BinaryKey="PTCustomActions"
+                DllEntry="CreateWinAppSDKHardlinksCA"
+                  />
+
+    <CustomAction Id="DeletePTInteropHardlinks"
+                      Return="ignore"
+                Impersonate="no"
+                Execute="deferred"
+                BinaryKey="PTCustomActions"
+                DllEntry="DeletePTInteropHardlinksCA"
+                  />
+
+    <CustomAction Id="CreatePTInteropHardlinks"
+                      Return="ignore"
+                Impersonate="no"
+                Execute="deferred"
+                BinaryKey="PTCustomActions"
+                DllEntry="CreatePTInteropHardlinksCA"
+                  />
+
+    <CustomAction Id="DeleteDotnetRuntimeHardlinks"
+                Impersonate="no"
+                Execute="deferred"
+                BinaryKey="PTCustomActions"
+                DllEntry="DeleteDotnetRuntimeHardlinksCA"
+                  />
+
+    <CustomAction Id="CreateDotnetRuntimeHardlinks"
+                Impersonate="no"
+                Execute="deferred"
+                BinaryKey="PTCustomActions"
+                DllEntry="CreateDotnetRuntimeHardlinksCA"
+                  />
 
     <CustomAction Id="RemovePowerToysSchTasks"
                   Return="ignore"
@@ -389,7 +517,6 @@
                 DllEntry="UnRegisterContextMenuPackagesCA"
                   />
 
-
     <!-- Close 'PowerToys.exe' before uninstall-->
     <Property Id="MSIRESTARTMANAGERCONTROL" Value="DisableShutdown" />
     <Property Id="MSIFASTINSTALL" Value="DisableShutdown" />
@@ -404,10 +531,20 @@
     <Directory Id="TARGETDIR" Name="SourceDir">
       <Directory Id="ProgramFiles64Folder">
         <Directory Id="INSTALLFOLDER" Name="PowerToys">
+          <Directory Id="DllsFolder" Name="dll">
+            <Directory Id="DotnetDlls" Name="dotnet" />
+            <Directory Id="WinAppSDKDlls" Name="WinAppSDK" />
+            <Directory Id="PowerToysInteropDlls" Name="Interop" />
+          </Directory>
           <Directory Id="ToolsFolder" Name="Tools"/>
           <Directory Id="ModulesInstallFolder" Name="modules">
             <Directory Id="ImageResizerInstallFolder" Name="$(var.ImageResizerProjectName)">
               <Directory Id="ImageResizerAssetsFolder" Name="Assets" />
+            </Directory>
+            <Directory Id="PowerAccentInstallFolder" Name="$(var.PowerAccentProjectName)">
+            </Directory>
+            <Directory Id="FileLocksmithInstallFolder" Name="$(var.FileLocksmithProjectName)">
+              <Directory Id="FileLocksmithAssetsInstallFolder" Name="Assets" />
             </Directory>
             <Directory Id="PowerRenameInstallFolder" Name="$(var.PowerRenameProjectName)">
               <Directory Id="PowerRenameAssetsFolder" Name="Assets" />
@@ -429,6 +566,7 @@
               <Directory Id="MonacoPreviewHandlerMonacoSRCFolder" Name="monacoSRC" />
             </Directory>
             <Directory Id="FancyZonesInstallFolder" Name="$(var.FancyZonesProjectName)" />
+            <Directory Id="PowerOCRInstallFolder" Name="$(var.PowerOCRProjectName)" />
             <Directory Id="AwakeInstallFolder" Name="$(var.AwakeProjectName)">
               <Directory Id="AwakeImagesFolder" Name="Images" />
             </Directory>
@@ -452,6 +590,21 @@
             <Directory Id="AlwaysOnTopInstallFolder" Name="$(var.AlwaysOnTopProjectName)">
             </Directory>
 
+            <!-- MeasureTool -->
+            <Directory Id="MeasureToolInstallFolder" Name="$(var.MeasureToolProjectName)">
+                <Directory Id="MeasureToolMicrosoftUIXamlInstallFolder" Name="Microsoft.UI.Xaml">
+                  <Directory Id="MeasureToolMicrosoftUIXamlAssetsInstallFolder" Name="Assets" />
+                </Directory>
+            </Directory>
+            
+            <!-- Hosts -->
+            <Directory Id="HostsInstallFolder" Name="$(var.HostsProjectName)">
+              <Directory Id="HostsAssetsFolder" Name="Assets" />
+              <Directory Id="HostsMicrosoftUIXamlInstallFolder" Name="Microsoft.UI.Xaml">
+                <Directory Id="HostsMicrosoftUIXamlAssetsInstallFolder" Name="Assets" />
+              </Directory>
+            </Directory>
+            
             <!-- Launcher -->
             <Directory Id="LauncherInstallFolder" Name="launcher">
               <Directory Id="LauncherImagesFolder" Name="Images" />
@@ -487,6 +640,10 @@
                   <Directory Id="UriImagesFolder" Name="Images" />
                   <Directory Id="UriLanguagesFolder" Name="Languages" />
                 </Directory>
+                <Directory Id="HistoryPluginFolder" Name="History">
+                  <Directory Id="HistoryImagesFolder" Name="Images" />
+                  <Directory Id="HistoryLanguagesFolder" Name="Languages" />
+                </Directory>								
                 <Directory Id="UnitConverterPluginFolder" Name="UnitConverter">
                   <Directory Id="UnitConverterImagesFolder" Name="Images" />
                   <Directory Id="UnitConverterLanguagesFolder" Name="Languages" />
@@ -558,16 +715,16 @@
     <DirectoryRef Id="INSTALLFOLDER" FileSource="$(var.BinDir)">
       <Component Id="powertoys_toast_clsid" Win64="yes">
         <RemoveFolder Id='Remove_powertoys_toast_clsid' On='uninstall' />
-        <RegistryKey Root="HKCR" Key="Software\Classes\CLSID\{DD5CACDA-7C2E-4997-A62A-04A597B58F76}">
+        <RegistryKey Root="HKCU" Key="Software\Classes\CLSID\{DD5CACDA-7C2E-4997-A62A-04A597B58F76}">
           <RegistryValue Type="string" Value="PowerToys Toast Notifications Background Activator" />
           <RegistryValue Type="string" Key="LocalServer32" Value="[INSTALLFOLDER]PowerToys.exe -ToastActivated" />
           <RegistryValue Type="string" Key="LocalServer32" Name="ThreadingModel" Value="Apartment" />
         </RegistryKey>
       </Component>
-      <Component Id="powertoys_exe" Win64="yes">
-        <File Id="PowerToys.exe" KeyPath="yes" Checksum="yes" />
-        <RegistryKey Root="HKLM" Key="Software\Classes\powertoys">
-          <RegistryValue Type="string" Name="URL Protocol" Value=""/>
+      <Component Id="powertoys_exe" Win64="yes" Guid="30261594-41A6-4509-AD09-FBC4E692F441">
+        <File Id="PowerToys.exe" Checksum="yes" />
+        <RegistryKey Root="HKCU" Key="Software\Classes\powertoys">
+          <RegistryValue Type="string" Name="URL Protocol" Value="" KeyPath="yes"/>
           <RegistryValue Type="string" Value="URL:PowerToys custom internal URI protocol"/>
           <RegistryKey Key="DefaultIcon">
             <RegistryValue Type="string" Value="PowerToys.exe" />
@@ -591,9 +748,6 @@
       </Component>
       <Component Id="Notice_md" Win64="yes">
         <File Source="$(var.RepoDir)\Notice.md" Id="Notice.md" KeyPath="yes" />
-      </Component>
-      <Component Id="powertoysinterop_dll" Win64="yes">
-        <File Id="PowerToys.Interop.dll" KeyPath="yes" Checksum="yes" />
       </Component>
     </DirectoryRef>
 
@@ -644,14 +798,42 @@
       </Component>
     </DirectoryRef>
 
+    <DirectoryRef Id="DotnetDlls">
+      <!-- !Warning! Make sure to change Component Guid if you update the file list -->
+      <Component Id="Dlls_DotnetFiles_Component" Guid="19488F16-3399-40AB-B7C4-CE3F27C1B294" Win64="yes">
+      <?foreach File in $(var.DotnetRuntimeFiles)?>
+        <File Source="$(var.BinDir)Settings\$(var.File)" />
+      <?endforeach?>
+      <?foreach File in $(var.DotnetRuntimeWPFFiles)?>
+        <File Source="$(var.BinDir)\modules\\ColorPicker\$(var.File)" />
+      <?endforeach?>
+      </Component>
+    </DirectoryRef>
+
+    <DirectoryRef Id="WinAppSDKDlls">
+      <?foreach File in $(var.WinAppSDKFiles)?>
+      <Component Id="Dlls_WinAppSdkFiles_$(var.File)" Win64="yes">
+        <File Id="Dlls_WinAppSdk_File_$(var.File)" Source="$(var.BinDir)Settings\$(var.File)" />
+      </Component>
+      <?endforeach?>
+    </DirectoryRef>
+
+    <DirectoryRef Id="PowerToysInteropDlls">
+      <?foreach File in $(var.PowerToysInteropFiles)?>
+      <Component Id="Dlls_PowerToysInteropFiles_$(var.File)" Win64="yes">
+        <File Id="Dlls_PowerToysInterop_File_$(var.File)" Source="$(var.BinDir)\$(var.File)" />
+      </Component>
+      <?endforeach?>
+    </DirectoryRef>
+
     <DirectoryRef Id="ModulesInstallFolder" FileSource="$(var.BinDir)modules\">
       <Component Id="Module_PowerPreview_Registry" Win64="yes">
         <!-- Update Key to use IE11 for prevhost.exe -->
-        <RegistryKey Root="HKLM" Key="Software\Microsoft\Internet Explorer\Main\FeatureControl\FEATURE_BROWSER_EMULATION">
+        <RegistryKey Root="HKCU" Key="Software\Microsoft\Internet Explorer\Main\FeatureControl\FEATURE_BROWSER_EMULATION">
           <RegistryValue Type="integer" Name="prevhost.exe" Value="11000" />
         </RegistryKey>
         <!-- Update Key to use IE11 for dllhost.exe -->
-        <RegistryKey Root="HKLM" Key="Software\Microsoft\Internet Explorer\Main\FeatureControl\FEATURE_BROWSER_EMULATION">
+        <RegistryKey Root="HKCU" Key="Software\Microsoft\Internet Explorer\Main\FeatureControl\FEATURE_BROWSER_EMULATION">
           <RegistryValue Type="integer" Name="dllhost.exe" Value="11000" />
         </RegistryKey>
       </Component>
@@ -665,7 +847,7 @@
       </Component>
       <?endforeach?>
       <Component Id="Module_ImageResizer_Registry" Win64="yes">
-        <RegistryKey Root="HKLM" Key="Software\Classes\CLSID\{51B4D7E5-7568-4234-B4BB-47FB3C016A69}\InprocServer32">
+        <RegistryKey Root="HKCU" Key="Software\Classes\CLSID\{51B4D7E5-7568-4234-B4BB-47FB3C016A69}\InprocServer32">
           <RegistryValue Value="[ImageResizerInstallFolder]PowerToys.ImageResizerExt.dll" Type="string" />
           <RegistryValue Name="ThreadingModel" Value="Apartment" Type="string" />
         </RegistryKey>
@@ -677,61 +859,61 @@
                                Value="{51B4D7E5-7568-4234-B4BB-47FB3C016A69}"
                                Type="string" />
                                -->
-        <RegistryValue Root="HKCR"
-                       Key="Directory\ShellEx\DragDropHandlers\ImageResizer"
+        <RegistryValue Root="HKCU"
+                       Key="SOFTWARE\Classes\Directory\ShellEx\DragDropHandlers\ImageResizer"
                        Value="{51B4D7E5-7568-4234-B4BB-47FB3C016A69}"
                        Type="string" />
         <!-- Registry Keys for the context menu handler for each of the following image formats: bmp, dib, gif, jfif, jpe, jpeg, jpg, jxr, png, rle, tif, tiff, wdp  -->
-        <RegistryValue Root="HKCR"
-                         Key="SystemFileAssociations\.bmp\ShellEx\ContextMenuHandlers\ImageResizer"
+        <RegistryValue Root="HKCU"
+                         Key="SOFTWARE\Classes\SystemFileAssociations\.bmp\ShellEx\ContextMenuHandlers\ImageResizer"
                          Value="{51B4D7E5-7568-4234-B4BB-47FB3C016A69}"
                          Type="string" />
-        <RegistryValue Root="HKCR"
-                       Key="SystemFileAssociations\.dib\ShellEx\ContextMenuHandlers\ImageResizer"
+        <RegistryValue Root="HKCU"
+                       Key="SOFTWARE\Classes\SystemFileAssociations\.dib\ShellEx\ContextMenuHandlers\ImageResizer"
                        Value="{51B4D7E5-7568-4234-B4BB-47FB3C016A69}"
                        Type="string" />
-        <RegistryValue Root="HKCR"
-                       Key="SystemFileAssociations\.gif\ShellEx\ContextMenuHandlers\ImageResizer"
+        <RegistryValue Root="HKCU"
+                       Key="SOFTWARE\Classes\SystemFileAssociations\.gif\ShellEx\ContextMenuHandlers\ImageResizer"
                        Value="{51B4D7E5-7568-4234-B4BB-47FB3C016A69}"
                        Type="string" />
-        <RegistryValue Root="HKCR"
-                       Key="SystemFileAssociations\.jfif\ShellEx\ContextMenuHandlers\ImageResizer"
+        <RegistryValue Root="HKCU"
+                       Key="SOFTWARE\Classes\SystemFileAssociations\.jfif\ShellEx\ContextMenuHandlers\ImageResizer"
                        Value="{51B4D7E5-7568-4234-B4BB-47FB3C016A69}"
                        Type="string" />
-        <RegistryValue Root="HKCR"
-                       Key="SystemFileAssociations\.jpe\ShellEx\ContextMenuHandlers\ImageResizer"
+        <RegistryValue Root="HKCU"
+                       Key="SOFTWARE\Classes\SystemFileAssociations\.jpe\ShellEx\ContextMenuHandlers\ImageResizer"
                        Value="{51B4D7E5-7568-4234-B4BB-47FB3C016A69}"
                        Type="string" />
-        <RegistryValue Root="HKCR"
-                       Key="SystemFileAssociations\.jpeg\ShellEx\ContextMenuHandlers\ImageResizer"
+        <RegistryValue Root="HKCU"
+                       Key="SOFTWARE\Classes\SystemFileAssociations\.jpeg\ShellEx\ContextMenuHandlers\ImageResizer"
                        Value="{51B4D7E5-7568-4234-B4BB-47FB3C016A69}"
                        Type="string" />
-        <RegistryValue Root="HKCR"
-                       Key="SystemFileAssociations\.jpg\ShellEx\ContextMenuHandlers\ImageResizer"
+        <RegistryValue Root="HKCU"
+                       Key="SOFTWARE\Classes\SystemFileAssociations\.jpg\ShellEx\ContextMenuHandlers\ImageResizer"
                        Value="{51B4D7E5-7568-4234-B4BB-47FB3C016A69}"
                        Type="string" />
-        <RegistryValue Root="HKCR"
-                       Key="SystemFileAssociations\.jxr\ShellEx\ContextMenuHandlers\ImageResizer"
+        <RegistryValue Root="HKCU"
+                       Key="SOFTWARE\Classes\SystemFileAssociations\.jxr\ShellEx\ContextMenuHandlers\ImageResizer"
                        Value="{51B4D7E5-7568-4234-B4BB-47FB3C016A69}"
                        Type="string" />
-        <RegistryValue Root="HKCR"
-                       Key="SystemFileAssociations\.png\ShellEx\ContextMenuHandlers\ImageResizer"
+        <RegistryValue Root="HKCU"
+                       Key="SOFTWARE\Classes\SystemFileAssociations\.png\ShellEx\ContextMenuHandlers\ImageResizer"
                        Value="{51B4D7E5-7568-4234-B4BB-47FB3C016A69}"
                        Type="string" />
-        <RegistryValue Root="HKCR"
-                       Key="SystemFileAssociations\.rle\ShellEx\ContextMenuHandlers\ImageResizer"
+        <RegistryValue Root="HKCU"
+                       Key="SOFTWARE\Classes\SystemFileAssociations\.rle\ShellEx\ContextMenuHandlers\ImageResizer"
                        Value="{51B4D7E5-7568-4234-B4BB-47FB3C016A69}"
                        Type="string" />
-        <RegistryValue Root="HKCR"
-                       Key="SystemFileAssociations\.tif\ShellEx\ContextMenuHandlers\ImageResizer"
+        <RegistryValue Root="HKCU"
+                       Key="SOFTWARE\Classes\SystemFileAssociations\.tif\ShellEx\ContextMenuHandlers\ImageResizer"
                        Value="{51B4D7E5-7568-4234-B4BB-47FB3C016A69}"
                        Type="string" />
-        <RegistryValue Root="HKCR"
-                       Key="SystemFileAssociations\.tiff\ShellEx\ContextMenuHandlers\ImageResizer"
+        <RegistryValue Root="HKCU"
+                       Key="SOFTWARE\Classes\SystemFileAssociations\.tiff\ShellEx\ContextMenuHandlers\ImageResizer"
                        Value="{51B4D7E5-7568-4234-B4BB-47FB3C016A69}"
                        Type="string" />
-        <RegistryValue Root="HKCR"
-                       Key="SystemFileAssociations\.wdp\ShellEx\ContextMenuHandlers\ImageResizer"
+        <RegistryValue Root="HKCU"
+                       Key="SOFTWARE\Classes\SystemFileAssociations\.wdp\ShellEx\ContextMenuHandlers\ImageResizer"
                        Value="{51B4D7E5-7568-4234-B4BB-47FB3C016A69}"
                        Type="string" />
       </Component>
@@ -746,6 +928,61 @@
       </Component>
     </DirectoryRef>
 
+    <!-- PowerAccent -->
+    <DirectoryRef Id="PowerAccentInstallFolder" FileSource="$(var.BinDir)modules\$(var.PowerAccentProjectName)">
+      <?foreach File in $(var.PowerAccentFiles)?>
+      <Component Id="PowerAccent_$(var.File)" Win64="yes">
+        <File Id="PowerAccentFile_$(var.File)" Source="$(var.BinDir)modules\$(var.PowerAccentProjectName)\$(var.File)" />
+      </Component>
+      <?endforeach?>
+    </DirectoryRef>
+
+    <!-- FileLocksmith -->
+    <DirectoryRef Id="FileLocksmithInstallFolder" FileSource="$(var.BinDir)modules\$(var.FileLocksmithProjectName)">
+      <?foreach File in $(var.FileLocksmithFiles)?>
+      <Component Id="FileLocksmith_$(var.File)" Win64="yes">
+        <File Id="FileLocksmithFile_$(var.File)" Source="$(var.BinDir)modules\$(var.FileLocksmithProjectName)\$(var.File)" />
+      </Component>
+      <?endforeach?>
+      <!-- !Warning! Make sure to change Component Guid if you update something here -->
+      <Component Id="Module_FileLocksmith" Guid="108D3EC1-E6E0-4E81-88EF-25966133CB41" Win64="yes">
+        <RegistryKey Root="HKCU" Key="Software\Classes\CLSID\{84D68575-E186-46AD-B0CB-BAEB45EE29C0}">
+          <RegistryValue Type="string" Value="File Locksmith Shell Extension" />
+          <RegistryValue Type="string" Name="ContextMenuOptIn" Value="" />
+          <RegistryValue Type="string" Key="InprocServer32" Value="[FileLocksmithInstallFolder]PowerToys.FileLocksmithExt.dll" />
+          <RegistryValue Type="string" Key="InprocServer32" Name="ThreadingModel" Value="Apartment" />
+        </RegistryKey>
+        <RegistryKey Root="HKCU" Key="Software\Classes\AllFileSystemObjects\ShellEx\ContextMenuHandlers\FileLocksmithExt">
+          <RegistryValue Type="string" Value="{84D68575-E186-46AD-B0CB-BAEB45EE29C0}"/>
+        </RegistryKey>
+        <RegistryKey Root="HKCU" Key="Software\Classes\Drive\ShellEx\ContextMenuHandlers\FileLocksmithExt">
+          <RegistryValue Type="string" Value="{84D68575-E186-46AD-B0CB-BAEB45EE29C0}"/>
+        </RegistryKey>
+        </Component>
+    </DirectoryRef>
+    <DirectoryRef Id="FileLocksmithAssetsInstallFolder" FileSource="$(var.BinDir)modules\$(var.FileLocksmithProjectName)\Assets">
+      <?foreach File in $(var.FileLocksmithAssetsFiles)?>
+      <Component Id="FileLocksmith_Assets_$(var.File)" Win64="yes">
+        <File Id="FileLocksmithAssetsFile_$(var.File)" Source="$(var.BinDir)modules\$(var.FileLocksmithProjectName)\Assets\$(var.File)" />
+      </Component>
+      <?endforeach?>
+      <Component Id="FileLocksmith_Assets_Applist_Scale100" Win64="yes">
+        <File Id="FL_AppList_Scale100" Source="$(var.BinDir)modules\$(var.FileLocksmithProjectName)\Assets\AppList.scale-100.png" />
+      </Component>
+      <Component Id="FileLocksmith_Assets_Applist_Scale125" Win64="yes">
+        <File Id="FL_AppList_Scale125" Source="$(var.BinDir)modules\$(var.FileLocksmithProjectName)\Assets\AppList.scale-125.png" />
+      </Component>
+      <Component Id="FileLocksmith_Assets_Applist_Scale150" Win64="yes">
+        <File Id="FL_AppList_Scale150" Source="$(var.BinDir)modules\$(var.FileLocksmithProjectName)\Assets\AppList.scale-150.png" />
+      </Component>
+      <Component Id="FileLocksmith_Assets_Applist_Scale200" Win64="yes">
+        <File Id="FL_AppList_Scale200" Source="$(var.BinDir)modules\$(var.FileLocksmithProjectName)\Assets\AppList.scale-200.png" />
+      </Component>
+      <Component Id="FileLocksmith_Assets_Applist_Scale400" Win64="yes">
+        <File Id="FL_AppList_Scale400" Source="$(var.BinDir)modules\$(var.FileLocksmithProjectName)\Assets\AppList.scale-400.png" />
+      </Component>
+    </DirectoryRef>
+
     <!-- PowerRename -->
     <DirectoryRef Id="PowerRenameInstallFolder" FileSource="$(var.BinDir)modules\$(var.PowerRenameProjectName)">
       <?foreach File in $(var.PowerRenameFiles)?>
@@ -755,25 +992,26 @@
       <?endforeach?>
       <!-- !Warning! Make sure to change Component Guid if you update something here -->
       <Component Id="Module_PowerRename" Guid="40D43079-240E-402D-8CE8-571BFFA71175" Win64="yes">
-        <RegistryKey Root="HKLM" Key="Software\Classes\CLSID\{0440049F-D1DC-4E46-B27B-98393D79486B}">
+        <RegistryKey Root="HKCU" Key="Software\Classes\CLSID\{0440049F-D1DC-4E46-B27B-98393D79486B}">
           <RegistryValue Type="string" Value="PowerRename Shell Extension" />
           <RegistryValue Type="string" Name="ContextMenuOptIn" Value="" />
           <RegistryValue Type="string" Key="InprocServer32" Value="[PowerRenameInstallFolder]PowerToys.PowerRenameExt.dll" />
           <RegistryValue Type="string" Key="InprocServer32" Name="ThreadingModel" Value="Apartment" />
         </RegistryKey>
-        <RegistryKey Root="HKLM" Key="Software\Classes\AllFileSystemObjects\ShellEx\ContextMenuHandlers\PowerRenameExt">
+        <RegistryKey Root="HKCU" Key="SOFTWARE\Classes\AllFileSystemObjects\ShellEx\ContextMenuHandlers\PowerRenameExt">
           <RegistryValue Type="string" Value="{0440049F-D1DC-4E46-B27B-98393D79486B}"/>
         </RegistryKey>
+
       </Component>
     </DirectoryRef>
 
-		<DirectoryRef Id="PowerRenameMicrosoftUIXamlAssetsInstallFolder" FileSource="$(var.BinDir)modules\$(var.PowerRenameProjectName)\Microsoft.UI.Xaml\Assets">
-			<?foreach File in $(var.PowerRenameMicrosoftUIXamlAssetsInstallFiles)?>
-			    <Component Id="PowerRenameMicrosoftUIXamlAssets_$(var.File)" Win64="yes">
-				    <File Id="PowerRenameMicrosoftUIXamlAssetsFile_$(var.File)" Source="$(var.BinDir)modules\$(var.PowerRenameProjectName)\Microsoft.UI.Xaml\Assets\$(var.File)" />
-			    </Component>
-			<?endforeach?>			
-        </DirectoryRef>
+    <DirectoryRef Id="PowerRenameMicrosoftUIXamlAssetsInstallFolder" FileSource="$(var.BinDir)modules\$(var.PowerRenameProjectName)\Microsoft.UI.Xaml\Assets">
+      <?foreach File in $(var.PowerRenameMicrosoftUIXamlAssetsInstallFiles)?>
+        <Component Id="PowerRenameMicrosoftUIXamlAssets_$(var.File)" Win64="yes">
+          <File Id="PowerRenameMicrosoftUIXamlAssetsFile_$(var.File)" Source="$(var.BinDir)modules\$(var.PowerRenameProjectName)\Microsoft.UI.Xaml\Assets\$(var.File)" />
+        </Component>
+      <?endforeach?>			
+    </DirectoryRef>
 
     <DirectoryRef Id="PowerRenameAssetsFolder" FileSource="$(var.BinDir)modules\$(var.PowerRenameProjectName)">
       <!-- !Warning! Make sure to change Component Guid if you update the file list -->
@@ -871,8 +1109,8 @@
     <!-- Color Picker -->
     <DirectoryRef Id="ColorPickerInstallFolder" FileSource="$(var.BinDir)modules\$(var.ColorPickerProjectName)">
       <!-- !Warning! Make sure to change Component Guid if you update the file list -->
-      <Component Id="Module_ColorPicker" Guid="C15076EC-70EE-4CE9-BEA0-665B1EECCAAF" Win64="yes">
-        <?foreach File in PowerToys.ColorPicker.dll;System.IO.Abstractions.dll;PowerToys.ColorPickerUI.exe;PowerToys.ColorPickerUI.dll;PowerToys.ColorPickerUI.deps.json;PowerToys.ColorPickerUI.runtimeconfig.json;PowerToys.Settings.UI.Lib.dll;PowerToys.Interop.dll;PowerToys.ManagedTelemetry.dll;PowerToys.ManagedCommon.dll;System.Management.dll;ControlzEx.dll;Microsoft.Xaml.Behaviors.dll;ModernWpf.Controls.dll;ModernWpf.dll;System.ComponentModel.Composition.dll;PowerToys.Common.UI.dll;WinRT.Runtime.dll;Microsoft.Windows.SDK.NET.dll;System.Text.Json.dll;Ijwhost.dll?>
+      <Component Id="Module_ColorPicker" Guid="963A986E-289D-45CC-BC6B-9A2C9EF3DB33" Win64="yes">
+        <?foreach File in PowerToys.ColorPicker.dll;System.IO.Abstractions.dll;PowerToys.ColorPickerUI.exe;PowerToys.ColorPickerUI.dll;PowerToys.ColorPickerUI.deps.json;PowerToys.ColorPickerUI.runtimeconfig.json;PowerToys.Settings.UI.Lib.dll;PowerToys.ManagedTelemetry.dll;PowerToys.ManagedCommon.dll;ControlzEx.dll;Microsoft.Xaml.Behaviors.dll;ModernWpf.Controls.dll;ModernWpf.dll;System.ComponentModel.Composition.dll;PowerToys.Common.UI.dll;WinRT.Runtime.dll;Microsoft.Windows.SDK.NET.dll;Ijwhost.dll;PowerToys.GPOWrapper.dll;PowerToys.GPOWrapperProjection.dll?>
         <File Id="ColorPickerFile_$(var.File)" Source="$(var.BinDir)modules\$(var.ColorPickerProjectName)\$(var.File)" />
         <?endforeach?>
       </Component>
@@ -888,11 +1126,21 @@
       </Component>
     </DirectoryRef>
 
+    <!-- PowerOCR Resources -->
+    <DirectoryRef Id="PowerOCRInstallFolder" FileSource="$(var.BinDir)modules\$(var.PowerOCRProjectName)">
+      <!-- !Warning! Make sure to change Component Guid if you update the file list -->
+      <Component Id="Module_PowerOCR" Guid="5640A7E8-E165-4368-8F08-F8E1E9242BDD" Win64="yes">
+        <?foreach File in PowerToys.PowerOCR.dll;ControlzEx.dll;Ijwhost.dll;Microsoft.Windows.SDK.NET.dll;Microsoft.Xaml.Behaviors.dll;PowerToys.Common.UI.dll;PowerToys.ManagedCommon.dll;PowerToys.ManagedTelemetry.dll;PowerToys.PowerOCR.deps.json;PowerToys.PowerOCR.exe;PowerToys.PowerOCR.runtimeconfig.json;PowerToys.PowerOCRModuleInterface.dll;PowerToys.Settings.UI.Lib.dll;System.ComponentModel.Composition.dll;System.IO.Abstractions.dll;WinRT.Runtime.dll;PowerToys.GPOWrapper.dll;PowerToys.GPOWrapperProjection.dll?>
+        <File Id="PowerOCRFile_$(var.File)" Source="$(var.BinDir)modules\$(var.PowerOCRProjectName)\$(var.File)" />
+        <?endforeach?>
+      </Component>
+    </DirectoryRef>
+
     <!-- Awake -->
     <DirectoryRef Id="AwakeInstallFolder" FileSource="$(var.BinDir)modules\$(var.AwakeProjectName)">
       <!-- !Warning! Make sure to change Component Guid if you update the file list -->
       <Component Id="Module_Awake" Guid="0D571D9A-743B-4CC5-9297-F0289FBE3398" Win64="yes">
-        <?foreach File in PowerToys.AwakeModuleInterface.dll;PowerToys.ManagedCommon.dll;System.Management.dll;PowerToys.ManagedTelemetry.dll;PowerToys.Settings.UI.Lib.dll;NLog.config;NLog.dll;PowerToys.Awake.deps.json;PowerToys.Awake.dll;PowerToys.Awake.exe;PowerToys.Awake.runtimeconfig.json;PowerToys.Interop.dll;System.CommandLine.dll;System.IO.Abstractions.dll;System.Reactive.dll;System.Runtime.Caching.dll;System.Text.Json.dll;Ijwhost.dll;Microsoft.Windows.SDK.NET.dll;WinRT.Runtime.dll?>
+        <?foreach File in PowerToys.AwakeModuleInterface.dll;PowerToys.ManagedCommon.dll;PowerToys.ManagedTelemetry.dll;PowerToys.Settings.UI.Lib.dll;NLog.config;NLog.dll;PowerToys.Awake.deps.json;PowerToys.Awake.dll;PowerToys.Awake.exe;PowerToys.Awake.runtimeconfig.json;System.CommandLine.dll;System.IO.Abstractions.dll;System.Reactive.dll;System.Runtime.Caching.dll;Ijwhost.dll;Microsoft.Windows.SDK.NET.dll;WinRT.Runtime.dll;PowerToys.GPOWrapper.dll?>
         <File Id="AwakeFile_$(var.File)" Source="$(var.BinDir)modules\$(var.AwakeProjectName)\$(var.File)" />
         <?endforeach?>
       </Component>
@@ -928,6 +1176,71 @@
       </Component>
 
     </DirectoryRef>
+
+    <!-- Measure Tool -->
+    <DirectoryRef Id="MeasureToolInstallFolder" FileSource="$(var.BinDir)modules\$(var.MeasureToolProjectName)">
+      <Component Id="Module_MeasureToolInterface" Win64="yes">
+        <File Source="$(var.BinDir)modules\$(var.MeasureToolProjectName)\PowerToys.MeasureToolModuleInterface.dll" />
+      </Component>
+
+      <?foreach File in $(var.MeasureToolFiles)?>
+      <Component Id="MT_$(var.File)" Win64="yes">
+        <File Id="MT_$(var.File)" Source="$(var.BinDir)modules\$(var.MeasureToolProjectName)\$(var.File)" />
+      </Component>
+      <?endforeach?>
+
+    </DirectoryRef>
+
+    <DirectoryRef Id="MeasureToolMicrosoftUIXamlAssetsInstallFolder" FileSource="$(var.BinDir)modules\$(var.MeasureToolProjectName)\Microsoft.UI.Xaml\Assets">
+      <?foreach File in $(var.MeasureToolMicrosoftUIXamlAssetsInstallFiles)?>
+        <Component Id="MeasureToolMicrosoftUIXamlAssets_$(var.File)" Win64="yes">
+          <File Id="MeasureToolMicrosoftUIXamlAssetsFile_$(var.File)" Source="$(var.BinDir)modules\$(var.MeasureToolProjectName)\Microsoft.UI.Xaml\Assets\$(var.File)" />
+        </Component>
+      <?endforeach?>			
+    </DirectoryRef>
+
+    <!-- Hosts -->
+    <DirectoryRef Id="HostsInstallFolder" FileSource="$(var.BinDir)modules\$(var.HostsProjectName)">
+      <Component Id="Module_HostsInterface" Win64="yes">
+        <File Source="$(var.BinDir)modules\$(var.HostsProjectName)\PowerToys.HostsModuleInterface.dll" />
+      </Component>
+
+      <?foreach File in $(var.HostsFiles)?>
+      <Component Id="H_$(var.File)" Win64="yes">
+        <File Id="H_$(var.File)" Source="$(var.BinDir)modules\$(var.HostsProjectName)\$(var.File)" />
+      </Component>
+      <?endforeach?>
+    </DirectoryRef>
+
+    <DirectoryRef Id="HostsMicrosoftUIXamlAssetsInstallFolder" FileSource="$(var.BinDir)modules\$(var.HostsProjectName)\Microsoft.UI.Xaml\Assets">
+      <?foreach File in $(var.HostsMicrosoftUIXamlAssetsInstallFiles)?>
+      <Component Id="HostsMicrosoftUIXamlAssets_$(var.File)" Win64="yes">
+        <File Id="HostsMicrosoftUIXamlAssetsFile_$(var.File)" Source="$(var.BinDir)modules\$(var.HostsProjectName)\Microsoft.UI.Xaml\Assets\$(var.File)" />
+      </Component>
+      <?endforeach?>
+    </DirectoryRef>
+
+    <DirectoryRef Id="HostsAssetsFolder" FileSource="$(var.BinDir)modules\$(var.HostsProjectName)\Assets">
+      <Component Id="HostsAssets_AppList_Scale100" Win64="yes">
+        <File Id="HA_AppList_Scale100" Source="$(var.BinDir)modules\$(var.HostsProjectName)\Assets\AppList.scale-100.png" />
+      </Component>
+      <Component Id="HostsAssets_AppList_Scale125" Win64="yes">
+        <File Id="HA_AppList_Scale125" Source="$(var.BinDir)modules\$(var.HostsProjectName)\Assets\AppList.scale-125.png" />
+      </Component>
+      <Component Id="HostsAssets_AppList_Scale150" Win64="yes">
+        <File Id="HA_AppList_Scale150" Source="$(var.BinDir)modules\$(var.HostsProjectName)\Assets\AppList.scale-150.png" />
+      </Component>
+      <Component Id="HostsAssets_AppList_Scale200" Win64="yes">
+        <File Id="HA_AppList_Scale200" Source="$(var.BinDir)modules\$(var.HostsProjectName)\Assets\AppList.scale-200.png" />
+      </Component>
+      <Component Id="HostsAssets_AppList_Scale400" Win64="yes">
+        <File Id="HA_AppList_Scale400" Source="$(var.BinDir)modules\$(var.HostsProjectName)\Assets\AppList.scale-400.png" />
+      </Component>
+      <Component Id="HostsAssets_Hosts" Win64="yes">
+        <File Id="HA_Hosts" Source="$(var.BinDir)modules\$(var.HostsProjectName)\Assets\Hosts.ico" />
+      </Component>
+    </DirectoryRef>
+
 
     <!-- SettingsV2 components -->
     <DirectoryRef Id="SettingsV2InstallFolder" FileSource="$(var.BinDir)Settings\">
@@ -1023,7 +1336,6 @@
       <ComponentRef Id="powertoys_toast_clsid" />
       <ComponentRef Id="License_rtf" />
       <ComponentRef Id="Notice_md" />
-      <ComponentRef Id="powertoysinterop_dll" />
       <?foreach File in $(var.ShortcutGuideSvgsFiles)?>
       <ComponentRef Id="ShortcutGuideSvgs_$(var.File)" />
       <?endforeach?>
@@ -1036,6 +1348,21 @@
       <?endforeach?>
       <ComponentRef Id="DesktopShortcut" />
       <ComponentRef Id="Module_PowerRename" />
+      <ComponentRef Id="Module_FileLocksmith" />
+      <?foreach File in $(var.FileLocksmithFiles)?>
+      <ComponentRef Id="FileLocksmith_$(var.File)" />
+      <?endforeach?>
+      <?foreach File in $(var.FileLocksmithAssetsFiles)?>
+        <ComponentRef Id="FileLocksmith_Assets_$(var.File)" />
+      <?endforeach?>
+      <ComponentRef Id="FileLocksmith_Assets_Applist_Scale100" />
+      <ComponentRef Id="FileLocksmith_Assets_Applist_Scale125" />
+      <ComponentRef Id="FileLocksmith_Assets_Applist_Scale150" />
+      <ComponentRef Id="FileLocksmith_Assets_Applist_Scale200" />
+      <ComponentRef Id="FileLocksmith_Assets_Applist_Scale400" />
+      <?foreach File in $(var.PowerAccentFiles)?>
+      <ComponentRef Id="PowerAccent_$(var.File)" />
+      <?endforeach?>
       <?foreach File in $(var.PowerRenameFiles)?>
       <ComponentRef Id="PowerRename_$(var.File)" />
       <?endforeach?>
@@ -1057,6 +1384,7 @@
       <ComponentRef Id="Module_KeyboardManager" />
       <ComponentRef Id="Module_KeyboardManager_Editor" />
       <ComponentRef Id="Module_KeyboardManager_Engine" />
+      <ComponentRef Id="Module_PowerOCR" />
       <ComponentRef Id="Module_ColorPicker" />
       <ComponentRef Id="Module_ColorPicker_Icon"/>
       <ComponentRef Id="Module_ColorPicker_Cursor"/>
@@ -1067,6 +1395,27 @@
       <ComponentRef Id="Module_MousePointerCrosshairs" />
       <ComponentRef Id="Module_AlwaysOnTop"/>
       <ComponentRef Id="Module_AlwaysOnTopInterface"/>
+      <ComponentRef Id="Module_MeasureToolInterface"/>
+      <?foreach File in $(var.MeasureToolFiles)?>
+      <ComponentRef Id="MT_$(var.File)" />
+      <?endforeach?>
+      <?foreach File in $(var.MeasureToolMicrosoftUIXamlAssetsInstallFiles)?>
+        <ComponentRef Id="MeasureToolMicrosoftUIXamlAssets_$(var.File)" />
+      <?endforeach?>
+      <ComponentRef Id="Module_HostsInterface"/>
+      <?foreach File in $(var.HostsFiles)?>
+        <ComponentRef Id="H_$(var.File)" />
+      <?endforeach?>
+      <?foreach File in $(var.HostsMicrosoftUIXamlAssetsInstallFiles)?>
+      <ComponentRef Id="HostsMicrosoftUIXamlAssets_$(var.File)" />
+      <?endforeach?>
+      <ComponentRef Id="HostsAssets_AppList_Scale100" />
+      <ComponentRef Id="HostsAssets_AppList_Scale125" />
+      <ComponentRef Id="HostsAssets_AppList_Scale150" />
+      <ComponentRef Id="HostsAssets_AppList_Scale200" />
+      <ComponentRef Id="HostsAssets_AppList_Scale400" />
+      <ComponentRef Id="HostsAssets_Hosts" />
+
       <?foreach File in $(var.SettingsV2Files)?>
       <ComponentRef Id="SV2C_$(var.File)" />
       <?endforeach?>
@@ -1088,8 +1437,15 @@
       <ComponentRef Id="SettingsV2OOBEAssetsModules_$(var.File)" />
       <?endforeach?>
 			<?foreach File in $(var.SettingsV2MicrosoftUIXamlAssetsInstallFiles)?>
-                <ComponentRef Id="SettingsV2MicrosoftUIXamlAssets_$(var.File)" />
-            <?endforeach?>
+      <ComponentRef Id="SettingsV2MicrosoftUIXamlAssets_$(var.File)" />
+      <?endforeach?>
+      <ComponentRef Id="Dlls_DotnetFiles_Component" />
+      <?foreach File in $(var.WinAppSDKFiles)?>
+      <ComponentRef Id="Dlls_WinAppSdkFiles_$(var.File)" />
+      <?endforeach?>
+      <?foreach File in $(var.PowerToysInteropFiles)?>
+      <ComponentRef Id="Dlls_PowerToysInteropFiles_$(var.File)" />
+      <?endforeach?>
     </ComponentGroup>
     <ComponentGroup Id="ToolComponents" Directory="ToolsFolder">
       <ComponentRef Id="BugReportTool_exe" />
@@ -1105,7 +1461,7 @@
   <Fragment>
     <!-- Resource directories should be added only if the installer is built on the build farm -->
     <?ifdef env.IsPipeline?>
-    <?foreach ParentDirectory in LauncherInstallFolder;FancyZonesInstallFolder;ImageResizerInstallFolder;ColorPickerInstallFolder;FileExplorerPreviewInstallFolder;CalculatorPluginFolder;FolderPluginFolder;ProgramPluginFolder;ShellPluginFolder;IndexerPluginFolder;UnitConverterPluginFolder;UriPluginFolder;WindowWalkerPluginFolder;OneNotePluginFolder;RegistryPluginFolder;VSCodeWorkspacesPluginFolder;ServicePluginFolder;SystemPluginFolder;TimeDatePluginFolder;TimeZonePluginFolder;WindowsSettingsPluginFolder;WindowsTerminalPluginFolder;WebSearchPluginFolder?>
+    <?foreach ParentDirectory in LauncherInstallFolder;FancyZonesInstallFolder;ImageResizerInstallFolder;ColorPickerInstallFolder;FileExplorerPreviewInstallFolder;HistoryPluginFolder;CalculatorPluginFolder;FolderPluginFolder;ProgramPluginFolder;ShellPluginFolder;IndexerPluginFolder;UnitConverterPluginFolder;UriPluginFolder;WindowWalkerPluginFolder;OneNotePluginFolder;RegistryPluginFolder;VSCodeWorkspacesPluginFolder;ServicePluginFolder;SystemPluginFolder;TimeDatePluginFolder;TimeZonePluginFolder;WindowsSettingsPluginFolder;WindowsTerminalPluginFolder;WebSearchPluginFolder?>
     <DirectoryRef Id="$(var.ParentDirectory)">
       <!-- Resource file directories -->
       <?foreach Language in $(var.LocLanguageList)?>
@@ -1397,6 +1753,12 @@
           Guid="$(var.CompGUIDPrefix)1A">
         <File Id="MonacoPreviewHandler_$(var.IdSafeLanguage)_File" Source="$(var.BinDir)modules\FileExplorerPreview\$(var.Language)\PowerToys.MonacoPreviewHandler.resources.dll" />
       </Component>
+      <Component
+          Id="Launcher_History_$(var.IdSafeLanguage)_Component"
+          Directory="Resource$(var.IdSafeLanguage)HistoryPluginFolder"
+          Guid="$(var.CompGUIDPrefix)1B">
+        <File Id="Launcher_History_$(var.IdSafeLanguage)_File" Source="$(var.BinDir)modules\launcher\Plugins\History\$(var.Language)\Microsoft.PowerToys.Run.Plugin.History.resources.dll" />
+      </Component>	  
       <?undef IdSafeLanguage?>
       <?undef CompGUIDPrefix?>
       <?endforeach?>
@@ -1407,7 +1769,7 @@
     <!-- Localization languages shipped with WinAppSDK. We should ship these as well. -->
     <?define WinAppSDKLocLanguageList = af-ZA;ar-SA;az-Latn-AZ;bg-BG;bs-Latn-BA;ca-ES;cs-CZ;cy-GB;da-DK;de-DE;el-GR;en-GB;en-us;es-ES;es-MX;et-EE;eu-ES;fa-IR;fi-FI;fr-CA;fr-FR;gl-ES;he-IL;hi-IN;hr-HR;hu-HU;id-ID;is-IS;it-IT;ja-JP;ka-GE;kk-KZ;ko-KR;lt-LT;lv-LV;ms-MY;nb-NO;nl-NL;nn-NO;pl-PL;pt-BR;pt-PT;ro-RO;ru-RU;sk-SK;sl-SI;sq-AL;sr-Cyrl-RS;sr-Latn-RS;sv-SE;th-TH;tr-TR;uk-UA;vi-VN;zh-CN;zh-TW?>
   <Fragment>
-        <?foreach ParentDirectory in SettingsV2InstallFolder;PowerRenameInstallFolder?>
+        <?foreach ParentDirectory in SettingsV2InstallFolder;PowerRenameInstallFolder;MeasureToolInstallFolder;HostsInstallFolder;FileLocksmithInstallFolder?>
         <DirectoryRef Id="$(var.ParentDirectory)">
             <?foreach Language in $(var.WinAppSDKLocLanguageList)?>
             <?if $(var.Language) = af-ZA?>
@@ -1719,25 +2081,46 @@
                 <File Id="PowerRename_WinAppSDKLoc_$(var.IdSafeLanguage)_XamlMui_File" Source="$(var.BinDir)modules\$(var.PowerRenameProjectName)\$(var.Language)\Microsoft.ui.xaml.dll.mui" />
                 <File Id="PowerRename_WinAppSDKLoc_$(var.IdSafeLanguage)_XamlPhoneMui_File" Source="$(var.BinDir)modules\$(var.PowerRenameProjectName)\$(var.Language)\Microsoft.UI.Xaml.Phone.dll.mui" />
             </Component>
-            <?undef IdSafeLanguage?>
-            <?undef CompGUIDPrefix?>
-            <?endforeach?>
+            <Component
+                Id="MeasureTool_WinAppSDKLoc_$(var.IdSafeLanguage)_Component"
+                Directory="WinAppSDKLoc$(var.IdSafeLanguage)MeasureToolInstallFolder"
+                Guid="$(var.CompGUIDPrefix)03">
+                <File Id="MeasureTool_WinAppSDKLoc_$(var.IdSafeLanguage)_XamlMui_File" Source="$(var.BinDir)modules\$(var.MeasureToolProjectName)\$(var.Language)\Microsoft.ui.xaml.dll.mui" />
+                <File Id="MeasureTool_WinAppSDKLoc_$(var.IdSafeLanguage)_XamlPhoneMui_File" Source="$(var.BinDir)modules\$(var.MeasureToolProjectName)\$(var.Language)\Microsoft.UI.Xaml.Phone.dll.mui" />
+            </Component>
+          <Component
+               Id="Hosts_WinAppSDKLoc_$(var.IdSafeLanguage)_Component"
+               Directory="WinAppSDKLoc$(var.IdSafeLanguage)HostsInstallFolder"
+               Guid="$(var.CompGUIDPrefix)04">
+            <File Id="Hosts_WinAppSDKLoc_$(var.IdSafeLanguage)_XamlMui_File" Source="$(var.BinDir)modules\$(var.HostsProjectName)\$(var.Language)\Microsoft.ui.xaml.dll.mui" />
+            <File Id="Hosts_WinAppSDKLoc_$(var.IdSafeLanguage)_XamlPhoneMui_File" Source="$(var.BinDir)modules\$(var.HostsProjectName)\$(var.Language)\Microsoft.UI.Xaml.Phone.dll.mui" />
+          </Component>
+          <Component
+              Id="FileLocksmith_WinAppSDKLoc_$(var.IdSafeLanguage)_Component"
+              Directory="WinAppSDKLoc$(var.IdSafeLanguage)FileLocksmithInstallFolder"
+              Guid="$(var.CompGUIDPrefix)05">
+            <File Id="FileLocksmith_WinAppSDKLoc_$(var.IdSafeLanguage)_XamlMui_File" Source="$(var.BinDir)modules\$(var.FileLocksmithProjectName)\$(var.Language)\Microsoft.ui.xaml.dll.mui" />
+            <File Id="FileLocksmith_WinAppSDKLoc_$(var.IdSafeLanguage)_XamlPhoneMui_File" Source="$(var.BinDir)modules\$(var.FileLocksmithProjectName)\$(var.Language)\Microsoft.UI.Xaml.Phone.dll.mui" />
+          </Component>
+          <?undef IdSafeLanguage?>
+          <?undef CompGUIDPrefix?>
+          <?endforeach?>
         </ComponentGroup>
     </Fragment>
     <Fragment>
     <ComponentGroup Id="LauncherComponents">
       <Component Id="launcherShortcutComponent" Directory="LauncherInstallFolder" >
         <!-- Toast Notification AUMID -->
-        <RegistryKey Root="HKLM" Key="SOFTWARE\Classes\AppUserModelId\PowerToysRun">
+        <RegistryKey Root="HKCU" Key="SOFTWARE\Classes\AppUserModelId\PowerToysRun">
           <RegistryValue Type="string" Name="DisplayName" Value="PowerToys Run" />
           <RegistryValue Type="string" Name="IconUri" Value="[LauncherImagesFolder]RunAsset.ico" />
         </RegistryKey>
       </Component>
 
       <!-- !Warning! Make sure to change Component Guid if you update the file list -->
-      <Component Id="launcherInstallComponent" Guid="ab0d0567-1e41-4da4-9934-dcb74b7048a4" Directory="LauncherInstallFolder" >
+      <Component Id="launcherInstallComponent" Guid="7362E89D-0FC8-4536-940F-F0FDF5735C39" Directory="LauncherInstallFolder" >
         <File Source="$(var.BinDir)modules\Launcher\PowerToys.Launcher.dll" />
-        <?foreach File in e_sqlite3.dll;JetBrains.Annotations.dll;Mages.Core.dll;Mono.Cecil.dll;Mono.Cecil.Mdb.dll;Mono.Cecil.Pdb.dll;Mono.Cecil.Rocks.dll;NLog.dll;NLog.Extensions.Logging.dll;PowerToys.PowerLauncher.deps.json;PowerToys.PowerLauncher.dll;PowerToys.PowerLauncher.exe;Microsoft.Xaml.Behaviors.dll;PowerToys.PowerLauncher.runtimeconfig.json;System.Data.OleDb.dll;UnitsNet.dll;vcamp140_app.dll;Wox.Infrastructure.dll;Wox.Plugin.dll;PowerToys.Interop.dll;PowerToys.ManagedTelemetry.dll;PowerToys.PowerLauncher.Telemetry.dll;Microsoft.Data.Sqlite.dll;SQLitePCLRaw.batteries_v2.dll;SQLitePCLRaw.core.dll;SQLitePCLRaw.provider.e_sqlite3.dll;Microsoft.Extensions.Configuration.Abstractions.dll;Microsoft.Extensions.DependencyInjection.Abstractions.dll;Microsoft.Extensions.DependencyInjection.dll;Microsoft.Extensions.Logging.Abstractions.dll;Microsoft.Extensions.Logging.dll;Microsoft.Extensions.Options.dll;Microsoft.Extensions.Primitives.dll;ControlzEx.dll;PowerToys.ManagedCommon.dll;System.Management.dll;System.IO.Abstractions.dll;PowerToys.Common.UI.dll;System.ServiceProcess.ServiceController.dll;Microsoft.Toolkit.Uwp.Notifications.dll;ModernWpf.Controls.dll;ModernWpf.dll;WinRT.Runtime.dll;Microsoft.Windows.SDK.NET.dll;System.Reactive.dll;System.Text.Json.dll;Ijwhost.dll;ScipBe.Common.Office.OneNote.dll;Interop.Microsoft.Office.Interop.OneNote.dll;LazyCache.dll;Microsoft.Extensions.Caching.Abstractions.dll;Microsoft.Extensions.Caching.Memory.dll?>
+        <?foreach File in e_sqlite3.dll;hyjiacan.py4n.dll;Mages.Core.dll;NLog.dll;NLog.Extensions.Logging.dll;PowerToys.PowerLauncher.deps.json;PowerToys.PowerLauncher.dll;PowerToys.PowerLauncher.exe;Microsoft.Xaml.Behaviors.dll;PowerToys.PowerLauncher.runtimeconfig.json;System.Data.OleDb.dll;UnitsNet.dll;Wox.Infrastructure.dll;Wox.Plugin.dll;PowerToys.ManagedTelemetry.dll;PowerToys.PowerLauncher.Telemetry.dll;Microsoft.Data.Sqlite.dll;SQLitePCLRaw.batteries_v2.dll;SQLitePCLRaw.core.dll;SQLitePCLRaw.provider.e_sqlite3.dll;Microsoft.Extensions.Configuration.Abstractions.dll;Microsoft.Extensions.DependencyInjection.Abstractions.dll;Microsoft.Extensions.DependencyInjection.dll;Microsoft.Extensions.Logging.Abstractions.dll;Microsoft.Extensions.Logging.dll;Microsoft.Extensions.Options.dll;Microsoft.Extensions.Primitives.dll;ControlzEx.dll;PowerToys.ManagedCommon.dll;System.IO.Abstractions.dll;PowerToys.Common.UI.dll;System.ServiceProcess.ServiceController.dll;Microsoft.Toolkit.Uwp.Notifications.dll;ModernWpf.Controls.dll;ModernWpf.dll;WinRT.Runtime.dll;Microsoft.Windows.SDK.NET.dll;System.Reactive.dll;Ijwhost.dll;ScipBe.Common.Office.OneNote.dll;Interop.Microsoft.Office.Interop.OneNote.dll;LazyCache.dll;Microsoft.Extensions.Caching.Abstractions.dll;Microsoft.Extensions.Caching.Memory.dll;PowerToys.GPOWrapper.dll;PowerToys.GPOWrapperProjection.dll?>
         <File Id="File_$(var.File)" Source="$(var.BinDir)modules\launcher\$(var.File)" />
         <?endforeach?>
         <File Source="$(var.BinDir)Settings\PowerToys.Settings.UI.Lib.dll" />
@@ -1836,6 +2219,19 @@
         <File Id="WebSearchDark" Source="$(var.BinDir)modules\launcher\Plugins\WebSearch\Images\WebSearch.dark.png" />
       </Component>
 
+      <!-- History Plugin -->
+      <?foreach File in $(var.HistoryPluginComponentFiles)?>
+      <Component Id="HistoryComponent_$(var.File)" Win64="yes" Directory="HistoryPluginFolder">
+        <File Id="HistoryComponentFile_$(var.File)" Source="$(var.BinDir)modules\launcher\Plugins\History\$(var.File)" />
+      </Component>
+      <?endforeach?>
+      <Component Id="HistoryImagesComponentLight" Directory="HistoryImagesFolder" >
+        <File Id="HistoryLightIcon" Source="$(var.BinDir)modules\launcher\Plugins\History\Images\history.light.png" />
+      </Component>
+      <Component Id="HistoryImagesComponentDark" Directory="HistoryImagesFolder" >
+        <File Id="HistoryDarkIcon" Source="$(var.BinDir)modules\launcher\Plugins\History\Images\history.dark.png" />
+      </Component>
+	  
       <!-- Uri Plugin -->
       <?foreach File in $(var.UriComponentFiles)?>
       <Component Id="UriComponent_$(var.File)" Win64="yes" Directory="UriPluginFolder">

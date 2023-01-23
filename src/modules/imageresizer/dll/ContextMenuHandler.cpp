@@ -38,7 +38,7 @@ void CContextMenuHandler::Uninitialize()
     }
 }
 
-HRESULT CContextMenuHandler::Initialize(_In_opt_ PCIDLIST_ABSOLUTE pidlFolder, _In_opt_ IDataObject* pdtobj, _In_opt_ HKEY hkeyProgID)
+HRESULT CContextMenuHandler::Initialize(_In_opt_ PCIDLIST_ABSOLUTE pidlFolder, _In_opt_ IDataObject* pdtobj, _In_opt_ HKEY /*hkeyProgID*/)
 {
     Uninitialize();
 
@@ -61,7 +61,7 @@ HRESULT CContextMenuHandler::Initialize(_In_opt_ PCIDLIST_ABSOLUTE pidlFolder, _
     return S_OK;
 }
 
-HRESULT CContextMenuHandler::QueryContextMenu(_In_ HMENU hmenu, UINT indexMenu, UINT idCmdFirst, UINT idCmdLast, UINT uFlags)
+HRESULT CContextMenuHandler::QueryContextMenu(_In_ HMENU hmenu, UINT indexMenu, UINT idCmdFirst, UINT /*idCmdLast*/, UINT uFlags)
 {
     if (uFlags & CMF_DEFAULTONLY)
         return S_OK;
@@ -72,12 +72,29 @@ HRESULT CContextMenuHandler::QueryContextMenu(_In_ HMENU hmenu, UINT indexMenu, 
     // NB: We just check the first item. We could iterate through more if the first one doesn't meet the criteria
     HDropIterator i(m_pdtobj);
     i.First();
+    if (i.IsDone())
+    {
+        return S_OK;
+    }
+
 // Suppressing C26812 warning as the issue is in the shtypes.h library
 #pragma warning(suppress : 26812)
     PERCEIVED type;
     PERCEIVEDFLAG flag;
     LPTSTR pszPath = i.CurrentItem();
+    if (nullptr == pszPath)
+    {
+        // Avoid crashes in the following code.
+        return E_FAIL;
+    }
+
     LPTSTR pszExt = PathFindExtension(pszPath);
+    if (nullptr == pszExt)
+    {
+        free(pszPath);
+        // Avoid crashes in the following code.
+        return E_FAIL;
+    }
 
     // TODO: Instead, detect whether there's a WIC codec installed that can handle this file
     AssocGetPerceivedType(pszExt, &type, &flag, NULL);
@@ -162,7 +179,7 @@ HRESULT CContextMenuHandler::QueryContextMenu(_In_ HMENU hmenu, UINT indexMenu, 
     return S_OK;
 }
 
-HRESULT CContextMenuHandler::GetCommandString(UINT_PTR idCmd, UINT uType, _In_ UINT* pReserved, LPSTR pszName, UINT cchMax)
+HRESULT CContextMenuHandler::GetCommandString(UINT_PTR idCmd, UINT uType, _In_ UINT* /*pReserved*/, LPSTR pszName, UINT cchMax)
 {
     if (idCmd == ID_RESIZE_PICTURES)
     {
@@ -257,7 +274,7 @@ HRESULT CContextMenuHandler::ResizePictures(CMINVOKECOMMANDINFO* pici, IShellIte
     startupInfo.dwFlags = STARTF_USESHOWWINDOW | STARTF_USESTDHANDLES;
     if (pici)
     {
-        startupInfo.wShowWindow = pici->nShow;
+        startupInfo.wShowWindow = static_cast<WORD>(pici->nShow);
     }
     else
     {
@@ -355,7 +372,7 @@ HRESULT __stdcall CContextMenuHandler::GetCanonicalName(GUID* pguidCommandName)
     return S_OK;
 }
 
-HRESULT __stdcall CContextMenuHandler::GetState(IShellItemArray* psiItemArray, BOOL fOkToBeSlow, EXPCMDSTATE* pCmdState)
+HRESULT __stdcall CContextMenuHandler::GetState(IShellItemArray* psiItemArray, BOOL /*fOkToBeSlow*/, EXPCMDSTATE* pCmdState)
 {
     if (!CSettingsInstance().GetEnabled())
     {
@@ -373,8 +390,20 @@ HRESULT __stdcall CContextMenuHandler::GetState(IShellItemArray* psiItemArray, B
     psiItemArray->GetItemAt(0, &shellItem);
     LPTSTR pszPath;
     // Retrieves the entire file system path of the file from its shell item
-    shellItem->GetDisplayName(SIGDN_FILESYSPATH, &pszPath);
+    HRESULT getDisplayResult = shellItem->GetDisplayName(SIGDN_FILESYSPATH, &pszPath);
+    if (S_OK != getDisplayResult || nullptr == pszPath)
+    {
+        // Avoid crashes in the following code.
+        return E_FAIL;
+    }
+
     LPTSTR pszExt = PathFindExtension(pszPath);
+    if (nullptr == pszExt)
+    {
+        CoTaskMemFree(pszPath);
+        // Avoid crashes in the following code.
+        return E_FAIL;
+    }
 
     // TODO: Instead, detect whether there's a WIC codec installed that can handle this file
     AssocGetPerceivedType(pszExt, &type, &flag, NULL);

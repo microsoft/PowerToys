@@ -11,7 +11,7 @@
 #include "Generated Files/resource.h"
 #include <common/SettingsAPI/settings_objects.h>
 
-BOOL APIENTRY DllMain(HMODULE hModule, DWORD ul_reason_for_call, LPVOID lpReserved)
+BOOL APIENTRY DllMain(HMODULE /*hModule*/, DWORD /*ul_reason_for_call*/, LPVOID /*lpReserved*/)
 {
     return TRUE;
 }
@@ -48,6 +48,12 @@ public:
         return app_key.c_str();
     }
 
+    // Return the configured status for the gpo policy for the module
+    virtual powertoys_gpo::gpo_rule_configured_t gpo_policy_enabled_configuration() override
+    {
+        return powertoys_gpo::getConfiguredShortcutGuideEnabledValue();
+    }
+
     virtual bool get_config(wchar_t* buffer, int* buffer_size) override
     {
         HINSTANCE hinstance = reinterpret_cast<HINSTANCE>(&__ImageBase);
@@ -66,7 +72,7 @@ public:
 
             ParseSettings(values);
         }
-        catch (std::exception ex)
+        catch (std::exception& ex)
         {
             Logger::error("Failed to parse settings. {}", ex.what());
         }
@@ -165,7 +171,7 @@ public:
 
     virtual UINT milliseconds_win_key_must_be_pressed() override
     {
-        return m_millisecondsWinKeyShouldBePressed;
+        return std::min(m_millisecondsWinKeyPressTimeForGlobalWindowsShortcuts, m_millisecondsWinKeyPressTimeForTaskbarIconShortcuts);
     }
 
 private:
@@ -174,14 +180,16 @@ private:
     std::wstring app_key;
     bool _enabled = false;
     HANDLE m_hProcess = nullptr;
-    
+
     // Hotkey to invoke the module
     HotkeyEx m_hotkey;
 
     // If the module should be activated through the legacy pressing windows key behavior.
-    const UINT DEFAULT_MILLISECONDS_WIN_KEY_SHOULD_BE_PRESSED = 900;
+    const UINT DEFAULT_MILLISECONDS_WIN_KEY_PRESS_TIME_FOR_GLOBAL_WINDOWS_SHORTCUTS = 900;
+    const UINT DEFAULT_MILLISECONDS_WIN_KEY_PRESS_TIME_FOR_TASKBAR_ICON_SHORTCUTS = 900;
     bool m_shouldReactToPressedWinKey = false;
-    UINT m_millisecondsWinKeyShouldBePressed = DEFAULT_MILLISECONDS_WIN_KEY_SHOULD_BE_PRESSED;
+    UINT m_millisecondsWinKeyPressTimeForGlobalWindowsShortcuts = DEFAULT_MILLISECONDS_WIN_KEY_PRESS_TIME_FOR_GLOBAL_WINDOWS_SHORTCUTS;
+    UINT m_millisecondsWinKeyPressTimeForTaskbarIconShortcuts = DEFAULT_MILLISECONDS_WIN_KEY_PRESS_TIME_FOR_TASKBAR_ICON_SHORTCUTS;
 
     HANDLE exitEvent;
 
@@ -220,7 +228,7 @@ private:
 
         Logger::trace(L"Started SG process with pid={}", GetProcessId(sei.hProcess));
         m_hProcess = sei.hProcess;
-        return true;    
+        return true;
     }
 
     void TerminateProcess()
@@ -261,11 +269,11 @@ private:
 
             ParseSettings(settings);
         }
-        catch (std::exception ex)
+        catch (std::exception& ex)
         {
             Logger::error("Failed to init settings. {}", ex.what());
         }
-        catch(...)
+        catch (...)
         {
             Logger::error("Failed to init settings");
         }
@@ -274,7 +282,8 @@ private:
     void ParseSettings(PowerToysSettings::PowerToyValues& settings)
     {
         m_shouldReactToPressedWinKey = false;
-        m_millisecondsWinKeyShouldBePressed = DEFAULT_MILLISECONDS_WIN_KEY_SHOULD_BE_PRESSED;
+        m_millisecondsWinKeyPressTimeForGlobalWindowsShortcuts = DEFAULT_MILLISECONDS_WIN_KEY_PRESS_TIME_FOR_GLOBAL_WINDOWS_SHORTCUTS;
+        m_millisecondsWinKeyPressTimeForTaskbarIconShortcuts = DEFAULT_MILLISECONDS_WIN_KEY_PRESS_TIME_FOR_TASKBAR_ICON_SHORTCUTS;
 
         auto settingsObject = settings.get_raw_json();
         if (settingsObject.GetView().Size())
@@ -305,7 +314,7 @@ private:
                     m_hotkey.modifiersMask |= MOD_ALT;
                 }
 
-                m_hotkey.vkCode = hotkey.get_code();
+                m_hotkey.vkCode = static_cast<WORD>(hotkey.get_code());
             }
             catch (...)
             {
@@ -316,8 +325,10 @@ private:
                 // Parse Legacy windows key press behavior settings
                 auto jsonUseLegacyWinKeyBehaviorObject = settingsObject.GetNamedObject(L"properties").GetNamedObject(L"use_legacy_press_win_key_behavior");
                 m_shouldReactToPressedWinKey = (bool)jsonUseLegacyWinKeyBehaviorObject.GetNamedBoolean(L"value");
-                auto jsonPressTimeObject = settingsObject.GetNamedObject(L"properties").GetNamedObject(L"press_time");
-                m_millisecondsWinKeyShouldBePressed = (UINT)jsonPressTimeObject.GetNamedNumber(L"value");
+                auto jsonPressTimeForGlobalWindowsShortcutsObject = settingsObject.GetNamedObject(L"properties").GetNamedObject(L"press_time");
+                auto jsonPressTimeForTaskbarIconShortcutsObject = settingsObject.GetNamedObject(L"properties").GetNamedObject(L"press_time_for_taskbar_icon_shortcuts");
+                m_millisecondsWinKeyPressTimeForGlobalWindowsShortcuts = (UINT)jsonPressTimeForGlobalWindowsShortcutsObject.GetNamedNumber(L"value");
+                m_millisecondsWinKeyPressTimeForTaskbarIconShortcuts = (UINT)jsonPressTimeForTaskbarIconShortcutsObject.GetNamedNumber(L"value");
             }
             catch (...)
             {
