@@ -11,7 +11,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using CommunityToolkit.Mvvm.ComponentModel;
 using Microsoft.UI.Dispatching;
-using Microsoft.UI.Xaml.Media;
 using Microsoft.UI.Xaml.Media.Imaging;
 using Peek.Common;
 using Peek.Common.Extensions;
@@ -30,9 +29,6 @@ namespace Peek.FilePreviewer.Previewers
 
         [ObservableProperty]
         private PreviewState state;
-
-        [ObservableProperty]
-        private Stretch imageStretch = Stretch.Uniform;
 
         public ImagePreviewer(File file)
         {
