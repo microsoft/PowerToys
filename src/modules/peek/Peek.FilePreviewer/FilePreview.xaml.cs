@@ -173,13 +173,10 @@ namespace Peek.FilePreviewer
                     SizeFormat windowSizeFormat = UnsupportedFilePreviewer != null ? SizeFormat.Percentage : SizeFormat.Pixels;
                     PreviewSizeChanged?.Invoke(this, new PreviewSizeChangedArgs(size, windowSizeFormat));
 
-                    var scaledImageWidth = size?.Width / ScalingFactor ?? 0;
-                    var scaledImageHeight = size?.Height / ScalingFactor ?? 0;
-                    if (Previewer is ImagePreviewer imagePreviewer && windowSizeFormat == SizeFormat.Pixels
-                        && (scaledImageWidth < WindowSize.Width && scaledImageHeight < WindowSize.Height))
+                    if (Previewer is ImagePreviewer imagePreviewer)
                     {
-                        ImagePreview.Width = scaledImageWidth;
-                        ImagePreview.Height = scaledImageHeight;
+                        ImagePreview.MaxWidth = size?.Width / ScalingFactor ?? 0;
+                        ImagePreview.MaxHeight = size?.Height / ScalingFactor ?? 0;
                     }
 
                     cancellationToken.ThrowIfCancellationRequested();
