@@ -61,6 +61,9 @@ namespace Peek.UI
         [ObservableProperty]
         private Size _windowSize = default(Size);
 
+        [ObservableProperty]
+        private double _scalingFactor = 1.0;
+
         private DispatcherTimer NavigationThrottleTimer { get; set; } = new();
     }
 }

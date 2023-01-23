@@ -42,6 +42,13 @@ namespace Peek.FilePreviewer
                 typeof(FilePreview),
                 new PropertyMetadata(false, async (d, e) => await ((FilePreview)d).OnWindowSizePropertyChanged()));
 
+        public static readonly DependencyProperty ScalingFactorProperty =
+            DependencyProperty.Register(
+                nameof(ScalingFactor),
+                typeof(double),
+                typeof(FilePreview),
+                new PropertyMetadata(false, async (d, e) => await ((FilePreview)d).OnScalingFactorPropertyChanged()));
+
         [ObservableProperty]
         [NotifyPropertyChangedFor(nameof(BitmapPreviewer))]
         [NotifyPropertyChangedFor(nameof(BrowserPreviewer))]
@@ -98,6 +105,12 @@ namespace Peek.FilePreviewer
             set => SetValue(WindowSizeProperty, value);
         }
 
+        public double ScalingFactor
+        {
+            get => (double)GetValue(ScalingFactorProperty);
+            set => SetValue(ScalingFactorProperty, value);
+        }
+
         public bool MatchPreviewState(PreviewState? value, PreviewState stateToMatch)
         {
             return value == stateToMatch;
@@ -140,6 +153,15 @@ namespace Peek.FilePreviewer
             await UpdatePreviewAsync(_cancellationTokenSource.Token);
         }
 
+        private async Task OnScalingFactorPropertyChanged()
+        {
+            // Cancel previous loading task
+            _cancellationTokenSource.Cancel();
+            _cancellationTokenSource = new();
+
+            await UpdatePreviewAsync(_cancellationTokenSource.Token);
+        }
+
         private async Task UpdatePreviewAsync(CancellationToken cancellationToken)
         {
             if (Previewer != null)
@@ -151,10 +173,13 @@ namespace Peek.FilePreviewer
                     SizeFormat windowSizeFormat = UnsupportedFilePreviewer != null ? SizeFormat.Percentage : SizeFormat.Pixels;
                     PreviewSizeChanged?.Invoke(this, new PreviewSizeChangedArgs(size, windowSizeFormat));
 
+                    var scaledImageWidth = size?.Width / ScalingFactor ?? 0;
+                    var scaledImageHeight = size?.Height / ScalingFactor ?? 0;
                     if (Previewer is ImagePreviewer imagePreviewer && windowSizeFormat == SizeFormat.Pixels
-                        && (size.Value.Width < WindowSize.Width && size.Value.Height < WindowSize.Height))
+                        && (scaledImageWidth < WindowSize.Width && scaledImageHeight < WindowSize.Height))
                     {
-                        imagePreviewer.ImageStretch = Stretch.None;
+                        ImagePreview.Width = scaledImageWidth;
+                        ImagePreview.Height = scaledImageHeight;
                     }
 
                     cancellationToken.ThrowIfCancellationRequested();

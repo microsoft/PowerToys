@@ -38,6 +38,7 @@
             Grid.Row="1"
             File="{x:Bind ViewModel.FolderItemsQuery.CurrentFile, Mode=OneWay}"
             WindowSize="{x:Bind ViewModel.WindowSize, Mode=OneWay}"
+            ScalingFactor="{x:Bind ViewModel.ScalingFactor, Mode=OneWay}"
             PreviewSizeChanged="FilePreviewer_PreviewSizeChanged" />
     </Grid>
 </winuiex:WindowEx>
