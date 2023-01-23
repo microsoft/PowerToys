@@ -35,13 +35,6 @@ namespace Peek.FilePreviewer
             typeof(FilePreview),
             new PropertyMetadata(false, async (d, e) => await ((FilePreview)d).OnFilePropertyChanged()));
 
-        public static readonly DependencyProperty WindowSizeProperty =
-            DependencyProperty.Register(
-                nameof(WindowSize),
-                typeof(Size),
-                typeof(FilePreview),
-                new PropertyMetadata(false, async (d, e) => await ((FilePreview)d).OnWindowSizePropertyChanged()));
-
         public static readonly DependencyProperty ScalingFactorProperty =
             DependencyProperty.Register(
                 nameof(ScalingFactor),
@@ -99,12 +92,6 @@ namespace Peek.FilePreviewer
             set => SetValue(FilesProperty, value);
         }
 
-        public Size WindowSize
-        {
-            get => (Size)GetValue(WindowSizeProperty);
-            set => SetValue(WindowSizeProperty, value);
-        }
-
         public double ScalingFactor
         {
             get => (double)GetValue(ScalingFactorProperty);
@@ -144,15 +131,6 @@ namespace Peek.FilePreviewer
             await UpdatePreviewAsync(_cancellationTokenSource.Token);
         }
 
-        private async Task OnWindowSizePropertyChanged()
-        {
-            // Cancel previous loading task
-            _cancellationTokenSource.Cancel();
-            _cancellationTokenSource = new();
-
-            await UpdatePreviewAsync(_cancellationTokenSource.Token);
-        }
-
         private async Task OnScalingFactorPropertyChanged()
         {
             // Cancel previous loading task
@@ -173,7 +151,7 @@ namespace Peek.FilePreviewer
                     SizeFormat windowSizeFormat = UnsupportedFilePreviewer != null ? SizeFormat.Percentage : SizeFormat.Pixels;
                     PreviewSizeChanged?.Invoke(this, new PreviewSizeChangedArgs(size, windowSizeFormat));
 
-                    if (Previewer is ImagePreviewer imagePreviewer)
+                    if (Previewer is ImagePreviewer imagePreviewer && ScalingFactor != 0)
                     {
                         ImagePreview.MaxWidth = size?.Width / ScalingFactor ?? 0;
                         ImagePreview.MaxHeight = size?.Height / ScalingFactor ?? 0;

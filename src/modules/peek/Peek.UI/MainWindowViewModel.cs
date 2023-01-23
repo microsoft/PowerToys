@@ -5,7 +5,6 @@
 using System;
 using CommunityToolkit.Mvvm.ComponentModel;
 using Microsoft.UI.Xaml;
-using Windows.Foundation;
 
 namespace Peek.UI
 {
@@ -57,9 +56,6 @@ namespace Peek.UI
 
         [ObservableProperty]
         private FolderItemsQuery _folderItemsQuery = new();
-
-        [ObservableProperty]
-        private Size _windowSize = default(Size);
 
         [ObservableProperty]
         private double _scalingFactor = 1.0;

@@ -20,7 +20,6 @@
 
         <Image
             x:Name="ImagePreview"
-            Stretch="{x:Bind BitmapPreviewer.ImageStretch, Mode=OneWay}"
             Source="{x:Bind BitmapPreviewer.Preview, Mode=OneWay}"
             ToolTipService.ToolTip="{x:Bind ImageInfoTooltip, Mode=OneWay}"
             Visibility="{x:Bind IsPreviewVisible(BitmapPreviewer, Previewer.State), Mode=OneWay}" />
