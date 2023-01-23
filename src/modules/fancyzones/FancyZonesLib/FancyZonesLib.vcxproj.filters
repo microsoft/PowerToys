@@ -153,6 +153,9 @@
     <ClInclude Include="FancyZonesData\LayoutData.h">
       <Filter>Header Files\FancyZonesData</Filter>
     </ClInclude>
+    <ClInclude Include="HighlightedZones.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
     <ClInclude Include="NotificationUtil.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -249,6 +252,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="LayoutAssignedWindows.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="HighlightedZones.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

@@ -383,4 +383,19 @@ namespace MonitorUtils
         
         return displays;
     }
+
+    FancyZonesUtils::Rect GetWorkAreaRect(HMONITOR monitor)
+    {
+        if (monitor)
+        {
+            MONITORINFO mi{};
+            mi.cbSize = sizeof(mi);
+            if (GetMonitorInfoW(monitor, &mi))
+            {
+                return FancyZonesUtils::Rect(mi.rcWork);
+            }
+        }
+
+        return FancyZonesUtils::Rect{};
+    }
 }
