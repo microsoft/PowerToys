@@ -35,6 +35,13 @@ namespace Peek.FilePreviewer
             typeof(FilePreview),
             new PropertyMetadata(false, async (d, e) => await ((FilePreview)d).OnFilePropertyChanged()));
 
+        public static readonly DependencyProperty WindowSizeProperty =
+            DependencyProperty.Register(
+                nameof(WindowSize),
+                typeof(Size),
+                typeof(FilePreview),
+                new PropertyMetadata(false, async (d, e) => await ((FilePreview)d).OnWindowSizePropertyChanged()));
+
         [ObservableProperty]
         [NotifyPropertyChangedFor(nameof(BitmapPreviewer))]
         [NotifyPropertyChangedFor(nameof(BrowserPreviewer))]
@@ -85,6 +92,12 @@ namespace Peek.FilePreviewer
             set => SetValue(FilesProperty, value);
         }
 
+        public Size WindowSize
+        {
+            get => (Size)GetValue(WindowSizeProperty);
+            set => SetValue(WindowSizeProperty, value);
+        }
+
         public bool MatchPreviewState(PreviewState? value, PreviewState stateToMatch)
         {
             return value == stateToMatch;
@@ -118,6 +131,15 @@ namespace Peek.FilePreviewer
             await UpdatePreviewAsync(_cancellationTokenSource.Token);
         }
 
+        private async Task OnWindowSizePropertyChanged()
+        {
+            // Cancel previous loading task
+            _cancellationTokenSource.Cancel();
+            _cancellationTokenSource = new();
+
+            await UpdatePreviewAsync(_cancellationTokenSource.Token);
+        }
+
         private async Task UpdatePreviewAsync(CancellationToken cancellationToken)
         {
             if (Previewer != null)
@@ -128,7 +150,9 @@ namespace Peek.FilePreviewer
                     var size = await Previewer.GetPreviewSizeAsync(cancellationToken);
                     SizeFormat windowSizeFormat = UnsupportedFilePreviewer != null ? SizeFormat.Percentage : SizeFormat.Pixels;
                     PreviewSizeChanged?.Invoke(this, new PreviewSizeChangedArgs(size, windowSizeFormat));
-                    if (Previewer is ImagePreviewer imagePreviewer && windowSizeFormat == SizeFormat.Pixels && (size.Value.Width < 100 || size.Value.Height < 100))
+
+                    if (Previewer is ImagePreviewer imagePreviewer && windowSizeFormat == SizeFormat.Pixels
+                        && (size.Value.Width < WindowSize.Width && size.Value.Height < WindowSize.Height))
                     {
                         imagePreviewer.ImageStretch = Stretch.None;
                     }
