@@ -38,6 +38,7 @@ namespace powertoys_gpo {
     const std::wstring POLICY_CONFIGURE_ENABLED_KEYBOARD_MANAGER = L"ConfigureEnabledUtilityKeyboardManager";
     const std::wstring POLICY_CONFIGURE_ENABLED_FIND_MY_MOUSE = L"ConfigureEnabledUtilityFindMyMouse";
     const std::wstring POLICY_CONFIGURE_ENABLED_MOUSE_HIGHLIGHTER = L"ConfigureEnabledUtilityMouseHighlighter";
+    const std::wstring POLICY_CONFIGURE_ENABLED_MOUSE_JUMP = L"ConfigureEnabledUtilityMouseJump";
     const std::wstring POLICY_CONFIGURE_ENABLED_MOUSE_POINTER_CROSSHAIRS = L"ConfigureEnabledUtilityMousePointerCrosshairs";
     const std::wstring POLICY_CONFIGURE_ENABLED_POWER_RENAME = L"ConfigureEnabledUtilityPowerRename";
     const std::wstring POLICY_CONFIGURE_ENABLED_POWER_LAUNCHER = L"ConfigureEnabledUtilityPowerLauncher";
@@ -193,6 +194,11 @@ namespace powertoys_gpo {
     inline gpo_rule_configured_t getConfiguredMouseHighlighterEnabledValue()
     {
         return getConfiguredValue(POLICY_CONFIGURE_ENABLED_MOUSE_HIGHLIGHTER);
+    }
+
+    inline gpo_rule_configured_t getConfiguredMouseJumpEnabledValue()
+    {
+        return getConfiguredValue(POLICY_CONFIGURE_ENABLED_MOUSE_JUMP);
     }
 
     inline gpo_rule_configured_t getConfiguredMousePointerCrosshairsEnabledValue()

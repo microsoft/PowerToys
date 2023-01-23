@@ -895,7 +895,7 @@
     <value>Remove</value>
     <comment>Removes a user defined setting group for Image Resizer</comment>
   </data>
-	<data name="RemoveItem.Text" xml:space="preserve">
+  <data name="RemoveItem.Text" xml:space="preserve">
     <value>Delete</value>
   </data>
   <data name="ImageResizer_Image.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
@@ -2690,7 +2690,7 @@ Activate by holding the key for the character you want to add an accent to, then
   <data name="QuickAccent_StartSelectionFromTheLeft_Indicator.Header" xml:space="preserve">
     <value>Start selection from the left</value>
   </data>
-	<data name="QuickAccent_StartSelectionFromTheLeft_Indicator.Description" xml:space="preserve">
+  <data name="QuickAccent_StartSelectionFromTheLeft_Indicator.Description" xml:space="preserve">
     <value>Start selection from the leftmost character for all activation keys, including left and right arrows</value>
   </data>
   <data name="QuickAccent_DisableFullscreen.Header" xml:space="preserve">
@@ -2881,5 +2881,23 @@ Activate by holding the key for the character you want to add an accent to, then
   </data>
   <data name="TextExtractor_Languages.Header" xml:space="preserve">
     <value>Preferred language</value>
+  </data>
+  <data name="MouseUtils_MouseJump.Description" xml:space="preserve">
+    <value>Quickly move the mouse pointer long distances.</value>
+    <comment>"Mouse Jump" is the name of the utility. Mouse is the hardware mouse.</comment>
+  </data>
+  <data name="MouseUtils_MouseJump.Header" xml:space="preserve">
+    <value>Mouse Jump</value>
+    <comment>Refers to the utility name</comment>
+  </data>
+  <data name="MouseUtils_MouseJump_ActivationShortcut.Description" xml:space="preserve">
+    <value>Customize the shortcut to turn on or off this mode</value>
+  </data>
+  <data name="MouseUtils_MouseJump_ActivationShortcut.Header" xml:space="preserve">
+    <value>Activation shortcut</value>
+  </data>
+  <data name="MouseUtils_Enable_MouseJump.Header" xml:space="preserve">
+    <value>Enable Mouse Jump</value>
+    <comment>"Mouse Jump" is the name of the utility.</comment>
   </data>
 </root>
