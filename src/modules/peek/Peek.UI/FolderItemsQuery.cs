@@ -5,6 +5,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using CommunityToolkit.Mvvm.ComponentModel;
@@ -35,18 +36,6 @@ namespace Peek.UI
         private CancellationTokenSource CancellationTokenSource { get; set; } = new CancellationTokenSource();
 
         private Task? InitializeFilesTask { get; set; } = null;
-
-        public static File? GetFileExplorerSelectedFile()
-        {
-            var shellItems = FileExplorerHelper.GetSelectedItems();
-            var firstSelectedItem = shellItems?.Item(0);
-            if (shellItems == null || firstSelectedItem == null)
-            {
-                return null;
-            }
-
-            return new File(firstSelectedItem.Path);
-        }
 
         public void Clear()
         {
@@ -94,25 +83,21 @@ namespace Peek.UI
 
         public void Start()
         {
-            var folderView = FileExplorerHelper.GetCurrentFolderView();
-            if (folderView == null)
+            var selectedItems = FileExplorerHelper.GetSelectedItems();
+            if (!selectedItems.Any())
             {
                 return;
             }
 
-            Shell32.FolderItems selectedItems = folderView.SelectedItems();
-            if (selectedItems == null || selectedItems.Count == 0)
-            {
-                return;
-            }
-
-            IsMultiSelection = selectedItems.Count > 1;
+            bool hasMoreThanOneItem = selectedItems.Skip(1).Any();
+            IsMultiSelection = hasMoreThanOneItem;
 
             // Prioritize setting CurrentFile, which notifies UI
-            var firstSelectedItem = selectedItems.Item(0);
-            CurrentFile = new File(firstSelectedItem.Path);
+            var firstSelectedItem = selectedItems.First();
+            CurrentFile = firstSelectedItem;
 
-            var items = selectedItems.Count > 1 ? selectedItems : folderView.Folder?.Items();
+            // TODO: we shouldn't get all files from the SHell API, we should query them
+            var items = hasMoreThanOneItem ? selectedItems : FileExplorerHelper.GetItems();
             if (items == null)
             {
                 return;
@@ -148,32 +133,14 @@ namespace Peek.UI
         //  the entire folder. We can then avoid iterating through all items here, and maintain a dynamic window of
         //  loaded items around the current item index.
         private void InitializeFiles(
-            Shell32.FolderItems items,
-            Shell32.FolderItem firstSelectedItem,
+            IEnumerable<File> items,
+            File firstSelectedItem,
             CancellationToken cancellationToken)
         {
-            var tempFiles = new List<File>(items.Count);
-            var tempCurIndex = UninitializedItemIndex;
+            var listOfItems = items.ToList();
+            var currentItemIndex = listOfItems.FindIndex(item => item.Path == firstSelectedItem.Path);
 
-            for (int i = 0; i < items.Count; i++)
-            {
-                cancellationToken.ThrowIfCancellationRequested();
-
-                var item = items.Item(i);
-                if (item == null)
-                {
-                    continue;
-                }
-
-                if (item.Name == firstSelectedItem.Name)
-                {
-                    tempCurIndex = i;
-                }
-
-                tempFiles.Add(new File(item.Path));
-            }
-
-            if (tempCurIndex == UninitializedItemIndex)
+            if (currentItemIndex < 0)
             {
                 Debug.WriteLine("File query initialization: selectedItem index not found. Navigation remains disabled.");
                 return;
@@ -187,8 +154,8 @@ namespace Peek.UI
 
                 _dispatcherQueue.TryEnqueue(() =>
                 {
-                    Files = tempFiles;
-                    CurrentItemIndex = tempCurIndex;
+                    Files = listOfItems;
+                    CurrentItemIndex = currentItemIndex;
                 });
             }
         }

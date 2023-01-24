@@ -4,6 +4,7 @@
 
 using System;
 using System.Runtime.InteropServices;
+using Windows.Win32.UI.Shell;
 
 namespace Peek.Common.Models
 {
@@ -20,22 +21,11 @@ namespace Peek.Common.Models
 
         void GetParent(out IShellItem ppsi);
 
-        void GetDisplayName(Sigdn sigdnName, out IntPtr ppszName);
+        [return: MarshalAs(UnmanagedType.LPWStr)]
+        string GetDisplayName(SIGDN sigdnName);
 
         void GetAttributes(uint sfgaoMask, out uint psfgaoAttribs);
 
         void Compare(IShellItem psi, uint hint, out int piOrder);
-    }
-
-    public enum Sigdn : uint
-    {
-        NormalDisplay = 0,
-        ParentRelativeParsing = 0x80018001,
-        ParentRelativeForAddressBar = 0x8001c001,
-        DesktopAbsoluteParsing = 0x80028000,
-        ParentRelativeEditing = 0x80031001,
-        DesktopAbsoluteEditing = 0x8004c000,
-        FileSysPath = 0x80058000,
-        Url = 0x80068000,
     }
 }

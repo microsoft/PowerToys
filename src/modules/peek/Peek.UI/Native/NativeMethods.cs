@@ -43,13 +43,13 @@ namespace Peek.UI.Native
             DDETopic,
         }
 
-        [DllImport("user32.dll", CharSet = CharSet.Auto, ExactSpelling = true)]
-        internal static extern IntPtr GetForegroundWindow();
-
         [DllImport("Shlwapi.dll", SetLastError = true, CharSet = CharSet.Auto)]
         internal static extern HResult AssocQueryString(AssocF flags, AssocStr str, string pszAssoc, string? pszExtra, [Out] StringBuilder? pszOut, [In][Out] ref uint pcchOut);
 
         [DllImport("user32.dll")]
         internal static extern int GetWindowText(Windows.Win32.Foundation.HWND hWnd, StringBuilder lpString, int nMaxCount);
+
+        [DllImport("user32.dll")]
+        public static extern int GetClassName(IntPtr hWnd, StringBuilder buf, int nMaxCount);
     }
 }
