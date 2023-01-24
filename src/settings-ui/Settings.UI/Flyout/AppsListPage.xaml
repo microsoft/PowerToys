@@ -16,12 +16,13 @@
             <RowDefinition Height="Auto" />
             <RowDefinition Height="*" />
         </Grid.RowDefinitions>
-        <Grid Padding="24,24,24,0">
+        <Grid Padding="24,32,24,0">
             <TextBlock
+                x:Uid="AllAppsTxt"
                 VerticalAlignment="Center"
-                Style="{StaticResource BodyStrongTextBlockStyle}"
-                Text="All apps" />
+                Style="{StaticResource BodyStrongTextBlockStyle}" />
             <Button
+                x:Uid="BackBtn"
                 Padding="8,4,8,4"
                 HorizontalAlignment="Right"
                 VerticalAlignment="Center"
@@ -35,21 +36,25 @@
                             Margin="0,2,0,0"
                             FontSize="12"
                             Glyph="&#xe76b;" />
-                        <TextBlock Style="{StaticResource CaptionTextBlockStyle}" Text="Back" />
+                        <TextBlock x:Uid="BackLabel" Style="{StaticResource CaptionTextBlockStyle}" />
                     </StackPanel>
                 </Button.Content>
             </Button>
         </Grid>
-        <ListView SelectionMode="None" Grid.Row="1" Margin="0,16,0,0" ItemsSource="{x:Bind ViewModel.FlyoutMenuItems}">
+        <ListView
+            Grid.Row="1"
+            Margin="0,16,0,0"
+            ItemsSource="{x:Bind ViewModel.FlyoutMenuItems}"
+            SelectionMode="None">
             <ListView.ItemsPanel>
                 <ItemsPanelTemplate>
-                    <StackPanel Orientation="Vertical" Padding="0,0,0,16"/>
+                    <StackPanel Padding="0,0,0,16" Orientation="Vertical" />
                 </ItemsPanelTemplate>
             </ListView.ItemsPanel>
-            
+
             <ListView.ItemTemplate>
                 <DataTemplate x:DataType="viewmodels:FlyoutMenuItem">
-                    <Grid Height="36">
+                    <Grid Height="40" Padding="24,0,24,0">
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="Auto" />
                             <ColumnDefinition Width="*" />
@@ -58,20 +63,20 @@
                         <!--<ViewBox VerticalAlignment="Center">-->
                         <BitmapIcon
                             Width="20"
-                            Margin="24,0,16,0"
+                            Margin="0,0,16,0"
                             ShowAsMonochrome="False"
                             UriSource="{x:Bind Icon, Mode=OneWay}" />
                         <!--</ViewBox>-->
                         <TextBlock
                             Grid.Column="1"
                             VerticalAlignment="Center"
-                            TextTrimming="CharacterEllipsis"
-                          
-                            Text="{x:Bind Label, Mode=OneWay}" />
+                            Text="{x:Bind Label, Mode=OneWay}"
+                            TextTrimming="CharacterEllipsis" />
                         <ToggleSwitch
                             Grid.Column="2"
-                            Margin="0,0,24,0"
+                            Margin="0,0,0,0"
                             HorizontalAlignment="Right"
+                            AutomationProperties.Name="{x:Bind Label, Mode=OneWay}"
                             IsOn="{x:Bind IsEnabled, Mode=TwoWay}"
                             Style="{StaticResource RightAlignedCompactToggleSwitchStyle}" />
                     </Grid>

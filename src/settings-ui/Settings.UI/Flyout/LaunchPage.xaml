@@ -35,15 +35,16 @@
                 <RowDefinition Height="*" />
             </Grid.RowDefinitions>
 
-            <Grid Padding="24,24,24,0">
+            <Grid Padding="36,32,36,0">
                 <TextBlock
                     VerticalAlignment="Center"
                     Style="{StaticResource BodyStrongTextBlockStyle}"
-                    Text="Quick launch" />
+                    x:Uid="ShortcutsTxt" />
                 <Button
                     Padding="8,4,8,4"
                     HorizontalAlignment="Right"
                     VerticalAlignment="Center"
+                    x:Uid="MoreBtn"
                     Click="Button_Click">
                     <Button.Content>
                         <StackPanel
@@ -51,7 +52,7 @@
                             Orientation="Horizontal"
                             Spacing="12">
 
-                            <TextBlock Style="{StaticResource CaptionTextBlockStyle}" Text="All apps" />
+                            <TextBlock Style="{StaticResource CaptionTextBlockStyle}" x:Uid="MoreLabel" />
                             <FontIcon
                                 Margin="0,2,0,0"
                                 FontSize="12"
@@ -62,7 +63,7 @@
             </Grid>
             <Grid Grid.Row="1">
                 <ItemsControl
-                    Margin="23,26,21,24"
+                    Margin="12,26,12,24"
                     HorizontalAlignment="Center"
                     VerticalAlignment="Top"
                     ItemsSource="{x:Bind ViewModel.FlyoutMenuItems}"
@@ -77,6 +78,7 @@
                             <controls:FlyoutMenuButton
                                 Click="ModuleButton_Click"
                                 Tag="{x:Bind Tag}"
+                                AutomationProperties.Name="{x:Bind Label}"
                                 ToolTipService.ToolTip="{x:Bind ToolTip}"
                                 Visibility="{x:Bind Visible, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged, Converter={StaticResource BoolToVisibilityConverter}}">
                                 <controls:FlyoutMenuButton.Content>
@@ -97,7 +99,7 @@
         </Grid>
         <Grid Grid.Row="2">
             <InfoBar
-                Title="Update available"
+                x:Uid="UpdateAvailable"
                 IsClosable="False"
                 IsOpen="{x:Bind ViewModel.IsUpdateAvailable, Mode=OneWay}"
                 Severity="Success" />
@@ -110,24 +112,33 @@
                 Spacing="8">
                 <Button
                     x:Name="DocsBtn"
+                    x:Uid="DocsBtn"
                     Click="DocsBtn_Click"
-                    Style="{StaticResource FlyoutButtonStyle}"
-                    ToolTipService.ToolTip="Documentation">
+                    Style="{StaticResource FlyoutButtonStyle}">
+                    <ToolTipService.ToolTip>
+                        <TextBlock x:Uid="DocsTooltip"/>
+                    </ToolTipService.ToolTip>
                     <FontIcon FontSize="14" Glyph="&#xE130;" />
                 </Button>
                 <Button
                     x:Name="ReportBugBtn"
+                    x:Uid="BugReportBtn"
                     Click="ReportBugBtn_Click"
-                    Style="{StaticResource FlyoutButtonStyle}"
-                    ToolTipService.ToolTip="Report a bug">
+                    Style="{StaticResource FlyoutButtonStyle}">
+                    <ToolTipService.ToolTip>
+                        <TextBlock x:Uid="BugReportTooltip"/>
+                    </ToolTipService.ToolTip>
                     <FontIcon FontSize="14" Glyph="&#xebe8;" />
                 </Button>
                 <Button
                     x:Name="SettingsBtn"
                     Padding="8"
+                    x:Uid="SettingsBtn"
                     Click="SettingsBtn_Click"
-                    Style="{StaticResource FlyoutButtonStyle}"
-                    ToolTipService.ToolTip="Settings">
+                    Style="{StaticResource FlyoutButtonStyle}">
+                    <ToolTipService.ToolTip>
+                        <TextBlock x:Uid="SettingsTooltip"/>
+                    </ToolTipService.ToolTip>
                     <AnimatedIcon x:Name="SearchAnimatedIcon">
                         <AnimatedIcon.Source>
                             <animatedVisuals:AnimatedSettingsVisualSource />
@@ -137,14 +148,14 @@
                         </AnimatedIcon.FallbackIconSource>
                     </AnimatedIcon>
                 </Button>
-                <AppBarSeparator />
+                <!--<AppBarSeparator />
                 <Button
                     x:Name="QuitBtn"
                     Style="{StaticResource FlyoutButtonStyle}"
                     ToolTipService.ToolTip="Quit"
                     Click="QuitButton_Click">
                     <FontIcon FontSize="14" Glyph="&#xe894;" />
-                </Button>
+                </Button>-->
             </StackPanel>
         </Grid>
     </Grid>

@@ -11,7 +11,7 @@
     <Style x:Key="DefaultFlyoutMenuButtonStyle" TargetType="local:FlyoutMenuButton">
         <Setter Property="HorizontalAlignment" Value="Stretch" />
         <Setter Property="VerticalAlignment" Value="Stretch" />
-        <Setter Property="Width" Value="104" />
+        <Setter Property="Width" Value="116" />
         <Setter Property="Height" Value="84" />
         <Setter Property="FontFamily" Value="{ThemeResource ContentControlThemeFontFamily}" />
         <Setter Property="FontWeight" Value="Normal" />
@@ -24,6 +24,8 @@
                 <ControlTemplate TargetType="local:FlyoutMenuButton">
                     <Grid
                         x:Name="RootGrid"
+                        Width="{TemplateBinding Width}"
+                        Height="{TemplateBinding Height}"
                         HorizontalAlignment="Stretch"
                         VerticalAlignment="Stretch"
                         Background="Transparent"

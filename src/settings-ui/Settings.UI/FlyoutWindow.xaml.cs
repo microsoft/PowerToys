@@ -16,8 +16,8 @@ namespace Microsoft.PowerToys.Settings.UI
     /// </summary>
     public sealed partial class FlyoutWindow : WindowEx
     {
-        private const int WindowWidth = 358;
-        private const int WindowHeight = 468;
+        private const int WindowWidth = 386;
+        private const int WindowHeight = 486;
         private const int WindowMargin = 12;
 
         public FlyoutWindow()
@@ -27,7 +27,6 @@ namespace Microsoft.PowerToys.Settings.UI
             var hwnd = WinRT.Interop.WindowNative.GetWindowHandle(this);
             WindowId windowId = Win32Interop.GetWindowIdFromWindow(hwnd);
             DisplayArea displayArea = DisplayArea.GetFromWindowId(windowId, DisplayAreaFallback.Nearest);
-
             double dpiScale = (float)this.GetDpiForWindow() / 96;
             double x = displayArea.WorkArea.Width - (dpiScale * (WindowWidth + WindowMargin));
             double y = displayArea.WorkArea.Height - (dpiScale * (WindowHeight + WindowMargin));

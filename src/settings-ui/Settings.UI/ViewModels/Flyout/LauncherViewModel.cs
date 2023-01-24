@@ -7,7 +7,7 @@ using System.Collections.ObjectModel;
 using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.PowerToys.Settings.UI.Library.Helpers;
 using Microsoft.PowerToys.Settings.UI.Library.Interfaces;
-using Microsoft.UI.Xaml;
+using Windows.ApplicationModel.Resources;
 
 namespace Microsoft.PowerToys.Settings.UI.ViewModels
 {
@@ -31,12 +31,12 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
             // set the callback functions value to hangle outgoing IPC message.
             SendIPCMessage = ipcMSGCallBackFunc;
-
+            ResourceLoader resourceLoader = ResourceLoader.GetForViewIndependentUse();
             FlyoutMenuItems = new ObservableCollection<FlyoutMenuItem>()
             {
                 new FlyoutMenuItem()
                 {
-                    Label = "ColorPicker",
+                    Label = resourceLoader.GetString("ColorPickerString"),
                     Tag = "ColorPicker",
                     Visible = generalSettingsConfig.Enabled.ColorPicker,
                     ToolTip = SettingsRepository<ColorPickerSettings>.GetInstance(new SettingsUtils()).SettingsConfig.Properties.ActivationShortcut.ToString(),
@@ -44,7 +44,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 },
                 new FlyoutMenuItem()
                 {
-                    Label = "FancyZones Editor",
+                    Label = resourceLoader.GetString("FZEditorString"),
                     Tag = "FancyZones",
                     Visible = generalSettingsConfig.Enabled.FancyZones,
                     ToolTip = SettingsRepository<FancyZonesSettings>.GetInstance(new SettingsUtils()).SettingsConfig.Properties.FancyzonesEditorHotkey.Value.ToString(),
@@ -52,14 +52,14 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 },
                 new FlyoutMenuItem()
                 {
-                    Label = "Hosts File Editor",
+                    Label = resourceLoader.GetString("HostsString"),
                     Tag = "Hosts",
                     Visible = generalSettingsConfig.Enabled.Hosts,
                     Icon = "ms-appx:///Assets/FluentIcons/FluentIconsHosts.png",
                 },
                 new FlyoutMenuItem()
                 {
-                    Label = "PowerToys Run",
+                    Label = resourceLoader.GetString("PowerToysRunString"),
                     Tag = "PowerLauncher",
                     Visible = generalSettingsConfig.Enabled.PowerLauncher,
                     ToolTip = SettingsRepository<PowerLauncherSettings>.GetInstance(new SettingsUtils()).SettingsConfig.Properties.OpenPowerLauncher.ToString(),
@@ -67,7 +67,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 },
                 new FlyoutMenuItem()
                 {
-                    Label = "Text Extractor",
+                    Label = resourceLoader.GetString("TextExtractorString"),
                     Tag = "PowerOCR",
                     Visible = generalSettingsConfig.Enabled.PowerOCR,
                     ToolTip = SettingsRepository<PowerOcrSettings>.GetInstance(new SettingsUtils()).SettingsConfig.Properties.ActivationShortcut.ToString(),
@@ -75,7 +75,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 },
                 new FlyoutMenuItem()
                 {
-                    Label = "Screen Ruler",
+                    Label = resourceLoader.GetString("ScreenRulerString"),
                     Tag = "MeasureTool",
                     Visible = generalSettingsConfig.Enabled.MeasureTool,
                     ToolTip = SettingsRepository<MeasureToolSettings>.GetInstance(new SettingsUtils()).SettingsConfig.Properties.ActivationShortcut.ToString(),
@@ -83,7 +83,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 },
                 new FlyoutMenuItem()
                 {
-                    Label = "Shortcut Guide",
+                    Label = resourceLoader.GetString("ShortcutGuideString"),
                     Tag = "ShortcutGuide",
                     Visible = generalSettingsConfig.Enabled.ShortcutGuide,
                     ToolTip = SettingsRepository<ShortcutGuideSettings>.GetInstance(new SettingsUtils()).SettingsConfig.Properties.OpenShortcutGuide.ToString(),
