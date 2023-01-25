@@ -179,6 +179,34 @@ LRESULT __stdcall tray_icon_window_proc(HWND window, UINT message, WPARAM wparam
         {
             switch (lparam)
             {
+            case WM_RBUTTONUP:
+            case WM_CONTEXTMENU:
+            {
+                if (!h_menu)
+                {
+                    h_menu = LoadMenu(reinterpret_cast<HINSTANCE>(&__ImageBase), MAKEINTRESOURCE(ID_TRAY_MENU));
+                }
+                if (h_menu)
+                {
+                    static std::wstring settings_menuitem_label = GET_RESOURCE_STRING(IDS_SETTINGS_MENU_TEXT);
+                    static std::wstring exit_menuitem_label = GET_RESOURCE_STRING(IDS_EXIT_MENU_TEXT);
+                    static std::wstring submit_bug_menuitem_label = GET_RESOURCE_STRING(IDS_SUBMIT_BUG_TEXT);
+                    static std::wstring documentation_menuitem_label = GET_RESOURCE_STRING(IDS_DOCUMENTATION_MENU_TEXT);
+                    change_menu_item_text(ID_SETTINGS_MENU_COMMAND, settings_menuitem_label.data());
+                    change_menu_item_text(ID_EXIT_MENU_COMMAND, exit_menuitem_label.data());
+                    change_menu_item_text(ID_REPORT_BUG_COMMAND, submit_bug_menuitem_label.data());
+                    change_menu_item_text(ID_DOCUMENTATION_MENU_COMMAND, documentation_menuitem_label.data());
+                }
+                if (!h_sub_menu)
+                {
+                    h_sub_menu = GetSubMenu(h_menu, 0);
+                }
+                POINT mouse_pointer;
+                GetCursorPos(&mouse_pointer);
+                SetForegroundWindow(window); // Needed for the context menu to disappear.
+                TrackPopupMenu(h_sub_menu, TPM_CENTERALIGN | TPM_BOTTOMALIGN, mouse_pointer.x, mouse_pointer.y, 0, window, nullptr);
+                break;
+            }
             case WM_LBUTTONUP:
             {
                 // ignore event if this is the second click of a double click
