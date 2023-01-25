@@ -175,7 +175,7 @@ namespace FancyZonesUtils
     std::optional<GUID> GuidFromString(const std::wstring& str) noexcept;
     std::optional<std::wstring> GuidToString(const GUID& guid) noexcept;
 
-    RECT PrepareRectForCycling(RECT windowRect, RECT workAreaRect, DWORD vkCode) noexcept;
+    constexpr RECT PrepareRectForCycling(RECT windowRect, RECT workAreaRect, DWORD vkCode) noexcept;
     size_t ChooseNextZoneByPosition(DWORD vkCode, RECT windowRect, const std::vector<RECT>& zoneRects) noexcept;
 
     void SwallowKey(const WORD key) noexcept;

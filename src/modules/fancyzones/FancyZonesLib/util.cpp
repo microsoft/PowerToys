@@ -248,10 +248,8 @@ namespace FancyZonesUtils
         return closestIdx;
     }
 
-// Disable 26497 this function should be evaluated at compile time
-#pragma warning(push)
-#pragma warning(disable : 26497)
-    RECT PrepareRectForCycling(RECT windowRect, RECT workAreaRect, DWORD vkCode) noexcept
+
+    constexpr RECT PrepareRectForCycling(RECT windowRect, RECT workAreaRect, DWORD vkCode) noexcept
     {
         LONG deltaX = 0, deltaY = 0;
         switch (vkCode)
@@ -276,7 +274,7 @@ namespace FancyZonesUtils
 
         return windowRect;
     }
-#pragma warning(pop)
+
 
     void SwallowKey(const WORD key) noexcept
     {
