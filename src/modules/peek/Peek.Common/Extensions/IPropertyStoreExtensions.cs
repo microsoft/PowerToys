@@ -16,7 +16,7 @@ namespace Peek.Common.Extensions
         /// Returns 0 if the value is not a VT_UI4 (4-byte unsigned integer in little-endian order).
         /// </summary>
         /// <param name="propertyStore">The property store</param>
-        /// <param name="key">The pkey</param>
+        /// <param name="key">The key</param>
         /// <returns>The uint value</returns>
         public static uint GetUInt(this IPropertyStore propertyStore, PropertyKey key)
         {

@@ -3,7 +3,6 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
-using System.Collections.Generic;
 using System.Runtime.InteropServices;
 using Peek.Common.Models;
 using Windows.Win32.UI.Shell.PropertiesSystem;

@@ -1,0 +1,9 @@
+namespace Peek_Win32
+{
+    [default_interface]
+    runtimeclass Class
+    {
+        Class();
+        Int32 MaPropriete;
+    }
+}
