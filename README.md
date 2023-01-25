@@ -49,7 +49,7 @@ Install from the [Microsoft Store's PowerToys page][microsoft-store-link]. You m
 Download PowerToys from [WinGet][winget-link]. To install PowerToys, run the following command from the command line / PowerShell:
 
 ```powershell
-winget install Microsoft.PowerToys -s winget
+winget install XP89DCGQ3K6VLD -s msstore
 ```
 
 ### Other install methods
