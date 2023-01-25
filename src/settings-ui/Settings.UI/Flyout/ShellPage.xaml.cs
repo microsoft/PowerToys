@@ -16,6 +16,11 @@ namespace Microsoft.PowerToys.Settings.UI.Flyout
             this.InitializeComponent();
         }
 
+        internal void SwitchToLaunchPage()
+        {
+            ContentFrame.Navigate(typeof(LaunchPage), null, null);
+        }
+
         private void Page_Loaded(object sender, RoutedEventArgs e)
         {
             ContentFrame.Navigate(typeof(LaunchPage), null, null);

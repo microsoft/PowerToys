@@ -75,17 +75,17 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
             if (GPOWrapper.GetConfiguredKeyboardManagerEnabledValue() != GpoRuleConfigured.Disabled)
             {
-                FlyoutMenuItems.Add(new FlyoutMenuItem() { Label = resourceLoader.GetString("KBMString"), IsEnabled = generalSettingsConfig.Enabled.KeyboardManager, Tag = "KBM", Icon = "ms-appx:///Assets/FluentIcons/FluentIconsKeyboardManager.png", EnabledChangedCallback = EnabledChangedOnUI });
+                FlyoutMenuItems.Add(new FlyoutMenuItem() { Label = resourceLoader.GetString("KBMString"), IsEnabled = generalSettingsConfig.Enabled.KeyboardManager, Tag = "KeyboardManager", Icon = "ms-appx:///Assets/FluentIcons/FluentIconsKeyboardManager.png", EnabledChangedCallback = EnabledChangedOnUI });
             }
 
             if (GPOWrapper.GetConfiguredMouseHighlighterEnabledValue() != GpoRuleConfigured.Disabled)
             {
-                FlyoutMenuItems.Add(new FlyoutMenuItem() { Label = resourceLoader.GetString("MouseHighlighterString"), IsEnabled = generalSettingsConfig.Enabled.MouseHighlighter, Tag = "MouseHightlighter", Icon = "ms-appx:///Assets/FluentIcons/FluentIconsMouseHighlighter.png", EnabledChangedCallback = EnabledChangedOnUI });
+                FlyoutMenuItems.Add(new FlyoutMenuItem() { Label = resourceLoader.GetString("MouseHighlighterString"), IsEnabled = generalSettingsConfig.Enabled.MouseHighlighter, Tag = "MouseHighlighter", Icon = "ms-appx:///Assets/FluentIcons/FluentIconsMouseHighlighter.png", EnabledChangedCallback = EnabledChangedOnUI });
             }
 
             if (GPOWrapper.GetConfiguredMousePointerCrosshairsEnabledValue() != GpoRuleConfigured.Disabled)
             {
-                FlyoutMenuItems.Add(new FlyoutMenuItem() { Label = resourceLoader.GetString("MousePointerCrosshairsString"), IsEnabled = generalSettingsConfig.Enabled.MousePointerCrosshairs, Tag = "MouseCrosshairs", Icon = "ms-appx:///Assets/FluentIcons/FluentIconsMouseCrosshairs.png", EnabledChangedCallback = EnabledChangedOnUI });
+                FlyoutMenuItems.Add(new FlyoutMenuItem() { Label = resourceLoader.GetString("MousePointerCrosshairsString"), IsEnabled = generalSettingsConfig.Enabled.MousePointerCrosshairs, Tag = "MousePointerCrosshairs", Icon = "ms-appx:///Assets/FluentIcons/FluentIconsMouseCrosshairs.png", EnabledChangedCallback = EnabledChangedOnUI });
             }
 
             if (GPOWrapper.GetConfiguredPowerRenameEnabledValue() != GpoRuleConfigured.Disabled)
@@ -100,7 +100,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
             if (GPOWrapper.GetConfiguredQuickAccentEnabledValue() != GpoRuleConfigured.Disabled)
             {
-                FlyoutMenuItems.Add(new FlyoutMenuItem() { Label = resourceLoader.GetString("QuickAccentString"), IsEnabled = generalSettingsConfig.Enabled.PowerAccent, Tag = "QuickAccent", Icon = "ms-appx:///Assets/FluentIcons/FluentIconsPowerAccent.png", EnabledChangedCallback = EnabledChangedOnUI });
+                FlyoutMenuItems.Add(new FlyoutMenuItem() { Label = resourceLoader.GetString("QuickAccentString"), IsEnabled = generalSettingsConfig.Enabled.PowerAccent, Tag = "PowerAccent", Icon = "ms-appx:///Assets/FluentIcons/FluentIconsPowerAccent.png", EnabledChangedCallback = EnabledChangedOnUI });
             }
 
             if (GPOWrapper.GetConfiguredScreenRulerEnabledValue() != GpoRuleConfigured.Disabled)
@@ -129,7 +129,10 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         private void EnabledChangedOnUI(FlyoutMenuItem flyoutMenuItem)
         {
-            Views.ShellPage.UpdateGeneralSettingsCallback(flyoutMenuItem.Tag, flyoutMenuItem.IsEnabled);
+            if (Views.ShellPage.UpdateGeneralSettingsCallback(flyoutMenuItem.Tag, flyoutMenuItem.IsEnabled))
+            {
+                Views.ShellPage.DisableFlyoutHidingCallback();
+            }
         }
 
         private void ModuleEnabledChangedOnSettingsPage()

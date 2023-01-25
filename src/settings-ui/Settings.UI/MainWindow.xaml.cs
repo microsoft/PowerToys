@@ -84,75 +84,77 @@ namespace Microsoft.PowerToys.Settings.UI
             // open main window
             ShellPage.SetUpdatingGeneralSettingsCallback((string module, bool isEnabled) =>
             {
-                this.DispatcherQueue.TryEnqueue(Microsoft.UI.Dispatching.DispatcherQueuePriority.Normal, () =>
+                SettingsRepository<GeneralSettings> repository = SettingsRepository<GeneralSettings>.GetInstance(new SettingsUtils());
+                GeneralSettings generalSettingsConfig = repository.SettingsConfig;
+                bool needToUpdate = false;
+                switch (module)
                 {
-                    SettingsRepository<GeneralSettings> repository = SettingsRepository<GeneralSettings>.GetInstance(new SettingsUtils());
-                    GeneralSettings generalSettingsConfig = repository.SettingsConfig;
-                    bool needToUpdate = false;
-                    switch (module)
-                    {
-                        case "AlwaysOnTop":
-                            needToUpdate = generalSettingsConfig.Enabled.AlwaysOnTop != isEnabled;
-                            generalSettingsConfig.Enabled.AlwaysOnTop = isEnabled; break;
-                        case "Awake":
-                            needToUpdate = generalSettingsConfig.Enabled.Awake != isEnabled;
-                            generalSettingsConfig.Enabled.Awake = isEnabled; break;
-                        case "ColorPicker":
-                            needToUpdate = generalSettingsConfig.Enabled.ColorPicker != isEnabled;
-                            generalSettingsConfig.Enabled.ColorPicker = isEnabled; break;
-                        case "FancyZones":
-                            needToUpdate = generalSettingsConfig.Enabled.FancyZones != isEnabled;
-                            generalSettingsConfig.Enabled.FancyZones = isEnabled; break;
-                        case "FileLocksmith":
-                            needToUpdate = generalSettingsConfig.Enabled.FileLocksmith != isEnabled;
-                            generalSettingsConfig.Enabled.FileLocksmith = isEnabled; break;
-                        case "FindMyMouse":
-                            needToUpdate = generalSettingsConfig.Enabled.FindMyMouse != isEnabled;
-                            generalSettingsConfig.Enabled.FindMyMouse = isEnabled; break;
-                        case "Hosts":
-                            needToUpdate = generalSettingsConfig.Enabled.Hosts != isEnabled;
-                            generalSettingsConfig.Enabled.Hosts = isEnabled; break;
-                        case "ImageResizer":
-                            needToUpdate = generalSettingsConfig.Enabled.ImageResizer != isEnabled;
-                            generalSettingsConfig.Enabled.ImageResizer = isEnabled; break;
-                        case "KeyboardManager":
-                            needToUpdate = generalSettingsConfig.Enabled.KeyboardManager != isEnabled;
-                            generalSettingsConfig.Enabled.KeyboardManager = isEnabled; break;
-                        case "MouseHighlighter":
-                            needToUpdate = generalSettingsConfig.Enabled.MouseHighlighter != isEnabled;
-                            generalSettingsConfig.Enabled.MouseHighlighter = isEnabled; break;
-                        case "MousePointerCrosshairs":
-                            needToUpdate = generalSettingsConfig.Enabled.MousePointerCrosshairs != isEnabled;
-                            generalSettingsConfig.Enabled.MousePointerCrosshairs = isEnabled; break;
-                        case "PowerRename":
-                            needToUpdate = generalSettingsConfig.Enabled.PowerRename != isEnabled;
-                            generalSettingsConfig.Enabled.PowerRename = isEnabled; break;
-                        case "PowerLauncher":
-                            needToUpdate = generalSettingsConfig.Enabled.PowerLauncher != isEnabled;
-                            generalSettingsConfig.Enabled.PowerLauncher = isEnabled; break;
-                        case "PowerAccent":
-                            needToUpdate = generalSettingsConfig.Enabled.PowerAccent != isEnabled;
-                            generalSettingsConfig.Enabled.PowerAccent = isEnabled; break;
-                        case "MeasureTool":
-                            needToUpdate = generalSettingsConfig.Enabled.MeasureTool != isEnabled;
-                            generalSettingsConfig.Enabled.MeasureTool = isEnabled; break;
-                        case "ShortcutGuide":
-                            needToUpdate = generalSettingsConfig.Enabled.ShortcutGuide != isEnabled;
-                            generalSettingsConfig.Enabled.ShortcutGuide = isEnabled; break;
-                        case "PowerOCR":
-                            needToUpdate = generalSettingsConfig.Enabled.PowerOCR != isEnabled;
-                            generalSettingsConfig.Enabled.PowerOCR = isEnabled; break;
-                        case "VideoConference":
-                            needToUpdate = generalSettingsConfig.Enabled.VideoConference != isEnabled;
-                            generalSettingsConfig.Enabled.VideoConference = isEnabled; break;
-                    }
+                    case "AlwaysOnTop":
+                        needToUpdate = generalSettingsConfig.Enabled.AlwaysOnTop != isEnabled;
+                        generalSettingsConfig.Enabled.AlwaysOnTop = isEnabled; break;
+                    case "Awake":
+                        needToUpdate = generalSettingsConfig.Enabled.Awake != isEnabled;
+                        generalSettingsConfig.Enabled.Awake = isEnabled; break;
+                    case "ColorPicker":
+                        needToUpdate = generalSettingsConfig.Enabled.ColorPicker != isEnabled;
+                        generalSettingsConfig.Enabled.ColorPicker = isEnabled; break;
+                    case "FancyZones":
+                        needToUpdate = generalSettingsConfig.Enabled.FancyZones != isEnabled;
+                        generalSettingsConfig.Enabled.FancyZones = isEnabled; break;
+                    case "FileLocksmith":
+                        needToUpdate = generalSettingsConfig.Enabled.FileLocksmith != isEnabled;
+                        generalSettingsConfig.Enabled.FileLocksmith = isEnabled; break;
+                    case "FindMyMouse":
+                        needToUpdate = generalSettingsConfig.Enabled.FindMyMouse != isEnabled;
+                        generalSettingsConfig.Enabled.FindMyMouse = isEnabled; break;
+                    case "Hosts":
+                        needToUpdate = generalSettingsConfig.Enabled.Hosts != isEnabled;
+                        generalSettingsConfig.Enabled.Hosts = isEnabled; break;
+                    case "ImageResizer":
+                        needToUpdate = generalSettingsConfig.Enabled.ImageResizer != isEnabled;
+                        generalSettingsConfig.Enabled.ImageResizer = isEnabled; break;
+                    case "KeyboardManager":
+                        needToUpdate = generalSettingsConfig.Enabled.KeyboardManager != isEnabled;
+                        generalSettingsConfig.Enabled.KeyboardManager = isEnabled; break;
+                    case "MouseHighlighter":
+                        needToUpdate = generalSettingsConfig.Enabled.MouseHighlighter != isEnabled;
+                        generalSettingsConfig.Enabled.MouseHighlighter = isEnabled; break;
+                    case "MousePointerCrosshairs":
+                        needToUpdate = generalSettingsConfig.Enabled.MousePointerCrosshairs != isEnabled;
+                        generalSettingsConfig.Enabled.MousePointerCrosshairs = isEnabled; break;
+                    case "PowerRename":
+                        needToUpdate = generalSettingsConfig.Enabled.PowerRename != isEnabled;
+                        generalSettingsConfig.Enabled.PowerRename = isEnabled; break;
+                    case "PowerLauncher":
+                        needToUpdate = generalSettingsConfig.Enabled.PowerLauncher != isEnabled;
+                        generalSettingsConfig.Enabled.PowerLauncher = isEnabled; break;
+                    case "PowerAccent":
+                        needToUpdate = generalSettingsConfig.Enabled.PowerAccent != isEnabled;
+                        generalSettingsConfig.Enabled.PowerAccent = isEnabled; break;
+                    case "MeasureTool":
+                        needToUpdate = generalSettingsConfig.Enabled.MeasureTool != isEnabled;
+                        generalSettingsConfig.Enabled.MeasureTool = isEnabled; break;
+                    case "ShortcutGuide":
+                        needToUpdate = generalSettingsConfig.Enabled.ShortcutGuide != isEnabled;
+                        generalSettingsConfig.Enabled.ShortcutGuide = isEnabled; break;
+                    case "PowerOCR":
+                        needToUpdate = generalSettingsConfig.Enabled.PowerOCR != isEnabled;
+                        generalSettingsConfig.Enabled.PowerOCR = isEnabled; break;
+                    case "VideoConference":
+                        needToUpdate = generalSettingsConfig.Enabled.VideoConference != isEnabled;
+                        generalSettingsConfig.Enabled.VideoConference = isEnabled; break;
+                }
 
-                    if (needToUpdate)
+                if (needToUpdate)
+                {
+                    var outgoing = new OutGoingGeneralSettings(generalSettingsConfig);
+                    this.DispatcherQueue.TryEnqueue(Microsoft.UI.Dispatching.DispatcherQueuePriority.Normal, () =>
                     {
-                        var outgoing = new OutGoingGeneralSettings(generalSettingsConfig);
                         ShellPage.SendDefaultIPCMessage(outgoing.ToString());
-                    }
-                });
+                    });
+                }
+
+                return needToUpdate;
             });
 
             // open oobe
@@ -180,6 +182,20 @@ namespace Microsoft.PowerToys.Settings.UI
                 });
             });
 
+            // disable flyout hiding
+            ShellPage.SetDisableFlyoutHidingCallback(() =>
+            {
+                this.DispatcherQueue.TryEnqueue(Microsoft.UI.Dispatching.DispatcherQueuePriority.Normal, () =>
+                {
+                    if (App.GetFlyoutWindow() == null)
+                    {
+                        App.SetFlyoutWindow(new FlyoutWindow());
+                    }
+
+                    App.GetFlyoutWindow().ViewModel.DisableHiding();
+                });
+            });
+
             this.InitializeComponent();
 
             // receive IPC Message
@@ -202,9 +218,17 @@ namespace Microsoft.PowerToys.Settings.UI
                 }
             };
 
+            this.Activated += MainWindow_Activated;
+
             bootTime.Stop();
 
             PowerToysTelemetry.Log.WriteEvent(new SettingsBootEvent() { BootTimeMs = bootTime.ElapsedMilliseconds });
+        }
+
+        private void MainWindow_Activated(object sender, WindowActivatedEventArgs args)
+        {
+            ShellPage.Navigate(typeof(GeneralPage));
+            this.Activated -= MainWindow_Activated;
         }
 
         public void NavigateToSection(System.Type type)

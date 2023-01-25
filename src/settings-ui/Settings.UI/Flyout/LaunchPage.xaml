@@ -45,7 +45,7 @@
                     HorizontalAlignment="Right"
                     VerticalAlignment="Center"
                     x:Uid="MoreBtn"
-                    Click="Button_Click">
+                    Click="AllAppButton_Click">
                     <Button.Content>
                         <StackPanel
                             VerticalAlignment="Center"

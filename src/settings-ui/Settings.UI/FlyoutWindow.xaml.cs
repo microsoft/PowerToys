@@ -1,12 +1,9 @@
 ﻿// Copyright (c) Microsoft Corporation
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
-using Microsoft.PowerToys.Settings.UI.Flyout;
+using Microsoft.PowerToys.Settings.UI.ViewModels.Flyout;
 using Microsoft.UI;
 using Microsoft.UI.Windowing;
-using Microsoft.UI.Xaml;
-using Microsoft.UI.Xaml.Controls;
-using Microsoft.UI.Xaml.Media.Animation;
 using WinUIEx;
 
 namespace Microsoft.PowerToys.Settings.UI
@@ -20,6 +17,8 @@ namespace Microsoft.PowerToys.Settings.UI
         private const int WindowHeight = 486;
         private const int WindowMargin = 12;
 
+        public FlyoutViewModel ViewModel { get; set; }
+
         public FlyoutWindow()
         {
             this.InitializeComponent();
@@ -31,14 +30,18 @@ namespace Microsoft.PowerToys.Settings.UI
             double x = displayArea.WorkArea.Width - (dpiScale * (WindowWidth + WindowMargin));
             double y = displayArea.WorkArea.Height - (dpiScale * (WindowHeight + WindowMargin));
             this.MoveAndResize(x, y, WindowWidth, WindowHeight);
+            ViewModel = new FlyoutViewModel();
         }
 
         private void FlyoutWindow_Activated(object sender, Microsoft.UI.Xaml.WindowActivatedEventArgs args)
         {
             if (args.WindowActivationState == Microsoft.UI.Xaml.WindowActivationState.Deactivated)
             {
-                this.Hide();
-                FlyoutShellPage.Frame.Navigate(typeof(LaunchPage));
+                if (ViewModel.CanHide)
+                {
+                    FlyoutShellPage.SwitchToLaunchPage();
+                    this.Hide();
+                }
             }
         }
     }

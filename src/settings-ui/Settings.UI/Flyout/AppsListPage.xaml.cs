@@ -28,7 +28,7 @@ namespace Microsoft.PowerToys.Settings.UI.Flyout
             DataContext = ViewModel;
         }
 
-        private void Button_Click(object sender, RoutedEventArgs e)
+        private void BackButton_Click(object sender, RoutedEventArgs e)
         {
             Frame.Navigate(typeof(LaunchPage), null, new SlideNavigationTransitionInfo() { Effect = SlideNavigationTransitionEffect.FromLeft });
         }

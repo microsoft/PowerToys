@@ -93,7 +93,7 @@ namespace Microsoft.PowerToys.Settings.UI.Flyout
             await Launcher.LaunchUriAsync(new Uri("https://aka.ms/PowerToysOverview"));
         }
 
-        private void Button_Click(object sender, RoutedEventArgs e)
+        private void AllAppButton_Click(object sender, RoutedEventArgs e)
         {
             Frame.Navigate(typeof(AppsListPage), null, new SlideNavigationTransitionInfo() { Effect = SlideNavigationTransitionEffect.FromRight });
         }

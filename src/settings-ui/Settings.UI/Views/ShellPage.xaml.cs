@@ -35,7 +35,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
         /// <summary>
         /// Declaration for the updateing the general settings callback function.
         /// </summary>
-        public delegate void UpdatingGeneralSettingsCallback(string module, bool isEnabled);
+        public delegate bool UpdatingGeneralSettingsCallback(string module, bool isEnabled);
 
         /// <summary>
         /// Declaration for the opening oobe window callback function.
@@ -43,9 +43,14 @@ namespace Microsoft.PowerToys.Settings.UI.Views
         public delegate void OobeOpeningCallback();
 
         /// <summary>
-        /// Declaration for the opening oobe window callback function.
+        /// Declaration for the opening flyout window callback function.
         /// </summary>
         public delegate void FlyoutOpeningCallback();
+
+        /// <summary>
+        /// Declaration for the diabling hide of flyout window callback function.
+        /// </summary>
+        public delegate void DisablingFlyoutHidingCallback();
 
         /// <summary>
         /// Gets or sets a shell handler to be used to update contents of the shell dynamically from page within the frame.
@@ -88,6 +93,11 @@ namespace Microsoft.PowerToys.Settings.UI.Views
         public static FlyoutOpeningCallback OpenFlyoutCallback { get; set; }
 
         /// <summary>
+        /// Gets or sets callback function for diabling hide of flyout window
+        /// </summary>
+        public static DisablingFlyoutHidingCallback DisableFlyoutHidingCallback { get; set; }
+
+        /// <summary>
         /// Gets view model.
         /// </summary>
         public ShellViewModel ViewModel { get; } = new ShellViewModel();
@@ -112,7 +122,9 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             DataContext = ViewModel;
             ShellHandler = this;
             ViewModel.Initialize(shellFrame, navigationView, KeyboardAccelerators);
-            shellFrame.Navigate(typeof(GeneralPage));
+
+            // NL moved navigation to general page to the moment when the window is first activated (to not make flyout window disappear)
+            // shellFrame.Navigate(typeof(GeneralPage));
             IPCResponseHandleList.Add(ReceiveMessage);
         }
 
@@ -190,12 +202,21 @@ namespace Microsoft.PowerToys.Settings.UI.Views
         }
 
         /// <summary>
-        /// Set oobe opening callback function
+        /// Set flyout opening callback function
         /// </summary>
         /// <param name="implementation">delegate function implementation.</param>
         public static void SetOpenFlyoutCallback(FlyoutOpeningCallback implementation)
         {
             OpenFlyoutCallback = implementation;
+        }
+
+        /// <summary>
+        /// Set flyout opening callback function
+        /// </summary>
+        /// <param name="implementation">delegate function implementation.</param>
+        public static void SetDisableFlyoutHidingCallback(DisablingFlyoutHidingCallback implementation)
+        {
+            DisableFlyoutHidingCallback = implementation;
         }
 
         public static void SetElevationStatus(bool isElevated)

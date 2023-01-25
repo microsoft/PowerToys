@@ -26,7 +26,7 @@
                 Padding="8,4,8,4"
                 HorizontalAlignment="Right"
                 VerticalAlignment="Center"
-                Click="Button_Click">
+                Click="BackButton_Click">
                 <Button.Content>
                     <StackPanel
                         VerticalAlignment="Center"
