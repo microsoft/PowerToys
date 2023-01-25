@@ -7,9 +7,8 @@ using System.Drawing;
 using System.Drawing.Imaging;
 using System.Linq;
 using System.Windows.Forms;
-using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Logging.Abstractions;
 using MouseJumpUI.Helpers;
+using NLog;
 
 namespace MouseJumpUI;
 
@@ -17,12 +16,12 @@ internal partial class MainForm : Form
 {
     public MainForm()
     {
-        this.Logger = NullLogger.Instance;
+        this.Logger = LogManager.CreateNullLogger();
         this.InitializeComponent();
         this.ShowPreview();
     }
 
-    private ILogger Logger
+    private Logger Logger
     {
         get;
     }
@@ -54,14 +53,14 @@ internal partial class MainForm : Form
 
     private void Thumbnail_Click(object sender, EventArgs e)
     {
-        this.Logger.LogDebug("-----------");
-        this.Logger.LogDebug(nameof(MainForm.Thumbnail_Click));
-        this.Logger.LogDebug("-----------");
+        this.Logger.Debug("-----------");
+        this.Logger.Debug(nameof(MainForm.Thumbnail_Click));
+        this.Logger.Debug("-----------");
 
         var mouseEventArgs = (MouseEventArgs)e;
-        this.Logger.LogDebug($"mouse event args = ");
-        this.Logger.LogDebug($"    button   = {mouseEventArgs.Button} ");
-        this.Logger.LogDebug($"    location = {mouseEventArgs.Location} ");
+        this.Logger.Debug($"mouse event args = ");
+        this.Logger.Debug($"    button   = {mouseEventArgs.Button} ");
+        this.Logger.Debug($"    location = {mouseEventArgs.Location} ");
 
         if (mouseEventArgs.Button == MouseButtons.Left)
         {
@@ -69,7 +68,7 @@ internal partial class MainForm : Form
             var desktopBounds = LayoutHelper.CombineRegions(
                 Screen.AllScreens.Select(
                     screen => screen.Bounds).ToList());
-            this.Logger.LogDebug(
+            this.Logger.Debug(
                 $"desktop bounds  = {desktopBounds}");
 
             var mouseEvent = (MouseEventArgs)e;
@@ -78,7 +77,7 @@ internal partial class MainForm : Form
                 originalBounds: Thumbnail.Bounds,
                 originalLocation: new Point(mouseEvent.X, mouseEvent.Y),
                 scaledBounds: desktopBounds);
-            this.Logger.LogDebug(
+            this.Logger.Debug(
                 $"cursor position = {cursorPosition}");
 
             Cursor.Position = cursorPosition;
@@ -89,9 +88,9 @@ internal partial class MainForm : Form
 
     public void ShowPreview()
     {
-        this.Logger.LogDebug("-----------");
-        this.Logger.LogDebug(nameof(MainForm.ShowPreview));
-        this.Logger.LogDebug("-----------");
+        this.Logger.Debug("-----------");
+        this.Logger.Debug(nameof(MainForm.ShowPreview));
+        this.Logger.Debug("-----------");
 
         if (this.Thumbnail.Image != null)
         {
@@ -104,25 +103,25 @@ internal partial class MainForm : Form
         foreach (var i in Enumerable.Range(0, screens.Length))
         {
             var screen = screens[i];
-            this.Logger.LogDebug($"screen[{i}] = \"{screen.DeviceName}\"");
-            this.Logger.LogDebug($"    primary      = {screen.Primary}");
-            this.Logger.LogDebug($"    bounds       = {screen.Bounds}");
-            this.Logger.LogDebug($"    working area = {screen.WorkingArea}");
+            this.Logger.Debug($"screen[{i}] = \"{screen.DeviceName}\"");
+            this.Logger.Debug($"    primary      = {screen.Primary}");
+            this.Logger.Debug($"    bounds       = {screen.Bounds}");
+            this.Logger.Debug($"    working area = {screen.WorkingArea}");
         }
 
         var desktopBounds = LayoutHelper.CombineRegions(
             screens.Select(screen => screen.Bounds).ToList());
-        this.Logger.LogDebug(
+        this.Logger.Debug(
             $"desktop bounds  = {desktopBounds}");
 
         var cursorPosition = Cursor.Position;
-        this.Logger.LogDebug(
+        this.Logger.Debug(
             $"cursor position = {cursorPosition}");
 
         var previewImagePadding = new Size(
             panel1.Padding.Left + panel1.Padding.Right,
             panel1.Padding.Top + panel1.Padding.Bottom);
-        this.Logger.LogDebug(
+        this.Logger.Debug(
             $"image padding   = {previewImagePadding}");
 
         var formBounds = LayoutHelper.GetPreviewFormBounds(
@@ -131,7 +130,7 @@ internal partial class MainForm : Form
             currentMonitorBounds: Screen.FromPoint(cursorPosition).Bounds,
             maximumPreviewImageSize: new Size(1600, 1200),
             previewImagePadding: previewImagePadding);
-        this.Logger.LogDebug(
+        this.Logger.Debug(
             $"form bounds     = {formBounds}");
 
         // take a screenshot of the entire desktop
