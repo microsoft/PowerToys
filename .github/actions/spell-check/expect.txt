@@ -1194,7 +1194,7 @@ NPH
 NResize
 NTAPI
 ntdll
-NTFS
+ntfs
 NTSTATUS
 nugets
 nullonfailure
@@ -1437,7 +1437,7 @@ rectp
 rects
 recyclebin
 redirectedfrom
-Redist
+redist
 redistributable
 reencode
 reencoded
