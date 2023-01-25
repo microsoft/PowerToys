@@ -160,7 +160,7 @@ IFACEMETHODIMP GcodeThumbnailProvider::GetThumbnail(UINT cx, HBITMAP* phbmp, WTS
                 std::filesystem::remove(fileName);
 
                 std::wstring fileNameBmp = filePath + guid + L".bmp";
-                *phbmp = (HBITMAP)LoadImage(NULL, fileNameBmp.c_str(), IMAGE_BITMAP, 0, 0, LR_LOADFROMFILE);
+                *phbmp = static_cast<HBITMAP>(LoadImage(NULL, fileNameBmp.c_str(), IMAGE_BITMAP, 0, 0, LR_LOADFROMFILE));
                 *pdwAlpha = WTS_ALPHATYPE::WTSAT_ARGB;
                 
                 std::filesystem::remove(fileNameBmp);

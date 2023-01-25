@@ -125,7 +125,7 @@ void CSettings::ParseJson()
             }
             if (json::has(jsonSettings, c_maxMRUSize, json::JsonValueType::Number))
             {
-                settings.maxMRUSize = (unsigned int)jsonSettings.GetNamedNumber(c_maxMRUSize);
+                settings.maxMRUSize = static_cast<unsigned int>(jsonSettings.GetNamedNumber(c_maxMRUSize));
             }
             if (json::has(jsonSettings, c_searchText, json::JsonValueType::String))
             {
