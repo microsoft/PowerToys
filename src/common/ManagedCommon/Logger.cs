@@ -25,70 +25,15 @@ namespace ManagedCommon
         private static readonly string Debug = "Debug";
         private static readonly string TraceFlag = "Trace";
 
-        static Logger()
+        public static void InitializeLogger(string applicationLogPath)
         {
-            var location = Assembly.GetExecutingAssembly().Location;
+            applicationLogPath = Constants.AppDataPath() + applicationLogPath + "\\" + Version;
 
-            string applicationLogPath = Path.Combine(Constants.AppDataPath());
-
-            bool noLoggerDefined = false;
-
-            if (location.Contains("ColorPicker"))
-            {
-                applicationLogPath += "\\ColorPicker\\Logs";
-            }
-            else if (location.Contains("FancyZones"))
-            {
-                applicationLogPath += "\\FancyZones\\Logs";
-            }
-            else if (location.Contains("Monaco"))
-            {
-                applicationLogPath = System.Environment.GetEnvironmentVariable("USERPROFILE") + "\\AppData\\LocalLow\\Microsoft\\PowerToys\\logs\\FileExplorer_localLow\\Monaco";
-            }
-            else if (location.Contains("PowerAccent"))
-            {
-                applicationLogPath += "\\QuickAccent\\Logs";
-            }
-            else if (location.Contains("MeasureTool"))
-            {
-                applicationLogPath += "\\Measure Tool\\Logs";
-            }
-            else if (location.Contains("Hosts"))
-            {
-                applicationLogPath += "\\Hosts\\Logs";
-            }
-            else if (location.Contains("Settings"))
-            {
-                applicationLogPath += "\\Settings\\Logs";
-            }
-            else if (location.Contains("FileLocksmith"))
-            {
-                applicationLogPath += "\\File Locksmith\\Logs";
-            }
-            else
-            {
-                applicationLogPath += "\\Debug";
-                noLoggerDefined = true;
-            }
-
-            applicationLogPath = Path.Combine(applicationLogPath, Version);
-
-            if (!Directory.Exists(applicationLogPath))
-            {
-                Directory.CreateDirectory(applicationLogPath);
-            }
-
-            // Using InvariantCulture since this is used for a log file name
             var logFilePath = _fileSystem.Path.Combine(applicationLogPath, "Log_" + DateTime.Now.ToString(@"yyyy-MM-dd", CultureInfo.InvariantCulture) + ".txt");
 
             Trace.Listeners.Add(new TextWriterTraceListener(logFilePath));
 
             Trace.AutoFlush = true;
-
-            if (noLoggerDefined)
-            {
-                LogError("No logger found for assembly: " + location);
-            }
         }
 
         public static void LogError(string message)
@@ -142,7 +87,7 @@ namespace ManagedCommon
 
         private static string GetCallerInfo()
         {
-            StackTrace stackTrace = new StackTrace();
+            StackTrace stackTrace = new();
 
             var methodName = stackTrace.GetFrame(3)?.GetMethod();
             var className = methodName?.DeclaringType.Name;

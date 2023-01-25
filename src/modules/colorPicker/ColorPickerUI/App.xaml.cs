@@ -4,6 +4,7 @@
 
 using System;
 using System.ComponentModel.Composition;
+using System.Runtime.InteropServices.JavaScript;
 using System.Threading;
 using System.Windows;
 using ColorPicker.Helpers;
@@ -28,6 +29,11 @@ namespace ColorPickerUI
 
         [Export]
         private static CancellationToken ExitToken { get; set; }
+
+        public App()
+        {
+            Logger.InitializeLogger("\\ColorPicker\\Logs");
+        }
 
         protected override void OnStartup(StartupEventArgs e)
         {
