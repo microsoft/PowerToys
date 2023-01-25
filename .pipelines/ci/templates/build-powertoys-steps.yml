@@ -208,6 +208,7 @@ steps:
       **\UnitTests-SvgThumbnailProvider.dll
       **\UnitTests-SvgPreviewHandler.dll
       **\PowerToys.Hosts.Tests.dll
+      **\MouseJumpUI.UnitTests.dll
       !**\obj\**
       !**\ref\**
 
