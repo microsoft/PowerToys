@@ -31,6 +31,9 @@ namespace Peek.FilePreviewer.Previewers
         [ObservableProperty]
         private PreviewState state;
 
+        [ObservableProperty]
+        private double scalingFactor;
+
         public PngPreviewer(File file)
         {
             File = file;

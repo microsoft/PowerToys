@@ -76,6 +76,7 @@ namespace Peek.UI
         private void Initialize()
         {
             ViewModel.FolderItemsQuery.Start();
+            ViewModel.ScalingFactor = this.GetMonitorScale();
         }
 
         private void Uninitialize()
@@ -133,7 +134,6 @@ namespace Peek.UI
             var monitorScale = this.GetMonitorScale();
             var scaledWindowWidth = adjustedContentSize.Width / monitorScale;
             var scaledWindowHeight = adjustedContentSize.Height / monitorScale;
-            ViewModel.ScalingFactor = monitorScale;
 
             this.CenterOnScreen(scaledWindowWidth + WindowHeightContentPadding, scaledWindowHeight + titleBarHeight + WindowWidthContentPadding);
             this.Show();

@@ -9,5 +9,7 @@ namespace Peek.FilePreviewer.Previewers
     public interface IBitmapPreviewer : IPreviewer
     {
         public BitmapSource? Preview { get; }
+
+        public double ScalingFactor { get; set; }
     }
 }

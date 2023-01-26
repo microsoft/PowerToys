@@ -127,6 +127,10 @@ namespace Peek.FilePreviewer
             }
 
             Previewer = previewerFactory.Create(File);
+            if (Previewer is IBitmapPreviewer bitmapPreviewer)
+            {
+                bitmapPreviewer.ScalingFactor = ScalingFactor;
+            }
 
             await UpdatePreviewAsync(_cancellationTokenSource.Token);
         }
