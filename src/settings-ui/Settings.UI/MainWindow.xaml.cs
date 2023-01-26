@@ -15,6 +15,7 @@ using Microsoft.UI.Windowing;
 using Microsoft.UI.Xaml;
 using Windows.ApplicationModel.Resources;
 using Windows.Data.Json;
+using WinUIEx;
 
 namespace Microsoft.PowerToys.Settings.UI
 {
@@ -178,7 +179,12 @@ namespace Microsoft.PowerToys.Settings.UI
                         App.SetFlyoutWindow(new FlyoutWindow());
                     }
 
-                    App.GetFlyoutWindow().Activate();
+                    FlyoutWindow flyout = App.GetFlyoutWindow();
+                    flyout.Activate();
+
+                    // https://github.com/microsoft/microsoft-ui-xaml/issues/7595 - Activate doesn't bring window to the foreground
+                    // Need to call SetForegroundWindow to actually gain focus.
+                    NativeMethods.SetForegroundWindow(flyout.GetWindowHandle());
                 });
             });
 
