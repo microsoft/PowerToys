@@ -1525,6 +1525,7 @@ RUNLEVEL
 runsettings
 runtimeclass
 runtimeconfig
+runtimedepsjsonpath
 runtimeobject
 runtimepack
 runtimes
@@ -2069,6 +2070,7 @@ workspaces
 wox
 wparam
 wpf
+wpfdepsjsonpath
 wpftmp
 wpr
 wprp
