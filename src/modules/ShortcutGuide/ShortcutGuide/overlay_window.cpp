@@ -111,10 +111,10 @@ D2DOverlaySVG& D2DOverlaySVG::resize(int x, int y, int width, int height, float 
     {
         auto scaled_top_left = transform.TransformPoint(thumbnail_top_left);
         auto scanled_bottom_right = transform.TransformPoint(thumbnail_bottom_right);
-        thumbnail_scaled_rect.left = (int)scaled_top_left.x;
-        thumbnail_scaled_rect.top = (int)scaled_top_left.y;
-        thumbnail_scaled_rect.right = (int)scanled_bottom_right.x;
-        thumbnail_scaled_rect.bottom = (int)scanled_bottom_right.y;
+        thumbnail_scaled_rect.left = static_cast<int>(scaled_top_left.x);
+        thumbnail_scaled_rect.top = static_cast<int>(scaled_top_left.y);
+        thumbnail_scaled_rect.right = static_cast<int>(scanled_bottom_right.x);
+        thumbnail_scaled_rect.bottom = static_cast<int>(scanled_bottom_right.y);
     }
     return *this;
 }
@@ -156,10 +156,10 @@ ScaleResult D2DOverlaySVG::get_thumbnail_rect_and_scale(int x_offset, int y_offs
     float scale_v = fill * thumbnail_scaled_rect_heigh / window_cy;
     float use_scale = std::min(scale_h, scale_v);
     RECT thumb_rect;
-    thumb_rect.left = thumbnail_scaled_rect.left + (int)(thumbnail_scaled_rect_width - use_scale * window_cx) / 2 + x_offset;
-    thumb_rect.right = thumbnail_scaled_rect.right - (int)(thumbnail_scaled_rect_width - use_scale * window_cx) / 2 + x_offset;
-    thumb_rect.top = thumbnail_scaled_rect.top + (int)(thumbnail_scaled_rect_heigh - use_scale * window_cy) / 2 + y_offset;
-    thumb_rect.bottom = thumbnail_scaled_rect.bottom - (int)(thumbnail_scaled_rect_heigh - use_scale * window_cy) / 2 + y_offset;
+    thumb_rect.left = thumbnail_scaled_rect.left + static_cast<int>(thumbnail_scaled_rect_width - use_scale * window_cx) / 2 + x_offset;
+    thumb_rect.right = thumbnail_scaled_rect.right - static_cast<int>(thumbnail_scaled_rect_width - use_scale * window_cx) / 2 + x_offset;
+    thumb_rect.top = thumbnail_scaled_rect.top + static_cast<int>(thumbnail_scaled_rect_heigh - use_scale * window_cy) / 2 + y_offset;
+    thumb_rect.bottom = thumbnail_scaled_rect.bottom - static_cast<int>(thumbnail_scaled_rect_heigh - use_scale * window_cy) / 2 + y_offset;
     ScaleResult result;
     result.scale = use_scale;
     result.rect = thumb_rect;
@@ -185,8 +185,8 @@ D2DOverlaySVG& D2DOverlaySVG::toggle_window_group(bool active)
 D2D1_RECT_F D2DOverlaySVG::get_maximize_label() const
 {
     D2D1_RECT_F result;
-    auto height = (float)(thumbnail_scaled_rect.bottom - thumbnail_scaled_rect.top);
-    auto width = (float)(thumbnail_scaled_rect.right - thumbnail_scaled_rect.left);
+    auto height = thumbnail_scaled_rect.bottom - thumbnail_scaled_rect.top;
+    auto width = thumbnail_scaled_rect.right - thumbnail_scaled_rect.left;
     if (width >= height)
     {
         result.top = thumbnail_scaled_rect.bottom + height * 0.210f;
@@ -198,7 +198,7 @@ D2D1_RECT_F D2DOverlaySVG::get_maximize_label() const
     {
         result.top = thumbnail_scaled_rect.top + height * 0.323f;
         result.bottom = thumbnail_scaled_rect.top + height * 0.398f;
-        result.left = (float)thumbnail_scaled_rect.right;
+        result.left = static_cast<float>(thumbnail_scaled_rect.right);
         result.right = thumbnail_scaled_rect.right + width * 1.45f;
     }
     return result;
@@ -206,8 +206,8 @@ D2D1_RECT_F D2DOverlaySVG::get_maximize_label() const
 D2D1_RECT_F D2DOverlaySVG::get_minimize_label() const
 {
     D2D1_RECT_F result;
-    auto height = (float)(thumbnail_scaled_rect.bottom - thumbnail_scaled_rect.top);
-    auto width = (float)(thumbnail_scaled_rect.right - thumbnail_scaled_rect.left);
+    auto height = thumbnail_scaled_rect.bottom - thumbnail_scaled_rect.top;
+    auto width = thumbnail_scaled_rect.right - thumbnail_scaled_rect.left;
     if (width >= height)
     {
         result.top = thumbnail_scaled_rect.bottom + height * 0.8f;
@@ -219,7 +219,7 @@ D2D1_RECT_F D2DOverlaySVG::get_minimize_label() const
     {
         result.top = thumbnail_scaled_rect.top + height * 0.725f;
         result.bottom = thumbnail_scaled_rect.top + height * 0.800f;
-        result.left = (float)thumbnail_scaled_rect.right;
+        result.left =static_cast<float>(thumbnail_scaled_rect.right);
         result.right = thumbnail_scaled_rect.right + width * 1.45f;
     }
     return result;
@@ -227,8 +227,8 @@ D2D1_RECT_F D2DOverlaySVG::get_minimize_label() const
 D2D1_RECT_F D2DOverlaySVG::get_snap_left() const
 {
     D2D1_RECT_F result;
-    auto height = (float)(thumbnail_scaled_rect.bottom - thumbnail_scaled_rect.top);
-    auto width = (float)(thumbnail_scaled_rect.right - thumbnail_scaled_rect.left);
+    auto height = thumbnail_scaled_rect.bottom - thumbnail_scaled_rect.top;
+    auto width = thumbnail_scaled_rect.right - thumbnail_scaled_rect.left;
     if (width >= height)
     {
         result.top = thumbnail_scaled_rect.bottom + height * 0.5f;
@@ -240,7 +240,7 @@ D2D1_RECT_F D2DOverlaySVG::get_snap_left() const
     {
         result.top = thumbnail_scaled_rect.top + height * 0.523f;
         result.bottom = thumbnail_scaled_rect.top + height * 0.598f;
-        result.left = (float)thumbnail_scaled_rect.right;
+        result.left = static_cast<float>(thumbnail_scaled_rect.right);
         result.right = thumbnail_scaled_rect.right + width * 0.450f;
     }
     return result;
@@ -248,8 +248,8 @@ D2D1_RECT_F D2DOverlaySVG::get_snap_left() const
 D2D1_RECT_F D2DOverlaySVG::get_snap_right() const
 {
     D2D1_RECT_F result;
-    auto height = (float)(thumbnail_scaled_rect.bottom - thumbnail_scaled_rect.top);
-    auto width = (float)(thumbnail_scaled_rect.right - thumbnail_scaled_rect.left);
+    auto height = thumbnail_scaled_rect.bottom - thumbnail_scaled_rect.top;
+    auto width = thumbnail_scaled_rect.right - thumbnail_scaled_rect.left;
     if (width >= height)
     {
         result.top = thumbnail_scaled_rect.bottom + height * 0.5f;
@@ -261,7 +261,7 @@ D2D1_RECT_F D2DOverlaySVG::get_snap_right() const
     {
         result.top = thumbnail_scaled_rect.top + height * 0.523f;
         result.bottom = thumbnail_scaled_rect.top + height * 0.598f;
-        result.left = (float)thumbnail_scaled_rect.right + width;
+        result.left = static_cast<float>(thumbnail_scaled_rect.right + width);
         result.right = thumbnail_scaled_rect.right + width * 1.45f;
     }
     return result;
@@ -390,7 +390,7 @@ void D2DOverlayWindow::show(HWND window, bool snappable)
     // Check if taskbar is auto-hidden. If so, don't display the number arrows
     APPBARDATA param = {};
     param.cbSize = sizeof(APPBARDATA);
-    if ((UINT)SHAppBarMessage(ABM_GETSTATE, &param) != ABS_AUTOHIDE)
+    if (static_cast<UINT>(SHAppBarMessage(ABM_GETSTATE, &param)) != ABS_AUTOHIDE)
     {
         tasklist_cv_mutex.lock();
         tasklist_update = true;
@@ -588,12 +588,12 @@ void render_arrow(D2DSVG& arrow, TasklistButton& button, RECT window, float max_
         dy = -1;
         arrow.toggle_element(L"bottom", true);
     }
-    double arrow_ratio = (double)arrow.height() / arrow.width();
+    double arrow_ratio = static_cast<double>(arrow.height()) / arrow.width();
     if (dy != 0)
     {
         // assume button is 25% wider than taller, +10% to make room for each of the arrows that are hidden
-        auto render_arrow_width = (int)(button.height * 1.25f * 1.2f);
-        auto render_arrow_height = (int)(render_arrow_width * arrow_ratio);
+        auto render_arrow_width = static_cast<int>(button.height * 1.25f * 1.2f);
+        auto render_arrow_height = static_cast<int>(render_arrow_width * arrow_ratio);
         arrow.resize((button.x + (button.width - render_arrow_width) / 2) + x_offset,
                      (dy == -1 ? button.y - render_arrow_height : 0) + y_offset,
                      render_arrow_width,
@@ -605,8 +605,8 @@ void render_arrow(D2DSVG& arrow, TasklistButton& button, RECT window, float max_
     else
     {
         // same as above - make room for the hidden arrow
-        auto render_arrow_height = (int)(button.height * 1.2f);
-        auto render_arrow_width = (int)(render_arrow_height / arrow_ratio);
+        auto render_arrow_height = static_cast<int>(button.height * 1.2f);
+        auto render_arrow_width = static_cast<int>(render_arrow_height / arrow_ratio);
         arrow.resize((dx == -1 ? button.x - render_arrow_width : 0) + x_offset,
                      (button.y + (button.height - render_arrow_height) / 2) + y_offset,
                      render_arrow_width,
@@ -627,7 +627,7 @@ bool D2DOverlayWindow::show_thumbnail(const RECT& rect, double alpha)
     thumb_properties.dwFlags = DWM_TNP_SOURCECLIENTAREAONLY | DWM_TNP_VISIBLE | DWM_TNP_RECTDESTINATION | DWM_TNP_OPACITY;
     thumb_properties.fSourceClientAreaOnly = FALSE;
     thumb_properties.fVisible = TRUE;
-    thumb_properties.opacity = (BYTE)(255 * alpha);
+    thumb_properties.opacity = static_cast<BYTE>(255 * alpha);
     thumb_properties.rcDestination = rect;
     if (DwmUpdateThumbnailProperties(thumbnail, &thumb_properties) != S_OK)
     {
@@ -655,10 +655,10 @@ void D2DOverlayWindow::render(ID2D1DeviceContext5* d2d_device_context)
     d2d_device_context->Clear();
     int taskbar_icon_shortcuts_x_offset = 0, taskbar_icon_shortcuts_y_offset = 0;
 
-    float current_background_anim_value = (float)background_animation.value(Animation::AnimFunctions::LINEAR);
-    float current_global_windows_shortcuts_anim_value = (float)global_windows_shortcuts_animation.value(Animation::AnimFunctions::LINEAR);
-    float pos_global_windows_shortcuts_anim_value = 1 - (float)global_windows_shortcuts_animation.value(Animation::AnimFunctions::EASE_OUT_EXPO);
-    float pos_taskbar_icon_shortcuts_anim_value = 1 - (float)taskbar_icon_shortcuts_animation.value(Animation::AnimFunctions::EASE_OUT_EXPO);
+    double current_background_anim_value = background_animation.value(Animation::AnimFunctions::LINEAR);
+    double current_global_windows_shortcuts_anim_value = global_windows_shortcuts_animation.value(Animation::AnimFunctions::LINEAR);
+    double pos_global_windows_shortcuts_anim_value = 1 - global_windows_shortcuts_animation.value(Animation::AnimFunctions::EASE_OUT_EXPO);
+    double pos_taskbar_icon_shortcuts_anim_value = 1 - taskbar_icon_shortcuts_animation.value(Animation::AnimFunctions::EASE_OUT_EXPO);
 
     // Draw background
     SetLayeredWindowAttributes(hwnd, 0, static_cast<byte>(255 * current_background_anim_value), LWA_ALPHA);
@@ -667,8 +667,8 @@ void D2DOverlayWindow::render(ID2D1DeviceContext5* d2d_device_context)
     D2D1_COLOR_F brushColor = light_mode ? D2D1::ColorF(1.0f, 1.0f, 1.0f, brush_opacity) : D2D1::ColorF(0, 0, 0, brush_opacity);
     winrt::check_hresult(d2d_device_context->CreateSolidColorBrush(brushColor, brush.put()));
     D2D1_RECT_F background_rect = {};
-    background_rect.bottom = (float)window_height;
-    background_rect.right = (float)window_width;
+    background_rect.bottom = static_cast<float>(window_height);
+    background_rect.right = static_cast<float>(window_width);
     d2d_device_context->SetTransform(D2D1::Matrix3x2F::Identity());
     d2d_device_context->FillRectangle(background_rect, brush.get());
 
@@ -680,26 +680,26 @@ void D2DOverlayWindow::render(ID2D1DeviceContext5* d2d_device_context)
             if (tasklist_buttons[0].x <= window_rect.left)
             {
                 // taskbar on left
-                taskbar_icon_shortcuts_x_offset = (int)(-pos_taskbar_icon_shortcuts_anim_value * use_overlay->width() * use_overlay->get_scale());
+                taskbar_icon_shortcuts_x_offset = static_cast<int>(-pos_taskbar_icon_shortcuts_anim_value * use_overlay->width() * use_overlay->get_scale());
             }
             if (tasklist_buttons[0].x >= window_rect.right)
             {
                 // taskbar on right
-                taskbar_icon_shortcuts_x_offset = (int)(pos_taskbar_icon_shortcuts_anim_value * use_overlay->width() * use_overlay->get_scale());
+                taskbar_icon_shortcuts_x_offset = static_cast<int>(pos_taskbar_icon_shortcuts_anim_value * use_overlay->width() * use_overlay->get_scale());
             }
             if (tasklist_buttons[0].y <= window_rect.top)
             {
                 // taskbar on top
-                taskbar_icon_shortcuts_y_offset = (int)(-pos_taskbar_icon_shortcuts_anim_value * use_overlay->height() * use_overlay->get_scale());
+                taskbar_icon_shortcuts_y_offset = static_cast<int>(-pos_taskbar_icon_shortcuts_anim_value * use_overlay->height() * use_overlay->get_scale());
             }
             if (tasklist_buttons[0].y >= window_rect.bottom)
             {
                 // taskbar on bottom
-                taskbar_icon_shortcuts_y_offset = (int)(pos_taskbar_icon_shortcuts_anim_value * use_overlay->height() * use_overlay->get_scale());
+                taskbar_icon_shortcuts_y_offset = static_cast<int>(pos_taskbar_icon_shortcuts_anim_value * use_overlay->height() * use_overlay->get_scale());
             }
             for (auto&& button : tasklist_buttons)
             {
-                if ((size_t)(button.keynum) - 1 >= arrows.size())
+                if (static_cast<size_t>(button.keynum) - 1 >= arrows.size())
                 {
                     continue;
                 }
@@ -767,10 +767,10 @@ void D2DOverlayWindow::render(ID2D1DeviceContext5* d2d_device_context)
             RECT thumbnail_pos;
             if (render_monitors)
             {
-                thumbnail_pos.left = (int)((thumb_window->left + monitor_dx) * rect_and_scale.scale + rect_and_scale.rect.left);
-                thumbnail_pos.top = (int)((thumb_window->top + monitor_dy) * rect_and_scale.scale + rect_and_scale.rect.top);
-                thumbnail_pos.right = (int)((thumb_window->right + monitor_dx) * rect_and_scale.scale + rect_and_scale.rect.left);
-                thumbnail_pos.bottom = (int)((thumb_window->bottom + monitor_dy) * rect_and_scale.scale + rect_and_scale.rect.top);
+                thumbnail_pos.left = static_cast<int>((thumb_window->left + monitor_dx) * rect_and_scale.scale + rect_and_scale.rect.left);
+                thumbnail_pos.top = static_cast<int>((thumb_window->top + monitor_dy) * rect_and_scale.scale + rect_and_scale.rect.top);
+                thumbnail_pos.right = static_cast<int>((thumb_window->right + monitor_dx) * rect_and_scale.scale + rect_and_scale.rect.left);
+                thumbnail_pos.bottom = static_cast<int>((thumb_window->bottom + monitor_dy) * rect_and_scale.scale + rect_and_scale.rect.top);
             }
             else
             {
@@ -791,17 +791,17 @@ void D2DOverlayWindow::render(ID2D1DeviceContext5* d2d_device_context)
         // render the monitors
         if (render_monitors)
         {
-            brushColor = D2D1::ColorF(colors.start_color_menu, miniature_shown ? current_global_windows_shortcuts_anim_value * 0.9f : current_global_windows_shortcuts_anim_value * 0.3f);
+            brushColor = D2D1::ColorF(colors.start_color_menu, miniature_shown ? static_cast<float>(current_global_windows_shortcuts_anim_value * 0.9) : static_cast<float>(current_global_windows_shortcuts_anim_value * 0.3));
             brush = nullptr;
             winrt::check_hresult(d2d_device_context->CreateSolidColorBrush(brushColor, brush.put()));
             for (auto& monitor : monitors)
             {
                 D2D1_RECT_F monitor_rect;
                 const auto monitor_size = monitor.GetScreenSize(true);
-                monitor_rect.left = (float)((monitor_size.left() + monitor_dx) * rect_and_scale.scale + rect_and_scale.rect.left);
-                monitor_rect.top = (float)((monitor_size.top() + monitor_dy) * rect_and_scale.scale + rect_and_scale.rect.top);
-                monitor_rect.right = (float)((monitor_size.right() + monitor_dx) * rect_and_scale.scale + rect_and_scale.rect.left);
-                monitor_rect.bottom = (float)((monitor_size.bottom() + monitor_dy) * rect_and_scale.scale + rect_and_scale.rect.top);
+                monitor_rect.left = static_cast<float>((monitor_size.left() + monitor_dx) * rect_and_scale.scale + rect_and_scale.rect.left);
+                monitor_rect.top = static_cast<float>((monitor_size.top() + monitor_dy) * rect_and_scale.scale + rect_and_scale.rect.top);
+                monitor_rect.right = static_cast<float>((monitor_size.right() + monitor_dx) * rect_and_scale.scale + rect_and_scale.rect.left);
+                monitor_rect.bottom = static_cast<float>((monitor_size.bottom() + monitor_dy) * rect_and_scale.scale + rect_and_scale.rect.top);
                 d2d_device_context->SetTransform(D2D1::Matrix3x2F::Identity());
                 d2d_device_context->FillRectangle(monitor_rect, brush.get());
             }
@@ -815,8 +815,8 @@ void D2DOverlayWindow::render(ID2D1DeviceContext5* d2d_device_context)
         }
 
         // Set the animation - move the draw window according to animation step
-        int global_windows_shortcuts_y_offset = (int)(pos_global_windows_shortcuts_anim_value * use_overlay->height() * use_overlay->get_scale());
-        auto popIn = D2D1::Matrix3x2F::Translation(0, (float)global_windows_shortcuts_y_offset);
+        int global_windows_shortcuts_y_offset = static_cast<int>(pos_global_windows_shortcuts_anim_value * use_overlay->height() * use_overlay->get_scale());
+        auto popIn = D2D1::Matrix3x2F::Translation(0, static_cast<float>(global_windows_shortcuts_y_offset));
         d2d_device_context->SetTransform(popIn);
 
         // Animate keys
@@ -824,7 +824,7 @@ void D2DOverlayWindow::render(ID2D1DeviceContext5* d2d_device_context)
         {
             auto& animation = key_animations[id];
             D2D1_COLOR_F color;
-            auto value = (float)animation.animation.value(Animation::AnimFunctions::EASE_OUT_EXPO);
+            auto value = static_cast<float>(animation.animation.value(Animation::AnimFunctions::EASE_OUT_EXPO));
             color.a = 1.0f;
             color.r = animation.original.r + (1.0f - animation.original.r) * value;
             color.g = animation.original.g + (1.0f - animation.original.g) * value;

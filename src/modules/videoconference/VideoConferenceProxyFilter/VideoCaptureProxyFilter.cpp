@@ -349,7 +349,7 @@ HRESULT VideoCaptureProxyPin::Get(
         return E_UNEXPECTED;
     }
 
-    *(GUID*)pPropData = PIN_CATEGORY_CAPTURE;
+    *static_cast<GUID*>(pPropData) = PIN_CATEGORY_CAPTURE;
 
     LOG("VideoCaptureProxyPin::Get SUCCESS");
     return S_OK;

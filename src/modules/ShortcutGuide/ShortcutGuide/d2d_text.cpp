@@ -47,7 +47,7 @@ void D2DText::write(ID2D1DeviceContext5* d2d_dc, D2D1_COLOR_F color, D2D1_RECT_F
     winrt::com_ptr<ID2D1SolidColorBrush> brush;
     d2d_dc->CreateSolidColorBrush(color, brush.put());
     d2d_dc->DrawText(text.c_str(),
-                     (UINT32)text.length(),
+                     static_cast<UINT32>(text.length()),
                      format.get(),
                      rect,
                      brush.get());

@@ -60,16 +60,16 @@ bool Tasklist::update_buttons(std::vector<TasklistButton>& buttons)
                 double value;
                 pos = 0;
                 SafeArrayGetElement(var_rect.parray, &pos, &value);
-                button.x = (long)value;
+                button.x = static_cast<long>(value);
                 pos = 1;
                 SafeArrayGetElement(var_rect.parray, &pos, &value);
-                button.y = (long)value;
+                button.y = static_cast<long>(value);
                 pos = 2;
                 SafeArrayGetElement(var_rect.parray, &pos, &value);
-                button.width = (long)value;
+                button.width = static_cast<long>(value);
                 pos = 3;
                 SafeArrayGetElement(var_rect.parray, &pos, &value);
-                button.height = (long)value;
+                button.height = static_cast<long>(value);
             }
             VariantClear(&var_rect);
         }
