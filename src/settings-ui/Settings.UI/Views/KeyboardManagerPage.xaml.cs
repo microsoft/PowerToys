@@ -5,6 +5,7 @@
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO.Abstractions;
+using Microsoft.PowerToys.Settings.UI.Helpers;
 using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.PowerToys.Settings.UI.Library.Utilities;
 using Microsoft.PowerToys.Settings.UI.ViewModels;
@@ -16,7 +17,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
     /// <summary>
     /// An empty page that can be used on its own or navigated to within a Frame.
     /// </summary>
-    public sealed partial class KeyboardManagerPage : Page
+    public sealed partial class KeyboardManagerPage : Page, IRefreshablePage
     {
         private const string PowerToyName = "Keyboard Manager";
 
@@ -83,6 +84,11 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             }
 
             return 0;
+        }
+
+        public void RefreshEnabledState()
+        {
+            ViewModel.RefreshEnabledState();
         }
     }
 }

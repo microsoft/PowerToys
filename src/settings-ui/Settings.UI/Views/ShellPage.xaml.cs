@@ -239,6 +239,16 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             shellFrame.Navigate(typeof(GeneralPage));
         }
 
+        // Tell the current page view model to update
+        public void SignalGeneralDataUpdate()
+        {
+            IRefreshablePage currentPage = shellFrame?.Content as IRefreshablePage;
+            if (currentPage != null)
+            {
+                currentPage.RefreshEnabledState();
+            }
+        }
+
         private void OobeButton_Click(object sender, RoutedEventArgs e)
         {
             OpenOobeWindowCallback();

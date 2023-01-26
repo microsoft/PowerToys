@@ -152,6 +152,7 @@ namespace Microsoft.PowerToys.Settings.UI
                     this.DispatcherQueue.TryEnqueue(Microsoft.UI.Dispatching.DispatcherQueuePriority.Normal, () =>
                     {
                         ShellPage.SendDefaultIPCMessage(outgoing.ToString());
+                        ShellPage.ShellHandler?.SignalGeneralDataUpdate();
                     });
                 }
 
