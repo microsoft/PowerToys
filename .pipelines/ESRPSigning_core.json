@@ -129,6 +129,7 @@
 
                 "modules\\MouseUtils\\PowerToys.FindMyMouse.dll",
                 "modules\\MouseUtils\\PowerToys.MouseHighlighter.dll",
+                "modules\\MouseUtils\\PowerToys.MouseJumpUI.dll",
                 "modules\\MouseUtils\\PowerToys.MousePointerCrosshairs.dll",
 
                 "modules\\PowerAccent\\PowerAccent.Core.dll",
