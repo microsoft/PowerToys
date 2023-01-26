@@ -733,7 +733,17 @@ void FancyZones::AddWorkArea(HMONITOR monitor, const FancyZonesDataTypes::WorkAr
             parentId = parentArea->UniqueId();
         }
 
-        auto workArea = MakeWorkArea(m_hinstance, monitor, id, parentId);
+        FancyZonesUtils::Rect rect{};
+        if (monitor)
+        {
+            rect = MonitorUtils::GetWorkAreaRect(monitor);
+        }
+        else
+        {
+            rect = FancyZonesUtils::GetAllMonitorsCombinedRect<&MONITORINFO::rcWork>();
+        }
+        
+        auto workArea = MakeWorkArea(m_hinstance, id, parentId, rect);
         if (workArea)
         {
             m_workAreaHandler.AddWorkArea(VirtualDesktop::instance().GetCurrentVirtualDesktopId(), monitor, workArea);
@@ -748,7 +758,7 @@ LRESULT CALLBACK FancyZones::s_WndProc(HWND window, UINT message, WPARAM wparam,
     if (!thisRef && (message == WM_CREATE))
     {
         const auto createStruct = reinterpret_cast<LPCREATESTRUCT>(lparam);
-        thisRef = reinterpret_cast<FancyZones*>(createStruct->lpCreateParams);
+        thisRef = static_cast<FancyZones*>(createStruct->lpCreateParams);
         SetWindowLongPtr(window, GWLP_USERDATA, reinterpret_cast<LONG_PTR>(thisRef));
     }
 

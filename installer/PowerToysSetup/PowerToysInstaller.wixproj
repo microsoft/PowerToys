@@ -24,7 +24,13 @@ SET PTRoot=..\..\..\..
 call "..\..\publish.cmd" arm64
 )</PreBuildEvent>
   </PropertyGroup>
-
+  <PropertyGroup>
+    <RunPostBuildEvent>Always</RunPostBuildEvent>
+    <PostBuildEvent>
+    call move /Y ..\..\Core.wxs.bk ..\..\Core.wxs
+    call move /Y ..\..\..\PowerToysSetupCustomActions\DepsFilesLists.h.bk ..\..\..\PowerToysSetupCustomActions\DepsFilesLists.h
+    </PostBuildEvent>
+  </PropertyGroup>
   <PropertyGroup>
     <Name>PowerToysInstaller</Name>
   </PropertyGroup>
@@ -56,7 +62,32 @@ call "..\..\publish.cmd" arm64
     <Compile Include="CustomDialogs\PTLicenseDlg.wxs" />
     <Compile Include="CustomDialogs\WixUI_PTInstallDir.wxs" />
     <Compile Include="Product.wxs" />
+
+    <Compile Include="AlwaysOnTop.wxs" />
+    <Compile Include="Awake.wxs" />
+    <Compile Include="ColorPicker.wxs" />
+    <Compile Include="FancyZones.wxs" />
+    <Compile Include="FileExplorerPreview.wxs" />
+    <Compile Include="FileLocksmith.wxs" />
+    <Compile Include="Hosts.wxs" />
+    <Compile Include="ImageResizer.wxs" />
+    <Compile Include="KeyboardManager.wxs" />
+    <Compile Include="MeasureTool.wxs" />
+    <Compile Include="MouseUtils.wxs" />
+    <Compile Include="PowerAccent.wxs" />
+    <Compile Include="PowerRename.wxs" />
+    <Compile Include="Run.wxs" />
+    <Compile Include="Settings.wxs" />
+    <Compile Include="ShortcutGuide.wxs" />
+    <Compile Include="TextExtractor.wxs" />
+    <Compile Include="Tools.wxs" />
+    <Compile Include="VideoConference.wxs" />
+
     <Compile Include="MonacoSRC.wxs" />
+
+    <Compile Include="Core.wxs" />
+    <Compile Include="Resources.wxs" />
+    <Compile Include="WinAppSDK.wxs" />
   </ItemGroup>
   <ItemGroup>
     <WixExtension Include="WixUtilExtension">

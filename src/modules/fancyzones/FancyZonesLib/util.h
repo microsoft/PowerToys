@@ -177,4 +177,6 @@ namespace FancyZonesUtils
 
     RECT PrepareRectForCycling(RECT windowRect, RECT workAreaRect, DWORD vkCode) noexcept;
     size_t ChooseNextZoneByPosition(DWORD vkCode, RECT windowRect, const std::vector<RECT>& zoneRects) noexcept;
+
+    void SwallowKey(const WORD key) noexcept;
 }

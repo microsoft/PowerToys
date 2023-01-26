@@ -20,7 +20,7 @@
         IsTabStop="False"
         ModuleImageSource="ms-appx:///Assets/Modules/Awake.png">
         <controls:SettingsPageControl.ModuleContent>
-            <StackPanel Orientation="Vertical">
+            <StackPanel Orientation="Vertical" ChildrenTransitions="{StaticResource SettingsCardsAnimations}">
                 <labs:SettingsCard
                     x:Uid="Awake_EnableAwake"
                     HeaderIcon="{ui:BitmapIcon Source=/Assets/FluentIcons/FluentIconsAwake.png}"
@@ -83,7 +83,7 @@
                     <labs:SettingsCard
                         x:Uid="Awake_EnableDisplayKeepAwake"
                         HeaderIcon="{ui:FontIcon FontFamily={StaticResource SymbolThemeFontFamily}, Glyph=&#xE7FB;}"
-                        Visibility="{x:Bind ViewModel.IsScreenConfigurationPossibleEnabled, Mode=OneWay}">
+                        IsEnabled="{x:Bind ViewModel.IsScreenConfigurationPossibleEnabled, Mode=OneWay}">
                         <ToggleSwitch
                             x:Uid="ToggleSwitch"
                             IsOn="{x:Bind ViewModel.KeepDisplayOn, Mode=TwoWay}" />
