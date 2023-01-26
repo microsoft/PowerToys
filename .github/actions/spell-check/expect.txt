@@ -847,6 +847,7 @@ Khakassia
 Khanty
 Khovd
 KILLFOCUS
+killrunner
 Kitts
 Knownfolders
 Krai
@@ -983,7 +984,6 @@ Markovic
 Marquesas
 martinchrzan
 martinmoene
-Masure
 Mato
 Maximizable
 MAXIMIZEBOX

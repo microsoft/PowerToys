@@ -50,7 +50,7 @@ namespace Microsoft.PowerToys.Settings.UI.Flyout
 
                 // TO DO: ADD HOSTS
                 case "MeasureTool": // Launch Screen Ruler
-                    using (var eventHandle = new EventWaitHandle(false, EventResetMode.AutoReset, Constants.MasureToolTriggerEvent()))
+                    using (var eventHandle = new EventWaitHandle(false, EventResetMode.AutoReset, Constants.MeasureToolTriggerEvent()))
                     {
                         eventHandle.Set();
                     }

@@ -216,7 +216,7 @@ public
         }
 
         static String
-            ^ MasureToolTriggerEvent() {
+            ^ MeasureToolTriggerEvent() {
                   return gcnew String(CommonSharedConstants::MEASURE_TOOL_TRIGGER_EVENT);
               }
         static String ^ GcodePreviewResizeEvent() {

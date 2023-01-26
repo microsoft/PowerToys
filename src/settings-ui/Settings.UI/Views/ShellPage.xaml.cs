@@ -33,7 +33,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
         public delegate void MainOpeningCallback();
 
         /// <summary>
-        /// Declaration for the updateing the general settings callback function.
+        /// Declaration for the updating the general settings callback function.
         /// </summary>
         public delegate bool UpdatingGeneralSettingsCallback(string module, bool isEnabled);
 
@@ -48,7 +48,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
         public delegate void FlyoutOpeningCallback();
 
         /// <summary>
-        /// Declaration for the diabling hide of flyout window callback function.
+        /// Declaration for the disabling hide of flyout window callback function.
         /// </summary>
         public delegate void DisablingFlyoutHidingCallback();
 
@@ -93,7 +93,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
         public static FlyoutOpeningCallback OpenFlyoutCallback { get; set; }
 
         /// <summary>
-        /// Gets or sets callback function for diabling hide of flyout window
+        /// Gets or sets callback function for disabling hide of flyout window
         /// </summary>
         public static DisablingFlyoutHidingCallback DisableFlyoutHidingCallback { get; set; }
 
@@ -326,7 +326,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
                     {
                         OpenFlyoutCallback();
                     }
-                    else if (json.ToString().EndsWith("\"mainpage\"}"))
+                    else if (json.ToString().EndsWith("\"main_page\"}"))
                     {
                         OpenMainWindowCallback();
                     }
