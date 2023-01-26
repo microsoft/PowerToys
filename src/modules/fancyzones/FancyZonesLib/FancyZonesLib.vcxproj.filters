@@ -159,6 +159,12 @@
     <ClInclude Include="NotificationUtil.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="HighlightedZones.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="DraggingState.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="pch.cpp">
@@ -255,6 +261,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="HighlightedZones.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="DraggingState.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
