@@ -1446,6 +1446,7 @@ reencoded
 REFCLSID
 REFGUID
 REFIID
+Refreshable
 REGCLS
 regedit
 regfile
