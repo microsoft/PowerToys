@@ -48,7 +48,7 @@ internal partial class MainForm : Form
             this.DesktopBounds = Rectangle.Empty;
         }
 
-        this.Hide();
+        this.Close();
     }
 
     private void Thumbnail_Click(object sender, EventArgs e)
