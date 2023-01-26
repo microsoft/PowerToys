@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft Corporation
+﻿// Copyright (c) Microsoft Corporation
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
@@ -29,6 +29,12 @@ namespace Peek.FilePreviewer.Previewers
 
         [ObservableProperty]
         private PreviewState state;
+
+        [ObservableProperty]
+        private Size imageSize;
+
+        [ObservableProperty]
+        private Size maxImageSize;
 
         [ObservableProperty]
         private double scalingFactor;
@@ -63,13 +69,13 @@ namespace Peek.FilePreviewer.Previewers
         public async Task<Size?> GetPreviewSizeAsync(CancellationToken cancellationToken)
         {
             cancellationToken.ThrowIfCancellationRequested();
-            var propertyImageSize = await PropertyHelper.GetImageSize(File.Path);
-            if (propertyImageSize != Size.Empty)
+            ImageSize = await PropertyHelper.GetImageSize(File.Path);
+            if (ImageSize == Size.Empty)
             {
-                return propertyImageSize;
+                ImageSize = await WICHelper.GetImageSize(File.Path);
             }
 
-            return await WICHelper.GetImageSize(File.Path);
+            return ImageSize;
         }
 
         public async Task LoadPreviewAsync(CancellationToken cancellationToken)
@@ -113,6 +119,17 @@ namespace Peek.FilePreviewer.Previewers
                 if (Preview != null)
                 {
                     State = PreviewState.Loaded;
+                }
+            }
+            else if (e.PropertyName == nameof(ScalingFactor) || e.PropertyName == nameof(ImageSize))
+            {
+                if (ScalingFactor != 0)
+                {
+                    MaxImageSize = new Size(ImageSize.Width / ScalingFactor, ImageSize.Height / ScalingFactor);
+                }
+                else
+                {
+                    MaxImageSize = new Size(ImageSize.Width, ImageSize.Height);
                 }
             }
         }

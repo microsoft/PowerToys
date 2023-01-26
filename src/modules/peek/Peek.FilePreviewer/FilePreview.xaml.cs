@@ -10,7 +10,6 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Input;
-using Microsoft.UI.Xaml.Media;
 using Microsoft.Web.WebView2.Core;
 using Peek.Common.Helpers;
 using Peek.Common.Models;
@@ -154,13 +153,6 @@ namespace Peek.FilePreviewer
                     var size = await Previewer.GetPreviewSizeAsync(cancellationToken);
                     SizeFormat windowSizeFormat = UnsupportedFilePreviewer != null ? SizeFormat.Percentage : SizeFormat.Pixels;
                     PreviewSizeChanged?.Invoke(this, new PreviewSizeChangedArgs(size, windowSizeFormat));
-
-                    if (Previewer is ImagePreviewer imagePreviewer && ScalingFactor != 0)
-                    {
-                        ImagePreview.MaxWidth = size?.Width / ScalingFactor ?? 0;
-                        ImagePreview.MaxHeight = size?.Height / ScalingFactor ?? 0;
-                    }
-
                     cancellationToken.ThrowIfCancellationRequested();
                     await Previewer.LoadPreviewAsync(cancellationToken);
 
