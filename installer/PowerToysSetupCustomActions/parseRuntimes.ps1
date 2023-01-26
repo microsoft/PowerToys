@@ -26,8 +26,21 @@ function Get-RuntimePack ($depsJsonFile, $runtimeName) {
             }
         } 
     }
-    $runtimes;
+    Write-Output $runtimes;
 }
+
+function Update-RuntimeHashTable () {
+    $runtimes = Get-RuntimePack $runtimeFile "Microsoft.NETCore.App.Runtime"
+    $runtimes = Get-RuntimePack $wpfRuntimeFile "Microsoft.WindowsDesktop.App.Runtime"
+
+    # Find the dlls that exist in both the .NET Runtime and WPF Runtime deps list and filter out of WPF
+    $runtimeFileComparison = Compare-Object -ReferenceObject $runtimes["Microsoft.NETCore.App.Runtime"] -DifferenceObject $runtimes["Microsoft.WindowsDesktop.App.Runtime"] -IncludeEqual -ExcludeDifferent
+
+    $runtimes["Microsoft.WindowsDesktop.App.Runtime"] = $runtimes["Microsoft.WindowsDesktop.App.Runtime"] | Where-Object { $_ -notin $runtimeFileComparison.InputObject }
+
+    Write-Output $runtimes;
+}
+
 function Update-RuntimeFileList($runtimeToken, $runtimeKey) {
     $depsFilesLists -replace "($runtimeToken = )(.*);", "`$1 {`r`n$(($runtimes[$runtimeKey] | ForEach-Object {'    L"'+$_+'"'} | Sort-Object) -join ",`r`n") };"        
 }
@@ -52,8 +65,7 @@ $wpfRuntimeFile = Get-Content $wpfdepsjsonpath | ConvertFrom-Json;
 
 $runtimes = @{}
 
-$runtimes = Get-RuntimePack $runtimeFile "Microsoft.NETCore.App.Runtime"
-$runtimes = Get-RuntimePack $wpfRuntimeFile "Microsoft.WindowsDesktop.App.Runtime"
+$runtimes = Update-RuntimeHashTable
 
 Write-Host "Writing Microsoft.NETCore.App.Runtime files"
 $depsFilesLists = Update-RuntimeFileList "dotnetRuntimeFiles" "Microsoft.NETCore.App.Runtime"
@@ -71,5 +83,3 @@ Set-Content -Path $depsfileslistspath -Value $depsFilesLists
 
 Write-Host "Updating $productwxspath"
 Set-Content -Path $productwxspath -Value $productWxs
-
-
