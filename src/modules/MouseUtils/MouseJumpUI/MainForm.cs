@@ -83,7 +83,7 @@ internal partial class MainForm : Form
             Cursor.Position = cursorPosition;
         }
 
-        this.Hide();
+        this.Close();
     }
 
     public void ShowPreview()
