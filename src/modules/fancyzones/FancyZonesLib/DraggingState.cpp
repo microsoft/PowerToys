@@ -16,6 +16,14 @@ DraggingState::DraggingState(const std::function<void()>& keyUpdateCallback) :
 
 void DraggingState::Enable()
 {
+    m_mouseHook.disable();
+    m_leftShiftKeyState.disable();
+    m_rightShiftKeyState.disable();
+    m_ctrlKeyState.disable();
+}
+
+void DraggingState::Enable()
+{
     if (FancyZonesSettings::settings().mouseSwitch)
     {
         m_mouseHook.enable();
@@ -28,8 +36,8 @@ void DraggingState::Enable()
 
 void DraggingState::Disable()
 {
-    bool leftShiftPressed = m_leftShiftKeyState.state();
-    bool rightShiftPressed = m_rightShiftKeyState.state();
+    const bool leftShiftPressed = m_leftShiftKeyState.state();
+    const bool rightShiftPressed = m_rightShiftKeyState.state();
 
     if (FancyZonesSettings::settings().shiftDrag)
     {

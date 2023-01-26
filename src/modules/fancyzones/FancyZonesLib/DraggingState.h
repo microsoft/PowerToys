@@ -10,11 +10,16 @@ public:
     ~DraggingState() = default;
 
     void Enable();
-    void Disable();
-    void UpdateDraggingState() noexcept;
+    void Reset() noexcept;
+
+    void UpdateDragState() noexcept;
+
+    void OnMouseDown();
 
     bool IsDragging() const noexcept;
     bool IsSelectManyZonesState() const noexcept;
+
+    void SettingsUpdate(SettingId type) override;
 
 private:
     void OnMouseDown();

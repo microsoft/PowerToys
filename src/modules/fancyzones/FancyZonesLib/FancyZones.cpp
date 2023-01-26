@@ -85,7 +85,7 @@ public:
     IFACEMETHODIMP_(void)
     Destroy() noexcept;
 
-    void MoveSizeStart(HWND window, HMONITOR monitor) noexcept
+    void MoveSizeStart(HWND window, HMONITOR monitor)
     {
         m_windowDrag = WindowDrag::Create(window, m_workAreaHandler.GetWorkAreasByDesktopId(VirtualDesktop::instance().GetCurrentVirtualDesktopId()));
         if (m_windowDrag)
@@ -100,7 +100,7 @@ public:
         }
     }
 
-    void MoveSizeUpdate(HMONITOR monitor, POINT const& ptScreen) noexcept
+    void MoveSizeUpdate(HMONITOR monitor, POINT const& ptScreen)
     {
         if (m_windowDrag)
         {
@@ -114,7 +114,7 @@ public:
         }
     }
 
-    void MoveSizeEnd() noexcept
+    void MoveSizeEnd()
     {
         if (m_windowDrag)
         {
