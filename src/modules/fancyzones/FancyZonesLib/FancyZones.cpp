@@ -26,9 +26,10 @@
 #include <FancyZonesLib/MonitorUtils.h>
 #include <FancyZonesLib/Settings.h>
 #include <FancyZonesLib/SettingsObserver.h>
-#include <FancyZonesLib/WorkArea.h>
+#include <FancyZonesLib/WindowDrag.h>
 #include <FancyZonesLib/WindowMoveHandler.h>
 #include <FancyZonesLib/WindowUtils.h>
+#include <FancyZonesLib/WorkArea.h>
 #include <FancyZonesLib/util.h>
 
 #include "on_thread_executor.h"
@@ -84,34 +85,43 @@ public:
     IFACEMETHODIMP_(void)
     Destroy() noexcept;
 
-    void MoveSizeStart(HWND window, HMONITOR monitor, POINT const& ptScreen) noexcept
+    void MoveSizeStart(HWND window, HMONITOR monitor) noexcept
     {
-        if (FancyZonesSettings::settings().spanZonesAcrossMonitors)
+        m_windowDrag = WindowDrag::Create(window, m_workAreaHandler.GetWorkAreasByDesktopId(VirtualDesktop::instance().GetCurrentVirtualDesktopId()));
+        if (m_windowDrag)
         {
-            monitor = NULL;
-        }
+            if (FancyZonesSettings::settings().spanZonesAcrossMonitors)
+            {
+                monitor = NULL;
+            }
 
-        m_draggingState.Enable();
-        m_draggingState.UpdateDraggingState();
-        m_windowMoveHandler.MoveSizeStart(window, monitor, ptScreen, m_workAreaHandler.GetWorkAreasByDesktopId(VirtualDesktop::instance().GetCurrentVirtualDesktopId()), m_draggingState.IsDragging());
+            m_draggingState.UpdateDragState();
+            m_windowDrag->MoveSizeStart(monitor, m_draggingState.IsDragging());
+        }
     }
 
     void MoveSizeUpdate(HMONITOR monitor, POINT const& ptScreen) noexcept
     {
-        if (FancyZonesSettings::settings().spanZonesAcrossMonitors)
+        if (m_windowDrag)
         {
-            monitor = NULL;
-        }
+            if (FancyZonesSettings::settings().spanZonesAcrossMonitors)
+            {
+                monitor = NULL;
+            }
 
-        m_draggingState.UpdateDraggingState();
-        m_windowMoveHandler.MoveSizeUpdate(monitor, ptScreen, m_workAreaHandler.GetWorkAreasByDesktopId(VirtualDesktop::instance().GetCurrentVirtualDesktopId()), m_draggingState.IsDragging(), m_draggingState.IsSelectManyZonesState());
+            m_draggingState.UpdateDragState();
+            m_windowDrag->MoveSizeUpdate(monitor, ptScreen, m_draggingState.IsDragging(), m_draggingState.IsSelectManyZonesState());
+        }
     }
 
-    void MoveSizeEnd(HWND window) noexcept
+    void MoveSizeEnd() noexcept
     {
-        m_draggingState.UpdateDraggingState();
-        m_windowMoveHandler.MoveSizeEnd(window, m_workAreaHandler.GetWorkAreasByDesktopId(VirtualDesktop::instance().GetCurrentVirtualDesktopId()));
-        m_draggingState.Disable();
+        if (m_windowDrag)
+        {
+            m_windowDrag->MoveSizeEnd();
+            m_draggingState.Reset();
+            m_windowDrag = nullptr;
+        }
     }
 
     IFACEMETHODIMP_(void)
@@ -192,6 +202,7 @@ private:
 
     HWND m_window{};
     WindowMoveHandler m_windowMoveHandler;
+    std::unique_ptr<WindowDrag> m_windowDrag{};
     MonitorWorkAreaHandler m_workAreaHandler;
     DraggingState m_draggingState;
 
@@ -637,13 +648,12 @@ LRESULT FancyZones::WndProc(HWND window, UINT message, WPARAM wparam, LPARAM lpa
             auto hwnd = reinterpret_cast<HWND>(wparam);
             if (auto monitor = MonitorFromPoint(ptScreen, MONITOR_DEFAULTTONULL))
             {
-                MoveSizeStart(hwnd, monitor, ptScreen);
+                MoveSizeStart(hwnd, monitor);
             }
         }
         else if (message == WM_PRIV_MOVESIZEEND)
         {
-            auto hwnd = reinterpret_cast<HWND>(wparam);
-            MoveSizeEnd(hwnd);
+            MoveSizeEnd();
         }
         else if (message == WM_PRIV_LOCATIONCHANGE)
         {
