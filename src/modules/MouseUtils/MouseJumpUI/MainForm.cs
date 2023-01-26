@@ -154,7 +154,7 @@ internal partial class MainForm : Form
             // containing the desktop bounds.
             //
             // then again, it might not make much difference at all - we'd need to do some perf tests
-            graphics.CopyFromScreen(desktopBounds.Top, desktopBounds.Left, 0, 0, desktopBounds.Size);
+            graphics.CopyFromScreen(desktopBounds.Left, desktopBounds.Top, 0, 0, desktopBounds.Size);
         }
 
         // resize and position the form, and update the preview image
