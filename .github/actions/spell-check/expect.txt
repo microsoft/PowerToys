@@ -92,7 +92,6 @@ Artsakh
 asdf
 AShortcut
 ASingle
-Asn
 ASSOCCHANGED
 ASYNCWINDOWPLACEMENT
 ASYNCWINDOWPOS
@@ -161,7 +160,6 @@ bpmf
 bpp
 bricelam
 BRIGHTGREEN
-Brotli
 Browsable
 bsd
 bstr
@@ -223,10 +221,6 @@ CLIPCHILDREN
 Clipperton
 CLIPSIBLINGS
 clrcall
-clrcompression
-clretwrc
-clrgc
-clrjit
 Cls
 CLSCTX
 clsid
@@ -242,7 +236,6 @@ CMONITORS
 cmpgt
 cmyk
 cne
-Cng
 cnt
 Cocklebiddy
 coclass
@@ -288,7 +281,6 @@ CONTROLL
 CONTROLPARENT
 Controlz
 copiedcolorrepresentation
-coreclr
 corewebview
 cortana
 cotaskmem
@@ -321,6 +313,7 @@ Ctx
 CUI
 Cunha
 currentculture
+CURRENTDIR
 CURSORINFO
 cursorpos
 customaction
@@ -352,7 +345,6 @@ davidegiacometti
 Dayof
 Dbg
 Dbghelp
-dbgshim
 DBLCLKS
 DBLEPSILON
 DCapture
@@ -361,7 +353,6 @@ DCOM
 dcommon
 dcomp
 dcompi
-DCompiler
 DComposition
 DCR
 DDevice
@@ -687,8 +678,6 @@ HOMEPATH
 homljgmgpmcbpjbnjpfijnhipfkiclkd
 HOOKPROC
 Hostbackdropbrush
-hostfxr
-hostpolicy
 hotkeycontrol
 hotkeys
 hotlight
@@ -760,7 +749,6 @@ IMAGERESIZEREXT
 imageresizerinput
 imageresizersettings
 imagingdevices
-Imc
 ime
 imeutil
 inetcpl
@@ -797,7 +785,6 @@ Intelli
 interactable
 Interlop
 INTRESOURCE
-Intrinsics
 INVALIDARG
 invalidoperatioexception
 ipc
@@ -835,7 +822,6 @@ jobject
 jpe
 jpn
 jpnime
-JSONOf
 Jsons
 jsonval
 junja
@@ -873,7 +859,6 @@ Kyrgyzstan
 Kyzylorda
 LAlt
 Lambson
-LANGID
 langword
 Lastdevice
 Laute
@@ -1087,10 +1072,7 @@ mru
 msbuild
 msc
 msclr
-mscordaccore
-mscordbi
 mscorlib
-mscorrc
 msdata
 msedge
 MSGFLT
@@ -1103,7 +1085,6 @@ MSIXCA
 MSLLHOOKSTRUCT
 Mso
 msp
-msquic
 msrc
 msstore
 mst
@@ -1153,7 +1134,6 @@ netcpl
 netframework
 netsetup
 netsh
-netstandard
 Neue
 newcolor
 newdev
@@ -1216,7 +1196,7 @@ NPH
 NResize
 NTAPI
 ntdll
-NTFS
+ntfs
 NTSTATUS
 nugets
 nullonfailure
@@ -1330,7 +1310,6 @@ pinvoke
 pipename
 Pitcairn
 PKBDLLHOOKSTRUCT
-Pkcs
 PKEY
 plib
 PLK
@@ -1432,7 +1411,6 @@ QUERYENDSESSION
 queryfocus
 QUERYOPEN
 QUEUESYNC
-Quic
 Quickime
 QUNS
 qwertyuiopasdfghjklzxcvbnm
@@ -1461,7 +1439,7 @@ rectp
 rects
 recyclebin
 redirectedfrom
-Redist
+redist
 redistributable
 reencode
 reencoded
@@ -1539,7 +1517,6 @@ Rsp
 Rstrtmgr
 RTB
 RTLREADING
-RTSS
 ruleset
 runas
 rundll
@@ -1703,7 +1680,6 @@ srw
 srwlock
 sse
 ssf
-Ssl
 STACKFRAME
 stackoverflow
 stackpanel
@@ -2093,7 +2069,6 @@ workspaces
 wox
 wparam
 wpf
-wpfgfx
 wpftmp
 wpr
 wprp
@@ -2160,6 +2135,5 @@ zonable
 zoneset
 Zoneszonabletester
 Zonev
-zopfli
 Zykova
 zzz

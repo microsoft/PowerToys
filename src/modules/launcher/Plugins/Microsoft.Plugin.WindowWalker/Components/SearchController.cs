@@ -101,7 +101,7 @@ namespace Microsoft.Plugin.WindowWalker.Components
 
             if (string.IsNullOrWhiteSpace(SearchText))
             {
-                searchMatches = new List<SearchResult>();
+                searchMatches = AllOpenWindows(snapshotOfOpenWindows);
             }
             else
             {
@@ -117,29 +117,42 @@ namespace Microsoft.Plugin.WindowWalker.Components
         private List<SearchResult> FuzzySearchOpenWindows(List<Window> openWindows)
         {
             List<SearchResult> result = new List<SearchResult>();
-            List<SearchString> searchStrings = new List<SearchString>();
+            var searchStrings = new SearchString(searchText, SearchResult.SearchType.Fuzzy);
 
-            searchStrings.Add(new SearchString(searchText, SearchResult.SearchType.Fuzzy));
-
-            foreach (var searchString in searchStrings)
+            foreach (var window in openWindows)
             {
-                foreach (var window in openWindows)
-                {
-                    var titleMatch = FuzzyMatching.FindBestFuzzyMatch(window.Title, searchString.SearchText);
-                    var processMatch = FuzzyMatching.FindBestFuzzyMatch(window.Process.Name, searchString.SearchText);
+                var titleMatch = FuzzyMatching.FindBestFuzzyMatch(window.Title, searchStrings.SearchText);
+                var processMatch = FuzzyMatching.FindBestFuzzyMatch(window.Process.Name, searchStrings.SearchText);
 
-                    if ((titleMatch.Count != 0 || processMatch.Count != 0) &&
-                                window.Title.Length != 0)
-                    {
-                        var temp = new SearchResult(window, titleMatch, processMatch, searchString.SearchType);
-                        result.Add(temp);
-                    }
+                if ((titleMatch.Count != 0 || processMatch.Count != 0) && window.Title.Length != 0)
+                {
+                    result.Add(new SearchResult(window, titleMatch, processMatch, searchStrings.SearchType));
                 }
             }
 
             System.Diagnostics.Debug.Print("Found " + result.Count + " windows that match the search text");
 
             return result;
+        }
+
+        /// <summary>
+        /// Search method that matches all the windows with a title
+        /// </summary>
+        /// <param name="openWindows">what windows are open</param>
+        /// <returns>Returns search results</returns>
+        private List<SearchResult> AllOpenWindows(List<Window> openWindows)
+        {
+            List<SearchResult> result = new List<SearchResult>();
+
+            foreach (var window in openWindows)
+            {
+                if (window.Title.Length != 0)
+                {
+                    result.Add(new SearchResult(window));
+                }
+            }
+
+            return result.OrderBy(w => w.Result.Title).ToList();
         }
 
         /// <summary>

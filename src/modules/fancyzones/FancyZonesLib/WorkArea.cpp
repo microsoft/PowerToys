@@ -109,8 +109,9 @@ namespace
     WindowPool windowPool;
 }
 
-WorkArea::WorkArea(HINSTANCE hinstance, const FancyZonesDataTypes::WorkAreaId& uniqueId) :
-    m_uniqueId(uniqueId)
+WorkArea::WorkArea(HINSTANCE hinstance, const FancyZonesDataTypes::WorkAreaId& uniqueId, const FancyZonesUtils::Rect& workAreaRect) :
+    m_uniqueId(uniqueId),
+    m_workAreaRect(workAreaRect)
 {
     WNDCLASSEXW wcex{};
     wcex.cbSize = sizeof(WNDCLASSEX);
@@ -129,8 +130,7 @@ WorkArea::~WorkArea()
 HRESULT WorkArea::MoveSizeEnter(HWND window) noexcept
 {
     m_windowMoveSize = window;
-    m_highlightZone = {};
-    m_initialHighlightZone = {};
+    m_highlightedZones.Reset();
     ShowZonesOverlay();
     Trace::WorkArea::MoveOrResizeStarted(m_layout.get(), m_layoutWindows.get());
     return S_OK;
@@ -144,42 +144,23 @@ HRESULT WorkArea::MoveSizeUpdate(POINT const& ptScreen, bool dragEnabled, bool s
     }
 
     bool redraw = false;
-    POINT ptClient = ptScreen;
-    MapWindowPoints(nullptr, m_window, &ptClient, 1);
 
     if (dragEnabled)
     {
-        auto highlightZone = ZonesFromPoint(ptClient);
+        POINT ptClient = ptScreen;
+        MapWindowPoints(nullptr, m_window, &ptClient, 1);
 
-        if (selectManyZones)
-        {
-            if (m_initialHighlightZone.empty())
-            {
-                // first time
-                m_initialHighlightZone = highlightZone;
-            }
-            else
-            {
-                highlightZone = m_layout->GetCombinedZoneRange(m_initialHighlightZone, highlightZone);
-            }
-        }
-        else
-        {
-            m_initialHighlightZone = {};
-        }
-
-        redraw = (highlightZone != m_highlightZone);
-        m_highlightZone = std::move(highlightZone);
+        redraw = m_highlightedZones.Update(m_layout.get(), ptClient, selectManyZones);
     }
-    else if (m_highlightZone.size())
+    else if (!m_highlightedZones.Empty())
     {
-        m_highlightZone = {};
+        m_highlightedZones.Reset();
         redraw = true;
     }
 
     if (redraw && m_zonesOverlay)
     {
-        m_zonesOverlay->DrawActiveZoneSet(m_layout->Zones(), m_highlightZone, Colors::GetZoneColors(), FancyZonesSettings::settings().showZoneNumber);
+        m_zonesOverlay->DrawActiveZoneSet(m_layout->Zones(), m_highlightedZones.Zones(), Colors::GetZoneColors(), FancyZonesSettings::settings().showZoneNumber);
     }
 
     return S_OK;
@@ -192,7 +173,8 @@ HRESULT WorkArea::MoveSizeEnd(HWND window) noexcept
         return E_INVALIDARG;
     }
 
-    MoveWindowIntoZoneByIndexSet(window, m_highlightZone);
+    MoveWindowIntoZoneByIndexSet(window, m_highlightedZones.Zones());
+    m_highlightedZones.Reset();
 
     Trace::WorkArea::MoveOrResizeEnd(m_layout.get(), m_layoutWindows.get());
 
@@ -505,7 +487,7 @@ void WorkArea::ShowZonesOverlay() noexcept
     if (m_window && m_layout)
     {
         SetAsTopmostWindow();
-        m_zonesOverlay->DrawActiveZoneSet(m_layout->Zones(), m_highlightZone, Colors::GetZoneColors(), FancyZonesSettings::settings().showZoneNumber);
+        m_zonesOverlay->DrawActiveZoneSet(m_layout->Zones(), m_highlightedZones.Zones(), Colors::GetZoneColors(), FancyZonesSettings::settings().showZoneNumber);
         m_zonesOverlay->Show();
     }
 }
@@ -515,9 +497,7 @@ void WorkArea::HideZonesOverlay() noexcept
     if (m_window)
     {
         m_zonesOverlay->Hide();
-        m_keyLast = 0;
         m_windowMoveSize = nullptr;
-        m_highlightZone = {};
     }
 }
 
@@ -532,8 +512,7 @@ void WorkArea::UpdateActiveZoneSet() noexcept
     CalculateZoneSet();
     if (m_window && m_layout)
     {
-        m_highlightZone.clear();
-        m_zonesOverlay->DrawActiveZoneSet(m_layout->Zones(), m_highlightZone, Colors::GetZoneColors(), FancyZonesSettings::settings().showZoneNumber);
+        m_zonesOverlay->DrawActiveZoneSet(m_layout->Zones(), {}, Colors::GetZoneColors(), FancyZonesSettings::settings().showZoneNumber);
     }
 }
 
@@ -547,10 +526,10 @@ void WorkArea::CycleWindows(HWND window, bool reverse) noexcept
 
 void WorkArea::ClearSelectedZones() noexcept
 {
-    if (m_highlightZone.size() && m_layout)
+    if (!m_highlightedZones.Empty() && m_layout)
     {
-        m_highlightZone.clear();
-        m_zonesOverlay->DrawActiveZoneSet(m_layout->Zones(), m_highlightZone, Colors::GetZoneColors(), FancyZonesSettings::settings().showZoneNumber);
+        m_highlightedZones.Reset();
+        m_zonesOverlay->DrawActiveZoneSet(m_layout->Zones(), {}, Colors::GetZoneColors(), FancyZonesSettings::settings().showZoneNumber);
     }
 }
 
@@ -609,7 +588,7 @@ void WorkArea::CalculateZoneSet() noexcept
     }
 
     m_layout = std::make_unique<Layout>(appliedLayout.value());
-    m_layout->Init(m_workAreaRect, m_monitor);
+    m_layout->Init(m_workAreaRect, m_uniqueId.monitorId.monitor);
 
     if (!m_layoutWindows)
     {
@@ -639,16 +618,6 @@ LRESULT WorkArea::WndProc(UINT message, WPARAM wparam, LPARAM lparam) noexcept
     return 0;
 }
 
-ZoneIndexSet WorkArea::ZonesFromPoint(POINT pt) noexcept
-{
-    if (m_layout)
-    {
-        return m_layout->ZonesFromPoint(pt);
-    }
-
-    return {};
-}
-
 void WorkArea::SetAsTopmostWindow() noexcept
 {
     if (!m_window)
@@ -665,11 +634,6 @@ void WorkArea::SetAsTopmostWindow() noexcept
     }
 
     SetWindowPos(m_window, windowInsertAfter, 0, 0, 0, 0, flags);
-}
-
-void WorkArea::LogInitializationError()
-{
-    Logger::error(L"Unable to get monitor info, {}", get_last_error_or_default(GetLastError()));
 }
 
 #pragma endregion

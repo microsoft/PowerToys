@@ -1,6 +1,7 @@
 #pragma once
 
 #include <FancyZonesLib/FancyZonesDataTypes.h>
+#include <FancyZonesLib/HighlightedZones.h>
 #include <FancyZonesLib/Layout.h>
 #include <FancyZonesLib/LayoutAssignedWindows.h>
 #include <FancyZonesLib/util.h>
@@ -10,7 +11,7 @@ class ZonesOverlay;
 class WorkArea
 {
 public:
-    WorkArea(HINSTANCE hinstance, const FancyZonesDataTypes::WorkAreaId& uniqueId);
+    WorkArea(HINSTANCE hinstance, const FancyZonesDataTypes::WorkAreaId& uniqueId, const FancyZonesUtils::Rect& workAreaRect);
     ~WorkArea();
 
 public:
@@ -23,34 +24,6 @@ public:
         }
 #endif
         InitLayout(parentUniqueId);
-        return true;
-    }
-
-    inline bool InitWorkAreaRect(HMONITOR monitor)
-    {
-        m_monitor = monitor;
-
-#if defined(UNIT_TESTS)
-        m_workAreaRect = FancyZonesUtils::Rect({ 0, 0, 1920, 1080 });
-#else
-
-        if (monitor)
-        {
-            MONITORINFO mi{};
-            mi.cbSize = sizeof(mi);
-            if (!GetMonitorInfoW(monitor, &mi))
-            {
-                return false;
-            }
-
-            m_workAreaRect = FancyZonesUtils::Rect(mi.rcWork);
-        }
-        else
-        {
-            m_workAreaRect = FancyZonesUtils::GetAllMonitorsCombinedRect<&MONITORINFO::rcWork>();
-        }
-#endif
-
         return true;
     }
 
@@ -79,8 +52,6 @@ public:
     void ClearSelectedZones() noexcept;
     
     void CycleWindows(HWND window, bool reverse) noexcept;
-    
-    void LogInitializationError();
 
 protected:
     static LRESULT CALLBACK s_WndProc(HWND window, UINT message, WPARAM wparam, LPARAM lparam) noexcept;
@@ -90,32 +61,22 @@ private:
     void InitLayout(const FancyZonesDataTypes::WorkAreaId& parentUniqueId) noexcept;
     void CalculateZoneSet() noexcept;
     LRESULT WndProc(UINT message, WPARAM wparam, LPARAM lparam) noexcept;
-    ZoneIndexSet ZonesFromPoint(POINT pt) noexcept;
     void SetAsTopmostWindow() noexcept;
 
-    HMONITOR m_monitor{};
-    FancyZonesUtils::Rect m_workAreaRect{};
+    const FancyZonesUtils::Rect m_workAreaRect{};
     const FancyZonesDataTypes::WorkAreaId m_uniqueId;
     HWND m_window{}; // Hidden tool window used to represent current monitor desktop work area.
-    HWND m_windowMoveSize{};
     std::unique_ptr<Layout> m_layout;
     std::unique_ptr<LayoutAssignedWindows> m_layoutWindows;
-    ZoneIndexSet m_initialHighlightZone;
-    ZoneIndexSet m_highlightZone;
-    WPARAM m_keyLast{};
-    size_t m_keyCycle{};
     std::unique_ptr<ZonesOverlay> m_zonesOverlay;
+    HighlightedZones m_highlightedZones;
+
+    HWND m_windowMoveSize{};
 };
 
-inline std::shared_ptr<WorkArea> MakeWorkArea(HINSTANCE hinstance, HMONITOR monitor, const FancyZonesDataTypes::WorkAreaId& uniqueId, const FancyZonesDataTypes::WorkAreaId& parentUniqueId) noexcept
+inline std::shared_ptr<WorkArea> MakeWorkArea(HINSTANCE hinstance, const FancyZonesDataTypes::WorkAreaId& uniqueId, const FancyZonesDataTypes::WorkAreaId& parentUniqueId, const FancyZonesUtils::Rect& workAreaRect)
 {
-    auto self = std::make_shared<WorkArea>(hinstance, uniqueId);
-    if (!self->InitWorkAreaRect(monitor))
-    {
-        self->LogInitializationError();
-        return nullptr;
-    }
-
+    auto self = std::make_shared<WorkArea>(hinstance, uniqueId, workAreaRect);
     if (!self->Init(hinstance, parentUniqueId))
     {
         return nullptr;
