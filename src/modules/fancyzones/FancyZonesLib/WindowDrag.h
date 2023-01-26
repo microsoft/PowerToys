@@ -1,5 +1,7 @@
 #pragma once
 
+#include <FancyZonesLib/HighlightedZones.h>
+
 class WorkArea;
 
 class WindowDrag
@@ -15,8 +17,8 @@ public:
     void MoveSizeEnd();
 
 private:
-    void SetWindowTransparency() noexcept;
-    void ResetWindowTransparency() noexcept;
+    void SetWindowTransparency();
+    void ResetWindowTransparency();
 
     struct WindowProperties
     {
@@ -38,4 +40,6 @@ private:
     std::shared_ptr<WorkArea> m_currentWorkArea; // "Active" WorkArea, where the move/size is happening. Will update as drag moves between monitors.
     
     bool m_transparencySet{};
+
+    HighlightedZones m_highlightedZones;
 };

@@ -55,21 +55,24 @@ bool WindowDrag::MoveSizeStart(HMONITOR monitor, bool isDragging)
         return false;
     }
 
+    m_highlightedZones.Reset();
+
     if (isDragging)
     {
-        m_currentWorkArea = iter->second;
         SetWindowTransparency();
-        m_currentWorkArea->MoveSizeEnter();
+
+        m_currentWorkArea = iter->second;
+        m_currentWorkArea->ShowZonesOverlay({});
         if (FancyZonesSettings::settings().showZonesOnAllMonitors)
         {
-            for (const auto& [keyMonitor, workArea] : m_activeWorkAreas)
+            for (const auto& [_, workArea] : m_activeWorkAreas)
             {
                 // Skip calling ShowZonesOverlay for iter->second (m_draggedWindowWorkArea) since it
                 // was already called in MoveSizeEnter
                 const bool moveSizeEnterCalled = workArea == m_currentWorkArea;
                 if (workArea && !moveSizeEnterCalled)
                 {
-                    workArea->ShowZonesOverlay();
+                    workArea->ShowZonesOverlay({});
                 }
             }
         }
@@ -77,7 +80,7 @@ bool WindowDrag::MoveSizeStart(HMONITOR monitor, bool isDragging)
     else if (m_currentWorkArea)
     {
         m_currentWorkArea = nullptr;
-        for (const auto& [keyMonitor, workArea] : m_activeWorkAreas)
+        for (const auto& [_, workArea] : m_activeWorkAreas)
         {
             if (workArea)
             {
@@ -86,10 +89,10 @@ bool WindowDrag::MoveSizeStart(HMONITOR monitor, bool isDragging)
         }
     }
 
-    auto workArea = m_activeWorkAreas.find(monitor);
-    if (workArea != m_activeWorkAreas.end())
+    if (m_currentWorkArea)
     {
-        workArea->second->UnsnapWindow(m_window);
+        m_currentWorkArea->UnsnapWindow(m_window);
+        Trace::WorkArea::MoveOrResizeStarted(m_currentWorkArea->GetLayout().get(), m_currentWorkArea->GetLayoutWindows().get());
     }
 
     return true;
@@ -130,19 +133,39 @@ void WindowDrag::MoveSizeUpdate(HMONITOR monitor, POINT const& ptScreen, bool is
                 if (iter->second != m_currentWorkArea)
                 {
                     // The drag has moved to a different monitor.
-                    m_currentWorkArea->ClearSelectedZones();
+                    m_highlightedZones.Reset();
+                    m_currentWorkArea->ShowZonesOverlay({});
                     if (!FancyZonesSettings::settings().showZonesOnAllMonitors)
                     {
                         m_currentWorkArea->HideZonesOverlay();
                     }
 
                     m_currentWorkArea = iter->second;
-                    m_currentWorkArea->MoveSizeEnter();
+                    m_currentWorkArea->ShowZonesOverlay({});
                 }
 
+                // redraw layout with new highlighted zones
                 for (auto& [_, workArea] : m_activeWorkAreas)
                 {
-                    workArea->MoveSizeUpdate(ptScreen, isDragging, isSelectManyZonesState);
+                    bool redraw = false;
+
+                    if (isDragging)
+                    {
+                        POINT ptClient = ptScreen;
+                        MapWindowPoints(nullptr, workArea->GetWorkAreaWindow(), &ptClient, 1);
+
+                        redraw = m_highlightedZones.Update(workArea->GetLayout().get(), ptClient, isSelectManyZonesState);
+                    }
+                    else if (!m_highlightedZones.Empty())
+                    {
+                        m_highlightedZones.Reset();
+                        redraw = true;
+                    }
+
+                    if (redraw)
+                    {
+                        workArea->ShowZonesOverlay(m_highlightedZones.Zones());
+                    }
                 }
             }
         }
@@ -174,7 +197,11 @@ void WindowDrag::MoveSizeEnd()
         }
         else
         {
-            workArea->MoveSizeEnd(m_window);
+            workArea->MoveWindowIntoZoneByIndexSet(m_window, m_highlightedZones.Zones());
+            m_highlightedZones.Reset();
+            workArea->HideZonesOverlay();
+
+            Trace::WorkArea::MoveOrResizeEnd(workArea->GetLayout().get(), workArea->GetLayoutWindows().get());
         }
     }
     else
@@ -217,7 +244,7 @@ void WindowDrag::MoveSizeEnd()
         FancyZonesWindowProperties::RemoveZoneIndexProperty(m_window);
     }
 
-    // Also, hide all windows (regardless of settings)
+    // Also, hide all layouts (regardless of settings)
     for (auto& [_, workArea] : m_activeWorkAreas)
     {
         if (workArea)
@@ -227,7 +254,7 @@ void WindowDrag::MoveSizeEnd()
     }
 }
 
-void WindowDrag::SetWindowTransparency() noexcept
+void WindowDrag::SetWindowTransparency()
 {
     if (m_transparencySet)
     {
@@ -236,33 +263,26 @@ void WindowDrag::SetWindowTransparency() noexcept
     
     if (FancyZonesSettings::settings().makeDraggedWindowTransparent)
     {
-        try
+        m_windowProperties.exstyle = GetWindowLong(m_window, GWL_EXSTYLE);
+
+        SetWindowLong(m_window, GWL_EXSTYLE, m_windowProperties.exstyle | WS_EX_LAYERED);
+
+        if (!GetLayeredWindowAttributes(m_window, &m_windowProperties.crKey, &m_windowProperties.alpha, &m_windowProperties.dwFlags))
         {
-            m_windowProperties.exstyle = GetWindowLong(m_window, GWL_EXSTYLE);
-
-            SetWindowLong(m_window, GWL_EXSTYLE, m_windowProperties.exstyle | WS_EX_LAYERED);
-
-            if (!GetLayeredWindowAttributes(m_window, &m_windowProperties.crKey, &m_windowProperties.alpha, &m_windowProperties.dwFlags))
-            {
-                Logger::error(L"Window transparency: GetLayeredWindowAttributes failed, {}", get_last_error_or_default(GetLastError()));
-                return;
-            }
-
-            if (!SetLayeredWindowAttributes(m_window, 0, (255 * 50) / 100, LWA_ALPHA))
-            {
-                Logger::error(L"Window transparency: SetLayeredWindowAttributes failed, {}", get_last_error_or_default(GetLastError()));
-            }
+            Logger::error(L"Window transparency: GetLayeredWindowAttributes failed, {}", get_last_error_or_default(GetLastError()));
+            return;
         }
-        catch(const std::exception&)
+
+        if (!SetLayeredWindowAttributes(m_window, 0, (255 * 50) / 100, LWA_ALPHA))
         {
-            Logger::error("Window transparency: exception");
+            Logger::error(L"Window transparency: SetLayeredWindowAttributes failed, {}", get_last_error_or_default(GetLastError()));
         }
     }
 
     m_transparencySet = true;
 }
 
-void WindowDrag::ResetWindowTransparency() noexcept
+void WindowDrag::ResetWindowTransparency()
 {
     if (!m_transparencySet)
     {
@@ -271,21 +291,14 @@ void WindowDrag::ResetWindowTransparency() noexcept
 
     if (FancyZonesSettings::settings().makeDraggedWindowTransparent)
     {
-        try
+        if (!SetLayeredWindowAttributes(m_window, m_windowProperties.crKey, m_windowProperties.alpha, m_windowProperties.dwFlags))
         {
-            if (!SetLayeredWindowAttributes(m_window, m_windowProperties.crKey, m_windowProperties.alpha, m_windowProperties.dwFlags))
-            {
-                Logger::error(L"Window transparency: SetLayeredWindowAttributes failed");
-            }
-
-            if (SetWindowLong(m_window, GWL_EXSTYLE, m_windowProperties.exstyle) == 0)
-            {
-                Logger::error(L"Window transparency: SetWindowLong failed, {}", get_last_error_or_default(GetLastError()));
-            }
+            Logger::error(L"Window transparency: SetLayeredWindowAttributes failed");
         }
-        catch (const std::exception&)
+
+        if (SetWindowLong(m_window, GWL_EXSTYLE, m_windowProperties.exstyle) == 0)
         {
-            Logger::error("Window transparency: exception");
+            Logger::error(L"Window transparency: SetWindowLong failed, {}", get_last_error_or_default(GetLastError()));
         }
     }
 
