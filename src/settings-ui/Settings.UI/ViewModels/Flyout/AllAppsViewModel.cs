@@ -118,11 +118,6 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 FlyoutMenuItems.Add(new FlyoutMenuItem() { Label = resourceLoader.GetString("TextExtractorString"), IsEnabled = generalSettingsConfig.Enabled.PowerOCR, Tag = "PowerOCR", Icon = "ms-appx:///Assets/FluentIcons/FluentIconsPowerOCR.png", EnabledChangedCallback = EnabledChangedOnUI });
             }
 
-            if (GPOWrapper.GetConfiguredVideoConferenceMuteEnabledValue() != GpoRuleConfigured.Disabled)
-            {
-                FlyoutMenuItems.Add(new FlyoutMenuItem() { Label = resourceLoader.GetString("VCMString"), IsEnabled = generalSettingsConfig.Enabled.VideoConference, Tag = "VideoConference", Icon = "ms-appx:///Assets/FluentIcons/FluentIconsVideoConferenceMute.png", EnabledChangedCallback = EnabledChangedOnUI });
-            }
-
             // set the callback functions value to hangle outgoing IPC message.
             SendConfigMSG = ipcMSGCallBackFunc;
         }

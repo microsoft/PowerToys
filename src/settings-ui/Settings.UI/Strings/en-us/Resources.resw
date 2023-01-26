@@ -2996,8 +2996,4 @@ Activate by holding the key for the character you want to add an accent to, then
   <data name="UpdateAvailable.Title" xml:space="preserve">
     <value>Update available</value>
   </data>
-  <data name="VCMString" xml:space="preserve">
-    <value>Video Conference Mute</value>
-    <comment>Do not localize this string</comment>
-  </data>
 </root>
