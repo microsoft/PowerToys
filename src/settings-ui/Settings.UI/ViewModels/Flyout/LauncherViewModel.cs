@@ -4,6 +4,7 @@
 
 using System;
 using System.Collections.ObjectModel;
+using global::PowerToys.GPOWrapper;
 using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.PowerToys.Settings.UI.Library.Helpers;
 using Microsoft.PowerToys.Settings.UI.Library.Interfaces;
@@ -32,64 +33,89 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             // set the callback functions value to hangle outgoing IPC message.
             SendIPCMessage = ipcMSGCallBackFunc;
             ResourceLoader resourceLoader = ResourceLoader.GetForViewIndependentUse();
-            FlyoutMenuItems = new ObservableCollection<FlyoutMenuItem>()
+            FlyoutMenuItems = new ObservableCollection<FlyoutMenuItem>();
+            if (GPOWrapper.GetConfiguredColorPickerEnabledValue() != GpoRuleConfigured.Disabled)
             {
-                new FlyoutMenuItem()
+                FlyoutMenuItems.Add(new FlyoutMenuItem()
                 {
                     Label = resourceLoader.GetString("ColorPicker/ModuleTitle"),
                     Tag = "ColorPicker",
                     Visible = generalSettingsConfig.Enabled.ColorPicker,
                     ToolTip = SettingsRepository<ColorPickerSettings>.GetInstance(new SettingsUtils()).SettingsConfig.Properties.ActivationShortcut.ToString(),
                     Icon = "ms-appx:///Assets/FluentIcons/FluentIconsColorPicker.png",
-                },
-                new FlyoutMenuItem()
+                });
+            }
+
+            if (GPOWrapper.GetConfiguredFancyZonesEnabledValue() != GpoRuleConfigured.Disabled)
+            {
+                FlyoutMenuItems.Add(new FlyoutMenuItem()
                 {
                     Label = resourceLoader.GetString("FZEditorString"),
                     Tag = "FancyZones",
                     Visible = generalSettingsConfig.Enabled.FancyZones,
                     ToolTip = SettingsRepository<FancyZonesSettings>.GetInstance(new SettingsUtils()).SettingsConfig.Properties.FancyzonesEditorHotkey.Value.ToString(),
                     Icon = "ms-appx:///Assets/FluentIcons/FluentIconsFancyZones.png",
-                },
-                new FlyoutMenuItem()
+                });
+            }
+
+            if (GPOWrapper.GetConfiguredHostsFileEditorEnabledValue() != GpoRuleConfigured.Disabled)
+            {
+                FlyoutMenuItems.Add(new FlyoutMenuItem()
                 {
                     Label = resourceLoader.GetString("Hosts/ModuleTitle"),
                     Tag = "Hosts",
                     Visible = generalSettingsConfig.Enabled.Hosts,
                     Icon = "ms-appx:///Assets/FluentIcons/FluentIconsHosts.png",
-                },
-                new FlyoutMenuItem()
+                });
+            }
+
+            if (GPOWrapper.GetConfiguredPowerLauncherEnabledValue() != GpoRuleConfigured.Disabled)
+            {
+                FlyoutMenuItems.Add(new FlyoutMenuItem()
                 {
                     Label = resourceLoader.GetString("PowerLauncher/ModuleTitle"),
                     Tag = "PowerLauncher",
                     Visible = generalSettingsConfig.Enabled.PowerLauncher,
                     ToolTip = SettingsRepository<PowerLauncherSettings>.GetInstance(new SettingsUtils()).SettingsConfig.Properties.OpenPowerLauncher.ToString(),
                     Icon = "ms-appx:///Assets/FluentIcons/FluentIconsPowerToysRun.png",
-                },
-                new FlyoutMenuItem()
+                });
+            }
+
+            if (GPOWrapper.GetConfiguredTextExtractorEnabledValue() != GpoRuleConfigured.Disabled)
+            {
+                FlyoutMenuItems.Add(new FlyoutMenuItem()
                 {
                     Label = resourceLoader.GetString("TextExtractor/ModuleTitle"),
                     Tag = "PowerOCR",
                     Visible = generalSettingsConfig.Enabled.PowerOCR,
                     ToolTip = SettingsRepository<PowerOcrSettings>.GetInstance(new SettingsUtils()).SettingsConfig.Properties.ActivationShortcut.ToString(),
                     Icon = "ms-appx:///Assets/FluentIcons/FluentIconsPowerOcr.png",
-                },
-                new FlyoutMenuItem()
+                });
+            }
+
+            if (GPOWrapper.GetConfiguredScreenRulerEnabledValue() != GpoRuleConfigured.Disabled)
+            {
+                FlyoutMenuItems.Add(new FlyoutMenuItem()
                 {
                     Label = resourceLoader.GetString("MeasureTool/ModuleTitle"),
                     Tag = "MeasureTool",
                     Visible = generalSettingsConfig.Enabled.MeasureTool,
                     ToolTip = SettingsRepository<MeasureToolSettings>.GetInstance(new SettingsUtils()).SettingsConfig.Properties.ActivationShortcut.ToString(),
                     Icon = "ms-appx:///Assets/FluentIcons/FluentIconsScreenRuler.png",
-                },
-                new FlyoutMenuItem()
+                });
+            }
+
+            if (GPOWrapper.GetConfiguredShortcutGuideEnabledValue() != GpoRuleConfigured.Disabled)
+            {
+                FlyoutMenuItems.Add(new FlyoutMenuItem()
                 {
                     Label = resourceLoader.GetString("ShortcutGuide/ModuleTitle"),
                     Tag = "ShortcutGuide",
                     Visible = generalSettingsConfig.Enabled.ShortcutGuide,
                     ToolTip = SettingsRepository<ShortcutGuideSettings>.GetInstance(new SettingsUtils()).SettingsConfig.Properties.OpenShortcutGuide.ToString(),
                     Icon = "ms-appx:///Assets/FluentIcons/FluentIconsShortcutGuide.png",
-                },
-            };
+                });
+            }
 
             if (updatingSettingsConfig == null)
             {
