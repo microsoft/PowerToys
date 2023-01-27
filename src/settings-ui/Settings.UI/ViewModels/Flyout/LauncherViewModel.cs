@@ -36,7 +36,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             {
                 new FlyoutMenuItem()
                 {
-                    Label = resourceLoader.GetString("ColorPickerString"),
+                    Label = resourceLoader.GetString("ColorPicker/ModuleTitle"),
                     Tag = "ColorPicker",
                     Visible = generalSettingsConfig.Enabled.ColorPicker,
                     ToolTip = SettingsRepository<ColorPickerSettings>.GetInstance(new SettingsUtils()).SettingsConfig.Properties.ActivationShortcut.ToString(),
@@ -52,14 +52,14 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 },
                 new FlyoutMenuItem()
                 {
-                    Label = resourceLoader.GetString("HostsString"),
+                    Label = resourceLoader.GetString("Hosts/ModuleTitle"),
                     Tag = "Hosts",
                     Visible = generalSettingsConfig.Enabled.Hosts,
                     Icon = "ms-appx:///Assets/FluentIcons/FluentIconsHosts.png",
                 },
                 new FlyoutMenuItem()
                 {
-                    Label = resourceLoader.GetString("PowerToysRunString"),
+                    Label = resourceLoader.GetString("PowerLauncher/ModuleTitle"),
                     Tag = "PowerLauncher",
                     Visible = generalSettingsConfig.Enabled.PowerLauncher,
                     ToolTip = SettingsRepository<PowerLauncherSettings>.GetInstance(new SettingsUtils()).SettingsConfig.Properties.OpenPowerLauncher.ToString(),
@@ -67,7 +67,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 },
                 new FlyoutMenuItem()
                 {
-                    Label = resourceLoader.GetString("TextExtractorString"),
+                    Label = resourceLoader.GetString("TextExtractor/ModuleTitle"),
                     Tag = "PowerOCR",
                     Visible = generalSettingsConfig.Enabled.PowerOCR,
                     ToolTip = SettingsRepository<PowerOcrSettings>.GetInstance(new SettingsUtils()).SettingsConfig.Properties.ActivationShortcut.ToString(),
@@ -75,7 +75,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 },
                 new FlyoutMenuItem()
                 {
-                    Label = resourceLoader.GetString("ScreenRulerString"),
+                    Label = resourceLoader.GetString("MeasureTool/ModuleTitle"),
                     Tag = "MeasureTool",
                     Visible = generalSettingsConfig.Enabled.MeasureTool,
                     ToolTip = SettingsRepository<MeasureToolSettings>.GetInstance(new SettingsUtils()).SettingsConfig.Properties.ActivationShortcut.ToString(),
@@ -83,7 +83,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 },
                 new FlyoutMenuItem()
                 {
-                    Label = resourceLoader.GetString("ShortcutGuideString"),
+                    Label = resourceLoader.GetString("ShortcutGuide/ModuleTitle"),
                     Tag = "ShortcutGuide",
                     Visible = generalSettingsConfig.Enabled.ShortcutGuide,
                     ToolTip = SettingsRepository<ShortcutGuideSettings>.GetInstance(new SettingsUtils()).SettingsConfig.Properties.OpenShortcutGuide.ToString(),

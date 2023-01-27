@@ -2384,10 +2384,6 @@ From there, simply click on one of the supported files in the File Explorer and 
     <value>Customize the shortcut to pin or unpin an app window</value>
     <comment>"Always On Top" is the name of the utility</comment>
   </data>
-  <data name="AlwaysOnTopString" xml:space="preserve">
-    <value>Always On Top</value>
-    <comment>"Always On Top" is the name of the utility</comment>
-  </data>
   <data name="Oobe_AlwaysOnTop.Title" xml:space="preserve">
     <value>Always On Top</value>
     <comment>"Always On Top" is the name of the utility</comment>
@@ -2892,10 +2888,6 @@ Activate by holding the key for the character you want to add an accent to, then
   <data name="AllAppsTxt.Text" xml:space="preserve">
     <value>All apps</value>
   </data>
-  <data name="AwakeString" xml:space="preserve">
-    <value>Awake</value>
-    <comment>Do not localize this string</comment>
-  </data>
   <data name="BackBtn.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
     <value>Back</value>
   </data>
@@ -2908,42 +2900,14 @@ Activate by holding the key for the character you want to add an accent to, then
   <data name="BugReportTooltip.Text" xml:space="preserve">
     <value>Bug report</value>
   </data>
-  <data name="ColorPickerString" xml:space="preserve">
-    <value>Color Picker</value>
-    <comment>Do not localize this string</comment>
-  </data>
   <data name="DocsBtn.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
     <value>Documentation</value>
   </data>
   <data name="DocsTooltip.Text" xml:space="preserve">
     <value>Documentation</value>
   </data>
-  <data name="FancyZonesString" xml:space="preserve">
-    <value>FancyZones</value>
-    <comment>Do not localize this string</comment>
-  </data>
-  <data name="FileLockSmithString" xml:space="preserve">
-    <value>File Locksmith</value>
-    <comment>Do not localize this string</comment>
-  </data>
-  <data name="FindMyMouseString" xml:space="preserve">
-    <value>Find My Mouse</value>
-    <comment>Do not localize this string</comment>
-  </data>
   <data name="FZEditorString" xml:space="preserve">
     <value>FancyZones Editor</value>
-    <comment>Do not localize this string</comment>
-  </data>
-  <data name="HostsString" xml:space="preserve">
-    <value>Host File Editor</value>
-    <comment>Do not localize this string</comment>
-  </data>
-  <data name="ImageResizerString" xml:space="preserve">
-    <value>Image Resizer</value>
-    <comment>Do not localize this string</comment>
-  </data>
-  <data name="KBMString" xml:space="preserve">
-    <value>Keyboard Manager</value>
     <comment>Do not localize this string</comment>
   </data>
   <data name="MoreBtn.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
@@ -2952,46 +2916,14 @@ Activate by holding the key for the character you want to add an accent to, then
   <data name="MoreLabel.Text" xml:space="preserve">
     <value>More</value>
   </data>
-  <data name="MouseHighlighterString" xml:space="preserve">
-    <value>Mouse Highlighter</value>
-    <comment>Do not localize this string</comment>
-  </data>
-  <data name="MousePointerCrosshairsString" xml:space="preserve">
-    <value>Mouse Pointer Crosshair</value>
-    <comment>Do not localize this string</comment>
-  </data>
-  <data name="PowerRenameString" xml:space="preserve">
-    <value>PowerRename</value>
-    <comment>Do not localize this string</comment>
-  </data>
-  <data name="PowerToysRunString" xml:space="preserve">
-    <value>PowerToys Run</value>
-    <comment>Do not localize this string</comment>
-  </data>
-  <data name="QuickAccentString" xml:space="preserve">
-    <value>Quick Accent</value>
-    <comment>Do not localize this string</comment>
-  </data>
-  <data name="ScreenRulerString" xml:space="preserve">
-    <value>Screen Ruler</value>
-    <comment>Do not localize this string</comment>
-  </data>
   <data name="SettingsBtn.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
     <value>Settings</value>
   </data>
   <data name="SettingsTooltip.Text" xml:space="preserve">
     <value>Settings</value>
   </data>
-  <data name="ShortcutGuideString" xml:space="preserve">
-    <value>Shortcut Guide</value>
-    <comment>Do not localize this string</comment>
-  </data>
   <data name="ShortcutsTxt.Text" xml:space="preserve">
     <value>Shortcuts</value>
-  </data>
-  <data name="TextExtractorString" xml:space="preserve">
-    <value>Text Extractor</value>
-    <comment>Do not localize this string</comment>
   </data>
   <data name="UpdateAvailable.Title" xml:space="preserve">
     <value>Update available</value>
