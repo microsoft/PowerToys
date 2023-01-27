@@ -42,6 +42,13 @@ namespace Wox.Plugin.Common
                 return _localizationCache[path.ToLowerInvariant()];
             }
 
+            // If it is a drive letter return it
+            if (path.Length == 2 & path.EndsWith(':'))
+            {
+                _localizationCache.Add(path.ToLowerInvariant(), path);
+                return path;
+            }
+
             Guid shellItemType = new Guid(IShellItemGuid);
             int retCode = SHCreateItemFromParsingName(path, IntPtr.Zero, ref shellItemType, out IShellItem shellItem);
 
@@ -51,7 +58,8 @@ namespace Wox.Plugin.Common
             }
 
             string filename;
-            shellItem.GetDisplayName(SIGDN.DESKTOPABSOLUTEPARSING, out filename);
+            shellItem.GetDisplayName(SIGDN.NORMALDISPLAY, out filename);
+            _localizationCache.Add(path.ToLowerInvariant(), filename);
             return filename;
         }
 
