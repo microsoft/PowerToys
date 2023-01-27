@@ -225,17 +225,9 @@ namespace Microsoft.PowerToys.Settings.UI
                 }
             };
 
-            this.Activated += MainWindow_Activated;
-
             bootTime.Stop();
 
             PowerToysTelemetry.Log.WriteEvent(new SettingsBootEvent() { BootTimeMs = bootTime.ElapsedMilliseconds });
-        }
-
-        private void MainWindow_Activated(object sender, WindowActivatedEventArgs args)
-        {
-            ShellPage.Navigate(typeof(GeneralPage));
-            this.Activated -= MainWindow_Activated;
         }
 
         public void NavigateToSection(System.Type type)
@@ -266,6 +258,11 @@ namespace Microsoft.PowerToys.Settings.UI
                 args.Handled = true;
                 NativeMethods.ShowWindow(hWnd, NativeMethods.SW_HIDE);
             }
+        }
+
+        internal void EnsurePageIsSelected()
+        {
+            ShellPage.EnsurePageIsSelected();
         }
     }
 }

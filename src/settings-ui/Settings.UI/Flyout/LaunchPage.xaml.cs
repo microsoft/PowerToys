@@ -85,7 +85,7 @@ namespace Microsoft.PowerToys.Settings.UI.Flyout
 
         private void SettingsBtn_Click(object sender, RoutedEventArgs e)
         {
-            App.OpenSettingsWindow();
+            App.OpenSettingsWindow(null, true);
         }
 
         private async void DocsBtn_Click(object sender, RoutedEventArgs e)

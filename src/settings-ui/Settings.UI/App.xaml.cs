@@ -75,7 +75,7 @@ namespace Microsoft.PowerToys.Settings.UI
             this.InitializeComponent();
         }
 
-        public static void OpenSettingsWindow(Type type = null)
+        public static void OpenSettingsWindow(Type type = null, bool ensurePageIsSelected = false)
         {
             if (settingsWindow == null)
             {
@@ -87,6 +87,11 @@ namespace Microsoft.PowerToys.Settings.UI
             if (type != null)
             {
                 settingsWindow.NavigateToSection(type);
+            }
+
+            if (ensurePageIsSelected)
+            {
+                settingsWindow.EnsurePageIsSelected();
             }
         }
 

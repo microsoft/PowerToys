@@ -343,5 +343,10 @@ namespace Microsoft.PowerToys.Settings.UI.Views
                 }
             }
         }
+
+        internal static void EnsurePageIsSelected()
+        {
+            NavigationService.EnsurePageIsSelected(typeof(GeneralPage));
+        }
     }
 }
