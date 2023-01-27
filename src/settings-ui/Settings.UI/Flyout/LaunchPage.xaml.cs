@@ -48,7 +48,19 @@ namespace Microsoft.PowerToys.Settings.UI.Flyout
 
                     break;
 
-                // TO DO: ADD HOSTS
+                case "Hosts": // Launch Hosts
+                    {
+                        var actionName = "Launch";
+                        if (App.IsElevated)
+                        {
+                            actionName = "LaunchAdministrator";
+                        }
+
+                        Views.ShellPage.SendDefaultIPCMessage("{\"action\":{\"Hosts\":{\"action_name\":\"" + actionName + "\", \"value\":\"\"}}}");
+                    }
+
+                    break;
+
                 case "MeasureTool": // Launch Screen Ruler
                     using (var eventHandle = new EventWaitHandle(false, EventResetMode.AutoReset, Constants.MeasureToolTriggerEvent()))
                     {
