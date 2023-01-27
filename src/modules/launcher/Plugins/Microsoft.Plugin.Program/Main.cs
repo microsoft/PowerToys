@@ -31,7 +31,7 @@ namespace Microsoft.Plugin.Program
 
         internal static ProgramPluginSettings Settings { get; set; }
 
-        internal static readonly ShellLocalization2 ShellLocalizationHelper = new();
+        internal static readonly ShellLocalization ShellLocalizationHelper = new();
 
         public string Name => Properties.Resources.wox_plugin_program_plugin_name;
 
