@@ -37,7 +37,7 @@ namespace Microsoft.PowerToys.Settings.UI
 
         private void FlyoutWindow_Activated(object sender, Microsoft.UI.Xaml.WindowActivatedEventArgs args)
         {
-            PowerToysTelemetry.Log.WriteEvent(new SystrayFlyoutActivatedEvent());
+            PowerToysTelemetry.Log.WriteEvent(new TrayFlyoutActivatedEvent());
             if (args.WindowActivationState == Microsoft.UI.Xaml.WindowActivationState.Deactivated)
             {
                 if (ViewModel.CanHide)

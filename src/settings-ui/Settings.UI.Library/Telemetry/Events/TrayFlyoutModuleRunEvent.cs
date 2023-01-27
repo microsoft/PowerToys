@@ -9,7 +9,7 @@ using Microsoft.PowerToys.Telemetry.Events;
 namespace Microsoft.PowerToys.Settings.UI.Library.Telemetry.Events
 {
     [EventData]
-    public class SystrayFlyoutModuleRunEvent : EventBase, IEvent
+    public class TrayFlyoutModuleRunEvent : EventBase, IEvent
     {
         public string ModuleName { get; set; }
 

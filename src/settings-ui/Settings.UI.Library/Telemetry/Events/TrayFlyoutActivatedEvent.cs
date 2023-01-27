@@ -9,7 +9,7 @@ using Microsoft.PowerToys.Telemetry.Events;
 namespace Microsoft.PowerToys.Settings.UI.Library.Telemetry.Events
 {
     [EventData]
-    public class SystrayFlyoutActivatedEvent : EventBase, IEvent
+    public class TrayFlyoutActivatedEvent : EventBase, IEvent
     {
         public PartA_PrivTags PartA_PrivTags => PartA_PrivTags.ProductAndServiceUsage;
     }
