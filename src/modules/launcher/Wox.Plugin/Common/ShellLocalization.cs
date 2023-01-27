@@ -11,30 +11,21 @@ namespace Wox.Plugin.Common
 {
     /// <summary>
     /// Class to get localized name of shell items like 'My computer'. The localization is based on the 'windows display language'.
-    /// Reused code from https://stackoverflow.com/questions/41423491/how-to-get-localized-name-of-known-folder for the method <see cref="GetLocalizedName"/>
     /// </summary>
     public class ShellLocalization
     {
+        // Guid for IShellItem object type
+        private const string IShellItemGuid = "43826d1e-e718-42ee-bc55-a1e261c37bfe";
+
         // Cache for already localized names. This makes localization of already localized string faster.
         private Dictionary<string, string> _localizationCache = new Dictionary<string, string>();
 
-        private const uint DONTRESOLVEDLLREFERENCES = 0x00000001;
-        private const uint LOADLIBRARYASDATAFILE = 0x00000002;
-
-        [DllImport("shell32.dll", CallingConvention = CallingConvention.Winapi, CharSet = CharSet.Unicode)]
-        private static extern int SHGetLocalizedName(string pszPath, StringBuilder pszResModule, ref int cch, out int pidsRes);
-
-        [DllImport("user32.dll", EntryPoint = "LoadStringW", CallingConvention = CallingConvention.Winapi, CharSet = CharSet.Unicode)]
-        private static extern int LoadString(IntPtr hModule, int resourceID, StringBuilder resourceValue, int len);
-
-        [DllImport("kernel32.dll", CharSet = CharSet.Unicode, ExactSpelling = true, EntryPoint = "LoadLibraryExW")]
-        private static extern IntPtr LoadLibraryEx(string lpFileName, IntPtr hFile, uint dwFlags);
-
-        [DllImport("kernel32.dll", ExactSpelling = true)]
-        private static extern int FreeLibrary(IntPtr hModule);
-
-        [DllImport("kernel32.dll", EntryPoint = "ExpandEnvironmentStringsW", CharSet = CharSet.Unicode, ExactSpelling = true)]
-        private static extern uint ExpandEnvironmentStrings(string lpSrc, StringBuilder lpDst, int nSize);
+        [DllImport("shell32.dll", CharSet = CharSet.Unicode, SetLastError = true)]
+        private static extern int SHCreateItemFromParsingName(
+        [MarshalAs(UnmanagedType.LPWStr)] string path,
+        IntPtr pbc,
+        ref Guid riid,
+        [MarshalAs(UnmanagedType.Interface)] out IShellItem shellItem);
 
         /// <summary>
         /// Returns the localized name of a shell item.
@@ -43,38 +34,37 @@ namespace Wox.Plugin.Common
         /// <returns>The localized name as string or <see cref="string.Empty"/>.</returns>
         public string GetLocalizedName(string path)
         {
+            // If it is a drive letter return it
+            if (path.Length == 2 & path.EndsWith(':'))
+            {
+                return path;
+            }
+
             // Checking cache if path is already localized
             if (_localizationCache.ContainsKey(path.ToLowerInvariant()))
             {
                 return _localizationCache[path.ToLowerInvariant()];
             }
 
-            StringBuilder resourcePath = new StringBuilder(1024);
-            StringBuilder localizedName = new StringBuilder(1024);
-            int len, id;
-            len = resourcePath.Capacity;
+            Guid shellItemType = new Guid(IShellItemGuid);
+            int retCode = SHCreateItemFromParsingName(path, IntPtr.Zero, ref shellItemType, out IShellItem shellItem);
 
-            // If there is no resource to localize a file name the method returns a non zero value.
-            if (SHGetLocalizedName(path, resourcePath, ref len, out id) == 0)
+            if (retCode != 0)
             {
-                _ = ExpandEnvironmentStrings(resourcePath.ToString(), resourcePath, resourcePath.Capacity);
-                IntPtr hMod = LoadLibraryEx(resourcePath.ToString(), IntPtr.Zero, DONTRESOLVEDLLREFERENCES | LOADLIBRARYASDATAFILE);
-                if (hMod != IntPtr.Zero)
-                {
-                    if (LoadString(hMod, id, localizedName, localizedName.Capacity) != 0)
-                    {
-                        string lString = localizedName.ToString();
-                        _ = FreeLibrary(hMod);
-
-                        _localizationCache.Add(path.ToLowerInvariant(), lString);
-                        return lString;
-                    }
-
-                    _ = FreeLibrary(hMod);
-                }
+                return string.Empty;
             }
 
-            return string.Empty;
+            string filename;
+            shellItem.GetDisplayName(SIGDN.NORMALDISPLAY, out filename);
+
+            if (!_localizationCache.ContainsKey(path.ToLowerInvariant()))
+            {
+                // The if condition is required to not get timing problems when called from an parallel execution.
+                // Without the check we got "key exists" crashes.
+                _localizationCache.Add(path.ToLowerInvariant(), filename);
+            }
+
+            return filename;
         }
 
         /// <summary>
