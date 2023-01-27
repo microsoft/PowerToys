@@ -2,6 +2,8 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System.Numerics;
+using System.Runtime.InteropServices;
 using System.Text.Json;
 using Microsoft.PowerToys.Settings.UI.Library.Telemetry.Events;
 using Microsoft.PowerToys.Telemetry;
@@ -171,21 +173,27 @@ namespace AllExperiments
                 Logger.LogError("Error creating/getting AssignmentUnit", ex);
             }
 
-            var attrNames = new List<string> { "FlightRing" };
+            var attrNames = new List<string> { "FlightRing", "c:InstallLanguage" };
             var attrData = AnalyticsInfo.GetSystemPropertiesAsync(attrNames).AsTask().GetAwaiter().GetResult();
 
             var flightRing = string.Empty;
+            var installLanguage = string.Empty;
 
             if (attrData.ContainsKey("FlightRing"))
             {
                 flightRing = attrData["FlightRing"];
             }
 
+            if (attrData.ContainsKey("InstallLanguage"))
+            {
+                installLanguage = attrData["InstallLanguage"];
+            }
+
             return new VariantAssignmentRequest
             {
                 Parameters =
                 {
-                    // TBD: Adding traffic filters to target region.
+                    { "installLanguage", installLanguage },
                     { "flightRing", flightRing },
                     { "clientid", AssignmentUnit },
                 },
