@@ -12,10 +12,10 @@ class WorkArea;
 class WindowMoveHandler
 {
 public:
-    WindowMoveHandler(const std::function<void()>& keyUpdateCallback);
+    WindowMoveHandler();
 
-    void MoveSizeStart(HWND window, HMONITOR monitor, POINT const& ptScreen, const std::unordered_map<HMONITOR, std::shared_ptr<WorkArea>>& workAreaMap) noexcept;
-    void MoveSizeUpdate(HMONITOR monitor, POINT const& ptScreen, const std::unordered_map<HMONITOR, std::shared_ptr<WorkArea>>& workAreaMap) noexcept;
+    void MoveSizeStart(HWND window, HMONITOR monitor, POINT const& ptScreen, const std::unordered_map<HMONITOR, std::shared_ptr<WorkArea>>& workAreaMap, bool dragEnabled) noexcept;
+    void MoveSizeUpdate(HMONITOR monitor, POINT const& ptScreen, const std::unordered_map<HMONITOR, std::shared_ptr<WorkArea>>& workAreaMap, bool dragEnabled, bool multipleZones) noexcept;
     void MoveSizeEnd(HWND window, const std::unordered_map<HMONITOR, std::shared_ptr<WorkArea>>& workAreaMap) noexcept;
 
     void MoveWindowIntoZoneByIndexSet(HWND window, const ZoneIndexSet& indexSet, std::shared_ptr<WorkArea> workArea) noexcept;
@@ -25,22 +25,6 @@ public:
 
     void AssignWindowsToZones(const std::unordered_map<HMONITOR, std::shared_ptr<WorkArea>>& activeWorkAreas, bool updatePositions) noexcept;
     
-    inline void OnMouseDown() noexcept
-    {
-        m_mouseState = !m_mouseState;
-        m_keyUpdateCallback();
-    }
-
-    inline bool IsDragEnabled() const noexcept
-    {
-        return m_dragEnabled;
-    }
-
-    inline bool InDragging() const noexcept
-    {
-        return m_inDragging;
-    }
-
 private:
     struct WindowTransparencyProperties
     {
@@ -60,8 +44,6 @@ private:
         bool hasNoVisibleOwner = false;
     };
 
-    void UpdateDragState() noexcept;
-
     void SetWindowTransparency(HWND window) noexcept;
     void ResetWindowTransparency() noexcept;
 
@@ -69,14 +51,7 @@ private:
     HWND m_draggedWindow{}; // The window that is being moved/sized
     MoveSizeWindowInfo m_draggedWindowInfo; // MoveSizeWindowInfo of the window at the moment when dragging started
     std::shared_ptr<WorkArea> m_draggedWindowWorkArea; // "Active" WorkArea, where the move/size is happening. Will update as drag moves between monitors.
-    bool m_dragEnabled{}; // True if we should be showing zone hints while dragging
 
     WindowTransparencyProperties m_windowTransparencyProperties;
 
-    std::atomic<bool> m_mouseState;
-    SecondaryMouseButtonsHook m_mouseHook;
-    KeyState<VK_LSHIFT> m_leftShiftKeyState;
-    KeyState<VK_RSHIFT> m_rightShiftKeyState;
-    KeyState<VK_LCONTROL, VK_RCONTROL> m_ctrlKeyState;
-    std::function<void()> m_keyUpdateCallback;
 };

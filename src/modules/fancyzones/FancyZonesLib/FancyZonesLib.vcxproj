@@ -35,6 +35,7 @@
     </ClCompile>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="DraggingState.h" />
     <ClInclude Include="EditorParameters.h" />
     <ClInclude Include="FancyZonesData\CustomLayouts.h" />
     <ClInclude Include="FancyZonesData\AppliedLayouts.h" />
@@ -75,12 +76,14 @@
     <ClInclude Include="WindowUtils.h" />
     <ClInclude Include="Zone.h" />
     <ClInclude Include="Colors.h" />
+    <ClInclude Include="HighlightedZones.h" />
     <ClInclude Include="ZoneIndexSetBitmask.h" />
     <ClInclude Include="WorkArea.h" />
     <ClInclude Include="ZonesOverlay.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Colors.cpp" />
+    <ClCompile Include="DraggingState.cpp" />
     <ClCompile Include="EditorParameters.cpp" />
     <ClCompile Include="FancyZonesData\AppZoneHistory.cpp">
       <PrecompiledHeaderFile>../pch.h</PrecompiledHeaderFile>
@@ -124,6 +127,7 @@
     <ClCompile Include="WindowUtils.cpp" />
     <ClCompile Include="Zone.cpp" />
     <ClCompile Include="WorkArea.cpp" />
+    <ClCompile Include="HighlightedZones.cpp" />
     <ClCompile Include="ZonesOverlay.cpp" />
   </ItemGroup>
   <ItemGroup>

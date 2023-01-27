@@ -81,6 +81,18 @@ namespace Microsoft.Plugin.WindowWalker.Components
         }
 
         /// <summary>
+        /// Initializes a new instance of the <see cref="SearchResult"/> class.
+        /// </summary>
+        internal SearchResult(Window window)
+        {
+            Result = window;
+            SearchMatchesInTitle = new List<int>();
+            SearchMatchesInProcessName = new List<int>();
+            SearchResultMatchType = SearchType.Empty;
+            CalculateScore();
+        }
+
+        /// <summary>
         /// Calculates the score for how closely this window matches the search string
         /// </summary>
         /// <remarks>

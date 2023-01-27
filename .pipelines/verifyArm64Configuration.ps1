@@ -22,7 +22,7 @@ catch {
 
 $solutionFile = [Microsoft.Build.Construction.SolutionFile]::Parse($solution);
 $arm64SlnConfigs = $solutionFile.SolutionConfigurations | Where-Object {
-    $_.PlatformName -eq "ARM64"
+    $_.PlatformName -ceq "ARM64"
 };
 
 # Should have two configurations. Debug and Release.
@@ -39,9 +39,9 @@ $projects = $solutionFile.ProjectsInOrder | Where-Object {
 # Enumerate through the projects and add any project with a mismatched platform and project configuration
 foreach ($project in $projects) {
     foreach ($slnConfig in $arm64SlnConfigs.FullName) {
-        if ($project.ProjectConfigurations.$slnConfig.FullName -ne $slnConfig) {
-            $errorTable[$project.ProjectName] += @(""
-                | Select-Object @{n = "Configuration"; e = { $project.ProjectConfigurations.$slnConfig.FullName } },
+        if ($project.ProjectConfigurations.$slnConfig.FullName -cne $slnConfig) {
+            $errorTable[$project.ProjectName] += @(""`
+                | Select-Object @{n = "Configuration"; e = { $project.ProjectConfigurations.$slnConfig.FullName ?? "Missing platform" } },
                 @{n = "ExpectedConfiguration"; e = { $slnConfig } })
         }
     }

@@ -13,17 +13,12 @@
 #include <FancyZonesLib/NotificationUtil.h>
 #include <FancyZonesLib/WindowUtils.h>
 
-WindowMoveHandler::WindowMoveHandler(const std::function<void()>& keyUpdateCallback) :
-    m_mouseState(false),
-    m_mouseHook(std::bind(&WindowMoveHandler::OnMouseDown, this)),
-    m_leftShiftKeyState(keyUpdateCallback),
-    m_rightShiftKeyState(keyUpdateCallback),
-    m_ctrlKeyState(keyUpdateCallback),
-    m_keyUpdateCallback(keyUpdateCallback)
+
+WindowMoveHandler::WindowMoveHandler()
 {
 }
 
-void WindowMoveHandler::MoveSizeStart(HWND window, HMONITOR monitor, POINT const& /*ptScreen*/, const std::unordered_map<HMONITOR, std::shared_ptr<WorkArea>>& workAreaMap) noexcept
+void WindowMoveHandler::MoveSizeStart(HWND window, HMONITOR monitor, POINT const& /*ptScreen*/, const std::unordered_map<HMONITOR, std::shared_ptr<WorkArea>>& workAreaMap, bool dragEnabled) noexcept
 {
     if (!FancyZonesWindowProcessing::IsProcessable(window))
     {
@@ -47,26 +42,13 @@ void WindowMoveHandler::MoveSizeStart(HWND window, HMONITOR monitor, POINT const
 
     m_draggedWindow = window;
 
-    if (FancyZonesSettings::settings().mouseSwitch)
-    {
-        m_mouseHook.enable();
-    }
-
-    m_leftShiftKeyState.enable();
-    m_rightShiftKeyState.enable();
-    m_ctrlKeyState.enable();
-
-    // This updates m_dragEnabled depending on if the shift key is being held down
-    UpdateDragState();
-
     if (!is_process_elevated() && FancyZonesWindowUtils::IsProcessOfWindowElevated(window))
     {
         // Notifies user if unable to drag elevated window
         FancyZonesNotifications::WarnIfElevationIsRequired();
-        m_dragEnabled = false;
     }
     
-    if (m_dragEnabled)
+    if (dragEnabled)
     {
         m_draggedWindowWorkArea = iter->second;
         SetWindowTransparency(m_draggedWindow);
@@ -105,20 +87,17 @@ void WindowMoveHandler::MoveSizeStart(HWND window, HMONITOR monitor, POINT const
     }
 }
 
-void WindowMoveHandler::MoveSizeUpdate(HMONITOR monitor, POINT const& ptScreen, const std::unordered_map<HMONITOR, std::shared_ptr<WorkArea>>& workAreaMap) noexcept
+void WindowMoveHandler::MoveSizeUpdate(HMONITOR monitor, POINT const& ptScreen, const std::unordered_map<HMONITOR, std::shared_ptr<WorkArea>>& workAreaMap, bool dragEnabled, bool multipleZones) noexcept
 {
     if (!m_inDragging)
     {
         return;
     }
 
-    // This updates m_dragEnabled depending on if the shift key is being held down.
-    UpdateDragState();
-
     if (m_draggedWindowWorkArea)
     {
         // Update the WorkArea already handling move/size
-        if (!m_dragEnabled)
+        if (!dragEnabled)
         {
             // Drag got disabled, tell it to cancel and hide all windows
             m_draggedWindowWorkArea = nullptr;
@@ -152,22 +131,22 @@ void WindowMoveHandler::MoveSizeUpdate(HMONITOR monitor, POINT const& ptScreen, 
 
                 for (auto [keyMonitor, workArea] : workAreaMap)
                 {
-                    workArea->MoveSizeUpdate(ptScreen, m_dragEnabled, m_ctrlKeyState.state());
+                    workArea->MoveSizeUpdate(ptScreen, dragEnabled, multipleZones);
                 }
             }
         }
     }
-    else if (m_dragEnabled)
+    else if (dragEnabled)
     {
         // We'll get here if the user presses/releases shift while dragging.
         // Restart the drag on the WorkArea that m_draggedWindow is on
-        MoveSizeStart(m_draggedWindow, monitor, ptScreen, workAreaMap);
+        MoveSizeStart(m_draggedWindow, monitor, ptScreen, workAreaMap, dragEnabled);
 
         // m_dragEnabled could get set to false if we're moving an elevated window.
         // In that case do not proceed.
-        if (m_dragEnabled)
+        if (dragEnabled)
         {
-            MoveSizeUpdate(monitor, ptScreen, workAreaMap);
+            MoveSizeUpdate(monitor, ptScreen, workAreaMap, dragEnabled, multipleZones);
         }
     }
 }
@@ -178,14 +157,6 @@ void WindowMoveHandler::MoveSizeEnd(HWND window, const std::unordered_map<HMONIT
     {
         return;
     }
-
-    bool leftShiftPressed = m_leftShiftKeyState.state();
-    bool rightShiftPressed = m_rightShiftKeyState.state();
-
-    m_mouseHook.disable();
-    m_leftShiftKeyState.disable();
-    m_rightShiftKeyState.disable();
-    m_ctrlKeyState.disable();
 
     if (m_draggedWindowWorkArea)
     {
@@ -204,19 +175,6 @@ void WindowMoveHandler::MoveSizeEnd(HWND window, const std::unordered_map<HMONIT
         }
         else
         {
-            if (FancyZonesSettings::settings().shiftDrag)
-            {
-                if (leftShiftPressed)
-                {
-                    FancyZonesUtils::SwallowKey(VK_LSHIFT);
-                }
-
-                if (rightShiftPressed)
-                {
-                    FancyZonesUtils::SwallowKey(VK_RSHIFT);
-                }
-            }
-
             workArea->MoveSizeEnd(m_draggedWindow);
         }
     }
@@ -261,8 +219,6 @@ void WindowMoveHandler::MoveSizeEnd(HWND window, const std::unordered_map<HMONIT
     }
 
     m_inDragging = false;
-    m_dragEnabled = false;
-    m_mouseState = false;
     m_draggedWindow = nullptr;
 
     // Also, hide all windows (regardless of settings)
@@ -316,17 +272,6 @@ void WindowMoveHandler::AssignWindowsToZones(const std::unordered_map<HMONITOR, 
     }
 }
 
-void WindowMoveHandler::UpdateDragState() noexcept
-{
-    if (FancyZonesSettings::settings().shiftDrag)
-    {
-        m_dragEnabled = ((m_leftShiftKeyState.state() || m_rightShiftKeyState.state()) ^ m_mouseState);
-    }
-    else
-    {
-        m_dragEnabled = !((m_leftShiftKeyState.state() || m_rightShiftKeyState.state()) ^ m_mouseState);
-    }
-}
 
 void WindowMoveHandler::SetWindowTransparency(HWND window) noexcept
 {
