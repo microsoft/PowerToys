@@ -10,9 +10,8 @@ using System.Text;
 
 namespace Wox.Plugin.Common
 {
-     /// <summary>
+    /// <summary>
     /// Class to get localized name of shell items like 'My computer'. The localization is based on the 'windows display language'.
-    /// Reused code from https://stackoverflow.com/questions/41423491/how-to-get-localized-name-of-known-folder for the method <see cref="GetLocalizedName"/>
     /// </summary>
     public class ShellLocalization2
     {
@@ -36,17 +35,16 @@ namespace Wox.Plugin.Common
         /// <returns>The localized name as string or <see cref="string.Empty"/>.</returns>
         public string GetLocalizedName(string path)
         {
+            // If it is a drive letter return it
+            if (path.Length == 2 & path.EndsWith(':'))
+            {
+                return path;
+            }
+
             // Checking cache if path is already localized
             if (_localizationCache.ContainsKey(path.ToLowerInvariant()))
             {
                 return _localizationCache[path.ToLowerInvariant()];
-            }
-
-            // If it is a drive letter return it
-            if (path.Length == 2 & path.EndsWith(':'))
-            {
-                _localizationCache.Add(path.ToLowerInvariant(), path);
-                return path;
             }
 
             Guid shellItemType = new Guid(IShellItemGuid);
@@ -59,7 +57,14 @@ namespace Wox.Plugin.Common
 
             string filename;
             shellItem.GetDisplayName(SIGDN.NORMALDISPLAY, out filename);
-            _localizationCache.Add(path.ToLowerInvariant(), filename);
+
+            if (!_localizationCache.ContainsKey(path.ToLowerInvariant()))
+            {
+                // The if condition is required to not get timing problems when called from an parallel execution.
+                // Without the check we got "key exists" crashes.
+                _localizationCache.Add(path.ToLowerInvariant(), filename);
+            }
+
             return filename;
         }
 
