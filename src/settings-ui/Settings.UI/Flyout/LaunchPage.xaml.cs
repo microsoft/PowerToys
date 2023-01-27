@@ -50,8 +50,9 @@ namespace Microsoft.PowerToys.Settings.UI.Flyout
 
                 case "Hosts": // Launch Hosts
                     {
+                        bool launchAdmin = SettingsRepository<HostsSettings>.GetInstance(new SettingsUtils()).SettingsConfig.Properties.LaunchAdministrator;
                         var actionName = "Launch";
-                        if (App.IsElevated)
+                        if (App.IsElevated && launchAdmin)
                         {
                             actionName = "LaunchAdministrator";
                         }
