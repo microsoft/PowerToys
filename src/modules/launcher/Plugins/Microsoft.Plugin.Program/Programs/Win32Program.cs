@@ -13,7 +13,6 @@ using System.Reflection;
 using System.Security;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
-using System.Windows.Forms;
 using System.Windows.Input;
 using Microsoft.Plugin.Program.Logger;
 using Microsoft.Plugin.Program.Utils;
@@ -21,7 +20,6 @@ using Microsoft.Win32;
 using Wox.Infrastructure;
 using Wox.Infrastructure.FileSystemHelper;
 using Wox.Plugin;
-using Wox.Plugin.Common;
 using Wox.Plugin.Logger;
 using DirectoryWrapper = Wox.Infrastructure.FileSystemHelper.DirectoryWrapper;
 
@@ -392,7 +390,7 @@ namespace Microsoft.Plugin.Program.Programs
                     IcoPath = path,
 
                     // Using InvariantCulture since this is user facing
-                    FullPath = path.ToLowerInvariant(),
+                    FullPath = path,
                     UniqueIdentifier = path,
                     ParentDirectory = Directory.GetParent(path).FullName,
                     Description = string.Empty,
@@ -479,7 +477,7 @@ namespace Microsoft.Plugin.Program.Programs
                         Name = Path.GetFileNameWithoutExtension(path),
                         ExecutableName = Path.GetFileName(path),
                         IcoPath = iconPath,
-                        FullPath = urlPath.ToLowerInvariant(),
+                        FullPath = urlPath,
                         UniqueIdentifier = path,
                         ParentDirectory = Directory.GetParent(path).FullName,
                         Valid = true,
@@ -522,8 +520,8 @@ namespace Microsoft.Plugin.Program.Programs
                     program.LnkResolvedExecutableNameLocalized = Path.GetFileName(Main.ShellLocalizationHelper.GetLocalizedPath(target));
 
                     // Using CurrentCulture since this is user facing
-                    program.FullPath = Path.GetFullPath(target).ToLowerInvariant();
-                    program.FullPathLocalized = Main.ShellLocalizationHelper.GetLocalizedPath(target).ToLowerInvariant();
+                    program.FullPath = Path.GetFullPath(target);
+                    program.FullPathLocalized = Main.ShellLocalizationHelper.GetLocalizedPath(target);
 
                     program.Arguments = ShellLinkHelper.Arguments;
 
