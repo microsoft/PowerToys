@@ -8,8 +8,10 @@ using global::Windows.System;
 using interop;
 using Microsoft.PowerToys.Settings.UI.Controls;
 using Microsoft.PowerToys.Settings.UI.Library;
+using Microsoft.PowerToys.Settings.UI.Library.Telemetry.Events;
 using Microsoft.PowerToys.Settings.UI.ViewModels;
 using Microsoft.PowerToys.Settings.UI.Views;
+using Microsoft.PowerToys.Telemetry;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Media.Animation;
@@ -31,6 +33,7 @@ namespace Microsoft.PowerToys.Settings.UI.Flyout
         private void ModuleButton_Click(object sender, RoutedEventArgs e)
         {
             FlyoutMenuButton selectedModuleBtn = sender as FlyoutMenuButton;
+            bool moduleRun = true;
             switch ((string)selectedModuleBtn.Tag)
             {
                 case "ColorPicker": // Launch ColorPicker
@@ -93,6 +96,15 @@ namespace Microsoft.PowerToys.Settings.UI.Flyout
                     }
 
                     break;
+
+                default:
+                    moduleRun = false;
+                    break;
+            }
+
+            if (moduleRun)
+            {
+                PowerToysTelemetry.Log.WriteEvent(new OobeModuleRunEvent() { ModuleName = (string)selectedModuleBtn.Tag });
             }
         }
 

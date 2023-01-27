@@ -1,7 +1,9 @@
 ﻿// Copyright (c) Microsoft Corporation
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
+using Microsoft.PowerToys.Settings.UI.Library.Telemetry.Events;
 using Microsoft.PowerToys.Settings.UI.ViewModels.Flyout;
+using Microsoft.PowerToys.Telemetry;
 using Microsoft.UI;
 using Microsoft.UI.Windowing;
 using WinUIEx;
@@ -35,6 +37,7 @@ namespace Microsoft.PowerToys.Settings.UI
 
         private void FlyoutWindow_Activated(object sender, Microsoft.UI.Xaml.WindowActivatedEventArgs args)
         {
+            PowerToysTelemetry.Log.WriteEvent(new SystrayFlyoutActivatedEvent());
             if (args.WindowActivationState == Microsoft.UI.Xaml.WindowActivationState.Deactivated)
             {
                 if (ViewModel.CanHide)

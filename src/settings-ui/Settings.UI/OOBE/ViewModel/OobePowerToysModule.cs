@@ -41,7 +41,7 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.ViewModel
 
         public void LogRunningModuleEvent()
         {
-            PowerToysTelemetry.Log.WriteEvent(new OobeModuleRunEvent() { ModuleName = this.ModuleName });
+            PowerToysTelemetry.Log.WriteEvent(new SystrayFlyoutModuleRunEvent() { ModuleName = this.ModuleName });
         }
 
         public void LogOpeningModuleEvent()
