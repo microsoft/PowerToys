@@ -7,7 +7,7 @@
 #include <sstream>
 #include <csignal>
 
-static IMAGEHLP_SYMBOL64* p_symbol = (IMAGEHLP_SYMBOL64*)malloc(sizeof(IMAGEHLP_SYMBOL64) + MAX_PATH * sizeof(WCHAR));
+static IMAGEHLP_SYMBOL64* p_symbol = static_cast<IMAGEHLP_SYMBOL64*>(malloc(sizeof(IMAGEHLP_SYMBOL64) + MAX_PATH * sizeof(WCHAR)));
 static IMAGEHLP_LINE64 line;
 static bool processing_exception = false;
 static WCHAR module_path[MAX_PATH];
@@ -126,7 +126,7 @@ void log_stack_trace(std::wstring& generalErrorDescription)
         auto module_base = SymGetModuleBase64(process, stack.AddrPC.Offset);
         if (module_base)
         {
-            GetModuleFileName((HINSTANCE)module_base, module_path, MAX_PATH);
+            GetModuleFileName(reinterpret_cast<HINSTANCE>(module_base), module_path, MAX_PATH);
         }
         ss << module_path << "!"
            << p_symbol->Name

@@ -66,13 +66,13 @@ void run_interval()
         left_to_wait = max(0, wait_time - timeutil::diff::in_seconds(timeutil::now(), time.value()));
     }
 
-    Sleep((DWORD)left_to_wait * 1000);
+    Sleep(static_cast<DWORD>(left_to_wait * 1000));
     send();
     update_last_send_time(timeutil::now());
 
     while (true)
     {
-        Sleep((DWORD)wait_time * 1000);
+        Sleep(static_cast<DWORD>(wait_time * 1000));
         send();
         update_last_send_time(timeutil::now());
     }
