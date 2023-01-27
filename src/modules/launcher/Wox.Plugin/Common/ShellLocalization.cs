@@ -4,8 +4,8 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Runtime.InteropServices;
-using System.Text;
+using Wox.Plugin.Common.Interfaces;
+using Wox.Plugin.Common.Win32;
 
 namespace Wox.Plugin.Common
 {
@@ -14,18 +14,8 @@ namespace Wox.Plugin.Common
     /// </summary>
     public class ShellLocalization
     {
-        // Guid for IShellItem object type
-        private const string IShellItemGuid = "43826d1e-e718-42ee-bc55-a1e261c37bfe";
-
         // Cache for already localized names. This makes localization of already localized string faster.
         private Dictionary<string, string> _localizationCache = new Dictionary<string, string>();
-
-        [DllImport("shell32.dll", CharSet = CharSet.Unicode, SetLastError = true)]
-        private static extern int SHCreateItemFromParsingName(
-        [MarshalAs(UnmanagedType.LPWStr)] string path,
-        IntPtr pbc,
-        ref Guid riid,
-        [MarshalAs(UnmanagedType.Interface)] out IShellItem shellItem);
 
         /// <summary>
         /// Returns the localized name of a shell item.
@@ -34,33 +24,25 @@ namespace Wox.Plugin.Common
         /// <returns>The localized name as string or <see cref="string.Empty"/>.</returns>
         public string GetLocalizedName(string path)
         {
-            // If it is a drive letter return it
-            if (path.Length == 2 & path.EndsWith(':'))
-            {
-                return path;
-            }
-
             // Checking cache if path is already localized
             if (_localizationCache.ContainsKey(path.ToLowerInvariant()))
             {
                 return _localizationCache[path.ToLowerInvariant()];
             }
 
-            Guid shellItemType = new Guid(IShellItemGuid);
-            int retCode = SHCreateItemFromParsingName(path, IntPtr.Zero, ref shellItemType, out IShellItem shellItem);
-
+            Guid shellItemType = ShellItemTypeConstants.ShellItemGuid;
+            int retCode = NativeMethods.SHCreateItemFromParsingName(path, IntPtr.Zero, ref shellItemType, out IShellItem shellItem);
             if (retCode != 0)
             {
                 return string.Empty;
             }
 
-            string filename;
-            shellItem.GetDisplayName(SIGDN.NORMALDISPLAY, out filename);
+            shellItem.GetDisplayName(SIGDN.NORMALDISPLAY, out string filename);
 
             if (!_localizationCache.ContainsKey(path.ToLowerInvariant()))
             {
                 // The if condition is required to not get timing problems when called from an parallel execution.
-                // Without the check we got "key exists" crashes.
+                // Without the check we will get "key exists" exceptions.
                 _localizationCache.Add(path.ToLowerInvariant(), filename);
             }
 
@@ -81,6 +63,14 @@ namespace Wox.Plugin.Common
 
             for (int i = 0; i < pathParts.Length; i++)
             {
+                if (i == 0 && pathParts[i].EndsWith(':'))
+                {
+                    // Skip the drive letter.
+                    locPath[0] = pathParts[0];
+                    continue;
+                }
+
+                // Localize path.
                 int iElements = i + 1;
                 string lName = GetLocalizedName(string.Join("\\", pathParts[..iElements]));
                 locPath[i] = !string.IsNullOrEmpty(lName) ? lName : pathParts[i];

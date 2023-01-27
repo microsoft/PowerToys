@@ -4,10 +4,15 @@
 
 using System;
 using System.Runtime.InteropServices;
+using Wox.Plugin.Common.Win32;
 
-namespace Wox.Plugin.Common
+namespace Wox.Plugin.Common.Interfaces
 {
-    internal enum SIGDN : uint
+    /// <summary>
+    /// The following are ShellItem DisplayName types.
+    /// </summary>
+    [Flags]
+    public enum SIGDN : uint
     {
         NORMALDISPLAY = 0,
         PARENTRELATIVEPARSING = 0x80018001,
@@ -22,7 +27,7 @@ namespace Wox.Plugin.Common
     [ComImport]
     [InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
     [Guid("43826d1e-e718-42ee-bc55-a1e261c37bfe")]
-    internal interface IShellItem
+    public interface IShellItem
     {
         void BindToHandler(
             IntPtr pbc,

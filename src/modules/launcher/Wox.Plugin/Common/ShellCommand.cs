@@ -16,6 +16,9 @@ namespace Wox.Plugin.Common
 
         private static bool containsSecurityWindow;
 
+        // Guid for IShellItem object type
+        internal const string IShellItemGuid = "43826d1e-e718-42ee-bc55-a1e261c37bfe";
+
         public static Process RunAsDifferentUser(ProcessStartInfo processStartInfo)
         {
             if (processStartInfo == null)
