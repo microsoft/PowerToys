@@ -44,6 +44,10 @@ namespace CommonSharedConstants
     // Path to the event used by PowerOCR
     const wchar_t SHOW_POWEROCR_SHARED_EVENT[] = L"Local\\PowerOCREvent-dc864e06-e1af-4ecc-9078-f98bee745e3a";
 
+    // Path to the event used by PastePlain
+    // TODO CARLOS: I just used a new GUID here. I don't know if this is the right way to do it.
+    const wchar_t SHOW_PASTEPLAIN_SHARED_EVENT[] = L"Local\\PastePlainEvent-57dc5a03-20b4-423b-aa5c-574e809d95a7";
+
     // Path to the event used by GcodePreviewHandler
     const wchar_t GCODE_PREVIEW_RESIZE_EVENT[] = L"Local\\PowerToysGcodePreviewResizeEvent-6ff1f9bd-ccbd-4b24-a79f-40a34fb0317d";
 
