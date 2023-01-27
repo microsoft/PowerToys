@@ -4,7 +4,7 @@
 
   <?include $(sys.CURRENTDIR)\Common.wxi?>
 
-  <?define ColorPickerFiles=PowerToys.ColorPicker.dll;System.IO.Abstractions.dll;PowerToys.ColorPickerUI.exe;PowerToys.ColorPickerUI.dll;PowerToys.ColorPickerUI.deps.json;PowerToys.ColorPickerUI.runtimeconfig.json;PowerToys.Settings.UI.Lib.dll;PowerToys.ManagedTelemetry.dll;PowerToys.ManagedCommon.dll;ControlzEx.dll;Microsoft.Xaml.Behaviors.dll;ModernWpf.Controls.dll;ModernWpf.dll;System.ComponentModel.Composition.dll;PowerToys.Common.UI.dll;WinRT.Runtime.dll;Microsoft.Windows.SDK.NET.dll;Ijwhost.dll;PowerToys.GPOWrapper.dll;PowerToys.GPOWrapperProjection.dll?>
+  <?define ColorPickerFiles=PowerToys.ColorPicker.dll;System.IO.Abstractions.dll;System.CodeDom.dll;System.Text.Json.dll;PowerToys.ColorPickerUI.exe;PowerToys.ColorPickerUI.dll;PowerToys.ColorPickerUI.deps.json;PowerToys.ColorPickerUI.runtimeconfig.json;PowerToys.Settings.UI.Lib.dll;PowerToys.ManagedTelemetry.dll;PowerToys.ManagedCommon.dll;System.Management.dll;ControlzEx.dll;Microsoft.Xaml.Behaviors.dll;ModernWpf.Controls.dll;ModernWpf.dll;System.ComponentModel.Composition.dll;PowerToys.Common.UI.dll;WinRT.Runtime.dll;Microsoft.Windows.SDK.NET.dll;Ijwhost.dll;PowerToys.GPOWrapper.dll;PowerToys.GPOWrapperProjection.dll;WindowsBase.dll?>
 
   <Fragment>
     <!-- Color Picker -->
