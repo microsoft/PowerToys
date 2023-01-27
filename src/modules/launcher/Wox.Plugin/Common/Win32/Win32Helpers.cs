@@ -4,7 +4,6 @@
 
 using System;
 using System.Runtime.InteropServices;
-using Wox.Plugin.Common.Interfaces;
 
 namespace Wox.Plugin.Common.Win32
 {
