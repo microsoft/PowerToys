@@ -60,6 +60,8 @@ namespace Microsoft.Plugin.Indexer.SearchHelper
                 {
                     Path = uri_path.LocalPath,
                     Title = (string)oleDBResult.FieldData[1],
+                    PathLocalized = (string)oleDBResult.FieldData[3],
+                    TitleLocalized = (string)oleDBResult.FieldData[4],
                 };
 
                 results.Add(result);
@@ -89,12 +91,14 @@ namespace Microsoft.Plugin.Indexer.SearchHelper
 
                 if (pattern.Contains('%', StringComparison.Ordinal) || pattern.Contains('_', StringComparison.Ordinal))
                 {
-                    queryHelper.QueryWhereRestrictions += " AND System.FileName LIKE '" + pattern + "' ";
+                    queryHelper.QueryWhereRestrictions += " AND (System.FileName LIKE '" + pattern + "' ";
+                    queryHelper.QueryWhereRestrictions += " OR System.ItemNameDisplay LIKE '" + pattern + "') ";
                 }
                 else
                 {
                     // if there are no wildcards we can use a contains which is much faster as it uses the index
-                    queryHelper.QueryWhereRestrictions += " AND Contains(System.FileName, '" + pattern + "') ";
+                    queryHelper.QueryWhereRestrictions += " AND (Contains(System.FileName, '" + pattern + "') ";
+                    queryHelper.QueryWhereRestrictions += " OR Contains(System.ItemNameDisplay, '" + pattern + "')) ";
                 }
             }
         }
@@ -116,7 +120,7 @@ namespace Microsoft.Plugin.Indexer.SearchHelper
             queryHelper.QueryMaxResults = maxCount;
 
             // Set list of columns we want to display, getting the path presently
-            queryHelper.QuerySelectColumns = "System.ItemUrl, System.FileName, System.FileAttributes";
+            queryHelper.QuerySelectColumns = "System.ItemUrl, System.FileName, System.FileAttributes, System.ItemPathDisplay, System.ItemNameDisplay";
 
             // Set additional query restriction
             queryHelper.QueryWhereRestrictions = "AND scope='file:'";
@@ -128,7 +132,8 @@ namespace Microsoft.Plugin.Indexer.SearchHelper
             }
 
             // To filter based on title for now
-            queryHelper.QueryContentProperties = "System.FileName";
+            // This does not work correctly for more than one property. If more than one property is defined it behaves like nothing is defined. (htcfreek; 2023-01-28)
+            queryHelper.QueryContentProperties = "System.FileName, System.ItemNameDisplay";
 
             // Set sorting order
             queryHelper.QuerySorting = "System.DateModified DESC";

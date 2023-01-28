@@ -151,7 +151,7 @@ namespace Microsoft.Plugin.Indexer.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Path.
+        ///   Looks up a localized string similar to Display path.
         /// </summary>
         public static string Microsoft_plugin_indexer_path {
             get {
@@ -174,6 +174,15 @@ namespace Microsoft.Plugin.Indexer.Properties {
         public static string Microsoft_plugin_indexer_plugin_name {
             get {
                 return ResourceManager.GetString("Microsoft_plugin_indexer_plugin_name", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Filesystem path.
+        /// </summary>
+        public static string Microsoft_plugin_indexer_rawpath {
+            get {
+                return ResourceManager.GetString("Microsoft_plugin_indexer_rawpath", resourceCulture);
             }
         }
         

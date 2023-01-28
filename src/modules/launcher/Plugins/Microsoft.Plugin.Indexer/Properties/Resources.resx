@@ -133,7 +133,7 @@
     <value>Name</value>
   </data>
   <data name="Microsoft_plugin_indexer_path" xml:space="preserve">
-    <value>Path</value>
+    <value>Display path</value>
   </data>
   <data name="Microsoft_plugin_indexer_drivedetectionwarning" xml:space="preserve">
     <value>Warning: Not all files are indexed.</value>
@@ -164,5 +164,8 @@
   </data>
   <data name="Microsoft_plugin_indexer_run_as_user" xml:space="preserve">
     <value>Run as different user (Ctrl+Shift+U)</value>
+  </data>
+  <data name="Microsoft_plugin_indexer_rawpath" xml:space="preserve">
+    <value>Filesystem path</value>
   </data>
 </root>

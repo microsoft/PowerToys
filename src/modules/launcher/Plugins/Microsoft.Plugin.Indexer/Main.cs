@@ -120,7 +120,8 @@ namespace Microsoft.Plugin.Indexer
 
                             // Using CurrentCulture since this is user facing
                             var toolTipTitle = string.Format(CultureInfo.CurrentCulture, "{0} : {1}", Properties.Resources.Microsoft_plugin_indexer_name, searchResult.Title);
-                            var toolTipText = string.Format(CultureInfo.CurrentCulture, "{0} : {1}", Properties.Resources.Microsoft_plugin_indexer_path, path);
+                            var toolTipText1 = string.Format(CultureInfo.CurrentCulture, "{0} : {1}", Properties.Resources.Microsoft_plugin_indexer_path, searchResult.PathLocalized);
+                            var toolTipText2 = string.Format(CultureInfo.CurrentCulture, "{0} : {1}", Properties.Resources.Microsoft_plugin_indexer_rawpath, path);
                             string workingDir = null;
                             if (_settings.UseLocationAsWorkingDir)
                             {
@@ -128,10 +129,10 @@ namespace Microsoft.Plugin.Indexer
                             }
 
                             Result r = new Result();
-                            r.Title = searchResult.Title;
-                            r.SubTitle = Properties.Resources.Microsoft_plugin_indexer_subtitle_header + ": " + path;
+                            r.Title = searchResult.TitleLocalized;
+                            r.SubTitle = Properties.Resources.Microsoft_plugin_indexer_subtitle_header + ": " + searchResult.PathLocalized;
                             r.IcoPath = path;
-                            r.ToolTipData = new ToolTipData(toolTipTitle, toolTipText);
+                            r.ToolTipData = new ToolTipData(toolTipTitle, toolTipText1 + "\n" + toolTipText2);
                             r.Action = c =>
                             {
                                 bool hide = true;

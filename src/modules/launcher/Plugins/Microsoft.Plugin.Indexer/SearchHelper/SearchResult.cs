@@ -13,5 +13,11 @@ namespace Microsoft.Plugin.Indexer.SearchHelper
 
         // Contains the Title of the file or folder
         public string Title { get; set; }
+
+        // Contains the Path of the file or folder in localized version
+        public string PathLocalized { get; set; }
+
+        // Contains the  Title of the file or folder in localized version
+        public string TitleLocalized { get; set; }
     }
 }
