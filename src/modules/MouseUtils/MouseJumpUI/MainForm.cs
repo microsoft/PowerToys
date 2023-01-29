@@ -45,7 +45,6 @@ internal partial class MainForm : Form
         {
             Thumbnail.Image.Dispose();
             Thumbnail.Image = null;
-            this.DesktopBounds = Rectangle.Empty;
         }
 
         this.Close();
