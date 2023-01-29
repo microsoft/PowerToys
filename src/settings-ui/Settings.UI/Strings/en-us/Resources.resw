@@ -1822,6 +1822,9 @@ From there, simply click on one of the supported files in the File Explorer and 
   <data name="Awake_EnableDisplayKeepAwake.Header" xml:space="preserve">
     <value>Keep screen on</value>
   </data>
+  <data name="Awake_EnableDisplayKeepAwake.Description" xml:space="preserve">
+    <value>This setting is only available when keeping the PC awake</value>
+  </data>
   <data name="Awake_Mode.Header" xml:space="preserve">
     <value>Mode</value>
   </data>

@@ -4,7 +4,7 @@
 
   <?include $(sys.CURRENTDIR)\Common.wxi?>
 
-  <?define FancyZonesFiles=PowerToys.FancyZonesModuleInterface.dll;PowerToys.FancyZonesEditor.dll;PowerToys.FancyZonesEditor.runtimeconfig.json;PowerToys.FancyZonesEditor.deps.json;PowerToys.FancyZonesEditor.exe;PowerToys.FancyZones.exe;ControlzEx.dll;Microsoft.Xaml.Behaviors.dll;ModernWpf.dll;ModernWpf.Controls.dll;PowerToys.ManagedCommon.dll;PowerToys.Common.UI.dll;PowerToys.ManagedTelemetry.dll;System.IO.Abstractions.dll;Microsoft.Windows.SDK.NET.dll;WinRT.Runtime.dll;Ijwhost.dll;PowerToys.GPOWrapper.dll;PowerToys.GPOWrapperProjection.dll?>
+  <?define FancyZonesFiles=PowerToys.FancyZonesModuleInterface.dll;PowerToys.FancyZonesEditor.dll;PowerToys.FancyZonesEditor.runtimeconfig.json;PowerToys.FancyZonesEditor.deps.json;PowerToys.FancyZonesEditor.exe;PowerToys.FancyZones.exe;ControlzEx.dll;Microsoft.Xaml.Behaviors.dll;ModernWpf.dll;ModernWpf.Controls.dll;PowerToys.ManagedCommon.dll;System.Management.dll;PowerToys.Common.UI.dll;PowerToys.ManagedTelemetry.dll;System.IO.Abstractions.dll;Microsoft.Windows.SDK.NET.dll;WinRT.Runtime.dll;Ijwhost.dll;PowerToys.GPOWrapper.dll;PowerToys.GPOWrapperProjection.dll;System.CodeDom.dll;System.Text.Json.dll;WindowsBase.dll?>
 
   <Fragment>
     <!-- FancyZone -->
