@@ -185,7 +185,7 @@ namespace Microsoft.PowerToys.Settings.UI
 
                     // https://github.com/microsoft/microsoft-ui-xaml/issues/7595 - Activate doesn't bring window to the foreground
                     // Need to call SetForegroundWindow to actually gain focus.
-                    NativeMethods.SetForegroundWindow(flyout.GetWindowHandle());
+                    Utils.BecomeForegroundWindow(flyout.GetWindowHandle());
                 });
             });
 

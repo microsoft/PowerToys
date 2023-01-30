@@ -45,5 +45,13 @@ namespace Microsoft.PowerToys.Settings.UI.Helpers
             {
             }
         }
+
+        public static void BecomeForegroundWindow(IntPtr hWnd)
+        {
+            NativeKeyboardHelper.INPUT input = new NativeKeyboardHelper.INPUT { type = NativeKeyboardHelper.INPUTTYPE.INPUT_MOUSE, data = { } };
+            NativeKeyboardHelper.INPUT[] inputs = new NativeKeyboardHelper.INPUT[] { input };
+            _ = NativeMethods.SendInput(1, inputs, NativeKeyboardHelper.INPUT.Size);
+            NativeMethods.SetForegroundWindow(hWnd);
+        }
     }
 }
