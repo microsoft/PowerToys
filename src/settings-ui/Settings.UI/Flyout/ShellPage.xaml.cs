@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
+using Microsoft.UI.Xaml.Media.Animation;
 
 namespace Microsoft.PowerToys.Settings.UI.Flyout
 {
@@ -18,12 +19,12 @@ namespace Microsoft.PowerToys.Settings.UI.Flyout
 
         internal void SwitchToLaunchPage()
         {
-            ContentFrame.Navigate(typeof(LaunchPage), null, null);
+            ContentFrame.Navigate(typeof(LaunchPage), null, new SuppressNavigationTransitionInfo());
         }
 
         private void Page_Loaded(object sender, RoutedEventArgs e)
         {
-            ContentFrame.Navigate(typeof(LaunchPage), null, null);
+            SwitchToLaunchPage();
         }
     }
 }

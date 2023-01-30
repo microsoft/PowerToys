@@ -89,7 +89,11 @@
                                         TextWrapping="Wrap" />
                                 </controls:FlyoutMenuButton.Content>
                                 <controls:FlyoutMenuButton.Icon>
-                                    <BitmapIcon ShowAsMonochrome="False" UriSource="{x:Bind Icon}" />
+                                    <Image>
+                                        <Image.Source>
+                                            <BitmapImage UriSource="{x:Bind Icon, Mode=OneWay}" />
+                                        </Image.Source>
+                                    </Image>
                                 </controls:FlyoutMenuButton.Icon>
                             </controls:FlyoutMenuButton>
                         </DataTemplate>
