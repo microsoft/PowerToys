@@ -192,6 +192,7 @@ CDeclaration
 CDEF
 cdpx
 CENTERALIGN
+ceq
 cguid
 changecursor
 Changemove
@@ -235,6 +236,7 @@ CMock
 CMONITORS
 cmpgt
 cmyk
+cne
 cnt
 Cocklebiddy
 coclass
@@ -1526,6 +1528,7 @@ RUNLEVEL
 runsettings
 runtimeclass
 runtimeconfig
+runtimedepsjsonpath
 runtimeobject
 runtimepack
 runtimes
@@ -2070,6 +2073,7 @@ workspaces
 wox
 wparam
 wpf
+wpfdepsjsonpath
 wpftmp
 wpr
 wprp

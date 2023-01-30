@@ -11,6 +11,7 @@
 #include <common/utils/window.h>
 #include <common/SettingsAPI/FileWatcher.h>
 
+#include <FancyZonesLib/DraggingState.h>
 #include <FancyZonesLib/EditorParameters.h>
 #include <FancyZonesLib/FancyZonesData.h>
 #include <FancyZonesLib/FancyZonesData/AppliedLayouts.h>
@@ -59,7 +60,8 @@ public:
     FancyZones(HINSTANCE hinstance, std::function<void()> disableModuleCallbackFunction) noexcept :
         SettingsObserver({ SettingId::EditorHotkey, SettingId::PrevTabHotkey, SettingId::NextTabHotkey, SettingId::SpanZonesAcrossMonitors }),
         m_hinstance(hinstance),
-        m_windowMoveHandler([this]() {
+        m_windowMoveHandler(),
+        m_draggingState([this]() {
             PostMessageW(m_window, WM_PRIV_LOCATIONCHANGE, NULL, NULL);
         })
     {
@@ -89,7 +91,9 @@ public:
             monitor = NULL;
         }
 
-        m_windowMoveHandler.MoveSizeStart(window, monitor, ptScreen, m_workAreaHandler.GetWorkAreasByDesktopId(VirtualDesktop::instance().GetCurrentVirtualDesktopId()));
+        m_draggingState.Enable();
+        m_draggingState.UpdateDraggingState();
+        m_windowMoveHandler.MoveSizeStart(window, monitor, ptScreen, m_workAreaHandler.GetWorkAreasByDesktopId(VirtualDesktop::instance().GetCurrentVirtualDesktopId()), m_draggingState.IsDragging());
     }
 
     void MoveSizeUpdate(HMONITOR monitor, POINT const& ptScreen) noexcept
@@ -98,12 +102,16 @@ public:
         {
             monitor = NULL;
         }
-        m_windowMoveHandler.MoveSizeUpdate(monitor, ptScreen, m_workAreaHandler.GetWorkAreasByDesktopId(VirtualDesktop::instance().GetCurrentVirtualDesktopId()));
+
+        m_draggingState.UpdateDraggingState();
+        m_windowMoveHandler.MoveSizeUpdate(monitor, ptScreen, m_workAreaHandler.GetWorkAreasByDesktopId(VirtualDesktop::instance().GetCurrentVirtualDesktopId()), m_draggingState.IsDragging(), m_draggingState.IsSelectManyZonesState());
     }
 
     void MoveSizeEnd(HWND window) noexcept
     {
+        m_draggingState.UpdateDraggingState();
         m_windowMoveHandler.MoveSizeEnd(window, m_workAreaHandler.GetWorkAreasByDesktopId(VirtualDesktop::instance().GetCurrentVirtualDesktopId()));
+        m_draggingState.Disable();
     }
 
     IFACEMETHODIMP_(void)
@@ -185,6 +193,7 @@ private:
     HWND m_window{};
     WindowMoveHandler m_windowMoveHandler;
     MonitorWorkAreaHandler m_workAreaHandler;
+    DraggingState m_draggingState;
 
     wil::unique_handle m_terminateEditorEvent; // Handle of FancyZonesEditor.exe we launch and wait on
 
@@ -478,7 +487,7 @@ FancyZones::OnKeyDown(PKBDLLHOOKSTRUCT info) noexcept
             digitPressed = info->vkCode - VK_NUMPAD0;
         }
 
-        bool dragging = m_windowMoveHandler.InDragging();
+        bool dragging = m_draggingState.IsDragging();
         bool changeLayoutWhileNotDragging = !dragging && !shift && win && ctrl && alt && digitPressed != -1;
         bool changeLayoutWhileDragging = dragging && digitPressed != -1;
 
@@ -494,7 +503,7 @@ FancyZones::OnKeyDown(PKBDLLHOOKSTRUCT info) noexcept
         }
     }
 
-    if (m_windowMoveHandler.IsDragEnabled() && shift)
+    if (m_draggingState.IsDragging() && shift)
     {
         return true;
     }
@@ -638,12 +647,9 @@ LRESULT FancyZones::WndProc(HWND window, UINT message, WPARAM wparam, LPARAM lpa
         }
         else if (message == WM_PRIV_LOCATIONCHANGE)
         {
-            if (m_windowMoveHandler.InDragging())
+            if (auto monitor = MonitorFromPoint(ptScreen, MONITOR_DEFAULTTONULL))
             {
-                if (auto monitor = MonitorFromPoint(ptScreen, MONITOR_DEFAULTTONULL))
-                {
-                    MoveSizeUpdate(monitor, ptScreen);
-                }
+                MoveSizeUpdate(monitor, ptScreen);
             }
         }
         else if (message == WM_PRIV_WINDOWCREATED)
@@ -1197,7 +1203,7 @@ void FancyZones::ApplyQuickLayout(int key) noexcept
 
 void FancyZones::FlashZones() noexcept
 {
-    if (FancyZonesSettings::settings().flashZonesOnQuickSwitch && !m_windowMoveHandler.IsDragEnabled())
+    if (FancyZonesSettings::settings().flashZonesOnQuickSwitch && !m_draggingState.IsDragging())
     {
         for (auto [monitor, workArea] : m_workAreaHandler.GetWorkAreasByDesktopId(VirtualDesktop::instance().GetCurrentVirtualDesktopId()))
         {

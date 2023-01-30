@@ -4,7 +4,7 @@
 
   <?include $(sys.CURRENTDIR)\Common.wxi?>
 
-  <?define ImageResizerFiles=ImageResizer.ico;PowerToys.ImageResizer.exe;PowerToys.ImageResizerExt.dll;PowerToys.ImageResizer.dll;PowerToys.ImageResizer.deps.json;PowerToys.ImageResizer.runtimeconfig.json;PowerToys.ManagedCommon.dll;PowerToys.ManagedTelemetry.dll;PowerToys.Common.UI.dll;ControlzEx.dll;ModernWpf.Controls.dll;ModernWpf.dll;Microsoft.Xaml.Behaviors.dll;System.IO.Abstractions.dll;WinRT.Runtime.dll;Microsoft.Windows.SDK.NET.dll;Ijwhost.dll;ImageResizerContextMenuPackage.msix;PowerToys.ImageResizerContextMenu.dll;PowerToys.GPOWrapper.dll;PowerToys.GPOWrapperProjection.dll ?>
+  <?define ImageResizerFiles=ImageResizer.ico;PowerToys.ImageResizer.exe;PowerToys.ImageResizerExt.dll;PowerToys.ImageResizer.dll;PowerToys.ImageResizer.deps.json;PowerToys.ImageResizer.runtimeconfig.json;PowerToys.ManagedCommon.dll;System.Management.dll;PowerToys.ManagedTelemetry.dll;PowerToys.Common.UI.dll;ControlzEx.dll;ModernWpf.Controls.dll;ModernWpf.dll;Microsoft.Xaml.Behaviors.dll;System.IO.Abstractions.dll;WinRT.Runtime.dll;Microsoft.Windows.SDK.NET.dll;Ijwhost.dll;ImageResizerContextMenuPackage.msix;PowerToys.ImageResizerContextMenu.dll;PowerToys.GPOWrapper.dll;PowerToys.GPOWrapperProjection.dll;System.CodeDom.dll;System.Text.Json.dll;WindowsBase.dll?>
   <?define ImageResizerSparsePackageAssets=LargeTile.png;SmallTile.png;SplashScreen.png;Square150x150Logo.png;Square44x44Logo.png;storelogo.png;Wide310x150Logo.png?>
 
   <Fragment>
