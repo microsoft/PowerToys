@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Wix xmlns="http://schemas.microsoft.com/wix/2006/wi"
+     xmlns:util="http://schemas.microsoft.com/wix/UtilExtension" >
+
+  <?include $(sys.CURRENTDIR)\Common.wxi?>
+
+  <?define AwakeFiles=PowerToys.AwakeModuleInterface.dll;PowerToys.ManagedCommon.dll;System.Management.dll;System.CodeDom.dll;System.Text.Json.dll;PowerToys.ManagedTelemetry.dll;PowerToys.Settings.UI.Lib.dll;NLog.config;NLog.dll;PowerToys.Awake.deps.json;PowerToys.Awake.dll;PowerToys.Awake.exe;PowerToys.Awake.runtimeconfig.json;System.CommandLine.dll;System.IO.Abstractions.dll;System.Reactive.dll;System.Runtime.Caching.dll;Ijwhost.dll;Microsoft.Windows.SDK.NET.dll;WinRT.Runtime.dll;PowerToys.GPOWrapper.dll;WindowsBase.dll?>
+
+  <Fragment>
+    <!-- Awake -->
+    <DirectoryRef Id="AwakeInstallFolder" FileSource="$(var.BinDir)modules\$(var.AwakeProjectName)">
+      <!-- !Warning! Make sure to change Component Guid if you update the file list -->
+      <Component Id="Module_Awake" Guid="0D571D9A-743B-4CC5-9297-F0289FBE3398" Win64="yes">
+        <?foreach File in $(var.AwakeFiles)?>
+          <File Id="AwakeFile_$(var.File)" Source="$(var.BinDir)modules\$(var.AwakeProjectName)\$(var.File)" />
+        <?endforeach?>
+      </Component>
+    </DirectoryRef>
+
+    <!-- Awake images -->
+    <DirectoryRef Id="AwakeImagesFolder" FileSource="$(var.BinDir)modules\$(var.AwakeProjectName)\Images">
+      <Component Id="Module_Awake_Images" >
+        <File Id="Awake_Awake.ico" Source="$(var.BinDir)modules\$(var.AwakeProjectName)\Images\Awake.ico" />
+      </Component>
+    </DirectoryRef>
+
+    <ComponentGroup Id="AwakeComponentGroup" Directory="INSTALLFOLDER">
+      <ComponentRef Id="Module_Awake"/>
+      <ComponentRef Id="Module_Awake_Images"/>
+    </ComponentGroup>
+
+  </Fragment>
+</Wix>

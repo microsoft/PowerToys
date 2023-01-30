@@ -1,0 +1,364 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Wix xmlns="http://schemas.microsoft.com/wix/2006/wi"
+     xmlns:util="http://schemas.microsoft.com/wix/UtilExtension" >
+
+  <?include $(sys.CURRENTDIR)\Common.wxi?>
+
+  <?define WinAppSDKFiles=CoreMessagingXP.dll;DWriteCore.dll;DwmSceneI.dll;MRM.dll;Microsoft.DirectManipulation.dll;Microsoft.InputStateManager.dll;Microsoft.Internal.FrameworkUdk.dll;Microsoft.UI.Composition.OSSupport.dll;Microsoft.UI.Input.dll;Microsoft.UI.Windowing.Core.dll;Microsoft.UI.Xaml.Controls.dll;Microsoft.UI.Xaml.Controls.pri;Microsoft.UI.Xaml.Internal.dll;Microsoft.UI.Xaml.Phone.dll;Microsoft.Web.WebView2.Core.dll;Microsoft.Windows.AppNotifications.Projection.dll;Microsoft.Windows.ApplicationModel.Resources.dll;Microsoft.WindowsAppRuntime.Bootstrap.dll;Microsoft.Windows.PushNotifications.Projection.dll;Microsoft.Windows.System.Projection.dll;Microsoft.WindowsAppRuntime.Insights.Resource.dll;Microsoft.WindowsAppRuntime.Release.Net.dll;Microsoft.WindowsAppRuntime.dll;Microsoft.ui.xaml.dll;Microsoft.ui.xaml.resources.19h1.dll;Microsoft.ui.xaml.resources.common.dll;PushNotificationsLongRunningTask.ProxyStub.dll;WinUIEdit.dll;WindowsAppRuntime.png;WindowsAppSdk.AppxDeploymentExtensions.Desktop.dll;dcompi.dll;dwmcorei.dll;marshal.dll;wuceffectsi.dll?>
+
+  <!-- Localization languages shipped with WinAppSDK. We should ship these as well. -->
+  <?define WinAppSDKLocLanguageList = af-ZA;ar-SA;az-Latn-AZ;bg-BG;bs-Latn-BA;ca-ES;cs-CZ;cy-GB;da-DK;de-DE;el-GR;en-GB;en-us;es-ES;es-MX;et-EE;eu-ES;fa-IR;fi-FI;fr-CA;fr-FR;gl-ES;he-IL;hi-IN;hr-HR;hu-HU;id-ID;is-IS;it-IT;ja-JP;ka-GE;kk-KZ;ko-KR;lt-LT;lv-LV;ms-MY;nb-NO;nl-NL;nn-NO;pl-PL;pt-BR;pt-PT;ro-RO;ru-RU;sk-SK;sl-SI;sq-AL;sr-Cyrl-RS;sr-Latn-RS;sv-SE;th-TH;tr-TR;uk-UA;vi-VN;zh-CN;zh-TW?>
+
+  <Fragment>
+    <DirectoryRef Id="WinAppSDKDlls">
+      <?foreach File in $(var.WinAppSDKFiles)?>
+      <Component Id="Dlls_WinAppSdkFiles_$(var.File)" Win64="yes">
+        <File Id="Dlls_WinAppSdk_File_$(var.File)" Source="$(var.BinDir)Settings\$(var.File)" />
+      </Component>
+      <?endforeach?>
+    </DirectoryRef>
+
+    <?foreach ParentDirectory in SettingsV2InstallFolder;PowerRenameInstallFolder;MeasureToolInstallFolder;HostsInstallFolder;FileLocksmithInstallFolder?>
+      <DirectoryRef Id="$(var.ParentDirectory)">
+        <?foreach Language in $(var.WinAppSDKLocLanguageList)?>
+        <?if $(var.Language) = af-ZA?>
+        <?define IdSafeLanguage = af_ZA?>
+        <?elseif $(var.Language) = ar-SA?>
+        <?define IdSafeLanguage = ar_SA?>
+        <?elseif $(var.Language) = az-Latn-AZ?>
+        <?define IdSafeLanguage = az_Latn_AZ?>
+        <?elseif $(var.Language) = bg-BG?>
+        <?define IdSafeLanguage = bg_BG?>
+        <?elseif $(var.Language) = bs-Latn-BA?>
+        <?define IdSafeLanguage = bs_Latn_BA?>
+        <?elseif $(var.Language) = ca-ES?>
+        <?define IdSafeLanguage = ca_ES?>
+        <?elseif $(var.Language) = cs-CZ?>
+        <?define IdSafeLanguage = cs_CZ?>
+        <?elseif $(var.Language) = cy-GB?>
+        <?define IdSafeLanguage = cy_GB?>
+        <?elseif $(var.Language) = da-DK?>
+        <?define IdSafeLanguage = da_DK?>
+        <?elseif $(var.Language) = de-DE?>
+        <?define IdSafeLanguage = de_DE?>
+        <?elseif $(var.Language) = el-GR?>
+        <?define IdSafeLanguage = el_GR?>
+        <?elseif $(var.Language) = en-GB?>
+        <?define IdSafeLanguage = en_GB?>
+        <?elseif $(var.Language) = en-us?>
+        <?define IdSafeLanguage = en_us?>
+        <?elseif $(var.Language) = es-ES?>
+        <?define IdSafeLanguage = es_ES?>
+        <?elseif $(var.Language) = es-MX?>
+        <?define IdSafeLanguage = es_MX?>
+        <?elseif $(var.Language) = et-EE?>
+        <?define IdSafeLanguage = et_EE?>
+        <?elseif $(var.Language) = eu-ES?>
+        <?define IdSafeLanguage = eu_ES?>
+        <?elseif $(var.Language) = fa-IR?>
+        <?define IdSafeLanguage = fa_IR?>
+        <?elseif $(var.Language) = fi-FI?>
+        <?define IdSafeLanguage = fi_FI?>
+        <?elseif $(var.Language) = fr-CA?>
+        <?define IdSafeLanguage = fr_CA?>
+        <?elseif $(var.Language) = fr-FR?>
+        <?define IdSafeLanguage = fr_FR?>
+        <?elseif $(var.Language) = gl-ES?>
+        <?define IdSafeLanguage = gl_ES?>
+        <?elseif $(var.Language) = he-IL?>
+        <?define IdSafeLanguage = he_IL?>
+        <?elseif $(var.Language) = hi-IN?>
+        <?define IdSafeLanguage = hi_IN?>
+        <?elseif $(var.Language) = hr-HR?>
+        <?define IdSafeLanguage = hr_HR?>
+        <?elseif $(var.Language) = hu-HU?>
+        <?define IdSafeLanguage = hu_HU?>
+        <?elseif $(var.Language) = id-ID?>
+        <?define IdSafeLanguage = id_ID?>
+        <?elseif $(var.Language) = is-IS?>
+        <?define IdSafeLanguage = is_IS?>
+        <?elseif $(var.Language) = it-IT?>
+        <?define IdSafeLanguage = it_IT?>
+        <?elseif $(var.Language) = ja-JP?>
+        <?define IdSafeLanguage = ja_JP?>
+        <?elseif $(var.Language) = ka-GE?>
+        <?define IdSafeLanguage = ka_GE?>
+        <?elseif $(var.Language) = kk-KZ?>
+        <?define IdSafeLanguage = kk_KZ?>
+        <?elseif $(var.Language) = ko-KR?>
+        <?define IdSafeLanguage = ko_KR?>
+        <?elseif $(var.Language) = lt-LT?>
+        <?define IdSafeLanguage = lt_LT?>
+        <?elseif $(var.Language) = lv-LV?>
+        <?define IdSafeLanguage = lv_LV?>
+        <?elseif $(var.Language) = ms-MY?>
+        <?define IdSafeLanguage = ms_MY?>
+        <?elseif $(var.Language) = nb-NO?>
+        <?define IdSafeLanguage = nb_NO?>
+        <?elseif $(var.Language) = nl-NL?>
+        <?define IdSafeLanguage = nl_NL?>
+        <?elseif $(var.Language) = nn-NO?>
+        <?define IdSafeLanguage = nn_NO?>
+        <?elseif $(var.Language) = pl-PL?>
+        <?define IdSafeLanguage = pl_PL?>
+        <?elseif $(var.Language) = pt-BR?>
+        <?define IdSafeLanguage = pt_BR?>
+        <?elseif $(var.Language) = pt-PT?>
+        <?define IdSafeLanguage = pt_PT?>
+        <?elseif $(var.Language) = ro-RO?>
+        <?define IdSafeLanguage = ro_RO?>
+        <?elseif $(var.Language) = ru-RU?>
+        <?define IdSafeLanguage = ru_RU?>
+        <?elseif $(var.Language) = sk-SK?>
+        <?define IdSafeLanguage = sk_SK?>
+        <?elseif $(var.Language) = sl-SI?>
+        <?define IdSafeLanguage = sl_SI?>
+        <?elseif $(var.Language) = sq-AL?>
+        <?define IdSafeLanguage = sq_AL?>
+        <?elseif $(var.Language) = sr-Cyrl-RS?>
+        <?define IdSafeLanguage = sr_Cyrl_RS?>
+        <?elseif $(var.Language) = sr-Latn-RS?>
+        <?define IdSafeLanguage = sr_Latn_RS?>
+        <?elseif $(var.Language) = sv-SE?>
+        <?define IdSafeLanguage = sv_SE?>
+        <?elseif $(var.Language) = th-TH?>
+        <?define IdSafeLanguage = th_TH?>
+        <?elseif $(var.Language) = tr-TR?>
+        <?define IdSafeLanguage = tr_TR?>
+        <?elseif $(var.Language) = uk-UA?>
+        <?define IdSafeLanguage = uk_UA?>
+        <?elseif $(var.Language) = vi-VN?>
+        <?define IdSafeLanguage = vi_VN?>
+        <?elseif $(var.Language) = zh-CN?>
+        <?define IdSafeLanguage = zh_CN?>
+        <?elseif $(var.Language) = zh-TW?>
+        <?define IdSafeLanguage = zh_TW?>
+        <?else?>
+        <?define IdSafeLanguage = $(var.Language)?>
+        <?endif?>
+        <Directory Id="WinAppSDKLoc$(var.IdSafeLanguage)$(var.ParentDirectory)" Name="$(var.Language)" />
+        <?undef IdSafeLanguage?>
+        <?endforeach?>
+      </DirectoryRef>
+    <?endforeach?>
+
+    <ComponentGroup Id="WindowsAppSDKComponentGroup">
+      <?foreach Language in $(var.WinAppSDKLocLanguageList)?>
+      <?if $(var.Language) = af-ZA?>
+      <?define CompGUIDPrefix = 3C8E6C25-772A-4686-8FE3-8BE63F8D19?>
+      <?define IdSafeLanguage = af_ZA?>
+      <?elseif $(var.Language) = ar-SA?>
+      <?define CompGUIDPrefix = E2E65A7F-48CA-49E1-847B-5B1116D32E?>
+      <?define IdSafeLanguage = ar_SA?>
+      <?elseif $(var.Language) = az-Latn-AZ?>
+      <?define CompGUIDPrefix = 601F5B70-D386-4F68-B958-9D3F07167C?>
+      <?define IdSafeLanguage = az_Latn_AZ?>
+      <?elseif $(var.Language) = bg-BG?>
+      <?define CompGUIDPrefix = 9DD6C8F9-8599-46E4-B9B6-8B8CB095F9?>
+      <?define IdSafeLanguage = bg_BG?>
+      <?elseif $(var.Language) = bs-Latn-BA?>
+      <?define CompGUIDPrefix = CF68A082-D286-4556-BDF1-FBD9C7FE37?>
+      <?define IdSafeLanguage = bs_Latn_BA?>
+      <?elseif $(var.Language) = ca-ES?>
+      <?define CompGUIDPrefix = 298A66A5-9683-4ABF-A1C5-D97DA031B3?>
+      <?define IdSafeLanguage = ca_ES?>
+      <?elseif $(var.Language) = cs-CZ?>
+      <?define CompGUIDPrefix = EDEC8BF7-6602-47E5-AC04-3D392BDD83?>
+      <?define IdSafeLanguage = cs_CZ?>
+      <?elseif $(var.Language) = cy-GB?>
+      <?define CompGUIDPrefix = 6E328AD9-58D4-4615-8A64-9710D5EA81?>
+      <?define IdSafeLanguage = cy_GB?>
+      <?elseif $(var.Language) = da-DK?>
+      <?define CompGUIDPrefix = BC5D9E5C-D4B8-4CEB-A944-1A34FD46E5?>
+      <?define IdSafeLanguage = da_DK?>
+      <?elseif $(var.Language) = de-DE?>
+      <?define CompGUIDPrefix = 4E1F60E3-6257-4492-AD9E-22124393F7?>
+      <?define IdSafeLanguage = de_DE?>
+      <?elseif $(var.Language) = el-GR?>
+      <?define CompGUIDPrefix = 0A340858-D5DF-44D1-90F9-E5435128D5?>
+      <?define IdSafeLanguage = el_GR?>
+      <?elseif $(var.Language) = en-GB?>
+      <?define CompGUIDPrefix = 2F06617A-9700-4223-A309-58F2C1DA88?>
+      <?define IdSafeLanguage = en_GB?>
+      <?elseif $(var.Language) = en-us?>
+      <?define CompGUIDPrefix = A817585B-4AD2-4030-844B-1B2975DE6C?>
+      <?define IdSafeLanguage = en_us?>
+      <?elseif $(var.Language) = es-ES?>
+      <?define CompGUIDPrefix = 987CE029-212B-40AF-956E-D0D76F5EE8?>
+      <?define IdSafeLanguage = es_ES?>
+      <?elseif $(var.Language) = es-MX?>
+      <?define CompGUIDPrefix = 9E806BDC-CB61-43C5-A314-6CB3C7CE17?>
+      <?define IdSafeLanguage = es_MX?>
+      <?elseif $(var.Language) = et-EE?>
+      <?define CompGUIDPrefix = 07C20887-C0FD-4686-8D6C-CD70D4099E?>
+      <?define IdSafeLanguage = et_EE?>
+      <?elseif $(var.Language) = eu-ES?>
+      <?define CompGUIDPrefix = 43FDBB2A-DCF0-4E5C-98B2-DF5F8A7ABC?>
+      <?define IdSafeLanguage = eu_ES?>
+      <?elseif $(var.Language) = fa-IR?>
+      <?define CompGUIDPrefix = 9A709AF1-A967-4188-9A6E-0EE1A01091?>
+      <?define IdSafeLanguage = fa_IR?>
+      <?elseif $(var.Language) = fi-FI?>
+      <?define CompGUIDPrefix = 7C933CD2-E937-4BEF-835D-7D27660BF1?>
+      <?define IdSafeLanguage = fi_FI?>
+      <?elseif $(var.Language) = fr-CA?>
+      <?define CompGUIDPrefix = 547742D0-6025-43A1-B37A-D7FE1C7AB7?>
+      <?define IdSafeLanguage = fr_CA?>
+      <?elseif $(var.Language) = fr-FR?>
+      <?define CompGUIDPrefix = 5C208D3F-0A62-4DD3-9A3C-D5F5931BC0?>
+      <?define IdSafeLanguage = fr_FR?>
+      <?elseif $(var.Language) = gl-ES?>
+      <?define CompGUIDPrefix = CC8360F1-B761-485F-AE34-D5E76C2133?>
+      <?define IdSafeLanguage = gl_ES?>
+      <?elseif $(var.Language) = he-IL?>
+      <?define CompGUIDPrefix = 5D3703BA-B7F8-45E6-8727-E184890524?>
+      <?define IdSafeLanguage = he_IL?>
+      <?elseif $(var.Language) = hi-IN?>
+      <?define CompGUIDPrefix = 85D55059-CFE3-47CD-A000-D795DCD0FF?>
+      <?define IdSafeLanguage = hi_IN?>
+      <?elseif $(var.Language) = hr-HR?>
+      <?define CompGUIDPrefix = 2BD6767A-A7C5-440B-BDC7-EA505F6B69?>
+      <?define IdSafeLanguage = hr_HR?>
+      <?elseif $(var.Language) = hu-HU?>
+      <?define CompGUIDPrefix = FB99F97C-A1C3-407E-AA4A-264621D1C4?>
+      <?define IdSafeLanguage = hu_HU?>
+      <?elseif $(var.Language) = id-ID?>
+      <?define CompGUIDPrefix = CBBA3A3A-B336-4CB0-ACB1-4BB666855D?>
+      <?define IdSafeLanguage = id_ID?>
+      <?elseif $(var.Language) = is-IS?>
+      <?define CompGUIDPrefix = 57E8C11E-6D1F-4F29-A440-9F6175C607?>
+      <?define IdSafeLanguage = is_IS?>
+      <?elseif $(var.Language) = it-IT?>
+      <?define CompGUIDPrefix = 1C4F8911-96E4-4903-A92B-CD48BF09DE?>
+      <?define IdSafeLanguage = it_IT?>
+      <?elseif $(var.Language) = ja-JP?>
+      <?define CompGUIDPrefix = EF51BC22-3D3E-4767-8558-BE43F729FD?>
+      <?define IdSafeLanguage = ja_JP?>
+      <?elseif $(var.Language) = ka-GE?>
+      <?define CompGUIDPrefix = 7F625700-74B5-4F55-8F80-E86B4DC784?>
+      <?define IdSafeLanguage = ka_GE?>
+      <?elseif $(var.Language) = kk-KZ?>
+      <?define CompGUIDPrefix = 3F4019C3-2FA3-48BA-9096-C02E6679B5?>
+      <?define IdSafeLanguage = kk_KZ?>
+      <?elseif $(var.Language) = ko-KR?>
+      <?define CompGUIDPrefix = F6C1AAAD-1917-48AC-B89A-3953D01C20?>
+      <?define IdSafeLanguage = ko_KR?>
+      <?elseif $(var.Language) = lt-LT?>
+      <?define CompGUIDPrefix = 6E48287B-937D-43D0-A7FB-161717D5E2?>
+      <?define IdSafeLanguage = lt_LT?>
+      <?elseif $(var.Language) = lv-LV?>
+      <?define CompGUIDPrefix = F2E02A03-361C-43FA-ACFA-53369774A6?>
+      <?define IdSafeLanguage = lv_LV?>
+      <?elseif $(var.Language) = ms-MY?>
+      <?define CompGUIDPrefix = 4D141E3C-7F30-4689-9D8D-36C1245845?>
+      <?define IdSafeLanguage = ms_MY?>
+      <?elseif $(var.Language) = nb-NO?>
+      <?define CompGUIDPrefix = 939F5123-0700-4C0C-891F-04E331FC5E?>
+      <?define IdSafeLanguage = nb_NO?>
+      <?elseif $(var.Language) = nl-NL?>
+      <?define CompGUIDPrefix = 5E97EAE0-F207-47F1-B4BD-12113D983C?>
+      <?define IdSafeLanguage = nl_NL?>
+      <?elseif $(var.Language) = nn-NO?>
+      <?define CompGUIDPrefix = A1E74004-671D-46DC-AECD-826D068B26?>
+      <?define IdSafeLanguage = nn_NO?>
+      <?elseif $(var.Language) = pl-PL?>
+      <?define CompGUIDPrefix = E1D983A8-D406-4C60-AE61-9F362CBEF2?>
+      <?define IdSafeLanguage = pl_PL?>
+      <?elseif $(var.Language) = pt-BR?>
+      <?define CompGUIDPrefix = E6E4AF39-7758-4F52-B6CA-CD6D4513B7?>
+      <?define IdSafeLanguage = pt_BR?>
+      <?elseif $(var.Language) = pt-PT?>
+      <?define CompGUIDPrefix = 8F4BB964-3EB7-4D91-816D-D0E25D69D0?>
+      <?define IdSafeLanguage = pt_PT?>
+      <?elseif $(var.Language) = ro-RO?>
+      <?define CompGUIDPrefix = 8324BA46-F54F-4696-B348-3193856660?>
+      <?define IdSafeLanguage = ro_RO?>
+      <?elseif $(var.Language) = ru-RU?>
+      <?define CompGUIDPrefix = 13BB6E4C-A928-4FD5-A0CA-CE45B8B857?>
+      <?define IdSafeLanguage = ru_RU?>
+      <?elseif $(var.Language) = sk-SK?>
+      <?define CompGUIDPrefix = 63D22C1D-D00A-4194-B64F-9CA2DF93D5?>
+      <?define IdSafeLanguage = sk_SK?>
+      <?elseif $(var.Language) = sl-SI?>
+      <?define CompGUIDPrefix = C007A438-5EBD-4E2A-9E03-8C9521762B?>
+      <?define IdSafeLanguage = sl_SI?>
+      <?elseif $(var.Language) = sq-AL?>
+      <?define CompGUIDPrefix = 9058E23A-A9DD-45A2-A85C-5DE97D0F2A?>
+      <?define IdSafeLanguage = sq_AL?>
+      <?elseif $(var.Language) = sr-Cyrl-RS?>
+      <?define CompGUIDPrefix = 7D21E8FC-368D-4393-A055-44D742C7A0?>
+      <?define IdSafeLanguage = sr_Cyrl_RS?>
+      <?elseif $(var.Language) = sr-Latn-RS?>
+      <?define CompGUIDPrefix = F8B974A0-4BEA-44F7-8603-7D9BE3003F?>
+      <?define IdSafeLanguage = sr_Latn_RS?>
+      <?elseif $(var.Language) = sv-SE?>
+      <?define CompGUIDPrefix = A56ECD85-B52C-421D-8C8A-CBADE0A92F?>
+      <?define IdSafeLanguage = sv_SE?>
+      <?elseif $(var.Language) = th-TH?>
+      <?define CompGUIDPrefix = C71B1361-A45E-42AB-8A20-95ED3AF74E?>
+      <?define IdSafeLanguage = th_TH?>
+      <?elseif $(var.Language) = tr-TR?>
+      <?define CompGUIDPrefix = 025B5CE3-6470-4C01-A606-DFC74A47E0?>
+      <?define IdSafeLanguage = tr_TR?>
+      <?elseif $(var.Language) = uk-UA?>
+      <?define CompGUIDPrefix = AD78BE3F-6A3B-414D-AAEC-BC4C801B64?>
+      <?define IdSafeLanguage = uk_UA?>
+      <?elseif $(var.Language) = vi-VN?>
+      <?define CompGUIDPrefix = 9F21001A-87DA-4D9E-A298-FEDC375D0C?>
+      <?define IdSafeLanguage = vi_VN?>
+      <?elseif $(var.Language) = zh-CN?>
+      <?define CompGUIDPrefix = C8BB7DD7-EB7B-478E-925D-6F64107590?>
+      <?define IdSafeLanguage = zh_CN?>
+      <?elseif $(var.Language) = zh-TW?>
+      <?define CompGUIDPrefix = E472BBC5-604D-44A2-8B95-3A456CFF56?>
+      <?define IdSafeLanguage = zh_TW?>
+      <?else?>
+      <?define IdSafeLanguage = $(var.Language)?>
+      <?define CompGUIDPrefix = 51B656B3-2D45-49D8-9871-F0A1C8BEEE?>
+      <?endif?>
+      <Component
+          Id="SettingsV2_WinAppSDKLoc_$(var.IdSafeLanguage)_Component"
+          Directory="WinAppSDKLoc$(var.IdSafeLanguage)SettingsV2InstallFolder"
+          Guid="$(var.CompGUIDPrefix)01">
+          <File Id="SettingsV2_WinAppSDKLoc_$(var.IdSafeLanguage)_XamlMui_File" Source="$(var.BinDir)Settings\$(var.Language)\Microsoft.ui.xaml.dll.mui" />
+          <File Id="SettingsV2_WinAppSDKLoc_$(var.IdSafeLanguage)_XamlPhoneMui_File" Source="$(var.BinDir)Settings\$(var.Language)\Microsoft.UI.Xaml.Phone.dll.mui" />
+      </Component>
+      <Component
+          Id="PowerRename_WinAppSDKLoc_$(var.IdSafeLanguage)_Component"
+          Directory="WinAppSDKLoc$(var.IdSafeLanguage)PowerRenameInstallFolder"
+          Guid="$(var.CompGUIDPrefix)02">
+          <File Id="PowerRename_WinAppSDKLoc_$(var.IdSafeLanguage)_XamlMui_File" Source="$(var.BinDir)modules\$(var.PowerRenameProjectName)\$(var.Language)\Microsoft.ui.xaml.dll.mui" />
+          <File Id="PowerRename_WinAppSDKLoc_$(var.IdSafeLanguage)_XamlPhoneMui_File" Source="$(var.BinDir)modules\$(var.PowerRenameProjectName)\$(var.Language)\Microsoft.UI.Xaml.Phone.dll.mui" />
+      </Component>
+      <Component
+          Id="MeasureTool_WinAppSDKLoc_$(var.IdSafeLanguage)_Component"
+          Directory="WinAppSDKLoc$(var.IdSafeLanguage)MeasureToolInstallFolder"
+          Guid="$(var.CompGUIDPrefix)03">
+          <File Id="MeasureTool_WinAppSDKLoc_$(var.IdSafeLanguage)_XamlMui_File" Source="$(var.BinDir)modules\$(var.MeasureToolProjectName)\$(var.Language)\Microsoft.ui.xaml.dll.mui" />
+          <File Id="MeasureTool_WinAppSDKLoc_$(var.IdSafeLanguage)_XamlPhoneMui_File" Source="$(var.BinDir)modules\$(var.MeasureToolProjectName)\$(var.Language)\Microsoft.UI.Xaml.Phone.dll.mui" />
+      </Component>
+      <Component
+          Id="Hosts_WinAppSDKLoc_$(var.IdSafeLanguage)_Component"
+          Directory="WinAppSDKLoc$(var.IdSafeLanguage)HostsInstallFolder"
+          Guid="$(var.CompGUIDPrefix)04">
+      <File Id="Hosts_WinAppSDKLoc_$(var.IdSafeLanguage)_XamlMui_File" Source="$(var.BinDir)modules\$(var.HostsProjectName)\$(var.Language)\Microsoft.ui.xaml.dll.mui" />
+      <File Id="Hosts_WinAppSDKLoc_$(var.IdSafeLanguage)_XamlPhoneMui_File" Source="$(var.BinDir)modules\$(var.HostsProjectName)\$(var.Language)\Microsoft.UI.Xaml.Phone.dll.mui" />
+      </Component>
+      <Component
+          Id="FileLocksmith_WinAppSDKLoc_$(var.IdSafeLanguage)_Component"
+          Directory="WinAppSDKLoc$(var.IdSafeLanguage)FileLocksmithInstallFolder"
+          Guid="$(var.CompGUIDPrefix)05">
+      <File Id="FileLocksmith_WinAppSDKLoc_$(var.IdSafeLanguage)_XamlMui_File" Source="$(var.BinDir)modules\$(var.FileLocksmithProjectName)\$(var.Language)\Microsoft.ui.xaml.dll.mui" />
+      <File Id="FileLocksmith_WinAppSDKLoc_$(var.IdSafeLanguage)_XamlPhoneMui_File" Source="$(var.BinDir)modules\$(var.FileLocksmithProjectName)\$(var.Language)\Microsoft.UI.Xaml.Phone.dll.mui" />
+      </Component>
+      <?undef IdSafeLanguage?>
+      <?undef CompGUIDPrefix?>
+      <?endforeach?>
+
+      <?foreach File in $(var.WinAppSDKFiles)?>
+        <ComponentRef Id="Dlls_WinAppSdkFiles_$(var.File)" />
+      <?endforeach?>
+    </ComponentGroup>
+  </Fragment>
+</Wix>
+
