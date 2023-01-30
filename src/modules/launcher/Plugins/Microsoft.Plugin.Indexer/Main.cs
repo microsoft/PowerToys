@@ -121,7 +121,7 @@ namespace Microsoft.Plugin.Indexer
                             // Using CurrentCulture since this is user facing
                             var toolTipTitle = string.Format(CultureInfo.CurrentCulture, "{0} : {1}", Properties.Resources.Microsoft_plugin_indexer_name, searchResult.Title);
                             var toolTipText1 = string.Format(CultureInfo.CurrentCulture, "{0} : {1}", Properties.Resources.Microsoft_plugin_indexer_path, searchResult.PathLocalized);
-                            var toolTipText2 = string.Format(CultureInfo.CurrentCulture, "{0} : {1}", Properties.Resources.Microsoft_plugin_indexer_rawpath, path);
+                            var toolTipText2 = string.Format(CultureInfo.CurrentCulture, "{0} : {1}", Properties.Resources.Microsoft_plugin_indexer_path_raw, path);
                             string workingDir = null;
                             if (_settings.UseLocationAsWorkingDir)
                             {

@@ -21,7 +21,7 @@ namespace Microsoft.Plugin.Indexer.SearchHelper
         // Contains the  Title of the file or folder in localized version
         public string TitleLocalized { get; set; }
 
-        // Contains the Modiefied date
+        // Contains the Modified date
         public DateTime DateModified { get; set; }
 
         // String to compare the object instance: "<Title>:<Path>"

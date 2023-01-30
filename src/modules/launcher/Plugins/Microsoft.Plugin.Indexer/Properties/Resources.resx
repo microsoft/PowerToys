@@ -165,7 +165,7 @@
   <data name="Microsoft_plugin_indexer_run_as_user" xml:space="preserve">
     <value>Run as different user (Ctrl+Shift+U)</value>
   </data>
-  <data name="Microsoft_plugin_indexer_rawpath" xml:space="preserve">
+  <data name="Microsoft_plugin_indexer_path_raw" xml:space="preserve">
     <value>Filesystem path</value>
   </data>
 </root>
