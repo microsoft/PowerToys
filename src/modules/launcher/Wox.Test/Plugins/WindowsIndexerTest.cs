@@ -174,8 +174,8 @@ namespace Wox.Test.Plugins
         public void WindowsSearchAPIShouldReturnResultsWhenSearchWasExecuted()
         {
             // Arrange
-            OleDBResult unHiddenFile = new OleDBResult(new List<object>() { "C:/test/path/file1.txt", "file1.txt" });
-            OleDBResult hiddenFile = new OleDBResult(new List<object>() { "C:/test/path/file2.txt", "file2.txt" });
+            OleDBResult unHiddenFile = new OleDBResult(new List<object>() { "C:/test/path/file1.txt", "file1.txt", DBNull.Value, "C:/test/path/file1.txt", "file1.txt", DateTime.Now });
+            OleDBResult hiddenFile = new OleDBResult(new List<object>() { "C:/test/path/file2.txt", "file2.txt", DBNull.Value, "C:/test/path/file2.txt", "file2.txt", DateTime.Now });
             List<OleDBResult> results = new List<OleDBResult>() { hiddenFile, unHiddenFile };
             var mock = new Mock<ISearch>();
             mock.Setup(x => x.Query(It.IsAny<string>(), It.IsAny<string>())).Returns(results);
@@ -195,8 +195,8 @@ namespace Wox.Test.Plugins
         public void WindowsSearchAPIShouldNotReturnResultsWithNullValueWhenDbResultHasANullColumn()
         {
             // Arrange
-            OleDBResult unHiddenFile = new OleDBResult(new List<object>() { "C:/test/path/file1.txt", DBNull.Value });
-            OleDBResult hiddenFile = new OleDBResult(new List<object>() { "C:/test/path/file2.txt", "file2.txt" });
+            OleDBResult unHiddenFile = new OleDBResult(new List<object>() { "C:/test/path/file1.txt", DBNull.Value, DBNull.Value, "C:/test/path/file1.txt", "file1.txt", DateTime.Now });
+            OleDBResult hiddenFile = new OleDBResult(new List<object>() { "C:/test/path/file2.txt", "file2.txt", DBNull.Value, "C:/test/path/file2.txt", "file2.txt", DateTime.Now });
             List<OleDBResult> results = new List<OleDBResult>() { hiddenFile, unHiddenFile };
             var mock = new Mock<ISearch>();
             mock.Setup(x => x.Query(It.IsAny<string>(), It.IsAny<string>())).Returns(results);
@@ -210,6 +210,46 @@ namespace Wox.Test.Plugins
             Assert.IsTrue(windowsSearchAPIResults.Count() == 1);
             Assert.IsFalse(windowsSearchAPIResults.Any(x => x.Title == "file1.txt"));
             Assert.IsTrue(windowsSearchAPIResults.Any(x => x.Title == "file2.txt"));
+        }
+
+        [TestMethod]
+        public void WindowsSearchAPIShouldSearchForNameAndDisplayName()
+        {
+            // Arrange
+            OleDBResult file1 = new OleDBResult(new List<object>() { "C:/test/path/file1.txt", "file1.txt", DBNull.Value, "C:/test/path/NiceFile1.txt", "NiceFile1.txt", DateTime.Now });
+            OleDBResult file2 = new OleDBResult(new List<object>() { "C:/test/path/file2.txt", "file2.txt", DBNull.Value, "C:/test/path/NiceFile2.txt", "NiceFile2.txt", DateTime.Now });
+            List<OleDBResult> results = new List<OleDBResult>() { file1, file2 };
+            var mock = new Mock<ISearch>();
+            mock.Setup(x => x.Query(It.IsAny<string>(), It.IsAny<string>())).Returns(results);
+            WindowsSearchAPI api = new WindowsSearchAPI(mock.Object, false);
+            var mockSearchManager = GetMockSearchManager();
+
+            // Act
+            var windowsSearchAPIResults = api.Search("file1.txt || NiceFile2.txt", mockSearchManager);
+
+            // Assert
+            Assert.IsTrue(windowsSearchAPIResults.Count() == 2);
+            windowsSearchAPIResults = windowsSearchAPIResults.OrderBy(x => x.Title); // Sort by name to ignore modified time order for same result on every test run.
+            Assert.IsTrue(windowsSearchAPIResults.ElementAt(0).Title == "file1.txt");
+            Assert.IsTrue(windowsSearchAPIResults.ElementAt(1).Title == "file2.txt");
+        }
+
+        [TestMethod]
+        public void WindowsSearchAPIShouldReturnSameFileOnlyOnce()
+        {
+            // Arrange
+            OleDBResult file1 = new OleDBResult(new List<object>() { "C:/test/path/file1.txt", "file1.txt", DBNull.Value, "C:/test/path/NiceFile1.txt", "NiceFile1.txt", DateTime.Now });
+            List<OleDBResult> results = new List<OleDBResult>() { file1 };
+            var mock = new Mock<ISearch>();
+            mock.Setup(x => x.Query(It.IsAny<string>(), It.IsAny<string>())).Returns(results);
+            WindowsSearchAPI api = new WindowsSearchAPI(mock.Object, false);
+            var mockSearchManager = GetMockSearchManager();
+
+            // Act
+            var windowsSearchAPIResults = api.Search("file1.txt || NiceFile1.txt", mockSearchManager);
+
+            // Assert
+            Assert.IsTrue(windowsSearchAPIResults.Count() == 1);
         }
 
         [TestMethod]
