@@ -81,7 +81,7 @@ namespace Microsoft.Plugin.Program.Programs
         private const string ShortcutExtension = "lnk";
         private const string ApplicationReferenceExtension = "appref-ms";
         private const string InternetShortcutExtension = "url";
-        private static readonly HashSet<string> ExecutableApplicationExtensions = new HashSet<string>(StringComparer.OrdinalIgnoreCase) { "exe", "bat", "bin", "com", "msc", "msi", "cmd", "ps1", "job", "msp", "mst", "sct", "ws", "wsh", "wsf" };
+        private static readonly HashSet<string> ExecutableApplicationExtensions = new HashSet<string>(StringComparer.OrdinalIgnoreCase) { "exe", "bat", "bin", "com", "cpl", "msc", "msi", "cmd", "ps1", "job", "msp", "mst", "sct", "ws", "wsh", "wsf" };
 
         private const string ProxyWebApp = "_proxy.exe";
         private const string AppIdArgument = "--app-id";
@@ -242,6 +242,12 @@ namespace Microsoft.Plugin.Program.Programs
                     return true;
                 },
             };
+
+            // Adjust title of RunCommad result
+            if (AppType == ApplicationType.RunCommand)
+            {
+                result.Title = ExecutableName;
+            }
 
             result.TitleHighlightData = StringMatcher.FuzzySearch(query, result.Title).MatchData;
 
@@ -986,9 +992,11 @@ namespace Microsoft.Plugin.Program.Programs
                 };
 
                 // Run commands are always set as AppType "RunCommand"
+                var runCommandSuffixes = settings.RunCommandAdditionalSuffixes;
+                runCommandSuffixes.AddRange(settings.ProgramSuffixes);
                 var runCommandSources = new (bool IsEnabled, Func<IEnumerable<string>> GetPaths)[]
                 {
-                    (settings.EnablePathEnvironmentVariableSource, () => PathEnvironmentProgramPaths(settings.ProgramSuffixes)),
+                    (settings.EnablePathEnvironmentVariableSource, () => PathEnvironmentProgramPaths(runCommandSuffixes)),
                 };
 
                 var disabledProgramsList = settings.DisabledProgramSources;
