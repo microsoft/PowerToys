@@ -41,3 +41,6 @@ There are broadly two different categories of applications:
 
 ### Additional Notes
 - Arguments can be provided to the program plugin by entering them after `--` (a double dash).
+- The `Run commands` differ in two points from the normal `Win32Programs`:
+   - The result title contains the executable type.
+   - The file types `.cpl` and `.msc` are supported too.
