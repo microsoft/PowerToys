@@ -27,7 +27,7 @@ wstring GetVersion(path filePath)
 			{
 				if (size)
 				{
-					VS_FIXEDFILEINFO* verInfo = (VS_FIXEDFILEINFO*)lpBuffer;
+					VS_FIXEDFILEINFO* verInfo = static_cast<VS_FIXEDFILEINFO*>(lpBuffer);
 					if (verInfo->dwSignature == 0xfeef04bd)
 					{
 						version =

@@ -15,7 +15,7 @@ namespace
         };
 
         auto callback = [](HMONITOR monitor, HDC, RECT*, LPARAM prm) -> BOOL {
-            std::wostream& os = *((capture*)prm)->os;
+            std::wostream& os = *(reinterpret_cast<capture*>(prm))->os;
             MONITORINFOEX mi;
             mi.cbSize = sizeof(mi);
 
@@ -48,7 +48,7 @@ namespace
 
         capture c;
         c.os = &os;
-        if (EnumDisplayMonitors(nullptr, nullptr, callback, (LPARAM)&c))
+        if (EnumDisplayMonitors(nullptr, nullptr, callback, reinterpret_cast<LPARAM>(& c)))
         {
             os << "EnumDisplayMonitors OK\n";
         }

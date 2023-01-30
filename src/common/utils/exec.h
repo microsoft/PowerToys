@@ -4,8 +4,9 @@
 #include <Windows.h>
 
 // disable warning 26471 - Don't use reinterpret_cast. A cast from void* can use static_cast
+// disable warning 26493 - Don't use C-style casts
 #pragma warning(push)
-#pragma warning(disable: 26471)
+#pragma warning(disable: 26471 26493)
 #include <wil/resource.h>
 #pragma warning(pop)
 

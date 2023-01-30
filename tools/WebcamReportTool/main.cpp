@@ -6,10 +6,11 @@
 #include <cguid.h>
 
 // disable warning 26471 - Don't use reinterpret_cast. A cast from void* can use static_cast
+// disable warning 26493 - Don't use C-style casts
 #pragma warning(push)
-#pragma warning(disable: 26471)
+#pragma warning(disable: 26471 26493)
 #include <wil/com.h>
-#pragma warning(push)
+#pragma warning(pop)
 
 #include <wil/resource.h>
 
@@ -176,7 +177,7 @@ void ReportAllWebcams()
         std::string friendlyName;
         for (wchar_t c : wideFriendlyName)
         {
-            friendlyName += (char)c;
+            friendlyName += static_cast<char>(c);
         }
         log() << "Webcam " << friendlyName << '\n';
 
