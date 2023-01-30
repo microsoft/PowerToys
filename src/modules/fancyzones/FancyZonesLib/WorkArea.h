@@ -9,11 +9,22 @@ class ZonesOverlay;
 
 class WorkArea
 {
-public:
     WorkArea(HINSTANCE hinstance, const FancyZonesDataTypes::WorkAreaId& uniqueId, const FancyZonesUtils::Rect& workAreaRect);
-    ~WorkArea();
 
 public:
+    ~WorkArea();
+
+    static std::unique_ptr<WorkArea> Create(HINSTANCE hinstance, const FancyZonesDataTypes::WorkAreaId& uniqueId, const FancyZonesDataTypes::WorkAreaId& parentUniqueId, const FancyZonesUtils::Rect& workAreaRect)
+    {
+        auto self = std::unique_ptr<WorkArea>(new WorkArea(hinstance, uniqueId, workAreaRect));
+        if (!self->Init(hinstance, parentUniqueId))
+        {
+            return nullptr;
+        }
+
+        return self;
+    }
+
     inline bool Init([[maybe_unused]] HINSTANCE hinstance, const FancyZonesDataTypes::WorkAreaId& parentUniqueId)
     {
 #ifndef UNIT_TESTS
@@ -25,7 +36,7 @@ public:
         InitLayout(parentUniqueId);
         return true;
     }
-
+    
     FancyZonesDataTypes::WorkAreaId UniqueId() const noexcept { return { m_uniqueId }; }
     const std::unique_ptr<Layout>& GetLayout() const noexcept { return m_layout; }
     const std::unique_ptr<LayoutAssignedWindows>& GetLayoutWindows() const noexcept { return m_layoutWindows; }
@@ -66,14 +77,3 @@ private:
     std::unique_ptr<LayoutAssignedWindows> m_layoutWindows;
     std::unique_ptr<ZonesOverlay> m_zonesOverlay;
 };
-
-inline std::shared_ptr<WorkArea> MakeWorkArea(HINSTANCE hinstance, const FancyZonesDataTypes::WorkAreaId& uniqueId, const FancyZonesDataTypes::WorkAreaId& parentUniqueId, const FancyZonesUtils::Rect& workAreaRect)
-{
-    auto self = std::make_shared<WorkArea>(hinstance, uniqueId, workAreaRect);
-    if (!self->Init(hinstance, parentUniqueId))
-    {
-        return nullptr;
-    }
-
-    return self;
-}

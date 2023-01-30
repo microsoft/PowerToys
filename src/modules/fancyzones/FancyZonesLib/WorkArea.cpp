@@ -494,7 +494,7 @@ bool WorkArea::InitWindow(HINSTANCE hinstance) noexcept
 
 void WorkArea::InitLayout(const FancyZonesDataTypes::WorkAreaId& parentUniqueId) noexcept
 {
-    Logger::info(L"Initialize layout on {}", m_uniqueId.toString());
+    Logger::info(L"Initialize layout on {}, work area rect = {}x{}", m_uniqueId.toString(), m_workAreaRect.width(), m_workAreaRect.height());
 
     bool isLayoutAlreadyApplied = AppliedLayouts::instance().IsLayoutApplied(m_uniqueId);
     if (!isLayoutAlreadyApplied)
