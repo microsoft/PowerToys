@@ -211,7 +211,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
         }
 
         /// <summary>
-        /// Set flyout opening callback function
+        /// Set disable flyout hiding callback function
         /// </summary>
         /// <param name="implementation">delegate function implementation.</param>
         public static void SetDisableFlyoutHidingCallback(DisablingFlyoutHidingCallback implementation)
