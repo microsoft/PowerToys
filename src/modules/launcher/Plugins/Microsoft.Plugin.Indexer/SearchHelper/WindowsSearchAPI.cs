@@ -4,6 +4,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using Microsoft.Plugin.Indexer.Interop;
 using Wox.Plugin.Logger;
 
@@ -62,6 +63,7 @@ namespace Microsoft.Plugin.Indexer.SearchHelper
                     Title = (string)oleDBResult.FieldData[1],
                     PathLocalized = (string)oleDBResult.FieldData[3],
                     TitleLocalized = (string)oleDBResult.FieldData[4],
+                    ModifiedDate = (DateTime)oleDBResult.FieldData[5],
                 };
 
                 results.Add(result);
@@ -120,7 +122,7 @@ namespace Microsoft.Plugin.Indexer.SearchHelper
             queryHelper.QueryMaxResults = maxCount;
 
             // Set list of columns we want to display, getting the path presently
-            queryHelper.QuerySelectColumns = "System.ItemUrl, System.FileName, System.FileAttributes, System.ItemPathDisplay, System.ItemNameDisplay";
+            queryHelper.QuerySelectColumns = "System.ItemUrl, System.FileName, System.FileAttributes, System.ItemPathDisplay, System.ItemNameDisplay, System.DateModified";
 
             // Set additional query restriction
             queryHelper.QueryWhereRestrictions = "AND scope='file:'";
@@ -131,9 +133,9 @@ namespace Microsoft.Plugin.Indexer.SearchHelper
                 queryHelper.QueryWhereRestrictions += " AND System.FileAttributes <> SOME BITWISE " + _fileAttributeHidden;
             }
 
-            // To filter based on title for now
-            // This does not work correctly for more than one property. If more than one property is defined it behaves like nothing is defined. (htcfreek; 2023-01-28)
-            queryHelper.QueryContentProperties = "System.FileName, System.ItemNameDisplay";
+            // To filter based on title for now (FileName = Raw name in filesystem.; ItemNameDisplay = Localized name in Explorer.)
+            // NOTE: This does not work correctly for more than one property. If more than one property is defined it behaves like nothing is defined. As workaround we implemented our own filter code in the Search() method. (htcfreek; 2023-01-30)
+            // queryHelper.QueryContentProperties = "System.FileName, System.ItemNameDisplay";
 
             // Set sorting order
             queryHelper.QuerySorting = "System.DateModified DESC";
@@ -149,7 +151,17 @@ namespace Microsoft.Plugin.Indexer.SearchHelper
             ISearchQueryHelper queryHelper;
             InitQueryHelper(out queryHelper, manager, maxCount, DisplayHiddenFiles);
             ModifyQueryHelper(ref queryHelper, pattern);
-            return ExecuteQuery(queryHelper, keyword);
+
+            // Workaround to filter the search results based on more tha one property. (htcfreek; 2023-01-30)
+            // We filter filter based on title for now. (FileName = Raw name in filesystem.; ItemNameDisplay = Localized name in Explorer.)
+            queryHelper.QueryContentProperties = "System.FileName";
+            List<SearchResult> list1 = ExecuteQuery(queryHelper, keyword);
+            queryHelper.QueryContentProperties = "System.ItemNameDisplay";
+            List<SearchResult> list2 = ExecuteQuery(queryHelper, keyword);
+            list1.AddRange(list2.Where(itemL2 => !list1.Any(itemL1 => itemL1.CompareString == itemL2.CompareString)));
+            IEnumerable<SearchResult> listResults = list1.OrderByDescending(x => x.ModifiedDate).Take(maxCount);
+
+            return listResults;
         }
     }
 }

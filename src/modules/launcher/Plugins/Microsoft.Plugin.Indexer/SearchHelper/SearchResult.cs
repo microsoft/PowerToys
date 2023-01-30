@@ -2,6 +2,7 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System;
 using Wox.Plugin.Interfaces;
 
 namespace Microsoft.Plugin.Indexer.SearchHelper
@@ -19,5 +20,11 @@ namespace Microsoft.Plugin.Indexer.SearchHelper
 
         // Contains the  Title of the file or folder in localized version
         public string TitleLocalized { get; set; }
+
+        // Contains the Modiefied date
+        public DateTime ModifiedDate { get; set; }
+
+        // String used two compare items: "<Title>:<Path>"
+        public string CompareString => Title + ":" + Path;
     }
 }
