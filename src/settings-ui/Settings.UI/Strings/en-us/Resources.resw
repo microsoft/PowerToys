@@ -2752,6 +2752,9 @@ Activate by holding the key for the character you want to add an accent to, then
   <data name="QuickAccent_SelectedLanguage_Dutch.Content" xml:space="preserve">
     <value>Dutch</value>
   </data>
+  <data name="QuickAccent_SelectedLanguage_Norwegian.Content" xml:space="preserve">
+    <value>Norwegian</value>
+  </data>
   <data name="QuickAccent_SelectedLanguage_Pinyin.Content" xml:space="preserve">
     <value>Pinyin</value>
   </data>
