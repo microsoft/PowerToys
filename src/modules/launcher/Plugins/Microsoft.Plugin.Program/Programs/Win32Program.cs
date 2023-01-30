@@ -243,7 +243,7 @@ namespace Microsoft.Plugin.Program.Programs
                 },
             };
 
-            // Adjust title of RunCommad result
+            // Adjust title of RunCommand result
             if (AppType == ApplicationType.RunCommand)
             {
                 result.Title = ExecutableName;
