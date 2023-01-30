@@ -41,6 +41,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             "KU",
             "MK",
             "MI",
+            "NO",
             "PI",
             "PL",
             "PT",
