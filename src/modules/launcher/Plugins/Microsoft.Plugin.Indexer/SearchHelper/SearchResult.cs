@@ -22,9 +22,10 @@ namespace Microsoft.Plugin.Indexer.SearchHelper
         public string TitleLocalized { get; set; }
 
         // Contains the Modiefied date
-        public DateTime ModifiedDate { get; set; }
+        public DateTime DateModified { get; set; }
 
-        // String used two compare items: "<Title>:<Path>"
+        // String to compare the object instance: "<Title>:<Path>"
+        // We have to compare the original filesystem values to be correct on translated items.
         public string CompareString => Title + ":" + Path;
     }
 }

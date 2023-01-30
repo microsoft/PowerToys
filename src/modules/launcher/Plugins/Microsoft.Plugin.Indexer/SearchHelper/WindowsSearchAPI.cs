@@ -63,7 +63,7 @@ namespace Microsoft.Plugin.Indexer.SearchHelper
                     Title = (string)oleDBResult.FieldData[1],
                     PathLocalized = (string)oleDBResult.FieldData[3],
                     TitleLocalized = (string)oleDBResult.FieldData[4],
-                    ModifiedDate = (DateTime)oleDBResult.FieldData[5],
+                    DateModified = (DateTime)oleDBResult.FieldData[5],
                 };
 
                 results.Add(result);
@@ -153,13 +153,13 @@ namespace Microsoft.Plugin.Indexer.SearchHelper
             ModifyQueryHelper(ref queryHelper, pattern);
 
             // Workaround to filter the search results based on more tha one property. (htcfreek; 2023-01-30)
-            // We filter filter based on title for now. (FileName = Raw name in filesystem.; ItemNameDisplay = Localized name in Explorer.)
+            // We filter based on title for now. (FileName = Raw name in filesystem.; ItemNameDisplay = Localized name in Explorer.)
             queryHelper.QueryContentProperties = "System.FileName";
             List<SearchResult> list1 = ExecuteQuery(queryHelper, keyword);
             queryHelper.QueryContentProperties = "System.ItemNameDisplay";
             List<SearchResult> list2 = ExecuteQuery(queryHelper, keyword);
             list1.AddRange(list2.Where(itemL2 => !list1.Any(itemL1 => itemL1.CompareString == itemL2.CompareString)));
-            IEnumerable<SearchResult> listResults = list1.OrderByDescending(x => x.ModifiedDate).Take(maxCount);
+            IEnumerable<SearchResult> listResults = list1.OrderByDescending(x => x.DateModified).Take(maxCount);
 
             return listResults;
         }
