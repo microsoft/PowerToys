@@ -114,19 +114,19 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
                         }
                         else if ((string)_keyVisual._keyPresenter.Content == "Insert")
                         {
-                            _keyVisual._keyPresenter.Content = "Bild auf";
+                            _keyVisual._keyPresenter.Content = "Einfg";
                         }
                         else if ((string)_keyVisual._keyPresenter.Content == "Delete")
                         {
-                            _keyVisual._keyPresenter.Content = "Bild ab";
+                            _keyVisual._keyPresenter.Content = "Entf";
                         }
                         else if ((string)_keyVisual._keyPresenter.Content == "Home")
                         {
-                            _keyVisual._keyPresenter.Content = "Bild auf";
+                            _keyVisual._keyPresenter.Content = "Pos1";
                         }
                         else if ((string)_keyVisual._keyPresenter.Content == "End")
                         {
-                            _keyVisual._keyPresenter.Content = "Bild ab";
+                            _keyVisual._keyPresenter.Content = "Ende";
                         }
                         else if ((string)_keyVisual._keyPresenter.Content == "Print Screen")
                         {
