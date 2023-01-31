@@ -17,7 +17,7 @@ namespace Microsoft.Plugin.Program
 
         public List<string> ProgramSuffixes { get; set; } = new List<string>() { "bat", "appref-ms", "exe", "lnk", "url" };
 
-        public List<string> RunCommandAdditionalSuffixes { get; set; } = new List<string>() { "cpl", "msc" };
+        public List<string> RunCommandSuffixes { get; set; } = new List<string>() { "bat", "appref-ms", "exe", "lnk", "url", "cpl", "msc" };
 
         public bool EnableStartMenuSource { get; set; } = true;
 

@@ -992,11 +992,9 @@ namespace Microsoft.Plugin.Program.Programs
                 };
 
                 // Run commands are always set as AppType "RunCommand"
-                var runCommandSuffixes = settings.RunCommandAdditionalSuffixes;
-                runCommandSuffixes.AddRange(settings.ProgramSuffixes);
                 var runCommandSources = new (bool IsEnabled, Func<IEnumerable<string>> GetPaths)[]
                 {
-                    (settings.EnablePathEnvironmentVariableSource, () => PathEnvironmentProgramPaths(runCommandSuffixes)),
+                    (settings.EnablePathEnvironmentVariableSource, () => PathEnvironmentProgramPaths(settings.RunCommandSuffixes)),
                 };
 
                 var disabledProgramsList = settings.DisabledProgramSources;
