@@ -25,5 +25,6 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Enums
         MeasureTool,
         Hosts,
         WhatsNew,
+        PastePlain,
     }
 }
