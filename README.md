@@ -78,9 +78,9 @@ In this release, we focused on releasing new features and improvements.
 
 **Highlights**
 
-- Added an option for PowerToys Run to tab through results instead of context buttons.
-- All PowerToys registry entries are moved from HKLM to HKCU.
-- New utility: Quick access system tray launcher
+- Added an option for PowerToys Run to tab through results instead of context buttons. Thanks [@maws6502](https://github.com/maws6502)!
+- All PowerToys registry entries are moved from machine scope (HKLM) to user scope (HKCU).
+- Quick access system tray launcher. Thanks [@niels9001](https://github.com/niels9001)!
 
 ### Awake
 
@@ -96,7 +96,7 @@ In this release, we focused on releasing new features and improvements.
 
 ### Image Resizer
 
-- Fixed call to AssocGetPerceivedType.
+- Improved code quality around a silent crash that was being reported to Microsoft servers.
 
 ### PowerToys Run
 
@@ -114,23 +114,24 @@ In this release, we focused on releasing new features and improvements.
 
 ### Settings
 
-- Fixed URL click crash.
+- Fixed URL click crash on the "What's New" screen.
 - Added quick access system tray launcher. Thanks [@niels9001](https://github.com/niels9001)!
 
 ### Documentation
 
-- Added PowerToys disk usage footprint document.
+- Added PowerToys [disk usage footprint document](doc\devdocs\disk-usage-footprint.md).
 
 ### Development
 
-- Verify notice.md file and used NuGet packages are synced
+- Verify notice.md file and used NuGet packages are synced.
 - Turned on C++ code analysis and incrementally fixing warnings.
 - Automatically add list of .NET Runtime deps to Installer during build. Thanks [@snickler](https://github.com/snickler)!
 - Move all installer registry entries to HKCU.
 - Refactor installer - extract module related stuff from Product.wxs to per-module .wxs file.
 - Enhance ARM64 build configuration verification. Thanks [@snickler](https://github.com/snickler)!
+- Helped identify a WebView2 issue affecting PowerToys File explorer add-ons, which has been fixed upstream and released as an update through the usual Windows Update channels.
 
-#### What is being planned for version 0.67
+#### What is being planned for version 0.68
 
 For [v0.68][github-next-release-work], we'll work on below:
 
