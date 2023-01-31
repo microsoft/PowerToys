@@ -36,8 +36,8 @@ Microsoft PowerToys is a set of utilities for power users to tune and streamline
 
 Go to [Microsoft PowerToys GitHub releases page][github-release-link], click on `Assets` at the bottom to show the files available in the release. Please use the appropriate the PowerToys installer that matches your machine's architecture. For most, it is `x64`.
  
- - **For x64 processors (most common):** [PowerToysSetup-0.66.0-x64.exe](https://github.com/microsoft/PowerToys/releases/download/v0.66.0/PowerToysSetup-0.66.0-x64.exe)
- - **For ARM64 processors:** [PowerToysSetup-0.66.0-arm64.exe](https://github.com/microsoft/PowerToys/releases/download/v0.66.0/PowerToysSetup-0.66.0-arm64.exe)
+ - **For x64 processors (most common):** [PowerToysSetup-0.67.0-x64.exe](https://github.com/microsoft/PowerToys/releases/download/v0.67.0/PowerToysSetup-0.67.0-x64.exe)
+ - **For ARM64 processors:** [PowerToysSetup-0.67.0-arm64.exe](https://github.com/microsoft/PowerToys/releases/download/v0.67.0/PowerToysSetup-0.67.0-arm64.exe)
 
 This is our preferred method.
 
@@ -72,102 +72,70 @@ For guidance on developing for PowerToys, please read the [developer docs](/doc/
 
 Our [prioritized roadmap][roadmap] of features and utilities that the core team is focusing on.
 
-### 0.66 - December 2022 Update
+### 0.67 - January 2023 Update
 
-In this release, we focused on stability and improvements.
+In this release, we focused on releasing new features and improvements.
 
 **Highlights**
 
-- PowerToy utilities now ship with self-contained .NET 7, meaning it's not necessary to install .NET as part of the installer and it's easier to keep up to date.
-- It's possible to pick which of the installed OCR languages is used by Text Extractor by selecting it in the right-click context menu.
-- Added a setting to sort the order of the accented characters by usage frequency in Quick Accent.
+- Added an option for PowerToys Run to tab through results instead of context buttons.
+- All PowerToys registry entries are moved from HKLM to HKCU.
+- New utility: Quick access system tray launcher
 
-### General
+### Awake
 
-- Reduced resource consumption caused by logging. A thread for each logger was being created even for disabled utilities.
-- The .NET 7 dependency is now shipped self-contained within the utilities, using deep links to reduce storage space usage.
-
-### Color Picker
-
-- Fixed an issue where the custom color formats were not working when picking colors without using the editor.
-- Fixed a crash when using duplicated names for color formats.
-- Added two decimal formats, to distinguish between RGB and BGR.
-- Fixed color name localization, which was not working correctly on 0.65.
+- Disable instead of hiding "Keep screen on" option.
 
 ### FancyZones
 
-- Fixed an editor crash caused by deleting a zone while trying to move it.
-- Reduce the time it takes the tooltip for layout shortcut setting to appear in the editor.
+- Refactored and improved code quality.
 
-### File Locksmith
+### File explorer add-ons
 
-- Fixed an issue causing File Locksmith to hang when looking for open handles in some machines.
+- Fixed escaping HTML-sensitive characters when previewing developer files. Thanks [@davidegiacometti](https://github.com/davidegiacometti)!
 
-### Hosts File Editor
+### Image Resizer
 
-- Added a warning when duplicated entries are detected. Thanks [@davidegiacometti](https://github.com/davidegiacometti)!
+- Fixed call to AssocGetPerceivedType.
 
 ### PowerToys Run
 
-- Support drag and dropping for file results. Thanks [@daniel-richter](https://github.com/daniel-richter)!
+- Add option to tab through results only. Thanks [@maws6502](https://github.com/maws6502)!
+- System plugin - Add Recycle Bin command. Thanks [@htcfreek](https://github.com/htcfreek)!
+- WindowWalker plugin - Show all open windows with action keyword. Thanks [@davidegiacometti](https://github.com/davidegiacometti)!
 
 ### Quick Accent
 
-- Added support for dark theme. Thanks [@niels9001](https://github.com/niels9001)!
-- Increased default input delay to improve out of the box experience.
-- Fixed a bug causing the first character to not be selected when opening the overlay. Thanks [@davidegiacometti](https://github.com/davidegiacometti)!
-- Fixed the positioning of the overlay when showing near the horizontal edges of the screen.
-- Added additional Pinyin characters. Thanks [@char-46](https://github.com/char-46)!
-- Added Macedonian characters. Thanks [@ad-mca-mk](https://github.com/ad-mca-mk)!
-- Added a setting to sort characters by usage frequency.
-- Added a setting to always start selection in the first character, even when using the arrow keys as the activation method.
+- Added dashes characters. Thanks [@Aaron-Junker](https://github.com/Aaron-Junker)!
+- Added Estonian characters. Thanks [@jovark](https://github.com/jovark)!
+- Added Hebrew characters. Thanks [@Evyatar-E](https://github.com/Evyatar-E)!
+- Added combining characters. Thanks [@Aaron-Junker](https://github.com/Aaron-Junker)!
+- Added Norwegian characters. Thanks [@norwayman22](https://github.com/norwayman22)!
 
 ### Settings
 
-- Fixed an error that hid the option to keep the display on when using the "Indefinitely Awake" mode.
-- Fixed an accessibility issue causing the navigation bar to not work with narrator in scan mode.
-- Fixed an accessibility issue where the name for the shortcut control was not being read correctly.
-- Tweaked the Color Picker custom color format UI. Thanks [@niels9001](https://github.com/niels9001)!
-- Improved the shortcut control visibility and accessibility. Thanks [@niels9001](https://github.com/niels9001)!
-- Fixed an issue causing the Settings to not be saved correctly on scenarios where the admin user would be different then the user running PowerToys.
-- Added a setting to pick which language should be used by default when using Text Extractor.
-
-### Text Extractor
-
-- Improve behavior for CJK languages by not adding spaces for some characters that don't need them. Thanks [@AO2233](https://github.com/AO2233)!
-- OCR language can now be picked in the right-click context menu.
-
-### Video Conference Mute
-
-- Reduced resource consumption by not starting the File Watchers when the utility is disabled.
+- Fixed URL click crash.
+- Added quick access system tray launcher. Thanks [@niels9001](https://github.com/niels9001)!
 
 ### Documentation
 
-- Updated the development setup documentation.
-- Improved the Markdown documentation lists numbering in many docs. Thanks [@sanidhyas3s](https://github.com/sanidhyas3s)!
+- Added PowerToys disk usage footprint document.
 
 ### Development
 
+- Verify notice.md file and used NuGet packages are synced
 - Turned on C++ code analysis and incrementally fixing warnings.
-- C++ code analysis no longer runs on release CI to speed up building release candidates. It still runs on GitHub CI and when building locally to maintain code quality.
-- Cleaned up "to-do" comments referring to disposing memory on C#. Thanks [@davidegiacometti](https://github.com/davidegiacometti)!
-- Added a fabric bot rule for localization issues.
-- Fixed a CI build error after a .NET tools update.
-- Update the Windows App SDK dependency version to 1.2.
-- When building for arm64, the arm64 build tools are now preferred when building on an arm64 device. Thanks [@snickler](https://github.com/snickler)!
-- Updated the C# test framework and removed unused Newtonsoft.Json package references.
-- Updated StyleCop and fixed/enabled more warnings. Thanks [@davidegiacometti](https://github.com/davidegiacometti)!
-- Fixed a language typo in the code. Thanks [@eltociear](https://github.com/eltociear)!
-- Improved code quality around some silent crashes that were being reported to Microsoft servers.
-- Moved the GPO asset files to source instead of docs in the repo.
-- Upgraded the unit test NuGet packages.
+- Automatically add list of .NET Runtime deps to Installer during build. Thanks [@snickler](https://github.com/snickler)!
+- Move all installer registry entries to HKCU.
+- Refactor installer - extract module related stuff from Product.wxs to per-module .wxs file.
+- Enhance ARM64 build configuration verification. Thanks [@snickler](https://github.com/snickler)!
 
 #### What is being planned for version 0.67
 
-For [v0.67][github-next-release-work], we'll work on below:
+For [v0.68][github-next-release-work], we'll work on below:
 
 - Allow installing without UAC.
-- Add a flyout menu to the system tray icon for quick access.
+- Peek
 - Stability / bug fixes
 
 ## PowerToys Community
@@ -195,5 +163,5 @@ The application logs basic telemetry. Our Telemetry Data page (Coming Soon) has 
 [usingPowerToys-docs-link]: https://aka.ms/powertoys-docs
 
 <!-- items that need to be updated release to release -->
-[github-next-release-work]: https://github.com/microsoft/PowerToys/issues?q=is%3Aopen+is%3Aissue+project%3Amicrosoft%2FPowerToys%2F40
-[github-current-release-work]: https://github.com/microsoft/PowerToys/issues?q=is%3Aopen+is%3Aissue+project%3Amicrosoft%2FPowerToys%2F39
+[github-next-release-work]: https://github.com/microsoft/PowerToys/issues?q=is%3Aopen+is%3Aissue+project%3Amicrosoft%2FPowerToys%2F41
+[github-current-release-work]: https://github.com/microsoft/PowerToys/issues?q=is%3Aopen+is%3Aissue+project%3Amicrosoft%2FPowerToys%2F40
