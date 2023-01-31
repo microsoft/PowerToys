@@ -6,6 +6,7 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel.Composition;
 using Microsoft.PowerToys.Settings.UI.Library.Utilities;
+using Microsoft.PowerToys.Telemetry;
 using PastePlain.Settings;
 using Windows.ApplicationModel.DataTransfer;
 using static PastePlain.OSInterop;
@@ -159,6 +160,8 @@ public class KeyboardMonitor : IDisposable
                                 {
                                     Logger.LogError("SendInput failed.");
                                 }
+
+                                PowerToysTelemetry.Log.WriteEvent(new PastePlain.Telemetry.PastePlainInvokedEvent());
                             }
                         }
                     }

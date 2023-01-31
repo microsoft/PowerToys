@@ -9,8 +9,16 @@ using Microsoft.PowerToys.Telemetry.Events;
 namespace PastePlain.Telemetry
 {
     [EventData]
-    public class PastePlainCancelledEvent : EventBase, IEvent
+    public class PastePlainSettings : EventBase, IEvent
     {
+        public PastePlainSettings(string shortcut)
+        {
+            ActivationShortcut = shortcut;
+            EventName = "PastePlain_Settings";
+        }
+
+        public string ActivationShortcut { get; set; }
+
         public PartA_PrivTags PartA_PrivTags => PartA_PrivTags.ProductAndServiceUsage;
     }
 }

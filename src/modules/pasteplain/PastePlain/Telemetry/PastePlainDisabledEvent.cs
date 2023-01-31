@@ -9,7 +9,7 @@ using Microsoft.PowerToys.Telemetry.Events;
 namespace PastePlain.Telemetry
 {
     [EventData]
-    public class PastePlainCaptureEvent : EventBase, IEvent
+    public class PastePlainDisabledEvent : EventBase, IEvent
     {
         public PartA_PrivTags PartA_PrivTags => PartA_PrivTags.ProductAndServiceUsage;
     }

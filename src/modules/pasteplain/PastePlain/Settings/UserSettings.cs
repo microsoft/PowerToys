@@ -9,6 +9,7 @@ using System.IO.Abstractions;
 using System.Threading;
 using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.PowerToys.Settings.UI.Library.Utilities;
+using Microsoft.PowerToys.Telemetry;
 
 namespace PastePlain.Settings
 {
@@ -104,16 +105,8 @@ namespace PastePlain.Settings
                 return;
             }
 
-            // TODO: Send Telemetry when settings change
-            // var telemetrySettings = new Telemetry.PastePlainSettings(properties.VisibleColorFormats)
-            // {
-            //     ActivationShortcut = properties.ActivationShortcut.ToString(),
-            //     ActivationBehaviour = properties.ActivationAction.ToString(),
-            //     ColorFormatForClipboard = properties.CopiedColorRepresentation.ToString(),
-            //     ShowColorName = properties.ShowColorName,
-            // };
-            //
-            // PowerToysTelemetry.Log.WriteEvent(telemetrySettings);
+            var telemetrySettings = new Telemetry.PastePlainSettings(properties.ActivationShortcut.ToString());
+            PowerToysTelemetry.Log.WriteEvent(telemetrySettings);
         }
     }
 }
