@@ -28,7 +28,7 @@
  - [ ] PowerToys Run ("Start typing" string is localized, for example)
  - [ ] Image Resizer
  - [ ] Shortcut Guide (Windows controls are localized)
- - [ ] File Explorer menu entries for Image Resizer and Power Rename
+ - [ ] File Explorer menu entries for Image Resizer, Power Rename and FileLocksmith
  - [ ] Hosts File Editor
  - [ ] File Locksmith
 
