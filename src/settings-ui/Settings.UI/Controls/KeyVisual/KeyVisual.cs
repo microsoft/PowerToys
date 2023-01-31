@@ -2,6 +2,8 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System;
+using System.Globalization;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Markup;
@@ -88,14 +90,97 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
             {
                 if (_keyVisual.Content.GetType() == typeof(string))
                 {
+                    string currentLanguage = CultureInfo.CurrentCulture.TwoLetterISOLanguageName;
+
                     _keyVisual.Style = GetStyleSize("TextKeyVisualStyle");
                     _keyVisual._keyPresenter.Content = _keyVisual.Content;
+                    if (currentLanguage == "de")
+                    {
+                        if ((string)_keyVisual._keyPresenter.Content == "Ctrl")
+                        {
+                            _keyVisual._keyPresenter.Content = "Strg";
+                        }
+                        else if ((string)_keyVisual._keyPresenter.Content == "Shift")
+                        {
+                            _keyVisual._keyPresenter.Content = "Umschalt";
+                        }
+                        else if ((string)_keyVisual._keyPresenter.Content == "PgUp")
+                        {
+                            _keyVisual._keyPresenter.Content = "Bild auf";
+                        }
+                        else if ((string)_keyVisual._keyPresenter.Content == "PgDn")
+                        {
+                            _keyVisual._keyPresenter.Content = "Bild ab";
+                        }
+                        else if ((string)_keyVisual._keyPresenter.Content == "Insert")
+                        {
+                            _keyVisual._keyPresenter.Content = "Bild auf";
+                        }
+                        else if ((string)_keyVisual._keyPresenter.Content == "Delete")
+                        {
+                            _keyVisual._keyPresenter.Content = "Bild ab";
+                        }
+                        else if ((string)_keyVisual._keyPresenter.Content == "Home")
+                        {
+                            _keyVisual._keyPresenter.Content = "Bild auf";
+                        }
+                        else if ((string)_keyVisual._keyPresenter.Content == "End")
+                        {
+                            _keyVisual._keyPresenter.Content = "Bild ab";
+                        }
+                        else if ((string)_keyVisual._keyPresenter.Content == "Print Screen")
+                        {
+                            _keyVisual._keyPresenter.Content = "Druck";
+                        }
+                        else if ((string)_keyVisual._keyPresenter.Content == "Space")
+                        {
+                            _keyVisual._keyPresenter.Content = "Leertaste";
+                        }
+                        else if ((string)_keyVisual._keyPresenter.Content == "Enter")
+                        {
+                            _keyVisual._keyPresenter.Content = "Eingabetaste";
+                        }
+                    }
+                    else if (currentLanguage == "en")
+                    {
+                        if ((string)_keyVisual._keyPresenter.Content == "PgUp")
+                        {
+                            _keyVisual._keyPresenter.Content = "Page up";
+                        }
+                        else if ((string)_keyVisual._keyPresenter.Content == "PgDn")
+                        {
+                            _keyVisual._keyPresenter.Content = "Page down";
+                        }
+                    }
+                    else if (currentLanguage == "fr")
+                    {
+                        if ((string)_keyVisual._keyPresenter.Content == "Shift")
+                        {
+                            _keyVisual._keyPresenter.Content = "Maj";
+                        }
+                    }
+                    else if (currentLanguage == "es")
+                    {
+                        if ((string)_keyVisual._keyPresenter.Content == "Shift")
+                        {
+                            _keyVisual._keyPresenter.Content = "Mayús";
+                        }
+                    }
+                    else if (currentLanguage == "it")
+                    {
+                        if ((string)_keyVisual._keyPresenter.Content == "Shift")
+                        {
+                            _keyVisual._keyPresenter.Content = "Maiusc";
+                        }
+                    }
                 }
                 else
                 {
                     _keyVisual.Style = GetStyleSize("IconKeyVisualStyle");
 
-                    switch ((int)_keyVisual.Content)
+                    int test = (int)_keyVisual.Content;
+
+                    switch (test)
                     {
                         /* We can enable other glyphs in the future
                         case 13: // The Enter key or button.
