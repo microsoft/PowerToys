@@ -131,19 +131,19 @@ Mouse Pointer Crosshairs:
 
 ### Text Extractor
  * Enable Text Extractor. Then:
-   - [ ] Press the activation shortcut and verify the overlay appears.
-   - [ ] Press Escape and verify the overlay disappears.
-   - [ ] Press the activation shortcut and verify the overlay appears.
-   - [ ] Right-click and select Cancel. Verify the overlay disappears.
-   - [ ] Disable Text Extractor and verify that the activation shortuct no longer activates the utility.
+   - [x] Press the activation shortcut and verify the overlay appears.
+   - [x] Press Escape and verify the overlay disappears.
+   - [x] Press the activation shortcut and verify the overlay appears.
+   - [x] Right-click and select Cancel. Verify the overlay disappears.
+   - [x] Disable Text Extractor and verify that the activation shortuct no longer activates the utility.
  * With Text Extractor enabled and activated:
-   - [ ] Try to select text and verify it is copied to the clipboard.
-   - [ ] Try to select a different OCR language by right-clicking and verify the change is applied.
+   - [x] Try to select text and verify it is copied to the clipboard.
+   - [x] Try to select a different OCR language by right-clicking and verify the change is applied.
  * In a multi-monitor setup with different dpis on each monitor:
-   - [ ] Verify text is correctly captured on all monitors.
+   - [x] Verify text is correctly captured on all monitors.
  * Test the different settings and verify they are applied:
-   - [ ] Activation shortcut
-   - [ ] OCR Language
+   - [x] Activation shortcut
+   - [x] OCR Language
 
 ### File Locksmith
  * Start the PowerToys installer executable and let it stay in the initial screen.
