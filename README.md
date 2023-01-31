@@ -138,7 +138,8 @@ In this release, we focused on releasing new features and improvements.
 For [v0.68][github-next-release-work], we'll work on below:
 
 - Allow installing without UAC.
-- New utility: Peek.
+- New utility: [PowerToys Peek](https://github.com/microsoft/PowerToys/issues/80)
+- New utility: [Paste as plain text](https://github.com/microsoft/PowerToys/issues/1684)
 - Stability / bug fixes
 
 ## PowerToys Community
