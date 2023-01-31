@@ -35,41 +35,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
             GeneralSettingsConfig = settingsRepository.SettingsConfig;
 
-            _findMyMouseEnabledGpoRuleConfiguration = GPOWrapper.GetConfiguredFindMyMouseEnabledValue();
-            if (_findMyMouseEnabledGpoRuleConfiguration == GpoRuleConfigured.Disabled || _findMyMouseEnabledGpoRuleConfiguration == GpoRuleConfigured.Enabled)
-            {
-                // Get the enabled state from GPO.
-                _findMyMouseEnabledStateIsGPOConfigured = true;
-                _isFindMyMouseEnabled = _findMyMouseEnabledGpoRuleConfiguration == GpoRuleConfigured.Enabled;
-            }
-            else
-            {
-                _isFindMyMouseEnabled = GeneralSettingsConfig.Enabled.FindMyMouse;
-            }
-
-            _highlighterEnabledGpoRuleConfiguration = GPOWrapper.GetConfiguredMouseHighlighterEnabledValue();
-            if (_highlighterEnabledGpoRuleConfiguration == GpoRuleConfigured.Disabled || _highlighterEnabledGpoRuleConfiguration == GpoRuleConfigured.Enabled)
-            {
-                // Get the enabled state from GPO.
-                _highlighterEnabledStateIsGPOConfigured = true;
-                _isMouseHighlighterEnabled = _highlighterEnabledGpoRuleConfiguration == GpoRuleConfigured.Enabled;
-            }
-            else
-            {
-                _isMouseHighlighterEnabled = GeneralSettingsConfig.Enabled.MouseHighlighter;
-            }
-
-            _mousePointerCrosshairsEnabledGpoRuleConfiguration = GPOWrapper.GetConfiguredMousePointerCrosshairsEnabledValue();
-            if (_mousePointerCrosshairsEnabledGpoRuleConfiguration == GpoRuleConfigured.Disabled || _mousePointerCrosshairsEnabledGpoRuleConfiguration == GpoRuleConfigured.Enabled)
-            {
-                // Get the enabled state from GPO.
-                _mousePointerCrosshairsEnabledStateIsGPOConfigured = true;
-                _isMousePointerCrosshairsEnabled = _mousePointerCrosshairsEnabledGpoRuleConfiguration == GpoRuleConfigured.Enabled;
-            }
-            else
-            {
-                _isMousePointerCrosshairsEnabled = GeneralSettingsConfig.Enabled.MousePointerCrosshairs;
-            }
+            InitializeEnabledValues();
 
             // To obtain the find my mouse settings, if the file exists.
             // If not, to create a file with the default settings and to return the default configurations.
@@ -132,6 +98,45 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
             // set the callback functions value to handle outgoing IPC message.
             SendConfigMSG = ipcMSGCallBackFunc;
+        }
+
+        private void InitializeEnabledValues()
+        {
+            _findMyMouseEnabledGpoRuleConfiguration = GPOWrapper.GetConfiguredFindMyMouseEnabledValue();
+            if (_findMyMouseEnabledGpoRuleConfiguration == GpoRuleConfigured.Disabled || _findMyMouseEnabledGpoRuleConfiguration == GpoRuleConfigured.Enabled)
+            {
+                // Get the enabled state from GPO.
+                _findMyMouseEnabledStateIsGPOConfigured = true;
+                _isFindMyMouseEnabled = _findMyMouseEnabledGpoRuleConfiguration == GpoRuleConfigured.Enabled;
+            }
+            else
+            {
+                _isFindMyMouseEnabled = GeneralSettingsConfig.Enabled.FindMyMouse;
+            }
+
+            _highlighterEnabledGpoRuleConfiguration = GPOWrapper.GetConfiguredMouseHighlighterEnabledValue();
+            if (_highlighterEnabledGpoRuleConfiguration == GpoRuleConfigured.Disabled || _highlighterEnabledGpoRuleConfiguration == GpoRuleConfigured.Enabled)
+            {
+                // Get the enabled state from GPO.
+                _highlighterEnabledStateIsGPOConfigured = true;
+                _isMouseHighlighterEnabled = _highlighterEnabledGpoRuleConfiguration == GpoRuleConfigured.Enabled;
+            }
+            else
+            {
+                _isMouseHighlighterEnabled = GeneralSettingsConfig.Enabled.MouseHighlighter;
+            }
+
+            _mousePointerCrosshairsEnabledGpoRuleConfiguration = GPOWrapper.GetConfiguredMousePointerCrosshairsEnabledValue();
+            if (_mousePointerCrosshairsEnabledGpoRuleConfiguration == GpoRuleConfigured.Disabled || _mousePointerCrosshairsEnabledGpoRuleConfiguration == GpoRuleConfigured.Enabled)
+            {
+                // Get the enabled state from GPO.
+                _mousePointerCrosshairsEnabledStateIsGPOConfigured = true;
+                _isMousePointerCrosshairsEnabled = _mousePointerCrosshairsEnabledGpoRuleConfiguration == GpoRuleConfigured.Enabled;
+            }
+            else
+            {
+                _isMousePointerCrosshairsEnabled = GeneralSettingsConfig.Enabled.MousePointerCrosshairs;
+            }
         }
 
         public bool IsFindMyMouseEnabled
@@ -691,6 +696,14 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             SndModuleSettings<SndMousePointerCrosshairsSettings> ipcMessage = new SndModuleSettings<SndMousePointerCrosshairsSettings>(outsettings);
             SendConfigMSG(ipcMessage.ToJsonString());
             SettingsUtils.SaveSettings(MousePointerCrosshairsSettingsConfig.ToJsonString(), MousePointerCrosshairsSettings.ModuleName);
+        }
+
+        public void RefreshEnabledState()
+        {
+            InitializeEnabledValues();
+            OnPropertyChanged(nameof(IsFindMyMouseEnabled));
+            OnPropertyChanged(nameof(IsMouseHighlighterEnabled));
+            OnPropertyChanged(nameof(IsMousePointerCrosshairsEnabled));
         }
 
         private Func<string, int> SendConfigMSG { get; }

@@ -895,7 +895,7 @@
     <value>Remove</value>
     <comment>Removes a user defined setting group for Image Resizer</comment>
   </data>
-	<data name="RemoveItem.Text" xml:space="preserve">
+  <data name="RemoveItem.Text" xml:space="preserve">
     <value>Delete</value>
   </data>
   <data name="ImageResizer_Image.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
@@ -2693,7 +2693,7 @@ Activate by holding the key for the character you want to add an accent to, then
   <data name="QuickAccent_StartSelectionFromTheLeft_Indicator.Header" xml:space="preserve">
     <value>Start selection from the left</value>
   </data>
-	<data name="QuickAccent_StartSelectionFromTheLeft_Indicator.Description" xml:space="preserve">
+  <data name="QuickAccent_StartSelectionFromTheLeft_Indicator.Description" xml:space="preserve">
     <value>Start selection from the leftmost character for all activation keys, including left and right arrows</value>
   </data>
   <data name="QuickAccent_DisableFullscreen.Header" xml:space="preserve">
@@ -2751,6 +2751,9 @@ Activate by holding the key for the character you want to add an accent to, then
   </data>
   <data name="QuickAccent_SelectedLanguage_Dutch.Content" xml:space="preserve">
     <value>Dutch</value>
+  </data>
+  <data name="QuickAccent_SelectedLanguage_Norwegian.Content" xml:space="preserve">
+    <value>Norwegian</value>
   </data>
   <data name="QuickAccent_SelectedLanguage_Pinyin.Content" xml:space="preserve">
     <value>Pinyin</value>
@@ -2884,5 +2887,48 @@ Activate by holding the key for the character you want to add an accent to, then
   </data>
   <data name="TextExtractor_Languages.Header" xml:space="preserve">
     <value>Preferred language</value>
+  </data>
+  <data name="AllAppsTxt.Text" xml:space="preserve">
+    <value>All apps</value>
+  </data>
+  <data name="BackBtn.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>Back</value>
+  </data>
+  <data name="BackLabel.Text" xml:space="preserve">
+    <value>Back</value>
+  </data>
+  <data name="BugReportBtn.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>Bug report</value>
+  </data>
+  <data name="BugReportTooltip.Text" xml:space="preserve">
+    <value>Bug report</value>
+  </data>
+  <data name="DocsBtn.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>Documentation</value>
+  </data>
+  <data name="DocsTooltip.Text" xml:space="preserve">
+    <value>Documentation</value>
+  </data>
+  <data name="FZEditorString" xml:space="preserve">
+    <value>FancyZones Editor</value>
+    <comment>Do not localize this string</comment>
+  </data>
+  <data name="MoreBtn.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>More</value>
+  </data>
+  <data name="MoreLabel.Text" xml:space="preserve">
+    <value>More</value>
+  </data>
+  <data name="SettingsBtn.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>Settings</value>
+  </data>
+  <data name="SettingsTooltip.Text" xml:space="preserve">
+    <value>Settings</value>
+  </data>
+  <data name="ShortcutsTxt.Text" xml:space="preserve">
+    <value>Shortcuts</value>
+  </data>
+  <data name="UpdateAvailable.Title" xml:space="preserve">
+    <value>Update available</value>
   </data>
 </root>

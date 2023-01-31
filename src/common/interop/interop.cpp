@@ -187,6 +187,10 @@ public
             return gcnew String(CommonSharedConstants::FZE_EXIT_EVENT);
         }
 
+        static String ^ FZEToggleEvent() {
+          return gcnew String(CommonSharedConstants::FANCY_ZONES_EDITOR_TOGGLE_EVENT);
+        }
+
         static String ^ ColorPickerSendSettingsTelemetryEvent() {
             return gcnew String(CommonSharedConstants::COLOR_PICKER_SEND_SETTINGS_TELEMETRY_EVENT);
         }
@@ -207,6 +211,14 @@ public
             return gcnew String(CommonSharedConstants::POWERACCENT_EXIT_EVENT);
         }
 
+        static String ^ ShortcutGuideTriggerEvent() {
+            return gcnew String(CommonSharedConstants::SHORTCUT_GUIDE_TRIGGER_EVENT);
+        }
+
+        static String
+            ^ MeasureToolTriggerEvent() {
+                  return gcnew String(CommonSharedConstants::MEASURE_TOOL_TRIGGER_EVENT);
+              }
         static String ^ GcodePreviewResizeEvent() {
             return gcnew String(CommonSharedConstants::GCODE_PREVIEW_RESIZE_EVENT);
         }

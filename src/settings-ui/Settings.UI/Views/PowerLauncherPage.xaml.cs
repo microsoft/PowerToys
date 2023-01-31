@@ -5,6 +5,7 @@
 using System;
 using System.Collections.ObjectModel;
 using System.IO;
+using Microsoft.PowerToys.Settings.UI.Helpers;
 using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.PowerToys.Settings.UI.Library.Interfaces;
 using Microsoft.PowerToys.Settings.UI.Library.Utilities;
@@ -14,7 +15,7 @@ using Windows.ApplicationModel.Resources;
 
 namespace Microsoft.PowerToys.Settings.UI.Views
 {
-    public sealed partial class PowerLauncherPage : Page
+    public sealed partial class PowerLauncherPage : Page, IRefreshablePage
     {
         public PowerLauncherViewModel ViewModel { get; set; }
 
@@ -83,6 +84,11 @@ namespace Microsoft.PowerToys.Settings.UI.Views
         private void OpenColorsSettings_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
         {
             Helpers.StartProcessHelper.Start(Helpers.StartProcessHelper.ColorsSettings);
+        }
+
+        public void RefreshEnabledState()
+        {
+            ViewModel.RefreshEnabledState();
         }
 
         /*
