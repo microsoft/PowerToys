@@ -707,6 +707,7 @@ HTTRANSPARENT
 HValue
 Hvci
 hwb
+HWHEEL
 HWINEVENTHOOK
 hwnd
 HWNDFIRST
@@ -877,6 +878,8 @@ LCONTROL
 LCtrl
 Ldone
 ldx
+LEFTDOWN
+LEFTUP
 LEFTSCROLLBAR
 lego
 len
@@ -1023,6 +1026,8 @@ mftransform
 mic
 microsoft
 Midl
+MIDDLEDOWN
+MIDDLEUP
 mii
 MIIM
 millis
@@ -1153,6 +1158,7 @@ NOACTIVATE
 NOAGGREGATION
 NOASYNC
 NOCLOSEPROCESS
+NOCOALESCE
 NOCOPYBITS
 nodeca
 nodiscard
@@ -1164,6 +1170,7 @@ NOMINMAX
 NOMOVE
 NONAME
 nonclient
+nonconvert
 NONCONVERT
 NONELEVATED
 NONINFRINGEMENT
@@ -1271,6 +1278,7 @@ PARENTRELATIVEPARSING
 PArgb
 parray
 PARTIALCONFIRMATIONDIALOGTITLE
+pasteplain
 pathcch
 Pathto
 PAUDIO
@@ -1497,6 +1505,8 @@ rgs
 rhs
 ricardosantos
 RIDEV
+RIGHTDOWN
+RIGHTUP
 RIGHTSCROLLBAR
 riid
 RKey
@@ -1504,6 +1514,7 @@ RLO
 RMENU
 RNumber
 roadmap
+Roamable
 robmensching
 Roboto
 rooler
@@ -1661,6 +1672,7 @@ Soref
 SOURCECLIENTAREAONLY
 SOURCEHEADER
 sourcesdirectory
+SPACEBAR
 spam
 spdisp
 spdlog
@@ -1864,6 +1876,7 @@ UIs
 Ulaanbaatar
 ULARGE
 ULONGLONG
+UMsg
 unassign
 uncompilable
 UNCPRIORITY
@@ -1941,6 +1954,7 @@ VIDEOINFOHEADER
 viewbox
 viewmodel
 vih
+VIRTUALDESK
 virtualkey
 visiblecolorformats
 Visibletrue
@@ -2083,6 +2097,7 @@ WResize
 writefile
 Wrk
 wrl
+WScan
 wsf
 wsh
 wsl
@@ -2097,6 +2112,7 @@ wtypes
 Wubi
 wuceffectsi
 WVC
+WVk
 Wwan
 Wwanpp
 XAttribute
@@ -2107,6 +2123,8 @@ XBUTTONDOWN
 XBUTTONUP
 xcopy
 XDocument
+XDOWN
+XUP
 XElement
 XFile
 XIncrement
