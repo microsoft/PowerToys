@@ -4036,4 +4036,7 @@ Activate by holding the key for the character you want to add an accent to, then
   <data name="GPO_SomeThumbnailProvidersAreManaged.Title" xml:space="preserve">
     <value>The enabled state of some thumbnail handlers is managed by your organization.</value>
   </data>
+  <data name="ExitPT_NavViewItem.Content" xml:space="preserve">
+    <value>Exit PowerToys</value>
+  </data>
 </root>
