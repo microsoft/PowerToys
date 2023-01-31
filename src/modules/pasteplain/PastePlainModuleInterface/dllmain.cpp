@@ -8,7 +8,7 @@
 #include <common/SettingsAPI/settings_objects.h>
 #include <common/utils/resources.h>
 
-#include <pastetext/PastePlainModuleInterface/PastePlainConstants.h>
+#include "PastePlainConstants.h"
 #include <common/interop/shared_constants.h>
 #include <common/utils/logger_helper.h>
 #include <common/utils/winapi_error.h>
@@ -201,7 +201,7 @@ public:
 
         // Create a Settings object.
         PowerToysSettings::Settings settings(hinstance, get_name());
-        settings.set_description(GET_RESOURCE_STRING(IDS_PastePlain_SETTINGS_DESC));
+        settings.set_description(GET_RESOURCE_STRING(IDS_PASTEPLAIN_SETTINGS_DESC));
 
         settings.set_overview_link(L"https://aka.ms/PowerToysOverview_PastePlain");
 

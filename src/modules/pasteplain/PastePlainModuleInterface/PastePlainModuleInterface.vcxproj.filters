@@ -50,12 +50,12 @@
       <Filter>Resource Files</Filter>
     </None>
     <None Include="packages.config" />
-    <None Include="PowerOCR.base.rc">
+    <None Include="PastePlain.base.rc">
       <Filter>Resource Files</Filter>
     </None>
   </ItemGroup>
   <ItemGroup>
-    <ResourceCompile Include="Generated Files\PowerOCR.rc">
+    <ResourceCompile Include="Generated Files\PastePlain.rc">
       <Filter>Resource Files</Filter>
     </ResourceCompile>
   </ItemGroup>

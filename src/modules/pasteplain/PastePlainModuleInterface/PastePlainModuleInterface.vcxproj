@@ -2,13 +2,13 @@
 <Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <Import Project="..\..\..\..\packages\Microsoft.Windows.CppWinRT.2.0.220929.3\build\native\Microsoft.Windows.CppWinRT.props" Condition="Exists('..\..\..\..\packages\Microsoft.Windows.CppWinRT.2.0.220929.3\build\native\Microsoft.Windows.CppWinRT.props')" />
   <Target Name="GenerateResourceFiles" BeforeTargets="PrepareForBuild">
-    <Exec Command="powershell -NonInteractive -executionpolicy Unrestricted $(SolutionDir)tools\build\convert-resx-to-rc.ps1 $(MSBuildThisFileDirectory) resource.base.h resource.h PowerOCR.base.rc PowerOCR.rc" />
+    <Exec Command="powershell -NonInteractive -executionpolicy Unrestricted $(SolutionDir)tools\build\convert-resx-to-rc.ps1 $(MSBuildThisFileDirectory) resource.base.h resource.h PastePlain.base.rc PastePlain.rc" />
   </Target>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>15.0</VCProjectVersion>
     <Keyword>Win32Proj</Keyword>
     <ProjectGuid>{FC373B24-3293-453C-AAF5-CF2909DCEE6A}</ProjectGuid>
-    <RootNamespace>PowerOCR</RootNamespace>
+    <RootNamespace>PastePlain</RootNamespace>
     <ProjectName>PastePlainInterface</ProjectName>
     <TargetName>PowerToys.PastePlainInterface</TargetName>
   </PropertyGroup>
@@ -27,7 +27,7 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup>
-    <OutDir>$(SolutionDir)$(Platform)\$(Configuration)\modules\PowerOCR\</OutDir>
+    <OutDir>$(SolutionDir)$(Platform)\$(Configuration)\modules\PastePlain\</OutDir>
   </PropertyGroup>
   <ItemDefinitionGroup>
     <ClCompile>
@@ -62,8 +62,8 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
-    <None Include="PowerOCR.base.rc" />
-    <ResourceCompile Include="Generated Files\PowerOCR.rc" />
+    <None Include="PastePlain.base.rc" />
+    <ResourceCompile Include="Generated Files\PastePlain.rc" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Resources.resx">
