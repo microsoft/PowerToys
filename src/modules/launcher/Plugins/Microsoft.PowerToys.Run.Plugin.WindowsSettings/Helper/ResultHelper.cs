@@ -45,7 +45,7 @@ namespace Microsoft.PowerToys.Run.Plugin.WindowsSettings.Helper
 
                 AddOptionalToolTip(entry, result);
 
-                // To not show duplicated entries we check the existing list before adding the entry. Example: Device Manager entry for Control Panel and Device Manager entry for MMC.
+                // To not show duplicate entries we check the existing results on the list before adding the new entry. Example: Device Manager entry for Control Panel and Device Manager entry for MMC.
                 if (!resultList.Any(x => x.Title == result.Title))
                 {
                     resultList.Add(result);
