@@ -33,6 +33,10 @@ Upvote the original issue by clicking its [+😊] button and hitting 👍 (+1) i
 
 Please comment on an issue to let us know you're interested in working on something before you start the work. Not only does this avoid multiple people unexpectedly working on the same thing at the same time but it enables us to make sure everyone is clear on what should be done to implement any new functionality. It's less work for everyone, in the long run, to establish this up front.
 
+### Localisation issues
+
+We currently don't accept contributions fixing localisation issues. Localisation is handled by an internal Microsoft team. But we do encourage people to file issues regarding translation mistakes. We will then forward these issues to the corresponding team.
+
 ### To Spec or not to Spec
 
 A key point is for everyone to understand the approach that will be taken. We want to be sure if anyone does work, we will accept it in. Items that are larger in scope we'll want some type of spec to understand what is being planned and have a discussion. Specs help collaborators discuss different approaches to solve a problem, describe how the feature will behave, how the feature will impact the user, what happens if something goes wrong, etc. Driving towards agreement in a spec, before any code is written, often results in simpler code, and less wasted effort in the long run.
@@ -53,7 +57,7 @@ Follow the [development guidelines](https://github.com/microsoft/PowerToys/blob/
 
 ### Naming of features and functionality
 
-Naming should be descriptive and straight forward.  We want names to be clear about functionality and usefulness moving forward. 
+Naming should be descriptive and straight forward. We want names to be clear about functionality and usefulness moving forward. 
 
 ### How can I become a collaborator on the PowerToys team
 
