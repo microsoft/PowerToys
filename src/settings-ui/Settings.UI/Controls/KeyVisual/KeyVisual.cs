@@ -359,6 +359,17 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
                             _keyVisual._keyPresenter.Content = "Pausa";
                         }
                     }
+                    else if (currentLanguage == "nl")
+                    {
+                        if ((string)_keyVisual._keyPresenter.Content == "Shift")
+                        {
+                            _keyVisual._keyPresenter.Content = "Skift";
+                        }
+                        else if ((string)_keyVisual._keyPresenter.Content == "Space")
+                        {
+                            _keyVisual._keyPresenter.Content = "Mellemrumstast";
+                        }
+                    }
                     else
                     {
                         if ((string)_keyVisual._keyPresenter.Content == "PgUp")
