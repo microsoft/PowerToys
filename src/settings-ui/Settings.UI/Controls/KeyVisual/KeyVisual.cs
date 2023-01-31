@@ -91,6 +91,7 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
                 if (_keyVisual.Content.GetType() == typeof(string))
                 {
                     string currentLanguage = CultureInfo.CurrentCulture.TwoLetterISOLanguageName;
+                    currentLanguage = "fr";
 
                     _keyVisual.Style = GetStyleSize("TextKeyVisualStyle");
                     _keyVisual._keyPresenter.Content = _keyVisual.Content;
@@ -140,6 +141,18 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
                         {
                             _keyVisual._keyPresenter.Content = "Eingabetaste";
                         }
+                        else if ((string)_keyVisual._keyPresenter.Content == "Backspace")
+                        {
+                            _keyVisual._keyPresenter.Content = "Rücktaste";
+                        }
+                        else if ((string)_keyVisual._keyPresenter.Content == "Caps Lock")
+                        {
+                            _keyVisual._keyPresenter.Content = "Feststelltaste";
+                        }
+                        else if ((string)_keyVisual._keyPresenter.Content == "Scroll Lock")
+                        {
+                            _keyVisual._keyPresenter.Content = "Rollen";
+                        }
                     }
                     else if (currentLanguage == "en")
                     {
@@ -157,6 +170,62 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
                         if ((string)_keyVisual._keyPresenter.Content == "Shift")
                         {
                             _keyVisual._keyPresenter.Content = "Maj";
+                        }
+                        else if ((string)_keyVisual._keyPresenter.Content == "PgUp")
+                        {
+                            _keyVisual._keyPresenter.Content = "Page précédente";
+                        }
+                        else if ((string)_keyVisual._keyPresenter.Content == "PgDn")
+                        {
+                            _keyVisual._keyPresenter.Content = "Page suivante";
+                        }
+                        else if ((string)_keyVisual._keyPresenter.Content == "Tab")
+                        {
+                            _keyVisual._keyPresenter.Content = "Tabulation";
+                        }
+                        else if ((string)_keyVisual._keyPresenter.Content == "Insert")
+                        {
+                            _keyVisual._keyPresenter.Content = "Insertion";
+                        }
+                        else if ((string)_keyVisual._keyPresenter.Content == "Delete")
+                        {
+                            _keyVisual._keyPresenter.Content = "Supprimer";
+                        }
+                        else if ((string)_keyVisual._keyPresenter.Content == "Home")
+                        {
+                            _keyVisual._keyPresenter.Content = "Accueil";
+                        }
+                        else if ((string)_keyVisual._keyPresenter.Content == "End")
+                        {
+                            _keyVisual._keyPresenter.Content = "Fin";
+                        }
+                        else if ((string)_keyVisual._keyPresenter.Content == "Print Screen")
+                        {
+                            _keyVisual._keyPresenter.Content = "Imp. écr.";
+                        }
+                        else if ((string)_keyVisual._keyPresenter.Content == "Space")
+                        {
+                            _keyVisual._keyPresenter.Content = "Barre d’espace";
+                        }
+                        else if ((string)_keyVisual._keyPresenter.Content == "Enter")
+                        {
+                            _keyVisual._keyPresenter.Content = "Entrée";
+                        }
+                        else if ((string)_keyVisual._keyPresenter.Content == "Backspace")
+                        {
+                            _keyVisual._keyPresenter.Content = "Retour arrière";
+                        }
+                        else if ((string)_keyVisual._keyPresenter.Content == "Caps Lock")
+                        {
+                            _keyVisual._keyPresenter.Content = "Verr Maj";
+                        }
+                        else if ((string)_keyVisual._keyPresenter.Content == "Scroll Lock")
+                        {
+                            _keyVisual._keyPresenter.Content = "Arrêt défil";
+                        }
+                        else if ((string)_keyVisual._keyPresenter.Content == "Num Lock")
+                        {
+                            _keyVisual._keyPresenter.Content = "Ver. num.";
                         }
                     }
                     else if (currentLanguage == "es")
