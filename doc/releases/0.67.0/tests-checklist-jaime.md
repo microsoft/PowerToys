@@ -162,16 +162,16 @@ Mouse Pointer Crosshairs:
 
 ### Hosts File Editor
  * Launch Host File Editor:
-   - [ ] Verify the application exits if "Quit" is clicked on the initial warning.
-   - [ ] Launch Host File Editor again and click "Accept". The module should not close. Open the hosts file (`%WinDir%\System32\Drivers\Etc`) in a text editor that auto-refreshes so you can see the changes applied by the editor in real time. (VSCode is an editor like this, for example)
-   - [ ] Enable and disable lines and verify they are applied to the file.
-   - [ ] Add a new entry and verify it's applied.
-   - [ ] Try to filter for lines and verify you can find them.
-   - [ ] Click the "Open hosts file" button and verify it opens in your default editor. (likely Notepad)
+   - [x] Verify the application exits if "Quit" is clicked on the initial warning.
+   - [x] Launch Host File Editor again and click "Accept". The module should not close. Open the hosts file (`%WinDir%\System32\Drivers\Etc`) in a text editor that auto-refreshes so you can see the changes applied by the editor in real time. (VSCode is an editor like this, for example)
+   - [x] Enable and disable lines and verify they are applied to the file.
+   - [x] Add a new entry and verify it's applied.
+   - [x] Try to filter for lines and verify you can find them.
+   - [x] Click the "Open hosts file" button and verify it opens in your default editor. (likely Notepad)
  * Test the different settings and verify they are applied:
-   - [ ] Launch as Administrator.
-   - [ ] Show a warning at startup.
-   - [ ] Additional lines position.
+   - [x] Launch as Administrator.
+   - [x] Show a warning at startup.
+   - [x] Additional lines position.
 
 ### GPO
  * Copy the "PowerToys.admx" file to your Policy Definition template folder. (Example: C:\Windows\PolicyDefinitions) and copy the "PowerToys.adml" file to the matching language folder in your Policy Definition folder. (Example: C:\Windows\PolicyDefinitions\en-US)
