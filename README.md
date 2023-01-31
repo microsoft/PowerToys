@@ -101,7 +101,9 @@ In this release, we focused on releasing new features and improvements.
 ### PowerToys Run
 
 - Add option to tab through results only. Thanks [@maws6502](https://github.com/maws6502)!
-- System plugin - Add Recycle Bin command. Thanks [@htcfreek](https://github.com/htcfreek)!
+- System plugin - Updated Recycle Bin command to allow opening the Recycle Bin. Thanks [@htcfreek](https://github.com/htcfreek)!
+- System plugin - Improved Recycle Bin command to not block PT Run while the deletion is running. Thanks [@htcfreek](https://github.com/htcfreek)!
+- System plugin - Small other changes to improve the usability of the Recycle Bin command. Thanks [@htcfreek](https://github.com/htcfreek)!
 - WindowWalker plugin - Show all open windows with action keyword. Thanks [@davidegiacometti](https://github.com/davidegiacometti)!
 
 ### Quick Accent
