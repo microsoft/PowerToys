@@ -95,6 +95,7 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
 
                     _keyVisual.Style = GetStyleSize("TextKeyVisualStyle");
                     _keyVisual._keyPresenter.Content = _keyVisual.Content;
+
                     if (currentLanguage == "de")
                     {
                         if ((string)_keyVisual._keyPresenter.Content == "Ctrl")
@@ -153,16 +154,9 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
                         {
                             _keyVisual._keyPresenter.Content = "Rollen";
                         }
-                    }
-                    else if (currentLanguage == "en")
-                    {
-                        if ((string)_keyVisual._keyPresenter.Content == "PgUp")
+                        else if ((string)_keyVisual._keyPresenter.Content == "Apps/Menu")
                         {
-                            _keyVisual._keyPresenter.Content = "Page up";
-                        }
-                        else if ((string)_keyVisual._keyPresenter.Content == "PgDn")
-                        {
-                            _keyVisual._keyPresenter.Content = "Page down";
+                            _keyVisual._keyPresenter.Content = "Menü";
                         }
                     }
                     else if (currentLanguage == "fr")
@@ -234,12 +228,150 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
                         {
                             _keyVisual._keyPresenter.Content = "Mayús";
                         }
+                        else if ((string)_keyVisual._keyPresenter.Content == "PgUp")
+                        {
+                            _keyVisual._keyPresenter.Content = "Re Pág";
+                        }
+                        else if ((string)_keyVisual._keyPresenter.Content == "PgDn")
+                        {
+                            _keyVisual._keyPresenter.Content = "Av Pág";
+                        }
+                        else if ((string)_keyVisual._keyPresenter.Content == "Tab")
+                        {
+                            _keyVisual._keyPresenter.Content = "Tabulador";
+                        }
+                        else if ((string)_keyVisual._keyPresenter.Content == "Insert")
+                        {
+                            _keyVisual._keyPresenter.Content = "Insertar";
+                        }
+                        else if ((string)_keyVisual._keyPresenter.Content == "Delete")
+                        {
+                            _keyVisual._keyPresenter.Content = "Supr";
+                        }
+                        else if ((string)_keyVisual._keyPresenter.Content == "Home")
+                        {
+                            _keyVisual._keyPresenter.Content = "Inicio";
+                        }
+                        else if ((string)_keyVisual._keyPresenter.Content == "End")
+                        {
+                            _keyVisual._keyPresenter.Content = "Fin";
+                        }
+                        else if ((string)_keyVisual._keyPresenter.Content == "Space")
+                        {
+                            _keyVisual._keyPresenter.Content = "Barra espaciadora";
+                        }
+                        else if ((string)_keyVisual._keyPresenter.Content == "Enter")
+                        {
+                            _keyVisual._keyPresenter.Content = "Entrar";
+                        }
+                        else if ((string)_keyVisual._keyPresenter.Content == "Backspace")
+                        {
+                            _keyVisual._keyPresenter.Content = "Retroceso";
+                        }
+                        else if ((string)_keyVisual._keyPresenter.Content == "Caps Lock")
+                        {
+                            _keyVisual._keyPresenter.Content = "Bloq Mayús";
+                        }
+                        else if ((string)_keyVisual._keyPresenter.Content == "Scroll Lock")
+                        {
+                            _keyVisual._keyPresenter.Content = "Bloq Despl";
+                        }
+                        else if ((string)_keyVisual._keyPresenter.Content == "Num Lock")
+                        {
+                            _keyVisual._keyPresenter.Content = "Bloq Num";
+                        }
+                        else if ((string)_keyVisual._keyPresenter.Content == "Pause")
+                        {
+                            _keyVisual._keyPresenter.Content = "Pausa";
+                        }
+                        else if ((string)_keyVisual._keyPresenter.Content == "Apps/Menu")
+                        {
+                            _keyVisual._keyPresenter.Content = "Menú";
+                        }
                     }
                     else if (currentLanguage == "it")
                     {
                         if ((string)_keyVisual._keyPresenter.Content == "Shift")
                         {
                             _keyVisual._keyPresenter.Content = "Maiusc";
+                        }
+                        else if ((string)_keyVisual._keyPresenter.Content == "PgUp")
+                        {
+                            _keyVisual._keyPresenter.Content = "PGSU";
+                        }
+                        else if ((string)_keyVisual._keyPresenter.Content == "PgDn")
+                        {
+                            _keyVisual._keyPresenter.Content = "PGGIÙ";
+                        }
+                        else if ((string)_keyVisual._keyPresenter.Content == "Insert")
+                        {
+                            _keyVisual._keyPresenter.Content = "Insertar";
+                        }
+                        else if ((string)_keyVisual._keyPresenter.Content == "Delete")
+                        {
+                            _keyVisual._keyPresenter.Content = "Canc";
+                        }
+                        else if ((string)_keyVisual._keyPresenter.Content == "End")
+                        {
+                            _keyVisual._keyPresenter.Content = "Fine";
+                        }
+                        else if ((string)_keyVisual._keyPresenter.Content == "Space")
+                        {
+                            _keyVisual._keyPresenter.Content = "Barra spaziatrice";
+                        }
+                        else if ((string)_keyVisual._keyPresenter.Content == "Enter")
+                        {
+                            _keyVisual._keyPresenter.Content = "Invio";
+                        }
+                        else if ((string)_keyVisual._keyPresenter.Content == "Caps Lock")
+                        {
+                            _keyVisual._keyPresenter.Content = "Blocco maiuscole";
+                        }
+                        else if ((string)_keyVisual._keyPresenter.Content == "Scroll Lock")
+                        {
+                            _keyVisual._keyPresenter.Content = "Bloc Scorr";
+                        }
+                        else if ((string)_keyVisual._keyPresenter.Content == "Num Lock")
+                        {
+                            _keyVisual._keyPresenter.Content = "Bloc Num";
+                        }
+                        else if ((string)_keyVisual._keyPresenter.Content == "Pause")
+                        {
+                            _keyVisual._keyPresenter.Content = "Pausa";
+                        }
+                        else if ((string)_keyVisual._keyPresenter.Content == "Print Screen")
+                        {
+                            _keyVisual._keyPresenter.Content = "Stamp";
+                        }
+                    }
+                    else if (currentLanguage == "pt")
+                    {
+                        if ((string)_keyVisual._keyPresenter.Content == "Tab")
+                        {
+                            _keyVisual._keyPresenter.Content = "Tabulação";
+                        }
+                        else if ((string)_keyVisual._keyPresenter.Content == "Space")
+                        {
+                            _keyVisual._keyPresenter.Content = "Barra de espaço";
+                        }
+                        else if ((string)_keyVisual._keyPresenter.Content == "Pause")
+                        {
+                            _keyVisual._keyPresenter.Content = "Pausa";
+                        }
+                    }
+                    else
+                    {
+                        if ((string)_keyVisual._keyPresenter.Content == "PgUp")
+                        {
+                            _keyVisual._keyPresenter.Content = "Page up";
+                        }
+                        else if ((string)_keyVisual._keyPresenter.Content == "PgDn")
+                        {
+                            _keyVisual._keyPresenter.Content = "Page down";
+                        }
+                        else if ((string)_keyVisual._keyPresenter.Content == "Apps/Menu")
+                        {
+                            _keyVisual._keyPresenter.Content = "Menu";
                         }
                     }
                 }
