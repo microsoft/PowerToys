@@ -417,6 +417,9 @@
     <value>Broadcasting</value>
     <comment>Area Gaming</comment>
   </data>
+  <data name="bthprops.cpl" xml:space="preserve">
+    <value>bthprops.cpl</value>
+  </data>
   <data name="Calendar" xml:space="preserve">
     <value>Calendar</value>
     <comment>Area Privacy</comment>
@@ -476,6 +479,9 @@
   <data name="ClosedCaptions" xml:space="preserve">
     <value>Closed captions</value>
     <comment>Area EaseOfAccess</comment>
+  </data>
+  <data name="collab.cpl" xml:space="preserve">
+    <value>collab.cpl</value>
   </data>
   <data name="ColorFilters" xml:space="preserve">
     <value>Color filters</value>
@@ -757,6 +763,9 @@
   <data name="Firewall" xml:space="preserve">
     <value>Firewall</value>
   </data>
+  <data name="Firewall.cpl" xml:space="preserve">
+    <value>Firewall.cpl</value>
+  </data>
   <data name="FocusAssistQuietHours" xml:space="preserve">
     <value>Focus assist - Quiet hours</value>
     <comment>Area System</comment>
@@ -829,6 +838,9 @@
   </data>
   <data name="GroupPolicy" xml:space="preserve">
     <value>Group Policy</value>
+  </data>
+  <data name="hdwwiz.cpl" xml:space="preserve">
+    <value>hdwwiz.cpl</value>
   </data>
   <data name="HeadsetDisplay" xml:space="preserve">
     <value>Headset display</value>
@@ -903,6 +915,9 @@
   <data name="IpSecurityPoliciesOnLocalComputer" xml:space="preserve">
     <value>IP Security Policies on Local Computer</value>
     <comment>Name of MMC Snap-In.</comment>
+  </data>
+  <data name="irprops.cpl" xml:space="preserve">
+    <value>irprops.cpl</value>
   </data>
   <data name="IsolatedBrowsing" xml:space="preserve">
     <value>Isolated Browsing</value>
@@ -1124,6 +1139,9 @@
   <data name="NavigationBar" xml:space="preserve">
     <value>Navigation bar</value>
     <comment>Area Personalization</comment>
+  </data>
+  <data name="ncpa.cpl" xml:space="preserve">
+    <value>ncpa.cpl</value>
   </data>
   <data name="NearbyShareSettings" xml:space="preserve">
     <value>Nearby sharing settings</value>
@@ -1741,6 +1759,9 @@
     <value>Tablet mode</value>
     <comment>Area System</comment>
   </data>
+  <data name="TabletPC.cpl" xml:space="preserve">
+    <value>TabletPC.cpl</value>
+  </data>
   <data name="TabletPcSettings" xml:space="preserve">
     <value>Tablet PC settings</value>
     <comment>Area Control Panel (legacy settings)</comment>
@@ -1774,6 +1795,9 @@
   <data name="TeamDeviceManagement" xml:space="preserve">
     <value>Team device management</value>
     <comment>Area SurfaceHub</comment>
+  </data>
+  <data name="telephon.cpl" xml:space="preserve">
+    <value>telephon.cpl</value>
   </data>
   <data name="TextToSpeech" xml:space="preserve">
     <value>Text to speech</value>
@@ -2024,6 +2048,9 @@
   <data name="WorkplaceProvisioning" xml:space="preserve">
     <value>Workplace provisioning</value>
     <comment>Area UserAccounts</comment>
+  </data>
+  <data name="wscui.cpl" xml:space="preserve">
+    <value>wscui.cpl</value>
   </data>
   <data name="WubiImeSettings" xml:space="preserve">
     <value>Wubi IME settings</value>

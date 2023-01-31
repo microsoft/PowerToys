@@ -808,6 +808,15 @@ namespace Microsoft.PowerToys.Run.Plugin.WindowsSettings.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to bthprops.cpl.
+        /// </summary>
+        internal static string bthprops_cpl {
+            get {
+                return ResourceManager.GetString("bthprops.cpl", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Calendar.
         /// </summary>
         internal static string Calendar {
@@ -948,6 +957,15 @@ namespace Microsoft.PowerToys.Run.Plugin.WindowsSettings.Properties {
         internal static string ClosedCaptions {
             get {
                 return ResourceManager.GetString("ClosedCaptions", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to collab.cpl.
+        /// </summary>
+        internal static string collab_cpl {
+            get {
+                return ResourceManager.GetString("collab.cpl", resourceCulture);
             }
         }
         
@@ -1618,6 +1636,15 @@ namespace Microsoft.PowerToys.Run.Plugin.WindowsSettings.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Firewall.cpl.
+        /// </summary>
+        internal static string Firewall_cpl {
+            get {
+                return ResourceManager.GetString("Firewall.cpl", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Focus assist - Quiet hours.
         /// </summary>
         internal static string FocusAssistQuietHours {
@@ -1785,6 +1812,15 @@ namespace Microsoft.PowerToys.Run.Plugin.WindowsSettings.Properties {
         internal static string GroupPolicy {
             get {
                 return ResourceManager.GetString("GroupPolicy", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to hdwwiz.cpl.
+        /// </summary>
+        internal static string hdwwiz_cpl {
+            get {
+                return ResourceManager.GetString("hdwwiz.cpl", resourceCulture);
             }
         }
         
@@ -1965,6 +2001,15 @@ namespace Microsoft.PowerToys.Run.Plugin.WindowsSettings.Properties {
         internal static string IpSecurityPoliciesOnLocalComputer {
             get {
                 return ResourceManager.GetString("IpSecurityPoliciesOnLocalComputer", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to irprops.cpl.
+        /// </summary>
+        internal static string irprops_cpl {
+            get {
+                return ResourceManager.GetString("irprops.cpl", resourceCulture);
             }
         }
         
@@ -2532,6 +2577,15 @@ namespace Microsoft.PowerToys.Run.Plugin.WindowsSettings.Properties {
         internal static string NavigationBar {
             get {
                 return ResourceManager.GetString("NavigationBar", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to ncpa.cpl.
+        /// </summary>
+        internal static string ncpa_cpl {
+            get {
+                return ResourceManager.GetString("ncpa.cpl", resourceCulture);
             }
         }
         
@@ -4039,6 +4093,15 @@ namespace Microsoft.PowerToys.Run.Plugin.WindowsSettings.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to TabletPC.cpl.
+        /// </summary>
+        internal static string TabletPC_cpl {
+            get {
+                return ResourceManager.GetString("TabletPC.cpl", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Tablet PC settings.
         /// </summary>
         internal static string TabletPcSettings {
@@ -4116,6 +4179,15 @@ namespace Microsoft.PowerToys.Run.Plugin.WindowsSettings.Properties {
         internal static string TeamDeviceManagement {
             get {
                 return ResourceManager.GetString("TeamDeviceManagement", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to telephon.cpl.
+        /// </summary>
+        internal static string telephon_cpl {
+            get {
+                return ResourceManager.GetString("telephon.cpl", resourceCulture);
             }
         }
         
@@ -4719,6 +4791,15 @@ namespace Microsoft.PowerToys.Run.Plugin.WindowsSettings.Properties {
         internal static string WorkplaceProvisioning {
             get {
                 return ResourceManager.GetString("WorkplaceProvisioning", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to wscui.cpl.
+        /// </summary>
+        internal static string wscui_cpl {
+            get {
+                return ResourceManager.GetString("wscui.cpl", resourceCulture);
             }
         }
         

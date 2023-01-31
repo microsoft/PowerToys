@@ -1284,6 +1284,7 @@
       "Name": "ActionCenter",
       "Areas": [ "AreaSystemAndSecurity" ],
       "Type": "AppControlPanel",
+      "AltNames": [ "wscui.cpl" ],
       "Command": "control /name Microsoft.ActionCenter"
     },
     {
@@ -1331,7 +1332,7 @@
     },
     {
       "Name": "BluetoothDevices",
-      "Areas": [ "AreaHardwareAndSound" ],
+      "Areas": [ "AreaHardwareAndSound", "bthprops.cpl" ],
       "Type": "AppControlPanel",
       "Command": "control /name Microsoft.BluetoothDevices"
     },
@@ -1378,6 +1379,7 @@
       "Name": "DeviceManager",
       "Areas": [ "AreaHardwareAndSound" ],
       "Type": "AppControlPanel",
+      "AltNames": [ "hdwwiz.cpl" ],
       "Command": "control /name Microsoft.DeviceManager"
     },
     {
@@ -1437,6 +1439,7 @@
       "Name": "Infrared",
       "Areas": [ "AreaHardwareAndSound" ],
       "Type": "AppControlPanel",
+      "AltNames": [ "irprops.cpl" ],
       "Command": "control /name Microsoft.Infrared"
     },
     {
@@ -1469,6 +1472,7 @@
       "Name": "NetworkConnection",
       "Areas": [ "AreaNetworkAndInternet" ],
       "Type": "AppControlPanel",
+      "AltNames": [ "ncpa.cpl" ],
       "Command": "control netconnections"
     },
     {
@@ -1531,13 +1535,14 @@
       "Name": "PhoneAndModemOptions",
       "Areas": [ "AreaNetworkAndInternet" ],
       "Type": "AppControlPanel",
+      "AltNames": [ "modem.cpl", "telephon.cpl" ],
       "Command": "control /name Microsoft.PhoneAndModemOptions"
     },
     {
       "Name": "PhoneAndModem",
       "Areas": [ "AreaNetworkAndInternet" ],
       "Type": "AppControlPanel",
-      "AltNames": [ "modem.cpl" ],
+      "AltNames": [ "modem.cpl", "telephon.cpl" ],
       "Command": "control /name Microsoft.PhoneAndModem"
     },
     {
@@ -1632,6 +1637,7 @@
       "Name": "TabletPcSettings",
       "Areas": [ "AreaSystemAndSecurity" ],
       "Type": "AppControlPanel",
+      "AltNames": [ "TabletPC.cpl" ],
       "Command": "control /name Microsoft.TabletPCSettings"
     },
     {
@@ -1672,7 +1678,7 @@
     },
     {
       "Name": "WindowsFirewall",
-      "Areas": [ "AreaSystemAndSecurity" ],
+      "Areas": [ "AreaSystemAndSecurity", "Firewall.cpl" ],
       "Type": "AppControlPanel",
       "Command": "control /name Microsoft.WindowsFirewall"
     },
