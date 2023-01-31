@@ -107,6 +107,7 @@ namespace Microsoft.PowerToys.Run.Plugin.WindowsSettings
                 .OrderBy(found => found.Name);
 
             var newList = ResultHelper.GetResultList(filteredList, query.Search, _defaultIconPath);
+
             return newList;
 
             bool Predicate(WindowsSetting found)
