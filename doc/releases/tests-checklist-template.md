@@ -49,6 +49,12 @@
  - [ ] turn on all the module, all module are now working
  - [ ] restart PT and verify that all module are still on in the settings page and they are actually working
 
+**Quick access tray icon flyout:**
+ - [ ] Use left click on the system tray icon and verify the flyout appears. (It'll take a bit the first time)
+ - [ ] Try to launch a module from the launch screen in the flyout.
+ - [ ] Try disabling a module in the all apps screen in the flyout, make it a module that's launchable from the launch screen. Verify that the module is disabled and that it also disappeared from the launch screen in the flyout.
+ - [ ] Open the main settings screen on a module page. Verify that when you disable/enable the module on the flyout, that the Settings page is updated too.
+
 **Settings backup/restore:**
  - [ ] In the General tab, create a backup of the settings.
  - [ ] Change some settings in some PowerToys.
@@ -485,9 +491,12 @@ Mouse Pointer Crosshairs:
    - [ ] Verify the module is not enabled.
    - [ ] Open settings and verify the module is not enabled and you can't enable it.
    - [ ] Try to open FancyZones Editor directly from the install folder and verify it doesn't run and adds a message to the log saying it didn't run because of GPO.
+   - [ ] Verify the module can't be launched from the quick launcher system tray flyout launcher screen (FancyZones editor in this case).
+   - [ ] Verify the module can't be enabled/disabled from the quick launcher system tray flyout.
  * In GPO, enable a module that can run as a standalone (FancyZones sounds good for this). Restart PowerToys.
    - [ ] Verify the module is enabled.
    - [ ] Open settings and verify the module is enabled and you can't disable it.
+   - [ ] Verify the module can't be enabled/disabled from the quick launcher system tray flyout.
  * In GPO, try to set different settings in the Computer and User Configurations for a PowerToy. Restart PowerToys.
    - [ ] Verify that the setting in Computer Configuration has priority over the setting in User Configuration.
  * In GPO, disable a module that has a context menu entry (File Locksmith sounds good for this). Restart PowerToys.
