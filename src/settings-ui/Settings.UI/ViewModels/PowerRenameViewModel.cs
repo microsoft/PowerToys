@@ -69,6 +69,11 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             _autoComplete = Settings.Properties.MRUEnabled.Value;
             _powerRenameUseBoostLib = Settings.Properties.UseBoostLib.Value;
 
+            InitializeEnabledValue();
+        }
+
+        private void InitializeEnabledValue()
+        {
             _enabledGpoRuleConfiguration = GPOWrapper.GetConfiguredPowerRenameEnabledValue();
             if (_enabledGpoRuleConfiguration == GpoRuleConfigured.Disabled || _enabledGpoRuleConfiguration == GpoRuleConfigured.Enabled)
             {
@@ -259,6 +264,13 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 SndModuleSettings<SndPowerRenameSettings> ipcMessage = new SndModuleSettings<SndPowerRenameSettings>(snd);
                 SendConfigMSG(ipcMessage.ToJsonString());
             }
+        }
+
+        public void RefreshEnabledState()
+        {
+            InitializeEnabledValue();
+            OnPropertyChanged(nameof(IsEnabled));
+            OnPropertyChanged(nameof(GlobalAndMruEnabled));
         }
     }
 }

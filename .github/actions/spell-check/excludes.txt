@@ -79,6 +79,7 @@
 ^\Q.pipelines/ESRPSigning_core.json\E$
 ^\Qsrc/modules/colorPicker/ColorPickerUI/Shaders/GridShader.cso\E$
 ^\Qsrc/common/ManagedCommon/ColorFormatHelper.cs\E$
+^\Qinstaller/PowerToysSetup/Settings.wxs\E$
 ^\Qsrc/settings-ui/Settings.UI.UnitTests/BackwardsCompatibility/TestFiles/CorruptJson/Microsoft/PowerToys/settings.json\E$
 ^\Qsrc/settings-ui/Settings.UI.UnitTests/BackwardsCompatibility/TestFiles/v0.18.2/Microsoft/PowerToys/PowerRename/power-rename-ui-flags\E$
 ^\Qsrc/settings-ui/Settings.UI.UnitTests/BackwardsCompatibility/TestFiles/v0.19.2/Microsoft/PowerToys/PowerRename/power-rename-ui-flags\E$
