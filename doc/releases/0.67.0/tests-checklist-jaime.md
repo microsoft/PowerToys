@@ -24,9 +24,9 @@
 ## PowerToys Run
 
  * Enable PT Run in settings and ensure that the hotkey brings up PT Run
-   - [ ] when PowerToys is running unelevated on start-up
-   - [ ] when PowerToys is running as admin on start-up
-   - [ ] when PowerToys is restarted as admin, by clicking the restart as admin button in settings.
+   - [x] when PowerToys is running unelevated on start-up
+   - [x] when PowerToys is running as admin on start-up
+   - [x] when PowerToys is restarted as admin, by clicking the restart as admin button in settings.
  * Check that each of the plugins is working:
    - [ ] Program - launch a Win32 application
    - [ ] Program - launch a Win32 application as admin
@@ -42,9 +42,9 @@
    - [ ] Service - start, stop, restart windows service. Enter the action keyword `!` to get the list of services.
    - [ ] Registry - navigate through the registry tree and open registry editor. Enter the action keyword `:` to get the root keys.
    - [ ] Registry - navigate through the registry tree and copy key path.
-   - [ ] System - test `lock`.
-   - [ ] System - test `empty recycle bin`.
-   - [ ] System - test `shutdown`.
+   - [x] System - test `lock`.
+   - [x] System - test `empty recycle bin`.
+   - [x] System - test `shutdown`.
 
  - [ ] Disable PT Run and ensure that the hotkey doesn't bring up PT Run.
 
