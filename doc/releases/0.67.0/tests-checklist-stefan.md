@@ -102,61 +102,61 @@
 
 ## Shortcut Guide
  * Run PowerToys as user:
-   - [ ] Verify `Win + Shift + /` opens the guide
-   - [ ] Change the hotkey to a different shortcut (e.g. `Win + /`) and verify it works
-   - [ ] Set Shortcut Guide to start with a Windows key press and verify it works.
+   - [x] Verify `Win + Shift + /` opens the guide
+   - [x] Change the hotkey to a different shortcut (e.g. `Win + /`) and verify it works
+   - [x] Set Shortcut Guide to start with a Windows key press and verify it works.
  * Restore the `Win + Shift + /` hotkey.
-   - [ ] Open the guide and close it pressing `Esc`
-   - [ ] Open the guide and close it pressing and releasing the `Win` key
+   - [x] Open the guide and close it pressing `Esc`
+   - [x] Open the guide and close it pressing and releasing the `Win` key
  * With PowerToys running as a user, open an elevated app and keep it on foreground:
-   - [ ] Verify `Win + Shift + /` opens the guide
-   - [ ] Verify some of the shortcuts shown in the guide work and the guide is closed when pressed
+   - [x] Verify `Win + Shift + /` opens the guide
+   - [x] Verify some of the shortcuts shown in the guide work and the guide is closed when pressed
 
 ## Always on Top
- - [ ] Pin/unpin a window, verify it's topmost/not topmost.
- - [ ] Pin/unpin a window, verify the border appeared/disappeared.
- - [ ] Switch virtual desktop, verify border doesn't show up on another desktop.
- - [ ] Minimize and maximize pinned window, verify the border looks as usual.
- - [ ] Change border color and thickness.
- - [ ] Verify if sound is played according to the sound setting.
- - [ ] Exclude app, try to pin it.
- - [ ] Exclude already pinned app, verify it was unpinned.
- - [ ] Try to pin the app in the Game Mode.
+ - [x] Pin/unpin a window, verify it's topmost/not topmost.
+ - [x] Pin/unpin a window, verify the border appeared/disappeared.
+ - [x] Switch virtual desktop, verify border doesn't show up on another desktop.
+ - [x] Minimize and maximize pinned window, verify the border looks as usual.
+ - [x] Change border color and thickness.
+ - [x] Verify if sound is played according to the sound setting.
+ - [x] Exclude app, try to pin it.
+ - [x] Exclude already pinned app, verify it was unpinned.
+ - [x] Try to pin the app in the Game Mode.
 
 ### Quick Accent
  * Enable Quick Accent and open notepad. Then:
-   - [ ] Press `a` and the left or right arrow and verify the accent menu appears and adds the accented letter you've selected. Use left and arrow keys to cycle through the options.
-   - [ ] Press `a` and the space key and verify the accent menu appears and adds the accented letter you've selected. Use <kbd>Space</kbd> to navigate forward, <kbd>Space</kbd> + <kbd>Shift</kbd> to navigate backward.
-   - [ ] Disable Quick Accent and verify you can no longer add accented characters through Quick Accent.
+   - [x] Press `a` and the left or right arrow and verify the accent menu appears and adds the accented letter you've selected. Use left and arrow keys to cycle through the options.
+   - [x] Press `a` and the space key and verify the accent menu appears and adds the accented letter you've selected. Use <kbd>Space</kbd> to navigate forward, <kbd>Space</kbd> + <kbd>Shift</kbd> to navigate backward.
+   - [x] Disable Quick Accent and verify you can no longer add accented characters through Quick Accent.
  * Test the different settings and verify they are applied:
-   - [ ] Activation key
-   - [ ] Language (for example, Currency has no accents for 'a' but has for 's')
-   - [ ] Toolbar position (test every option, some had issues before)
-   - [ ] Input delay
-   - [ ] Exclude some apps. Verify that Quick Accent is not activated for them.
-   - [ ] Sort characters by frequency.
-   - [ ] Always start on the first character when using left/right arrows as activation method.
+   - [x] Activation key
+   - [x] Language (for example, Currency has no accents for 'a' but has for 's')
+   - [x] Toolbar position (test every option, some had issues before)
+   - [x] Input delay
+   - [x] Exclude some apps. Verify that Quick Accent is not activated for them.
+   - [x] Sort characters by frequency.
+   - [x] Always start on the first character when using left/right arrows as activation method.
 
 ### GPO
  * Copy the "PowerToys.admx" file to your Policy Definition template folder. (Example: C:\Windows\PolicyDefinitions) and copy the "PowerToys.adml" file to the matching language folder in your Policy Definition folder. (Example: C:\Windows\PolicyDefinitions\en-US)
-   - [ ] Open the "Local Group Policy Editor" on Windows and verify there is a "Microsoft PowerToys" folder in Administrative Templates for both Computer Configuration and User Configuration.
+   - [x] Open the "Local Group Policy Editor" on Windows and verify there is a "Microsoft PowerToys" folder in Administrative Templates for both Computer Configuration and User Configuration.
  * In GPO, disable a module that can run as a standalone (FancyZones sounds good for this). Restart PowerToys.
-   - [ ] Verify the module is not enabled.
-   - [ ] Open settings and verify the module is not enabled and you can't enable it.
-   - [ ] Try to open FancyZones Editor directly from the install folder and verify it doesn't run and adds a message to the log saying it didn't run because of GPO.
-   - [ ] Verify the module can't be launched from the quick launcher system tray flyout launcher screen (FancyZones editor in this case).
-   - [ ] Verify the module can't be enabled/disabled from the quick launcher system tray flyout.
+   - [x] Verify the module is not enabled.
+   - [x] Open settings and verify the module is not enabled and you can't enable it.
+   - [x] Try to open FancyZones Editor directly from the install folder and verify it doesn't run and adds a message to the log saying it didn't run because of GPO.
+   - [x] Verify the module can't be launched from the quick launcher system tray flyout launcher screen (FancyZones editor in this case).
+   - [x] Verify the module can't be enabled/disabled from the quick launcher system tray flyout.
  * In GPO, enable a module that can run as a standalone (FancyZones sounds good for this). Restart PowerToys.
-   - [ ] Verify the module is enabled.
-   - [ ] Open settings and verify the module is enabled and you can't disable it.
-   - [ ] Verify the module can't be enabled/disabled from the quick launcher system tray flyout.
+   - [x] Verify the module is enabled.
+   - [x] Open settings and verify the module is enabled and you can't disable it.
+   - [x] Verify the module can't be enabled/disabled from the quick launcher system tray flyout.
  * In GPO, try to set different settings in the Computer and User Configurations for a PowerToy. Restart PowerToys.
-   - [ ] Verify that the setting in Computer Configuration has priority over the setting in User Configuration.
+   - [x] Verify that the setting in Computer Configuration has priority over the setting in User Configuration.
  * In GPO, disable a module that has a context menu entry (File Locksmith sounds good for this). Restart PowerToys.
-   - [ ] Verify the module is not enabled. (No context menu entry)
-   - [ ] Open settings and verify the module is not enabled and you can't enable it.
-   - [ ] Try to open File Locksmith directly from the install folder and verify it doesn't run and adds a message to the log saying it didn't run because of GPO.
+   - [x] Verify the module is not enabled. (No context menu entry)
+   - [x] Open settings and verify the module is not enabled and you can't enable it.
+   - [x] Try to open File Locksmith directly from the install folder and verify it doesn't run and adds a message to the log saying it didn't run because of GPO.
  * In GPO, disable a module that is a Preview Handler (Markdown Preview is good for this). Restart PowerToys.
-   - [ ] Verify the module is not enabled. (Markdown files won't appear in the preview pane)
-   - [ ] Open settings and verify the module is not enabled and you can't enable it.
+   - [x] Verify the module is not enabled. (Markdown files won't appear in the preview pane)
+   - [x] Open settings and verify the module is not enabled and you can't enable it.
  * Remember to reset all you Settings to Not Configured after the tests, both in Conputer and User Configurations.
