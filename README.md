@@ -136,7 +136,7 @@ In this release, we focused on releasing new features and improvements.
 For [v0.68][github-next-release-work], we'll work on below:
 
 - Allow installing without UAC.
-- Peek
+- New utility: Peek.
 - Stability / bug fixes
 
 ## PowerToys Community
