@@ -118,6 +118,7 @@ Avanc
 awakeness
 awakeversion
 AYUV
+azman
 backtracer
 bak
 Bashkortostan
@@ -163,6 +164,7 @@ BRIGHTGREEN
 Browsable
 bsd
 bstr
+bthprops
 bti
 btn
 BTNFACE
