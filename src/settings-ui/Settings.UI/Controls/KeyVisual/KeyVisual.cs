@@ -91,7 +91,6 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
                 if (_keyVisual.Content.GetType() == typeof(string))
                 {
                     string currentLanguage = CultureInfo.CurrentCulture.TwoLetterISOLanguageName;
-                    currentLanguage = "fr";
 
                     _keyVisual.Style = GetStyleSize("TextKeyVisualStyle");
                     _keyVisual._keyPresenter.Content = _keyVisual.Content;
