@@ -24,6 +24,14 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
             GeneralSettingsConfig = settingsRepository.SettingsConfig;
 
+            InitializeEnabledValue();
+
+            // set the callback functions value to hangle outgoing IPC message.
+            SendConfigMSG = ipcMSGCallBackFunc;
+        }
+
+        private void InitializeEnabledValue()
+        {
             _enabledGpoRuleConfiguration = GPOWrapper.GetConfiguredFileLocksmithEnabledValue();
             if (_enabledGpoRuleConfiguration == GpoRuleConfigured.Disabled || _enabledGpoRuleConfiguration == GpoRuleConfigured.Enabled)
             {
@@ -35,9 +43,6 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             {
                 _isFileLocksmithEnabled = GeneralSettingsConfig.Enabled.FileLocksmith;
             }
-
-            // set the callback functions value to hangle outgoing IPC message.
-            SendConfigMSG = ipcMSGCallBackFunc;
         }
 
         public bool IsFileLocksmithEnabled
@@ -77,5 +82,11 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         private GpoRuleConfigured _enabledGpoRuleConfiguration;
         private bool _enabledStateIsGPOConfigured;
         private bool _isFileLocksmithEnabled;
+
+        public void RefreshEnabledState()
+        {
+            InitializeEnabledValue();
+            OnPropertyChanged(nameof(IsFileLocksmithEnabled));
+        }
     }
 }

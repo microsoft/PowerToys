@@ -28,8 +28,8 @@ void DraggingState::Enable()
 
 void DraggingState::Disable()
 {
-    bool leftShiftPressed = m_leftShiftKeyState.state();
-    bool rightShiftPressed = m_rightShiftKeyState.state();
+    const bool leftShiftPressed = m_leftShiftKeyState.state();
+    const bool rightShiftPressed = m_rightShiftKeyState.state();
 
     if (FancyZonesSettings::settings().shiftDrag)
     {
