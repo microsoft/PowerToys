@@ -106,14 +106,14 @@ void log_stack_trace(std::wstring& generalErrorDescription)
 #else
             IMAGE_FILE_MACHINE_AMD64,
 #endif
-                                  process,
-                                  thread,
-                                  &stack,
-                                  &context,
-                                  NULL,
-                                  SymFunctionTableAccess64,
-                                  SymGetModuleBase64,
-                                  NULL);
+            process,
+            thread,
+            &stack,
+            &context,
+            NULL,
+            SymFunctionTableAccess64,
+            SymGetModuleBase64,
+            NULL);
 
         p_symbol->MaxNameLength = MAX_PATH;
         p_symbol->SizeOfStruct = sizeof(IMAGEHLP_SYMBOL64);

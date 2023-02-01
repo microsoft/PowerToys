@@ -345,7 +345,7 @@ void run_settings_window(bool show_oobe_window, bool show_scoobe_window, std::op
         auto val = get_last_error_message(GetLastError());
         Logger::warn(L"UuidCreate can not create guid. {}", val.has_value() ? val.value() : L"");
     }
-    else if (UuidToString(&temp_uuid, reinterpret_cast<RPC_WSTR*>( & uuid_chars)) != RPC_S_OK)
+    else if (UuidToString(&temp_uuid, reinterpret_cast<RPC_WSTR*>(&uuid_chars)) != RPC_S_OK)
     {
         auto val = get_last_error_message(GetLastError());
         Logger::warn(L"UuidToString can not convert to string. {}", val.has_value() ? val.value() : L"");
@@ -355,7 +355,7 @@ void run_settings_window(bool show_oobe_window, bool show_scoobe_window, std::op
     {
         powertoys_pipe_name += std::wstring(uuid_chars);
         settings_pipe_name += std::wstring(uuid_chars);
-        RpcStringFree(reinterpret_cast<RPC_WSTR*>(& uuid_chars));
+        RpcStringFree(reinterpret_cast<RPC_WSTR*>(&uuid_chars));
         uuid_chars = nullptr;
     }
 

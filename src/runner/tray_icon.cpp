@@ -91,7 +91,7 @@ void handle_tray_command(HWND window, const WPARAM command_id, LPARAM lparam)
         }
         break;
     case ID_REPORT_BUG_COMMAND:
-    {        
+    {
         std::wstring bug_report_path = get_module_folderpath();
         bug_report_path += L"\\Tools\\PowerToys.BugReportTool.exe";
         SHELLEXECUTEINFOW sei{ sizeof(sei) };
@@ -114,7 +114,6 @@ void handle_tray_command(HWND window, const WPARAM command_id, LPARAM lparam)
         RunNonElevatedEx(L"https://aka.ms/PowerToysOverview", L"", L"");
         break;
     }
-        
     }
 }
 
