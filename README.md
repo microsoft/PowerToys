@@ -45,7 +45,7 @@ This is our preferred method.
 
 Install from the [Microsoft Store's PowerToys page][microsoft-store-link]. You must be using the [new Microsoft Store](https://blogs.windows.com/windowsExperience/2021/06/24/building-a-new-open-microsoft-store-on-windows-11/) which is available for both Windows 11 and Windows 10.
 
-### Via WinGet (Preview)
+### Via WinGet
 Download PowerToys from [WinGet][winget-link]. To install PowerToys, run the following command from the command line / PowerShell:
 
 ```powershell
@@ -54,7 +54,7 @@ winget install Microsoft.PowerToys -s winget
 
 ### Other install methods
 
-There are [community driven install methods](./doc/unofficialInstallMethods.md) such as Chocolatey and Scoop. If these are your preferred install solutions, this will have the install instructions.
+There are [community-driven install methods](./doc/unofficialInstallMethods.md) such as Chocolatey and Scoop. If these are your preferred install solutions, this will have the install instructions.
 
 ## Contributing
 
@@ -101,7 +101,9 @@ In this release, we focused on releasing new features and improvements.
 ### PowerToys Run
 
 - Add option to tab through results only. Thanks [@maws6502](https://github.com/maws6502)!
-- System plugin - Add Recycle Bin command. Thanks [@htcfreek](https://github.com/htcfreek)!
+- System plugin - Updated Recycle Bin command to allow opening the Recycle Bin. Thanks [@htcfreek](https://github.com/htcfreek)!
+- System plugin - Improved Recycle Bin command to not block PT Run while the deletion is running. Thanks [@htcfreek](https://github.com/htcfreek)!
+- System plugin - Small other changes to improve the usability of the Recycle Bin command. Thanks [@htcfreek](https://github.com/htcfreek)!
 - WindowWalker plugin - Show all open windows with action keyword. Thanks [@davidegiacometti](https://github.com/davidegiacometti)!
 
 ### Quick Accent
@@ -136,7 +138,8 @@ In this release, we focused on releasing new features and improvements.
 For [v0.68][github-next-release-work], we'll work on below:
 
 - Allow installing without UAC.
-- Peek
+- New utility: [PowerToys Peek](https://github.com/microsoft/PowerToys/issues/80)
+- New utility: [Paste as plain text](https://github.com/microsoft/PowerToys/issues/1684)
 - Stability / bug fixes
 
 ## PowerToys Community
