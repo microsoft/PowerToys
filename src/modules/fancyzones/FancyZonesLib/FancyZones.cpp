@@ -162,7 +162,7 @@ private:
     const HINSTANCE m_hinstance{};
 
     HWND m_window{};
-    std::unique_ptr<WindowMouseSnap> m_windowDrag{};
+    std::unique_ptr<WindowMouseSnap> m_windowMouseSnapper{};
     MonitorWorkAreaMap m_workAreaHandler;
     DraggingState m_draggingState;
 
@@ -283,8 +283,8 @@ FancyZones::VirtualDesktopChanged() noexcept
 
 void FancyZones::MoveSizeStart(HWND window, HMONITOR monitor)
 {
-    m_windowDrag = WindowMouseSnap::Create(window, m_workAreaHandler.GetAllWorkAreas());
-    if (m_windowDrag)
+    m_windowMouseSnapper = WindowMouseSnap::Create(window, m_workAreaHandler.GetAllWorkAreas());
+    if (m_windowMouseSnapper)
     {
         if (FancyZonesSettings::settings().spanZonesAcrossMonitors)
         {
@@ -293,13 +293,13 @@ void FancyZones::MoveSizeStart(HWND window, HMONITOR monitor)
 
         m_draggingState.Enable();
         m_draggingState.UpdateDraggingState();
-        m_windowDrag->MoveSizeStart(monitor, m_draggingState.IsDragging());
+        m_windowMouseSnapper->MoveSizeStart(monitor, m_draggingState.IsDragging());
     }
 }
 
 void FancyZones::MoveSizeUpdate(HMONITOR monitor, POINT const& ptScreen)
 {
-    if (m_windowDrag)
+    if (m_windowMouseSnapper)
     {
         if (FancyZonesSettings::settings().spanZonesAcrossMonitors)
         {
@@ -307,17 +307,17 @@ void FancyZones::MoveSizeUpdate(HMONITOR monitor, POINT const& ptScreen)
         }
 
         m_draggingState.UpdateDraggingState();
-        m_windowDrag->MoveSizeUpdate(monitor, ptScreen, m_draggingState.IsDragging(), m_draggingState.IsSelectManyZonesState());
+        m_windowMouseSnapper->MoveSizeUpdate(monitor, ptScreen, m_draggingState.IsDragging(), m_draggingState.IsSelectManyZonesState());
     }
 }
 
 void FancyZones::MoveSizeEnd()
 {
-    if (m_windowDrag)
+    if (m_windowMouseSnapper)
     {
-        m_windowDrag->MoveSizeEnd();
+        m_windowMouseSnapper->MoveSizeEnd();
         m_draggingState.Disable();
-        m_windowDrag = nullptr;
+        m_windowMouseSnapper = nullptr;
     }
 }
 
