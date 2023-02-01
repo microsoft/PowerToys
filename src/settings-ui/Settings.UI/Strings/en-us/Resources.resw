@@ -2888,6 +2888,10 @@ Activate by holding the key for the character you want to add an accent to, then
   <data name="TextExtractor_Languages.Header" xml:space="preserve">
     <value>Preferred language</value>
   </data>
+  <data name="Shell_PastePlain.Content" xml:space="preserve">
+    <value>Paste As Plain Text</value>
+    <comment>Product name: Navigation view item name for Paste as Plain Text</comment>
+  </data>
   <data name="PastePlain.ModuleDescription" xml:space="preserve">
     <value>Paste As Plain Text is a quick shortcut for pasting the text contents of your clipboard without formatting.</value>
   </data>
