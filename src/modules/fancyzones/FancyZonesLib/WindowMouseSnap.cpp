@@ -83,11 +83,11 @@ void WindowMouseSnap::MoveSizeUpdate(HMONITOR monitor, POINT const& ptScreen, bo
             {
                 if (!FancyZonesSettings::settings().showZonesOnAllMonitors)
                 {
-                    m_currentWorkArea->HideZonesOverlay();
+                    m_currentWorkArea->HideZones();
                 }
                 else
                 {
-                    m_currentWorkArea->ShowZonesOverlay({}, m_window);
+                    m_currentWorkArea->ShowZones({}, m_window);
                 }
             }
             
@@ -101,7 +101,7 @@ void WindowMouseSnap::MoveSizeUpdate(HMONITOR monitor, POINT const& ptScreen, bo
             const bool redraw = m_highlightedZones.Update(m_currentWorkArea->GetLayout().get(), ptClient, isSelectManyZonesState);
             if (redraw)
             {
-                m_currentWorkArea->ShowZonesOverlay(m_highlightedZones.Zones(), m_window);
+                m_currentWorkArea->ShowZones(m_highlightedZones.Zones(), m_window);
             }
         }
     }
@@ -160,13 +160,13 @@ void WindowMouseSnap::SwitchSnappingMode(bool isSnapping)
             {
                 if (workArea)
                 {
-                    workArea->ShowZonesOverlay({}, m_window);
+                    workArea->ShowZones({}, m_window);
                 }
             }
         }
         else if (m_currentWorkArea)
         {
-            m_currentWorkArea->ShowZonesOverlay({}, m_window);
+            m_currentWorkArea->ShowZones({}, m_window);
         }
 
         if (m_currentWorkArea)
@@ -185,7 +185,7 @@ void WindowMouseSnap::SwitchSnappingMode(bool isSnapping)
         {
             if (workArea)
             {
-                workArea->HideZonesOverlay();
+                workArea->HideZones();
             }
         }
 

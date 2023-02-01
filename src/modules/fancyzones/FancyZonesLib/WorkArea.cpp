@@ -181,7 +181,7 @@ const GUID WorkArea::GetLayoutId() const noexcept
     return GUID{};
 }
 
-void WorkArea::ShowZonesOverlay(const ZoneIndexSet& highlight, HWND draggedWindow/* = nullptr*/)
+void WorkArea::ShowZones(const ZoneIndexSet& highlight, HWND draggedWindow/* = nullptr*/)
 {
     if (m_layout && m_zonesOverlay)
     {
@@ -191,7 +191,7 @@ void WorkArea::ShowZonesOverlay(const ZoneIndexSet& highlight, HWND draggedWindo
     }
 }
 
-void WorkArea::HideZonesOverlay()
+void WorkArea::HideZones()
 {
     if (m_zonesOverlay)
     {

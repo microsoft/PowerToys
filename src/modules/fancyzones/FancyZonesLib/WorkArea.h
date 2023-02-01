@@ -51,8 +51,8 @@ public:
     void UpdateActiveZoneSet();
     void UpdateWindowPositions();
 
-    void ShowZonesOverlay(const ZoneIndexSet& highlight, HWND draggedWindow = nullptr);
-    void HideZonesOverlay();
+    void ShowZones(const ZoneIndexSet& highlight, HWND draggedWindow = nullptr);
+    void HideZones();
     void FlashZones();
     
     void CycleWindows(HWND window, bool reverse);
