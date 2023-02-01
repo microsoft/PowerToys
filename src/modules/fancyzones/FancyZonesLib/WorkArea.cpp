@@ -181,28 +181,6 @@ const GUID WorkArea::GetLayoutId() const noexcept
     return GUID{};
 }
 
-ZoneIndexSet WorkArea::GetWindowZoneIndexes(HWND window) const
-{
-    if (m_layout)
-    {
-        auto guidStr = FancyZonesUtils::GuidToString(m_layout->Id());
-        if (guidStr.has_value())
-        {
-            return AppZoneHistory::instance().GetAppLastZoneIndexSet(window, m_uniqueId, guidStr.value());
-        }
-        else
-        {
-            Logger::error(L"Failed to convert to string layout GUID on the requested work area");
-        }
-    }
-    else
-    {
-        Logger::error(L"No layout initialized on the requested work area");
-    }
-
-    return {};
-}
-
 void WorkArea::ShowZonesOverlay(const ZoneIndexSet& highlight, HWND draggedWindow/* = nullptr*/)
 {
     if (m_layout && m_zonesOverlay)

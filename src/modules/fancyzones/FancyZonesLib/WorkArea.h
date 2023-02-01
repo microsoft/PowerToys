@@ -44,8 +44,6 @@ public:
     const GUID GetLayoutId() const noexcept;
     const FancyZonesUtils::Rect& GetWorkAreaRect() const noexcept { return m_workAreaRect; }
     
-    ZoneIndexSet GetWindowZoneIndexes(HWND window) const;
-
     void InitSnappedWindows();
     void Snap(HWND window, const ZoneIndexSet& zones, bool updatePosition = true);
     void Unsnap(HWND window);
