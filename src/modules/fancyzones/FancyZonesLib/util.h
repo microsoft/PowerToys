@@ -195,6 +195,7 @@ namespace FancyZonesUtils
     }
 
     UINT GetDpiForMonitor(HMONITOR monitor) noexcept;
+    void OrderMonitors(std::vector<std::pair<HMONITOR, RECT>>& monitorInfo);
     std::vector<HMONITOR> GetMonitorsOrdered();
 
     bool IsValidGuid(const std::wstring& str);
