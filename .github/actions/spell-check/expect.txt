@@ -1458,6 +1458,7 @@ REGFILTERPINS
 REGISTERCLASSFAILED
 registerhotkey
 registrypath
+registrypreview
 regkey
 REGPINTYPES
 regsvr
