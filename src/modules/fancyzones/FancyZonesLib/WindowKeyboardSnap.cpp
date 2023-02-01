@@ -46,7 +46,7 @@ bool WindowKeyboardSnap::SnapHotkeyBasedOnZoneNumber(HWND window, DWORD vkCode, 
                     {
                         if (prevWorkArea && workArea != prevWorkArea)
                         {
-                            prevWorkArea->UnsnapWindow(window);
+                            prevWorkArea->Unsnap(window);
                         }
                     }
 

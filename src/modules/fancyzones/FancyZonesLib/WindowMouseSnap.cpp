@@ -171,6 +171,7 @@ void WindowMouseSnap::SwitchSnappingMode(bool isSnapping)
 
         if (m_currentWorkArea)
         {
+            m_currentWorkArea->Unsnap(m_window);
             Trace::WorkArea::MoveOrResizeStarted(m_currentWorkArea->GetLayout().get(), m_currentWorkArea->GetLayoutWindows().get());
         }
     }

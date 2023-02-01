@@ -52,8 +52,8 @@ public:
     bool ExtendWindowByDirectionAndPosition(HWND window, DWORD vkCode);
 
     void InitSnappedWindows();
-    void SnapWindow(HWND window, const ZoneIndexSet& zones, bool extend = false);
-    void UnsnapWindow(HWND window);
+    void Snap(HWND window, const ZoneIndexSet& zones);
+    void Unsnap(HWND window);
 
     void UpdateActiveZoneSet();
     void UpdateWindowPositions();

@@ -151,7 +151,7 @@ void WorkArea::MoveWindowIntoZoneByIndexSet(HWND window, const ZoneIndexSet& ind
         }
     }
 
-    SnapWindow(window, indexSet);
+    Snap(window, indexSet);
 }
 
 bool WorkArea::MoveWindowIntoZoneByDirectionAndIndex(HWND window, DWORD vkCode, bool cycle)
@@ -358,7 +358,7 @@ bool WorkArea::ExtendWindowByDirectionAndPosition(HWND window, DWORD vkCode)
         FancyZonesWindowUtils::SizeWindowToRect(window, adjustedRect);
         
         m_layoutWindows->Extend(window, resultIndexSet);
-        SnapWindow(window, resultIndexSet, true /* extend mode */);
+        Snap(window, resultIndexSet, true /* extend mode */);
 
         return true;
     }
@@ -366,7 +366,7 @@ bool WorkArea::ExtendWindowByDirectionAndPosition(HWND window, DWORD vkCode)
     return false;
 }
 
-void WorkArea::SnapWindow(HWND window, const ZoneIndexSet& zones, bool extendMode /* = false*/)
+void WorkArea::Snap(HWND window, const ZoneIndexSet& zones)
 {
     if (!m_layoutWindows || !m_layout)
     {
@@ -384,7 +384,7 @@ void WorkArea::SnapWindow(HWND window, const ZoneIndexSet& zones, bool extendMod
     FancyZonesWindowProperties::StampZoneIndexProperty(window, zones);
 }
 
-void WorkArea::UnsnapWindow(HWND window)
+void WorkArea::Unsnap(HWND window)
 {
     if (!m_layoutWindows || !m_layout)
     {
