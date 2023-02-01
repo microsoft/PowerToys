@@ -127,11 +127,6 @@ WorkArea::~WorkArea()
     windowPool.FreeZonesOverlayWindow(m_window);
 }
 
-void WorkArea::MoveWindowIntoZoneByIndex(HWND window, ZoneIndex index)
-{
-    Snap(window, { index });
-}
-
 bool WorkArea::MoveWindowIntoZoneByDirectionAndIndex(HWND window, DWORD vkCode, bool cycle)
 {
     if (!m_layout || m_layout->Zones().empty())
@@ -145,7 +140,8 @@ bool WorkArea::MoveWindowIntoZoneByDirectionAndIndex(HWND window, DWORD vkCode, 
     // The window was not assigned to any zone here
     if (zoneIndexes.size() == 0)
     {
-        MoveWindowIntoZoneByIndex(window, vkCode == VK_LEFT ? numZones - 1 : 0);
+        const ZoneIndex zone = vkCode == VK_LEFT ? numZones - 1 : 0; 
+        Snap(window, { zone });
     }
     else
     {
@@ -159,18 +155,19 @@ bool WorkArea::MoveWindowIntoZoneByDirectionAndIndex(HWND window, DWORD vkCode, 
                 return false;
             }
 
-            MoveWindowIntoZoneByIndex(window, vkCode == VK_LEFT ? numZones - 1 : 0);
+            const ZoneIndex zone = vkCode == VK_LEFT ? numZones - 1 : 0;
+            Snap(window, { zone });
         }
         else
         {
             // We didn't reach the edge
             if (vkCode == VK_LEFT)
             {
-                MoveWindowIntoZoneByIndex(window, oldId - 1);
+                Snap(window, { oldId - 1 });
             }
             else
             {
-                MoveWindowIntoZoneByIndex(window, oldId + 1);
+                Snap(window, { oldId + 1 });
             }
         }
     }

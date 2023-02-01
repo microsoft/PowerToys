@@ -338,10 +338,10 @@ bool WindowKeyboardSnap::MoveByDirectionAndPosition(HWND window, DWORD vkCode, b
     windowRect.left -= workAreaRect.left();
     windowRect.right -= workAreaRect.left();
 
-    auto result = FancyZonesUtils::ChooseNextZoneByPosition(vkCode, windowRect, zoneRects);
-    if (result < zoneRects.size())
+    ZoneIndex result = FancyZonesUtils::ChooseNextZoneByPosition(vkCode, windowRect, zoneRects);
+    if (static_cast<size_t>(result) < zoneRects.size())
     {
-        workArea->MoveWindowIntoZoneByIndex(window, freeZoneIndices[result]);
+        workArea->Snap(window, { freeZoneIndices[result] });
         Trace::FancyZones::KeyboardSnapWindowToZone(layout.get(), layoutWindows);
         return true;
     }
@@ -354,9 +354,9 @@ bool WindowKeyboardSnap::MoveByDirectionAndPosition(HWND window, DWORD vkCode, b
         windowRect = FancyZonesUtils::PrepareRectForCycling(windowRect, RECT(workAreaRect.left(), workAreaRect.top(), workAreaRect.right(), workAreaRect.bottom()), vkCode);
         result = FancyZonesUtils::ChooseNextZoneByPosition(vkCode, windowRect, zoneRects);
 
-        if (result < zoneRects.size())
+        if (static_cast<size_t>(result) < zoneRects.size())
         {
-            workArea->MoveWindowIntoZoneByIndex(window, result);
+            workArea->Snap(window, { result });
             Trace::FancyZones::KeyboardSnapWindowToZone(layout.get(), layoutWindows);
             return true;
         }
