@@ -1,6 +1,5 @@
 #pragma once
 
-#include <FancyZonesLib/FancyZonesDataTypes.h>
 #include <FancyZonesLib/Layout.h>
 #include <FancyZonesLib/LayoutAssignedWindows.h>
 

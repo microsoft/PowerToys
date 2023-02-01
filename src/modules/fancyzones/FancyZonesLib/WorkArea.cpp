@@ -1,25 +1,15 @@
 #include "pch.h"
 #include "WorkArea.h"
 
-#include <common/logger/call_tracer.h>
 #include <common/logger/logger.h>
-#include <common/utils/winapi_error.h>
 
 #include "FancyZonesData/AppliedLayouts.h"
 #include "FancyZonesData/AppZoneHistory.h"
-#include "FancyZonesDataTypes.h"
-#include "SettingsObserver.h"
 #include "ZonesOverlay.h"
-#include "trace.h"
-#include "on_thread_executor.h"
 #include "Settings.h"
 #include <FancyZonesLib/FancyZonesWindowProperties.h>
 #include <FancyZonesLib/VirtualDesktop.h>
 #include <FancyZonesLib/WindowUtils.h>
-
-#include <ShellScalingApi.h>
-#include <mutex>
-#include <fileapi.h>
 
 // disabling warning 4458 - declaration of 'identifier' hides class member
 // to avoid warnings from GDI files - can't add winRT directory to external code
