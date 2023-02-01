@@ -16,7 +16,8 @@ namespace MarkdownPreviewHandlerUnitTests
     [STATestClass]
     public class MarkdownPreviewHandlerTest
     {
-        private static readonly int TenSecondsInMilliseconds = 10000;
+        // A long timeout is needed. WebView2 can take a long time to load the first time in some CI systems.
+        private static readonly int HardTimeoutInMilliseconds = 30000;
         private static readonly int SleepTimeInMilliseconds = 200;
 
         [TestMethod]
@@ -30,7 +31,7 @@ namespace MarkdownPreviewHandlerUnitTests
 
                 int beforeTick = Environment.TickCount;
 
-                while (markdownPreviewHandlerControl.Controls.Count == 0 && Environment.TickCount < beforeTick + TenSecondsInMilliseconds)
+                while (markdownPreviewHandlerControl.Controls.Count == 0 && Environment.TickCount < beforeTick + HardTimeoutInMilliseconds)
                 {
                     Application.DoEvents();
                     Thread.Sleep(SleepTimeInMilliseconds);
@@ -53,7 +54,7 @@ namespace MarkdownPreviewHandlerUnitTests
 
                 int beforeTick = Environment.TickCount;
 
-                while (markdownPreviewHandlerControl.Controls.Count == 0 && Environment.TickCount < beforeTick + TenSecondsInMilliseconds)
+                while (markdownPreviewHandlerControl.Controls.Count == 0 && Environment.TickCount < beforeTick + HardTimeoutInMilliseconds)
                 {
                     Application.DoEvents();
                     Thread.Sleep(SleepTimeInMilliseconds);
@@ -76,7 +77,7 @@ namespace MarkdownPreviewHandlerUnitTests
 
                 int beforeTick = Environment.TickCount;
 
-                while (markdownPreviewHandlerControl.Controls.Count < 2 && Environment.TickCount < beforeTick + TenSecondsInMilliseconds)
+                while (markdownPreviewHandlerControl.Controls.Count < 2 && Environment.TickCount < beforeTick + HardTimeoutInMilliseconds)
                 {
                     Application.DoEvents();
                     Thread.Sleep(SleepTimeInMilliseconds);
@@ -99,7 +100,7 @@ namespace MarkdownPreviewHandlerUnitTests
 
                 int beforeTick = Environment.TickCount;
 
-                while (markdownPreviewHandlerControl.Controls.Count == 0 && Environment.TickCount < beforeTick + TenSecondsInMilliseconds)
+                while (markdownPreviewHandlerControl.Controls.Count == 0 && Environment.TickCount < beforeTick + HardTimeoutInMilliseconds)
                 {
                     Application.DoEvents();
                     Thread.Sleep(SleepTimeInMilliseconds);
@@ -122,7 +123,7 @@ namespace MarkdownPreviewHandlerUnitTests
 
                 int beforeTick = Environment.TickCount;
 
-                while (markdownPreviewHandlerControl.Controls.Count < 2 && Environment.TickCount < beforeTick + TenSecondsInMilliseconds)
+                while (markdownPreviewHandlerControl.Controls.Count < 2 && Environment.TickCount < beforeTick + HardTimeoutInMilliseconds)
                 {
                     Application.DoEvents();
                     Thread.Sleep(SleepTimeInMilliseconds);
@@ -145,7 +146,7 @@ namespace MarkdownPreviewHandlerUnitTests
 
                 int beforeTick = Environment.TickCount;
 
-                while (markdownPreviewHandlerControl.Controls.Count == 0 && Environment.TickCount < beforeTick + TenSecondsInMilliseconds)
+                while (markdownPreviewHandlerControl.Controls.Count == 0 && Environment.TickCount < beforeTick + HardTimeoutInMilliseconds)
                 {
                     Application.DoEvents();
                     Thread.Sleep(SleepTimeInMilliseconds);

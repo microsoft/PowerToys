@@ -1,6 +1,5 @@
 #include "pch.h"
 #include "PowerRenameItem.h"
-#include <common/themes/icon_helpers.h>
 
 int CPowerRenameItem::s_id = 0;
 
@@ -180,16 +179,6 @@ IFACEMETHODIMP CPowerRenameItem::GetId(_Out_ int* id)
     return S_OK;
 }
 
-IFACEMETHODIMP CPowerRenameItem::GetIconIndex(_Out_ int* iconIndex)
-{
-    if (m_iconIndex == -1)
-    {
-        GetIconIndexFromPath((PCWSTR)m_path, &m_iconIndex);
-    }
-    *iconIndex = m_iconIndex;
-    return S_OK;
-}
-
 IFACEMETHODIMP CPowerRenameItem::GetDepth(_Out_ UINT* depth)
 {
     *depth = m_depth;
@@ -202,16 +191,28 @@ IFACEMETHODIMP CPowerRenameItem::PutDepth(_In_ int depth)
     return S_OK;
 }
 
+IFACEMETHODIMP CPowerRenameItem::GetStatus(_Out_ PowerRenameItemRenameStatus* status)
+{
+    *status = m_status;
+    return S_OK;
+}
+
+IFACEMETHODIMP CPowerRenameItem::PutStatus(_In_ PowerRenameItemRenameStatus status)
+{
+    m_status = status;
+    return S_OK;
+}
+
 IFACEMETHODIMP CPowerRenameItem::ShouldRenameItem(_In_ DWORD flags, _Out_ bool* shouldRename)
 {
     // Should we perform a rename on this item given its
     // state and the options that were set?
-    bool hasChanged = m_newName != nullptr && (lstrcmp(m_originalName, m_newName) != 0);
+    bool hasChanged = m_newName != nullptr && (lstrcmp(m_originalName, m_newName) != 0) && (lstrcmp(L"", m_newName) != 0);
     bool excludeBecauseFolder = (m_isFolder && (flags & PowerRenameFlags::ExcludeFolders));
     bool excludeBecauseFile = (!m_isFolder && (flags & PowerRenameFlags::ExcludeFiles));
     bool excludeBecauseSubFolderContent = (m_depth > 0 && (flags & PowerRenameFlags::ExcludeSubfolders));
     *shouldRename = (m_selected && m_canRename && hasChanged && !excludeBecauseFile &&
-                     !excludeBecauseFolder && !excludeBecauseSubFolderContent);
+                     !excludeBecauseFolder && !excludeBecauseSubFolderContent && m_status == PowerRenameItemRenameStatus::ShouldRename);
     return S_OK;
 }
 

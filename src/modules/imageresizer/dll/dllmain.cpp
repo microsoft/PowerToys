@@ -2,12 +2,18 @@
 #include "Generated Files/resource.h"
 #include "ImageResizerExt_i.h"
 #include "dllmain.h"
-#include <interface/powertoy_module_interface.h>
+
+#include <ImageResizerConstants.h>
+#include <Settings.h>
+#include <trace.h>
+
+#include <common/logger/logger.h>
 #include <common/SettingsAPI/settings_objects.h>
+#include <common/utils/package.h>
+#include <common/utils/process_path.h>
 #include <common/utils/resources.h>
-#include "Settings.h"
-#include "trace.h"
-#include <imageresizer/dll/ImageResizerConstants.h>
+#include <common/utils/logger_helper.h>
+#include <interface/powertoy_module_interface.h>
 
 CImageResizerExtModule _AtlModule;
 HINSTANCE g_hInst_imageResizer = 0;
@@ -43,6 +49,7 @@ public:
         m_enabled = CSettingsInstance().GetEnabled();
         app_name = GET_RESOURCE_STRING(IDS_IMAGERESIZER);
         app_key = ImageResizerConstants::ModuleKey;
+        LoggerHelpers::init_logger(app_key, L"ModuleInterface", LogSettings::imageResizerLoggerName);
     };
 
     // Destroy the powertoy and free memory
@@ -63,6 +70,12 @@ public:
         return app_key.c_str();
     }
 
+    // Return the configured status for the gpo policy for the module
+    virtual powertoys_gpo::gpo_rule_configured_t gpo_policy_enabled_configuration() override
+    {
+        return powertoys_gpo::getConfiguredImageResizerEnabledValue();
+    }
+
     // Return JSON with the configuration options.
     virtual bool get_config(wchar_t* buffer, int* buffer_size) override
     {
@@ -79,16 +92,28 @@ public:
 
     // Signal from the Settings editor to call a custom action.
     // This can be used to spawn more complex editors.
-    virtual void call_custom_action(const wchar_t* action) override {}
+    virtual void call_custom_action(const wchar_t* /*action*/) override {}
 
     // Called by the runner to pass the updated settings values as a serialized JSON.
-    virtual void set_config(const wchar_t* config) override {}
+    virtual void set_config(const wchar_t* /*config*/) override {}
 
     // Enable the powertoy
     virtual void enable()
     {
         m_enabled = true;
         CSettingsInstance().SetEnabled(m_enabled);
+
+        if (package::IsWin11OrGreater())
+        {
+            std::wstring path = get_module_folderpath(g_hInst_imageResizer);
+            std::wstring packageUri = path + L"\\ImageResizerContextMenuPackage.msix";
+
+            if (!package::IsPackageRegistered(ImageResizerConstants::ModulePackageDisplayName))
+            {
+                package::RegisterSparsePackage(path, packageUri);
+            }
+        }
+
         Trace::EnableImageResizer(m_enabled);
     }
 

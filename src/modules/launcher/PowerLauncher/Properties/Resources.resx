@@ -191,4 +191,7 @@
   <data name="FailedToInitializePluginsTitle" xml:space="preserve">
     <value>Fail to initialize plugins</value>
   </data>
+  <data name="ContextMenuItemsAvailable" xml:space="preserve">
+    <value>Appended controls available</value>
+  </data>
 </root>

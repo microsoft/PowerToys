@@ -25,17 +25,6 @@ The process and variables that can be tweaked on the pipeline are described in m
 
 The localized resource dlls for C# projects are added to the MSI only for build on the pipeline. This is done by checking if the [`IsPipeline` variable is defined](https://github.com/microsoft/PowerToys/blob/f92bd6ffd38014c228544bb8d68d0937ce4c2b6d/installer/PowerToysSetup/Product.wxs#L804-L805), which gets defined before building the installer on the pipeline [here](https://github.com/microsoft/PowerToys/blob/f92bd6ffd38014c228544bb8d68d0937ce4c2b6d/.pipelines/build-installer.cmd#L4). This is done because the localized resx files are only present on the pipeline, and not having this check would result in the installer project failing to build locally.
 
-### UWP Special case
-C# projects normally expect localized resource files with the language id in the file name as Resources.`langId`.resx, where `langId` is generally a two character code except for language with specific variants (like zh-Hans or pt-BR):
-
-For example, `path\Resources.resx` for English and `path\Resources.fr.resx` for French.
-
-UWP differs from this as it expects the resources to have the same Resources.resw file name, but they should be present in language specific folders, with the full language ID (such as fr-fr, zh-hans, pt-br, etc.)
-
-For example, `path\en-us\Resources.resw` for English and `path\fr-fr\Resources.resw` for French.
-
-Since the pipeline generates it in this format, [a script is run](https://github.com/microsoft/PowerToys/blob/86d77103e9c69686c297490acb04775d43ef8b76/.pipelines/build-localization.cmd#L29-L31) to move these resw files to the correct format expected by all UWP projects. Currently the only UWP project is [Settings.UI](https://github.com/microsoft/PowerToys/tree/main/src/core/Settings.UI). The script used for moving the resources can be [found here](https://github.com/microsoft/PowerToys/blob/main/tools/localization/move_uwp_resources.ps1). The equivalent full language IDs for each shortened language ID obtained from the pipeline has been hardcoded in the script.
-
 ## Enabling localization on a new project
 To enable localization on a new project, the first step is to create a file `LocProject.json` in the project root.
 
@@ -61,7 +50,7 @@ The rest of the steps depend on the project type and are covered in the sections
 ### C++
 C++ projects do not support `resx` files, and instead use `rc` files along with `resource.h` files. The CDPX pipeline however doesn't support localizing `rc` files and the other alternative they support is directly translating the resources from the binary which makes it harder to maintain resources. To avoid this, a custom script has been added which expects a resx file and converts the entries to an rc file with a string table and adds resource declarations to a resource.h file so that the resources can be compiled with the C++ project.
 
-If you already have a .rc file, copy the string table to a separate txt file and run the [convert-stringtable-to-resx.ps1](https://github.com/microsoft/PowerToys/blob/main/tools/build/convert-stringtable-to-resx.ps1) script on it. This script is not very robust to input, and requires the data in a specific format, where `IDS_ResName L"ResourceValue"` and any number of spaces can be present in between. The script converts this file to the format expected by [`resgen`](https://docs.microsoft.com/en-us/dotnet/framework/tools/resgen-exe-resource-file-generator#Convert), which will convert it to resx. The resource names are changed from all uppercase to title case, and the `IDS_` prefix is removed. Escape characters might have to be manually replaced, for example .rc files would have escaped double quotes as `""`, so this should be replaced with just `"` before converting to the resx files.
+If you already have a .rc file, copy the string table to a separate txt file and run the [convert-stringtable-to-resx.ps1](https://github.com/microsoft/PowerToys/blob/main/tools/build/convert-stringtable-to-resx.ps1) script on it. This script is not very robust to input, and requires the data in a specific format, where `IDS_ResName L"ResourceValue"` and any number of spaces can be present in between. The script converts this file to the format expected by [`resgen`](https://learn.microsoft.com/dotnet/framework/tools/resgen-exe-resource-file-generator#Convert), which will convert it to resx. The resource names are changed from all uppercase to title case, and the `IDS_` prefix is removed. Escape characters might have to be manually replaced, for example .rc files would have escaped double quotes as `""`, so this should be replaced with just `"` before converting to the resx files.
 
 After generating the resx file, rename the existing rc and h files to ProjName.base.rc and resource.base.h. In the rc file remove the string table which is to be localized and in the .h file remove all `#define`s corresponding to localized resources. In the vcxproj of the C++ project, add the following build event:
 ```
@@ -70,7 +59,7 @@ After generating the resx file, rename the existing rc and h files to ProjName.b
 </Target>
 ```
 
-This event runs a script which generates a resource.h and ProjName.rc in the `Generated Files` folder using the strings in all the resx files along with the existing information in resource.base.h and ProjName.base.rc. The script can be found [here](https://github.com/microsoft/PowerToys/blob/main/tools/build/convert-resx-to-rc.ps1). The script uses [`resgen`](https://docs.microsoft.com/en-us/dotnet/framework/tools/resgen-exe-resource-file-generator#Convert) to convert the resx file to a string table expected in the .rc file format. When the resources are added to the rc file the `IDS_` prefix is added and resource names are in upper case (as it was originally). Any occurrences of `"` in the string resource is escaped as `""` to prevent build errors. The string tables are added to the rc file in the following format:
+This event runs a script which generates a resource.h and ProjName.rc in the `Generated Files` folder using the strings in all the resx files along with the existing information in resource.base.h and ProjName.base.rc. The script can be found [here](https://github.com/microsoft/PowerToys/blob/main/tools/build/convert-resx-to-rc.ps1). The script uses [`resgen`](https://learn.microsoft.com/dotnet/framework/tools/resgen-exe-resource-file-generator#Convert) to convert the resx file to a string table expected in the .rc file format. When the resources are added to the rc file the `IDS_` prefix is added and resource names are in upper case (as it was originally). Any occurrences of `"` in the string resource is escaped as `""` to prevent build errors. The string tables are added to the rc file in the following format:
 ```
 #if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENU)
 LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
@@ -99,7 +88,7 @@ Since C# projects natively support `resx` files, the only step required here is 
 
 **Note:** Building with localized resources may cause a build warning `Referenced assembly 'mscorlib.dll' targets a different processor` which is a VS bug. More details can be found [here](https://github.com/microsoft/PowerToys/issues/7269).
 
-**Note:** If a project needs to be migrated from XAML resources to resx, the easiest way to convert the resources would be to change to format to `=` separates resources by either manually (by Ctrl+H on a text editor), or by a script, and then running [`resgen`](https://docs.microsoft.com/en-us/dotnet/framework/tools/resgen-exe-resource-file-generator#Convert) on `Developer Command Prompt for VS` to convert it to resx format.
+**Note:** If a project needs to be migrated from XAML resources to resx, the easiest way to convert the resources would be to change to format to `=` separates resources by either manually (by Ctrl+H on a text editor), or by a script, and then running [`resgen`](https://learn.microsoft.com/dotnet/framework/tools/resgen-exe-resource-file-generator#Convert) on `Developer Command Prompt for VS` to convert it to resx format.
 ```
 <system:String x:Key="wox_plugin_calculator_plugin_name">Calculator</system:String>
 <system:String x:Key="wox_plugin_calculator_plugin_description">Allows to do mathematical calculations.(Try 5*3-2 in Wox)</system:String>

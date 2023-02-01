@@ -63,6 +63,7 @@ APPIDS
 appium
 Applets
 Applicationcan
+applicationconfiguration
 applicationframehost
 Applist
 applog
@@ -75,6 +76,7 @@ appxpackage
 APSTUDIO
 AQS
 Aqtobe
+ARCHITEW
 arcosh
 ARemapped
 argb
@@ -159,11 +161,10 @@ bpp
 bricelam
 BRIGHTGREEN
 Browsable
-brucelindbloom
 bsd
 bstr
 bti
-Btn
+btn
 BTNFACE
 Bto
 buf
@@ -191,6 +192,7 @@ CDeclaration
 CDEF
 cdpx
 CENTERALIGN
+ceq
 cguid
 changecursor
 Changemove
@@ -201,11 +203,11 @@ Choibalsan
 chrdavis
 chromaticities
 Chrzan
-CHT
+cht
 Chukotka
 Chuuk
-cielab
-ciexyz
+CIELAB
+CIEXYZ
 cim
 CImage
 cla
@@ -234,6 +236,7 @@ CMock
 CMONITORS
 cmpgt
 cmyk
+cne
 cnt
 Cocklebiddy
 coclass
@@ -254,13 +257,11 @@ comctl
 COMDAT
 comdef
 comdlg
-comhost
 cominterop
 commandline
 COMMANDTITLE
 commctrl
 Comoros
-companding
 COMPOSITIONFULL
 comsupp
 comsuppw
@@ -313,6 +314,7 @@ Ctx
 CUI
 Cunha
 currentculture
+CURRENTDIR
 CURSORINFO
 cursorpos
 customaction
@@ -325,12 +327,10 @@ cwd
 cxfksword
 CXSMICON
 CXVIRTUALSCREEN
-cxxopts
 cyberrex
 CYSMICON
 CYVIRTUALSCREEN
 cziplib
-cziplob
 Dac
 dacl
 damienleroy
@@ -383,12 +383,14 @@ DENORMAL
 Deondre
 depersist
 deprioritized
+depsfileslistspath
+depsjsonpath
 deref
 DESKTOPABSOLUTEEDITING
 DESKTOPABSOLUTEPARSING
 desktopshorcutinstalled
 desktopwindowxamlsource
-DEU
+deu
 devblogs
 devdocs
 devenum
@@ -469,19 +471,17 @@ EFile
 ekus
 emmintrin
 Emoji
-emptyrecyclebin
 ENABLEDELAYEDEXPANSION
 enabledisable
 ENABLEDPOPUP
 endpointvolume
 endregion
 ENTERSIZEMOVE
-ENU
+enu
 enumerationoptions
 EOAC
 epicgames
 epu
-Eqn
 ERASEBKGND
 EREOF
 EResize
@@ -490,6 +490,7 @@ ERRORLEVEL
 ERRORTITLE
 ESettings
 esize
+esn
 esrp
 Eswatini
 etl
@@ -533,7 +534,6 @@ Faroe
 FARPROC
 fdw
 feimage
-ffaa
 fff
 fileapi
 FILEEXPLORER
@@ -552,7 +552,6 @@ FILEVERSION
 Filtergraph
 Filterkeyboard
 Filterx
-finalizer
 findfast
 firefox
 FIXEDFILEINFO
@@ -576,6 +575,8 @@ FZE
 gabime
 GAC
 gacutil
+Gaeilge
+Gaidhlig
 GBarm
 Gbits
 Gbps
@@ -616,6 +617,7 @@ HACCEL
 handlekeyboardhookevent
 handlerroutine
 hangeul
+Hankaku
 hanselman
 Hanzi
 Hardlines
@@ -640,6 +642,7 @@ hdc
 hdrop
 HEB
 Heiko
+Helpline
 helptext
 Heure
 HGFE
@@ -785,15 +788,12 @@ Interlop
 INTRESOURCE
 INVALIDARG
 invalidoperatioexception
-iobjectwithsitesetsite
-iolewindowcontextsensitivehelp
 ipc
 ipcmanager
 IPlugin
 IPower
-ipreview
+IPREVIEW
 ipreviewhandler
-ipreviewhandlertranslateaccelerator
 ipreviewhandlervisualssetfont
 IProperty
 IPublic
@@ -821,9 +821,8 @@ jgeosdfsdsgmkedfgdfgdfgbkmhcgcflmi
 jjw
 jobject
 jpe
-JPN
+jpn
 jpnime
-JSONOf
 Jsons
 jsonval
 junja
@@ -844,13 +843,13 @@ keyevent
 KEYEVENTF
 keynum
 keyremaps
-keystokes
 Keytool
 keyup
 Khakassia
 Khanty
 Khovd
 KILLFOCUS
+killrunner
 Kitts
 Knownfolders
 Krai
@@ -902,6 +901,7 @@ lmcons
 LMEM
 LMENU
 lnk
+LOADFROMFILE
 LOADLIBRARYASDATAFILE
 LOBYTE
 LOCALAPPDATA
@@ -913,6 +913,7 @@ LOCATIONCHANGE
 logconsole
 logfile
 LOGFONT
+LOGFONTW
 LOGMSG
 logon
 LOGPIXELSX
@@ -979,6 +980,8 @@ MAPPEDTOSAMEKEY
 MAPTOSAMESHORTCUT
 MAPVK
 Markdig
+markdownpreviewhandler
+MARKDOWNPREVIEWHANDLERCPP
 Markovic
 Marquesas
 martinchrzan
@@ -1011,6 +1014,7 @@ Metadatas
 metafile
 mfapi
 mfc
+mfcm
 mfidl
 mfobjects
 mfplat
@@ -1070,7 +1074,6 @@ mru
 msbuild
 msc
 msclr
-mscoree
 mscorlib
 msdata
 msedge
@@ -1116,7 +1119,7 @@ NCMBUTTONDOWN
 NCMBUTTONUP
 NCMOUSELEAVE
 NCMOUSEMOVE
-ncol
+NCol
 NCPAINT
 NCRBUTTONDBLCLK
 NCRBUTTONDOWN
@@ -1139,7 +1142,7 @@ newdev
 newitem
 newpath
 newrow
-newtonsoft
+Newtonsoft
 niels
 nielslaute
 NIF
@@ -1195,7 +1198,7 @@ NPH
 NResize
 NTAPI
 ntdll
-NTFS
+ntfs
 NTSTATUS
 nugets
 nullonfailure
@@ -1366,6 +1369,7 @@ proactively
 PROCESSKEY
 PRODEXT
 PRODUCTVERSION
+productwxspath
 Progman
 programdata
 PROGRAMFILES
@@ -1437,13 +1441,14 @@ rectp
 rects
 recyclebin
 redirectedfrom
-Redist
+redist
 redistributable
 reencode
 reencoded
 REFCLSID
 REFGUID
 REFIID
+Refreshable
 REGCLS
 regedit
 regfile
@@ -1515,7 +1520,6 @@ Rsp
 Rstrtmgr
 RTB
 RTLREADING
-RTSS
 ruleset
 runas
 rundll
@@ -1524,9 +1528,11 @@ RUNLEVEL
 runsettings
 runtimeclass
 runtimeconfig
+runtimedepsjsonpath
 runtimeobject
+runtimepack
 runtimes
-RUS
+rus
 Rutkas
 RValue
 rvm
@@ -1570,7 +1576,6 @@ SETFOCUS
 SETFOREGROUND
 SETICON
 setlocal
-Setrect
 SETREDRAW
 SETTEXT
 SETTINGCHANGE
@@ -1591,6 +1596,7 @@ shellex
 SHELLEXECUTEINFO
 SHELLEXECUTEINFOW
 shellscalingapi
+shemptyrecyclebina
 SHFILEINFO
 SHGFI
 Shl
@@ -1795,6 +1801,7 @@ THH
 THICKFRAME
 THISCOMPONENT
 THotkey
+thumbcache
 TILEDWINDOW
 timedate
 timediff
@@ -1857,6 +1864,7 @@ UIs
 Ulaanbaatar
 ULARGE
 ULONGLONG
+unassign
 uncompilable
 UNCPRIORITY
 UNDNAME
@@ -1868,7 +1876,7 @@ uniquifier
 Uniquifies
 unitconverter
 unittests
-unk
+Unk
 unknwn
 UNLEN
 Unmap
@@ -2003,7 +2011,6 @@ WINDOWPOSCHANGING
 Windowsapp
 WINDOWSBUILDNUMBER
 Windowscodecs
-windowsdesktop
 windowssearch
 windowssettings
 WINDOWSTYLES
@@ -2066,6 +2073,7 @@ workspaces
 wox
 wparam
 wpf
+wpfdepsjsonpath
 wpftmp
 wpr
 wprp

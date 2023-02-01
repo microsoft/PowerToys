@@ -4,7 +4,6 @@
 
 using System.Globalization;
 using System.Linq;
-using System.Threading;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
 using Wox.Infrastructure;
@@ -64,9 +63,9 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.UnitTests
         public void IconThemeDarkTest(string typedString, string subTitleMatch, string expectedResult)
         {
             // Setup
-            Mock<Main> main = new ();
+            Mock<Main> main = new();
             main.Object.IconTheme = "dark";
-            Query expectedQuery = new ("(" + typedString, "(");
+            Query expectedQuery = new("(" + typedString, "(");
 
             // Act
             string result = main.Object.Query(expectedQuery).FirstOrDefault(predicate: x => x.SubTitle.StartsWith(subTitleMatch, System.StringComparison.CurrentCulture)).IcoPath;
@@ -109,9 +108,9 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.UnitTests
         public void IconThemeLightTest(string typedString, string subTitleMatch, string expectedResult)
         {
             // Setup
-            Mock<Main> main = new ();
+            Mock<Main> main = new();
             main.Object.IconTheme = "light";
-            Query expectedQuery = new ("(" + typedString, "(");
+            Query expectedQuery = new("(" + typedString, "(");
 
             // Act
             var result = main.Object.Query(expectedQuery).FirstOrDefault(x => x.SubTitle.StartsWith(subTitleMatch, System.StringComparison.CurrentCulture)).IcoPath;

@@ -22,8 +22,8 @@ namespace winrt::Windows::UI::Xaml
 class ShortcutControl
 {
 private:
-    // Stack panel for the drop downs to display the selected shortcut
-    winrt::Windows::Foundation::IInspectable shortcutDropDownStackPanel;
+    // Wrap grid for the drop downs to display the selected shortcut
+    winrt::Windows::Foundation::IInspectable shortcutDropDownVariableSizedWrapGrid;
 
     // Button to type the shortcut
     winrt::Windows::Foundation::IInspectable typeShortcut;

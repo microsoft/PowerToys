@@ -13,9 +13,9 @@ namespace BackwardsCompatibility
     struct DeviceIdData
     {
         std::wstring deviceName = L"FallbackDevice";
-        int width;
-        int height;
-        GUID virtualDesktopId;
+        int width{};
+        int height{};
+        GUID virtualDesktopId{};
         std::wstring monitorId;
 
         static std::optional<DeviceIdData> ParseDeviceId(const std::wstring& str);
@@ -63,7 +63,6 @@ namespace JSONHelpers
 
     namespace ZoneSetDataJSON
     {
-        json::JsonObject ToJson(const FancyZonesDataTypes::ZoneSetData& zoneSet);
         std::optional<FancyZonesDataTypes::ZoneSetData> FromJson(const json::JsonObject& zoneSet);
     };
 
@@ -78,38 +77,14 @@ namespace JSONHelpers
     struct LayoutQuickKeyJSON
     {
         std::wstring layoutUuid;
-        int key;
+        int key{};
 
-        static json::JsonObject ToJson(const LayoutQuickKeyJSON& device);
         static std::optional<LayoutQuickKeyJSON> FromJson(const json::JsonObject& device);
     };
 
     using TDeviceInfoMap = std::unordered_map<BackwardsCompatibility::DeviceIdData, FancyZonesDataTypes::DeviceInfoData>;
     using TCustomZoneSetsMap = std::unordered_map<std::wstring, FancyZonesDataTypes::CustomLayoutData>;
     using TLayoutQuickKeysMap = std::unordered_map<std::wstring, int>;
-
-    struct MonitorInfo
-    {
-        std::wstring monitorName;
-        std::wstring virtualDesktop;
-        int dpi;
-        int top;
-        int left;
-        int width;
-        int height;
-        bool isSelected = false;
-
-        static json::JsonObject ToJson(const MonitorInfo& monitor);
-    };
-    
-    struct EditorArgs
-    {
-        DWORD processId;
-        bool spanZonesAcrossMonitors;
-        std::vector<MonitorInfo> monitors;
-
-        static json::JsonObject ToJson(const EditorArgs& args);
-    };
 
     json::JsonObject GetPersistFancyZonesJSON(const std::wstring& zonesSettingsFileName, const std::wstring& appZoneHistoryFileName);
 
@@ -135,7 +110,7 @@ namespace std
     template<>
     struct hash<BackwardsCompatibility::DeviceIdData>
     {
-        size_t operator()(const BackwardsCompatibility::DeviceIdData& Value) const
+        size_t operator()(const BackwardsCompatibility::DeviceIdData& /*Value*/) const
         {
             return 0;
         }

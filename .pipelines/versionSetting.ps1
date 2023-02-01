@@ -40,3 +40,21 @@ $verProps.Project.PropertyGroup.DevEnvironment = $DevEnvironment;
 
 Write-Host "xml" $verProps.Project.PropertyGroup.Version 
 $verProps.Save($verPropWriteFileLocation);
+
+# Set PowerRenameContextMenu package version in AppManifest.xml
+$powerRenameContextMenuAppManifestWriteFileLocation = $PSScriptRoot + '/../src/modules/powerrename/PowerRenameContextMenu/AppxManifest.xml';
+$powerRenameContextMenuAppManifestReadFileLocation = $powerRenameContextMenuAppManifestWriteFileLocation;
+
+[XML]$powerRenameContextMenuAppManifest = Get-Content $powerRenameContextMenuAppManifestReadFileLocation
+$powerRenameContextMenuAppManifest.Package.Identity.Version = $versionNumber + '.0'
+Write-Host "PowerRenameContextMenu version" $powerRenameContextMenuAppManifest.Package.Identity.Version
+$powerRenameContextMenuAppManifest.Save($powerRenameContextMenuAppManifestWriteFileLocation);
+
+# Set ImageResizerContextMenu package version in AppManifest.xml
+$imageResizerContextMenuAppManifestWriteFileLocation = $PSScriptRoot + '/../src/modules/imageresizer/ImageResizerContextMenu/AppxManifest.xml';
+$imageResizerContextMenuAppManifestReadFileLocation = $imageResizerContextMenuAppManifestWriteFileLocation;
+
+[XML]$imageResizerContextMenuAppManifest = Get-Content $imageResizerContextMenuAppManifestReadFileLocation
+$imageResizerContextMenuAppManifest.Package.Identity.Version = $versionNumber + '.0'
+Write-Host "ImageResizerContextMenu version" $imageResizerContextMenuAppManifest.Package.Identity.Version
+$imageResizerContextMenuAppManifest.Save($imageResizerContextMenuAppManifestWriteFileLocation);

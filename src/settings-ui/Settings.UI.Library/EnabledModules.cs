@@ -2,6 +2,7 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System;
 using System.Runtime.CompilerServices;
 using System.Text.Json;
 using System.Text.Json.Serialization;
@@ -12,6 +13,8 @@ namespace Microsoft.PowerToys.Settings.UI.Library
 {
     public class EnabledModules
     {
+        private Action notifyEnabledChangedAction;
+
         public EnabledModules()
         {
         }
@@ -28,6 +31,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
                 {
                     LogTelemetryEvent(value);
                     fancyZones = value;
+                    NotifyChange();
                 }
             }
         }
@@ -76,6 +80,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
                 {
                     LogTelemetryEvent(value);
                     shortcutGuide = value;
+                    NotifyChange();
                 }
             }
         }
@@ -139,6 +144,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
                 {
                     LogTelemetryEvent(value);
                     powerLauncher = value;
+                    NotifyChange();
                 }
             }
         }
@@ -155,6 +161,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
                 {
                     LogTelemetryEvent(value);
                     colorPicker = value;
+                    NotifyChange();
                 }
             }
         }
@@ -239,6 +246,94 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             }
         }
 
+        private bool powerAccent;
+
+        [JsonPropertyName("QuickAccent")]
+        public bool PowerAccent
+        {
+            get => powerAccent;
+            set
+            {
+                if (powerAccent != value)
+                {
+                    LogTelemetryEvent(value);
+                    powerAccent = value;
+                }
+            }
+        }
+
+        private bool powerOCR = true;
+
+        [JsonPropertyName("TextExtractor")]
+        public bool PowerOCR
+        {
+            get => powerOCR;
+            set
+            {
+                if (powerOCR != value)
+                {
+                    LogTelemetryEvent(value);
+                    powerOCR = value;
+                    NotifyChange();
+                }
+            }
+        }
+
+        private bool measureTool = true;
+
+        [JsonPropertyName("Measure Tool")]
+        public bool MeasureTool
+        {
+            get => measureTool;
+            set
+            {
+                if (measureTool != value)
+                {
+                    LogTelemetryEvent(value);
+                    measureTool = value;
+                    NotifyChange();
+                }
+            }
+        }
+
+        private bool hosts = true;
+
+        [JsonPropertyName("Hosts")]
+        public bool Hosts
+        {
+            get => hosts;
+            set
+            {
+                if (hosts != value)
+                {
+                    LogTelemetryEvent(value);
+                    hosts = value;
+                    NotifyChange();
+                }
+            }
+        }
+
+        private bool fileLocksmith = true;
+
+        [JsonPropertyName("File Locksmith")]
+        public bool FileLocksmith
+        {
+            get => fileLocksmith;
+            set
+            {
+                if (fileLocksmith != value)
+                {
+                    LogTelemetryEvent(value);
+                    fileLocksmith = value;
+                }
+            }
+        }
+
+        private void NotifyChange()
+        {
+            notifyEnabledChangedAction?.Invoke();
+        }
+
         public string ToJsonString()
         {
             return JsonSerializer.Serialize(this);
@@ -252,6 +347,11 @@ namespace Microsoft.PowerToys.Settings.UI.Library
                 Name = moduleName,
             };
             PowerToysTelemetry.Log.WriteEvent(dataEvent);
+        }
+
+        internal void AddEnabledModuleChangeNotification(Action callBack)
+        {
+            notifyEnabledChangedAction = callBack;
         }
     }
 }

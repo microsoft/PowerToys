@@ -315,11 +315,10 @@ namespace registry
                                                           std::wstring handlerClsid,
                                                           std::wstring powertoysVersion,
                                                           std::wstring fullPathToHandler,
-                                                          std::wstring handlerCategory,
                                                           std::wstring className,
                                                           std::wstring displayName,
                                                           std::vector<std::wstring> fileTypes,
-                                                          std::wstring fileKindType = L"" )
+                                                          std::wstring fileKindType = L"")
         {
             const HKEY scope = perUser ? HKEY_CURRENT_USER : HKEY_LOCAL_MACHINE;
 
@@ -330,9 +329,6 @@ namespace registry
             std::wstring inprocServerPath = clsidPath;
             inprocServerPath += L'\\';
             inprocServerPath += L"InprocServer32";
-
-            std::wstring implementedCategoriesPath = clsidPath + LR"d(\Implemented Categories\)d";
-            implementedCategoriesPath += handlerCategory;
 
             std::wstring assemblyKeyValue;
             if (const auto lastDotPos = className.rfind(L'.'); lastDotPos != std::wstring::npos)
@@ -356,13 +352,10 @@ namespace registry
             // TODO: verify that we actually need all of those
             vec_t changes = { { scope, clsidPath, L"DisplayName", displayName },
                               { scope, clsidPath, std::nullopt, className },
-                              { scope, implementedCategoriesPath, std::nullopt, L"" },
                               { scope, inprocServerPath, std::nullopt, fullPathToHandler },
                               { scope, inprocServerPath, L"Assembly", assemblyKeyValue },
                               { scope, inprocServerPath, L"Class", className },
-                              { scope, inprocServerPath, L"ThreadingModel", L"Both" },
-                              { scope, versionPath, L"Assembly", assemblyKeyValue },
-                              { scope, versionPath, L"Class", className } };
+                              { scope, inprocServerPath, L"ThreadingModel", L"Apartment" } };
 
             for (const auto& fileType : fileTypes)
             {
@@ -377,6 +370,12 @@ namespace registry
                     // Make it optional as well so that we don't fail registering the handler if we can't write to HKEY_LOCAL_MACHINE.
                     std::wstring kindMapPath = L"Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\KindMap";
                     changes.push_back({ HKEY_LOCAL_MACHINE, kindMapPath, fileType, fileKindType, false});
+                }
+                if (handlerType == PreviewHandlerType::preview && fileType == L".reg")
+                {
+                    // this regfile registry key has precedence over Software\Classes\.reg for .reg files
+                    std::wstring regfilePath = L"Software\\Classes\\regfile\\shellex\\" + IPREVIEW_HANDLER_CLSID + L"\\";
+                    changes.push_back({ scope, regfilePath, std::nullopt, handlerClsid });
                 }
             }
 

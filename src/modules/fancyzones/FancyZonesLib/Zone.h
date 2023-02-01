@@ -11,20 +11,21 @@ using ZoneIndexSet = std::vector<ZoneIndex>;
 /**
  * Class representing one zone inside applied zone layout, which is basically wrapper around rectangle structure.
  */
-interface __declspec(uuid("{8228E934-B6EF-402A-9892-15A1441BF8B0}")) IZone : public IUnknown
+class Zone
 {
-    /**
-     * @returns Zone coordinates (top-left and bottom-right corner) represented as RECT structure.
-     */
-    IFACEMETHOD_(RECT, GetZoneRect)() const = 0;
-    /**
-     * @returns Zone area calculated from zone rect
-     */
-    IFACEMETHOD_(long, GetZoneArea)() const = 0;
-    /**
-     * @returns Zone identifier.
-     */
-    IFACEMETHOD_(ZoneIndex, Id)() const = 0;
-};
+public:
+    Zone(const RECT& zoneRect, const ZoneIndex zoneIndex);
+    Zone(const Zone& other);
+    ~Zone() = default;
 
-winrt::com_ptr<IZone> MakeZone(const RECT& zoneRect, const ZoneIndex zoneId) noexcept;
+    ZoneIndex Id() const noexcept;
+    bool IsValid() const noexcept;
+    RECT GetZoneRect() const noexcept;
+    long GetZoneArea() const noexcept;
+
+private:
+    const RECT m_rect;
+    const ZoneIndex m_index;
+
+    bool isValid() const noexcept;
+};

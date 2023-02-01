@@ -18,7 +18,7 @@ Once you've discussed your proposed feature/fix/etc. with a team member, and you
 - Package new ideas into classes or refactor existing ideas into a class as you extend.
 - When adding new classes/methods/changing existing code: add new unit tests or update the existing tests.
 
-## Github Workflow
+## GitHub Workflow
 
 - Before starting to work on a fix/feature, make sure there is an open issue to track the work.
 - Add the `In progress` label to the issue, if not already present also add a `Cost-Small/Medium/Large` estimate and make sure all appropriate labels are set.
@@ -38,15 +38,17 @@ Once you've discussed your proposed feature/fix/etc. with a team member, and you
 ### Prerequisites for Compiling PowerToys
 
 1. Windows 10 April 2018 Update (version 1803) or newer
-2. Visual Studio Community/Professional/Enterprise 2022
-3. Once you've cloned and started the `PowerToys.sln`, in the solution explorer, if you see a dialog that says `install extra components`, click `install`
+1. Visual Studio Community/Professional/Enterprise 2022 17.4 or newer
+1. Git clone PowerToys repository 
+1. Open started the `PowerToys.sln`
+1. If you see a dialog that says `install extra components` in the solution explorer pane, click `install`
 
 ### Get Submodules to compile
 We have submodules that need to be initialized before you can compile most parts of PowerToys.  This should be a one time step.
 
 1. Open a terminal
-2. Navigate to the folder you cloned PowerToys to.
-3. Run `git submodule update --init --recursive`
+1. Navigate to the folder you cloned PowerToys to.
+1. Run `git submodule update --init --recursive`
 
 ### Compiling Source Code
 
@@ -63,32 +65,57 @@ Our installer is two parts, an EXE and an MSI.  The EXE (Bootstrapper) contains 
 The installer can only be compiled in `Release` mode, step 1 and 2 must be done before the MSI will be able to be compiled.
 
 1. Compile `PowerToys.sln`. Instructions are listed above.
-2. Compile `BugReportTool.sln` tool. Path from root: `tools\BugReportTool\BugReportTool.sln` (details listed below)
-3. Compile `WebcamReportTool.sln` tool. Path from root: `tools\WebcamReportTool\WebcamReportTool.sln` (details listed below)
-4. Compile `PowerToysSetup.sln` Path from root: `installer\PowerToysSetup.sln` (details listed below)
+1. Compile `BugReportTool.sln` tool. Path from root: `tools\BugReportTool\BugReportTool.sln` (details listed below)
+1. Compile `WebcamReportTool.sln` tool. Path from root: `tools\WebcamReportTool\WebcamReportTool.sln` (details listed below)
+1. Compile `StylesReportTool.sln` tool. Path from root: `tools\StylesReportTool\StylesReportTool.sln` (details listed below)
+1. Compile `PowerToysSetup.sln` Path from root: `installer\PowerToysSetup.sln` (details listed below)
 
 ### Prerequisites for building the MSI installer
 
 1. Install the [WiX Toolset Visual Studio 2022 Extension](https://marketplace.visualstudio.com/items?itemName=WixToolset.WixToolsetVisualStudio2022Extension).
-2. Install the [WiX Toolset build tools](https://wixtoolset.org/releases/).
+1. Install the [WiX Toolset build tools](https://wixtoolset.org/releases/v3-14-0-6526/).
+1. Download [WiX binaries](https://wixtoolset.org/downloads/v3.14.0.6526/wix314-binaries.zip) and extract `wix.targets` to `C:\Program Files (x86)\WiX Toolset v3.14`.
+
+### Locally building the installer prerequisite projects all at once from the command-line
+
+1. Open a `Developer Command Prompt for VS 2022`
+1. Ensure `nuget.exe` is in your `%path%`
+1. In the repo root, run these commands:
+  
+```
+nuget restore .\tools\BugReportTool\BugReportTool.sln
+msbuild -p:Platform=x64 -p:Configuration=Release .\tools\BugReportTool\BugReportTool.sln
+
+nuget restore .\tools\WebcamReportTool\WebcamReportTool.sln
+msbuild -p:Platform=x64 -p:Configuration=Release .\tools\WebcamReportTool\WebcamReportTool.sln
+
+nuget restore .\tools\StylesReportTool\StylesReportTool.sln
+msbuild -p:Platform=x64 -p:Configuration=Release .\tools\StylesReportTool\StylesReportTool.sln
+```
 
 ### Locally compiling the Bug reporting tool
 
 1. Open `tools\BugReportTool\BugReportTool.sln`
-2. In Visual Studio, in the `Solutions Configuration` drop-down menu select `Release`
-3. From the `Build` menu, choose `Build Solution`.
+1. In Visual Studio, in the `Solutions Configuration` drop-down menu select `Release`
+1. From the `Build` menu, choose `Build Solution`.
 
 ### Locally compiling the Webcam reporting tool
 
 1. Open `tools\WebcamReportTool\WebcamReportTool.sln`
-2. In Visual Studio, in the `Solutions Configuration` drop-down menu select `Release`
-3. From the `Build` menu, choose `Build Solution`.
+1. In Visual Studio, in the `Solutions Configuration` drop-down menu select `Release`
+1. From the `Build` menu, choose `Build Solution`.
+
+### Locally compiling the Window styles reporting tool
+
+1. Open `tools\StylesReportTool\StylesReportTool.sln`
+1. In Visual Studio, in the `Solutions Configuration` drop-down menu select `Release`
+1. From the `Build` menu, choose `Build Solution`.
 
 ### Locally compiling the installer
 
 1. Open `installer\PowerToysSetup.sln`
-2. In Visual Studio, in the `Solutions Configuration` drop-down menu select `Release`
-3. From the `Build` menu choose `Build Solution`.
+1. In Visual Studio, in the `Solutions Configuration` drop-down menu select `Release`
+1. From the `Build` menu choose `Build Solution`.
 
 The resulting `PowerToysSetup.msi` installer will be available in the `installer\PowerToysSetup\x64\Release\` folder.
 

@@ -13,7 +13,7 @@
 class AlwaysOnTop : public SettingsObserver
 {
 public:
-    AlwaysOnTop();
+    AlwaysOnTop(bool useLLKH);
     ~AlwaysOnTop();
 
 protected:
@@ -24,7 +24,7 @@ protected:
         if (!thisRef && (message == WM_CREATE))
         {
             const auto createStruct = reinterpret_cast<LPCREATESTRUCT>(lparam);
-            thisRef = reinterpret_cast<AlwaysOnTop*>(createStruct->lpCreateParams);
+            thisRef = static_cast<AlwaysOnTop*>(createStruct->lpCreateParams);
             SetWindowLongPtr(window, GWLP_USERDATA, reinterpret_cast<LONG_PTR>(thisRef));
         }
 
@@ -47,20 +47,23 @@ private:
     HWND m_window{ nullptr };
     HINSTANCE m_hinstance;
     std::map<HWND, std::unique_ptr<WindowBorder>> m_topmostWindows{};
+    HANDLE m_hPinEvent;
+    std::thread m_thread;
+    const bool m_useCentralizedLLKH;
+    bool m_running = true;
 
     LRESULT WndProc(HWND, UINT, WPARAM, LPARAM) noexcept;
     void HandleWinHookEvent(WinHookEvent* data) noexcept;
     
     bool InitMainWindow();
     void RegisterHotkey() const;
+    void RegisterLLKH();
     void SubscribeToEvents();
 
     void ProcessCommand(HWND window);
     void StartTrackingTopmostWindows();
     void UnpinAll();
     void CleanUp();
-
-    void VirtualDesktopSwitchedHandle();
 
     bool IsTracked(HWND window) const noexcept;
     bool IsTopmost(HWND window) const noexcept;
@@ -69,6 +72,7 @@ private:
     bool PinTopmostWindow(HWND window) const noexcept;
     bool UnpinTopmostWindow(HWND window) const noexcept;
     bool AssignBorder(HWND window);
+    void RefreshBorders();
 
     virtual void SettingsUpdate(SettingId type) override;
 

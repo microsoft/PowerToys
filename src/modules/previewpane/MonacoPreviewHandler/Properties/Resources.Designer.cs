@@ -106,5 +106,14 @@ namespace Microsoft.PowerToys.PreviewHandler.Monaco.Properties {
                 return ResourceManager.GetString("WebView2_Not_Installed_Message", resourceCulture);
             }
         }
+
+        /// <summary>
+        ///   Looks up a localized string for an error when Gpo has the utility disabled.
+        /// </summary>
+        internal static string GpoDisabledErrorText {
+            get {
+                return ResourceManager.GetString("GpoDisabledErrorText", resourceCulture);
+            }
+        }
     }
 }

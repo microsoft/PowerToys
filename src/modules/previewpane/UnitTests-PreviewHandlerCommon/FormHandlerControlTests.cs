@@ -2,7 +2,6 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-using System;
 using System.Drawing;
 
 using System.Windows.Forms;
@@ -95,22 +94,6 @@ namespace PreviewHandlerCommonUnitTests
                     // Assert
                     Assert.AreEqual(font, testFormHandlerControl.Font);
                 }
-            }
-        }
-
-        [TestMethod]
-        public void FormHandlerControlShouldUpdateBoundsWhenSetRectCalled()
-        {
-            // Arrange
-            using (var testFormHandlerControl = new TestFormControl())
-            {
-                var bounds = new Rectangle(2, 2, 4, 4);
-
-                // Act
-                testFormHandlerControl.SetRect(bounds);
-
-                // Assert
-                Assert.AreEqual(bounds, testFormHandlerControl.Bounds);
             }
         }
 

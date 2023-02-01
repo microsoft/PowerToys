@@ -4,14 +4,15 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
+using Microsoft.PowerToys.Settings.UI.Helpers;
 using Microsoft.PowerToys.Settings.UI.Services;
 using Microsoft.PowerToys.Settings.UI.ViewModels;
+using Microsoft.UI.Xaml;
+using Microsoft.UI.Xaml.Automation.Peers;
+using Microsoft.UI.Xaml.Controls;
+using Windows.ApplicationModel.Resources;
 using Windows.Data.Json;
-using Windows.UI.Xaml;
-using Windows.UI.Xaml.Automation.Peers;
-using Windows.UI.Xaml.Controls;
-using WinUI = Microsoft.UI.Xaml.Controls;
+using Windows.System;
 
 namespace Microsoft.PowerToys.Settings.UI.Views
 {
@@ -27,9 +28,29 @@ namespace Microsoft.PowerToys.Settings.UI.Views
         public delegate void IPCMessageCallback(string msg);
 
         /// <summary>
+        /// Declaration for the opening main window callback function.
+        /// </summary>
+        public delegate void MainOpeningCallback();
+
+        /// <summary>
+        /// Declaration for the updating the general settings callback function.
+        /// </summary>
+        public delegate bool UpdatingGeneralSettingsCallback(string module, bool isEnabled);
+
+        /// <summary>
         /// Declaration for the opening oobe window callback function.
         /// </summary>
         public delegate void OobeOpeningCallback();
+
+        /// <summary>
+        /// Declaration for the opening flyout window callback function.
+        /// </summary>
+        public delegate void FlyoutOpeningCallback();
+
+        /// <summary>
+        /// Declaration for the disabling hide of flyout window callback function.
+        /// </summary>
+        public delegate void DisablingFlyoutHidingCallback();
 
         /// <summary>
         /// Gets or sets a shell handler to be used to update contents of the shell dynamically from page within the frame.
@@ -52,9 +73,29 @@ namespace Microsoft.PowerToys.Settings.UI.Views
         public static IPCMessageCallback CheckForUpdatesMsgCallback { get; set; }
 
         /// <summary>
+        /// Gets or sets callback function for opening main window
+        /// </summary>
+        public static MainOpeningCallback OpenMainWindowCallback { get; set; }
+
+        /// <summary>
+        /// Gets or sets callback function for updating the general settings
+        /// </summary>
+        public static UpdatingGeneralSettingsCallback UpdateGeneralSettingsCallback { get; set; }
+
+        /// <summary>
         /// Gets or sets callback function for opening oobe window
         /// </summary>
         public static OobeOpeningCallback OpenOobeWindowCallback { get; set; }
+
+        /// <summary>
+        /// Gets or sets callback function for opening flyout window
+        /// </summary>
+        public static FlyoutOpeningCallback OpenFlyoutCallback { get; set; }
+
+        /// <summary>
+        /// Gets or sets callback function for disabling hide of flyout window
+        /// </summary>
+        public static DisablingFlyoutHidingCallback DisableFlyoutHidingCallback { get; set; }
 
         /// <summary>
         /// Gets view model.
@@ -81,7 +122,10 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             DataContext = ViewModel;
             ShellHandler = this;
             ViewModel.Initialize(shellFrame, navigationView, KeyboardAccelerators);
-            shellFrame.Navigate(typeof(GeneralPage));
+
+            // NL moved navigation to general page to the moment when the window is first activated (to not make flyout window disappear)
+            // shellFrame.Navigate(typeof(GeneralPage));
+            IPCResponseHandleList.Add(ReceiveMessage);
         }
 
         public static int SendDefaultIPCMessage(string msg)
@@ -131,12 +175,48 @@ namespace Microsoft.PowerToys.Settings.UI.Views
         }
 
         /// <summary>
+        /// Set main window opening callback function
+        /// </summary>
+        /// <param name="implementation">delegate function implementation.</param>
+        public static void SetOpenMainWindowCallback(MainOpeningCallback implementation)
+        {
+            OpenMainWindowCallback = implementation;
+        }
+
+        /// <summary>
+        /// Set updating the general settings callback function
+        /// </summary>
+        /// <param name="implementation">delegate function implementation.</param>
+        public static void SetUpdatingGeneralSettingsCallback(UpdatingGeneralSettingsCallback implementation)
+        {
+            UpdateGeneralSettingsCallback = implementation;
+        }
+
+        /// <summary>
         /// Set oobe opening callback function
         /// </summary>
         /// <param name="implementation">delegate function implementation.</param>
         public static void SetOpenOobeCallback(OobeOpeningCallback implementation)
         {
             OpenOobeWindowCallback = implementation;
+        }
+
+        /// <summary>
+        /// Set flyout opening callback function
+        /// </summary>
+        /// <param name="implementation">delegate function implementation.</param>
+        public static void SetOpenFlyoutCallback(FlyoutOpeningCallback implementation)
+        {
+            OpenFlyoutCallback = implementation;
+        }
+
+        /// <summary>
+        /// Set disable flyout hiding callback function
+        /// </summary>
+        /// <param name="implementation">delegate function implementation.</param>
+        public static void SetDisableFlyoutHidingCallback(DisablingFlyoutHidingCallback implementation)
+        {
+            DisableFlyoutHidingCallback = implementation;
         }
 
         public static void SetElevationStatus(bool isElevated)
@@ -159,6 +239,16 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             shellFrame.Navigate(typeof(GeneralPage));
         }
 
+        // Tell the current page view model to update
+        public void SignalGeneralDataUpdate()
+        {
+            IRefreshablePage currentPage = shellFrame?.Content as IRefreshablePage;
+            if (currentPage != null)
+            {
+                currentPage.RefreshEnabledState();
+            }
+        }
+
         private void OobeButton_Click(object sender, RoutedEventArgs e)
         {
             OpenOobeWindowCallback();
@@ -166,8 +256,6 @@ namespace Microsoft.PowerToys.Settings.UI.Views
 
         private bool navigationViewInitialStateProcessed; // avoid announcing initial state of the navigation pane.
 
-        [SuppressMessage("Usage", "CA1801:Review unused parameters", Justification = "Params are required for event handler signature requirements.")]
-#pragma warning disable CA1822 // Mark members as static
         private void NavigationView_PaneOpened(Microsoft.UI.Xaml.Controls.NavigationView sender, object args)
         {
             if (!navigationViewInitialStateProcessed)
@@ -184,7 +272,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
 
             if (AutomationPeer.ListenerExists(AutomationEvents.MenuOpened))
             {
-                var loader = Windows.ApplicationModel.Resources.ResourceLoader.GetForCurrentView();
+                var loader = ResourceLoader.GetForViewIndependentUse();
                 peer.RaiseNotificationEvent(
                     AutomationNotificationKind.ActionCompleted,
                     AutomationNotificationProcessing.ImportantMostRecent,
@@ -193,7 +281,6 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             }
         }
 
-        [SuppressMessage("Usage", "CA1801:Review unused parameters", Justification = "Params are required for event handler signature requirements.")]
         private void NavigationView_PaneClosed(Microsoft.UI.Xaml.Controls.NavigationView sender, object args)
         {
             if (!navigationViewInitialStateProcessed)
@@ -210,7 +297,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
 
             if (AutomationPeer.ListenerExists(AutomationEvents.MenuClosed))
             {
-                var loader = Windows.ApplicationModel.Resources.ResourceLoader.GetForCurrentView();
+                var loader = ResourceLoader.GetForViewIndependentUse();
                 peer.RaiseNotificationEvent(
                     AutomationNotificationKind.ActionCompleted,
                     AutomationNotificationProcessing.ImportantMostRecent,
@@ -219,14 +306,47 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             }
         }
 
-        private void OOBEItem_Tapped(object sender, Windows.UI.Xaml.Input.TappedRoutedEventArgs e)
+        private void OOBEItem_Tapped(object sender, Microsoft.UI.Xaml.Input.TappedRoutedEventArgs e)
         {
             OpenOobeWindowCallback();
         }
 
-        private async void FeedbackItem_Tapped(object sender, Windows.UI.Xaml.Input.TappedRoutedEventArgs e)
+        private async void FeedbackItem_Tapped(object sender, Microsoft.UI.Xaml.Input.TappedRoutedEventArgs e)
         {
-            await Windows.System.Launcher.LaunchUriAsync(new Uri("https://aka.ms/powerToysGiveFeedback"));
+            await Launcher.LaunchUriAsync(new Uri("https://aka.ms/powerToysGiveFeedback"));
+        }
+
+        private void NavigationView_SelectionChanged(NavigationView sender, NavigationViewSelectionChangedEventArgs args)
+        {
+            NavigationViewItem selectedItem = args.SelectedItem as NavigationViewItem;
+            if (selectedItem != null)
+            {
+                Type pageType = selectedItem.GetValue(NavHelper.NavigateToProperty) as Type;
+                NavigationService.Navigate(pageType);
+            }
+        }
+
+        private void ReceiveMessage(JsonObject json)
+        {
+            if (json != null)
+            {
+                if (json.ToString().StartsWith("{\"ShowYourself\":"))
+                {
+                    if (json.ToString().EndsWith("\"flyout\"}"))
+                    {
+                        OpenFlyoutCallback();
+                    }
+                    else if (json.ToString().EndsWith("\"main_page\"}"))
+                    {
+                        OpenMainWindowCallback();
+                    }
+                }
+            }
+        }
+
+        internal static void EnsurePageIsSelected()
+        {
+            NavigationService.EnsurePageIsSelected(typeof(GeneralPage));
         }
     }
 }

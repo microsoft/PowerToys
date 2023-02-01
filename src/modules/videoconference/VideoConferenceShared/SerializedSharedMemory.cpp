@@ -1,5 +1,7 @@
 #include "SerializedSharedMemory.h"
-
+#ifdef _M_ARM64
+#define _mm_pause() __yield();
+#endif
 inline char* SerializedSharedMemory::lock_flag_addr() noexcept
 {
     return reinterpret_cast<char*>(_memory._data + _memory._size);
@@ -81,7 +83,7 @@ std::optional<SerializedSharedMemory> SerializedSharedMemory::create(const std::
     }
 
     // We need an extra byte for locking if it's not readonly
-    const ULARGE_INTEGER UISize{ .QuadPart = size + !read_only };
+    const ULARGE_INTEGER UISize{ .QuadPart = static_cast<uint64_t>(size) + !read_only };
 
     wil::unique_handle hMapFile{ CreateFileMappingW(INVALID_HANDLE_VALUE,
                                                     maybe_attributes ? maybe_attributes : &sa,

@@ -37,8 +37,8 @@ enum DWM_WINDOW_CORNER_PREFERENCE
 };
 
 namespace
-{   
-    BOOL CALLBACK saveDisplayToVector(HMONITOR monitor, HDC hdc, LPRECT rect, LPARAM data)
+{
+    BOOL CALLBACK saveDisplayToVector(HMONITOR monitor, HDC /*hdc*/, LPRECT /*rect*/, LPARAM data)
     {
         reinterpret_cast<std::vector<HMONITOR>*>(data)->emplace_back(monitor);
         return true;
@@ -121,7 +121,6 @@ namespace
     }
 }
 
-
 bool FancyZonesWindowUtils::IsSplashScreen(HWND window)
 {
     wchar_t className[MAX_PATH];
@@ -200,9 +199,7 @@ bool FancyZonesWindowUtils::IsPopupWindow(HWND window) noexcept
 bool FancyZonesWindowUtils::HasThickFrameAndMinimizeMaximizeButtons(HWND window) noexcept
 {
     auto style = GetWindowLong(window, GWL_STYLE);
-    return ((style & WS_THICKFRAME) == WS_THICKFRAME
-        && (style & WS_MINIMIZEBOX) == WS_MINIMIZEBOX
-        && (style & WS_MAXIMIZEBOX) == WS_MAXIMIZEBOX);
+    return ((style & WS_THICKFRAME) == WS_THICKFRAME && (style & WS_MINIMIZEBOX) == WS_MINIMIZEBOX && (style & WS_MAXIMIZEBOX) == WS_MAXIMIZEBOX);
 }
 
 bool FancyZonesWindowUtils::IsCandidateForZoning(HWND window)
@@ -212,7 +209,7 @@ bool FancyZonesWindowUtils::IsCandidateForZoning(HWND window)
     {
         return false;
     }
-    
+
     // popup could be the window we don't want to snap: start menu, notification popup, tray window, etc.
     // also, popup could be the windows we want to snap disregarding the "allowSnapPopupWindows" setting, e.g. Telegram
     bool isPopup = IsPopupWindow(window);
@@ -220,15 +217,15 @@ bool FancyZonesWindowUtils::IsCandidateForZoning(HWND window)
     {
         return false;
     }
-    
-    // allow child windows 
+
+    // allow child windows
     auto hasOwner = HasVisibleOwner(window);
     if (hasOwner && !FancyZonesSettings::settings().allowSnapChildWindows)
     {
         return false;
     }
 
-    std::wstring processPath = get_process_path(window);
+    std::wstring processPath = get_process_path_waiting_uwp(window);
     CharUpperBuffW(const_cast<std::wstring&>(processPath).data(), (DWORD)processPath.length());
     if (IsExcludedByUser(processPath))
     {
@@ -257,7 +254,6 @@ bool FancyZonesWindowUtils::IsProcessOfWindowElevated(HWND window)
                                              pid) };
 
     wil::unique_handle token;
-    bool elevated = false;
 
     if (OpenProcessToken(hProcess.get(), TOKEN_QUERY, &token))
     {
@@ -283,7 +279,7 @@ bool FancyZonesWindowUtils::IsExcludedByDefault(const std::wstring& processPath)
     {
         return true;
     }
-    
+
     static std::vector<std::wstring> defaultExcludedApps = { NonLocalizable::PowerToysAppFZEditor, NonLocalizable::CoreWindow, NonLocalizable::SearchUI };
     return (find_app_name_in_path(processPath, defaultExcludedApps));
 }
@@ -322,18 +318,25 @@ void FancyZonesWindowUtils::SizeWindowToRect(HWND window, RECT rect) noexcept
         ::GetWindowPlacement(window, &placement);
     }
 
-    // Do not restore minimized windows. We change their placement though so they restore to the correct zone.
-    if ((placement.showCmd != SW_SHOWMINIMIZED) &&
-        (placement.showCmd != SW_MINIMIZE))
+    if (!IsWindowVisible(window))
     {
-        placement.showCmd = SW_RESTORE;
+        placement.showCmd = SW_HIDE;
     }
-
-    // Remove maximized show command to make sure window is moved to the correct zone.
-    if (placement.showCmd == SW_SHOWMAXIMIZED)
+    else
     {
-        placement.showCmd = SW_RESTORE;
-        placement.flags &= ~WPF_RESTORETOMAXIMIZED;
+        // Do not restore minimized windows. We change their placement though so they restore to the correct zone.
+        if ((placement.showCmd != SW_SHOWMINIMIZED) &&
+            (placement.showCmd != SW_MINIMIZE))
+        {
+            placement.showCmd = SW_RESTORE;
+        }
+
+        // Remove maximized show command to make sure window is moved to the correct zone.
+        if (placement.showCmd == SW_SHOWMAXIMIZED)
+        {
+            placement.showCmd = SW_RESTORE;
+            placement.flags &= ~WPF_RESTORETOMAXIMIZED;
+        }
     }
 
     ScreenToWorkAreaCoords(window, rect);
@@ -346,7 +349,7 @@ void FancyZonesWindowUtils::SizeWindowToRect(HWND window, RECT rect) noexcept
     {
         Logger::error(L"SetWindowPlacement failed, {}", get_last_error_or_default(GetLastError()));
     }
-    
+
     // Do it again, allowing Windows to resize the window and set correct scaling
     // This fixes Issue #365
     result = ::SetWindowPlacement(window, &placement);
@@ -542,4 +545,31 @@ void FancyZonesWindowUtils::MakeWindowTransparent(HWND window)
         DWM_BLURBEHIND bh = { DWM_BB_ENABLE | DWM_BB_BLURREGION, TRUE, hrgn.get(), FALSE };
         DwmEnableBlurBehindWindow(window, &bh);
     }
+}
+
+bool FancyZonesWindowUtils::IsCursorTypeIndicatingSizeEvent()
+{
+    CURSORINFO cursorInfo = { 0 };
+    cursorInfo.cbSize = sizeof(cursorInfo);
+
+    if (::GetCursorInfo(&cursorInfo))
+    {
+        if (::LoadCursor(NULL, IDC_SIZENS) == cursorInfo.hCursor)
+        {
+            return true;
+        }
+        if (::LoadCursor(NULL, IDC_SIZEWE) == cursorInfo.hCursor)
+        {
+            return true;
+        }
+        if (::LoadCursor(NULL, IDC_SIZENESW) == cursorInfo.hCursor)
+        {
+            return true;
+        }
+        if (::LoadCursor(NULL, IDC_SIZENWSE) == cursorInfo.hCursor)
+        {
+            return true;
+        }
+    }
+    return false;
 }

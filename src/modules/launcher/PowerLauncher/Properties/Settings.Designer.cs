@@ -26,9 +26,9 @@ namespace PowerLauncher.Properties {
         [global::System.Configuration.ApplicationScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("https://aka.ms/powerToys")]
-        public string GithubRepo {
+        public string GitHubRepo {
             get {
-                return ((string)(this["GithubRepo"]));
+                return ((string)(this["GitHubRepo"]));
             }
         }
     }

@@ -23,6 +23,7 @@ namespace Common.UI
             FileExplorer,
             ShortcutGuide,
             VideoConference,
+            Hosts,
         }
 
         private static string SettingsWindowNameToString(SettingsWindow value)
@@ -53,6 +54,8 @@ namespace Common.UI
                     return "ShortcutGuide";
                 case SettingsWindow.VideoConference:
                     return "VideoConference";
+                case SettingsWindow.Hosts:
+                    return "Hosts";
                 default:
                     {
                         return string.Empty;
@@ -68,9 +71,7 @@ namespace Common.UI
                 var fullPath = Directory.GetParent(assemblyPath).FullName;
                 Process.Start(new ProcessStartInfo(fullPath + "\\..\\PowerToys.exe") { Arguments = "--open-settings=" + SettingsWindowNameToString(window) });
             }
-#pragma warning disable CA1031 // Do not catch general exception types
             catch
-#pragma warning restore CA1031 // Do not catch general exception types
             {
                 // TODO(stefan): Log exception once unified logging is implemented
             }

@@ -9,6 +9,8 @@ jobs:
   variables:
     BuildConfiguration: ${{ parameters.configuration }}
     BuildPlatform: ${{ parameters.platform }}
+    NUGET_RESTORE_MSBUILD_ARGS: /p:Platform=${{ parameters.platform }} # Required for nuget to work due to self contained
+    NODE_OPTIONS: --max_old_space_size=16384
   pool:
     demands: ImageOverride -equals WinDevVS17-latest
     ${{ if eq(variables['System.CollectionUri'], 'https://dev.azure.com/ms/') }}:
@@ -22,3 +24,9 @@ jobs:
   - template: build-powertoys-steps.yml
     parameters:
       additionalBuildArguments: ${{ parameters.additionalBuildArguments }}
+
+  # It appears that the Component Governance build task that gets automatically injected stopped working
+  # when we renamed our main branch.
+  - task: ms.vss-governance-buildtask.governance-build-task-component-detection.ComponentGovernanceComponentDetection@0
+    displayName: 'Component Detection'
+    condition: and(succeededOrFailed(), not(eq(variables['Build.Reason'], 'PullRequest')))

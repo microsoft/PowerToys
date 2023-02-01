@@ -2,7 +2,12 @@
 
 #define WIN32_LEAN_AND_MEAN
 #include <Windows.h>
+
+// disable warning 26471 - Don't use reinterpret_cast. A cast from void* can use static_cast
+#pragma warning(push)
+#pragma warning(disable: 26471)
 #include <wil/resource.h>
+#pragma warning(pop)
 
 #include <optional>
 #include <string>

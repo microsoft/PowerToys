@@ -71,7 +71,7 @@ namespace Common.Utilities
                 CheckDisposed();
                 System.Runtime.InteropServices.ComTypes.STATSTG stat;
 
-                // Stat called with STATFLAG_NONAME. The pwcsName is not required more details https://docs.microsoft.com/en-us/windows/win32/api/wtypes/ne-wtypes-statflag
+                // Stat called with STATFLAG_NONAME. The pwcsName is not required more details https://learn.microsoft.com/windows/win32/api/wtypes/ne-wtypes-statflag
                 _stream.Stat(out stat, 1); // STATFLAG_NONAME
 
                 return stat.cbSize;
@@ -153,7 +153,7 @@ namespace Common.Utilities
             CheckDisposed();
             int dwOrigin;
 
-            // Maps the SeekOrigin with dworigin more details: https://docs.microsoft.com/en-us/windows/win32/api/objidl/ne-objidl-stream_seek
+            // Maps the SeekOrigin with dworigin more details: https://learn.microsoft.com/windows/win32/api/objidl/ne-objidl-stream_seek
             switch (origin)
             {
                 case SeekOrigin.Begin:

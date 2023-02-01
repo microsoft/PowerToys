@@ -42,6 +42,9 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         [JsonPropertyName("clear_input_on_launch")]
         public bool ClearInputOnLaunch { get; set; }
 
+        [JsonPropertyName("tab_selects_context_buttons")]
+        public bool TabSelectsContextButtons { get; set; }
+
         [JsonPropertyName("theme")]
         public Theme Theme { get; set; }
 
@@ -50,6 +53,24 @@ namespace Microsoft.PowerToys.Settings.UI.Library
 
         [JsonPropertyName("use_centralized_keyboard_hook")]
         public bool UseCentralizedKeyboardHook { get; set; }
+
+        [JsonPropertyName("search_query_results_with_delay")]
+        public bool SearchQueryResultsWithDelay { get; set; }
+
+        [JsonPropertyName("search_input_delay")]
+        public int SearchInputDelay { get; set; }
+
+        [JsonPropertyName("search_input_delay_fast")]
+        public int SearchInputDelayFast { get; set; }
+
+        [JsonPropertyName("search_clicked_item_weight")]
+        public int SearchClickedItemWeight { get; set; }
+
+        [JsonPropertyName("search_query_tuning_enabled")]
+        public bool SearchQueryTuningEnabled { get; set; }
+
+        [JsonPropertyName("search_wait_for_slow_results")]
+        public bool SearchWaitForSlowResults { get; set; }
 
         public PowerLauncherProperties()
         {
@@ -61,10 +82,16 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             SearchTypePreference = "application_name";
             IgnoreHotkeysInFullscreen = false;
             ClearInputOnLaunch = false;
+            TabSelectsContextButtons = true;
             MaximumNumberOfResults = 4;
             Theme = Theme.System;
             Position = StartupPosition.Cursor;
             UseCentralizedKeyboardHook = false;
+            SearchQueryResultsWithDelay = true;
+            SearchInputDelay = 150;
+            SearchClickedItemWeight = 5;
+            SearchQueryTuningEnabled = false;
+            SearchWaitForSlowResults = false;
         }
     }
 }

@@ -45,7 +45,15 @@
 #include <common/utils/winapi_error.h>
 #include <common/utils/window.h>
 #include <common/version/version.h>
+#include <common/utils/string_utils.h>
+
+// disabling warning 4458 - declaration of 'identifier' hides class member
+// to avoid warnings from GDI files - can't add winRT directory to external code
+// in the Cpp.Build.props
+#pragma warning(push)
+#pragma warning(disable : 4458)
 #include <gdiplus.h>
+#pragma warning(pop)
 
 namespace
 {
@@ -112,7 +120,7 @@ int runner(bool isProcessElevated, bool openSettings, std::string settingsWindow
 
 #if _DEBUG && _WIN64
 //Global error handlers to diagnose errors.
-//We prefer this not not show any longer until there's a bug to diagnose.
+//We prefer this not to show any longer until there's a bug to diagnose.
 //init_global_error_handlers();
 #endif
     Trace::RegisterProvider();
@@ -148,10 +156,15 @@ int runner(bool isProcessElevated, bool openSettings, std::string settingsWindow
             L"modules/ShortcutGuide/ShortcutGuideModuleInterface/PowerToys.ShortcutGuideModuleInterface.dll",
             L"modules/ColorPicker/PowerToys.ColorPicker.dll",
             L"modules/Awake/PowerToys.AwakeModuleInterface.dll",
-            L"modules/MouseUtils/PowerToys.FindMyMouse.dll" ,
+            L"modules/MouseUtils/PowerToys.FindMyMouse.dll",
             L"modules/MouseUtils/PowerToys.MouseHighlighter.dll",
             L"modules/AlwaysOnTop/PowerToys.AlwaysOnTopModuleInterface.dll",
             L"modules/MouseUtils/PowerToys.MousePointerCrosshairs.dll",
+            L"modules/PowerAccent/PowerToys.PowerAccentModuleInterface.dll",
+            L"modules/PowerOCR/PowerToys.PowerOCRModuleInterface.dll",
+            L"modules/FileLocksmith/PowerToys.FileLocksmithExt.dll",
+            L"modules/MeasureTool/PowerToys.MeasureToolModuleInterface.dll",
+            L"modules/Hosts/PowerToys.HostsModuleInterface.dll",
         };
         const auto VCM_PATH = L"modules/VideoConference/PowerToys.VideoConferenceModule.dll";
         if (const auto mf = LoadLibraryA("mf.dll"))
@@ -160,7 +173,7 @@ int runner(bool isProcessElevated, bool openSettings, std::string settingsWindow
             knownModules.emplace_back(VCM_PATH);
         }
 
-        for (const auto& moduleSubdir : knownModules)
+        for (auto moduleSubdir : knownModules)
         {
             try
             {
@@ -190,7 +203,7 @@ int runner(bool isProcessElevated, bool openSettings, std::string settingsWindow
             {
                 window = winrt::to_hstring(settingsWindow);
             }
-            open_settings_window(window);
+            open_settings_window(window, false);
         }
 
         if (openOobe)
@@ -291,7 +304,58 @@ toast_notification_handler_result toast_notification_handler(const std::wstring_
     }
 }
 
-int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow)
+void cleanup_updates()
+{
+    auto state = UpdateState::read();
+    if (state.state != UpdateState::upToDate)
+    {
+        return;
+    }
+
+    auto update_dir = updating::get_pending_updates_path();
+    if (std::filesystem::exists(update_dir))
+    {
+        // Msi and exe files
+        for (const auto& entry : std::filesystem::directory_iterator(update_dir))
+        {
+            auto entryPath = entry.path().wstring();
+            std::transform(entryPath.begin(), entryPath.end(), entryPath.begin(), ::towlower);
+
+            if (entryPath.ends_with(L".msi") || entryPath.ends_with(L".exe"))
+            {
+                std::error_code err;
+                std::filesystem::remove(entry, err);
+                if (err.value())
+                {
+                    Logger::warn("Failed to delete installer file {}. {}", entry.path().string(), err.message());
+                }
+            }
+        }
+    }
+
+    // Log files
+    auto rootPath{ PTSettingsHelper::get_root_save_folder_location() };
+    auto currentVersion = left_trim<wchar_t>(get_product_version(), L"v");
+    if (std::filesystem::exists(rootPath))
+    {
+        for (const auto& entry : std::filesystem::directory_iterator(rootPath))
+        {
+            auto entryPath = entry.path().wstring();
+            std::transform(entryPath.begin(), entryPath.end(), entryPath.begin(), ::towlower);
+            if (entry.is_regular_file() && entryPath.ends_with(L".log") && entryPath.find(currentVersion) == std::string::npos)
+            {
+                std::error_code err;
+                std::filesystem::remove(entry, err);
+                if (err.value())
+                {
+                    Logger::warn("Failed to delete log file {}. {}", entry.path().string(), err.message());
+                }
+            }
+        }
+    }
+}
+
+int WINAPI WinMain(HINSTANCE /*hInstance*/, HINSTANCE /*hPrevInstance*/, LPSTR lpCmdLine, int /*nCmdShow*/)
 {
     Gdiplus::GdiplusStartupInput gpStartupInput;
     ULONG_PTR gpToken;
@@ -325,6 +389,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
         case toast_notification_handler_result::exit_success:
             return 0;
         }
+        [[fallthrough]];
     case SpecialMode::ReportSuccessfulUpdate:
     {
         notifications::remove_toasts_by_tag(notifications::UPDATING_PROCESS_TOAST_TAG);
@@ -395,30 +460,33 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
         // then modules to guarantee the reverse destruction order.
         modules();
 
+        std::thread{ [] {
+            cleanup_updates();
+        } }.detach();
+
         auto general_settings = load_general_settings();
 
         // Apply the general settings but don't save it as the modules() variable has not been loaded yet
         apply_general_settings(general_settings, false);
-        int rvalue = 0;
         const bool elevated = is_process_elevated();
         const bool with_dont_elevate_arg = cmdLine.find("--dont-elevate") != std::string::npos;
         const bool run_elevated_setting = general_settings.GetNamedBoolean(L"run_elevated", false);
 
         if (elevated && with_dont_elevate_arg && !run_elevated_setting)
-
         {
             Logger::info("Scheduling restart as non elevated");
             schedule_restart_as_non_elevated();
             result = 0;
         }
         else if (elevated || !run_elevated_setting || with_dont_elevate_arg)
-
         {
             result = runner(elevated, open_settings, settings_window, openOobe, openScoobe);
 
-            // Save settings on closing
-            auto general_settings = get_general_settings();
-            PTSettingsHelper::save_general_settings(general_settings.to_json());
+            if (result == 0)
+            {
+                // Save settings on closing, if closed 'normal'
+                PTSettingsHelper::save_general_settings(get_general_settings().to_json());
+            }
         }
         else
         {
@@ -443,10 +511,9 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
     if (is_restart_scheduled())
     {
         if (!restart_if_scheduled())
-
         {
-            Logger::warn("Scheduled restart failed. Trying restart as admin as fallback...");
-            restart_same_elevation();
+            // If it's not possible to restart non-elevated due to some condition in the user's configuration, user should start PowerToys manually.
+            Logger::warn("Scheduled restart failed. Couldn't restart non-elevated. PowerToys exits here because retrying it would just mean failing in a loop.");
         }
     }
     stop_tray_icon();

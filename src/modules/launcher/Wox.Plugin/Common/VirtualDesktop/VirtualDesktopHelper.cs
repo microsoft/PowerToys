@@ -22,8 +22,8 @@ namespace Wox.Plugin.Common.VirtualDesktop.Helper
     /// To use this helper you have to create an instance of it and access the method via the helper instance.
     /// We are only allowed to use public documented com interfaces.
     /// </remarks>
-    /// <SeeAlso href="https://docs.microsoft.com/en-us/windows/win32/api/shobjidl_core/nn-shobjidl_core-ivirtualdesktopmanager">Documentation of IVirtualDesktopManager interface</SeeAlso>
-    /// <SeeAlso href="https://docs.microsoft.com/en-us/archive/blogs/winsdk/virtual-desktop-switching-in-windows-10">CSharp example code for IVirtualDesktopManager</SeeAlso>
+    /// <SeeAlso href="https://learn.microsoft.com/windows/win32/api/shobjidl_core/nn-shobjidl_core-ivirtualdesktopmanager">Documentation of IVirtualDesktopManager interface</SeeAlso>
+    /// <SeeAlso href="https://learn.microsoft.com/archive/blogs/winsdk/virtual-desktop-switching-in-windows-10">CSharp example code for IVirtualDesktopManager</SeeAlso>
     public class VirtualDesktopHelper
     {
         /// <summary>
@@ -389,10 +389,10 @@ namespace Wox.Plugin.Common.VirtualDesktop.Helper
         /// </summary>
         /// <param name="hWindow">Handle of the window.</param>
         /// <param name="desktop">Optional the desktop id if known</param>
-        /// <returns>A value indicating if the window is cloaked by Virtual Desktop Manager, because it is moved to an other desktop.</returns>
+        /// <returns>A value indicating if the window is cloaked by Virtual Desktop Manager, because it is moved to another desktop.</returns>
         public bool IsWindowCloakedByVirtualDesktopManager(IntPtr hWindow, Guid? desktop = null)
         {
-            // If a window is hidden because it is moved to an other desktop, then DWM returns type "CloakedShell". If DWM returns an other type the window is not cloaked by shell or VirtualDesktopManager.
+            // If a window is hidden because it is moved to another desktop, then DWM returns type "CloakedShell". If DWM returns another type the window is not cloaked by shell or VirtualDesktopManager.
             _ = NativeMethods.DwmGetWindowAttribute(hWindow, (int)DwmWindowAttributes.Cloaked, out int dwmCloakedState, sizeof(uint));
             return GetWindowDesktopAssignmentType(hWindow, desktop) == VirtualDesktopAssignmentType.OtherDesktop && dwmCloakedState == (int)DwmWindowCloakStates.CloakedShell;
         }
@@ -414,7 +414,7 @@ namespace Wox.Plugin.Common.VirtualDesktop.Helper
             int hr = _virtualDesktopManager.MoveWindowToDesktop(hWindow, desktopId);
             if (hr != (int)HRESULT.S_OK)
             {
-                Log.Exception($"VirtualDesktopHelper.MoveWindowToDesktop() failed: An exception was thrown when moving the window ({hWindow}) to an other desktop ({desktopId}).", Marshal.GetExceptionForHR(hr), typeof(VirtualDesktopHelper));
+                Log.Exception($"VirtualDesktopHelper.MoveWindowToDesktop() failed: An exception was thrown when moving the window ({hWindow}) to another desktop ({desktopId}).", Marshal.GetExceptionForHR(hr), typeof(VirtualDesktopHelper));
                 return false;
             }
 

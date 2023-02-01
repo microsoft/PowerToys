@@ -250,9 +250,9 @@ void VideoConferenceModule::onModuleSettingsChanged()
                 settings.imageOverlayPath = val.value();
                 sendOverlayImageUpdate();
             }
-            if (const auto val = values.get_bool_value(L"hide_toolbar_when_unmuted"))
+            if (const auto val = values.get_string_value(L"toolbar_hide"))
             {
-                toolbar.setHideToolbarWhenUnmuted(val.value());
+                toolbar.setToolbarHide(val.value());
             }
 
             const auto selectedMic = values.get_string_value(L"selected_mic");
@@ -311,11 +311,7 @@ void VideoConferenceModule::onMicrophoneConfigurationChanged()
     }
 }
 
-VideoConferenceModule::VideoConferenceModule() :
-    _generalSettingsWatcher{ PTSettingsHelper::get_powertoys_general_save_file_location(), [this] {
-                                toolbar.scheduleGeneralSettingsUpdate();
-                            } },
-    _moduleSettingsWatcher{ PTSettingsHelper::get_module_save_file_location(get_key()), [this] { toolbar.scheduleModuleSettingsUpdate(); } }
+VideoConferenceModule::VideoConferenceModule()
 {
     init_settings();
     _settingsUpdateChannel =
@@ -323,7 +319,14 @@ VideoConferenceModule::VideoConferenceModule() :
     if (_settingsUpdateChannel)
     {
         _settingsUpdateChannel->access([](auto memory) {
+
+// Suppress warning 26403 -  Reset or explicitly delete an owner<T> pointer 'variable' (r.3)
+// the video conference class should be only instantiated once and it is using placement new
+// the access to the data can be done through memory._data
+#pragma warning(push)
+#pragma warning(disable : 26403)
             auto updatesChannel = new (memory._data) CameraSettingsUpdateChannel{};
+#pragma warning(pop)
         });
     }
     sendSourceCameraNameUpdate();
@@ -343,6 +346,12 @@ const wchar_t* VideoConferenceModule::get_name()
 const wchar_t* VideoConferenceModule::get_key()
 {
     return L"Video Conference";
+}
+
+// Return the configured status for the gpo policy for the module
+powertoys_gpo::gpo_rule_configured_t VideoConferenceModule::gpo_policy_enabled_configuration()
+{
+    return powertoys_gpo::getConfiguredVideoConferenceMuteEnabledValue();
 }
 
 bool VideoConferenceModule::get_config(wchar_t* buffer, int* buffer_size)
@@ -397,9 +406,9 @@ void VideoConferenceModule::init_settings()
         {
             settings.imageOverlayPath = val.value();
         }
-        if (const auto val = powerToysSettings.get_bool_value(L"hide_toolbar_when_unmuted"))
+        if (const auto val = powerToysSettings.get_string_value(L"toolbar_hide"))
         {
-            toolbar.setHideToolbarWhenUnmuted(val.value());
+            toolbar.setToolbarHide(val.value());
         }
         if (const auto val = powerToysSettings.get_string_value(L"selected_mic"); val && *val != settings.selectedMicrophone)
         {
@@ -490,8 +499,11 @@ void toggleProxyCamRegistration(const bool enable)
 
     auto vcmRoot = fs::path{ get_module_folderpath() } / "modules";
     vcmRoot /= "VideoConference";
-
+#if defined(_M_ARM64)
+    std::array<fs::path, 2> proxyFilters = { vcmRoot / "PowerToys.VideoConferenceProxyFilter_ARM64.dll", vcmRoot / "PowerToys.VideoConferenceProxyFilter_x86.dll" };
+#else
     std::array<fs::path, 2> proxyFilters = { vcmRoot / "PowerToys.VideoConferenceProxyFilter_x64.dll", vcmRoot / "PowerToys.VideoConferenceProxyFilter_x86.dll" };
+#endif
     for (const auto filter : proxyFilters)
     {
         std::wstring params{ L"/s " };
@@ -515,6 +527,15 @@ void VideoConferenceModule::enable()
 {
     if (!_enabled)
     {
+        _generalSettingsWatcher = std::make_unique<FileWatcher>(
+            PTSettingsHelper::get_powertoys_general_save_file_location(), [this] {
+                toolbar.scheduleGeneralSettingsUpdate();
+            });
+        _moduleSettingsWatcher = std::make_unique<FileWatcher>(
+            PTSettingsHelper::get_module_save_file_location(get_key()), [this] {
+                toolbar.scheduleModuleSettingsUpdate();
+            });
+
         toggleProxyCamRegistration(true);
         toolbar.setMicrophoneMute(getMicrophoneMuteState());
         toolbar.setCameraMute(getVirtualCameraMuteState());
@@ -546,10 +567,25 @@ void VideoConferenceModule::unmuteAll()
     }
 }
 
+void VideoConferenceModule::muteAll()
+{
+    if (!getVirtualCameraMuteState())
+    {
+        reverseVirtualCameraMuteState();
+    }
+
+    if (!getMicrophoneMuteState())
+    {
+        reverseMicrophoneMute();
+    }
+}
+
 void VideoConferenceModule::disable()
 {
     if (_enabled)
     {
+        _generalSettingsWatcher.reset();
+        _moduleSettingsWatcher.reset();
         toggleProxyCamRegistration(false);
         if (hook_handle)
         {

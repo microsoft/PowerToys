@@ -105,6 +105,36 @@ namespace PowerLauncher
                         _settings.UseCentralizedKeyboardHook = overloadSettings.Properties.UseCentralizedKeyboardHook;
                     }
 
+                    if (_settings.SearchQueryResultsWithDelay != overloadSettings.Properties.SearchQueryResultsWithDelay)
+                    {
+                        _settings.SearchQueryResultsWithDelay = overloadSettings.Properties.SearchQueryResultsWithDelay;
+                    }
+
+                    if (_settings.SearchInputDelay != overloadSettings.Properties.SearchInputDelay)
+                    {
+                        _settings.SearchInputDelay = overloadSettings.Properties.SearchInputDelay;
+                    }
+
+                    if (_settings.SearchInputDelayFast != overloadSettings.Properties.SearchInputDelayFast)
+                    {
+                        _settings.SearchInputDelayFast = overloadSettings.Properties.SearchInputDelayFast;
+                    }
+
+                    if (_settings.SearchClickedItemWeight != overloadSettings.Properties.SearchClickedItemWeight)
+                    {
+                        _settings.SearchClickedItemWeight = overloadSettings.Properties.SearchClickedItemWeight;
+                    }
+
+                    if (_settings.SearchQueryTuningEnabled != overloadSettings.Properties.SearchQueryTuningEnabled)
+                    {
+                        _settings.SearchQueryTuningEnabled = overloadSettings.Properties.SearchQueryTuningEnabled;
+                    }
+
+                    if (_settings.SearchWaitForSlowResults != overloadSettings.Properties.SearchWaitForSlowResults)
+                    {
+                        _settings.SearchWaitForSlowResults = overloadSettings.Properties.SearchWaitForSlowResults;
+                    }
+
                     if (_settings.MaxResultsToShow != overloadSettings.Properties.MaximumNumberOfResults)
                     {
                         _settings.MaxResultsToShow = overloadSettings.Properties.MaximumNumberOfResults;
@@ -118,6 +148,11 @@ namespace PowerLauncher
                     if (_settings.ClearInputOnLaunch != overloadSettings.Properties.ClearInputOnLaunch)
                     {
                         _settings.ClearInputOnLaunch = overloadSettings.Properties.ClearInputOnLaunch;
+                    }
+
+                    if (_settings.TabSelectsContextButtons != overloadSettings.Properties.TabSelectsContextButtons)
+                    {
+                        _settings.TabSelectsContextButtons = overloadSettings.Properties.TabSelectsContextButtons;
                     }
 
                     if (_settings.Theme != overloadSettings.Properties.Theme)

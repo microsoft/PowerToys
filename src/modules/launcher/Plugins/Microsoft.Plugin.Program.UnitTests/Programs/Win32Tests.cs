@@ -287,7 +287,7 @@ namespace Microsoft.Plugin.Program.UnitTests.Programs
         }
 
         [TestMethod]
-        public void DedupFunctionWhenCalledMustNotRemovelnkWhichdoesNotHaveExe()
+        public void DedupFunctionWhenCalledMustNotRemovelnkWhichDoesNotHaveExe()
         {
             // Arrange
             List<Win32Program> prgms = new List<Win32Program>

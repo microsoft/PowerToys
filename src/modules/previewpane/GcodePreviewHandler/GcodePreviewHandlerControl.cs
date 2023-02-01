@@ -43,45 +43,53 @@ namespace Microsoft.PowerToys.PreviewHandler.Gcode
         /// <param name="dataSource">Stream reference to access source file.</param>
         public override void DoPreview<T>(T dataSource)
         {
-            InvokeOnControlThread(() =>
+            if (global::PowerToys.GPOWrapper.GPOWrapper.GetConfiguredGcodePreviewEnabledValue() == global::PowerToys.GPOWrapper.GpoRuleConfigured.Disabled)
             {
-                try
+                // GPO is disabling this utility. Show an error message instead.
+                _infoBarAdded = true;
+                AddTextBoxControl(Properties.Resource.GpoDisabledErrorText);
+                Resize += FormResized;
+                base.DoPreview(dataSource);
+
+                return;
+            }
+
+            try
+            {
+                Bitmap thumbnail = null;
+
+                if (!(dataSource is string filePath))
                 {
-                    Bitmap thumbnail = null;
-
-                    using (var stream = new ReadonlyStream(dataSource as IStream))
-                    {
-                        using (var reader = new StreamReader(stream))
-                        {
-#pragma warning disable CA2000 // Do not dispose here
-                            thumbnail = GetThumbnail(reader);
-#pragma warning restore CA2000
-                        }
-                    }
-
-                    _infoBarAdded = false;
-
-                    if (thumbnail == null)
-                    {
-                        _infoBarAdded = true;
-                        AddTextBoxControl(Properties.Resource.GcodeWithoutEmbeddedThumbnails);
-                    }
-                    else
-                    {
-                        AddPictureBoxControl(thumbnail);
-                    }
-
-                    Resize += FormResized;
-                    base.DoPreview(dataSource);
-                    PowerToysTelemetry.Log.WriteEvent(new GcodeFilePreviewed());
+                    throw new ArgumentException($"{nameof(dataSource)} for {nameof(GcodePreviewHandlerControl)} must be a string but was a '{typeof(T)}'");
                 }
-#pragma warning disable CA1031 // Do not catch general exception types
-                catch (Exception ex)
-#pragma warning restore CA1031 // Do not catch general exception types
+
+                FileStream fs = new FileStream(filePath, FileMode.Open, FileAccess.Read);
+
+                using (var reader = new StreamReader(fs))
                 {
-                    PreviewError(ex, dataSource);
+                    thumbnail = GetThumbnail(reader);
                 }
-            });
+
+                _infoBarAdded = false;
+
+                if (thumbnail == null)
+                {
+                    _infoBarAdded = true;
+                    AddTextBoxControl(Properties.Resource.GcodeWithoutEmbeddedThumbnails);
+                }
+                else
+                {
+                    AddPictureBoxControl(thumbnail);
+                }
+
+                Resize += FormResized;
+                base.DoPreview(fs);
+                PowerToysTelemetry.Log.WriteEvent(new GcodeFilePreviewed());
+            }
+            catch (Exception ex)
+            {
+                PreviewError(ex, dataSource);
+            }
         }
 
         /// <summary>

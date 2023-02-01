@@ -8,7 +8,8 @@ enum State
     None,
     RestartAsElevated,
     RestartAsElevatedOpenSettings,
-    RestartAsNonElevated
+    RestartAsNonElevated,
+    RestartAsNonElevatedOpenSettings
 };
 static State state = None;
 
@@ -17,10 +18,14 @@ void schedule_restart_as_elevated(bool openSettings)
     state = openSettings ? RestartAsElevatedOpenSettings : RestartAsElevated;
 }
 
-
 void schedule_restart_as_non_elevated()
 {
     state = RestartAsNonElevated;
+}
+
+void schedule_restart_as_non_elevated(bool openSettings)
+{
+    state = openSettings ? RestartAsNonElevatedOpenSettings : RestartAsNonElevated;
 }
 
 bool is_restart_scheduled()
@@ -40,8 +45,10 @@ bool restart_if_scheduled()
         return run_elevated(exe_path.get(), {});
     case RestartAsElevatedOpenSettings:
         return run_elevated(exe_path.get(), L"--open-settings");
+    case RestartAsNonElevatedOpenSettings:
+        return run_non_elevated(exe_path.get(), L"--open-settings", NULL);
     case RestartAsNonElevated:
-        return run_non_elevated(exe_path.get(), L"--dont-elevate", NULL);
+        return run_non_elevated(exe_path.get(), L"", NULL);
     default:
         return false;
     }
@@ -52,5 +59,5 @@ bool restart_same_elevation()
     constexpr DWORD exe_path_size = 0xFFFF;
     auto exe_path = std::make_unique<wchar_t[]>(exe_path_size);
     GetModuleFileNameW(nullptr, exe_path.get(), exe_path_size);
-    return run_same_elevation(exe_path.get(), L"--dont-elevate", nullptr);
+    return run_same_elevation(exe_path.get(), L"", nullptr);
 }

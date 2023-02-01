@@ -5,7 +5,6 @@
 using System;
 using System.Globalization;
 using System.Linq;
-using System.Threading;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
 using Wox.Infrastructure;
@@ -37,14 +36,13 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.UnitTests
         [DataRow("now", 3)]
         [DataRow("current", 3)]
         [DataRow("year", 0)]
-        [DataRow("", 0)]
-        [DataRow("time::10:10:10", 2)]
-        [DataRow("date::10/10/10", 2)]
+        [DataRow("time::10:10:10", 0)]
+        [DataRow("date::10/10/10", 0)]
         public void CountWithoutPluginKeyword(string typedString, int expectedResultCount)
         {
             // Setup
-            Mock<Main> main = new ();
-            Query expectedQuery = new (typedString);
+            Mock<Main> main = new();
+            Query expectedQuery = new(typedString);
 
             // Act
             var result = main.Object.Query(expectedQuery).Count;
@@ -65,8 +63,8 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.UnitTests
         public void CountWithPluginKeyword(string typedString, int expectedResultCount)
         {
             // Setup
-            Mock<Main> main = new ();
-            Query expectedQuery = new (typedString, "(");
+            Mock<Main> main = new();
+            Query expectedQuery = new(typedString, "(");
 
             // Act
             var result = main.Object.Query(expectedQuery);
@@ -82,11 +80,15 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.UnitTests
         [DataRow("and time", 1)] // match if term is conjunction and other words
         [DataRow("date and time", 1)] // Match if first word is a full word match
         [DataRow("ate and time", 0)] // Don't match if first word is not a full word match
+        [DataRow("10/10/10", 0)] // Don't match number only input (Setting 'Only Date, Time, Now on global results' is default on)
+        [DataRow("10:10:10", 0)] // Don't match number only input (Setting 'Only Date, Time, Now on global results' is default on)
+        [DataRow("10 10 10", 0)] // Don't match number only input (Setting 'Only Date, Time, Now on global results' is default on)
+        [DataRow("ft10", 1)] // Don't match number input with prefix (Setting 'Only Date, Time, Now on global results' is default on) => Test behave strange here.
         public void ValidateBehaviorOnGlobalQueries(string typedString, int expectedResultCount)
         {
             // Setup
-            Mock<Main> main = new ();
-            Query expectedQuery = new (typedString);
+            Mock<Main> main = new();
+            Query expectedQuery = new(typedString);
 
             // Act
             var result = main.Object.Query(expectedQuery);
@@ -139,8 +141,8 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.UnitTests
         public void CanFindFormatResult(string typedString, string expectedResult)
         {
             // Setup
-            Mock<Main> main = new ();
-            Query expectedQuery = new (typedString, "(");
+            Mock<Main> main = new();
+            Query expectedQuery = new(typedString, "(");
 
             // Act
             var result = main.Object.Query(expectedQuery).FirstOrDefault(x => x.SubTitle.StartsWith(expectedResult, StringComparison.CurrentCulture));
@@ -158,8 +160,8 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.UnitTests
         public void DateTimeNumberOnlyInput(string typedString, string expectedResult)
         {
             // Setup
-            Mock<Main> main = new ();
-            Query expectedQuery = new (typedString, "(");
+            Mock<Main> main = new();
+            Query expectedQuery = new(typedString, "(");
 
             // Act
             var result = main.Object.Query(expectedQuery).FirstOrDefault(x => x.SubTitle.StartsWith(expectedResult, StringComparison.CurrentCulture));
@@ -186,8 +188,8 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.UnitTests
         public void InvalidInputNotShowsResults(string typedString)
         {
             // Setup
-            Mock<Main> main = new ();
-            Query expectedQuery = new (typedString, "(");
+            Mock<Main> main = new();
+            Query expectedQuery = new(typedString, "(");
 
             // Act
             var result = main.Object.Query(expectedQuery).FirstOrDefault();
@@ -204,8 +206,8 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.UnitTests
         public void InvalidNumberInputShowsErrorMessage(string typedString)
         {
             // Setup
-            Mock<Main> main = new ();
-            Query expectedQuery = new (typedString, "(");
+            Mock<Main> main = new();
+            Query expectedQuery = new(typedString, "(");
 
             // Act
             var result = main.Object.Query(expectedQuery).FirstOrDefault().Title;
@@ -222,8 +224,8 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.UnitTests
         public void InvalidInputNotShowsErrorMessage(string typedString)
         {
             // Setup
-            Mock<Main> main = new ();
-            Query expectedQuery = new (typedString, "(");
+            Mock<Main> main = new();
+            Query expectedQuery = new(typedString, "(");
 
             // Act
             var result = main.Object.Query(expectedQuery).FirstOrDefault();

@@ -122,7 +122,7 @@
   </data>
   <data name="PluginDescription" xml:space="preserve">
     <value>Navigates inside the Windows Registry.</value>
-    <comment>"this built into Windows the OS. translate accordingly, https://docs.microsoft.com/de-de/troubleshoot/windows-server/performance/windows-registry-advanced-users is an example of it translated in German"</comment>
+    <comment>"this built into Windows the OS. translate accordingly, https://learn.microsoft.com/troubleshoot/windows-server/performance/windows-registry-advanced-users is an example of it translated in German"</comment>
   </data>
   <data name="CopyKeyNamePath" xml:space="preserve">
     <value>Copy key name (path)</value>
@@ -164,11 +164,11 @@
   </data>
   <data name="Type" xml:space="preserve">
     <value>Type:</value>
-    <comment>See https://docs.microsoft.com/en-us/windows/win32/sysinfo/registry-value-types for proper context of how to translate 'type'</comment>
+    <comment>See https://learn.microsoft.com/windows/win32/sysinfo/registry-value-types for proper context of how to translate 'type'</comment>
   </data>
   <data name="Value" xml:space="preserve">
     <value>Value:</value>
-    <comment>See https://docs.microsoft.com/en-us/windows/win32/sysinfo/registry-value-types for proper context of how to translate 'value'</comment>
+    <comment>See https://learn.microsoft.com/windows/win32/sysinfo/registry-value-types for proper context of how to translate 'value'</comment>
   </data>
   <data name="RegistryValueKindNone" xml:space="preserve">
     <value>No data type</value>

@@ -24,3 +24,6 @@ jobs:
   - template: ./templates/build-powertoys-ci.yml
     parameters:
       platform: x64
+  - template: ./templates/build-powertoys-ci.yml
+    parameters:
+      platform: arm64

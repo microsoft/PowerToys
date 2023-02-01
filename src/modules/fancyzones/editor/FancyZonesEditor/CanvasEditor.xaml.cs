@@ -53,7 +53,6 @@ namespace FancyZonesEditor
                 _model = model;
 
                 var workArea = App.Overlay.WorkArea;
-                _model.ScaleLayout(workAreaWidth: workArea.Width, workAreaHeight: workArea.Height);
 
                 UpdateZoneRects();
 
@@ -82,6 +81,8 @@ namespace FancyZonesEditor
             var workArea = App.Overlay.WorkArea;
             Preview.Width = workArea.Width;
             Preview.Height = workArea.Height;
+
+            _model.ScaleLayout(workAreaWidth: workArea.Width, workAreaHeight: workArea.Height);
 
             UIElementCollection previewChildren = Preview.Children;
             int previewChildrenCount = previewChildren.Count;

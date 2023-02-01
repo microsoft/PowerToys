@@ -3,6 +3,8 @@
 
 #include <dwmapi.h>
 
+#include <ScalingUtils.h>
+
 namespace
 {
     size_t D2DRectUHash(D2D1_SIZE_U rect)
@@ -59,6 +61,8 @@ bool FrameDrawer::CreateRenderTargets(const RECT& clientRect)
     {
         return false;
     }
+
+    m_renderTarget->SetAntialiasMode(D2D1_ANTIALIAS_MODE_ALIASED);
     m_renderTargetSizeHash = rectHash;
 
     return true;
@@ -86,17 +90,26 @@ void FrameDrawer::Show()
     Render();
 }
 
-void FrameDrawer::SetBorderRect(RECT windowRect, COLORREF color, int thickness)
+void FrameDrawer::SetBorderRect(RECT windowRect, COLORREF color, int thickness, float radius)
 {
-    const auto newSceneRect = DrawableRect{
-        .rect = ConvertRect(windowRect),
+    auto newSceneRect = DrawableRect{
         .borderColor = ConvertColor(color),
-        .thickness = thickness
+        .thickness = thickness,
     };
 
+    if (radius != 0)
+    {
+        newSceneRect.roundedRect = ConvertRect(windowRect, thickness, radius);
+    }
+    else
+    {
+        newSceneRect.rect = ConvertRect(windowRect, thickness);
+    }
+    
     const bool colorUpdated = std::memcmp(&m_sceneRect.borderColor, &newSceneRect.borderColor, sizeof(newSceneRect.borderColor));
     const bool thicknessUpdated = m_sceneRect.thickness != newSceneRect.thickness;
-    const bool needsRedraw = colorUpdated || thicknessUpdated;
+    const bool cornersUpdated = m_sceneRect.rect.has_value() != newSceneRect.rect.has_value() || m_sceneRect.roundedRect.has_value() != newSceneRect.roundedRect.has_value();
+    const bool needsRedraw = colorUpdated || thicknessUpdated || cornersUpdated;
 
     RECT clientRect;
     if (!SUCCEEDED(DwmGetWindowAttribute(m_window, DWMWA_EXTENDED_FRAME_BOUNDS, &clientRect, sizeof(clientRect))))
@@ -104,7 +117,7 @@ void FrameDrawer::SetBorderRect(RECT windowRect, COLORREF color, int thickness)
         return;
     }
 
-    m_sceneRect = newSceneRect;
+    m_sceneRect = std::move(newSceneRect);
 
     const auto renderTargetSize = D2D1::SizeU(clientRect.right - clientRect.left, clientRect.bottom - clientRect.top);
 
@@ -170,24 +183,50 @@ D2D1_COLOR_F FrameDrawer::ConvertColor(COLORREF color)
                         1.f);
 }
 
-D2D1_RECT_F FrameDrawer::ConvertRect(RECT rect)
+D2D1_ROUNDED_RECT FrameDrawer::ConvertRect(RECT rect, int thickness, float radius)
 {
-    return D2D1::RectF((float)rect.left, (float)rect.top, (float)rect.right, (float)rect.bottom);
+    float halfThickness = thickness / 2.0f;
+
+    // 1 is needed to eliminate the gap between border and window
+    auto d2d1Rect = D2D1::RectF((float)rect.left + halfThickness + 1, 
+        (float)rect.top + halfThickness + 1, 
+        (float)rect.right - halfThickness - 1, 
+        (float)rect.bottom - halfThickness - 1);
+    return D2D1::RoundedRect(d2d1Rect, radius, radius);
+}
+
+D2D1_RECT_F FrameDrawer::ConvertRect(RECT rect, int thickness)
+{
+    float halfThickness = thickness / 2.0f;
+
+    // 1 is needed to eliminate the gap between border and window
+    return D2D1::RectF((float)rect.left + halfThickness + 1,
+        (float)rect.top + halfThickness + 1,
+        (float)rect.right - halfThickness - 1,
+        (float)rect.bottom - halfThickness - 1);
 }
 
 void FrameDrawer::Render()
 {
-    if (!m_renderTarget)
+    if (!m_renderTarget || !m_borderBrush)
+    {
         return;
+    }
+
     m_renderTarget->BeginDraw();
 
     m_renderTarget->Clear(D2D1::ColorF(0.f, 0.f, 0.f, 0.f));
 
-    if (m_borderBrush)
-    {
-        // The border stroke is centered on the line.
-        m_renderTarget->DrawRectangle(m_sceneRect.rect, m_borderBrush.get(), static_cast<float>(m_sceneRect.thickness * 2));
-    }
+    // The border stroke is centered on the line.
 
+    if (m_sceneRect.roundedRect)
+    {
+        m_renderTarget->DrawRoundedRectangle(m_sceneRect.roundedRect.value(), m_borderBrush.get(), static_cast<float>(m_sceneRect.thickness));
+    }
+    else if (m_sceneRect.rect)
+    {
+        m_renderTarget->DrawRectangle(m_sceneRect.rect.value(), m_borderBrush.get(), static_cast<float>(m_sceneRect.thickness));
+    }
+    
     m_renderTarget->EndDraw();
 }

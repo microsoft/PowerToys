@@ -27,7 +27,7 @@ namespace ImageResizer.Models
         private readonly string _destinationDirectory;
         private readonly Settings _settings;
 
-        // Filenames to avoid according to https://docs.microsoft.com/en-us/windows/win32/fileio/naming-a-file#file-and-directory-names
+        // Filenames to avoid according to https://learn.microsoft.com/windows/win32/fileio/naming-a-file#file-and-directory-names
         private static readonly string[] _avoidFilenames =
             {
                 "CON", "PRN", "AUX", "NUL",
@@ -75,29 +75,38 @@ namespace ImageResizer.Models
                 foreach (var originalFrame in decoder.Frames)
                 {
                     var transformedBitmap = Transform(originalFrame);
-                    BitmapMetadata originalMetadata = (BitmapMetadata)originalFrame.Metadata;
+
+                    // if the frame was not modified, we should not replace the metadata
+                    if (transformedBitmap == originalFrame)
+                    {
+                        encoder.Frames.Add(originalFrame);
+                    }
+                    else
+                    {
+                        BitmapMetadata originalMetadata = (BitmapMetadata)originalFrame.Metadata;
 
 #if DEBUG
-                    Debug.WriteLine($"### Processing metadata of file {_file}");
-                    originalMetadata.PrintsAllMetadataToDebugOutput();
+                        Debug.WriteLine($"### Processing metadata of file {_file}");
+                        originalMetadata.PrintsAllMetadataToDebugOutput();
 #endif
 
-                    var metadata = GetValidMetadata(originalMetadata, transformedBitmap, containerFormat);
+                        var metadata = GetValidMetadata(originalMetadata, transformedBitmap, containerFormat);
 
-                    if (_settings.RemoveMetadata && metadata != null)
-                    {
-                        // strip any metadata that doesn't affect rendering
-                        var newMetadata = new BitmapMetadata(metadata.Format);
+                        if (_settings.RemoveMetadata && metadata != null)
+                        {
+                            // strip any metadata that doesn't affect rendering
+                            var newMetadata = new BitmapMetadata(metadata.Format);
 
-                        metadata.CopyMetadataPropertyTo(newMetadata, "System.Photo.Orientation");
-                        metadata.CopyMetadataPropertyTo(newMetadata, "System.Image.ColorSpace");
+                            metadata.CopyMetadataPropertyTo(newMetadata, "System.Photo.Orientation");
+                            metadata.CopyMetadataPropertyTo(newMetadata, "System.Image.ColorSpace");
 
-                        metadata = newMetadata;
+                            metadata = newMetadata;
+                        }
+
+                        var frame = CreateBitmapFrame(transformedBitmap, metadata);
+
+                        encoder.Frames.Add(frame);
                     }
-
-                    var frame = CreateBitmapFrame(transformedBitmap, metadata);
-
-                    encoder.Frames.Add(frame);
                 }
 
                 path = GetDestinationPath(encoder);
@@ -249,9 +258,7 @@ namespace ImageResizer.Models
 
                     return true;
                 }
-#pragma warning disable CA1031 // Do not catch general exception types
                 catch (Exception)
-#pragma warning restore CA1031 // Do not catch general exception types
                 {
                     return false;
                 }

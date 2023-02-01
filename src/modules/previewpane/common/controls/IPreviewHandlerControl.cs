@@ -8,13 +8,13 @@ using System.Drawing;
 namespace Common
 {
     /// <summary>
-    /// Interface defining methods requirement by the <see cref="PreviewHandlerBase"/> control.
+    /// Interface defining preview handler control.
     /// </summary>
     public interface IPreviewHandlerControl
     {
         /// <summary>
         /// Directs the preview handler to return the HWND from calling the GetFocus function.
-        /// Source: https://docs.microsoft.com/en-us/windows/win32/api/shobjidl_core/nf-shobjidl_core-ipreviewhandler-queryfocus.
+        /// Source: https://learn.microsoft.com/windows/win32/api/shobjidl_core/nf-shobjidl_core-ipreviewhandler-queryfocus.
         /// </summary>
         /// <param name="result">Returns the handle of the window with focus.</param>
         void QueryFocus(out IntPtr result);
@@ -26,7 +26,7 @@ namespace Common
 
         /// <summary>
         /// Sets the font according to the font set in Windows Settings.
-        /// More details: https://docs.microsoft.com/en-us/windows/win32/shell/building-preview-handlers#ipreviewhandlervisualssetfont.
+        /// More details: https://learn.microsoft.com/windows/win32/shell/building-preview-handlers#ipreviewhandlervisualssetfont.
         /// </summary>
         /// <param name="font">Instance of Font.</param>
         void SetFont(Font font);

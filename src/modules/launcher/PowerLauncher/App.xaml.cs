@@ -4,25 +4,32 @@
 
 using System;
 using System.Diagnostics;
+using System.Globalization;
 using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Windows;
+
 using Common.UI;
+
 using interop;
+
 using ManagedCommon;
+
 using Microsoft.PowerLauncher.Telemetry;
 using Microsoft.PowerToys.Telemetry;
+
 using PowerLauncher.Helper;
 using PowerLauncher.Plugin;
 using PowerLauncher.ViewModel;
+
 using Wox;
 using Wox.Infrastructure;
-using Wox.Infrastructure.Http;
 using Wox.Infrastructure.Image;
 using Wox.Infrastructure.UserSettings;
 using Wox.Plugin;
 using Wox.Plugin.Logger;
+
 using Stopwatch = Wox.Infrastructure.Stopwatch;
 
 namespace PowerLauncher
@@ -31,7 +38,12 @@ namespace PowerLauncher
     {
         public static PublicAPIInstance API { get; private set; }
 
+        private readonly Alphabet _alphabet = new Alphabet();
+
+        public static CancellationTokenSource NativeThreadCTS { get; private set; }
+
         private static bool _disposed;
+
         private PowerToysRunSettings _settings;
         private MainViewModel _mainVM;
         private MainWindow _mainWindow;
@@ -46,7 +58,15 @@ namespace PowerLauncher
         [STAThread]
         public static void Main()
         {
+            NativeThreadCTS = new CancellationTokenSource();
+
             Log.Info($"Starting PowerToys Run with PID={Environment.ProcessId}", typeof(App));
+            if (PowerToys.GPOWrapperProjection.GPOWrapper.GetConfiguredPowerLauncherEnabledValue() == PowerToys.GPOWrapperProjection.GpoRuleConfigured.Disabled)
+            {
+                Log.Warn("Tried to start with a GPO policy setting the utility to always be disabled. Please contact your systems administrator.", typeof(App));
+                return;
+            }
+
             int powerToysPid = GetPowerToysPId();
             if (powerToysPid != 0)
             {
@@ -67,15 +87,16 @@ namespace PowerLauncher
             using (var application = new App())
             {
                 application.InitializeComponent();
-                new Thread(() =>
-                {
-                    var eventHandle = new EventWaitHandle(false, EventResetMode.AutoReset, Constants.RunExitEvent());
-                    if (eventHandle.WaitOne())
+
+                NativeEventWaiter.WaitForEventLoop(
+                    Constants.RunExitEvent(),
+                    () =>
                     {
                         Log.Warn("RunExitEvent was signaled. Exiting PowerToys", typeof(App));
                         ExitPowerToys(application);
-                    }
-                }).Start();
+                    },
+                    Application.Current.Dispatcher,
+                    NativeThreadCTS.Token);
 
                 if (powerToysPid != 0)
                 {
@@ -102,7 +123,7 @@ namespace PowerLauncher
             {
                 var textToLog = new StringBuilder();
                 textToLog.AppendLine("Begin PowerToys Run startup ----------------------------------------------------");
-                textToLog.AppendLine($"Runtime info:{ErrorReporting.RuntimeInfo()}");
+                textToLog.AppendLine(CultureInfo.InvariantCulture, $"Runtime info:{ErrorReporting.RuntimeInfo()}");
 
                 RegisterAppDomainExceptions();
                 RegisterDispatcherUnhandledException();
@@ -114,13 +135,14 @@ namespace PowerLauncher
                 _settings = _settingsVM.Settings;
                 _settings.StartedFromPowerToysRunner = e.Args.Contains("--started-from-runner");
 
-                _stringMatcher = new StringMatcher();
+                _alphabet.Initialize(_settings);
+                _stringMatcher = new StringMatcher(_alphabet);
                 StringMatcher.Instance = _stringMatcher;
                 _stringMatcher.UserSettingSearchPrecision = _settings.QuerySearchPrecision;
 
-                _mainVM = new MainViewModel(_settings);
-                _mainWindow = new MainWindow(_settings, _mainVM);
-                API = new PublicAPIInstance(_settingsVM, _mainVM, _themeManager);
+                _mainVM = new MainViewModel(_settings, NativeThreadCTS.Token);
+                _mainWindow = new MainWindow(_settings, _mainVM, NativeThreadCTS.Token);
+                API = new PublicAPIInstance(_settingsVM, _mainVM, _alphabet, _themeManager);
                 _settingsReader = new SettingsReader(_settings, _themeManager);
                 _settingsReader.ReadSettings();
 
@@ -128,9 +150,6 @@ namespace PowerLauncher
 
                 Current.MainWindow = _mainWindow;
                 Current.MainWindow.Title = Constant.ExeFileName;
-
-                // main windows needs initialized before theme change because of blur settings
-                HttpClient.Proxy = _settings.Proxy;
 
                 RegisterExitEvents();
 
@@ -157,14 +176,7 @@ namespace PowerLauncher
         {
             SingleInstance<App>.SingleInstanceMutex.Close();
 
-            try
-            {
-                app.Dispose();
-            }
-            finally
-            {
-                Environment.Exit(0);
-            }
+            app.Dispatcher.Invoke(() => app.Shutdown());
         }
 
         private static int GetPowerToysPId()
@@ -197,6 +209,7 @@ namespace PowerLauncher
 
             Current.Exit += (s, e) =>
             {
+                NativeThreadCTS.Cancel();
                 Log.Info("Application.Current.Exit", GetType());
                 Dispose();
             };
@@ -280,18 +293,10 @@ namespace PowerLauncher
                     _themeManager?.Dispose();
                 }
 
-                // TODO: free unmanaged resources (unmanaged objects) and override finalizer
-                // TODO: set large fields to null
                 Log.Info("End PowerToys Run Exit ----------------------------------------------------  ", GetType());
             });
         }
 
-        // // TODO: override finalizer only if 'Dispose(bool disposing)' has code to free unmanaged resources
-        // ~App()
-        // {
-        //     // Do not change this code. Put cleanup code in 'Dispose(bool disposing)' method
-        //     Dispose(disposing: false);
-        // }
         public void Dispose()
         {
             // Do not change this code. Put cleanup code in 'Dispose(bool disposing)' method

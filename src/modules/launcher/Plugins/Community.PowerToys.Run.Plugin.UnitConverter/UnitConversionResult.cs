@@ -8,17 +8,29 @@ namespace Community.PowerToys.Run.Plugin.UnitConverter
 {
     public class UnitConversionResult
     {
+        public static string Format { get; set; } = "g14";
+
         public double ConvertedValue { get; }
 
         public string UnitName { get; }
 
-        public QuantityType QuantityType { get; }
+        public QuantityInfo QuantityInfo { get; }
 
-        public UnitConversionResult(double convertedValue, string unitName, QuantityType quantityType)
+        public UnitConversionResult(double convertedValue, string unitName, QuantityInfo quantityInfo)
         {
             ConvertedValue = convertedValue;
             UnitName = unitName;
-            QuantityType = quantityType;
+            QuantityInfo = quantityInfo;
+        }
+
+        public string ToString(System.IFormatProvider provider = null)
+        {
+            if (provider == null)
+            {
+                provider = System.Globalization.CultureInfo.CurrentCulture;
+            }
+
+            return ConvertedValue.ToString(Format, provider) + " " + UnitName;
         }
     }
 }

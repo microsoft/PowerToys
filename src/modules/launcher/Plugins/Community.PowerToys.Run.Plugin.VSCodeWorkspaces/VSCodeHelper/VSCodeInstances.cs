@@ -74,14 +74,20 @@ namespace Community.PowerToys.Run.Plugin.VSCodeWorkspaces.VSCodeHelper
             {
                 Instances = new List<VSCodeInstance>();
 
-                paths = paths.Where(x => x.Contains("VS Code") || x.Contains("VSCodium")).ToList();
+                paths = paths.Where(x =>
+                                    x.Contains("VS Code", StringComparison.OrdinalIgnoreCase) ||
+                                    x.Contains("VSCodium", StringComparison.OrdinalIgnoreCase) ||
+                                    x.Contains("vscode", StringComparison.OrdinalIgnoreCase)).ToList();
                 foreach (var path in paths)
                 {
                     if (Directory.Exists(path))
                     {
                         var files = Directory.GetFiles(path);
                         var iconPath = Path.GetDirectoryName(path);
-                        files = files.Where(x => (x.Contains("code") || x.Contains("VSCodium")) && !x.EndsWith(".cmd", StringComparison.OrdinalIgnoreCase)).ToArray();
+                        files = files.Where(x =>
+                                            (x.Contains("code", StringComparison.OrdinalIgnoreCase) ||
+                                            x.Contains("VSCodium", StringComparison.OrdinalIgnoreCase))
+                                            && !x.EndsWith(".cmd", StringComparison.OrdinalIgnoreCase)).ToArray();
 
                         if (files.Length > 0)
                         {
@@ -116,7 +122,9 @@ namespace Community.PowerToys.Run.Plugin.VSCodeWorkspaces.VSCodeHelper
 
                             if (version != string.Empty)
                             {
-                                instance.AppData = Path.Combine(_userAppDataPath, version);
+                                var portableData = Path.Join(iconPath, "data");
+                                instance.AppData = Directory.Exists(portableData) ? Path.Join(portableData, "user-data") : Path.Combine(_userAppDataPath, version);
+
                                 var iconVSCode = Path.Join(iconPath, $"{version}.exe");
 
                                 var bitmapIconVscode = Icon.ExtractAssociatedIcon(iconVSCode).ToBitmap();

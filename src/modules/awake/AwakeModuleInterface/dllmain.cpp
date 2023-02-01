@@ -17,7 +17,7 @@
 #include <filesystem>
 #include <set>
 
-BOOL APIENTRY DllMain(HMODULE hModule, DWORD ul_reason_for_call, LPVOID lpReserved)
+BOOL APIENTRY DllMain(HMODULE /*hModule*/, DWORD ul_reason_for_call, LPVOID /*lpReserved*/)
 {
     switch (ul_reason_for_call)
     {
@@ -85,6 +85,12 @@ public:
         Logger::info("Launcher object is constructing");
     };
 
+    // Return the configured status for the gpo policy for the module
+    virtual powertoys_gpo::gpo_rule_configured_t gpo_policy_enabled_configuration() override
+    {
+        return powertoys_gpo::getConfiguredAwakeEnabledValue();
+    }
+
     virtual void destroy() override
     {
         delete this;
@@ -130,6 +136,7 @@ public:
 
     virtual void enable()
     {
+        Trace::EnableAwake(true);
         ResetEvent(send_telemetry_event);
         ResetEvent(m_hInvokeEvent);
         launch_process();
@@ -140,6 +147,7 @@ public:
     {
         if (m_enabled)
         {
+            Trace::EnableAwake(false);
             Logger::trace(L"Disabling Awake...");
             ResetEvent(send_telemetry_event);
             ResetEvent(m_hInvokeEvent);

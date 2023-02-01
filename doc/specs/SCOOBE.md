@@ -51,14 +51,14 @@ The SCOOBE dialog builds off the currently implemented OOBE dialog originally dr
 | --- | --- | --- |
 |1. | The SCOOBE dialog should launch immediately when PowerToys runs after having been updated. | P0 |
 |2. | The SCOOBE dialog should be contained inside the existing OOBE Dialog under its own &quot;What&#39;s New&quot; page of the dialog window. See figure 5.1.1. | P0 |
-|3. | The content for the SCOOBE dialog should be stored externally from the PowerToys application on the PowerToys Github in distinct wiki pages on for each release. **\*** | P0 |
+|3. | The content for the SCOOBE dialog should be stored externally from the PowerToys application on the PowerToys GitHub in distinct wiki pages on for each release. **\*** | P0 |
 |4. | When the &quot;What&#39;s New&quot; page is opened, the content displayed should be loaded from the information contained in the relevant wiki pages discussed in 3.1.1.3 above. Assumes the user&#39;s device is connected to the internet. | P0 |
 |6. | The SCOOBE dialog should display information on updates that have occurred on the version of PowerToys the user has installed/updated to. | P0 |
 |7. | If PowerToys was installed for the first time, the OOBE&#39;s &quot;Welcome to PowerToys&quot; page should display first, not the SCOOBE&#39;s &quot;What&#39;s New&quot; page. See figure 5.1.2. | P0 |
 |8. | The structure of the SCOOBE dialog page&#39;s content should follow the guidelines described in section 3.1.2. | P0 |
 |9. | After SCOOBE is initially viewed, the user should be able to re-access the SCOOBE dialog at any time by opening the OOBE window again and selecting the &quot;What&#39;s New&quot; page. | P1 |
 
-**\*** - By storing the content for SCOOBE externally from the application, the PowerToys team can update/adjust information without being constrained to PowerToys&#39; release cycles. This is critical in the event of errors or miscommunications that would otherwise be difficult, if not impossible, to correct if stored locally to the app and shipped with the version of PowerToys being released. The content will likely be stored in an archive maintained in the PowerToys Github Wiki.
+**\*** - By storing the content for SCOOBE externally from the application, the PowerToys team can update/adjust information without being constrained to PowerToys&#39; release cycles. This is critical in the event of errors or miscommunications that would otherwise be difficult, if not impossible, to correct if stored locally to the app and shipped with the version of PowerToys being released. The content will likely be stored in an archive maintained in the PowerToys GitHub Wiki.
 
 **3.1.2. Page Content**
 

@@ -85,6 +85,12 @@ public:
         return MODULE_NAME;
     }
 
+    // Return the configured status for the gpo policy for the module
+    virtual powertoys_gpo::gpo_rule_configured_t gpo_policy_enabled_configuration() override
+    {
+        return powertoys_gpo::getConfiguredMousePointerCrosshairsEnabledValue();
+    }
+
     // Return JSON with the configuration options.
     virtual bool get_config(wchar_t* buffer, int* buffer_size) override
     {
@@ -298,7 +304,7 @@ public:
         if (!m_hotkey.modifiersMask)
         {
             Logger::info("Mouse Pointer Crosshairs  is going to use default shortcut");
-            m_hotkey.modifiersMask = MOD_CONTROL | MOD_ALT;
+            m_hotkey.modifiersMask = MOD_WIN | MOD_ALT;
             m_hotkey.vkCode = 0x50; // P key
         }
         m_inclusiveCrosshairsSettings = inclusiveCrosshairsSettings;

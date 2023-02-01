@@ -69,12 +69,12 @@ The following formats are currently available:
 - All available settings for the plugin are defined in the [`TimeDateSettings`](/src/modules/launcher/Plugins/Microsoft.PowerToys.Run.Plugin.TimeDate/Components/TimeDateSettings.cs) class of the plugin. The settings can be accessed everywhere in the plugin code via the static class instance `TimeDateSettings.Instance`.
 - We have the following settings that the user can configure to change the behavior of the plugin:
 
-	| Key | Default value | Name/Description |
-	|--------------|-----------|------------|
-	| `OnlyDateTimeNowGlobal` | `true` | Show only 'Time', 'Date', and 'Now' result on global queries |
-	| `TimeWithSeconds` | `false` | Show time with seconds (Applies to 'Time' and 'Now' result) |
-	| `DateWithWeekday` | `false` | Show date with weekday and name of month (Applies to 'Date' and 'Now' result) |
-	| `HideNumberMessageOnGlobalQuery` | `false` | Hide 'Invalid number input' error message on global queries |
+	| Key | Default value | Name | Description |
+	|--------------|-----------|------------|------------|
+	| `OnlyDateTimeNowGlobal` | `true` | Show only 'Time', 'Date', and 'Now' result for system time on global queries | Regardless of this setting, for global queries the first word of the query has to be a complete match. |
+	| `TimeWithSeconds` | `false` | Show time with seconds | This setting applies to the 'Time' and 'Now' result. |
+	| `DateWithWeekday` | `false` | Show date with weekday and name of month | This setting applies to the 'Date' and 'Now' result. |
+	| `HideNumberMessageOnGlobalQuery` | `false` | Hide 'Invalid number input' error message on global queries | |
 	
 
 ## Classes

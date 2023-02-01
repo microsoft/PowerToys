@@ -152,5 +152,10 @@ namespace ImageResizer.Models
                     return value;
             }
         }
+
+        public override string ToString()
+        {
+            return Name;
+        }
     }
 }

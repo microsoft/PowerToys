@@ -155,14 +155,6 @@
   <data name="Microsoft_plugin_sys_Dns" xml:space="preserve">
     <value>DNS servers</value>
   </data>
-  <data name="Microsoft_plugin_sys_emptyrecyclebin" xml:space="preserve">
-    <value>Empty Recycle Bin</value>
-    <comment>This should align to the action in Windows of emptying the recycle bin on your computer.</comment>
-  </data>
-  <data name="Microsoft_plugin_sys_emptyrecyclebin_description" xml:space="preserve">
-    <value>Empty Recycle Bin</value>
-    <comment>This should align to the action in Windows of emptying the recycle bin on your computer.</comment>
-  </data>
   <data name="Microsoft_plugin_sys_Gateways" xml:space="preserve">
     <value>Default Gateway</value>
   </data>
@@ -248,6 +240,41 @@
     <value>Windows System Commands</value>
     <comment>Windows operating system commands.</comment>
   </data>
+  <data name="Microsoft_plugin_sys_RecycleBin" xml:space="preserve">
+    <value>Recycle Bin</value>
+    <comment>Means the recycle bin folder in Explorer.</comment>
+  </data>
+  <data name="Microsoft_plugin_sys_RecycleBin_contextMenu" xml:space="preserve">
+    <value>Empty Recycle Bin (Shift+Delete)</value>
+    <comment>This should align to the action in Windows of emptying the recycle bin on your computer.</comment>
+  </data>
+  <data name="Microsoft_plugin_sys_RecycleBin_description" xml:space="preserve">
+    <value>Open the Recycle Bin</value>
+    <comment>This should align to the action in Windows of emptying the recycle bin on your computer.</comment>
+  </data>
+  <data name="Microsoft_plugin_sys_RecycleBin_EmptySuccessMessage" xml:space="preserve">
+    <value>Recycle Bin emptied successfully.</value>
+    <comment>Means the recycle bin folder in Explorer.</comment>
+  </data>
+  <data name="Microsoft_plugin_sys_RecycleBin_EmptyTaskRunning" xml:space="preserve">
+    <value>The task to empty the Recycle Bin is already running.</value>
+    <comment>Means the recycle bin folder in Explorer.</comment>
+  </data>
+  <data name="Microsoft_plugin_sys_RecycleBin_ErrorMsg" xml:space="preserve">
+    <value>Failed to empty the Recycle Bin:</value>
+  </data>
+  <data name="Microsoft_plugin_sys_RecycleBin_IsEmpty" xml:space="preserve">
+    <value>Recycle Bin is empty.</value>
+    <comment>Means the recycle bin folder in Explorer.</comment>
+  </data>
+  <data name="Microsoft_plugin_sys_RecycleBin_searchTag" xml:space="preserve">
+    <value>Empty Recycle Bin</value>
+    <comment>This should align to the action in Windows of emptying the recycle bin on your computer.</comment>
+  </data>
+  <data name="Microsoft_plugin_sys_RecycleBin_ShowEmptySuccessMessage" xml:space="preserve">
+    <value>Show a success message after emptying the Recycle Bin</value>
+    <comment>Means the recycle bin folder in Explorer and "emptying" refers to "Empty Recycle Bin" command.</comment>
+  </data>
   <data name="Microsoft_plugin_sys_restart_computer" xml:space="preserve">
     <value>Restart</value>
     <comment>This should align to the action in Windows of a restarting your computer.</comment>
@@ -317,6 +344,7 @@
   </data>
   <data name="Microsoft_plugin_sys_Type" xml:space="preserve">
     <value>Type</value>
+    <comment>Means type like category. Here it means network interface type (ethernet, wifi, ...).</comment>
   </data>
   <data name="Microsoft_plugin_sys_uefi" xml:space="preserve">
     <value>UEFI Firmware Settings</value>

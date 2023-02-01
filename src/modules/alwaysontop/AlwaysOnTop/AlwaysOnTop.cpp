@@ -8,7 +8,11 @@
 #include <common/utils/winapi_error.h>
 #include <common/utils/process_path.h>
 
+#include <interop/shared_constants.h>
+
+#include <trace.h>
 #include <WinHookEventIDs.h>
+
 
 namespace NonLocalizable
 {
@@ -23,9 +27,10 @@ bool isExcluded(HWND window)
     return find_app_name_in_path(processPath, AlwaysOnTopSettings::settings().excludedApps);
 }
 
-AlwaysOnTop::AlwaysOnTop() :
+AlwaysOnTop::AlwaysOnTop(bool useLLKH) :
     SettingsObserver({SettingId::FrameEnabled, SettingId::Hotkey, SettingId::ExcludeApps}),
-    m_hinstance(reinterpret_cast<HINSTANCE>(&__ImageBase))
+    m_hinstance(reinterpret_cast<HINSTANCE>(&__ImageBase)),
+    m_useCentralizedLLKH(useLLKH)
 {
     s_instance = this;
     DPIAware::EnableDPIAwarenessForThisProcess();
@@ -38,6 +43,8 @@ AlwaysOnTop::AlwaysOnTop() :
         AlwaysOnTopSettings::instance().LoadSettings();
 
         RegisterHotkey();
+        RegisterLLKH();
+        
         SubscribeToEvents();
         StartTrackingTopmostWindows();
     }
@@ -50,6 +57,16 @@ AlwaysOnTop::AlwaysOnTop() :
 
 AlwaysOnTop::~AlwaysOnTop()
 {
+    m_running = false;
+
+    if (m_hPinEvent)
+    {
+        // Needed to unblock MsgWaitForMultipleObjects one last time
+        SetEvent(m_hPinEvent);
+        CloseHandle(m_hPinEvent);
+    }
+    m_thread.join();
+
     CleanUp();
 }
 
@@ -166,6 +183,8 @@ void AlwaysOnTop::ProcessCommand(HWND window)
             {
                 m_topmostWindows.erase(iter);
             }
+
+            Trace::AlwaysOnTop::UnpinWindow();
         }
     }
     else
@@ -174,6 +193,7 @@ void AlwaysOnTop::ProcessCommand(HWND window)
         {
             soundType = Sound::Type::On;
             AssignBorder(window);
+            Trace::AlwaysOnTop::PinWindow();
         }
     }
 
@@ -240,19 +260,72 @@ bool AlwaysOnTop::AssignBorder(HWND window)
 
 void AlwaysOnTop::RegisterHotkey() const
 {
+    if (m_useCentralizedLLKH)
+    {
+        return;
+    }
+
     UnregisterHotKey(m_window, static_cast<int>(HotkeyId::Pin));
     RegisterHotKey(m_window, static_cast<int>(HotkeyId::Pin), AlwaysOnTopSettings::settings().hotkey.get_modifiers(), AlwaysOnTopSettings::settings().hotkey.get_code());
+}
+
+void AlwaysOnTop::RegisterLLKH()
+{
+    if (!m_useCentralizedLLKH)
+    {
+        return;
+    }
+	
+    m_hPinEvent = CreateEventW(nullptr, false, false, CommonSharedConstants::ALWAYS_ON_TOP_PIN_EVENT);
+
+    if (!m_hPinEvent)
+    {
+        Logger::warn(L"Failed to create pinEvent. {}", get_last_error_or_default(GetLastError()));
+        return;
+    }
+
+    m_thread = std::thread([this]() {
+        MSG msg;
+        while (m_running)
+        {
+            DWORD dwEvt = MsgWaitForMultipleObjects(1, &m_hPinEvent, false, INFINITE, QS_ALLINPUT);
+            if (!m_running)
+            {
+                break;
+            }
+            switch (dwEvt)
+            {
+            case WAIT_OBJECT_0:
+                if (HWND fw{ GetForegroundWindow() })
+                {
+                    ProcessCommand(fw);
+                }
+                break;
+            case WAIT_OBJECT_0 + 1:
+                if (PeekMessageW(&msg, nullptr, 0, 0, PM_REMOVE))
+                {
+                    TranslateMessage(&msg);
+                    DispatchMessageW(&msg);
+                }
+                break;
+            default:
+                break;
+            }
+        }
+    });
 }
 
 void AlwaysOnTop::SubscribeToEvents()
 {
     // subscribe to windows events
-    std::array<DWORD, 5> events_to_subscribe = {
+    std::array<DWORD, 7> events_to_subscribe = {
         EVENT_OBJECT_LOCATIONCHANGE,
         EVENT_SYSTEM_MINIMIZESTART,
         EVENT_SYSTEM_MINIMIZEEND,
         EVENT_SYSTEM_MOVESIZEEND,
-        EVENT_OBJECT_NAMECHANGE
+        EVENT_SYSTEM_FOREGROUND,
+        EVENT_OBJECT_DESTROY,
+        EVENT_OBJECT_FOCUS,
     };
 
     for (const auto event : events_to_subscribe)
@@ -347,11 +420,11 @@ void AlwaysOnTop::HandleWinHookEvent(WinHookEvent* data) noexcept
         return;
     }
 
-    // fix for the https://github.com/microsoft/PowerToys/issues/15300
-    // check if the window was closed, since for some EVENT_OBJECT_DESTROY doesn't work 
     std::vector<HWND> toErase{};
     for (const auto& [window, border] : m_topmostWindows)
     {
+        // check if the window was closed, since for some EVENT_OBJECT_DESTROY doesn't work
+        // fixes https://github.com/microsoft/PowerToys/issues/15300
         bool visible = IsWindowVisible(window);
         if (!visible)
         {
@@ -413,13 +486,22 @@ void AlwaysOnTop::HandleWinHookEvent(WinHookEvent* data) noexcept
         }
     }
     break;
-    case EVENT_OBJECT_NAMECHANGE:
+    case EVENT_SYSTEM_FOREGROUND:
     {
-        // The accessibility name of the desktop window changes whenever the user
-        // switches virtual desktops.
-        if (data->hwnd == GetDesktopWindow())
+        RefreshBorders();
+    }
+    break;
+    case EVENT_OBJECT_FOCUS:
+    {
+        for (const auto& [window, border] : m_topmostWindows)
         {
-            VirtualDesktopSwitchedHandle();
+            // check if topmost was reset
+            // fixes https://github.com/microsoft/PowerToys/issues/19168
+            if (!IsTopmost(window))
+            {
+                Logger::trace(L"A window no longer has Topmost set and it should. Setting topmost again.");
+                PinTopmostWindow(window);
+            }
         }
     }
     break;
@@ -428,17 +510,23 @@ void AlwaysOnTop::HandleWinHookEvent(WinHookEvent* data) noexcept
     }
 }
 
-void AlwaysOnTop::VirtualDesktopSwitchedHandle()
+void AlwaysOnTop::RefreshBorders()
 {
     for (const auto& [window, border] : m_topmostWindows)
     {
         if (m_virtualDesktopUtils.IsWindowOnCurrentDesktop(window))
         {
-            AssignBorder(window);
+            if (!border)
+            {
+                AssignBorder(window);
+            }
         }
         else
         {
-            m_topmostWindows[window] = nullptr;
+            if (border)
+            {
+                m_topmostWindows[window] = nullptr;
+            }
         }
     }
 }

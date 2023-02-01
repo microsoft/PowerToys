@@ -2149,6 +2149,15 @@ namespace Microsoft.PowerToys.Run.Plugin.WindowsSettings.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Nearby share settings.
+        /// </summary>
+        internal static string NearbyShareSettings {
+            get {
+                return ResourceManager.GetString("NearbyShareSettings", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to netcpl.cpl.
         /// </summary>
         internal static string netcpl_cpl {
@@ -3283,7 +3292,16 @@ namespace Microsoft.PowerToys.Run.Plugin.WindowsSettings.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Shared experiences.
+        ///   Looks up a localized string similar to Share across devices.
+        /// </summary>
+        internal static string ShareAcrossDevices {
+            get {
+                return ResourceManager.GetString("ShareAcrossDevices", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Shared experience settings.
         /// </summary>
         internal static string SharedExperiences {
             get {
@@ -4053,6 +4071,15 @@ namespace Microsoft.PowerToys.Run.Plugin.WindowsSettings.Properties {
         internal static string WindowsSearch {
             get {
                 return ResourceManager.GetString("WindowsSearch", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Windows search settings.
+        /// </summary>
+        internal static string WindowsSearchSettings {
+            get {
+                return ResourceManager.GetString("WindowsSearchSettings", resourceCulture);
             }
         }
         

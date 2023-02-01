@@ -15,9 +15,23 @@ namespace Microsoft.PowerToys.Run.Plugin.WindowsTerminal.Helpers
         /// </summary>
         /// <param name="profileName">Name of the Terminal profile</param>
         /// <param name="openNewTab">Whether to launch the profile in a new tab</param>
-        public static string GetArguments(string profileName, bool openNewTab)
+        /// <param name="openQuake">Whether to launch the profile in the quake window</param>
+        public static string GetArguments(string profileName, bool openNewTab, bool openQuake)
         {
-            return openNewTab ? $"--window 0 nt --profile \"{profileName}\"" : $"--profile \"{profileName}\"";
+            var argsPrefix = string.Empty;
+            if (openQuake)
+            {
+                // It does not matter whether we add the "nt" argument here; when specifying the
+                // _quake window explicitly, Windows Terminal will always open a new tab when the
+                // window exists, or open a new window when it does not yet.
+                argsPrefix = "--window _quake";
+            }
+            else if (openNewTab)
+            {
+                argsPrefix = "--window 0 nt";
+            }
+
+            return $"{argsPrefix} --profile \"{profileName}\"";
         }
 
         /// <summary>

@@ -12,6 +12,8 @@ namespace Microsoft.PowerToys.Settings.UI.Library
 {
     public class PowerPreviewProperties
     {
+        public const string DefaultStlThumbnailColor = "#FFC924";
+
         private bool enableSvgPreview = true;
 
         [JsonPropertyName("svg-previewer-toggle-setting")]
@@ -93,6 +95,23 @@ namespace Microsoft.PowerToys.Settings.UI.Library
                 {
                     LogTelemetryEvent(value);
                     monacoPreviewWordWrap = value;
+                }
+            }
+        }
+
+        private bool monacoPreviewTryFormat;
+
+        [JsonPropertyName("monaco-previewer-toggle-try-format")]
+        [JsonConverter(typeof(BoolPropertyJsonConverter))]
+        public bool MonacoPreviewTryFormat
+        {
+            get => monacoPreviewTryFormat;
+            set
+            {
+                if (value != monacoPreviewTryFormat)
+                {
+                    LogTelemetryEvent(value);
+                    monacoPreviewTryFormat = value;
                 }
             }
         }
@@ -182,8 +201,12 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             }
         }
 
+        [JsonPropertyName("stl-thumbnail-color-setting")]
+        public StringProperty StlThumbnailColor { get; set; }
+
         public PowerPreviewProperties()
         {
+            StlThumbnailColor = new StringProperty(DefaultStlThumbnailColor);
         }
 
         public override string ToString()

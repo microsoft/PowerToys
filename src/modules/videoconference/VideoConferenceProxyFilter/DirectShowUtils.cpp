@@ -36,11 +36,6 @@ wil::com_ptr_nothrow<IMemAllocator> GetPinAllocator(wil::com_ptr_nothrow<IPin>& 
     return nullptr;
 }
 
-unique_media_type_ptr CopyMediaType(const unique_media_type_ptr& source)
-{
-    return CopyMediaType(source.get());
-}
-
 void MyFreeMediaType(AM_MEDIA_TYPE& mt)
 {
     if (mt.cbFormat != 0)
@@ -79,7 +74,7 @@ HRESULT MediaTypeEnumerator::Next(ULONG cObjects, AM_MEDIA_TYPE** outObjects, UL
     ULONG toFetch = cObjects;
     while (toFetch-- && _pos < _objects.size())
     {
-        auto copy = CopyMediaType(_objects[_pos++]);
+        auto copy = CopyMediaType(_objects[_pos++].get());
         outObjects[fetched++] = copy.release();
     }
 
@@ -109,7 +104,7 @@ HRESULT MediaTypeEnumerator::Clone(IEnumMediaTypes** ppEnum)
     cloned->_objects.resize(_objects.size());
     for (size_t i = 0; i < _objects.size(); ++i)
     {
-        cloned->_objects[i] = CopyMediaType(_objects[i]);
+        cloned->_objects[i] = CopyMediaType(_objects[i].get());
     }
 
     cloned->_pos = _pos;

@@ -10,6 +10,7 @@
 #include <FancyZonesLib/FancyZonesData/LayoutDefaults.h>
 #include <FancyZonesLib/FancyZonesData/LayoutHotkeys.h>
 #include <FancyZonesLib/FancyZonesData/LayoutTemplates.h>
+#include <FancyZonesLib/MonitorUtils.h>
 
 #include <common/logger/logger.h>
 
@@ -60,19 +61,6 @@ namespace NonLocalizable
     const wchar_t ZoneIndexStr[] = L"zone-index";
     const wchar_t ZoneSetUuidStr[] = L"zoneset-uuid";
     const wchar_t ZonesStr[] = L"zones";
-
-    // Editor arguments
-    const wchar_t Dpi[] = L"dpi";
-    const wchar_t MonitorNameId[] = L"monitor";
-    const wchar_t VirtualDesktopId[] = L"virtual-desktop";
-    const wchar_t TopCoordinate[] = L"top-coordinate";
-    const wchar_t LeftCoordinate[] = L"left-coordinate";
-    const wchar_t Width[] = L"width";
-    const wchar_t Height[] = L"height";
-    const wchar_t IsSelected[] = L"is-selected";
-    const wchar_t ProcessId[] = L"process-id";
-    const wchar_t SpanZonesAcrossMonitors[] = L"span-zones-across-monitors";
-    const wchar_t Monitors[] = L"monitors";
 }
 
 namespace BackwardsCompatibility
@@ -285,8 +273,8 @@ namespace
             return std::nullopt;
         }
 
-        data.deviceId = FancyZonesDataTypes::DeviceIdData{
-            .deviceName = deviceId->deviceName,
+        data.workAreaId = FancyZonesDataTypes::WorkAreaId{
+            .monitorId = { .deviceId = MonitorUtils::Display::ConvertObsoleteDeviceId(deviceId->deviceName) },
             .virtualDesktopId = deviceId->virtualDesktopId
         };
         data.zoneSetUuid = json.GetNamedString(NonLocalizable::ZoneSetUuidStr);
@@ -395,7 +383,7 @@ namespace JSONHelpers
             json::JsonArray columnsPercentage = infoJson.GetNamedArray(NonLocalizable::ColumnsPercentageStr);
             json::JsonArray cellChildMap = infoJson.GetNamedArray(NonLocalizable::CellChildMapStr);
 
-            if (rowsPercentage.Size() != info.m_rows || columnsPercentage.Size() != info.m_columns || cellChildMap.Size() != info.m_rows)
+            if (static_cast<int>(rowsPercentage.Size()) != info.m_rows || static_cast<int>(columnsPercentage.Size()) != info.m_columns || static_cast<int>(cellChildMap.Size()) != info.m_rows)
             {
                 return std::nullopt;
             }
@@ -405,7 +393,7 @@ namespace JSONHelpers
             for (const auto& cellsRow : cellChildMap)
             {
                 const auto cellsArray = cellsRow.GetArray();
-                if (cellsArray.Size() != info.m_columns)
+                if (static_cast<int>(cellsArray.Size()) != info.m_columns)
                 {
                     return std::nullopt;
                 }
@@ -508,16 +496,6 @@ namespace JSONHelpers
         }
     }
 
-    json::JsonObject ZoneSetDataJSON::ToJson(const FancyZonesDataTypes::ZoneSetData& zoneSet)
-    {
-        json::JsonObject result{};
-
-        result.SetNamedValue(NonLocalizable::UuidStr, json::value(zoneSet.uuid));
-        result.SetNamedValue(NonLocalizable::TypeStr, json::value(TypeToString(zoneSet.type)));
-
-        return result;
-    }
-
     std::optional<FancyZonesDataTypes::ZoneSetData> ZoneSetDataJSON::FromJson(const json::JsonObject& zoneSet)
     {
         try
@@ -575,16 +553,6 @@ namespace JSONHelpers
             return std::nullopt;
         }
     }
-
-    json::JsonObject LayoutQuickKeyJSON::ToJson(const LayoutQuickKeyJSON& layoutQuickKey)
-    {
-        json::JsonObject result{};
-
-        result.SetNamedValue(NonLocalizable::QuickAccessUuid, json::value(layoutQuickKey.layoutUuid));
-        result.SetNamedValue(NonLocalizable::QuickAccessKey, json::value(layoutQuickKey.key));
-
-        return result;
-    }
     
     std::optional<LayoutQuickKeyJSON> LayoutQuickKeyJSON::FromJson(const json::JsonObject& layoutQuickKey)
     {
@@ -606,40 +574,6 @@ namespace JSONHelpers
         {
             return std::nullopt;
         }
-    }
-
-    json::JsonObject MonitorInfo::ToJson(const MonitorInfo& monitor)
-    {
-        json::JsonObject result{};
-
-        result.SetNamedValue(NonLocalizable::MonitorNameId, json::value(monitor.monitorName));
-        result.SetNamedValue(NonLocalizable::VirtualDesktopId, json::value(monitor.virtualDesktop));
-        result.SetNamedValue(NonLocalizable::Dpi, json::value(monitor.dpi));
-        result.SetNamedValue(NonLocalizable::TopCoordinate, json::value(monitor.top));
-        result.SetNamedValue(NonLocalizable::LeftCoordinate, json::value(monitor.left));
-        result.SetNamedValue(NonLocalizable::Width, json::value(monitor.width));
-        result.SetNamedValue(NonLocalizable::Height, json::value(monitor.height));
-        result.SetNamedValue(NonLocalizable::IsSelected, json::value(monitor.isSelected));
-
-        return result;
-    }
-
-    json::JsonObject EditorArgs::ToJson(const EditorArgs& args)
-    {
-        json::JsonObject result{};
-
-        result.SetNamedValue(NonLocalizable::ProcessId, json::value(args.processId));
-        result.SetNamedValue(NonLocalizable::SpanZonesAcrossMonitors, json::value(args.spanZonesAcrossMonitors));
-
-        json::JsonArray monitors;
-        for (const auto& monitor : args.monitors)
-        {
-            monitors.Append(MonitorInfo::ToJson(monitor));
-        }
-
-        result.SetNamedValue(NonLocalizable::Monitors, monitors);
-
-        return result;
     }
 
     json::JsonObject GetPersistFancyZonesJSON(const std::wstring& zonesSettingsFileName, const std::wstring& appZoneHistoryFileName)
@@ -724,18 +658,6 @@ namespace JSONHelpers
 
         root.SetNamedValue(NonLocalizable::AppliedLayoutsIds::AppliedLayoutsArrayID, layoutsArray);
         json::to_file(AppliedLayouts::AppliedLayoutsFileName(), root);
-    }
-
-    json::JsonArray SerializeCustomZoneSets(const TCustomZoneSetsMap& customZoneSetsMap)
-    {
-        json::JsonArray customZoneSetsJSON{};
-
-        for (const auto& [zoneSetId, zoneSetData] : customZoneSetsMap)
-        {
-            customZoneSetsJSON.Append(CustomZoneSetJSON::ToJson(CustomZoneSetJSON{ zoneSetId, zoneSetData }));
-        }
-
-        return customZoneSetsJSON;
     }
     
     std::optional<TLayoutQuickKeysMap> ParseQuickKeys(const json::JsonObject& fancyZonesDataJSON)

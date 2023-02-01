@@ -1,0 +1,105 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Wix xmlns="http://schemas.microsoft.com/wix/2006/wi"
+     xmlns:util="http://schemas.microsoft.com/wix/UtilExtension" >
+
+  <?include $(sys.CURRENTDIR)\Common.wxi?>
+
+  <?define SettingsV2Files=WinUIEx.dll;backup_restore_settings.json;Ijwhost.dll;ColorCode.Core.dll;ColorCode.WinUI.dll;CommunityToolkit.Common.dll;CommunityToolkit.Labs.WinUI.SettingsControls.dll;CommunityToolkit.WinUI.dll;CommunityToolkit.WinUI.UI.Controls.Core.dll;CommunityToolkit.WinUI.UI.Controls.DataGrid.dll;CommunityToolkit.WinUI.UI.Controls.Input.dll;CommunityToolkit.WinUI.UI.Controls.Layout.dll;CommunityToolkit.WinUI.UI.Controls.Markdown.dll;CommunityToolkit.WinUI.UI.Controls.Media.dll;CommunityToolkit.WinUI.UI.Controls.Primitives.dll;CommunityToolkit.WinUI.UI.dll;icon.ico;Microsoft.Graphics.Canvas.Interop.dll;Microsoft.InteractiveExperiences.Projection.dll;Microsoft.Windows.ApplicationModel.DynamicDependency.Projection.dll;Microsoft.Windows.ApplicationModel.Resources.Projection.dll;Microsoft.Windows.ApplicationModel.WindowsAppRuntime.Projection.dll;Microsoft.Windows.AppLifecycle.Projection.dll;Microsoft.Windows.SDK.NET.dll;Microsoft.Windows.System.Power.Projection.dll;Microsoft.WindowsAppRuntime.Bootstrap.Net.dll;Microsoft.WinUI.dll;Microsoft.Xaml.Interactions.dll;Microsoft.Xaml.Interactivity.dll;PowerToys.ManagedCommon.dll;PowerToys.ManagedTelemetry.dll;PowerToys.Settings.deps.json;PowerToys.Settings.dll;PowerToys.Settings.exe;PowerToys.Settings.runtimeconfig.json;PowerToys.Settings.UI.Lib.dll;resources.pri;System.CodeDom.dll;System.IO.Abstractions.dll;WinRT.Runtime.dll;Microsoft.Graphics.Canvas.dll;System.Management.dll;PowerToys.GPOWrapper.dll;System.Text.Json.dll;WindowsBase.dll?>
+  <?define SettingsV2AssetsModulesFiles=ColorPicker.png;FancyZones.png;FileLocksmith.png;AlwaysOnTop.png;HostsFileEditor.png;Awake.png;ImageResizer.png;KBM.png;MouseUtils.png;PowerAccent.png;PowerOCR.png;PowerLauncher.png;PowerPreview.png;PowerRename.png;PT.png;ScreenRuler.png;ShortcutGuide.png;VideoConference.png?>
+  <?define SettingsV2OOBEAssetsModulesFiles=ColorPicker.gif;AlwaysOnTop.png;HostsFileEditor.png;Awake.png;FancyZones.gif;FileExplorer.png;FileLocksmith.gif;ImageResizer.gif;KBM.gif;MouseUtils.gif;PowerAccent.gif;PowerOCR.gif;PowerRename.gif;Run.gif;ScreenRuler.gif;OOBEShortcutGuide.png;VideoConferenceMute.png;OOBEPTHero.png?>
+  <?define SettingsV2OOBEAssetsFluentIconsFiles=ColorPicker.png;FancyZones.png;FileLocksmith.png;AlwaysOnTop.png;Awake.png;FileExplorerPreview.png;FindMyMouse.png;Hosts.png;ImageResizer.png;KeyboardManager.png;MouseHighlighter.png;MouseCrosshairs.png;MouseUtils.png;PowerAccent.png;PowerOcr.png;PowerRename.png;PowerToys.png;PowerToysRun.png;ScreenRuler.png;Settings.png;ShortcutGuide.png;VideoConferenceMute.png?>
+  <?define SettingsV2MicrosoftUIXamlAssetsInstallFiles=NoiseAsset_256x256_PNG.png?>
+
+  <Fragment>
+    <!-- SettingsV2 components -->
+    <DirectoryRef Id="SettingsV2InstallFolder" FileSource="$(var.BinDir)Settings\">
+      <?foreach File in $(var.SettingsV2Files)?>
+        <Component Id="SV2C_$(var.File)" Win64="yes">
+          <File Id="SV2_$(var.File)" Source="$(var.BinDir)Settings\$(var.File)" />
+        </Component>
+      <?endforeach?>
+    </DirectoryRef>
+    <DirectoryRef Id="SettingsV2AssetsInstallFolder" FileSource="$(var.BinDir)Settings\Assets">
+      <Component Id="SettingsV2Assets_LogoScale200" Win64="yes">
+        <File Id="SV2A_LogoScale200" Source="$(var.BinDir)Settings\Assets\Logo.scale-200.png" />
+      </Component>
+      <Component Id="SettingsV2Assets_SplashScreen" Win64="yes">
+        <File Id="SV2A_SplashScreen" Source="$(var.BinDir)Settings\Assets\SplashScreen.png" />
+      </Component>
+      <Component Id="SettingsV2Assets_StoreLogo_Scale100" Win64="yes">
+        <File Id="SV2A_StoreLogoScale100" Source="$(var.BinDir)Settings\Assets\StoreLogo.scale-100.png" />
+      </Component>
+      <Component Id="SettingsV2Assets_StoreLogo" Win64="yes">
+        <File Id="SV2A_StoreLogo" Source="$(var.BinDir)Settings\Assets\StoreLogo.png" />
+      </Component>
+      <Component Id="SettingsV2Assets_Square150x150sc200" Win64="yes">
+        <File Id="SV2A_Square150x150sc200" Source="$(var.BinDir)Settings\Assets\Square150x150Logo.scale-200.png" />
+      </Component>
+      <Component Id="SettingsV2Assets_Square44x44ts24" Win64="yes">
+        <File Id="SV2A_Square44x44ts24" Source="$(var.BinDir)Settings\Assets\Square44x44Logo.targetsize-24_altform-unplated.png" />
+      </Component>
+      <Component Id="SettingsV2Assets_Wide310x150sc200" Win64="yes">
+        <File Id="SV2A_Wide310x150sc200" Source="$(var.BinDir)Settings\Assets\Wide310x150Logo.scale-200.png" />
+      </Component>
+      <Component Id="SettingsV2Assets_Square44x44Logo200" Win64="yes">
+        <File Id="SV2A_Square44x44Logo200" Source="$(var.BinDir)Settings\Assets\Square44x44Logo.scale-200.png" />
+      </Component>
+    </DirectoryRef>
+    <DirectoryRef Id="SettingsV2AssetsModulesInstallFolder" FileSource="$(var.BinDir)Settings\Assets\Modules">
+      <?foreach File in $(var.SettingsV2AssetsModulesFiles)?>
+        <Component Id="SettingsV2AssetsModules_$(var.File)" Win64="yes">
+          <File Id="S2AMF_$(var.File)" Source="$(var.BinDir)Settings\Assets\Modules\$(var.File)" />
+        </Component>
+      <?endforeach?>
+    </DirectoryRef>
+    <DirectoryRef Id="SettingsV2OOBEAssetsModulesInstallFolder" FileSource="$(var.BinDir)Settings\Assets\Modules\OOBE">
+      <?foreach File in $(var.SettingsV2OOBEAssetsModulesFiles)?>
+        <Component Id="SettingsV2OOBEAssetsModules_$(var.File)" Win64="yes">
+          <File Id="SettingsV2OOBEAssetsModules_$(var.File)"  Source="$(var.BinDir)Settings\Assets\Modules\OOBE\$(var.File)" />
+        </Component>
+      <?endforeach?>
+    </DirectoryRef>
+    <DirectoryRef Id="SettingsV2OOBEAssetsFluentIconsInstallFolder" FileSource="$(var.BinDir)Settings\Assets\FluentIcons">
+      <?foreach File in $(var.SettingsV2OOBEAssetsFluentIconsFiles)?>
+        <Component Id="SettingsV2OOBEAssetsFluentIcons_$(var.File)" Win64="yes">
+          <File Id="SettingsV2OOBEAssetsFluentIconsFile_$(var.File)" Source="$(var.BinDir)Settings\Assets\FluentIcons\FluentIcons$(var.File)" />
+        </Component>
+      <?endforeach?>
+    </DirectoryRef>
+    <DirectoryRef Id="SettingsV2MicrosoftUIXamlAssetsInstallFolder" FileSource="$(var.BinDir)Settings\Microsoft.UI.Xaml\Assets">
+			<?foreach File in $(var.SettingsV2MicrosoftUIXamlAssetsInstallFiles)?>
+			    <Component Id="SettingsV2MicrosoftUIXamlAssets_$(var.File)" Win64="yes">
+				    <File Id="SettingsV2MicrosoftUIXamlAssetsFile_$(var.File)" Source="$(var.BinDir)Settings\Microsoft.UI.Xaml\Assets\$(var.File)" />
+			    </Component>
+			<?endforeach?>
+    </DirectoryRef>
+
+    <ComponentGroup Id="SettingsComponentGroup" Directory="INSTALLFOLDER">
+      <?foreach File in $(var.SettingsV2Files)?>
+        <ComponentRef Id="SV2C_$(var.File)" />
+      <?endforeach?>
+      <ComponentRef Id="SettingsV2Assets_LogoScale200" />
+      <ComponentRef Id="SettingsV2Assets_SplashScreen" />
+      <ComponentRef Id="SettingsV2Assets_StoreLogo_Scale100" />
+      <ComponentRef Id="SettingsV2Assets_StoreLogo" />
+      <ComponentRef Id="SettingsV2Assets_Square150x150sc200" />
+      <ComponentRef Id="SettingsV2Assets_Square44x44ts24" />
+      <ComponentRef Id="SettingsV2Assets_Wide310x150sc200" />
+      <ComponentRef Id="SettingsV2Assets_Square44x44Logo200" />
+      <?foreach File in $(var.SettingsV2AssetsModulesFiles)?>
+        <ComponentRef Id="SettingsV2AssetsModules_$(var.File)" />
+      <?endforeach?>
+      <?foreach File in $(var.SettingsV2OOBEAssetsFluentIconsFiles)?>
+        <ComponentRef Id="SettingsV2OOBEAssetsFluentIcons_$(var.File)" />
+      <?endforeach?>
+      <?foreach File in $(var.SettingsV2OOBEAssetsModulesFiles)?>
+        <ComponentRef Id="SettingsV2OOBEAssetsModules_$(var.File)" />
+      <?endforeach?>
+      <?foreach File in $(var.SettingsV2MicrosoftUIXamlAssetsInstallFiles)?>
+        <ComponentRef Id="SettingsV2MicrosoftUIXamlAssets_$(var.File)" />
+      <?endforeach?>
+
+    </ComponentGroup>
+
+  </Fragment>
+</Wix>

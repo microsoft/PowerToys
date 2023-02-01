@@ -3,11 +3,9 @@
 // See the LICENSE file in the project root for more information.
 
 using System.ComponentModel;
-using Windows.UI.Accessibility;
-using Windows.UI.Xaml;
-using Windows.UI.Xaml.Automation;
-using Windows.UI.Xaml.Controls;
-using Windows.UI.Xaml.Media;
+using Microsoft.UI.Xaml;
+using Microsoft.UI.Xaml.Automation;
+using Microsoft.UI.Xaml.Controls;
 
 namespace Microsoft.PowerToys.Settings.UI.Controls
 {
@@ -38,16 +36,12 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
         private void CheckBoxSubTextControl_Loaded(object sender, RoutedEventArgs e)
         {
             StackPanel panel = new StackPanel() { Orientation = Orientation.Vertical };
+            panel.Children.Add(new TextBlock() { Text = Header, TextWrapping = TextWrapping.WrapWholeWords });
 
             // Add text box only if the description is not empty. Required for additional plugin options.
             if (!string.IsNullOrWhiteSpace(Description))
             {
-                panel.Children.Add(new TextBlock() { Margin = new Thickness(0, 10, 0, 0), Text = Header });
-                panel.Children.Add(new IsEnabledTextBlock() { Style = (Style)App.Current.Resources["SecondaryIsEnabledTextBlockStyle"], Text = Description });
-            }
-            else
-            {
-                panel.Children.Add(new TextBlock() { Margin = new Thickness(0, 0, 0, 0), Text = Header });
+              panel.Children.Add(new IsEnabledTextBlock() { Style = (Style)App.Current.Resources["SecondaryIsEnabledTextBlockStyle"], Text = Description });
             }
 
             _checkBoxSubTextControl.Content = panel;
@@ -61,7 +55,7 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
 
         public static readonly DependencyProperty DescriptionProperty = DependencyProperty.Register(
             "Description",
-            typeof(object),
+            typeof(string),
             typeof(CheckBoxWithDescriptionControl),
             new PropertyMetadata(default(string)));
 

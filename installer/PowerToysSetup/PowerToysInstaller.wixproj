@@ -1,14 +1,43 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" DefaultTargets="Build" InitialTargets="EnsureNuGetPackageBuildImports" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-  <Import Project="..\packages\WiX.3.11.2\build\wix.props" Condition="Exists('..\packages\WiX.3.11.2\build\wix.props')" />
+  <Import Project="..\wix.props" Condition="Exists('..\wix.props')" />
   <Import Project="..\..\src\Version.props" />
-  <PropertyGroup>
+
+  <PropertyGroup Condition="'$(Platform)' == 'x64'">
     <DefineConstants>Version=$(Version);MonacoSRCHarvestPath=$(ProjectDir)..\..\x64\$(Configuration)\modules\FileExplorerPreview\monacoSRC</DefineConstants>
+    <!-- THIS IS AN INNER LOOP OPTIMIZATION
+    The build pipeline builds the Settings and Launcher projects for Publication
+    using a specific profile. If you're doing local installer builds, this will
+    simulate the build pipeline doing that for you. -->
+    <PreBuildEvent>IF NOT DEFINED IsPipeline (
+call "$([MSBuild]::GetVsInstallRoot())\Common7\Tools\VsDevCmd.bat" -arch=amd64 -host_arch=amd64 -winsdk=10.0.19041.0
+SET PTRoot=..\..\..\..
+call "..\..\publish.cmd" x64
+)</PreBuildEvent>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Platform)' != 'x64'">
+    <DefineConstants>Version=$(Version);MonacoSRCHarvestPath=$(ProjectDir)..\..\ARM64\$(Configuration)\modules\FileExplorerPreview\monacoSRC</DefineConstants>
+    <PreBuildEvent>IF NOT DEFINED IsPipeline (
+call "$([MSBuild]::GetVsInstallRoot())\Common7\Tools\VsDevCmd.bat" -arch=arm64 -host_arch=amd64 -winsdk=10.0.19041.0
+SET PTRoot=..\..\..\..
+call "..\..\publish.cmd" arm64
+)</PreBuildEvent>
+  </PropertyGroup>
+  <PropertyGroup>
+    <RunPostBuildEvent>Always</RunPostBuildEvent>
+    <PostBuildEvent>
+    call move /Y ..\..\Core.wxs.bk ..\..\Core.wxs
+    call move /Y ..\..\..\PowerToysSetupCustomActions\DepsFilesLists.h.bk ..\..\..\PowerToysSetupCustomActions\DepsFilesLists.h
+    </PostBuildEvent>
+  </PropertyGroup>
+  <PropertyGroup>
     <Name>PowerToysInstaller</Name>
   </PropertyGroup>
   <PropertyGroup>
-    <Configuration Condition=" '$(Configuration)' == '' ">Release</Configuration>
-    <Platform Condition=" '$(Platform)' == '' ">x64</Platform>
+    <!-- We do not support debug installer builds -->
+    <Configuration Condition=" '$(Configuration)' == '' ">Release</Configuration> 
+    <Platform>$(Platform)</Platform>
     <ProductVersion>3.10</ProductVersion>
     <ProjectGuid>022a9d30-7c4f-416d-a9df-5ff2661cc0ad</ProjectGuid>
     <SchemaVersion>2.0</SchemaVersion>
@@ -18,24 +47,47 @@
     <NuGetPackageImportStamp>
     </NuGetPackageImportStamp>
   </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|x64' ">
+  <PropertyGroup>
     <OutputPath>$(Platform)\$(Configuration)\</OutputPath>
     <IntermediateOutputPath>obj\$(Platform)\$(Configuration)\</IntermediateOutputPath>
-    <SuppressIces>ICE91</SuppressIces>
-    <SuppressValidation>True</SuppressValidation>
+    <SuppressIces>ICE40</SuppressIces>
   </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|x64' ">
-    <OutputPath>$(Platform)\$(Configuration)\</OutputPath>
-    <IntermediateOutputPath>obj\$(Platform)\$(Configuration)\</IntermediateOutputPath>
-    <SuppressValidation>True</SuppressValidation>
-    <SuppressIces>ICE91</SuppressIces>
+  <PropertyGroup>
+    <!-- suppress warning 1108 regarding -sh being deprecated -->
+    <!-- -sh suppresses file information which was causing wix build to hang in CI -->
+    <LinkerAdditionalOptions>-v -sh -sw1108</LinkerAdditionalOptions>
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="CustomDialogs\PTInstallDirDlg.wxs" />
     <Compile Include="CustomDialogs\PTLicenseDlg.wxs" />
     <Compile Include="CustomDialogs\WixUI_PTInstallDir.wxs" />
     <Compile Include="Product.wxs" />
+
+    <Compile Include="AlwaysOnTop.wxs" />
+    <Compile Include="Awake.wxs" />
+    <Compile Include="ColorPicker.wxs" />
+    <Compile Include="FancyZones.wxs" />
+    <Compile Include="FileExplorerPreview.wxs" />
+    <Compile Include="FileLocksmith.wxs" />
+    <Compile Include="Hosts.wxs" />
+    <Compile Include="ImageResizer.wxs" />
+    <Compile Include="KeyboardManager.wxs" />
+    <Compile Include="MeasureTool.wxs" />
+    <Compile Include="MouseUtils.wxs" />
+    <Compile Include="PowerAccent.wxs" />
+    <Compile Include="PowerRename.wxs" />
+    <Compile Include="Run.wxs" />
+    <Compile Include="Settings.wxs" />
+    <Compile Include="ShortcutGuide.wxs" />
+    <Compile Include="TextExtractor.wxs" />
+    <Compile Include="Tools.wxs" />
+    <Compile Include="VideoConference.wxs" />
+
     <Compile Include="MonacoSRC.wxs" />
+
+    <Compile Include="Core.wxs" />
+    <Compile Include="Resources.wxs" />
+    <Compile Include="WinAppSDK.wxs" />
   </ItemGroup>
   <ItemGroup>
     <WixExtension Include="WixUtilExtension">
@@ -76,19 +128,8 @@
     <PropertyGroup>
       <ErrorText>This project references NuGet package(s) that are missing on this computer. Use NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.</ErrorText>
     </PropertyGroup>
-    <Error Condition="!Exists('..\packages\WiX.3.11.2\build\wix.props')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\WiX.3.11.2\build\wix.props'))" />
+    <Error Condition="!Exists('..\wix.props')" Text="$([System.String]::Format('$(ErrorText)', '..\wix.props'))" />
   </Target>
-  <PropertyGroup>
-    <!-- THIS IS AN INNER LOOP OPTIMIZATION
-    The build pipeline builds the Settings and Launcher projects for Publication
-    using a specific profile. If you're doing local installer builds, this will
-    simulate the build pipeline doing that for you. -->
-    <PreBuildEvent>IF NOT DEFINED IsPipeline (
-call "$([MSBuild]::GetVsInstallRoot())\Common7\Tools\VsDevCmd.bat" -arch=amd64 -host_arch=amd64 -winsdk=10.0.18362.0
-SET PTRoot=..\..\..\..
-call "..\..\publish.cmd"
-)</PreBuildEvent>
-  </PropertyGroup>
   <!--
 	To modify your build process, add your task inside one of the targets below and uncomment it.
 	Other similar extension points exist, see Wix.targets.

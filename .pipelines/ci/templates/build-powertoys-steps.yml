@@ -7,17 +7,53 @@ steps:
   submodules: true
   clean: true
 
-- task: UseDotNet@2
-  displayName: 'Use .NET 3.1 for unit test SDK'
+- task: PowerShell@2
+  displayName: Verifying Nuget package versions for PowerToys.sln
   inputs:
-    packageType: sdk
-    version: '3.1.x'
+    filePath: '$(build.sourcesdirectory)\.pipelines\verifyNugetPackages.ps1'
+    arguments: -solution '$(build.sourcesdirectory)\PowerToys.sln'
+    pwsh: true
+
+- task: PowerShell@2
+  displayName: Verify Arm64 configuration for PowerToys.sln
+  inputs:
+    filePath: '$(build.sourcesdirectory)\.pipelines\verifyArm64Configuration.ps1'
+    arguments: -solution '$(build.sourcesdirectory)\PowerToys.sln'
+    pwsh: true
+
+- task: PowerShell@2
+  displayName: Verify Arm64 configuration for BugReportTool.sln
+  inputs:
+    filePath: '$(build.sourcesdirectory)\.pipelines\verifyArm64Configuration.ps1'
+    arguments: -solution '$(build.sourcesdirectory)\tools\BugReportTool\BugReportTool.sln'
+    pwsh: true
+
+- task: PowerShell@2
+  displayName: Verify Arm64 configuration for WebcamReportTool.sln
+  inputs:
+    filePath: '$(build.sourcesdirectory)\.pipelines\verifyArm64Configuration.ps1'
+    arguments: -solution '$(build.sourcesdirectory)\tools\WebcamReportTool\WebcamReportTool.sln'
+    pwsh: true
+
+- task: PowerShell@2
+  displayName: Verify Arm64 configuration for StylesReportTool.sln
+  inputs:
+    filePath: '$(build.sourcesdirectory)\.pipelines\verifyArm64Configuration.ps1'
+    arguments: -solution '$(build.sourcesdirectory)\tools\StylesReportTool\StylesReportTool.sln'
+    pwsh: true
+
+- task: PowerShell@2
+  displayName: Verify Arm64 configuration for PowerToysSetup.sln
+  inputs:
+    filePath: '$(build.sourcesdirectory)\.pipelines\verifyArm64Configuration.ps1'
+    arguments: -solution '$(build.sourcesdirectory)\installer\PowerToysSetup.sln'
+    pwsh: true
 
 - task: UseDotNet@2
-  displayName: 'Use .NET 6 SDK'
+  displayName: 'Use .NET 7 SDK'
   inputs:
     packageType: sdk
-    version: '6.x'
+    version: '7.x'
 
 - task: NuGetToolInstaller@1
   displayName: Ensure NuGet Installer
@@ -33,7 +69,7 @@ steps:
     configPath: NuGet.config
     restoreSolution: PowerToys.sln
     restoreDirectory: '$(Build.SourcesDirectory)\packages'
-
+    
 - task: VSBuild@1
   displayName: 'Build PowerToys.sln'
   inputs:
@@ -83,6 +119,25 @@ steps:
     maximumCpuCount: true
 
 - task: NuGetCommand@2
+  displayName: Restore NuGet packages for StylesReportTool.sln
+  inputs:
+    command: restore
+    feedsToUse: config
+    configPath: NuGet.config
+    restoreSolution: tools\StylesReportTool\StylesReportTool.sln
+    restoreDirectory: '$(Build.SourcesDirectory)\tools\StylesReportTool\packages'
+
+- task: VSBuild@1
+  displayName: 'Build StylesReportTool.sln'
+  inputs:
+    solution: '**\StylesReportTool.sln'
+    vsVersion: 17.0
+    platform: '$(BuildPlatform)'
+    configuration: '$(BuildConfiguration)'
+    msbuildArgs: ${{ parameters.additionalBuildArguments }}
+    maximumCpuCount: true
+
+- task: NuGetCommand@2
   displayName: Restore NuGet packages for PowerToysSetup.sln
   inputs:
     command: restore
@@ -90,6 +145,12 @@ steps:
     configPath: NuGet.config
     restoreSolution: installer\PowerToysSetup.sln
     restoreDirectory: '$(Build.SourcesDirectory)\installer\packages'
+
+- task: PowerShell@2
+  displayName: Download and install WiX 3.14 development build
+  inputs:
+    targetType: filePath
+    filePath: '$(build.sourcesdirectory)\.pipelines\installWiX.ps1'
 
 - task: VSBuild@1
   displayName: 'Build PowerToys MSI'
@@ -115,22 +176,19 @@ steps:
 # directly not doing WinAppDriver testing
 - task: VSTest@2
   displayName: 'MS Tests'
+  condition: ne(variables['BuildPlatform'], 'arm64') # No arm64 agents to run the tests.
   inputs:
     platform: '$(BuildPlatform)'
     configuration: '$(BuildConfiguration)'
     testSelector: 'testAssemblies'
     testAssemblyVer2: |
       **\UnitTests-GcodeThumbnailProvider.dll
-      **\UnitTests-SvgThumbnailProvider.dll
       **\UnitTests-StlThumbnailProvider.dll
       **\UnitTests-PdfThumbnailProvider.dll
       **\Settings.UI.UnitTests.dll
-      **\UnitTests-MarkdownPreviewHandler.dll
       **\UnitTests-GcodePreviewHandler.dll
       **\UnitTests-PdfPreviewHandler.dll
-      **\UnitTests-SvgPreviewHandler.dll
       **\UnitTests-PreviewHandlerCommon.dll
-      **\PreviewPaneUnitTests.dll
       **\Microsoft.PowerToys.Run.Plugin.Registry.UnitTests.dll
       **\UnitTest-ColorPickerUI.dll
       **\Microsoft.Interop.Tests.dll
@@ -142,14 +200,20 @@ steps:
       **\Microsoft.Plugin.Uri.UnitTests.dll
       **\Wox.Test.dll
       **\Microsoft.PowerToys.Run.Plugin.System.UnitTests.dll
-      **\Microsoft.PowerToys.Run.Plugin.TimeDate.UnitTests.dll      
+      **\Microsoft.PowerToys.Run.Plugin.TimeDate.UnitTests.dll
+      **\Microsoft.PowerToys.Run.Plugin.TimeZone.UnitTests.dll
       **\Microsoft.Plugin.WindowsTerminal.UnitTests.dll
       **\Microsoft.Plugin.WindowWalker.UnitTests.dll
+      **\PreviewPaneUnitTests.dll
+      **\UnitTests-SvgThumbnailProvider.dll
+      **\UnitTests-SvgPreviewHandler.dll
+      **\PowerToys.Hosts.Tests.dll
       !**\obj\**
       !**\ref\**
 
 # Native dlls
 - task: VSTest@2
+  condition: ne(variables['BuildPlatform'],'arm64') # No arm64 agents to run the tests.
   displayName: 'Native Tests'
   inputs:
     platform: '$(BuildPlatform)'
@@ -161,4 +225,12 @@ steps:
       **\UnitTests-CommonLib.dll
       **\PowerRenameUnitTests.dll
       **\powerpreviewTest.dll
+      **\UnitTests-FancyZones.dll
       !**\obj\**
+  
+- task: PowerShell@2
+  displayName: Verifying Notice.md and Nuget packages match
+  inputs:
+    filePath: '$(build.sourcesdirectory)\.pipelines\verifyNoticeMdAgainstNugetPackages.ps1'
+    arguments: -path '$(build.sourcesdirectory)\'
+    pwsh: true

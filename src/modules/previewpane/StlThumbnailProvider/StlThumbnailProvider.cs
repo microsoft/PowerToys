@@ -1,32 +1,40 @@
 ﻿// Copyright (c) Microsoft Corporation
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
-using System;
 using System.IO;
-using System.Runtime.InteropServices;
 using System.Runtime.InteropServices.ComTypes;
 using System.Windows;
 using System.Windows.Media;
 using System.Windows.Media.Media3D;
-using Common.ComInterlop;
 using Common.Utilities;
 using HelixToolkit.Wpf;
+using Microsoft.PowerToys.Settings.UI.Library;
 using Bitmap = System.Drawing.Bitmap;
+using Color = System.Windows.Media.Color;
+using ColorConverter = System.Windows.Media.ColorConverter;
 
 namespace Microsoft.PowerToys.ThumbnailHandler.Stl
 {
     /// <summary>
     /// Stl Thumbnail Provider.
     /// </summary>
-    [Guid("8BC8AFC2-4E7C-4695-818E-8C1FFDCEA2AF")]
-    [ClassInterface(ClassInterfaceType.None)]
-    [ComVisible(true)]
-    public class StlThumbnailProvider : IInitializeWithStream, IThumbnailProvider
+    public class StlThumbnailProvider
     {
+        public StlThumbnailProvider(string filePath)
+        {
+            FilePath = filePath;
+            Stream = new FileStream(filePath, FileMode.Open, FileAccess.Read);
+        }
+
+        /// <summary>
+        /// Gets the file path to the file creating thumbnail for.
+        /// </summary>
+        public string FilePath { get; private set; }
+
         /// <summary>
         /// Gets the stream object to access file.
         /// </summary>
-        public IStream Stream { get; private set; }
+        public Stream Stream { get; private set; }
 
         /// <summary>
         ///  The maximum dimension (width or height) thumbnail we will generate.
@@ -50,7 +58,7 @@ namespace Microsoft.PowerToys.ThumbnailHandler.Stl
 
             var stlReader = new StLReader
             {
-                DefaultMaterial = new DiffuseMaterial(new SolidColorBrush(Color.FromRgb(255, 201, 36))),
+                DefaultMaterial = new DiffuseMaterial(new SolidColorBrush(DefaultMaterialColor)),
             };
 
             var model = stlReader.Read(stream);
@@ -62,7 +70,7 @@ namespace Microsoft.PowerToys.ThumbnailHandler.Stl
 
             var viewport = new System.Windows.Controls.Viewport3D();
 
-            viewport.Measure(new Size(cx, cx));
+            viewport.Measure(new System.Windows.Size(cx, cx));
             viewport.Arrange(new Rect(0, 0, cx, cx));
 
             var modelVisual = new ModelVisual3D()
@@ -104,40 +112,62 @@ namespace Microsoft.PowerToys.ThumbnailHandler.Stl
             return thumbnail;
         }
 
-        /// <inheritdoc/>
-        public void Initialize(IStream pstream, uint grfMode)
+        /// <summary>
+        /// Generate thumbnail bitmap for provided Gcode file/stream.
+        /// </summary>
+        /// <param name="cx">Maximum thumbnail size, in pixels.</param>
+        /// <returns>Generated bitmap</returns>
+        public Bitmap GetThumbnail(uint cx)
         {
-            // Ignore the grfMode always use read mode to access the file.
-            this.Stream = pstream;
-        }
-
-        /// <inheritdoc/>
-        public void GetThumbnail(uint cx, out IntPtr phbmp, out WTS_ALPHATYPE pdwAlpha)
-        {
-            phbmp = IntPtr.Zero;
-            pdwAlpha = WTS_ALPHATYPE.WTSAT_UNKNOWN;
-
             if (cx == 0 || cx > MaxThumbnailSize)
             {
-                return;
+                return null;
             }
 
-            using (var stream = new ReadonlyStream(this.Stream as IStream))
+            if (global::PowerToys.GPOWrapper.GPOWrapper.GetConfiguredStlThumbnailsEnabledValue() == global::PowerToys.GPOWrapper.GpoRuleConfigured.Disabled)
             {
-                using (var memStream = new MemoryStream())
+                // GPO is disabling this utility.
+                return null;
+            }
+
+            using (var memStream = new MemoryStream())
+            {
+                this.Stream.CopyTo(memStream);
+
+                memStream.Position = 0;
+
+                using (Bitmap thumbnail = GetThumbnail(memStream, cx))
                 {
-                    stream.CopyTo(memStream);
-
-                    memStream.Position = 0;
-
-                    using (Bitmap thumbnail = GetThumbnail(memStream, cx))
+                    if (thumbnail != null && thumbnail.Size.Width > 0 && thumbnail.Size.Height > 0)
                     {
-                        if (thumbnail != null && thumbnail.Size.Width > 0 && thumbnail.Size.Height > 0)
-                        {
-                            phbmp = thumbnail.GetHbitmap(System.Drawing.Color.Transparent);
-                            pdwAlpha = WTS_ALPHATYPE.WTSAT_ARGB;
-                        }
+                        return (Bitmap)thumbnail.Clone();
                     }
+                }
+            }
+
+            return null;
+        }
+
+        /// <summary>
+        /// Gets a value indicating what color to use.
+        /// </summary>
+        public static Color DefaultMaterialColor
+        {
+            get
+            {
+                try
+                {
+                    var moduleSettings = new SettingsUtils();
+
+                    var colorString = moduleSettings.GetSettings<PowerPreviewSettings>(PowerPreviewSettings.ModuleName).Properties.StlThumbnailColor.Value;
+
+                    return (Color)ColorConverter.ConvertFromString(colorString);
+                }
+                catch (FileNotFoundException)
+                {
+                    // Couldn't read the settings.
+                    // Assume default color value.
+                    return Color.FromRgb(255, 201, 36);
                 }
             }
         }

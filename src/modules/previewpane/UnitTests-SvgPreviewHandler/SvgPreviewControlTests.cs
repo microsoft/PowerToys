@@ -21,7 +21,8 @@ namespace SvgPreviewHandlerUnitTests
     [System.Diagnostics.CodeAnalysis.SuppressMessage("Usage", "CA2201:Do not raise reserved exception types", Justification = "new Exception() is fine in test projects.")]
     public class SvgPreviewControlTests
     {
-        private static readonly int ThreeSecondsInMilliseconds = 3000;
+        // A long timeout is needed. WebView2 can take a long time to load the first time in some CI systems.
+        private static readonly int HardTimeoutInMilliseconds = 30000;
         private static readonly int SleepTimeInMilliseconds = 200;
 
         [TestMethod]
@@ -31,11 +32,11 @@ namespace SvgPreviewHandlerUnitTests
             using (var svgPreviewControl = new SvgPreviewControl())
             {
                 // Act
-                svgPreviewControl.DoPreview(GetMockStream("<svg></svg>"));
+                svgPreviewControl.DoPreview("HelperFiles/file1.svg");
 
                 int beforeTick = Environment.TickCount;
 
-                while (svgPreviewControl.Controls.Count == 0 && Environment.TickCount < beforeTick + ThreeSecondsInMilliseconds)
+                while (svgPreviewControl.Controls.Count == 0 && Environment.TickCount < beforeTick + HardTimeoutInMilliseconds)
                 {
                     Application.DoEvents();
                     Thread.Sleep(SleepTimeInMilliseconds);
@@ -54,11 +55,11 @@ namespace SvgPreviewHandlerUnitTests
             using (var svgPreviewControl = new SvgPreviewControl())
             {
                 // Act
-                svgPreviewControl.DoPreview(GetMockStream("<svg></svg>"));
+                svgPreviewControl.DoPreview("HelperFiles/file1.svg");
 
                 int beforeTick = Environment.TickCount;
 
-                while (svgPreviewControl.Controls.Count == 0 && Environment.TickCount < beforeTick + ThreeSecondsInMilliseconds)
+                while (svgPreviewControl.Controls.Count == 0 && Environment.TickCount < beforeTick + HardTimeoutInMilliseconds)
                 {
                     Application.DoEvents();
                     Thread.Sleep(SleepTimeInMilliseconds);
@@ -85,7 +86,7 @@ namespace SvgPreviewHandlerUnitTests
 
                 int beforeTick = Environment.TickCount;
 
-                while (svgPreviewControl.Controls.Count == 0 && Environment.TickCount < beforeTick + ThreeSecondsInMilliseconds)
+                while (svgPreviewControl.Controls.Count == 0 && Environment.TickCount < beforeTick + HardTimeoutInMilliseconds)
                 {
                     Application.DoEvents();
                     Thread.Sleep(SleepTimeInMilliseconds);
@@ -119,7 +120,7 @@ namespace SvgPreviewHandlerUnitTests
 
                 int beforeTick = Environment.TickCount;
 
-                while (svgPreviewControl.Controls.Count == 0 && Environment.TickCount < beforeTick + ThreeSecondsInMilliseconds)
+                while (svgPreviewControl.Controls.Count == 0 && Environment.TickCount < beforeTick + HardTimeoutInMilliseconds)
                 {
                     Application.DoEvents();
                     Thread.Sleep(SleepTimeInMilliseconds);
@@ -146,17 +147,12 @@ namespace SvgPreviewHandlerUnitTests
             // Arrange
             using (var svgPreviewControl = new SvgPreviewControl())
             {
-                var svgBuilder = new StringBuilder();
-                svgBuilder.AppendLine("<svg width =\"200\" height=\"200\" xmlns=\"http://www.w3.org/2000/svg\" xmlns:xlink=\"http://www.w3.org/1999/xlink\">");
-                svgBuilder.AppendLine("\t<script>alert(\"hello\")</script>");
-                svgBuilder.AppendLine("</svg>");
-
                 // Act
-                svgPreviewControl.DoPreview(GetMockStream(svgBuilder.ToString()));
+                svgPreviewControl.DoPreview("HelperFiles/file2.svg");
 
                 int beforeTick = Environment.TickCount;
 
-                while (svgPreviewControl.Controls.Count < 2 && Environment.TickCount < beforeTick + ThreeSecondsInMilliseconds)
+                while (svgPreviewControl.Controls.Count < 2 && Environment.TickCount < beforeTick + HardTimeoutInMilliseconds)
                 {
                     Application.DoEvents();
                     Thread.Sleep(SleepTimeInMilliseconds);
@@ -175,18 +171,11 @@ namespace SvgPreviewHandlerUnitTests
             // Arrange
             using (var svgPreviewControl = new SvgPreviewControl())
             {
-                var svgBuilder = new StringBuilder();
-                svgBuilder.AppendLine("<svg viewBox=\"0 0 100 100\" xmlns=\"http://www.w3.org/2000/svg\">");
-                svgBuilder.AppendLine("\t<circle cx=\"50\" cy=\"50\" r=\"50\">");
-                svgBuilder.AppendLine("\t</circle>");
-                svgBuilder.AppendLine("</svg>");
-
-                // Act
-                svgPreviewControl.DoPreview(GetMockStream(svgBuilder.ToString()));
+                svgPreviewControl.DoPreview("HelperFiles/file1.svg");
 
                 int beforeTick = Environment.TickCount;
 
-                while (svgPreviewControl.Controls.Count == 0 && Environment.TickCount < beforeTick + ThreeSecondsInMilliseconds)
+                while (svgPreviewControl.Controls.Count == 0 && Environment.TickCount < beforeTick + HardTimeoutInMilliseconds)
                 {
                     Application.DoEvents();
                     Thread.Sleep(SleepTimeInMilliseconds);
@@ -204,15 +193,11 @@ namespace SvgPreviewHandlerUnitTests
             // Arrange
             using (var svgPreviewControl = new SvgPreviewControl())
             {
-                var svgBuilder = new StringBuilder();
-                svgBuilder.AppendLine("<svg width =\"200\" height=\"200\" xmlns=\"http://www.w3.org/2000/svg\" xmlns:xlink=\"http://www.w3.org/1999/xlink\">");
-                svgBuilder.AppendLine("\t<script>alert(\"hello\")</script>");
-                svgBuilder.AppendLine("</svg>");
-                svgPreviewControl.DoPreview(GetMockStream(svgBuilder.ToString()));
+                svgPreviewControl.DoPreview("HelperFiles/file2.svg");
 
                 int beforeTick = Environment.TickCount;
 
-                while (svgPreviewControl.Controls.Count == 0 && Environment.TickCount < beforeTick + ThreeSecondsInMilliseconds)
+                while (svgPreviewControl.Controls.Count == 0 && Environment.TickCount < beforeTick + HardTimeoutInMilliseconds)
                 {
                     Application.DoEvents();
                     Thread.Sleep(SleepTimeInMilliseconds);
@@ -231,32 +216,6 @@ namespace SvgPreviewHandlerUnitTests
                 Assert.AreEqual(initialTextBoxWidth, initialParentWidth);
                 Assert.AreEqual(textBox.Width, finalParentWidth);
             }
-        }
-
-        private static IStream GetMockStream(string streamData)
-        {
-            var mockStream = new Mock<IStream>();
-            var streamBytes = Encoding.UTF8.GetBytes(streamData);
-
-            var streamMock = new Mock<IStream>();
-            var firstCall = true;
-            streamMock
-                .Setup(x => x.Read(It.IsAny<byte[]>(), It.IsAny<int>(), It.IsAny<IntPtr>()))
-                .Callback<byte[], int, IntPtr>((buffer, countToRead, bytesReadPtr) =>
-                {
-                    if (firstCall)
-                    {
-                        Array.Copy(streamBytes, 0, buffer, 0, streamBytes.Length);
-                        Marshal.WriteInt32(bytesReadPtr, streamBytes.Length);
-                        firstCall = false;
-                    }
-                    else
-                    {
-                        Marshal.WriteInt32(bytesReadPtr, 0);
-                    }
-                });
-
-            return streamMock.Object;
         }
     }
 }
