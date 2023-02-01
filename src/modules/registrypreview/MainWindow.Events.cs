@@ -246,7 +246,7 @@ namespace RegistryPreview
         }
 
         /// <summary>
-        /// Merges the currently saved file into the Registy Editor; UAC is handled by the request to open
+        /// Merges the currently saved file into the Registry Editor; UAC is handled by the request to open
         /// </summary>   
         private async void writeButton_Click(object sender, RoutedEventArgs e)
         {
