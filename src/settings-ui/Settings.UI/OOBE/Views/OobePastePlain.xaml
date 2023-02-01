@@ -23,10 +23,6 @@
                     x:Name="HotkeyControl"
                     x:Uid="Oobe_PastePlain_HowToUse" />
 
-                <TextBlock
-                    x:Uid="Oobe_TipsAndTricks"
-                    Style="{ThemeResource OobeSubtitleStyle}" />
-
                 <StackPanel
                     Margin="0,24,0,0"
                     Orientation="Horizontal"

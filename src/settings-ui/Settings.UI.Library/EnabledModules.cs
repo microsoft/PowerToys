@@ -291,6 +291,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
                 {
                     LogTelemetryEvent(value);
                     pastePlain = value;
+                    NotifyChange();
                 }
             }
         }
