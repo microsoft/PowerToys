@@ -46,7 +46,6 @@ internal static class Program
         if (currentDpiAwareness != desiredDpiAwareness)
         {
             // try to set the current process's dpi awareness level.
-            // see https://learn.microsoft.com/en-us/dotnet/desktop/winforms/high-dpi-support-in-windows-forms?view=netframeworkdesktop-4.8
             hResult = Shcore.SetProcessDpiAwareness(desiredDpiAwareness);
             if (hResult != Shcore.S_OK)
             {

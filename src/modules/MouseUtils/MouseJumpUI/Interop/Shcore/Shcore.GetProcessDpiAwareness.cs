@@ -15,9 +15,6 @@ internal static partial class Shcore
     /// <param name="hProcess">Handle of the process that is being queried. If this parameter is NULL, the current process is queried.</param>
     /// <param name="value">The DPI awareness of the specified process. Possible values are from the PROCESS_DPI_AWARENESS enumeration.</param>
     /// <returns></returns>
-    /// <remarks>
-    /// See https://learn.microsoft.com/en-us/windows/win32/api/shellscalingapi/nf-shellscalingapi-getprocessdpiawareness
-    /// </remarks>
     /// <returns>
     /// This function returns one of the following values.
     ///

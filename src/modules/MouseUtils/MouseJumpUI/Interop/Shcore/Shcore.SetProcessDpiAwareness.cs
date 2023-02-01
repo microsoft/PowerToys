@@ -34,9 +34,6 @@ internal static partial class Shcore
     ///   </tr>
     /// </table>
     /// </returns>
-    /// <remarks>
-    /// See https://learn.microsoft.com/en-us/windows/win32/api/shellscalingapi/nf-shellscalingapi-setprocessdpiawareness
-    /// </remarks>
     [LibraryImport("shcore.dll")]
     public static partial int SetProcessDpiAwareness(
         PROCESS_DPI_AWARENESS value);
