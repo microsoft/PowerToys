@@ -39,7 +39,7 @@ namespace RegistryPreview
                 // if true, the app will not close
                 args.Handled = true;
 
-                // ask the user if they want to save, discard or cancel the close; strings must be loaded here and passed in to avoid timing issues
+                // ask the user if they want to save, discard or cancel the close; strings must be loaded here and passed to avoid timing issues
                 HandleDirtyClosing(
                     m_resourceLoader.GetString("YesNoCancelDialogTitle"),
                     m_resourceLoader.GetString("YesNoCancelDialogContent"),
@@ -110,7 +110,7 @@ namespace RegistryPreview
 
             textBox.Focus(FocusState.Programmatic);
 
-            // hookup the event handler here to avoid accidental enablements to Save
+            // hookup the event handler here to avoid accidental ability to Save
             textBox.TextChanged += textBox_TextChanged;
         }
 
@@ -237,7 +237,7 @@ namespace RegistryPreview
         }
 
         /// <summary>
-        /// Opens the Registy Editor; UAC is handled by the request to open
+        /// Opens the Registry Editor; UAC is handled by the request to open
         /// </summary>   
         private void registryButton_Click(object sender, RoutedEventArgs e)
         {
