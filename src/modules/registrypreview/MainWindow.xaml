@@ -1,7 +1,6 @@
 ﻿<Window
     x:Class="RegistryPreview.MainWindow"
     xmlns:controls="using:CommunityToolkit.WinUI.UI.Controls"
-    xmlns:primatives="using:CommunityToolkit.WinUI.UI.Controls.Primitives"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:local="using:RegistryPreview"
