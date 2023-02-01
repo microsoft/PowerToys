@@ -42,6 +42,11 @@
     <Optimize>true</Optimize>
   </PropertyGroup>
   <ItemGroup>
+    <Content Include="NLog.config">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+  <ItemGroup>
     <PackageReference Include="NLog" Version="5.0.4" />
   </ItemGroup>
 </Project>
