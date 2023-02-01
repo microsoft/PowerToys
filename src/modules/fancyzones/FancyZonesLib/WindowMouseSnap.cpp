@@ -125,7 +125,7 @@ void WindowMouseSnap::MoveSizeEnd()
         }
         else if (m_currentWorkArea)
         {
-            m_currentWorkArea->MoveWindowIntoZoneByIndexSet(m_window, m_highlightedZones.Zones());
+            m_currentWorkArea->Snap(m_window, m_highlightedZones.Zones());
         }
     }
     else

@@ -47,11 +47,10 @@ public:
     ZoneIndexSet GetWindowZoneIndexes(HWND window) const;
 
     void MoveWindowIntoZoneByIndex(HWND window, ZoneIndex index);
-    void MoveWindowIntoZoneByIndexSet(HWND window, const ZoneIndexSet& indexSet, bool updatePosition = true);
     bool MoveWindowIntoZoneByDirectionAndIndex(HWND window, DWORD vkCode, bool cycle);
 
     void InitSnappedWindows();
-    void Snap(HWND window, const ZoneIndexSet& zones);
+    void Snap(HWND window, const ZoneIndexSet& zones, bool updatePosition = true);
     void Unsnap(HWND window);
 
     void UpdateActiveZoneSet();

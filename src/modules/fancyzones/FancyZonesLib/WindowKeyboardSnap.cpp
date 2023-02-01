@@ -188,7 +188,7 @@ bool WindowKeyboardSnap::SnapHotkeyBasedOnPosition(HWND window, DWORD vkCode, HM
             const auto& [trueZoneIdx, workArea] = zoneRectsInfo[chosenIdx];
             if (workArea)
             {
-                workArea->MoveWindowIntoZoneByIndexSet(window, { trueZoneIdx });
+                workArea->Snap(window, { trueZoneIdx });
                 Trace::FancyZones::KeyboardSnapWindowToZone(workArea->GetLayout().get(), workArea->GetLayoutWindows());
             }
 
@@ -237,7 +237,7 @@ bool WindowKeyboardSnap::SnapHotkeyBasedOnPosition(HWND window, DWORD vkCode, HM
 
             if (workArea)
             {
-                workArea->MoveWindowIntoZoneByIndexSet(window, { trueZoneIdx });
+                workArea->Snap(window, { trueZoneIdx });
                 Trace::FancyZones::KeyboardSnapWindowToZone(workArea->GetLayout().get(), workArea->GetLayoutWindows());
             }
 
@@ -297,13 +297,13 @@ bool WindowKeyboardSnap::MoveByDirectionAndPosition(HWND window, DWORD vkCode, b
     }
 
     const auto& layout = workArea->GetLayout();
+    const auto& zones = layout->Zones();
     const auto& layoutWindows = workArea->GetLayoutWindows();
-    if (!layout || layout->Zones().empty())
+    if (!layout || zones.empty())
     {
         return false;
     }
 
-    const auto& zones = layout->Zones();
     std::vector<bool> usedZoneIndices(zones.size(), false);
     auto windowZones = layoutWindows.GetZoneIndexSetFromWindow(window);
 
@@ -458,10 +458,6 @@ bool WindowKeyboardSnap::Extend(HWND window, DWORD vkCode, WorkArea* const workA
         m_extendData.windowFinalIndex = targetZone;
         resultIndexSet = layout->GetCombinedZoneRange(m_extendData.windowInitialIndexSet, { targetZone });
     }
-
-    const auto rect = layout->GetCombinedZonesRect(resultIndexSet);
-    const auto adjustedRect = FancyZonesWindowUtils::AdjustRectForSizeWindowToRect(window, rect, workArea->GetWorkAreaWindow());
-    FancyZonesWindowUtils::SizeWindowToRect(window, adjustedRect);
 
     workArea->Snap(window, resultIndexSet);
 
