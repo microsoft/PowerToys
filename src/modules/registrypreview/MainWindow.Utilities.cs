@@ -495,7 +495,7 @@ namespace RegistryPreview
 
         /// <summary>
         /// Method will open the Registry Editor or merge the current REG file into the Registry via the Editor
-        /// Process will prompt for elevation of previledge if it needs it.
+        /// Process will prompt for elevation if it needs it.
         /// </summary>   
         private void OpenRegistryEditor(string fileMerge)
         {
@@ -556,7 +556,7 @@ namespace RegistryPreview
         {
             ChangeCursor(gridPreview, true);
 
-            // set up the filesteam for all writing
+            // set up the FileStream for all writing
             FileStream fileStream = null;
 
             try
@@ -590,7 +590,7 @@ namespace RegistryPreview
             }
             catch
             {
-                // this catch handles all other excpetions thrown when trying to write the file out
+                // this catch handles all other exceptions thrown when trying to write the file out
                 ShowMessageBox(
                     m_resourceLoader.GetString("ErrorDialogTitle"),
                     m_resourceLoader.GetString("FileSaveError"),
