@@ -13,7 +13,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
     public class PowerPreviewProperties
     {
         public const string DefaultStlThumbnailColor = "#FFC924";
-        public const int DefaultMonacoMaxFileSize = 50000;
+        public const int DefaultMonacoMaxFileSize = 50;
 
         private bool enableSvgPreview = true;
 

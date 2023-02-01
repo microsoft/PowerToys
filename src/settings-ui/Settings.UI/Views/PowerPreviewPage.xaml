@@ -83,8 +83,8 @@
                                 IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.MonacoRenderIsEnabled}">
                                 <NumberBox
                                     MinWidth="{StaticResource SettingActionControlMinWidth}"
-                                    Maximum="100000"
-                                    Minimum="2000"
+                                    Maximum="100"
+                                    Minimum="2"
                                     SpinButtonPlacementMode="Compact"
                                     Value="{x:Bind Mode=TwoWay, Path=ViewModel.MonacoPreviewMaxFileSize}" />
                             </labs:SettingsCard>

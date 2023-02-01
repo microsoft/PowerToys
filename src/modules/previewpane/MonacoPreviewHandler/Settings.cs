@@ -66,7 +66,7 @@ namespace Microsoft.PowerToys.PreviewHandler.Monaco
             {
                 try
                 {
-                    return moduleSettings.GetSettings<PowerPreviewSettings>(PowerPreviewSettings.ModuleName).Properties.MonacoPreviewMaxFileSize.Value;
+                    return moduleSettings.GetSettings<PowerPreviewSettings>(PowerPreviewSettings.ModuleName).Properties.MonacoPreviewMaxFileSize.Value * 1000;
                 }
                 catch (FileNotFoundException)
                 {
