@@ -127,54 +127,6 @@ WorkArea::~WorkArea()
     windowPool.FreeZonesOverlayWindow(m_window);
 }
 
-bool WorkArea::MoveWindowIntoZoneByDirectionAndIndex(HWND window, DWORD vkCode, bool cycle)
-{
-    if (!m_layout || m_layout->Zones().empty())
-    {
-        return false;
-    }
-
-    auto zoneIndexes = m_layoutWindows.GetZoneIndexSetFromWindow(window);
-    const auto numZones = m_layout->Zones().size();
-
-    // The window was not assigned to any zone here
-    if (zoneIndexes.size() == 0)
-    {
-        const ZoneIndex zone = vkCode == VK_LEFT ? numZones - 1 : 0; 
-        Snap(window, { zone });
-    }
-    else
-    {
-        const ZoneIndex oldId = zoneIndexes[0];
-
-        // We reached the edge
-        if ((vkCode == VK_LEFT && oldId == 0) || (vkCode == VK_RIGHT && oldId == static_cast<int64_t>(numZones) - 1))
-        {
-            if (!cycle)
-            {
-                return false;
-            }
-
-            const ZoneIndex zone = vkCode == VK_LEFT ? numZones - 1 : 0;
-            Snap(window, { zone });
-        }
-        else
-        {
-            // We didn't reach the edge
-            if (vkCode == VK_LEFT)
-            {
-                Snap(window, { oldId - 1 });
-            }
-            else
-            {
-                Snap(window, { oldId + 1 });
-            }
-        }
-    }
-
-    return true;
-}
-
 void WorkArea::Snap(HWND window, const ZoneIndexSet& zones, bool updatePosition)
 {
     if (!m_layout || zones.empty())

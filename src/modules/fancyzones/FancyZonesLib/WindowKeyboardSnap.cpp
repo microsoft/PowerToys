@@ -289,6 +289,62 @@ bool WindowKeyboardSnap::ProcessDirectedSnapHotkey(HWND window, DWORD vkCode, bo
     return result;
 }
 
+bool WindowKeyboardSnap::MoveByDirectionAndIndex(HWND window, DWORD vkCode, bool cycle, WorkArea* const workArea)
+{
+    if (!workArea)
+    {
+        return false;
+    }
+
+    const auto& layout = workArea->GetLayout();
+    const auto& zones = layout->Zones();
+    const auto& layoutWindows = workArea->GetLayoutWindows();
+    if (!layout || zones.empty())
+    {
+        return false;
+    }
+
+    auto zoneIndexes = layoutWindows.GetZoneIndexSetFromWindow(window);
+    const auto numZones = zones.size();
+
+    // The window was not assigned to any zone here
+    if (zoneIndexes.size() == 0)
+    {
+        const ZoneIndex zone = vkCode == VK_LEFT ? numZones - 1 : 0;
+        workArea->Snap(window, { zone });
+    }
+    else
+    {
+        const ZoneIndex oldId = zoneIndexes[0];
+
+        // We reached the edge
+        if ((vkCode == VK_LEFT && oldId == 0) || (vkCode == VK_RIGHT && oldId == static_cast<int64_t>(numZones) - 1))
+        {
+            if (!cycle)
+            {
+                return false;
+            }
+
+            const ZoneIndex zone = vkCode == VK_LEFT ? numZones - 1 : 0;
+            workArea->Snap(window, { zone });
+        }
+        else
+        {
+            // We didn't reach the edge
+            if (vkCode == VK_LEFT)
+            {
+                workArea->Snap(window, { oldId - 1 });
+            }
+            else
+            {
+                workArea->Snap(window, { oldId + 1 });
+            }
+        }
+    }
+
+    return true;
+}
+
 bool WindowKeyboardSnap::MoveByDirectionAndPosition(HWND window, DWORD vkCode, bool cycle, WorkArea* const workArea)
 {
     if (!workArea)
