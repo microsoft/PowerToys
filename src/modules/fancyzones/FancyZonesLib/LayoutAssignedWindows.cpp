@@ -11,36 +11,10 @@ LayoutAssignedWindows::LayoutAssignedWindows()
     
 }
 
-void LayoutAssignedWindows::Assign(HWND window, const ZoneIndexSet& zones, bool resetExtendMode /*= true*/)
+void LayoutAssignedWindows::Assign(HWND window, const ZoneIndexSet& zones)
 {
     Dismiss(window);
-
-    // clear info about extension
-    if (resetExtendMode)
-    {
-        m_extendData.window = window;
-        m_extendData.windowFinalIndex = -1;
-        m_extendData.windowInitialIndexSet.clear();
-    }
     
-    for (const auto& index : zones)
-    {
-        m_windowIndexSet[window].push_back(index);
-    }
-
-    if (FancyZonesSettings::settings().disableRoundCorners)
-    {
-        FancyZonesWindowUtils::DisableRoundCorners(window);
-    }
-
-    auto tabSortKeyWithinZone = FancyZonesWindowProperties::GetTabSortKeyWithinZone(window);
-    InsertWindowIntoZone(window, tabSortKeyWithinZone, zones);
-}
-
-void LayoutAssignedWindows::Extend(HWND window, const ZoneIndexSet& zones)
-{
-    Dismiss(window);
-
     for (const auto& index : zones)
     {
         m_windowIndexSet[window].push_back(index);

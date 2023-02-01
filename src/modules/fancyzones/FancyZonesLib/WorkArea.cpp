@@ -373,7 +373,7 @@ void WorkArea::SnapWindow(HWND window, const ZoneIndexSet& zones, bool extendMod
         return;
     }
 
-    m_layoutWindows->Assign(window, zones, !extendMode);
+    m_layoutWindows->Assign(window, zones);
 
     auto guidStr = FancyZonesUtils::GuidToString(m_layout->Id());
     if (guidStr.has_value())

@@ -16,8 +16,7 @@ public :
     LayoutAssignedWindows();
     ~LayoutAssignedWindows() = default;
 
-    void Assign(HWND window, const ZoneIndexSet& zones, bool resetExtendMode = true);
-    void Extend(HWND window, const ZoneIndexSet& zones);
+    void Assign(HWND window, const ZoneIndexSet& zones);
     void Dismiss(HWND window);
 
     std::map<HWND, ZoneIndexSet> SnappedWindows() const noexcept;
