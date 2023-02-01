@@ -132,7 +132,7 @@
   <data name="FileSaveError" xml:space="preserve">
     <value>The REG file cannot be written to.</value>
   </data>
-  <data name="InvalidregistryFile" xml:space="preserve">
+  <data name="InvalidRegistryFile" xml:space="preserve">
     <value> doesn't appear to be a valid registry file!</value>
   </data>
   <data name="InvalidRegistryFileTitle" xml:space="preserve">
