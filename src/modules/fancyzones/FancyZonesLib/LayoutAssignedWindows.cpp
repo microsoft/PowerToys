@@ -8,17 +8,21 @@
 
 LayoutAssignedWindows::LayoutAssignedWindows()
 {
-    m_extendData = std::make_unique<ExtendWindowModeData>();
+    
 }
 
-void LayoutAssignedWindows::Assign(HWND window, const ZoneIndexSet& zones)
+void LayoutAssignedWindows::Assign(HWND window, const ZoneIndexSet& zones, bool resetExtendMode /*= true*/)
 {
     Dismiss(window);
 
-    // clear info about extension 
-    std::erase_if(m_extendData->windowInitialIndexSet, [window](const auto& item) { return item.first == window; });
-    std::erase_if(m_extendData->windowFinalIndex, [window](const auto& item) { return item.first == window; });
-
+    // clear info about extension
+    if (resetExtendMode)
+    {
+        m_extendData.window = window;
+        m_extendData.windowFinalIndex = -1;
+        m_extendData.windowInitialIndexSet.clear();
+    }
+    
     for (const auto& index : zones)
     {
         m_windowIndexSet[window].push_back(index);
@@ -133,7 +137,7 @@ void LayoutAssignedWindows::CycleWindows(HWND window, bool reverse)
     }
 }
 
-const std::unique_ptr<LayoutAssignedWindows::ExtendWindowModeData>& LayoutAssignedWindows::ExtendWindowData()
+LayoutAssignedWindows::ExtendWindowModeData& LayoutAssignedWindows::ExtendWindowData()
 {
     return m_extendData;
 }

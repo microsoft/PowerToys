@@ -284,7 +284,7 @@ bool WorkArea::ExtendWindowByDirectionAndPosition(HWND window, DWORD vkCode)
 
     const auto& zones = m_layout->Zones();
     auto appliedZones = m_layoutWindows->GetZoneIndexSetFromWindow(window);
-    const auto& extendModeData = m_layoutWindows->ExtendWindowData();
+    auto& extendModeData = m_layoutWindows->ExtendWindowData();
 
     std::vector<bool> usedZoneIndices(zones.size(), false);
     std::vector<RECT> zoneRects;
@@ -292,11 +292,10 @@ bool WorkArea::ExtendWindowByDirectionAndPosition(HWND window, DWORD vkCode)
 
     // If selectManyZones = true for the second time, use the last zone into which we moved
     // instead of the window rect and enable moving to all zones except the old one
-    auto finalIndexIt = extendModeData->windowFinalIndex.find(window);
-    if (finalIndexIt != extendModeData->windowFinalIndex.end())
+    if (window == extendModeData.window && extendModeData.windowFinalIndex != -1)
     {
-        usedZoneIndices[finalIndexIt->second] = true;
-        windowRect = zones.at(finalIndexIt->second).GetZoneRect();
+        usedZoneIndices[extendModeData.windowFinalIndex] = true;
+        windowRect = zones.at(extendModeData.windowFinalIndex).GetZoneRect();
     }
     else
     {
@@ -309,6 +308,10 @@ bool WorkArea::ExtendWindowByDirectionAndPosition(HWND window, DWORD vkCode)
         windowRect.bottom -= m_workAreaRect.top();
         windowRect.left -= m_workAreaRect.left();
         windowRect.right -= m_workAreaRect.left();
+
+        extendModeData.window = window;
+        extendModeData.windowFinalIndex = -1;
+        extendModeData.windowInitialIndexSet.clear();
     }
 
     for (size_t i = 0; i < zones.size(); i++)
@@ -327,34 +330,35 @@ bool WorkArea::ExtendWindowByDirectionAndPosition(HWND window, DWORD vkCode)
         ZoneIndexSet resultIndexSet;
 
         // First time with selectManyZones = true for this window?
-        if (finalIndexIt == extendModeData->windowFinalIndex.end())
+        if (extendModeData.windowFinalIndex == -1)
         {
             // Already zoned?
             if (appliedZones.size())
             {
-                extendModeData->windowInitialIndexSet[window] = appliedZones;
-                extendModeData->windowFinalIndex[window] = targetZone;
+                extendModeData.windowInitialIndexSet = appliedZones;
+                extendModeData.windowFinalIndex = targetZone;
                 resultIndexSet = m_layout->GetCombinedZoneRange(appliedZones, { targetZone });
             }
             else
             {
-                extendModeData->windowInitialIndexSet[window] = { targetZone };
-                extendModeData->windowFinalIndex[window] = targetZone;
+                extendModeData.windowInitialIndexSet = { targetZone };
+                extendModeData.windowFinalIndex = targetZone;
                 resultIndexSet = { targetZone };
             }
         }
         else
         {
-            auto deletethis = extendModeData->windowInitialIndexSet[window];
-            extendModeData->windowFinalIndex[window] = targetZone;
-            resultIndexSet = m_layout->GetCombinedZoneRange(extendModeData->windowInitialIndexSet[window], { targetZone });
+            auto deletethis = extendModeData.windowInitialIndexSet;
+            extendModeData.windowFinalIndex = targetZone;
+            resultIndexSet = m_layout->GetCombinedZoneRange(extendModeData.windowInitialIndexSet, { targetZone });
         }
 
         const auto rect = m_layout->GetCombinedZonesRect(resultIndexSet);
         const auto adjustedRect = FancyZonesWindowUtils::AdjustRectForSizeWindowToRect(window, rect, m_window);
         FancyZonesWindowUtils::SizeWindowToRect(window, adjustedRect);
-
-        SnapWindow(window, resultIndexSet, true);
+        
+        m_layoutWindows->Extend(window, resultIndexSet);
+        SnapWindow(window, resultIndexSet, true /* extend mode */);
 
         return true;
     }
@@ -362,22 +366,15 @@ bool WorkArea::ExtendWindowByDirectionAndPosition(HWND window, DWORD vkCode)
     return false;
 }
 
-void WorkArea::SnapWindow(HWND window, const ZoneIndexSet& zones, bool extend)
+void WorkArea::SnapWindow(HWND window, const ZoneIndexSet& zones, bool extendMode /* = false*/)
 {
     if (!m_layoutWindows || !m_layout)
     {
         return;
     }
 
-    if (extend)
-    {
-        m_layoutWindows->Extend(window, zones);
-    }
-    else
-    {
-        m_layoutWindows->Assign(window, zones);
-    }
-    
+    m_layoutWindows->Assign(window, zones, !extendMode);
+
     auto guidStr = FancyZonesUtils::GuidToString(m_layout->Id());
     if (guidStr.has_value())
     {

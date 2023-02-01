@@ -7,15 +7,16 @@ class LayoutAssignedWindows
 public:
     struct ExtendWindowModeData
     {
-        std::map<HWND, ZoneIndexSet> windowInitialIndexSet;
-        std::map<HWND, ZoneIndex> windowFinalIndex;
+        HWND window{ nullptr };
+        ZoneIndexSet windowInitialIndexSet{};
+        ZoneIndex windowFinalIndex{ -1 };
     };
 
 public :
     LayoutAssignedWindows();
     ~LayoutAssignedWindows() = default;
 
-    void Assign(HWND window, const ZoneIndexSet& zones);
+    void Assign(HWND window, const ZoneIndexSet& zones, bool resetExtendMode = true);
     void Extend(HWND window, const ZoneIndexSet& zones);
     void Dismiss(HWND window);
 
@@ -25,12 +26,12 @@ public :
     
     void CycleWindows(HWND window, bool reverse);
 
-    const std::unique_ptr<ExtendWindowModeData>& ExtendWindowData();
+    ExtendWindowModeData& ExtendWindowData();
 
 private:
     std::map<HWND, ZoneIndexSet> m_windowIndexSet{};
     std::map<ZoneIndexSet, std::vector<HWND>> m_windowsByIndexSets{};
-    std::unique_ptr<ExtendWindowModeData> m_extendData{}; // Needed for ExtendWindowByDirectionAndPosition
+    ExtendWindowModeData m_extendData{}; // Needed for ExtendWindowByDirectionAndPosition
 
     void InsertWindowIntoZone(HWND window, std::optional<size_t> tabSortKeyWithinZone, const ZoneIndexSet& indexSet);
     HWND GetNextZoneWindow(ZoneIndexSet indexSet, HWND current, bool reverse) noexcept;
