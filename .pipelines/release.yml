@@ -22,6 +22,7 @@ parameters:
 
 variables:
   IsPipeline: 1 # The installer uses this to detect whether it should pick up localizations
+  SkipCppCodeAnalysis: 1 # Skip the code analysis to speed up release CI. It runs on PR CI, anyway
 
 name: $(BuildDefinitionName)_$(date:yyMM).$(date:dd)$(rev:rrr)
 resources:
@@ -38,6 +39,8 @@ jobs:
           ${{ config }}_${{ platform }}:
             BuildConfiguration: ${{ config }}
             BuildPlatform: ${{ platform }}
+            NUGET_RESTORE_MSBUILD_ARGS: /p:Platform=${{ platform }} # Required for nuget to work due to self contained
+            NODE_OPTIONS: --max_old_space_size=16384
   displayName: Build
   timeoutInMinutes: 120 # Some of the loc stuff adds quite a bit of time.
   cancelTimeoutInMinutes: 1
@@ -314,7 +317,7 @@ jobs:
     inputs:
       solution: '**/installer/PowerToysSetup.sln'
       vsVersion: 17.0
-      msbuildArgs: /p:CIBuild=true /bl:$(Build.SourcesDirectory)\msbuild.binlog /t:PowerToysSetupCustomActions
+      msbuildArgs: /p:CIBuild=true /bl:$(Build.SourcesDirectory)\msbuild.binlog /t:PowerToysSetupCustomActions /p:RunBuildEvents=true
       platform: $(BuildPlatform)
       configuration: $(BuildConfiguration)
       maximumCpuCount: true
@@ -359,7 +362,7 @@ jobs:
     inputs:
       solution: '**/installer/PowerToysSetup.sln'
       vsVersion: 17.0
-      msbuildArgs: /p:CIBuild=true /target:PowerToysInstaller /bl:$(Build.SourcesDirectory)\msbuild.binlog
+      msbuildArgs: /p:CIBuild=true /target:PowerToysInstaller /bl:$(Build.SourcesDirectory)\msbuild.binlog /p:RunBuildEvents=false
       platform: $(BuildPlatform)
       configuration: $(BuildConfiguration)
       clean: false # don't undo our hard work above by deleting the CustomActions dll
@@ -545,7 +548,7 @@ jobs:
   - task: PublishBuildArtifacts@1
     displayName: 'Publish Artifact: GPO Files'
     inputs:
-      PathtoPublish: doc\gpo\assets
+      PathtoPublish: src\gpo\assets
       ArtifactName: GroupPolicyObjectsFiles
 
 

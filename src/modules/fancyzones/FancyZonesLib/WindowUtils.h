@@ -36,4 +36,6 @@ namespace FancyZonesWindowUtils
 
     void DisableRoundCorners(HWND window) noexcept;
     void ResetRoundCornersPreference(HWND window) noexcept;
+
+    bool IsCursorTypeIndicatingSizeEvent();
 }

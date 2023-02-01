@@ -74,7 +74,6 @@ public:
     // These are the settings shown on the settings page along with their current values.
     virtual bool get_config(wchar_t* buffer, int* buffer_size) override
     {
-        return false;
         HINSTANCE hinstance = reinterpret_cast<HINSTANCE>(&__ImageBase);
 
         // Create a Settings object.

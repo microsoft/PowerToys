@@ -30,15 +30,14 @@ Microsoft PowerToys is a set of utilities for power users to tune and streamline
 
 - Windows 11 or Windows 10 version 2004 (code name 20H1 / build number 19041) or newer.
 - Our installer will install the following items:
-   - [.NET 6.0.10 Desktop Runtime](https://dotnet.microsoft.com/download/dotnet/6.0#runtime-desktop-6.0.10).
    - [Microsoft Edge WebView2 Runtime](https://go.microsoft.com/fwlink/p/?LinkId=2124703) bootstrapper. This will install the latest version.
 
 ### Via GitHub with EXE [Recommended]
 
 Go to [Microsoft PowerToys GitHub releases page][github-release-link], click on `Assets` at the bottom to show the files available in the release. Please use the appropriate the PowerToys installer that matches your machine's architecture. For most, it is `x64`.
  
- - **For x64 processors (most common):** [PowerToysSetup-0.64.1-x64.exe](https://github.com/microsoft/PowerToys/releases/download/v0.64.1/PowerToysSetup-0.64.1-x64.exe)
- - **For ARM64 processors:** [PowerToysSetup-0.64.1-arm64.exe](https://github.com/microsoft/PowerToys/releases/download/v0.64.1/PowerToysSetup-0.64.1-arm64.exe)
+ - **For x64 processors (most common):** [PowerToysSetup-0.66.0-x64.exe](https://github.com/microsoft/PowerToys/releases/download/v0.66.0/PowerToysSetup-0.66.0-x64.exe)
+ - **For ARM64 processors:** [PowerToysSetup-0.66.0-arm64.exe](https://github.com/microsoft/PowerToys/releases/download/v0.66.0/PowerToysSetup-0.66.0-arm64.exe)
 
 This is our preferred method.
 
@@ -55,7 +54,7 @@ winget install Microsoft.PowerToys -s winget
 
 ### Other install methods
 
-There are [community driven install methods](./doc/unofficialInstallMethods.md) such as Chocolatey and Scoop.  If these are your preferred install solutions, this will have the install instructions.
+There are [community driven install methods](./doc/unofficialInstallMethods.md) such as Chocolatey and Scoop. If these are your preferred install solutions, this will have the install instructions.
 
 ## Contributing
 
@@ -73,121 +72,106 @@ For guidance on developing for PowerToys, please read the [developer docs](/doc/
 
 Our [prioritized roadmap][roadmap] of features and utilities that the core team is focusing on.
 
-### 0.64 - October 2022 Update
+### 0.66 - December 2022 Update
 
-In this release, we focused on releasing new features and improvements.
+In this release, we focused on stability and improvements.
 
 **Highlights**
 
-- New utility: File Locksmith allows seeing which processes are currently using the selected files.
-- New utility: Hosts File Editor allows you to edit your hosts file in an Editor UI. Thanks [@davidegiacometti](https://github.com/davidegiacometti)!
-- Settings has a new feature for backing up / restoring the settings from a file. Thanks [@jefflord](https://github.com/jefflord)!
-- FancyZones allows you to set defaults for horizontal/vertical screens to get better intended behavior for new screens and cases where a monitor ID resets.
-- PowerToys ships with Group Policy Objects settings for force disabling and enabling PowerToys utilities in organizations. Check the [GPO docs](https://github.com/microsoft/PowerToys/tree/main/doc/gpo) for more details.
-- Added a warning about deprecating Video Conference Mute in the future (v0.67), please check https://github.com/microsoft/PowerToys/issues/21473 for more information.
+- PowerToy utilities now ship with self-contained .NET 7, meaning it's not necessary to install .NET as part of the installer and it's easier to keep up to date.
+- It's possible to pick which of the installed OCR languages is used by Text Extractor by selecting it in the right-click context menu.
+- Added a setting to sort the order of the accented characters by usage frequency in Quick Accent.
 
-### Known issues
+### General
 
-- The Text Extractor utility [fails to recognize text in some cases on ARM64 devices running Windows 10](https://github.com/microsoft/PowerToys/issues/20278).
-- After installing PowerToys, [the new Windows 11 context menu entries for PowerRename and Image Resizer might not appear before a system restart](https://github.com/microsoft/PowerToys/issues/19124).
-- There are reports of users who are [unable to open the Settings window](https://github.com/microsoft/PowerToys/issues/18015). This is being caused by incompatibilities with some applications (RTSS RivaTuner Statistics Server is a known examples of this). If you're affected by this, please check the  linked issue to verify if any of the presented solutions works for you.
-
-### Always on Top
-
-- Detect and put a window on top again if it's no longer on top.
+- Reduced resource consumption caused by logging. A thread for each logger was being created even for disabled utilities.
+- The .NET 7 dependency is now shipped self-contained within the utilities, using deep links to reduce storage space usage.
 
 ### Color Picker
 
-- Added the hexadecimal integer format. Thanks [@marius-bughiu](https://github.com/marius-bughiu)!
+- Fixed an issue where the custom color formats were not working when picking colors without using the editor.
+- Fixed a crash when using duplicated names for color formats.
+- Added two decimal formats, to distinguish between RGB and BGR.
+- Fixed color name localization, which was not working correctly on 0.65.
 
 ### FancyZones
 
-- Added a way for users to configure default layouts for horizontal and vertical screens.
-- Replaced remaining Number Boxes in FancyZones Editor with Sliders, to improve accessibility for screen readers.
-- Fixed an issue breaking window switching shortcuts.
+- Fixed an editor crash caused by deleting a zone while trying to move it.
+- Reduce the time it takes the tooltip for layout shortcut setting to appear in the editor.
+
+### File explorer add-ons
+
+- Added .log file support to the Monaco preview handler. Thanks [@Eagle3386](https://github.com/Eagle3386)!
 
 ### File Locksmith
 
-- Added a new utility: File Locksmith.
-- Thanks [@niels9001](https://github.com/niels9001) for the design on the UI!
-
-### Group Policy Objects
-
-- Group Policy Objects settings for force disabling and enabling PowerToys utilities.
-- Thanks [@htcfreek](https://github.com/htcfreek) for your help in reviewing to make sure the shipped settings conform to system administrators expectations!
+- Fixed an issue causing File Locksmith to hang when looking for open handles in some machines.
 
 ### Hosts File Editor
 
-- Added a new utility: Hosts File Editor. Thanks [@davidegiacometti](https://github.com/davidegiacometti)!
-- Thanks [@niels9001](https://github.com/niels9001) for the design help on the UI!
-- Thanks [@davidegiacometti](https://github.com/davidegiacometti) for fixing the bugs found and adding features up until release!
-- Thanks [@AtariDreams](https://github.com/AtariDreams) for consolidating the packages comparing to the rest of the project!
-- Thanks [@htcfreek](https://github.com/htcfreek) for adding a scrollviewer to the entry editor!
-
-### Keyboard Manager
-
-- Fixed a delay that was not being cancelled properly. Thanks [@AtariDreams](https://github.com/AtariDreams)!
-
-### Mouse Utilities
-
-- Changed the opacity setting to the 1-100 range. Thanks [@davidegiacometti](https://github.com/davidegiacometti)!
+- Added a warning when duplicated entries are detected. Thanks [@davidegiacometti](https://github.com/davidegiacometti)!
 
 ### PowerToys Run
 
-- Changed image loading to release the images in PowerToys Run main executable. This is a try to fix the "app.dark.png" missing issues received after a PowerToys update.
-- Fixed the PowerToys Run hiding after the default action failed. Thanks [@hlaueriksson](https://github.com/hlaueriksson)!
-- Fixed the PowerToys Run allows showing after a context menu action succeeded. Thanks [@hlaueriksson](https://github.com/hlaueriksson)!
+- Support drag and dropping for file results. Thanks [@daniel-richter](https://github.com/daniel-richter)!
 
 ### Quick Accent
 
-- Corrected "Dutch" word to "German". Thanks [@damienleroy](https://github.com/damienleroy)!
-- Added the Portuguese language accents. Thanks [@pcanavar](https://github.com/pcanavar)!
-- Fixed positioning of toolbar on scaled desktops.
-
-### Screen Ruler
-
-- Improved the acrylic brush used in the menu. Thanks [@niels9001](https://github.com/niels9001)!
+- Added support for dark theme. Thanks [@niels9001](https://github.com/niels9001)!
+- Increased default input delay to improve out of the box experience.
+- Fixed a bug causing the first character to not be selected when opening the overlay. Thanks [@davidegiacometti](https://github.com/davidegiacometti)!
+- Fixed the positioning of the overlay when showing near the horizontal edges of the screen.
+- Added additional Pinyin characters. Thanks [@char-46](https://github.com/char-46)!
+- Added Macedonian characters. Thanks [@ad-mca-mk](https://github.com/ad-mca-mk)!
+- Added a setting to sort characters by usage frequency.
+- Added a setting to always start selection in the first character, even when using the arrow keys as the activation method.
 
 ### Settings
 
-- Added a feature to backup/restore settings to/from a file. Thanks [@jefflord](https://github.com/jefflord)!
-- Fixed an issue causing shortcuts shown in OOBE not updating to new values when the window was re-opened.
-- Fixed the "Documents" folder usage in the backup/restore feature. Thanks [@davidegiacometti](https://github.com/davidegiacometti)!
+- Fixed an error that hid the option to keep the display on when using the "Indefinitely Awake" mode.
+- Fixed an accessibility issue causing the navigation bar to not work with narrator in scan mode.
+- Fixed an accessibility issue where the name for the shortcut control was not being read correctly.
+- Tweaked the Color Picker custom color format UI. Thanks [@niels9001](https://github.com/niels9001)!
+- Improved the shortcut control visibility and accessibility. Thanks [@niels9001](https://github.com/niels9001)!
+- Fixed an issue causing the Settings to not be saved correctly on scenarios where the admin user would be different then the user running PowerToys.
+- Added a setting to pick which language should be used by default when using Text Extractor.
 
 ### Text Extractor
 
-- Added a warning about how to install languages for OCR recognition.
-- Fixed the overlay not focusing after the first activation.
-- Added spaces between CJK and non-CJK words. Thanks [@maggch97](https://github.com/maggch97)!
+- Improve behavior for CJK languages by not adding spaces for some characters that don't need them. Thanks [@AO2233](https://github.com/AO2233)!
+- OCR language can now be picked in the right-click context menu.
 
 ### Video Conference Mute
-- Added a setting to hide the Video Conference Mute overlay when muted. Thanks [@akabhirav](https://github.com/akabhirav)!
-- Added a warning about deprecating Video Conference Mute in the future (v0.67), please check https://github.com/microsoft/PowerToys/issues/21473 for more information.
 
-### Installer
+- Reduced resource consumption by not starting the File Watchers when the utility is disabled.
 
-- Added some missing files that were causing Settings and PowerRename to not function correctly on some configurations.
-- Updated the .NET dependency to 6.0.10.
+### Documentation
+
+- Updated the development setup documentation.
+- Improved the Markdown documentation lists numbering in many docs. Thanks [@sanidhyas3s](https://github.com/sanidhyas3s)!
 
 ### Development
 
-- Consolidated nuget packages and removed a few unused packages.
-- Updated the Windows.CppRT to the latest version. Thanks [@AtariDreams](https://github.com/AtariDreams)!
-- Removed the cxxopts dependency, which was no longer used. Thanks [@AtariDreams](https://github.com/AtariDreams)!
-- Updated the cziplob dependency to 0.25. Thanks [@AtariDreams](https://github.com/AtariDreams)!
-- Updated the System.IO.Abstractions dependency. Thanks [@davidegiacometti](https://github.com/davidegiacometti)!
 - Turned on C++ code analysis and incrementally fixing warnings.
-- Added the install method to the issue template on GitHub, since some issues seem to be related to specific installation methods.
-- Automated installer hash creation in the release CI.
-- Simplified use of `.First()` on ImageResizer. Thanks [@AtariDreams](https://github.com/AtariDreams)!
-- Improved and clarified the issues templates. Thanks [@Jay-o-Way](https://github.com/Jay-o-Way)!
-- Fixed a PTRun unit test to be more compatible with .NET 6. Thanks [@AtariDreams](https://github.com/AtariDreams)!
+- C++ code analysis no longer runs on release CI to speed up building release candidates. It still runs on GitHub CI and when building locally to maintain code quality.
+- Cleaned up "to-do" comments referring to disposing memory on C#. Thanks [@davidegiacometti](https://github.com/davidegiacometti)!
+- Added a fabric bot rule for localization issues.
+- Fixed a CI build error after a .NET tools update.
+- Update the Windows App SDK dependency version to 1.2.
+- When building for arm64, the arm64 build tools are now preferred when building on an arm64 device. Thanks [@snickler](https://github.com/snickler)!
+- Updated the C# test framework and removed unused Newtonsoft.Json package references.
+- Updated StyleCop and fixed/enabled more warnings. Thanks [@davidegiacometti](https://github.com/davidegiacometti)!
+- Fixed a language typo in the code. Thanks [@eltociear](https://github.com/eltociear)!
+- Improved code quality around some silent crashes that were being reported to Microsoft servers.
+- Moved the GPO asset files to source instead of docs in the repo.
+- Upgraded the unit test NuGet packages.
 
-#### What is being planned for version 0.65
+#### What is being planned for version 0.67
 
-For [v0.65][github-next-release-work], we'll work on below:
+For [v0.67][github-next-release-work], we'll work on below:
 
-- Ship .NET self contained and shared between utilities
+- Allow installing without UAC.
+- Add a flyout menu to the system tray icon for quick access.
 - Stability / bug fixes
 
 ## PowerToys Community
@@ -215,5 +199,5 @@ The application logs basic telemetry. Our Telemetry Data page (Coming Soon) has 
 [usingPowerToys-docs-link]: https://aka.ms/powertoys-docs
 
 <!-- items that need to be updated release to release -->
-[github-next-release-work]: https://github.com/microsoft/PowerToys/issues?q=is%3Aopen+is%3Aissue+project%3Amicrosoft%2FPowerToys%2F38
-[github-current-release-work]: https://github.com/microsoft/PowerToys/issues?q=is%3Aopen+is%3Aissue+project%3Amicrosoft%2FPowerToys%2F37
+[github-next-release-work]: https://github.com/microsoft/PowerToys/issues?q=is%3Aopen+is%3Aissue+project%3Amicrosoft%2FPowerToys%2F40
+[github-current-release-work]: https://github.com/microsoft/PowerToys/issues?q=is%3Aopen+is%3Aissue+project%3Amicrosoft%2FPowerToys%2F39

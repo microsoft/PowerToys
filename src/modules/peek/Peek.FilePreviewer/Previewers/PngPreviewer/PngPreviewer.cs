@@ -1,22 +1,25 @@
-﻿// Copyright (c) Microsoft Corporation
+// Copyright (c) Microsoft Corporation
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System;
+using System.IO;
+using System.Threading;
+using System.Threading.Tasks;
+using CommunityToolkit.Mvvm.ComponentModel;
+using Microsoft.UI.Dispatching;
+using Microsoft.UI.Xaml.Media.Imaging;
+using Peek.Common;
+using Peek.Common.Extensions;
+using Windows.ApplicationModel.DataTransfer;
+using Windows.Foundation;
+using Windows.Graphics.Imaging;
+using Windows.Storage;
+using Windows.Storage.Streams;
+using File = Peek.Common.Models.File;
+
 namespace Peek.FilePreviewer.Previewers
 {
-    using System;
-    using System.IO;
-    using System.Threading;
-    using System.Threading.Tasks;
-    using CommunityToolkit.Mvvm.ComponentModel;
-    using Microsoft.UI.Dispatching;
-    using Microsoft.UI.Xaml.Media.Imaging;
-    using Peek.Common.Extensions;
-    using Windows.Foundation;
-    using Windows.Graphics.Imaging;
-    using Windows.Storage;
-    using File = Peek.Common.Models.File;
-
     public partial class PngPreviewer : ObservableObject, IBitmapPreviewer
     {
         private readonly uint _png_image_size = 1280;
@@ -27,6 +30,12 @@ namespace Peek.FilePreviewer.Previewers
 
         [ObservableProperty]
         private PreviewState state;
+
+        [ObservableProperty]
+        private Size maxImageSize;
+
+        [ObservableProperty]
+        private double scalingFactor;
 
         public PngPreviewer(File file)
         {
@@ -53,7 +62,7 @@ namespace Peek.FilePreviewer.Previewers
             GC.SuppressFinalize(this);
         }
 
-        public async Task<Size> GetPreviewSizeAsync(CancellationToken cancellationToken)
+        public async Task<Size?> GetPreviewSizeAsync(CancellationToken cancellationToken)
         {
             var propertyImageSize = await PropertyHelper.GetImageSize(File.Path);
             if (propertyImageSize != Size.Empty)
@@ -81,6 +90,23 @@ namespace Peek.FilePreviewer.Previewers
             }
         }
 
+        public async Task CopyAsync()
+        {
+            await Dispatcher.RunOnUiThread(async () =>
+            {
+                var storageFile = await File.GetStorageFileAsync();
+
+                var dataPackage = new DataPackage();
+                dataPackage.SetStorageItems(new StorageFile[1] { storageFile }, false);
+
+                RandomAccessStreamReference imageStreamRef = RandomAccessStreamReference.CreateFromFile(storageFile);
+                dataPackage.Properties.Thumbnail = imageStreamRef;
+                dataPackage.SetBitmap(imageStreamRef);
+
+                Clipboard.SetContent(dataPackage);
+            });
+        }
+
         public static bool IsFileTypeSupported(string fileExt)
         {
             return fileExt == ".png" ? true : false;
@@ -104,14 +130,15 @@ namespace Peek.FilePreviewer.Previewers
             {
                 cancellationToken.ThrowIfCancellationRequested();
 
-                if (!IsFullImageLoaded)
+                await Dispatcher.RunOnUiThread(async () =>
                 {
-                    await Dispatcher.RunOnUiThread(async () =>
+                    cancellationToken.ThrowIfCancellationRequested();
+                    var thumbnail = await ThumbnailHelper.GetThumbnailAsync(File, _png_image_size);
+                    if (!IsFullImageLoaded)
                     {
-                        cancellationToken.ThrowIfCancellationRequested();
-                        Preview = await ThumbnailHelper.GetThumbnailAsync(File.Path, _png_image_size);
-                    });
-                }
+                        Preview = thumbnail;
+                    }
+                });
             });
         }
 

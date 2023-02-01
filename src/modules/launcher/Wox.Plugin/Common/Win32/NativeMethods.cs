@@ -202,6 +202,13 @@ namespace Wox.Plugin.Common.Win32
         /// One or more arguments are not valid.
         /// </summary>
         E_INVALIDARG = 0x80070057,
+
+        /// <summary>
+        /// The operation was canceled by the user. (Error source 7 means Win32.)
+        /// </summary>
+        /// <SeeAlso href="https://learn.microsoft.com/en-us/windows/win32/debug/system-error-codes--1000-1299-"/>
+        /// <SeeAlso href="https://en.wikipedia.org/wiki/HRESULT"/>
+        E_CANCELLED = 0x800704C7,
     }
 
     /// <remarks>

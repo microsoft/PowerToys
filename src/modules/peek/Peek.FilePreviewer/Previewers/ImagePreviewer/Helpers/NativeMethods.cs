@@ -2,12 +2,12 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System;
+using System.Runtime.InteropServices;
+using Peek.Common.Models;
+
 namespace Peek.Common
 {
-    using System;
-    using System.Runtime.InteropServices;
-    using Peek.Common.Models;
-
     public static class NativeMethods
     {
         [DllImport("shell32.dll", CharSet = CharSet.Unicode, SetLastError = true)]

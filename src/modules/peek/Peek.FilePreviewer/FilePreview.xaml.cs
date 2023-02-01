@@ -2,27 +2,28 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System;
+using System.Text;
+using System.Threading;
+using System.Threading.Tasks;
+using CommunityToolkit.Mvvm.ComponentModel;
+using Microsoft.UI.Xaml;
+using Microsoft.UI.Xaml.Controls;
+using Microsoft.UI.Xaml.Input;
+using Microsoft.Web.WebView2.Core;
+using Peek.Common.Helpers;
+using Peek.Common.Models;
+using Peek.FilePreviewer.Models;
+using Peek.FilePreviewer.Previewers;
+using Windows.ApplicationModel.Resources;
+using Windows.Foundation;
+
 namespace Peek.FilePreviewer
 {
-    using System;
-    using System.Text;
-    using System.Threading;
-    using System.Threading.Tasks;
-    using CommunityToolkit.Mvvm.ComponentModel;
-    using Microsoft.UI.Xaml;
-    using Microsoft.UI.Xaml.Controls;
-    using Microsoft.UI.Xaml.Media.Imaging;
-    using Peek.Common.Helpers;
-    using Peek.Common.Models;
-    using Peek.FilePreviewer.Models;
-    using Peek.FilePreviewer.Previewers;
-    using Windows.ApplicationModel.Resources;
-    using Windows.Foundation;
-
     [INotifyPropertyChanged]
     public sealed partial class FilePreview : UserControl
     {
-        private readonly PreviewerFactory previewerFactory = new ();
+        private readonly PreviewerFactory previewerFactory = new();
 
         public event EventHandler<PreviewSizeChangedArgs>? PreviewSizeChanged;
 
@@ -32,6 +33,13 @@ namespace Peek.FilePreviewer
             typeof(File),
             typeof(FilePreview),
             new PropertyMetadata(false, async (d, e) => await ((FilePreview)d).OnFilePropertyChanged()));
+
+        public static readonly DependencyProperty ScalingFactorProperty =
+            DependencyProperty.Register(
+                nameof(ScalingFactor),
+                typeof(double),
+                typeof(FilePreview),
+                new PropertyMetadata(false, async (d, e) => await ((FilePreview)d).OnScalingFactorPropertyChanged()));
 
         [ObservableProperty]
         [NotifyPropertyChangedFor(nameof(BitmapPreviewer))]
@@ -43,7 +51,7 @@ namespace Peek.FilePreviewer
         [ObservableProperty]
         private string imageInfoTooltip = ResourceLoader.GetForViewIndependentUse().GetString("PreviewTooltip_Blank");
 
-        private CancellationTokenSource _cancellationTokenSource = new ();
+        private CancellationTokenSource _cancellationTokenSource = new();
 
         public FilePreview()
         {
@@ -59,7 +67,7 @@ namespace Peek.FilePreviewer
                 {
                     // Cancel previous loading task
                     _cancellationTokenSource.Cancel();
-                    _cancellationTokenSource = new ();
+                    _cancellationTokenSource = new();
 
                     Previewer = previewerFactory.CreateDefaultPreviewer(File);
                     await UpdatePreviewAsync(_cancellationTokenSource.Token);
@@ -83,6 +91,12 @@ namespace Peek.FilePreviewer
             set => SetValue(FilesProperty, value);
         }
 
+        public double ScalingFactor
+        {
+            get => (double)GetValue(ScalingFactorProperty);
+            set => SetValue(ScalingFactorProperty, value);
+        }
+
         public bool MatchPreviewState(PreviewState? value, PreviewState stateToMatch)
         {
             return value == stateToMatch;
@@ -98,7 +112,7 @@ namespace Peek.FilePreviewer
         {
             // Cancel previous loading task
             _cancellationTokenSource.Cancel();
-            _cancellationTokenSource = new ();
+            _cancellationTokenSource = new();
 
             // TODO: track and cancel existing async preview tasks
             // https://github.com/microsoft/PowerToys/issues/22480
@@ -112,6 +126,19 @@ namespace Peek.FilePreviewer
             }
 
             Previewer = previewerFactory.Create(File);
+            if (Previewer is IBitmapPreviewer bitmapPreviewer)
+            {
+                bitmapPreviewer.ScalingFactor = ScalingFactor;
+            }
+
+            await UpdatePreviewAsync(_cancellationTokenSource.Token);
+        }
+
+        private async Task OnScalingFactorPropertyChanged()
+        {
+            // Cancel previous loading task
+            _cancellationTokenSource.Cancel();
+            _cancellationTokenSource = new();
 
             await UpdatePreviewAsync(_cancellationTokenSource.Token);
         }
@@ -158,12 +185,48 @@ namespace Peek.FilePreviewer
             }
         }
 
-        private void PreviewBrowser_NavigationCompleted(WebView2 sender, Microsoft.Web.WebView2.Core.CoreWebView2NavigationCompletedEventArgs args)
+        private void BrowserPreview_DOMContentLoaded(Microsoft.Web.WebView2.Core.CoreWebView2 sender, Microsoft.Web.WebView2.Core.CoreWebView2DOMContentLoadedEventArgs args)
         {
-            // Once browser has completed navigation it is ready to be visible
+            /*
+             * There is an odd behavior where the WebView2 would not raise the NavigationCompleted event
+             * for certain HTML files, even though it has already been loaded. Probably related to certain
+             * extra module that require more time to load. One example is saving and opening google.com locally.
+             *
+             * So to address this, we will make the Browser visible and display it as "Loaded" as soon the HTML document
+             * has been parsed and loaded with the DOMContentLoaded event.
+             *
+             * Similar issue: https://github.com/MicrosoftEdge/WebView2Feedback/issues/998
+             */
             if (BrowserPreviewer != null)
             {
                 BrowserPreviewer.State = PreviewState.Loaded;
+            }
+        }
+
+        private void PreviewBrowser_NavigationCompleted(WebView2 sender, CoreWebView2NavigationCompletedEventArgs args)
+        {
+            /*
+             * In theory most of navigation should work after DOM is loaded.
+             * But in case something fails we check NavigationCompleted event
+             * for failure and switch visibility accordingly.
+             *
+             * As an alternative, in the future, the preview Browser control
+             * could also display error content.
+             */
+            if (!args.IsSuccess)
+            {
+                if (BrowserPreviewer != null)
+                {
+                    BrowserPreviewer.State = PreviewState.Error;
+                }
+            }
+        }
+
+        private async void KeyboardAccelerator_CtrlC_Invoked(KeyboardAccelerator sender, KeyboardAcceleratorInvokedEventArgs args)
+        {
+            if (Previewer != null)
+            {
+                await Previewer.CopyAsync();
             }
         }
 

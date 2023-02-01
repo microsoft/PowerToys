@@ -74,8 +74,9 @@ public:
         std::wstring saveFolderPath = PTSettingsHelper::get_module_save_folder_location(NonLocalizable::ModuleKey);
 #if defined(UNIT_TESTS)
         return saveFolderPath + L"\\test-settings.json";
-#endif
+#else
         return saveFolderPath + L"\\settings.json";
+#endif
     }
 
     void AddObserver(SettingsObserver& observer);

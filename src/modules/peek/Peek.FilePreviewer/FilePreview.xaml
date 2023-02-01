@@ -21,12 +21,15 @@
         <Image
             x:Name="ImagePreview"
             Source="{x:Bind BitmapPreviewer.Preview, Mode=OneWay}"
+            MaxHeight="{x:Bind BitmapPreviewer.MaxImageSize.Height, Mode=OneWay}"
+            MaxWidth="{x:Bind BitmapPreviewer.MaxImageSize.Width, Mode=OneWay}"
             ToolTipService.ToolTip="{x:Bind ImageInfoTooltip, Mode=OneWay}"
             Visibility="{x:Bind IsPreviewVisible(BitmapPreviewer, Previewer.State), Mode=OneWay}" />
 
         <controls:BrowserControl
             x:Name="BrowserPreview"
             x:Load="True"
+            DOMContentLoaded="BrowserPreview_DOMContentLoaded"
             NavigationCompleted="PreviewBrowser_NavigationCompleted"
             Source="{x:Bind BrowserPreviewer.Preview, Mode=OneWay}"
             Visibility="{x:Bind IsPreviewVisible(BrowserPreviewer, Previewer.State), Mode=OneWay, FallbackValue=Collapsed}" />
@@ -39,6 +42,11 @@
             FileType="{x:Bind UnsupportedFilePreviewer.FileType, Mode=OneWay}"
             IconPreview="{x:Bind UnsupportedFilePreviewer.IconPreview, Mode=OneWay}"
             Visibility="{x:Bind IsPreviewVisible(UnsupportedFilePreviewer, Previewer.State), Mode=OneWay}" />
-
     </Grid>
+    <UserControl.KeyboardAccelerators>
+        <KeyboardAccelerator
+            Key="C"
+            Invoked="KeyboardAccelerator_CtrlC_Invoked"
+            Modifiers="Control" />
+    </UserControl.KeyboardAccelerators>
 </UserControl>

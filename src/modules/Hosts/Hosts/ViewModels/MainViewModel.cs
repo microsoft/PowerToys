@@ -1,8 +1,9 @@
-﻿// Copyright (c) Microsoft Corporation
+// Copyright (c) Microsoft Corporation
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Threading.Tasks;
@@ -13,7 +14,6 @@ using CommunityToolkit.Mvvm.Input;
 using CommunityToolkit.WinUI;
 using Hosts.Helpers;
 using Hosts.Models;
-using Hosts.Settings;
 using Microsoft.UI.Dispatching;
 
 namespace Hosts.ViewModels
@@ -21,7 +21,6 @@ namespace Hosts.ViewModels
     public partial class MainViewModel : ObservableObject, IDisposable
     {
         private readonly IHostsService _hostsService;
-        private readonly IUserSettings _userSettings;
         private readonly DispatcherQueue _dispatcherQueue = DispatcherQueue.GetForCurrentThread();
         private bool _disposed;
 
@@ -35,6 +34,9 @@ namespace Hosts.ViewModels
         private bool _fileChanged;
 
         [ObservableProperty]
+        private bool _filtered;
+
+        [ObservableProperty]
         private string _addressFilter;
 
         [ObservableProperty]
@@ -44,50 +46,15 @@ namespace Hosts.ViewModels
         private string _commentFilter;
 
         [ObservableProperty]
-        private bool _filtered;
+        [NotifyPropertyChangedFor(nameof(Entries))]
+        private bool _showOnlyDuplicates;
 
         [ObservableProperty]
         private string _additionalLines;
 
         private ObservableCollection<Entry> _entries;
 
-        public ObservableCollection<Entry> Entries
-        {
-            get
-            {
-                if (_filtered)
-                {
-                    var filter = _entries.AsEnumerable();
-
-                    if (!string.IsNullOrWhiteSpace(_addressFilter))
-                    {
-                        filter = filter.Where(e => e.Address.Contains(_addressFilter, StringComparison.OrdinalIgnoreCase));
-                    }
-
-                    if (!string.IsNullOrWhiteSpace(_hostsFilter))
-                    {
-                        filter = filter.Where(e => e.Hosts.Contains(_hostsFilter, StringComparison.OrdinalIgnoreCase));
-                    }
-
-                    if (!string.IsNullOrWhiteSpace(_commentFilter))
-                    {
-                        filter = filter.Where(e => e.Comment.Contains(_commentFilter, StringComparison.OrdinalIgnoreCase));
-                    }
-
-                    return new ObservableCollection<Entry>(filter);
-                }
-                else
-                {
-                    return _entries;
-                }
-            }
-
-            set
-            {
-                _entries = value;
-                OnPropertyChanged(nameof(Entries));
-            }
-        }
+        public ObservableCollection<Entry> Entries => _filtered || _showOnlyDuplicates ? GetFilteredEntries() : _entries;
 
         public ICommand ReadHostsCommand => new RelayCommand(ReadHosts);
 
@@ -99,12 +66,9 @@ namespace Hosts.ViewModels
 
         public ICommand OpenHostsFileCommand => new RelayCommand(OpenHostsFile);
 
-        public MainViewModel(
-            IHostsService hostService,
-            IUserSettings userSettings)
+        public MainViewModel(IHostsService hostService)
         {
             _hostsService = hostService;
-            _userSettings = userSettings;
 
             _hostsService.FileChanged += (s, e) =>
             {
@@ -116,24 +80,35 @@ namespace Hosts.ViewModels
         {
             entry.PropertyChanged += Entry_PropertyChanged;
             _entries.Add(entry);
+
+            FindDuplicates(entry.Address, entry.SplittedHosts);
+            OnPropertyChanged(nameof(Entries));
         }
 
         public void Update(int index, Entry entry)
         {
-            var existingEntry = _entries.ElementAt(index);
+            var existingEntry = Entries.ElementAt(index);
+            var oldAddress = existingEntry.Address;
+            var oldHosts = existingEntry.SplittedHosts;
+
             existingEntry.Address = entry.Address;
             existingEntry.Comment = entry.Comment;
             existingEntry.Hosts = entry.Hosts;
             existingEntry.Active = entry.Active;
+
+            FindDuplicates(oldAddress, oldHosts);
+            FindDuplicates(entry.Address, entry.SplittedHosts);
+            OnPropertyChanged(nameof(Entries));
         }
 
         public void DeleteSelected()
         {
+            var address = Selected.Address;
+            var hosts = Selected.SplittedHosts;
             _entries.Remove(Selected);
-            if (Filtered)
-            {
-                OnPropertyChanged(nameof(Entries));
-            }
+
+            FindDuplicates(address, hosts);
+            OnPropertyChanged(nameof(Entries));
         }
 
         public void UpdateAdditionalLines(string lines)
@@ -157,7 +132,7 @@ namespace Hosts.ViewModels
 
                 await _dispatcherQueue.EnqueueAsync(() =>
                 {
-                    Entries = new ObservableCollection<Entry>(entries);
+                    _entries = new ObservableCollection<Entry>(entries);
 
                     foreach (var e in _entries)
                     {
@@ -165,17 +140,24 @@ namespace Hosts.ViewModels
                     }
 
                     _entries.CollectionChanged += Entries_CollectionChanged;
+                    OnPropertyChanged(nameof(Entries));
+                    FindDuplicates();
                 });
             });
         }
 
         public void ApplyFilters()
         {
-            if (_entries != null)
+            if (_entries == null)
             {
-                Filtered = !string.IsNullOrWhiteSpace(_addressFilter) || !string.IsNullOrWhiteSpace(_hostsFilter) || !string.IsNullOrWhiteSpace(_commentFilter);
-                OnPropertyChanged(nameof(Entries));
+                return;
             }
+
+            Filtered = !string.IsNullOrWhiteSpace(_addressFilter)
+                || !string.IsNullOrWhiteSpace(_hostsFilter)
+                || !string.IsNullOrWhiteSpace(_commentFilter);
+
+            OnPropertyChanged(nameof(Entries));
         }
 
         public void ClearFilters()
@@ -183,6 +165,7 @@ namespace Hosts.ViewModels
             AddressFilter = null;
             HostsFilter = null;
             CommentFilter = null;
+            ShowOnlyDuplicates = false;
         }
 
         public async Task PingSelectedAsync()
@@ -212,8 +195,10 @@ namespace Hosts.ViewModels
 
         private void Entry_PropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
         {
-            // Ping should't trigger a file save
-            if (e.PropertyName == nameof(Entry.Ping) || e.PropertyName == nameof(Entry.Pinging))
+            // Ping and duplicate should't trigger a file save
+            if (e.PropertyName == nameof(Entry.Ping)
+                || e.PropertyName == nameof(Entry.Pinging)
+                || e.PropertyName == nameof(Entry.Duplicate))
             {
                 return;
             }
@@ -232,6 +217,68 @@ namespace Hosts.ViewModels
                 var error = !await _hostsService.WriteAsync(_additionalLines, _entries);
                 await _dispatcherQueue.EnqueueAsync(() => Error = error);
             });
+        }
+
+        private void FindDuplicates()
+        {
+            foreach (var entry in _entries)
+            {
+                SetDuplicate(entry);
+            }
+        }
+
+        private void FindDuplicates(string address, IEnumerable<string> hosts)
+        {
+            var entries = _entries.Where(e =>
+                string.Equals(e.Address, address, StringComparison.InvariantCultureIgnoreCase)
+                || hosts.Intersect(e.SplittedHosts, StringComparer.InvariantCultureIgnoreCase).Any());
+
+            foreach (var entry in entries)
+            {
+                SetDuplicate(entry);
+            }
+        }
+
+        private void SetDuplicate(Entry entry)
+        {
+            var hosts = entry.SplittedHosts;
+
+            entry.Duplicate = _entries.FirstOrDefault(e =>
+                e != entry
+                && (string.Equals(e.Address, entry.Address, StringComparison.InvariantCultureIgnoreCase)
+                || hosts.Intersect(e.SplittedHosts, StringComparer.InvariantCultureIgnoreCase).Any())) != null;
+        }
+
+        private ObservableCollection<Entry> GetFilteredEntries()
+        {
+            if (_entries == null)
+            {
+                return new ObservableCollection<Entry>();
+            }
+
+            var filter = _entries.AsEnumerable();
+
+            if (!string.IsNullOrWhiteSpace(_addressFilter))
+            {
+                filter = filter.Where(e => e.Address.Contains(_addressFilter, StringComparison.OrdinalIgnoreCase));
+            }
+
+            if (!string.IsNullOrWhiteSpace(_hostsFilter))
+            {
+                filter = filter.Where(e => e.Hosts.Contains(_hostsFilter, StringComparison.OrdinalIgnoreCase));
+            }
+
+            if (!string.IsNullOrWhiteSpace(_commentFilter))
+            {
+                filter = filter.Where(e => e.Comment.Contains(_commentFilter, StringComparison.OrdinalIgnoreCase));
+            }
+
+            if (_showOnlyDuplicates)
+            {
+                filter = filter.Where(e => e.Duplicate);
+            }
+
+            return new ObservableCollection<Entry>(filter);
         }
 
         protected virtual void Dispose(bool disposing)

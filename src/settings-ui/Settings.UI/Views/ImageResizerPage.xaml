@@ -25,7 +25,7 @@
         x:Uid="ImageResizer"
         ModuleImageSource="ms-appx:///Assets/Modules/ImageResizer.png">
         <controls:SettingsPageControl.ModuleContent>
-            <StackPanel>
+            <StackPanel ChildrenTransitions="{StaticResource SettingsCardsAnimations}">
                 <labs:SettingsCard
                     x:Uid="ImageResizer_EnableToggle"
                     HeaderIcon="{ui:BitmapIcon Source=/Assets/FluentIcons/FluentIconsImageResizer.png}"

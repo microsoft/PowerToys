@@ -17,7 +17,6 @@ void MyDeleteMediaType(AM_MEDIA_TYPE* pmt);
 using unique_media_type_ptr =
     wistd::unique_ptr<AM_MEDIA_TYPE, wil::function_deleter<decltype(&MyDeleteMediaType), MyDeleteMediaType>>;
 
-unique_media_type_ptr CopyMediaType(const unique_media_type_ptr& source);
 unique_media_type_ptr CopyMediaType(const AM_MEDIA_TYPE* source);
 
 template<typename ObjectInterface, typename EnumeratorInterface>

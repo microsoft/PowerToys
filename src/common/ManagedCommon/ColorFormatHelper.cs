@@ -2,13 +2,13 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System;
+using System.Collections.Generic;
+using System.Drawing;
+using System.Globalization;
+
 namespace ManagedCommon
 {
-    using System;
-    using System.Collections.Generic;
-    using System.Drawing;
-    using System.Globalization;
-
     public static class ColorFormatHelper
     {
         /// <summary>
@@ -16,7 +16,7 @@ namespace ManagedCommon
         /// </summary>
         /// <param name="color">The <see cref="Color"/> to convert</param>
         /// <returns>The cyan[0..1], magenta[0..1], yellow[0..1] and black key[0..1] of the converted color</returns>
-        public static (double cyan, double magenta, double yellow, double blackKey) ConvertToCMYKColor(Color color)
+        public static (double Cyan, double Magenta, double Yellow, double BlackKey) ConvertToCMYKColor(Color color)
         {
             // special case for black (avoid division by zero)
             if (color.R == 0 && color.G == 0 && color.B == 0)
@@ -48,7 +48,7 @@ namespace ManagedCommon
         /// </summary>
         /// <param name="color">The <see cref="Color"/> to convert</param>
         /// <returns>The hue [0°..360°], saturation [0..1] and brightness [0..1] of the converted color</returns>
-        public static (double hue, double saturation, double brightness) ConvertToHSBColor(Color color)
+        public static (double Hue, double Saturation, double Brightness) ConvertToHSBColor(Color color)
         {
             // HSB and HSV represents the same color space
             return ConvertToHSVColor(color);
@@ -59,7 +59,7 @@ namespace ManagedCommon
         /// </summary>
         /// <param name="color">The <see cref="Color"/> to convert</param>
         /// <returns>The hue [0°..360°], saturation [0..1] and value [0..1] of the converted color</returns>
-        public static (double hue, double saturation, double value) ConvertToHSVColor(Color color)
+        public static (double Hue, double Saturation, double Value) ConvertToHSVColor(Color color)
         {
             var min = Math.Min(Math.Min(color.R, color.G), color.B) / 255d;
             var max = Math.Max(Math.Max(color.R, color.G), color.B) / 255d;
@@ -72,7 +72,7 @@ namespace ManagedCommon
         /// </summary>
         /// <param name="color">The <see cref="Color"/> to convert</param>
         /// <returns>The hue [0°..360°], saturation [0..1] and intensity [0..1] of the converted color</returns>
-        public static (double hue, double saturation, double intensity) ConvertToHSIColor(Color color)
+        public static (double Hue, double Saturation, double Intensity) ConvertToHSIColor(Color color)
         {
             // special case for black
             if (color.R == 0 && color.G == 0 && color.B == 0)
@@ -96,7 +96,7 @@ namespace ManagedCommon
         /// </summary>
         /// <param name="color">The <see cref="Color"/> to convert</param>
         /// <returns>The hue [0°..360°], saturation [0..1] and lightness [0..1] values of the converted color</returns>
-        public static (double hue, double saturation, double lightness) ConvertToHSLColor(Color color)
+        public static (double Hue, double Saturation, double Lightness) ConvertToHSLColor(Color color)
         {
             var min = Math.Min(Math.Min(color.R, color.G), color.B) / 255d;
             var max = Math.Max(Math.Max(color.R, color.G), color.B) / 255d;
@@ -120,7 +120,7 @@ namespace ManagedCommon
         /// </summary>
         /// <param name="color">The <see cref="Color"/> to convert</param>
         /// <returns>The hue [0°..360°], whiteness [0..1] and blackness [0..1] of the converted color</returns>
-        public static (double hue, double whiteness, double blackness) ConvertToHWBColor(Color color)
+        public static (double Hue, double Whiteness, double Blackness) ConvertToHWBColor(Color color)
         {
             var min = Math.Min(Math.Min(color.R, color.G), color.B) / 255d;
             var max = Math.Max(Math.Max(color.R, color.G), color.B) / 255d;
@@ -133,10 +133,10 @@ namespace ManagedCommon
         /// </summary>
         /// <param name="color">The <see cref="Color"/> to convert</param>
         /// <returns>The lightness [0..100] and two chromaticities [-128..127]</returns>
-        public static (double lightness, double chromaticityA, double chromaticityB) ConvertToCIELABColor(Color color)
+        public static (double Lightness, double ChromaticityA, double ChromaticityB) ConvertToCIELABColor(Color color)
         {
             var xyz = ConvertToCIEXYZColor(color);
-            var lab = GetCIELABColorFromCIEXYZ(xyz.x, xyz.y, xyz.z);
+            var lab = GetCIELABColorFromCIEXYZ(xyz.X, xyz.Y, xyz.Z);
 
             return lab;
         }
@@ -150,7 +150,7 @@ namespace ManagedCommon
         /// </summary>
         /// <param name="color">The <see cref="Color"/> to convert</param>
         /// <returns>The X [0..1], Y [0..1] and Z [0..1]</returns>
-        public static (double x, double y, double z) ConvertToCIEXYZColor(Color color)
+        public static (double X, double Y, double Z) ConvertToCIEXYZColor(Color color)
         {
             double r = color.R / 255d;
             double g = color.G / 255d;
@@ -177,7 +177,7 @@ namespace ManagedCommon
         /// <param name="y">The <see cref="y"/> represents the luminance</param>
         /// <param name="z">The <see cref="z"/> is quasi-equal to blue (of CIE RGB)</param>
         /// <returns>The lightness [0..100] and two chromaticities [-128..127]</returns>
-        private static (double lightness, double chromaticityA, double chromaticityB)
+        private static (double Lightness, double ChromaticityA, double ChromaticityB)
             GetCIELABColorFromCIEXYZ(double x, double y, double z)
         {
             // sRGB reference white (x=0.3127, y=0.3290, Y=1.0), actually CIE Standard Illuminant D65 truncated to 4 decimal places,
@@ -215,7 +215,7 @@ namespace ManagedCommon
         /// </summary>
         /// <param name="color">The <see cref="Color"/> to convert</param>
         /// <returns>The hue, whiteness [0..1] and blackness [0..1] of the converted color</returns>
-        public static (string hue, double whiteness, double blackness) ConvertToNaturalColor(Color color)
+        public static (string Hue, double Whiteness, double Blackness) ConvertToNaturalColor(Color color)
         {
             var min = Math.Min(Math.Min(color.R, color.G), color.B) / 255d;
             var max = Math.Max(Math.Max(color.R, color.G), color.B) / 255d;
@@ -285,9 +285,14 @@ namespace ManagedCommon
             { "Xv", 'i' },   // X value          int
             { "Yv", 'i' },   // Y value          int
             { "Zv", 'i' },   // Z value          int
-            { "Dv", 'i' },   // Decimal value    int
-            { "Na", 's' },   // Color name       string
+            { "Dr", 'i' },   // Decimal value (RGB)   int
+            { "Dv", 'i' },   // Decimal value (BGR)   int
+
+            // Removed Parameter Na, as the color name gets replaced separately, in localised way
+            // { "Na", 's' },   // Color name       string
         };
+
+        public static string GetColorNameParameter() => "%Na";
 
         private static readonly Dictionary<char, string> FormatTypeToStringFormatters = new Dictionary<char, string>()
         {
@@ -347,7 +352,7 @@ namespace ManagedCommon
                     formatString = string.Concat(formatString.AsSpan(0, formatterPosition), GetStringRepresentation(color.Value, paramFormat, paramType), formatString.AsSpan(formatterPosition + paramCount + 1));
                 }
 
-                // search for the next occurence of the formatter char
+                // search for the next occurrence of the formatter char
                 formatterPosition = formatString.IndexOf('%', formatterPosition + 1);
             }
 
@@ -447,10 +452,14 @@ namespace ManagedCommon
                     var (_, _, z) = ConvertToCIEXYZColor(color);
                     z = Math.Round(z * 100, 4);
                     return z.ToString(CultureInfo.InvariantCulture);
+                case "Dr":
+                    return ((color.R * 65536) + (color.G * 256) + color.B).ToString(CultureInfo.InvariantCulture);
                 case "Dv":
                     return (color.R + (color.G * 256) + (color.B * 65536)).ToString(CultureInfo.InvariantCulture);
-                case "Na":
-                    return ColorNameHelper.GetColorName(color);
+
+                // Removed Parameter Na, as the color name gets replaced separately, in localised way
+                // case "Na":
+                //     return ColorNameHelper.GetColorName(color);
                 default: return string.Empty;
             }
         }

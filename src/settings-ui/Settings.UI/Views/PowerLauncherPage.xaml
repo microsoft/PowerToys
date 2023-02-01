@@ -18,7 +18,7 @@
         ModuleImageSource="ms-appx:///Assets/Modules/PowerLauncher.png">
         <controls:SettingsPageControl.ModuleContent>
 
-            <StackPanel Orientation="Vertical">
+            <StackPanel Orientation="Vertical" ChildrenTransitions="{StaticResource SettingsCardsAnimations}">
                 <labs:SettingsCard
                     x:Uid="PowerLauncher_EnablePowerLauncher"
                     HeaderIcon="{ui:BitmapIcon Source=/Assets/FluentIcons/FluentIconsPowerToysRun.png}"
@@ -176,6 +176,15 @@
                             </labs:SettingsCard>
                         </labs:SettingsExpander.Items>
                     </labs:SettingsExpander>
+
+                    <labs:SettingsCard
+                        x:Uid="PowerLauncher_TabSelectsContextButtons"
+                        HeaderIcon="{ui:FontIcon FontFamily={StaticResource SymbolThemeFontFamily}, Glyph=&#xE7FD;}">
+                        <ToggleSwitch
+                            x:Uid="ToggleSwitch"
+                            IsOn="{x:Bind ViewModel.TabSelectsContextButtons, Mode=TwoWay}" />
+                    </labs:SettingsCard>
+
                 </controls:SettingsGroup>
 
                 <!--<ComboBox x:Uid="PowerLauncher_SearchResultPreference"

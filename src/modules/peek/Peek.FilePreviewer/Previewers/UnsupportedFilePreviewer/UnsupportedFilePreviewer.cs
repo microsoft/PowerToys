@@ -2,26 +2,27 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System;
+using System.Drawing.Imaging;
+using System.IO;
+using System.Threading;
+using System.Threading.Tasks;
+using CommunityToolkit.Mvvm.ComponentModel;
+using Microsoft.PowerToys.Settings.UI.Library;
+using Microsoft.UI.Dispatching;
+using Microsoft.UI.Xaml.Controls;
+using Microsoft.UI.Xaml.Media.Imaging;
+using Peek.Common;
+using Peek.Common.Extensions;
+using Peek.Common.Helpers;
+using Peek.FilePreviewer.Previewers.Helpers;
+using Windows.ApplicationModel.DataTransfer;
+using Windows.Foundation;
+using Windows.Storage;
+using File = Peek.Common.Models.File;
+
 namespace Peek.FilePreviewer.Previewers
 {
-    using System;
-    using System.Drawing.Imaging;
-    using System.IO;
-    using System.Threading;
-    using System.Threading.Tasks;
-    using CommunityToolkit.Mvvm.ComponentModel;
-    using Microsoft.PowerToys.Settings.UI.Library;
-    using Microsoft.UI.Dispatching;
-    using Microsoft.UI.Xaml.Controls;
-    using Microsoft.UI.Xaml.Media.Imaging;
-    using Peek.Common;
-    using Peek.Common.Extensions;
-    using Peek.Common.Helpers;
-    using Peek.FilePreviewer.Previewers.Helpers;
-    using Windows.Foundation;
-
-    using File = Peek.Common.Models.File;
-
     public partial class UnsupportedFilePreviewer : ObservableObject, IUnsupportedFilePreviewer, IDisposable
     {
         [ObservableProperty]
@@ -79,11 +80,12 @@ namespace Peek.FilePreviewer.Previewers
             GC.SuppressFinalize(this);
         }
 
-        public Task<Size> GetPreviewSizeAsync(CancellationToken cancellationToken)
+        public Task<Size?> GetPreviewSizeAsync(CancellationToken cancellationToken)
         {
             return Task.Run(() =>
             {
-                return new Size(UnsupportedFileWidthPercent, UnsupportedFileHeightPercent);
+                Size? size = new Size(UnsupportedFileWidthPercent, UnsupportedFileHeightPercent);
+                return size;
             });
         }
 
@@ -104,20 +106,32 @@ namespace Peek.FilePreviewer.Previewers
             }
         }
 
+        public async Task CopyAsync()
+        {
+            await Dispatcher.RunOnUiThread(async () =>
+            {
+                var storageFile = await File.GetStorageFileAsync();
+
+                var dataPackage = new DataPackage();
+                dataPackage.SetStorageItems(new StorageFile[1] { storageFile }, false);
+
+                Clipboard.SetContent(dataPackage);
+            });
+        }
+
         public Task<bool> LoadIconPreviewAsync(CancellationToken cancellationToken)
         {
             return TaskExtension.RunSafe(async () =>
             {
                 cancellationToken.ThrowIfCancellationRequested();
 
-                // TODO: Get icon with transparency
                 IconHelper.GetIcon(Path.GetFullPath(File.Path), out IntPtr hbitmap);
 
                 cancellationToken.ThrowIfCancellationRequested();
                 await Dispatcher.RunOnUiThread(async () =>
                 {
                     cancellationToken.ThrowIfCancellationRequested();
-                    var iconBitmap = await GetBitmapFromHBitmapAsync(hbitmap, cancellationToken);
+                    var iconBitmap = await GetBitmapFromHBitmapWithTransparencyAsync(hbitmap, cancellationToken);
                     IconPreview = iconBitmap;
                 });
             });
@@ -162,19 +176,21 @@ namespace Peek.FilePreviewer.Previewers
             return hasFailedLoadingIconPreview && hasFailedLoadingDisplayInfo;
         }
 
-        // TODO: Move this to a helper file (ImagePreviewer uses the same code)
-        private static async Task<BitmapSource> GetBitmapFromHBitmapAsync(IntPtr hbitmap, CancellationToken cancellationToken)
+        // TODO: Move this to a common helper file and make transparency a parameter (ImagePrevier uses the same code)
+        private static async Task<BitmapSource> GetBitmapFromHBitmapWithTransparencyAsync(IntPtr hbitmap, CancellationToken cancellationToken)
         {
             try
             {
                 cancellationToken.ThrowIfCancellationRequested();
                 var bitmap = System.Drawing.Image.FromHbitmap(hbitmap);
+                bitmap.MakeTransparent();
+
                 var bitmapImage = new BitmapImage();
 
                 cancellationToken.ThrowIfCancellationRequested();
                 using (var stream = new MemoryStream())
                 {
-                    bitmap.Save(stream, ImageFormat.Bmp);
+                    bitmap.Save(stream, ImageFormat.Png);
                     stream.Position = 0;
 
                     cancellationToken.ThrowIfCancellationRequested();

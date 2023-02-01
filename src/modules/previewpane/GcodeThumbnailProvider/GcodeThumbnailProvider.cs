@@ -1,32 +1,31 @@
 ﻿// Copyright (c) Microsoft Corporation
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
-using System;
-using System.Collections.Generic;
-using System.Drawing;
 using System.Drawing.Drawing2D;
-using System.IO;
-using System.Linq;
-using System.Runtime.InteropServices;
-using System.Runtime.InteropServices.ComTypes;
 using System.Text;
-using Common.ComInterlop;
-using Common.Utilities;
 
 namespace Microsoft.PowerToys.ThumbnailHandler.Gcode
 {
     /// <summary>
     /// G-code Thumbnail Provider.
     /// </summary>
-    [Guid("BFEE99B4-B74D-4348-BCA5-E757029647FF")]
-    [ClassInterface(ClassInterfaceType.None)]
-    [ComVisible(true)]
-    public class GcodeThumbnailProvider : IInitializeWithStream, IThumbnailProvider
+    public class GcodeThumbnailProvider
     {
+        public GcodeThumbnailProvider(string filePath)
+        {
+            FilePath = filePath;
+            Stream = new FileStream(filePath, FileMode.Open, FileAccess.Read);
+        }
+
+        /// <summary>
+        /// Gets the file path to the file creating thumbnail for.
+        /// </summary>
+        public string FilePath { get; private set; }
+
         /// <summary>
         /// Gets the stream object to access file.
         /// </summary>
-        public IStream Stream { get; private set; }
+        public Stream Stream { get; private set; }
 
         /// <summary>
         ///  The maximum dimension (width or height) thumbnail we will generate.
@@ -140,44 +139,36 @@ namespace Microsoft.PowerToys.ThumbnailHandler.Gcode
             return destImage;
         }
 
-        /// <inheritdoc/>
-        public void Initialize(IStream pstream, uint grfMode)
+        /// <summary>
+        /// Generate thumbnail bitmap for provided Gcode file/stream.
+        /// </summary>
+        /// <param name="cx">Maximum thumbnail size, in pixels.</param>
+        /// <returns>Generated bitmap</returns>
+        public Bitmap GetThumbnail(uint cx)
         {
-            // Ignore the grfMode always use read mode to access the file.
-            this.Stream = pstream;
-        }
-
-        /// <inheritdoc/>
-        public void GetThumbnail(uint cx, out IntPtr phbmp, out WTS_ALPHATYPE pdwAlpha)
-        {
-            phbmp = IntPtr.Zero;
-            pdwAlpha = WTS_ALPHATYPE.WTSAT_UNKNOWN;
-
             if (cx == 0 || cx > MaxThumbnailSize)
             {
-                return;
+                return null;
             }
 
             if (global::PowerToys.GPOWrapper.GPOWrapper.GetConfiguredGcodeThumbnailsEnabledValue() == global::PowerToys.GPOWrapper.GpoRuleConfigured.Disabled)
             {
                 // GPO is disabling this utility.
-                return;
+                return null;
             }
 
-            using (var stream = new ReadonlyStream(this.Stream as IStream))
+            using (var reader = new StreamReader(this.Stream))
             {
-                using (var reader = new StreamReader(stream))
+                using (Bitmap thumbnail = GetThumbnail(reader, cx))
                 {
-                    using (Bitmap thumbnail = GetThumbnail(reader, cx))
+                    if (thumbnail != null && thumbnail.Size.Width > 0 && thumbnail.Size.Height > 0)
                     {
-                        if (thumbnail != null && thumbnail.Size.Width > 0 && thumbnail.Size.Height > 0)
-                        {
-                            phbmp = thumbnail.GetHbitmap(Color.Transparent);
-                            pdwAlpha = WTS_ALPHATYPE.WTSAT_ARGB;
-                        }
+                        return (Bitmap)thumbnail.Clone();
                     }
                 }
             }
+
+            return null;
         }
     }
 }

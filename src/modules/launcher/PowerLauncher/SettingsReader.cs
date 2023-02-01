@@ -150,6 +150,11 @@ namespace PowerLauncher
                         _settings.ClearInputOnLaunch = overloadSettings.Properties.ClearInputOnLaunch;
                     }
 
+                    if (_settings.TabSelectsContextButtons != overloadSettings.Properties.TabSelectsContextButtons)
+                    {
+                        _settings.TabSelectsContextButtons = overloadSettings.Properties.TabSelectsContextButtons;
+                    }
+
                     if (_settings.Theme != overloadSettings.Properties.Theme)
                     {
                         _settings.Theme = overloadSettings.Properties.Theme;

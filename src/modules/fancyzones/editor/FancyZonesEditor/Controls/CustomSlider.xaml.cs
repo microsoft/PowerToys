@@ -2,11 +2,11 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System.Windows.Automation.Peers;
+using System.Windows.Controls;
+
 namespace FancyZonesEditor.Controls
 {
-    using System.Windows.Automation.Peers;
-    using System.Windows.Controls;
-
     /// <summary>
     /// Interaction logic for CustomSlider.xaml
     /// </summary>

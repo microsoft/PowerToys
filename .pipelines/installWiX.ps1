@@ -1,7 +1,7 @@
 $ProgressPreference = 'SilentlyContinue'
 
-$WixDownloadUrl = "https://wixtoolset.org/downloads/v3.14.0.6526/wix314.exe"
-$WixBinariesDownloadUrl = "https://wixtoolset.org/downloads/v3.14.0.6526/wix314-binaries.zip"
+$WixDownloadUrl = "https://github.com/JaneaSystems/wix3/releases/download/wix3-3.14.0.6526/wix314.exe"
+$WixBinariesDownloadUrl = "https://github.com/JaneaSystems/wix3/releases/download/wix3-3.14.0.6526/wix314-binaries.zip"
 
 # Download WiX binaries and verify their hash sums
 Invoke-WebRequest -Uri $WixDownloadUrl -OutFile "$($ENV:Temp)\wix314.exe"

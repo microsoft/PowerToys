@@ -36,7 +36,7 @@ class AppliedLayouts
 {
 public:
     using TAppliedLayoutsMap = std::unordered_map<FancyZonesDataTypes::WorkAreaId, LayoutData>;
-    
+
     static AppliedLayouts& instance();
 
     inline static std::wstring AppliedLayoutsFileName()
@@ -44,8 +44,9 @@ public:
         std::wstring saveFolderPath = PTSettingsHelper::get_module_save_folder_location(NonLocalizable::ModuleKey);
 #if defined(UNIT_TESTS)
         return saveFolderPath + L"\\test-applied-layouts.json";
-#endif
+#else
         return saveFolderPath + L"\\applied-layouts.json";
+#endif
     }
 
     void LoadData();

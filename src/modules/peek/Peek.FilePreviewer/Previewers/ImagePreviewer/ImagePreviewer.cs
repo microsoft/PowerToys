@@ -2,23 +2,26 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System;
+using System.Collections.Generic;
+using System.Diagnostics;
+using System.Drawing.Imaging;
+using System.IO;
+using System.Threading;
+using System.Threading.Tasks;
+using CommunityToolkit.Mvvm.ComponentModel;
+using Microsoft.UI.Dispatching;
+using Microsoft.UI.Xaml.Media.Imaging;
+using Peek.Common;
+using Peek.Common.Extensions;
+using Windows.ApplicationModel.DataTransfer;
+using Windows.Foundation;
+using Windows.Storage;
+using Windows.Storage.Streams;
+using File = Peek.Common.Models.File;
+
 namespace Peek.FilePreviewer.Previewers
 {
-    using System;
-    using System.Collections.Generic;
-    using System.Diagnostics;
-    using System.Drawing.Imaging;
-    using System.IO;
-    using System.Threading;
-    using System.Threading.Tasks;
-    using CommunityToolkit.Mvvm.ComponentModel;
-    using Microsoft.UI.Dispatching;
-    using Microsoft.UI.Xaml.Media.Imaging;
-    using Peek.Common;
-    using Peek.Common.Extensions;
-    using Windows.Foundation;
-    using File = Peek.Common.Models.File;
-
     public partial class ImagePreviewer : ObservableObject, IBitmapPreviewer, IDisposable
     {
         [ObservableProperty]
@@ -26,6 +29,15 @@ namespace Peek.FilePreviewer.Previewers
 
         [ObservableProperty]
         private PreviewState state;
+
+        [ObservableProperty]
+        private Size imageSize;
+
+        [ObservableProperty]
+        private Size maxImageSize;
+
+        [ObservableProperty]
+        private double scalingFactor;
 
         public ImagePreviewer(File file)
         {
@@ -54,16 +66,16 @@ namespace Peek.FilePreviewer.Previewers
             GC.SuppressFinalize(this);
         }
 
-        public async Task<Size> GetPreviewSizeAsync(CancellationToken cancellationToken)
+        public async Task<Size?> GetPreviewSizeAsync(CancellationToken cancellationToken)
         {
             cancellationToken.ThrowIfCancellationRequested();
-            var propertyImageSize = await PropertyHelper.GetImageSize(File.Path);
-            if (propertyImageSize != Size.Empty)
+            ImageSize = await PropertyHelper.GetImageSize(File.Path);
+            if (ImageSize == Size.Empty)
             {
-                return propertyImageSize;
+                ImageSize = await WICHelper.GetImageSize(File.Path);
             }
 
-            return await WICHelper.GetImageSize(File.Path);
+            return ImageSize;
         }
 
         public async Task LoadPreviewAsync(CancellationToken cancellationToken)
@@ -83,6 +95,23 @@ namespace Peek.FilePreviewer.Previewers
             }
         }
 
+        public async Task CopyAsync()
+        {
+            await Dispatcher.RunOnUiThread(async () =>
+            {
+                var storageFile = await File.GetStorageFileAsync();
+
+                var dataPackage = new DataPackage();
+                dataPackage.SetStorageItems(new StorageFile[1] { storageFile }, false);
+
+                RandomAccessStreamReference imageStreamRef = RandomAccessStreamReference.CreateFromFile(storageFile);
+                dataPackage.Properties.Thumbnail = imageStreamRef;
+                dataPackage.SetBitmap(imageStreamRef);
+
+                Clipboard.SetContent(dataPackage);
+            });
+        }
+
         private void OnPropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
         {
             if (e.PropertyName == nameof(Preview))
@@ -90,6 +119,17 @@ namespace Peek.FilePreviewer.Previewers
                 if (Preview != null)
                 {
                     State = PreviewState.Loaded;
+                }
+            }
+            else if (e.PropertyName == nameof(ScalingFactor) || e.PropertyName == nameof(ImageSize))
+            {
+                if (ScalingFactor != 0)
+                {
+                    MaxImageSize = new Size(ImageSize.Width / ScalingFactor, ImageSize.Height / ScalingFactor);
+                }
+                else
+                {
+                    MaxImageSize = new Size(ImageSize.Width, ImageSize.Height);
                 }
             }
         }
@@ -100,25 +140,25 @@ namespace Peek.FilePreviewer.Previewers
             {
                 cancellationToken.ThrowIfCancellationRequested();
 
-                if (!IsFullImageLoaded && !IsHighQualityThumbnailLoaded)
+                var hr = ThumbnailHelper.GetThumbnail(Path.GetFullPath(File.Path), out IntPtr hbitmap, ThumbnailHelper.LowQualityThumbnailSize);
+                if (hr != Common.Models.HResult.Ok)
                 {
-                    var hr = ThumbnailHelper.GetThumbnail(Path.GetFullPath(File.Path), out IntPtr hbitmap, ThumbnailHelper.LowQualityThumbnailSize);
-                    if (hr != Common.Models.HResult.Ok)
-                    {
-                        Debug.WriteLine("Error loading low quality thumbnail - hresult: " + hr);
+                    Debug.WriteLine("Error loading low quality thumbnail - hresult: " + hr);
 
-                        throw new ArgumentNullException(nameof(hbitmap));
-                    }
-
-                    cancellationToken.ThrowIfCancellationRequested();
-
-                    await Dispatcher.RunOnUiThread(async () =>
-                    {
-                        cancellationToken.ThrowIfCancellationRequested();
-                        var thumbnailBitmap = await GetBitmapFromHBitmapAsync(hbitmap, cancellationToken);
-                        Preview = thumbnailBitmap;
-                    });
+                    throw new ArgumentNullException(nameof(hbitmap));
                 }
+
+                cancellationToken.ThrowIfCancellationRequested();
+
+                await Dispatcher.RunOnUiThread(async () =>
+                {
+                    cancellationToken.ThrowIfCancellationRequested();
+                    var thumbnailBitmap = await GetBitmapFromHBitmapAsync(hbitmap, cancellationToken);
+                    if (!IsFullImageLoaded && !IsHighQualityThumbnailLoaded)
+                    {
+                        Preview = thumbnailBitmap;
+                    }
+                });
             });
         }
 
@@ -128,25 +168,25 @@ namespace Peek.FilePreviewer.Previewers
             {
                 cancellationToken.ThrowIfCancellationRequested();
 
-                if (!IsFullImageLoaded)
+                var hr = ThumbnailHelper.GetThumbnail(Path.GetFullPath(File.Path), out IntPtr hbitmap, ThumbnailHelper.HighQualityThumbnailSize);
+                if (hr != Common.Models.HResult.Ok)
                 {
-                    var hr = ThumbnailHelper.GetThumbnail(Path.GetFullPath(File.Path), out IntPtr hbitmap, ThumbnailHelper.HighQualityThumbnailSize);
-                    if (hr != Common.Models.HResult.Ok)
-                    {
-                        Debug.WriteLine("Error loading high quality thumbnail - hresult: " + hr);
+                    Debug.WriteLine("Error loading high quality thumbnail - hresult: " + hr);
 
-                        throw new ArgumentNullException(nameof(hbitmap));
-                    }
-
-                    cancellationToken.ThrowIfCancellationRequested();
-
-                    await Dispatcher.RunOnUiThread(async () =>
-                    {
-                        cancellationToken.ThrowIfCancellationRequested();
-                        var thumbnailBitmap = await GetBitmapFromHBitmapAsync(hbitmap, cancellationToken);
-                        Preview = thumbnailBitmap;
-                    });
+                    throw new ArgumentNullException(nameof(hbitmap));
                 }
+
+                cancellationToken.ThrowIfCancellationRequested();
+
+                await Dispatcher.RunOnUiThread(async () =>
+                {
+                    cancellationToken.ThrowIfCancellationRequested();
+                    var thumbnailBitmap = await GetBitmapFromHBitmapAsync(hbitmap, cancellationToken);
+                    if (!IsFullImageLoaded)
+                    {
+                        Preview = thumbnailBitmap;
+                    }
+                });
             });
         }
 

@@ -38,19 +38,21 @@ namespace ColorPicker.Behaviors
             {
                 Task.Run(
                     new Action(() =>
-                  {
-                      Dispatcher.BeginInvoke(
-                          new Action(() =>
-                      {
-                          if (e.LeftButton == MouseButtonState.Pressed)
-                          {
-                              var data = new DataObject();
-                              data.SetData("Source", (sender as FrameworkElement).DataContext);
-                              DragDrop.DoDragDrop(sender as DependencyObject, data, DragDropEffects.Move);
-                              e.Handled = true;
-                          }
-                      }), null);
-                  }), CancellationToken.None);
+                    {
+                        Dispatcher.BeginInvoke(
+                            new Action(() =>
+                            {
+                                if (e.LeftButton == MouseButtonState.Pressed)
+                                {
+                                    var data = new DataObject();
+                                    data.SetData("Source", (sender as FrameworkElement).DataContext);
+                                    DragDrop.DoDragDrop(sender as DependencyObject, data, DragDropEffects.Move);
+                                    e.Handled = true;
+                                }
+                            }),
+                            null);
+                    }),
+                    CancellationToken.None);
             }
         }
 

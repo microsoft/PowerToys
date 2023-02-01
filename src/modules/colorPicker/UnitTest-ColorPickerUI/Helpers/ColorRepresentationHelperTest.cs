@@ -4,6 +4,7 @@
 
 using System.Drawing;
 using ColorPicker.Helpers;
+using ManagedCommon;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Microsoft.ColorPicker.UnitTests
@@ -29,7 +30,7 @@ namespace Microsoft.ColorPicker.UnitTests
 
         public void GetStringRepresentationTest(string type, string expected)
         {
-            var result = ColorRepresentationHelper.GetStringRepresentation(Color.Black, type, string.Empty);
+            var result = ColorRepresentationHelper.GetStringRepresentation(Color.Black, type, ColorFormatHelper.GetDefaultFormat(type));
             Assert.AreEqual(result, expected);
         }
     }

@@ -33,7 +33,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
             GeneralSettingsConfig = settingsRepository.SettingsConfig;
 
             _settingsUtils = settingsUtils ?? throw new ArgumentNullException(nameof(settingsUtils));
-            if (_settingsUtils.SettingsExists(ColorPickerSettings.ModuleName))
+            if (_settingsUtils.SettingsExists(PeekSettings.ModuleName))
             {
                 _peekSettings = _settingsUtils.GetSettingsOrDefault<PeekSettings>(PeekSettings.ModuleName);
             }

@@ -153,6 +153,9 @@
     <ClInclude Include="FancyZonesData\LayoutData.h">
       <Filter>Header Files\FancyZonesData</Filter>
     </ClInclude>
+    <ClInclude Include="NotificationUtil.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="pch.cpp">

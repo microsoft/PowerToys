@@ -2,14 +2,14 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System;
+using System.Drawing;
+using System.Runtime.InteropServices;
+using Peek.Common;
+using Peek.Common.Models;
+
 namespace Peek.FilePreviewer.Previewers.Helpers
 {
-    using System;
-    using System.Drawing;
-    using System.Runtime.InteropServices;
-    using Peek.Common;
-    using Peek.Common.Models;
-
     public static class IconHelper
     {
         // Based on https://stackoverflow.com/questions/21751747/extract-thumbnail-for-any-file-in-windows

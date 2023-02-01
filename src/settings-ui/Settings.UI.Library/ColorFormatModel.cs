@@ -86,8 +86,11 @@ namespace Microsoft.PowerToys.Settings.UI.Library
 
             set
             {
-                _canMoveUp = value;
-                OnPropertyChanged(nameof(CanMoveUp));
+                if (value != _canMoveUp)
+                {
+                    _canMoveUp = value;
+                    OnPropertyChanged(nameof(CanMoveUp));
+                }
             }
         }
 
@@ -100,8 +103,11 @@ namespace Microsoft.PowerToys.Settings.UI.Library
 
             set
             {
-                _canMoveDown = value;
-                OnPropertyChanged(nameof(CanMoveDown));
+                if (value != _canMoveDown)
+                {
+                    _canMoveDown = value;
+                    OnPropertyChanged(nameof(CanMoveDown));
+                }
             }
         }
 
@@ -154,7 +160,8 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         {
             get
             {
-                return ColorFormatHelper.GetStringRepresentation(null, _format);
+                // get string representation in 2 steps. First replace all color specific number values then in 2nd step replace color name with localisation
+                return Helpers.ColorNameHelper.ReplaceName(ColorFormatHelper.GetStringRepresentation(null, _format), null);
             }
 
             set

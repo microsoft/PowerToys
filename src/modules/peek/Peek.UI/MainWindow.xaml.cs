@@ -2,19 +2,20 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System.Diagnostics;
+using System.Linq;
+using interop;
+using Microsoft.UI.Windowing;
+using Microsoft.UI.Xaml.Input;
+using Peek.FilePreviewer.Models;
+using Peek.UI.Extensions;
+using Peek.UI.Helpers;
+using Peek.UI.Native;
+using Windows.Foundation;
+using WinUIEx;
+
 namespace Peek.UI
 {
-    using System.Diagnostics;
-    using interop;
-    using Microsoft.UI.Windowing;
-    using Microsoft.UI.Xaml.Input;
-    using Peek.FilePreviewer.Models;
-    using Peek.UI.Extensions;
-    using Peek.UI.Helpers;
-    using Peek.UI.Native;
-    using Windows.Foundation;
-    using WinUIEx;
-
     /// <summary>
     /// An empty window that can be used on its own or navigated to within a Frame.
     /// </summary>
@@ -76,6 +77,7 @@ namespace Peek.UI
         private void Initialize()
         {
             ViewModel.FolderItemsQuery.Start();
+            ViewModel.ScalingFactor = this.GetMonitorScale();
         }
 
         private void Uninitialize()
@@ -94,9 +96,10 @@ namespace Peek.UI
         /// <param name="e">PreviewSizeChangedArgs</param>
         private void FilePreviewer_PreviewSizeChanged(object sender, PreviewSizeChangedArgs e)
         {
-            // TODO: Use design-defined rules for adjusted window size
-            var requestedSize = e.WindowSizeRequested;
             var monitorSize = this.GetMonitorSize();
+
+            // If no size is requested, try to fit to the monitor size.
+            Size requestedSize = e.WindowSizeRequested ?? monitorSize;
 
             var titleBarHeight = TitleBarControl.ActualHeight;
 
@@ -151,19 +154,13 @@ namespace Peek.UI
 
         private bool IsNewSingleSelectedItem()
         {
-            var folderView = FileExplorerHelper.GetCurrentFolderView();
-            if (folderView == null)
+            var selectedItems = FileExplorerHelper.GetSelectedItems();
+            if (!selectedItems.Any() || selectedItems.Skip(1).Any())
             {
                 return false;
             }
 
-            Shell32.FolderItems selectedItems = folderView.SelectedItems();
-            if (selectedItems.Count > 1)
-            {
-                return false;
-            }
-
-            var fileExplorerSelectedItemPath = selectedItems.Item(0)?.Path;
+            var fileExplorerSelectedItemPath = selectedItems.First().Path;
             var currentFilePath = ViewModel.FolderItemsQuery.CurrentFile?.Path;
             if (fileExplorerSelectedItemPath == null || currentFilePath == null || fileExplorerSelectedItemPath == currentFilePath)
             {

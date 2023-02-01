@@ -8,5 +8,7 @@ public interface IUserSettings
 {
     SettingItem<string> ActivationShortcut { get; }
 
+    SettingItem<string> PreferredLanguage { get; }
+
     void SendSettingsTelemetry();
 }

@@ -169,24 +169,6 @@ namespace Microsoft.PowerToys.Run.Plugin.System.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Empty Recycle Bin.
-        /// </summary>
-        internal static string Microsoft_plugin_sys_emptyrecyclebin {
-            get {
-                return ResourceManager.GetString("Microsoft_plugin_sys_emptyrecyclebin", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Empty Recycle Bin.
-        /// </summary>
-        internal static string Microsoft_plugin_sys_emptyrecyclebin_description {
-            get {
-                return ResourceManager.GetString("Microsoft_plugin_sys_emptyrecyclebin_description", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to Default Gateway.
         /// </summary>
         internal static string Microsoft_plugin_sys_Gateways {
@@ -399,6 +381,87 @@ namespace Microsoft.PowerToys.Run.Plugin.System.Properties {
         internal static string Microsoft_plugin_sys_plugin_name {
             get {
                 return ResourceManager.GetString("Microsoft_plugin_sys_plugin_name", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Recycle Bin.
+        /// </summary>
+        internal static string Microsoft_plugin_sys_RecycleBin {
+            get {
+                return ResourceManager.GetString("Microsoft_plugin_sys_RecycleBin", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Empty Recycle Bin (Shift+Delete).
+        /// </summary>
+        internal static string Microsoft_plugin_sys_RecycleBin_contextMenu {
+            get {
+                return ResourceManager.GetString("Microsoft_plugin_sys_RecycleBin_contextMenu", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Open the Recycle Bin.
+        /// </summary>
+        internal static string Microsoft_plugin_sys_RecycleBin_description {
+            get {
+                return ResourceManager.GetString("Microsoft_plugin_sys_RecycleBin_description", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Recycle Bin emptied successfully..
+        /// </summary>
+        internal static string Microsoft_plugin_sys_RecycleBin_EmptySuccessMessage {
+            get {
+                return ResourceManager.GetString("Microsoft_plugin_sys_RecycleBin_EmptySuccessMessage", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The task to empty the Recycle Bin is already running..
+        /// </summary>
+        internal static string Microsoft_plugin_sys_RecycleBin_EmptyTaskRunning {
+            get {
+                return ResourceManager.GetString("Microsoft_plugin_sys_RecycleBin_EmptyTaskRunning", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Failed to empty the Recycle Bin:.
+        /// </summary>
+        internal static string Microsoft_plugin_sys_RecycleBin_ErrorMsg {
+            get {
+                return ResourceManager.GetString("Microsoft_plugin_sys_RecycleBin_ErrorMsg", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Recycle Bin is empty..
+        /// </summary>
+        internal static string Microsoft_plugin_sys_RecycleBin_IsEmpty {
+            get {
+                return ResourceManager.GetString("Microsoft_plugin_sys_RecycleBin_IsEmpty", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Empty Recycle Bin.
+        /// </summary>
+        internal static string Microsoft_plugin_sys_RecycleBin_searchTag {
+            get {
+                return ResourceManager.GetString("Microsoft_plugin_sys_RecycleBin_searchTag", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Show a success message after empty the Recycle Bin.
+        /// </summary>
+        internal static string Microsoft_plugin_sys_RecycleBin_ShowEmptySuccessMessage {
+            get {
+                return ResourceManager.GetString("Microsoft_plugin_sys_RecycleBin_ShowEmptySuccessMessage", resourceCulture);
             }
         }
         

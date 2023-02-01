@@ -184,6 +184,9 @@
   <data name="DeleteDialogAreYouSure.Text" xml:space="preserve">
     <value>Are you sure you want to delete this entry?</value>
   </data>
+  <data name="DuplicateEntryIcon.[using:Microsoft.UI.Xaml.Controls]ToolTipService.ToolTip" xml:space="preserve">
+    <value>Duplicate entry</value>
+  </data>
   <data name="Entries.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
     <value>Entries</value>
   </data>
@@ -234,6 +237,10 @@
     <value>Ping</value>
     <comment>"Ping" refers to the command-line utility, do not loc</comment>
   </data>
+  <data name="PingIcon.[using:Microsoft.UI.Xaml.Controls]ToolTipService.ToolTip" xml:space="preserve">
+    <value>Ping response</value>
+    <comment>"Ping" refers to the command-line utility, do not loc</comment>
+  </data>
   <data name="Reload.Content" xml:space="preserve">
     <value>Reload</value>
   </data>
@@ -242,6 +249,9 @@
   </data>
   <data name="SettingsBtn.[using:Microsoft.UI.Xaml.Controls]ToolTipService.ToolTip" xml:space="preserve">
     <value>Settings</value>
+  </data>
+  <data name="ShowOnlyDuplicates.Header" xml:space="preserve">
+    <value>Show only duplicates</value>
   </data>
   <data name="UpdateBtn" xml:space="preserve">
     <value>Update</value>

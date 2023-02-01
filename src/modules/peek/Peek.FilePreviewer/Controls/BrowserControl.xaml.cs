@@ -2,15 +2,15 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System;
+using Microsoft.UI.Xaml;
+using Microsoft.UI.Xaml.Controls;
+using Microsoft.Web.WebView2.Core;
+using Windows.System;
+
 namespace Peek.FilePreviewer.Controls
 {
-    using System;
-    using Microsoft.UI.Xaml;
-    using Microsoft.UI.Xaml.Controls;
-    using Microsoft.Web.WebView2.Core;
-    using Windows.System;
-
-    public sealed partial class BrowserControl : UserControl
+    public sealed partial class BrowserControl : UserControl, IDisposable
     {
         /// <summary>
         /// Helper private Uri where we cache the last navigated page
@@ -21,7 +21,14 @@ namespace Peek.FilePreviewer.Controls
 
         public delegate void NavigationCompletedHandler(WebView2? sender, CoreWebView2NavigationCompletedEventArgs? args);
 
+        public delegate void DOMContentLoadedHandler(CoreWebView2? sender, CoreWebView2DOMContentLoadedEventArgs? args);
+
         public event NavigationCompletedHandler? NavigationCompleted;
+
+        public event DOMContentLoadedHandler? DOMContentLoaded;
+
+        private string previewBrowserUserDataFolder = System.Environment.GetEnvironmentVariable("USERPROFILE") +
+                        "\\AppData\\LocalLow\\Microsoft\\PowerToys\\Peek-Temp";
 
         public static readonly DependencyProperty SourceProperty = DependencyProperty.Register(
                 nameof(Source),
@@ -29,27 +36,24 @@ namespace Peek.FilePreviewer.Controls
                 typeof(BrowserControl),
                 new PropertyMetadata(null, new PropertyChangedCallback((d, e) => ((BrowserControl)d).SourcePropertyChanged())));
 
-        public static readonly DependencyProperty IsNavigationCompletedProperty = DependencyProperty.Register(
-                nameof(IsNavigationCompleted),
-                typeof(bool),
-                typeof(BrowserControl),
-                new PropertyMetadata(false));
-
         public Uri? Source
         {
             get { return (Uri)GetValue(SourceProperty); }
             set { SetValue(SourceProperty, value); }
         }
 
-        public bool IsNavigationCompleted
-        {
-            get { return (bool)GetValue(IsNavigationCompletedProperty); }
-            set { SetValue(IsNavigationCompletedProperty, value); }
-        }
-
         public BrowserControl()
         {
             this.InitializeComponent();
+            Environment.SetEnvironmentVariable("WEBVIEW2_USER_DATA_FOLDER", previewBrowserUserDataFolder, EnvironmentVariableTarget.Process);
+        }
+
+        public void Dispose()
+        {
+            if (PreviewBrowser.CoreWebView2 != null)
+            {
+                PreviewBrowser.CoreWebView2.DOMContentLoaded -= CoreWebView2_DOMContentLoaded;
+            }
         }
 
         /// <summary>
@@ -59,7 +63,8 @@ namespace Peek.FilePreviewer.Controls
         /// </summary>
         public void Navigate()
         {
-            IsNavigationCompleted = false;
+            var value = Environment.GetEnvironmentVariable("WEBVIEW2_ADDITIONAL_BROWSER_ARGUMENTS");
+
             _navigatedUri = null;
 
             if (Source != null)
@@ -89,11 +94,18 @@ namespace Peek.FilePreviewer.Controls
                 PreviewBrowser.CoreWebView2.Settings.IsPasswordAutosaveEnabled = false;
                 PreviewBrowser.CoreWebView2.Settings.IsScriptEnabled = false;
                 PreviewBrowser.CoreWebView2.Settings.IsWebMessageEnabled = false;
+
+                PreviewBrowser.CoreWebView2.DOMContentLoaded += CoreWebView2_DOMContentLoaded;
             }
             catch
             {
                 // TODO: exception / telemetry log?
             }
+        }
+
+        private void CoreWebView2_DOMContentLoaded(CoreWebView2 sender, CoreWebView2DOMContentLoadedEventArgs args)
+        {
+            DOMContentLoaded?.Invoke(sender, args);
         }
 
         private async void PreviewBrowser_NavigationStarting(WebView2 sender, Microsoft.Web.WebView2.Core.CoreWebView2NavigationStartingEventArgs args)
@@ -115,8 +127,6 @@ namespace Peek.FilePreviewer.Controls
         {
             if (args.IsSuccess)
             {
-                IsNavigationCompleted = true;
-
                 _navigatedUri = Source;
             }
 

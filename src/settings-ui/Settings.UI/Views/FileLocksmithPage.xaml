@@ -15,7 +15,7 @@
         x:Uid="FileLocksmith"
         ModuleImageSource="ms-appx:///Assets/Modules/FileLocksmith.png">
         <controls:SettingsPageControl.ModuleContent>
-            <StackPanel Orientation="Vertical">
+            <StackPanel Orientation="Vertical" ChildrenTransitions="{StaticResource SettingsCardsAnimations}">
                 <labs:SettingsCard
                     x:Uid="FileLocksmith_Enable_FileLocksmith"
                     HeaderIcon="{ui:BitmapIcon Source=/Assets/FluentIcons/FluentIconsFileLocksmith.png}"

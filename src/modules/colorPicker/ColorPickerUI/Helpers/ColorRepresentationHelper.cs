@@ -5,8 +5,8 @@
 using System;
 using System.Drawing;
 using System.Globalization;
+using ColorPicker.Properties;
 using ManagedCommon;
-using Microsoft.PowerToys.Settings.UI.Library.Enumerations;
 
 namespace ColorPicker.Helpers
 {
@@ -34,26 +34,17 @@ namespace ColorPicker.Helpers
         /// <param name="colorRepresentationType">The type of the representation</param>
         /// <returns>A <see cref="string"/> representation of a color</returns>
         internal static string GetStringRepresentation(Color color, string colorRepresentationType, string colorFormat)
-            => colorRepresentationType switch
+        {
+            if (string.IsNullOrEmpty(colorFormat))
             {
-                "CMYK" => ColorToCMYK(color),
-                "HEX" => ColorToHex(color),
-                "HSB" => ColorToHSB(color),
-                "HSI" => ColorToHSI(color),
-                "HSL" => ColorToHSL(color),
-                "HSV" => ColorToHSV(color),
-                "HWB" => ColorToHWB(color),
-                "NCol" => ColorToNCol(color),
-                "RGB" => ColorToRGB(color),
-                "CIELAB" => ColorToCIELAB(color),
-                "CIEXYZ" => ColorToCIEXYZ(color),
-                "VEC4" => ColorToFloat(color),
-                "Decimal" => ColorToDecimal(color),
-                "HEX Int" => ColorToHexInteger(color),
-
-                // Fall-back value, when "_userSettings.CopiedColorRepresentation.Value" is incorrect
-                _ => string.IsNullOrEmpty(colorFormat) ? ColorToHex(color) : ColorFormatHelper.GetStringRepresentation(color, colorFormat),
-            };
+                return ColorToHex(color);
+            }
+            else
+            {
+                // get string representation in 2 steps. First replace all color specific number values then in 2nd step replace color name with localisation
+                return ReplaceName(ColorFormatHelper.GetStringRepresentation(color, colorFormat), color);
+            }
+        }
 
         /// <summary>
         /// Return a <see cref="string"/> representation of a CMYK color
@@ -130,7 +121,7 @@ namespace ColorPicker.Helpers
         /// <returns>a string value number</returns>
         private static string ColorToDecimal(Color color)
         {
-            return $"{color.R + (color.G * 256) + (color.B * 65536)}";
+            return $"{(color.R * 65536) + (color.G * 256) + color.B}";
         }
 
         /// <summary>
@@ -282,6 +273,61 @@ namespace ColorPicker.Helpers
                 + $"{color.R.ToString(hexFormat, CultureInfo.InvariantCulture)}"
                 + $"{color.G.ToString(hexFormat, CultureInfo.InvariantCulture)}"
                 + $"{color.B.ToString(hexFormat, CultureInfo.InvariantCulture)}";
+        }
+
+        public static string GetColorNameFromColorIdentifier(string colorIdentifier)
+        {
+            switch (colorIdentifier)
+            {
+                case "TEXT_COLOR_WHITE": return Resources.TEXT_COLOR_WHITE;
+                case "TEXT_COLOR_BLACK": return Resources.TEXT_COLOR_BLACK;
+                case "TEXT_COLOR_LIGHTGRAY": return Resources.TEXT_COLOR_LIGHTGRAY;
+                case "TEXT_COLOR_GRAY": return Resources.TEXT_COLOR_GRAY;
+                case "TEXT_COLOR_DARKGRAY": return Resources.TEXT_COLOR_DARKGRAY;
+                case "TEXT_COLOR_CORAL": return Resources.TEXT_COLOR_CORAL;
+                case "TEXT_COLOR_ROSE": return Resources.TEXT_COLOR_ROSE;
+                case "TEXT_COLOR_LIGHTORANGE": return Resources.TEXT_COLOR_LIGHTORANGE;
+                case "TEXT_COLOR_TAN": return Resources.TEXT_COLOR_TAN;
+                case "TEXT_COLOR_LIGHTYELLOW": return Resources.TEXT_COLOR_LIGHTYELLOW;
+                case "TEXT_COLOR_LIGHTGREEN": return Resources.TEXT_COLOR_LIGHTGREEN;
+                case "TEXT_COLOR_LIME": return Resources.TEXT_COLOR_LIME;
+                case "TEXT_COLOR_AQUA": return Resources.TEXT_COLOR_AQUA;
+                case "TEXT_COLOR_SKYBLUE": return Resources.TEXT_COLOR_SKYBLUE;
+                case "TEXT_COLOR_LIGHTTURQUOISE": return Resources.TEXT_COLOR_LIGHTTURQUOISE;
+                case "TEXT_COLOR_PALEBLUE": return Resources.TEXT_COLOR_PALEBLUE;
+                case "TEXT_COLOR_LIGHTBLUE": return Resources.TEXT_COLOR_LIGHTBLUE;
+                case "TEXT_COLOR_ICEBLUE": return Resources.TEXT_COLOR_ICEBLUE;
+                case "TEXT_COLOR_PERIWINKLE": return Resources.TEXT_COLOR_PERIWINKLE;
+                case "TEXT_COLOR_LAVENDER": return Resources.TEXT_COLOR_LAVENDER;
+                case "TEXT_COLOR_PINK": return Resources.TEXT_COLOR_PINK;
+                case "TEXT_COLOR_RED": return Resources.TEXT_COLOR_RED;
+                case "TEXT_COLOR_ORANGE": return Resources.TEXT_COLOR_ORANGE;
+                case "TEXT_COLOR_BROWN": return Resources.TEXT_COLOR_BROWN;
+                case "TEXT_COLOR_GOLD": return Resources.TEXT_COLOR_GOLD;
+                case "TEXT_COLOR_YELLOW": return Resources.TEXT_COLOR_YELLOW;
+                case "TEXT_COLOR_OLIVEGREEN": return Resources.TEXT_COLOR_OLIVEGREEN;
+                case "TEXT_COLOR_GREEN": return Resources.TEXT_COLOR_GREEN;
+                case "TEXT_COLOR_BRIGHTGREEN": return Resources.TEXT_COLOR_BRIGHTGREEN;
+                case "TEXT_COLOR_TEAL": return Resources.TEXT_COLOR_TEAL;
+                case "TEXT_COLOR_TURQUOISE": return Resources.TEXT_COLOR_TURQUOISE;
+                case "TEXT_COLOR_BLUE": return Resources.TEXT_COLOR_BLUE;
+                case "TEXT_COLOR_BLUEGRAY": return Resources.TEXT_COLOR_BLUEGRAY;
+                case "TEXT_COLOR_INDIGO": return Resources.TEXT_COLOR_INDIGO;
+                case "TEXT_COLOR_PURPLE": return Resources.TEXT_COLOR_PURPLE;
+                case "TEXT_COLOR_DARKRED": return Resources.TEXT_COLOR_DARKRED;
+                case "TEXT_COLOR_DARKYELLOW": return Resources.TEXT_COLOR_DARKYELLOW;
+                case "TEXT_COLOR_DARKGREEN": return Resources.TEXT_COLOR_DARKGREEN;
+                case "TEXT_COLOR_DARKTEAL": return Resources.TEXT_COLOR_DARKTEAL;
+                case "TEXT_COLOR_DARKBLUE": return Resources.TEXT_COLOR_DARKBLUE;
+                case "TEXT_COLOR_DARKPURPLE": return Resources.TEXT_COLOR_DARKPURPLE;
+                case "TEXT_COLOR_PLUM": return Resources.TEXT_COLOR_PLUM;
+                default: return string.Empty;
+            }
+        }
+
+        public static string ReplaceName(string colorFormat, Color color)
+        {
+            return colorFormat.Replace(ColorFormatHelper.GetColorNameParameter(), GetColorNameFromColorIdentifier(ColorNameHelper.GetColorNameIdentifier(color)));
         }
     }
 }

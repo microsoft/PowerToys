@@ -2,26 +2,26 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System;
+using System.Collections.Generic;
+using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.Input;
+using ManagedCommon;
+using Microsoft.UI;
+using Microsoft.UI.Windowing;
+using Microsoft.UI.Xaml;
+using Microsoft.UI.Xaml.Controls;
+using Peek.Common.Models;
+using Peek.UI.Extensions;
+using Peek.UI.Helpers;
+using Windows.ApplicationModel.Resources;
+using Windows.Graphics;
+using Windows.Storage;
+using Windows.System;
+using WinUIEx;
+
 namespace Peek.UI.Views
 {
-    using System;
-    using System.Collections.Generic;
-    using CommunityToolkit.Mvvm.ComponentModel;
-    using CommunityToolkit.Mvvm.Input;
-    using ManagedCommon;
-    using Microsoft.UI;
-    using Microsoft.UI.Windowing;
-    using Microsoft.UI.Xaml;
-    using Microsoft.UI.Xaml.Controls;
-    using Peek.Common.Models;
-    using Peek.UI.Extensions;
-    using Peek.UI.Helpers;
-    using Windows.ApplicationModel.Resources;
-    using Windows.Graphics;
-    using Windows.Storage;
-    using Windows.System;
-    using WinUIEx;
-
     [INotifyPropertyChanged]
     public sealed partial class TitleBar : UserControl
     {
@@ -121,7 +121,7 @@ namespace Peek.UI.Views
         private async void LaunchDefaultAppButtonAsync()
         {
             StorageFile storageFile = await File.GetStorageFileAsync();
-            LauncherOptions options = new ();
+            LauncherOptions options = new();
 
             if (string.IsNullOrEmpty(DefaultAppName))
             {
