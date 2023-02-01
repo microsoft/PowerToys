@@ -260,29 +260,109 @@ bool WindowKeyboardSnap::SnapHotkeyBasedOnPosition(HWND window, DWORD vkCode, HM
 
 bool WindowKeyboardSnap::ProcessDirectedSnapHotkey(HWND window, DWORD vkCode, bool cycle, WorkArea* const workArea)
 {
+    if (!workArea)
+    {
+        return false;
+    }
+
+    bool result = false;
+
     // Check whether Alt is used in the shortcut key combination
     if (GetAsyncKeyState(VK_MENU) & 0x8000)
     {
         // continue extention process
-        bool result = Extend(window, vkCode, workArea);
-        if (result)
-        {
-            Trace::FancyZones::KeyboardSnapWindowToZone(workArea->GetLayout().get(), workArea->GetLayoutWindows());
-        }
-        return result;
+        result = Extend(window, vkCode, workArea);
     }
     else
     {
         // clean previous extention data
         m_extendData.Reset();
 
-        bool result = workArea && workArea->MoveWindowIntoZoneByDirectionAndPosition(window, vkCode, cycle);
-        if (result)
-        {
-            Trace::FancyZones::KeyboardSnapWindowToZone(workArea->GetLayout().get(), workArea->GetLayoutWindows());
-        }
-        return result;
+        result = MoveByDirectionAndPosition(window, vkCode, cycle, workArea);    
     }
+
+    if (result)
+    {
+        Trace::FancyZones::KeyboardSnapWindowToZone(workArea->GetLayout().get(), workArea->GetLayoutWindows());
+    }
+
+    return result;
+}
+
+bool WindowKeyboardSnap::MoveByDirectionAndPosition(HWND window, DWORD vkCode, bool cycle, WorkArea* const workArea)
+{
+    if (!workArea)
+    {
+        return false;
+    }
+
+    const auto& layout = workArea->GetLayout();
+    const auto& layoutWindows = workArea->GetLayoutWindows();
+    if (!layout || layout->Zones().empty())
+    {
+        return false;
+    }
+
+    const auto& zones = layout->Zones();
+    std::vector<bool> usedZoneIndices(zones.size(), false);
+    auto windowZones = layoutWindows.GetZoneIndexSetFromWindow(window);
+
+    for (const ZoneIndex id : windowZones)
+    {
+        usedZoneIndices[id] = true;
+    }
+
+    std::vector<RECT> zoneRects;
+    ZoneIndexSet freeZoneIndices;
+
+    for (const auto& [zoneId, zone] : zones)
+    {
+        if (!usedZoneIndices[zoneId])
+        {
+            zoneRects.emplace_back(zones.at(zoneId).GetZoneRect());
+            freeZoneIndices.emplace_back(zoneId);
+        }
+    }
+
+    RECT windowRect;
+    if (!GetWindowRect(window, &windowRect))
+    {
+        Logger::error(L"GetWindowRect failed, {}", get_last_error_or_default(GetLastError()));
+        return false;
+    }
+
+    // Move to coordinates relative to windowZone
+    const auto& workAreaRect = workArea->GetWorkAreaRect();
+    windowRect.top -= workAreaRect.top();
+    windowRect.bottom -= workAreaRect.top();
+    windowRect.left -= workAreaRect.left();
+    windowRect.right -= workAreaRect.left();
+
+    auto result = FancyZonesUtils::ChooseNextZoneByPosition(vkCode, windowRect, zoneRects);
+    if (result < zoneRects.size())
+    {
+        workArea->MoveWindowIntoZoneByIndex(window, freeZoneIndices[result]);
+        Trace::FancyZones::KeyboardSnapWindowToZone(layout.get(), layoutWindows);
+        return true;
+    }
+    else if (cycle)
+    {
+        // Try again from the position off the screen in the opposite direction to vkCode
+        // Consider all zones as available
+        zoneRects.resize(zones.size());
+        std::transform(zones.begin(), zones.end(), zoneRects.begin(), [](auto zone) { return zone.second.GetZoneRect(); });
+        windowRect = FancyZonesUtils::PrepareRectForCycling(windowRect, RECT(workAreaRect.left(), workAreaRect.top(), workAreaRect.right(), workAreaRect.bottom()), vkCode);
+        result = FancyZonesUtils::ChooseNextZoneByPosition(vkCode, windowRect, zoneRects);
+
+        if (result < zoneRects.size())
+        {
+            workArea->MoveWindowIntoZoneByIndex(window, result);
+            Trace::FancyZones::KeyboardSnapWindowToZone(layout.get(), layoutWindows);
+            return true;
+        }
+    }
+
+    return false;
 }
 
 bool WindowKeyboardSnap::Extend(HWND window, DWORD vkCode, WorkArea* const workArea)

@@ -49,7 +49,6 @@ public:
     void MoveWindowIntoZoneByIndex(HWND window, ZoneIndex index);
     void MoveWindowIntoZoneByIndexSet(HWND window, const ZoneIndexSet& indexSet, bool updatePosition = true);
     bool MoveWindowIntoZoneByDirectionAndIndex(HWND window, DWORD vkCode, bool cycle);
-    bool MoveWindowIntoZoneByDirectionAndPosition(HWND window, DWORD vkCode, bool cycle);
 
     void InitSnappedWindows();
     void Snap(HWND window, const ZoneIndexSet& zones);
