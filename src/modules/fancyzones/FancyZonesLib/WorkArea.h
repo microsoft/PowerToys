@@ -39,7 +39,7 @@ public:
     
     FancyZonesDataTypes::WorkAreaId UniqueId() const noexcept { return { m_uniqueId }; }
     const std::unique_ptr<Layout>& GetLayout() const noexcept { return m_layout; }
-    const std::unique_ptr<LayoutAssignedWindows>& GetLayoutWindows() const noexcept { return m_layoutWindows; }
+    const LayoutAssignedWindows& GetLayoutWindows() const noexcept { return m_layoutWindows; }
     const HWND GetWorkAreaWindow() const noexcept { return m_window; }
     const GUID GetLayoutId() const noexcept;
     
@@ -80,6 +80,6 @@ private:
     const FancyZonesDataTypes::WorkAreaId m_uniqueId;
     HWND m_window{}; // Hidden tool window used to represent current monitor desktop work area.
     std::unique_ptr<Layout> m_layout;
-    std::unique_ptr<LayoutAssignedWindows> m_layoutWindows;
+    LayoutAssignedWindows m_layoutWindows{};
     std::unique_ptr<ZonesOverlay> m_zonesOverlay;
 };

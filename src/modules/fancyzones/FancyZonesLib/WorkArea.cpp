@@ -134,7 +134,7 @@ void WorkArea::MoveWindowIntoZoneByIndex(HWND window, ZoneIndex index)
 
 void WorkArea::MoveWindowIntoZoneByIndexSet(HWND window, const ZoneIndexSet& indexSet, bool updatePosition /* = true*/)
 {
-    if (!m_layout || !m_layoutWindows || m_layout->Zones().empty() || indexSet.empty())
+    if (!m_layout || m_layout->Zones().empty() || indexSet.empty())
     {
         return;
     }
@@ -156,12 +156,12 @@ void WorkArea::MoveWindowIntoZoneByIndexSet(HWND window, const ZoneIndexSet& ind
 
 bool WorkArea::MoveWindowIntoZoneByDirectionAndIndex(HWND window, DWORD vkCode, bool cycle)
 {
-    if (!m_layout || !m_layoutWindows || m_layout->Zones().empty())
+    if (!m_layout || m_layout->Zones().empty())
     {
         return false;
     }
 
-    auto zoneIndexes = m_layoutWindows->GetZoneIndexSetFromWindow(window);
+    auto zoneIndexes = m_layoutWindows.GetZoneIndexSetFromWindow(window);
     const auto numZones = m_layout->Zones().size();
 
     // The window was not assigned to any zone here
@@ -202,14 +202,14 @@ bool WorkArea::MoveWindowIntoZoneByDirectionAndIndex(HWND window, DWORD vkCode, 
 
 bool WorkArea::MoveWindowIntoZoneByDirectionAndPosition(HWND window, DWORD vkCode, bool cycle)
 {
-    if (!m_layout || !m_layoutWindows || m_layout->Zones().empty())
+    if (!m_layout || m_layout->Zones().empty())
     {
         return false;
     }
 
     const auto& zones = m_layout->Zones();
     std::vector<bool> usedZoneIndices(zones.size(), false);
-    auto windowZones = m_layoutWindows->GetZoneIndexSetFromWindow(window);
+    auto windowZones = m_layoutWindows.GetZoneIndexSetFromWindow(window);
 
     for (const ZoneIndex id : windowZones)
     {
@@ -245,7 +245,7 @@ bool WorkArea::MoveWindowIntoZoneByDirectionAndPosition(HWND window, DWORD vkCod
     if (result < zoneRects.size())
     {
         MoveWindowIntoZoneByIndex(window, freeZoneIndices[result]);
-        Trace::FancyZones::KeyboardSnapWindowToZone(m_layout.get(), m_layoutWindows.get());
+        Trace::FancyZones::KeyboardSnapWindowToZone(m_layout.get(), m_layoutWindows);
         return true;
     }
     else if (cycle)
@@ -260,7 +260,7 @@ bool WorkArea::MoveWindowIntoZoneByDirectionAndPosition(HWND window, DWORD vkCod
         if (result < zoneRects.size())
         {
             MoveWindowIntoZoneByIndex(window, result);
-            Trace::FancyZones::KeyboardSnapWindowToZone(m_layout.get(), m_layoutWindows.get());
+            Trace::FancyZones::KeyboardSnapWindowToZone(m_layout.get(), m_layoutWindows);
             return true;
         }
     }
@@ -368,12 +368,12 @@ bool WorkArea::ExtendWindowByDirectionAndPosition(HWND window, DWORD vkCode)
 
 void WorkArea::Snap(HWND window, const ZoneIndexSet& zones)
 {
-    if (!m_layoutWindows || !m_layout)
+    if (!m_layout)
     {
         return;
     }
 
-    m_layoutWindows->Assign(window, zones);
+    m_layoutWindows.Assign(window, zones);
 
     auto guidStr = FancyZonesUtils::GuidToString(m_layout->Id());
     if (guidStr.has_value())
@@ -386,12 +386,12 @@ void WorkArea::Snap(HWND window, const ZoneIndexSet& zones)
 
 void WorkArea::Unsnap(HWND window)
 {
-    if (!m_layoutWindows || !m_layout)
+    if (!m_layout)
     {
         return;
     }
     
-    m_layoutWindows->Dismiss(window);
+    m_layoutWindows.Dismiss(window);
 
     auto guidStr = FancyZonesUtils::GuidToString(m_layout->Id());
     if (guidStr.has_value())
@@ -493,10 +493,7 @@ void WorkArea::UpdateWindowPositions()
 
 void WorkArea::CycleWindows(HWND window, bool reverse)
 {
-    if (m_layoutWindows)
-    {
-        m_layoutWindows->CycleWindows(window, reverse);
-    }
+    m_layoutWindows.CycleWindows(window, reverse);
 }
 
 #pragma region private
@@ -545,11 +542,6 @@ void WorkArea::CalculateZoneSet()
 
     m_layout = std::make_unique<Layout>(appliedLayout.value());
     m_layout->Init(m_workAreaRect, m_uniqueId.monitorId.monitor);
-
-    if (!m_layoutWindows)
-    {
-        m_layoutWindows = std::make_unique<LayoutAssignedWindows>();
-    }
 }
 
 LRESULT WorkArea::WndProc(UINT message, WPARAM wparam, LPARAM lparam) noexcept

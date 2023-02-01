@@ -50,7 +50,7 @@ bool WindowKeyboardSnap::SnapHotkeyBasedOnZoneNumber(HWND window, DWORD vkCode, 
                         }
                     }
 
-                    Trace::FancyZones::KeyboardSnapWindowToZone(workArea->GetLayout().get(), workArea->GetLayoutWindows().get());
+                    Trace::FancyZones::KeyboardSnapWindowToZone(workArea->GetLayout().get(), workArea->GetLayoutWindows());
                     return true;
                 }
                 // We iterated through all zones in current monitor zone layout, move on to next one (or previous depending on direction).
@@ -89,7 +89,7 @@ bool WindowKeyboardSnap::SnapHotkeyBasedOnZoneNumber(HWND window, DWORD vkCode, 
                 }
                 else if (workArea)
                 {
-                    Trace::FancyZones::KeyboardSnapWindowToZone(workArea->GetLayout().get(), workArea->GetLayoutWindows().get());
+                    Trace::FancyZones::KeyboardSnapWindowToZone(workArea->GetLayout().get(), workArea->GetLayoutWindows());
                 }
                 return moved;
             }
@@ -99,7 +99,7 @@ bool WindowKeyboardSnap::SnapHotkeyBasedOnZoneNumber(HWND window, DWORD vkCode, 
 
                 if (moved)
                 {
-                    Trace::FancyZones::KeyboardSnapWindowToZone(workArea->GetLayout().get(), workArea->GetLayoutWindows().get());
+                    Trace::FancyZones::KeyboardSnapWindowToZone(workArea->GetLayout().get(), workArea->GetLayoutWindows());
                 }
 
                 return moved;
@@ -183,7 +183,7 @@ bool WindowKeyboardSnap::SnapHotkeyBasedOnPosition(HWND window, DWORD vkCode, HM
             if (workArea)
             {
                 workArea->MoveWindowIntoZoneByIndexSet(window, { trueZoneIdx });
-                Trace::FancyZones::KeyboardSnapWindowToZone(workArea->GetLayout().get(), workArea->GetLayoutWindows().get());
+                Trace::FancyZones::KeyboardSnapWindowToZone(workArea->GetLayout().get(), workArea->GetLayoutWindows());
             }
 
             return true;
@@ -232,7 +232,7 @@ bool WindowKeyboardSnap::SnapHotkeyBasedOnPosition(HWND window, DWORD vkCode, HM
             if (workArea)
             {
                 workArea->MoveWindowIntoZoneByIndexSet(window, { trueZoneIdx });
-                Trace::FancyZones::KeyboardSnapWindowToZone(workArea->GetLayout().get(), workArea->GetLayoutWindows().get());
+                Trace::FancyZones::KeyboardSnapWindowToZone(workArea->GetLayout().get(), workArea->GetLayoutWindows());
             }
 
             return true;
@@ -260,7 +260,7 @@ bool WindowKeyboardSnap::ProcessDirectedSnapHotkey(HWND window, DWORD vkCode, bo
         bool result = workArea && workArea->ExtendWindowByDirectionAndPosition(window, vkCode);
         if (result)
         {
-            Trace::FancyZones::KeyboardSnapWindowToZone(workArea->GetLayout().get(), workArea->GetLayoutWindows().get());
+            Trace::FancyZones::KeyboardSnapWindowToZone(workArea->GetLayout().get(), workArea->GetLayoutWindows());
         }
         return result;
     }
@@ -269,7 +269,7 @@ bool WindowKeyboardSnap::ProcessDirectedSnapHotkey(HWND window, DWORD vkCode, bo
         bool result = workArea && workArea->MoveWindowIntoZoneByDirectionAndPosition(window, vkCode, cycle);
         if (result)
         {
-            Trace::FancyZones::KeyboardSnapWindowToZone(workArea->GetLayout().get(), workArea->GetLayoutWindows().get());
+            Trace::FancyZones::KeyboardSnapWindowToZone(workArea->GetLayout().get(), workArea->GetLayoutWindows());
         }
         return result;
     }
