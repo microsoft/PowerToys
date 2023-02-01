@@ -7,7 +7,7 @@ class Layout;
 class HighlightedZones
 {
 public:
-    HighlightedZones();
+    HighlightedZones() noexcept;
     ~HighlightedZones() = default;
 
     const ZoneIndexSet& Zones() const noexcept;

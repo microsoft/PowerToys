@@ -201,6 +201,7 @@ CHILDACTIVATE
 CHILDWINDOW
 Choibalsan
 chrdavis
+chromaticities
 Chrzan
 cht
 Chukotka
@@ -848,6 +849,7 @@ Khakassia
 Khanty
 Khovd
 KILLFOCUS
+killrunner
 Kitts
 Knownfolders
 Krai
@@ -1446,6 +1448,7 @@ reencoded
 REFCLSID
 REFGUID
 REFIID
+Refreshable
 REGCLS
 regedit
 regfile

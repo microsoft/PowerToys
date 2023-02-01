@@ -92,17 +92,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 _selectedMicrophoneIndex = MicrophoneNames.FindIndex(name => name == Settings.Properties.SelectedMicrophone.Value);
             }
 
-            _enabledGpoRuleConfiguration = GPOWrapper.GetConfiguredVideoConferenceMuteEnabledValue();
-            if (_enabledGpoRuleConfiguration == GpoRuleConfigured.Disabled || _enabledGpoRuleConfiguration == GpoRuleConfigured.Enabled)
-            {
-                // Get the enabled state from GPO.
-                _enabledStateIsGPOConfigured = true;
-                _isEnabled = _enabledGpoRuleConfiguration == GpoRuleConfigured.Enabled;
-            }
-            else
-            {
-                _isEnabled = GeneralSettingsConfig.Enabled.VideoConference;
-            }
+            InitializeEnabledValue();
 
             _cameraAndMicrophoneMuteHotkey = Settings.Properties.MuteCameraAndMicrophoneHotkey.Value;
             _microphoneMuteHotkey = Settings.Properties.MuteMicrophoneHotkey.Value;
@@ -160,6 +150,21 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             if (shouldSaveSettings)
             {
                 _settingsUtils.SaveSettings(Settings.ToJsonString(), ModuleName);
+            }
+        }
+
+        private void InitializeEnabledValue()
+        {
+            _enabledGpoRuleConfiguration = GPOWrapper.GetConfiguredVideoConferenceMuteEnabledValue();
+            if (_enabledGpoRuleConfiguration == GpoRuleConfigured.Disabled || _enabledGpoRuleConfiguration == GpoRuleConfigured.Enabled)
+            {
+                // Get the enabled state from GPO.
+                _enabledStateIsGPOConfigured = true;
+                _isEnabled = _enabledGpoRuleConfiguration == GpoRuleConfigured.Enabled;
+            }
+            else
+            {
+                _isEnabled = GeneralSettingsConfig.Enabled.VideoConference;
             }
         }
 
@@ -472,6 +477,12 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                         "{{ \"powertoys\": {{ \"{0}\": {1} }} }}",
                         ModuleName,
                         JsonSerializer.Serialize(Settings)));
+        }
+
+        public void RefreshEnabledState()
+        {
+            InitializeEnabledValue();
+            OnPropertyChanged(nameof(IsEnabled));
         }
     }
 

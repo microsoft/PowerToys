@@ -3,7 +3,7 @@
 
 #include <FancyZonesLib/Layout.h>
 
-HighlightedZones::HighlightedZones()
+HighlightedZones::HighlightedZones() noexcept
 {
 }
 

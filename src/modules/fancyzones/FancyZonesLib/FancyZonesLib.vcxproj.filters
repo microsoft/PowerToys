@@ -48,16 +48,13 @@
     <ClInclude Include="VirtualDesktop.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="WindowMoveHandler.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="FancyZonesWinHookEventIDs.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="SecondaryMouseButtonsHook.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="MonitorWorkAreaHandler.h">
+    <ClInclude Include="MonitorWorkAreaMap.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="GenericKeyHook.h">
@@ -165,6 +162,9 @@
     <ClInclude Include="DraggingState.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="WindowDrag.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="pch.cpp">
@@ -191,16 +191,13 @@
     <ClCompile Include="VirtualDesktop.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="WindowMoveHandler.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="FancyZonesWinHookEventIDs.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="SecondaryMouseButtonsHook.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="MonitorWorkAreaHandler.cpp">
+    <ClCompile Include="MonitorWorkAreaMap.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="FancyZonesData.cpp">
@@ -264,6 +261,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="DraggingState.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="WindowDrag.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

@@ -60,6 +60,14 @@
 	</ItemGroup>
 
   <ItemGroup>
+    <None Remove="FlyoutWindow.xaml" />
+    <None Remove="Flyout\AppsListPage.xaml" />
+    <None Remove="Controls\FlyoutMenuButton\FlyoutMenuButton.xaml" />
+    <None Remove="Flyout\LaunchPage.xaml" />
+    <None Remove="Flyout\ShellPage.xaml" />
+  </ItemGroup>
+
+  <ItemGroup>
     <Content Include="Assets\SplashScreen.scale-200.png" />
     <Content Include="Assets\LockScreenLogo.scale-200.png" />
     <Content Include="Assets\Square150x150Logo.scale-200.png" />
@@ -74,6 +82,7 @@
     <PackageReference Include="Microsoft.Windows.CsWinRT" Version="2.0.0" />
     <PackageReference Include="CommunityToolkit.WinUI.UI" Version="7.1.2" />
     <PackageReference Include="CommunityToolkit.WinUI.UI.Controls" Version="7.1.2" />
+    <PackageReference Include="WinUIEx" Version="1.8.0" />
     <PackageReference Include="Microsoft.WindowsAppSDK" Version="1.2.221116.1" />
     <PackageReference Include="Microsoft.Windows.SDK.BuildTools" Version="10.0.22621.755" />
     <PackageReference Include="Microsoft.Xaml.Behaviors.WinUI.Managed" Version="2.0.9" />
@@ -92,7 +101,22 @@
     <ProjectReference Include="..\Settings.UI.Library\Settings.UI.Library.csproj" />
   </ItemGroup>
   <ItemGroup>
+    <Page Update="FlyoutWindow.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Update="Flyout\LaunchPage.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Update="Flyout\ShellPage.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Update="Controls\ColorFormatEditor.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Update="Flyout\AppsListPage.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Update="Flyout\Controls\FlyoutMenuButton.xaml">
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <None Update="icon.ico">
