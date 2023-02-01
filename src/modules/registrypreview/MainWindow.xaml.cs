@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.IO;
 using Windows.ApplicationModel;
 using Windows.ApplicationModel.Resources;
+using Windows.Management.Core;
 using Windows.Storage;
 
 namespace RegistryPreview
@@ -79,7 +80,7 @@ namespace RegistryPreview
         private bool m_visualTreeReady = false;
         private Dictionary<String, TreeViewNode> m_mapRegistryKeys = null;
         private List<RegistryValue> m_listRegistryValues;
-        private ApplicationDataContainer m_applicationDataContainer = ApplicationData.Current.LocalSettings;
+        private ApplicationDataContainer m_applicationDataContainer = null;
         private SolidColorBrush m_solidColorBrushNormal = null;
         private SolidColorBrush m_solidColorBrushReadOnly = null;
 
@@ -90,6 +91,16 @@ namespace RegistryPreview
             // Initialize the string table
             m_resourceLoader = ResourceLoader.GetForViewIndependentUse();
 
+            // attempt to load the settings via the current AppContainer
+            try
+            {
+                m_applicationDataContainer = ApplicationDataManager.CreateForPackageFamily(Package.Current.Id.FamilyName).LocalSettings;
+            }
+            catch
+            {
+                m_applicationDataContainer = ApplicationDataManager.CreateForPackageFamily("736d5a59-dea7-4177-9d37-57b41883614c_cs0kxz6c6q80t").LocalSettings;
+            }
+
             // Attempts to force the visual tree to load faster
             this.Activate();
 
@@ -97,9 +108,8 @@ namespace RegistryPreview
             IntPtr windowHandle = WinRT.Interop.WindowNative.GetWindowHandle(this);
             WindowId windowId = Win32Interop.GetWindowIdFromWindow(windowHandle);
             m_appWindow = Microsoft.UI.Windowing.AppWindow.GetFromWindowId(windowId);
-            m_appWindow.SetIcon(Path.Combine(Package.Current.InstalledLocation.Path, "app.ico"));
+            m_appWindow.SetIcon("app.ico");
             m_appWindow.Closing += m_appWindow_Closing;
-
 
             // set up textBox's font colors
             m_solidColorBrushReadOnly = new SolidColorBrush(Windows.UI.Color.FromArgb(255, 120, 120, 120));
