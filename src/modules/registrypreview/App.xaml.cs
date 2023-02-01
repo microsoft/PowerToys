@@ -32,7 +32,7 @@ namespace RegistryPreview
             string[] cmdArgs = Environment.GetCommandLineArgs();
             if (cmdArgs == null)
             {
-                // Covers the doubleclick exe scenario and treated as no file loaded
+                // Covers the double click exe scenario and treated as no file loaded
                 s_Filename = "";
             }
             else if (cmdArgs.Length == 2)
