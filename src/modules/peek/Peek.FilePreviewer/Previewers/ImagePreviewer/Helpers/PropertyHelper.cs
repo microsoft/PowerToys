@@ -2,6 +2,8 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System;
+using System.Diagnostics;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using Peek.Common.Extensions;
@@ -18,14 +20,21 @@ namespace Peek.FilePreviewer.Previewers
         {
             return Task.Run(() =>
             {
-                var propertyStore = PropertyStoreHelper.GetPropertyStoreFromPath(filePath, GETPROPERTYSTOREFLAGS.GPS_OPENSLOWITEM);
-                if (propertyStore != null)
+                try
                 {
-                    var width = (int)propertyStore.GetUInt(PropertyKey.ImageHorizontalSize);
-                    var height = (int)propertyStore.GetUInt(PropertyKey.ImageVerticalSize);
+                    var propertyStore = PropertyStoreHelper.GetPropertyStoreFromPath(filePath, GETPROPERTYSTOREFLAGS.GPS_OPENSLOWITEM);
+                    if (propertyStore != null)
+                    {
+                        var width = (int)propertyStore.GetUInt(PropertyKey.ImageHorizontalSize);
+                        var height = (int)propertyStore.GetUInt(PropertyKey.ImageVerticalSize);
 
-                    Marshal.ReleaseComObject(propertyStore);
-                    return new Size(width, height);
+                        Marshal.ReleaseComObject(propertyStore);
+                        return new Size(width, height);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Debug.WriteLine(ex.Message);
                 }
 
                 return Size.Empty;
@@ -35,12 +44,19 @@ namespace Peek.FilePreviewer.Previewers
         public static Task<ulong> GetFileSizeInBytes(string filePath)
         {
             ulong bytes = 0;
-            var propertyStore = PropertyStoreHelper.GetPropertyStoreFromPath(filePath, GETPROPERTYSTOREFLAGS.GPS_OPENSLOWITEM);
-            if (propertyStore != null)
+            try
             {
-                bytes = propertyStore.GetULong(PropertyKey.FileSizeBytes);
+                var propertyStore = PropertyStoreHelper.GetPropertyStoreFromPath(filePath, GETPROPERTYSTOREFLAGS.GPS_OPENSLOWITEM);
+                if (propertyStore != null)
+                {
+                    bytes = propertyStore.GetULong(PropertyKey.FileSizeBytes);
 
-                Marshal.ReleaseComObject(propertyStore);
+                    Marshal.ReleaseComObject(propertyStore);
+                }
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine(ex.Message);
             }
 
             return Task.FromResult(bytes);
@@ -49,13 +65,20 @@ namespace Peek.FilePreviewer.Previewers
         public static Task<string> GetFileType(string filePath)
         {
             var type = string.Empty;
-            var propertyStore = PropertyStoreHelper.GetPropertyStoreFromPath(filePath, GETPROPERTYSTOREFLAGS.GPS_OPENSLOWITEM);
-            if (propertyStore != null)
+            try
             {
-                // TODO: find a way to get user friendly description
-                type = propertyStore.GetString(PropertyKey.FileType);
+                var propertyStore = PropertyStoreHelper.GetPropertyStoreFromPath(filePath, GETPROPERTYSTOREFLAGS.GPS_OPENSLOWITEM);
+                if (propertyStore != null)
+                {
+                    // TODO: find a way to get user friendly description
+                    type = propertyStore.GetString(PropertyKey.FileType);
 
-                Marshal.ReleaseComObject(propertyStore);
+                    Marshal.ReleaseComObject(propertyStore);
+                }
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine(ex.Message);
             }
 
             return Task.FromResult(type);

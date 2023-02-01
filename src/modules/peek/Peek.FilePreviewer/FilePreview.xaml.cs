@@ -163,6 +163,12 @@ namespace Peek.FilePreviewer
                 {
                     // TODO: Log task cancelled exception?
                 }
+                catch (Exception ex)
+                {
+                    // Fall back to Default previewer
+                    System.Diagnostics.Debug.WriteLine("Error in UpdatePreviewAsync, falling back to default previewer: " + ex.Message);
+                    Previewer.State = PreviewState.Error;
+                }
             }
         }
 
