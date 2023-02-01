@@ -163,6 +163,7 @@ private:
 
     HWND m_window{};
     std::unique_ptr<WindowMouseSnap> m_windowMouseSnapper{};
+    WindowKeyboardSnap m_windowKeyboardSnapper{};
     MonitorWorkAreaMap m_workAreaHandler;
     DraggingState m_draggingState;
 
@@ -599,7 +600,7 @@ LRESULT FancyZones::WndProc(HWND window, UINT message, WPARAM wparam, LPARAM lpa
 
         if (message == WM_PRIV_SNAP_HOTKEY)
         {
-            WindowKeyboardSnap::SnapForegroundWindow(static_cast<DWORD>(lparam), m_workAreaHandler.GetAllWorkAreas());
+            m_windowKeyboardSnapper.SnapForegroundWindow(static_cast<DWORD>(lparam), m_workAreaHandler.GetAllWorkAreas());
         }
         else if (message == WM_PRIV_INIT)
         {
