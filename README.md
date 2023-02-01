@@ -43,7 +43,7 @@ This is our preferred method.
 
 ### Via Microsoft Store
 
-Install from the [Microsoft Store's PowerToys page][microsoft-store-link]. You must be using the [new Microsoft Store](https://blogs.windows.com/windowsExperience/2021/06/24/building-a-new-open-microsoft-store-on-windows-11/) which will be available for both Windows 11 and Windows 10.
+Install from the [Microsoft Store's PowerToys page][microsoft-store-link]. You must be using the [new Microsoft Store](https://blogs.windows.com/windowsExperience/2021/06/24/building-a-new-open-microsoft-store-on-windows-11/) which is available for both Windows 11 and Windows 10.
 
 ### Via WinGet (Preview)
 Download PowerToys from [WinGet][winget-link]. To install PowerToys, run the following command from the command line / PowerShell:
@@ -109,7 +109,7 @@ In this release, we focused on releasing new features and improvements.
 - Added dashes characters. Thanks [@Aaron-Junker](https://github.com/Aaron-Junker)!
 - Added Estonian characters. Thanks [@jovark](https://github.com/jovark)!
 - Added Hebrew characters. Thanks [@Evyatar-E](https://github.com/Evyatar-E)!
-- Added combining characters. Thanks [@Aaron-Junker](https://github.com/Aaron-Junker)!
+- Added diacritical marks. Thanks [@Aaron-Junker](https://github.com/Aaron-Junker)!
 - Added Norwegian characters. Thanks [@norwayman22](https://github.com/norwayman22)!
 
 ### Settings
