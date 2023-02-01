@@ -1,4 +1,4 @@
-﻿using Microsoft.UI.Input;
+using Microsoft.UI.Input;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using System;
@@ -26,7 +26,7 @@ namespace RegistryPreview
             treeView.RootNodes.Clear();
             ClearTable();
 
-            // update the current window's title with the current fileanme
+            // update the current window's title with the current filename
             UpdateWindowTitle(filename);
 
             // Load in the whole file in one call and plop it all into textBox
@@ -100,7 +100,7 @@ namespace RegistryPreview
             // check to see if there was a key in treeView before the refresh happened 
             if (currentNode != null)
             {
-                // since there is a valid node, get the fullpath of the key that was selected
+                // since there is a valid node, get the FullPath of the key that was selected
                 String selectedFullPath = ((RegistryKey)currentNode.Content).FullPath;
 
                 // check to see if we still have the key in the new Dictionary of keys
@@ -159,7 +159,7 @@ namespace RegistryPreview
             String[] registryLines = filenameText.Split("\r");
             if (registryLines.Length <= 1)
             {
-                // after the splt, we have no lines so get out
+                // after the split, we have no lines so get out
                 ChangeCursor(gridPreview, false);
                 return false;
             }
@@ -309,7 +309,7 @@ namespace RegistryPreview
                     // shove the updated array into the Tag property
                     ((RegistryKey)treeViewNode.Content).Tag = arrayList;
                 }
-                // if we get here, it's not a Key (starts with [) or Value (starts with " or @) so it's likely cruft (comments that start with ; fall out here)
+                // if we get here, it's not a Key (starts with [) or Value (starts with " or @) so it's likely waste (comments that start with ; fall out here)
 
                 // read the next line from the REG file
                 index++;
@@ -354,7 +354,7 @@ namespace RegistryPreview
 
         /// <summary>
         /// Enable command bar buttons and textBox.
-        /// Note that writeButton, saveAdBuggon, and textBox all update with the same value on purpose
+        /// Note that writeButton, saveAsButton, and textBox all update with the same value on purpose
         /// </summary>   
         private void UpdateToolBarAndUI(bool enableWrite, bool enableRefresh, bool enableEdit)
         {
@@ -415,7 +415,7 @@ namespace RegistryPreview
                     newNode.Children.Add(previousNode);
                 }
 
-                // befmore moving onto the next node, tag the previous node and update the path
+                // before moving onto the next node, tag the previous node and update the path
                 previousNode = newNode;
                 fullPath = fullPath.Replace(String.Format(@"\{0}", individualKeys[i]), "");
                 
