@@ -45,7 +45,7 @@ bool WindowKeyboardSnap::SnapHotkeyBasedOnZoneNumber(HWND window, DWORD vkCode, 
             {
                 const auto& workArea = activeWorkAreas.at(*currMonitor);
             
-                if (workArea && workArea->MoveWindowIntoZoneByDirectionAndIndex(window, vkCode, false /* cycle through zones */))
+                if (MoveByDirectionAndIndex(window, vkCode, false /* cycle through zones */, workArea.get()))
                 {
                     // unassign from previous work area
                     for (auto& [_, prevWorkArea] : activeWorkAreas)
@@ -87,7 +87,7 @@ bool WindowKeyboardSnap::SnapHotkeyBasedOnZoneNumber(HWND window, DWORD vkCode, 
             // Single monitor environment, or combined multi-monitor environment.
             if (FancyZonesSettings::settings().restoreSize)
             {
-                bool moved = workArea && workArea->MoveWindowIntoZoneByDirectionAndIndex(window, vkCode, false /* cycle through zones */);
+                bool moved = MoveByDirectionAndIndex(window, vkCode, false /* cycle through zones */, workArea.get());
                 if (!moved)
                 {
                     FancyZonesWindowUtils::RestoreWindowOrigin(window);
@@ -101,7 +101,7 @@ bool WindowKeyboardSnap::SnapHotkeyBasedOnZoneNumber(HWND window, DWORD vkCode, 
             }
             else
             {
-                bool moved = workArea && workArea->MoveWindowIntoZoneByDirectionAndIndex(window, vkCode, true /* cycle through zones */);
+                bool moved = MoveByDirectionAndIndex(window, vkCode, true /* cycle through zones */, workArea.get());
 
                 if (moved)
                 {
