@@ -90,7 +90,7 @@ namespace RegistryPreview
             // Initialize the string table
             m_resourceLoader = ResourceLoader.GetForViewIndependentUse();
 
-            // Attempts to forse the visual tree to load faster
+            // Attempts to force the visual tree to load faster
             this.Activate();
 
             // Update the Win32 looking window with the correct icon (and grab the appWindow handle for later)
