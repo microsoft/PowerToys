@@ -43,5 +43,8 @@ private:
     bool SnapHotkeyBasedOnZoneNumber(HWND window, DWORD vkCode, HMONITOR monitor, const std::unordered_map<HMONITOR, std::unique_ptr<WorkArea>>& activeWorkAreas);
     bool SnapHotkeyBasedOnPosition(HWND window, DWORD vkCode, HMONITOR monitor, const std::unordered_map<HMONITOR, std::unique_ptr<WorkArea>>& activeWorkAreas);
     bool ProcessDirectedSnapHotkey(HWND window, DWORD vkCode, bool cycle, WorkArea* const workArea);
+
+    bool Extend(HWND window, DWORD vkCode, WorkArea* const workArea);
+
     ExtendWindowModeData m_extendData{}; // Needed for ExtendWindowByDirectionAndPosition
 };

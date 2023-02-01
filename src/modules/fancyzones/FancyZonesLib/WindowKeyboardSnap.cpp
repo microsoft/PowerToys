@@ -7,6 +7,9 @@
 #include <FancyZonesLib/WorkArea.h>
 #include <FancyZonesLib/util.h>
 
+#include <common/logger/logger.h>
+#include <common/utils/winapi_error.h>
+
 bool WindowKeyboardSnap::SnapForegroundWindow(DWORD vkCode, const std::unordered_map<HMONITOR, std::unique_ptr<WorkArea>>& activeWorkAreas)
 {
     // We already checked in ShouldProcessSnapHotkey whether the foreground window is a candidate for zoning
@@ -28,6 +31,9 @@ bool WindowKeyboardSnap::SnapForegroundWindow(DWORD vkCode, const std::unordered
 
 bool WindowKeyboardSnap::SnapHotkeyBasedOnZoneNumber(HWND window, DWORD vkCode, HMONITOR current, const std::unordered_map<HMONITOR, std::unique_ptr<WorkArea>>& activeWorkAreas)
 {
+    // clean previous extention data
+    m_extendData.Reset();
+
     std::vector<HMONITOR> monitors = FancyZonesUtils::GetMonitorsOrdered();
     if (current && monitors.size() > 1 && FancyZonesSettings::settings().moveWindowAcrossMonitors)
     {
@@ -257,7 +263,8 @@ bool WindowKeyboardSnap::ProcessDirectedSnapHotkey(HWND window, DWORD vkCode, bo
     // Check whether Alt is used in the shortcut key combination
     if (GetAsyncKeyState(VK_MENU) & 0x8000)
     {
-        bool result = workArea && workArea->ExtendWindowByDirectionAndPosition(window, vkCode);
+        // continue extention process
+        bool result = Extend(window, vkCode, workArea);
         if (result)
         {
             Trace::FancyZones::KeyboardSnapWindowToZone(workArea->GetLayout().get(), workArea->GetLayoutWindows());
@@ -266,6 +273,9 @@ bool WindowKeyboardSnap::ProcessDirectedSnapHotkey(HWND window, DWORD vkCode, bo
     }
     else
     {
+        // clean previous extention data
+        m_extendData.Reset();
+
         bool result = workArea && workArea->MoveWindowIntoZoneByDirectionAndPosition(window, vkCode, cycle);
         if (result)
         {
@@ -273,4 +283,107 @@ bool WindowKeyboardSnap::ProcessDirectedSnapHotkey(HWND window, DWORD vkCode, bo
         }
         return result;
     }
+}
+
+bool WindowKeyboardSnap::Extend(HWND window, DWORD vkCode, WorkArea* const workArea)
+{
+    if (!workArea)
+    {
+        return false;
+    }
+
+    const auto& layout = workArea->GetLayout();
+    const auto& layoutWindows = workArea->GetLayoutWindows();
+    if (!layout || layout->Zones().empty())
+    {
+        return false;
+    }
+
+    RECT windowRect;
+    if (!GetWindowRect(window, &windowRect))
+    {
+        Logger::error(L"GetWindowRect failed, {}", get_last_error_or_default(GetLastError()));
+        return false;
+    }
+
+    const auto& zones = layout->Zones();
+    auto appliedZones = layoutWindows.GetZoneIndexSetFromWindow(window);
+    
+    std::vector<bool> usedZoneIndices(zones.size(), false);
+    std::vector<RECT> zoneRects;
+    ZoneIndexSet freeZoneIndices;
+
+    // If selectManyZones = true for the second time, use the last zone into which we moved
+    // instead of the window rect and enable moving to all zones except the old one
+    if (m_extendData.IsExtended(window))
+    {
+        usedZoneIndices[m_extendData.windowFinalIndex] = true;
+        windowRect = zones.at(m_extendData.windowFinalIndex).GetZoneRect();
+    }
+    else
+    {
+        for (const ZoneIndex idx : appliedZones)
+        {
+            usedZoneIndices[idx] = true;
+        }
+
+        // Move to coordinates relative to windowZone
+        const auto& workAreaRect = workArea->GetWorkAreaRect();
+        windowRect.top -= workAreaRect.top();
+        windowRect.bottom -= workAreaRect.top();
+        windowRect.left -= workAreaRect.left();
+        windowRect.right -= workAreaRect.left();
+
+        m_extendData.Set(window);
+    }
+
+    for (size_t i = 0; i < zones.size(); i++)
+    {
+        if (!usedZoneIndices[i])
+        {
+            zoneRects.emplace_back(zones.at(i).GetZoneRect());
+            freeZoneIndices.emplace_back(i);
+        }
+    }
+
+    const auto result = FancyZonesUtils::ChooseNextZoneByPosition(vkCode, windowRect, zoneRects);
+    if (result >= zoneRects.size())
+    {
+        return false;
+    }
+
+    ZoneIndex targetZone = freeZoneIndices[result];
+    ZoneIndexSet resultIndexSet;
+
+    // First time with selectManyZones = true for this window?
+    if (m_extendData.windowFinalIndex == -1)
+    {
+        // Already zoned?
+        if (appliedZones.size())
+        {
+            m_extendData.windowInitialIndexSet = appliedZones;
+            m_extendData.windowFinalIndex = targetZone;
+            resultIndexSet = layout->GetCombinedZoneRange(appliedZones, { targetZone });
+        }
+        else
+        {
+            m_extendData.windowInitialIndexSet = { targetZone };
+            m_extendData.windowFinalIndex = targetZone;
+            resultIndexSet = { targetZone };
+        }
+    }
+    else
+    {
+        auto deletethis = m_extendData.windowInitialIndexSet;
+        m_extendData.windowFinalIndex = targetZone;
+        resultIndexSet = layout->GetCombinedZoneRange(m_extendData.windowInitialIndexSet, { targetZone });
+    }
+
+    const auto rect = layout->GetCombinedZonesRect(resultIndexSet);
+    const auto adjustedRect = FancyZonesWindowUtils::AdjustRectForSizeWindowToRect(window, rect, workArea->GetWorkAreaWindow());
+    FancyZonesWindowUtils::SizeWindowToRect(window, adjustedRect);
+
+    workArea->Snap(window, resultIndexSet);
+
+    return true;
 }

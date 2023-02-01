@@ -42,6 +42,7 @@ public:
     const LayoutAssignedWindows& GetLayoutWindows() const noexcept { return m_layoutWindows; }
     const HWND GetWorkAreaWindow() const noexcept { return m_window; }
     const GUID GetLayoutId() const noexcept;
+    const FancyZonesUtils::Rect& GetWorkAreaRect() const noexcept { return m_workAreaRect; }
     
     ZoneIndexSet GetWindowZoneIndexes(HWND window) const;
 
@@ -49,7 +50,6 @@ public:
     void MoveWindowIntoZoneByIndexSet(HWND window, const ZoneIndexSet& indexSet, bool updatePosition = true);
     bool MoveWindowIntoZoneByDirectionAndIndex(HWND window, DWORD vkCode, bool cycle);
     bool MoveWindowIntoZoneByDirectionAndPosition(HWND window, DWORD vkCode, bool cycle);
-    bool ExtendWindowByDirectionAndPosition(HWND window, DWORD vkCode);
 
     void InitSnappedWindows();
     void Snap(HWND window, const ZoneIndexSet& zones);
