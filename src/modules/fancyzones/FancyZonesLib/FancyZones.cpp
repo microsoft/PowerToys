@@ -936,7 +936,7 @@ void FancyZones::UpdateActiveLayouts() noexcept
     {
         if (workArea)
         {
-            workArea->UpdateActiveZoneSet();
+            workArea->InitLayout();
 
             if (FancyZonesSettings::settings().zoneSetChange_moveWindows)
             {

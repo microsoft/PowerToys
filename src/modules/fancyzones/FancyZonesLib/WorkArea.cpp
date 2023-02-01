@@ -209,15 +209,10 @@ void WorkArea::FlashZones()
     }
 }
 
-void WorkArea::UpdateActiveZoneSet()
+void WorkArea::InitLayout()
 {
-    const bool isLayoutAlreadyApplied = AppliedLayouts::instance().IsLayoutApplied(m_uniqueId);
-    if (!isLayoutAlreadyApplied)
-    {
-        AppliedLayouts::instance().ApplyDefaultLayout(m_uniqueId);
-    }
+    InitLayout({});
 
-    CalculateZoneSet();
     if (m_window && m_layout)
     {
         m_zonesOverlay->DrawActiveZoneSet(m_layout->Zones(), {}, Colors::GetZoneColors(), FancyZonesSettings::settings().showZoneNumber);
