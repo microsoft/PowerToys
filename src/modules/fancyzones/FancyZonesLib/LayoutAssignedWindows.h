@@ -4,14 +4,6 @@
 
 class LayoutAssignedWindows
 {
-public:
-    struct ExtendWindowModeData
-    {
-        HWND window{ nullptr };
-        ZoneIndexSet windowInitialIndexSet{};
-        ZoneIndex windowFinalIndex{ -1 };
-    };
-
 public :
     LayoutAssignedWindows();
     ~LayoutAssignedWindows() = default;
@@ -25,12 +17,9 @@ public :
     
     void CycleWindows(HWND window, bool reverse);
 
-    ExtendWindowModeData& ExtendWindowData();
-
 private:
     std::map<HWND, ZoneIndexSet> m_windowIndexSet{};
     std::map<ZoneIndexSet, std::vector<HWND>> m_windowsByIndexSets{};
-    ExtendWindowModeData m_extendData{}; // Needed for ExtendWindowByDirectionAndPosition
 
     void InsertWindowIntoZone(HWND window, std::optional<size_t> tabSortKeyWithinZone, const ZoneIndexSet& indexSet);
     HWND GetNextZoneWindow(ZoneIndexSet indexSet, HWND current, bool reverse) noexcept;

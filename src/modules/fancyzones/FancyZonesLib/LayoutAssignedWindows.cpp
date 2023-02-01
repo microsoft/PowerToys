@@ -111,11 +111,6 @@ void LayoutAssignedWindows::CycleWindows(HWND window, bool reverse)
     }
 }
 
-LayoutAssignedWindows::ExtendWindowModeData& LayoutAssignedWindows::ExtendWindowData()
-{
-    return m_extendData;
-}
-
 void LayoutAssignedWindows::InsertWindowIntoZone(HWND window, std::optional<size_t> tabSortKeyWithinZone, const ZoneIndexSet& indexSet)
 {
     if (tabSortKeyWithinZone.has_value())
