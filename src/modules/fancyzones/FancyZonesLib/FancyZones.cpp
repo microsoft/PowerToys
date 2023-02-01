@@ -150,7 +150,7 @@ private:
 
     bool MoveToAppLastZone(HWND window, HMONITOR monitor) noexcept;
     
-    void UpdateActiveLayouts() noexcept;
+    void RefreshLayouts() noexcept;
     bool ShouldProcessSnapHotkey(DWORD vkCode) noexcept;
     void ApplyQuickLayout(int key) noexcept;
     void FlashZones() noexcept;
@@ -930,7 +930,7 @@ void FancyZones::SettingsUpdate(SettingId id)
     }
 }
 
-void FancyZones::UpdateActiveLayouts() noexcept
+void FancyZones::RefreshLayouts() noexcept
 {
     for (const auto& [_, workArea] : m_workAreaHandler.GetAllWorkAreas())
     {
