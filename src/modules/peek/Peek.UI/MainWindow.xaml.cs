@@ -77,6 +77,7 @@ namespace Peek.UI
         private void Initialize()
         {
             ViewModel.FolderItemsQuery.Start();
+            ViewModel.ScalingFactor = this.GetMonitorScale();
         }
 
         private void Uninitialize()

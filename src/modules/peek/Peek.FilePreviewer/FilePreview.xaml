@@ -21,6 +21,8 @@
         <Image
             x:Name="ImagePreview"
             Source="{x:Bind BitmapPreviewer.Preview, Mode=OneWay}"
+            MaxHeight="{x:Bind BitmapPreviewer.MaxImageSize.Height, Mode=OneWay}"
+            MaxWidth="{x:Bind BitmapPreviewer.MaxImageSize.Width, Mode=OneWay}"
             ToolTipService.ToolTip="{x:Bind ImageInfoTooltip, Mode=OneWay}"
             Visibility="{x:Bind IsPreviewVisible(BitmapPreviewer, Previewer.State), Mode=OneWay}" />
 

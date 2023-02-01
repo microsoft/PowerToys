@@ -34,6 +34,13 @@ namespace Peek.FilePreviewer
             typeof(FilePreview),
             new PropertyMetadata(false, async (d, e) => await ((FilePreview)d).OnFilePropertyChanged()));
 
+        public static readonly DependencyProperty ScalingFactorProperty =
+            DependencyProperty.Register(
+                nameof(ScalingFactor),
+                typeof(double),
+                typeof(FilePreview),
+                new PropertyMetadata(false, async (d, e) => await ((FilePreview)d).OnScalingFactorPropertyChanged()));
+
         [ObservableProperty]
         [NotifyPropertyChangedFor(nameof(BitmapPreviewer))]
         [NotifyPropertyChangedFor(nameof(BrowserPreviewer))]
@@ -84,6 +91,12 @@ namespace Peek.FilePreviewer
             set => SetValue(FilesProperty, value);
         }
 
+        public double ScalingFactor
+        {
+            get => (double)GetValue(ScalingFactorProperty);
+            set => SetValue(ScalingFactorProperty, value);
+        }
+
         public bool MatchPreviewState(PreviewState? value, PreviewState stateToMatch)
         {
             return value == stateToMatch;
@@ -113,6 +126,19 @@ namespace Peek.FilePreviewer
             }
 
             Previewer = previewerFactory.Create(File);
+            if (Previewer is IBitmapPreviewer bitmapPreviewer)
+            {
+                bitmapPreviewer.ScalingFactor = ScalingFactor;
+            }
+
+            await UpdatePreviewAsync(_cancellationTokenSource.Token);
+        }
+
+        private async Task OnScalingFactorPropertyChanged()
+        {
+            // Cancel previous loading task
+            _cancellationTokenSource.Cancel();
+            _cancellationTokenSource = new();
 
             await UpdatePreviewAsync(_cancellationTokenSource.Token);
         }

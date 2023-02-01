@@ -57,6 +57,9 @@ namespace Peek.UI
         [ObservableProperty]
         private FolderItemsQuery _folderItemsQuery = new();
 
+        [ObservableProperty]
+        private double _scalingFactor = 1.0;
+
         private DispatcherTimer NavigationThrottleTimer { get; set; } = new();
     }
 }
