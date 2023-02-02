@@ -10,6 +10,7 @@
 #include "../interface/powertoy_module_interface.h"
 #include "Generated Files/resource.h"
 #include <common/SettingsAPI/settings_objects.h>
+#include <common/utils/EventWaiter.h>
 
 BOOL APIENTRY DllMain(HMODULE /*hModule*/, DWORD /*ul_reason_for_call*/, LPVOID /*lpReserved*/)
 {
@@ -34,6 +35,11 @@ public:
         {
             Logger::warn(L"Failed to create {} event. {}", CommonSharedConstants::SHORTCUT_GUIDE_EXIT_EVENT, get_last_error_or_default(GetLastError()));
         }
+
+        triggerEvent = CreateEvent(nullptr, false, false, CommonSharedConstants::SHORTCUT_GUIDE_TRIGGER_EVENT);
+        triggerEventWaiter = EventWaiter(CommonSharedConstants::SHORTCUT_GUIDE_TRIGGER_EVENT, [this](int) {
+            OnHotkeyEx();
+        });
 
         InitSettings();
     }
@@ -191,7 +197,9 @@ private:
     UINT m_millisecondsWinKeyPressTimeForGlobalWindowsShortcuts = DEFAULT_MILLISECONDS_WIN_KEY_PRESS_TIME_FOR_GLOBAL_WINDOWS_SHORTCUTS;
     UINT m_millisecondsWinKeyPressTimeForTaskbarIconShortcuts = DEFAULT_MILLISECONDS_WIN_KEY_PRESS_TIME_FOR_TASKBAR_ICON_SHORTCUTS;
 
+    HANDLE triggerEvent;
     HANDLE exitEvent;
+    EventWaiter triggerEventWaiter;
 
     bool StartProcess(std::wstring args = L"")
     {

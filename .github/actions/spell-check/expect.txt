@@ -92,7 +92,6 @@ Artsakh
 asdf
 AShortcut
 ASingle
-Asn
 ASSOCCHANGED
 ASYNCWINDOWPLACEMENT
 ASYNCWINDOWPOS
@@ -161,7 +160,6 @@ bpmf
 bpp
 bricelam
 BRIGHTGREEN
-Brotli
 Browsable
 bsd
 Bson
@@ -195,6 +193,7 @@ CDeclaration
 CDEF
 cdpx
 CENTERALIGN
+ceq
 cguid
 changecursor
 Changemove
@@ -203,6 +202,7 @@ CHILDACTIVATE
 CHILDWINDOW
 Choibalsan
 chrdavis
+chromaticities
 Chrzan
 cht
 Chukotka
@@ -224,10 +224,6 @@ CLIPCHILDREN
 Clipperton
 CLIPSIBLINGS
 clrcall
-clrcompression
-clretwrc
-clrgc
-clrjit
 Cls
 CLSCTX
 clsid
@@ -242,7 +238,7 @@ CMock
 CMONITORS
 cmpgt
 cmyk
-Cng
+cne
 cnt
 Cocklebiddy
 coclass
@@ -288,7 +284,6 @@ CONTROLL
 CONTROLPARENT
 Controlz
 copiedcolorrepresentation
-coreclr
 corewebview
 cortana
 cotaskmem
@@ -321,6 +316,7 @@ Ctx
 CUI
 Cunha
 currentculture
+CURRENTDIR
 CURSORINFO
 cursorpos
 customaction
@@ -353,7 +349,6 @@ davidegiacometti
 Dayof
 Dbg
 Dbghelp
-dbgshim
 DBLCLKS
 DBLEPSILON
 DCapture
@@ -362,7 +357,6 @@ DCOM
 dcommon
 dcomp
 dcompi
-DCompiler
 DComposition
 DCR
 DDevice
@@ -688,8 +682,6 @@ HOMEPATH
 homljgmgpmcbpjbnjpfijnhipfkiclkd
 HOOKPROC
 Hostbackdropbrush
-hostfxr
-hostpolicy
 hotkeycontrol
 hotkeys
 hotlight
@@ -761,7 +753,6 @@ IMAGERESIZEREXT
 imageresizerinput
 imageresizersettings
 imagingdevices
-Imc
 ime
 imeutil
 inetcpl
@@ -798,7 +789,6 @@ Intelli
 interactable
 Interlop
 INTRESOURCE
-Intrinsics
 INVALIDARG
 invalidoperatioexception
 ipc
@@ -836,7 +826,6 @@ jobject
 jpe
 jpn
 jpnime
-JSONOf
 Jsons
 jsonval
 junja
@@ -863,6 +852,7 @@ Khakassia
 Khanty
 Khovd
 KILLFOCUS
+killrunner
 Kitts
 Knownfolders
 Krai
@@ -874,7 +864,6 @@ Kyrgyzstan
 Kyzylorda
 LAlt
 Lambson
-LANGID
 langword
 Lastdevice
 Laute
@@ -1088,10 +1077,7 @@ mru
 msbuild
 msc
 msclr
-mscordaccore
-mscordbi
 mscorlib
-mscorrc
 msdata
 msedge
 MSGFLT
@@ -1104,7 +1090,6 @@ MSIXCA
 MSLLHOOKSTRUCT
 Mso
 msp
-msquic
 msrc
 msstore
 mst
@@ -1154,7 +1139,6 @@ netcpl
 netframework
 netsetup
 netsh
-netstandard
 Neue
 newcolor
 newdev
@@ -1217,7 +1201,7 @@ NPH
 NResize
 NTAPI
 ntdll
-NTFS
+ntfs
 NTSTATUS
 nugets
 nullonfailure
@@ -1331,7 +1315,6 @@ pinvoke
 pipename
 Pitcairn
 PKBDLLHOOKSTRUCT
-Pkcs
 PKEY
 plib
 PLK
@@ -1433,7 +1416,6 @@ QUERYENDSESSION
 queryfocus
 QUERYOPEN
 QUEUESYNC
-Quic
 Quickime
 QUNS
 qwertyuiopasdfghjklzxcvbnm
@@ -1462,13 +1444,14 @@ rectp
 rects
 recyclebin
 redirectedfrom
-Redist
+redist
 redistributable
 reencode
 reencoded
 REFCLSID
 REFGUID
 REFIID
+Refreshable
 REGCLS
 regedit
 regfile
@@ -1540,7 +1523,6 @@ Rsp
 Rstrtmgr
 RTB
 RTLREADING
-RTSS
 ruleset
 runas
 rundll
@@ -1549,6 +1531,7 @@ RUNLEVEL
 runsettings
 runtimeclass
 runtimeconfig
+runtimedepsjsonpath
 runtimeobject
 runtimepack
 runtimes
@@ -1704,7 +1687,6 @@ srw
 srwlock
 sse
 ssf
-Ssl
 STACKFRAME
 stackoverflow
 stackpanel
@@ -2097,7 +2079,7 @@ workspaces
 wox
 wparam
 wpf
-wpfgfx
+wpfdepsjsonpath
 wpftmp
 wpr
 wprp
@@ -2164,6 +2146,5 @@ zonable
 zoneset
 Zoneszonabletester
 Zonev
-zopfli
 Zykova
 zzz

@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Wix xmlns="http://schemas.microsoft.com/wix/2006/wi"
+     xmlns:util="http://schemas.microsoft.com/wix/UtilExtension" >
+
+  <?include $(sys.CURRENTDIR)\Common.wxi?>
+
+  <?define MeasureToolFiles=Ijwhost.dll;Microsoft.InteractiveExperiences.Projection.dll;Microsoft.Windows.ApplicationModel.DynamicDependency.Projection.dll;Microsoft.Windows.ApplicationModel.Resources.Projection.dll;Microsoft.Windows.ApplicationModel.WindowsAppRuntime.Projection.dll;Microsoft.Windows.AppLifecycle.Projection.dll;Microsoft.Windows.SDK.NET.dll;Microsoft.Windows.System.Power.Projection.dll;Microsoft.WindowsAppRuntime.Bootstrap.Net.dll;Microsoft.WinUI.dll;PowerToys.ManagedCommon.dll;PowerToys.ManagedTelemetry.dll;PowerToys.MeasureToolCore.dll;PowerToys.MeasureToolUI.deps.json;PowerToys.MeasureToolUI.dll;PowerToys.MeasureToolUI.exe;PowerToys.MeasureToolUI.runtimeconfig.json;resources.pri;System.CodeDom.dll;System.Management.dll;System.Text.Json.dll;WinRT.Runtime.dll;WinUIEx.dll;PowerToys.GPOWrapper.dll;WindowsBase.dll?>
+  <?define MeasureToolMicrosoftUIXamlAssetsInstallFiles=NoiseAsset_256x256_PNG.png?>
+
+  <Fragment>
+    <!-- Measure Tool -->
+    <DirectoryRef Id="MeasureToolInstallFolder" FileSource="$(var.BinDir)modules\$(var.MeasureToolProjectName)">
+      <Component Id="Module_MeasureToolInterface" Win64="yes">
+        <File Source="$(var.BinDir)modules\$(var.MeasureToolProjectName)\PowerToys.MeasureToolModuleInterface.dll" />
+      </Component>
+
+      <?foreach File in $(var.MeasureToolFiles)?>
+        <Component Id="MT_$(var.File)" Win64="yes">
+          <File Id="MT_$(var.File)" Source="$(var.BinDir)modules\$(var.MeasureToolProjectName)\$(var.File)" />
+        </Component>
+      <?endforeach?>
+
+    </DirectoryRef>
+
+    <DirectoryRef Id="MeasureToolMicrosoftUIXamlAssetsInstallFolder" FileSource="$(var.BinDir)modules\$(var.MeasureToolProjectName)\Microsoft.UI.Xaml\Assets">
+      <?foreach File in $(var.MeasureToolMicrosoftUIXamlAssetsInstallFiles)?>
+        <Component Id="MeasureToolMicrosoftUIXamlAssets_$(var.File)" Win64="yes">
+          <File Id="MeasureToolMicrosoftUIXamlAssetsFile_$(var.File)" Source="$(var.BinDir)modules\$(var.MeasureToolProjectName)\Microsoft.UI.Xaml\Assets\$(var.File)" />
+        </Component>
+      <?endforeach?>
+    </DirectoryRef>
+
+
+    <ComponentGroup Id="MeasureToolComponentGroup" Directory="INSTALLFOLDER">
+      <ComponentRef Id="Module_MeasureToolInterface"/>
+      <?foreach File in $(var.MeasureToolFiles)?>
+        <ComponentRef Id="MT_$(var.File)" />
+      <?endforeach?>
+      <?foreach File in $(var.MeasureToolMicrosoftUIXamlAssetsInstallFiles)?>
+        <ComponentRef Id="MeasureToolMicrosoftUIXamlAssets_$(var.File)" />
+      <?endforeach?>
+
+    </ComponentGroup>
+
+  </Fragment>
+</Wix>

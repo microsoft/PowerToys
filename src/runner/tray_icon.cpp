@@ -30,6 +30,8 @@ namespace
 
     HMENU h_menu = nullptr;
     HMENU h_sub_menu = nullptr;
+    bool double_click_timer_running = false;
+    bool double_clicked = false;
 }
 
 // Struct to fill with callback and the data. The window_proc is responsible for cleaning it.
@@ -69,7 +71,7 @@ void handle_tray_command(HWND window, const WPARAM command_id, LPARAM lparam)
     case ID_SETTINGS_MENU_COMMAND:
         {
             std::wstring settings_window{ winrt::to_hstring(ESettingsWindowNames_to_string(static_cast<ESettingsWindowNames>(lparam))) };
-            open_settings_window(settings_window);
+            open_settings_window(settings_window, false);
         }
         break;
     case ID_EXIT_MENU_COMMAND:
@@ -113,6 +115,15 @@ void handle_tray_command(HWND window, const WPARAM command_id, LPARAM lparam)
         break;
     }
         
+    }
+}
+
+void click_timer_elapsed()
+{
+    double_click_timer_running = false;
+    if (!double_clicked)
+    {
+        open_settings_window(std::nullopt, true);
     }
 }
 
@@ -168,11 +179,6 @@ LRESULT __stdcall tray_icon_window_proc(HWND window, UINT message, WPARAM wparam
         {
             switch (lparam)
             {
-            case WM_LBUTTONDBLCLK:
-            {
-                open_settings_window(std::nullopt);
-                break;
-            }
             case WM_RBUTTONUP:
             case WM_CONTEXTMENU:
             {
@@ -186,7 +192,6 @@ LRESULT __stdcall tray_icon_window_proc(HWND window, UINT message, WPARAM wparam
                     static std::wstring exit_menuitem_label = GET_RESOURCE_STRING(IDS_EXIT_MENU_TEXT);
                     static std::wstring submit_bug_menuitem_label = GET_RESOURCE_STRING(IDS_SUBMIT_BUG_TEXT);
                     static std::wstring documentation_menuitem_label = GET_RESOURCE_STRING(IDS_DOCUMENTATION_MENU_TEXT);
-                    
                     change_menu_item_text(ID_SETTINGS_MENU_COMMAND, settings_menuitem_label.data());
                     change_menu_item_text(ID_EXIT_MENU_COMMAND, exit_menuitem_label.data());
                     change_menu_item_text(ID_REPORT_BUG_COMMAND, submit_bug_menuitem_label.data());
@@ -200,6 +205,30 @@ LRESULT __stdcall tray_icon_window_proc(HWND window, UINT message, WPARAM wparam
                 GetCursorPos(&mouse_pointer);
                 SetForegroundWindow(window); // Needed for the context menu to disappear.
                 TrackPopupMenu(h_sub_menu, TPM_CENTERALIGN | TPM_BOTTOMALIGN, mouse_pointer.x, mouse_pointer.y, 0, window, nullptr);
+                break;
+            }
+            case WM_LBUTTONUP:
+            {
+                // ignore event if this is the second click of a double click
+                if (!double_click_timer_running)
+                {
+                    // start timer for detecting single or double click
+                    double_click_timer_running = true;
+                    double_clicked = false;
+                    
+                    UINT doubleClickTime = GetDoubleClickTime();
+                    std::thread([doubleClickTime]() {
+                        std::this_thread::sleep_for(std::chrono::milliseconds(doubleClickTime));
+                        click_timer_elapsed();
+                    }).detach();
+                }
+                break;
+            }
+            case WM_LBUTTONDBLCLK:
+            {
+                double_clicked = true;
+                open_settings_window(std::nullopt, false);
+                break;
             }
             break;
             }

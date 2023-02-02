@@ -1,6 +1,7 @@
 #pragma once
 
 #include <FancyZonesLib/FancyZonesDataTypes.h>
+#include <FancyZonesLib/util.h>
 
 namespace MonitorUtils
 {
@@ -19,4 +20,6 @@ namespace MonitorUtils
 
     std::vector<FancyZonesDataTypes::MonitorId> IdentifyMonitors() noexcept;
     void OpenWindowOnActiveMonitor(HWND window, HMONITOR monitor) noexcept;
+
+    FancyZonesUtils::Rect GetWorkAreaRect(HMONITOR monitor);
 };

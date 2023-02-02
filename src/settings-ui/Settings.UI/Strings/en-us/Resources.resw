@@ -1822,6 +1822,9 @@ From there, simply click on one of the supported files in the File Explorer and 
   <data name="Awake_EnableDisplayKeepAwake.Header" xml:space="preserve">
     <value>Keep screen on</value>
   </data>
+  <data name="Awake_EnableDisplayKeepAwake.Description" xml:space="preserve">
+    <value>This setting is only available when keeping the PC awake</value>
+  </data>
   <data name="Awake_Mode.Header" xml:space="preserve">
     <value>Mode</value>
   </data>
@@ -2749,6 +2752,9 @@ Activate by holding the key for the character you want to add an accent to, then
   <data name="QuickAccent_SelectedLanguage_Dutch.Content" xml:space="preserve">
     <value>Dutch</value>
   </data>
+  <data name="QuickAccent_SelectedLanguage_Norwegian.Content" xml:space="preserve">
+    <value>Norwegian</value>
+  </data>
   <data name="QuickAccent_SelectedLanguage_Pinyin.Content" xml:space="preserve">
     <value>Pinyin</value>
   </data>
@@ -2918,5 +2924,49 @@ Activate by holding the key for the character you want to add an accent to, then
   </data>
   <data name="GeneralPage_EnableExperimentation.Header" xml:space="preserve">
     <value>Enable experimentation</value>
+  </data>
+</root>
+  <data name="AllAppsTxt.Text" xml:space="preserve">
+    <value>All apps</value>
+  </data>
+  <data name="BackBtn.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>Back</value>
+  </data>
+  <data name="BackLabel.Text" xml:space="preserve">
+    <value>Back</value>
+  </data>
+  <data name="BugReportBtn.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>Bug report</value>
+  </data>
+  <data name="BugReportTooltip.Text" xml:space="preserve">
+    <value>Bug report</value>
+  </data>
+  <data name="DocsBtn.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>Documentation</value>
+  </data>
+  <data name="DocsTooltip.Text" xml:space="preserve">
+    <value>Documentation</value>
+  </data>
+  <data name="FZEditorString" xml:space="preserve">
+    <value>FancyZones Editor</value>
+    <comment>Do not localize this string</comment>
+  </data>
+  <data name="MoreBtn.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>More</value>
+  </data>
+  <data name="MoreLabel.Text" xml:space="preserve">
+    <value>More</value>
+  </data>
+  <data name="SettingsBtn.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>Settings</value>
+  </data>
+  <data name="SettingsTooltip.Text" xml:space="preserve">
+    <value>Settings</value>
+  </data>
+  <data name="ShortcutsTxt.Text" xml:space="preserve">
+    <value>Shortcuts</value>
+  </data>
+  <data name="UpdateAvailable.Title" xml:space="preserve">
+    <value>Update available</value>
   </data>
 </root>

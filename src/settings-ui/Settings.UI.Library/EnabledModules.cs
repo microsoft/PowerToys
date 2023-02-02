@@ -2,6 +2,7 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System;
 using System.Runtime.CompilerServices;
 using System.Text.Json;
 using System.Text.Json.Serialization;
@@ -12,6 +13,8 @@ namespace Microsoft.PowerToys.Settings.UI.Library
 {
     public class EnabledModules
     {
+        private Action notifyEnabledChangedAction;
+
         public EnabledModules()
         {
         }
@@ -28,6 +31,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
                 {
                     LogTelemetryEvent(value);
                     fancyZones = value;
+                    NotifyChange();
                 }
             }
         }
@@ -76,6 +80,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
                 {
                     LogTelemetryEvent(value);
                     shortcutGuide = value;
+                    NotifyChange();
                 }
             }
         }
@@ -139,6 +144,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
                 {
                     LogTelemetryEvent(value);
                     powerLauncher = value;
+                    NotifyChange();
                 }
             }
         }
@@ -155,6 +161,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
                 {
                     LogTelemetryEvent(value);
                     colorPicker = value;
+                    NotifyChange();
                 }
             }
         }
@@ -267,6 +274,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
                 {
                     LogTelemetryEvent(value);
                     powerOCR = value;
+                    NotifyChange();
                 }
             }
         }
@@ -283,6 +291,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
                 {
                     LogTelemetryEvent(value);
                     measureTool = value;
+                    NotifyChange();
                 }
             }
         }
@@ -299,6 +308,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
                 {
                     LogTelemetryEvent(value);
                     hosts = value;
+                    NotifyChange();
                 }
             }
         }
@@ -319,6 +329,11 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             }
         }
 
+        private void NotifyChange()
+        {
+            notifyEnabledChangedAction?.Invoke();
+        }
+
         public string ToJsonString()
         {
             return JsonSerializer.Serialize(this);
@@ -332,6 +347,11 @@ namespace Microsoft.PowerToys.Settings.UI.Library
                 Name = moduleName,
             };
             PowerToysTelemetry.Log.WriteEvent(dataEvent);
+        }
+
+        internal void AddEnabledModuleChangeNotification(Action callBack)
+        {
+            notifyEnabledChangedAction = callBack;
         }
     }
 }

@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Wix xmlns="http://schemas.microsoft.com/wix/2006/wi"
+     xmlns:util="http://schemas.microsoft.com/wix/UtilExtension" >
+
+  <?include $(sys.CURRENTDIR)\Common.wxi?>
+
+  <Fragment>
+    <!-- AlwaysOnTop -->
+    <DirectoryRef Id="AlwaysOnTopInstallFolder" FileSource="$(var.BinDir)modules\$(var.AlwaysOnTopProjectName)">
+      <Component Id="Module_AlwaysOnTopInterface" Win64="yes">
+        <File Source="$(var.BinDir)modules\$(var.AlwaysOnTopProjectName)\PowerToys.AlwaysOnTopModuleInterface.dll" />
+      </Component>
+      <Component Id="Module_AlwaysOnTop" Win64="yes">
+        <File Source="$(var.BinDir)modules\$(var.AlwaysOnTopProjectName)\PowerToys.AlwaysOnTop.exe" />
+      </Component>
+
+    </DirectoryRef>
+
+    <ComponentGroup Id="AlwaysOnTopComponentGroup" Directory="INSTALLFOLDER">
+      <ComponentRef Id="Module_AlwaysOnTop"/>
+      <ComponentRef Id="Module_AlwaysOnTopInterface"/>
+    </ComponentGroup>
+
+  </Fragment>
+</Wix>

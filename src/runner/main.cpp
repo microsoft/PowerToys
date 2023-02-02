@@ -203,7 +203,7 @@ int runner(bool isProcessElevated, bool openSettings, std::string settingsWindow
             {
                 window = winrt::to_hstring(settingsWindow);
             }
-            open_settings_window(window);
+            open_settings_window(window, false);
         }
 
         if (openOobe)
