@@ -157,7 +157,7 @@ namespace Wox.Infrastructure.Image
                      * - Solution: just load the icon
                      */
                     type = ImageType.Folder;
-                    image = WindowsThumbnailProvider.GetThumbnail(path, Constant.ThumbnailSize, Constant.ThumbnailSize, ThumbnailOptions.IconOnly);
+                    image = WindowsThumbnailProvider.GetThumbnail(path, Constant.ThumbnailSize, Constant.ThumbnailSize, ThumbnailOptions.IconOnly, false);
                 }
                 else if (File.Exists(path))
                 {
@@ -177,13 +177,16 @@ namespace Wox.Infrastructure.Image
                              * be the case in many situations while testing.
                              * - Solution: explicitly pass the ThumbnailOnly flag
                              */
-                            image = WindowsThumbnailProvider.GetThumbnail(path, Constant.ThumbnailSize, Constant.ThumbnailSize, ThumbnailOptions.ThumbnailOnly);
+                            image = WindowsThumbnailProvider.GetThumbnail(path, Constant.ThumbnailSize, Constant.ThumbnailSize, ThumbnailOptions.ThumbnailOnly, true);
                         }
                     }
                     else
                     {
                         type = ImageType.File;
-                        image = WindowsThumbnailProvider.GetThumbnail(path, Constant.ThumbnailSize, Constant.ThumbnailSize, ThumbnailOptions.None);
+
+                        // Switching to in cache only to fix a crash that is caused by Acrobat Reader thumbnail handler.
+                        // And additionaly this is faster and recommended through MS: https://learn.microsoft.com/en-us/windows/win32/api/shobjidl_core/nf-shobjidl_core-ishellitemimagefactory-getimage#remarks
+                        image = WindowsThumbnailProvider.GetThumbnail(path, Constant.ThumbnailSize, Constant.ThumbnailSize, ThumbnailOptions.InCacheOnly, false);
                     }
                 }
                 else

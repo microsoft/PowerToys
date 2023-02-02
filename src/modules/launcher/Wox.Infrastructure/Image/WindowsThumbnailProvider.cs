@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.Drawing;
 using System.IO.Abstractions;
 using System.Runtime.InteropServices;
 using System.Windows;
@@ -14,7 +15,7 @@ namespace Wox.Infrastructure.Image
     [Flags]
     public enum ThumbnailOptions
     {
-        None = 0x00,
+        RESIZETOFIT = 0x00,
         BiggerSizeOk = 0x01,
         InMemoryOnly = 0x02,
         IconOnly = 0x04,
@@ -77,9 +78,15 @@ namespace Wox.Infrastructure.Image
             }
         }
 
-        public static BitmapSource GetThumbnail(string fileName, int width, int height, ThumbnailOptions options)
+        public static BitmapSource GetThumbnail(string fileName, int width, int height, ThumbnailOptions options, bool isImageExtension)
         {
             IntPtr hBitmap = GetHBitmap(Path.GetFullPath(fileName), width, height, options);
+
+            // For example with enabled Acrobat Reader thumbnail provider enabled, we run into a bug where we only get transpaerent images. In this case we fall back to the file type icon.
+            if (!isImageExtension && IsHBitmapOnlyTransparent(ref hBitmap))
+            {
+                hBitmap = GetHBitmap(Path.GetFullPath(fileName), width, height, ThumbnailOptions.IconOnly);
+            }
 
             try
             {
@@ -124,6 +131,23 @@ namespace Wox.Infrastructure.Image
             }
 
             throw new InvalidComObjectException($"Error while extracting thumbnail for {fileName}", Marshal.GetExceptionForHR((int)hr));
+        }
+
+        private static bool IsHBitmapOnlyTransparent(ref nint image)
+        {
+            Bitmap bitamp = Bitmap.FromHbitmap(image);
+            for (int y = 0; y < bitamp.Height; ++y)
+            {
+                for (int x = 0; x < bitamp.Width; ++x)
+                {
+                    if (bitamp.GetPixel(x, y).A != 255)
+                    {
+                        return false;
+                    }
+                }
+            }
+
+            return true;
         }
     }
 }
