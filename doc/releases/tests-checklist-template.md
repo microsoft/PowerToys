@@ -9,6 +9,10 @@
     * if you have a second monitor apply different templates layouts for the primary desktop and for the second virtual desktop
  * install the new version (it will uninstall the old version and install the new version)
  - [ ] verify the settings are preserved and FancyZones configuration is still the same
+ - [ ] test installing as SYSTEM (LocalSystem account)
+   * Download PsTools from https://learn.microsoft.com/en-us/sysinternals/downloads/psexec
+   * Run PowerToys installer with psexec tool `psexec.exe -sid <path_to_installer_exe`
+   * Brief check if all modules are working
 
 ## Functional tests
 
@@ -178,7 +182,7 @@ Before testing
 
 ## Image Resizer
 - [ ] Disable the Image Resizer and check that `Resize images` is absent in the context menu
-- [ ] Enable the Image Resizer and check that `Resize images` is present in the context menu
+- [ ] Enable the Image Resizer and check that `Resize images` is present in the context menu. (On Win11) Check if both old context menu and Win11 tier1 context menu items are present when module is enabled.
 - [ ] Remove one image size and add a custom image size. Open the Image Resize window from the context menu and verify that changes are populated
 - [ ] Resize one image
 - [ ] Resize multiple images
@@ -237,7 +241,7 @@ For all the remapping below, try pressing and releasing the remapped key/shortcu
   - [ ] Test switching between remapping while holding down modifiers - Eg. Ctrl+D->Ctrl+A and Ctrl+E->Ctrl+V, hold Ctrl and press D followed by E. Should select all and paste over it in a text editor. Similar steps for Windows key shortcuts.
 
 ## PowerRename
-- [ ] Check if disable and enable of the module works.
+- [ ] Check if disable and enable of the module works. (On Win11) Check if both old context menu and Win11 tier1 context menu items are present when module is enabled.
 - [ ] Check that with the `Show icon on context menu` icon is shown and vice versa.
 - [ ] Check if `Appear only in extended context menu` works.
 - [ ] Enable/disable autocomplete.
