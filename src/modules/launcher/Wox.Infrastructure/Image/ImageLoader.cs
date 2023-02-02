@@ -185,7 +185,7 @@ namespace Wox.Infrastructure.Image
                         type = ImageType.File;
 
                         // Switching to in cache only to fix a crash that is caused by Acrobat Reader thumbnail handler.
-                        // And additionaly this is faster and recommended through MS: https://learn.microsoft.com/en-us/windows/win32/api/shobjidl_core/nf-shobjidl_core-ishellitemimagefactory-getimage#remarks
+                        // And additionally this is the faster way and recommended through MS: https://learn.microsoft.com/en-us/windows/win32/api/shobjidl_core/nf-shobjidl_core-ishellitemimagefactory-getimage#remarks
                         image = WindowsThumbnailProvider.GetThumbnail(path, Constant.ThumbnailSize, Constant.ThumbnailSize, ThumbnailOptions.InCacheOnly, false);
                     }
                 }

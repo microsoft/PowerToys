@@ -82,7 +82,7 @@ namespace Wox.Infrastructure.Image
         {
             IntPtr hBitmap = GetHBitmap(Path.GetFullPath(fileName), width, height, options);
 
-            // For example with enabled Acrobat Reader thumbnail provider enabled, we run into a bug where we only get transpaerent images. In this case we fall back to the file type icon.
+            // For example with enabled Acrobat Reader thumbnail provider enabled, we run into a bug where we only get transparrent images. In this case we fall back to the file type icon.
             if (!isImageExtension && IsHBitmapOnlyTransparent(ref hBitmap))
             {
                 hBitmap = GetHBitmap(Path.GetFullPath(fileName), width, height, ThumbnailOptions.IconOnly);
@@ -135,12 +135,12 @@ namespace Wox.Infrastructure.Image
 
         private static bool IsHBitmapOnlyTransparent(ref nint image)
         {
-            Bitmap bitamp = Bitmap.FromHbitmap(image);
-            for (int y = 0; y < bitamp.Height; ++y)
+            Bitmap bitmap = Bitmap.FromHbitmap(image);
+            for (int y = 0; y < bitmap.Height; ++y)
             {
-                for (int x = 0; x < bitamp.Width; ++x)
+                for (int x = 0; x < bitmap.Width; ++x)
                 {
-                    if (bitamp.GetPixel(x, y).A != 255)
+                    if (bitmap.GetPixel(x, y).A != 255)
                     {
                         return false;
                     }
