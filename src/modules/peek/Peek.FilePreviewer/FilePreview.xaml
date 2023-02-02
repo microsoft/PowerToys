@@ -20,9 +20,9 @@
 
         <Image
             x:Name="ImagePreview"
-            Source="{x:Bind BitmapPreviewer.Preview, Mode=OneWay}"
-            MaxHeight="{x:Bind BitmapPreviewer.MaxImageSize.Height, Mode=OneWay}"
             MaxWidth="{x:Bind BitmapPreviewer.MaxImageSize.Width, Mode=OneWay}"
+            MaxHeight="{x:Bind BitmapPreviewer.MaxImageSize.Height, Mode=OneWay}"
+            Source="{x:Bind BitmapPreviewer.Preview, Mode=OneWay}"
             ToolTipService.ToolTip="{x:Bind ImageInfoTooltip, Mode=OneWay}"
             Visibility="{x:Bind IsPreviewVisible(BitmapPreviewer, Previewer.State), Mode=OneWay}" />
 
@@ -34,7 +34,7 @@
             Source="{x:Bind BrowserPreviewer.Preview, Mode=OneWay}"
             Visibility="{x:Bind IsPreviewVisible(BrowserPreviewer, Previewer.State), Mode=OneWay, FallbackValue=Collapsed}" />
 
-        <local:UnsupportedFilePreview
+        <controls:UnsupportedFilePreview
             x:Name="UnsupportedFilePreview"
             DateModified="{x:Bind UnsupportedFilePreviewer.DateModified, Mode=OneWay}"
             FileName="{x:Bind UnsupportedFilePreviewer.FileName, Mode=OneWay}"

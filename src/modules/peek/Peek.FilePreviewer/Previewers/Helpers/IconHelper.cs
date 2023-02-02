@@ -5,6 +5,10 @@
 using System;
 using System.Drawing;
 using System.Runtime.InteropServices;
+using System.Threading;
+using System.Threading.Tasks;
+using Microsoft.UI.Xaml.Media;
+using Microsoft.UI.Xaml.Media.Imaging;
 using Peek.Common;
 using Peek.Common.Models;
 
@@ -15,29 +19,46 @@ namespace Peek.FilePreviewer.Previewers.Helpers
         // Based on https://stackoverflow.com/questions/21751747/extract-thumbnail-for-any-file-in-windows
         private const string IShellItem2Guid = "7E9FB0D3-919F-4307-AB2E-9B1860310C93";
 
-        public static HResult GetIcon(string fileName, out IntPtr hbitmap)
+        public static async Task<ImageSource?> GetIconAsync(string fileName, CancellationToken cancellationToken)
         {
-            Guid shellItem2Guid = new Guid(IShellItem2Guid);
-            int retCode = NativeMethods.SHCreateItemFromParsingName(fileName, IntPtr.Zero, ref shellItem2Guid, out IShellItem nativeShellItem);
-
-            if (retCode != 0)
+            ImageSource? imageSource = null;
+            IShellItem? nativeShellItem = null;
+            try
             {
-                throw Marshal.GetExceptionForHR(retCode)!;
+                Guid shellItem2Guid = new(IShellItem2Guid);
+                int retCode = NativeMethods.SHCreateItemFromParsingName(fileName, IntPtr.Zero, ref shellItem2Guid, out nativeShellItem);
+
+                if (retCode != 0)
+                {
+                    throw Marshal.GetExceptionForHR(retCode)!;
+                }
+
+                NativeSize large = new NativeSize { Width = 256, Height = 256 };
+                var options = ThumbnailOptions.BiggerSizeOk | ThumbnailOptions.IconOnly;
+
+                HResult hr = ((IShellItemImageFactory)nativeShellItem).GetImage(large, options, out IntPtr hbitmap);
+
+                cancellationToken.ThrowIfCancellationRequested();
+
+                if (hr == HResult.Ok)
+                {
+                    imageSource = await BitmapHelper.GetBitmapFromHBitmapAsync(hbitmap, true, cancellationToken);
+                }
+                else
+                {
+                    var svgImageSource = new SvgImageSource(new Uri("ms-appx:///Assets/DefaultFileIcon.svg"));
+                    imageSource = svgImageSource;
+                }
+            }
+            finally
+            {
+                if (nativeShellItem != null)
+                {
+                    Marshal.ReleaseComObject(nativeShellItem);
+                }
             }
 
-            NativeSize large = new NativeSize { Width = 256, Height = 256 };
-            var options = ThumbnailOptions.BiggerSizeOk | ThumbnailOptions.IconOnly;
-
-            HResult hr = ((IShellItemImageFactory)nativeShellItem).GetImage(large, options, out hbitmap);
-
-            if (hr != HResult.Ok)
-            {
-                // TODO: fallback to a generic icon
-            }
-
-            Marshal.ReleaseComObject(nativeShellItem);
-
-            return hr;
+            return imageSource;
         }
     }
 }

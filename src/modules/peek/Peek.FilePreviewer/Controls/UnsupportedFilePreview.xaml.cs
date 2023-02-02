@@ -4,16 +4,16 @@
 
 using CommunityToolkit.Mvvm.ComponentModel;
 using Microsoft.UI.Xaml.Controls;
-using Microsoft.UI.Xaml.Media.Imaging;
+using Microsoft.UI.Xaml.Media;
 using Peek.Common.Helpers;
 
-namespace Peek.FilePreviewer
+namespace Peek.FilePreviewer.Controls
 {
     [INotifyPropertyChanged]
     public sealed partial class UnsupportedFilePreview : UserControl
     {
         [ObservableProperty]
-        private BitmapSource? iconPreview;
+        private ImageSource? iconPreview;
 
         [ObservableProperty]
         private string? fileName;
