@@ -896,7 +896,7 @@ bool FancyZones::OnSnapHotkeyBasedOnPosition(HWND window, DWORD vkCode) noexcept
 
         // If that didn't work, extract zones from all other monitors and target one of them
         std::vector<RECT> zoneRects;
-        std::vector<std::pair<ZoneIndex, std::shared_ptr<WorkArea>>> zoneRectsInfo;
+        std::vector<std::pair<ZoneIndex, WorkArea*>> zoneRectsInfo;
         RECT currentMonitorRect{ .top = 0, .bottom = -1 };
 
         for (const auto& [monitor, monitorRect] : allMonitors)
