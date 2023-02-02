@@ -89,11 +89,11 @@
 
     <DirectoryRef Id="ModulesInstallFolder" FileSource="$(var.BinDir)modules\">
       <Component Id="Module_PowerPreview_Registry" Win64="yes">
-        <!-- Update Key to use IE11 for prevhost.exe -->
+        <!-- TODO: Remove this - Update Key to use IE11 for prevhost.exe -->
         <RegistryKey Root="HKLM" Key="Software\Microsoft\Internet Explorer\Main\FeatureControl\FEATURE_BROWSER_EMULATION">
           <RegistryValue Type="integer" Name="prevhost.exe" Value="11000" />
         </RegistryKey>
-        <!-- Update Key to use IE11 for dllhost.exe -->
+        <!-- TODO: Remove this - Update Key to use IE11 for dllhost.exe -->
         <RegistryKey Root="HKLM" Key="Software\Microsoft\Internet Explorer\Main\FeatureControl\FEATURE_BROWSER_EMULATION">
           <RegistryValue Type="integer" Name="dllhost.exe" Value="11000" />
         </RegistryKey>

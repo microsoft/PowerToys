@@ -22,13 +22,6 @@
           <RegistryValue Name="ThreadingModel" Value="Apartment" Type="string" />
         </RegistryKey>
 
-        <!-- Registry Key for the drag and drop handler -->
-        <!-- To use later on when we want to install per user.
-                <RegistryValue Root="HKCR"
-                               Key="Software\Classes\Directory\ShellEx\DragDropHandlers\ImageResizer"
-                               Value="{51B4D7E5-7568-4234-B4BB-47FB3C016A69}"
-                               Type="string" />
-                               -->
         <RegistryValue Root="HKCR"
                        Key="SOFTWARE\Classes\Directory\ShellEx\DragDropHandlers\ImageResizer"
                        Value="{51B4D7E5-7568-4234-B4BB-47FB3C016A69}"
