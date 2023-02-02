@@ -337,14 +337,14 @@ namespace Microsoft.PowerToys.Settings.UI.Views
                     {
                         POINT? p = null;
 
-                        IJsonValue flyoutPointXJson;
-                        IJsonValue flyoutPointYJson;
-                        if (json.TryGetValue("x_position", out flyoutPointXJson) && json.TryGetValue("y_position", out flyoutPointYJson))
+                        IJsonValue flyoutPointX;
+                        IJsonValue flyoutPointY;
+                        if (json.TryGetValue("x_position", out flyoutPointX) && json.TryGetValue("y_position", out flyoutPointY))
                         {
-                            if (flyoutPointXJson.ValueType == JsonValueType.Number && flyoutPointYJson.ValueType == JsonValueType.Number)
+                            if (flyoutPointX.ValueType == JsonValueType.Number && flyoutPointY.ValueType == JsonValueType.Number)
                             {
-                                int flyout_x = (int)flyoutPointXJson.GetNumber();
-                                int flyout_y = (int)flyoutPointYJson.GetNumber();
+                                int flyout_x = (int)flyoutPointX.GetNumber();
+                                int flyout_y = (int)flyoutPointY.GetNumber();
                                 p = new POINT(flyout_x, flyout_y);
                             }
                         }
