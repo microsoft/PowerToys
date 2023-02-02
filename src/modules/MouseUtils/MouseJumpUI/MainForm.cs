@@ -17,6 +17,7 @@ internal partial class MainForm : Form
     public MainForm()
     {
         this.Logger = LogManager.CreateNullLogger();
+
         // var factory = LogManager.LoadConfiguration(".\\NLog.config");
         // this.Logger = factory.GetCurrentClassLogger();
         this.InitializeComponent();
