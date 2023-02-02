@@ -10,7 +10,7 @@ using System.Threading.Tasks;
 using CommunityToolkit.Mvvm.ComponentModel;
 using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.UI.Dispatching;
-using Microsoft.UI.Xaml.Controls;
+using Microsoft.UI.Xaml.Media;
 using Microsoft.UI.Xaml.Media.Imaging;
 using Peek.Common;
 using Peek.Common.Extensions;
@@ -26,7 +26,7 @@ namespace Peek.FilePreviewer.Previewers
     public partial class UnsupportedFilePreviewer : ObservableObject, IUnsupportedFilePreviewer, IDisposable
     {
         [ObservableProperty]
-        private BitmapSource? iconPreview;
+        private ImageSource? iconPreview;
 
         [ObservableProperty]
         private string? fileName;
@@ -124,14 +124,10 @@ namespace Peek.FilePreviewer.Previewers
             return TaskExtension.RunSafe(async () =>
             {
                 cancellationToken.ThrowIfCancellationRequested();
-
-                IconHelper.GetIcon(Path.GetFullPath(File.Path), out IntPtr hbitmap);
-
-                cancellationToken.ThrowIfCancellationRequested();
                 await Dispatcher.RunOnUiThread(async () =>
                 {
                     cancellationToken.ThrowIfCancellationRequested();
-                    var iconBitmap = await GetBitmapFromHBitmapWithTransparencyAsync(hbitmap, cancellationToken);
+                    var iconBitmap = await IconHelper.GetIconAsync(Path.GetFullPath(File.Path), cancellationToken);
                     IconPreview = iconBitmap;
                 });
             });
@@ -174,36 +170,6 @@ namespace Peek.FilePreviewer.Previewers
             var hasFailedLoadingDisplayInfo = !(DisplayInfoTask?.Result ?? true);
 
             return hasFailedLoadingIconPreview && hasFailedLoadingDisplayInfo;
-        }
-
-        // TODO: Move this to a common helper file and make transparency a parameter (ImagePrevier uses the same code)
-        private static async Task<BitmapSource> GetBitmapFromHBitmapWithTransparencyAsync(IntPtr hbitmap, CancellationToken cancellationToken)
-        {
-            try
-            {
-                cancellationToken.ThrowIfCancellationRequested();
-                var bitmap = System.Drawing.Image.FromHbitmap(hbitmap);
-                bitmap.MakeTransparent();
-
-                var bitmapImage = new BitmapImage();
-
-                cancellationToken.ThrowIfCancellationRequested();
-                using (var stream = new MemoryStream())
-                {
-                    bitmap.Save(stream, ImageFormat.Png);
-                    stream.Position = 0;
-
-                    cancellationToken.ThrowIfCancellationRequested();
-                    await bitmapImage.SetSourceAsync(stream.AsRandomAccessStream());
-                }
-
-                return bitmapImage;
-            }
-            finally
-            {
-                // delete HBitmap to avoid memory leaks
-                NativeMethods.DeleteObject(hbitmap);
-            }
         }
     }
 }

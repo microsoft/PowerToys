@@ -14,6 +14,7 @@ using Microsoft.UI.Dispatching;
 using Microsoft.UI.Xaml.Media.Imaging;
 using Peek.Common;
 using Peek.Common.Extensions;
+using Peek.FilePreviewer.Previewers.Helpers;
 using Windows.ApplicationModel.DataTransfer;
 using Windows.Foundation;
 using Windows.Storage;
@@ -153,7 +154,7 @@ namespace Peek.FilePreviewer.Previewers
                 await Dispatcher.RunOnUiThread(async () =>
                 {
                     cancellationToken.ThrowIfCancellationRequested();
-                    var thumbnailBitmap = await GetBitmapFromHBitmapAsync(hbitmap, cancellationToken);
+                    var thumbnailBitmap = await BitmapHelper.GetBitmapFromHBitmapAsync(hbitmap, false, cancellationToken);
                     if (!IsFullImageLoaded && !IsHighQualityThumbnailLoaded)
                     {
                         Preview = thumbnailBitmap;
@@ -181,7 +182,7 @@ namespace Peek.FilePreviewer.Previewers
                 await Dispatcher.RunOnUiThread(async () =>
                 {
                     cancellationToken.ThrowIfCancellationRequested();
-                    var thumbnailBitmap = await GetBitmapFromHBitmapAsync(hbitmap, cancellationToken);
+                    var thumbnailBitmap = await BitmapHelper.GetBitmapFromHBitmapAsync(hbitmap, false, cancellationToken);
                     if (!IsFullImageLoaded)
                     {
                         Preview = thumbnailBitmap;
@@ -227,32 +228,6 @@ namespace Peek.FilePreviewer.Previewers
             }
 
             return bitmap;
-        }
-
-        private static async Task<BitmapSource> GetBitmapFromHBitmapAsync(IntPtr hbitmap, CancellationToken cancellationToken)
-        {
-            try
-            {
-                var bitmap = System.Drawing.Image.FromHbitmap(hbitmap);
-                var bitmapImage = new BitmapImage();
-
-                cancellationToken.ThrowIfCancellationRequested();
-                using (var stream = new MemoryStream())
-                {
-                    bitmap.Save(stream, ImageFormat.Bmp);
-                    stream.Position = 0;
-
-                    cancellationToken.ThrowIfCancellationRequested();
-                    await bitmapImage.SetSourceAsync(stream.AsRandomAccessStream());
-                }
-
-                return bitmapImage;
-            }
-            finally
-            {
-                // delete HBitmap to avoid memory leaks
-                NativeMethods.DeleteObject(hbitmap);
-            }
         }
 
         public static bool IsFileTypeSupported(string fileExt)
