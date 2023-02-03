@@ -180,7 +180,7 @@ namespace Wox.Infrastructure.Image
                             image = WindowsThumbnailProvider.GetThumbnail(path, Constant.ThumbnailSize, Constant.ThumbnailSize, ThumbnailOptions.ThumbnailOnly);
                         }
                     }
-                    else if (extension == ".pdf" && WindowsThumbnailProvider.DoesPdfUsesAcrobat)
+                    else if (extension == ".pdf" && WindowsThumbnailProvider.DoesPdfUseAcrobatAsProvider())
                     {
                         // The PDF thumbnail provider from Adobe Reader and Acrobat Pro lets crash PT Run with and Dispatcher exception. (https://github.com/microsoft/PowerToys/issues/18166)
                         // To not run into the crash we only request the icon of PDF files if the PDF thumbnail handler is set to Adobe Reader/Acrobat Pro.

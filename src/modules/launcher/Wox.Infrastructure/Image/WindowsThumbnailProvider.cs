@@ -31,23 +31,6 @@ namespace Wox.Infrastructure.Image
         // Based on https://stackoverflow.com/questions/21751747/extract-thumbnail-for-any-file-in-windows
         private const string IShellItem2Guid = "7E9FB0D3-919F-4307-AB2E-9B1860310C93";
 
-        // Indicates if the thumbnail provider for PDFs set to Acrobat Reader/Acrobat Pro or not.
-        private static bool? _pdfThumbnailProviderIsAcrobat = null;
-
-        // Indicates if the thumbnail provider for PDFs set to Acrobat Reader/Acrobat Pro or not.
-        public static bool DoesPdfUsesAcrobat
-        {
-            get
-            {
-                if (_pdfThumbnailProviderIsAcrobat == null)
-                {
-                    _pdfThumbnailProviderIsAcrobat = DoesPdfUseAcrobatAsProvider();
-                }
-
-                return (bool)_pdfThumbnailProviderIsAcrobat;
-            }
-        }
-
         internal enum HResult
         {
             Ok = 0x0000,
@@ -144,7 +127,8 @@ namespace Wox.Infrastructure.Image
             throw new InvalidComObjectException($"Error while extracting thumbnail for {fileName}", Marshal.GetExceptionForHR((int)hr));
         }
 
-        private static bool DoesPdfUseAcrobatAsProvider()
+        // We have to evaluate this in real time to not crash, if the user switches to Acobat after starting PT Run.
+        public static bool DoesPdfUseAcrobatAsProvider()
         {
             // First check of there is an provider other than Adobe. For example PowerToys.
             // Generic Guids used by Explorer to identify the configured provider types: {BB2E617C-0920-11d1-9A0B-00C04FC2D6C1} = Image thumbnail; {E357FCCD-A995-4576-B01F-234630154E96} = File thumbnail;
