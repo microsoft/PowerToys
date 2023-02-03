@@ -55,6 +55,7 @@ public:
     void UnsnapWindow(HWND window);
 
     void UpdateActiveZoneSet();
+    void UpdateWindowPositions();
 
     void ShowZonesOverlay(const ZoneIndexSet& highlight, HWND draggedWindow = nullptr);
     void HideZonesOverlay();

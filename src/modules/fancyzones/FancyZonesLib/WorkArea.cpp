@@ -465,6 +465,20 @@ void WorkArea::UpdateActiveZoneSet()
     }
 }
 
+void WorkArea::UpdateWindowPositions()
+{
+    if (!m_layoutWindows)
+    {
+        return;
+    }
+
+    const auto& snappedWindows = m_layoutWindows->SnappedWindows();
+    for (const auto& [window, zones] : snappedWindows)
+    {
+        MoveWindowIntoZoneByIndexSet(window, zones, true);
+    }
+}
+
 void WorkArea::CycleWindows(HWND window, bool reverse)
 {
     if (m_layoutWindows)
@@ -510,8 +524,7 @@ void WorkArea::InitLayout(const FancyZonesDataTypes::WorkAreaId& parentUniqueId)
 
 void WorkArea::InitSnappedWindows()
 {
-    static bool updatePositionOnceOnStartFlag = true;
-    Logger::info(L"Init work area windows, update positions = {}", updatePositionOnceOnStartFlag);
+    Logger::info(L"Init work area windows");
 
     for (const auto& window : VirtualDesktop::instance().GetWindowsFromCurrentDesktop())
     {
@@ -523,19 +536,17 @@ void WorkArea::InitSnappedWindows()
 
         if (!m_uniqueId.monitorId.monitor) // one work area across monitors
         {
-            MoveWindowIntoZoneByIndexSet(window, zoneIndexSet, updatePositionOnceOnStartFlag);
+            MoveWindowIntoZoneByIndexSet(window, zoneIndexSet, false);
         }
         else
         {
             const auto monitor = MonitorFromWindow(window, MONITOR_DEFAULTTONULL);
             if (monitor && m_uniqueId.monitorId.monitor == monitor)
             {
-                MoveWindowIntoZoneByIndexSet(window, zoneIndexSet, updatePositionOnceOnStartFlag);
+                MoveWindowIntoZoneByIndexSet(window, zoneIndexSet, false);
             }
         }
     }
-
-    updatePositionOnceOnStartFlag = false;
 }
 
 void WorkArea::CalculateZoneSet()
