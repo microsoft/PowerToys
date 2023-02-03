@@ -316,7 +316,7 @@ BOOL run_settings_non_elevated(LPCWSTR executable_path, LPWSTR executable_args, 
 
 DWORD g_settings_process_id = 0;
 
-void run_settings_window(bool show_oobe_window, bool show_scoobe_window, std::optional<std::wstring> settings_window, bool show_flyout = false)
+void run_settings_window(bool show_oobe_window, bool show_scoobe_window, std::optional<std::wstring> settings_window, bool show_flyout = false, const std::optional<POINT>& flyout_position = std::nullopt)
 {
     g_isLaunchInProgress = true;
 
@@ -389,26 +389,44 @@ void run_settings_window(bool show_oobe_window, bool show_scoobe_window, std::op
     // Arg 10: should flyout be shown
     std::wstring settings_showFlyout = show_flyout ? L"true" : L"false";
 
+    // Arg 11: contains if there's a settings window argument. If true, will add one extra argument with the value to the call.
+    std::wstring settings_containsSettingsWindow = settings_window.has_value() ? L"true" : L"false";
+
+    // Arg 12: contains if there's flyout coordinates. If true, will add two extra arguments to the call containing the x and y coordinates.
+    std::wstring settings_containsFlyoutPosition = flyout_position.has_value() ? L"true" : L"false";
+
+    // Args 13, .... : Optional arguments depending on the options presented before. All by the same value.
+
     // create general settings file to initialize the settings file with installation configurations like :
     // 1. Run on start up.
     PTSettingsHelper::save_general_settings(save_settings.to_json());
 
-    std::wstring executable_args = fmt::format(L"\"{}\" {} {} {} {} {} {} {} {} {}",
-                                               executable_path,
-                                               powertoys_pipe_name,
-                                               settings_pipe_name,
-                                               std::to_wstring(powertoys_pid),
-                                               settings_theme,
-                                               settings_elevatedStatus,
-                                               settings_isUserAnAdmin,
-                                               settings_showOobe,
-                                               settings_showScoobe,
-                                               settings_showFlyout);
+    std::wstring executable_args = fmt::format(L"\"{}\" {} {} {} {} {} {} {} {} {} {} {}",
+                                                   executable_path,
+                                                   powertoys_pipe_name,
+                                                   settings_pipe_name,
+                                                   std::to_wstring(powertoys_pid),
+                                                   settings_theme,
+                                                   settings_elevatedStatus,
+                                                   settings_isUserAnAdmin,
+                                                   settings_showOobe,
+                                                   settings_showScoobe,
+                                                   settings_showFlyout,
+                                                   settings_containsSettingsWindow,
+                                                   settings_containsFlyoutPosition);
 
     if (settings_window.has_value())
     {
         executable_args.append(L" ");
         executable_args.append(settings_window.value());
+    }
+
+    if (flyout_position)
+    {
+        executable_args.append(L" ");
+        executable_args.append(std::to_wstring(flyout_position.value().x));
+        executable_args.append(L" ");
+        executable_args.append(std::to_wstring(flyout_position.value().y));
     }
 
     BOOL process_created = false;
@@ -550,7 +568,7 @@ void bring_settings_to_front()
     EnumWindows(callback, 0);
 }
 
-void open_settings_window(std::optional<std::wstring> settings_window, bool show_flyout = false)
+void open_settings_window(std::optional<std::wstring> settings_window, bool show_flyout = false, const std::optional<POINT>& flyout_position)
 {
     if (g_settings_process_id != 0)
     {
@@ -558,7 +576,14 @@ void open_settings_window(std::optional<std::wstring> settings_window, bool show
         {
             if (current_settings_ipc)
             {
-                current_settings_ipc->send(L"{\"ShowYourself\":\"flyout\"}");
+                if (!flyout_position.has_value())
+                {
+                    current_settings_ipc->send(L"{\"ShowYourself\":\"flyout\"}");
+                }
+                else
+                {
+                    current_settings_ipc->send(fmt::format(L"{{\"ShowYourself\":\"flyout\", \"x_position\":{}, \"y_position\":{} }}", std::to_wstring(flyout_position.value().x), std::to_wstring(flyout_position.value().y)));
+                }
             }
         }
         else
@@ -575,8 +600,8 @@ void open_settings_window(std::optional<std::wstring> settings_window, bool show
     {
         if (!g_isLaunchInProgress)
         {
-            std::thread([settings_window, show_flyout]() {
-                run_settings_window(false, false, settings_window, show_flyout);
+            std::thread([settings_window, show_flyout, flyout_position]() {
+                run_settings_window(false, false, settings_window, show_flyout, flyout_position);
             }).detach();
         }
     }
@@ -605,13 +630,6 @@ void open_scoobe_window()
 {
     std::thread([]() {
         run_settings_window(false, true, std::nullopt);
-    }).detach();
-}
-
-void open_flyout()
-{
-    std::thread([]() {
-        run_settings_window(false, false, std::nullopt, true);
     }).detach();
 }
 

@@ -36,7 +36,7 @@
     <ComponentGroup Id="RunComponentGroup">
       <Component Id="launcherShortcutComponent" Directory="LauncherInstallFolder" >
         <!-- Toast Notification AUMID -->
-        <RegistryKey Root="HKCU" Key="SOFTWARE\Classes\AppUserModelId\PowerToysRun">
+        <RegistryKey Root="HKLM" Key="SOFTWARE\Classes\AppUserModelId\PowerToysRun">
           <RegistryValue Type="string" Name="DisplayName" Value="PowerToys Run" />
           <RegistryValue Type="string" Name="IconUri" Value="[LauncherImagesFolder]RunAsset.ico" />
         </RegistryKey>
