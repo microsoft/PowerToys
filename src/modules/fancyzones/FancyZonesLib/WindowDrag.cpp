@@ -213,22 +213,30 @@ void WindowDrag::SetWindowTransparency()
         if (!SetLayeredWindowAttributes(m_window, 0, (255 * 50) / 100, LWA_ALPHA))
         {
             Logger::error(L"Window transparency: SetLayeredWindowAttributes failed, {}", get_last_error_or_default(GetLastError()));
+            return;
         }
+
+        m_windowProperties.transparencySet = true;
     }
 }
 
 void WindowDrag::ResetWindowTransparency()
 {
-    if (FancyZonesSettings::settings().makeDraggedWindowTransparent)
+    if (FancyZonesSettings::settings().makeDraggedWindowTransparent && m_windowProperties.transparencySet)
     {
+        bool reset = true;
         if (!SetLayeredWindowAttributes(m_window, m_windowProperties.crKey, m_windowProperties.alpha, m_windowProperties.dwFlags))
         {
-            Logger::error(L"Window transparency: SetLayeredWindowAttributes failed");
+            Logger::error(L"Window transparency: SetLayeredWindowAttributes failed, {}", get_last_error_or_default(GetLastError()));
+            reset = false;
         }
 
         if (SetWindowLong(m_window, GWL_EXSTYLE, m_windowProperties.exstyle) == 0)
         {
             Logger::error(L"Window transparency: SetWindowLong failed, {}", get_last_error_or_default(GetLastError()));
+            reset = false;
         }
+
+        m_windowProperties.transparencySet = !reset;
     }
 }
