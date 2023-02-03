@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Wix xmlns="http://schemas.microsoft.com/wix/2006/wi"
+     xmlns:util="http://schemas.microsoft.com/wix/UtilExtension" >
+
+  <?include $(sys.CURRENTDIR)\Common.wxi?>
+
+  <?define PastePlainFiles=PowerToys.PastePlain.dll;ControlzEx.dll;Ijwhost.dll;Microsoft.Windows.SDK.NET.dll;Microsoft.Xaml.Behaviors.dll;PowerToys.Common.UI.dll;PowerToys.ManagedCommon.dll;PowerToys.ManagedTelemetry.dll;System.Text.Json.dll;PowerToys.PastePlain.deps.json;PowerToys.PastePlain.exe;PowerToys.PastePlain.runtimeconfig.json;PowerToys.PastePlainInterface.dll;PowerToys.Settings.UI.Lib.dll;System.ComponentModel.Composition.dll;System.IO.Abstractions.dll;System.Management.dll;WinRT.Runtime.dll;PowerToys.GPOWrapper.dll;PowerToys.GPOWrapperProjection.dll;WindowsBase.dll?>
+
+  <Fragment>
+    <DirectoryRef Id="PastePlainInstallFolder" FileSource="$(var.BinDir)modules\$(var.PastePlainProjectName)">
+      <!-- !Warning! Make sure to change Component Guid if you update the file list -->
+      <Component Id="Module_PastePlain" Guid="49F5461C-78F2-453C-9A16-24CC78C7D1FC" Win64="yes">
+        <?foreach File in $(var.PastePlainFiles)?>
+          <File Id="PastePlainFile_$(var.File)" Source="$(var.BinDir)modules\$(var.PastePlainProjectName)\$(var.File)" />
+        <?endforeach?>
+      </Component>
+    </DirectoryRef>
+
+    <ComponentGroup Id="PastePlainComponentGroup" Directory="INSTALLFOLDER">
+      <ComponentRef Id="Module_PastePlain" />
+    </ComponentGroup>
+
+  </Fragment>
+</Wix>
