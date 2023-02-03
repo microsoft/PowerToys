@@ -98,9 +98,9 @@ private:
             Logger::info("PastePlain is going to use default shortcut");
             m_hotkey.win = true;
             m_hotkey.alt = false;
-            m_hotkey.shift = true;
-            m_hotkey.ctrl = false;
-            m_hotkey.key = 'T';
+            m_hotkey.shift = false;
+            m_hotkey.ctrl = true;
+            m_hotkey.key = 'V';
         }
     }
 

@@ -4,5 +4,5 @@
 namespace PastePlainConstants
 {
     // Name of the powertoy module.
-    inline const std::wstring ModuleKey = L"PasteAsPlainText";
+    inline const std::wstring ModuleKey = L"PastePlain";
 }
