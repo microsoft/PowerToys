@@ -3,12 +3,12 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
-using System.Drawing;
 using System.IO.Abstractions;
 using System.Runtime.InteropServices;
 using System.Windows;
 using System.Windows.Interop;
 using System.Windows.Media.Imaging;
+using Microsoft.Win32;
 
 namespace Wox.Infrastructure.Image
 {
@@ -30,6 +30,23 @@ namespace Wox.Infrastructure.Image
 
         // Based on https://stackoverflow.com/questions/21751747/extract-thumbnail-for-any-file-in-windows
         private const string IShellItem2Guid = "7E9FB0D3-919F-4307-AB2E-9B1860310C93";
+
+        // Indicates if the thumbnail provider for PDFs set to Acrobat Reader/Acrobat Pro or not.
+        private static bool? _pdfThumbnailProviderIsAcrobat = null;
+
+        // Indicates if the thumbnail provider for PDFs set to Acrobat Reader/Acrobat Pro or not.
+        public static bool DoesPdfUsesAcrobat
+        {
+            get
+            {
+                if (_pdfThumbnailProviderIsAcrobat == null)
+                {
+                    _pdfThumbnailProviderIsAcrobat = DoesPdfUseAcrobatAsProvider();
+                }
+
+                return (bool)_pdfThumbnailProviderIsAcrobat;
+            }
+        }
 
         internal enum HResult
         {
@@ -125,6 +142,44 @@ namespace Wox.Infrastructure.Image
             }
 
             throw new InvalidComObjectException($"Error while extracting thumbnail for {fileName}", Marshal.GetExceptionForHR((int)hr));
+        }
+
+        private static bool DoesPdfUseAcrobatAsProvider()
+        {
+            // First check of there is an provider other than Adobe. For example PowerToys.
+            // Generic Guids used by Explorer to identify the configured provider types: {BB2E617C-0920-11d1-9A0B-00C04FC2D6C1} = Image thumbnail; {E357FCCD-A995-4576-B01F-234630154E96} = File thumbnail;
+            RegistryKey key1 = Registry.ClassesRoot.OpenSubKey(".pdf\\shellex\\{E357FCCD-A995-4576-B01F-234630154E96}");
+            string value1 = (string)key1?.GetValue("(Default)");
+            key1?.Close();
+            RegistryKey key2 = Registry.ClassesRoot.OpenSubKey(".pdf\\shellex\\{BB2E617C-0920-11d1-9A0B-00C04FC2D6C1}");
+            string value2 = (string)key2?.GetValue("(Default)");
+            key2?.Close();
+            if (!string.IsNullOrEmpty(value1) || !string.IsNullOrEmpty(value2))
+            {
+                return false;
+            }
+
+            // Second check if Adobe is the default application.
+            RegistryKey pdfKey = Registry.ClassesRoot.OpenSubKey(".pdf");
+            string pdfApp = (string)pdfKey?.GetValue("(Default)");
+            pdfKey?.Close();
+            if (string.IsNullOrEmpty(pdfApp) || !pdfApp.StartsWith("Acrobat.Document.", StringComparison.OrdinalIgnoreCase))
+            {
+                return false;
+            }
+
+            // Check if the thumbnail handler from Adobe is disabled.
+            RegistryKey adobeApp = Registry.ClassesRoot.OpenSubKey(pdfApp + "\\shellex\\{BB2E617C-0920-11d1-9A0B-00C04FC2D6C1}");
+            string adobeAppProvider = (string)pdfKey?.GetValue("(Default)");
+            adobeApp?.Close();
+            if (string.IsNullOrEmpty(adobeAppProvider))
+            {
+                // No Adboe handler.
+                return false;
+            }
+
+            // Thumbnail handler from Adobe is enabled and used.
+            return true;
         }
     }
 }
