@@ -127,7 +127,7 @@ namespace Wox.Infrastructure.Image
             throw new InvalidComObjectException($"Error while extracting thumbnail for {fileName}", Marshal.GetExceptionForHR((int)hr));
         }
 
-        // We have to evaluate this in real time to not crash, if the user switches to Acrobat after starting PT Run.
+        // We have to evaluate this in real time to not crash, if the user switches to Adobe Reader/Acrobat Pro after starting PT Run.
         // Adobe registers its thumbnail handler always in "HKCR\Acrobat.Document.*\shellex\{BB2E617C-0920-11d1-9A0B-00C04FC2D6C1}".
         public static bool DoesPdfUseAcrobatAsProvider()
         {
