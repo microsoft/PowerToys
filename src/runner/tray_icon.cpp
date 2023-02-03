@@ -32,6 +32,8 @@ namespace
     HMENU h_sub_menu = nullptr;
     bool double_click_timer_running = false;
     bool double_clicked = false;
+    POINT tray_icon_click_point;
+
 }
 
 // Struct to fill with callback and the data. The window_proc is responsible for cleaning it.
@@ -123,7 +125,7 @@ void click_timer_elapsed()
     double_click_timer_running = false;
     if (!double_clicked)
     {
-        open_settings_window(std::nullopt, true);
+        open_settings_window(std::nullopt, true, tray_icon_click_point);
     }
 }
 
@@ -212,6 +214,9 @@ LRESULT __stdcall tray_icon_window_proc(HWND window, UINT message, WPARAM wparam
                 // ignore event if this is the second click of a double click
                 if (!double_click_timer_running)
                 {
+                    // save the cursor position for sending where to show the popup.
+                    GetCursorPos(&tray_icon_click_point);
+
                     // start timer for detecting single or double click
                     double_click_timer_running = true;
                     double_clicked = false;
