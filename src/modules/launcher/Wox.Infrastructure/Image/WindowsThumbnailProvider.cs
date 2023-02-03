@@ -127,7 +127,7 @@ namespace Wox.Infrastructure.Image
             throw new InvalidComObjectException($"Error while extracting thumbnail for {fileName}", Marshal.GetExceptionForHR((int)hr));
         }
 
-        // We have to evaluate this in real time to not crash, if the user switches to Acobat after starting PT Run.
+        // We have to evaluate this in real time to not crash, if the user switches to Acrobat after starting PT Run.
         public static bool DoesPdfUseAcrobatAsProvider()
         {
             // First check of there is an provider other than Adobe. For example PowerToys.
@@ -158,7 +158,7 @@ namespace Wox.Infrastructure.Image
             adobeAppKey?.Close();
             if (string.IsNullOrEmpty(adobeAppProvider))
             {
-                // No Adboe handler.
+                // No Adobe handler.
                 return false;
             }
 
