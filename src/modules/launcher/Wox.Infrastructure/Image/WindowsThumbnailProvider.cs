@@ -148,11 +148,11 @@ namespace Wox.Infrastructure.Image
         {
             // First check of there is an provider other than Adobe. For example PowerToys.
             // Generic Guids used by Explorer to identify the configured provider types: {BB2E617C-0920-11d1-9A0B-00C04FC2D6C1} = Image thumbnail; {E357FCCD-A995-4576-B01F-234630154E96} = File thumbnail;
-            RegistryKey key1 = Registry.ClassesRoot.OpenSubKey(".pdf\\shellex\\{E357FCCD-A995-4576-B01F-234630154E96}");
-            string value1 = (string)key1?.GetValue("(Default)");
+            RegistryKey key1 = Registry.ClassesRoot.OpenSubKey(".pdf\\shellex\\{E357FCCD-A995-4576-B01F-234630154E96}", false);
+            string value1 = (string)key1?.GetValue(string.Empty);
             key1?.Close();
-            RegistryKey key2 = Registry.ClassesRoot.OpenSubKey(".pdf\\shellex\\{BB2E617C-0920-11d1-9A0B-00C04FC2D6C1}");
-            string value2 = (string)key2?.GetValue("(Default)");
+            RegistryKey key2 = Registry.ClassesRoot.OpenSubKey(".pdf\\shellex\\{BB2E617C-0920-11d1-9A0B-00C04FC2D6C1}", false);
+            string value2 = (string)key2?.GetValue(string.Empty);
             key2?.Close();
             if (!string.IsNullOrEmpty(value1) || !string.IsNullOrEmpty(value2))
             {
@@ -160,8 +160,8 @@ namespace Wox.Infrastructure.Image
             }
 
             // Second check if Adobe is the default application.
-            RegistryKey pdfKey = Registry.ClassesRoot.OpenSubKey(".pdf");
-            string pdfApp = (string)pdfKey?.GetValue("(Default)");
+            RegistryKey pdfKey = Registry.ClassesRoot.OpenSubKey(".pdf", false);
+            string pdfApp = (string)pdfKey?.GetValue(string.Empty);
             pdfKey?.Close();
             if (string.IsNullOrEmpty(pdfApp) || !pdfApp.StartsWith("Acrobat.Document.", StringComparison.OrdinalIgnoreCase))
             {
@@ -169,9 +169,9 @@ namespace Wox.Infrastructure.Image
             }
 
             // Check if the thumbnail handler from Adobe is disabled.
-            RegistryKey adobeApp = Registry.ClassesRoot.OpenSubKey(pdfApp + "\\shellex\\{BB2E617C-0920-11d1-9A0B-00C04FC2D6C1}");
-            string adobeAppProvider = (string)pdfKey?.GetValue("(Default)");
-            adobeApp?.Close();
+            RegistryKey adobeAppKey = Registry.ClassesRoot.OpenSubKey(pdfApp + "\\shellex\\{BB2E617C-0920-11d1-9A0B-00C04FC2D6C1}", false);
+            string adobeAppProvider = (string)adobeAppKey?.GetValue(string.Empty);
+            adobeAppKey?.Close();
             if (string.IsNullOrEmpty(adobeAppProvider))
             {
                 // No Adboe handler.
