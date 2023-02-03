@@ -593,7 +593,6 @@ GETDESKWALLPAPER
 GETDLGCODE
 GETDPISCALEDSIZE
 GETICON
-getimage
 GETMINMAXINFO
 GETSTATE
 GETTEXT
@@ -803,7 +802,6 @@ ISearch
 ISettings
 isfinite
 IShell
-ishellitemimagefactory
 isocpp
 iss
 ITask
@@ -1148,7 +1146,6 @@ Newtonsoft
 niels
 nielslaute
 NIF
-nint
 NLD
 nlog
 NLSTEXT
