@@ -144,8 +144,11 @@ void WorkArea::MoveWindowIntoZoneByIndexSet(HWND window, const ZoneIndexSet& ind
     if (updatePosition)
     {
         const auto rect = m_layout->GetCombinedZonesRect(indexSet);
-        const auto adjustedRect = FancyZonesWindowUtils::AdjustRectForSizeWindowToRect(window, rect, m_window);
-        FancyZonesWindowUtils::SizeWindowToRect(window, adjustedRect);
+        if (rect.bottom - rect.top > 0 && rect.right - rect.left > 0)
+        {
+            const auto adjustedRect = FancyZonesWindowUtils::AdjustRectForSizeWindowToRect(window, rect, m_window);
+            FancyZonesWindowUtils::SizeWindowToRect(window, adjustedRect);
+        }
     }
 
     SnapWindow(window, indexSet);
