@@ -9,7 +9,6 @@ using System.Runtime.InteropServices;
 using System.Windows;
 using System.Windows.Interop;
 using System.Windows.Media.Imaging;
-using Microsoft.PowerToys.Settings.UI.Library.Utilities;
 using Microsoft.Win32;
 using Wox.Plugin.Logger;
 
@@ -130,17 +129,27 @@ namespace Wox.Infrastructure.Image
             throw new InvalidComObjectException($"Error while extracting thumbnail for {fileName}", Marshal.GetExceptionForHR((int)hr));
         }
 
-        private static bool reportedAdobeReaderDetected = false; // Keep track if Adobe Reader detection has been logged yet.
-        private static bool reportedErrorInDetectingAdobeReader = false; // Keep track if we reported an exception while trying to detect Adobe Reader yet.
+        private static bool logReportedAdobeReaderDetected; // Keep track if Adobe Reader detection has been logged yet.
+        private static bool logReportedErrorInDetectingAdobeReader; // Keep track if we reported an exception while trying to detect Adobe Reader yet.
+        private static bool adobeReaderDetectionLastResult; // The last result when Adobe Reader detection has read the registry.
+        private static DateTime adobeReaderDetectionLastTime; // The last time when Adobe Reader detection has read the registry.
 
         // We have to evaluate this in real time to not crash, if the user switches to Adobe Reader/Acrobat Pro after starting PT Run.
         // Adobe registers its thumbnail handler always in "HKCR\Acrobat.Document.*\shellex\{BB2E617C-0920-11d1-9A0B-00C04FC2D6C1}".
         public static bool DoesPdfUseAcrobatAsProvider()
         {
+            // If the last run is newer than five seconds ago use its result.
+            // Doing this we minimize the amount of Registry querries in a short time, if many new PDF files are shown as result.
+            if ((DateTime.Now - adobeReaderDetectionLastTime).TotalSeconds < 5)
+            {
+                return adobeReaderDetectionLastResult;
+            }
+
+            // If cache condition is false, then query the registry.
             try
             {
-                // First check of there is an provider other than Adobe. For example PowerToys.
-                // Generic Guids used by Explorer to identify the configured provider types: {BB2E617C-0920-11d1-9A0B-00C04FC2D6C1} = Image thumbnail; {E357FCCD-A995-4576-B01F-234630154E96} = File thumbnail;
+                // First detect of there is an provider other than Adobe. For example PowerToys.
+                // Generic Guids used by Explorer to identify the configured provider types: {E357FCCD-A995-4576-B01F-234630154E96} = File thumbnail, {BB2E617C-0920-11d1-9A0B-00C04FC2D6C1} = Image thumbnail.
                 RegistryKey key1 = Registry.ClassesRoot.OpenSubKey(".pdf\\shellex\\{E357FCCD-A995-4576-B01F-234630154E96}", false);
                 string value1 = (string)key1?.GetValue(string.Empty);
                 key1?.Close();
@@ -149,45 +158,57 @@ namespace Wox.Infrastructure.Image
                 key2?.Close();
                 if (!string.IsNullOrEmpty(value1) || !string.IsNullOrEmpty(value2))
                 {
+                    // A provider other than Adobe is used. (For example the PowerToys PDF Thumbnail provider.)
+                    adobeReaderDetectionLastResult = false;
+                    adobeReaderDetectionLastTime = DateTime.Now;
                     return false;
                 }
 
-                // Second check if Adobe is the default application.
+                // Then detect if Adobe is the default PDF application.
                 RegistryKey pdfKey = Registry.ClassesRoot.OpenSubKey(".pdf", false);
                 string pdfApp = (string)pdfKey?.GetValue(string.Empty);
                 pdfKey?.Close();
                 if (string.IsNullOrEmpty(pdfApp) || !pdfApp.StartsWith("Acrobat.Document.", StringComparison.OrdinalIgnoreCase))
                 {
+                    // Adobe is not used as PDF application.
+                    adobeReaderDetectionLastResult = false;
+                    adobeReaderDetectionLastTime = DateTime.Now;
                     return false;
                 }
 
-                // Check if the thumbnail handler from Adobe is disabled.
+                // Detect if the thumbnail handler from Adobe is disabled.
                 RegistryKey adobeAppKey = Registry.ClassesRoot.OpenSubKey(pdfApp + "\\shellex\\{BB2E617C-0920-11d1-9A0B-00C04FC2D6C1}", false);
                 string adobeAppProvider = (string)adobeAppKey?.GetValue(string.Empty);
                 adobeAppKey?.Close();
                 if (string.IsNullOrEmpty(adobeAppProvider))
                 {
                     // No Adobe handler.
+                    adobeReaderDetectionLastResult = false;
+                    adobeReaderDetectionLastTime = DateTime.Now;
                     return false;
                 }
 
-                if (!reportedAdobeReaderDetected)
+                // Thumbnail handler from Adobe is enabled and used.
+                if (!logReportedAdobeReaderDetected)
                 {
-                    reportedAdobeReaderDetected = true;
+                    logReportedAdobeReaderDetected = true;
                     Log.Info("Adobe Reader has been detected as the pdf thumbnail provider.", MethodBase.GetCurrentMethod().DeclaringType);
                 }
 
-                // Thumbnail handler from Adobe is enabled and used.
+                adobeReaderDetectionLastResult = true;
+                adobeReaderDetectionLastTime = DateTime.Now;
                 return true;
             }
             catch (System.Exception ex)
             {
-                if (!reportedErrorInDetectingAdobeReader)
+                if (!logReportedErrorInDetectingAdobeReader)
                 {
-                    reportedErrorInDetectingAdobeReader = true;
-                    Log.Exception("Got an exception while trying to detect Adobe Reader.", ex, MethodBase.GetCurrentMethod().DeclaringType);
+                    logReportedErrorInDetectingAdobeReader = true;
+                    Log.Exception("Got an exception while trying to detect Adobe Reader. To prevent from Dispatcher crashes we report that Adobe is used.", ex, MethodBase.GetCurrentMethod().DeclaringType);
                 }
 
+                // If we fail to detect it, we return that Adobe is used. Otherwise we could run into the Dispatcher crash.
+                // (This only results in showing the icon instead of a thumbnail. It has no other functional impact.)
                 return false;
             }
         }
