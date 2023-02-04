@@ -139,7 +139,7 @@ namespace Wox.Infrastructure.Image
         public static bool DoesPdfUseAcrobatAsProvider()
         {
             // If the last run is newer than five seconds ago use its result.
-            // Doing this we minimize the amount of Registry querries in a short time, if many new PDF files are shown as result.
+            // Doing this we minimize the amount of Registry queries in a short time, if many new PDF files are shown as result.
             if ((DateTime.Now - adobeReaderDetectionLastTime).TotalSeconds < 5)
             {
                 return adobeReaderDetectionLastResult;
