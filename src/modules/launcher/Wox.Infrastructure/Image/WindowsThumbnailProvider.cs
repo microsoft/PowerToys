@@ -195,7 +195,7 @@ namespace Wox.Infrastructure.Image
                 if (!logReportedAdobeReaderDetected)
                 {
                     logReportedAdobeReaderDetected = true;
-                    Log.Info("Adobe Reader has been detected as the pdf thumbnail provider.", MethodBase.GetCurrentMethod().DeclaringType);
+                    Log.Info("Adobe Reader / Adobe Acrobat Pro has been detected as the PDF thumbnail provider.", MethodBase.GetCurrentMethod().DeclaringType);
                 }
 
                 adobeReaderDetectionLastResult = true;
@@ -207,7 +207,7 @@ namespace Wox.Infrastructure.Image
                 if (!logReportedErrorInDetectingAdobeReader)
                 {
                     logReportedErrorInDetectingAdobeReader = true;
-                    Log.Exception("Got an exception while trying to detect Adobe Reader. To prevent from Dispatcher crashes we report that Adobe is used.", ex, MethodBase.GetCurrentMethod().DeclaringType);
+                    Log.Exception("Got an exception while trying to detect Adobe Reader / Adobe Acrobat Pro as PDF thumbnail provider. To prevent PT Run from a Dispatcher crashe, we report that Adobe Reader / Adobe Acrobat Pro is used and show only the PDF icon in the results.", ex, MethodBase.GetCurrentMethod().DeclaringType);
                 }
 
                 // If we fail to detect it, we return that Adobe is used. Otherwise we could run into the Dispatcher crash.
