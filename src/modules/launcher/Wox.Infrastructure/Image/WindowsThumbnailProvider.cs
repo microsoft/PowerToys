@@ -159,6 +159,7 @@ namespace Wox.Infrastructure.Image
                 if (!string.IsNullOrEmpty(value1) || !string.IsNullOrEmpty(value2))
                 {
                     // A provider other than Adobe is used. (For example the PowerToys PDF Thumbnail provider.)
+                    logReportedAdobeReaderDetected = false; // Reset log marker to report when Adobe is reused. (Example: Adobe -> Test PowerToys. -> Back to Adobe.)
                     adobeReaderDetectionLastResult = false;
                     adobeReaderDetectionLastTime = DateTime.Now;
                     return false;
@@ -171,6 +172,7 @@ namespace Wox.Infrastructure.Image
                 if (string.IsNullOrEmpty(pdfApp) || !pdfApp.StartsWith("Acrobat.Document.", StringComparison.OrdinalIgnoreCase))
                 {
                     // Adobe is not used as PDF application.
+                    logReportedAdobeReaderDetected = false; // Reset log marker to report when Adobe is reused. (Example: Adobe -> Test PowerToys. -> Back to Adobe.)
                     adobeReaderDetectionLastResult = false;
                     adobeReaderDetectionLastTime = DateTime.Now;
                     return false;
@@ -183,6 +185,7 @@ namespace Wox.Infrastructure.Image
                 if (string.IsNullOrEmpty(adobeAppProvider))
                 {
                     // No Adobe handler.
+                    logReportedAdobeReaderDetected = false; // Reset log marker to report when Adobe is reused. (Example: Adobe -> Test PowerToys. -> Back to Adobe.)
                     adobeReaderDetectionLastResult = false;
                     adobeReaderDetectionLastTime = DateTime.Now;
                     return false;
