@@ -41,7 +41,7 @@
                     Value="1" />
                 <ic:ChangePropertyAction
                     PropertyName="BorderBrush"
-                    Value="#646464" />
+                    Value="{ThemeResource SurfaceStrokeColorDefaultBrush}" />
             </ic:DataTriggerBehavior>
         </i:Interaction.Behaviors>
         <flyout:ShellPage x:Name="FlyoutShellPage" />
