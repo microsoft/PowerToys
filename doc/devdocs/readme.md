@@ -40,7 +40,7 @@ Once you've discussed your proposed feature/fix/etc. with a team member, and you
 1. Windows 10 April 2018 Update (version 1803) or newer
 1. Visual Studio Community/Professional/Enterprise 2022 17.4 or newer
 1. Git clone PowerToys repository 
-1. Open started the `PowerToys.sln`
+1. Open the `PowerToys.sln` file.
 1. If you see a dialog that says `install extra components` in the solution explorer pane, click `install`
 
 ### Get Submodules to compile
