@@ -217,7 +217,7 @@ namespace Wox.Infrastructure.Image
 
                 // If we fail to detect it, we return that Adobe is used. Otherwise we could run into the Dispatcher crash.
                 // (This only results in showing the icon instead of a thumbnail. It has no other functional impact.)
-                return false;
+                return true;
             }
         }
     }
