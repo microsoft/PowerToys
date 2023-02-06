@@ -56,13 +56,15 @@ bool WindowDrag::MoveSizeStart(HMONITOR monitor, bool isSnapping)
         return false;
     }
 
-    if (isSnapping)
-    {
-        m_currentWorkArea = iter->second.get(); 
-    }
+    m_currentWorkArea = iter->second.get();
 
     SwitchSnappingMode(isSnapping);
 
+    if (m_currentWorkArea)
+    {
+        m_currentWorkArea->UnsnapWindow(m_window);
+    }
+    
     return true;
 }
 
@@ -169,7 +171,6 @@ void WindowDrag::SwitchSnappingMode(bool isSnapping)
 
         if (m_currentWorkArea)
         {
-            m_currentWorkArea->UnsnapWindow(m_window);
             Trace::WorkArea::MoveOrResizeStarted(m_currentWorkArea->GetLayout().get(), m_currentWorkArea->GetLayoutWindows().get());
         }
     }
