@@ -354,9 +354,7 @@ bool WorkArea::ExtendWindowByDirectionAndPosition(HWND window, DWORD vkCode)
         const auto adjustedRect = FancyZonesWindowUtils::AdjustRectForSizeWindowToRect(window, rect, m_window);
         FancyZonesWindowUtils::SizeWindowToRect(window, adjustedRect);
 
-        m_layoutWindows->Extend(window, resultIndexSet);
-
-        SnapWindow(window, resultIndexSet);
+        SnapWindow(window, resultIndexSet, true);
 
         return true;
     }
@@ -364,15 +362,22 @@ bool WorkArea::ExtendWindowByDirectionAndPosition(HWND window, DWORD vkCode)
     return false;
 }
 
-void WorkArea::SnapWindow(HWND window, const ZoneIndexSet& zones)
+void WorkArea::SnapWindow(HWND window, const ZoneIndexSet& zones, bool extend)
 {
     if (!m_layoutWindows || !m_layout)
     {
         return;
     }
 
-    m_layoutWindows->Assign(window, zones);
-
+    if (extend)
+    {
+        m_layoutWindows->Extend(window, zones);
+    }
+    else
+    {
+        m_layoutWindows->Assign(window, zones);
+    }
+    
     auto guidStr = FancyZonesUtils::GuidToString(m_layout->Id());
     if (guidStr.has_value())
     {
