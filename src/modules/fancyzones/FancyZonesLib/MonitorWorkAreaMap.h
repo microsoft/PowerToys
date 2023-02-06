@@ -1,6 +1,7 @@
 #pragma once
 
 #include "GuidUtils.h"
+#include <FancyZonesLib/FancyZonesDataTypes.h>
 
 class WorkArea;
 
@@ -48,6 +49,8 @@ public:
      */
     void AddWorkArea(HMONITOR monitor, std::unique_ptr<WorkArea> workArea);
 
+    FancyZonesDataTypes::WorkAreaId GetParent(HMONITOR monitor) const;
+
     /**
      * Clear all persisted work area related data.
      */
@@ -55,4 +58,5 @@ public:
     
 private:
     std::unordered_map<HMONITOR, std::unique_ptr<WorkArea>> m_workAreaMap;
+    std::unordered_map<HMONITOR, FancyZonesDataTypes::WorkAreaId> m_workAreaParents{};
 };

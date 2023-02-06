@@ -61,7 +61,27 @@ void MonitorWorkAreaMap::AddWorkArea(HMONITOR monitor, std::unique_ptr<WorkArea>
     m_workAreaMap.insert({ monitor, std::move(workArea) });
 }
 
+FancyZonesDataTypes::WorkAreaId MonitorWorkAreaMap::GetParent(HMONITOR monitor) const
+{
+    if (m_workAreaParents.contains(monitor))
+    {
+        return m_workAreaParents.at(monitor);
+    }
+    
+    return FancyZonesDataTypes::WorkAreaId{};
+}
+
 void MonitorWorkAreaMap::Clear() noexcept
 {
+    // save parent ids
+    m_workAreaParents.clear();
+    for (const auto& [monitor, workArea] : m_workAreaMap)
+    {
+        if (workArea)
+        {
+            m_workAreaParents.insert({ monitor, workArea->UniqueId() });
+        }
+    }
+
     m_workAreaMap.clear();
 }
