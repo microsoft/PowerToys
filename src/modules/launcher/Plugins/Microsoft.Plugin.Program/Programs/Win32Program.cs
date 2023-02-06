@@ -403,7 +403,7 @@ namespace Microsoft.Plugin.Program.Programs
             }
         }
 
-        private static readonly Regex InternetShortcutURLPrefixes = new Regex(@"^steam:\/\/(rungameid|run)\/|^com\.epicgames\.launcher:\/\/apps\/", RegexOptions.Compiled);
+        private static readonly Regex InternetShortcutURLPrefixes = new Regex(@"^steam:\/\/(rungameid|run|open)\/|^com\.epicgames\.launcher:\/\/apps\/", RegexOptions.Compiled);
 
         // This function filters Internet Shortcut programs
         private static Win32Program InternetShortcutProgram(string path)
