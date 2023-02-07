@@ -18,25 +18,32 @@ namespace Peek.Common.Extensions
         /// <param name="propertyStore">The property store</param>
         /// <param name="key">The pkey</param>
         /// <returns>The uint value</returns>
-        public static uint GetUInt(this IPropertyStore propertyStore, PropertyKey key)
+        public static uint? TryGetUInt(this IPropertyStore propertyStore, PropertyKey key)
         {
             if (propertyStore == null)
             {
-                throw new ArgumentNullException("propertyStore");
+                return null;
             }
 
-            PropVariant propVar;
-
-            propertyStore.GetValue(ref key, out propVar);
-
-            // VT_UI4 Indicates a 4-byte unsigned integer formatted in little-endian byte order.
-            if ((VarEnum)propVar.Vt == VarEnum.VT_UI4)
+            try
             {
-                return propVar.UlVal;
+                PropVariant propVar;
+
+                propertyStore.GetValue(ref key, out propVar);
+
+                // VT_UI4 Indicates a 4-byte unsigned integer formatted in little-endian byte order.
+                if ((VarEnum)propVar.Vt == VarEnum.VT_UI4)
+                {
+                    return propVar.UlVal;
+                }
+                else
+                {
+                    return null;
+                }
             }
-            else
+            catch (Exception)
             {
-                return 0;
+                return null;
             }
         }
 
@@ -47,25 +54,32 @@ namespace Peek.Common.Extensions
         /// <param name="propertyStore">The property store</param>
         /// <param name="key">the pkey</param>
         /// <returns>the ulong value</returns>
-        public static ulong GetULong(this IPropertyStore propertyStore, PropertyKey key)
+        public static ulong? TryGetULong(this IPropertyStore propertyStore, PropertyKey key)
         {
             if (propertyStore == null)
             {
-                throw new ArgumentNullException("propertyStore");
+                return null;
             }
 
-            PropVariant propVar;
-
-            propertyStore.GetValue(ref key, out propVar);
-
-            // VT_UI8 Indicates an 8-byte unsigned integer formatted in little-endian byte order.
-            if ((VarEnum)propVar.Vt == VarEnum.VT_UI8)
+            try
             {
-                return propVar.UhVal;
+                PropVariant propVar;
+
+                propertyStore.GetValue(ref key, out propVar);
+
+                // VT_UI8 Indicates an 8-byte unsigned integer formatted in little-endian byte order.
+                if ((VarEnum)propVar.Vt == VarEnum.VT_UI8)
+                {
+                    return propVar.UhVal;
+                }
+                else
+                {
+                    return null;
+                }
             }
-            else
+            catch (Exception)
             {
-                return 0;
+                return null;
             }
         }
 
@@ -75,19 +89,31 @@ namespace Peek.Common.Extensions
         /// <param name="propertyStore">The property store</param>
         /// <param name="key">The pkey</param>
         /// <returns>The string value</returns>
-        public static string GetString(this IPropertyStore propertyStore, PropertyKey key)
+        public static string? TryGetString(this IPropertyStore propertyStore, PropertyKey key)
         {
-            PropVariant propVar;
-
-            propertyStore.GetValue(ref key, out propVar);
-
-            if ((VarEnum)propVar.Vt == VarEnum.VT_LPWSTR)
+            if (propertyStore == null)
             {
-                return Marshal.PtrToStringUni(propVar.P) ?? string.Empty;
+                return null;
             }
-            else
+
+            try
             {
-                return string.Empty;
+                PropVariant propVar;
+
+                propertyStore.GetValue(ref key, out propVar);
+
+                if ((VarEnum)propVar.Vt == VarEnum.VT_LPWSTR)
+                {
+                    return Marshal.PtrToStringUni(propVar.P) ?? string.Empty;
+                }
+                else
+                {
+                    return null;
+                }
+            }
+            catch (Exception)
+            {
+                return null;
             }
         }
 
@@ -97,26 +123,39 @@ namespace Peek.Common.Extensions
         /// <param name="propertyStore">The property store</param>
         /// <param name="key">The pkey</param>
         /// <returns>The array of string values</returns>
-        public static string[] GetStringArray(this IPropertyStore propertyStore, PropertyKey key)
+        public static string[]? TryGetStringArray(this IPropertyStore propertyStore, PropertyKey key)
         {
-            PropVariant propVar;
-            propertyStore.GetValue(ref key, out propVar);
-
-            List<string> values = new List<string>();
-
-            if ((VarEnum)propVar.Vt == (VarEnum.VT_LPWSTR | VarEnum.VT_VECTOR))
+            if (propertyStore == null)
             {
-                for (int elementIndex = 0; elementIndex < propVar.Calpwstr.CElems; elementIndex++)
-                {
-                    var stringVal = Marshal.PtrToStringUni(Marshal.ReadIntPtr(propVar.Calpwstr.PElems, elementIndex));
-                    if (stringVal != null)
-                    {
-                        values.Add(stringVal);
-                    }
-                }
+                return null;
             }
 
-            return values.ToArray();
+            try
+            {
+                PropVariant propVar;
+                propertyStore.GetValue(ref key, out propVar);
+
+                List<string>? values = null;
+
+                if ((VarEnum)propVar.Vt == (VarEnum.VT_LPWSTR | VarEnum.VT_VECTOR))
+                {
+                    values = new List<string>();
+                    for (int elementIndex = 0; elementIndex < propVar.Calpwstr.CElems; elementIndex++)
+                    {
+                        var stringVal = Marshal.PtrToStringUni(Marshal.ReadIntPtr(propVar.Calpwstr.PElems, elementIndex));
+                        if (stringVal != null)
+                        {
+                            values.Add(stringVal);
+                        }
+                    }
+                }
+
+                return values?.ToArray();
+            }
+            catch (Exception)
+            {
+                return null;
+            }
         }
     }
 }

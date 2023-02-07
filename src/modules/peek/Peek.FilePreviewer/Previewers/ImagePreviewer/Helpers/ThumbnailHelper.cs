@@ -9,6 +9,7 @@ using System.Threading.Tasks;
 using Microsoft.UI.Xaml.Media.Imaging;
 using Peek.Common;
 using Peek.Common.Models;
+using Windows.Storage;
 
 namespace Peek.FilePreviewer.Previewers
 {
@@ -62,18 +63,11 @@ namespace Peek.FilePreviewer.Previewers
             return hr;
         }
 
-        public static async Task<BitmapImage?> GetThumbnailAsync(File file, uint size)
+        public static async Task<BitmapImage?> GetThumbnailAsync(StorageFile? storageFile, uint size)
         {
             BitmapImage? bitmapImage = null;
 
-            // preview image
-            var storageFile = await file.GetStorageFileAsync();
-            if (storageFile == null)
-            {
-                return bitmapImage;
-            }
-
-            var imageStream = await storageFile.GetThumbnailAsync(
+            var imageStream = await storageFile?.GetThumbnailAsync(
                 Windows.Storage.FileProperties.ThumbnailMode.SingleItem,
                 size,
                 Windows.Storage.FileProperties.ThumbnailOptions.None);

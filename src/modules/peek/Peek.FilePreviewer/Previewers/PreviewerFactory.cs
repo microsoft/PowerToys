@@ -9,7 +9,7 @@ namespace Peek.FilePreviewer.Previewers
 {
     public class PreviewerFactory
     {
-        public IPreviewer Create(File file)
+        public IPreviewer Create(IFileSystemItem file)
         {
             if (PngPreviewer.IsFileTypeSupported(file.Extension))
             {
@@ -28,7 +28,7 @@ namespace Peek.FilePreviewer.Previewers
             return CreateDefaultPreviewer(file);
         }
 
-        public IPreviewer CreateDefaultPreviewer(File file)
+        public IPreviewer CreateDefaultPreviewer(IFileSystemItem file)
         {
             return new UnsupportedFilePreviewer(file);
         }

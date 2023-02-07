@@ -11,12 +11,13 @@ using Microsoft.UI.Dispatching;
 using Microsoft.UI.Xaml.Media.Imaging;
 using Peek.Common;
 using Peek.Common.Extensions;
+using Peek.Common.Helpers;
+using Peek.Common.Models;
 using Windows.ApplicationModel.DataTransfer;
 using Windows.Foundation;
 using Windows.Graphics.Imaging;
 using Windows.Storage;
 using Windows.Storage.Streams;
-using File = Peek.Common.Models.File;
 
 namespace Peek.FilePreviewer.Previewers
 {
@@ -37,9 +38,9 @@ namespace Peek.FilePreviewer.Previewers
         [ObservableProperty]
         private double scalingFactor;
 
-        public PngPreviewer(File file)
+        public PngPreviewer(IFileSystemItem file)
         {
-            File = file;
+            Item = file;
             Dispatcher = DispatcherQueue.GetForCurrentThread();
 
             PropertyChanged += OnPropertyChanged;
@@ -47,7 +48,7 @@ namespace Peek.FilePreviewer.Previewers
 
         public bool IsPreviewLoaded => preview != null;
 
-        private File File { get; }
+        private IFileSystemItem Item { get; }
 
         private DispatcherQueue Dispatcher { get; }
 
@@ -64,14 +65,14 @@ namespace Peek.FilePreviewer.Previewers
 
         public async Task<Size?> GetPreviewSizeAsync(CancellationToken cancellationToken)
         {
-            var propertyImageSize = await PropertyHelper.GetImageSize(File.Path);
+            var propertyImageSize = await Task.Run(Item.GetImageSize);
             if (propertyImageSize != Size.Empty)
             {
                 return propertyImageSize;
             }
 
             cancellationToken.ThrowIfCancellationRequested();
-            return await WICHelper.GetImageSize(File.Path);
+            return await WICHelper.GetImageSize(Item.Path);
         }
 
         public async Task LoadPreviewAsync(CancellationToken cancellationToken)
@@ -94,16 +95,8 @@ namespace Peek.FilePreviewer.Previewers
         {
             await Dispatcher.RunOnUiThread(async () =>
             {
-                var storageFile = await File.GetStorageFileAsync();
-
-                var dataPackage = new DataPackage();
-                dataPackage.SetStorageItems(new StorageFile[1] { storageFile }, false);
-
-                RandomAccessStreamReference imageStreamRef = RandomAccessStreamReference.CreateFromFile(storageFile);
-                dataPackage.Properties.Thumbnail = imageStreamRef;
-                dataPackage.SetBitmap(imageStreamRef);
-
-                Clipboard.SetContent(dataPackage);
+                var storageItem = await Item.GetStorageItemAsync();
+                ClipboardHelper.SaveToClipboard(storageItem);
             });
         }
 
@@ -133,7 +126,15 @@ namespace Peek.FilePreviewer.Previewers
                 await Dispatcher.RunOnUiThread(async () =>
                 {
                     cancellationToken.ThrowIfCancellationRequested();
-                    var thumbnail = await ThumbnailHelper.GetThumbnailAsync(File, _png_image_size);
+
+                    if (Item is not FileItem fileItem)
+                    {
+                        return;
+                    }
+
+                    var storageFile = await fileItem.GetStorageFileAsync();
+
+                    var thumbnail = await ThumbnailHelper.GetThumbnailAsync(storageFile, _png_image_size);
                     if (!IsFullImageLoaded)
                     {
                         Preview = thumbnail;
@@ -153,7 +154,7 @@ namespace Peek.FilePreviewer.Previewers
                     WriteableBitmap? bitmap = null;
 
                     cancellationToken.ThrowIfCancellationRequested();
-                    var sFile = await StorageFile.GetFileFromPathAsync(File.Path);
+                    var sFile = await StorageFile.GetFileFromPathAsync(Item.Path);
 
                     cancellationToken.ThrowIfCancellationRequested();
                     using (var randomAccessStream = await sFile.OpenStreamForReadAsync())

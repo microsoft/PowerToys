@@ -1,0 +1,52 @@
+﻿// Copyright (c) Microsoft Corporation
+// The Microsoft Corporation licenses this file to you under the MIT license.
+// See the LICENSE file in the project root for more information.
+
+using Peek.Common.Models;
+using Scripting;
+using Windows.Foundation;
+
+namespace Peek.Common.Extensions
+{
+    public static class IFileSystemItemExtensions
+    {
+        public static Size GetImageSize(this IFileSystemItem item)
+        {
+            var propertyStore = item.PropertyStore;
+            var width = propertyStore.TryGetUInt(PropertyKey.ImageHorizontalSize) ?? 0;
+            var height = propertyStore.TryGetUInt(PropertyKey.ImageVerticalSize) ?? 0;
+
+            var size = new Size((int)width, (int)height);
+
+            return size;
+        }
+
+        public static ulong GetSizeInBytes(this IFileSystemItem item)
+        {
+            ulong sizeInBytes = 0;
+
+            switch (item)
+            {
+                case FolderItem _:
+                    FileSystemObject fileSystemObject = new FileSystemObject();
+                    Folder folder = fileSystemObject.GetFolder(item.Path);
+                    sizeInBytes = (ulong)folder.Size;
+                    break;
+                case FileItem _:
+                    var propertyStore = item.PropertyStore;
+                    sizeInBytes = propertyStore.TryGetULong(PropertyKey.FileSizeBytes) ?? 0;
+                    break;
+            }
+
+            return sizeInBytes;
+        }
+
+        public static string GetContentType(this IFileSystemItem item)
+        {
+            // TODO: find a way to get user friendly description
+            var propertyStore = item.PropertyStore;
+            var type = propertyStore.TryGetString(PropertyKey.FileType);
+            return type ?? string.Empty;
+        }
+    }
+}

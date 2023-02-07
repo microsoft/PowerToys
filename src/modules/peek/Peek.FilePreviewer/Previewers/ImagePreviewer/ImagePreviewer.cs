@@ -5,21 +5,20 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Drawing.Imaging;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 using CommunityToolkit.Mvvm.ComponentModel;
 using Microsoft.UI.Dispatching;
 using Microsoft.UI.Xaml.Media.Imaging;
-using Peek.Common;
 using Peek.Common.Extensions;
+using Peek.Common.Helpers;
+using Peek.Common.Models;
 using Peek.FilePreviewer.Previewers.Helpers;
 using Windows.ApplicationModel.DataTransfer;
 using Windows.Foundation;
 using Windows.Storage;
 using Windows.Storage.Streams;
-using File = Peek.Common.Models.File;
 
 namespace Peek.FilePreviewer.Previewers
 {
@@ -40,15 +39,15 @@ namespace Peek.FilePreviewer.Previewers
         [ObservableProperty]
         private double scalingFactor;
 
-        public ImagePreviewer(File file)
+        public ImagePreviewer(IFileSystemItem file)
         {
-            File = file;
+            Item = file;
             Dispatcher = DispatcherQueue.GetForCurrentThread();
 
             PropertyChanged += OnPropertyChanged;
         }
 
-        private File File { get; }
+        private IFileSystemItem Item { get; }
 
         private DispatcherQueue Dispatcher { get; }
 
@@ -70,10 +69,10 @@ namespace Peek.FilePreviewer.Previewers
         public async Task<Size?> GetPreviewSizeAsync(CancellationToken cancellationToken)
         {
             cancellationToken.ThrowIfCancellationRequested();
-            ImageSize = await PropertyHelper.GetImageSize(File.Path);
+            ImageSize = await Task.Run(Item.GetImageSize);
             if (ImageSize == Size.Empty)
             {
-                ImageSize = await WICHelper.GetImageSize(File.Path);
+                ImageSize = await WICHelper.GetImageSize(Item.Path);
             }
 
             return ImageSize;
@@ -100,16 +99,8 @@ namespace Peek.FilePreviewer.Previewers
         {
             await Dispatcher.RunOnUiThread(async () =>
             {
-                var storageFile = await File.GetStorageFileAsync();
-
-                var dataPackage = new DataPackage();
-                dataPackage.SetStorageItems(new StorageFile[1] { storageFile }, false);
-
-                RandomAccessStreamReference imageStreamRef = RandomAccessStreamReference.CreateFromFile(storageFile);
-                dataPackage.Properties.Thumbnail = imageStreamRef;
-                dataPackage.SetBitmap(imageStreamRef);
-
-                Clipboard.SetContent(dataPackage);
+                var storageItem = await Item.GetStorageItemAsync();
+                ClipboardHelper.SaveToClipboard(storageItem);
             });
         }
 
@@ -141,7 +132,7 @@ namespace Peek.FilePreviewer.Previewers
             {
                 cancellationToken.ThrowIfCancellationRequested();
 
-                var hr = ThumbnailHelper.GetThumbnail(Path.GetFullPath(File.Path), out IntPtr hbitmap, ThumbnailHelper.LowQualityThumbnailSize);
+                var hr = ThumbnailHelper.GetThumbnail(Path.GetFullPath(Item.Path), out IntPtr hbitmap, ThumbnailHelper.LowQualityThumbnailSize);
                 if (hr != Common.Models.HResult.Ok)
                 {
                     Debug.WriteLine("Error loading low quality thumbnail - hresult: " + hr);
@@ -169,7 +160,7 @@ namespace Peek.FilePreviewer.Previewers
             {
                 cancellationToken.ThrowIfCancellationRequested();
 
-                var hr = ThumbnailHelper.GetThumbnail(Path.GetFullPath(File.Path), out IntPtr hbitmap, ThumbnailHelper.HighQualityThumbnailSize);
+                var hr = ThumbnailHelper.GetThumbnail(Path.GetFullPath(Item.Path), out IntPtr hbitmap, ThumbnailHelper.HighQualityThumbnailSize);
                 if (hr != Common.Models.HResult.Ok)
                 {
                     Debug.WriteLine("Error loading high quality thumbnail - hresult: " + hr);
@@ -201,7 +192,7 @@ namespace Peek.FilePreviewer.Previewers
                 await Dispatcher.RunOnUiThread(async () =>
                 {
                     cancellationToken.ThrowIfCancellationRequested();
-                    var bitmap = await GetFullBitmapFromPathAsync(File.Path, cancellationToken);
+                    var bitmap = await GetFullBitmapFromPathAsync(Item.Path, cancellationToken);
                     Preview = bitmap;
                 });
             });
