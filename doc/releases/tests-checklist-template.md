@@ -151,7 +151,7 @@ Enable `During zone layout changes, windows assigned to a zone will match new si
 
 Enable `Move newly created windows to their last known zone`, snap a window to a zone, close this window.
 - [ ] Reopen the window on the same monitor, verify it snapped to its zone.
-- [ ] Reopen the window on another monitor, verify it snapped to its zone on the monitor where it was snapped.
+- [ ] Disable `Move newly created windows to the current active monitor`. Reopen the window on another monitor, verify it snapped to its zone on the monitor where it was snapped.
 - [ ] Snap the window of the same app to a zone on another monitor, close and reopen the window, verify it snapped to its zone on the active monitor.
 - [ ] Disable `Move newly created windows to their last known zone`, reopen the snapped window, verify it's opened in its default position or in the position where it was closed after unsnapping.
 
@@ -161,7 +161,8 @@ Enable `Move newly created windows to their last known zone`, snap a window to a
 
 Enable `Move newly created windows to the current active monitor`.
 - [ ] Open a window that wasn't snapped anywhere, verify it's opened on the active monitor.
-- [ ] Open a window that was snapped on the current virtual desktop, verify it's opened in its zone.
+- [ ] Open a window that was snapped on the current virtual desktop and current monitor, verify it's opened in its zone.
+- [ ] Open a window that was snappen on the current virtual desktop and another monitor, verify it's opened on the active monitor.
 - [ ] Open a window that was snapped on another virtual desktop, verify it's opened on the active monitor.
 
 - [ ] Enable `Allow popup windows snapping` and `Allow child windows snapping`, try to snap Notepad++ search window. Verify it can be snapped.
