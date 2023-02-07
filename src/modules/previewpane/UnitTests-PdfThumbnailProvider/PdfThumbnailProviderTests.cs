@@ -22,7 +22,7 @@ namespace PdfThumbnailProviderUnitTests
         public void GetThumbnailValidStreamPDF()
         {
             // Act
-            var filePath = "HelperFiles/sample.pdf";
+            var filePath = System.IO.Path.GetFullPath("HelperFiles/sample.pdf");
 
             PdfThumbnailProvider provider = new PdfThumbnailProvider(filePath);
 
@@ -35,7 +35,7 @@ namespace PdfThumbnailProviderUnitTests
         public void GetThumbnailInValidSizePDF()
         {
             // Act
-            var filePath = "HelperFiles/sample.pdf";
+            var filePath = System.IO.Path.GetFullPath("HelperFiles/sample.pdf");
 
             PdfThumbnailProvider provider = new PdfThumbnailProvider(filePath);
 
@@ -48,7 +48,7 @@ namespace PdfThumbnailProviderUnitTests
         public void GetThumbnailToBigPDF()
         {
             // Act
-            var filePath = "HelperFiles/sample.pdf";
+            var filePath = System.IO.Path.GetFullPath("HelperFiles/sample.pdf");
 
             PdfThumbnailProvider provider = new PdfThumbnailProvider(filePath);
 
