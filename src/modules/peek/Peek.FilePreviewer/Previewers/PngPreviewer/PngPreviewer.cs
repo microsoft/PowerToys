@@ -154,10 +154,16 @@ namespace Peek.FilePreviewer.Previewers
                     WriteableBitmap? bitmap = null;
 
                     cancellationToken.ThrowIfCancellationRequested();
-                    var sFile = await StorageFile.GetFileFromPathAsync(Item.Path);
+                    var storageItem = await Item.GetStorageItemAsync();
+
+                    if (storageItem is not StorageFile storageFile)
+                    {
+                        Preview = null;
+                        return;
+                    }
 
                     cancellationToken.ThrowIfCancellationRequested();
-                    using (var randomAccessStream = await sFile.OpenStreamForReadAsync())
+                    using (var randomAccessStream = await storageFile.OpenStreamForReadAsync())
                     {
                         // Create an encoder with the desired format
                         cancellationToken.ThrowIfCancellationRequested();
