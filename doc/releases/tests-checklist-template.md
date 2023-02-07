@@ -164,8 +164,8 @@ Enable `Move newly created windows to the current active monitor`.
 - [ ] Open a window that was snapped on the current virtual desktop, verify it's opened in its zone.
 - [ ] Open a window that was snapped on another virtual desktop, verify it's opened on the active monitor.
 
-- [ ] Enable `Allow popup windows snapping`, snap Teams, verify a popup message window appears in the zone.
-- [ ] Disable `Allow popup windows snapping`, snap Teams, verify a popup window appears in its usual position.
+- [ ] Enable `Allow popup windows snapping` and `Allow child windows snapping`, try to snap Notepad++ search window. Verify it can be snapped.
+- [ ] Enable `Allow popup windows snapping`, snap Teams, verify a popup window appears in its usual position.
 - [ ] Enable `Allow popup windows snapping`, snap Visual Studio Code to a zone, and open any menu. Verify the menu is where it's supposed to be and not on the top left corner of the zone.
 - [ ] Enable `Allow child windows snapping`, drag any child window (e.g. Solution Explorer), verify it can be snapped to a zone.
 - [ ] Disable `Allow child windows snapping`, drag any child window (e.g. Solution Explorer), verify it can't be snapped to a zone.
@@ -199,6 +199,8 @@ Two and more monitors:
 
 Select Move windows based on `Relative position`.
 - [ ] Open the previously not snapped window, press `Win`+`Arrow`, verify it's snapped.
+- [ ] Extend the window using `Ctrl`+`Alt`+`Win`+`Arrow`. Verify the window is snapped to all zones.
+- [ ] Extend the window using `Ctrl`+`Alt`+`Win`+`Arrow` and return it back using the opposite arrow. Verify it could be reverted while you hold `Ctrl`+`Alt`+`Win`.
 
 - [ ] `Move windows between zones across all monitors` disabled. Verify `Win`+`LeftArrow` cycles the window position to the left (from the leftmost zone moves to the rightmost in the same row) within one monitor.
 - [ ] `Move windows between zones across all monitors` disabled. Verify `Win`+`RightArrow` cycles the window position to the right within one monitor.
