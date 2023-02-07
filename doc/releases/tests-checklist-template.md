@@ -250,7 +250,7 @@ Before testing
 ### Span zones across monitors
 - [ ] Switch between `Allow zones to span across monitors` on and off. Verify that layouts are applied correctly in both cases.
 
-Repeat previous steps with enabled `Allow zones to span across monitors`
+Repeat the previous subsections steps after enabling `Allow zones to span across monitors`
 - [ ] Dragging
 - [ ] Snapping
 - [ ] Snapped window behavior
