@@ -754,6 +754,7 @@ LRESULT CALLBACK FancyZones::s_WndProc(HWND window, UINT message, WPARAM wparam,
 
 void FancyZones::UpdateWorkAreas(bool updateWindowPositions) noexcept
 {
+    m_workAreaHandler.SaveParentIds();
     m_workAreaHandler.Clear();
 
     if (FancyZonesSettings::settings().spanZonesAcrossMonitors)

@@ -71,9 +71,8 @@ FancyZonesDataTypes::WorkAreaId MonitorWorkAreaMap::GetParent(HMONITOR monitor) 
     return FancyZonesDataTypes::WorkAreaId{};
 }
 
-void MonitorWorkAreaMap::Clear() noexcept
+void MonitorWorkAreaMap::SaveParentIds()
 {
-    // save parent ids
     m_workAreaParents.clear();
     for (const auto& [monitor, workArea] : m_workAreaMap)
     {
@@ -82,6 +81,9 @@ void MonitorWorkAreaMap::Clear() noexcept
             m_workAreaParents.insert({ monitor, workArea->UniqueId() });
         }
     }
+}
 
+void MonitorWorkAreaMap::Clear() noexcept
+{
     m_workAreaMap.clear();
 }

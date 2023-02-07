@@ -52,6 +52,11 @@ public:
     FancyZonesDataTypes::WorkAreaId GetParent(HMONITOR monitor) const;
 
     /**
+    * Saving current work area IDs as parents for later use.
+    */
+    void SaveParentIds();
+
+    /**
      * Clear all persisted work area related data.
      */
     void Clear() noexcept;
