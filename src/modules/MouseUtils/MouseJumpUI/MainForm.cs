@@ -21,7 +21,7 @@ internal partial class MainForm : Form
         // var factory = LogManager.LoadConfiguration(".\\NLog.config");
         // this.Logger = factory.GetCurrentClassLogger();
         this.InitializeComponent();
-        this.ShowPreview();
+        this.ShowThumbnail();
     }
 
     private Logger Logger
@@ -55,14 +55,16 @@ internal partial class MainForm : Form
 
     private void Thumbnail_Click(object sender, EventArgs e)
     {
-        this.Logger.Debug("-----------");
-        this.Logger.Debug(nameof(MainForm.Thumbnail_Click));
-        this.Logger.Debug("-----------");
+        var logger = this.Logger;
+
+        logger.Debug("-----------");
+        logger.Debug(nameof(MainForm.Thumbnail_Click));
+        logger.Debug("-----------");
 
         var mouseEventArgs = (MouseEventArgs)e;
-        this.Logger.Debug($"mouse event args = ");
-        this.Logger.Debug($"    button   = {mouseEventArgs.Button} ");
-        this.Logger.Debug($"    location = {mouseEventArgs.Location} ");
+        logger.Debug($"mouse event args = ");
+        logger.Debug($"    button   = {mouseEventArgs.Button} ");
+        logger.Debug($"    location = {mouseEventArgs.Location} ");
 
         if (mouseEventArgs.Button == MouseButtons.Left)
         {
@@ -70,17 +72,17 @@ internal partial class MainForm : Form
             var desktopBounds = LayoutHelper.CombineRegions(
                 Screen.AllScreens.Select(
                     screen => screen.Bounds).ToList());
-            this.Logger.Debug(
+            logger.Debug(
                 $"desktop bounds  = {desktopBounds}");
 
             var mouseEvent = (MouseEventArgs)e;
 
-            var cursorPosition = LayoutHelper.ScaleLocation(
+            var scaledLocation = LayoutHelper.ScaleLocation(
                 originalBounds: Thumbnail.Bounds,
                 originalLocation: new Point(mouseEvent.X, mouseEvent.Y),
                 scaledBounds: desktopBounds);
-            this.Logger.Debug(
-                $"cursor position = {cursorPosition}");
+            logger.Debug(
+                $"scaled location = {scaledLocation}");
 
             Cursor.Position = cursorPosition;
         }
@@ -88,11 +90,13 @@ internal partial class MainForm : Form
         this.Close();
     }
 
-    public void ShowPreview()
+    public void ShowThumbnail()
     {
-        this.Logger.Debug("-----------");
-        this.Logger.Debug(nameof(MainForm.ShowPreview));
-        this.Logger.Debug("-----------");
+        var logger = this.Logger;
+
+        logger.Debug("-----------");
+        logger.Debug(nameof(MainForm.ShowThumbnail));
+        logger.Debug("-----------");
 
         if (this.Thumbnail.Image != null)
         {
@@ -105,34 +109,35 @@ internal partial class MainForm : Form
         foreach (var i in Enumerable.Range(0, screens.Length))
         {
             var screen = screens[i];
-            this.Logger.Debug($"screen[{i}] = \"{screen.DeviceName}\"");
-            this.Logger.Debug($"    primary      = {screen.Primary}");
-            this.Logger.Debug($"    bounds       = {screen.Bounds}");
-            this.Logger.Debug($"    working area = {screen.WorkingArea}");
+            logger.Debug($"screen[{i}] = \"{screen.DeviceName}\"");
+            logger.Debug($"    primary      = {screen.Primary}");
+            logger.Debug($"    bounds       = {screen.Bounds}");
+            logger.Debug($"    working area = {screen.WorkingArea}");
         }
 
         var desktopBounds = LayoutHelper.CombineRegions(
             screens.Select(screen => screen.Bounds).ToList());
-        this.Logger.Debug(
+        logger.Debug(
             $"desktop bounds  = {desktopBounds}");
 
-        var cursorPosition = Cursor.Position;
-        this.Logger.Debug(
-            $"cursor position = {cursorPosition}");
+        var activatedPosition = Cursor.Position;
+        logger.Debug(
+            $"activated position = {activatedPosition}");
 
         var previewImagePadding = new Size(
             panel1.Padding.Left + panel1.Padding.Right,
             panel1.Padding.Top + panel1.Padding.Bottom);
-        this.Logger.Debug(
+        logger.Debug(
             $"image padding   = {previewImagePadding}");
 
+        var maxThumbnailSize = new Size(1600, 1200);
         var formBounds = LayoutHelper.GetPreviewFormBounds(
             desktopBounds: desktopBounds,
-            cursorPosition: cursorPosition,
-            currentMonitorBounds: Screen.FromPoint(cursorPosition).Bounds,
-            maximumPreviewImageSize: new Size(1600, 1200),
-            previewImagePadding: previewImagePadding);
-        this.Logger.Debug(
+            activatedPosition: activatedPosition,
+            activatedMonitorBounds: Screen.FromPoint(activatedPosition).Bounds,
+            maximumThumbnailImageSize: maxThumbnailSize,
+            thumbnailImagePadding: previewImagePadding);
+        logger.Debug(
             $"form bounds     = {formBounds}");
 
         // take a screenshot of the entire desktop
@@ -159,8 +164,18 @@ internal partial class MainForm : Form
             graphics.CopyFromScreen(desktopBounds.Left, desktopBounds.Top, 0, 0, desktopBounds.Size);
         }
 
-        // resize and position the form, and update the preview image
-        this.Bounds = formBounds;
+        // resize and position the form
+        // note - do this in two steps rather than "this.Bounds = formBounds" as there
+        // appears to be an issue in WinForms with dpi scaling even when using PerMonitorV2,
+        // where the form scaling uses either the *primary* screen scaling or the *previous*
+        // screen's scaling when the form is moved to a different screen. i've got no idea
+        // *why*, but the exact sequence of calls below seems to be a workaround...
+        // see https://github.com/mikeclayton/FancyMouse/issues/2
+        this.Location = formBounds.Location;
+        _ = this.PointToScreen(Point.Empty);
+        this.Size = formBounds.Size;
+
+        // update the preview image
         this.Thumbnail.Image = screenshot;
 
         this.Show();

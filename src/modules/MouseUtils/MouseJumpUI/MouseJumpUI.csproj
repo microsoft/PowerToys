@@ -22,6 +22,10 @@
   </PropertyGroup>
 
   <PropertyGroup>
+    <ApplicationHighDpiMode>PerMonitorV2</ApplicationHighDpiMode>
+  </PropertyGroup>
+
+  <PropertyGroup>
     <ProjectGuid>{D962A009-834F-4EEC-AABB-430DF8F98E39}</ProjectGuid>
     <OutputType>WinExe</OutputType>
     <RootNamespace>MouseJumpUI</RootNamespace>
