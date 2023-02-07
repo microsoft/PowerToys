@@ -9,15 +9,12 @@ using System.Threading.Tasks;
 using CommunityToolkit.Mvvm.ComponentModel;
 using Microsoft.UI.Dispatching;
 using Microsoft.UI.Xaml.Media.Imaging;
-using Peek.Common;
 using Peek.Common.Extensions;
 using Peek.Common.Helpers;
 using Peek.Common.Models;
-using Windows.ApplicationModel.DataTransfer;
 using Windows.Foundation;
 using Windows.Graphics.Imaging;
 using Windows.Storage;
-using Windows.Storage.Streams;
 
 namespace Peek.FilePreviewer.Previewers
 {

@@ -3,7 +3,6 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
-using System.Drawing.Imaging;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
@@ -11,15 +10,11 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.UI.Dispatching;
 using Microsoft.UI.Xaml.Media;
-using Microsoft.UI.Xaml.Media.Imaging;
-using Peek.Common;
 using Peek.Common.Extensions;
 using Peek.Common.Helpers;
 using Peek.Common.Models;
 using Peek.FilePreviewer.Previewers.Helpers;
-using Windows.ApplicationModel.DataTransfer;
 using Windows.Foundation;
-using Windows.Storage;
 
 namespace Peek.FilePreviewer.Previewers
 {

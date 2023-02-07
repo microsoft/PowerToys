@@ -15,10 +15,7 @@ using Peek.Common.Extensions;
 using Peek.Common.Helpers;
 using Peek.Common.Models;
 using Peek.FilePreviewer.Previewers.Helpers;
-using Windows.ApplicationModel.DataTransfer;
 using Windows.Foundation;
-using Windows.Storage;
-using Windows.Storage.Streams;
 
 namespace Peek.FilePreviewer.Previewers
 {
