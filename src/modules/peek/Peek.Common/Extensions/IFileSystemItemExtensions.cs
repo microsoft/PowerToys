@@ -2,9 +2,11 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System.Threading.Tasks;
 using Peek.Common.Models;
 using Scripting;
 using Windows.Foundation;
+using Windows.Storage;
 
 namespace Peek.Common.Extensions
 {
@@ -41,12 +43,26 @@ namespace Peek.Common.Extensions
             return sizeInBytes;
         }
 
-        public static string GetContentType(this IFileSystemItem item)
+        public static async Task<string> GetContentTypeAsync(this IFileSystemItem item)
         {
-            // TODO: find a way to get user friendly description
-            var propertyStore = item.PropertyStore;
-            var type = propertyStore.TryGetString(PropertyKey.FileType);
-            return type ?? string.Empty;
+            string contentType = string.Empty;
+
+            var storageItem = await item.GetStorageItemAsync();
+            switch (storageItem)
+            {
+                case StorageFile storageFile:
+                    contentType = storageFile.DisplayType;
+                    break;
+                case StorageFolder storageFolder:
+                    contentType = storageFolder.DisplayType;
+                    break;
+                default:
+                    var propertyStore = item.PropertyStore;
+                    contentType = propertyStore.TryGetString(PropertyKey.FileType) ?? string.Empty;
+                    break;
+            }
+
+            return contentType;
         }
     }
 }

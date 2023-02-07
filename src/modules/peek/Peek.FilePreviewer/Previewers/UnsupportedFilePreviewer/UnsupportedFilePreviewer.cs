@@ -139,7 +139,7 @@ namespace Peek.FilePreviewer.Previewers
                 var bytes = await Task.Run(Item.GetSizeInBytes);
 
                 cancellationToken.ThrowIfCancellationRequested();
-                var type = await Task.Run(Item.GetContentType);
+                var type = await Task.Run(Item.GetContentTypeAsync);
 
                 await Dispatcher.RunOnUiThread(() =>
                 {

@@ -245,7 +245,7 @@ namespace Peek.FilePreviewer
             sb.Append(fileNameFormatted);
 
             cancellationToken.ThrowIfCancellationRequested();
-            string fileType = await Task.Run(Item.GetContentType);
+            string fileType = await Task.Run(Item.GetContentTypeAsync);
             string fileTypeFormatted = string.IsNullOrEmpty(fileType) ? string.Empty : "\n" + ReadableStringHelper.FormatResourceString("PreviewTooltip_FileType", fileType);
             sb.Append(fileTypeFormatted);
 
