@@ -503,10 +503,10 @@ public static class LayoutHelperTests
         {
             var actual = LayoutHelper.GetPreviewFormBounds(
                 desktopBounds: data.DesktopBounds,
-                cursorPosition: data.CursorPosition,
-                currentMonitorBounds: data.CurrentMonitorBounds,
-                maximumPreviewImageSize: data.MaximumPreviewImageSize,
-                previewImagePadding: data.PreviewImagePadding);
+                activatedPosition: data.CursorPosition,
+                activatedMonitorBounds: data.CurrentMonitorBounds,
+                maximumThumbnailImageSize: data.MaximumPreviewImageSize,
+                thumbnailImagePadding: data.PreviewImagePadding);
             var expected = data.ExpectedResult;
             Assert.AreEqual(expected, actual);
         }
