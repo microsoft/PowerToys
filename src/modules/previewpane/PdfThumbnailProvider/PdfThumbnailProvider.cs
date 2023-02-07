@@ -72,6 +72,7 @@ namespace Microsoft.PowerToys.ThumbnailHandler.Pdf
             }
             catch (Exception)
             {
+                // TODO: add logger
             }
 
             return thumbnail;
