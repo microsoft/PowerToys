@@ -75,7 +75,7 @@ bool create_auto_start_task_for_this_user(bool runElevated)
                           NULL,
                           CLSCTX_INPROC_SERVER,
                           IID_ITaskService,
-                          (void**)&pService);
+                          reinterpret_cast<void**>(&pService));
     ExitOnFailure(hr, "Failed to create an instance of ITaskService: %x", hr);
 
     // Connect to the task service.
@@ -286,7 +286,7 @@ bool delete_auto_start_task_for_this_user()
                           NULL,
                           CLSCTX_INPROC_SERVER,
                           IID_ITaskService,
-                          (void**)&pService);
+                          reinterpret_cast<void**>(&pService));
     ExitOnFailure(hr, "Failed to create an instance of ITaskService: %x", hr);
 
     // Connect to the task service.
@@ -351,7 +351,7 @@ bool is_auto_start_task_active_for_this_user()
                           NULL,
                           CLSCTX_INPROC_SERVER,
                           IID_ITaskService,
-                          (void**)&pService);
+                          reinterpret_cast<void**>(&pService));
     ExitOnFailure(hr, "Failed to create an instance of ITaskService: %x", hr);
 
     // Connect to the task service.

@@ -53,7 +53,7 @@ bool dispatch_run_on_main_ui_thread(main_loop_callback_function _callback, PVOID
     wnd_msg->_callback = _callback;
     wnd_msg->data = data;
 
-    PostMessage(tray_icon_hwnd, wm_run_on_main_ui_thread, 0, (LPARAM)wnd_msg);
+    PostMessage(tray_icon_hwnd, wm_run_on_main_ui_thread, 0, reinterpret_cast<LPARAM>(wnd_msg));
 
     return true;
 }
@@ -93,7 +93,7 @@ void handle_tray_command(HWND window, const WPARAM command_id, LPARAM lparam)
         }
         break;
     case ID_REPORT_BUG_COMMAND:
-    {        
+    {
         std::wstring bug_report_path = get_module_folderpath();
         bug_report_path += L"\\Tools\\PowerToys.BugReportTool.exe";
         SHELLEXECUTEINFOW sei{ sizeof(sei) };
@@ -116,7 +116,6 @@ void handle_tray_command(HWND window, const WPARAM command_id, LPARAM lparam)
         RunNonElevatedEx(L"https://aka.ms/PowerToysOverview", L"", L"");
         break;
     }
-        
     }
 }
 
@@ -242,7 +241,7 @@ LRESULT __stdcall tray_icon_window_proc(HWND window, UINT message, WPARAM wparam
         {
             if (lparam != NULL)
             {
-                struct run_on_main_ui_thread_msg* msg = (struct run_on_main_ui_thread_msg*)lparam;
+                struct run_on_main_ui_thread_msg* msg = reinterpret_cast<struct run_on_main_ui_thread_msg*>(lparam);
                 msg->_callback(msg->data);
                 delete msg;
                 lparam = NULL;
