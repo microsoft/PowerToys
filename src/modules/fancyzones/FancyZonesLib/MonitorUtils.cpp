@@ -88,7 +88,7 @@ namespace MonitorUtils
             // on a particular host computer.
             IWbemLocator* pLocator = 0;
 
-            hres = CoCreateInstance(CLSID_WbemLocator, 0, CLSCTX_INPROC_SERVER, IID_IWbemLocator, (LPVOID*)&pLocator);
+            hres = CoCreateInstance(CLSID_WbemLocator, 0, CLSCTX_INPROC_SERVER, IID_IWbemLocator, reinterpret_cast<LPVOID*>(&pLocator));
             if (FAILED(hres))
             {
                 Logger::error(L"Failed to create IWbemLocator object. {}", get_last_error_or_default(hres));
