@@ -14,7 +14,7 @@ using Windows.ApplicationModel.Resources;
 
 namespace Microsoft.PowerToys.Settings.UI.Views
 {
-    public sealed partial class ColorPickerPage : Page
+    public sealed partial class ColorPickerPage : Page, IRefreshablePage
     {
         public ColorPickerViewModel ViewModel { get; set; }
 
@@ -156,6 +156,11 @@ namespace Microsoft.PowerToys.Settings.UI.Views
         private void ColorFormatEditor_PropertyChanged(object sender, EventArgs e)
         {
             ColorFormatDialog.IsPrimaryButtonEnabled = ViewModel.SetValidity(ColorFormatDialog.DataContext as ColorFormatModel, ColorFormatDialog.Tag as string);
+        }
+
+        public void RefreshEnabledState()
+        {
+            ViewModel.RefreshEnabledState();
         }
     }
 }

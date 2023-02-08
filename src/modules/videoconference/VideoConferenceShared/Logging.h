@@ -41,12 +41,12 @@ std::string toMediaTypeString(GUID subtype);
 #define LOG(str) LogToFile(str, false);
 #endif
 
-inline bool failed(HRESULT hr)
+constexpr inline bool failed(HRESULT hr)
 {
     return hr != S_OK;
 }
 
-inline bool failed(bool val)
+constexpr inline bool failed(bool val)
 {
     return val == false;
 }

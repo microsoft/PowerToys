@@ -3,9 +3,11 @@
 #include <interface/powertoy_module_interface.h>
 #include <common/SettingsAPI/settings_objects.h>
 #include "trace.h"
+#include <common/interop/shared_constants.h>
 #include <common/utils/string_utils.h>
 #include <common/utils/winapi_error.h>
 #include <common/utils/logger_helper.h>
+#include <common/utils/EventWaiter.h>
 
 extern "C" IMAGE_DOS_HEADER __ImageBase;
 
@@ -48,6 +50,9 @@ private:
 
     Hotkey m_hotkey;
     HANDLE m_hProcess;
+
+    HANDLE triggerEvent;
+    EventWaiter triggerEventWaiter;
 
     void parse_hotkey(PowerToysSettings::PowerToyValues& settings)
     {
@@ -142,6 +147,11 @@ public:
     {
         LoggerHelpers::init_logger(L"Measure Tool", L"ModuleInterface", "Measure Tool");
         init_settings();
+
+        triggerEvent = CreateEvent(nullptr, false, false, CommonSharedConstants::MEASURE_TOOL_TRIGGER_EVENT);
+        triggerEventWaiter = EventWaiter(CommonSharedConstants::MEASURE_TOOL_TRIGGER_EVENT, [this](int) {
+            on_hotkey(0);
+        });
     }
 
     ~MeasureTool()

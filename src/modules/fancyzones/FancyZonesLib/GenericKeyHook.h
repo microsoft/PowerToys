@@ -48,7 +48,7 @@ private:
         {
             if (wParam == WM_KEYDOWN || wParam == WM_KEYUP)
             {
-                PKBDLLHOOKSTRUCT kbdHookStruct = (PKBDLLHOOKSTRUCT)lParam;
+                PKBDLLHOOKSTRUCT kbdHookStruct = reinterpret_cast<PKBDLLHOOKSTRUCT>(lParam);
                 if (((kbdHookStruct->vkCode == keys) || ...))
                 {
                     callback(wParam == WM_KEYDOWN);

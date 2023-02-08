@@ -69,6 +69,21 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 _colorPickerSettings = colorPickerSettingsRepository.SettingsConfig; // used in the unit tests
             }
 
+            InitializeEnabledValue();
+
+            // set the callback functions value to hangle outgoing IPC message.
+            SendConfigMSG = ipcMSGCallBackFunc;
+
+            _delayedTimer = new Timer();
+            _delayedTimer.Interval = SaveSettingsDelayInMs;
+            _delayedTimer.Elapsed += DelayedTimer_Tick;
+            _delayedTimer.AutoReset = false;
+
+            InitializeColorFormats();
+        }
+
+        private void InitializeEnabledValue()
+        {
             _enabledGpoRuleConfiguration = GPOWrapper.GetConfiguredColorPickerEnabledValue();
             if (_enabledGpoRuleConfiguration == GpoRuleConfigured.Disabled || _enabledGpoRuleConfiguration == GpoRuleConfigured.Enabled)
             {
@@ -80,16 +95,6 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             {
                 _isEnabled = GeneralSettingsConfig.Enabled.ColorPicker;
             }
-
-            // set the callback functions value to hangle outgoing IPC message.
-            SendConfigMSG = ipcMSGCallBackFunc;
-
-            _delayedTimer = new Timer();
-            _delayedTimer.Interval = SaveSettingsDelayInMs;
-            _delayedTimer.Elapsed += DelayedTimer_Tick;
-            _delayedTimer.AutoReset = false;
-
-            InitializeColorFormats();
         }
 
         public bool IsEnabled
@@ -358,6 +363,12 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                        "{{ \"powertoys\": {{ \"{0}\": {1} }} }}",
                        ColorPickerSettings.ModuleName,
                        JsonSerializer.Serialize(_colorPickerSettings)));
+        }
+
+        public void RefreshEnabledState()
+        {
+            InitializeEnabledValue();
+            OnPropertyChanged(nameof(IsEnabled));
         }
 
         protected virtual void Dispose(bool disposing)

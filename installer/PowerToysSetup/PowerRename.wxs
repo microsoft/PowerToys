@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Wix xmlns="http://schemas.microsoft.com/wix/2006/wi"
+     xmlns:util="http://schemas.microsoft.com/wix/UtilExtension" >
+
+  <?include $(sys.CURRENTDIR)\Common.wxi?>
+
+  <?define PowerRenameFiles=PowerRenameUI.ico;PowerToys.PowerRename.exe;resources.pri;PowerToys.PowerRenameExt.dll;PowerRenameContextMenuPackage.msix;PowerToys.PowerRenameContextMenu.dll?>
+  <?define PowerRenameSparsePackageAssets=LargeTile.png;SmallTile.png;SplashScreen.png;Square150x150Logo.png;Square44x44Logo.png;storelogo.png;Wide310x150Logo.png?>
+  <?define PowerRenameMicrosoftUIXamlAssetsInstallFiles=NoiseAsset_256x256_PNG.png?>
+
+  <Fragment>
+
+    <!-- PowerRename -->
+    <DirectoryRef Id="PowerRenameInstallFolder" FileSource="$(var.BinDir)modules\$(var.PowerRenameProjectName)">
+      <?foreach File in $(var.PowerRenameFiles)?>
+        <Component Id="PowerRename_$(var.File)" Win64="yes">
+          <File Source="$(var.BinDir)modules\$(var.PowerRenameProjectName)\$(var.File)" />
+        </Component>
+      <?endforeach?>
+      <!-- !Warning! Make sure to change Component Guid if you update something here -->
+      <Component Id="Module_PowerRename" Guid="40D43079-240E-402D-8CE8-571BFFA71175" Win64="yes">
+        <RegistryKey Root="HKLM" Key="Software\Classes\CLSID\{0440049F-D1DC-4E46-B27B-98393D79486B}">
+          <RegistryValue Type="string" Value="PowerRename Shell Extension" />
+          <RegistryValue Type="string" Name="ContextMenuOptIn" Value="" />
+          <RegistryValue Type="string" Key="InprocServer32" Value="[PowerRenameInstallFolder]PowerToys.PowerRenameExt.dll" />
+          <RegistryValue Type="string" Key="InprocServer32" Name="ThreadingModel" Value="Apartment" />
+        </RegistryKey>
+        <RegistryKey Root="HKLM" Key="SOFTWARE\Classes\AllFileSystemObjects\ShellEx\ContextMenuHandlers\PowerRenameExt">
+          <RegistryValue Type="string" Value="{0440049F-D1DC-4E46-B27B-98393D79486B}"/>
+        </RegistryKey>
+
+      </Component>
+    </DirectoryRef>
+
+    <DirectoryRef Id="PowerRenameMicrosoftUIXamlAssetsInstallFolder" FileSource="$(var.BinDir)modules\$(var.PowerRenameProjectName)\Microsoft.UI.Xaml\Assets">
+      <?foreach File in $(var.PowerRenameMicrosoftUIXamlAssetsInstallFiles)?>
+        <Component Id="PowerRenameMicrosoftUIXamlAssets_$(var.File)" Win64="yes">
+          <File Id="PowerRenameMicrosoftUIXamlAssetsFile_$(var.File)" Source="$(var.BinDir)modules\$(var.PowerRenameProjectName)\Microsoft.UI.Xaml\Assets\$(var.File)" />
+        </Component>
+      <?endforeach?>
+    </DirectoryRef>
+
+    <DirectoryRef Id="PowerRenameAssetsFolder" FileSource="$(var.BinDir)modules\$(var.PowerRenameProjectName)">
+      <!-- !Warning! Make sure to change Component Guid if you update the file list -->
+      <Component Id="Module_PowerRename_Assets" Guid="BA290033-7861-44B7-8A04-7E4C3CC7F0AE" Win64="yes">
+        <File Source="$(var.BinDir)modules\$(var.PowerRenameProjectName)\Assets\file.png" />
+        <File Source="$(var.BinDir)modules\$(var.PowerRenameProjectName)\Assets\folder.png" />
+      </Component>
+      <!-- !Warning! Make sure to change Component Guid if you update the file list -->
+      <Component Id="PowerRename_PowerRenameSparsePackageAssets" Guid="A32B528D-2771-4853-9775-1791D39DF30E" Win64="yes">
+        <?foreach File in $(var.PowerRenameSparsePackageAssets)?>
+          <File Id="PowerRenameSparsePackageAssets_$(var.File)" Source="$(var.BinDir)modules\$(var.PowerRenameProjectName)\Assets\$(var.File)" />
+        <?endforeach?>
+      </Component>
+    </DirectoryRef>
+
+    <ComponentGroup Id="PowerRenameComponentGroup" Directory="INSTALLFOLDER">
+      <ComponentRef Id="Module_PowerRename" />
+      <?foreach File in $(var.PowerRenameFiles)?>
+       <ComponentRef Id="PowerRename_$(var.File)" />
+      <?endforeach?>
+	  <?foreach File in $(var.PowerRenameMicrosoftUIXamlAssetsInstallFiles)?>
+	    <ComponentRef Id="PowerRenameMicrosoftUIXamlAssets_$(var.File)" />
+      <?endforeach?>
+      <ComponentRef Id="Module_PowerRename_Assets" />
+      <ComponentRef Id="PowerRename_PowerRenameSparsePackageAssets" />
+
+    </ComponentGroup>
+
+  </Fragment>
+</Wix>

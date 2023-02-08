@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Wix xmlns="http://schemas.microsoft.com/wix/2006/wi"
+     xmlns:util="http://schemas.microsoft.com/wix/UtilExtension" >
+
+  <?include $(sys.CURRENTDIR)\Common.wxi?>
+
+  <Fragment>
+    <!-- KBM -->
+    <DirectoryRef Id="KeyboardManagerInstallFolder" FileSource="$(var.BinDir)modules\$(var.KeyboardManagerProjectName)\">
+      <Component Id="Module_KeyboardManager" Win64="yes">
+        <File Source="$(var.BinDir)modules\$(var.KeyboardManagerProjectName)\PowerToys.KeyboardManager.dll" />
+      </Component>
+    </DirectoryRef>
+
+    <!-- KBM Editor -->
+    <DirectoryRef Id="KeyboardManagerEditorInstallFolder" FileSource="$(var.BinDir)modules\$(var.KeyboardManagerProjectName)\KeyboardManagerEditor">
+      <Component Id="Module_KeyboardManager_Editor" Win64="yes">
+        <File Source="$(var.BinDir)modules\$(var.KeyboardManagerProjectName)\KeyboardManagerEditor\PowerToys.KeyboardManagerEditor.exe" />
+      </Component>
+    </DirectoryRef>
+
+    <!-- KBM Engine -->
+    <DirectoryRef Id="KeyboardManagerEngineInstallFolder" FileSource="$(var.BinDir)modules\$(var.KeyboardManagerProjectName)\KeyboardManagerEngine">
+      <Component Id="Module_KeyboardManager_Engine" Win64="yes">
+        <File Source="$(var.BinDir)modules\$(var.KeyboardManagerProjectName)\KeyboardManagerEngine\PowerToys.KeyboardManagerEngine.exe" />
+      </Component>
+    </DirectoryRef>
+
+    <ComponentGroup Id="KeyboardManagerComponentGroup" Directory="INSTALLFOLDER">
+      <ComponentRef Id="Module_KeyboardManager" />
+      <ComponentRef Id="Module_KeyboardManager_Editor" />
+      <ComponentRef Id="Module_KeyboardManager_Engine" />
+    </ComponentGroup>
+
+  </Fragment>
+</Wix>

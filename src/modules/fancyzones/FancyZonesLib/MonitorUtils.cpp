@@ -88,7 +88,7 @@ namespace MonitorUtils
             // on a particular host computer.
             IWbemLocator* pLocator = 0;
 
-            hres = CoCreateInstance(CLSID_WbemLocator, 0, CLSCTX_INPROC_SERVER, IID_IWbemLocator, (LPVOID*)&pLocator);
+            hres = CoCreateInstance(CLSID_WbemLocator, 0, CLSCTX_INPROC_SERVER, IID_IWbemLocator, reinterpret_cast<LPVOID*>(&pLocator));
             if (FAILED(hres))
             {
                 Logger::error(L"Failed to create IWbemLocator object. {}", get_last_error_or_default(hres));
@@ -207,7 +207,7 @@ namespace MonitorUtils
             return { .id = str.substr(0, dividerPos), .instanceId = str.substr(dividerPos + 1) };
         }
 
-        inline bool not_digit(wchar_t ch)
+        constexpr inline bool not_digit(wchar_t ch)
         {
             return '0' <= ch && ch <= '9';
         }
@@ -382,5 +382,20 @@ namespace MonitorUtils
         }
         
         return displays;
+    }
+
+    FancyZonesUtils::Rect GetWorkAreaRect(HMONITOR monitor)
+    {
+        if (monitor)
+        {
+            MONITORINFO mi{};
+            mi.cbSize = sizeof(mi);
+            if (GetMonitorInfoW(monitor, &mi))
+            {
+                return FancyZonesUtils::Rect(mi.rcWork);
+            }
+        }
+
+        return FancyZonesUtils::Rect{};
     }
 }

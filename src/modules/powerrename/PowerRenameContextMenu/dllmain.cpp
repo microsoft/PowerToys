@@ -213,7 +213,7 @@ private:
                 auto val = get_last_error_message(GetLastError());
                 Logger::warn(L"UuidCreate can not create guid. {}", val.has_value() ? val.value() : L"");
             }
-            else if (UuidToString(&temp_uuid, (RPC_WSTR*)&uuid_chars) != RPC_S_OK)
+            else if (UuidToString(&temp_uuid, reinterpret_cast<RPC_WSTR*>(& uuid_chars)) != RPC_S_OK)
             {
                 auto val = get_last_error_message(GetLastError());
                 Logger::warn(L"UuidToString can not convert to string. {}", val.has_value() ? val.value() : L"");
@@ -222,7 +222,7 @@ private:
             if (uuid_chars != nullptr)
             {
                 pipe_name += std::wstring(uuid_chars);
-                RpcStringFree((RPC_WSTR*)&uuid_chars);
+                RpcStringFree(reinterpret_cast<RPC_WSTR*>(&uuid_chars));
                 uuid_chars = nullptr;
             }
             create_pipe_thread = std::thread(&PowerRenameContextMenuCommand::StartNamedPipeServerAndSendData, this, pipe_name);
