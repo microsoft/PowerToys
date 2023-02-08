@@ -5,8 +5,9 @@
 
 // disable warning 26471 - Don't use reinterpret_cast. A cast from void* can use static_cast
 // disable warning 26492 - Don't use const_cast to cast away const
+// Disable 26497 for winrt - This function function-name could be marked constexpr if compile-time evaluation is desired.
 #pragma warning(push)
-#pragma warning(disable: 26471 26492)
+#pragma warning(disable : 26471 26492 26497)
 #include <wil/resource.h>
 #pragma warning(pop)
 

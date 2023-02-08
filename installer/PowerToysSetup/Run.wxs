@@ -1,0 +1,311 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Wix xmlns="http://schemas.microsoft.com/wix/2006/wi"
+     xmlns:util="http://schemas.microsoft.com/wix/UtilExtension" >
+
+  <?include $(sys.CURRENTDIR)\Common.wxi?>
+
+  <?define launcherImagesComponentFiles=app.dark.png;app.light.png;app_error.dark.png;app_error.light.png;RunAsset.ico?>
+  <?define calcComponentFiles=plugin.json;Microsoft.PowerToys.Run.Plugin.Calculator.deps.json;Microsoft.PowerToys.Run.Plugin.Calculator.dll;PowerToys.ManagedTelemetry.dll?>
+  <?define FolderComponentFiles=plugin.json;Microsoft.Plugin.Folder.deps.json;Microsoft.Plugin.Folder.dll;PowerToys.ManagedTelemetry.dll;Ijwhost.dll?>
+  <?define FolderImagesComponentFiles=copy.dark.png;copy.light.png;delete.dark.png;delete.light.png;file.dark.png;file.light.png;folder.dark.png;folder.light.png;user.dark.png;user.light.png;Warning.dark.png;Warning.light.png?>
+  <?define ProgramComponentFiles=plugin.json;Microsoft.Plugin.Program.deps.json;Microsoft.Plugin.Program.dll;PowerToys.ManagedTelemetry.dll?>
+  <?define ProgramImagesComponentFiles=app.dark.png;app.light.png;disable.light.png;disable.dark.png;folder.light.png;folder.dark.png;shell.light.png;shell.dark.png;user.light.png;user.dark.png?>
+  <?define ShellComponentFiles=plugin.json;Microsoft.Plugin.Shell.deps.json;Microsoft.Plugin.Shell.dll;PowerToys.ManagedTelemetry.dll?>
+  <?define HistoryPluginComponentFiles=plugin.json;Microsoft.PowerToys.Run.Plugin.History.deps.json;Microsoft.PowerToys.Run.Plugin.History.dll?>
+  <?define ShellImagesComponentFiles=shell.light.png;shell.dark.png;user.light.png;user.dark.png?>
+  <?define IndexerComponentFiles=Microsoft.Plugin.Indexer.deps.json;Microsoft.Plugin.Indexer.dll;plugin.json;PowerToys.ManagedTelemetry.dll;Ijwhost.dll?>
+  <?define IndexerImagesComponentFiles=indexer.dark.png;indexer.light.png;Warning.light.png;Warning.dark.png?>
+  <?define UnitConvCompFiles=plugin.json;Community.PowerToys.Run.Plugin.UnitConverter.deps.json;Community.PowerToys.Run.Plugin.UnitConverter.dll?>
+  <?define WebSrchCompFiles=plugin.json;Community.PowerToys.Run.Plugin.WebSearch.deps.json;Community.PowerToys.Run.Plugin.WebSearch.dll?>
+  <?define UriComponentFiles=plugin.json;Microsoft.Plugin.Uri.deps.json;Microsoft.Plugin.Uri.dll;PowerToys.ManagedTelemetry.dll?>
+  <?define VSCWrkCompFiles=plugin.json;Community.PowerToys.Run.Plugin.VSCodeWorkspaces.dll?>
+  <?define WindowWlkrCompFiles=plugin.json;Microsoft.Plugin.WindowWalker.deps.json;Microsoft.Plugin.WindowWalker.dll;PowerToys.ManagedTelemetry.dll?>
+  <?define WindowWlkrImagesCompFiles=windowwalker.dark.png;windowwalker.light.png;info.dark.png;info.light.png?>
+  <?define OneNoteComponentFiles=plugin.json;Microsoft.PowerToys.Run.Plugin.OneNote.deps.json;Microsoft.PowerToys.Run.Plugin.OneNote.dll;PowerToys.ManagedTelemetry.dll?>
+  <?define RegistryComponentFiles=plugin.json;Microsoft.PowerToys.Run.Plugin.Registry.deps.json;Microsoft.PowerToys.Run.Plugin.Registry.dll;PowerToys.ManagedTelemetry.dll?>
+  <?define ServiceComponentFiles=plugin.json;Microsoft.PowerToys.Run.Plugin.Service.deps.json;Microsoft.PowerToys.Run.Plugin.Service.dll?>
+  <?define SystemComponentFiles=plugin.json;Microsoft.PowerToys.Run.Plugin.System.deps.json;Microsoft.PowerToys.Run.Plugin.System.dll?>
+  <?define SystemImagesComponentFiles=lock.dark.png;lock.light.png;logoff.dark.png;logoff.light.png;recyclebin.dark.png;recyclebin.light.png;restart.dark.png;restart.light.png;shutdown.dark.png;shutdown.light.png;sleep.dark.png;sleep.light.png;firmwareSettings.dark.png;firmwareSettings.light.png;networkAdapter.dark.png;networkAdapter.light.png?>
+  <?define TimeDateComponentFiles=Microsoft.PowerToys.Run.Plugin.TimeDate.deps.json;Microsoft.PowerToys.Run.Plugin.TimeDate.dll;plugin.json;PowerToys.ManagedTelemetry.dll?>
+  <?define TimeDateImagesComponentFiles=calendar.dark.png;calendar.light.png;time.dark.png;time.light.png;timeDate.dark.png;timeDate.light.png;Warning.dark.png;Warning.light.png?>
+  <?define TimeZoneComponentFiles=plugin.json;Microsoft.PowerToys.Run.Plugin.TimeZone.deps.json;Microsoft.PowerToys.Run.Plugin.TimeZone.dll;PowerToys.ManagedTelemetry.dll?>
+  <?define WinSetCmpFiles=plugin.json;Microsoft.PowerToys.Run.Plugin.WindowsSettings.deps.json;Microsoft.PowerToys.Run.Plugin.WindowsSettings.dll;PowerToys.ManagedTelemetry.dll?>
+  <?define WinTermCmpFiles=plugin.json;Microsoft.PowerToys.Run.Plugin.WindowsTerminal.deps.json;Microsoft.PowerToys.Run.Plugin.WindowsTerminal.dll;PowerToys.ManagedTelemetry.dll?>
+
+  <Fragment>
+    <ComponentGroup Id="RunComponentGroup">
+      <Component Id="launcherShortcutComponent" Directory="LauncherInstallFolder" >
+        <!-- Toast Notification AUMID -->
+        <RegistryKey Root="HKLM" Key="SOFTWARE\Classes\AppUserModelId\PowerToysRun">
+          <RegistryValue Type="string" Name="DisplayName" Value="PowerToys Run" />
+          <RegistryValue Type="string" Name="IconUri" Value="[LauncherImagesFolder]RunAsset.ico" />
+        </RegistryKey>
+      </Component>
+
+      <!-- !Warning! Make sure to change Component Guid if you update the file list -->
+      <Component Id="launcherInstallComponent" Guid="7362E89D-0FC8-4536-940F-F0FDF5735C39" Directory="LauncherInstallFolder" >
+        <File Source="$(var.BinDir)modules\Launcher\PowerToys.Launcher.dll" />
+        <?foreach File in e_sqlite3.dll;hyjiacan.py4n.dll;Mages.Core.dll;NLog.dll;NLog.Extensions.Logging.dll;PowerToys.PowerLauncher.deps.json;PowerToys.PowerLauncher.dll;PowerToys.PowerLauncher.exe;Microsoft.Xaml.Behaviors.dll;PowerToys.PowerLauncher.runtimeconfig.json;System.Data.OleDb.dll;UnitsNet.dll;Wox.Infrastructure.dll;Wox.Plugin.dll;PowerToys.ManagedTelemetry.dll;PowerToys.PowerLauncher.Telemetry.dll;Microsoft.Data.Sqlite.dll;SQLitePCLRaw.batteries_v2.dll;SQLitePCLRaw.core.dll;SQLitePCLRaw.provider.e_sqlite3.dll;Microsoft.Extensions.Configuration.Abstractions.dll;Microsoft.Extensions.DependencyInjection.Abstractions.dll;Microsoft.Extensions.DependencyInjection.dll;Microsoft.Extensions.Logging.Abstractions.dll;Microsoft.Extensions.Logging.dll;Microsoft.Extensions.Options.dll;Microsoft.Extensions.Primitives.dll;ControlzEx.dll;PowerToys.ManagedCommon.dll;System.Management.dll;System.IO.Abstractions.dll;PowerToys.Common.UI.dll;System.ServiceProcess.ServiceController.dll;Microsoft.Toolkit.Uwp.Notifications.dll;ModernWpf.Controls.dll;ModernWpf.dll;WinRT.Runtime.dll;Microsoft.Windows.SDK.NET.dll;System.Reactive.dll;System.Text.Json.dll;Ijwhost.dll;ScipBe.Common.Office.OneNote.dll;Interop.Microsoft.Office.Interop.OneNote.dll;LazyCache.dll;Microsoft.Extensions.Caching.Abstractions.dll;Microsoft.Extensions.Caching.Memory.dll;PowerToys.GPOWrapper.dll;PowerToys.GPOWrapperProjection.dll;WindowsBase.dll?>
+        <File Id="File_$(var.File)" Source="$(var.BinDir)modules\launcher\$(var.File)" />
+        <?endforeach?>
+        <File Source="$(var.BinDir)Settings\PowerToys.Settings.UI.Lib.dll" />
+      </Component>
+      <?foreach File in $(var.launcherImagesComponentFiles)?>
+      <Component Id="launcherImagesComponent_$(var.File)" Win64="yes" Directory="LauncherImagesFolder">
+        <File Id="launcherImagesComponentFile_$(var.File)" Source="$(var.BinDir)modules\launcher\Images\$(var.File)" />
+      </Component>
+      <?endforeach?>
+      
+      <!-- Calculator Plugin -->
+      <?foreach File in $(var.calcComponentFiles)?>
+      <Component Id="calcComponent_$(var.File)" Win64="yes" Directory="CalculatorPluginFolder">
+        <File Id="calcComponentFile_$(var.File)" Source="$(var.BinDir)modules\launcher\Plugins\Calculator\$(var.File)" />
+      </Component>
+      <?endforeach?>
+      <Component Id="calculatorImagesComponentLight" Directory="CalculatorImagesFolder" >
+        <File Id="calculatorPluginImg_calculator_light" Source="$(var.BinDir)modules\launcher\Plugins\Calculator\Images\calculator.light.png" />
+      </Component>
+      <Component Id="calculatorImagesComponentDark" Directory="CalculatorImagesFolder" >
+        <File Id="calculatorPluginImg_calculator_dark" Source="$(var.BinDir)modules\launcher\Plugins\Calculator\Images\calculator.dark.png" />
+      </Component>
+
+      <!-- Folder Plugin -->
+      <?foreach File in $(var.FolderComponentFiles)?>
+      <Component Id="FolderComponent_$(var.File)" Win64="yes" Directory="FolderPluginFolder">
+        <File Id="FolderComponentFile_$(var.File)" Source="$(var.BinDir)modules\launcher\Plugins\Folder\$(var.File)" />
+      </Component>
+      <?endforeach?>
+      <?foreach File in $(var.FolderImagesComponentFiles)?>
+      <Component Id="FolderImagesComponent_$(var.File)" Win64="yes" Directory="FolderPluginImagesFolder">
+        <File Id="FolderImagesComponentFile_$(var.File)" Source="$(var.BinDir)modules\launcher\Plugins\Folder\Images\$(var.File)" />
+      </Component>
+      <?endforeach?>
+
+      <!-- Program Plugin -->
+      <?foreach File in $(var.ProgramComponentFiles)?>
+      <Component Id="ProgramComponent_$(var.File)" Win64="yes" Directory="ProgramPluginFolder">
+        <File Id="ProgramComponentFile_$(var.File)" Source="$(var.BinDir)modules\launcher\Plugins\Program\$(var.File)" />
+      </Component>
+      <?endforeach?>
+
+      <?foreach File in $(var.ProgramImagesComponentFiles)?>
+      <Component Id="ProgramImagesComponent_$(var.File)" Win64="yes" Directory="ProgramImagesFolder">
+        <File Id="ProgramImagesComponentFile_$(var.File)" Source="$(var.BinDir)modules\launcher\Plugins\Program\Images\$(var.File)" />
+      </Component>
+      <?endforeach?>
+
+      <!-- Shell Plugin -->
+      <?foreach File in $(var.ShellComponentFiles)?>
+      <Component Id="ShellComponent_$(var.File)" Win64="yes" Directory="ShellPluginFolder">
+        <File Id="ShellComponentFile_$(var.File)" Source="$(var.BinDir)modules\launcher\Plugins\Shell\$(var.File)" />
+      </Component>
+      <?endforeach?>
+      <?foreach File in $(var.ShellImagesComponentFiles)?>
+      <Component Id="ShellImagesComponent_$(var.File)" Win64="yes" Directory="ShellImagesFolder">
+        <File Id="ShellImagesComponentFile_$(var.File)" Source="$(var.BinDir)modules\launcher\Plugins\Shell\Images\$(var.File)" />
+      </Component>
+      <?endforeach?>
+
+      <!-- Indexer Plugin -->
+      <?foreach File in $(var.IndexerComponentFiles)?>
+      <Component Id="IndexerComponent_$(var.File)" Win64="yes" Directory="IndexerPluginFolder">
+        <File Id="IndexerComponentFile_$(var.File)" Source="$(var.BinDir)modules\launcher\Plugins\Indexer\$(var.File)" />
+      </Component>
+      <?endforeach?>
+      <?foreach File in $(var.IndexerImagesComponentFiles)?>
+      <Component Id="IndexerImagesComponent_$(var.File)" Win64="yes" Directory="IndexerImagesFolder">
+        <File Id="IndexerImagesComponentFile_$(var.File)" Source="$(var.BinDir)modules\launcher\Plugins\Indexer\Images\$(var.File)" />
+      </Component>
+      <?endforeach?>
+
+      <!-- UnitConverter Plugin -->
+      <?foreach File in $(var.UnitConvCompFiles)?>
+      <Component Id="UnitConvComp_$(var.File)" Win64="yes" Directory="UnitConverterPluginFolder">
+        <File Id="UnitConvCompFile_$(var.File)" Source="$(var.BinDir)modules\launcher\Plugins\UnitConverter\$(var.File)" />
+      </Component>
+      <?endforeach?>
+      <Component Id="UnitConverterImagesComponentLight" Directory="UnitConverterImagesFolder" >
+        <File Id="UnitConverterLight" Source="$(var.BinDir)modules\launcher\Plugins\UnitConverter\Images\unitconverter.light.png" />
+      </Component>
+      <Component Id="UnitConverterImagesComponentDark" Directory="UnitConverterImagesFolder" >
+        <File Id="UnitConverterDark" Source="$(var.BinDir)modules\launcher\Plugins\UnitConverter\Images\unitconverter.dark.png" />
+      </Component>
+
+      <!-- WebSearch Plugin -->
+      <?foreach File in $(var.WebSrchCompFiles)?>
+      <Component Id="WebSrchComp_$(var.File)" Win64="yes" Directory="WebSearchPluginFolder">
+        <File Id="WebSrchCompFile_$(var.File)" Source="$(var.BinDir)modules\launcher\Plugins\WebSearch\$(var.File)" />
+      </Component>
+      <?endforeach?>
+      <Component Id="WebSearchImagesComponentLight" Directory="WebSearchImagesFolder" >
+        <File Id="WebSearchLight" Source="$(var.BinDir)modules\launcher\Plugins\WebSearch\Images\WebSearch.light.png" />
+      </Component>
+      <Component Id="WebSearchImagesComponentDark" Directory="WebSearchImagesFolder" >
+        <File Id="WebSearchDark" Source="$(var.BinDir)modules\launcher\Plugins\WebSearch\Images\WebSearch.dark.png" />
+      </Component>
+
+      <!-- History Plugin -->
+      <?foreach File in $(var.HistoryPluginComponentFiles)?>
+      <Component Id="HistoryComponent_$(var.File)" Win64="yes" Directory="HistoryPluginFolder">
+        <File Id="HistoryComponentFile_$(var.File)" Source="$(var.BinDir)modules\launcher\Plugins\History\$(var.File)" />
+      </Component>
+      <?endforeach?>
+      <Component Id="HistoryImagesComponentLight" Directory="HistoryImagesFolder" >
+        <File Id="HistoryLightIcon" Source="$(var.BinDir)modules\launcher\Plugins\History\Images\history.light.png" />
+      </Component>
+      <Component Id="HistoryImagesComponentDark" Directory="HistoryImagesFolder" >
+        <File Id="HistoryDarkIcon" Source="$(var.BinDir)modules\launcher\Plugins\History\Images\history.dark.png" />
+      </Component>
+	  
+      <!-- Uri Plugin -->
+      <?foreach File in $(var.UriComponentFiles)?>
+      <Component Id="UriComponent_$(var.File)" Win64="yes" Directory="UriPluginFolder">
+        <File Id="UriComponentFile_$(var.File)" Source="$(var.BinDir)modules\launcher\Plugins\Uri\$(var.File)" />
+      </Component>
+      <?endforeach?>
+      <Component Id="UriImagesComponentLight" Directory="UriImagesFolder" >
+        <File Id="UriLightIcon" Source="$(var.BinDir)modules\launcher\Plugins\Uri\Images\Uri.light.png" />
+      </Component>
+      <Component Id="UriImagesComponentDark" Directory="UriImagesFolder" >
+        <File Id="UriDarkIcon" Source="$(var.BinDir)modules\launcher\Plugins\Uri\Images\Uri.dark.png" />
+      </Component>
+
+      <!-- VSCodeWorkspaces Plugin -->
+      <?foreach File in $(var.VSCWrkCompFiles)?>
+      <Component Id="VSCWrkComp_$(var.File)" Win64="yes" Directory="VSCodeWorkspacesPluginFolder">
+        <File Id="VSCWrkCompFile_$(var.File)" Source="$(var.BinDir)modules\launcher\Plugins\VSCodeWorkspaces\$(var.File)" />
+      </Component>
+      <?endforeach?>
+      <Component Id="VSCodeWorkspacesDepsComponent" Directory="VSCodeWorkspacesPluginFolder">
+        <File Id="VSCodeWorkspaceFolder_deps" Source="$(var.BinDir)modules\launcher\Plugins\VSCodeWorkspaces\Community.PowerToys.Run.Plugin.VSCodeWorkspaces.deps.json" />
+      </Component>
+      <Component Id="VSCodeWorkspacesImagesComponentLight" Directory="VSCodeWorkspaceImagesFolder" >
+        <File Id="VSCodeWorkspaceCodeLight" Source="$(var.BinDir)modules\launcher\Plugins\VSCodeWorkspaces\Images\code-light.png" />
+      </Component>
+      <Component Id="VSCodeWorkspacesImagesComponentDark" Directory="VSCodeWorkspaceImagesFolder" >
+        <File Id="VSCodeWorkspaceCodeDark" Source="$(var.BinDir)modules\launcher\Plugins\VSCodeWorkspaces\Images\code-dark.png" />
+      </Component>
+      <Component Id="VSCodeWorkspacesImagesComponentFolder" Directory="VSCodeWorkspaceImagesFolder" >
+        <File Id="VSCodeWorkspaceFolder" Source="$(var.BinDir)modules\launcher\Plugins\VSCodeWorkspaces\Images\folder.png" />
+      </Component>
+      <Component Id="VSCodeWorkspacesImagesComponentMonitor" Directory="VSCodeWorkspaceImagesFolder" >
+        <File Id="VSCodeWorkspaceRemote" Source="$(var.BinDir)modules\launcher\Plugins\VSCodeWorkspaces\Images\monitor.png" />
+      </Component>
+
+      <!-- WindowWalker Plugin -->
+      <?foreach File in $(var.WindowWlkrCompFiles)?>
+      <Component Id="WindowWlkrComp_$(var.File)" Win64="yes" Directory="WindowWalkerPluginFolder">
+        <File Id="WindowWlkrCompFile_$(var.File)" Source="$(var.BinDir)modules\launcher\Plugins\WindowWalker\$(var.File)" />
+      </Component>
+      <?endforeach?>
+      <?foreach File in $(var.WindowWlkrImagesCompFiles)?>
+      <Component Id="WindowWalkerImagesComp_$(var.File)" Win64="yes" Directory="WindowWalkerImagesFolder">
+        <File Id="WindowWalkerImagesComp_$(var.File)" Source="$(var.BinDir)modules\launcher\Plugins\WindowWalker\Images\$(var.File)" />
+      </Component>
+      <?endforeach?>
+
+      <!-- OneNote Plugin -->
+      <?foreach File in $(var.OneNoteComponentFiles)?>
+      <Component Id="OneNoteComp_$(var.File)" Win64="yes" Directory="OneNotePluginFolder">
+        <File Id="OneNoteCompFile_$(var.File)" Source="$(var.BinDir)modules\launcher\Plugins\OneNote\$(var.File)" />
+      </Component>
+      <?endforeach?>
+      <Component Id="OneNoteImagesComponentLight" Directory="OneNoteImagesFolder" >
+        <File Id="OneNoteLightIcon" Source="$(var.BinDir)modules\launcher\Plugins\OneNote\Images\oneNote.light.png" />
+      </Component>
+      <Component Id="OneNoteImagesComponentDark" Directory="OneNoteImagesFolder" >
+        <File Id="OneNoteDarkIcon" Source="$(var.BinDir)modules\launcher\Plugins\OneNote\Images\oneNote.dark.png" />
+      </Component>
+
+      <!-- Registry Plugin -->
+      <?foreach File in $(var.RegistryComponentFiles)?>
+      <Component Id="RegistryComponent_$(var.File)" Win64="yes" Directory="RegistryPluginFolder">
+        <File Id="RegistryComponentFile_$(var.File)" Source="$(var.BinDir)modules\launcher\Plugins\Registry\$(var.File)" />
+      </Component>
+      <?endforeach?>
+      <Component Id="RegistryImagesComponentLight" Directory="RegistryImagesFolder" >
+        <File Id="RegistryLightIcon" Source="$(var.BinDir)modules\launcher\Plugins\Registry\Images\reg.light.png" />
+      </Component>
+      <Component Id="RegistryImagesComponentDark" Directory="RegistryImagesFolder" >
+        <File Id="RegistryDarkIcon" Source="$(var.BinDir)modules\launcher\Plugins\Registry\Images\reg.dark.png" />
+      </Component>
+
+      <!-- Service Plugin -->
+      <?foreach File in $(var.ServiceComponentFiles)?>
+      <Component Id="ServiceComponent_$(var.File)" Win64="yes" Directory="ServicePluginFolder">
+        <File Id="ServiceComponentFile_$(var.File)" Source="$(var.BinDir)modules\launcher\Plugins\Service\$(var.File)" />
+      </Component>
+      <?endforeach?>
+      <Component Id="ServiceImagesComponentLight" Directory="ServiceImagesFolder" >
+        <File Id="ServiceLightIcon" Source="$(var.BinDir)modules\launcher\Plugins\Service\Images\service.light.png" />
+      </Component>
+      <Component Id="ServiceImagesComponentDark" Directory="ServiceImagesFolder" >
+        <File Id="ServiceDarkIcon" Source="$(var.BinDir)modules\launcher\Plugins\Service\Images\service.dark.png" />
+      </Component>
+
+      <!-- System Plugin -->
+      <?foreach File in $(var.SystemComponentFiles)?>
+      <Component Id="SystemComponent_$(var.File)" Win64="yes" Directory="SystemPluginFolder">
+        <File Id="SystemComponentFile_$(var.File)" Source="$(var.BinDir)modules\launcher\Plugins\System\$(var.File)" />
+      </Component>
+      <?endforeach?>
+      <?foreach File in $(var.SystemImagesComponentFiles)?>
+      <Component Id="SystemImagesComponent_$(var.File)" Win64="yes" Directory="SystemImagesFolder">
+        <File Id="SystemImagesComponentFile_$(var.File)" Source="$(var.BinDir)modules\launcher\Plugins\System\Images\$(var.File)" />
+      </Component>
+      <?endforeach?>
+
+      <!-- TimeDate Plugin -->
+      <?foreach File in $(var.TimeDateComponentFiles)?>
+      <Component Id="TimeDateComponent_$(var.File)" Win64="yes" Directory="TimeDatePluginFolder">
+        <File Id="TimeDateComponentFile_$(var.File)" Source="$(var.BinDir)modules\launcher\Plugins\TimeDate\$(var.File)" />
+      </Component>
+      <?endforeach?>
+      <?foreach File in $(var.TimeDateImagesComponentFiles)?>
+      <Component Id="TimeDateImagesComponent_$(var.File)" Win64="yes" Directory="TimeDateImagesFolder">
+        <File Id="TimeDateImagesComponentFile_$(var.File)" Source="$(var.BinDir)modules\launcher\Plugins\TimeDate\Images\$(var.File)" />
+      </Component>
+      <?endforeach?>
+
+      <!-- TimeZone Plugin -->
+      <?foreach File in $(var.TimeZoneComponentFiles)?>
+      <Component Id="TimeZoneComponent_$(var.File)" Win64="yes" Directory="TimeZonePluginFolder">
+        <File Id="TimeZoneComponentFile_$(var.File)" Source="$(var.BinDir)modules\launcher\Plugins\TimeZone\$(var.File)" />
+      </Component>
+      <?endforeach?>
+      <Component Id="TimeZoneImagesComponentLight" Directory="TimeZoneImagesFolder" >
+        <File Id="TimeZoneLightIcon" Source="$(var.BinDir)modules\launcher\Plugins\TimeZone\Images\timeZone.light.png" />
+      </Component>
+      <Component Id="TimeZoneImagesComponentDark" Directory="TimeZoneImagesFolder" >
+        <File Id="TimeZoneDarkIcon" Source="$(var.BinDir)modules\launcher\Plugins\TimeZone\Images\timeZone.dark.png" />
+      </Component>
+
+      <!-- WindowsSettings Plugin -->
+      <?foreach File in $(var.WinSetCmpFiles)?>
+      <Component Id="WinSetCmp_$(var.File)" Win64="yes" Directory="WindowsSettingsPluginFolder">
+        <File Id="WinSetCmpFile_$(var.File)" Source="$(var.BinDir)modules\launcher\Plugins\WindowsSettings\$(var.File)" />
+      </Component>
+      <?endforeach?>
+      <Component Id="WindowsSettingsImagesComponentLight" Directory="WindowsSettingsImagesFolder" >
+        <File Id="WindowsSettingsLightIcon" Source="$(var.BinDir)modules\launcher\Plugins\WindowsSettings\Images\WindowsSettings.light.png" />
+      </Component>
+      <Component Id="WindowsSettingsImagesComponentDark" Directory="WindowsSettingsImagesFolder" >
+        <File Id="WindowsSettingsDarkIcon" Source="$(var.BinDir)modules\launcher\Plugins\WindowsSettings\Images\WindowsSettings.dark.png" />
+      </Component>
+
+      <!-- WindowsTerminal Plugin -->
+      <?foreach File in $(var.WinTermCmpFiles)?>
+      <Component Id="WinTermCmp_$(var.File)" Win64="yes" Directory="WindowsTerminalPluginFolder">
+        <File Id="WinTermCmpFile_$(var.File)" Source="$(var.BinDir)modules\launcher\Plugins\WindowsTerminal\$(var.File)" />
+      </Component>
+      <?endforeach?>
+      <Component Id="WindowsTerminalImagesComponentLight" Directory="WindowsTerminalImagesFolder" >
+        <File Id="WindowsTerminalLightIcon" Source="$(var.BinDir)modules\launcher\Plugins\WindowsTerminal\Images\WindowsTerminal.light.png" />
+      </Component>
+      <Component Id="WindowsTerminalImagesComponentDark" Directory="WindowsTerminalImagesFolder" >
+        <File Id="WindowsTerminalDarkIcon" Source="$(var.BinDir)modules\launcher\Plugins\WindowsTerminal\Images\WindowsTerminal.dark.png" />
+      </Component>
+
+    </ComponentGroup>
+  </Fragment>
+</Wix>

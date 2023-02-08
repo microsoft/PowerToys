@@ -1,0 +1,102 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Wix xmlns="http://schemas.microsoft.com/wix/2006/wi"
+     xmlns:util="http://schemas.microsoft.com/wix/UtilExtension" >
+
+  <?include $(sys.CURRENTDIR)\Common.wxi?>
+
+  <?define ImageResizerFiles=ImageResizer.ico;PowerToys.ImageResizer.exe;PowerToys.ImageResizerExt.dll;PowerToys.ImageResizer.dll;PowerToys.ImageResizer.deps.json;PowerToys.ImageResizer.runtimeconfig.json;PowerToys.ManagedCommon.dll;System.Management.dll;PowerToys.ManagedTelemetry.dll;PowerToys.Common.UI.dll;ControlzEx.dll;ModernWpf.Controls.dll;ModernWpf.dll;Microsoft.Xaml.Behaviors.dll;System.IO.Abstractions.dll;WinRT.Runtime.dll;Microsoft.Windows.SDK.NET.dll;Ijwhost.dll;ImageResizerContextMenuPackage.msix;PowerToys.ImageResizerContextMenu.dll;PowerToys.GPOWrapper.dll;PowerToys.GPOWrapperProjection.dll;System.CodeDom.dll;System.Text.Json.dll;WindowsBase.dll?>
+  <?define ImageResizerSparsePackageAssets=LargeTile.png;SmallTile.png;SplashScreen.png;Square150x150Logo.png;Square44x44Logo.png;storelogo.png;Wide310x150Logo.png?>
+
+  <Fragment>
+    <!-- Image Resizer -->
+    <DirectoryRef Id="ImageResizerInstallFolder" FileSource="$(var.BinDir)modules\$(var.ImageResizerProjectName)">
+      <?foreach File in $(var.ImageResizerFiles)?>
+        <Component Id="Module_ImageResizer_$(var.File)" Win64="yes">
+          <File Id="Module_ImageResizer_File_$(var.File)" Source="$(var.BinDir)modules\$(var.ImageResizerProjectName)\$(var.File)" />
+        </Component>
+      <?endforeach?>
+
+      <Component Id="Module_ImageResizer_Registry" Win64="yes">
+        <RegistryKey Root="HKLM" Key="Software\Classes\CLSID\{51B4D7E5-7568-4234-B4BB-47FB3C016A69}\InprocServer32">
+          <RegistryValue Value="[ImageResizerInstallFolder]PowerToys.ImageResizerExt.dll" Type="string" />
+          <RegistryValue Name="ThreadingModel" Value="Apartment" Type="string" />
+        </RegistryKey>
+
+        <RegistryValue Root="HKCR"
+                       Key="SOFTWARE\Classes\Directory\ShellEx\DragDropHandlers\ImageResizer"
+                       Value="{51B4D7E5-7568-4234-B4BB-47FB3C016A69}"
+                       Type="string" />
+        <!-- Registry Keys for the context menu handler for each of the following image formats: bmp, dib, gif, jfif, jpe, jpeg, jpg, jxr, png, rle, tif, tiff, wdp  -->
+        <RegistryValue Root="HKCR"
+                         Key="SystemFileAssociations\.bmp\ShellEx\ContextMenuHandlers\ImageResizer"
+                         Value="{51B4D7E5-7568-4234-B4BB-47FB3C016A69}"
+                         Type="string" />
+        <RegistryValue Root="HKCR"
+                       Key="SystemFileAssociations\.dib\ShellEx\ContextMenuHandlers\ImageResizer"
+                       Value="{51B4D7E5-7568-4234-B4BB-47FB3C016A69}"
+                       Type="string" />
+        <RegistryValue Root="HKCR"
+                       Key="SystemFileAssociations\.gif\ShellEx\ContextMenuHandlers\ImageResizer"
+                       Value="{51B4D7E5-7568-4234-B4BB-47FB3C016A69}"
+                       Type="string" />
+        <RegistryValue Root="HKCR"
+                       Key="SystemFileAssociations\.jfif\ShellEx\ContextMenuHandlers\ImageResizer"
+                       Value="{51B4D7E5-7568-4234-B4BB-47FB3C016A69}"
+                       Type="string" />
+        <RegistryValue Root="HKCR"
+                       Key="SystemFileAssociations\.jpe\ShellEx\ContextMenuHandlers\ImageResizer"
+                       Value="{51B4D7E5-7568-4234-B4BB-47FB3C016A69}"
+                       Type="string" />
+        <RegistryValue Root="HKCR"
+                       Key="SystemFileAssociations\.jpeg\ShellEx\ContextMenuHandlers\ImageResizer"
+                       Value="{51B4D7E5-7568-4234-B4BB-47FB3C016A69}"
+                       Type="string" />
+        <RegistryValue Root="HKCR"
+                       Key="SystemFileAssociations\.jpg\ShellEx\ContextMenuHandlers\ImageResizer"
+                       Value="{51B4D7E5-7568-4234-B4BB-47FB3C016A69}"
+                       Type="string" />
+        <RegistryValue Root="HKCR"
+                       Key="SystemFileAssociations\.jxr\ShellEx\ContextMenuHandlers\ImageResizer"
+                       Value="{51B4D7E5-7568-4234-B4BB-47FB3C016A69}"
+                       Type="string" />
+        <RegistryValue Root="HKCR"
+                       Key="SystemFileAssociations\.png\ShellEx\ContextMenuHandlers\ImageResizer"
+                       Value="{51B4D7E5-7568-4234-B4BB-47FB3C016A69}"
+                       Type="string" />
+        <RegistryValue Root="HKCR"
+                       Key="SystemFileAssociations\.rle\ShellEx\ContextMenuHandlers\ImageResizer"
+                       Value="{51B4D7E5-7568-4234-B4BB-47FB3C016A69}"
+                       Type="string" />
+        <RegistryValue Root="HKCR"
+                       Key="SystemFileAssociations\.tif\ShellEx\ContextMenuHandlers\ImageResizer"
+                       Value="{51B4D7E5-7568-4234-B4BB-47FB3C016A69}"
+                       Type="string" />
+        <RegistryValue Root="HKCR"
+                       Key="SystemFileAssociations\.tiff\ShellEx\ContextMenuHandlers\ImageResizer"
+                       Value="{51B4D7E5-7568-4234-B4BB-47FB3C016A69}"
+                       Type="string" />
+        <RegistryValue Root="HKCR"
+                       Key="SystemFileAssociations\.wdp\ShellEx\ContextMenuHandlers\ImageResizer"
+                       Value="{51B4D7E5-7568-4234-B4BB-47FB3C016A69}"
+                       Type="string" />
+      </Component>
+    </DirectoryRef>
+
+    <DirectoryRef Id="ImageResizerAssetsFolder" FileSource="$(var.BinDir)modules\$(var.ImageResizerProjectName)">
+      <!-- !Warning! Make sure to change Component Guid if you update the file list -->
+      <Component Id="ImageResizer_ImageResizerSparsePackageAssets" Guid="CC1B81A0-7971-4FAA-A3E6-4CE4DD0EC7C1" Win64="yes">
+          <?foreach File in $(var.ImageResizerSparsePackageAssets)?>
+              <File Id="ImageResizerSparsePackageAssets_$(var.File)" Source="$(var.BinDir)modules\$(var.ImageResizerProjectName)\Assets\$(var.File)" />
+          <?endforeach?>
+      </Component>
+    </DirectoryRef>
+
+    <ComponentGroup Id="ImageResizerComponentGroup" Directory="INSTALLFOLDER">
+      <?foreach File in $(var.ImageResizerFiles)?>
+        <ComponentRef Id="Module_ImageResizer_$(var.File)" />
+      <?endforeach?>
+      <ComponentRef Id="ImageResizer_ImageResizerSparsePackageAssets" />
+      <ComponentRef Id="Module_ImageResizer_Registry" />
+    </ComponentGroup>
+  </Fragment>
+</Wix>

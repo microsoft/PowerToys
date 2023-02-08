@@ -1,0 +1,142 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Wix xmlns="http://schemas.microsoft.com/wix/2006/wi"
+     xmlns:util="http://schemas.microsoft.com/wix/UtilExtension" >
+
+  <?include $(sys.CURRENTDIR)\Common.wxi?>
+
+  <?define PowerToysInteropFiles=concrt140.dll;msvcp140.dll;msvcp140_1.dll;msvcp140_2.dll;msvcp140_atomic_wait.dll;msvcp140_codecvt_ids.dll;PowerToys.Interop.dll;vcamp140.dll;vccorlib140.dll;vcomp140.dll;vcruntime140.dll;vcruntime140_1.dll?>
+
+  <?define DotnetRuntimeFiles= ?>
+
+  <?define DotnetRuntimeWPFFiles= ?>
+
+  <Fragment>
+    <DirectoryRef Id="INSTALLFOLDER" FileSource="$(var.BinDir)">
+      <Component Id="powertoys_toast_clsid" Win64="yes">
+        <RemoveFolder Id='Remove_powertoys_toast_clsid' On='uninstall' />
+        <RegistryKey Root="HKCR" Key="Software\Classes\CLSID\{DD5CACDA-7C2E-4997-A62A-04A597B58F76}">
+          <RegistryValue Type="string" Value="PowerToys Toast Notifications Background Activator" />
+          <RegistryValue Type="string" Key="LocalServer32" Value="[INSTALLFOLDER]PowerToys.exe -ToastActivated" />
+          <RegistryValue Type="string" Key="LocalServer32" Name="ThreadingModel" Value="Apartment" />
+        </RegistryKey>
+      </Component>
+      <Component Id="powertoys_exe" Win64="yes" Guid="30261594-41A6-4509-AD09-FBC4E692F441">
+        <File Id="PowerToys.exe" Checksum="yes" />
+        <RegistryKey Root="HKLM" Key="Software\Classes\powertoys">
+          <RegistryValue Type="string" Name="URL Protocol" Value="" KeyPath="yes"/>
+          <RegistryValue Type="string" Value="URL:PowerToys custom internal URI protocol"/>
+          <RegistryKey Key="DefaultIcon">
+            <RegistryValue Type="string" Value="PowerToys.exe" />
+          </RegistryKey>
+          <RegistryKey Key="shell\open\command">
+            <RegistryValue Type="string" Value="&quot;[INSTALLFOLDER]PowerToys.exe&quot; &quot;%1&quot;" />
+          </RegistryKey>
+        </RegistryKey>
+      </Component>
+      <Component Id="BackgroundActivator_dll" Win64="yes">
+        <File Id="PowerToys.BackgroundActivatorDLL.dll" KeyPath="yes" Checksum="yes" />
+      </Component>
+      <Component Id="PowerToys_ActionRunner_exe" Win64="yes">
+        <File Id="PowerToys.ActionRunner.exe" KeyPath="yes" Checksum="yes" />
+      </Component>
+      <Component Id="PowerToys_Update_exe" Win64="yes">
+        <File Id="PowerToys.Update.exe" KeyPath="yes" Checksum="yes" />
+      </Component>
+      <Component Id="License_rtf" Win64="yes">
+        <File Source="$(var.RepoDir)\installer\License.rtf" Id="License.rtf" KeyPath="yes" />
+      </Component>
+      <Component Id="Notice_md" Win64="yes">
+        <File Source="$(var.RepoDir)\Notice.md" Id="Notice.md" KeyPath="yes" />
+      </Component>
+    </DirectoryRef>
+
+    <DirectoryRef Id="ApplicationProgramsFolder">
+      <Component Id="PowerToysStartMenuShortcut" >
+        <Shortcut Id="ApplicationStartMenuShortcut"
+        Name="PowerToys (Preview)"
+        Description="PowerToys - Windows system utilities to maximize productivity"
+        Icon="powertoys.exe"
+        IconIndex="0"
+        Target="[!PowerToys.exe]"
+        WorkingDirectory="INSTALLFOLDER">
+          <ShortcutProperty Key="System.AppUserModel.ID" Value="Microsoft.PowerToysWin32"/>
+        </Shortcut>
+        <RemoveFolder Id="CleanUpStartMenuShortCut" Directory="ApplicationProgramsFolder" On="uninstall"/>
+        <!-- ApplicationStartMenuShortcut is implicitly installed in HKCU, so WIX won't allow changing this reg value to HKLM. -->
+        <RegistryValue Root="HKCU" Key="Software\Microsoft\PowerToys" Name="installed" Type="integer" Value="1" KeyPath="yes"/>
+      </Component>
+    </DirectoryRef>
+
+    <DirectoryRef Id="DotnetDlls">
+      <!-- !Warning! Make sure to change Component Guid if you update the file list -->
+      <Component Id="Dlls_DotnetFiles_Component" Guid="19488F16-3399-40AB-B7C4-CE3F27C1B294" Win64="yes">
+      <?foreach File in $(var.DotnetRuntimeFiles)?>
+        <File Source="$(var.BinDir)Settings\$(var.File)" />
+      <?endforeach?>
+      <?foreach File in $(var.DotnetRuntimeWPFFiles)?>
+        <File Source="$(var.BinDir)\modules\\ColorPicker\$(var.File)" />
+      <?endforeach?>
+      </Component>
+    </DirectoryRef>
+
+    <DirectoryRef Id="PowerToysInteropDlls">
+      <?foreach File in $(var.PowerToysInteropFiles)?>
+      <Component Id="Dlls_PowerToysInteropFiles_$(var.File)" Win64="yes">
+        <File Id="Dlls_PowerToysInterop_File_$(var.File)" Source="$(var.BinDir)\$(var.File)" />
+      </Component>
+      <?endforeach?>
+    </DirectoryRef>
+
+    <DirectoryRef Id="ModulesInstallFolder" FileSource="$(var.BinDir)modules\">
+      <Component Id="Module_PowerPreview_Registry" Win64="yes">
+        <!-- TODO: Remove this - Update Key to use IE11 for prevhost.exe -->
+        <RegistryKey Root="HKLM" Key="Software\Microsoft\Internet Explorer\Main\FeatureControl\FEATURE_BROWSER_EMULATION">
+          <RegistryValue Type="integer" Name="prevhost.exe" Value="11000" />
+        </RegistryKey>
+        <!-- TODO: Remove this - Update Key to use IE11 for dllhost.exe -->
+        <RegistryKey Root="HKLM" Key="Software\Microsoft\Internet Explorer\Main\FeatureControl\FEATURE_BROWSER_EMULATION">
+          <RegistryValue Type="integer" Name="dllhost.exe" Value="11000" />
+        </RegistryKey>
+      </Component>
+    </DirectoryRef>
+
+    <DirectoryRef Id="DesktopFolder">
+      <Component Id="DesktopShortcut" >
+        <Condition>INSTALLDESKTOPSHORTCUT</Condition>
+        <!-- DesktopShortcutId is implicitly installed in HKCU, so WIX won't allow changing this reg value to HKLM. -->
+        <RegistryValue Root="HKCU"
+                        Key="Software\[Manufacturer]\[ProductName]"
+                        Name="desktopshorcutinstalled"
+                        Type="integer"
+                        Value="1"
+                        KeyPath="yes"/>
+        <Shortcut Id="DesktopShortcutId"
+                  Name="PowerToys (Preview)"
+                  Description="PowerToys - Windows system utilities to maximize productivity"
+                  Target="[!PowerToys.exe]"
+                  WorkingDirectory="INSTALLFOLDER"
+                  Icon="powertoys.exe"
+                  Directory="DesktopFolder"/>
+      </Component>
+    </DirectoryRef>
+  </Fragment>
+  <Fragment>
+    <ComponentGroup Id="CoreComponents" Directory="INSTALLFOLDER">
+        <ComponentRef Id="powertoys_exe" />
+        <ComponentRef Id="PowerToysStartMenuShortcut"/>
+        <ComponentRef Id="BackgroundActivator_dll" />
+        <ComponentRef Id="PowerToys_ActionRunner_exe" />
+        <ComponentRef Id="PowerToys_Update_exe" />
+        <ComponentRef Id="powertoys_toast_clsid" />
+        <ComponentRef Id="License_rtf" />
+        <ComponentRef Id="Notice_md" />
+        <ComponentRef Id="DesktopShortcut" />
+        <ComponentRef Id="Module_PowerPreview_Registry" />
+
+        <ComponentRef Id="Dlls_DotnetFiles_Component" />
+        <?foreach File in $(var.PowerToysInteropFiles)?>
+        <ComponentRef Id="Dlls_PowerToysInteropFiles_$(var.File)" />
+        <?endforeach?>
+    </ComponentGroup>
+  </Fragment>
+</Wix>

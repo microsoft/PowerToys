@@ -109,6 +109,11 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             Settings = moduleSettingsRepository.SettingsConfig;
             SendConfigMSG = ipcMSGCallBackFunc;
             _isElevated = isElevated;
+            InitializeEnabledValue();
+        }
+
+        private void InitializeEnabledValue()
+        {
             _enabledGpoRuleConfiguration = GPOWrapper.GetConfiguredHostsFileEditorEnabledValue();
             if (_enabledGpoRuleConfiguration == GpoRuleConfigured.Disabled || _enabledGpoRuleConfiguration == GpoRuleConfigured.Enabled)
             {
@@ -138,6 +143,12 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         {
             OnPropertyChanged(propertyName);
             SettingsUtils.SaveSettings(Settings.ToJsonString(), HostsSettings.ModuleName);
+        }
+
+        public void RefreshEnabledState()
+        {
+            InitializeEnabledValue();
+            OnPropertyChanged(nameof(IsEnabled));
         }
     }
 }

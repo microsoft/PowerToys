@@ -247,7 +247,7 @@ inline std::wstring get_module_folderpath(HMODULE mod = nullptr, const bool remo
     {
         PathRemoveFileSpecW(buffer);
     }
-    return { buffer, (UINT)lstrlenW(buffer) };
+    return { buffer, static_cast<UINT>(lstrlenW(buffer)) };
 }
 
 HRESULT ExplorerCommand::LaunchUI(CMINVOKECOMMANDINFO* pici, ipc::Writer* writer)
