@@ -326,7 +326,7 @@ void KeyDropDownControl::AddDropDown(StackPanel& table, StackPanel row, Variable
     keyDropDownControlObjects[keyDropDownControlObjects.size() - 1]->SetSelectionHandler(table, row, parent, colIndex, shortcutRemapBuffer, keyDropDownControlObjects, targetApp, isHybridControl, isSingleKeyWindow);
 
     // Update accessible name
-    SetAccessibleNameForComboBox(keyDropDownControlObjects[keyDropDownControlObjects.size() - 1]->GetComboBox(), (int)keyDropDownControlObjects.size());
+    SetAccessibleNameForComboBox(keyDropDownControlObjects[keyDropDownControlObjects.size() - 1]->GetComboBox(), static_cast<int>(keyDropDownControlObjects.size()));
 }
 
 // Function to get the list of key codes from the shortcut combo box stack panel
