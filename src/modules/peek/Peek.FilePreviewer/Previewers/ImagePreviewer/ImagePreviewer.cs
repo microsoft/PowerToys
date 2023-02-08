@@ -56,6 +56,11 @@ namespace Peek.FilePreviewer.Previewers
 
         private bool IsFullImageLoaded => FullQualityImageTask?.Status == TaskStatus.RanToCompletion;
 
+        public static bool IsFileTypeSupported(string fileExt)
+        {
+            return _supportedFileTypes.Contains(fileExt);
+        }
+
         public void Dispose()
         {
             GC.SuppressFinalize(this);
@@ -136,7 +141,7 @@ namespace Peek.FilePreviewer.Previewers
                 cancellationToken.ThrowIfCancellationRequested();
 
                 var hr = ThumbnailHelper.GetThumbnail(Path.GetFullPath(Item.Path), out IntPtr hbitmap, ThumbnailHelper.LowQualityThumbnailSize);
-                if (hr != Common.Models.HResult.Ok)
+                if (hr != HResult.Ok)
                 {
                     Debug.WriteLine("Error loading low quality thumbnail - hresult: " + hr);
 
@@ -148,7 +153,7 @@ namespace Peek.FilePreviewer.Previewers
                 await Dispatcher.RunOnUiThread(async () =>
                 {
                     cancellationToken.ThrowIfCancellationRequested();
-                    var thumbnailBitmap = await BitmapHelper.GetBitmapFromHBitmapAsync(hbitmap, false, cancellationToken);
+                    var thumbnailBitmap = await BitmapHelper.GetBitmapFromHBitmapAsync(hbitmap, IsPng(Item), cancellationToken);
                     if (!IsFullImageLoaded && !IsHighQualityThumbnailLoaded)
                     {
                         Preview = thumbnailBitmap;
@@ -164,7 +169,7 @@ namespace Peek.FilePreviewer.Previewers
                 cancellationToken.ThrowIfCancellationRequested();
 
                 var hr = ThumbnailHelper.GetThumbnail(Path.GetFullPath(Item.Path), out IntPtr hbitmap, ThumbnailHelper.HighQualityThumbnailSize);
-                if (hr != Common.Models.HResult.Ok)
+                if (hr != HResult.Ok)
                 {
                     Debug.WriteLine("Error loading high quality thumbnail - hresult: " + hr);
 
@@ -176,7 +181,7 @@ namespace Peek.FilePreviewer.Previewers
                 await Dispatcher.RunOnUiThread(async () =>
                 {
                     cancellationToken.ThrowIfCancellationRequested();
-                    var thumbnailBitmap = await BitmapHelper.GetBitmapFromHBitmapAsync(hbitmap, false, cancellationToken);
+                    var thumbnailBitmap = await BitmapHelper.GetBitmapFromHBitmapAsync(hbitmap, IsPng(Item), cancellationToken);
                     if (!IsFullImageLoaded)
                     {
                         Preview = thumbnailBitmap;
@@ -210,6 +215,11 @@ namespace Peek.FilePreviewer.Previewers
             return hasFailedLoadingLowQualityThumbnail && hasFailedLoadingHighQualityThumbnail && hasFailedLoadingFullQualityImage;
         }
 
+        private bool IsPng(IFileSystemItem item)
+        {
+            return item.Extension == ".png";
+        }
+
         private static async Task<BitmapImage> GetFullBitmapFromPathAsync(string path, CancellationToken cancellationToken)
         {
             var bitmap = new BitmapImage();
@@ -222,11 +232,6 @@ namespace Peek.FilePreviewer.Previewers
             }
 
             return bitmap;
-        }
-
-        public static bool IsFileTypeSupported(string fileExt)
-        {
-            return _supportedFileTypes.Contains(fileExt);
         }
 
         private static readonly HashSet<string> _supportedFileTypes = new HashSet<string>

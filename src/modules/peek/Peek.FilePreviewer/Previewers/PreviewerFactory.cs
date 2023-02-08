@@ -10,11 +10,7 @@ namespace Peek.FilePreviewer.Previewers
     {
         public IPreviewer Create(IFileSystemItem file)
         {
-            if (PngPreviewer.IsFileTypeSupported(file.Extension))
-            {
-                return new PngPreviewer(file);
-            }
-            else if (ImagePreviewer.IsFileTypeSupported(file.Extension))
+            if (ImagePreviewer.IsFileTypeSupported(file.Extension))
             {
                 return new ImagePreviewer(file);
             }
