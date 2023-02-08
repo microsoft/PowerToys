@@ -173,6 +173,22 @@ steps:
     clean: false
     maximumCpuCount: true
 
+- task: PowerShell@2
+  displayName: Clean installer dir before building per-user installer
+  inputs:
+    targetType: inline
+    script: git clean -xfd  -e *exe -- .\installer\
+    pwsh: true
+
+- task: NuGetCommand@2
+  displayName: Restore NuGet packages for PowerToysSetup.sln
+  inputs:
+    command: restore
+    feedsToUse: config
+    configPath: NuGet.config
+    restoreSolution: installer\PowerToysSetup.sln
+    restoreDirectory: '$(Build.SourcesDirectory)\installer\packages'
+
 - task: VSBuild@1
   displayName: 'Build PowerToys per-user MSI'
   inputs:

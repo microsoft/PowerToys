@@ -47,9 +47,11 @@ if ($isWinAppSdkProj -eq $True) {
     }
 }
 
-$fileExclusionList = @("*Test*", "*.pdb", "*.lastcodeanalysissucceeded", "backup_restore_settings.json", "createdump.exe") + $interopFilesList + $winAppSDKfilesList
+$fileExclusionList = @("*Test*", "*.pdb", "*.lastcodeanalysissucceeded", "createdump.exe", "backup_restore_settings.json") + $interopFilesList + $winAppSDKfilesList
 
 $fileInclusionList = @("*.dll", "*.exe", "*.json", "*.msix", "*png", "*gif", "*ico", "*cur", "*svg", "index.html", "reg.js", "monacoSpecialLanguages.js", "resources.pri")
+
+$dllsToIgnore = @("System.CodeDom.dll", "WindowsBase.dll")
 
 if ($fileDepsJson -eq [string]::Empty) {
     $fileDepsRoot = $depsPath
@@ -68,8 +70,11 @@ if ($fileDepsJson -eq [string]::Empty) {
     }
 }
 
+$fileExclusionList = $fileExclusionList.where({$_ -notin $dllsToIgnore})
+
 if ($isLauncherPlugin -eq $True) {
-    $fileExclusionList += @("Ijwhost.dll", "PowerToys.Common.UI.dll", "PowerToys.GPOWrapper.dll", "PowerToys.GPOWrapperProjection.dll", "PowerToys.PowerLauncher.Telemetry.dll", "PowerToys.ManagedCommon.dll", "PowerToys.ManagedTelemetry.dll", "PowerToys.Settings.UI.Lib.dll", "Wox.Infrastructure.dll", "Wox.Plugin.dll")
+    $fileInclusionList += @("*.deps.json")
+    $fileExclusionList += @("Ijwhost.dll", "PowerToys.Common.UI.dll", "PowerToys.GPOWrapper.dll", "PowerToys.GPOWrapperProjection.dll", "PowerToys.PowerLauncher.Telemetry.dll", "PowerToys.ManagedCommon.dll", "PowerToys.Settings.UI.Lib.dll", "Wox.Infrastructure.dll", "Wox.Plugin.dll")
 }
 
 $fileList = Get-ChildItem $fileDepsRoot -Include $fileInclusionList -Exclude $fileExclusionList -File -Name

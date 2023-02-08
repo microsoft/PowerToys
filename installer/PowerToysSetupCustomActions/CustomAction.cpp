@@ -32,9 +32,6 @@ TRACELOGGING_DEFINE_PROVIDER(
 const DWORD USERNAME_DOMAIN_LEN = DNLEN + UNLEN + 2; // Domain Name + '\' + User Name + '\0'
 const DWORD USERNAME_LEN = UNLEN + 1; // User Name + '\0'
 
-static const wchar_t* POWERTOYS_EXE_COMPONENT = L"{A2C66D91-3485-4D00-B04D-91844E6B345B}";
-static const wchar_t* POWERTOYS_UPGRADE_CODE = L"{42B84BF7-5FBF-473B-9C8B-049DC16F7708}";
-
 struct WcaSink : spdlog::sinks::base_sink<std::mutex>
 {
     virtual void sink_it_(const spdlog::details::log_msg& msg) override
@@ -755,38 +752,15 @@ UINT __stdcall DetectPrevInstallPathCA(MSIHANDLE hInstall)
     UINT er = ERROR_SUCCESS;
     hr = WcaInitialize(hInstall, "DetectPrevInstallPathCA");
     MsiSetPropertyW(hInstall, L"PREVIOUSINSTALLFOLDER", L"");
-    try
-    {
-        if (auto install_path = GetMsiPackageInstalledPath())
-        {
-            MsiSetPropertyW(hInstall, L"PREVIOUSINSTALLFOLDER", install_path->data());
-        }
-    }
-    catch (...)
-    {
-    }
-    er = SUCCEEDED(hr) ? ERROR_SUCCESS : ERROR_INSTALL_FAILURE;
-    return WcaFinalize(er);
-}
-
-UINT __stdcall DetectPrevInstallScopeCA(MSIHANDLE hInstall)
-{
-    HRESULT hr = S_OK;
-    UINT er = ERROR_SUCCESS;
-    hr = WcaInitialize(hInstall, "DetectPrevInstallScopeCA");
 
     LPWSTR currentScope = nullptr;
     hr = WcaGetProperty(L"InstallScope", &currentScope);
 
     try
     {
-        auto install_scope = registry::install_scope::get_current_install_scope();
-        if (install_scope == registry::install_scope::InstallScope::PerMachine && std::wstring{ currentScope } == L"perUser")
+        if (auto install_path = GetMsiPackageInstalledPath(std::wstring{ currentScope } == L"perUser"))
         {
-            PMSIHANDLE hRecord = MsiCreateRecord(0);
-            MsiRecordSetString(hRecord, 0, TEXT("PowerToys is already installed on this system for all users. We recommend first uninstalling that version before installing this one.'"));
-            MsiProcessMessage(hInstall, static_cast<INSTALLMESSAGE>(INSTALLMESSAGE_ERROR + MB_OK), hRecord);
-            hr = E_FAIL;
+            MsiSetPropertyW(hInstall, L"PREVIOUSINSTALLFOLDER", install_path->data());
         }
     }
     catch (...)

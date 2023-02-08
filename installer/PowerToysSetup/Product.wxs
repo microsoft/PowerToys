@@ -23,17 +23,17 @@
        Language="1033"
        Version="$(var.Version)"
        Manufacturer="Microsoft Corporation"
-       UpgradeCode="42B84BF7-5FBF-473B-9C8B-049DC16F7708">
+       UpgradeCode="$(var.UpgradeCodeGUID)">
 
 
       <Package InstallerVersion="500" Compressed="yes" InstallScope="$(var.InstallScope)" InstallPrivileges="$(var.InstallPrivileges)" Platform="$(var.PlatformLK)" />
 
     <MajorUpgrade DowngradeErrorMessage="A later version of [ProductName] is already installed." />
 
-    <Upgrade Id="42B84BF7-5FBF-473B-9C8B-049DC16F7708">
+    <Upgrade Id="$(var.UpgradeCodeGUID)">
       <UpgradeVersion
          Minimum="0.0.0" Maximum="$(var.Version)"
-         Property="PREVIOUSVERSIONSINSTALLED"
+         Property="PREVIOUSVERSIONSINSTALLED" 
          IncludeMinimum="yes" IncludeMaximum="no" />
     </Upgrade>
 
@@ -131,10 +131,9 @@
       <![CDATA[BOOTSTRAPPERINSTALLFOLDER <> DEFAULTBOOTSTRAPPERINSTALLFOLDER OR PREVIOUSINSTALLFOLDER = ""]]>
     </SetProperty>
 
-    <SetProperty Id="InstallScope" Value="$(var.InstallScope)" Before="DetectPrevInstallScope" Sequence="execute"></SetProperty>
+    <SetProperty Id="InstallScope" Value="$(var.InstallScope)" Before="DetectPrevInstallPath" Sequence="execute"></SetProperty>
     <InstallExecuteSequence>
       <Custom Action="DetectPrevInstallPath" After="AppSearch" />
-      <Custom Action="DetectPrevInstallScope" After="DetectPrevInstallPath" />
       <Custom Action="SetRegisterPowerToysSchTaskParam" Before="RegisterPowerToysSchTask" />
       <Custom Action="SetApplyModulesRegistryChangeSetsParam" Before="ApplyModulesRegistryChangeSets" />
       <Custom Action="SetUnApplyModulesRegistryChangeSetsParam" Before="UnApplyModulesRegistryChangeSets" />
@@ -387,13 +386,6 @@
                   Impersonate="yes"
                   BinaryKey="PTCustomActions"
                   DllEntry="DetectPrevInstallPathCA"
-                  />
-
-    <CustomAction Id="DetectPrevInstallScope"
-                  Return="check"
-                  Impersonate="yes"
-                  BinaryKey="PTCustomActions"
-                  DllEntry="DetectPrevInstallScopeCA"
                   />
 
     <CustomAction Id="ApplyModulesRegistryChangeSets"

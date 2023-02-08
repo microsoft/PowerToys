@@ -26,10 +26,10 @@
     <OutputName>PowerToysSetup-$(Version)-$(Platform)</OutputName>
     <OutputType>Bundle</OutputType>
     <SuppressAclReset>True</SuppressAclReset>
-    <OutputName Condition=" '$(PerUser)' != 'true' ">PowerToysSetup-$(Version)-$(Platform)-perMachine</OutputName>
-    <OutputName Condition=" '$(PerUser)' == 'true' ">PowerToysSetup-$(Version)-$(Platform)-perUser</OutputName>
-    <OutputPath Condition=" '$(PerUser)' != 'true' ">$(Platform)\$(Configuration)\perMachine</OutputPath>
-    <OutputPath Condition=" '$(PerUser)' == 'true' ">$(Platform)\$(Configuration)\perUser</OutputPath>
+    <OutputName Condition=" '$(PerUser)' != 'true' ">PowerToysSetup-$(Version)-$(Platform)</OutputName>
+    <OutputName Condition=" '$(PerUser)' == 'true' ">PowerToysUserSetup-$(Version)-$(Platform)</OutputName>
+    <OutputPath Condition=" '$(PerUser)' != 'true' ">$(Platform)\$(Configuration)\MachineSetup</OutputPath>
+    <OutputPath Condition=" '$(PerUser)' == 'true' ">$(Platform)\$(Configuration)\UserSetup</OutputPath>
     <IntermediateOutputPath>obj\$(Platform)\$(Configuration)\</IntermediateOutputPath>
     <NuGetPackageImportStamp />
   </PropertyGroup>
