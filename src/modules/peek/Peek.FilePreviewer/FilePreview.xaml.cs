@@ -114,8 +114,6 @@ namespace Peek.FilePreviewer
             _cancellationTokenSource.Cancel();
             _cancellationTokenSource = new();
 
-            // TODO: track and cancel existing async preview tasks
-            // https://github.com/microsoft/PowerToys/issues/22480
             if (File == null)
             {
                 Previewer = null;
@@ -151,8 +149,7 @@ namespace Peek.FilePreviewer
                 {
                     cancellationToken.ThrowIfCancellationRequested();
                     var size = await Previewer.GetPreviewSizeAsync(cancellationToken);
-                    SizeFormat windowSizeFormat = UnsupportedFilePreviewer != null ? SizeFormat.Percentage : SizeFormat.Pixels;
-                    PreviewSizeChanged?.Invoke(this, new PreviewSizeChangedArgs(size, windowSizeFormat));
+                    PreviewSizeChanged?.Invoke(this, new PreviewSizeChangedArgs(size));
                     cancellationToken.ThrowIfCancellationRequested();
                     await Previewer.LoadPreviewAsync(cancellationToken);
 

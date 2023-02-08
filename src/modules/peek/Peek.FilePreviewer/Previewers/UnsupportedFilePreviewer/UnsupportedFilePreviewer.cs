@@ -49,21 +49,7 @@ namespace Peek.FilePreviewer.Previewers
             FileName = file.FileName;
             DateModified = file.DateModified.ToString();
             Dispatcher = DispatcherQueue.GetForCurrentThread();
-            PropertyChanged += OnPropertyChanged;
-
-            var settingsUtils = new SettingsUtils();
-            var settings = settingsUtils.GetSettingsOrDefault<PeekSettings>(PeekSettings.ModuleName);
-
-            if (settings != null)
-            {
-                UnsupportedFileWidthPercent = settings.Properties.UnsupportedFileWidthPercent / 100.0;
-                UnsupportedFileHeightPercent = settings.Properties.UnsupportedFileHeightPercent / 100.0;
-            }
         }
-
-        private double UnsupportedFileWidthPercent { get; set; }
-
-        private double UnsupportedFileHeightPercent { get; set; }
 
         public bool IsPreviewLoaded => iconPreview != null;
 
@@ -82,11 +68,8 @@ namespace Peek.FilePreviewer.Previewers
 
         public Task<Size?> GetPreviewSizeAsync(CancellationToken cancellationToken)
         {
-            return Task.Run(() =>
-            {
-                Size? size = new Size(UnsupportedFileWidthPercent, UnsupportedFileHeightPercent);
-                return size;
-            });
+            Size? size = new Size(680, 500);
+            return Task.FromResult(size);
         }
 
         public async Task LoadPreviewAsync(CancellationToken cancellationToken)
@@ -153,14 +136,11 @@ namespace Peek.FilePreviewer.Previewers
             });
         }
 
-        private void OnPropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
+        partial void OnIconPreviewChanged(ImageSource? value)
         {
-            if (e.PropertyName == nameof(IconPreview))
+            if (IconPreview != null)
             {
-                if (IconPreview != null)
-                {
-                    State = PreviewState.Loaded;
-                }
+                State = PreviewState.Loaded;
             }
         }
 
