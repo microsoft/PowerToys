@@ -154,7 +154,7 @@
     <comment>Date Modified label for the unsupported files view. {0} is the date.</comment>
   </data>
   <data name="ReadableString_ByteAbbreviationFormat" xml:space="preserve">
-    <value>{0} B</value>
+    <value>{0} bytes</value>
     <comment>Abbrivation for the size unit byte.</comment>
   </data>
   <data name="ReadableString_KiloByteAbbreviationFormat" xml:space="preserve">

@@ -7,6 +7,7 @@ using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 using CommunityToolkit.Mvvm.ComponentModel;
+using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.UI.Dispatching;
 using Microsoft.UI.Xaml.Media.Imaging;
 using Peek.Common.Extensions;
@@ -30,6 +31,9 @@ namespace Peek.FilePreviewer.Previewers
         private PreviewState state;
 
         [ObservableProperty]
+        private Size imageSize;
+
+        [ObservableProperty]
         private Size maxImageSize;
 
         [ObservableProperty]
@@ -39,8 +43,6 @@ namespace Peek.FilePreviewer.Previewers
         {
             Item = file;
             Dispatcher = DispatcherQueue.GetForCurrentThread();
-
-            PropertyChanged += OnPropertyChanged;
         }
 
         public bool IsPreviewLoaded => preview != null;
@@ -62,14 +64,14 @@ namespace Peek.FilePreviewer.Previewers
 
         public async Task<Size?> GetPreviewSizeAsync(CancellationToken cancellationToken)
         {
-            var propertyImageSize = await Task.Run(Item.GetImageSize);
-            if (propertyImageSize != Size.Empty)
+            cancellationToken.ThrowIfCancellationRequested();
+            ImageSize = await Task.Run(Item.GetImageSize);
+            if (ImageSize == Size.Empty)
             {
-                return propertyImageSize;
+                ImageSize = await WICHelper.GetImageSize(Item.Path);
             }
 
-            cancellationToken.ThrowIfCancellationRequested();
-            return await WICHelper.GetImageSize(Item.Path);
+            return ImageSize;
         }
 
         public async Task LoadPreviewAsync(CancellationToken cancellationToken)
@@ -102,14 +104,33 @@ namespace Peek.FilePreviewer.Previewers
             return fileExt == ".png" ? true : false;
         }
 
-        private void OnPropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
+        partial void OnPreviewChanged(BitmapSource? value)
         {
-            if (e.PropertyName == nameof(Preview))
+            if (Preview != null)
             {
-                if (Preview != null)
-                {
-                    State = PreviewState.Loaded;
-                }
+                State = PreviewState.Loaded;
+            }
+        }
+
+        partial void OnScalingFactorChanged(double value)
+        {
+            UpdateMaxImageSize();
+        }
+
+        partial void OnImageSizeChanged(Size value)
+        {
+            UpdateMaxImageSize();
+        }
+
+        private void UpdateMaxImageSize()
+        {
+            if (ScalingFactor != 0)
+            {
+                MaxImageSize = new Size(ImageSize.Width / ScalingFactor, ImageSize.Height / ScalingFactor);
+            }
+            else
+            {
+                MaxImageSize = new Size(ImageSize.Width, ImageSize.Height);
             }
         }
 

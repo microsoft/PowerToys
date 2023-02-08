@@ -40,8 +40,6 @@ namespace Peek.FilePreviewer.Previewers
         {
             Item = file;
             Dispatcher = DispatcherQueue.GetForCurrentThread();
-
-            PropertyChanged += OnPropertyChanged;
         }
 
         private IFileSystemItem Item { get; }
@@ -101,25 +99,33 @@ namespace Peek.FilePreviewer.Previewers
             });
         }
 
-        private void OnPropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
+        partial void OnPreviewChanged(BitmapSource? value)
         {
-            if (e.PropertyName == nameof(Preview))
+            if (Preview != null)
             {
-                if (Preview != null)
-                {
-                    State = PreviewState.Loaded;
-                }
+                State = PreviewState.Loaded;
             }
-            else if (e.PropertyName == nameof(ScalingFactor) || e.PropertyName == nameof(ImageSize))
+        }
+
+        partial void OnScalingFactorChanged(double value)
+        {
+            UpdateMaxImageSize();
+        }
+
+        partial void OnImageSizeChanged(Size value)
+        {
+            UpdateMaxImageSize();
+        }
+
+        private void UpdateMaxImageSize()
+        {
+            if (ScalingFactor != 0)
             {
-                if (ScalingFactor != 0)
-                {
-                    MaxImageSize = new Size(ImageSize.Width / ScalingFactor, ImageSize.Height / ScalingFactor);
-                }
-                else
-                {
-                    MaxImageSize = new Size(ImageSize.Width, ImageSize.Height);
-                }
+                MaxImageSize = new Size(ImageSize.Width / ScalingFactor, ImageSize.Height / ScalingFactor);
+            }
+            else
+            {
+                MaxImageSize = new Size(ImageSize.Width, ImageSize.Height);
             }
         }
 
