@@ -173,7 +173,7 @@ namespace Hosts.Helpers
                     _backupDone = true;
                 }
 
-                await _fileSystem.File.WriteAllLinesAsync(HostsFilePath, lines);
+                await _fileSystem.File.WriteAllLinesAsync(HostsFilePath, lines, Encoding.UTF8);
             }
             catch (Exception ex)
             {
