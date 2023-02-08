@@ -7,11 +7,12 @@
 
 // disable warning 26471 - Don't use reinterpret_cast. A cast from void* can use static_cast
 // disable warning 26492 - Don't use const_cast to cast away const
+// disable warning 26493 - Don't use C-style casts
 // Disable 26497 for winrt - This function function-name could be marked constexpr if compile-time evaluation is desired.
 #pragma warning(push)
-#pragma warning(disable : 26471 26492 26497)
+#pragma warning(disable : 26471 26492 26493 26497)
 #include <wil/com.h>
-#pragma warning(push)
+#pragma warning(pop)
 
 #include <wil/resource.h>
 
@@ -178,7 +179,7 @@ void ReportAllWebcams()
         std::string friendlyName;
         for (wchar_t c : wideFriendlyName)
         {
-            friendlyName += (char)c;
+            friendlyName += static_cast<char>(c);
         }
         log() << "Webcam " << friendlyName << '\n';
 

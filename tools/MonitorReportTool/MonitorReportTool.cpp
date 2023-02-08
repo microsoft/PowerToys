@@ -221,7 +221,7 @@ void LogWMI()
     // on a particular host computer.
     IWbemLocator* pLocator = 0;
 
-    hres = CoCreateInstance(CLSID_WbemLocator, 0, CLSCTX_INPROC_SERVER, IID_IWbemLocator, (LPVOID*)&pLocator);
+    hres = CoCreateInstance(CLSID_WbemLocator, 0, CLSCTX_INPROC_SERVER, IID_IWbemLocator, reinterpret_cast<LPVOID*>(&pLocator));
     if (FAILED(hres))
     {
         Logger::log(L"Failed to create IWbemLocator object. Error code = ", hres);
@@ -346,7 +346,7 @@ void LogWMICIMV2()
     // on a particular host computer.
     IWbemLocator* pLocator = 0;
 
-    hres = CoCreateInstance(CLSID_WbemLocator, 0, CLSCTX_INPROC_SERVER, IID_IWbemLocator, (LPVOID*)&pLocator);
+    hres = CoCreateInstance(CLSID_WbemLocator, 0, CLSCTX_INPROC_SERVER, IID_IWbemLocator, reinterpret_cast<LPVOID*>(&pLocator));
     if (FAILED(hres))
     {
         Logger::log(L"Failed to create IWbemLocator object. Error code = ", hres);
