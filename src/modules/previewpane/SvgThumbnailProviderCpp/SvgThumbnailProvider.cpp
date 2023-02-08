@@ -159,7 +159,6 @@ IFACEMETHODIMP SvgThumbnailProvider::GetThumbnail(UINT cx, HBITMAP* phbmp, WTS_A
 
                 std::wstring fileNameBmp = filePath + guid + L".bmp";
 
-
                 if (std::filesystem::exists(fileNameBmp))
                 {
                     *phbmp = static_cast<HBITMAP>LoadImage(NULL, fileNameBmp.c_str(), IMAGE_BITMAP, 0, 0, LR_LOADFROMFILE);
