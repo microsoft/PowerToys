@@ -247,7 +247,7 @@ namespace PowerToysSettings
     bool Settings::serialize_to_buffer(wchar_t* buffer, int* buffer_size)
     {
         auto result = m_json.Stringify();
-        const int result_len = (int)result.size() + 1;
+        const int result_len = static_cast<int>(result.size() + 1);
 
         if (buffer == nullptr || *buffer_size < result_len)
         {
