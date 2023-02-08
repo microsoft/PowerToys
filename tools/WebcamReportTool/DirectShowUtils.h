@@ -6,8 +6,9 @@
 #include <dshow.h>
 
 // disable warning 26471 - Don't use reinterpret_cast. A cast from void* can use static_cast
+// Disable 26497 for winrt - This function function-name could be marked constexpr if compile-time evaluation is desired.
 #pragma warning(push)
-#pragma warning(disable: 26471)
+#pragma warning(disable : 26471 26497)
 #include <wil/com.h>
 #pragma warning(push)
 

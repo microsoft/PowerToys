@@ -1,0 +1,27 @@
+<Include>
+  <!-- Names of folders and projects -->
+  <?define FancyZonesProjectName="FancyZones"?>
+  <?define ImageResizerProjectName="ImageResizer"?>
+  <?define KeyboardManagerProjectName="KeyboardManager"?>
+  <?define PowerAccentProjectName="PowerAccent"?>
+  <?define PowerRenameProjectName="PowerRename"?>
+  <?define FileLocksmithProjectName="FileLocksmith"?>
+  <?define ColorPickerProjectName="ColorPicker"?>
+  <?define PowerOCRProjectName="PowerOCR"?>
+  <?define VideoConferenceProjectName="VideoConference"?>
+  <?define AwakeProjectName="Awake"?>
+  <?define MouseUtilsProjectName="MouseUtils"?>
+  <?define AlwaysOnTopProjectName="AlwaysOnTop"?>
+  <?define MeasureToolProjectName="MeasureTool"?>
+  <?define HostsProjectName="Hosts"?>
+
+  <?define RepoDir="$(var.ProjectDir)..\..\" ?>
+  <?if $(var.Platform) = x64?>
+          <?define PlatformLK="x64" ?>
+  <?define BinDir="$(var.RepoDir)x64\$(var.Configuration)\" ?>
+  <?else?>
+          <?define PlatformLK="arm64" ?>
+  <?define BinDir="$(var.RepoDir)ARM64\$(var.Configuration)\" ?>
+  <?endif?>
+  <?define BinX32Dir="$(var.RepoDir)x86\$(var.Configuration)\" ?>
+</Include>

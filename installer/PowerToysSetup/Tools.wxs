@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Wix xmlns="http://schemas.microsoft.com/wix/2006/wi"
+     xmlns:util="http://schemas.microsoft.com/wix/UtilExtension" >
+
+  <?include $(sys.CURRENTDIR)\Common.wxi?>
+
+  <Fragment>
+    <DirectoryRef Id="ToolsFolder">
+      <Component Id="BugReportTool_exe" Win64="yes">
+        <File Source="$(var.BinDir)BugReportTool\PowerToys.BugReportTool.exe" Id="BugReportTool.exe" KeyPath="yes" Checksum="yes" />
+      </Component>
+      <Component Id="WebcamReportTool_exe" Win64="yes">
+        <File Source="$(var.BinDir)WebcamReportTool\PowerToys.WebcamReportTool.exe" Id="WebcamReportTool.exe" Checksum="yes" />
+      </Component>
+      <Component Id="StylesReportTool_exe" Win64="yes">
+        <File Source="$(var.BinDir)StylesReportTool\PowerToys.StylesReportTool.exe" Id="StylesReportTool.exe" Checksum="yes" />
+      </Component>
+    </DirectoryRef>
+
+    <ComponentGroup Id="ToolComponentGroup" Directory="ToolsFolder">
+      <ComponentRef Id="BugReportTool_exe" />
+      <ComponentRef Id="WebcamReportTool_exe" />
+      <ComponentRef Id="StylesReportTool_exe" />
+    </ComponentGroup>
+
+  </Fragment>
+</Wix>

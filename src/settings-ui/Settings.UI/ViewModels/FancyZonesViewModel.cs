@@ -116,6 +116,19 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             string numberColor = Settings.Properties.FancyzonesNumberColor.Value;
             _zoneNumberColor = !string.IsNullOrEmpty(numberColor) ? numberColor : ConfigDefaults.DefaultFancyzonesNumberColor;
 
+            InitializeEnabledValue();
+
+            _windows11 = Helper.Windows11();
+
+            // Disable setting on windows 10
+            if (!_windows11 && DisableRoundCornersOnWindowSnap)
+            {
+                DisableRoundCornersOnWindowSnap = false;
+            }
+        }
+
+        private void InitializeEnabledValue()
+        {
             _enabledGpoRuleConfiguration = GPOWrapper.GetConfiguredFancyZonesEnabledValue();
             if (_enabledGpoRuleConfiguration == GpoRuleConfigured.Disabled || _enabledGpoRuleConfiguration == GpoRuleConfigured.Enabled)
             {
@@ -126,14 +139,6 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             else
             {
                 _isEnabled = GeneralSettingsConfig.Enabled.FancyZones;
-            }
-
-            _windows11 = Helper.Windows11();
-
-            // Disable setting on windows 10
-            if (!_windows11 && DisableRoundCornersOnWindowSnap)
-            {
-                DisableRoundCornersOnWindowSnap = false;
             }
         }
 
@@ -882,6 +887,15 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         {
             OnPropertyChanged(propertyName);
             SettingsUtils.SaveSettings(Settings.ToJsonString(), GetSettingsSubPath());
+        }
+
+        public void RefreshEnabledState()
+        {
+            InitializeEnabledValue();
+            OnPropertyChanged(nameof(IsEnabled));
+            OnPropertyChanged(nameof(SnapHotkeysCategoryEnabled));
+            OnPropertyChanged(nameof(QuickSwitchEnabled));
+            OnPropertyChanged(nameof(WindowSwitchingCategoryEnabled));
         }
     }
 }
