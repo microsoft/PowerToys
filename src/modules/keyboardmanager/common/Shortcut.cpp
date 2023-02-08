@@ -592,13 +592,13 @@ bool Shortcut::CheckModifiersKeyboardState(KeyboardManagerInput::InputInterface&
 }
 
 // Helper method for checking if a key is in a range for cleaner code
-bool in_range(DWORD key, DWORD a, DWORD b)
+constexpr bool in_range(DWORD key, DWORD a, DWORD b)
 {
     return (key >= a && key <= b);
 }
 
 // Helper method for checking if a key is equal to a value for cleaner code
-bool equals(DWORD key, DWORD a)
+constexpr bool equals(DWORD key, DWORD a)
 {
     return (key == a);
 }
