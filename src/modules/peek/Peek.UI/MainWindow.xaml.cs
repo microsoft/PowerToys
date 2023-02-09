@@ -7,6 +7,7 @@ using System.Linq;
 using interop;
 using Microsoft.UI.Windowing;
 using Microsoft.UI.Xaml.Input;
+using Peek.Common.Constants;
 using Peek.FilePreviewer.Models;
 using Peek.UI.Extensions;
 using Peek.UI.Helpers;
@@ -21,12 +22,6 @@ namespace Peek.UI
     /// </summary>
     public sealed partial class MainWindow : WindowEx
     {
-        private const double MaxWindowToMonitorRatio = 0.80;
-        private const double MinWindowHeight = 500;
-        private const double MinWindowWidth = 680;
-        private const double WindowWidthContentPadding = 7;
-        private const double WindowHeightContentPadding = 16;
-
         public MainWindow()
         {
             InitializeComponent();
@@ -101,42 +96,25 @@ namespace Peek.UI
             // If no size is requested, try to fit to the monitor size.
             Size requestedSize = e.WindowSizeRequested ?? monitorSize;
 
-            var titleBarHeight = TitleBarControl.ActualHeight;
+            double titleBarHeight = TitleBarControl.ActualHeight;
 
-            var maxContentSize = new Size(0, 0);
-            var minContentSize = new Size(MinWindowWidth, MinWindowHeight - titleBarHeight);
+            double maxContentWidth = monitorSize.Width * WindowConstants.MaxWindowToMonitorRatio;
+            double maxContentHeight = (monitorSize.Height - titleBarHeight) * WindowConstants.MaxWindowToMonitorRatio;
+            Size maxContentSize = new(maxContentWidth, maxContentHeight);
 
-            var adjustedContentSize = new Size(0, 0);
+            double minContentWidth = WindowConstants.MinWindowWidth;
+            double minContentHeight = WindowConstants.MinWindowHeight - titleBarHeight;
+            Size minContentSize = new(minContentWidth, minContentHeight);
 
-            if (e.WindowSizeFormat == SizeFormat.Percentage)
-            {
-                maxContentSize = new Size(monitorSize.Width * requestedSize.Width, (monitorSize.Height - titleBarHeight) * requestedSize.Height);
-                minContentSize = new Size(MinWindowWidth, MinWindowHeight - titleBarHeight);
-
-                adjustedContentSize = maxContentSize.Fit(maxContentSize, minContentSize);
-            }
-            else if (e.WindowSizeFormat == SizeFormat.Pixels)
-            {
-                maxContentSize = new Size(monitorSize.Width * MaxWindowToMonitorRatio, (monitorSize.Height - titleBarHeight) * MaxWindowToMonitorRatio);
-                minContentSize = new Size(MinWindowWidth, MinWindowHeight - titleBarHeight);
-
-                adjustedContentSize = requestedSize.Fit(maxContentSize, minContentSize);
-            }
-            else
-            {
-                Debug.Assert(false, "Unknown SizeFormat set for resizing window.");
-                adjustedContentSize = minContentSize;
-
-                return;
-            }
+            Size adjustedContentSize = requestedSize.Fit(maxContentSize, minContentSize);
 
             // TODO: Only re-center if window has not been resized by user (or use design-defined logic).
             // TODO: Investigate why portrait images do not perfectly fit edge-to-edge
-            var monitorScale = this.GetMonitorScale();
-            var scaledWindowWidth = adjustedContentSize.Width / monitorScale;
-            var scaledWindowHeight = adjustedContentSize.Height / monitorScale;
+            double monitorScale = this.GetMonitorScale();
+            double scaledWindowWidth = adjustedContentSize.Width / monitorScale;
+            double scaledWindowHeight = adjustedContentSize.Height / monitorScale;
 
-            this.CenterOnScreen(scaledWindowWidth + WindowHeightContentPadding, scaledWindowHeight + titleBarHeight + WindowWidthContentPadding);
+            this.CenterOnScreen(scaledWindowWidth + WindowConstants.WindowHeightContentPadding, scaledWindowHeight + titleBarHeight + WindowConstants.WindowWidthContentPadding);
             this.Show();
             this.BringToForeground();
         }

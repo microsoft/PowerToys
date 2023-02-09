@@ -23,7 +23,7 @@
             Grid.Column="0"
             Width="180"
             Height="180"
-            Margin="24"
+            Margin="0,24,24,24"
             Source="{x:Bind IconPreview, Mode=OneWay}" />
 
         <StackPanel
@@ -34,7 +34,8 @@
             <TextBlock
                 FontSize="26"
                 FontWeight="SemiBold"
-                Text="{x:Bind FileName, Mode=OneWay}" />
+                Text="{x:Bind FileName, Mode=OneWay}"
+                TextTrimming="CharacterEllipsis" />
             <TextBlock Text="{x:Bind FormattedFileType, Mode=OneWay}" />
             <TextBlock Text="{x:Bind FormattedFileSize, Mode=OneWay}" />
             <TextBlock Text="{x:Bind FormattedDateModified, Mode=OneWay}" />
