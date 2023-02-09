@@ -68,6 +68,7 @@ applicationframehost
 Applist
 applog
 appmanifest
+APPNAME
 appref
 apps
 appwindow
@@ -857,6 +858,7 @@ Krai
 KSPROPERTY
 Kwango
 Kwilu
+kxz
 Kybd
 Kyrgyzstan
 Kyzylorda
@@ -1456,6 +1458,8 @@ regfile
 REGFILTER
 REGFILTERPINS
 REGISTERCLASSFAILED
+REGISTRYHEADER4
+REGISTRYHEADER5
 registerhotkey
 registrypath
 registrypreview
