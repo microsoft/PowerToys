@@ -3,7 +3,6 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
-using System.Drawing.Imaging;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
@@ -11,15 +10,11 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.UI.Dispatching;
 using Microsoft.UI.Xaml.Media;
-using Microsoft.UI.Xaml.Media.Imaging;
-using Peek.Common;
 using Peek.Common.Extensions;
 using Peek.Common.Helpers;
+using Peek.Common.Models;
 using Peek.FilePreviewer.Previewers.Helpers;
-using Windows.ApplicationModel.DataTransfer;
 using Windows.Foundation;
-using Windows.Storage;
-using File = Peek.Common.Models.File;
 
 namespace Peek.FilePreviewer.Previewers
 {
@@ -43,17 +38,17 @@ namespace Peek.FilePreviewer.Previewers
         [ObservableProperty]
         private PreviewState state;
 
-        public UnsupportedFilePreviewer(File file)
+        public UnsupportedFilePreviewer(IFileSystemItem file)
         {
-            File = file;
-            FileName = file.FileName;
+            Item = file;
+            FileName = file.Name;
             DateModified = file.DateModified.ToString();
             Dispatcher = DispatcherQueue.GetForCurrentThread();
         }
 
         public bool IsPreviewLoaded => iconPreview != null;
 
-        private File File { get; }
+        private IFileSystemItem Item { get; }
 
         private DispatcherQueue Dispatcher { get; }
 
@@ -93,12 +88,8 @@ namespace Peek.FilePreviewer.Previewers
         {
             await Dispatcher.RunOnUiThread(async () =>
             {
-                var storageFile = await File.GetStorageFileAsync();
-
-                var dataPackage = new DataPackage();
-                dataPackage.SetStorageItems(new StorageFile[1] { storageFile }, false);
-
-                Clipboard.SetContent(dataPackage);
+                var storageItem = await Item.GetStorageItemAsync();
+                ClipboardHelper.SaveToClipboard(storageItem);
             });
         }
 
@@ -110,7 +101,7 @@ namespace Peek.FilePreviewer.Previewers
                 await Dispatcher.RunOnUiThread(async () =>
                 {
                     cancellationToken.ThrowIfCancellationRequested();
-                    var iconBitmap = await IconHelper.GetIconAsync(Path.GetFullPath(File.Path), cancellationToken);
+                    var iconBitmap = await IconHelper.GetIconAsync(Path.GetFullPath(Item.Path), cancellationToken);
                     IconPreview = iconBitmap;
                 });
             });
@@ -122,10 +113,11 @@ namespace Peek.FilePreviewer.Previewers
             {
                 // File Properties
                 cancellationToken.ThrowIfCancellationRequested();
-                var bytes = await PropertyHelper.GetFileSizeInBytes(File.Path);
+
+                var bytes = await Task.Run(Item.GetSizeInBytes);
 
                 cancellationToken.ThrowIfCancellationRequested();
-                var type = await PropertyHelper.GetFileType(File.Path);
+                var type = await Task.Run(Item.GetContentTypeAsync);
 
                 await Dispatcher.RunOnUiThread(() =>
                 {

@@ -25,10 +25,10 @@ namespace Peek.UI.Views
     [INotifyPropertyChanged]
     public sealed partial class TitleBar : UserControl
     {
-        public static readonly DependencyProperty FileProperty =
+        public static readonly DependencyProperty ItemProperty =
             DependencyProperty.Register(
-                nameof(File),
-                typeof(File),
+                nameof(Item),
+                typeof(IFileSystemItem),
                 typeof(TitleBar),
                 new PropertyMetadata(null, (d, e) => ((TitleBar)d).OnFilePropertyChanged()));
 
@@ -62,16 +62,19 @@ namespace Peek.UI.Views
         [ObservableProperty]
         private string? fileCountText;
 
+        [ObservableProperty]
+        private string defaultAppName = string.Empty;
+
         public TitleBar()
         {
             InitializeComponent();
             TitleBarRootContainer.SizeChanged += TitleBarRootContainer_SizeChanged;
         }
 
-        public File File
+        public IFileSystemItem Item
         {
-            get => (File)GetValue(FileProperty);
-            set => SetValue(FileProperty, value);
+            get => (IFileSystemItem)GetValue(ItemProperty);
+            set => SetValue(ItemProperty, value);
         }
 
         public int FileIndex
@@ -91,8 +94,6 @@ namespace Peek.UI.Views
             get => (int)GetValue(NumberOfFilesProperty);
             set => SetValue(NumberOfFilesProperty, value);
         }
-
-        private string? DefaultAppName { get; set; }
 
         private Window? MainWindow { get; set; }
 
@@ -117,10 +118,20 @@ namespace Peek.UI.Views
             }
         }
 
+        public Visibility IsLaunchDefaultAppButtonVisible(string appName)
+        {
+            return string.IsNullOrEmpty(appName) ? Visibility.Collapsed : Visibility.Visible;
+        }
+
         [RelayCommand]
         private async void LaunchDefaultAppButtonAsync()
         {
-            StorageFile storageFile = await File.GetStorageFileAsync();
+            if (Item is not FileItem fileItem)
+            {
+                return;
+            }
+
+            StorageFile? storageFile = await fileItem.GetStorageFileAsync();
             LauncherOptions options = new();
 
             if (string.IsNullOrEmpty(DefaultAppName))
@@ -198,7 +209,7 @@ namespace Peek.UI.Views
 
         private void OnFilePropertyChanged()
         {
-            if (File == null)
+            if (Item == null)
             {
                 return;
             }
@@ -225,7 +236,7 @@ namespace Peek.UI.Views
         private void UpdateDefaultAppToLaunch()
         {
             // Update the name of default app to launch
-            DefaultAppName = DefaultAppHelper.TryGetDefaultAppName(File.Extension);
+            DefaultAppName = DefaultAppHelper.TryGetDefaultAppName(Item.Extension);
 
             string openWithAppTextFormat = ResourceLoader.GetForViewIndependentUse().GetString("LaunchAppButton_OpenWithApp_Text");
             OpenWithAppText = string.Format(openWithAppTextFormat, DefaultAppName);

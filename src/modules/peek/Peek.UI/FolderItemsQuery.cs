@@ -22,10 +22,10 @@ namespace Peek.UI
         private readonly DispatcherQueue _dispatcherQueue = DispatcherQueue.GetForCurrentThread();
 
         [ObservableProperty]
-        private File? currentFile;
+        private IFileSystemItem? currentFile;
 
         [ObservableProperty]
-        private List<File> files = new();
+        private List<IFileSystemItem> files = new();
 
         [ObservableProperty]
         private bool isMultiSelection;
@@ -54,7 +54,7 @@ namespace Peek.UI
             {
                 _dispatcherQueue.TryEnqueue(() =>
                 {
-                    Files = new List<File>();
+                    Files = new List<IFileSystemItem>();
                     CurrentItemIndex = UninitializedItemIndex;
                 });
             }
@@ -133,8 +133,8 @@ namespace Peek.UI
         //  the entire folder. We can then avoid iterating through all items here, and maintain a dynamic window of
         //  loaded items around the current item index.
         private void InitializeFiles(
-            IEnumerable<File> items,
-            File firstSelectedItem,
+            IEnumerable<IFileSystemItem> items,
+            IFileSystemItem firstSelectedItem,
             CancellationToken cancellationToken)
         {
             var listOfItems = items.ToList();

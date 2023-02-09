@@ -67,7 +67,7 @@
                     x:Uid="AppTitle_FileName"
                     Grid.Column="1"
                     Style="{StaticResource CaptionTextBlockStyle}"
-                    Text="{x:Bind File.FileName, Mode=OneWay}"
+                    Text="{x:Bind Item.Name, Mode=OneWay}"
                     TextWrapping="NoWrap" />
             </Grid>
         </Grid>
@@ -78,7 +78,8 @@
             Grid.Column="2"
             VerticalAlignment="Center"
             Command="{x:Bind LaunchDefaultAppButtonAsyncCommand, Mode=OneWay}"
-            ToolTipService.ToolTip="{x:Bind OpenWithAppToolTip, Mode=OneWay}">
+            ToolTipService.ToolTip="{x:Bind OpenWithAppToolTip, Mode=OneWay}"
+            Visibility="{x:Bind IsLaunchDefaultAppButtonVisible(DefaultAppName), Mode=OneWay}">
             <Button.Content>
                 <StackPanel Orientation="Horizontal" Spacing="4">
                     <FontIcon
@@ -106,7 +107,6 @@
                     </VisualState.StateTriggers>
                     <VisualState.Setters>
                         <Setter Target="LaunchAppButton_Text.Visibility" Value="Visible" />
-                        <Setter Target="LaunchAppButton.Visibility" Value="Visible" />
                     </VisualState.Setters>
                 </VisualState>
                 <VisualState x:Name="MediumLayout">
@@ -115,7 +115,6 @@
                     </VisualState.StateTriggers>
                     <VisualState.Setters>
                         <Setter Target="LaunchAppButton_Text.Visibility" Value="Collapsed" />
-                        <Setter Target="LaunchAppButton.Visibility" Value="Visible" />
                     </VisualState.Setters>
                 </VisualState>
                 <VisualState x:Name="MinimumLayout">

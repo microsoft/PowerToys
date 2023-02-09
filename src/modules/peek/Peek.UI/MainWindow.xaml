@@ -29,14 +29,14 @@
         <views:TitleBar
             x:Name="TitleBarControl"
             Grid.Row="0"
-            File="{x:Bind ViewModel.FolderItemsQuery.CurrentFile, Mode=OneWay}"
+            Item="{x:Bind ViewModel.FolderItemsQuery.CurrentFile, Mode=OneWay}"
             FileIndex="{x:Bind ViewModel.FolderItemsQuery.CurrentItemIndex, Mode=OneWay}"
             IsMultiSelection="{x:Bind ViewModel.FolderItemsQuery.IsMultiSelection, Mode=OneWay}"
             NumberOfFiles="{x:Bind ViewModel.FolderItemsQuery.Files.Count, Mode=OneWay}" />
 
         <fp:FilePreview
             Grid.Row="1"
-            File="{x:Bind ViewModel.FolderItemsQuery.CurrentFile, Mode=OneWay}"
+            Item="{x:Bind ViewModel.FolderItemsQuery.CurrentFile, Mode=OneWay}"
             ScalingFactor="{x:Bind ViewModel.ScalingFactor, Mode=OneWay}"
             PreviewSizeChanged="FilePreviewer_PreviewSizeChanged" />
     </Grid>
