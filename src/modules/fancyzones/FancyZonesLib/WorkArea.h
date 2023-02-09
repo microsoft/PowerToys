@@ -42,6 +42,7 @@ public:
     const std::unique_ptr<Layout>& GetLayout() const noexcept { return m_layout; }
     const std::unique_ptr<LayoutAssignedWindows>& GetLayoutWindows() const noexcept { return m_layoutWindows; }
     const HWND GetWorkAreaWindow() const noexcept { return m_window; }
+    const GUID GetLayoutId() const noexcept;
     
     ZoneIndexSet GetWindowZoneIndexes(HWND window) const;
 

@@ -405,6 +405,16 @@ void WorkArea::UnsnapWindow(HWND window)
     FancyZonesWindowProperties::RemoveZoneIndexProperty(window);
 }
 
+const GUID WorkArea::GetLayoutId() const noexcept
+{
+    if (m_layout)
+    {
+        return m_layout->Id();
+    }
+
+    return GUID{};
+}
+
 ZoneIndexSet WorkArea::GetWindowZoneIndexes(HWND window) const
 {
     if (m_layout)
