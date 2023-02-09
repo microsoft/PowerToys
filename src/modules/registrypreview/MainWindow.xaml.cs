@@ -15,6 +15,10 @@ using Windows.ApplicationModel.Resources;
 using Windows.Management.Core;
 using Windows.Storage;
 
+// spell-check-ignore: REGISTRYHEADER4
+// spell-check-ignore: REGISTRYHEADER5
+// spell-check-ignore: APPNAME
+// spell-check-ignore: kxz
 namespace RegistryPreview
 {
     public sealed partial class MainWindow : Window
