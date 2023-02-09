@@ -251,8 +251,8 @@ namespace Peek.FilePreviewer
             sb.Append(dateModifiedFormatted);
 
             cancellationToken.ThrowIfCancellationRequested();
-            Size dimensions = await Task.Run(Item.GetImageSize);
-            string dimensionsFormatted = dimensions.IsEmpty ? string.Empty : "\n" + ReadableStringHelper.FormatResourceString("PreviewTooltip_Dimensions", dimensions.Width, dimensions.Height);
+            Size? dimensions = await Task.Run(Item.GetImageSize);
+            string dimensionsFormatted = dimensions == null ? string.Empty : "\n" + ReadableStringHelper.FormatResourceString("PreviewTooltip_Dimensions", dimensions.Value.Width, dimensions.Value.Height);
             sb.Append(dimensionsFormatted);
 
             cancellationToken.ThrowIfCancellationRequested();
