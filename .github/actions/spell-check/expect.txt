@@ -469,6 +469,7 @@ editkeyboardwindow
 EDITSHORTCUTS
 editshortcutswindow
 EFile
+egfile
 ekus
 emmintrin
 Emoji
