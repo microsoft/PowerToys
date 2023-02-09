@@ -16,7 +16,7 @@
         Height="Auto"
         TabFocusNavigation="Cycle"
         x:FieldModifier="public"
-        Loaded="gridPreview_Loaded"
+        Loaded="GridPreview_Loaded"
         >
         <Grid.ColumnDefinitions>
             <!-- Left, Splitter, Right -->
@@ -44,39 +44,39 @@
             Grid.ColumnSpan="3"
             IsTabStop="False"
             >
-            <AppBarButton x:Name="openButton" x:Uid="OpenButton" Icon="OpenFile" IsTabStop="False" Click="openButton_Click" HorizontalAlignment="Left">
+            <AppBarButton x:Name="openButton" x:Uid="OpenButton" Icon="OpenFile" IsTabStop="False" Click="OpenButton_Click" HorizontalAlignment="Left">
                 <AppBarButton.KeyboardAccelerators>
                     <KeyboardAccelerator Modifiers="Control" Key="O" />
                 </AppBarButton.KeyboardAccelerators>
             </AppBarButton>
-            <AppBarButton x:Name="saveButton" x:Uid="SaveButton" Icon="Save" IsTabStop="False" Click="saveButton_Click" HorizontalAlignment="Left" IsEnabled="False">
+            <AppBarButton x:Name="saveButton" x:Uid="SaveButton" Icon="Save" IsTabStop="False" Click="SaveButton_Click" HorizontalAlignment="Left" IsEnabled="False">
                 <AppBarButton.KeyboardAccelerators>
                     <KeyboardAccelerator Modifiers="None" Key="F2" />
                 </AppBarButton.KeyboardAccelerators>
             </AppBarButton>
-            <AppBarButton x:Name="saveAsButton" x:Uid="SaveAsButton" Icon="SaveLocal" IsTabStop="False" Click="saveAsButton_Click"  HorizontalAlignment="Left">
+            <AppBarButton x:Name="saveAsButton" x:Uid="SaveAsButton" Icon="SaveLocal" IsTabStop="False" Click="SaveAsButton_Click"  HorizontalAlignment="Left">
                 <AppBarButton.KeyboardAccelerators>
                     <KeyboardAccelerator Modifiers="Shift" Key="F2" />
                 </AppBarButton.KeyboardAccelerators>
             </AppBarButton>
-            <AppBarButton x:Name="editButton" x:Uid="EditButton" Icon="Rename" IsTabStop="False" Click="editButton_Click" HorizontalAlignment="Left">
+            <AppBarButton x:Name="editButton" x:Uid="EditButton" Icon="Rename" IsTabStop="False" Click="EditButton_Click" HorizontalAlignment="Left">
                 <AppBarButton.KeyboardAccelerators>
                     <KeyboardAccelerator Modifiers="Control" Key="E" />
                 </AppBarButton.KeyboardAccelerators>
             </AppBarButton>
-            <AppBarButton x:Name="refreshButton" x:Uid="RefreshButton" Icon="Refresh" IsTabStop="False" Click="refreshButton_Click" HorizontalAlignment="Left">
+            <AppBarButton x:Name="refreshButton" x:Uid="RefreshButton" Icon="Refresh" IsTabStop="False" Click="RefreshButton_Click" HorizontalAlignment="Left">
                 <AppBarButton.KeyboardAccelerators>
                     <!-- is this needed twice? -->
                     <KeyboardAccelerator Key="F5" />
                     <KeyboardAccelerator Key="F5" />
                 </AppBarButton.KeyboardAccelerators>
             </AppBarButton>
-            <AppBarButton x:Name="writeButton" x:Uid="WriteButton" Icon="Share" IsTabStop="False" Click="writeButton_Click" HorizontalAlignment="Left">
+            <AppBarButton x:Name="writeButton" x:Uid="WriteButton" Icon="Share" IsTabStop="False" Click="WriteButton_Click" HorizontalAlignment="Left">
                 <AppBarButton.KeyboardAccelerators>
                     <KeyboardAccelerator Modifiers="Control" Key="W" />
                 </AppBarButton.KeyboardAccelerators>
             </AppBarButton>
-            <AppBarButton x:Name="registryButton" x:Uid="RegistryButton" Icon="Go" IsTabStop="False" Click="registryButton_Click" HorizontalAlignment="Left">
+            <AppBarButton x:Name="registryButton" x:Uid="RegistryButton" Icon="Go" IsTabStop="False" Click="RegistryButton_Click" HorizontalAlignment="Left">
                 <AppBarButton.KeyboardAccelerators>
                     <KeyboardAccelerator Modifiers="Control" Key="R" />
                 </AppBarButton.KeyboardAccelerators>
@@ -122,8 +122,8 @@
                 VerticalAlignment="Center" 
                 IsTabStop="True"
                 TabIndex="1"
-                Checked="checkBoxTextBox_Checked" 
-                Unchecked="checkBoxTextBox_Unchecked"
+                Checked="CheckBoxTextBox_Checked" 
+                Unchecked="CheckBoxTextBox_Unchecked"
                 />
         </StackPanel>
 
@@ -142,7 +142,7 @@
             ScrollViewer.VerticalScrollBarVisibility="Visible"
             ScrollViewer.HorizontalScrollBarVisibility="Visible"
             ScrollViewer.HorizontalScrollMode="Enabled"
-            ItemInvoked="treeView_ItemInvoked"
+            ItemInvoked="TreeView_ItemInvoked"
             Padding="0,0,0,0"
             IsTabStop="False"
             TabIndex="2"

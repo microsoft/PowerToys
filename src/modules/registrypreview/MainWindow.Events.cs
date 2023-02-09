@@ -1,16 +1,20 @@
-﻿using CommunityToolkit.WinUI.UI.Controls;
-using Microsoft.UI.Xaml;
-using Microsoft.UI.Xaml.Controls;
-using Microsoft.UI.Xaml.Data;
+﻿// Copyright (c) Microsoft Corporation
+// The Microsoft Corporation licenses this file to you under the MIT license.
+// See the LICENSE file in the project root for more information.
+
 using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
-using WinRT.Interop;
+using CommunityToolkit.WinUI.UI.Controls;
+using Microsoft.UI.Xaml;
+using Microsoft.UI.Xaml.Controls;
+using Microsoft.UI.Xaml.Data;
 using Windows.Foundation.Metadata;
+using Windows.Graphics;
 using Windows.Storage;
 using Windows.Storage.Pickers;
-using Windows.Graphics;
+using WinRT.Interop;
 
 namespace RegistryPreview
 {
@@ -19,18 +23,17 @@ namespace RegistryPreview
         /// <summary>
         /// Event handler to grab the main window's size and position before it closes
         /// </summary>
-        private void m_appWindow_Closing(Microsoft.UI.Windowing.AppWindow sender, Microsoft.UI.Windowing.AppWindowClosingEventArgs args)
+        private void AppWindow_Closing(Microsoft.UI.Windowing.AppWindow sender, Microsoft.UI.Windowing.AppWindowClosingEventArgs args)
         {
-            m_applicationDataContainer.Values["m_appWindow.Position.X"] = (int)m_appWindow.Position.X;
-            m_applicationDataContainer.Values["m_appWindow.Position.Y"] = (int)m_appWindow.Position.Y;
-            m_applicationDataContainer.Values["m_appWindow.Size.Width"] = (int)m_appWindow.Size.Width;
-            m_applicationDataContainer.Values["m_appWindow.Size.Height"] = (int)m_appWindow.Size.Height;
+            applicationDataContainer.Values["appWindow.Position.X"] = (int)appWindow.Position.X;
+            applicationDataContainer.Values["appWindow.Position.Y"] = (int)appWindow.Position.Y;
+            applicationDataContainer.Values["appWindow.Size.Width"] = (int)appWindow.Size.Width;
+            applicationDataContainer.Values["appWindow.Size.Height"] = (int)appWindow.Size.Height;
         }
-
 
         /// <summary>
         /// Event that is will prevent the app from closing if the "save file" flag is active
-        /// </summary>   
+        /// </summary>
         public void Window_Closed(object sender, WindowEventArgs args)
         {
             // Only block closing if the REG file has been edited but not yet saved
@@ -41,42 +44,41 @@ namespace RegistryPreview
 
                 // ask the user if they want to save, discard or cancel the close; strings must be loaded here and passed to avoid timing issues
                 HandleDirtyClosing(
-                    m_resourceLoader.GetString("YesNoCancelDialogTitle"),
-                    m_resourceLoader.GetString("YesNoCancelDialogContent"),
-                    m_resourceLoader.GetString("YesNoCancelDialogPrimaryButtonText"),
-                    m_resourceLoader.GetString("YesNoCancelDialogSecondaryButtonText"),
-                    m_resourceLoader.GetString("YesNoCancelDialogCloseButtonText")
-                    );
-
+                    resourceLoader.GetString("YesNoCancelDialogTitle"),
+                    resourceLoader.GetString("YesNoCancelDialogContent"),
+                    resourceLoader.GetString("YesNoCancelDialogPrimaryButtonText"),
+                    resourceLoader.GetString("YesNoCancelDialogSecondaryButtonText"),
+                    resourceLoader.GetString("YesNoCancelDialogCloseButtonText"));
             }
 
             // Save app settings
-            m_applicationDataContainer.Values["checkBoxTextBox.Checked"] = checkBoxTextBox.IsChecked;
+            applicationDataContainer.Values["checkBoxTextBox.Checked"] = checkBoxTextBox.IsChecked;
         }
 
         /// <summary>
         /// Event that gets fired after the visual tree has been fully loaded; the app opens the reg file from here so it can show a message box successfully
-        /// </summary>   
-        private void gridPreview_Loaded(object sender, RoutedEventArgs e)
+        /// </summary>
+        private void GridPreview_Loaded(object sender, RoutedEventArgs e)
         {
             // static flag to track whether the Visual Tree is ready - if the main Grid has been loaded, the tree is ready.
-            m_visualTreeReady = true;
+            visualTreeReady = true;
 
             // Load and restore app settings
-            if (m_applicationDataContainer.Values["checkBoxTextBox.Checked"] != null)
+            if (applicationDataContainer.Values["checkBoxTextBox.Checked"] != null)
             {
-                checkBoxTextBox.IsChecked = (bool)m_applicationDataContainer.Values["checkBoxTextBox.Checked"];
+                checkBoxTextBox.IsChecked = (bool)applicationDataContainer.Values["checkBoxTextBox.Checked"];
             }
 
             // Check to see if the REG file was opened and parsed successfully
-            if (OpenRegistryFile(App.s_Filename) == false)
+            if (OpenRegistryFile(App.AppFilename) == false)
             {
                 // Allow Refresh and Edit to be enabled because a broken Reg file might be fixable
                 UpdateToolBarAndUI(false, true, true);
-                UpdateWindowTitle(m_resourceLoader.GetString("InvalidRegistryFileTitle"));
+                UpdateWindowTitle(resourceLoader.GetString("InvalidRegistryFileTitle"));
                 return;
             }
 
+            /*
             // Some days you have to select the node yourself - unclear as to why, but why lose this neat code?
             //if (treeView.RootNodes.Count > 0)
             //{
@@ -89,47 +91,48 @@ namespace RegistryPreview
             //        item.Focus(FocusState.Programmatic);
             //    }
             //}
+            */
 
             // resize the window
-            if (m_applicationDataContainer.Values["m_appWindow.Size.Width"] != null)
+            if (applicationDataContainer.Values["appWindow.Size.Width"] != null)
             {
                 SizeInt32 size;
-                size.Width = (int)m_applicationDataContainer.Values["m_appWindow.Size.Width"];
-                size.Height = (int)m_applicationDataContainer.Values["m_appWindow.Size.Height"];
-                m_appWindow.Resize(size);
+                size.Width = (int)applicationDataContainer.Values["appWindow.Size.Width"];
+                size.Height = (int)applicationDataContainer.Values["appWindow.Size.Height"];
+                appWindow.Resize(size);
             }
-            
+
             // reposition the window
-            if (m_applicationDataContainer.Values["m_appWindow.Position.X"] != null)
+            if (applicationDataContainer.Values["appWindow.Position.X"] != null)
             {
                 PointInt32 point;
-                point.X = (int)m_applicationDataContainer.Values["m_appWindow.Position.X"];
-                point.Y = (int)m_applicationDataContainer.Values["m_appWindow.Position.Y"];
-                m_appWindow.Move(point);
+                point.X = (int)applicationDataContainer.Values["appWindow.Position.X"];
+                point.Y = (int)applicationDataContainer.Values["appWindow.Position.Y"];
+                appWindow.Move(point);
             }
 
             textBox.Focus(FocusState.Programmatic);
 
             // hookup the event handler here to avoid accidental ability to Save
-            textBox.TextChanged += textBox_TextChanged;
+            textBox.TextChanged += TextBox_TextChanged;
         }
 
         /// <summary>
         /// Uses a picker to select a new file to open
-        /// </summary>   
-        private async void openButton_Click(object sender, RoutedEventArgs e)
+        /// </summary>
+        private async void OpenButton_Click(object sender, RoutedEventArgs e)
         {
             // Check to see if the current file has been saved
             if (saveButton.IsEnabled)
             {
                 ContentDialog contentDialog = new ContentDialog()
                 {
-                    Title = m_resourceLoader.GetString("YesNoCancelDialogTitle"),
-                    Content = m_resourceLoader.GetString("YesNoCancelDialogContent"),
-                    PrimaryButtonText = m_resourceLoader.GetString("YesNoCancelDialogPrimaryButtonText"),
-                    SecondaryButtonText = m_resourceLoader.GetString("YesNoCancelDialogSecondaryButtonText"),
-                    CloseButtonText = m_resourceLoader.GetString("YesNoCancelDialogCloseButtonText"),
-                    DefaultButton = ContentDialogButton.Primary
+                    Title = resourceLoader.GetString("YesNoCancelDialogTitle"),
+                    Content = resourceLoader.GetString("YesNoCancelDialogContent"),
+                    PrimaryButtonText = resourceLoader.GetString("YesNoCancelDialogPrimaryButtonText"),
+                    SecondaryButtonText = resourceLoader.GetString("YesNoCancelDialogSecondaryButtonText"),
+                    CloseButtonText = resourceLoader.GetString("YesNoCancelDialogCloseButtonText"),
+                    DefaultButton = ContentDialogButton.Primary,
                 };
 
                 // Use this code to associate the dialog to the appropriate AppWindow by setting
@@ -159,7 +162,7 @@ namespace RegistryPreview
             // Pull in a new REG file
             FileOpenPicker fileOpenPicker = new FileOpenPicker();
             fileOpenPicker.ViewMode = PickerViewMode.List;
-            fileOpenPicker.CommitButtonText = m_resourceLoader.GetString("OpenButtonText");
+            fileOpenPicker.CommitButtonText = resourceLoader.GetString("OpenButtonText");
             fileOpenPicker.SuggestedStartLocation = PickerLocationId.DocumentsLibrary;
             fileOpenPicker.FileTypeFilter.Add(".reg");
 
@@ -172,38 +175,38 @@ namespace RegistryPreview
             if (storageFile != null)
             {
                 // mute the TextChanged handler to make for clean UI
-                textBox.TextChanged -= textBox_TextChanged;
- 
-                App.s_Filename = storageFile.Path;
-                UpdateToolBarAndUI(OpenRegistryFile(App.s_Filename));
+                textBox.TextChanged -= TextBox_TextChanged;
+
+                App.AppFilename = storageFile.Path;
+                UpdateToolBarAndUI(OpenRegistryFile(App.AppFilename));
 
                 // disable the Save button as it's a new file
                 saveButton.IsEnabled = false;
 
                 // Restore the event handler as we're loaded
-                textBox.TextChanged += textBox_TextChanged;
+                textBox.TextChanged += TextBox_TextChanged;
             }
         }
 
         /// <summary>
         /// Saves the currently opened file in place
-        /// </summary>   
-        private void saveButton_Click(object sender, RoutedEventArgs e)
+        /// </summary>
+        private void SaveButton_Click(object sender, RoutedEventArgs e)
         {
             SaveFile();
         }
 
         /// <summary>
         /// Uses a picker to save out a copy of the current reg file
-        /// </summary>   
-        private async void saveAsButton_Click(object sender, RoutedEventArgs e)
+        /// </summary>
+        private async void SaveAsButton_Click(object sender, RoutedEventArgs e)
         {
             // Save out a new REG file and then open it
             FileSavePicker fileSavePicker = new FileSavePicker();
-            fileSavePicker.CommitButtonText = m_resourceLoader.GetString("SaveButtonText");
+            fileSavePicker.CommitButtonText = resourceLoader.GetString("SaveButtonText");
             fileSavePicker.SuggestedStartLocation = PickerLocationId.DocumentsLibrary;
-            fileSavePicker.FileTypeChoices.Add("Registry file", new List<String>() { ".reg" });
-            fileSavePicker.SuggestedFileName = m_resourceLoader.GetString("SuggestFileName");
+            fileSavePicker.FileTypeChoices.Add("Registry file", new List<string>() { ".reg" });
+            fileSavePicker.SuggestedFileName = resourceLoader.GetString("SuggestFileName");
 
             // Get the HWND so we an save the modal
             IntPtr hWnd = WinRT.Interop.WindowNative.GetWindowHandle(this);
@@ -213,54 +216,54 @@ namespace RegistryPreview
 
             if (storageFile != null)
             {
-                App.s_Filename = storageFile.Path;
+                App.AppFilename = storageFile.Path;
                 SaveFile();
-                UpdateToolBarAndUI(OpenRegistryFile(App.s_Filename));
+                UpdateToolBarAndUI(OpenRegistryFile(App.AppFilename));
             }
         }
 
         /// <summary>
         /// Reloads the current REG file from storage
-        /// </summary>   
-        private void refreshButton_Click(object sender, RoutedEventArgs e)
+        /// </summary>
+        private void RefreshButton_Click(object sender, RoutedEventArgs e)
         {
             // mute the TextChanged handler to make for clean UI
-            textBox.TextChanged -= textBox_TextChanged;
+            textBox.TextChanged -= TextBox_TextChanged;
 
             // reload the current Registry file and update the toolbar accordingly.
-            UpdateToolBarAndUI(OpenRegistryFile(App.s_Filename), true, true);
+            UpdateToolBarAndUI(OpenRegistryFile(App.AppFilename), true, true);
 
             saveButton.IsEnabled = false;
 
             // restore the TextChanged handler
-            textBox.TextChanged += textBox_TextChanged;
+            textBox.TextChanged += TextBox_TextChanged;
         }
 
         /// <summary>
         /// Opens the Registry Editor; UAC is handled by the request to open
-        /// </summary>   
-        private void registryButton_Click(object sender, RoutedEventArgs e)
+        /// </summary>
+        private void RegistryButton_Click(object sender, RoutedEventArgs e)
         {
             // pass in an empty string as we have no file to open
-            OpenRegistryEditor("");
+            OpenRegistryEditor(string.Empty);
         }
 
         /// <summary>
         /// Merges the currently saved file into the Registry Editor; UAC is handled by the request to open
-        /// </summary>   
-        private async void writeButton_Click(object sender, RoutedEventArgs e)
+        /// </summary>
+        private async void WriteButton_Click(object sender, RoutedEventArgs e)
         {
             // Check to see if the current file has been saved
             if (saveButton.IsEnabled)
             {
                 ContentDialog contentDialog = new ContentDialog()
                 {
-                    Title = m_resourceLoader.GetString("YesNoCancelDialogTitle"),
-                    Content = m_resourceLoader.GetString("YesNoCancelDialogContent"),
-                    PrimaryButtonText = m_resourceLoader.GetString("YesNoCancelDialogPrimaryButtonText"),
-                    SecondaryButtonText = m_resourceLoader.GetString("YesNoCancelDialogSecondaryButtonText"),
-                    CloseButtonText = m_resourceLoader.GetString("YesNoCancelDialogCloseButtonText"),
-                    DefaultButton = ContentDialogButton.Primary
+                    Title = resourceLoader.GetString("YesNoCancelDialogTitle"),
+                    Content = resourceLoader.GetString("YesNoCancelDialogContent"),
+                    PrimaryButtonText = resourceLoader.GetString("YesNoCancelDialogPrimaryButtonText"),
+                    SecondaryButtonText = resourceLoader.GetString("YesNoCancelDialogSecondaryButtonText"),
+                    CloseButtonText = resourceLoader.GetString("YesNoCancelDialogCloseButtonText"),
+                    DefaultButton = ContentDialogButton.Primary,
                 };
 
                 // Use this code to associate the dialog to the appropriate AppWindow by setting
@@ -288,17 +291,17 @@ namespace RegistryPreview
             }
 
             // pass in the filename so we can edit the current file
-            OpenRegistryEditor(App.s_Filename);
+            OpenRegistryEditor(App.AppFilename);
         }
 
         /// <summary>
         /// Opens the currently saved file in the PC's default REG file editor (often Notepad)
-        /// </summary>   
-        private void editButton_Click(object sender, RoutedEventArgs e)
+        /// </summary>
+        private void EditButton_Click(object sender, RoutedEventArgs e)
         {
             // use the REG file's filename and verb so we can respect the selected editor
             Process process = new Process();
-            process.StartInfo.FileName= String.Format("\"{0}\"", App.s_Filename);
+            process.StartInfo.FileName = string.Format("\"{0}\"", App.AppFilename);
             process.StartInfo.Verb = "Edit";
             process.StartInfo.UseShellExecute = true;
 
@@ -309,18 +312,17 @@ namespace RegistryPreview
             catch
             {
                 ShowMessageBox(
-                    m_resourceLoader.GetString("ErrorDialogTitle"),
-                    m_resourceLoader.GetString("FileEditorError"),
-                    m_resourceLoader.GetString("OkButtonText")
-                );
+                    resourceLoader.GetString("ErrorDialogTitle"),
+                    resourceLoader.GetString("FileEditorError"),
+                    resourceLoader.GetString("OkButtonText"));
             }
         }
 
         /// <summary>
         /// Trigger that fires when a node in treeView is clicked and which populates dataGrid
         /// Can also be fired from elsewhere in the code
-        /// </summary>   
-        private void treeView_ItemInvoked(TreeView sender, TreeViewItemInvokedEventArgs args)
+        /// </summary>
+        private void TreeView_ItemInvoked(TreeView sender, TreeViewItemInvokedEventArgs args)
         {
             TreeViewItemInvokedEventArgs localArgs = args as TreeViewItemInvokedEventArgs;
             TreeViewNode treeViewNode = null;
@@ -349,23 +351,23 @@ namespace RegistryPreview
 
             // if there WAS something in the Tag property, cast it to a list and Populate the ListView
             ArrayList arrayList = (ArrayList)registryKey.Tag;
-            m_listRegistryValues = new List<RegistryValue>();
+            listRegistryValues = new List<RegistryValue>();
 
             for (int i = 0; i < arrayList.Count; i++)
             {
                 RegistryValue listViewItem = (RegistryValue)arrayList[i];
-                m_listRegistryValues.Add(listViewItem);
+                listRegistryValues.Add(listViewItem);
             }
 
             // create a new binding for dataGrid and reattach it, updating the rows
-            Binding ListRegistryValuesBinding = new Binding { Source = m_listRegistryValues };
-            dataGrid.SetBinding(DataGrid.ItemsSourceProperty, ListRegistryValuesBinding);
+            Binding listRegistryValuesBinding = new Binding { Source = listRegistryValues };
+            dataGrid.SetBinding(DataGrid.ItemsSourceProperty, listRegistryValuesBinding);
         }
 
         /// <summary>
         /// When the text in textBox changes, reload treeView and possibly dataGrid and reset the save button
-        /// </summary>   
-        private void textBox_TextChanged(object sender, TextChangedEventArgs e)
+        /// </summary>
+        private void TextBox_TextChanged(object sender, TextChangedEventArgs e)
         {
             RefreshRegistryFile();
             saveButton.IsEnabled = true;
@@ -373,20 +375,20 @@ namespace RegistryPreview
 
         /// <summary>
         /// Readonly checkbox is checked, set textBox to read only; also update the font color so it has a hint of being "disabled"
-        /// </summary>   
-        private void checkBoxTextBox_Checked(object sender, RoutedEventArgs e)
+        /// </summary>
+        private void CheckBoxTextBox_Checked(object sender, RoutedEventArgs e)
         {
             textBox.IsReadOnly = true;
-            textBox.Foreground = m_solidColorBrushReadOnly;
+            textBox.Foreground = solidColorBrushReadOnly;
         }
 
         /// <summary>
         /// Readonly checkbox is unchecked, set textBox to be editable; also update the font color back to black
-        /// </summary>   
-        private void checkBoxTextBox_Unchecked(object sender, RoutedEventArgs e)
+        /// </summary>
+        private void CheckBoxTextBox_Unchecked(object sender, RoutedEventArgs e)
         {
             textBox.IsReadOnly = false;
-            textBox.Foreground = m_solidColorBrushNormal;
+            textBox.Foreground = solidColorBrushNormal;
         }
     }
 }

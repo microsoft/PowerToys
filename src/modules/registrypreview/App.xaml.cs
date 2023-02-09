@@ -1,6 +1,11 @@
-﻿using Microsoft.UI.Xaml;
+﻿// Copyright (c) Microsoft Corporation
+// The Microsoft Corporation licenses this file to you under the MIT license.
+// See the LICENSE file in the project root for more information.
+
 using System;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
+using Microsoft.UI.Xaml;
 using Windows.ApplicationModel.Activation;
 using LaunchActivatedEventArgs = Windows.ApplicationModel.Activation.LaunchActivatedEventArgs;
 
@@ -12,8 +17,7 @@ namespace RegistryPreview
     public partial class App : Application
     {
         /// <summary>
-        /// Initializes the singleton application object.  This is the first line of authored code
-        /// executed, and as such is the logical equivalent of main() or WinMain().
+        /// Initializes a new instance of the <see cref="App"/> class.
         /// </summary>
         public App()
         {
@@ -33,25 +37,27 @@ namespace RegistryPreview
             if (cmdArgs == null)
             {
                 // Covers the double click exe scenario and treated as no file loaded
-                s_Filename = "";
+                AppFilename = string.Empty;
             }
             else if (cmdArgs.Length == 2)
             {
                 // GetCommandLineArgs() send in the called EXE as 0 and the selected filename as 1
-                s_Filename = cmdArgs[1];
+                AppFilename = cmdArgs[1];
             }
-            else 
+            else
             {
                 // Anything else should be treated as no file loaded
-                s_Filename = "";
+                AppFilename = string.Empty;
             }
 
             // Start the application
-            m_window = new MainWindow();
-            m_window.Activate();
+            appWindow = new MainWindow();
+            appWindow.Activate();
         }
 
-        private Window m_window;
-        public static string s_Filename= "";
+        private Window appWindow;
+
+        [SuppressMessage("Microsoft.StyleCop.CSharp.OrderingRules", "SA1401: FieldsMustBePrivate", Justification = "TODO: consider making it a property")]
+        public static string AppFilename = string.Empty;
     }
 }

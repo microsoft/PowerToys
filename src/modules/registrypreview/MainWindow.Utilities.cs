@@ -1,12 +1,16 @@
-using Microsoft.UI.Input;
-using Microsoft.UI.Xaml;
-using Microsoft.UI.Xaml.Controls;
+// Copyright (c) Microsoft Corporation
+// The Microsoft Corporation licenses this file to you under the MIT license.
+// See the LICENSE file in the project root for more information.
+
 using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Reflection;
+using Microsoft.UI.Input;
+using Microsoft.UI.Xaml;
+using Microsoft.UI.Xaml.Controls;
 using Windows.Foundation.Metadata;
 
 namespace RegistryPreview
@@ -15,12 +19,12 @@ namespace RegistryPreview
     {
         /// <summary>
         /// Method that opens and processes the passed in file name; expected to be an absolute path and a first time open
-        /// </summary>   
+        /// </summary>
         private bool OpenRegistryFile(string filename)
         {
             // Disable parts of the UI that can cause trouble when loading
             ChangeCursor(gridPreview, true);
-            textBox.Text = "";
+            textBox.Text = string.Empty;
 
             // clear the treeView and dataGrid no matter what
             treeView.RootNodes.Clear();
@@ -41,20 +45,20 @@ namespace RegistryPreview
                 fileStream = new FileStream(filename, fileStreamOptions);
                 StreamReader streamReader = new StreamReader(fileStream);
 
-                String filenameText = streamReader.ReadToEnd();
+                string filenameText = streamReader.ReadToEnd();
                 textBox.Text = filenameText;
                 streamReader.Close();
             }
             catch
             {
                 // restore TextChanged handler to make for clean UI
-                textBox.TextChanged += textBox_TextChanged;
+                textBox.TextChanged += TextBox_TextChanged;
 
                 // Reset the cursor but leave textBox disabled as no content got loaded
                 ChangeCursor(gridPreview, false);
                 return false;
             }
-            finally 
+            finally
             {
                 // clean up no matter what
                 if (fileStream != null)
@@ -81,7 +85,7 @@ namespace RegistryPreview
 
         /// <summary>
         /// Method that re-opens and processes the filename the app already knows about; expected to not be a first time open
-        /// </summary>   
+        /// </summary>
         private void RefreshRegistryFile()
         {
             // Disable parts of the UI that can cause trouble when loading
@@ -97,20 +101,20 @@ namespace RegistryPreview
             // the existing text is still in textBox so parse the data again
             ParseRegistryFile(textBox.Text);
 
-            // check to see if there was a key in treeView before the refresh happened 
+            // check to see if there was a key in treeView before the refresh happened
             if (currentNode != null)
             {
                 // since there is a valid node, get the FullPath of the key that was selected
-                String selectedFullPath = ((RegistryKey)currentNode.Content).FullPath;
+                string selectedFullPath = ((RegistryKey)currentNode.Content).FullPath;
 
                 // check to see if we still have the key in the new Dictionary of keys
-                if (m_mapRegistryKeys .ContainsKey(selectedFullPath))
+                if (mapRegistryKeys.ContainsKey(selectedFullPath))
                 {
                     // we found it! select it in the tree and pretend it was selected
                     TreeViewNode treeViewNode;
-                    m_mapRegistryKeys .TryGetValue(selectedFullPath, out treeViewNode);
+                    mapRegistryKeys.TryGetValue(selectedFullPath, out treeViewNode);
                     treeView.SelectedNode = treeViewNode;
-                    treeView_ItemInvoked(treeView, null);
+                    TreeView_ItemInvoked(treeView, null);
                 }
                 else
                 {
@@ -136,27 +140,27 @@ namespace RegistryPreview
 
         /// <summary>
         /// Parses the text that is passed in, which should be the same text that's in textBox
-        /// </summary>   
+        /// </summary>
         private bool ParseRegistryFile(string filenameText)
         {
             // if this is a not-first open, clear out the Dictionary of nodes
-            if (m_mapRegistryKeys  != null)
+            if (mapRegistryKeys != null)
             {
-                m_mapRegistryKeys .Clear();
-                m_mapRegistryKeys  = null;
+                mapRegistryKeys.Clear();
+                mapRegistryKeys = null;
             }
 
             // set up a new dictionary
-            m_mapRegistryKeys  = new Dictionary<String, TreeViewNode>();
+            mapRegistryKeys = new Dictionary<string, TreeViewNode>();
 
             // As we'll be processing the text one line at a time, this string will be the current line
-            String registryLine;
+            string registryLine;
 
             // Brute force editing: for textBox to show Cr-Lf corrected, we need to strip out the \n's
             filenameText = filenameText.Replace("\r\n", "\r");
 
             // split apart all of the text in textBox, where one element in the array represents one line
-            String[] registryLines = filenameText.Split("\r");
+            string[] registryLines = filenameText.Split("\r");
             if (registryLines.Length <= 1)
             {
                 // after the split, we have no lines so get out
@@ -171,11 +175,11 @@ namespace RegistryPreview
             // make sure that this is a valid REG file, based on the first line of the file
             switch (registryLine)
             {
-                case REGISTRY_HEADER_4:
-                case REGISTRY_HEADER_5:
+                case REGISTRYHEADER4:
+                case REGISTRYHEADER5:
                     break;
                 default:
-                    ShowMessageBox(APP_NAME, App.s_Filename + m_resourceLoader.GetString("InvalidRegistryFile"), m_resourceLoader.GetString("OkButtonText"));
+                    ShowMessageBox(APPNAME, App.AppFilename + resourceLoader.GetString("InvalidRegistryFile"), resourceLoader.GetString("OkButtonText"));
                     ChangeCursor(gridPreview, false);
                     return false;
             }
@@ -195,12 +199,12 @@ namespace RegistryPreview
                 if (registryLine.StartsWith("["))
                 {
                     // this is a key!
-                    registryLine = registryLine.Replace("[", "");
-                    registryLine = registryLine.Replace("]", "");
+                    registryLine = registryLine.Replace("[", string.Empty);
+                    registryLine = registryLine.Replace("]", string.Empty);
 
                     treeViewNode = AddTextToTree(registryLine);
                 }
-                else if ((registryLine.StartsWith("\"")) || (registryLine.StartsWith("@")))
+                else if (registryLine.StartsWith("\"") || registryLine.StartsWith("@"))
                 {
                     // this is a named value or default value (denoted with the @)
 
@@ -209,14 +213,14 @@ namespace RegistryPreview
                     if ((equal < 0) || (equal > registryLine.Length - 1))
                     {
                         // something is very wrong
-                        Debug.WriteLine(String.Format("SOMETHING WENT WRONG: {0}", registryLine));
+                        Debug.WriteLine(string.Format("SOMETHING WENT WRONG: {0}", registryLine));
                         break;
                     }
 
                     // set the name and the value
-                    String name = registryLine.Substring(0, equal);
-                    name = name.Replace("\"", "");
-                    String value = registryLine.Substring(equal + 1);
+                    string name = registryLine.Substring(0, equal);
+                    name = name.Replace("\"", string.Empty);
+                    string value = registryLine.Substring(equal + 1);
 
                     if (name == "@")
                     {
@@ -224,12 +228,13 @@ namespace RegistryPreview
                     }
 
                     // Create a new listview item that will be used to display the value
-                    registryValue = new RegistryValue(name, "REG_SZ", "");
+                    registryValue = new RegistryValue(name, "REG_SZ", string.Empty);
 
                     // if the first character is a " then this is a string value; get rid of the first and last "
                     if (value.StartsWith("\""))
                     {
                         value = value.Remove(0, 1);
+
                         // handles the case where someone is typing a new line with a REG_SZ value
                         if (value.Length > 0)
                         {
@@ -241,27 +246,27 @@ namespace RegistryPreview
                     if (value.StartsWith("dword:"))
                     {
                         registryValue.Type = "REG_DWORD";
-                        value = value.Replace("dword:", "");
+                        value = value.Replace("dword:", string.Empty);
                     }
                     else if (value.StartsWith("hex(b):"))
                     {
                         registryValue.Type = "REG_QWORD";
-                        value = value.Replace("hex(b):", "");
+                        value = value.Replace("hex(b):", string.Empty);
                     }
                     else if (value.StartsWith("hex:"))
                     {
                         registryValue.Type = "REG_BINARY";
-                        value = value.Replace("hex:", "");
+                        value = value.Replace("hex:", string.Empty);
                     }
                     else if (value.StartsWith("hex(2):"))
                     {
                         registryValue.Type = "REG_EXAND_SZ";
-                        value = value.Replace("hex(2):", "");
+                        value = value.Replace("hex(2):", string.Empty);
                     }
                     else if (value.StartsWith("hex(7):"))
                     {
                         registryValue.Type = "REG_MULTI_SZ";
-                        value = value.Replace("hex(7):", "");
+                        value = value.Replace("hex(7):", string.Empty);
                     }
                     else
                     {
@@ -279,6 +284,7 @@ namespace RegistryPreview
                             ChangeCursor(gridPreview, false);
                             return false;
                         }
+
                         registryLine = registryLines[index];
                         registryLine = registryLine.TrimStart();
                         value += registryLine;
@@ -292,7 +298,7 @@ namespace RegistryPreview
                     registryValue.Value = value;
 
                     // We're going to store this ListViewItem in an ArrayList which will then
-                    // be attached to the most recently returned TreeNode that came back from 
+                    // be attached to the most recently returned TreeNode that came back from
                     // AddTextToTree.  If there's already a list there, we will use that list and
                     // add our new node to it.
                     ArrayList arrayList = null;
@@ -302,13 +308,15 @@ namespace RegistryPreview
                     }
                     else
                     {
-                        arrayList = (ArrayList)(((RegistryKey)treeViewNode.Content).Tag);
+                        arrayList = (ArrayList)((RegistryKey)treeViewNode.Content).Tag;
                     }
+
                     arrayList.Add(registryValue);
 
                     // shove the updated array into the Tag property
                     ((RegistryKey)treeViewNode.Content).Tag = arrayList;
                 }
+
                 // if we get here, it's not a Key (starts with [) or Value (starts with " or @) so it's likely waste (comments that start with ; fall out here)
 
                 // read the next line from the REG file
@@ -330,23 +338,23 @@ namespace RegistryPreview
 
         /// <summary>
         /// Adds the REG file that's being currently being viewed to the app's title bar
-        /// </summary>   
-        private void UpdateWindowTitle(String filename)
+        /// </summary>
+        private void UpdateWindowTitle(string filename)
         {
-            String[] file = filename.Split('\\');
+            string[] file = filename.Split('\\');
             if (file.Length > 0)
             {
-                m_appWindow.Title = file[file.Length - 1] + " - " + APP_NAME;
+                appWindow.Title = file[file.Length - 1] + " - " + APPNAME;
             }
             else
             {
-                m_appWindow.Title = filename + " - " + APP_NAME;
+                appWindow.Title = filename + " - " + APPNAME;
             }
         }
 
         /// <summary>
         /// Helper method that assumes everything is enabled/disabled together
-        /// </summary>   
+        /// </summary>
         private void UpdateToolBarAndUI(bool enable)
         {
             UpdateToolBarAndUI(enable, enable, enable);
@@ -355,42 +363,42 @@ namespace RegistryPreview
         /// <summary>
         /// Enable command bar buttons and textBox.
         /// Note that writeButton, saveAsButton, and textBox all update with the same value on purpose
-        /// </summary>   
+        /// </summary>
         private void UpdateToolBarAndUI(bool enableWrite, bool enableRefresh, bool enableEdit)
         {
             refreshButton.IsEnabled = enableRefresh;
             editButton.IsEnabled = enableEdit;
             writeButton.IsEnabled = enableWrite;
-            saveAsButton.IsEnabled = enableEdit; 
+            saveAsButton.IsEnabled = enableEdit;
         }
 
         /// <summary>
         /// Helper method that creates a new TreeView node, attaches it to a parent if any, and then passes the new node back to the caller
         /// mapRegistryKeys is a collection of all of the [] lines in the file
         /// keys comes from the REG file and represents a bunch of nodes
-        /// </summary>   
-        private TreeViewNode AddTextToTree(String keys)
+        /// </summary>
+        private TreeViewNode AddTextToTree(string keys)
         {
-            String[] individualKeys = keys.Split('\\');
-            String fullPath = keys;
+            string[] individualKeys = keys.Split('\\');
+            string fullPath = keys;
             TreeViewNode returnNewNode = null, newNode = null, previousNode = null;
 
             // Walk the list of keys backwards
-            for (int i=individualKeys.Length - 1; i >= 0; i--)
+            for (int i = individualKeys.Length - 1; i >= 0; i--)
             {
                 // First check the dictionary, and return the current node if it already exists
-                if (m_mapRegistryKeys .ContainsKey(fullPath))
+                if (mapRegistryKeys.ContainsKey(fullPath))
                 {
                     // was a new node created?
                     if (returnNewNode == null)
                     {
                         // if no new nodes have been created, send out the node we should have already
-                        m_mapRegistryKeys .TryGetValue(fullPath, out returnNewNode);
+                        mapRegistryKeys.TryGetValue(fullPath, out returnNewNode);
                     }
                     else
                     {
                         // as a new node was created, hook it up to this found parent
-                        m_mapRegistryKeys .TryGetValue(fullPath, out newNode);
+                        mapRegistryKeys.TryGetValue(fullPath, out newNode);
                         newNode.Children.Add(previousNode);
                     }
 
@@ -401,9 +409,9 @@ namespace RegistryPreview
                 // Since the path is not in the tree, create a new node and add it to the dictionary
                 RegistryKey registryKey = new RegistryKey(individualKeys[i], fullPath);
                 newNode = new TreeViewNode() { Content = registryKey, IsExpanded = true };
-                m_mapRegistryKeys .Add(fullPath, newNode);
+                mapRegistryKeys.Add(fullPath, newNode);
 
-                // if this is the first new node we're creating, we need to return it to the caller 
+                // if this is the first new node we're creating, we need to return it to the caller
                 if (previousNode == null)
                 {
                     // capture the first node so it can be returned
@@ -417,8 +425,8 @@ namespace RegistryPreview
 
                 // before moving onto the next node, tag the previous node and update the path
                 previousNode = newNode;
-                fullPath = fullPath.Replace(String.Format(@"\{0}", individualKeys[i]), "");
-                
+                fullPath = fullPath.Replace(string.Format(@"\{0}", individualKeys[i]), string.Empty);
+
                 // One last check: if we get here, the parent of this node is not yet in the tree, so we need to add it as a RootNode
                 if (i == 0)
                 {
@@ -426,19 +434,20 @@ namespace RegistryPreview
                     treeView.UpdateLayout();
                 }
             }
+
             return returnNewNode;
         }
 
         /// <summary>
         /// Wrapper method that shows a simple one-button message box, parented by the main application window
         /// </summary>
-        private async void ShowMessageBox(String title, String content, String closeButtonText)
+        private async void ShowMessageBox(string title, string content, string closeButtonText)
         {
             ContentDialog contentDialog = new ContentDialog()
             {
                 Title = title,
                 Content = content,
-                CloseButtonText = closeButtonText
+                CloseButtonText = closeButtonText,
             };
 
             // Use this code to associate the dialog to the appropriate AppWindow by setting
@@ -447,13 +456,14 @@ namespace RegistryPreview
             {
                 contentDialog.XamlRoot = this.Content.XamlRoot;
             }
+
             await contentDialog.ShowAsync();
         }
 
         /// <summary>
         /// Wrapper method that shows a Save/Don't Save/Cancel message box, parented by the main application window and shown when closing the app
         /// </summary>
-        private async void HandleDirtyClosing(String title, String content, String primaryButtonText, string secondaryButtonText, String closeButtonText)
+        private async void HandleDirtyClosing(string title, string content, string primaryButtonText, string secondaryButtonText, string closeButtonText)
         {
             ContentDialog contentDialog = new ContentDialog()
             {
@@ -462,7 +472,7 @@ namespace RegistryPreview
                 PrimaryButtonText = primaryButtonText,
                 SecondaryButtonText = secondaryButtonText,
                 CloseButtonText = closeButtonText,
-                DefaultButton = ContentDialogButton.Primary
+                DefaultButton = ContentDialogButton.Primary,
             };
 
             // Use this code to associate the dialog to the appropriate AppWindow by setting
@@ -496,7 +506,7 @@ namespace RegistryPreview
         /// <summary>
         /// Method will open the Registry Editor or merge the current REG file into the Registry via the Editor
         /// Process will prompt for elevation if it needs it.
-        /// </summary>   
+        /// </summary>
         private void OpenRegistryEditor(string fileMerge)
         {
             Process process = new Process();
@@ -505,7 +515,7 @@ namespace RegistryPreview
             if (File.Exists(fileMerge))
             {
                 // If Merge was called, pass in the filename as a param to the Editor
-                process.StartInfo.Arguments = String.Format("\"{0}\"", fileMerge);
+                process.StartInfo.Arguments = string.Format("\"{0}\"", fileMerge);
             }
 
             try
@@ -515,21 +525,20 @@ namespace RegistryPreview
             catch
             {
                 ShowMessageBox(
-                    m_resourceLoader.GetString("UACDialogTitle"),
-                    m_resourceLoader.GetString("UACDialogError"),
-                    m_resourceLoader.GetString("OkButtonText")
-                );
+                    resourceLoader.GetString("UACDialogTitle"),
+                    resourceLoader.GetString("UACDialogError"),
+                    resourceLoader.GetString("OkButtonText"));
             }
         }
 
         /// <summary>
         /// Utility method that clears out the GridView as there's no other way to do it.
-        /// </summary>   
+        /// </summary>
         private void ClearTable()
         {
-            if (m_listRegistryValues != null)
+            if (listRegistryValues != null)
             {
-                m_listRegistryValues.Clear();
+                listRegistryValues.Clear();
             }
 
             dataGrid.ItemsSource = null;
@@ -537,12 +546,14 @@ namespace RegistryPreview
 
         /// <summary>
         /// Change the current app cursor at the grid level to be a wait cursor.  Sort of works, sort of doesn't, but it's a nice attempt.
-        /// </summary>   
+        /// </summary>
         public void ChangeCursor(UIElement uiElement, bool wait)
         {
             // You can only change the Cursor if the visual tree is loaded
-            if (!m_visualTreeReady)
+            if (!visualTreeReady)
+            {
                 return;
+            }
 
             InputCursor cursor = InputSystemCursor.Create(wait ? InputSystemCursorShape.Wait : InputSystemCursorShape.Arrow);
             System.Type type = typeof(UIElement);
@@ -567,11 +578,11 @@ namespace RegistryPreview
                 fileStreamOptions.Share = FileShare.Write;
                 fileStreamOptions.Mode = FileMode.OpenOrCreate;
 
-                fileStream = new FileStream(App.s_Filename, fileStreamOptions);
+                fileStream = new FileStream(App.AppFilename, fileStreamOptions);
                 StreamWriter streamWriter = new StreamWriter(fileStream);
 
                 // if we get here, the file is open and writable so dump the whole contents of textBox
-                String filenameText = textBox.Text;
+                string filenameText = textBox.Text;
                 streamWriter.Write(filenameText);
                 streamWriter.Flush();
                 streamWriter.Close();
@@ -583,21 +594,19 @@ namespace RegistryPreview
             {
                 // this exception is thrown if the file is there but marked as read only
                 ShowMessageBox(
-                    m_resourceLoader.GetString("ErrorDialogTitle"),
+                    resourceLoader.GetString("ErrorDialogTitle"),
                     ex.Message,
-                    m_resourceLoader.GetString("OkButtonText")
-                );
+                    resourceLoader.GetString("OkButtonText"));
             }
             catch
             {
                 // this catch handles all other exceptions thrown when trying to write the file out
                 ShowMessageBox(
-                    m_resourceLoader.GetString("ErrorDialogTitle"),
-                    m_resourceLoader.GetString("FileSaveError"),
-                    m_resourceLoader.GetString("OkButtonText")
-                );
+                    resourceLoader.GetString("ErrorDialogTitle"),
+                    resourceLoader.GetString("FileSaveError"),
+                    resourceLoader.GetString("OkButtonText"));
             }
-            finally 
+            finally
             {
                 // clean up no matter what
                 if (fileStream != null)
