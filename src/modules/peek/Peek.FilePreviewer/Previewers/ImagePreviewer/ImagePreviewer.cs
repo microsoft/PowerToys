@@ -28,7 +28,7 @@ namespace Peek.FilePreviewer.Previewers
         private PreviewState state;
 
         [ObservableProperty]
-        private Size imageSize;
+        private Size? imageSize;
 
         [ObservableProperty]
         private Size maxImageSize;
@@ -70,7 +70,7 @@ namespace Peek.FilePreviewer.Previewers
         {
             cancellationToken.ThrowIfCancellationRequested();
             ImageSize = await Task.Run(Item.GetImageSize);
-            if (ImageSize == Size.Empty)
+            if (ImageSize == null)
             {
                 ImageSize = await WICHelper.GetImageSize(Item.Path);
             }
@@ -117,20 +117,23 @@ namespace Peek.FilePreviewer.Previewers
             UpdateMaxImageSize();
         }
 
-        partial void OnImageSizeChanged(Size value)
+        partial void OnImageSizeChanged(Size? value)
         {
             UpdateMaxImageSize();
         }
 
         private void UpdateMaxImageSize()
         {
+            var imageWidth = ImageSize?.Width ?? 0;
+            var imageHeight = ImageSize?.Height ?? 0;
+
             if (ScalingFactor != 0)
             {
-                MaxImageSize = new Size(ImageSize.Width / ScalingFactor, ImageSize.Height / ScalingFactor);
+                MaxImageSize = new Size(imageWidth / ScalingFactor, imageHeight / ScalingFactor);
             }
             else
             {
-                MaxImageSize = new Size(ImageSize.Width, ImageSize.Height);
+                MaxImageSize = new Size(imageWidth, imageHeight);
             }
         }
 
@@ -196,11 +199,14 @@ namespace Peek.FilePreviewer.Previewers
             {
                 cancellationToken.ThrowIfCancellationRequested();
 
-                // TODO: Check if this is performant
+                using FileStream stream = File.OpenRead(Item.Path);
+
                 await Dispatcher.RunOnUiThread(async () =>
                 {
                     cancellationToken.ThrowIfCancellationRequested();
-                    var bitmap = await GetFullBitmapFromPathAsync(Item.Path, cancellationToken);
+
+                    var bitmap = new BitmapImage();
+                    await bitmap.SetSourceAsync(stream.AsRandomAccessStream());
                     Preview = bitmap;
                 });
             });
@@ -218,20 +224,6 @@ namespace Peek.FilePreviewer.Previewers
         private bool IsPng(IFileSystemItem item)
         {
             return item.Extension == ".png";
-        }
-
-        private static async Task<BitmapImage> GetFullBitmapFromPathAsync(string path, CancellationToken cancellationToken)
-        {
-            var bitmap = new BitmapImage();
-
-            cancellationToken.ThrowIfCancellationRequested();
-            using (FileStream stream = System.IO.File.OpenRead(path))
-            {
-                cancellationToken.ThrowIfCancellationRequested();
-                await bitmap.SetSourceAsync(stream.AsRandomAccessStream());
-            }
-
-            return bitmap;
         }
 
         private static readonly HashSet<string> _supportedFileTypes = new HashSet<string>

@@ -12,13 +12,18 @@ namespace Peek.Common.Extensions
 {
     public static class IFileSystemItemExtensions
     {
-        public static Size GetImageSize(this IFileSystemItem item)
+        public static Size? GetImageSize(this IFileSystemItem item)
         {
-            var propertyStore = item.PropertyStore;
-            var width = propertyStore.TryGetUInt(PropertyKey.ImageHorizontalSize) ?? 0;
-            var height = propertyStore.TryGetUInt(PropertyKey.ImageVerticalSize) ?? 0;
+            Size? size = null;
 
-            var size = new Size((int)width, (int)height);
+            var propertyStore = item.PropertyStore;
+            var width = propertyStore.TryGetUInt(PropertyKey.ImageHorizontalSize);
+            var height = propertyStore.TryGetUInt(PropertyKey.ImageVerticalSize);
+
+            if (width != null && height != null)
+            {
+                size = new Size((int)width, (int)height);
+            }
 
             return size;
         }
