@@ -532,29 +532,6 @@ bool AppZoneHistory::IsAnotherWindowOfApplicationInstanceZoned(HWND window, cons
     return false;
 }
 
-void AppZoneHistory::UpdateProcessIdToHandleMap(HWND window, const FancyZonesDataTypes::WorkAreaId& workAreaId)
-{
-    auto processPath = get_process_path_waiting_uwp(window);
-    if (!processPath.empty())
-    {
-        auto history = m_history.find(processPath);
-        if (history != std::end(m_history))
-        {
-            auto& perDesktopData = history->second;
-            for (auto& data : perDesktopData)
-            {
-                if (data.workAreaId == workAreaId)
-                {
-                    DWORD processId = 0;
-                    GetWindowThreadProcessId(window, &processId);
-                    data.processIdToHandleMap[processId] = window;
-                    break;
-                }
-            }
-        }
-    }
-}
-
 ZoneIndexSet AppZoneHistory::GetAppLastZoneIndexSet(HWND window, const FancyZonesDataTypes::WorkAreaId& workAreaId, const std::wstring& zoneSetId) const
 {
     auto processPath = get_process_path_waiting_uwp(window);

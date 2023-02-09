@@ -54,7 +54,6 @@ public:
     std::optional<FancyZonesDataTypes::AppZoneHistoryData> GetZoneHistory(const std::wstring& appPath, const FancyZonesDataTypes::WorkAreaId& workAreaId) const noexcept;
 
     bool IsAnotherWindowOfApplicationInstanceZoned(HWND window, const FancyZonesDataTypes::WorkAreaId& workAreaId) const noexcept;
-    void UpdateProcessIdToHandleMap(HWND window, const FancyZonesDataTypes::WorkAreaId& workAreaId);
     ZoneIndexSet GetAppLastZoneIndexSet(HWND window, const FancyZonesDataTypes::WorkAreaId& workAreaId, const std::wstring& zoneSetId) const;
 
     void SyncVirtualDesktops();
