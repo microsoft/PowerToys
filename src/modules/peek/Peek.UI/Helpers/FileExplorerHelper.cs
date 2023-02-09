@@ -4,30 +4,31 @@
 
 using System;
 using System.Collections.Generic;
+using System.IO;
 using Peek.Common.Models;
 using Peek.UI.Extensions;
 using SHDocVw;
-using Shell32;
 using Windows.Win32;
 using Windows.Win32.Foundation;
 using Windows.Win32.UI.Shell;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 using IServiceProvider = Peek.Common.Models.IServiceProvider;
 
 namespace Peek.UI.Helpers
 {
     public static class FileExplorerHelper
     {
-        public static IEnumerable<File> GetSelectedItems()
+        public static IEnumerable<IFileSystemItem> GetSelectedItems()
         {
             return GetItemsInternal(onlySelectedFiles: true);
         }
 
-        public static IEnumerable<File> GetItems()
+        public static IEnumerable<IFileSystemItem> GetItems()
         {
             return GetItemsInternal(onlySelectedFiles: false);
         }
 
-        private static IEnumerable<File> GetItemsInternal(bool onlySelectedFiles)
+        private static IEnumerable<IFileSystemItem> GetItemsInternal(bool onlySelectedFiles)
         {
             var foregroundWindowHandle = PInvoke.GetForegroundWindow();
             if (foregroundWindowHandle.IsDesktopWindow())
@@ -40,12 +41,12 @@ namespace Peek.UI.Helpers
             }
         }
 
-        private static IEnumerable<File> GetItemsFromDesktop(HWND foregroundWindowHandle, bool onlySelectedFiles)
+        private static IEnumerable<IFileSystemItem> GetItemsFromDesktop(HWND foregroundWindowHandle, bool onlySelectedFiles)
         {
             const int SWC_DESKTOP = 8;
             const int SWFO_NEEDDISPATCH = 1;
 
-            var shell = new Shell();
+            var shell = new Shell32.Shell();
             ShellWindows shellWindows = shell.Windows();
             object? oNull1 = null;
             object? oNull2 = null;
@@ -57,21 +58,21 @@ namespace Peek.UI.Helpers
             shellView.Items(selectionFlag, typeof(IShellItemArray).GUID, out var items);
             if (items is IShellItemArray array)
             {
-                return array.ToFilesEnumerable();
+                return array.ToEnumerable();
             }
 
-            return new List<File>();
+            return new List<IFileSystemItem>();
         }
 
-        private static IEnumerable<File> GetItemsFromFileExplorer(HWND foregroundWindowHandle, bool onlySelectedFiles)
+        private static IEnumerable<IFileSystemItem> GetItemsFromFileExplorer(HWND foregroundWindowHandle, bool onlySelectedFiles)
         {
             var activeTab = foregroundWindowHandle.GetActiveTab();
 
-            var shell = new Shell();
+            var shell = new Shell32.Shell();
             ShellWindows shellWindows = shell.Windows();
             foreach (IWebBrowserApp webBrowserApp in shell.Windows())
             {
-                var shellFolderView = (IShellFolderViewDual2)webBrowserApp.Document;
+                var shellFolderView = (Shell32.IShellFolderViewDual2)webBrowserApp.Document;
                 var folderTitle = shellFolderView.Folder.Title;
 
                 if (webBrowserApp.HWND == foregroundWindowHandle)
@@ -83,29 +84,39 @@ namespace Peek.UI.Helpers
                     if (activeTab == shellBrowserHandle)
                     {
                         var items = onlySelectedFiles ? shellFolderView.SelectedItems() : shellFolderView.Folder?.Items();
-                        return items != null ? items.ToFilesEnumerable() : new List<File>();
+                        return items != null ? items.ToEnumerable() : new List<IFileSystemItem>();
                     }
                 }
             }
 
-            return new List<File>();
+            return new List<IFileSystemItem>();
         }
 
-        private static IEnumerable<File> ToFilesEnumerable(this IShellItemArray array)
+        private static IEnumerable<IFileSystemItem> ToEnumerable(this IShellItemArray array)
         {
             for (var i = 0; i < array.GetCount(); i++)
             {
-                var item = array.GetItemAt(i);
-                var path = item.GetDisplayName(SIGDN.SIGDN_FILESYSPATH);
-                yield return new File(path);
+                IShellItem item = array.GetItemAt(i);
+                string path = string.Empty;
+                try
+                {
+                    path = item.GetDisplayName(SIGDN.SIGDN_FILESYSPATH);
+                }
+                catch (Exception)
+                {
+                    // TODO: Handle cases that do not have a file system path like Recycle Bin.
+                }
+
+                yield return File.Exists(path) ? new FileItem(path) : new FolderItem(path);
             }
         }
 
-        private static IEnumerable<File> ToFilesEnumerable(this FolderItems folderItems)
+        private static IEnumerable<IFileSystemItem> ToEnumerable(this Shell32.FolderItems folderItems)
         {
-            foreach (FolderItem item in folderItems)
+            foreach (Shell32.FolderItem item in folderItems)
             {
-                yield return new File(item.Path);
+                // TODO: Handle cases where it is neither a file or a folder
+                yield return File.Exists(item.Path) ? new FileItem(item.Path) : new FolderItem(item.Path);
             }
         }
     }
