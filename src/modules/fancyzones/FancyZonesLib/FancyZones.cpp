@@ -135,9 +135,7 @@ private:
 
     void UpdateHotkey(int hotkeyId, const PowerToysSettings::HotkeyObject& hotkeyObject, bool enable) noexcept;
 
-    std::pair<WorkArea*, ZoneIndexSet> GetAppZoneHistoryInfo(HWND window, HMONITOR monitor, const std::unordered_map<HMONITOR, std::unique_ptr<WorkArea>>& workAreas) noexcept;
-    void MoveWindowIntoZone(HWND window, WorkArea* const workArea, const ZoneIndexSet& zoneIndexSet) noexcept;
-    bool MoveToAppLastZone(HWND window, HMONITOR active, HMONITOR primary) noexcept;
+    bool MoveToAppLastZone(HWND window, HMONITOR monitor) noexcept;
     
     void UpdateActiveLayouts() noexcept;
     bool ShouldProcessSnapHotkey(DWORD vkCode) noexcept;
@@ -319,64 +317,53 @@ void FancyZones::MoveSizeEnd()
     }
 }
 
-std::pair<WorkArea*, ZoneIndexSet> FancyZones::GetAppZoneHistoryInfo(HWND window, HMONITOR monitor, const std::unordered_map<HMONITOR, std::unique_ptr<WorkArea>>& workAreas) noexcept
-{
-    for (const auto& [workAreaMonitor, workArea] : workAreas)
-    {
-        if (workAreaMonitor == monitor && workArea)
-        {
-            return std::pair<WorkArea*, ZoneIndexSet>{ workArea.get(), workArea->GetWindowZoneIndexes(window) };
-        }
-    }
-
-    Logger::error(L"No work area for the currently active monitor.");
-    return std::pair<WorkArea*, ZoneIndexSet>{ nullptr, {} };
-}
-
-void FancyZones::MoveWindowIntoZone(HWND window, WorkArea* const workArea, const ZoneIndexSet& zoneIndexSet) noexcept
-{
-    if (workArea)
-    {
-        Trace::FancyZones::SnapNewWindowIntoZone(workArea->GetLayout().get(), workArea->GetLayoutWindows().get());
-        workArea->MoveWindowIntoZoneByIndexSet(window, zoneIndexSet);
-        AppZoneHistory::instance().UpdateProcessIdToHandleMap(window, workArea->UniqueId());
-    }
-}
-
-bool FancyZones::MoveToAppLastZone(HWND window, HMONITOR active, HMONITOR primary) noexcept
+bool FancyZones::MoveToAppLastZone(HWND window, HMONITOR monitor) noexcept
 {
     const auto& workAreas = m_workAreaHandler.GetAllWorkAreas();
-    if (workAreas.empty())
-    {
-        Logger::trace(L"No work area for the current desktop.");
-        return false;
-    }
+    WorkArea* workArea{ nullptr };
+    ZoneIndexSet indexes{};
 
-    // Search application history on currently active monitor.
-    auto appZoneHistoryInfo = GetAppZoneHistoryInfo(window, active, workAreas);
-
-    // No application history on currently active monitor
-    if (appZoneHistoryInfo.second.empty())
-    {
-        // Search application history on primary monitor.
-        appZoneHistoryInfo = GetAppZoneHistoryInfo(window, primary, workAreas);
-    }
-
-    // No application history on currently active and primary monitors
-    if (appZoneHistoryInfo.second.empty())
-    {
-        // Search application history on remaining monitors.
-        appZoneHistoryInfo = GetAppZoneHistoryInfo(window, nullptr, workAreas);
-    }
-
-    if (!appZoneHistoryInfo.second.empty())
-    {
-        MoveWindowIntoZone(window, appZoneHistoryInfo.first, appZoneHistoryInfo.second);
-        return true;
+    if (monitor)
+    {    
+        if (workAreas.contains(monitor))
+        {
+            workArea = workAreas.at(monitor).get();
+            if (workArea)
+            {
+                auto guidStr = FancyZonesUtils::GuidToString(workArea->GetLayoutId());
+                if (guidStr.has_value())
+                {
+                    indexes = AppZoneHistory::instance().GetAppLastZoneIndexSet(window, workArea->UniqueId(), guidStr.value());
+                }
+            }
+        }
+        else
+        {
+            Logger::error(L"Unable to find work area for requested monitor on the active virtual desktop");
+        }
     }
     else
     {
-        Logger::trace(L"App zone history is empty for the processing window on a current virtual desktop");
+        for (const auto& [_, secondaryWorkArea] : workAreas)
+        {
+            if (secondaryWorkArea)
+            {
+                indexes = secondaryWorkArea->GetWindowZoneIndexes(window);
+                workArea = secondaryWorkArea.get();
+                if (!indexes.empty())
+                {
+                    break;
+                }
+            }
+        }
+    }
+    
+    if (!indexes.empty() && workArea)
+    {
+        Trace::FancyZones::SnapNewWindowIntoZone(workArea->GetLayout().get(), workArea->GetLayoutWindows().get());
+        workArea->MoveWindowIntoZoneByIndexSet(window, indexes);
+
+        return true;
     }
 
     return false;
@@ -419,24 +406,35 @@ void FancyZones::WindowCreated(HWND window) noexcept
         active = MonitorFromPoint(cursorPosition, MONITOR_DEFAULTTOPRIMARY);
     }
 
-    bool movedToAppLastZone = false;
-    if (FancyZonesSettings::settings().spanZonesAcrossMonitors)
+    bool windowMovedToZone = false;
+    if (moveToAppLastZone)
     {
-        if (moveToAppLastZone)
+        if (FancyZonesSettings::settings().spanZonesAcrossMonitors)
         {
-            movedToAppLastZone = MoveToAppLastZone(window, nullptr, nullptr);
+            windowMovedToZone = MoveToAppLastZone(window, nullptr);
+        }
+        else
+        {
+            // Search application history on currently active monitor.
+            windowMovedToZone = MoveToAppLastZone(window, active);
+
+            if (!windowMovedToZone && primary != active)
+            {
+                // Search application history on primary monitor.
+                windowMovedToZone = MoveToAppLastZone(window, primary);
+            }
+
+            if (!windowMovedToZone)
+            {
+                // Search application history on remaining monitors.
+                windowMovedToZone = MoveToAppLastZone(window, nullptr);
+            }
         }
     }
-    else
-    {
-        if (moveToAppLastZone)
-        {
-            movedToAppLastZone = MoveToAppLastZone(window, active, primary);
-        }
-    }
+    
 
     // Open on active monitor if window wasn't zoned
-    if (openOnActiveMonitor && !movedToAppLastZone)
+    if (openOnActiveMonitor && !windowMovedToZone)
     {
         // window is recreated after switching virtual desktop
         // avoid moving already opened windows after switching vd
