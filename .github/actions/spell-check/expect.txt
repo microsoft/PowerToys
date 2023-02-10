@@ -40,7 +40,6 @@ ALPHATYPE
 Altdown
 alwaysontop
 amd
-AMF
 AModifier
 AMPROPERTY
 AMPROPSETID
@@ -201,7 +200,6 @@ CHILDACTIVATE
 CHILDWINDOW
 Choibalsan
 chrdavis
-chromaticities
 Chrzan
 cht
 Chukotka
@@ -384,7 +382,6 @@ Deondre
 depersist
 deprioritized
 depsfileslistspath
-depsjsonpath
 deref
 DESKTOPABSOLUTEEDITING
 DESKTOPABSOLUTEPARSING
@@ -914,7 +911,6 @@ logconsole
 logfile
 LOGFONT
 LOGFONTW
-LOGMSG
 logon
 LOGPIXELSX
 LOn
@@ -1972,7 +1968,7 @@ WANTPALM
 wbem
 wbemuuid
 WBounds
-wca
+Wca
 wcautil
 WCE
 wcex

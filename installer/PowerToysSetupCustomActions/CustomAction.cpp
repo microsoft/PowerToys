@@ -363,19 +363,19 @@ UINT __stdcall CreateScheduledTaskCA(MSIHANDLE hInstall)
     hr = pPrincipal->put_Id(_bstr_t(L"Principal1"));
     if (FAILED(hr))
     {
-        Logger::error(L"Cannot put the principal ID: %x", hr);
+        Logger::error(L"Cannot put the principal ID: {}", hr);
     }
 
     hr = pPrincipal->put_UserId(_bstr_t(username_domain));
     if (FAILED(hr))
     {
-        Logger::error(L"Cannot put principal user Id: %x", hr);
+        Logger::error(L"Cannot put principal user Id: {}", hr);
     }
 
     hr = pPrincipal->put_LogonType(TASK_LOGON_INTERACTIVE_TOKEN);
     if (FAILED(hr))
     {
-        Logger::error(L"Cannot put principal logon type: %x", hr);
+        Logger::error(L"Cannot put principal logon type: {}", hr);
     }
 
     // Run the task with the highest available privileges.
