@@ -256,7 +256,8 @@ void ReportVCMLogs(const filesystem::path& tmpDir, const filesystem::path& repor
 
 void ReportInstallerLogs(const filesystem::path& tmpDir, const filesystem::path& reportDir)
 {
-    const char* logFilePrefix = "powertoys-bootstrapper-msi-";
+    const char* bootstrapperLogFilePrefix = "powertoys-bootstrapper-msi-";
+    const char* PTLogFilePrefix = "PowerToysMSIInstaller_";
 
     for (auto& entry : directory_iterator{ tmpDir })
     {
@@ -267,7 +268,7 @@ void ReportInstallerLogs(const filesystem::path& tmpDir, const filesystem::path&
         }
 
         const auto fileName = entry.path().filename().string();
-        if (!fileName.starts_with(logFilePrefix))
+        if (!fileName.starts_with(bootstrapperLogFilePrefix) && !fileName.starts_with(PTLogFilePrefix))
         {
             continue;
         }
