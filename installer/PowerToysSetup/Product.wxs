@@ -478,6 +478,7 @@
 
             <!-- Mouse Utils -->
             <Directory Id="MouseUtilsInstallFolder" Name="$(var.MouseUtilsProjectName)">
+              <Directory Id="MouseJumpUIFolder" Name="MouseJumpUI" />
             </Directory>
 
             <!-- AlwaysOnTop -->
