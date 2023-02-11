@@ -60,7 +60,7 @@ namespace Microsoft.PowerToys.Run.Plugin.System
             {
                 Key = "SeparateResultEmptyRB",
                 DisplayLabel = Resources.Microsoft_plugin_sys_RecycleBin_ShowEmptySeparate,
-                Value = true,
+                Value = false,
             },
             new PluginAdditionalOption()
             {

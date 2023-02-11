@@ -33,7 +33,7 @@ namespace Microsoft.PowerToys.Run.Plugin.System.Components
         /// Returns a list with all system command results
         /// </summary>
         /// <param name="isUefi">Value indicating if the system is booted in uefi mode</param>
-        /// <param name="splitRecycleBinResults">Value idicating if we should show two results for Recycle Bin.</param>
+        /// <param name="splitRecycleBinResults">Value indicating if we should show two results for Recycle Bin.</param>
         /// <param name="confirmCommands">A value indicating if the user should confirm the system commands</param>
         /// <param name="emptyRBSuccessMessage">Show a success message after empty Recycle Bin.</param>
         /// <param name="iconTheme">The current theme to use for the icons</param>
@@ -106,7 +106,7 @@ namespace Microsoft.PowerToys.Run.Plugin.System.Components
                 },
             });
 
-            // SHow Recycle Bin results based on setting.
+            // Show Recycle Bin results based on setting.
             if (splitRecycleBinResults)
             {
                 results.AddRange(new[]
