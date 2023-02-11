@@ -35,7 +35,7 @@ namespace Microsoft.PowerToys.Run.Plugin.System.Components
         /// <param name="isUefi">Value indicating if the system is booted in uefi mode</param>
         /// <param name="splitRecycleBinResults">Value idicating if we should show two results for Recycle Bin.</param>
         /// <param name="confirmCommands">A value indicating if the user should confirm the system commands</param>
-        /// <param name="emptyRBSuccessMsg">Show a success message after empty Recycle Bin.</param>
+        /// <param name="emptyRBSuccessMessage">Show a success message after empty Recycle Bin.</param>
         /// <param name="iconTheme">The current theme to use for the icons</param>
         /// <param name="culture">The culture to use for the result's title and sub title</param>
         /// <returns>A list of all results</returns>
@@ -132,7 +132,7 @@ namespace Microsoft.PowerToys.Run.Plugin.System.Components
                             return true;
                         },
                     },
-                })
+                });
             }
             else
             {
