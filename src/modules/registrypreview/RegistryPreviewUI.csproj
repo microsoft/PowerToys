@@ -3,16 +3,14 @@
 		<OutputType>WinExe</OutputType>
 		<TargetFramework>net7.0-windows10.0.19041.0</TargetFramework>
 		<TargetPlatformMinVersion>10.0.17763.0</TargetPlatformMinVersion>
-		<RootNamespace>RegistryPreview</RootNamespace>
 		<Platforms>x86;x64;arm64</Platforms>
+		<OutputPath>$(SolutionDir)$(Platform)\$(Configuration)\modules\RegistryPreview</OutputPath>
 		<UseWinUI>true</UseWinUI>
 		<UseWindowsForms>False</UseWindowsForms>
-		<StartupObject>RegistryPreview.Program</StartupObject>
 		<ApplicationIcon>app.ico</ApplicationIcon>
 		<ApplicationManifest>app.manifest</ApplicationManifest>
-		<AssemblyName>RegistryPreview</AssemblyName>
 		<NeutralLanguage>en-US</NeutralLanguage>
-		<PlatformTarget>AnyCPU</PlatformTarget>
+		<PlatformTarget>x64</PlatformTarget>
 		<WindowsAppSDKSelfContained>true</WindowsAppSDKSelfContained>
 		<GenerateSatelliteAssembliesForCore>true</GenerateSatelliteAssembliesForCore>
 		<AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
@@ -22,6 +20,11 @@
 		<WindowsAppSDKSelfContained>true</WindowsAppSDKSelfContained>
 		<SupportedOSPlatformVersion>10.0.19041.0</SupportedOSPlatformVersion>
 		<SelfContained>true</SelfContained>
+		<Product>$(AssemblyName)</Product>
+		<PackageOutputPath />
+		<AssemblyName>PowerToys.RegistryPreview</AssemblyName>
+		<RootNamespace>RegistryPreview</RootNamespace>
+		<DisableWinExeOutputInference>true</DisableWinExeOutputInference>
 	</PropertyGroup>
 
 	<!-- SelfContained=true requires RuntimeIdentifier to be set -->
