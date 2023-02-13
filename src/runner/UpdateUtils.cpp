@@ -88,7 +88,26 @@ bool IsMeteredConnection()
 {
     using namespace winrt::Windows::Networking::Connectivity;
     ConnectionProfile internetConnectionProfile = NetworkInformation::GetInternetConnectionProfile();
-    return internetConnectionProfile && internetConnectionProfile.IsWwanConnectionProfile();
+    if (!internetConnectionProfile)
+    {
+        return false;
+    }
+
+    if (internetConnectionProfile.IsWwanConnectionProfile())
+    {
+        return true;
+    }
+
+    ConnectionCost connectionCost = internetConnectionProfile.GetConnectionCost();
+    if (connectionCost.Roaming()
+        || connectionCost.OverDataLimit()
+        || connectionCost.NetworkCostType() == NetworkCostType::Fixed
+        || connectionCost.NetworkCostType() == NetworkCostType::Variable)
+    {
+        return true;
+    }
+
+    return false;
 }
 
 void ProcessNewVersionInfo(const github_version_info& version_info,
