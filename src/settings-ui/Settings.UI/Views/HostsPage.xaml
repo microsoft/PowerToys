@@ -9,7 +9,7 @@
     xmlns:ui="using:CommunityToolkit.WinUI.UI"
     mc:Ignorable="d">
 
-    <controls:SettingsPageControl x:Uid="Hosts" ModuleImageSource="ms-appx:///Assets/Modules/AlwaysOnTop.png">
+    <controls:SettingsPageControl x:Uid="Hosts" ModuleImageSource="ms-appx:///Assets/Modules/HostsFileEditor.png">
         <controls:SettingsPageControl.ModuleContent>
             <StackPanel Orientation="Vertical" ChildrenTransitions="{StaticResource SettingsCardsAnimations}">
                 <labs:SettingsCard

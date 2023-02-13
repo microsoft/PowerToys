@@ -45,7 +45,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
         /// <summary>
         /// Declaration for the opening flyout window callback function.
         /// </summary>
-        public delegate void FlyoutOpeningCallback();
+        public delegate void FlyoutOpeningCallback(POINT? point);
 
         /// <summary>
         /// Declaration for the disabling hide of flyout window callback function.
@@ -330,13 +330,28 @@ namespace Microsoft.PowerToys.Settings.UI.Views
         {
             if (json != null)
             {
-                if (json.ToString().StartsWith("{\"ShowYourself\":"))
+                IJsonValue whatToShowJson;
+                if (json.TryGetValue("ShowYourself", out whatToShowJson))
                 {
-                    if (json.ToString().EndsWith("\"flyout\"}"))
+                    if (whatToShowJson.ValueType == JsonValueType.String && whatToShowJson.GetString().Equals("flyout"))
                     {
-                        OpenFlyoutCallback();
+                        POINT? p = null;
+
+                        IJsonValue flyoutPointX;
+                        IJsonValue flyoutPointY;
+                        if (json.TryGetValue("x_position", out flyoutPointX) && json.TryGetValue("y_position", out flyoutPointY))
+                        {
+                            if (flyoutPointX.ValueType == JsonValueType.Number && flyoutPointY.ValueType == JsonValueType.Number)
+                            {
+                                int flyout_x = (int)flyoutPointX.GetNumber();
+                                int flyout_y = (int)flyoutPointY.GetNumber();
+                                p = new POINT(flyout_x, flyout_y);
+                            }
+                        }
+
+                        OpenFlyoutCallback(p);
                     }
-                    else if (json.ToString().EndsWith("\"main_page\"}"))
+                    else if (whatToShowJson.ValueType == JsonValueType.String && whatToShowJson.GetString().Equals("main_page"))
                     {
                         OpenMainWindowCallback();
                     }

@@ -69,6 +69,11 @@ void LayoutAssignedWindows::Dismiss(HWND window)
     FancyZonesWindowProperties::SetTabSortKeyWithinZone(window, std::nullopt);
 }
 
+std::map<HWND, ZoneIndexSet> LayoutAssignedWindows::SnappedWindows() const noexcept
+{
+    return m_windowIndexSet;
+}
+
 ZoneIndexSet LayoutAssignedWindows::GetZoneIndexSetFromWindow(HWND window) const noexcept
 {
     auto it = m_windowIndexSet.find(window);

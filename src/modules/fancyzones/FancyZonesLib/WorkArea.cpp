@@ -144,8 +144,11 @@ void WorkArea::MoveWindowIntoZoneByIndexSet(HWND window, const ZoneIndexSet& ind
     if (updatePosition)
     {
         const auto rect = m_layout->GetCombinedZonesRect(indexSet);
-        const auto adjustedRect = FancyZonesWindowUtils::AdjustRectForSizeWindowToRect(window, rect, m_window);
-        FancyZonesWindowUtils::SizeWindowToRect(window, adjustedRect);
+        if (rect.bottom - rect.top > 0 && rect.right - rect.left > 0)
+        {
+            const auto adjustedRect = FancyZonesWindowUtils::AdjustRectForSizeWindowToRect(window, rect, m_window);
+            FancyZonesWindowUtils::SizeWindowToRect(window, adjustedRect);
+        }
     }
 
     SnapWindow(window, indexSet);
@@ -351,9 +354,7 @@ bool WorkArea::ExtendWindowByDirectionAndPosition(HWND window, DWORD vkCode)
         const auto adjustedRect = FancyZonesWindowUtils::AdjustRectForSizeWindowToRect(window, rect, m_window);
         FancyZonesWindowUtils::SizeWindowToRect(window, adjustedRect);
 
-        m_layoutWindows->Extend(window, resultIndexSet);
-
-        SnapWindow(window, resultIndexSet);
+        SnapWindow(window, resultIndexSet, true);
 
         return true;
     }
@@ -361,15 +362,22 @@ bool WorkArea::ExtendWindowByDirectionAndPosition(HWND window, DWORD vkCode)
     return false;
 }
 
-void WorkArea::SnapWindow(HWND window, const ZoneIndexSet& zones)
+void WorkArea::SnapWindow(HWND window, const ZoneIndexSet& zones, bool extend)
 {
     if (!m_layoutWindows || !m_layout)
     {
         return;
     }
 
-    m_layoutWindows->Assign(window, zones);
-
+    if (extend)
+    {
+        m_layoutWindows->Extend(window, zones);
+    }
+    else
+    {
+        m_layoutWindows->Assign(window, zones);
+    }
+    
     auto guidStr = FancyZonesUtils::GuidToString(m_layout->Id());
     if (guidStr.has_value())
     {
@@ -462,6 +470,20 @@ void WorkArea::UpdateActiveZoneSet()
     }
 }
 
+void WorkArea::UpdateWindowPositions()
+{
+    if (!m_layoutWindows)
+    {
+        return;
+    }
+
+    const auto& snappedWindows = m_layoutWindows->SnappedWindows();
+    for (const auto& [window, zones] : snappedWindows)
+    {
+        MoveWindowIntoZoneByIndexSet(window, zones, true);
+    }
+}
+
 void WorkArea::CycleWindows(HWND window, bool reverse)
 {
     if (m_layoutWindows)
@@ -507,8 +529,7 @@ void WorkArea::InitLayout(const FancyZonesDataTypes::WorkAreaId& parentUniqueId)
 
 void WorkArea::InitSnappedWindows()
 {
-    static bool updatePositionOnceOnStartFlag = true;
-    Logger::info(L"Init work area windows, update positions = {}", updatePositionOnceOnStartFlag);
+    Logger::info(L"Init work area windows");
 
     for (const auto& window : VirtualDesktop::instance().GetWindowsFromCurrentDesktop())
     {
@@ -520,19 +541,17 @@ void WorkArea::InitSnappedWindows()
 
         if (!m_uniqueId.monitorId.monitor) // one work area across monitors
         {
-            MoveWindowIntoZoneByIndexSet(window, zoneIndexSet, updatePositionOnceOnStartFlag);
+            MoveWindowIntoZoneByIndexSet(window, zoneIndexSet, false);
         }
         else
         {
             const auto monitor = MonitorFromWindow(window, MONITOR_DEFAULTTONULL);
             if (monitor && m_uniqueId.monitorId.monitor == monitor)
             {
-                MoveWindowIntoZoneByIndexSet(window, zoneIndexSet, updatePositionOnceOnStartFlag);
+                MoveWindowIntoZoneByIndexSet(window, zoneIndexSet, false);
             }
         }
     }
-
-    updatePositionOnceOnStartFlag = false;
 }
 
 void WorkArea::CalculateZoneSet()

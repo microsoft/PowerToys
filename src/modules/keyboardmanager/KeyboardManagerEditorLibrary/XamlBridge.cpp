@@ -141,7 +141,7 @@ bool XamlBridge::NavigateFocus(MSG* msg)
 }
 
 // Function to run the message loop for the xaml island window
-int XamlBridge::MessageLoop()
+WPARAM XamlBridge::MessageLoop()
 {
     MSG msg = {};
     HRESULT hr = S_OK;
@@ -160,12 +160,12 @@ int XamlBridge::MessageLoop()
     }
 
     Logger::trace("XamlBridge::MessageLoop() stopped");
-    return (int)msg.wParam;
+    return msg.wParam;
 }
 
-static const WPARAM invalidKey = (WPARAM)-1;
+static const WPARAM invalidKey = 0xFFFFFFFFFFFFFFFF;
 
-WPARAM GetKeyFromReason(winrt::Windows::UI::Xaml::Hosting::XamlSourceFocusNavigationReason reason)
+constexpr WPARAM GetKeyFromReason(winrt::Windows::UI::Xaml::Hosting::XamlSourceFocusNavigationReason reason)
 {
     auto key = invalidKey;
     if (reason == winrt::Windows::UI::Xaml::Hosting::XamlSourceFocusNavigationReason::Last || reason == winrt::Windows::UI::Xaml::Hosting::XamlSourceFocusNavigationReason::First)
