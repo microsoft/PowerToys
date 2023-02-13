@@ -2934,4 +2934,12 @@ Activate by holding the key for the character you want to add an accent to, then
   <data name="UpdateAvailable.Title" xml:space="preserve">
     <value>Update available</value>
   </data>
+  <data name="FileExplorerPreview_Toggle_Monaco_Max_File_Size.Header" xml:space="preserve">
+    <value>Maximum file size to preview</value>
+    <comment>Size refers to the disk space used by a file</comment>
+  </data>
+  <data name="FileExplorerPreview_Toggle_Monaco_Max_File_Size.Description" xml:space="preserve">
+    <value>The maximum size, in kilobytes, for files to be displayed. This is a safety mechanism to prevent loading large files into RAM.</value>
+    <comment>"RAM" refers to random access memory; "size" refers to disk space; "bytes" refer to the measurement unit</comment>
+  </data>
 </root>
