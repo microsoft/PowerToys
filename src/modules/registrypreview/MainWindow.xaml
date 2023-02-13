@@ -171,7 +171,7 @@
             RowDetailsVisibilityMode="Collapsed"
             IsReadOnly="True"
             AutoGenerateColumns="False"
-            ItemsSource="{x:Bind m_listRegistryValues}"
+            ItemsSource="{x:Bind listRegistryValues}"
             IsTabStop="true"
             TabIndex="3"
             >
