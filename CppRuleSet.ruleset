@@ -80,7 +80,7 @@
     <Rule Id="C26490" Action="Hidden" />
     <Rule Id="C26491" Action="Hidden" />
     <Rule Id="C26492" Action="Error" />
-    <Rule Id="C26493" Action="Hidden" />
+    <Rule Id="C26493" Action="Error" />
     <Rule Id="C26494" Action="Hidden" />
     <Rule Id="C26495" Action="Error" />
     <Rule Id="C26496" Action="Hidden" />
