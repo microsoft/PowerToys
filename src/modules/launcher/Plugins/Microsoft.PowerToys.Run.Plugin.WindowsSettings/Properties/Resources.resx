@@ -153,10 +153,6 @@
     <value>Activation</value>
     <comment>Area UpdateAndSecurity</comment>
   </data>
-  <data name="ActiveXControl" xml:space="preserve">
-    <value>ActiveX Control</value>
-    <comment>Name of MMC Snap-In.</comment>
-  </data>
   <data name="ActivityHistory" xml:space="preserve">
     <value>Activity history</value>
     <comment>Area Privacy</comment>
@@ -866,10 +862,6 @@
     <value>Home group</value>
     <comment>Area Control Panel (legacy settings)</comment>
   </data>
-  <data name="HyperVManager" xml:space="preserve">
-    <value>Hyper-V Manager</value>
-    <comment>Name of MMC Snap-In.</comment>
-  </data>
   <data name="Id" xml:space="preserve">
     <value>ID</value>
     <comment>MEans The "Windows Identifier"</comment>
@@ -1037,8 +1029,8 @@
   <data name="MMC_diskmgmt" xml:space="preserve">
     <value>diskmgmt.msc</value>
   </data>
-  <data name="MMC_eventmgmt" xml:space="preserve">
-    <value>eventmgmt.msc</value>
+  <data name="MMC_eventvwr" xml:space="preserve">
+    <value>eventvwr.msc</value>
   </data>
   <data name="MMC_fsmgmt" xml:space="preserve">
     <value>fsmgmt.msc</value>
@@ -1073,13 +1065,10 @@
   <data name="MMC_tpm" xml:space="preserve">
     <value>tpm.msc</value>
   </data>
-  <data name="MMC_virtmgmt" xml:space="preserve">
-    <value>virtmgmt.msc</value>
-  </data>
   <data name="MMC_wf" xml:space="preserve">
     <value>WF.msc</value>
   </data>
-  <data name="MMC_winmgmt" xml:space="preserve">
+  <data name="MMC_wmimgmt" xml:space="preserve">
     <value>WmiMgmt.msc</value>
   </data>
   <data name="mmsys.cpl" xml:space="preserve">
@@ -1904,9 +1893,6 @@
   </data>
   <data name="VirtualDesktops" xml:space="preserve">
     <value>Virtual Desktops</value>
-  </data>
-  <data name="VirtualMachine" xml:space="preserve">
-    <value>Virtual Machine</value>
   </data>
   <data name="Virus" xml:space="preserve">
     <value>Virus</value>

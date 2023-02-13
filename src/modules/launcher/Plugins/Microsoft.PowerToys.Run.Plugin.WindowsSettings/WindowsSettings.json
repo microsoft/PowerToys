@@ -1809,13 +1809,6 @@
       "ShowAsFirstResult" : true
     },
     {
-      "Name": "ActiveXControl",
-      "Type": "AppMMC",
-      "AltNames": [ "MMC_mmcexe" ],
-      "Command": "mmc.exe",
-      "Note": "NoteNoMscFileExist"
-    },
-    {
       "Name": "AuthorizationManager",
       "Type": "AppMMC",
       "AltNames": [ "MMC_mmcexe", "MMC_azman" ],
@@ -1860,20 +1853,14 @@
     {
       "Name": "EventViewer",
       "Type": "AppMMC",
-      "AltNames": [ "MMC_mmcexe", "MMC_eventmgmt" ],
-      "Command": "eventmgmt.msc"
+      "AltNames": [ "MMC_mmcexe", "MMC_eventvwr" ],
+      "Command": "eventvwr.msc"
     },
     {
       "Name": "LocalGroupPolicy",
       "Type": "AppMMC",
       "AltNames": [ "MMC_mmcexe", "MMC_gpedit", "GroupPolicy" ],
       "Command": "gpedit.msc"
-    },
-    {
-      "Name": "HyperVManager",
-      "Type": "AppMMC",
-      "AltNames": [ "MMC_mmcexe", "MMC_virtmgmt", "VirtualMachine" ],
-      "Command": "virtmgmt.msc"
     },
     {
       "Name": "IpSecurityMonitor",
@@ -1959,8 +1946,8 @@
     {
       "Name": "WmiControl",
       "Type": "AppMMC",
-      "AltNames": [ "MMC_mmcexe", "MMC_winmgmt", "WindowsManagementInstrumentation" ],
-      "Command": "winmgmt.msc"
+      "AltNames": [ "MMC_mmcexe", "MMC_wmimgmt", "WindowsManagementInstrumentation" ],
+      "Command": "wmimgmt.msc"
     }
   ]
 }

@@ -142,15 +142,6 @@ namespace Microsoft.PowerToys.Run.Plugin.WindowsSettings.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to ActiveX Control.
-        /// </summary>
-        internal static string ActiveXControl {
-            get {
-                return ResourceManager.GetString("ActiveXControl", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to Activity history.
         /// </summary>
         internal static string ActivityHistory {
@@ -1888,15 +1879,6 @@ namespace Microsoft.PowerToys.Run.Plugin.WindowsSettings.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Hyper-V Manager.
-        /// </summary>
-        internal static string HyperVManager {
-            get {
-                return ResourceManager.GetString("HyperVManager", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to ID.
         /// </summary>
         internal static string Id {
@@ -2311,11 +2293,11 @@ namespace Microsoft.PowerToys.Run.Plugin.WindowsSettings.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to eventmgmt.msc.
+        ///   Looks up a localized string similar to eventvwr.msc.
         /// </summary>
-        internal static string MMC_eventmgmt {
+        internal static string MMC_eventvwr {
             get {
-                return ResourceManager.GetString("MMC_eventmgmt", resourceCulture);
+                return ResourceManager.GetString("MMC_eventvwr", resourceCulture);
             }
         }
         
@@ -2419,15 +2401,6 @@ namespace Microsoft.PowerToys.Run.Plugin.WindowsSettings.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to virtmgmt.msc.
-        /// </summary>
-        internal static string MMC_virtmgmt {
-            get {
-                return ResourceManager.GetString("MMC_virtmgmt", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to WF.msc.
         /// </summary>
         internal static string MMC_wf {
@@ -2439,9 +2412,9 @@ namespace Microsoft.PowerToys.Run.Plugin.WindowsSettings.Properties {
         /// <summary>
         ///   Looks up a localized string similar to WmiMgmt.msc.
         /// </summary>
-        internal static string MMC_winmgmt {
+        internal static string MMC_wmimgmt {
             get {
-                return ResourceManager.GetString("MMC_winmgmt", resourceCulture);
+                return ResourceManager.GetString("MMC_wmimgmt", resourceCulture);
             }
         }
         
@@ -4449,15 +4422,6 @@ namespace Microsoft.PowerToys.Run.Plugin.WindowsSettings.Properties {
         internal static string VirtualDesktops {
             get {
                 return ResourceManager.GetString("VirtualDesktops", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Virtual Machine.
-        /// </summary>
-        internal static string VirtualMachine {
-            get {
-                return ResourceManager.GetString("VirtualMachine", resourceCulture);
             }
         }
         

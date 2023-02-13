@@ -507,7 +507,7 @@ Eucla
 EUQ
 eurochange
 eventlog
-eventmgmt
+eventvwr
 everytime
 evt
 EWXFORCE
@@ -1968,13 +1968,11 @@ VIDEOINFOHEADER
 viewbox
 viewmodel
 vih
-virtmgmt
 virtualkey
 visiblecolorformats
 Visibletrue
 VKey
 VKTAB
-VManager
 vmovl
 vorrq
 VOS
@@ -2058,7 +2056,6 @@ Winhook
 winkey
 WINL
 winmd
-winmgmt
 winmm
 winmsg
 winnt
@@ -2086,6 +2083,7 @@ wmain
 Wman
 wmi
 WMICIM
+wmimgmt
 WMKEYDOWN
 WMKEYUP
 wmp
