@@ -198,7 +198,7 @@ inline bool drop_elevated_privileges()
     TOKEN_MANDATORY_LABEL label = { 0 };
     label.Label.Attributes = SE_GROUP_INTEGRITY;
     label.Label.Sid = medium_sid;
-    DWORD size = (DWORD)sizeof(TOKEN_MANDATORY_LABEL) + ::GetLengthSid(medium_sid);
+    DWORD size = static_cast<DWORD>(sizeof(TOKEN_MANDATORY_LABEL) + ::GetLengthSid(medium_sid));
 
     BOOL result = SetTokenInformation(token, TokenIntegrityLevel, &label, size);
     LocalFree(medium_sid);
@@ -294,8 +294,9 @@ inline bool run_non_elevated(const std::wstring& file, const std::wstring& param
     siex.StartupInfo.cb = sizeof(siex);
 
     PROCESS_INFORMATION pi = { 0 };
+
     auto succeeded = CreateProcessW(file.c_str(),
-                                    const_cast<LPWSTR>(executable_args.c_str()),
+                                    &executable_args[0],
                                     nullptr,
                                     nullptr,
                                     FALSE,
@@ -395,8 +396,9 @@ inline bool run_same_elevation(const std::wstring& file, const std::wstring& par
 
     STARTUPINFO si = { sizeof(STARTUPINFO) };
     PROCESS_INFORMATION pi = { 0 };
+
     auto succeeded = CreateProcessW(file.c_str(),
-                                    const_cast<LPWSTR>(executable_args.c_str()),
+                                    &executable_args[0],
                                     nullptr,
                                     nullptr,
                                     FALSE,
@@ -464,7 +466,7 @@ inline bool check_user_is_admin()
     }
 
     // Allocate the buffer.
-    pGroupInfo = (PTOKEN_GROUPS)GlobalAlloc(GPTR, dwSize);
+    pGroupInfo = static_cast<PTOKEN_GROUPS>(GlobalAlloc(GPTR, dwSize));
 
     // Call GetTokenInformation again to get the group information.
     if (!GetTokenInformation(hToken, TokenGroups, pGroupInfo, dwSize, &dwSize))

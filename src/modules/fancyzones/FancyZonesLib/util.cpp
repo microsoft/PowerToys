@@ -248,32 +248,6 @@ namespace FancyZonesUtils
         return closestIdx;
     }
 
-    RECT PrepareRectForCycling(RECT windowRect, RECT workAreaRect, DWORD vkCode) noexcept
-    {
-        LONG deltaX = 0, deltaY = 0;
-        switch (vkCode)
-        {
-        case VK_UP:
-            deltaY = workAreaRect.bottom - workAreaRect.top;
-            break;
-        case VK_DOWN:
-            deltaY = workAreaRect.top - workAreaRect.bottom;
-            break;
-        case VK_LEFT:
-            deltaX = workAreaRect.right - workAreaRect.left;
-            break;
-        case VK_RIGHT:
-            deltaX = workAreaRect.left - workAreaRect.right;
-        }
-
-        windowRect.left += deltaX;
-        windowRect.right += deltaX;
-        windowRect.top += deltaY;
-        windowRect.bottom += deltaY;
-
-        return windowRect;
-    }
-
     void SwallowKey(const WORD key) noexcept
     {
         INPUT inputKey[1] = {};

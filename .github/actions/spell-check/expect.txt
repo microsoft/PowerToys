@@ -1479,6 +1479,7 @@ rescap
 resgen
 resheader
 resizers
+RESIZETOFIT
 resmimetype
 RESOURCEID
 resourcemanager

@@ -38,7 +38,7 @@ namespace RemappingLogicTests
                 }
                 else
                 {
-                    return (intptr_t)1;
+                    return 1LL;
                 }
             });
         }

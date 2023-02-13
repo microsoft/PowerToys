@@ -206,7 +206,7 @@ void notifications::show_toast(std::wstring message, std::wstring title, toast_p
     show_toast_with_activations(std::move(message), std::move(title), {}, {}, std::move(params));
 }
 
-inline void xml_escape(std::wstring data)
+constexpr inline void xml_escape(std::wstring data)
 {
     std::wstring buffer;
     buffer.reserve(data.size());

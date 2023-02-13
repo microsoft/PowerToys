@@ -132,7 +132,7 @@ void Highlighter::AddDrawingPoint(MouseButton button)
     auto circleGeometry = m_compositor.CreateEllipseGeometry();
     circleGeometry.Radius({ m_radius, m_radius });
     auto circleShape = m_compositor.CreateSpriteShape(circleGeometry);
-    circleShape.Offset({ (float)pt.x, (float)pt.y });
+    circleShape.Offset({ static_cast<float>(pt.x), static_cast<float>(pt.y )});
     if (button == MouseButton::Left)
     {
         circleShape.FillBrush(m_compositor.CreateColorBrush(m_leftClickColor));
@@ -166,12 +166,12 @@ void Highlighter::UpdateDrawingPointPosition(MouseButton button)
 
     if (button == MouseButton::Left)
     {
-        m_leftPointer.Offset({ (float)pt.x, (float)pt.y });
+        m_leftPointer.Offset({ static_cast<float>(pt.x), static_cast<float>(pt.y )});
     }
     else
     {
         //right
-        m_rightPointer.Offset({ (float)pt.x, (float)pt.y });
+        m_rightPointer.Offset({ static_cast<float>(pt.x), static_cast<float>(pt.y )});
     }
 }
 void Highlighter::StartDrawingPointFading(MouseButton button)
@@ -217,7 +217,7 @@ LRESULT CALLBACK Highlighter::MouseHookProc(int nCode, WPARAM wParam, LPARAM lPa
 {
     if (nCode >= 0)
     {
-        MSLLHOOKSTRUCT* hookData = (MSLLHOOKSTRUCT*)lParam;
+        MSLLHOOKSTRUCT* hookData = reinterpret_cast<MSLLHOOKSTRUCT*>(lParam);
         switch (wParam)
         {
         case WM_LBUTTONDOWN:
@@ -293,7 +293,7 @@ void Highlighter::SwitchActivationMode()
 }
 
 void Highlighter::ApplySettings(MouseHighlighterSettings settings) {
-    m_radius = (float)settings.radius;
+    m_radius = static_cast<float>(settings.radius);
     m_fadeDelay_ms = settings.fadeDelayMs;
     m_fadeDuration_ms = settings.fadeDurationMs;
     m_leftClickColor = settings.leftButtonColor;
@@ -349,7 +349,7 @@ bool Highlighter::MyRegisterClass(HINSTANCE hInstance)
         wc.hInstance = hInstance;
         wc.hIcon = LoadIcon(hInstance, IDI_APPLICATION);
         wc.hCursor = LoadCursor(nullptr, IDC_ARROW);
-        wc.hbrBackground = (HBRUSH)GetStockObject(NULL_BRUSH);
+        wc.hbrBackground = static_cast<HBRUSH>(GetStockObject(NULL_BRUSH));
         wc.lpszClassName = m_className;
 
         if (!RegisterClassW(&wc))

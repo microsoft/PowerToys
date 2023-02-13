@@ -26,8 +26,11 @@ namespace Microsoft.PowerToys.ThumbnailHandler.Pdf
 
                     _thumbnailProvider = new PdfThumbnailProvider(filePath);
                     Bitmap thumbnail = _thumbnailProvider.GetThumbnail(cx);
-                    filePath = filePath.Replace(".pdf", ".bmp");
-                    thumbnail.Save(filePath, System.Drawing.Imaging.ImageFormat.Bmp);
+                    if (thumbnail != null)
+                    {
+                        filePath = filePath.Replace(".pdf", ".bmp");
+                        thumbnail.Save(filePath, System.Drawing.Imaging.ImageFormat.Bmp);
+                    }
                 }
                 else
                 {

@@ -54,7 +54,7 @@
     <ClInclude Include="SecondaryMouseButtonsHook.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="MonitorWorkAreaHandler.h">
+    <ClInclude Include="MonitorWorkAreaMap.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="GenericKeyHook.h">
@@ -197,7 +197,7 @@
     <ClCompile Include="SecondaryMouseButtonsHook.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="MonitorWorkAreaHandler.cpp">
+    <ClCompile Include="MonitorWorkAreaMap.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="FancyZonesData.cpp">

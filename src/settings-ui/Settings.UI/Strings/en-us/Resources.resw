@@ -2015,7 +2015,7 @@ From there, simply click on one of the supported files in the File Explorer and 
     <comment>Mouse as in the hardware peripheral.</comment>
   </data>
   <data name="Oobe_MouseUtils_MouseHighlighter_Description.Text" xml:space="preserve">
-    <value>Use a keyboard shortcut highlight left and right mouse clicks.</value>
+    <value>Use a keyboard shortcut to highlight left and right mouse clicks.</value>
     <comment>Mouse as in the hardware peripheral.</comment>
   </data>
   <data name="Oobe_MouseUtils_MousePointerCrosshairs.Text" xml:space="preserve">
@@ -2742,6 +2742,9 @@ Activate by holding the key for the character you want to add an accent to, then
   </data>
   <data name="QuickAccent_SelectedLanguage_Estonian.Content" xml:space="preserve">
     <value>Estonian</value>
+  </data>
+  <data name="QuickAccent_SelectedLanguage_Lithuanian.Content" xml:space="preserve">
+    <value>Lithuanian</value>
   </data>
   <data name="QuickAccent_SelectedLanguage_Macedonian.Content" xml:space="preserve">
     <value>Macedonian</value>
