@@ -1235,7 +1235,7 @@
     <value>Only available on mobile and if the enterprise has deployed a provisioning package.</value>
   </data>
   <data name="NoteNoMscFileExist" xml:space="preserve">
-    <value>You have to add this Snap-in manually.</value>
+    <value>You have to add this snap-in manually.</value>
   </data>
   <data name="NoteSince18362" xml:space="preserve">
     <value>Added in Windows 10, version 1903 (build 18362).</value>

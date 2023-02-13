@@ -2833,7 +2833,7 @@ namespace Microsoft.PowerToys.Run.Plugin.WindowsSettings.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to You have to add this Snap-in manually..
+        ///   Looks up a localized string similar to You have to add this snap-in manually..
         /// </summary>
         internal static string NoteNoMscFileExist {
             get {
