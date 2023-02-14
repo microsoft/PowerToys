@@ -24,8 +24,4 @@
     <Compile Remove=".\$(MockDirectory)\Contract\*.cs" />
   </ItemGroup>
 
-  <!-- Experimentation is not live, forcing inclusion -->
-  <ItemGroup Condition="'$(IsExperimentationLive)'==''">
-
-  </ItemGroup>
 </Project>
