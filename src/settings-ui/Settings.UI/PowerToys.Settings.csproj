@@ -125,6 +125,9 @@
     <Page Update="OOBE\Views\OobeHosts.xaml">
       <Generator>MSBuild:Compile</Generator>
     </Page>
+    <Page Update="Views\RegistryPreviewPage.xaml">
+      <XamlRuntime>$(DefaultXamlRuntime)</XamlRuntime>
+    </Page>
   </ItemGroup>
   <ItemGroup>
     <Page Update="OOBE\Views\OobePowerOCR.xaml">

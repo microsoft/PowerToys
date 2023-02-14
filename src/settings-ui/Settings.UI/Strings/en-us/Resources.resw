@@ -2931,4 +2931,18 @@ Activate by holding the key for the character you want to add an accent to, then
   <data name="UpdateAvailable.Title" xml:space="preserve">
     <value>Update available</value>
   </data>
+  <data name="RegistryPreview.ModuleDescription" xml:space="preserve">
+    <value>This is a quick little utility to visualize complex registry files.</value>
+  </data>
+  <data name="RegistryPreview.ModuleTitle" xml:space="preserve">
+    <value>Registry Preview</value>
+  </data>
+  <data name="Shell_RegistryPreview.Content" xml:space="preserve">
+    <value>Registry Preview</value>
+    <comment>Product name: Navigation view item name for Registry Preview</comment>
+  </data>
+  <data name="RegistryPreview_Enable_RegistryPreview.Header" xml:space="preserve">
+    <value>Enable Registry Preview</value>
+    <comment>Registry Preview is the name of the utility</comment>
+  </data>
 </root>

@@ -96,6 +96,10 @@ namespace winrt::PowerToys::GPOWrapper::implementation
     {
         return (GpoRuleConfigured)powertoys_gpo::getConfiguredQuickAccentEnabledValue();
     }
+    GpoRuleConfigured GPOWrapper::GetConfiguredRegistryPreviewEnabledValue()
+    {
+        return (GpoRuleConfigured)powertoys_gpo::getConfiguredRegistryPreviewEnabledValue();
+    }
     GpoRuleConfigured GPOWrapper::GetConfiguredScreenRulerEnabledValue()
     {
         return (GpoRuleConfigured)powertoys_gpo::getConfiguredScreenRulerEnabledValue();
