@@ -209,7 +209,7 @@ void Toolbar::show(std::wstring position, std::wstring monitorString)
     wc.hInstance = GetModuleHandleW(nullptr);
     wc.lpszClassName = CLASS_NAME;
     wc.hCursor = LoadCursor(nullptr, IDC_ARROW);
-    wc.hbrBackground = (HBRUSH)COLOR_WINDOW;
+    wc.hbrBackground = reinterpret_cast<HBRUSH>(COLOR_WINDOW);
     wc.lpfnWndProc = WindowProcessMessages;
     RegisterClassW(&wc);
 
@@ -282,7 +282,7 @@ void Toolbar::show(std::wstring position, std::wstring monitorString)
 
         auto transparentColorKey = RGB(0, 0, 255);
         HBRUSH brush = CreateSolidBrush(transparentColorKey);
-        SetClassLongPtr(hwnd, GCLP_HBRBACKGROUND, (LONG_PTR)brush);
+        SetClassLongPtr(hwnd, GCLP_HBRBACKGROUND, reinterpret_cast<LONG_PTR>(brush));
 
         SetLayeredWindowAttributes(hwnd, transparentColorKey, 0, LWA_COLORKEY);
 

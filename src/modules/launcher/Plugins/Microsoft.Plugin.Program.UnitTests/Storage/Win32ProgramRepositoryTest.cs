@@ -331,7 +331,7 @@ namespace Microsoft.Plugin.Program.UnitTests.Storage
                 ExecutableName = "path.exe",
                 ParentDirectory = "directory",
                 FullPath = "directory\\path.exe",
-                LnkResolvedPath = "directory\\path.lnk", // This must be equal for lnk applications
+                LnkFilePath = "directory\\path.lnk", // This must be equal for lnk applications
             };
             win32ProgramRepository.Add(item);
 

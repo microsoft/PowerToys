@@ -51,10 +51,11 @@ public:
     bool MoveWindowIntoZoneByDirectionAndPosition(HWND window, DWORD vkCode, bool cycle);
     bool ExtendWindowByDirectionAndPosition(HWND window, DWORD vkCode);
 
-    void SnapWindow(HWND window, const ZoneIndexSet& zones);
+    void SnapWindow(HWND window, const ZoneIndexSet& zones, bool extend = false);
     void UnsnapWindow(HWND window);
 
     void UpdateActiveZoneSet();
+    void UpdateWindowPositions();
 
     void ShowZonesOverlay(const ZoneIndexSet& highlight, HWND draggedWindow = nullptr);
     void HideZonesOverlay();

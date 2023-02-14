@@ -296,7 +296,7 @@ bool MappingConfiguration::SaveSettingsToFile()
     for (const auto& it : singleKeyReMap)
     {
         json::JsonObject keys;
-        keys.SetNamedValue(KeyboardManagerConstants::OriginalKeysSettingName, json::value(winrt::to_hstring((unsigned int)it.first)));
+        keys.SetNamedValue(KeyboardManagerConstants::OriginalKeysSettingName, json::value(winrt::to_hstring(static_cast<unsigned int>(it.first))));
 
         // For key to key remapping
         if (it.second.index() == 0)

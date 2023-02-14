@@ -111,7 +111,7 @@ bool ReencodeJPGImage(BYTE* imageBuf, const DWORD imageSize, DWORD& reencodedSiz
     auto jpgStreamMemory = static_cast<uint8_t*>(GlobalLock(streamMemoryHandle));
     std::copy(jpgStreamMemory, jpgStreamMemory + jpgStreamSize, imageBuf);
     auto unlockJpgStreamMemory = wil::scope_exit([jpgStreamMemory] { GlobalUnlock(jpgStreamMemory); });
-    reencodedSize = (DWORD)jpgStreamSize;
+    reencodedSize = static_cast<DWORD>(jpgStreamSize);
     return true;
 }
 
