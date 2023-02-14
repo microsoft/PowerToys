@@ -35,7 +35,6 @@
     <ProjectGuid>{697C6AF9-0A48-49A9-866C-67DA12384015}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
     <RootNamespace>RegistryPreviewExt</RootNamespace>
-
     <WindowsTargetPlatformVersion>10.0.19041.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
@@ -199,7 +198,7 @@
       <PreprocessorDefinitions>NDEBUG;REGISTRYPREVIEWEXT_EXPORTS;_WINDOWS;_USRDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <PrecompiledHeader>Use</PrecompiledHeader>
-      <AdditionalIncludeDirectories>../../;../../../;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\..\..\common\inc;..\..\..\common\Telemetry;..\..\;..\..\..\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
