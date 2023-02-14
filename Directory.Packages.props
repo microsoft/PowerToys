@@ -57,4 +57,8 @@
     <PackageVersion Include="Vanara.PInvoke.Shell32" Version="3.4.11" />
     <PackageVersion Include="WinUIEx" Version="1.8.0" />
   </ItemGroup>
+  <ItemGroup Condition="'$(IsExperimentationLive)'!=''">
+    <PackageVersion Include="Microsoft.VariantAssignment.Client" Version="2.4.17140001" />
+    <PackageVersion Include="Microsoft.VariantAssignment.Contract" Version="3.0.16990001" />
+  </ItemGroup>
 </Project>

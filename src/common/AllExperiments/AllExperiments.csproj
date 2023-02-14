@@ -16,10 +16,10 @@
 
   <!-- Experimentation is live, forcing inclusion -->
   <ItemGroup Condition="'$(IsExperimentationLive)'!=''">
-    <!-- Force Newtonsoft.Json version to avoid older one with vulnerabilities -->
-    <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
-    <PackageReference Include="Microsoft.VariantAssignment.Client" Version="2.4.17140001" />
-    <PackageReference Include="Microsoft.VariantAssignment.Contract" Version="3.0.16990001" />
+    <!-- Newtonsoft.Json is included and a version specified in Directory.Packages.props to avoid a vulnerability from older versions. -->
+    <PackageReference Include="Newtonsoft.Json" />
+    <PackageReference Include="Microsoft.VariantAssignment.Client" />
+    <PackageReference Include="Microsoft.VariantAssignment.Contract" />
     <Compile Remove=".\$(MockDirectory)\Client\*.cs" />
     <Compile Remove=".\$(MockDirectory)\Contract\*.cs" />
   </ItemGroup>
