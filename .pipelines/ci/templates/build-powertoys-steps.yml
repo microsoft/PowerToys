@@ -70,6 +70,14 @@ steps:
     restoreSolution: PowerToys.sln
     restoreDirectory: '$(Build.SourcesDirectory)\packages'
     
+
+- task: PowerShell@2
+  displayName: Verifying Notice.md and Nuget packages match
+  inputs:
+    filePath: '$(build.sourcesdirectory)\.pipelines\verifyNoticeMdAgainstNugetPackages.ps1'
+    arguments: -path '$(build.sourcesdirectory)\'
+    pwsh: true
+
 - task: VSBuild@1
   displayName: 'Build PowerToys.sln'
   inputs:
@@ -227,10 +235,3 @@ steps:
       **\powerpreviewTest.dll
       **\UnitTests-FancyZones.dll
       !**\obj\**
-  
-- task: PowerShell@2
-  displayName: Verifying Notice.md and Nuget packages match
-  inputs:
-    filePath: '$(build.sourcesdirectory)\.pipelines\verifyNoticeMdAgainstNugetPackages.ps1'
-    arguments: -path '$(build.sourcesdirectory)\'
-    pwsh: true
