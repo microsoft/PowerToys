@@ -13,11 +13,6 @@
 #include "resource.h"
 #include "Constants.h"
 
-//#include <common/utils/elevation.h>
-//#include <common/utils/winapi_error.h>
-//#include <common/utils/process_path.h>
-//#include <common/utils/os-detect.h>
-
 extern "C" IMAGE_DOS_HEADER __ImageBase;
 
 BOOL APIENTRY DllMain(HMODULE /*hModule*/, DWORD ul_reason_for_call, LPVOID /*lpReserved*/)
@@ -165,8 +160,23 @@ public:
     // Enable the powertoy
     virtual void enable()
     {
-        // TODO: set up the context menu for REG files
+        // Inject the Preview command into the context menu for REG files in Explorer
+        // Puts the values into HKCU to avoid having to elevate privledge
+        WCHAR executable_path[MAX_PATH];
+        ZeroMemory(executable_path, sizeof(executable_path));
+        GetCurrentDirectory(MAX_PATH, executable_path);
 
+        std::wstring command = executable_path;
+        command.append(L"\\modules\\RegistryPreview\\PowerToys.RegistryPreview.exe \"%1\"");
+
+        HKEY key{}, subKey{};
+        auto res = RegOpenKey(HKEY_CURRENT_USER, L"Software\\Classes\\regfile", &key);
+        res = RegCreateKey(key, L"shell\\preview\\command", &subKey);
+        res = RegSetValue(subKey, nullptr, REG_SZ, command.c_str(), sizeof(command.c_str()));
+        RegCloseKey(subKey);
+        RegCloseKey(key);
+
+        // let the DLL enable the app
         m_enabled = true;
         Trace::EnableRegistryPreview(true);
     };
@@ -175,12 +185,15 @@ public:
     {
         if (m_enabled)
         {
+            // let the DLL disable the app
             terminate_process();
 
             Trace::EnableRegistryPreview(false);
             Logger::trace(L"Disabling Registry Preview...");
 
-            // TODO: remove up the context menu for REG files
+            // Yeet the Registry setting so preview doesn't work anymore
+            auto res = RegDeleteKey(HKEY_CURRENT_USER, L"Software\\Classes\\regfile\\shell\\preview\\command");
+            res = RegDeleteKey(HKEY_CURRENT_USER, L"Software\\Classes\\regfile\\shell\\preview");
         }
 
         m_enabled = false;

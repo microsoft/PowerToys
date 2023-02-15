@@ -41,15 +41,18 @@ namespace RegistryPreview
             // Initialize the string table
             resourceLoader = ResourceLoader.GetForViewIndependentUse();
 
+            applicationDataContainer = null;
+
+            // TODO: replace with working settings.
             // attempt to load the settings via the current AppContainer
-            try
-            {
-                applicationDataContainer = ApplicationDataManager.CreateForPackageFamily(Package.Current.Id.FamilyName).LocalSettings;
-            }
-            catch
-            {
-                applicationDataContainer = ApplicationDataManager.CreateForPackageFamily("736d5a59-dea7-4177-9d37-57b41883614c_cs0kxz6c6q80t").LocalSettings;
-            }
+            // try
+            // {
+            //     applicationDataContainer = ApplicationDataManager.CreateForPackageFamily(Package.Current.Id.FamilyName).LocalSettings;
+            // }
+            // catch
+            // {
+            //     applicationDataContainer = ApplicationDataManager.CreateForPackageFamily("736d5a59-dea7-4177-9d37-57b41883614c_cs0kxz6c6q80t").LocalSettings;
+            // }
 
             // Attempts to force the visual tree to load faster
             this.Activate();

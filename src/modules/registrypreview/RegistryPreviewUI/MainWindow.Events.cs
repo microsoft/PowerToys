@@ -25,6 +25,12 @@ namespace RegistryPreview
         /// </summary>
         private void AppWindow_Closing(Microsoft.UI.Windowing.AppWindow sender, Microsoft.UI.Windowing.AppWindowClosingEventArgs args)
         {
+            if (applicationDataContainer == null)
+            {
+                return;
+            }
+
+            // TODO: replace with working settings.
             applicationDataContainer.Values["appWindow.Position.X"] = (int)appWindow.Position.X;
             applicationDataContainer.Values["appWindow.Position.Y"] = (int)appWindow.Position.Y;
             applicationDataContainer.Values["appWindow.Size.Width"] = (int)appWindow.Size.Width;
@@ -51,8 +57,12 @@ namespace RegistryPreview
                     resourceLoader.GetString("YesNoCancelDialogCloseButtonText"));
             }
 
+            // TODO: replace with working settings.
             // Save app settings
-            applicationDataContainer.Values["checkBoxTextBox.Checked"] = checkBoxTextBox.IsChecked;
+            if (applicationDataContainer != null)
+            {
+                applicationDataContainer.Values["checkBoxTextBox.Checked"] = checkBoxTextBox.IsChecked;
+            }
         }
 
         /// <summary>
@@ -63,8 +73,9 @@ namespace RegistryPreview
             // static flag to track whether the Visual Tree is ready - if the main Grid has been loaded, the tree is ready.
             visualTreeReady = true;
 
+            // TODO: replace with working settings.
             // Load and restore app settings
-            if (applicationDataContainer.Values["checkBoxTextBox.Checked"] != null)
+            if ((applicationDataContainer != null) && (applicationDataContainer.Values["checkBoxTextBox.Checked"] != null))
             {
                 checkBoxTextBox.IsChecked = (bool)applicationDataContainer.Values["checkBoxTextBox.Checked"];
             }
@@ -94,8 +105,9 @@ namespace RegistryPreview
             */
 
             // resize the window
-            if (applicationDataContainer.Values["appWindow.Size.Width"] != null)
+            if ((applicationDataContainer != null) && (applicationDataContainer.Values["appWindow.Size.Width"] != null))
             {
+                // TODO: replace with working settings.
                 SizeInt32 size;
                 size.Width = (int)applicationDataContainer.Values["appWindow.Size.Width"];
                 size.Height = (int)applicationDataContainer.Values["appWindow.Size.Height"];
@@ -103,8 +115,9 @@ namespace RegistryPreview
             }
 
             // reposition the window
-            if (applicationDataContainer.Values["appWindow.Position.X"] != null)
+            if ((applicationDataContainer != null) && (applicationDataContainer.Values["appWindow.Position.X"] != null))
             {
+                // TODO: replace with working settings.
                 PointInt32 point;
                 point.X = (int)applicationDataContainer.Values["appWindow.Position.X"];
                 point.Y = (int)applicationDataContainer.Values["appWindow.Position.Y"];

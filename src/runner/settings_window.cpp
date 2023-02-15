@@ -710,6 +710,10 @@ ESettingsWindowNames ESettingsWindowNames_from_string(std::string value)
     {
         return ESettingsWindowNames::Hosts;
     }
+    else if (value == "RegistryPreview")
+    {
+        return ESettingsWindowNames::RegistryPreview;
+    }
     else
     {
         Logger::error(L"Can't convert string value={} to ESettingsWindowNames", winrt::to_hstring(value));

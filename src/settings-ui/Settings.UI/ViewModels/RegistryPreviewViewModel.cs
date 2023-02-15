@@ -59,15 +59,11 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 if (_isRegistryPreviewEnabled != value)
                 {
                     _isRegistryPreviewEnabled = value;
-
-                    GeneralSettingsConfig.Enabled.RegistryPreview = value;
                     OnPropertyChanged(nameof(IsRegistryPreviewEnabled));
 
+                    GeneralSettingsConfig.Enabled.RegistryPreview = value;
                     OutGoingGeneralSettings outgoing = new OutGoingGeneralSettings(GeneralSettingsConfig);
                     SendConfigMSG(outgoing.ToString());
-
-                    // TODO: Implement when this module has properties.
-                    // NotifyPropertyChanged();
                 }
             }
         }
