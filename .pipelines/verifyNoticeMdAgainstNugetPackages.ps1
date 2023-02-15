@@ -13,7 +13,7 @@ Write-Host "Calling a dummy dotnet command to trigger the welcome message now in
 #Workaround for preventing exit code from dotnet process from reflecting exit code in PowerShell
 $dummyProcInfo = New-Object System.Diagnostics.ProcessStartInfo -Property @{
     FileName               = "dotnet.exe";
-    Arguments              = "--version";
+    Arguments              = "list $path\src\common\Common.UI\Common.UI.csproj package";
     RedirectStandardOutput = $true;
     RedirectStandardError  = $true;
 }
@@ -28,7 +28,10 @@ while (!$dummyProc.StandardOutput.EndOfStream) {
 $dummyProc = $null;
 $dummyProcInfo = $null;
 
-Write-Host $dummyProcTemp + "`r`n"
+# Need to debug this script? Uncomment this line.
+Write-Host $dummyProcTemp "`r`n"
+
+Write-Host "Verifying NuGet packages"
 
 $projFiles = Get-ChildItem $path -Filter *.csproj -force -Recurse
 $projFiles.Count
@@ -58,7 +61,8 @@ $totalList = $projFiles | ForEach-Object -Parallel {
 
     if($nugetTemp -is [array] -and $nugetTemp.count -gt 3)
     {
-        Write-Host $csproj + "`r`n" + $nugetTemp + "`r`n"
+        # Need to debug this script? Uncomment this line.
+        Write-Host $csproj "`r`n" $nugetTemp "`r`n"
         $temp = New-Object System.Collections.ArrayList
         $temp.AddRange($nugetTemp)
         $temp.RemoveRange(0, 3)
