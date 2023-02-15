@@ -44,4 +44,8 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
   </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Previewers\DrivePreviewer\" />
+  </ItemGroup>
 </Project>

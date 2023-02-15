@@ -132,15 +132,18 @@ namespace Peek.UI
 
         private bool IsNewSingleSelectedItem()
         {
-            var selectedItems = FileExplorerHelper.GetSelectedItems();
-            if (!selectedItems.Any() || selectedItems.Skip(1).Any())
+            var foregroundWindowHandle = Windows.Win32.PInvoke.GetForegroundWindow();
+
+            var selectedItems = FileExplorerHelper.GetSelectedItems(foregroundWindowHandle);
+            var selectedItemsCount = selectedItems?.GetCount() ?? 0;
+            if (selectedItems == null || selectedItemsCount == 0 || selectedItemsCount > 1)
             {
                 return false;
             }
 
-            var fileExplorerSelectedItemPath = selectedItems.First().Path;
-            var currentFilePath = ViewModel.FolderItemsQuery.CurrentFile?.Path;
-            if (fileExplorerSelectedItemPath == null || currentFilePath == null || fileExplorerSelectedItemPath == currentFilePath)
+            var fileExplorerSelectedItemPath = selectedItems.GetItemAt(0).ToIFileSystemItem().Path;
+            var currentItemPath = ViewModel.FolderItemsQuery.CurrentItem?.Path;
+            if (fileExplorerSelectedItemPath == null || currentItemPath == null || fileExplorerSelectedItemPath == currentItemPath)
             {
                 return false;
             }

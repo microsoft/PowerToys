@@ -5,13 +5,16 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using CommunityToolkit.Mvvm.ComponentModel;
 using Microsoft.UI.Dispatching;
 using Peek.Common.Models;
+using Peek.UI.Extensions;
 using Peek.UI.Helpers;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace Peek.UI
 {
@@ -22,10 +25,7 @@ namespace Peek.UI
         private readonly DispatcherQueue _dispatcherQueue = DispatcherQueue.GetForCurrentThread();
 
         [ObservableProperty]
-        private IFileSystemItem? currentFile;
-
-        [ObservableProperty]
-        private List<IFileSystemItem> files = new();
+        private IFileSystemItem? currentItem;
 
         [ObservableProperty]
         private bool isMultiSelection;
@@ -33,13 +33,18 @@ namespace Peek.UI
         [ObservableProperty]
         private int currentItemIndex = UninitializedItemIndex;
 
+        [ObservableProperty]
+        private int fileCount;
+
+        private IShellItemArray? ShellItemArray { get; set; }
+
         private CancellationTokenSource CancellationTokenSource { get; set; } = new CancellationTokenSource();
 
         private Task? InitializeFilesTask { get; set; } = null;
 
         public void Clear()
         {
-            CurrentFile = null;
+            CurrentItem = null;
             IsMultiSelection = false;
 
             if (InitializeFilesTask != null && InitializeFilesTask.Status == TaskStatus.Running)
@@ -54,7 +59,7 @@ namespace Peek.UI
             {
                 _dispatcherQueue.TryEnqueue(() =>
                 {
-                    Files = new List<IFileSystemItem>();
+                    ShellItemArray = null;
                     CurrentItemIndex = UninitializedItemIndex;
                 });
             }
@@ -62,42 +67,50 @@ namespace Peek.UI
 
         public void UpdateCurrentItemIndex(int desiredIndex)
         {
-            if (Files.Count <= 1 || CurrentItemIndex == UninitializedItemIndex ||
+            if (FileCount <= 1 || CurrentItemIndex == UninitializedItemIndex ||
                 (InitializeFilesTask != null && InitializeFilesTask.Status == TaskStatus.Running))
             {
                 return;
             }
 
             // Current index wraps around when reaching min/max folder item indices
-            desiredIndex %= Files.Count;
-            CurrentItemIndex = desiredIndex < 0 ? Files.Count + desiredIndex : desiredIndex;
+            desiredIndex %= FileCount;
+            CurrentItemIndex = desiredIndex < 0 ? FileCount + desiredIndex : desiredIndex;
 
-            if (CurrentItemIndex < 0 || CurrentItemIndex >= Files.Count)
+            if (CurrentItemIndex < 0 || CurrentItemIndex >= FileCount)
             {
                 Debug.Assert(false, "Out of bounds folder item index detected.");
                 CurrentItemIndex = 0;
             }
 
-            CurrentFile = Files[CurrentItemIndex];
+            IShellItem? shellItem = ShellItemArray?.GetItemAt(CurrentItemIndex);
+            IFileSystemItem? item = shellItem?.ToIFileSystemItem();
+
+            CurrentItem = item;
         }
 
         public void Start()
         {
-            var selectedItems = FileExplorerHelper.GetSelectedItems();
-            if (!selectedItems.Any())
+            var stopwatch = new Stopwatch();
+            stopwatch.Start();
+            var foregroundWindowHandle = Windows.Win32.PInvoke.GetForegroundWindow();
+
+            var selectedItems = FileExplorerHelper.GetSelectedItems(foregroundWindowHandle);
+            var selectedItemsCount = selectedItems?.GetCount() ?? 0;
+            if (selectedItems == null || selectedItemsCount < 1)
             {
                 return;
             }
 
-            bool hasMoreThanOneItem = selectedItems.Skip(1).Any();
+            bool hasMoreThanOneItem = selectedItemsCount > 1;
             IsMultiSelection = hasMoreThanOneItem;
 
-            // Prioritize setting CurrentFile, which notifies UI
-            var firstSelectedItem = selectedItems.First();
-            CurrentFile = firstSelectedItem;
+            // Prioritize setting CurrentItem, which notifies UI
+            var firstSelectedItem = selectedItems.GetItemAt(0).ToIFileSystemItem();
+            CurrentItem = firstSelectedItem;
 
-            // TODO: we shouldn't get all files from the SHell API, we should query them
-            var items = hasMoreThanOneItem ? selectedItems : FileExplorerHelper.GetItems();
+            // TODO: we shouldn't get all files from the Shell API, we should query them
+            var items = hasMoreThanOneItem ? selectedItems : FileExplorerHelper.GetItems(foregroundWindowHandle);
             if (items == null)
             {
                 return;
@@ -116,6 +129,9 @@ namespace Peek.UI
 
                 // Execute file initialization/querying on background thread
                 InitializeFilesTask.Start();
+
+                stopwatch.Stop();
+                var elapsed = stopwatch.ElapsedMilliseconds;
             }
             catch (Exception e)
             {
@@ -133,18 +149,11 @@ namespace Peek.UI
         //  the entire folder. We can then avoid iterating through all items here, and maintain a dynamic window of
         //  loaded items around the current item index.
         private void InitializeFiles(
-            IEnumerable<IFileSystemItem> items,
+            IShellItemArray items,
             IFileSystemItem firstSelectedItem,
             CancellationToken cancellationToken)
         {
-            var listOfItems = items.ToList();
-            var currentItemIndex = listOfItems.FindIndex(item => item.Path == firstSelectedItem.Path);
-
-            if (currentItemIndex < 0)
-            {
-                Debug.WriteLine("File query initialization: selectedItem index not found. Navigation remains disabled.");
-                return;
-            }
+            var currentItemIndex = 0;
 
             cancellationToken.ThrowIfCancellationRequested();
 
@@ -154,7 +163,8 @@ namespace Peek.UI
 
                 _dispatcherQueue.TryEnqueue(() =>
                 {
-                    Files = listOfItems;
+                    FileCount = items.GetCount();
+                    ShellItemArray = items;
                     CurrentItemIndex = currentItemIndex;
                 });
             }

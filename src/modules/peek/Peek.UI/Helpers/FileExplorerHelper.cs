@@ -4,6 +4,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using Peek.Common.Models;
 using Peek.UI.Extensions;
@@ -18,19 +19,18 @@ namespace Peek.UI.Helpers
 {
     public static class FileExplorerHelper
     {
-        public static IEnumerable<IFileSystemItem> GetSelectedItems()
+        internal static IShellItemArray? GetSelectedItems(HWND foregroundWindowHandle)
         {
-            return GetItemsInternal(onlySelectedFiles: true);
+            return GetItemsInternal(foregroundWindowHandle, onlySelectedFiles: true);
         }
 
-        public static IEnumerable<IFileSystemItem> GetItems()
+        internal static IShellItemArray? GetItems(HWND foregroundWindowHandle)
         {
-            return GetItemsInternal(onlySelectedFiles: false);
+            return GetItemsInternal(foregroundWindowHandle, onlySelectedFiles: false);
         }
 
-        private static IEnumerable<IFileSystemItem> GetItemsInternal(bool onlySelectedFiles)
+        private static IShellItemArray? GetItemsInternal(HWND foregroundWindowHandle, bool onlySelectedFiles)
         {
-            var foregroundWindowHandle = PInvoke.GetForegroundWindow();
             if (foregroundWindowHandle.IsDesktopWindow())
             {
                 return GetItemsFromDesktop(foregroundWindowHandle, onlySelectedFiles);
@@ -41,7 +41,7 @@ namespace Peek.UI.Helpers
             }
         }
 
-        private static IEnumerable<IFileSystemItem> GetItemsFromDesktop(HWND foregroundWindowHandle, bool onlySelectedFiles)
+        private static IShellItemArray? GetItemsFromDesktop(HWND foregroundWindowHandle, bool onlySelectedFiles)
         {
             const int SWC_DESKTOP = 8;
             const int SWFO_NEEDDISPATCH = 1;
@@ -58,13 +58,13 @@ namespace Peek.UI.Helpers
             shellView.Items(selectionFlag, typeof(IShellItemArray).GUID, out var items);
             if (items is IShellItemArray array)
             {
-                return array.ToEnumerable();
+                return array;
             }
 
-            return new List<IFileSystemItem>();
+            return null;
         }
 
-        private static IEnumerable<IFileSystemItem> GetItemsFromFileExplorer(HWND foregroundWindowHandle, bool onlySelectedFiles)
+        private static IShellItemArray? GetItemsFromFileExplorer(HWND foregroundWindowHandle, bool onlySelectedFiles)
         {
             var activeTab = foregroundWindowHandle.GetActiveTab();
 
@@ -83,31 +83,33 @@ namespace Peek.UI.Helpers
 
                     if (activeTab == shellBrowserHandle)
                     {
-                        var items = onlySelectedFiles ? shellFolderView.SelectedItems() : shellFolderView.Folder?.Items();
-                        return items != null ? items.ToEnumerable() : new List<IFileSystemItem>();
+                        var shellView = (IFolderView)shellBrowser.QueryActiveShellView();
+
+                        var selectionFlag = onlySelectedFiles ? (uint)_SVGIO.SVGIO_SELECTION : (uint)_SVGIO.SVGIO_ALLVIEW;
+                        shellView.Items(selectionFlag, typeof(IShellItemArray).GUID, out var items);
+                        if (items is IShellItemArray array)
+                        {
+                            return array;
+                        }
                     }
                 }
             }
 
-            return new List<IFileSystemItem>();
+            return null;
         }
 
         private static IEnumerable<IFileSystemItem> ToEnumerable(this IShellItemArray array)
         {
+            var stopwatch = new Stopwatch();
+            stopwatch.Start();
+            var count = array.GetCount();
+            stopwatch.Stop();
+            var elasped = stopwatch.Elapsed;
+
             for (var i = 0; i < array.GetCount(); i++)
             {
                 IShellItem item = array.GetItemAt(i);
-                string path = string.Empty;
-                try
-                {
-                    path = item.GetDisplayName(SIGDN.SIGDN_FILESYSPATH);
-                }
-                catch (Exception)
-                {
-                    // TODO: Handle cases that do not have a file system path like Recycle Bin.
-                }
-
-                yield return File.Exists(path) ? new FileItem(path) : new FolderItem(path);
+                yield return item.ToIFileSystemItem();
             }
         }
 
