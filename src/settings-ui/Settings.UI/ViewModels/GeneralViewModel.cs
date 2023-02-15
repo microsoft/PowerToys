@@ -12,6 +12,7 @@ using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Text.Json;
 using System.Threading.Tasks;
+using global::PowerToys.GPOWrapper;
 using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.PowerToys.Settings.UI.Library.Helpers;
 using Microsoft.PowerToys.Settings.UI.Library.Interfaces;
@@ -140,6 +141,8 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             _newAvailableVersionLink = UpdatingSettingsConfig.ReleasePageLink;
             _updateCheckedDate = UpdatingSettingsConfig.LastCheckedDateLocalized;
 
+            _experimentationIsGpoDisallowed = GPOWrapper.GetAllowExperimentationValue() == GpoRuleConfigured.Disabled;
+
             if (dispatcherAction != null)
             {
                 _fileWatcher = Helper.GetFileWatcher(string.Empty, UpdatingSettings.SettingsFile, dispatcherAction);
@@ -154,6 +157,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         private bool _autoDownloadUpdates;
         private bool _enableExperimentation;
+        private bool _experimentationIsGpoDisallowed;
 
         private UpdatingSettings.UpdatingState _updatingState = UpdatingSettings.UpdatingState.UpToDate;
         private string _newAvailableVersion = string.Empty;
@@ -290,7 +294,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         {
             get
             {
-                return _enableExperimentation;
+                return _enableExperimentation && !_experimentationIsGpoDisallowed;
             }
 
             set
@@ -302,6 +306,11 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                     NotifyPropertyChanged();
                 }
             }
+        }
+
+        public bool IsExperimentationGpoDisallowed
+        {
+            get => _experimentationIsGpoDisallowed;
         }
 
         public static bool AutoUpdatesEnabled
