@@ -120,6 +120,9 @@ namespace Microsoft.PowerToys.Settings.UI
                     case "MouseHighlighter":
                         needToUpdate = generalSettingsConfig.Enabled.MouseHighlighter != isEnabled;
                         generalSettingsConfig.Enabled.MouseHighlighter = isEnabled; break;
+                    case "MouseJump":
+                        needToUpdate = generalSettingsConfig.Enabled.MouseJump != isEnabled;
+                        generalSettingsConfig.Enabled.MouseJump = isEnabled; break;
                     case "MousePointerCrosshairs":
                         needToUpdate = generalSettingsConfig.Enabled.MousePointerCrosshairs != isEnabled;
                         generalSettingsConfig.Enabled.MousePointerCrosshairs = isEnabled; break;
