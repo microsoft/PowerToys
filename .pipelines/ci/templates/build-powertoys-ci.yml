@@ -11,7 +11,6 @@ jobs:
     BuildPlatform: ${{ parameters.platform }}
     NUGET_RESTORE_MSBUILD_ARGS: /p:Platform=${{ parameters.platform }} # Required for nuget to work due to self contained
     NODE_OPTIONS: --max_old_space_size=16384
-    DOTNET_CLI_TELEMETRY_OPTOUT: 1 # opt out of telemetry to disable the telemetry warning when calling dotnet tools, which we expect to output an exact format
   pool:
     demands: ImageOverride -equals WinDevVS17-latest
     ${{ if eq(variables['System.CollectionUri'], 'https://dev.azure.com/ms/') }}:
