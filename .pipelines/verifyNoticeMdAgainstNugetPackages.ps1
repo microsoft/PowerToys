@@ -13,7 +13,7 @@ Write-Host "Calling a dummy dotnet command to trigger the welcome message now in
 #Workaround for preventing exit code from dotnet process from reflecting exit code in PowerShell
 $dummyProcInfo = New-Object System.Diagnostics.ProcessStartInfo -Property @{
     FileName               = "dotnet.exe";
-    Arguments              = " --version";
+    Arguments              = "--version";
     RedirectStandardOutput = $true;
     RedirectStandardError  = $true;
 }
@@ -21,8 +21,8 @@ $dummyProcInfo = New-Object System.Diagnostics.ProcessStartInfo -Property @{
 $dummyProc = [System.Diagnostics.Process]::Start($dummyProcInfo);
 $dummyProcTemp = @();
 
-while (!$proc.StandardOutput.EndOfStream) {
-    $dummyProcTemp += $proc.StandardOutput.ReadLine();
+while (!$dummyProc.StandardOutput.EndOfStream) {
+    $dummyProcTemp += $dummyProc.StandardOutput.ReadLine();
 }
 
 $dummyProc = $null;
