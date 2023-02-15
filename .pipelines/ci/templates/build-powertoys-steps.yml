@@ -55,13 +55,6 @@ steps:
     packageType: sdk
     version: '7.x'
 
-- task: PowerShell@2
-  displayName: Trigger dotnet welcome message so that it does not cause errors on other scripts
-  inputs:
-    targetType: 'inline'
-    script: |
-      dotnet list $(build.sourcesdirectory)\src\common\Common.UI\Common.UI.csproj package
-
 - task: NuGetToolInstaller@1
   displayName: Ensure NuGet Installer
 
@@ -76,7 +69,13 @@ steps:
     configPath: NuGet.config
     restoreSolution: PowerToys.sln
     restoreDirectory: '$(Build.SourcesDirectory)\packages'
-    
+
+- task: PowerShell@2
+  displayName: Trigger dotnet welcome message so that it does not cause errors on other scripts
+  inputs:
+    targetType: 'inline'
+    script: |
+      dotnet list $(build.sourcesdirectory)\src\common\Common.UI\Common.UI.csproj package
 
 - task: PowerShell@2
   displayName: Verifying Notice.md and Nuget packages match
