@@ -70,7 +70,7 @@ BOOL RegisterDLLWindowClass(LPCWSTR szClassName, Mocks::HwndCreator* creator)
     wc.lpszMenuName = NULL;
     wc.cbClsExtra = 0;
     wc.cbWndExtra = 0;
-    wc.hbrBackground = (HBRUSH)COLOR_BACKGROUND;
+    wc.hbrBackground = reinterpret_cast<HBRUSH>(COLOR_BACKGROUND);
 
     auto regRes = RegisterClassEx(&wc);
     return regRes;
@@ -83,9 +83,9 @@ DWORD WINAPI ThreadProc(LPVOID lpParam)
     if (!creator)
         return static_cast<DWORD>(-1);
 
-    if (RegisterDLLWindowClass((LPCWSTR)creator->getWindowClassName().c_str(), creator) != 0)
+    if (RegisterDLLWindowClass(creator->getWindowClassName().c_str(), creator) != 0)
     {
-        auto hWnd = CreateWindowEx(0, (LPCWSTR)creator->getWindowClassName().c_str(), (LPCWSTR)creator->getTitle().c_str(), WS_EX_APPWINDOW, CW_USEDEFAULT, CW_USEDEFAULT, 10, 10, nullptr, nullptr, creator->getHInstance(), NULL);
+        auto hWnd = CreateWindowEx(0, creator->getWindowClassName().c_str(), creator->getTitle().c_str(), WS_EX_APPWINDOW, CW_USEDEFAULT, CW_USEDEFAULT, 10, 10, nullptr, nullptr, creator->getHInstance(), NULL);
         SetWindowPos(hWnd, HWND_TOPMOST, 10, 10, 100, 100, SWP_SHOWWINDOW);
         creator->setHwnd(hWnd);
         creator->setCondition(true);
@@ -130,7 +130,7 @@ namespace Mocks
         m_conditionFlag = false;
         std::unique_lock<std::mutex> lock(m_mutex);
 
-        m_thread = CreateThread(0, NULL, ThreadProc, (LPVOID)this, NULL, NULL);
+        m_thread = CreateThread(0, NULL, ThreadProc, reinterpret_cast<LPVOID>(this), NULL, NULL);
         m_conditionVar.wait(lock, [this] { return m_conditionFlag; });
 
         return m_hWnd;

@@ -19,13 +19,13 @@
       <?endforeach?>
       <!-- !Warning! Make sure to change Component Guid if you update something here -->
       <Component Id="Module_PowerRename" Guid="40D43079-240E-402D-8CE8-571BFFA71175" Win64="yes">
-        <RegistryKey Root="HKCU" Key="Software\Classes\CLSID\{0440049F-D1DC-4E46-B27B-98393D79486B}">
+        <RegistryKey Root="HKLM" Key="Software\Classes\CLSID\{0440049F-D1DC-4E46-B27B-98393D79486B}">
           <RegistryValue Type="string" Value="PowerRename Shell Extension" />
           <RegistryValue Type="string" Name="ContextMenuOptIn" Value="" />
           <RegistryValue Type="string" Key="InprocServer32" Value="[PowerRenameInstallFolder]PowerToys.PowerRenameExt.dll" />
           <RegistryValue Type="string" Key="InprocServer32" Name="ThreadingModel" Value="Apartment" />
         </RegistryKey>
-        <RegistryKey Root="HKCU" Key="SOFTWARE\Classes\AllFileSystemObjects\ShellEx\ContextMenuHandlers\PowerRenameExt">
+        <RegistryKey Root="HKLM" Key="SOFTWARE\Classes\AllFileSystemObjects\ShellEx\ContextMenuHandlers\PowerRenameExt">
           <RegistryValue Type="string" Value="{0440049F-D1DC-4E46-B27B-98393D79486B}"/>
         </RegistryKey>
 

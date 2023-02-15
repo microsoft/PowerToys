@@ -26,8 +26,11 @@ namespace Microsoft.PowerToys.ThumbnailHandler.Gcode
 
                     _thumbnailProvider = new GcodeThumbnailProvider(filePath);
                     Bitmap thumbnail = _thumbnailProvider.GetThumbnail(cx);
-                    filePath = filePath.Replace(".gcode", ".bmp");
-                    thumbnail.Save(filePath, System.Drawing.Imaging.ImageFormat.Bmp);
+                    if (thumbnail != null)
+                    {
+                        filePath = filePath.Replace(".gcode", ".bmp");
+                        thumbnail.Save(filePath, System.Drawing.Imaging.ImageFormat.Bmp);
+                    }
                 }
                 else
                 {
