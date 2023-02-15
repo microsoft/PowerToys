@@ -56,7 +56,7 @@ steps:
     version: '7.x'
 
 - task: PowerShell@2
-  displayName: 'Trigger dotnet welcome message so that it doesn't cause errors on other scripts'
+  displayName: Trigger dotnet welcome message so that it does not cause errors on other scripts
   inputs:
     targetType: 'inline'
     script: |
