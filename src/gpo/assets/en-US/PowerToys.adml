@@ -29,7 +29,7 @@ If you disable this setting, the utility will be always disabled and the user wo
 
 If you don't configure this setting, users are able to disable or enable the utility.
 </string>
-      <string id="ConfigureEnabledUtilityDescription"> This policy configures whether PowerToys experimentation is allowed.
+      <string id="AllowExperimentationDescription">This policy configures whether PowerToys experimentation is allowed.
 
 Disable this setting to disable the experimentation features in PowerToys, meaning the user won't see the new features being experimented even if it gets selected as part of the test group.
 
