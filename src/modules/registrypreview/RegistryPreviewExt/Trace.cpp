@@ -18,6 +18,7 @@ void Trace::UnregisterProvider()
     TraceLoggingUnregister(g_hProvider);
 }
 
+// Log if the user has enabled or disabled the app
 void Trace::EnableRegistryPreview(_In_ bool enabled) noexcept
 {
     TraceLoggingWrite(
@@ -26,4 +27,14 @@ void Trace::EnableRegistryPreview(_In_ bool enabled) noexcept
         ProjectTelemetryPrivacyDataTag(ProjectTelemetryTag_ProductAndServicePerformance),
         TraceLoggingKeyword(PROJECT_KEYWORD_MEASURE),
         TraceLoggingBoolean(enabled, "Enabled"));
+}
+
+// Log that the user tried to activate the app
+void Trace::ActivateEditor() noexcept
+{
+    TraceLoggingWrite(
+        g_hProvider,
+        "RegistryPreview_Activate",
+        ProjectTelemetryPrivacyDataTag(ProjectTelemetryTag_ProductAndServicePerformance),
+        TraceLoggingKeyword(PROJECT_KEYWORD_MEASURE));
 }

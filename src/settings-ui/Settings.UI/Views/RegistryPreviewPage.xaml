@@ -32,6 +32,7 @@
 
             </StackPanel>
         </controls:SettingsPageControl.ModuleContent>
+        
         <controls:SettingsPageControl.PrimaryLinks>
             <controls:PageLink
                 x:Uid="LearnMore_RegistryPreview"

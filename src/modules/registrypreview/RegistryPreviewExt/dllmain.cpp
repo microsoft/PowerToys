@@ -139,6 +139,26 @@ public:
         return settings.serialize_to_buffer(buffer, buffer_size);
     }
 
+    // Pop open the app, if the OOBE page asks it to
+    virtual void call_custom_action(const wchar_t* action) override
+    {
+        try
+        {
+            PowerToysSettings::CustomActionObject action_object =
+                PowerToysSettings::CustomActionObject::from_json_string(action);
+
+            if (action_object.get_name() == L"Launch")
+            {
+                launch_process();
+            }
+            Trace::ActivateEditor();
+        }
+        catch (std::exception&)
+        {
+            Logger::error(L"Failed to parse action. {}", action);
+        }
+    }
+
     // Called by the runner to pass the updated settings values as a serialized JSON.
     virtual void set_config(const wchar_t* config) override
     {
