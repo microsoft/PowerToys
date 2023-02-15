@@ -2830,6 +2830,10 @@ Activate by holding the key for the character you want to add an accent to, then
     <value>Launch Host File Editor</value>
     <comment>"Host File Editor" is a product name</comment>
   </data>
+  <data name="Hosts_LaunchButton_Accessible.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>Launch Host File Editor</value>
+    <comment>"Host File Editor" is a product name</comment>
+  </data>
   <data name="Hosts_AdditionalLinesPosition.Header" xml:space="preserve">
     <value>Position of additional content</value>
   </data>
@@ -2890,6 +2894,39 @@ Activate by holding the key for the character you want to add an accent to, then
   </data>
   <data name="TextExtractor_Languages.Header" xml:space="preserve">
     <value>Preferred language</value>
+  </data>
+  <data name="Alternate_OOBE_AlwaysOnTop_Description.Text" xml:space="preserve">
+    <value>Pin a window so that:</value>
+  </data>
+  <data name="Alternate_OOBE_AlwaysOnTop_Title.Text" xml:space="preserve">
+    <value>Always On Top</value>
+  </data>
+  <data name="Alternate_OOBE_ColorPicker_Description.Text" xml:space="preserve">
+    <value>To pick a color:</value>
+  </data>
+  <data name="Alternate_OOBE_ColorPicker_Title.Text" xml:space="preserve">
+    <value>Color Picker</value>
+  </data>
+  <data name="Alternate_OOBE_Description.Text" xml:space="preserve">
+    <value>Here are a few shortcuts to get you started:</value>
+  </data>
+  <data name="Alternate_OOBE_FancyZones_Description.Text" xml:space="preserve">
+    <value>To open the FancyZones editor, press:</value>
+  </data>
+  <data name="Alternate_OOBE_FancyZones_Title.Text" xml:space="preserve">
+    <value>FancyZones</value>
+  </data>
+  <data name="Alternate_OOBE_Run_Description.Text" xml:space="preserve">
+    <value>Get access to your files and more:</value>
+  </data>
+  <data name="Alternate_OOBE_Run_Title.Text" xml:space="preserve">
+    <value>PowerToys Run</value>
+  </data>
+  <data name="GeneralPage_EnableExperimentation.Description" xml:space="preserve">
+    <value>Only affects Windows Insider builds</value>
+  </data>
+  <data name="GeneralPage_EnableExperimentation.Header" xml:space="preserve">
+    <value>Enable experimentation</value>
   </data>
   <data name="AllAppsTxt.Text" xml:space="preserve">
     <value>All apps</value>

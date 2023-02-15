@@ -56,6 +56,9 @@
 		<RestoreAdditionalProjectSources>https://pkgs.dev.azure.com/dotnet/CommunityToolkit/_packaging/CommunityToolkit-Labs/nuget/v3/index.json</RestoreAdditionalProjectSources>
 	</PropertyGroup>
 	<ItemGroup>
+	  <None Remove="OOBE\Views\OobeOverviewPlaceholder.xaml" />
+	</ItemGroup>
+	<ItemGroup>
 	  <None Remove="Controls\ColorFormatEditor.xaml" />
 	</ItemGroup>
 
@@ -91,15 +94,19 @@
   <!-- Defining the "Msix" ProjectCapability here allows the Single-project MSIX Packaging
        Tools extension to be activated for this project even if the Windows App SDK Nuget
        package has not yet been restored -->
+	
   <ItemGroup Condition="'$(DisableMsixProjectCapabilityAddedByProject)'!='true' and '$(EnablePreviewMsixTooling)'=='true'">
     <ProjectCapability Include="Msix" />
   </ItemGroup>
+	
   <ItemGroup>
+    <ProjectReference Include="..\..\common\AllExperiments\AllExperiments.csproj" />
     <ProjectReference Include="..\..\common\GPOWrapper\GPOWrapper.vcxproj" />
     <ProjectReference Include="..\..\common\ManagedCommon\ManagedCommon.csproj" />
     <ProjectReference Include="..\..\common\ManagedTelemetry\Telemetry\ManagedTelemetry.csproj" />
     <ProjectReference Include="..\Settings.UI.Library\Settings.UI.Library.csproj" />
   </ItemGroup>
+	
   <ItemGroup>
     <Page Update="FlyoutWindow.xaml">
       <Generator>MSBuild:Compile</Generator>
@@ -122,10 +129,17 @@
     <None Update="icon.ico">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
+    <Page Update="OOBE\Views\OobeOverviewPlaceholder.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Update="OOBE\Views\OobeHosts.xaml">
       <Generator>MSBuild:Compile</Generator>
     </Page>
+    <Page Update="OOBE\Views\OobeOverviewAlternate.xaml">
+      <XamlRuntime>$(DefaultXamlRuntime)</XamlRuntime>
+    </Page>
   </ItemGroup>
+	
   <ItemGroup>
     <Page Update="OOBE\Views\OobePowerOCR.xaml">
       <XamlRuntime>$(DefaultXamlRuntime)</XamlRuntime>

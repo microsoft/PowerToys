@@ -163,6 +163,7 @@ bricelam
 BRIGHTGREEN
 Browsable
 bsd
+Bson
 bstr
 bthprops
 bti
@@ -221,6 +222,7 @@ CLASSNOTAVAILABLE
 clickable
 clickonce
 CLIENTEDGE
+clientid
 clientside
 CLIPCHILDREN
 Clipperton
@@ -347,6 +349,7 @@ DARKYELLOW
 datareader
 datatemplate
 Datavalue
+dataversion
 DATAW
 davidegiacometti
 Dayof
@@ -1859,6 +1862,7 @@ TRAYMOUSEMESSAGE
 triaging
 TRK
 trl
+TServer
 Tshuapa
 TStr
 Tuva
@@ -1911,6 +1915,7 @@ unmute
 UNORM
 unregistering
 unremapped
+Unstub
 unsubscribe
 unvirtualized
 Updatelayout
@@ -1936,6 +1941,7 @@ UYVY
 vabdq
 validmodulename
 Vanara
+variantassignment
 vcamp
 vccorlib
 vcdl

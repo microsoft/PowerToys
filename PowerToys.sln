@@ -487,6 +487,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "StlThumbnailProviderCpp", "
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "SvgThumbnailProviderCpp", "src\modules\previewpane\SvgThumbnailProviderCpp\SvgThumbnailProviderCpp.vcxproj", "{2BBC9E33-21EC-401C-84DA-BB6590A9B2AA}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AllExperiments", "src\common\AllExperiments\AllExperiments.csproj", "{9CE59ED5-7087-4353-88EB-788038A73CEC}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|ARM64 = Debug|ARM64
@@ -2022,6 +2024,18 @@ Global
 		{2BBC9E33-21EC-401C-84DA-BB6590A9B2AA}.Release|x64.Build.0 = Release|x64
 		{2BBC9E33-21EC-401C-84DA-BB6590A9B2AA}.Release|x86.ActiveCfg = Release|x64
 		{2BBC9E33-21EC-401C-84DA-BB6590A9B2AA}.Release|x86.Build.0 = Release|x64
+		{9CE59ED5-7087-4353-88EB-788038A73CEC}.Debug|ARM64.ActiveCfg = Debug|ARM64
+		{9CE59ED5-7087-4353-88EB-788038A73CEC}.Debug|ARM64.Build.0 = Debug|ARM64
+		{9CE59ED5-7087-4353-88EB-788038A73CEC}.Debug|x64.ActiveCfg = Debug|x64
+		{9CE59ED5-7087-4353-88EB-788038A73CEC}.Debug|x64.Build.0 = Debug|x64
+		{9CE59ED5-7087-4353-88EB-788038A73CEC}.Debug|x86.ActiveCfg = Debug|x64
+		{9CE59ED5-7087-4353-88EB-788038A73CEC}.Debug|x86.Build.0 = Debug|x64
+		{9CE59ED5-7087-4353-88EB-788038A73CEC}.Release|ARM64.ActiveCfg = Release|ARM64
+		{9CE59ED5-7087-4353-88EB-788038A73CEC}.Release|ARM64.Build.0 = Release|ARM64
+		{9CE59ED5-7087-4353-88EB-788038A73CEC}.Release|x64.ActiveCfg = Release|x64
+		{9CE59ED5-7087-4353-88EB-788038A73CEC}.Release|x64.Build.0 = Release|x64
+		{9CE59ED5-7087-4353-88EB-788038A73CEC}.Release|x86.ActiveCfg = Release|x64
+		{9CE59ED5-7087-4353-88EB-788038A73CEC}.Release|x86.Build.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -2192,6 +2206,7 @@ Global
 		{CA5518ED-0458-4B09-8F53-4122B9888655} = {2F305555-C296-497E-AC20-5FA1B237996A}
 		{D6DCC3AE-18C0-488A-B978-BAA9E3CFF09D} = {2F305555-C296-497E-AC20-5FA1B237996A}
 		{2BBC9E33-21EC-401C-84DA-BB6590A9B2AA} = {2F305555-C296-497E-AC20-5FA1B237996A}
+		{9CE59ED5-7087-4353-88EB-788038A73CEC} = {1AFB6476-670D-4E80-A464-657E01DFF482}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {C3A2F9D1-7930-4EF4-A6FC-7EE0A99821D0}
