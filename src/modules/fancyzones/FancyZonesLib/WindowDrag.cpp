@@ -13,9 +13,10 @@
 
 #include <common/utils/elevation.h>
 
-WindowDrag::WindowDrag(HWND window, const std::unordered_map<HMONITOR, std::shared_ptr<WorkArea>>& activeWorkAreas) :
+WindowDrag::WindowDrag(HWND window, const std::unordered_map<HMONITOR, std::unique_ptr<WorkArea>>& activeWorkAreas) :
     m_window(window),
     m_activeWorkAreas(activeWorkAreas),
+    m_currentWorkArea(nullptr),
     m_snappingMode(false)
 {
     m_windowProperties.hasNoVisibleOwner = !FancyZonesWindowUtils::HasVisibleOwner(m_window);
@@ -28,7 +29,7 @@ WindowDrag::~WindowDrag()
     ResetWindowTransparency();
 }
 
-std::unique_ptr<WindowDrag> WindowDrag::Create(HWND window, const std::unordered_map<HMONITOR, std::shared_ptr<WorkArea>>& activeWorkAreas)
+std::unique_ptr<WindowDrag> WindowDrag::Create(HWND window, const std::unordered_map<HMONITOR, std::unique_ptr<WorkArea>>& activeWorkAreas)
 {
     if (!FancyZonesWindowProcessing::IsProcessable(window) ||
         !FancyZonesWindowUtils::IsCandidateForZoning(window) ||
@@ -55,13 +56,15 @@ bool WindowDrag::MoveSizeStart(HMONITOR monitor, bool isSnapping)
         return false;
     }
 
-    if (isSnapping)
-    {
-        m_currentWorkArea = iter->second; 
-    }
+    m_currentWorkArea = iter->second.get();
 
     SwitchSnappingMode(isSnapping);
 
+    if (m_currentWorkArea)
+    {
+        m_currentWorkArea->UnsnapWindow(m_window);
+    }
+    
     return true;
 }
 
@@ -72,7 +75,7 @@ void WindowDrag::MoveSizeUpdate(HMONITOR monitor, POINT const& ptScreen, bool is
     {
         // The drag has moved to a different monitor.
         // Change work area
-        if (iter->second != m_currentWorkArea)
+        if (iter->second.get() != m_currentWorkArea)
         {
             m_highlightedZones.Reset();
 
@@ -88,7 +91,7 @@ void WindowDrag::MoveSizeUpdate(HMONITOR monitor, POINT const& ptScreen, bool is
                 }
             }
             
-            m_currentWorkArea = iter->second;
+            m_currentWorkArea = iter->second.get();
         }
 
         if (m_currentWorkArea)
@@ -168,19 +171,6 @@ void WindowDrag::SwitchSnappingMode(bool isSnapping)
 
         if (m_currentWorkArea)
         {
-            m_currentWorkArea->UnsnapWindow(m_window);
-            FancyZonesWindowProperties::RemoveZoneIndexProperty(m_window);
-
-            const auto& layout = m_currentWorkArea->GetLayout();
-            if (layout)
-            {
-                auto guidStr = FancyZonesUtils::GuidToString(layout->Id());
-                if (guidStr.has_value())
-                {
-                    AppZoneHistory::instance().RemoveAppLastZone(m_window, m_currentWorkArea->UniqueId(), guidStr.value());
-                }
-            }
-
             Trace::WorkArea::MoveOrResizeStarted(m_currentWorkArea->GetLayout().get(), m_currentWorkArea->GetLayoutWindows().get());
         }
     }
@@ -224,22 +214,30 @@ void WindowDrag::SetWindowTransparency()
         if (!SetLayeredWindowAttributes(m_window, 0, (255 * 50) / 100, LWA_ALPHA))
         {
             Logger::error(L"Window transparency: SetLayeredWindowAttributes failed, {}", get_last_error_or_default(GetLastError()));
+            return;
         }
+
+        m_windowProperties.transparencySet = true;
     }
 }
 
 void WindowDrag::ResetWindowTransparency()
 {
-    if (FancyZonesSettings::settings().makeDraggedWindowTransparent)
+    if (FancyZonesSettings::settings().makeDraggedWindowTransparent && m_windowProperties.transparencySet)
     {
+        bool reset = true;
         if (!SetLayeredWindowAttributes(m_window, m_windowProperties.crKey, m_windowProperties.alpha, m_windowProperties.dwFlags))
         {
-            Logger::error(L"Window transparency: SetLayeredWindowAttributes failed");
+            Logger::error(L"Window transparency: SetLayeredWindowAttributes failed, {}", get_last_error_or_default(GetLastError()));
+            reset = false;
         }
 
         if (SetWindowLong(m_window, GWL_EXSTYLE, m_windowProperties.exstyle) == 0)
         {
             Logger::error(L"Window transparency: SetWindowLong failed, {}", get_last_error_or_default(GetLastError()));
+            reset = false;
         }
+
+        m_windowProperties.transparencySet = !reset;
     }
 }

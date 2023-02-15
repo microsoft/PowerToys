@@ -332,11 +332,27 @@ private:
             {
                 // Parse Legacy windows key press behavior settings
                 auto jsonUseLegacyWinKeyBehaviorObject = settingsObject.GetNamedObject(L"properties").GetNamedObject(L"use_legacy_press_win_key_behavior");
-                m_shouldReactToPressedWinKey = (bool)jsonUseLegacyWinKeyBehaviorObject.GetNamedBoolean(L"value");
+                m_shouldReactToPressedWinKey = jsonUseLegacyWinKeyBehaviorObject.GetNamedBoolean(L"value");
                 auto jsonPressTimeForGlobalWindowsShortcutsObject = settingsObject.GetNamedObject(L"properties").GetNamedObject(L"press_time");
                 auto jsonPressTimeForTaskbarIconShortcutsObject = settingsObject.GetNamedObject(L"properties").GetNamedObject(L"press_time_for_taskbar_icon_shortcuts");
-                m_millisecondsWinKeyPressTimeForGlobalWindowsShortcuts = (UINT)jsonPressTimeForGlobalWindowsShortcutsObject.GetNamedNumber(L"value");
-                m_millisecondsWinKeyPressTimeForTaskbarIconShortcuts = (UINT)jsonPressTimeForTaskbarIconShortcutsObject.GetNamedNumber(L"value");
+                int value = static_cast<int>(jsonPressTimeForGlobalWindowsShortcutsObject.GetNamedNumber(L"value"));
+                if (value >= 0)
+                {
+                    m_millisecondsWinKeyPressTimeForGlobalWindowsShortcuts = value;
+                }
+                else
+                {
+                    throw;
+                }
+                value = static_cast<int>(jsonPressTimeForTaskbarIconShortcutsObject.GetNamedNumber(L"value"));
+                if (value >= 0)
+                {
+                    m_millisecondsWinKeyPressTimeForTaskbarIconShortcuts = value;
+                }
+                else
+                {
+                    throw;
+                }
             }
             catch (...)
             {

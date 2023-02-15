@@ -46,13 +46,13 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Interop.Microsoft.Office.Interop.OneNote" Version="1.1.0.2" />
-    <PackageReference Include="LazyCache" Version="2.4.0" />
-    <PackageReference Include="Microsoft.Windows.CsWin32" Version="0.2.46-beta">
+    <PackageReference Include="Interop.Microsoft.Office.Interop.OneNote" />
+    <PackageReference Include="LazyCache" />
+    <PackageReference Include="Microsoft.Windows.CsWin32">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
-    <PackageReference Include="ScipBe.Common.Office.OneNote" Version="3.0.1" />
+    <PackageReference Include="ScipBe.Common.Office.OneNote" />
   </ItemGroup>
 
   <ItemGroup>

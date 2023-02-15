@@ -78,6 +78,16 @@
                                     IsChecked="{x:Bind ViewModel.MonacoPreviewTryFormat, Mode=TwoWay}"
                                     IsEnabled="{x:Bind ViewModel.MonacoRenderIsEnabled, Mode=OneWay}" />
                             </labs:SettingsCard>
+                            <labs:SettingsCard
+                                x:Uid="FileExplorerPreview_Toggle_Monaco_Max_File_Size"
+                                IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.MonacoRenderIsEnabled}">
+                                <NumberBox
+                                    MinWidth="{StaticResource SettingActionControlMinWidth}"
+                                    Maximum="100"
+                                    Minimum="2"
+                                    SpinButtonPlacementMode="Compact"
+                                    Value="{x:Bind Mode=TwoWay, Path=ViewModel.MonacoPreviewMaxFileSize}" />
+                            </labs:SettingsCard>
                         </labs:SettingsExpander.Items>
                     </labs:SettingsExpander>
 

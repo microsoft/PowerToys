@@ -70,7 +70,7 @@ D2D1_COLOR_F ZonesOverlay::ConvertColor(COLORREF color)
 
 D2D1_RECT_F ZonesOverlay::ConvertRect(RECT rect)
 {
-    return D2D1::RectF((float)rect.left + 0.5f, (float)rect.top + 0.5f, (float)rect.right - 0.5f, (float)rect.bottom - 0.5f);
+    return D2D1::RectF(rect.left + 0.5f, rect.top + 0.5f, rect.right - 0.5f, rect.bottom - 0.5f);
 }
 
 ZonesOverlay::ZonesOverlay(HWND window)
@@ -174,7 +174,7 @@ ZonesOverlay::RenderResult ZonesOverlay::Render()
             {
                 textFormat->SetTextAlignment(DWRITE_TEXT_ALIGNMENT_CENTER);
                 textFormat->SetParagraphAlignment(DWRITE_PARAGRAPH_ALIGNMENT_CENTER);
-                m_renderTarget->DrawTextW(idStr.c_str(), (UINT32)idStr.size(), textFormat, drawableRect.rect, textBrush);
+                m_renderTarget->DrawTextW(idStr.c_str(), static_cast<UINT32>(idStr.size()), textFormat, drawableRect.rect, textBrush);
             }
 
             if (textBrush)

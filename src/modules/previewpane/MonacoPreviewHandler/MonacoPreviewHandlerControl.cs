@@ -212,6 +212,7 @@ namespace Microsoft.PowerToys.PreviewHandler.Monaco
                             downloadLink.Top = TextRenderer.MeasureText(Resources.WebView2_Not_Installed_Message, errorMessage.Font).Height + 10;
                             downloadLink.Width = TextRenderer.MeasureText(Resources.Download_WebView2, errorMessage.Font).Width + 10;
                             downloadLink.Height = TextRenderer.MeasureText(Resources.Download_WebView2, errorMessage.Font).Height;
+                            downloadLink.ForeColor = Settings.TextColor;
                             Controls.Add(downloadLink);
                         }
                     });
@@ -222,6 +223,7 @@ namespace Microsoft.PowerToys.PreviewHandler.Monaco
                     Controls.Remove(_loadingBar);
                     Controls.Remove(_loadingBackground);
                     Label text = new Label();
+                    text.ForeColor = Settings.TextColor;
                     text.Text = Resources.Exception_Occurred;
                     text.Text += e.Message;
                     text.Text += "\n" + e.Source;
@@ -244,6 +246,7 @@ namespace Microsoft.PowerToys.PreviewHandler.Monaco
                 Controls.Remove(_loadingBackground);
                 Label errorMessage = new Label();
                 errorMessage.Text = Resources.Max_File_Size_Error.Replace("%1", (_settings.MaxFileSize / 1000).ToString(CultureInfo.CurrentCulture), StringComparison.InvariantCulture);
+                errorMessage.ForeColor = Settings.TextColor;
                 errorMessage.Width = 500;
                 errorMessage.Height = 50;
                 Controls.Add(errorMessage);

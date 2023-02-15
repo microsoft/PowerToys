@@ -264,7 +264,7 @@ UINT __stdcall CreateScheduledTaskCA(MSIHANDLE hInstall)
                           nullptr,
                           CLSCTX_INPROC_SERVER,
                           IID_ITaskService,
-                          (void**)&pService);
+                          reinterpret_cast<void**>(&pService));
     ExitOnFailure(hr, "Failed to create an instance of ITaskService: %x", hr);
 
     // Connect to the task service.
@@ -490,7 +490,7 @@ UINT __stdcall RemoveScheduledTasksCA(MSIHANDLE hInstall)
                           nullptr,
                           CLSCTX_INPROC_SERVER,
                           IID_ITaskService,
-                          (void**)&pService);
+                          reinterpret_cast<void**>(&pService));
     ExitOnFailure(hr, "Failed to create an instance of ITaskService: %x", hr);
 
     // Connect to the task service.
@@ -809,7 +809,7 @@ UINT __stdcall CertifyVirtualCameraDriverCA(MSIHANDLE hInstall)
         ExitOnFailure(hr, "Certificate file size not valid", hr);
     }
 
-    pFileContent = (char*)malloc(size);
+    pFileContent = static_cast<char*>(malloc(size));
 
     DWORD sizeread;
     if (!ReadFile(hfile, pFileContent, size, &sizeread, nullptr))
@@ -820,7 +820,7 @@ UINT __stdcall CertifyVirtualCameraDriverCA(MSIHANDLE hInstall)
 
     if (!CertAddEncodedCertificateToStore(hCertStore,
                                           X509_ASN_ENCODING,
-                                          (const BYTE*)pFileContent,
+                                          reinterpret_cast<const BYTE*>(pFileContent),
                                           size,
                                           CERT_STORE_ADD_ALWAYS,
                                           nullptr))

@@ -174,16 +174,17 @@ namespace Microsoft.PowerToys.Settings.UI
             });
 
             // open flyout
-            ShellPage.SetOpenFlyoutCallback(() =>
+            ShellPage.SetOpenFlyoutCallback((POINT? p) =>
             {
                 this.DispatcherQueue.TryEnqueue(Microsoft.UI.Dispatching.DispatcherQueuePriority.Normal, () =>
                 {
                     if (App.GetFlyoutWindow() == null)
                     {
-                        App.SetFlyoutWindow(new FlyoutWindow());
+                        App.SetFlyoutWindow(new FlyoutWindow(p));
                     }
 
                     FlyoutWindow flyout = App.GetFlyoutWindow();
+                    flyout.FlyoutAppearPosition = p;
                     flyout.Activate();
 
                     // https://github.com/microsoft/microsoft-ui-xaml/issues/7595 - Activate doesn't bring window to the foreground
@@ -199,7 +200,7 @@ namespace Microsoft.PowerToys.Settings.UI
                 {
                     if (App.GetFlyoutWindow() == null)
                     {
-                        App.SetFlyoutWindow(new FlyoutWindow());
+                        App.SetFlyoutWindow(new FlyoutWindow(null));
                     }
 
                     App.GetFlyoutWindow().ViewModel.DisableHiding();

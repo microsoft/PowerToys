@@ -125,6 +125,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
             _startup = GeneralSettingsConfig.Startup;
             _autoDownloadUpdates = GeneralSettingsConfig.AutoDownloadUpdates;
+            _enableExperimentation = GeneralSettingsConfig.EnableExperimentation;
 
             _isElevated = isElevated;
             _runElevated = GeneralSettingsConfig.RunElevated;
@@ -152,6 +153,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         private int _themeIndex;
 
         private bool _autoDownloadUpdates;
+        private bool _enableExperimentation;
 
         private UpdatingSettings.UpdatingState _updatingState = UpdatingSettings.UpdatingState.UpToDate;
         private string _newAvailableVersion = string.Empty;
@@ -279,6 +281,24 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 {
                     _autoDownloadUpdates = value;
                     GeneralSettingsConfig.AutoDownloadUpdates = value;
+                    NotifyPropertyChanged();
+                }
+            }
+        }
+
+        public bool EnableExperimentation
+        {
+            get
+            {
+                return _enableExperimentation;
+            }
+
+            set
+            {
+                if (_enableExperimentation != value)
+                {
+                    _enableExperimentation = value;
+                    GeneralSettingsConfig.EnableExperimentation = value;
                     NotifyPropertyChanged();
                 }
             }

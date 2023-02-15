@@ -130,19 +130,10 @@ namespace Microsoft.PowerToys.ThumbnailHandler.Stl
                 return null;
             }
 
-            using (var memStream = new MemoryStream())
+            Bitmap thumbnail = GetThumbnail(this.Stream, cx);
+            if (thumbnail != null && thumbnail.Size.Width > 0 && thumbnail.Size.Height > 0)
             {
-                this.Stream.CopyTo(memStream);
-
-                memStream.Position = 0;
-
-                using (Bitmap thumbnail = GetThumbnail(memStream, cx))
-                {
-                    if (thumbnail != null && thumbnail.Size.Width > 0 && thumbnail.Size.Height > 0)
-                    {
-                        return (Bitmap)thumbnail.Clone();
-                    }
-                }
+                return thumbnail;
             }
 
             return null;

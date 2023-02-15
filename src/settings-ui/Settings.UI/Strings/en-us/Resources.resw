@@ -2015,7 +2015,7 @@ From there, simply click on one of the supported files in the File Explorer and 
     <comment>Mouse as in the hardware peripheral.</comment>
   </data>
   <data name="Oobe_MouseUtils_MouseHighlighter_Description.Text" xml:space="preserve">
-    <value>Use a keyboard shortcut highlight left and right mouse clicks.</value>
+    <value>Use a keyboard shortcut to highlight left and right mouse clicks.</value>
     <comment>Mouse as in the hardware peripheral.</comment>
   </data>
   <data name="Oobe_MouseUtils_MousePointerCrosshairs.Text" xml:space="preserve">
@@ -2743,6 +2743,9 @@ Activate by holding the key for the character you want to add an accent to, then
   <data name="QuickAccent_SelectedLanguage_Estonian.Content" xml:space="preserve">
     <value>Estonian</value>
   </data>
+  <data name="QuickAccent_SelectedLanguage_Lithuanian.Content" xml:space="preserve">
+    <value>Lithuanian</value>
+  </data>
   <data name="QuickAccent_SelectedLanguage_Macedonian.Content" xml:space="preserve">
     <value>Macedonian</value>
   </data>
@@ -2827,6 +2830,10 @@ Activate by holding the key for the character you want to add an accent to, then
     <value>Launch Host File Editor</value>
     <comment>"Host File Editor" is a product name</comment>
   </data>
+  <data name="Hosts_LaunchButton_Accessible.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>Launch Host File Editor</value>
+    <comment>"Host File Editor" is a product name</comment>
+  </data>
   <data name="Hosts_AdditionalLinesPosition.Header" xml:space="preserve">
     <value>Position of additional content</value>
   </data>
@@ -2888,6 +2895,39 @@ Activate by holding the key for the character you want to add an accent to, then
   <data name="TextExtractor_Languages.Header" xml:space="preserve">
     <value>Preferred language</value>
   </data>
+  <data name="Alternate_OOBE_AlwaysOnTop_Description.Text" xml:space="preserve">
+    <value>Pin a window so that:</value>
+  </data>
+  <data name="Alternate_OOBE_AlwaysOnTop_Title.Text" xml:space="preserve">
+    <value>Always On Top</value>
+  </data>
+  <data name="Alternate_OOBE_ColorPicker_Description.Text" xml:space="preserve">
+    <value>To pick a color:</value>
+  </data>
+  <data name="Alternate_OOBE_ColorPicker_Title.Text" xml:space="preserve">
+    <value>Color Picker</value>
+  </data>
+  <data name="Alternate_OOBE_Description.Text" xml:space="preserve">
+    <value>Here are a few shortcuts to get you started:</value>
+  </data>
+  <data name="Alternate_OOBE_FancyZones_Description.Text" xml:space="preserve">
+    <value>To open the FancyZones editor, press:</value>
+  </data>
+  <data name="Alternate_OOBE_FancyZones_Title.Text" xml:space="preserve">
+    <value>FancyZones</value>
+  </data>
+  <data name="Alternate_OOBE_Run_Description.Text" xml:space="preserve">
+    <value>Get access to your files and more:</value>
+  </data>
+  <data name="Alternate_OOBE_Run_Title.Text" xml:space="preserve">
+    <value>PowerToys Run</value>
+  </data>
+  <data name="GeneralPage_EnableExperimentation.Description" xml:space="preserve">
+    <value>Only affects Windows Insider builds</value>
+  </data>
+  <data name="GeneralPage_EnableExperimentation.Header" xml:space="preserve">
+    <value>Enable experimentation</value>
+  </data>
   <data name="AllAppsTxt.Text" xml:space="preserve">
     <value>All apps</value>
   </data>
@@ -2931,39 +2971,12 @@ Activate by holding the key for the character you want to add an accent to, then
   <data name="UpdateAvailable.Title" xml:space="preserve">
     <value>Update available</value>
   </data>
-  <data name="RegistryPreview.ModuleDescription" xml:space="preserve">
-    <value>This is a quick little utility to visualize complex registry files.</value>
+  <data name="FileExplorerPreview_Toggle_Monaco_Max_File_Size.Header" xml:space="preserve">
+    <value>Maximum file size to preview</value>
+    <comment>Size refers to the disk space used by a file</comment>
   </data>
-  <data name="RegistryPreview.ModuleTitle" xml:space="preserve">
-    <value>Registry Preview</value>
-  </data>
-  <data name="Shell_RegistryPreview.Content" xml:space="preserve">
-    <value>Registry Preview</value>
-    <comment>Product name: Navigation view item name for Registry Preview</comment>
-  </data>
-  <data name="RegistryPreview_Enable_RegistryPreview.Header" xml:space="preserve">
-    <value>Enable Registry Preview</value>
-    <comment>Registry Preview is the name of the utility</comment>
-  </data>
-  <data name="Oobe_RegistryPreview_HowToUse.Text" xml:space="preserve">
-    <value>In File Explorer, right-click a .REG file and select **Preview** from the context menu.</value>
-  </data>
-  <data name="Oobe_RegistryPreview_TipsAndTricks.Text" xml:space="preserve">
-    <value>You can preview or edit Registry files in File Explorer or by opening the app from the PowerToys launcher.</value>
-  </data>
-  <data name="Oobe_RegistryPreview.Description" xml:space="preserve">
-    <value>Registry Preview is a quick little utility to visualize complex registry files.</value>
-  </data>
-  <data name="Oobe_RegistryPreview.Title" xml:space="preserve">
-    <value>Registry Preview</value>
-    <comment>Do not localize this string</comment>
-  </data>
-  <data name="LearnMore_RegistryPreview.Text" xml:space="preserve">
-    <value>Learn more about Registry Preview</value>
-    <comment>Registry Preview is a product name, do not loc</comment>
-  </data>
-	<data name="Launch_RegistryPreview.Content" xml:space="preserve">
-    <value>Launch Registry Preview</value>
-    <comment>"Registry Preview" is the name of the utility</comment>
+  <data name="FileExplorerPreview_Toggle_Monaco_Max_File_Size.Description" xml:space="preserve">
+    <value>The maximum size, in kilobytes, for files to be displayed. This is a safety mechanism to prevent loading large files into RAM.</value>
+    <comment>"RAM" refers to random access memory; "size" refers to disk space; "bytes" refer to the measurement unit</comment>
   </data>
 </root>

@@ -166,7 +166,7 @@ void ReportWindowsVersion(const filesystem::path& tmpDir)
     {
         NTSTATUS(WINAPI * RtlGetVersion)
         (LPOSVERSIONINFOEXW) = nullptr;
-        *(FARPROC*)&RtlGetVersion = GetProcAddress(GetModuleHandleA("ntdll"), "RtlGetVersion");
+        *reinterpret_cast<FARPROC*>(& RtlGetVersion) = GetProcAddress(GetModuleHandleA("ntdll"), "RtlGetVersion");
         if (RtlGetVersion)
         {
             osInfo.dwOSVersionInfoSize = sizeof(osInfo);

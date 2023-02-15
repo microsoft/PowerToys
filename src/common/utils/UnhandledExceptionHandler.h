@@ -93,7 +93,7 @@ inline std::wstring GetModuleName(HANDLE process, const STACKFRAME64& stack)
         return std::wstring();
     }
 
-    if (!GetModuleFileNameW((HINSTANCE)moduleBase, modulePath, MAX_PATH))
+    if (!GetModuleFileNameW(reinterpret_cast<HINSTANCE>(moduleBase), modulePath, MAX_PATH))
     {
         Logger::error(L"Failed to get a module path. {}", get_last_error_or_default(GetLastError()));
         return std::wstring();
@@ -105,7 +105,7 @@ inline std::wstring GetModuleName(HANDLE process, const STACKFRAME64& stack)
 
 inline std::wstring GetName(HANDLE process, const STACKFRAME64& stack)
 {
-    static IMAGEHLP_SYMBOL64* pSymbol = (IMAGEHLP_SYMBOL64*)malloc(sizeof(IMAGEHLP_SYMBOL64) + MAX_PATH * sizeof(TCHAR));
+    static IMAGEHLP_SYMBOL64* pSymbol = static_cast<IMAGEHLP_SYMBOL64*>(malloc(sizeof(IMAGEHLP_SYMBOL64) + MAX_PATH * sizeof(TCHAR)));
     if (!pSymbol)
     {
         return std::wstring();

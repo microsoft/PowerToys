@@ -4,11 +4,14 @@
 
   <?include $(sys.CURRENTDIR)\Common.wxi?>
 
-  <?define SettingsV2Files=WinUIEx.dll;backup_restore_settings.json;Ijwhost.dll;ColorCode.Core.dll;ColorCode.WinUI.dll;CommunityToolkit.Common.dll;CommunityToolkit.Labs.WinUI.SettingsControls.dll;CommunityToolkit.WinUI.dll;CommunityToolkit.WinUI.UI.Controls.Core.dll;CommunityToolkit.WinUI.UI.Controls.DataGrid.dll;CommunityToolkit.WinUI.UI.Controls.Input.dll;CommunityToolkit.WinUI.UI.Controls.Layout.dll;CommunityToolkit.WinUI.UI.Controls.Markdown.dll;CommunityToolkit.WinUI.UI.Controls.Media.dll;CommunityToolkit.WinUI.UI.Controls.Primitives.dll;CommunityToolkit.WinUI.UI.dll;icon.ico;Microsoft.Graphics.Canvas.Interop.dll;Microsoft.InteractiveExperiences.Projection.dll;Microsoft.Windows.ApplicationModel.DynamicDependency.Projection.dll;Microsoft.Windows.ApplicationModel.Resources.Projection.dll;Microsoft.Windows.ApplicationModel.WindowsAppRuntime.Projection.dll;Microsoft.Windows.AppLifecycle.Projection.dll;Microsoft.Windows.SDK.NET.dll;Microsoft.Windows.System.Power.Projection.dll;Microsoft.WindowsAppRuntime.Bootstrap.Net.dll;Microsoft.WinUI.dll;Microsoft.Xaml.Interactions.dll;Microsoft.Xaml.Interactivity.dll;PowerToys.ManagedCommon.dll;PowerToys.ManagedTelemetry.dll;PowerToys.Settings.deps.json;PowerToys.Settings.dll;PowerToys.Settings.exe;PowerToys.Settings.runtimeconfig.json;PowerToys.Settings.UI.Lib.dll;resources.pri;System.CodeDom.dll;System.IO.Abstractions.dll;WinRT.Runtime.dll;Microsoft.Graphics.Canvas.dll;System.Management.dll;PowerToys.GPOWrapper.dll;System.Text.Json.dll;WindowsBase.dll?>
+  <?define SettingsV2Files=WinUIEx.dll;backup_restore_settings.json;Ijwhost.dll;ColorCode.Core.dll;ColorCode.WinUI.dll;CommunityToolkit.Common.dll;CommunityToolkit.Labs.WinUI.SettingsControls.dll;CommunityToolkit.WinUI.dll;CommunityToolkit.WinUI.UI.Controls.Core.dll;CommunityToolkit.WinUI.UI.Controls.DataGrid.dll;CommunityToolkit.WinUI.UI.Controls.Input.dll;CommunityToolkit.WinUI.UI.Controls.Layout.dll;CommunityToolkit.WinUI.UI.Controls.Markdown.dll;CommunityToolkit.WinUI.UI.Controls.Media.dll;CommunityToolkit.WinUI.UI.Controls.Primitives.dll;CommunityToolkit.WinUI.UI.dll;icon.ico;Microsoft.Graphics.Canvas.Interop.dll;Microsoft.InteractiveExperiences.Projection.dll;Microsoft.Windows.ApplicationModel.DynamicDependency.Projection.dll;Microsoft.Windows.ApplicationModel.Resources.Projection.dll;Microsoft.Windows.ApplicationModel.WindowsAppRuntime.Projection.dll;Microsoft.Windows.AppLifecycle.Projection.dll;Microsoft.Windows.SDK.NET.dll;Microsoft.Windows.System.Power.Projection.dll;Microsoft.WindowsAppRuntime.Bootstrap.Net.dll;Microsoft.WinUI.dll;Microsoft.Xaml.Interactions.dll;Microsoft.Xaml.Interactivity.dll;PowerToys.ManagedCommon.dll;PowerToys.ManagedTelemetry.dll;PowerToys.Settings.deps.json;PowerToys.Settings.dll;PowerToys.Settings.exe;PowerToys.Settings.runtimeconfig.json;PowerToys.Settings.UI.Lib.dll;resources.pri;System.CodeDom.dll;System.IO.Abstractions.dll;WinRT.Runtime.dll;Microsoft.Graphics.Canvas.dll;System.Management.dll;PowerToys.GPOWrapper.dll;System.Text.Json.dll;WindowsBase.dll;PowerToys.AllExperiments.dll?>
   <?define SettingsV2AssetsModulesFiles=ColorPicker.png;FancyZones.png;FileLocksmith.png;AlwaysOnTop.png;HostsFileEditor.png;Awake.png;ImageResizer.png;KBM.png;MouseUtils.png;PowerAccent.png;PowerOCR.png;PowerLauncher.png;PowerPreview.png;PowerRename.png;PT.png;ScreenRuler.png;ShortcutGuide.png;VideoConference.png?>
   <?define SettingsV2OOBEAssetsModulesFiles=ColorPicker.gif;AlwaysOnTop.png;HostsFileEditor.png;Awake.png;FancyZones.gif;FileExplorer.png;FileLocksmith.gif;ImageResizer.gif;KBM.gif;MouseUtils.gif;PowerAccent.gif;PowerOCR.gif;PowerRename.gif;Run.gif;ScreenRuler.gif;OOBEShortcutGuide.png;VideoConferenceMute.png;OOBEPTHero.png?>
   <?define SettingsV2OOBEAssetsFluentIconsFiles=ColorPicker.png;FancyZones.png;FileLocksmith.png;AlwaysOnTop.png;Awake.png;FileExplorerPreview.png;FindMyMouse.png;Hosts.png;ImageResizer.png;KeyboardManager.png;MouseHighlighter.png;MouseCrosshairs.png;MouseUtils.png;PowerAccent.png;PowerOcr.png;PowerRename.png;PowerToys.png;PowerToysRun.png;ScreenRuler.png;Settings.png;ShortcutGuide.png;VideoConferenceMute.png?>
   <?define SettingsV2MicrosoftUIXamlAssetsInstallFiles=NoiseAsset_256x256_PNG.png?>
+
+  <!-- These files are needed for release builds to contain the experimentation DLLs -->
+  <?define PowerToysExperimentsFiles=Microsoft.VariantAssignment.Client.dll;Microsoft.VariantAssignment.Contract.dll;System.Net.Http.Formatting.dll;Microsoft.Extensions.Configuration.dll;Microsoft.Extensions.Configuration.Abstractions.dll;Microsoft.Extensions.Configuration.Binder.dll;Microsoft.Extensions.DependencyInjection.Abstractions.dll;Microsoft.Extensions.Http.dll;Microsoft.Extensions.Logging.dll;Microsoft.Extensions.Logging.Abstractions.dll;Microsoft.Extensions.Options.dll;Microsoft.Extensions.Primitives.dll;Newtonsoft.Json.dll;Newtonsoft.Json.Bson.dll?>
 
   <Fragment>
     <!-- SettingsV2 components -->
@@ -18,6 +21,13 @@
           <File Id="SV2_$(var.File)" Source="$(var.BinDir)Settings\$(var.File)" />
         </Component>
       <?endforeach?>
+      <?ifdef env.IsExperimentationLive?>
+      <?foreach File in $(var.PowerToysExperimentsFiles)?>
+      <Component Id="SV2CE_$(var.File)" Win64="yes">
+        <File Id="SV2E_$(var.File)" Source="$(var.BinDir)Settings\$(var.File)" />
+      </Component>
+      <?endforeach?>
+      <?endif?>
     </DirectoryRef>
     <DirectoryRef Id="SettingsV2AssetsInstallFolder" FileSource="$(var.BinDir)Settings\Assets">
       <Component Id="SettingsV2Assets_LogoScale200" Win64="yes">
@@ -78,6 +88,11 @@
       <?foreach File in $(var.SettingsV2Files)?>
         <ComponentRef Id="SV2C_$(var.File)" />
       <?endforeach?>
+      <?ifdef env.IsExperimentationLive?>
+      <?foreach File in $(var.PowerToysExperimentsFiles)?>
+      <ComponentRef Id="SV2CE_$(var.File)" />
+      <?endforeach?>
+      <?endif?>
       <ComponentRef Id="SettingsV2Assets_LogoScale200" />
       <ComponentRef Id="SettingsV2Assets_SplashScreen" />
       <ComponentRef Id="SettingsV2Assets_StoreLogo_Scale100" />

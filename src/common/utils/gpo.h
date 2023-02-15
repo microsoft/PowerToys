@@ -51,7 +51,7 @@ namespace powertoys_gpo {
     inline gpo_rule_configured_t getConfiguredValue(const std::wstring& registry_value_name)
     {
         HKEY key{};
-        DWORD value = (DWORD) -2;
+        DWORD value = 0xFFFFFFFE;
         DWORD valueSize = sizeof(value);
 
         bool machine_key_found = true;
@@ -63,7 +63,7 @@ namespace powertoys_gpo {
         if(machine_key_found)
         {
             // If the path was found in the machine, we need to check if the value for the policy exists.
-            auto res = RegQueryValueExW(key, registry_value_name.c_str(), nullptr, nullptr, (LPBYTE)&value, &valueSize);
+            auto res = RegQueryValueExW(key, registry_value_name.c_str(), nullptr, nullptr, reinterpret_cast<LPBYTE>(&value), &valueSize);
 
             RegCloseKey(key);
 
@@ -83,7 +83,7 @@ namespace powertoys_gpo {
                 }
                 return gpo_rule_configured_unavailable;
             }
-            auto res = RegQueryValueExW(key, registry_value_name.c_str(), nullptr, nullptr, (LPBYTE)&value, &valueSize);
+            auto res = RegQueryValueExW(key, registry_value_name.c_str(), nullptr, nullptr, reinterpret_cast<LPBYTE>(&value), &valueSize);
             RegCloseKey(key);
 
             if (res != ERROR_SUCCESS) {

@@ -13,7 +13,13 @@
 #include <winrt/Windows.Foundation.h>
 #include <winrt/Windows.Foundation.Collections.h>
 #include <winrt/Windows.System.h>
+
+// disable warning 26493 - Don't use C-style casts
+#pragma warning(push)
+#pragma warning(disable: 26493)
 #include <winrt/Microsoft.UI.Composition.h>
+#pragma warning(pop)
+
 #include <winrt/Microsoft.UI.Xaml.h>
 #include <winrt/Microsoft.UI.Xaml.Automation.Peers.h>
 #include <winrt/Microsoft.UI.Xaml.Controls.h>

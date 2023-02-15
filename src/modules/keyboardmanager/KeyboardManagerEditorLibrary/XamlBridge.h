@@ -5,7 +5,7 @@ class XamlBridge
 {
 public:
     // Function to run the message loop for the xaml island window
-    int MessageLoop();
+    WPARAM MessageLoop();
 
     // Constructor
     XamlBridge(HWND parent) :
