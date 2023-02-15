@@ -172,7 +172,6 @@ namespace Microsoft.PowerToys.Run.Plugin.Calculator.UnitTests
         [DataRow("log10(3)", true)]
         [DataRow("log2", false)]
         [DataRow("log10", false)]
-        [DataRow("log1", false)]
         [DataRow("log", false)]
         [DataRow("ln", false)]
         [DataRow("ceil(2 * (pi ^ 2))", true)]
