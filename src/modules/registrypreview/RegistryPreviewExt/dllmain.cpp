@@ -161,7 +161,7 @@ public:
     virtual void enable()
     {
         // Inject the Preview command into the context menu for REG files in Explorer
-        // Puts the values into HKCU to avoid having to elevate privledge
+        // Puts the values into HKCU to avoid having to elevate privilege
         WCHAR executable_path[MAX_PATH];
         ZeroMemory(executable_path, sizeof(executable_path));
         GetCurrentDirectory(MAX_PATH, executable_path);

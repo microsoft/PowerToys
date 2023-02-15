@@ -6,10 +6,12 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
 using CommunityToolkit.WinUI.UI.Controls;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Data;
+using Windows.Data.Json;
 using Windows.Foundation.Metadata;
 using Windows.Graphics;
 using Windows.Storage;
@@ -25,16 +27,10 @@ namespace RegistryPreview
         /// </summary>
         private void AppWindow_Closing(Microsoft.UI.Windowing.AppWindow sender, Microsoft.UI.Windowing.AppWindowClosingEventArgs args)
         {
-            if (applicationDataContainer == null)
-            {
-                return;
-            }
-
-            // TODO: replace with working settings.
-            applicationDataContainer.Values["appWindow.Position.X"] = (int)appWindow.Position.X;
-            applicationDataContainer.Values["appWindow.Position.Y"] = (int)appWindow.Position.Y;
-            applicationDataContainer.Values["appWindow.Size.Width"] = (int)appWindow.Size.Width;
-            applicationDataContainer.Values["appWindow.Size.Height"] = (int)appWindow.Size.Height;
+            jsonSettings.SetNamedValue("appWindow.Position.X", JsonValue.CreateNumberValue(appWindow.Position.X));
+            jsonSettings.SetNamedValue("appWindow.Position.Y", JsonValue.CreateNumberValue(appWindow.Position.Y));
+            jsonSettings.SetNamedValue("appWindow.Size.Width", JsonValue.CreateNumberValue(appWindow.Size.Width));
+            jsonSettings.SetNamedValue("appWindow.Size.Height", JsonValue.CreateNumberValue(appWindow.Size.Height));
         }
 
         /// <summary>
@@ -57,12 +53,9 @@ namespace RegistryPreview
                     resourceLoader.GetString("YesNoCancelDialogCloseButtonText"));
             }
 
-            // TODO: replace with working settings.
             // Save app settings
-            if (applicationDataContainer != null)
-            {
-                applicationDataContainer.Values["checkBoxTextBox.Checked"] = checkBoxTextBox.IsChecked;
-            }
+            jsonSettings.SetNamedValue("checkBoxTextBox.Checked", JsonValue.CreateBooleanValue(checkBoxTextBox.IsChecked.Value));
+            SaveSettingsFile(settingsFolder, settingsFile);
         }
 
         /// <summary>
@@ -73,20 +66,10 @@ namespace RegistryPreview
             // static flag to track whether the Visual Tree is ready - if the main Grid has been loaded, the tree is ready.
             visualTreeReady = true;
 
-            // TODO: replace with working settings.
             // Load and restore app settings
-            if ((applicationDataContainer != null) && (applicationDataContainer.Values["checkBoxTextBox.Checked"] != null))
+            if (jsonSettings.ContainsKey("checkBoxTextBox.Checked"))
             {
-                checkBoxTextBox.IsChecked = (bool)applicationDataContainer.Values["checkBoxTextBox.Checked"];
-            }
-
-            // Check to see if the REG file was opened and parsed successfully
-            if (OpenRegistryFile(App.AppFilename) == false)
-            {
-                // Allow Refresh and Edit to be enabled because a broken Reg file might be fixable
-                UpdateToolBarAndUI(false, true, true);
-                UpdateWindowTitle(resourceLoader.GetString("InvalidRegistryFileTitle"));
-                return;
+                checkBoxTextBox.IsChecked = jsonSettings.GetNamedBoolean("checkBoxTextBox.Checked");
             }
 
             /*
@@ -105,23 +88,38 @@ namespace RegistryPreview
             */
 
             // resize the window
-            if ((applicationDataContainer != null) && (applicationDataContainer.Values["appWindow.Size.Width"] != null))
+            if (jsonSettings.ContainsKey("appWindow.Size.Width") && jsonSettings.ContainsKey("appWindow.Size.Height"))
             {
-                // TODO: replace with working settings.
                 SizeInt32 size;
-                size.Width = (int)applicationDataContainer.Values["appWindow.Size.Width"];
-                size.Height = (int)applicationDataContainer.Values["appWindow.Size.Height"];
+                size.Width = (int)jsonSettings.GetNamedNumber("appWindow.Size.Width");
+                size.Height = (int)jsonSettings.GetNamedNumber("appWindow.Size.Height");
                 appWindow.Resize(size);
             }
 
             // reposition the window
-            if ((applicationDataContainer != null) && (applicationDataContainer.Values["appWindow.Position.X"] != null))
+            if (jsonSettings.ContainsKey("appWindow.Position.X") && jsonSettings.ContainsKey("appWindow.Position.Y"))
             {
-                // TODO: replace with working settings.
                 PointInt32 point;
-                point.X = (int)applicationDataContainer.Values["appWindow.Position.X"];
-                point.Y = (int)applicationDataContainer.Values["appWindow.Position.Y"];
+                point.X = (int)jsonSettings.GetNamedNumber("appWindow.Position.X");
+                point.Y = (int)jsonSettings.GetNamedNumber("appWindow.Position.Y");
                 appWindow.Move(point);
+            }
+
+            // Check to see if the REG file was opened and parsed successfully
+            if (OpenRegistryFile(App.AppFilename) == false)
+            {
+                if (File.Exists(App.AppFilename))
+                {
+                    // Allow Refresh and Edit to be enabled because a broken Reg file might be fixable
+                    UpdateToolBarAndUI(false, true, true);
+                    UpdateWindowTitle(resourceLoader.GetString("InvalidRegistryFileTitle"));
+                    return;
+                }
+                else
+                {
+                    UpdateToolBarAndUI(false, false, false);
+                    UpdateWindowTitle();
+                }
             }
 
             textBox.Focus(FocusState.Programmatic);

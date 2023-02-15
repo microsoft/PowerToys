@@ -10,10 +10,8 @@ using Microsoft.UI;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Media;
-using Windows.ApplicationModel;
 using Windows.ApplicationModel.Resources;
-using Windows.Management.Core;
-using Windows.Storage;
+using Windows.Data.Json;
 
 namespace RegistryPreview
 {
@@ -30,9 +28,11 @@ namespace RegistryPreview
         private bool visualTreeReady = false;
         private Dictionary<string, TreeViewNode> mapRegistryKeys = null;
         private List<RegistryValue> listRegistryValues;
-        private ApplicationDataContainer applicationDataContainer = null;
         private SolidColorBrush solidColorBrushNormal = null;
         private SolidColorBrush solidColorBrushReadOnly = null;
+        private JsonObject jsonSettings = null;
+        private string settingsFolder = string.Empty;
+        private string settingsFile = string.Empty;
 
         internal MainWindow()
         {
@@ -41,18 +41,10 @@ namespace RegistryPreview
             // Initialize the string table
             resourceLoader = ResourceLoader.GetForViewIndependentUse();
 
-            applicationDataContainer = null;
-
-            // TODO: replace with working settings.
-            // attempt to load the settings via the current AppContainer
-            // try
-            // {
-            //     applicationDataContainer = ApplicationDataManager.CreateForPackageFamily(Package.Current.Id.FamilyName).LocalSettings;
-            // }
-            // catch
-            // {
-            //     applicationDataContainer = ApplicationDataManager.CreateForPackageFamily("736d5a59-dea7-4177-9d37-57b41883614c_cs0kxz6c6q80t").LocalSettings;
-            // }
+            // Open settings file
+            settingsFolder = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData) + @"\Microsoft\PowerToys\" + APPNAME;
+            settingsFile = APPNAME + "_settings.json";
+            OpenSettingsFile(settingsFolder, settingsFile);
 
             // Attempts to force the visual tree to load faster
             this.Activate();

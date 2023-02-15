@@ -8,10 +8,12 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Reflection;
+using CommunityToolkit.WinUI.Helpers;
 using Microsoft.UI.Input;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Windows.Foundation.Metadata;
+using Windows.Storage;
 
 namespace RegistryPreview
 {
@@ -353,6 +355,14 @@ namespace RegistryPreview
         }
 
         /// <summary>
+        /// No REG file was opened, so leave the app's title bar alone
+        /// </summary>
+        private void UpdateWindowTitle()
+        {
+            appWindow.Title = APPNAME;
+        }
+
+        /// <summary>
         /// Helper method that assumes everything is enabled/disabled together
         /// </summary>
         private void UpdateToolBarAndUI(bool enable)
@@ -617,6 +627,99 @@ namespace RegistryPreview
 
             // restore the cursor
             ChangeCursor(gridPreview, false);
+        }
+
+        private async void OpenSettingsFile(string path, string filename)
+        {
+            StorageFolder storageFolder = null;
+            StorageFile storageFile = null;
+            string fileContents = string.Empty;
+
+            try
+            {
+                storageFolder = await StorageFolder.GetFolderFromPathAsync(path);
+            }
+            catch (FileNotFoundException ex)
+            {
+                Debug.WriteLine(ex.Message);
+                Directory.CreateDirectory(path);
+                storageFolder = await StorageFolder.GetFolderFromPathAsync(path);
+            }
+
+            try
+            {
+                storageFile = await storageFolder.GetFileAsync(filename);
+            }
+            catch (FileNotFoundException ex)
+            {
+                Debug.WriteLine(ex.Message);
+                File.Create(Path.Combine(path, filename));
+                storageFile = await storageFolder.GetFileAsync(filename);
+            }
+
+            try
+            {
+                fileContents = await Windows.Storage.FileIO.ReadTextAsync(storageFile);
+            }
+            catch
+            {
+            }
+
+            try
+            {
+                jsonSettings = Windows.Data.Json.JsonObject.Parse(fileContents);
+            }
+            catch
+            {
+                // set up default JSON blob
+                fileContents = "{ }";
+            }
+
+            jsonSettings = Windows.Data.Json.JsonObject.Parse(fileContents);
+        }
+
+        private async void SaveSettingsFile(string path, string filename)
+        {
+            StorageFolder storageFolder = null;
+            StorageFile storageFile = null;
+            string fileContents = string.Empty;
+
+            try
+            {
+                storageFolder = await StorageFolder.GetFolderFromPathAsync(path);
+            }
+            catch (FileNotFoundException ex)
+            {
+                Debug.WriteLine(ex.Message);
+                Directory.CreateDirectory(path);
+                storageFolder = await StorageFolder.GetFolderFromPathAsync(path);
+            }
+
+            try
+            {
+                if (await storageFolder.FileExistsAsync(filename))
+                {
+                    storageFile = await storageFolder.GetFileAsync(filename);
+                }
+                else
+                {
+                    storageFile = await storageFolder.CreateFileAsync(filename);
+                }
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine(ex.Message);
+            }
+
+            try
+            {
+                fileContents = jsonSettings.Stringify();
+                await Windows.Storage.FileIO.WriteTextAsync(storageFile, fileContents);
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine(ex.Message);
+            }
         }
     }
 }
