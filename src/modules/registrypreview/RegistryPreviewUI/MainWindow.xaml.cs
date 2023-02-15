@@ -46,8 +46,9 @@ namespace RegistryPreview
             settingsFile = APPNAME + "_settings.json";
             OpenSettingsFile(settingsFolder, settingsFile);
 
+            // Removed this on 2/15/23 as it doesn't seem to be doing anything any more
             // Attempts to force the visual tree to load faster
-            this.Activate();
+            // this.Activate();
 
             // Update the Win32 looking window with the correct icon (and grab the appWindow handle for later)
             IntPtr windowHandle = WinRT.Interop.WindowNative.GetWindowHandle(this);
@@ -65,7 +66,6 @@ namespace RegistryPreview
             {
                 UpdateToolBarAndUI(false);
                 UpdateWindowTitle(resourceLoader.GetString("FileNotFound"));
-                return;
             }
         }
     }

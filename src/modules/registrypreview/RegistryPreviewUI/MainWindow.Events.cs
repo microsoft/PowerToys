@@ -72,21 +72,6 @@ namespace RegistryPreview
                 checkBoxTextBox.IsChecked = jsonSettings.GetNamedBoolean("checkBoxTextBox.Checked");
             }
 
-            /*
-            // Some days you have to select the node yourself - unclear as to why, but why lose this neat code?
-            //if (treeView.RootNodes.Count > 0)
-            //{
-            //    TreeViewNode node = treeView.RootNodes[0];
-            //    TreeViewItem item = (TreeViewItem)treeView.ContainerFromNode(node);
-            //    if (item != null)
-            //    {
-            //        item.TabIndex = 0;
-            //        item.IsTabStop = true;
-            //        item.Focus(FocusState.Programmatic);
-            //    }
-            //}
-            */
-
             // resize the window
             if (jsonSettings.ContainsKey("appWindow.Size.Width") && jsonSettings.ContainsKey("appWindow.Size.Height"))
             {
