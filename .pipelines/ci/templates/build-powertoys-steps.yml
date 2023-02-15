@@ -70,20 +70,6 @@ steps:
     restoreSolution: PowerToys.sln
     restoreDirectory: '$(Build.SourcesDirectory)\packages'
 
-- task: PowerShell@2
-  displayName: Trigger dotnet welcome message so that it does not cause errors on other scripts
-  inputs:
-    targetType: 'inline'
-    script: |
-      dotnet list $(build.sourcesdirectory)\src\common\Common.UI\Common.UI.csproj package
-
-- task: PowerShell@2
-  displayName: Verifying Notice.md and Nuget packages match
-  inputs:
-    filePath: '$(build.sourcesdirectory)\.pipelines\verifyNoticeMdAgainstNugetPackages.ps1'
-    arguments: -path '$(build.sourcesdirectory)\'
-    pwsh: true
-
 - task: VSBuild@1
   displayName: 'Build PowerToys.sln'
   inputs:
@@ -241,3 +227,17 @@ steps:
       **\powerpreviewTest.dll
       **\UnitTests-FancyZones.dll
       !**\obj\**
+
+- task: PowerShell@2
+  displayName: Trigger dotnet welcome message so that it does not cause errors on other scripts
+  inputs:
+    targetType: 'inline'
+    script: |
+      dotnet list $(build.sourcesdirectory)\src\common\Common.UI\Common.UI.csproj package
+
+- task: PowerShell@2
+  displayName: Verifying Notice.md and Nuget packages match
+  inputs:
+    filePath: '$(build.sourcesdirectory)\.pipelines\verifyNoticeMdAgainstNugetPackages.ps1'
+    arguments: -path '$(build.sourcesdirectory)\'
+    pwsh: true
