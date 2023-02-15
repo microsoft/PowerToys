@@ -55,6 +55,13 @@ steps:
     packageType: sdk
     version: '7.x'
 
+  - task: PowerShell@2
+    displayName: 'Trigger dotnet welcome message so that it doesn't cause errors on other scripts'
+    inputs:
+      targetType: 'inline'
+      script: |
+        dotnet list $(build.sourcesdirectory)\src\common\Common.UI\Common.UI.csproj package
+
 - task: NuGetToolInstaller@1
   displayName: Ensure NuGet Installer
 

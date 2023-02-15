@@ -8,29 +8,6 @@ $noticeFile = Get-Content -Raw "NOTICE.md"
 
 Write-Host $noticeFile
 
-Write-Host "Calling a dummy dotnet command to trigger the welcome message now instead of later"
-
-#Workaround for preventing exit code from dotnet process from reflecting exit code in PowerShell
-$dummyProcInfo = New-Object System.Diagnostics.ProcessStartInfo -Property @{
-    FileName               = "dotnet.exe";
-    Arguments              = "list $path\src\common\Common.UI\Common.UI.csproj package";
-    RedirectStandardOutput = $true;
-    RedirectStandardError  = $true;
-}
-
-$dummyProc = [System.Diagnostics.Process]::Start($dummyProcInfo);
-$dummyProcTemp = @();
-
-while (!$dummyProc.StandardOutput.EndOfStream) {
-    $dummyProcTemp += $dummyProc.StandardOutput.ReadLine();
-}
-
-$dummyProc = $null;
-$dummyProcInfo = $null;
-
-# Need to debug this script? Uncomment this line.
-Write-Host $dummyProcTemp "`r`n"
-
 Write-Host "Verifying NuGet packages"
 
 $projFiles = Get-ChildItem $path -Filter *.csproj -force -Recurse
