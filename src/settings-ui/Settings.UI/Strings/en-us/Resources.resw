@@ -2932,7 +2932,7 @@ Activate by holding the key for the character you want to add an accent to, then
     <value>Allow experimentation with new features</value>
   </data>
   <data name="GPO_ExperimentationIsDisallowed.Title" xml:space="preserve">
-    <value>The systems administrator is disabling experimentation.</value>
+    <value>The system administrator has disabled experimentation.</value>
   </data>
   <data name="AllAppsTxt.Text" xml:space="preserve">
     <value>All apps</value>
