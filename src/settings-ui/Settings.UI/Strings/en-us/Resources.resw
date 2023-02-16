@@ -2929,7 +2929,7 @@ Activate by holding the key for the character you want to add an accent to, then
     <value>Note: Only Windows Insider builds may be selected for experimentation</value>
   </data>
   <data name="GeneralPage_EnableExperimentation.Header" xml:space="preserve">
-    <value>Allow experimentation</value>
+    <value>Allow experimentation with new features</value>
   </data>
   <data name="GPO_ExperimentationIsDisallowed.Title" xml:space="preserve">
     <value>The systems administrator is disabling experimentation.</value>
