@@ -33,9 +33,9 @@ Upvote the original issue by clicking its [+😊] button and hitting 👍 (+1) i
 
 Please comment on an issue to let us know you're interested in working on something before you start the work. Not only does this avoid multiple people unexpectedly working on the same thing at the same time but it enables us to make sure everyone is clear on what should be done to implement any new functionality. It's less work for everyone, in the long run, to establish this up front.
 
-### Localisation issues
+### Localization issues
 
-We currently don't accept contributions fixing localisation issues. Localisation is handled by an internal Microsoft team. But we do encourage people to file issues regarding translation mistakes. We will then forward these issues to the corresponding team.
+Please file localization issues, so our internal localization team can identify and fix them. However we currently don't accept community Pull Requests fixing localization issues. Localization is handled by the internal Microsoft team only.
 
 ### To Spec or not to Spec
 
