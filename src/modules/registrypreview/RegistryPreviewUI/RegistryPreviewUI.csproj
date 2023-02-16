@@ -39,14 +39,24 @@
 	<ItemGroup>
 		<Content Include="app.ico" />
 	</ItemGroup>
+
+	<!-- Needed for CommunityToolkit.Labs.WinUI.SettingsControls, on local builds and PR CI. -->
+	<PropertyGroup Condition="'$(IsPipeline)' == ''">
+		<RestoreAdditionalProjectSources>https://pkgs.dev.azure.com/dotnet/CommunityToolkit/_packaging/CommunityToolkit-Labs/nuget/v3/index.json</RestoreAdditionalProjectSources>
+	</PropertyGroup>
+	
 	<ItemGroup>
-		<PackageReference Include="CommunityToolkit.WinUI.UI.Controls.DataGrid" Version="7.1.2" />
-		<PackageReference Include="CommunityToolkit.WinUI.UI.Controls.Layout" Version="7.1.2" />
-		<PackageReference Include="Microsoft.Windows.SDK.BuildTools" Version="10.0.22621.755" />
-		<PackageReference Include="Microsoft.WindowsAppSDK" Version="1.2.230118.102" />
+		<PackageReference Include="CommunityToolkit.WinUI.UI.Controls" />
+		<PackageReference Include="Microsoft.Windows.SDK.BuildTools" />
+		<PackageReference Include="Microsoft.WindowsAppSDK"  />
 		<Manifest Include="$(ApplicationManifest)" />
 	</ItemGroup>
 
+	<ItemGroup>
+		<ProjectReference Include="..\..\..\common\Common.UI\Common.UI.csproj" />
+		<ProjectReference Include="..\..\..\settings-ui\Settings.UI.Library\Settings.UI.Library.csproj" />
+	</ItemGroup>
+	
 	<ItemGroup>
 		<Content Update="Assets\data32.png">
 			<CopyToOutputDirectory>Never</CopyToOutputDirectory>

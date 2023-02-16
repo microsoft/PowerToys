@@ -98,7 +98,7 @@ namespace winrt::PowerToys::GPOWrapper::implementation
     }
     GpoRuleConfigured GPOWrapper::GetConfiguredRegistryPreviewEnabledValue()
     {
-        return (GpoRuleConfigured)powertoys_gpo::getConfiguredRegistryPreviewEnabledValue();
+        return static_cast<GpoRuleConfigured>(powertoys_gpo::getConfiguredRegistryPreviewEnabledValue());
     }
     GpoRuleConfigured GPOWrapper::GetConfiguredScreenRulerEnabledValue()
     {

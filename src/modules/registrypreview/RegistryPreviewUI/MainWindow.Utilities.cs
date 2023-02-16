@@ -8,7 +8,8 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Reflection;
-using CommunityToolkit.WinUI.Helpers;
+
+// using CommunityToolkit.WinUI.Helpers;
 using Microsoft.UI.Input;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
@@ -697,18 +698,12 @@ namespace RegistryPreview
 
             try
             {
-                if (await storageFolder.FileExistsAsync(filename))
-                {
-                    storageFile = await storageFolder.GetFileAsync(filename);
-                }
-                else
-                {
-                    storageFile = await storageFolder.CreateFileAsync(filename);
-                }
+                storageFile = await storageFolder.GetFileAsync(filename);
             }
-            catch (Exception ex)
+            catch (FileNotFoundException ex)
             {
                 Debug.WriteLine(ex.Message);
+                storageFile = await storageFolder.CreateFileAsync(filename);
             }
 
             try
