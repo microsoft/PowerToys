@@ -367,8 +367,7 @@ namespace Awake
 
                         case AwakeMode.EXPIRABLE:
                             {
-                                DateTime expireAt = DateTime.Parse(settings.Properties.ExpireAt);
-                                SetupExpirableKeepAwake(expireAt, settings.Properties.KeepDisplayOn);
+                                SetupExpirableKeepAwake(settings.Properties.ExpireAt, settings.Properties.KeepDisplayOn);
 
                                 break;
                             }

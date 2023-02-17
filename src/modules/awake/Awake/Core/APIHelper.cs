@@ -6,6 +6,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
+using System.Reactive.Linq;
 using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
@@ -82,10 +83,8 @@ namespace Awake.Core
             }
         }
 
-        public static void SetIndefiniteKeepAwake(Action<bool> callback, Action failureCallback, bool keepDisplayOn = false)
+        public static void CancelExistingThread()
         {
-            PowerToysTelemetry.Log.WriteEvent(new Awake.Telemetry.AwakeIndefinitelyKeepAwakeEvent());
-
             _tokenSource.Cancel();
 
             try
@@ -97,11 +96,18 @@ namespace Awake.Core
             }
             catch (OperationCanceledException)
             {
-                _log.Info("Confirmed background thread cancellation when setting indefinite keep awake.");
+                _log.Info("Confirmed background thread cancellation when disabling explicit keep awake.");
             }
 
             _tokenSource = new CancellationTokenSource();
             _threadToken = _tokenSource.Token;
+        }
+
+        public static void SetIndefiniteKeepAwake(Action<bool> callback, Action failureCallback, bool keepDisplayOn = false)
+        {
+            PowerToysTelemetry.Log.WriteEvent(new Awake.Telemetry.AwakeIndefinitelyKeepAwakeEvent());
+
+            CancelExistingThread();
 
             try
             {
@@ -117,18 +123,32 @@ namespace Awake.Core
 
         public static void SetNoKeepAwake()
         {
-            _tokenSource.Cancel();
+            PowerToysTelemetry.Log.WriteEvent(new Awake.Telemetry.AwakeNoKeepAwakeEvent());
 
-            try
+            CancelExistingThread();
+        }
+
+        public static void SetExpirableKeepAwake(DateTime expireAt, Action<bool> callback, Action failureCallback, bool keepDisplayOn = true)
+        {
+            PowerToysTelemetry.Log.WriteEvent(new Awake.Telemetry.AwakeExpirableKeepAwakeEvent());
+
+            CancelExistingThread();
+
+            if (expireAt > DateTime.Now)
             {
-                if (_runnerThread != null && !_runnerThread.IsCanceled)
+                Observable.Timer(expireAt).Subscribe(
+                _ =>
                 {
-                    _runnerThread.Wait(_threadToken);
-                }
+                    callback(true);
+                    CancelExistingThread();
+                },
+                _tokenSource.Token);
             }
-            catch (OperationCanceledException)
+            else
             {
-                _log.Info("Confirmed background thread cancellation when disabling explicit keep awake.");
+                // The target date is not in the future.
+                _log.Error("The specified target date and time is not in the future.");
+                _log.Error($"Current time: {DateTime.Now}\tTarget time: {expireAt}");
             }
         }
 
@@ -136,22 +156,7 @@ namespace Awake.Core
         {
             PowerToysTelemetry.Log.WriteEvent(new Awake.Telemetry.AwakeTimedKeepAwakeEvent());
 
-            _tokenSource.Cancel();
-
-            try
-            {
-                if (_runnerThread != null && !_runnerThread.IsCanceled)
-                {
-                    _runnerThread.Wait(_threadToken);
-                }
-            }
-            catch (OperationCanceledException)
-            {
-                _log.Info("Confirmed background thread cancellation when setting timed keep awake.");
-            }
-
-            _tokenSource = new CancellationTokenSource();
-            _threadToken = _tokenSource.Token;
+            CancelExistingThread();
 
             _runnerThread = Task.Run(() => RunTimedLoop(seconds, keepDisplayOn), _threadToken)
                 .ContinueWith((result) => callback(result.Result), TaskContinuationOptions.OnlyOnRanToCompletion)
