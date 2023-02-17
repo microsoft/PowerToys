@@ -29,12 +29,12 @@ If you disable this setting, the utility will be always disabled and the user wo
 
 If you don't configure this setting, users are able to disable or enable the utility.
 </string>
-      <string id="AllowExperimentationDescription">This policy configures whether PowerToys experimentation is allowed. With experimentation allowed the user see the new features being experimented if it gets selected as part of the test group. (Experimentation will only happens on Windows Insider builds.)
+      <string id="AllowExperimentationDescription">This policy configures whether PowerToys experimentation is allowed. With experimentation allowed the user sees the new features being experimented if it gets selected as part of the test group. (Experimentation will only happen on Windows Insider builds.)
 
 If this setting is not configured or enabled, experimentation is allowed.
 
 If this setting is disabled, experimentation is not allowed.
- </string>
+</string>
       <string id="ConfigureEnabledUtilityAlwaysOnTop">Always On Top: Configure enabled state</string>
       <string id="ConfigureEnabledUtilityAwake">Awake: Configure enabled state</string>
       <string id="ConfigureEnabledUtilityColorPicker">Color Picker: Configure enabled state</string>
