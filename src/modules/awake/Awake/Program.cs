@@ -416,7 +416,7 @@ namespace Awake
         {
             _log.Info($"Expirable keep-awake. Expected expiration date/time: {expireAt} with display on setting set to {displayOn}.");
 
-            APIHelper.SetExpirableKeepAwake(expireAt, LogCompletedExpirableKeepAwakeThread, LogUnexpectedOrCancelledKeepAwakeThreadCompletion, displayOn);
+            APIHelper.SetExpirableKeepAwake(expireAt, LogCompletedKeepAwakeThread, LogUnexpectedOrCancelledKeepAwakeThreadCompletion, displayOn);
         }
 
         private static void SetupTimedKeepAwake(uint time, bool displayOn)
@@ -428,19 +428,14 @@ namespace Awake
 
         private static void LogUnexpectedOrCancelledKeepAwakeThreadCompletion()
         {
-            string? errorMessage = "The keep-awake thread was terminated early.";
+            string? errorMessage = "The keep awake thread was terminated early.";
             _log.Info(errorMessage);
             _log.Debug(errorMessage);
         }
 
-        private static void LogCompletedKeepAwakeThread(bool result)
+        private static void LogCompletedKeepAwakeThread()
         {
-            _log.Info($"Exited keep-awake thread successfully: {result}");
-        }
-
-        private static void LogCompletedExpirableKeepAwakeThread()
-        {
-            LogCompletedKeepAwakeThread(true);
+            _log.Info($"Exited keep awake thread successfully.");
         }
     }
 }
