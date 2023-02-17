@@ -6,6 +6,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
+using System.Reactive.Concurrency;
 using System.Reactive.Linq;
 using System.Runtime.InteropServices;
 using System.Threading;
@@ -83,6 +84,18 @@ namespace Awake.Core
             }
         }
 
+        private static bool SetAwakeStateBasedOnDisplaySetting(bool keepDisplayOn)
+        {
+            if (keepDisplayOn)
+            {
+                return SetAwakeState(EXECUTION_STATE.ES_SYSTEM_REQUIRED | EXECUTION_STATE.ES_DISPLAY_REQUIRED | EXECUTION_STATE.ES_CONTINUOUS);
+            }
+            else
+            {
+                return SetAwakeState(EXECUTION_STATE.ES_SYSTEM_REQUIRED | EXECUTION_STATE.ES_CONTINUOUS);
+            }
+        }
+
         public static void CancelExistingThread()
         {
             _tokenSource.Cancel();
@@ -128,7 +141,7 @@ namespace Awake.Core
             CancelExistingThread();
         }
 
-        public static void SetExpirableKeepAwake(DateTime expireAt, Action<bool> callback, Action failureCallback, bool keepDisplayOn = true)
+        public static void SetExpirableKeepAwake(DateTime expireAt, Action callback, Action failureCallback, bool keepDisplayOn = true)
         {
             PowerToysTelemetry.Log.WriteEvent(new Awake.Telemetry.AwakeExpirableKeepAwakeEvent());
 
@@ -136,13 +149,9 @@ namespace Awake.Core
 
             if (expireAt > DateTime.Now)
             {
-                Observable.Timer(expireAt).Subscribe(
-                _ =>
-                {
-                    callback(true);
-                    CancelExistingThread();
-                },
-                _tokenSource.Token);
+                _runnerThread = Task.Run(() => RunExpiringJob(expireAt, keepDisplayOn), _threadToken)
+                    .ContinueWith((result) => callback, TaskContinuationOptions.OnlyOnRanToCompletion)
+                    .ContinueWith((result) => failureCallback, TaskContinuationOptions.NotOnRanToCompletion);
             }
             else
             {
@@ -163,20 +172,44 @@ namespace Awake.Core
                 .ContinueWith((result) => failureCallback, TaskContinuationOptions.NotOnRanToCompletion);
         }
 
-        private static bool RunIndefiniteLoop(bool keepDisplayOn = false)
+        private static void RunExpiringJob(DateTime expireAt, bool keepDisplayOn = false)
         {
-            bool success;
-            if (keepDisplayOn)
+            bool success = false;
+
+            // In case cancellation was already requested.
+            _threadToken.ThrowIfCancellationRequested();
+
+            success = SetAwakeStateBasedOnDisplaySetting(keepDisplayOn);
+
+            if (success)
             {
-                success = SetAwakeState(EXECUTION_STATE.ES_SYSTEM_REQUIRED | EXECUTION_STATE.ES_DISPLAY_REQUIRED | EXECUTION_STATE.ES_CONTINUOUS);
+                _log.Info($"Initiated expirable keep awake in background thread: {PInvoke.GetCurrentThreadId()}. Screen on: {keepDisplayOn}");
+
+                Observable.Timer(expireAt, Scheduler.CurrentThread).Subscribe(
+                _ =>
+                {
+                    _log.Info("Completed expirable thread.");
+                    CancelExistingThread();
+                },
+                _tokenSource.Token);
             }
             else
             {
-                success = SetAwakeState(EXECUTION_STATE.ES_SYSTEM_REQUIRED | EXECUTION_STATE.ES_CONTINUOUS);
+                _log.Info("Could not successfully set up expirable keep awake.");
             }
+        }
+
+        private static bool RunIndefiniteLoop(bool keepDisplayOn = false)
+        {
+            bool success = false;
+
+            // In case cancellation was already requested.
+            _threadToken.ThrowIfCancellationRequested();
 
             try
             {
+                success = SetAwakeStateBasedOnDisplaySetting(keepDisplayOn);
+
                 if (success)
                 {
                     _log.Info($"Initiated indefinite keep awake in background thread: {PInvoke.GetCurrentThreadId()}. Screen on: {keepDisplayOn}");
@@ -232,16 +265,10 @@ namespace Awake.Core
 
             // In case cancellation was already requested.
             _threadToken.ThrowIfCancellationRequested();
+
             try
             {
-                if (keepDisplayOn)
-                {
-                    success = SetAwakeState(EXECUTION_STATE.ES_SYSTEM_REQUIRED | EXECUTION_STATE.ES_DISPLAY_REQUIRED | EXECUTION_STATE.ES_CONTINUOUS);
-                }
-                else
-                {
-                    success = SetAwakeState(EXECUTION_STATE.ES_SYSTEM_REQUIRED | EXECUTION_STATE.ES_CONTINUOUS);
-                }
+                success = SetAwakeStateBasedOnDisplaySetting(keepDisplayOn);
 
                 if (success)
                 {
