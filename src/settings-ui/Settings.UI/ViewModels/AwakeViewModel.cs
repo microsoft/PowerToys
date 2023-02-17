@@ -95,6 +95,11 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             get => _enabledStateIsGPOConfigured;
         }
 
+        public bool IsExpirationConfigurationEnabled
+        {
+            get => _mode == AwakeMode.EXPIRABLE && _isEnabled;
+        }
+
         public bool IsTimeConfigurationEnabled
         {
             get => _mode == AwakeMode.TIMED && _isEnabled;
@@ -116,6 +121,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                     OnPropertyChanged(nameof(Mode));
                     OnPropertyChanged(nameof(IsTimeConfigurationEnabled));
                     OnPropertyChanged(nameof(IsScreenConfigurationPossibleEnabled));
+                    OnPropertyChanged(nameof(IsExpirationConfigurationEnabled));
 
                     Settings.Properties.Mode = value;
                     NotifyPropertyChanged();
@@ -171,6 +177,22 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             }
         }
 
+        public DateTimeOffset ExpireAt
+        {
+            get => _expireAt;
+            set
+            {
+                if (_expireAt != value)
+                {
+                    _expireAt = value;
+                    OnPropertyChanged(nameof(ExpireAt));
+
+                    Settings.Properties.ExpireAt = value;
+                    NotifyPropertyChanged();
+                }
+            }
+        }
+
         public void NotifyPropertyChanged([CallerMemberName] string propertyName = null)
         {
             OnPropertyChanged(propertyName);
@@ -198,6 +220,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         private uint _hours;
         private uint _minutes;
         private bool _keepDisplayOn;
+        private DateTimeOffset _expireAt;
         private AwakeMode _mode;
     }
 }

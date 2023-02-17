@@ -1817,7 +1817,10 @@ From there, simply click on one of the supported files in the File Explorer and 
     <value>Keep awake indefinitely</value>
   </data>
   <data name="Awake_TemporaryKeepAwake.Content" xml:space="preserve">
-    <value>Keep awake temporarily</value>
+    <value>Keep awake for a time interval</value>
+  </data>
+  <data name="Awake_ExpirableKeepAwake.Content" xml:space="preserve">
+    <value>Keep awake until expiration</value>
   </data>
   <data name="Awake_EnableDisplayKeepAwake.Header" xml:space="preserve">
     <value>Keep screen on</value>
@@ -2103,7 +2106,10 @@ From there, simply click on one of the supported files in the File Explorer and 
     <comment>First part of the default name of new sizes that can be added in PT's settings ui.</comment>
   </data>
   <data name="Awake_TimeBeforeAwake.Header" xml:space="preserve">
-    <value>Time before returning to the previous awakeness state</value>
+    <value>Interval before returning to the previous awakeness state</value>
+  </data>
+  <data name="Awake_ExpireAtAwake.Header" xml:space="preserve">
+    <value>Date and time before returning to the previous awakeness state</value>
   </data>
   <data name="MouseUtils.ModuleTitle" xml:space="preserve">
     <value>Mouse utilities</value>

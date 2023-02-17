@@ -49,9 +49,19 @@
                             <ComboBoxItem x:Uid="Awake_NoKeepAwake" />
                             <ComboBoxItem x:Uid="Awake_IndefiniteKeepAwake" />
                             <ComboBoxItem x:Uid="Awake_TemporaryKeepAwake" />
+                            <ComboBoxItem x:Uid="Awake_ExpirableKeepAwake" />
                         </ComboBox>
                     </labs:SettingsCard>
 
+                    <labs:SettingsCard
+                        x:Uid="Awake_ExpireAtAwake"
+                        HeaderIcon="{ui:FontIcon FontFamily={StaticResource SymbolThemeFontFamily}, Glyph=&#xEC92;}"
+                        Visibility="{x:Bind ViewModel.IsExpirationConfigurationEnabled, Mode=OneWay}">
+                        <StackPanel Orientation="Horizontal">
+                            <!--<DatePicker SelectedDate="{x:Bind ViewModel.ExpireAt, Mode=TwoWay}"></DatePicker>-->
+                        </StackPanel>
+                    </labs:SettingsCard>
+                    
                     <labs:SettingsCard
                         x:Uid="Awake_TimeBeforeAwake"
                         HeaderIcon="{ui:FontIcon FontFamily={StaticResource SymbolThemeFontFamily}, Glyph=&#xE916;}"

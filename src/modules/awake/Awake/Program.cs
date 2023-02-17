@@ -412,7 +412,7 @@ namespace Awake
             APIHelper.SetNoKeepAwake();
         }
 
-        private static void SetupExpirableKeepAwake(DateTime expireAt, bool displayOn)
+        private static void SetupExpirableKeepAwake(DateTimeOffset expireAt, bool displayOn)
         {
             _log.Info($"Expirable keep-awake. Expected expiration date/time: {expireAt} with display on setting set to {displayOn}.");
 

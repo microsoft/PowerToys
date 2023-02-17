@@ -147,7 +147,7 @@ namespace Awake.Core
             CancelExistingThread();
         }
 
-        public static void SetExpirableKeepAwake(DateTime expireAt, Action callback, Action failureCallback, bool keepDisplayOn = true)
+        public static void SetExpirableKeepAwake(DateTimeOffset expireAt, Action callback, Action failureCallback, bool keepDisplayOn = true)
         {
             PowerToysTelemetry.Log.WriteEvent(new Awake.Telemetry.AwakeExpirableKeepAwakeEvent());
 
@@ -178,7 +178,7 @@ namespace Awake.Core
                 .ContinueWith((result) => failureCallback, TaskContinuationOptions.NotOnRanToCompletion);
         }
 
-        private static void RunExpiringJob(DateTime expireAt, bool keepDisplayOn = false)
+        private static void RunExpiringJob(DateTimeOffset expireAt, bool keepDisplayOn = false)
         {
             bool success = false;
 
