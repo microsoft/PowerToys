@@ -2,6 +2,7 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System;
 using System.Collections.Generic;
 using System.Text.Json.Serialization;
 
@@ -15,6 +16,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             Mode = AwakeMode.PASSIVE;
             Hours = 0;
             Minutes = 0;
+            ExpireAt = DateTime.MinValue;
             TrayTimeShortcuts = new Dictionary<string, int>();
         }
 
@@ -30,6 +32,9 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         [JsonPropertyName("awake_minutes")]
         public uint Minutes { get; set; }
 
+        [JsonPropertyName("awake_expire_at")]
+        public DateTime ExpireAt { get; set; }
+
         [JsonPropertyName("tray_times")]
         public Dictionary<string, int> TrayTimeShortcuts { get; set; }
     }
@@ -39,5 +44,6 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         PASSIVE = 0,
         INDEFINITE = 1,
         TIMED = 2,
+        EXPIRABLE = 3,
     }
 }
