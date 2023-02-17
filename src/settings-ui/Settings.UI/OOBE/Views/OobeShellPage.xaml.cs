@@ -6,6 +6,7 @@ using System;
 using System.Collections.ObjectModel;
 using System.Globalization;
 using AllExperiments;
+using global::PowerToys.GPOWrapper;
 using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.PowerToys.Settings.UI.OOBE.Enums;
 using Microsoft.PowerToys.Settings.UI.OOBE.ViewModel;
@@ -195,7 +196,7 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
                 switch (selectedItem.Tag)
                 {
                     case "Overview":
-                        if (ExperimentationToggleSwitchEnabled)
+                        if (ExperimentationToggleSwitchEnabled && GPOWrapper.GetAllowExperimentationValue() != GpoRuleConfigured.Disabled)
                         {
                             switch (AllExperiments.Experiments.LandingPageExperiment)
                             {

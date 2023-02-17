@@ -2922,11 +2922,17 @@ Activate by holding the key for the character you want to add an accent to, then
   <data name="Alternate_OOBE_Run_Title.Text" xml:space="preserve">
     <value>PowerToys Run</value>
   </data>
+  <data name="General_Experimentation.Header" xml:space="preserve">
+    <value>Experimentation</value>
+  </data>
   <data name="GeneralPage_EnableExperimentation.Description" xml:space="preserve">
-    <value>Only affects Windows Insider builds</value>
+    <value>Note: Only Windows Insider builds may be selected for experimentation</value>
   </data>
   <data name="GeneralPage_EnableExperimentation.Header" xml:space="preserve">
-    <value>Enable experimentation</value>
+    <value>Allow experimentation with new features</value>
+  </data>
+  <data name="GPO_ExperimentationIsDisallowed.Title" xml:space="preserve">
+    <value>The system administrator has disabled experimentation.</value>
   </data>
   <data name="AllAppsTxt.Text" xml:space="preserve">
     <value>All apps</value>

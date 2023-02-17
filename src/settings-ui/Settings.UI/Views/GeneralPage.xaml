@@ -369,12 +369,6 @@
                             </labs:SettingsCard>
                         </labs:SettingsExpander.Items>
                     </labs:SettingsExpander>
-                    <labs:SettingsCard x:Uid="GeneralPage_EnableExperimentation"
-                                       HeaderIcon="{ui:BitmapIcon Source=/Assets/FluentIcons/FluentIconsExperimentation.png}">
-                        <ToggleSwitch
-                            x:Uid="ToggleSwitch"
-                            IsOn="{Binding Mode=TwoWay, Path=EnableExperimentation}" />
-                    </labs:SettingsCard>
                 </controls:SettingsGroup>
                 <InfoBar
                     x:Uid="General_SettingsBackupMessageResults"
@@ -383,6 +377,23 @@
                     IsOpen="{Binding SettingsBackupRestoreMessageVisible, Mode=OneWay}"
                     IsTabStop="{Binding SettingsBackupRestoreMessageVisible, Mode=OneWay}"
                     Severity="{Binding BackupRestoreMessageSeverity, Converter={StaticResource StringToInfoBarSeverityConverter}}" />
+                <controls:SettingsGroup
+                    x:Uid="General_Experimentation"
+                    Visibility="Visible">
+                    <labs:SettingsCard x:Uid="GeneralPage_EnableExperimentation"
+                                       HeaderIcon="{ui:BitmapIcon Source=/Assets/FluentIcons/FluentIconsExperimentation.png}">
+                        <ToggleSwitch
+                            x:Uid="ToggleSwitch"
+                            IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsExperimentationGpoDisallowed, Converter={StaticResource BoolNegationConverter}}"
+                            IsOn="{Binding Mode=TwoWay, Path=EnableExperimentation}" />
+                    </labs:SettingsCard>
+                    <InfoBar
+                        x:Uid="GPO_ExperimentationIsDisallowed"
+                        IsClosable="False"
+                        IsOpen="{x:Bind Mode=OneWay, Path=ViewModel.IsExperimentationGpoDisallowed}"
+                        IsTabStop="{x:Bind Mode=OneWay, Path=ViewModel.IsExperimentationGpoDisallowed}"
+                        Severity="Informational" />
+                </controls:SettingsGroup>
             </StackPanel>
 
         </controls:SettingsPageControl.ModuleContent>
