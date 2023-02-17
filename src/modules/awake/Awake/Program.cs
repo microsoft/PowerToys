@@ -24,7 +24,6 @@ using Windows.Win32;
 using Windows.Win32.Foundation;
 using Windows.Win32.System.Console;
 using Windows.Win32.System.Power;
-using static System.Windows.Forms.VisualStyles.VisualStyleElement.TaskbarClock;
 
 #pragma warning disable CS8602 // Dereference of a possibly null reference.
 #pragma warning disable CS8603 // Possible null reference return.
@@ -98,7 +97,7 @@ namespace Awake
 
             _log.Info("Parsing parameters...");
 
-            var configOption = new Option<bool>(
+            Option<bool> configOption = new(
                     aliases: new[] { "--use-pt-config", "-c" },
                     getDefaultValue: () => false,
                     description: $"Specifies whether {InternalConstants.AppName} will be using the PowerToys configuration file for managing the state.")
@@ -110,7 +109,7 @@ namespace Awake
                 Required = false,
             };
 
-            var displayOption = new Option<bool>(
+            Option<bool> displayOption = new(
                     aliases: new[] { "--display-on", "-d" },
                     getDefaultValue: () => true,
                     description: "Determines whether the display should be kept awake.")
@@ -122,7 +121,7 @@ namespace Awake
                 Required = false,
             };
 
-            var timeOption = new Option<uint>(
+            Option<uint> timeOption = new(
                     aliases: new[] { "--time-limit", "-t" },
                     getDefaultValue: () => 0,
                     description: "Determines the interval, in seconds, during which the computer is kept awake.")
@@ -134,7 +133,7 @@ namespace Awake
                 Required = false,
             };
 
-            var pidOption = new Option<int>(
+            Option<int> pidOption = new(
                     aliases: new[] { "--pid", "-p" },
                     getDefaultValue: () => 0,
                     description: $"Bind the execution of {InternalConstants.AppName} to another process. When the process ends, the system will resume managing the current sleep/display mode.")
@@ -146,19 +145,19 @@ namespace Awake
                 Required = false,
             };
 
-            var expireAtOption = new Option<DateTime>(
+            Option<string> expireAtOption = new(
                     aliases: new[] { "--expire", "-e" },
-                    getDefaultValue: () => DateTime.MinValue,
+                    getDefaultValue: () => string.Empty,
                     description: $"Determines the end date/time when {InternalConstants.AppName} will back off and let the system manage the current sleep/display mode.")
             {
-                Argument = new Argument<DateTime>(() => DateTime.MinValue)
+                Argument = new Argument<string>(() => string.Empty)
                 {
                     Arity = ArgumentArity.ZeroOrOne,
                 },
                 Required = false,
             };
 
-            RootCommand? rootCommand = new RootCommand
+            RootCommand? rootCommand = new()
             {
                 configOption,
                 displayOption,
@@ -169,7 +168,7 @@ namespace Awake
 
             rootCommand.Description = InternalConstants.AppName;
 
-            rootCommand.Handler = CommandHandler.Create<bool, bool, uint, int, DateTime>(HandleCommandLineArguments);
+            rootCommand.Handler = CommandHandler.Create<bool, bool, uint, int, string>(HandleCommandLineArguments);
 
             _log.Info("Parameter setup complete. Proceeding to the rest of the app initiation...");
 
@@ -190,7 +189,7 @@ namespace Awake
             APIHelper.CompleteExit(exitCode, exitSignal, force);
         }
 
-        private static void HandleCommandLineArguments(bool usePtConfig, bool displayOn, uint timeLimit, int pid, DateTime expireAt)
+        private static void HandleCommandLineArguments(bool usePtConfig, bool displayOn, uint timeLimit, int pid, string expireAt)
         {
             _handler += ExitHandler;
             APIHelper.SetConsoleControlHandler(_handler, true);
@@ -279,19 +278,27 @@ namespace Awake
             {
                 // Date-based binding takes precedence over timed configuration, so we want to
                 // check for that first.
-                if (expireAt != DateTime.MinValue)
+                if (!string.IsNullOrWhiteSpace(expireAt))
                 {
-                    if (expireAt > DateTime.Now)
+                    try
                     {
-                        // We want to have a dedicated expirable keep-awake logic instead of
-                        // converting the target date to seconds and then passing to SetupTimedKeepAwake
-                        // because that way we're accounting for the user potentially changing their clock
-                        // while Awake is running.
-                        SetupExpirableKeepAwake(expireAt, displayOn);
+                        DateTime expirationDateTime = DateTime.Parse(expireAt);
+                        if (expirationDateTime > DateTime.Now)
+                        {
+                            // We want to have a dedicated expirable keep-awake logic instead of
+                            // converting the target date to seconds and then passing to SetupTimedKeepAwake
+                            // because that way we're accounting for the user potentially changing their clock
+                            // while Awake is running.
+                            SetupExpirableKeepAwake(expirationDateTime, displayOn);
+                        }
+                        else
+                        {
+                            _log.Info($"Target date is not in the future, therefore there is nothing to wait for.");
+                        }
                     }
-                    else
+                    catch
                     {
-                        _log.Info($"Target date is not in the future, therefore there is nothing to wait for.");
+                        _log.Error($"Could not parse date string {expireAt} into a viable date.");
                     }
                 }
                 else
