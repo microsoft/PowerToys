@@ -146,7 +146,7 @@ namespace Awake
             };
 
             Option<string> expireAtOption = new(
-                    aliases: new[] { "--expire", "-e" },
+                    aliases: new[] { "--expire-at", "-e" },
                     getDefaultValue: () => string.Empty,
                     description: $"Determines the end date/time when {InternalConstants.AppName} will back off and let the system manage the current sleep/display mode.")
             {
@@ -415,6 +415,8 @@ namespace Awake
         private static void SetupExpirableKeepAwake(DateTime expireAt, bool displayOn)
         {
             _log.Info($"Expirable keep-awake. Expected expiration date/time: {expireAt} with display on setting set to {displayOn}.");
+
+            APIHelper.SetExpirableKeepAwake(expireAt, LogCompletedKeepAwakeThread, LogUnexpectedOrCancelledKeepAwakeThreadCompletion, displayOn);
         }
 
         private static void SetupTimedKeepAwake(uint time, bool displayOn)
