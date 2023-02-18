@@ -186,6 +186,15 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             }
         }
 
+        public TimeSpan Time
+        {
+            get => ExpireAt.TimeOfDay;
+            set
+            {
+                ExpireAt = new DateTime(ExpireAt.Year, ExpireAt.Month, ExpireAt.Day, value.Hours, value.Minutes, value.Seconds);
+            }
+        }
+
         public void NotifyPropertyChanged([CallerMemberName] string propertyName = null)
         {
             OnPropertyChanged(propertyName);
