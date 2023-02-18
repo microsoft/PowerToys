@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft Corporation
+// Copyright (c) Microsoft Corporation
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
@@ -13,6 +13,10 @@ namespace Peek.FilePreviewer.Previewers
             if (ImagePreviewer.IsFileTypeSupported(file.Extension))
             {
                 return new ImagePreviewer(file);
+            }
+            else if (SvgPreviewer.IsFileTypeSupported(file.Extension))
+            {
+                return new SvgPreviewer(file);
             }
             else if (WebBrowserPreviewer.IsFileTypeSupported(file.Extension))
             {

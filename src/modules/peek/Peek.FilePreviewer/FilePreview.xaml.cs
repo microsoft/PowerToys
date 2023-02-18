@@ -78,6 +78,8 @@ namespace Peek.FilePreviewer
 
         public IBitmapPreviewer? BitmapPreviewer => Previewer as IBitmapPreviewer;
 
+        public ISvgPreviewer? SVGPreviewer => Previewer as ISvgPreviewer;
+
         public IBrowserPreviewer? BrowserPreviewer => Previewer as IBrowserPreviewer;
 
         public bool IsImageVisible => BitmapPreviewer != null;
