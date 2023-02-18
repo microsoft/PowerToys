@@ -58,7 +58,7 @@
                         HeaderIcon="{ui:FontIcon FontFamily={StaticResource SymbolThemeFontFamily}, Glyph=&#xEC92;}"
                         Visibility="{x:Bind ViewModel.IsExpirationConfigurationEnabled, Mode=OneWay}">
                         <StackPanel Orientation="Horizontal">
-                            <!--<DatePicker SelectedDate="{x:Bind ViewModel.ExpireAt, Mode=TwoWay}"></DatePicker>-->
+                            <DatePicker SelectedDate="{x:Bind ViewModel.ExpireAt, Mode=TwoWay}"></DatePicker>
                         </StackPanel>
                     </labs:SettingsCard>
                     

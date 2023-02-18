@@ -224,7 +224,8 @@ namespace Awake
                             Exit("Received a signal to end the process. Making sure we quit...", 0, _exitSignal, true);
                         }
                     }).Start();
-                    TrayHelper.InitializeTray(InternalConstants.FullAppName, new Icon("modules/awake/images/awake.ico"), _exitSignal);
+
+                    TrayHelper.InitializeTray(InternalConstants.FullAppName, new Icon(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "images/awake.ico")), _exitSignal);
 
                     string? settingsPath = _settingsUtils.GetSettingsFilePath(InternalConstants.AppName);
                     _log.Info($"Reading configuration file: {settingsPath}");
@@ -412,7 +413,7 @@ namespace Awake
             APIHelper.SetNoKeepAwake();
         }
 
-        private static void SetupExpirableKeepAwake(DateTimeOffset expireAt, bool displayOn)
+        private static void SetupExpirableKeepAwake(DateTimeOffset? expireAt, bool displayOn)
         {
             _log.Info($"Expirable keep-awake. Expected expiration date/time: {expireAt} with display on setting set to {displayOn}.");
 

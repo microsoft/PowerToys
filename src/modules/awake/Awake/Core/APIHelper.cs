@@ -147,13 +147,13 @@ namespace Awake.Core
             CancelExistingThread();
         }
 
-        public static void SetExpirableKeepAwake(DateTimeOffset expireAt, Action callback, Action failureCallback, bool keepDisplayOn = true)
+        public static void SetExpirableKeepAwake(DateTimeOffset? expireAt, Action callback, Action failureCallback, bool keepDisplayOn = true)
         {
             PowerToysTelemetry.Log.WriteEvent(new Awake.Telemetry.AwakeExpirableKeepAwakeEvent());
 
             CancelExistingThread();
 
-            if (expireAt > DateTime.Now)
+            if (expireAt > DateTime.Now && expireAt != null)
             {
                 _runnerThread = Task.Run(() => RunExpiringJob(expireAt, keepDisplayOn), _threadToken)
                     .ContinueWith((result) => callback, TaskContinuationOptions.OnlyOnRanToCompletion)
@@ -178,7 +178,7 @@ namespace Awake.Core
                 .ContinueWith((result) => failureCallback, TaskContinuationOptions.NotOnRanToCompletion);
         }
 
-        private static void RunExpiringJob(DateTimeOffset expireAt, bool keepDisplayOn = false)
+        private static void RunExpiringJob(DateTimeOffset? expireAt, bool keepDisplayOn = false)
         {
             bool success = false;
 
@@ -193,7 +193,7 @@ namespace Awake.Core
                 {
                     _log.Info($"Initiated expirable keep awake in background thread: {PInvoke.GetCurrentThreadId()}. Screen on: {keepDisplayOn}");
 
-                    Observable.Timer(expireAt, Scheduler.CurrentThread).Subscribe(
+                    Observable.Timer((DateTimeOffset)expireAt!, Scheduler.CurrentThread).Subscribe(
                     _ =>
                     {
                         _log.Info($"Completed expirable thread in {PInvoke.GetCurrentThreadId()}.");
