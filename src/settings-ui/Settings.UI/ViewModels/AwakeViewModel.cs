@@ -43,6 +43,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             _mode = Settings.Properties.Mode;
             _hours = Settings.Properties.Hours;
             _minutes = Settings.Properties.Minutes;
+            _expireAt = Settings.Properties.ExpireAt;
 
             // set the callback functions value to hangle outgoing IPC message.
             SendConfigMSG = ipcMSGCallBackFunc;
@@ -82,6 +83,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                     OnPropertyChanged(nameof(IsEnabled));
                     OnPropertyChanged(nameof(IsTimeConfigurationEnabled));
                     OnPropertyChanged(nameof(IsScreenConfigurationPossibleEnabled));
+                    OnPropertyChanged(nameof(IsExpirationConfigurationEnabled));
 
                     OutGoingGeneralSettings outgoing = new OutGoingGeneralSettings(GeneralSettingsConfig);
                     SendConfigMSG(outgoing.ToString());
@@ -212,6 +214,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             OnPropertyChanged(nameof(IsEnabled));
             OnPropertyChanged(nameof(IsTimeConfigurationEnabled));
             OnPropertyChanged(nameof(IsScreenConfigurationPossibleEnabled));
+            OnPropertyChanged(nameof(IsExpirationConfigurationEnabled));
         }
 
         private GpoRuleConfigured _enabledGpoRuleConfiguration;
