@@ -97,7 +97,20 @@ namespace Peek.FilePreviewer
         public double ScalingFactor
         {
             get => (double)GetValue(ScalingFactorProperty);
-            set => SetValue(ScalingFactorProperty, value);
+            set
+            {
+                SetValue(ScalingFactorProperty, value);
+
+                if (Previewer is IBitmapPreviewer bitmapPreviewer)
+                {
+                    bitmapPreviewer.ScalingFactor = ScalingFactor;
+                }
+
+                if (Previewer is ISvgPreviewer svgPreviewer)
+                {
+                    svgPreviewer.ScalingFactor = ScalingFactor;
+                }
+            }
         }
 
         public bool MatchPreviewState(PreviewState? value, PreviewState stateToMatch)
@@ -130,6 +143,11 @@ namespace Peek.FilePreviewer
             if (Previewer is IBitmapPreviewer bitmapPreviewer)
             {
                 bitmapPreviewer.ScalingFactor = ScalingFactor;
+            }
+
+            if (Previewer is ISvgPreviewer svgPreviewer)
+            {
+                svgPreviewer.ScalingFactor = ScalingFactor;
             }
 
             await UpdatePreviewAsync(_cancellationTokenSource.Token);
