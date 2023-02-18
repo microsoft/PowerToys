@@ -33,7 +33,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         public uint Minutes { get; set; }
 
         [JsonPropertyName("awake_expire_at")]
-        public DateTimeOffset? ExpireAt { get; set; }
+        public DateTimeOffset ExpireAt { get; set; }
 
         [JsonPropertyName("tray_times")]
         public Dictionary<string, int> TrayTimeShortcuts { get; set; }

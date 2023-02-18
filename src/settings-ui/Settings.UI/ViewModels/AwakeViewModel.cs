@@ -179,7 +179,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             }
         }
 
-        public DateTimeOffset? ExpireAt
+        public DateTimeOffset ExpireAt
         {
             get => _expireAt;
             set
@@ -223,7 +223,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         private uint _hours;
         private uint _minutes;
         private bool _keepDisplayOn;
-        private DateTimeOffset? _expireAt;
+        private DateTimeOffset _expireAt;
         private AwakeMode _mode;
     }
 }

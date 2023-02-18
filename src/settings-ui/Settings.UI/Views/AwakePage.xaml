@@ -13,6 +13,7 @@
 
     <Page.Resources>
         <converters:AwakeModeToIntConverter x:Key="AwakeModeToIntConverter" />
+        <converters:DateTimeOffsetToTimeSpanConverter x:Key="DateTimeOffsetToTimeSpanConverter" />
     </Page.Resources>
 
     <controls:SettingsPageControl
@@ -58,7 +59,8 @@
                         HeaderIcon="{ui:FontIcon FontFamily={StaticResource SymbolThemeFontFamily}, Glyph=&#xEC92;}"
                         Visibility="{x:Bind ViewModel.IsExpirationConfigurationEnabled, Mode=OneWay}">
                         <StackPanel Orientation="Horizontal">
-                            <DatePicker SelectedDate="{x:Bind ViewModel.ExpireAt, Mode=OneWay}"></DatePicker>
+                            <DatePicker Date="{x:Bind ViewModel.ExpireAt, Mode=TwoWay}"></DatePicker>
+                            <TimePicker Margin="8,0,0,0" Time="{x:Bind ViewModel.ExpireAt, Mode=TwoWay, Converter={StaticResource DateTimeOffsetToTimeSpanConverter}}"></TimePicker>
                         </StackPanel>
                     </labs:SettingsCard>
                     

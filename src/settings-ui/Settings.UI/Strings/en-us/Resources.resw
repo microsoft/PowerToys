@@ -1828,6 +1828,9 @@ From there, simply click on one of the supported files in the File Explorer and 
   <data name="Awake_EnableDisplayKeepAwake.Description" xml:space="preserve">
     <value>This setting is only available when keeping the PC awake</value>
   </data>
+  <data name="Awake_ExpireAtAwake.Description" xml:space="preserve">
+    <value>Keep custom awakeness state until a specific date and time</value>
+  </data>
   <data name="Awake_Mode.Header" xml:space="preserve">
     <value>Mode</value>
   </data>
@@ -2109,7 +2112,7 @@ From there, simply click on one of the supported files in the File Explorer and 
     <value>Interval before returning to the previous awakeness state</value>
   </data>
   <data name="Awake_ExpireAtAwake.Header" xml:space="preserve">
-    <value>Date and time before returning to the previous awakeness state</value>
+    <value>End date and time</value>
   </data>
   <data name="MouseUtils.ModuleTitle" xml:space="preserve">
     <value>Mouse utilities</value>
