@@ -120,7 +120,6 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 if (_mode != value)
                 {
                     _mode = value;
-                    OnPropertyChanged(nameof(Mode));
                     OnPropertyChanged(nameof(IsTimeConfigurationEnabled));
                     OnPropertyChanged(nameof(IsScreenConfigurationPossibleEnabled));
                     OnPropertyChanged(nameof(IsExpirationConfigurationEnabled));
@@ -139,8 +138,6 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 if (_keepDisplayOn != value)
                 {
                     _keepDisplayOn = value;
-                    OnPropertyChanged(nameof(KeepDisplayOn));
-
                     Settings.Properties.KeepDisplayOn = value;
                     NotifyPropertyChanged();
                 }
@@ -155,8 +152,6 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 if (_hours != value)
                 {
                     _hours = value;
-                    OnPropertyChanged(nameof(Hours));
-
                     Settings.Properties.Hours = value;
                     NotifyPropertyChanged();
                 }
@@ -171,8 +166,6 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 if (_minutes != value)
                 {
                     _minutes = value;
-                    OnPropertyChanged(nameof(Minutes));
-
                     Settings.Properties.Minutes = value;
                     NotifyPropertyChanged();
                 }
@@ -187,8 +180,6 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 if (_expireAt != value)
                 {
                     _expireAt = value;
-                    OnPropertyChanged(nameof(ExpireAt));
-
                     Settings.Properties.ExpireAt = value;
                     NotifyPropertyChanged();
                 }

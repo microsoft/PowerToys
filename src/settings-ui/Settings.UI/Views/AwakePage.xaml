@@ -59,8 +59,8 @@
                         HeaderIcon="{ui:FontIcon FontFamily={StaticResource SymbolThemeFontFamily}, Glyph=&#xEC92;}"
                         Visibility="{x:Bind ViewModel.IsExpirationConfigurationEnabled, Mode=OneWay}">
                         <StackPanel Orientation="Horizontal">
-                            <DatePicker Date="{x:Bind ViewModel.ExpireAt, Mode=TwoWay}"></DatePicker>
-                            <TimePicker Margin="8,0,0,0" Time="{x:Bind ViewModel.ExpireAt, Mode=TwoWay, Converter={StaticResource DateTimeOffsetToTimeSpanConverter}}"></TimePicker>
+                            <DatePicker Date="{x:Bind ViewModel.ExpireAt, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"></DatePicker>
+                            <TimePicker Margin="8,0,0,0" Time="{x:Bind ViewModel.ExpireAt, Mode=TwoWay, Converter={StaticResource DateTimeOffsetToTimeSpanConverter}, UpdateSourceTrigger=PropertyChanged}"></TimePicker>
                         </StackPanel>
                     </labs:SettingsCard>
                     
