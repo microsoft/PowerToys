@@ -191,8 +191,8 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             OnPropertyChanged(propertyName);
             if (SendConfigMSG != null)
             {
-                SndAwakeSettings outsettings = new SndAwakeSettings(Settings);
-                SndModuleSettings<SndAwakeSettings> ipcMessage = new SndModuleSettings<SndAwakeSettings>(outsettings);
+                SndAwakeSettings outSettings = new SndAwakeSettings(Settings);
+                SndModuleSettings<SndAwakeSettings> ipcMessage = new SndModuleSettings<SndAwakeSettings>(outSettings);
 
                 string targetMessage = ipcMessage.ToJsonString();
                 SendConfigMSG(targetMessage);
