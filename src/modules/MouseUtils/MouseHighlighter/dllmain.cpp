@@ -215,7 +215,15 @@ public:
             {
                 // Parse Opacity
                 auto jsonPropertiesObject = settingsObject.GetNamedObject(JSON_KEY_PROPERTIES).GetNamedObject(JSON_KEY_HIGHLIGHT_OPACITY);
-                opacity = (uint8_t)jsonPropertiesObject.GetNamedNumber(JSON_KEY_VALUE);
+                int value = static_cast<int>(jsonPropertiesObject.GetNamedNumber(JSON_KEY_VALUE));
+                if (value >= 0)
+                {
+                    opacity = value;
+                }
+                else
+                {
+                    throw;
+                }
             }
             catch (...)
             {
@@ -234,7 +242,7 @@ public:
                 auto jsonPropertiesObject = settingsObject.GetNamedObject(JSON_KEY_PROPERTIES).GetNamedObject(JSON_KEY_LEFT_BUTTON_CLICK_COLOR);
                 auto leftColor = (std::wstring)jsonPropertiesObject.GetNamedString(JSON_KEY_VALUE);
                 uint8_t r, g, b;
-                if (!checkValidRGB(leftColor,&r,&g,&b))
+                if (!checkValidRGB(leftColor, &r, &g, &b))
                 {
                     Logger::error("Left click color RGB value is invalid. Will use default value");
                 }
@@ -270,7 +278,15 @@ public:
             {
                 // Parse Radius
                 auto jsonPropertiesObject = settingsObject.GetNamedObject(JSON_KEY_PROPERTIES).GetNamedObject(JSON_KEY_HIGHLIGHT_RADIUS);
-                highlightSettings.radius = (UINT)jsonPropertiesObject.GetNamedNumber(JSON_KEY_VALUE);
+                int value = static_cast<int>(jsonPropertiesObject.GetNamedNumber(JSON_KEY_VALUE));
+                if (value >= 0)
+                {
+                    highlightSettings.radius = value;
+                }
+                else
+                {
+                    throw;
+                }
             }
             catch (...)
             {
@@ -280,7 +296,15 @@ public:
             {
                 // Parse Fade Delay
                 auto jsonPropertiesObject = settingsObject.GetNamedObject(JSON_KEY_PROPERTIES).GetNamedObject(JSON_KEY_HIGHLIGHT_FADE_DELAY_MS);
-                highlightSettings.fadeDelayMs = (UINT)jsonPropertiesObject.GetNamedNumber(JSON_KEY_VALUE);
+                int value = static_cast<int>(jsonPropertiesObject.GetNamedNumber(JSON_KEY_VALUE));
+                if (value >= 0)
+                {
+                    highlightSettings.fadeDelayMs = value;
+                }
+                else
+                {
+                    throw;
+                }
             }
             catch (...)
             {
@@ -290,7 +314,15 @@ public:
             {
                 // Parse Fade Duration
                 auto jsonPropertiesObject = settingsObject.GetNamedObject(JSON_KEY_PROPERTIES).GetNamedObject(JSON_KEY_HIGHLIGHT_FADE_DURATION_MS);
-                highlightSettings.fadeDurationMs = (UINT)jsonPropertiesObject.GetNamedNumber(JSON_KEY_VALUE);
+                int value = static_cast<int>(jsonPropertiesObject.GetNamedNumber(JSON_KEY_VALUE));
+                if (value >= 0)
+                {
+                    highlightSettings.fadeDurationMs = value;
+                }
+                else
+                {
+                    throw;
+                }
             }
             catch (...)
             {

@@ -17,16 +17,16 @@
       <?endforeach?>
       <!-- !Warning! Make sure to change Component Guid if you update something here -->
       <Component Id="Module_FileLocksmith" Guid="108D3EC1-E6E0-4E81-88EF-25966133CB41" Win64="yes">
-        <RegistryKey Root="HKCU" Key="Software\Classes\CLSID\{84D68575-E186-46AD-B0CB-BAEB45EE29C0}">
+        <RegistryKey Root="HKLM" Key="Software\Classes\CLSID\{84D68575-E186-46AD-B0CB-BAEB45EE29C0}">
           <RegistryValue Type="string" Value="File Locksmith Shell Extension" />
           <RegistryValue Type="string" Name="ContextMenuOptIn" Value="" />
           <RegistryValue Type="string" Key="InprocServer32" Value="[FileLocksmithInstallFolder]PowerToys.FileLocksmithExt.dll" />
           <RegistryValue Type="string" Key="InprocServer32" Name="ThreadingModel" Value="Apartment" />
         </RegistryKey>
-        <RegistryKey Root="HKCU" Key="Software\Classes\AllFileSystemObjects\ShellEx\ContextMenuHandlers\FileLocksmithExt">
+        <RegistryKey Root="HKLM" Key="Software\Classes\AllFileSystemObjects\ShellEx\ContextMenuHandlers\FileLocksmithExt">
           <RegistryValue Type="string" Value="{84D68575-E186-46AD-B0CB-BAEB45EE29C0}"/>
         </RegistryKey>
-        <RegistryKey Root="HKCU" Key="Software\Classes\Drive\ShellEx\ContextMenuHandlers\FileLocksmithExt">
+        <RegistryKey Root="HKLM" Key="Software\Classes\Drive\ShellEx\ContextMenuHandlers\FileLocksmithExt">
           <RegistryValue Type="string" Value="{84D68575-E186-46AD-B0CB-BAEB45EE29C0}"/>
         </RegistryKey>
         </Component>

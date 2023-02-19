@@ -37,12 +37,12 @@ namespace Microsoft.PowerToys.Settings.UI
             ShowOobeWindow,
             ShowScoobeWindow,
             ShowFlyout,
-            SettingsWindow,
+            ContainsSettingsWindow,
+            ContainsFlyoutPosition,
         }
 
         // Quantity of arguments
-        private const int RequiredArgumentsQty = 10;
-        private const int RequiredAndOptionalArgumentsQty = 11;
+        private const int RequiredArgumentsQty = 12;
 
         // Create an instance of the  IPC wrapper.
         private static TwoWayPipeMessageIPCManaged ipcmanager;
@@ -122,11 +122,16 @@ namespace Microsoft.PowerToys.Settings.UI
                 ShowOobe = cmdArgs[(int)Arguments.ShowOobeWindow] == "true";
                 ShowScoobe = cmdArgs[(int)Arguments.ShowScoobeWindow] == "true";
                 ShowFlyout = cmdArgs[(int)Arguments.ShowFlyout] == "true";
+                bool containsSettingsWindow = cmdArgs[(int)Arguments.ContainsSettingsWindow] == "true";
+                bool containsFlyoutPosition = cmdArgs[(int)Arguments.ContainsFlyoutPosition] == "true";
 
-                if (cmdArgs.Length == RequiredAndOptionalArgumentsQty)
+                // To keep track of variable arguments
+                int currentArgumentIndex = RequiredArgumentsQty;
+
+                if (containsSettingsWindow)
                 {
                     // open specific window
-                    switch (cmdArgs[(int)Arguments.SettingsWindow])
+                    switch (cmdArgs[currentArgumentIndex])
                     {
                         case "Overview": StartupPage = typeof(Views.GeneralPage); break;
                         case "AlwaysOnTop": StartupPage = typeof(Views.AlwaysOnTopPage); break;
@@ -148,6 +153,17 @@ namespace Microsoft.PowerToys.Settings.UI
                         case "Hosts": StartupPage = typeof(Views.HostsPage); break;
                         default: Debug.Assert(false, "Unexpected SettingsWindow argument value"); break;
                     }
+
+                    currentArgumentIndex++;
+                }
+
+                int flyout_x = 0;
+                int flyout_y = 0;
+                if (containsFlyoutPosition)
+                {
+                    // get the flyout position arguments
+                    int.TryParse(cmdArgs[currentArgumentIndex++], out flyout_x);
+                    int.TryParse(cmdArgs[currentArgumentIndex++], out flyout_y);
                 }
 
                 RunnerHelper.WaitForPowerToysRunner(PowerToysPID, () =>
@@ -193,7 +209,13 @@ namespace Microsoft.PowerToys.Settings.UI
                     }
                     else if (ShowFlyout)
                     {
-                        ShellPage.OpenFlyoutCallback();
+                        POINT? p = null;
+                        if (containsFlyoutPosition)
+                        {
+                            p = new POINT(flyout_x, flyout_y);
+                        }
+
+                        ShellPage.OpenFlyoutCallback(p);
                     }
                 }
             }

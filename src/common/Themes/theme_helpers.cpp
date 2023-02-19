@@ -28,10 +28,7 @@ AppTheme ThemeHelpers::GetAppTheme()
     }
 
     // convert bytes written to our buffer to an int, assuming little-endian
-    auto i = int(buffer[3] << 24 |
-                 buffer[2] << 16 |
-                 buffer[1] << 8 |
-                 buffer[0]);
+    auto i = static_cast<int>(buffer[3] << 24 | buffer[2] << 16 | buffer[1] << 8 | buffer[0]);
 
     return AppTheme(i);
 }

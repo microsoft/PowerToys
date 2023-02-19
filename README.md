@@ -121,7 +121,7 @@ In this release, we focused on releasing new features and improvements.
 
 ### Documentation
 
-- Added PowerToys [disk usage footprint document](doc\devdocs\disk-usage-footprint.md).
+- Added PowerToys [disk usage footprint document](/doc/devdocs/disk-usage-footprint.md).
 - Fixed some grammar issues on main readme / Wiki.  Thanks [@CanePlayz](https://github.com/CanePlayz)!
 
 ### Development

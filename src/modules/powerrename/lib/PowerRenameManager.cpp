@@ -526,7 +526,7 @@ LRESULT CALLBACK CPowerRenameManager::s_msgWndProc(_In_ HWND hwnd, _In_ UINT uMs
 {
     LRESULT lRes = 0;
 
-    CPowerRenameManager* pThis = (CPowerRenameManager*)GetWindowLongPtr(hwnd, 0);
+    CPowerRenameManager* pThis = reinterpret_cast<CPowerRenameManager*>(GetWindowLongPtr(hwnd, 0));
     if (pThis != nullptr)
     {
         lRes = pThis->_WndProc(hwnd, uMsg, wParam, lParam);
