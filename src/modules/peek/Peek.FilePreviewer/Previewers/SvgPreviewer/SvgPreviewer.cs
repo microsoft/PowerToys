@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft Corporation
+// Copyright (c) Microsoft Corporation
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
@@ -132,6 +132,9 @@ namespace Peek.FilePreviewer.Previewers
                     cancellationToken.ThrowIfCancellationRequested();
 
                     var source = new SvgImageSource();
+                    source.RasterizePixelHeight = ImageSize.Height;
+                    source.RasterizePixelWidth = ImageSize.Width;
+
                     var loadStatus = await source.SetSourceAsync(stream.AsRandomAccessStream());
                     if (loadStatus != SvgImageSourceLoadStatus.Success)
                     {
