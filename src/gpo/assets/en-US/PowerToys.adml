@@ -36,14 +36,13 @@ If enabled, automatic downloads are disabled.
 
 If disabled or not configured, the user is in control of automatic downloads setting.
 </string>
-      <string id="SuspendNewUpdateToastDescription">This policy configures whether the action center notification for new updates is suspended for 2 minor releases.
-(Example: if the installed version is v0.60.0, then the next notification is shown for the v0.63.* release.)
+      <string id="SuspendNewUpdateToastDescription">This policy configures whether the action center notification for new updates is suspended for 2 minor releases. (Example: if the installed version is v0.60.0, then the next notification is shown for the v0.63.* release.)
 
 If enabled, if enabled the notification is suspended.
 
 If disabled or not configured, the notification is shown.
 
-Note: The notification about new major versions is displayed in any case.
+Note: The notification about new major versions is always displayed.
 </string>
       <string id="DisablePeriodicUpdateCheckDescription">This policy allows you to disable automatic update checks running in the background. (The manual check in PT Settings is not affected from this setting.)
 

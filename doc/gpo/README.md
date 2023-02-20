@@ -52,14 +52,13 @@ If disabled or not configured, the user is in control of automatic downloads set
 
 #### Suspend Action Center notification for new updates
 
-This policy configures whether the action center notification for new updates is suspended for 2 minor releases.
-(Example: if the installed version is v0.60.0, then the next notification is shown for the v0.63.* release.)
+This policy configures whether the action center notification for new updates is suspended for 2 minor releases. (Example: if the installed version is v0.60.0, then the next notification is shown for the v0.63.* release.)
 
 If enabled, if enabled the notification is suspended.
 
 If disabled or not configured, the notification is shown.
 
-Note: The notification about new major versions is displayed in any case.
+Note: The notification about new major versions is always displayed.
 
 <!-- This policy is implemented for later usage (PT v1.0 and later) and therefore inactive. (To make it working please update `src/runner/UpdateUtils.cpp`)
 #### Disable automatic update checks
