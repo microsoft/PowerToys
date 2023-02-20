@@ -40,7 +40,7 @@ Disable this setting to disable the experimentation features in PowerToys, meani
 
 If this setting is not configured, experimentation is allowed.
 
-### Installer und Updates
+### Installer and Updates
 
 #### Disable automatic downloads
 
