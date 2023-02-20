@@ -113,7 +113,7 @@ namespace Awake.Core
 
             currentSettings.Properties.Mode = AwakeMode.TIMED;
             currentSettings.Properties.IntervalHours = (uint)timeSpan.Hours;
-            currentSettings.Properties.Minutes = (uint)timeSpan.Minutes;
+            currentSettings.Properties.IntervalMinutes = (uint)timeSpan.Minutes;
 
             ModuleSettings.SaveSettings(JsonSerializer.Serialize(currentSettings), moduleName);
         }

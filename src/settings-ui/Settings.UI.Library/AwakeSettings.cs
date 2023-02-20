@@ -10,7 +10,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
     public class AwakeSettings : BasePTModuleSettings, ISettingsConfig
     {
         public const string ModuleName = "Awake";
-        public const string ModuleVersion = "0.0.1";
+        public const string ModuleVersion = "0.0.2";
 
         public AwakeSettings()
         {
