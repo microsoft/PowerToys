@@ -60,7 +60,7 @@ If enabled, if enabled the notification is suspended.
 If disabled or not configured, the notification is shown.
 
 <!-- This policy is implemented for later usage (PT v1.0 and later) and therefore inactive. (To make it working please update `src/runner/UpdateUtils.cpp`)
-#### Disable automatic update checking
+#### Disable automatic update checks
 
 This policy allows you to disable automatic update checks running in the background. (The manual check in PT Settings is not affected from this setting.)
 
