@@ -48,7 +48,7 @@ namespace powertoys_gpo {
     const std::wstring POLICY_CONFIGURE_ENABLED_VIDEO_CONFERENCE_MUTE = L"ConfigureEnabledUtilityVideoConferenceMute";
 
     // The registry value names for PowerToys installer and update policies.
-    const std::wstring POLICY_DISABLE_AUTOMATIC_DOWNLOAD = L"UpdateAutomaticDownloadDisabled";
+    const std::wstring POLICY_DISABLE_AUTOMATIC_UPDATE_DOWNLOAD = L"AutomaticUpdateDownloadDisabled";
     const std::wstring POLICY_SUSPEND_NEW_UPDATE_TOAST = L"SuspendNewUpdateAvailableToast";
     const std::wstring POLICY_DISABLE_PERIODIC_UPDATE_CHECK = L"PeriodicUpdateCheckDisabled";
 
@@ -243,9 +243,9 @@ namespace powertoys_gpo {
         return getConfiguredValue(POLICY_CONFIGURE_ENABLED_VIDEO_CONFERENCE_MUTE);
     }
 
-    inline gpo_rule_configured_t getDisableAutomaticDownloadValue()
+    inline gpo_rule_configured_t getDisableAutomaticUpdateDownloadValue()
     {
-        return getConfiguredValue(POLICY_DISABLE_AUTOMATIC_DOWNLOAD);
+        return getConfiguredValue(POLICY_DISABLE_AUTOMATIC_UPDATE_DOWNLOAD);
     }
 
     inline gpo_rule_configured_t getSuspendNewUpdateToastValue()

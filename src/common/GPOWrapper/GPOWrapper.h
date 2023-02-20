@@ -34,7 +34,7 @@ namespace winrt::PowerToys::GPOWrapper::implementation
         static GpoRuleConfigured GetConfiguredShortcutGuideEnabledValue();
         static GpoRuleConfigured GetConfiguredTextExtractorEnabledValue();
         static GpoRuleConfigured GetConfiguredVideoConferenceMuteEnabledValue();
-        static GpoRuleConfigured GetDisableAutomaticDownloadValue();
+        static GpoRuleConfigured GetDisableAutomaticUpdateDownloadValue();
         static GpoRuleConfigured GetSuspendNewUpdateToastValue();
         static GpoRuleConfigured GetDisablePeriodicUpdateCheckValue();
         static GpoRuleConfigured GetAllowExperimentationValue();

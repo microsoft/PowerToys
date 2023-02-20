@@ -215,7 +215,7 @@ void PeriodicUpdateWorker()
 
         // Auto download setting.
         bool download_update = !IsMeteredConnection() && get_general_settings().downloadUpdatesAutomatically;
-        if (powertoys_gpo::getDisableAutomaticDownloadValue() == powertoys_gpo::gpo_rule_configured_enabled)
+        if (powertoys_gpo::getDisableAutomaticUpdateDownloadValue() == powertoys_gpo::gpo_rule_configured_enabled)
         {
             Logger::info(L"Automatic download of updates is disabled by GPO.");
             download_update = false;
@@ -269,7 +269,7 @@ void CheckForUpdatesCallback()
 
         // Auto download setting
         bool download_update = !IsMeteredConnection() && get_general_settings().downloadUpdatesAutomatically;
-        if (powertoys_gpo::getDisableAutomaticDownloadValue() == powertoys_gpo::gpo_rule_configured_enabled)
+        if (powertoys_gpo::getDisableAutomaticUpdateDownloadValue() == powertoys_gpo::gpo_rule_configured_enabled)
         {
             Logger::info(L"Automatic download of updates is disabled by GPO.");
             download_update = false;
