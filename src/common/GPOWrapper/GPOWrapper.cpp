@@ -114,7 +114,7 @@ namespace winrt::PowerToys::GPOWrapper::implementation
     }
     GpoRuleConfigured GPOWrapper::GetDisableAutomaticUpdateDownloadValue()
     {
-        return static_cast<GpoRuleConfigured>(powertoys_gpo::getDisableAutomaticUpdateDownloadValue);
+        return static_cast<GpoRuleConfigured>(powertoys_gpo::getDisableAutomaticUpdateDownloadValue());
     }
     GpoRuleConfigured GPOWrapper::GetSuspendNewUpdateToastValue()
     {
