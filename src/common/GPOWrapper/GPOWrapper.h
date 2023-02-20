@@ -1,5 +1,5 @@
 ﻿#pragma once
-#include "Generated Files\GPOWrapper.g.h"
+#include "GPOWrapper.g.h"
 #include <common/utils/gpo.h>
 
 namespace winrt::PowerToys::GPOWrapper::implementation
@@ -35,8 +35,6 @@ namespace winrt::PowerToys::GPOWrapper::implementation
         static GpoRuleConfigured GetConfiguredTextExtractorEnabledValue();
         static GpoRuleConfigured GetConfiguredVideoConferenceMuteEnabledValue();
         static GpoRuleConfigured GetDisableAutomaticUpdateDownloadValue();
-        static GpoRuleConfigured GetSuspendNewUpdateToastValue();
-        static GpoRuleConfigured GetDisablePeriodicUpdateCheckValue();
         static GpoRuleConfigured GetAllowExperimentationValue();
     };
 }

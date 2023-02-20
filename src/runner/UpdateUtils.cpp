@@ -6,7 +6,7 @@
 #include "general_settings.h"
 #include "UpdateUtils.h"
 
-#include <common/GPOWrapper/GPOWrapper.h>
+#include <common/utils/gpo.h>
 #include <common/logger/logger.h>
 #include <common/notifications/notifications.h>
 #include <common/updating/installer.h>
