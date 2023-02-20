@@ -141,18 +141,18 @@ void ProcessNewVersionInfo(const github_version_info& version_info,
     }
 
     // Check notification GPO.
-    // We check only if notifications are allowed. Thsi is the case if we are triggered by the periodic check.
+    // We check only if notifications are allowed. This is the case if we are triggered by the periodic check.
     if (show_notifications && powertoys_gpo::getSuspendNewUpdateToastValue() == powertoys_gpo::gpo_rule_configured_enabled)
     {
         Logger::info(L"GPO to suspend new update toast notification is enabled.");
-        if (new_version_info.version.major > VERSION_MAJOR || new_version_info.version.minor - VERSION_MINOR > UPDATE_NOTIFICATION_TOAST_SUSPEND_MINOR_VERSION_COUNT)
+        if (new_version_info.version.major <= VERSION_MAJOR && new_version_info.version.minor - VERSION_MINOR <= UPDATE_NOTIFICATION_TOAST_SUSPEND_MINOR_VERSION_COUNT)
         {
-            Logger::info(L"The installed version is older than allowed for suspending the toast. The toast is shown.");
+            Logger::info(L"The difference between the installed version and the newer version is within the allowed period. The toast notification is not shown.");
             show_notifications = false;
         }
         else
         {
-            Logger::info(L"The difference between the installed version and the newer version is within the allowed period. The toast is not shown.");
+            Logger::info(L"The installed version is older than allowed for suspending the toast notification. The toast notification is shown.");
         }
     }
 
