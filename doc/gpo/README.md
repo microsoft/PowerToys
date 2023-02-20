@@ -67,5 +67,5 @@ This policy allows you to disable automatic update checks running in the backgro
 
 If enabled, the automatic update checks are disabled.
 
-If disabled or not configured, the update checks are enabled.
+If disabled or not configured, the automatic update checks are enabled.
 -->

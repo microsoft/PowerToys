@@ -48,7 +48,7 @@ Note: The notification about new major versions is always displayed.
 
 If enabled, the automatic update checks are disabled.
 
-If disabled or not configured, the update checks are enabled.
+If disabled or not configured, the automatic update checks are enabled.
 </string>
       <string id="AllowExperimentationDescription">This policy configures whether PowerToys experimentation is allowed. With experimentation allowed the user sees the new features being experimented if it gets selected as part of the test group. (Experimentation will only happen on Windows Insider builds.)
 
