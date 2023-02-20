@@ -199,8 +199,8 @@
                     <InfoBar
                         x:Uid="GPO_AutoDownloadIsDisabled"
                         IsClosable="False"
-                        IsOpen="{x:Bind Mode=OneWay, Path=ViewModel.IsAutomaticDownloadIsGpoDisabled}"
-                        IsTabStop="{x:Bind Mode=OneWay, Path=ViewModel.IsAutomaticDownloadIsGpoDisabled}"
+                        IsOpen="{x:Bind Mode=OneWay, Path=ViewModel.IsAutomaticDownloadGpoDisabled}"
+                        IsTabStop="{x:Bind Mode=OneWay, Path=ViewModel.IsAutomaticDownloadGpoDisabled}"
                         Severity="Informational" />
                 </controls:SettingsGroup>
 

@@ -157,7 +157,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         private int _themeIndex;
 
         private bool _autoDownloadUpdates;
-        private bool _automaticDownloadIsGpoDisabled
+        private bool _automaticDownloadIsGpoDisabled;
         private bool _enableExperimentation;
         private bool _experimentationIsGpoDisallowed;
 
@@ -292,7 +292,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             }
         }
 
-        public bool IsAutomaticDownloadIsGpoDisabled
+        public bool IsAutomaticDownloadGpoDisabled
         {
             get => _automaticDownloadIsGpoDisabled;
         }
