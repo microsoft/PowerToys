@@ -44,6 +44,7 @@ namespace Peek.FilePreviewer
 
         [ObservableProperty]
         [NotifyPropertyChangedFor(nameof(BitmapPreviewer))]
+        [NotifyPropertyChangedFor(nameof(SVGPreviewer))]
         [NotifyPropertyChangedFor(nameof(BrowserPreviewer))]
         [NotifyPropertyChangedFor(nameof(UnsupportedFilePreviewer))]
 
