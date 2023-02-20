@@ -1,5 +1,5 @@
 ﻿#pragma once
-#include "GPOWrapper.g.h"
+#include "Generated Files\GPOWrapper.g.h"
 #include <common/utils/gpo.h>
 
 namespace winrt::PowerToys::GPOWrapper::implementation
