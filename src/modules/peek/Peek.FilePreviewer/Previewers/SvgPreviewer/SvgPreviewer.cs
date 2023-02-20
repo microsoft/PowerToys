@@ -27,7 +27,7 @@ namespace Peek.FilePreviewer.Previewers
         private PreviewState state;
 
         [ObservableProperty]
-        private Size? imageSize;
+        private Size imageSize;
 
         [ObservableProperty]
         private double scalingFactor;
@@ -61,7 +61,12 @@ namespace Peek.FilePreviewer.Previewers
         public async Task<Size?> GetPreviewSizeAsync(CancellationToken cancellationToken)
         {
             cancellationToken.ThrowIfCancellationRequested();
-            ImageSize = await Task.Run(Item.GetSvgSize);
+            var size = await Task.Run(Item.GetSvgSize);
+            if (size != null)
+            {
+                ImageSize = size.Value;
+            }
+
             return ImageSize;
         }
 
