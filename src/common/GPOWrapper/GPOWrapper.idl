@@ -38,6 +38,9 @@ namespace PowerToys
             static GpoRuleConfigured GetConfiguredShortcutGuideEnabledValue();
             static GpoRuleConfigured GetConfiguredTextExtractorEnabledValue();
             static GpoRuleConfigured GetConfiguredVideoConferenceMuteEnabledValue();
+            static GpoRuleConfigured GetDisableAutomaticDownloadValue();
+            static GpoRuleConfigured GetSuspendNewUpdateToastValue();
+            static GpoRuleConfigured GetDisablePeriodicUpdateCheckValue();
             static GpoRuleConfigured GetAllowExperimentationValue();
         }
     }
