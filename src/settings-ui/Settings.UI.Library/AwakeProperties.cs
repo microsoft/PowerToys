@@ -14,29 +14,29 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         {
             KeepDisplayOn = false;
             Mode = AwakeMode.PASSIVE;
-            Hours = 0;
-            Minutes = 0;
-            ExpireAt = DateTime.MinValue;
-            TrayTimeShortcuts = new Dictionary<string, int>();
+            IntervalHours = 0;
+            IntervalMinutes = 0;
+            ExpirationDateTime = DateTime.MinValue;
+            CustomTrayTimes = new Dictionary<string, int>();
         }
 
-        [JsonPropertyName("awake_keep_display_on")]
+        [JsonPropertyName("keepDisplayOn")]
         public bool KeepDisplayOn { get; set; }
 
-        [JsonPropertyName("awake_mode")]
+        [JsonPropertyName("mode")]
         public AwakeMode Mode { get; set; }
 
-        [JsonPropertyName("awake_hours")]
-        public uint Hours { get; set; }
+        [JsonPropertyName("intervalHours")]
+        public uint IntervalHours { get; set; }
 
-        [JsonPropertyName("awake_minutes")]
-        public uint Minutes { get; set; }
+        [JsonPropertyName("intervalMinutes")]
+        public uint IntervalMinutes { get; set; }
 
-        [JsonPropertyName("awake_expire_at")]
-        public DateTimeOffset ExpireAt { get; set; }
+        [JsonPropertyName("expirationDateTime")]
+        public DateTimeOffset ExpirationDateTime { get; set; }
 
-        [JsonPropertyName("tray_times")]
-        public Dictionary<string, int> TrayTimeShortcuts { get; set; }
+        [JsonPropertyName("customTrayTimes")]
+        public Dictionary<string, int> CustomTrayTimes { get; set; }
     }
 
     public enum AwakeMode

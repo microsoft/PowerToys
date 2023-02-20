@@ -89,7 +89,7 @@ namespace Awake.Core
                 text,
                 settings.Properties.KeepDisplayOn,
                 settings.Properties.Mode,
-                settings.Properties.TrayTimeShortcuts,
+                settings.Properties.CustomTrayTimes,
                 startedFromPowerToys);
         }
 
@@ -116,19 +116,17 @@ namespace Awake.Core
                 trayTimeShortcuts.AddRange(APIHelper.GetDefaultTrayOptions());
             }
 
-            // TODO: Make sure that this loads from JSON instead of being hard-coded.
             var awakeTimeMenu = new DestroyMenuSafeHandle(PInvoke.CreatePopupMenu(), false);
             for (int i = 0; i < trayTimeShortcuts.Count; i++)
             {
                 PInvoke.InsertMenu(awakeTimeMenu, (uint)i, MENU_ITEM_FLAGS.MF_BYPOSITION | MENU_ITEM_FLAGS.MF_STRING, (uint)TrayCommands.TC_TIME + (uint)i, trayTimeShortcuts.ElementAt(i).Key);
             }
 
-            var modeMenu = new DestroyMenuSafeHandle(PInvoke.CreatePopupMenu(), false);
-            PInvoke.InsertMenu(modeMenu, 0, MENU_ITEM_FLAGS.MF_BYPOSITION | MENU_ITEM_FLAGS.MF_STRING | (mode == AwakeMode.PASSIVE ? MENU_ITEM_FLAGS.MF_CHECKED : MENU_ITEM_FLAGS.MF_UNCHECKED), (uint)TrayCommands.TC_MODE_PASSIVE, "Off (keep using the selected power plan)");
-            PInvoke.InsertMenu(modeMenu, 1, MENU_ITEM_FLAGS.MF_BYPOSITION | MENU_ITEM_FLAGS.MF_STRING | (mode == AwakeMode.INDEFINITE ? MENU_ITEM_FLAGS.MF_CHECKED : MENU_ITEM_FLAGS.MF_UNCHECKED), (uint)TrayCommands.TC_MODE_INDEFINITE, "Keep awake indefinitely");
+            PInvoke.InsertMenu(TrayMenu, 0, MENU_ITEM_FLAGS.MF_BYPOSITION | MENU_ITEM_FLAGS.MF_SEPARATOR, 0, string.Empty);
 
-            PInvoke.InsertMenu(modeMenu, 2, MENU_ITEM_FLAGS.MF_BYPOSITION | MENU_ITEM_FLAGS.MF_POPUP | (mode == AwakeMode.TIMED ? MENU_ITEM_FLAGS.MF_CHECKED : MENU_ITEM_FLAGS.MF_UNCHECKED), (uint)awakeTimeMenu.DangerousGetHandle(), "Keep awake on interval");
-            PInvoke.InsertMenu(TrayMenu, 0, MENU_ITEM_FLAGS.MF_BYPOSITION | MENU_ITEM_FLAGS.MF_POPUP, (uint)modeMenu.DangerousGetHandle(), "Mode");
+            PInvoke.InsertMenu(TrayMenu, 0, MENU_ITEM_FLAGS.MF_BYPOSITION | MENU_ITEM_FLAGS.MF_STRING | (mode == AwakeMode.PASSIVE ? MENU_ITEM_FLAGS.MF_CHECKED : MENU_ITEM_FLAGS.MF_UNCHECKED), (uint)TrayCommands.TC_MODE_PASSIVE, "Off (keep using the selected power plan)");
+            PInvoke.InsertMenu(TrayMenu, 0, MENU_ITEM_FLAGS.MF_BYPOSITION | MENU_ITEM_FLAGS.MF_STRING | (mode == AwakeMode.INDEFINITE ? MENU_ITEM_FLAGS.MF_CHECKED : MENU_ITEM_FLAGS.MF_UNCHECKED), (uint)TrayCommands.TC_MODE_INDEFINITE, "Keep awake indefinitely");
+            PInvoke.InsertMenu(TrayMenu, 0, MENU_ITEM_FLAGS.MF_BYPOSITION | MENU_ITEM_FLAGS.MF_POPUP | (mode == AwakeMode.TIMED ? MENU_ITEM_FLAGS.MF_CHECKED : MENU_ITEM_FLAGS.MF_UNCHECKED), (uint)awakeTimeMenu.DangerousGetHandle(), "Keep awake on interval");
 
             TrayIcon.Text = text;
         }

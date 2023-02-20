@@ -60,8 +60,8 @@
                         HeaderIcon="{ui:FontIcon FontFamily={StaticResource SymbolThemeFontFamily}, Glyph=&#xEC92;}"
                         Visibility="{x:Bind ViewModel.IsExpirationConfigurationEnabled, Mode=OneWay}">
                         <StackPanel Orientation="Horizontal">
-                            <DatePicker Date="{x:Bind ViewModel.ExpireAtOffset, Mode=TwoWay}"></DatePicker>
-                            <TimePicker Margin="8,0,0,0" Time="{x:Bind ViewModel.ExpireAtTime, Mode=TwoWay}"></TimePicker>
+                            <DatePicker Date="{x:Bind ViewModel.ExpirationDateTime, Mode=TwoWay}"></DatePicker>
+                            <TimePicker Margin="8,0,0,0" Time="{x:Bind ViewModel.ExpirationTime, Mode=TwoWay}" ClockIdentifier="24HourClock"></TimePicker>
                         </StackPanel>
                     </labs:SettingsCard>
                     
@@ -78,7 +78,7 @@
                                 Minimum="0"
                                 SmallChange="1"
                                 SpinButtonPlacementMode="Compact"
-                                Value="{x:Bind ViewModel.Hours, Mode=TwoWay}" />
+                                Value="{x:Bind ViewModel.IntervalHours, Mode=TwoWay}" />
                             <NumberBox
                                 x:Uid="Awake_IntervalMinutesInput"
                                 Width="96"
@@ -89,7 +89,7 @@
                                 Minimum="0"
                                 SmallChange="1"
                                 SpinButtonPlacementMode="Compact"
-                                Value="{x:Bind ViewModel.Minutes, Mode=TwoWay}" />
+                                Value="{x:Bind ViewModel.IntervalMinutes, Mode=TwoWay}" />
                         </StackPanel>
                     </labs:SettingsCard>
 

@@ -41,9 +41,9 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
             _keepDisplayOn = Settings.Properties.KeepDisplayOn;
             _mode = Settings.Properties.Mode;
-            _hours = Settings.Properties.Hours;
-            _minutes = Settings.Properties.Minutes;
-            _expireAtOffset = Settings.Properties.ExpireAt;
+            _intervalHours = Settings.Properties.IntervalHours;
+            _intervalMinutes = Settings.Properties.IntervalMinutes;
+            _expirationDateTime = Settings.Properties.ExpirationDateTime;
 
             // set the callback functions value to hangle outgoing IPC message.
             SendConfigMSG = ipcMSGCallBackFunc;
@@ -144,54 +144,54 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             }
         }
 
-        public uint Hours
+        public uint IntervalHours
         {
-            get => _hours;
+            get => _intervalHours;
             set
             {
-                if (_hours != value)
+                if (_intervalHours != value)
                 {
-                    _hours = value;
-                    Settings.Properties.Hours = value;
+                    _intervalHours = value;
+                    Settings.Properties.IntervalHours = value;
                     NotifyPropertyChanged();
                 }
             }
         }
 
-        public uint Minutes
+        public uint IntervalMinutes
         {
-            get => _minutes;
+            get => _intervalMinutes;
             set
             {
-                if (_minutes != value)
+                if (_intervalMinutes != value)
                 {
-                    _minutes = value;
-                    Settings.Properties.Minutes = value;
+                    _intervalMinutes = value;
+                    Settings.Properties.IntervalMinutes = value;
                     NotifyPropertyChanged();
                 }
             }
         }
 
-        public DateTimeOffset ExpireAtOffset
+        public DateTimeOffset ExpirationDateTime
         {
-            get => _expireAtOffset;
+            get => _expirationDateTime;
             set
             {
-                if (_expireAtOffset != value)
+                if (_expirationDateTime != value)
                 {
-                    _expireAtOffset = value;
-                    Settings.Properties.ExpireAt = value;
+                    _expirationDateTime = value;
+                    Settings.Properties.ExpirationDateTime = value;
                     NotifyPropertyChanged();
                 }
             }
         }
 
-        public TimeSpan ExpireAtTime
+        public TimeSpan ExpirationTime
         {
-            get => ExpireAtOffset.TimeOfDay;
+            get => ExpirationDateTime.TimeOfDay;
             set
             {
-                ExpireAtOffset = new DateTime(ExpireAtOffset.Year, ExpireAtOffset.Month, ExpireAtOffset.Day, value.Hours, value.Minutes, value.Seconds);
+                ExpirationDateTime = new DateTime(ExpirationDateTime.Year, ExpirationDateTime.Month, ExpirationDateTime.Day, value.Hours, value.Minutes, value.Seconds);
             }
         }
 
@@ -220,10 +220,10 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         private GpoRuleConfigured _enabledGpoRuleConfiguration;
         private bool _enabledStateIsGPOConfigured;
         private bool _isEnabled;
-        private uint _hours;
-        private uint _minutes;
+        private uint _intervalHours;
+        private uint _intervalMinutes;
         private bool _keepDisplayOn;
-        private DateTimeOffset _expireAtOffset;
+        private DateTimeOffset _expirationDateTime;
         private AwakeMode _mode;
     }
 }

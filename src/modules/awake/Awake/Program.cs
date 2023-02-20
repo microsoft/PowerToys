@@ -349,7 +349,7 @@ namespace Awake
 
                 if (settings != null)
                 {
-                    _log.Info($"Identified custom time shortcuts for the tray: {settings.Properties.TrayTimeShortcuts.Count}");
+                    _log.Info($"Identified custom time shortcuts for the tray: {settings.Properties.CustomTrayTimes.Count}");
 
                     switch (settings.Properties.Mode)
                     {
@@ -367,7 +367,7 @@ namespace Awake
 
                         case AwakeMode.TIMED:
                             {
-                                uint computedTime = (settings.Properties.Hours * 60 * 60) + (settings.Properties.Minutes * 60);
+                                uint computedTime = (settings.Properties.IntervalHours * 60 * 60) + (settings.Properties.IntervalMinutes * 60);
                                 SetupTimedKeepAwake(computedTime, settings.Properties.KeepDisplayOn);
 
                                 break;
@@ -375,7 +375,7 @@ namespace Awake
 
                         case AwakeMode.EXPIRABLE:
                             {
-                                SetupExpirableKeepAwake(settings.Properties.ExpireAt, settings.Properties.KeepDisplayOn);
+                                SetupExpirableKeepAwake(settings.Properties.ExpirationDateTime, settings.Properties.KeepDisplayOn);
 
                                 break;
                             }
