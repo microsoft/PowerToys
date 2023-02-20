@@ -142,7 +142,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             _updateCheckedDate = UpdatingSettingsConfig.LastCheckedDateLocalized;
 
             _experimentationIsGpoDisallowed = GPOWrapper.GetAllowExperimentationValue() == GpoRuleConfigured.Disabled;
-            _automaticDownloadIsGpoDisabled = GPOWrapper.GetDisableAutomaticUpdateDownloadValue() == GpoRuleConfigured.Disabled;
+            _automaticDownloadIsGpoDisabled = GPOWrapper.GetDisableAutomaticUpdateDownloadValue() == GpoRuleConfigured.Enabled;
 
             if (dispatcherAction != null)
             {
