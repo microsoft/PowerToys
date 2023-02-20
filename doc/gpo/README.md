@@ -44,20 +44,22 @@ If this setting is not configured, experimentation is allowed.
 
 #### Disable automatic downloads
 
-This policy configures whether automatic downloads of available updates are allowed or not. (On metered connections updates are never downloaded.)
+This policy configures whether automatic downloads of available updates are disabled or not. (On metered connections updates are never downloaded.)
 
-If enabled, automatic downloaded are not allowed.
+If enabled, automatic downloads are disabled.
 
 If disabled or not configured, the user is in control of automatic downloads setting.
 
 #### Suspend Action Center notification for new updates
 
-This policy configures whether the action center notification for new updates is suspended for 2 minor releases. (Example: Installed version=0.60.0, Next notification=0.63.*)
-Note: The notification about new major versions is displayed in any case.
+This policy configures whether the action center notification for new updates is suspended for 2 minor releases.
+(Example: if the installed version is v0.60.0, then the next notification is shown for the v0.63.* release.)
 
 If enabled, if enabled the notification is suspended.
 
 If disabled or not configured, the notification is shown.
+
+Note: The notification about new major versions is displayed in any case.
 
 <!-- This policy is implemented for later usage (PT v1.0 and later) and therefore inactive. (To make it working please update `src/runner/UpdateUtils.cpp`)
 #### Disable automatic update checks
