@@ -152,6 +152,172 @@ private:
         }
     }
 
+    void try_inject_modifier_key_up(std::vector<INPUT> &inputs, short modifier)
+    {
+        // Most significant bit is set if key is down
+        if ((GetAsyncKeyState((int)modifier) & 0x8000) != 0)
+        {
+            INPUT input_event = {};
+            input_event.type = INPUT_KEYBOARD;
+            input_event.ki.wVk = modifier;
+            input_event.ki.dwFlags = KEYEVENTF_KEYUP;
+            inputs.push_back(input_event);
+        }
+    }
+
+    void try_to_paste_as_plain_text()
+    {
+        std::wstring clipboard_text;
+
+        {
+            // Read clipboard data begin
+
+            if (!OpenClipboard(NULL))
+            {
+                Logger::error(L"Couldn't open the clipboard to get the text. {}", get_last_error_or_default(GetLastError()));
+                return;
+            }
+            HANDLE h_clipboard_data = GetClipboardData(CF_UNICODETEXT);
+
+            if (h_clipboard_data == NULL)
+            {
+                Logger::error(L"Failed to get clipboard data. {}", get_last_error_or_default(GetLastError()));
+                CloseClipboard();
+                return;
+            }
+
+            wchar_t* pch_data;
+
+            if (NULL == (pch_data = (wchar_t*)GlobalLock(h_clipboard_data)))
+            {
+                Logger::error(L"Couldn't lock the buffer to get the unformatted text from the clipboard. {}", get_last_error_or_default(GetLastError()));
+                CloseClipboard();
+                return;
+            }
+
+            clipboard_text = pch_data;
+            GlobalUnlock(h_clipboard_data);
+
+            CloseClipboard();
+            // Read clipboard data end
+        }
+
+        {
+            // Copy text to clipboard begin
+            UINT no_clipboard_history_or_roaming_format = 0;
+
+            // Get the format identifier for not adding the data to the clipboard history or roaming.
+            // https://learn.microsoft.com/en-us/windows/win32/dataxchg/clipboard-formats#cloud-clipboard-and-clipboard-history-formats
+            if (0 == (no_clipboard_history_or_roaming_format = RegisterClipboardFormat(L"ExcludeClipboardContentFromMonitorProcessing")))
+            {
+                Logger::error(L"Couldn't get the clipboard data format type that would allow excluding the data from the clipboard history / roaming. {}", get_last_error_or_default(GetLastError()));
+                return;
+            }
+
+            if (!OpenClipboard(NULL))
+            {
+                Logger::error(L"Couldn't open the clipboard to copy the unformatted text. {}", get_last_error_or_default(GetLastError()));
+                return;
+            }
+
+            HGLOBAL h_clipboard_data;
+
+            if (NULL == (h_clipboard_data = GlobalAlloc(GMEM_MOVEABLE, (clipboard_text.length() + 1) * sizeof(wchar_t))))
+            {
+                Logger::error(L"Couldn't allocate a buffer for the unformatted text. {}", get_last_error_or_default(GetLastError()));
+                CloseClipboard();
+                return;
+            }
+            wchar_t* pch_data;
+
+            if (NULL == (pch_data = (wchar_t*)GlobalLock(h_clipboard_data)))
+            {
+                Logger::error(L"Couldn't lock the buffer to send the unformatted text to the clipboard. {}", get_last_error_or_default(GetLastError()));
+                GlobalFree(h_clipboard_data);
+                CloseClipboard();
+                return;
+            }
+
+            wcscpy_s(pch_data, clipboard_text.length() + 1, clipboard_text.c_str());
+
+            EmptyClipboard();
+
+            if (NULL == SetClipboardData(CF_UNICODETEXT, h_clipboard_data))
+            {
+                Logger::error(L"Couldn't set the clipboard data to the unformatted text. {}", get_last_error_or_default(GetLastError()));
+                GlobalUnlock(h_clipboard_data);
+                GlobalFree(h_clipboard_data);
+                CloseClipboard();
+                return;
+            }
+
+            // Don't show in history or allow data roaming.
+            SetClipboardData(no_clipboard_history_or_roaming_format, 0);
+
+            CloseClipboard();
+            // Copy text to clipboard end
+        }
+        {
+            // Clear kb state and send Ctrl+V begin
+            
+            // we can assume that the last pressed key is...
+            //  (1) not a modifier key and
+            //  (2) marked as handled (so it never gets a key down input event).
+            // So, let's check which modifiers were pressed,
+            // and, if they were, inject a key up event for each of them
+            std::vector<INPUT> inputs;
+            try_inject_modifier_key_up(inputs, VK_LCONTROL);
+            try_inject_modifier_key_up(inputs, VK_RCONTROL);
+            try_inject_modifier_key_up(inputs, VK_LWIN);
+            try_inject_modifier_key_up(inputs, VK_RWIN);
+            try_inject_modifier_key_up(inputs, VK_LSHIFT);
+            try_inject_modifier_key_up(inputs, VK_RSHIFT);
+            try_inject_modifier_key_up(inputs, VK_LMENU);
+            try_inject_modifier_key_up(inputs, VK_RMENU);
+
+            // send Ctrl+V (key downs and key ups)
+            {
+                INPUT input_event = {};
+                input_event.type = INPUT_KEYBOARD;
+                input_event.ki.wVk = VK_CONTROL;
+                inputs.push_back(input_event);
+            }
+
+            {
+                INPUT input_event = {};
+                input_event.type = INPUT_KEYBOARD;
+                input_event.ki.wVk = 0x56; // V
+                inputs.push_back(input_event);
+            }
+
+            {
+                INPUT input_event = {};
+                input_event.type = INPUT_KEYBOARD;
+                input_event.ki.wVk = 0x56; // V
+                input_event.ki.dwFlags = KEYEVENTF_KEYUP;
+                inputs.push_back(input_event);
+            }
+
+            {
+                INPUT input_event = {};
+                input_event.type = INPUT_KEYBOARD;
+                input_event.ki.wVk = VK_CONTROL;
+                input_event.ki.dwFlags = KEYEVENTF_KEYUP;
+                inputs.push_back(input_event);
+            }
+
+            auto uSent = SendInput(static_cast<UINT>(inputs.size()), inputs.data(), sizeof(INPUT));
+            if (uSent != inputs.size())
+            {
+                Logger::error("SendInput failed. Expected to send {} inputs and sent only {}.", inputs.size(), uSent);
+                return;
+            }
+
+            // Clear kb state and send Ctrl+V end
+        }
+        // TODO: Send some telemetry on success.
+    }
+
 public:
     PastePlain()
     {
@@ -236,8 +402,6 @@ public:
     virtual void enable()
     {
         Logger::trace("PastePlain::enable()");
-        ResetEvent(m_hInvokeEvent);
-        launch_process();
         m_enabled = true;
         Trace::EnablePastePlain(true);
     };
@@ -245,27 +409,25 @@ public:
     virtual void disable()
     {
         Logger::trace("PastePlain::disable()");
-        if (m_enabled)
-        {
-            ResetEvent(m_hInvokeEvent);
-            TerminateProcess(m_hProcess, 1);
-        }
-
         m_enabled = false;
         Trace::EnablePastePlain(false);
     }
+
+
 
     virtual bool on_hotkey(size_t /*hotkeyId*/) override
     {
         if (m_enabled)
         {
             Logger::trace(L"PastePlain hotkey pressed");
-            if (!is_process_running())
-            {
-                launch_process();
-            }
 
-            SetEvent(m_hInvokeEvent);
+            std::thread([=]() {
+                // hotkey work should be kept to a minimum, or Windows might deregister our low level keyboard hook.
+                // Move work to another thread.
+                try_to_paste_as_plain_text();
+            }).detach();
+
+            // TODO: telemetry for invocation
             return true;
         }
 
