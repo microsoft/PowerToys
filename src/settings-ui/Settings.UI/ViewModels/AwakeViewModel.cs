@@ -43,7 +43,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             _mode = Settings.Properties.Mode;
             _hours = Settings.Properties.Hours;
             _minutes = Settings.Properties.Minutes;
-            _expireAt = Settings.Properties.ExpireAt;
+            _expireAtOffset = Settings.Properties.ExpireAt;
 
             // set the callback functions value to hangle outgoing IPC message.
             SendConfigMSG = ipcMSGCallBackFunc;
@@ -172,26 +172,26 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             }
         }
 
-        public DateTimeOffset ExpireAt
+        public DateTimeOffset ExpireAtOffset
         {
-            get => _expireAt;
+            get => _expireAtOffset;
             set
             {
-                if (_expireAt != value)
+                if (_expireAtOffset != value)
                 {
-                    _expireAt = value;
+                    _expireAtOffset = value;
                     Settings.Properties.ExpireAt = value;
                     NotifyPropertyChanged();
                 }
             }
         }
 
-        public TimeSpan Time
+        public TimeSpan ExpireAtTime
         {
-            get => ExpireAt.TimeOfDay;
+            get => ExpireAtOffset.TimeOfDay;
             set
             {
-                ExpireAt = new DateTime(ExpireAt.Year, ExpireAt.Month, ExpireAt.Day, value.Hours, value.Minutes, value.Seconds);
+                ExpireAtOffset = new DateTime(ExpireAtOffset.Year, ExpireAtOffset.Month, ExpireAtOffset.Day, value.Hours, value.Minutes, value.Seconds);
             }
         }
 
@@ -223,7 +223,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         private uint _hours;
         private uint _minutes;
         private bool _keepDisplayOn;
-        private DateTimeOffset _expireAt;
+        private DateTimeOffset _expireAtOffset;
         private AwakeMode _mode;
     }
 }
