@@ -142,6 +142,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             _updateCheckedDate = UpdatingSettingsConfig.LastCheckedDateLocalized;
 
             _experimentationIsGpoDisallowed = GPOWrapper.GetAllowExperimentationValue() == GpoRuleConfigured.Disabled;
+            _automaticDownloadIsGpoDisabled = GPOWrapper.GetDisableAutomaticUpdateDownloadValue() == GpoRuleConfigured.Disabled;
 
             if (dispatcherAction != null)
             {
@@ -156,6 +157,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         private int _themeIndex;
 
         private bool _autoDownloadUpdates;
+        private bool _automaticDownloadIsGpoDisabled
         private bool _enableExperimentation;
         private bool _experimentationIsGpoDisallowed;
 
@@ -276,7 +278,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         {
             get
             {
-                return _autoDownloadUpdates;
+                return _autoDownloadUpdates && !_automaticDownloadIsGpoDisabled;
             }
 
             set
@@ -288,6 +290,11 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                     NotifyPropertyChanged();
                 }
             }
+        }
+
+        public bool IsAutomaticDownloadIsGpoDisabled
+        {
+            get => _automaticDownloadIsGpoDisabled;
         }
 
         public bool EnableExperimentation

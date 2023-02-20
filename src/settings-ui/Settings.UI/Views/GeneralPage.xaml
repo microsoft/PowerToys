@@ -196,6 +196,12 @@
                             x:Uid="ToggleSwitch"
                             IsOn="{Binding Mode=TwoWay, Path=AutoDownloadUpdates}" />
                     </labs:SettingsCard>
+                    <InfoBar
+                        x:Uid="GPO_AutoDownloadIsDisabled"
+                        IsClosable="False"
+                        IsOpen="{x:Bind Mode=OneWay, Path=ViewModel.IsAutomaticDownloadIsGpoDisabled}"
+                        IsTabStop="{x:Bind Mode=OneWay, Path=ViewModel.IsAutomaticDownloadIsGpoDisabled}"
+                        Severity="Informational" />
                 </controls:SettingsGroup>
 
                 <controls:SettingsGroup x:Uid="Admin_Mode">
