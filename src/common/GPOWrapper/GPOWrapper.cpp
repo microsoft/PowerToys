@@ -110,7 +110,7 @@ namespace winrt::PowerToys::GPOWrapper::implementation
     }
     GpoRuleConfigured GPOWrapper::GetConfiguredPastePlainEnabledValue()
     {
-        return (GpoRuleConfigured)powertoys_gpo::getConfiguredPastePlainEnabledValue();
+        return static_cast<GpoRuleConfigured>(powertoys_gpo::getConfiguredPastePlainEnabledValue());
     }
     GpoRuleConfigured GPOWrapper::GetConfiguredVideoConferenceMuteEnabledValue()
     {

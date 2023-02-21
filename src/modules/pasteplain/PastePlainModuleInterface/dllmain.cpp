@@ -155,7 +155,7 @@ private:
     void try_inject_modifier_key_up(std::vector<INPUT> &inputs, short modifier)
     {
         // Most significant bit is set if key is down
-        if ((GetAsyncKeyState((int)modifier) & 0x8000) != 0)
+        if ((GetAsyncKeyState(static_cast<int>(modifier)) & 0x8000) != 0)
         {
             INPUT input_event = {};
             input_event.type = INPUT_KEYBOARD;
@@ -192,9 +192,9 @@ private:
                 return;
             }
 
-            wchar_t* pch_data;
+            wchar_t* pch_data= reinterpret_cast<wchar_t*>(GlobalLock(h_clipboard_data));
 
-            if (NULL == (pch_data = (wchar_t*)GlobalLock(h_clipboard_data)))
+            if (NULL == pch_data )
             {
                 DWORD errorCode = GetLastError();
                 auto errorMessage = get_last_error_message(errorCode);
@@ -246,9 +246,9 @@ private:
                 CloseClipboard();
                 return;
             }
-            wchar_t* pch_data;
+            wchar_t* pch_data = reinterpret_cast<wchar_t*>(GlobalLock(h_clipboard_data));
 
-            if (NULL == (pch_data = (wchar_t*)GlobalLock(h_clipboard_data)))
+            if (NULL == pch_data)
             {
                 DWORD errorCode = GetLastError();
                 auto errorMessage = get_last_error_message(errorCode);
