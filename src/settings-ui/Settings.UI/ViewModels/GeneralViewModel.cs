@@ -142,7 +142,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             _updateCheckedDate = UpdatingSettingsConfig.LastCheckedDateLocalized;
 
             _experimentationIsGpoDisallowed = GPOWrapper.GetAllowExperimentationValue() == GpoRuleConfigured.Disabled;
-            _automaticDownloadIsGpoDisabled = GPOWrapper.GetDisableAutomaticUpdateDownloadValue() == GpoRuleConfigured.Enabled;
+            _autoDownloadUpdatesIsGpoDisabled = GPOWrapper.GetDisableAutomaticUpdateDownloadValue() == GpoRuleConfigured.Enabled;
 
             if (dispatcherAction != null)
             {
@@ -274,6 +274,15 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             }
         }
 
+        // Are we running a dev build? (Please note that we verify this in the code that gets the newest version from Github too.)
+        public static bool AutoUpdatesDisabledOnDevBuild
+        {
+            get
+            {
+                return Helper.GetProductVersion() == "v0.0.1";
+            }
+        }
+
         public bool AutoDownloadUpdates
         {
             get
@@ -294,7 +303,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         public bool IsAutoDownloadUpdatesCardEnabled
         {
-            get => AutoUpdatesEnabled && !_autoDownloadUpdatesIsGpoDisabled;
+            get => !AutoUpdatesDisabledOnDevBuild && !_autoDownloadUpdatesIsGpoDisabled;
         }
 
         // The settings card is hidden for users who are not a member of the Administrators group and in this case the GPO info should be hidden too.
@@ -325,15 +334,6 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         public bool IsExperimentationGpoDisallowed
         {
             get => _experimentationIsGpoDisallowed;
-        }
-
-        // Are we running a dev build? (Please note that we verify this in the code that gets the newest version from Github too.)
-        public static bool AutoUpdatesEnabled
-        {
-            get
-            {
-                return Helper.GetProductVersion() != "v0.0.1";
-            }
         }
 
         public string SettingsBackupAndRestoreDir
@@ -674,7 +674,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         {
             get
             {
-                return AutoUpdatesEnabled && !IsNewVersionDownloading;
+                return !AutoUpdatesDisabledOnDevBuild && !IsNewVersionDownloading;
             }
         }
 

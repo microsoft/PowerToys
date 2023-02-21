@@ -190,7 +190,7 @@
                     <labs:SettingsCard
                         x:Uid="GeneralPage_ToggleSwitch_AutoDownloadUpdates"
                         Margin="0,-6,0,0"
-                        IsEnabled="{Binding ViewModel.IsAutoDownloadUpdatesCardEnabled}"
+                        IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsAutoDownloadUpdatesCardEnabled}"
                         Visibility="{Binding Mode=OneWay, Path=IsAdmin, Converter={StaticResource BoolToVisibilityConverter}}">
                         <ToggleSwitch
                             x:Uid="ToggleSwitch"
