@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using Microsoft.PowerToys.Settings.UI.Helpers;
 using Microsoft.PowerToys.Settings.UI.Library;
@@ -17,19 +18,31 @@ namespace Microsoft.PowerToys.Settings.UI.Views
     {
         private VideoConferenceViewModel ViewModel { get; set; }
 
+        [DllImport("Comdlg32.dll", CharSet = CharSet.Auto)]
+        public static extern bool GetOpenFileName([In, Out] OpenFileName openFileName);
+
         private static async Task<string> PickFileDialog()
         {
-            FileOpenPicker openPicker = new FileOpenPicker();
-            openPicker.ViewMode = PickerViewMode.Thumbnail;
-            openPicker.SuggestedStartLocation = PickerLocationId.PicturesLibrary;
-            openPicker.FileTypeFilter.Add(".jpg");
-            openPicker.FileTypeFilter.Add(".jpeg");
-            openPicker.FileTypeFilter.Add(".png");
-            var hwnd = WinRT.Interop.WindowNative.GetWindowHandle(App.GetSettingsWindow());
-            WinRT.Interop.InitializeWithWindow.Initialize(openPicker, hwnd);
+            OpenFileName openFileName = new OpenFileName();
+            openFileName.StructSize = Marshal.SizeOf(openFileName);
+            openFileName.Filter = "Images (*.jpg, *.jpeg, *.png)\0*.jpg; *.jpeg; *.png\0";
+            openFileName.File = new string(new char[1024]);
+            openFileName.MaxFile = openFileName.File.Length;
+            openFileName.FileTitle = new string(new char[1024]);
+            openFileName.MaxFileTitle = openFileName.FileTitle.Length;
+            openFileName.InitialDir = null;
+            openFileName.Title = string.Empty;
+            openFileName.DefExt = null;
 
-            StorageFile file = await openPicker.PickSingleFileAsync();
-            return file?.Path;
+            await Task.Delay(10);
+
+            bool result = GetOpenFileName(openFileName);
+            if (result)
+            {
+                return openFileName.File;
+            }
+
+            return null;
         }
 
         public VideoConferencePage()
