@@ -126,7 +126,7 @@ namespace
                         stream << achValue;
                     }
 
-                    stream << " > " << (LPCTSTR)value << "\n";
+                    stream << " > " << reinterpret_cast<LPCTSTR>(value) << "\n";
                 }
                 else
                 {

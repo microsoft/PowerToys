@@ -88,7 +88,7 @@ HRESULT CPowerRenameMenu::QueryContextMenu(HMENU hMenu, UINT index, UINT uIDFirs
 
         if (CSettingsInstance().GetShowIconOnMenu())
         {
-            HICON hIcon = (HICON)LoadImage(g_hInst, MAKEINTRESOURCE(IDI_RENAME), IMAGE_ICON, 16, 16, 0);
+            HICON hIcon = static_cast<HICON>(LoadImage(g_hInst, MAKEINTRESOURCE(IDI_RENAME), IMAGE_ICON, 16, 16, 0));
             if (hIcon)
             {
                 mii.fMask |= MIIM_BITMAP;
@@ -131,7 +131,7 @@ HRESULT CPowerRenameMenu::RunPowerRename(CMINVOKECOMMANDINFO* pici, IShellItemAr
         // Set the application path based on the location of the dll
         std::wstring path = get_module_folderpath(g_hInst);
         path = path + L"\\PowerToys.PowerRename.exe";
-        LPTSTR lpApplicationName = (LPTSTR)path.c_str();
+        LPTSTR lpApplicationName = path.data();
         // Create an anonymous pipe to stream filenames
         SECURITY_ATTRIBUTES sa;
         HANDLE hReadPipe;

@@ -32,6 +32,8 @@ namespace
     HMENU h_sub_menu = nullptr;
     bool double_click_timer_running = false;
     bool double_clicked = false;
+    POINT tray_icon_click_point;
+
 }
 
 // Struct to fill with callback and the data. The window_proc is responsible for cleaning it.
@@ -51,7 +53,7 @@ bool dispatch_run_on_main_ui_thread(main_loop_callback_function _callback, PVOID
     wnd_msg->_callback = _callback;
     wnd_msg->data = data;
 
-    PostMessage(tray_icon_hwnd, wm_run_on_main_ui_thread, 0, (LPARAM)wnd_msg);
+    PostMessage(tray_icon_hwnd, wm_run_on_main_ui_thread, 0, reinterpret_cast<LPARAM>(wnd_msg));
 
     return true;
 }
@@ -91,7 +93,7 @@ void handle_tray_command(HWND window, const WPARAM command_id, LPARAM lparam)
         }
         break;
     case ID_REPORT_BUG_COMMAND:
-    {        
+    {
         std::wstring bug_report_path = get_module_folderpath();
         bug_report_path += L"\\Tools\\PowerToys.BugReportTool.exe";
         SHELLEXECUTEINFOW sei{ sizeof(sei) };
@@ -114,7 +116,6 @@ void handle_tray_command(HWND window, const WPARAM command_id, LPARAM lparam)
         RunNonElevatedEx(L"https://aka.ms/PowerToysOverview", L"", L"");
         break;
     }
-        
     }
 }
 
@@ -123,7 +124,7 @@ void click_timer_elapsed()
     double_click_timer_running = false;
     if (!double_clicked)
     {
-        open_settings_window(std::nullopt, true);
+        open_settings_window(std::nullopt, true, tray_icon_click_point);
     }
 }
 
@@ -212,6 +213,9 @@ LRESULT __stdcall tray_icon_window_proc(HWND window, UINT message, WPARAM wparam
                 // ignore event if this is the second click of a double click
                 if (!double_click_timer_running)
                 {
+                    // save the cursor position for sending where to show the popup.
+                    GetCursorPos(&tray_icon_click_point);
+
                     // start timer for detecting single or double click
                     double_click_timer_running = true;
                     double_clicked = false;
@@ -237,7 +241,7 @@ LRESULT __stdcall tray_icon_window_proc(HWND window, UINT message, WPARAM wparam
         {
             if (lparam != NULL)
             {
-                struct run_on_main_ui_thread_msg* msg = (struct run_on_main_ui_thread_msg*)lparam;
+                struct run_on_main_ui_thread_msg* msg = reinterpret_cast<struct run_on_main_ui_thread_msg*>(lparam);
                 msg->_callback(msg->data);
                 delete msg;
                 lparam = NULL;

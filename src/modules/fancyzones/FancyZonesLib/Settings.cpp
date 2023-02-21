@@ -212,7 +212,7 @@ void FancyZonesSettings::LoadSettings()
             std::wstring apps = std::move(*val);
             std::vector<std::wstring> excludedApps;
             auto excludedUppercase = apps;
-            CharUpperBuffW(excludedUppercase.data(), (DWORD)excludedUppercase.length());
+            CharUpperBuffW(excludedUppercase.data(), static_cast<DWORD>(excludedUppercase.length()));
             std::wstring_view view(excludedUppercase);
             view = left_trim<wchar_t>(trim<wchar_t>(view));
 
@@ -236,7 +236,7 @@ void FancyZonesSettings::LoadSettings()
         if (auto val = values.get_int_value(NonLocalizable::OverlappingZonesAlgorithmID))
         {
             // Avoid undefined behavior
-            if (*val >= 0 || *val < (int)OverlappingZonesAlgorithm::EnumElements)
+            if (*val >= 0 || *val < static_cast<int>(OverlappingZonesAlgorithm::EnumElements))
             {
                 auto algorithm = (OverlappingZonesAlgorithm)*val;
                 if (m_settings.overlappingZonesAlgorithm != algorithm)

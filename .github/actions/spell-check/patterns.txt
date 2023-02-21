@@ -62,6 +62,9 @@ https?://(?:(?:www\.|)youtube\.com|youtu.be)/[-a-zA-Z0-9?&=]*
 link\.medium\.com/[a-zA-Z0-9]+
 \bmedium\.com/\@[^/]+/[-\w]+
 
+# experimentation urls
+https?://default\.exp-tas\.com/[-_a-zA-Z0-9/]*
+
 publicKeyToken=(['"]|)[0-9a-f]+\g{-1}
 \@sha256:[0-9a-f]{64}\b
 

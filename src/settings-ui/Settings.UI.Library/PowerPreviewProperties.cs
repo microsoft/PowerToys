@@ -13,6 +13,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
     public class PowerPreviewProperties
     {
         public const string DefaultStlThumbnailColor = "#FFC924";
+        public const int DefaultMonacoMaxFileSize = 50;
 
         private bool enableSvgPreview = true;
 
@@ -116,6 +117,9 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             }
         }
 
+        [JsonPropertyName("monaco-previewer-max-file-size")]
+        public IntProperty MonacoPreviewMaxFileSize { get; set; }
+
         private bool enablePdfPreview;
 
         [JsonPropertyName("pdf-previewer-toggle-setting")]
@@ -207,6 +211,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         public PowerPreviewProperties()
         {
             StlThumbnailColor = new StringProperty(DefaultStlThumbnailColor);
+            MonacoPreviewMaxFileSize = new IntProperty(DefaultMonacoMaxFileSize);
         }
 
         public override string ToString()

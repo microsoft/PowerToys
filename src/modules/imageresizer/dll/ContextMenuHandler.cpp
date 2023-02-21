@@ -130,7 +130,7 @@ HRESULT CContextMenuHandler::QueryContextMenu(_In_ HMENU hmenu, UINT indexMenu, 
         mii.fType = MFT_STRING;
         mii.dwTypeData = (PWSTR)strResizePictures;
         mii.fState = MFS_ENABLED;
-        HICON hIcon = (HICON)LoadImage(g_hInst_imageResizer, MAKEINTRESOURCE(IDI_RESIZE_PICTURES), IMAGE_ICON, 16, 16, 0);
+        HICON hIcon = static_cast<HICON>(LoadImage(g_hInst_imageResizer, MAKEINTRESOURCE(IDI_RESIZE_PICTURES), IMAGE_ICON, 16, 16, 0));
         if (hIcon)
         {
             mii.fMask |= MIIM_BITMAP;
@@ -185,7 +185,7 @@ HRESULT CContextMenuHandler::GetCommandString(UINT_PTR idCmd, UINT uType, _In_ U
     {
         if (uType == GCS_VERBW)
         {
-            wcscpy_s((LPWSTR)pszName, cchMax, RESIZE_PICTURES_VERBW);
+            wcscpy_s(reinterpret_cast<LPWSTR>(pszName), cchMax, RESIZE_PICTURES_VERBW);
         }
     }
     else
@@ -211,7 +211,7 @@ HRESULT CContextMenuHandler::InvokeCommand(_In_ CMINVOKECOMMANDINFO* pici)
     }
     else if (fUnicode && HIWORD(((CMINVOKECOMMANDINFOEX*)pici)->lpVerbW))
     {
-        if (wcscmp(((CMINVOKECOMMANDINFOEX*)pici)->lpVerbW, RESIZE_PICTURES_VERBW) == 0)
+        if (wcscmp((reinterpret_cast<CMINVOKECOMMANDINFOEX*>(pici))->lpVerbW, RESIZE_PICTURES_VERBW) == 0)
         {
             hr = ResizePictures(pici, nullptr);
         }
@@ -230,7 +230,7 @@ HRESULT CContextMenuHandler::ResizePictures(CMINVOKECOMMANDINFO* pici, IShellIte
     // Set the application path based on the location of the dll
     std::wstring path = get_module_folderpath(g_hInst_imageResizer);
     path = path + L"\\PowerToys.ImageResizer.exe";
-    LPTSTR lpApplicationName = (LPTSTR)path.c_str();
+    LPTSTR lpApplicationName = &path[0];
     // Create an anonymous pipe to stream filenames
     SECURITY_ATTRIBUTES sa;
     HANDLE hReadPipe;

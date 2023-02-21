@@ -33,6 +33,7 @@ private:
         COLORREF crKey = RGB(0, 0, 0);
         DWORD dwFlags = 0;
         BYTE alpha = 0;
+        bool transparencySet{false};
     };
 
     const HWND m_window;

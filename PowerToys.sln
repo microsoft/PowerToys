@@ -176,6 +176,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		src\.editorconfig = src\.editorconfig
 		.vsconfig = .vsconfig
 		Directory.Build.props = Directory.Build.props
+		Directory.Packages.props = Directory.Packages.props
 		Solution.props = Solution.props
 	EndProjectSection
 EndProject
@@ -491,6 +492,8 @@ EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PastePlain", "src\modules\pasteplain\PastePlain\PastePlain.csproj", "{EEB24BDA-10FA-4834-83CD-63449F39B7F7}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "PastePlainInterface", "src\modules\pasteplain\PastePlainModuleInterface\PastePlainModuleInterface.vcxproj", "{FC373B24-3293-453C-AAF5-CF2909DCEE6A}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AllExperiments", "src\common\AllExperiments\AllExperiments.csproj", "{9CE59ED5-7087-4353-88EB-788038A73CEC}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -2051,6 +2054,18 @@ Global
 		{FC373B24-3293-453C-AAF5-CF2909DCEE6A}.Release|x64.Build.0 = Release|x64
 		{FC373B24-3293-453C-AAF5-CF2909DCEE6A}.Release|x86.ActiveCfg = Release|x64
 		{FC373B24-3293-453C-AAF5-CF2909DCEE6A}.Release|x86.Build.0 = Release|x64
+		{9CE59ED5-7087-4353-88EB-788038A73CEC}.Debug|ARM64.ActiveCfg = Debug|ARM64
+		{9CE59ED5-7087-4353-88EB-788038A73CEC}.Debug|ARM64.Build.0 = Debug|ARM64
+		{9CE59ED5-7087-4353-88EB-788038A73CEC}.Debug|x64.ActiveCfg = Debug|x64
+		{9CE59ED5-7087-4353-88EB-788038A73CEC}.Debug|x64.Build.0 = Debug|x64
+		{9CE59ED5-7087-4353-88EB-788038A73CEC}.Debug|x86.ActiveCfg = Debug|x64
+		{9CE59ED5-7087-4353-88EB-788038A73CEC}.Debug|x86.Build.0 = Debug|x64
+		{9CE59ED5-7087-4353-88EB-788038A73CEC}.Release|ARM64.ActiveCfg = Release|ARM64
+		{9CE59ED5-7087-4353-88EB-788038A73CEC}.Release|ARM64.Build.0 = Release|ARM64
+		{9CE59ED5-7087-4353-88EB-788038A73CEC}.Release|x64.ActiveCfg = Release|x64
+		{9CE59ED5-7087-4353-88EB-788038A73CEC}.Release|x64.Build.0 = Release|x64
+		{9CE59ED5-7087-4353-88EB-788038A73CEC}.Release|x86.ActiveCfg = Release|x64
+		{9CE59ED5-7087-4353-88EB-788038A73CEC}.Release|x86.Build.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -2224,6 +2239,7 @@ Global
 		{9873BA05-4C41-4819-9283-CF45D795431B} = {4574FDD0-F61D-4376-98BF-E5A1262C11EC}
 		{EEB24BDA-10FA-4834-83CD-63449F39B7F7} = {9873BA05-4C41-4819-9283-CF45D795431B}
 		{FC373B24-3293-453C-AAF5-CF2909DCEE6A} = {9873BA05-4C41-4819-9283-CF45D795431B}
+		{9CE59ED5-7087-4353-88EB-788038A73CEC} = {1AFB6476-670D-4E80-A464-657E01DFF482}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {C3A2F9D1-7930-4EF4-A6FC-7EE0A99821D0}

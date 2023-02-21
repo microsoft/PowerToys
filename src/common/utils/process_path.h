@@ -15,7 +15,7 @@ inline std::wstring get_process_path(DWORD pid) noexcept
     {
         name.resize(MAX_PATH);
         DWORD name_length = static_cast<DWORD>(name.length());
-        if (QueryFullProcessImageNameW(process, 0, (LPWSTR)name.data(), &name_length) == 0)
+        if (QueryFullProcessImageNameW(process, 0, name.data(), &name_length) == 0)
         {
             name_length = 0;
         }
@@ -118,5 +118,5 @@ inline std::wstring get_module_folderpath(HMODULE mod = nullptr, const bool remo
     {
         PathRemoveFileSpecW(buffer);
     }
-    return { buffer, (UINT)lstrlenW(buffer) };
+    return { buffer, static_cast<uint64_t>(lstrlenW(buffer))};
 }
