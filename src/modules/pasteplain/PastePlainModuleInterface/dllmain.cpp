@@ -192,7 +192,7 @@ private:
                 return;
             }
 
-            wchar_t* pch_data= reinterpret_cast<wchar_t*>(GlobalLock(h_clipboard_data));
+            wchar_t* pch_data= static_cast<wchar_t*>(GlobalLock(h_clipboard_data));
 
             if (NULL == pch_data )
             {
@@ -246,7 +246,7 @@ private:
                 CloseClipboard();
                 return;
             }
-            wchar_t* pch_data = reinterpret_cast<wchar_t*>(GlobalLock(h_clipboard_data));
+            wchar_t* pch_data = static_cast<wchar_t*>(GlobalLock(h_clipboard_data));
 
             if (NULL == pch_data)
             {
