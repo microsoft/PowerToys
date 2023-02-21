@@ -8,12 +8,15 @@ using global::PowerToys.GPOWrapper;
 using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.PowerToys.Settings.UI.Library.Helpers;
 using Microsoft.PowerToys.Settings.UI.Library.Interfaces;
+using Microsoft.PowerToys.Settings.UI.Library.Utilities;
 
 namespace Microsoft.PowerToys.Settings.UI.ViewModels
 {
     public class AwakeViewModel : Observable
     {
         private GeneralSettings GeneralSettingsConfig { get; set; }
+
+        private ISettingsRepository<AwakeSettings> AwakeSettingsRepository { get; set; }
 
         private AwakeSettings Settings { get; set; }
 
@@ -35,19 +38,25 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 throw new ArgumentNullException(nameof(moduleSettingsRepository));
             }
 
-            moduleSettingsRepository.ReloadSettings();
-            Settings = moduleSettingsRepository.SettingsConfig;
-
-            InitializeEnabledValue();
-
-            KeepDisplayOn = Settings.Properties.KeepDisplayOn;
-            Mode = Settings.Properties.Mode;
-            IntervalHours = Settings.Properties.IntervalHours;
-            IntervalMinutes = Settings.Properties.IntervalMinutes;
-            ExpirationDateTime = Settings.Properties.ExpirationDateTime;
+            AwakeSettingsRepository = moduleSettingsRepository;
+            LoadSettings();
 
             // set the callback functions value to hangle outgoing IPC message.
             SendConfigMSG = ipcMSGCallBackFunc;
+
+            InitializeEnabledValue();
+        }
+
+        public void LoadSettings()
+        {
+            AwakeSettingsRepository.ReloadSettings();
+            Settings = AwakeSettingsRepository.SettingsConfig;
+
+            _keepDisplayOn = Settings.Properties.KeepDisplayOn;
+            _mode = Settings.Properties.Mode;
+            _intervalHours = Settings.Properties.IntervalHours;
+            _intervalMinutes = Settings.Properties.IntervalMinutes;
+            _expirationDateTime = Settings.Properties.ExpirationDateTime;
         }
 
         private void InitializeEnabledValue()
@@ -192,12 +201,16 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             get => ExpirationDateTime.TimeOfDay;
             set
             {
-                ExpirationDateTime = new DateTime(ExpirationDateTime.Year, ExpirationDateTime.Month, ExpirationDateTime.Day, value.Hours, value.Minutes, value.Seconds);
+                if (ExpirationDateTime.TimeOfDay != value)
+                {
+                    ExpirationDateTime = new DateTime(ExpirationDateTime.Year, ExpirationDateTime.Month, ExpirationDateTime.Day, value.Hours, value.Minutes, value.Seconds);
+                }
             }
         }
 
         public void NotifyPropertyChanged([CallerMemberName] string propertyName = null)
         {
+            Logger.LogError($"Changed the property {propertyName}");
             OnPropertyChanged(propertyName);
             if (SendConfigMSG != null)
             {
@@ -205,6 +218,8 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 SndModuleSettings<SndAwakeSettings> ipcMessage = new(outSettings);
 
                 string targetMessage = ipcMessage.ToJsonString();
+
+                Logger.LogError($"Sent config JSON: {targetMessage}");
                 SendConfigMSG(targetMessage);
             }
         }

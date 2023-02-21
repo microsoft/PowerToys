@@ -2,11 +2,11 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-using System;
 using System.IO;
 using System.IO.Abstractions;
 using Microsoft.PowerToys.Settings.UI.Helpers;
 using Microsoft.PowerToys.Settings.UI.Library;
+using Microsoft.PowerToys.Settings.UI.Library.Utilities;
 using Microsoft.PowerToys.Settings.UI.ViewModels;
 using Microsoft.UI.Dispatching;
 using Microsoft.UI.Xaml.Controls;
@@ -32,6 +32,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
 
             ViewModel = new AwakeViewModel(SettingsRepository<GeneralSettings>.GetInstance(_settingsUtils), SettingsRepository<AwakeSettings>.GetInstance(_settingsUtils), ShellPage.SendDefaultIPCMessage);
             DataContext = ViewModel;
+            DataContextChanged += AwakePage_DataContextChanged;
 
             var settingsPath = _settingsUtils.GetSettingsFilePath(_appName);
 
@@ -45,15 +46,19 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             InitializeComponent();
         }
 
+        private void AwakePage_DataContextChanged(Microsoft.UI.Xaml.FrameworkElement sender, Microsoft.UI.Xaml.DataContextChangedEventArgs args)
+        {
+            this.Bindings.Update();
+        }
+
         private void Settings_Changed(object sender, FileSystemEventArgs e)
         {
             bool taskAdded = _dispatcherQueue.TryEnqueue(DispatcherQueuePriority.Normal, () =>
             {
-                ViewModel = new AwakeViewModel(SettingsRepository<GeneralSettings>.GetInstance(_settingsUtils), SettingsRepository<AwakeSettings>.GetInstance(_settingsUtils), ShellPage.SendDefaultIPCMessage);
-                this.Bindings.Update();
+                Logger.LogInfo("View model changed - tracked inside the page.");
+                ViewModel.LoadSettings();
+                DataContext = ViewModel;
             });
-
-            Console.WriteLine("Task added.");
         }
 
         public void RefreshEnabledState()
