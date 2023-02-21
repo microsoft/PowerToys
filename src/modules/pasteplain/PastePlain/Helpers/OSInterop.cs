@@ -115,7 +115,7 @@ public static class OSInterop
     internal struct KEYBDINPUT
     {
         internal VirtualKeyShort WVk;
-        internal ScanCodeShort wScan;
+        internal ScanCodeShort W_Scan;
         internal KEYEVENTF DwFlags;
         internal int Time;
         internal UIntPtr DwExtraInfo;
