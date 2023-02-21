@@ -157,7 +157,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         private int _themeIndex;
 
         private bool _autoDownloadUpdates;
-        private bool _automaticDownloadIsGpoDisabled;
+        private bool _autoDownloadUpdatesIsGpoDisabled;
         private bool _enableExperimentation;
         private bool _experimentationIsGpoDisallowed;
 
@@ -278,7 +278,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         {
             get
             {
-                return _autoDownloadUpdates && !_automaticDownloadIsGpoDisabled;
+                return _autoDownloadUpdates && !_autoDownloadUpdatesIsGpoDisabled;
             }
 
             set
@@ -292,9 +292,16 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             }
         }
 
-        public bool IsAutomaticDownloadGpoDisabled
+        public bool IsAutoDownloadUpdatesCardEnabled
         {
-            get => _automaticDownloadIsGpoDisabled;
+            get => AutoUpdatesEnabled && !_autoDownloadUpdatesIsGpoDisabled;
+        }
+
+        // The settings card is hidden for users who are not a member of the Administarors group and in this case the GPO info should be hidden too.
+        // We hide it, because we don't want a normal user to enbale the setting. He can't install the updates.
+        public bool ShowAutoDownloadUpdatesGpoInformation
+        {
+            get => _isAdmin && _autoDownloadUpdatesIsGpoDisabled;
         }
 
         public bool EnableExperimentation
@@ -320,6 +327,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             get => _experimentationIsGpoDisallowed;
         }
 
+        // Are we running a dev build? (Please note taht we verifiy this in the "check for updates" code too.)
         public static bool AutoUpdatesEnabled
         {
             get
