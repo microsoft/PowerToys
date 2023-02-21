@@ -1256,7 +1256,7 @@ oldpath
 oldtheme
 oleaut
 OLECHAR
-oledb
+OLEDB
 oledbcommand
 oledbconnection
 OLIVEGREEN
@@ -1387,7 +1387,7 @@ Prefixer
 Preinstalled
 prevhost
 previewer
-previewhandlerframeinfo
+PREVIEWHANDLERFRAMEINFO
 previewpane
 previouscamera
 PREVIOUSINSTALLFOLDER
@@ -1475,7 +1475,7 @@ rectp
 rects
 recyclebin
 redirectedfrom
-redist
+Redist
 redistributable
 reencode
 reencoded
@@ -1601,7 +1601,7 @@ secauthz
 secpol
 Secur
 securityoverview
-segoe
+Segoe
 Sekan
 SENDCHANGE
 sendinput
@@ -1667,7 +1667,7 @@ SHOWMINNOACTIVE
 SHOWNA
 SHOWNOACTIVATE
 SHOWNORMAL
-showwindow
+SHOWWINDOW
 shtypes
 SICHINT
 sid
@@ -1735,7 +1735,7 @@ STARTUPINFO
 STARTUPINFOEX
 STARTUPINFOW
 startupscreen
-statflag
+STATFLAG
 STATICEDGE
 STATSTG
 stdafx
@@ -1747,7 +1747,7 @@ STDMETHODCALLTYPE
 STDMETHODIMP
 stefan
 Stereolithography
-stgm
+STGM
 STGMEDIUM
 sticpl
 stl
@@ -1794,7 +1794,7 @@ SYSICONINDEX
 sysinfo
 SYSKEY
 syskeydown
-syskeyup
+SYSKEYUP
 SYSMENU
 SYSTEMAPPS
 systemroot
@@ -2078,7 +2078,7 @@ WINL
 winmd
 winmm
 winmsg
-winnt
+WINNT
 winres
 winrt
 winsdk
