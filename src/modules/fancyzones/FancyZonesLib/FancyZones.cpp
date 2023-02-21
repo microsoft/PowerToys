@@ -250,7 +250,7 @@ FancyZones::Run() noexcept
         }
     });
 
-    PostMessage(m_window, WM_PRIV_VD_INIT, 0, 0);
+    PostMessage(m_window, WM_PRIV_INIT, 0, 0);
 }
 
 // IFancyZones
@@ -601,7 +601,7 @@ LRESULT FancyZones::WndProc(HWND window, UINT message, WPARAM wparam, LPARAM lpa
         {
             OnSnapHotkey(static_cast<DWORD>(lparam));
         }
-        else if (message == WM_PRIV_VD_INIT)
+        else if (message == WM_PRIV_INIT)
         {
             OnDisplayChange(DisplayChangeType::Initialization);
         }
@@ -1099,7 +1099,7 @@ void FancyZones::SettingsUpdate(SettingId id)
     case SettingId::SpanZonesAcrossMonitors:
     {
         m_workAreaHandler.Clear();
-        PostMessageW(m_window, WM_PRIV_VD_INIT, NULL, NULL);
+        PostMessageW(m_window, WM_PRIV_INIT, NULL, NULL);
     }
     break;
     default:
