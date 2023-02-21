@@ -9,7 +9,6 @@ UINT WM_PRIV_NAMECHANGE;
 UINT WM_PRIV_WINDOWCREATED;
 UINT WM_PRIV_VD_INIT;
 UINT WM_PRIV_VD_SWITCH;
-UINT WM_PRIV_VD_UPDATE;
 UINT WM_PRIV_EDITOR;
 UINT WM_PRIV_LAYOUT_HOTKEYS_FILE_UPDATE;
 UINT WM_PRIV_LAYOUT_TEMPLATES_FILE_UPDATE;
@@ -32,7 +31,6 @@ void InitializeWinhookEventIds()
         WM_PRIV_WINDOWCREATED = RegisterWindowMessage(L"{bdb10669-75da-480a-9ec4-eeebf09a02d7}");
         WM_PRIV_VD_INIT = RegisterWindowMessage(L"{469818a8-00fa-4069-b867-a1da484fcd9a}");
         WM_PRIV_VD_SWITCH = RegisterWindowMessage(L"{128c2cb0-6bdf-493e-abbe-f8705e04aa95}");
-        WM_PRIV_VD_UPDATE = RegisterWindowMessage(L"{b8b72b46-f42f-4c26-9e20-29336cf2f22e}");
         WM_PRIV_EDITOR = RegisterWindowMessage(L"{87543824-7080-4e91-9d9c-0404642fc7b6}");
         WM_PRIV_LAYOUT_HOTKEYS_FILE_UPDATE = RegisterWindowMessage(L"{07229b7e-4f22-4357-b136-33c289be2295}");
         WM_PRIV_LAYOUT_TEMPLATES_FILE_UPDATE = RegisterWindowMessage(L"{4686f019-5d3d-4c5c-9051-b7cbbccca77d}");
