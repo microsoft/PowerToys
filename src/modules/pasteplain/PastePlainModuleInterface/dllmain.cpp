@@ -174,14 +174,20 @@ private:
 
             if (!OpenClipboard(NULL))
             {
-                Logger::error(L"Couldn't open the clipboard to get the text. {}", get_last_error_or_default(GetLastError()));
+                DWORD errorCode = GetLastError();
+                auto errorMessage = get_last_error_message(errorCode);
+                Logger::error(L"Couldn't open the clipboard to get the text. {}", errorMessage.has_value() ? errorMessage.value() : L"");
+                Trace::PastePlainError(errorCode, errorMessage.has_value() ? errorMessage.value() : L"", L"read.OpenClipboard");
                 return;
             }
             HANDLE h_clipboard_data = GetClipboardData(CF_UNICODETEXT);
 
             if (h_clipboard_data == NULL)
             {
-                Logger::error(L"Failed to get clipboard data. {}", get_last_error_or_default(GetLastError()));
+                DWORD errorCode = GetLastError();
+                auto errorMessage = get_last_error_message(errorCode);
+                Logger::error(L"Failed to get clipboard data. {}", errorMessage.has_value() ? errorMessage.value() : L"");
+                Trace::PastePlainError(errorCode, errorMessage.has_value() ? errorMessage.value() : L"", L"read.GetClipboardData");
                 CloseClipboard();
                 return;
             }
@@ -190,7 +196,10 @@ private:
 
             if (NULL == (pch_data = (wchar_t*)GlobalLock(h_clipboard_data)))
             {
-                Logger::error(L"Couldn't lock the buffer to get the unformatted text from the clipboard. {}", get_last_error_or_default(GetLastError()));
+                DWORD errorCode = GetLastError();
+                auto errorMessage = get_last_error_message(errorCode);
+                Logger::error(L"Couldn't lock the buffer to get the unformatted text from the clipboard. {}", errorMessage.has_value() ? errorMessage.value() : L"");
+                Trace::PastePlainError(errorCode, errorMessage.has_value() ? errorMessage.value() : L"", L"read.GlobalLock");
                 CloseClipboard();
                 return;
             }
@@ -210,13 +219,19 @@ private:
             // https://learn.microsoft.com/en-us/windows/win32/dataxchg/clipboard-formats#cloud-clipboard-and-clipboard-history-formats
             if (0 == (no_clipboard_history_or_roaming_format = RegisterClipboardFormat(L"ExcludeClipboardContentFromMonitorProcessing")))
             {
-                Logger::error(L"Couldn't get the clipboard data format type that would allow excluding the data from the clipboard history / roaming. {}", get_last_error_or_default(GetLastError()));
+                DWORD errorCode = GetLastError();
+                auto errorMessage = get_last_error_message(errorCode);
+                Logger::error(L"Couldn't get the clipboard data format type that would allow excluding the data from the clipboard history / roaming. {}", errorMessage.has_value() ? errorMessage.value() : L"");
+                Trace::PastePlainError(errorCode, errorMessage.has_value() ? errorMessage.value() : L"", L"write.RegisterClipboardFormat");
                 return;
             }
 
             if (!OpenClipboard(NULL))
             {
-                Logger::error(L"Couldn't open the clipboard to copy the unformatted text. {}", get_last_error_or_default(GetLastError()));
+                DWORD errorCode = GetLastError();
+                auto errorMessage = get_last_error_message(errorCode);
+                Logger::error(L"Couldn't open the clipboard to copy the unformatted text. {}", errorMessage.has_value() ? errorMessage.value() : L"");
+                Trace::PastePlainError(errorCode, errorMessage.has_value() ? errorMessage.value() : L"", L"write.OpenClipboard");
                 return;
             }
 
@@ -224,7 +239,10 @@ private:
 
             if (NULL == (h_clipboard_data = GlobalAlloc(GMEM_MOVEABLE, (clipboard_text.length() + 1) * sizeof(wchar_t))))
             {
-                Logger::error(L"Couldn't allocate a buffer for the unformatted text. {}", get_last_error_or_default(GetLastError()));
+                DWORD errorCode = GetLastError();
+                auto errorMessage = get_last_error_message(errorCode);
+                Logger::error(L"Couldn't allocate a buffer for the unformatted text. {}", errorMessage.has_value() ? errorMessage.value() : L"");
+                Trace::PastePlainError(errorCode, errorMessage.has_value() ? errorMessage.value() : L"", L"write.GlobalAlloc");
                 CloseClipboard();
                 return;
             }
@@ -232,9 +250,12 @@ private:
 
             if (NULL == (pch_data = (wchar_t*)GlobalLock(h_clipboard_data)))
             {
-                Logger::error(L"Couldn't lock the buffer to send the unformatted text to the clipboard. {}", get_last_error_or_default(GetLastError()));
+                DWORD errorCode = GetLastError();
+                auto errorMessage = get_last_error_message(errorCode);
+                Logger::error(L"Couldn't lock the buffer to send the unformatted text to the clipboard. {}", errorMessage.has_value() ? errorMessage.value() : L"");
                 GlobalFree(h_clipboard_data);
                 CloseClipboard();
+                Trace::PastePlainError(errorCode, errorMessage.has_value() ? errorMessage.value() : L"", L"write.GlobalLock");
                 return;
             }
 
@@ -244,10 +265,13 @@ private:
 
             if (NULL == SetClipboardData(CF_UNICODETEXT, h_clipboard_data))
             {
-                Logger::error(L"Couldn't set the clipboard data to the unformatted text. {}", get_last_error_or_default(GetLastError()));
+                DWORD errorCode = GetLastError();
+                auto errorMessage = get_last_error_message(errorCode);
+                Logger::error(L"Couldn't set the clipboard data to the unformatted text. {}", errorMessage.has_value() ? errorMessage.value() : L"");
                 GlobalUnlock(h_clipboard_data);
                 GlobalFree(h_clipboard_data);
                 CloseClipboard();
+                Trace::PastePlainError(errorCode, errorMessage.has_value() ? errorMessage.value() : L"", L"write.SetClipboardData");
                 return;
             }
 
@@ -309,13 +333,16 @@ private:
             auto uSent = SendInput(static_cast<UINT>(inputs.size()), inputs.data(), sizeof(INPUT));
             if (uSent != inputs.size())
             {
-                Logger::error("SendInput failed. Expected to send {} inputs and sent only {}.", inputs.size(), uSent);
+                DWORD errorCode = GetLastError();
+                auto errorMessage = get_last_error_message(errorCode);
+                Logger::error(L"SendInput failed. Expected to send {} inputs and sent only {}. {}", inputs.size(), uSent, errorMessage.has_value() ? errorMessage.value() : L"");
+                Trace::PastePlainError(errorCode, errorMessage.has_value() ? errorMessage.value() : L"", L"input.SendInput");
                 return;
             }
 
             // Clear kb state and send Ctrl+V end
         }
-        // TODO: Send some telemetry on success.
+        Trace::PastePlainSuccess();
     }
 
 public:
@@ -427,7 +454,7 @@ public:
                 try_to_paste_as_plain_text();
             }).detach();
 
-            // TODO: telemetry for invocation
+            Trace::PastePlainInvoked();
             return true;
         }
 

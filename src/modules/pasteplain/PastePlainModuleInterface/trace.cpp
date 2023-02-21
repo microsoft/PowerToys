@@ -28,3 +28,36 @@ void Trace::EnablePastePlain(const bool enabled) noexcept
         TraceLoggingKeyword(PROJECT_KEYWORD_MEASURE),
         TraceLoggingBoolean(enabled, "Enabled"));
 }
+
+// Log if the user has invoked PastePlain
+void Trace::PastePlainInvoked() noexcept
+{
+    TraceLoggingWrite(
+        g_hProvider,
+        "PastePlain_InvokePastePlain",
+        ProjectTelemetryPrivacyDataTag(ProjectTelemetryTag_ProductAndServicePerformance),
+        TraceLoggingKeyword(PROJECT_KEYWORD_MEASURE));
+}
+
+// Log if a PastePlain invocation has succeeded
+void Trace::PastePlainSuccess() noexcept
+{
+    TraceLoggingWrite(
+        g_hProvider,
+        "PastePlain_Success",
+        ProjectTelemetryPrivacyDataTag(ProjectTelemetryTag_ProductAndServicePerformance),
+        TraceLoggingKeyword(PROJECT_KEYWORD_MEASURE));
+}
+
+// Log if an error occurs in PastePlain
+void Trace::PastePlainError(const DWORD errorCode, std::wstring errorMessage, std::wstring methodName) noexcept
+{
+    TraceLoggingWrite(
+        g_hProvider,
+        "PastePlain_Error",
+        ProjectTelemetryPrivacyDataTag(ProjectTelemetryTag_ProductAndServicePerformance),
+        TraceLoggingKeyword(PROJECT_KEYWORD_MEASURE),
+        TraceLoggingValue(methodName.c_str(), "MethodName"),
+        TraceLoggingValue(errorCode, "ErrorCode"),
+        TraceLoggingValue(errorMessage.c_str(), "ErrorMessage"));
+}
