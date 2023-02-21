@@ -131,7 +131,7 @@ private:
     bool OnSnapHotkey(DWORD vkCode) noexcept;
     bool ProcessDirectedSnapHotkey(HWND window, DWORD vkCode, bool cycle, WorkArea* const workArea) noexcept;
 
-    void RegisterVirtualDesktopUpdates() noexcept;
+    void SyncVirtualDesktops() noexcept;
 
     void UpdateHotkey(int hotkeyId, const PowerToysSettings::HotkeyObject& hotkeyObject, bool enable) noexcept;
 
@@ -249,6 +249,13 @@ FancyZones::Run() noexcept
             PostMessage(m_window, WM_HOTKEY, 1, 0);
         }
     });
+
+    SyncVirtualDesktops();
+
+    // id format of applied-layouts and app-zone-history was changed in 0.60
+    auto monitors = MonitorUtils::IdentifyMonitors();
+    AppliedLayouts::instance().AdjustWorkAreaIds(monitors);
+    AppZoneHistory::instance().AdjustWorkAreaIds(monitors);
 
     PostMessage(m_window, WM_PRIV_INIT, 0, 0);
 }
@@ -603,15 +610,13 @@ LRESULT FancyZones::WndProc(HWND window, UINT message, WPARAM wparam, LPARAM lpa
         }
         else if (message == WM_PRIV_INIT)
         {
+            VirtualDesktop::instance().UpdateVirtualDesktopId();
             OnDisplayChange(DisplayChangeType::Initialization);
         }
         else if (message == WM_PRIV_VD_SWITCH)
         {
+            VirtualDesktop::instance().UpdateVirtualDesktopId();
             OnDisplayChange(DisplayChangeType::VirtualDesktop);
-        }
-        else if (message == WM_PRIV_VD_UPDATE)
-        {
-            OnDisplayChange(DisplayChangeType::Initialization);
         }
         else if (message == WM_PRIV_EDITOR)
         {
@@ -685,25 +690,24 @@ void FancyZones::OnDisplayChange(DisplayChangeType changeType) noexcept
 {
     Logger::info(L"Display changed, type: {}", changeType);
 
-    if (changeType == DisplayChangeType::VirtualDesktop ||
-        changeType == DisplayChangeType::Initialization)
+    bool updateWindowsPositions = false;
+
+    switch (changeType)
     {
-        VirtualDesktop::instance().UpdateVirtualDesktopId();
-
-        if (changeType == DisplayChangeType::Initialization)
-        {
-            RegisterVirtualDesktopUpdates();
-
-            // id format of applied-layouts and app-zone-history was changed in 0.60
-            auto monitors = MonitorUtils::IdentifyMonitors();
-            AppliedLayouts::instance().AdjustWorkAreaIds(monitors);
-            AppZoneHistory::instance().AdjustWorkAreaIds(monitors);
-        }
+    case DisplayChangeType::WorkArea: // WorkArea size changed
+    case DisplayChangeType::DisplayChange: // Resolution changed or display added
+        updateWindowsPositions = FancyZonesSettings::settings().displayChange_moveWindows;
+        break;
+    case DisplayChangeType::VirtualDesktop: // Switched virtual desktop
+        break;
+    case DisplayChangeType::Initialization: // Initialization
+        updateWindowsPositions = FancyZonesSettings::settings().zoneSetChange_moveWindows;
+        break;
+    default:
+        break;
     }
 
-    bool updateWindowsPositionsOnResolutionChange = FancyZonesSettings::settings().displayChange_moveWindows && changeType == DisplayChangeType::DisplayChange;
-    bool updateWindowsPositionsOnStart = FancyZonesSettings::settings().zoneSetChange_moveWindows && changeType == DisplayChangeType::Initialization;
-    UpdateWorkAreas(updateWindowsPositionsOnResolutionChange || updateWindowsPositionsOnStart);
+    UpdateWorkAreas(updateWindowsPositions);
 }
 
 void FancyZones::AddWorkArea(HMONITOR monitor, const FancyZonesDataTypes::WorkAreaId& id, bool updateWindowsPositions) noexcept
@@ -752,6 +756,8 @@ LRESULT CALLBACK FancyZones::s_WndProc(HWND window, UINT message, WPARAM wparam,
 
 void FancyZones::UpdateWorkAreas(bool updateWindowPositions) noexcept
 {
+    Logger::debug(L"Update work areas, update windows positions: {}", updateWindowPositions);
+
     m_workAreaHandler.SaveParentIds();
     m_workAreaHandler.Clear();
 
@@ -1040,7 +1046,7 @@ bool FancyZones::ProcessDirectedSnapHotkey(HWND window, DWORD vkCode, bool cycle
     }
 }
 
-void FancyZones::RegisterVirtualDesktopUpdates() noexcept
+void FancyZones::SyncVirtualDesktops() noexcept
 {
     auto guids = VirtualDesktop::instance().GetVirtualDesktopIdsFromRegistry();
     if (guids.has_value())
