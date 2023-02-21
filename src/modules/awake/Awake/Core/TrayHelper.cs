@@ -20,6 +20,13 @@ using Windows.Win32.UI.WindowsAndMessaging;
 
 namespace Awake.Core
 {
+    /// <summary>
+    /// Helper class used to manage the system tray.
+    /// </summary>
+    /// <remarks>
+    /// Because Awake is a console application, there is no built-in
+    /// way to embed UI components so we have to heavily rely on the native Windows API.
+    /// </remarks>
     internal static class TrayHelper
     {
         private static readonly Logger _log;

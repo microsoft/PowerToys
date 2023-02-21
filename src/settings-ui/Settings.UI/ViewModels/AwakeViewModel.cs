@@ -35,15 +35,16 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 throw new ArgumentNullException(nameof(moduleSettingsRepository));
             }
 
+            moduleSettingsRepository.ReloadSettings();
             Settings = moduleSettingsRepository.SettingsConfig;
 
             InitializeEnabledValue();
 
-            _keepDisplayOn = Settings.Properties.KeepDisplayOn;
-            _mode = Settings.Properties.Mode;
-            _intervalHours = Settings.Properties.IntervalHours;
-            _intervalMinutes = Settings.Properties.IntervalMinutes;
-            _expirationDateTime = Settings.Properties.ExpirationDateTime;
+            KeepDisplayOn = Settings.Properties.KeepDisplayOn;
+            Mode = Settings.Properties.Mode;
+            IntervalHours = Settings.Properties.IntervalHours;
+            IntervalMinutes = Settings.Properties.IntervalMinutes;
+            ExpirationDateTime = Settings.Properties.ExpirationDateTime;
 
             // set the callback functions value to hangle outgoing IPC message.
             SendConfigMSG = ipcMSGCallBackFunc;
