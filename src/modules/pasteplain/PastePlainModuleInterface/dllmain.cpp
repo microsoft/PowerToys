@@ -482,6 +482,12 @@ public:
     {
         return m_enabled;
     }
+
+    virtual void send_settings_telemetry() override
+    {
+        Logger::info("Send settings telemetry");
+        Trace::SettingsTelemetry(m_hotkey);
+    }
 };
 
 extern "C" __declspec(dllexport) PowertoyModuleIface* __cdecl powertoy_create()

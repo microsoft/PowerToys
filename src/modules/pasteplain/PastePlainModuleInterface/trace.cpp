@@ -61,3 +61,22 @@ void Trace::PastePlainError(const DWORD errorCode, std::wstring errorMessage, st
         TraceLoggingValue(errorCode, "ErrorCode"),
         TraceLoggingValue(errorMessage.c_str(), "ErrorMessage"));
 }
+
+// Event to send settings telemetry.
+void Trace::SettingsTelemetry(PowertoyModuleIface::Hotkey& hotkey) noexcept
+{
+    std::wstring hotKeyStr =
+        std::wstring(hotkey.win ? L"Win + " : L"") +
+        std::wstring(hotkey.ctrl ? L"Ctrl + " : L"") +
+        std::wstring(hotkey.shift ? L"Shift + " : L"") +
+        std::wstring(hotkey.alt ? L"Alt + " : L"") +
+        std::wstring(L"VK ") + std::to_wstring(hotkey.key);
+
+    TraceLoggingWrite(
+        g_hProvider,
+        "PastePlain_Settings",
+        ProjectTelemetryPrivacyDataTag(ProjectTelemetryTag_ProductAndServicePerformance),
+        TraceLoggingKeyword(PROJECT_KEYWORD_MEASURE),
+        TraceLoggingWideString(hotKeyStr.c_str(), "HotKey")
+    );
+}
