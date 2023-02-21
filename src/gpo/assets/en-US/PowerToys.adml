@@ -55,6 +55,7 @@ If this setting is disabled, experimentation is not allowed.
       <string id="ConfigureEnabledUtilityFindMyMouse">Find My Mouse: Configure enabled state</string>
       <string id="ConfigureEnabledUtilityMouseHighlighter">Mouse Highlighter: Configure enabled state</string>
       <string id="ConfigureEnabledUtilityMousePointerCrosshairs">Mouse Pointer Crosshairs: Configure enabled state</string>
+      <string id="ConfigureEnabledUtilityPastePlain">Paste as Plain Text: Configure enabled state</string>
       <string id="ConfigureEnabledUtilityPowerRename">Power Rename: Configure enabled state</string>
       <string id="ConfigureEnabledUtilityPowerLauncher">PowerToys Run: Configure enabled state</string>
       <string id="ConfigureEnabledUtilityQuickAccent">Quick Accent: Configure enabled state</string>
