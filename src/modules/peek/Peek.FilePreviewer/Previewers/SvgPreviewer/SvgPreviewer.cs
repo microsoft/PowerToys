@@ -130,32 +130,33 @@ namespace Peek.FilePreviewer.Previewers
                 cancellationToken.ThrowIfCancellationRequested();
 
                 using FileStream stream = File.OpenRead(Item.Path);
-
-                cancellationToken.ThrowIfCancellationRequested();
-
-                await Dispatcher.RunOnUiThread(async () =>
                 {
                     cancellationToken.ThrowIfCancellationRequested();
 
-                    var source = new SvgImageSource();
-                    source.RasterizePixelHeight = ImageSize.Height;
-                    source.RasterizePixelWidth = ImageSize.Width;
-
-                    var loadStatus = await source.SetSourceAsync(stream.AsRandomAccessStream());
-                    if (loadStatus != SvgImageSourceLoadStatus.Success)
+                    await Dispatcher.RunOnUiThread(async () =>
                     {
-                        Debug.WriteLine("Error loading SVG: " + loadStatus.ToString());
-                        throw new ArgumentNullException(nameof(source));
-                    }
+                        cancellationToken.ThrowIfCancellationRequested();
 
-                    Preview = source;
-                });
+                        var source = new SvgImageSource();
+                        source.RasterizePixelHeight = ImageSize.Height;
+                        source.RasterizePixelWidth = ImageSize.Width;
+
+                        var loadStatus = await source.SetSourceAsync(stream.AsRandomAccessStream());
+                        if (loadStatus != SvgImageSourceLoadStatus.Success)
+                        {
+                            Debug.WriteLine("Error loading SVG: " + loadStatus.ToString());
+                            throw new ArgumentNullException(nameof(source));
+                        }
+
+                        Preview = source;
+                    });
+                }
             });
         }
 
         private bool HasFailedLoadingPreview()
         {
-            var hasFailedLoadingLowQualityThumbnail = true; // !(LowQualityThumbnailTask?.Result ?? true);
+            var hasFailedLoadingLowQualityThumbnail = !(LowQualityThumbnailTask?.Result ?? true);
             var hasFailedLoadingFullQualityImage = !(FullQualityImageTask?.Result ?? true);
 
             return hasFailedLoadingLowQualityThumbnail && hasFailedLoadingFullQualityImage;
