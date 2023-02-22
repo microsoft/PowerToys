@@ -2939,7 +2939,7 @@ Activate by holding the key for the character you want to add an accent to, then
     <comment>Product name: Navigation view item name for Paste as Plain Text</comment>
   </data>
   <data name="PastePlain.ModuleDescription" xml:space="preserve">
-    <value>Paste As Plain Text is a quick shortcut for pasting the text contents of your clipboard without formatting.</value>
+    <value>Paste As Plain Text is a quick shortcut for pasting the text contents of your clipboard without formatting. Note: the formatted text in the clipboard is replaced with the unformatted text.</value>
   </data>
   <data name="PastePlain.ModuleTitle" xml:space="preserve">
     <value>Paste As Plain Text</value>
@@ -2957,7 +2957,7 @@ Activate by holding the key for the character you want to add an accent to, then
     <value>Paste As Plain Text</value>
   </data>
   <data name="Oobe_PastePlain_HowToUse.Text" xml:space="preserve">
-    <value>to paste your clipboard data as plain text.</value>
+    <value>to paste your clipboard data as plain text. Note: this will replace the formatted text in your clipboard with the plain text.</value>
   </data>
   <data name="AllAppsTxt.Text" xml:space="preserve">
     <value>All apps</value>
