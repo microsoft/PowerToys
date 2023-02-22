@@ -59,7 +59,7 @@ $items | ForEach-Object {
         Write-Host "Version not set: " + $_.FullName
         $totalFailure++;
     }
-    elseif ($_.VersionInfo.ProductName -contains "PowerToys" -and $_.VersionInfo.LegalCopyright -notmatch "Copyright (C) $((Get-Date).Year)") {
+    elseif ($_.VersionInfo.ProductName -contains "PowerToys" -and $_.VersionInfo.LegalCopyright -notmatch "Copyright \(C\) $((Get-Date).Year)") {
         # PowerToys assemblies that aren't updated to the current year in the copyright
         Write-Host "Copyright year out of date: " + $_.FullName
         $totalFailure++;
