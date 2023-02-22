@@ -32,7 +32,7 @@ A minimum entry for the `TimeZone.json` looks like:
 ```json
   {
     "Offset": "11:55",
-    "Name": "My unique time zone",
+    "Name": "My crazy time zone",
   }
 ```
 
@@ -41,26 +41,26 @@ A full entry for the `TimeZone.json` looks like:
 ```json
   {
     "Offset": "11:55",
-    "Name": "My unique time zone",
+    "Name": "My crazy time zone",
     "Shortcut" : "MYTZ",
     "MilitaryName" : "Order Time Zone",
     "TimeNamesStandard": [
-        "My unique standard time"
+        "My crazy standard time"
     ],
     "ShortcutsStandard": [
         "MCST"
     ],
     "TimeNamesDaylight": [
-        "My unique daylight time"
+        "My crazy daylight time"
     ],
     "ShortcutsDaylight": [
         "MCDT"
     ],
     "CountriesStandard": [
-      "unique Land East"
+      "Crazy Land East"
     ],
     "CountriesDaylight": [
-      "Unique Land West"
+      "Crazy Land West"
     ]
   }
 ```

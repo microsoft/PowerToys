@@ -19,7 +19,7 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeZone.Properties {
     // class via a tool like ResGen or Visual Studio.
     // To add or remove a member, edit your .ResX file then rerun ResGen
     // with the /str option, or rebuild your VS project.
-    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "17.0.0.0")]
+    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "16.0.0.0")]
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
     [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
     internal class Resources {
@@ -408,6 +408,15 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeZone.Properties {
         internal static string Armenia_Time {
             get {
                 return ResourceManager.GetString("Armenia Time", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Artsakh.
+        /// </summary>
+        internal static string Artsakh {
+            get {
+                return ResourceManager.GetString("Artsakh", resourceCulture);
             }
         }
         
@@ -1024,15 +1033,6 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeZone.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Cabo Verde.
-        /// </summary>
-        internal static string Cabo_Verde {
-            get {
-                return ResourceManager.GetString("Cabo Verde", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to Caiguna (Australia).
         /// </summary>
         internal static string Caiguna__Australia_ {
@@ -1074,6 +1074,15 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeZone.Properties {
         internal static string Canary_Islands {
             get {
                 return ResourceManager.GetString("Canary Islands", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Cape Verde.
+        /// </summary>
+        internal static string Cape_Verde {
+            get {
+                return ResourceManager.GetString("Cape Verde", resourceCulture);
             }
         }
         
@@ -1767,6 +1776,15 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeZone.Properties {
         internal static string East_Nusa_Tenggara__Indonesia_ {
             get {
                 return ResourceManager.GetString("East Nusa Tenggara (Indonesia)", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to East Timor.
+        /// </summary>
+        internal static string East_Timor {
+            get {
+                return ResourceManager.GetString("East Timor", resourceCulture);
             }
         }
         
@@ -2779,6 +2797,15 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeZone.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Ivory Coast.
+        /// </summary>
+        internal static string Ivory_Coast {
+            get {
+                return ResourceManager.GetString("Ivory Coast", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Jamaica.
         /// </summary>
         internal static string Jamaica {
@@ -3328,11 +3355,11 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeZone.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Macao SAR.
+        ///   Looks up a localized string similar to Macau.
         /// </summary>
-        internal static string Macao_SAR {
+        internal static string Macau {
             get {
-                return ResourceManager.GetString("Macao SAR", resourceCulture);
+                return ResourceManager.GetString("Macau", resourceCulture);
             }
         }
         
@@ -4237,6 +4264,15 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeZone.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Northern Cyprus.
+        /// </summary>
+        internal static string Northern_Cyprus {
+            get {
+                return ResourceManager.GetString("Northern Cyprus", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Northern Mariana Islands.
         /// </summary>
         internal static string Northern_Mariana_Islands {
@@ -4516,11 +4552,11 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeZone.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Palestine Authority.
+        ///   Looks up a localized string similar to Palestine.
         /// </summary>
-        internal static string Palestine_Authority {
+        internal static string Palestine {
             get {
-                return ResourceManager.GetString("Palestine Authority", resourceCulture);
+                return ResourceManager.GetString("Palestine", resourceCulture);
             }
         }
         
@@ -5632,6 +5668,15 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeZone.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Sverdlovsk (Russia).
+        /// </summary>
+        internal static string Sverdlovsk__Russia_ {
+            get {
+                return ResourceManager.GetString("Sverdlovsk (Russia)", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Sweden.
         /// </summary>
         internal static string Sweden {
@@ -5817,15 +5862,6 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeZone.Properties {
         internal static string TimeZoneShortcut {
             get {
                 return ResourceManager.GetString("TimeZoneShortcut", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Timor-Leste.
-        /// </summary>
-        internal static string Timor_Leste {
-            get {
-                return ResourceManager.GetString("Timor-Leste", resourceCulture);
             }
         }
         
@@ -6537,15 +6573,6 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeZone.Properties {
         internal static string Yap__Micronesia_ {
             get {
                 return ResourceManager.GetString("Yap (Micronesia)", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Yekaterinburg.
-        /// </summary>
-        internal static string Yekaterinburg {
-            get {
-                return ResourceManager.GetString("Yekaterinburg", resourceCulture);
             }
         }
         

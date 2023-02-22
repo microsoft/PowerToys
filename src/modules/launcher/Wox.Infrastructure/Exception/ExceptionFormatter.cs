@@ -91,23 +91,23 @@ namespace Wox.Infrastructure.Exception
 
             // GlobalAssemblyCache - .NET Core and .NET 5 and later: false in all cases.
             // Source https://learn.microsoft.com/dotnet/api/system.reflection.assembly.globalassemblycache?view=net-6.0
-            foreach (var assembly in AppDomain.CurrentDomain.GetAssemblies())
+            foreach (var ass in AppDomain.CurrentDomain.GetAssemblies())
             {
                 sb.Append("* ");
-                sb.Append(assembly.FullName);
+                sb.Append(ass.FullName);
                 sb.Append(" (");
 
-                if (assembly.IsDynamic)
+                if (ass.IsDynamic)
                 {
                     sb.Append("dynamic assembly doesn't has location");
                 }
-                else if (string.IsNullOrEmpty(assembly.Location))
+                else if (string.IsNullOrEmpty(ass.Location))
                 {
                     sb.Append("location is null or empty");
                 }
                 else
                 {
-                    sb.Append(assembly.Location);
+                    sb.Append(ass.Location);
                 }
 
                 sb.AppendLine(")");

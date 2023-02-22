@@ -235,6 +235,9 @@
   <data name="Armenia Time" xml:space="preserve">
     <value>Armenia Time</value>
   </data>
+  <data name="Artsakh" xml:space="preserve">
+    <value>Artsakh</value>
+  </data>
   <data name="Aruba" xml:space="preserve">
     <value>Aruba</value>
   </data>
@@ -455,8 +458,8 @@
   <data name="Canary Islands" xml:space="preserve">
     <value>Canary Islands</value>
   </data>
-  <data name="Cabo Verde" xml:space="preserve">
-    <value>Cabo Verde</value>
+  <data name="Cape Verde" xml:space="preserve">
+    <value>Cape Verde</value>
   </data>
   <data name="Cape Verde Time" xml:space="preserve">
     <value>Cape Verde Time</value>
@@ -692,8 +695,8 @@
   <data name="East Nusa Tenggara (Indonesia)" xml:space="preserve">
     <value>East Nusa Tenggara (Indonesia)</value>
   </data>
-  <data name="Timor-Leste" xml:space="preserve">
-    <value>Timor-Leste</value>
+  <data name="East Timor" xml:space="preserve">
+    <value>East Timor</value>
   </data>
   <data name="Easter Island (Chile)" xml:space="preserve">
     <value>Easter Island (Chile)</value>
@@ -1033,8 +1036,8 @@
   <data name="Ittoqqortoormiit (Greenland)" xml:space="preserve">
     <value>Ittoqqortoormiit (Greenland)</value>
   </data>
-  <data name="Côte d’Ivoire" xml:space="preserve">
-    <value>Côte d’Ivoire</value>
+  <data name="Ivory Coast" xml:space="preserve">
+    <value>Ivory Coast</value>
   </data>
   <data name="Jamaica" xml:space="preserve">
     <value>Jamaica</value>
@@ -1221,8 +1224,8 @@
   <data name="Luxembourg" xml:space="preserve">
     <value>Luxembourg</value>
   </data>
-  <data name="Macao SAR" xml:space="preserve">
-    <value>Macao SAR</value>
+  <data name="Macau" xml:space="preserve">
+    <value>Macau</value>
   </data>
   <data name="Macquarie Island Station Time" xml:space="preserve">
     <value>Macquarie Island Station Time</value>
@@ -1525,6 +1528,9 @@
   <data name="North Maluku (Indonesia)" xml:space="preserve">
     <value>North Maluku (Indonesia)</value>
   </data>
+  <data name="Northern Cyprus" xml:space="preserve">
+    <value>Northern Cyprus</value>
+  </data>
   <data name="Northern Mariana Islands" xml:space="preserve">
     <value>Northern Mariana Islands</value>
   </data>
@@ -1620,8 +1626,8 @@
   <data name="Palau Time" xml:space="preserve">
     <value>Palau Time</value>
   </data>
-  <data name="Palestine Authority" xml:space="preserve">
-    <value>Palestine Authority</value>
+  <data name="Palestine" xml:space="preserve">
+    <value>Palestine</value>
   </data>
   <data name="Palmyra Atoll" xml:space="preserve">
     <value>Palmyra Atoll</value>
@@ -1997,8 +2003,8 @@
   <data name="Suriname Time" xml:space="preserve">
     <value>Suriname Time</value>
   </data>
-  <data name="Yekaterinburg" xml:space="preserve">
-    <value>Yekaterinburg</value>
+  <data name="Sverdlovsk (Russia)" xml:space="preserve">
+    <value>Sverdlovsk (Russia)</value>
   </data>
   <data name="Sweden" xml:space="preserve">
     <value>Sweden</value>
