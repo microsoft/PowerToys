@@ -1970,6 +1970,10 @@ From there, simply click on one of the supported files in the File Explorer and 
     <value>Learn more about Mouse utilities</value>
     <comment>Mouse utilities is a product name, do not loc</comment>
   </data>
+  <data name="LearnMore_PastePlain.Text" xml:space="preserve">
+    <value>Learn more about Paste as Plain Text</value>
+    <comment> Paste as Plain Text is the name of the module. </comment>
+  </data>
   <data name="LearnMore_PowerPreview.Text" xml:space="preserve">
     <value>Learn more about File Explorer add-ons</value>
     <comment>File Explorer is a product name, localize as Windows does</comment>
