@@ -177,9 +177,7 @@
       <Custom Action="DeleteWinAppSDKHardlinks" Before="RemoveFiles">
         Installed AND (REMOVE="ALL")
       </Custom>
-      <Custom Action="DeletePTInteropHardlinks" Before="RemoveFiles">
-        Installed AND (REMOVE="ALL")
-      </Custom>
+      <Custom Action="DeletePTInteropHardlinks" Before="CreatePTInteropHardlinks" />
 
       <Custom Action="DeleteDotnetRuntimeHardlinks" Before="RemoveFiles">
         Installed AND (REMOVE="ALL")
