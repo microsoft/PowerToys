@@ -238,8 +238,8 @@
   <data name="Aruba" xml:space="preserve">
     <value>Aruba</value>
   </data>
-  <data name="Saint Helena, Ascension and Tristan da Cunha" xml:space="preserve">
-    <value>Saint Helena, Ascension and Tristan da Cunha</value>
+  <data name="Ascension and Tristan da Cunha" xml:space="preserve">
+    <value>Ascension and Tristan da Cunha</value>
   </data>
   <data name="ASEAN Common Time" xml:space="preserve">
     <value>ASEAN Common Time</value>
@@ -932,8 +932,8 @@
   <data name="Honduras" xml:space="preserve">
     <value>Honduras</value>
   </data>
-  <data name="Hong Kong SAR" xml:space="preserve">
-    <value>Hong Kong SAR</value>
+  <data name="Hong Kong" xml:space="preserve">
+    <value>Hong Kong</value>
   </data>
   <data name="Hong Kong Time" xml:space="preserve">
     <value>Hong Kong Time</value>
@@ -1770,6 +1770,9 @@
   <data name="Saint Barthélemy" xml:space="preserve">
     <value>Saint Barthélemy</value>
   </data>
+  <data name="Saint Helena" xml:space="preserve">
+    <value>Saint Helena</value>
+  </data>
   <data name="Saint Kitts and Nevis" xml:space="preserve">
     <value>Saint Kitts and Nevis</value>
   </data>
@@ -1908,6 +1911,9 @@
   </data>
   <data name="Somalia" xml:space="preserve">
     <value>Somalia</value>
+  </data>
+  <data name="Somaliland" xml:space="preserve">
+    <value>Somaliland</value>
   </data>
   <data name="Sonora (Mexico)" xml:space="preserve">
     <value>Sonora (Mexico)</value>

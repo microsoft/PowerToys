@@ -545,7 +545,7 @@
                 "WEST"
             ],
             "CountriesStandard": [
-                "Saint Helena, Ascension and Tristan da Cunha",
+                "Ascension and Tristan da Cunha",
                 "Burkina Faso",
                 "Danmarkshavn",
                 "Gambia",
@@ -557,6 +557,7 @@
                 "Liberia",
                 "Mali",
                 "Mauritania",
+                "Saint Helena",
                 "São Tomé and Príncipe",
                 "Senegal",
                 "Sierra Leone",
@@ -763,6 +764,7 @@
                 "Russia (most of European part)",
                 "Saudi Arabia",
                 "Somalia",
+                "Somaliland",
                 "Prince Edward Islands (South Africa)",
                 "South Ossetia",
                 "Tanzania",
@@ -1069,7 +1071,7 @@
                 "Australia: Western Australia (most)",
                 "Brunei",
                 "China",
-                "Hong Kong SAR",
+                "Hong Kong",
                 "Bali (Indonesia)",
                 "East Kalimantan (Indonesia)",
                 "East Nusa Tenggara (Indonesia)",
