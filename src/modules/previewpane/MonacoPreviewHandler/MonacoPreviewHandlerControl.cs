@@ -208,6 +208,7 @@ namespace Microsoft.PowerToys.PreviewHandler.Monaco
                             downloadLink.Top = TextRenderer.MeasureText(Resources.WebView2_Not_Installed_Message, errorMessage.Font).Height + 10;
                             downloadLink.Width = TextRenderer.MeasureText(Resources.Download_WebView2, errorMessage.Font).Width + 10;
                             downloadLink.Height = TextRenderer.MeasureText(Resources.Download_WebView2, errorMessage.Font).Height;
+                            downloadLink.ForeColor = Settings.TextColor;
                             Controls.Add(downloadLink);
                         }
                     });

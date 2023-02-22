@@ -34,6 +34,7 @@ namespace winrt::PowerToys::GPOWrapper::implementation
         static GpoRuleConfigured GetConfiguredShortcutGuideEnabledValue();
         static GpoRuleConfigured GetConfiguredTextExtractorEnabledValue();
         static GpoRuleConfigured GetConfiguredVideoConferenceMuteEnabledValue();
+        static GpoRuleConfigured GetAllowExperimentationValue();
     };
 }
 

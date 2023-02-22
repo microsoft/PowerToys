@@ -199,7 +199,7 @@ LRESULT __stdcall D2DWindow::d2d_window_proc(HWND window, UINT message, WPARAM w
     }
     case WM_MOVE:
     case WM_SIZE:
-        self->base_resize((unsigned)lparam & 0xFFFF, (unsigned)lparam >> 16);
+        self->base_resize(static_cast<unsigned>(lparam) & 0xFFFF, static_cast<unsigned>(lparam) >> 16);
         [[fallthrough]];
     case WM_PAINT:
         self->base_render();

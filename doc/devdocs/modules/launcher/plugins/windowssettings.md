@@ -62,6 +62,7 @@ A full entry for the `WindowsSettings.json` looks like:
 * The strings for `Name`, `AltNames`, `Areas`, `Type` and `Note` must not contain whitespace(s) or special characters (#, €, $, etc.)
 * The strings for `Name`, `AltNames`, `Areas`, `Type` and `Note` are used as ids for the resource file under `Properties\Resources.resx`
 * When you add new strings make sure you have added all translations for it.
+* If a result has `mmc.exe` as command and the note property is filled, the note is shown in the sub title too. (This is for special MMC results where we don't have a .msc file.)
 
 ## Scores
 

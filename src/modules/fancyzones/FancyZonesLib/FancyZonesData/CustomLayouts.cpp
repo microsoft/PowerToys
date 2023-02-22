@@ -242,7 +242,7 @@ std::optional<LayoutData> CustomLayouts::GetLayout(const GUID& id) const noexcep
     {
         auto layoutInfo = std::get<FancyZonesDataTypes::CanvasLayoutInfo>(customLayout.info);
         layout.sensitivityRadius = layoutInfo.sensitivityRadius;
-        layout.zoneCount = (int)layoutInfo.zones.size();
+        layout.zoneCount = static_cast<int>(layoutInfo.zones.size());
     }
 
     return layout;

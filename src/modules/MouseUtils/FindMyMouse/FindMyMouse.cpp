@@ -161,7 +161,7 @@ bool SuperSonar<D>::Initialize(HINSTANCE hinst)
         wc.hInstance = hinst;
         wc.hIcon = LoadIcon(hinst, IDI_APPLICATION);
         wc.hCursor = LoadCursor(nullptr, IDC_ARROW);
-        wc.hbrBackground = (HBRUSH)GetStockObject(NULL_BRUSH);
+        wc.hbrBackground = static_cast<HBRUSH>(GetStockObject(NULL_BRUSH));
         wc.lpszClassName = className;
 
         if (!RegisterClassW(&wc))
@@ -196,14 +196,14 @@ LRESULT SuperSonar<D>::s_WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM 
     SuperSonar* self;
     if (message == WM_NCCREATE)
     {
-        auto info = (LPCREATESTRUCT)lParam;
-        SetWindowLongPtr(hwnd, GWLP_USERDATA, (LONG_PTR)info->lpCreateParams);
-        self = (SuperSonar*)info->lpCreateParams;
+        auto info = reinterpret_cast<LPCREATESTRUCT>(lParam);
+        SetWindowLongPtr(hwnd, GWLP_USERDATA, reinterpret_cast<LONG_PTR>(info->lpCreateParams));
+        self = static_cast<SuperSonar*>(info->lpCreateParams);
         self->m_hwnd = hwnd;
     }
     else
     {
-        self = (SuperSonar*)GetWindowLongPtr(hwnd, GWLP_USERDATA);
+        self = reinterpret_cast<SuperSonar*>(GetWindowLongPtr(hwnd, GWLP_USERDATA));
     }
     if (self)
     {
@@ -230,7 +230,7 @@ LRESULT SuperSonar<D>::BaseWndProc(UINT message, WPARAM wParam, LPARAM lParam) n
         break;
 
     case WM_INPUT:
-        OnSonarInput(wParam, (HRAWINPUT)lParam);
+        OnSonarInput(wParam, reinterpret_cast<HRAWINPUT>(lParam));
         break;
 
     case WM_TIMER:
@@ -272,7 +272,7 @@ void SuperSonar<D>::OnSonarInput(WPARAM flags, HRAWINPUT hInput)
     RAWINPUT input;
     UINT size = sizeof(input);
     auto result = GetRawInputData(hInput, RID_INPUT, &input, &size, sizeof(RAWINPUTHEADER));
-    if ((int)result < sizeof(RAWINPUTHEADER))
+    if (result < sizeof(RAWINPUTHEADER))
     {
         return;
     }
@@ -397,7 +397,7 @@ void SuperSonar<D>::DetectShake()
     {
         currentX += movement.diff.x;
         currentY += movement.diff.y;
-        distanceTravelled += sqrt((double)movement.diff.x * movement.diff.x + (double)movement.diff.y * movement.diff.y); // Pythagorean theorem
+        distanceTravelled += sqrt(static_cast<double>(movement.diff.x) * movement.diff.x + static_cast<double>(movement.diff.y) * movement.diff.y); // Pythagorean theorem
         minX = min(currentX, minX);
         maxX = max(currentX, maxX);
         minY = min(currentY, minY);
@@ -410,8 +410,8 @@ void SuperSonar<D>::DetectShake()
     }
 
     // Size of the rectangle the pointer moved in.
-    double rectangleWidth = (double)maxX - minX;
-    double rectangleHeight = (double)maxY - minY;
+    double rectangleWidth =  static_cast<double>(maxX) - minX;
+    double rectangleHeight =  static_cast<double>(maxY) - minY;
 
     double diagonal = sqrt(rectangleWidth * rectangleWidth + rectangleHeight * rectangleHeight);
     if (diagonal > 0 && distanceTravelled / diagonal > ShakeFactor)
@@ -592,7 +592,7 @@ bool SuperSonar<D>::IsForegroundAppExcluded()
     if (HWND foregroundApp{ GetForegroundWindow() })
     {
         auto processPath = get_process_path(foregroundApp);
-        CharUpperBuffW(processPath.data(), (DWORD)processPath.length());
+        CharUpperBuffW(processPath.data(), static_cast<DWORD>(processPath.length()));
         return find_app_name_in_path(processPath, m_excludedApps);
     }
     else
@@ -613,7 +613,7 @@ struct CompositionSpotlight : SuperSonar<CompositionSpotlight>
 
     void AfterMoveSonar()
     {
-        m_spotlight.Offset({ (float)m_sonarPos.x, (float)m_sonarPos.y, 0.0f });
+        m_spotlight.Offset({ static_cast<float>(m_sonarPos.x), static_cast<float>(m_sonarPos.y), 0.0f });
     }
 
     LRESULT WndProc(UINT message, WPARAM wParam, LPARAM lParam) noexcept
@@ -924,10 +924,10 @@ struct GdiSpotlight : GdiSonar<GdiSpotlight>
         auto spotlight = CreateRoundRectRgn(
             this->m_sonarPos.x - radius, this->m_sonarPos.y - radius, this->m_sonarPos.x + radius, this->m_sonarPos.y + radius, radius * 2, radius * 2);
 
-        FillRgn(ps.hdc, spotlight, (HBRUSH)GetStockObject(WHITE_BRUSH));
+        FillRgn(ps.hdc, spotlight, static_cast<HBRUSH>(GetStockObject(WHITE_BRUSH)));
         Sleep(1000 / 60);
         ExtSelectClipRgn(ps.hdc, spotlight, RGN_DIFF);
-        FillRect(ps.hdc, &ps.rcPaint, (HBRUSH)GetStockObject(BLACK_BRUSH));
+        FillRect(ps.hdc, &ps.rcPaint, static_cast<HBRUSH>(GetStockObject(BLACK_BRUSH)));
         DeleteObject(spotlight);
 
         EndPaint(this->m_hwnd, &ps);
@@ -959,7 +959,7 @@ struct GdiCrosshairs : GdiSonar<GdiCrosshairs>
         auto radius = CurrentSonarRadius();
         RECT rc;
 
-        HBRUSH white = (HBRUSH)GetStockObject(WHITE_BRUSH);
+        HBRUSH white = static_cast<HBRUSH>(GetStockObject(WHITE_BRUSH));
 
         rc.left = m_sonarPos.x - radius;
         rc.top = ps.rcPaint.top;
@@ -973,7 +973,7 @@ struct GdiCrosshairs : GdiSonar<GdiCrosshairs>
         rc.bottom = m_sonarPos.y + radius;
         FillRect(ps.hdc, &rc, white);
 
-        HBRUSH black = (HBRUSH)GetStockObject(BLACK_BRUSH);
+        HBRUSH black = static_cast<HBRUSH>(GetStockObject(BLACK_BRUSH));
 
         // Top left
         rc.left = ps.rcPaint.left;

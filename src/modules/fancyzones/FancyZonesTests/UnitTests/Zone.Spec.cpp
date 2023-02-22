@@ -16,7 +16,7 @@ namespace FancyZonesUnitTests
 
         TEST_METHOD_INITIALIZE(Init)
         {
-            m_hInst = (HINSTANCE)GetModuleHandleW(nullptr);
+            m_hInst = static_cast<HINSTANCE>(GetModuleHandleW(nullptr));
         }
 
     public:

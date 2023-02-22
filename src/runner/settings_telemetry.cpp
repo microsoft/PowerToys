@@ -48,7 +48,7 @@ void send()
             {
                 powertoy->send_settings_telemetry();
             }
-            catch(...)
+            catch (...)
             {
                 Logger::error(L"Failed to send telemetry for {} module", name);
             }
@@ -59,20 +59,20 @@ void send()
 void run_interval()
 {
     auto time = get_last_send_time();
-    long long wait_time = 24*3600;
+    long long wait_time = 24 * 3600;
     long long left_to_wait = 0;
     if (time.has_value())
     {
         left_to_wait = max(0, wait_time - timeutil::diff::in_seconds(timeutil::now(), time.value()));
     }
 
-    Sleep((DWORD)left_to_wait * 1000);
+    Sleep(static_cast<DWORD>(left_to_wait * 1000));
     send();
     update_last_send_time(timeutil::now());
 
     while (true)
     {
-        Sleep((DWORD)wait_time * 1000);
+        Sleep(static_cast<DWORD>(wait_time * 1000));
         send();
         update_last_send_time(timeutil::now());
     }
@@ -87,7 +87,7 @@ void settings_telemetry::init()
         }
         catch (...)
         {
-            Logger::error("Failed to send settings telemetry");    
+            Logger::error("Failed to send settings telemetry");
         }
     }).detach();
 }
