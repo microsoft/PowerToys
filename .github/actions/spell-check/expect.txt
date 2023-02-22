@@ -179,6 +179,7 @@ Buryatia
 BValue
 BYPOSITION
 bytearray
+Cabo
 Caiguna
 CALG
 callbackptr
@@ -402,9 +403,9 @@ deu
 devblogs
 devdocs
 devenum
+devmgmt
 DEVMON
 devpkey
-devmgmt
 DEVSOURCE
 DIIRFLAG
 dimm
@@ -653,8 +654,8 @@ HCRYPTHASH
 HCRYPTPROV
 hcwhite
 hdc
-hdwwiz
 hdrop
+hdwwiz
 HEB
 Heiko
 Helpline
@@ -827,6 +828,7 @@ Ittoqqortoormiit
 IUI
 IUnknown
 ivirtualdesktopmanager
+Ivoire
 IWbem
 IWIC
 iwr
@@ -1387,8 +1389,8 @@ prevpane
 prgms
 pri
 Primorsky
-printmanagement
 PRINTCLIENT
+printmanagement
 prm
 proactively
 PROCESSKEY
@@ -1693,8 +1695,8 @@ spam
 spdisp
 spdlog
 spdo
-spec'ing
 specialfolder
+spec'ing
 spesi
 splitwstring
 spsi
@@ -2134,13 +2136,14 @@ WVC
 Wwan
 Wwanpp
 XAttribute
+XAxis
 Xbox
 XBUTTON
 XBUTTONDBLCLK
 XBUTTONDOWN
 XBUTTONUP
-xcopy
 XControl
+xcopy
 XDocument
 XElement
 XFile
@@ -2154,6 +2157,7 @@ xsi
 XStr
 XVIRTUALSCREEN
 Yamalia
+YAxis
 YIncrement
 yinle
 yinwang
@@ -2177,7 +2181,3 @@ Zoneszonabletester
 Zonev
 Zykova
 zzz
-Ivoire
-XAxis
-YAxis
-Cabo
