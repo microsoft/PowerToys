@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- Copyright (c) Microsoft Corporation.
      Licensed under the MIT License. -->
-<policyDefinitionResources xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" revision="1.0" schemaVersion="1.0" xmlns="http://schemas.microsoft.com/GroupPolicy/2006/07/PolicyDefinitions">
+<policyDefinitionResources xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" revision="1.1" schemaVersion="1.0" xmlns="http://schemas.microsoft.com/GroupPolicy/2006/07/PolicyDefinitions">
   <displayName>PowerToys</displayName>
   <description>PowerToys</description>
   <resources>
@@ -9,6 +9,7 @@
       <string id="PowerToys">Microsoft PowerToys</string>
 
       <string id="SUPPORTED_POWERTOYS_0_64_0">PowerToys version 0.64.0 or later</string>
+      <string id="SUPPORTED_POWERTOYS_0_68_0">PowerToys version 0.68.0 or later</string>
 
       <string id="ConfigureEnabledUtilityDescription">This policy configures the enabled state for a PowerToys utility.
 
@@ -27,6 +28,12 @@ If you enable this setting, the utility will be always enabled and the user won'
 If you disable this setting, the utility will be always disabled and the user won't be able to enable it.
 
 If you don't configure this setting, users are able to disable or enable the utility.
+</string>
+      <string id="AllowExperimentationDescription">This policy configures whether PowerToys experimentation is allowed. With experimentation allowed the user sees the new features being experimented if it gets selected as part of the test group. (Experimentation will only happen on Windows Insider builds.)
+
+If this setting is not configured or enabled, the user can control experimentation in the PowerToys settings menu.
+
+If this setting is disabled, experimentation is not allowed.
 </string>
       <string id="ConfigureEnabledUtilityAlwaysOnTop">Always On Top: Configure enabled state</string>
       <string id="ConfigureEnabledUtilityAwake">Awake: Configure enabled state</string>
@@ -55,6 +62,7 @@ If you don't configure this setting, users are able to disable or enable the uti
       <string id="ConfigureEnabledUtilityShortcutGuide">Shortcut Guide: Configure enabled state</string>
       <string id="ConfigureEnabledUtilityTextExtractor">Text Extractor: Configure enabled state</string>
       <string id="ConfigureEnabledUtilityVideoConferenceMute">Video Conference Mute: Configure enabled state</string>
+      <string id="AllowExperimentation">Allow Experimentation</string>
     </stringTable>
   </resources>
 </policyDefinitionResources>

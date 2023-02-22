@@ -49,7 +49,7 @@ inline std::wstring get_process_path(DWORD pid) noexcept
     {
         name.resize(MAX_PATH);
         DWORD name_length = static_cast<DWORD>(name.length());
-        if (QueryFullProcessImageNameW(process, 0, (LPWSTR)name.data(), &name_length) == 0)
+        if (QueryFullProcessImageNameW(process, 0, static_cast<LPWSTR>(name.data()), &name_length) == 0)
         {
             name_length = 0;
         }
@@ -410,7 +410,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 
             LPCWSTR text = L"Please select the target window (using a mouse or Alt+Tab), \r\nand press Ctrl+Alt+S to capture its styles. \r\nYou can find the output file \"window_styles.txt\" on your desktop.";
             RECT rc{0,50,600,200};
-            DrawText(hdc, text, (int)wcslen(text), &rc, DT_CENTER | DT_WORDBREAK);
+            DrawText(hdc, text, static_cast<int>(wcslen(text)), &rc, DT_CENTER | DT_WORDBREAK);
             
             EndPaint(hWnd, &ps);
         }

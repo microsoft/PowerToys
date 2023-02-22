@@ -84,19 +84,19 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.Windows.CsWinRT" Version="2.0.0" />
-    <PackageReference Include="Interop.Microsoft.Office.Interop.OneNote" Version="1.1.0.2" />
-    <PackageReference Include="Mages" Version="2.0.1" />
-    <PackageReference Include="LazyCache" Version="2.4.0" />
-    <PackageReference Include="Microsoft.Data.Sqlite" Version="7.0.0" />
-    <PackageReference Include="Microsoft.Toolkit.Uwp.Notifications" Version="7.1.2" />
-    <PackageReference Include="Microsoft.Xaml.Behaviors.Wpf" Version="1.1.39" />
-    <PackageReference Include="ModernWpfUI" Version="0.9.4" />
-    <PackageReference Include="ScipBe.Common.Office.OneNote" Version="3.0.1" />
-    <PackageReference Include="System.Reactive" Version="5.0.0" />
-    <PackageReference Include="System.Data.OleDb" Version="7.0.0" />
-    <PackageReference Include="System.ServiceProcess.ServiceController" Version="7.0.0" />
-    <PackageReference Include="UnitsNet" Version="4.145.0" />
+    <PackageReference Include="Microsoft.Windows.CsWinRT" />
+    <PackageReference Include="Interop.Microsoft.Office.Interop.OneNote" />
+    <PackageReference Include="Mages" />
+    <PackageReference Include="LazyCache" />
+    <PackageReference Include="Microsoft.Data.Sqlite" />
+    <PackageReference Include="Microsoft.Toolkit.Uwp.Notifications" />
+    <PackageReference Include="Microsoft.Xaml.Behaviors.Wpf" />
+    <PackageReference Include="ModernWpfUI" />
+    <PackageReference Include="ScipBe.Common.Office.OneNote" />
+    <PackageReference Include="System.Reactive" />
+    <PackageReference Include="System.Data.OleDb" />
+    <PackageReference Include="System.ServiceProcess.ServiceController" />
+    <PackageReference Include="UnitsNet" />
   </ItemGroup>
 
   <ItemGroup>

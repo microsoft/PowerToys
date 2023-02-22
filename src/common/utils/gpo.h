@@ -46,6 +46,7 @@ namespace powertoys_gpo {
     const std::wstring POLICY_CONFIGURE_ENABLED_SHORTCUT_GUIDE = L"ConfigureEnabledUtilityShortcutGuide";
     const std::wstring POLICY_CONFIGURE_ENABLED_TEXT_EXTRACTOR = L"ConfigureEnabledUtilityTextExtractor";
     const std::wstring POLICY_CONFIGURE_ENABLED_VIDEO_CONFERENCE_MUTE = L"ConfigureEnabledUtilityVideoConferenceMute";
+    const std::wstring POLICY_ALLOW_EXPERIMENTATION = L"AllowExperimentation";
 
     inline gpo_rule_configured_t getConfiguredValue(const std::wstring& registry_value_name)
     {
@@ -233,6 +234,11 @@ namespace powertoys_gpo {
     inline gpo_rule_configured_t getConfiguredVideoConferenceMuteEnabledValue()
     {
         return getConfiguredValue(POLICY_CONFIGURE_ENABLED_VIDEO_CONFERENCE_MUTE);
+    }
+
+    inline gpo_rule_configured_t getAllowExperimentationValue()
+    {
+        return getConfiguredValue(POLICY_ALLOW_EXPERIMENTATION);
     }
 
 }

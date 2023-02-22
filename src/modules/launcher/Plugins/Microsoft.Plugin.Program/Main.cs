@@ -13,6 +13,7 @@ using Microsoft.Plugin.Program.Programs;
 using Microsoft.Plugin.Program.Storage;
 using Wox.Infrastructure.Storage;
 using Wox.Plugin;
+using Wox.Plugin.Common;
 using Stopwatch = Wox.Infrastructure.Stopwatch;
 
 namespace Microsoft.Plugin.Program
@@ -29,6 +30,8 @@ namespace Microsoft.Plugin.Program
         };
 
         internal static ProgramPluginSettings Settings { get; set; }
+
+        internal static readonly ShellLocalization ShellLocalizationHelper = new();
 
         public string Name => Properties.Resources.wox_plugin_program_plugin_name;
 

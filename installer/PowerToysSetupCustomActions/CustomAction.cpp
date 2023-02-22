@@ -8,7 +8,6 @@
 #include "../../src/common/logger/logger.h"
 #include "../../src/common/utils/MsiUtils.h"
 #include "../../src/common/utils/modulesRegistry.h"
-#include "../../src/common/utils/registry.h"
 #include "../../src/common/updating/installer.h"
 #include "../../src/common/version/version.h"
 
@@ -32,23 +31,8 @@ TRACELOGGING_DEFINE_PROVIDER(
 const DWORD USERNAME_DOMAIN_LEN = DNLEN + UNLEN + 2; // Domain Name + '\' + User Name + '\0'
 const DWORD USERNAME_LEN = UNLEN + 1; // User Name + '\0'
 
-struct WcaSink : spdlog::sinks::base_sink<std::mutex>
-{
-    virtual void sink_it_(const spdlog::details::log_msg& msg) override
-    {
-        WcaLog(LOGMSG_STANDARD, msg.payload.data());
-    }
-    virtual void flush_() override
-    {
-        // we don't need to flush wca log manually
-    }
-};
-
-void initSystemLogger()
-{
-    static std::once_flag initLoggerFlag;
-    std::call_once(initLoggerFlag, []() { Logger::init(std::vector<spdlog::sink_ptr>{ std::make_shared<WcaSink>() }); });
-}
+static const wchar_t* POWERTOYS_EXE_COMPONENT = L"{A2C66D91-3485-4D00-B04D-91844E6B345B}";
+static const wchar_t* POWERTOYS_UPGRADE_CODE = L"{42B84BF7-5FBF-473B-9C8B-049DC16F7708}";
 
 HRESULT getInstallFolder(MSIHANDLE hInstall, std::wstring& installationDir)
 {
@@ -68,7 +52,6 @@ LExit:
 }
 UINT __stdcall ApplyModulesRegistryChangeSetsCA(MSIHANDLE hInstall)
 {
-    initSystemLogger();
     HRESULT hr = S_OK;
     UINT er = ERROR_SUCCESS;
     std::wstring installationFolder;
@@ -83,14 +66,14 @@ UINT __stdcall ApplyModulesRegistryChangeSetsCA(MSIHANDLE hInstall)
     {
         if (!changeSet.apply())
         {
-            WcaLog(LOGMSG_STANDARD, "Couldn't apply registry changeSet");
+            Logger::error(L"Couldn't apply registry changeSet");
             failedToApply = true;
         }
     }
 
     if (!failedToApply)
     {
-        WcaLog(LOGMSG_STANDARD, "All registry changeSets applied successfully");
+        Logger::info(L"All registry changeSets applied successfully");
     }
 LExit:
     er = SUCCEEDED(hr) ? ERROR_SUCCESS : ERROR_INSTALL_FAILURE;
@@ -99,7 +82,6 @@ LExit:
 
 UINT __stdcall UnApplyModulesRegistryChangeSetsCA(MSIHANDLE hInstall)
 {
-    initSystemLogger();
     HRESULT hr = S_OK;
     UINT er = ERROR_SUCCESS;
     std::wstring installationFolder;
@@ -129,14 +111,14 @@ UINT __stdcall InstallEmbeddedMSIXCA(MSIHANDLE hInstall)
 
     if (auto msix = RcResource::create(IDR_BIN_MSIX_HELLO_PACKAGE, L"BIN", DLL_HANDLE))
     {
-        WcaLog(LOGMSG_STANDARD, "Extracted MSIX");
+        Logger::info(L"Extracted MSIX");
         // TODO: Use to activate embedded MSIX
         const auto msix_path = std::filesystem::temp_directory_path() / "hello_package.msix";
         if (!msix->saveAsFile(msix_path))
         {
             ExitOnFailure(hr, "Failed to save msix");
         }
-        WcaLog(LOGMSG_STANDARD, "Saved MSIX");
+        Logger::info(L"Saved MSIX");
         using namespace winrt::Windows::Management::Deployment;
         using namespace winrt::Windows::Foundation;
 
@@ -148,7 +130,7 @@ UINT __stdcall InstallEmbeddedMSIXCA(MSIHANDLE hInstall)
             ExitOnFailure(hr, "Failed to AddPackage");
         }
 
-        WcaLog(LOGMSG_STANDARD, "MSIX[s] were installed!");
+        Logger::info(L"MSIX[s] were installed!");
     }
     else
     {
@@ -179,11 +161,11 @@ UINT __stdcall UninstallEmbeddedMSIXCA(MSIHANDLE hInstall)
         auto result = pm.RemovePackageAsync(p.Id().FullName()).get();
         if (result)
         {
-            WcaLog(LOGMSG_STANDARD, "MSIX was uninstalled!");
+            Logger::info(L"MSIX was uninstalled!");
         }
         else
         {
-            WcaLog(LOGMSG_STANDARD, "Couldn't uninstall MSIX!");
+            Logger::error(L"Couldn't uninstall MSIX!");
         }
     }
 
@@ -225,7 +207,7 @@ UINT __stdcall CreateScheduledTaskCA(MSIHANDLE hInstall)
     hr = WcaInitialize(hInstall, "CreateScheduledTaskCA");
     ExitOnFailure(hr, "Failed to initialize");
 
-    WcaLog(LOGMSG_STANDARD, "Initialized.");
+    Logger::info(L"CreateScheduledTaskCA Initialized.");
 
     // ------------------------------------------------------
     // Get the Domain/Username for the trigger.
@@ -244,7 +226,7 @@ UINT __stdcall CreateScheduledTaskCA(MSIHANDLE hInstall)
     wcscat_s(username_domain, L"\\");
     wcscat_s(username_domain, username);
 
-    WcaLog(LOGMSG_STANDARD, "Current user detected: %ls", username_domain);
+    Logger::info(L"Current user detected: {}", username_domain);
 
     // Task Name.
     wstrTaskName = L"Autorun for ";
@@ -262,7 +244,7 @@ UINT __stdcall CreateScheduledTaskCA(MSIHANDLE hInstall)
                           nullptr,
                           CLSCTX_INPROC_SERVER,
                           IID_ITaskService,
-                          (void**)&pService);
+                          reinterpret_cast<void**>(&pService));
     ExitOnFailure(hr, "Failed to create an instance of ITaskService: %x", hr);
 
     // Connect to the task service.
@@ -284,7 +266,7 @@ UINT __stdcall CreateScheduledTaskCA(MSIHANDLE hInstall)
             pRootFolder->Release();
             ExitOnFailure(hr, "Cannot create PowerToys task folder: %x", hr);
         }
-        WcaLog(LOGMSG_STANDARD, "PowerToys task folder created.");
+        Logger::info(L"PowerToys task folder created.");
     }
 
     // If the same task exists, remove it.
@@ -332,7 +314,7 @@ UINT __stdcall CreateScheduledTaskCA(MSIHANDLE hInstall)
     hr = pLogonTrigger->put_Id(_bstr_t(L"Trigger1"));
     if (FAILED(hr))
     {
-        WcaLogError(hr, "Cannot put the trigger ID: %x", hr);
+        Logger::error(L"Cannot put the trigger ID: {}", hr);
     }
 
     // Timing issues may make explorer not be started when the task runs.
@@ -340,7 +322,7 @@ UINT __stdcall CreateScheduledTaskCA(MSIHANDLE hInstall)
     hr = pLogonTrigger->put_Delay(_bstr_t(L"PT03S"));
     if (FAILED(hr))
     {
-        WcaLogError(hr, "Cannot put the trigger delay: %x", hr);
+        Logger::error(L"Cannot put the trigger delay: {}", hr);
     }
 
     // Define the user. The task will execute when the user logs on.
@@ -381,19 +363,19 @@ UINT __stdcall CreateScheduledTaskCA(MSIHANDLE hInstall)
     hr = pPrincipal->put_Id(_bstr_t(L"Principal1"));
     if (FAILED(hr))
     {
-        WcaLogError(hr, "Cannot put the principal ID: %x", hr);
+        Logger::error(L"Cannot put the principal ID: {}", hr);
     }
 
     hr = pPrincipal->put_UserId(_bstr_t(username_domain));
     if (FAILED(hr))
     {
-        WcaLogError(hr, "Cannot put principal user Id: %x", hr);
+        Logger::error(L"Cannot put principal user Id: {}", hr);
     }
 
     hr = pPrincipal->put_LogonType(TASK_LOGON_INTERACTIVE_TOKEN);
     if (FAILED(hr))
     {
-        WcaLogError(hr, "Cannot put principal logon type: %x", hr);
+        Logger::error(L"Cannot put principal logon type: {}", hr);
     }
 
     // Run the task with the highest available privileges.
@@ -417,7 +399,7 @@ UINT __stdcall CreateScheduledTaskCA(MSIHANDLE hInstall)
         ExitOnFailure(hr, "Error saving the Task : %x", hr);
     }
 
-    WcaLog(LOGMSG_STANDARD, "Scheduled task created for the current user.");
+    Logger::info(L"Scheduled task created for the current user.");
 
 LExit:
     ReleaseStr(wszExecutablePath);
@@ -478,7 +460,7 @@ UINT __stdcall RemoveScheduledTasksCA(MSIHANDLE hInstall)
     hr = WcaInitialize(hInstall, "RemoveScheduledTasksCA");
     ExitOnFailure(hr, "Failed to initialize");
 
-    WcaLog(LOGMSG_STANDARD, "Initialized.");
+    Logger::info(L"RemoveScheduledTasksCA Initialized.");
 
     // COM and Security Initialization is expected to have been done by the MSI.
     // It couldn't be done in the DLL, anyway.
@@ -488,7 +470,7 @@ UINT __stdcall RemoveScheduledTasksCA(MSIHANDLE hInstall)
                           nullptr,
                           CLSCTX_INPROC_SERVER,
                           IID_ITaskService,
-                          (void**)&pService);
+                          reinterpret_cast<void**>(&pService));
     ExitOnFailure(hr, "Failed to create an instance of ITaskService: %x", hr);
 
     // Connect to the task service.
@@ -501,7 +483,7 @@ UINT __stdcall RemoveScheduledTasksCA(MSIHANDLE hInstall)
     if (FAILED(hr))
     {
         // Folder doesn't exist. No need to delete anything.
-        WcaLog(LOGMSG_STANDARD, "The PowerToys scheduled task folder wasn't found. Nothing to delete.");
+        Logger::info(L"The PowerToys scheduled task folder wasn't found. Nothing to delete.");
         hr = S_OK;
         ExitFunction();
     }
@@ -527,19 +509,19 @@ UINT __stdcall RemoveScheduledTasksCA(MSIHANDLE hInstall)
                 hr = pTaskFolder->DeleteTask(taskName, 0);
                 if (FAILED(hr))
                 {
-                    WcaLogError(hr, "Cannot delete the '%S' task: %x", taskName, hr);
+                    Logger::error(L"Cannot delete the {} task: {}", taskName, hr);
                 }
                 SysFreeString(taskName);
             }
             else
             {
-                WcaLogError(hr, "Cannot get the registered task name: %x", hr);
+                Logger::error(L"Cannot get the registered task name: {}", hr);
             }
             pRegisteredTask->Release();
         }
         else
         {
-            WcaLogError(hr, "Cannot get the registered task item at index=%d: %x", i + 1, hr);
+            Logger::error(L"Cannot get the registered task item at index={}: {}", i + 1, hr);
         }
     }
 
@@ -551,7 +533,7 @@ UINT __stdcall RemoveScheduledTasksCA(MSIHANDLE hInstall)
     pRootFolder->Release();
     ExitOnFailure(hr, "Cannot delete the PowerToys folder: %x", hr);
 
-    WcaLog(LOGMSG_STANDARD, "Deleted the PowerToys Task Scheduler folder.");
+    Logger::info(L"Deleted the PowerToys Task Scheduler folder.");
 
 LExit:
     if (pService)
@@ -811,7 +793,7 @@ UINT __stdcall CertifyVirtualCameraDriverCA(MSIHANDLE hInstall)
         ExitOnFailure(hr, "Certificate file size not valid", hr);
     }
 
-    pFileContent = (char*)malloc(size);
+    pFileContent = static_cast<char*>(malloc(size));
 
     DWORD sizeread;
     if (!ReadFile(hfile, pFileContent, size, &sizeread, nullptr))
@@ -822,7 +804,7 @@ UINT __stdcall CertifyVirtualCameraDriverCA(MSIHANDLE hInstall)
 
     if (!CertAddEncodedCertificateToStore(hCertStore,
                                           X509_ASN_ENCODING,
-                                          (const BYTE*)pFileContent,
+                                          reinterpret_cast<const BYTE*>(pFileContent),
                                           size,
                                           CERT_STORE_ADD_ALWAYS,
                                           nullptr))
@@ -1402,6 +1384,20 @@ UINT __stdcall TerminateProcessesCA(MSIHANDLE hInstall)
     return WcaFinalize(er);
 }
 
+void initSystemLogger()
+{
+    static std::once_flag initLoggerFlag;
+    std::call_once(initLoggerFlag, []() {
+        WCHAR temp_path[MAX_PATH];
+        auto ret = GetTempPath(MAX_PATH, temp_path);
+
+        if (ret)
+        {
+            Logger::init("PowerToysMSI", std::wstring{ temp_path } + L"\\PowerToysMSIInstaller", L"");
+        }
+    });
+}
+
 // DllMain - Initialize and cleanup WiX custom action utils.
 extern "C" BOOL WINAPI DllMain(__in HINSTANCE hInst, __in ULONG ulReason, __in LPVOID)
 {
@@ -1409,6 +1405,7 @@ extern "C" BOOL WINAPI DllMain(__in HINSTANCE hInst, __in ULONG ulReason, __in L
     {
     case DLL_PROCESS_ATTACH:
         WcaGlobalInitialize(hInst);
+        initSystemLogger();
         TraceLoggingRegister(g_hProvider);
         DLL_HANDLE = hInst;
         break;

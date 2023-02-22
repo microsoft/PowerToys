@@ -23,6 +23,7 @@
                 "PowerToys.Settings.UI.Lib.dll",
                 "PowerToys.GPOWrapper.dll",
                 "PowerToys.GPOWrapperProjection.dll",
+                "PowerToys.AllExperiments.dll",
 
                 "modules\\AlwaysOnTop\\PowerToys.AlwaysOnTop.exe",
                 "modules\\AlwaysOnTop\\PowerToys.AlwaysOnTopModuleInterface.dll",
@@ -202,6 +203,8 @@
                 "Mono.Cecil.Mdb.dll",
                 "Mono.Cecil.Pdb.dll",
                 "Mono.Cecil.Rocks.dll",
+                "Newtonsoft.Json.dll",
+                "Newtonsoft.Json.Bson.dll",
                 "NLog.dll",
                 "HtmlAgilityPack.dll",
                 "Markdig.Signed.dll",

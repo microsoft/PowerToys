@@ -143,6 +143,7 @@ awakeversion
 AYUV
 azcli
 azor
+azman
 backtracer
 BAF
 bak
@@ -208,7 +209,9 @@ bricelam
 BRIGHTGREEN
 Browsable
 bsd
+Bson
 bstr
+bthprops
 bti
 btn
 BTNFACE
@@ -259,6 +262,8 @@ CFBBF
 CFEE
 CFFEE
 CFFF
+certlm
+certmgr
 cguid
 changecursor
 Changemove
@@ -282,6 +287,7 @@ CLASSNOTAVAILABLE
 clickable
 clickonce
 CLIENTEDGE
+clientid
 clientside
 CLIPCHILDREN
 Clipperton
@@ -322,11 +328,13 @@ comctl
 COMDAT
 comdef
 comdlg
+comexp
 cominterop
 commandline
 COMMANDTITLE
 commctrl
 Comoros
+compmgmt
 COMPOSITIONFULL
 comsupp
 comsuppw
@@ -408,6 +416,7 @@ DARKYELLOW
 datareader
 datatemplate
 Datavalue
+dataversion
 DATAW
 davidegiacometti
 Dayof
@@ -474,6 +483,7 @@ devdocs
 devenum
 DEVMON
 devpkey
+devmgmt
 DEVSOURCE
 DFAB
 DFB
@@ -482,6 +492,7 @@ DIIRFLAG
 dimm
 directshow
 DISABLEASACTIONKEY
+diskmgmt
 DISPLAYCHANGE
 DISPLAYCONFIG
 displayname
@@ -608,6 +619,7 @@ Eucla
 EUQ
 eurochange
 eventlog
+eventvwr
 everytime
 evt
 EWXFORCE
@@ -707,6 +719,7 @@ frankychen
 Froml
 FROMTOUCH
 FSCTL
+fsmgmt
 FTYPE
 Functiondiscoverykeys
 Futuna
@@ -742,7 +755,9 @@ globalassemblycache
 GMEM
 GNumber
 google
+gpedit
 gpo
+GPT
 gpu
 graphql
 GSM
@@ -779,6 +794,7 @@ HCRYPTHASH
 HCRYPTPROV
 hcwhite
 hdc
+hdwwiz
 hdrop
 HEB
 Heiko
@@ -938,6 +954,7 @@ ipreviewhandler
 ipreviewhandlervisualssetfont
 IProperty
 IPublic
+irprops
 isbi
 ISearch
 ISettings
@@ -1061,7 +1078,6 @@ logconsole
 logfile
 LOGFONT
 LOGFONTW
-LOGMSG
 logon
 LOGPIXELSX
 LOn
@@ -1105,6 +1121,7 @@ LTRB
 LTRREADING
 Luhansk
 luid
+lusrmgr
 LWA
 lwin
 LZero
@@ -1139,6 +1156,7 @@ MAXIMIZEBOX
 MAXSHORTCUTSIZE
 maxversiontested
 Mbits
+MBR
 MBs
 MBUTTON
 MBUTTONDBLCLK
@@ -1166,6 +1184,7 @@ mfobjects
 mfplat
 Mfsensorgroup
 mftransform
+Mgmt
 mic
 microsoft
 Midl
@@ -1187,6 +1206,8 @@ mjpg
 mkd
 mkdn
 mlcfg
+mmc
+mmcexe
 MMdd
 mmdeviceapi
 mmi
@@ -1268,6 +1289,7 @@ NCMBUTTONUP
 NCMOUSELEAVE
 NCMOUSEMOVE
 NCol
+ncpa
 NCPAINT
 NCRBUTTONDBLCLK
 NCRBUTTONDOWN
@@ -1439,6 +1461,7 @@ pdw
 PDWORD
 pedrolamas
 PERCEIVEDFLAG
+perfmon
 pesi
 peteblois
 PEXCEPTION
@@ -1472,6 +1495,7 @@ plocm
 plugins
 pluginsmodel
 PMSIHANDLE
+Pnp
 Pohnpei
 Popups
 POPUPWINDOW
@@ -1517,6 +1541,7 @@ prevpane
 prgms
 pri
 Primorsky
+printmanagement
 PRINTCLIENT
 prm
 proactively
@@ -1674,6 +1699,7 @@ RRF
 rrr
 RSAT
 rshift
+rsop
 Rsp
 Rstrtmgr
 RTB
@@ -1716,6 +1742,7 @@ SDKDDK
 sdns
 searchterm
 secauthz
+secpol
 Secur
 securityoverview
 segoe
@@ -1944,6 +1971,7 @@ tdbuild
 TDefault
 TDevice
 telem
+telephon
 Templated
 templatenamespace
 Tenggara
@@ -1991,6 +2019,7 @@ TRAYMOUSEMESSAGE
 triaging
 TRK
 trl
+TServer
 Tshuapa
 TStr
 Tuva
@@ -2044,6 +2073,7 @@ unmute
 UNORM
 unregistering
 unremapped
+Unstub
 unsubscribe
 unvirtualized
 Updatelayout
@@ -2069,6 +2099,7 @@ UYVY
 vabdq
 validmodulename
 Vanara
+variantassignment
 vcamp
 vccorlib
 vcdl
@@ -2131,7 +2162,7 @@ WANTPALM
 wbem
 wbemuuid
 WBounds
-wca
+Wca
 wcautil
 WCE
 wcex
@@ -2216,6 +2247,7 @@ wmain
 Wman
 wmi
 WMICIM
+wmimgmt
 WMKEYDOWN
 WMKEYUP
 wmp
@@ -2243,6 +2275,7 @@ WResize
 writefile
 Wrk
 wrl
+wscui
 wsf
 wsh
 wsl
@@ -2266,6 +2299,7 @@ XBUTTONDBLCLK
 XBUTTONDOWN
 XBUTTONUP
 xcopy
+XControl
 XDocument
 XElement
 xfd
