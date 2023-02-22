@@ -514,7 +514,7 @@
                 "EGST"
             ],
             "CountriesStandard": [
-                "Cape Verde"
+                "Cabo Verde"
             ],
             "CountriesDaylight": [
                 "Ittoqqortoormiit (Greenland)",
@@ -553,7 +553,7 @@
                 "Guinea-Bissau",
                 "Guinea",
                 "Iceland",
-                "Ivory Coast",
+                "Côte d’Ivoire",
                 "Liberia",
                 "Mali",
                 "Mauritania",
@@ -716,8 +716,7 @@
                 "Lebanon",
                 "Lithuania",
                 "Moldova",
-                "Northern Cyprus",
-                "Palestine",
+                "Palestine Authority",
                 "Romania",
                 "Transnistria",
                 "Syria"
@@ -820,7 +819,6 @@
             ],
             "CountriesDaylight": [
                 "Armenia",
-                "Artsakh",
                 "Azerbaijan",
                 "Crozet Islands (French Southern and Antarctic Lands)",
                 "Georgia",
@@ -896,7 +894,7 @@
                 "Kurgan (Russia)",
                 "Orenburg (Russia)",
                 "Perm (Russia)",
-                "Sverdlovsk (Russia)",
+                "Yekaterinburg",
                 "Tyumen (Russia)",
                 "Yamalia (Russia)",
                 "Tajikistan",
@@ -1081,7 +1079,7 @@
                 "South Kalimantan (Indonesia)",
                 "Sulawesi (Indonesia)",
                 "West Nusa Tenggara (Indonesia)",
-                "Macau",
+                "Macao SAR",
                 "Malaysia",
                 "Mongolia (most)",
                 "Philippines",
@@ -1132,7 +1130,7 @@
                 "YAKT"
             ],
             "CountriesStandard": [
-                "East Timor",
+                "Timor-Leste",
                 "Maluku (Indonesia)",
                 "North Maluku (Indonesia)",
                 "Papua (Indonesia)",

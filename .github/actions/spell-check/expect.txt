@@ -88,7 +88,6 @@ ARPPRODUCTICON
 ARRAYSIZE
 arsinh
 artanh
-Artsakh
 asdf
 AShortcut
 ASingle
