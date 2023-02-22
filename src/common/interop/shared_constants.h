@@ -46,9 +46,6 @@ namespace CommonSharedConstants
     // Path to the event used by PowerOCR
     const wchar_t SHOW_POWEROCR_SHARED_EVENT[] = L"Local\\PowerOCREvent-dc864e06-e1af-4ecc-9078-f98bee745e3a";
 
-    // Path to the event used by PastePlain
-    const wchar_t SHOW_PASTEPLAIN_SHARED_EVENT[] = L"Local\\PastePlainEvent-57dc5a03-20b4-423b-aa5c-574e809d95a7";
-
     // Path to the event used by MeasureTool
     const wchar_t MEASURE_TOOL_TRIGGER_EVENT[] = L"Local\\MeasureToolEvent-3d46745f-09b3-4671-a577-236be7abd199";
 

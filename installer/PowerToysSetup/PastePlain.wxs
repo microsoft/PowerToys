@@ -4,7 +4,7 @@
 
   <?include $(sys.CURRENTDIR)\Common.wxi?>
 
-  <?define PastePlainFiles=PowerToys.PastePlain.dll;ControlzEx.dll;Ijwhost.dll;Microsoft.Windows.SDK.NET.dll;Microsoft.Xaml.Behaviors.dll;PowerToys.Common.UI.dll;PowerToys.ManagedCommon.dll;PowerToys.ManagedTelemetry.dll;System.Text.Json.dll;PowerToys.PastePlain.deps.json;PowerToys.PastePlain.exe;PowerToys.PastePlain.runtimeconfig.json;PowerToys.PastePlainInterface.dll;PowerToys.Settings.UI.Lib.dll;System.ComponentModel.Composition.dll;System.IO.Abstractions.dll;System.Management.dll;WinRT.Runtime.dll;PowerToys.GPOWrapper.dll;PowerToys.GPOWrapperProjection.dll;WindowsBase.dll?>
+  <?define PastePlainFiles=PowerToys.PastePlainModuleInterface.dll?>
 
   <Fragment>
     <DirectoryRef Id="PastePlainInstallFolder" FileSource="$(var.BinDir)modules\$(var.PastePlainProjectName)">

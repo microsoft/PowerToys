@@ -9,8 +9,8 @@
     <Keyword>Win32Proj</Keyword>
     <ProjectGuid>{FC373B24-3293-453C-AAF5-CF2909DCEE6A}</ProjectGuid>
     <RootNamespace>PastePlain</RootNamespace>
-    <ProjectName>PastePlainInterface</ProjectName>
-    <TargetName>PowerToys.PastePlainInterface</TargetName>
+    <ProjectName>PastePlainModuleInterface</ProjectName>
+    <TargetName>PowerToys.PastePlainModuleInterface</TargetName>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Label="Configuration">

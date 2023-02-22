@@ -6,8 +6,8 @@
 // Non-localizable
 
 #define FILE_DESCRIPTION "PowerToys PastePlain"
-#define INTERNAL_NAME "PowerToys.PastePlain"
-#define ORIGINAL_FILENAME "PowerToys.PastePlain.dll"
+#define INTERNAL_NAME "PowerToys.PastePlainModuleInterface"
+#define ORIGINAL_FILENAME "PowerToys.PastePlainModuleInterface.dll"
 
 // Non-localizable
 //////////////////////////////

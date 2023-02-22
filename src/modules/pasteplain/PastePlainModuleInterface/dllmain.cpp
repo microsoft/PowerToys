@@ -351,7 +351,6 @@ public:
         app_name = GET_RESOURCE_STRING(IDS_PASTEPLAIN_NAME);
         app_key = PastePlainConstants::ModuleKey;
         LoggerHelpers::init_logger(app_key, L"ModuleInterface", "PastePlain");
-        m_hInvokeEvent = CreateDefaultEvent(CommonSharedConstants::SHOW_PASTEPLAIN_SHARED_EVENT);
         init_settings();
     }
 
