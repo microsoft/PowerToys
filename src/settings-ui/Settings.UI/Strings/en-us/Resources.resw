@@ -2891,7 +2891,7 @@ Activate by holding the key for the character you want to add an accent to, then
     <comment>File Locksmith is the name of the utility</comment>
   </data>
   <data name="GPO_IsSettingForced.Title" xml:space="preserve">
-    <value>The systems administrator is forcing this setting.</value>
+    <value>The system administrator is forcing this setting.</value>
   </data>
   <data name="Hosts_AdditionalLinesPosition.Description" xml:space="preserve">
     <value>Additional content includes the file header and lines that can't parse</value>
