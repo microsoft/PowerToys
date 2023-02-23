@@ -63,7 +63,7 @@ Note: The notification about new major versions is always displayed.
 <!-- This policy is implemented for later usage (PT v1.0 and later) and therefore inactive. (To make it working please update `src/runner/UpdateUtils.cpp`)
 #### Disable automatic update checks
 
-This policy allows you to disable automatic update checks running in the background. (The manual check in PT Settings is not affected from this setting.)
+This policy allows you to disable automatic update checks running in the background. (The manual check in PT Settings is not affected by this policy.)
 
 If enabled, the automatic update checks are disabled.
 
