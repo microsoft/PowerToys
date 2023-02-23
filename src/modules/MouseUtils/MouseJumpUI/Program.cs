@@ -4,6 +4,7 @@
 
 using System;
 using System.Windows.Forms;
+using MouseJumpUI.Helpers;
 
 namespace MouseJumpUI;
 
@@ -22,13 +23,14 @@ internal static class Program
         if (PowerToys.GPOWrapper.GPOWrapper.GetConfiguredMouseJumpEnabledValue() == PowerToys.GPOWrapper.GpoRuleConfigured.Disabled)
         {
             // TODO : Log message
-            // Logger.LogWarning("Tried to start with a GPO policy setting the utility to always be disabled. Please contact your systems administrator.");
+            Logger.LogWarning("Tried to start with a GPO policy setting the utility to always be disabled. Please contact your systems administrator.");
             return;
         }
 
         if (Application.HighDpiMode != HighDpiMode.PerMonitorV2)
         {
-            throw new InvalidOperationException("high dpi mode is not set to PerMonitorV2");
+            Logger.LogError("High dpi mode is not set to PerMonitorV2.");
+            return;
         }
 
         Application.Run(new MainForm());

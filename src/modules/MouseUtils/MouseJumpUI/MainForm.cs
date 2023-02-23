@@ -8,7 +8,6 @@ using System.Drawing.Imaging;
 using System.Linq;
 using System.Windows.Forms;
 using MouseJumpUI.Helpers;
-using NLog;
 
 namespace MouseJumpUI;
 
@@ -16,17 +15,8 @@ internal partial class MainForm : Form
 {
     public MainForm()
     {
-        this.Logger = LogManager.CreateNullLogger();
-
-        // var factory = LogManager.LoadConfiguration(".\\NLog.config");
-        // this.Logger = factory.GetCurrentClassLogger();
         this.InitializeComponent();
         this.ShowThumbnail();
-    }
-
-    private Logger Logger
-    {
-        get;
     }
 
     private void MainForm_Load(object sender, EventArgs e)
@@ -55,16 +45,8 @@ internal partial class MainForm : Form
 
     private void Thumbnail_Click(object sender, EventArgs e)
     {
-        var logger = this.Logger;
-
-        logger.Debug("-----------");
-        logger.Debug(nameof(MainForm.Thumbnail_Click));
-        logger.Debug("-----------");
-
         var mouseEventArgs = (MouseEventArgs)e;
-        logger.Debug($"mouse event args = ");
-        logger.Debug($"    button   = {mouseEventArgs.Button} ");
-        logger.Debug($"    location = {mouseEventArgs.Location} ");
+        Logger.LogInfo($"Reporting mouse event args \n\tbutton   = {mouseEventArgs.Button}\n\tlocation = {mouseEventArgs.Location} ");
 
         if (mouseEventArgs.Button == MouseButtons.Left)
         {
@@ -72,8 +54,7 @@ internal partial class MainForm : Form
             var desktopBounds = LayoutHelper.CombineRegions(
                 Screen.AllScreens.Select(
                     screen => screen.Bounds).ToList());
-            logger.Debug(
-                $"desktop bounds  = {desktopBounds}");
+            Logger.LogInfo($"desktop bounds  = {desktopBounds}");
 
             var mouseEvent = (MouseEventArgs)e;
 
@@ -81,8 +62,7 @@ internal partial class MainForm : Form
                 originalBounds: Thumbnail.Bounds,
                 originalLocation: new Point(mouseEvent.X, mouseEvent.Y),
                 scaledBounds: desktopBounds);
-            logger.Debug(
-                $"scaled location = {scaledLocation}");
+            Logger.LogInfo($"scaled location = {scaledLocation}");
 
             // set the new cursor position *twice* - the cursor sometimes end up in
             // the wrong place if we try to cross the dead space between non-aligned
@@ -110,12 +90,6 @@ internal partial class MainForm : Form
 
     public void ShowThumbnail()
     {
-        var logger = this.Logger;
-
-        logger.Debug("-----------");
-        logger.Debug(nameof(MainForm.ShowThumbnail));
-        logger.Debug("-----------");
-
         if (this.Thumbnail.Image != null)
         {
             var tmp = this.Thumbnail.Image;
@@ -127,25 +101,22 @@ internal partial class MainForm : Form
         foreach (var i in Enumerable.Range(0, screens.Length))
         {
             var screen = screens[i];
-            logger.Debug($"screen[{i}] = \"{screen.DeviceName}\"");
-            logger.Debug($"    primary      = {screen.Primary}");
-            logger.Debug($"    bounds       = {screen.Bounds}");
-            logger.Debug($"    working area = {screen.WorkingArea}");
+            Logger.LogInfo($"screen[{i}] = \"{screen.DeviceName}\"\n\tprimary      = {screen.Primary}\n\tbounds       = {screen.Bounds}\n\tworking area = {screen.WorkingArea}");
         }
 
         var desktopBounds = LayoutHelper.CombineRegions(
             screens.Select(screen => screen.Bounds).ToList());
-        logger.Debug(
+        Logger.LogInfo(
             $"desktop bounds  = {desktopBounds}");
 
         var activatedPosition = Cursor.Position;
-        logger.Debug(
+        Logger.LogInfo(
             $"activated position = {activatedPosition}");
 
         var previewImagePadding = new Size(
             panel1.Padding.Left + panel1.Padding.Right,
             panel1.Padding.Top + panel1.Padding.Bottom);
-        logger.Debug(
+        Logger.LogInfo(
             $"image padding   = {previewImagePadding}");
 
         var maxThumbnailSize = new Size(1600, 1200);
@@ -155,7 +126,7 @@ internal partial class MainForm : Form
             activatedMonitorBounds: Screen.FromPoint(activatedPosition).Bounds,
             maximumThumbnailImageSize: maxThumbnailSize,
             thumbnailImagePadding: previewImagePadding);
-        logger.Debug(
+        Logger.LogInfo(
             $"form bounds     = {formBounds}");
 
         // take a screenshot of the entire desktop
