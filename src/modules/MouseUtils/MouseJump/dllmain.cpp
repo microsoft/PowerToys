@@ -213,6 +213,8 @@ public:
             PowerToysSettings::PowerToyValues values =
                 PowerToysSettings::PowerToyValues::from_json_string(config, get_key());
 
+            parse_hotkey(values);
+
             values.save_to_settings_file();
         }
         catch (std::exception&)
