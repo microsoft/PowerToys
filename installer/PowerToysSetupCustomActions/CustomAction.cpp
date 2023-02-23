@@ -1036,6 +1036,7 @@ const std::wstring PTInteropConsumers[] =
     L"modules\\FileLocksmith",
     L"modules\\Hosts",
     L"modules\\FileExplorerPreview",
+    L"modules\\MouseUtils\\MouseJumpUI",
 };
 
 UINT __stdcall CreatePTInteropHardlinksCA(MSIHANDLE hInstall)
