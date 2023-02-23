@@ -83,6 +83,7 @@ internal partial class MainForm : Form
             // https://github.com/mikeclayton/FancyMouse/pull/3
             Cursor.Position = scaledLocation;
             Cursor.Position = scaledLocation;
+            Microsoft.PowerToys.Telemetry.PowerToysTelemetry.Log.WriteEvent(new Telemetry.MouseJumpTeleportCursorEvent());
         }
 
         this.Close();
@@ -168,6 +169,7 @@ internal partial class MainForm : Form
         this.Thumbnail.Image = screenshot;
 
         this.Show();
+        Microsoft.PowerToys.Telemetry.PowerToysTelemetry.Log.WriteEvent(new Telemetry.MouseJumpTeleportCursorEvent());
 
         // we have to activate the form to make sure the deactivate event fires
         this.Activate();

@@ -28,11 +28,11 @@ void Trace::EnableJumpTool(const bool enabled) noexcept
         TraceLoggingBoolean(enabled, "Enabled"));
 }
 
-void Trace::JumpToolActivated() noexcept
+void Trace::InvokeJumpTool() noexcept
 {
     TraceLoggingWrite(
         g_hProvider,
-        "MouseJump_JumpToolActivated",
+        "MouseJump_InvokeJumpTool",
         ProjectTelemetryPrivacyDataTag(ProjectTelemetryTag_ProductAndServicePerformance),
         TraceLoggingKeyword(PROJECT_KEYWORD_MEASURE));
 }

@@ -8,5 +8,5 @@ public:
 
     static void EnableJumpTool(const bool enabled) noexcept;
 
-    static void JumpToolActivated() noexcept;
+    static void InvokeJumpTool() noexcept;
 };

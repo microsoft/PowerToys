@@ -253,6 +253,7 @@ public:
         if (m_enabled)
         {
             Logger::trace(L"MouseJump hotkey pressed");
+            Trace::InvokeJumpTool();
             if (is_process_running())
             {
                 terminate_process();
