@@ -153,6 +153,14 @@
                         <ToggleSwitch x:Uid="ToggleSwitch" IsOn="{x:Bind ViewModel.TabSelectsContextButtons, Mode=TwoWay}" />
                     </controls:SettingsCard>
 
+                    <labs:SettingsCard
+                        x:Uid="PowerLauncher_ShouldUsePinyin"
+                        HeaderIcon="{ui:FontIcon FontFamily={StaticResource SymbolThemeFontFamily}, Glyph=&#xE98A;}">
+                        <ToggleSwitch
+                            x:Uid="ToggleSwitch"
+                            IsOn="{x:Bind ViewModel.ShouldUsePinyin, Mode=TwoWay}" />
+                    </labs:SettingsCard>
+
                     <controls:SettingsCard x:Uid="PowerLauncher_GenerateThumbnailsFromFiles">
                         <ToggleSwitch x:Uid="ToggleSwitch" IsOn="{x:Bind ViewModel.GenerateThumbnailsFromFiles, Mode=TwoWay}" />
                     </controls:SettingsCard>

@@ -3570,6 +3570,12 @@ Activate by holding the key for the character you want to add an accent to, then
   <data name="GPO_AutoDownloadUpdatesIsDisabled.Title" xml:space="preserve">
     <value>The system administrator has disabled the automatic download of updates.</value>
   </data>
+  <data name="PowerLauncher_ShouldUsePinyin.Description" xml:space="preserve">
+    <value>Show chinese characters</value>
+  </data>
+  <data name="PowerLauncher_ShouldUsePinyin.Header" xml:space="preserve">
+    <value>Use pinyin</value>
+  </data>
   <data name="Hosts_Toggle_LoopbackDuplicates.Description" xml:space="preserve">
     <value>127.0.0.1, ::1, ...</value>
     <comment>"127.0.0.1 and ::1" are well known loopback addresses, do not loc</comment>

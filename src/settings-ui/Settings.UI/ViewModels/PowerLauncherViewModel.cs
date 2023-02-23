@@ -580,6 +580,23 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             }
         }
 
+        public bool ShouldUsePinyin
+        {
+            get
+            {
+                return settings.Properties.ShouldUsePinyin;
+            }
+
+            set
+            {
+                if (settings.Properties.ShouldUsePinyin != value)
+                {
+                    settings.Properties.ShouldUsePinyin = value;
+                    UpdateSettings();
+                }
+            }
+        }
+
         private ObservableCollection<PowerLauncherPluginViewModel> _plugins;
 
         public ObservableCollection<PowerLauncherPluginViewModel> Plugins
