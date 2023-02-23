@@ -18,6 +18,14 @@ internal static class Program
         // To customize application configuration such as set high DPI settings or default font,
         // see https://aka.ms/applicationconfiguration.
         ApplicationConfiguration.Initialize();
+
+        if (PowerToys.GPOWrapper.GPOWrapper.GetConfiguredMouseJumpEnabledValue() == PowerToys.GPOWrapper.GpoRuleConfigured.Disabled)
+        {
+            // TODO : Log message
+            // Logger.LogWarning("Tried to start with a GPO policy setting the utility to always be disabled. Please contact your systems administrator.");
+            return;
+        }
+
         if (Application.HighDpiMode != HighDpiMode.PerMonitorV2)
         {
             throw new InvalidOperationException("high dpi mode is not set to PerMonitorV2");

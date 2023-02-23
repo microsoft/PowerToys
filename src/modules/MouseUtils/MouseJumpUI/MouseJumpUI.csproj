@@ -3,7 +3,8 @@
   <PropertyGroup>
     <AssemblyTitle>PowerToys.MouseJumpUI</AssemblyTitle>
     <AssemblyDescription>PowerToys MouseJumpUI</AssemblyDescription>
-    <OutputPath>$(SolutionDir)$(Platform)\$(Configuration)\modules\MouseUtils\MouseJumpUI</OutputPath>
+    <Version>$(Version).0</Version>
+    <OutputPath>..\..\..\..\$(Platform)\$(Configuration)\modules\MouseUtils\MouseJumpUI</OutputPath>
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
     <AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
     <GenerateSatelliteAssembliesForCore>true</GenerateSatelliteAssembliesForCore>
@@ -32,7 +33,16 @@
     <AssemblyName>PowerToys.MouseJumpUI</AssemblyName>
     <TargetFramework>net7.0-windows10.0.19041.0</TargetFramework>
     <ProjectTypeGuids>{60dc8134-eba5-43b8-bcc9-bb4bc16c2548};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
+    <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
   </PropertyGroup>
+
+    <!-- See https://learn.microsoft.com/windows/apps/develop/platform/csharp-winrt/net-projection-from-cppwinrt-component for more info -->
+  <PropertyGroup>
+    <CsWinRTIncludes>PowerToys.GPOWrapper</CsWinRTIncludes>
+    <CsWinRTGeneratedFilesDir>$(OutDir)</CsWinRTGeneratedFilesDir>
+    <ErrorOnDuplicatePublishOutputFiles>false</ErrorOnDuplicatePublishOutputFiles>
+  </PropertyGroup>
+
   <PropertyGroup Condition="'$(Configuration)' == 'Debug'">
     <DebugSymbols>true</DebugSymbols>
     <DefineConstants>DEBUG;TRACE</DefineConstants>
@@ -52,5 +62,9 @@
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="NLog" />
+    <PackageReference Include="Microsoft.Windows.CsWinRT" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\common\GPOWrapper\GPOWrapper.vcxproj" />
   </ItemGroup>
 </Project>
