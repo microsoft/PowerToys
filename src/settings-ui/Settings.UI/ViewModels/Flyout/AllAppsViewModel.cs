@@ -93,6 +93,11 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 FlyoutMenuItems.Add(new FlyoutMenuItem() { Label = resourceLoader.GetString("MouseUtils_MousePointerCrosshairs/Header"), IsEnabled = generalSettingsConfig.Enabled.MousePointerCrosshairs, Tag = "MousePointerCrosshairs", Icon = "ms-appx:///Assets/FluentIcons/FluentIconsMouseCrosshairs.png", EnabledChangedCallback = EnabledChangedOnUI });
             }
 
+            if ((gpo = GPOWrapper.GetConfiguredPastePlainEnabledValue()) != GpoRuleConfigured.Disabled && gpo != GpoRuleConfigured.Enabled)
+            {
+                FlyoutMenuItems.Add(new FlyoutMenuItem() { Label = resourceLoader.GetString("PastePlain/ModuleTitle"), IsEnabled = generalSettingsConfig.Enabled.PastePlain, Tag = "PastePlain", Icon = "ms-appx:///Assets/FluentIcons/FluentIconsPastePlain.png", EnabledChangedCallback = EnabledChangedOnUI });
+            }
+
             if ((gpo = GPOWrapper.GetConfiguredPowerRenameEnabledValue()) != GpoRuleConfigured.Disabled && gpo != GpoRuleConfigured.Enabled)
             {
                 FlyoutMenuItems.Add(new FlyoutMenuItem() { Label = resourceLoader.GetString("PowerRename/ModuleTitle"), IsEnabled = generalSettingsConfig.Enabled.PowerRename, Tag = "PowerRename", Icon = "ms-appx:///Assets/FluentIcons/FluentIconsPowerRename.png", EnabledChangedCallback = EnabledChangedOnUI });
@@ -155,6 +160,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                     case "MouseHighlighter": item.IsEnabled = generalSettingsConfig.Enabled.MouseHighlighter; break;
                     case "MouseJump": item.IsEnabled = generalSettingsConfig.Enabled.MouseJump; break;
                     case "MousePointerCrosshairs": item.IsEnabled = generalSettingsConfig.Enabled.MousePointerCrosshairs; break;
+                    case "PastePlain": item.IsEnabled = generalSettingsConfig.Enabled.PastePlain; break;
                     case "PowerRename": item.IsEnabled = generalSettingsConfig.Enabled.PowerRename; break;
                     case "PowerLauncher": item.IsEnabled = generalSettingsConfig.Enabled.PowerLauncher; break;
                     case "PowerAccent": item.IsEnabled = generalSettingsConfig.Enabled.PowerAccent; break;

@@ -74,6 +74,8 @@ namespace Microsoft.PowerToys.Run.Plugin.Calculator.UnitTests
                 new object[] { "e*2", 5.43656365691809M },
                 new object[] { "ln(3)",  1.09861228866810M },
                 new object[] { "log(3)", 0.47712125471966M },
+                new object[] { "log2(3)", 1.58496250072116M },
+                new object[] { "log10(3)", 0.47712125471966M },
                 new object[] { "ln(e)", 1M },
                 new object[] { "cosh(0)", 1M },
             };
@@ -166,6 +168,10 @@ namespace Microsoft.PowerToys.Run.Plugin.Calculator.UnitTests
         [DataTestMethod]
         [DataRow("log(3)", true)]
         [DataRow("ln(3)", true)]
+        [DataRow("log2(3)", true)]
+        [DataRow("log10(3)", true)]
+        [DataRow("log2", false)]
+        [DataRow("log10", false)]
         [DataRow("log", false)]
         [DataRow("ln", false)]
         [DataRow("ceil(2 * (pi ^ 2))", true)]

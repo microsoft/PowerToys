@@ -31,3 +31,11 @@ If you enable this setting, the utility will be always enabled and the user won'
 If you disable this setting, the utility will be always disabled and the user won't be able to enable it.
 
 If you don't configure this setting, users are able to disable or enable the utility.
+
+### Allow experimentation
+
+This policy configures whether PowerToys experimentation is allowed. With experimentation allowed the user sees the new features being experimented if it gets selected as part of the test group. (Experimentation will only happen on Windows Insider builds.)
+
+If this setting is not configured or enabled, the user can control experimentation in the PowerToys settings menu.
+
+If this setting is disabled, experimentation is not allowed.
