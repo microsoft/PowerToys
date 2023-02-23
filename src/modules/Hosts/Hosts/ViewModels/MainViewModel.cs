@@ -14,6 +14,7 @@ using CommunityToolkit.Mvvm.Input;
 using CommunityToolkit.WinUI;
 using Hosts.Helpers;
 using Hosts.Models;
+using Hosts.Settings;
 using Microsoft.UI.Dispatching;
 
 namespace Hosts.ViewModels
@@ -21,7 +22,16 @@ namespace Hosts.ViewModels
     public partial class MainViewModel : ObservableObject, IDisposable
     {
         private readonly IHostsService _hostsService;
+        private readonly IUserSettings _userSettings;
         private readonly DispatcherQueue _dispatcherQueue = DispatcherQueue.GetForCurrentThread();
+        private readonly string[] _loopbackAddresses =
+        {
+            "127.0.0.1",
+            "::1",
+            "0:0:0:0:0:0:0:1",
+        };
+
+        private bool _initialized;
         private bool _disposed;
 
         [ObservableProperty]
@@ -69,13 +79,22 @@ namespace Hosts.ViewModels
 
         public ICommand OpenHostsFileCommand => new RelayCommand(OpenHostsFile);
 
-        public MainViewModel(IHostsService hostService)
+        public MainViewModel(IHostsService hostService, IUserSettings userSettings)
         {
             _hostsService = hostService;
+            _userSettings = userSettings;
 
             _hostsService.FileChanged += (s, e) =>
             {
                 _dispatcherQueue.TryEnqueue(() => FileChanged = true);
+            };
+
+            _userSettings.LoopbackDuplicatesChanged += (s, e) =>
+            {
+                if (_initialized)
+                {
+                    ReadHosts();
+                }
             };
         }
 
@@ -127,8 +146,13 @@ namespace Hosts.ViewModels
 
         public void ReadHosts()
         {
-            FileChanged = false;
-            IsLoading = true;
+            _initialized = false;
+
+            _dispatcherQueue.TryEnqueue(() =>
+            {
+                FileChanged = false;
+                IsLoading = true;
+            });
 
             Task.Run(async () =>
             {
@@ -149,6 +173,7 @@ namespace Hosts.ViewModels
                 });
 
                 FindDuplicates();
+                _initialized = true;
             });
         }
 
@@ -229,12 +254,22 @@ namespace Hosts.ViewModels
         {
             foreach (var entry in _entries)
             {
+                if (!_userSettings.LoopbackDuplicates && _loopbackAddresses.Contains(entry.Address))
+                {
+                    continue;
+                }
+
                 SetDuplicate(entry);
             }
         }
 
         private void FindDuplicates(string address, IEnumerable<string> hosts)
         {
+            if (!_userSettings.LoopbackDuplicates && _loopbackAddresses.Contains(address))
+            {
+                return;
+            }
+
             var entries = _entries.Where(e =>
                 string.Equals(e.Address, address, StringComparison.InvariantCultureIgnoreCase)
                 || hosts.Intersect(e.SplittedHosts, StringComparer.InvariantCultureIgnoreCase).Any());
@@ -249,12 +284,21 @@ namespace Hosts.ViewModels
         {
             var hosts = entry.SplittedHosts;
 
-            var duplicate = _entries.FirstOrDefault(e =>
-                e != entry
+            var duplicate = _entries.FirstOrDefault(e => e != entry
+                && e.Type == entry.Type
                 && (string.Equals(e.Address, entry.Address, StringComparison.InvariantCultureIgnoreCase)
-                || hosts.Intersect(e.SplittedHosts, StringComparer.InvariantCultureIgnoreCase).Any())) != null;
+                    || hosts.Intersect(e.SplittedHosts, StringComparer.InvariantCultureIgnoreCase).Any())) != null;
 
-            _dispatcherQueue.TryEnqueue(DispatcherQueuePriority.Low, () => entry.Duplicate = duplicate);
+            _dispatcherQueue.TryEnqueue(() =>
+            {
+                entry.Duplicate = duplicate;
+
+                // HACK: should use https://learn.microsoft.com/en-us/windows/communitytoolkit/helpers/advancedcollectionview for a better filters handling
+                if (_showOnlyDuplicates)
+                {
+                    OnPropertyChanged(nameof(Entries));
+                }
+            });
         }
 
         private ObservableCollection<Entry> GetFilteredEntries()
