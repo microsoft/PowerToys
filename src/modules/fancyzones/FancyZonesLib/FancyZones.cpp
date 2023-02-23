@@ -353,11 +353,7 @@ bool FancyZones::MoveToAppLastZone(HWND window, HMONITOR monitor) noexcept
             workArea = workAreas.at(monitor).get();
             if (workArea)
             {
-                auto guidStr = FancyZonesUtils::GuidToString(workArea->GetLayoutId());
-                if (guidStr.has_value())
-                {
-                    indexes = AppZoneHistory::instance().GetAppLastZoneIndexSet(window, workArea->UniqueId(), guidStr.value());
-                }
+                indexes = workArea->GetWindowZoneIndexes(window);
             }
         }
         else
