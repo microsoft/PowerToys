@@ -95,7 +95,7 @@
 
                     <labs:SettingsCard
                         x:Uid="Awake_DisplaySettingsCard"
-                        HeaderIcon="{ui:FontIcon FontFamily={StaticResource SymbolThemeFontFamily}, Glyph=&#xE7FB;}"
+                        HeaderIcon="{ui:FontIcon FontFamily={StaticResource SymbolThemeFontFamily}, Glyph=&#xE7F4;}"
                         IsEnabled="{x:Bind ViewModel.IsScreenConfigurationPossibleEnabled, Mode=OneWay}">
                         <ToggleSwitch
                             IsOn="{x:Bind ViewModel.KeepDisplayOn, Mode=TwoWay}" />

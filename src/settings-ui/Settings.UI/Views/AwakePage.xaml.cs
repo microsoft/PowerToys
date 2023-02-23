@@ -66,6 +66,9 @@ namespace Microsoft.PowerToys.Settings.UI.Views
         /// <summary>
         /// Triggered whenever a view model property changes. This is done in addition to the baked-in view model changes.
         /// </summary>
+        /// <remarks>
+        /// TODO: The logic here needs to be optimized since doing string comparison on values is not ideal.
+        /// </remarks>
         /// <param name="sender">Sender of the change.</param>
         /// <param name="e">Property parameter.</param>
         private void ViewModel_PropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
@@ -74,17 +77,14 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             {
                 if (e.PropertyName == "IsEnabled")
                 {
-                    if (ViewModel.GeneralSettings != null)
+                    if (ViewModel.IsEnabled != _generalSettingsRepository.SettingsConfig.Enabled.Awake)
                     {
-                        var current = new OutGoingGeneralSettings(_generalSettingsRepository.SettingsConfig).ToString();
-                        var outgoing = new OutGoingGeneralSettings(ViewModel.GeneralSettings).ToString();
+                        _generalSettingsRepository.SettingsConfig.Enabled.Awake = ViewModel.IsEnabled;
 
-                        if (!current.Equals(outgoing))
-                        {
-                            Logger.LogInfo($"Current setting string: {current}");
-                            Logger.LogInfo($"Pending setting string: {outgoing}");
-                            _sendConfigMsg(outgoing);
-                        }
+                        var generalSettingsMessage = new OutGoingGeneralSettings(_generalSettingsRepository.SettingsConfig).ToString();
+
+                        Logger.LogInfo($"Saved general settings from Awake page.");
+                        _sendConfigMsg(generalSettingsMessage);
                     }
                 }
                 else
@@ -95,18 +95,15 @@ namespace Microsoft.PowerToys.Settings.UI.Views
                         SndModuleSettings<SndAwakeSettings> csIpcMessage = new(currentSettings);
 
                         SndAwakeSettings outSettings = new(ViewModel.ModuleSettings);
-                        SndModuleSettings<SndAwakeSettings> ipcMessage = new(outSettings);
+                        SndModuleSettings<SndAwakeSettings> outIpcMessage = new(outSettings);
 
-                        string currentMessage = csIpcMessage.ToJsonString();
-                        string targetMessage = ipcMessage.ToJsonString();
+                        string csMessage = csIpcMessage.ToJsonString();
+                        string outMessage = outIpcMessage.ToJsonString();
 
-                        if (!currentMessage.Equals(targetMessage))
+                        if (!csMessage.Equals(outMessage))
                         {
-                            Logger.LogInfo($"Current Awake setting string: {currentMessage}");
-                            Logger.LogInfo($"Pending Awake setting string: {targetMessage}");
-
-                            Logger.LogInfo($"Sent config JSON: {targetMessage}");
-                            _sendConfigMsg(targetMessage);
+                            Logger.LogInfo($"Saved Awake settings from Awake page.");
+                            _sendConfigMsg(outMessage);
                         }
                     }
                 }
@@ -138,8 +135,8 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             {
                 if (generalSettings != null)
                 {
-                    ViewModel.GeneralSettings = generalSettings;
-                    ViewModel.ModuleSettings = awakeSettings;
+                    ViewModel.IsEnabled = generalSettings.Enabled.Awake;
+                    ViewModel.ModuleSettings = (AwakeSettings)awakeSettings.Clone();
 
                     UpdateEnabledState(generalSettings.Enabled.Awake);
                 }
@@ -157,7 +154,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
         /// <summary>
         /// Updates the tool enablement state.
         /// </summary>
-        /// <param name="recommendedState">The state that is recommended for the tool, but can be overriden if a GPO policy is in place.</param>
+        /// <param name="recommendedState">The state that is recommended for the tool, but can be overridden if a GPO policy is in place.</param>
         private void UpdateEnabledState(bool recommendedState)
         {
             var enabledGpoRuleConfiguration = GPOWrapper.GetConfiguredAwakeEnabledValue();
@@ -180,8 +177,6 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             {
                 _moduleSettingsRepository.ReloadSettings();
                 LoadSettings(_generalSettingsRepository, _moduleSettingsRepository);
-
-                Logger.LogInfo("View model changed - tracked inside the page.");
             });
         }
 

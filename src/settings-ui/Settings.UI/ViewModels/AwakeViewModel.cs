@@ -12,17 +12,8 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 {
     public class AwakeViewModel : Observable
     {
-        public GeneralSettings GeneralSettings
+        public AwakeViewModel()
         {
-            get => _generalSettings;
-            set
-            {
-                if (_generalSettings != value)
-                {
-                    _generalSettings = value;
-                    RefreshEnabledState();
-                }
-            }
         }
 
         public AwakeSettings ModuleSettings
@@ -39,16 +30,12 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             }
         }
 
-        public AwakeViewModel()
-        {
-        }
-
         public bool IsEnabled
         {
-            get => GeneralSettings.Enabled.Awake;
+            get => _isEnabled;
             set
             {
-                if (GeneralSettings.Enabled.Awake != value)
+                if (_isEnabled != value)
                 {
                     if (_enabledStateIsGPOConfigured)
                     {
@@ -56,7 +43,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                         return;
                     }
 
-                    GeneralSettings.Enabled.Awake = value;
+                    _isEnabled = value;
 
                     RefreshEnabledState();
 
@@ -199,7 +186,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         }
 
         private bool _enabledStateIsGPOConfigured;
-        private GeneralSettings _generalSettings;
         private AwakeSettings _moduleSettings;
+        private bool _isEnabled;
     }
 }
