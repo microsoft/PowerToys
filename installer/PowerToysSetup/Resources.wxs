@@ -199,7 +199,7 @@
           Id="PDFPreviewHandler_$(var.IdSafeLanguage)_Component"
           Directory="Resource$(var.IdSafeLanguage)FileExplorerPreviewInstallFolder"
           Guid="$(var.CompGUIDPrefix)06">
-        <RegistryKey Root="H$(var.RegistryScope)KCU" Key="Software\Classes\powertoys\components">
+        <RegistryKey Root="$(var.RegistryScope)" Key="Software\Classes\powertoys\components">
           <RegistryValue Type="string" Name="PDFPreviewHandler_$(var.IdSafeLanguage)_Component" Value="" KeyPath="yes"/>
         </RegistryKey>
         <File Id="PDFPreviewHandler_$(var.IdSafeLanguage)_File" Source="$(var.BinDir)modules\FileExplorerPreview\$(var.Language)\PowerToys.PdfPreviewHandler.resources.dll" />
