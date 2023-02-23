@@ -32,16 +32,16 @@ namespace FancyZonesUnitTests
             json::JsonArray zonesArray{};
             {
                 json::JsonObject zone{};
-                zone.SetNamedValue(NonLocalizable::CustomLayoutsIds::XID, json::value(0));
-                zone.SetNamedValue(NonLocalizable::CustomLayoutsIds::YID, json::value(0));
+                zone.SetNamedValue(NonLocalizable::CustomLayoutsIds::XAxisID, json::value(0));
+                zone.SetNamedValue(NonLocalizable::CustomLayoutsIds::YAxisID, json::value(0));
                 zone.SetNamedValue(NonLocalizable::CustomLayoutsIds::WidthID, json::value(1140));
                 zone.SetNamedValue(NonLocalizable::CustomLayoutsIds::HeightID, json::value(1040));
                 zonesArray.Append(zone);
             }
             {
                 json::JsonObject zone{};
-                zone.SetNamedValue(NonLocalizable::CustomLayoutsIds::XID, json::value(1140));
-                zone.SetNamedValue(NonLocalizable::CustomLayoutsIds::YID, json::value(649));
+                zone.SetNamedValue(NonLocalizable::CustomLayoutsIds::XAxisID, json::value(1140));
+                zone.SetNamedValue(NonLocalizable::CustomLayoutsIds::YAxisID, json::value(649));
                 zone.SetNamedValue(NonLocalizable::CustomLayoutsIds::WidthID, json::value(780));
                 zone.SetNamedValue(NonLocalizable::CustomLayoutsIds::HeightID, json::value(391));
                 zonesArray.Append(zone);

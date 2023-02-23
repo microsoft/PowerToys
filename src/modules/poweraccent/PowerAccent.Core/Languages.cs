@@ -53,7 +53,7 @@ namespace PowerAccent.Core
                 Language.CUR => GetDefaultLetterKeyCUR(letter), // Currency
                 Language.CY => GetDefaultLetterKeyCY(letter), // Welsh
                 Language.CZ => GetDefaultLetterKeyCZ(letter), // Czech
-                Language.GA => GetDefaultLetterKeyGA(letter), // Gaeilge (Irish Gaelic)
+                Language.GA => GetDefaultLetterKeyGA(letter), // Gaeilge (Irish)
                 Language.GD => GetDefaultLetterKeyGD(letter), // Gàidhlig (Scottish Gaelic)
                 Language.DE => GetDefaultLetterKeyDE(letter), // German
                 Language.EST => GetDefaultLetterKeyEST(letter), // Estonian

@@ -40,7 +40,6 @@ ALPHATYPE
 Altdown
 alwaysontop
 amd
-AMF
 AModifier
 AMPROPERTY
 AMPROPSETID
@@ -88,7 +87,6 @@ ARPPRODUCTICON
 ARRAYSIZE
 arsinh
 artanh
-Artsakh
 asdf
 AShortcut
 ASingle
@@ -177,9 +175,11 @@ buildtask
 buildtransitive
 Burkina
 Buryatia
+BUTTONUP
 BValue
 BYPOSITION
 bytearray
+Cabo
 Caiguna
 CALG
 callbackptr
@@ -206,7 +206,6 @@ CHILDACTIVATE
 CHILDWINDOW
 Choibalsan
 chrdavis
-chromaticities
 Chrzan
 cht
 Chukotka
@@ -393,7 +392,6 @@ Deondre
 depersist
 deprioritized
 depsfileslistspath
-depsjsonpath
 deref
 DESKTOPABSOLUTEEDITING
 DESKTOPABSOLUTEPARSING
@@ -403,9 +401,9 @@ deu
 devblogs
 devdocs
 devenum
+devmgmt
 DEVMON
 devpkey
-devmgmt
 DEVSOURCE
 DIIRFLAG
 dimm
@@ -654,8 +652,8 @@ HCRYPTHASH
 HCRYPTPROV
 hcwhite
 hdc
-hdwwiz
 hdrop
+hdwwiz
 HEB
 Heiko
 Helpline
@@ -828,6 +826,7 @@ Ittoqqortoormiit
 IUI
 IUnknown
 ivirtualdesktopmanager
+Ivoire
 IWbem
 IWIC
 iwr
@@ -931,7 +930,6 @@ logconsole
 logfile
 LOGFONT
 LOGFONTW
-LOGMSG
 logon
 LOGPIXELSX
 LOn
@@ -1388,8 +1386,8 @@ prevpane
 prgms
 pri
 Primorsky
-printmanagement
 PRINTCLIENT
+printmanagement
 prm
 proactively
 PROCESSKEY
@@ -1694,8 +1692,8 @@ spam
 spdisp
 spdlog
 spdo
-spec'ing
 specialfolder
+spec'ing
 spesi
 splitwstring
 spsi
@@ -2004,7 +2002,7 @@ WANTPALM
 wbem
 wbemuuid
 WBounds
-wca
+Wca
 wcautil
 WCE
 wcex
@@ -2135,13 +2133,14 @@ WVC
 Wwan
 Wwanpp
 XAttribute
+XAxis
 Xbox
 XBUTTON
 XBUTTONDBLCLK
 XBUTTONDOWN
 XBUTTONUP
-xcopy
 XControl
+xcopy
 XDocument
 XElement
 XFile
@@ -2155,6 +2154,7 @@ xsi
 XStr
 XVIRTUALSCREEN
 Yamalia
+YAxis
 YIncrement
 yinle
 yinwang

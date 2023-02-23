@@ -52,6 +52,9 @@ namespace Hosts.ViewModels
         [ObservableProperty]
         private string _additionalLines;
 
+        [ObservableProperty]
+        private bool _isLoading;
+
         private ObservableCollection<Entry> _entries;
 
         public ObservableCollection<Entry> Entries => _filtered || _showOnlyDuplicates ? GetFilteredEntries() : _entries;
@@ -125,6 +128,7 @@ namespace Hosts.ViewModels
         public void ReadHosts()
         {
             FileChanged = false;
+            IsLoading = true;
 
             Task.Run(async () =>
             {
@@ -141,8 +145,10 @@ namespace Hosts.ViewModels
 
                     _entries.CollectionChanged += Entries_CollectionChanged;
                     OnPropertyChanged(nameof(Entries));
-                    FindDuplicates();
+                    IsLoading = false;
                 });
+
+                FindDuplicates();
             });
         }
 
@@ -243,10 +249,12 @@ namespace Hosts.ViewModels
         {
             var hosts = entry.SplittedHosts;
 
-            entry.Duplicate = _entries.FirstOrDefault(e =>
+            var duplicate = _entries.FirstOrDefault(e =>
                 e != entry
                 && (string.Equals(e.Address, entry.Address, StringComparison.InvariantCultureIgnoreCase)
                 || hosts.Intersect(e.SplittedHosts, StringComparer.InvariantCultureIgnoreCase).Any())) != null;
+
+            _dispatcherQueue.TryEnqueue(DispatcherQueuePriority.Low, () => entry.Duplicate = duplicate);
         }
 
         private ObservableCollection<Entry> GetFilteredEntries()
