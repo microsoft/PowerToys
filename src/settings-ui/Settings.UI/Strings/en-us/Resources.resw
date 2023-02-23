@@ -2030,6 +2030,14 @@ From there, simply click on one of the supported files in the File Explorer and 
     <value>Draw crosshairs centered around the mouse pointer.</value>
     <comment>Mouse as in the hardware peripheral.</comment>
   </data>
+  <data name="Oobe_MouseUtils_MouseJump.Text" xml:space="preserve">
+    <value>Mouse Jump</value>
+    <comment>Mouse as in the hardware peripheral.</comment>
+  </data>
+  <data name="Oobe_MouseUtils_MouseJump_Description.Text" xml:space="preserve">
+    <value>Teleport the mouse pointer quickly to any screen.</value>
+    <comment>Mouse as in the hardware peripheral.</comment>
+  </data>
   <data name="Launch_Run.Content" xml:space="preserve">
     <value>Launch PowerToys Run</value>
   </data>
