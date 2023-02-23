@@ -140,6 +140,7 @@ Disable FZ and clear `app-zone-history.json` before starting. FancyZones should 
 
 ### Snapped window behavior
 - [ ] `Keep windows in their zones when the screen resolution changes` on, snap a window to a zone, change the screen resolution or scaling, verify window changed its size and position.
+- [ ] `Keep windows in their zones when the screen resolution changes` on, snap a window to a zone on the secondary monitor. Disconnect the secondary monitor (the window will be moved to the primary monitor). Reconnect the secondary monitor. Verify the window returned to its zone. 
 - [ ] `Keep windows in their zones when the screen resolution changes` off, snap a window to a zone, change the screen resolution or scaling, verify window didn't change its size and position.
 
 Enable `During zone layout changes, windows assigned to a zone will match new size/positions` and prepare layouts with 1 and 3 zones where zone size/positions are different.
@@ -149,12 +150,10 @@ Enable `During zone layout changes, windows assigned to a zone will match new si
 - [ ] Snap a window to zones 1-2, change the layout (the window will be snapped to zone 1), then return back to the previous layout, verify the window snapped to 1-2 zones.
 - [ ] Disable `During zone layout changes, windows assigned to a zone will match new size/positions`, snap window to zone 1, change layout, verify window didn't change its size/position
 
-Enable `Move newly created windows to their last known zone`, snap a window to a zone, close this window.
-- [ ] Reopen the window on the same monitor, verify it snapped to its zone.
-- [ ] Disable `Move newly created windows to the current active monitor`. Reopen the window on another monitor, verify it snapped to its zone on the monitor where it was snapped.
-- [ ] Snap the window of the same app to a zone on another monitor, close and reopen the window, verify it snapped to its zone on the active monitor.
-- [ ] Disable `Move newly created windows to their last known zone`, reopen the snapped window, verify it's opened in its default position or in the position where it was closed after unsnapping.
-
+Enable `Move newly created windows to their last known zone`.
+- [ ] Snap a window to the primary monitor, close and reopen the window. Verify it's snapped to its zone.
+- [ ] Snap a window to zones on the primary and secondary monitors. Close and reopen the app. Verify it's snapped to the zone on the active monitor.
+- [ ] Snap a window to the secondary monitor (use a different app or unsnap the window from the zone on the primary monitor), close and reopen the window. Verify it's snapped to its zone. 
 - [ ] Snap a window, turn off FancyZones, move that window, turn FZ on. Verify window returned to its zone.
 - [ ] Move unsnapped window to a secondary monitor, switch virtual desktop and return back. Verify window didn't change its position and size.
 - [ ] Snap a window, then resize it (it's still snapped, but doesn't fit the zone). Switch the virtual desktop and return back, verify window didn't change its size.
