@@ -539,7 +539,7 @@ void WorkArea::InitLayout(const FancyZonesDataTypes::WorkAreaId& parentUniqueId)
 
 void WorkArea::InitSnappedWindows()
 {
-    Logger::info(L"Init work area windows");
+    Logger::info(L"Init work area windows: {}", m_uniqueId.toString());
 
     for (const auto& window : VirtualDesktop::instance().GetWindowsFromCurrentDesktop())
     {

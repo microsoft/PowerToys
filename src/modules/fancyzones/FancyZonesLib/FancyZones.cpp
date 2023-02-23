@@ -37,6 +37,22 @@ enum class DisplayChangeType
     Initialization
 };
 
+constexpr wchar_t* DisplayChangeTypeName (const DisplayChangeType type){
+    switch (type)
+    {
+    case DisplayChangeType::WorkArea:
+        return L"WorkArea";
+    case DisplayChangeType::DisplayChange:
+        return L"DisplayChange";
+    case DisplayChangeType::VirtualDesktop:
+        return L"VirtualDesktop";
+    case DisplayChangeType::Initialization:
+        return L"Initialization";
+    default:
+        return L"";
+    }
+}
+
 // Non-localizable strings
 namespace NonLocalizable
 {
@@ -688,7 +704,7 @@ LRESULT FancyZones::WndProc(HWND window, UINT message, WPARAM wparam, LPARAM lpa
 
 void FancyZones::OnDisplayChange(DisplayChangeType changeType) noexcept
 {
-    Logger::info(L"Display changed, type: {}", changeType);
+    Logger::info(L"Display changed, type: {}", DisplayChangeTypeName(changeType));
 
     bool updateWindowsPositions = false;
 
