@@ -141,7 +141,7 @@ void WorkArea::MoveWindowIntoZoneByIndexSet(HWND window, const ZoneIndexSet& ind
 
     FancyZonesWindowUtils::SaveWindowSizeAndOrigin(window);
 
-    if (updatePosition)
+    if (updatePosition && IsWindowVisible(window))
     {
         const auto rect = m_layout->GetCombinedZonesRect(indexSet);
         if (rect.bottom - rect.top > 0 && rect.right - rect.left > 0)
@@ -543,22 +543,22 @@ void WorkArea::InitSnappedWindows()
 
     for (const auto& window : VirtualDesktop::instance().GetWindowsFromCurrentDesktop())
     {
-        auto zoneIndexSet = FancyZonesWindowProperties::RetrieveZoneIndexProperty(window);
-        if (zoneIndexSet.size() == 0)
+        auto indexes = FancyZonesWindowProperties::RetrieveZoneIndexProperty(window);
+        if (indexes.size() == 0)
         {
             continue;
         }
 
         if (!m_uniqueId.monitorId.monitor) // one work area across monitors
         {
-            MoveWindowIntoZoneByIndexSet(window, zoneIndexSet, false);
+            MoveWindowIntoZoneByIndexSet(window, indexes, false);
         }
         else
         {
-            const auto monitor = MonitorFromWindow(window, MONITOR_DEFAULTTONULL);
-            if (monitor && m_uniqueId.monitorId.monitor == monitor)
+            auto savedIndexes = GetWindowZoneIndexes(window);
+            if (savedIndexes == indexes)
             {
-                MoveWindowIntoZoneByIndexSet(window, zoneIndexSet, false);
+                MoveWindowIntoZoneByIndexSet(window, indexes, false);
             }
         }
     }
