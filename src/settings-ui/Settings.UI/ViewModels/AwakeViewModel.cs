@@ -4,82 +4,51 @@
 
 using System;
 using System.Runtime.CompilerServices;
-using global::PowerToys.GPOWrapper;
 using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.PowerToys.Settings.UI.Library.Helpers;
-using Microsoft.PowerToys.Settings.UI.Library.Interfaces;
 using Microsoft.PowerToys.Settings.UI.Library.Utilities;
 
 namespace Microsoft.PowerToys.Settings.UI.ViewModels
 {
     public class AwakeViewModel : Observable
     {
-        private GeneralSettings GeneralSettingsConfig { get; set; }
-
-        private ISettingsRepository<AwakeSettings> AwakeSettingsRepository { get; set; }
-
-        private AwakeSettings Settings { get; set; }
-
-        private Func<string, int> SendConfigMSG { get; }
-
-        public AwakeViewModel(ISettingsRepository<GeneralSettings> settingsRepository, ISettingsRepository<AwakeSettings> moduleSettingsRepository, Func<string, int> ipcMSGCallBackFunc)
+        public GeneralSettings GeneralSettings
         {
-            // To obtain the general settings configurations of PowerToys Settings.
-            if (settingsRepository == null)
+            get => _generalSettings;
+            set
             {
-                throw new ArgumentNullException(nameof(settingsRepository));
+                if (_generalSettings != value)
+                {
+                    _generalSettings = value;
+                    RefreshEnabledState();
+                }
             }
-
-            GeneralSettingsConfig = settingsRepository.SettingsConfig;
-
-            // To obtain the settings configurations of Fancy zones.
-            if (moduleSettingsRepository == null)
-            {
-                throw new ArgumentNullException(nameof(moduleSettingsRepository));
-            }
-
-            AwakeSettingsRepository = moduleSettingsRepository;
-            LoadSettings();
-
-            // set the callback functions value to hangle outgoing IPC message.
-            SendConfigMSG = ipcMSGCallBackFunc;
-
-            InitializeEnabledValue();
         }
 
-        public void LoadSettings()
+        public AwakeSettings ModuleSettings
         {
-            AwakeSettingsRepository.ReloadSettings();
-            Settings = AwakeSettingsRepository.SettingsConfig;
-
-            _keepDisplayOn = Settings.Properties.KeepDisplayOn;
-            _mode = Settings.Properties.Mode;
-            _intervalHours = Settings.Properties.IntervalHours;
-            _intervalMinutes = Settings.Properties.IntervalMinutes;
-            _expirationDateTime = Settings.Properties.ExpirationDateTime;
+            get => _moduleSettings;
+            set
+            {
+                if (_moduleSettings != value)
+                {
+                    _moduleSettings = value;
+                    RefreshModuleSettings();
+                    RefreshEnabledState();
+                }
+            }
         }
 
-        private void InitializeEnabledValue()
+        public AwakeViewModel()
         {
-            _enabledGpoRuleConfiguration = GPOWrapper.GetConfiguredAwakeEnabledValue();
-            if (_enabledGpoRuleConfiguration == GpoRuleConfigured.Disabled || _enabledGpoRuleConfiguration == GpoRuleConfigured.Enabled)
-            {
-                // Get the enabled state from GPO.
-                _enabledStateIsGPOConfigured = true;
-                _isEnabled = _enabledGpoRuleConfiguration == GpoRuleConfigured.Enabled;
-            }
-            else
-            {
-                _isEnabled = GeneralSettingsConfig.Enabled.Awake;
-            }
         }
 
         public bool IsEnabled
         {
-            get => _isEnabled;
+            get => GeneralSettings.Enabled.Awake;
             set
             {
-                if (_isEnabled != value)
+                if (GeneralSettings.Enabled.Awake != value)
                 {
                     if (_enabledStateIsGPOConfigured)
                     {
@@ -87,16 +56,10 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                         return;
                     }
 
-                    _isEnabled = value;
+                    GeneralSettings.Enabled.Awake = value;
 
-                    GeneralSettingsConfig.Enabled.Awake = value;
-                    OnPropertyChanged(nameof(IsEnabled));
-                    OnPropertyChanged(nameof(IsTimeConfigurationEnabled));
-                    OnPropertyChanged(nameof(IsScreenConfigurationPossibleEnabled));
-                    OnPropertyChanged(nameof(IsExpirationConfigurationEnabled));
+                    RefreshEnabledState();
 
-                    OutGoingGeneralSettings outgoing = new OutGoingGeneralSettings(GeneralSettingsConfig);
-                    SendConfigMSG(outgoing.ToString());
                     NotifyPropertyChanged();
                 }
             }
@@ -105,36 +68,44 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         public bool IsEnabledGpoConfigured
         {
             get => _enabledStateIsGPOConfigured;
+            set
+            {
+                if (_enabledStateIsGPOConfigured != value)
+                {
+                    _enabledStateIsGPOConfigured = value;
+                    NotifyPropertyChanged();
+                }
+            }
         }
 
         public bool IsExpirationConfigurationEnabled
         {
-            get => _mode == AwakeMode.EXPIRABLE && _isEnabled;
+            get => ModuleSettings.Properties.Mode == AwakeMode.EXPIRABLE && IsEnabled;
         }
 
         public bool IsTimeConfigurationEnabled
         {
-            get => _mode == AwakeMode.TIMED && _isEnabled;
+            get => ModuleSettings.Properties.Mode == AwakeMode.TIMED && IsEnabled;
         }
 
         public bool IsScreenConfigurationPossibleEnabled
         {
-            get => _mode != AwakeMode.PASSIVE && _isEnabled;
+            get => ModuleSettings.Properties.Mode != AwakeMode.PASSIVE && IsEnabled;
         }
 
         public AwakeMode Mode
         {
-            get => _mode;
+            get => ModuleSettings.Properties.Mode;
             set
             {
-                if (_mode != value)
+                if (ModuleSettings.Properties.Mode != value)
                 {
-                    _mode = value;
+                    ModuleSettings.Properties.Mode = value;
+
                     OnPropertyChanged(nameof(IsTimeConfigurationEnabled));
                     OnPropertyChanged(nameof(IsScreenConfigurationPossibleEnabled));
                     OnPropertyChanged(nameof(IsExpirationConfigurationEnabled));
 
-                    Settings.Properties.Mode = value;
                     NotifyPropertyChanged();
                 }
             }
@@ -142,13 +113,12 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         public bool KeepDisplayOn
         {
-            get => _keepDisplayOn;
+            get => ModuleSettings.Properties.KeepDisplayOn;
             set
             {
-                if (_keepDisplayOn != value)
+                if (ModuleSettings.Properties.KeepDisplayOn != value)
                 {
-                    _keepDisplayOn = value;
-                    Settings.Properties.KeepDisplayOn = value;
+                    ModuleSettings.Properties.KeepDisplayOn = value;
                     NotifyPropertyChanged();
                 }
             }
@@ -156,13 +126,12 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         public uint IntervalHours
         {
-            get => _intervalHours;
+            get => ModuleSettings.Properties.IntervalHours;
             set
             {
-                if (_intervalHours != value)
+                if (ModuleSettings.Properties.IntervalHours != value)
                 {
-                    _intervalHours = value;
-                    Settings.Properties.IntervalHours = value;
+                    ModuleSettings.Properties.IntervalHours = value;
                     NotifyPropertyChanged();
                 }
             }
@@ -170,13 +139,12 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         public uint IntervalMinutes
         {
-            get => _intervalMinutes;
+            get => ModuleSettings.Properties.IntervalMinutes;
             set
             {
-                if (_intervalMinutes != value)
+                if (ModuleSettings.Properties.IntervalMinutes != value)
                 {
-                    _intervalMinutes = value;
-                    Settings.Properties.IntervalMinutes = value;
+                    ModuleSettings.Properties.IntervalMinutes = value;
                     NotifyPropertyChanged();
                 }
             }
@@ -184,13 +152,12 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         public DateTimeOffset ExpirationDateTime
         {
-            get => _expirationDateTime;
+            get => ModuleSettings.Properties.ExpirationDateTime;
             set
             {
-                if (_expirationDateTime != value)
+                if (ModuleSettings.Properties.ExpirationDateTime != value)
                 {
-                    _expirationDateTime = value;
-                    Settings.Properties.ExpirationDateTime = value;
+                    ModuleSettings.Properties.ExpirationDateTime = value;
                     NotifyPropertyChanged();
                 }
             }
@@ -210,36 +177,29 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         public void NotifyPropertyChanged([CallerMemberName] string propertyName = null)
         {
-            Logger.LogError($"Changed the property {propertyName}");
+            Logger.LogInfo($"Changed the property {propertyName}");
             OnPropertyChanged(propertyName);
-            if (SendConfigMSG != null)
-            {
-                SndAwakeSettings outSettings = new(Settings);
-                SndModuleSettings<SndAwakeSettings> ipcMessage = new(outSettings);
-
-                string targetMessage = ipcMessage.ToJsonString();
-
-                Logger.LogError($"Sent config JSON: {targetMessage}");
-                SendConfigMSG(targetMessage);
-            }
         }
 
         public void RefreshEnabledState()
         {
-            InitializeEnabledValue();
             OnPropertyChanged(nameof(IsEnabled));
             OnPropertyChanged(nameof(IsTimeConfigurationEnabled));
             OnPropertyChanged(nameof(IsScreenConfigurationPossibleEnabled));
             OnPropertyChanged(nameof(IsExpirationConfigurationEnabled));
         }
 
-        private GpoRuleConfigured _enabledGpoRuleConfiguration;
+        public void RefreshModuleSettings()
+        {
+            OnPropertyChanged(nameof(Mode));
+            OnPropertyChanged(nameof(KeepDisplayOn));
+            OnPropertyChanged(nameof(IntervalHours));
+            OnPropertyChanged(nameof(IntervalMinutes));
+            OnPropertyChanged(nameof(ExpirationDateTime));
+        }
+
         private bool _enabledStateIsGPOConfigured;
-        private bool _isEnabled;
-        private uint _intervalHours;
-        private uint _intervalMinutes;
-        private bool _keepDisplayOn;
-        private DateTimeOffset _expirationDateTime;
-        private AwakeMode _mode;
+        private GeneralSettings _generalSettings;
+        private AwakeSettings _moduleSettings;
     }
 }
