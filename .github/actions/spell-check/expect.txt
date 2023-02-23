@@ -721,6 +721,7 @@ HTTRANSPARENT
 HValue
 Hvci
 hwb
+HWHEEL
 HWINEVENTHOOK
 hwnd
 HWNDFIRST
@@ -893,6 +894,8 @@ LCONTROL
 LCtrl
 Ldone
 ldx
+LEFTDOWN
+LEFTUP
 LEFTSCROLLBAR
 lego
 len
@@ -1041,6 +1044,8 @@ Mgmt
 mic
 microsoft
 Midl
+MIDDLEDOWN
+MIDDLEUP
 mii
 MIIM
 millis
@@ -1174,6 +1179,7 @@ NOACTIVATE
 NOAGGREGATION
 NOASYNC
 NOCLOSEPROCESS
+NOCOALESCE
 NOCOPYBITS
 nodeca
 nodiscard
@@ -1247,7 +1253,7 @@ oldpath
 oldtheme
 oleaut
 OLECHAR
-oledb
+OLEDB
 oledbcommand
 oledbconnection
 OLIVEGREEN
@@ -1292,6 +1298,7 @@ PARENTRELATIVEPARSING
 PArgb
 parray
 PARTIALCONFIRMATIONDIALOGTITLE
+pasteplain
 pathcch
 Pathto
 PAUDIO
@@ -1377,7 +1384,7 @@ Prefixer
 Preinstalled
 prevhost
 previewer
-previewhandlerframeinfo
+PREVIEWHANDLERFRAMEINFO
 previewpane
 previouscamera
 PREVIOUSINSTALLFOLDER
@@ -1465,7 +1472,7 @@ rectp
 rects
 recyclebin
 redirectedfrom
-redist
+Redist
 redistributable
 reencode
 reencoded
@@ -1522,6 +1529,8 @@ rgs
 rhs
 ricardosantos
 RIDEV
+RIGHTDOWN
+RIGHTUP
 RIGHTSCROLLBAR
 riid
 RKey
@@ -1529,6 +1538,7 @@ RLO
 RMENU
 RNumber
 roadmap
+Roamable
 robmensching
 Roboto
 rooler
@@ -1588,7 +1598,7 @@ secauthz
 secpol
 Secur
 securityoverview
-segoe
+Segoe
 Sekan
 SENDCHANGE
 sendinput
@@ -1654,7 +1664,7 @@ SHOWMINNOACTIVE
 SHOWNA
 SHOWNOACTIVATE
 SHOWNORMAL
-showwindow
+SHOWWINDOW
 shtypes
 SICHINT
 sid
@@ -1688,6 +1698,7 @@ Soref
 SOURCECLIENTAREAONLY
 SOURCEHEADER
 sourcesdirectory
+SPACEBAR
 spam
 spdisp
 spdlog
@@ -1721,7 +1732,7 @@ STARTUPINFO
 STARTUPINFOEX
 STARTUPINFOW
 startupscreen
-statflag
+STATFLAG
 STATICEDGE
 STATSTG
 stdafx
@@ -1733,7 +1744,7 @@ STDMETHODCALLTYPE
 STDMETHODIMP
 stefan
 Stereolithography
-stgm
+STGM
 STGMEDIUM
 sticpl
 stl
@@ -1780,7 +1791,7 @@ SYSICONINDEX
 sysinfo
 SYSKEY
 syskeydown
-syskeyup
+SYSKEYUP
 SYSMENU
 SYSTEMAPPS
 systemroot
@@ -1893,6 +1904,7 @@ UIs
 Ulaanbaatar
 ULARGE
 ULONGLONG
+UMsg
 unassign
 uncompilable
 UNCPRIORITY
@@ -1972,6 +1984,7 @@ VIDEOINFOHEADER
 viewbox
 viewmodel
 vih
+VIRTUALDESK
 virtualkey
 visiblecolorformats
 Visibletrue
@@ -2062,7 +2075,7 @@ WINL
 winmd
 winmm
 winmsg
-winnt
+WINNT
 winres
 winrt
 winsdk
@@ -2130,6 +2143,7 @@ wtypes
 Wubi
 wuceffectsi
 WVC
+WVk
 Wwan
 Wwanpp
 XAttribute
@@ -2142,6 +2156,8 @@ XBUTTONUP
 XControl
 xcopy
 XDocument
+XDOWN
+XUP
 XElement
 XFile
 XIncrement

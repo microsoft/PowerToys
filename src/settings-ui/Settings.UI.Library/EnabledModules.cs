@@ -279,6 +279,23 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             }
         }
 
+        private bool pastePlain = true;
+
+        [JsonPropertyName("PastePlain")]
+        public bool PastePlain
+        {
+            get => pastePlain;
+            set
+            {
+                if (pastePlain != value)
+                {
+                    LogTelemetryEvent(value);
+                    pastePlain = value;
+                    NotifyChange();
+                }
+            }
+        }
+
         private bool measureTool = true;
 
         [JsonPropertyName("Measure Tool")]

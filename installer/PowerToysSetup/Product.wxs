@@ -65,6 +65,7 @@
       <ComponentGroupRef Id="KeyboardManagerComponentGroup" />
       <ComponentGroupRef Id="MeasureToolComponentGroup" />
       <ComponentGroupRef Id="MouseUtilsComponentGroup" />
+      <ComponentGroupRef Id="PastePlainComponentGroup" />
       <ComponentGroupRef Id="PowerAccentComponentGroup" />
       <ComponentGroupRef Id="PowerRenameComponentGroup" />
       <ComponentGroupRef Id="RunComponentGroup" />
@@ -476,6 +477,10 @@
 
             <!-- Mouse Utils -->
             <Directory Id="MouseUtilsInstallFolder" Name="$(var.MouseUtilsProjectName)">
+            </Directory>
+
+            <!-- PastePlain -->
+            <Directory Id="PastePlainInstallFolder" Name="$(var.PastePlainProjectName)">
             </Directory>
 
             <!-- AlwaysOnTop -->

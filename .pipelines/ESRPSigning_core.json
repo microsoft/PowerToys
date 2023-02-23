@@ -36,6 +36,8 @@
                 "modules\\PowerOCR\\PowerToys.PowerOCR.dll",
                 "modules\\PowerOCR\\PowerToys.PowerOCR.exe",
 
+                "modules\\PastePlain\\PowerToys.PastePlainModuleInterface.dll",
+
                 "modules\\Awake\\PowerToys.AwakeModuleInterface.dll",
                 "modules\\Awake\\PowerToys.Awake.exe",
                 "modules\\Awake\\PowerToys.Awake.dll",

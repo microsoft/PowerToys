@@ -45,6 +45,7 @@ namespace powertoys_gpo {
     const std::wstring POLICY_CONFIGURE_ENABLED_SCREEN_RULER = L"ConfigureEnabledUtilityScreenRuler";
     const std::wstring POLICY_CONFIGURE_ENABLED_SHORTCUT_GUIDE = L"ConfigureEnabledUtilityShortcutGuide";
     const std::wstring POLICY_CONFIGURE_ENABLED_TEXT_EXTRACTOR = L"ConfigureEnabledUtilityTextExtractor";
+    const std::wstring POLICY_CONFIGURE_ENABLED_PASTE_PLAIN = L"ConfigureEnabledUtilityPastePlain";
     const std::wstring POLICY_CONFIGURE_ENABLED_VIDEO_CONFERENCE_MUTE = L"ConfigureEnabledUtilityVideoConferenceMute";
     const std::wstring POLICY_ALLOW_EXPERIMENTATION = L"AllowExperimentation";
 
@@ -229,6 +230,11 @@ namespace powertoys_gpo {
     inline gpo_rule_configured_t getConfiguredTextExtractorEnabledValue()
     {
         return getConfiguredValue(POLICY_CONFIGURE_ENABLED_TEXT_EXTRACTOR);
+    }
+
+    inline gpo_rule_configured_t getConfiguredPastePlainEnabledValue()
+    {
+        return getConfiguredValue(POLICY_CONFIGURE_ENABLED_PASTE_PLAIN);
     }
 
     inline gpo_rule_configured_t getConfiguredVideoConferenceMuteEnabledValue()

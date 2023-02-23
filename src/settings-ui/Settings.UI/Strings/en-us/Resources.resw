@@ -1970,6 +1970,10 @@ From there, simply click on one of the supported files in the File Explorer and 
     <value>Learn more about Mouse utilities</value>
     <comment>Mouse utilities is a product name, do not loc</comment>
   </data>
+  <data name="LearnMore_PastePlain.Text" xml:space="preserve">
+    <value>Learn more about Paste as Plain Text</value>
+    <comment> Paste as Plain Text is the name of the module. </comment>
+  </data>
   <data name="LearnMore_PowerPreview.Text" xml:space="preserve">
     <value>Learn more about File Explorer add-ons</value>
     <comment>File Explorer is a product name, localize as Windows does</comment>
@@ -2933,6 +2937,31 @@ Activate by holding the key for the character you want to add an accent to, then
   </data>
   <data name="GPO_ExperimentationIsDisallowed.Title" xml:space="preserve">
     <value>The system administrator has disabled experimentation.</value>
+  </data>
+  <data name="Shell_PastePlain.Content" xml:space="preserve">
+    <value>Paste As Plain Text</value>
+    <comment>Product name: Navigation view item name for Paste as Plain Text</comment>
+  </data>
+  <data name="PastePlain.ModuleDescription" xml:space="preserve">
+    <value>Paste As Plain Text is a quick shortcut for pasting the text contents of your clipboard without formatting. Note: the formatted text in the clipboard is replaced with the unformatted text.</value>
+  </data>
+  <data name="PastePlain.ModuleTitle" xml:space="preserve">
+    <value>Paste As Plain Text</value>
+  </data>
+  <data name="PastePlain_Cancel" xml:space="preserve">
+    <value>cancel</value>
+  </data>
+  <data name="PastePlain_EnableToggleControl_HeaderText.Header" xml:space="preserve">
+    <value>Enable Paste As Plain Text</value>
+  </data>
+  <data name="Oobe_PastePlain.Description" xml:space="preserve">
+    <value>Paste As Plain Text strips rich formatting from your clipboard data and pastes it as non-formatted text.</value>
+  </data>
+  <data name="Oobe_PastePlain.Title" xml:space="preserve">
+    <value>Paste As Plain Text</value>
+  </data>
+  <data name="Oobe_PastePlain_HowToUse.Text" xml:space="preserve">
+    <value>to paste your clipboard data as plain text. Note: this will replace the formatted text in your clipboard with the plain text.</value>
   </data>
   <data name="AllAppsTxt.Text" xml:space="preserve">
     <value>All apps</value>
