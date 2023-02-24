@@ -190,12 +190,18 @@
                     <labs:SettingsCard
                         x:Uid="GeneralPage_ToggleSwitch_AutoDownloadUpdates"
                         Margin="0,-6,0,0"
-                        IsEnabled="{Binding AutoUpdatesEnabled}"
+                        IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsAutoDownloadUpdatesCardEnabled}"
                         Visibility="{Binding Mode=OneWay, Path=IsAdmin, Converter={StaticResource BoolToVisibilityConverter}}">
                         <ToggleSwitch
                             x:Uid="ToggleSwitch"
                             IsOn="{Binding Mode=TwoWay, Path=AutoDownloadUpdates}" />
                     </labs:SettingsCard>
+                    <InfoBar
+                        x:Uid="GPO_AutoDownloadUpdatesIsDisabled"
+                        IsClosable="False"
+                        IsOpen="{x:Bind Mode=OneWay, Path=ViewModel.ShowAutoDownloadUpdatesGpoInformation}"
+                        IsTabStop="{x:Bind Mode=OneWay, Path=ViewModel.ShowAutoDownloadUpdatesGpoInformation}"
+                        Severity="Informational" />
                 </controls:SettingsGroup>
 
                 <controls:SettingsGroup x:Uid="Admin_Mode">

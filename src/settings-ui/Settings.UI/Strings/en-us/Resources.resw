@@ -3040,4 +3040,7 @@ Activate by holding the key for the character you want to add an accent to, then
     <value>Enable Mouse Jump</value>
     <comment>"Mouse Jump" is the name of the utility.</comment>
   </data>
+  <data name="GPO_AutoDownloadUpdatesIsDisabled.Title" xml:space="preserve">
+    <value>The system administrator has disabled the automatic download of updates.</value>
+  </data>
 </root>

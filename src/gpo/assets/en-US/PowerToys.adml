@@ -7,6 +7,7 @@
   <resources>
     <stringTable>
       <string id="PowerToys">Microsoft PowerToys</string>
+	  <string id="InstallerUpdates">Installer and Updates</string>
 
       <string id="SUPPORTED_POWERTOYS_0_64_0">PowerToys version 0.64.0 or later</string>
       <string id="SUPPORTED_POWERTOYS_0_68_0">PowerToys version 0.68.0 or later</string>
@@ -28,6 +29,26 @@ If you enable this setting, the utility will be always enabled and the user won'
 If you disable this setting, the utility will be always disabled and the user won't be able to enable it.
 
 If you don't configure this setting, users are able to disable or enable the utility.
+</string>
+      <string id="DisableAutomaticUpdateDownloadDescription">This policy configures whether automatic downloads of available updates are disabled or not. (On metered connections updates are never downloaded.)
+
+If enabled, automatic downloads are disabled.
+
+If disabled or not configured, the user is in control of automatic downloads setting.
+</string>
+      <string id="SuspendNewUpdateToastDescription">This policy configures whether the action center notification for new updates is suspended for 2 minor releases. (Example: if the installed version is v0.60.0, then the next notification is shown for the v0.63.* release.)
+
+If enabled, the notification is suspended.
+
+If disabled or not configured, the notification is shown.
+
+Note: The notification about new major versions is always displayed.
+</string>
+      <string id="DisablePeriodicUpdateCheckDescription">This policy allows you to disable automatic update checks running in the background. (The manual check in PT Settings is not affected by this policy.)
+
+If enabled, the automatic update checks are disabled.
+
+If disabled or not configured, the automatic update checks are enabled.
 </string>
       <string id="AllowExperimentationDescription">This policy configures whether PowerToys experimentation is allowed. With experimentation allowed the user sees the new features being experimented if it gets selected as part of the test group. (Experimentation will only happen on Windows Insider builds.)
 
@@ -64,6 +85,9 @@ If this setting is disabled, experimentation is not allowed.
       <string id="ConfigureEnabledUtilityShortcutGuide">Shortcut Guide: Configure enabled state</string>
       <string id="ConfigureEnabledUtilityTextExtractor">Text Extractor: Configure enabled state</string>
       <string id="ConfigureEnabledUtilityVideoConferenceMute">Video Conference Mute: Configure enabled state</string>
+	  <string id="DisableAutomaticUpdateDownload">Disable automatic downloads</string>
+	  <string id="SuspendNewUpdateToast">Suspend Action Center notification for new updates</string>
+	  <string id="DisablePeriodicUpdateCheck">Disable automatic update checks</string>
       <string id="AllowExperimentation">Allow Experimentation</string>
     </stringTable>
   </resources>

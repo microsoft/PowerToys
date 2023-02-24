@@ -48,6 +48,13 @@ namespace powertoys_gpo {
     const std::wstring POLICY_CONFIGURE_ENABLED_TEXT_EXTRACTOR = L"ConfigureEnabledUtilityTextExtractor";
     const std::wstring POLICY_CONFIGURE_ENABLED_PASTE_PLAIN = L"ConfigureEnabledUtilityPastePlain";
     const std::wstring POLICY_CONFIGURE_ENABLED_VIDEO_CONFERENCE_MUTE = L"ConfigureEnabledUtilityVideoConferenceMute";
+
+    // The registry value names for PowerToys installer and update policies.
+    const std::wstring POLICY_DISABLE_AUTOMATIC_UPDATE_DOWNLOAD = L"AutomaticUpdateDownloadDisabled";
+    const std::wstring POLICY_SUSPEND_NEW_UPDATE_TOAST = L"SuspendNewUpdateAvailableToast";
+    const std::wstring POLICY_DISABLE_PERIODIC_UPDATE_CHECK = L"PeriodicUpdateCheckDisabled";
+
+    // The registry value names for other PowerToys policies.
     const std::wstring POLICY_ALLOW_EXPERIMENTATION = L"AllowExperimentation";
 
     inline gpo_rule_configured_t getConfiguredValue(const std::wstring& registry_value_name)
@@ -246,6 +253,21 @@ namespace powertoys_gpo {
     inline gpo_rule_configured_t getConfiguredVideoConferenceMuteEnabledValue()
     {
         return getConfiguredValue(POLICY_CONFIGURE_ENABLED_VIDEO_CONFERENCE_MUTE);
+    }
+
+    inline gpo_rule_configured_t getDisableAutomaticUpdateDownloadValue()
+    {
+        return getConfiguredValue(POLICY_DISABLE_AUTOMATIC_UPDATE_DOWNLOAD);
+    }
+
+    inline gpo_rule_configured_t getSuspendNewUpdateToastValue()
+    {
+        return getConfiguredValue(POLICY_SUSPEND_NEW_UPDATE_TOAST);
+    }
+
+    inline gpo_rule_configured_t getDisablePeriodicUpdateCheckValue()
+    {
+        return getConfiguredValue(POLICY_DISABLE_PERIODIC_UPDATE_CHECK);
     }
 
     inline gpo_rule_configured_t getAllowExperimentationValue()

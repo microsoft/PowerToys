@@ -120,6 +120,10 @@ namespace winrt::PowerToys::GPOWrapper::implementation
     {
         return static_cast<GpoRuleConfigured>(powertoys_gpo::getConfiguredVideoConferenceMuteEnabledValue());
     }
+    GpoRuleConfigured GPOWrapper::GetDisableAutomaticUpdateDownloadValue()
+    {
+        return static_cast<GpoRuleConfigured>(powertoys_gpo::getDisableAutomaticUpdateDownloadValue());
+    }
     GpoRuleConfigured GPOWrapper::GetAllowExperimentationValue()
     {
         return static_cast<GpoRuleConfigured>(powertoys_gpo::getAllowExperimentationValue());

@@ -39,3 +39,35 @@ This policy configures whether PowerToys experimentation is allowed. With experi
 If this setting is not configured or enabled, the user can control experimentation in the PowerToys settings menu.
 
 If this setting is disabled, experimentation is not allowed.
+
+If this setting is not configured, experimentation is allowed.
+
+### Installer and Updates
+
+#### Disable automatic downloads
+
+This policy configures whether automatic downloads of available updates are disabled or not. (On metered connections updates are never downloaded.)
+
+If enabled, automatic downloads are disabled.
+
+If disabled or not configured, the user is in control of automatic downloads setting.
+
+#### Suspend Action Center notification for new updates
+
+This policy configures whether the action center notification for new updates is suspended for 2 minor releases. (Example: if the installed version is v0.60.0, then the next notification is shown for the v0.63.* release.)
+
+If enabled, the notification is suspended.
+
+If disabled or not configured, the notification is shown.
+
+Note: The notification about new major versions is always displayed.
+
+<!-- This policy is implemented for later usage (PT v1.0 and later) and therefore inactive. (To make it working please update `src/runner/UpdateUtils.cpp`)
+#### Disable automatic update checks
+
+This policy allows you to disable automatic update checks running in the background. (The manual check in PT Settings is not affected by this policy.)
+
+If enabled, the automatic update checks are disabled.
+
+If disabled or not configured, the automatic update checks are enabled.
+-->

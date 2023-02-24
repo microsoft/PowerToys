@@ -13,7 +13,9 @@
     </definitions>
   </supportedOn>
   <categories>
-    <category name="PowerToys" displayName="$(string.PowerToys)">
+    <category name="PowerToys" displayName="$(string.PowerToys)" />
+	<category name="InstallerUpdates" displayName="$(string.InstallerUpdates)">
+		<parentCategory ref="PowerToys" />
     </category>
   </categories>
   <policies>
@@ -307,6 +309,38 @@
         <decimal value="0" />
       </disabledValue>
     </policy>
+	<policy name="DisableAutomaticUpdateDownload" class="Both" displayName="$(string.DisableAutomaticUpdateDownload)" explainText="$(string.DisableAutomaticUpdateDownloadDescription)" key="Software\Policies\PowerToys" valueName="AutomaticUpdateDownloadDisabled">
+      <parentCategory ref="InstallerUpdates" />
+      <supportedOn ref="SUPPORTED_POWERTOYS_0_68_0" />
+      <enabledValue>
+        <decimal value="1" />
+      </enabledValue>
+      <disabledValue>
+        <decimal value="0" />
+      </disabledValue>
+    </policy>
+	<policy name="SuspendNewUpdateToast" class="Both" displayName="$(string.SuspendNewUpdateToast)" explainText="$(string.SuspendNewUpdateToastDescription)" key="Software\Policies\PowerToys" valueName="SuspendNewUpdateAvailableToast">
+      <parentCategory ref="InstallerUpdates" />
+      <supportedOn ref="SUPPORTED_POWERTOYS_0_68_0" />
+      <enabledValue>
+        <decimal value="1" />
+      </enabledValue>
+      <disabledValue>
+        <decimal value="0" />
+      </disabledValue>
+    </policy>
+	<!-- This policy is implemented for later usage (PT v1.0 and later) and therefore inactive. (To make it working please update `src/runner/UpdateUtils.cpp`)
+	<policy name="DisablePeriodicUpdateCheck" class="Both" displayName="$(string.DisablePeriodicUpdateCheck)" explainText="$(string.DisablePeriodicUpdateCheckDescription)" key="Software\Policies\PowerToys" valueName="PeriodicUpdateCheckDisabled">
+      <parentCategory ref="InstallerUpdates" />
+      <supportedOn ref="SUPPORTED_POWERTOYS_0_68_0" />
+      <enabledValue>
+        <decimal value="1" />
+      </enabledValue>
+      <disabledValue>
+        <decimal value="0" />
+      </disabledValue>
+    </policy>
+	-->
     <policy name="AllowExperimentation" class="Both" displayName="$(string.AllowExperimentation)" explainText="$(string.AllowExperimentationDescription)" key="Software\Policies\PowerToys" valueName="AllowExperimentation">
       <parentCategory ref="PowerToys" />
       <supportedOn ref="SUPPORTED_POWERTOYS_0_68_0" />

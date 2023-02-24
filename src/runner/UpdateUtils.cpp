@@ -6,6 +6,7 @@
 #include "general_settings.h"
 #include "UpdateUtils.h"
 
+#include <common/utils/gpo.h>
 #include <common/logger/logger.h>
 #include <common/notifications/notifications.h>
 #include <common/updating/installer.h>
@@ -21,6 +22,10 @@ namespace
 {
     constexpr int64_t UPDATE_CHECK_INTERVAL_MINUTES = 60 * 24;
     constexpr int64_t UPDATE_CHECK_AFTER_FAILED_INTERVAL_MINUTES = 60 * 2;
+
+    // How many minor versions to suspend the toast notification (example: installed=0.60.0, suspend=2, next notification=0.63.*)
+    // Attention: When changing this value please update the ADML file to.
+    const int UPDATE_NOTIFICATION_TOAST_SUSPEND_MINOR_VERSION_COUNT = 2;
 }
 using namespace notifications;
 using namespace updating;
@@ -113,7 +118,7 @@ bool IsMeteredConnection()
 void ProcessNewVersionInfo(const github_version_info& version_info,
                            UpdateState& state,
                            const bool download_update,
-                           const bool show_notifications)
+                           bool show_notifications)
 {
     state.githubUpdateLastCheckedDate.emplace(timeutil::now());
     if (std::holds_alternative<version_up_to_date>(version_info))
@@ -133,6 +138,22 @@ void ProcessNewVersionInfo(const github_version_info& version_info,
     {
         Logger::trace(L"New version is already downloaded");
         return;
+    }
+
+    // Check notification GPO.
+    // We check only if notifications are allowed. This is the case if we are triggered by the periodic check.
+    if (show_notifications && powertoys_gpo::getSuspendNewUpdateToastValue() == powertoys_gpo::gpo_rule_configured_enabled)
+    {
+        Logger::info(L"GPO to suspend new update toast notification is enabled.");
+        if (new_version_info.version.major <= VERSION_MAJOR && new_version_info.version.minor - VERSION_MINOR <= UPDATE_NOTIFICATION_TOAST_SUSPEND_MINOR_VERSION_COUNT)
+        {
+            Logger::info(L"The difference between the installed version and the newer version is within the allowed period. The toast notification is not shown.");
+            show_notifications = false;
+        }
+        else
+        {
+            Logger::info(L"The installed version is older than allowed for suspending the toast notification. The toast notification is shown.");
+        }
     }
 
     if (download_update)
@@ -168,6 +189,14 @@ void ProcessNewVersionInfo(const github_version_info& version_info,
 
 void PeriodicUpdateWorker()
 {
+    // Check if periodic update check is disabled by GPO.
+    // This policy code is implemented but not active. It is for later usage in PT version after 1.0 release.
+    //if (powertoys_gpo::getDisablePeriodicUpdateCheckValue() == powertoys_gpo::gpo_rule_configured_enabled)
+    //{
+    //    Logger::info(L"Initialization of periodic update checks stopped. Periodic update checks are disabled by GPO.");
+    //    return;
+    //}
+
     for (;;)
     {
         auto state = UpdateState::read();
@@ -184,7 +213,14 @@ void PeriodicUpdateWorker()
 
         std::this_thread::sleep_for(std::chrono::minutes{ sleep_minutes_till_next_update });
 
-        const bool download_update = !IsMeteredConnection() && get_general_settings().downloadUpdatesAutomatically;
+        // Auto download setting.
+        bool download_update = !IsMeteredConnection() && get_general_settings().downloadUpdatesAutomatically;
+        if (powertoys_gpo::getDisableAutomaticUpdateDownloadValue() == powertoys_gpo::gpo_rule_configured_enabled)
+        {
+            Logger::info(L"Automatic download of updates is disabled by GPO.");
+            download_update = false;
+        }
+
         bool version_info_obtained = false;
         try
         {
@@ -230,7 +266,15 @@ void CheckForUpdatesCallback()
             new_version_info = version_up_to_date{};
             Logger::error(L"Couldn't obtain version info from github: {}", new_version_info.error());
         }
-        const bool download_update = !IsMeteredConnection() && get_general_settings().downloadUpdatesAutomatically;
+
+        // Auto download setting
+        bool download_update = !IsMeteredConnection() && get_general_settings().downloadUpdatesAutomatically;
+        if (powertoys_gpo::getDisableAutomaticUpdateDownloadValue() == powertoys_gpo::gpo_rule_configured_enabled)
+        {
+            Logger::info(L"Automatic download of updates is disabled by GPO.");
+            download_update = false;
+        }
+        
         ProcessNewVersionInfo(*new_version_info, state, download_update, false);
         UpdateState::store([&](UpdateState& v) {
             v = std::move(state);

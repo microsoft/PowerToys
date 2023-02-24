@@ -142,6 +142,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             _updateCheckedDate = UpdatingSettingsConfig.LastCheckedDateLocalized;
 
             _experimentationIsGpoDisallowed = GPOWrapper.GetAllowExperimentationValue() == GpoRuleConfigured.Disabled;
+            _autoDownloadUpdatesIsGpoDisabled = GPOWrapper.GetDisableAutomaticUpdateDownloadValue() == GpoRuleConfigured.Enabled;
 
             if (dispatcherAction != null)
             {
@@ -156,6 +157,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         private int _themeIndex;
 
         private bool _autoDownloadUpdates;
+        private bool _autoDownloadUpdatesIsGpoDisabled;
         private bool _enableExperimentation;
         private bool _experimentationIsGpoDisallowed;
 
@@ -272,11 +274,20 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             }
         }
 
+        // Are we running a dev build? (Please note that we verify this in the code that gets the newest version from GitHub too.)
+        public static bool AutoUpdatesDisabledOnDevBuild
+        {
+            get
+            {
+                return Helper.GetProductVersion() == "v0.0.1";
+            }
+        }
+
         public bool AutoDownloadUpdates
         {
             get
             {
-                return _autoDownloadUpdates;
+                return _autoDownloadUpdates && !_autoDownloadUpdatesIsGpoDisabled;
             }
 
             set
@@ -288,6 +299,18 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                     NotifyPropertyChanged();
                 }
             }
+        }
+
+        public bool IsAutoDownloadUpdatesCardEnabled
+        {
+            get => !AutoUpdatesDisabledOnDevBuild && !_autoDownloadUpdatesIsGpoDisabled;
+        }
+
+        // The settings card is hidden for users who are not a member of the Administrators group and in this case the GPO info should be hidden too.
+        // We hide it, because we don't want a normal user to enable the setting. He can't install the updates.
+        public bool ShowAutoDownloadUpdatesGpoInformation
+        {
+            get => _isAdmin && _autoDownloadUpdatesIsGpoDisabled;
         }
 
         public bool EnableExperimentation
@@ -311,14 +334,6 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         public bool IsExperimentationGpoDisallowed
         {
             get => _experimentationIsGpoDisallowed;
-        }
-
-        public static bool AutoUpdatesEnabled
-        {
-            get
-            {
-                return Helper.GetProductVersion() != "v0.0.1";
-            }
         }
 
         public string SettingsBackupAndRestoreDir
@@ -659,7 +674,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         {
             get
             {
-                return AutoUpdatesEnabled && !IsNewVersionDownloading;
+                return !AutoUpdatesDisabledOnDevBuild && !IsNewVersionDownloading;
             }
         }
 
