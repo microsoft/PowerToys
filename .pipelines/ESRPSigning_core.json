@@ -121,7 +121,6 @@
                 "modules\\launcher\\Plugins\\Service\\Microsoft.PowerToys.Run.Plugin.Service.dll",
                 "modules\\launcher\\Plugins\\System\\Microsoft.PowerToys.Run.Plugin.System.dll",
                 "modules\\launcher\\Plugins\\TimeDate\\Microsoft.PowerToys.Run.Plugin.TimeDate.dll",
-                "modules\\launcher\\Plugins\\TimeZone\\Microsoft.PowerToys.Run.Plugin.TimeZone.dll",
                 "modules\\launcher\\Plugins\\WebSearch\\Community.PowerToys.Run.Plugin.WebSearch.dll",
                 "modules\\launcher\\Plugins\\WindowsTerminal\\Microsoft.PowerToys.Run.Plugin.WindowsTerminal.dll",
                 
