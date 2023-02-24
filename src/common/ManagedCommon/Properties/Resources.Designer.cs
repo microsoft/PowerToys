@@ -72,18 +72,18 @@ namespace ManagedCommon.Properties {
         /// <summary>
         ///   Looks up a localized string similar to Menu.
         /// </summary>
-        internal static string Keyboard_AppsMenu {
+        internal static string Keyboard_Apps_Menu {
             get {
-                return ResourceManager.GetString("Keyboard_AppsMenu", resourceCulture);
+                return ResourceManager.GetString("Keyboard_Apps/Menu", resourceCulture);
             }
         }
         
         /// <summary>
         ///   Looks up a localized string similar to Caps Lock.
         /// </summary>
-        internal static string Keyboard_CapsLock {
+        internal static string Keyboard_Caps_Lock {
             get {
-                return ResourceManager.GetString("Keyboard_CapsLock", resourceCulture);
+                return ResourceManager.GetString("Keyboard_Caps Lock", resourceCulture);
             }
         }
         
@@ -189,27 +189,9 @@ namespace ManagedCommon.Properties {
         /// <summary>
         ///   Looks up a localized string similar to Num Lock.
         /// </summary>
-        internal static string Keyboard_NumLock {
+        internal static string Keyboard_Num_Lock {
             get {
-                return ResourceManager.GetString("Keyboard_NumLock", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Page down.
-        /// </summary>
-        internal static string Keyboard_PageDown {
-            get {
-                return ResourceManager.GetString("Keyboard_PageDown", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Page up.
-        /// </summary>
-        internal static string Keyboard_PageUp {
-            get {
-                return ResourceManager.GetString("Keyboard_PageUp", resourceCulture);
+                return ResourceManager.GetString("Keyboard_Num Lock", resourceCulture);
             }
         }
         
@@ -219,6 +201,24 @@ namespace ManagedCommon.Properties {
         internal static string Keyboard_Pause {
             get {
                 return ResourceManager.GetString("Keyboard_Pause", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Page down.
+        /// </summary>
+        internal static string Keyboard_PgDn {
+            get {
+                return ResourceManager.GetString("Keyboard_PgDn", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Page up.
+        /// </summary>
+        internal static string Keyboard_PgUp {
+            get {
+                return ResourceManager.GetString("Keyboard_PgUp", resourceCulture);
             }
         }
         
@@ -234,9 +234,9 @@ namespace ManagedCommon.Properties {
         /// <summary>
         ///   Looks up a localized string similar to Print Screen.
         /// </summary>
-        internal static string Keyboard_PrintScreen {
+        internal static string Keyboard_Print_Screen {
             get {
-                return ResourceManager.GetString("Keyboard_PrintScreen", resourceCulture);
+                return ResourceManager.GetString("Keyboard_Print Screen", resourceCulture);
             }
         }
         
@@ -252,9 +252,9 @@ namespace ManagedCommon.Properties {
         /// <summary>
         ///   Looks up a localized string similar to Scroll Lock.
         /// </summary>
-        internal static string Keyboard_ScrollLock {
+        internal static string Keyboard_Scroll_Lock {
             get {
-                return ResourceManager.GetString("Keyboard_ScrollLock", resourceCulture);
+                return ResourceManager.GetString("Keyboard_Scroll Lock", resourceCulture);
             }
         }
         

@@ -121,11 +121,11 @@
     <value>Alt</value>
     <comment>The alt key on the keyboard</comment>
   </data>
-  <data name="Keyboard_AppsMenu" xml:space="preserve">
+  <data name="Keyboard_Apps/Menu" xml:space="preserve">
     <value>Menu</value>
     <comment>The menu key on the keyboard</comment>
   </data>
-  <data name="Keyboard_CapsLock" xml:space="preserve">
+  <data name="Keyboard_Caps Lock" xml:space="preserve">
     <value>Caps Lock</value>
     <comment>The caps lock key on the keyboard</comment>
   </data>
@@ -173,27 +173,27 @@
     <value>Left arrow</value>
     <comment>The left arrow key on the keyboard</comment>
   </data>
-  <data name="Keyboard_NumLock" xml:space="preserve">
+  <data name="Keyboard_Num Lock" xml:space="preserve">
     <value>Num Lock</value>
     <comment>The num lock key on the keyboard</comment>
-  </data>
-  <data name="Keyboard_PageDown" xml:space="preserve">
-    <value>Page down</value>
-    <comment>The page down key on the keyboard</comment>
-  </data>
-  <data name="Keyboard_PageUp" xml:space="preserve">
-    <value>Page up</value>
-    <comment>The page up key on the keyboard</comment>
   </data>
   <data name="Keyboard_Pause" xml:space="preserve">
     <value>Pause</value>
     <comment>The pause key on the keyboard</comment>
   </data>
+  <data name="Keyboard_PgDn" xml:space="preserve">
+    <value>Page down</value>
+    <comment>The page down key on the keyboard</comment>
+  </data>
+  <data name="Keyboard_PgUp" xml:space="preserve">
+    <value>Page up</value>
+    <comment>The page up key on the keyboard</comment>
+  </data>
   <data name="Keyboard_Print" xml:space="preserve">
     <value>Print</value>
     <comment>The print key on the keyboard (not print screen)</comment>
   </data>
-  <data name="Keyboard_PrintScreen" xml:space="preserve">
+  <data name="Keyboard_Print Screen" xml:space="preserve">
     <value>Print Screen</value>
     <comment>The print screen key on the keyboard</comment>
   </data>
@@ -201,7 +201,7 @@
     <value>Right arrow</value>
     <comment>The right arrow key on the keyboard</comment>
   </data>
-  <data name="Keyboard_ScrollLock" xml:space="preserve">
+  <data name="Keyboard_Scroll Lock" xml:space="preserve">
     <value>Scroll Lock</value>
     <comment>The scroll lock key on the keyboard</comment>
   </data>
