@@ -74,6 +74,7 @@ call "..\..\publish.cmd" arm64
     <Compile Include="KeyboardManager.wxs" />
     <Compile Include="MeasureTool.wxs" />
     <Compile Include="MouseUtils.wxs" />
+    <Compile Include="PastePlain.wxs" />
     <Compile Include="PowerAccent.wxs" />
     <Compile Include="PowerRename.wxs" />
     <Compile Include="Run.wxs" />
