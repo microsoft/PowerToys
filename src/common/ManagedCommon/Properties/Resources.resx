@@ -121,6 +121,14 @@
     <value>Alt</value>
     <comment>The alt key on the keyboard</comment>
   </data>
+  <data name="Keyboard_Alt (Left)" xml:space="preserve">
+    <value>Alt (Left)</value>
+    <comment>The left alt key on the keyboard</comment>
+  </data>
+  <data name="Keyboard_Alt (Right)" xml:space="preserve">
+    <value>Alt (Right)</value>
+    <comment>The right alt key on the keyboard</comment>
+  </data>
   <data name="Keyboard_Apps/Menu" xml:space="preserve">
     <value>Menu</value>
     <comment>The menu key on the keyboard</comment>
@@ -136,6 +144,14 @@
   <data name="Keyboard_Ctrl" xml:space="preserve">
     <value>Ctrl</value>
     <comment>The ctrl key on the keyboard</comment>
+  </data>
+  <data name="Keyboard_Ctrl (Left)" xml:space="preserve">
+    <value>Ctrl (Left)</value>
+    <comment>The left control key on the keyboard</comment>
+  </data>
+  <data name="Keyboard_Ctrl (Right)" xml:space="preserve">
+    <value>Ctrl (Right)</value>
+    <comment>The right control key on the keyboard</comment>
   </data>
   <data name="Keyboard_Delete" xml:space="preserve">
     <value>Delete</value>
@@ -177,6 +193,46 @@
     <value>Num Lock</value>
     <comment>The num lock key on the keyboard</comment>
   </data>
+  <data name="Keyboard_Numpad 0" xml:space="preserve">
+    <value>NumPad 0</value>
+    <comment>The numpad 0 key on the keyboard</comment>
+  </data>
+  <data name="Keyboard_Numpad 1" xml:space="preserve">
+    <value>NumPad 1</value>
+    <comment>The numpad 1 key on the keyboard</comment>
+  </data>
+  <data name="Keyboard_Numpad 2" xml:space="preserve">
+    <value>NumPad 2</value>
+    <comment>The numpad 2 key on the keyboard</comment>
+  </data>
+  <data name="Keyboard_Numpad 3" xml:space="preserve">
+    <value>NumPad 3</value>
+    <comment>The numpad 3 key on the keyboard</comment>
+  </data>
+  <data name="Keyboard_Numpad 4" xml:space="preserve">
+    <value>NumPad 4</value>
+    <comment>The numpad 4 key on the keyboard</comment>
+  </data>
+  <data name="Keyboard_Numpad 5" xml:space="preserve">
+    <value>NumPad 5</value>
+    <comment>The numpad 5 key on the keyboard</comment>
+  </data>
+  <data name="Keyboard_Numpad 6" xml:space="preserve">
+    <value>NumPad 6</value>
+    <comment>The numpad 6 key on the keyboard</comment>
+  </data>
+  <data name="Keyboard_Numpad 7" xml:space="preserve">
+    <value>NumPad 7</value>
+    <comment>The numpad 7 key on the keyboard</comment>
+  </data>
+  <data name="Keyboard_Numpad 8" xml:space="preserve">
+    <value>NumPad 8</value>
+    <comment>The numpad 8 key on the keyboard</comment>
+  </data>
+  <data name="Keyboard_Numpad 9" xml:space="preserve">
+    <value>NumPad 9</value>
+    <comment>The numpad 9 key on the keyboard</comment>
+  </data>
   <data name="Keyboard_Pause" xml:space="preserve">
     <value>Pause</value>
     <comment>The pause key on the keyboard</comment>
@@ -209,9 +265,25 @@
     <value>Select</value>
     <comment>The select key on the keyboard</comment>
   </data>
+  <data name="Keyboard_Separator" xml:space="preserve">
+    <value>Seperator</value>
+    <comment>The separator key on the keyboard</comment>
+  </data>
   <data name="Keyboard_Shift" xml:space="preserve">
     <value>Shift</value>
     <comment>The shift key on the keyboard</comment>
+  </data>
+  <data name="Keyboard_Shift (Left)" xml:space="preserve">
+    <value>Shift (Left)</value>
+    <comment>The left shift key on the keyboard</comment>
+  </data>
+  <data name="Keyboard_Shift (Right)" xml:space="preserve">
+    <value>Shift (Right)</value>
+    <comment>The right shift key on the keyboard</comment>
+  </data>
+  <data name="Keyboard_Sleep" xml:space="preserve">
+    <value>Sleep</value>
+    <comment>The sleep key on the keyboard</comment>
   </data>
   <data name="Keyboard_Tab" xml:space="preserve">
     <value>Tab</value>
@@ -220,5 +292,13 @@
   <data name="Keyboard_Up" xml:space="preserve">
     <value>Up arrow</value>
     <comment>The up arrow key on the keyboard</comment>
+  </data>
+  <data name="Keyboard_Win (Left)" xml:space="preserve">
+    <value>Win (Left)</value>
+    <comment>The left Windows key on the keyboard</comment>
+  </data>
+  <data name="Keyboard_Win (Right)" xml:space="preserve">
+    <value>Win (Right)</value>
+    <comment>The right Windows key on the keyboard</comment>
   </data>
 </root>

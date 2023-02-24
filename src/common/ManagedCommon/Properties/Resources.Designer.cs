@@ -70,6 +70,24 @@ namespace ManagedCommon.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Alt (Left).
+        /// </summary>
+        internal static string Keyboard_Alt__Left_ {
+            get {
+                return ResourceManager.GetString("Keyboard_Alt (Left)", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Alt (Right).
+        /// </summary>
+        internal static string Keyboard_Alt__Right_ {
+            get {
+                return ResourceManager.GetString("Keyboard_Alt (Right)", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Menu.
         /// </summary>
         internal static string Keyboard_Apps_Menu {
@@ -102,6 +120,24 @@ namespace ManagedCommon.Properties {
         internal static string Keyboard_Ctrl {
             get {
                 return ResourceManager.GetString("Keyboard_Ctrl", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Ctrl (Left).
+        /// </summary>
+        internal static string Keyboard_Ctrl__Left_ {
+            get {
+                return ResourceManager.GetString("Keyboard_Ctrl (Left)", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Ctrl (Right).
+        /// </summary>
+        internal static string Keyboard_Ctrl__Right_ {
+            get {
+                return ResourceManager.GetString("Keyboard_Ctrl (Right)", resourceCulture);
             }
         }
         
@@ -196,6 +232,96 @@ namespace ManagedCommon.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to NumPad 0.
+        /// </summary>
+        internal static string Keyboard_Numpad_0 {
+            get {
+                return ResourceManager.GetString("Keyboard_Numpad 0", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to NumPad 1.
+        /// </summary>
+        internal static string Keyboard_Numpad_1 {
+            get {
+                return ResourceManager.GetString("Keyboard_Numpad 1", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to NumPad 2.
+        /// </summary>
+        internal static string Keyboard_Numpad_2 {
+            get {
+                return ResourceManager.GetString("Keyboard_Numpad 2", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to NumPad 3.
+        /// </summary>
+        internal static string Keyboard_Numpad_3 {
+            get {
+                return ResourceManager.GetString("Keyboard_Numpad 3", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to NumPad 4.
+        /// </summary>
+        internal static string Keyboard_Numpad_4 {
+            get {
+                return ResourceManager.GetString("Keyboard_Numpad 4", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to NumPad 5.
+        /// </summary>
+        internal static string Keyboard_Numpad_5 {
+            get {
+                return ResourceManager.GetString("Keyboard_Numpad 5", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to NumPad 6.
+        /// </summary>
+        internal static string Keyboard_Numpad_6 {
+            get {
+                return ResourceManager.GetString("Keyboard_Numpad 6", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to NumPad 7.
+        /// </summary>
+        internal static string Keyboard_Numpad_7 {
+            get {
+                return ResourceManager.GetString("Keyboard_Numpad 7", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to NumPad 8.
+        /// </summary>
+        internal static string Keyboard_Numpad_8 {
+            get {
+                return ResourceManager.GetString("Keyboard_Numpad 8", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to NumPad 9.
+        /// </summary>
+        internal static string Keyboard_Numpad_9 {
+            get {
+                return ResourceManager.GetString("Keyboard_Numpad 9", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Pause.
         /// </summary>
         internal static string Keyboard_Pause {
@@ -268,11 +394,47 @@ namespace ManagedCommon.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Seperator.
+        /// </summary>
+        internal static string Keyboard_Separator {
+            get {
+                return ResourceManager.GetString("Keyboard_Separator", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Shift.
         /// </summary>
         internal static string Keyboard_Shift {
             get {
                 return ResourceManager.GetString("Keyboard_Shift", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Shift (Left).
+        /// </summary>
+        internal static string Keyboard_Shift__Left_ {
+            get {
+                return ResourceManager.GetString("Keyboard_Shift (Left)", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Shift (Right).
+        /// </summary>
+        internal static string Keyboard_Shift__Right_ {
+            get {
+                return ResourceManager.GetString("Keyboard_Shift (Right)", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Sleep.
+        /// </summary>
+        internal static string Keyboard_Sleep {
+            get {
+                return ResourceManager.GetString("Keyboard_Sleep", resourceCulture);
             }
         }
         
@@ -291,6 +453,24 @@ namespace ManagedCommon.Properties {
         internal static string Keyboard_Up {
             get {
                 return ResourceManager.GetString("Keyboard_Up", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Win (Left).
+        /// </summary>
+        internal static string Keyboard_Win__Left_ {
+            get {
+                return ResourceManager.GetString("Keyboard_Win (Left)", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Win (Right).
+        /// </summary>
+        internal static string Keyboard_Win__Right_ {
+            get {
+                return ResourceManager.GetString("Keyboard_Win (Right)", resourceCulture);
             }
         }
     }
