@@ -34,8 +34,10 @@ namespace Microsoft.PowerToys.Settings.UI.Helpers
 
         public static string GetFolderDialog(IntPtr hwndOwner)
         {
-            StringBuilder sb = new StringBuilder(256);
-            IntPtr bufferAddress = Marshal.AllocHGlobal(256);
+            // windows MAX_PATH with long path enable can be approximated 32k char long
+            // allocating more than double (unicode) to hold the path
+            StringBuilder sb = new StringBuilder(65000);
+            IntPtr bufferAddress = Marshal.AllocHGlobal(65000);
             IntPtr pidl = IntPtr.Zero;
             BrowseInformation browseInfo;
             browseInfo.HwndOwner = hwndOwner;
