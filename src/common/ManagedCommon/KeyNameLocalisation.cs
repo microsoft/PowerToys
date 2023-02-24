@@ -37,7 +37,7 @@ namespace ManagedCommon
                 "Help" => Properties.Resources.Keyboard_Help,
                 "Home" => Properties.Resources.Keyboard_Home,
                 "Insert" => Properties.Resources.Keyboard_Insert,
-                "Left" => Properties.Resources.Keybaord_Left,
+                "Left" => Properties.Resources.Keyboard_Left,
                 "Num Lock" => Properties.Resources.Keyboard_NumLock,
                 "Pause" => Properties.Resources.Keyboard_Pause,
                 "PgDn" => Properties.Resources.Keyboard_PageDown,

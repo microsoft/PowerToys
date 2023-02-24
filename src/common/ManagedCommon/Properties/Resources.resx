@@ -117,10 +117,6 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
-  <data name="Keybaord_Left" xml:space="preserve">
-    <value>Left arrow</value>
-    <comment>The left arrow key on the keyboard</comment>
-  </data>
   <data name="Keyboard_Alt" xml:space="preserve">
     <value>Alt</value>
     <comment>The alt key on the keyboard</comment>
@@ -172,6 +168,10 @@
   <data name="Keyboard_Insert" xml:space="preserve">
     <value>Insert</value>
     <comment>The insert key on the keyboard</comment>
+  </data>
+  <data name="Keyboard_Left" xml:space="preserve">
+    <value>Left arrow</value>
+    <comment>The left arrow key on the keyboard</comment>
   </data>
   <data name="Keyboard_NumLock" xml:space="preserve">
     <value>Num Lock</value>

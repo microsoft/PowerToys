@@ -61,15 +61,6 @@ namespace ManagedCommon.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Left arrow.
-        /// </summary>
-        internal static string Keybaord_Left {
-            get {
-                return ResourceManager.GetString("Keybaord_Left", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to Alt.
         /// </summary>
         internal static string Keyboard_Alt {
@@ -183,6 +174,15 @@ namespace ManagedCommon.Properties {
         internal static string Keyboard_Insert {
             get {
                 return ResourceManager.GetString("Keyboard_Insert", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Left arrow.
+        /// </summary>
+        internal static string Keyboard_Left {
+            get {
+                return ResourceManager.GetString("Keyboard_Left", resourceCulture);
             }
         }
         
