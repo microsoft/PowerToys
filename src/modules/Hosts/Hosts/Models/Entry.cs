@@ -61,18 +61,22 @@ namespace Hosts.Models
 
         public string[] SplittedHosts { get; private set; }
 
+        public int Id { get; set; }
+
         public Entry()
         {
         }
 
-        public Entry(string line)
+        public Entry(int id, string line)
         {
+            Id = id;
             _line = line.Trim();
             Parse();
         }
 
-        public Entry(string address, string hosts, string comment, bool active)
+        public Entry(int id, string address, string hosts, string comment, bool active)
         {
+            Id = id;
             Address = address.Trim();
             Hosts = hosts.Trim();
             Comment = comment.Trim();

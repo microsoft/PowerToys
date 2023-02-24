@@ -70,7 +70,7 @@ namespace Hosts.Tests
             fileSystem.AddFile(service.HostsFilePath, new MockFileData(content));
 
             var (_, entries) = await service.ReadAsync();
-            entries.Add(new Entry("10.1.1.30", "host30 host30.local", "new entry", false));
+            entries.Add(new Entry(0, "10.1.1.30", "host30 host30.local", "new entry", false));
             await service.WriteAsync(string.Empty, entries);
 
             var result = fileSystem.GetFile(service.HostsFilePath);
