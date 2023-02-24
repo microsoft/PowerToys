@@ -274,7 +274,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             }
         }
 
-        // Are we running a dev build? (Please note that we verify this in the code that gets the newest version from Github too.)
+        // Are we running a dev build? (Please note that we verify this in the code that gets the newest version from GitHub too.)
         public static bool AutoUpdatesDisabledOnDevBuild
         {
             get
