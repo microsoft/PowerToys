@@ -61,6 +61,15 @@ namespace ManagedCommon.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Left arrow.
+        /// </summary>
+        internal static string Keybaord_Left {
+            get {
+                return ResourceManager.GetString("Keybaord_Left", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Alt.
         /// </summary>
         internal static string Keyboard_Alt {
@@ -88,6 +97,15 @@ namespace ManagedCommon.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Clear.
+        /// </summary>
+        internal static string Keyboard_Clear {
+            get {
+                return ResourceManager.GetString("Keyboard_Clear", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Ctrl.
         /// </summary>
         internal static string Keyboard_Ctrl {
@@ -106,6 +124,15 @@ namespace ManagedCommon.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Down arrow.
+        /// </summary>
+        internal static string Keyboard_Down {
+            get {
+                return ResourceManager.GetString("Keyboard_Down", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to End.
         /// </summary>
         internal static string Keyboard_End {
@@ -120,6 +147,24 @@ namespace ManagedCommon.Properties {
         internal static string Keyboard_Esc {
             get {
                 return ResourceManager.GetString("Keyboard_Esc", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Execute.
+        /// </summary>
+        internal static string Keyboard_Execute {
+            get {
+                return ResourceManager.GetString("Keyboard_Execute", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Help.
+        /// </summary>
+        internal static string Keyboard_Help {
+            get {
+                return ResourceManager.GetString("Keyboard_Help", resourceCulture);
             }
         }
         
@@ -178,6 +223,15 @@ namespace ManagedCommon.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Print.
+        /// </summary>
+        internal static string Keyboard_Print {
+            get {
+                return ResourceManager.GetString("Keyboard_Print", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Print Screen.
         /// </summary>
         internal static string Keyboard_PrintScreen {
@@ -187,11 +241,29 @@ namespace ManagedCommon.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Right arrow.
+        /// </summary>
+        internal static string Keyboard_Right {
+            get {
+                return ResourceManager.GetString("Keyboard_Right", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Scroll Lock.
         /// </summary>
         internal static string Keyboard_ScrollLock {
             get {
                 return ResourceManager.GetString("Keyboard_ScrollLock", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Select.
+        /// </summary>
+        internal static string Keyboard_Select {
+            get {
+                return ResourceManager.GetString("Keyboard_Select", resourceCulture);
             }
         }
         
@@ -210,6 +282,15 @@ namespace ManagedCommon.Properties {
         internal static string Keyboard_Tab {
             get {
                 return ResourceManager.GetString("Keyboard_Tab", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Up arrow.
+        /// </summary>
+        internal static string Keyboard_Up {
+            get {
+                return ResourceManager.GetString("Keyboard_Up", resourceCulture);
             }
         }
     }

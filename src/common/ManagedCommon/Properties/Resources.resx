@@ -117,6 +117,10 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
+  <data name="Keybaord_Left" xml:space="preserve">
+    <value>Left arrow</value>
+    <comment>The left arrow key on the keyboard</comment>
+  </data>
   <data name="Keyboard_Alt" xml:space="preserve">
     <value>Alt</value>
     <comment>The alt key on the keyboard</comment>
@@ -129,6 +133,10 @@
     <value>Caps Lock</value>
     <comment>The caps lock key on the keyboard</comment>
   </data>
+  <data name="Keyboard_Clear" xml:space="preserve">
+    <value>Clear</value>
+    <comment>The clear key on the keyboard</comment>
+  </data>
   <data name="Keyboard_Ctrl" xml:space="preserve">
     <value>Ctrl</value>
     <comment>The ctrl key on the keyboard</comment>
@@ -137,6 +145,10 @@
     <value>Delete</value>
     <comment>The delete key on the keyboard</comment>
   </data>
+  <data name="Keyboard_Down" xml:space="preserve">
+    <value>Down arrow</value>
+    <comment>The down arrow key on the keyboard</comment>
+  </data>
   <data name="Keyboard_End" xml:space="preserve">
     <value>End</value>
     <comment>The end key on the Keyboard</comment>
@@ -144,6 +156,14 @@
   <data name="Keyboard_Esc" xml:space="preserve">
     <value>Escape</value>
     <comment>The escape key on the keyboard</comment>
+  </data>
+  <data name="Keyboard_Execute" xml:space="preserve">
+    <value>Execute</value>
+    <comment>The execute key on the keyboard</comment>
+  </data>
+  <data name="Keyboard_Help" xml:space="preserve">
+    <value>Help</value>
+    <comment>The help key on the keyboard</comment>
   </data>
   <data name="Keyboard_Home" xml:space="preserve">
     <value>Homer</value>
@@ -169,13 +189,25 @@
     <value>Pause</value>
     <comment>The pause key on the keyboard</comment>
   </data>
+  <data name="Keyboard_Print" xml:space="preserve">
+    <value>Print</value>
+    <comment>The print key on the keyboard (not print screen)</comment>
+  </data>
   <data name="Keyboard_PrintScreen" xml:space="preserve">
     <value>Print Screen</value>
     <comment>The print screen key on the keyboard</comment>
   </data>
+  <data name="Keyboard_Right" xml:space="preserve">
+    <value>Right arrow</value>
+    <comment>The right arrow key on the keyboard</comment>
+  </data>
   <data name="Keyboard_ScrollLock" xml:space="preserve">
     <value>Scroll Lock</value>
     <comment>The scroll lock key on the keyboard</comment>
+  </data>
+  <data name="Keyboard_Select" xml:space="preserve">
+    <value>Select</value>
+    <comment>The select key on the keyboard</comment>
   </data>
   <data name="Keyboard_Shift" xml:space="preserve">
     <value>Shift</value>
@@ -184,5 +216,9 @@
   <data name="Keyboard_Tab" xml:space="preserve">
     <value>Tab</value>
     <comment>The tabulator key on the keyboard</comment>
+  </data>
+  <data name="Keyboard_Up" xml:space="preserve">
+    <value>Up arrow</value>
+    <comment>The up arrow key on the keyboard</comment>
   </data>
 </root>

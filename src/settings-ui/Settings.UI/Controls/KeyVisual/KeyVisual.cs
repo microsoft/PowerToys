@@ -92,7 +92,7 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
                 if (_keyVisual.Content.GetType() == typeof(string))
                 {
                     _keyVisual.Style = GetStyleSize("TextKeyVisualStyle");
-                    _keyVisual._keyPresenter.Content = KeyNameLocalisation.GetLocalisation((string)_keyVisual.Content) ?? _keyVisual.Content;
+                    _keyVisual._keyPresenter.Content = KeyNameLocalisation.GetLocalisation((string)_keyVisual.Content);
                 }
                 else
                 {
