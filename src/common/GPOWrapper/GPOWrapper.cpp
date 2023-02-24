@@ -80,6 +80,10 @@ namespace winrt::PowerToys::GPOWrapper::implementation
     {
         return static_cast<GpoRuleConfigured>(powertoys_gpo::getConfiguredMouseHighlighterEnabledValue());
     }
+    GpoRuleConfigured GPOWrapper::GetConfiguredMouseJumpEnabledValue()
+    {
+        return static_cast<GpoRuleConfigured>(powertoys_gpo::getConfiguredMouseJumpEnabledValue());
+    }
     GpoRuleConfigured GPOWrapper::GetConfiguredMousePointerCrosshairsEnabledValue()
     {
         return static_cast<GpoRuleConfigured>(powertoys_gpo::getConfiguredMousePointerCrosshairsEnabledValue());

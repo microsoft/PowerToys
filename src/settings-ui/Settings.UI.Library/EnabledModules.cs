@@ -214,6 +214,22 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             }
         }
 
+        private bool mouseJump = true;
+
+        [JsonPropertyName("MouseJump")]
+        public bool MouseJump
+        {
+            get => mouseJump;
+            set
+            {
+                if (mouseJump != value)
+                {
+                    LogTelemetryEvent(value);
+                    mouseJump = value;
+                }
+            }
+        }
+
         private bool alwaysOnTop = true;
 
         [JsonPropertyName("AlwaysOnTop")]

@@ -216,6 +216,7 @@ cim
 CImage
 cla
 clangformat
+clayton
 CLASSDC
 CLASSNOTAVAILABLE
 clickable
@@ -536,6 +537,7 @@ EXTENDEDKEY
 EXTENDEDVERBS
 eyetracker
 fabricbot
+fancymouse
 fancyzones
 FANCYZONESDRAWLAYOUTTEST
 FANCYZONESEDITOR

@@ -26,6 +26,7 @@ namespace winrt::PowerToys::GPOWrapper::implementation
         static GpoRuleConfigured GetConfiguredKeyboardManagerEnabledValue();
         static GpoRuleConfigured GetConfiguredFindMyMouseEnabledValue();
         static GpoRuleConfigured GetConfiguredMouseHighlighterEnabledValue();
+        static GpoRuleConfigured GetConfiguredMouseJumpEnabledValue();
         static GpoRuleConfigured GetConfiguredMousePointerCrosshairsEnabledValue();
         static GpoRuleConfigured GetConfiguredPowerRenameEnabledValue();
         static GpoRuleConfigured GetConfiguredPowerLauncherEnabledValue();
