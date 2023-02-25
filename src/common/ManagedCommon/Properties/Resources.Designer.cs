@@ -556,7 +556,7 @@ namespace ManagedCommon.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Seperator.
+        ///   Looks up a localized string similar to Separator.
         /// </summary>
         internal static string Keyboard_Separator {
             get {

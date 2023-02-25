@@ -338,7 +338,7 @@
     <comment>The select media key on the keyboard</comment>
   </data>
   <data name="Keyboard_Separator" xml:space="preserve">
-    <value>Seperator</value>
+    <value>Separator</value>
     <comment>The separator key on the keyboard</comment>
   </data>
   <data name="Keyboard_Shift" xml:space="preserve">
