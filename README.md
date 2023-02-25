@@ -36,8 +36,8 @@ Microsoft PowerToys is a set of utilities for power users to tune and streamline
 
 Go to [Microsoft PowerToys GitHub releases page][github-release-link], click on `Assets` at the bottom to show the files available in the release. Please use the appropriate PowerToys installer that matches your machine's architecture. For most, it is `x64`.
  
- - **For x64 processors (most common):** [PowerToysSetup-0.67.0-x64.exe](https://github.com/microsoft/PowerToys/releases/download/v0.67.0/PowerToysSetup-0.67.0-x64.exe)
- - **For ARM64 processors:** [PowerToysSetup-0.67.0-arm64.exe](https://github.com/microsoft/PowerToys/releases/download/v0.67.0/PowerToysSetup-0.67.0-arm64.exe)
+ - **For x64 processors (most common):** [PowerToysSetup-0.68.0-x64.exe](https://github.com/microsoft/PowerToys/releases/download/v0.68.0/PowerToysSetup-0.68.0-x64.exe)
+ - **For ARM64 processors:** [PowerToysSetup-0.68.0-arm64.exe](https://github.com/microsoft/PowerToys/releases/download/v0.68.0/PowerToysSetup-0.68.0-arm64.exe)
 
 This is our preferred method.
 
@@ -72,19 +72,23 @@ For guidance on developing for PowerToys, please read the [developer docs](/doc/
 
 Our [prioritized roadmap][roadmap] of features and utilities that the core team is focusing on.
 
-### 0.67 - January 2023 Update
+### 0.68 - February 2023 Update
 
-In this release, we focused on releasing new features and improvements.
+In this release, we focused on releasing new features, stability and improvements.
 
 **Highlights**
 
-- Added an option for PowerToys Run to tab through results instead of context buttons. Thanks [@maws6502](https://github.com/maws6502)!
-- All PowerToys registry entries are moved from machine scope (HKLM) to user scope (HKCU).
-- Quick access system tray launcher. Thanks [@niels9001](https://github.com/niels9001)!
+- New utility: Paste as Plain Text allows pasting the text contents of your clipboard without formatting. Note: the formatted text in the clipboard is replaced with the unformatted text. Thanks [@carlos-zamora](https://github.com/carlos-zamora)!
+- New utility: Mouse Jump allows to quickly move the mouse pointer long distances on single or across screens. Thanks [@mikeclayton](https://github.com/mikeclayton)!
+- Add new GPO policies for automatic update downloads, update toast notifications and automatic background update check. Thanks [@htcfreek](https://github.com/htcfreek)!
+- Support MSC and CPL files in "Run command" results of PowerToys Run Program plugin. Thanks [@htcfreek](https://github.com/htcfreek)!
+- Add support for log2 and log10 in PowerToys Run Calculator plugin. Thanks [@RickLuiken](https://github.com/RickLuiken)!
 
-### Awake
+### General
 
-- Disable instead of hiding "Keep screen on" option.
+- Improve metered network detection in runner. Thanks [@davidegiacometti](https://github.com/davidegiacometti)!
+- Update PowerToys logo used by installer. Thanks [@ChaseKnowlden](https://github.com/ChaseKnowlden1)!
+- Add new GPO policies for automatic update downloads, update toast notifications and automatic background update check. Thanks [@htcfreek](https://github.com/htcfreek)!
 
 ### FancyZones
 
@@ -92,55 +96,68 @@ In this release, we focused on releasing new features and improvements.
 
 ### File explorer add-ons
 
-- Fixed escaping HTML-sensitive characters when previewing developer files. Thanks [@davidegiacometti](https://github.com/davidegiacometti)!
+- Add Developer files previewer option to set max file size and fix styling issue. [@Aaron-Junker](https://github.com/Aaron-Junker)!
+- Improve Developer files previewer exception handling and error messages display.
 
-### Image Resizer
+### Hosts file editor
 
-- Improved code quality around a silent crash that was being reported to Microsoft servers.
+- Improve hosts file loading. Thanks [@davidegiacometti](https://github.com/davidegiacometti)!
+
+### Keyboard Manager
+
+- Fix typo in Keyboard Manager Editor. Thanks [@ChristianLW](https://github.com/ChristianLW)!
+
+### Mouse Utils
+
+- Resolve grammatical error in Mouse Highlighter description. Thanks [@WordlessSafe1](https://github.com/WordlessSafe1)!
+- New utility: Mouse Jump allows to quickly move the mouse pointer long distances on single or across screens. Thanks [@mikeclayton](https://github.com/mikeclayton)!
+
+### Paste as Plain Text
+
+- New utility: Paste as Plain Text allows pasting the text contents of your clipboard without formatting. Note: the formatted text in the clipboard is replaced with the unformatted text. Thanks [@carlos-zamora](https://github.com/carlos-zamora)!
 
 ### PowerToys Run
 
-- Add option to tab through results only. Thanks [@maws6502](https://github.com/maws6502)!
-- System plugin - Updated Recycle Bin command to allow opening the Recycle Bin. Thanks [@htcfreek](https://github.com/htcfreek)!
-- System plugin - Improved Recycle Bin command to not block PT Run while the deletion is running. Thanks [@htcfreek](https://github.com/htcfreek)!
-- System plugin - Small other changes to improve the usability of the Recycle Bin command. Thanks [@htcfreek](https://github.com/htcfreek)!
-- WindowWalker plugin - Show all open windows with action keyword. Thanks [@davidegiacometti](https://github.com/davidegiacometti)!
+- Show Steam (steam://open/) shortcuts in the Program plugin. 
+- Localize paths of Program plugin results. Thanks [@htcfreek](https://github.com/htcfreek)!
+- Support MSC and CPL files in "Run command" results of Program plugin. Thanks [@htcfreek](https://github.com/htcfreek)!
+- System plugin: Setting for separate "Open/Empty Recycle bin" results or single one with context menu. Thanks [@htcfreek](https://github.com/htcfreek)!
+- Add support for log2 and log10 in Calculator plugin. Thanks [@RickLuiken](https://github.com/RickLuiken)!
+- Removed TimeZone plugin.
+
+### Shortcut Guide
+
+- Dissmiss Shortcut Guide with mouse click. Thanks [@davidegiacometti](https://github.com/davidegiacometti)!
 
 ### Quick Accent
 
-- Added dashes characters. Thanks [@Aaron-Junker](https://github.com/Aaron-Junker)!
-- Added Estonian characters. Thanks [@jovark](https://github.com/jovark)!
-- Added Hebrew characters. Thanks [@Evyatar-E](https://github.com/Evyatar-E)!
-- Added diacritical marks. Thanks [@Aaron-Junker](https://github.com/Aaron-Junker)!
-- Added Norwegian characters. Thanks [@norwayman22](https://github.com/norwayman22)!
+- Added Lithuanian characters. Thanks [@saulens22](https://github.com/saulens22)!
+- Added additional (Chinese) characters. Thanks [@ChaseKnowlden](https://github.com/ChaseKnowlden)!
+
 
 ### Settings
 
-- Fixed URL click crash on the "What's New" screen.
-- Added quick access system tray launcher. Thanks [@niels9001](https://github.com/niels9001)!
+- Add missing flyout borders on Windows 10. Thanks [@davidegiacometti](https://github.com/davidegiacometti)!
+- Add Experimentation settings landing page.
+- Show icons of user-installed PowerToys Run plugins. Thanks [@al2me6](https://github.com/al2me6)!
+- Fixed crash when clicking Browse for backup and restore location while running elevated.
 
 ### Documentation
 
-- Added PowerToys [disk usage footprint document](/doc/devdocs/disk-usage-footprint.md).
-- Fixed some grammar issues on main readme / Wiki.  Thanks [@CanePlayz](https://github.com/CanePlayz)!
+- Improve GPO docs and the layout of the disabled Experiments setting. Thanks [@htcfreek](https://github.com/htcfreek)!
 
 ### Development
 
-- Verify notice.md file and used NuGet packages are synced.
 - Turned on C++ code analysis and incrementally fixing warnings.
-- Automatically add list of .NET Runtime deps to Installer during build. Thanks [@snickler](https://github.com/snickler)!
-- Move all installer registry entries to HKCU.
-- Refactor installer - extract module related stuff from Product.wxs to per-module .wxs file.
-- Enhance ARM64 build configuration verification. Thanks [@snickler](https://github.com/snickler)!
-- Helped identify a WebView2 issue affecting PowerToys File explorer add-ons, which has been fixed upstream and released as an update through the usual Windows Update channels.
+- Centralize .NET NuGet packages versions. Thanks [@snickler](https://github.com/snickler)!
+- Separate PowerToys installer logs and MSI logs to different files. 
 
-#### What is being planned for version 0.68
+#### What is being planned for version 0.69
 
-For [v0.68][github-next-release-work], we'll work on below:
+For [v0.69][github-next-release-work], we'll work on below:
 
 - Allow installing without UAC.
 - New utility: [PowerToys Peek](https://github.com/microsoft/PowerToys/issues/80)
-- New utility: [Paste as plain text](https://github.com/microsoft/PowerToys/issues/1684)
 - Stability / bug fixes
 
 ## PowerToys Community
@@ -168,5 +185,5 @@ The application logs basic telemetry. Our Telemetry Data page (Coming Soon) has 
 [usingPowerToys-docs-link]: https://aka.ms/powertoys-docs
 
 <!-- items that need to be updated release to release -->
-[github-next-release-work]: https://github.com/microsoft/PowerToys/issues?q=is%3Aopen+is%3Aissue+project%3Amicrosoft%2FPowerToys%2F41
-[github-current-release-work]: https://github.com/microsoft/PowerToys/issues?q=is%3Aopen+is%3Aissue+project%3Amicrosoft%2FPowerToys%2F40
+[github-next-release-work]: https://github.com/microsoft/PowerToys/issues?q=is%3Aopen+is%3Aissue+project%3Amicrosoft%2FPowerToys%2F42
+[github-current-release-work]: https://github.com/microsoft/PowerToys/issues?q=is%3Aopen+is%3Aissue+project%3Amicrosoft%2FPowerToys%2F41
