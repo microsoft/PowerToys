@@ -243,7 +243,7 @@
   </data>
   <data name="Keyboard_Next Track" xml:space="preserve">
     <value>Next Track</value>
-    <comment>The next track key on the keyboard; Track like in "musik track"</comment>
+    <comment>The next track key on the keyboard; Track like in "music track"</comment>
   </data>
   <data name="Keyboard_Num Lock" xml:space="preserve">
     <value>Num Lock</value>
