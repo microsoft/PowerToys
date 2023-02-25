@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Linq.Expressions;
+using System.Threading;
 using System.Threading.Tasks;
 using Common.UI;
 using CommunityToolkit.Mvvm.ComponentModel;
@@ -34,6 +35,7 @@ namespace Hosts.ViewModels
 
         private bool _readingHosts;
         private bool _disposed;
+        private CancellationTokenSource _tokenSource;
 
         [ObservableProperty]
         private Entry _selected;
@@ -185,7 +187,9 @@ namespace Hosts.ViewModels
                 });
                 _readingHosts = false;
 
-                FindDuplicates();
+                _tokenSource?.Cancel();
+                _tokenSource = new CancellationTokenSource();
+                FindDuplicates(_tokenSource.Token);
             });
         }
 
@@ -298,16 +302,26 @@ namespace Hosts.ViewModels
             });
         }
 
-        private void FindDuplicates()
+        private void FindDuplicates(CancellationToken cancellationToken)
         {
             foreach (var entry in _entries)
             {
-                if (!_userSettings.LoopbackDuplicates && _loopbackAddresses.Contains(entry.Address))
+                try
                 {
-                    continue;
-                }
+                    cancellationToken.ThrowIfCancellationRequested();
 
-                SetDuplicate(entry);
+                    if (!_userSettings.LoopbackDuplicates && _loopbackAddresses.Contains(entry.Address))
+                    {
+                        continue;
+                    }
+
+                    SetDuplicate(entry);
+                }
+                catch (OperationCanceledException)
+                {
+                    Logger.LogInfo("FindDuplicates cancelled");
+                    return;
+                }
             }
         }
 
