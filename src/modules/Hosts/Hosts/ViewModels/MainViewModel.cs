@@ -32,7 +32,7 @@ namespace Hosts.ViewModels
             "0:0:0:0:0:0:0:1",
         };
 
-        private bool _initialized;
+        private bool _readingHosts;
         private bool _disposed;
 
         [ObservableProperty]
@@ -85,18 +85,8 @@ namespace Hosts.ViewModels
             _hostsService = hostService;
             _userSettings = userSettings;
 
-            _hostsService.FileChanged += (s, e) =>
-            {
-                _dispatcherQueue.TryEnqueue(() => FileChanged = true);
-            };
-
-            _userSettings.LoopbackDuplicatesChanged += (s, e) =>
-            {
-                if (_initialized)
-                {
-                    ReadHosts();
-                }
-            };
+            _hostsService.FileChanged += (s, e) => _dispatcherQueue.TryEnqueue(() => FileChanged = true);
+            _userSettings.LoopbackDuplicatesChanged += (s, e) => ReadHosts();
         }
 
         public void Add(Entry entry)
@@ -161,7 +151,10 @@ namespace Hosts.ViewModels
         [RelayCommand]
         public void ReadHosts()
         {
-            _initialized = false;
+            if (_readingHosts)
+            {
+                return;
+            }
 
             _dispatcherQueue.TryEnqueue(() =>
             {
@@ -171,6 +164,7 @@ namespace Hosts.ViewModels
 
             Task.Run(async () =>
             {
+                _readingHosts = true;
                 (_additionalLines, var entries) = await _hostsService.ReadAsync();
 
                 await _dispatcherQueue.EnqueueAsync(() =>
@@ -185,12 +179,13 @@ namespace Hosts.ViewModels
                     _entries.CollectionChanged += Entries_CollectionChanged;
                     Entries = new AdvancedCollectionView(_entries, true);
                     Entries.SortDescriptions.Add(new SortDescription(nameof(Entry.Id), SortDirection.Ascending));
+                    ApplyFilters();
                     OnPropertyChanged(nameof(Entries));
                     IsLoading = false;
                 });
+                _readingHosts = false;
 
                 FindDuplicates();
-                _initialized = true;
             });
         }
 
@@ -318,11 +313,6 @@ namespace Hosts.ViewModels
 
         private void FindDuplicates(string address, IEnumerable<string> hosts)
         {
-            if (!_userSettings.LoopbackDuplicates && _loopbackAddresses.Contains(address))
-            {
-                return;
-            }
-
             var entries = _entries.Where(e =>
                 string.Equals(e.Address, address, StringComparison.InvariantCultureIgnoreCase)
                 || hosts.Intersect(e.SplittedHosts, StringComparer.InvariantCultureIgnoreCase).Any());
@@ -335,6 +325,16 @@ namespace Hosts.ViewModels
 
         private void SetDuplicate(Entry entry)
         {
+            if (!_userSettings.LoopbackDuplicates && _loopbackAddresses.Contains(entry.Address))
+            {
+                _dispatcherQueue.TryEnqueue(() =>
+                {
+                    entry.Duplicate = false;
+                });
+
+                return;
+            }
+
             var hosts = entry.SplittedHosts;
 
             var duplicate = _entries.FirstOrDefault(e => e != entry
