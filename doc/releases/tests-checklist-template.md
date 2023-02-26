@@ -495,6 +495,16 @@ Mouse Pointer Crosshairs:
     - [ ] Crosshairs border color
     - [ ] Crosshairs border size
 
+Mouse Jump:
+  * Enable Mouse Jump. Then:
+    - [ ] Press the activation shortcut and verify the screens preview appears.
+    - [ ] Change activation shortcut and verify that new shorctut triggers Mouse Jump.
+    - [ ] Click around the screen preview and ensure that mouse cursor jumped to clicked location.
+    - [ ] Reorder screens in Display settings and confirm that Mouse Jump reflects the change and still works correctly.
+    - [ ] Change scaling of screens and confirm that Mouse Jump still works correctly.
+    - [ ] Unplug additional monitors and confirm that Mouse Jump still works correctly.
+    - [ ] Disable Mouse Jump and verify that the module is not activated when you press the activation shortcut.
+
 ## VCM
  - [ ] Check "Hide toolbar when both camera and microphone are unmuted" and verify that it works
  - [ ] Uncheck it, mute the microphone with the hotkey and make sure the toolbar doesn't hide after a timeout
@@ -626,3 +636,11 @@ Mouse Pointer Crosshairs:
    - [ ] Verify the module is not enabled. (Markdown files won't appear in the preview pane)
    - [ ] Open settings and verify the module is not enabled and you can't enable it.
  * Remember to reset all you Settings to Not Configured after the tests, both in Conputer and User Configurations.
+
+### Paste As Plain Text
+ * Copy some rich text (e.g word of the text is different color, another work is bold, underlined, etd.). Then:
+   - [ ] Paste the text using standard Windows Ctrl + V shortcut and ensure that rich text is pasted (with all colors, formatting, etc.)
+   - [ ] Paste the text using Paste As Plain Text activation shortcut and ensure that plain text without any formatting is pasted.
+   - [ ] Paste again the text using standard Windows Ctrl + V shortcut and ensure the text is now pasted plain without formatting as well.
+   - [ ] Change the activation shorctut and ensure that Paste As Plain Text is triggered using new shortcut.
+   - [ ] Disable the module and ensure that text is not being pasted using activation shortcut. 

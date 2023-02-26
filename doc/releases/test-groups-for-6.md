@@ -24,6 +24,7 @@ All:
 - Hosts File Editor
 - File Locksmith
 - GPO
+- Paste As Plain Text
 ```
 
 ```
@@ -36,7 +37,9 @@ Group 1:
 - Screen Ruler
 - File Locksmith
 - GPO
+- Paste As Plain Text
 ```
+
 ```
 Group 2:
 - PowerRename
@@ -47,7 +50,9 @@ Group 2:
 - VCM
 - AlwaysOnTop
 - Hosts File Editor
+- File Locksmith
 ```
+
 ```
 Group 3:
 - Image Resizer
@@ -58,7 +63,9 @@ Group 3:
 - Awake
 - Text Extractor
 - GPO
+- Paste As Plain Text
 ```
+
 ```
 Group 4:
 - Functional
@@ -69,7 +76,9 @@ Group 4:
 - AlwaysOnTop
 - Screen Ruler
 - Quick Accent
+- Hosts File Editor
 ```
+
 ```
 Group 5:
 - Install
@@ -79,8 +88,8 @@ Group 5:
 - FZ
 - File Explorer Add-ons
 - Awake
-- File Locksmith
 ```
+
 ```
 Group 6:
 - Color Picker
@@ -90,5 +99,4 @@ Group 6:
 - VCM
 - Quick Accent
 - Text Extractor
-- Hosts File Editor
 ```
