@@ -1295,8 +1295,10 @@ PEXCEPTION
 pfn
 pfo
 pft
+PGDN
 pgp
 pguid
+PGUP
 PHANDLE
 PHANDLER
 phbm
