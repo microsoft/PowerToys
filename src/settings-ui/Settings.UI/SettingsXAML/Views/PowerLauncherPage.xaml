@@ -154,11 +154,11 @@
                     </controls:SettingsCard>
 
                     <labs:SettingsCard
-                        x:Uid="PowerLauncher_ShouldUsePinyin"
+                        x:Uid="PowerLauncher_UsePinyin"
                         HeaderIcon="{ui:FontIcon FontFamily={StaticResource SymbolThemeFontFamily}, Glyph=&#xE98A;}">
                         <ToggleSwitch
                             x:Uid="ToggleSwitch"
-                            IsOn="{x:Bind ViewModel.ShouldUsePinyin, Mode=TwoWay}" />
+                            IsOn="{x:Bind ViewModel.UsePinyin, Mode=TwoWay}" />
                     </labs:SettingsCard>
 
                     <controls:SettingsCard x:Uid="PowerLauncher_GenerateThumbnailsFromFiles">
