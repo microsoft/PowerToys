@@ -72,8 +72,8 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         [JsonPropertyName("search_wait_for_slow_results")]
         public bool SearchWaitForSlowResults { get; set; }
 
-        [JsonPropertyName("should_use_pinyin")]
-        public bool ShouldUsePinyin { get; set; }
+        [JsonPropertyName("use_pinyin")]
+        public bool UsePinyin { get; set; }
 
         [JsonPropertyName("generate_thumbnails_from_files")]
         public bool GenerateThumbnailsFromFiles { get; set; }
@@ -106,7 +106,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             SearchQueryTuningEnabled = false;
             SearchWaitForSlowResults = false;
             GenerateThumbnailsFromFiles = true;
-            ShouldUsePinyin = false;
+            UsePinyin = false;
         }
     }
 }
