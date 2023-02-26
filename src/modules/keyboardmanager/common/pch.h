@@ -7,3 +7,4 @@
 #include <algorithm>
 #include <stdlib.h>
 #include <ProjectTelemetry.h>
+#include <../utils/resources.h>

@@ -24,6 +24,9 @@
       <Platform>x64</Platform>
     </ProjectConfiguration>
   </ItemGroup>
+  <Target Name="GenerateResourceFiles" BeforeTargets="PrepareForBuild">
+    <Exec Command="powershell -NonInteractive -executionpolicy Unrestricted $(SolutionDir)tools\build\convert-resx-to-rc.ps1 . resource.base.h resource.h interop.base.rc interop.rc" />
+  </Target>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>16.0</VCProjectVersion>
     <ProjectGuid>{F055103B-F80B-4D0C-BF48-057C55620033}</ProjectGuid>
@@ -105,11 +108,14 @@
   <ItemGroup>
     <ClInclude Include="..\..\modules\videoconference\VideoConferenceShared\MicrophoneDevice.h" />
     <ClInclude Include="..\..\modules\videoconference\VideoConferenceShared\VideoCaptureDeviceList.h" />
+    <ClInclude Include="GetLocalisation.h" />
     <ClInclude Include="HotkeyManager.h" />
     <ClInclude Include="KeyboardHook.h" />
     <ClInclude Include="pch.h" />
     <ClInclude Include="resource.h" />
     <ClInclude Include="shared_constants.h" />
+    <ClInclude Include="Generated Files/resource.h" />
+    <None Include="resource.base.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\modules\videoconference\VideoConferenceShared\MicrophoneDevice.cpp">
@@ -130,10 +136,14 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ResourceCompile Include="interop.rc" />
+    <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="packages.config" />
+    <ResourceCompile Include="Generated Files/interop.rc" />
+    <None Include="interop.base.rc" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources.resx" />
   </ItemGroup>
   <ImportGroup Label="ExtensionTargets" />
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

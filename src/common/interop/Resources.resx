@@ -121,15 +121,15 @@
     <value>Alt</value>
     <comment>The alt key on the keyboard</comment>
   </data>
-  <data name="Keyboard_Alt (Left)" xml:space="preserve">
+  <data name="Keyboard_Alt_Left" xml:space="preserve">
     <value>Alt (Left)</value>
     <comment>The left alt key on the keyboard</comment>
   </data>
-  <data name="Keyboard_Alt (Right)" xml:space="preserve">
+  <data name="Keyboard_Alt_Right" xml:space="preserve">
     <value>Alt (Right)</value>
     <comment>The right alt key on the keyboard</comment>
   </data>
-  <data name="Keyboard_Apps/Menu" xml:space="preserve">
+  <data name="Keyboard_Apps_Menu" xml:space="preserve">
     <value>Menu</value>
     <comment>The menu key on the keyboard</comment>
   </data>
@@ -137,35 +137,43 @@
     <value>Attn</value>
     <comment>The attn key on the keyboard; Attention interrupt key</comment>
   </data>
-  <data name="Keyboard_Browser Back" xml:space="preserve">
+  <data name="Keyboard_Backspace" xml:space="preserve">
+    <value>Backspace</value>
+    <comment>The backspace key on the keyboard</comment>
+  </data>
+  <data name="Keyboard_Break" xml:space="preserve">
+    <value>Break</value>
+    <comment>The break key on the keyboard</comment>
+  </data>
+  <data name="Keyboard_Browser_Back" xml:space="preserve">
     <value>Browser Back</value>
     <comment>The browser back key on the keyboard; back like in "navigating back"</comment>
   </data>
-  <data name="Keyboard_Browser Favorites" xml:space="preserve">
+  <data name="Keyboard_Browser_Favorites" xml:space="preserve">
     <value>Browser Favorites</value>
     <comment>The browser favorites key on the keyboard</comment>
   </data>
-  <data name="Keyboard_Browser Forward" xml:space="preserve">
+  <data name="Keyboard_Browser_Forward" xml:space="preserve">
     <value>Browser Forward</value>
     <comment>The browser forward key on the keyboard; forward like in "navigating forward"</comment>
   </data>
-  <data name="Keyboard_Browser Home" xml:space="preserve">
+  <data name="Keyboard_Browser_Home" xml:space="preserve">
     <value>Browser Home</value>
     <comment>The browser home key on the keyboard; home like in "homepage"</comment>
   </data>
-  <data name="Keyboard_Browser Refresh" xml:space="preserve">
+  <data name="Keyboard_Browser_Refresh" xml:space="preserve">
     <value>Browser Refresh</value>
     <comment>The browser refresh key on the keyboard; refresh like in "refreshing the wab page"</comment>
   </data>
-  <data name="Keyboard_Browser Search" xml:space="preserve">
+  <data name="Keyboard_Browser_Search" xml:space="preserve">
     <value>Browser Search</value>
     <comment>The browser search key on the keyboard</comment>
   </data>
-  <data name="Keyboard_Browser Stop" xml:space="preserve">
+  <data name="Keyboard_Browser_Stop" xml:space="preserve">
     <value>Browser Stop</value>
     <comment>The browser stop key on the keyboard; stop like in "stop loading the webpage"</comment>
   </data>
-  <data name="Keyboard_Caps Lock" xml:space="preserve">
+  <data name="Keyboard_Caps_Lock" xml:space="preserve">
     <value>Caps Lock</value>
     <comment>The caps lock key on the keyboard</comment>
   </data>
@@ -177,11 +185,11 @@
     <value>Ctrl</value>
     <comment>The ctrl key on the keyboard</comment>
   </data>
-  <data name="Keyboard_Ctrl (Left)" xml:space="preserve">
+  <data name="Keyboard_Ctrl_Left" xml:space="preserve">
     <value>Ctrl (Left)</value>
     <comment>The left control key on the keyboard</comment>
   </data>
-  <data name="Keyboard_Ctrl (Right)" xml:space="preserve">
+  <data name="Keyboard_Ctrl_Right" xml:space="preserve">
     <value>Ctrl (Right)</value>
     <comment>The right control key on the keyboard</comment>
   </data>
@@ -201,7 +209,11 @@
     <value>End</value>
     <comment>The end key on the Keyboard</comment>
   </data>
-  <data name="Keyboard_Erase EOF" xml:space="preserve">
+  <data name="Keyboard_Enter" xml:space="preserve">
+    <value>Enter</value>
+    <comment>The enter key on the keyboard</comment>
+  </data>
+  <data name="Keyboard_Erase_EOF" xml:space="preserve">
     <value>Erase EOF</value>
     <comment>The erase eof key on the keyboard; Erase end of file key</comment>
   </data>
@@ -218,18 +230,18 @@
     <comment>The help key on the keyboard</comment>
   </data>
   <data name="Keyboard_Home" xml:space="preserve">
-    <value>Homer</value>
+    <value>Home</value>
     <comment>The home key on the keyboard</comment>
   </data>
-  <data name="Keyboard_IME Convert" xml:space="preserve">
+  <data name="Keyboard_IME_Convert" xml:space="preserve">
     <value>IME Convert</value>
     <comment>The IME convert key on the keyboard; Use https://support.microsoft.com/en-us/windows/microsoft-japanese-ime-da40471d-6b91-4042-ae8b-713a96476916 as reference</comment>
   </data>
-  <data name="Keyboard_IME Mode Change" xml:space="preserve">
+  <data name="Keyboard_IME_Mode_Change" xml:space="preserve">
     <value>IME Mode Change</value>
     <comment>The IME mode change key on the keyboard; Use https://support.microsoft.com/en-us/windows/microsoft-japanese-ime-da40471d-6b91-4042-ae8b-713a96476916 as reference</comment>
   </data>
-  <data name="Keyboard_IME Non-Convert" xml:space="preserve">
+  <data name="Keyboard_IME_Non_Convert" xml:space="preserve">
     <value>IME Non-Convert</value>
     <comment>The IME non-convert key on the keyboard; Use https://support.microsoft.com/en-us/windows/microsoft-japanese-ime-da40471d-6b91-4042-ae8b-713a96476916 as reference</comment>
   </data>
@@ -241,53 +253,53 @@
     <value>Left arrow</value>
     <comment>The left arrow key on the keyboard</comment>
   </data>
-  <data name="Keyboard_Next Track" xml:space="preserve">
+  <data name="Keyboard_Next_Track" xml:space="preserve">
     <value>Next Track</value>
     <comment>The next track key on the keyboard; Track like in "music track"</comment>
   </data>
-  <data name="Keyboard_Num Lock" xml:space="preserve">
-    <value>Num Lock</value>
-    <comment>The num lock key on the keyboard</comment>
-  </data>
-  <data name="Keyboard_NumPad 0" xml:space="preserve">
+  <data name="Keyboard_NumPad0" xml:space="preserve">
     <value>NumPad 0</value>
     <comment>The NumPad 0 key on the keyboard</comment>
   </data>
-  <data name="Keyboard_NumPad 1" xml:space="preserve">
+  <data name="Keyboard_NumPad1" xml:space="preserve">
     <value>NumPad 1</value>
     <comment>The NumPad 1 key on the keyboard</comment>
   </data>
-  <data name="Keyboard_NumPad 2" xml:space="preserve">
+  <data name="Keyboard_NumPad2" xml:space="preserve">
     <value>NumPad 2</value>
     <comment>The NumPad 2 key on the keyboard</comment>
   </data>
-  <data name="Keyboard_NumPad 3" xml:space="preserve">
+  <data name="Keyboard_NumPad3" xml:space="preserve">
     <value>NumPad 3</value>
     <comment>The NumPad 3 key on the keyboard</comment>
   </data>
-  <data name="Keyboard_NumPad 4" xml:space="preserve">
+  <data name="Keyboard_NumPad4" xml:space="preserve">
     <value>NumPad 4</value>
     <comment>The NumPad 4 key on the keyboard</comment>
   </data>
-  <data name="Keyboard_NumPad 5" xml:space="preserve">
+  <data name="Keyboard_NumPad5" xml:space="preserve">
     <value>NumPad 5</value>
     <comment>The NumPad 5 key on the keyboard</comment>
   </data>
-  <data name="Keyboard_NumPad 6" xml:space="preserve">
+  <data name="Keyboard_NumPad6" xml:space="preserve">
     <value>NumPad 6</value>
     <comment>The NumPad 6 key on the keyboard</comment>
   </data>
-  <data name="Keyboard_NumPad 7" xml:space="preserve">
+  <data name="Keyboard_NumPad7" xml:space="preserve">
     <value>NumPad 7</value>
     <comment>The NumPad 7 key on the keyboard</comment>
   </data>
-  <data name="Keyboard_NumPad 8" xml:space="preserve">
+  <data name="Keyboard_NumPad8" xml:space="preserve">
     <value>NumPad 8</value>
     <comment>The NumPad 8 key on the keyboard</comment>
   </data>
-  <data name="Keyboard_NumPad 9" xml:space="preserve">
+  <data name="Keyboard_NumPad9" xml:space="preserve">
     <value>NumPad 9</value>
     <comment>The NumPad 9 key on the keyboard</comment>
+  </data>
+  <data name="Keyboard_Num_Lock" xml:space="preserve">
+    <value>Num Lock</value>
+    <comment>The num lock key on the keyboard</comment>
   </data>
   <data name="Keyboard_Pause" xml:space="preserve">
     <value>Pause</value>
@@ -305,11 +317,11 @@
     <value>Play</value>
     <comment>The play key on the keyboard</comment>
   </data>
-  <data name="Keyboard_Play/Pause Media" xml:space="preserve">
+  <data name="Keyboard_Play_Pause_Media" xml:space="preserve">
     <value>Play/Pause Media</value>
     <comment>The play/pause media key on the keyboard; Starts or stops a running music track.</comment>
   </data>
-  <data name="Keyboard_Previous Track" xml:space="preserve">
+  <data name="Keyboard_Previous_Track" xml:space="preserve">
     <value>Previous Track</value>
     <comment>The previous track key on the keyboard; Track like in "music track"</comment>
   </data>
@@ -317,7 +329,7 @@
     <value>Print</value>
     <comment>The print key on the keyboard (not print screen)</comment>
   </data>
-  <data name="Keyboard_Print Screen" xml:space="preserve">
+  <data name="Keyboard_Print_Screen" xml:space="preserve">
     <value>Print Screen</value>
     <comment>The print screen key on the keyboard</comment>
   </data>
@@ -325,7 +337,7 @@
     <value>Right arrow</value>
     <comment>The right arrow key on the keyboard</comment>
   </data>
-  <data name="Keyboard_Scroll Lock" xml:space="preserve">
+  <data name="Keyboard_Scroll_Lock" xml:space="preserve">
     <value>Scroll Lock</value>
     <comment>The scroll lock key on the keyboard</comment>
   </data>
@@ -333,7 +345,7 @@
     <value>Select</value>
     <comment>The select key on the keyboard</comment>
   </data>
-  <data name="Keyboard_Select Media" xml:space="preserve">
+  <data name="Keyboard_Select_Media" xml:space="preserve">
     <value>Select Media</value>
     <comment>The select media key on the keyboard</comment>
   </data>
@@ -345,11 +357,11 @@
     <value>Shift</value>
     <comment>The shift key on the keyboard</comment>
   </data>
-  <data name="Keyboard_Shift (Left)" xml:space="preserve">
+  <data name="Keyboard_Shift_Left" xml:space="preserve">
     <value>Shift (Left)</value>
     <comment>The left shift key on the keyboard</comment>
   </data>
-  <data name="Keyboard_Shift (Right)" xml:space="preserve">
+  <data name="Keyboard_Shift_Right" xml:space="preserve">
     <value>Shift (Right)</value>
     <comment>The right shift key on the keyboard</comment>
   </data>
@@ -357,19 +369,23 @@
     <value>Sleep</value>
     <comment>The sleep key on the keyboard</comment>
   </data>
-  <data name="Keyboard_Start App 1" xml:space="preserve">
+  <data name="Keyboard_Space" xml:space="preserve">
+    <value>Space</value>
+    <comment>The space key on the keyboard</comment>
+  </data>
+  <data name="Keyboard_Start_App1" xml:space="preserve">
     <value>Start App 1</value>
     <comment>The start app 1 key on the keyboard</comment>
   </data>
-  <data name="Keyboard_Start App 2" xml:space="preserve">
+  <data name="Keyboard_Start_App2" xml:space="preserve">
     <value>Start App 2</value>
     <comment>The start app 2 key on the keyboard</comment>
   </data>
-  <data name="Keyboard_Start Mail" xml:space="preserve">
+  <data name="Keyboard_Start_Mail" xml:space="preserve">
     <value>Start Mail</value>
     <comment>The start mail key on the keyboard; This key starts the default mail app</comment>
   </data>
-  <data name="Keyboard_Stop Media" xml:space="preserve">
+  <data name="Keyboard_Stop_Media" xml:space="preserve">
     <value>Stop Media</value>
     <comment>The stop media key on the keyboard; Invokes the stop of a music track</comment>
   </data>
@@ -385,23 +401,23 @@
     <value>Up arrow</value>
     <comment>The up arrow key on the keyboard</comment>
   </data>
-  <data name="Keyboard_Volume Down" xml:space="preserve">
+  <data name="Keyboard_Volume_Down" xml:space="preserve">
     <value>Volume Down</value>
     <comment>The volume down key on the keyboard</comment>
   </data>
-  <data name="Keyboard_Volume Mute" xml:space="preserve">
+  <data name="Keyboard_Volume_Mute" xml:space="preserve">
     <value>Volume Mute</value>
     <comment>The volume mute key on the keyboard; Mute like in "muting the speaker"</comment>
   </data>
-  <data name="Keyboard_Volume Up" xml:space="preserve">
+  <data name="Keyboard_Volume_Up" xml:space="preserve">
     <value>Volume Up</value>
     <comment>The volume up key on the keyboard</comment>
   </data>
-  <data name="Keyboard_Win (Left)" xml:space="preserve">
+  <data name="Keyboard_Win_Left" xml:space="preserve">
     <value>Win (Left)</value>
     <comment>The left Windows key on the keyboard</comment>
   </data>
-  <data name="Keyboard_Win (Right)" xml:space="preserve">
+  <data name="Keyboard_Win_Right" xml:space="preserve">
     <value>Win (Right)</value>
     <comment>The right Windows key on the keyboard</comment>
   </data>

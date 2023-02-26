@@ -92,6 +92,9 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "keyboardmanager", "keyboardmanager", "{38BDB927-829B-4C65-9CD9-93FB05D66D65}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "KeyboardManagerCommon", "src\modules\keyboardmanager\common\KeyboardManagerCommon.vcxproj", "{8AFFA899-0B73-49EC-8C50-0FADDA57B2FC}"
+	ProjectSection(ProjectDependencies) = postProject
+		{F055103B-F80B-4D0C-BF48-057C55620033} = {F055103B-F80B-4D0C-BF48-057C55620033}
+	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "launcher", "launcher", "{C140A3EF-6DBF-4084-9D4C-4EB5A99FEE68}"
 EndProject
