@@ -1,8 +1,8 @@
 #pragma once
 #include "Generated Files/resource.h"
 #ifndef GET_RESOURCE_STRING
-#include <utils/resources.h>
-#endif // !WIN32_LEAN_AND_MEAN
+#include <../utils/resources.h>
+#endif
 
 
 
