@@ -6,6 +6,8 @@
     xmlns:local="using:Microsoft.PowerToys.Settings.UI.OOBE.Views"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     Closed="Window_Closed"
+    MinWidth="480"
+    MinHeight="480"
     xmlns:winuiex="using:WinUIEx"
     mc:Ignorable="d">
     <winuiex:WindowEx.Backdrop>

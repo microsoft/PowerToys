@@ -7,6 +7,7 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:winuiex="using:WinUIEx"
     MinWidth="480"
+    MinHeight="480"
     Closed="Window_Closed"
     mc:Ignorable="d">
     <winuiex:WindowEx.Backdrop>
