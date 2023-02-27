@@ -28,7 +28,6 @@
   <?define SystemImagesComponentFiles=lock.dark.png;lock.light.png;logoff.dark.png;logoff.light.png;recyclebin.dark.png;recyclebin.light.png;restart.dark.png;restart.light.png;shutdown.dark.png;shutdown.light.png;sleep.dark.png;sleep.light.png;firmwareSettings.dark.png;firmwareSettings.light.png;networkAdapter.dark.png;networkAdapter.light.png?>
   <?define TimeDateComponentFiles=Microsoft.PowerToys.Run.Plugin.TimeDate.deps.json;Microsoft.PowerToys.Run.Plugin.TimeDate.dll;plugin.json;PowerToys.ManagedTelemetry.dll?>
   <?define TimeDateImagesComponentFiles=calendar.dark.png;calendar.light.png;time.dark.png;time.light.png;timeDate.dark.png;timeDate.light.png;Warning.dark.png;Warning.light.png?>
-  <?define TimeZoneComponentFiles=plugin.json;Microsoft.PowerToys.Run.Plugin.TimeZone.deps.json;Microsoft.PowerToys.Run.Plugin.TimeZone.dll;PowerToys.ManagedTelemetry.dll?>
   <?define WinSetCmpFiles=plugin.json;Microsoft.PowerToys.Run.Plugin.WindowsSettings.deps.json;Microsoft.PowerToys.Run.Plugin.WindowsSettings.dll;PowerToys.ManagedTelemetry.dll?>
   <?define WinTermCmpFiles=plugin.json;Microsoft.PowerToys.Run.Plugin.WindowsTerminal.deps.json;Microsoft.PowerToys.Run.Plugin.WindowsTerminal.dll;PowerToys.ManagedTelemetry.dll?>
 
@@ -266,19 +265,6 @@
         <File Id="TimeDateImagesComponentFile_$(var.File)" Source="$(var.BinDir)modules\launcher\Plugins\TimeDate\Images\$(var.File)" />
       </Component>
       <?endforeach?>
-
-      <!-- TimeZone Plugin -->
-      <?foreach File in $(var.TimeZoneComponentFiles)?>
-      <Component Id="TimeZoneComponent_$(var.File)" Win64="yes" Directory="TimeZonePluginFolder">
-        <File Id="TimeZoneComponentFile_$(var.File)" Source="$(var.BinDir)modules\launcher\Plugins\TimeZone\$(var.File)" />
-      </Component>
-      <?endforeach?>
-      <Component Id="TimeZoneImagesComponentLight" Directory="TimeZoneImagesFolder" >
-        <File Id="TimeZoneLightIcon" Source="$(var.BinDir)modules\launcher\Plugins\TimeZone\Images\timeZone.light.png" />
-      </Component>
-      <Component Id="TimeZoneImagesComponentDark" Directory="TimeZoneImagesFolder" >
-        <File Id="TimeZoneDarkIcon" Source="$(var.BinDir)modules\launcher\Plugins\TimeZone\Images\timeZone.dark.png" />
-      </Component>
 
       <!-- WindowsSettings Plugin -->
       <?foreach File in $(var.WinSetCmpFiles)?>

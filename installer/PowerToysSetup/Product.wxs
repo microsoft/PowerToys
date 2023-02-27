@@ -576,10 +576,6 @@
                   <Directory Id="TimeDateImagesFolder" Name="Images" />
                   <Directory Id="TimeDateLanguagesFolder" Name="Languages" />
                 </Directory>
-                <Directory Id="TimeZonePluginFolder" Name="TimeZone">
-                  <Directory Id="TimeZoneImagesFolder" Name="Images" />
-                  <Directory Id="TimeZoneLanguagesFolder" Name="Languages" />
-                </Directory>
                 <Directory Id="WindowsSettingsPluginFolder" Name="WindowsSettings">
                   <Directory Id="WindowsSettingsImagesFolder" Name="Images" />
                   <Directory Id="WindowsSettingsLanguagesFolder" Name="Languages" />
