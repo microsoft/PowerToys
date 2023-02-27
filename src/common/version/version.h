@@ -13,7 +13,7 @@
 #define PRODUCT_VERSION_STRING FILE_VERSION_STRING
 
 #define COMPANY_NAME "Microsoft Corporation"
-#define COPYRIGHT_NOTE "Copyright (C) 2022 Microsoft Corporation"
+#define COPYRIGHT_NOTE "Copyright (C) 2023 Microsoft Corporation"
 #define PRODUCT_NAME "PowerToys"
 
 #include <string>
