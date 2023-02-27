@@ -5,9 +5,8 @@ extern UINT WM_PRIV_MOVESIZEEND;
 extern UINT WM_PRIV_LOCATIONCHANGE;
 extern UINT WM_PRIV_NAMECHANGE;
 extern UINT WM_PRIV_WINDOWCREATED;
-extern UINT WM_PRIV_VD_INIT; // Scheduled when FancyZones is initialized
+extern UINT WM_PRIV_INIT; // Scheduled when FancyZones is initialized
 extern UINT WM_PRIV_VD_SWITCH; // Scheduled when virtual desktop switch occurs
-extern UINT WM_PRIV_VD_UPDATE; // Scheduled on virtual desktops update (creation/deletion)
 extern UINT WM_PRIV_EDITOR; // Scheduled when the editor exits
 extern UINT WM_PRIV_LAYOUT_HOTKEYS_FILE_UPDATE; // Scheduled when the watched layout-hotkeys.json file is updated
 extern UINT WM_PRIV_LAYOUT_TEMPLATES_FILE_UPDATE; // Scheduled when the watched layout-templates.json file is updated

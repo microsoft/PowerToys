@@ -460,7 +460,7 @@ namespace FancyZonesUnitTests
             PrepareGridLayout();
             auto workArea = WorkArea::Create(m_hInst, m_workAreaId, m_parentUniqueId, m_workAreaRect);
             const auto window = Mocks::WindowCreate(m_hInst);
-            workArea->MoveWindowIntoZoneByDirectionAndIndex(window, VK_RIGHT, true); // apply to 1st zone
+            workArea->MoveWindowIntoZoneByIndexSet(window, { 0 }, true); // snap to the 1st zone
 
             // test
             workArea->MoveWindowIntoZoneByDirectionAndPosition(window, VK_RIGHT, true);
@@ -478,7 +478,7 @@ namespace FancyZonesUnitTests
             PrepareGridLayout();
             auto workArea = WorkArea::Create(m_hInst, m_workAreaId, m_parentUniqueId, m_workAreaRect);
             const auto window = Mocks::WindowCreate(m_hInst);
-            workArea->MoveWindowIntoZoneByDirectionAndIndex(window, VK_RIGHT, true); // apply to 1st zone
+            workArea->MoveWindowIntoZoneByIndexSet(window, { 0 }, true); // snap to the 1st zone
 
             // test
             workArea->MoveWindowIntoZoneByDirectionAndPosition(window, VK_DOWN, true);
@@ -496,7 +496,7 @@ namespace FancyZonesUnitTests
             PrepareGridLayout();
             auto workArea = WorkArea::Create(m_hInst, m_workAreaId, m_parentUniqueId, m_workAreaRect);
             const auto window = Mocks::WindowCreate(m_hInst);
-            workArea->MoveWindowIntoZoneByDirectionAndIndex(window, VK_RIGHT, true); // apply to 1st zone
+            workArea->MoveWindowIntoZoneByIndexSet(window, { 0 }, true); // snap to the 1st zone
 
             // test
             workArea->MoveWindowIntoZoneByDirectionAndPosition(window, VK_LEFT, true);
@@ -533,7 +533,7 @@ namespace FancyZonesUnitTests
             auto workArea = WorkArea::Create(m_hInst, m_workAreaId, m_parentUniqueId, m_workAreaRect);
             const auto window = Mocks::WindowCreate(m_hInst);
             const auto& layoutWindows = workArea->GetLayoutWindows();
-            workArea->MoveWindowIntoZoneByDirectionAndIndex(window, VK_RIGHT, true); // apply to 1st zone
+            workArea->MoveWindowIntoZoneByIndexSet(window, { 0 }, true); // snap to the 1st zone
             Assert::IsTrue(ZoneIndexSet{ 0 } == layoutWindows->GetZoneIndexSetFromWindow(window));
 
             // test
@@ -551,7 +551,7 @@ namespace FancyZonesUnitTests
             PrepareGridLayout();
             auto workArea = WorkArea::Create(m_hInst, m_workAreaId, m_parentUniqueId, m_workAreaRect);
             const auto window = Mocks::WindowCreate(m_hInst);
-            workArea->MoveWindowIntoZoneByDirectionAndIndex(window, VK_RIGHT, true); // apply to 1st zone
+            workArea->MoveWindowIntoZoneByIndexSet(window, { 0 }, true); // snap to the 1st zone
 
             // test
             workArea->MoveWindowIntoZoneByDirectionAndPosition(window, VK_UP, false);
@@ -569,7 +569,7 @@ namespace FancyZonesUnitTests
             PrepareGridLayout();
             auto workArea = WorkArea::Create(m_hInst, m_workAreaId, m_parentUniqueId, m_workAreaRect);
             const auto window = Mocks::WindowCreate(m_hInst);
-            workArea->MoveWindowIntoZoneByDirectionAndIndex(window, VK_RIGHT, true); // apply to 1st zone
+            workArea->MoveWindowIntoZoneByIndexSet(window, { 0 }, true); // snap to the 1st zone
 
             // test
             workArea->ExtendWindowByDirectionAndPosition(window, VK_RIGHT);
@@ -587,7 +587,7 @@ namespace FancyZonesUnitTests
             PrepareGridLayout();
             auto workArea = WorkArea::Create(m_hInst, m_workAreaId, m_parentUniqueId, m_workAreaRect);
             const auto window = Mocks::WindowCreate(m_hInst);
-            workArea->MoveWindowIntoZoneByDirectionAndIndex(window, VK_RIGHT, true); // apply to 1st zone
+            workArea->MoveWindowIntoZoneByIndexSet(window, { 0 }, true); // snap to the 1st zone
 
             // test
             workArea->ExtendWindowByDirectionAndPosition(window, VK_DOWN);
