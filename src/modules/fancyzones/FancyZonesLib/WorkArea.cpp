@@ -141,7 +141,7 @@ void WorkArea::MoveWindowIntoZoneByIndexSet(HWND window, const ZoneIndexSet& ind
 
     FancyZonesWindowUtils::SaveWindowSizeAndOrigin(window);
 
-    if (updatePosition && IsWindowVisible(window))
+    if (updatePosition)
     {
         const auto rect = m_layout->GetCombinedZonesRect(indexSet);
         if (rect.bottom - rect.top > 0 && rect.right - rect.left > 0)
