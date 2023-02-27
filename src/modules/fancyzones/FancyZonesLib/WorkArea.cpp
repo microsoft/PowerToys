@@ -555,10 +555,20 @@ void WorkArea::InitSnappedWindows()
         }
         else
         {
-            auto savedIndexes = GetWindowZoneIndexes(window);
-            if (savedIndexes == indexes)
+            const auto monitor = MonitorFromWindow(window, MONITOR_DEFAULTTONULL);
+            if (monitor && m_uniqueId.monitorId.monitor == monitor)
             {
+                // prioritize snapping on the current monitor if the window was snapped to several work areas
                 MoveWindowIntoZoneByIndexSet(window, indexes, false);
+            }
+            else
+            {
+                // if the window is not snapped on the current monitor, then check the others
+                auto savedIndexes = GetWindowZoneIndexes(window);
+                if (savedIndexes == indexes)
+                {
+                    MoveWindowIntoZoneByIndexSet(window, indexes, false);
+                }
             }
         }
     }
