@@ -89,19 +89,27 @@ In this release, we focused on releasing new features, stability and improvement
 - Improve metered network detection in runner. Thanks [@davidegiacometti](https://github.com/davidegiacometti)!
 - Update PowerToys logo used by installer. Thanks [@ChaseKnowlden](https://github.com/ChaseKnowlden1)!
 - Add new GPO policies for automatic update downloads, update toast notifications and automatic background update check. Thanks [@htcfreek](https://github.com/htcfreek)!
+- Update copyright year to 2023. Thanks [@ChaseKnowlden](https://github.com/ChaseKnowlden)!
 
 ### FancyZones
 
 - Refactored and improved code quality.
+- Fix crashing on moving window between monitors with Win + arrows. (This was a hotfix for 0.67)
+- Fix issue causing window attributes to not be reset properly. (This was a hotfix for 0.67)
+- Fix issue causing window to not be adjusted when layout is changed. (This was a hotfix for 0.67)
+- Fix issue causing window not to be unsnapped on drag started. (This was a hotfix for 0.67)
+- Fix issue causing layouts not to be applied to new virtual desktops. (This was a hotfix for 0.67)
 
 ### File explorer add-ons
 
 - Add Developer files previewer option to set max file size and fix styling issue. [@Aaron-Junker](https://github.com/Aaron-Junker)!
 - Improve Developer files previewer exception handling and error messages display.
+- Fix crash when generating PDF and Gcode files thumbnails. (This was a hotfix for 0.67)
 
 ### Hosts file editor
 
 - Improve hosts file loading. Thanks [@davidegiacometti](https://github.com/davidegiacometti)!
+- Improved duplicate hosts finding. Thanks [@davidegiacometti](https://github.com/davidegiacometti)!
 
 ### Keyboard Manager
 
@@ -123,7 +131,8 @@ In this release, we focused on releasing new features, stability and improvement
 - Support MSC and CPL files in "Run command" results of Program plugin. Thanks [@htcfreek](https://github.com/htcfreek)!
 - System plugin: Setting for separate "Open/Empty Recycle bin" results or single one with context menu. Thanks [@htcfreek](https://github.com/htcfreek)!
 - Add support for log2 and log10 in Calculator plugin. Thanks [@RickLuiken](https://github.com/RickLuiken)!
-- Removed TimeZone plugin.
+- Removed the TimeZone plugin.
+- Fix the crash when loading thumbnail for PDF files. (This was a hotfix for 0.67)
 
 ### Shortcut Guide
 
@@ -138,9 +147,11 @@ In this release, we focused on releasing new features, stability and improvement
 ### Settings
 
 - Add missing flyout borders on Windows 10. Thanks [@davidegiacometti](https://github.com/davidegiacometti)!
-- Add Experimentation settings landing page.
+- Add Experimentation settings landing page. Thanks [@chenss3](https://github.com/chenss3)!
 - Show icons of user-installed PowerToys Run plugins. Thanks [@al2me6](https://github.com/al2me6)!
 - Fixed crash when clicking Browse for backup and restore location while running elevated.
+- Respect taskbar position when showing system tray flyout. (This was a hotfix for 0.67)
+- Show correct Hosts module image. (This was a hotfix for 0.67)
 
 ### Documentation
 
@@ -150,7 +161,9 @@ In this release, we focused on releasing new features, stability and improvement
 
 - Turned on C++ code analysis and incrementally fixing warnings.
 - Centralize .NET NuGet packages versions. Thanks [@snickler](https://github.com/snickler)!
-- Separate PowerToys installer logs and MSI logs to different files. 
+- Separate PowerToys installer logs and MSI logs to different files.
+- Added new GPO rules to the reporting tool.
+- Move PowerToys registry entries back to HKLM to fix context menu entries not working on some configurations. (This was a hotfix for 0.67)
 
 #### What is being planned for version 0.69
 
