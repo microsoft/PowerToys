@@ -22,6 +22,7 @@ namespace Hosts.Models
             set
             {
                 SetProperty(ref _address, value);
+                SetAddressType();
                 OnPropertyChanged(nameof(Valid));
             }
         }
@@ -54,22 +55,28 @@ namespace Hosts.Models
         [ObservableProperty]
         private bool _duplicate;
 
-        public bool Valid => ValidationHelper.ValidHosts(_hosts) && (ValidationHelper.ValidIPv4(_address) || ValidationHelper.ValidIPv6(_address));
+        public bool Valid => ValidationHelper.ValidHosts(_hosts) && Type != AddressType.Invalid;
+
+        public AddressType Type { get; private set; }
 
         public string[] SplittedHosts { get; private set; }
+
+        public int Id { get; set; }
 
         public Entry()
         {
         }
 
-        public Entry(string line)
+        public Entry(int id, string line)
         {
+            Id = id;
             _line = line.Trim();
             Parse();
         }
 
-        public Entry(string address, string hosts, string comment, bool active)
+        public Entry(int id, string address, string hosts, string comment, bool active)
         {
+            Id = id;
             Address = address.Trim();
             Hosts = hosts.Trim();
             Comment = comment.Trim();
@@ -150,6 +157,22 @@ namespace Hosts.Models
         public string GetLine()
         {
             return _line;
+        }
+
+        private void SetAddressType()
+        {
+            if (ValidationHelper.ValidIPv4(_address))
+            {
+                Type = AddressType.IPv4;
+            }
+            else if (ValidationHelper.ValidIPv6(_address))
+            {
+                Type = AddressType.IPv6;
+            }
+            else
+            {
+                Type = AddressType.Invalid;
+            }
         }
     }
 }

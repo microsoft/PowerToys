@@ -6,14 +6,17 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
+using System.Linq.Expressions;
+using System.Threading;
 using System.Threading.Tasks;
-using System.Windows.Input;
 using Common.UI;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using CommunityToolkit.WinUI;
+using CommunityToolkit.WinUI.UI;
 using Hosts.Helpers;
 using Hosts.Models;
+using Hosts.Settings;
 using Microsoft.UI.Dispatching;
 
 namespace Hosts.ViewModels
@@ -21,8 +24,18 @@ namespace Hosts.ViewModels
     public partial class MainViewModel : ObservableObject, IDisposable
     {
         private readonly IHostsService _hostsService;
+        private readonly IUserSettings _userSettings;
         private readonly DispatcherQueue _dispatcherQueue = DispatcherQueue.GetForCurrentThread();
+        private readonly string[] _loopbackAddresses =
+        {
+            "127.0.0.1",
+            "::1",
+            "0:0:0:0:0:0:0:1",
+        };
+
+        private bool _readingHosts;
         private bool _disposed;
+        private CancellationTokenSource _tokenSource;
 
         [ObservableProperty]
         private Entry _selected;
@@ -34,9 +47,6 @@ namespace Hosts.ViewModels
         private bool _fileChanged;
 
         [ObservableProperty]
-        private bool _filtered;
-
-        [ObservableProperty]
         private string _addressFilter;
 
         [ObservableProperty]
@@ -46,37 +56,39 @@ namespace Hosts.ViewModels
         private string _commentFilter;
 
         [ObservableProperty]
-        [NotifyPropertyChangedFor(nameof(Entries))]
-        private bool _showOnlyDuplicates;
-
-        [ObservableProperty]
         private string _additionalLines;
 
         [ObservableProperty]
         private bool _isLoading;
 
+        [ObservableProperty]
+        private bool _filtered;
+
+        private bool _showOnlyDuplicates;
+
+        public bool ShowOnlyDuplicates
+        {
+            get => _showOnlyDuplicates;
+            set
+            {
+                SetProperty(ref _showOnlyDuplicates, value);
+                ApplyFilters();
+            }
+        }
+
         private ObservableCollection<Entry> _entries;
 
-        public ObservableCollection<Entry> Entries => _filtered || _showOnlyDuplicates ? GetFilteredEntries() : _entries;
+        public AdvancedCollectionView Entries { get; set; }
 
-        public ICommand ReadHostsCommand => new RelayCommand(ReadHosts);
+        public int NextId => _entries.Max(e => e.Id) + 1;
 
-        public ICommand ApplyFiltersCommand => new RelayCommand(ApplyFilters);
-
-        public ICommand ClearFiltersCommand => new RelayCommand(ClearFilters);
-
-        public ICommand OpenSettingsCommand => new RelayCommand(OpenSettings);
-
-        public ICommand OpenHostsFileCommand => new RelayCommand(OpenHostsFile);
-
-        public MainViewModel(IHostsService hostService)
+        public MainViewModel(IHostsService hostService, IUserSettings userSettings)
         {
             _hostsService = hostService;
+            _userSettings = userSettings;
 
-            _hostsService.FileChanged += (s, e) =>
-            {
-                _dispatcherQueue.TryEnqueue(() => FileChanged = true);
-            };
+            _hostsService.FileChanged += (s, e) => _dispatcherQueue.TryEnqueue(() => FileChanged = true);
+            _userSettings.LoopbackDuplicatesChanged += (s, e) => ReadHosts();
         }
 
         public void Add(Entry entry)
@@ -85,12 +97,11 @@ namespace Hosts.ViewModels
             _entries.Add(entry);
 
             FindDuplicates(entry.Address, entry.SplittedHosts);
-            OnPropertyChanged(nameof(Entries));
         }
 
         public void Update(int index, Entry entry)
         {
-            var existingEntry = Entries.ElementAt(index);
+            var existingEntry = Entries[index] as Entry;
             var oldAddress = existingEntry.Address;
             var oldHosts = existingEntry.SplittedHosts;
 
@@ -101,7 +112,6 @@ namespace Hosts.ViewModels
 
             FindDuplicates(oldAddress, oldHosts);
             FindDuplicates(entry.Address, entry.SplittedHosts);
-            OnPropertyChanged(nameof(Entries));
         }
 
         public void DeleteSelected()
@@ -111,7 +121,6 @@ namespace Hosts.ViewModels
             _entries.Remove(Selected);
 
             FindDuplicates(address, hosts);
-            OnPropertyChanged(nameof(Entries));
         }
 
         public void UpdateAdditionalLines(string lines)
@@ -125,13 +134,39 @@ namespace Hosts.ViewModels
             });
         }
 
+        public void Move(int oldIndex, int newIndex)
+        {
+            if (Filtered)
+            {
+                return;
+            }
+
+            // Swap the IDs
+            var entry1 = _entries[oldIndex];
+            var entry2 = _entries[newIndex];
+            (entry2.Id, entry1.Id) = (entry1.Id, entry2.Id);
+
+            // Move entries in the UI
+            _entries.Move(oldIndex, newIndex);
+        }
+
+        [RelayCommand]
         public void ReadHosts()
         {
-            FileChanged = false;
-            IsLoading = true;
+            if (_readingHosts)
+            {
+                return;
+            }
+
+            _dispatcherQueue.TryEnqueue(() =>
+            {
+                FileChanged = false;
+                IsLoading = true;
+            });
 
             Task.Run(async () =>
             {
+                _readingHosts = true;
                 (_additionalLines, var entries) = await _hostsService.ReadAsync();
 
                 await _dispatcherQueue.EnqueueAsync(() =>
@@ -144,34 +179,66 @@ namespace Hosts.ViewModels
                     }
 
                     _entries.CollectionChanged += Entries_CollectionChanged;
+                    Entries = new AdvancedCollectionView(_entries, true);
+                    Entries.SortDescriptions.Add(new SortDescription(nameof(Entry.Id), SortDirection.Ascending));
+                    ApplyFilters();
                     OnPropertyChanged(nameof(Entries));
                     IsLoading = false;
                 });
+                _readingHosts = false;
 
-                FindDuplicates();
+                _tokenSource?.Cancel();
+                _tokenSource = new CancellationTokenSource();
+                FindDuplicates(_tokenSource.Token);
             });
         }
 
+        [RelayCommand]
         public void ApplyFilters()
         {
-            if (_entries == null)
+            var expressions = new List<Expression<Func<object, bool>>>(4);
+
+            if (!string.IsNullOrWhiteSpace(_addressFilter))
             {
-                return;
+                expressions.Add(e => ((Entry)e).Address.Contains(_addressFilter, StringComparison.OrdinalIgnoreCase));
             }
 
-            Filtered = !string.IsNullOrWhiteSpace(_addressFilter)
-                || !string.IsNullOrWhiteSpace(_hostsFilter)
-                || !string.IsNullOrWhiteSpace(_commentFilter);
+            if (!string.IsNullOrWhiteSpace(_hostsFilter))
+            {
+                expressions.Add(e => ((Entry)e).Hosts.Contains(_hostsFilter, StringComparison.OrdinalIgnoreCase));
+            }
 
-            OnPropertyChanged(nameof(Entries));
+            if (!string.IsNullOrWhiteSpace(_commentFilter))
+            {
+                expressions.Add(e => ((Entry)e).Comment.Contains(_commentFilter, StringComparison.OrdinalIgnoreCase));
+            }
+
+            if (_showOnlyDuplicates)
+            {
+                expressions.Add(e => ((Entry)e).Duplicate);
+            }
+
+            Expression<Func<object, bool>> filterExpression = null;
+
+            foreach (var e in expressions)
+            {
+                filterExpression = filterExpression == null ? e : filterExpression.And(e);
+            }
+
+            Filtered = filterExpression != null;
+            Entries.Filter = Filtered ? filterExpression.Compile().Invoke : null;
+            Entries.RefreshFilter();
         }
 
+        [RelayCommand]
         public void ClearFilters()
         {
             AddressFilter = null;
             HostsFilter = null;
             CommentFilter = null;
             ShowOnlyDuplicates = false;
+            Entries.Filter = null;
+            Entries.RefreshFilter();
         }
 
         public async Task PingSelectedAsync()
@@ -183,11 +250,13 @@ namespace Hosts.ViewModels
             selected.Pinging = false;
         }
 
+        [RelayCommand]
         public void OpenSettings()
         {
             SettingsDeepLink.OpenSettings(SettingsDeepLink.SettingsWindow.Hosts);
         }
 
+        [RelayCommand]
         public void OpenHostsFile()
         {
             _hostsService.OpenHostsFile();
@@ -201,6 +270,14 @@ namespace Hosts.ViewModels
 
         private void Entry_PropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
         {
+            if (Filtered && (e.PropertyName == nameof(Entry.Hosts)
+                || e.PropertyName == nameof(Entry.Address)
+                || e.PropertyName == nameof(Entry.Comment)
+                || e.PropertyName == nameof(Entry.Duplicate)))
+            {
+                Entries.RefreshFilter();
+            }
+
             // Ping and duplicate should't trigger a file save
             if (e.PropertyName == nameof(Entry.Ping)
                 || e.PropertyName == nameof(Entry.Pinging)
@@ -225,11 +302,26 @@ namespace Hosts.ViewModels
             });
         }
 
-        private void FindDuplicates()
+        private void FindDuplicates(CancellationToken cancellationToken)
         {
             foreach (var entry in _entries)
             {
-                SetDuplicate(entry);
+                try
+                {
+                    cancellationToken.ThrowIfCancellationRequested();
+
+                    if (!_userSettings.LoopbackDuplicates && _loopbackAddresses.Contains(entry.Address))
+                    {
+                        continue;
+                    }
+
+                    SetDuplicate(entry);
+                }
+                catch (OperationCanceledException)
+                {
+                    Logger.LogInfo("FindDuplicates cancelled");
+                    return;
+                }
             }
         }
 
@@ -247,46 +339,27 @@ namespace Hosts.ViewModels
 
         private void SetDuplicate(Entry entry)
         {
+            if (!_userSettings.LoopbackDuplicates && _loopbackAddresses.Contains(entry.Address))
+            {
+                _dispatcherQueue.TryEnqueue(() =>
+                {
+                    entry.Duplicate = false;
+                });
+
+                return;
+            }
+
             var hosts = entry.SplittedHosts;
 
-            var duplicate = _entries.FirstOrDefault(e =>
-                e != entry
+            var duplicate = _entries.FirstOrDefault(e => e != entry
+                && e.Type == entry.Type
                 && (string.Equals(e.Address, entry.Address, StringComparison.InvariantCultureIgnoreCase)
-                || hosts.Intersect(e.SplittedHosts, StringComparer.InvariantCultureIgnoreCase).Any())) != null;
+                    || hosts.Intersect(e.SplittedHosts, StringComparer.InvariantCultureIgnoreCase).Any())) != null;
 
-            _dispatcherQueue.TryEnqueue(DispatcherQueuePriority.Low, () => entry.Duplicate = duplicate);
-        }
-
-        private ObservableCollection<Entry> GetFilteredEntries()
-        {
-            if (_entries == null)
+            _dispatcherQueue.TryEnqueue(() =>
             {
-                return new ObservableCollection<Entry>();
-            }
-
-            var filter = _entries.AsEnumerable();
-
-            if (!string.IsNullOrWhiteSpace(_addressFilter))
-            {
-                filter = filter.Where(e => e.Address.Contains(_addressFilter, StringComparison.OrdinalIgnoreCase));
-            }
-
-            if (!string.IsNullOrWhiteSpace(_hostsFilter))
-            {
-                filter = filter.Where(e => e.Hosts.Contains(_hostsFilter, StringComparison.OrdinalIgnoreCase));
-            }
-
-            if (!string.IsNullOrWhiteSpace(_commentFilter))
-            {
-                filter = filter.Where(e => e.Comment.Contains(_commentFilter, StringComparison.OrdinalIgnoreCase));
-            }
-
-            if (_showOnlyDuplicates)
-            {
-                filter = filter.Where(e => e.Duplicate);
-            }
-
-            return new ObservableCollection<Entry>(filter);
+                entry.Duplicate = duplicate;
+            });
         }
 
         protected virtual void Dispose(bool disposing)

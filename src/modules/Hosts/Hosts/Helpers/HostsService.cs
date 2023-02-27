@@ -82,7 +82,7 @@ namespace Hosts.Helpers
                     continue;
                 }
 
-                var entry = new Entry(line);
+                var entry = new Entry(i, line);
 
                 if (entry.Valid)
                 {
