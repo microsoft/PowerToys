@@ -5,18 +5,11 @@
 using System;
 using System.Runtime.InteropServices;
 using System.Text;
-using static Microsoft.PowerToys.Settings.UI.Helpers.ShellGetFolder;
 
 namespace Microsoft.PowerToys.Settings.UI.Helpers
 {
     public class ShellGetFolder
     {
-        [DllImport("shell32.dll")]
-        private static extern IntPtr SHBrowseForFolderW(ref BrowseInformation browseInfo);
-
-        [DllImport("shell32.dll")]
-        private static extern int SHGetPathFromIDListW(IntPtr pidl, IntPtr pszPath);
-
         public delegate int BrowseCallbackProc(IntPtr hwnd, int msg, IntPtr lp, IntPtr wp);
 
         [StructLayout(LayoutKind.Sequential)]
@@ -51,8 +44,8 @@ namespace Microsoft.PowerToys.Settings.UI.Helpers
 
             try
             {
-                pidl = SHBrowseForFolderW(ref browseInfo);
-                if (SHGetPathFromIDListW(pidl, bufferAddress) == 0)
+                pidl = NativeMethods.SHBrowseForFolderW(ref browseInfo);
+                if (NativeMethods.SHGetPathFromIDListW(pidl, bufferAddress) == 0)
                 {
                     return null;
                 }
