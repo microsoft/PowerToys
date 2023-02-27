@@ -743,6 +743,7 @@ void FancyZones::AddWorkArea(HMONITOR monitor, const FancyZonesDataTypes::WorkAr
     auto workArea = WorkArea::Create(m_hinstance, id, m_workAreaHandler.GetParent(monitor), rect);
     if (workArea)
     {
+        workArea->InitSnappedWindows();
         if (updateWindowsPositions)
         {
             workArea->UpdateWindowPositions();
