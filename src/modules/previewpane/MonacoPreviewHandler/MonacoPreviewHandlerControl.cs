@@ -137,11 +137,10 @@ namespace Microsoft.PowerToys.PreviewHandler.Monaco
 
             if (fileSize < _settings.MaxFileSize)
             {
-                Task initializeIndexFileAndSelectedFileTask = new Task(() => { InitializeIndexFileAndSelectedFile(filePath); });
-                initializeIndexFileAndSelectedFileTask.Start();
-
                 try
                 {
+                    InitializeIndexFileAndSelectedFile(filePath);
+
                     Logger.LogInfo("Create WebView2 environment");
                     ConfiguredTaskAwaitable<CoreWebView2Environment>.ConfiguredTaskAwaiter
                         webView2EnvironmentAwaiter = CoreWebView2Environment
@@ -168,9 +167,6 @@ namespace Microsoft.PowerToys.PreviewHandler.Monaco
                             try
                             {
                                 await _webView.EnsureCoreWebView2Async(_webView2Environment).ConfigureAwait(true);
-
-                                // Wait until html is loaded
-                                initializeIndexFileAndSelectedFileTask.Wait();
 
                                 _webView.CoreWebView2.SetVirtualHostNameToFolderMapping(VirtualHostName, Settings.AssemblyDirectory, CoreWebView2HostResourceAccessKind.Allow);
 
@@ -217,21 +213,19 @@ namespace Microsoft.PowerToys.PreviewHandler.Monaco
                         }
                     });
                 }
+                catch (UnauthorizedAccessException e)
+                {
+                    Logger.LogError(e.Message);
+                    AddTextBoxControl(Resources.Access_Denied_Exception_Message);
+                }
                 catch (Exception e)
                 {
-                    Controls.Remove(_loading);
-                    Controls.Remove(_loadingBar);
-                    Controls.Remove(_loadingBackground);
-                    Label text = new Label();
-                    text.ForeColor = Settings.TextColor;
-                    text.Text = Resources.Exception_Occurred;
-                    text.Text += e.Message;
-                    text.Text += "\n" + e.Source;
-                    text.Text += "\n" + e.StackTrace;
-                    text.Width = 500;
-                    text.Height = 10000;
-                    Controls.Add(text);
                     Logger.LogError(e.Message);
+                    string errorMessage = Resources.Exception_Occurred;
+                    errorMessage += e.Message;
+                    errorMessage += "\n" + e.Source;
+                    errorMessage += "\n" + e.StackTrace;
+                    AddTextBoxControl(errorMessage);
                 }
 
                 this.Resize += FormResize;
@@ -239,17 +233,7 @@ namespace Microsoft.PowerToys.PreviewHandler.Monaco
             else
             {
                 Logger.LogInfo("File is too big to display. Showing error message");
-
-                Controls.Remove(_loading);
-                _loadingBar.Dispose();
-                Controls.Remove(_loadingBar);
-                Controls.Remove(_loadingBackground);
-                Label errorMessage = new Label();
-                errorMessage.Text = Resources.Max_File_Size_Error.Replace("%1", (_settings.MaxFileSize / 1000).ToString(CultureInfo.CurrentCulture), StringComparison.InvariantCulture);
-                errorMessage.ForeColor = Settings.TextColor;
-                errorMessage.Width = 500;
-                errorMessage.Height = 50;
-                Controls.Add(errorMessage);
+                AddTextBoxControl(Resources.Max_File_Size_Error.Replace("%1", (_settings.MaxFileSize / 1000).ToString(CultureInfo.CurrentCulture), StringComparison.InvariantCulture));
             }
         }
 
@@ -460,6 +444,10 @@ namespace Microsoft.PowerToys.PreviewHandler.Monaco
         /// <param name="message">Message to be displayed in textbox.</param>
         private void AddTextBoxControl(string message)
         {
+            Controls.Remove(_loading);
+            Controls.Remove(_loadingBar);
+            Controls.Remove(_loadingBackground);
+
             _textBox = new RichTextBox();
             _textBox.Text = message;
             _textBox.BackColor = Color.LightYellow;
