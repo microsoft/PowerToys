@@ -50,7 +50,7 @@
         <File Source="$(var.BinDir)Settings\PowerToys.Settings.UI.Lib.dll" />
       </Component>
       <?foreach File in $(var.launcherImagesComponentFiles)?>
-      <Component Id="launcherImagesComponent_$(var.File)" Win64="yes" Directory="LauncherImagesFolder">
+      <Component Id="launcherImagesComponent_$(var.File)" Win64="yes" Guid="381EF861-21C4-41E6-AF8B-61EFFFCA1B11" Directory="LauncherImagesFolder">
         <File Id="launcherImagesComponentFile_$(var.File)" Source="$(var.BinDir)modules\launcher\Images\$(var.File)" />
       </Component>
       <?endforeach?>
