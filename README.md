@@ -136,7 +136,7 @@ In this release, we focused on releasing new features, stability and improvement
 
 ### Shortcut Guide
 
-- Dissmiss Shortcut Guide with mouse click. Thanks [@davidegiacometti](https://github.com/davidegiacometti)!
+- Dismiss Shortcut Guide with mouse click. Thanks [@davidegiacometti](https://github.com/davidegiacometti)!
 
 ### Quick Accent
 
