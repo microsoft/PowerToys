@@ -26,9 +26,11 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             OpenFileName openFileName = new OpenFileName();
             openFileName.StructSize = Marshal.SizeOf(openFileName);
             openFileName.Filter = "Images (*.jpg, *.jpeg, *.png)\0*.jpg; *.jpeg; *.png\0";
-            openFileName.File = new string(new char[1024]);
+
+            // make buffer 65k bytes big as the MAX_PATH can be ~32k chars if long path is enable
+            openFileName.File = new string(new char[65000]);
             openFileName.MaxFile = openFileName.File.Length;
-            openFileName.FileTitle = new string(new char[1024]);
+            openFileName.FileTitle = new string(new char[65000]);
             openFileName.MaxFileTitle = openFileName.FileTitle.Length;
             openFileName.InitialDir = null;
             openFileName.Title = string.Empty;
