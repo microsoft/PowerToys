@@ -83,6 +83,7 @@ In this release, we focused on releasing new features, stability and improvement
 - Add new GPO policies for automatic update downloads, update toast notifications and automatic background update check. Thanks [@htcfreek](https://github.com/htcfreek)!
 - Support MSC and CPL files in "Run command" results of PowerToys Run Program plugin. Thanks [@htcfreek](https://github.com/htcfreek)!
 - Add support for log2 and log10 in PowerToys Run Calculator plugin. Thanks [@RickLuiken](https://github.com/RickLuiken)!
+- Added experimentation to PowerToys first run experience.  There are current page which says "welcome" and a variant with direct instructions on how to use some of the utilities.  We want to see if directly showing how to use PowerToys leads to more people using the features :) 
 
 ### General
 
