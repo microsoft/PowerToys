@@ -9,17 +9,12 @@ using Microsoft.PowerToys.Settings.UI.Helpers;
 using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.PowerToys.Settings.UI.ViewModels;
 using Microsoft.UI.Xaml.Controls;
-using Windows.Storage;
-using Windows.Storage.Pickers;
 
 namespace Microsoft.PowerToys.Settings.UI.Views
 {
     public sealed partial class VideoConferencePage : Page, IRefreshablePage
     {
         private VideoConferenceViewModel ViewModel { get; set; }
-
-        [DllImport("Comdlg32.dll", CharSet = CharSet.Auto)]
-        public static extern bool GetOpenFileName([In, Out] OpenFileName openFileName);
 
         private static async Task<string> PickFileDialog()
         {
@@ -38,7 +33,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
 
             await Task.Delay(10);
 
-            bool result = GetOpenFileName(openFileName);
+            bool result = NativeMethods.GetOpenFileName(openFileName);
             if (result)
             {
                 return openFileName.File;

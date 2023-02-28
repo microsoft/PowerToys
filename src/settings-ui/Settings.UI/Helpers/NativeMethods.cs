@@ -59,6 +59,9 @@ namespace Microsoft.PowerToys.Settings.UI.Helpers
 
         [DllImport("kernel32.dll", CharSet = CharSet.Unicode)]
         public static extern bool FreeLibrary(IntPtr hModule);
+
+        [DllImport("Comdlg32.dll", CharSet = CharSet.Unicode)]
+        public static extern bool GetOpenFileName([In, Out] OpenFileName openFileName);
 #pragma warning restore CA1401 // P/Invokes should not be visible
 
         [DllImport("user32.dll", SetLastError = true, CharSet = CharSet.Unicode)]
