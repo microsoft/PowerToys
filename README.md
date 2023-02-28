@@ -104,7 +104,7 @@ In this release, we focused on releasing new features, stability and improvement
 ### File explorer add-ons
 
 - Add Developer files previewer option to set max file size and fix styling issue. Thanks [@Aaron-Junker](https://github.com/Aaron-Junker)!
-- Improve Developer files previewer exception handling and error messages display.
+- Improve Developer files previewer exception handling and printing of error messages.
 - Fix crash when generating PDF and Gcode files thumbnails. (This was a hotfix for 0.67)
 
 ### Hosts file editor
