@@ -4,6 +4,8 @@
 
   <?include $(sys.CURRENTDIR)\Common.wxi?>
 
+  <?define MouseJumpUIComponentFiles=PowerToys.MouseJumpUI.deps.json;PowerToys.MouseJumpUI.dll;PowerToys.MouseJumpUI.exe;PowerToys.MouseJumpUI.runtimeconfig.json;WinRT.Runtime.dll;PowerToys.ManagedCommon.dll;PowerToys.GPOWrapper.dll;PowerToys.ManagedTelemetry.dll;Ijwhost.dll;System.Management.dll?>
+
   <Fragment>
     <!-- MouseUtils -->
     <DirectoryRef Id="MouseUtilsInstallFolder" FileSource="$(var.BinDir)modules\$(var.MouseUtilsProjectName)">
@@ -16,12 +18,26 @@
       <Component Id="Module_MousePointerCrosshairs" Win64="yes">
         <File Source="$(var.BinDir)modules\$(var.MouseUtilsProjectName)\PowerToys.MousePointerCrosshairs.dll" KeyPath="yes" />
       </Component>
+      <Component Id="Module_MouseJump" Win64="yes">
+        <File Source="$(var.BinDir)modules\$(var.MouseUtilsProjectName)\PowerToys.MouseJump.dll" KeyPath="yes" />
+      </Component>
     </DirectoryRef>
+
+    <!-- MouseJump UI -->
+    <?foreach File in $(var.MouseJumpUIComponentFiles)?>
+      <Component Id="MouseJumpUIComp_$(var.File)" Win64="yes" Directory="MouseJumpUIFolder">
+        <File Id="MouseJumpUIFile_$(var.File)" Source="$(var.BinDir)modules\$(var.MouseUtilsProjectName)\MouseJumpUI\$(var.File)" />
+      </Component>
+    <?endforeach?>
 
     <ComponentGroup Id="MouseUtilsComponentGroup" Directory="INSTALLFOLDER">
       <ComponentRef Id="Module_FindMyMouse"/>
       <ComponentRef Id="Module_MouseHighlighter"/>
       <ComponentRef Id="Module_MousePointerCrosshairs" />
+      <ComponentRef Id="Module_MouseJump" />
+      <?foreach File in $(var.MouseJumpUIComponentFiles)?>
+        <ComponentRef Id="MouseJumpUIComp_$(var.File)" />
+      <?endforeach?>
     </ComponentGroup>
 
   </Fragment>

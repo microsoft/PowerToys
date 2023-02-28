@@ -151,6 +151,7 @@ namespace Microsoft.PowerToys.Settings.UI
                         case "VideoConference": StartupPage = typeof(Views.VideoConferencePage); break;
                         case "MeasureTool": StartupPage = typeof(Views.MeasureToolPage); break;
                         case "Hosts": StartupPage = typeof(Views.HostsPage); break;
+                        case "PastePlain": StartupPage = typeof(Views.PastePlainPage); break;
                         default: Debug.Assert(false, "Unexpected SettingsWindow argument value"); break;
                     }
 

@@ -65,6 +65,7 @@
       <ComponentGroupRef Id="KeyboardManagerComponentGroup" />
       <ComponentGroupRef Id="MeasureToolComponentGroup" />
       <ComponentGroupRef Id="MouseUtilsComponentGroup" />
+      <ComponentGroupRef Id="PastePlainComponentGroup" />
       <ComponentGroupRef Id="PowerAccentComponentGroup" />
       <ComponentGroupRef Id="PowerRenameComponentGroup" />
       <ComponentGroupRef Id="RunComponentGroup" />
@@ -177,9 +178,7 @@
       <Custom Action="DeleteWinAppSDKHardlinks" Before="RemoveFiles">
         Installed AND (REMOVE="ALL")
       </Custom>
-      <Custom Action="DeletePTInteropHardlinks" Before="RemoveFiles">
-        Installed AND (REMOVE="ALL")
-      </Custom>
+      <Custom Action="DeletePTInteropHardlinks" Before="CreatePTInteropHardlinks" />
 
       <Custom Action="DeleteDotnetRuntimeHardlinks" Before="RemoveFiles">
         Installed AND (REMOVE="ALL")
@@ -478,6 +477,11 @@
 
             <!-- Mouse Utils -->
             <Directory Id="MouseUtilsInstallFolder" Name="$(var.MouseUtilsProjectName)">
+              <Directory Id="MouseJumpUIFolder" Name="MouseJumpUI" />
+            </Directory>
+
+            <!-- PastePlain -->
+            <Directory Id="PastePlainInstallFolder" Name="$(var.PastePlainProjectName)">
             </Directory>
 
             <!-- AlwaysOnTop -->
@@ -571,10 +575,6 @@
                 <Directory Id="TimeDatePluginFolder" Name="TimeDate">
                   <Directory Id="TimeDateImagesFolder" Name="Images" />
                   <Directory Id="TimeDateLanguagesFolder" Name="Languages" />
-                </Directory>
-                <Directory Id="TimeZonePluginFolder" Name="TimeZone">
-                  <Directory Id="TimeZoneImagesFolder" Name="Images" />
-                  <Directory Id="TimeZoneLanguagesFolder" Name="Languages" />
                 </Directory>
                 <Directory Id="WindowsSettingsPluginFolder" Name="WindowsSettings">
                   <Directory Id="WindowsSettingsImagesFolder" Name="Images" />

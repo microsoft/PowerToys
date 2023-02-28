@@ -26,6 +26,10 @@
             NotEmptyValue="Visible" />
         <converters:BoolNegationConverter x:Key="BoolNegationConverter" />
         <converters:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter" />
+        <converters:BoolToVisibilityConverter
+            x:Key="BoolToInvertedVisibilityConverter"
+            TrueValue="Collapsed"
+            FalseValue="Visible" />
     </Page.Resources>
 
     <Grid>
@@ -194,7 +198,8 @@
             IsItemClickEnabled="True"
             ItemClick="Entries_ItemClick"
             ItemsSource="{Binding Entries, Mode=TwoWay}"
-            SelectedItem="{Binding Selected, Mode=TwoWay}">
+            SelectedItem="{Binding Selected, Mode=TwoWay}"
+            Visibility="{x:Bind ViewModel.IsLoading, Converter={StaticResource BoolToInvertedVisibilityConverter}, Mode=OneWay}">
             <ListView.ItemTemplate>
                 <DataTemplate x:DataType="models:Entry">
                     <Grid
@@ -332,6 +337,12 @@
                 </DataTemplate>
             </ListView.ItemTemplate>
         </ListView>
+
+        <ProgressRing
+            Width="48"
+            Height="48"
+            Grid.Row="1"
+            IsActive="{x:Bind ViewModel.IsLoading, Mode=OneWay}" />
 
         <ContentDialog
             x:Name="EntryDialog"

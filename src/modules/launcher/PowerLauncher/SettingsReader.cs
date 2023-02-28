@@ -215,8 +215,7 @@ namespace PowerLauncher
 
         private static string GetIcon(PluginMetadata metadata, string iconPath)
         {
-            var pluginDirectory = Path.GetFileName(metadata.PluginDirectory);
-            return Path.Combine(pluginDirectory, iconPath);
+            return Path.Combine(metadata.PluginDirectory, iconPath);
         }
 
         private static IEnumerable<PowerLauncherPluginSettings> GetDefaultPluginsSettings()

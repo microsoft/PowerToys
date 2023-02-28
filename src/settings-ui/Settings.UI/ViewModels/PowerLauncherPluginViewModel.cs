@@ -160,12 +160,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         public string IconPath
         {
-            get
-            {
-                var path = isDark() ? settings.IconPathDark : settings.IconPathLight;
-                path = Path.Combine(Directory.GetCurrentDirectory(), @"modules\launcher\Plugins", path);
-                return path;
-            }
+            get => isDark() ? settings.IconPathDark : settings.IconPathLight;
         }
 
         public event PropertyChangedEventHandler PropertyChanged;
