@@ -589,7 +589,7 @@ namespace Microsoft.Plugin.Program.Programs
 
         internal void LogoPathFromUri(string uri, Theme theme)
         {
-            // all https://msdn.microsoft.com/windows/uwp/controls-and-patterns/tiles-and-notifications-app-assets
+            // all https://learn.microsoft.com/windows/uwp/controls-and-patterns/tiles-and-notifications-app-assets
             // windows 10 https://msdn.microsoft.com/library/windows/apps/dn934817.aspx
             // windows 8.1 https://msdn.microsoft.com/library/windows/apps/hh965372.aspx#target_size
             // windows 8 https://msdn.microsoft.com/library/windows/apps/br211475.aspx
