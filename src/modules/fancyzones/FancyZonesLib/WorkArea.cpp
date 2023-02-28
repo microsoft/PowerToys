@@ -405,6 +405,16 @@ void WorkArea::UnsnapWindow(HWND window)
     FancyZonesWindowProperties::RemoveZoneIndexProperty(window);
 }
 
+const GUID WorkArea::GetLayoutId() const noexcept
+{
+    if (m_layout)
+    {
+        return m_layout->Id();
+    }
+
+    return GUID{};
+}
+
 ZoneIndexSet WorkArea::GetWindowZoneIndexes(HWND window) const
 {
     if (m_layout)
@@ -529,26 +539,36 @@ void WorkArea::InitLayout(const FancyZonesDataTypes::WorkAreaId& parentUniqueId)
 
 void WorkArea::InitSnappedWindows()
 {
-    Logger::info(L"Init work area windows");
+    Logger::info(L"Init work area windows: {}", m_uniqueId.toString());
 
     for (const auto& window : VirtualDesktop::instance().GetWindowsFromCurrentDesktop())
     {
-        auto zoneIndexSet = FancyZonesWindowProperties::RetrieveZoneIndexProperty(window);
-        if (zoneIndexSet.size() == 0)
+        auto indexes = FancyZonesWindowProperties::RetrieveZoneIndexProperty(window);
+        if (indexes.size() == 0)
         {
             continue;
         }
 
         if (!m_uniqueId.monitorId.monitor) // one work area across monitors
         {
-            MoveWindowIntoZoneByIndexSet(window, zoneIndexSet, false);
+            MoveWindowIntoZoneByIndexSet(window, indexes, false);
         }
         else
         {
             const auto monitor = MonitorFromWindow(window, MONITOR_DEFAULTTONULL);
             if (monitor && m_uniqueId.monitorId.monitor == monitor)
             {
-                MoveWindowIntoZoneByIndexSet(window, zoneIndexSet, false);
+                // prioritize snapping on the current monitor if the window was snapped to several work areas
+                MoveWindowIntoZoneByIndexSet(window, indexes, false);
+            }
+            else
+            {
+                // if the window is not snapped on the current monitor, then check the others
+                auto savedIndexes = GetWindowZoneIndexes(window);
+                if (savedIndexes == indexes)
+                {
+                    MoveWindowIntoZoneByIndexSet(window, indexes, false);
+                }
             }
         }
     }

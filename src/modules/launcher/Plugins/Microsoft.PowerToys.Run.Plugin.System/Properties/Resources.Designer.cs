@@ -457,11 +457,47 @@ namespace Microsoft.PowerToys.Run.Plugin.System.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Show a success message after empty the Recycle Bin.
+        ///   Looks up a localized string similar to Show separate result for Empty Recycle Bin command.
+        /// </summary>
+        internal static string Microsoft_plugin_sys_RecycleBin_ShowEmptySeparate {
+            get {
+                return ResourceManager.GetString("Microsoft_plugin_sys_RecycleBin_ShowEmptySeparate", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Show a success message after emptying the Recycle Bin.
         /// </summary>
         internal static string Microsoft_plugin_sys_RecycleBin_ShowEmptySuccessMessage {
             get {
                 return ResourceManager.GetString("Microsoft_plugin_sys_RecycleBin_ShowEmptySuccessMessage", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Empty Recycle Bin.
+        /// </summary>
+        internal static string Microsoft_plugin_sys_RecycleBinEmpty_description {
+            get {
+                return ResourceManager.GetString("Microsoft_plugin_sys_RecycleBinEmpty_description", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Empty Recycle Bin.
+        /// </summary>
+        internal static string Microsoft_plugin_sys_RecycleBinEmptyResult {
+            get {
+                return ResourceManager.GetString("Microsoft_plugin_sys_RecycleBinEmptyResult", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Open Recycle Bin.
+        /// </summary>
+        internal static string Microsoft_plugin_sys_RecycleBinOpen {
+            get {
+                return ResourceManager.GetString("Microsoft_plugin_sys_RecycleBinOpen", resourceCulture);
             }
         }
         

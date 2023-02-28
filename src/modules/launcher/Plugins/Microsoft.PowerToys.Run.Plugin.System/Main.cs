@@ -26,6 +26,7 @@ namespace Microsoft.PowerToys.Run.Plugin.System
         private bool _showSuccessOnEmptyRB;
         private bool _localizeSystemCommands;
         private bool _reduceNetworkResultScore;
+        private bool _separateEmptyRB;
 
         public string Name => Resources.Microsoft_plugin_sys_plugin_name;
 
@@ -54,6 +55,12 @@ namespace Microsoft.PowerToys.Run.Plugin.System
                 Key = "LocalizeSystemCommands",
                 DisplayLabel = Resources.Use_localized_system_commands,
                 Value = true,
+            },
+            new PluginAdditionalOption()
+            {
+                Key = "SeparateResultEmptyRB",
+                DisplayLabel = Resources.Microsoft_plugin_sys_RecycleBin_ShowEmptySeparate,
+                Value = false,
             },
             new PluginAdditionalOption()
             {
@@ -90,7 +97,7 @@ namespace Microsoft.PowerToys.Run.Plugin.System
             }
 
             // normal system commands are fast and can be returned immediately
-            var systemCommands = Commands.GetSystemCommands(IsBootedInUefiMode, IconTheme, culture, _confirmSystemCommands);
+            var systemCommands = Commands.GetSystemCommands(IsBootedInUefiMode, _separateEmptyRB, _confirmSystemCommands, _showSuccessOnEmptyRB, IconTheme, culture);
             foreach (var c in systemCommands)
             {
                 var resultMatch = StringMatcher.FuzzySearch(query.Search, c.Title);
@@ -209,6 +216,7 @@ namespace Microsoft.PowerToys.Run.Plugin.System
             var showSuccessOnEmptyRB = false;
             var localizeSystemCommands = true;
             var reduceNetworkResultScore = true;
+            var separateEmptyRB = false;
 
             if (settings != null && settings.AdditionalOptions != null)
             {
@@ -223,12 +231,16 @@ namespace Microsoft.PowerToys.Run.Plugin.System
 
                 var optionNetworkScore = settings.AdditionalOptions.FirstOrDefault(x => x.Key == "ReduceNetworkResultScore");
                 reduceNetworkResultScore = optionNetworkScore?.Value ?? reduceNetworkResultScore;
+
+                var optionSeparateEmptyRB = settings.AdditionalOptions.FirstOrDefault(x => x.Key == "SeparateResultEmptyRB");
+                separateEmptyRB = optionSeparateEmptyRB?.Value ?? separateEmptyRB;
             }
 
             _confirmSystemCommands = confirmSystemCommands;
             _showSuccessOnEmptyRB = showSuccessOnEmptyRB;
             _localizeSystemCommands = localizeSystemCommands;
             _reduceNetworkResultScore = reduceNetworkResultScore;
+            _separateEmptyRB = separateEmptyRB;
         }
     }
 }

@@ -48,7 +48,7 @@ namespace CommonSharedConstants
 
     // Path to the event used by MeasureTool
     const wchar_t MEASURE_TOOL_TRIGGER_EVENT[] = L"Local\\MeasureToolEvent-3d46745f-09b3-4671-a577-236be7abd199";
-    
+
     // Path to the event used by GcodePreviewHandler
     const wchar_t GCODE_PREVIEW_RESIZE_EVENT[] = L"Local\\PowerToysGcodePreviewResizeEvent-6ff1f9bd-ccbd-4b24-a79f-40a34fb0317d";
 
