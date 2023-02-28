@@ -100,6 +100,7 @@ In this release, we focused on releasing new features, stability and improvement
 - Fix issue causing window to not be adjusted when layout is changed. (This was a hotfix for 0.67)
 - Fix issue causing window not to be unsnapped on drag started. (This was a hotfix for 0.67)
 - Fix issue causing layouts not to be applied to new virtual desktops. (This was a hotfix for 0.67)
+- Fix issues causing windows not to be restored correctly to their last known zone.
 
 ### File explorer add-ons
 
