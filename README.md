@@ -79,7 +79,7 @@ In this release, we focused on releasing new features, stability and improvement
 **Highlights**
 
 - New utility: Paste as Plain Text allows pasting the text contents of your clipboard without formatting. Note: the formatted text in the clipboard is replaced with the unformatted text. Thanks [@carlos-zamora](https://github.com/carlos-zamora)!
-- New utility: Mouse Jump allows to quickly move the mouse pointer long distances on single or across screens. Thanks [@mikeclayton](https://github.com/mikeclayton)!
+- New utility: Mouse Jump allows to quickly move the mouse pointer long distances on a single screen or across multiple screens. Thanks [@mikeclayton](https://github.com/mikeclayton)!
 - Add new GPO policies for automatic update downloads and update toast notifications. Thanks [@htcfreek](https://github.com/htcfreek)!
 - Support MSC and CPL files in "Run command" results of PowerToys Run Program plugin. Thanks [@htcfreek](https://github.com/htcfreek)!
 - Add support for log2 and log10 in PowerToys Run Calculator plugin. Thanks [@RickLuiken](https://github.com/RickLuiken)!
