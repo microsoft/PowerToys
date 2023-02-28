@@ -116,7 +116,7 @@ namespace Wox.Infrastructure.Exception
             return sb.ToString();
         }
 
-        // http://msdn.microsoft.com/en-us/library/hh925568%28v=vs.110%29.aspx
+        // http://msdn.microsoft.com/library/hh925568%28v=vs.110%29.aspx
         private static List<string> GetFrameworkVersionFromRegistry()
         {
             try
