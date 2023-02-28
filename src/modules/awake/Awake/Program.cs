@@ -230,43 +230,15 @@ namespace Awake
                     string? settingsPath = _settingsUtils.GetSettingsFilePath(InternalConstants.AppName);
                     _log.Info($"Reading configuration file: {settingsPath}");
 
-                    if (File.Exists(settingsPath))
+                    if (!File.Exists(settingsPath))
                     {
-                        _watcher = new FileSystemWatcher
-                        {
-                            Path = Path.GetDirectoryName(settingsPath)!,
-                            EnableRaisingEvents = true,
-                            NotifyFilter = NotifyFilters.LastWrite | NotifyFilters.CreationTime,
-                            Filter = Path.GetFileName(settingsPath),
-                        };
+                        string? errorString = $"The settings file does not exist. Scaffolding default configuration...";
 
-                        IObservable<System.Reactive.EventPattern<FileSystemEventArgs>>? changedObservable = Observable.FromEventPattern<FileSystemEventHandler, FileSystemEventArgs>(
-                                h => _watcher.Changed += h,
-                                h => _watcher.Changed -= h);
-
-                        IObservable<System.Reactive.EventPattern<FileSystemEventArgs>>? createdObservable = Observable.FromEventPattern<FileSystemEventHandler, FileSystemEventArgs>(
-                                cre => _watcher.Created += cre,
-                                cre => _watcher.Created -= cre);
-
-                        IObservable<System.Reactive.EventPattern<FileSystemEventArgs>>? mergedObservable = Observable.Merge(changedObservable, createdObservable);
-
-                        mergedObservable.Throttle(TimeSpan.FromMilliseconds(25))
-                            .SubscribeOn(TaskPoolScheduler.Default)
-                            .Select(e => e.EventArgs)
-                            .Subscribe(HandleAwakeConfigChange);
-
-                        TrayHelper.SetTray(InternalConstants.FullAppName, new AwakeSettings(), _startedFromPowerToys);
-
-                        // Initially the file might not be updated, so we need to start processing
-                        // settings right away.
-                        ProcessSettings();
+                        AwakeSettings scaffoldSettings = new AwakeSettings();
+                        _settingsUtils.SaveSettings(JsonSerializer.Serialize(scaffoldSettings), InternalConstants.AppName);
                     }
-                    else
-                    {
-                        string? errorString = $"The settings file does not exist. Please check the application configuration.";
-                        _log.Info(errorString);
-                        _log.Debug(errorString);
-                    }
+
+                    ScaffoldConfiguration(settingsPath);
                 }
                 catch (Exception ex)
                 {
@@ -327,6 +299,45 @@ namespace Awake
             }
 
             _exitSignal.WaitOne();
+        }
+
+        private static void ScaffoldConfiguration(string settingsPath)
+        {
+            try
+            {
+                _watcher = new FileSystemWatcher
+                {
+                    Path = Path.GetDirectoryName(settingsPath)!,
+                    EnableRaisingEvents = true,
+                    NotifyFilter = NotifyFilters.LastWrite | NotifyFilters.CreationTime,
+                    Filter = Path.GetFileName(settingsPath),
+                };
+
+                IObservable<System.Reactive.EventPattern<FileSystemEventArgs>>? changedObservable = Observable.FromEventPattern<FileSystemEventHandler, FileSystemEventArgs>(
+                        h => _watcher.Changed += h,
+                        h => _watcher.Changed -= h);
+
+                IObservable<System.Reactive.EventPattern<FileSystemEventArgs>>? createdObservable = Observable.FromEventPattern<FileSystemEventHandler, FileSystemEventArgs>(
+                        cre => _watcher.Created += cre,
+                        cre => _watcher.Created -= cre);
+
+                IObservable<System.Reactive.EventPattern<FileSystemEventArgs>>? mergedObservable = Observable.Merge(changedObservable, createdObservable);
+
+                mergedObservable.Throttle(TimeSpan.FromMilliseconds(25))
+                    .SubscribeOn(TaskPoolScheduler.Default)
+                    .Select(e => e.EventArgs)
+                    .Subscribe(HandleAwakeConfigChange);
+
+                TrayHelper.SetTray(InternalConstants.FullAppName, new AwakeSettings(), _startedFromPowerToys);
+
+                // Initially the file might not be updated, so we need to start processing
+                // settings right away.
+                ProcessSettings();
+            }
+            catch (Exception ex)
+            {
+                _log.Error($"An error occurred scaffolding the configuration. Error details: {ex.Message}");
+            }
         }
 
         private static void SetupIndefiniteKeepAwake(bool displayOn)
