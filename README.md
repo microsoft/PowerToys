@@ -130,6 +130,7 @@ In this release, we focused on releasing new features, stability and improvement
 - Show Steam (steam://open/) shortcuts in the Program plugin. 
 - Localize paths of Program plugin results. Thanks [@htcfreek](https://github.com/htcfreek)!
 - Support MSC and CPL files in "Run command" results of Program plugin. Thanks [@htcfreek](https://github.com/htcfreek)!
+- Added missing MSC and CPL settings to the results of Windows Settings plugin. Thanks [@htcfreek](https://github.com/htcfreek)!
 - System plugin: Setting for separate "Open/Empty Recycle bin" results or single one with context menu. Thanks [@htcfreek](https://github.com/htcfreek)!
 - Add support for log2 and log10 in Calculator plugin. Thanks [@RickLuiken](https://github.com/RickLuiken)!
 - Removed the TimeZone plugin.
