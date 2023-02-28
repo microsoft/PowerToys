@@ -1,6 +1,6 @@
 ## Image Resizer
 - [x] Disable the Image Resizer and check that `Resize images` is absent in the context menu
-- [x] Enable the Image Resizer and check that `Resize images` is present in the context menu
+- [x] Enable the Image Resizer and check that `Resize images` is present in the context menu. (On Win11) Check if both old context menu and Win11 tier1 context menu items are present when module is enabled.
 - [x] Remove one image size and add a custom image size. Open the Image Resize window from the context menu and verify that changes are populated
 - [x] Resize one image
 - [x] Resize multiple images
@@ -22,7 +22,7 @@
 - [x] Uncheck `Ignore the orientation of pictures` and verify that swapped width and height will actually resize a picture if the width is not equal to the height
 
 ## PowerRename
-- [x] Check if disable and enable of the module works.
+- [x] Check if disable and enable of the module works. (On Win11) Check if both old context menu and Win11 tier1 context menu items are present when module is enabled.
 - [x] Check that with the `Show icon on context menu` icon is shown and vice versa.
 - [x] Check if `Appear only in extended context menu` works.
 - [x] Enable/disable autocomplete.
@@ -171,10 +171,12 @@ Mouse Jump:
    - [x] Disable Text Extractor and verify that the activation shortuct no longer activates the utility.
  * With Text Extractor enabled and activated:
    - [x] Try to select text and verify it is copied to the clipboard.
+   - [x] Try to select a different OCR language by right-clicking and verify the change is applied.
  * In a multi-monitor setup with different dpis on each monitor:
    - [x] Verify text is correctly captured on all monitors.
  * Test the different settings and verify they are applied:
    - [x] Activation shortcut
+   - [x] OCR Language
 
 ### GPO
  * Copy the "PowerToys.admx" file to your Policy Definition template folder. (Example: C:\Windows\PolicyDefinitions) and copy the "PowerToys.adml" file to the matching language folder in your Policy Definition folder. (Example: C:\Windows\PolicyDefinitions\en-US)
@@ -183,9 +185,12 @@ Mouse Jump:
    - [x] Verify the module is not enabled.
    - [x] Open settings and verify the module is not enabled and you can't enable it.
    - [x] Try to open FancyZones Editor directly from the install folder and verify it doesn't run and adds a message to the log saying it didn't run because of GPO.
+   - [x] Verify the module can't be launched from the quick launcher system tray flyout launcher screen (FancyZones editor in this case).
+   - [x] Verify the module can't be enabled/disabled from the quick launcher system tray flyout.
  * In GPO, enable a module that can run as a standalone (FancyZones sounds good for this). Restart PowerToys.
    - [x] Verify the module is enabled.
    - [x] Open settings and verify the module is enabled and you can't disable it.
+   - [x] Verify the module can't be enabled/disabled from the quick launcher system tray flyout.
  * In GPO, try to set different settings in the Computer and User Configurations for a PowerToy. Restart PowerToys.
    - [x] Verify that the setting in Computer Configuration has priority over the setting in User Configuration.
  * In GPO, disable a module that has a context menu entry (File Locksmith sounds good for this). Restart PowerToys.

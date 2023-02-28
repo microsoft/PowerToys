@@ -23,7 +23,7 @@
 
 ## Image Resizer
 - [ ] Disable the Image Resizer and check that `Resize images` is absent in the context menu
-- [ ] Enable the Image Resizer and check that `Resize images` is present in the context menu
+- [ ] Enable the Image Resizer and check that `Resize images` is present in the context menu. (On Win11) Check if both old context menu and Win11 tier1 context menu items are present when module is enabled.
 - [ ] Remove one image size and add a custom image size. Open the Image Resize window from the context menu and verify that changes are populated
 - [ ] Resize one image
 - [ ] Resize multiple images
@@ -142,6 +142,8 @@ For all the remapping below, try pressing and releasing the remapped key/shortcu
    - [ ] Toolbar position (test every option, some had issues before)
    - [ ] Input delay
    - [ ] Exclude some apps. Verify that Quick Accent is not activated for them.
+   - [ ] Sort characters by frequency.
+   - [ ] Always start on the first character when using left/right arrows as activation method.
 
 ### Hosts File Editor
  * Launch Host File Editor:

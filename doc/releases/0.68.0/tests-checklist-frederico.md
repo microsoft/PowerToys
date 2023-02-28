@@ -1,5 +1,5 @@
 ## PowerRename
-- [ ] Check if disable and enable of the module works.
+- [ ] Check if disable and enable of the module works. (On Win11) Check if both old context menu and Win11 tier1 context menu items are present when module is enabled.
 - [ ] Check that with the `Show icon on context menu` icon is shown and vice versa.
 - [ ] Check if `Appear only in extended context menu` works.
 - [ ] Enable/disable autocomplete.
