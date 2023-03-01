@@ -130,7 +130,7 @@ In this release, we focused on releasing new features, stability and improvement
 
 - Show Steam (steam://open/) shortcuts in the Program plugin. 
 - Localize paths of Program plugin results. Thanks [@htcfreek](https://github.com/htcfreek)!
-- Improved stability of localization code. Thanks [@htcfreek](https://github.com/htcfreek)!
+- Improved stability of the code used to get the localized names and paths. Thanks [@htcfreek](https://github.com/htcfreek)!
 - Support MSC and CPL files in "Run command" results of Program plugin. Thanks [@htcfreek](https://github.com/htcfreek)!
 - Added missing MSC and CPL settings to the results of Windows Settings plugin. Thanks [@htcfreek](https://github.com/htcfreek)!
 - System plugin: Setting for separate "Open/Empty Recycle bin" results or single result with context menu. (This was implemented based on user feedback for a change in the last build.) Thanks [@htcfreek](https://github.com/htcfreek)!
