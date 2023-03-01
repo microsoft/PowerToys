@@ -110,7 +110,7 @@ LRESULT Toolbar::WindowProcessMessages(HWND hwnd, UINT msg, WPARAM wparam, LPARA
     case WM_DPICHANGED:
     {
         UINT dpi = LOWORD(dpi);
-        RECT* prcNewWindow = (RECT*)lparam;
+        RECT* prcNewWindow = reinterpret_cast<RECT*>(lparam);
 
         POINT suggestedPosition;
         suggestedPosition.x = prcNewWindow->left;
