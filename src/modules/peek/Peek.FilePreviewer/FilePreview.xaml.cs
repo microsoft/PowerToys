@@ -44,7 +44,6 @@ namespace Peek.FilePreviewer
 
         [ObservableProperty]
         [NotifyPropertyChangedFor(nameof(ImagePreviewer))]
-        [NotifyPropertyChangedFor(nameof(SVGPreviewer))]
         [NotifyPropertyChangedFor(nameof(BrowserPreviewer))]
         [NotifyPropertyChangedFor(nameof(UnsupportedFilePreviewer))]
 
@@ -79,8 +78,6 @@ namespace Peek.FilePreviewer
 
         public IImagePreviewer? ImagePreviewer => Previewer as IImagePreviewer;
 
-        public ISvgPreviewer? SVGPreviewer => Previewer as ISvgPreviewer;
-
         public IBrowserPreviewer? BrowserPreviewer => Previewer as IBrowserPreviewer;
 
         public bool IsImageVisible => ImagePreviewer != null;
@@ -105,11 +102,6 @@ namespace Peek.FilePreviewer
                 if (Previewer is IImagePreviewer imagePreviewer)
                 {
                     imagePreviewer.ScalingFactor = ScalingFactor;
-                }
-
-                if (Previewer is ISvgPreviewer svgPreviewer)
-                {
-                    svgPreviewer.ScalingFactor = ScalingFactor;
                 }
             }
         }
@@ -144,11 +136,6 @@ namespace Peek.FilePreviewer
             if (Previewer is IImagePreviewer imagePreviewer)
             {
                 imagePreviewer.ScalingFactor = ScalingFactor;
-            }
-
-            if (Previewer is ISvgPreviewer svgPreviewer)
-            {
-                svgPreviewer.ScalingFactor = ScalingFactor;
             }
 
             await UpdatePreviewAsync(_cancellationTokenSource.Token);

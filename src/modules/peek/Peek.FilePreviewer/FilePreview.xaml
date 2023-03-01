@@ -26,12 +26,6 @@
             ToolTipService.ToolTip="{x:Bind ImageInfoTooltip, Mode=OneWay}"
             Visibility="{x:Bind IsPreviewVisible(ImagePreviewer, Previewer.State), Mode=OneWay}" />
 
-        <Image
-            x:Name="SVGPreview"
-            Source="{x:Bind SVGPreviewer.Preview, Mode=OneWay}"
-            ToolTipService.ToolTip="{x:Bind ImageInfoTooltip, Mode=OneWay}"
-            Visibility="{x:Bind IsPreviewVisible(SVGPreviewer, Previewer.State), Mode=OneWay}" />
-        
         <controls:BrowserControl
             x:Name="BrowserPreview"
             x:Load="True"
