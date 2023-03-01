@@ -150,7 +150,7 @@ In this release, we focused on releasing new features, stability and improvement
 ### Settings
 
 - Add missing flyout borders on Windows 10. Thanks [@davidegiacometti](https://github.com/davidegiacometti)!
-- Add experimentation settings landing page. Thanks [@chenss3](https://github.com/chenss3)!
+- Add experimentation for oobe landing page. Thanks [@chenss3](https://github.com/chenss3)!
 - Show icons of user-installed PowerToys Run plugins. Thanks [@al2me6](https://github.com/al2me6)!
 - Fixed crash when clicking Browse for backup and restore location while running elevated.
 - Respect taskbar position when showing system tray flyout. (This was a hotfix for 0.67)
