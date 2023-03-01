@@ -7,7 +7,6 @@ using System.ComponentModel.Composition;
 using System.Drawing;
 using System.Drawing.Imaging;
 using System.Windows.Input;
-using System.Windows.Interop;
 using System.Windows.Threading;
 using ColorPicker.Helpers;
 using ColorPicker.Settings;
