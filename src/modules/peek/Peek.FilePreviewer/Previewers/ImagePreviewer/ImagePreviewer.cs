@@ -10,6 +10,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using CommunityToolkit.Mvvm.ComponentModel;
 using Microsoft.UI.Dispatching;
+using Microsoft.UI.Xaml.Media;
 using Microsoft.UI.Xaml.Media.Imaging;
 using Peek.Common.Extensions;
 using Peek.Common.Helpers;
@@ -19,10 +20,10 @@ using Windows.Foundation;
 
 namespace Peek.FilePreviewer.Previewers
 {
-    public partial class ImagePreviewer : ObservableObject, IBitmapPreviewer, IDisposable
+    public partial class ImagePreviewer : ObservableObject, IImagePreviewer, IDisposable
     {
         [ObservableProperty]
-        private BitmapSource? preview;
+        private ImageSource? preview;
 
         [ObservableProperty]
         private PreviewState state;
@@ -104,7 +105,7 @@ namespace Peek.FilePreviewer.Previewers
             });
         }
 
-        partial void OnPreviewChanged(BitmapSource? value)
+        partial void OnPreviewChanged(ImageSource? value)
         {
             if (Preview != null)
             {

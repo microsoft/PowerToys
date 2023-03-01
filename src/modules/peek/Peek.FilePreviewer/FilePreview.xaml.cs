@@ -43,7 +43,7 @@ namespace Peek.FilePreviewer
                 new PropertyMetadata(false, async (d, e) => await ((FilePreview)d).OnScalingFactorPropertyChanged()));
 
         [ObservableProperty]
-        [NotifyPropertyChangedFor(nameof(BitmapPreviewer))]
+        [NotifyPropertyChangedFor(nameof(ImagePreviewer))]
         [NotifyPropertyChangedFor(nameof(SVGPreviewer))]
         [NotifyPropertyChangedFor(nameof(BrowserPreviewer))]
         [NotifyPropertyChangedFor(nameof(UnsupportedFilePreviewer))]
@@ -77,13 +77,13 @@ namespace Peek.FilePreviewer
             }
         }
 
-        public IBitmapPreviewer? BitmapPreviewer => Previewer as IBitmapPreviewer;
+        public IImagePreviewer? ImagePreviewer => Previewer as IImagePreviewer;
 
         public ISvgPreviewer? SVGPreviewer => Previewer as ISvgPreviewer;
 
         public IBrowserPreviewer? BrowserPreviewer => Previewer as IBrowserPreviewer;
 
-        public bool IsImageVisible => BitmapPreviewer != null;
+        public bool IsImageVisible => ImagePreviewer != null;
 
         public IUnsupportedFilePreviewer? UnsupportedFilePreviewer => Previewer as IUnsupportedFilePreviewer;
 
@@ -102,9 +102,9 @@ namespace Peek.FilePreviewer
             {
                 SetValue(ScalingFactorProperty, value);
 
-                if (Previewer is IBitmapPreviewer bitmapPreviewer)
+                if (Previewer is IImagePreviewer imagePreviewer)
                 {
-                    bitmapPreviewer.ScalingFactor = ScalingFactor;
+                    imagePreviewer.ScalingFactor = ScalingFactor;
                 }
 
                 if (Previewer is ISvgPreviewer svgPreviewer)
@@ -141,9 +141,9 @@ namespace Peek.FilePreviewer
             }
 
             Previewer = previewerFactory.Create(Item);
-            if (Previewer is IBitmapPreviewer bitmapPreviewer)
+            if (Previewer is IImagePreviewer imagePreviewer)
             {
-                bitmapPreviewer.ScalingFactor = ScalingFactor;
+                imagePreviewer.ScalingFactor = ScalingFactor;
             }
 
             if (Previewer is ISvgPreviewer svgPreviewer)
