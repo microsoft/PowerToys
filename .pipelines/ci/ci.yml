@@ -9,7 +9,7 @@ trigger:
       - doc/*
       - temp/*
       - tools/*
-      - **/*.md
+      - /**/*.md
 
 pr:
   branches:
@@ -18,7 +18,7 @@ pr:
       - stable
   paths:
     exclude:
-      - **/*.md
+      - /**/*.md
        
 #     0.0.yyMM.dd##
 #     0.0.1904.0900
