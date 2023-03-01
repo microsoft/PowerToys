@@ -191,7 +191,7 @@ LRESULT Toolbar::WindowProcessMessages(HWND hwnd, UINT msg, WPARAM wparam, LPARA
                 toolbarImage = themeImages->camOnMicOn;
             }
         }
-        // Images are upscaled by 4 to support higher dpis.
+        // Images are scaled by 4 to support higher dpi values.
         graphic.DrawImage(toolbarImage, 0, 0, toolbarImage->GetWidth() / 4 * dpi / DPIAware::DEFAULT_DPI, toolbarImage->GetHeight() / 4 * dpi / DPIAware::DEFAULT_DPI);
 
         EndPaint(hwnd, &ps);
@@ -274,7 +274,7 @@ void Toolbar::show(std::wstring position, std::wstring monitorString)
     }
     hwnds.clear();
 
-    // Images are upscaled by 4 to support higher dpis.
+    // Images are scaled by 4 to support higher dpi values.
     int overlayWidth = darkImages.camOffMicOff->GetWidth() / 4;
     int overlayHeight = darkImages.camOffMicOff->GetHeight() / 4;
 
