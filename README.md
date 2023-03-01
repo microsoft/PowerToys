@@ -106,7 +106,7 @@ In this release, we focused on releasing new features, stability and improvement
 
 - Add Developer files previewer option to set max file size and fix styling issue. Thanks [@Aaron-Junker](https://github.com/Aaron-Junker)!
 - Improve Developer files previewer exception handling and printing of error messages.
-- Fix crash when generating PDF and Gcode files thumbnails. (This was a hotfix for 0.67)
+- Fix crash when generating PDF and Gcode file thumbnails. (This was a hotfix for 0.67)
 
 ### Hosts file editor
 
@@ -130,9 +130,10 @@ In this release, we focused on releasing new features, stability and improvement
 
 - Show Steam (steam://open/) shortcuts in the Program plugin. 
 - Localize paths of Program plugin results. Thanks [@htcfreek](https://github.com/htcfreek)!
+- Improved stability of localization code. Thanks [@htcfreek](https://github.com/htcfreek)!
 - Support MSC and CPL files in "Run command" results of Program plugin. Thanks [@htcfreek](https://github.com/htcfreek)!
 - Added missing MSC and CPL settings to the results of Windows Settings plugin. Thanks [@htcfreek](https://github.com/htcfreek)!
-- System plugin: Setting for separate "Open/Empty Recycle bin" results or single result with context menu. Thanks [@htcfreek](https://github.com/htcfreek)!
+- System plugin: Setting for separate "Open/Empty Recycle bin" results or single result with context menu. (This was implemented based on user feedback for a change in the last build.) Thanks [@htcfreek](https://github.com/htcfreek)!
 - Add support for log2 and log10 in Calculator plugin. Thanks [@RickLuiken](https://github.com/RickLuiken)!
 - Removed the TimeZone plugin.
 - Fix the crash when loading thumbnail for PDF files. (This was a hotfix for 0.67)
@@ -150,7 +151,7 @@ In this release, we focused on releasing new features, stability and improvement
 ### Settings
 
 - Add missing flyout borders on Windows 10. Thanks [@davidegiacometti](https://github.com/davidegiacometti)!
-- Add experimentation settings landing page. Thanks [@chenss3](https://github.com/chenss3)!
+- Add experimentation for oobe landing page. Thanks [@chenss3](https://github.com/chenss3)!
 - Show icons of user-installed PowerToys Run plugins. Thanks [@al2me6](https://github.com/al2me6)!
 - Fixed crash when clicking Browse for backup and restore location while running elevated.
 - Respect taskbar position when showing system tray flyout. (This was a hotfix for 0.67)
