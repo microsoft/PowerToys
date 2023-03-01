@@ -32,6 +32,7 @@
     <BuildPassReferences>true</BuildPassReferences>
     <AllowParallelCompileInReferencedProjects>true</AllowParallelCompileInReferencedProjects>
     <AccelerateBuildsInVisualStudio>true</AccelerateBuildsInVisualStudio>
+    <BuildInParallel>true</BuildInParallel>
   </PropertyGroup>
 
   <PropertyGroup>
