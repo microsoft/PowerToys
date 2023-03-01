@@ -33,6 +33,8 @@
     <AllowParallelCompileInReferencedProjects>true</AllowParallelCompileInReferencedProjects>
     <AccelerateBuildsInVisualStudio>true</AccelerateBuildsInVisualStudio>
     <BuildInParallel>true</BuildInParallel>
+    <UseMultiToolTask>true</UseMultiToolTask>
+    <UseMsbuildResourceManager>true</UseMsbuildResourceManager>
   </PropertyGroup>
 
   <PropertyGroup>
