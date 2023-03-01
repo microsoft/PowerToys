@@ -120,4 +120,7 @@
     <LinkIncremental>false</LinkIncremental>
   </PropertyGroup>
 
+  <Target Name="CleanBootstrap" BeforeTargets="PostBuildEvent">
+     <Exec Command="del $(OutDir)Microsoft.WindowsAppRuntime.Bootstrap.dll" Condition="'$(EnablePreviewMsixTooling)'=='true'" />
+  </Target>
 </Project>
