@@ -70,10 +70,21 @@ namespace Peek.FilePreviewer.Previewers
         public async Task<Size?> GetPreviewSizeAsync(CancellationToken cancellationToken)
         {
             cancellationToken.ThrowIfCancellationRequested();
-            ImageSize = await Task.Run(Item.GetImageSize);
-            if (ImageSize == null)
+            if (IsSvg(Item))
             {
-                ImageSize = await WICHelper.GetImageSize(Item.Path);
+                var size = await Task.Run(Item.GetSvgSize);
+                if (size != null)
+                {
+                    ImageSize = size.Value;
+                }
+            }
+            else
+            {
+                ImageSize = await Task.Run(Item.GetImageSize);
+                if (ImageSize == null)
+                {
+                    ImageSize = await WICHelper.GetImageSize(Item.Path);
+                }
             }
 
             return ImageSize;
@@ -206,9 +217,27 @@ namespace Peek.FilePreviewer.Previewers
                 {
                     cancellationToken.ThrowIfCancellationRequested();
 
-                    var bitmap = new BitmapImage();
-                    await bitmap.SetSourceAsync(stream.AsRandomAccessStream());
-                    Preview = bitmap;
+                    if (IsSvg(Item))
+                    {
+                        var source = new SvgImageSource();
+                        source.RasterizePixelHeight = ImageSize?.Height ?? 0;
+                        source.RasterizePixelWidth = ImageSize?.Width ?? 0;
+
+                        var loadStatus = await source.SetSourceAsync(stream.AsRandomAccessStream());
+                        if (loadStatus != SvgImageSourceLoadStatus.Success)
+                        {
+                            Debug.WriteLine("Error loading SVG: " + loadStatus.ToString());
+                            throw new ArgumentNullException(nameof(source));
+                        }
+
+                        Preview = source;
+                    }
+                    else
+                    {
+                        var bitmap = new BitmapImage();
+                        await bitmap.SetSourceAsync(stream.AsRandomAccessStream());
+                        Preview = bitmap;
+                    }
                 });
             });
         }
@@ -225,6 +254,11 @@ namespace Peek.FilePreviewer.Previewers
         private bool IsPng(IFileSystemItem item)
         {
             return item.Extension == ".png";
+        }
+
+        private bool IsSvg(IFileSystemItem item)
+        {
+            return item.Extension == ".svg";
         }
 
         private static readonly HashSet<string> _supportedFileTypes = new HashSet<string>
@@ -289,6 +323,8 @@ namespace Peek.FilePreviewer.Previewers
                 ".x3f",
                 ".ori",
                 ".cr3",
+
+                ".svg",
         };
     }
 }
