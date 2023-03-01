@@ -156,10 +156,6 @@ In this release, we focused on releasing new features, stability and improvement
 - Respect taskbar position when showing system tray flyout. (This was a hotfix for 0.67)
 - Show correct Hosts module image. (This was a hotfix for 0.67)
 
-### Documentation
-
-- Improve GPO docs and the layout of the disabled Experiments setting. Thanks [@htcfreek](https://github.com/htcfreek)!
-
 ### Development
 
 - Turned on C++ code analysis and incrementally fixing warnings.
