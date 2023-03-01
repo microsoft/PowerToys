@@ -96,7 +96,7 @@ namespace ColorPicker.Mouse
 
         private static Color GetPixelColor(System.Windows.Point mousePosition)
         {
-            var rect = new Rectangle((int)System.Math.Ceiling(mousePosition.X), (int)System.Math.Ceiling(mousePosition.Y), 1, 1);
+            var rect = new Rectangle((int)mousePosition.X, (int)mousePosition.Y, 1, 1);
             using (var bmp = new Bitmap(rect.Width, rect.Height, PixelFormat.Format32bppArgb))
             {
                 var g = Graphics.FromImage(bmp);
