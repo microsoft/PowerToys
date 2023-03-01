@@ -14,7 +14,8 @@
   <?define AlwaysOnTopProjectName="AlwaysOnTop"?>
   <?define MeasureToolProjectName="MeasureTool"?>
   <?define HostsProjectName="Hosts"?>
-
+  <?define PastePlainProjectName="PastePlain"?>
+  
   <?define RepoDir="$(var.ProjectDir)..\..\" ?>
   <?if $(var.Platform) = x64?>
           <?define PlatformLK="x64" ?>
