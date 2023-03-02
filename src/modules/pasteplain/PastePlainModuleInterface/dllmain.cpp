@@ -311,6 +311,8 @@ private:
                 INPUT input_event = {};
                 input_event.type = INPUT_KEYBOARD;
                 input_event.ki.wVk = 0x56; // V
+                // Avoid triggering detection by the centralized keyboard hook. Allows using Control+V as activation.
+                input_event.ki.dwExtraInfo = CENTRALIZED_KEYBOARD_HOOK_DONT_TRIGGER_FLAG;
                 inputs.push_back(input_event);
             }
 
@@ -319,6 +321,8 @@ private:
                 input_event.type = INPUT_KEYBOARD;
                 input_event.ki.wVk = 0x56; // V
                 input_event.ki.dwFlags = KEYEVENTF_KEYUP;
+                // Avoid triggering detection by the centralized keyboard hook. Allows using Control+V as activation.
+                input_event.ki.dwExtraInfo = CENTRALIZED_KEYBOARD_HOOK_DONT_TRIGGER_FLAG;
                 inputs.push_back(input_event);
             }
 
