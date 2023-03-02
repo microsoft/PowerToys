@@ -214,6 +214,22 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             }
         }
 
+        private bool mouseJump = true;
+
+        [JsonPropertyName("MouseJump")]
+        public bool MouseJump
+        {
+            get => mouseJump;
+            set
+            {
+                if (mouseJump != value)
+                {
+                    LogTelemetryEvent(value);
+                    mouseJump = value;
+                }
+            }
+        }
+
         private bool alwaysOnTop = true;
 
         [JsonPropertyName("AlwaysOnTop")]
@@ -274,6 +290,23 @@ namespace Microsoft.PowerToys.Settings.UI.Library
                 {
                     LogTelemetryEvent(value);
                     powerOCR = value;
+                    NotifyChange();
+                }
+            }
+        }
+
+        private bool pastePlain = true;
+
+        [JsonPropertyName("PastePlain")]
+        public bool PastePlain
+        {
+            get => pastePlain;
+            set
+            {
+                if (pastePlain != value)
+                {
+                    LogTelemetryEvent(value);
+                    pastePlain = value;
                     NotifyChange();
                 }
             }

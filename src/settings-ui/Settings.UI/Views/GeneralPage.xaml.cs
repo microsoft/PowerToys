@@ -6,6 +6,7 @@ using System;
 using System.Diagnostics;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.PowerToys.Settings.UI.Helpers;
 using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.PowerToys.Settings.UI.Library.Utilities;
 using Microsoft.PowerToys.Settings.UI.ViewModels;
@@ -142,12 +143,12 @@ namespace Microsoft.PowerToys.Settings.UI.Views
 
         private async Task<string> PickSingleFolderDialog()
         {
-            var openPicker = new FolderPicker();
+            // This function was changed to use the shell32 API to open folder dialog
+            // as the old one (PickSingleFolderAsync) can't work when the process is elevated
+            // TODO: go back PickSingleFolderAsync when it's fixed
             var hwnd = WinRT.Interop.WindowNative.GetWindowHandle(App.GetSettingsWindow());
-            WinRT.Interop.InitializeWithWindow.Initialize(openPicker, hwnd);
-            openPicker.FileTypeFilter.Add("*");
-            var folder = await openPicker.PickSingleFolderAsync();
-            return folder?.Path;
+            string r = await Task.FromResult<string>(ShellGetFolder.GetFolderDialog(hwnd));
+            return r;
         }
     }
 }

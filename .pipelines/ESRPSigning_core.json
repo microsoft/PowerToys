@@ -36,6 +36,8 @@
                 "modules\\PowerOCR\\PowerToys.PowerOCR.dll",
                 "modules\\PowerOCR\\PowerToys.PowerOCR.exe",
 
+                "modules\\PastePlain\\PowerToys.PastePlainModuleInterface.dll",
+
                 "modules\\Awake\\PowerToys.AwakeModuleInterface.dll",
                 "modules\\Awake\\PowerToys.Awake.exe",
                 "modules\\Awake\\PowerToys.Awake.dll",
@@ -119,7 +121,6 @@
                 "modules\\launcher\\Plugins\\Service\\Microsoft.PowerToys.Run.Plugin.Service.dll",
                 "modules\\launcher\\Plugins\\System\\Microsoft.PowerToys.Run.Plugin.System.dll",
                 "modules\\launcher\\Plugins\\TimeDate\\Microsoft.PowerToys.Run.Plugin.TimeDate.dll",
-                "modules\\launcher\\Plugins\\TimeZone\\Microsoft.PowerToys.Run.Plugin.TimeZone.dll",
                 "modules\\launcher\\Plugins\\WebSearch\\Community.PowerToys.Run.Plugin.WebSearch.dll",
                 "modules\\launcher\\Plugins\\WindowsTerminal\\Microsoft.PowerToys.Run.Plugin.WindowsTerminal.dll",
                 
@@ -130,7 +131,10 @@
 
                 "modules\\MouseUtils\\PowerToys.FindMyMouse.dll",
                 "modules\\MouseUtils\\PowerToys.MouseHighlighter.dll",
+                "modules\\MouseUtils\\PowerToys.MouseJump.dll",
                 "modules\\MouseUtils\\PowerToys.MousePointerCrosshairs.dll",
+                "modules\\MouseUtils\\MouseJumpUI\\PowerToys.MouseJumpUI.dll",
+                "modules\\MouseUtils\\MouseJumpUI\\PowerToys.MouseJumpUI.exe",
 
                 "modules\\PowerAccent\\PowerAccent.Core.dll",
                 "modules\\PowerAccent\\PowerToys.PowerAccent.dll",

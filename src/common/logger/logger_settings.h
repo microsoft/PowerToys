@@ -47,6 +47,7 @@ struct LogSettings
     inline const static std::wstring keyboardManagerLogPath = L"Logs\\keyboard-manager-log.txt";
     inline const static std::string findMyMouseLoggerName = "find-my-mouse";
     inline const static std::string mouseHighlighterLoggerName = "mouse-highlighter";
+    inline const static std::string mouseJumpLoggerName = "mouse-jump";
     inline const static std::string mousePointerCrosshairsLoggerName = "mouse-pointer-crosshairs";
     inline const static std::string imageResizerLoggerName = "imageresizer";
     inline const static std::string powerRenameLoggerName = "powerrename";

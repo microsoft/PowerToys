@@ -76,6 +76,19 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             }
         }
 
+        public bool LoopbackDuplicates
+        {
+            get => Settings.Properties.LoopbackDuplicates;
+            set
+            {
+                if (value != Settings.Properties.LoopbackDuplicates)
+                {
+                    Settings.Properties.LoopbackDuplicates = value;
+                    NotifyPropertyChanged();
+                }
+            }
+        }
+
         public bool LaunchAdministrator
         {
             get => Settings.Properties.LaunchAdministrator;

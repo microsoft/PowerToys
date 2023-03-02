@@ -80,6 +80,10 @@ namespace winrt::PowerToys::GPOWrapper::implementation
     {
         return static_cast<GpoRuleConfigured>(powertoys_gpo::getConfiguredMouseHighlighterEnabledValue());
     }
+    GpoRuleConfigured GPOWrapper::GetConfiguredMouseJumpEnabledValue()
+    {
+        return static_cast<GpoRuleConfigured>(powertoys_gpo::getConfiguredMouseJumpEnabledValue());
+    }
     GpoRuleConfigured GPOWrapper::GetConfiguredMousePointerCrosshairsEnabledValue()
     {
         return static_cast<GpoRuleConfigured>(powertoys_gpo::getConfiguredMousePointerCrosshairsEnabledValue());
@@ -112,8 +116,20 @@ namespace winrt::PowerToys::GPOWrapper::implementation
     {
         return static_cast<GpoRuleConfigured>(powertoys_gpo::getConfiguredTextExtractorEnabledValue());
     }
+    GpoRuleConfigured GPOWrapper::GetConfiguredPastePlainEnabledValue()
+    {
+        return static_cast<GpoRuleConfigured>(powertoys_gpo::getConfiguredPastePlainEnabledValue());
+    }
     GpoRuleConfigured GPOWrapper::GetConfiguredVideoConferenceMuteEnabledValue()
     {
         return static_cast<GpoRuleConfigured>(powertoys_gpo::getConfiguredVideoConferenceMuteEnabledValue());
+    }
+    GpoRuleConfigured GPOWrapper::GetDisableAutomaticUpdateDownloadValue()
+    {
+        return static_cast<GpoRuleConfigured>(powertoys_gpo::getDisableAutomaticUpdateDownloadValue());
+    }
+    GpoRuleConfigured GPOWrapper::GetAllowExperimentationValue()
+    {
+        return static_cast<GpoRuleConfigured>(powertoys_gpo::getAllowExperimentationValue());
     }
 }
