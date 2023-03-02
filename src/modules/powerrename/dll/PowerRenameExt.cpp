@@ -46,14 +46,26 @@ HRESULT CPowerRenameMenu::s_CreateInstance(_In_opt_ IUnknown*, _In_ REFIID riid,
 }
 
 // IShellExtInit
-HRESULT CPowerRenameMenu::Initialize(_In_opt_ PCIDLIST_ABSOLUTE, _In_ IDataObject* pdtobj, HKEY)
+HRESULT CPowerRenameMenu::Initialize(_In_opt_ PCIDLIST_ABSOLUTE idlist, _In_ IDataObject* pdtobj, HKEY)
 {
     // Check if we have disabled ourselves
     if (!CSettingsInstance().GetEnabled())
         return E_FAIL;
 
     // Cache the data object to be used later
-    m_spdo = pdtobj;
+    if (idlist != NULL)
+    {
+        CComPtr<IShellItemArray> spsia;
+        if (SUCCEEDED(SHCreateShellItemArrayFromIDLists(1, &idlist, &spsia)))
+        {
+            spsia->BindToHandler(NULL, BHID_DataObject, IID_IDataObject, (void**)&m_spdo);
+        }
+    }
+    else
+    {
+        m_spdo = pdtobj;
+    }
+
     return S_OK;
 }
 
@@ -201,15 +213,18 @@ HRESULT CPowerRenameMenu::RunPowerRename(CMINVOKECOMMANDINFO* pici, IShellItemAr
         // psiItemArray is NULL if called from InvokeCommand. This part is used for the MSI installer. It is not NULL if it is called from Invoke (MSIX).
         if (!psiItemArray)
         {
-            // Stream the input files
-            HDropIterator i(m_spdo);
-            for (i.First(); !i.IsDone(); i.Next())
+            if (m_spdo)
             {
-                CString fileName(i.CurrentItem());
-                // File name can't contain '?'
-                fileName.Append(_T("?"));
+                // Stream the input files
+                HDropIterator i(m_spdo);
+                for (i.First(); !i.IsDone(); i.Next())
+                {
+                    CString fileName(i.CurrentItem());
+                    // File name can't contain '?'
+                    fileName.Append(_T("?"));
 
-                writePipe.Write(fileName, fileName.GetLength() * sizeof(TCHAR));
+                    writePipe.Write(fileName, fileName.GetLength() * sizeof(TCHAR));
+                }
             }
         }
         else
