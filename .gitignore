@@ -350,3 +350,5 @@ src/common/Telemetry/*.etl
 /installer/PowerToysSetup/MonacoSRC.wxs
 PowerToys.sln
 src/runner/main.cpp
+src/modules/fancyzones/FancyZones/FancyZones.vcxproj
+src/modules/videoconference/VideoConferenceModule/VideoConference.vcxproj
