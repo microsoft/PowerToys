@@ -18,6 +18,8 @@ namespace Microsoft.PowerToys.Settings.UI.Views
 
         private static async Task<string> PickFileDialog()
         {
+            // this code was changed to solve the problem with WinUI3 that prevents to select a file
+            // while running elevated, when the issue is solved in WinUI3 it should be changed back
             OpenFileName openFileName = new OpenFileName();
             openFileName.StructSize = Marshal.SizeOf(openFileName);
             openFileName.Filter = "Images (*.jpg, *.jpeg, *.png)\0*.jpg; *.jpeg; *.png\0";
