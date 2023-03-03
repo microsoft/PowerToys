@@ -58,7 +58,7 @@ HRESULT CPowerRenameMenu::Initialize(_In_opt_ PCIDLIST_ABSOLUTE idlist, _In_ IDa
         CComPtr<IShellItemArray> spsia;
         if (SUCCEEDED(SHCreateShellItemArrayFromIDLists(1, &idlist, &spsia)))
         {
-            spsia->BindToHandler(NULL, BHID_DataObject, IID_IDataObject, (void**)&m_spdo);
+            spsia->BindToHandler(NULL, BHID_DataObject, IID_IDataObject, reinterpret_cast<void**>(&m_spdo));
         }
     }
     else
