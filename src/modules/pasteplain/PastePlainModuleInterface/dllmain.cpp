@@ -165,6 +165,18 @@ private:
         }
     }
 
+    void try_inject_modifier_key_restore(std::vector<INPUT> &inputs, short modifier)
+    {
+        // Most significant bit is set if key is down
+        if ((GetAsyncKeyState(static_cast<int>(modifier)) & 0x8000) != 0)
+        {
+            INPUT input_event = {};
+            input_event.type = INPUT_KEYBOARD;
+            input_event.ki.wVk = modifier;
+            inputs.push_back(input_event);
+        }
+    }
+
     void try_to_paste_as_plain_text()
     {
         std::wstring clipboard_text;
@@ -311,6 +323,8 @@ private:
                 INPUT input_event = {};
                 input_event.type = INPUT_KEYBOARD;
                 input_event.ki.wVk = 0x56; // V
+                // Avoid triggering detection by the centralized keyboard hook. Allows using Control+V as activation.
+                input_event.ki.dwExtraInfo = CENTRALIZED_KEYBOARD_HOOK_DONT_TRIGGER_FLAG;
                 inputs.push_back(input_event);
             }
 
@@ -319,6 +333,8 @@ private:
                 input_event.type = INPUT_KEYBOARD;
                 input_event.ki.wVk = 0x56; // V
                 input_event.ki.dwFlags = KEYEVENTF_KEYUP;
+                // Avoid triggering detection by the centralized keyboard hook. Allows using Control+V as activation.
+                input_event.ki.dwExtraInfo = CENTRALIZED_KEYBOARD_HOOK_DONT_TRIGGER_FLAG;
                 inputs.push_back(input_event);
             }
 
@@ -329,6 +345,15 @@ private:
                 input_event.ki.dwFlags = KEYEVENTF_KEYUP;
                 inputs.push_back(input_event);
             }
+
+            try_inject_modifier_key_restore(inputs, VK_LCONTROL);
+            try_inject_modifier_key_restore(inputs, VK_RCONTROL);
+            try_inject_modifier_key_restore(inputs, VK_LWIN);
+            try_inject_modifier_key_restore(inputs, VK_RWIN);
+            try_inject_modifier_key_restore(inputs, VK_LSHIFT);
+            try_inject_modifier_key_restore(inputs, VK_RSHIFT);
+            try_inject_modifier_key_restore(inputs, VK_LMENU);
+            try_inject_modifier_key_restore(inputs, VK_RMENU);
 
             auto uSent = SendInput(static_cast<UINT>(inputs.size()), inputs.data(), sizeof(INPUT));
             if (uSent != inputs.size())
