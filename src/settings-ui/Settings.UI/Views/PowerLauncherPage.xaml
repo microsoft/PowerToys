@@ -185,6 +185,14 @@
                             IsOn="{x:Bind ViewModel.TabSelectsContextButtons, Mode=TwoWay}" />
                     </labs:SettingsCard>
 
+                    <labs:SettingsCard
+                        x:Uid="PowerLauncher_GenerateThumbnailsFromFiles"
+                        >
+                        <ToggleSwitch
+                            x:Uid="ToggleSwitch"
+                            IsOn="{x:Bind ViewModel.GenerateThumbnailsFromFiles, Mode=TwoWay}" />
+                    </labs:SettingsCard>
+
                 </controls:SettingsGroup>
 
                 <!--<ComboBox x:Uid="PowerLauncher_SearchResultPreference"
