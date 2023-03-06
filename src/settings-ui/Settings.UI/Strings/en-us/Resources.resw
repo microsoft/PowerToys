@@ -503,7 +503,7 @@
     <value>Generate thumbnails from files</value>
   </data>
   <data name="PowerLauncher_GenerateThumbnailsFromFiles.Description" xml:space="preserve">
-    <value>Results will try to generate thumbnails for files. Disabling this setting off may increase stability and speed</value>
+    <value>Results will try to generate thumbnails for files. Disabling this setting may increase stability and speed</value>
   </data>
   <data name="PowerLauncher_SearchQueryResultsWithDelay.Header" xml:space="preserve">
     <value>Input Smoothing</value>
