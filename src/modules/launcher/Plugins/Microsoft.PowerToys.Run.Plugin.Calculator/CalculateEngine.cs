@@ -43,11 +43,23 @@ namespace Microsoft.PowerToys.Run.Plugin.Calculator
                 return default;
             }
 
+            input = Regex.Replace(input, " ", string.Empty);
+
             // mages has quirky log representation
             // mage has log == ln vs log10
             input = input.
                         Replace("log(", "log10(", true, CultureInfo.CurrentCulture).
                         Replace("ln(", "log(", true, CultureInfo.CurrentCulture);
+
+            // mages does not hande cases such as =2(5+5) or (2+2)(3+3),
+            // therefore, manually inserting multplication operator
+            for (int i = 1; i < input.Length; i++)
+            {
+                if (input[i] == '(' && (int.TryParse(input[i - 1].ToString(), out int _) || input[i - 1] == ')'))
+                {
+                    input = input.Insert(i, "*");
+                }
+            }
 
             var result = _magesEngine.Interpret(input);
 
