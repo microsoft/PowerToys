@@ -48,5 +48,119 @@ namespace Microsoft.PowerToys.Run.Plugin.Calculator
 
             return true;
         }
+
+        public static string FixHumanMultiplicationExpressions(string input)
+        {
+            var output = Check_NumberOrConstant_ParenthesisExpr(input);
+            output = Check_NumberOrConstant_Func(output);
+            output = Check_ParenthesisExpr_Func(output);
+            output = Check_ParenthesisExpr_ParenthesisExpr(output);
+            output = Check_Number_Constant(output);
+            output = Check_Constant_Constant(output);
+            return output;
+        }
+
+        private static string Check_NumberOrConstant_ParenthesisExpr(string input)
+        {
+            var output = input;
+            do
+            {
+                input = output;
+                output = Regex.Replace(input, @"(\d+|pi|e)\s*(\()", m =>
+                {
+                    if (m.Index > 0 && char.IsLetter(input[m.Index - 1]))
+                    {
+                        return m.Value;
+                    }
+
+                    return $"{m.Groups[1].Value} * {m.Groups[2].Value}";
+                });
+            }
+            while (output != input);
+
+            return output;
+        }
+
+        private static string Check_NumberOrConstant_Func(string input)
+        {
+            var output = input;
+            do
+            {
+                input = output;
+                output = Regex.Replace(input, @"(\d+|pi|e)\s*([a-zA-Z]+[0-9]*\s*\()", m =>
+                {
+                    if (input[m.Index] == 'e' && input[m.Index + 1] == 'x' && input[m.Index + 2] == 'p')
+                    {
+                        return m.Value;
+                    }
+
+                    if (m.Index > 0 && char.IsLetter(input[m.Index - 1]))
+                    {
+                        return m.Value;
+                    }
+
+                    return $"{m.Groups[1].Value} * {m.Groups[2].Value}";
+                });
+            }
+            while (output != input);
+
+            return output;
+        }
+
+        private static string Check_ParenthesisExpr_Func(string input)
+        {
+            var p = @"(\))\s*([a-zA-Z]+[0-9]*\s*\()";
+            var r = "$1 * $2";
+            return Regex.Replace(input, p, r);
+        }
+
+        private static string Check_ParenthesisExpr_ParenthesisExpr(string input)
+        {
+            var p = @"(\))\s*(\()";
+            var r = "$1 * $2";
+            return Regex.Replace(input, p, r);
+        }
+
+        private static string Check_Number_Constant(string input)
+        {
+            var output = input;
+            do
+            {
+                input = output;
+                output = Regex.Replace(input, @"(\d+)\s*(pi|e)", m =>
+                {
+                    if (m.Index > 0 && char.IsLetter(input[m.Index - 1]))
+                    {
+                        return m.Value;
+                    }
+
+                    return $"{m.Groups[1].Value} * {m.Groups[2].Value}";
+                });
+            }
+            while (output != input);
+
+            return output;
+        }
+
+        private static string Check_Constant_Constant(string input)
+        {
+            var output = input;
+            do
+            {
+                input = output;
+                output = Regex.Replace(input, @"(pi|e)\s*(pi|e)", m =>
+                {
+                    if (m.Index > 0 && char.IsLetter(input[m.Index - 1]))
+                    {
+                        return m.Value;
+                    }
+
+                    return $"{m.Groups[1].Value} * {m.Groups[2].Value}";
+                });
+            }
+            while (output != input);
+
+            return output;
+        }
     }
 }
