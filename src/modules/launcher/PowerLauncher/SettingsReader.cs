@@ -166,6 +166,11 @@ namespace PowerLauncher
                         _settings.StartupPosition = overloadSettings.Properties.Position;
                     }
 
+                    if (_settings.GenerateThumbnailsFromFiles != overloadSettings.Properties.GenerateThumbnailsFromFiles)
+                    {
+                        _settings.GenerateThumbnailsFromFiles = overloadSettings.Properties.GenerateThumbnailsFromFiles;
+                    }
+
                     retry = false;
                 }
 
