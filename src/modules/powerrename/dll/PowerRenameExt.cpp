@@ -56,7 +56,7 @@ HRESULT CPowerRenameMenu::Initialize(_In_opt_ PCIDLIST_ABSOLUTE idlist, _In_ IDa
     if (idlist != NULL)
     {
         CComPtr<IShellItemArray> spsia;
-        if (SUCCEEDED(SHCreateShellItemArrayFromIDLists(1, &idlist, &spsia)))
+        if (SUCCEEDED(SHCreateShellItemArrayFromIDLists(1, &idlist, &spsia)) && spsia != NULL)
         {
             spsia->BindToHandler(NULL, BHID_DataObject, IID_IDataObject, reinterpret_cast<void**>(&m_spdo));
         }
@@ -136,7 +136,7 @@ HRESULT CPowerRenameMenu::RunPowerRename(CMINVOKECOMMANDINFO* pici, IShellItemAr
     HRESULT hr = E_FAIL;
 
     if (CSettingsInstance().GetEnabled() &&
-        (IS_INTRESOURCE(pici->lpVerb)) &&
+        pici && (IS_INTRESOURCE(pici->lpVerb)) &&
         (LOWORD(pici->lpVerb) == 0))
     {
         Trace::Invoked();
@@ -175,14 +175,7 @@ HRESULT CPowerRenameMenu::RunPowerRename(CMINVOKECOMMANDINFO* pici, IShellItemAr
         startupInfo.cb = sizeof(STARTUPINFO);
         startupInfo.hStdInput = hReadPipe;
         startupInfo.dwFlags = STARTF_USESHOWWINDOW | STARTF_USESTDHANDLES;
-        if (pici)
-        {
-            startupInfo.wShowWindow = static_cast<WORD>(pici->nShow);
-        }
-        else
-        {
-            startupInfo.wShowWindow = SW_SHOWNORMAL;
-        }
+        startupInfo.wShowWindow = static_cast<WORD>(pici->nShow);
 
         PROCESS_INFORMATION processInformation;
 
