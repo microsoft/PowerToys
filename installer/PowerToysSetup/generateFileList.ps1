@@ -70,7 +70,7 @@ if ($fileDepsJson -eq [string]::Empty) {
     }
 }
 
-$fileExclusionList = $fileExclusionList.where({$_ -notin $dllsToIgnore})
+$fileExclusionList = $fileExclusionList | Where-Object {$_ -notin $dllsToIgnore}
 
 if ($isLauncherPlugin -eq $True) {
     $fileInclusionList += @("*.deps.json")
