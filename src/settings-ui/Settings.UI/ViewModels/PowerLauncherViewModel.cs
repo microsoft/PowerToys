@@ -563,6 +563,23 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             }
         }
 
+        public bool GenerateThumbnailsFromFiles
+        {
+            get
+            {
+                return settings.Properties.GenerateThumbnailsFromFiles;
+            }
+
+            set
+            {
+                if (settings.Properties.GenerateThumbnailsFromFiles != value)
+                {
+                    settings.Properties.GenerateThumbnailsFromFiles = value;
+                    UpdateSettings();
+                }
+            }
+        }
+
         private ObservableCollection<PowerLauncherPluginViewModel> _plugins;
 
         public ObservableCollection<PowerLauncherPluginViewModel> Plugins

@@ -499,6 +499,12 @@
   <data name="PowerLauncher_TabSelectsContextButtons.Description" xml:space="preserve">
     <value>Pressing tab will first select through the available context buttons of the current selection before moving onto the next result</value>
   </data>
+  <data name="PowerLauncher_GenerateThumbnailsFromFiles.Header" xml:space="preserve">
+    <value>Generate thumbnails from files</value>
+  </data>
+  <data name="PowerLauncher_GenerateThumbnailsFromFiles.Description" xml:space="preserve">
+    <value>Results will try to generate thumbnails for files. Disabling this setting may increase stability and speed</value>
+  </data>
   <data name="PowerLauncher_SearchQueryResultsWithDelay.Header" xml:space="preserve">
     <value>Input Smoothing</value>
     <comment>This is about adding a delay to wait for more input before executing a search</comment>
