@@ -72,6 +72,9 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         [JsonPropertyName("search_wait_for_slow_results")]
         public bool SearchWaitForSlowResults { get; set; }
 
+        [JsonPropertyName("generate_thumbnails_from_files")]
+        public bool GenerateThumbnailsFromFiles { get; set; }
+
         public PowerLauncherProperties()
         {
             OpenPowerLauncher = new HotkeySettings(false, false, true, false, 32);
@@ -92,6 +95,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             SearchClickedItemWeight = 5;
             SearchQueryTuningEnabled = false;
             SearchWaitForSlowResults = false;
+            GenerateThumbnailsFromFiles = true;
         }
     }
 }
