@@ -56,7 +56,7 @@
                     </labs:SettingsCard>
 
                     <labs:SettingsCard
-                        x:Uid="Awake_ExpiationSettingsCard"
+                        x:Uid="Awake_ExpirationSettingsCard"
                         HeaderIcon="{ui:FontIcon FontFamily={StaticResource SymbolThemeFontFamily}, Glyph=&#xEC92;}"
                         Visibility="{x:Bind ViewModel.IsExpirationConfigurationEnabled, Mode=OneWay}">
                         <StackPanel Orientation="Horizontal">
