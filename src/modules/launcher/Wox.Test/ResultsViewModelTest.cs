@@ -18,7 +18,7 @@ namespace Wox.Test
             // Arrange
             ResultsViewModel rvm = new ResultsViewModel();
             Result result = new Result();
-            ResultViewModel selectedItem = new ResultViewModel(result, null);
+            ResultViewModel selectedItem = new ResultViewModel(result, null, null);
             selectedItem.ContextMenuItems.Add(new ContextMenuItemViewModel(null, null, null, null, Key.None, ModifierKeys.None, null));
             rvm.SelectedItem = selectedItem;
 
@@ -32,7 +32,7 @@ namespace Wox.Test
             // Arrange
             ResultsViewModel rvm = new ResultsViewModel();
             Result result = new Result();
-            ResultViewModel selectedItem = new ResultViewModel(result, null);
+            ResultViewModel selectedItem = new ResultViewModel(result, null, null);
             selectedItem.ContextMenuItems.Add(new ContextMenuItemViewModel(null, null, null, null, Key.None, ModifierKeys.None, null));
             rvm.SelectedItem = selectedItem;
 
@@ -49,7 +49,7 @@ namespace Wox.Test
             // Arrange
             ResultsViewModel rvm = new ResultsViewModel();
             Result result = new Result();
-            ResultViewModel selectedItem = new ResultViewModel(result, null);
+            ResultViewModel selectedItem = new ResultViewModel(result, null, null);
             selectedItem.ContextMenuItems.Add(new ContextMenuItemViewModel(null, null, null, null, Key.None, ModifierKeys.None, null));
             rvm.SelectedItem = selectedItem;
 
@@ -66,7 +66,7 @@ namespace Wox.Test
             // Arrange
             ResultsViewModel rvm = new ResultsViewModel();
             Result result = new Result();
-            ResultViewModel selectedItem = new ResultViewModel(result, null);
+            ResultViewModel selectedItem = new ResultViewModel(result, null, null);
             selectedItem.ContextMenuItems.Add(new ContextMenuItemViewModel(null, null, null, null, Key.None, ModifierKeys.None, null));
             selectedItem.ContextMenuItems.Add(new ContextMenuItemViewModel(null, null, null, null, Key.None, ModifierKeys.None, null));
             selectedItem.ContextMenuItems.Add(new ContextMenuItemViewModel(null, null, null, null, Key.None, ModifierKeys.None, null));
@@ -88,7 +88,7 @@ namespace Wox.Test
             // Arrange
             ResultsViewModel rvm = new ResultsViewModel();
             Result result = new Result();
-            ResultViewModel selectedItem = new ResultViewModel(result, null);
+            ResultViewModel selectedItem = new ResultViewModel(result, null, null);
             selectedItem.ContextMenuItems.Add(new ContextMenuItemViewModel(null, null, null, null, Key.None, ModifierKeys.None, null));
             rvm.SelectedItem = selectedItem;
 
@@ -106,7 +106,7 @@ namespace Wox.Test
             // Arrange
             ResultsViewModel rvm = new ResultsViewModel();
             Result result = new Result();
-            ResultViewModel selectedItem = new ResultViewModel(result, null);
+            ResultViewModel selectedItem = new ResultViewModel(result, null, null);
             selectedItem.ContextMenuItems.Add(new ContextMenuItemViewModel(null, null, null, null, Key.None, ModifierKeys.None, null));
             rvm.SelectedItem = selectedItem;
 
@@ -124,7 +124,7 @@ namespace Wox.Test
             // Arrange
             ResultsViewModel rvm = new ResultsViewModel();
             Result result = new Result();
-            ResultViewModel selectedItem = new ResultViewModel(result, null);
+            ResultViewModel selectedItem = new ResultViewModel(result, null, null);
             selectedItem.ContextMenuItems.Add(new ContextMenuItemViewModel(null, null, null, null, Key.None, ModifierKeys.None, null));
             rvm.SelectedItem = selectedItem;
 

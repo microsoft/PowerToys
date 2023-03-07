@@ -499,6 +499,12 @@
   <data name="PowerLauncher_TabSelectsContextButtons.Description" xml:space="preserve">
     <value>Pressing tab will first select through the available context buttons of the current selection before moving onto the next result</value>
   </data>
+  <data name="PowerLauncher_GenerateThumbnailsFromFiles.Header" xml:space="preserve">
+    <value>Generate thumbnails from files</value>
+  </data>
+  <data name="PowerLauncher_GenerateThumbnailsFromFiles.Description" xml:space="preserve">
+    <value>Results will try to generate thumbnails for files. Disabling this setting may increase stability and speed</value>
+  </data>
   <data name="PowerLauncher_SearchQueryResultsWithDelay.Header" xml:space="preserve">
     <value>Input Smoothing</value>
     <comment>This is about adding a delay to wait for more input before executing a search</comment>
@@ -1970,6 +1976,10 @@ From there, simply click on one of the supported files in the File Explorer and 
     <value>Learn more about Mouse utilities</value>
     <comment>Mouse utilities is a product name, do not loc</comment>
   </data>
+  <data name="LearnMore_PastePlain.Text" xml:space="preserve">
+    <value>Learn more about Paste as Plain Text</value>
+    <comment> Paste as Plain Text is the name of the module. </comment>
+  </data>
   <data name="LearnMore_PowerPreview.Text" xml:space="preserve">
     <value>Learn more about File Explorer add-ons</value>
     <comment>File Explorer is a product name, localize as Windows does</comment>
@@ -2024,6 +2034,14 @@ From there, simply click on one of the supported files in the File Explorer and 
   </data>
   <data name="Oobe_MouseUtils_MousePointerCrosshairs_Description.Text" xml:space="preserve">
     <value>Draw crosshairs centered around the mouse pointer.</value>
+    <comment>Mouse as in the hardware peripheral.</comment>
+  </data>
+  <data name="Oobe_MouseUtils_MouseJump.Text" xml:space="preserve">
+    <value>Mouse Jump</value>
+    <comment>Mouse as in the hardware peripheral.</comment>
+  </data>
+  <data name="Oobe_MouseUtils_MouseJump_Description.Text" xml:space="preserve">
+    <value>Jump the mouse pointer quickly to anywhere on your desktop.</value>
     <comment>Mouse as in the hardware peripheral.</comment>
   </data>
   <data name="Launch_Run.Content" xml:space="preserve">
@@ -2725,7 +2743,7 @@ Activate by holding the key for the character you want to add an accent to, then
   </data>
   <data name="QuickAccent_SelectedLanguage_Gaeilge.Content" xml:space="preserve">
     <value>Gaeilge</value>
-    <comment>Irish Gaelic</comment>
+    <comment>Gaelic language spoken in Ireland</comment>
   </data>
   <data name="QuickAccent_SelectedLanguage_Gaidhlig.Content" xml:space="preserve">
     <value>Gàidhlig</value>
@@ -2843,8 +2861,8 @@ Activate by holding the key for the character you want to add an accent to, then
   <data name="Hosts_AdditionalLinesPosition_Top.Content" xml:space="preserve">
     <value>Top</value>
   </data>
-  <data name="Hosts_File_GroupSettings.Header" xml:space="preserve">
-    <value>File</value>
+  <data name="Hosts_Behavior_GroupSettings.Header" xml:space="preserve">
+    <value>Behavior</value>
   </data>
   <data name="Launch_Hosts.Content" xml:space="preserve">
     <value>Launch Hosts File Editor</value>
@@ -2887,7 +2905,7 @@ Activate by holding the key for the character you want to add an accent to, then
     <comment>File Locksmith is the name of the utility</comment>
   </data>
   <data name="GPO_IsSettingForced.Title" xml:space="preserve">
-    <value>The systems administrator is forcing this setting.</value>
+    <value>The system administrator is forcing this setting.</value>
   </data>
   <data name="Hosts_AdditionalLinesPosition.Description" xml:space="preserve">
     <value>Additional content includes the file header and lines that can't parse</value>
@@ -2933,6 +2951,31 @@ Activate by holding the key for the character you want to add an accent to, then
   </data>
   <data name="GPO_ExperimentationIsDisallowed.Title" xml:space="preserve">
     <value>The system administrator has disabled experimentation.</value>
+  </data>
+  <data name="Shell_PastePlain.Content" xml:space="preserve">
+    <value>Paste As Plain Text</value>
+    <comment>Product name: Navigation view item name for Paste as Plain Text</comment>
+  </data>
+  <data name="PastePlain.ModuleDescription" xml:space="preserve">
+    <value>Paste As Plain Text is a quick shortcut for pasting the text contents of your clipboard without formatting. Note: the formatted text in the clipboard is replaced with the unformatted text.</value>
+  </data>
+  <data name="PastePlain.ModuleTitle" xml:space="preserve">
+    <value>Paste As Plain Text</value>
+  </data>
+  <data name="PastePlain_Cancel" xml:space="preserve">
+    <value>cancel</value>
+  </data>
+  <data name="PastePlain_EnableToggleControl_HeaderText.Header" xml:space="preserve">
+    <value>Enable Paste As Plain Text</value>
+  </data>
+  <data name="Oobe_PastePlain.Description" xml:space="preserve">
+    <value>Paste As Plain Text strips rich formatting from your clipboard data and pastes it as non-formatted text.</value>
+  </data>
+  <data name="Oobe_PastePlain.Title" xml:space="preserve">
+    <value>Paste As Plain Text</value>
+  </data>
+  <data name="Oobe_PastePlain_HowToUse.Text" xml:space="preserve">
+    <value>to paste your clipboard data as plain text. Note: this will replace the formatted text in your clipboard with the plain text.</value>
   </data>
   <data name="AllAppsTxt.Text" xml:space="preserve">
     <value>All apps</value>
@@ -2984,5 +3027,33 @@ Activate by holding the key for the character you want to add an accent to, then
   <data name="FileExplorerPreview_Toggle_Monaco_Max_File_Size.Description" xml:space="preserve">
     <value>The maximum size, in kilobytes, for files to be displayed. This is a safety mechanism to prevent loading large files into RAM.</value>
     <comment>"RAM" refers to random access memory; "size" refers to disk space; "bytes" refer to the measurement unit</comment>
+  </data>
+  <data name="MouseUtils_MouseJump.Description" xml:space="preserve">
+    <value>Quickly move the mouse pointer long distances.</value>
+    <comment>"Mouse Jump" is the name of the utility. Mouse is the hardware mouse.</comment>
+  </data>
+  <data name="MouseUtils_MouseJump.Header" xml:space="preserve">
+    <value>Mouse Jump</value>
+    <comment>Refers to the utility name</comment>
+  </data>
+  <data name="MouseUtils_MouseJump_ActivationShortcut.Description" xml:space="preserve">
+    <value>Customize the shortcut to turn on or off this mode</value>
+  </data>
+  <data name="MouseUtils_MouseJump_ActivationShortcut.Header" xml:space="preserve">
+    <value>Activation shortcut</value>
+  </data>
+  <data name="MouseUtils_Enable_MouseJump.Header" xml:space="preserve">
+    <value>Enable Mouse Jump</value>
+    <comment>"Mouse Jump" is the name of the utility.</comment>
+  </data>
+  <data name="GPO_AutoDownloadUpdatesIsDisabled.Title" xml:space="preserve">
+    <value>The system administrator has disabled the automatic download of updates.</value>
+  </data>
+  <data name="Hosts_Toggle_LoopbackDuplicates.Description" xml:space="preserve">
+    <value>127.0.0.1, ::1, ...</value>
+    <comment>"127.0.0.1 and ::1" are well known loopback addresses, do not loc</comment>
+  </data>
+  <data name="Hosts_Toggle_LoopbackDuplicates.Header" xml:space="preserve">
+    <value>Consider loopback addresses as duplicates</value>
   </data>
 </root>

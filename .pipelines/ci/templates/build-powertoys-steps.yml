@@ -238,13 +238,13 @@ steps:
       **\Wox.Test.dll
       **\Microsoft.PowerToys.Run.Plugin.System.UnitTests.dll
       **\Microsoft.PowerToys.Run.Plugin.TimeDate.UnitTests.dll
-      **\Microsoft.PowerToys.Run.Plugin.TimeZone.UnitTests.dll
       **\Microsoft.Plugin.WindowsTerminal.UnitTests.dll
       **\Microsoft.Plugin.WindowWalker.UnitTests.dll
       **\PreviewPaneUnitTests.dll
       **\UnitTests-SvgThumbnailProvider.dll
       **\UnitTests-SvgPreviewHandler.dll
       **\PowerToys.Hosts.Tests.dll
+      **\MouseJumpUI.UnitTests.dll
       !**\obj\**
       !**\ref\**
 

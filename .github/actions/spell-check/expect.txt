@@ -111,7 +111,6 @@ ARPPRODUCTICON
 ARRAYSIZE
 arsinh
 artanh
-Artsakh
 asdf
 AShortcut
 ASingle
@@ -223,10 +222,11 @@ buildtask
 buildtransitive
 Burkina
 Buryatia
+BUTTONUP
 BValue
 BYPOSITION
 bytearray
-CABD
+Cabo
 Caiguna
 CALG
 callbackptr
@@ -282,6 +282,7 @@ cim
 CImage
 cla
 clangformat
+clayton
 CLASSDC
 CLASSNOTAVAILABLE
 clickable
@@ -481,9 +482,9 @@ DEU
 devblogs
 devdocs
 devenum
+devmgmt
 DEVMON
 devpkey
-devmgmt
 DEVSOURCE
 DFAB
 DFB
@@ -651,6 +652,7 @@ fabricbot
 FAEDDA
 FAF
 FAFD
+fancymouse
 fancyzones
 FANCYZONESDRAWLAYOUTTEST
 FANCYZONESEDITOR
@@ -794,8 +796,8 @@ HCRYPTHASH
 HCRYPTPROV
 hcwhite
 hdc
-hdwwiz
 hdrop
+hdwwiz
 HEB
 Heiko
 Helpline
@@ -863,6 +865,7 @@ HTTRANSPARENT
 HValue
 Hvci
 hwb
+HWHEEL
 HWINEVENTHOOK
 hwnd
 HWNDFIRST
@@ -969,6 +972,7 @@ Ittoqqortoormiit
 IUI
 IUnknown
 ivirtualdesktopmanager
+Ivoire
 IWbem
 IWIC
 iwr
@@ -1040,6 +1044,8 @@ LCONTROL
 LCtrl
 Ldone
 ldx
+LEFTDOWN
+LEFTUP
 LEFTSCROLLBAR
 lego
 len
@@ -1188,6 +1194,8 @@ Mgmt
 mic
 microsoft
 Midl
+MIDDLEDOWN
+MIDDLEUP
 mii
 MIIM
 millis
@@ -1324,6 +1332,7 @@ NOACTIVATE
 NOAGGREGATION
 NOASYNC
 NOCLOSEPROCESS
+NOCOALESCE
 NOCOPYBITS
 nodeca
 nodiscard
@@ -1397,7 +1406,7 @@ oldpath
 oldtheme
 oleaut
 OLECHAR
-oledb
+OLEDB
 oledbcommand
 oledbconnection
 OLIVEGREEN
@@ -1443,6 +1452,7 @@ PArgb
 parray
 PARTIALCONFIRMATIONDIALOGTITLE
 pascaligo
+pasteplain
 pathcch
 Pathto
 PAUDIO
@@ -1532,7 +1542,7 @@ Prefixer
 Preinstalled
 prevhost
 previewer
-previewhandlerframeinfo
+PREVIEWHANDLERFRAMEINFO
 previewpane
 previouscamera
 PREVIOUSINSTALLFOLDER
@@ -1541,8 +1551,8 @@ prevpane
 prgms
 pri
 Primorsky
-printmanagement
 PRINTCLIENT
+printmanagement
 prm
 proactively
 PROCESSKEY
@@ -1680,6 +1690,8 @@ rgs
 rhs
 ricardosantos
 RIDEV
+RIGHTDOWN
+RIGHTUP
 RIGHTSCROLLBAR
 riid
 RKey
@@ -1687,6 +1699,7 @@ RLO
 RMENU
 RNumber
 roadmap
+Roamable
 robmensching
 Roboto
 rooler
@@ -1745,7 +1758,7 @@ secauthz
 secpol
 Secur
 securityoverview
-segoe
+Segoe
 Sekan
 SENDCHANGE
 sendinput
@@ -1810,7 +1823,7 @@ SHOWMINNOACTIVE
 SHOWNA
 SHOWNOACTIVATE
 SHOWNORMAL
-showwindow
+SHOWWINDOW
 shtypes
 SICHINT
 sid
@@ -1844,12 +1857,13 @@ Soref
 SOURCECLIENTAREAONLY
 SOURCEHEADER
 sourcesdirectory
+SPACEBAR
 spam
 spdisp
 spdlog
 spdo
-spec'ing
 specialfolder
+spec'ing
 spesi
 splitwstring
 spsi
@@ -1877,7 +1891,7 @@ STARTUPINFO
 STARTUPINFOEX
 STARTUPINFOW
 startupscreen
-statflag
+STATFLAG
 STATICEDGE
 STATSTG
 stdafx
@@ -1890,7 +1904,7 @@ STDMETHODIMP
 stefan
 stefansjfw
 Stereolithography
-stgm
+STGM
 STGMEDIUM
 sticpl
 stl
@@ -1937,7 +1951,7 @@ SYSICONINDEX
 sysinfo
 SYSKEY
 syskeydown
-syskeyup
+SYSKEYUP
 SYSMENU
 SYSTEMAPPS
 systemroot
@@ -2053,6 +2067,7 @@ UIs
 Ulaanbaatar
 ULARGE
 ULONGLONG
+UMsg
 unassign
 uncompilable
 UNCPRIORITY
@@ -2132,6 +2147,7 @@ VIDEOINFOHEADER
 viewbox
 viewmodel
 vih
+VIRTUALDESK
 virtualkey
 visiblecolorformats
 Visibletrue
@@ -2222,7 +2238,7 @@ WINL
 winmd
 winmm
 winmsg
-winnt
+WINNT
 winres
 winrt
 winsdk
@@ -2290,17 +2306,21 @@ wtypes
 Wubi
 wuceffectsi
 WVC
+WVk
 Wwan
 Wwanpp
 XAttribute
+XAxis
 Xbox
 XBUTTON
 XBUTTONDBLCLK
 XBUTTONDOWN
 XBUTTONUP
-xcopy
 XControl
+xcopy
 XDocument
+XDOWN
+XUP
 XElement
 xfd
 XFile
@@ -2314,6 +2334,7 @@ xsi
 XStr
 XVIRTUALSCREEN
 Yamalia
+YAxis
 YIncrement
 yinle
 yinwang

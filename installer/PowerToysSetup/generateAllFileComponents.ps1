@@ -68,6 +68,9 @@ Invoke-Expression -Command "$PSScriptRoot\generateFileComponents.ps1 -fileListNa
 #MouseUtils
 Invoke-Expression -Command "$PSScriptRoot\generateFileList.ps1 -fileDepsJson """" -fileListName MouseUtilsFiles -wxsFilePath $PSScriptRoot\MouseUtils.wxs -depsPath ""$PSScriptRoot..\..\..\$platform\Release\modules\MouseUtils\"""
 Invoke-Expression -Command "$PSScriptRoot\generateFileComponents.ps1 -fileListName ""MouseUtilsFiles"" -wxsFilePath $PSScriptRoot\MouseUtils.wxs -regroot $registryroot"
+#MouseJumpUI
+Invoke-Expression -Command "$PSScriptRoot\generateFileList.ps1 -fileDepsJson ""$PSScriptRoot..\..\..\$platform\Release\modules\MouseUtils\MouseJumpUI\PowerToys.MouseJumpUI.deps.json"" -fileListName MouseJumpUIFiles -wxsFilePath $PSScriptRoot\MouseUtils.wxs"
+Invoke-Expression -Command "$PSScriptRoot\generateFileComponents.ps1 -fileListName ""MouseJumpUIFiles"" -wxsFilePath $PSScriptRoot\MouseUtils.wxs -regroot $registryroot"
 
 #MeasureTool
 Invoke-Expression -Command "$PSScriptRoot\generateFileList.ps1 -fileDepsJson ""$PSScriptRoot..\..\..\$platform\Release\modules\MeasureTool\PowerToys.MeasureToolUI.deps.json"" -fileListName MeasureToolFiles -wxsFilePath $PSScriptRoot\MeasureTool.wxs -isWinAppSdkProj 1"
@@ -169,11 +172,6 @@ Invoke-Expression -Command "$PSScriptRoot\generateFileList.ps1 -fileDepsJson ""$
 Invoke-Expression -Command "$PSScriptRoot\generateFileList.ps1 -fileDepsJson """" -fileListName TimeDateImagesComponentFiles -wxsFilePath $PSScriptRoot\Run.wxs -depsPath ""$PSScriptRoot..\..\..\$platform\Release\modules\launcher\Plugins\TimeDate\Images"""
 Invoke-Expression -Command "$PSScriptRoot\generateFileComponents.ps1 -fileListName ""TimeDateComponentFiles"" -wxsFilePath $PSScriptRoot\Run.wxs -regroot $registryroot"
 Invoke-Expression -Command "$PSScriptRoot\generateFileComponents.ps1 -fileListName ""TimeDateImagesComponentFiles"" -wxsFilePath $PSScriptRoot\Run.wxs -regroot $registryroot"
-###TimeZone
-Invoke-Expression -Command "$PSScriptRoot\generateFileList.ps1 -fileDepsJson ""$PSScriptRoot..\..\..\$platform\Release\modules\launcher\Plugins\TimeZone\Microsoft.PowerToys.Run.Plugin.TimeZone.deps.json"" -fileListName TimeZoneComponentFiles -wxsFilePath $PSScriptRoot\Run.wxs -isLauncherPlugin 1"
-Invoke-Expression -Command "$PSScriptRoot\generateFileList.ps1 -fileDepsJson """" -fileListName TimeZoneImagesComponentFiles -wxsFilePath $PSScriptRoot\Run.wxs -depsPath ""$PSScriptRoot..\..\..\$platform\Release\modules\launcher\Plugins\TimeZone\Images"""
-Invoke-Expression -Command "$PSScriptRoot\generateFileComponents.ps1 -fileListName ""TimeZoneComponentFiles"" -wxsFilePath $PSScriptRoot\Run.wxs -regroot $registryroot"
-Invoke-Expression -Command "$PSScriptRoot\generateFileComponents.ps1 -fileListName ""TimeZoneImagesComponentFiles"" -wxsFilePath $PSScriptRoot\Run.wxs -regroot $registryroot"
 ###WindowsSettings
 Invoke-Expression -Command "$PSScriptRoot\generateFileList.ps1 -fileDepsJson ""$PSScriptRoot..\..\..\$platform\Release\modules\launcher\Plugins\WindowsSettings\Microsoft.PowerToys.Run.Plugin.WindowsSettings.deps.json"" -fileListName WinSetCmpFiles -wxsFilePath $PSScriptRoot\Run.wxs -isLauncherPlugin 1"
 Invoke-Expression -Command "$PSScriptRoot\generateFileList.ps1 -fileDepsJson """" -fileListName WinSetImagesCmpFiles -wxsFilePath $PSScriptRoot\Run.wxs -depsPath ""$PSScriptRoot..\..\..\$platform\Release\modules\launcher\Plugins\WindowsSettings\Images"""

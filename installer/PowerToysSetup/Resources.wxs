@@ -11,7 +11,7 @@
   <Fragment>
     <!-- Resource directories should be added only if the installer is built on the build farm -->
     <?ifdef env.IsPipeline?>
-      <?foreach ParentDirectory in LauncherInstallFolder;FancyZonesInstallFolder;ImageResizerInstallFolder;ColorPickerInstallFolder;FileExplorerPreviewInstallFolder;HistoryPluginFolder;CalculatorPluginFolder;FolderPluginFolder;ProgramPluginFolder;ShellPluginFolder;IndexerPluginFolder;UnitConverterPluginFolder;UriPluginFolder;WindowWalkerPluginFolder;OneNotePluginFolder;RegistryPluginFolder;VSCodeWorkspacesPluginFolder;ServicePluginFolder;SystemPluginFolder;TimeDatePluginFolder;TimeZonePluginFolder;WindowsSettingsPluginFolder;WindowsTerminalPluginFolder;WebSearchPluginFolder?>
+      <?foreach ParentDirectory in LauncherInstallFolder;FancyZonesInstallFolder;ImageResizerInstallFolder;ColorPickerInstallFolder;FileExplorerPreviewInstallFolder;HistoryPluginFolder;CalculatorPluginFolder;FolderPluginFolder;ProgramPluginFolder;ShellPluginFolder;IndexerPluginFolder;UnitConverterPluginFolder;UriPluginFolder;WindowWalkerPluginFolder;OneNotePluginFolder;RegistryPluginFolder;VSCodeWorkspacesPluginFolder;ServicePluginFolder;SystemPluginFolder;TimeDatePluginFolder;WindowsSettingsPluginFolder;WindowsTerminalPluginFolder;WebSearchPluginFolder?>
         <DirectoryRef Id="$(var.ParentDirectory)">
           <!-- Resource file directories -->
           <?foreach Language in $(var.LocLanguageList)?>
@@ -322,15 +322,6 @@
         <File Id="Launcher_WindowsSettings_$(var.IdSafeLanguage)_File" Source="$(var.BinDir)modules\launcher\Plugins\WindowsSettings\$(var.Language)\Microsoft.PowerToys.Run.Plugin.WindowsSettings.resources.dll" />
       </Component>
       <Component
-          Id="Launcher_TimeZone_$(var.IdSafeLanguage)_Component"
-          Guid="$(var.CompGUIDPrefix)14"
-          Directory="Resource$(var.IdSafeLanguage)TimeZonePluginFolder">
-        <RegistryKey Root="$(var.RegistryScope)" Key="Software\Classes\powertoys\components">
-          <RegistryValue Type="string" Name="Launcher_TimeZone_$(var.IdSafeLanguage)_Component" Value="" KeyPath="yes"/>
-        </RegistryKey>
-        <File Id="Launcher_TimeZone_$(var.IdSafeLanguage)_File" Source="$(var.BinDir)modules\launcher\Plugins\TimeZone\$(var.Language)\Microsoft.PowerToys.Run.Plugin.TimeZone.resources.dll" />
-      </Component>
-      <Component
           Id="Launcher_WindowsTerminal_$(var.IdSafeLanguage)_Component"
           Guid="$(var.CompGUIDPrefix)15"
           Directory="Resource$(var.IdSafeLanguage)WindowsTerminalPluginFolder">
@@ -467,7 +458,6 @@
           <RemoveFolder Id="RemoveFolderResourcesResource$(var.IdSafeLanguage)ServicePluginFolder" Directory="Resource$(var.IdSafeLanguage)ServicePluginFolder" On="uninstall"/>
           <RemoveFolder Id="RemoveFolderResourcesResource$(var.IdSafeLanguage)SystemPluginFolder" Directory="Resource$(var.IdSafeLanguage)SystemPluginFolder" On="uninstall"/>
           <RemoveFolder Id="RemoveFolderResourcesResource$(var.IdSafeLanguage)WindowsSettingsPluginFolder" Directory="Resource$(var.IdSafeLanguage)WindowsSettingsPluginFolder" On="uninstall"/>
-          <RemoveFolder Id="RemoveFolderResourcesResource$(var.IdSafeLanguage)TimeZonePluginFolder" Directory="Resource$(var.IdSafeLanguage)TimeZonePluginFolder" On="uninstall"/>
           <RemoveFolder Id="RemoveFolderResourcesResource$(var.IdSafeLanguage)WindowsTerminalPluginFolder" Directory="Resource$(var.IdSafeLanguage)WindowsTerminalPluginFolder" On="uninstall"/>
           <RemoveFolder Id="RemoveFolderResourcesResource$(var.IdSafeLanguage)WebSearchPluginFolder" Directory="Resource$(var.IdSafeLanguage)WebSearchPluginFolder" On="uninstall"/>
           <RemoveFolder Id="RemoveFolderResourcesResource$(var.IdSafeLanguage)UnitConverterPluginFolder" Directory="Resource$(var.IdSafeLanguage)UnitConverterPluginFolder" On="uninstall"/>

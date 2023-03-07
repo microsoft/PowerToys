@@ -272,7 +272,7 @@ namespace PowerLauncher.ViewModel
             List<ResultViewModel> newResults = new List<ResultViewModel>(newRawResults.Count);
             foreach (Result r in newRawResults)
             {
-                newResults.Add(new ResultViewModel(r, _mainViewModel));
+                newResults.Add(new ResultViewModel(r, _mainViewModel, _settings));
                 ct.ThrowIfCancellationRequested();
             }
 

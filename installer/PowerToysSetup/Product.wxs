@@ -66,6 +66,7 @@
       <ComponentGroupRef Id="KeyboardManagerComponentGroup" />
       <ComponentGroupRef Id="MeasureToolComponentGroup" />
       <ComponentGroupRef Id="MouseUtilsComponentGroup" />
+      <ComponentGroupRef Id="PastePlainComponentGroup" />
       <ComponentGroupRef Id="PowerAccentComponentGroup" />
       <ComponentGroupRef Id="PowerRenameComponentGroup" />
       <ComponentGroupRef Id="RunComponentGroup" />
@@ -478,6 +479,11 @@
 
             <!-- Mouse Utils -->
             <Directory Id="MouseUtilsInstallFolder" Name="$(var.MouseUtilsProjectName)">
+              <Directory Id="MouseJumpUIFolder" Name="MouseJumpUI" />
+            </Directory>
+
+            <!-- PastePlain -->
+            <Directory Id="PastePlainInstallFolder" Name="$(var.PastePlainProjectName)">
             </Directory>
 
             <!-- AlwaysOnTop -->
@@ -555,9 +561,6 @@
                 </Directory>
                 <Directory Id="TimeDatePluginFolder" Name="TimeDate">
                   <Directory Id="TimeDateImagesFolder" Name="Images" />
-                </Directory>
-                <Directory Id="TimeZonePluginFolder" Name="TimeZone">
-                  <Directory Id="TimeZoneImagesFolder" Name="Images" />
                 </Directory>
                 <Directory Id="WindowsSettingsPluginFolder" Name="WindowsSettings">
                   <Directory Id="WindowsSettingsImagesFolder" Name="Images" />
