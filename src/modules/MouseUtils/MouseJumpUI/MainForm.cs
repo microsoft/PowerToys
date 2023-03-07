@@ -4,9 +4,9 @@
 
 using System;
 using System.Drawing;
-using System.Drawing.Imaging;
 using System.Linq;
 using System.Windows.Forms;
+using MouseJumpUI.Drawing;
 using MouseJumpUI.Helpers;
 
 namespace MouseJumpUI;
@@ -105,8 +105,9 @@ internal partial class MainForm : Form
             Logger.LogInfo($"screen[{i}] = \"{screen.DeviceName}\"\n\tprimary      = {screen.Primary}\n\tbounds       = {screen.Bounds}\n\tworking area = {screen.WorkingArea}");
         }
 
-        var desktopBounds = LayoutHelper.CombineRegions(
-            screens.Select(screen => screen.Bounds).ToList());
+        var screenBounds = screens.Select(screen => screen.Bounds).ToList();
+
+        var desktopBounds = LayoutHelper.CombineRegions(screenBounds);
         Logger.LogInfo(
             $"desktop bounds  = {desktopBounds}");
 
@@ -127,32 +128,11 @@ internal partial class MainForm : Form
             activatedMonitorBounds: Screen.FromPoint(activatedPosition).Bounds,
             maximumThumbnailImageSize: maxThumbnailSize,
             thumbnailImagePadding: previewImagePadding);
-        Logger.LogInfo(
-            $"form bounds     = {formBounds}");
 
-        // take a screenshot of the entire desktop
-        // see https://learn.microsoft.com/en-gb/windows/win32/gdi/the-virtual-screen
-        var screenshot = new Bitmap(desktopBounds.Width, desktopBounds.Height, PixelFormat.Format32bppArgb);
-        using (var graphics = Graphics.FromImage(screenshot))
-        {
-            // note - it *might* be faster to capture each monitor individually and assemble them into
-            // a single image ourselves as we *may* not have to transfer all of the blank pixels
-            // that are outside the desktop bounds - e.g. the *** in the ascii art below
-            //
-            // +----------------+********
-            // |                |********
-            // |       1        +-------+
-            // |                |       |
-            // +----------------+   0   |
-            // *****************|       |
-            // *****************+-------+
-            //
-            // for very irregular monitor layouts this *might* be a big percentage of the rectangle
-            // containing the desktop bounds.
-            //
-            // then again, it might not make much difference at all - we'd need to do some perf tests
-            graphics.CopyFromScreen(desktopBounds.Left, desktopBounds.Top, 0, 0, desktopBounds.Size);
-        }
+        var screenshot = StretchBltScreenCopyHelper.CopyFromScreen(
+            desktopBounds,
+            screenBounds,
+            maxThumbnailSize);
 
         // resize and position the form
         // note - do this in two steps rather than "this.Bounds = formBounds" as there

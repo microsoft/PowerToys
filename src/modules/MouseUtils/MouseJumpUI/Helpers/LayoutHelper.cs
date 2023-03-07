@@ -28,7 +28,7 @@ internal static class LayoutHelper
     /// <returns>
     /// Returns the smallest rectangle that contains all the specified regions.
     /// </returns>
-    public static Rectangle CombineRegions(List<Rectangle> regions)
+    public static Rectangle CombineRegions(IList<Rectangle> regions)
     {
         if (regions == null)
         {
@@ -43,6 +43,7 @@ internal static class LayoutHelper
         var combined = regions.Aggregate(
             seed: regions[0],
             func: Rectangle.Union);
+
         return combined;
     }
 
@@ -100,6 +101,24 @@ internal static class LayoutHelper
     }
 
     /// <summary>
+    /// Get the scaling ratio to scale obj by so that it fits inside the specified bounds
+    /// without distorting the aspect ratio.
+    /// </summary>
+    public static double GetScalingRatio(Size obj, Size bounds)
+    {
+        if (bounds.Width == 0 || bounds.Height == 0)
+        {
+            return 0;
+        }
+
+        var widthRatio = (double)bounds.Width / obj.Width;
+        var heightRatio = (double)bounds.Height / obj.Height;
+        var scalingRatio = Math.Min(widthRatio, heightRatio);
+
+        return scalingRatio;
+    }
+
+    /// <summary>
     /// Scale an object to fit inside the specified bounds while maintaining aspect ratio.
     /// </summary>
     public static Size ScaleToFit(Size obj, Size bounds)
@@ -109,18 +128,10 @@ internal static class LayoutHelper
             return Size.Empty;
         }
 
-        var widthRatio = (double)obj.Width / bounds.Width;
-        var heightRatio = (double)obj.Height / bounds.Height;
-        var scaledSize = (widthRatio > heightRatio)
-            ? bounds with
-            {
-                Height = (int)(obj.Height / widthRatio),
-            }
-            : bounds with
-            {
-                Width = (int)(obj.Width / heightRatio),
-            };
-        return scaledSize;
+        var scalingRatio = LayoutHelper.GetScalingRatio(obj, bounds);
+        return new Size(
+            (int)(obj.Width * scalingRatio),
+            (int)(obj.Height * scalingRatio));
     }
 
     /// <summary>

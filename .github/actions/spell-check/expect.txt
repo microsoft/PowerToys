@@ -304,6 +304,7 @@ CProj
 CREATESCHEDULEDTASK
 CREATESTRUCT
 CREATEWINDOWFAILED
+createcompatibledc
 critsec
 Crossdevice
 CRSEL
@@ -2069,6 +2070,7 @@ winevt
 winexe
 winforms
 winfx
+wingdi
 winget
 wingetcreate
 Winhook
