@@ -6,7 +6,7 @@ Param(
     [string]$installscopeperuser = "false"
 )
 
-if ($platform -eq "arm64") {
+if ($platform -ceq "arm64") {
     $platform = "ARM64"
 }
 
