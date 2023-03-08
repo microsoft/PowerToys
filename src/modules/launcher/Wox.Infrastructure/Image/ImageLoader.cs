@@ -12,6 +12,7 @@ using System.Threading.Tasks;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using ManagedCommon;
+using Wox.Infrastructure.UserSettings;
 using Wox.Plugin;
 using Wox.Plugin.Logger;
 
@@ -67,7 +68,7 @@ namespace Wox.Infrastructure.Image
                 {
                     ImageCache.Usage.AsParallel().ForAll(x =>
                     {
-                        Load(x.Key);
+                        Load(x.Key, true);
                     });
                 });
 
@@ -119,7 +120,7 @@ namespace Wox.Infrastructure.Image
             Cache,
         }
 
-        private static ImageResult LoadInternal(string path, bool loadFullImage = false)
+        private static ImageResult LoadInternal(string path, bool generateThumbnailsFromFiles, bool loadFullImage = false)
         {
             ImageSource image;
             ImageType type = ImageType.Error;
@@ -172,18 +173,27 @@ namespace Wox.Infrastructure.Image
                         }
                         else
                         {
-                            /* Although the documentation for GetImage on MSDN indicates that
-                             * if a thumbnail is available it will return one, this has proved to not
-                             * be the case in many situations while testing.
-                             * - Solution: explicitly pass the ThumbnailOnly flag
-                             */
-                            image = WindowsThumbnailProvider.GetThumbnail(path, Constant.ThumbnailSize, Constant.ThumbnailSize, ThumbnailOptions.ThumbnailOnly);
+                            // PowerToys Run internal images are png, so we make this exception
+                            if (extension == ".png" || generateThumbnailsFromFiles)
+                            {
+                                /* Although the documentation for GetImage on MSDN indicates that
+                                * if a thumbnail is available it will return one, this has proved to not
+                                * be the case in many situations while testing.
+                                * - Solution: explicitly pass the ThumbnailOnly flag
+                                */
+                                image = WindowsThumbnailProvider.GetThumbnail(path, Constant.ThumbnailSize, Constant.ThumbnailSize, ThumbnailOptions.ThumbnailOnly);
+                            }
+                            else
+                            {
+                                image = WindowsThumbnailProvider.GetThumbnail(path, Constant.ThumbnailSize, Constant.ThumbnailSize, ThumbnailOptions.IconOnly);
+                            }
                         }
                     }
-                    else if (extension == ".pdf" && WindowsThumbnailProvider.DoesPdfUseAcrobatAsProvider())
+                    else if (!generateThumbnailsFromFiles || (extension == ".pdf" && WindowsThumbnailProvider.DoesPdfUseAcrobatAsProvider()))
                     {
                         // The PDF thumbnail provider from Adobe Reader and Acrobat Pro lets crash PT Run with an Dispatcher exception. (https://github.com/microsoft/PowerToys/issues/18166)
                         // To not run into the crash, we only request the icon of PDF files if the PDF thumbnail handler is set to Adobe Reader/Acrobat Pro.
+                        // Also don't get thumbnail if the GenerateThumbnailsFromFiles option is off.
                         type = ImageType.File;
                         image = WindowsThumbnailProvider.GetThumbnail(path, Constant.ThumbnailSize, Constant.ThumbnailSize, ThumbnailOptions.IconOnly);
                     }
@@ -217,9 +227,9 @@ namespace Wox.Infrastructure.Image
 
         private const bool _enableImageHash = true;
 
-        public static ImageSource Load(string path, bool loadFullImage = false)
+        public static ImageSource Load(string path, bool generateThumbnailsFromFiles, bool loadFullImage = false)
         {
-            var imageResult = LoadInternal(path, loadFullImage);
+            var imageResult = LoadInternal(path, generateThumbnailsFromFiles, loadFullImage);
 
             var img = imageResult.ImageSource;
             if (imageResult.ImageType != ImageType.Error && imageResult.ImageType != ImageType.Cache)
