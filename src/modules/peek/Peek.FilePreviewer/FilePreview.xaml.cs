@@ -43,7 +43,7 @@ namespace Peek.FilePreviewer
                 new PropertyMetadata(false, async (d, e) => await ((FilePreview)d).OnScalingFactorPropertyChanged()));
 
         [ObservableProperty]
-        [NotifyPropertyChangedFor(nameof(BitmapPreviewer))]
+        [NotifyPropertyChangedFor(nameof(ImagePreviewer))]
         [NotifyPropertyChangedFor(nameof(BrowserPreviewer))]
         [NotifyPropertyChangedFor(nameof(UnsupportedFilePreviewer))]
 
@@ -76,11 +76,11 @@ namespace Peek.FilePreviewer
             }
         }
 
-        public IBitmapPreviewer? BitmapPreviewer => Previewer as IBitmapPreviewer;
+        public IImagePreviewer? ImagePreviewer => Previewer as IImagePreviewer;
 
         public IBrowserPreviewer? BrowserPreviewer => Previewer as IBrowserPreviewer;
 
-        public bool IsImageVisible => BitmapPreviewer != null;
+        public bool IsImageVisible => ImagePreviewer != null;
 
         public IUnsupportedFilePreviewer? UnsupportedFilePreviewer => Previewer as IUnsupportedFilePreviewer;
 
@@ -95,7 +95,15 @@ namespace Peek.FilePreviewer
         public double ScalingFactor
         {
             get => (double)GetValue(ScalingFactorProperty);
-            set => SetValue(ScalingFactorProperty, value);
+            set
+            {
+                SetValue(ScalingFactorProperty, value);
+
+                if (Previewer is IImagePreviewer imagePreviewer)
+                {
+                    imagePreviewer.ScalingFactor = ScalingFactor;
+                }
+            }
         }
 
         public bool MatchPreviewState(PreviewState? value, PreviewState stateToMatch)
@@ -125,9 +133,9 @@ namespace Peek.FilePreviewer
             }
 
             Previewer = previewerFactory.Create(Item);
-            if (Previewer is IBitmapPreviewer bitmapPreviewer)
+            if (Previewer is IImagePreviewer imagePreviewer)
             {
-                bitmapPreviewer.ScalingFactor = ScalingFactor;
+                imagePreviewer.ScalingFactor = ScalingFactor;
             }
 
             await UpdatePreviewAsync(_cancellationTokenSource.Token);
