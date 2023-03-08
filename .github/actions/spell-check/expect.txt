@@ -742,7 +742,7 @@ IDD
 IDesktop
 IDirect
 idl
-IDLIST
+idlist
 IDOn
 IDR
 idx
