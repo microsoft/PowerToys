@@ -113,6 +113,16 @@ namespace Microsoft.PowerToys.Run.Plugin.Calculator.UnitTests
         }
 
         [DataTestMethod]
+        [DataRow("pie", "pi * e")]
+        [DataRow("eln(100)", "e * ln(100)")]
+        [DataRow("pi(1+1)", "pi * (1+1)")]
+        [DataRow("2pi", "2 * pi")]
+        [DataRow("2log10(100)", "2 * log10(100)")]
+        [DataRow("2(3+4)", "2 * (3+4)")]
+        [DataRow("sin(pi)cos(pi)", "sin(pi) * cos(pi)")]
+        [DataRow("log10(100)(2+3)", "log10(100) * (2+3)")]
+        [DataRow("(1+1)cos(pi)", "(1+1) * cos(pi)")]
+        [DataRow("(1+1)(2+2)", "(1+1) * (2+2)")]
         [DataRow("2(1+1)", "2 * (1+1)")]
         [DataRow("pi(1+1)", "pi * (1+1)")]
         [DataRow("pilog(100)", "pi * log(100)")]
@@ -134,7 +144,7 @@ namespace Microsoft.PowerToys.Run.Plugin.Calculator.UnitTests
         [DataRow("pipipie", "pi * pi * pi * e")]
         [DataRow("(1+1)(3+2)(1+1)(1+1)", "(1+1) * (3+2) * (1+1) * (1+1)")]
         [DataRow("(1+1) (3+2)  (1+1)(1+1)", "(1+1) * (3+2) * (1+1) * (1+1)")]
-        public void RightHumaMultiplicationExpressionTransformation(string typedString, string expectedQuery)
+        public void RightHumanMultiplicationExpressionTransformation(string typedString, string expectedQuery)
         {
             // Setup
 
@@ -167,7 +177,7 @@ namespace Microsoft.PowerToys.Run.Plugin.Calculator.UnitTests
         [DataRow("pipipie")]
         [DataRow("(1+1)(3+2)(1+1)(1+1)")]
         [DataRow("(1+1) (3+2)  (1+1)(1+1)")]
-        public void NoErrorForHumaMultiplicationExpressions(string typedString)
+        public void NoErrorForHumanMultiplicationExpressions(string typedString)
         {
             // Setup
             Mock<Main> main = new();
@@ -192,7 +202,7 @@ namespace Microsoft.PowerToys.Run.Plugin.Calculator.UnitTests
         [DataRow("(1+1)(3+2)", "10")]
         [DataRow("(1+1)cos(pi)", "-2")]
         [DataRow("log(100)cos(pi)", "-2")]
-        public void RightAnswerForHumaMultiplicationExpressions(string typedString, string answer)
+        public void RightAnswerForHumanMultiplicationExpressions(string typedString, string answer)
         {
             // Setup
             Mock<Main> main = new();

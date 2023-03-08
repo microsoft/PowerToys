@@ -51,16 +51,20 @@ namespace Microsoft.PowerToys.Run.Plugin.Calculator
 
         public static string FixHumanMultiplicationExpressions(string input)
         {
-            var output = Check_NumberOrConstant_ParenthesisExpr(input);
-            output = Check_NumberOrConstant_Func(output);
-            output = Check_ParenthesisExpr_Func(output);
-            output = Check_ParenthesisExpr_ParenthesisExpr(output);
-            output = Check_Number_Constant(output);
-            output = Check_Constant_Constant(output);
+            var output = CheckNumberOrConstantThenParenthesisExpr(input);
+            output = CheckNumberOrConstantThenFunc(output);
+            output = CheckParenthesisExprThenFunc(output);
+            output = CheckParenthesisExprThenParenthesisExpr(output);
+            output = CheckNumberThenConstant(output);
+            output = CheckConstantThenConstant(output);
             return output;
         }
 
-        private static string Check_NumberOrConstant_ParenthesisExpr(string input)
+        /*
+         * num (exp)
+         * const (exp)
+         */
+        private static string CheckNumberOrConstantThenParenthesisExpr(string input)
         {
             var output = input;
             do
@@ -81,7 +85,11 @@ namespace Microsoft.PowerToys.Run.Plugin.Calculator
             return output;
         }
 
-        private static string Check_NumberOrConstant_Func(string input)
+        /*
+         * num func
+         * const func
+         */
+        private static string CheckNumberOrConstantThenFunc(string input)
         {
             var output = input;
             do
@@ -107,21 +115,32 @@ namespace Microsoft.PowerToys.Run.Plugin.Calculator
             return output;
         }
 
-        private static string Check_ParenthesisExpr_Func(string input)
+        /*
+         * (exp) func
+         * func func
+         */
+        private static string CheckParenthesisExprThenFunc(string input)
         {
             var p = @"(\))\s*([a-zA-Z]+[0-9]*\s*\()";
             var r = "$1 * $2";
             return Regex.Replace(input, p, r);
         }
 
-        private static string Check_ParenthesisExpr_ParenthesisExpr(string input)
+        /*
+         * (exp) (exp)
+         * func (exp)
+         */
+        private static string CheckParenthesisExprThenParenthesisExpr(string input)
         {
             var p = @"(\))\s*(\()";
             var r = "$1 * $2";
             return Regex.Replace(input, p, r);
         }
 
-        private static string Check_Number_Constant(string input)
+        /*
+         * num const
+         */
+        private static string CheckNumberThenConstant(string input)
         {
             var output = input;
             do
@@ -142,7 +161,10 @@ namespace Microsoft.PowerToys.Run.Plugin.Calculator
             return output;
         }
 
-        private static string Check_Constant_Constant(string input)
+        /*
+         * const const
+         */
+        private static string CheckConstantThenConstant(string input)
         {
             var output = input;
             do
