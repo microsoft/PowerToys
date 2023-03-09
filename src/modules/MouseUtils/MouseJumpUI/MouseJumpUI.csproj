@@ -12,6 +12,7 @@
     <StartupObject>MouseJumpUI.Program</StartupObject>
     <SelfContained>true</SelfContained>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <Nullable>enable</Nullable>
   </PropertyGroup>
 
   <!-- SelfContained=true requires RuntimeIdentifier to be set -->

@@ -3,11 +3,17 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.Diagnostics;
 using System.Drawing;
+using System.Drawing.Drawing2D;
+using System.Drawing.Imaging;
 using System.Linq;
 using System.Windows.Forms;
 using MouseJumpUI.Drawing;
+using MouseJumpUI.Drawing.Models;
 using MouseJumpUI.Helpers;
+using MouseJumpUI.NativeMethods.Core;
+using MouseJumpUI.NativeWrappers;
 
 namespace MouseJumpUI;
 
@@ -46,22 +52,23 @@ internal partial class MainForm : Form
     private void Thumbnail_Click(object sender, EventArgs e)
     {
         var mouseEventArgs = (MouseEventArgs)e;
-        Logger.LogInfo($"Reporting mouse event args \n\tbutton   = {mouseEventArgs.Button}\n\tlocation = {mouseEventArgs.Location} ");
+        Logger.LogInfo(string.Join(
+            '\n',
+            $"Reporting mouse event args",
+            $"\tbutton   = {mouseEventArgs.Button}",
+            $"\tlocation = {mouseEventArgs.Location}"));
 
         if (mouseEventArgs.Button == MouseButtons.Left)
         {
             // plain click - move mouse pointer
-            var desktopBounds = LayoutHelper.CombineRegions(
-                Screen.AllScreens.Select(
-                    screen => screen.Bounds).ToList());
+            var desktopBounds = SystemInformation.VirtualScreen;
             Logger.LogInfo($"desktop bounds  = {desktopBounds}");
 
             var mouseEvent = (MouseEventArgs)e;
 
-            var scaledLocation = LayoutHelper.ScaleLocation(
-                originalBounds: Thumbnail.Bounds,
-                originalLocation: new Point(mouseEvent.X, mouseEvent.Y),
-                scaledBounds: desktopBounds);
+            var scaledLocation = new PointInfo(mouseEvent.X, mouseEvent.Y)
+                    .Scale(new SizeInfo(this.Thumbnail.Size).ScaleToFitRatio(new(desktopBounds.Size)))
+                    .ToPoint();
             Logger.LogInfo($"scaled location = {scaledLocation}");
 
             // set the new cursor position *twice* - the cursor sometimes end up in
@@ -87,52 +94,59 @@ internal partial class MainForm : Form
         }
 
         this.Close();
-    }
 
-    public void ShowThumbnail()
-    {
         if (this.Thumbnail.Image != null)
         {
             var tmp = this.Thumbnail.Image;
             this.Thumbnail.Image = null;
             tmp.Dispose();
         }
+    }
 
+    public void ShowThumbnail()
+    {
         var screens = Screen.AllScreens;
         foreach (var i in Enumerable.Range(0, screens.Length))
         {
             var screen = screens[i];
-            Logger.LogInfo($"screen[{i}] = \"{screen.DeviceName}\"\n\tprimary      = {screen.Primary}\n\tbounds       = {screen.Bounds}\n\tworking area = {screen.WorkingArea}");
+            Logger.LogInfo(string.Join(
+                '\n',
+                $"screen[{i}] = \"{screen.DeviceName}\"",
+                $"\tprimary      = {screen.Primary}",
+                $"\tbounds       = {screen.Bounds}",
+                $"\tworking area = {screen.WorkingArea}"));
         }
 
-        var screenBounds = screens.Select(screen => screen.Bounds).ToList();
+        // collect together some values that we need for calculating layout
+        var activatedLocation = Cursor.Position;
+        var layoutConfig = new LayoutConfig(
+            virtualScreen: SystemInformation.VirtualScreen,
+            screenBounds: Screen.AllScreens.Select(screen => screen.Bounds),
+            activatedLocation: activatedLocation,
+            activatedScreen: Array.IndexOf(Screen.AllScreens, Screen.FromPoint(activatedLocation)),
+            maximumFormSize: new Size(1600, 1200),
+            formPadding: this.panel1.Padding,
+            previewPadding: new Padding(0));
+        Logger.LogInfo(string.Join(
+            '\n',
+            $"Layout config",
+            $"-------------",
+            $"virtual screen     = {layoutConfig.VirtualScreen}",
+            $"activated location = {layoutConfig.ActivatedLocation}",
+            $"activated screen   = {layoutConfig.ActivatedScreen}",
+            $"maximum form size  = {layoutConfig.MaximumFormSize}",
+            $"form padding       = {layoutConfig.FormPadding}",
+            $"preview padding    = {layoutConfig.PreviewPadding}"));
 
-        var desktopBounds = LayoutHelper.CombineRegions(screenBounds);
-        Logger.LogInfo(
-            $"desktop bounds  = {desktopBounds}");
-
-        var activatedPosition = Cursor.Position;
-        Logger.LogInfo(
-            $"activated position = {activatedPosition}");
-
-        var previewImagePadding = new Size(
-            panel1.Padding.Left + panel1.Padding.Right,
-            panel1.Padding.Top + panel1.Padding.Bottom);
-        Logger.LogInfo(
-            $"image padding   = {previewImagePadding}");
-
-        var maxThumbnailSize = new Size(1600, 1200);
-        var formBounds = LayoutHelper.GetPreviewFormBounds(
-            desktopBounds: desktopBounds,
-            activatedPosition: activatedPosition,
-            activatedMonitorBounds: Screen.FromPoint(activatedPosition).Bounds,
-            maximumThumbnailImageSize: maxThumbnailSize,
-            thumbnailImagePadding: previewImagePadding);
-
-        var screenshot = StretchBltScreenCopyHelper.CopyFromScreen(
-            desktopBounds,
-            screenBounds,
-            maxThumbnailSize);
+        // calculate the layout coordinates for everything
+        var layoutCoords = PreviewImageComposer.CalculateCoords(layoutConfig);
+        Logger.LogInfo(string.Join(
+            '\n',
+            $"Layout coords",
+            $"-------------",
+            $"form bounds      = {layoutCoords.FormBounds}",
+            $"preview bounds   = {layoutCoords.PreviewBounds}",
+            $"activated screen = {layoutCoords.ActivatedScreen}"));
 
         // resize and position the form
         // note - do this in two steps rather than "this.Bounds = formBounds" as there
@@ -141,15 +155,99 @@ internal partial class MainForm : Form
         // screen's scaling when the form is moved to a different screen. i've got no idea
         // *why*, but the exact sequence of calls below seems to be a workaround...
         // see https://github.com/mikeclayton/FancyMouse/issues/2
-        this.Location = formBounds.Location;
+        this.Location = layoutCoords.FormBounds.Location.ToPoint();
         _ = this.PointToScreen(Point.Empty);
-        this.Size = formBounds.Size;
+        this.Size = layoutCoords.FormBounds.Size.ToSize();
 
-        // update the preview image
-        this.Thumbnail.Image = screenshot;
+        // initialize the preview image
+        var preview = new Bitmap(
+            (int)layoutCoords.PreviewBounds.Width,
+            (int)layoutCoords.PreviewBounds.Height,
+            PixelFormat.Format32bppArgb);
+        this.Thumbnail.Image = preview;
 
-        this.Show();
-        Microsoft.PowerToys.Telemetry.PowerToysTelemetry.Log.WriteEvent(new Telemetry.MouseJumpTeleportCursorEvent());
+        using var previewGraphics = Graphics.FromImage(preview);
+
+        // draw the preview background
+        using var backgroundBrush = new LinearGradientBrush(
+            new Point(0, 0),
+            new Point(preview.Width, preview.Height),
+            Color.FromArgb(13, 87, 210),
+            Color.FromArgb(3, 68, 192));
+        previewGraphics.FillRectangle(backgroundBrush, layoutCoords.PreviewBounds.ToRectangle());
+
+        var previewHdc = HDC.Null;
+        var desktopHwnd = HWND.Null;
+        var desktopHdc = HDC.Null;
+        try
+        {
+            desktopHwnd = User32.GetDesktopWindow();
+            desktopHdc = User32.GetWindowDC(desktopHwnd);
+
+            // we have to capture the screen where we're going to show the form first
+            // as the form will obscure the screen as soon as it's visible
+            var stopwatch = Stopwatch.StartNew();
+            previewHdc = new HDC(previewGraphics.GetHdc());
+            PreviewImageComposer.CopyFromScreen(
+                desktopHdc,
+                previewHdc,
+                layoutConfig.ScreenBounds.Where((_, idx) => idx == layoutConfig.ActivatedScreen).ToList(),
+                layoutCoords.ScreenBounds.Where((_, idx) => idx == layoutConfig.ActivatedScreen).ToList());
+            previewGraphics.ReleaseHdc(previewHdc.Value);
+            previewHdc = HDC.Null;
+            stopwatch.Stop();
+
+            // show the placeholder image if it looks like it might take a while to capture
+            // the remaining screenshot images
+            if (stopwatch.ElapsedMilliseconds > 150)
+            {
+                var activatedArea = layoutConfig.ScreenBounds[layoutConfig.ActivatedScreen].Area;
+                var totalArea = layoutConfig.ScreenBounds.Sum(screen => screen.Area);
+                if ((activatedArea / totalArea) < 0.5M)
+                {
+                    var brush = Brushes.Black;
+                    var bounds = layoutCoords.ScreenBounds
+                        .Where((_, idx) => idx != layoutConfig.ActivatedScreen)
+                        .Select(screen => screen.ToRectangle())
+                        .ToArray();
+                    if (bounds.Any())
+                    {
+                        previewGraphics.FillRectangles(brush, bounds);
+                    }
+
+                    this.Show();
+                    this.Thumbnail.Refresh();
+                }
+            }
+
+            // draw the remaining screen captures on the preview image
+            previewHdc = new HDC(previewGraphics.GetHdc());
+            PreviewImageComposer.CopyFromScreen(
+                desktopHdc,
+                previewHdc,
+                layoutConfig.ScreenBounds.Where((_, idx) => idx != layoutConfig.ActivatedScreen).ToList(),
+                layoutCoords.ScreenBounds.Where((_, idx) => idx != layoutConfig.ActivatedScreen).ToList());
+            previewGraphics.ReleaseHdc(previewHdc.Value);
+            previewHdc = HDC.Null;
+            this.Thumbnail.Refresh();
+        }
+        finally
+        {
+            if (!desktopHwnd.IsNull && !desktopHdc.IsNull)
+            {
+                _ = User32.ReleaseDC(desktopHwnd, desktopHdc);
+            }
+
+            if (!previewHdc.IsNull)
+            {
+                previewGraphics.ReleaseHdc(previewHdc.Value);
+            }
+        }
+
+        if (!this.Visible)
+        {
+            this.Show();
+        }
 
         // we have to activate the form to make sure the deactivate event fires
         this.Activate();

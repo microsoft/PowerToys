@@ -38,6 +38,6 @@ internal static partial class Gdi32
         return result
             ? result
             : throw new InvalidOperationException(
-                $"{nameof(Gdi32.StretchBlt)} returned {result}");
+                $"{nameof(Gdi32.StretchBlt)} returned {result.Value}");
     }
 }
