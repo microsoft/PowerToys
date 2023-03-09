@@ -11,6 +11,9 @@ using System.Windows.Forms;
 
 namespace MouseJumpUI.Drawing.Models;
 
+/// <summary>
+/// Represents a collection of values needed for calculating the MainForm layout.
+/// </summary>
 internal sealed class LayoutConfig
 {
     public LayoutConfig(
@@ -67,6 +70,9 @@ internal sealed class LayoutConfig
         get;
     }
 
+    /// <summary>
+    /// Gets the index of the screen the cursor was on when the form was activated.
+    /// </summary>
     public int ActivatedScreen
     {
         get;
