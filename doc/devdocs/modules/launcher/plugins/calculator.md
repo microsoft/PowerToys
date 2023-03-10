@@ -25,7 +25,7 @@ The Calculator plugin as the name suggests is used to perform calculations on th
 - This class also handles some human multiplication expression like `2(1+2)` and `(2+3)(3+4)` in order to be computed by `Mages` lib.
   - It does so by matching some regex and inserting `'*'` where appropriate, e.g: `2(1+2) -> 2 * (1+2)`
   - It takes into account the combination of numbers (`num`), constants (`const`), functions (`func`) and expressions in parentheses (`(exp)`).
-  - The blank spaces between them is also considered.
+  - The blank spaces between them are also considered.
   - Some combinations were not handled as they are not common such as `'const num'` or `'func const'`
 
 ### [`CalculateEngine`](src/modules/launcher/Plugins/Microsoft.PowerToys.Run.Plugin.Calculator/CalculateEngine.cs)
