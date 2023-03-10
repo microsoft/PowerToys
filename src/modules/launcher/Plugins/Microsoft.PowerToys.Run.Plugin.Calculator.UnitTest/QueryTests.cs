@@ -14,7 +14,6 @@ namespace Microsoft.PowerToys.Run.Plugin.Calculator.UnitTests
     {
         [DataTestMethod]
         [DataRow("=pi(9+)", "Expression wrong or incomplete (Did you forget some parentheses?)")]
-        [DataRow("=pi(9)", "Expression wrong or incomplete (Did you forget some parentheses?)")]
         [DataRow("=pi,", "Expression wrong or incomplete (Did you forget some parentheses?)")]
         [DataRow("=log()", "Expression wrong or incomplete (Did you forget some parentheses?)")]
         [DataRow("=0xf0x6", "Expression wrong or incomplete (Did you forget some parentheses?)")]
@@ -41,7 +40,6 @@ namespace Microsoft.PowerToys.Run.Plugin.Calculator.UnitTests
 
         [DataTestMethod]
         [DataRow("pi(9+)")]
-        [DataRow("pi(9)")]
         [DataRow("pi,")]
         [DataRow("log()")]
         [DataRow("0xf0x6")]
@@ -112,6 +110,112 @@ namespace Microsoft.PowerToys.Run.Plugin.Calculator.UnitTests
             // Assert
             Assert.AreEqual(result, "Copy this number to the clipboard");
             Assert.AreEqual(resultWithKeyword, "Copy this number to the clipboard");
+        }
+
+        [DataTestMethod]
+        [DataRow("pie", "pi * e")]
+        [DataRow("eln(100)", "e * ln(100)")]
+        [DataRow("pi(1+1)", "pi * (1+1)")]
+        [DataRow("2pi", "2 * pi")]
+        [DataRow("2log10(100)", "2 * log10(100)")]
+        [DataRow("2(3+4)", "2 * (3+4)")]
+        [DataRow("sin(pi)cos(pi)", "sin(pi) * cos(pi)")]
+        [DataRow("log10(100)(2+3)", "log10(100) * (2+3)")]
+        [DataRow("(1+1)cos(pi)", "(1+1) * cos(pi)")]
+        [DataRow("(1+1)(2+2)", "(1+1) * (2+2)")]
+        [DataRow("2(1+1)", "2 * (1+1)")]
+        [DataRow("pi(1+1)", "pi * (1+1)")]
+        [DataRow("pilog(100)", "pi * log(100)")]
+        [DataRow("3log(100)", "3 * log(100)")]
+        [DataRow("2e", "2 * e")]
+        [DataRow("(1+1)(3+2)", "(1+1) * (3+2)")]
+        [DataRow("(1+1)cos(pi)", "(1+1) * cos(pi)")]
+        [DataRow("sin(pi)cos(pi)", "sin(pi) * cos(pi)")]
+        [DataRow("2 (1+1)", "2 * (1+1)")]
+        [DataRow("pi  (1+1)", "pi * (1+1)")]
+        [DataRow("pi  log(100)", "pi * log(100)")]
+        [DataRow("3   log(100)", "3 * log(100)")]
+        [DataRow("2 e", "2 * e")]
+        [DataRow("(1+1)  (3+2)", "(1+1) * (3+2)")]
+        [DataRow("(1+1)  cos(pi)", "(1+1) * cos(pi)")]
+        [DataRow("sin  (pi)  cos(pi)", "sin  (pi) * cos(pi)")]
+        [DataRow("2picos(pi)(1+1)", "2 * pi * cos(pi) * (1+1)")]
+        [DataRow("pilog(100)log(1000)", "pi * log(100) * log(1000)")]
+        [DataRow("pipipie", "pi * pi * pi * e")]
+        [DataRow("(1+1)(3+2)(1+1)(1+1)", "(1+1) * (3+2) * (1+1) * (1+1)")]
+        [DataRow("(1+1) (3+2)  (1+1)(1+1)", "(1+1) * (3+2) * (1+1) * (1+1)")]
+        public void RightHumanMultiplicationExpressionTransformation(string typedString, string expectedQuery)
+        {
+            // Setup
+
+            // Act
+            var result = CalculateHelper.FixHumanMultiplicationExpressions(typedString);
+
+            // Assert
+            Assert.AreEqual(expectedQuery, result);
+        }
+
+        [DataTestMethod]
+        [DataRow("2(1+1)")]
+        [DataRow("pi(1+1)")]
+        [DataRow("pilog(100)")]
+        [DataRow("3log(100)")]
+        [DataRow("2e")]
+        [DataRow("(1+1)(3+2)")]
+        [DataRow("(1+1)cos(pi)")]
+        [DataRow("sin(pi)cos(pi)")]
+        [DataRow("2 (1+1)")]
+        [DataRow("pi  (1+1)")]
+        [DataRow("pi  log(100)")]
+        [DataRow("3   log(100)")]
+        [DataRow("2 e")]
+        [DataRow("(1+1)  (3+2)")]
+        [DataRow("(1+1)  cos(pi)")]
+        [DataRow("sin  (pi)  cos(pi)")]
+        [DataRow("2picos(pi)(1+1)")]
+        [DataRow("pilog(100)log(1000)")]
+        [DataRow("pipipie")]
+        [DataRow("(1+1)(3+2)(1+1)(1+1)")]
+        [DataRow("(1+1) (3+2)  (1+1)(1+1)")]
+        public void NoErrorForHumanMultiplicationExpressions(string typedString)
+        {
+            // Setup
+            Mock<Main> main = new();
+            Query expectedQuery = new(typedString);
+            Query expectedQueryWithKeyword = new("=" + typedString, "=");
+
+            // Act
+            var result = main.Object.Query(expectedQuery).FirstOrDefault()?.SubTitle;
+            var resultWithKeyword = main.Object.Query(expectedQueryWithKeyword).FirstOrDefault()?.SubTitle;
+
+            // Assert
+            Assert.AreEqual("Copy this number to the clipboard", result);
+            Assert.AreEqual("Copy this number to the clipboard", resultWithKeyword);
+        }
+
+        [DataTestMethod]
+        [DataRow("2(1+1)", "4")]
+        [DataRow("pi(1+1)", "6.2831853072")]
+        [DataRow("pilog(100)", "6.2831853072")]
+        [DataRow("3log(100)", "6")]
+        [DataRow("2e", "5.4365636569")]
+        [DataRow("(1+1)(3+2)", "10")]
+        [DataRow("(1+1)cos(pi)", "-2")]
+        [DataRow("log(100)cos(pi)", "-2")]
+        public void RightAnswerForHumanMultiplicationExpressions(string typedString, string answer)
+        {
+            // Setup
+            Mock<Main> main = new();
+            Query expectedQuery = new(typedString);
+            Query expectedQueryWithKeyword = new("=" + typedString, "=");
+
+            // Act
+            var result = main.Object.Query(expectedQuery).FirstOrDefault()?.Title;
+            var resultWithKeyword = main.Object.Query(expectedQueryWithKeyword).FirstOrDefault()?.Title;
+
+            // Assert
+            Assert.AreEqual(answer, result);
+            Assert.AreEqual(answer, resultWithKeyword);
         }
     }
 }
