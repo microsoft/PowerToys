@@ -170,7 +170,6 @@ internal partial class MainForm : Form
                         previewGraphics,
                         layoutInfo.ScreenBounds.Where((_, idx) => idx != layoutConfig.ActivatedScreen));
                     MainForm.ShowPreview(this);
-                    System.Threading.Thread.Sleep(2000);
                 }
             }
 
