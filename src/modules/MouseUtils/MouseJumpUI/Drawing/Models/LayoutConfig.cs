@@ -14,7 +14,7 @@ namespace MouseJumpUI.Drawing.Models;
 /// <summary>
 /// Represents a collection of values needed for calculating the MainForm layout.
 /// </summary>
-internal sealed class LayoutConfig
+public sealed class LayoutConfig
 {
     public LayoutConfig(
         Rectangle virtualScreen,

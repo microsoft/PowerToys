@@ -9,7 +9,7 @@ namespace MouseJumpUI.Drawing.Models;
 /// <summary>
 /// Immutable version of a System.Windows.Forms.Padding object with some extra utility methods.
 /// </summary>
-internal sealed class PaddingInfo
+public sealed class PaddingInfo
 {
     public PaddingInfo(decimal all)
         : this(all, all, all, all)

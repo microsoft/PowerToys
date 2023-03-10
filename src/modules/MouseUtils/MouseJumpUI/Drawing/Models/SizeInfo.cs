@@ -10,7 +10,7 @@ namespace MouseJumpUI.Drawing.Models;
 /// <summary>
 /// Immutable version of a System.Drawing.Size object with some extra utility methods.
 /// </summary>
-internal sealed class SizeInfo
+public sealed class SizeInfo
 {
     public SizeInfo(decimal width, decimal height)
     {
@@ -46,6 +46,8 @@ internal sealed class SizeInfo
         Math.Min(this.Height, size.Height));
 
     public Size ToSize() => new((int)this.Width, (int)this.Height);
+
+    public Point ToPoint() => new((int)this.Width, (int)this.Height);
 
     /// <summary>
     /// Get the scaling ratio to scale obj by so that it fits inside the specified bounds

@@ -10,7 +10,7 @@ namespace MouseJumpUI.Drawing.Models;
 /// <summary>
 /// Immutable version of a System.Drawing.Rectangle object with some extra utility methods.
 /// </summary>
-internal sealed class RectangleInfo
+public sealed class RectangleInfo
 {
     public RectangleInfo(decimal x, decimal y, decimal width, decimal height)
     {
@@ -88,12 +88,6 @@ internal sealed class RectangleInfo
     public RectangleInfo Center(PointInfo point) => new(
         x: point.X - (this.Width / 2),
         y: point.Y - (this.Height / 2),
-        width: this.Width,
-        height: this.Height);
-
-    public RectangleInfo Center(RectangleInfo rectangle) => new(
-        x: rectangle.X + ((rectangle.Width - this.Width) / 2),
-        y: rectangle.Y + ((rectangle.Height - this.Height) / 2),
         width: this.Width,
         height: this.Height);
 
