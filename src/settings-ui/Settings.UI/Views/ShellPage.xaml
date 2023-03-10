@@ -137,8 +137,7 @@
                 <NavigationViewItem
                     x:Uid="Shell_VideoConference"
                     helpers:NavHelper.NavigateTo="views:VideoConferencePage"
-                    Icon="{ui:BitmapIcon Source=/Assets/FluentIcons/FluentIconsVideoConferenceMute.png}"
-                    IsEnabled="{x:Bind ViewModel.IsVideoConferenceBuild, Mode=OneWay}" />
+                    Icon="{ui:BitmapIcon Source=/Assets/FluentIcons/FluentIconsVideoConferenceMute.png}" />
             </NavigationView.MenuItems>
             <NavigationView.PaneFooter>
                 <StackPanel Orientation="Vertical">
