@@ -3059,9 +3059,10 @@ Activate by holding the key for the character you want to add an accent to, then
     <value>Learn more about Registry Preview</value>
     <comment>Registry Preview is a product name, do not loc</comment>
   </data>
-	<data name="Launch_RegistryPreview.Content" xml:space="preserve">
+  <data name="Launch_RegistryPreview.Content" xml:space="preserve">
     <value>Launch Registry Preview</value>
     <comment>"Registry Preview" is the name of the utility</comment>
+  </data>
   <data name="MouseUtils_MouseJump.Description" xml:space="preserve">
     <value>Quickly move the mouse pointer long distances.</value>
     <comment>"Mouse Jump" is the name of the utility. Mouse is the hardware mouse.</comment>
