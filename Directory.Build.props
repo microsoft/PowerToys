@@ -28,13 +28,10 @@
     <CreateHardLinksForPublishFilesIfPossible>true</CreateHardLinksForPublishFilesIfPossible>
     <CreateHardLinksForCopyAdditionalFilesIfPossible>true</CreateHardLinksForCopyAdditionalFilesIfPossible>
     <CreateHardLinksForCopyLocalIfPossible>true</CreateHardLinksForCopyLocalIfPossible>
-    <EnforceProcessCountAcrossBuilds>true</EnforceProcessCountAcrossBuilds>
     <BuildPassReferences>true</BuildPassReferences>
-    <AllowParallelCompileInReferencedProjects>true</AllowParallelCompileInReferencedProjects>
     <AccelerateBuildsInVisualStudio>true</AccelerateBuildsInVisualStudio>
     <BuildInParallel>true</BuildInParallel>
-    <UseMultiToolTask>true</UseMultiToolTask>
-    <UseMsbuildResourceManager>true</UseMsbuildResourceManager>
+    <EnableClServerMode>true</EnableClServerMode>
   </PropertyGroup>
 
   <PropertyGroup>
