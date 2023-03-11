@@ -10,6 +10,7 @@ using System.Windows.Media;
 using PowerLauncher.Helper;
 using PowerLauncher.Plugin;
 using Wox.Infrastructure.Image;
+using Wox.Infrastructure.UserSettings;
 using Wox.Plugin;
 using Wox.Plugin.Logger;
 
@@ -22,6 +23,8 @@ namespace PowerLauncher.ViewModel
             Selection,
             Hover,
         }
+
+        private readonly PowerToysRunSettings _settings;
 
         public ObservableCollection<ContextMenuItemViewModel> ContextMenuItems { get; } = new ObservableCollection<ContextMenuItemViewModel>();
 
@@ -65,12 +68,14 @@ namespace PowerLauncher.ViewModel
 
         public const int NoSelectionIndex = -1;
 
-        public ResultViewModel(Result result, IMainViewModel mainViewModel)
+        public ResultViewModel(Result result, IMainViewModel mainViewModel, PowerToysRunSettings settings)
         {
             if (result != null)
             {
                 Result = result;
             }
+
+            _settings = settings;
 
             ContextMenuSelectedIndex = NoSelectionIndex;
             LoadContextMenu();
@@ -201,7 +206,7 @@ namespace PowerLauncher.ViewModel
                 }
 
                 // will get here either when icoPath has value\icon delegate is null\when had exception in delegate
-                return ImageLoader.Load(imagePath);
+                return ImageLoader.Load(imagePath, _settings.GenerateThumbnailsFromFiles);
             }
         }
 

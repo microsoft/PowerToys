@@ -323,6 +323,8 @@ namespace Wox.Infrastructure.UserSettings
 
         public bool StartedFromPowerToysRunner { get; set; }
 
+        public bool GenerateThumbnailsFromFiles { get; set; } = true;
+
         public HttpProxy Proxy { get; set; } = new HttpProxy();
 
         [JsonConverter(typeof(JsonStringEnumConverter))]

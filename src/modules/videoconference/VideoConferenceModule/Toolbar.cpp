@@ -4,6 +4,7 @@
 #include <windowsx.h>
 
 #include <common/Themes/windows_colors.h>
+#include <common/Display/dpi_aware.h>
 
 #include "Logging.h"
 #include "VideoConferenceModule.h"
@@ -14,6 +15,7 @@ const int REFRESH_RATE = 100;
 const int OVERLAY_SHOW_TIME = 500;
 const int BORDER_OFFSET = 12;
 const int TOP_RIGHT_BORDER_OFFSET = 40;
+std::wstring cached_position = L"";
 
 Toolbar::Toolbar()
 {
@@ -43,6 +45,44 @@ void Toolbar::scheduleGeneralSettingsUpdate()
     generalSettingsUpdateScheduled = true;
 }
 
+inline POINT calculateToolbarPositioning(Box const& screenSize, std::wstring& position, const int desiredWidth, const int desiredHeight)
+{
+    POINT p;
+    p.x = p.y = 0;
+
+    if (position == L"Top left corner")
+    {
+        p.x = screenSize.left() + BORDER_OFFSET;
+        p.y = screenSize.top() + BORDER_OFFSET;
+    }
+    else if (position == L"Top center")
+    {
+        p.x = screenSize.middle().x - desiredWidth / 2;
+        p.y = screenSize.top() + BORDER_OFFSET;
+    }
+    else if (position == L"Bottom left corner")
+    {
+        p.x = screenSize.left() + BORDER_OFFSET;
+        p.y = screenSize.bottom() - desiredHeight - BORDER_OFFSET;
+    }
+    else if (position == L"Bottom center")
+    {
+        p.x = screenSize.middle().x - desiredWidth / 2;
+        p.y = screenSize.bottom() - desiredHeight - BORDER_OFFSET;
+    }
+    else if (position == L"Bottom right corner")
+    {
+        p.x = screenSize.right() - desiredWidth - BORDER_OFFSET;
+        p.y = screenSize.bottom() - desiredHeight - BORDER_OFFSET;
+    }
+    else //"Top right corner" or non-present
+    {
+        p.x = screenSize.right() - desiredWidth - BORDER_OFFSET;
+        p.y = screenSize.top() + TOP_RIGHT_BORDER_OFFSET;
+    }
+    return p;
+}
+
 LRESULT Toolbar::WindowProcessMessages(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
 {
     switch (msg)
@@ -53,8 +93,10 @@ LRESULT Toolbar::WindowProcessMessages(HWND hwnd, UINT msg, WPARAM wparam, LPARA
     {
         int x = GET_X_LPARAM(lparam);
         int y = GET_Y_LPARAM(lparam);
+        UINT dpi = DPIAware::DEFAULT_DPI;
+        DPIAware::GetScreenDPIForWindow(hwnd, dpi);
 
-        if (x < 322 / 2)
+        if (x < 322 * static_cast<int>(dpi) / static_cast<int>(DPIAware::DEFAULT_DPI) / 2)
         {
             VideoConferenceModule::reverseMicrophoneMute();
         }
@@ -65,11 +107,41 @@ LRESULT Toolbar::WindowProcessMessages(HWND hwnd, UINT msg, WPARAM wparam, LPARA
 
         return DefWindowProcW(hwnd, msg, wparam, lparam);
     }
+    case WM_DPICHANGED:
+    {
+        UINT dpi = LOWORD(dpi);
+        RECT* prcNewWindow = reinterpret_cast<RECT*>(lparam);
+
+        POINT suggestedPosition;
+        suggestedPosition.x = prcNewWindow->left;
+        suggestedPosition.y = prcNewWindow->top;
+
+        int desiredWidth = prcNewWindow->right - prcNewWindow->left;
+        int desiredHeight = prcNewWindow->bottom - prcNewWindow->top;
+
+        HMONITOR hMonitor = MonitorFromPoint(suggestedPosition, MONITOR_DEFAULTTONEAREST);
+
+        MonitorInfo info{ hMonitor };
+
+        suggestedPosition = calculateToolbarPositioning(info.GetScreenSize(false), cached_position, desiredWidth, desiredHeight);
+
+        SetWindowPos(hwnd,
+                     NULL,
+                     suggestedPosition.x,
+                     suggestedPosition.y,
+                     desiredWidth,
+                     desiredHeight,
+                     SWP_NOZORDER | SWP_NOACTIVATE);
+        return DefWindowProcW(hwnd, msg, wparam, lparam);
+    }
     case WM_CREATE:
     case WM_PAINT:
     {
         PAINTSTRUCT ps;
         HDC hdc;
+        UINT dpi = DPIAware::DEFAULT_DPI;
+
+        DPIAware::GetScreenDPIForWindow(hwnd, dpi);
 
         hdc = BeginPaint(hwnd, &ps);
 
@@ -119,7 +191,8 @@ LRESULT Toolbar::WindowProcessMessages(HWND hwnd, UINT msg, WPARAM wparam, LPARA
                 toolbarImage = themeImages->camOnMicOn;
             }
         }
-        graphic.DrawImage(toolbarImage, 0, 0, toolbarImage->GetWidth(), toolbarImage->GetHeight());
+        // Images are scaled by 4 to support higher dpi values.
+        graphic.DrawImage(toolbarImage, 0, 0, toolbarImage->GetWidth() / 4 * dpi / DPIAware::DEFAULT_DPI, toolbarImage->GetHeight() / 4 * dpi / DPIAware::DEFAULT_DPI);
 
         EndPaint(hwnd, &ps);
         break;
@@ -194,14 +267,16 @@ LRESULT Toolbar::WindowProcessMessages(HWND hwnd, UINT msg, WPARAM wparam, LPARA
 
 void Toolbar::show(std::wstring position, std::wstring monitorString)
 {
+    cached_position = position;
     for (auto& hwnd : hwnds)
     {
         PostMessageW(hwnd, WM_CLOSE, 0, 0);
     }
     hwnds.clear();
 
-    int overlayWidth = darkImages.camOffMicOff->GetWidth();
-    int overlayHeight = darkImages.camOffMicOff->GetHeight();
+    // Images are scaled by 4 to support higher dpi values.
+    int overlayWidth = darkImages.camOffMicOff->GetWidth() / 4;
+    int overlayHeight = darkImages.camOffMicOff->GetHeight() / 4;
 
     // Register the window class
     LPCWSTR CLASS_NAME = L"MuteNotificationWindowClass";
@@ -231,39 +306,13 @@ void Toolbar::show(std::wstring position, std::wstring monitorString)
     for (auto& monitorInfo : monitorInfos)
     {
         const auto screenSize = monitorInfo.GetScreenSize(false);
-        int positionX = 0;
-        int positionY = 0;
+        UINT dpi = DPIAware::DEFAULT_DPI;
+        DPIAware::GetScreenDPIForMonitor(monitorInfo.GetHandle(), dpi);
 
-        if (position == L"Top left corner")
-        {
-            positionX = screenSize.left() + BORDER_OFFSET;
-            positionY = screenSize.top() + BORDER_OFFSET;
-        }
-        else if (position == L"Top center")
-        {
-            positionX = screenSize.middle().x - overlayWidth / 2;
-            positionY = screenSize.top() + BORDER_OFFSET;
-        }
-        else if (position == L"Bottom left corner")
-        {
-            positionX = screenSize.left() + BORDER_OFFSET;
-            positionY = screenSize.bottom() - overlayHeight - BORDER_OFFSET;
-        }
-        else if (position == L"Bottom center")
-        {
-            positionX = screenSize.middle().x - overlayWidth / 2;
-            positionY = screenSize.bottom() - overlayHeight - BORDER_OFFSET;
-        }
-        else if (position == L"Bottom right corner")
-        {
-            positionX = screenSize.right() - overlayWidth - BORDER_OFFSET;
-            positionY = screenSize.bottom() - overlayHeight - BORDER_OFFSET;
-        }
-        else //"Top right corner" or non-present
-        {
-            positionX = screenSize.right() - overlayWidth - BORDER_OFFSET;
-            positionY = screenSize.top() + TOP_RIGHT_BORDER_OFFSET;
-        }
+        int scaledOverlayWidth = overlayWidth * dpi / DPIAware::DEFAULT_DPI;
+        int scaledOverlayHeight = overlayHeight * dpi / DPIAware::DEFAULT_DPI;
+
+        POINT p = calculateToolbarPositioning(screenSize, position, scaledOverlayWidth, scaledOverlayHeight);
 
         HWND hwnd;
         hwnd = CreateWindowExW(
@@ -271,10 +320,10 @@ void Toolbar::show(std::wstring position, std::wstring monitorString)
             CLASS_NAME,
             CLASS_NAME,
             WS_POPUP,
-            positionX,
-            positionY,
-            overlayWidth,
-            overlayHeight,
+            static_cast<int>(p.x),
+            static_cast<int>(p.y),
+            scaledOverlayWidth,
+            scaledOverlayHeight,
             nullptr,
             nullptr,
             GetModuleHandleW(nullptr),

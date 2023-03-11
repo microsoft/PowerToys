@@ -3,8 +3,6 @@
   <Import Project="..\..\Version.props" />
   <PropertyGroup>
     <AssemblyTitle>PowerToys.Interop</AssemblyTitle>
-    <AssemblyCompany>Microsoft Corp.</AssemblyCompany>
-    <AssemblyCopyright>Copyright (C) 2022 Microsoft Corp.</AssemblyCopyright>
   </PropertyGroup>
   <ItemGroup Label="ProjectConfigurations">
     <ProjectConfiguration Include="Debug|ARM64">

@@ -551,7 +551,7 @@ bool DataObjectContainsRenamableItem(_In_ IUnknown* dataSource)
 {
     bool hasRenamable = false;
     CComPtr<IShellItemArray> spsia;
-    if (SUCCEEDED(GetShellItemArrayFromDataObject(dataSource, &spsia)))
+    if (dataSource && SUCCEEDED(GetShellItemArrayFromDataObject(dataSource, &spsia)))
     {
         CComPtr<IEnumShellItems> spesi;
         if (SUCCEEDED(spsia->EnumItems(&spesi)))

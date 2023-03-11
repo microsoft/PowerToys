@@ -40,7 +40,6 @@ ALPHATYPE
 Altdown
 alwaysontop
 amd
-AMF
 AModifier
 AMPROPERTY
 AMPROPSETID
@@ -88,7 +87,6 @@ ARPPRODUCTICON
 ARRAYSIZE
 arsinh
 artanh
-Artsakh
 asdf
 AShortcut
 ASingle
@@ -177,9 +175,11 @@ buildtask
 buildtransitive
 Burkina
 Buryatia
+BUTTONUP
 BValue
 BYPOSITION
 bytearray
+Cabo
 Caiguna
 CALG
 callbackptr
@@ -206,7 +206,6 @@ CHILDACTIVATE
 CHILDWINDOW
 Choibalsan
 chrdavis
-chromaticities
 Chrzan
 cht
 Chukotka
@@ -217,6 +216,7 @@ cim
 CImage
 cla
 clangformat
+clayton
 CLASSDC
 CLASSNOTAVAILABLE
 clickable
@@ -393,7 +393,6 @@ Deondre
 depersist
 deprioritized
 depsfileslistspath
-depsjsonpath
 deref
 DESKTOPABSOLUTEEDITING
 DESKTOPABSOLUTEPARSING
@@ -403,9 +402,9 @@ deu
 devblogs
 devdocs
 devenum
+devmgmt
 DEVMON
 devpkey
-devmgmt
 DEVSOURCE
 DIIRFLAG
 dimm
@@ -538,6 +537,7 @@ EXTENDEDKEY
 EXTENDEDVERBS
 eyetracker
 fabricbot
+fancymouse
 fancyzones
 FANCYZONESDRAWLAYOUTTEST
 FANCYZONESEDITOR
@@ -654,8 +654,8 @@ HCRYPTHASH
 HCRYPTPROV
 hcwhite
 hdc
-hdwwiz
 hdrop
+hdwwiz
 HEB
 Heiko
 Helpline
@@ -723,6 +723,7 @@ HTTRANSPARENT
 HValue
 Hvci
 hwb
+HWHEEL
 HWINEVENTHOOK
 hwnd
 HWNDFIRST
@@ -741,7 +742,7 @@ IDD
 IDesktop
 IDirect
 idl
-IDLIST
+idlist
 IDOn
 IDR
 idx
@@ -828,6 +829,7 @@ Ittoqqortoormiit
 IUI
 IUnknown
 ivirtualdesktopmanager
+Ivoire
 IWbem
 IWIC
 iwr
@@ -894,6 +896,8 @@ LCONTROL
 LCtrl
 Ldone
 ldx
+LEFTDOWN
+LEFTUP
 LEFTSCROLLBAR
 lego
 len
@@ -931,7 +935,6 @@ logconsole
 logfile
 LOGFONT
 LOGFONTW
-LOGMSG
 logon
 LOGPIXELSX
 LOn
@@ -1043,6 +1046,8 @@ Mgmt
 mic
 microsoft
 Midl
+MIDDLEDOWN
+MIDDLEUP
 mii
 MIIM
 millis
@@ -1176,6 +1181,7 @@ NOACTIVATE
 NOAGGREGATION
 NOASYNC
 NOCLOSEPROCESS
+NOCOALESCE
 NOCOPYBITS
 nodeca
 nodiscard
@@ -1249,7 +1255,7 @@ oldpath
 oldtheme
 oleaut
 OLECHAR
-oledb
+OLEDB
 oledbcommand
 oledbconnection
 OLIVEGREEN
@@ -1294,6 +1300,7 @@ PARENTRELATIVEPARSING
 PArgb
 parray
 PARTIALCONFIRMATIONDIALOGTITLE
+pasteplain
 pathcch
 Pathto
 PAUDIO
@@ -1379,7 +1386,7 @@ Prefixer
 Preinstalled
 prevhost
 previewer
-previewhandlerframeinfo
+PREVIEWHANDLERFRAMEINFO
 previewpane
 previouscamera
 PREVIOUSINSTALLFOLDER
@@ -1388,8 +1395,8 @@ prevpane
 prgms
 pri
 Primorsky
-printmanagement
 PRINTCLIENT
+printmanagement
 prm
 proactively
 PROCESSKEY
@@ -1467,7 +1474,7 @@ rectp
 rects
 recyclebin
 redirectedfrom
-redist
+Redist
 redistributable
 reencode
 reencoded
@@ -1524,6 +1531,8 @@ rgs
 rhs
 ricardosantos
 RIDEV
+RIGHTDOWN
+RIGHTUP
 RIGHTSCROLLBAR
 riid
 RKey
@@ -1531,6 +1540,7 @@ RLO
 RMENU
 RNumber
 roadmap
+Roamable
 robmensching
 Roboto
 rooler
@@ -1590,7 +1600,7 @@ secauthz
 secpol
 Secur
 securityoverview
-segoe
+Segoe
 Sekan
 SENDCHANGE
 sendinput
@@ -1656,7 +1666,7 @@ SHOWMINNOACTIVE
 SHOWNA
 SHOWNOACTIVATE
 SHOWNORMAL
-showwindow
+SHOWWINDOW
 shtypes
 SICHINT
 sid
@@ -1690,12 +1700,13 @@ Soref
 SOURCECLIENTAREAONLY
 SOURCEHEADER
 sourcesdirectory
+SPACEBAR
 spam
 spdisp
 spdlog
 spdo
-spec'ing
 specialfolder
+spec'ing
 spesi
 splitwstring
 spsi
@@ -1723,7 +1734,7 @@ STARTUPINFO
 STARTUPINFOEX
 STARTUPINFOW
 startupscreen
-statflag
+STATFLAG
 STATICEDGE
 STATSTG
 stdafx
@@ -1735,7 +1746,7 @@ STDMETHODCALLTYPE
 STDMETHODIMP
 stefan
 Stereolithography
-stgm
+STGM
 STGMEDIUM
 sticpl
 stl
@@ -1782,7 +1793,7 @@ SYSICONINDEX
 sysinfo
 SYSKEY
 syskeydown
-syskeyup
+SYSKEYUP
 SYSMENU
 SYSTEMAPPS
 systemroot
@@ -1895,6 +1906,7 @@ UIs
 Ulaanbaatar
 ULARGE
 ULONGLONG
+UMsg
 unassign
 uncompilable
 UNCPRIORITY
@@ -1974,6 +1986,7 @@ VIDEOINFOHEADER
 viewbox
 viewmodel
 vih
+VIRTUALDESK
 virtualkey
 visiblecolorformats
 Visibletrue
@@ -2004,7 +2017,7 @@ WANTPALM
 wbem
 wbemuuid
 WBounds
-wca
+Wca
 wcautil
 WCE
 wcex
@@ -2064,7 +2077,7 @@ WINL
 winmd
 winmm
 winmsg
-winnt
+WINNT
 winres
 winrt
 winsdk
@@ -2132,17 +2145,21 @@ wtypes
 Wubi
 wuceffectsi
 WVC
+WVk
 Wwan
 Wwanpp
 XAttribute
+XAxis
 Xbox
 XBUTTON
 XBUTTONDBLCLK
 XBUTTONDOWN
 XBUTTONUP
-xcopy
 XControl
+xcopy
 XDocument
+XDOWN
+XUP
 XElement
 XFile
 XIncrement
@@ -2155,6 +2172,7 @@ xsi
 XStr
 XVIRTUALSCREEN
 Yamalia
+YAxis
 YIncrement
 yinle
 yinwang
