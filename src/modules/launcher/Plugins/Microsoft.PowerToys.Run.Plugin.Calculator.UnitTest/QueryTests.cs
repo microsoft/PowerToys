@@ -2,6 +2,7 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System.Globalization;
 using System.Linq;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
@@ -194,15 +195,15 @@ namespace Microsoft.PowerToys.Run.Plugin.Calculator.UnitTests
         }
 
         [DataTestMethod]
-        [DataRow("2(1+1)", "4")]
-        [DataRow("pi(1+1)", "6.2831853072")]
-        [DataRow("pilog(100)", "6.2831853072")]
-        [DataRow("3log(100)", "6")]
-        [DataRow("2e", "5.4365636569")]
-        [DataRow("(1+1)(3+2)", "10")]
-        [DataRow("(1+1)cos(pi)", "-2")]
-        [DataRow("log(100)cos(pi)", "-2")]
-        public void RightAnswerForHumanMultiplicationExpressions(string typedString, string answer)
+        [DataRow("2(1+1)", 4)]
+        [DataRow("pi(1+1)", 6.2831853072)]
+        [DataRow("pilog(100)", 6.2831853072)]
+        [DataRow("3log(100)", 6)]
+        [DataRow("2e", 5.4365636569)]
+        [DataRow("(1+1)(3+2)", 10)]
+        [DataRow("(1+1)cos(pi)", -2)]
+        [DataRow("log(100)cos(pi)", -2)]
+        public void RightAnswerForHumanMultiplicationExpressions(string typedString, double answer)
         {
             // Setup
             Mock<Main> main = new();
@@ -214,8 +215,8 @@ namespace Microsoft.PowerToys.Run.Plugin.Calculator.UnitTests
             var resultWithKeyword = main.Object.Query(expectedQueryWithKeyword).FirstOrDefault()?.Title;
 
             // Assert
-            Assert.AreEqual(answer, result);
-            Assert.AreEqual(answer, resultWithKeyword);
+            Assert.AreEqual(answer.ToString(CultureInfo.CurrentCulture), result);
+            Assert.AreEqual(answer.ToString(CultureInfo.CurrentCulture), resultWithKeyword);
         }
     }
 }
