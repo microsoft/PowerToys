@@ -179,7 +179,8 @@
 
                     <labs:SettingsCard
                         x:Uid="PowerLauncher_TabSelectsContextButtons"
-                        HeaderIcon="{ui:FontIcon FontFamily={StaticResource SymbolThemeFontFamily}, Glyph=&#xE7FD;}">
+                        HeaderIcon="{ui:FontIcon FontFamily={StaticResource SymbolThemeFontFamily}, Glyph=&#xE7FD;}"
+                        Padding="16,16,44,16">
                         <ToggleSwitch
                             x:Uid="ToggleSwitch"
                             IsOn="{x:Bind ViewModel.TabSelectsContextButtons, Mode=TwoWay}" />
@@ -187,7 +188,7 @@
 
                     <labs:SettingsCard
                         x:Uid="PowerLauncher_GenerateThumbnailsFromFiles"
-                        >
+                        Padding="16,16,44,16">
                         <ToggleSwitch
                             x:Uid="ToggleSwitch"
                             IsOn="{x:Bind ViewModel.GenerateThumbnailsFromFiles, Mode=TwoWay}" />
