@@ -273,8 +273,13 @@ namespace winrt::PowerRenameUI::implementation
         {
             ToggleAll();
             m_allSelected = !m_allSelected;
-            m_explorerItems.Clear();
-            PopulateExplorerItems();
+            if (button_showRenamed().IsChecked())
+            {
+                m_explorerItems.Clear();
+                m_explorerItemsMap.clear();
+                PopulateExplorerItems();
+                UpdateCounts();
+            }
         }
     }
 
