@@ -78,7 +78,8 @@
 
                     <labs:SettingsCard
                         x:Uid="PowerRename_Toggle_RestoreFlagsOnLaunch"
-                        HeaderIcon="{ui:FontIcon FontFamily={StaticResource SymbolThemeFontFamily}, Glyph=&#xe81c;}">
+                        HeaderIcon="{ui:FontIcon FontFamily={StaticResource SymbolThemeFontFamily}, Glyph=&#xe81c;}"
+                        Padding="16,16,44,16">
                         <ToggleSwitch
                             x:Uid="ToggleSwitch"
                             IsOn="{x:Bind Mode=TwoWay, Path=ViewModel.RestoreFlagsOnLaunch}" />
@@ -87,10 +88,11 @@
                 <controls:SettingsGroup
                     x:Uid="PowerRename_BehaviorHeader"
                     IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}">
-                    <labs:SettingsCard x:Uid="PowerRename_Toggle_UseBoostLib">
+                    <labs:SettingsCard x:Uid="PowerRename_Toggle_UseBoostLib"
+                                       Padding="16,16,44,16">
                         <ToggleSwitch
                             x:Uid="ToggleSwitch"
-                            IsOn="{x:Bind Mode=TwoWay, Path=ViewModel.UseBoostLib}" />
+                            IsOn="{x:Bind Mode=TwoWay, Path=ViewModel.UseBoostLib}"/>
                     </labs:SettingsCard>
                 </controls:SettingsGroup>
             </StackPanel>
