@@ -532,7 +532,7 @@ bool AppZoneHistory::IsAnotherWindowOfApplicationInstanceZoned(HWND window, cons
     return false;
 }
 
-ZoneIndexSet AppZoneHistory::GetAppLastZoneIndexSet(HWND window, const FancyZonesDataTypes::WorkAreaId& workAreaId, const std::wstring& zoneSetId) const
+ZoneIndexSet AppZoneHistory::GetAppLastZoneIndexSet(HWND window, const FancyZonesDataTypes::WorkAreaId& workAreaId, const GUID& layoutId) const
 {
     auto processPath = get_process_path_waiting_uwp(window);
     if (processPath.empty())
@@ -540,6 +540,15 @@ ZoneIndexSet AppZoneHistory::GetAppLastZoneIndexSet(HWND window, const FancyZone
         Logger::error("Process path is empty");
         return {};
     }
+
+    auto layoutIdStrOpt = FancyZonesUtils::GuidToString(layoutId);
+    if (!layoutIdStrOpt)
+    {
+        Logger::error("Invalid layout id");
+        return {};
+    }
+
+    auto layoutIdStr = layoutIdStrOpt.value();
 
     auto app = processPath;
     auto pos = processPath.find_last_of('\\');
@@ -559,7 +568,7 @@ ZoneIndexSet AppZoneHistory::GetAppLastZoneIndexSet(HWND window, const FancyZone
     const auto& perDesktopData = history->second;
     for (const auto& data : perDesktopData)
     {
-        if (data.zoneSetUuid == zoneSetId && data.workAreaId == workAreaId)
+        if (data.zoneSetUuid == layoutIdStr && data.workAreaId == workAreaId)
         {
             if (data.workAreaId.virtualDesktopId == workAreaId.virtualDesktopId || data.workAreaId.virtualDesktopId == GUID_NULL)
             {
