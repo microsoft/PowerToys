@@ -35,7 +35,7 @@ public partial class OCROverlay : Window
 
     private Point GetMousePos() => PointToScreen(Mouse.GetPosition(this));
 
-    private Language? selectedLanguage = null;
+    private Language? selectedLanguage;
     private MenuItem cancelMenuItem;
 
     private System.Windows.Forms.Screen? CurrentScreen
@@ -70,8 +70,8 @@ public partial class OCROverlay : Window
         foreach (Language language in possibleOcrLanguages)
         {
             MenuItem menuItem = new MenuItem() { Header = language.NativeName, Tag = language, IsCheckable = true };
-            menuItem.IsChecked = language.DisplayName.Equals(selectedLanguageName);
-            if (language.DisplayName.Equals(selectedLanguageName))
+            menuItem.IsChecked = language.DisplayName.Equals(selectedLanguageName, StringComparison.Ordinal);
+            if (language.DisplayName.Equals(selectedLanguageName, StringComparison.Ordinal))
             {
                 selectedLanguage = language;
             }

@@ -328,8 +328,8 @@ namespace Hosts.ViewModels
         private void FindDuplicates(string address, IEnumerable<string> hosts)
         {
             var entries = _entries.Where(e =>
-                string.Equals(e.Address, address, StringComparison.InvariantCultureIgnoreCase)
-                || hosts.Intersect(e.SplittedHosts, StringComparer.InvariantCultureIgnoreCase).Any());
+                string.Equals(e.Address, address, StringComparison.OrdinalIgnoreCase)
+                || hosts.Intersect(e.SplittedHosts, StringComparer.OrdinalIgnoreCase).Any());
 
             foreach (var entry in entries)
             {
@@ -353,8 +353,8 @@ namespace Hosts.ViewModels
 
             var duplicate = _entries.FirstOrDefault(e => e != entry
                 && e.Type == entry.Type
-                && (string.Equals(e.Address, entry.Address, StringComparison.InvariantCultureIgnoreCase)
-                    || hosts.Intersect(e.SplittedHosts, StringComparer.InvariantCultureIgnoreCase).Any())) != null;
+                && (string.Equals(e.Address, entry.Address, StringComparison.OrdinalIgnoreCase)
+                    || hosts.Intersect(e.SplittedHosts, StringComparer.OrdinalIgnoreCase).Any())) != null;
 
             _dispatcherQueue.TryEnqueue(() =>
             {

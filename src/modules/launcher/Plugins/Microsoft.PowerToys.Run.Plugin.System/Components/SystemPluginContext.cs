@@ -4,7 +4,7 @@
 
 namespace Microsoft.PowerToys.Run.Plugin.System.Components
 {
-    internal class SystemPluginContext
+    internal sealed class SystemPluginContext
     {
         /// <summary>
         /// Gets or sets the type of the result

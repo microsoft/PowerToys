@@ -10,7 +10,7 @@ namespace PreviewHandlerCommon.ComInterop
     /// <summary>
     /// Interop methods
     /// </summary>
-    internal class NativeMethods
+    internal sealed class NativeMethods
     {
         /// <summary>
         /// Changes the parent window of the specified child window.

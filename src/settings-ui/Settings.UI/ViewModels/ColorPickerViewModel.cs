@@ -241,7 +241,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             {
                 // skip entries with empty name or duplicated name, it should never occur
                 string storedName = storedColorFormat.Key;
-                if (storedName == string.Empty || ColorFormats.Count(x => x.Name.ToUpperInvariant().Equals(storedName.ToUpperInvariant(), StringComparison.Ordinal)) > 0)
+                if (storedName == string.Empty || ColorFormats.Any(x => x.Name.ToUpperInvariant().Equals(storedName.ToUpperInvariant(), StringComparison.Ordinal)))
                 {
                     continue;
                 }

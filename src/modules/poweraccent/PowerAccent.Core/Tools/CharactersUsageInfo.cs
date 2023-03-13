@@ -34,6 +34,7 @@ namespace PowerAccent.Core.Tools
             return timestamp;
         }
 
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Performance", "CA1854:Prefer the 'IDictionary.TryGetValue(TKey, out TValue)' method", Justification = "False positive: https://github.com/dotnet/roslyn-analyzers/issues/6390")]
         public void IncrementUsageFrequency(string character)
         {
             if (_characterUsageCounters.ContainsKey(character))
