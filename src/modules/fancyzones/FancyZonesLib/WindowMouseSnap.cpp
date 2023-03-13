@@ -62,7 +62,7 @@ bool WindowMouseSnap::MoveSizeStart(HMONITOR monitor, bool isSnapping)
 
     if (m_currentWorkArea)
     {
-        m_currentWorkArea->UnsnapWindow(m_window);
+        m_currentWorkArea->Unsnap(m_window);
     }
     
     return true;

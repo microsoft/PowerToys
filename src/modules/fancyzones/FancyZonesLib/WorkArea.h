@@ -43,12 +43,12 @@ public:
     const GUID GetLayoutId() const noexcept;
     const FancyZonesUtils::Rect& GetWorkAreaRect() const noexcept { return m_workAreaRect; }
     
+    void InitLayout();
     void InitSnappedWindows();
+    void UpdateWindowPositions();
+
     void Snap(HWND window, const ZoneIndexSet& zones, bool updatePosition = true);
     void Unsnap(HWND window);
-
-    void InitLayout();
-    void UpdateWindowPositions();
 
     void ShowZones(const ZoneIndexSet& highlight, HWND draggedWindow = nullptr);
     void HideZones();

@@ -211,15 +211,10 @@ void WorkArea::InitLayout()
 
 void WorkArea::UpdateWindowPositions()
 {
-    if (!m_layoutWindows)
-    {
-        return;
-    }
-
-    const auto& snappedWindows = m_layoutWindows->SnappedWindows();
+    const auto& snappedWindows = m_layoutWindows.SnappedWindows();
     for (const auto& [window, zones] : snappedWindows)
     {
-        MoveWindowIntoZoneByIndexSet(window, zones, true);
+        Snap(window, zones, true);
     }
 }
 
@@ -265,7 +260,8 @@ void WorkArea::InitLayout(const FancyZonesDataTypes::WorkAreaId& parentUniqueId)
 
 void WorkArea::InitSnappedWindows()
 {
-    Logger::info(L"Init work area windows: {}", m_uniqueId.toString());
+    static bool updatePositionOnceOnStartFlag = true;
+    Logger::info(L"Init work area {} windows, update positions = {}", m_uniqueId.toString(), updatePositionOnceOnStartFlag);
 
     for (const auto& window : VirtualDesktop::instance().GetWindowsFromCurrentDesktop())
     {
@@ -277,7 +273,7 @@ void WorkArea::InitSnappedWindows()
 
         if (!m_uniqueId.monitorId.monitor) // one work area across monitors
         {
-            Snap(window, zoneIndexSet, updatePositionOnceOnStartFlag);
+            Snap(window, indexes, updatePositionOnceOnStartFlag);
         }
         else
         {
@@ -285,19 +281,21 @@ void WorkArea::InitSnappedWindows()
             if (monitor && m_uniqueId.monitorId.monitor == monitor)
             {
                 // prioritize snapping on the current monitor if the window was snapped to several work areas
-                Snap(window, zoneIndexSet, updatePositionOnceOnStartFlag);
+                Snap(window, indexes, updatePositionOnceOnStartFlag);
             }
             else
             {
                 // if the window is not snapped on the current monitor, then check the others
-                auto savedIndexes = GetWindowZoneIndexes(window);
+                auto savedIndexes = AppZoneHistory::instance().GetAppLastZoneIndexSet(window, m_uniqueId, GetLayoutId());
                 if (savedIndexes == indexes)
                 {
-                    MoveWindowIntoZoneByIndexSet(window, indexes, false);
+                    Snap(window, indexes, updatePositionOnceOnStartFlag);
                 }
             }
         }
     }
+
+    updatePositionOnceOnStartFlag = false;
 }
 
 void WorkArea::CalculateZoneSet()

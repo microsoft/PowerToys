@@ -335,7 +335,7 @@ bool FancyZones::MoveToAppLastZone(HWND window, HMONITOR monitor) noexcept
             workArea = workAreas.at(monitor).get();
             if (workArea)
             {
-                indexes = workArea->GetWindowZoneIndexes(window);
+                indexes = AppZoneHistory::instance().GetAppLastZoneIndexSet(window, workArea->UniqueId(), workArea->GetLayoutId());
             }
         }
         else
@@ -349,7 +349,7 @@ bool FancyZones::MoveToAppLastZone(HWND window, HMONITOR monitor) noexcept
         {
             if (secondaryWorkArea)
             {
-                indexes = secondaryWorkArea->GetWindowZoneIndexes(window);
+                indexes = AppZoneHistory::instance().GetAppLastZoneIndexSet(window, secondaryWorkArea->UniqueId(), secondaryWorkArea->GetLayoutId());
                 workArea = secondaryWorkArea.get();
                 if (!indexes.empty())
                 {
@@ -361,8 +361,8 @@ bool FancyZones::MoveToAppLastZone(HWND window, HMONITOR monitor) noexcept
     
     if (!indexes.empty() && workArea)
     {
-        Trace::FancyZones::SnapNewWindowIntoZone(workArea->GetLayout().get(), workArea->GetLayoutWindows().get());
-        workArea->MoveWindowIntoZoneByIndexSet(window, indexes);
+        Trace::FancyZones::SnapNewWindowIntoZone(workArea->GetLayout().get(), workArea->GetLayoutWindows());
+        workArea->Snap(window, indexes);
 
         return true;
     }
@@ -656,7 +656,7 @@ LRESULT FancyZones::WndProc(HWND window, UINT message, WPARAM wparam, LPARAM lpa
         else if (message == WM_PRIV_APPLIED_LAYOUTS_FILE_UPDATE)
         {
             AppliedLayouts::instance().LoadData();
-            UpdateActiveLayouts();
+            RefreshLayouts();
         }
         else if (message == WM_PRIV_DEFAULT_LAYOUTS_FILE_UPDATE)
         {
@@ -857,7 +857,7 @@ void FancyZones::CycleWindows(bool reverse) noexcept
     }
 }
 
-void FancyZones::RegisterVirtualDesktopUpdates() noexcept
+void FancyZones::SyncVirtualDesktops() noexcept
 {
     auto guids = VirtualDesktop::instance().GetVirtualDesktopIdsFromRegistry();
     if (guids.has_value())
@@ -1009,7 +1009,7 @@ void FancyZones::ApplyQuickLayout(int key) noexcept
     {
         AppliedLayouts::instance().ApplyLayout(workArea->UniqueId(), layout.value());
         AppliedLayouts::instance().SaveData();
-        UpdateActiveLayouts();
+        RefreshLayouts();
         FlashZones();
     }
 }
