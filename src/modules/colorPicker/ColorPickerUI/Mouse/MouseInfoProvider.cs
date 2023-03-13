@@ -118,9 +118,8 @@ namespace ColorPicker.Mouse
 
             foreach (var monitor in MonitorResolutionHelper.AllMonitors)
             {
-                if (monitor.IsPrimary)
+                if (monitor.IsPrimary && EnumDisplaySettingsW(monitor.Name, ENUM_CURRENT_SETTINGS, out DEVMODEW lpDevMode))
                 {
-                    EnumDisplaySettingsW(monitor.Name, ENUM_CURRENT_SETTINGS, out DEVMODEW lpDevMode);
                     refreshRate = (double)lpDevMode.dmDisplayFrequency;
                     break;
                 }
