@@ -91,6 +91,10 @@ public sealed class RectangleInfo
         width: this.Width,
         height: this.Height);
 
+    public PointInfo Midpoint => new(
+        x: this.X + (this.Width / 2),
+        y: this.Y + (this.Height / 2));
+
     public RectangleInfo Clamp(RectangleInfo outer)
     {
         if ((this.Width > outer.Width) || (this.Height > outer.Height))

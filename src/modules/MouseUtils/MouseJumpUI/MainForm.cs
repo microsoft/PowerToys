@@ -37,14 +37,14 @@ internal partial class MainForm : Form
 
     private void MainForm_Deactivate(object sender, EventArgs e)
     {
-        // dispose the existing image if there is one
-        if (Thumbnail.Image != null)
-        {
-            Thumbnail.Image.Dispose();
-            Thumbnail.Image = null;
-        }
-
         this.Close();
+
+        if (this.Thumbnail.Image is not null)
+        {
+            var tmp = this.Thumbnail.Image;
+            this.Thumbnail.Image = null;
+            tmp.Dispose();
+        }
     }
 
     private void Thumbnail_Click(object sender, EventArgs e)
@@ -59,23 +59,16 @@ internal partial class MainForm : Form
         if (mouseEventArgs.Button == MouseButtons.Left)
         {
             // plain click - move mouse pointer
-            var scaledLocation = DrawingHelper.GetJumpLocation(
+            var scaledLocation = MouseHelper.GetJumpLocation(
                 new PointInfo(mouseEventArgs.X, mouseEventArgs.Y),
                 new SizeInfo(this.Thumbnail.Size),
                 new RectangleInfo(SystemInformation.VirtualScreen));
             Logger.LogInfo($"scaled location = {scaledLocation}");
-            DrawingHelper.JumpCursor(scaledLocation);
+            MouseHelper.JumpCursor(scaledLocation);
             Microsoft.PowerToys.Telemetry.PowerToysTelemetry.Log.WriteEvent(new Telemetry.MouseJumpTeleportCursorEvent());
         }
 
-        this.Hide();
-
-        if (this.Thumbnail.Image != null)
-        {
-            var tmp = this.Thumbnail.Image;
-            this.Thumbnail.Image = null;
-            tmp.Dispose();
-        }
+        this.OnDeactivate(EventArgs.Empty);
     }
 
     public void ShowThumbnail()

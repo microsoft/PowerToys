@@ -11,6 +11,53 @@ namespace MouseJumpUI.UnitTests.Drawing;
 public sealed class SizeInfoTests
 {
     [TestClass]
+    public class ScaleToFitTests
+    {
+        public class TestCase
+        {
+            public TestCase(SizeInfo obj, SizeInfo bounds, SizeInfo expectedResult)
+            {
+                this.Obj = obj;
+                this.Bounds = bounds;
+                this.ExpectedResult = expectedResult;
+            }
+
+            public SizeInfo Obj { get; set; }
+
+            public SizeInfo Bounds { get; set; }
+
+            public SizeInfo ExpectedResult { get; set; }
+        }
+
+        public static IEnumerable<object[]> GetTestCases()
+        {
+            // identity tests
+            yield return new[] { new TestCase(new(512, 384), new(512, 384), new(512, 384)), };
+            yield return new[] { new TestCase(new(1024, 768), new(1024, 768), new(1024, 768)), };
+
+            // general tests
+            yield return new[] { new TestCase(new(512, 384), new(2048, 1536), new(2048, 1536)), };
+            yield return new[] { new TestCase(new(2048, 1536), new(1024, 768), new(1024, 768)), };
+
+            // scale to fit width
+            yield return new[] { new TestCase(new(512, 384), new(2048, 3072), new(2048, 1536)), };
+
+            // scale to fit height
+            yield return new[] { new TestCase(new(512, 384), new(4096, 1536), new(2048, 1536)), };
+        }
+
+        [TestMethod]
+        [DynamicData(nameof(GetTestCases), DynamicDataSourceType.Method)]
+        public void RunTestCases(TestCase data)
+        {
+            var actual = data.Obj.ScaleToFit(data.Bounds);
+            var expected = data.ExpectedResult;
+            Assert.AreEqual(expected.Width, actual.Width);
+            Assert.AreEqual(expected.Height, actual.Height);
+        }
+    }
+
+    [TestClass]
     public class ScaleToFitRatioTests
     {
         public class TestCase

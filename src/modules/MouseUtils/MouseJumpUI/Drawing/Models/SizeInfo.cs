@@ -37,17 +37,23 @@ public sealed class SizeInfo
 
     public SizeInfo Shrink(PaddingInfo padding) => new(this.Width - padding.Horizontal, this.Height - padding.Vertical);
 
-    public RectangleInfo PlaceAt(decimal x, decimal y) => new(x, y, this.Width, this.Height);
-
-    public SizeInfo Scale(decimal scalingFactor) => new(this.Width * scalingFactor, this.Height * scalingFactor);
-
     public SizeInfo Intersect(SizeInfo size) => new(
         Math.Min(this.Width, size.Width),
         Math.Min(this.Height, size.Height));
 
-    public Size ToSize() => new((int)this.Width, (int)this.Height);
+    public RectangleInfo PlaceAt(decimal x, decimal y) => new(x, y, this.Width, this.Height);
 
-    public Point ToPoint() => new((int)this.Width, (int)this.Height);
+    public SizeInfo ScaleToFit(SizeInfo bounds)
+    {
+        var widthRatio = bounds.Width / this.Width;
+        var heightRatio = bounds.Height / this.Height;
+        return widthRatio.CompareTo(heightRatio) switch
+        {
+            < 0 => new(bounds.Width, this.Height * widthRatio),
+            0 => bounds,
+            > 0 => new(this.Width * heightRatio, bounds.Height),
+        };
+    }
 
     /// <summary>
     /// Get the scaling ratio to scale obj by so that it fits inside the specified bounds
@@ -66,6 +72,10 @@ public sealed class SizeInfo
 
         return scalingRatio;
     }
+
+    public Size ToSize() => new((int)this.Width, (int)this.Height);
+
+    public Point ToPoint() => new((int)this.Width, (int)this.Height);
 
     public override string ToString()
     {

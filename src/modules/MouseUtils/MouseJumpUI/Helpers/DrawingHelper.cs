@@ -9,10 +9,11 @@ using System.Drawing.Drawing2D;
 using System.Linq;
 using System.Windows.Forms;
 using MouseJumpUI.Drawing.Models;
+using MouseJumpUI.Helpers;
 using MouseJumpUI.NativeMethods.Core;
 using MouseJumpUI.NativeWrappers;
 
-namespace MouseJumpUI.Drawing;
+namespace MouseJumpUI.Helpers;
 
 internal static class DrawingHelper
 {
@@ -49,7 +50,7 @@ internal static class DrawingHelper
 
         // position the drawing bounds inside the preview border
         var drawingBounds = layoutConfig.VirtualScreen.Size
-            .Scale(scalingRatio)
+            .ScaleToFit(maxDrawingSize)
             .PlaceAt(layoutConfig.PreviewPadding.Left, layoutConfig.PreviewPadding.Top);
 
         // now we know the size of the drawing area we can work out the preview size
@@ -150,7 +151,7 @@ internal static class DrawingHelper
         if (previewHdc.IsNull)
         {
             previewHdc = new HDC(previewGraphics.GetHdc());
-            _ = Gdi32.SetStretchBltMode(previewHdc, NativeMethods.Gdi32.STRETCH_BLT_MODE.STRETCH_HALFTONE);
+            _ = Gdi32.SetStretchBltMode(previewHdc, MouseJumpUI.NativeMethods.Gdi32.STRETCH_BLT_MODE.STRETCH_HALFTONE);
         }
     }
 
@@ -204,7 +205,7 @@ internal static class DrawingHelper
             source.Y,
             source.Width,
             source.Height,
-            NativeMethods.Gdi32.ROP_CODE.SRCCOPY);
+            MouseJumpUI.NativeMethods.Gdi32.ROP_CODE.SRCCOPY);
     }
 
     /// <summary>
@@ -231,52 +232,7 @@ internal static class DrawingHelper
                 source.Y,
                 source.Width,
                 source.Height,
-                NativeMethods.Gdi32.ROP_CODE.SRCCOPY);
+                MouseJumpUI.NativeMethods.Gdi32.ROP_CODE.SRCCOPY);
         }
-    }
-
-    /// <summary>
-    /// Calculates where to move the cursor to by projecting a point from
-    /// the preview image onto the desktop and using that as the target location.
-    /// </summary>
-    /// <remarks>
-    /// The preview image origin is (0, 0) but the desktop origin may be non-zero,
-    /// or even negative if the primary monitor is not the at the top-left of the
-    /// entire desktop rectangle, so results may contain negative coordinates.
-    /// </remarks>
-    public static PointInfo GetJumpLocation(PointInfo previewLocation, SizeInfo previewSize, RectangleInfo desktopBounds)
-    {
-        return previewLocation
-            .Scale(previewSize.ScaleToFitRatio(desktopBounds.Size))
-            .Offset(desktopBounds.Location);
-    }
-
-    /// <summary>
-    /// Moves the cursor to the specified location.
-    /// </summary>
-    /// <remarks>
-    /// See https://github.com/mikeclayton/FancyMouse/pull/3
-    /// </remarks>
-    public static void JumpCursor(PointInfo location)
-    {
-        // set the new cursor position *twice* - the cursor sometimes end up in
-        // the wrong place if we try to cross the dead space between non-aligned
-        // monitors - e.g. when trying to move the cursor from (a) to (b) we can
-        // *sometimes* - for no clear reason - end up at (c) instead.
-        //
-        //           +----------------+
-        //           |(c)    (b)      |
-        //           |                |
-        //           |                |
-        //           |                |
-        // +---------+                |
-        // |  (a)    |                |
-        // +---------+----------------+
-        //
-        // setting the position a second time seems to fix this and moves the
-        // cursor to the expected location (b) - for more details see
-        var point = location.ToPoint();
-        Cursor.Position = point;
-        Cursor.Position = point;
     }
 }

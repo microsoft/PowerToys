@@ -5,8 +5,8 @@
 using System.Collections.Generic;
 using System.Drawing;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using MouseJumpUI.Drawing;
 using MouseJumpUI.Drawing.Models;
+using MouseJumpUI.Helpers;
 
 namespace MouseJumpUI.UnitTests.Helpers;
 
@@ -159,66 +159,6 @@ public static class DrawingHelperTests
             Assert.AreEqual(expected.ActivatedScreen.Width, actual.ActivatedScreen.Width, "ActivatedScreen.Width");
             Assert.AreEqual(expected.ActivatedScreen.Height, actual.ActivatedScreen.Height, "ActivatedScreen.Height");
             Assert.AreEqual(expected.ActivatedScreen.ToRectangle(), actual.ActivatedScreen.ToRectangle(), "ActivatedScreen.ToRectangle");
-        }
-    }
-
-    [TestClass]
-    public class GetJumpLocationTests
-    {
-        public class TestCase
-        {
-            public TestCase(PointInfo previewLocation, SizeInfo previewSize,  RectangleInfo desktopBounds, PointInfo expectedResult)
-            {
-                this.PreviewLocation = previewLocation;
-                this.PreviewSize = previewSize;
-                this.DesktopBounds = desktopBounds;
-                this.ExpectedResult = expectedResult;
-            }
-
-            public PointInfo PreviewLocation { get; set; }
-
-            public SizeInfo PreviewSize { get; set; }
-
-            public RectangleInfo DesktopBounds { get; set; }
-
-            public PointInfo ExpectedResult { get; set; }
-        }
-
-        public static IEnumerable<object[]> GetTestCases()
-        {
-            // corners and midpoint with a zero origin
-            yield return new[] { new TestCase(new(0, 0), new(160, 120), new(0, 0, 1600, 1200), new(0, 0)) };
-            yield return new[] { new TestCase(new(160, 0), new(160, 120), new(0, 0, 1600, 1200), new(1600, 0)) };
-            yield return new[] { new TestCase(new(0, 120), new(160, 120), new(0, 0, 1600, 1200), new(0, 1200)) };
-            yield return new[] { new TestCase(new(160, 120), new(160, 120), new(0, 0, 1600, 1200), new(1600, 1200)) };
-            yield return new[] { new TestCase(new(80, 60), new(160, 120), new(0, 0, 1600, 1200), new(800, 600)) };
-
-            // corners and midpoint with a positive origin
-            yield return new[] { new TestCase(new(0, 0), new(160, 120), new(1000, 1000, 1600, 1200), new(1000, 1000)) };
-            yield return new[] { new TestCase(new(160, 0), new(160, 120), new(1000, 1000, 1600, 1200), new(2600, 1000)) };
-            yield return new[] { new TestCase(new(0, 120), new(160, 120), new(1000, 1000, 1600, 1200), new(1000, 2200)) };
-            yield return new[] { new TestCase(new(160, 120), new(160, 120), new(1000, 1000, 1600, 1200), new(2600, 2200)) };
-            yield return new[] { new TestCase(new(80, 60), new(160, 120), new(1000, 1000, 1600, 1200), new(1800, 1600)) };
-
-            // corners and midpoint with a negative origin
-            yield return new[] { new TestCase(new(0, 0), new(160, 120), new(-1000, -1000, 1600, 1200), new(-1000, -1000)) };
-            yield return new[] { new TestCase(new(160, 0), new(160, 120), new(-1000, -1000, 1600, 1200), new(600, -1000)) };
-            yield return new[] { new TestCase(new(0, 120), new(160, 120), new(-1000, -1000, 1600, 1200), new(-1000, 200)) };
-            yield return new[] { new TestCase(new(160, 120), new(160, 120), new(-1000, -1000, 1600, 1200), new(600, 200)) };
-            yield return new[] { new TestCase(new(80, 60), new(160, 120), new(-1000, -1000, 1600, 1200), new(-200, -400)) };
-        }
-
-        [TestMethod]
-        [DynamicData(nameof(GetTestCases), DynamicDataSourceType.Method)]
-        public void RunTestCases(TestCase data)
-        {
-            var actual = DrawingHelper.GetJumpLocation(
-                data.PreviewLocation,
-                data.PreviewSize,
-                data.DesktopBounds);
-            var expected = data.ExpectedResult;
-            Assert.AreEqual(expected.X, actual.X);
-            Assert.AreEqual(expected.Y, actual.Y);
         }
     }
 }

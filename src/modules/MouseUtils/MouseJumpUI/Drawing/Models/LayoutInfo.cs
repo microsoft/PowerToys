@@ -70,7 +70,7 @@ public sealed class LayoutInfo
         this.FormBounds = formBounds ?? throw new ArgumentNullException(nameof(formBounds));
         this.PreviewBounds = previewBounds ?? throw new ArgumentNullException(nameof(previewBounds));
         this.ScreenBounds = new(
-            (screenBounds ?? throw new ArgumentNullException(nameof(formBounds)))
+            (screenBounds ?? throw new ArgumentNullException(nameof(screenBounds)))
                 .ToList());
         this.ActivatedScreen = activatedScreen ?? throw new ArgumentNullException(nameof(activatedScreen));
     }

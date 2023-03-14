@@ -30,7 +30,7 @@ internal readonly struct BOOL
 
     public static implicit operator BOOL(bool value) => new(value);
 
-    public static implicit operator int(BOOL value) => value;
+    public static implicit operator int(BOOL value) => value.Value;
 
     public static implicit operator BOOL(int value) => new(value);
 }
