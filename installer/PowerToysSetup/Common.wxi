@@ -32,7 +32,6 @@
   <?endif?>
 
   <?if $(var.PerUser) = "true"?>
-        <?define BundleName="PowerToys (Preview) $(var.PowerToysPlatform) User"?>
         <?define PerMachineYesNo="no"?>
         <?define MSIPath="UserSetup"?>
         <?define MSIName="PowerToysUserSetup-$(var.Version)-$(var.PowerToysPlatform).msi"?>
@@ -42,7 +41,6 @@
         <?define InstallPrivileges="limited" ?>
         <?define UpgradeCodeGUID="D8B559DB-4C98-487A-A33F-50A8EEE42726" ?>
    <?else?>
-        <?define BundleName="PowerToys (Preview) $(var.PowerToysPlatform)"?>
         <?define PerMachineYesNo="yes"?>
         <?define MSIPath="MachineSetup"?>
         <?define MSIName="PowerToysSetup-$(var.Version)-$(var.PowerToysPlatform).msi"?>

@@ -8,7 +8,7 @@
 
     <?include $(sys.CURRENTDIR)\Common.wxi?>
 
-    <Bundle Name="$(var.BundleName)"
+    <Bundle Name="PowerToys (Preview) $(var.PowerToysPlatform)"
             Version="$(var.Version)"
             Manufacturer="Microsoft Corporation"
             IconSourceFile="$(var.BinDir)svgs\icon.ico"
