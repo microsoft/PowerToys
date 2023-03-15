@@ -2,7 +2,7 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-using System.Diagnostics;
+using System;
 using System.Linq;
 using interop;
 using Microsoft.UI.Windowing;
@@ -114,7 +114,33 @@ namespace Peek.UI
             double scaledWindowWidth = adjustedContentSize.Width / monitorScale;
             double scaledWindowHeight = adjustedContentSize.Height / monitorScale;
 
-            this.CenterOnScreen(scaledWindowWidth + WindowConstants.WindowHeightContentPadding, scaledWindowHeight + titleBarHeight + WindowConstants.WindowWidthContentPadding);
+            double desiredScaledHeight = scaledWindowHeight + titleBarHeight + WindowConstants.WindowWidthContentPadding;
+            double desiredScaledWidth = scaledWindowWidth + WindowConstants.WindowHeightContentPadding;
+
+            if (!this.AppWindow.IsVisible)
+            {
+                this.CenterOnScreen(desiredScaledWidth, desiredScaledHeight); // re-center on opening
+            }
+            else
+            {
+                // pin center of the window
+                double currentHeight = this.Height * monitorScale;
+                double currentWidth = this.Width * monitorScale;
+
+                this.SetWindowSize(Math.Round(desiredScaledWidth), Math.Round(desiredScaledHeight));
+
+                double actualResizedWidth = this.Width * monitorScale;
+                double actualResizedHeight = this.Height * monitorScale;
+
+                double widthDiff = (currentWidth - actualResizedWidth) / 2;
+                double heightDiff = (currentHeight - actualResizedHeight) / 2;
+
+                int newX = this.AppWindow.Position.X + (int)Math.Round(widthDiff);
+                int newY = this.AppWindow.Position.Y + (int)Math.Round(heightDiff);
+
+                this.AppWindow.Move(new Windows.Graphics.PointInt32(newX, newY));
+            }
+
             this.Show();
             this.BringToForeground();
         }
