@@ -9,7 +9,7 @@ using Microsoft.PowerToys.Telemetry.Events;
 namespace Awake.Telemetry
 {
     [EventData]
-    internal class AwakeNoKeepAwakeEvent : EventBase, IEvent
+    internal sealed class AwakeNoKeepAwakeEvent : EventBase, IEvent
     {
         public PartA_PrivTags PartA_PrivTags => PartA_PrivTags.ProductAndServiceUsage;
     }

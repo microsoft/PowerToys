@@ -7,6 +7,7 @@ using System.CommandLine;
 using System.CommandLine.Invocation;
 using System.Diagnostics;
 using System.Drawing;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Reactive.Concurrency;
@@ -255,7 +256,7 @@ namespace Awake
                 {
                     try
                     {
-                        DateTime expirationDateTime = DateTime.Parse(expireAt);
+                        DateTime expirationDateTime = DateTime.Parse(expireAt, CultureInfo.CurrentCulture);
                         if (expirationDateTime > DateTime.Now)
                         {
                             // We want to have a dedicated expirable keep-awake logic instead of
