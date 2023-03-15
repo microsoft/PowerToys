@@ -48,6 +48,23 @@ namespace Microsoft.PowerToys.Settings.UI.UnitTests.BackwardsCompatibility
                     }
                 }
             }
+
+            public bool ReloadSettings()
+            {
+                try
+                {
+                    T settingsItem = new T();
+                    _settingsConfig = _settingsUtils.GetSettingsOrDefault<T>(settingsItem.GetModuleName());
+
+                    SettingsConfig = _settingsConfig;
+
+                    return true;
+                }
+                catch
+                {
+                    return false;
+                }
+            }
         }
 
         public static Mock<IFile> GetModuleIOProvider(string version, string module, string fileName)

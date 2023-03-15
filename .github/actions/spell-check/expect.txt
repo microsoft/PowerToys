@@ -227,6 +227,7 @@ clientside
 CLIPCHILDREN
 Clipperton
 CLIPSIBLINGS
+Cloneable
 clrcall
 Cls
 CLSCTX
