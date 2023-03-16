@@ -2,7 +2,6 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-using System.Drawing;
 using System.Windows.Forms;
 using MouseJumpUI.Drawing.Models;
 
@@ -49,7 +48,7 @@ internal static class MouseHelper
         // +---------+----------------+
         //
         // setting the position a second time seems to fix this and moves the
-        // cursor to the expected location (b) - for more details see
+        // cursor to the expected location (b)
         var point = location.ToPoint();
         Cursor.Position = point;
         Cursor.Position = point;
