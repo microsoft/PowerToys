@@ -2,6 +2,7 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System.Drawing;
 using System.Windows.Forms;
 using MouseJumpUI.Drawing.Models;
 
@@ -52,5 +53,35 @@ internal static class MouseHelper
         var point = location.ToPoint();
         Cursor.Position = point;
         Cursor.Position = point;
+    }
+
+    /// <summary>
+    /// Sends an input simulating an absolute mouse move to the new location.
+    /// </summary>
+    /// <remarks>
+    /// See https://github.com/microsoft/PowerToys/issues/24523
+    ///     https://github.com/microsoft/PowerToys/pull/24527
+    /// </remarks>
+    public static void SimulateMouseMovementEvent(Point location)
+    {
+        var mouseMoveInput = new NativeMethods.INPUT
+        {
+            type = NativeMethods.INPUTTYPE.INPUT_MOUSE,
+            data = new NativeMethods.InputUnion
+            {
+                mi = new NativeMethods.MOUSEINPUT
+                {
+                    dx = NativeMethods.CalculateAbsoluteCoordinateX(location.X),
+                    dy = NativeMethods.CalculateAbsoluteCoordinateY(location.Y),
+                    mouseData = 0,
+                    dwFlags = (uint)NativeMethods.MOUSE_INPUT_FLAGS.MOUSEEVENTF_MOVE
+                        | (uint)NativeMethods.MOUSE_INPUT_FLAGS.MOUSEEVENTF_ABSOLUTE,
+                    time = 0,
+                    dwExtraInfo = 0,
+                },
+            },
+        };
+        var inputs = new NativeMethods.INPUT[] { mouseMoveInput };
+        _ = NativeMethods.SendInput(1, inputs, NativeMethods.INPUT.Size);
     }
 }

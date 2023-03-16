@@ -64,6 +64,9 @@ internal partial class MainForm : Form
                 new RectangleInfo(SystemInformation.VirtualScreen));
             Logger.LogInfo($"scaled location = {scaledLocation}");
             MouseHelper.JumpCursor(scaledLocation);
+
+            // Simulate mouse input for handlers that won't just catch the Cursor change
+            MouseHelper.SimulateMouseMovementEvent(scaledLocation.ToPoint());
             Microsoft.PowerToys.Telemetry.PowerToysTelemetry.Log.WriteEvent(new Telemetry.MouseJumpTeleportCursorEvent());
         }
 

@@ -17,7 +17,7 @@ namespace Microsoft.PowerToys.Run.Plugin.System.Components
     /// <summary>
     /// This class represents the informations for a network connection/interface
     /// </summary>
-    internal class NetworkConnectionProperties
+    internal sealed class NetworkConnectionProperties
     {
         /// <summary>
         /// Gets the name of the adapter

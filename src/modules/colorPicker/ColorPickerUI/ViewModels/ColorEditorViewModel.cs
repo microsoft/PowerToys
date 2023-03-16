@@ -246,9 +246,7 @@ namespace ColorPicker.ViewModels
                 new ColorFormatModel()
                 {
                     FormatName = ColorRepresentationType.HEX.ToString(),
-#pragma warning disable CA1304 // Specify CultureInfo
-                    Convert = (Color color) => ColorRepresentationHelper.GetStringRepresentationFromMediaColor(color, ColorRepresentationType.HEX.ToString()).ToLower(),
-#pragma warning restore CA1304 // Specify CultureInfo
+                    Convert = (Color color) => ColorRepresentationHelper.GetStringRepresentationFromMediaColor(color, ColorRepresentationType.HEX.ToString()).ToLowerInvariant(),
                 });
 
             _allColorRepresentations.Add(

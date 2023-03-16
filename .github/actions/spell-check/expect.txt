@@ -231,6 +231,7 @@ clientside
 CLIPCHILDREN
 Clipperton
 CLIPSIBLINGS
+Cloneable
 clrcall
 Cls
 CLSCTX
@@ -339,9 +340,11 @@ cvtepu
 cvtsi
 cwd
 cxfksword
+CXSCREEN
 CXSMICON
 CXVIRTUALSCREEN
 cyberrex
+CYSCREEN
 CYSMICON
 CYVIRTUALSCREEN
 cziplib
@@ -751,7 +754,7 @@ IDD
 IDesktop
 IDirect
 idl
-IDLIST
+idlist
 IDOn
 IDR
 idx
@@ -1873,6 +1876,7 @@ timeunion
 timeutil
 timezones
 Titlecase
+TKey
 TLayout
 tlb
 TMPVAR
