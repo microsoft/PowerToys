@@ -11,19 +11,20 @@
     xmlns:viewmodels="using:Microsoft.PowerToys.Settings.UI.ViewModels"
     mc:Ignorable="d">
 
-    <Grid Background="{ThemeResource LayerOnAcrylicFillColorDefaultBrush}">
+    <Grid Background="{ThemeResource LayerOnAcrylicFillColorDefaultBrush}"
+          Padding="12"
+          RowSpacing="12">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
             <RowDefinition Height="*" />
         </Grid.RowDefinitions>
-        <Grid Padding="24,32,24,0">
+        <Grid>
             <TextBlock
                 x:Uid="AllAppsTxt"
                 VerticalAlignment="Center"
                 Style="{StaticResource BodyStrongTextBlockStyle}" />
             <Button
                 x:Uid="BackBtn"
-                Padding="8,4,8,4"
                 HorizontalAlignment="Right"
                 VerticalAlignment="Center"
                 Click="BackButton_Click">
@@ -33,7 +34,7 @@
                         Orientation="Horizontal"
                         Spacing="12">
                         <FontIcon
-                            Margin="0,2,0,0"
+                            VerticalAlignment="Center"
                             FontSize="12"
                             Glyph="&#xe76b;" />
                         <TextBlock x:Uid="BackLabel" Style="{StaticResource CaptionTextBlockStyle}" />
@@ -43,18 +44,18 @@
         </Grid>
         <ListView
             Grid.Row="1"
-            Margin="0,16,0,0"
             ItemsSource="{x:Bind ViewModel.FlyoutMenuItems}"
             SelectionMode="None">
             <ListView.ItemsPanel>
                 <ItemsPanelTemplate>
-                    <StackPanel Padding="0,0,0,16" Orientation="Vertical" />
+                    <StackPanel Orientation="Vertical" />
                 </ItemsPanelTemplate>
             </ListView.ItemsPanel>
 
             <ListView.ItemTemplate>
                 <DataTemplate x:DataType="viewmodels:FlyoutMenuItem">
-                    <Grid Height="40" Padding="24,0,24,0">
+                    <Grid Height="40"
+                          ColumnSpacing="16">
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="Auto" />
                             <ColumnDefinition Width="*" />
@@ -62,8 +63,7 @@
                         </Grid.ColumnDefinitions>
                         <!--<ViewBox VerticalAlignment="Center">-->
                         <Image
-                            Width="20"
-                            Margin="0,0,16,0">
+                            Width="20">
                             <Image.Source>
                                 <BitmapImage UriSource="{x:Bind Icon, Mode=OneWay}" />
                             </Image.Source>
@@ -76,7 +76,6 @@
                             TextTrimming="CharacterEllipsis" />
                         <ToggleSwitch
                             Grid.Column="2"
-                            Margin="0,0,0,0"
                             HorizontalAlignment="Right"
                             AutomationProperties.Name="{x:Bind Label, Mode=OneWay}"
                             IsOn="{x:Bind IsEnabled, Mode=TwoWay}"
