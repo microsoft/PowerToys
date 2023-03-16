@@ -2,6 +2,7 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System;
 using System.Collections.Generic;
 using System.Text.Json.Serialization;
 
@@ -13,25 +14,29 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         {
             KeepDisplayOn = false;
             Mode = AwakeMode.PASSIVE;
-            Hours = 0;
-            Minutes = 0;
-            TrayTimeShortcuts = new Dictionary<string, int>();
+            IntervalHours = 0;
+            IntervalMinutes = 0;
+            ExpirationDateTime = DateTimeOffset.MinValue;
+            CustomTrayTimes = new Dictionary<string, int>();
         }
 
-        [JsonPropertyName("awake_keep_display_on")]
+        [JsonPropertyName("keepDisplayOn")]
         public bool KeepDisplayOn { get; set; }
 
-        [JsonPropertyName("awake_mode")]
+        [JsonPropertyName("mode")]
         public AwakeMode Mode { get; set; }
 
-        [JsonPropertyName("awake_hours")]
-        public uint Hours { get; set; }
+        [JsonPropertyName("intervalHours")]
+        public uint IntervalHours { get; set; }
 
-        [JsonPropertyName("awake_minutes")]
-        public uint Minutes { get; set; }
+        [JsonPropertyName("intervalMinutes")]
+        public uint IntervalMinutes { get; set; }
 
-        [JsonPropertyName("tray_times")]
-        public Dictionary<string, int> TrayTimeShortcuts { get; set; }
+        [JsonPropertyName("expirationDateTime")]
+        public DateTimeOffset ExpirationDateTime { get; set; }
+
+        [JsonPropertyName("customTrayTimes")]
+        public Dictionary<string, int> CustomTrayTimes { get; set; }
     }
 
     public enum AwakeMode
@@ -39,5 +44,6 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         PASSIVE = 0,
         INDEFINITE = 1,
         TIMED = 2,
+        EXPIRABLE = 3,
     }
 }
