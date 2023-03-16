@@ -12,13 +12,17 @@
     mc:Ignorable="d">
 
     <Grid Background="{ThemeResource LayerOnAcrylicFillColorDefaultBrush}"
-          Padding="12"
+          Padding="0,12"
           RowSpacing="12">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
             <RowDefinition Height="*" />
         </Grid.RowDefinitions>
-        <Grid>
+        <Grid
+            Grid.Row="0"
+            Padding="12,0"
+            ColumnSpacing="12"
+            HorizontalAlignment="Stretch">
             <TextBlock
                 x:Uid="AllAppsTxt"
                 VerticalAlignment="Center"
@@ -44,6 +48,7 @@
         </Grid>
         <ListView
             Grid.Row="1"
+            Padding="12,0"
             ItemsSource="{x:Bind ViewModel.FlyoutMenuItems}"
             SelectionMode="None">
             <ListView.ItemsPanel>

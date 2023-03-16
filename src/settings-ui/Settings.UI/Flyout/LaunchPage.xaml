@@ -12,7 +12,7 @@
     mc:Ignorable="d">
 
     <Grid Background="{ThemeResource LayerOnAcrylicFillColorDefaultBrush}"
-          Padding="12"
+          Padding="0,12"
           RowSpacing="12">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
@@ -22,6 +22,7 @@
         <!-- header + button -->
         <Grid
             Grid.Row="0"
+            Padding="12,0"
             ColumnSpacing="12"
             HorizontalAlignment="Stretch">
             <TextBlock
@@ -50,6 +51,7 @@
         </Grid>
         <ItemsControl
             Grid.Row="1"
+            Padding="12,0"
             HorizontalAlignment="Center"
             VerticalAlignment="Top"
             ItemsSource="{x:Bind ViewModel.FlyoutMenuItems}"
@@ -86,8 +88,11 @@
             </ItemsControl.ItemTemplate>
         </ItemsControl>
         <!-- bottom buttons -->
-        <Grid Grid.Row="2">
-            <InfoBar Grid.Row="0"
+        <Grid
+            Grid.Row="2"
+            Padding="12,0">
+            <InfoBar
+                Grid.Row="0"
                 x:Uid="UpdateAvailable"
                 IsClosable="False"
                 Severity="Informational" />
