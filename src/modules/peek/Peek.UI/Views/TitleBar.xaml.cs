@@ -65,6 +65,9 @@ namespace Peek.UI.Views
         [ObservableProperty]
         private string defaultAppName = string.Empty;
 
+        [ObservableProperty]
+        private bool pinned = false;
+
         public TitleBar()
         {
             InitializeComponent();
@@ -151,6 +154,22 @@ namespace Peek.UI.Views
                     await Launcher.LaunchFileAsync(storageFile, options);
                 }
             }
+        }
+
+        public string PinGlyph(bool pinned)
+        {
+            return pinned ? "\xE840" : "\xE718";
+        }
+
+        public string PinToolTip(bool pinned)
+        {
+            return pinned ? ResourceLoader.GetForViewIndependentUse().GetString("UnpinButton_ToolTip") : ResourceLoader.GetForViewIndependentUse().GetString("PinButton_ToolTip");
+        }
+
+        [RelayCommand]
+        private void Pin()
+        {
+            Pinned = !Pinned;
         }
 
         private void TitleBarRootContainer_SizeChanged(object sender, SizeChangedEventArgs e)
