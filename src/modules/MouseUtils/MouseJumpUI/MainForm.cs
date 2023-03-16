@@ -8,7 +8,6 @@ using System.Drawing;
 using System.Drawing.Imaging;
 using System.Linq;
 using System.Windows.Forms;
-using MouseJumpUI.Drawing;
 using MouseJumpUI.Drawing.Models;
 using MouseJumpUI.Helpers;
 using MouseJumpUI.NativeMethods.Core;

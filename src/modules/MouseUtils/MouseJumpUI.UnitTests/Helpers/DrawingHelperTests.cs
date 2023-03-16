@@ -33,6 +33,12 @@ public static class DrawingHelperTests
         {
             // happy path - check the preview form is shown
             // at the correct size and position on a single screen
+            //
+            // +----------------+
+            // |                |
+            // |       0        |
+            // |                |
+            // +----------------+
             var layoutConfig = new LayoutConfig(
                 virtualScreen: new(0, 0, 5120, 1440),
                 screenBounds: new List<Rectangle>
@@ -55,12 +61,59 @@ public static class DrawingHelperTests
                 activatedScreen: new(0, 0, 5120, 1440));
             yield return new[] { new TestCase(layoutConfig, layoutInfo) };
 
+            // primary monitor not topmost / leftmost - if there are screens
+            // that are further left or higher than the primary monitor
+            // they'll have negative coordinates which has caused some
+            // issues with calculations in the past. this test will make
+            // sure we handle negative coordinates gracefully
+            //
+            // +-------+
+            // |   0   +----------------+
+            // +-------+                |
+            //         |       1        |
+            //         |                |
+            //         +----------------+
+            layoutConfig = new LayoutConfig(
+                virtualScreen: new(-1920, -472, 7040, 1912),
+                screenBounds: new List<Rectangle>
+                {
+                    new(-1920, -472, 1920, 1080),
+                    new(0, 0, 5120, 1440),
+                },
+                activatedLocation: new(-960, -236),
+                activatedScreen: 0,
+                maximumFormSize: new(1600, 1200),
+                formPadding: new(5, 5, 5, 5),
+                previewPadding: new(0, 0, 0, 0));
+            layoutInfo = new LayoutInfo(
+                layoutConfig: layoutConfig,
+                formBounds: new(
+                    -1760,
+                    -456.91477M, // -236 - (((decimal)(1600-10) / 7040 * 1912) + 10) / 2
+                    1600,
+                    441.829545M // ((decimal)(1600-10) / 7040 * 1912) + 10
+                ),
+                previewBounds: new(0, 0, 1590, 431.829545M),
+                screenBounds: new List<RectangleInfo>
+                {
+                    new(0, 0, 433.63636M, 243.92045M),
+                    new(433.63636M, 106.602270M, 1156.36363M, 325.22727M),
+                },
+                activatedScreen: new(-1920, -472, 1920, 1080));
+            yield return new[] { new TestCase(layoutConfig, layoutInfo) };
+
             // check we handle rounding errors in scaling the preview form
             // that might make the form *larger* than the current screen -
             // e.g. a desktop 7168 x 1440 scaled to a screen 1024 x 768
             // with a 5px form padding border:
             //
             // ((decimal)1014 / 7168) * 7168 = 1014.0000000000000000000000002
+            //
+            // +----------------+
+            // |                |
+            // |       1        +-------+
+            // |                |   0   |
+            // +----------------+-------+
             layoutConfig = new LayoutConfig(
                 virtualScreen: new(0, 0, 7168, 1440),
                 screenBounds: new List<Rectangle>
@@ -91,6 +144,12 @@ public static class DrawingHelperTests
             // with a 5px form padding border:
             //
             // ((decimal)1280 / 7424) * 7424 = 1279.9999999999999999999999999
+            //
+            // +----------------+
+            // |                |
+            // |       1        +-------+
+            // |                |   0   |
+            // +----------------+-------+
             layoutConfig = new LayoutConfig(
                 virtualScreen: new(0, 0, 7424, 1440),
                 screenBounds: new List<Rectangle>
