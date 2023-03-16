@@ -1812,35 +1812,41 @@ From there, simply click on one of the supported files in the File Explorer and 
   <data name="Awake.ModuleDescription" xml:space="preserve">
     <value>A convenient way to keep your PC awake on-demand.</value>
   </data>
-  <data name="Awake_EnableAwake.Header" xml:space="preserve">
+  <data name="Awake_EnableSettingsCard.Header" xml:space="preserve">
     <value>Enable Awake</value>
     <comment>Awake is a product name, do not loc</comment>
   </data>
-  <data name="Awake_NoKeepAwake.Content" xml:space="preserve">
+  <data name="Awake_NoKeepAwakeSelector.Content" xml:space="preserve">
     <value>Keep using the selected power plan</value>
   </data>
-  <data name="Awake_IndefiniteKeepAwake.Content" xml:space="preserve">
+  <data name="Awake_IndefiniteKeepAwakeSelector.Content" xml:space="preserve">
     <value>Keep awake indefinitely</value>
   </data>
-  <data name="Awake_TemporaryKeepAwake.Content" xml:space="preserve">
-    <value>Keep awake temporarily</value>
+  <data name="Awake_TemporaryKeepAwakeSelector.Content" xml:space="preserve">
+    <value>Keep awake for a time interval</value>
   </data>
-  <data name="Awake_EnableDisplayKeepAwake.Header" xml:space="preserve">
+  <data name="Awake_ExpirableKeepAwakeSelector.Content" xml:space="preserve">
+    <value>Keep awake until expiration</value>
+  </data>
+  <data name="Awake_DisplaySettingsCard.Header" xml:space="preserve">
     <value>Keep screen on</value>
   </data>
-  <data name="Awake_EnableDisplayKeepAwake.Description" xml:space="preserve">
+  <data name="Awake_DisplaySettingsCard.Description" xml:space="preserve">
     <value>This setting is only available when keeping the PC awake</value>
   </data>
-  <data name="Awake_Mode.Header" xml:space="preserve">
+  <data name="Awake_ExpirationSettingsCard.Description" xml:space="preserve">
+    <value>Keep custom awakeness state until a specific date and time</value>
+  </data>
+  <data name="Awake_ModeSettingsCard.Header" xml:space="preserve">
     <value>Mode</value>
   </data>
-  <data name="Awake_Behavior_GroupSettings.Header" xml:space="preserve">
+  <data name="Awake_BehaviorSettingsGroup.Header" xml:space="preserve">
     <value>Behavior</value>
   </data>
-  <data name="Awake_TemporaryKeepAwake_Hours.Header" xml:space="preserve">
+  <data name="Awake_IntervalHoursInput.Header" xml:space="preserve">
     <value>Hours</value>
   </data>
-  <data name="Awake_TemporaryKeepAwake_Minutes.Header" xml:space="preserve">
+  <data name="Awake_IntervalMinutesInput.Header" xml:space="preserve">
     <value>Minutes</value>
   </data>
   <data name="Oobe_Awake.Title" xml:space="preserve">
@@ -1930,7 +1936,7 @@ From there, simply click on one of the supported files in the File Explorer and 
   <data name="SeeWhatsNew.Content" xml:space="preserve">
     <value>See what's new</value>
   </data>
-  <data name="Awake_Mode.Description" xml:space="preserve">
+  <data name="Awake_ModeSettingsCard.Description" xml:space="preserve">
     <value>Manage the state of your device when Awake is active</value>
   </data>
   <data name="ExcludedApps.Header" xml:space="preserve">
@@ -2120,8 +2126,11 @@ From there, simply click on one of the supported files in the File Explorer and 
     <value>New size</value>
     <comment>First part of the default name of new sizes that can be added in PT's settings ui.</comment>
   </data>
-  <data name="Awake_TimeBeforeAwake.Header" xml:space="preserve">
-    <value>Time before returning to the previous awakeness state</value>
+  <data name="Awake_IntervalSettingsCard.Header" xml:space="preserve">
+    <value>Interval before returning to the previous awakeness state</value>
+  </data>
+  <data name="Awake_ExpirationSettingsCard.Header" xml:space="preserve">
+    <value>End date and time</value>
   </data>
   <data name="MouseUtils.ModuleTitle" xml:space="preserve">
     <value>Mouse utilities</value>

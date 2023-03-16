@@ -14,7 +14,7 @@ namespace ViewModelTests
     [TestClass]
     public class PowerLauncherViewModelTest
     {
-        private class SendCallbackMock
+        private sealed class SendCallbackMock
         {
             public int TimesSent { get; set; }
 

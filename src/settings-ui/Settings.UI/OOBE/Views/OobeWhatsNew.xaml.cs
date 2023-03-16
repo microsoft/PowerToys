@@ -25,7 +25,7 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
     public sealed partial class OobeWhatsNew : Page
     {
         // Contains information for a release. Used to deserialize release JSON info from GitHub.
-        private class PowerToysReleaseInfo
+        private sealed class PowerToysReleaseInfo
         {
             [JsonPropertyName("published_at")]
             public DateTimeOffset PublishedDate { get; set; }

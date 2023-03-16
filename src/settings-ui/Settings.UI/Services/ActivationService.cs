@@ -15,7 +15,7 @@ namespace Microsoft.PowerToys.Settings.UI.Services
 {
     // For more information on understanding and extending activation flow see
     // https://github.com/Microsoft/WindowsTemplateStudio/blob/master/docs/activation.md
-    internal class ActivationService
+    internal sealed class ActivationService
     {
         private readonly App app;
         private readonly Type defaultNavItem;

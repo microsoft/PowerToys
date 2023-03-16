@@ -178,12 +178,12 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             AvailableLanguages.Clear();
             foreach (Language language in possibleOcrLanguages)
             {
-                if (_powerOcrSettings.Properties.PreferredLanguage?.Equals(language.DisplayName) == true)
+                if (_powerOcrSettings.Properties.PreferredLanguage?.Equals(language.DisplayName, StringComparison.Ordinal) == true)
                 {
                     preferredLanguageIndex = AvailableLanguages.Count;
                 }
 
-                if (systemCulture.DisplayName.Equals(language.DisplayName) || systemCulture.Parent.DisplayName.Equals(language.DisplayName))
+                if (systemCulture.DisplayName.Equals(language.DisplayName, StringComparison.Ordinal) || systemCulture.Parent.DisplayName.Equals(language.DisplayName, StringComparison.Ordinal))
                 {
                     systemLanguageIndex = AvailableLanguages.Count;
                 }

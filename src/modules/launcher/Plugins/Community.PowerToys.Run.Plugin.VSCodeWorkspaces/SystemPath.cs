@@ -6,7 +6,7 @@ using System.Text.RegularExpressions;
 
 namespace Community.PowerToys.Run.Plugin.VSCodeWorkspaces
 {
-    internal class SystemPath
+    internal sealed class SystemPath
     {
         private static readonly Regex WindowsPath = new Regex(@"^([a-zA-Z]:)", RegexOptions.Compiled);
 
