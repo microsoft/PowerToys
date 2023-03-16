@@ -30,11 +30,6 @@ namespace ColorPickerUI
         [Export]
         private static CancellationToken ExitToken { get; set; }
 
-        public App()
-        {
-            Logger.InitializeLogger("\\ColorPicker\\Logs");
-        }
-
         protected override void OnStartup(StartupEventArgs e)
         {
             NativeThreadCTS = new CancellationTokenSource();
