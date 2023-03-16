@@ -158,10 +158,12 @@ int runner(bool isProcessElevated, bool openSettings, std::string settingsWindow
             L"modules/Awake/PowerToys.AwakeModuleInterface.dll",
             L"modules/MouseUtils/PowerToys.FindMyMouse.dll",
             L"modules/MouseUtils/PowerToys.MouseHighlighter.dll",
+            L"modules/MouseUtils/PowerToys.MouseJump.dll",
             L"modules/AlwaysOnTop/PowerToys.AlwaysOnTopModuleInterface.dll",
             L"modules/MouseUtils/PowerToys.MousePointerCrosshairs.dll",
             L"modules/PowerAccent/PowerToys.PowerAccentModuleInterface.dll",
             L"modules/PowerOCR/PowerToys.PowerOCRModuleInterface.dll",
+            L"modules/PastePlain/PowerToys.PastePlainModuleInterface.dll",
             L"modules/FileLocksmith/PowerToys.FileLocksmithExt.dll",
             L"modules/MeasureTool/PowerToys.MeasureToolModuleInterface.dll",
             L"modules/Hosts/PowerToys.HostsModuleInterface.dll",
@@ -203,7 +205,7 @@ int runner(bool isProcessElevated, bool openSettings, std::string settingsWindow
             {
                 window = winrt::to_hstring(settingsWindow);
             }
-            open_settings_window(window);
+            open_settings_window(window, false);
         }
 
         if (openOobe)

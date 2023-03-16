@@ -93,12 +93,6 @@ public:
     {
         *cmdState = ECS_ENABLED;
 
-        // We've observed that it's possible that a null gets passed instead of an empty array. Just don't show the context menu in this case.
-        if (nullptr == selection) {
-            *cmdState = ECS_HIDDEN;
-            return S_OK;
-        }
-
         if (!CSettingsInstance().GetEnabled())
         {
             *cmdState = ECS_HIDDEN;
@@ -109,6 +103,12 @@ public:
         if (CSettingsInstance().GetExtendedContextMenuOnly())
         {
             *cmdState = ECS_HIDDEN;
+            return S_OK;
+        }
+
+        // When right clicking directory background, selection is empty. This prevents checking if there
+        // are renamable items, but internal PowerRename logic will prevent renaming non-renamable items anyway.
+        if (nullptr == selection) {
             return S_OK;
         }
 
@@ -213,7 +213,7 @@ private:
                 auto val = get_last_error_message(GetLastError());
                 Logger::warn(L"UuidCreate can not create guid. {}", val.has_value() ? val.value() : L"");
             }
-            else if (UuidToString(&temp_uuid, (RPC_WSTR*)&uuid_chars) != RPC_S_OK)
+            else if (UuidToString(&temp_uuid, reinterpret_cast<RPC_WSTR*>(& uuid_chars)) != RPC_S_OK)
             {
                 auto val = get_last_error_message(GetLastError());
                 Logger::warn(L"UuidToString can not convert to string. {}", val.has_value() ? val.value() : L"");
@@ -222,7 +222,7 @@ private:
             if (uuid_chars != nullptr)
             {
                 pipe_name += std::wstring(uuid_chars);
-                RpcStringFree((RPC_WSTR*)&uuid_chars);
+                RpcStringFree(reinterpret_cast<RPC_WSTR*>(&uuid_chars));
                 uuid_chars = nullptr;
             }
             create_pipe_thread = std::thread(&PowerRenameContextMenuCommand::StartNamedPipeServerAndSendData, this, pipe_name);

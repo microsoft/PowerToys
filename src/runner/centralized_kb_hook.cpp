@@ -88,6 +88,12 @@ namespace CentralizedKeyboardHook
 
         const auto& keyPressInfo = *reinterpret_cast<KBDLLHOOKSTRUCT*>(lParam);
 
+        if (keyPressInfo.dwExtraInfo == PowertoyModuleIface::CENTRALIZED_KEYBOARD_HOOK_DONT_TRIGGER_FLAG)
+        {
+            // The new keystroke was generated from one of our actions. We should pass it along.
+            return CallNextHookEx(hHook, nCode, wParam, lParam);
+        }
+
         // Check if the keys are pressed.
         if (!pressedKeyDescriptors.empty())
         {

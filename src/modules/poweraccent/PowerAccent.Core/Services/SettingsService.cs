@@ -93,6 +93,8 @@ public class SettingsService
                         }
 
                         ShowUnicodeDescription = settings.Properties.ShowUnicodeDescription;
+                        SortByUsageFrequency = settings.Properties.SortByUsageFrequency;
+                        StartSelectionFromTheLeft = settings.Properties.StartSelectionFromTheLeft;
                     }
                 }
                 catch (Exception ex)
@@ -190,6 +192,36 @@ public class SettingsService
         set
         {
             _showUnicodeDescription = value;
+        }
+    }
+
+    private bool _sortByUsageFrequency;
+
+    public bool SortByUsageFrequency
+    {
+        get
+        {
+            return _sortByUsageFrequency;
+        }
+
+        set
+        {
+            _sortByUsageFrequency = value;
+        }
+    }
+
+    private bool _startSelectionFromTheLeft;
+
+    public bool StartSelectionFromTheLeft
+    {
+        get
+        {
+            return _startSelectionFromTheLeft;
+        }
+
+        set
+        {
+            _startSelectionFromTheLeft = value;
         }
     }
 }

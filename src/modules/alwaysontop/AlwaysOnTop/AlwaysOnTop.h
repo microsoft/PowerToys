@@ -24,7 +24,7 @@ protected:
         if (!thisRef && (message == WM_CREATE))
         {
             const auto createStruct = reinterpret_cast<LPCREATESTRUCT>(lparam);
-            thisRef = reinterpret_cast<AlwaysOnTop*>(createStruct->lpCreateParams);
+            thisRef = static_cast<AlwaysOnTop*>(createStruct->lpCreateParams);
             SetWindowLongPtr(window, GWLP_USERDATA, reinterpret_cast<LONG_PTR>(thisRef));
         }
 

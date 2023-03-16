@@ -25,7 +25,7 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
     public sealed partial class OobeWhatsNew : Page
     {
         // Contains information for a release. Used to deserialize release JSON info from GitHub.
-        private class PowerToysReleaseInfo
+        private sealed class PowerToysReleaseInfo
         {
             [JsonPropertyName("published_at")]
             public DateTimeOffset PublishedDate { get; set; }
@@ -154,7 +154,10 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
         {
             if (Uri.TryCreate(e.Link, UriKind.Absolute, out Uri link))
             {
-                Process.Start(new ProcessStartInfo(link.ToString()) { UseShellExecute = true });
+                this.DispatcherQueue.TryEnqueue(Microsoft.UI.Dispatching.DispatcherQueuePriority.Normal, () =>
+                {
+                    Process.Start(new ProcessStartInfo(link.ToString()) { UseShellExecute = true });
+                });
             }
         }
     }

@@ -8,6 +8,7 @@
             <Setter.Value>
                 <ItemsPanelTemplate>
                     <StackPanel
+                        ChildrenTransitions="{StaticResource SettingsCardsAnimations}"
                         Orientation="Vertical"
                         Spacing="2" />
                 </ItemsPanelTemplate>
@@ -41,25 +42,19 @@
                             Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                             TextWrapping="WrapWholeWords">
                             <ContentPresenter.Resources>
-                                <Style
-                                    BasedOn="{StaticResource CaptionTextBlockStyle}"
-                                    TargetType="TextBlock">
+                                <Style BasedOn="{StaticResource CaptionTextBlockStyle}" TargetType="TextBlock">
                                     <Style.Setters>
                                         <Setter Property="TextWrapping" Value="WrapWholeWords" />
                                     </Style.Setters>
                                 </Style>
-                                <Style
-                                    BasedOn="{StaticResource TextButtonStyle}"
-                                    TargetType="HyperlinkButton">
+                                <Style BasedOn="{StaticResource TextButtonStyle}" TargetType="HyperlinkButton">
                                     <Style.Setters>
                                         <Setter Property="Padding" Value="0,0,0,0" />
                                     </Style.Setters>
                                 </Style>
                             </ContentPresenter.Resources>
                         </ContentPresenter>
-                        <ItemsPresenter
-                            Grid.Row="2"
-                            Margin="0,8,0,0" />
+                        <ItemsPresenter Grid.Row="2" Margin="0,8,0,0" />
                         <VisualStateManager.VisualStateGroups>
                             <VisualStateGroup x:Name="CommonStates">
                                 <VisualState x:Name="Normal" />

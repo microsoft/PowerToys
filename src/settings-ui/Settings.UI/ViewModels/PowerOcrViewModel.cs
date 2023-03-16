@@ -95,6 +95,19 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
             _powerOcrSettings = powerOcrsettingsRepository.SettingsConfig;
 
+            InitializeEnabledValue();
+
+            // set the callback functions value to hangle outgoing IPC message.
+            SendConfigMSG = ipcMSGCallBackFunc;
+
+            _delayedTimer = new Timer();
+            _delayedTimer.Interval = SaveSettingsDelayInMs;
+            _delayedTimer.Elapsed += DelayedTimer_Tick;
+            _delayedTimer.AutoReset = false;
+        }
+
+        private void InitializeEnabledValue()
+        {
             _enabledGpoRuleConfiguration = GPOWrapper.GetConfiguredTextExtractorEnabledValue();
             if (_enabledGpoRuleConfiguration == GpoRuleConfigured.Disabled || _enabledGpoRuleConfiguration == GpoRuleConfigured.Enabled)
             {
@@ -106,14 +119,6 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             {
                 _isEnabled = GeneralSettingsConfig.Enabled.PowerOCR;
             }
-
-            // set the callback functions value to hangle outgoing IPC message.
-            SendConfigMSG = ipcMSGCallBackFunc;
-
-            _delayedTimer = new Timer();
-            _delayedTimer.Interval = SaveSettingsDelayInMs;
-            _delayedTimer.Elapsed += DelayedTimer_Tick;
-            _delayedTimer.AutoReset = false;
         }
 
         public bool IsEnabled
@@ -173,12 +178,12 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             AvailableLanguages.Clear();
             foreach (Language language in possibleOcrLanguages)
             {
-                if (_powerOcrSettings.Properties.PreferredLanguage?.Equals(language.DisplayName) == true)
+                if (_powerOcrSettings.Properties.PreferredLanguage?.Equals(language.DisplayName, StringComparison.Ordinal) == true)
                 {
                     preferredLanguageIndex = AvailableLanguages.Count;
                 }
 
-                if (systemCulture.DisplayName.Equals(language.DisplayName) || systemCulture.Parent.DisplayName.Equals(language.DisplayName))
+                if (systemCulture.DisplayName.Equals(language.DisplayName, StringComparison.Ordinal) || systemCulture.Parent.DisplayName.Equals(language.DisplayName, StringComparison.Ordinal))
                 {
                     systemLanguageIndex = AvailableLanguages.Count;
                 }
@@ -235,6 +240,12 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                        "{{ \"powertoys\": {{ \"{0}\": {1} }} }}",
                        PowerOcrSettings.ModuleName,
                        JsonSerializer.Serialize(_powerOcrSettings)));
+        }
+
+        public void RefreshEnabledState()
+        {
+            InitializeEnabledValue();
+            OnPropertyChanged(nameof(IsEnabled));
         }
 
         protected virtual void Dispose(bool disposing)

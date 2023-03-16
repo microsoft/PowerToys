@@ -315,11 +315,15 @@ namespace Wox.Infrastructure.UserSettings
 
         public bool ClearInputOnLaunch { get; set; }
 
+        public bool TabSelectsContextButtons { get; set; }
+
         public bool RememberLastLaunchLocation { get; set; }
 
         public bool IgnoreHotkeysOnFullscreen { get; set; }
 
         public bool StartedFromPowerToysRunner { get; set; }
+
+        public bool GenerateThumbnailsFromFiles { get; set; } = true;
 
         public HttpProxy Proxy { get; set; } = new HttpProxy();
 

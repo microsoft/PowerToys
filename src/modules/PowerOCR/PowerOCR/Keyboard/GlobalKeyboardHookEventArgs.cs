@@ -7,7 +7,7 @@ using static PowerOCR.OSInterop;
 
 namespace PowerOCR.Keyboard;
 
-internal class GlobalKeyboardHookEventArgs : HandledEventArgs
+internal sealed class GlobalKeyboardHookEventArgs : HandledEventArgs
 {
     internal GlobalKeyboardHook.KeyboardState KeyboardState { get; private set; }
 

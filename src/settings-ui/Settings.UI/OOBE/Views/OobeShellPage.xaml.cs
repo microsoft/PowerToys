@@ -4,6 +4,9 @@
 
 using System;
 using System.Collections.ObjectModel;
+using System.Globalization;
+using AllExperiments;
+using global::PowerToys.GPOWrapper;
 using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.PowerToys.Settings.UI.OOBE.Enums;
 using Microsoft.PowerToys.Settings.UI.OOBE.ViewModel;
@@ -47,9 +50,15 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
 
         public ObservableCollection<OobePowerToysModule> Modules { get; }
 
+        private static ISettingsUtils settingsUtils = new SettingsUtils();
+
+        private bool ExperimentationToggleSwitchEnabled { get; set; } = true;
+
         public OobeShellPage()
         {
             InitializeComponent();
+
+            ExperimentationToggleSwitchEnabled = SettingsRepository<GeneralSettings>.GetInstance(settingsUtils).SettingsConfig.EnableExperimentation;
 
             DataContext = ViewModel;
             OobeShellHandler = this;
@@ -150,6 +159,12 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
                 IsNew = true,
             });
 
+            Modules.Insert((int)PowerToysModules.PastePlain, new OobePowerToysModule()
+            {
+                ModuleName = "PastePlain",
+                IsNew = true,
+            });
+
             Modules.Insert((int)PowerToysModules.WhatsNew, new OobePowerToysModule()
             {
                 ModuleName = "WhatsNew",
@@ -186,7 +201,27 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
             {
                 switch (selectedItem.Tag)
                 {
-                    case "Overview": NavigationFrame.Navigate(typeof(OobeOverview)); break;
+                    case "Overview":
+                        if (ExperimentationToggleSwitchEnabled && GPOWrapper.GetAllowExperimentationValue() != GpoRuleConfigured.Disabled)
+                        {
+                            switch (AllExperiments.Experiments.LandingPageExperiment)
+                            {
+                                case Experiments.ExperimentState.Enabled:
+                                    NavigationFrame.Navigate(typeof(OobeOverviewAlternate)); break;
+                                case Experiments.ExperimentState.Disabled:
+                                    NavigationFrame.Navigate(typeof(OobeOverview)); break;
+                                case Experiments.ExperimentState.NotLoaded:
+                                    NavigationFrame.Navigate(typeof(OobeOverviewPlaceholder)); break;
+                            }
+
+                            break;
+                        }
+                        else
+                        {
+                            NavigationFrame.Navigate(typeof(OobeOverview));
+                            break;
+                        }
+
                     case "WhatsNew": NavigationFrame.Navigate(typeof(OobeWhatsNew)); break;
                     case "AlwaysOnTop": NavigationFrame.Navigate(typeof(OobeAlwaysOnTop)); break;
                     case "Awake": NavigationFrame.Navigate(typeof(OobeAwake)); break;
@@ -205,6 +240,7 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
                     case "MouseUtils": NavigationFrame.Navigate(typeof(OobeMouseUtils)); break;
                     case "MeasureTool": NavigationFrame.Navigate(typeof(OobeMeasureTool)); break;
                     case "Hosts": NavigationFrame.Navigate(typeof(OobeHosts)); break;
+                    case "PastePlain": NavigationFrame.Navigate(typeof(OobePastePlain)); break;
                 }
             }
         }

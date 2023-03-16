@@ -87,8 +87,8 @@ namespace winrt::PowerRenameUI::implementation
 
             winrt::Windows::Graphics::RectInt32 rect;
             // Scale window size
-            rect.Width = (int32_t)(width * (float)window_dpi / x_dpi);
-            rect.Height = (int32_t)(height * (float)window_dpi / x_dpi);
+            rect.Width = static_cast<int32_t>(width * static_cast<float>(window_dpi) / x_dpi);
+            rect.Height = static_cast<int32_t>(height * static_cast<float>(window_dpi) / x_dpi);
             // Center to screen
             rect.X = displayArea.WorkArea().X + displayArea.WorkArea().Width / 2 - width / 2;
             rect.Y = displayArea.WorkArea().Y + displayArea.WorkArea().Height / 2 - height / 2;
@@ -1070,7 +1070,7 @@ namespace winrt::PowerRenameUI::implementation
         if (closeUIWindowAfterRenaming)
         {
             // Close the window
-            PostMessage(m_window, WM_CLOSE, (WPARAM)0, (LPARAM)0);
+            PostMessage(m_window, WM_CLOSE, static_cast<WPARAM>(0),  static_cast<LPARAM>(0));
         }
         else
         {

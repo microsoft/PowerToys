@@ -60,7 +60,7 @@ template<typename T>
 inline T GetWindowCreateParam(LPARAM lparam)
 {
     static_assert(sizeof(T) <= sizeof(void*));
-    T data{ (T)(reinterpret_cast<CREATESTRUCT*>(lparam)->lpCreateParams) };
+    T data{ static_cast <T>(reinterpret_cast<CREATESTRUCT*>(lparam)->lpCreateParams) };
     return data;
 }
 
@@ -74,5 +74,5 @@ inline void StoreWindowParam(HWND window, T data)
 template<typename T>
 inline T GetWindowParam(HWND window)
 {
-    return (T)GetWindowLongPtrW(window, GWLP_USERDATA);
+    return reinterpret_cast <T>(GetWindowLongPtrW(window, GWLP_USERDATA));
 }

@@ -175,7 +175,7 @@ namespace FancyZonesEditor.Utils
         }
 
         // custom-layouts.json
-        private class CanvasInfoWrapper
+        private sealed class CanvasInfoWrapper
         {
             public struct CanvasZoneWrapper
             {
@@ -198,7 +198,7 @@ namespace FancyZonesEditor.Utils
         }
 
         // custom-layouts.json
-        private class GridInfoWrapper
+        private sealed class GridInfoWrapper
         {
             public int Rows { get; set; }
 

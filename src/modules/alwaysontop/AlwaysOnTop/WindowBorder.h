@@ -23,7 +23,7 @@ protected:
         if ((thisRef == nullptr) && (message == WM_CREATE))
         {
             auto createStruct = reinterpret_cast<LPCREATESTRUCT>(lparam);
-            thisRef = reinterpret_cast<WindowBorder*>(createStruct->lpCreateParams);
+            thisRef = static_cast<WindowBorder*>(createStruct->lpCreateParams);
             SetWindowLongPtr(window, GWLP_USERDATA, reinterpret_cast<LONG_PTR>(thisRef));
         }
 

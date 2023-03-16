@@ -3,17 +3,27 @@
 #include <FancyZonesLib/FancyZonesDataTypes.h>
 #include <FancyZonesLib/Layout.h>
 #include <FancyZonesLib/LayoutAssignedWindows.h>
-#include <FancyZonesLib/util.h>
 
 class ZonesOverlay;
 
 class WorkArea
 {
-public:
-    WorkArea(HINSTANCE hinstance, const FancyZonesDataTypes::WorkAreaId& uniqueId);
-    ~WorkArea();
+    WorkArea(HINSTANCE hinstance, const FancyZonesDataTypes::WorkAreaId& uniqueId, const FancyZonesUtils::Rect& workAreaRect);
 
 public:
+    ~WorkArea();
+
+    static std::unique_ptr<WorkArea> Create(HINSTANCE hinstance, const FancyZonesDataTypes::WorkAreaId& uniqueId, const FancyZonesDataTypes::WorkAreaId& parentUniqueId, const FancyZonesUtils::Rect& workAreaRect)
+    {
+        auto self = std::unique_ptr<WorkArea>(new WorkArea(hinstance, uniqueId, workAreaRect));
+        if (!self->Init(hinstance, parentUniqueId))
+        {
+            return nullptr;
+        }
+
+        return self;
+    }
+
     inline bool Init([[maybe_unused]] HINSTANCE hinstance, const FancyZonesDataTypes::WorkAreaId& parentUniqueId)
     {
 #ifndef UNIT_TESTS
@@ -23,103 +33,53 @@ public:
         }
 #endif
         InitLayout(parentUniqueId);
+        
         return true;
     }
-
-    inline bool InitWorkAreaRect(HMONITOR monitor)
-    {
-        m_monitor = monitor;
-
-#if defined(UNIT_TESTS)
-        m_workAreaRect = FancyZonesUtils::Rect({ 0, 0, 1920, 1080 });
-#else
-
-        if (monitor)
-        {
-            MONITORINFO mi{};
-            mi.cbSize = sizeof(mi);
-            if (!GetMonitorInfoW(monitor, &mi))
-            {
-                return false;
-            }
-
-            m_workAreaRect = FancyZonesUtils::Rect(mi.rcWork);
-        }
-        else
-        {
-            m_workAreaRect = FancyZonesUtils::GetAllMonitorsCombinedRect<&MONITORINFO::rcWork>();
-        }
-#endif
-
-        return true;
-    }
-
+    
     FancyZonesDataTypes::WorkAreaId UniqueId() const noexcept { return { m_uniqueId }; }
     const std::unique_ptr<Layout>& GetLayout() const noexcept { return m_layout; }
     const std::unique_ptr<LayoutAssignedWindows>& GetLayoutWindows() const noexcept { return m_layoutWindows; }
+    const HWND GetWorkAreaWindow() const noexcept { return m_window; }
+    const GUID GetLayoutId() const noexcept;
     
-    ZoneIndexSet GetWindowZoneIndexes(HWND window) const noexcept;
+    ZoneIndexSet GetWindowZoneIndexes(HWND window) const;
 
-    HRESULT MoveSizeEnter(HWND window) noexcept;
-    HRESULT MoveSizeUpdate(POINT const& ptScreen, bool dragEnabled, bool selectManyZones) noexcept;
-    HRESULT MoveSizeEnd(HWND window) noexcept;
-    void MoveWindowIntoZoneByIndex(HWND window, ZoneIndex index) noexcept;
-    void MoveWindowIntoZoneByIndexSet(HWND window, const ZoneIndexSet& indexSet, bool updatePosition = true) noexcept;
-    bool MoveWindowIntoZoneByDirectionAndIndex(HWND window, DWORD vkCode, bool cycle) noexcept;
-    bool MoveWindowIntoZoneByDirectionAndPosition(HWND window, DWORD vkCode, bool cycle) noexcept;
-    bool ExtendWindowByDirectionAndPosition(HWND window, DWORD vkCode) noexcept;
-    void SaveWindowProcessToZoneIndex(HWND window) noexcept;
-    bool UnsnapWindow(HWND window) noexcept;
+    void MoveWindowIntoZoneByIndex(HWND window, ZoneIndex index);
+    void MoveWindowIntoZoneByIndexSet(HWND window, const ZoneIndexSet& indexSet, bool updatePosition = true);
+    bool MoveWindowIntoZoneByDirectionAndIndex(HWND window, DWORD vkCode, bool cycle);
+    bool MoveWindowIntoZoneByDirectionAndPosition(HWND window, DWORD vkCode, bool cycle);
+    bool ExtendWindowByDirectionAndPosition(HWND window, DWORD vkCode);
 
-    void UpdateActiveZoneSet() noexcept;
+    void InitSnappedWindows();
+    void SnapWindow(HWND window, const ZoneIndexSet& zones, bool extend = false);
+    void UnsnapWindow(HWND window);
 
-    void ShowZonesOverlay() noexcept;
-    void HideZonesOverlay() noexcept;
-    void FlashZones() noexcept;
-    void ClearSelectedZones() noexcept;
+    void UpdateActiveZoneSet();
+    void UpdateWindowPositions();
+
+    void ShowZonesOverlay(const ZoneIndexSet& highlight, HWND draggedWindow = nullptr);
+    void HideZonesOverlay();
+    void FlashZones();
     
-    void CycleWindows(HWND window, bool reverse) noexcept;
-    
-    void LogInitializationError();
+    void CycleWindows(HWND window, bool reverse);
 
 protected:
     static LRESULT CALLBACK s_WndProc(HWND window, UINT message, WPARAM wparam, LPARAM lparam) noexcept;
 
 private:
-    bool InitWindow(HINSTANCE hinstance) noexcept;
-    void InitLayout(const FancyZonesDataTypes::WorkAreaId& parentUniqueId) noexcept;
-    void CalculateZoneSet() noexcept;
-    LRESULT WndProc(UINT message, WPARAM wparam, LPARAM lparam) noexcept;
-    ZoneIndexSet ZonesFromPoint(POINT pt) noexcept;
-    void SetAsTopmostWindow() noexcept;
+    bool InitWindow(HINSTANCE hinstance);
+    void InitLayout(const FancyZonesDataTypes::WorkAreaId& parentUniqueId);
+    
+    void CalculateZoneSet();
+    void SetWorkAreaWindowAsTopmost(HWND draggedWindow) noexcept;
 
-    HMONITOR m_monitor{};
-    FancyZonesUtils::Rect m_workAreaRect{};
+    LRESULT WndProc(UINT message, WPARAM wparam, LPARAM lparam) noexcept;
+    
+    const FancyZonesUtils::Rect m_workAreaRect{};
     const FancyZonesDataTypes::WorkAreaId m_uniqueId;
     HWND m_window{}; // Hidden tool window used to represent current monitor desktop work area.
-    HWND m_windowMoveSize{};
     std::unique_ptr<Layout> m_layout;
     std::unique_ptr<LayoutAssignedWindows> m_layoutWindows;
-    ZoneIndexSet m_initialHighlightZone;
-    ZoneIndexSet m_highlightZone;
-    WPARAM m_keyLast{};
-    size_t m_keyCycle{};
     std::unique_ptr<ZonesOverlay> m_zonesOverlay;
 };
-
-inline std::shared_ptr<WorkArea> MakeWorkArea(HINSTANCE hinstance, HMONITOR monitor, const FancyZonesDataTypes::WorkAreaId& uniqueId, const FancyZonesDataTypes::WorkAreaId& parentUniqueId) noexcept
-{
-    auto self = std::make_shared<WorkArea>(hinstance, uniqueId);
-    if (!self->InitWorkAreaRect(monitor))
-    {
-        self->LogInitializationError();
-        return nullptr;
-    }
-
-    if (!self->Init(hinstance, parentUniqueId))
-    {
-        return nullptr;
-    }
-
-    return self;
-}

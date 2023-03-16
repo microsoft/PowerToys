@@ -38,7 +38,7 @@
             Text="{x:Bind ModuleTitle}" />
 
         <ScrollViewer Grid.Row="1">
-            <Grid
+            <Grid ChildrenTransitions="{StaticResource SettingsCardsAnimations}"
                 Padding="0,0,20,48"
                 RowSpacing="24">
 

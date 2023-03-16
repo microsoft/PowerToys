@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Wix xmlns="http://schemas.microsoft.com/wix/2006/wi"
+     xmlns:util="http://schemas.microsoft.com/wix/UtilExtension" >
+
+  <?include $(sys.CURRENTDIR)\Common.wxi?>
+
+  <?define FileLocksmithFiles=Microsoft.Win32.SystemEvents.dll;Microsoft.Xaml.Interactions.dll;Microsoft.Xaml.Interactivity.dll;CommunityToolkit.WinUI.dll;CommunityToolkit.WinUI.UI.dll;CommunityToolkit.Common.dll;CommunityToolkit.Mvvm.dll;CommunityToolkit.Labs.WinUI.SettingsControls.dll;Ijwhost.dll;Microsoft.InteractiveExperiences.Projection.dll;Microsoft.Windows.ApplicationModel.DynamicDependency.Projection.dll;Microsoft.Windows.ApplicationModel.Resources.Projection.dll;Microsoft.Windows.ApplicationModel.WindowsAppRuntime.Projection.dll;Microsoft.Windows.AppLifecycle.Projection.dll;Microsoft.Windows.SDK.NET.dll;Microsoft.Windows.System.Power.Projection.dll;Microsoft.WindowsAppRuntime.Bootstrap.Net.dll;Microsoft.WinUI.dll;PowerToys.ManagedCommon.dll;PowerToys.ManagedTelemetry.dll;PowerToys.FileLocksmithExt.dll;PowerToys.FileLocksmithLib.Interop.dll;PowerToys.FileLocksmithUI.exe;PowerToys.FileLocksmithUI.dll;PowerToys.FileLocksmithUI.deps.json;PowerToys.FileLocksmithUI.runtimeconfig.json;System.CodeDom.dll;System.Drawing.Common.dll;System.Management.dll;WinRT.Runtime.dll;WinUIEx.dll;resources.pri;PowerToys.GPOWrapper.dll;WindowsBase.dll;System.Text.Json.dll?>
+  <?define FileLocksmithAssetsFiles=Icon.ico?>
+
+  <Fragment>
+    <!-- FileLocksmith -->
+    <DirectoryRef Id="FileLocksmithInstallFolder" FileSource="$(var.BinDir)modules\$(var.FileLocksmithProjectName)">
+      <?foreach File in $(var.FileLocksmithFiles)?>
+        <Component Id="FileLocksmith_$(var.File)" Win64="yes">
+          <File Id="FileLocksmithFile_$(var.File)" Source="$(var.BinDir)modules\$(var.FileLocksmithProjectName)\$(var.File)" />
+        </Component>
+      <?endforeach?>
+      <!-- !Warning! Make sure to change Component Guid if you update something here -->
+      <Component Id="Module_FileLocksmith" Guid="108D3EC1-E6E0-4E81-88EF-25966133CB41" Win64="yes">
+        <RegistryKey Root="HKLM" Key="Software\Classes\CLSID\{84D68575-E186-46AD-B0CB-BAEB45EE29C0}">
+          <RegistryValue Type="string" Value="File Locksmith Shell Extension" />
+          <RegistryValue Type="string" Name="ContextMenuOptIn" Value="" />
+          <RegistryValue Type="string" Key="InprocServer32" Value="[FileLocksmithInstallFolder]PowerToys.FileLocksmithExt.dll" />
+          <RegistryValue Type="string" Key="InprocServer32" Name="ThreadingModel" Value="Apartment" />
+        </RegistryKey>
+        <RegistryKey Root="HKLM" Key="Software\Classes\AllFileSystemObjects\ShellEx\ContextMenuHandlers\FileLocksmithExt">
+          <RegistryValue Type="string" Value="{84D68575-E186-46AD-B0CB-BAEB45EE29C0}"/>
+        </RegistryKey>
+        <RegistryKey Root="HKLM" Key="Software\Classes\Drive\ShellEx\ContextMenuHandlers\FileLocksmithExt">
+          <RegistryValue Type="string" Value="{84D68575-E186-46AD-B0CB-BAEB45EE29C0}"/>
+        </RegistryKey>
+        </Component>
+    </DirectoryRef>
+    <DirectoryRef Id="FileLocksmithAssetsInstallFolder" FileSource="$(var.BinDir)modules\$(var.FileLocksmithProjectName)\Assets">
+      <?foreach File in $(var.FileLocksmithAssetsFiles)?>
+        <Component Id="FileLocksmith_Assets_$(var.File)" Win64="yes">
+          <File Id="FileLocksmithAssetsFile_$(var.File)" Source="$(var.BinDir)modules\$(var.FileLocksmithProjectName)\Assets\$(var.File)" />
+        </Component>
+      <?endforeach?>
+      <Component Id="FileLocksmith_Assets_Applist_Scale100" Win64="yes">
+        <File Id="FL_AppList_Scale100" Source="$(var.BinDir)modules\$(var.FileLocksmithProjectName)\Assets\AppList.scale-100.png" />
+      </Component>
+      <Component Id="FileLocksmith_Assets_Applist_Scale125" Win64="yes">
+        <File Id="FL_AppList_Scale125" Source="$(var.BinDir)modules\$(var.FileLocksmithProjectName)\Assets\AppList.scale-125.png" />
+      </Component>
+      <Component Id="FileLocksmith_Assets_Applist_Scale150" Win64="yes">
+        <File Id="FL_AppList_Scale150" Source="$(var.BinDir)modules\$(var.FileLocksmithProjectName)\Assets\AppList.scale-150.png" />
+      </Component>
+      <Component Id="FileLocksmith_Assets_Applist_Scale200" Win64="yes">
+        <File Id="FL_AppList_Scale200" Source="$(var.BinDir)modules\$(var.FileLocksmithProjectName)\Assets\AppList.scale-200.png" />
+      </Component>
+      <Component Id="FileLocksmith_Assets_Applist_Scale400" Win64="yes">
+        <File Id="FL_AppList_Scale400" Source="$(var.BinDir)modules\$(var.FileLocksmithProjectName)\Assets\AppList.scale-400.png" />
+      </Component>
+    </DirectoryRef>
+
+    <ComponentGroup Id="FileLocksmithComponentGroup" Directory="INSTALLFOLDER">
+      <ComponentRef Id="Module_FileLocksmith" />
+      <?foreach File in $(var.FileLocksmithFiles)?>
+        <ComponentRef Id="FileLocksmith_$(var.File)" />
+      <?endforeach?>
+      <?foreach File in $(var.FileLocksmithAssetsFiles)?>
+        <ComponentRef Id="FileLocksmith_Assets_$(var.File)" />
+      <?endforeach?>
+      <ComponentRef Id="FileLocksmith_Assets_Applist_Scale100" />
+      <ComponentRef Id="FileLocksmith_Assets_Applist_Scale125" />
+      <ComponentRef Id="FileLocksmith_Assets_Applist_Scale150" />
+      <ComponentRef Id="FileLocksmith_Assets_Applist_Scale200" />
+      <ComponentRef Id="FileLocksmith_Assets_Applist_Scale400" />
+
+    </ComponentGroup>
+
+  </Fragment>
+</Wix>

@@ -1,5 +1,4 @@
 #include "pch.h"
-#include "CppUnitTest.h"
 #include <PowerRenameInterfaces.h>
 #include <PowerRenameManager.h>
 #include <PowerRenameItem.h>

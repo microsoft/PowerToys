@@ -5,6 +5,7 @@
 using System;
 using System.Runtime.InteropServices;
 using System.Text;
+using Wox.Plugin.Common.Interfaces;
 using SuppressMessageAttribute = System.Diagnostics.CodeAnalysis.SuppressMessageAttribute;
 
 #pragma warning disable SA1649, CA1051, CA1707, CA1028, CA1714, CA1069, SA1402
@@ -114,6 +115,9 @@ namespace Wox.Plugin.Common.Win32
 
         [DllImport("shlwapi.dll", CharSet = CharSet.Unicode)]
         public static extern HRESULT SHCreateStreamOnFileEx(string fileName, STGM grfMode, uint attributes, bool create, System.Runtime.InteropServices.ComTypes.IStream reserved, out System.Runtime.InteropServices.ComTypes.IStream stream);
+
+        [DllImport("shell32.dll", CharSet = CharSet.Unicode, SetLastError = true)]
+        public static extern int SHCreateItemFromParsingName([MarshalAs(UnmanagedType.LPWStr)] string path, IntPtr pbc, ref Guid riid, [MarshalAs(UnmanagedType.Interface)] out IShellItem shellItem);
     }
 
     [SuppressMessage("StyleCop.CSharp.NamingRules", "SA1310:Field names should not contain underscore", Justification = "These are the names used by win32.")]
@@ -139,6 +143,19 @@ namespace Wox.Plugin.Common.Win32
         /// Closes the window
         /// </summary>
         public const int SC_CLOSE = 0xF060;
+    }
+
+    public static class ShellItemTypeConstants
+    {
+        /// <summary>
+        /// Guid for type IShellItem.
+        /// </summary>
+        public static readonly Guid ShellItemGuid = new Guid("43826d1e-e718-42ee-bc55-a1e261c37bfe");
+
+        /// <summary>
+        /// Guid for type IShellItem2.
+        /// </summary>
+        public static readonly Guid ShellItem2Guid = new Guid("7E9FB0D3-919F-4307-AB2E-9B1860310C93");
     }
 
     public enum HRESULT : uint
@@ -202,6 +219,13 @@ namespace Wox.Plugin.Common.Win32
         /// One or more arguments are not valid.
         /// </summary>
         E_INVALIDARG = 0x80070057,
+
+        /// <summary>
+        /// The operation was canceled by the user. (Error source 7 means Win32.)
+        /// </summary>
+        /// <SeeAlso href="https://learn.microsoft.com/en-us/windows/win32/debug/system-error-codes--1000-1299-"/>
+        /// <SeeAlso href="https://en.wikipedia.org/wiki/HRESULT"/>
+        E_CANCELLED = 0x800704C7,
     }
 
     /// <remarks>

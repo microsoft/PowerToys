@@ -37,8 +37,8 @@ namespace JsonUtils
                 for (uint32_t i = 0; i < size; ++i)
                 {
                     json::JsonObject zoneJson = zonesJson.GetObjectAt(i);
-                    const int x = static_cast<int>(zoneJson.GetNamedNumber(NonLocalizable::CustomLayoutsIds::XID));
-                    const int y = static_cast<int>(zoneJson.GetNamedNumber(NonLocalizable::CustomLayoutsIds::YID));
+                    const int x = static_cast<int>(zoneJson.GetNamedNumber(NonLocalizable::CustomLayoutsIds::XAxisID));
+                    const int y = static_cast<int>(zoneJson.GetNamedNumber(NonLocalizable::CustomLayoutsIds::YAxisID));
                     const int width = static_cast<int>(zoneJson.GetNamedNumber(NonLocalizable::CustomLayoutsIds::WidthID));
                     const int height = static_cast<int>(zoneJson.GetNamedNumber(NonLocalizable::CustomLayoutsIds::HeightID));
                     FancyZonesDataTypes::CanvasLayoutInfo::Rect zone{ x, y, width, height };
@@ -242,7 +242,7 @@ std::optional<LayoutData> CustomLayouts::GetLayout(const GUID& id) const noexcep
     {
         auto layoutInfo = std::get<FancyZonesDataTypes::CanvasLayoutInfo>(customLayout.info);
         layout.sensitivityRadius = layoutInfo.sensitivityRadius;
-        layout.zoneCount = (int)layoutInfo.zones.size();
+        layout.zoneCount = static_cast<int>(layoutInfo.zones.size());
     }
 
     return layout;

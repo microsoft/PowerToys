@@ -5,13 +5,10 @@
 using System;
 using System.Collections.Generic;
 using System.Globalization;
-using System.Windows;
-using System.Windows.Interop;
 using Microsoft.PowerToys.Run.Plugin.System.Properties;
 using Wox.Infrastructure;
 using Wox.Plugin;
 using Wox.Plugin.Common.Win32;
-using Wox.Plugin.Logger;
 
 namespace Microsoft.PowerToys.Run.Plugin.System.Components
 {
@@ -36,11 +33,13 @@ namespace Microsoft.PowerToys.Run.Plugin.System.Components
         /// Returns a list with all system command results
         /// </summary>
         /// <param name="isUefi">Value indicating if the system is booted in uefi mode</param>
+        /// <param name="splitRecycleBinResults">Value indicating if we should show two results for Recycle Bin.</param>
+        /// <param name="confirmCommands">A value indicating if the user should confirm the system commands</param>
+        /// <param name="emptyRBSuccessMessage">Show a success message after empty Recycle Bin.</param>
         /// <param name="iconTheme">The current theme to use for the icons</param>
         /// <param name="culture">The culture to use for the result's title and sub title</param>
-        /// <param name="confirmCommands">A value indicating if the user should confirm the system commands</param>
         /// <returns>A list of all results</returns>
-        internal static List<Result> GetSystemCommands(bool isUefi, string iconTheme, CultureInfo culture, bool confirmCommands)
+        internal static List<Result> GetSystemCommands(bool isUefi, bool splitRecycleBinResults, bool confirmCommands, bool emptyRBSuccessMessage, string iconTheme, CultureInfo culture)
         {
             var results = new List<Result>();
             results.AddRange(new[]
@@ -105,30 +104,50 @@ namespace Microsoft.PowerToys.Run.Plugin.System.Components
                         return ResultHelper.ExecuteCommand(confirmCommands, Resources.Microsoft_plugin_sys_hibernate_confirmation, () => NativeMethods.SetSuspendState(true, true, true));
                     },
                 },
-                new Result
+            });
+
+            // Show Recycle Bin results based on setting.
+            if (splitRecycleBinResults)
+            {
+                results.AddRange(new[]
                 {
-                    Title = Resources.ResourceManager.GetString("Microsoft_plugin_sys_emptyrecyclebin", culture),
-                    SubTitle = Resources.ResourceManager.GetString("Microsoft_plugin_sys_emptyrecyclebin_description", culture),
+                    new Result
+                    {
+                        Title = Resources.ResourceManager.GetString("Microsoft_plugin_sys_RecycleBinOpen", culture),
+                        SubTitle = Resources.ResourceManager.GetString("Microsoft_plugin_sys_RecycleBin_description", culture),
+                        IcoPath = $"Images\\recyclebin.{iconTheme}.png",
+                        Action = c =>
+                        {
+                            return Helper.OpenInShell("explorer.exe", "shell:RecycleBinFolder");
+                        },
+                    },
+                    new Result
+                    {
+                        Title = Resources.ResourceManager.GetString("Microsoft_plugin_sys_RecycleBinEmptyResult", culture),
+                        SubTitle = Resources.ResourceManager.GetString("Microsoft_plugin_sys_RecycleBinEmpty_description", culture),
+                        IcoPath = $"Images\\recyclebin.{iconTheme}.png",
+                        Action = c =>
+                        {
+                            ResultHelper.EmptyRecycleBinAsync(emptyRBSuccessMessage);
+                            return true;
+                        },
+                    },
+                });
+            }
+            else
+            {
+                results.Add(new Result
+                {
+                    Title = Resources.ResourceManager.GetString("Microsoft_plugin_sys_RecycleBin", culture),
+                    SubTitle = Resources.ResourceManager.GetString("Microsoft_plugin_sys_RecycleBin_description", culture),
                     IcoPath = $"Images\\recyclebin.{iconTheme}.png",
+                    ContextData = new SystemPluginContext { Type = ResultContextType.RecycleBinCommand, SearchTag = Resources.ResourceManager.GetString("Microsoft_plugin_sys_RecycleBin_searchTag", culture) },
                     Action = c =>
                     {
-                        // http://www.pinvoke.net/default.aspx/shell32/SHEmptyRecycleBin.html
-                        // FYI, couldn't find documentation for this but if the recycle bin is already empty, it will return -2147418113 (0x8000FFFF (E_UNEXPECTED))
-                        // 0 for nothing
-                        var result = NativeMethods.SHEmptyRecycleBin(new WindowInteropHelper(Application.Current.MainWindow).Handle, 0);
-                        if (result != (uint)HRESULT.S_OK && result != 0x8000FFFF)
-                        {
-                            var name = "Plugin: " + Resources.Microsoft_plugin_sys_plugin_name;
-                            var message = $"Error emptying recycle bin, error code: {result}\n" +
-                                          "please refer to https://msdn.microsoft.com/en-us/library/windows/desktop/aa378137";
-                            Log.Error(message, typeof(Commands));
-                            _ = MessageBox.Show(message, name);
-                        }
-
-                        return true;
+                        return Helper.OpenInShell("explorer.exe", "shell:RecycleBinFolder");
                     },
-                },
-            });
+                });
+            }
 
             // UEFI command/result. It is only available on systems booted in UEFI mode.
             if (isUefi)

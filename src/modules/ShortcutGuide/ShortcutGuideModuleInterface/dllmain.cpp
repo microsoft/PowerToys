@@ -10,6 +10,7 @@
 #include "../interface/powertoy_module_interface.h"
 #include "Generated Files/resource.h"
 #include <common/SettingsAPI/settings_objects.h>
+#include <common/utils/EventWaiter.h>
 
 BOOL APIENTRY DllMain(HMODULE /*hModule*/, DWORD /*ul_reason_for_call*/, LPVOID /*lpReserved*/)
 {
@@ -34,6 +35,11 @@ public:
         {
             Logger::warn(L"Failed to create {} event. {}", CommonSharedConstants::SHORTCUT_GUIDE_EXIT_EVENT, get_last_error_or_default(GetLastError()));
         }
+
+        triggerEvent = CreateEvent(nullptr, false, false, CommonSharedConstants::SHORTCUT_GUIDE_TRIGGER_EVENT);
+        triggerEventWaiter = EventWaiter(CommonSharedConstants::SHORTCUT_GUIDE_TRIGGER_EVENT, [this](int) {
+            OnHotkeyEx();
+        });
 
         InitSettings();
     }
@@ -191,7 +197,9 @@ private:
     UINT m_millisecondsWinKeyPressTimeForGlobalWindowsShortcuts = DEFAULT_MILLISECONDS_WIN_KEY_PRESS_TIME_FOR_GLOBAL_WINDOWS_SHORTCUTS;
     UINT m_millisecondsWinKeyPressTimeForTaskbarIconShortcuts = DEFAULT_MILLISECONDS_WIN_KEY_PRESS_TIME_FOR_TASKBAR_ICON_SHORTCUTS;
 
+    HANDLE triggerEvent;
     HANDLE exitEvent;
+    EventWaiter triggerEventWaiter;
 
     bool StartProcess(std::wstring args = L"")
     {
@@ -324,11 +332,27 @@ private:
             {
                 // Parse Legacy windows key press behavior settings
                 auto jsonUseLegacyWinKeyBehaviorObject = settingsObject.GetNamedObject(L"properties").GetNamedObject(L"use_legacy_press_win_key_behavior");
-                m_shouldReactToPressedWinKey = (bool)jsonUseLegacyWinKeyBehaviorObject.GetNamedBoolean(L"value");
+                m_shouldReactToPressedWinKey = jsonUseLegacyWinKeyBehaviorObject.GetNamedBoolean(L"value");
                 auto jsonPressTimeForGlobalWindowsShortcutsObject = settingsObject.GetNamedObject(L"properties").GetNamedObject(L"press_time");
                 auto jsonPressTimeForTaskbarIconShortcutsObject = settingsObject.GetNamedObject(L"properties").GetNamedObject(L"press_time_for_taskbar_icon_shortcuts");
-                m_millisecondsWinKeyPressTimeForGlobalWindowsShortcuts = (UINT)jsonPressTimeForGlobalWindowsShortcutsObject.GetNamedNumber(L"value");
-                m_millisecondsWinKeyPressTimeForTaskbarIconShortcuts = (UINT)jsonPressTimeForTaskbarIconShortcutsObject.GetNamedNumber(L"value");
+                int value = static_cast<int>(jsonPressTimeForGlobalWindowsShortcutsObject.GetNamedNumber(L"value"));
+                if (value >= 0)
+                {
+                    m_millisecondsWinKeyPressTimeForGlobalWindowsShortcuts = value;
+                }
+                else
+                {
+                    throw;
+                }
+                value = static_cast<int>(jsonPressTimeForTaskbarIconShortcutsObject.GetNamedNumber(L"value"));
+                if (value >= 0)
+                {
+                    m_millisecondsWinKeyPressTimeForTaskbarIconShortcuts = value;
+                }
+                else
+                {
+                    throw;
+                }
             }
             catch (...)
             {

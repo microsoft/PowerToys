@@ -109,8 +109,9 @@ namespace
     WindowPool windowPool;
 }
 
-WorkArea::WorkArea(HINSTANCE hinstance, const FancyZonesDataTypes::WorkAreaId& uniqueId) :
-    m_uniqueId(uniqueId)
+WorkArea::WorkArea(HINSTANCE hinstance, const FancyZonesDataTypes::WorkAreaId& uniqueId, const FancyZonesUtils::Rect& workAreaRect) :
+    m_uniqueId(uniqueId),
+    m_workAreaRect(workAreaRect)
 {
     WNDCLASSEXW wcex{};
     wcex.cbSize = sizeof(WNDCLASSEX);
@@ -126,87 +127,12 @@ WorkArea::~WorkArea()
     windowPool.FreeZonesOverlayWindow(m_window);
 }
 
-HRESULT WorkArea::MoveSizeEnter(HWND window) noexcept
-{
-    m_windowMoveSize = window;
-    m_highlightZone = {};
-    m_initialHighlightZone = {};
-    ShowZonesOverlay();
-    Trace::WorkArea::MoveOrResizeStarted(m_layout.get(), m_layoutWindows.get());
-    return S_OK;
-}
-
-HRESULT WorkArea::MoveSizeUpdate(POINT const& ptScreen, bool dragEnabled, bool selectManyZones) noexcept
-{
-    if (!m_layout)
-    {
-        return -1;
-    }
-
-    bool redraw = false;
-    POINT ptClient = ptScreen;
-    MapWindowPoints(nullptr, m_window, &ptClient, 1);
-
-    if (dragEnabled)
-    {
-        auto highlightZone = ZonesFromPoint(ptClient);
-
-        if (selectManyZones)
-        {
-            if (m_initialHighlightZone.empty())
-            {
-                // first time
-                m_initialHighlightZone = highlightZone;
-            }
-            else
-            {
-                highlightZone = m_layout->GetCombinedZoneRange(m_initialHighlightZone, highlightZone);
-            }
-        }
-        else
-        {
-            m_initialHighlightZone = {};
-        }
-
-        redraw = (highlightZone != m_highlightZone);
-        m_highlightZone = std::move(highlightZone);
-    }
-    else if (m_highlightZone.size())
-    {
-        m_highlightZone = {};
-        redraw = true;
-    }
-
-    if (redraw && m_zonesOverlay)
-    {
-        m_zonesOverlay->DrawActiveZoneSet(m_layout->Zones(), m_highlightZone, Colors::GetZoneColors(), FancyZonesSettings::settings().showZoneNumber);
-    }
-
-    return S_OK;
-}
-
-HRESULT WorkArea::MoveSizeEnd(HWND window) noexcept
-{
-    if (m_windowMoveSize != window)
-    {
-        return E_INVALIDARG;
-    }
-
-    MoveWindowIntoZoneByIndexSet(window, m_highlightZone);
-
-    Trace::WorkArea::MoveOrResizeEnd(m_layout.get(), m_layoutWindows.get());
-
-    HideZonesOverlay();
-    m_windowMoveSize = nullptr;
-    return S_OK;
-}
-
-void WorkArea::MoveWindowIntoZoneByIndex(HWND window, ZoneIndex index) noexcept
+void WorkArea::MoveWindowIntoZoneByIndex(HWND window, ZoneIndex index)
 {
     MoveWindowIntoZoneByIndexSet(window, { index });
 }
 
-void WorkArea::MoveWindowIntoZoneByIndexSet(HWND window, const ZoneIndexSet& indexSet, bool updatePosition /* = true*/) noexcept
+void WorkArea::MoveWindowIntoZoneByIndexSet(HWND window, const ZoneIndexSet& indexSet, bool updatePosition /* = true*/)
 {
     if (!m_layout || !m_layoutWindows || m_layout->Zones().empty() || indexSet.empty())
     {
@@ -217,18 +143,18 @@ void WorkArea::MoveWindowIntoZoneByIndexSet(HWND window, const ZoneIndexSet& ind
 
     if (updatePosition)
     {
-        auto rect = m_layout->GetCombinedZonesRect(indexSet);
-        auto adjustedRect = FancyZonesWindowUtils::AdjustRectForSizeWindowToRect(window, rect, m_window);
-        FancyZonesWindowUtils::SizeWindowToRect(window, adjustedRect);
+        const auto rect = m_layout->GetCombinedZonesRect(indexSet);
+        if (rect.bottom - rect.top > 0 && rect.right - rect.left > 0)
+        {
+            const auto adjustedRect = FancyZonesWindowUtils::AdjustRectForSizeWindowToRect(window, rect, m_window);
+            FancyZonesWindowUtils::SizeWindowToRect(window, adjustedRect);
+        }
     }
 
-    m_layoutWindows->Assign(window, indexSet);
-    FancyZonesWindowProperties::StampZoneIndexProperty(window, indexSet);
-
-    SaveWindowProcessToZoneIndex(window);
+    SnapWindow(window, indexSet);
 }
 
-bool WorkArea::MoveWindowIntoZoneByDirectionAndIndex(HWND window, DWORD vkCode, bool cycle) noexcept
+bool WorkArea::MoveWindowIntoZoneByDirectionAndIndex(HWND window, DWORD vkCode, bool cycle)
 {
     if (!m_layout || !m_layoutWindows || m_layout->Zones().empty())
     {
@@ -236,7 +162,7 @@ bool WorkArea::MoveWindowIntoZoneByDirectionAndIndex(HWND window, DWORD vkCode, 
     }
 
     auto zoneIndexes = m_layoutWindows->GetZoneIndexSetFromWindow(window);
-    auto numZones = m_layout->Zones().size();
+    const auto numZones = m_layout->Zones().size();
 
     // The window was not assigned to any zone here
     if (zoneIndexes.size() == 0)
@@ -245,7 +171,7 @@ bool WorkArea::MoveWindowIntoZoneByDirectionAndIndex(HWND window, DWORD vkCode, 
     }
     else
     {
-        ZoneIndex oldId = zoneIndexes[0];
+        const ZoneIndex oldId = zoneIndexes[0];
 
         // We reached the edge
         if ((vkCode == VK_LEFT && oldId == 0) || (vkCode == VK_RIGHT && oldId == static_cast<int64_t>(numZones) - 1))
@@ -271,15 +197,10 @@ bool WorkArea::MoveWindowIntoZoneByDirectionAndIndex(HWND window, DWORD vkCode, 
         }
     }
 
-    if (!FancyZonesWindowUtils::HasVisibleOwner(window))
-    {
-        SaveWindowProcessToZoneIndex(window);
-    }
-
     return true;
 }
 
-bool WorkArea::MoveWindowIntoZoneByDirectionAndPosition(HWND window, DWORD vkCode, bool cycle) noexcept
+bool WorkArea::MoveWindowIntoZoneByDirectionAndPosition(HWND window, DWORD vkCode, bool cycle)
 {
     if (!m_layout || !m_layoutWindows || m_layout->Zones().empty())
     {
@@ -290,7 +211,7 @@ bool WorkArea::MoveWindowIntoZoneByDirectionAndPosition(HWND window, DWORD vkCod
     std::vector<bool> usedZoneIndices(zones.size(), false);
     auto windowZones = m_layoutWindows->GetZoneIndexSetFromWindow(window);
 
-    for (ZoneIndex id : windowZones)
+    for (const ZoneIndex id : windowZones)
     {
         usedZoneIndices[id] = true;
     }
@@ -324,7 +245,6 @@ bool WorkArea::MoveWindowIntoZoneByDirectionAndPosition(HWND window, DWORD vkCod
     if (result < zoneRects.size())
     {
         MoveWindowIntoZoneByIndex(window, freeZoneIndices[result]);
-        SaveWindowProcessToZoneIndex(window);
         Trace::FancyZones::KeyboardSnapWindowToZone(m_layout.get(), m_layoutWindows.get());
         return true;
     }
@@ -340,7 +260,6 @@ bool WorkArea::MoveWindowIntoZoneByDirectionAndPosition(HWND window, DWORD vkCod
         if (result < zoneRects.size())
         {
             MoveWindowIntoZoneByIndex(window, result);
-            SaveWindowProcessToZoneIndex(window);
             Trace::FancyZones::KeyboardSnapWindowToZone(m_layout.get(), m_layoutWindows.get());
             return true;
         }
@@ -349,7 +268,7 @@ bool WorkArea::MoveWindowIntoZoneByDirectionAndPosition(HWND window, DWORD vkCod
     return false;
 }
 
-bool WorkArea::ExtendWindowByDirectionAndPosition(HWND window, DWORD vkCode) noexcept
+bool WorkArea::ExtendWindowByDirectionAndPosition(HWND window, DWORD vkCode)
 {
     if (!m_layout || !m_layoutWindows || m_layout->Zones().empty())
     {
@@ -381,7 +300,7 @@ bool WorkArea::ExtendWindowByDirectionAndPosition(HWND window, DWORD vkCode) noe
     }
     else
     {
-        for (ZoneIndex idx : appliedZones)
+        for (const ZoneIndex idx : appliedZones)
         {
             usedZoneIndices[idx] = true;
         }
@@ -401,7 +320,7 @@ bool WorkArea::ExtendWindowByDirectionAndPosition(HWND window, DWORD vkCode) noe
         }
     }
 
-    auto result = FancyZonesUtils::ChooseNextZoneByPosition(vkCode, windowRect, zoneRects);
+    const auto result = FancyZonesUtils::ChooseNextZoneByPosition(vkCode, windowRect, zoneRects);
     if (result < zoneRects.size())
     {
         ZoneIndex targetZone = freeZoneIndices[result];
@@ -431,14 +350,11 @@ bool WorkArea::ExtendWindowByDirectionAndPosition(HWND window, DWORD vkCode) noe
             resultIndexSet = m_layout->GetCombinedZoneRange(extendModeData->windowInitialIndexSet[window], { targetZone });
         }
 
-        auto rect = m_layout->GetCombinedZonesRect(resultIndexSet);
-        auto adjustedRect = FancyZonesWindowUtils::AdjustRectForSizeWindowToRect(window, rect, m_window);
+        const auto rect = m_layout->GetCombinedZonesRect(resultIndexSet);
+        const auto adjustedRect = FancyZonesWindowUtils::AdjustRectForSizeWindowToRect(window, rect, m_window);
         FancyZonesWindowUtils::SizeWindowToRect(window, adjustedRect);
 
-        m_layoutWindows->Extend(window, resultIndexSet);
-        FancyZonesWindowProperties::StampZoneIndexProperty(window, resultIndexSet);
-
-        SaveWindowProcessToZoneIndex(window);
+        SnapWindow(window, resultIndexSet, true);
 
         return true;
     }
@@ -446,39 +362,60 @@ bool WorkArea::ExtendWindowByDirectionAndPosition(HWND window, DWORD vkCode) noe
     return false;
 }
 
-void WorkArea::SaveWindowProcessToZoneIndex(HWND window) noexcept
+void WorkArea::SnapWindow(HWND window, const ZoneIndexSet& zones, bool extend)
 {
-    if (m_layout && m_layoutWindows)
+    if (!m_layoutWindows || !m_layout)
     {
-        auto zoneIndexSet = m_layoutWindows->GetZoneIndexSetFromWindow(window);
-        if (zoneIndexSet.size())
-        {
-            auto guidStr = FancyZonesUtils::GuidToString(m_layout->Id());
-            if (guidStr.has_value())
-            {
-                AppZoneHistory::instance().SetAppLastZones(window, m_uniqueId, guidStr.value(), zoneIndexSet);
-            }
-        }
+        return;
     }
-}
 
-bool WorkArea::UnsnapWindow(HWND window) noexcept
-{
-    if (!m_layoutWindows)
+    if (extend)
     {
-        return false;    
+        m_layoutWindows->Extend(window, zones);
+    }
+    else
+    {
+        m_layoutWindows->Assign(window, zones);
     }
     
-    if (!m_layoutWindows->GetZoneIndexSetFromWindow(window).empty())
+    auto guidStr = FancyZonesUtils::GuidToString(m_layout->Id());
+    if (guidStr.has_value())
     {
-        m_layoutWindows->Dismiss(window);
-        return true;
+        AppZoneHistory::instance().SetAppLastZones(window, m_uniqueId, guidStr.value(), zones);
     }
 
-    return false;
+    FancyZonesWindowProperties::StampZoneIndexProperty(window, zones);
 }
 
-ZoneIndexSet WorkArea::GetWindowZoneIndexes(HWND window) const noexcept
+void WorkArea::UnsnapWindow(HWND window)
+{
+    if (!m_layoutWindows || !m_layout)
+    {
+        return;
+    }
+    
+    m_layoutWindows->Dismiss(window);
+
+    auto guidStr = FancyZonesUtils::GuidToString(m_layout->Id());
+    if (guidStr.has_value())
+    {
+        AppZoneHistory::instance().RemoveAppLastZone(window, m_uniqueId, guidStr.value());
+    }
+
+    FancyZonesWindowProperties::RemoveZoneIndexProperty(window);
+}
+
+const GUID WorkArea::GetLayoutId() const noexcept
+{
+    if (m_layout)
+    {
+        return m_layout->Id();
+    }
+
+    return GUID{};
+}
+
+ZoneIndexSet WorkArea::GetWindowZoneIndexes(HWND window) const
 {
     if (m_layout)
     {
@@ -500,30 +437,37 @@ ZoneIndexSet WorkArea::GetWindowZoneIndexes(HWND window) const noexcept
     return {};
 }
 
-void WorkArea::ShowZonesOverlay() noexcept
+void WorkArea::ShowZonesOverlay(const ZoneIndexSet& highlight, HWND draggedWindow/* = nullptr*/)
 {
-    if (m_window && m_layout)
+    if (m_layout && m_zonesOverlay)
     {
-        SetAsTopmostWindow();
-        m_zonesOverlay->DrawActiveZoneSet(m_layout->Zones(), m_highlightZone, Colors::GetZoneColors(), FancyZonesSettings::settings().showZoneNumber);
+        SetWorkAreaWindowAsTopmost(draggedWindow);
+        m_zonesOverlay->DrawActiveZoneSet(m_layout->Zones(), highlight, Colors::GetZoneColors(), FancyZonesSettings::settings().showZoneNumber);
         m_zonesOverlay->Show();
     }
 }
 
-void WorkArea::HideZonesOverlay() noexcept
+void WorkArea::HideZonesOverlay()
 {
-    if (m_window)
+    if (m_zonesOverlay)
     {
         m_zonesOverlay->Hide();
-        m_keyLast = 0;
-        m_windowMoveSize = nullptr;
-        m_highlightZone = {};
     }
 }
 
-void WorkArea::UpdateActiveZoneSet() noexcept
+void WorkArea::FlashZones()
 {
-    bool isLayoutAlreadyApplied = AppliedLayouts::instance().IsLayoutApplied(m_uniqueId);
+    if (m_layout && m_zonesOverlay)
+    {
+        SetWorkAreaWindowAsTopmost(nullptr);
+        m_zonesOverlay->DrawActiveZoneSet(m_layout->Zones(), {}, Colors::GetZoneColors(), FancyZonesSettings::settings().showZoneNumber);
+        m_zonesOverlay->Flash();
+    }
+}
+
+void WorkArea::UpdateActiveZoneSet()
+{
+    const bool isLayoutAlreadyApplied = AppliedLayouts::instance().IsLayoutApplied(m_uniqueId);
     if (!isLayoutAlreadyApplied)
     {
         AppliedLayouts::instance().ApplyDefaultLayout(m_uniqueId);
@@ -532,12 +476,25 @@ void WorkArea::UpdateActiveZoneSet() noexcept
     CalculateZoneSet();
     if (m_window && m_layout)
     {
-        m_highlightZone.clear();
-        m_zonesOverlay->DrawActiveZoneSet(m_layout->Zones(), m_highlightZone, Colors::GetZoneColors(), FancyZonesSettings::settings().showZoneNumber);
+        m_zonesOverlay->DrawActiveZoneSet(m_layout->Zones(), {}, Colors::GetZoneColors(), FancyZonesSettings::settings().showZoneNumber);
     }
 }
 
-void WorkArea::CycleWindows(HWND window, bool reverse) noexcept
+void WorkArea::UpdateWindowPositions()
+{
+    if (!m_layoutWindows)
+    {
+        return;
+    }
+
+    const auto& snappedWindows = m_layoutWindows->SnappedWindows();
+    for (const auto& [window, zones] : snappedWindows)
+    {
+        MoveWindowIntoZoneByIndexSet(window, zones, true);
+    }
+}
+
+void WorkArea::CycleWindows(HWND window, bool reverse)
 {
     if (m_layoutWindows)
     {
@@ -545,28 +502,9 @@ void WorkArea::CycleWindows(HWND window, bool reverse) noexcept
     }
 }
 
-void WorkArea::ClearSelectedZones() noexcept
-{
-    if (m_highlightZone.size() && m_layout)
-    {
-        m_highlightZone.clear();
-        m_zonesOverlay->DrawActiveZoneSet(m_layout->Zones(), m_highlightZone, Colors::GetZoneColors(), FancyZonesSettings::settings().showZoneNumber);
-    }
-}
-
-void WorkArea::FlashZones() noexcept
-{
-    if (m_window && m_layout)
-    {
-        SetAsTopmostWindow();
-        m_zonesOverlay->DrawActiveZoneSet(m_layout->Zones(), {}, Colors::GetZoneColors(), FancyZonesSettings::settings().showZoneNumber);
-        m_zonesOverlay->Flash();
-    }
-}
-
 #pragma region private
 
-bool WorkArea::InitWindow(HINSTANCE hinstance) noexcept
+bool WorkArea::InitWindow(HINSTANCE hinstance)
 {
     m_window = windowPool.NewZonesOverlayWindow(m_workAreaRect, hinstance, this);
     if (!m_window)
@@ -579,11 +517,11 @@ bool WorkArea::InitWindow(HINSTANCE hinstance) noexcept
     return true;
 }
 
-void WorkArea::InitLayout(const FancyZonesDataTypes::WorkAreaId& parentUniqueId) noexcept
+void WorkArea::InitLayout(const FancyZonesDataTypes::WorkAreaId& parentUniqueId)
 {
-    Logger::info(L"Initialize layout on {}", m_uniqueId.toString());
+    Logger::info(L"Initialize layout on {}, work area rect = {}x{}", m_uniqueId.toString(), m_workAreaRect.width(), m_workAreaRect.height());
 
-    bool isLayoutAlreadyApplied = AppliedLayouts::instance().IsLayoutApplied(m_uniqueId);
+    const bool isLayoutAlreadyApplied = AppliedLayouts::instance().IsLayoutApplied(m_uniqueId);
     if (!isLayoutAlreadyApplied)
     {
         if (parentUniqueId.virtualDesktopId != GUID_NULL)
@@ -599,7 +537,44 @@ void WorkArea::InitLayout(const FancyZonesDataTypes::WorkAreaId& parentUniqueId)
     CalculateZoneSet();
 }
 
-void WorkArea::CalculateZoneSet() noexcept
+void WorkArea::InitSnappedWindows()
+{
+    Logger::info(L"Init work area windows: {}", m_uniqueId.toString());
+
+    for (const auto& window : VirtualDesktop::instance().GetWindowsFromCurrentDesktop())
+    {
+        auto indexes = FancyZonesWindowProperties::RetrieveZoneIndexProperty(window);
+        if (indexes.size() == 0)
+        {
+            continue;
+        }
+
+        if (!m_uniqueId.monitorId.monitor) // one work area across monitors
+        {
+            MoveWindowIntoZoneByIndexSet(window, indexes, false);
+        }
+        else
+        {
+            const auto monitor = MonitorFromWindow(window, MONITOR_DEFAULTTONULL);
+            if (monitor && m_uniqueId.monitorId.monitor == monitor)
+            {
+                // prioritize snapping on the current monitor if the window was snapped to several work areas
+                MoveWindowIntoZoneByIndexSet(window, indexes, false);
+            }
+            else
+            {
+                // if the window is not snapped on the current monitor, then check the others
+                auto savedIndexes = GetWindowZoneIndexes(window);
+                if (savedIndexes == indexes)
+                {
+                    MoveWindowIntoZoneByIndexSet(window, indexes, false);
+                }
+            }
+        }
+    }
+}
+
+void WorkArea::CalculateZoneSet()
 {
     const auto appliedLayout = AppliedLayouts::instance().GetDeviceLayout(m_uniqueId);
     if (!appliedLayout.has_value())
@@ -609,7 +584,7 @@ void WorkArea::CalculateZoneSet() noexcept
     }
 
     m_layout = std::make_unique<Layout>(appliedLayout.value());
-    m_layout->Init(m_workAreaRect, m_monitor);
+    m_layout->Init(m_workAreaRect, m_uniqueId.monitorId.monitor);
 
     if (!m_layoutWindows)
     {
@@ -639,37 +614,17 @@ LRESULT WorkArea::WndProc(UINT message, WPARAM wparam, LPARAM lparam) noexcept
     return 0;
 }
 
-ZoneIndexSet WorkArea::ZonesFromPoint(POINT pt) noexcept
-{
-    if (m_layout)
-    {
-        return m_layout->ZonesFromPoint(pt);
-    }
-
-    return {};
-}
-
-void WorkArea::SetAsTopmostWindow() noexcept
+void WorkArea::SetWorkAreaWindowAsTopmost(HWND draggedWindow) noexcept
 {
     if (!m_window)
     {
         return;
     }
 
-    UINT flags = SWP_NOSIZE | SWP_NOMOVE | SWP_NOACTIVATE;
+    HWND windowInsertAfter = draggedWindow ? draggedWindow : HWND_TOPMOST;
 
-    HWND windowInsertAfter = m_windowMoveSize;
-    if (windowInsertAfter == nullptr)
-    {
-        windowInsertAfter = HWND_TOPMOST;
-    }
-
+    constexpr UINT flags = SWP_NOSIZE | SWP_NOMOVE | SWP_NOACTIVATE;
     SetWindowPos(m_window, windowInsertAfter, 0, 0, 0, 0, flags);
-}
-
-void WorkArea::LogInitializationError()
-{
-    Logger::error(L"Unable to get monitor info, {}", get_last_error_or_default(GetLastError()));
 }
 
 #pragma endregion
@@ -680,7 +635,7 @@ LRESULT CALLBACK WorkArea::s_WndProc(HWND window, UINT message, WPARAM wparam, L
     if ((thisRef == nullptr) && (message == WM_CREATE))
     {
         auto createStruct = reinterpret_cast<LPCREATESTRUCT>(lparam);
-        thisRef = reinterpret_cast<WorkArea*>(createStruct->lpCreateParams);
+        thisRef = static_cast<WorkArea*>(createStruct->lpCreateParams);
         SetWindowLongPtr(window, GWLP_USERDATA, reinterpret_cast<LONG_PTR>(thisRef));
     }
 

@@ -21,7 +21,12 @@ The Calculator plugin as the name suggests is used to perform calculations on th
 
 ### [`CalculateHelper`](/src/modules/launcher/Plugins/Microsoft.PowerToys.Run.Plugin.Calculator/CalculateHelper.cs)
 - The [`CalculateHelper.cs`](src/modules/launcher/Plugins/Microsoft.PowerToys.Run.Plugin.Calculator/CalculateHelper.cs) class checks to see if the user entered query is a valid input to the calculator and only if the input is valid does it perform the operation.
-- It does so by matching the user query to a valid regex.
+  - It does so by matching the user query to a valid regex.
+- This class also handles some human multiplication expression like `2(1+2)` and `(2+3)(3+4)` in order to be computed by `Mages` lib.
+  - It does so by matching some regex and inserting `'*'` where appropriate, e.g: `2(1+2) -> 2 * (1+2)`
+  - It takes into account the combination of numbers (`num`), constants (`const`), functions (`func`) and expressions in parentheses (`(exp)`).
+  - The blank spaces between them are also considered.
+  - Some combinations were not handled as they are not common such as `'const num'` or `'func const'`
 
 ### [`CalculateEngine`](src/modules/launcher/Plugins/Microsoft.PowerToys.Run.Plugin.Calculator/CalculateEngine.cs)
 - The main computation is done in the [`CalculateEngine.cs`](src/modules/launcher/Plugins/Microsoft.PowerToys.Run.Plugin.Calculator/CalculateEngine.cs) file using the `Mages` library.

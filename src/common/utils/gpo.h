@@ -38,6 +38,7 @@ namespace powertoys_gpo {
     const std::wstring POLICY_CONFIGURE_ENABLED_KEYBOARD_MANAGER = L"ConfigureEnabledUtilityKeyboardManager";
     const std::wstring POLICY_CONFIGURE_ENABLED_FIND_MY_MOUSE = L"ConfigureEnabledUtilityFindMyMouse";
     const std::wstring POLICY_CONFIGURE_ENABLED_MOUSE_HIGHLIGHTER = L"ConfigureEnabledUtilityMouseHighlighter";
+    const std::wstring POLICY_CONFIGURE_ENABLED_MOUSE_JUMP = L"ConfigureEnabledUtilityMouseJump";
     const std::wstring POLICY_CONFIGURE_ENABLED_MOUSE_POINTER_CROSSHAIRS = L"ConfigureEnabledUtilityMousePointerCrosshairs";
     const std::wstring POLICY_CONFIGURE_ENABLED_POWER_RENAME = L"ConfigureEnabledUtilityPowerRename";
     const std::wstring POLICY_CONFIGURE_ENABLED_POWER_LAUNCHER = L"ConfigureEnabledUtilityPowerLauncher";
@@ -45,12 +46,21 @@ namespace powertoys_gpo {
     const std::wstring POLICY_CONFIGURE_ENABLED_SCREEN_RULER = L"ConfigureEnabledUtilityScreenRuler";
     const std::wstring POLICY_CONFIGURE_ENABLED_SHORTCUT_GUIDE = L"ConfigureEnabledUtilityShortcutGuide";
     const std::wstring POLICY_CONFIGURE_ENABLED_TEXT_EXTRACTOR = L"ConfigureEnabledUtilityTextExtractor";
+    const std::wstring POLICY_CONFIGURE_ENABLED_PASTE_PLAIN = L"ConfigureEnabledUtilityPastePlain";
     const std::wstring POLICY_CONFIGURE_ENABLED_VIDEO_CONFERENCE_MUTE = L"ConfigureEnabledUtilityVideoConferenceMute";
+
+    // The registry value names for PowerToys installer and update policies.
+    const std::wstring POLICY_DISABLE_AUTOMATIC_UPDATE_DOWNLOAD = L"AutomaticUpdateDownloadDisabled";
+    const std::wstring POLICY_SUSPEND_NEW_UPDATE_TOAST = L"SuspendNewUpdateAvailableToast";
+    const std::wstring POLICY_DISABLE_PERIODIC_UPDATE_CHECK = L"PeriodicUpdateCheckDisabled";
+
+    // The registry value names for other PowerToys policies.
+    const std::wstring POLICY_ALLOW_EXPERIMENTATION = L"AllowExperimentation";
 
     inline gpo_rule_configured_t getConfiguredValue(const std::wstring& registry_value_name)
     {
         HKEY key{};
-        DWORD value = (DWORD) -2;
+        DWORD value = 0xFFFFFFFE;
         DWORD valueSize = sizeof(value);
 
         bool machine_key_found = true;
@@ -62,7 +72,7 @@ namespace powertoys_gpo {
         if(machine_key_found)
         {
             // If the path was found in the machine, we need to check if the value for the policy exists.
-            auto res = RegQueryValueExW(key, registry_value_name.c_str(), nullptr, nullptr, (LPBYTE)&value, &valueSize);
+            auto res = RegQueryValueExW(key, registry_value_name.c_str(), nullptr, nullptr, reinterpret_cast<LPBYTE>(&value), &valueSize);
 
             RegCloseKey(key);
 
@@ -82,7 +92,7 @@ namespace powertoys_gpo {
                 }
                 return gpo_rule_configured_unavailable;
             }
-            auto res = RegQueryValueExW(key, registry_value_name.c_str(), nullptr, nullptr, (LPBYTE)&value, &valueSize);
+            auto res = RegQueryValueExW(key, registry_value_name.c_str(), nullptr, nullptr, reinterpret_cast<LPBYTE>(&value), &valueSize);
             RegCloseKey(key);
 
             if (res != ERROR_SUCCESS) {
@@ -195,6 +205,11 @@ namespace powertoys_gpo {
         return getConfiguredValue(POLICY_CONFIGURE_ENABLED_MOUSE_HIGHLIGHTER);
     }
 
+    inline gpo_rule_configured_t getConfiguredMouseJumpEnabledValue()
+    {
+        return getConfiguredValue(POLICY_CONFIGURE_ENABLED_MOUSE_JUMP);
+    }
+
     inline gpo_rule_configured_t getConfiguredMousePointerCrosshairsEnabledValue()
     {
         return getConfiguredValue(POLICY_CONFIGURE_ENABLED_MOUSE_POINTER_CROSSHAIRS);
@@ -230,9 +245,34 @@ namespace powertoys_gpo {
         return getConfiguredValue(POLICY_CONFIGURE_ENABLED_TEXT_EXTRACTOR);
     }
 
+    inline gpo_rule_configured_t getConfiguredPastePlainEnabledValue()
+    {
+        return getConfiguredValue(POLICY_CONFIGURE_ENABLED_PASTE_PLAIN);
+    }
+
     inline gpo_rule_configured_t getConfiguredVideoConferenceMuteEnabledValue()
     {
         return getConfiguredValue(POLICY_CONFIGURE_ENABLED_VIDEO_CONFERENCE_MUTE);
+    }
+
+    inline gpo_rule_configured_t getDisableAutomaticUpdateDownloadValue()
+    {
+        return getConfiguredValue(POLICY_DISABLE_AUTOMATIC_UPDATE_DOWNLOAD);
+    }
+
+    inline gpo_rule_configured_t getSuspendNewUpdateToastValue()
+    {
+        return getConfiguredValue(POLICY_SUSPEND_NEW_UPDATE_TOAST);
+    }
+
+    inline gpo_rule_configured_t getDisablePeriodicUpdateCheckValue()
+    {
+        return getConfiguredValue(POLICY_DISABLE_PERIODIC_UPDATE_CHECK);
+    }
+
+    inline gpo_rule_configured_t getAllowExperimentationValue()
+    {
+        return getConfiguredValue(POLICY_ALLOW_EXPERIMENTATION);
     }
 
 }

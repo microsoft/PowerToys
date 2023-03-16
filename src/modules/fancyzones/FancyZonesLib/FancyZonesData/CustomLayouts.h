@@ -30,8 +30,8 @@ namespace NonLocalizable
         const static wchar_t* RefHeightID = L"ref-height";
         const static wchar_t* RefWidthID = L"ref-width";
         const static wchar_t* ZonesID = L"zones";
-        const static wchar_t* XID = L"X";
-        const static wchar_t* YID = L"Y";
+        const static wchar_t* XAxisID = L"X";
+        const static wchar_t* YAxisID = L"Y";
         const static wchar_t* WidthID = L"width";
         const static wchar_t* HeightID = L"height";
 

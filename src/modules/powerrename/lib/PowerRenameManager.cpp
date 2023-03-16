@@ -526,7 +526,7 @@ LRESULT CALLBACK CPowerRenameManager::s_msgWndProc(_In_ HWND hwnd, _In_ UINT uMs
 {
     LRESULT lRes = 0;
 
-    CPowerRenameManager* pThis = (CPowerRenameManager*)GetWindowLongPtr(hwnd, 0);
+    CPowerRenameManager* pThis = reinterpret_cast<CPowerRenameManager*>(GetWindowLongPtr(hwnd, 0));
     if (pThis != nullptr)
     {
         lRes = pThis->_WndProc(hwnd, uMsg, wParam, lParam);
@@ -727,7 +727,7 @@ DWORD WINAPI CPowerRenameManager::s_fileOpWorkerThread(_In_ void* pv)
 {
     if (SUCCEEDED(CoInitializeEx(nullptr, COINIT_APARTMENTTHREADED | COINIT_DISABLE_OLE1DDE)))
     {
-        WorkerThreadData* pwtd = reinterpret_cast<WorkerThreadData*>(pv);
+        WorkerThreadData* pwtd = static_cast<WorkerThreadData*>(pv);
         if (pwtd)
         {
             bool closeUIWindowAfterRenaming = true;
@@ -914,7 +914,7 @@ DWORD WINAPI CPowerRenameManager::s_regexWorkerThread(_In_ void* pv)
     try
     {
         winrt::check_hresult(CoInitializeEx(nullptr, COINIT_APARTMENTTHREADED | COINIT_DISABLE_OLE1DDE));
-        WorkerThreadData* pwtd = reinterpret_cast<WorkerThreadData*>(pv);
+        WorkerThreadData* pwtd = static_cast<WorkerThreadData*>(pv);
         if (pwtd)
         {
             PostMessage(pwtd->hwndManager, SRM_REGEX_STARTED, GetCurrentThreadId(), 0);

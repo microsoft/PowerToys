@@ -7,5 +7,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library.Interfaces
     public interface ISettingsRepository<T>
     {
         T SettingsConfig { get; set; }
+
+        bool ReloadSettings();
     }
 }

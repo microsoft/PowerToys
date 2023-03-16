@@ -197,8 +197,8 @@ ZonesMap LayoutConfigurator::Focus(FancyZonesUtils::Rect workArea, int zoneCount
 
     long left{ 100 };
     long top{ 100 };
-    long right{ left + long(workArea.width() * 0.4) };
-    long bottom{ top + long(workArea.height() * 0.4) };
+    long right{ left + static_cast<long>(workArea.width() * 0.4) };
+    long bottom{ top + static_cast<long>(workArea.height() * 0.4) };
 
     RECT focusZoneRect{ left, top, right, bottom };
 

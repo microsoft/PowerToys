@@ -15,8 +15,7 @@
         ModuleImageSource="ms-appx:///Assets/Modules/PowerRename.png">
         <controls:SettingsPageControl.ModuleContent>
             <StackPanel
-                x:Name="PowerRenameView"
-                HorizontalAlignment="Stretch"
+                x:Name="PowerRenameView" ChildrenTransitions="{StaticResource SettingsCardsAnimations}"
                 Orientation="Vertical">
                 <labs:SettingsCard
                     x:Uid="PowerRename_Toggle_Enable"

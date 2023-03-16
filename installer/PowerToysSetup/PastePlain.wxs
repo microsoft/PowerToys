@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Wix xmlns="http://schemas.microsoft.com/wix/2006/wi"
+     xmlns:util="http://schemas.microsoft.com/wix/UtilExtension" >
+
+  <?include $(sys.CURRENTDIR)\Common.wxi?>
+
+  <Fragment>
+    <DirectoryRef Id="PastePlainInstallFolder" FileSource="$(var.BinDir)modules\$(var.PastePlainProjectName)">
+      <!-- !Warning! Make sure to change Component Guid if you update the file list -->
+      <Component Id="Module_PastePlain" Win64="yes">
+        <File Source="$(var.BinDir)modules\$(var.PastePlainProjectName)\PowerToys.PastePlainModuleInterface.dll" KeyPath="yes" />
+      </Component>
+    </DirectoryRef>
+
+    <ComponentGroup Id="PastePlainComponentGroup" Directory="INSTALLFOLDER">
+      <ComponentRef Id="Module_PastePlain" />
+    </ComponentGroup>
+
+  </Fragment>
+</Wix>

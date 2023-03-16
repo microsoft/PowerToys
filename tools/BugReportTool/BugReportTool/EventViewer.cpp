@@ -57,7 +57,7 @@ namespace
                 if (ERROR_INSUFFICIENT_BUFFER == (status = GetLastError()))
                 {
                     dwBufferSize = dwBufferUsed;
-                    pRenderedContent = (LPWSTR)malloc(dwBufferSize);
+                    pRenderedContent = static_cast<LPWSTR>(malloc(dwBufferSize));
                     if (pRenderedContent)
                     {
                         EvtRender(NULL, hEvent, EvtRenderEventXml, dwBufferSize, pRenderedContent, &dwBufferUsed, &dwPropertyCount);
