@@ -75,7 +75,7 @@ namespace ImageResizer.Test
             return raisedEvent;
         }
 
-        public class RaisedEvent<TArgs>
+        public sealed class RaisedEvent<TArgs>
         {
             public RaisedEvent(object sender, TArgs args)
             {

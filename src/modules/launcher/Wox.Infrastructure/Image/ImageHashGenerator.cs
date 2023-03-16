@@ -34,12 +34,7 @@ namespace Wox.Infrastructure.Image
                     enc.Frames.Add(bitmapFrame);
                     enc.Save(outStream);
                     var byteArray = outStream.GetBuffer();
-
-                    using (var sha1 = SHA1.Create())
-                    {
-                        var hash = Convert.ToBase64String(sha1.ComputeHash(byteArray));
-                        return hash;
-                    }
+                    return Convert.ToBase64String(SHA1.HashData(byteArray));
                 }
             }
             catch (System.Exception e)

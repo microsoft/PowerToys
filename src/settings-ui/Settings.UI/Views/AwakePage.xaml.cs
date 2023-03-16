@@ -100,7 +100,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
                         string csMessage = csIpcMessage.ToJsonString();
                         string outMessage = outIpcMessage.ToJsonString();
 
-                        if (!csMessage.Equals(outMessage))
+                        if (!csMessage.Equals(outMessage, StringComparison.Ordinal))
                         {
                             Logger.LogInfo($"Saved Awake settings from Awake page.");
                             _sendConfigMsg(outMessage);

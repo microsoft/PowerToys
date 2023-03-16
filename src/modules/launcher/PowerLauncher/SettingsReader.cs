@@ -269,9 +269,9 @@ namespace PowerLauncher
             var defaultOptions = defaultAdditionalOptions.ToDictionary(x => x.Key);
             foreach (var option in additionalOptions)
             {
-                if (option.Key != null && defaultOptions.ContainsKey(option.Key))
+                if (option.Key != null && defaultOptions.TryGetValue(option.Key, out PluginAdditionalOption defaultOption))
                 {
-                    defaultOptions[option.Key].Value = option.Value;
+                    defaultOption.Value = option.Value;
                 }
             }
 
