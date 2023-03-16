@@ -227,6 +227,7 @@ clientside
 CLIPCHILDREN
 Clipperton
 CLIPSIBLINGS
+Cloneable
 clrcall
 Cls
 CLSCTX
@@ -333,9 +334,11 @@ cvtepu
 cvtsi
 cwd
 cxfksword
+CXSCREEN
 CXSMICON
 CXVIRTUALSCREEN
 cyberrex
+CYSCREEN
 CYSMICON
 CYVIRTUALSCREEN
 cziplib

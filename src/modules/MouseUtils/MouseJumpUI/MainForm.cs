@@ -43,6 +43,29 @@ internal partial class MainForm : Form
         this.Close();
     }
 
+    // Sends an input simulating an absolute mouse move to the new location.
+    private void SimulateMouseMovementEvent(Point location)
+    {
+        NativeMethods.INPUT mouseMoveInput = new NativeMethods.INPUT
+        {
+            type = NativeMethods.INPUTTYPE.INPUT_MOUSE,
+            data = new NativeMethods.InputUnion
+            {
+                mi = new NativeMethods.MOUSEINPUT
+                {
+                    dx = NativeMethods.CalculateAbsoluteCoordinateX(location.X),
+                    dy = NativeMethods.CalculateAbsoluteCoordinateY(location.Y),
+                    mouseData = 0,
+                    dwFlags = (uint)NativeMethods.MOUSE_INPUT_FLAGS.MOUSEEVENTF_MOVE | (uint)NativeMethods.MOUSE_INPUT_FLAGS.MOUSEEVENTF_ABSOLUTE,
+                    time = 0,
+                    dwExtraInfo = 0,
+                },
+            },
+        };
+        NativeMethods.INPUT[] inputs = new NativeMethods.INPUT[] { mouseMoveInput };
+        _ = NativeMethods.SendInput(1, inputs, NativeMethods.INPUT.Size);
+    }
+
     private void Thumbnail_Click(object sender, EventArgs e)
     {
         var mouseEventArgs = (MouseEventArgs)e;
@@ -83,6 +106,10 @@ internal partial class MainForm : Form
             // https://github.com/mikeclayton/FancyMouse/pull/3
             Cursor.Position = scaledLocation;
             Cursor.Position = scaledLocation;
+
+            // Simulate mouse input for handlers that won't just catch the Cursor change
+            SimulateMouseMovementEvent(scaledLocation);
+
             Microsoft.PowerToys.Telemetry.PowerToysTelemetry.Log.WriteEvent(new Telemetry.MouseJumpTeleportCursorEvent());
         }
 
