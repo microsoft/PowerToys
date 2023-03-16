@@ -15,6 +15,10 @@
             x:Name="EmptyToCollapsedConverter"
             EmptyValue="Collapsed"
             NotEmptyValue="Visible" />
+        <converters:StringVisibilityConverter
+            x:Name="EmptyToBoolConverter"
+            EmptyValue="False"
+            NotEmptyValue="True" />
     </Page.Resources>
 
     <controls:SettingsPageControl
@@ -116,7 +120,7 @@
                                     <Button
                                         x:Uid="VideoConference_CameraOverlayImageClear"
                                         Command="{Binding Mode=OneWay, Path=ClearOverlayImage}"
-                                        Visibility="{Binding Path=CameraImageOverlayPath, Mode=OneWay, Converter={StaticResource EmptyToCollapsedConverter}}" />
+                                        IsEnabled="{Binding Path=CameraImageOverlayPath, Mode=OneWay, Converter={StaticResource EmptyToBoolConverter}}" />
                                 </StackPanel>
                             </labs:SettingsCard>
                             <labs:SettingsCard
