@@ -22,9 +22,10 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             // while running elevated, when the issue is solved in WinUI3 it should be changed back
             OpenFileName openFileName = new OpenFileName();
             openFileName.StructSize = Marshal.SizeOf(openFileName);
-            openFileName.Filter = "Images (*.jpg, *.jpeg, *.png)\0*.jpg; *.jpeg; *.png\0";
+            openFileName.Filter = "Images(*.jpg,*.jpeg,*.png)\0*.jpg;*.jpeg;*.png\0";
 
             // make buffer 65k bytes big as the MAX_PATH can be ~32k chars if long path is enable
+            // and unicode uses 2 bytes per character
             openFileName.File = new string(new char[65000]);
             openFileName.MaxFile = openFileName.File.Length;
             openFileName.FileTitle = new string(new char[65000]);
@@ -33,12 +34,10 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             openFileName.Title = string.Empty;
             openFileName.DefExt = null;
 
-            await Task.Delay(10);
-
             bool result = NativeMethods.GetOpenFileName(openFileName);
             if (result)
             {
-                return openFileName.File;
+                return await Task.FromResult<string>(openFileName.File);
             }
 
             return null;
