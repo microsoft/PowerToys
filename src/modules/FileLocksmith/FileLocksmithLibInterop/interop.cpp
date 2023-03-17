@@ -6,20 +6,20 @@
 
 namespace FileLocksmith::Interop
 {
-public
-    ref struct ProcessResult
+    public ref struct ProcessResult
     {
-        System::String ^ name;
+        System::String^ name;
         System::UInt32 pid;
-        System::String ^ user;
-        array<System::String ^> ^ files;
+        System::String^ user;
+        array<System::String^>^ files;
     };
 
-    System::String ^ from_wstring_view(std::wstring_view str) {
+    System::String^ from_wstring_view(std::wstring_view str)
+    {
         return gcnew System::String(str.data(), 0, static_cast<int>(str.size()));
     }
 
-        std::wstring from_system_string(System::String ^ str)
+    std::wstring from_system_string(System::String^ str)
     {
         // TODO use some built-in method
         auto chars = str->ToCharArray();
@@ -49,10 +49,10 @@ public
         return pid_to_full_path(GetCurrentProcessId());
     }
 
-public
-    ref struct NativeMethods
+    public ref struct NativeMethods
     {
-        static array<ProcessResult ^> ^ FindProcessesRecursive(array<System::String ^> ^ paths) {
+        static array<ProcessResult ^> ^ FindProcessesRecursive(array<System::String^>^ paths)
+        {
             const int n = paths->Length;
 
             std::vector<std::wstring> paths_cpp(n);
@@ -86,57 +86,57 @@ public
             return result;
         }
 
-            static System::String
-            ^ PidToFullPath(System::UInt32 pid) {
-                  auto path_cpp = pid_to_full_path(pid);
-                  return from_wstring_view(path_cpp);
-              }
+        static System::String^ PidToFullPath(System::UInt32 pid)
+        {
+            auto path_cpp = pid_to_full_path(pid);
+            return from_wstring_view(path_cpp);
+        }
 
-            static array<System::String ^> ^
-            ReadPathsFromFile() {
-                std::ifstream stream(paths_file());
+        static array<System::String^>^ ReadPathsFromFile()
+        {
+            std::ifstream stream(paths_file());
 
-                std::vector<std::wstring> result_cpp;
-                std::wstring line;
+            std::vector<std::wstring> result_cpp;
+            std::wstring line;
 
-                bool finished = false;
+            bool finished = false;
 
-                while (!finished)
+            while (!finished)
+            {
+                WCHAR ch{};
+                // We have to read data like this
+                if (!stream.read(reinterpret_cast<char*>(&ch), 2))
                 {
-                    WCHAR ch{};
-                    // We have to read data like this
-                    if (!stream.read(reinterpret_cast<char*>(&ch), 2))
+                    finished = true;
+                }
+                else if (ch == L'\n')
+                {
+                    if (line.empty())
                     {
                         finished = true;
                     }
-                    else if (ch == L'\n')
-                    {
-                        if (line.empty())
-                        {
-                            finished = true;
-                        }
-                        else
-                        {
-                            result_cpp.push_back(line);
-                            line = {};
-                        }
-                    }
                     else
                     {
-                        line += ch;
+                        result_cpp.push_back(line);
+                        line = {};
                     }
                 }
-
-                auto result = gcnew array<System::String ^>(static_cast<int>(result_cpp.size()));
-                for (int i = 0; i < result->Length; i++)
+                else
                 {
-                    result[i] = from_wstring_view(result_cpp[i]);
+                    line += ch;
                 }
-
-                return result;
             }
 
-            static System::Boolean StartAsElevated(array<System::String ^> ^ paths)
+            auto result = gcnew array<System::String ^>(static_cast<int>(result_cpp.size()));
+            for (int i = 0; i < result->Length; i++)
+            {
+                result[i] = from_wstring_view(result_cpp[i]);
+            }
+
+            return result;
+        }
+
+        static System::Boolean StartAsElevated(array<System::String ^> ^ paths)
         {
             std::ofstream stream(paths_file());
             const WCHAR newline = L'\n';
