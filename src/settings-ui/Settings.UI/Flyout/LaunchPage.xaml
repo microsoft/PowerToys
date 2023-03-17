@@ -106,7 +106,7 @@
                     Icon="Document"
                     Click="DocsBtn_Click">
                     <ToolTipService.ToolTip>
-                        <TextBlock x:Uid="DocsTooltip"/>
+                        <ToolTip x:Uid="DocsTooltip"/>
                     </ToolTipService.ToolTip>
                 </AppBarButton>
                 <AppBarButton
@@ -117,7 +117,7 @@
                         <FontIcon FontFamily="{StaticResource SymbolThemeFontFamily}" Glyph="&#xEBE8;"/>
                     </AppBarButton.Icon>
                     <ToolTipService.ToolTip>
-                        <TextBlock x:Uid="BugReportTooltip"/>
+                        <ToolTip x:Uid="BugReportTooltip"/>
                     </ToolTipService.ToolTip>
                 </AppBarButton>
                 <AppBarButton
@@ -126,17 +126,19 @@
                     Click="SettingsBtn_Click"
                     Icon="Setting">
                     <ToolTipService.ToolTip>
-                        <TextBlock x:Uid="SettingsTooltip"/>
+                        <ToolTip x:Uid="SettingsTooltip"/>
                     </ToolTipService.ToolTip>
                 </AppBarButton>
                 <AppBarSeparator />
                 <AppBarButton
                     x:Name="CloseBtn"
-                    ToolTipService.ToolTip="Quit"
                     Click="CloseButton_Click">
                     <AppBarButton.Icon>
                         <FontIcon FontFamily="{StaticResource SymbolThemeFontFamily}" Glyph="&#xE8BB;"/>
                     </AppBarButton.Icon>
+                    <ToolTipService.ToolTip>
+                        <ToolTip x:Uid="CloseTooltip"/>
+                    </ToolTipService.ToolTip>
                 </AppBarButton>
             </CommandBar>
         </StackPanel>

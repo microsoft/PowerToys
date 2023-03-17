@@ -2996,16 +2996,22 @@ Activate by holding the key for the character you want to add an accent to, then
     <value>Back</value>
   </data>
   <data name="BugReportBtn.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
-    <value>Bug report</value>
+    <value>Create bug report file</value>
   </data>
-  <data name="BugReportTooltip.Text" xml:space="preserve">
-    <value>Bug report</value>
+  <data name="BugReportTooltip.Content" xml:space="preserve">
+    <value>Create bug report file</value>
   </data>
   <data name="DocsBtn.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
-    <value>Documentation</value>
+    <value>Go to online documentation</value>
   </data>
-  <data name="DocsTooltip.Text" xml:space="preserve">
-    <value>Documentation</value>
+  <data name="DocsTooltip.Content" xml:space="preserve">
+    <value>Go to online documentation</value>
+  </data>
+  <data name="CloseBtn.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>Close PowerToys</value>
+  </data>
+  <data name="CloseTooltip.Content" xml:space="preserve">
+    <value>Close PowerToys</value>
   </data>
   <data name="FZEditorString" xml:space="preserve">
     <value>FancyZones Editor</value>
@@ -3018,10 +3024,10 @@ Activate by holding the key for the character you want to add an accent to, then
     <value>More</value>
   </data>
   <data name="SettingsBtn.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
-    <value>Settings</value>
+    <value>Open PowerToys settings</value>
   </data>
-  <data name="SettingsTooltip.Text" xml:space="preserve">
-    <value>Settings</value>
+  <data name="SettingsTooltip.Content" xml:space="preserve">
+    <value>Open PowerToys settings</value>
   </data>
   <data name="ShortcutsTxt.Text" xml:space="preserve">
     <value>Shortcuts</value>
