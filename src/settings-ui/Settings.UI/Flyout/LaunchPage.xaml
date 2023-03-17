@@ -131,9 +131,9 @@
                 </AppBarButton>
                 <AppBarSeparator />
                 <AppBarButton
-                    x:Name="QuitBtn"
+                    x:Name="CloseBtn"
                     ToolTipService.ToolTip="Quit"
-                    Click="QuitButton_Click">
+                    Click="CloseButton_Click">
                     <AppBarButton.Icon>
                         <FontIcon FontFamily="{StaticResource SymbolThemeFontFamily}" Glyph="&#xE8BB;"/>
                     </AppBarButton.Icon>
