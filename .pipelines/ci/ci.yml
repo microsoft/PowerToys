@@ -19,8 +19,13 @@ pr:
   paths:
     exclude:
       - README.md
+      - CODE_OF_CONDUCT.md
+      - COMMUNITY.md
+      - CONTRIBUTING.md
+      - NOTICE.md
+      - SECURITY.md
+      - SUPPORT.md
       - doc/*
-      - **/*.md
        
 #     0.0.yyMM.dd##
 #     0.0.1904.0900
