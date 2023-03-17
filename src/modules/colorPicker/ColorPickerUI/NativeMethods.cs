@@ -22,6 +22,9 @@ namespace ColorPicker
         public const int KfAltdown = 0x2000;
         public const int LlkhfAltdown = KfAltdown >> 8;
         public const int MonitorinfofPrimary = 0x00000001;
+        public const int CCHDEVICENAME = 32;
+        public const int CCHFORMNAME = 32;
+        public const uint ENUM_CURRENT_SETTINGS = 4294967295;
         public const int VK_SHIFT = 0x10;
         public const int VK_CONTROL = 0x11;
         public const int VK_MENU = 0x12;
@@ -56,6 +59,13 @@ namespace ColorPicker
         [ResourceExposure(ResourceScope.None)]
         internal static extern bool EnumDisplayMonitors(
             HandleRef hdc, IntPtr rcClip, MonitorEnumProc lpfnEnum, IntPtr dwData);
+
+        [DllImport("user32.dll", SetLastError = false, CharSet = CharSet.Unicode)]
+        [return: MarshalAs(UnmanagedType.Bool)]
+        internal static extern bool EnumDisplaySettingsW(
+            string lpszDeviceName,
+            uint iModeNum,
+            out DEVMODEW lpDevMode);
 
         [DllImport("user32.dll")]
         internal static extern bool GetCursorPos(out PointInter lpPoint);
@@ -129,6 +139,50 @@ namespace ColorPicker
             public int dwFlags;
             [MarshalAs(UnmanagedType.ByValArray, SizeConst = 32)]
             public char[] szDevice = new char[32];
+        }
+
+        [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Unicode)]
+        internal struct DEVMODEW
+        {
+            [MarshalAs(UnmanagedType.ByValTStr, SizeConst = CCHDEVICENAME)]
+            public string dmDeviceName;
+
+            public ushort dmSpecVersion;
+            public ushort dmDriverVersion;
+            public ushort dmSize;
+            public ushort dmDriverExtra;
+            public uint dmFields;
+
+            public int dmPositionX;
+            public int dmPositionY;
+            public uint dmDisplayOrientation;
+            public uint dmDisplayFixedOutput;
+
+            public short dmColor;
+            public short dmDuplex;
+            public short dmYResolution;
+            public short dmTTOption;
+            public short dmCollate;
+
+            [MarshalAs(UnmanagedType.ByValTStr, SizeConst = CCHFORMNAME)]
+            public string dmFormName;
+
+            public short dmLogPixels;
+            public uint dmBitsPerPel;
+            public uint dmPelsWidth;
+            public uint dmPelsHeight;
+
+            public uint dmDisplayFlags;
+            public uint dmDisplayFrequency;
+
+            public uint dmICMMethod;
+            public uint dmICMIntent;
+            public uint dmMediaType;
+            public uint dmDitherType;
+            public uint dmReserved1;
+            public uint dmReserved2;
+            public uint dmPanningWidth;
+            public uint dmPanningHeight;
         }
 
         [StructLayout(LayoutKind.Sequential)]

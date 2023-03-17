@@ -41,6 +41,10 @@ amd
 AModifier
 AMPROPERTY
 AMPROPSETID
+<<<<<<< HEAD
+=======
+ANDSCANS
+>>>>>>> origin/main
 anges
 angularsen
 Animatable
@@ -129,8 +133,10 @@ BITMAPINFOHEADER
 bitmask
 BITSPIXEL
 bla
+BLACKONWHITE
 Blockquotes
 blogs
+Blt
 BLUEGRAY
 Bluetooth
 BLURBEHIND
@@ -170,9 +176,14 @@ CALG
 callbackptr
 Cangjie
 CANRENAME
+CAPTUREBLT
 CAPTURECHANGED
 CAtl
 cch
+CCHDEVICENAME
+CCHDEVICENAME
+CCHFORMNAME
+CCHFORMNAME
 CCom
 CContext
 cdecl
@@ -239,6 +250,7 @@ colorformat
 colorhistory
 colorhistorylimit
 COLORKEY
+COLORONCOLOR
 colorpicker
 COLORREF
 comctl
@@ -345,6 +357,7 @@ dcompi
 DCompiler
 DComposition
 DCR
+DCs
 DDevice
 ddf
 DDxgi
@@ -365,6 +378,7 @@ DEFERERASE
 DEFPUSHBUTTON
 deinitialization
 DELA
+DELETESCANS
 deletethis
 Delimarsky
 dend
@@ -383,6 +397,8 @@ devblogs
 devdocs
 devenum
 devmgmt
+DEVMODEW
+DEVMODEW
 DEVMON
 devpkey
 DEVSOURCE
@@ -418,6 +434,7 @@ drawingcolor
 dreamsofameaningfullife
 drivedetectionwarning
 dshow
+DSTINVERT
 dutil
 DVASPECT
 DVASPECTINFO
@@ -976,6 +993,8 @@ mediatype
 Melman
 MENUITEMINFO
 MENUITEMINFOW
+MERGECOPY
+MERGEPAINT
 Metadatas
 metafile
 mfapi
@@ -1126,6 +1145,7 @@ NOINHERITLAYOUT
 NOINTERFACE
 NOLINKINFO
 NOMINMAX
+NOMIRRORBITMAP
 NOMOVE
 NONAME
 nonclient
@@ -1155,6 +1175,8 @@ notmatch
 Noto
 NOTOPMOST
 NOTRACK
+NOTSRCCOPY
+NOTSRCERASE
 NOUPDATE
 NOZORDER
 NPH
@@ -1200,6 +1222,7 @@ openxmlformats
 OPTIMIZEFORINVOKE
 ORAW
 ORPHANEDDIALOGTITLE
+ORSCANS
 oss
 ostr
 OSVERSIONINFOEX
@@ -1231,8 +1254,11 @@ PArgb
 parray
 PARTIALCONFIRMATIONDIALOGTITLE
 pasteplain
+PATCOPY
 pathcch
 Pathto
+PATINVERT
+PATPAINT
 PAUDIO
 pbc
 Pbgra
@@ -1248,6 +1274,8 @@ pdtobj
 pdw
 PDWORD
 pedrolamas
+Pels
+Pels
 PERCEIVEDFLAG
 perfmon
 pesi
@@ -1471,6 +1499,7 @@ roadmap
 robmensching
 Roboto
 rooler
+rop
 roslyn
 roundf
 ROUNDSMALL
@@ -1634,8 +1663,12 @@ spsi
 spsia
 spsrm
 spsv
+SRCAND
 SRCCOPY
+SRCERASE
 Srch
+SRCINVERT
+SRCPAINT
 sre
 SResize
 srme
@@ -1937,6 +1970,7 @@ website
 wekyb
 Wevtapi
 wgpocpl
+WHITEONBLACK
 whitespaces
 WIC
 wifi
@@ -2075,6 +2109,8 @@ yinle
 yinwang
 yinyue
 YOffset
+YResolution
+YResolution
 YStr
 YUY
 yuyoyuppe
