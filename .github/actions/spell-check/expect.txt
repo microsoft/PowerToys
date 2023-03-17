@@ -288,7 +288,6 @@ cppruntime
 cppstd
 cppwinrt
 CProj
-createcompatibledc
 CREATESCHEDULEDTASK
 CREATESTRUCT
 CREATEWINDOWFAILED
@@ -703,6 +702,7 @@ HTTRANSPARENT
 HValue
 Hvci
 hwb
+HWHEEL
 HWINEVENTHOOK
 hwnd
 HWNDFIRST
@@ -861,7 +861,9 @@ LCONTROL
 LCtrl
 Ldone
 ldx
+LEFTDOWN
 LEFTSCROLLBAR
+LEFTUP
 lego
 len
 LError
@@ -982,6 +984,8 @@ mediatype
 Melman
 MENUITEMINFO
 MENUITEMINFOW
+MERGECOPY
+MERGEPAINT
 Metadatas
 metafile
 mfapi
@@ -995,6 +999,8 @@ mftransform
 Mgmt
 mic
 microsoft
+MIDDLEDOWN
+MIDDLEUP
 Midl
 mii
 MIIM
@@ -1121,6 +1127,7 @@ NOACTIVATE
 NOAGGREGATION
 NOASYNC
 NOCLOSEPROCESS
+NOCOALESCE
 NOCOPYBITS
 nodeca
 nodiscard
@@ -1467,7 +1474,9 @@ rgs
 rhs
 ricardosantos
 RIDEV
+RIGHTDOWN
 RIGHTSCROLLBAR
+RIGHTUP
 riid
 RKey
 RLO
@@ -1799,6 +1808,7 @@ TRK
 trl
 TServer
 TStr
+TValue
 TWF
 tymed
 typedef
@@ -1899,6 +1909,7 @@ VIDEOINFOHEADER
 viewbox
 viewmodel
 vih
+VIRTUALDESK
 visiblecolorformats
 Visibletrue
 VKey
@@ -1980,7 +1991,6 @@ winevt
 winexe
 winforms
 winfx
-wingdi
 winget
 wingetcreate
 Winhook
@@ -2065,6 +2075,7 @@ XBUTTONDOWN
 XBUTTONUP
 xcopy
 XDocument
+XDOWN
 XElement
 XFile
 XIncrement
@@ -2075,6 +2086,7 @@ XPixel
 XResource
 xsi
 XStr
+XUP
 XVIRTUALSCREEN
 YAxis
 YIncrement
