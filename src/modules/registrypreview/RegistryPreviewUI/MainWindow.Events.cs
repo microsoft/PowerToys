@@ -6,8 +6,10 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Globalization;
 using System.IO;
 using CommunityToolkit.WinUI.UI.Controls;
+using CommunityToolkit.WinUI.UI.Converters;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Data;
@@ -297,7 +299,7 @@ namespace RegistryPreview
         {
             // use the REG file's filename and verb so we can respect the selected editor
             Process process = new Process();
-            process.StartInfo.FileName = string.Format("\"{0}\"", App.AppFilename);
+            process.StartInfo.FileName = string.Format(CultureInfo.InvariantCulture, "\"{0}\"", App.AppFilename);
             process.StartInfo.Verb = "Edit";
             process.StartInfo.UseShellExecute = true;
 

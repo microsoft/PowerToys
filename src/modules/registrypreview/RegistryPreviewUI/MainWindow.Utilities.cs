@@ -6,6 +6,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Globalization;
 using System.IO;
 using System.Reflection;
 
@@ -173,7 +174,7 @@ namespace RegistryPreview
 
             // REG files have to start with one of two headers and it's case insensitive
             registryLine = registryLines[0];
-            registryLine = registryLine.ToLower();
+            registryLine = registryLine.ToLowerInvariant();
 
             // make sure that this is a valid REG file, based on the first line of the file
             switch (registryLine)
@@ -199,7 +200,7 @@ namespace RegistryPreview
             {
                 // continue until we have nothing left to read
                 // switch logic, based off what the current line we're reading is
-                if (registryLine.StartsWith("["))
+                if (registryLine.StartsWith("[", StringComparison.InvariantCulture))
                 {
                     // this is a key!
                     registryLine = registryLine.Replace("[", string.Empty);
@@ -207,7 +208,7 @@ namespace RegistryPreview
 
                     treeViewNode = AddTextToTree(registryLine);
                 }
-                else if (registryLine.StartsWith("\"") || registryLine.StartsWith("@"))
+                else if (registryLine.StartsWith("\"", StringComparison.InvariantCulture) || registryLine.StartsWith("@", StringComparison.InvariantCulture))
                 {
                     // this is a named value or default value (denoted with the @)
 
@@ -216,7 +217,7 @@ namespace RegistryPreview
                     if ((equal < 0) || (equal > registryLine.Length - 1))
                     {
                         // something is very wrong
-                        Debug.WriteLine(string.Format("SOMETHING WENT WRONG: {0}", registryLine));
+                        Debug.WriteLine(string.Format(CultureInfo.InvariantCulture, "SOMETHING WENT WRONG: {0}", registryLine));
                         break;
                     }
 
@@ -234,7 +235,7 @@ namespace RegistryPreview
                     registryValue = new RegistryValue(name, "REG_SZ", string.Empty);
 
                     // if the first character is a " then this is a string value; get rid of the first and last "
-                    if (value.StartsWith("\""))
+                    if (value.StartsWith("\"", StringComparison.InvariantCulture))
                     {
                         value = value.Remove(0, 1);
 
@@ -246,27 +247,27 @@ namespace RegistryPreview
                     }
 
                     // check the header of the Value's value and format it accordingly
-                    if (value.StartsWith("dword:"))
+                    if (value.StartsWith("dword:", StringComparison.InvariantCultureIgnoreCase))
                     {
                         registryValue.Type = "REG_DWORD";
                         value = value.Replace("dword:", string.Empty);
                     }
-                    else if (value.StartsWith("hex(b):"))
+                    else if (value.StartsWith("hex(b):", StringComparison.InvariantCultureIgnoreCase))
                     {
                         registryValue.Type = "REG_QWORD";
                         value = value.Replace("hex(b):", string.Empty);
                     }
-                    else if (value.StartsWith("hex:"))
+                    else if (value.StartsWith("hex:", StringComparison.InvariantCultureIgnoreCase))
                     {
                         registryValue.Type = "REG_BINARY";
                         value = value.Replace("hex:", string.Empty);
                     }
-                    else if (value.StartsWith("hex(2):"))
+                    else if (value.StartsWith("hex(2):", StringComparison.InvariantCultureIgnoreCase))
                     {
                         registryValue.Type = "REG_EXAND_SZ";
                         value = value.Replace("hex(2):", string.Empty);
                     }
-                    else if (value.StartsWith("hex(7):"))
+                    else if (value.StartsWith("hex(7):", StringComparison.InvariantCultureIgnoreCase))
                     {
                         registryValue.Type = "REG_MULTI_SZ";
                         value = value.Replace("hex(7):", string.Empty);
@@ -278,7 +279,7 @@ namespace RegistryPreview
 
                     // If the end of a decimal line ends in a \ then you have to keep
                     // reading the block as a single value!
-                    while (value.EndsWith(@",\"))
+                    while (value.EndsWith(@",\", StringComparison.InvariantCulture))
                     {
                         value = value.TrimEnd('\\');
                         index++;
@@ -436,7 +437,7 @@ namespace RegistryPreview
 
                 // before moving onto the next node, tag the previous node and update the path
                 previousNode = newNode;
-                fullPath = fullPath.Replace(string.Format(@"\{0}", individualKeys[i]), string.Empty);
+                fullPath = fullPath.Replace(string.Format(CultureInfo.InvariantCulture, @"\{0}", individualKeys[i]), string.Empty);
 
                 // One last check: if we get here, the parent of this node is not yet in the tree, so we need to add it as a RootNode
                 if (i == 0)
@@ -526,7 +527,7 @@ namespace RegistryPreview
             if (File.Exists(fileMerge))
             {
                 // If Merge was called, pass in the filename as a param to the Editor
-                process.StartInfo.Arguments = string.Format("\"{0}\"", fileMerge);
+                process.StartInfo.Arguments = string.Format(CultureInfo.InvariantCulture, "\"{0}\"", fileMerge);
             }
 
             try
@@ -568,7 +569,7 @@ namespace RegistryPreview
 
             InputCursor cursor = InputSystemCursor.Create(wait ? InputSystemCursorShape.Wait : InputSystemCursorShape.Arrow);
             System.Type type = typeof(UIElement);
-            type.InvokeMember("ProtectedCursor", BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.SetProperty | BindingFlags.Instance, null, uiElement, new object[] { cursor });
+            type.InvokeMember("ProtectedCursor", BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.SetProperty | BindingFlags.Instance, null, uiElement, new object[] { cursor }, CultureInfo.InvariantCulture);
         }
 
         /// <summary>

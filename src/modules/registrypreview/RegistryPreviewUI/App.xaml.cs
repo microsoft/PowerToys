@@ -57,7 +57,10 @@ namespace RegistryPreview
 
         private Window appWindow;
 
-        [SuppressMessage("Microsoft.StyleCop.CSharp.OrderingRules", "SA1401: FieldsMustBePrivate", Justification = "TODO: consider making it a property")]
-        public static string AppFilename = string.Empty;
+#pragma warning disable SA1401 // Fields should be private
+#pragma warning disable CA2211 // Non-constant fields should not be visible. TODO: consider making it a property
+        public static string AppFilename;
+#pragma warning restore CA2211 // Non-constant fields should not be visible
+#pragma warning restore SA1401 // Fields should be private
     }
 }

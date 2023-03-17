@@ -24,13 +24,13 @@ namespace RegistryPreview
 
         // private members
         private Microsoft.UI.Windowing.AppWindow appWindow;
-        private ResourceLoader resourceLoader = null;
-        private bool visualTreeReady = false;
-        private Dictionary<string, TreeViewNode> mapRegistryKeys = null;
+        private ResourceLoader resourceLoader;
+        private bool visualTreeReady;
+        private Dictionary<string, TreeViewNode> mapRegistryKeys;
         private List<RegistryValue> listRegistryValues;
-        private SolidColorBrush solidColorBrushNormal = null;
-        private SolidColorBrush solidColorBrushReadOnly = null;
-        private JsonObject jsonSettings = null;
+        private SolidColorBrush solidColorBrushNormal;
+        private SolidColorBrush solidColorBrushReadOnly;
+        private JsonObject jsonSettings;
         private string settingsFolder = string.Empty;
         private string settingsFile = string.Empty;
 
