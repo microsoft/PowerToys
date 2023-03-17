@@ -25,9 +25,9 @@ namespace Wox.Plugin.Common
         public string GetLocalizedName(string path)
         {
             // Checking cache if path is already localized
-            if (_localizationCache.ContainsKey(path.ToLowerInvariant()))
+            if (_localizationCache.TryGetValue(path.ToLowerInvariant(), out string value))
             {
-                return _localizationCache[path.ToLowerInvariant()];
+                return value;
             }
 
             Guid shellItemType = ShellItemTypeConstants.ShellItemGuid;

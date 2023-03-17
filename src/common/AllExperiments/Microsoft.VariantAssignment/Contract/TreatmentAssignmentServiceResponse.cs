@@ -5,7 +5,7 @@
 // The goal of this class is to just mock out the Microsoft.VariantAssignment close source objects
 namespace Microsoft.VariantAssignment.Contract
 {
-    internal class TreatmentAssignmentServiceResponse : VariantAssignmentServiceResponse
+    internal sealed class TreatmentAssignmentServiceResponse : VariantAssignmentServiceResponse
     {
     }
 }

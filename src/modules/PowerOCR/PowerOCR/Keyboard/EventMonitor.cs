@@ -12,7 +12,7 @@ namespace PowerOCR.Keyboard
     /// This class handles the interaction model when running from PowerToys Run.
     /// Handles activation through the event sent by the runner.
     /// </summary>
-    internal class EventMonitor
+    internal sealed class EventMonitor
     {
         public EventMonitor(System.Windows.Threading.Dispatcher dispatcher, System.Threading.CancellationToken exitToken)
         {

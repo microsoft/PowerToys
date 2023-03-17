@@ -8,7 +8,7 @@ using System.Windows.Controls;
 
 namespace FancyZonesEditor.Controls
 {
-    internal class CustomSliderAutomationPeer : SliderAutomationPeer
+    internal sealed class CustomSliderAutomationPeer : SliderAutomationPeer
     {
         private string name = string.Empty;
 

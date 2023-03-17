@@ -49,6 +49,7 @@ angularsen
 Animatable
 ansicolor
 ANull
+ANDSCANS
 AOC
 aocfnapldcnfbofgmbbllojgocaelgdd
 APARTMENTTHREADED
@@ -139,7 +140,9 @@ BITMAPINFOHEADER
 bitmask
 BITSPIXEL
 bla
+BLACKONWHITE
 Blockquotes
+Blt
 blogs
 BLUEGRAY
 Bluetooth
@@ -185,6 +188,7 @@ CALG
 callbackptr
 Cangjie
 CANRENAME
+CAPTUREBLT
 CAPTURECHANGED
 CAtl
 cch
@@ -258,6 +262,7 @@ colorformat
 colorhistory
 colorhistorylimit
 COLORKEY
+COLORONCOLOR
 colorpicker
 COLORREF
 comctl
@@ -305,6 +310,7 @@ CProj
 CREATESCHEDULEDTASK
 CREATESTRUCT
 CREATEWINDOWFAILED
+createcompatibledc
 critsec
 Crossdevice
 CRSEL
@@ -368,6 +374,7 @@ dcomp
 dcompi
 DComposition
 DCR
+DCs
 DDevice
 ddf
 DDxgi
@@ -388,6 +395,7 @@ DEFERERASE
 DEFPUSHBUTTON
 deinitialization
 DELA
+DELETESCANS
 deletethis
 Delimarsky
 dend
@@ -442,6 +450,7 @@ drawingcolor
 dreamsofameaningfullife
 drivedetectionwarning
 dshow
+DSTINVERT
 dutil
 DVASPECT
 DVASPECTINFO
@@ -1035,6 +1044,8 @@ Melman
 MENUITEMINFO
 MENUITEMINFOW
 menurc
+MERGECOPY
+MERGEPAINT
 Metadatas
 metafile
 mfapi
@@ -1193,6 +1204,7 @@ NOINHERITLAYOUT
 NOINTERFACE
 NOLINKINFO
 NOMINMAX
+NOMIRRORBITMAP
 NOMOVE
 NONAME
 nonclient
@@ -1224,6 +1236,8 @@ notmatch
 Noto
 NOTOPMOST
 NOTRACK
+NOTSRCCOPY
+NOTSRCERASE
 NOUPDATE
 NOZORDER
 NPH
@@ -1273,6 +1287,7 @@ openxmlformats
 OPTIMIZEFORINVOKE
 ORAW
 ORPHANEDDIALOGTITLE
+ORSCANS
 oss
 ostr
 OSVERSIONINFOEX
@@ -1304,8 +1319,11 @@ PArgb
 parray
 PARTIALCONFIRMATIONDIALOGTITLE
 pasteplain
+PATCOPY
 pathcch
 Pathto
+PATINVERT
+PATPAINT
 PAUDIO
 pbc
 Pbgra
@@ -1547,6 +1565,7 @@ Roamable
 robmensching
 Roboto
 rooler
+rop
 roslyn
 Rothera
 roundf
@@ -1716,8 +1735,12 @@ spsi
 spsia
 spsrm
 spsv
+SRCAND
 SRCCOPY
+SRCERASE
 Srch
+SRCINVERT
+SRCPAINT
 sre
 Srednekolymsk
 SResize
@@ -1853,6 +1876,7 @@ timeunion
 timeutil
 timezones
 Titlecase
+TKey
 TLayout
 tlb
 TMPVAR
@@ -2038,6 +2062,7 @@ website
 wekyb
 Wevtapi
 wgpocpl
+WHITEONBLACK
 whitespaces
 WIC
 wifi
@@ -2072,6 +2097,7 @@ winevt
 winexe
 winforms
 winfx
+wingdi
 winget
 wingetcreate
 Winhook
