@@ -29,8 +29,6 @@ AFFINETRANSFORM
 AFX
 AGGREGATABLE
 AHybrid
-Akrotiri
-Aktobe
 ALarger
 alekhyareddy
 ALLAPPS
@@ -43,7 +41,6 @@ amd
 AModifier
 AMPROPERTY
 AMPROPSETID
-Andreanof
 anges
 angularsen
 Animatable
@@ -71,10 +68,8 @@ appref
 apps
 appwindow
 appwiz
-appxpackage
 APSTUDIO
 AQS
-Aqtobe
 ARCHITEW
 arcosh
 ARemapped
@@ -93,7 +88,6 @@ ASingle
 ASSOCCHANGED
 ASYNCWINDOWPLACEMENT
 ASYNCWINDOWPOS
-Atikokan
 atl
 atlbase
 atlcom
@@ -101,7 +95,6 @@ atleast
 atlfile
 atlstr
 Attribs
-Atyrau
 aumid
 Aut
 Authenticode
@@ -112,18 +105,14 @@ AUTOMATIONPROPERTIES
 Autorun
 AUTOUPDATE
 AValid
-Avanc
 awakeness
 awakeversion
 AYUV
 azman
 backtracer
 bak
-Bashkortostan
-Bayan
 bbwe
 bck
-Belarus
 betadele
 betsegaw
 BGR
@@ -161,7 +150,6 @@ bricelam
 BRIGHTGREEN
 Browsable
 bsd
-Bson
 bstr
 bthprops
 bti
@@ -173,14 +161,10 @@ bugreport
 BUILDNUMBER
 buildtask
 buildtransitive
-Burkina
-Buryatia
 BUTTONUP
 BValue
 BYPOSITION
 bytearray
-Cabo
-Caiguna
 CALG
 callbackptr
 Cangjie
@@ -188,6 +172,8 @@ CANRENAME
 CAPTURECHANGED
 CAtl
 cch
+CCHDEVICENAME
+CCHFORMNAME
 CCom
 CContext
 cdecl
@@ -204,28 +190,24 @@ Changemove
 chdir
 CHILDACTIVATE
 CHILDWINDOW
-Choibalsan
 chrdavis
 Chrzan
 cht
-Chukotka
-Chuuk
 CIELAB
 CIEXYZ
 cim
 CImage
 cla
 clangformat
-clayton
 CLASSDC
 CLASSNOTAVAILABLE
+clayton
 clickable
 clickonce
 CLIENTEDGE
 clientid
 clientside
 CLIPCHILDREN
-Clipperton
 CLIPSIBLINGS
 clrcall
 Cls
@@ -244,7 +226,6 @@ cmpgt
 cmyk
 cne
 cnt
-Cocklebiddy
 coclass
 CODENAME
 codeofconduct
@@ -268,7 +249,6 @@ cominterop
 commandline
 COMMANDTITLE
 commctrl
-Comoros
 compmgmt
 COMPOSITIONFULL
 comsupp
@@ -290,7 +270,6 @@ CONTROLL
 CONTROLPARENT
 Controlz
 copiedcolorrepresentation
-corewebview
 cortana
 cotaskmem
 COULDNOT
@@ -320,7 +299,6 @@ CTRLALTDEL
 Ctrls
 Ctx
 CUI
-Cunha
 currentculture
 CURRENTDIR
 CURSORINFO
@@ -342,12 +320,10 @@ cziplib
 Dac
 dacl
 damienleroy
-Danmarkshavn
 DARKPURPLE
 DARKTEAL
 DARKYELLOW
 datareader
-datatemplate
 Datavalue
 dataversion
 DATAW
@@ -403,6 +379,7 @@ devblogs
 devdocs
 devenum
 devmgmt
+DEVMODEW
 DEVMON
 devpkey
 DEVSOURCE
@@ -425,7 +402,6 @@ dllmain
 DNLEN
 Dns
 DONOTROUND
-DONTRESOLVEDLLREFERENCES
 DONTVALIDATEPATH
 dotnet
 DPICHANGED
@@ -488,7 +464,6 @@ endpointvolume
 endregion
 ENTERSIZEMOVE
 enu
-enumerationoptions
 EOAC
 epicgames
 epu
@@ -502,10 +477,8 @@ ESettings
 esize
 esn
 esrp
-Eswatini
 etl
 etw
-Eucla
 EUQ
 eurochange
 eventlog
@@ -542,7 +515,6 @@ fancyzones
 FANCYZONESDRAWLAYOUTTEST
 FANCYZONESEDITOR
 Farbraum
-Faroe
 FARPROC
 fdw
 feimage
@@ -582,7 +554,6 @@ FSCTL
 fsmgmt
 FTYPE
 Functiondiscoverykeys
-Futuna
 fwlink
 FZE
 gabime
@@ -600,8 +571,6 @@ gcode
 gdi
 gdiplus
 GDISCALED
-getancestor
-getasynckeystate
 GETDESKWALLPAPER
 GETDLGCODE
 GETDPISCALEDSIZE
@@ -611,7 +580,6 @@ GETSTATE
 GETTEXT
 GETTEXTLENGTH
 GHND
-globalassemblycache
 Globbing
 GMEM
 GNumber
@@ -630,7 +598,6 @@ gwl
 GWLP
 HACCEL
 handlekeyboardhookevent
-handlerroutine
 hangeul
 Hankaku
 hanselman
@@ -660,7 +627,6 @@ HEB
 Heiko
 Helpline
 helptext
-Heure
 HGFE
 hglobal
 hhk
@@ -699,7 +665,6 @@ hotkeycontrol
 hotkeys
 hotlight
 hotspot
-Hovd
 HPAINTBUFFER
 HPALETTE
 HRAWINPUT
@@ -723,7 +688,6 @@ HTTRANSPARENT
 HValue
 Hvci
 hwb
-HWHEEL
 HWINEVENTHOOK
 hwnd
 HWNDFIRST
@@ -781,7 +745,6 @@ Inlines
 inorder
 INPC
 inproc
-inputdev
 INPUTHARDWARE
 INPUTKEYBOARD
 INPUTLANGCHANGED
@@ -810,7 +773,6 @@ ipcmanager
 IPlugin
 IPower
 IPREVIEW
-ipreviewhandler
 ipreviewhandlervisualssetfont
 IProperty
 IPublic
@@ -825,11 +787,8 @@ iss
 ITask
 ith
 ITHUMBNAIL
-Ittoqqortoormiit
 IUI
 IUnknown
-ivirtualdesktopmanager
-Ivoire
 IWbem
 IWIC
 iwr
@@ -864,20 +823,11 @@ keynum
 keyremaps
 Keytool
 keyup
-Khakassia
-Khanty
-Khovd
 KILLFOCUS
 killrunner
-Kitts
 Knownfolders
-Krai
 KSPROPERTY
-Kwango
-Kwilu
 Kybd
-Kyrgyzstan
-Kyzylorda
 LAlt
 Lambson
 langword
@@ -896,8 +846,6 @@ LCONTROL
 LCtrl
 Ldone
 ldx
-LEFTDOWN
-LEFTUP
 LEFTSCROLLBAR
 lego
 len
@@ -923,7 +871,6 @@ LMEM
 LMENU
 lnk
 LOADFROMFILE
-LOADLIBRARYASDATAFILE
 LOBYTE
 LOCALAPPDATA
 LOCALDISPLAY
@@ -976,16 +923,12 @@ lstrcmpi
 lstrlen
 LTRB
 LTRREADING
-Luhansk
 luid
 lusrmgr
 LWA
 lwin
 LZero
 lzw
-Maarten
-Macquarie
-Magadan
 Mainwindow
 majortype
 MAJORVERSION
@@ -993,10 +936,7 @@ makecab
 MAKEINTRESOURCE
 MAKEINTRESOURCEW
 makepri
-Mangere
-Mangystau
 manifestdependency
-Mansi
 MAPPEDTOSAMEKEY
 MAPTOSAMESHORTCUT
 MAPVK
@@ -1004,10 +944,8 @@ Markdig
 markdownpreviewhandler
 MARKDOWNPREVIEWHANDLERCPP
 Markovic
-Marquesas
 martinchrzan
 martinmoene
-Mato
 Maximizable
 MAXIMIZEBOX
 MAXSHORTCUTSIZE
@@ -1019,8 +957,6 @@ MBUTTON
 MBUTTONDBLCLK
 MBUTTONDOWN
 MBUTTONUP
-MCDT
-MCST
 MDICHILD
 MDL
 mdtext
@@ -1031,7 +967,6 @@ mediatype
 Melman
 MENUITEMINFO
 MENUITEMINFOW
-menurc
 Metadatas
 metafile
 mfapi
@@ -1046,8 +981,6 @@ Mgmt
 mic
 microsoft
 Midl
-MIDDLEDOWN
-MIDDLEUP
 mii
 MIIM
 millis
@@ -1061,7 +994,6 @@ miniz
 minlevel
 MINORVERSION
 Miracast
-Mishkeegogamang
 mjpg
 mkd
 mkdn
@@ -1077,8 +1009,6 @@ mockapi
 MODECHANGE
 modernwpf
 MODESPRUNED
-Moldova
-Mongala
 MONITORINFO
 MONITORINFOEX
 MONITORINFOEXW
@@ -1123,15 +1053,11 @@ MTND
 Mul
 MULTIPLEUSE
 multizone
-Mundrabilla
 mvvm
 myfile
 MYICON
-MYTZ
 NAMECHANGE
 nameof
-Navassa
-navigatetostring
 NCACTIVATE
 ncc
 NCCALCSIZE
@@ -1153,7 +1079,6 @@ NCRBUTTONDBLCLK
 NCRBUTTONDOWN
 NCRBUTTONUP
 NCRENDERING
-Ndombe
 ndp
 NEEDDISPATCH
 Nemeth
@@ -1181,7 +1106,6 @@ NOACTIVATE
 NOAGGREGATION
 NOASYNC
 NOCLOSEPROCESS
-NOCOALESCE
 NOCOPYBITS
 nodeca
 nodiscard
@@ -1196,7 +1120,6 @@ nonclient
 NONCONVERT
 NONELEVATED
 NONINFRINGEMENT
-nonpackaged
 nonstd
 NOOWNERZORDER
 NOPARENTNOTIFY
@@ -1209,7 +1132,6 @@ NOREPOSITION
 norestart
 NORMALDISPLAY
 NORMALUSER
-Noronha
 NOSEARCH
 NOSENDCHANGING
 NOSIZE
@@ -1234,8 +1156,6 @@ nullonfailure
 numberbox
 NUMLOCK
 NUMPAD
-Nunavut
-Nusa
 nwc
 Objbase
 OBJID
@@ -1256,8 +1176,6 @@ oldtheme
 oleaut
 OLECHAR
 OLEDB
-oledbcommand
-oledbconnection
 OLIVEGREEN
 onebranch
 onenote
@@ -1318,6 +1236,7 @@ pdtobj
 pdw
 PDWORD
 pedrolamas
+Pels
 PERCEIVEDFLAG
 perfmon
 pesi
@@ -1341,7 +1260,6 @@ PINDIR
 pinfo
 pinvoke
 pipename
-Pitcairn
 PKBDLLHOOKSTRUCT
 PKEY
 plib
@@ -1353,7 +1271,6 @@ plugins
 pluginsmodel
 PMSIHANDLE
 Pnp
-Pohnpei
 Popups
 POPUPWINDOW
 posix
@@ -1394,7 +1311,6 @@ PREVIOUSVERSIONSINSTALLED
 prevpane
 prgms
 pri
-Primorsky
 PRINTCLIENT
 printmanagement
 prm
@@ -1443,7 +1359,6 @@ QITAB
 QITABENT
 qps
 QUERYENDSESSION
-queryfocus
 QUERYOPEN
 QUEUESYNC
 Quickime
@@ -1488,7 +1403,6 @@ regfile
 REGFILTER
 REGFILTERPINS
 REGISTERCLASSFAILED
-registerhotkey
 registrypath
 regkey
 REGPINTYPES
@@ -1515,7 +1429,6 @@ resizers
 RESIZETOFIT
 resmimetype
 RESOURCEID
-resourcemanager
 RESTORETOMAXIMIZED
 restrictedcapabilities
 restrictederrorinfo
@@ -1531,8 +1444,6 @@ rgs
 rhs
 ricardosantos
 RIDEV
-RIGHTDOWN
-RIGHTUP
 RIGHTSCROLLBAR
 riid
 RKey
@@ -1540,12 +1451,10 @@ RLO
 RMENU
 RNumber
 roadmap
-Roamable
 robmensching
 Roboto
 rooler
 roslyn
-Rothera
 roundf
 ROUNDSMALL
 Rpc
@@ -1584,7 +1493,6 @@ SAMESHORTCUTPREVIOUSLYMAPPED
 SAVEFAILED
 scancode
 scanled
-Schd
 schedtasks
 Scip
 scipbe
@@ -1596,10 +1504,8 @@ sddl
 SDKDDK
 sdns
 searchterm
-secauthz
 secpol
 Secur
-securityoverview
 Segoe
 Sekan
 SENDCHANGE
@@ -1635,7 +1541,6 @@ shellex
 SHELLEXECUTEINFO
 SHELLEXECUTEINFOW
 shellscalingapi
-shemptyrecyclebina
 SHFILEINFO
 SHGFI
 Shl
@@ -1700,13 +1605,12 @@ Soref
 SOURCECLIENTAREAONLY
 SOURCEHEADER
 sourcesdirectory
-SPACEBAR
 spam
 spdisp
 spdlog
 spdo
-specialfolder
 spec'ing
+specialfolder
 spesi
 splitwstring
 spsi
@@ -1716,7 +1620,6 @@ spsv
 SRCCOPY
 Srch
 sre
-Srednekolymsk
 SResize
 srme
 srre
@@ -1768,9 +1671,7 @@ subkey
 SUBLANG
 subquery
 subresource
-Sul
 Superbar
-Suri
 sut
 SVE
 SVGIn
@@ -1790,7 +1691,6 @@ SYSCOMMAND
 SYSDEADCHAR
 sysdm
 SYSICONINDEX
-sysinfo
 SYSKEY
 syskeydown
 SYSKEYUP
@@ -1800,7 +1700,6 @@ systemroot
 SYSTEMTIME
 sysvol
 Tadele
-Tajikistan
 talynone
 TApp
 TApplication
@@ -1828,7 +1727,6 @@ telem
 telephon
 Templated
 templatenamespace
-Tenggara
 testapp
 testcase
 testhost
@@ -1848,7 +1746,6 @@ timedate
 timediff
 timeunion
 timeutil
-timezones
 Titlecase
 TLayout
 tlb
@@ -1860,7 +1757,6 @@ toolkitconverters
 Toolset
 toolwindow
 TOPDOWNDIB
-tostring
 TOUCHEVENTF
 TOUCHINPUT
 touchpad
@@ -1868,16 +1764,12 @@ Towindow
 tracelogging
 traies
 transicc
-Transnistria
 TRAYMOUSEMESSAGE
 triaging
 TRK
 trl
 TServer
-Tshuapa
 TStr
-Tuva
-TValue
 TWF
 tymed
 typedef
@@ -1890,23 +1782,18 @@ TYPESHORTCUT
 UAC
 UAL
 uap
-uapmanifestschema
 udit
 Udk
-Udmurtia
 Udp
 uefi
 UHash
 UIA
-uiauto
 uid
 UIEx
 uipi
 UIs
-Ulaanbaatar
 ULARGE
 ULONGLONG
-UMsg
 unassign
 uncompilable
 UNCPRIORITY
@@ -1927,13 +1814,11 @@ unmute
 UNORM
 unregistering
 unremapped
-Unstub
 unsubscribe
 unvirtualized
 Updatelayout
 UPGRADINGPRODUCTCODE
 Uptool
-Urville
 Usb
 USEDEFAULT
 USEFILEATTRIBUTES
@@ -1946,7 +1831,6 @@ USRDLL
 Utc
 utf
 uuidof
-Uvs
 uwp
 uxtheme
 UYVY
@@ -1986,8 +1870,6 @@ VIDEOINFOHEADER
 viewbox
 viewmodel
 vih
-VIRTUALDESK
-virtualkey
 visiblecolorformats
 Visibletrue
 VKey
@@ -2042,7 +1924,6 @@ wikipedia
 wildcards
 winapi
 winappdriver
-winauto
 wincodec
 Wincodecsdk
 wincolor
@@ -2076,7 +1957,6 @@ winkey
 WINL
 winmd
 winmm
-winmsg
 WINNT
 winres
 winrt
@@ -2087,7 +1967,6 @@ winternl
 WINTHRESHOLD
 winui
 winuiex
-winuser
 winxamlmanager
 wistd
 withinrafael
@@ -2141,11 +2020,9 @@ wtoi
 WTS
 wtsapi
 WTSAT
-wtypes
 Wubi
 wuceffectsi
 WVC
-WVk
 Wwan
 Wwanpp
 XAttribute
@@ -2155,11 +2032,8 @@ XBUTTON
 XBUTTONDBLCLK
 XBUTTONDOWN
 XBUTTONUP
-XControl
 xcopy
 XDocument
-XDOWN
-XUP
 XElement
 XFile
 XIncrement
@@ -2171,13 +2045,13 @@ XResource
 xsi
 XStr
 XVIRTUALSCREEN
-Yamalia
 YAxis
 YIncrement
 yinle
 yinwang
 yinyue
 YOffset
+YResolution
 YStr
 YUY
 yuyoyuppe
@@ -2185,7 +2059,6 @@ YUYV
 YVIRTUALSCREEN
 YVU
 YVYU
-Zabaykalsky
 ZEROINIT
 ZIndex
 zipfile
@@ -2193,6 +2066,5 @@ zipfolder
 zonable
 zoneset
 Zoneszonabletester
-Zonev
 Zykova
 zzz
