@@ -7,7 +7,7 @@ using Microsoft.VariantAssignment.Contract;
 // The goal of this class is to just mock out the Microsoft.VariantAssignment close source objects
 namespace Microsoft.VariantAssignment.Client
 {
-    internal partial class VariantAssignmentServiceClient<TServerResponse> : IVariantAssignmentProvider, IDisposable
+    internal sealed partial class VariantAssignmentServiceClient<TServerResponse> : IVariantAssignmentProvider, IDisposable
         where TServerResponse : VariantAssignmentServiceResponse
     {
         public void Dispose()

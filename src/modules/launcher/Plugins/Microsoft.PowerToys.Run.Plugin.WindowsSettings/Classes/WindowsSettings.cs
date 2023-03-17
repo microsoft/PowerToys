@@ -10,7 +10,7 @@ namespace Microsoft.PowerToys.Run.Plugin.WindowsSettings
     /// <summary>
     /// A class that contain all possible windows settings
     /// </summary>
-    internal class WindowsSettings
+    internal sealed class WindowsSettings
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="WindowsSettings"/> class with an empty settings list.

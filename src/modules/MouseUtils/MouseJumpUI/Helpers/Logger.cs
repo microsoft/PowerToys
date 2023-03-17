@@ -67,10 +67,9 @@ namespace MouseJumpUI.Helpers
 
         private static string GetCallerInfo()
         {
-            StackTrace stackTrace = new StackTrace();
-
+            var stackTrace = new StackTrace();
             var methodName = stackTrace.GetFrame(3)?.GetMethod();
-            var className = methodName?.DeclaringType.Name;
+            var className = methodName?.DeclaringType?.Name;
             return "[Method]: " + methodName?.Name + " [Class]: " + className;
         }
     }

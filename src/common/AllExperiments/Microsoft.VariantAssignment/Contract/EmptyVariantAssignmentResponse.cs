@@ -31,7 +31,13 @@ namespace Microsoft.VariantAssignment.Contract
         /// <inheritdoc/>
         public IReadOnlyList<IFeatureVariable> GetFeatureVariables(IReadOnlyList<string> prefix) => Array.Empty<IFeatureVariable>();
 
-        void IDisposable.Dispose()
+        public void Dispose()
+        {
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+
+        protected virtual void Dispose(bool disposing)
         {
         }
 
