@@ -12,25 +12,25 @@ namespace Microsoft.PowerToys.Settings.UI.Helpers
     [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Auto)]
     public class OpenFileName
     {
-        public int StructSize = 0;
+        public int StructSize;
         public IntPtr Hwnd = IntPtr.Zero;
         public IntPtr Hinst = IntPtr.Zero;
-        public string Filter = null;
-        public string CustFilter = null;
-        public int CustFilterMax = 0;
-        public int FilterIndex = 0;
-        public string File = null;
-        public int MaxFile = 0;
-        public string FileTitle = null;
-        public int MaxFileTitle = 0;
-        public string InitialDir = null;
-        public string Title = null;
-        public int Flags = 0;
-        public short FileOffset = 0;
-        public short FileExtMax = 0;
-        public string DefExt = null;
-        public int CustData = 0;
+        public string Filter;
+        public string CustFilter;
+        public int CustFilterMax;
+        public int FilterIndex;
+        public string File;
+        public int MaxFile;
+        public string FileTitle;
+        public int MaxFileTitle;
+        public string InitialDir;
+        public string Title;
+        public int Flags;
+        public short FileOffset;
+        public short FileExtMax;
+        public string DefExt;
+        public int CustData;
         public IntPtr Hook = IntPtr.Zero;
-        public string Template = null;
+        public string Template;
     }
 }
