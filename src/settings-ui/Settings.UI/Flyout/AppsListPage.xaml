@@ -12,12 +12,13 @@
     mc:Ignorable="d">
 
     <Grid Background="{ThemeResource LayerOnAcrylicFillColorDefaultBrush}"
-          Padding="0,12"
+          Padding="0,12,0,0"
           RowSpacing="12">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
             <RowDefinition Height="*" />
         </Grid.RowDefinitions>
+        <!-- header + button -->
         <Grid
             Grid.Row="0"
             Padding="12,0"

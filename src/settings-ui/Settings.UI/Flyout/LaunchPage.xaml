@@ -12,7 +12,7 @@
     mc:Ignorable="d">
 
     <Grid Background="{ThemeResource LayerOnAcrylicFillColorDefaultBrush}"
-          Padding="0,12"
+          Padding="0,12,0,0"
           RowSpacing="12">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
@@ -88,18 +88,16 @@
             </ItemsControl.ItemTemplate>
         </ItemsControl>
         <!-- bottom buttons -->
-        <Grid
+        <StackPanel
             Grid.Row="2"
             Padding="12,0">
             <InfoBar
-                Grid.Row="0"
                 x:Uid="UpdateAvailable"
                 IsClosable="False"
+                IsOpen="{x:Bind ViewModel.IsUpdateAvailable, Mode=OneWay}"
                 Severity="Informational" />
-                <!--IsOpen="{x:Bind ViewModel.IsUpdateAvailable, Mode=OneWay}"-->
 
             <CommandBar
-                Grid.Row="1"
                 HorizontalAlignment="Right"
                 OverflowButtonVisibility="Collapsed">
                 <AppBarButton
@@ -131,17 +129,16 @@
                         <TextBlock x:Uid="SettingsTooltip"/>
                     </ToolTipService.ToolTip>
                 </AppBarButton>
-                <!--<AppBarSeparator />
+                <AppBarSeparator />
                 <AppBarButton
                     x:Name="QuitBtn"
-                    Style="{StaticResource FlyoutButtonStyle}"
                     ToolTipService.ToolTip="Quit"
                     Click="QuitButton_Click">
                     <AppBarButton.Icon>
                         <FontIcon FontFamily="{StaticResource SymbolThemeFontFamily}" Glyph="&#xE8BB;"/>
                     </AppBarButton.Icon>
-                </AppBarButton>-->
+                </AppBarButton>
             </CommandBar>
-        </Grid>
+        </StackPanel>
     </Grid>
 </Page>
