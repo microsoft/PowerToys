@@ -20,7 +20,7 @@ pr:
     exclude:
       - README.md
       - doc/*
-      - *.md
+      - **/*.md
        
 #     0.0.yyMM.dd##
 #     0.0.1904.0900
