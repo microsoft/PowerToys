@@ -46,7 +46,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             }
         }
 
-        private class JsonMergeHelper
+        private sealed class JsonMergeHelper
         {
             // mostly from https://stackoverflow.com/questions/58694837/system-text-json-merge-two-objects
             // but with some update to prevent array item duplicates
@@ -308,10 +308,10 @@ namespace Microsoft.PowerToys.Settings.UI.Library
                     var retoreFullPath = Path.Combine(appBasePath, relativePath);
                     var settingsToRestoreJson = GetExportVersion(backupRetoreSettings, currentFile.Key, currentFile.Value);
 
-                    if (currentSettingsFiles.ContainsKey(currentFile.Key))
+                    if (currentSettingsFiles.TryGetValue(currentFile.Key, out string value))
                     {
                         // we have a setting file to restore to
-                        var currentSettingsFileJson = GetExportVersion(backupRetoreSettings, currentFile.Key, currentSettingsFiles[currentFile.Key]);
+                        var currentSettingsFileJson = GetExportVersion(backupRetoreSettings, currentFile.Key, value);
 
                         if (JsonNormalizer.Normalize(settingsToRestoreJson) != JsonNormalizer.Normalize(currentSettingsFileJson))
                         {
@@ -659,10 +659,10 @@ namespace Microsoft.PowerToys.Settings.UI.Library
                         var currentSettingsFileToBackup = GetExportVersion(backupRetoreSettings, currentFile.Key, currentFile.Value);
 
                         var doBackup = false;
-                        if (lastBackupSettingsFiles.ContainsKey(currentFile.Key))
+                        if (lastBackupSettingsFiles.TryGetValue(currentFile.Key, out string value))
                         {
                             // there is a previous backup for this, get an export version of it.
-                            var lastSettingsFileDoc = GetExportVersion(backupRetoreSettings, currentFile.Key, lastBackupSettingsFiles[currentFile.Key]);
+                            var lastSettingsFileDoc = GetExportVersion(backupRetoreSettings, currentFile.Key, value);
 
                             // check to see if the new export version would be same as last export version.
                             if (JsonNormalizer.Normalize(currentSettingsFileToBackup) != JsonNormalizer.Normalize(lastSettingsFileDoc))
@@ -989,7 +989,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         /// Class <c>JsonNormalizer</c> is a utility class to 'normalize' a JSON file so that it can be compared to another JSON file.
         /// This really just means to fully sort it. This does not work for any JSON file where the order of the node is relevant.
         /// </summary>
-        private class JsonNormalizer
+        private sealed class JsonNormalizer
         {
             public static string Normalize(string json)
             {

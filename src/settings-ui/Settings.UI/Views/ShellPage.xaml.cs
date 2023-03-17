@@ -333,7 +333,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
                 IJsonValue whatToShowJson;
                 if (json.TryGetValue("ShowYourself", out whatToShowJson))
                 {
-                    if (whatToShowJson.ValueType == JsonValueType.String && whatToShowJson.GetString().Equals("flyout"))
+                    if (whatToShowJson.ValueType == JsonValueType.String && whatToShowJson.GetString().Equals("flyout", StringComparison.Ordinal))
                     {
                         POINT? p = null;
 
@@ -351,7 +351,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
 
                         OpenFlyoutCallback(p);
                     }
-                    else if (whatToShowJson.ValueType == JsonValueType.String && whatToShowJson.GetString().Equals("main_page"))
+                    else if (whatToShowJson.ValueType == JsonValueType.String && whatToShowJson.GetString().Equals("main_page", StringComparison.Ordinal))
                     {
                         OpenMainWindowCallback();
                     }

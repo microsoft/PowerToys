@@ -39,11 +39,7 @@ namespace Wox.Plugin
                 throw new ArgumentNullException(nameof(result));
             }
 
-            var key = result.ToString();
-            if (Records.ContainsKey(result.ToString()))
-            {
-                Records.Remove(result.ToString());
-            }
+            Records.Remove(result.ToString());
         }
 
         public void Add(Result result)

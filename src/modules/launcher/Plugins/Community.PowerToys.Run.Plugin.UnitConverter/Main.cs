@@ -62,7 +62,7 @@ namespace Community.PowerToys.Run.Plugin.UnitConverter
             return new Result
             {
                 ContextData = result,
-                Title = result.ToString(),
+                Title = result.ToString(null),
                 IcoPath = _icon_path,
                 Score = 300,
                 SubTitle = string.Format(CultureInfo.CurrentCulture, Properties.Resources.copy_to_clipboard, result.QuantityInfo.Name),

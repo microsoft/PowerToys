@@ -23,7 +23,7 @@ namespace Hosts.Helpers
             return new ReplaceVisitor(searchEx, replaceEx).Visit(expression);
         }
 
-        internal class ReplaceVisitor : ExpressionVisitor
+        internal sealed class ReplaceVisitor : ExpressionVisitor
         {
             private readonly Expression _from;
             private readonly Expression _to;

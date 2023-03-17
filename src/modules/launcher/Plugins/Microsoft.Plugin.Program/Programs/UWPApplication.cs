@@ -439,9 +439,9 @@ namespace Microsoft.Plugin.Program.Programs
                     paths.Add(path);
                 }
 
-                if (_scaleFactors.ContainsKey(Package.Version))
+                if (_scaleFactors.TryGetValue(Package.Version, out List<int> factors))
                 {
-                    foreach (var factor in _scaleFactors[Package.Version])
+                    foreach (var factor in factors)
                     {
                         if (highContrast)
                         {
