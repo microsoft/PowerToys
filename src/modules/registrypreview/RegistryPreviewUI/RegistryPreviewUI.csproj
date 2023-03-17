@@ -2,15 +2,13 @@
 	<PropertyGroup>
 		<OutputType>WinExe</OutputType>
 		<TargetFramework>net7.0-windows10.0.19041.0</TargetFramework>
-		<TargetPlatformMinVersion>10.0.17763.0</TargetPlatformMinVersion>
+		<TargetPlatformMinVersion>10.0.19041.0</TargetPlatformMinVersion>
 		<Platforms>x86;x64;arm64</Platforms>
 		<OutputPath>$(SolutionDir)$(Platform)\$(Configuration)\modules\RegistryPreview</OutputPath>
 		<UseWinUI>true</UseWinUI>
 		<UseWindowsForms>False</UseWindowsForms>
 		<ApplicationIcon>app.ico</ApplicationIcon>
 		<ApplicationManifest>app.manifest</ApplicationManifest>
-		<NeutralLanguage>en-US</NeutralLanguage>
-		<WindowsAppSDKSelfContained>true</WindowsAppSDKSelfContained>
 		<GenerateSatelliteAssembliesForCore>true</GenerateSatelliteAssembliesForCore>
 		<AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
 		<AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
@@ -20,8 +18,9 @@
 		<SupportedOSPlatformVersion>10.0.19041.0</SupportedOSPlatformVersion>
 		<SelfContained>true</SelfContained>
 		<Product>$(AssemblyName)</Product>
-		<PackageOutputPath />
 		<AssemblyName>PowerToys.RegistryPreview</AssemblyName>
+		<AssemblyTitle>PowerToys.RegistryPreview</AssemblyTitle>
+		<AssemblyDescription>PowerToys RegistryPreview</AssemblyDescription>
 		<RootNamespace>RegistryPreview</RootNamespace>
 		<DisableWinExeOutputInference>true</DisableWinExeOutputInference>
 	</PropertyGroup>
