@@ -41,6 +41,7 @@ amd
 AModifier
 AMPROPERTY
 AMPROPSETID
+ANDSCANS
 anges
 angularsen
 Animatable
@@ -128,8 +129,10 @@ BITMAPINFOHEADER
 bitmask
 BITSPIXEL
 bla
+BLACKONWHITE
 Blockquotes
 blogs
+Blt
 BLUEGRAY
 Bluetooth
 BLURBEHIND
@@ -169,10 +172,13 @@ CALG
 callbackptr
 Cangjie
 CANRENAME
+CAPTUREBLT
 CAPTURECHANGED
 CAtl
 cch
 CCHDEVICENAME
+CCHDEVICENAME
+CCHFORMNAME
 CCHFORMNAME
 CCom
 CContext
@@ -209,6 +215,7 @@ clientid
 clientside
 CLIPCHILDREN
 CLIPSIBLINGS
+Cloneable
 clrcall
 Cls
 CLSCTX
@@ -238,6 +245,7 @@ colorformat
 colorhistory
 colorhistorylimit
 COLORKEY
+COLORONCOLOR
 colorpicker
 COLORREF
 comctl
@@ -280,6 +288,7 @@ cppruntime
 cppstd
 cppwinrt
 CProj
+createcompatibledc
 CREATESCHEDULEDTASK
 CREATESTRUCT
 CREATEWINDOWFAILED
@@ -311,9 +320,11 @@ cvtepu
 cvtsi
 cwd
 cxfksword
+CXSCREEN
 CXSMICON
 CXVIRTUALSCREEN
 cyberrex
+CYSCREEN
 CYSMICON
 CYVIRTUALSCREEN
 cziplib
@@ -341,6 +352,7 @@ dcomp
 dcompi
 DComposition
 DCR
+DCs
 DDevice
 ddf
 DDxgi
@@ -361,6 +373,7 @@ DEFERERASE
 DEFPUSHBUTTON
 deinitialization
 DELA
+DELETESCANS
 deletethis
 Delimarsky
 dend
@@ -379,6 +392,7 @@ devblogs
 devdocs
 devenum
 devmgmt
+DEVMODEW
 DEVMODEW
 DEVMON
 devpkey
@@ -415,6 +429,7 @@ drawingcolor
 dreamsofameaningfullife
 drivedetectionwarning
 dshow
+DSTINVERT
 dutil
 DVASPECT
 DVASPECTINFO
@@ -706,7 +721,7 @@ IDD
 IDesktop
 IDirect
 idl
-IDLIST
+idlist
 IDOn
 IDR
 idx
@@ -1114,6 +1129,7 @@ NOINHERITLAYOUT
 NOINTERFACE
 NOLINKINFO
 NOMINMAX
+NOMIRRORBITMAP
 NOMOVE
 NONAME
 nonclient
@@ -1143,6 +1159,8 @@ notmatch
 Noto
 NOTOPMOST
 NOTRACK
+NOTSRCCOPY
+NOTSRCERASE
 NOUPDATE
 NOZORDER
 NPH
@@ -1188,6 +1206,7 @@ openxmlformats
 OPTIMIZEFORINVOKE
 ORAW
 ORPHANEDDIALOGTITLE
+ORSCANS
 oss
 ostr
 OSVERSIONINFOEX
@@ -1219,8 +1238,11 @@ PArgb
 parray
 PARTIALCONFIRMATIONDIALOGTITLE
 pasteplain
+PATCOPY
 pathcch
 Pathto
+PATINVERT
+PATPAINT
 PAUDIO
 pbc
 Pbgra
@@ -1236,6 +1258,7 @@ pdtobj
 pdw
 PDWORD
 pedrolamas
+Pels
 Pels
 PERCEIVEDFLAG
 perfmon
@@ -1454,6 +1477,7 @@ roadmap
 robmensching
 Roboto
 rooler
+rop
 roslyn
 roundf
 ROUNDSMALL
@@ -1617,8 +1641,12 @@ spsi
 spsia
 spsrm
 spsv
+SRCAND
 SRCCOPY
+SRCERASE
 Srch
+SRCINVERT
+SRCPAINT
 sre
 SResize
 srme
@@ -1747,6 +1775,7 @@ timediff
 timeunion
 timeutil
 Titlecase
+TKey
 TLayout
 tlb
 TMPVAR
@@ -1917,6 +1946,7 @@ website
 wekyb
 Wevtapi
 wgpocpl
+WHITEONBLACK
 whitespaces
 WIC
 wifi
@@ -1950,6 +1980,7 @@ winevt
 winexe
 winforms
 winfx
+wingdi
 winget
 wingetcreate
 Winhook
@@ -2051,6 +2082,7 @@ yinle
 yinwang
 yinyue
 YOffset
+YResolution
 YResolution
 YStr
 YUY

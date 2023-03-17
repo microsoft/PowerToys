@@ -93,12 +93,6 @@ public:
     {
         *cmdState = ECS_ENABLED;
 
-        // We've observed that it's possible that a null gets passed instead of an empty array. Just don't show the context menu in this case.
-        if (nullptr == selection) {
-            *cmdState = ECS_HIDDEN;
-            return S_OK;
-        }
-
         if (!CSettingsInstance().GetEnabled())
         {
             *cmdState = ECS_HIDDEN;
@@ -109,6 +103,12 @@ public:
         if (CSettingsInstance().GetExtendedContextMenuOnly())
         {
             *cmdState = ECS_HIDDEN;
+            return S_OK;
+        }
+
+        // When right clicking directory background, selection is empty. This prevents checking if there
+        // are renamable items, but internal PowerRename logic will prevent renaming non-renamable items anyway.
+        if (nullptr == selection) {
             return S_OK;
         }
 

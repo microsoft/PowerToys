@@ -7,7 +7,7 @@ using System.Runtime.InteropServices;
 
 namespace Hosts.Helpers
 {
-    internal class NativeMethods
+    internal sealed class NativeMethods
     {
         [DllImport("user32.dll", SetLastError = true)]
         internal static extern IntPtr SetForegroundWindow(IntPtr hWnd);

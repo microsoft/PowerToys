@@ -24,7 +24,7 @@ using BitmapDecoder = Windows.Graphics.Imaging.BitmapDecoder;
 
 namespace PowerOCR;
 
-internal class ImageMethods
+internal sealed class ImageMethods
 {
     internal static ImageSource GetWindowBoundsImage(Window passedWindow)
     {

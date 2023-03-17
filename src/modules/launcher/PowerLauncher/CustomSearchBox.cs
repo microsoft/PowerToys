@@ -9,7 +9,7 @@ using System.Windows.Controls;
 
 namespace PowerLauncher
 {
-    public class CustomSearchBox : TextBox
+    public sealed class CustomSearchBox : TextBox
     {
         public List<UIElement> ControlledElements { get; } = new List<UIElement>();
 
@@ -18,7 +18,7 @@ namespace PowerLauncher
             return new AutoSuggestTextBoxAutomationPeer(this);
         }
 
-        internal class AutoSuggestTextBoxAutomationPeer : TextBoxAutomationPeer
+        internal sealed class AutoSuggestTextBoxAutomationPeer : TextBoxAutomationPeer
         {
             public AutoSuggestTextBoxAutomationPeer(CustomSearchBox owner)
                 : base(owner)

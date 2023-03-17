@@ -10,7 +10,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
     {
         public PastePlainProperties()
         {
-            ActivationShortcut = new HotkeySettings(true, true, false, false, 0x56); // Ctrl+Win+V
+            ActivationShortcut = new HotkeySettings(true, true, true, false, 0x56); // Ctrl+Win+Alt+V
         }
 
         public HotkeySettings ActivationShortcut { get; set; }
