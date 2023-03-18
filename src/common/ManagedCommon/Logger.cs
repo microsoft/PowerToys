@@ -35,7 +35,7 @@ namespace ManagedCommon
         {
             if (isLocalLow)
             {
-                applicationLogPath = Environment.GetEnvironmentVariable("userprofile") + "\\appdata\\locallow\\Microsoft\\PowerToys" + applicationLogPath + "\\" + Version;
+                applicationLogPath = Environment.GetEnvironmentVariable("userprofile") + "\\appdata\\LocalLow\\Microsoft\\PowerToys" + applicationLogPath + "\\" + Version;
             }
             else
             {
