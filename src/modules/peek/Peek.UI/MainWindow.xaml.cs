@@ -117,9 +117,9 @@ namespace Peek.UI
             double desiredScaledHeight = scaledWindowHeight + titleBarHeight + WindowConstants.WindowWidthContentPadding;
             double desiredScaledWidth = scaledWindowWidth + WindowConstants.WindowHeightContentPadding;
 
-            if (!this.AppWindow.IsVisible || !TitleBarControl.Pinned)
+            if (!TitleBarControl.Pinned)
             {
-                this.CenterOnScreen(desiredScaledWidth, desiredScaledHeight); // re-center on opening
+                this.CenterOnScreen(desiredScaledWidth, desiredScaledHeight); // re-center if not pinned
             }
             else
             {
