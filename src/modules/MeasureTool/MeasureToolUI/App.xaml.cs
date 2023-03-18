@@ -21,6 +21,8 @@ namespace MeasureToolUI
         /// </summary>
         public App()
         {
+            Logger.InitializeLogger("\\Measure Tool\\MeasureToolUI\\Logs");
+
             this.InitializeComponent();
         }
 
