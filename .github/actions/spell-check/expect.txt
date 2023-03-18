@@ -41,10 +41,7 @@ amd
 AModifier
 AMPROPERTY
 AMPROPSETID
-<<<<<<< HEAD
-=======
 ANDSCANS
->>>>>>> origin/main
 anges
 angularsen
 Animatable
