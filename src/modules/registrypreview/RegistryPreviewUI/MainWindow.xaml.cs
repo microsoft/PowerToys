@@ -59,7 +59,14 @@ namespace RegistryPreview
 
             // set up textBox's font colors
             solidColorBrushReadOnly = new SolidColorBrush(Windows.UI.Color.FromArgb(255, 120, 120, 120));
-            solidColorBrushNormal = new SolidColorBrush(Colors.Black);
+            if (App.Current.RequestedTheme == ApplicationTheme.Dark)
+            {
+                solidColorBrushNormal = new SolidColorBrush(Colors.White);
+            }
+            else
+            {
+                solidColorBrushNormal = new SolidColorBrush(Colors.Black);
+            }
 
             // Update Toolbar
             if ((App.AppFilename == null) || (File.Exists(App.AppFilename) != true))
