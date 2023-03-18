@@ -9,7 +9,7 @@ trigger:
       - doc/*
       - temp/*
       - tools/*
-      - /**/*.md
+      - '**.md'
 
 pr:
   branches:
@@ -18,14 +18,8 @@ pr:
       - stable
   paths:
     exclude:
-      - README.md
-      - CODE_OF_CONDUCT.md
-      - COMMUNITY.md
-      - CONTRIBUTING.md
-      - NOTICE.md
-      - SECURITY.md
-      - SUPPORT.md
-      - doc/*
+      - '**.md'
+      - doc
        
 #     0.0.yyMM.dd##
 #     0.0.1904.0900
