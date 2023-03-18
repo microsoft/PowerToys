@@ -22,6 +22,8 @@ namespace FileLocksmithUI
         /// </summary>
         public App()
         {
+            Logger.InitializeLogger("\\File Locksmith\\FileLocksmithUI\\Logs");
+
             this.InitializeComponent();
         }
 
