@@ -1,4 +1,5 @@
 # NOTICES AND INFORMATION
+
 This software incorporates material from third parties.
 
 - Color Picker
@@ -122,7 +123,7 @@ COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER
 IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-###  Beta Tadele's Window Walker License
+### Beta Tadele's Window Walker License
 
 **Source**: https://github.com/betsegaw/windowwalker
 
@@ -167,11 +168,12 @@ SOFTWARE.
 ## PowerToy: Installer/Runner
 
 ### spdlog
+
 **Source**: https://github.com/gabime/spdlog
 
 The MIT License (MIT)
 
-Copyright (c) 2016 Gabi Melman.                                       
+Copyright (c) 2016 Gabi Melman.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -185,7 +187,7 @@ all copies or substantial portions of the Software.
 
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL THE
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
 AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
@@ -195,8 +197,8 @@ THE SOFTWARE.
 This software depends on the fmt lib (MIT License),
 and users must comply to its license: https://github.com/fmtlib/fmt/blob/master/LICENSE.rst
 
-
 ### expected-lite
+
 **Source**: https://github.com/martinmoene/expected-lite
 
 Boost Software License - Version 1.0 - August 17th, 2003
@@ -224,6 +226,7 @@ ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 
 ### zip
+
 **Source**: https://github.com/kuba--/zip
 
 This is free and unencumbered software released into the public domain.
@@ -254,6 +257,7 @@ For more information, please refer to <http://unlicense.org/>
 ## Utility: Measure tool
 
 ### sse2neon
+
 We adopted some functions from it.
 
 **Source**: https://github.com/DLTcollab/sse2neon
@@ -277,7 +281,7 @@ SOFTWARE.
 
 ## NuGet Packages used by PowerToys
 
-- CommunityToolkit.Labs.WinUI.SettingsControls 0.0.7
+- CommunityToolkit.Labs.WinUI.SettingsControls 0.0.17
 - CommunityToolkit.Mvvm 8.0.0
 - CommunityToolkit.WinUI.UI 7.1.2
 - CommunityToolkit.WinUI.UI.Controls 7.1.2
@@ -296,9 +300,9 @@ SOFTWARE.
 - Microsoft.Toolkit.Uwp.Notifications 7.1.2
 - Microsoft.Web.WebView2 1.0.1343.22
 - Microsoft.Windows.CsWin32 0.2.46-beta
-- Microsoft.Windows.CsWinRT 2.0.0
+- Microsoft.Windows.CsWinRT 2.0.1
 - Microsoft.Windows.SDK.BuildTools 10.0.22621.755
-- Microsoft.WindowsAppSDK 1.2.221116.1
+- Microsoft.WindowsAppSDK 1.2.230217.4
 - Microsoft.Xaml.Behaviors.WinUI.Managed 2.0.9
 - Microsoft.Xaml.Behaviors.Wpf 1.1.39
 - ModernWpfUI 0.9.4
