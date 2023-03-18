@@ -74,6 +74,12 @@
                             HotkeySettings="{x:Bind Path=ViewModel.MicrophoneMuteHotkey, Mode=TwoWay}" />
                     </labs:SettingsCard>
 
+                    <labs:SettingsCard x:Uid="VideoConference_MicrophonePushToTalkHotkeyControl_Header">
+                        <controls:ShortcutControl
+                            MinWidth="{StaticResource SettingActionControlMinWidth}"
+                            HotkeySettings="{x:Bind Path=ViewModel.MicrophonePushToTalkHotkey, Mode=TwoWay}" />
+                    </labs:SettingsCard>
+
                     <labs:SettingsCard x:Uid="VideoConference_CameraMuteHotkeyControl_Header">
                         <controls:ShortcutControl
                             MinWidth="{StaticResource SettingActionControlMinWidth}"

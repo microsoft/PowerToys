@@ -123,10 +123,10 @@ LRESULT CALLBACK VideoConferenceModule::LowLevelKeyboardProc(int nCode, WPARAM w
 {
     if (nCode == HC_ACTION)
     {
+        KBDLLHOOKSTRUCT* kbd = reinterpret_cast<KBDLLHOOKSTRUCT*>(lParam);
         switch (wParam)
         {
         case WM_KEYDOWN:
-            KBDLLHOOKSTRUCT* kbd = reinterpret_cast<KBDLLHOOKSTRUCT*>(lParam);
 
             if (isHotkeyPressed(kbd->vkCode, settings.cameraAndMicrophoneMuteHotkey))
             {
@@ -163,9 +163,21 @@ LRESULT CALLBACK VideoConferenceModule::LowLevelKeyboardProc(int nCode, WPARAM w
                 reverseMicrophoneMute();
                 return 1;
             }
+            else if (isHotkeyPressed(kbd->vkCode, settings.microphonePushToTalkHotkey))
+            {
+                reverseMicrophoneMute();
+                return 1;
+            }
             else if (isHotkeyPressed(kbd->vkCode, settings.cameraMuteHotkey))
             {
                 reverseVirtualCameraMuteState();
+                return 1;
+            }
+            break;
+        case WM_KEYUP:
+            if (isHotkeyPressed(kbd->vkCode, settings.microphonePushToTalkHotkey))
+            {
+                reverseMicrophoneMute();
                 return 1;
             }
         }
@@ -227,6 +239,10 @@ void VideoConferenceModule::onModuleSettingsChanged()
             if (const auto val = values.get_json(L"mute_microphone_hotkey"))
             {
                 settings.microphoneMuteHotkey = PowerToysSettings::HotkeyObject::from_json(*val);
+            }
+            if (const auto val = values.get_json(L"push_to_talk_microphone_hotkey"))
+            {
+                settings.microphonePushToTalkHotkey = PowerToysSettings::HotkeyObject::from_json(*val);
             }
             if (const auto val = values.get_json(L"mute_camera_hotkey"))
             {
@@ -385,6 +401,10 @@ void VideoConferenceModule::init_settings()
         if (const auto val = powerToysSettings.get_json(L"mute_microphone_hotkey"))
         {
             settings.microphoneMuteHotkey = PowerToysSettings::HotkeyObject::from_json(*val);
+        }
+        if (const auto val = powerToysSettings.get_json(L"push_to_talk_microphone_hotkey"))
+        {
+            settings.microphonePushToTalkHotkey = PowerToysSettings::HotkeyObject::from_json(*val);
         }
         if (const auto val = powerToysSettings.get_json(L"mute_camera_hotkey"))
         {
