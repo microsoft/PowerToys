@@ -38,6 +38,12 @@ namespace Microsoft.PowerToys.Settings.UI.Helpers
         [DllImport("user32.dll")]
         internal static extern int SetWindowLong(IntPtr hWnd, int nIndex, int dwNewLong);
 
+        [DllImport("shell32.dll")]
+        internal static extern IntPtr SHBrowseForFolderW(ref ShellGetFolder.BrowseInformation browseInfo);
+
+        [DllImport("shell32.dll")]
+        internal static extern int SHGetPathFromIDListW(IntPtr pidl, IntPtr pszPath);
+
 #pragma warning disable CA1401 // P/Invokes should not be visible
         [DllImport("user32.dll")]
         public static extern bool ShowWindow(System.IntPtr hWnd, int nCmdShow);
@@ -59,6 +65,7 @@ namespace Microsoft.PowerToys.Settings.UI.Helpers
 
         [DllImport("kernel32.dll", CharSet = CharSet.Unicode)]
         public static extern bool FreeLibrary(IntPtr hModule);
+
 #pragma warning restore CA1401 // P/Invokes should not be visible
 
         [DllImport("user32.dll", SetLastError = true, CharSet = CharSet.Unicode)]
