@@ -94,4 +94,5 @@ private:
 
     static VideoConferenceSettings settings;
     static Toolbar toolbar;
+    static bool pushToTalkPressed;
 };

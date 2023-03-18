@@ -26,6 +26,7 @@ VideoConferenceModule* instance = nullptr;
 
 VideoConferenceSettings VideoConferenceModule::settings;
 Toolbar VideoConferenceModule::toolbar;
+bool VideoConferenceModule::pushToTalkPressed;
 
 HHOOK VideoConferenceModule::hook_handle;
 
@@ -163,9 +164,10 @@ LRESULT CALLBACK VideoConferenceModule::LowLevelKeyboardProc(int nCode, WPARAM w
                 reverseMicrophoneMute();
                 return 1;
             }
-            else if (isHotkeyPressed(kbd->vkCode, settings.microphonePushToTalkHotkey))
+            else if (isHotkeyPressed(kbd->vkCode, settings.microphonePushToTalkHotkey) && !pushToTalkPressed)
             {
                 reverseMicrophoneMute();
+                pushToTalkPressed = true;
                 return 1;
             }
             else if (isHotkeyPressed(kbd->vkCode, settings.cameraMuteHotkey))
@@ -178,6 +180,7 @@ LRESULT CALLBACK VideoConferenceModule::LowLevelKeyboardProc(int nCode, WPARAM w
             if (isHotkeyPressed(kbd->vkCode, settings.microphonePushToTalkHotkey))
             {
                 reverseMicrophoneMute();
+                pushToTalkPressed = false;
                 return 1;
             }
         }
