@@ -4,8 +4,8 @@ Logging plays an important part in determining bugs in our code. It provides con
 
 ## Where are the logs saved
 
-* Most of the logs are saved under `%localappdata%/microsoft/powertoys`.
-* For low-privilege processes (like preview handlers) the loga are saved under `%userprofile%/appdata/locallow/microsoft/powertoys`.
+* Most of the logs are saved under `%localAppData%/microsoft/powertoys`.
+* For low-privilege processes (like preview handlers) the logs are saved under `%userprofile%/appdata/LocalLow/microsoft/powertoys`.
 
 Logs are normally in a subfolder with the module name as title.
 
@@ -32,7 +32,7 @@ For including it you have to add the following line of code to all the files usi
 using ManagedCommon;
 ```
 
-In the `Main` function (or a function with a simmilar meaning (like `App` in a `App.xaml.cs` file)) you have to call `InitializeLogger` and procide the location where the logs will be saved (always use a path scheme simmilar to this example):
+In the `Main` function (or a function with a similar meaning (like `App` in a `App.xaml.cs` file)) you have to call `InitializeLogger` and specify the location where the logs will be saved (always use a path scheme similar to this example):
 
 ```Csharp
 Logger.InitializeLogger("\\FancyZones\\Editor\\Logs");
