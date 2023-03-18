@@ -54,6 +54,8 @@ namespace FancyZonesEditor
 
         public App()
         {
+            Logger.InitializeLogger("\\FancyZones\\Editor\\Logs", true);
+
             // DebugModeCheck();
             NativeThreadCTS = new CancellationTokenSource();
             FancyZonesEditorIO = new FancyZonesEditorIO();

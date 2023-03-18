@@ -25,9 +25,22 @@ namespace ManagedCommon
         private static readonly string Debug = "Debug";
         private static readonly string TraceFlag = "Trace";
 
-        public static void InitializeLogger(string applicationLogPath)
+        /// <summary>
+        /// Initializes the logger and sets the path for logging.
+        /// </summary>
+        /// <example>InitializeLogger("\\FancyZones\\Editor\\Logs")</example>
+        /// <param name="applicationLogPath">The path to the log files folder.</param>
+        /// <param name="isLocalLow">If the process using Logger is a low-privilege process.</param>
+        public static void InitializeLogger(string applicationLogPath, bool isLocalLow = false)
         {
-            applicationLogPath = Constants.AppDataPath() + applicationLogPath + "\\" + Version;
+            if (isLocalLow)
+            {
+                applicationLogPath = Environment.GetEnvironmentVariable("userprofile") + "\\appdata\\locallow\\Microsoft\\PowerToys" + applicationLogPath + "\\" + Version;
+            }
+            else
+            {
+                applicationLogPath = Constants.AppDataPath() + applicationLogPath + "\\" + Version;
+            }
 
             if (!_fileSystem.Directory.Exists(applicationLogPath))
             {
