@@ -26,6 +26,8 @@ public partial class App : Application, IDisposable
 
     public App()
     {
+        Logger.InitializeLogger("\\TextExtractor\\Logs");
+
         NativeThreadCTS = new CancellationTokenSource();
     }
 
