@@ -4,7 +4,11 @@
 
   <?include $(sys.CURRENTDIR)\Common.wxi?>
 
-  <?define RegistryPreviewFiles=Accessibility.dll;ColorCode.Core.dll;ColorCode.WinUI.dll;CommunityToolkit.Common.dll;CommunityToolkit.WinUI.UI.Controls.Core.dll;CommunityToolkit.WinUI.UI.Controls.DataGrid.dll;CommunityToolkit.WinUI.UI.Controls.Input.dll;CommunityToolkit.WinUI.UI.Controls.Layout.dll;CommunityToolkit.WinUI.UI.Controls.Markdown.dll;CommunityToolkit.WinUI.UI.Controls.Media.dll;CommunityToolkit.WinUI.UI.Controls.Primitives.dll;CommunityToolkit.WinUI.UI.dll;CommunityToolkit.WinUI.dll;ControlzEx.dll;D3DCompiler_47_cor3.dll;DirectWriteForwarder.dll;Ijwhost.dll;Microsoft.Graphics.Canvas.Interop.dll;Microsoft.Graphics.Canvas.dll;Microsoft.Graphics.Display.dll;Microsoft.InteractiveExperiences.Projection.dll;Microsoft.VisualBasic.Forms.dll;Microsoft.Win32.Registry.AccessControl.dll;Microsoft.Win32.SystemEvents.dll;Microsoft.WinUI.dll;Microsoft.Windows.AppLifecycle.Projection.dll;Microsoft.Windows.AppNotifications.Builder.Projection.dll;Microsoft.Windows.AppNotifications.Projection.dll;Microsoft.Windows.ApplicationModel.DynamicDependency.Projection.dll;Microsoft.Windows.ApplicationModel.Resources.Projection.dll;Microsoft.Windows.ApplicationModel.WindowsAppRuntime.Projection.dll;Microsoft.Windows.PushNotifications.Projection.dll;Microsoft.Windows.SDK.NET.dll;Microsoft.Windows.Security.AccessControl.Projection.dll;Microsoft.Windows.System.Power.Projection.dll;Microsoft.Windows.System.Projection.dll;Microsoft.Windows.Widgets.Projection.dll;Microsoft.Windows.Widgets.dll;Microsoft.WindowsAppRuntime.Bootstrap.Net.dll;Microsoft.Xaml.Behaviors.dll;PenImc_cor3.dll;PowerToys.Common.UI.dll;PowerToys.ManagedCommon.dll;PowerToys.ManagedTelemetry.dll;PowerToys.RegistryPreview.deps.json;PowerToys.RegistryPreview.dll;PowerToys.RegistryPreview.exe;PowerToys.RegistryPreview.runtimeconfig.json;PowerToys.RegistryPreviewExt.dll;PowerToys.Settings.UI.Lib.dll;PresentationCore.dll;PresentationFramework.Aero.dll;PresentationFramework.Aero2.dll;PresentationFramework.AeroLite.dll;PresentationFramework.Classic.dll;PresentationFramework.Luna.dll;PresentationFramework.Royale.dll;PresentationFramework.dll;PresentationNative_cor3.dll;PresentationUI.dll;ReachFramework.dll;System.CodeDom.dll;System.Configuration.ConfigurationManager.dll;System.Design.dll;System.Diagnostics.EventLog.Messages.dll;System.Diagnostics.EventLog.dll;System.Diagnostics.PerformanceCounter.dll;System.DirectoryServices.dll;System.Drawing.Common.dll;System.Drawing.Design.dll;System.IO.Abstractions.dll;System.IO.Packaging.dll;System.Management.dll;System.Printing.dll;System.Resources.Extensions.dll;System.Security.Cryptography.Pkcs.dll;System.Security.Cryptography.ProtectedData.dll;System.Security.Cryptography.Xml.dll;System.Security.Permissions.dll;System.Threading.AccessControl.dll;System.Windows.Controls.Ribbon.dll;System.Windows.Extensions.dll;System.Windows.Forms.Design.Editors.dll;System.Windows.Forms.Design.dll;System.Windows.Forms.Primitives.dll;System.Windows.Forms.dll;System.Windows.Input.Manipulations.dll;System.Windows.Presentation.dll;System.Xaml.dll;UIAutomationClient.dll;UIAutomationClientSideProviders.dll;UIAutomationProvider.dll;UIAutomationTypes.dll;WinRT.Runtime.dll;WindowsFormsIntegration.dll;app.ico;resources.pri;vcruntime140_cor3.dll;wpfgfx_cor3.dll?>
+  <?define RegistryPreviewFiles=ColorCode.Core.dll;ColorCode.WinUI.dll;CommunityToolkit.Common.dll;CommunityToolkit.WinUI.UI.Controls.Core.dll;CommunityToolkit.WinUI.UI.Controls.DataGrid.dll;CommunityToolkit.WinUI.UI.Controls.Input.dll;CommunityToolkit.WinUI.UI.Controls.Layout.dll;CommunityToolkit.WinUI.UI.Controls.Markdown.dll;CommunityToolkit.WinUI.UI.Controls.Media.dll;CommunityToolkit.WinUI.UI.Controls.Primitives.dll;CommunityToolkit.WinUI.UI.dll;CommunityToolkit.WinUI.dll;ControlzEx.dll;Ijwhost.dll;Microsoft.Graphics.Canvas.Interop.dll;Microsoft.Graphics.Canvas.dll;Microsoft.Graphics.Display.dll;Microsoft.InteractiveExperiences.Projection.dll;Microsoft.WinUI.dll;Microsoft.Windows.AppLifecycle.Projection.dll;Microsoft.Windows.AppNotifications.Builder.Projection.dll;Microsoft.Windows.ApplicationModel.DynamicDependency.Projection.dll;Microsoft.Windows.ApplicationModel.Resources.Projection.dll;Microsoft.Windows.ApplicationModel.WindowsAppRuntime.Projection.dll;Microsoft.Windows.SDK.NET.dll;Microsoft.Windows.Security.AccessControl.Projection.dll;Microsoft.Windows.System.Power.Projection.dll;Microsoft.Windows.Widgets.Projection.dll;Microsoft.Windows.Widgets.dll;Microsoft.WindowsAppRuntime.Bootstrap.Net.dll;Microsoft.Xaml.Behaviors.dll;PowerToys.Common.UI.dll;PowerToys.ManagedCommon.dll;PowerToys.ManagedTelemetry.dll;PowerToys.RegistryPreview.deps.json;PowerToys.RegistryPreview.dll;PowerToys.RegistryPreview.exe;PowerToys.RegistryPreview.runtimeconfig.json;PowerToys.RegistryPreviewExt.dll;PowerToys.Settings.UI.Lib.dll;System.CodeDom.dll;System.IO.Abstractions.dll;System.Management.dll;WinRT.Runtime.dll;app.ico;resources.pri?>
+  <?if $(var.Platform) = x64?>
+    <?define RegistryPreviewFiles=$(var.RegistryPreviewFiles);clrcompression.dll?>
+  <?endif?>
+
   <?define RegistryPreviewAssets=data32.png;folder32.png;string32.png?>
 
   <Fragment>
@@ -15,22 +19,6 @@
           <File Id="RegistryPreviewFile_$(var.File)" Source="$(var.BinDir)modules\$(var.RegistryPreviewProjectName)\$(var.File)" />
         </Component>
       <?endforeach?>
-      <!-- These files have '-' in the name, and Wix doesn't allow '-' in Id, so need to list those manually. -->
-      <Component Id="RegistryPreviewComp_PresentationFramework_SystemCore.dll" Win64="yes">
-        <File Id="RegistryPreviewFile_PresentationFramework_SystemCore.dll" Source="$(var.BinDir)modules\$(var.RegistryPreviewProjectName)\PresentationFramework-SystemCore.dll" />
-      </Component>
-      <Component Id="RegistryPreviewComp_PresentationFramework_SystemData.dll" Win64="yes">
-        <File Id="RegistryPreviewFile_PresentationFramework_SystemData.dll" Source="$(var.BinDir)modules\$(var.RegistryPreviewProjectName)\PresentationFramework-SystemData.dll" />
-      </Component>
-      <Component Id="RegistryPreviewComp_PresentationFramework_SystemDrawing.dll" Win64="yes">
-        <File Id="RegistryPreviewFile_PresentationFramework_SystemDrawing.dll" Source="$(var.BinDir)modules\$(var.RegistryPreviewProjectName)\PresentationFramework-SystemDrawing.dll" />
-      </Component>
-      <Component Id="RegistryPreviewComp_PresentationFramework_SystemXml.dll" Win64="yes">
-        <File Id="RegistryPreviewFile_PresentationFramework_SystemXml.dll" Source="$(var.BinDir)modules\$(var.RegistryPreviewProjectName)\PresentationFramework-SystemXml.dll" />
-      </Component>
-      <Component Id="RegistryPreviewComp_PresentationFramework_SystemXmlLinq.dll" Win64="yes">
-        <File Id="RegistryPreviewFile_PresentationFramework_SystemXmlLinq.dll" Source="$(var.BinDir)modules\$(var.RegistryPreviewProjectName)\PresentationFramework-SystemXmlLinq.dll" />
-      </Component>
     </DirectoryRef>
 
     <DirectoryRef Id="RegistryPreviewAssetsInstallFolder" FileSource="$(var.BinDir)modules\$(var.RegistryPreviewProjectName)\Assets">
@@ -46,11 +34,6 @@
       <?foreach File in $(var.RegistryPreviewFiles)?>
         <ComponentRef Id="RegistryPreviewComp_$(var.File)" />
       <?endforeach?>
-      <ComponentRef Id="RegistryPreviewComp_PresentationFramework_SystemCore.dll" />
-      <ComponentRef Id="RegistryPreviewComp_PresentationFramework_SystemData.dll" />
-      <ComponentRef Id="RegistryPreviewComp_PresentationFramework_SystemDrawing.dll" />
-      <ComponentRef Id="RegistryPreviewComp_PresentationFramework_SystemXml.dll" />
-      <ComponentRef Id="RegistryPreviewComp_PresentationFramework_SystemXmlLinq.dll" />
       <?foreach File in $(var.RegistryPreviewAssets)?>
         <ComponentRef Id="RegistryPreviewAssetsComp_$(var.File)" />
       <?endforeach?>

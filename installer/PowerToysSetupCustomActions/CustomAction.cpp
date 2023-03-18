@@ -1148,6 +1148,7 @@ UINT __stdcall CreateDotnetRuntimeHardlinksCA(MSIHANDLE hInstall)
       std::filesystem::create_hard_link((dotnetRuntimeFilesSrcDir + file).c_str(), (fileExplorerAddOnsDir + file).c_str(), ec);
       std::filesystem::create_hard_link((dotnetRuntimeFilesSrcDir + file).c_str(), (hostsDir + file).c_str(), ec);
       std::filesystem::create_hard_link((dotnetRuntimeFilesSrcDir + file).c_str(), (mouseJumpDir + file).c_str(), ec);
+      std::filesystem::create_hard_link((dotnetRuntimeFilesSrcDir + file).c_str(), (registryPreviewDir + file).c_str(), ec);
 
       if (ec.value() != S_OK)
       {
@@ -1297,6 +1298,7 @@ UINT __stdcall DeleteDotnetRuntimeHardlinksCA(MSIHANDLE hInstall)
           DeleteFile((fileExplorerAddOnsDir + file).c_str());
           DeleteFile((hostsDir + file).c_str());
           DeleteFile((mouseJumpDir + file).c_str());
+          DeleteFile((registryPreviewDir + file).c_str());
         }
     }
     catch (std::exception e)
