@@ -439,15 +439,6 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Set custom whatever.
-        /// </summary>
-        internal static string Microsoft_plugin_timedate_SettingCustomDateTimeFormat {
-            get {
-                return ResourceManager.GetString("Microsoft_plugin_timedate_SettingCustomDateTimeFormat", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to Show date with weekday and name of month.
         /// </summary>
         internal static string Microsoft_plugin_timedate_SettingDateWithWeekday {
