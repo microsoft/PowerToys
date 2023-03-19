@@ -4,7 +4,7 @@ This tool is used to collect logs and system information for bug reports. The bu
 
 ## Launching
 
-It can launch from the PowerToys tray icon by clicking "Report Bug" or by running the executable directly.
+It can launch from the PowerToys tray icon by clicking "Report Bug", by clicking the bug report icon in the PowerToys flyout  or by running the executable directly.
 
 ## Included files
 
