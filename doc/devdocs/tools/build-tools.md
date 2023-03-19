@@ -18,7 +18,7 @@ This script converts a stringtable to a .resx file, so it can be used in a C# pr
 
 This script is used by the pipeline to move the .resx files to the correct location, so that they can be localized into different languages.
 
-## [move-uwp-resw.ps1]
+## [move-uwp-resw.ps1](/tools/build/move-uwp-resw.ps1)
 
 This script is used by the pipeline to move the .resw files to the correct location, so that they can be localized into different languages.
 
