@@ -60,5 +60,5 @@ After you updated monaco editor or adding a new language you should update the [
 You have to run the file on a local webserver!
 
 1. Build monaco in debug mode.
-2. Open [generateLanguagesJson.html](/src/modules/previewpane/MonacoPreviewHandler/generateLanguagesJson.html) in a browser.
+2. Open [generateLanguagesJson.html](/src/modules/previewpane/MonacoPreviewHandler/generateLanguagesJson.html) in a browser over the webserver.
 3. Replace the old JSON file.
