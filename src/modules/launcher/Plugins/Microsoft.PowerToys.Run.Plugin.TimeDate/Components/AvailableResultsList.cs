@@ -256,6 +256,13 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.Components
                         AlternativeSearchTag = ResultHelper.SelectStringFromResources(isSystemDateTime, "Microsoft_plugin_timedate_SearchTagFormat"),
                         IconType = ResultIconType.DateTime,
                     },
+                    new AvailableResult()
+                    {
+                        Value = dateTimeNow.ToString("yyyy_MM_dd-HH_mm_ss", CultureInfo.InvariantCulture),
+                        Label = Resources.Microsoft_plugin_timedate_filename_compatible,
+                        AlternativeSearchTag = ResultHelper.SelectStringFromResources(isSystemDateTime, "Microsoft_plugin_timedate_SearchTagFormat"),
+                        IconType = ResultIconType.DateTime,
+                    },
                 });
             }
 
