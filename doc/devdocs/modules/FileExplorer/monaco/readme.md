@@ -11,7 +11,7 @@ Developer preview is based on [Microsoft's Monaco Editor](https://microsoft.gith
 
 ## Add a new language definition
 
-1. Add the language definition (Written with [Monarch](https://microsoft.github.io/monaco-editor/monarch.html)) to the [`monacoSRC`](/src/modules/previewpane/MonacoPreviewHandler/customLanguages/) folder. The file should be formatted like this (change `idDefinition` to the name of your language):
+1. Add the language definition (Written with [Monarch](https://microsoft.github.io/monaco-editor/monarch.html)) to the [`monacoSRC`](/src/modules/previewpane/MonacoPreviewHandler/customLanguages/) folder. The file should be formatted like in the example below. (Please change `idDefinition` to the name of your language.)
 
 ```javascript
 export function idDefinition() {
