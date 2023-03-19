@@ -4,10 +4,10 @@ Developer preview is based on [Microsoft's Monaco Editor](https://microsoft.gith
 
 ## Update Monaco Editor
 
-1. Download Monaco editor with npm: `npm i monaco-editor`.
-2. Delete everything except the `min` folder (the minimised code).
+1. Download Monaco editor with [npm](https://www.npmjs.com/): `npm i monaco-editor`.
+2. Delete everything except the `min` folder (the minimised code) from the downloaded files.
 3. Copy the `min` folder inside the [`monacoSRC`](/src/modules/previewpane/MonacoPreviewHandler/monacoSRC) folder.
-4. Generate the JSON file (see section below)
+4. Generate the JSON file as described in the [Generate monaco_languages.json file](#generate-monaco_languagesjson-file) section.
 
 ## Add a new language definition
 
