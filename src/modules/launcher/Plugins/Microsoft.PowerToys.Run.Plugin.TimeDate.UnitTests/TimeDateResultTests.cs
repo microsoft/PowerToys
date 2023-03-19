@@ -172,7 +172,7 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.UnitTests
         [DataRow("ISO 8601 UTC", "yyyy-MM-ddTHH:mm:ss")]
         [DataRow("ISO 8601 UTC with time zone", "yyyy-MM-ddTHH:mm:ss'Z'")]
         [DataRow("Universal time format: YYYY-MM-DD hh:mm:ss", "u")]
-        [DataRow("Date and time in filename-compatible format", "YYYY_MM_DD-hh_mm_ss")]
+        [DataRow("Date and time in filename-compatible format", "yyyy_MM_dd-hh_mm_ss")]
         public void UtcFormatsWithShortTimeAndShortDate(string formatLabel, string expectedFormat)
         {
             // Setup
@@ -192,7 +192,7 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.UnitTests
         [DataRow("ISO 8601 UTC", "yyyy-MM-ddTHH:mm:ss")]
         [DataRow("ISO 8601 UTC with time zone", "yyyy-MM-ddTHH:mm:ss'Z'")]
         [DataRow("Universal time format: YYYY-MM-DD hh:mm:ss", "u")]
-        [DataRow("Date and time in filename-compatible format", "YYYY_MM_DD-hh_mm_ss")]
+        [DataRow("Date and time in filename-compatible format", "yyyy_MM_dd-hh_mm_ss")]
         public void UtcFormatsWithShortTimeAndLongDate(string formatLabel, string expectedFormat)
         {
             // Setup
@@ -212,7 +212,7 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.UnitTests
         [DataRow("ISO 8601 UTC", "yyyy-MM-ddTHH:mm:ss")]
         [DataRow("ISO 8601 UTC with time zone", "yyyy-MM-ddTHH:mm:ss'Z'")]
         [DataRow("Universal time format: YYYY-MM-DD hh:mm:ss", "u")]
-        [DataRow("Date and time in filename-compatible format", "YYYY_MM_DD-hh_mm_ss")]
+        [DataRow("Date and time in filename-compatible format", "yyyy_MM_dd-hh_mm_ss")]
         public void UtcFormatsWithLongTimeAndShortDate(string formatLabel, string expectedFormat)
         {
             // Setup
@@ -232,7 +232,7 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.UnitTests
         [DataRow("ISO 8601 UTC", "yyyy-MM-ddTHH:mm:ss")]
         [DataRow("ISO 8601 UTC with time zone", "yyyy-MM-ddTHH:mm:ss'Z'")]
         [DataRow("Universal time format: YYYY-MM-DD hh:mm:ss", "u")]
-        [DataRow("Date and time in filename-compatible format", "YYYY_MM_DD-hh_mm_ss")]
+        [DataRow("Date and time in filename-compatible format", "yyyy_MM_dd-hh_mm_ss")]
         public void UtcFormatsWithLongTimeAndLongDate(string formatLabel, string expectedFormat)
         {
             // Setup
