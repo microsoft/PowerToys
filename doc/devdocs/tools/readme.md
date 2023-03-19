@@ -14,3 +14,9 @@ Following tools are currently available:
 * [Clean up tool](clean-up-tool.md) - A tool to clean up the PowerToys installation.
 * [FancyZones hit test](fancyzone-hit-test.md) - A tool to test FancyZones layout selection logic.
 * [FancyZones draw layout test](fancyzones-draw-layout-test.md) - A tool to test FancyZones layout drawing logic.
+* [FancyZones zonable tester](fancyzones-zonable-tester.md) - A tool to test if a window is zonable.
+* [MonitorReportTool]
+* [project_termplate]
+* [StylesReportTool]
+* [Verification scripts]
+* [WebcamReportTool]
