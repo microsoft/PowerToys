@@ -22,4 +22,4 @@ This script checks the preview handler registration for the following file types
 * .txt
 * .ini
 
-The tool shows the user handler and the machine handler for each file type and puts out the App GUID of the handler.
+The tool shows the user handler and the machine handler for each file type and displays the App GUID of the corresponding handler.
