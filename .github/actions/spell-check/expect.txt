@@ -525,6 +525,7 @@ EXTENDEDVERBS
 eyetracker
 fabricbot
 fancymouse
+fancyzone
 fancyzones
 FANCYZONESDRAWLAYOUTTEST
 FANCYZONESEDITOR
