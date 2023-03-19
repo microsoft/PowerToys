@@ -845,6 +845,7 @@ KSPROPERTY
 Kybd
 LAlt
 Lambson
+languagesjson
 langword
 Lastdevice
 Laute
