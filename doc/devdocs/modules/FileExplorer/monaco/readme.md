@@ -6,7 +6,7 @@ Developer preview is based on [Microsoft's Monaco Editor](https://microsoft.gith
 
 1. Download Monaco editor with [npm](https://www.npmjs.com/): `npm i monaco-editor`.
 2. Delete everything except the `min` folder (the minimised code) from the downloaded files.
-3. Copy the `min` folder inside the [`monacoSRC`](/src/modules/previewpane/MonacoPreviewHandler/monacoSRC) folder.
+3. Copy the `min` folder into the [`monacoSRC`](/src/modules/previewpane/MonacoPreviewHandler/monacoSRC) folder.
 4. Generate the JSON file as described in the [Generate monaco_languages.json file](#generate-monaco_languagesjson-file) section.
 
 ## Add a new language definition
@@ -33,6 +33,8 @@ import { idDefinition } from './customLanguages/file.js';
 registerAdditionalNewLanguage("id", [".fileExtension"], idDefinition(), monaco)
 ```
 
+  * The id can be anything. Recommended is one of the file extensions. For example "php" or "reg".
+
 4. Execute the steps described in the [Generate monaco_languages.json file](#generate-monaco_languagesjson-file) section.
 
 ## Add a new file extension to an existing language
@@ -40,8 +42,10 @@ registerAdditionalNewLanguage("id", [".fileExtension"], idDefinition(), monaco)
 1. In the [`monacoSpecialLanguages.js` file](/src/modules/previewpane/MonacoPreviewHandler/monacoSpecialLanguages.js) add the following line to the `registerAdditionalLanguages` function:
 
 ```javascript
-registerAdditionalLanguage("oldIdExt", [".fileExtension"], "oldId", monaco)
+registerAdditionalLanguage("id", [".fileExtension"], "oldId", monaco)
 ```
+
+  * If for instance you want to add more extensions to the php language set the id to `phpExt` and the oldId to `php`.
 
 2. Execute the steps described in the [Generate monaco_languages.json file](#generate-monaco_languagesjson-file) section.
 
