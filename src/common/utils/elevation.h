@@ -17,10 +17,10 @@
 #include <string>
 #include <filesystem>
 
-#include <common/logger/logger.h>
-#include <common/utils/winapi_error.h>
-#include <common/utils/process_path.h>
-#include <common/utils/processApi.h>
+#include "../../../common/logger/logger.h"
+#include "../../../common/utils/winapi_error.h"
+#include "../../../common/utils/process_path.h"
+#include "../../../common/utils/processApi.h"
 
 namespace
 {
