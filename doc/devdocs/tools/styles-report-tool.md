@@ -8,5 +8,5 @@ The Styles Report Tool is a tool to collect information about an open window. Ru
 * Window class
 * Window style parameters
 * Window exStyle parameters
-* DwmAttributes
+* DWM attributes
 * Infos about the Virtual Desktop the window is on
