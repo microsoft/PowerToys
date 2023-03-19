@@ -1,6 +1,6 @@
 # [Bug report tool](/tools/BugReportTool/)
 
-This tool is used to collect logs and system information for bug reports. The bug report is then saved on the desktop.
+This tool is used to collect logs and system information for bug reports. The bug report is then saved as a zip file on the desktop.
 
 ## Launching
 
