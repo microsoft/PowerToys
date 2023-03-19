@@ -8,6 +8,9 @@ The source code of the tools can be found in the [tools folder](/tools). The com
 
 Following tools are currently available:
 
-* [BugReportTool](bug-report-tool.md) - a tool to collect logs and system information for bug reports.
-* [Build tools](build-tools.md) - a set of scripts that help building PowerToys.
-* [Monitor info report](monitor-info-report.md) - a small diagnostic tool which helps identifying WinAPI bugs related to the physical monitor detection.
+* [BugReportTool](bug-report-tool.md) - A tool to collect logs and system information for bug reports.
+* [Build tools](build-tools.md) - A set of scripts that help building PowerToys.
+* [Monitor info report](monitor-info-report.md) - A small diagnostic tool which helps identifying WinAPI bugs related to the physical monitor detection.
+* [Clean up tool](clean-up-tool.md) - A tool to clean up the PowerToys installation.
+* [FancyZones hit test](fancyzone-hit-test.md) - A tool to test FancyZones layout selection logic.
+* [FancyZones draw layout test](fancyzones-draw-layout-test.md) - A tool to test FancyZones layout drawing logic.
