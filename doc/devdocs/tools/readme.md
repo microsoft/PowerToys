@@ -16,7 +16,7 @@ Following tools are currently available:
 * [FancyZones draw layout test](fancyzones-draw-layout-test.md) - A tool to test FancyZones layout drawing logic.
 * [FancyZones zonable tester](fancyzones-zonable-tester.md) - A tool to test if a window is zonable.
 * [MonitorReportTool]
-* [project_termplate]
+* [project_template]
 * [StylesReportTool]
 * [Verification scripts]
 * [WebcamReportTool]
