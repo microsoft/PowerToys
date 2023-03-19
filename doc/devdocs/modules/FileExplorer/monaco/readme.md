@@ -2,7 +2,7 @@
 
 Developer preview is based on [Microsoft's Monaco Editor](https://microsoft.github.io/monaco-editor/) which is maintained by the Visual Studio Code team.
 
-## Update monaco editor
+## Update Monaco Editor
 
 1. Download Monaco editor with npm: `npm i monaco-editor`.
 2. Delete everything except the `min` folder (the minimised code).
