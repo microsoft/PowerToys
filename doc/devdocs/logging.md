@@ -9,7 +9,7 @@ Logging plays an important part in determining bugs in our code. It provides con
 
 Logs are normally in a subfolder with the module name as title.
 
-The [BugReportTool](/tools/BugReportTool) includes logs from both locations when executed.
+The [BugReportTool](/tools/BugReportTool) will take logs from both locations when executed.
 
 ## Using a logger in a project
 
