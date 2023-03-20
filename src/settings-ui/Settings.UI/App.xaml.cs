@@ -18,6 +18,7 @@ using Microsoft.PowerToys.Telemetry;
 using Microsoft.UI.Xaml;
 using Windows.UI.Popups;
 using WinRT.Interop;
+using WinUIEx;
 
 namespace Microsoft.PowerToys.Settings.UI
 {
@@ -189,6 +190,10 @@ namespace Microsoft.PowerToys.Settings.UI
                     settingsWindow = new MainWindow(isDark);
                     settingsWindow.Activate();
                     settingsWindow.NavigateToSection(StartupPage);
+
+                    // https://github.com/microsoft/microsoft-ui-xaml/issues/7595 - Activate doesn't bring window to the foreground
+                    // Need to call SetForegroundWindow to actually gain focus.
+                    Utils.BecomeForegroundWindow(settingsWindow.GetWindowHandle());
                 }
                 else
                 {
