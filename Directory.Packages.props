@@ -45,7 +45,7 @@
     <PackageVersion Include="System.Configuration.ConfigurationManager" Version="6.0.0" />
     <PackageVersion Include="System.Data.OleDb" Version="7.0.0" />
     <PackageVersion Include="System.Drawing.Common" Version="7.0.0" />
-    <PackageVersion Include="System.IO.Abstractions" Version="17.2.3" />
+    <PackageVersion Include="System.IO.Abstractions" Version="19.2.4" />
     <PackageVersion Include="System.IO.Abstractions.TestingHelpers" Version="17.2.3" />
     <PackageVersion Include="System.Management" Version="7.0.0" />
     <PackageVersion Include="System.Reactive" Version="5.0.0" />

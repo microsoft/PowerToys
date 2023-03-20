@@ -3,12 +3,9 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
-using System.Collections.Generic;
-using System.Configuration;
-using System.Data;
 using System.Linq;
-using System.Threading.Tasks;
 using System.Windows;
+using Hopper;
 
 namespace PowerToys.Hopper
 {
@@ -19,7 +16,8 @@ namespace PowerToys.Hopper
     {
         private void Application_Startup(object sender, StartupEventArgs e)
         {
-            MainWindow wnd = new MainWindow(e.Args);
+            HopperBatch files = HopperBatch.FromCommandLine(Console.In, e.Args);
+            MainWindow wnd = new MainWindow(files.Files.ToArray());
             wnd.Show();
         }
     }

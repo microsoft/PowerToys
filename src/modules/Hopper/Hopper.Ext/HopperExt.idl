@@ -1,0 +1,15 @@
+import "shobjidl.idl";
+
+[
+	uuid(09082E28-A5CA-47A7-8571-A2236C411E91),
+	version(3.1)
+]
+library HopperExtLib
+{
+	[uuid(5E785611-FE77-4DC3-89AE-6A055F2ED053)]
+	coclass ContextMenuHandler
+	{
+		[default] interface IShellExtInit;
+		interface IContextMenu;
+	};
+};
