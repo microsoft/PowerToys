@@ -26,7 +26,7 @@ It'll add the required include dirs and link the library binary itself.
 
 For C# projects there is a static logger class in Managed Common called `Logger`.
 
-For including it you have to add the following line of code to all the files using the logger:
+To use it, add the following line of code to all the files using the logger:
 
 ```Csharp
 using ManagedCommon;
