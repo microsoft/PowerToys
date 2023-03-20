@@ -4,8 +4,8 @@ Logging plays an important part in determining bugs in our code. It provides con
 
 ## Where are the logs saved
 
-* Most of the logs are saved under `%localAppData%/microsoft/powertoys`.
-* For low-privilege processes (like preview handlers) the logs are saved under `%userprofile%/appdata/LocalLow/microsoft/powertoys`.
+* Most of the logs are saved under `%LOCALAPPDATA%/Microsoft/PowerToys`.
+* For low-privilege processes (like preview handlers) the logs are saved under `%USERPROFILE%/AppData/LocalLow/Microsoft/PowerToys`.
 
 Logs are normally in a subfolder with the module name as title.
 
@@ -26,7 +26,7 @@ It'll add the required include dirs and link the library binary itself.
 
 For C# projects there is a static logger class in Managed Common called `Logger`.
 
-To use it, add the following line of code to all the files using the logger:
+To use it, add a project reference to `ManagedCommon` and add the following line of code to all the files using the logger:
 
 ```Csharp
 using ManagedCommon;
@@ -41,7 +41,7 @@ Logger.InitializeLogger("\\FancyZones\\Editor\\Logs");
 For a low-privilege process you have to set the optional second parameter to `true`:
 
 ```Csharp
-Logger.InitializeLogger("\\FileExplorer\\Monaco\\Logs");
+Logger.InitializeLogger("\\FileExplorer\\Monaco\\Logs", true);
 ```
 
 The `Logger` class contains the following logging functions:
