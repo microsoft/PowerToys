@@ -12,7 +12,6 @@
         <Setter Property="HorizontalAlignment" Value="Stretch" />
         <Setter Property="VerticalAlignment" Value="Stretch" />
         <Setter Property="Width" Value="116" />
-        <Setter Property="MinHeight" Value="84" />
         <Setter Property="FontFamily" Value="{ThemeResource ContentControlThemeFontFamily}" />
         <Setter Property="FontWeight" Value="Normal" />
         <Setter Property="FontSize" Value="{ThemeResource ControlContentThemeFontSize}" />
@@ -27,7 +26,6 @@
                         Height="{TemplateBinding Height}"
                         HorizontalAlignment="Stretch"
                         VerticalAlignment="Stretch"
-                        RowSpacing="12"
                         Background="Transparent"
                         BackgroundSizing="InnerBorderEdge"
                         CornerRadius="{TemplateBinding CornerRadius}">
@@ -42,6 +40,7 @@
                         <ContentPresenter
                             x:Name="IconPresenter"
                             Width="32"
+                            Margin="8"
                             HorizontalAlignment="Center"
                             VerticalAlignment="Top"
                             Content="{TemplateBinding Icon}"

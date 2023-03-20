@@ -12,7 +12,7 @@
     mc:Ignorable="d">
 
     <Grid Background="{ThemeResource LayerOnAcrylicFillColorDefaultBrush}"
-          Padding="0,12,0,0"
+          Padding="0,24,0,0"
           RowSpacing="12">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
@@ -22,12 +22,11 @@
         <!-- header + button -->
         <Grid
             Grid.Row="0"
-            Padding="12,0"
+            Padding="24,0"
             ColumnSpacing="12"
             HorizontalAlignment="Stretch">
             <TextBlock
                 x:Uid="ShortcutsTxt"
-                Grid.Column="0"
                 VerticalAlignment="Center"
                 Style="{StaticResource BodyStrongTextBlockStyle}"/>
             <Button
@@ -51,7 +50,7 @@
         </Grid>
         <ItemsControl
             Grid.Row="1"
-            Padding="12,8"
+            Padding="24,8"
             HorizontalAlignment="Center"
             VerticalAlignment="Top"
             ItemsSource="{x:Bind ViewModel.FlyoutMenuItems}"
@@ -80,17 +79,18 @@
                         <controls:FlyoutMenuButton.Content>
                             <StackPanel>
                                 <TextBlock
-                                    Style="{StaticResource CaptionTextBlockStyle}"
                                     Text="{x:Bind Label}"
                                     TextAlignment="Center"
-                                    TextWrapping="Wrap" />
-                                <TextBlock
+                                    TextWrapping="Wrap"
                                     Style="{StaticResource CaptionTextBlockStyle}"
-                                    Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                    />
+                                <TextBlock
                                     Text="{x:Bind Shortcut}"
                                     TextAlignment="Center"
                                     TextWrapping="Wrap"
-                                    VerticalAlignment="Bottom"/>
+                                    Style="{StaticResource CaptionTextBlockStyle}"
+                                    Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                    />
                             </StackPanel>
                         </controls:FlyoutMenuButton.Content>
                     </controls:FlyoutMenuButton>
@@ -99,19 +99,22 @@
         </ItemsControl>
         <!-- bottom buttons -->
         <StackPanel
-            Grid.Row="2">
+            Grid.Row="2"
+            Spacing="8">
             <InfoBar
                 x:Uid="UpdateAvailable"
                 IsClosable="False"
                 IsOpen="{x:Bind ViewModel.IsUpdateAvailable, Mode=OneWay}"
                 Severity="Informational"
-                Margin="12,0"/>
+                Margin="24,0"/>
 
             <CommandBar
                 HorizontalAlignment="Stretch"
                 HorizontalContentAlignment="Right"
-                OverflowButtonVisibility="Collapsed"
-                Background="{StaticResource LayerOnAcrylicFillColorDefaultBrush}">
+                BorderBrush="{StaticResource CardStrokeColorDefaultBrush}"
+                BorderThickness="0,1,0,0"
+                Background="{StaticResource LayerFillColorDefaultBrush}"
+                OverflowButtonVisibility="Collapsed">
                 <AppBarButton
                     x:Name="DocsBtn"
                     x:Uid="DocsBtn"
