@@ -58,7 +58,7 @@ namespace PowerLauncher.Helper
         {
         }
 
-        // https://docs.microsoft.com/en-us/windows/win32/api/shobjidl_core/ns-shobjidl_core-shdragimage
+        // https://learn.microsoft.com/windows/win32/api/shobjidl_core/ns-shobjidl_core-shdragimage
         [StructLayout(LayoutKind.Sequential)]
         private struct ShDragImage
         {
@@ -68,7 +68,7 @@ namespace PowerLauncher.Helper
             public int CrColorKey;
         }
 
-        // https://docs.microsoft.com/en-us/windows/win32/api/shobjidl_core/nn-shobjidl_core-idragsourcehelper
+        // https://learn.microsoft.com/windows/win32/api/shobjidl_core/nn-shobjidl_core-idragsourcehelper
         [InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
         [Guid("DE5BF786-477A-11D2-839D-00C04FD918D0")]
         private interface IDragSourceHelper

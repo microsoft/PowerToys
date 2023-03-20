@@ -56,7 +56,7 @@ If a remote test machine is being used, the IP of the test machine must be used 
 
 ### Extra tools and information
 
-For tests creation you will need a tool that enables you select any UI element and view the element's accessibility data. For this purpose you could use  [AccessibilityInsights](https://accessibilityinsights.io/docs/en/windows/overview) or [Inspect](https://learn.microsoft.com/windows/win32/winauto/inspect-objects?redirectedfrom=MSDN).
+For tests creation you will need a tool that enables you select any UI element and view the element's accessibility data. For this purpose you could use  [AccessibilityInsights](https://accessibilityinsights.io/docs/windows/overview) or [Inspect](https://learn.microsoft.com/windows/win32/winauto/inspect-objects?redirectedfrom=MSDN).
 
 * `inspect.exe` you can find installed at `C:\Program Files (x86)\Windows Kits\10\bin\<version>\<platform>\inspect.exe`
 * `AccessibilityInsights` you can download [here](https://aka.ms/accessibilityinsights-windows/download)
