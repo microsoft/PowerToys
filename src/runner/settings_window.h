@@ -18,6 +18,9 @@ enum class ESettingsWindowNames
     VideoConference,
     Hosts,
     RegistryPreview,
+    Hosts,
+    MeasureTool,
+    PowerOCR,
 };
 
 std::string ESettingsWindowNames_to_string(ESettingsWindowNames value);

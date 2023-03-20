@@ -7,6 +7,8 @@
 #include "Generated Files/resource.h"
 
 #include <shellapi.h>
+#include <common/interop/shared_constants.h>
+#include <common/utils/EventWaiter.h>
 #include <common/utils/resources.h>
 #include <common/utils/winapi_error.h>
 #include <common/SettingsAPI/settings_objects.h>
@@ -48,6 +50,10 @@ private:
     std::wstring app_key;
 
     HANDLE m_hProcess;
+
+    HANDLE m_hShowEvent;
+
+    HANDLE m_hShowAdminEvent;
 
     bool is_process_running()
     {
@@ -104,11 +110,55 @@ private:
     }
 
 public:
+    EventWaiter m_showEventWaiter;
+
+    EventWaiter m_showAdminEventWaiter;
+
     HostsModuleInterface()
     {
         app_name = GET_RESOURCE_STRING(IDS_HOSTS_NAME);
         app_key = ModuleKey;
         LoggerHelpers::init_logger(app_key, L"ModuleInterface", LogSettings::hostsLoggerName);
+
+        m_hShowEvent = CreateDefaultEvent(CommonSharedConstants::SHOW_HOSTS_EVENT);
+        if (!m_hShowEvent)
+        {
+            Logger::error(L"Failed to create show hosts event");
+            auto message = get_last_error_message(GetLastError());
+            if (message.has_value())
+            {
+                Logger::error(message.value());
+            }
+        }
+
+        m_hShowAdminEvent = CreateDefaultEvent(CommonSharedConstants::SHOW_HOSTS_ADMIN_EVENT);
+        if (!m_hShowEvent)
+        {
+            Logger::error(L"Failed to create show hosts admin event");
+            auto message = get_last_error_message(GetLastError());
+            if (message.has_value())
+            {
+                Logger::error(message.value());
+            }
+        }
+
+        m_showEventWaiter = EventWaiter(CommonSharedConstants::SHOW_HOSTS_EVENT, [&](int err)
+        {
+            if (err == ERROR_SUCCESS)
+            {
+                Logger::trace(L"{} event was signaled", CommonSharedConstants::SHOW_HOSTS_EVENT);
+                launch_process(false);
+            }
+        });
+
+        m_showAdminEventWaiter = EventWaiter(CommonSharedConstants::SHOW_HOSTS_ADMIN_EVENT, [&](int err)
+        {
+            if (err == ERROR_SUCCESS)
+            {
+                Logger::trace(L"{} event was signaled", CommonSharedConstants::SHOW_HOSTS_ADMIN_EVENT);
+                launch_process(true);
+            }
+        });
     }
 
     ~HostsModuleInterface()
@@ -120,6 +170,19 @@ public:
     virtual void destroy() override
     {
         Logger::trace("HostsModuleInterface::destroy()");
+
+        if (m_hShowEvent)
+        {
+            CloseHandle(m_hShowEvent);
+            m_hShowEvent = nullptr;
+        }
+
+        if (m_hShowAdminEvent)
+        {
+            CloseHandle(m_hShowAdminEvent);
+            m_hShowAdminEvent = nullptr;
+        }
+
         delete this;
     }
 
@@ -194,6 +257,16 @@ public:
         Logger::trace("HostsModuleInterface::disable()");
         if (m_enabled)
         {
+            if (m_hShowEvent)
+            {
+                ResetEvent(m_hShowEvent);
+            }
+
+            if (m_hShowAdminEvent)
+            {
+                ResetEvent(m_hShowAdminEvent);
+            }
+
             TerminateProcess(m_hProcess, 1);
         }
 

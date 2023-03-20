@@ -663,6 +663,10 @@ std::string ESettingsWindowNames_to_string(ESettingsWindowNames value)
         return "VideoConference";
     case ESettingsWindowNames::Hosts:
         return "Hosts";
+    case ESettingsWindowNames::MeasureTool:
+        return "MeasureTool";
+    case ESettingsWindowNames::PowerOCR:
+        return "PowerOCR";
     case ESettingsWindowNames::RegistryPreview:
         return "RegistryPreview";
     default:
@@ -727,6 +731,14 @@ ESettingsWindowNames ESettingsWindowNames_from_string(std::string value)
     else if (value == "Hosts")
     {
         return ESettingsWindowNames::Hosts;
+    }
+    else if (value == "MeasureTool")
+    {
+        return ESettingsWindowNames::MeasureTool;
+    }
+    else if (value == "PowerOCR")
+    {
+        return ESettingsWindowNames::PowerOCR;
     }
     else if (value == "RegistryPreview")
     {

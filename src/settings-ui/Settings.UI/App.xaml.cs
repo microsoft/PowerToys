@@ -149,7 +149,7 @@ namespace Microsoft.PowerToys.Settings.UI
                         case "QuickAccent": StartupPage = typeof(Views.PowerAccentPage); break;
                         case "FileExplorer": StartupPage = typeof(Views.PowerPreviewPage); break;
                         case "ShortcutGuide": StartupPage = typeof(Views.ShortcutGuidePage); break;
-                        case "TextExtractor": StartupPage = typeof(Views.PowerOcrPage); break;
+                        case "PowerOCR": StartupPage = typeof(Views.PowerOcrPage); break;
                         case "VideoConference": StartupPage = typeof(Views.VideoConferencePage); break;
                         case "MeasureTool": StartupPage = typeof(Views.MeasureToolPage); break;
                         case "Hosts": StartupPage = typeof(Views.HostsPage); break;
