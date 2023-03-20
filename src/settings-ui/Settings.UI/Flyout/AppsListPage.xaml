@@ -42,7 +42,7 @@
                             VerticalAlignment="Center"
                             FontSize="12"
                             Glyph="&#xe76b;" />
-                        <TextBlock x:Uid="BackLabel" Style="{StaticResource CaptionTextBlockStyle}" />
+                        <TextBlock x:Uid="BackLabel" />
                     </StackPanel>
                 </Button.Content>
             </Button>

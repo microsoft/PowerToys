@@ -18,7 +18,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         public string Icon { get; set; }
 
-        public string ToolTip { get; set; }
+        public string Shortcut { get; set; }
 
         public string Tag { get; set; }
 

@@ -41,7 +41,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                     Label = resourceLoader.GetString("ColorPicker/ModuleTitle"),
                     Tag = "ColorPicker",
                     Visible = generalSettingsConfig.Enabled.ColorPicker,
-                    ToolTip = SettingsRepository<ColorPickerSettings>.GetInstance(new SettingsUtils()).SettingsConfig.Properties.ActivationShortcut.ToString(),
+                    Shortcut = SettingsRepository<ColorPickerSettings>.GetInstance(new SettingsUtils()).SettingsConfig.Properties.ActivationShortcut.ToString(),
                     Icon = "ms-appx:///Assets/FluentIcons/FluentIconsColorPicker.png",
                 });
             }
@@ -53,7 +53,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                     Label = resourceLoader.GetString("FZEditorString"),
                     Tag = "FancyZones",
                     Visible = generalSettingsConfig.Enabled.FancyZones,
-                    ToolTip = SettingsRepository<FancyZonesSettings>.GetInstance(new SettingsUtils()).SettingsConfig.Properties.FancyzonesEditorHotkey.Value.ToString(),
+                    Shortcut = SettingsRepository<FancyZonesSettings>.GetInstance(new SettingsUtils()).SettingsConfig.Properties.FancyzonesEditorHotkey.Value.ToString(),
                     Icon = "ms-appx:///Assets/FluentIcons/FluentIconsFancyZones.png",
                 });
             }
@@ -76,7 +76,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                     Label = resourceLoader.GetString("PowerLauncher/ModuleTitle"),
                     Tag = "PowerLauncher",
                     Visible = generalSettingsConfig.Enabled.PowerLauncher,
-                    ToolTip = SettingsRepository<PowerLauncherSettings>.GetInstance(new SettingsUtils()).SettingsConfig.Properties.OpenPowerLauncher.ToString(),
+                    Shortcut = SettingsRepository<PowerLauncherSettings>.GetInstance(new SettingsUtils()).SettingsConfig.Properties.OpenPowerLauncher.ToString(),
                     Icon = "ms-appx:///Assets/FluentIcons/FluentIconsPowerToysRun.png",
                 });
             }
@@ -88,7 +88,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                     Label = resourceLoader.GetString("TextExtractor/ModuleTitle"),
                     Tag = "PowerOCR",
                     Visible = generalSettingsConfig.Enabled.PowerOCR,
-                    ToolTip = SettingsRepository<PowerOcrSettings>.GetInstance(new SettingsUtils()).SettingsConfig.Properties.ActivationShortcut.ToString(),
+                    Shortcut = SettingsRepository<PowerOcrSettings>.GetInstance(new SettingsUtils()).SettingsConfig.Properties.ActivationShortcut.ToString(),
                     Icon = "ms-appx:///Assets/FluentIcons/FluentIconsPowerOcr.png",
                 });
             }
@@ -100,7 +100,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                     Label = resourceLoader.GetString("MeasureTool/ModuleTitle"),
                     Tag = "MeasureTool",
                     Visible = generalSettingsConfig.Enabled.MeasureTool,
-                    ToolTip = SettingsRepository<MeasureToolSettings>.GetInstance(new SettingsUtils()).SettingsConfig.Properties.ActivationShortcut.ToString(),
+                    Shortcut = SettingsRepository<MeasureToolSettings>.GetInstance(new SettingsUtils()).SettingsConfig.Properties.ActivationShortcut.ToString(),
                     Icon = "ms-appx:///Assets/FluentIcons/FluentIconsScreenRuler.png",
                 });
             }
@@ -112,7 +112,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                     Label = resourceLoader.GetString("ShortcutGuide/ModuleTitle"),
                     Tag = "ShortcutGuide",
                     Visible = generalSettingsConfig.Enabled.ShortcutGuide,
-                    ToolTip = SettingsRepository<ShortcutGuideSettings>.GetInstance(new SettingsUtils()).SettingsConfig.Properties.OpenShortcutGuide.ToString(),
+                    Shortcut = SettingsRepository<ShortcutGuideSettings>.GetInstance(new SettingsUtils()).SettingsConfig.Properties.OpenShortcutGuide.ToString(),
                     Icon = "ms-appx:///Assets/FluentIcons/FluentIconsShortcutGuide.png",
                 });
             }
@@ -124,14 +124,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
             updatingSettingsConfig = UpdatingSettings.LoadSettings();
 
-            if (updatingSettingsConfig.State == UpdatingSettings.UpdatingState.ReadyToInstall || updatingSettingsConfig.State == UpdatingSettings.UpdatingState.ReadyToDownload)
-            {
-                IsUpdateAvailable = true;
-            }
-            else
-            {
-                IsUpdateAvailable = false;
-            }
+            IsUpdateAvailable = updatingSettingsConfig.State == UpdatingSettings.UpdatingState.ReadyToInstall || updatingSettingsConfig.State == UpdatingSettings.UpdatingState.ReadyToDownload;
         }
 
         private void ModuleEnabledChanged()

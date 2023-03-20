@@ -40,7 +40,7 @@
                         VerticalAlignment="Center"
                         Orientation="Horizontal"
                         Spacing="12">
-                        <TextBlock x:Uid="MoreLabel" Style="{StaticResource CaptionTextBlockStyle}" />
+                        <TextBlock x:Uid="MoreLabel" />
                         <FontIcon
                             VerticalAlignment="Center"
                             FontSize="12"
@@ -51,7 +51,7 @@
         </Grid>
         <ItemsControl
             Grid.Row="1"
-            Padding="12,0"
+            Padding="12,8"
             HorizontalAlignment="Center"
             VerticalAlignment="Top"
             ItemsSource="{x:Bind ViewModel.FlyoutMenuItems}"
@@ -67,15 +67,9 @@
                         Click="ModuleButton_Click"
                         Tag="{x:Bind Tag}"
                         AutomationProperties.Name="{x:Bind Label}"
-                        ToolTipService.ToolTip="{x:Bind ToolTip}"
                         Visibility="{x:Bind Visible, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged, Converter={StaticResource BoolToVisibilityConverter}}">
-                        <controls:FlyoutMenuButton.Content>
-                            <TextBlock
-                                Style="{StaticResource CaptionTextBlockStyle}"
-                                Text="{x:Bind Label}"
-                                TextAlignment="Center"
-                                TextWrapping="Wrap" />
-                        </controls:FlyoutMenuButton.Content>
+                        <!--ToolTipService.ToolTip="{x:Bind Shortcut}"-->
+                        
                         <controls:FlyoutMenuButton.Icon>
                             <Image>
                                 <Image.Source>
@@ -83,23 +77,41 @@
                                 </Image.Source>
                             </Image>
                         </controls:FlyoutMenuButton.Icon>
+                        <controls:FlyoutMenuButton.Content>
+                            <StackPanel>
+                                <TextBlock
+                                    Style="{StaticResource CaptionTextBlockStyle}"
+                                    Text="{x:Bind Label}"
+                                    TextAlignment="Center"
+                                    TextWrapping="Wrap" />
+                                <TextBlock
+                                    Style="{StaticResource CaptionTextBlockStyle}"
+                                    Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                    Text="{x:Bind Shortcut}"
+                                    TextAlignment="Center"
+                                    TextWrapping="Wrap"
+                                    VerticalAlignment="Bottom"/>
+                            </StackPanel>
+                        </controls:FlyoutMenuButton.Content>
                     </controls:FlyoutMenuButton>
                 </DataTemplate>
             </ItemsControl.ItemTemplate>
         </ItemsControl>
         <!-- bottom buttons -->
         <StackPanel
-            Grid.Row="2"
-            Padding="12,0">
+            Grid.Row="2">
             <InfoBar
                 x:Uid="UpdateAvailable"
                 IsClosable="False"
                 IsOpen="{x:Bind ViewModel.IsUpdateAvailable, Mode=OneWay}"
-                Severity="Informational" />
+                Severity="Informational"
+                Margin="12,0"/>
 
             <CommandBar
-                HorizontalAlignment="Right"
-                OverflowButtonVisibility="Collapsed">
+                HorizontalAlignment="Stretch"
+                HorizontalContentAlignment="Right"
+                OverflowButtonVisibility="Collapsed"
+                Background="{StaticResource LayerOnAcrylicFillColorDefaultBrush}">
                 <AppBarButton
                     x:Name="DocsBtn"
                     x:Uid="DocsBtn"
