@@ -28,8 +28,6 @@ namespace RegistryPreview
         private bool visualTreeReady;
         private Dictionary<string, TreeViewNode> mapRegistryKeys;
         private List<RegistryValue> listRegistryValues;
-        private SolidColorBrush solidColorBrushNormal;
-        private SolidColorBrush solidColorBrushReadOnly;
         private JsonObject jsonSettings;
         private string settingsFolder = string.Empty;
         private string settingsFile = string.Empty;
@@ -56,17 +54,6 @@ namespace RegistryPreview
             appWindow = Microsoft.UI.Windowing.AppWindow.GetFromWindowId(windowId);
             appWindow.SetIcon("app.ico");
             appWindow.Closing += AppWindow_Closing;
-
-            // set up textBox's font colors
-            solidColorBrushReadOnly = new SolidColorBrush(Windows.UI.Color.FromArgb(255, 120, 120, 120));
-            if (App.Current.RequestedTheme == ApplicationTheme.Dark)
-            {
-                solidColorBrushNormal = new SolidColorBrush(Colors.White);
-            }
-            else
-            {
-                solidColorBrushNormal = new SolidColorBrush(Colors.Black);
-            }
 
             // Update Toolbar
             if ((App.AppFilename == null) || (File.Exists(App.AppFilename) != true))

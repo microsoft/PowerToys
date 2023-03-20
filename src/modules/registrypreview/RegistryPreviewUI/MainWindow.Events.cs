@@ -13,6 +13,8 @@ using CommunityToolkit.WinUI.UI.Converters;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Data;
+using Microsoft.UI.Xaml.Media;
+using Settings.UI.Library.Resources;
 using Windows.Data.Json;
 using Windows.Foundation.Metadata;
 using Windows.Graphics;
@@ -372,21 +374,31 @@ namespace RegistryPreview
         }
 
         /// <summary>
-        /// Readonly checkbox is checked, set textBox to read only; also update the font color so it has a hint of being "disabled"
+        /// Readonly checkbox is checked, set textBox to read only; also update the font color so it has a hint of being "disabled" (also the hover state!)
         /// </summary>
         private void CheckBoxTextBox_Checked(object sender, RoutedEventArgs e)
         {
             textBox.IsReadOnly = true;
-            textBox.Foreground = solidColorBrushReadOnly;
+            SolidColorBrush brush = new SolidColorBrush(Windows.UI.Color.FromArgb(255, 120, 120, 120)); // (SolidColorBrush)Application.Current.Resources["TextBoxDisabledForegroundThemeBrush"];
+            if (brush != null)
+            {
+                textBox.Foreground = brush;
+                textBox.Resources["TextControlForegroundPointerOver"] = brush;
+            }
         }
 
         /// <summary>
-        /// Readonly checkbox is unchecked, set textBox to be editable; also update the font color back to black
+        /// Readonly checkbox is unchecked, set textBox to be editable; also update the font color back to a theme friendly foreground (also the hover state!)
         /// </summary>
         private void CheckBoxTextBox_Unchecked(object sender, RoutedEventArgs e)
         {
             textBox.IsReadOnly = false;
-            textBox.Foreground = solidColorBrushNormal;
+            SolidColorBrush brush = (SolidColorBrush)Application.Current.Resources["TextControlForeground"];
+            if (brush != null)
+            {
+                textBox.Foreground = brush;
+                textBox.Resources["TextControlForegroundPointerOver"] = brush;
+            }
         }
     }
 }
