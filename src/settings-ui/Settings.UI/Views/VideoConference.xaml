@@ -53,7 +53,7 @@
                 <InfoBar
                     x:Uid="VideoConference_RunAsAdminRequired"
                     IsClosable="False"
-                    IsOpen="{Binding Mode=OneWay, Path=IsElevated}"
+                    IsOpen="{Binding Mode=OneWay, Path=IsElevated, Converter={StaticResource BoolNegationConverter}}"
                     IsTabStop="True"
                     Severity="Informational"/>
                 <InfoBar
