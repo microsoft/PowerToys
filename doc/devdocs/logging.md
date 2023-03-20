@@ -15,7 +15,7 @@ The [BugReportTool](/tools/BugReportTool) will take logs from both locations whe
 
 ### Spdlog
 
-In C++ projects we are use the awesome [spdlog](https://github.com/gabime/spdlog) library for logging as a git submodule under the `deps` directory. To use it in your project, just include [spdlog.props](/deps/spdlog.props) in a .vcxproj like this:
+In C++ projects we use the awesome [spdlog](https://github.com/gabime/spdlog) library for logging as a git submodule under the `deps` directory. To use it in your project, just include [spdlog.props](/deps/spdlog.props) in a .vcxproj like this:
 
 ```xml
 <Import Project="..\..\..\deps\spdlog.props" />
