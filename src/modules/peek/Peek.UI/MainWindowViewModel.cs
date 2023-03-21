@@ -3,8 +3,12 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.Linq;
 using CommunityToolkit.Mvvm.ComponentModel;
 using Microsoft.UI.Xaml;
+using Peek.Common.Helpers;
+using Peek.Common.Models;
+using Peek.UI.Models;
 
 namespace Peek.UI
 {
@@ -12,10 +16,42 @@ namespace Peek.UI
     {
         private const int NavigationThrottleDelayMs = 100;
 
-        public MainWindowViewModel()
+        [ObservableProperty]
+        private int _currentIndex;
+
+        [ObservableProperty]
+        private IFileSystemItem? _currentItem;
+
+        [ObservableProperty]
+        private NeighboringItems? _items;
+
+        [ObservableProperty]
+        private double _scalingFactor = 1.0;
+
+        public NeighboringItemsQuery NeighboringItemsQuery { get; }
+
+        private DispatcherTimer NavigationThrottleTimer { get; set; } = new();
+
+        public MainWindowViewModel(NeighboringItemsQuery query)
         {
+            NeighboringItemsQuery = query;
+
             NavigationThrottleTimer.Tick += NavigationThrottleTimer_Tick;
             NavigationThrottleTimer.Interval = TimeSpan.FromMilliseconds(NavigationThrottleDelayMs);
+        }
+
+        public void Initialize()
+        {
+            Items = NeighboringItemsQuery.GetNeighboringItems();
+            CurrentIndex = 0;
+            CurrentItem = Items?.FirstOrDefault();
+        }
+
+        public void Uninitialize()
+        {
+            CurrentIndex = 0;
+            CurrentItem = null;
+            Items = null;
         }
 
         public void AttemptLeftNavigation()
@@ -27,8 +63,9 @@ namespace Peek.UI
 
             NavigationThrottleTimer.Start();
 
-            // TODO: return a bool so UI can give feedback in case navigation is unavailable
-            FolderItemsQuery.UpdateCurrentItemIndex(FolderItemsQuery.CurrentItemIndex - 1);
+            var itemCount = Items?.Count ?? 1;
+            CurrentIndex = MathHelper.Modulo(CurrentIndex - 1, itemCount);
+            CurrentItem = Items?.ElementAtOrDefault(CurrentIndex);
         }
 
         public void AttemptRightNavigation()
@@ -40,8 +77,9 @@ namespace Peek.UI
 
             NavigationThrottleTimer.Start();
 
-            // TODO: return a bool so UI can give feedback in case navigation is unavailable
-            FolderItemsQuery.UpdateCurrentItemIndex(FolderItemsQuery.CurrentItemIndex + 1);
+            var itemCount = Items?.Count ?? 1;
+            CurrentIndex = MathHelper.Modulo(CurrentIndex + 1, itemCount);
+            CurrentItem = Items?.ElementAtOrDefault(CurrentIndex);
         }
 
         private void NavigationThrottleTimer_Tick(object? sender, object e)
@@ -53,13 +91,5 @@ namespace Peek.UI
 
             ((DispatcherTimer)sender).Stop();
         }
-
-        [ObservableProperty]
-        private FolderItemsQuery _folderItemsQuery = new();
-
-        [ObservableProperty]
-        private double _scalingFactor = 1.0;
-
-        private DispatcherTimer NavigationThrottleTimer { get; set; } = new();
     }
 }

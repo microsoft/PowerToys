@@ -3,16 +3,12 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.IO;
 using Peek.Common.Models;
 using Peek.UI.Extensions;
 using SHDocVw;
 using Windows.Win32;
 using Windows.Win32.Foundation;
 using Windows.Win32.UI.Shell;
-using static System.Runtime.InteropServices.JavaScript.JSType;
 using IServiceProvider = Peek.Common.Models.IServiceProvider;
 
 namespace Peek.UI.Helpers
@@ -48,24 +44,21 @@ namespace Peek.UI.Helpers
 
             var shell = new Shell32.Shell();
             ShellWindows shellWindows = shell.Windows();
+
             object? oNull1 = null;
             object? oNull2 = null;
+
             var serviceProvider = (IServiceProvider)shellWindows.FindWindowSW(ref oNull1, ref oNull2, SWC_DESKTOP, out int pHWND, SWFO_NEEDDISPATCH);
             var shellBrowser = (IShellBrowser)serviceProvider.QueryService(PInvoke.SID_STopLevelBrowser, typeof(IShellBrowser).GUID);
-            var shellView = (IFolderView)shellBrowser.QueryActiveShellView();
 
-            var selectionFlag = onlySelectedFiles ? (uint)_SVGIO.SVGIO_SELECTION : (uint)_SVGIO.SVGIO_ALLVIEW;
-            shellView.Items(selectionFlag, typeof(IShellItemArray).GUID, out var items);
-            if (items is IShellItemArray array)
-            {
-                return array;
-            }
-
-            return null;
+            IShellItemArray? shellItemArray = GetShellItemArray(shellBrowser, onlySelectedFiles);
+            return shellItemArray;
         }
 
         private static IShellItemArray? GetItemsFromFileExplorer(HWND foregroundWindowHandle, bool onlySelectedFiles)
         {
+            IShellItemArray? shellItemArray = null;
+
             var activeTab = foregroundWindowHandle.GetActiveTab();
 
             var shell = new Shell32.Shell();
@@ -83,43 +76,21 @@ namespace Peek.UI.Helpers
 
                     if (activeTab == shellBrowserHandle)
                     {
-                        var shellView = (IFolderView)shellBrowser.QueryActiveShellView();
-
-                        var selectionFlag = onlySelectedFiles ? (uint)_SVGIO.SVGIO_SELECTION : (uint)_SVGIO.SVGIO_ALLVIEW;
-                        shellView.Items(selectionFlag, typeof(IShellItemArray).GUID, out var items);
-                        if (items is IShellItemArray array)
-                        {
-                            return array;
-                        }
+                        shellItemArray = GetShellItemArray(shellBrowser, onlySelectedFiles);
+                        return shellItemArray;
                     }
                 }
             }
 
-            return null;
+            return shellItemArray;
         }
 
-        private static IEnumerable<IFileSystemItem> ToEnumerable(this IShellItemArray array)
+        private static IShellItemArray? GetShellItemArray(IShellBrowser shellBrowser, bool onlySelectedFiles)
         {
-            var stopwatch = new Stopwatch();
-            stopwatch.Start();
-            var count = array.GetCount();
-            stopwatch.Stop();
-            var elasped = stopwatch.Elapsed;
-
-            for (var i = 0; i < array.GetCount(); i++)
-            {
-                IShellItem item = array.GetItemAt(i);
-                yield return item.ToIFileSystemItem();
-            }
-        }
-
-        private static IEnumerable<IFileSystemItem> ToEnumerable(this Shell32.FolderItems folderItems)
-        {
-            foreach (Shell32.FolderItem item in folderItems)
-            {
-                // TODO: Handle cases where it is neither a file or a folder
-                yield return File.Exists(item.Path) ? new FileItem(item.Path) : new FolderItem(item.Path);
-            }
+            var shellView = (IFolderView)shellBrowser.QueryActiveShellView();
+            var selectionFlag = onlySelectedFiles ? (uint)_SVGIO.SVGIO_SELECTION : (uint)_SVGIO.SVGIO_ALLVIEW;
+            shellView.Items(selectionFlag, typeof(IShellItemArray).GUID, out var items);
+            return items as IShellItemArray;
         }
     }
 }
