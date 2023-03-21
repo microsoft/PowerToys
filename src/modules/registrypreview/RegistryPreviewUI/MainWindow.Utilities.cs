@@ -15,6 +15,7 @@ using System.Xml.Linq;
 using Microsoft.UI.Input;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
+using Microsoft.Win32;
 using Windows.Foundation.Metadata;
 using Windows.Storage;
 
@@ -219,9 +220,8 @@ namespace RegistryPreview
                 // switch logic, based off what the current line we're reading is
                 if (registryLine.StartsWith("[", StringComparison.InvariantCulture))
                 {
-                    // this is a key!
-                    registryLine = registryLine.Replace("[", string.Empty);
-                    registryLine = registryLine.Replace("]", string.Empty);
+                    // this is a key, so remove the first [ and last ]
+                    registryLine = StripFirstAndLast(registryLine);
 
                     treeViewNode = AddTextToTree(registryLine, KEYIMAGE);
                 }
@@ -230,9 +230,8 @@ namespace RegistryPreview
                     // this line deletes this key so it gets special treatment for the UI
                     registryLine = registryLine.Remove(0, 1);
 
-                    // this is a key!
-                    registryLine = registryLine.Replace("[", string.Empty);
-                    registryLine = registryLine.Replace("]", string.Empty);
+                    // this is a key, so remove the first [ and last ]
+                    registryLine = StripFirstAndLast(registryLine);
 
                     // do not track the result of this node, since it should have no children
                     AddTextToTree(registryLine, DELETEDKEYIMAGE);
@@ -241,7 +240,9 @@ namespace RegistryPreview
                 {
                     // this line deletes this value so it gets special treatment for the UI
                     registryLine = registryLine.Replace("=-", string.Empty);
-                    registryLine = registryLine.Replace("\"", string.Empty);
+
+                    // remove the "'s without removing all of them
+                    registryLine = StripFirstAndLast(registryLine);
 
                     // Create a new listview item that will be used to display the delete value and store it
                     registryValue = new RegistryValue(registryLine, string.Empty, string.Empty);
@@ -262,7 +263,8 @@ namespace RegistryPreview
 
                     // set the name and the value
                     string name = registryLine.Substring(0, equal);
-                    name = name.Replace("\"", string.Empty);
+                    name = StripFirstAndLast(name);
+
                     string value = registryLine.Substring(equal + 1);
 
                     if (name == "@")
@@ -276,13 +278,7 @@ namespace RegistryPreview
                     // if the first character is a " then this is a string value; get rid of the first and last "
                     if (value.StartsWith("\"", StringComparison.InvariantCulture))
                     {
-                        value = value.Remove(0, 1);
-
-                        // handles the case where someone is typing a new line with a REG_SZ value
-                        if (value.Length > 0)
-                        {
-                            value = value.Substring(0, value.Length - 1);
-                        }
+                        value = StripFirstAndLast(value);
                     }
 
                     // check the header of the Value's value and format it accordingly
@@ -363,12 +359,14 @@ namespace RegistryPreview
             return true;
         }
 
+        /// <summary>
+        /// We're going to store this ListViewItem in an ArrayList which will then
+        /// be attached to the most recently returned TreeNode that came back from
+        /// AddTextToTree.  If there's already a list there, we will use that list and
+        /// add our new node to it.
+        /// </summary>
         private void StoreTheListValue(RegistryKey registryKey, RegistryValue registryValue)
         {
-            // We're going to store this ListViewItem in an ArrayList which will then
-            // be attached to the most recently returned TreeNode that came back from
-            // AddTextToTree.  If there's already a list there, we will use that list and
-            // add our new node to it.
             ArrayList arrayList = null;
             if (registryKey.Tag == null)
             {
@@ -728,6 +726,9 @@ namespace RegistryPreview
             jsonSettings = Windows.Data.Json.JsonObject.Parse(fileContents);
         }
 
+        /// <summary>
+        /// Save the settings JSON blob out to a local file
+        /// </summary>
         private async void SaveSettingsFile(string path, string filename)
         {
             StorageFolder storageFolder = null;
@@ -764,6 +765,21 @@ namespace RegistryPreview
             {
                 Debug.WriteLine(ex.Message);
             }
+        }
+
+        /// <summary>
+        /// Rip the first and last character off a string, 
+        /// checking that the string is at least 2 characters long to avoid errors
+        /// </summary>
+        private string StripFirstAndLast(string line)
+        {
+            if (line.Length > 1)
+            {
+                line = line.Remove(line.Length - 1, 1);
+                line = line.Remove(0, 1);
+            }
+
+            return line;
         }
     }
 }
