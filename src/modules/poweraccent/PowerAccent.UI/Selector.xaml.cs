@@ -17,7 +17,7 @@ public partial class Selector : Window, IDisposable, INotifyPropertyChanged
 
     private Visibility _characterNameVisibility = Visibility.Visible;
 
-    private int _selectedIndex = 0;
+    private int _selectedIndex;
 
     public event PropertyChangedEventHandler PropertyChanged;
 

@@ -9,7 +9,7 @@ using Windows.ApplicationModel.Activation;
 
 namespace Microsoft.PowerToys.Settings.UI.Activation
 {
-    internal class DefaultActivationHandler : ActivationHandler<IActivatedEventArgs>
+    internal sealed class DefaultActivationHandler : ActivationHandler<IActivatedEventArgs>
     {
         private readonly Type navElement;
 
