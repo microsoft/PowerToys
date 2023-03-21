@@ -121,25 +121,6 @@ namespace Peek.UI
             {
                 this.CenterOnScreen(desiredScaledWidth, desiredScaledHeight); // re-center if not pinned
             }
-            else
-            {
-                // pin center of the window
-                double currentHeight = this.Height * monitorScale;
-                double currentWidth = this.Width * monitorScale;
-
-                this.SetWindowSize(Math.Round(desiredScaledWidth), Math.Round(desiredScaledHeight));
-
-                double actualResizedWidth = this.Width * monitorScale;
-                double actualResizedHeight = this.Height * monitorScale;
-
-                double widthDiff = (currentWidth - actualResizedWidth) / 2;
-                double heightDiff = (currentHeight - actualResizedHeight) / 2;
-
-                int newX = this.AppWindow.Position.X + (int)Math.Round(widthDiff);
-                int newY = this.AppWindow.Position.Y + (int)Math.Round(heightDiff);
-
-                this.AppWindow.Move(new Windows.Graphics.PointInt32(newX, newY));
-            }
 
             this.Show();
             this.BringToForeground();
