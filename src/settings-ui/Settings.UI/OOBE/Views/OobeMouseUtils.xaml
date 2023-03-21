@@ -35,6 +35,13 @@
                     x:Uid="Oobe_MouseUtils_MousePointerCrosshairs_Description"
                     Background="Transparent" />
 
+                <TextBlock
+                    x:Uid="Oobe_MouseUtils_MouseJump"
+                    Style="{ThemeResource OobeSubtitleStyle}" />
+                <toolkitcontrols:MarkdownTextBlock
+                    x:Uid="Oobe_MouseUtils_MouseJump_Description"
+                    Background="Transparent" />
+
                 <StackPanel
                     Margin="0,24,0,0"
                     Orientation="Horizontal"

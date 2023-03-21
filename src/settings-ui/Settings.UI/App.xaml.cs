@@ -72,6 +72,8 @@ namespace Microsoft.PowerToys.Settings.UI
         /// </summary>
         public App()
         {
+            Logger.InitializeLogger("\\Settings\\Logs");
+
             this.InitializeComponent();
         }
 
@@ -151,6 +153,7 @@ namespace Microsoft.PowerToys.Settings.UI
                         case "VideoConference": StartupPage = typeof(Views.VideoConferencePage); break;
                         case "MeasureTool": StartupPage = typeof(Views.MeasureToolPage); break;
                         case "Hosts": StartupPage = typeof(Views.HostsPage); break;
+                        case "PastePlain": StartupPage = typeof(Views.PastePlainPage); break;
                         default: Debug.Assert(false, "Unexpected SettingsWindow argument value"); break;
                     }
 
@@ -162,8 +165,8 @@ namespace Microsoft.PowerToys.Settings.UI
                 if (containsFlyoutPosition)
                 {
                     // get the flyout position arguments
-                    int.TryParse(cmdArgs[currentArgumentIndex++], out flyout_x);
-                    int.TryParse(cmdArgs[currentArgumentIndex++], out flyout_y);
+                    _ = int.TryParse(cmdArgs[currentArgumentIndex++], out flyout_x);
+                    _ = int.TryParse(cmdArgs[currentArgumentIndex++], out flyout_y);
                 }
 
                 RunnerHelper.WaitForPowerToysRunner(PowerToysPID, () =>

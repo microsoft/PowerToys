@@ -69,6 +69,10 @@
                     Icon="{ui:BitmapIcon Source=/Assets/FluentIcons/FluentIconsMouseUtils.png}"
                     Tag="MouseUtils" />
                 <NavigationViewItem
+                    x:Uid="Shell_PastePlain"
+                    Icon="{ui:BitmapIcon Source=/Assets/FluentIcons/FluentIconsPastePlain.png}"
+                    Tag="PastePlain" />
+                <NavigationViewItem
                     x:Uid="Shell_PowerRename"
                     Icon="{ui:BitmapIcon Source=/Assets/FluentIcons/FluentIconsPowerRename.png}"
                     Tag="PowerRename" />

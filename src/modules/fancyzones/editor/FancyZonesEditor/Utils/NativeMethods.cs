@@ -9,7 +9,7 @@ using System.Windows.Interop;
 
 namespace FancyZonesEditor.Utils
 {
-    internal class NativeMethods
+    internal sealed class NativeMethods
     {
         [DllImport("user32.dll", SetLastError = true)]
         private static extern int GetWindowLong(IntPtr hWnd, int nIndex);

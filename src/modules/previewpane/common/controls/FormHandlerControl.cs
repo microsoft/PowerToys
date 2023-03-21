@@ -73,7 +73,7 @@ namespace Common
         }
 
         /// <inheritdoc />
-        public void SetRect(Rectangle rect)
+        public void SetRect(Rectangle windowBounds)
         {
             this.UpdateWindowBounds(parentHwnd);
         }

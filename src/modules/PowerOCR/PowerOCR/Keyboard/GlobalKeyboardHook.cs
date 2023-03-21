@@ -10,7 +10,7 @@ using static PowerOCR.OSInterop;
 
 namespace PowerOCR.Keyboard;
 
-internal class GlobalKeyboardHook : IDisposable
+internal sealed class GlobalKeyboardHook : IDisposable
 {
     private IntPtr _windowsHookHandle;
     private IntPtr _user32LibraryHandle;
@@ -39,7 +39,7 @@ internal class GlobalKeyboardHook : IDisposable
 
     internal event EventHandler<GlobalKeyboardHookEventArgs>? KeyboardPressed;
 
-    protected virtual void Dispose(bool disposing)
+    public void Dispose(bool disposing)
     {
         if (disposing)
         {

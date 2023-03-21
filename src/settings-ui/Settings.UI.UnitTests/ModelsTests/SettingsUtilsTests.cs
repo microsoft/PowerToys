@@ -100,7 +100,7 @@ namespace CommonLibTest
               .Select(s => s[random.Next(s.Length)]).ToArray());
         }
 
-        private partial class TestClass : ISettingsConfig
+        private sealed partial class TestClass : ISettingsConfig
         {
             public int TestInt { get; set; } = 100;
 

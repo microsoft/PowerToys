@@ -8,6 +8,8 @@
     xmlns:labs="using:CommunityToolkit.Labs.WinUI"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:ui="using:CommunityToolkit.WinUI.UI"
+    xmlns:viewmodels="using:Microsoft.PowerToys.Settings.UI.ViewModels"
+    d:DataContext="{d:DesignInstance Type=viewmodels:AwakeViewModel}"
     AutomationProperties.LandmarkType="Main"
     mc:Ignorable="d">
 
@@ -22,7 +24,7 @@
         <controls:SettingsPageControl.ModuleContent>
             <StackPanel Orientation="Vertical" ChildrenTransitions="{StaticResource SettingsCardsAnimations}">
                 <labs:SettingsCard
-                    x:Uid="Awake_EnableAwake"
+                    x:Uid="Awake_EnableSettingsCard"
                     HeaderIcon="{ui:BitmapIcon Source=/Assets/FluentIcons/FluentIconsAwake.png}"
                     IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabledGpoConfigured, Converter={StaticResource BoolNegationConverter}}">
                     <ToggleSwitch
@@ -37,37 +39,48 @@
                     Severity="Informational" />
 
                 <controls:SettingsGroup
-                    x:Uid="Awake_Behavior_GroupSettings"
+                    x:Uid="Awake_BehaviorSettingsGroup"
                     IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}">
 
                     <labs:SettingsCard
-                        x:Uid="Awake_Mode"
+                        x:Uid="Awake_ModeSettingsCard"
                         HeaderIcon="{ui:FontIcon FontFamily={StaticResource SymbolThemeFontFamily}, Glyph=&#xE945;}">
                         <ComboBox
                             MinWidth="{StaticResource SettingActionControlMinWidth}"
                             SelectedIndex="{x:Bind Path=ViewModel.Mode, Mode=TwoWay, Converter={StaticResource AwakeModeToIntConverter}}">
-                            <ComboBoxItem x:Uid="Awake_NoKeepAwake" />
-                            <ComboBoxItem x:Uid="Awake_IndefiniteKeepAwake" />
-                            <ComboBoxItem x:Uid="Awake_TemporaryKeepAwake" />
+                            <ComboBoxItem x:Uid="Awake_NoKeepAwakeSelector" />
+                            <ComboBoxItem x:Uid="Awake_IndefiniteKeepAwakeSelector" />
+                            <ComboBoxItem x:Uid="Awake_TemporaryKeepAwakeSelector" />
+                            <ComboBoxItem x:Uid="Awake_ExpirableKeepAwakeSelector" />
                         </ComboBox>
                     </labs:SettingsCard>
 
                     <labs:SettingsCard
-                        x:Uid="Awake_TimeBeforeAwake"
+                        x:Uid="Awake_ExpirationSettingsCard"
+                        HeaderIcon="{ui:FontIcon FontFamily={StaticResource SymbolThemeFontFamily}, Glyph=&#xEC92;}"
+                        Visibility="{x:Bind ViewModel.IsExpirationConfigurationEnabled, Mode=OneWay}">
+                        <StackPanel Orientation="Horizontal">
+                            <DatePicker Date="{x:Bind ViewModel.ExpirationDateTime, Mode=TwoWay}"></DatePicker>
+                            <TimePicker Margin="8,0,0,0" Time="{x:Bind ViewModel.ExpirationTime, Mode=TwoWay}" ClockIdentifier="24HourClock"></TimePicker>
+                        </StackPanel>
+                    </labs:SettingsCard>
+                    
+                    <labs:SettingsCard
+                        x:Uid="Awake_IntervalSettingsCard"
                         HeaderIcon="{ui:FontIcon FontFamily={StaticResource SymbolThemeFontFamily}, Glyph=&#xE916;}"
                         Visibility="{x:Bind ViewModel.IsTimeConfigurationEnabled, Mode=OneWay}">
                         <StackPanel Orientation="Horizontal">
                             <NumberBox
-                                x:Uid="Awake_TemporaryKeepAwake_Hours"
+                                x:Uid="Awake_IntervalHoursInput"
                                 Width="96"
                                 HorizontalAlignment="Left"
                                 LargeChange="5"
                                 Minimum="0"
                                 SmallChange="1"
                                 SpinButtonPlacementMode="Compact"
-                                Value="{x:Bind ViewModel.Hours, Mode=TwoWay}" />
+                                Value="{x:Bind ViewModel.IntervalHours, Mode=TwoWay}" />
                             <NumberBox
-                                x:Uid="Awake_TemporaryKeepAwake_Minutes"
+                                x:Uid="Awake_IntervalMinutesInput"
                                 Width="96"
                                 Margin="8,0,0,0"
                                 HorizontalAlignment="Left"
@@ -76,16 +89,15 @@
                                 Minimum="0"
                                 SmallChange="1"
                                 SpinButtonPlacementMode="Compact"
-                                Value="{x:Bind ViewModel.Minutes, Mode=TwoWay}" />
+                                Value="{x:Bind ViewModel.IntervalMinutes, Mode=TwoWay}" />
                         </StackPanel>
                     </labs:SettingsCard>
 
                     <labs:SettingsCard
-                        x:Uid="Awake_EnableDisplayKeepAwake"
-                        HeaderIcon="{ui:FontIcon FontFamily={StaticResource SymbolThemeFontFamily}, Glyph=&#xE7FB;}"
+                        x:Uid="Awake_DisplaySettingsCard"
+                        HeaderIcon="{ui:FontIcon FontFamily={StaticResource SymbolThemeFontFamily}, Glyph=&#xE7F4;}"
                         IsEnabled="{x:Bind ViewModel.IsScreenConfigurationPossibleEnabled, Mode=OneWay}">
                         <ToggleSwitch
-                            x:Uid="ToggleSwitch"
                             IsOn="{x:Bind ViewModel.KeepDisplayOn, Mode=TwoWay}" />
                     </labs:SettingsCard>
                 </controls:SettingsGroup>
@@ -99,7 +111,7 @@
         </controls:SettingsPageControl.PrimaryLinks>
         <controls:SettingsPageControl.SecondaryLinks>
             <controls:PageLink
-                Link="https://Awake.den.dev"
+                Link="https://awake.den.dev"
                 Text="Den Delimarsky's work on creating Awake" />
         </controls:SettingsPageControl.SecondaryLinks>
     </controls:SettingsPageControl>

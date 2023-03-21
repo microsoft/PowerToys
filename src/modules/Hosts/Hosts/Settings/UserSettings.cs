@@ -5,6 +5,7 @@
 using System;
 using System.IO.Abstractions;
 using System.Threading;
+using ManagedCommon;
 using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.PowerToys.Settings.UI.Library.Utilities;
 using Settings.UI.Library.Enumerations;
@@ -22,18 +23,36 @@ namespace Hosts.Settings
 
         public bool ShowStartupWarning { get; private set; }
 
+        private bool _loopbackDuplicates;
+
+        public bool LoopbackDuplicates
+        {
+            get => _loopbackDuplicates;
+            set
+            {
+                if (_loopbackDuplicates != value)
+                {
+                    _loopbackDuplicates = value;
+                    LoopbackDuplicatesChanged?.Invoke(this, EventArgs.Empty);
+                }
+            }
+        }
+
         public AdditionalLinesPosition AdditionalLinesPosition { get; private set; }
 
         public UserSettings()
         {
             _settingsUtils = new SettingsUtils();
             ShowStartupWarning = true;
+            LoopbackDuplicates = false;
             AdditionalLinesPosition = AdditionalLinesPosition.Top;
 
             LoadSettingsFromJson();
 
             _watcher = Helper.GetFileWatcher(HostsModuleName, "settings.json", () => LoadSettingsFromJson());
         }
+
+        public event EventHandler LoopbackDuplicatesChanged;
 
         private void LoadSettingsFromJson()
         {
@@ -60,6 +79,7 @@ namespace Hosts.Settings
                         {
                             ShowStartupWarning = settings.Properties.ShowStartupWarning;
                             AdditionalLinesPosition = settings.Properties.AdditionalLinesPosition;
+                            LoopbackDuplicates = settings.Properties.LoopbackDuplicates;
                         }
 
                         retry = false;

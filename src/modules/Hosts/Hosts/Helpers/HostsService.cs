@@ -15,6 +15,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Hosts.Models;
 using Hosts.Settings;
+using ManagedCommon;
 using Microsoft.Win32;
 using Settings.UI.Library.Enumerations;
 
@@ -82,7 +83,7 @@ namespace Hosts.Helpers
                     continue;
                 }
 
-                var entry = new Entry(line);
+                var entry = new Entry(i, line);
 
                 if (entry.Valid)
                 {

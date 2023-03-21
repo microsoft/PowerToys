@@ -12,8 +12,8 @@ using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
 using System.Windows;
-using FancyZonesEditor.Logs;
 using FancyZonesEditor.Models;
+using ManagedCommon;
 
 namespace FancyZonesEditor.Utils
 {
@@ -175,7 +175,7 @@ namespace FancyZonesEditor.Utils
         }
 
         // custom-layouts.json
-        private class CanvasInfoWrapper
+        private sealed class CanvasInfoWrapper
         {
             public struct CanvasZoneWrapper
             {
@@ -198,7 +198,7 @@ namespace FancyZonesEditor.Utils
         }
 
         // custom-layouts.json
-        private class GridInfoWrapper
+        private sealed class GridInfoWrapper
         {
             public int Rows { get; set; }
 

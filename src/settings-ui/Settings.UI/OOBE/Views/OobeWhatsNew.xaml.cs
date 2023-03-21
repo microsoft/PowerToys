@@ -14,7 +14,7 @@ using System.Text.Json.Serialization;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using CommunityToolkit.WinUI.UI.Controls;
-using Microsoft.PowerToys.Settings.UI.Library.Utilities;
+using ManagedCommon;
 using Microsoft.PowerToys.Settings.UI.OOBE.Enums;
 using Microsoft.PowerToys.Settings.UI.OOBE.ViewModel;
 using Microsoft.UI.Xaml.Controls;
@@ -25,7 +25,7 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
     public sealed partial class OobeWhatsNew : Page
     {
         // Contains information for a release. Used to deserialize release JSON info from GitHub.
-        private class PowerToysReleaseInfo
+        private sealed class PowerToysReleaseInfo
         {
             [JsonPropertyName("published_at")]
             public DateTimeOffset PublishedDate { get; set; }
@@ -73,7 +73,7 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
             using var getReleaseInfoClient = new HttpClient(proxyClientHandler);
 
             // GitHub APIs require sending an user agent
-            // https://docs.github.com/en/rest/overview/resources-in-the-rest-api#user-agent-required
+            // https://docs.github.com/rest/overview/resources-in-the-rest-api#user-agent-required
             getReleaseInfoClient.DefaultRequestHeaders.TryAddWithoutValidation("User-Agent", "PowerToys");
             releaseNotesJSON = await getReleaseInfoClient.GetStringAsync("https://api.github.com/repos/microsoft/PowerToys/releases");
             IList<PowerToysReleaseInfo> releases = JsonSerializer.Deserialize<IList<PowerToysReleaseInfo>>(releaseNotesJSON);

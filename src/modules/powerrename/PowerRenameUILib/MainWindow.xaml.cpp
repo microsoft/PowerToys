@@ -273,6 +273,13 @@ namespace winrt::PowerRenameUI::implementation
         {
             ToggleAll();
             m_allSelected = !m_allSelected;
+            if (button_showRenamed().IsChecked())
+            {
+                m_explorerItems.Clear();
+                m_explorerItemsMap.clear();
+                PopulateExplorerItems();
+                UpdateCounts();
+            }
         }
     }
 
@@ -738,7 +745,8 @@ namespace winrt::PowerRenameUI::implementation
                 int id = 0;
                 spItem->GetId(&id);
                 auto item = FindById(id);
-                item.Checked(selected);
+                if (item)
+                    item.Checked(selected);
             }
         }
         UpdateCounts();

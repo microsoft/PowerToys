@@ -6,10 +6,10 @@ using System;
 using System.Threading.Tasks;
 using System.Windows.Input;
 using CommunityToolkit.Mvvm.Input;
-using Hosts.Helpers;
 using Hosts.Models;
 using Hosts.Settings;
 using Hosts.ViewModels;
+using ManagedCommon;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Controls.Primitives;
@@ -49,7 +49,7 @@ namespace Hosts.Views
             EntryDialog.Title = resourceLoader.GetString("AddNewEntryDialog_Title");
             EntryDialog.PrimaryButtonText = resourceLoader.GetString("AddBtn");
             EntryDialog.PrimaryButtonCommand = AddCommand;
-            EntryDialog.DataContext = new Entry(string.Empty, string.Empty, string.Empty, true);
+            EntryDialog.DataContext = new Entry(ViewModel.NextId, string.Empty, string.Empty, string.Empty, true);
             await EntryDialog.ShowAsync();
         }
 
@@ -164,7 +164,7 @@ namespace Hosts.Views
                 var index = ViewModel.Entries.IndexOf(entry);
                 if (index > 0)
                 {
-                    ViewModel.Entries.Move(index, index - 1);
+                    ViewModel.Move(index, index - 1);
                 }
             }
         }
@@ -179,7 +179,7 @@ namespace Hosts.Views
                 var index = ViewModel.Entries.IndexOf(entry);
                 if (index < ViewModel.Entries.Count - 1)
                 {
-                    ViewModel.Entries.Move(index, index + 1);
+                    ViewModel.Move(index, index + 1);
                 }
             }
         }

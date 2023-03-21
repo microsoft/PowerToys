@@ -38,6 +38,12 @@ namespace Microsoft.PowerToys.Settings.UI.Helpers
         [DllImport("user32.dll")]
         internal static extern int SetWindowLong(IntPtr hWnd, int nIndex, int dwNewLong);
 
+        [DllImport("shell32.dll")]
+        internal static extern IntPtr SHBrowseForFolderW(ref ShellGetFolder.BrowseInformation browseInfo);
+
+        [DllImport("shell32.dll")]
+        internal static extern int SHGetPathFromIDListW(IntPtr pidl, IntPtr pszPath);
+
         [DllImport("Comdlg32.dll", CharSet = CharSet.Unicode)]
         internal static extern bool GetOpenFileName([In, Out] OpenFileName openFileName);
 
