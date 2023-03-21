@@ -20,11 +20,11 @@
 
         <Image
             x:Name="ImagePreview"
-            MaxWidth="{x:Bind BitmapPreviewer.MaxImageSize.Width, Mode=OneWay}"
-            MaxHeight="{x:Bind BitmapPreviewer.MaxImageSize.Height, Mode=OneWay}"
-            Source="{x:Bind BitmapPreviewer.Preview, Mode=OneWay}"
+            MaxWidth="{x:Bind ImagePreviewer.MaxImageSize.Width, Mode=OneWay}"
+            MaxHeight="{x:Bind ImagePreviewer.MaxImageSize.Height, Mode=OneWay}"
+            Source="{x:Bind ImagePreviewer.Preview, Mode=OneWay}"
             ToolTipService.ToolTip="{x:Bind ImageInfoTooltip, Mode=OneWay}"
-            Visibility="{x:Bind IsPreviewVisible(BitmapPreviewer, Previewer.State), Mode=OneWay}" />
+            Visibility="{x:Bind IsPreviewVisible(ImagePreviewer, Previewer.State), Mode=OneWay}" />
 
         <controls:BrowserControl
             x:Name="BrowserPreview"
