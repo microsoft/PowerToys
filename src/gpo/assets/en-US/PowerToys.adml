@@ -81,6 +81,7 @@ If this setting is disabled, experimentation is not allowed.
       <string id="ConfigureEnabledUtilityPowerRename">Power Rename: Configure enabled state</string>
       <string id="ConfigureEnabledUtilityPowerLauncher">PowerToys Run: Configure enabled state</string>
       <string id="ConfigureEnabledUtilityQuickAccent">Quick Accent: Configure enabled state</string>
+      <string id="ConfigureEnabledUtilityRegistryPreview">Registry Preview: Configure enabled state</string>		
       <string id="ConfigureEnabledUtilityScreenRuler">Screen Ruler: Configure enabled state</string>
       <string id="ConfigureEnabledUtilityShortcutGuide">Shortcut Guide: Configure enabled state</string>
       <string id="ConfigureEnabledUtilityTextExtractor">Text Extractor: Configure enabled state</string>
