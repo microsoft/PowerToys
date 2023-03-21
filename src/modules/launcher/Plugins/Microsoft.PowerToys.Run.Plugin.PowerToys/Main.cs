@@ -6,19 +6,24 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.PowerToys.Run.Plugin.PowerToys.Components;
+using Microsoft.PowerToys.Run.Plugin.PowerToys.Properties;
 using Wox.Infrastructure;
 using Wox.Plugin;
 
 namespace Microsoft.PowerToys.Run.Plugin.PowerToys
 {
-    public class Main : IPlugin, IContextMenu, IDisposable
+    public class Main : IPlugin, IPluginI18n, IContextMenu, IDisposable
     {
         private UtilityProvider _utilityProvider;
         private bool _disposed;
 
-        public string Name => "PowerToys";
+        public string Name => Resources.Plugin_Name;
 
-        public string Description => "Open PowerToys utilities and settings.";
+        public string Description => Resources.Plugin_Description;
+
+        public string GetTranslatedPluginTitle() => Resources.Plugin_Name;
+
+        public string GetTranslatedPluginDescription() => Resources.Plugin_Description;
 
         public void Init(PluginInitContext context)
         {

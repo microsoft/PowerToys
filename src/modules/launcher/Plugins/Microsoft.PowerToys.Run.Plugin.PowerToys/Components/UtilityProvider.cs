@@ -8,6 +8,7 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using Microsoft.PowerToys.Run.Plugin.PowerToys.Components;
+using Microsoft.PowerToys.Run.Plugin.PowerToys.Properties;
 using Microsoft.PowerToys.Settings.UI.Library;
 using PowerToys.GPOWrapper;
 using Wox.Plugin.Logger;
@@ -31,32 +32,32 @@ namespace Microsoft.PowerToys.Run.Plugin.PowerToys
 
             if (GPOWrapper.GetConfiguredColorPickerEnabledValue() != GpoRuleConfigured.Disabled)
             {
-                _utilities.Add(new Utility(UtilityKey.ColorPicker, "Color Picker", generalSettings.Enabled.ColorPicker));
+                _utilities.Add(new Utility(UtilityKey.ColorPicker, Resources.Color_Picker, generalSettings.Enabled.ColorPicker));
             }
 
             if (GPOWrapper.GetConfiguredFancyZonesEnabledValue() != GpoRuleConfigured.Disabled)
             {
-                _utilities.Add(new Utility(UtilityKey.FancyZones, "FancyZones", generalSettings.Enabled.FancyZones));
+                _utilities.Add(new Utility(UtilityKey.FancyZones, Resources.FancyZones_Editor, generalSettings.Enabled.FancyZones));
             }
 
             if (GPOWrapper.GetConfiguredHostsFileEditorEnabledValue() != GpoRuleConfigured.Disabled)
             {
-                _utilities.Add(new Utility(UtilityKey.Hosts, "Hosts File Editor", generalSettings.Enabled.Hosts));
+                _utilities.Add(new Utility(UtilityKey.Hosts, Resources.Hosts_File_Editor, generalSettings.Enabled.Hosts));
             }
 
             if (GPOWrapper.GetConfiguredScreenRulerEnabledValue() != GpoRuleConfigured.Disabled)
             {
-                _utilities.Add(new Utility(UtilityKey.MeasureTool, "Screen Ruler", generalSettings.Enabled.MeasureTool));
+                _utilities.Add(new Utility(UtilityKey.MeasureTool, Resources.Screen_Ruler, generalSettings.Enabled.MeasureTool));
             }
 
             if (GPOWrapper.GetConfiguredTextExtractorEnabledValue() != GpoRuleConfigured.Disabled)
             {
-                _utilities.Add(new Utility(UtilityKey.PowerOCR, "Text Extractor", generalSettings.Enabled.PowerOCR));
+                _utilities.Add(new Utility(UtilityKey.PowerOCR, Resources.Text_Extractor, generalSettings.Enabled.PowerOCR));
             }
 
             if (GPOWrapper.GetConfiguredShortcutGuideEnabledValue() != GpoRuleConfigured.Disabled)
             {
-                _utilities.Add(new Utility(UtilityKey.ShortcutGuide, "Shortcut Guide", generalSettings.Enabled.ShortcutGuide));
+                _utilities.Add(new Utility(UtilityKey.ShortcutGuide, Resources.Shortcut_Guide, generalSettings.Enabled.ShortcutGuide));
             }
 
             _watcher = new FileSystemWatcher

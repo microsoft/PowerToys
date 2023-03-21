@@ -7,6 +7,7 @@ using System.Threading;
 using System.Windows.Input;
 using Common.UI;
 using interop;
+using Microsoft.PowerToys.Run.Plugin.PowerToys.Properties;
 using Wox.Infrastructure;
 using Wox.Plugin;
 
@@ -32,7 +33,7 @@ namespace Microsoft.PowerToys.Run.Plugin.PowerToys.Components
             return new Result
             {
                 Title = Name,
-                SubTitle = "PowerToys Utility",
+                SubTitle = Resources.Subtitle_Powertoys_Utility,
                 IcoPath = UtilityHelper.GetIcoPath(Key),
                 Action = UtilityHelper.GetAction(Key),
                 ContextData = this,
@@ -49,7 +50,7 @@ namespace Microsoft.PowerToys.Run.Plugin.PowerToys.Components
             {
                 results.Add(new ContextMenuResult
                 {
-                    Title = "Run as administrator (Ctrl+Shift+Enter)",
+                    Title = Resources.Action_Run_As_Administrator,
                     Glyph = "\xE7EF",
                     FontFamily = "Segoe MDL2 Assets",
                     AcceleratorKey = System.Windows.Input.Key.Enter,
@@ -71,7 +72,7 @@ namespace Microsoft.PowerToys.Run.Plugin.PowerToys.Components
             {
                 results.Add(new ContextMenuResult
                 {
-                    Title = "Open settings (Ctrl+Shift+S)",
+                    Title = Resources.Action_Open_Settings,
                     Glyph = "\xE713",
                     FontFamily = "Segoe MDL2 Assets",
                     AcceleratorKey = System.Windows.Input.Key.S,
