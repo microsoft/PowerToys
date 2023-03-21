@@ -16,7 +16,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
     {
         private VideoConferenceViewModel ViewModel { get; set; }
 
-        private static async Task<string> PickFileDialog()
+        private static string PickFileDialog()
         {
             // this code was changed to solve the problem with WinUI3 that prevents to select a file
             // while running elevated, when the issue is solved in WinUI3 it should be changed back
@@ -37,7 +37,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             bool result = NativeMethods.GetOpenFileName(openFileName);
             if (result)
             {
-                return await Task.FromResult<string>(openFileName.File);
+                return openFileName.File;
             }
 
             return null;
