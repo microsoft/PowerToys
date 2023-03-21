@@ -150,8 +150,8 @@ public:
             if (action_object.get_name() == L"Launch")
             {
                 launch_process();
+                Trace::ActivateEditor();
             }
-            Trace::ActivateEditor();
         }
         catch (std::exception&)
         {

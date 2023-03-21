@@ -66,8 +66,6 @@
             </AppBarButton>
             <AppBarButton x:Name="refreshButton" x:Uid="RefreshButton" Icon="Refresh" IsTabStop="False" Click="RefreshButton_Click" HorizontalAlignment="Left">
                 <AppBarButton.KeyboardAccelerators>
-                    <!-- is this needed twice? -->
-                    <KeyboardAccelerator Key="F5" />
                     <KeyboardAccelerator Key="F5" />
                 </AppBarButton.KeyboardAccelerators>
             </AppBarButton>
@@ -85,6 +83,7 @@
 
         <TextBox
             x:Name="textBox"
+            x:Uid="textBox"
             Grid.Column="0"
             Grid.Row="1"
             Grid.RowSpan="3"
@@ -95,7 +94,7 @@
             IsTextPredictionEnabled="False"
             IsSpellCheckEnabled="False"
             AcceptsReturn="True"
-            PlaceholderText="Registry file text will appear here..."
+            PlaceholderText="{Binding PlaceholderText}"
             TextWrapping="NoWrap"
             CanBeScrollAnchor="False"
             ScrollViewer.IsVerticalRailEnabled ="True"
@@ -116,7 +115,8 @@
             >
             <CheckBox 
                 x:Name="checkBoxTextBox" 
-                Content="Read only" 
+                x:Uid="checkBoxTextBox"
+                Content="{Binding Content}" 
                 IsChecked="True" 
                 HorizontalAlignment="Center" 
                 VerticalAlignment="Center" 

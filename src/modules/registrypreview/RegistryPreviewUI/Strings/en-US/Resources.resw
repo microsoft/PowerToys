@@ -117,8 +117,11 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
+  <data name="checkBoxTextBox.Content" xml:space="preserve">
+    <value>Read only</value>
+  </data>
   <data name="EditButton.Label" xml:space="preserve">
-    <value>Edit external file...</value>
+    <value>Edit file...</value>
   </data>
   <data name="ErrorDialogTitle" xml:space="preserve">
     <value>Error</value>
@@ -168,11 +171,14 @@
   <data name="SuggestFileName" xml:space="preserve">
     <value>New Registry File</value>
   </data>
+  <data name="textBox.PlaceholderText" xml:space="preserve">
+    <value>Registry file text will appear here...</value>
+  </data>
   <data name="TypeColumn.Header" xml:space="preserve">
     <value>Type</value>
   </data>
   <data name="UACDialogError" xml:space="preserve">
-    <value>You must say click Yes on the previous popup if you want to run the Registry application.</value>
+    <value>You must click Yes on the previous popup if you want to run the Registry application.</value>
   </data>
   <data name="UACDialogTitle" xml:space="preserve">
     <value>User Account Control</value>

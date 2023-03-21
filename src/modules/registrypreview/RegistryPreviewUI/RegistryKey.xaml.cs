@@ -19,7 +19,7 @@ namespace RegistryPreview
     /// <summary>
     /// Class representing an each item in the tree view, each one a Registry Key;
     /// FullPath is so we can re-select the node after a live update
-    /// Tag is an Array of ListViewItems that below to each key
+    /// Tag is an Array of ListViewItems that stores all the children for the current object
     /// </summary>
     public class RegistryKey
     {
