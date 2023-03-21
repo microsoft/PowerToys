@@ -9,6 +9,7 @@ using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 using System.Reflection;
+using System.Xml.Linq;
 
 // using CommunityToolkit.WinUI.Helpers;
 using Microsoft.UI.Input;
@@ -26,6 +27,22 @@ namespace RegistryPreview
         /// </summary>
         private bool OpenRegistryFile(string filename)
         {
+            // clamp to prevent attempts to open a file larger than 10MB
+            try
+            {
+                long fileLength = new System.IO.FileInfo(filename).Length;
+                if (fileLength > 1048576)
+                {
+                    ShowMessageBox(resourceLoader.GetString("LargeRegistryFileTitle"), App.AppFilename + resourceLoader.GetString("LargeRegistryFile"), resourceLoader.GetString("OkButtonText"));
+                    ChangeCursor(gridPreview, false);
+                    return false;
+                }
+            }
+            catch
+            {
+                // Do nothing here - a missing or invalid file will be caught below
+            }
+
             // Disable parts of the UI that can cause trouble when loading
             ChangeCursor(gridPreview, true);
             textBox.Text = string.Empty;
@@ -206,7 +223,29 @@ namespace RegistryPreview
                     registryLine = registryLine.Replace("[", string.Empty);
                     registryLine = registryLine.Replace("]", string.Empty);
 
-                    treeViewNode = AddTextToTree(registryLine);
+                    treeViewNode = AddTextToTree(registryLine, KEYIMAGE);
+                }
+                else if (registryLine.StartsWith("-", StringComparison.InvariantCulture))
+                {
+                    // this line deletes this key so it gets special treatment for the UI
+                    registryLine = registryLine.Remove(0, 1);
+
+                    // this is a key!
+                    registryLine = registryLine.Replace("[", string.Empty);
+                    registryLine = registryLine.Replace("]", string.Empty);
+
+                    // do not track the result of this node, since it should have no children
+                    AddTextToTree(registryLine, DELETEDKEYIMAGE);
+                }
+                else if (registryLine.StartsWith("\"", StringComparison.InvariantCulture) && (registryLine.IndexOf("=-", StringComparison.InvariantCulture) > -1))
+                {
+                    // this line deletes this value so it gets special treatment for the UI
+                    registryLine = registryLine.Replace("=-", string.Empty);
+                    registryLine = registryLine.Replace("\"", string.Empty);
+
+                    // Create a new listview item that will be used to display the delete value and store it
+                    registryValue = new RegistryValue(registryLine, string.Empty, string.Empty);
+                    StoreTheListValue((RegistryKey)treeViewNode.Content, registryValue);
                 }
                 else if (registryLine.StartsWith("\"", StringComparison.InvariantCulture) || registryLine.StartsWith("@", StringComparison.InvariantCulture))
                 {
@@ -301,24 +340,8 @@ namespace RegistryPreview
                     // update the ListViewItem with this information
                     registryValue.Value = value;
 
-                    // We're going to store this ListViewItem in an ArrayList which will then
-                    // be attached to the most recently returned TreeNode that came back from
-                    // AddTextToTree.  If there's already a list there, we will use that list and
-                    // add our new node to it.
-                    ArrayList arrayList = null;
-                    if (((RegistryKey)treeViewNode.Content).Tag == null)
-                    {
-                        arrayList = new ArrayList();
-                    }
-                    else
-                    {
-                        arrayList = (ArrayList)((RegistryKey)treeViewNode.Content).Tag;
-                    }
-
-                    arrayList.Add(registryValue);
-
-                    // shove the updated array into the Tag property
-                    ((RegistryKey)treeViewNode.Content).Tag = arrayList;
+                    // store the ListViewItem
+                    StoreTheListValue((RegistryKey)treeViewNode.Content, registryValue);
                 }
 
                 // if we get here, it's not a Key (starts with [) or Value (starts with " or @) so it's likely waste (comments that start with ; fall out here)
@@ -338,6 +361,28 @@ namespace RegistryPreview
             }
 
             return true;
+        }
+
+        private void StoreTheListValue(RegistryKey registryKey, RegistryValue registryValue)
+        {
+            // We're going to store this ListViewItem in an ArrayList which will then
+            // be attached to the most recently returned TreeNode that came back from
+            // AddTextToTree.  If there's already a list there, we will use that list and
+            // add our new node to it.
+            ArrayList arrayList = null;
+            if (registryKey.Tag == null)
+            {
+                arrayList = new ArrayList();
+            }
+            else
+            {
+                arrayList = (ArrayList)registryKey.Tag;
+            }
+
+            arrayList.Add(registryValue);
+
+            // shove the updated array into the Tag property
+            registryKey.Tag = arrayList;
         }
 
         /// <summary>
@@ -389,7 +434,7 @@ namespace RegistryPreview
         /// mapRegistryKeys is a collection of all of the [] lines in the file
         /// keys comes from the REG file and represents a bunch of nodes
         /// </summary>
-        private TreeViewNode AddTextToTree(string keys)
+        private TreeViewNode AddTextToTree(string keys, string image)
         {
             string[] individualKeys = keys.Split('\\');
             string fullPath = keys;
@@ -419,7 +464,7 @@ namespace RegistryPreview
                 }
 
                 // Since the path is not in the tree, create a new node and add it to the dictionary
-                RegistryKey registryKey = new RegistryKey(individualKeys[i], fullPath);
+                RegistryKey registryKey = new RegistryKey(individualKeys[i], fullPath, image);
                 newNode = new TreeViewNode() { Content = registryKey, IsExpanded = true };
                 mapRegistryKeys.Add(fullPath, newNode);
 

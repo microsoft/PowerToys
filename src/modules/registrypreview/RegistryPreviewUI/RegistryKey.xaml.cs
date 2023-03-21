@@ -27,12 +27,15 @@ namespace RegistryPreview
 
         public string FullPath { get; set; }
 
+        public string Image { get; }
+
         public object Tag { get; set; }
 
-        public RegistryKey(string name, string fullPath)
+        public RegistryKey(string name, string fullPath, string image)
         {
             this.Name = name;
             this.FullPath = fullPath;
+            this.Image = image;
         }
     }
 }

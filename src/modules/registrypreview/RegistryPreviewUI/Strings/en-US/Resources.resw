@@ -141,6 +141,12 @@
   <data name="InvalidRegistryFileTitle" xml:space="preserve">
     <value>File was not a Registry file!</value>
   </data>
+  <data name="LargeRegistryFile" xml:space="preserve">
+    <value> is larger than 10MB which is too large for this application.</value>
+  </data>
+  <data name="LargeRegistryFileTitle" xml:space="preserve">
+    <value>File is too large!</value>
+  </data>
   <data name="NameColumn.Header" xml:space="preserve">
     <value>Name</value>
   </data>

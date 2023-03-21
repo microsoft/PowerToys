@@ -59,7 +59,7 @@
                     <KeyboardAccelerator Modifiers="Shift" Key="F2" />
                 </AppBarButton.KeyboardAccelerators>
             </AppBarButton>
-            <AppBarButton x:Name="editButton" x:Uid="EditButton" Icon="Rename" IsTabStop="False" Click="EditButton_Click" HorizontalAlignment="Left">
+            <AppBarButton x:Name="editButton" x:Uid="EditButton" Icon="NewWindow" IsTabStop="False" Click="EditButton_Click" HorizontalAlignment="Left">
                 <AppBarButton.KeyboardAccelerators>
                     <KeyboardAccelerator Modifiers="Control" Key="E" />
                 </AppBarButton.KeyboardAccelerators>
@@ -150,7 +150,7 @@
             <TreeView.ItemTemplate>
                 <DataTemplate>
                     <StackPanel Orientation="Horizontal" VerticalAlignment="Center" Padding="0,0,0,0" IsTabStop="False">
-                        <Image Source="ms-appx:///Assets/folder32.png" MaxHeight="16" MaxWidth="16" />
+                        <Image Source="{Binding Path=Content.Image}" MaxHeight="16" MaxWidth="16" />
                         <TextBlock Padding="5,0,0,0" Text="{Binding Path=Content.Name}" />
                     </StackPanel>
                 </DataTemplate>

@@ -21,6 +21,8 @@ namespace RegistryPreview
         private const string REGISTRYHEADER4 = "regedit4";
         private const string REGISTRYHEADER5 = "windows registry editor version 5.00";
         private const string APPNAME = "Registry Preview";
+        private const string KEYIMAGE = "ms-appx:///Assets/folder32.png";
+        private const string DELETEDKEYIMAGE = "ms-appx:///Assets/deleted-folder32.png";
 
         // private members
         private Microsoft.UI.Windowing.AppWindow appWindow;

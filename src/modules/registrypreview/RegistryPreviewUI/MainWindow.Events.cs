@@ -102,6 +102,7 @@ namespace RegistryPreview
                     // Allow Refresh and Edit to be enabled because a broken Reg file might be fixable
                     UpdateToolBarAndUI(false, true, true);
                     UpdateWindowTitle(resourceLoader.GetString("InvalidRegistryFileTitle"));
+                    textBox.TextChanged += TextBox_TextChanged;
                     return;
                 }
                 else
@@ -112,9 +113,6 @@ namespace RegistryPreview
             }
 
             textBox.Focus(FocusState.Programmatic);
-
-            // hookup the event handler here to avoid accidental ability to Save
-            textBox.TextChanged += TextBox_TextChanged;
         }
 
         /// <summary>
