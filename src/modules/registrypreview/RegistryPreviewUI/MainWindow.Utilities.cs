@@ -686,27 +686,16 @@ namespace RegistryPreview
             {
                 storageFolder = await StorageFolder.GetFolderFromPathAsync(path);
             }
-            catch (FileNotFoundException ex)
+            catch
             {
-                Debug.WriteLine(ex.Message);
-                Directory.CreateDirectory(path);
-                storageFolder = await StorageFolder.GetFolderFromPathAsync(path);
             }
 
             try
             {
-                storageFile = await storageFolder.GetFileAsync(filename);
-            }
-            catch (FileNotFoundException ex)
-            {
-                Debug.WriteLine(ex.Message);
-                File.Create(Path.Combine(path, filename));
-                storageFile = await storageFolder.GetFileAsync(filename);
-            }
-
-            try
-            {
-                fileContents = await Windows.Storage.FileIO.ReadTextAsync(storageFile);
+                if (storageFolder != null)
+                {
+                    storageFile = await storageFolder.GetFileAsync(filename);
+                }
             }
             catch
             {
@@ -714,7 +703,21 @@ namespace RegistryPreview
 
             try
             {
-                jsonSettings = Windows.Data.Json.JsonObject.Parse(fileContents);
+                if (storageFile != null)
+                {
+                    fileContents = await Windows.Storage.FileIO.ReadTextAsync(storageFile);
+                }
+            }
+            catch
+            {
+            }
+
+            try
+            {
+                if (fileContents != null)
+                {
+                    jsonSettings = Windows.Data.Json.JsonObject.Parse(fileContents);
+                }
             }
             catch
             {
@@ -744,7 +747,7 @@ namespace RegistryPreview
 
             try
             {
-                storageFile = await storageFolder.GetFileAsync(filename);
+                storageFile = await storageFolder.CreateFileAsync(filename, CreationCollisionOption.OpenIfExists);
             }
             catch (FileNotFoundException ex)
             {

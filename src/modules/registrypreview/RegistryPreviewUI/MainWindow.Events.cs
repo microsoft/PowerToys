@@ -76,24 +76,6 @@ namespace RegistryPreview
                 checkBoxTextBox.IsChecked = jsonSettings.GetNamedBoolean("checkBoxTextBox.Checked");
             }
 
-            // resize the window
-            if (jsonSettings.ContainsKey("appWindow.Size.Width") && jsonSettings.ContainsKey("appWindow.Size.Height"))
-            {
-                SizeInt32 size;
-                size.Width = (int)jsonSettings.GetNamedNumber("appWindow.Size.Width");
-                size.Height = (int)jsonSettings.GetNamedNumber("appWindow.Size.Height");
-                appWindow.Resize(size);
-            }
-
-            // reposition the window
-            if (jsonSettings.ContainsKey("appWindow.Position.X") && jsonSettings.ContainsKey("appWindow.Position.Y"))
-            {
-                PointInt32 point;
-                point.X = (int)jsonSettings.GetNamedNumber("appWindow.Position.X");
-                point.Y = (int)jsonSettings.GetNamedNumber("appWindow.Position.Y");
-                appWindow.Move(point);
-            }
-
             // Check to see if the REG file was opened and parsed successfully
             if (OpenRegistryFile(App.AppFilename) == false)
             {

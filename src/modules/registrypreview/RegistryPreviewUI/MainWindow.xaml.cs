@@ -12,6 +12,7 @@ using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Media;
 using Windows.ApplicationModel.Resources;
 using Windows.Data.Json;
+using Windows.Graphics;
 
 namespace RegistryPreview
 {
@@ -56,6 +57,27 @@ namespace RegistryPreview
             appWindow = Microsoft.UI.Windowing.AppWindow.GetFromWindowId(windowId);
             appWindow.SetIcon("app.ico");
             appWindow.Closing += AppWindow_Closing;
+
+            // resize the window
+            if (jsonSettings != null)
+            {
+                if (jsonSettings.ContainsKey("appWindow.Size.Width") && jsonSettings.ContainsKey("appWindow.Size.Height"))
+                {
+                    SizeInt32 size;
+                    size.Width = (int)jsonSettings.GetNamedNumber("appWindow.Size.Width");
+                    size.Height = (int)jsonSettings.GetNamedNumber("appWindow.Size.Height");
+                    appWindow.Resize(size);
+                }
+
+                // reposition the window
+                if (jsonSettings.ContainsKey("appWindow.Position.X") && jsonSettings.ContainsKey("appWindow.Position.Y"))
+                {
+                    PointInt32 point;
+                    point.X = (int)jsonSettings.GetNamedNumber("appWindow.Position.X");
+                    point.Y = (int)jsonSettings.GetNamedNumber("appWindow.Position.Y");
+                    appWindow.Move(point);
+                }
+            }
 
             // Update Toolbar
             if ((App.AppFilename == null) || (File.Exists(App.AppFilename) != true))
