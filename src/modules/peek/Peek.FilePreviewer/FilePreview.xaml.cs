@@ -18,7 +18,6 @@ using Peek.FilePreviewer.Models;
 using Peek.FilePreviewer.Previewers;
 using Peek.FilePreviewer.Previewers.Interfaces;
 using Windows.ApplicationModel.Resources;
-using Windows.Foundation;
 
 namespace Peek.FilePreviewer
 {
