@@ -14,7 +14,7 @@ using System.Text.Json.Serialization;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using CommunityToolkit.WinUI.UI.Controls;
-using Microsoft.PowerToys.Settings.UI.Library.Utilities;
+using ManagedCommon;
 using Microsoft.PowerToys.Settings.UI.OOBE.Enums;
 using Microsoft.PowerToys.Settings.UI.OOBE.ViewModel;
 using Microsoft.UI.Xaml.Controls;

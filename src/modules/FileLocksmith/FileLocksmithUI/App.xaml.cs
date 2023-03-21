@@ -4,7 +4,6 @@
 
 using System;
 using System.Linq;
-using FileLocksmithUI.Helpers;
 using ManagedCommon;
 using Microsoft.UI.Dispatching;
 using Microsoft.UI.Xaml;
@@ -23,6 +22,8 @@ namespace FileLocksmithUI
         /// </summary>
         public App()
         {
+            Logger.InitializeLogger("\\File Locksmith\\FileLocksmithUI\\Logs");
+
             this.InitializeComponent();
         }
 

@@ -8,16 +8,16 @@ using System.Globalization;
 using System.IO;
 using System.IO.Abstractions;
 using System.Reflection;
+using System.Runtime.Serialization;
 using interop;
 
-namespace FancyZonesEditor.Logs
+namespace ManagedCommon
 {
     public static class Logger
     {
         private static readonly IFileSystem _fileSystem = new FileSystem();
         private static readonly Assembly Assembly = Assembly.GetExecutingAssembly();
-        public static readonly string Version = FileVersionInfo.GetVersionInfo(Assembly.Location).ProductVersion;
-        private static readonly string ApplicationLogPath = Path.Combine(Constants.AppDataPath(), "FancyZones\\Editor\\Logs\\", Version);
+        private static readonly string Version = FileVersionInfo.GetVersionInfo(Assembly.Location).ProductVersion;
 
         private static readonly string Error = "Error";
         private static readonly string Warning = "Warning";
@@ -25,15 +25,29 @@ namespace FancyZonesEditor.Logs
         private static readonly string Debug = "Debug";
         private static readonly string TraceFlag = "Trace";
 
-        static Logger()
+        /// <summary>
+        /// Initializes the logger and sets the path for logging.
+        /// </summary>
+        /// <example>InitializeLogger("\\FancyZones\\Editor\\Logs")</example>
+        /// <param name="applicationLogPath">The path to the log files folder.</param>
+        /// <param name="isLocalLow">If the process using Logger is a low-privilege process.</param>
+        public static void InitializeLogger(string applicationLogPath, bool isLocalLow = false)
         {
-            if (!_fileSystem.Directory.Exists(ApplicationLogPath))
+            if (isLocalLow)
             {
-                _fileSystem.Directory.CreateDirectory(ApplicationLogPath);
+                applicationLogPath = Environment.GetEnvironmentVariable("userprofile") + "\\appdata\\LocalLow\\Microsoft\\PowerToys" + applicationLogPath + "\\" + Version;
+            }
+            else
+            {
+                applicationLogPath = Constants.AppDataPath() + applicationLogPath + "\\" + Version;
             }
 
-            // Using InvariantCulture since this is used for a log file name
-            var logFilePath = _fileSystem.Path.Combine(ApplicationLogPath, "Log_" + DateTime.Now.ToString(@"yyyy-MM-dd", CultureInfo.InvariantCulture) + ".txt");
+            if (!_fileSystem.Directory.Exists(applicationLogPath))
+            {
+                _fileSystem.Directory.CreateDirectory(applicationLogPath);
+            }
+
+            var logFilePath = _fileSystem.Path.Combine(applicationLogPath, "Log_" + DateTime.Now.ToString(@"yyyy-MM-dd", CultureInfo.InvariantCulture) + ".txt");
 
             Trace.Listeners.Add(new TextWriterTraceListener(logFilePath));
 
@@ -91,7 +105,7 @@ namespace FancyZonesEditor.Logs
 
         private static string GetCallerInfo()
         {
-            StackTrace stackTrace = new StackTrace();
+            StackTrace stackTrace = new();
 
             var methodName = stackTrace.GetFrame(3)?.GetMethod();
             var className = methodName?.DeclaringType.Name;

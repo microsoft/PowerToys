@@ -4,6 +4,7 @@
 
 using System;
 using System.Runtime.CompilerServices;
+using ManagedCommon;
 using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.PowerToys.Settings.UI.Library.Helpers;
 using Microsoft.PowerToys.Settings.UI.Library.Utilities;
