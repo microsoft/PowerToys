@@ -375,6 +375,7 @@ DEFERERASE
 DEFPUSHBUTTON
 deinitialization
 DELA
+DELETEDKEYIMAGE
 DELETESCANS
 deletethis
 Delimarsky
@@ -840,6 +841,7 @@ keydown
 keydropdowncontrol
 keyevent
 KEYEVENTF
+KEYIMAGE
 keynum
 keyremaps
 Keytool
