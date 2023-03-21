@@ -16,6 +16,7 @@ using Peek.Common.Extensions;
 using Peek.Common.Helpers;
 using Peek.Common.Models;
 using Peek.FilePreviewer.Previewers.Helpers;
+using Peek.FilePreviewer.Previewers.Interfaces;
 using Windows.Foundation;
 
 namespace Peek.FilePreviewer.Previewers
