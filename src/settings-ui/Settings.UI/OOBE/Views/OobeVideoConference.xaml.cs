@@ -40,7 +40,7 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
             ViewModel.LogOpeningModuleEvent();
             HotkeyMicVidControl.Keys = SettingsRepository<VideoConferenceSettings>.GetInstance(new SettingsUtils()).SettingsConfig.Properties.MuteCameraAndMicrophoneHotkey.Value.GetKeysList();
             HotkeyMicControl.Keys = SettingsRepository<VideoConferenceSettings>.GetInstance(new SettingsUtils()).SettingsConfig.Properties.MuteMicrophoneHotkey.Value.GetKeysList();
-            HotkeyPushToTalkControl.Keys = SettingsRepository<VideoConferenceSettings>.GetInstance(new SettingsUtils()).SettingsConfig.Properties.PushToTalkMicrophoneHotkey.Value.GetKeysList();
+            HotkeyPushToReverseControl.Keys = SettingsRepository<VideoConferenceSettings>.GetInstance(new SettingsUtils()).SettingsConfig.Properties.PushToReverseMicrophoneHotkey.Value.GetKeysList();
             HotkeyVidControl.Keys = SettingsRepository<VideoConferenceSettings>.GetInstance(new SettingsUtils()).SettingsConfig.Properties.MuteCameraHotkey.Value.GetKeysList();
         }
 

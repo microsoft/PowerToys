@@ -26,8 +26,8 @@
                     x:Name="HotkeyMicControl"
                     x:Uid="Oobe_VideoConference_ToggleMic" />
                 <controls:ShortcutWithTextLabelControl
-                    x:Name="HotkeyPushToTalkControl"
-                    x:Uid="Oobe_VideoConference_PushToTalkMic" />
+                    x:Name="HotkeyPushToReverseControl"
+                    x:Uid="Oobe_VideoConference_PushToReverseMic" />
                 <controls:ShortcutWithTextLabelControl
                     x:Name="HotkeyVidControl"
                     x:Uid="Oobe_VideoConference_ToggleVid" />
