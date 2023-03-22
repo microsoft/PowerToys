@@ -225,17 +225,10 @@ namespace RegistryPreview
 
                 // continue until we have nothing left to read
                 // switch logic, based off what the current line we're reading is
-                if (registryLine.StartsWith("[", StringComparison.InvariantCulture))
+                if (registryLine.StartsWith("[-", StringComparison.InvariantCulture))
                 {
-                    // this is a key, so remove the first [ and last ]
-                    registryLine = StripFirstAndLast(registryLine);
-
-                    treeViewNode = AddTextToTree(registryLine, KEYIMAGE);
-                }
-                else if (registryLine.StartsWith("-", StringComparison.InvariantCulture))
-                {
-                    // this line deletes this key so it gets special treatment for the UI
-                    registryLine = registryLine.Remove(0, 1);
+                    // remove the - as we won't need it but it will get special treatment in the UI
+                    registryLine = registryLine.Remove(1, 1);
 
                     // this is a key, so remove the first [ and last ]
                     registryLine = StripFirstAndLast(registryLine);
@@ -243,7 +236,14 @@ namespace RegistryPreview
                     // do not track the result of this node, since it should have no children
                     AddTextToTree(registryLine, DELETEDKEYIMAGE);
                 }
-                else if (registryLine.StartsWith("\"", StringComparison.InvariantCulture) && (registryLine.IndexOf("=-", StringComparison.InvariantCulture) > -1))
+                else if (registryLine.StartsWith("[", StringComparison.InvariantCulture))
+                {
+                    // this is a key, so remove the first [ and last ]
+                    registryLine = StripFirstAndLast(registryLine);
+
+                    treeViewNode = AddTextToTree(registryLine, KEYIMAGE);
+                }
+                else if (registryLine.StartsWith("\"", StringComparison.InvariantCulture) && registryLine.EndsWith("=-", StringComparison.InvariantCulture))
                 {
                     // this line deletes this value so it gets special treatment for the UI
                     registryLine = registryLine.Replace("=-", string.Empty);
@@ -271,6 +271,9 @@ namespace RegistryPreview
                     // set the name and the value
                     string name = registryLine.Substring(0, equal);
                     name = StripFirstAndLast(name);
+
+                    // Clean out any escaped characters in the value, only for the preview
+                    name = StripEscapedCharacters(name);
 
                     string value = registryLine.Substring(equal + 1);
 
@@ -332,8 +335,7 @@ namespace RegistryPreview
                     }
 
                     // Clean out any escaped characters in the value, only for the preview
-                    value = value.Replace("\\\\", "\\");    // Replace \\ with \ in the UI
-                    value = value.Replace("\\\"", "\"");    // Replace \. with . in the UI
+                    value = StripEscapedCharacters(value);
 
                     // update the ListViewItem with this information
                     if (registryValue.Type != "ERROR")
@@ -341,11 +343,14 @@ namespace RegistryPreview
                         registryValue.Value = value;
                     }
 
-                    // store the ListViewItem
-                    StoreTheListValue((RegistryKey)treeViewNode.Content, registryValue);
+                    // store the ListViewItem, if we have a valid Key to attach to
+                    if (treeViewNode != null)
+                    {
+                        StoreTheListValue((RegistryKey)treeViewNode.Content, registryValue);
+                    }
                 }
 
-                // if we get here, it's not a Key (starts with [) or Value (starts with " or @) so it's likely waste (comments that start with ; fall out here)
+                // if we get here, it's not a Key (starts with [) or Value (starts with ") so it's likely waste (comments that start with ; fall out here)
 
                 // read the next line from the REG file
                 index++;
@@ -353,12 +358,26 @@ namespace RegistryPreview
                 // if we've gone too far, escape the proc!
                 if (index >= registryLines.Length)
                 {
+                    // check to see if anything got parsed!
+                    if (treeView.RootNodes.Count <= 0)
+                    {
+                        ShowMessageBox(APPNAME, App.AppFilename + resourceLoader.GetString("InvalidRegistryFile"), resourceLoader.GetString("OkButtonText"));
+                    }
+
                     ChangeCursor(gridPreview, false);
                     return false;
                 }
 
                 // carry on with the next line
                 registryLine = registryLines[index];
+            }
+
+            // last check, to see if anything got parsed!
+            if (treeView.RootNodes.Count <= 0)
+            {
+                ShowMessageBox(APPNAME, App.AppFilename + resourceLoader.GetString("InvalidRegistryFile"), resourceLoader.GetString("OkButtonText"));
+                ChangeCursor(gridPreview, false);
+                return false;
             }
 
             return true;
@@ -639,7 +658,7 @@ namespace RegistryPreview
                 fileStreamOptions.Mode = FileMode.OpenOrCreate;
 
                 fileStream = new FileStream(App.AppFilename, fileStreamOptions);
-                StreamWriter streamWriter = new StreamWriter(fileStream);
+                StreamWriter streamWriter = new StreamWriter(fileStream, System.Text.Encoding.Unicode);
 
                 // if we get here, the file is open and writable so dump the whole contents of textBox
                 string filenameText = textBox.Text;
@@ -785,6 +804,13 @@ namespace RegistryPreview
             }
 
             return line;
+        }
+
+        private string StripEscapedCharacters(string value)
+        {
+            value = value.Replace("\\\\", "\\");    // Replace \\ with \ in the UI
+            value = value.Replace("\\\"", "\"");    // Replace \" with " in the UI
+            return value;
         }
     }
 }
