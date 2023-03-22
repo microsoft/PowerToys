@@ -26,7 +26,7 @@ VideoConferenceModule* instance = nullptr;
 
 VideoConferenceSettings VideoConferenceModule::settings;
 Toolbar VideoConferenceModule::toolbar;
-bool VideoConferenceModule::pushToTalkPressed;
+bool VideoConferenceModule::pushToTalkPressed = false;
 
 HHOOK VideoConferenceModule::hook_handle;
 
@@ -177,7 +177,7 @@ LRESULT CALLBACK VideoConferenceModule::LowLevelKeyboardProc(int nCode, WPARAM w
             }
             break;
         case WM_KEYUP:
-            if (isHotkeyPressed(kbd->vkCode, settings.microphonePushToTalkHotkey))
+            if (pushToTalkPressed && (kbd->vkCode == settings.microphonePushToTalkHotkey.get_code()))
             {
                 reverseMicrophoneMute();
                 pushToTalkPressed = false;
