@@ -150,7 +150,7 @@
             <TreeView.ItemTemplate>
                 <DataTemplate>
                     <StackPanel Orientation="Horizontal" VerticalAlignment="Center" Padding="0,0,0,0" IsTabStop="False">
-                        <Image Source="{Binding Path=Content.Image}" MaxHeight="16" MaxWidth="16" />
+                        <Image Source="{Binding Path=Content.Image}" MaxHeight="16" MaxWidth="16" ToolTipService.ToolTip="{Binding Path=Content.ToolTipText}"/>
                         <TextBlock Padding="5,0,0,0" Text="{Binding Path=Content.Name}" />
                     </StackPanel>
                 </DataTemplate>
@@ -185,7 +185,7 @@
                         <DataTemplate>
                             <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
                                 <TextBlock Padding="10,0,0,0" Text=" " FontSize="14" IsTabStop="False"/>
-                                <Image Source="{Binding ImageUri}" MaxHeight="16" MaxWidth="16" IsTabStop="False"/>
+                                <Image Source="{Binding ImageUri}" MaxHeight="16" MaxWidth="16" IsTabStop="False" ToolTipService.ToolTip="{Binding ToolTipText}" />
                                 <TextBlock Padding="5, 0, 10, 0" Text="{Binding Name}" FontSize="14" IsTabStop="False"/>
                             </StackPanel>
                         </DataTemplate>

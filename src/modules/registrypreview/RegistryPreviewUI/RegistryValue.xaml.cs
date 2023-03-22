@@ -33,6 +33,8 @@ namespace RegistryPreview
 
         public string Value { get; set; }
 
+        public string ToolTipText { get; set; }
+
         public Uri ImageUri
         {
             // Based off the Type of the item, pass back the correct image Uri used by the Binding of the DataGrid
@@ -59,6 +61,7 @@ namespace RegistryPreview
             this.Name = name;
             this.Type = type;
             this.Value = value;
+            this.ToolTipText = string.Empty;
         }
     }
 }

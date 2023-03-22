@@ -173,7 +173,7 @@ namespace RegistryPreview
             }
 
             // set up a new dictionary
-            mapRegistryKeys = new Dictionary<string, TreeViewNode>();
+            mapRegistryKeys = new Dictionary<string, TreeViewNode>(StringComparer.InvariantCultureIgnoreCase);
 
             // As we'll be processing the text one line at a time, this string will be the current line
             string registryLine;
@@ -253,7 +253,13 @@ namespace RegistryPreview
 
                     // Create a new listview item that will be used to display the delete value and store it
                     registryValue = new RegistryValue(registryLine, string.Empty, string.Empty);
-                    StoreTheListValue((RegistryKey)treeViewNode.Content, registryValue);
+                    SetValueToolTip(registryValue);
+
+                    // store the ListViewItem, if we have a valid Key to attach to
+                    if (treeViewNode != null)
+                    {
+                        StoreTheListValue((RegistryKey)treeViewNode.Content, registryValue);
+                    }
                 }
                 else if (registryLine.StartsWith("\"", StringComparison.InvariantCulture))
                 {
@@ -342,6 +348,9 @@ namespace RegistryPreview
                     {
                         registryValue.Value = value;
                     }
+
+                    // update the ToolTip
+                    SetValueToolTip(registryValue);
 
                     // store the ListViewItem, if we have a valid Key to attach to
                     if (treeViewNode != null)
@@ -465,6 +474,29 @@ namespace RegistryPreview
             // Walk the list of keys backwards
             for (int i = individualKeys.Length - 1; i >= 0; i--)
             {
+                // when a Key is marked for deletion, make sure it only sets the icon for the bottom most leaf
+                if (image == DELETEDKEYIMAGE)
+                {
+                    if (i < individualKeys.Length - 1)
+                    {
+                        image = KEYIMAGE;
+                    }
+                    else
+                    {
+                        // special casing for Registry roots
+                        switch (individualKeys[i])
+                        {
+                            case "HKEY_CLASSES_ROOT":
+                            case "HKEY_CURRENT_USER":
+                            case "HKEY_LOCAL_MACHINE":
+                            case "HKEY_USERS":
+                            case "HKEY_CURRENT_CONFIG":
+                                image = KEYIMAGE;
+                                break;
+                        }
+                    }
+                }
+
                 // First check the dictionary, and return the current node if it already exists
                 if (mapRegistryKeys.ContainsKey(fullPath))
                 {
@@ -486,7 +518,8 @@ namespace RegistryPreview
                 }
 
                 // Since the path is not in the tree, create a new node and add it to the dictionary
-                RegistryKey registryKey = new RegistryKey(individualKeys[i], fullPath, image);
+                RegistryKey registryKey = new RegistryKey(individualKeys[i], fullPath, image, GetFolderToolTip(image));
+
                 newNode = new TreeViewNode() { Content = registryKey, IsExpanded = true };
                 mapRegistryKeys.Add(fullPath, newNode);
 
@@ -806,11 +839,60 @@ namespace RegistryPreview
             return line;
         }
 
+        /// <summary>
+        /// Replace any escaped characters in the REG file with their counterparts, for the UX
+        /// </summary>
         private string StripEscapedCharacters(string value)
         {
             value = value.Replace("\\\\", "\\");    // Replace \\ with \ in the UI
             value = value.Replace("\\\"", "\"");    // Replace \" with " in the UI
             return value;
+        }
+
+        /// <summary>
+        /// Loads and returns a string for a given Key's image in the tree, based off the current set image
+        /// </summary>
+        private string GetFolderToolTip(string key)
+        {
+            string value = string.Empty;
+            switch (key)
+            {
+                case DELETEDKEYIMAGE:
+                    value = resourceLoader.GetString("ToolTipDeletedKey");
+                    break;
+                case KEYIMAGE:
+                    value = resourceLoader.GetString("ToolTipAddedKey");
+                    break;
+            }
+
+            return value;
+        }
+
+        /// <summary>
+        /// Loads a string for a given Value's image in the grid, based off the current current type and updates the RegistryValue that's passed in
+        /// </summary>
+        private void SetValueToolTip(RegistryValue registryValue)
+        {
+            string value = string.Empty;
+            switch (registryValue.Type)
+            {
+                case "REG_SZ":
+                case "REG_EXAND_SZ":
+                case "REG_MULTI_SZ":
+                    value = resourceLoader.GetString("ToolTipStringValue");
+                    break;
+                case "ERROR":
+                    value = resourceLoader.GetString("ToolTipErrorValue");
+                    break;
+                case "":
+                    value = resourceLoader.GetString("ToolTipDeletedValue");
+                    break;
+                default:
+                    value = resourceLoader.GetString("ToolTipBinaryValue");
+                    break;
+            }
+
+            registryValue.ToolTipText = value;
         }
     }
 }

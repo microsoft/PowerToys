@@ -180,6 +180,24 @@
   <data name="textBox.PlaceholderText" xml:space="preserve">
     <value>Registry file text will appear here...</value>
   </data>
+  <data name="ToolTipAddedKey" xml:space="preserve">
+    <value>Key will be added, if needed</value>
+  </data>
+  <data name="ToolTipBinaryValue" xml:space="preserve">
+    <value>Binary value will be updated</value>
+  </data>
+  <data name="ToolTipDeletedKey" xml:space="preserve">
+    <value>Key will be deleted</value>
+  </data>
+  <data name="ToolTipDeletedValue" xml:space="preserve">
+    <value>Value will be deleted</value>
+  </data>
+  <data name="ToolTipErrorValue" xml:space="preserve">
+    <value>Value has a syntax error</value>
+  </data>
+  <data name="ToolTipStringValue" xml:space="preserve">
+    <value>String value will be updated</value>
+  </data>
   <data name="TypeColumn.Header" xml:space="preserve">
     <value>Type</value>
   </data>
