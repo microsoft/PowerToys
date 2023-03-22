@@ -24,7 +24,8 @@ namespace RegistryPreview
         // Static members
         private static Uri uriStringValue = new Uri("ms-appx:///Assets/string32.png");
         private static Uri uriBinaryValue = new Uri("ms-appx:///Assets/data32.png");
-        private static Uri uriDeleteValue = new Uri("ms-appx:///Assets/deleted-value.png");
+        private static Uri uriDeleteValue = new Uri("ms-appx:///Assets/deleted-value32.png");
+        private static Uri uriErrorValue = new Uri("ms-appx:///Assets/error32.png");
 
         public string Name { get; set; }
 
@@ -43,6 +44,8 @@ namespace RegistryPreview
                     case "REG_EXAND_SZ":
                     case "REG_MULTI_SZ":
                         return uriStringValue;
+                    case "ERROR":
+                        return uriErrorValue;
                     case "":
                         return uriDeleteValue;
                 }

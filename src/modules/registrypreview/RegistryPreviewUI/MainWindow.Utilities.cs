@@ -216,6 +216,13 @@ namespace RegistryPreview
 
             while (index < registryLines.Length)
             {
+                // special case for when the registryLine begins with a @, which will be a SZ_REG value called "(Default)"
+                // and let the regular processing handle the rest.
+                if (registryLine.StartsWith("@", StringComparison.InvariantCulture))
+                {
+                    registryLine = registryLine.Replace("@=", "\"(Default)\"=");
+                }
+
                 // continue until we have nothing left to read
                 // switch logic, based off what the current line we're reading is
                 if (registryLine.StartsWith("[", StringComparison.InvariantCulture))
@@ -248,9 +255,9 @@ namespace RegistryPreview
                     registryValue = new RegistryValue(registryLine, string.Empty, string.Empty);
                     StoreTheListValue((RegistryKey)treeViewNode.Content, registryValue);
                 }
-                else if (registryLine.StartsWith("\"", StringComparison.InvariantCulture) || registryLine.StartsWith("@", StringComparison.InvariantCulture))
+                else if (registryLine.StartsWith("\"", StringComparison.InvariantCulture))
                 {
-                    // this is a named value or default value (denoted with the @)
+                    // this is a named value
 
                     // split up the name from the value by looking for the first found =
                     int equal = registryLine.IndexOf('=');
@@ -267,21 +274,20 @@ namespace RegistryPreview
 
                     string value = registryLine.Substring(equal + 1);
 
-                    if (name == "@")
-                    {
-                        name = "(Default)";
-                    }
-
                     // Create a new listview item that will be used to display the value
                     registryValue = new RegistryValue(name, "REG_SZ", string.Empty);
 
-                    // if the first character is a " then this is a string value; get rid of the first and last "
-                    if (value.StartsWith("\"", StringComparison.InvariantCulture))
+                    // if the first and last character is a " then this is a string value; get rid of the first and last "
+                    if (value.StartsWith("\"", StringComparison.InvariantCulture) && value.EndsWith("\"", StringComparison.InvariantCulture))
                     {
                         value = StripFirstAndLast(value);
                     }
+                    else
+                    {
+                        // this is an invalid value as there are no "s in the right side of the =
+                        registryValue.Type = "ERROR";
+                    }
 
-                    // check the header of the Value's value and format it accordingly
                     if (value.StartsWith("dword:", StringComparison.InvariantCultureIgnoreCase))
                     {
                         registryValue.Type = "REG_DWORD";
@@ -307,10 +313,6 @@ namespace RegistryPreview
                         registryValue.Type = "REG_MULTI_SZ";
                         value = value.Replace("hex(7):", string.Empty);
                     }
-                    else
-                    {
-                        registryValue.Type = "REG_SZ";
-                    }
 
                     // If the end of a decimal line ends in a \ then you have to keep
                     // reading the block as a single value!
@@ -334,7 +336,10 @@ namespace RegistryPreview
                     value = value.Replace("\\\"", "\"");    // Replace \. with . in the UI
 
                     // update the ListViewItem with this information
-                    registryValue.Value = value;
+                    if (registryValue.Type != "ERROR")
+                    {
+                        registryValue.Value = value;
+                    }
 
                     // store the ListViewItem
                     StoreTheListValue((RegistryKey)treeViewNode.Content, registryValue);
@@ -768,7 +773,7 @@ namespace RegistryPreview
         }
 
         /// <summary>
-        /// Rip the first and last character off a string, 
+        /// Rip the first and last character off a string,
         /// checking that the string is at least 2 characters long to avoid errors
         /// </summary>
         private string StripFirstAndLast(string line)

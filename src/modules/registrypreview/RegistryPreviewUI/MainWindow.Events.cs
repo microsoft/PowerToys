@@ -93,6 +93,10 @@ namespace RegistryPreview
                     UpdateWindowTitle();
                 }
             }
+            else
+            {
+                textBox.TextChanged += TextBox_TextChanged;
+            }
 
             textBox.Focus(FocusState.Programmatic);
         }
