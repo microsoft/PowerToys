@@ -7,12 +7,15 @@ using global::PowerToys.GPOWrapper;
 using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.PowerToys.Settings.UI.Library.Helpers;
 using Microsoft.PowerToys.Settings.UI.Library.Interfaces;
+using Microsoft.PowerToys.Settings.UI.Library.ViewModels.Commands;
 
 namespace Microsoft.PowerToys.Settings.UI.ViewModels
 {
     public class RegistryPreviewViewModel : Observable
     {
         private GeneralSettings GeneralSettingsConfig { get; set; }
+
+        public ButtonClickCommand LaunchEventHandler => new ButtonClickCommand(Launch);
 
         public RegistryPreviewViewModel(ISettingsRepository<GeneralSettings> settingsRepository, Func<string, int> ipcMSGCallBackFunc)
         {
@@ -71,6 +74,13 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         public bool IsEnabledGpoConfigured
         {
             get => _enabledStateIsGPOConfigured;
+        }
+
+        public void Launch()
+        {
+            var actionName = "Launch";
+
+            SendConfigMSG("{\"action\":{\"RegistryPreview\":{\"action_name\":\"" + actionName + "\", \"value\":\"\"}}}");
         }
 
         private Func<string, int> SendConfigMSG { get; }

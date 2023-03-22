@@ -30,6 +30,18 @@
                     IsTabStop="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabledGpoConfigured}"
                     Severity="Informational" />
 
+                <controls:SettingsGroup x:Uid="RegistryPreview_Launch_GroupSettings" IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsRegistryPreviewEnabled}">
+                    <labs:SettingsCard
+                        x:Uid="RegistryPreview_LaunchButtonControl"
+                        ActionIcon="{ui:FontIcon FontFamily={StaticResource SymbolThemeFontFamily},
+                                                 FontSize=14,
+                                                 Glyph=&#xE8A7;}"
+                        Command="{x:Bind ViewModel.LaunchEventHandler}"
+                        HeaderIcon="{ui:FontIcon FontFamily={StaticResource SymbolThemeFontFamily},
+                                                 Glyph=&#xEA37;}"
+                        IsClickEnabled="True" />
+                </controls:SettingsGroup>
+
             </StackPanel>
         </controls:SettingsPageControl.ModuleContent>
         
