@@ -3100,4 +3100,13 @@ Activate by holding the key for the character you want to add an accent to, then
   <data name="Hosts_Toggle_LoopbackDuplicates.Header" xml:space="preserve">
     <value>Consider loopback addresses as duplicates</value>
   </data>
+  <data name="RegistryPreview_Launch_GroupSettings.Header" xml:space="preserve">
+    <value>Launch</value>
+  </data>
+  <data name="RegistryPreview_LaunchButton_Accessible.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>Launch Registry Preview</value>
+  </data>
+  <data name="RegistryPreview_LaunchButtonControl.Header" xml:space="preserve">
+    <value>Launch Registry Preview</value>
+  </data>
 </root>
