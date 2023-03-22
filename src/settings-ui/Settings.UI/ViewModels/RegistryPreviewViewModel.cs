@@ -15,6 +15,8 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
     {
         private GeneralSettings GeneralSettingsConfig { get; set; }
 
+        public ButtonClickCommand LaunchEventHandler => new ButtonClickCommand(Launch);
+
         public RegistryPreviewViewModel(ISettingsRepository<GeneralSettings> settingsRepository, Func<string, int> ipcMSGCallBackFunc)
         {
             // To obtain the general settings configurations of PowerToys Settings.
@@ -72,6 +74,13 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         public bool IsEnabledGpoConfigured
         {
             get => _enabledStateIsGPOConfigured;
+        }
+
+        public void Launch()
+        {
+            var actionName = "Launch";
+
+            SendConfigMSG("{\"action\":{\"RegistryPreview\":{\"action_name\":\"" + actionName + "\", \"value\":\"\"}}}");
         }
 
         private Func<string, int> SendConfigMSG { get; }
