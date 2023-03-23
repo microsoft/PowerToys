@@ -6,6 +6,7 @@ using System;
 using System.Diagnostics;
 using System.Linq;
 using System.Windows;
+using System.Windows.Input;
 using Hopper;
 
 namespace PowerToys.Hopper
@@ -17,8 +18,10 @@ namespace PowerToys.Hopper
     {
         public MainWindow(string[] files)
         {
+#if DEBUG
             Debugger.Launch();
             Debugger.Break();
+#endif
 
             string[] file2 = Array.Empty<string>();
 
@@ -32,6 +35,13 @@ namespace PowerToys.Hopper
 
             InitializeComponent();
             FileList.ItemsSource = file2;
+        }
+
+        private void CreateFolderButton_Click(object sender, RoutedEventArgs e)
+        {
+            Window con = new ContentPropertiesWindow((string[])FileList.ItemsSource);
+            con.Show();
+            Close();
         }
     }
 }
