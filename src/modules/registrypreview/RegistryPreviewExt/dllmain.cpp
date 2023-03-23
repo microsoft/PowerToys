@@ -9,6 +9,8 @@
 #include <common/utils/logger_helper.h>
 #include <common/utils/EventWaiter.h>
 #include <common/utils/resources.h>
+#include <common/utils/modulesRegistry.h>
+#include <common/utils/process_path.h>
 
 #include "resource.h"
 #include "Constants.h"
@@ -183,27 +185,12 @@ public:
     // Enable the powertoy
     virtual void enable()
     {
-        // Inject the Preview command into the context menu for REG files in Explorer
-        // Puts the values into HKCU to avoid having to elevate privilege
-        WCHAR executable_path[MAX_PATH];
-        ZeroMemory(executable_path, sizeof(executable_path));
-        GetCurrentDirectory(MAX_PATH, executable_path);
+        const std::wstring installationDir = get_module_folderpath();
 
-        std::wstring command = executable_path;
-        command.append(L"\\modules\\RegistryPreview\\PowerToys.RegistryPreview.exe \"%1\"");
-        std::wstring icon_path = executable_path;
-        icon_path.append(L"\\modules\\RegistryPreview\\app.ico");
-
-        HKEY key{}, subKey{};
-        auto res = RegOpenKey(HKEY_CURRENT_USER, L"Software\\Classes\\regfile", &key);
-        res = RegCreateKey(key, L"shell\\preview\\command", &subKey);
-        res = RegSetValue(subKey, nullptr, REG_SZ, command.c_str(), sizeof(command.c_str()));
-        RegCloseKey(key);
-        RegCloseKey(subKey);
-
-        res = RegOpenKey(HKEY_CURRENT_USER, L"Software\\Classes\\regfile\\shell\\preview", &key);
-        res = RegSetKeyValue(key, nullptr, L"icon", REG_SZ, icon_path.c_str(), static_cast<DWORD>((icon_path.size() + 1) * sizeof(wchar_t)));
-        RegCloseKey(key);
+        if (!getRegistryPreviewChangeSet(installationDir, true).apply())
+        {
+            Logger::error(L"Applying registry changes failed");
+        }
 
         // let the DLL enable the app
         m_enabled = true;
@@ -221,8 +208,12 @@ public:
             Logger::trace(L"Disabling Registry Preview...");
 
             // Yeet the Registry setting so preview doesn't work anymore
-            auto res = RegDeleteKey(HKEY_CURRENT_USER, L"Software\\Classes\\regfile\\shell\\preview\\command");
-            res = RegDeleteKey(HKEY_CURRENT_USER, L"Software\\Classes\\regfile\\shell\\preview");
+            const std::wstring installationDir = get_module_folderpath();
+
+            if (!getRegistryPreviewChangeSet(installationDir, true).unApply())
+            {
+                Logger::error(L"Unapplying registry changes failed");
+            }
         }
 
         m_enabled = false;
