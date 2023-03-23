@@ -9,13 +9,9 @@ using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 using System.Reflection;
-using System.Xml.Linq;
-
-// using CommunityToolkit.WinUI.Helpers;
 using Microsoft.UI.Input;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
-using Microsoft.Win32;
 using Windows.Foundation.Metadata;
 using Windows.Storage;
 

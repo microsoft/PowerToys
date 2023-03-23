@@ -3,16 +3,6 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
-using System.Collections.Generic;
-using System.IO;
-using Microsoft.UI;
-using Microsoft.UI.Xaml;
-using Microsoft.UI.Xaml.Controls;
-using Microsoft.UI.Xaml.Media;
-using Windows.ApplicationModel;
-using Windows.ApplicationModel.Resources;
-using Windows.Management.Core;
-using Windows.Storage;
 
 namespace RegistryPreview
 {
