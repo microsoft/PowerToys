@@ -772,18 +772,14 @@ namespace RegistryPreview
 
             try
             {
-                if (fileContents != null)
-                {
-                    jsonSettings = Windows.Data.Json.JsonObject.Parse(fileContents);
-                }
+                jsonSettings = Windows.Data.Json.JsonObject.Parse(fileContents);
             }
             catch
             {
                 // set up default JSON blob
                 fileContents = "{ }";
+                jsonSettings = Windows.Data.Json.JsonObject.Parse(fileContents);
             }
-
-            jsonSettings = Windows.Data.Json.JsonObject.Parse(fileContents);
         }
 
         /// <summary>

@@ -40,11 +40,6 @@ namespace RegistryPreview
             // Initialize the string table
             resourceLoader = ResourceLoader.GetForViewIndependentUse();
 
-            // Open settings file
-            settingsFolder = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData) + @"\Microsoft\PowerToys\" + APPNAME;
-            settingsFile = APPNAME + "_settings.json";
-            OpenSettingsFile(settingsFolder, settingsFile);
-
             // Removed this on 2/15/23 as it doesn't seem to be doing anything any more
             // Attempts to force the visual tree to load faster
             // this.Activate();
@@ -56,9 +51,15 @@ namespace RegistryPreview
             appWindow.SetIcon("app.ico");
             appWindow.Closing += AppWindow_Closing;
 
-            // resize the window
+            // Open settings file; this moved to after the window tweak because it gives the window time to start up
+            settingsFolder = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData) + @"\Microsoft\PowerToys\" + APPNAME;
+            settingsFile = APPNAME + "_settings.json";
+            OpenSettingsFile(settingsFolder, settingsFile);
+
+            // if have settings, update the location of the window
             if (jsonSettings != null)
             {
+                // resize the window
                 if (jsonSettings.ContainsKey("appWindow.Size.Width") && jsonSettings.ContainsKey("appWindow.Size.Height"))
                 {
                     SizeInt32 size;
