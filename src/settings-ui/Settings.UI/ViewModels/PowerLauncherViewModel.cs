@@ -580,18 +580,18 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             }
         }
 
-        public bool ShouldUsePinyin
+        public bool UsePinyin
         {
             get
             {
-                return settings.Properties.ShouldUsePinyin;
+                return settings.Properties.UsePinyin;
             }
 
             set
             {
-                if (settings.Properties.ShouldUsePinyin != value)
+                if (settings.Properties.UsePinyin != value)
                 {
-                    settings.Properties.ShouldUsePinyin = value;
+                    settings.Properties.UsePinyin = value;
                     UpdateSettings();
                 }
             }
