@@ -270,7 +270,7 @@
       </disabledValue>
     </policy>
 	  <policy name="ConfigureEnabledUtilityRegistryPreview" class="Both" displayName="$(string.ConfigureEnabledUtilityRegistryPreview)" explainText="$(string.ConfigureEnabledUtilityDescription)" key="Software\Policies\PowerToys" valueName="ConfigureEnabledUtilityRegistryPreview">
-		  <parentCategory ref="RegistryPreview" />
+		  <parentCategory ref="PowerToys" />
 		  <supportedOn ref="SUPPORTED_POWERTOYS_0_69_0" />
 		  <enabledValue>
 			  <decimal value="1" />
