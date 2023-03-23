@@ -191,12 +191,18 @@ public:
 
         std::wstring command = executable_path;
         command.append(L"\\modules\\RegistryPreview\\PowerToys.RegistryPreview.exe \"%1\"");
+        std::wstring icon_path = executable_path;
+        icon_path.append(L"\\modules\\RegistryPreview\\app.ico");
 
         HKEY key{}, subKey{};
         auto res = RegOpenKey(HKEY_CURRENT_USER, L"Software\\Classes\\regfile", &key);
         res = RegCreateKey(key, L"shell\\preview\\command", &subKey);
         res = RegSetValue(subKey, nullptr, REG_SZ, command.c_str(), sizeof(command.c_str()));
+        RegCloseKey(key);
         RegCloseKey(subKey);
+
+        res = RegOpenKey(HKEY_CURRENT_USER, L"Software\\Classes\\regfile\\shell\\preview", &key);
+        res = RegSetKeyValue(key, nullptr, L"icon", REG_SZ, icon_path.c_str(), static_cast<DWORD>((icon_path.size() + 1) * sizeof(wchar_t)));
         RegCloseKey(key);
 
         // let the DLL enable the app
