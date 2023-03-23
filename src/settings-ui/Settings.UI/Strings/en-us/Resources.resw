@@ -3038,7 +3038,7 @@ Activate by holding the key for the character you want to add an accent to, then
     <comment>"RAM" refers to random access memory; "size" refers to disk space; "bytes" refer to the measurement unit</comment>
   </data>
   <data name="RegistryPreview.ModuleDescription" xml:space="preserve">
-    <value>This is a quick little utility to visualize complex registry files.</value>
+    <value>A quick little utility to visualize and edit complex Windows Registry files.</value>
   </data>
   <data name="RegistryPreview.ModuleTitle" xml:space="preserve">
     <value>Registry Preview</value>
@@ -3058,7 +3058,7 @@ Activate by holding the key for the character you want to add an accent to, then
     <value>You can preview or edit Registry files in File Explorer or by opening the app from the PowerToys launcher.</value>
   </data>
   <data name="Oobe_RegistryPreview.Description" xml:space="preserve">
-    <value>Registry Preview is a quick little utility to visualize complex registry files.</value>
+    <value>Registry Preview is a quick little utility to visualize and edit complex Windows Registry files.</value>
   </data>
   <data name="Oobe_RegistryPreview.Title" xml:space="preserve">
     <value>Registry Preview</value>

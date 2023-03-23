@@ -33,7 +33,7 @@ BOOL APIENTRY DllMain(HMODULE /*hModule*/, DWORD ul_reason_for_call, LPVOID /*lp
 }
 
 const static wchar_t* MODULE_NAME = L"RegistryPreview";
-const static wchar_t* MODULE_DESC = L"This is a quick little utility to visualize complex registry files.";
+const static wchar_t* MODULE_DESC = L"A quick little utility to visualize and edit complex Windows Registry files.";
 
 class RegistryPreviewModule : public PowertoyModuleIface
 {
