@@ -216,10 +216,17 @@ namespace RegistryPreview
 
             while (index < registryLines.Length)
             {
-                // special case for when the registryLine begins with a @, which will be a SZ_REG value called "(Default)"
-                // and let the regular processing handle the rest.
-                if (registryLine.StartsWith("@", StringComparison.InvariantCulture))
+                // special case for when the registryLine begins with a @ - make some tweaks and
+                // let the regular processing handle the rest.
+                if (registryLine.StartsWith("@=-", StringComparison.InvariantCulture))
                 {
+                    // REG file has a callout to delete the @ Value which won't work *but* the Registry Editor will
+                    // clear the value of the @ Value instead, so it's still a valid line.
+                    registryLine = registryLine.Replace("@=-", "\"(Default)\"=\"\"");
+                }
+                else if (registryLine.StartsWith("@=", StringComparison.InvariantCulture))
+                {
+                    // This is the a Value called "(Default)" so we tweak the line for the UX
                     registryLine = registryLine.Replace("@=", "\"(Default)\"=");
                 }
 
