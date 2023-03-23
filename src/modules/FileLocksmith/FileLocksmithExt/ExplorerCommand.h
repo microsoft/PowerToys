@@ -5,6 +5,7 @@
 #include "IPC.h"
 
 #define EXPLORER_COMMAND_UUID_STR "84d68575-e186-46ad-b0cb-baeb45ee29c0"
+#define IDI_FILELOCKSMITH 2001
 
 class __declspec(uuid(EXPLORER_COMMAND_UUID_STR)) ExplorerCommand : public IExplorerCommand, public IShellExtInit, public IContextMenu
 {
@@ -42,6 +43,8 @@ public:
     ~ExplorerCommand();
 
 private:
+    HBITMAP m_hbmpIcon = nullptr;
+
     // Helpers
     HRESULT LaunchUI(CMINVOKECOMMANDINFO* pici, ipc::Writer* writer);
 
