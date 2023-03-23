@@ -868,7 +868,7 @@ namespace RegistryPreview
         }
 
         /// <summary>
-        /// Loads a string for a given Value's image in the grid, based off the current current type and updates the RegistryValue that's passed in
+        /// Loads a string for a given Value's image in the grid, based off the current type and updates the RegistryValue that's passed in
         /// </summary>
         private void SetValueToolTip(RegistryValue registryValue)
         {

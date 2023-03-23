@@ -9,6 +9,8 @@
 #include <common/utils/logger_helper.h>
 #include <common/utils/EventWaiter.h>
 #include <common/utils/resources.h>
+#include <common/utils/modulesRegistry.h>
+#include <common/utils/process_path.h>
 
 #include "resource.h"
 #include "Constants.h"
@@ -54,27 +56,30 @@ private:
 
     void launch_process()
     {
-        Logger::trace(L"Starting Registry Preview process");
-        unsigned long powertoys_pid = GetCurrentProcessId();
-
-        std::wstring executable_args = L"";
-        executable_args.append(std::to_wstring(powertoys_pid));
-
-        SHELLEXECUTEINFOW sei{ sizeof(sei) };
-        sei.fMask = { SEE_MASK_NOCLOSEPROCESS | SEE_MASK_FLAG_NO_UI };
-        sei.lpFile = L"modules\\RegistryPreview\\PowerToys.RegistryPreview.exe";
-        sei.nShow = SW_SHOWNORMAL;
-        sei.lpParameters = executable_args.data();
-        if (ShellExecuteExW(&sei))
+        if (m_enabled)
         {
-            Logger::trace("Successfully started the Registry Preview process");
-        }
-        else
-        {
-            Logger::error(L"Registry Preview failed to start. {}", get_last_error_or_default(GetLastError()));
-        }
+            Logger::trace(L"Starting Registry Preview process");
+            unsigned long powertoys_pid = GetCurrentProcessId();
 
-        m_hProcess = sei.hProcess;
+            std::wstring executable_args = L"";
+            executable_args.append(std::to_wstring(powertoys_pid));
+
+            SHELLEXECUTEINFOW sei{ sizeof(sei) };
+            sei.fMask = { SEE_MASK_NOCLOSEPROCESS | SEE_MASK_FLAG_NO_UI };
+            sei.lpFile = L"modules\\RegistryPreview\\PowerToys.RegistryPreview.exe";
+            sei.nShow = SW_SHOWNORMAL;
+            sei.lpParameters = executable_args.data();
+            if (ShellExecuteExW(&sei))
+            {
+                Logger::trace("Successfully started the Registry Preview process");
+            }
+            else
+            {
+                Logger::error(L"Registry Preview failed to start. {}", get_last_error_or_default(GetLastError()));
+            }
+
+            m_hProcess = sei.hProcess;
+        }
     }
 
     void terminate_process()
@@ -180,21 +185,12 @@ public:
     // Enable the powertoy
     virtual void enable()
     {
-        // Inject the Preview command into the context menu for REG files in Explorer
-        // Puts the values into HKCU to avoid having to elevate privilege
-        WCHAR executable_path[MAX_PATH];
-        ZeroMemory(executable_path, sizeof(executable_path));
-        GetCurrentDirectory(MAX_PATH, executable_path);
+        const std::wstring installationDir = get_module_folderpath();
 
-        std::wstring command = executable_path;
-        command.append(L"\\modules\\RegistryPreview\\PowerToys.RegistryPreview.exe \"%1\"");
-
-        HKEY key{}, subKey{};
-        auto res = RegOpenKey(HKEY_CURRENT_USER, L"Software\\Classes\\regfile", &key);
-        res = RegCreateKey(key, L"shell\\preview\\command", &subKey);
-        res = RegSetValue(subKey, nullptr, REG_SZ, command.c_str(), sizeof(command.c_str()));
-        RegCloseKey(subKey);
-        RegCloseKey(key);
+        if (!getRegistryPreviewChangeSet(installationDir, true).apply())
+        {
+            Logger::error(L"Applying registry changes failed");
+        }
 
         // let the DLL enable the app
         m_enabled = true;
@@ -212,8 +208,12 @@ public:
             Logger::trace(L"Disabling Registry Preview...");
 
             // Yeet the Registry setting so preview doesn't work anymore
-            auto res = RegDeleteKey(HKEY_CURRENT_USER, L"Software\\Classes\\regfile\\shell\\preview\\command");
-            res = RegDeleteKey(HKEY_CURRENT_USER, L"Software\\Classes\\regfile\\shell\\preview");
+            const std::wstring installationDir = get_module_folderpath();
+
+            if (!getRegistryPreviewChangeSet(installationDir, true).unApply())
+            {
+                Logger::error(L"Unapplying registry changes failed");
+            }
         }
 
         m_enabled = false;
