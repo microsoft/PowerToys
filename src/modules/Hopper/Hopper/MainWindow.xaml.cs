@@ -57,7 +57,10 @@ namespace PowerToys.Hopper
 
                 foreach (string file in files)
                 {
-                    oldFiles = oldFiles.Append(file).ToArray<string>();
+                    if (!oldFiles.Contains(file))
+                    {
+                        oldFiles = oldFiles.Append(file).ToArray<string>();
+                    }
                 }
 
                 FileList.ItemsSource = oldFiles;
