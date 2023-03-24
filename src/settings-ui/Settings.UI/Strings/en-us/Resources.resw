@@ -488,7 +488,7 @@
     <value>Use centralized keyboard hook</value>
   </data>
   <data name="PowerLauncher_UseCentralizedKeyboardHook.Description" xml:space="preserve">
-    <value>Try this if there are issues with the shortcut; But PowerToys Run might not get focus when triggered from an elevated window</value>
+    <value>Try this if there are issues with the shortcut (PowerToys Run might not get focus when triggered from an elevated window)</value>
   </data>
   <data name="PowerLauncher_ClearInputOnLaunch.Content" xml:space="preserve">
     <value>Clear the previous query on launch</value>
