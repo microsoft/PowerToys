@@ -56,27 +56,31 @@ namespace RegistryPreview
             settingsFile = APPNAME + "_settings.json";
             OpenSettingsFile(settingsFolder, settingsFile);
 
-            // if have settings, update the location of the window
-            if (jsonSettings != null)
-            {
-                // resize the window
-                if (jsonSettings.ContainsKey("appWindow.Size.Width") && jsonSettings.ContainsKey("appWindow.Size.Height"))
-                {
-                    SizeInt32 size;
-                    size.Width = (int)jsonSettings.GetNamedNumber("appWindow.Size.Width");
-                    size.Height = (int)jsonSettings.GetNamedNumber("appWindow.Size.Height");
-                    appWindow.Resize(size);
-                }
-
-                // reposition the window
-                if (jsonSettings.ContainsKey("appWindow.Position.X") && jsonSettings.ContainsKey("appWindow.Position.Y"))
-                {
-                    PointInt32 point;
-                    point.X = (int)jsonSettings.GetNamedNumber("appWindow.Position.X");
-                    point.Y = (int)jsonSettings.GetNamedNumber("appWindow.Position.Y");
-                    appWindow.Move(point);
-                }
-            }
+            // TODO: figure out a way to only call this once after MainWindow is initialized but before it shows itself
+            // Calling it from here only successfully resizes/moves the window and it seems to be based off timing, which is horrible.
+            // Calling it from GridPreview_Loaded() works 100% of the time, but the initial state of the window flashes before sizing/moving it
+            //
+            // // if have settings, update the location of the window
+            // if (jsonSettings != null)
+            // {
+            //     // resize the window
+            //     if (jsonSettings.ContainsKey("appWindow.Size.Width") && jsonSettings.ContainsKey("appWindow.Size.Height"))
+            //     {
+            //         SizeInt32 size;
+            //         size.Width = (int)jsonSettings.GetNamedNumber("appWindow.Size.Width");
+            //         size.Height = (int)jsonSettings.GetNamedNumber("appWindow.Size.Height");
+            //         appWindow.Resize(size);
+            //     }
+            //
+            //     // reposition the window
+            //     if (jsonSettings.ContainsKey("appWindow.Position.X") && jsonSettings.ContainsKey("appWindow.Position.Y"))
+            //     {
+            //         PointInt32 point;
+            //         point.X = (int)jsonSettings.GetNamedNumber("appWindow.Position.X");
+            //         point.Y = (int)jsonSettings.GetNamedNumber("appWindow.Position.Y");
+            //         appWindow.Move(point);
+            //     }
+            // }
 
             // Update Toolbar
             if ((App.AppFilename == null) || (File.Exists(App.AppFilename) != true))
