@@ -93,6 +93,18 @@ public:
         LoggerHelpers::init_logger(GET_RESOURCE_STRING(IDS_REGISTRYPREVIEW_NAME), L"ModuleInterface", "RegistryPreview");
         Logger::info("Registry Preview object is constructing");
 
+        if (!m_enabled)
+        {
+            const std::wstring installationDir = get_module_folderpath();
+
+            auto regChanges = getRegistryPreviewChangeSet(installationDir, true);
+
+            if (!regChanges.unApply())
+            {
+                Logger::error(L"Unapplying registry changes failed");
+            }
+        }
+
         triggerEvent = CreateEvent(nullptr, false, false, CommonSharedConstants::REGISTRY_PREVIEW_TRIGGER_EVENT);
         triggerEventWaiter = EventWaiter(CommonSharedConstants::REGISTRY_PREVIEW_TRIGGER_EVENT, [this](int) {
             on_hotkey(0);
