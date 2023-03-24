@@ -24,7 +24,7 @@ This script is used by the pipeline to move the .resw files to the correct locat
 
 ## [versionSetting.ps1](/tools/build/versionSetting.ps1)
 
-Sets `version.prop` file with the version number.
+Sets `version.props` file with the version number.
 
 ## [video_conference_make_cab.ps1](/tools/build/video_conference_make_cab.ps1)
 
