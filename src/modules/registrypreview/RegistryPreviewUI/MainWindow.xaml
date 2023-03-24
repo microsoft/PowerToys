@@ -54,7 +54,7 @@
                     <KeyboardAccelerator Modifiers="None" Key="F2" />
                 </AppBarButton.KeyboardAccelerators>
             </AppBarButton>
-            <AppBarButton x:Name="saveAsButton" x:Uid="SaveAsButton" Icon="SaveLocal" IsTabStop="False" Click="SaveAsButton_Click"  HorizontalAlignment="Left">
+            <AppBarButton x:Name="saveAsButton" x:Uid="SaveAsButton" Icon="SaveLocal" IsTabStop="False" Click="SaveAsButton_Click"  HorizontalAlignment="Left" IsEnabled="True">
                 <AppBarButton.KeyboardAccelerators>
                     <KeyboardAccelerator Modifiers="Shift" Key="F2" />
                 </AppBarButton.KeyboardAccelerators>

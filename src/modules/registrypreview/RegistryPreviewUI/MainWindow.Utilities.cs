@@ -453,14 +453,13 @@ namespace RegistryPreview
 
         /// <summary>
         /// Enable command bar buttons and textBox.
-        /// Note that writeButton, saveAsButton, and textBox all update with the same value on purpose
+        /// Note that writeButton and textBox all update with the same value on purpose
         /// </summary>
         private void UpdateToolBarAndUI(bool enableWrite, bool enableRefresh, bool enableEdit)
         {
             refreshButton.IsEnabled = enableRefresh;
             editButton.IsEnabled = enableEdit;
             writeButton.IsEnabled = enableWrite;
-            saveAsButton.IsEnabled = enableEdit;
         }
 
         /// <summary>
