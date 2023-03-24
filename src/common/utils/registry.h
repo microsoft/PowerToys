@@ -16,6 +16,9 @@
 
 namespace registry
 {
+    template<class>
+    inline constexpr bool always_false_v = false;
+
     namespace detail
     {
         struct on_exit
@@ -26,9 +29,6 @@ namespace registry
                 f{ std::move(f) } {}
             ~on_exit() { f(); }
         };
-
-        template<class>
-        inline constexpr bool always_false_v = false;
 
         template<class... Ts>
         struct overloaded : Ts...
