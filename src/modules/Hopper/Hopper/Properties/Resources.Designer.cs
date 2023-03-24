@@ -61,7 +61,7 @@ namespace Hopper.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Create folder.
+        ///   Looks up a localized string similar to Move files to folder.
         /// </summary>
         internal static string Hopper_create_folder {
             get {
@@ -93,6 +93,15 @@ namespace Hopper.Properties {
         internal static string Hopper_folder_chooser_description {
             get {
                 return ResourceManager.GetString("Hopper_folder_chooser_description", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Select folder.
+        /// </summary>
+        internal static string Hopper_select_folder {
+            get {
+                return ResourceManager.GetString("Hopper_select_folder", resourceCulture);
             }
         }
     }

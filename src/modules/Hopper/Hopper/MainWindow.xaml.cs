@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.Collections.Specialized;
 using System.Diagnostics;
 using System.Linq;
 using System.Windows;
@@ -18,6 +19,7 @@ namespace PowerToys.Hopper
     {
         public MainWindow(string[] files)
         {
+            // Open debugger, so that this app can be debugged when launched from explorer context menu
 #if DEBUG
             Debugger.Launch();
             Debugger.Break();
@@ -42,6 +44,25 @@ namespace PowerToys.Hopper
             Window con = new ContentPropertiesWindow((string[])FileList.ItemsSource);
             con.Show();
             Close();
+        }
+
+        private void Window_Drop(object sender, DragEventArgs e)
+        {
+            if (e.Data.GetDataPresent(DataFormats.FileDrop))
+            {
+                // Note that you can have more than one file.
+                string[] files = (string[])e.Data.GetData(DataFormats.FileDrop);
+
+                string[] oldFiles = (string[])FileList.ItemsSource;
+
+                foreach (string file in files)
+                {
+                    oldFiles = oldFiles.Append(file).ToArray<string>();
+                }
+
+                FileList.ItemsSource = oldFiles;
+                FileList.ScrollIntoView(FileList.Items[FileList.Items.Count - 1]);
+            }
         }
     }
 }

@@ -22,7 +22,7 @@ namespace Hopper
             {
                 try
                 {
-                    File.Move(file, destinationFolder + Path.GetFileName(file));
+                    File.Move(file, destinationFolder + "\\" + Path.GetFileName(file));
                     fileStatus.Add(new FileTransferingStatus(StatusType.Ok, file));
                 }
                 catch (FileNotFoundException)

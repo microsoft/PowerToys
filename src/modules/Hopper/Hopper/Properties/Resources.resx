@@ -118,8 +118,8 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="Hopper_create_folder" xml:space="preserve">
-    <value>Create folder</value>
-    <comment>folder means a file directrory; create like in "create a new folder"; it's a command on a button</comment>
+    <value>Move files to folder</value>
+    <comment>folder means a file directrory; move like in move to a new folder"; it's a command on a button</comment>
   </data>
   <data name="Hopper_files_to_new_folder" xml:space="preserve">
     <value>Move %1 files to a new folder</value>
@@ -127,10 +127,14 @@
   </data>
   <data name="Hopper_file_to_new_folder" xml:space="preserve">
     <value>Move 1 file to a new folder</value>
-    <comment>folder means a file directrory;</comment>
+    <comment>folder means a file directrory</comment>
   </data>
   <data name="Hopper_folder_chooser_description" xml:space="preserve">
     <value>Select the folder where the file(s) will be saved in</value>
-    <comment>folder means a file directrory;</comment>
+    <comment>folder means a file directrory</comment>
+  </data>
+  <data name="Hopper_select_folder" xml:space="preserve">
+    <value>Select folder</value>
+    <comment>folder means a file directrory; It's a button that opens a folder picker</comment>
   </data>
 </root>

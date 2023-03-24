@@ -3,7 +3,6 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        xmlns:local="clr-namespace:Hopper"
         mc:Ignorable="d"
         ResizeMode="NoResize"
         Title="PowerToys Hopper" Height="Auto" Width="800" SizeToContent="Height"
@@ -17,9 +16,19 @@
         <TextBlock x:Name="TitleTextBlock" Text="# files to new folder" FontSize="20" />
         <StackPanel Grid.Row="1">
             <TextBlock Text="New folder name:"></TextBlock>
-            <TextBox x:Name="NewFolderName" GotFocus="NewFolderName_GotFocus" IsUndoEnabled="False" IsInactiveSelectionHighlightEnabled="True"/>
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="auto"/>
+                </Grid.ColumnDefinitions>
+                <TextBox Grid.Column="0" x:Name="NewFolderName" GotFocus="NewFolderName_GotFocus" IsUndoEnabled="False" IsInactiveSelectionHighlightEnabled="True"/>
+                <Border DragDrop.DragEnter="DragFolder_DragEnter" Name="DragFolder" Grid.Column="1" BorderThickness="1,1,1,1" BorderBrush="Black">
+                    <TextBlock Text="Drag"></TextBlock>
+                </Border>
+            </Grid>
+
         </StackPanel>
-        
+
         <Border Margin="0,12,0,0"
                 BorderThickness="0,1,0,0"
                 Padding="12"
@@ -30,7 +39,7 @@
                     <ColumnDefinition Width="Auto"/>
                 </Grid.ColumnDefinitions>
                 <Button Width="36"
-                    Command="{Binding OpenSettingsCommand}"
+                    x:Name="SettingsButton"
                     Height="36"
                     Margin="-8,0,0,0"
                     Content="&#xE713;"
