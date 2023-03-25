@@ -22,6 +22,8 @@
   <?define WindowWlkrCompFiles=plugin.json;Microsoft.Plugin.WindowWalker.deps.json;Microsoft.Plugin.WindowWalker.dll;PowerToys.ManagedTelemetry.dll?>
   <?define WindowWlkrImagesCompFiles=windowwalker.dark.png;windowwalker.light.png;info.dark.png;info.light.png?>
   <?define OneNoteComponentFiles=plugin.json;Microsoft.PowerToys.Run.Plugin.OneNote.deps.json;Microsoft.PowerToys.Run.Plugin.OneNote.dll;PowerToys.ManagedTelemetry.dll?>
+  <?define PTComponentFiles=plugin.json;Microsoft.PowerToys.Run.Plugin.PowerToys.deps.json;Microsoft.PowerToys.Run.Plugin.PowerToys.dll;PowerToys.ManagedTelemetry.dll?>
+  <?define PTImagesComponentFiles=PowerToys.dark.png;PowerToys.light.png;ColorPicker.png;FancyZones.png;Hosts.png;PowerOcr.png;ScreenRuler.png;ShortcutGuide.png?>
   <?define RegistryComponentFiles=plugin.json;Microsoft.PowerToys.Run.Plugin.Registry.deps.json;Microsoft.PowerToys.Run.Plugin.Registry.dll;PowerToys.ManagedTelemetry.dll?>
   <?define ServiceComponentFiles=plugin.json;Microsoft.PowerToys.Run.Plugin.Service.deps.json;Microsoft.PowerToys.Run.Plugin.Service.dll?>
   <?define SystemComponentFiles=plugin.json;Microsoft.PowerToys.Run.Plugin.System.deps.json;Microsoft.PowerToys.Run.Plugin.System.dll?>
@@ -291,6 +293,18 @@
       <Component Id="WindowsTerminalImagesComponentDark" Directory="WindowsTerminalImagesFolder" >
         <File Id="WindowsTerminalDarkIcon" Source="$(var.BinDir)modules\launcher\Plugins\WindowsTerminal\Images\WindowsTerminal.dark.png" />
       </Component>
+
+      <!-- PowerToys Plugin -->
+      <?foreach File in $(var.PTComponentFiles)?>
+      <Component Id="PTComponent_$(var.File)" Win64="yes" Directory="PowerToysPluginFolder">
+        <File Id="PTComponentFile_$(var.File)" Source="$(var.BinDir)modules\launcher\Plugins\PowerToys\$(var.File)" />
+      </Component>
+      <?endforeach?>
+      <?foreach File in $(var.PTImagesComponentFiles)?>
+      <Component Id="PTImagesComponent_$(var.File)" Win64="yes" Directory="PowerToysImagesFolder">
+        <File Id="PTImagesComponentFile_$(var.File)" Source="$(var.BinDir)modules\launcher\Plugins\PowerToys\Images\$(var.File)" />
+      </Component>
+      <?endforeach?>
 
     </ComponentGroup>
   </Fragment>
