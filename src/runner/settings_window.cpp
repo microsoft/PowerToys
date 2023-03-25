@@ -592,7 +592,15 @@ void open_settings_window(std::optional<std::wstring> settings_window, bool show
             // bring_settings_to_front();
             if (current_settings_ipc)
             {
-                current_settings_ipc->send(L"{\"ShowYourself\":\"main_page\"}");
+                if (settings_window.has_value())
+                {
+                    std::wstring msg = L"{\"ShowYourself\":\"" + settings_window.value() + L"\"}";
+                    current_settings_ipc->send(msg);
+                }
+                else
+                {
+                    current_settings_ipc->send(L"{\"ShowYourself\":\"Overview\"}");
+                }
             }
         }
     }

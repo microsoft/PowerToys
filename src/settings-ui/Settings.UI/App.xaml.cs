@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft Corporation
+// Copyright (c) Microsoft Corporation
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
@@ -12,7 +12,6 @@ using ManagedCommon;
 using Microsoft.PowerToys.Settings.UI.Helpers;
 using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.PowerToys.Settings.UI.Library.Telemetry.Events;
-using Microsoft.PowerToys.Settings.UI.Library.Utilities;
 using Microsoft.PowerToys.Settings.UI.Views;
 using Microsoft.PowerToys.Telemetry;
 using Microsoft.UI.Xaml;
@@ -83,7 +82,6 @@ namespace Microsoft.PowerToys.Settings.UI
             if (settingsWindow == null)
             {
                 settingsWindow = new MainWindow(IsDarkTheme());
-                type = typeof(GeneralPage);
             }
 
             settingsWindow.Activate();
@@ -133,6 +131,8 @@ namespace Microsoft.PowerToys.Settings.UI
 
                 if (containsSettingsWindow)
                 {
+                    // Open specific window
+                    StartupPage = GetPage(cmdArgs[currentArgumentIndex]);
                     // open specific window
                     switch (cmdArgs[currentArgumentIndex])
                     {
@@ -368,6 +368,36 @@ namespace Microsoft.PowerToys.Settings.UI
         public static void ClearFlyoutWindow()
         {
             flyoutWindow = null;
+        }
+
+        public static Type GetPage(string settingWindow)
+        {
+            switch (settingWindow)
+            {
+                case "Overview": return typeof(GeneralPage);
+                case "AlwaysOnTop": return typeof(AlwaysOnTopPage);
+                case "Awake": return typeof(AwakePage);
+                case "ColorPicker": return typeof(ColorPickerPage);
+                case "FancyZones": return typeof(FancyZonesPage);
+                case "FileLocksmith": return typeof(FileLocksmithPage);
+                case "Run": return typeof(PowerLauncherPage);
+                case "ImageResizer": return typeof(ImageResizerPage);
+                case "KBM": return typeof(KeyboardManagerPage);
+                case "MouseUtils": return typeof(MouseUtilsPage);
+                case "PowerRename": return typeof(PowerRenamePage);
+                case "QuickAccent": return typeof(PowerAccentPage);
+                case "FileExplorer": return typeof(PowerPreviewPage);
+                case "ShortcutGuide": return typeof(ShortcutGuidePage);
+                case "PowerOCR": return typeof(PowerOcrPage);
+                case "VideoConference": return typeof(VideoConferencePage);
+                case "MeasureTool": return typeof(MeasureToolPage);
+                case "Hosts": return typeof(HostsPage);
+                case "PastePlain": return typeof(PastePlainPage);
+                default:
+                    // Fallback to general
+                    Debug.Assert(false, "Unexpected SettingsWindow argument value");
+                    return typeof(GeneralPage);
+            }
         }
     }
 }
