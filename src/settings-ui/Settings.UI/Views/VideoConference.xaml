@@ -15,6 +15,10 @@
             x:Name="EmptyToCollapsedConverter"
             EmptyValue="Collapsed"
             NotEmptyValue="Visible" />
+        <converters:StringVisibilityConverter
+            x:Name="EmptyToBoolConverter"
+            EmptyValue="False"
+            NotEmptyValue="True" />
     </Page.Resources>
 
     <controls:SettingsPageControl
@@ -28,7 +32,7 @@
                     IsClosable="False"
                     IsOpen="True"
                     IsTabStop="True"
-                    Severity="Error">
+                    Severity="Informational">
                     <InfoBar.ActionButton>
                         <HyperlinkButton
                             x:Uid="VideoConference_DeprecationWarningButton"
@@ -49,10 +53,9 @@
                 <InfoBar
                     x:Uid="VideoConference_RunAsAdminRequired"
                     IsClosable="False"
-                    IsOpen="True"
+                    IsOpen="{Binding Mode=OneWay, Path=IsElevated, Converter={StaticResource BoolNegationConverter}}"
                     IsTabStop="True"
-                    Severity="Warning"
-                    Visibility="{Binding Mode=OneWay, Path=IsElevated, Converter={StaticResource ReverseBoolToVisibilityConverter}}" />
+                    Severity="Informational"/>
                 <InfoBar
                     x:Uid="GPO_IsSettingForced"
                     IsClosable="False"
@@ -117,15 +120,15 @@
                                     <Button
                                         x:Uid="VideoConference_CameraOverlayImageClear"
                                         Command="{Binding Mode=OneWay, Path=ClearOverlayImage}"
-                                        Visibility="{Binding Path=CameraImageOverlayPath, Mode=OneWay, Converter={StaticResource EmptyToCollapsedConverter}}" />
+                                        IsEnabled="{Binding Path=CameraImageOverlayPath, Mode=OneWay, Converter={StaticResource EmptyToBoolConverter}}" />
                                 </StackPanel>
                             </labs:SettingsCard>
-                            <labs:SettingsCard>
+                            <labs:SettingsCard
+                                Visibility="{Binding Path=CameraImageOverlayPath, Mode=OneWay, Converter={StaticResource EmptyToCollapsedConverter}}">
                                 <Border
                                     MaxHeight="100"
                                     HorizontalAlignment="Right"
-                                    CornerRadius="4"
-                                    Visibility="{Binding Path=CameraImageOverlayPath, Mode=OneWay, Converter={StaticResource EmptyToCollapsedConverter}}">
+                                    CornerRadius="4">
                                     <Image
                                         x:Uid="VideoConference_CameraOverlayImageAlt"
                                         Source="{Binding Mode=OneWay, Path=CameraImageOverlayPath}"

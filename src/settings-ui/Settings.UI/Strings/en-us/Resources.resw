@@ -488,7 +488,7 @@
     <value>Use centralized keyboard hook</value>
   </data>
   <data name="PowerLauncher_UseCentralizedKeyboardHook.Description" xml:space="preserve">
-    <value>Try this if there are issues with the shortcut</value>
+    <value>Try this if there are issues with the shortcut (PowerToys Run might not get focus when triggered from an elevated window)</value>
   </data>
   <data name="PowerLauncher_ClearInputOnLaunch.Content" xml:space="preserve">
     <value>Clear the previous query on launch</value>
@@ -1834,8 +1834,8 @@ From there, simply click on one of the supported files in the File Explorer and 
   <data name="Awake_DisplaySettingsCard.Description" xml:space="preserve">
     <value>This setting is only available when keeping the PC awake</value>
   </data>
-  <data name="Awake_ExpirationSettingsCard.Description" xml:space="preserve">
-    <value>Keep custom awakeness state until a specific date and time</value>
+  <data name="Awake_ExpirationSettingsExpander.Description" xml:space="preserve">
+    <value>Keep custom awake state until a specific date and time</value>
   </data>
   <data name="Awake_ModeSettingsCard.Header" xml:space="preserve">
     <value>Mode</value>
@@ -1848,6 +1848,12 @@ From there, simply click on one of the supported files in the File Explorer and 
   </data>
   <data name="Awake_IntervalMinutesInput.Header" xml:space="preserve">
     <value>Minutes</value>
+  </data>
+  <data name="Awake_ExpirationSettingsExpander_Date.Header" xml:space="preserve">
+    <value>End date</value>
+  </data>
+  <data name="Awake_ExpirationSettingsExpander_Time.Header" xml:space="preserve">
+    <value>End time</value>
   </data>
   <data name="Oobe_Awake.Title" xml:space="preserve">
     <value>Awake</value>
@@ -2129,7 +2135,7 @@ From there, simply click on one of the supported files in the File Explorer and 
   <data name="Awake_IntervalSettingsCard.Header" xml:space="preserve">
     <value>Interval before returning to the previous awakeness state</value>
   </data>
-  <data name="Awake_ExpirationSettingsCard.Header" xml:space="preserve">
+  <data name="Awake_ExpirationSettingsExpander.Header" xml:space="preserve">
     <value>End date and time</value>
   </data>
   <data name="MouseUtils.ModuleTitle" xml:space="preserve">

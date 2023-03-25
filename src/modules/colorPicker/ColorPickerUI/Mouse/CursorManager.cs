@@ -4,7 +4,7 @@
 
 using System;
 using System.IO.Abstractions;
-using ColorPicker.Helpers;
+using ManagedCommon;
 using Microsoft.Win32;
 
 namespace ColorPicker.Mouse

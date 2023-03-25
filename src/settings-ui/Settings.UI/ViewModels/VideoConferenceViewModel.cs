@@ -30,7 +30,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         private Func<string, int> SendConfigMSG { get; }
 
-        private Func<Task<string>> PickFileDialog { get; }
+        private Func<string> PickFileDialog { get; }
 
         private string _settingsConfigFileFolder = string.Empty;
 
@@ -39,7 +39,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             ISettingsRepository<GeneralSettings> settingsRepository,
             ISettingsRepository<VideoConferenceSettings> videoConferenceSettingsRepository,
             Func<string, int> ipcMSGCallBackFunc,
-            Func<Task<string>> pickFileDialog,
+            Func<string> pickFileDialog,
             string configFileSubfolder = "")
         {
             PickFileDialog = pickFileDialog;
@@ -197,11 +197,11 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             RaisePropertyChanged(nameof(CameraImageOverlayPath));
         }
 
-        private async void SelectOverlayImageAction()
+        private void SelectOverlayImageAction()
         {
             try
             {
-                string pickedImage = await PickFileDialog().ConfigureAwait(true);
+                string pickedImage = PickFileDialog();
                 if (pickedImage != null)
                 {
                     CameraImageOverlayPath = pickedImage;

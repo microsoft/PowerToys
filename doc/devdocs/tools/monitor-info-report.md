@@ -1,10 +1,8 @@
-# Tools
-
-## [Monitor info report](tools\monitor_info_report)
+# [Monitor info report tool](/tools/MonitorReportTool)
 
 A small diagnostic tool which helps identifying WinAPI bugs related to the physical monitor detection. When launched, it creates a log file like this:
 
-```
+```text
 GetSystemMetrics = 2
 GetMonitorInfo OK
 EnumDisplayDevices OK:
@@ -20,4 +18,5 @@ EnumDisplayDevices OK:
         DeviceString = Generic PnP Monitor
 EnumDisplayMonitors OK
 ```
+
 and also duplicates the info to `stdout`.
