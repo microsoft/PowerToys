@@ -48,7 +48,7 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.UnitTests
         [DataRow("ISO 8601", "2022-03-02T10:30:45")]
         [DataRow("ISO 8601 with time zone", "2022-03-02T10:30:45")]
         [DataRow("RFC1123", "Wed, 02 Mar 2022 10:30:45 GMT")]
-        [DataRow("Date and time in filename-compatible format", "2022_03_02-10_30_45")]
+        [DataRow("Date and time in filename-compatible format", "2022-03-02_10-30-45")]
         public void LocalFormatsWithShortTimeAndShortDate(string formatLabel, string expectedResult)
         {
             // Setup
@@ -83,7 +83,7 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.UnitTests
         [DataRow("ISO 8601", "2022-03-02T10:30:45")]
         [DataRow("ISO 8601 with time zone", "2022-03-02T10:30:45")]
         [DataRow("RFC1123", "Wed, 02 Mar 2022 10:30:45 GMT")]
-        [DataRow("Date and time in filename-compatible format", "2022_03_02-10_30_45")]
+        [DataRow("Date and time in filename-compatible format", "2022-03-02_10-30-45")]
         public void LocalFormatsWithShortTimeAndLongDate(string formatLabel, string expectedResult)
         {
             // Setup
@@ -118,7 +118,7 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.UnitTests
         [DataRow("ISO 8601", "2022-03-02T10:30:45")]
         [DataRow("ISO 8601 with time zone", "2022-03-02T10:30:45")]
         [DataRow("RFC1123", "Wed, 02 Mar 2022 10:30:45 GMT")]
-        [DataRow("Date and time in filename-compatible format", "2022_03_02-10_30_45")]
+        [DataRow("Date and time in filename-compatible format", "2022-03-02_10-30-45")]
         public void LocalFormatsWithLongTimeAndShortDate(string formatLabel, string expectedResult)
         {
             // Setup
@@ -153,7 +153,7 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.UnitTests
         [DataRow("ISO 8601", "2022-03-02T10:30:45")]
         [DataRow("ISO 8601 with time zone", "2022-03-02T10:30:45")]
         [DataRow("RFC1123", "Wed, 02 Mar 2022 10:30:45 GMT")]
-        [DataRow("Date and time in filename-compatible format", "2022_03_02-10_30_45")]
+        [DataRow("Date and time in filename-compatible format", "2022-03-02_10-30-45")]
         public void LocalFormatsWithLongTimeAndLongDate(string formatLabel, string expectedResult)
         {
             // Setup
@@ -172,7 +172,7 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.UnitTests
         [DataRow("ISO 8601 UTC", "yyyy-MM-ddTHH:mm:ss")]
         [DataRow("ISO 8601 UTC with time zone", "yyyy-MM-ddTHH:mm:ss'Z'")]
         [DataRow("Universal time format: YYYY-MM-DD hh:mm:ss", "u")]
-        [DataRow("Date and time in filename-compatible format", "yyyy_MM_dd-hh_mm_ss")]
+        [DataRow("Date and time in filename-compatible format", "yyyy-MM-dd_hh-mm-ss")]
         public void UtcFormatsWithShortTimeAndShortDate(string formatLabel, string expectedFormat)
         {
             // Setup
@@ -192,7 +192,7 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.UnitTests
         [DataRow("ISO 8601 UTC", "yyyy-MM-ddTHH:mm:ss")]
         [DataRow("ISO 8601 UTC with time zone", "yyyy-MM-ddTHH:mm:ss'Z'")]
         [DataRow("Universal time format: YYYY-MM-DD hh:mm:ss", "u")]
-        [DataRow("Date and time in filename-compatible format", "yyyy_MM_dd-hh_mm_ss")]
+        [DataRow("Date and time in filename-compatible format", "yyyy-MM-dd_hh-mm-ss")]
         public void UtcFormatsWithShortTimeAndLongDate(string formatLabel, string expectedFormat)
         {
             // Setup
@@ -212,7 +212,7 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.UnitTests
         [DataRow("ISO 8601 UTC", "yyyy-MM-ddTHH:mm:ss")]
         [DataRow("ISO 8601 UTC with time zone", "yyyy-MM-ddTHH:mm:ss'Z'")]
         [DataRow("Universal time format: YYYY-MM-DD hh:mm:ss", "u")]
-        [DataRow("Date and time in filename-compatible format", "yyyy_MM_dd-hh_mm_ss")]
+        [DataRow("Date and time in filename-compatible format", "yyyy-MM-dd_hh-mm-ss")]
         public void UtcFormatsWithLongTimeAndShortDate(string formatLabel, string expectedFormat)
         {
             // Setup
@@ -232,7 +232,7 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.UnitTests
         [DataRow("ISO 8601 UTC", "yyyy-MM-ddTHH:mm:ss")]
         [DataRow("ISO 8601 UTC with time zone", "yyyy-MM-ddTHH:mm:ss'Z'")]
         [DataRow("Universal time format: YYYY-MM-DD hh:mm:ss", "u")]
-        [DataRow("Date and time in filename-compatible format", "yyyy_MM_dd-hh_mm_ss")]
+        [DataRow("Date and time in filename-compatible format", "yyyy-MM-dd_hh-mm-ss")]
         public void UtcFormatsWithLongTimeAndLongDate(string formatLabel, string expectedFormat)
         {
             // Setup
