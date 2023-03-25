@@ -4,7 +4,7 @@
 
   <?include $(sys.CURRENTDIR)\Common.wxi?>
 
-  <?define MouseJumpUIComponentFiles=PowerToys.MouseJumpUI.deps.json;PowerToys.MouseJumpUI.dll;PowerToys.MouseJumpUI.exe;PowerToys.MouseJumpUI.runtimeconfig.json;WinRT.Runtime.dll;PowerToys.ManagedCommon.dll;PowerToys.GPOWrapper.dll;PowerToys.ManagedTelemetry.dll;Ijwhost.dll;System.Management.dll?>
+  <?define MouseJumpUIComponentFiles=Microsoft.Windows.SDK.NET.dll;System.IO.Abstractions.dll;PowerToys.MouseJumpUI.deps.json;PowerToys.MouseJumpUI.dll;PowerToys.MouseJumpUI.exe;PowerToys.MouseJumpUI.runtimeconfig.json;WinRT.Runtime.dll;PowerToys.ManagedCommon.dll;PowerToys.GPOWrapper.dll;PowerToys.ManagedTelemetry.dll;Ijwhost.dll;System.Management.dll?>
 
   <Fragment>
     <!-- MouseUtils -->
