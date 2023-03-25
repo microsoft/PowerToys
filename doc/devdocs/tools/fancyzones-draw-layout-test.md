@@ -1,4 +1,4 @@
-## Testing tool for drawing zone layout
+# [FancyZones_DrawLayoutTest](/tools/FancyZones_DrawLayoutTest/)
 
 This test tool is created in order to debug issues related to the drawing of zone layout on screen.
 

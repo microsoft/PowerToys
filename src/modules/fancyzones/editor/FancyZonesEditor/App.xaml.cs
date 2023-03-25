@@ -8,7 +8,6 @@ using System.Threading;
 using System.Windows;
 using System.Windows.Input;
 using Common.UI;
-using FancyZonesEditor.Logs;
 using FancyZonesEditor.Utils;
 using ManagedCommon;
 
@@ -55,6 +54,8 @@ namespace FancyZonesEditor
 
         public App()
         {
+            Logger.InitializeLogger("\\FancyZones\\Editor\\Logs");
+
             // DebugModeCheck();
             NativeThreadCTS = new CancellationTokenSource();
             FancyZonesEditorIO = new FancyZonesEditorIO();

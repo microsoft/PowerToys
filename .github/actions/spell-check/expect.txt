@@ -322,6 +322,7 @@ cxfksword
 CXSCREEN
 CXSMICON
 CXVIRTUALSCREEN
+cxxopts
 cyberrex
 CYSCREEN
 CYSMICON
@@ -525,6 +526,7 @@ EXTENDEDVERBS
 eyetracker
 fabricbot
 fancymouse
+fancyzone
 fancyzones
 FANCYZONESDRAWLAYOUTTEST
 FANCYZONESEDITOR

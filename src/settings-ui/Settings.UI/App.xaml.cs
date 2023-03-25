@@ -72,6 +72,8 @@ namespace Microsoft.PowerToys.Settings.UI
         /// </summary>
         public App()
         {
+            Logger.InitializeLogger("\\Settings\\Logs");
+
             this.InitializeComponent();
         }
 
