@@ -134,7 +134,7 @@ In this release, we have focused on releasing new features, stability, and impro
 - Added missing MSC and CPL settings to the results of the Windows Settings plugin. Thanks to [@htcfreek](https://github.com/htcfreek)!
 - System plugin: Setting for separate "Open/Empty Recycle bin" results or single result with context menu. (This was implemented based on user feedback for a change in the last build.) Thanks to [@htcfreek](https://github.com/htcfreek)!
 - Add support for log2 and log10 in Calculator plugin. Thanks to[@RickLuiken](https://github.com/RickLuiken)!
-- Removed the Timezone plugin.
+- Removed the TimeZone plugin.
 - Fix the crash when loading thumbnails for PDF files. (This was a hotfix for 0.67)
 
 ### Shortcut Guide
