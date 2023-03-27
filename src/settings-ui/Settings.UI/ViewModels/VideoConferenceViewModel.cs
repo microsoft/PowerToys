@@ -97,7 +97,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             _cameraAndMicrophoneMuteHotkey = Settings.Properties.MuteCameraAndMicrophoneHotkey.Value;
             _microphoneMuteHotkey = Settings.Properties.MuteMicrophoneHotkey.Value;
             _microphonePushToTalkHotkey = Settings.Properties.PushToTalkMicrophoneHotkey.Value;
-            _pushToReverseEnabled = Settings.Properties.PushToReverseEnabled;
+            _pushToReverseEnabled = Settings.Properties.PushToReverseEnabled.Value;
             _cameraMuteHotkey = Settings.Properties.MuteCameraHotkey.Value;
             CameraImageOverlayPath = Settings.Properties.CameraOverlayImagePath.Value;
             SelectOverlayImage = new ButtonClickCommand(SelectOverlayImageAction);
@@ -374,7 +374,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 if (value != _pushToReverseEnabled)
                 {
                     _pushToReverseEnabled = value;
-                    Settings.Properties.PushToReverseEnabled = value;
+                    Settings.Properties.PushToReverseEnabled.Value = value;
                     RaisePropertyChanged(nameof(PushToReverseEnabled));
                 }
             }

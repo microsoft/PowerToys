@@ -166,7 +166,10 @@ LRESULT CALLBACK VideoConferenceModule::LowLevelKeyboardProc(int nCode, WPARAM w
             }
             else if (isHotkeyPressed(kbd->vkCode, settings.microphonePushToTalkHotkey) && !pushToTalkPressed)
             {
-                reverseMicrophoneMute();
+                if (settings.pushToReverseEnabled || getMicrophoneMuteState())
+                {
+                    reverseMicrophoneMute();
+                }
                 pushToTalkPressed = true;
                 return 1;
             }

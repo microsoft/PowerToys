@@ -54,6 +54,8 @@ namespace Microsoft.PowerToys.Settings.UI.Library
                 Key = "O",
                 Code = 79,
             });
+
+            this.PushToReverseEnabled = new BoolProperty(false);
         }
 
         [JsonPropertyName("mute_camera_and_microphone_hotkey")]
@@ -66,7 +68,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         public KeyboardKeysProperty PushToTalkMicrophoneHotkey { get; set; }
 
         [JsonPropertyName("push_to_reverse_enabled")]
-        public bool PushToReverseEnabled { get; set; }
+        public BoolProperty PushToReverseEnabled { get; set; }
 
         [JsonPropertyName("mute_camera_hotkey")]
         public KeyboardKeysProperty MuteCameraHotkey { get; set; }
