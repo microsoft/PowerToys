@@ -336,6 +336,7 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
             c.Keys = HotkeySettings.GetKeysList();
 
             shortcutDialog.XamlRoot = this.XamlRoot;
+            shortcutDialog.RequestedTheme = this.ActualTheme;
             await shortcutDialog.ShowAsync();
         }
 
