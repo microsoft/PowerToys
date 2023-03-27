@@ -247,6 +247,10 @@ void VideoConferenceModule::onModuleSettingsChanged()
             {
                 settings.microphonePushToTalkHotkey = PowerToysSettings::HotkeyObject::from_json(*val);
             }
+            if (const auto val = values.get_bool_value(L"push_to_reverse_enabled"))
+            {
+                settings.pushToReverseEnabled = *val;
+            }
             if (const auto val = values.get_json(L"mute_camera_hotkey"))
             {
                 settings.cameraMuteHotkey = PowerToysSettings::HotkeyObject::from_json(*val);
@@ -408,6 +412,10 @@ void VideoConferenceModule::init_settings()
         if (const auto val = powerToysSettings.get_json(L"push_to_talk_microphone_hotkey"))
         {
             settings.microphonePushToTalkHotkey = PowerToysSettings::HotkeyObject::from_json(*val);
+        }
+        if (const auto val = powerToysSettings.get_bool_value(L"push_to_reverse_enabled"))
+        {
+            settings.pushToReverseEnabled = *val;
         }
         if (const auto val = powerToysSettings.get_json(L"mute_camera_hotkey"))
         {

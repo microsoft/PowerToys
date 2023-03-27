@@ -29,6 +29,8 @@ struct VideoConferenceSettings
     std::wstring selectedCamera;
     std::wstring imageOverlayPath;
     std::wstring selectedMicrophone;
+
+    bool pushToReverseEnabled = false;
 };
 
 class VideoConferenceModule : public PowertoyModuleIface

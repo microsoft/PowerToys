@@ -219,6 +219,9 @@
   <data name="VideoConference_SelectedMicrophone.Header" xml:space="preserve">
     <value>Selected microphone</value>
   </data>
+  <data name="VideoConference_PushToReverse.Header" xml:space="preserve">
+    <value>Push to reverse</value>
+  </data>
   <data name="VideoConference_CameraOverlayImagePathHeader.Header" xml:space="preserve">
     <value>Image displayed when camera is muted</value>
   </data>

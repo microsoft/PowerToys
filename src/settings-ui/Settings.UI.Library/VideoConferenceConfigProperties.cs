@@ -65,6 +65,9 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         [JsonPropertyName("push_to_talk_microphone_hotkey")]
         public KeyboardKeysProperty PushToTalkMicrophoneHotkey { get; set; }
 
+        [JsonPropertyName("push_to_reverse_enabled")]
+        public bool PushToReverseEnabled { get; set; }
+
         [JsonPropertyName("mute_camera_hotkey")]
         public KeyboardKeysProperty MuteCameraHotkey { get; set; }
 
