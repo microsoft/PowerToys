@@ -120,6 +120,11 @@
                     Icon="{ui:BitmapIcon Source=/Assets/FluentIcons/FluentIconsPowerAccent.png}" />
 
                 <NavigationViewItem
+                    x:Uid="Shell_RegistryPreview"
+                    helpers:NavHelper.NavigateTo="views:RegistryPreviewPage"
+                    Icon="{ui:BitmapIcon Source=/Assets/FluentIcons/FluentIconsRegistryPreview.png}"  />
+
+                <NavigationViewItem
                     x:Uid="Shell_MeasureTool"
                     helpers:NavHelper.NavigateTo="views:MeasureToolPage"
                     Icon="{ui:BitmapIcon Source=/Assets/FluentIcons/FluentIconsScreenRuler.png}" />

@@ -3,13 +3,12 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using Microsoft.PowerToys.Settings.UI.Helpers;
 using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.PowerToys.Settings.UI.ViewModels;
 using Microsoft.UI.Xaml.Controls;
-using Windows.Storage;
-using Windows.Storage.Pickers;
 
 namespace Microsoft.PowerToys.Settings.UI.Views
 {
@@ -17,19 +16,31 @@ namespace Microsoft.PowerToys.Settings.UI.Views
     {
         private VideoConferenceViewModel ViewModel { get; set; }
 
-        private static async Task<string> PickFileDialog()
+        private static string PickFileDialog()
         {
-            FileOpenPicker openPicker = new FileOpenPicker();
-            openPicker.ViewMode = PickerViewMode.Thumbnail;
-            openPicker.SuggestedStartLocation = PickerLocationId.PicturesLibrary;
-            openPicker.FileTypeFilter.Add(".jpg");
-            openPicker.FileTypeFilter.Add(".jpeg");
-            openPicker.FileTypeFilter.Add(".png");
-            var hwnd = WinRT.Interop.WindowNative.GetWindowHandle(App.GetSettingsWindow());
-            WinRT.Interop.InitializeWithWindow.Initialize(openPicker, hwnd);
+            // this code was changed to solve the problem with WinUI3 that prevents to select a file
+            // while running elevated, when the issue is solved in WinUI3 it should be changed back
+            OpenFileName openFileName = new OpenFileName();
+            openFileName.StructSize = Marshal.SizeOf(openFileName);
+            openFileName.Filter = "Images(*.jpg,*.jpeg,*.png)\0*.jpg;*.jpeg;*.png\0";
 
-            StorageFile file = await openPicker.PickSingleFileAsync();
-            return file?.Path;
+            // make buffer 65k bytes big as the MAX_PATH can be ~32k chars if long path is enable
+            // and unicode uses 2 bytes per character
+            openFileName.File = new string(new char[65000]);
+            openFileName.MaxFile = openFileName.File.Length;
+            openFileName.FileTitle = new string(new char[65000]);
+            openFileName.MaxFileTitle = openFileName.FileTitle.Length;
+            openFileName.InitialDir = null;
+            openFileName.Title = string.Empty;
+            openFileName.DefExt = null;
+
+            bool result = NativeMethods.GetOpenFileName(openFileName);
+            if (result)
+            {
+                return openFileName.File;
+            }
+
+            return null;
         }
 
         public VideoConferencePage()

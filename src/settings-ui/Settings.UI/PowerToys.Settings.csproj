@@ -139,6 +139,9 @@
     <Page Update="OOBE\Views\OobeOverviewAlternate.xaml">
       <XamlRuntime>$(DefaultXamlRuntime)</XamlRuntime>
     </Page>
+    <Page Update="Views\RegistryPreviewPage.xaml">
+      <XamlRuntime>$(DefaultXamlRuntime)</XamlRuntime>
+    </Page>
   </ItemGroup>
 	
   <ItemGroup>
