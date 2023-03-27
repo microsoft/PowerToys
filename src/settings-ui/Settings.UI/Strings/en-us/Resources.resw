@@ -491,7 +491,7 @@
     <value>Use centralized keyboard hook</value>
   </data>
   <data name="PowerLauncher_UseCentralizedKeyboardHook.Description" xml:space="preserve">
-    <value>Try this if there are issues with the shortcut</value>
+    <value>Try this if there are issues with the shortcut (PowerToys Run might not get focus when triggered from an elevated window)</value>
   </data>
   <data name="PowerLauncher_ClearInputOnLaunch.Content" xml:space="preserve">
     <value>Clear the previous query on launch</value>
@@ -1840,8 +1840,8 @@ From there, simply click on one of the supported files in the File Explorer and 
   <data name="Awake_DisplaySettingsCard.Description" xml:space="preserve">
     <value>This setting is only available when keeping the PC awake</value>
   </data>
-  <data name="Awake_ExpirationSettingsCard.Description" xml:space="preserve">
-    <value>Keep custom awakeness state until a specific date and time</value>
+  <data name="Awake_ExpirationSettingsExpander.Description" xml:space="preserve">
+    <value>Keep custom awake state until a specific date and time</value>
   </data>
   <data name="Awake_ModeSettingsCard.Header" xml:space="preserve">
     <value>Mode</value>
@@ -1854,6 +1854,12 @@ From there, simply click on one of the supported files in the File Explorer and 
   </data>
   <data name="Awake_IntervalMinutesInput.Header" xml:space="preserve">
     <value>Minutes</value>
+  </data>
+  <data name="Awake_ExpirationSettingsExpander_Date.Header" xml:space="preserve">
+    <value>End date</value>
+  </data>
+  <data name="Awake_ExpirationSettingsExpander_Time.Header" xml:space="preserve">
+    <value>End time</value>
   </data>
   <data name="Oobe_Awake.Title" xml:space="preserve">
     <value>Awake</value>
@@ -2135,7 +2141,7 @@ From there, simply click on one of the supported files in the File Explorer and 
   <data name="Awake_IntervalSettingsCard.Header" xml:space="preserve">
     <value>Interval before returning to the previous awakeness state</value>
   </data>
-  <data name="Awake_ExpirationSettingsCard.Header" xml:space="preserve">
+  <data name="Awake_ExpirationSettingsExpander.Header" xml:space="preserve">
     <value>End date and time</value>
   </data>
   <data name="MouseUtils.ModuleTitle" xml:space="preserve">
@@ -3043,6 +3049,41 @@ Activate by holding the key for the character you want to add an accent to, then
     <value>The maximum size, in kilobytes, for files to be displayed. This is a safety mechanism to prevent loading large files into RAM.</value>
     <comment>"RAM" refers to random access memory; "size" refers to disk space; "bytes" refer to the measurement unit</comment>
   </data>
+  <data name="RegistryPreview.ModuleDescription" xml:space="preserve">
+    <value>A quick little utility to visualize and edit complex Windows Registry files.</value>
+  </data>
+  <data name="RegistryPreview.ModuleTitle" xml:space="preserve">
+    <value>Registry Preview</value>
+  </data>
+  <data name="Shell_RegistryPreview.Content" xml:space="preserve">
+    <value>Registry Preview</value>
+    <comment>Product name: Navigation view item name for Registry Preview</comment>
+  </data>
+  <data name="RegistryPreview_Enable_RegistryPreview.Header" xml:space="preserve">
+    <value>Enable Registry Preview</value>
+    <comment>Registry Preview is the name of the utility</comment>
+  </data>
+  <data name="Oobe_RegistryPreview_HowToUse.Text" xml:space="preserve">
+    <value>In File Explorer, right-click a .REG file and select **Preview** from the context menu.</value>
+  </data>
+  <data name="Oobe_RegistryPreview_TipsAndTricks.Text" xml:space="preserve">
+    <value>You can preview or edit Registry files in File Explorer or by opening the app from the PowerToys launcher.</value>
+  </data>
+  <data name="Oobe_RegistryPreview.Description" xml:space="preserve">
+    <value>Registry Preview is a quick little utility to visualize and edit complex Windows Registry files.</value>
+  </data>
+  <data name="Oobe_RegistryPreview.Title" xml:space="preserve">
+    <value>Registry Preview</value>
+    <comment>Do not localize this string</comment>
+  </data>
+  <data name="LearnMore_RegistryPreview.Text" xml:space="preserve">
+    <value>Learn more about Registry Preview</value>
+    <comment>Registry Preview is a product name, do not loc</comment>
+  </data>
+  <data name="Launch_RegistryPreview.Content" xml:space="preserve">
+    <value>Launch Registry Preview</value>
+    <comment>"Registry Preview" is the name of the utility</comment>
+  </data>
   <data name="MouseUtils_MouseJump.Description" xml:space="preserve">
     <value>Quickly move the mouse pointer long distances.</value>
     <comment>"Mouse Jump" is the name of the utility. Mouse is the hardware mouse.</comment>
@@ -3070,5 +3111,14 @@ Activate by holding the key for the character you want to add an accent to, then
   </data>
   <data name="Hosts_Toggle_LoopbackDuplicates.Header" xml:space="preserve">
     <value>Consider loopback addresses as duplicates</value>
+  </data>
+  <data name="RegistryPreview_Launch_GroupSettings.Header" xml:space="preserve">
+    <value>Launch</value>
+  </data>
+  <data name="RegistryPreview_LaunchButton_Accessible.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>Launch Registry Preview</value>
+  </data>
+  <data name="RegistryPreview_LaunchButtonControl.Header" xml:space="preserve">
+    <value>Launch Registry Preview</value>
   </data>
 </root>

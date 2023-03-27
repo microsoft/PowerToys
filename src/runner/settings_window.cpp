@@ -663,6 +663,8 @@ std::string ESettingsWindowNames_to_string(ESettingsWindowNames value)
         return "VideoConference";
     case ESettingsWindowNames::Hosts:
         return "Hosts";
+    case ESettingsWindowNames::RegistryPreview:
+        return "RegistryPreview";
     default:
     {
         Logger::error(L"Can't convert ESettingsWindowNames value={} to string", static_cast<int>(value));
@@ -725,6 +727,10 @@ ESettingsWindowNames ESettingsWindowNames_from_string(std::string value)
     else if (value == "Hosts")
     {
         return ESettingsWindowNames::Hosts;
+    }
+    else if (value == "RegistryPreview")
+    {
+        return ESettingsWindowNames::RegistryPreview;
     }
     else
     {

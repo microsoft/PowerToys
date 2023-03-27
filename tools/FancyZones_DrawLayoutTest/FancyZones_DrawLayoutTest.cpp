@@ -68,7 +68,7 @@ int GetHighlightedZoneIdx(const std::vector<RECT>& zones, const POINT& cursorPos
     {
         if (cursorPosition.x >= zones[i].left && cursorPosition.x < zones[i].right)
         {
-            return i;
+            return static_cast<int>(i);
         }
     }
     return -1;
@@ -361,7 +361,7 @@ void DrawZone(HDC hdc, const ColorSetting& colorSetting, const RECT& rect, size_
     DrawIndex(hdc, rect, index);
 }
 
-inline BYTE OpacitySettingToAlpha(int opacity)
+constexpr inline BYTE OpacitySettingToAlpha(int opacity)
 {
     return static_cast<BYTE>(opacity * 2.55);
 }

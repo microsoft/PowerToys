@@ -48,6 +48,7 @@ namespace powertoys_gpo {
     const std::wstring POLICY_CONFIGURE_ENABLED_TEXT_EXTRACTOR = L"ConfigureEnabledUtilityTextExtractor";
     const std::wstring POLICY_CONFIGURE_ENABLED_PASTE_PLAIN = L"ConfigureEnabledUtilityPastePlain";
     const std::wstring POLICY_CONFIGURE_ENABLED_VIDEO_CONFERENCE_MUTE = L"ConfigureEnabledUtilityVideoConferenceMute";
+    const std::wstring POLICY_CONFIGURE_ENABLED_REGISTRY_PREVIEW = L"ConfigureEnabledUtilityRegistryPreview";
 
     // The registry value names for PowerToys installer and update policies.
     const std::wstring POLICY_DISABLE_AUTOMATIC_UPDATE_DOWNLOAD = L"AutomaticUpdateDownloadDisabled";
@@ -255,6 +256,10 @@ namespace powertoys_gpo {
         return getConfiguredValue(POLICY_CONFIGURE_ENABLED_VIDEO_CONFERENCE_MUTE);
     }
 
+    inline gpo_rule_configured_t getConfiguredRegistryPreviewEnabledValue()
+    {
+        return getConfiguredValue(POLICY_CONFIGURE_ENABLED_REGISTRY_PREVIEW);
+    }
     inline gpo_rule_configured_t getDisableAutomaticUpdateDownloadValue()
     {
         return getConfiguredValue(POLICY_DISABLE_AUTOMATIC_UPDATE_DOWNLOAD);

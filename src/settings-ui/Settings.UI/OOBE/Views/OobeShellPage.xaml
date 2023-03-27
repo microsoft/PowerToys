@@ -85,6 +85,10 @@
                     Icon="{ui:BitmapIcon Source=/Assets/FluentIcons/FluentIconsPowerAccent.png}"
                     Tag="QuickAccent" />
                 <NavigationViewItem
+                    x:Uid="Shell_RegistryPreview"
+                    Icon="{ui:BitmapIcon Source=/Assets/FluentIcons/FluentIconsRegistryPreview.png}"
+                    Tag="RegistryPreview" />
+                <NavigationViewItem
                     x:Uid="Shell_MeasureTool"
                     Icon="{ui:BitmapIcon Source=/Assets/FluentIcons/FluentIconsScreenRuler.png}"
                     Tag="MeasureTool" />

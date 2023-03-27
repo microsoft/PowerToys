@@ -147,6 +147,10 @@
                 "modules\\PowerRename\\PowerToys.PowerRenameContextMenu.dll",
                 "modules\\PowerRename\\PowerRenameContextMenuPackage.msix",
 
+                "modules\\RegistryPreview\\PowerToys.RegistryPreviewExt.dll",
+                "modules\\RegistryPreview\\PowerToys.RegistryPreview.dll",
+                "modules\\RegistryPreview\\PowerToys.RegistryPreview.exe",
+
                 "modules\\ShortcutGuide\\ShortcutGuide\\PowerToys.ShortcutGuide.exe",
                 "modules\\ShortcutGuide\\ShortcutGuideModuleInterface\\PowerToys.ShortcutGuideModuleInterface.dll",
 
@@ -240,6 +244,8 @@
                 "modules\\PowerAccent\\Vanara.PInvoke.Shell32.dll",
                 "modules\\PowerAccent\\Vanara.PInvoke.ShlwApi.dll",
                 "modules\\PowerAccent\\Vanara.PInvoke.User32.dll",
+                "modules\\RegistryPreview\\clrcompression.dll",
+                "modules\\RegistryPreview\\Microsoft.Graphics.Canvas.Interop.dll",
                 "modules\\FileExplorerPreview\\Microsoft.Web.WebView2.Core.dll",
                 "modules\\FileExplorerPreview\\Microsoft.Web.WebView2.WinForms.dll",
                 "modules\\FileExplorerPreview\\Microsoft.Web.WebView2.Wpf.dll",

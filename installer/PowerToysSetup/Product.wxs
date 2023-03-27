@@ -68,6 +68,7 @@
       <ComponentGroupRef Id="PastePlainComponentGroup" />
       <ComponentGroupRef Id="PowerAccentComponentGroup" />
       <ComponentGroupRef Id="PowerRenameComponentGroup" />
+      <ComponentGroupRef Id="RegistryPreviewComponentGroup" />
       <ComponentGroupRef Id="RunComponentGroup" />
       <ComponentGroupRef Id="SettingsComponentGroup" />
       <ComponentGroupRef Id="ShortcutGuideComponentGroup" />
@@ -178,7 +179,8 @@
       <Custom Action="DeleteWinAppSDKHardlinks" Before="RemoveFiles">
         Installed AND (REMOVE="ALL")
       </Custom>
-      <Custom Action="DeletePTInteropHardlinks" Before="CreatePTInteropHardlinks" />
+
+      <Custom Action="DeletePTInteropHardlinks" After="InstallInitialize" />
 
       <Custom Action="DeleteDotnetRuntimeHardlinks" Before="RemoveFiles">
         Installed AND (REMOVE="ALL")
@@ -482,6 +484,11 @@
 
             <!-- PastePlain -->
             <Directory Id="PastePlainInstallFolder" Name="$(var.PastePlainProjectName)">
+            </Directory>
+
+            <!-- RegistryPreview -->
+            <Directory Id="RegistryPreviewInstallFolder" Name="$(var.RegistryPreviewProjectName)">
+              <Directory Id="RegistryPreviewAssetsInstallFolder" Name="Assets" />
             </Directory>
 
             <!-- AlwaysOnTop -->

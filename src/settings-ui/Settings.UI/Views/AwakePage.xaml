@@ -55,21 +55,28 @@
                         </ComboBox>
                     </labs:SettingsCard>
 
-                    <labs:SettingsCard
-                        x:Uid="Awake_ExpirationSettingsCard"
+                    <labs:SettingsExpander
+                        x:Uid="Awake_ExpirationSettingsExpander"
                         HeaderIcon="{ui:FontIcon FontFamily={StaticResource SymbolThemeFontFamily}, Glyph=&#xEC92;}"
-                        Visibility="{x:Bind ViewModel.IsExpirationConfigurationEnabled, Mode=OneWay}">
-                        <StackPanel Orientation="Horizontal">
-                            <DatePicker Date="{x:Bind ViewModel.ExpirationDateTime, Mode=TwoWay}"></DatePicker>
-                            <TimePicker Margin="8,0,0,0" Time="{x:Bind ViewModel.ExpirationTime, Mode=TwoWay}" ClockIdentifier="24HourClock"></TimePicker>
-                        </StackPanel>
-                    </labs:SettingsCard>
-                    
+                        Visibility="{x:Bind ViewModel.IsExpirationConfigurationEnabled, Mode=OneWay}" IsExpanded="True">
+                        <labs:SettingsExpander.Items>
+                            <labs:SettingsCard
+                                x:Uid="Awake_ExpirationSettingsExpander_Date">
+                                <DatePicker Date="{x:Bind ViewModel.ExpirationDateTime, Mode=TwoWay}"></DatePicker>
+                            </labs:SettingsCard>
+                            <labs:SettingsCard
+                                x:Uid="Awake_ExpirationSettingsExpander_Time">
+                                <TimePicker Time="{x:Bind ViewModel.ExpirationTime, Mode=TwoWay}" ClockIdentifier="24HourClock"></TimePicker>
+                            </labs:SettingsCard>
+                        </labs:SettingsExpander.Items>
+                    </labs:SettingsExpander>
+
                     <labs:SettingsCard
                         x:Uid="Awake_IntervalSettingsCard"
                         HeaderIcon="{ui:FontIcon FontFamily={StaticResource SymbolThemeFontFamily}, Glyph=&#xE916;}"
                         Visibility="{x:Bind ViewModel.IsTimeConfigurationEnabled, Mode=OneWay}">
-                        <StackPanel Orientation="Horizontal">
+
+                        <StackPanel Orientation="Horizontal" MinWidth="{StaticResource SettingActionControlMinWidth}">
                             <NumberBox
                                 x:Uid="Awake_IntervalHoursInput"
                                 Width="96"

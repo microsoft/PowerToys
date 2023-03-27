@@ -22,3 +22,5 @@ msbuild !PTRoot!\src\modules\previewpane\SvgThumbnailProvider\SvgThumbnailProvid
 msbuild !PTRoot!\src\modules\MeasureTool\MeasureToolUI\MeasureToolUI.csproj -t:Publish -p:Configuration="Release" -p:Platform="!PlatformArg!" -p:AppxBundle=Never -p:PowerToysRoot=!PTRoot! -p:VCRTForwarders-IncludeDebugCRT=false -p:PublishProfile=InstallationPublishProfile.pubxml
 
 msbuild !PTRoot!\src\modules\FileLocksmith\FileLocksmithUI\FileLocksmithUI.csproj -t:Publish -p:Configuration="Release" -p:Platform="!PlatformArg!" -p:AppxBundle=Never -p:PowerToysRoot=!PTRoot! -p:VCRTForwarders-IncludeDebugCRT=false -p:PublishProfile=InstallationPublishProfile.pubxml
+
+msbuild !PTRoot!\src\modules\registrypreview\RegistryPreviewUI\RegistryPreviewUI.csproj -t:Publish -p:Configuration="Release" -p:Platform="!PlatformArg!" -p:AppxBundle=Never -p:PowerToysRoot=!PTRoot! -p:VCRTForwarders-IncludeDebugCRT=false -p:PublishProfile=InstallationPublishProfile.pubxml

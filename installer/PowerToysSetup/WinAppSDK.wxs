@@ -18,7 +18,7 @@
       <?endforeach?>
     </DirectoryRef>
 
-    <?foreach ParentDirectory in SettingsV2InstallFolder;PowerRenameInstallFolder;MeasureToolInstallFolder;HostsInstallFolder;FileLocksmithInstallFolder?>
+    <?foreach ParentDirectory in SettingsV2InstallFolder;PowerRenameInstallFolder;MeasureToolInstallFolder;HostsInstallFolder;FileLocksmithInstallFolder;RegistryPreviewInstallFolder?>
       <DirectoryRef Id="$(var.ParentDirectory)">
         <?foreach Language in $(var.WinAppSDKLocLanguageList)?>
         <?if $(var.Language) = af-ZA?>
@@ -350,6 +350,13 @@
           Guid="$(var.CompGUIDPrefix)05">
       <File Id="FileLocksmith_WinAppSDKLoc_$(var.IdSafeLanguage)_XamlMui_File" Source="$(var.BinDir)modules\$(var.FileLocksmithProjectName)\$(var.Language)\Microsoft.ui.xaml.dll.mui" />
       <File Id="FileLocksmith_WinAppSDKLoc_$(var.IdSafeLanguage)_XamlPhoneMui_File" Source="$(var.BinDir)modules\$(var.FileLocksmithProjectName)\$(var.Language)\Microsoft.UI.Xaml.Phone.dll.mui" />
+      </Component>
+      <Component
+          Id="RegistryPreview_WinAppSDKLoc_$(var.IdSafeLanguage)_Component"
+          Directory="WinAppSDKLoc$(var.IdSafeLanguage)RegistryPreviewInstallFolder"
+          Guid="$(var.CompGUIDPrefix)06">
+      <File Id="RegistryPreview_WinAppSDKLoc_$(var.IdSafeLanguage)_XamlMui_File" Source="$(var.BinDir)modules\$(var.RegistryPreviewProjectName)\$(var.Language)\Microsoft.ui.xaml.dll.mui" />
+      <File Id="RegistryPreview_WinAppSDKLoc_$(var.IdSafeLanguage)_XamlPhoneMui_File" Source="$(var.BinDir)modules\$(var.RegistryPreviewProjectName)\$(var.Language)\Microsoft.UI.Xaml.Phone.dll.mui" />
       </Component>
       <?undef IdSafeLanguage?>
       <?undef CompGUIDPrefix?>
