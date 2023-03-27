@@ -79,6 +79,20 @@
                                         Style="{StaticResource CriticalIconInfoBadgeStyle}" />
                         -->
 
+                        <Grid Margin="2,0,12,0" AutomationProperties.AccessibilityView="Raw">
+                            <!--  Error badge  -->
+                            <FontIcon
+                                                    FontFamily="{StaticResource SymbolThemeFontFamily}"
+                                                    Foreground="{ThemeResource InfoBarErrorSeverityIconBackground}"
+                                                    Glyph="{StaticResource InfoBarIconBackgroundGlyph}"
+                                                    FontSize="16" />
+                            <FontIcon
+                                                    FontFamily="{StaticResource SymbolThemeFontFamily}"
+                                                    Foreground="{ThemeResource InfoBarErrorSeverityIconForeground}"
+                                                    Glyph="{StaticResource InfoBarErrorIconGlyph}" 
+                                                    FontSize="16" />
+                        </Grid>
+
                         <TextBlock
                             x:Name="InvalidShortcutWarningLabel"
                             x:Uid="InvalidShortcut"
