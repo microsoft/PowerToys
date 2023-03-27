@@ -26,7 +26,7 @@ VideoConferenceModule* instance = nullptr;
 
 VideoConferenceSettings VideoConferenceModule::settings;
 Toolbar VideoConferenceModule::toolbar;
-bool VideoConferenceModule::pushToReversePressed = false;
+bool VideoConferenceModule::pushToTalkPressed = false;
 
 HHOOK VideoConferenceModule::hook_handle;
 
@@ -164,10 +164,10 @@ LRESULT CALLBACK VideoConferenceModule::LowLevelKeyboardProc(int nCode, WPARAM w
                 reverseMicrophoneMute();
                 return 1;
             }
-            else if (isHotkeyPressed(kbd->vkCode, settings.microphonePushToReverseHotkey) && !pushToReversePressed)
+            else if (isHotkeyPressed(kbd->vkCode, settings.microphonePushToTalkHotkey) && !pushToTalkPressed)
             {
                 reverseMicrophoneMute();
-                pushToReversePressed = true;
+                pushToTalkPressed = true;
                 return 1;
             }
             else if (isHotkeyPressed(kbd->vkCode, settings.cameraMuteHotkey))
@@ -177,10 +177,10 @@ LRESULT CALLBACK VideoConferenceModule::LowLevelKeyboardProc(int nCode, WPARAM w
             }
             break;
         case WM_KEYUP:
-            if (pushToReversePressed && (kbd->vkCode == settings.microphonePushToReverseHotkey.get_code()))
+            if (pushToTalkPressed && (kbd->vkCode == settings.microphonePushToTalkHotkey.get_code()))
             {
                 reverseMicrophoneMute();
-                pushToReversePressed = false;
+                pushToTalkPressed = false;
                 return 1;
             }
         }
@@ -243,9 +243,9 @@ void VideoConferenceModule::onModuleSettingsChanged()
             {
                 settings.microphoneMuteHotkey = PowerToysSettings::HotkeyObject::from_json(*val);
             }
-            if (const auto val = values.get_json(L"push_to_reverse_microphone_hotkey"))
+            if (const auto val = values.get_json(L"push_to_talk_microphone_hotkey"))
             {
-                settings.microphonePushToReverseHotkey = PowerToysSettings::HotkeyObject::from_json(*val);
+                settings.microphonePushToTalkHotkey = PowerToysSettings::HotkeyObject::from_json(*val);
             }
             if (const auto val = values.get_json(L"mute_camera_hotkey"))
             {
@@ -405,9 +405,9 @@ void VideoConferenceModule::init_settings()
         {
             settings.microphoneMuteHotkey = PowerToysSettings::HotkeyObject::from_json(*val);
         }
-        if (const auto val = powerToysSettings.get_json(L"push_to_reverse_microphone_hotkey"))
+        if (const auto val = powerToysSettings.get_json(L"push_to_talk_microphone_hotkey"))
         {
-            settings.microphonePushToReverseHotkey = PowerToysSettings::HotkeyObject::from_json(*val);
+            settings.microphonePushToTalkHotkey = PowerToysSettings::HotkeyObject::from_json(*val);
         }
         if (const auto val = powerToysSettings.get_json(L"mute_camera_hotkey"))
         {
