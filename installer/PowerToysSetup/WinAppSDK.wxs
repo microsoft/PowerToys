@@ -368,6 +368,9 @@
           Id="RegistryPreview_WinAppSDKLoc_$(var.IdSafeLanguage)_Component"
           Directory="WinAppSDKLoc$(var.IdSafeLanguage)RegistryPreviewInstallFolder"
           Guid="$(var.CompGUIDPrefix)06">
+          <RegistryKey Root="$(var.RegistryScope)" Key="Software\Classes\powertoys\components">
+            <RegistryValue Type="string" Name="RegistryPreview_WinAppSDKLoc_$(var.IdSafeLanguage)_Component" Value="" KeyPath="yes"/>
+          </RegistryKey>
       <File Id="RegistryPreview_WinAppSDKLoc_$(var.IdSafeLanguage)_XamlMui_File" Source="$(var.BinDir)modules\$(var.RegistryPreviewProjectName)\$(var.Language)\Microsoft.ui.xaml.dll.mui" />
       <File Id="RegistryPreview_WinAppSDKLoc_$(var.IdSafeLanguage)_XamlPhoneMui_File" Source="$(var.BinDir)modules\$(var.RegistryPreviewProjectName)\$(var.Language)\Microsoft.UI.Xaml.Phone.dll.mui" />
       </Component>
@@ -500,6 +503,7 @@
           <RemoveFolder Id="RemoveFolderWinAppSDKLoc$(var.IdSafeLanguage)MeasureToolInstallFolder" Directory="WinAppSDKLoc$(var.IdSafeLanguage)MeasureToolInstallFolder" On="uninstall"/>
           <RemoveFolder Id="RemoveFolderWinAppSDKLoc$(var.IdSafeLanguage)HostsInstallFolder" Directory="WinAppSDKLoc$(var.IdSafeLanguage)HostsInstallFolder" On="uninstall"/>
           <RemoveFolder Id="RemoveFolderWinAppSDKLoc$(var.IdSafeLanguage)FileLocksmithInstallFolder" Directory="WinAppSDKLoc$(var.IdSafeLanguage)FileLocksmithInstallFolder" On="uninstall"/>
+          <RemoveFolder Id="RemoveFolderWinAppSDKLoc$(var.IdSafeLanguage)RegistryPreviewInstallFolder" Directory="WinAppSDKLoc$(var.IdSafeLanguage)RegistryPreviewInstallFolder" On="uninstall"/>
       <?undef IdSafeLanguage?>
         <?endforeach?>
       </Component>
