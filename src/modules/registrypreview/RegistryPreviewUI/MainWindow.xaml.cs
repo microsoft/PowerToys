@@ -5,7 +5,6 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Threading.Tasks;
 using Microsoft.UI;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
@@ -53,10 +52,6 @@ namespace RegistryPreview
             appWindow.SetIcon("app.ico");
             appWindow.Closing += AppWindow_Closing;
 
-            // TODO: figure out a way to only call this once after MainWindow is initialized but before it shows itself
-            // Calling it from here only successfully resizes/moves the window and it seems to be based off timing, which is horrible.
-            // Calling it from GridPreview_Loaded() works 100% of the time, but the initial state of the window flashes before sizing/moving it
-            //
             // if have settings, update the location of the window
             if (jsonSettings != null)
             {
