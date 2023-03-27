@@ -124,6 +124,15 @@ namespace Microsoft.PowerToys.Run.Plugin.PowerToys.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Registry Preview.
+        /// </summary>
+        internal static string Registry_Preview {
+            get {
+                return ResourceManager.GetString("Registry_Preview", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Screen Ruler.
         /// </summary>
         internal static string Screen_Ruler {

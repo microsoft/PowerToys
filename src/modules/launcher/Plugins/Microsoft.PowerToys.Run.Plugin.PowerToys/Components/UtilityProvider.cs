@@ -60,6 +60,11 @@ namespace Microsoft.PowerToys.Run.Plugin.PowerToys
                 _utilities.Add(new Utility(UtilityKey.ShortcutGuide, Resources.Shortcut_Guide, generalSettings.Enabled.ShortcutGuide));
             }
 
+            if (GPOWrapper.GetConfiguredRegistryPreviewEnabledValue() != GpoRuleConfigured.Disabled)
+            {
+                _utilities.Add(new Utility(UtilityKey.RegistryPreview, Resources.Registry_Preview, generalSettings.Enabled.RegistryPreview));
+            }
+
             _watcher = new FileSystemWatcher
             {
                 Path = Path.GetDirectoryName(settingsUtils.GetSettingsFilePath()),
@@ -102,6 +107,7 @@ namespace Microsoft.PowerToys.Run.Plugin.PowerToys
                                 case UtilityKey.PowerOCR: u.Enabled = generalSettings.Enabled.PowerOCR; break;
                                 case UtilityKey.MeasureTool: u.Enabled = generalSettings.Enabled.MeasureTool; break;
                                 case UtilityKey.ShortcutGuide: u.Enabled = generalSettings.Enabled.ShortcutGuide; break;
+                                case UtilityKey.RegistryPreview: u.Enabled = generalSettings.Enabled.RegistryPreview; break;
                             }
                         }
 

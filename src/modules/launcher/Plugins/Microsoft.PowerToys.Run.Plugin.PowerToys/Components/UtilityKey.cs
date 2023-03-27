@@ -12,5 +12,6 @@ namespace Microsoft.PowerToys.Run.Plugin.PowerToys.Components
         MeasureTool = 3,
         PowerOCR = 4,
         ShortcutGuide = 5,
+        RegistryPreview = 6,
     }
 }

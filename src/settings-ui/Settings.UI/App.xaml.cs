@@ -133,31 +133,6 @@ namespace Microsoft.PowerToys.Settings.UI
                 {
                     // Open specific window
                     StartupPage = GetPage(cmdArgs[currentArgumentIndex]);
-                    // open specific window
-                    switch (cmdArgs[currentArgumentIndex])
-                    {
-                        case "Overview": StartupPage = typeof(Views.GeneralPage); break;
-                        case "AlwaysOnTop": StartupPage = typeof(Views.AlwaysOnTopPage); break;
-                        case "Awake": StartupPage = typeof(Views.AwakePage); break;
-                        case "ColorPicker": StartupPage = typeof(Views.ColorPickerPage); break;
-                        case "FancyZones": StartupPage = typeof(Views.FancyZonesPage); break;
-                        case "FileLocksmith": StartupPage = typeof(Views.FileLocksmithPage); break;
-                        case "Run": StartupPage = typeof(Views.PowerLauncherPage); break;
-                        case "ImageResizer": StartupPage = typeof(Views.ImageResizerPage); break;
-                        case "KBM": StartupPage = typeof(Views.KeyboardManagerPage); break;
-                        case "MouseUtils": StartupPage = typeof(Views.MouseUtilsPage); break;
-                        case "PowerRename": StartupPage = typeof(Views.PowerRenamePage); break;
-                        case "QuickAccent": StartupPage = typeof(Views.PowerAccentPage); break;
-                        case "FileExplorer": StartupPage = typeof(Views.PowerPreviewPage); break;
-                        case "ShortcutGuide": StartupPage = typeof(Views.ShortcutGuidePage); break;
-                        case "PowerOCR": StartupPage = typeof(Views.PowerOcrPage); break;
-                        case "VideoConference": StartupPage = typeof(Views.VideoConferencePage); break;
-                        case "MeasureTool": StartupPage = typeof(Views.MeasureToolPage); break;
-                        case "Hosts": StartupPage = typeof(Views.HostsPage); break;
-                        case "RegistryPreview": StartupPage = typeof(Views.RegistryPreviewPage); break;
-                        case "PastePlain": StartupPage = typeof(Views.PastePlainPage); break;
-                        default: Debug.Assert(false, "Unexpected SettingsWindow argument value"); break;
-                    }
 
                     currentArgumentIndex++;
                 }
@@ -392,6 +367,7 @@ namespace Microsoft.PowerToys.Settings.UI
                 case "VideoConference": return typeof(VideoConferencePage);
                 case "MeasureTool": return typeof(MeasureToolPage);
                 case "Hosts": return typeof(HostsPage);
+                case "RegistryPreview": return typeof(RegistryPreviewPage);
                 case "PastePlain": return typeof(PastePlainPage);
                 default:
                     // Fallback to general

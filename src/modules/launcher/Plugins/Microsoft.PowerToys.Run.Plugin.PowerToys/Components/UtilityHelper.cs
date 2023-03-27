@@ -22,6 +22,7 @@ namespace Microsoft.PowerToys.Run.Plugin.PowerToys.Components
                 UtilityKey.MeasureTool => "Images/ScreenRuler.png",
                 UtilityKey.PowerOCR => "Images/PowerOcr.png",
                 UtilityKey.ShortcutGuide => "Images/ShortcutGuide.png",
+                UtilityKey.RegistryPreview => "Images/RegistryPreview.png",
                 _ => null,
             };
         }
@@ -36,6 +37,7 @@ namespace Microsoft.PowerToys.Run.Plugin.PowerToys.Components
                 UtilityKey.MeasureTool => SettingsDeepLink.SettingsWindow.MeasureTool,
                 UtilityKey.PowerOCR => SettingsDeepLink.SettingsWindow.PowerOCR,
                 UtilityKey.ShortcutGuide => SettingsDeepLink.SettingsWindow.ShortcutGuide,
+                UtilityKey.RegistryPreview => SettingsDeepLink.SettingsWindow.RegistryPreview,
                 _ => null,
             };
         }
@@ -88,6 +90,14 @@ namespace Microsoft.PowerToys.Run.Plugin.PowerToys.Components
 
                     case UtilityKey.ShortcutGuide: // Launch Shortcut Guide
                         using (var eventHandle = new EventWaitHandle(false, EventResetMode.AutoReset, Constants.ShortcutGuideTriggerEvent()))
+                        {
+                            eventHandle.Set();
+                        }
+
+                        break;
+
+                    case UtilityKey.RegistryPreview: // Launch Registry Preview
+                        using (var eventHandle = new EventWaitHandle(false, EventResetMode.AutoReset, Constants.RegistryPreviewTriggerEvent()))
                         {
                             eventHandle.Set();
                         }

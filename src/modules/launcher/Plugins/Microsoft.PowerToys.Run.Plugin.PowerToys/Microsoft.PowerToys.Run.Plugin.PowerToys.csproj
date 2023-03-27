@@ -82,6 +82,9 @@
     <None Update="Images\PowerToys.light.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
+    <None Update="Images\RegistryPreview.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
     <None Update="Images\ScreenRuler.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>

@@ -141,6 +141,10 @@
   <data name="Plugin_Name" xml:space="preserve">
     <value>PowerToys</value>
   </data>
+  <data name="Registry_Preview" xml:space="preserve">
+    <value>Registry Preview</value>
+    <comment>"Registry Preview" is the name of the utility</comment>
+  </data>
   <data name="Screen_Ruler" xml:space="preserve">
     <value>Screen Ruler</value>
     <comment>"Screen Ruler" is the name of the utility</comment>

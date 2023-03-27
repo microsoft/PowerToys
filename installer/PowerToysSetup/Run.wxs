@@ -23,7 +23,7 @@
   <?define WindowWlkrImagesCompFiles=windowwalker.dark.png;windowwalker.light.png;info.dark.png;info.light.png?>
   <?define OneNoteComponentFiles=plugin.json;Microsoft.PowerToys.Run.Plugin.OneNote.deps.json;Microsoft.PowerToys.Run.Plugin.OneNote.dll;PowerToys.ManagedTelemetry.dll?>
   <?define PTComponentFiles=plugin.json;Microsoft.PowerToys.Run.Plugin.PowerToys.deps.json;Microsoft.PowerToys.Run.Plugin.PowerToys.dll;PowerToys.ManagedTelemetry.dll?>
-  <?define PTImagesComponentFiles=PowerToys.dark.png;PowerToys.light.png;ColorPicker.png;FancyZones.png;Hosts.png;PowerOcr.png;ScreenRuler.png;ShortcutGuide.png?>
+  <?define PTImagesComponentFiles=PowerToys.dark.png;PowerToys.light.png;ColorPicker.png;FancyZones.png;Hosts.png;PowerOcr.png;RegistryPreview.png;ScreenRuler.png;ShortcutGuide.png?>
   <?define RegistryComponentFiles=plugin.json;Microsoft.PowerToys.Run.Plugin.Registry.deps.json;Microsoft.PowerToys.Run.Plugin.Registry.dll;PowerToys.ManagedTelemetry.dll?>
   <?define ServiceComponentFiles=plugin.json;Microsoft.PowerToys.Run.Plugin.Service.deps.json;Microsoft.PowerToys.Run.Plugin.Service.dll?>
   <?define SystemComponentFiles=plugin.json;Microsoft.PowerToys.Run.Plugin.System.deps.json;Microsoft.PowerToys.Run.Plugin.System.dll?>
