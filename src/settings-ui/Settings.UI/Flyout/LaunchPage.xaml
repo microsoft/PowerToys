@@ -8,153 +8,175 @@
     xmlns:local="using:Microsoft.PowerToys.Settings.UI.Flyout"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:toolkitControls="using:CommunityToolkit.WinUI.UI.Controls"
-    xmlns:viewModels="using:Microsoft.PowerToys.Settings.UI.ViewModels"
+    xmlns:viewModels="using:Microsoft.PowerToys.Settings.UI.ViewModels" d:DataContext="{d:DesignInstance Type=viewModels:GeneralViewModel}"
     mc:Ignorable="d">
 
-    <Grid Background="{ThemeResource LayerOnAcrylicFillColorDefaultBrush}"
-          Padding="0,24,0,0"
-          RowSpacing="12">
+    <Page.Resources>
+        <Style
+            x:Key="FlyoutButtonStyle"
+            BasedOn="{StaticResource SubtleButtonStyle}"
+            TargetType="Button">
+            <Setter Property="Width" Value="32" />
+            <Setter Property="Height" Value="32" />
+            <Setter Property="Padding" Value="8" />
+        </Style>
+    </Page.Resources>
+
+    <Grid>
         <Grid.RowDefinitions>
-            <RowDefinition Height="Auto" />
             <RowDefinition Height="*" />
             <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
-        <!-- header + button -->
         <Grid
             Grid.Row="0"
-            Padding="24,0"
-            ColumnSpacing="12"
-            HorizontalAlignment="Stretch">
-            <TextBlock
-                x:Uid="ShortcutsTxt"
-                VerticalAlignment="Center"
-                Style="{StaticResource BodyStrongTextBlockStyle}"/>
-            <Button
-                x:Uid="MoreBtn"
-                Grid.Column="1"
-                HorizontalAlignment="Right"
-                Click="AllAppButton_Click">
-                <Button.Content>
-                    <StackPanel
-                        VerticalAlignment="Center"
-                        Orientation="Horizontal"
-                        Spacing="12">
-                        <TextBlock x:Uid="MoreLabel" />
-                        <FontIcon
+            RowSpacing="12"
+            Background="{ThemeResource LayerOnAcrylicFillColorDefaultBrush}"
+            BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+            BorderThickness="0,0,0,1">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="*" />
+            </Grid.RowDefinitions>
+
+            <!-- header + button -->
+            <Grid Margin="24,24,24,0">
+                <TextBlock
+                    x:Uid="ShortcutsTxt"
+                    VerticalAlignment="Center"
+                    Style="{StaticResource BodyStrongTextBlockStyle}"/>
+                <Button
+                    x:Uid="MoreBtn"
+                    Grid.Column="1"
+                    HorizontalAlignment="Right"
+                    Click="AllAppButton_Click">
+                    <Button.Content>
+                        <StackPanel
                             VerticalAlignment="Center"
-                            FontSize="12"
-                            Glyph="&#xe76c;" />
-                    </StackPanel>
-                </Button.Content>
-            </Button>
-        </Grid>
-        <ItemsControl
+                            Orientation="Horizontal"
+                            Spacing="12">
+                            <TextBlock x:Uid="MoreLabel" />
+                            <FontIcon
+                                VerticalAlignment="Center"
+                                FontSize="12"
+                                Glyph="&#xe76c;" />
+                        </StackPanel>
+                    </Button.Content>
+                </Button>
+            </Grid>
+            <ItemsControl
             Grid.Row="1"
-            Padding="24,8"
             HorizontalAlignment="Center"
             VerticalAlignment="Top"
             ItemsSource="{x:Bind ViewModel.FlyoutMenuItems}"
-            TabNavigation="Local">
-            <ItemsControl.ItemsPanel>
-                <ItemsPanelTemplate>
-                    <toolkitControls:WrapPanel VerticalSpacing="12" />
-                </ItemsPanelTemplate>
-            </ItemsControl.ItemsPanel>
-            <ItemsControl.ItemTemplate>
-                <DataTemplate x:DataType="viewModels:FlyoutMenuItem">
-                    <controls:FlyoutMenuButton
+            TabNavigation="Local"
+            >
+                <ItemsControl.ItemsPanel>
+                    <ItemsPanelTemplate>
+                        <toolkitControls:WrapPanel VerticalSpacing="12" />
+                    </ItemsPanelTemplate>
+                </ItemsControl.ItemsPanel>
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate x:DataType="viewModels:FlyoutMenuItem">
+                        <controls:FlyoutMenuButton
                         Click="ModuleButton_Click"
                         Tag="{x:Bind Tag}"
                         AutomationProperties.Name="{x:Bind Label}"
                         Visibility="{x:Bind Visible, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged, Converter={StaticResource BoolToVisibilityConverter}}">
-                        <!--ToolTipService.ToolTip="{x:Bind Shortcut}"-->
-                        
-                        <controls:FlyoutMenuButton.Icon>
-                            <Image>
-                                <Image.Source>
-                                    <BitmapImage UriSource="{x:Bind Icon, Mode=OneWay}" />
-                                </Image.Source>
-                            </Image>
-                        </controls:FlyoutMenuButton.Icon>
-                        <controls:FlyoutMenuButton.Content>
-                            <StackPanel>
-                                <TextBlock
+                            <!--ToolTipService.ToolTip="{x:Bind Shortcut}"-->
+
+                            <controls:FlyoutMenuButton.Icon>
+                                <Image>
+                                    <Image.Source>
+                                        <BitmapImage UriSource="{x:Bind Icon, Mode=OneWay}" />
+                                    </Image.Source>
+                                </Image>
+                            </controls:FlyoutMenuButton.Icon>
+                            <controls:FlyoutMenuButton.Content>
+                                <StackPanel>
+                                    <TextBlock
                                     Text="{x:Bind Label}"
                                     TextAlignment="Center"
                                     TextWrapping="Wrap"
                                     Style="{StaticResource CaptionTextBlockStyle}"
                                     />
-                                <TextBlock
+                                    <TextBlock
                                     Text="{x:Bind Shortcut}"
                                     TextAlignment="Center"
                                     TextWrapping="Wrap"
                                     Style="{StaticResource CaptionTextBlockStyle}"
                                     Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                                     />
-                            </StackPanel>
-                        </controls:FlyoutMenuButton.Content>
-                    </controls:FlyoutMenuButton>
-                </DataTemplate>
-            </ItemsControl.ItemTemplate>
-        </ItemsControl>
+                                </StackPanel>
+                            </controls:FlyoutMenuButton.Content>
+                        </controls:FlyoutMenuButton>
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
+        </Grid>
         <!-- bottom buttons -->
-        <StackPanel
-            Grid.Row="2"
-            Spacing="8">
-            <InfoBar
-                x:Uid="UpdateAvailable"
-                IsClosable="False"
-                IsOpen="{x:Bind ViewModel.IsUpdateAvailable, Mode=OneWay}"
-                Severity="Informational"
-                Margin="24,0"/>
+        <Grid
+                Grid.Row="1"
+                Padding="8"
+                >
+            <Button
+                Visibility="{x:Bind ViewModel.IsUpdateAvailable, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}"
+                Command="{Binding UpdateNowButtonEventHandler}">
+                <Button.Content>
+                    <StackPanel Orientation="Horizontal" Spacing="8">
+                        <FontIcon FontSize="12" Glyph="&#xE896;"/>
+                        <TextBlock x:Uid="UpdateAvailable"/>
+                    </StackPanel>
+                </Button.Content>
+                <ToolTipService.ToolTip>
+                    <ToolTip x:Uid="UpdateAvailableTooltip"/>
+                </ToolTipService.ToolTip>
+            </Button>
 
-            <CommandBar
-                HorizontalAlignment="Stretch"
-                HorizontalContentAlignment="Right"
-                BorderBrush="{StaticResource CardStrokeColorDefaultBrush}"
-                BorderThickness="0,1,0,0"
-                OverflowButtonVisibility="Collapsed">
-                <AppBarButton
+            <StackPanel
+                Orientation="Horizontal"
+                HorizontalAlignment="Right">
+                <Button
                     x:Name="DocsBtn"
                     x:Uid="DocsBtn"
-                    Icon="Document"
-                    Click="DocsBtn_Click">
+                    Click="DocsBtn_Click"
+                    Style="{StaticResource FlyoutButtonStyle}">
                     <ToolTipService.ToolTip>
                         <ToolTip x:Uid="DocsTooltip"/>
                     </ToolTipService.ToolTip>
-                </AppBarButton>
-                <AppBarButton
+                    <FontIcon FontSize="16" Glyph="&#xE8A5;"/>
+                </Button>
+                <Button
                     x:Name="ReportBugBtn"
                     x:Uid="BugReportBtn"
-                    Click="ReportBugBtn_Click">
-                    <AppBarButton.Icon>
-                        <FontIcon FontFamily="{StaticResource SymbolThemeFontFamily}" Glyph="&#xEBE8;"/>
-                    </AppBarButton.Icon>
+                    Click="ReportBugBtn_Click"
+                    Style="{StaticResource FlyoutButtonStyle}">
                     <ToolTipService.ToolTip>
                         <ToolTip x:Uid="BugReportTooltip"/>
                     </ToolTipService.ToolTip>
-                </AppBarButton>
-                <AppBarButton
+                    <FontIcon FontSize="16" Glyph="&#xEBE8;"/>
+                </Button>
+                <Button
                     x:Name="SettingsBtn"
                     x:Uid="SettingsBtn"
                     Click="SettingsBtn_Click"
-                    Icon="Setting">
+                    Style="{StaticResource FlyoutButtonStyle}">
+                    <FontIcon FontSize="16" Glyph="&#xE713;"/>
                     <ToolTipService.ToolTip>
                         <ToolTip x:Uid="SettingsTooltip"/>
                     </ToolTipService.ToolTip>
-                </AppBarButton>
+                </Button>
                 <AppBarSeparator />
-                <AppBarButton
+
+                <Button
                     x:Name="CloseBtn"
-                    Click="CloseButton_Click">
-                    <AppBarButton.Icon>
-                        <FontIcon FontFamily="{StaticResource SymbolThemeFontFamily}" Glyph="&#xE8BB;"/>
-                    </AppBarButton.Icon>
+                    Click="CloseButton_Click"
+                    Style="{StaticResource FlyoutButtonStyle}">
+                    <FontIcon FontSize="16" Glyph="&#xE8BB;" Foreground="{ThemeResource SystemFillColorCriticalBrush}"/>
                     <ToolTipService.ToolTip>
                         <ToolTip x:Uid="CloseTooltip"/>
                     </ToolTipService.ToolTip>
-                </AppBarButton>
-            </CommandBar>
-        </StackPanel>
+                </Button>
+            </StackPanel>
+        </Grid>
     </Grid>
 </Page>

@@ -22,7 +22,7 @@
         <!-- header + button -->
         <Grid
             Grid.Row="0"
-            Padding="24,0"
+            Margin="24,0"
             ColumnSpacing="12"
             HorizontalAlignment="Stretch">
             <TextBlock

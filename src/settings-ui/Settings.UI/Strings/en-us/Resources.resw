@@ -3038,8 +3038,9 @@ Activate by holding the key for the character you want to add an accent to, then
   <data name="ShortcutsTxt.Text" xml:space="preserve">
     <value>Shortcuts</value>
   </data>
-  <data name="UpdateAvailable.Title" xml:space="preserve">
-    <value>Update available</value>
+  <data name="UpdateAvailable.Text" xml:space="preserve">
+    <value>Update</value>
+    <comment>verb</comment>
   </data>
   <data name="FileExplorerPreview_Toggle_Monaco_Max_File_Size.Header" xml:space="preserve">
     <value>Maximum file size to preview</value>
@@ -3120,5 +3121,8 @@ Activate by holding the key for the character you want to add an accent to, then
   </data>
   <data name="RegistryPreview_LaunchButtonControl.Header" xml:space="preserve">
     <value>Launch Registry Preview</value>
+  </data>
+  <data name="UpdateAvailableTooltip.Content" xml:space="preserve">
+    <value>There is an update available. Click to download and install.</value>
   </data>
 </root>
