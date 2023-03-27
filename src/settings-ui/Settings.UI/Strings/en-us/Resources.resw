@@ -222,6 +222,9 @@
   <data name="VideoConference_PushToReverse.Header" xml:space="preserve">
     <value>Push to reverse</value>
   </data>
+  <data name="VideoConference_PushToReverse.Description" xml:space="preserve">
+    <value>If enabled, allows both push to talk and push to mute, depending on microphone state</value>
+  </data>
   <data name="VideoConference_CameraOverlayImagePathHeader.Header" xml:space="preserve">
     <value>Image displayed when camera is muted</value>
   </data>
