@@ -65,6 +65,7 @@ applicationframehost
 Applist
 applog
 appmanifest
+APPNAME
 appref
 apps
 appwindow
@@ -217,6 +218,7 @@ CLIPCHILDREN
 CLIPSIBLINGS
 Cloneable
 clrcall
+clrcompression
 Cls
 CLSCTX
 clsid
@@ -350,6 +352,7 @@ DCOM
 dcommon
 dcomp
 dcompi
+DCompiler
 DComposition
 DCR
 DCs
@@ -373,6 +376,7 @@ DEFERERASE
 DEFPUSHBUTTON
 deinitialization
 DELA
+DELETEDKEYIMAGE
 DELETESCANS
 deletethis
 Delimarsky
@@ -469,6 +473,7 @@ editkeyboardwindow
 EDITSHORTCUTS
 editshortcutswindow
 EFile
+egfile
 ekus
 emmintrin
 Emoji
@@ -508,6 +513,7 @@ EWXREBOOT
 EWXSHUTDOWN
 examplehandler
 examplepowertoy
+EXAND
 EXCLUDEFROMCAPTURE
 exdisp
 executionpolicy
@@ -748,6 +754,7 @@ IMAGERESIZEREXT
 imageresizerinput
 imageresizersettings
 imagingdevices
+Imc
 ime
 imeutil
 inetcpl
@@ -836,6 +843,7 @@ keydown
 keydropdowncontrol
 keyevent
 KEYEVENTF
+KEYIMAGE
 keynum
 keyremaps
 Keytool
@@ -1293,6 +1301,7 @@ pinfo
 pinvoke
 pipename
 PKBDLLHOOKSTRUCT
+Pkcs
 PKEY
 plib
 PLK
@@ -1435,7 +1444,10 @@ regfile
 REGFILTER
 REGFILTERPINS
 REGISTERCLASSFAILED
+REGISTRYHEADER
 registrypath
+registrypreview
+REGISTRYPREVIEWEXT
 regkey
 REGPINTYPES
 regsvr
@@ -2043,6 +2055,7 @@ wox
 wparam
 wpf
 wpfdepsjsonpath
+wpfgfx
 wpftmp
 wpr
 wprp
@@ -2091,6 +2104,7 @@ XStr
 XUP
 XVIRTUALSCREEN
 YAxis
+Yeet
 YIncrement
 yinle
 yinwang

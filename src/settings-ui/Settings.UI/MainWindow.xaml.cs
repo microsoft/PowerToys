@@ -138,6 +138,9 @@ namespace Microsoft.PowerToys.Settings.UI
                     case "PowerAccent":
                         needToUpdate = generalSettingsConfig.Enabled.PowerAccent != isEnabled;
                         generalSettingsConfig.Enabled.PowerAccent = isEnabled; break;
+                    case "RegistryPreview":
+                        needToUpdate = generalSettingsConfig.Enabled.RegistryPreview != isEnabled;
+                        generalSettingsConfig.Enabled.RegistryPreview = isEnabled; break;
                     case "MeasureTool":
                         needToUpdate = generalSettingsConfig.Enabled.MeasureTool != isEnabled;
                         generalSettingsConfig.Enabled.MeasureTool = isEnabled; break;

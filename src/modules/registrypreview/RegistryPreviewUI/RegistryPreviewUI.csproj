@@ -1,0 +1,67 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+	<Import Project="..\..\..\Version.props" />
+	<PropertyGroup>
+		<OutputType>WinExe</OutputType>
+		<TargetFramework>net7.0-windows10.0.19041.0</TargetFramework>
+		<TargetPlatformMinVersion>10.0.19041.0</TargetPlatformMinVersion>
+		<Platforms>x86;x64;arm64</Platforms>
+		<OutputPath>$(SolutionDir)$(Platform)\$(Configuration)\modules\RegistryPreview</OutputPath>
+		<UseWinUI>true</UseWinUI>
+		<UseWindowsForms>False</UseWindowsForms>
+		<ApplicationIcon>app.ico</ApplicationIcon>
+		<ApplicationManifest>app.manifest</ApplicationManifest>
+		<GenerateSatelliteAssembliesForCore>true</GenerateSatelliteAssembliesForCore>
+		<AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+		<AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
+		<EnablePreviewMsixTooling>true</EnablePreviewMsixTooling>
+		<WindowsPackageType>None</WindowsPackageType>
+		<WindowsAppSDKSelfContained>true</WindowsAppSDKSelfContained>
+		<SupportedOSPlatformVersion>10.0.19041.0</SupportedOSPlatformVersion>
+		<SelfContained>true</SelfContained>
+		<Product>$(AssemblyName)</Product>
+		<AssemblyName>PowerToys.RegistryPreview</AssemblyName>
+		<AssemblyTitle>PowerToys.RegistryPreview</AssemblyTitle>
+		<AssemblyDescription>PowerToys RegistryPreview</AssemblyDescription>
+		<RootNamespace>RegistryPreview</RootNamespace>
+		<DisableWinExeOutputInference>true</DisableWinExeOutputInference>
+	</PropertyGroup>
+
+	<!-- SelfContained=true requires RuntimeIdentifier to be set -->
+	<PropertyGroup Condition="'$(Platform)'=='x64'">
+		<RuntimeIdentifier>win10-x64</RuntimeIdentifier>
+	</PropertyGroup>
+	<PropertyGroup Condition="'$(Platform)'=='ARM64'">
+		<RuntimeIdentifier>win10-arm64</RuntimeIdentifier>
+	</PropertyGroup>
+	
+	<ItemGroup>
+		<Content Include="app.ico" />
+	</ItemGroup>
+
+	<!-- Needed for CommunityToolkit.Labs.WinUI.SettingsControls, on local builds and PR CI. -->
+	<PropertyGroup Condition="'$(IsPipeline)' == ''">
+		<RestoreAdditionalProjectSources>https://pkgs.dev.azure.com/dotnet/CommunityToolkit/_packaging/CommunityToolkit-Labs/nuget/v3/index.json</RestoreAdditionalProjectSources>
+	</PropertyGroup>
+	
+	<ItemGroup>
+		<PackageReference Include="CommunityToolkit.WinUI.UI.Controls" />
+		<PackageReference Include="Microsoft.Windows.SDK.BuildTools" />
+		<PackageReference Include="Microsoft.WindowsAppSDK"  />
+		<Manifest Include="$(ApplicationManifest)" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<ProjectReference Include="..\..\..\common\Common.UI\Common.UI.csproj" />
+		<ProjectReference Include="..\..\..\settings-ui\Settings.UI.Library\Settings.UI.Library.csproj" />
+	</ItemGroup>
+	
+	<ItemGroup>
+		<Content Update="Assets\data32.png">
+			<CopyToOutputDirectory>Never</CopyToOutputDirectory>
+		</Content>
+		<Content Update="Assets\string32.png">
+			<CopyToOutputDirectory>Never</CopyToOutputDirectory>
+		</Content>
+	</ItemGroup>
+</Project>
+<!--TargetFramework>net6.0-windows10.0.19041.0</TargetFramework-->

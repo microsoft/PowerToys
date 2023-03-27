@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Wix xmlns="http://schemas.microsoft.com/wix/2006/wi"
+     xmlns:util="http://schemas.microsoft.com/wix/UtilExtension" >
+
+  <?include $(sys.CURRENTDIR)\Common.wxi?>
+
+  <?define RegistryPreviewFiles=ColorCode.Core.dll;ColorCode.WinUI.dll;CommunityToolkit.Common.dll;CommunityToolkit.WinUI.UI.Controls.Core.dll;CommunityToolkit.WinUI.UI.Controls.DataGrid.dll;CommunityToolkit.WinUI.UI.Controls.Input.dll;CommunityToolkit.WinUI.UI.Controls.Layout.dll;CommunityToolkit.WinUI.UI.Controls.Markdown.dll;CommunityToolkit.WinUI.UI.Controls.Media.dll;CommunityToolkit.WinUI.UI.Controls.Primitives.dll;CommunityToolkit.WinUI.UI.dll;CommunityToolkit.WinUI.dll;ControlzEx.dll;Ijwhost.dll;Microsoft.Graphics.Canvas.Interop.dll;Microsoft.Graphics.Canvas.dll;Microsoft.Graphics.Display.dll;Microsoft.InteractiveExperiences.Projection.dll;Microsoft.WinUI.dll;Microsoft.Windows.AppLifecycle.Projection.dll;Microsoft.Windows.AppNotifications.Builder.Projection.dll;Microsoft.Windows.ApplicationModel.DynamicDependency.Projection.dll;Microsoft.Windows.ApplicationModel.Resources.Projection.dll;Microsoft.Windows.ApplicationModel.WindowsAppRuntime.Projection.dll;Microsoft.Windows.SDK.NET.dll;Microsoft.Windows.Security.AccessControl.Projection.dll;Microsoft.Windows.System.Power.Projection.dll;Microsoft.Windows.Widgets.Projection.dll;Microsoft.Windows.Widgets.dll;Microsoft.WindowsAppRuntime.Bootstrap.Net.dll;Microsoft.Xaml.Behaviors.dll;PowerToys.Common.UI.dll;PowerToys.ManagedCommon.dll;PowerToys.ManagedTelemetry.dll;PowerToys.RegistryPreview.deps.json;PowerToys.RegistryPreview.dll;PowerToys.RegistryPreview.exe;PowerToys.RegistryPreview.runtimeconfig.json;PowerToys.RegistryPreviewExt.dll;PowerToys.Settings.UI.Lib.dll;System.CodeDom.dll;System.IO.Abstractions.dll;System.Management.dll;WinRT.Runtime.dll;app.ico;resources.pri?>
+  <?if $(var.Platform) = x64?>
+    <?define RegistryPreviewFiles=$(var.RegistryPreviewFiles);clrcompression.dll?>
+  <?endif?>
+
+  <?define RegistryPreviewAssets=data32.png;folder32.png;string32.png?>
+
+  <Fragment>
+    <!-- Registry Preview -->
+    <DirectoryRef Id="RegistryPreviewInstallFolder" FileSource="$(var.BinDir)modules\$(var.RegistryPreviewProjectName)">
+      <?foreach File in $(var.RegistryPreviewFiles)?>
+        <Component Id="RegistryPreviewComp_$(var.File)" Win64="yes">
+          <File Id="RegistryPreviewFile_$(var.File)" Source="$(var.BinDir)modules\$(var.RegistryPreviewProjectName)\$(var.File)" />
+        </Component>
+      <?endforeach?>
+    </DirectoryRef>
+
+    <DirectoryRef Id="RegistryPreviewAssetsInstallFolder" FileSource="$(var.BinDir)modules\$(var.RegistryPreviewProjectName)\Assets">
+      <?foreach File in $(var.RegistryPreviewAssets)?>
+        <Component Id="RegistryPreviewAssetsComp_$(var.File)" Win64="yes">
+          <File Id="RegistryPreviewAssetsFile_$(var.File)" Source="$(var.BinDir)modules\$(var.RegistryPreviewProjectName)\Assets\$(var.File)" />
+        </Component>
+      <?endforeach?>
+    </DirectoryRef>
+
+
+    <ComponentGroup Id="RegistryPreviewComponentGroup" Directory="INSTALLFOLDER">
+      <?foreach File in $(var.RegistryPreviewFiles)?>
+        <ComponentRef Id="RegistryPreviewComp_$(var.File)" />
+      <?endforeach?>
+      <?foreach File in $(var.RegistryPreviewAssets)?>
+        <ComponentRef Id="RegistryPreviewAssetsComp_$(var.File)" />
+      <?endforeach?>
+
+    </ComponentGroup>
+
+  </Fragment>
+</Wix>

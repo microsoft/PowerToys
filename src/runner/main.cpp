@@ -165,6 +165,7 @@ int runner(bool isProcessElevated, bool openSettings, std::string settingsWindow
             L"modules/PowerOCR/PowerToys.PowerOCRModuleInterface.dll",
             L"modules/PastePlain/PowerToys.PastePlainModuleInterface.dll",
             L"modules/FileLocksmith/PowerToys.FileLocksmithExt.dll",
+            L"modules/RegistryPreview/PowerToys.RegistryPreviewExt.dll",
             L"modules/MeasureTool/PowerToys.MeasureToolModuleInterface.dll",
             L"modules/Hosts/PowerToys.HostsModuleInterface.dll",
         };
