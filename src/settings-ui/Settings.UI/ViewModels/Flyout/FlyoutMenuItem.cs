@@ -36,7 +36,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             }
         }
 
-        public Action<FlyoutMenuItem> EnabledChangedCallback { get; set; } = null;
+        public Action<FlyoutMenuItem> EnabledChangedCallback { get; set; }
 
         public bool Visible
         {

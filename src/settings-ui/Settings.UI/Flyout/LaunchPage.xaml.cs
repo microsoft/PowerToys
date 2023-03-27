@@ -65,6 +65,13 @@ namespace Microsoft.PowerToys.Settings.UI.Flyout
 
                     break;
 
+                case "RegistryPreview": // Launch Registry Preview
+                    using (var eventHandle = new EventWaitHandle(false, EventResetMode.AutoReset, Constants.RegistryPreviewTriggerEvent()))
+                    {
+                        eventHandle.Set();
+                    }
+
+                    break;
                 case "MeasureTool": // Launch Screen Ruler
                     using (var eventHandle = new EventWaitHandle(false, EventResetMode.AutoReset, Constants.MeasureToolTriggerEvent()))
                     {

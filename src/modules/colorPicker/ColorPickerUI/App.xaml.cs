@@ -6,7 +6,6 @@ using System;
 using System.ComponentModel.Composition;
 using System.Threading;
 using System.Windows;
-using ColorPicker.Helpers;
 using ColorPicker.Mouse;
 using Common.UI;
 using ManagedCommon;

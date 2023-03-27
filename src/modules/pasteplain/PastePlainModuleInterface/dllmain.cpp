@@ -152,7 +152,7 @@ private:
         }
     }
 
-    void try_inject_modifier_key_up(std::vector<INPUT> &inputs, short modifier)
+    void try_inject_modifier_key_up(std::vector<INPUT>& inputs, short modifier)
     {
         // Most significant bit is set if key is down
         if ((GetAsyncKeyState(static_cast<int>(modifier)) & 0x8000) != 0)
@@ -204,9 +204,9 @@ private:
                 return;
             }
 
-            wchar_t* pch_data= static_cast<wchar_t*>(GlobalLock(h_clipboard_data));
+            wchar_t* pch_data = static_cast<wchar_t*>(GlobalLock(h_clipboard_data));
 
-            if (NULL == pch_data )
+            if (NULL == pch_data)
             {
                 DWORD errorCode = GetLastError();
                 auto errorMessage = get_last_error_message(errorCode);
@@ -228,7 +228,7 @@ private:
             UINT no_clipboard_history_or_roaming_format = 0;
 
             // Get the format identifier for not adding the data to the clipboard history or roaming.
-            // https://learn.microsoft.com/en-us/windows/win32/dataxchg/clipboard-formats#cloud-clipboard-and-clipboard-history-formats
+            // https://learn.microsoft.com/windows/win32/dataxchg/clipboard-formats#cloud-clipboard-and-clipboard-history-formats
             if (0 == (no_clipboard_history_or_roaming_format = RegisterClipboardFormat(L"ExcludeClipboardContentFromMonitorProcessing")))
             {
                 DWORD errorCode = GetLastError();
@@ -295,7 +295,7 @@ private:
         }
         {
             // Clear kb state and send Ctrl+V begin
-            
+
             // we can assume that the last pressed key is...
             //  (1) not a modifier key and
             //  (2) marked as handled (so it never gets a key down input event).
@@ -463,8 +463,6 @@ public:
         m_enabled = false;
         Trace::EnablePastePlain(false);
     }
-
-
 
     virtual bool on_hotkey(size_t /*hotkeyId*/) override
     {

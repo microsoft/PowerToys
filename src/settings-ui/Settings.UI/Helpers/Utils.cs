@@ -9,7 +9,7 @@ using System.Text.Json;
 
 namespace Microsoft.PowerToys.Settings.UI.Helpers
 {
-    internal class Utils
+    internal sealed class Utils
     {
         private static string _placementPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), @"Microsoft\PowerToys\settings-placement.json");
 

@@ -215,10 +215,14 @@ public
             return gcnew String(CommonSharedConstants::SHORTCUT_GUIDE_TRIGGER_EVENT);
         }
 
-        static String
-            ^ MeasureToolTriggerEvent() {
+        static String ^ RegistryPreviewTriggerEvent() {
+                  return gcnew String(CommonSharedConstants::REGISTRY_PREVIEW_TRIGGER_EVENT);
+        }
+
+        static String ^ MeasureToolTriggerEvent() {
                   return gcnew String(CommonSharedConstants::MEASURE_TOOL_TRIGGER_EVENT);
-              }
+        }
+
         static String ^ GcodePreviewResizeEvent() {
             return gcnew String(CommonSharedConstants::GCODE_PREVIEW_RESIZE_EVENT);
         }

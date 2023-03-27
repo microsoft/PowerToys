@@ -22,7 +22,7 @@ namespace Microsoft.PowerToys.Settings.UI
     /// <summary>
     /// An empty window that can be used on its own or navigated to within a Frame.
     /// </summary>
-    public sealed partial class MainWindow : WindowEx
+    public sealed partial class MainWindow : Window
     {
         public MainWindow(bool isDark, bool createHidden = false)
         {
@@ -138,6 +138,9 @@ namespace Microsoft.PowerToys.Settings.UI
                     case "PowerAccent":
                         needToUpdate = generalSettingsConfig.Enabled.PowerAccent != isEnabled;
                         generalSettingsConfig.Enabled.PowerAccent = isEnabled; break;
+                    case "RegistryPreview":
+                        needToUpdate = generalSettingsConfig.Enabled.RegistryPreview != isEnabled;
+                        generalSettingsConfig.Enabled.RegistryPreview = isEnabled; break;
                     case "MeasureTool":
                         needToUpdate = generalSettingsConfig.Enabled.MeasureTool != isEnabled;
                         generalSettingsConfig.Enabled.MeasureTool = isEnabled; break;

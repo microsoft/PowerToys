@@ -439,9 +439,9 @@ namespace Microsoft.Plugin.Program.Programs
                     paths.Add(path);
                 }
 
-                if (_scaleFactors.ContainsKey(Package.Version))
+                if (_scaleFactors.TryGetValue(Package.Version, out List<int> factors))
                 {
-                    foreach (var factor in _scaleFactors[Package.Version])
+                    foreach (var factor in factors)
                     {
                         if (highContrast)
                         {
@@ -589,10 +589,10 @@ namespace Microsoft.Plugin.Program.Programs
 
         internal void LogoPathFromUri(string uri, Theme theme)
         {
-            // all https://msdn.microsoft.com/windows/uwp/controls-and-patterns/tiles-and-notifications-app-assets
-            // windows 10 https://msdn.microsoft.com/en-us/library/windows/apps/dn934817.aspx
-            // windows 8.1 https://msdn.microsoft.com/en-us/library/windows/apps/hh965372.aspx#target_size
-            // windows 8 https://msdn.microsoft.com/en-us/library/windows/apps/br211475.aspx
+            // all https://learn.microsoft.com/windows/uwp/controls-and-patterns/tiles-and-notifications-app-assets
+            // windows 10 https://msdn.microsoft.com/library/windows/apps/dn934817.aspx
+            // windows 8.1 https://msdn.microsoft.com/library/windows/apps/hh965372.aspx#target_size
+            // windows 8 https://msdn.microsoft.com/library/windows/apps/br211475.aspx
             string path;
             bool isLogoUriSet;
 

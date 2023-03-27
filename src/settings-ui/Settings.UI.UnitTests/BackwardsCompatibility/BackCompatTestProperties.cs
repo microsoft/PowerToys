@@ -20,7 +20,7 @@ namespace Microsoft.PowerToys.Settings.UI.UnitTests.BackwardsCompatibility
         // Using Ordinal since this is used internally for a path
         private static readonly Expression<Func<string, bool>> SettingsFilterExpression = s => s == null || s.Contains("Microsoft\\PowerToys\\settings.json", StringComparison.Ordinal);
 
-        internal class MockSettingsRepository<T> : ISettingsRepository<T>
+        internal sealed class MockSettingsRepository<T> : ISettingsRepository<T>
             where T : ISettingsConfig, new()
         {
             private readonly ISettingsUtils _settingsUtils;

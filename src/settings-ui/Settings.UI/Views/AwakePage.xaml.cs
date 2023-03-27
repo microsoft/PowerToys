@@ -5,10 +5,10 @@
 using System;
 using System.IO;
 using System.IO.Abstractions;
+using ManagedCommon;
 using Microsoft.PowerToys.Settings.UI.Helpers;
 using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.PowerToys.Settings.UI.Library.Interfaces;
-using Microsoft.PowerToys.Settings.UI.Library.Utilities;
 using Microsoft.PowerToys.Settings.UI.ViewModels;
 using Microsoft.UI.Dispatching;
 using Microsoft.UI.Xaml.Controls;
@@ -100,7 +100,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
                         string csMessage = csIpcMessage.ToJsonString();
                         string outMessage = outIpcMessage.ToJsonString();
 
-                        if (!csMessage.Equals(outMessage))
+                        if (!csMessage.Equals(outMessage, StringComparison.Ordinal))
                         {
                             Logger.LogInfo($"Saved Awake settings from Awake page.");
                             _sendConfigMsg(outMessage);
