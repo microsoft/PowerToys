@@ -22,7 +22,6 @@
     <!--RegistryPreviewAssetsFiles_Component_Def-->
     </DirectoryRef>
 
-
     <ComponentGroup Id="RegistryPreviewComponentGroup">
       <Component Id="RemoveRegistryPreviewFolder" Guid="D3DBC395-FAC5-44B1-BE44-3FE2B6E0F391" Directory="RegistryPreviewInstallFolder" >
         <RegistryKey Root="$(var.RegistryScope)" Key="Software\Classes\powertoys\components">
