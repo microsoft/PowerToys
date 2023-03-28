@@ -733,40 +733,23 @@ namespace RegistryPreview
             ChangeCursor(gridPreview, false);
         }
 
-        private async void OpenSettingsFile(string path, string filename)
+        private void OpenSettingsFile(string path, string filename)
         {
-            StorageFolder storageFolder = null;
-            StorageFile storageFile = null;
             string fileContents = string.Empty;
-
-            try
+            string storageFile = Path.Combine(path, filename);
+            if (File.Exists(storageFile))
             {
-                storageFolder = await StorageFolder.GetFolderFromPathAsync(path);
-            }
-            catch
-            {
-            }
-
-            try
-            {
-                if (storageFolder != null)
+                try
                 {
-                    storageFile = await storageFolder.GetFileAsync(filename);
+                    TextReader reader = new StreamReader(storageFile);
+                    fileContents = reader.ReadToEnd();
+                    reader.Close();
                 }
-            }
-            catch
-            {
-            }
-
-            try
-            {
-                if (storageFile != null)
+                catch
                 {
-                    fileContents = await Windows.Storage.FileIO.ReadTextAsync(storageFile);
+                    // set up default JSON blob
+                    fileContents = "{ }";
                 }
-            }
-            catch
-            {
             }
 
             try

@@ -40,9 +40,10 @@ namespace RegistryPreview
             // Initialize the string table
             resourceLoader = ResourceLoader.GetForViewIndependentUse();
 
-            // Removed this on 2/15/23 as it doesn't seem to be doing anything any more
-            // Attempts to force the visual tree to load faster
-            // this.Activate();
+            // Open settings file; this moved to after the window tweak because it gives the window time to start up
+            settingsFolder = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData) + @"\Microsoft\PowerToys\" + APPNAME;
+            settingsFile = APPNAME + "_settings.json";
+            OpenSettingsFile(settingsFolder, settingsFile);
 
             // Update the Win32 looking window with the correct icon (and grab the appWindow handle for later)
             IntPtr windowHandle = WinRT.Interop.WindowNative.GetWindowHandle(this);
@@ -51,36 +52,27 @@ namespace RegistryPreview
             appWindow.SetIcon("app.ico");
             appWindow.Closing += AppWindow_Closing;
 
-            // Open settings file; this moved to after the window tweak because it gives the window time to start up
-            settingsFolder = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData) + @"\Microsoft\PowerToys\" + APPNAME;
-            settingsFile = APPNAME + "_settings.json";
-            OpenSettingsFile(settingsFolder, settingsFile);
+            // if have settings, update the location of the window
+            if (jsonSettings != null)
+            {
+                // resize the window
+                if (jsonSettings.ContainsKey("appWindow.Size.Width") && jsonSettings.ContainsKey("appWindow.Size.Height"))
+                {
+                    SizeInt32 size;
+                    size.Width = (int)jsonSettings.GetNamedNumber("appWindow.Size.Width");
+                    size.Height = (int)jsonSettings.GetNamedNumber("appWindow.Size.Height");
+                    appWindow.Resize(size);
+                }
 
-            // TODO: figure out a way to only call this once after MainWindow is initialized but before it shows itself
-            // Calling it from here only successfully resizes/moves the window and it seems to be based off timing, which is horrible.
-            // Calling it from GridPreview_Loaded() works 100% of the time, but the initial state of the window flashes before sizing/moving it
-            //
-            // // if have settings, update the location of the window
-            // if (jsonSettings != null)
-            // {
-            //     // resize the window
-            //     if (jsonSettings.ContainsKey("appWindow.Size.Width") && jsonSettings.ContainsKey("appWindow.Size.Height"))
-            //     {
-            //         SizeInt32 size;
-            //         size.Width = (int)jsonSettings.GetNamedNumber("appWindow.Size.Width");
-            //         size.Height = (int)jsonSettings.GetNamedNumber("appWindow.Size.Height");
-            //         appWindow.Resize(size);
-            //     }
-            //
-            //     // reposition the window
-            //     if (jsonSettings.ContainsKey("appWindow.Position.X") && jsonSettings.ContainsKey("appWindow.Position.Y"))
-            //     {
-            //         PointInt32 point;
-            //         point.X = (int)jsonSettings.GetNamedNumber("appWindow.Position.X");
-            //         point.Y = (int)jsonSettings.GetNamedNumber("appWindow.Position.Y");
-            //         appWindow.Move(point);
-            //     }
-            // }
+                // reposition the window
+                if (jsonSettings.ContainsKey("appWindow.Position.X") && jsonSettings.ContainsKey("appWindow.Position.Y"))
+                {
+                    PointInt32 point;
+                    point.X = (int)jsonSettings.GetNamedNumber("appWindow.Position.X");
+                    point.Y = (int)jsonSettings.GetNamedNumber("appWindow.Position.Y");
+                    appWindow.Move(point);
+                }
+            }
 
             // Update Toolbar
             if ((App.AppFilename == null) || (File.Exists(App.AppFilename) != true))
