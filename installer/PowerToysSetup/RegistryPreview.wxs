@@ -9,7 +9,7 @@
     <?define RegistryPreviewFiles=$(var.RegistryPreviewFiles);clrcompression.dll?>
   <?endif?>
 
-  <?define RegistryPreviewAssets=data32.png;folder32.png;string32.png?>
+  <?define RegistryPreviewAssets=data32.png;error32.png;folder32.png;string32.png?>
 
   <Fragment>
     <!-- Registry Preview -->
@@ -27,6 +27,13 @@
           <File Id="RegistryPreviewAssetsFile_$(var.File)" Source="$(var.BinDir)modules\$(var.RegistryPreviewProjectName)\Assets\$(var.File)" />
         </Component>
       <?endforeach?>
+      <!-- Files with dash '-' in name listed manually as Component/File ID can'ţcontain dash -->
+      <Component Id="RegistryPreviewAssetsComp_deleted_folder32.png" Win64="yes">
+        <File Id="RegistryPreviewAssetsFile_deleted_folder32.png" Source="$(var.BinDir)modules\$(var.RegistryPreviewProjectName)\Assets\deleted-folder32.png" />
+      </Component>
+      <Component Id="RegistryPreviewAssetsComp_deleted_value32.png" Win64="yes">
+        <File Id="RegistryPreviewAssetsFile_deleted_value32.png" Source="$(var.BinDir)modules\$(var.RegistryPreviewProjectName)\Assets\deleted-value32.png" />
+      </Component>
     </DirectoryRef>
 
 
@@ -37,6 +44,8 @@
       <?foreach File in $(var.RegistryPreviewAssets)?>
         <ComponentRef Id="RegistryPreviewAssetsComp_$(var.File)" />
       <?endforeach?>
+      <ComponentRef Id="RegistryPreviewAssetsComp_deleted_folder32.png" />
+      <ComponentRef Id="RegistryPreviewAssetsComp_deleted_value32.png" />
 
     </ComponentGroup>
 
