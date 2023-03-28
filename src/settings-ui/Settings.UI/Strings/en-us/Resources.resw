@@ -2119,7 +2119,7 @@ From there, simply click on one of the supported files in the File Explorer and 
   <data name="Activation_Shortcut_Title" xml:space="preserve">
     <value>Activation shortcut</value>
   </data>
-  <data name="InvalidShortcut.Text" xml:space="preserve">
+  <data name="InvalidShortcut.Title" xml:space="preserve">
     <value>Invalid shortcut</value>
   </data>
   <data name="InvalidShortcutWarningLabel.Text" xml:space="preserve">
