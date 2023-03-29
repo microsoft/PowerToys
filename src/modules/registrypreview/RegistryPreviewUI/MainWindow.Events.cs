@@ -18,10 +18,11 @@ using Windows.Foundation.Metadata;
 using Windows.Storage;
 using Windows.Storage.Pickers;
 using WinRT.Interop;
+using WinUIEx;
 
 namespace RegistryPreview
 {
-    public sealed partial class MainWindow : Window
+    public sealed partial class MainWindow : WindowEx
     {
         /// <summary>
         /// Event handler to grab the main window's size and position before it closes
