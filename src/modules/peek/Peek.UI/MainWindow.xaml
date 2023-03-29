@@ -29,15 +29,15 @@
         <views:TitleBar
             x:Name="TitleBarControl"
             Grid.Row="0"
-            Item="{x:Bind ViewModel.FolderItemsQuery.CurrentFile, Mode=OneWay}"
-            FileIndex="{x:Bind ViewModel.FolderItemsQuery.CurrentItemIndex, Mode=OneWay}"
-            IsMultiSelection="{x:Bind ViewModel.FolderItemsQuery.IsMultiSelection, Mode=OneWay}"
-            NumberOfFiles="{x:Bind ViewModel.FolderItemsQuery.Files.Count, Mode=OneWay}" />
+            FileIndex="{x:Bind ViewModel.CurrentIndex, Mode=OneWay}"
+            IsMultiSelection="{x:Bind ViewModel.NeighboringItemsQuery.IsMultipleFilesActivation, Mode=OneWay}"
+            Item="{x:Bind ViewModel.CurrentItem, Mode=OneWay}"
+            NumberOfFiles="{x:Bind ViewModel.Items.Count, Mode=OneWay}" />
 
         <fp:FilePreview
             Grid.Row="1"
-            Item="{x:Bind ViewModel.FolderItemsQuery.CurrentFile, Mode=OneWay}"
-            ScalingFactor="{x:Bind ViewModel.ScalingFactor, Mode=OneWay}"
-            PreviewSizeChanged="FilePreviewer_PreviewSizeChanged" />
+            Item="{x:Bind ViewModel.CurrentItem, Mode=OneWay}"
+            PreviewSizeChanged="FilePreviewer_PreviewSizeChanged"
+            ScalingFactor="{x:Bind ViewModel.ScalingFactor, Mode=OneWay}" />
     </Grid>
 </winuiex:WindowEx>

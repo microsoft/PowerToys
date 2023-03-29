@@ -16,8 +16,8 @@ using Peek.Common.Helpers;
 using Peek.Common.Models;
 using Peek.FilePreviewer.Models;
 using Peek.FilePreviewer.Previewers;
+using Peek.FilePreviewer.Previewers.Interfaces;
 using Windows.ApplicationModel.Resources;
-using Windows.Foundation;
 
 namespace Peek.FilePreviewer
 {
@@ -33,7 +33,7 @@ namespace Peek.FilePreviewer
             nameof(Item),
             typeof(IFileSystemItem),
             typeof(FilePreview),
-            new PropertyMetadata(false, async (d, e) => await ((FilePreview)d).OnFilePropertyChanged()));
+            new PropertyMetadata(false, async (d, e) => await ((FilePreview)d).OnItemPropertyChanged()));
 
         public static readonly DependencyProperty ScalingFactorProperty =
             DependencyProperty.Register(
@@ -80,11 +80,7 @@ namespace Peek.FilePreviewer
 
         public IBrowserPreviewer? BrowserPreviewer => Previewer as IBrowserPreviewer;
 
-        public bool IsImageVisible => ImagePreviewer != null;
-
         public IUnsupportedFilePreviewer? UnsupportedFilePreviewer => Previewer as IUnsupportedFilePreviewer;
-
-        public bool IsUnsupportedPreviewVisible => UnsupportedFilePreviewer != null;
 
         public IFileSystemItem Item
         {
@@ -117,7 +113,7 @@ namespace Peek.FilePreviewer
             return isValidPreview ? Visibility.Visible : Visibility.Collapsed;
         }
 
-        private async Task OnFilePropertyChanged()
+        private async Task OnItemPropertyChanged()
         {
             // Cancel previous loading task
             _cancellationTokenSource.Cancel();
@@ -257,11 +253,6 @@ namespace Peek.FilePreviewer
             string dateModified = Item.DateModified.ToString();
             string dateModifiedFormatted = string.IsNullOrEmpty(dateModified) ? string.Empty : "\n" + ReadableStringHelper.FormatResourceString("PreviewTooltip_DateModified", dateModified);
             sb.Append(dateModifiedFormatted);
-
-            cancellationToken.ThrowIfCancellationRequested();
-            Size? dimensions = await Task.Run(Item.GetImageSize);
-            string dimensionsFormatted = dimensions == null ? string.Empty : "\n" + ReadableStringHelper.FormatResourceString("PreviewTooltip_Dimensions", dimensions.Value.Width, dimensions.Value.Height);
-            sb.Append(dimensionsFormatted);
 
             cancellationToken.ThrowIfCancellationRequested();
             ulong bytes = await Task.Run(Item.GetSizeInBytes);

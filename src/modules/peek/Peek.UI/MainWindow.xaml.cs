@@ -5,6 +5,7 @@
 using System.Diagnostics;
 using System.Linq;
 using interop;
+using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.UI.Windowing;
 using Microsoft.UI.Xaml.Input;
 using Peek.Common.Constants;
@@ -22,11 +23,13 @@ namespace Peek.UI
     /// </summary>
     public sealed partial class MainWindow : WindowEx
     {
+        public MainWindowViewModel ViewModel { get; }
+
         public MainWindow()
         {
             InitializeComponent();
 
-            ViewModel = new MainWindowViewModel();
+            ViewModel = App.GetService<MainWindowViewModel>();
 
             NativeEventWaiter.WaitForEventLoop(Constants.ShowPeekEvent(), OnPeekHotkey);
 
@@ -34,8 +37,6 @@ namespace Peek.UI
 
             AppWindow.Closing += AppWindow_Closing;
         }
-
-        public MainWindowViewModel ViewModel { get; }
 
         /// <summary>
         /// Handle Peek hotkey, by toggling the window visibility and querying files when necessary.
@@ -71,7 +72,7 @@ namespace Peek.UI
 
         private void Initialize()
         {
-            ViewModel.FolderItemsQuery.Start();
+            ViewModel.Initialize();
             ViewModel.ScalingFactor = this.GetMonitorScale();
         }
 
@@ -80,8 +81,8 @@ namespace Peek.UI
             this.Restore();
             this.Hide();
 
-            // TODO: move into general ViewModel method when needed
-            ViewModel.FolderItemsQuery.Clear();
+            ViewModel.Uninitialize();
+            ViewModel.ScalingFactor = 1;
         }
 
         /// <summary>
@@ -132,15 +133,18 @@ namespace Peek.UI
 
         private bool IsNewSingleSelectedItem()
         {
-            var selectedItems = FileExplorerHelper.GetSelectedItems();
-            if (!selectedItems.Any() || selectedItems.Skip(1).Any())
+            var foregroundWindowHandle = Windows.Win32.PInvoke.GetForegroundWindow();
+
+            var selectedItems = FileExplorerHelper.GetSelectedItems(foregroundWindowHandle);
+            var selectedItemsCount = selectedItems?.GetCount() ?? 0;
+            if (selectedItems == null || selectedItemsCount == 0 || selectedItemsCount > 1)
             {
                 return false;
             }
 
-            var fileExplorerSelectedItemPath = selectedItems.First().Path;
-            var currentFilePath = ViewModel.FolderItemsQuery.CurrentFile?.Path;
-            if (fileExplorerSelectedItemPath == null || currentFilePath == null || fileExplorerSelectedItemPath == currentFilePath)
+            var fileExplorerSelectedItemPath = selectedItems.GetItemAt(0).ToIFileSystemItem().Path;
+            var currentItemPath = ViewModel.CurrentItem?.Path;
+            if (fileExplorerSelectedItemPath == null || currentItemPath == null || fileExplorerSelectedItemPath == currentItemPath)
             {
                 return false;
             }

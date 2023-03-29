@@ -4,7 +4,11 @@
 
 using System;
 using ManagedCommon;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using Microsoft.UI.Xaml;
+using Peek.FilePreviewer;
+using Peek.UI.Views;
 using WinUIEx;
 
 namespace Peek.UI
@@ -16,6 +20,13 @@ namespace Peek.UI
     {
         public static int PowerToysPID { get; set; }
 
+        public IHost Host
+        {
+            get;
+        }
+
+        private Window? Window { get; set; }
+
         /// <summary>
         /// Initializes a new instance of the <see cref="App"/> class.
         /// Initializes the singleton application object.  This is the first line of authored code
@@ -23,7 +34,35 @@ namespace Peek.UI
         /// </summary>
         public App()
         {
-            this.InitializeComponent();
+            InitializeComponent();
+
+            Host = Microsoft.Extensions.Hosting.Host.
+            CreateDefaultBuilder().
+            UseContentRoot(AppContext.BaseDirectory).
+            ConfigureServices((context, services) =>
+            {
+                // Core Services
+                services.AddTransient<NeighboringItemsQuery>();
+
+                // Views and ViewModels
+                services.AddTransient<TitleBar>();
+                services.AddTransient<FilePreview>();
+                services.AddTransient<MainWindowViewModel>();
+            }).
+            Build();
+
+            UnhandledException += App_UnhandledException;
+        }
+
+        public static T GetService<T>()
+            where T : class
+        {
+            if ((App.Current as App)!.Host.Services.GetService(typeof(T)) is not T service)
+            {
+                throw new ArgumentException($"{typeof(T)} needs to be registered in ConfigureServices within App.xaml.cs.");
+            }
+
+            return service;
         }
 
         /// <summary>
@@ -44,12 +83,14 @@ namespace Peek.UI
                 }
             }
 
-            window = new MainWindow();
+            Window = new MainWindow();
 
-            window.Activate();
-            window.Hide();
+            Window.Activate();
+            Window.Hide();
         }
 
-        private Window? window;
+        private void App_UnhandledException(object sender, Microsoft.UI.Xaml.UnhandledExceptionEventArgs e)
+        {
+        }
     }
 }
