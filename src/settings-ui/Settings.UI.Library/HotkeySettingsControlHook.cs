@@ -79,6 +79,8 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             }
         }
 
+        public bool GetDisposedState() => disposedValue;
+
         public void Dispose()
         {
             Dispose(disposing: true);

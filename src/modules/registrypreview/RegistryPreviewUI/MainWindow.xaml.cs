@@ -11,10 +11,11 @@ using Microsoft.UI.Xaml.Controls;
 using Windows.ApplicationModel.Resources;
 using Windows.Data.Json;
 using Windows.Graphics;
+using WinUIEx;
 
 namespace RegistryPreview
 {
-    public sealed partial class MainWindow : Window
+    public sealed partial class MainWindow : WindowEx
     {
         // Const values
         private const string REGISTRYHEADER4 = "regedit4";

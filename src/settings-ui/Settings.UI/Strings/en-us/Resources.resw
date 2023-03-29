@@ -2119,11 +2119,12 @@ From there, simply click on one of the supported files in the File Explorer and 
   <data name="Activation_Shortcut_Title" xml:space="preserve">
     <value>Activation shortcut</value>
   </data>
-  <data name="InvalidShortcut.Text" xml:space="preserve">
+  <data name="InvalidShortcut.Title" xml:space="preserve">
     <value>Invalid shortcut</value>
   </data>
   <data name="InvalidShortcutWarningLabel.Text" xml:space="preserve">
     <value>Only shortcuts that start with **Windows key**, **Ctrl**, **Alt** or **Shift** are valid.</value>
+    <comment>The ** sequences are used for text formatting of the key names. Don't remove them on translation.</comment>
   </data>
   <data name="FancyZones_SpanZonesAcrossMonitors.Description" xml:space="preserve">
     <value>All monitors must have the same DPI scaling and will be treated as one large combined rectangle which contains all monitors</value>
@@ -3114,5 +3115,8 @@ Activate by holding the key for the character you want to add an accent to, then
   </data>
   <data name="RegistryPreview_LaunchButtonControl.Header" xml:space="preserve">
     <value>Launch Registry Preview</value>
+  </data>
+  <data name="PastePlain_ShortcutWarning.Title" xml:space="preserve">
+    <value>Using this shortcut may prevent non-text paste actions (e.g. images, files) or built-in paste plain text actions in other applications from functioning.</value>
   </data>
 </root>
