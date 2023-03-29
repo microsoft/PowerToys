@@ -164,13 +164,16 @@ LRESULT CALLBACK VideoConferenceModule::LowLevelKeyboardProc(int nCode, WPARAM w
                 reverseMicrophoneMute();
                 return 1;
             }
-            else if (isHotkeyPressed(kbd->vkCode, settings.microphonePushToTalkHotkey) && !pushToTalkPressed)
+            else if (isHotkeyPressed(kbd->vkCode, settings.microphonePushToTalkHotkey))
             {
-                if (settings.pushToReverseEnabled || getMicrophoneMuteState())
+                if (!pushToTalkPressed)
                 {
-                    reverseMicrophoneMute();
+                    if (settings.pushToReverseEnabled || getMicrophoneMuteState())
+                    {
+                        reverseMicrophoneMute();
+                    }
+                    pushToTalkPressed = true;
                 }
-                pushToTalkPressed = true;
                 return 1;
             }
             else if (isHotkeyPressed(kbd->vkCode, settings.cameraMuteHotkey))
