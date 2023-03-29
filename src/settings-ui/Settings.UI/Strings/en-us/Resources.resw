@@ -2124,6 +2124,7 @@ From there, simply click on one of the supported files in the File Explorer and 
   </data>
   <data name="InvalidShortcutWarningLabel.Text" xml:space="preserve">
     <value>Only shortcuts that start with **Windows key**, **Ctrl**, **Alt** or **Shift** are valid.</value>
+    <comment>The ** sequences are used for text formatting of the key names. Don't remove them on translation.</comment>
   </data>
   <data name="FancyZones_SpanZonesAcrossMonitors.Description" xml:space="preserve">
     <value>All monitors must have the same DPI scaling and will be treated as one large combined rectangle which contains all monitors</value>

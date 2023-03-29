@@ -373,10 +373,12 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
             args.Handled = true;
             if (args.WindowActivationState != WindowActivationState.Deactivated && hook.GetDisposedState() == true)
             {
+                // If the PT settings window gets focussed/activated again, we enable the keyboard hook to catch the keyboard input.
                 hook = new HotkeySettingsControlHook(Hotkey_KeyDown, Hotkey_KeyUp, Hotkey_IsActive, FilterAccessibleKeyboardEvents);
             }
             else if (args.WindowActivationState == WindowActivationState.Deactivated && hook.GetDisposedState() == false)
             {
+                // If the PT settings window lost focus/activation, we disable the keyboard hook to allow keyboard input on other windows.
                 hook.Dispose();
             }
         }
