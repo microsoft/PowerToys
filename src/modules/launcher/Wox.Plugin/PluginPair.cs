@@ -67,10 +67,11 @@ namespace Wox.Plugin
             {
                 Metadata.Disabled = false;
                 InitializePlugin(api);
+
                 if (!IsPluginInitialized)
                 {
-                    var title = string.Format(CultureInfo.CurrentCulture, Resources.FailedToLoadPluginTitle, Metadata.Name);
-                    api.ShowMsg(title, Resources.FailedToLoadPluginDescription, string.Empty, false);
+                    string description = $"{Resources.FailedToLoadPluginDescription} {Metadata.Name}\n\n{Resources.FailedToLoadPluginDescriptionPartTwo}";
+                    api.ShowMsg(Resources.FailedToLoadPluginTitle, description, string.Empty, false);
                 }
             }
             else
