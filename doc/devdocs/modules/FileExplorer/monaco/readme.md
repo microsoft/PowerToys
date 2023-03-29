@@ -4,10 +4,10 @@ Developer preview is based on [Microsoft's Monaco Editor](https://microsoft.gith
 
 ## Update Monaco Editor
 
-1. Download Monaco editor with [npm](https://www.npmjs.com/): `npm i monaco-editor`.
+1. Download Monaco editor with [npm](https://www.npmjs.com/): Enter `npm i monaco-editor` in the command prompt.
 2. Delete everything except the `min` folder (the minimised code) from the downloaded files.
 3. Copy the `min` folder into the `/src/modules/previewpane/MonacoPreviewHandler/monacoSRC` folder of the PowerToys project.
-4. Generate the JSON file as described in the [Generate monaco_languages.json file](#generate-monaco_languagesjson-file) section.
+4. Generate the JSON file as described in the [Generate monaco_languages.json file](#monaco_languagesjson) section.
 
 ## Add a new language definition
 
@@ -56,10 +56,8 @@ registerAdditionalLanguage("id", [".fileExtension"], "oldId", monaco)
 [`monaco_languages.json`](/src/modules/previewpane/MonacoPreviewHandler/monaco_languages.json) contains all extensions and Id's for the languages supported by Monaco. The [`FileHandler`](/src/modules/previewpane/MonacoPreviewHandler/FileHandler.cs) class and the installer are using this file to register preview handlers for defined extensions.
 
 After updating Monaco Editor and/or adding a new language you should update the [`monaco_languages.json`](/src/modules/previewpane/MonacoPreviewHandler/monaco_languages.json) file.
-After you updated monaco editor or adding a new language you should update the [`monaco_languages.json`](/src/modules/previewpane/MonacoPreviewHandler/monaco_languages.json) file.
 
-You have to run the file on a local webserver, as browsers will block certain needed features when running the file locally. This can for example be achieved by using the [Live Server](https://marketplace.visualstudio.com/items?itemName=ritwickdey.LiveServer) extension for Visual Studio Code: Open the file in Visual Studio Code and click on the "Go Live" button in the bottom right corner.
-
-1. Build monaco in debug mode.
-2. Open [generateLanguagesJson.html](/src/modules/previewpane/MonacoPreviewHandler/generateLanguagesJson.html) in a browser over the webserver.
-3. Replace the old JSON file.
+1. Run the file on a local webserver (as webbrowsers will block certain needed features when running the file locally.)
+  *  This can for example be achieved by using the [Preview Server](https://marketplace.visualstudio.com/items?itemName=yuichinukiyama.vscode-preview-server) extension for Visual Studio Code: Open the file in Visual Studio Code right click in the code editor and select `vscode-preview-server: Launch on browser`. The file will then be opened in a browser.
+2. The browser will download the new `monaco_languages.json` file
+3. Replace the old file with the newly downloaded one in the source code folder.
