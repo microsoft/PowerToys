@@ -20,7 +20,6 @@
                     <GridViewColumn/>
                 </GridView>
             </ListView.View>
-
         </ListView>
         <Border Margin="0,12,0,0"
                 BorderThickness="0,1,0,0"

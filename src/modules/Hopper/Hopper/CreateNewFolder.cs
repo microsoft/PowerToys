@@ -10,7 +10,7 @@ namespace Hopper
 {
     internal static class CreateNewFolder
     {
-        public static FileTransferingStatus[] NewFolderWithFiles(string[] files, string destinationFolder)
+        public static FileTransferingStatus[] NewFolderWithFiles(string[] files, string destinationFolder, bool copy = false)
         {
             if (!Directory.Exists(destinationFolder))
             {
@@ -22,7 +22,15 @@ namespace Hopper
             {
                 try
                 {
-                    File.Move(file, destinationFolder + "\\" + Path.GetFileName(file));
+                    if (copy)
+                    {
+                        File.Copy(file, destinationFolder + "\\" + Path.GetFileName(file));
+                    }
+                    else
+                    {
+                        File.Move(file, destinationFolder + "\\" + Path.GetFileName(file));
+                    }
+
                     fileStatus.Add(new FileTransferingStatus(StatusType.Ok, file));
                 }
                 catch (FileNotFoundException)

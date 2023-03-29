@@ -6,7 +6,9 @@ using System;
 using System.Collections.Specialized;
 using System.Diagnostics;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Windows;
+using System.Windows.Controls;
 using System.Windows.Input;
 using Hopper;
 
@@ -22,7 +24,6 @@ namespace PowerToys.Hopper
             // Open debugger, so that this app can be debugged when launched from explorer context menu
 #if DEBUG
             Debugger.Launch();
-            Debugger.Break();
 #endif
 
             string[] file2 = Array.Empty<string>();
@@ -37,6 +38,35 @@ namespace PowerToys.Hopper
 
             InitializeComponent();
             FileList.ItemsSource = file2;
+            FileList.ContextMenu = new ContextMenu();
+            MenuItem menuItem = new MenuItem();
+            menuItem.Header = "Remove";
+            menuItem.Click += (sender, e) =>
+            {
+                string[] newFiles = Array.Empty<string>();
+                foreach (string file in FileList.ItemsSource)
+                {
+                    if (file != FileList.SelectedItem.ToString())
+                    {
+                        newFiles = newFiles.Append(file).ToArray();
+                    }
+                }
+
+                FileList.ItemsSource = newFiles;
+            };
+            FileList.ContextMenu.Items.Add(menuItem);
+            ContextMenu contextMenu = FileList.ContextMenu;
+            FileList.PreviewMouseRightButtonDown += (sender, e) =>
+            {
+                if (FileList.SelectedItem == null)
+                {
+                    FileList.ContextMenu = null;
+                }
+                else
+                {
+                    FileList.ContextMenu = contextMenu;
+                }
+            };
         }
 
         private void CreateFolderButton_Click(object sender, RoutedEventArgs e)
@@ -65,6 +95,15 @@ namespace PowerToys.Hopper
 
                 FileList.ItemsSource = oldFiles;
                 FileList.ScrollIntoView(FileList.Items[FileList.Items.Count - 1]);
+            }
+        }
+
+        private void MenuItem_Click(object sender, RoutedEventArgs e)
+        {
+            var item = FileList.SelectedItem;
+            if (item != null)
+            {
+                FileList.Items.Remove(item);
             }
         }
     }

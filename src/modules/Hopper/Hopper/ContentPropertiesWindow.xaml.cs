@@ -3,11 +3,15 @@
 // See the LICENSE file in the project root for more information.
 
 using System.Collections.Specialized;
+using System.Diagnostics;
 using System.Globalization;
 using System.IO;
+using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Forms;
 using System.Windows.Input;
+using System.Windows.Shell;
+using Windows.Media.Audio;
 using DataObject = System.Windows.DataObject;
 using DragDropEffects = System.Windows.DragDropEffects;
 using Path = System.IO.Path;
@@ -41,28 +45,36 @@ namespace Hopper
 
             Directory.CreateDirectory(tmpPath);
 
-            CreateNewFolder.NewFolderWithFiles(_files, tmpPath);
-
-            StringCollection filesStringCollection = new StringCollection
+            CreateNewFolder.NewFolderWithFiles(_files, tmpPath, true);
+            new Task(() =>
             {
-                tmpPath,
-            };
+                Dispatcher.Invoke(() =>
+                {
+                    DataObject dataObject = new DataObject(System.Windows.DataFormats.FileDrop);
+                    dataObject.SetFileDropList(new StringCollection { tmpPath });
 
-            DataObject dataObject = new DataObject(System.Windows.DataFormats.FileDrop);
-            dataObject.SetFileDropList(filesStringCollection);
+                    DragDrop.DoDragDrop(DragFolder, dataObject, System.Windows.DragDropEffects.Move);
+                });
+            }).Start();
+            SetFileWatcher(tmpPath);
+        }
 
-            DragDrop.DoDragDrop(DragFolder, dataObject, System.Windows.DragDropEffects.Move);
-
+        private void SetFileWatcher(string path)
+        {
             FileSystemWatcher watcher = new FileSystemWatcher();
-            watcher.Path = tmpPath;
+            watcher.Path = path;
             watcher.NotifyFilter = NotifyFilters.LastAccess | NotifyFilters.LastWrite
                | NotifyFilters.FileName | NotifyFilters.DirectoryName;
 
             watcher.Deleted += (object sender, FileSystemEventArgs e) =>
             {
-                Directory.Delete(Path.GetTempPath() + NewFolderName.Text);
+                Dispatcher.Invoke(() => Debugger.Launch());
+                foreach (string file in _files)
+                {
+                    File.Delete(file);
+                }
 
-                Close();
+                Dispatcher.Invoke(() => Close());
             };
         }
 
