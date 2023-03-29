@@ -1,212 +1,311 @@
-﻿<Window
+﻿<winuiex:WindowEx
     x:Class="RegistryPreview.MainWindow"
-    xmlns:controls="using:CommunityToolkit.WinUI.UI.Controls"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-    xmlns:local="using:RegistryPreview"
+    xmlns:controls="using:CommunityToolkit.WinUI.UI.Controls"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:local="using:RegistryPreview"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    mc:Ignorable="d"
+    xmlns:ui="using:CommunityToolkit.WinUI.UI"
+    xmlns:winuiex="using:WinUIEx"
     Closed="Window_Closed"
-    >
-    <Grid 
-        x:Name="gridPreview" 
-        Background="{ThemeResource ApplicationPageBackgroundThemeBrush}"
-        Width="Auto" 
+    mc:Ignorable="d">
+    <winuiex:WindowEx.Backdrop>
+        <winuiex:MicaSystemBackdrop />
+    </winuiex:WindowEx.Backdrop>
+    <Grid
+        x:Name="gridPreview"
+        Width="Auto"
         Height="Auto"
-        TabFocusNavigation="Cycle"
         x:FieldModifier="public"
         Loaded="GridPreview_Loaded"
-        >
+        TabFocusNavigation="Cycle">
+        <Grid.Resources>
+            <Style x:Key="GridCardStyle" TargetType="Grid">
+                <Style.Setters>
+                    <Setter Property="Background" Value="{ThemeResource CardBackgroundFillColorDefaultBrush}" />
+                    <Setter Property="BorderThickness" Value="1" />
+                    <Setter Property="BorderBrush" Value="{ThemeResource CardStrokeColorDefaultBrush}" />
+                </Style.Setters>
+            </Style>
+        </Grid.Resources>
         <Grid.ColumnDefinitions>
-            <!-- Left, Splitter, Right -->
+            <!--  Left, Splitter, Right  -->
             <ColumnDefinition Width="*" />
-            <ColumnDefinition Width="6"/>
-            <ColumnDefinition Width="*"/>
+            <ColumnDefinition Width="6" />
+            <ColumnDefinition Width="*" />
         </Grid.ColumnDefinitions>
         <Grid.RowDefinitions>
-            <!-- CommandBar, Tree, Splitter, List, StackPanel -->
-            <RowDefinition Height="48"/>
+            <!--  CommandBar, Tree, Splitter, List, StackPanel  -->
+            <RowDefinition Height="Auto" />
             <RowDefinition Height="*" />
             <RowDefinition Height="6" />
             <RowDefinition Height="*" />
-            <RowDefinition Height="32"/>
+            <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
 
-        <CommandBar
-            Name="commandBar"
-            Background="Transparent"
-            IsOpen="True" 
-            DefaultLabelPosition="Right"
-            HorizontalAlignment="Left"
+        <Grid
             Grid.Row="0"
             Grid.Column="0"
             Grid.ColumnSpan="3"
-            IsTabStop="False"
-            >
-            <AppBarButton x:Name="openButton" x:Uid="OpenButton" Icon="OpenFile" IsTabStop="False" Click="OpenButton_Click" HorizontalAlignment="Left">
-                <AppBarButton.KeyboardAccelerators>
-                    <KeyboardAccelerator Modifiers="Control" Key="O" />
-                </AppBarButton.KeyboardAccelerators>
-            </AppBarButton>
-            <AppBarButton x:Name="saveButton" x:Uid="SaveButton" Icon="Save" IsTabStop="False" Click="SaveButton_Click" HorizontalAlignment="Left" IsEnabled="False">
-                <AppBarButton.KeyboardAccelerators>
-                    <KeyboardAccelerator Modifiers="None" Key="F2" />
-                </AppBarButton.KeyboardAccelerators>
-            </AppBarButton>
-            <AppBarButton x:Name="saveAsButton" x:Uid="SaveAsButton" Icon="SaveLocal" IsTabStop="False" Click="SaveAsButton_Click"  HorizontalAlignment="Left" IsEnabled="True">
-                <AppBarButton.KeyboardAccelerators>
-                    <KeyboardAccelerator Modifiers="Shift" Key="F2" />
-                </AppBarButton.KeyboardAccelerators>
-            </AppBarButton>
-            <AppBarButton x:Name="editButton" x:Uid="EditButton" Icon="NewWindow" IsTabStop="False" Click="EditButton_Click" HorizontalAlignment="Left">
-                <AppBarButton.KeyboardAccelerators>
-                    <KeyboardAccelerator Modifiers="Control" Key="E" />
-                </AppBarButton.KeyboardAccelerators>
-            </AppBarButton>
-            <AppBarButton x:Name="refreshButton" x:Uid="RefreshButton" Icon="Refresh" IsTabStop="False" Click="RefreshButton_Click" HorizontalAlignment="Left">
-                <AppBarButton.KeyboardAccelerators>
-                    <KeyboardAccelerator Key="F5" />
-                </AppBarButton.KeyboardAccelerators>
-            </AppBarButton>
-            <AppBarButton x:Name="writeButton" x:Uid="WriteButton" Icon="Share" IsTabStop="False" Click="WriteButton_Click" HorizontalAlignment="Left">
-                <AppBarButton.KeyboardAccelerators>
-                    <KeyboardAccelerator Modifiers="Control" Key="W" />
-                </AppBarButton.KeyboardAccelerators>
-            </AppBarButton>
-            <AppBarButton x:Name="registryButton" x:Uid="RegistryButton" Icon="Go" IsTabStop="False" Click="RegistryButton_Click" HorizontalAlignment="Left">
-                <AppBarButton.KeyboardAccelerators>
-                    <KeyboardAccelerator Modifiers="Control" Key="R" />
-                </AppBarButton.KeyboardAccelerators>
-            </AppBarButton>
-        </CommandBar>
+            Margin="8,8,8,8"
+            CornerRadius="{StaticResource OverlayCornerRadius}"
+            Style="{StaticResource GridCardStyle}">
+            <CommandBar
+                Name="commandBar"
+                HorizontalAlignment="Left"
+                BorderBrush="Transparent"
+                BorderThickness="0"
+                DefaultLabelPosition="Right"
+                IsOpen="True"
+                IsTabStop="False">
 
+                <AppBarButton
+                    x:Name="openButton"
+                    x:Uid="OpenButton"
+                    HorizontalAlignment="Left"
+                    Click="OpenButton_Click"
+                    Icon="OpenFile"
+                    IsTabStop="False">
+                    <AppBarButton.KeyboardAccelerators>
+                        <KeyboardAccelerator Key="O" Modifiers="Control" />
+                    </AppBarButton.KeyboardAccelerators>
+                </AppBarButton>
+                <AppBarButton
+                    x:Name="saveButton"
+                    x:Uid="SaveButton"
+                    HorizontalAlignment="Left"
+                    Click="SaveButton_Click"
+                    Icon="Save"
+                    IsEnabled="False"
+                    IsTabStop="False">
+                    <AppBarButton.KeyboardAccelerators>
+                        <KeyboardAccelerator Key="F2" Modifiers="None" />
+                    </AppBarButton.KeyboardAccelerators>
+                </AppBarButton>
+                <AppBarButton
+                    x:Name="saveAsButton"
+                    x:Uid="SaveAsButton"
+                    HorizontalAlignment="Left"
+                    Click="SaveAsButton_Click"
+                    Icon="SaveLocal"
+                    IsEnabled="True"
+                    IsTabStop="False">
+                    <AppBarButton.KeyboardAccelerators>
+                        <KeyboardAccelerator Key="F2" Modifiers="Shift" />
+                    </AppBarButton.KeyboardAccelerators>
+                </AppBarButton>
+                <AppBarButton
+                    x:Name="editButton"
+                    x:Uid="EditButton"
+                    HorizontalAlignment="Left"
+                    Click="EditButton_Click"
+                    Icon="NewWindow"
+                    IsTabStop="False">
+                    <AppBarButton.KeyboardAccelerators>
+                        <KeyboardAccelerator Key="E" Modifiers="Control" />
+                    </AppBarButton.KeyboardAccelerators>
+                </AppBarButton>
+                <AppBarButton
+                    x:Name="refreshButton"
+                    x:Uid="RefreshButton"
+                    HorizontalAlignment="Left"
+                    Click="RefreshButton_Click"
+                    Icon="Refresh"
+                    IsTabStop="False">
+                    <AppBarButton.KeyboardAccelerators>
+                        <KeyboardAccelerator Key="F5" />
+                    </AppBarButton.KeyboardAccelerators>
+                </AppBarButton>
+                <AppBarButton
+                    x:Name="writeButton"
+                    x:Uid="WriteButton"
+                    HorizontalAlignment="Left"
+                    Click="WriteButton_Click"
+                    Icon="Share"
+                    IsTabStop="False">
+                    <AppBarButton.KeyboardAccelerators>
+                        <KeyboardAccelerator Key="W" Modifiers="Control" />
+                    </AppBarButton.KeyboardAccelerators>
+                </AppBarButton>
+                <AppBarButton
+                    x:Name="registryButton"
+                    x:Uid="RegistryButton"
+                    HorizontalAlignment="Left"
+                    Click="RegistryButton_Click"
+                    Icon="Go"
+                    IsTabStop="False">
+                    <AppBarButton.KeyboardAccelerators>
+                        <KeyboardAccelerator Key="R" Modifiers="Control" />
+                    </AppBarButton.KeyboardAccelerators>
+                </AppBarButton>
+            </CommandBar>
+        </Grid>
         <TextBox
             x:Name="textBox"
             x:Uid="textBox"
-            Grid.Column="0"
             Grid.Row="1"
             Grid.RowSpan="3"
+            Grid.Column="0"
+            Margin="8,0,0,0"
             HorizontalAlignment="Stretch"
             VerticalAlignment="Stretch"
-            IsTabStop="True"
-            TabIndex="0"
-            IsTextPredictionEnabled="False"
-            IsSpellCheckEnabled="False"
             AcceptsReturn="True"
-            PlaceholderText="{Binding PlaceholderText}"
-            TextWrapping="NoWrap"
             CanBeScrollAnchor="False"
-            ScrollViewer.IsVerticalRailEnabled ="True"
-            ScrollViewer.IsHorizontalRailEnabled="True"
-            ScrollViewer.VerticalScrollBarVisibility="Visible"
-            ScrollViewer.HorizontalScrollBarVisibility="Visible"            
             FontFamily="Cascadia Mono, Consolas, Courier New"
-            />
+            IsSpellCheckEnabled="False"
+            IsTabStop="True"
+            IsTextPredictionEnabled="False"
+            PlaceholderText="{Binding PlaceholderText}"
+            ScrollViewer.HorizontalScrollBarVisibility="Visible"
+            ScrollViewer.IsHorizontalRailEnabled="True"
+            ScrollViewer.IsVerticalRailEnabled="True"
+            ScrollViewer.VerticalScrollBarVisibility="Visible"
+            TabIndex="0"
+            TextWrapping="NoWrap" />
 
         <StackPanel
             x:Name="stackPanelTextBox"
-            Grid.Column="0"
             Grid.Row="4"
+            Grid.Column="0"
             HorizontalAlignment="Stretch"
             VerticalAlignment="Stretch"
-            IsTabStop="False"
-            Background="Transparent"
-            >
-            <CheckBox 
-                x:Name="checkBoxTextBox" 
+            IsTabStop="False">
+            <CheckBox
+                x:Name="checkBoxTextBox"
                 x:Uid="checkBoxTextBox"
-                Content="{Binding Content}" 
-                IsChecked="True" 
-                HorizontalAlignment="Center" 
-                VerticalAlignment="Center" 
+                HorizontalAlignment="Center"
+                VerticalAlignment="Center"
+                Checked="CheckBoxTextBox_Checked"
+                Content="{Binding Content}"
+                IsChecked="True"
                 IsTabStop="True"
                 TabIndex="1"
-                Checked="CheckBoxTextBox_Checked" 
-                Unchecked="CheckBoxTextBox_Unchecked"
-                />
+                Unchecked="CheckBoxTextBox_Unchecked" />
         </StackPanel>
 
-        <TreeView
-            x:Name="treeView" 
-            Grid.Column="2" 
-            Grid.Row="1" 
-            Background="Transparent" 
-            CanDragItems="False" 
-            AllowDrop="False"
-            AllowFocusOnInteraction="True"
-            CanReorderItems="False"
-            IsEnabled="True"
-            ScrollViewer.BringIntoViewOnFocusChange="True"
-            ScrollViewer.VerticalScrollMode="Auto"
-            ScrollViewer.VerticalScrollBarVisibility="Visible"
-            ScrollViewer.HorizontalScrollBarVisibility="Visible"
-            ScrollViewer.HorizontalScrollMode="Enabled"
-            ItemInvoked="TreeView_ItemInvoked"
-            Padding="0,0,0,0"
-            IsTabStop="False"
-            TabIndex="2"
-            >
-            <TreeView.ItemTemplate>
-                <DataTemplate>
-                    <StackPanel Orientation="Horizontal" VerticalAlignment="Center" Padding="0,0,0,0" IsTabStop="False">
-                        <Image Source="{Binding Path=Content.Image}" MaxHeight="16" MaxWidth="16" ToolTipService.ToolTip="{Binding Path=Content.ToolTipText}"/>
-                        <TextBlock Padding="5,0,0,0" Text="{Binding Path=Content.Name}" />
-                    </StackPanel>
-                </DataTemplate>
-            </TreeView.ItemTemplate>
-        </TreeView>
-
-        <controls:DataGrid
-            x:Name="dataGrid"
-            Background="Transparent"
+        <Grid
+            Grid.Row="1"
             Grid.Column="2"
+            Margin="0,0,8,0"
+            CornerRadius="{StaticResource OverlayCornerRadius}"
+            Style="{StaticResource GridCardStyle}">
+            <TreeView
+                x:Name="treeView"
+                Padding="0,0,0,0"
+                AllowDrop="False"
+                AllowFocusOnInteraction="True"
+                Background="Transparent"
+                CanDragItems="False"
+                CanReorderItems="False"
+                IsEnabled="True"
+                IsTabStop="False"
+                ItemInvoked="TreeView_ItemInvoked"
+                ScrollViewer.BringIntoViewOnFocusChange="True"
+                ScrollViewer.HorizontalScrollBarVisibility="Visible"
+                ScrollViewer.HorizontalScrollMode="Enabled"
+                ScrollViewer.VerticalScrollBarVisibility="Visible"
+                ScrollViewer.VerticalScrollMode="Auto"
+                TabIndex="2">
+                <TreeView.ItemTemplate>
+                    <DataTemplate>
+                        <StackPanel
+                            Padding="0,0,0,0"
+                            VerticalAlignment="Center"
+                            IsTabStop="False"
+                            Orientation="Horizontal">
+                            <Image
+                                MaxWidth="16"
+                                MaxHeight="16"
+                                Source="{Binding Path=Content.Image}"
+                                ToolTipService.ToolTip="{Binding Path=Content.ToolTipText}" />
+                            <TextBlock Padding="5,0,0,0" Text="{Binding Path=Content.Name}" />
+                        </StackPanel>
+                    </DataTemplate>
+                </TreeView.ItemTemplate>
+            </TreeView>
+        </Grid>
+        <Grid
             Grid.Row="3"
             Grid.RowSpan="2"
-            CanDrag="False"
-            SelectionMode="Single"
-            AllowDrop="False"
-            AreRowDetailsFrozen="True"
-            HeadersVisibility="Column"
-            RowDetailsVisibilityMode="Collapsed"
-            IsReadOnly="True"
-            AutoGenerateColumns="False"
-            ItemsSource="{x:Bind listRegistryValues}"
-            IsTabStop="true"
-            TabIndex="3"
-            >
-            <controls:DataGrid.Columns>
-                <controls:DataGridTemplateColumn
-                    x:Uid="NameColumn"
-                    Width="Auto"
-                    IsReadOnly="True"
-                    >
-                    <controls:DataGridTemplateColumn.CellTemplate>
-                        <DataTemplate>
-                            <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
-                                <TextBlock Padding="10,0,0,0" Text=" " FontSize="14" IsTabStop="False"/>
-                                <Image Source="{Binding ImageUri}" MaxHeight="16" MaxWidth="16" IsTabStop="False" ToolTipService.ToolTip="{Binding ToolTipText}" />
-                                <TextBlock Padding="5, 0, 10, 0" Text="{Binding Name}" FontSize="14" IsTabStop="False"/>
-                            </StackPanel>
-                        </DataTemplate>
-                    </controls:DataGridTemplateColumn.CellTemplate>
-                </controls:DataGridTemplateColumn>
-                <controls:DataGridTextColumn 
-                    x:Uid="TypeColumn"
-                    Width="Auto"
-                    Binding="{Binding Type}" 
-                    FontSize="14"
-                    />
-                <controls:DataGridTextColumn 
-                    x:Uid="ValueColumn" 
-                    Width="Auto"
-                    Binding="{Binding Value}" 
-                    FontSize="14"
-                    />
-            </controls:DataGrid.Columns>
-        </controls:DataGrid>
-
-        <controls:GridSplitter  x:Name="verticalSplitter" Grid.Column="1" Grid.Row="1" Grid.RowSpan="4" CursorBehavior="ChangeOnSplitterHover" Background="{ThemeResource TextControlBorderBrush}" VerticalAlignment="Stretch" GripperCursor="SizeWestEast" IsTabStop="False"/>
-        <controls:GridSplitter  x:Name="horizontalSplitter" Grid.Column="2" Grid.Row="2" CursorBehavior="ChangeOnSplitterHover" Background="{ThemeResource TextControlBorderBrush}" HorizontalAlignment="Stretch" GripperCursor="SizeNorthSouth" IsTabStop="False"/>
+            Grid.Column="2"
+            Margin="0,0,8,8"
+            Style="{StaticResource GridCardStyle}">
+            <controls:DataGrid
+                x:Name="dataGrid"
+                AllowDrop="False"
+                AreRowDetailsFrozen="True"
+                AutoGenerateColumns="False"
+                Background="Transparent"
+                CanDrag="False"
+                CornerRadius="{StaticResource OverlayCornerRadius}"
+                HeadersVisibility="Column"
+                IsReadOnly="True"
+                IsTabStop="true"
+                ItemsSource="{x:Bind listRegistryValues}"
+                RowDetailsVisibilityMode="Collapsed"
+                SelectionMode="Single"
+                TabIndex="3">
+                <controls:DataGrid.Columns>
+                    <controls:DataGridTemplateColumn
+                        x:Uid="NameColumn"
+                        Width="Auto"
+                        IsReadOnly="True">
+                        <controls:DataGridTemplateColumn.CellTemplate>
+                            <DataTemplate>
+                                <StackPanel VerticalAlignment="Center" Orientation="Horizontal">
+                                    <TextBlock
+                                        Padding="10,0,0,0"
+                                        FontSize="14"
+                                        IsTabStop="False"
+                                        Text=" " />
+                                    <Image
+                                        MaxWidth="16"
+                                        MaxHeight="16"
+                                        IsTabStop="False"
+                                        Source="{Binding ImageUri}"
+                                        ToolTipService.ToolTip="{Binding ToolTipText}" />
+                                    <TextBlock
+                                        Padding="5,0,10,0"
+                                        FontSize="14"
+                                        IsTabStop="False"
+                                        Text="{Binding Name}" />
+                                </StackPanel>
+                            </DataTemplate>
+                        </controls:DataGridTemplateColumn.CellTemplate>
+                    </controls:DataGridTemplateColumn>
+                    <controls:DataGridTextColumn
+                        x:Uid="TypeColumn"
+                        Width="Auto"
+                        Binding="{Binding Type}"
+                        FontSize="14" />
+                    <controls:DataGridTextColumn
+                        x:Uid="ValueColumn"
+                        Width="Auto"
+                        Binding="{Binding Value}"
+                        FontSize="14" />
+                </controls:DataGrid.Columns>
+            </controls:DataGrid>
+        </Grid>
+        <controls:GridSplitter
+            x:Name="verticalSplitter"
+            Grid.Row="1"
+            Grid.RowSpan="4"
+            Grid.Column="1"
+            VerticalAlignment="Stretch"
+            Background="Transparent"
+            CursorBehavior="ChangeOnSplitterHover"
+            GripperCursor="SizeWestEast"
+            IsTabStop="False" />
+        <controls:GridSplitter
+            x:Name="horizontalSplitter"
+            Grid.Row="2"
+            Grid.Column="2"
+            HorizontalAlignment="Stretch"
+            Background="Transparent"
+            CornerRadius="4"
+            CursorBehavior="ChangeOnSplitterHover"
+            GripperCursor="SizeNorthSouth"
+            IsTabStop="False" />
     </Grid>
-</Window>
+</winuiex:WindowEx>

@@ -14,10 +14,11 @@ using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Windows.Foundation.Metadata;
 using Windows.Storage;
+using WinUIEx;
 
 namespace RegistryPreview
 {
-    public sealed partial class MainWindow : Window
+    public sealed partial class MainWindow : WindowEx
     {
         /// <summary>
         /// Method that opens and processes the passed in file name; expected to be an absolute path and a first time open
