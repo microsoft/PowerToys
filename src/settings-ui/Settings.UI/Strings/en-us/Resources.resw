@@ -3116,4 +3116,7 @@ Activate by holding the key for the character you want to add an accent to, then
   <data name="RegistryPreview_LaunchButtonControl.Header" xml:space="preserve">
     <value>Launch Registry Preview</value>
   </data>
+  <data name="PastePlain_ShortcutWarning.Title" xml:space="preserve">
+    <value>Using this shortcut may prevent non-text paste actions (e.g. images, files) or built-in paste plain text actions in other applications from functioning.</value>
+  </data>
 </root>
