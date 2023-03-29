@@ -121,7 +121,8 @@
     <value>Fail to load plugin:</value>
   </data>
   <data name="FailedToLoadPluginDescriptionPartTwo" xml:space="preserve">
-    <value>Please contact plugin creator for help.</value>
+    <value>Please report the bug to https://aka.ms/powerToysReportBug. (For third-party plugins, please contact the plugin author.)</value>
+    <comment>"https://aka.ms/powerToysReportBug" is a web uri.</comment>
   </data>
   <data name="FailedToLoadPluginTitle" xml:space="preserve">
     <value>PowerToys Run - Plugin Loading Error</value>

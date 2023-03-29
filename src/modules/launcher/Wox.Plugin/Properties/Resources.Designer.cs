@@ -70,7 +70,7 @@ namespace Wox.Plugin.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Please contact plugin creator for help..
+        ///   Looks up a localized string similar to Please report the bug to https://aka.ms/powerToysReportBug. (For third-party plugins, please contact the plugin author.).
         /// </summary>
         public static string FailedToLoadPluginDescriptionPartTwo {
             get {
