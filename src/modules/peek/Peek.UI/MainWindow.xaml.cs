@@ -2,7 +2,7 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-using System.Diagnostics;
+using System;
 using System.Linq;
 using interop;
 using Microsoft.PowerToys.Settings.UI.Library;
@@ -115,7 +115,14 @@ namespace Peek.UI
             double scaledWindowWidth = adjustedContentSize.Width / monitorScale;
             double scaledWindowHeight = adjustedContentSize.Height / monitorScale;
 
-            this.CenterOnScreen(scaledWindowWidth + WindowConstants.WindowHeightContentPadding, scaledWindowHeight + titleBarHeight + WindowConstants.WindowWidthContentPadding);
+            double desiredScaledHeight = scaledWindowHeight + titleBarHeight + WindowConstants.WindowWidthContentPadding;
+            double desiredScaledWidth = scaledWindowWidth + WindowConstants.WindowHeightContentPadding;
+
+            if (!TitleBarControl.Pinned)
+            {
+                this.CenterOnScreen(desiredScaledWidth, desiredScaledHeight); // re-center if not pinned
+            }
+
             this.Show();
             this.BringToForeground();
         }

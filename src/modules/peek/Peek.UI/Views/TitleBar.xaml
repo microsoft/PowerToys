@@ -16,6 +16,7 @@
             <ColumnDefinition x:Name="DraggableColumn" Width="*" />
             <ColumnDefinition x:Name="LaunchAppButtonColumn" Width="Auto" />
             <ColumnDefinition x:Name="AppRightPaddingColumn" Width="65" />
+            <ColumnDefinition x:Name="PinButtonColumn" Width="40" />
             <ColumnDefinition x:Name="SystemRightPaddingColumn" Width="0" />
         </Grid.ColumnDefinitions>
 
@@ -97,6 +98,22 @@
             <Button.KeyboardAccelerators>
                 <KeyboardAccelerator Key="Enter" />
             </Button.KeyboardAccelerators>
+        </Button>
+
+        <Button
+            x:Name="PinButton"
+            x:Uid="PinButton"
+            Grid.Column="4"
+            VerticalAlignment="Center"
+            Command="{x:Bind PinCommand, Mode=OneWay}"
+            ToolTipService.ToolTip="{x:Bind PinToolTip(Pinned), Mode=OneWay}">
+            <Button.Content>
+                <FontIcon
+                    x:Name="PinButton_Icon"
+                    x:Uid="PinButton_Icon"
+                    FontSize="{StaticResource CaptionTextBlockFontSize}"
+                    Glyph="{x:Bind PinGlyph(Pinned), Mode=OneWay}" />
+            </Button.Content>
         </Button>
 
         <VisualStateManager.VisualStateGroups>

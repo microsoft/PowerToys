@@ -189,7 +189,7 @@
     <value>Item Type: {0}</value>
     <comment>Item Type for the tooltip of preview. {0} is the type.</comment>
   </data>
-	<data name="PreviewTooltip_DateModified" xml:space="preserve">
+  <data name="PreviewTooltip_DateModified" xml:space="preserve">
     <value>Date Modified: {0}</value>
     <comment>Date Modified label for the tooltip of preview. {0} is the date.</comment>
   </data>
@@ -204,5 +204,13 @@
   <data name="PreviewTooltip_Blank" xml:space="preserve">
     <value>File preview</value>
     <comment>Tooltip of preview when there's no file info available.</comment>
+  </data>
+  <data name="PinButton_Tooltip" xml:space="preserve">
+    <value>Pin the window to the current location</value>
+    <comment>Tooltip for button to pin the Peek window.</comment>
+  </data>
+  <data name="UnpinButton_ToolTip" xml:space="preserve">
+    <value>Unpin the window</value>
+    <comment>Tooltip for button to unpin the Peek window.</comment>
   </data>
 </root>
