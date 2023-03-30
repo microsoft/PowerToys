@@ -77,6 +77,12 @@
                             HotkeySettings="{x:Bind Path=ViewModel.MicrophoneMuteHotkey, Mode=TwoWay}" />
                     </labs:SettingsCard>
 
+                    <labs:SettingsCard x:Uid="VideoConference_MicrophonePushToTalkHotkeyControl_Header">
+                        <controls:ShortcutControl
+                            MinWidth="{StaticResource SettingActionControlMinWidth}"
+                            HotkeySettings="{x:Bind Path=ViewModel.MicrophonePushToTalkHotkey, Mode=TwoWay}" />
+                    </labs:SettingsCard>
+
                     <labs:SettingsCard x:Uid="VideoConference_CameraMuteHotkeyControl_Header">
                         <controls:ShortcutControl
                             MinWidth="{StaticResource SettingActionControlMinWidth}"
@@ -94,6 +100,13 @@
                             MinWidth="{StaticResource SettingActionControlMinWidth}"
                             ItemsSource="{Binding MicrophoneNames, Mode=OneTime}"
                             SelectedIndex="{Binding Path=SelectedMicrophoneIndex, Mode=TwoWay}" />
+                    </labs:SettingsCard>
+                    
+                    <labs:SettingsCard
+                        x:Uid="VideoConference_PushToReverse">
+                        <ToggleSwitch
+                            x:Uid="PushToReverseSwitch"
+                            IsOn="{x:Bind Mode=TwoWay, Path=ViewModel.PushToReverseEnabled}" />
                     </labs:SettingsCard>
                 </controls:SettingsGroup>
 

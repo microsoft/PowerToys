@@ -207,6 +207,9 @@
   <data name="VideoConference_MicrophoneMuteHotkeyControl_Header.Header" xml:space="preserve">
     <value>Mute microphone</value>
   </data>
+  <data name="VideoConference_MicrophonePushToTalkHotkeyControl_Header.Header" xml:space="preserve">
+    <value>Push to talk</value>
+  </data>
   <data name="VideoConference_CameraMuteHotkeyControl_Header.Header" xml:space="preserve">
     <value>Mute camera</value>
   </data>
@@ -215,6 +218,12 @@
   </data>
   <data name="VideoConference_SelectedMicrophone.Header" xml:space="preserve">
     <value>Selected microphone</value>
+  </data>
+  <data name="VideoConference_PushToReverse.Header" xml:space="preserve">
+    <value>Push to reverse</value>
+  </data>
+  <data name="VideoConference_PushToReverse.Description" xml:space="preserve">
+    <value>If enabled, allows both push to talk and push to mute, depending on microphone state</value>
   </data>
   <data name="VideoConference_CameraOverlayImagePathHeader.Header" xml:space="preserve">
     <value>Image displayed when camera is muted</value>
@@ -1719,6 +1728,9 @@ From there, simply click on one of the supported files in the File Explorer and 
   </data>
   <data name="Oobe_VideoConference_ToggleMic.Text" xml:space="preserve">
     <value>to toggle your microphone</value>
+  </data>
+  <data name="Oobe_VideoConference_PushToTalkMic.Text" xml:space="preserve">
+    <value>to toggle your microphone until key release</value>
   </data>
   <data name="Oobe_VideoConference_ToggleVid.Text" xml:space="preserve">
     <value>to toggle your video</value>
