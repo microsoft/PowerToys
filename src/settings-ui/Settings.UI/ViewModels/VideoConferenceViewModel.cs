@@ -96,6 +96,8 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
             _cameraAndMicrophoneMuteHotkey = Settings.Properties.MuteCameraAndMicrophoneHotkey.Value;
             _microphoneMuteHotkey = Settings.Properties.MuteMicrophoneHotkey.Value;
+            _microphonePushToTalkHotkey = Settings.Properties.PushToTalkMicrophoneHotkey.Value;
+            _pushToReverseEnabled = Settings.Properties.PushToReverseEnabled.Value;
             _cameraMuteHotkey = Settings.Properties.MuteCameraHotkey.Value;
             CameraImageOverlayPath = Settings.Properties.CameraOverlayImagePath.Value;
             SelectOverlayImage = new ButtonClickCommand(SelectOverlayImageAction);
@@ -176,7 +178,9 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         private int _toolbarHideIndex;
         private HotkeySettings _cameraAndMicrophoneMuteHotkey;
         private HotkeySettings _microphoneMuteHotkey;
+        private HotkeySettings _microphonePushToTalkHotkey;
         private HotkeySettings _cameraMuteHotkey;
+        private bool _pushToReverseEnabled;
         private int _selectedCameraIndex = -1;
         private int _selectedMicrophoneIndex;
 
@@ -336,6 +340,42 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                     _microphoneMuteHotkey = value;
                     Settings.Properties.MuteMicrophoneHotkey.Value = value;
                     RaisePropertyChanged(nameof(MicrophoneMuteHotkey));
+                }
+            }
+        }
+
+        public HotkeySettings MicrophonePushToTalkHotkey
+        {
+            get
+            {
+                return _microphonePushToTalkHotkey;
+            }
+
+            set
+            {
+                if (value != _microphonePushToTalkHotkey)
+                {
+                    _microphonePushToTalkHotkey = value;
+                    Settings.Properties.PushToTalkMicrophoneHotkey.Value = value;
+                    RaisePropertyChanged(nameof(MicrophonePushToTalkHotkey));
+                }
+            }
+        }
+
+        public bool PushToReverseEnabled
+        {
+            get
+            {
+                return _pushToReverseEnabled;
+            }
+
+            set
+            {
+                if (value != _pushToReverseEnabled)
+                {
+                    _pushToReverseEnabled = value;
+                    Settings.Properties.PushToReverseEnabled.Value = value;
+                    RaisePropertyChanged(nameof(PushToReverseEnabled));
                 }
             }
         }
