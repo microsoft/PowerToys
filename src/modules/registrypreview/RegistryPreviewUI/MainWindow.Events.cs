@@ -56,7 +56,6 @@ namespace RegistryPreview
             }
 
             // Save app settings
-            jsonSettings.SetNamedValue("checkBoxTextBox.Checked", JsonValue.CreateBooleanValue(checkBoxTextBox.IsChecked.Value));
             SaveSettingsFile(settingsFolder, settingsFile);
         }
 
@@ -67,12 +66,6 @@ namespace RegistryPreview
         {
             // static flag to track whether the Visual Tree is ready - if the main Grid has been loaded, the tree is ready.
             visualTreeReady = true;
-
-            // Load and restore app settings
-            if (jsonSettings.ContainsKey("checkBoxTextBox.Checked"))
-            {
-                checkBoxTextBox.IsChecked = jsonSettings.GetNamedBoolean("checkBoxTextBox.Checked");
-            }
 
             // Check to see if the REG file was opened and parsed successfully
             if (OpenRegistryFile(App.AppFilename) == false)
@@ -353,34 +346,6 @@ namespace RegistryPreview
         {
             RefreshRegistryFile();
             saveButton.IsEnabled = true;
-        }
-
-        /// <summary>
-        /// Readonly checkbox is checked, set textBox to read only; also update the font color so it has a hint of being "disabled" (also the hover state!)
-        /// </summary>
-        private void CheckBoxTextBox_Checked(object sender, RoutedEventArgs e)
-        {
-            textBox.IsReadOnly = true;
-            SolidColorBrush brush = new SolidColorBrush(Windows.UI.Color.FromArgb(255, 120, 120, 120)); // (SolidColorBrush)Application.Current.Resources["TextBoxDisabledForegroundThemeBrush"];
-            if (brush != null)
-            {
-                textBox.Foreground = brush;
-                textBox.Resources["TextControlForegroundPointerOver"] = brush;
-            }
-        }
-
-        /// <summary>
-        /// Readonly checkbox is unchecked, set textBox to be editable; also update the font color back to a theme friendly foreground (also the hover state!)
-        /// </summary>
-        private void CheckBoxTextBox_Unchecked(object sender, RoutedEventArgs e)
-        {
-            textBox.IsReadOnly = false;
-            SolidColorBrush brush = (SolidColorBrush)Application.Current.Resources["TextControlForeground"];
-            if (brush != null)
-            {
-                textBox.Foreground = brush;
-                textBox.Resources["TextControlForegroundPointerOver"] = brush;
-            }
         }
     }
 }
