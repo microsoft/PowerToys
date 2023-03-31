@@ -148,6 +148,9 @@
       <Custom Action="RegisterPowerToysSchTask" After="InstallFiles">
         NOT Installed and CREATESCHEDULEDTASK = 1
       </Custom>
+      <Custom Action="CheckGPO" After="InstallInitialize">
+        NOT Installed
+      </Custom>
       <Custom Action="ApplyModulesRegistryChangeSets" After="InstallFiles">
         NOT Installed
       </Custom>
@@ -411,6 +414,13 @@
                 Execute="deferred"
                 BinaryKey="PTCustomActions"
                 DllEntry="UnRegisterContextMenuPackagesCA"
+                  />
+
+    <CustomAction Id="CheckGPO"
+                  Return="check"
+                  Impersonate="yes"
+                  BinaryKey="PTCustomActions"
+                  DllEntry="CheckGPOCA"
                   />
 
     <!-- Close 'PowerToys.exe' before uninstall-->
