@@ -24,6 +24,8 @@ All:
 - Hosts File Editor
 - File Locksmith
 - GPO
+- Paste as plain text
+- Registry Preview
 ```
 
 ```
@@ -38,6 +40,7 @@ Group 1:
 - Keyboard Manager
 - Screen Ruler
 - VCM
+- Paste as plain text
 ```
 ```
 Group 2:
@@ -51,6 +54,7 @@ Group 2:
 - AlwaysOnTop
 - Screen Ruler
 - Hosts File Editor
+- Paste as plain text
 ```
 ```
 Group 3:
@@ -63,6 +67,7 @@ Group 3:
 - File Locksmith
 - Hosts File Editor
 - GPO
+- Registry Preview
 ```
 ```
 Group 4:
@@ -88,4 +93,5 @@ Group 5:
 - AlwaysOnTop
 - Quick Accent
 - GPO
+- Registry Preview
 ```
