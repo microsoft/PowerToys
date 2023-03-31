@@ -14,6 +14,12 @@
    * Run PowerToys installer with psexec tool `psexec.exe -sid <path_to_installer_exe`
    * Brief check if all modules are working
 
+ * PER-USER and PER-MACHINE TESTS:
+   * Install **previous version** on a clean machine and update with new per-machine version. Ensure that it is installed in Program files and that registry entries are under **HKLM**/Software/Classes/PowerToys. Go trhough different modules and ensure that they are working correctly.
+   * Try installing per-user version over already installed per-machine version and ensure that proper error message is shown.
+   * Remove PowerToys and install per-user version. Ensure that it is installed in <APPDATA>/Local/PowerToys and that registry entries are under **HKCU**/Software/Classes/PowerToys. Go trhough different modules and ensure that they are working correctly.
+   * Create a new user and install per-user version there as well. Go trhough different modules and ensure that they are working correctly. Ensure that changing settings for one user does not change settings of other user.
+
 ## Functional tests
 
  Regressions:
@@ -644,3 +650,19 @@ Mouse Jump:
    - [ ] Paste again the text using standard Windows Ctrl + V shortcut and ensure the text is now pasted plain without formatting as well.
    - [ ] Change the activation shorctut and ensure that Paste As Plain Text is triggered using new shortcut.
    - [ ] Disable the module and ensure that text is not being pasted using activation shortcut. 
+
+### Registry Preview
+ * Open Registry Editor, add new registry key with 1 string value and 1 binary value in e.g. HKLM/Software/Classes/PowerToysTest. Right click new registry key->export and export it to file.
+ * Launch Registry Preview by right-clicking exported .reg file->'Preview'. Then:
+   - [ ] Uncheck ReadOnly checkbox and edit file content. Ensure that visual try is being re-populated while typing. Save the file by pressing Save file button. Confirm that file is properly saved by pressing Edit file... button which will open file in Notepad. Try saving file using Save file as... button.
+   - [ ] Edit file externaly (e.g. in Notepad) and save it there. Pres Reload from file button and ensure that file content and visual tree are reloaded and show new content.
+   - [ ] Select some registry key with registry values in visual tree and ensure that registry values are shown properly in bottom-right area.
+   - [ ] Try opening different registry file by pressing Open file button.
+   - [ ] Delete newly created registry key from first step manually in Registry Editor, then try writing registry changes to registry by pressing Write to Registry button in Registry Preview. *Be careful what you are writing!* 
+   
+ * Open Registry Preview Settings. Then:
+   - [ ] Disable Registry Preview and ensure that Preview context menu option for .reg files no longer appears.
+   - [ ] Try to launch Registry Preview from it's OOBE page while Registry Preview is disabled and ensure that it does not start.
+   - [ ] Enable Registry Preview again and ensure that Preview context menu option for .reg files appears and that it starts Registry Preview correctly. 
+   - [ ] Try to launch Registry Preview from it's Settings page and ensure that it is launched properly.
+   - [ ] Try to launch Registry Preview from it's OOBE page and ensure that it is launched properly.
