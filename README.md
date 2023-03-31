@@ -109,17 +109,17 @@ In this release, we have focused on releasing new features, stability, and impro
 
 ### Hosts file editor
 
-- Improve the host's file loading. Thanks [@davidegiacometti](https://github.com/davidegiacometti)!
-- Improved duplicate host finding. Thanks [@davidegiacometti](https://github.com/davidegiacometti)!
+- Improve the hosts file loading. Thanks [@davidegiacometti](https://github.com/davidegiacometti)!
+- Improved duplicate hosts finding. Thanks [@davidegiacometti](https://github.com/davidegiacometti)!
 
 ### Keyboard Manager
 
-- Fixed a typo in the Keyboard Manager Editor. Thanks [@ChristianLW](https://github.com/ChristianLW)!
+- Fix typo in Keyboard Manager Editor. Thanks [@ChristianLW](https://github.com/ChristianLW)!
 
 ### Mouse Utils
 
-- Resolved grammatical errors in the Mouse Highlighter description. Thanks [@WordlessSafe1](https://github.com/WordlessSafe1)!
-- New utility: Mouse Jump allows you to quickly move the mouse pointer long distances on single or across screens. Thanks [@mikeclayton](https://github.com/mikeclayton)!
+- Resolve grammatical error in Mouse Highlighter description. Thanks [@WordlessSafe1](https://github.com/WordlessSafe1)!
+- New utility: Mouse Jump allows to quickly move the mouse pointer long distances on single or across screens. Thanks [@mikeclayton](https://github.com/mikeclayton)!
 
 ### Paste as Plain Text
 
@@ -130,16 +130,16 @@ In this release, we have focused on releasing new features, stability, and impro
 - Show Steam (steam://open/) shortcuts in the Program plugin. 
 - Localize paths of Program plugin results. Thanks [@htcfreek](https://github.com/htcfreek)!
 - Improved stability of the code used to get the localized names and paths. Thanks [@htcfreek](https://github.com/htcfreek)!
-- Support MSC and CPL files in the "Run command" results of the Program plugin. Thanks [@htcfreek](https://github.com/htcfreek)!
-- Added missing MSC and CPL settings to the results of the Windows Settings plugin. Thanks [@htcfreek](https://github.com/htcfreek)!
+- Support MSC and CPL files in "Run command" results of Program plugin. Thanks [@htcfreek](https://github.com/htcfreek)!
+- Added missing MSC and CPL settings to the results of Windows Settings plugin. Thanks [@htcfreek](https://github.com/htcfreek)!
 - System plugin: Setting for separate "Open/Empty Recycle bin" results or single result with context menu. (This was implemented based on user feedback for a change in the last build.) Thanks [@htcfreek](https://github.com/htcfreek)!
 - Add support for log2 and log10 in Calculator plugin. Thanks [@RickLuiken](https://github.com/RickLuiken)!
 - Removed the TimeZone plugin.
-- Fix the crash when loading thumbnails for PDF files. (This was a hotfix for 0.67)
+- Fix the crash when loading thumbnail for PDF files. (This was a hotfix for 0.67)
 
 ### Shortcut Guide
 
-- Added: Dismiss Shortcut Guide with a mouse click. Thanks [@davidegiacometti](https://github.com/davidegiacometti)!
+- Added: Dismiss Shortcut Guide with mouse click. Thanks [@davidegiacometti](https://github.com/davidegiacometti)!
 
 ### Quick Accent
 
