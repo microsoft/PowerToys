@@ -319,7 +319,17 @@
         <decimal value="0" />
       </disabledValue>
     </policy>
-	<policy name="DisableAutomaticUpdateDownload" class="Both" displayName="$(string.DisableAutomaticUpdateDownload)" explainText="$(string.DisableAutomaticUpdateDownloadDescription)" key="Software\Policies\PowerToys" valueName="AutomaticUpdateDownloadDisabled">
+	  <policy name="DisablePerUserInstallation" class="Machine" displayName="$(string.DisablePerUserInstallation)" explainText="$(string.DisablePerUserInstallationDescription)" key="Software\Policies\PowerToys" valueName="PerUserInstallationDisabled">
+      <parentCategory ref="InstallerUpdates" />
+      <supportedOn ref="SUPPORTED_POWERTOYS_0_69_0" />
+      <enabledValue>
+        <decimal value="1" />
+      </enabledValue>
+      <disabledValue>
+        <decimal value="0" />
+      </disabledValue>
+    </policy>
+	  <policy name="DisableAutomaticUpdateDownload" class="Both" displayName="$(string.DisableAutomaticUpdateDownload)" explainText="$(string.DisableAutomaticUpdateDownloadDescription)" key="Software\Policies\PowerToys" valueName="AutomaticUpdateDownloadDisabled">
       <parentCategory ref="InstallerUpdates" />
       <supportedOn ref="SUPPORTED_POWERTOYS_0_68_0" />
       <enabledValue>
@@ -329,7 +339,7 @@
         <decimal value="0" />
       </disabledValue>
     </policy>
-	<policy name="SuspendNewUpdateToast" class="Both" displayName="$(string.SuspendNewUpdateToast)" explainText="$(string.SuspendNewUpdateToastDescription)" key="Software\Policies\PowerToys" valueName="SuspendNewUpdateAvailableToast">
+	  <policy name="SuspendNewUpdateToast" class="Both" displayName="$(string.SuspendNewUpdateToast)" explainText="$(string.SuspendNewUpdateToastDescription)" key="Software\Policies\PowerToys" valueName="SuspendNewUpdateAvailableToast">
       <parentCategory ref="InstallerUpdates" />
       <supportedOn ref="SUPPORTED_POWERTOYS_0_68_0" />
       <enabledValue>

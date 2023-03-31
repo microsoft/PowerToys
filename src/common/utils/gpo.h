@@ -51,6 +51,7 @@ namespace powertoys_gpo {
     const std::wstring POLICY_CONFIGURE_ENABLED_REGISTRY_PREVIEW = L"ConfigureEnabledUtilityRegistryPreview";
 
     // The registry value names for PowerToys installer and update policies.
+    const std::wstring POLICY_DISABLE_PER_USER_INSTALLATION = L"PerUserInstallationDisabled";
     const std::wstring POLICY_DISABLE_AUTOMATIC_UPDATE_DOWNLOAD = L"AutomaticUpdateDownloadDisabled";
     const std::wstring POLICY_SUSPEND_NEW_UPDATE_TOAST = L"SuspendNewUpdateAvailableToast";
     const std::wstring POLICY_DISABLE_PERIODIC_UPDATE_CHECK = L"PeriodicUpdateCheckDisabled";
@@ -260,6 +261,12 @@ namespace powertoys_gpo {
     {
         return getConfiguredValue(POLICY_CONFIGURE_ENABLED_REGISTRY_PREVIEW);
     }
+
+    inline gpo_rule_configured_t getDisablePerUserInstallationValue()
+    {
+        return getConfiguredValue(POLICY_DISABLE_PER_USER_INSTALLATION);
+    }
+
     inline gpo_rule_configured_t getDisableAutomaticUpdateDownloadValue()
     {
         return getConfiguredValue(POLICY_DISABLE_AUTOMATIC_UPDATE_DOWNLOAD);
