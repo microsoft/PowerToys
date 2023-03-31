@@ -24,10 +24,12 @@ All:
 - Hosts File Editor
 - File Locksmith
 - GPO
+- Paste as plain text
+- Registry Preview
 ```
 
 ```
-Group 1: 
+Group 1:
 - Functional
 - Localization
 - General
@@ -40,7 +42,9 @@ Group 1:
 - Screen Ruler
 - Hosts File Editor
 - File Locksmith
+- Registry Preview
 ```
+
 ```
 Group 2:
 - Install
@@ -55,7 +59,9 @@ Group 2:
 - Awake
 - File Locksmith
 - GPO
+- Paste as plain text
 ```
+
 ```
 Group 3:
 - Functional
@@ -70,7 +76,9 @@ Group 3:
 - Screen Ruler
 - Quick Accent
 - Text Extractor
+- Registry Preview
 ```
+
 ```
 Group 4:
 - Install
@@ -85,4 +93,5 @@ Group 4:
 - Text Extractor
 - Hosts File Editor
 - GPO
+- Paste as plain text
 ```
