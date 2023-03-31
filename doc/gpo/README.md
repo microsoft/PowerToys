@@ -44,14 +44,6 @@ If this setting is not configured, experimentation is allowed.
 
 ### Installer and Updates
 
-#### Disable per-machine installation
-
-This policy configures whether PowerToys per-machine installation is allowed or not.
-
-If enabled, per-machine installation is not allowed.
-
-If disabled or not configured, per-machine installation is allowed.
-
 #### Disable per-user installation
 
 This policy configures whether PowerToys per-user installation is allowed or not.

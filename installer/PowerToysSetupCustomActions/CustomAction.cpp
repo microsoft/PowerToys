@@ -72,16 +72,6 @@ UINT __stdcall CheckGPOCA(MSIHANDLE hInstall)
             hr = E_ABORT;
         }
     }
-    if(std::wstring{ currentScope } == L"perMachine")
-    {
-        if (powertoys_gpo::getDisablePerMachineInstallationValue() == powertoys_gpo::gpo_rule_configured_enabled)
-        {
-            PMSIHANDLE hRecord = MsiCreateRecord(0);
-            MsiRecordSetString(hRecord, 0, TEXT("The system administrator has disabled per-machine installation."));
-            MsiProcessMessage(hInstall, static_cast<INSTALLMESSAGE>(INSTALLMESSAGE_ERROR + MB_OK), hRecord);
-            hr = E_ABORT;
-        }
-    }
 
 LExit:
     UINT er = SUCCEEDED(hr) ? ERROR_SUCCESS : ERROR_INSTALL_FAILURE;
