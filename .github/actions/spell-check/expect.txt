@@ -283,7 +283,6 @@ CLIPCHILDREN
 CLIPSIBLINGS
 Cloneable
 clrcall
-clrcompression
 Cls
 CLSCTX
 clsid
@@ -427,7 +426,6 @@ DCOM
 dcommon
 dcomp
 dcompi
-DCompiler
 DComposition
 DCR
 DCs
@@ -581,7 +579,6 @@ EFDD
 EFE
 EFFEFC
 EFile
-egfile
 ekus
 emmintrin
 Emoji
@@ -645,7 +642,6 @@ FAF
 FAFD
 fancymouse
 fancyzone
-fancyzones
 FANCYZONESDRAWLAYOUTTEST
 FANCYZONESEDITOR
 Farbraum
@@ -746,6 +742,7 @@ GNumber
 google
 gpedit
 gpo
+GPOCA
 GPT
 gpu
 graphql
@@ -893,7 +890,6 @@ IMAGERESIZEREXT
 imageresizerinput
 imageresizersettings
 imagingdevices
-Imc
 ime
 imeutil
 inetcpl
@@ -1449,7 +1445,6 @@ pinfo
 pinvoke
 pipename
 PKBDLLHOOKSTRUCT
-Pkcs
 PKEY
 plib
 PLK
@@ -1597,9 +1592,9 @@ REGFILTERPINS
 REGISTERCLASSFAILED
 REGISTRYHEADER
 registrypath
-registryroot
 registrypreview
 REGISTRYPREVIEWEXT
+registryroot
 regkey
 REGPINTYPES
 regroot
@@ -1851,7 +1846,6 @@ stdcpplatest
 STDMETHODCALLTYPE
 STDMETHODIMP
 stefan
-stefansjfw
 Stereolithography
 STGM
 STGMEDIUM
@@ -2211,7 +2205,6 @@ wox
 wparam
 wpf
 wpfdepsjsonpath
-wpfgfx
 wpftmp
 wpr
 wprp
