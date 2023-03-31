@@ -150,15 +150,15 @@ In this release, we have focused on releasing new features, stability, and impro
 ### Settings
 
 - Add missing flyout borders on Windows 10. Thanks [@davidegiacometti](https://github.com/davidegiacometti)!
-- Add experimentation for the OOBE landing page. Thanks [@chenss3](https://github.com/chenss3)!
+- Add experimentation for oobe landing page. Thanks [@chenss3](https://github.com/chenss3)!
 - Show icons of user-installed PowerToys Run plugins. Thanks [@al2me6](https://github.com/al2me6)!
 - Fixed crash when clicking Browse for backup and restore location while running elevated.
 - Respect taskbar position when showing system tray flyout. (This was a hotfix for 0.67)
-- Show the correct Hosts module image. (This was a hotfix for 0.67)
+- Show correct Hosts module image. (This was a hotfix for 0.67)
 
 ### Development
 
-- Turned on C++ code analysis and incrementally fixed some warnings.
+- Turned on C++ code analysis and incrementally fixing warnings.
 - Centralize .NET NuGet packages versions. Thanks [@snickler](https://github.com/snickler)!
 - Separate PowerToys installer logs and MSI logs to different files.
 - Added new GPO rules to the reporting tool.
@@ -168,13 +168,13 @@ In this release, we have focused on releasing new features, stability, and impro
 
 For [v0.69][github-next-release-work], we'll work on below:
 
-- Allow installing PowerToys without UAC.
+- Allow installing without UAC.
 - New utility: [PowerToys Peek](https://github.com/microsoft/PowerToys/issues/80)
 - Stability / bug fixes
 
 ## PowerToys Community
 
-The PowerToys team is extremely grateful to have the [support of an amazingly active community][community-link]. The work you do is incredibly important. PowerToys wouldn’t be nearly what it is today without your help filing bugs, updating documentation, guiding the design, or writing features. We want to say thank you and take the time to recognize your work.  Month over month, you directly help make PowerToys a better piece of software.
+The PowerToys team is extremely grateful to have the [support of an amazing active community][community-link]. The work you do is incredibly important. PowerToys wouldn’t be nearly what it is today without your help filing bugs, updating documentation, guiding the design, or writing features. We want to say thank you and take time to recognize your work.  Month over month, you directly help make PowerToys a better piece of software.
 
 ## Code of Conduct
 
