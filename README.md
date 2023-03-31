@@ -78,11 +78,11 @@ In this release, we have focused on releasing new features, stability, and impro
 **Highlights**
 
 - New utility: Paste as Plain Text allows pasting the text contents of your clipboard without formatting. Note: the formatted text in the clipboard is replaced with the unformatted text. Thanks [@carlos-zamora](https://github.com/carlos-zamora)!
-- New utility: Mouse Jump allows you to quickly move the mouse pointer long distances on a single screen or across multiple screens. Thanks to [@mikeclayton](https://github.com/mikeclayton)!
+- New utility: Mouse Jump allows to quickly move the mouse pointer long distances on a single screen or across multiple screens. Thanks [@mikeclayton](https://github.com/mikeclayton)!
 - Add new GPO policies for automatic update downloads and update toast notifications. Thanks [@htcfreek](https://github.com/htcfreek)!
-- Support MSC and CPL files in the "Run command" results of the PowerToys Run Program plugin. Thanks [@htcfreek](https://github.com/htcfreek)!
+- Support MSC and CPL files in "Run command" results of PowerToys Run Program plugin. Thanks [@htcfreek](https://github.com/htcfreek)!
 - Add support for log2 and log10 in PowerToys Run Calculator plugin. Thanks [@RickLuiken](https://github.com/RickLuiken)!
-- Added experimentation to PowerToys' first run experience.  There is a current page that says "Welcome" and a variant with direct instructions on how to use some of the utilities.  We want to see if directly showing how to use PowerToys leads to more people using the features :) 
+- Added experimentation to PowerToys first run experience.  There are current page which says "welcome" and a variant with direct instructions on how to use some of the utilities.  We want to see if directly showing how to use PowerToys leads to more people using the features :) 
 
 ### General
 
@@ -94,64 +94,64 @@ In this release, we have focused on releasing new features, stability, and impro
 ### FancyZones
 
 - Refactored and improved code quality.
-- Fixed crashing on moving a window between monitors with Win + arrows. (This was a hotfix for 0.67)
-- Fixed issue causing window attributes to not be reset properly. (This was a hotfix for 0.67)
-- Fixed issue causing a window to not be adjusted when the layout is changed. (This was a hotfix for 0.67)
-- Fixed issue causing window not to be unsnapped on drag started. (This was a hotfix for 0.67)
-- Fixed issue causing layouts not to be applied to new virtual desktops. (This was a hotfix for 0.67)
-- Fixed issues causing windows not to be restored correctly to their last known zone.
+- Fix crashing on moving a window between monitors with Win + arrows. (This was a hotfix for 0.67)
+- Fix issue causing window attributes to not be reset properly. (This was a hotfix for 0.67)
+- Fix issue causing a window to not be adjusted when the layout is changed. (This was a hotfix for 0.67)
+- Fix issue causing window not to be unsnapped on drag started. (This was a hotfix for 0.67)
+- Fix issue causing layouts not to be applied to new virtual desktops. (This was a hotfix for 0.67)
+- Fix issues causing windows not to be restored correctly to their last known zone.
 
 ### File explorer add-ons
 
-- Add Developer files previewer option to set max file size and fix styling issue. Thanks to [@Aaron-Junker](https://github.com/Aaron-Junker)!
+- Add Developer files previewer option to set max file size and fix styling issue. Thanks [@Aaron-Junker](https://github.com/Aaron-Junker)!
 - Improve Developer files previewer exception handling and printing of error messages.
 - Fix crash when generating PDF and Gcode file thumbnails. (This was a hotfix for 0.67)
 
 ### Hosts file editor
 
-- Improve the host's file loading. Thanks to [@davidegiacometti](https://github.com/davidegiacometti)!
-- Improved duplicate host finding. Thanks to [@davidegiacometti](https://github.com/davidegiacometti)!
+- Improve the host's file loading. Thanks [@davidegiacometti](https://github.com/davidegiacometti)!
+- Improved duplicate host finding. Thanks [@davidegiacometti](https://github.com/davidegiacometti)!
 
 ### Keyboard Manager
 
-- Fixed a typo in the Keyboard Manager Editor. Thanks to [@ChristianLW](https://github.com/ChristianLW)!
+- Fixed a typo in the Keyboard Manager Editor. Thanks [@ChristianLW](https://github.com/ChristianLW)!
 
 ### Mouse Utils
 
-- Resolved grammatical errors in the Mouse Highlighter description. Thanks to [@WordlessSafe1](https://github.com/WordlessSafe1)!
-- New utility: Mouse Jump allows you to quickly move the mouse pointer long distances on single or across screens. Thanks to [@mikeclayton](https://github.com/mikeclayton)!
+- Resolved grammatical errors in the Mouse Highlighter description. Thanks [@WordlessSafe1](https://github.com/WordlessSafe1)!
+- New utility: Mouse Jump allows you to quickly move the mouse pointer long distances on single or across screens. Thanks [@mikeclayton](https://github.com/mikeclayton)!
 
 ### Paste as Plain Text
 
-- New utility: Paste as Plain Text allows pasting the text contents of your clipboard without formatting. Note: the formatted text in the clipboard is replaced with the unformatted text. Thanks to [@carlos-zamora](https://github.com/carlos-zamora)!
+- New utility: Paste as Plain Text allows pasting the text contents of your clipboard without formatting. Note: the formatted text in the clipboard is replaced with the unformatted text. Thanks [@carlos-zamora](https://github.com/carlos-zamora)!
 
 ### PowerToys Run
 
 - Show Steam (steam://open/) shortcuts in the Program plugin. 
-- Localize paths of Program plugin results. Thanks to [@htcfreek](https://github.com/htcfreek)!
-- Improved stability of the code used to get the localized names and paths. Thanks to [@htcfreek](https://github.com/htcfreek)!
-- Support MSC and CPL files in the "Run command" results of the Program plugin. Thanks to [@htcfreek](https://github.com/htcfreek)!
-- Added missing MSC and CPL settings to the results of the Windows Settings plugin. Thanks to [@htcfreek](https://github.com/htcfreek)!
-- System plugin: Setting for separate "Open/Empty Recycle bin" results or single result with context menu. (This was implemented based on user feedback for a change in the last build.) Thanks to [@htcfreek](https://github.com/htcfreek)!
-- Add support for log2 and log10 in Calculator plugin. Thanks to[@RickLuiken](https://github.com/RickLuiken)!
+- Localize paths of Program plugin results. Thanks [@htcfreek](https://github.com/htcfreek)!
+- Improved stability of the code used to get the localized names and paths. Thanks [@htcfreek](https://github.com/htcfreek)!
+- Support MSC and CPL files in the "Run command" results of the Program plugin. Thanks [@htcfreek](https://github.com/htcfreek)!
+- Added missing MSC and CPL settings to the results of the Windows Settings plugin. Thanks [@htcfreek](https://github.com/htcfreek)!
+- System plugin: Setting for separate "Open/Empty Recycle bin" results or single result with context menu. (This was implemented based on user feedback for a change in the last build.) Thanks [@htcfreek](https://github.com/htcfreek)!
+- Add support for log2 and log10 in Calculator plugin. Thanks [@RickLuiken](https://github.com/RickLuiken)!
 - Removed the TimeZone plugin.
 - Fix the crash when loading thumbnails for PDF files. (This was a hotfix for 0.67)
 
 ### Shortcut Guide
 
-- Added: Dismiss Shortcut Guide with a mouse click. Thanks to [@davidegiacometti](https://github.com/davidegiacometti)!
+- Added: Dismiss Shortcut Guide with a mouse click. Thanks [@davidegiacometti](https://github.com/davidegiacometti)!
 
 ### Quick Accent
 
-- Added Lithuanian characters. Thanks to [@saulens22](https://github.com/saulens22)!
-- Added additional (Chinese) characters. Thanks to [@ChaseKnowlden](https://github.com/ChaseKnowlden)!
+- Added Lithuanian characters. Thanks [@saulens22](https://github.com/saulens22)!
+- Added additional (Chinese) characters. Thanks [@ChaseKnowlden](https://github.com/ChaseKnowlden)!
 
 
 ### Settings
 
-- Add missing flyout borders on Windows 10. Thanks to [@davidegiacometti](https://github.com/davidegiacometti)!
-- Add experimentation for the OOBE landing page. Thanks to [@chenss3](https://github.com/chenss3)!
-- Show icons of user-installed PowerToys Run plugins. Thanks to [@al2me6](https://github.com/al2me6)!
+- Add missing flyout borders on Windows 10. Thanks [@davidegiacometti](https://github.com/davidegiacometti)!
+- Add experimentation for the OOBE landing page. Thanks [@chenss3](https://github.com/chenss3)!
+- Show icons of user-installed PowerToys Run plugins. Thanks [@al2me6](https://github.com/al2me6)!
 - Fixed crash when clicking Browse for backup and restore location while running elevated.
 - Respect taskbar position when showing system tray flyout. (This was a hotfix for 0.67)
 - Show the correct Hosts module image. (This was a hotfix for 0.67)
@@ -159,7 +159,7 @@ In this release, we have focused on releasing new features, stability, and impro
 ### Development
 
 - Turned on C++ code analysis and incrementally fixed some warnings.
-- Centralize .NET NuGet packages versions. Thanks to [@snickler](https://github.com/snickler)!
+- Centralize .NET NuGet packages versions. Thanks [@snickler](https://github.com/snickler)!
 - Separate PowerToys installer logs and MSI logs to different files.
 - Added new GPO rules to the reporting tool.
 - Move PowerToys registry entries back to HKLM to fix context menu entries not working on some configurations. (This was a hotfix for 0.67)
