@@ -52,6 +52,7 @@ If enabled, per-user installation is not allowed.
 
 If disabled or not configured, per-user installation is allowed.
 
+You can set this policy only as Computer policy.
 #### Disable automatic downloads
 
 This policy configures whether automatic downloads of available updates are disabled or not. (On metered connections updates are never downloaded.)
