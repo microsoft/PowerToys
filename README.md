@@ -60,7 +60,7 @@ There are [community-driven install methods](./doc/unofficialInstallMethods.md) 
 
 This project welcomes contributions of all types. Help spec'ing, design, documentation, and finding bugs are ways everyone can help on top of coding features/bug fixes. We are excited to work with the power user community to build a set of tools for helping you get the most out of Windows.
 
-We ask that **before you start working on a feature you would like to contribute**, please read our [Contributor's Guide](CONTRIBUTING.md). We will happily work with you to figure out the best approach, provide guidance and mentorship throughout feature development, and help avoid wasted or duplicate effort.
+We ask that **before you start work on a feature that you would like to contribute**, please read our [Contributor's Guide](CONTRIBUTING.md). We will be happy work with you to figure out the best approach, provide guidance and mentorship throughout feature development, and help avoid any waste or duplicate effort.
 
 Most contributions require you to agree to a [Contributor License Agreement (CLA)][oss-CLA] declaring that you have the right to and do, grant us the rights to use your contribution.
 
