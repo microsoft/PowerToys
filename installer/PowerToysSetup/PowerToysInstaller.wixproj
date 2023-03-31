@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" DefaultTargets="Build" InitialTargets="EnsureNuGetPackageBuildImports" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <Import Project="..\wix.props" Condition="Exists('..\wix.props')" />
   <Import Project="..\..\src\Version.props" />
@@ -11,8 +11,8 @@
     simulate the build pipeline doing that for you. -->
     <PreBuildEvent>IF NOT DEFINED IsPipeline (
 call "$([MSBuild]::GetVsInstallRoot())\Common7\Tools\VsDevCmd.bat" -arch=amd64 -host_arch=amd64 -winsdk=10.0.19041.0
-SET PTRoot=..\..\..\..
-call "..\..\publish.cmd" x64
+SET PTRoot=..\..\..\..\..
+call "..\..\..\publish.cmd" x64
 )</PreBuildEvent>
   </PropertyGroup>
 
@@ -20,20 +20,50 @@ call "..\..\publish.cmd" x64
     <DefineConstants>Version=$(Version);MonacoSRCHarvestPath=$(ProjectDir)..\..\ARM64\$(Configuration)\modules\FileExplorerPreview\monacoSRC</DefineConstants>
     <PreBuildEvent>IF NOT DEFINED IsPipeline (
 call "$([MSBuild]::GetVsInstallRoot())\Common7\Tools\VsDevCmd.bat" -arch=arm64 -host_arch=amd64 -winsdk=10.0.19041.0
-SET PTRoot=..\..\..\..
-call "..\..\publish.cmd" arm64
+SET PTRoot=..\..\..\..\..
+call "..\..\..\publish.cmd" arm64
 )</PreBuildEvent>
   </PropertyGroup>
   <PropertyGroup>
     <RunPostBuildEvent>Always</RunPostBuildEvent>
     <PostBuildEvent>
-    call move /Y ..\..\Core.wxs.bk ..\..\Core.wxs
-    call move /Y ..\..\..\PowerToysSetupCustomActions\DepsFilesLists.h.bk ..\..\..\PowerToysSetupCustomActions\DepsFilesLists.h
+    call move /Y ..\..\..\AlwaysOnTop.wxs.bk ..\..\..\AlwaysOnTop.wxs
+    call move /Y ..\..\..\Awake.wxs.bk ..\..\..\Awake.wxs
+    call move /Y ..\..\..\ColorPicker.wxs.bk ..\..\..\ColorPicker.wxs
+    call move /Y ..\..\..\Core.wxs.bk ..\..\..\Core.wxs
+    call move /Y ..\..\..\FancyZones.wxs.bk ..\..\..\FancyZones.wxs
+    call move /Y ..\..\..\FileExplorerPreview.wxs.bk ..\..\..\FileExplorerPreview.wxs
+    call move /Y ..\..\..\FileLocksmith.wxs.bk ..\..\..\FileLocksmith.wxs
+    call move /Y ..\..\..\Hosts.wxs.bk ..\..\..\Hosts.wxs
+    call move /Y ..\..\..\ImageResizer.wxs.bk ..\..\..\ImageResizer.wxs
+    call move /Y ..\..\..\KeyboardManager.wxs.bk ..\..\..\KeyboardManager.wxs
+    call move /Y ..\..\..\MeasureTool.wxs.bk ..\..\..\MeasureTool.wxs
+    call move /Y ..\..\..\MouseUtils.wxs.bk ..\..\..\MouseUtils.wxs
+    call move /Y ..\..\..\PowerAccent.wxs.bk ..\..\..\PowerAccent.wxs
+    call move /Y ..\..\..\PowerRename.wxs.bk ..\..\..\PowerRename.wxs
+    call move /Y ..\..\..\Product.wxs.bk ..\..\..\Product.wxs
+    call move /Y ..\..\..\RegistryPreview.wxs.bk ..\..\..\RegistryPreview.wxs
+    call move /Y ..\..\..\Resources.wxs.bk ..\..\..\Resources.wxs
+    call move /Y ..\..\..\Run.wxs.bk ..\..\..\Run.wxs
+    call move /Y ..\..\..\Settings.wxs.bk ..\..\..\Settings.wxs
+    call move /Y ..\..\..\ShortcutGuide.wxs.bk ..\..\..\ShortcutGuide.wxs
+    call move /Y ..\..\..\TextExtractor.wxs.bk ..\..\..\TextExtractor.wxs
+    call move /Y ..\..\..\Tools.wxs.bk ..\..\..\Tools.wxs
+    call move /Y ..\..\..\VideoConference.wxs.bk ..\..\..\VideoConference.wxs
+    call move /Y ..\..\..\WinAppSDK.wxs.bk ..\..\..\WinAppSDK.wxs
+    call move /Y ..\..\..\..\PowerToysSetupCustomActions\DepsFilesLists.h.bk ..\..\..\..\PowerToysSetupCustomActions\DepsFilesLists.h
     </PostBuildEvent>
   </PropertyGroup>
   <PropertyGroup>
     <Name>PowerToysInstaller</Name>
   </PropertyGroup>
+  <PropertyGroup Label="UserMacros" Condition=" '$(PerUser)' == 'true' ">
+    <DefineConstants>$(DefineConstants);PerUser=true</DefineConstants>
+  </PropertyGroup>
+  <PropertyGroup Label="UserMacros" Condition=" '$(PerUser)' != 'true' ">
+    <DefineConstants>$(DefineConstants);PerUser=false</DefineConstants>
+  </PropertyGroup>
+
   <PropertyGroup>
     <!-- We do not support debug installer builds -->
     <Configuration Condition=" '$(Configuration)' == '' ">Release</Configuration> 
@@ -41,15 +71,22 @@ call "..\..\publish.cmd" arm64
     <ProductVersion>3.10</ProductVersion>
     <ProjectGuid>022a9d30-7c4f-416d-a9df-5ff2661cc0ad</ProjectGuid>
     <SchemaVersion>2.0</SchemaVersion>
-    <OutputName>PowerToysSetup-$(Version)-$(Platform)</OutputName>
+    <OutputName Condition=" '$(PerUser)' != 'true' ">PowerToysSetup-$(Version)-$(Platform)</OutputName>
+    <OutputName Condition=" '$(PerUser)' == 'true' ">PowerToysUserSetup-$(Version)-$(Platform)</OutputName>
     <OutputType>Package</OutputType>
     <SuppressAclReset>True</SuppressAclReset>
     <NuGetPackageImportStamp>
     </NuGetPackageImportStamp>
+    <!-- 1076 and ICE91 - warning: using this configuration for perMachine install could cause problems. -->
+    <!-- 1026 - warning: file ID is too long -->
+    <SuppressIces>ICE91</SuppressIces>
+    <SuppressSpecificWarnings>1026;1076</SuppressSpecificWarnings>
   </PropertyGroup>
   <PropertyGroup>
-    <OutputPath>$(Platform)\$(Configuration)\</OutputPath>
-    <IntermediateOutputPath>obj\$(Platform)\$(Configuration)\</IntermediateOutputPath>
+    <OutputPath Condition=" '$(PerUser)' != 'true' ">$(Platform)\$(Configuration)\MachineSetup</OutputPath>
+    <OutputPath Condition=" '$(PerUser)' == 'true' ">$(Platform)\$(Configuration)\UserSetup</OutputPath>
+    <IntermediateOutputPath Condition=" '$(PerUser)' != 'true' ">obj\$(Platform)\$(Configuration)\MachineSetup</IntermediateOutputPath>
+    <IntermediateOutputPath Condition=" '$(PerUser)' == 'true' ">obj\$(Platform)\$(Configuration)\UserSetup</IntermediateOutputPath>
     <SuppressIces>ICE40</SuppressIces>
   </PropertyGroup>
   <PropertyGroup>
@@ -139,18 +176,19 @@ call "..\..\publish.cmd" arm64
 	</Target>
 	<Target Name="AfterBuild">
 	</Target>
-	-->
   <Target Name="BeforeBuild">
     <HeatDirectory Directory="..\..\src\modules\previewpane\MonacoPreviewHandler\monacoSRC"
       PreprocessorVariable="var.MonacoSRCHarvestPath"
       OutputFile="MonacoSRC.wxs"
       ComponentGroupName="MonacoSRCHeatGenerated"
       DirectoryRefId="MonacoPreviewHandlerMonacoSRCFolder"
-      AutogenerateGuids="true"
+      AutogenerateGuids="false"
+      GenerateGuidsNow="true" 
       ToolPath="$(WixToolPath)"
       RunAsSeparateProcess="true"
-      SuppressFragments="true"
-      SuppressRegistry="true"
-      SuppressRootDirectory="true" />
-  </Target>
+      SuppressFragments="false"
+      SuppressRegistry="false"
+      SuppressRootDirectory="true"/>
+  </Target>	-->
+
 </Project>
