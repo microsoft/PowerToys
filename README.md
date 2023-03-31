@@ -54,7 +54,7 @@ winget install Microsoft.PowerToys -s winget
 
 ### Other install methods
 
-There are [community-driven install methods](./doc/unofficialInstallMethods.md) such as Chocolatey and Scoop. You can find the install instructions if these are your preferred install solutions.
+There are [community-driven install methods](./doc/unofficialInstallMethods.md) such as Chocolatey and Scoop. If these are your preferred install solutions, you can find the install instructions there
 
 ## Contributing
 
