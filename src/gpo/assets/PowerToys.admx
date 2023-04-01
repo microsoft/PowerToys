@@ -5,11 +5,12 @@
   <policyNamespaces>
     <target prefix="powertoys" namespace="Microsoft.Policies.PowerToys" />
   </policyNamespaces>
-  <resources minRequiredRevision="1.1"/><!-- Last changed with PowerToys v0.68.0 -->
+  <resources minRequiredRevision="1.1"/><!-- Last changed with PowerToys v0.69.0 -->
   <supportedOn>
     <definitions>
       <definition name="SUPPORTED_POWERTOYS_0_64_0" displayName="$(string.SUPPORTED_POWERTOYS_0_64_0)"/>
       <definition name="SUPPORTED_POWERTOYS_0_68_0" displayName="$(string.SUPPORTED_POWERTOYS_0_68_0)"/>
+      <definition name="SUPPORTED_POWERTOYS_0_69_0" displayName="$(string.SUPPORTED_POWERTOYS_0_69_0)"/>
     </definitions>
   </supportedOn>
   <categories>
