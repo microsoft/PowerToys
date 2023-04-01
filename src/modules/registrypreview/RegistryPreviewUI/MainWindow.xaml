@@ -185,7 +185,7 @@
                 ScrollViewer.HorizontalScrollMode="Enabled"
                 ScrollViewer.VerticalScrollBarVisibility="Visible"
                 ScrollViewer.VerticalScrollMode="Auto"
-                TabIndex="2">
+                TabIndex="1">
                 <TreeView.ItemTemplate>
                     <DataTemplate>
                         <StackPanel
@@ -224,7 +224,7 @@
                 ItemsSource="{x:Bind listRegistryValues}"
                 RowDetailsVisibilityMode="Collapsed"
                 SelectionMode="Single"
-                TabIndex="3">
+                TabIndex="2">
                 <controls:DataGrid.Columns>
                     <controls:DataGridTemplateColumn
                         x:Uid="NameColumn"
