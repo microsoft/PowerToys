@@ -117,9 +117,6 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
-  <data name="checkBoxTextBox.Content" xml:space="preserve">
-    <value>Read only</value>
-  </data>
   <data name="EditButton.Label" xml:space="preserve">
     <value>Edit file...</value>
   </data>

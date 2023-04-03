@@ -41,7 +41,6 @@
             <RowDefinition Height="*" />
             <RowDefinition Height="6" />
             <RowDefinition Height="*" />
-            <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
 
         <Grid
@@ -147,7 +146,7 @@
             Grid.Row="1"
             Grid.RowSpan="3"
             Grid.Column="0"
-            Margin="8,0,0,0"
+            Margin="8,0,0,8"
             HorizontalAlignment="Stretch"
             VerticalAlignment="Stretch"
             AcceptsReturn="True"
@@ -163,26 +162,6 @@
             ScrollViewer.VerticalScrollBarVisibility="Visible"
             TabIndex="0"
             TextWrapping="NoWrap" />
-
-        <StackPanel
-            x:Name="stackPanelTextBox"
-            Grid.Row="4"
-            Grid.Column="0"
-            HorizontalAlignment="Stretch"
-            VerticalAlignment="Stretch"
-            IsTabStop="False">
-            <CheckBox
-                x:Name="checkBoxTextBox"
-                x:Uid="checkBoxTextBox"
-                HorizontalAlignment="Center"
-                VerticalAlignment="Center"
-                Checked="CheckBoxTextBox_Checked"
-                Content="{Binding Content}"
-                IsChecked="True"
-                IsTabStop="True"
-                TabIndex="1"
-                Unchecked="CheckBoxTextBox_Unchecked" />
-        </StackPanel>
 
         <Grid
             Grid.Row="1"
@@ -206,7 +185,7 @@
                 ScrollViewer.HorizontalScrollMode="Enabled"
                 ScrollViewer.VerticalScrollBarVisibility="Visible"
                 ScrollViewer.VerticalScrollMode="Auto"
-                TabIndex="2">
+                TabIndex="1">
                 <TreeView.ItemTemplate>
                     <DataTemplate>
                         <StackPanel
@@ -245,7 +224,7 @@
                 ItemsSource="{x:Bind listRegistryValues}"
                 RowDetailsVisibilityMode="Collapsed"
                 SelectionMode="Single"
-                TabIndex="3">
+                TabIndex="2">
                 <controls:DataGrid.Columns>
                     <controls:DataGridTemplateColumn
                         x:Uid="NameColumn"
