@@ -50,11 +50,12 @@ Install from the [Microsoft Store's PowerToys page][microsoft-store-link]. You m
 ### Via WinGet
 Download PowerToys from [WinGet][winget-link]. To install PowerToys, run the following command from the command line / PowerShell:
 
+#### User scope installer [default]
 ```powershell
 winget install Microsoft.PowerToys -s winget
 ```
 
-**PowerToys will be installed in user scope by default**. To install PowerToys in machine scope, run the following command from the command line / PowerShell:
+#### Machine-wide scope installer
 
 ```powershell
 winget install --scope machine Microsoft.PowerToys -s winget
