@@ -31,6 +31,12 @@ If you disable this setting, the utility will be always disabled and the user wo
 
 If you don't configure this setting, users are able to disable or enable the utility.
 </string>
+      <string id="DisablePerUserInstallationDescription">This policy configures whether per-user PowerToys installation is allowed or not.
+
+If enabled, per-user installation is not allowed.
+
+If disabled or not configured, per-user installation is allowed.
+</string>
       <string id="DisableAutomaticUpdateDownloadDescription">This policy configures whether automatic downloads of available updates are disabled or not. (On metered connections updates are never downloaded.)
 
 If enabled, automatic downloads are disabled.
@@ -87,9 +93,10 @@ If this setting is disabled, experimentation is not allowed.
       <string id="ConfigureEnabledUtilityShortcutGuide">Shortcut Guide: Configure enabled state</string>
       <string id="ConfigureEnabledUtilityTextExtractor">Text Extractor: Configure enabled state</string>
       <string id="ConfigureEnabledUtilityVideoConferenceMute">Video Conference Mute: Configure enabled state</string>
-	  <string id="DisableAutomaticUpdateDownload">Disable automatic downloads</string>
-	  <string id="SuspendNewUpdateToast">Suspend Action Center notification for new updates</string>
-	  <string id="DisablePeriodicUpdateCheck">Disable automatic update checks</string>
+      <string id="DisablePerUserInstallation">Disable per-user installation</string>
+      <string id="DisableAutomaticUpdateDownload">Disable automatic downloads</string>
+      <string id="SuspendNewUpdateToast">Suspend Action Center notification for new updates</string>
+      <string id="DisablePeriodicUpdateCheck">Disable automatic update checks</string>
       <string id="AllowExperimentation">Allow Experimentation</string>
     </stringTable>
   </resources>

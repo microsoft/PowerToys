@@ -16,6 +16,83 @@
 
 namespace registry
 {
+    namespace install_scope
+    {
+        const wchar_t INSTALL_SCOPE_REG_KEY[] = L"Software\\Classes\\powertoys\\";
+
+        enum class InstallScope
+        {
+            PerMachine = 0,
+            PerUser,
+        };
+
+        inline const InstallScope get_current_install_scope()
+        {
+            // Open HKLM key
+            HKEY perMachineKey{};
+            if (RegOpenKeyExW(HKEY_LOCAL_MACHINE,
+                              INSTALL_SCOPE_REG_KEY,
+                              0,
+                              KEY_READ,
+                              &perMachineKey) != ERROR_SUCCESS)
+            {
+                // Open HKCU key
+                HKEY perUserKey{};
+                if (RegOpenKeyExW(HKEY_CURRENT_USER,
+                                  INSTALL_SCOPE_REG_KEY,
+                                  0,
+                                  KEY_READ,
+                                  &perUserKey) != ERROR_SUCCESS)
+                {
+                    // both keys are missing
+                    return InstallScope::PerMachine;
+                }
+                else
+                {
+                    DWORD dataSize{};
+                    if (RegGetValueW(
+                        perUserKey,
+                        nullptr,
+                        L"InstallScope",
+                        RRF_RT_REG_SZ,
+                        nullptr,
+                        nullptr,
+                        &dataSize) != ERROR_SUCCESS)
+                    {
+                        // HKCU key is missing
+                        RegCloseKey(perUserKey);
+                        return InstallScope::PerMachine;
+                    }
+
+                    std::wstring data;
+                    data.resize(dataSize / sizeof(wchar_t));
+
+                    if (RegGetValueW(
+                            perUserKey,
+                            nullptr,
+                            L"InstallScope",
+                            RRF_RT_REG_SZ,
+                            nullptr,
+                            &data[0],
+                            &dataSize) != ERROR_SUCCESS)
+                    {
+                        // HKCU key is missing
+                        RegCloseKey(perUserKey);
+                        return InstallScope::PerMachine;
+                    }
+                    RegCloseKey(perUserKey);
+
+                    if (data.contains(L"perUser"))
+                    {
+                        return InstallScope::PerUser;
+                    }
+                }
+            }
+
+            return InstallScope::PerMachine;
+        }
+    }
+
     template<class>
     inline constexpr bool always_false_v = false;
 

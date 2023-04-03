@@ -1,25 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <?define UpgradeCode="6341382d-c0a9-4238-9188-be9607e3fab2"?>
-<?define RepoDir="$(var.ProjectDir)..\..\" ?>
-<?if $(var.Platform) = x64?>
-    <?define BinDir="$(var.RepoDir)$(var.Platform)\$(var.Configuration)\" ?>
-    <?define PowerToysPlatform="x64"?>
-
-    <?define PlatformProgramFiles="[ProgramFiles64Folder]"?>
-<?else?>
-    <!-- stable WIX 3 doesn't support ARM64, so we build installers as x86 -->
-    <?define BinDir="$(var.RepoDir)ARM64\$(var.Configuration)\" ?>
-    <?define PowerToysPlatform="ARM64"?>
-
-    <!--TODO: define to ARM64 Program files once it's available-->
-    <?define PlatformProgramFiles="[ProgramFiles6432Folder]"?> 
-
-<?endif?>
 
 <Wix xmlns="http://schemas.microsoft.com/wix/2006/wi"
     xmlns:util="http://schemas.microsoft.com/wix/UtilExtension"
     xmlns:bal="http://schemas.microsoft.com/wix/BalExtension">
+
+    <?include $(sys.CURRENTDIR)\Common.wxi?>
+
     <Bundle Name="PowerToys (Preview) $(var.PowerToysPlatform)"
             Version="$(var.Version)"
             Manufacturer="Microsoft Corporation"
@@ -36,17 +24,31 @@
         <util:RegistrySearch Variable="HasWebView2PerMachine" Root="HKLM" Key="SOFTWARE\WOW6432Node\Microsoft\EdgeUpdate\Clients\{F3017226-FE2A-4295-8BDF-00C3A9A7E4C5}" Result="exists" />
         <util:RegistrySearch Variable="HasWebView2PerUser" Root="HKCU" Key="Software\Microsoft\EdgeUpdate\Clients\{F3017226-FE2A-4295-8BDF-00C3A9A7E4C5}" Result="exists" />
 
-        <Variable Name="InstallFolder" Type="string" Value="$(var.PlatformProgramFiles)PowerToys" bal:Overridable="yes"/>
+        <?if $(var.PerUser) = "true" ?>
+            <Variable Name="InstallFolder" Type="string" Value="[LocalAppDataFolder]PowerToys" bal:Overridable="yes"/>
+        <?else?>
+            <Variable Name="InstallFolder" Type="string" Value="$(var.PlatformProgramFiles)PowerToys" bal:Overridable="yes"/>
+        <?endif?>
 
         <Variable Name="MsiLogFolder" Type="string" Value="[LocalAppDataFolder]\Microsoft\PowerToys\" /> 
         <Log Disable="no" Prefix='powertoys-bootstrapper-msi-$(var.Version)' Extension=".log" />
 
       <!-- Only install/upgrade if the version is greater or equal than the currently installed version of PowerToys, to handle the case in which PowerToys was installed from old MSI (before WiX bootstrapper was used) -->
       <!-- If the previous installation is a bundle installation, just let WiX run its logic. -->
-      <Variable Name="DetectedPowerToysVersion" Type="version" Value="0.0.0.0"/>
+      <Variable Name="MinimumVersion" Type="version" Value="0.0.0.0"/>
       <Variable Name="TargetPowerToysVersion" Type="version" Value="$(var.Version)"/>
+      <Variable  Name="DetectedPowerToysVersion" Type="version" Value="0.0.0.0"/>
+      <Variable  Name="DetectedPowerToysUserVersion" Type="version" Value="0.0.0.0"/>
+
       <util:ProductSearch Id="SearchInstalledPowerToysVersion" Variable="DetectedPowerToysVersion" UpgradeCode="42B84BF7-5FBF-473B-9C8B-049DC16F7708" Result="version" />
-      <bal:Condition Message="A later version of PowerToys is already installed." >TargetPowerToysVersion &gt;= DetectedPowerToysVersion OR WixBundleInstalled</bal:Condition>
+
+      <?if $(var.PerUser) = "true" ?>
+        <util:ProductSearch Id="SearchInstalledPowerToysUserVersion" Variable="DetectedPowerToysUserVersion" UpgradeCode="D8B559DB-4C98-487A-A33F-50A8EEE42726" Result="version" />
+        <bal:Condition Message="PowerToys is already installed on this system for all users. We recommend first uninstalling that version before installing this one." >MinimumVersion &gt;= DetectedPowerToysVersion</bal:Condition>
+        <bal:Condition Message="The same or later version of PowerToys is already installed." >TargetPowerToysVersion &gt;= DetectedPowerToysUserVersion OR WixBundleInstalled</bal:Condition>
+      <?else?>
+        <bal:Condition Message="A later version of PowerToys is already installed." >TargetPowerToysVersion &gt;= DetectedPowerToysVersion OR WixBundleInstalled</bal:Condition>
+      <?endif?>
 
       <Variable Name="DetectedWindowsBuildNumber" Type="version" Value="0"/>
       <util:RegistrySearch Id="SearchWindowsBuildNumber" Root="HKLM" Key="SOFTWARE\Microsoft\Windows NT\CurrentVersion" Value="CurrentBuildNumber" Result="value" Format="raw" Variable="DetectedWindowsBuildNumber" />
@@ -61,7 +63,7 @@
                 Id="TerminatePowerToys"
                 SourceFile="terminate_powertoys.cmd"
                 Permanent="yes"
-                PerMachine="yes"
+                PerMachine="$(var.PerMachineYesNo)"
                 Vital="no">
             </ExePackage>
             <ExePackage
@@ -74,12 +76,12 @@
                 InstallCommand="/silent /install"
                 RepairCommand="/repair /passive"
                 Permanent="yes"
-                PerMachine="yes"
+                PerMachine="$(var.PerMachineYesNo)"
                 UninstallCommand="/silent /uninstall">
             </ExePackage>
             <MsiPackage
                 DisplayName="Installing PowerToys"
-                SourceFile="$(var.PowerToysPlatform)\Release\PowerToysSetup-$(var.Version)-$(var.PowerToysPlatform).msi"
+                SourceFile="$(var.PowerToysPlatform)\Release\$(var.MSIPath)\$(var.MSIName)"
                 Compressed="yes"
                 DisplayInternalUI="no">
                 <MsiProperty Name="BOOTSTRAPPERINSTALLFOLDER" Value="[InstallFolder]" />

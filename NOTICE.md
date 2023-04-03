@@ -302,7 +302,7 @@ SOFTWARE.
 - Microsoft.Windows.CsWin32 0.2.46-beta
 - Microsoft.Windows.CsWinRT 2.0.1
 - Microsoft.Windows.SDK.BuildTools 10.0.22621.755
-- Microsoft.WindowsAppSDK 1.2.230217.4
+- Microsoft.WindowsAppSDK 1.2.230313.1
 - Microsoft.Xaml.Behaviors.WinUI.Managed 2.0.9
 - Microsoft.Xaml.Behaviors.Wpf 1.1.39
 - ModernWpfUI 0.9.4
@@ -329,4 +329,4 @@ SOFTWARE.
 - UnitsNet 4.145.0
 - Vanara.PInvoke.Shell32 3.4.11
 - Vanara.PInvoke.User32 3.4.11
-- WinUIEx 1.8.0
+- WinUIEx 2.1.0

@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="15.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <Import Project="..\packages\Microsoft.Windows.CppWinRT.2.0.220929.3\build\native\Microsoft.Windows.CppWinRT.props" Condition="Exists('..\packages\Microsoft.Windows.CppWinRT.2.0.220929.3\build\native\Microsoft.Windows.CppWinRT.props')" />
   <Import Project="..\wix.props" Condition="Exists('..\wix.props')" />
@@ -33,8 +33,10 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup>
-    <OutDir>$(Platform)\$(Configuration)\</OutDir>
-    <IntDir>$(SolutionDir)$(ProjectName)\$(Platform)\$(Configuration)\obj\</IntDir>
+    <OutDir Condition=" '$(PerUser)' != 'true' ">$(Platform)\$(Configuration)\MachineSetup</OutDir>
+    <OutDir Condition=" '$(PerUser)' == 'true' ">$(Platform)\$(Configuration)\UserSetup</OutDir>
+    <IntDir Condition=" '$(PerUser)' != 'true' ">$(SolutionDir)$(ProjectName)\$(Platform)\$(Configuration)\MachineSetup\obj\</IntDir>
+    <IntDir Condition=" '$(PerUser)' == 'true' ">$(SolutionDir)$(ProjectName)\$(Platform)\$(Configuration)\UserSetup\obj\</IntDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)'=='Debug'">
     <LinkIncremental>true</LinkIncremental>
@@ -47,8 +49,33 @@
     <PreBuildEvent>
       <Command>
       call cmd /C "copy ""$(ProjectDir)DepsFilesLists.h"" ""$(ProjectDir)DepsFilesLists.h.bk"""
+      call cmd /C "copy ""$(ProjectDir)..\PowerToysSetup\AlwaysOnTop.wxs"" ""$(ProjectDir)..\PowerToysSetup\AlwaysOnTop.wxs.bk""""
+      call cmd /C "copy ""$(ProjectDir)..\PowerToysSetup\Awake.wxs"" ""$(ProjectDir)..\PowerToysSetup\Awake.wxs.bk""""
+      call cmd /C "copy ""$(ProjectDir)..\PowerToysSetup\ColorPicker.wxs"" ""$(ProjectDir)..\PowerToysSetup\ColorPicker.wxs.bk""""
       call cmd /C "copy ""$(ProjectDir)..\PowerToysSetup\Core.wxs"" ""$(ProjectDir)..\PowerToysSetup\Core.wxs.bk""""
+      call cmd /C "copy ""$(ProjectDir)..\PowerToysSetup\FancyZones.wxs"" ""$(ProjectDir)..\PowerToysSetup\FancyZones.wxs.bk""""
+      call cmd /C "copy ""$(ProjectDir)..\PowerToysSetup\FileExplorerPreview.wxs"" ""$(ProjectDir)..\PowerToysSetup\FileExplorerPreview.wxs.bk""""
+      call cmd /C "copy ""$(ProjectDir)..\PowerToysSetup\FileLocksmith.wxs"" ""$(ProjectDir)..\PowerToysSetup\FileLocksmith.wxs.bk""""
+      call cmd /C "copy ""$(ProjectDir)..\PowerToysSetup\Hosts.wxs"" ""$(ProjectDir)..\PowerToysSetup\Hosts.wxs.bk""""
+      call cmd /C "copy ""$(ProjectDir)..\PowerToysSetup\ImageResizer.wxs"" ""$(ProjectDir)..\PowerToysSetup\ImageResizer.wxs.bk""""
+      call cmd /C "copy ""$(ProjectDir)..\PowerToysSetup\KeyboardManager.wxs"" ""$(ProjectDir)..\PowerToysSetup\KeyboardManager.wxs.bk""""
+      call cmd /C "copy ""$(ProjectDir)..\PowerToysSetup\MeasureTool.wxs"" ""$(ProjectDir)..\PowerToysSetup\MeasureTool.wxs.bk""""
+      call cmd /C "copy ""$(ProjectDir)..\PowerToysSetup\MouseUtils.wxs"" ""$(ProjectDir)..\PowerToysSetup\MouseUtils.wxs.bk""""
+      call cmd /C "copy ""$(ProjectDir)..\PowerToysSetup\PowerAccent.wxs"" ""$(ProjectDir)..\PowerToysSetup\PowerAccent.wxs.bk""""
+      call cmd /C "copy ""$(ProjectDir)..\PowerToysSetup\PowerRename.wxs"" ""$(ProjectDir)..\PowerToysSetup\PowerRename.wxs.bk""""
+      call cmd /C "copy ""$(ProjectDir)..\PowerToysSetup\Product.wxs"" ""$(ProjectDir)..\PowerToysSetup\Product.wxs.bk""""
+      call cmd /C "copy ""$(ProjectDir)..\PowerToysSetup\RegistryPreview.wxs"" ""$(ProjectDir)..\PowerToysSetup\RegistryPreview.wxs.bk""""
+      call cmd /C "copy ""$(ProjectDir)..\PowerToysSetup\Resources.wxs"" ""$(ProjectDir)..\PowerToysSetup\Resources.wxs.bk""""
+      call cmd /C "copy ""$(ProjectDir)..\PowerToysSetup\Run.wxs"" ""$(ProjectDir)..\PowerToysSetup\Run.wxs.bk""""
+      call cmd /C "copy ""$(ProjectDir)..\PowerToysSetup\Settings.wxs"" ""$(ProjectDir)..\PowerToysSetup\Settings.wxs.bk""""
+      call cmd /C "copy ""$(ProjectDir)..\PowerToysSetup\ShortcutGuide.wxs"" ""$(ProjectDir)..\PowerToysSetup\ShortcutGuide.wxs.bk""""
+      call cmd /C "copy ""$(ProjectDir)..\PowerToysSetup\TextExtractor.wxs"" ""$(ProjectDir)..\PowerToysSetup\TextExtractor.wxs.bk""""
+      call cmd /C "copy ""$(ProjectDir)..\PowerToysSetup\Tools.wxs"" ""$(ProjectDir)..\PowerToysSetup\Tools.wxs.bk""""
+      call cmd /C "copy ""$(ProjectDir)..\PowerToysSetup\VideoConference.wxs"" ""$(ProjectDir)..\PowerToysSetup\VideoConference.wxs.bk""""
+      call cmd /C "copy ""$(ProjectDir)..\PowerToysSetup\WinAppSDK.wxs"" ""$(ProjectDir)..\PowerToysSetup\WinAppSDK.wxs.bk""""
       call powershell.exe -NonInteractive -executionpolicy Unrestricted -File parseRuntimes.ps1 -runtimedepsjsonpath "$(ProjectDir)..\..\$(Platform)\$(Configuration)\Settings\PowerToys.Settings.deps.json" -wpfdepsjsonpath "$(ProjectDir)..\..\$(Platform)\$(Configuration)\modules\ColorPicker\PowerToys.ColorPickerUI.deps.json" -depsfileslistspath "$(ProjectDir)DepsFilesLists.h" -productwxspath "$(ProjectDir)..\PowerToysSetup\Core.wxs"
+      if not "$(PerUser)" == "true" call powershell.exe -NonInteractive -executionpolicy Unrestricted -File ..\PowerToysSetup\generateAllFileComponents.ps1 -platform $(Platform)
+      if "$(PerUser)" == "true" call powershell.exe -NonInteractive -executionpolicy Unrestricted -File ..\PowerToysSetup\generateAllFileComponents.ps1 -platform $(Platform) -installscopeperuser $(PerUser)
       </Command>
       <Message>Backing up original files and populating .NET and WPF Runtime dependencies </Message>
     </PreBuildEvent>

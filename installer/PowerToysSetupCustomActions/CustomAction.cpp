@@ -6,6 +6,7 @@
 #include <spdlog/sinks/base_sink.h>
 
 #include "../../src/common/logger/logger.h"
+#include "../../src/common/utils/gpo.h"
 #include "../../src/common/utils/MsiUtils.h"
 #include "../../src/common/utils/modulesRegistry.h"
 #include "../../src/common/updating/installer.h"
@@ -50,6 +51,33 @@ HRESULT getInstallFolder(MSIHANDLE hInstall, std::wstring& installationDir)
 LExit:
     return hr;
 }
+
+UINT __stdcall CheckGPOCA(MSIHANDLE hInstall)
+{
+    HRESULT hr = S_OK;
+
+    hr = WcaInitialize(hInstall, "CheckGPOCA");
+    ExitOnFailure(hr, "Failed to initialize");
+
+    LPWSTR currentScope = nullptr;
+    hr = WcaGetProperty(L"InstallScope", &currentScope);
+
+    if(std::wstring{ currentScope } == L"perUser")
+    {
+        if (powertoys_gpo::getDisablePerUserInstallationValue() == powertoys_gpo::gpo_rule_configured_enabled)
+        {
+            PMSIHANDLE hRecord = MsiCreateRecord(0);
+            MsiRecordSetString(hRecord, 0, TEXT("The system administrator has disabled per-user installation."));
+            MsiProcessMessage(hInstall, static_cast<INSTALLMESSAGE>(INSTALLMESSAGE_ERROR + MB_OK), hRecord);
+            hr = E_ABORT;
+        }
+    }
+
+LExit:
+    UINT er = SUCCEEDED(hr) ? ERROR_SUCCESS : ERROR_INSTALL_FAILURE;
+    return WcaFinalize(er);
+}
+
 UINT __stdcall ApplyModulesRegistryChangeSetsCA(MSIHANDLE hInstall)
 {
     HRESULT hr = S_OK;
@@ -734,9 +762,13 @@ UINT __stdcall DetectPrevInstallPathCA(MSIHANDLE hInstall)
     UINT er = ERROR_SUCCESS;
     hr = WcaInitialize(hInstall, "DetectPrevInstallPathCA");
     MsiSetPropertyW(hInstall, L"PREVIOUSINSTALLFOLDER", L"");
+
+    LPWSTR currentScope = nullptr;
+    hr = WcaGetProperty(L"InstallScope", &currentScope);
+
     try
     {
-        if (auto install_path = GetMsiPackageInstalledPath())
+        if (auto install_path = GetMsiPackageInstalledPath(std::wstring{ currentScope } == L"perUser"))
         {
             MsiSetPropertyW(hInstall, L"PREVIOUSINSTALLFOLDER", install_path->data());
         }

@@ -14,10 +14,11 @@ using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Windows.Foundation.Metadata;
 using Windows.Storage;
+using WinUIEx;
 
 namespace RegistryPreview
 {
-    public sealed partial class MainWindow : Window
+    public sealed partial class MainWindow : WindowEx
     {
         /// <summary>
         /// Method that opens and processes the passed in file name; expected to be an absolute path and a first time open
@@ -733,40 +734,23 @@ namespace RegistryPreview
             ChangeCursor(gridPreview, false);
         }
 
-        private async void OpenSettingsFile(string path, string filename)
+        private void OpenSettingsFile(string path, string filename)
         {
-            StorageFolder storageFolder = null;
-            StorageFile storageFile = null;
             string fileContents = string.Empty;
-
-            try
+            string storageFile = Path.Combine(path, filename);
+            if (File.Exists(storageFile))
             {
-                storageFolder = await StorageFolder.GetFolderFromPathAsync(path);
-            }
-            catch
-            {
-            }
-
-            try
-            {
-                if (storageFolder != null)
+                try
                 {
-                    storageFile = await storageFolder.GetFileAsync(filename);
+                    TextReader reader = new StreamReader(storageFile);
+                    fileContents = reader.ReadToEnd();
+                    reader.Close();
                 }
-            }
-            catch
-            {
-            }
-
-            try
-            {
-                if (storageFile != null)
+                catch
                 {
-                    fileContents = await Windows.Storage.FileIO.ReadTextAsync(storageFile);
+                    // set up default JSON blob
+                    fileContents = "{ }";
                 }
-            }
-            catch
-            {
             }
 
             try

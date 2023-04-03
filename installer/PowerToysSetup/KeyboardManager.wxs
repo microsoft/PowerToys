@@ -7,26 +7,43 @@
   <Fragment>
     <!-- KBM -->
     <DirectoryRef Id="KeyboardManagerInstallFolder" FileSource="$(var.BinDir)modules\$(var.KeyboardManagerProjectName)\">
-      <Component Id="Module_KeyboardManager" Win64="yes">
+      <Component Id="Module_KeyboardManager" Win64="yes" Guid="88F5D745-025A-4A0D-85CC-EFC8FF348C88">
+        <RegistryKey Root="$(var.RegistryScope)" Key="Software\Classes\powertoys\components">
+          <RegistryValue Type="string" Name="Module_KeyboardManager" Value="" KeyPath="yes"/>
+        </RegistryKey>
         <File Source="$(var.BinDir)modules\$(var.KeyboardManagerProjectName)\PowerToys.KeyboardManager.dll" />
       </Component>
     </DirectoryRef>
 
     <!-- KBM Editor -->
     <DirectoryRef Id="KeyboardManagerEditorInstallFolder" FileSource="$(var.BinDir)modules\$(var.KeyboardManagerProjectName)\KeyboardManagerEditor">
-      <Component Id="Module_KeyboardManager_Editor" Win64="yes">
+      <Component Id="Module_KeyboardManager_Editor" Win64="yes" Guid="E9C74E78-970F-4DF5-9CC0-FFD3CCF285B4">
+        <RegistryKey Root="$(var.RegistryScope)" Key="Software\Classes\powertoys\components">
+          <RegistryValue Type="string" Name="Module_KeyboardManager_Editor" Value="" KeyPath="yes"/>
+        </RegistryKey>
         <File Source="$(var.BinDir)modules\$(var.KeyboardManagerProjectName)\KeyboardManagerEditor\PowerToys.KeyboardManagerEditor.exe" />
       </Component>
     </DirectoryRef>
 
     <!-- KBM Engine -->
     <DirectoryRef Id="KeyboardManagerEngineInstallFolder" FileSource="$(var.BinDir)modules\$(var.KeyboardManagerProjectName)\KeyboardManagerEngine">
-      <Component Id="Module_KeyboardManager_Engine" Win64="yes">
+      <Component Id="Module_KeyboardManager_Engine" Win64="yes" Guid="3F58FCE3-B44D-4676-94E9-C59F1FE42FFD">
+        <RegistryKey Root="$(var.RegistryScope)" Key="Software\Classes\powertoys\components">
+          <RegistryValue Type="string" Name="Module_KeyboardManager_Engine" Value="" KeyPath="yes"/>
+        </RegistryKey>
         <File Source="$(var.BinDir)modules\$(var.KeyboardManagerProjectName)\KeyboardManagerEngine\PowerToys.KeyboardManagerEngine.exe" />
       </Component>
     </DirectoryRef>
 
-    <ComponentGroup Id="KeyboardManagerComponentGroup" Directory="INSTALLFOLDER">
+    <ComponentGroup Id="KeyboardManagerComponentGroup">
+      <Component Id="RemoveKeyboardManagerFolder" Guid="C411CB11-4617-40A4-B6DA-1823B49FB9FF" Directory="KeyboardManagerInstallFolder" >
+        <RegistryKey Root="$(var.RegistryScope)" Key="Software\Classes\powertoys\components">
+          <RegistryValue Type="string" Name="RemoveKeyboardManagerFolder" Value="" KeyPath="yes"/>
+        </RegistryKey>
+        <RemoveFolder Id="RemoveFolderKeyboardManagerFolder" Directory="KeyboardManagerInstallFolder" On="uninstall"/>
+        <RemoveFolder Id="RemoveFolderKeyboardManagerEditorFolder" Directory="KeyboardManagerEditorInstallFolder" On="uninstall"/>
+        <RemoveFolder Id="RemoveFolderKeyboardManagerEngineFolder" Directory="KeyboardManagerEngineInstallFolder" On="uninstall"/>
+      </Component>
       <ComponentRef Id="Module_KeyboardManager" />
       <ComponentRef Id="Module_KeyboardManager_Editor" />
       <ComponentRef Id="Module_KeyboardManager_Engine" />
