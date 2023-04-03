@@ -96,6 +96,7 @@ In this release, we focused on releasing new features, stability and improvement
 
 - Fix issue causing folders to not be removed on uninstall.
 - Support per-user scope installation and GPO to forbid it.
+   - Companies can control this using the new GPO.
 
 ### Awake
 
