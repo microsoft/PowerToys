@@ -96,7 +96,7 @@ In this release, we focused on releasing new features, stability and improvement
 ### General
 
 - Fix issue causing folders to not be removed on uninstall.
-- Support per-user scope installation and GPO to forbid it.
+- Support per-user scope installation.
    - Companies can control this using the new GPO.
 
 ### Awake
@@ -105,7 +105,7 @@ In this release, we focused on releasing new features, stability and improvement
 
 ### Color Picker
 
-- Fix issue sampling timing and grid issue causing Color Picker to sample the color of it's own grid. Thanks [@IHorvalds](https://github.com/IHorvalds)!
+- Fix issue sampling timing and grid issue causing Color Picker to sample the color of its own grid. Thanks [@IHorvalds](https://github.com/IHorvalds)!
 
 ### FancyZones
 
@@ -138,7 +138,7 @@ In this release, we focused on releasing new features, stability and improvement
 - Add setting to disable thumbnails generation for files. (This was a hotfix for 0.67)
 - Calculator plugin - handle implied multiplication expressions. Thanks [@jjavierdguezas](https://github.com/jjavierdguezas)!
 - Fix Calculator plugin unit tests to respect decimal separator locale. Thanks [@davidegiacometti](https://github.com/davidegiacometti)!
-- Fix crashing issue caused by thumbnail image loading.
+- Fix crashing caused by thumbnail image loading.
 - Date & Time plugin - Add filename-compatible date & time format. Thanks [@Picazsoo](https://github.com/Picazsoo)!
 - Improved the error message shown on plugin loading error. Thanks [@htcfreek](https://github.com/htcfreek)!
 
@@ -165,7 +165,7 @@ In this release, we focused on releasing new features, stability and improvement
 - Fix Experiment bitmap icon rendering on theme change and bump CommunityToolkit.Labs.WinUI.SettingsControls package version. Thanks [@niels9001](https://github.com/niels9001)!
 - Video Conference Mute page improvements. Thanks [@Jay-o-Way](https://github.com/Jay-o-Way)!
 - Add warning that PowerToys Run might get no focus if "Use centralized keyboard hook" settings is enabled. Thanks [@Aaron-Junker](https://github.com/Aaron-Junker)!
-- Fix ShortcutControl issues related to focus, theme change and missing error badge when invalid key is pressed. Thanks [@htcfreek](https://github.com/htcfreek)! 
+- Fix ShortcutControl issues related to keyboard input focus, theme change and missing error badge when invalid key is pressed. Thanks [@htcfreek](https://github.com/htcfreek)! 
 - Add warning when Ctrl+V and Ctrl+Shift+V is used as an activation shortcut for Paste as Plain Text. Thanks [@htcfreek](https://github.com/htcfreek)! 
 
 ### Documentation
