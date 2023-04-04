@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using ManagedCommon;
+using Microsoft.PowerToys.Telemetry;
 using Microsoft.UI;
 using Microsoft.UI.Windowing;
 using Microsoft.UI.Xaml;
@@ -14,6 +15,7 @@ using Microsoft.UI.Xaml.Controls;
 using Peek.Common.Models;
 using Peek.UI.Extensions;
 using Peek.UI.Helpers;
+using Peek.UI.Telemetry.Events;
 using Windows.ApplicationModel.Resources;
 using Windows.Graphics;
 using Windows.Storage;
@@ -136,6 +138,8 @@ namespace Peek.UI.Views
 
             StorageFile? storageFile = await fileItem.GetStorageFileAsync();
             LauncherOptions options = new();
+
+            PowerToysTelemetry.Log.WriteEvent(new OpenWithEvent() { App = DefaultAppName ?? string.Empty });
 
             if (string.IsNullOrEmpty(DefaultAppName))
             {
