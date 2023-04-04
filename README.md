@@ -21,8 +21,9 @@ Microsoft PowerToys is a set of utilities for power users to tune and streamline
 | [FancyZones](https://aka.ms/PowerToysOverview_FancyZones) | [File Explorer Add-ons](https://aka.ms/PowerToysOverview_FileExplorerAddOns) | [File Locksmith](https://aka.ms/PowerToysOverview_FileLocksmith) |
 | [Hosts File Editor](https://aka.ms/PowerToysOverview_HostsFileEditor) | [Image Resizer](https://aka.ms/PowerToysOverview_ImageResizer) | [Keyboard Manager](https://aka.ms/PowerToysOverview_KeyboardManager) |
 | [Mouse utilities](https://aka.ms/PowerToysOverview_MouseUtilities) | [Paste as Plain Text](https://aka.ms/PowerToysOverview_PastePlain) | [PowerRename](https://aka.ms/PowerToysOverview_PowerRename) |
-| [PowerToys Run](https://aka.ms/PowerToysOverview_PowerToysRun) | [Quick Accent](https://aka.ms/PowerToysOverview_QuickAccent) | [Screen Ruler](https://aka.ms/PowerToysOverview_ScreenRuler) |
-| [Shortcut Guide](https://aka.ms/PowerToysOverview_ShortcutGuide) | [Text Extractor](https://aka.ms/PowerToysOverview_TextExtractor) | [Video Conference Mute](https://aka.ms/PowerToysOverview_VideoConference) |
+| [PowerToys Run](https://aka.ms/PowerToysOverview_PowerToysRun) | [Quick Accent](https://aka.ms/PowerToysOverview_QuickAccent) | [Registry Preview](https://aka.ms/PowerToysOverview_RegistryPreview) |
+| [Screen Ruler](https://aka.ms/PowerToysOverview_ScreenRuler) | [Shortcut Guide](https://aka.ms/PowerToysOverview_ShortcutGuide) | [Text Extractor](https://aka.ms/PowerToysOverview_TextExtractor) |
+| [Video Conference Mute](https://aka.ms/PowerToysOverview_VideoConference) |
 
 ## Installing and running Microsoft PowerToys
 
@@ -88,6 +89,7 @@ Our [prioritized roadmap][roadmap] of features and utilities that the core team 
 In this release, we focused on releasing new features, stability and improvements.
 
 **Highlights**
+
 - New utility: Registry Preview is a utility to visualize and edit Windows Registry files. Thanks [@randyrants](https://github.com/randyrants)!
 - Support per-user scope installation.
 - Awake: Quality-of-life improvements and introduced keeping system awake until expiration time and date. Thanks [@dend](https://github.com/dend)!
@@ -95,6 +97,7 @@ In this release, we focused on releasing new features, stability and improvement
 
 ### General
 
+- New utility: Registry Preview. Thanks [@randyrants](https://github.com/randyrants)!
 - Fix issue causing folders to not be removed on uninstall.
 - Support per-user scope installation.
    - Companies can control this using the new GPO.
@@ -148,11 +151,9 @@ In this release, we focused on releasing new features, stability and improvement
 
 ### Registry Preview
 
-- New utility: Registry Preview is a utility to visualize and edit Windows Registry files. Thanks [@randyrants](https://github.com/randyrants)!
-- Fix resizing and moving logic. Thanks [@randyrants](https://github.com/randyrants)!
-- UI improvements. Thanks [@niels9001](https://github.com/niels9001)!
-- Update icon. Thanks [@niels9001](https://github.com/niels9001)!
-- Remove read-only checkbox. Thanks [@randyrants](https://github.com/randyrants)!
+- Added a new utility: Registry Preview.
+- Thanks [@htcfreek](https://github.com/htcfreek)! for the help shipping this utility!
+- Thanks [@niels9001](https://github.com/niels9001) for the help on the UI!
 
 ### Video Conference Mute
 
@@ -165,7 +166,7 @@ In this release, we focused on releasing new features, stability and improvement
 - Fix Experiment bitmap icon rendering on theme change and bump CommunityToolkit.Labs.WinUI.SettingsControls package version. Thanks [@niels9001](https://github.com/niels9001)!
 - Video Conference Mute page improvements. Thanks [@Jay-o-Way](https://github.com/Jay-o-Way)!
 - Add warning that PowerToys Run might get no focus if "Use centralized keyboard hook" settings is enabled. Thanks [@Aaron-Junker](https://github.com/Aaron-Junker)!
-- Fix ShortcutControl issues related to keyboard input focus, theme change and missing error badge when invalid key is pressed. Thanks [@htcfreek](https://github.com/htcfreek)! 
+- Fix ShortcutControl issues related to keyboard input focus, theme change and missing error badge when invalid key is pressed. Thanks [@htcfreek](https://github.com/htcfreek)!
 - Add warning when Ctrl+V and Ctrl+Shift+V is used as an activation shortcut for Paste as Plain Text. Thanks [@htcfreek](https://github.com/htcfreek)! 
 
 ### Documentation
