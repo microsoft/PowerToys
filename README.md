@@ -140,7 +140,7 @@ In this release, we focused on releasing new features, stability and improvement
 - Fix Calculator plugin unit tests to respect decimal separator locale. Thanks [@davidegiacometti](https://github.com/davidegiacometti)!
 - Fix crashing issue caused by thumbnail image loading.
 - Date & Time plugin - Add filename-compatible date & time format. Thanks [@Picazsoo](https://github.com/Picazsoo)!
-- Improve plugin loading error. Thanks [@htcfreek](https://github.com/htcfreek)!
+- Improved the error message shown on plugin loading error. Thanks [@htcfreek](https://github.com/htcfreek)!
 
 ### Quick Accent
 
