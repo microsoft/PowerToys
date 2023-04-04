@@ -105,7 +105,7 @@ In this release, we focused on releasing new features, stability and improvement
 
 ### Color Picker
 
-- Fix issue sampling timing and grid issue causing Color Picker to sample the color of it's own grid. Thanks [@IHorvalds](https://github.com/IHorvalds)!
+- Fix issue sampling timing and grid issue causing Color Picker to sample the color of its own grid. Thanks [@IHorvalds](https://github.com/IHorvalds)!
 
 ### FancyZones
 
