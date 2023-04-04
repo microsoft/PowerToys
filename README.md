@@ -138,7 +138,7 @@ In this release, we focused on releasing new features, stability and improvement
 - Add setting to disable thumbnails generation for files. (This was a hotfix for 0.67)
 - Calculator plugin - handle implied multiplication expressions. Thanks [@jjavierdguezas](https://github.com/jjavierdguezas)!
 - Fix Calculator plugin unit tests to respect decimal separator locale. Thanks [@davidegiacometti](https://github.com/davidegiacometti)!
-- Fix crashing issue caused by thumbnail image loading.
+- Fix crashing caused by thumbnail image loading.
 - Date & Time plugin - Add filename-compatible date & time format. Thanks [@Picazsoo](https://github.com/Picazsoo)!
 - Improve plugin loading error. Thanks [@htcfreek](https://github.com/htcfreek)!
 
