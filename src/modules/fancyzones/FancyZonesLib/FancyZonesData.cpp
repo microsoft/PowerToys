@@ -30,40 +30,20 @@ FancyZonesData::FancyZonesData()
     settingsFileName = saveFolderPath + L"\\" + std::wstring(NonLocalizable::FancyZonesSettingsFile);
     appZoneHistoryFileName = saveFolderPath + L"\\" + std::wstring(NonLocalizable::FancyZonesAppZoneHistoryFile);
     zonesSettingsFileName = saveFolderPath + L"\\" + std::wstring(NonLocalizable::FancyZonesDataFile);
-}
 
-void FancyZonesData::ReplaceZoneSettingsFileFromOlderVersions()
-{
+    // Custom code to avoid overlapping windows in zones
+    // Load previously saved zones settings
     if (std::filesystem::exists(zonesSettingsFileName))
     {
-        Logger::info("Replace zones-settings file");
-
-        json::JsonObject fancyZonesDataJSON = JSONHelpers::GetPersistFancyZonesJSON(zonesSettingsFileName, appZoneHistoryFileName);
-        
-        auto deviceInfoMap = JSONHelpers::ParseDeviceInfos(fancyZonesDataJSON);
-        if (deviceInfoMap)
+        Logger::info("Loading existing zones settings file {}", zonesSettingsFileName.c_str());
+        json::JsonObject fancyZonesDataJSON = JSONHelpers::ParseJsonFile(zonesSettingsFileName);
+        if (fancyZonesDataJSON.HasNamedField(NonLocalizable::CustomZoneSets))
         {
-            JSONHelpers::SaveAppliedLayouts(deviceInfoMap.value());
+            customZoneSets = JSONHelpers::DeserializeCustomZoneSets(fancyZonesDataJSON.GetNamedArray(NonLocalizable::CustomZoneSets));
         }
-
-        auto customLayouts = JSONHelpers::ParseCustomZoneSets(fancyZonesDataJSON);
-        if (customLayouts)
+        if (fancyZonesDataJSON.HasNamedField(NonLocalizable::Devices))
         {
-            JSONHelpers::SaveCustomLayouts(customLayouts.value());
+            zoneSettingsMap = JSONHelpers::DeserializeDeviceZoneSettingsMap(fancyZonesDataJSON.GetNamedArray(NonLocalizable::Devices));
         }
-
-        auto templates = JSONHelpers::ParseLayoutTemplates(fancyZonesDataJSON);
-        if (templates)
-        {
-            JSONHelpers::SaveLayoutTemplates(templates.value());
-        }
-        
-        auto quickKeysMap = JSONHelpers::ParseQuickKeys(fancyZonesDataJSON);
-        if (quickKeysMap)
-        {
-            JSONHelpers::SaveLayoutHotkeys(quickKeysMap.value());
-        }
-
-        std::filesystem::remove(zonesSettingsFileName);
     }
 }
