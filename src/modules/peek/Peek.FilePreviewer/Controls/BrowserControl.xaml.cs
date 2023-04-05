@@ -6,6 +6,7 @@ using System;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.Web.WebView2.Core;
+using Peek.Common.Helpers;
 using Windows.System;
 
 namespace Peek.FilePreviewer.Controls
@@ -97,9 +98,9 @@ namespace Peek.FilePreviewer.Controls
 
                 PreviewBrowser.CoreWebView2.DOMContentLoaded += CoreWebView2_DOMContentLoaded;
             }
-            catch
+            catch (Exception ex)
             {
-                // TODO: exception / telemetry log?
+                Logger.LogError("WebView2 loading failed. " + ex.Message);
             }
         }
 

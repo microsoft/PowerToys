@@ -172,7 +172,7 @@ namespace Peek.FilePreviewer
                 {
                     // Fall back to Default previewer
                     PowerToysTelemetry.Log.WriteEvent(new ErrorEvent() { HResult = (Common.Models.HResult)ex.HResult, Failure = ErrorEvent.FailureType.PreviewFail });
-                    System.Diagnostics.Debug.WriteLine("Error in UpdatePreviewAsync, falling back to default previewer: " + ex.Message);
+                    Logger.LogError("Error in UpdatePreviewAsync, falling back to default previewer: " + ex.Message);
                     Previewer.State = PreviewState.Error;
                 }
             }

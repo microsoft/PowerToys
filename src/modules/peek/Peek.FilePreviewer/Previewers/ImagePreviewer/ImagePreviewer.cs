@@ -1,10 +1,9 @@
-﻿// Copyright (c) Microsoft Corporation
+// Copyright (c) Microsoft Corporation
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
@@ -159,8 +158,7 @@ namespace Peek.FilePreviewer.Previewers
                 var hr = ThumbnailHelper.GetThumbnail(Path.GetFullPath(Item.Path), out IntPtr hbitmap, ThumbnailHelper.LowQualityThumbnailSize);
                 if (hr != HResult.Ok)
                 {
-                    Debug.WriteLine("Error loading low quality thumbnail - hresult: " + hr);
-
+                    Logger.LogError("Error loading low quality thumbnail - hresult: " + hr);
                     throw new ArgumentNullException(nameof(hbitmap));
                 }
 
@@ -187,8 +185,7 @@ namespace Peek.FilePreviewer.Previewers
                 var hr = ThumbnailHelper.GetThumbnail(Path.GetFullPath(Item.Path), out IntPtr hbitmap, ThumbnailHelper.HighQualityThumbnailSize);
                 if (hr != HResult.Ok)
                 {
-                    Debug.WriteLine("Error loading high quality thumbnail - hresult: " + hr);
-
+                    Logger.LogError("Error loading high quality thumbnail - hresult: " + hr);
                     throw new ArgumentNullException(nameof(hbitmap));
                 }
 
@@ -227,7 +224,7 @@ namespace Peek.FilePreviewer.Previewers
                         var loadStatus = await source.SetSourceAsync(stream.AsRandomAccessStream());
                         if (loadStatus != SvgImageSourceLoadStatus.Success)
                         {
-                            Debug.WriteLine("Error loading SVG: " + loadStatus.ToString());
+                            Logger.LogError("Error loading SVG: " + loadStatus.ToString());
                             throw new ArgumentNullException(nameof(source));
                         }
 
