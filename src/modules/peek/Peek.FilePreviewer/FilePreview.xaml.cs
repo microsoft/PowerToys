@@ -7,6 +7,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using CommunityToolkit.Mvvm.ComponentModel;
+using Microsoft.PowerToys.Telemetry;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Input;
@@ -17,6 +18,7 @@ using Peek.Common.Models;
 using Peek.FilePreviewer.Models;
 using Peek.FilePreviewer.Previewers;
 using Peek.FilePreviewer.Previewers.Interfaces;
+using Peek.UI.Telemetry.Events;
 using Windows.ApplicationModel.Resources;
 
 namespace Peek.FilePreviewer
@@ -70,6 +72,7 @@ namespace Peek.FilePreviewer
                     _cancellationTokenSource.Cancel();
                     _cancellationTokenSource = new();
 
+                    PowerToysTelemetry.Log.WriteEvent(new ErrorEvent() { HResult = 0, Failure = ErrorEvent.FailureType.FileNotSupported });
                     Previewer = previewerFactory.CreateDefaultPreviewer(Item);
                     await UpdatePreviewAsync(_cancellationTokenSource.Token);
                 }
@@ -168,6 +171,7 @@ namespace Peek.FilePreviewer
                 catch (Exception ex)
                 {
                     // Fall back to Default previewer
+                    PowerToysTelemetry.Log.WriteEvent(new ErrorEvent() { HResult = (Common.Models.HResult)ex.HResult, Failure = ErrorEvent.FailureType.PreviewFail });
                     System.Diagnostics.Debug.WriteLine("Error in UpdatePreviewAsync, falling back to default previewer: " + ex.Message);
                     Previewer.State = PreviewState.Error;
                 }

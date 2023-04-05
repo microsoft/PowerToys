@@ -6,8 +6,10 @@ using System;
 using ManagedCommon;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.PowerToys.Telemetry;
 using Microsoft.UI.Xaml;
 using Peek.FilePreviewer;
+using Peek.UI.Telemetry.Events;
 using Peek.UI.Views;
 using WinUIEx;
 
@@ -91,6 +93,7 @@ namespace Peek.UI
 
         private void App_UnhandledException(object sender, Microsoft.UI.Xaml.UnhandledExceptionEventArgs e)
         {
+            PowerToysTelemetry.Log.WriteEvent(new ErrorEvent() { HResult = (Common.Models.HResult)e.Exception.HResult, Failure = ErrorEvent.FailureType.AppCrash });
         }
     }
 }
