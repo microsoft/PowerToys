@@ -72,7 +72,6 @@ namespace Peek.FilePreviewer
                     _cancellationTokenSource.Cancel();
                     _cancellationTokenSource = new();
 
-                    PowerToysTelemetry.Log.WriteEvent(new ErrorEvent() { HResult = 0, Failure = ErrorEvent.FailureType.FileNotSupported });
                     Previewer = previewerFactory.CreateDefaultPreviewer(Item);
                     await UpdatePreviewAsync(_cancellationTokenSource.Token);
                 }
