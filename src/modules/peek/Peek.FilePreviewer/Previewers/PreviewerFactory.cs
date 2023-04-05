@@ -27,7 +27,7 @@ namespace Peek.FilePreviewer.Previewers
 
         public IPreviewer CreateDefaultPreviewer(IFileSystemItem file)
         {
-            PowerToysTelemetry.Log.WriteEvent(new ErrorEvent() { HResult = 0, Failure = ErrorEvent.FailureType.FileNotSupported });
+            PowerToysTelemetry.Log.WriteEvent(new ErrorEvent() { Failure = ErrorEvent.FailureType.FileNotSupported });
             return new UnsupportedFilePreviewer(file);
         }
     }

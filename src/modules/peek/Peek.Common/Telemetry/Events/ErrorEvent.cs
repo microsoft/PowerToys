@@ -24,7 +24,9 @@ namespace Peek.UI.Telemetry.Events
             EventName = "Peek_Error";
         }
 
-        public HResult HResult { get; set; }
+        public HResult HResult { get; set; } = 0;
+
+        public string Message { get; set; } = string.Empty;
 
         public string Failure { get; set; } = string.Empty;
 

@@ -170,7 +170,7 @@ namespace Peek.FilePreviewer
                 catch (Exception ex)
                 {
                     // Fall back to Default previewer
-                    PowerToysTelemetry.Log.WriteEvent(new ErrorEvent() { HResult = (Common.Models.HResult)ex.HResult, Failure = ErrorEvent.FailureType.PreviewFail });
+                    PowerToysTelemetry.Log.WriteEvent(new ErrorEvent() { HResult = (Common.Models.HResult)ex.HResult, Message = ex.Message, Failure = ErrorEvent.FailureType.PreviewFail });
                     Logger.LogError("Error in UpdatePreviewAsync, falling back to default previewer: " + ex.Message);
                     Previewer.State = PreviewState.Error;
                 }
