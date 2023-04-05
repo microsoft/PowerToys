@@ -41,12 +41,13 @@
       <Variable  Name="DetectedPowerToysUserVersion" Type="version" Value="0.0.0.0"/>
 
       <util:ProductSearch Id="SearchInstalledPowerToysVersion" Variable="DetectedPowerToysVersion" UpgradeCode="42B84BF7-5FBF-473B-9C8B-049DC16F7708" Result="version" />
+      <util:ProductSearch Id="SearchInstalledPowerToysUserVersion" Variable="DetectedPowerToysUserVersion" UpgradeCode="D8B559DB-4C98-487A-A33F-50A8EEE42726" Result="version" />
 
       <?if $(var.PerUser) = "true" ?>
-        <util:ProductSearch Id="SearchInstalledPowerToysUserVersion" Variable="DetectedPowerToysUserVersion" UpgradeCode="D8B559DB-4C98-487A-A33F-50A8EEE42726" Result="version" />
         <bal:Condition Message="PowerToys is already installed on this system for all users. We recommend first uninstalling that version before installing this one." >MinimumVersion &gt;= DetectedPowerToysVersion</bal:Condition>
         <bal:Condition Message="The same or later version of PowerToys is already installed." >TargetPowerToysVersion &gt;= DetectedPowerToysUserVersion OR WixBundleInstalled</bal:Condition>
       <?else?>
+        <bal:Condition Message="PowerToys is already installed on this system for current user. We recommend first uninstalling that version before installing this one." >MinimumVersion &gt;= DetectedPowerToysUserVersion</bal:Condition>
         <bal:Condition Message="A later version of PowerToys is already installed." >TargetPowerToysVersion &gt;= DetectedPowerToysVersion OR WixBundleInstalled</bal:Condition>
       <?endif?>
 
