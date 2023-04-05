@@ -19,6 +19,11 @@ namespace Peek.UI.Telemetry.Events
             public static readonly string AppCrash = "App crash";
         }
 
+        public ErrorEvent()
+        {
+            EventName = "Peek_Error";
+        }
+
         public HResult HResult { get; set; }
 
         public string Failure { get; set; } = string.Empty;

@@ -11,6 +11,11 @@ namespace Peek.UI.Telemetry.Events
     [EventData]
     public class OpenedEvent : EventBase, IEvent
     {
+        public OpenedEvent()
+        {
+            EventName = "Peek_Opened";
+        }
+
         public string ActivationKind { get; set; } = string.Empty;
 
         public string FileExtension { get; set; } = string.Empty;

@@ -11,6 +11,11 @@ namespace Peek.UI.Telemetry.Events
     [EventData]
     public class OpenWithEvent : EventBase, IEvent
     {
+        public OpenWithEvent()
+        {
+            EventName = "Peek_OpenWith";
+        }
+
         public string App { get; set; } = string.Empty;
 
         public PartA_PrivTags PartA_PrivTags => PartA_PrivTags.ProductAndServiceUsage;

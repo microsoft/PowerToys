@@ -11,6 +11,11 @@ namespace Peek.UI.Telemetry.Events
     [EventData]
     public class ClosedEvent : EventBase, IEvent
     {
+        public ClosedEvent()
+        {
+            EventName = "Peek_Closed";
+        }
+
         public PartA_PrivTags PartA_PrivTags => PartA_PrivTags.ProductAndServiceUsage;
     }
 }
