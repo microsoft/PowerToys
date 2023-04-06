@@ -376,25 +376,6 @@ jobs:
       SourceFolder: $(Build.ArtifactStagingDirectory)/Symbols-$(BuildPlatform)/
       RemoveSourceFolder: True
 
-  - task: PowerShell@2
-    displayName: 'Calculating SHA256 hash'
-    inputs:
-      targetType: 'inline'
-      script: |
-        $p = "$(System.ArtifactsDirectory)\";
-        $staging = "$(Build.ArtifactStagingDirectory)\"
-        $hash = ((get-item $p\*.exe | Get-FileHash).Hash);
-        $plat = "hash_$(BuildPlatform).txt";
-        $combinedPath = $staging + $plat;
-        
-        echo $plat
-        echo $hash
-        echo $p
-        echo $combinedPath
-        
-        $hash | out-file -filepath $combinedPath
-      pwsh: true
-
   - template: installer-steps.yml
     parameters:
       versionNumber: ${{ parameters.versionNumber }}
@@ -430,6 +411,25 @@ jobs:
       contents: "**/PowerToys*Setup-*.exe"
       flattenFolders: True
       targetFolder: $(Build.ArtifactStagingDirectory)
+
+  - task: PowerShell@2
+    displayName: 'Calculating SHA256 hash'
+    inputs:
+      targetType: 'inline'
+      script: |
+        $p = "$(System.ArtifactsDirectory)\";
+        $staging = "$(Build.ArtifactStagingDirectory)\"
+        $hash = ((get-item $p\*.exe | Get-FileHash).Hash);
+        $plat = "hash_$(BuildPlatform).txt";
+        $combinedPath = $staging + $plat;
+        
+        echo $plat
+        echo $hash
+        echo $p
+        echo $combinedPath
+        
+        $hash | out-file -filepath $combinedPath
+      pwsh: true
 
   - task: PublishBuildArtifacts@1
     displayName: "Publish Artifact: PowerToySetup"
