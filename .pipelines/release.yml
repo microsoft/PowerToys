@@ -419,16 +419,25 @@ jobs:
       script: |
         $p = "$(System.ArtifactsDirectory)\";
         $staging = "$(Build.ArtifactStagingDirectory)\"
-        $hash = ((get-item $p\*.exe | Get-FileHash).Hash);
-        $plat = "hash_$(BuildPlatform).txt";
-        $combinedPath = $staging + $plat;
+        $userHash = ((get-item $p\PowerToysUserSetup*.exe | Get-FileHash).Hash);
+        $machineHash = ((get-item $p\PowerToysSetup*.exe | Get-FileHash).Hash);
+        $userPlat = "hash_user_$(BuildPlatform).txt";
+        $machinePlat = "hash_machine_$(BuildPlatform).txt";
+        $combinedUserPath = $staging + $userPlat;
+        $combinedMachinePath = $staging + $machinePlat;
         
-        echo $plat
-        echo $hash
         echo $p
-        echo $combinedPath
+
+        echo $userPlat
+        echo $userHash
+        echo $combinedUserPath
+
+        echo $machinePlat
+        echo $machineHash
+        echo $combinedMachinePath
         
-        $hash | out-file -filepath $combinedPath
+        $userHash | out-file -filepath $combinedUserPath
+        $machineHash | out-file -filepath $combinedMachinePath
       pwsh: true
 
   - task: PublishBuildArtifacts@1
