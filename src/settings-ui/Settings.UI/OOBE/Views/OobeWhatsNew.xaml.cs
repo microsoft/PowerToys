@@ -55,7 +55,7 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
         /// <summary>
         /// Regex to remove installer hash sections from the release notes.
         /// </summary>
-        private const string RemoveInstallerHashesRegex = @"((\r\n)+#+ installer hashes)?((\r\n)+#+( x64)?( arm64)? installer( SHA256)? hash(\r\n)+[0-9A-F]{64})+";
+        private const string RemoveInstallerHashesRegex = @"((\r\n)+#+ installer hashes)?((\r\n)+#+( per user)?( machine wide)?[ -]+( x64)?( ARM64)? installer( SHA256)? hash[ -]+PowerToys(User)?Setup[-/.0-9]+(x64)?(arm64)?\.exe(\r\n)+[0-9A-F]{64})+";
         private const RegexOptions RemoveInstallerHashesRegexOptions = RegexOptions.Compiled | RegexOptions.Multiline | RegexOptions.IgnoreCase | RegexOptions.CultureInvariant;
 
         private static async Task<string> GetReleaseNotesMarkdown()
