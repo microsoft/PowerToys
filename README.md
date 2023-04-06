@@ -49,7 +49,7 @@ This is our preferred method.
 Install from the [Microsoft Store's PowerToys page][microsoft-store-link]. You must be using the [new Microsoft Store](https://blogs.windows.com/windowsExperience/2021/06/24/building-a-new-open-microsoft-store-on-windows-11/) which is available for both Windows 11 and Windows 10.
 
 ### Via WinGet
-Download PowerToys from [WinGet][winget-link]. To install PowerToys, run the following command from the command line / PowerShell:
+Download PowerToys from [WinGet][winget-link]. Updating PowerToys via winget will respect current PowerToys installation scope. To install PowerToys, run the following command from the command line / PowerShell:
 
 #### User scope installer [default]
 ```powershell
@@ -61,8 +61,6 @@ winget install Microsoft.PowerToys -s winget
 ```powershell
 winget install --scope machine Microsoft.PowerToys -s winget
 ```
-
-Updating PowerToys via winget will respect current PowerToys installation scope.
 
 ### Other install methods
 
@@ -86,7 +84,7 @@ Our [prioritized roadmap][roadmap] of features and utilities that the core team 
 
 ### 0.69 - March 2023 Update
 
-In this release, we focused on releasing new features, stability and improvements.
+In this release, we focused on releasing new features, stability and improvements. Early notice for v0.70, we will be releasing it later in May 2023.
 
 **Highlights**
 
