@@ -78,7 +78,7 @@
                     Click="SaveButton_Click"
                     Icon="Save"
                     IsEnabled="False"
-                    IsTabStop="False"
+                    IsTabStop="False">
                     <AppBarButton.KeyboardAccelerators>
                         <KeyboardAccelerator Key="S" Modifiers="Control" />
                     </AppBarButton.KeyboardAccelerators>
