@@ -24,6 +24,7 @@
 		<AssemblyDescription>PowerToys RegistryPreview</AssemblyDescription>
 		<RootNamespace>RegistryPreview</RootNamespace>
 		<DisableWinExeOutputInference>true</DisableWinExeOutputInference>
+		<AllowUnsafeBlocks>true</AllowUnsafeBlocks>
 	</PropertyGroup>
 
 	<!-- SelfContained=true requires RuntimeIdentifier to be set -->

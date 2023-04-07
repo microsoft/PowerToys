@@ -134,18 +134,21 @@ namespace RegistryPreview
                 }
             }
 
-            // Pull in a new REG file
-            FileOpenPicker fileOpenPicker = new FileOpenPicker();
-            fileOpenPicker.ViewMode = PickerViewMode.List;
-            fileOpenPicker.CommitButtonText = resourceLoader.GetString("OpenButtonText");
-            fileOpenPicker.SuggestedStartLocation = PickerLocationId.DocumentsLibrary;
-            fileOpenPicker.FileTypeFilter.Add(".reg");
+            // Pull in a new REG file - we have to use the direct Win32 method because FileOpenPicker crashes when it's
+            // called while running as admin
+            string documentsPath = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
+            string filename = FilePicker.ShowDialog(
+                documentsPath,
+                new string[] { "reg" },
+                resourceLoader.GetString("FilterRegistryName"),
+                resourceLoader.GetString("OpenDialogTitle"));
 
-            // Get the HWND so we an open the modal
-            IntPtr hWnd = WinRT.Interop.WindowNative.GetWindowHandle(this);
-            InitializeWithWindow.Initialize(fileOpenPicker, hWnd);
+            if (filename == string.Empty || File.Exists(filename) == false)
+            {
+                return;
+            }
 
-            StorageFile storageFile = await fileOpenPicker.PickSingleFileAsync();
+            StorageFile storageFile = await StorageFile.GetFileFromPathAsync(filename);
 
             if (storageFile != null)
             {
