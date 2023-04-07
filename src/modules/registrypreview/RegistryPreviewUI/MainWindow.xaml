@@ -78,9 +78,9 @@
                     Click="SaveButton_Click"
                     Icon="Save"
                     IsEnabled="False"
-                    IsTabStop="False">
+                    IsTabStop="False"
                     <AppBarButton.KeyboardAccelerators>
-                        <KeyboardAccelerator Key="F2" Modifiers="None" />
+                        <KeyboardAccelerator Key="S" Modifiers="Control" />
                     </AppBarButton.KeyboardAccelerators>
                 </AppBarButton>
                 <AppBarButton
@@ -92,7 +92,7 @@
                     IsEnabled="True"
                     IsTabStop="False">
                     <AppBarButton.KeyboardAccelerators>
-                        <KeyboardAccelerator Key="F2" Modifiers="Shift" />
+                        <KeyboardAccelerator Key="S" Modifiers="Control,Shift" />
                     </AppBarButton.KeyboardAccelerators>
                 </AppBarButton>
                 <AppBarButton
