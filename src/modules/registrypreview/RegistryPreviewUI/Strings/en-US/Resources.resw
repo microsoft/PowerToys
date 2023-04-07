@@ -153,8 +153,11 @@
   <data name="OkButtonText" xml:space="preserve">
     <value>OK</value>
   </data>
-  <data name="OpenDialogTitle" xml:space="preserve">
+  <data name="OpenButton.Label" xml:space="preserve">
     <value>Open file...</value>
+  </data>
+  <data name="OpenDialogTitle" xml:space="preserve">
+    <value>Open Registry file...</value>
   </data>
   <data name="RefreshButton.Label" xml:space="preserve">
     <value>Reload from file</value>
