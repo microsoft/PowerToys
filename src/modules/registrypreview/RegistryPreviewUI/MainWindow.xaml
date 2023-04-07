@@ -53,6 +53,7 @@
             <CommandBar
                 Name="commandBar"
                 HorizontalAlignment="Left"
+                Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
                 BorderBrush="Transparent"
                 BorderThickness="0"
                 DefaultLabelPosition="Right"
@@ -161,7 +162,9 @@
             ScrollViewer.IsVerticalRailEnabled="True"
             ScrollViewer.VerticalScrollBarVisibility="Visible"
             TabIndex="0"
-            TextWrapping="NoWrap" />
+            TextWrapping="NoWrap"
+            CornerRadius="{StaticResource OverlayCornerRadius}"
+            />
 
         <Grid
             Grid.Row="1"
@@ -209,6 +212,7 @@
             Grid.RowSpan="2"
             Grid.Column="2"
             Margin="0,0,8,8"
+            CornerRadius="{StaticResource OverlayCornerRadius}"
             Style="{StaticResource GridCardStyle}">
             <controls:DataGrid
                 x:Name="dataGrid"
