@@ -1,0 +1,13 @@
+{
+  "ID": "E4F538395B174D7691FBB270781F427B",
+  "ActionKeyword": "??",
+  "IsGlobal": false,
+  "Name": "ChatGPT",
+  "Author": "Simone Franco",
+  "Version": "1.0.0",
+  "Language": "csharp",
+  "Website": "https://aka.ms/powertoys",
+  "ExecuteFileName": "Community.PowerToys.Run.Plugin.ChatGPT.dll",
+  "IcoPathDark": "Images\\shell.dark.png",
+  "IcoPathLight": "Images\\shell.light.png"
+}
