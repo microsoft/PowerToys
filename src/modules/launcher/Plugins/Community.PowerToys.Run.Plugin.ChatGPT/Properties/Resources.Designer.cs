@@ -70,7 +70,7 @@ namespace Community.PowerToys.Run.Plugin.ChatGPT.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Make fast queries to chatGPT and display its answers..
+        ///   Looks up a localized string similar to Make fast queries to chatGPT and display its answer..
         /// </summary>
         internal static string plugin_description {
             get {

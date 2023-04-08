@@ -121,7 +121,7 @@
     <value>Personal API Key</value>
   </data>
   <data name="plugin_description" xml:space="preserve">
-    <value>Make fast queries to chatGPT and display its answers.</value>
+    <value>Make fast queries to chatGPT and display its answer.</value>
   </data>
   <data name="plugin_name" xml:space="preserve">
     <value>ChatGPT</value>

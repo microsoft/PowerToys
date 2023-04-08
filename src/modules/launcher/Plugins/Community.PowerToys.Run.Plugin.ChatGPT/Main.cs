@@ -41,12 +41,12 @@ namespace Community.PowerToys.Run.Plugin.ChatGPT
 
         private const string PersonalAPIKey = nameof(PersonalAPIKey);
 
-        public List<Result> Query(Query query, bool isFullQuery)
+        public List<Result> Query(Query query, bool delayedExecution)
         {
             // TODO: Have a look at Indexer Plugin to use delayed execution queries
             var results = new List<Result>();
 
-            if (query.Search.EndsWith("?"))
+            if (query.Search.EndsWith("?", StringComparison.OrdinalIgnoreCase))
             {
                 string searchTerm = query.Search;
                 string answer = GetChatGPTAnswer(searchTerm);
@@ -81,7 +81,7 @@ namespace Community.PowerToys.Run.Plugin.ChatGPT
 
                 results.Add(emptyResult);
             }
-            else if (!query.Search.EndsWith("?"))
+            else if (!query.Search.EndsWith("?", StringComparison.OrdinalIgnoreCase))
             {
                 Result missingQuestionMarkResult = new()
                 {
@@ -128,7 +128,7 @@ namespace Community.PowerToys.Run.Plugin.ChatGPT
             using (var httpClient = new HttpClient())
             {
                 // TODO: Allow to set the custom Auth Key with a setting
-                httpClient.DefaultRequestHeaders.Add("Authorization", "Bearer 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");
+                httpClient.DefaultRequestHeaders.Add("Authorization", PersonalAPIKey);
 
                 var content = new StringContent(data.ToJsonString(), Encoding.UTF8, contentType);
                 var response = httpClient.Send(new HttpRequestMessage(HttpMethod.Post, url)
