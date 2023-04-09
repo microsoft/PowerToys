@@ -30,7 +30,8 @@
                             <RowDefinition Height="24" />
                         </Grid.RowDefinitions>
                         <TextBlock Text="{Binding Name}"
-                                   Style="{StaticResource BodyStrongTextBlockStyle}"/>
+                                   FontSize="14"
+                                   FontWeight="SemiBold"/>
                         <StackPanel Orientation="Horizontal"
                                     Grid.Row="1"
                                     VerticalAlignment="Top">
@@ -41,10 +42,9 @@
                                        Margin="4,0,0,0"
                                        Style="{StaticResource CaptionTextBlockStyle}"
                                        Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
-                            <TextBlock Text="&#xE947;"
-                                       Margin="4,4,0,0"
+                            <TextBlock Text="×"
+                                       Margin="4,0,0,0"
                                        Style="{StaticResource CaptionTextBlockStyle}"
-                                       FontFamily="{StaticResource SymbolThemeFontFamily}"
                                        Foreground="{DynamicResource TextFillColorSecondaryBrush}"
                                        Visibility="{Binding ShowHeight, Converter={StaticResource BoolValueConverter}}"/>
                             <TextBlock Text="{Binding Height, Converter={StaticResource AutoDoubleConverter}, ConverterParameter=Auto}"
@@ -61,13 +61,14 @@
                 </DataTemplate>
 
                 <DataTemplate DataType="{x:Type m:CustomSize}">
-                    <Grid Height="44"
+                    <Grid Height="50"
                           AutomationProperties.Name="{Binding Name}">
 
                         <TextBlock Text="{Binding Name}"
                                    Margin="0,0,0,0"
                                    VerticalAlignment="Center"
-                                   Style="{StaticResource BodyStrongTextBlockStyle}"
+                                   FontSize="14"
+                                   FontWeight="SemiBold"
                                    Foreground="{DynamicResource PrimaryForegroundBrush}" />
                     </Grid>
                 </DataTemplate>
