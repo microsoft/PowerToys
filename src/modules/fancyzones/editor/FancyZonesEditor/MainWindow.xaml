@@ -417,7 +417,7 @@
                             <TextBlock Text="&#xE74D;"
                                        FontFamily="{DynamicResource SymbolThemeFontFamily}"
                                        FontSize="16"
-                                       Foreground="{DynamicResource SystemFillColorCriticalBrush}"
+                                       Foreground="Red"
                                        AutomationProperties.Name="{x:Static props:Resources.Delete}" />
                         </Button.Content>
                     </Button>
