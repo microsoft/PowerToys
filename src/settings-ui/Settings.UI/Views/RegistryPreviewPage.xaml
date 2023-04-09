@@ -34,7 +34,7 @@
                     <labs:SettingsCard
                         x:Uid="RegistryPreview_LaunchButtonControl"
                         ActionIcon="{ui:FontIcon FontFamily={StaticResource SymbolThemeFontFamily},
-                                                 FontSize=16,
+                                                 FontSize=14,
                                                  Glyph=&#xE8A7;}"
                         Command="{x:Bind ViewModel.LaunchEventHandler}"
                         HeaderIcon="{ui:FontIcon FontFamily={StaticResource SymbolThemeFontFamily},
