@@ -89,7 +89,7 @@
                     <labs:SettingsCard
                         x:Uid="KeyboardManager_RemapKeyboardButton"
                         ActionIcon="{ui:FontIcon FontFamily={StaticResource SymbolThemeFontFamily},
-                                                 FontSize=14,
+                                                 FontSize=16,
                                                  Glyph=&#xE8A7;}"
                         Command="{Binding Path=RemapKeyboardCommand}"
                         HeaderIcon="{ui:FontIcon FontFamily={StaticResource SymbolThemeFontFamily},
@@ -151,7 +151,7 @@
                     <labs:SettingsCard
                         x:Uid="KeyboardManager_RemapShortcutsButton"
                         ActionIcon="{ui:FontIcon FontFamily={StaticResource SymbolThemeFontFamily},
-                                                 FontSize=14,
+                                                 FontSize=16,
                                                  Glyph=&#xE8A7;}"
                         Command="{Binding Path=EditShortcutCommand}"
                         HeaderIcon="{ui:FontIcon FontFamily={StaticResource SymbolThemeFontFamily},
