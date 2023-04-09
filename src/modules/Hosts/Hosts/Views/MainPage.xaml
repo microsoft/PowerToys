@@ -47,15 +47,13 @@
                 Command="{x:Bind NewDialogCommand}">
                 <StackPanel
                     Orientation="Horizontal"
-                    Spacing="12">
-                    <TextBlock
+                    Spacing="8">
+                    <FontIcon
                         x:Name="Icon"
-                        Margin="0,0,0,0"
-                        VerticalAlignment="Center"
                         FontFamily="{ThemeResource SymbolThemeFontFamily}"
                         FontSize="16"
                         Foreground="{ThemeResource AccentTextFillColorPrimaryBrush}"
-                        Text="&#xe710;" />
+                        Glyph="&#xe710;" />
                     <TextBlock x:Uid="AddEntry" />
                 </StackPanel>
             </Button>
@@ -71,7 +69,7 @@
                     Style="{StaticResource SubtleButtonStyle}">
                     <FontIcon
                         FontFamily="{StaticResource SymbolThemeFontFamily}"
-                        FontSize="14"
+                        FontSize="16"
                         Glyph="&#xe8a5;" />
                 </Button>
 
@@ -81,7 +79,7 @@
                     Style="{StaticResource SubtleButtonStyle}">
                     <FontIcon
                         FontFamily="{StaticResource SymbolThemeFontFamily}"
-                        FontSize="14"
+                        FontSize="16"
                         Glyph="&#xe71c;" />
                     <Button.Flyout>
                         <Flyout>
@@ -141,7 +139,7 @@
                     Style="{StaticResource SubtleButtonStyle}">
                     <FontIcon
                         FontFamily="{StaticResource SymbolThemeFontFamily}"
-                        FontSize="14"
+                        FontSize="16"
                         Glyph="&#xe8a7;" />
                 </Button>
 
@@ -152,7 +150,7 @@
                     Style="{StaticResource SubtleButtonStyle}">
                     <FontIcon
                         FontFamily="{StaticResource SymbolThemeFontFamily}"
-                        FontSize="14"
+                        FontSize="16"
                         Glyph="&#xe713;" />
                 </Button>
             </StackPanel>
