@@ -243,13 +243,11 @@
                                     Spacing="8">
                                     <TextBlock
                                         x:Name="pathTextBlock"
-                                        Width="350"
-                                        HorizontalAlignment="Right"
                                         VerticalAlignment="Center"
                                         IsTextSelectionEnabled="True"
                                         Text="{x:Bind Mode=TwoWay, Path=ViewModel.SettingsBackupAndRestoreDir}"
-                                        TextAlignment="Right"
-                                        TextTrimming="CharacterEllipsis">
+                                        TextTrimming="CharacterEllipsis"
+                                        Foreground="{ThemeResource TextFillColorSecondaryBrush}">
                                         <ToolTipService.ToolTip>
                                             <ToolTip IsEnabled="{Binding ElementName=pathTextBlock, Path=IsTextTrimmed}">
                                                 <TextBlock Text="{x:Bind Mode=TwoWay, Path=ViewModel.SettingsBackupAndRestoreDir}" />
@@ -274,7 +272,7 @@
                                 ContentAlignment="Vertical">
                                 <Grid Margin="0,0,0,6" ColumnSpacing="8">
                                     <Grid.ColumnDefinitions>
-                                        <ColumnDefinition Width="Auto" />
+                                        <ColumnDefinition Width="Auto" MinWidth="{StaticResource SettingActionControlMinWidth}"/>
                                         <ColumnDefinition Width="*" />
                                     </Grid.ColumnDefinitions>
                                     <Grid.RowDefinitions>

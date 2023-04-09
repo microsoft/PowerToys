@@ -108,7 +108,7 @@
                                Text="{Binding Dimensions}"
                                Grid.Row="0"
                                Margin="0,0,0,0"
-                               FontSize="14"
+                               FontSize="12"
                                HorizontalAlignment="Center"
                                VerticalAlignment="Center"
                                Foreground="{Binding (TextElement.Foreground), RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type ContentPresenter}}}" />
