@@ -115,8 +115,8 @@
                         <labs:SettingsExpander.Items>
                             <labs:SettingsCard ContentAlignment="Left">
                                 <controls:FancyZonesPreviewControl
-                                    Width="170"
-                                    Height="86"
+                                    Width="192"
+                                    Height="108"
                                     CustomBorderColor="{x:Bind Path=ViewModel.ZoneBorderColor, Mode=OneWay}"
                                     CustomHighlightColor="{x:Bind Path=ViewModel.ZoneHighlightColor, Mode=OneWay}"
                                     CustomInActiveColor="{x:Bind Path=ViewModel.ZoneInActiveColor, Mode=OneWay}"

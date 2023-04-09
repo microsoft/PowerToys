@@ -49,6 +49,7 @@
         MinWidth="170"
         MinHeight="86"
         HorizontalAlignment="Center"
+        Padding="2"
         Background="Black"
         BorderBrush="Black"
         BorderThickness="6"
@@ -65,7 +66,6 @@
         <Border
             Grid.RowSpan="3"
             Grid.ColumnSpan="2"
-            CornerRadius="2"
             Opacity="0.8">
             <Image
                 AutomationProperties.AccessibilityView="Raw"
@@ -80,7 +80,7 @@
         <Border
             x:Name="Zone1"
             Grid.RowSpan="2"
-            Margin="4,4,2,4"
+            Margin="2"
             BorderThickness="1"
             CornerRadius="2">
             <TextBlock
@@ -94,7 +94,7 @@
         <Border
             x:Name="Zone2"
             Grid.Column="1"
-            Margin="2,4,4,2"
+            Margin="2"
             BorderThickness="1"
             CornerRadius="2">
             <TextBlock
@@ -109,7 +109,7 @@
             x:Name="Zone3"
             Grid.Row="1"
             Grid.Column="1"
-            Margin="2,2,4,4"
+            Margin="2"
             BorderThickness="1"
             CornerRadius="2">
             <TextBlock
