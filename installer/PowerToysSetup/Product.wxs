@@ -566,7 +566,6 @@
                 </Directory>
                 <Directory Id="PowerToysPluginFolder" Name="PowerToys">
                   <Directory Id="PowerToysImagesFolder" Name="Images" />
-                  <Directory Id="PowerToysLanguagesFolder" Name="Languages" />
                 </Directory>
                 <Directory Id="RegistryPluginFolder" Name="Registry">
                   <Directory Id="RegistryImagesFolder" Name="Images" />
