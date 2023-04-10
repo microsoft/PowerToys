@@ -62,7 +62,12 @@ namespace RegistryPreview
                     SizeInt32 size;
                     size.Width = (int)jsonSettings.GetNamedNumber("appWindow.Size.Width");
                     size.Height = (int)jsonSettings.GetNamedNumber("appWindow.Size.Height");
-                    appWindow.Resize(size);
+
+                    // check to make sure the size values are reasonable before attempting to restore the last saved size
+                    if (size.Width >= 320 && size.Height >= 240)
+                    {
+                        appWindow.Resize(size);
+                    }
                 }
 
                 // reposition the window
@@ -71,7 +76,12 @@ namespace RegistryPreview
                     PointInt32 point;
                     point.X = (int)jsonSettings.GetNamedNumber("appWindow.Position.X");
                     point.Y = (int)jsonSettings.GetNamedNumber("appWindow.Position.Y");
-                    appWindow.Move(point);
+
+                    // check to make sure the move values are reasonable before attempting to restore the last saved location
+                    if (point.X >= 0 && point.Y >= 0)
+                    {
+                        appWindow.Move(point);
+                    }
                 }
             }
 
