@@ -34,6 +34,12 @@
             Source="{x:Bind BrowserPreviewer.Preview, Mode=OneWay}"
             Visibility="{x:Bind IsPreviewVisible(BrowserPreviewer, Previewer.State), Mode=OneWay, FallbackValue=Collapsed}" />
 
+        <controls:TextFilePreview
+            x:Name="TextPreview"
+            FileName="{x:Bind TextFilePreviewer.FileName, Mode=OneWay}"
+            FileContent="{x:Bind TextFilePreviewer.FileContent, Mode=OneWay}"
+            Visibility="{x:Bind IsPreviewVisible(TextFilePreviewer, Previewer.State), Mode=OneWay}" />
+        
         <controls:UnsupportedFilePreview
             x:Name="UnsupportedFilePreview"
             DateModified="{x:Bind UnsupportedFilePreviewer.DateModified, Mode=OneWay}"

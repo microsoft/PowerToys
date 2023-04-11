@@ -20,6 +20,10 @@ namespace Peek.FilePreviewer.Previewers
             {
                 return new WebBrowserPreviewer(file);
             }
+            else if (TextFilePreviewer.IsFileTypeSupported(file.Extension))
+            {
+                return new TextFilePreviewer(file);
+            }
 
             // Other previewer types check their supported file types here
             return CreateDefaultPreviewer(file);

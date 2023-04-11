@@ -47,6 +47,7 @@ namespace Peek.FilePreviewer
         [ObservableProperty]
         [NotifyPropertyChangedFor(nameof(ImagePreviewer))]
         [NotifyPropertyChangedFor(nameof(BrowserPreviewer))]
+        [NotifyPropertyChangedFor(nameof(TextFilePreviewer))]
         [NotifyPropertyChangedFor(nameof(UnsupportedFilePreviewer))]
 
         private IPreviewer? previewer;
@@ -81,6 +82,8 @@ namespace Peek.FilePreviewer
         public IImagePreviewer? ImagePreviewer => Previewer as IImagePreviewer;
 
         public IBrowserPreviewer? BrowserPreviewer => Previewer as IBrowserPreviewer;
+
+        public ITextFilePreviewer? TextFilePreviewer => Previewer as ITextFilePreviewer;
 
         public IUnsupportedFilePreviewer? UnsupportedFilePreviewer => Previewer as IUnsupportedFilePreviewer;
 
