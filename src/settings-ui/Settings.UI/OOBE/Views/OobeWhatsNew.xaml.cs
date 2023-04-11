@@ -55,7 +55,7 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
         /// <summary>
         /// Regex to remove installer hash sections from the release notes.
         /// </summary>
-        private const string RemoveInstallerHashesRegex = @"((\r\n)+#+ installer hashes)?((\r\n)+#+( x64)?( arm64)? installer( SHA256)? hash(\r\n)+[0-9A-F]{64})+";
+        private const string RemoveInstallerHashesRegex = @"(\r\n)+## Installer Hashes(\r\n.*)+## Highlights";
         private const RegexOptions RemoveInstallerHashesRegexOptions = RegexOptions.Compiled | RegexOptions.Multiline | RegexOptions.IgnoreCase | RegexOptions.CultureInvariant;
 
         private static async Task<string> GetReleaseNotesMarkdown()
@@ -89,7 +89,7 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
             foreach (var release in latestReleases)
             {
                 releaseNotesHtmlBuilder.AppendLine("# " + release.Name);
-                var notes = removeHashRegex.Replace(release.ReleaseNotes, string.Empty);
+                var notes = removeHashRegex.Replace(release.ReleaseNotes, "\r\n## Highlights");
                 releaseNotesHtmlBuilder.AppendLine(notes);
                 releaseNotesHtmlBuilder.AppendLine("&nbsp;");
             }
