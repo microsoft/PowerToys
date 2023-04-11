@@ -2,6 +2,7 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System.Globalization;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 using Common;
@@ -18,6 +19,18 @@ namespace Microsoft.PowerToys.PreviewHandler.Svg
     /// </summary>
     public class SvgPreviewControl : FormHandlerControl
     {
+        private const string CheckeredBackgroundShade1 = """
+            url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAIAAACQkWg2AAABhGlDQ1BJQ0MgcHJvZmlsZQAAKJF9kT1Iw0AcxV/TiqItDnYQcchQxcGCqIijVLEIFkpboVUHk0u/oElDkuLiKLgWHPxYrDq4OOvq4CoIgh8gri5Oii5S4v+SQosYD4778e7e4+4dIDQqTDUDE4CqWUYqHhOzuVWx+xUB9CEEYExipp5IL2bgOb7u4ePrXZRneZ/7c4SUvMkAn0g8x3TDIt4gntm0dM77xGFWkhTic+Jxgy5I/Mh12eU3zkWHBZ4ZNjKpeeIwsVjsYLmDWclQiaeJI4qqUb6QdVnhvMVZrdRY6578hcG8tpLmOs1hxLGEBJIQIaOGMiqwEKVVI8VEivZjHv4hx58kl0yuMhg5FlCFCsnxg//B727NwtSkmxSMAV0vtv0xAnTvAs26bX8f23bzBPA/A1da219tALOfpNfbWuQI6N8GLq7bmrwHXO4Ag0+6ZEiO5KcpFArA+xl9Uw4YuAV619zeWvs4fQAy1NXyDXBwCIwWKXvd4909nb39e6bV3w87j3KR+nFUEgAAAAlwSFlzAAAuIwAALiMBeKU/dgAAAAd0SU1FB+cECw0KNtiZThsAAAAZdEVYdENvbW1lbnQAQ3JlYXRlZCB3aXRoIEdJTVBXgQ4XAAAAMElEQVQoz2N0dXVlgIFdu3bB2W5ubljFmRhIBLTXwPj//3+C7kYWH4x+GI2HQeEHAKsiGbWMbaqGAAAAAElFTkSuQmCC');
+            """;
+
+        private const string HtmlTemplate = """
+            <html>
+                <body style="background-image: {0}">
+                    {1}
+                <body>
+            </html>
+            """;
+
         /// <summary>
         /// WebView2 Control to display Svg.
         /// </summary>
@@ -220,20 +233,11 @@ namespace Microsoft.PowerToys.PreviewHandler.Svg
                     _browser.CoreWebView2.AddWebResourceRequestedFilter("*", CoreWebView2WebResourceContext.All);
                     _browser.CoreWebView2.WebResourceRequested += CoreWebView2_BlockExternalResources;
 
-                    // WebView2.NavigateToString() limitation
-                    // See https://learn.microsoft.com/dotnet/api/microsoft.web.webview2.core.corewebview2.navigatetostring?view=webview2-dotnet-1.0.864.35#remarks
-                    // While testing the limit, it turned out it is ~1.5MB, so to be on a safe side we go for 1.5m bytes
-                    if (svgData.Length > 1_500_000)
-                    {
-                        string filename = _webView2UserDataFolder + "\\" + Guid.NewGuid().ToString() + ".html";
-                        File.WriteAllText(filename, svgData);
-                        _localFileURI = new Uri(filename);
-                        _browser.Source = _localFileURI;
-                    }
-                    else
-                    {
-                        _browser.NavigateToString(svgData);
-                    }
+                    string filename = _webView2UserDataFolder + "\\" + Guid.NewGuid().ToString() + ".html";
+                    string htmlContent = string.Format(CultureInfo.InvariantCulture, HtmlTemplate, CheckeredBackgroundShade1, svgData);
+                    File.WriteAllText(filename, htmlContent);
+                    _localFileURI = new Uri(filename);
+                    _browser.Source = _localFileURI;
 
                     Controls.Add(_browser);
                 }
