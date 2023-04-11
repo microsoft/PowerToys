@@ -8,7 +8,7 @@ using System.Runtime.InteropServices;
 namespace RegistryPreview
 {
     // Workaround for File Pickers that don't work while running as admin, per:
-    // https://github.com/microsoft/WindowsAppSDK/issues/2504https://github.com/microsoft/WindowsAppSDK/issues/2504
+    // https://github.com/microsoft/WindowsAppSDK/issues/2504
     [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Auto)]
     public struct FileName
     {
