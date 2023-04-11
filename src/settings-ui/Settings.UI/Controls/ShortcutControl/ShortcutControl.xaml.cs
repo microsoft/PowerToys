@@ -89,7 +89,10 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
             hook = new HotkeySettingsControlHook(Hotkey_KeyDown, Hotkey_KeyUp, Hotkey_IsActive, FilterAccessibleKeyboardEvents);
             ResourceLoader resourceLoader = ResourceLoader.GetForViewIndependentUse();
 
-            App.GetSettingsWindow().Activated += ShortcutDialog_SettingsWindow_Activated;
+            if (App.GetSettingsWindow() != null)
+            {
+                App.GetSettingsWindow().Activated += ShortcutDialog_SettingsWindow_Activated;
+            }
 
             // We create the Dialog in C# because doing it in XAML is giving WinUI/XAML Island bugs when using dark theme.
             shortcutDialog = new ContentDialog
@@ -113,7 +116,10 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
             shortcutDialog.Opened -= ShortcutDialog_Opened;
             shortcutDialog.Closing -= ShortcutDialog_Closing;
 
-            App.GetSettingsWindow().Activated -= ShortcutDialog_SettingsWindow_Activated;
+            if (App.GetSettingsWindow() != null)
+            {
+                App.GetSettingsWindow().Activated -= ShortcutDialog_SettingsWindow_Activated;
+            }
 
             // Dispose the HotkeySettingsControlHook object to terminate the hook threads when the textbox is unloaded
             if (hook != null)
