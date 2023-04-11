@@ -37,7 +37,9 @@ namespace Microsoft.PowerToys.Settings.UI.Library
                     KeepDisplayOn = Properties.KeepDisplayOn,
                     IntervalMinutes = Properties.IntervalMinutes,
                     IntervalHours = Properties.IntervalHours,
-                    ExpirationDateTime = Properties.ExpirationDateTime,
+
+                    // Fix old buggy default value that might be saved in Settings. Some components don't deal well with negative time zones and minimum time offsets.
+                    ExpirationDateTime = Properties.ExpirationDateTime.Year < 2 ? DateTimeOffset.Now : Properties.ExpirationDateTime,
                 },
             };
         }
