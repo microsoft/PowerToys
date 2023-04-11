@@ -132,6 +132,12 @@
   <data name="FileSaveError" xml:space="preserve">
     <value>The REG file cannot be written to.</value>
   </data>
+  <data name="FilterAllFiles" xml:space="preserve">
+    <value>All files (*.*)</value>
+  </data>
+  <data name="FilterRegistryName" xml:space="preserve">
+    <value>Registry files (*.reg)</value>
+  </data>
   <data name="InvalidRegistryFile" xml:space="preserve">
     <value> doesn't appear to be a valid registry file!</value>
   </data>
@@ -153,8 +159,8 @@
   <data name="OpenButton.Label" xml:space="preserve">
     <value>Open file...</value>
   </data>
-  <data name="OpenButtonText" xml:space="preserve">
-    <value>Open</value>
+  <data name="OpenDialogTitle" xml:space="preserve">
+    <value>Open Registry file...</value>
   </data>
   <data name="RefreshButton.Label" xml:space="preserve">
     <value>Reload from file</value>
