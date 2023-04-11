@@ -38,7 +38,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
                     IntervalMinutes = Properties.IntervalMinutes,
                     IntervalHours = Properties.IntervalHours,
 
-                    // Fix old buggy default value that might be saved in Settings. Some components don't deal well with negative timezones and minimum time offsets-
+                    // Fix old buggy default value that might be saved in Settings. Some components don't deal well with negative time zones and minimum time offsets.
                     ExpirationDateTime = Properties.ExpirationDateTime.Year < 2 ? DateTimeOffset.Now : Properties.ExpirationDateTime,
                 },
             };
