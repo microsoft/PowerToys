@@ -74,7 +74,7 @@
                 </MenuItem.Icon>
             </MenuItem>
         </ContextMenu>
-        
+
         <DataTemplate x:Key="MonitorItemTemplate">
             <Border x:Name="MonitorItem"
                     Width="{Binding DisplayWidth}"
@@ -93,12 +93,11 @@
                     </ToolTip>
                 </Border.ToolTip>
                 <StackPanel Orientation="Vertical"
-                            VerticalAlignment="Center">
+                            VerticalAlignment="Center"
+                            Margin="4">
                     <TextBlock Name="IndexText"
-                               TextTrimming="CharacterEllipsis"
                                Text="{Binding Index}"
-                               FontSize="26"
-                               Grid.Row="0"
+                               FontSize="28"
                                FontWeight="SemiBold"
                                HorizontalAlignment="Center"
                                VerticalAlignment="Center"
@@ -106,8 +105,6 @@
                     <TextBlock Name="ResolutionText"
                                TextTrimming="CharacterEllipsis"
                                Text="{Binding Dimensions}"
-                               Grid.Row="0"
-                               Margin="0,0,0,0"
                                FontSize="12"
                                HorizontalAlignment="Center"
                                VerticalAlignment="Center"
@@ -115,15 +112,12 @@
                     <TextBlock Name="ScalingText"
                                TextTrimming="CharacterEllipsis"
                                Text="{Binding Scaling}"
-                               Margin="0,0,0,0"
                                FontSize="12"
                                HorizontalAlignment="Center"
                                Foreground="{Binding (TextElement.Foreground), RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type ContentPresenter}}}" />
                 </StackPanel>
             </Border>
-
         </DataTemplate>
-
         <DataTemplate x:Key="LayoutItemTemplate">
             <Grid Background="Transparent">
                 <Grid Width="180"
@@ -417,7 +411,7 @@
                             <TextBlock Text="&#xE74D;"
                                        FontFamily="{DynamicResource SymbolThemeFontFamily}"
                                        FontSize="16"
-                                       Foreground="Red"
+                                       Foreground="#C42B1C"
                                        AutomationProperties.Name="{x:Static props:Resources.Delete}" />
                         </Button.Content>
                     </Button>
