@@ -93,8 +93,7 @@
                     </ToolTip>
                 </Border.ToolTip>
                 <StackPanel Orientation="Vertical"
-                            VerticalAlignment="Center"
-                            Margin="4">
+                            VerticalAlignment="Center">
                     <TextBlock Name="IndexText"
                                Text="{Binding Index}"
                                FontSize="28"
