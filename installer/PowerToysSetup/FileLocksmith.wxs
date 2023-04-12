@@ -35,6 +35,15 @@
     <!--FileLocksmithAssetsFiles_Component_Def-->
     </DirectoryRef>
 
+    <DirectoryRef Id="FileLocksmithMicrosoftUIXamlAssetsInstallFolder" FileSource="$(var.BinDir)modules\$(var.FileLocksmithProjectName)\Microsoft.UI.Xaml\Assets">
+      <Component Id="FileLocksmithMicrosoftUIXamlAssets_NoiseAsset_256x256_PNG.png" Win64="yes" Guid="39889494-838A-4B9A-BD0A-105A1F0161BF">
+        <RegistryKey Root="$(var.RegistryScope)" Key="Software\Classes\powertoys\components">
+          <RegistryValue Type="string" Name="FileLocksmithMicrosoftUIXamlAssets_NoiseAsset_256x256_PNG" Value="" KeyPath="yes"/>
+        </RegistryKey>
+        <File Id="FileLocksmithMicrosoftUIXamlAssetsFile_NoiseAsset_256x256_PNG.png" Source="$(var.BinDir)modules\$(var.FileLocksmithProjectName)\Microsoft.UI.Xaml\Assets\NoiseAsset_256x256_PNG.png" />
+      </Component>
+    </DirectoryRef>
+
     <ComponentGroup Id="FileLocksmithComponentGroup">
       <Component Id="RemoveFileLocksmithFolder" Guid="1DAC9A3F-D89C-4730-BF57-1778E011709B" Directory="FileLocksmithInstallFolder" >
         <RegistryKey Root="$(var.RegistryScope)" Key="Software\Classes\powertoys\components">
@@ -42,8 +51,11 @@
         </RegistryKey>
         <RemoveFolder Id="RemoveFolderFileLocksmithFolder" Directory="FileLocksmithInstallFolder" On="uninstall"/>
         <RemoveFolder Id="RemoveFolderFileLocksmithAssetsFolder" Directory="FileLocksmithAssetsInstallFolder" On="uninstall"/>
+        <RemoveFolder Id="RemoveFolderFileLocksmithMicrosoftUIXamlInstallFolder" Directory="FileLocksmithMicrosoftUIXamlInstallFolder" On="uninstall"/>
+        <RemoveFolder Id="RemoveFolderFileLocksmithMicrosoftUIXamlAssetsInstallFolder" Directory="FileLocksmithMicrosoftUIXamlAssetsInstallFolder" On="uninstall"/>
       </Component>
       <ComponentRef Id="Module_FileLocksmith" />
+      <ComponentRef Id="FileLocksmithMicrosoftUIXamlAssets_NoiseAsset_256x256_PNG.png" />
     </ComponentGroup>
 
   </Fragment>
