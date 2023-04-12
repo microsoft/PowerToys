@@ -11,6 +11,7 @@
 
       <string id="SUPPORTED_POWERTOYS_0_64_0">PowerToys version 0.64.0 or later</string>
       <string id="SUPPORTED_POWERTOYS_0_68_0">PowerToys version 0.68.0 or later</string>
+      <string id="SUPPORTED_POWERTOYS_0_69_0">PowerToys version 0.69.0 or later</string>
 
       <string id="ConfigureEnabledUtilityDescription">This policy configures the enabled state for a PowerToys utility.
 
@@ -29,6 +30,12 @@ If you enable this setting, the utility will be always enabled and the user won'
 If you disable this setting, the utility will be always disabled and the user won't be able to enable it.
 
 If you don't configure this setting, users are able to disable or enable the utility.
+</string>
+      <string id="DisablePerUserInstallationDescription">This policy configures whether per-user PowerToys installation is allowed or not.
+
+If enabled, per-user installation is not allowed.
+
+If disabled or not configured, per-user installation is allowed.
 </string>
       <string id="DisableAutomaticUpdateDownloadDescription">This policy configures whether automatic downloads of available updates are disabled or not. (On metered connections updates are never downloaded.)
 
@@ -81,13 +88,15 @@ If this setting is disabled, experimentation is not allowed.
       <string id="ConfigureEnabledUtilityPowerRename">Power Rename: Configure enabled state</string>
       <string id="ConfigureEnabledUtilityPowerLauncher">PowerToys Run: Configure enabled state</string>
       <string id="ConfigureEnabledUtilityQuickAccent">Quick Accent: Configure enabled state</string>
+      <string id="ConfigureEnabledUtilityRegistryPreview">Registry Preview: Configure enabled state</string>		
       <string id="ConfigureEnabledUtilityScreenRuler">Screen Ruler: Configure enabled state</string>
       <string id="ConfigureEnabledUtilityShortcutGuide">Shortcut Guide: Configure enabled state</string>
       <string id="ConfigureEnabledUtilityTextExtractor">Text Extractor: Configure enabled state</string>
       <string id="ConfigureEnabledUtilityVideoConferenceMute">Video Conference Mute: Configure enabled state</string>
-	  <string id="DisableAutomaticUpdateDownload">Disable automatic downloads</string>
-	  <string id="SuspendNewUpdateToast">Suspend Action Center notification for new updates</string>
-	  <string id="DisablePeriodicUpdateCheck">Disable automatic update checks</string>
+      <string id="DisablePerUserInstallation">Disable per-user installation</string>
+      <string id="DisableAutomaticUpdateDownload">Disable automatic downloads</string>
+      <string id="SuspendNewUpdateToast">Suspend Action Center notification for new updates</string>
+      <string id="DisablePeriodicUpdateCheck">Disable automatic update checks</string>
       <string id="AllowExperimentation">Allow Experimentation</string>
     </stringTable>
   </resources>

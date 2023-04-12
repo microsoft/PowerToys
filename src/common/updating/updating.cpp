@@ -8,6 +8,9 @@
 
 #include <common/SettingsAPI/settings_helpers.h>
 #include <common/utils/json.h>
+#include <common/utils/registry.h>
+
+using namespace registry::install_scope;
 
 namespace // Strings in this namespace should not be localized
 {
@@ -42,9 +45,16 @@ namespace updating
     std::pair<Uri, std::wstring> extract_installer_asset_download_info(const json::JsonObject& release_object)
     {
         const std::wstring_view required_architecture = get_architecture_string(get_current_architecture());
-        constexpr const std::wstring_view required_filename_pattern = updating::INSTALLER_FILENAME_PATTERN;
+        std::wstring_view required_filename_pattern = updating::INSTALLER_FILENAME_PATTERN;
         // Desc-sorted by its priority
         const std::array<std::wstring_view, 2> asset_extensions = { L".exe", L".msi" };
+
+        const InstallScope current_install_scope = get_current_install_scope();
+        if (current_install_scope == InstallScope::PerUser)
+        {
+            required_filename_pattern = updating::INSTALLER_FILENAME_PATTERN_USER;
+        }
+
         for (const auto asset_extension : asset_extensions)
         {
             for (auto asset_elem : release_object.GetNamedArray(L"assets"))

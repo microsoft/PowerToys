@@ -118,11 +118,15 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="FailedToLoadPluginDescription" xml:space="preserve">
-    <value>Please contact plugin creator for help</value>
+    <value>Fail to load plugin:</value>
+  </data>
+  <data name="FailedToLoadPluginDescriptionPartTwo" xml:space="preserve">
+    <value>Please report the bug to https://aka.ms/powerToysReportBug. (For third-party plugins, please contact the plugin author.)</value>
+    <comment>"https://aka.ms/powerToysReportBug" is a web uri.</comment>
   </data>
   <data name="FailedToLoadPluginTitle" xml:space="preserve">
-    <value>Fail to Load {0} Plugin</value>
-    <comment>Do not translate '{0}' as this is a place holder and will be converted in code.</comment>
+    <value>PowerToys Run - Plugin Loading Error</value>
+    <comment>Don't translate "PowerToys Run". This is a product name.</comment>
   </data>
   <data name="VirtualDesktopHelper_AllDesktops" xml:space="preserve">
     <value>On all Desktops</value>

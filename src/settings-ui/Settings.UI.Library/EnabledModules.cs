@@ -362,6 +362,22 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             }
         }
 
+        private bool registryPreview = true;
+
+        [JsonPropertyName("RegistryPreview")]
+        public bool RegistryPreview
+        {
+            get => registryPreview;
+            set
+            {
+                if (registryPreview != value)
+                {
+                    LogTelemetryEvent(value);
+                    registryPreview = value;
+                }
+            }
+        }
+
         private void NotifyChange()
         {
             notifyEnabledChangedAction?.Invoke();

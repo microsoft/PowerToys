@@ -42,6 +42,8 @@ public:
     ~ExplorerCommand();
 
 private:
+    HBITMAP m_hbmpIcon = nullptr;
+
     // Helpers
     HRESULT LaunchUI(CMINVOKECOMMANDINFO* pici, ipc::Writer* writer);
 

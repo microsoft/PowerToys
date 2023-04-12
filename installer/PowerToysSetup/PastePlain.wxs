@@ -7,12 +7,21 @@
   <Fragment>
     <DirectoryRef Id="PastePlainInstallFolder" FileSource="$(var.BinDir)modules\$(var.PastePlainProjectName)">
       <!-- !Warning! Make sure to change Component Guid if you update the file list -->
-      <Component Id="Module_PastePlain" Win64="yes">
-        <File Source="$(var.BinDir)modules\$(var.PastePlainProjectName)\PowerToys.PastePlainModuleInterface.dll" KeyPath="yes" />
+      <Component Id="Module_PastePlain" Win64="yes" Guid="80F648F2-29F6-4685-AED4-04DC1B6EE176">
+        <RegistryKey Root="$(var.RegistryScope)" Key="Software\Classes\powertoys\components">
+          <RegistryValue Type="string" Name="Module_PastePlain" Value="" KeyPath="yes"/>
+        </RegistryKey>
+        <File Source="$(var.BinDir)modules\$(var.PastePlainProjectName)\PowerToys.PastePlainModuleInterface.dll" />
       </Component>
     </DirectoryRef>
 
-    <ComponentGroup Id="PastePlainComponentGroup" Directory="INSTALLFOLDER">
+    <ComponentGroup Id="PastePlainComponentGroup">
+      <Component Id="RemovePastePlainFolder" Guid="118DC166-23CF-4EF7-B510-2ED79A2A78AD" Directory="PastePlainInstallFolder" >
+        <RegistryKey Root="$(var.RegistryScope)" Key="Software\Classes\powertoys\components">
+          <RegistryValue Type="string" Name="RemovePastePlainFolder" Value="" KeyPath="yes"/>
+        </RegistryKey>
+        <RemoveFolder Id="RemoveFolderPastePlainInstallFolder" Directory="PastePlainInstallFolder" On="uninstall"/>
+      </Component>
       <ComponentRef Id="Module_PastePlain" />
     </ComponentGroup>
 

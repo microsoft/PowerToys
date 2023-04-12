@@ -24,6 +24,7 @@ namespace Common.UI
             ShortcutGuide,
             VideoConference,
             Hosts,
+            RegistryPreview,
         }
 
         private static string SettingsWindowNameToString(SettingsWindow value)
@@ -56,6 +57,8 @@ namespace Common.UI
                     return "VideoConference";
                 case SettingsWindow.Hosts:
                     return "Hosts";
+                case SettingsWindow.RegistryPreview:
+                    return "RegistryPreview";
                 default:
                     {
                         return string.Empty;
