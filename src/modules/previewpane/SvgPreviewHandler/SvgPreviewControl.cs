@@ -2,7 +2,7 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-using System.Globalization;
+using System.Net.Http;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 using Common;
@@ -11,6 +11,7 @@ using Microsoft.PowerToys.PreviewHandler.Svg.Telemetry.Events;
 using Microsoft.PowerToys.Telemetry;
 using Microsoft.Web.WebView2.Core;
 using Microsoft.Web.WebView2.WinForms;
+using SvgPreviewHandler;
 
 namespace Microsoft.PowerToys.PreviewHandler.Svg
 {
@@ -19,17 +20,10 @@ namespace Microsoft.PowerToys.PreviewHandler.Svg
     /// </summary>
     public class SvgPreviewControl : FormHandlerControl
     {
-        private const string CheckeredBackgroundShade1 = """
-            url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAIAAACQkWg2AAABhGlDQ1BJQ0MgcHJvZmlsZQAAKJF9kT1Iw0AcxV/TiqItDnYQcchQxcGCqIijVLEIFkpboVUHk0u/oElDkuLiKLgWHPxYrDq4OOvq4CoIgh8gri5Oii5S4v+SQosYD4778e7e4+4dIDQqTDUDE4CqWUYqHhOzuVWx+xUB9CEEYExipp5IL2bgOb7u4ePrXZRneZ/7c4SUvMkAn0g8x3TDIt4gntm0dM77xGFWkhTic+Jxgy5I/Mh12eU3zkWHBZ4ZNjKpeeIwsVjsYLmDWclQiaeJI4qqUb6QdVnhvMVZrdRY6578hcG8tpLmOs1hxLGEBJIQIaOGMiqwEKVVI8VEivZjHv4hx58kl0yuMhg5FlCFCsnxg//B727NwtSkmxSMAV0vtv0xAnTvAs26bX8f23bzBPA/A1da219tALOfpNfbWuQI6N8GLq7bmrwHXO4Ag0+6ZEiO5KcpFArA+xl9Uw4YuAV619zeWvs4fQAy1NXyDXBwCIwWKXvd4909nb39e6bV3w87j3KR+nFUEgAAAAlwSFlzAAAuIwAALiMBeKU/dgAAAAd0SU1FB+cECw0KNtiZThsAAAAZdEVYdENvbW1lbnQAQ3JlYXRlZCB3aXRoIEdJTVBXgQ4XAAAAMElEQVQoz2N0dXVlgIFdu3bB2W5ubljFmRhIBLTXwPj//3+C7kYWH4x+GI2HQeEHAKsiGbWMbaqGAAAAAElFTkSuQmCC');
-            """;
-
-        private const string HtmlTemplate = """
-            <html>
-                <body style="background-image: {0}">
-                    {1}
-                <body>
-            </html>
-            """;
+        /// <summary>
+        /// Generator for the actual preview file
+        /// </summary>
+        private readonly SvgHTMLPreviewGenerator _previewGenerator = new();
 
         /// <summary>
         /// WebView2 Control to display Svg.
@@ -233,10 +227,12 @@ namespace Microsoft.PowerToys.PreviewHandler.Svg
                     _browser.CoreWebView2.AddWebResourceRequestedFilter("*", CoreWebView2WebResourceContext.All);
                     _browser.CoreWebView2.WebResourceRequested += CoreWebView2_BlockExternalResources;
 
-                    string filename = _webView2UserDataFolder + "\\" + Guid.NewGuid().ToString() + ".html";
-                    string htmlContent = string.Format(CultureInfo.InvariantCulture, HtmlTemplate, CheckeredBackgroundShade1, svgData);
-                    File.WriteAllText(filename, htmlContent);
-                    _localFileURI = new Uri(filename);
+                    string generatedPreview = _previewGenerator.GeneratePreview(svgData);
+
+                    string filePath = _webView2UserDataFolder + "\\" + Guid.NewGuid().ToString() + ".html";
+                    File.WriteAllText(filePath, generatedPreview);
+
+                    _localFileURI = new Uri(filePath);
                     _browser.Source = _localFileURI;
 
                     Controls.Add(_browser);
