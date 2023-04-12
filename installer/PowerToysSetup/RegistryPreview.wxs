@@ -22,6 +22,15 @@
     <!--RegistryPreviewAssetsFiles_Component_Def-->
     </DirectoryRef>
 
+    <DirectoryRef Id="RegistryPreviewMicrosoftUIXamlAssetsInstallFolder" FileSource="$(var.BinDir)modules\$(var.RegistryPreviewProjectName)\Microsoft.UI.Xaml\Assets">
+      <Component Id="RegistryPreviewMicrosoftUIXamlAssets_NoiseAsset_256x256_PNG.png" Win64="yes" Guid="CBE56377-8E9F-4C4E-85B5-514916FCE818">
+        <RegistryKey Root="$(var.RegistryScope)" Key="Software\Classes\powertoys\components">
+          <RegistryValue Type="string" Name="RegistryPreviewMicrosoftUIXamlAssets_NoiseAsset_256x256_PNG" Value="" KeyPath="yes"/>
+        </RegistryKey>
+        <File Id="RegistryPreviewMicrosoftUIXamlAssetsFile_NoiseAsset_256x256_PNG.png" Source="$(var.BinDir)modules\$(var.RegistryPreviewProjectName)\Microsoft.UI.Xaml\Assets\NoiseAsset_256x256_PNG.png" />
+      </Component>
+    </DirectoryRef>
+
     <ComponentGroup Id="RegistryPreviewComponentGroup">
       <Component Id="RemoveRegistryPreviewFolder" Guid="D3DBC395-FAC5-44B1-BE44-3FE2B6E0F391" Directory="RegistryPreviewInstallFolder" >
         <RegistryKey Root="$(var.RegistryScope)" Key="Software\Classes\powertoys\components">
@@ -29,7 +38,10 @@
         </RegistryKey>
         <RemoveFolder Id="RemoveFolderRegistryPreviewFolder" Directory="RegistryPreviewInstallFolder" On="uninstall"/>
         <RemoveFolder Id="RemoveFolderRegistryPreviewAssetsFolder" Directory="RegistryPreviewAssetsInstallFolder" On="uninstall"/>
+        <RemoveFolder Id="RemoveFolderRegistryPreviewMicrosoftUIXamlInstallFolder" Directory="RegistryPreviewMicrosoftUIXamlInstallFolder" On="uninstall"/>
+        <RemoveFolder Id="RemoveFolderRegistryPreviewMicrosoftUIXamlAssetsInstallFolder" Directory="RegistryPreviewMicrosoftUIXamlAssetsInstallFolder" On="uninstall"/>
       </Component>
+      <ComponentRef Id="RegistryPreviewMicrosoftUIXamlAssets_NoiseAsset_256x256_PNG.png" />
     </ComponentGroup>
 
   </Fragment>
