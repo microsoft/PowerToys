@@ -56,7 +56,8 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
         /// Regex to remove installer hash sections from the release notes.
         /// </summary>
         private const string RemoveInstallerHashesRegex = @"(\r\n)+## Installer Hashes(\r\n.*)+## Highlights";
-        private const RegexOptions RemoveInstallerHashesRegexOptions = RegexOptions.Compiled | RegexOptions.Multiline | RegexOptions.IgnoreCase | RegexOptions.CultureInvariant;
+        private const string RemoveHotFixInstallerHashesRegex = @"(\r\n)+## Installer Hashes(\r\n.*)+$";
+        private const RegexOptions RemoveInstallerHashesRegexOptions = RegexOptions.Compiled | RegexOptions.IgnoreCase | RegexOptions.CultureInvariant;
 
         private static async Task<string> GetReleaseNotesMarkdown()
         {
@@ -86,10 +87,14 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
             // Regex to remove installer hash sections from the release notes.
             Regex removeHashRegex = new Regex(RemoveInstallerHashesRegex, RemoveInstallerHashesRegexOptions);
 
+            // Regex to remove installer hash sections from the release notes, since there'll be no Highlights section for hotfix releases.
+            Regex removeHotfixHashRegex = new Regex(RemoveHotFixInstallerHashesRegex, RemoveInstallerHashesRegexOptions);
+
             foreach (var release in latestReleases)
             {
                 releaseNotesHtmlBuilder.AppendLine("# " + release.Name);
                 var notes = removeHashRegex.Replace(release.ReleaseNotes, "\r\n## Highlights");
+                notes = removeHotfixHashRegex.Replace(notes, string.Empty);
                 releaseNotesHtmlBuilder.AppendLine(notes);
                 releaseNotesHtmlBuilder.AppendLine("&nbsp;");
             }
