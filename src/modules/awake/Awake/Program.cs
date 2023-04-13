@@ -20,12 +20,10 @@ using Awake.Core;
 using interop;
 using ManagedCommon;
 using Microsoft.PowerToys.Settings.UI.Library;
-using NLog;
 using Windows.Win32;
 using Windows.Win32.Foundation;
 using Windows.Win32.System.Console;
 using Windows.Win32.System.Power;
-using Logger = NLog.Logger;
 
 #pragma warning disable CS8602 // Dereference of a possibly null reference.
 #pragma warning disable CS8603 // Possible null reference return.
@@ -40,7 +38,7 @@ namespace Awake
         // Format of the build ID is: CODENAME_MMDDYYYY, where MMDDYYYY
         // is representative of the date when the last change was made before
         // the pull request is issued.
-        private static readonly string BuildId = "NOBLE_SIX_02162023";
+        private static readonly string BuildId = "ATRIOX_04132023";
 
         private static Mutex? _mutex;
         private static FileSystemWatcher? _watcher;
@@ -49,8 +47,6 @@ namespace Awake
         private static bool _startedFromPowerToys;
 
         public static Mutex LockMutex { get => _mutex; set => _mutex = value; }
-
-        private static Logger? _log;
 
 #pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
         private static PHANDLER_ROUTINE _handler;
@@ -61,9 +57,7 @@ namespace Awake
 
         private static int Main(string[] args)
         {
-            // Log initialization needs to always happen before we test whether
-            // only one instance of Awake is running.
-            _log = LogManager.GetCurrentClassLogger();
+            Logger.InitializeLogger(Path.Combine("\\", InternalConstants.AppName, "Logs"));
 
             if (PowerToys.GPOWrapper.GPOWrapper.GetConfiguredAwakeEnabledValue() == PowerToys.GPOWrapper.GpoRuleConfigured.Disabled)
             {
@@ -80,11 +74,11 @@ namespace Awake
 
             _settingsUtils = new SettingsUtils();
 
-            _log.Info($"Launching {InternalConstants.AppName}...");
-            _log.Info(FileVersionInfo.GetVersionInfo(Assembly.GetExecutingAssembly().Location).FileVersion);
-            _log.Info($"Build: {BuildId}");
-            _log.Info($"OS: {Environment.OSVersion}");
-            _log.Info($"OS Build: {APIHelper.GetOperatingSystemBuild()}");
+            Logger.LogInfo($"Launching {InternalConstants.AppName}...");
+            Logger.LogInfo(FileVersionInfo.GetVersionInfo(Assembly.GetExecutingAssembly().Location).FileVersion);
+            Logger.LogInfo($"Build: {BuildId}");
+            Logger.LogInfo($"OS: {Environment.OSVersion}");
+            Logger.LogInfo($"OS Build: {APIHelper.GetOperatingSystemBuild()}");
 
             TaskScheduler.UnobservedTaskException += (sender, args) =>
             {
@@ -95,9 +89,9 @@ namespace Awake
             // To make it easier to diagnose future issues, let's get the
             // system power capabilities and aggregate them in the log.
             PInvoke.GetPwrCapabilities(out _powerCapabilities);
-            _log.Info(JsonSerializer.Serialize(_powerCapabilities));
+            Logger.LogInfo(JsonSerializer.Serialize(_powerCapabilities));
 
-            _log.Info("Parsing parameters...");
+            Logger.LogInfo("Parsing parameters...");
 
             Option<bool> configOption = new(
                     aliases: new[] { "--use-pt-config", "-c" },
@@ -172,21 +166,21 @@ namespace Awake
 
             rootCommand.Handler = CommandHandler.Create<bool, bool, uint, int, string>(HandleCommandLineArguments);
 
-            _log.Info("Parameter setup complete. Proceeding to the rest of the app initiation...");
+            Logger.LogInfo("Parameter setup complete. Proceeding to the rest of the app initiation...");
 
             return rootCommand.InvokeAsync(args).Result;
         }
 
         private static BOOL ExitHandler(uint ctrlType)
         {
-            _log.Info($"Exited through handler with control type: {ctrlType}");
+            Logger.LogInfo($"Exited through handler with control type: {ctrlType}");
             Exit("Exiting from the internal termination handler.", Environment.ExitCode, _exitSignal);
             return false;
         }
 
         private static void Exit(string message, int exitCode, ManualResetEvent exitSignal, bool force = false)
         {
-            _log.Info(message);
+            Logger.LogInfo(message);
 
             APIHelper.CompleteExit(exitCode, exitSignal, force);
         }
@@ -198,7 +192,7 @@ namespace Awake
 
             if (pid == 0)
             {
-                _log.Info("No PID specified. Allocating console...");
+                Logger.LogInfo("No PID specified. Allocating console...");
                 APIHelper.AllocateConsole();
             }
             else
@@ -206,11 +200,11 @@ namespace Awake
                 _startedFromPowerToys = true;
             }
 
-            _log.Info($"The value for --use-pt-config is: {usePtConfig}");
-            _log.Info($"The value for --display-on is: {displayOn}");
-            _log.Info($"The value for --time-limit is: {timeLimit}");
-            _log.Info($"The value for --pid is: {pid}");
-            _log.Info($"The value for --expire is: {expireAt}");
+            Logger.LogInfo($"The value for --use-pt-config is: {usePtConfig}");
+            Logger.LogInfo($"The value for --display-on is: {displayOn}");
+            Logger.LogInfo($"The value for --time-limit is: {timeLimit}");
+            Logger.LogInfo($"The value for --pid is: {pid}");
+            Logger.LogInfo($"The value for --expire-at is: {expireAt}");
 
             if (usePtConfig)
             {
@@ -230,7 +224,7 @@ namespace Awake
                     TrayHelper.InitializeTray(InternalConstants.FullAppName, new Icon(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "images/awake.ico")), _exitSignal);
 
                     string? settingsPath = _settingsUtils.GetSettingsFilePath(InternalConstants.AppName);
-                    _log.Info($"Reading configuration file: {settingsPath}");
+                    Logger.LogInfo($"Reading configuration file: {settingsPath}");
 
                     if (!File.Exists(settingsPath))
                     {
@@ -245,8 +239,7 @@ namespace Awake
                 catch (Exception ex)
                 {
                     string? errorString = $"There was a problem with the configuration file. Make sure it exists.\n{ex.Message}";
-                    _log.Info(errorString);
-                    _log.Debug(errorString);
+                    Logger.LogError(errorString);
                 }
             }
             else
@@ -268,12 +261,12 @@ namespace Awake
                         }
                         else
                         {
-                            _log.Info($"Target date is not in the future, therefore there is nothing to wait for.");
+                            Logger.LogInfo($"Target date is not in the future, therefore there is nothing to wait for.");
                         }
                     }
                     catch
                     {
-                        _log.Error($"Could not parse date string {expireAt} into a viable date.");
+                        Logger.LogError($"Could not parse date string {expireAt} into a viable date.");
                     }
                 }
                 else
@@ -295,7 +288,7 @@ namespace Awake
             {
                 RunnerHelper.WaitForPowerToysRunner(pid, () =>
                 {
-                    _log.Info($"Triggered PID-based exit handler for PID {pid}.");
+                    Logger.LogInfo($"Triggered PID-based exit handler for PID {pid}.");
                     Exit("Terminating from process binding hook.", 0, _exitSignal, true);
                 });
             }
@@ -338,7 +331,7 @@ namespace Awake
             }
             catch (Exception ex)
             {
-                _log.Error($"An error occurred scaffolding the configuration. Error details: {ex.Message}");
+                Logger.LogError($"An error occurred scaffolding the configuration. Error details: {ex.Message}");
             }
         }
 
@@ -349,8 +342,8 @@ namespace Awake
 
         private static void HandleAwakeConfigChange(FileSystemEventArgs fileEvent)
         {
-            _log.Info("Detected a settings file change. Updating configuration...");
-            _log.Info("Resetting keep-awake to normal state due to settings change.");
+            Logger.LogInfo("Detected a settings file change. Updating configuration...");
+            Logger.LogInfo("Resetting keep-awake to normal state due to settings change.");
             ProcessSettings();
         }
 
@@ -362,7 +355,7 @@ namespace Awake
 
                 if (settings != null)
                 {
-                    _log.Info($"Identified custom time shortcuts for the tray: {settings.Properties.CustomTrayTimes.Count}");
+                    Logger.LogInfo($"Identified custom time shortcuts for the tray: {settings.Properties.CustomTrayTimes.Count}");
 
                     switch (settings.Properties.Mode)
                     {
@@ -396,8 +389,7 @@ namespace Awake
                         default:
                             {
                                 string? errorMessage = "Unknown mode of operation. Check config file.";
-                                _log.Info(errorMessage);
-                                _log.Debug(errorMessage);
+                                Logger.LogError(errorMessage);
                                 break;
                             }
                     }
@@ -407,35 +399,33 @@ namespace Awake
                 else
                 {
                     string? errorMessage = "Settings are null.";
-                    _log.Info(errorMessage);
-                    _log.Debug(errorMessage);
+                    Logger.LogError(errorMessage);
                 }
             }
             catch (Exception ex)
             {
                 string? errorMessage = $"There was a problem reading the configuration file. Error: {ex.GetType()} {ex.Message}";
-                _log.Info(errorMessage);
-                _log.Debug(errorMessage);
+                Logger.LogError(errorMessage);
             }
         }
 
         private static void SetupNoKeepAwake()
         {
-            _log.Info($"Operating in passive mode (computer's standard power plan). No custom keep awake settings enabled.");
+            Logger.LogInfo($"Operating in passive mode (computer's standard power plan). No custom keep awake settings enabled.");
 
             APIHelper.SetNoKeepAwake();
         }
 
         private static void SetupExpirableKeepAwake(DateTimeOffset expireAt, bool displayOn)
         {
-            _log.Info($"Expirable keep-awake. Expected expiration date/time: {expireAt} with display on setting set to {displayOn}.");
+            Logger.LogInfo($"Expirable keep-awake. Expected expiration date/time: {expireAt} with display on setting set to {displayOn}.");
 
             APIHelper.SetExpirableKeepAwake(expireAt, LogCompletedKeepAwakeThread, LogUnexpectedOrCancelledKeepAwakeThreadCompletion, displayOn);
         }
 
         private static void SetupTimedKeepAwake(uint time, bool displayOn)
         {
-            _log.Info($"Timed keep-awake. Expected runtime: {time} seconds with display on setting set to {displayOn}.");
+            Logger.LogInfo($"Timed keep-awake. Expected runtime: {time} seconds with display on setting set to {displayOn}.");
 
             APIHelper.SetTimedKeepAwake(time, LogCompletedKeepAwakeThread, LogUnexpectedOrCancelledKeepAwakeThreadCompletion, displayOn);
         }
@@ -443,13 +433,13 @@ namespace Awake
         private static void LogUnexpectedOrCancelledKeepAwakeThreadCompletion()
         {
             string? errorMessage = "The keep awake thread was terminated early.";
-            _log.Info(errorMessage);
-            _log.Debug(errorMessage);
+            Logger.LogInfo(errorMessage);
+            Logger.LogInfo(errorMessage);
         }
 
         private static void LogCompletedKeepAwakeThread()
         {
-            _log.Info($"Exited keep awake thread successfully.");
+            Logger.LogInfo($"Exited keep awake thread successfully.");
         }
     }
 }
