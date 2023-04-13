@@ -9,8 +9,8 @@ using System.Drawing.Drawing2D;
 using System.Linq;
 using System.Windows.Forms;
 using MouseJumpUI.Drawing.Models;
-using MouseJumpUI.NativeMethods.Core;
-using MouseJumpUI.NativeWrappers;
+using MouseJumpUI.NativeMethods;
+using static MouseJumpUI.NativeMethods.Core;
 
 namespace MouseJumpUI.Helpers;
 
@@ -150,7 +150,7 @@ internal static class DrawingHelper
         if (previewHdc.IsNull)
         {
             previewHdc = new HDC(previewGraphics.GetHdc());
-            _ = Gdi32.SetStretchBltMode(previewHdc, MouseJumpUI.NativeMethods.Gdi32.STRETCH_BLT_MODE.STRETCH_HALFTONE);
+            _ = Gdi32.SetStretchBltMode(previewHdc, Gdi32.STRETCH_BLT_MODE.STRETCH_HALFTONE);
         }
     }
 
@@ -204,7 +204,7 @@ internal static class DrawingHelper
             source.Y,
             source.Width,
             source.Height,
-            MouseJumpUI.NativeMethods.Gdi32.ROP_CODE.SRCCOPY);
+            Gdi32.ROP_CODE.SRCCOPY);
     }
 
     /// <summary>
@@ -231,7 +231,7 @@ internal static class DrawingHelper
                 source.Y,
                 source.Width,
                 source.Height,
-                MouseJumpUI.NativeMethods.Gdi32.ROP_CODE.SRCCOPY);
+                Gdi32.ROP_CODE.SRCCOPY);
         }
     }
 }

@@ -3,7 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System.Runtime.InteropServices;
-using MouseJumpUI.NativeMethods.Core;
+using static MouseJumpUI.NativeMethods.Core;
 
 namespace MouseJumpUI.NativeMethods;
 
@@ -20,5 +20,5 @@ internal static partial class User32
     /// See https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-getdesktopwindow
     /// </remarks>
     [LibraryImport(Libraries.User32)]
-    public static partial HWND GetDesktopWindow();
+    internal static partial HWND GetDesktopWindow();
 }

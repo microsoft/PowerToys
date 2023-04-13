@@ -3,7 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System.Runtime.InteropServices;
-using MouseJumpUI.NativeMethods.Core;
+using static MouseJumpUI.NativeMethods.Core;
 
 namespace MouseJumpUI.NativeMethods;
 
@@ -23,7 +23,7 @@ internal static partial class Gdi32
     /// See https://learn.microsoft.com/en-us/windows/win32/api/wingdi/nf-wingdi-stretchblt
     /// </remarks>
     [LibraryImport(Libraries.Gdi32)]
-    public static partial BOOL StretchBlt(
+    internal static partial BOOL StretchBlt(
       HDC hdcDest,
       int xDest,
       int yDest,

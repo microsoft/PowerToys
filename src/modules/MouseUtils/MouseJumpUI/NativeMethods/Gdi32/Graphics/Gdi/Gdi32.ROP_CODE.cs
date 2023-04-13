@@ -14,7 +14,7 @@ internal static partial class Gdi32
     /// <remarks>
     /// See https://learn.microsoft.com/en-us/windows/win32/api/wingdi/nf-wingdi-bitblt
     /// </remarks>
-    public enum ROP_CODE : uint
+    internal enum ROP_CODE : uint
     {
         BLACKNESS = 0x00000042,
         CAPTUREBLT = 0x40000000,

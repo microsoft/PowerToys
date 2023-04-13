@@ -2,9 +2,13 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System;
+using System.ComponentModel;
 using System.Drawing;
+using System.Runtime.InteropServices;
 using System.Windows.Forms;
 using MouseJumpUI.Drawing.Models;
+using MouseJumpUI.NativeMethods;
 
 namespace MouseJumpUI.Helpers;
 
@@ -64,24 +68,41 @@ internal static class MouseHelper
     /// </remarks>
     public static void SimulateMouseMovementEvent(Point location)
     {
-        var mouseMoveInput = new NativeMethods.INPUT
+        var inputs = new User32.INPUT[]
         {
-            type = NativeMethods.INPUTTYPE.INPUT_MOUSE,
-            data = new NativeMethods.InputUnion
-            {
-                mi = new NativeMethods.MOUSEINPUT
-                {
-                    dx = NativeMethods.CalculateAbsoluteCoordinateX(location.X),
-                    dy = NativeMethods.CalculateAbsoluteCoordinateY(location.Y),
-                    mouseData = 0,
-                    dwFlags = (uint)NativeMethods.MOUSE_INPUT_FLAGS.MOUSEEVENTF_MOVE
-                        | (uint)NativeMethods.MOUSE_INPUT_FLAGS.MOUSEEVENTF_ABSOLUTE,
-                    time = 0,
-                    dwExtraInfo = 0,
-                },
-            },
+            new(
+                type: User32.INPUT_TYPE.INPUT_MOUSE,
+                data: new User32.INPUT.DUMMYUNIONNAME(
+                    mi: new User32.MOUSEINPUT(
+                        dx: (int)MouseHelper.CalculateAbsoluteCoordinateX(location.X),
+                        dy: (int)MouseHelper.CalculateAbsoluteCoordinateY(location.Y),
+                        mouseData: 0,
+                        dwFlags: User32.MOUSE_EVENT_FLAGS.MOUSEEVENTF_MOVE | User32.MOUSE_EVENT_FLAGS.MOUSEEVENTF_ABSOLUTE,
+                        time: 0,
+                        dwExtraInfo: UIntPtr.Zero))),
         };
-        var inputs = new NativeMethods.INPUT[] { mouseMoveInput };
-        _ = NativeMethods.SendInput(1, inputs, NativeMethods.INPUT.Size);
+        var result = User32.SendInput(
+            (uint)inputs.Length,
+            new User32.LPINPUT(inputs),
+            User32.INPUT.Size * inputs.Length);
+        if (result != inputs.Length)
+        {
+            throw new Win32Exception(
+                Marshal.GetLastWin32Error());
+        }
+    }
+
+    private static decimal CalculateAbsoluteCoordinateX(decimal x)
+    {
+        // If MOUSEEVENTF_ABSOLUTE value is specified, dx and dy contain normalized absolute coordinates between 0 and 65,535.
+        // see https://learn.microsoft.com/en-us/windows/win32/api/winuser/ns-winuser-mouseinput
+        return (x * 65535) / User32.GetSystemMetrics(User32.SYSTEM_METRICS_INDEX.SM_CXSCREEN);
+    }
+
+    internal static decimal CalculateAbsoluteCoordinateY(decimal y)
+    {
+        // If MOUSEEVENTF_ABSOLUTE value is specified, dx and dy contain normalized absolute coordinates between 0 and 65,535.
+        // see https://learn.microsoft.com/en-us/windows/win32/api/winuser/ns-winuser-mouseinput
+        return (y * 65535) / User32.GetSystemMetrics(User32.SYSTEM_METRICS_INDEX.SM_CYSCREEN);
     }
 }

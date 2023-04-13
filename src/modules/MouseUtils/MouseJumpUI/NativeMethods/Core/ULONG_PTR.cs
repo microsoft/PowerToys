@@ -9,25 +9,32 @@ namespace MouseJumpUI.NativeMethods;
 internal static partial class Core
 {
     /// <summary>
-    /// A handle to a device context (DC).
-    /// This type is declared in WinDef.h as follows:
-    /// typedef HANDLE HDC;
+    /// An unsigned LONG_PTR.
+    /// This type is declared in BaseTsd.h as follows:
+    /// C++
+    /// #if defined(_WIN64)
+    ///  typedef unsigned __int64 ULONG_PTR;
+    /// #else
+    ///  typedef unsigned long ULONG_PTR;
+    /// #endif
     /// </summary>
     /// <remarks>
     /// See https://learn.microsoft.com/en-us/windows/win32/winprog/windows-data-types
     /// </remarks>
-    internal readonly struct HDC
+    internal readonly struct ULONG_PTR
     {
-        public static readonly HDC Null = new(IntPtr.Zero);
+        public static readonly ULONG_PTR Null = new(UIntPtr.Zero);
 
-        public readonly IntPtr Value;
+        public readonly UIntPtr Value;
 
-        public HDC(IntPtr value)
+        public ULONG_PTR(UIntPtr value)
         {
             this.Value = value;
         }
 
-        public bool IsNull => this.Value == HDC.Null.Value;
+        public static implicit operator UIntPtr(ULONG_PTR value) => value.Value;
+
+        public static implicit operator ULONG_PTR(UIntPtr value) => new(value);
 
         public override string ToString()
         {

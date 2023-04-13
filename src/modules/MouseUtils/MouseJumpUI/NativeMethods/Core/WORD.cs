@@ -7,34 +7,25 @@ namespace MouseJumpUI.NativeMethods;
 internal static partial class Core
 {
     /// <summary>
-    /// A Boolean variable (should be TRUE or FALSE).
+    /// A 16-bit unsigned integer.The range is 0 through 65535 decimal.
     /// This type is declared in WinDef.h as follows:
-    /// typedef int BOOL;
+    /// typedef unsigned short WORD;
     /// </summary>
     /// <remarks>
     /// See https://learn.microsoft.com/en-us/windows/win32/winprog/windows-data-types
     /// </remarks>
-    internal readonly struct BOOL
+    internal readonly struct WORD
     {
-        public readonly int Value;
+        public readonly ushort Value;
 
-        public BOOL(int value)
+        public WORD(ushort value)
         {
             this.Value = value;
         }
 
-        public BOOL(bool value)
-        {
-            this.Value = value ? 1 : 0;
-        }
+        public static implicit operator ulong(WORD value) => value.Value;
 
-        public static implicit operator bool(BOOL value) => value.Value != 0;
-
-        public static implicit operator BOOL(bool value) => new(value);
-
-        public static implicit operator int(BOOL value) => value.Value;
-
-        public static implicit operator BOOL(int value) => new(value);
+        public static implicit operator WORD(ushort value) => new(value);
 
         public override string ToString()
         {

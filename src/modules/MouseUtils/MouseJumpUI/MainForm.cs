@@ -11,7 +11,7 @@ using System.Windows.Forms;
 using ManagedCommon;
 using MouseJumpUI.Drawing.Models;
 using MouseJumpUI.Helpers;
-using MouseJumpUI.NativeMethods.Core;
+using static MouseJumpUI.NativeMethods.Core;
 
 namespace MouseJumpUI;
 

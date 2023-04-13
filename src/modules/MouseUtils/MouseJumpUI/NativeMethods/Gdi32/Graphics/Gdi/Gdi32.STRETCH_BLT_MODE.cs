@@ -12,7 +12,7 @@ internal static partial class Gdi32
     /// <remarks>
     /// See https://learn.microsoft.com/en-us/windows/win32/api/wingdi/nf-wingdi-setstretchbltmode
     /// </remarks>
-    public enum STRETCH_BLT_MODE : int
+    internal enum STRETCH_BLT_MODE : int
     {
         BLACKONWHITE = 1,
         COLORONCOLOR = 3,
