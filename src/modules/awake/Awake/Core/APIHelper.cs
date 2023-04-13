@@ -31,7 +31,6 @@ namespace Awake.Core
         private const string BuildRegistryLocation = @"SOFTWARE\Microsoft\Windows NT\CurrentVersion";
 
         private static CancellationTokenSource _tokenSource;
-        private static CancellationToken _threadToken;
 
         private static Task? _runnerThread;
         private static System.Timers.Timer _timedLoopTimer;
@@ -104,7 +103,7 @@ namespace Awake.Core
 
                 if (_runnerThread != null && !_runnerThread.IsCanceled)
                 {
-                    _runnerThread.Wait(_threadToken);
+                    _runnerThread.Wait(_tokenSource.Token);
                 }
 
                 Logger.LogInfo("Thread is clean.");
@@ -115,22 +114,19 @@ namespace Awake.Core
             }
 
             _tokenSource = new CancellationTokenSource();
-            _threadToken = _tokenSource.Token;
 
             Logger.LogInfo("Instantiating of new token source and thread token completed.");
         }
 
-        public static void SetIndefiniteKeepAwake(Action callback, Action failureCallback, bool keepDisplayOn = false)
+        public static void SetIndefiniteKeepAwake(bool keepDisplayOn = false)
         {
-            PowerToysTelemetry.Log.WriteEvent(new Awake.Telemetry.AwakeIndefinitelyKeepAwakeEvent());
+            PowerToysTelemetry.Log.WriteEvent(new Telemetry.AwakeIndefinitelyKeepAwakeEvent());
 
             CancelExistingThread();
 
             try
             {
-                _runnerThread = Task.Run(() => RunIndefiniteJob(keepDisplayOn), _threadToken)
-                    .ContinueWith((result) => callback, TaskContinuationOptions.OnlyOnRanToCompletion)
-                    .ContinueWith((result) => failureCallback, TaskContinuationOptions.NotOnRanToCompletion);
+                _runnerThread = Task.Run(() => RunIndefiniteJob(keepDisplayOn), _tokenSource.Token);
             }
             catch (Exception ex)
             {
@@ -140,22 +136,20 @@ namespace Awake.Core
 
         public static void SetNoKeepAwake()
         {
-            PowerToysTelemetry.Log.WriteEvent(new Awake.Telemetry.AwakeNoKeepAwakeEvent());
+            PowerToysTelemetry.Log.WriteEvent(new Telemetry.AwakeNoKeepAwakeEvent());
 
             CancelExistingThread();
         }
 
-        public static void SetExpirableKeepAwake(DateTimeOffset expireAt, Action callback, Action failureCallback, bool keepDisplayOn = true)
+        public static void SetExpirableKeepAwake(DateTimeOffset expireAt, bool keepDisplayOn = true)
         {
-            PowerToysTelemetry.Log.WriteEvent(new Awake.Telemetry.AwakeExpirableKeepAwakeEvent());
+            PowerToysTelemetry.Log.WriteEvent(new Telemetry.AwakeExpirableKeepAwakeEvent());
 
             CancelExistingThread();
 
             if (expireAt > DateTime.Now && expireAt != null)
             {
-                _runnerThread = Task.Run(() => RunExpiringJob(expireAt, keepDisplayOn), _threadToken)
-                    .ContinueWith((result) => callback, TaskContinuationOptions.OnlyOnRanToCompletion)
-                    .ContinueWith((result) => failureCallback, TaskContinuationOptions.NotOnRanToCompletion);
+                _runnerThread = Task.Run(() => RunExpiringJob(expireAt, keepDisplayOn), _tokenSource.Token);
             }
             else
             {
@@ -165,15 +159,13 @@ namespace Awake.Core
             }
         }
 
-        public static void SetTimedKeepAwake(uint seconds, Action callback, Action failureCallback, bool keepDisplayOn = true)
+        public static void SetTimedKeepAwake(uint seconds, bool keepDisplayOn = true)
         {
-            PowerToysTelemetry.Log.WriteEvent(new Awake.Telemetry.AwakeTimedKeepAwakeEvent());
+            PowerToysTelemetry.Log.WriteEvent(new Telemetry.AwakeTimedKeepAwakeEvent());
 
             CancelExistingThread();
 
-            _runnerThread = Task.Run(() => RunTimedJob(seconds, keepDisplayOn), _threadToken)
-                .ContinueWith((result) => callback, TaskContinuationOptions.OnlyOnRanToCompletion)
-                .ContinueWith((result) => failureCallback, TaskContinuationOptions.NotOnRanToCompletion);
+            _runnerThread = Task.Run(() => RunTimedJob(seconds, keepDisplayOn), _tokenSource.Token);
         }
 
         private static void RunExpiringJob(DateTimeOffset expireAt, bool keepDisplayOn = false)
@@ -181,7 +173,7 @@ namespace Awake.Core
             bool success = false;
 
             // In case cancellation was already requested.
-            _threadToken.ThrowIfCancellationRequested();
+            _tokenSource.Token.ThrowIfCancellationRequested();
 
             try
             {
@@ -214,7 +206,7 @@ namespace Awake.Core
         private static void RunIndefiniteJob(bool keepDisplayOn = false)
         {
             // In case cancellation was already requested.
-            _threadToken.ThrowIfCancellationRequested();
+            _tokenSource.Token.ThrowIfCancellationRequested();
 
             try
             {
@@ -224,7 +216,7 @@ namespace Awake.Core
                 {
                     Logger.LogInfo($"Initiated indefinite keep awake in background thread: {PInvoke.GetCurrentThreadId()}. Screen on: {keepDisplayOn}");
 
-                    WaitHandle.WaitAny(new[] { _threadToken.WaitHandle });
+                    WaitHandle.WaitAny(new[] { _tokenSource.Token.WaitHandle });
                 }
                 else
                 {
@@ -270,7 +262,7 @@ namespace Awake.Core
             bool success = false;
 
             // In case cancellation was already requested.
-            _threadToken.ThrowIfCancellationRequested();
+            _tokenSource.Token.ThrowIfCancellationRequested();
 
             try
             {
