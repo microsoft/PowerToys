@@ -4,16 +4,17 @@
 
 using System.Collections.Generic;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using MouseJumpUI.Drawing.Models;
+using MouseJumpUI.Models.Drawing;
 
 namespace MouseJumpUI.UnitTests.Drawing;
 
-public sealed class SizeInfoTests
+[TestClass]
+public static class SizeInfoTests
 {
     [TestClass]
-    public class ScaleToFitTests
+    public sealed class ScaleToFitTests
     {
-        public class TestCase
+        public sealed class TestCase
         {
             public TestCase(SizeInfo obj, SizeInfo bounds, SizeInfo expectedResult)
             {
@@ -58,9 +59,9 @@ public sealed class SizeInfoTests
     }
 
     [TestClass]
-    public class ScaleToFitRatioTests
+    public sealed class ScaleToFitRatioTests
     {
-        public class TestCase
+        public sealed class TestCase
         {
             public TestCase(SizeInfo obj, SizeInfo bounds, decimal expectedResult)
             {

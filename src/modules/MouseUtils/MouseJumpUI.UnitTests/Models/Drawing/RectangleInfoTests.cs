@@ -4,17 +4,17 @@
 
 using System.Collections.Generic;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using MouseJumpUI.Drawing.Models;
+using MouseJumpUI.Models.Drawing;
 
-namespace MouseJumpUI.UnitTests.Drawing;
+namespace MouseJumpUI.UnitTests.Models.Drawing;
 
 [TestClass]
 public static class RectangleInfoTests
 {
     [TestClass]
-    public class CenterTests
+    public sealed class CenterTests
     {
-        public class TestCase
+        public sealed class TestCase
         {
             public TestCase(RectangleInfo rectangle, PointInfo point, RectangleInfo expectedResult)
             {
@@ -63,9 +63,9 @@ public static class RectangleInfoTests
     }
 
     [TestClass]
-    public class ClampTests
+    public sealed class ClampTests
     {
-        public class TestCase
+        public sealed class TestCase
         {
             public TestCase(RectangleInfo inner, RectangleInfo outer, RectangleInfo expectedResult)
             {

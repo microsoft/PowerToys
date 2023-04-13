@@ -5,10 +5,9 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.Drawing;
 using System.Linq;
-using System.Windows.Forms;
 using MouseJumpUI.Models.Drawing;
+using MouseJumpUI.Models.Screen;
 
 namespace MouseJumpUI.Models.Layout;
 
@@ -19,7 +18,7 @@ public sealed class LayoutConfig
 {
     public LayoutConfig(
         RectangleInfo virtualScreenBounds,
-        List<RectangleInfo> screenBounds,
+        List<ScreenInfo> screens,
         PointInfo activatedLocation,
         int activatedScreenIndex,
         int activatedScreenNumber,
@@ -29,14 +28,14 @@ public sealed class LayoutConfig
     {
         // make sure the virtual screen entirely contains all of the individual screen bounds
         ArgumentNullException.ThrowIfNull(virtualScreenBounds);
-        ArgumentNullException.ThrowIfNull(screenBounds);
-        if (screenBounds.Any(screen => !virtualScreenBounds.Contains(screen)))
+        ArgumentNullException.ThrowIfNull(screens);
+        if (screens.Any(screen => !virtualScreenBounds.Contains(screen.Bounds)))
         {
-            throw new ArgumentException($"'{nameof(virtualScreenBounds)}' must contain all of the screens in '{nameof(screenBounds)}'", nameof(virtualScreenBounds));
+            throw new ArgumentException($"'{nameof(virtualScreenBounds)}' must contain all of the screens in '{nameof(screens)}'", nameof(virtualScreenBounds));
         }
 
         this.VirtualScreenBounds = virtualScreenBounds;
-        this.ScreenBounds = new(screenBounds.ToList());
+        this.Screens = new(screens.ToList());
         this.ActivatedLocation = activatedLocation;
         this.ActivatedScreenIndex = activatedScreenIndex;
         this.ActivatedScreenNumber = activatedScreenNumber;
@@ -58,9 +57,9 @@ public sealed class LayoutConfig
     }
 
     /// <summary>
-    /// Gets the bounds of all of the screens connected to the system.
+    /// Gets a collection containing the individual screens connected to the system.
     /// </summary>
-    public ReadOnlyCollection<RectangleInfo> ScreenBounds
+    public ReadOnlyCollection<ScreenInfo> Screens
     {
         get;
     }

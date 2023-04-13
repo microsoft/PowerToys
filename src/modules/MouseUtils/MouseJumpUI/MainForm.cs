@@ -90,25 +90,31 @@ internal partial class MainForm : Form
 
     private static LayoutInfo GetLayoutInfo(MainForm form)
     {
-        var screens = Screen.AllScreens;
-        foreach (var i in Enumerable.Range(0, screens.Length))
+        // map screens to their screen number in "System > Display"
+        var screens = ScreenHelper.GetAllScreens()
+            .Select((screen, index) => new { Screen = screen, Index = index, Number = index + 1 })
+            .ToList();
+        foreach (var screen in screens)
         {
-            var screen = screens[i];
             Logger.LogInfo(string.Join(
                 '\n',
-                $"screen[{i}] = \"{screen.DeviceName}\"",
-                $"\tprimary      = {screen.Primary}",
-                $"\tbounds       = {screen.Bounds}",
-                $"\tworking area = {screen.WorkingArea}"));
+                $"screen[{screen.Number}]",
+                $"\tprimary      = {screen.Screen.Primary}",
+                $"\tdisplay area = {screen.Screen.DisplayArea}",
+                $"\tworking area = {screen.Screen.WorkingArea}"));
         }
 
         // collect together some values that we need for calculating layout
-        var activatedLocation = Cursor.Position;
-        var activatedScreenIndex = Array.IndexOf(Screen.AllScreens, Screen.FromPoint(activatedLocation));
+        var activatedLocation = new PointInfo(Cursor.Position);
+        var activatedScreenHandle = ScreenHelper.MonitorFromPoint(activatedLocation);
+        var activatedScreenIndex = screens
+            .Single(item => item.Screen.Handle == activatedScreenHandle.Value)
+            .Index;
+
         var layoutConfig = new LayoutConfig(
             virtualScreenBounds: new(SystemInformation.VirtualScreen),
-            screenBounds: Screen.AllScreens.Select(screen => new RectangleInfo(screen.Bounds)).ToList(),
-            activatedLocation: new(activatedLocation),
+            screens: screens.Select(item => item.Screen).ToList(),
+            activatedLocation: activatedLocation,
             activatedScreenIndex: activatedScreenIndex,
             activatedScreenNumber: activatedScreenIndex + 1,
             maximumFormSize: new(1600, 1200),
@@ -173,7 +179,7 @@ internal partial class MainForm : Form
             DrawingHelper.DrawPreviewScreen(
                 desktopHdc,
                 previewHdc,
-                layoutConfig.ScreenBounds[layoutConfig.ActivatedScreenIndex],
+                layoutConfig.Screens[layoutConfig.ActivatedScreenIndex].Bounds,
                 layoutInfo.ScreenBounds[layoutConfig.ActivatedScreenIndex]);
             activatedStopwatch.Stop();
 
@@ -181,8 +187,8 @@ internal partial class MainForm : Form
             // to capture the remaining screenshot images
             if (activatedStopwatch.ElapsedMilliseconds > 250)
             {
-                var activatedArea = layoutConfig.ScreenBounds[layoutConfig.ActivatedScreenIndex].Area;
-                var totalArea = layoutConfig.ScreenBounds.Sum(screen => screen.Area);
+                var activatedArea = layoutConfig.Screens[layoutConfig.ActivatedScreenIndex].Bounds.Area;
+                var totalArea = layoutConfig.Screens.Sum(screen => screen.Bounds.Area);
                 if ((activatedArea / totalArea) < 0.5M)
                 {
                     // we need to release the device context handle before we can draw the placeholders
@@ -197,7 +203,10 @@ internal partial class MainForm : Form
             }
 
             // draw the remaining screen captures (if any) on the preview image
-            var sourceScreens = layoutConfig.ScreenBounds.Where((_, idx) => idx != layoutConfig.ActivatedScreenIndex).ToList();
+            var sourceScreens = layoutConfig.Screens
+                .Where((_, idx) => idx != layoutConfig.ActivatedScreenIndex)
+                .Select(screen => screen.Bounds)
+                .ToList();
             if (sourceScreens.Any())
             {
                 DrawingHelper.EnsurePreviewDeviceContext(previewGraphics, ref previewHdc);

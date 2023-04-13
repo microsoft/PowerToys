@@ -26,7 +26,7 @@ internal static class LayoutHelper
             LayoutConfig = layoutConfig,
         };
 
-        builder.ActivatedScreenBounds = layoutConfig.ScreenBounds[layoutConfig.ActivatedScreenIndex];
+        builder.ActivatedScreenBounds = layoutConfig.Screens[layoutConfig.ActivatedScreenIndex].Bounds;
 
         // work out the maximum *constrained* form size
         // * can't be bigger than the activated screen
@@ -61,9 +61,9 @@ internal static class LayoutHelper
             .Clamp(builder.ActivatedScreenBounds);
 
         // now calculate the positions of each of the screen images on the preview
-        builder.ScreenBounds = layoutConfig.ScreenBounds
+        builder.ScreenBounds = layoutConfig.Screens
             .Select(
-                screen => screen
+                screen => screen.Bounds
                     .Offset(layoutConfig.VirtualScreenBounds.Location.ToSize().Negate())
                     .Scale(scalingRatio)
                     .Offset(layoutConfig.PreviewPadding.Left, layoutConfig.PreviewPadding.Top))
