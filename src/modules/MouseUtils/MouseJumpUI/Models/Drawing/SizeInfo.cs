@@ -5,7 +5,7 @@
 using System;
 using System.Drawing;
 
-namespace MouseJumpUI.Drawing.Models;
+namespace MouseJumpUI.Models.Drawing;
 
 /// <summary>
 /// Immutable version of a System.Drawing.Size object with some extra utility methods.

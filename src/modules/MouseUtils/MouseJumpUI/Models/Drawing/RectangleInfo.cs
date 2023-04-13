@@ -5,7 +5,7 @@
 using System;
 using System.Drawing;
 
-namespace MouseJumpUI.Drawing.Models;
+namespace MouseJumpUI.Models.Drawing;
 
 /// <summary>
 /// Immutable version of a System.Drawing.Rectangle object with some extra utility methods.
@@ -68,6 +68,14 @@ public sealed class RectangleInfo
     public PointInfo Location => new(this.X, this.Y);
 
     public decimal Area => this.Width * this.Height;
+
+    /// <remarks>
+    /// Adapted from https://github.comdotnet/runtime.
+    /// See https://github.com/dotnet/runtime/blob/dfd618dc648ba9b11dd0f8034f78113d69f223cd/src/libraries/System.Drawing.Primitives/src/System/Drawing/Rectangle.cs
+    /// </remarks>
+    public bool Contains(RectangleInfo rect) =>
+        (this.X <= rect.X) && (rect.X + rect.Width <= this.X + this.Width) &&
+        (this.Y <= rect.Y) && (rect.Y + rect.Height <= this.Y + this.Height);
 
     public RectangleInfo Enlarge(PaddingInfo padding) => new(
         this.X + padding.Left,

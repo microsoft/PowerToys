@@ -2,13 +2,12 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-using System;
 using System.ComponentModel;
-using System.Drawing;
 using System.Runtime.InteropServices;
 using System.Windows.Forms;
-using MouseJumpUI.Drawing.Models;
+using MouseJumpUI.Models.Drawing;
 using MouseJumpUI.NativeMethods;
+using static MouseJumpUI.NativeMethods.Core;
 
 namespace MouseJumpUI.Helpers;
 
@@ -66,7 +65,7 @@ internal static class MouseHelper
     /// See https://github.com/microsoft/PowerToys/issues/24523
     ///     https://github.com/microsoft/PowerToys/pull/24527
     /// </remarks>
-    public static void SimulateMouseMovementEvent(Point location)
+    public static void SimulateMouseMovementEvent(PointInfo location)
     {
         var inputs = new User32.INPUT[]
         {
@@ -79,7 +78,7 @@ internal static class MouseHelper
                         mouseData: 0,
                         dwFlags: User32.MOUSE_EVENT_FLAGS.MOUSEEVENTF_MOVE | User32.MOUSE_EVENT_FLAGS.MOUSEEVENTF_ABSOLUTE,
                         time: 0,
-                        dwExtraInfo: UIntPtr.Zero))),
+                        dwExtraInfo: ULONG_PTR.Null))),
         };
         var result = User32.SendInput(
             (uint)inputs.Length,

@@ -4,7 +4,7 @@
 
 using System.Windows.Forms;
 
-namespace MouseJumpUI.Drawing.Models;
+namespace MouseJumpUI.Models.Drawing;
 
 /// <summary>
 /// Immutable version of a System.Windows.Forms.Padding object with some extra utility methods.
@@ -13,11 +13,6 @@ public sealed class PaddingInfo
 {
     public PaddingInfo(decimal all)
         : this(all, all, all, all)
-    {
-    }
-
-    public PaddingInfo(Padding padding)
-        : this(padding.Left, padding.Top, padding.Right, padding.Bottom)
     {
     }
 

@@ -6,8 +6,9 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
+using MouseJumpUI.Models.Drawing;
 
-namespace MouseJumpUI.Drawing.Models;
+namespace MouseJumpUI.Models.Layout;
 
 public sealed class LayoutInfo
 {
@@ -42,7 +43,7 @@ public sealed class LayoutInfo
             set;
         }
 
-        public RectangleInfo? ActivatedScreen
+        public RectangleInfo? ActivatedScreenBounds
         {
             get;
             set;
@@ -55,7 +56,7 @@ public sealed class LayoutInfo
                 formBounds: this.FormBounds ?? throw new InvalidOperationException(),
                 previewBounds: this.PreviewBounds ?? throw new InvalidOperationException(),
                 screenBounds: this.ScreenBounds ?? throw new InvalidOperationException(),
-                activatedScreen: this.ActivatedScreen ?? throw new InvalidOperationException());
+                activatedScreenBounds: this.ActivatedScreenBounds ?? throw new InvalidOperationException());
         }
     }
 
@@ -64,7 +65,7 @@ public sealed class LayoutInfo
         RectangleInfo formBounds,
         RectangleInfo previewBounds,
         IEnumerable<RectangleInfo> screenBounds,
-        RectangleInfo activatedScreen)
+        RectangleInfo activatedScreenBounds)
     {
         this.LayoutConfig = layoutConfig ?? throw new ArgumentNullException(nameof(layoutConfig));
         this.FormBounds = formBounds ?? throw new ArgumentNullException(nameof(formBounds));
@@ -72,7 +73,7 @@ public sealed class LayoutInfo
         this.ScreenBounds = new(
             (screenBounds ?? throw new ArgumentNullException(nameof(screenBounds)))
                 .ToList());
-        this.ActivatedScreen = activatedScreen ?? throw new ArgumentNullException(nameof(activatedScreen));
+        this.ActivatedScreenBounds = activatedScreenBounds ?? throw new ArgumentNullException(nameof(activatedScreenBounds));
     }
 
     /// <summary>
@@ -104,7 +105,7 @@ public sealed class LayoutInfo
         get;
     }
 
-    public RectangleInfo ActivatedScreen
+    public RectangleInfo ActivatedScreenBounds
     {
         get;
     }

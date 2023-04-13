@@ -9,8 +9,9 @@ using System.Drawing.Imaging;
 using System.Linq;
 using System.Windows.Forms;
 using ManagedCommon;
-using MouseJumpUI.Drawing.Models;
 using MouseJumpUI.Helpers;
+using MouseJumpUI.Models.Drawing;
+using MouseJumpUI.Models.Layout;
 using static MouseJumpUI.NativeMethods.Core;
 
 namespace MouseJumpUI;
@@ -67,7 +68,7 @@ internal partial class MainForm : Form
             MouseHelper.JumpCursor(scaledLocation);
 
             // Simulate mouse input for handlers that won't just catch the Cursor change
-            MouseHelper.SimulateMouseMovementEvent(scaledLocation.ToPoint());
+            MouseHelper.SimulateMouseMovementEvent(scaledLocation);
             Microsoft.PowerToys.Telemetry.PowerToysTelemetry.Log.WriteEvent(new Telemetry.MouseJumpTeleportCursorEvent());
         }
 
@@ -75,6 +76,19 @@ internal partial class MainForm : Form
     }
 
     public void ShowThumbnail()
+    {
+        var stopwatch = Stopwatch.StartNew();
+        var layoutInfo = MainForm.GetLayoutInfo(this);
+        LayoutHelper.PositionForm(this, layoutInfo.FormBounds);
+        MainForm.RenderPreview(this, layoutInfo);
+        stopwatch.Stop();
+
+        // we have to activate the form to make sure the deactivate event fires
+        Microsoft.PowerToys.Telemetry.PowerToysTelemetry.Log.WriteEvent(new Telemetry.MouseJumpTeleportCursorEvent());
+        this.Activate();
+    }
+
+    private static LayoutInfo GetLayoutInfo(MainForm form)
     {
         var screens = Screen.AllScreens;
         foreach (var i in Enumerable.Range(0, screens.Length))
@@ -90,43 +104,56 @@ internal partial class MainForm : Form
 
         // collect together some values that we need for calculating layout
         var activatedLocation = Cursor.Position;
+        var activatedScreenIndex = Array.IndexOf(Screen.AllScreens, Screen.FromPoint(activatedLocation));
         var layoutConfig = new LayoutConfig(
-            virtualScreen: SystemInformation.VirtualScreen,
-            screenBounds: Screen.AllScreens.Select(screen => screen.Bounds),
-            activatedLocation: activatedLocation,
-            activatedScreen: Array.IndexOf(Screen.AllScreens, Screen.FromPoint(activatedLocation)),
-            maximumFormSize: new Size(1600, 1200),
-            formPadding: this.panel1.Padding,
-            previewPadding: new Padding(0));
+            virtualScreenBounds: new(SystemInformation.VirtualScreen),
+            screenBounds: Screen.AllScreens.Select(screen => new RectangleInfo(screen.Bounds)).ToList(),
+            activatedLocation: new(activatedLocation),
+            activatedScreenIndex: activatedScreenIndex,
+            activatedScreenNumber: activatedScreenIndex + 1,
+            maximumFormSize: new(1600, 1200),
+            formPadding: new(
+                form.panel1.Padding.Left,
+                form.panel1.Padding.Top,
+                form.panel1.Padding.Right,
+                form.panel1.Padding.Bottom),
+            previewPadding: new(0));
         Logger.LogInfo(string.Join(
             '\n',
             $"Layout config",
             $"-------------",
-            $"virtual screen     = {layoutConfig.VirtualScreen}",
-            $"activated location = {layoutConfig.ActivatedLocation}",
-            $"activated screen   = {layoutConfig.ActivatedScreen}",
-            $"maximum form size  = {layoutConfig.MaximumFormSize}",
-            $"form padding       = {layoutConfig.FormPadding}",
-            $"preview padding    = {layoutConfig.PreviewPadding}"));
+            $"virtual screen          = {layoutConfig.VirtualScreenBounds}",
+            $"activated location      = {layoutConfig.ActivatedLocation}",
+            $"activated screen index  = {layoutConfig.ActivatedScreenIndex}",
+            $"activated screen number = {layoutConfig.ActivatedScreenNumber}",
+            $"maximum form size       = {layoutConfig.MaximumFormSize}",
+            $"form padding            = {layoutConfig.FormPadding}",
+            $"preview padding         = {layoutConfig.PreviewPadding}"));
 
         // calculate the layout coordinates for everything
-        var layoutInfo = DrawingHelper.CalculateLayoutInfo(layoutConfig);
+        var layoutInfo = LayoutHelper.CalculateLayoutInfo(layoutConfig);
         Logger.LogInfo(string.Join(
             '\n',
             $"Layout info",
             $"-----------",
             $"form bounds      = {layoutInfo.FormBounds}",
             $"preview bounds   = {layoutInfo.PreviewBounds}",
-            $"activated screen = {layoutInfo.ActivatedScreen}"));
+            $"activated screen = {layoutInfo.ActivatedScreenBounds}"));
 
-        DrawingHelper.PositionForm(this, layoutInfo.FormBounds);
+        return layoutInfo;
+    }
+
+    private static void RenderPreview(
+        MainForm form, LayoutInfo layoutInfo)
+    {
+        var layoutConfig = layoutInfo.LayoutConfig;
 
         // initialize the preview image
         var preview = new Bitmap(
             (int)layoutInfo.PreviewBounds.Width,
             (int)layoutInfo.PreviewBounds.Height,
             PixelFormat.Format32bppArgb);
-        this.Thumbnail.Image = preview;
+        form.Thumbnail.Image = preview;
 
         using var previewGraphics = Graphics.FromImage(preview);
 
@@ -146,15 +173,15 @@ internal partial class MainForm : Form
             DrawingHelper.DrawPreviewScreen(
                 desktopHdc,
                 previewHdc,
-                layoutConfig.ScreenBounds[layoutConfig.ActivatedScreen],
-                layoutInfo.ScreenBounds[layoutConfig.ActivatedScreen]);
+                layoutConfig.ScreenBounds[layoutConfig.ActivatedScreenIndex],
+                layoutInfo.ScreenBounds[layoutConfig.ActivatedScreenIndex]);
             activatedStopwatch.Stop();
 
             // show the placeholder images if it looks like it might take a while
             // to capture the remaining screenshot images
             if (activatedStopwatch.ElapsedMilliseconds > 250)
             {
-                var activatedArea = layoutConfig.ScreenBounds[layoutConfig.ActivatedScreen].Area;
+                var activatedArea = layoutConfig.ScreenBounds[layoutConfig.ActivatedScreenIndex].Area;
                 var totalArea = layoutConfig.ScreenBounds.Sum(screen => screen.Area);
                 if ((activatedArea / totalArea) < 0.5M)
                 {
@@ -162,15 +189,15 @@ internal partial class MainForm : Form
                     // using the Graphics object otherwise we'll get an error from GDI saying
                     // "Object is currently in use elsewhere"
                     DrawingHelper.FreePreviewDeviceContext(previewGraphics, ref previewHdc);
-                    DrawingHelper.DrawPreviewPlaceholders(
+                    DrawingHelper.DrawPreviewScreenPlaceholders(
                         previewGraphics,
-                        layoutInfo.ScreenBounds.Where((_, idx) => idx != layoutConfig.ActivatedScreen));
-                    MainForm.ShowPreview(this);
+                        layoutInfo.ScreenBounds.Where((_, idx) => idx != layoutConfig.ActivatedScreenIndex));
+                    MainForm.RefreshPreview(form);
                 }
             }
 
             // draw the remaining screen captures (if any) on the preview image
-            var sourceScreens = layoutConfig.ScreenBounds.Where((_, idx) => idx != layoutConfig.ActivatedScreen).ToList();
+            var sourceScreens = layoutConfig.ScreenBounds.Where((_, idx) => idx != layoutConfig.ActivatedScreenIndex).ToList();
             if (sourceScreens.Any())
             {
                 DrawingHelper.EnsurePreviewDeviceContext(previewGraphics, ref previewHdc);
@@ -178,8 +205,9 @@ internal partial class MainForm : Form
                     desktopHdc,
                     previewHdc,
                     sourceScreens,
-                    layoutInfo.ScreenBounds.Where((_, idx) => idx != layoutConfig.ActivatedScreen).ToList());
-                MainForm.ShowPreview(this);
+                    layoutInfo.ScreenBounds.Where((_, idx) => idx != layoutConfig.ActivatedScreenIndex).ToList());
+                DrawingHelper.FreePreviewDeviceContext(previewGraphics, ref previewHdc);
+                MainForm.RefreshPreview(form);
             }
         }
         finally
@@ -187,14 +215,9 @@ internal partial class MainForm : Form
             DrawingHelper.FreeDesktopDeviceContext(ref desktopHwnd, ref desktopHdc);
             DrawingHelper.FreePreviewDeviceContext(previewGraphics, ref previewHdc);
         }
-
-        // we have to activate the form to make sure the deactivate event fires
-        MainForm.ShowPreview(this);
-        Microsoft.PowerToys.Telemetry.PowerToysTelemetry.Log.WriteEvent(new Telemetry.MouseJumpTeleportCursorEvent());
-        this.Activate();
     }
 
-    private static void ShowPreview(MainForm form)
+    private static void RefreshPreview(MainForm form)
     {
         if (!form.Visible)
         {
