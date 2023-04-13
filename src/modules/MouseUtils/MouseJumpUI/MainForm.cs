@@ -66,10 +66,7 @@ internal partial class MainForm : Form
                 new SizeInfo(this.Thumbnail.Size),
                 virtualScreen);
             Logger.LogInfo($"scaled location = {scaledLocation}");
-            MouseHelper.JumpCursor(scaledLocation);
-
-            // Simulate mouse input for handlers that won't just catch the Cursor change
-            MouseHelper.SimulateMouseMovementEvent(scaledLocation);
+            MouseHelper.SetCursorPosition(scaledLocation);
             Microsoft.PowerToys.Telemetry.PowerToysTelemetry.Log.WriteEvent(new Telemetry.MouseJumpTeleportCursorEvent());
         }
 
@@ -106,7 +103,7 @@ internal partial class MainForm : Form
         }
 
         // collect together some values that we need for calculating layout
-        var activatedLocation = new PointInfo(Cursor.Position);
+        var activatedLocation = MouseHelper.GetCursorPosition();
         var activatedScreenHandle = ScreenHelper.MonitorFromPoint(activatedLocation);
         var activatedScreenIndex = screens
             .Single(item => item.Screen.Handle == activatedScreenHandle.Value)

@@ -30,12 +30,32 @@ internal static class MouseHelper
     }
 
     /// <summary>
+    /// Get the current position of the cursor.
+    /// </summary>
+    public static PointInfo GetCursorPosition()
+    {
+        var lpPoint = new LPPOINT(new POINT(0, 0));
+        var result = User32.GetCursorPos(lpPoint);
+        if (!result)
+        {
+            throw new Win32Exception(
+                Marshal.GetLastWin32Error());
+        }
+
+        var point = lpPoint.ToStructure();
+        lpPoint.Free();
+
+        return new PointInfo(
+            point.x, point.y);
+    }
+
+    /// <summary>
     /// Moves the cursor to the specified location.
     /// </summary>
     /// <remarks>
     /// See https://github.com/mikeclayton/FancyMouse/pull/3
     /// </remarks>
-    public static void JumpCursor(PointInfo location)
+    public static void SetCursorPosition(PointInfo location)
     {
         // set the new cursor position *twice* - the cursor sometimes end up in
         // the wrong place if we try to cross the dead space between non-aligned
@@ -54,8 +74,18 @@ internal static class MouseHelper
         // setting the position a second time seems to fix this and moves the
         // cursor to the expected location (b)
         var point = location.ToPoint();
-        Cursor.Position = point;
-        Cursor.Position = point;
+        for (var i = 0; i < 2; i++)
+        {
+            var result = User32.SetCursorPos(point.X, point.Y);
+            if (!result)
+            {
+                throw new Win32Exception(
+                    Marshal.GetLastWin32Error());
+            }
+        }
+
+        // temporary workaround for issue #1273
+        MouseHelper.SimulateMouseMovementEvent(location);
     }
 
     /// <summary>
