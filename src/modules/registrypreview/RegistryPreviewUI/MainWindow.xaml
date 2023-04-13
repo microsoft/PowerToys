@@ -53,6 +53,7 @@
             <CommandBar
                 Name="commandBar"
                 HorizontalAlignment="Left"
+                Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
                 BorderBrush="Transparent"
                 BorderThickness="0"
                 DefaultLabelPosition="Right"
@@ -64,8 +65,10 @@
                     x:Uid="OpenButton"
                     HorizontalAlignment="Left"
                     Click="OpenButton_Click"
-                    Icon="OpenFile"
                     IsTabStop="False">
+                    <AppBarButton.Icon>
+                        <FontIcon FontFamily="{StaticResource SymbolThemeFontFamily}" Glyph="&#xe8e5;"/>
+                    </AppBarButton.Icon>
                     <AppBarButton.KeyboardAccelerators>
                         <KeyboardAccelerator Key="O" Modifiers="Control" />
                     </AppBarButton.KeyboardAccelerators>
@@ -75,11 +78,13 @@
                     x:Uid="SaveButton"
                     HorizontalAlignment="Left"
                     Click="SaveButton_Click"
-                    Icon="Save"
                     IsEnabled="False"
                     IsTabStop="False">
+                    <AppBarButton.Icon>
+                        <FontIcon FontFamily="{StaticResource SymbolThemeFontFamily}" Glyph="&#xe74e;"/>
+                    </AppBarButton.Icon>
                     <AppBarButton.KeyboardAccelerators>
-                        <KeyboardAccelerator Key="F2" Modifiers="None" />
+                        <KeyboardAccelerator Key="S" Modifiers="Control" />
                     </AppBarButton.KeyboardAccelerators>
                 </AppBarButton>
                 <AppBarButton
@@ -87,11 +92,13 @@
                     x:Uid="SaveAsButton"
                     HorizontalAlignment="Left"
                     Click="SaveAsButton_Click"
-                    Icon="SaveLocal"
                     IsEnabled="True"
                     IsTabStop="False">
+                    <AppBarButton.Icon>
+                        <FontIcon FontFamily="{StaticResource SymbolThemeFontFamily}" Glyph="&#xe792;"/>
+                    </AppBarButton.Icon>
                     <AppBarButton.KeyboardAccelerators>
-                        <KeyboardAccelerator Key="F2" Modifiers="Shift" />
+                        <KeyboardAccelerator Key="S" Modifiers="Control,Shift" />
                     </AppBarButton.KeyboardAccelerators>
                 </AppBarButton>
                 <AppBarButton
@@ -99,8 +106,10 @@
                     x:Uid="EditButton"
                     HorizontalAlignment="Left"
                     Click="EditButton_Click"
-                    Icon="NewWindow"
                     IsTabStop="False">
+                    <AppBarButton.Icon>
+                        <FontIcon FontFamily="{StaticResource SymbolThemeFontFamily}" Glyph="&#xe8a7;"/>
+                    </AppBarButton.Icon>
                     <AppBarButton.KeyboardAccelerators>
                         <KeyboardAccelerator Key="E" Modifiers="Control" />
                     </AppBarButton.KeyboardAccelerators>
@@ -110,8 +119,10 @@
                     x:Uid="RefreshButton"
                     HorizontalAlignment="Left"
                     Click="RefreshButton_Click"
-                    Icon="Refresh"
                     IsTabStop="False">
+                    <AppBarButton.Icon>
+                        <FontIcon FontFamily="{StaticResource SymbolThemeFontFamily}" Glyph="&#xe72c;"/>
+                    </AppBarButton.Icon>
                     <AppBarButton.KeyboardAccelerators>
                         <KeyboardAccelerator Key="F5" />
                     </AppBarButton.KeyboardAccelerators>
@@ -121,8 +132,10 @@
                     x:Uid="WriteButton"
                     HorizontalAlignment="Left"
                     Click="WriteButton_Click"
-                    Icon="Share"
                     IsTabStop="False">
+                    <AppBarButton.Icon>
+                        <FontIcon FontFamily="{StaticResource SymbolThemeFontFamily}" Glyph="&#xe72d;"/>
+                    </AppBarButton.Icon>
                     <AppBarButton.KeyboardAccelerators>
                         <KeyboardAccelerator Key="W" Modifiers="Control" />
                     </AppBarButton.KeyboardAccelerators>
@@ -132,8 +145,10 @@
                     x:Uid="RegistryButton"
                     HorizontalAlignment="Left"
                     Click="RegistryButton_Click"
-                    Icon="Go"
                     IsTabStop="False">
+                    <AppBarButton.Icon>
+                        <FontIcon FontFamily="{StaticResource SymbolThemeFontFamily}" Glyph="&#xe8ad;"/>
+                    </AppBarButton.Icon>
                     <AppBarButton.KeyboardAccelerators>
                         <KeyboardAccelerator Key="R" Modifiers="Control" />
                     </AppBarButton.KeyboardAccelerators>
@@ -161,7 +176,9 @@
             ScrollViewer.IsVerticalRailEnabled="True"
             ScrollViewer.VerticalScrollBarVisibility="Visible"
             TabIndex="0"
-            TextWrapping="NoWrap" />
+            TextWrapping="NoWrap"
+            CornerRadius="{StaticResource OverlayCornerRadius}"
+            />
 
         <Grid
             Grid.Row="1"
@@ -209,6 +226,7 @@
             Grid.RowSpan="2"
             Grid.Column="2"
             Margin="0,0,8,8"
+            CornerRadius="{StaticResource OverlayCornerRadius}"
             Style="{StaticResource GridCardStyle}">
             <controls:DataGrid
                 x:Name="dataGrid"

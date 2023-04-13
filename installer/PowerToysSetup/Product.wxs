@@ -452,6 +452,9 @@
             </Directory>
             <Directory Id="FileLocksmithInstallFolder" Name="$(var.FileLocksmithProjectName)">
               <Directory Id="FileLocksmithAssetsInstallFolder" Name="Assets" />
+              <Directory Id="FileLocksmithMicrosoftUIXamlInstallFolder" Name="Microsoft.UI.Xaml">
+                <Directory Id="FileLocksmithMicrosoftUIXamlAssetsInstallFolder" Name="Assets" />
+              </Directory>
             </Directory>
             <Directory Id="PowerRenameInstallFolder" Name="$(var.PowerRenameProjectName)">
               <Directory Id="PowerRenameAssetsFolder" Name="Assets" />
@@ -501,6 +504,9 @@
             <!-- RegistryPreview -->
             <Directory Id="RegistryPreviewInstallFolder" Name="$(var.RegistryPreviewProjectName)">
               <Directory Id="RegistryPreviewAssetsInstallFolder" Name="Assets" />
+              <Directory Id="RegistryPreviewMicrosoftUIXamlInstallFolder" Name="Microsoft.UI.Xaml">
+                <Directory Id="RegistryPreviewMicrosoftUIXamlAssetsInstallFolder" Name="Assets" />
+              </Directory>
             </Directory>
 
             <!-- AlwaysOnTop -->
