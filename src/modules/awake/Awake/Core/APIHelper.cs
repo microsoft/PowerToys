@@ -11,9 +11,9 @@ using System.Reactive.Linq;
 using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
+using ManagedCommon;
 using Microsoft.PowerToys.Telemetry;
 using Microsoft.Win32;
-using NLog;
 using Windows.Win32;
 using Windows.Win32.Foundation;
 using Windows.Win32.Storage.FileSystem;
@@ -30,7 +30,6 @@ namespace Awake.Core
     {
         private const string BuildRegistryLocation = @"SOFTWARE\Microsoft\Windows NT\CurrentVersion";
 
-        private static readonly Logger _log;
         private static CancellationTokenSource _tokenSource;
         private static CancellationToken _threadToken;
 
@@ -40,7 +39,6 @@ namespace Awake.Core
         static APIHelper()
         {
             _timedLoopTimer = new System.Timers.Timer();
-            _log = LogManager.GetCurrentClassLogger();
             _tokenSource = new CancellationTokenSource();
         }
 
@@ -51,15 +49,15 @@ namespace Awake.Core
 
         public static void AllocateConsole()
         {
-            _log.Debug("Bootstrapping the console allocation routine.");
+            Logger.LogDebug("Bootstrapping the console allocation routine.");
             PInvoke.AllocConsole();
-            _log.Debug($"Console allocation result: {Marshal.GetLastWin32Error()}");
+            Logger.LogDebug($"Console allocation result: {Marshal.GetLastWin32Error()}");
 
             var outputFilePointer = PInvoke.CreateFile("CONOUT$", FILE_ACCESS_FLAGS.FILE_GENERIC_READ | FILE_ACCESS_FLAGS.FILE_GENERIC_WRITE, FILE_SHARE_MODE.FILE_SHARE_WRITE, null, FILE_CREATION_DISPOSITION.OPEN_EXISTING, 0, null);
-            _log.Debug($"CONOUT creation result: {Marshal.GetLastWin32Error()}");
+            Logger.LogDebug($"CONOUT creation result: {Marshal.GetLastWin32Error()}");
 
             PInvoke.SetStdHandle(Windows.Win32.System.Console.STD_HANDLE.STD_OUTPUT_HANDLE, outputFilePointer);
-            _log.Debug($"SetStdHandle result: {Marshal.GetLastWin32Error()}");
+            Logger.LogDebug($"SetStdHandle result: {Marshal.GetLastWin32Error()}");
 
             Console.SetOut(new StreamWriter(Console.OpenStandardOutput(), Console.OutputEncoding) { AutoFlush = true });
         }
@@ -102,24 +100,24 @@ namespace Awake.Core
 
             try
             {
-                _log.Info("Attempting to ensure that the thread is properly cleaned up...");
+                Logger.LogInfo("Attempting to ensure that the thread is properly cleaned up...");
 
                 if (_runnerThread != null && !_runnerThread.IsCanceled)
                 {
                     _runnerThread.Wait(_threadToken);
                 }
 
-                _log.Info("Thread is clean.");
+                Logger.LogInfo("Thread is clean.");
             }
             catch (OperationCanceledException)
             {
-                _log.Info("Confirmed background thread cancellation when disabling explicit keep awake.");
+                Logger.LogInfo("Confirmed background thread cancellation when disabling explicit keep awake.");
             }
 
             _tokenSource = new CancellationTokenSource();
             _threadToken = _tokenSource.Token;
 
-            _log.Info("Instantiating of new token source and thread token completed.");
+            Logger.LogInfo("Instantiating of new token source and thread token completed.");
         }
 
         public static void SetIndefiniteKeepAwake(Action callback, Action failureCallback, bool keepDisplayOn = false)
@@ -136,7 +134,7 @@ namespace Awake.Core
             }
             catch (Exception ex)
             {
-                _log.Error(ex.Message);
+                Logger.LogError(ex.Message);
             }
         }
 
@@ -162,8 +160,8 @@ namespace Awake.Core
             else
             {
                 // The target date is not in the future.
-                _log.Error("The specified target date and time is not in the future.");
-                _log.Error($"Current time: {DateTime.Now}\tTarget time: {expireAt}");
+                Logger.LogError("The specified target date and time is not in the future.");
+                Logger.LogError($"Current time: {DateTime.Now}\tTarget time: {expireAt}");
             }
         }
 
@@ -191,25 +189,25 @@ namespace Awake.Core
 
                 if (success)
                 {
-                    _log.Info($"Initiated expirable keep awake in background thread: {PInvoke.GetCurrentThreadId()}. Screen on: {keepDisplayOn}");
+                    Logger.LogInfo($"Initiated expirable keep awake in background thread: {PInvoke.GetCurrentThreadId()}. Screen on: {keepDisplayOn}");
 
                     Observable.Timer(expireAt, Scheduler.CurrentThread).Subscribe(
                     _ =>
                     {
-                        _log.Info($"Completed expirable thread in {PInvoke.GetCurrentThreadId()}.");
+                        Logger.LogInfo($"Completed expirable thread in {PInvoke.GetCurrentThreadId()}.");
                         CancelExistingThread();
                     },
                     _tokenSource.Token);
                 }
                 else
                 {
-                    _log.Info("Could not successfully set up expirable keep awake.");
+                    Logger.LogError("Could not successfully set up expirable keep awake.");
                 }
             }
             catch (OperationCanceledException ex)
             {
                 // Task was clearly cancelled.
-                _log.Info($"Background thread termination: {PInvoke.GetCurrentThreadId()}. Message: {ex.Message}");
+                Logger.LogInfo($"Background thread termination: {PInvoke.GetCurrentThreadId()}. Message: {ex.Message}");
             }
         }
 
@@ -224,19 +222,19 @@ namespace Awake.Core
 
                 if (success)
                 {
-                    _log.Info($"Initiated indefinite keep awake in background thread: {PInvoke.GetCurrentThreadId()}. Screen on: {keepDisplayOn}");
+                    Logger.LogInfo($"Initiated indefinite keep awake in background thread: {PInvoke.GetCurrentThreadId()}. Screen on: {keepDisplayOn}");
 
                     WaitHandle.WaitAny(new[] { _threadToken.WaitHandle });
                 }
                 else
                 {
-                    _log.Info("Could not successfully set up indefinite keep awake.");
+                    Logger.LogError("Could not successfully set up indefinite keep awake.");
                 }
             }
             catch (OperationCanceledException ex)
             {
                 // Task was clearly cancelled.
-                _log.Info($"Background thread termination: {PInvoke.GetCurrentThreadId()}. Message: {ex.Message}");
+                Logger.LogInfo($"Background thread termination: {PInvoke.GetCurrentThreadId()}. Message: {ex.Message}");
             }
         }
 
@@ -263,7 +261,7 @@ namespace Awake.Core
             }
             catch (Exception ex)
             {
-                _log.Info($"Exit signal error ${ex}");
+                Logger.LogError($"Exit signal error ${ex}");
             }
         }
 
@@ -280,25 +278,25 @@ namespace Awake.Core
 
                 if (success)
                 {
-                    _log.Info($"Initiated timed keep awake in background thread: {PInvoke.GetCurrentThreadId()}. Screen on: {keepDisplayOn}");
+                    Logger.LogInfo($"Initiated timed keep awake in background thread: {PInvoke.GetCurrentThreadId()}. Screen on: {keepDisplayOn}");
 
                     Observable.Timer(TimeSpan.FromSeconds(seconds), Scheduler.CurrentThread).Subscribe(
                    _ =>
                    {
-                       _log.Info($"Completed timed thread in {PInvoke.GetCurrentThreadId()}.");
+                       Logger.LogInfo($"Completed timed thread in {PInvoke.GetCurrentThreadId()}.");
                        CancelExistingThread();
                    },
                    _tokenSource.Token);
                 }
                 else
                 {
-                    _log.Info("Could not set up timed keep-awake with display on.");
+                    Logger.LogError("Could not set up timed keep-awake with display on.");
                 }
             }
             catch (OperationCanceledException ex)
             {
                 // Task was clearly cancelled.
-                _log.Info($"Background thread termination: {PInvoke.GetCurrentThreadId()}. Message: {ex.Message}");
+                Logger.LogInfo($"Background thread termination: {PInvoke.GetCurrentThreadId()}. Message: {ex.Message}");
             }
         }
 
@@ -317,13 +315,13 @@ namespace Awake.Core
                 }
                 else
                 {
-                    _log.Info("Registry key acquisition for OS failed.");
+                    Logger.LogError("Registry key acquisition for OS failed.");
                     return string.Empty;
                 }
             }
             catch (Exception ex)
             {
-                _log.Info($"Could not get registry key for the build number. Error: {ex.Message}");
+                Logger.LogError($"Could not get registry key for the build number. Error: {ex.Message}");
                 return string.Empty;
             }
         }

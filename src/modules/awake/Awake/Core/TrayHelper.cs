@@ -10,8 +10,8 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using Awake.Core.Models;
+using ManagedCommon;
 using Microsoft.PowerToys.Settings.UI.Library;
-using NLog;
 using Windows.Win32;
 using Windows.Win32.Foundation;
 using Windows.Win32.UI.WindowsAndMessaging;
@@ -29,15 +29,12 @@ namespace Awake.Core
     /// </remarks>
     internal static class TrayHelper
     {
-        private static readonly Logger _log;
-
         private static DestroyMenuSafeHandle TrayMenu { get; set; }
 
         private static NotifyIcon TrayIcon { get; set; }
 
         static TrayHelper()
         {
-            _log = LogManager.GetCurrentClassLogger();
             TrayMenu = new DestroyMenuSafeHandle();
             TrayIcon = new NotifyIcon();
         }
@@ -49,7 +46,7 @@ namespace Awake.Core
                 {
                     try
                     {
-                        _log.Info("Setting up the tray.");
+                        Logger.LogInfo("Setting up the tray.");
                         ((NotifyIcon?)tray).Text = text;
                         ((NotifyIcon?)tray).Icon = icon;
                         ((NotifyIcon?)tray).ContextMenuStrip = contextMenu;
@@ -57,12 +54,12 @@ namespace Awake.Core
                         ((NotifyIcon?)tray).MouseClick += TrayClickHandler;
                         Application.AddMessageFilter(new TrayMessageFilter(exitSignal));
                         Application.Run();
-                        _log.Info("Tray setup complete.");
+                        Logger.LogInfo("Tray setup complete.");
                     }
                     catch (Exception ex)
                     {
-                        _log.Error($"An error occurred initializing the tray. {ex.Message}");
-                        _log.Error($"{ex.StackTrace}");
+                        Logger.LogError($"An error occurred initializing the tray. {ex.Message}");
+                        Logger.LogError($"{ex.StackTrace}");
                     }
                 },
                 TrayIcon);

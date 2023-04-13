@@ -187,13 +187,15 @@ namespace Awake
 
         private static void HandleCommandLineArguments(bool usePtConfig, bool displayOn, uint timeLimit, int pid, string expireAt)
         {
-            _handler += ExitHandler;
-            APIHelper.SetConsoleControlHandler(_handler, true);
-
             if (pid == 0)
             {
                 Logger.LogInfo("No PID specified. Allocating console...");
                 APIHelper.AllocateConsole();
+
+                _handler += ExitHandler;
+                APIHelper.SetConsoleControlHandler(_handler, true);
+
+                Trace.Listeners.Add(new ConsoleTraceListener());
             }
             else
             {

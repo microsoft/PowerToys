@@ -51,6 +51,10 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
 
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" />
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|ARM64'" />
+
   <ItemGroup>
     <None Remove="Images\Awake.ico" />
   </ItemGroup>
@@ -60,7 +64,6 @@
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
     <PackageReference Include="Microsoft.Windows.CsWinRT" />
-    <PackageReference Include="NLog" />
     <PackageReference Include="System.CommandLine" />
     <PackageReference Include="System.Reactive" />
     <PackageReference Include="System.Runtime.Caching" />
