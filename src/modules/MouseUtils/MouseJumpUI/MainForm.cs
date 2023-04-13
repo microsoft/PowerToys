@@ -60,10 +60,11 @@ internal partial class MainForm : Form
         if (mouseEventArgs.Button == MouseButtons.Left)
         {
             // plain click - move mouse pointer
+            var virtualScreen = ScreenHelper.GetVirtualScreen();
             var scaledLocation = MouseHelper.GetJumpLocation(
                 new PointInfo(mouseEventArgs.X, mouseEventArgs.Y),
                 new SizeInfo(this.Thumbnail.Size),
-                new RectangleInfo(SystemInformation.VirtualScreen));
+                virtualScreen);
             Logger.LogInfo($"scaled location = {scaledLocation}");
             MouseHelper.JumpCursor(scaledLocation);
 
@@ -112,7 +113,7 @@ internal partial class MainForm : Form
             .Index;
 
         var layoutConfig = new LayoutConfig(
-            virtualScreenBounds: new(SystemInformation.VirtualScreen),
+            virtualScreenBounds: ScreenHelper.GetVirtualScreen(),
             screens: screens.Select(item => item.Screen).ToList(),
             activatedLocation: activatedLocation,
             activatedScreenIndex: activatedScreenIndex,
