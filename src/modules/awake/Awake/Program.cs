@@ -210,7 +210,7 @@ namespace Awake
             _log.Info($"The value for --display-on is: {displayOn}");
             _log.Info($"The value for --time-limit is: {timeLimit}");
             _log.Info($"The value for --pid is: {pid}");
-            _log.Info($"The value for --expire is: {expireAt}");
+            _log.Info($"The value for --expire-at is: {expireAt}");
 
             if (usePtConfig)
             {
