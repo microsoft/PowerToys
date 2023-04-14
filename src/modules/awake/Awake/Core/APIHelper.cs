@@ -36,11 +36,9 @@ namespace Awake.Core
         private static CancellationTokenSource _tokenSource;
 
         private static Task? _runnerThread;
-        private static System.Timers.Timer _timedLoopTimer;
 
         static APIHelper()
         {
-            _timedLoopTimer = new System.Timers.Timer();
             _tokenSource = new CancellationTokenSource();
         }
 
@@ -113,16 +111,12 @@ namespace Awake.Core
             }
             catch (OperationCanceledException)
             {
-                Logger.LogInfo("Confirmed background thread cancellation when disabling explicit keep awake.");
+                Logger.LogInfo("Confirmed background thread cancellation when disabling keep awake.");
             }
 
+            _tokenSource.Dispose();
+
             _tokenSource = new CancellationTokenSource();
-            _tokenSource.Token.Register(() =>
-            {
-                // Reset the thread state because cancellation and clean up
-                // may take some time.
-                SetAwakeState(ExecutionState.ES_CONTINUOUS);
-            });
 
             Logger.LogInfo("Instantiating of new token source and thread token completed.");
         }
@@ -184,13 +178,15 @@ namespace Awake.Core
             // In case cancellation was already requested.
             _tokenSource.Token.ThrowIfCancellationRequested();
 
+            Logger.LogInfo($"State ready to be set in {Environment.CurrentManagedThreadId}");
+
             try
             {
                 success = SetAwakeStateBasedOnDisplaySetting(keepDisplayOn);
 
                 if (success)
                 {
-                    Logger.LogInfo($"Initiated expirable keep awake in background thread. Screen on: {keepDisplayOn}");
+                    Logger.LogInfo($"Initiated expirable keep awake in background thread {Environment.CurrentManagedThreadId}. Screen on: {keepDisplayOn}");
 
                     Observable.Timer(expireAt, Scheduler.CurrentThread).Subscribe(
                     _ =>
@@ -208,7 +204,7 @@ namespace Awake.Core
             catch (OperationCanceledException ex)
             {
                 // Task was clearly cancelled.
-                Logger.LogInfo($"Background thread termination. Message: {ex.Message}");
+                Logger.LogInfo($"Background thread {Environment.CurrentManagedThreadId} termination. Message: {ex.Message}");
             }
         }
 

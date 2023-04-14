@@ -256,9 +256,10 @@ namespace Awake
                             Logger.LogInfo($"Target date is not in the future, therefore there is nothing to wait for.");
                         }
                     }
-                    catch
+                    catch (Exception ex)
                     {
                         Logger.LogError($"Could not parse date string {expireAt} into a viable date.");
+                        Logger.LogError(ex.Message);
                     }
                 }
                 else
