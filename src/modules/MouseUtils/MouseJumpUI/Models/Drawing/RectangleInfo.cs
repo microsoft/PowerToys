@@ -70,7 +70,7 @@ public sealed class RectangleInfo
     public decimal Area => this.Width * this.Height;
 
     /// <remarks>
-    /// Adapted from https://github.comdotnet/runtime.
+    /// Adapted from https://github.com/dotnet/runtime
     /// See https://github.com/dotnet/runtime/blob/dfd618dc648ba9b11dd0f8034f78113d69f223cd/src/libraries/System.Drawing.Primitives/src/System/Drawing/Rectangle.cs
     /// </remarks>
     public bool Contains(RectangleInfo rect) =>
