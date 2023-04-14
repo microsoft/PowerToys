@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft Corporation
+// Copyright (c) Microsoft Corporation
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
@@ -53,7 +53,7 @@ namespace Peek.FilePreviewer.Previewers
 
         public Task<Size?> GetPreviewSizeAsync(CancellationToken cancellationToken)
         {
-            Size? size = new Size(820, 730);
+            Size? size = new Size(1640, 1460);
             return Task.FromResult(size);
         }
 
