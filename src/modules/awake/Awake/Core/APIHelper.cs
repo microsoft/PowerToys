@@ -95,12 +95,12 @@ namespace Awake.Core
 
         public static void CancelExistingThread()
         {
+            Logger.LogInfo($"Attempting to ensure that the thread is properly cleaned up...");
+
             _tokenSource.Cancel();
 
             try
             {
-                Logger.LogInfo("Attempting to ensure that the thread is properly cleaned up...");
-
                 if (_runnerThread != null && !_runnerThread.IsCanceled)
                 {
                     _runnerThread.Wait(_tokenSource.Token);
@@ -114,6 +114,12 @@ namespace Awake.Core
             }
 
             _tokenSource = new CancellationTokenSource();
+            _tokenSource.Token.Register(() =>
+            {
+                // Reset the thread state because cancellation and clean up
+                // may take some time.
+                SetAwakeState(EXECUTION_STATE.ES_CONTINUOUS);
+            });
 
             Logger.LogInfo("Instantiating of new token source and thread token completed.");
         }
@@ -181,12 +187,12 @@ namespace Awake.Core
 
                 if (success)
                 {
-                    Logger.LogInfo($"Initiated expirable keep awake in background thread: {PInvoke.GetCurrentThreadId()}. Screen on: {keepDisplayOn}");
+                    Logger.LogInfo($"Initiated expirable keep awake in background thread. Screen on: {keepDisplayOn}");
 
                     Observable.Timer(expireAt, Scheduler.CurrentThread).Subscribe(
                     _ =>
                     {
-                        Logger.LogInfo($"Completed expirable thread in {PInvoke.GetCurrentThreadId()}.");
+                        Logger.LogInfo($"Completed expirable thread.");
                         CancelExistingThread();
                     },
                     _tokenSource.Token);
@@ -199,7 +205,7 @@ namespace Awake.Core
             catch (OperationCanceledException ex)
             {
                 // Task was clearly cancelled.
-                Logger.LogInfo($"Background thread termination: {PInvoke.GetCurrentThreadId()}. Message: {ex.Message}");
+                Logger.LogInfo($"Background thread termination. Message: {ex.Message}");
             }
         }
 
@@ -214,7 +220,7 @@ namespace Awake.Core
 
                 if (success)
                 {
-                    Logger.LogInfo($"Initiated indefinite keep awake in background thread: {PInvoke.GetCurrentThreadId()}. Screen on: {keepDisplayOn}");
+                    Logger.LogInfo($"Initiated indefinite keep awake in background thread. Screen on: {keepDisplayOn}");
 
                     WaitHandle.WaitAny(new[] { _tokenSource.Token.WaitHandle });
                 }
@@ -226,7 +232,7 @@ namespace Awake.Core
             catch (OperationCanceledException ex)
             {
                 // Task was clearly cancelled.
-                Logger.LogInfo($"Background thread termination: {PInvoke.GetCurrentThreadId()}. Message: {ex.Message}");
+                Logger.LogInfo($"Background thread termination. Message: {ex.Message}");
             }
         }
 
@@ -270,12 +276,12 @@ namespace Awake.Core
 
                 if (success)
                 {
-                    Logger.LogInfo($"Initiated timed keep awake in background thread: {PInvoke.GetCurrentThreadId()}. Screen on: {keepDisplayOn}");
+                    Logger.LogInfo($"Initiated timed keep awake in background thread. Screen on: {keepDisplayOn}");
 
                     Observable.Timer(TimeSpan.FromSeconds(seconds), Scheduler.CurrentThread).Subscribe(
                    _ =>
                    {
-                       Logger.LogInfo($"Completed timed thread in {PInvoke.GetCurrentThreadId()}.");
+                       Logger.LogInfo($"Completed timed thread.");
                        CancelExistingThread();
                    },
                    _tokenSource.Token);

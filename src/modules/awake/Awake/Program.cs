@@ -259,6 +259,7 @@ namespace Awake
                             // converting the target date to seconds and then passing to SetupTimedKeepAwake
                             // because that way we're accounting for the user potentially changing their clock
                             // while Awake is running.
+                            Logger.LogInfo($"Operating in thread ID {Environment.CurrentManagedThreadId}.");
                             SetupExpirableKeepAwake(expirationDateTime, displayOn);
                         }
                         else
