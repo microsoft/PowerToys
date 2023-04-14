@@ -9,8 +9,8 @@ using System.Text.Json;
 using System.Threading;
 using System.Windows.Forms;
 using Awake.Core.Models;
+using Awake.Core.Native;
 using Microsoft.PowerToys.Settings.UI.Library;
-using Windows.Win32;
 
 #pragma warning disable CS8603 // Possible null reference return.
 
@@ -36,7 +36,7 @@ namespace Awake.Core
 
             switch (m.Msg)
             {
-                case (int)PInvoke.WM_COMMAND:
+                case (int)Constants.WM_COMMAND:
                     var targetCommandIndex = m.WParam.ToInt64() & 0xFFFF;
                     switch (targetCommandIndex)
                     {

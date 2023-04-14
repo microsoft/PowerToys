@@ -10,11 +10,9 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using Awake.Core.Models;
+using Awake.Core.Native;
 using ManagedCommon;
 using Microsoft.PowerToys.Settings.UI.Library;
-using Windows.Win32;
-using Windows.Win32.Foundation;
-using Windows.Win32.UI.WindowsAndMessaging;
 
 #pragma warning disable CS8602 // Dereference of a possibly null reference.
 
@@ -29,13 +27,14 @@ namespace Awake.Core
     /// </remarks>
     internal static class TrayHelper
     {
-        private static DestroyMenuSafeHandle TrayMenu { get; set; }
+        private static IntPtr _trayMenu;
+
+        private static IntPtr TrayMenu { get => _trayMenu; set => _trayMenu = value; }
 
         private static NotifyIcon TrayIcon { get; set; }
 
         static TrayHelper()
         {
-            TrayMenu = new DestroyMenuSafeHandle();
             TrayIcon = new NotifyIcon();
         }
 
@@ -78,12 +77,12 @@ namespace Awake.Core
         /// <param name="e">MouseEventArgs instance containing mouse click event information.</param>
         private static void TrayClickHandler(object? sender, MouseEventArgs e)
         {
-            HWND windowHandle = APIHelper.GetHiddenWindow();
+            IntPtr windowHandle = APIHelper.GetHiddenWindow();
 
-            if (windowHandle != HWND.Null)
+            if (windowHandle != IntPtr.Zero)
             {
-                PInvoke.SetForegroundWindow(windowHandle);
-                PInvoke.TrackPopupMenuEx(TrayMenu, 0, Cursor.Position.X, Cursor.Position.Y, windowHandle, null);
+                Bridge.SetForegroundWindow(windowHandle);
+                Bridge.TrackPopupMenuEx(TrayMenu, 0, Cursor.Position.X, Cursor.Position.Y, windowHandle, IntPtr.Zero);
             }
         }
 
@@ -99,18 +98,27 @@ namespace Awake.Core
 
         public static void SetTray(string text, bool keepDisplayOn, AwakeMode mode, Dictionary<string, int> trayTimeShortcuts, bool startedFromPowerToys)
         {
-            TrayMenu = new DestroyMenuSafeHandle(PInvoke.CreatePopupMenu());
+            if (TrayMenu != IntPtr.Zero)
+            {
+                var destructionStatus = Bridge.DestroyMenu(TrayMenu);
+                if (destructionStatus != true)
+                {
+                    Logger.LogError("Failed to destroy menu.");
+                }
+            }
 
-            if (!TrayMenu.IsInvalid)
+            TrayMenu = Bridge.CreatePopupMenu();
+
+            if (TrayMenu != IntPtr.Zero)
             {
                 if (!startedFromPowerToys)
                 {
                     // If Awake is started from PowerToys, the correct way to exit it is disabling it from Settings.
-                    PInvoke.InsertMenu(TrayMenu, 0, MENU_ITEM_FLAGS.MF_BYPOSITION | MENU_ITEM_FLAGS.MF_STRING, (uint)TrayCommands.TC_EXIT, "Exit");
-                    PInvoke.InsertMenu(TrayMenu, 0, MENU_ITEM_FLAGS.MF_BYPOSITION | MENU_ITEM_FLAGS.MF_SEPARATOR, 0, string.Empty);
+                    Bridge.InsertMenu(TrayMenu, 0, Constants.MF_BYPOSITION | Constants.MF_STRING, (uint)TrayCommands.TC_EXIT, "Exit");
+                    Bridge.InsertMenu(TrayMenu, 0, Constants.MF_BYPOSITION | Constants.MF_SEPARATOR, 0, string.Empty);
                 }
 
-                PInvoke.InsertMenu(TrayMenu, 0, MENU_ITEM_FLAGS.MF_BYPOSITION | MENU_ITEM_FLAGS.MF_STRING | (keepDisplayOn ? MENU_ITEM_FLAGS.MF_CHECKED : MENU_ITEM_FLAGS.MF_UNCHECKED) | (mode == AwakeMode.PASSIVE ? MENU_ITEM_FLAGS.MF_DISABLED : MENU_ITEM_FLAGS.MF_ENABLED), (uint)TrayCommands.TC_DISPLAY_SETTING, "Keep screen on");
+                Bridge.InsertMenu(TrayMenu, 0, Constants.MF_BYPOSITION | Constants.MF_STRING | (keepDisplayOn ? Constants.MF_CHECKED : Constants.MF_UNCHECKED) | (mode == AwakeMode.PASSIVE ? Constants.MF_DISABLED : Constants.MF_ENABLED), (uint)TrayCommands.TC_DISPLAY_SETTING, "Keep screen on");
             }
 
             // In case there are no tray shortcuts defined for the application default to a
@@ -120,18 +128,18 @@ namespace Awake.Core
                 trayTimeShortcuts.AddRange(APIHelper.GetDefaultTrayOptions());
             }
 
-            var awakeTimeMenu = new DestroyMenuSafeHandle(PInvoke.CreatePopupMenu(), false);
+            var awakeTimeMenu = Bridge.CreatePopupMenu();
             for (int i = 0; i < trayTimeShortcuts.Count; i++)
             {
-                PInvoke.InsertMenu(awakeTimeMenu, (uint)i, MENU_ITEM_FLAGS.MF_BYPOSITION | MENU_ITEM_FLAGS.MF_STRING, (uint)TrayCommands.TC_TIME + (uint)i, trayTimeShortcuts.ElementAt(i).Key);
+                Bridge.InsertMenu(awakeTimeMenu, (uint)i, Constants.MF_BYPOSITION | Constants.MF_STRING, (uint)TrayCommands.TC_TIME + (uint)i, trayTimeShortcuts.ElementAt(i).Key);
             }
 
-            PInvoke.InsertMenu(TrayMenu, 0, MENU_ITEM_FLAGS.MF_BYPOSITION | MENU_ITEM_FLAGS.MF_SEPARATOR, 0, string.Empty);
+            Bridge.InsertMenu(TrayMenu, 0, Constants.MF_BYPOSITION | Constants.MF_SEPARATOR, 0, string.Empty);
 
-            PInvoke.InsertMenu(TrayMenu, 0, MENU_ITEM_FLAGS.MF_BYPOSITION | MENU_ITEM_FLAGS.MF_STRING | (mode == AwakeMode.PASSIVE ? MENU_ITEM_FLAGS.MF_CHECKED : MENU_ITEM_FLAGS.MF_UNCHECKED), (uint)TrayCommands.TC_MODE_PASSIVE, "Off (keep using the selected power plan)");
-            PInvoke.InsertMenu(TrayMenu, 0, MENU_ITEM_FLAGS.MF_BYPOSITION | MENU_ITEM_FLAGS.MF_STRING | (mode == AwakeMode.INDEFINITE ? MENU_ITEM_FLAGS.MF_CHECKED : MENU_ITEM_FLAGS.MF_UNCHECKED), (uint)TrayCommands.TC_MODE_INDEFINITE, "Keep awake indefinitely");
-            PInvoke.InsertMenu(TrayMenu, 0, MENU_ITEM_FLAGS.MF_BYPOSITION | MENU_ITEM_FLAGS.MF_POPUP | (mode == AwakeMode.TIMED ? MENU_ITEM_FLAGS.MF_CHECKED : MENU_ITEM_FLAGS.MF_UNCHECKED), (uint)awakeTimeMenu.DangerousGetHandle(), "Keep awake on interval");
-            PInvoke.InsertMenu(TrayMenu, 0, MENU_ITEM_FLAGS.MF_BYPOSITION | MENU_ITEM_FLAGS.MF_STRING | MENU_ITEM_FLAGS.MF_DISABLED | (mode == AwakeMode.EXPIRABLE ? MENU_ITEM_FLAGS.MF_CHECKED : MENU_ITEM_FLAGS.MF_UNCHECKED), (uint)TrayCommands.TC_MODE_EXPIRABLE, "Keep awake until expiration date and time");
+            Bridge.InsertMenu(TrayMenu, 0, Constants.MF_BYPOSITION | Constants.MF_STRING | (mode == AwakeMode.PASSIVE ? Constants.MF_CHECKED : Constants.MF_UNCHECKED), (uint)TrayCommands.TC_MODE_PASSIVE, "Off (keep using the selected power plan)");
+            Bridge.InsertMenu(TrayMenu, 0, Constants.MF_BYPOSITION | Constants.MF_STRING | (mode == AwakeMode.INDEFINITE ? Constants.MF_CHECKED : Constants.MF_UNCHECKED), (uint)TrayCommands.TC_MODE_INDEFINITE, "Keep awake indefinitely");
+            Bridge.InsertMenu(TrayMenu, 0, Constants.MF_BYPOSITION | Constants.MF_POPUP | (mode == AwakeMode.TIMED ? Constants.MF_CHECKED : Constants.MF_UNCHECKED), (uint)awakeTimeMenu, "Keep awake on interval");
+            Bridge.InsertMenu(TrayMenu, 0, Constants.MF_BYPOSITION | Constants.MF_STRING | Constants.MF_DISABLED | (mode == AwakeMode.EXPIRABLE ? Constants.MF_CHECKED : Constants.MF_UNCHECKED), (uint)TrayCommands.TC_MODE_EXPIRABLE, "Keep awake until expiration date and time");
 
             TrayIcon.Text = text;
         }

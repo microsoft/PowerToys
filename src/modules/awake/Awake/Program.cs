@@ -17,13 +17,11 @@ using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Awake.Core;
+using Awake.Core.Models;
+using Awake.Core.Native;
 using interop;
 using ManagedCommon;
 using Microsoft.PowerToys.Settings.UI.Library;
-using Windows.Win32;
-using Windows.Win32.Foundation;
-using Windows.Win32.System.Console;
-using Windows.Win32.System.Power;
 
 #pragma warning disable CS8602 // Dereference of a possibly null reference.
 #pragma warning disable CS8603 // Possible null reference return.
@@ -49,8 +47,8 @@ namespace Awake
         public static Mutex LockMutex { get => _mutex; set => _mutex = value; }
 
 #pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
-        private static PHANDLER_ROUTINE _handler;
-        private static SYSTEM_POWER_CAPABILITIES _powerCapabilities;
+        private static ConsoleEventHandler _handler;
+        private static SystemPowerCapabilities _powerCapabilities;
 #pragma warning restore CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
 
         private static ManualResetEvent _exitSignal = new ManualResetEvent(false);
@@ -88,7 +86,7 @@ namespace Awake
 
             // To make it easier to diagnose future issues, let's get the
             // system power capabilities and aggregate them in the log.
-            PInvoke.GetPwrCapabilities(out _powerCapabilities);
+            Bridge.GetPwrCapabilities(out _powerCapabilities);
             Logger.LogInfo(JsonSerializer.Serialize(_powerCapabilities));
 
             Logger.LogInfo("Parsing parameters...");
@@ -98,11 +96,8 @@ namespace Awake
                     getDefaultValue: () => false,
                     description: $"Specifies whether {InternalConstants.AppName} will be using the PowerToys configuration file for managing the state.")
             {
-                Argument = new Argument<bool>(() => false)
-                {
-                    Arity = ArgumentArity.ZeroOrOne,
-                },
-                Required = false,
+                Arity = ArgumentArity.ZeroOrOne,
+                IsRequired = false,
             };
 
             Option<bool> displayOption = new(
@@ -110,11 +105,8 @@ namespace Awake
                     getDefaultValue: () => true,
                     description: "Determines whether the display should be kept awake.")
             {
-                Argument = new Argument<bool>(() => false)
-                {
-                    Arity = ArgumentArity.ZeroOrOne,
-                },
-                Required = false,
+                Arity = ArgumentArity.ZeroOrOne,
+                IsRequired = false,
             };
 
             Option<uint> timeOption = new(
@@ -122,11 +114,8 @@ namespace Awake
                     getDefaultValue: () => 0,
                     description: "Determines the interval, in seconds, during which the computer is kept awake.")
             {
-                Argument = new Argument<uint>(() => 0)
-                {
-                    Arity = ArgumentArity.ExactlyOne,
-                },
-                Required = false,
+                Arity = ArgumentArity.ExactlyOne,
+                IsRequired = false,
             };
 
             Option<int> pidOption = new(
@@ -134,11 +123,8 @@ namespace Awake
                     getDefaultValue: () => 0,
                     description: $"Bind the execution of {InternalConstants.AppName} to another process. When the process ends, the system will resume managing the current sleep/display mode.")
             {
-                Argument = new Argument<int>(() => 0)
-                {
-                    Arity = ArgumentArity.ZeroOrOne,
-                },
-                Required = false,
+                Arity = ArgumentArity.ZeroOrOne,
+                IsRequired = false,
             };
 
             Option<string> expireAtOption = new(
@@ -146,11 +132,8 @@ namespace Awake
                     getDefaultValue: () => string.Empty,
                     description: $"Determines the end date/time when {InternalConstants.AppName} will back off and let the system manage the current sleep/display mode.")
             {
-                Argument = new Argument<string>(() => string.Empty)
-                {
-                    Arity = ArgumentArity.ZeroOrOne,
-                },
-                Required = false,
+                Arity = ArgumentArity.ZeroOrOne,
+                IsRequired = false,
             };
 
             RootCommand? rootCommand = new()
@@ -164,14 +147,20 @@ namespace Awake
 
             rootCommand.Description = InternalConstants.AppName;
 
-            rootCommand.Handler = CommandHandler.Create<bool, bool, uint, int, string>(HandleCommandLineArguments);
+            rootCommand.SetHandler(
+                HandleCommandLineArguments,
+                configOption,
+                displayOption,
+                timeOption,
+                pidOption,
+                expireAtOption);
 
             Logger.LogInfo("Parameter setup complete. Proceeding to the rest of the app initiation...");
 
             return rootCommand.InvokeAsync(args).Result;
         }
 
-        private static BOOL ExitHandler(uint ctrlType)
+        private static bool ExitHandler(ControlType ctrlType)
         {
             Logger.LogInfo($"Exited through handler with control type: {ctrlType}");
             Exit("Exiting from the internal termination handler.", Environment.ExitCode, _exitSignal);
@@ -192,7 +181,7 @@ namespace Awake
                 Logger.LogInfo("No PID specified. Allocating console...");
                 APIHelper.AllocateConsole();
 
-                _handler += ExitHandler;
+                _handler += new ConsoleEventHandler(ExitHandler);
                 APIHelper.SetConsoleControlHandler(_handler, true);
 
                 Trace.Listeners.Add(new ConsoleTraceListener());
@@ -214,7 +203,7 @@ namespace Awake
                 // and instead watch for changes in the file.
                 try
                 {
-                    var eventHandle = new EventWaitHandle(false, EventResetMode.ManualReset, Constants.AwakeExitEvent());
+                    var eventHandle = new EventWaitHandle(false, EventResetMode.ManualReset, interop.Constants.AwakeExitEvent());
                     new Thread(() =>
                     {
                         if (WaitHandle.WaitAny(new WaitHandle[] { _exitSignal, eventHandle }) == 1)

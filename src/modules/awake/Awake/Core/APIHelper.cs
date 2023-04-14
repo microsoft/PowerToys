@@ -9,19 +9,19 @@ using System.IO;
 using System.Reactive.Concurrency;
 using System.Reactive.Linq;
 using System.Runtime.InteropServices;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using Awake.Core.Models;
+using Awake.Core.Native;
 using ManagedCommon;
 using Microsoft.PowerToys.Telemetry;
 using Microsoft.Win32;
-using Windows.Win32;
-using Windows.Win32.Foundation;
-using Windows.Win32.Storage.FileSystem;
-using Windows.Win32.System.Console;
-using Windows.Win32.System.Power;
 
 namespace Awake.Core
 {
+    public delegate bool ConsoleEventHandler(Models.ControlType ctrlType);
+
     /// <summary>
     /// Helper class that allows talking to Win32 APIs without having to rely on PInvoke in other parts
     /// of the codebase.
@@ -29,6 +29,9 @@ namespace Awake.Core
     public class APIHelper
     {
         private const string BuildRegistryLocation = @"SOFTWARE\Microsoft\Windows NT\CurrentVersion";
+        private const int StdOutputHandle = -11;
+        private const uint GenericWrite = 0x40000000;
+        private const uint GenericRead = 0x80000000;
 
         private static CancellationTokenSource _tokenSource;
 
@@ -41,21 +44,21 @@ namespace Awake.Core
             _tokenSource = new CancellationTokenSource();
         }
 
-        internal static void SetConsoleControlHandler(PHANDLER_ROUTINE handler, bool addHandler)
+        internal static void SetConsoleControlHandler(ConsoleEventHandler handler, bool addHandler)
         {
-            PInvoke.SetConsoleCtrlHandler(handler, addHandler);
+            Bridge.SetConsoleCtrlHandler(handler, addHandler);
         }
 
         public static void AllocateConsole()
         {
             Logger.LogDebug("Bootstrapping the console allocation routine.");
-            PInvoke.AllocConsole();
+            Bridge.AllocConsole();
             Logger.LogDebug($"Console allocation result: {Marshal.GetLastWin32Error()}");
 
-            var outputFilePointer = PInvoke.CreateFile("CONOUT$", FILE_ACCESS_FLAGS.FILE_GENERIC_READ | FILE_ACCESS_FLAGS.FILE_GENERIC_WRITE, FILE_SHARE_MODE.FILE_SHARE_WRITE, null, FILE_CREATION_DISPOSITION.OPEN_EXISTING, 0, null);
+            var outputFilePointer = Bridge.CreateFile("CONOUT$", GenericRead | GenericWrite, FileShare.Write, IntPtr.Zero, FileMode.OpenOrCreate, 0, IntPtr.Zero);
             Logger.LogDebug($"CONOUT creation result: {Marshal.GetLastWin32Error()}");
 
-            PInvoke.SetStdHandle(Windows.Win32.System.Console.STD_HANDLE.STD_OUTPUT_HANDLE, outputFilePointer);
+            Bridge.SetStdHandle(StdOutputHandle, outputFilePointer);
             Logger.LogDebug($"SetStdHandle result: {Marshal.GetLastWin32Error()}");
 
             Console.SetOut(new StreamWriter(Console.OpenStandardOutput(), Console.OutputEncoding) { AutoFlush = true });
@@ -68,11 +71,11 @@ namespace Awake.Core
         /// </summary>
         /// <param name="state">Single or multiple EXECUTION_STATE entries.</param>
         /// <returns>true if successful, false if failed</returns>
-        private static bool SetAwakeState(EXECUTION_STATE state)
+        private static bool SetAwakeState(ExecutionState state)
         {
             try
             {
-                var stateResult = PInvoke.SetThreadExecutionState(state);
+                var stateResult = Bridge.SetThreadExecutionState(state);
                 return stateResult != 0;
             }
             catch
@@ -85,11 +88,11 @@ namespace Awake.Core
         {
             if (keepDisplayOn)
             {
-                return SetAwakeState(EXECUTION_STATE.ES_SYSTEM_REQUIRED | EXECUTION_STATE.ES_DISPLAY_REQUIRED | EXECUTION_STATE.ES_CONTINUOUS);
+                return SetAwakeState(ExecutionState.ES_SYSTEM_REQUIRED | ExecutionState.ES_DISPLAY_REQUIRED | ExecutionState.ES_CONTINUOUS);
             }
             else
             {
-                return SetAwakeState(EXECUTION_STATE.ES_SYSTEM_REQUIRED | EXECUTION_STATE.ES_CONTINUOUS);
+                return SetAwakeState(ExecutionState.ES_SYSTEM_REQUIRED | ExecutionState.ES_CONTINUOUS);
             }
         }
 
@@ -118,7 +121,7 @@ namespace Awake.Core
             {
                 // Reset the thread state because cancellation and clean up
                 // may take some time.
-                SetAwakeState(EXECUTION_STATE.ES_CONTINUOUS);
+                SetAwakeState(ExecutionState.ES_CONTINUOUS);
             });
 
             Logger.LogInfo("Instantiating of new token source and thread token completed.");
@@ -240,22 +243,22 @@ namespace Awake.Core
         {
             SetNoKeepAwake();
 
-            HWND windowHandle = GetHiddenWindow();
+            IntPtr windowHandle = GetHiddenWindow();
 
-            if (windowHandle != HWND.Null)
+            if (windowHandle != IntPtr.Zero)
             {
-                PInvoke.SendMessage(windowHandle, PInvoke.WM_CLOSE, 0, 0);
+                Bridge.SendMessage(windowHandle, Constants.WM_CLOSE, 0, 0);
             }
 
             if (force)
             {
-                PInvoke.PostQuitMessage(0);
+                Bridge.PostQuitMessage(0);
             }
 
             try
             {
                 exitSignal?.Set();
-                PInvoke.DestroyWindow(windowHandle);
+                Bridge.DestroyWindow(windowHandle);
             }
             catch (Exception ex)
             {
@@ -294,7 +297,7 @@ namespace Awake.Core
             catch (OperationCanceledException ex)
             {
                 // Task was clearly cancelled.
-                Logger.LogInfo($"Background thread termination: {PInvoke.GetCurrentThreadId()}. Message: {ex.Message}");
+                Logger.LogInfo($"Background thread termination. Message: {ex.Message}");
             }
         }
 
@@ -325,19 +328,17 @@ namespace Awake.Core
         }
 
         [SuppressMessage("Performance", "CA1806:Do not ignore method results", Justification = "Function returns DWORD value that identifies the current thread, but we do not need it.")]
-        internal static IEnumerable<HWND> EnumerateWindowsForProcess(int processId)
+        internal static IEnumerable<IntPtr> EnumerateWindowsForProcess(int processId)
         {
-            var handles = new List<HWND>();
-            var hCurrentWnd = HWND.Null;
+            var handles = new List<IntPtr>();
+            var hCurrentWnd = IntPtr.Zero;
 
             do
             {
-                hCurrentWnd = PInvoke.FindWindowEx(HWND.Null, hCurrentWnd, null as string, null);
+                hCurrentWnd = Bridge.FindWindowEx(IntPtr.Zero, hCurrentWnd, null as string, null);
                 uint targetProcessId = 0;
-                unsafe
-                {
-                    PInvoke.GetWindowThreadProcessId(hCurrentWnd, &targetProcessId);
-                }
+
+                Bridge.GetWindowThreadProcessId(hCurrentWnd, out targetProcessId);
 
                 if (targetProcessId == processId)
                 {
@@ -350,30 +351,23 @@ namespace Awake.Core
         }
 
         [SuppressMessage("Globalization", "CA1305:Specify IFormatProvider", Justification = "In this context, the string is only converted to a hex value.")]
-        internal static HWND GetHiddenWindow()
+        internal static IntPtr GetHiddenWindow()
         {
-            IEnumerable<HWND> windowHandles = EnumerateWindowsForProcess(Environment.ProcessId);
+            IEnumerable<IntPtr> windowHandles = EnumerateWindowsForProcess(Environment.ProcessId);
             var domain = AppDomain.CurrentDomain.GetHashCode().ToString("x");
             string targetClass = $"{InternalConstants.TrayWindowId}{domain}";
 
-            unsafe
+            foreach (var handle in windowHandles)
             {
-                var classNameLen = 256;
-                Span<char> className = stackalloc char[classNameLen];
-                foreach (var handle in windowHandles)
+                StringBuilder className = new(256);
+                int classQueryResult = Bridge.GetClassName(handle, className, className.Capacity);
+                if (classQueryResult != 0 && className.ToString().StartsWith(targetClass, StringComparison.InvariantCultureIgnoreCase))
                 {
-                    fixed (char* ptr = className)
-                    {
-                        int classQueryResult = PInvoke.GetClassName(handle, ptr, classNameLen);
-                        if (classQueryResult != 0 && className.ToString().StartsWith(targetClass, StringComparison.InvariantCultureIgnoreCase))
-                        {
-                            return handle;
-                        }
-                    }
+                    return handle;
                 }
             }
 
-            return HWND.Null;
+            return IntPtr.Zero;
         }
 
         public static Dictionary<string, int> GetDefaultTrayOptions()
