@@ -14,12 +14,13 @@
         HorizontalAlignment="Stretch"
         VerticalAlignment="Stretch">
         <Grid.ColumnDefinitions>
-            <ColumnDefinition x:Name="FileInfo" Width="Auto" />
+            <ColumnDefinition x:Name="FileInfo" Width="*" />
         </Grid.ColumnDefinitions>
 
-        <TextBlock
-                FontSize="14"
-                FontWeight="Normal"
-                Text="{x:Bind FileContent, Mode=OneWay}" />
+        <ScrollViewer>
+            <TextBlock
+                Text="{x:Bind FileContent, Mode=OneWay}"
+                TextWrapping="WrapWholeWords" />
+        </ScrollViewer>
     </Grid>
 </UserControl>
