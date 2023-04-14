@@ -60,6 +60,10 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 _svgRenderIsEnabled = Settings.Properties.EnableSvgPreview;
             }
 
+            _svgBackgroundColorMode = Settings.Properties.SvgBackgroundColorMode.Value;
+            _svgBackgroundSolidColor = Settings.Properties.SvgBackgroundSolidColor.Value;
+            _svgBackgroundCheckeredShade = Settings.Properties.SvgBackgroundCheckeredShade.Value;
+
             _svgThumbnailEnabledGpoRuleConfiguration = GPOWrapper.GetConfiguredSvgThumbnailsEnabledValue();
             if (_svgThumbnailEnabledGpoRuleConfiguration == GpoRuleConfigured.Disabled || _svgThumbnailEnabledGpoRuleConfiguration == GpoRuleConfigured.Enabled)
             {
@@ -166,6 +170,9 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         private GpoRuleConfigured _svgRenderEnabledGpoRuleConfiguration;
         private bool _svgRenderEnabledStateIsGPOConfigured;
         private bool _svgRenderIsEnabled;
+        private int _svgBackgroundColorMode;
+        private string _svgBackgroundSolidColor;
+        private int _svgBackgroundCheckeredShade;
 
         private GpoRuleConfigured _mdRenderEnabledGpoRuleConfiguration;
         private bool _mdRenderEnabledStateIsGPOConfigured;
@@ -222,6 +229,78 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 {
                     _svgRenderIsEnabled = value;
                     Settings.Properties.EnableSvgPreview = value;
+                    RaisePropertyChanged();
+                }
+            }
+        }
+
+        public int SVGRenderBackgroundColorMode
+        {
+            get
+            {
+                return _svgBackgroundColorMode;
+            }
+
+            set
+            {
+                if (value != _svgBackgroundColorMode)
+                {
+                    _svgBackgroundColorMode = value;
+                    Settings.Properties.SvgBackgroundColorMode.Value = value;
+                    RaisePropertyChanged();
+                    RaisePropertyChanged(nameof(IsSvgBackgroundColorVisible));
+                    RaisePropertyChanged(nameof(IsSvgCheckeredShadeVisible));
+                }
+            }
+        }
+
+        public bool IsSvgBackgroundColorVisible
+        {
+            get
+            {
+                return SVGRenderBackgroundColorMode == 1;
+            }
+        }
+
+        public string SVGRenderBackgroundSolidColor
+        {
+            get
+            {
+                return _svgBackgroundSolidColor;
+            }
+
+            set
+            {
+                if (value != _svgBackgroundSolidColor)
+                {
+                    _svgBackgroundSolidColor = value;
+                    Settings.Properties.SvgBackgroundSolidColor = value;
+                    RaisePropertyChanged();
+                }
+            }
+        }
+
+        public bool IsSvgCheckeredShadeVisible
+        {
+            get
+            {
+                return SVGRenderBackgroundColorMode == 2;
+            }
+        }
+
+        public int SVGRenderBackgroundCheckeredShade
+        {
+            get
+            {
+                return _svgBackgroundCheckeredShade;
+            }
+
+            set
+            {
+                if (value != _svgBackgroundCheckeredShade)
+                {
+                    _svgBackgroundCheckeredShade = value;
+                    Settings.Properties.SvgBackgroundCheckeredShade.Value = value;
                     RaisePropertyChanged();
                 }
             }

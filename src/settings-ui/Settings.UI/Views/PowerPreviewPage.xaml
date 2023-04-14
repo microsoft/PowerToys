@@ -22,14 +22,39 @@
                         IsOpen="True"
                         IsTabStop="True"
                         Severity="Warning" />
-                    <labs:SettingsCard
+                    <labs:SettingsExpander
                         x:Uid="FileExplorerPreview_ToggleSwitch_Preview_SVG"
                         HeaderIcon="{ui:FontIcon FontFamily={StaticResource SymbolThemeFontFamily}, Glyph=&#xE91B;}"
                         IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsSVGRenderEnabledGpoConfigured, Converter={StaticResource BoolNegationConverter}}">
                         <ToggleSwitch
                             x:Uid="ToggleSwitch"
                             IsOn="{x:Bind Mode=TwoWay, Path=ViewModel.SVGRenderIsEnabled}" />
-                    </labs:SettingsCard>
+                        <labs:SettingsExpander.Items>
+                            <labs:SettingsCard x:Uid="FileExplorerPreview_Preview_SVG_Color_Mode">
+                                <ComboBox MinWidth="{StaticResource SettingActionControlMinWidth}" SelectedIndex="{x:Bind Path=ViewModel.SVGRenderBackgroundColorMode, Mode=TwoWay}"
+                                          IsEnabled="{x:Bind ViewModel.SVGRenderIsEnabled, Mode=OneWay}">
+                                    <ComboBoxItem x:Uid="FileExplorerPreview_Preview_SVG_Color_Mode_Default" />
+                                    <ComboBoxItem x:Uid="FileExplorerPreview_Preview_SVG_Color_Solid_Color" />
+                                    <ComboBoxItem x:Uid="FileExplorerPreview_Preview_SVG_Checkered_Shade" />
+                                </ComboBox>
+                            </labs:SettingsCard>
+                            <labs:SettingsCard x:Uid="FileExplorerPreview_Preview_SVG_Background_Color"
+                                               Visibility="{x:Bind ViewModel.IsSvgBackgroundColorVisible, Converter={StaticResource BoolToVisibilityConverter}, Mode=OneWay}">
+                                <controls:ColorPickerButton
+                                    IsEnabled="{x:Bind ViewModel.SVGRenderIsEnabled, Mode=OneWay}"
+                                    SelectedColor="{x:Bind Path=ViewModel.SVGRenderBackgroundSolidColor, Mode=TwoWay}" />
+                            </labs:SettingsCard>
+                            <labs:SettingsCard x:Uid="FileExplorerPreview_Preview_SVG_Checkered_Shade_Mode"
+                                               Visibility="{x:Bind ViewModel.IsSvgCheckeredShadeVisible, Converter={StaticResource BoolToVisibilityConverter}, Mode=OneWay}">
+                                <ComboBox MinWidth="{StaticResource SettingActionControlMinWidth}" SelectedIndex="{x:Bind Path=ViewModel.SVGRenderBackgroundCheckeredShade, Mode=TwoWay}"
+                                          IsEnabled="{x:Bind ViewModel.SVGRenderIsEnabled, Mode=OneWay}">
+                                    <ComboBoxItem x:Uid="FileExplorerPreview_Preview_SVG_Checkered_Shade_1" />
+                                    <ComboBoxItem x:Uid="FileExplorerPreview_Preview_SVG_Checkered_Shade_2" />
+                                    <ComboBoxItem x:Uid="FileExplorerPreview_Preview_SVG_Checkered_Shade_3" />
+                                </ComboBox>
+                            </labs:SettingsCard>
+                        </labs:SettingsExpander.Items>
+                    </labs:SettingsExpander>
 
                     <InfoBar
                         x:Uid="GPO_IsSettingForced"

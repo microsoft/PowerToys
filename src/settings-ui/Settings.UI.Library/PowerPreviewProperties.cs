@@ -14,6 +14,9 @@ namespace Microsoft.PowerToys.Settings.UI.Library
     {
         public const string DefaultStlThumbnailColor = "#FFC924";
         public const int DefaultMonacoMaxFileSize = 50;
+        public const int DefaultSvgBackgroundColorMode = 0;
+        public const string DefaultSvgBackgroundSolidColor = "#FFFFFF";
+        public const int DefaultSvgBackgroundCheckeredShade = 0;
 
         private bool enableSvgPreview = true;
 
@@ -31,6 +34,15 @@ namespace Microsoft.PowerToys.Settings.UI.Library
                 }
             }
         }
+
+        [JsonPropertyName("svg-previewer-background-color-mode")]
+        public IntProperty SvgBackgroundColorMode { get; set; }
+
+        [JsonPropertyName("svg-previewer-background-solid-color")]
+        public StringProperty SvgBackgroundSolidColor { get; set; }
+
+        [JsonPropertyName("svg-previewer-background-checkered-shade")]
+        public IntProperty SvgBackgroundCheckeredShade { get; set; }
 
         private bool enableSvgThumbnail = true;
 
@@ -210,6 +222,9 @@ namespace Microsoft.PowerToys.Settings.UI.Library
 
         public PowerPreviewProperties()
         {
+            SvgBackgroundColorMode = new IntProperty(DefaultSvgBackgroundColorMode);
+            SvgBackgroundSolidColor = new StringProperty(DefaultSvgBackgroundSolidColor);
+            SvgBackgroundCheckeredShade = new IntProperty(DefaultSvgBackgroundCheckeredShade);
             StlThumbnailColor = new StringProperty(DefaultStlThumbnailColor);
             MonacoPreviewMaxFileSize = new IntProperty(DefaultMonacoMaxFileSize);
         }
