@@ -153,6 +153,9 @@
   <data name="NameColumn.Header" xml:space="preserve">
     <value>Name</value>
   </data>
+  <data name="NoNodesFoundInFile" xml:space="preserve">
+    <value>No valid Keys were found</value>
+  </data>
   <data name="OkButtonText" xml:space="preserve">
     <value>OK</value>
   </data>
@@ -194,6 +197,9 @@
   </data>
   <data name="ToolTipDeletedValue" xml:space="preserve">
     <value>Value will be deleted</value>
+  </data>
+  <data name="ToolTipErrorKey" xml:space="preserve">
+    <value>Key couldn't be parsed</value>
   </data>
   <data name="ToolTipErrorValue" xml:space="preserve">
     <value>Value has a syntax error</value>

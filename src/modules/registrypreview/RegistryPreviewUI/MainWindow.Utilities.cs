@@ -234,18 +234,24 @@ namespace RegistryPreview
                     // remove the - as we won't need it but it will get special treatment in the UI
                     registryLine = registryLine.Remove(1, 1);
 
+                    string imageName = DELETEDKEYIMAGE;
+                    CheckKeyLineForBrackets(ref registryLine, ref imageName);
+
                     // this is a key, so remove the first [ and last ]
                     registryLine = StripFirstAndLast(registryLine);
 
                     // do not track the result of this node, since it should have no children
-                    AddTextToTree(registryLine, DELETEDKEYIMAGE);
+                    AddTextToTree(registryLine, imageName);
                 }
                 else if (registryLine.StartsWith("[", StringComparison.InvariantCulture))
                 {
+                    string imageName = KEYIMAGE;
+                    CheckKeyLineForBrackets(ref registryLine, ref imageName);
+
                     // this is a key, so remove the first [ and last ]
                     registryLine = StripFirstAndLast(registryLine);
 
-                    treeViewNode = AddTextToTree(registryLine, KEYIMAGE);
+                    treeViewNode = AddTextToTree(registryLine, imageName);
                 }
                 else if (registryLine.StartsWith("\"", StringComparison.InvariantCulture) && registryLine.EndsWith("=-", StringComparison.InvariantCulture))
                 {
@@ -374,7 +380,9 @@ namespace RegistryPreview
                     // check to see if anything got parsed!
                     if (treeView.RootNodes.Count <= 0)
                     {
-                        ShowMessageBox(APPNAME, App.AppFilename + resourceLoader.GetString("InvalidRegistryFile"), resourceLoader.GetString("OkButtonText"));
+                        AddTextToTree(resourceLoader.GetString("NoNodesFoundInFile"), ERRORIMAGE);
+
+                        // ShowMessageBox(APPNAME, App.AppFilename + resourceLoader.GetString("InvalidRegistryFile"), resourceLoader.GetString("OkButtonText"));
                     }
 
                     ChangeCursor(gridPreview, false);
@@ -845,6 +853,9 @@ namespace RegistryPreview
                 case KEYIMAGE:
                     value = resourceLoader.GetString("ToolTipAddedKey");
                     break;
+                case ERRORIMAGE:
+                    value = resourceLoader.GetString("ToolTipErrorKey");
+                    break;
             }
 
             return value;
@@ -875,6 +886,26 @@ namespace RegistryPreview
             }
 
             registryValue.ToolTipText = value;
+        }
+
+        private void CheckKeyLineForBrackets(ref string registryLine, ref string imageName)
+        {
+            // following the current behavior of the registry editor, find the last ] and treat everything else as ignorable
+            int lastBracket = registryLine.LastIndexOf(']');
+            if (lastBracket == -1)
+            {
+                // since we don't have a last bracket yet, add an extra space and continue processing
+                registryLine += " ";
+                imageName = ERRORIMAGE;
+            }
+            else
+            {
+                // having found the last ] and there is text after it, drop the rest of the string on the floor
+                if (lastBracket < registryLine.Length - 1)
+                {
+                    registryLine = registryLine.Substring(0, lastBracket + 1);
+                }
+            }
         }
     }
 }
