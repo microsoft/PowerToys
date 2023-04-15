@@ -888,6 +888,9 @@ namespace RegistryPreview
             registryValue.ToolTipText = value;
         }
 
+        /// <summary>
+        /// Checks a Key line for the closing bracket and treat it as an error if it cannot be found
+        /// </summary>
         private void CheckKeyLineForBrackets(ref string registryLine, ref string imageName)
         {
             // following the current behavior of the registry editor, find the last ] and treat everything else as ignorable
