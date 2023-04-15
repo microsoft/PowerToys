@@ -168,6 +168,9 @@
   <data name="RegistryButton.Label" xml:space="preserve">
     <value>Open Registry Editor...</value>
   </data>
+  <data name="RegistryJumpToKeyButton.Label" xml:space="preserve">
+    <value>Open Key...</value>
+  </data>
   <data name="SaveAsButton.Label" xml:space="preserve">
     <value>Save file as...</value>
   </data>

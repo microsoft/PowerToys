@@ -153,6 +153,9 @@ namespace RegistryPreview
                 }
             }
 
+            // Update the toolbar button for the trees
+            registryJumpToKeyButton.IsEnabled = CheckTreeForValidKey();
+
             // enable the UI
             ChangeCursor(gridPreview, false);
         }
@@ -461,6 +464,9 @@ namespace RegistryPreview
             refreshButton.IsEnabled = enableRefresh;
             editButton.IsEnabled = enableEdit;
             writeButton.IsEnabled = enableWrite;
+
+            // Now check the tree and see if anything is in there
+            registryJumpToKeyButton.IsEnabled = CheckTreeForValidKey();
         }
 
         /// <summary>
@@ -875,6 +881,26 @@ namespace RegistryPreview
             }
 
             registryValue.ToolTipText = value;
+        }
+
+        /// <summary>
+        /// Turns the Open Key button in the commandbar on/off, depending on if a key is selected
+        /// </summary>
+        private bool CheckTreeForValidKey()
+        {
+            if (treeView == null)
+            {
+                return false;
+            }
+
+            // See if a key is available
+            TreeViewNode treeViewNode = treeView.SelectedNode;
+            if (treeViewNode != null && ((RegistryKey)treeViewNode.Content).Image != ERRORIMAGE)
+            {
+                return true;
+            }
+
+            return false;
         }
     }
 }

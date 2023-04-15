@@ -23,6 +23,7 @@ namespace RegistryPreview
         private const string APPNAME = "Registry Preview";
         private const string KEYIMAGE = "ms-appx:///Assets/folder32.png";
         private const string DELETEDKEYIMAGE = "ms-appx:///Assets/deleted-folder32.png";
+        private const string ERRORIMAGE = "ms-appx:///Assets/error32.png";
 
         // private members
         private Microsoft.UI.Windowing.AppWindow appWindow;

@@ -4,9 +4,7 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:controls="using:CommunityToolkit.WinUI.UI.Controls"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-    xmlns:local="using:RegistryPreview"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    xmlns:ui="using:CommunityToolkit.WinUI.UI"
     xmlns:winuiex="using:WinUIEx"
     Closed="Window_Closed"
     mc:Ignorable="d">
@@ -73,6 +71,7 @@
                         <KeyboardAccelerator Key="O" Modifiers="Control" />
                     </AppBarButton.KeyboardAccelerators>
                 </AppBarButton>
+                <AppBarSeparator />
                 <AppBarButton
                     x:Name="saveButton"
                     x:Uid="SaveButton"
@@ -127,6 +126,7 @@
                         <KeyboardAccelerator Key="F5" />
                     </AppBarButton.KeyboardAccelerators>
                 </AppBarButton>
+                <AppBarSeparator />
                 <AppBarButton
                     x:Name="writeButton"
                     x:Uid="WriteButton"
@@ -140,6 +140,7 @@
                         <KeyboardAccelerator Key="W" Modifiers="Control" />
                     </AppBarButton.KeyboardAccelerators>
                 </AppBarButton>
+                <AppBarSeparator />
                 <AppBarButton
                     x:Name="registryButton"
                     x:Uid="RegistryButton"
@@ -151,6 +152,20 @@
                     </AppBarButton.Icon>
                     <AppBarButton.KeyboardAccelerators>
                         <KeyboardAccelerator Key="R" Modifiers="Control" />
+                    </AppBarButton.KeyboardAccelerators>
+                </AppBarButton>
+                <AppBarButton
+                    x:Name="registryJumpToKeyButton"
+                    x:Uid="RegistryJumpToKeyButton"
+                    HorizontalAlignment="Left"
+                    Click="RegistryJumpToKeyButton_Click"
+                    IsTabStop="False"
+                    IsEnabled="True">
+                    <AppBarButton.Icon>
+                        <FontIcon FontFamily="{StaticResource SymbolThemeFontFamily}" Glyph="&#xe78b;"/>
+                    </AppBarButton.Icon>
+                    <AppBarButton.KeyboardAccelerators>
+                        <KeyboardAccelerator Key="R" Modifiers="Control,Shift" />
                     </AppBarButton.KeyboardAccelerators>
                 </AppBarButton>
             </CommandBar>
