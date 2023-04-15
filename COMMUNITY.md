@@ -93,6 +93,10 @@ PowerToys Awake is a tool to keep your computer awake.
 
 Niels has helped drive large sums of our update toward a new [consistent and modern UX](https://github.com/microsoft/PowerToys/issues/891). This includes the [launcher work](https://github.com/microsoft/PowerToys/issues/44), color picker UX update and [icon design](https://github.com/microsoft/PowerToys/issues/1118).
 
+### [@randyrants](https://github.com/randyrants) - [Randy Santossio](https://www.randyrants.com)
+
+Randy contributed Registry Preview and some very early conversations about keyboard remapping.
+
 ### [@oldnewthing](https://github.com/oldnewthing) - Raymond Chen
 
 Find My Mouse is based on Raymond Chen's SuperSonar.
