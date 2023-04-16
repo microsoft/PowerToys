@@ -327,7 +327,7 @@ namespace RegistryPreview
                         value = value.Replace("hex(7):", string.Empty);
                     }
 
-                    // Parse for the case where a \ is added immediately after hex delare
+                    // Parse for the case where a \ is added immediately after hex is declared
                     switch (registryValue.Type)
                     {
                         case "REG_QWORD":
