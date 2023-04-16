@@ -884,7 +884,7 @@ namespace RegistryPreview
         }
 
         /// <summary>
-        /// Turns the Open Key button in the commandbar on/off, depending on if a key is selected
+        /// Turns the Open Key button in the command bar on/off, depending on if a key is selected
         /// </summary>
         private bool CheckTreeForValidKey()
         {
