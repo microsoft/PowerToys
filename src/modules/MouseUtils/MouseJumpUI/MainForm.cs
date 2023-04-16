@@ -9,6 +9,7 @@ using System.Drawing.Imaging;
 using System.Linq;
 using System.Windows.Forms;
 using ManagedCommon;
+using Microsoft.PowerToys.Settings.UI.Library;
 using MouseJumpUI.Helpers;
 using MouseJumpUI.Models.Drawing;
 using MouseJumpUI.Models.Layout;
@@ -18,10 +19,16 @@ namespace MouseJumpUI;
 
 internal partial class MainForm : Form
 {
-    public MainForm()
+    public MainForm(MouseJumpSettings settings)
     {
         this.InitializeComponent();
+        this.Settings = settings ?? throw new ArgumentNullException(nameof(settings));
         this.ShowThumbnail();
+    }
+
+    public MouseJumpSettings Settings
+    {
+        get;
     }
 
     private void MainForm_Load(object sender, EventArgs e)
@@ -116,7 +123,9 @@ internal partial class MainForm : Form
             activatedLocation: activatedLocation,
             activatedScreenIndex: activatedScreenIndex,
             activatedScreenNumber: activatedScreenIndex + 1,
-            maximumFormSize: new(1600, 1200),
+            maximumFormSize: new(
+                form.Settings.Properties.ThumbnailSize.Width,
+                form.Settings.Properties.ThumbnailSize.Height),
             formPadding: new(
                 form.panel1.Padding.Left,
                 form.panel1.Padding.Top,
