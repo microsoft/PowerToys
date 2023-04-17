@@ -296,7 +296,16 @@ namespace RegistryPreview
                     // Create a new listview item that will be used to display the value
                     registryValue = new RegistryValue(name, "REG_SZ", string.Empty);
 
-                    // if the first and last character is a " then this is a string value; get rid of the first and last "
+                    // if the first character is a " then this is a string value, so find the last most " which will avoid comments
+                    if (value.StartsWith("\"", StringComparison.InvariantCulture))
+                    {
+                        int last = value.LastIndexOf("\"", StringComparison.InvariantCulture);
+                        if (last >= 0)
+                        {
+                            value = value.Substring(0, last + 1);
+                        }
+                    }
+
                     if (value.StartsWith("\"", StringComparison.InvariantCulture) && value.EndsWith("\"", StringComparison.InvariantCulture))
                     {
                         value = StripFirstAndLast(value);
@@ -332,6 +341,32 @@ namespace RegistryPreview
                         registryValue.Type = "REG_MULTI_SZ";
                         value = value.Replace("hex(7):", string.Empty);
                     }
+                    else if (value.StartsWith("hex(0):", StringComparison.InvariantCultureIgnoreCase))
+                    {
+                        registryValue.Type = "REG_NONE";
+                        value = value.Replace("hex(0):", string.Empty);
+                    }
+
+                    // special casing for various key types
+                    switch (registryValue.Type)
+                    {
+                        case "REG_SZ":
+                        case "ERROR":
+
+                            // no special handling for these two
+                            break;
+                        default:
+                            // check to see if a continuation marker is the first character
+                            if (value == @"\")
+                            {
+                                // pad the value, so the parsing below is triggered
+                                value = @",\";
+                            }
+
+                            value = ScanAndRemoveComments(value);
+
+                            break;
+                    }
 
                     // If the end of a decimal line ends in a \ then you have to keep
                     // reading the block as a single value!
@@ -346,6 +381,7 @@ namespace RegistryPreview
                         }
 
                         registryLine = registryLines[index];
+                        registryLine = ScanAndRemoveComments(registryLine);
                         registryLine = registryLine.TrimStart();
                         value += registryLine;
                     }
@@ -353,10 +389,25 @@ namespace RegistryPreview
                     // Clean out any escaped characters in the value, only for the preview
                     value = StripEscapedCharacters(value);
 
-                    // update the ListViewItem with this information
-                    if (registryValue.Type != "ERROR")
+                    // update the ListViewItem with the loaded value, based off REG value type
+                    switch (registryValue.Type)
                     {
-                        registryValue.Value = value;
+                        case "ERROR":
+                            // do nothing
+                            break;
+                        case "REG_BINARY":
+                        case "REG_NONE":
+                            if (value.Length <= 0)
+                            {
+                                value = resourceLoader.GetString("ZeroLength");
+                            }
+
+                            registryValue.Value = value;
+
+                            break;
+                        default:
+                            registryValue.Value = value;
+                            break;
                     }
 
                     // update the ToolTip
@@ -909,6 +960,19 @@ namespace RegistryPreview
                     registryLine = registryLine.Substring(0, lastBracket + 1);
                 }
             }
+        /// Takes a binary registry value, sees if it has a ; and dumps the rest of the line - this does not work for REG_SZ values
+        /// </summary>
+        private string ScanAndRemoveComments(string value)
+        {
+            // scan for comments and remove them
+            int indexOf = value.IndexOf(";", StringComparison.InvariantCulture);
+            if (indexOf > -1)
+            {
+                // presume that there is nothing following the start of the comment
+                value = value.Remove(indexOf, value.Length - indexOf);
+            }
+
+            return value;
         }
     }
 }

@@ -237,4 +237,7 @@
   <data name="YesNoCancelDialogTitle" xml:space="preserve">
     <value>Registry Preview</value>
   </data>
+  <data name="ZeroLength" xml:space="preserve">
+    <value>(zero-length binary value)</value>
+  </data>
 </root>
