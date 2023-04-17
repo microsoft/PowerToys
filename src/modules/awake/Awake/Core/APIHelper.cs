@@ -119,11 +119,9 @@ namespace Awake.Core
 
             // Next, make sure that any existing background threads are terminated.
             _tokenSource.Cancel();
-
             _tokenSource.Dispose();
 
             _tokenSource = new CancellationTokenSource();
-
             Logger.LogInfo("Instantiating of new token source and thread token completed.");
         }
 
@@ -151,10 +149,11 @@ namespace Awake.Core
 
             if (expireAt > DateTime.Now && expireAt != null)
             {
+                Logger.LogInfo($"Starting expirable log for {expireAt}");
                 _stateQueue.Add(ComputeAwakeState(keepDisplayOn));
 
                 Observable.Timer(expireAt).Subscribe(
-                t =>
+                _ =>
                 {
                     Logger.LogInfo($"Completed expirable keep-awake.");
                     CancelExistingThread();
@@ -175,9 +174,9 @@ namespace Awake.Core
 
             CancelExistingThread();
 
-            _stateQueue.Add(ComputeAwakeState(keepDisplayOn));
+            Logger.LogInfo($"Timed keep awake started for {seconds} seconds.");
 
-            Logger.LogInfo($"Initiated timed keep awake in background thread. Screen on: {keepDisplayOn}");
+            _stateQueue.Add(ComputeAwakeState(keepDisplayOn));
 
             Observable.Timer(TimeSpan.FromSeconds(seconds)).Subscribe(
             _ =>
@@ -250,9 +249,7 @@ namespace Awake.Core
             do
             {
                 hCurrentWnd = Bridge.FindWindowEx(IntPtr.Zero, hCurrentWnd, null as string, null);
-                uint targetProcessId = 0;
-
-                Bridge.GetWindowThreadProcessId(hCurrentWnd, out targetProcessId);
+                Bridge.GetWindowThreadProcessId(hCurrentWnd, out uint targetProcessId);
 
                 if (targetProcessId == processId)
                 {

@@ -14,8 +14,6 @@ using Awake.Core.Native;
 using ManagedCommon;
 using Microsoft.PowerToys.Settings.UI.Library;
 
-#pragma warning disable CS8602 // Dereference of a possibly null reference.
-
 namespace Awake.Core
 {
     /// <summary>
@@ -46,14 +44,17 @@ namespace Awake.Core
                     try
                     {
                         Logger.LogInfo("Setting up the tray.");
-                        ((NotifyIcon?)tray).Text = text;
-                        ((NotifyIcon?)tray).Icon = icon;
-                        ((NotifyIcon?)tray).ContextMenuStrip = contextMenu;
-                        ((NotifyIcon?)tray).Visible = true;
-                        ((NotifyIcon?)tray).MouseClick += TrayClickHandler;
-                        Application.AddMessageFilter(new TrayMessageFilter(exitSignal));
-                        Application.Run();
-                        Logger.LogInfo("Tray setup complete.");
+                        if (tray != null)
+                        {
+                            ((NotifyIcon)tray).Text = text;
+                            ((NotifyIcon)tray).Icon = icon;
+                            ((NotifyIcon)tray).ContextMenuStrip = contextMenu;
+                            ((NotifyIcon)tray).Visible = true;
+                            ((NotifyIcon)tray).MouseClick += TrayClickHandler;
+                            Application.AddMessageFilter(new TrayMessageFilter(exitSignal));
+                            Application.Run();
+                            Logger.LogInfo("Tray setup complete.");
+                        }
                     }
                     catch (Exception ex)
                     {
@@ -146,7 +147,7 @@ namespace Awake.Core
 
         private sealed class CheckButtonToolStripMenuItemAccessibleObject : ToolStripItem.ToolStripItemAccessibleObject
         {
-            private CheckButtonToolStripMenuItem _menuItem;
+            private readonly CheckButtonToolStripMenuItem _menuItem;
 
             public CheckButtonToolStripMenuItemAccessibleObject(CheckButtonToolStripMenuItem menuItem)
                 : base(menuItem)
@@ -154,23 +155,13 @@ namespace Awake.Core
                 _menuItem = menuItem;
             }
 
-            public override AccessibleRole Role
-            {
-                get
-                {
-                    return AccessibleRole.CheckButton;
-                }
-            }
+            public override AccessibleRole Role => AccessibleRole.CheckButton;
 
             public override string Name => _menuItem.Text + ", " + Role + ", " + (_menuItem.Checked ? "Checked" : "Unchecked");
         }
 
         private sealed class CheckButtonToolStripMenuItem : ToolStripMenuItem
         {
-            public CheckButtonToolStripMenuItem()
-            {
-            }
-
             protected override AccessibleObject CreateAccessibilityInstance()
             {
                 return new CheckButtonToolStripMenuItemAccessibleObject(this);
