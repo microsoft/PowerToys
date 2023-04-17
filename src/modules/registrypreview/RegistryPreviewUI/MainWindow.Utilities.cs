@@ -335,12 +335,19 @@ namespace RegistryPreview
                         registryValue.Type = "REG_MULTI_SZ";
                         value = value.Replace("hex(7):", string.Empty);
                     }
+                    else if (value.StartsWith("hex(0):", StringComparison.InvariantCultureIgnoreCase))
+                    {
+                        registryValue.Type = "REG_NONE";
+                        value = value.Replace("hex(0):", string.Empty);
+                    }
 
-                    // special casing for most key type
+                    // special casing for various key types
                     switch (registryValue.Type)
                     {
                         case "REG_SZ":
                         case "ERROR":
+
+                            // no special handling for these two
                             break;
                         default:
                             // check to see if a continuation marker is the first character
@@ -376,10 +383,25 @@ namespace RegistryPreview
                     // Clean out any escaped characters in the value, only for the preview
                     value = StripEscapedCharacters(value);
 
-                    // update the ListViewItem with this information
-                    if (registryValue.Type != "ERROR")
+                    // update the ListViewItem with the loaded value, based off REG value type
+                    switch (registryValue.Type)
                     {
-                        registryValue.Value = value;
+                        case "ERROR":
+                            // do nothing
+                            break;
+                        case "REG_BINARY":
+                        case "REG_NONE":
+                            if (value.Length <= 0)
+                            {
+                                value = resourceLoader.GetString("ZeroLength");
+                            }
+
+                            registryValue.Value = value;
+
+                            break;
+                        default:
+                            registryValue.Value = value;
+                            break;
                     }
 
                     // update the ToolTip
