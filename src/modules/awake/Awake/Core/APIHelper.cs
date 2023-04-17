@@ -46,6 +46,7 @@ namespace Awake.Core
         {
             Thread monitorThread = new(() =>
             {
+                Thread.CurrentThread.IsBackground = true;
                 while (true)
                 {
                     ExecutionState state = _stateQueue.Take();
