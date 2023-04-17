@@ -3,15 +3,14 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
-using System.Reactive.Concurrency;
 using System.Reactive.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading;
-using System.Threading.Tasks;
 using Awake.Core.Models;
 using Awake.Core.Native;
 using ManagedCommon;
@@ -33,13 +32,30 @@ namespace Awake.Core
         private const uint GenericWrite = 0x40000000;
         private const uint GenericRead = 0x80000000;
 
-        private static CancellationTokenSource _tokenSource;
+        private static BlockingCollection<ExecutionState> _stateQueue;
 
-        private static Task? _runnerThread;
+        private static CancellationTokenSource _tokenSource;
 
         static APIHelper()
         {
             _tokenSource = new CancellationTokenSource();
+            _stateQueue = new BlockingCollection<ExecutionState>();
+        }
+
+        public static void StartMonitor()
+        {
+            Thread monitorThread = new(() =>
+            {
+                while (true)
+                {
+                    ExecutionState state = _stateQueue.Take();
+
+                    Logger.LogInfo($"Setting state to {state}");
+
+                    SetAwakeState(state);
+                }
+            });
+            monitorThread.Start();
         }
 
         internal static void SetConsoleControlHandler(ConsoleEventHandler handler, bool addHandler)
@@ -82,15 +98,15 @@ namespace Awake.Core
             }
         }
 
-        private static bool SetAwakeStateBasedOnDisplaySetting(bool keepDisplayOn)
+        private static ExecutionState ComputeAwakeState(bool keepDisplayOn)
         {
             if (keepDisplayOn)
             {
-                return SetAwakeState(ExecutionState.ES_SYSTEM_REQUIRED | ExecutionState.ES_DISPLAY_REQUIRED | ExecutionState.ES_CONTINUOUS);
+                return ExecutionState.ES_SYSTEM_REQUIRED | ExecutionState.ES_DISPLAY_REQUIRED | ExecutionState.ES_CONTINUOUS;
             }
             else
             {
-                return SetAwakeState(ExecutionState.ES_SYSTEM_REQUIRED | ExecutionState.ES_CONTINUOUS);
+                return ExecutionState.ES_SYSTEM_REQUIRED | ExecutionState.ES_CONTINUOUS;
             }
         }
 
@@ -98,21 +114,11 @@ namespace Awake.Core
         {
             Logger.LogInfo($"Attempting to ensure that the thread is properly cleaned up...");
 
+            // Resetting the thread state.
+            _stateQueue.Add(ExecutionState.ES_CONTINUOUS);
+
+            // Next, make sure that any existing background threads are terminated.
             _tokenSource.Cancel();
-
-            try
-            {
-                if (_runnerThread != null && !_runnerThread.IsCanceled)
-                {
-                    _runnerThread.Wait(_tokenSource.Token);
-                }
-
-                Logger.LogInfo("Thread is clean.");
-            }
-            catch (OperationCanceledException)
-            {
-                Logger.LogInfo("Confirmed background thread cancellation when disabling keep awake.");
-            }
 
             _tokenSource.Dispose();
 
@@ -127,14 +133,7 @@ namespace Awake.Core
 
             CancelExistingThread();
 
-            try
-            {
-                _runnerThread = Task.Run(() => RunIndefiniteJob(keepDisplayOn), _tokenSource.Token);
-            }
-            catch (Exception ex)
-            {
-                Logger.LogError(ex.Message);
-            }
+            _stateQueue.Add(ComputeAwakeState(keepDisplayOn));
         }
 
         public static void SetNoKeepAwake()
@@ -152,7 +151,15 @@ namespace Awake.Core
 
             if (expireAt > DateTime.Now && expireAt != null)
             {
-                _runnerThread = Task.Run(() => RunExpiringJob(expireAt, keepDisplayOn), _tokenSource.Token);
+                _stateQueue.Add(ComputeAwakeState(keepDisplayOn));
+
+                Observable.Timer(expireAt).Subscribe(
+                t =>
+                {
+                    Logger.LogInfo($"Completed expirable keep-awake.");
+                    CancelExistingThread();
+                },
+                _tokenSource.Token);
             }
             else
             {
@@ -168,71 +175,17 @@ namespace Awake.Core
 
             CancelExistingThread();
 
-            _runnerThread = Task.Run(() => RunTimedJob(seconds, keepDisplayOn), _tokenSource.Token);
-        }
+            _stateQueue.Add(ComputeAwakeState(keepDisplayOn));
 
-        private static void RunExpiringJob(DateTimeOffset expireAt, bool keepDisplayOn = false)
-        {
-            bool success = false;
+            Logger.LogInfo($"Initiated timed keep awake in background thread. Screen on: {keepDisplayOn}");
 
-            // In case cancellation was already requested.
-            _tokenSource.Token.ThrowIfCancellationRequested();
-
-            Logger.LogInfo($"State ready to be set in {Environment.CurrentManagedThreadId}");
-
-            try
+            Observable.Timer(TimeSpan.FromSeconds(seconds)).Subscribe(
+            _ =>
             {
-                success = SetAwakeStateBasedOnDisplaySetting(keepDisplayOn);
-
-                if (success)
-                {
-                    Logger.LogInfo($"Initiated expirable keep awake in background thread {Environment.CurrentManagedThreadId}. Screen on: {keepDisplayOn}");
-
-                    Observable.Timer(expireAt, Scheduler.CurrentThread).Subscribe(
-                    _ =>
-                    {
-                        Logger.LogInfo($"Completed expirable thread.");
-                        CancelExistingThread();
-                    },
-                    _tokenSource.Token);
-                }
-                else
-                {
-                    Logger.LogError("Could not successfully set up expirable keep awake.");
-                }
-            }
-            catch (OperationCanceledException ex)
-            {
-                // Task was clearly cancelled.
-                Logger.LogInfo($"Background thread {Environment.CurrentManagedThreadId} termination. Message: {ex.Message}");
-            }
-        }
-
-        private static void RunIndefiniteJob(bool keepDisplayOn = false)
-        {
-            // In case cancellation was already requested.
-            _tokenSource.Token.ThrowIfCancellationRequested();
-
-            try
-            {
-                bool success = SetAwakeStateBasedOnDisplaySetting(keepDisplayOn);
-
-                if (success)
-                {
-                    Logger.LogInfo($"Initiated indefinite keep awake in background thread. Screen on: {keepDisplayOn}");
-
-                    WaitHandle.WaitAny(new[] { _tokenSource.Token.WaitHandle });
-                }
-                else
-                {
-                    Logger.LogError("Could not successfully set up indefinite keep awake.");
-                }
-            }
-            catch (OperationCanceledException ex)
-            {
-                // Task was clearly cancelled.
-                Logger.LogInfo($"Background thread termination. Message: {ex.Message}");
-            }
+                Logger.LogInfo($"Completed timed thread.");
+                CancelExistingThread();
+            },
+            _tokenSource.Token);
         }
 
         internal static void CompleteExit(int exitCode, ManualResetEvent? exitSignal, bool force = false)
@@ -248,7 +201,7 @@ namespace Awake.Core
 
             if (force)
             {
-                Bridge.PostQuitMessage(0);
+                Bridge.PostQuitMessage(exitCode);
             }
 
             try
@@ -259,41 +212,6 @@ namespace Awake.Core
             catch (Exception ex)
             {
                 Logger.LogError($"Exit signal error ${ex}");
-            }
-        }
-
-        private static void RunTimedJob(uint seconds, bool keepDisplayOn = true)
-        {
-            bool success = false;
-
-            // In case cancellation was already requested.
-            _tokenSource.Token.ThrowIfCancellationRequested();
-
-            try
-            {
-                success = SetAwakeStateBasedOnDisplaySetting(keepDisplayOn);
-
-                if (success)
-                {
-                    Logger.LogInfo($"Initiated timed keep awake in background thread. Screen on: {keepDisplayOn}");
-
-                    Observable.Timer(TimeSpan.FromSeconds(seconds), Scheduler.CurrentThread).Subscribe(
-                   _ =>
-                   {
-                       Logger.LogInfo($"Completed timed thread.");
-                       CancelExistingThread();
-                   },
-                   _tokenSource.Token);
-                }
-                else
-                {
-                    Logger.LogError("Could not set up timed keep-awake with display on.");
-                }
-            }
-            catch (OperationCanceledException ex)
-            {
-                // Task was clearly cancelled.
-                Logger.LogInfo($"Background thread termination. Message: {ex.Message}");
             }
         }
 

@@ -197,6 +197,9 @@ namespace Awake
             Logger.LogInfo($"The value for --pid is: {pid}");
             Logger.LogInfo($"The value for --expire-at is: {expireAt}");
 
+            // Start the monitor thread that will be used to track the current state.
+            APIHelper.StartMonitor();
+
             if (usePtConfig)
             {
                 // Configuration file is used, therefore we disregard any other command-line parameter
