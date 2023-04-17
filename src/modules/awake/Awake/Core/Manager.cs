@@ -61,15 +61,11 @@ namespace Awake.Core
 
         public static void AllocateConsole()
         {
-            Logger.LogDebug("Bootstrapping the console allocation routine.");
             Bridge.AllocConsole();
-            Logger.LogDebug($"Console allocation result: {Marshal.GetLastWin32Error()}");
 
             var outputFilePointer = Bridge.CreateFile("CONOUT$", Native.Constants.GENERIC_READ | Native.Constants.GENERIC_WRITE, FileShare.Write, IntPtr.Zero, FileMode.OpenOrCreate, 0, IntPtr.Zero);
-            Logger.LogDebug($"CONOUT creation result: {Marshal.GetLastWin32Error()}");
 
             Bridge.SetStdHandle(Native.Constants.STD_OUTPUT_HANDLE, outputFilePointer);
-            Logger.LogDebug($"SetStdHandle result: {Marshal.GetLastWin32Error()}");
 
             Console.SetOut(new StreamWriter(Console.OpenStandardOutput(), Console.OutputEncoding) { AutoFlush = true });
         }
@@ -214,9 +210,7 @@ namespace Awake.Core
         {
             try
             {
-#pragma warning disable CS8600 // Converting null literal or possible null value to non-nullable type.
                 RegistryKey registryKey = Registry.LocalMachine.OpenSubKey(Constants.BuildRegistryLocation);
-#pragma warning restore CS8600 // Converting null literal or possible null value to non-nullable type.
 
                 if (registryKey != null)
                 {

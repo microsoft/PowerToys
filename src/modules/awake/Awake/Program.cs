@@ -4,7 +4,6 @@
 
 using System;
 using System.CommandLine;
-using System.CommandLine.Invocation;
 using System.Diagnostics;
 using System.Drawing;
 using System.Globalization;
@@ -19,12 +18,8 @@ using System.Threading.Tasks;
 using Awake.Core;
 using Awake.Core.Models;
 using Awake.Core.Native;
-using interop;
 using ManagedCommon;
 using Microsoft.PowerToys.Settings.UI.Library;
-
-#pragma warning disable CS8602 // Dereference of a possibly null reference.
-#pragma warning disable CS8603 // Possible null reference return.
 
 namespace Awake
 {
@@ -44,7 +39,7 @@ namespace Awake
 
         private static bool _startedFromPowerToys;
 
-        public static Mutex LockMutex { get => _mutex; set => _mutex = value; }
+        public static Mutex? LockMutex { get => _mutex; set => _mutex = value; }
 
 #pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
         private static ConsoleEventHandler _handler;
@@ -55,6 +50,9 @@ namespace Awake
 
         private static int Main(string[] args)
         {
+            _settingsUtils = new SettingsUtils();
+            LockMutex = new Mutex(true, Core.Constants.AppName, out bool instantiated);
+
             Logger.InitializeLogger(Path.Combine("\\", Core.Constants.AppName, "Logs"));
 
             if (PowerToys.GPOWrapper.GPOWrapper.GetConfiguredAwakeEnabledValue() == PowerToys.GPOWrapper.GpoRuleConfigured.Disabled)
@@ -63,14 +61,10 @@ namespace Awake
                 return 0;
             }
 
-            LockMutex = new Mutex(true, Core.Constants.AppName, out bool instantiated);
-
             if (!instantiated)
             {
                 Exit(Core.Constants.AppName + " is already running! Exiting the application.", 1, _exitSignal, true);
             }
-
-            _settingsUtils = new SettingsUtils();
 
             Logger.LogInfo($"Launching {Core.Constants.AppName}...");
             Logger.LogInfo(FileVersionInfo.GetVersionInfo(Assembly.GetExecutingAssembly().Location).FileVersion);
@@ -121,7 +115,7 @@ namespace Awake
             Option<int> pidOption = new(
                     aliases: new[] { "--pid", "-p" },
                     getDefaultValue: () => 0,
-                    description: $"Bind the execution of {Core.Constants.AppName} to another process. When the process ends, the system will resume managing the current sleep/display mode.")
+                    description: $"Bind the execution of {Core.Constants.AppName} to another process. When the process ends, the system will resume managing the current sleep and display state.")
             {
                 Arity = ArgumentArity.ZeroOrOne,
                 IsRequired = false,
@@ -130,7 +124,7 @@ namespace Awake
             Option<string> expireAtOption = new(
                     aliases: new[] { "--expire-at", "-e" },
                     getDefaultValue: () => string.Empty,
-                    description: $"Determines the end date/time when {Core.Constants.AppName} will back off and let the system manage the current sleep/display mode.")
+                    description: $"Determines the end date/time when {Core.Constants.AppName} will back off and let the system manage the current sleep and display state.")
             {
                 Arity = ArgumentArity.ZeroOrOne,
                 IsRequired = false,
@@ -217,7 +211,7 @@ namespace Awake
 
                     TrayHelper.InitializeTray(Core.Constants.FullAppName, new Icon(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "images/awake.ico")), _exitSignal);
 
-                    string? settingsPath = _settingsUtils.GetSettingsFilePath(Core.Constants.AppName);
+                    string? settingsPath = _settingsUtils!.GetSettingsFilePath(Core.Constants.AppName);
                     Logger.LogInfo($"Reading configuration file: {settingsPath}");
 
                     if (!File.Exists(settingsPath))
@@ -347,7 +341,7 @@ namespace Awake
         {
             try
             {
-                AwakeSettings settings = _settingsUtils.GetSettings<AwakeSettings>(Core.Constants.AppName);
+                AwakeSettings settings = _settingsUtils!.GetSettings<AwakeSettings>(Core.Constants.AppName);
 
                 if (settings != null)
                 {
