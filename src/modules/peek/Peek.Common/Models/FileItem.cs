@@ -40,8 +40,9 @@ namespace Peek.Common.Models
                 {
                     storageFile = await StorageFile.GetFileFromPathAsync(Path);
                 }
-                catch (Exception)
+                catch (Exception ex)
                 {
+                    Logger.LogError("Error getting file from path. " + ex.Message);
                     storageFile = null;
                 }
             }

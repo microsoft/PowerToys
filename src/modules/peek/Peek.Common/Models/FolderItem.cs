@@ -40,8 +40,9 @@ namespace Peek.Common.Models
                 {
                     storageFolder = await StorageFolder.GetFolderFromPathAsync(Path);
                 }
-                catch (Exception)
+                catch (Exception ex)
                 {
+                    Logger.LogError("Error getting folder from path. " + ex.Message);
                     storageFolder = null;
                 }
             }
