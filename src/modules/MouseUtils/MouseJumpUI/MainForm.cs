@@ -42,6 +42,64 @@ internal partial class MainForm : Form
             this.OnDeactivate(EventArgs.Empty);
             return;
         }
+
+        // map screens to their screen number in "System > Display"
+        var screens = ScreenHelper.GetAllScreens()
+            .Select((screen, index) => new { Screen = screen, Index = index, Number = index + 1 })
+            .ToList();
+
+        var currentLocation = MouseHelper.GetCursorPosition();
+        var currentScreenHandle = ScreenHelper.MonitorFromPoint(currentLocation);
+        var currentScreen = screens
+            .Single(item => item.Screen.Handle == currentScreenHandle.Value);
+        var targetScreenNumber = default(int?);
+
+        if (((e.KeyCode >= Keys.D1) && (e.KeyCode <= Keys.D9))
+            || ((e.KeyCode >= Keys.NumPad1) && (e.KeyCode <= Keys.NumPad9)))
+        {
+            // number keys 1-9 or numpad keys 1-9 - move to the numbered screen
+            var screenNumber = e.KeyCode - Keys.D0;
+            if (screenNumber <= screens.Count)
+            {
+                targetScreenNumber = screenNumber;
+            }
+        }
+        else if (e.KeyCode == Keys.P)
+        {
+            // "P" - move to the primary screen
+            targetScreenNumber = screens.Single(item => item.Screen.Primary).Number;
+        }
+        else if (e.KeyCode == Keys.Left)
+        {
+            // move to the previous screen
+            targetScreenNumber = currentScreen.Number == 1
+                ? screens.Count
+                : currentScreen.Number - 1;
+        }
+        else if (e.KeyCode == Keys.Right)
+        {
+            // move to the next screen
+            targetScreenNumber = currentScreen.Number == screens.Count
+                ? 1
+                : currentScreen.Number + 1;
+        }
+        else if (e.KeyCode == Keys.Home)
+        {
+            // move to the first screen
+            targetScreenNumber = 1;
+        }
+        else if (e.KeyCode == Keys.End)
+        {
+            // move to the last screen
+            targetScreenNumber = screens.Count;
+        }
+
+        if (targetScreenNumber.HasValue)
+        {
+            MouseHelper.SetCursorPosition(
+                screens[targetScreenNumber.Value - 1].Screen.Bounds.Midpoint);
+            this.OnDeactivate(EventArgs.Empty);
+        }
     }
 
     private void MainForm_Deactivate(object sender, EventArgs e)

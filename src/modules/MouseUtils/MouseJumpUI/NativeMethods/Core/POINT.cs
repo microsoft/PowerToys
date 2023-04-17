@@ -16,7 +16,7 @@ internal static partial class Core
     /// See https://learn.microsoft.com/en-us/windows/win32/api/windef/ns-windef-point
     /// </remarks>
     [SuppressMessage("SA1307", "SA1307:AccessibleFieldsMustBeginWithUpperCaseLetter", Justification = "Names match Win32 api")]
-    internal struct POINT
+    internal readonly struct POINT
     {
         /// <summary>
         /// Specifies the x-coordinate of the point.
