@@ -29,7 +29,7 @@ namespace RegistryPreview
             try
             {
                 long fileLength = new System.IO.FileInfo(filename).Length;
-                if (fileLength > 1048576)
+                if (fileLength > 10485760)
                 {
                     ShowMessageBox(resourceLoader.GetString("LargeRegistryFileTitle"), App.AppFilename + resourceLoader.GetString("LargeRegistryFile"), resourceLoader.GetString("OkButtonText"));
                     ChangeCursor(gridPreview, false);
