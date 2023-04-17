@@ -24,5 +24,9 @@ namespace Awake.Core.Native
 
         internal const uint MF_ENABLED = 0x00000000;
         internal const uint MF_DISABLED = 0x00000002;
+
+        internal const int STD_OUTPUT_HANDLE = -11;
+        internal const uint GENERIC_WRITE = 0x40000000;
+        internal const uint GENERIC_READ = 0x80000000;
     }
 }

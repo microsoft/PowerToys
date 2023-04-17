@@ -27,11 +27,6 @@ namespace Awake.Core
     /// </summary>
     public class APIHelper
     {
-        private const string BuildRegistryLocation = @"SOFTWARE\Microsoft\Windows NT\CurrentVersion";
-        private const int StdOutputHandle = -11;
-        private const uint GenericWrite = 0x40000000;
-        private const uint GenericRead = 0x80000000;
-
         private static BlockingCollection<ExecutionState> _stateQueue;
 
         private static CancellationTokenSource _tokenSource;
@@ -70,10 +65,10 @@ namespace Awake.Core
             Bridge.AllocConsole();
             Logger.LogDebug($"Console allocation result: {Marshal.GetLastWin32Error()}");
 
-            var outputFilePointer = Bridge.CreateFile("CONOUT$", GenericRead | GenericWrite, FileShare.Write, IntPtr.Zero, FileMode.OpenOrCreate, 0, IntPtr.Zero);
+            var outputFilePointer = Bridge.CreateFile("CONOUT$", Native.Constants.GENERIC_READ | Native.Constants.GENERIC_WRITE, FileShare.Write, IntPtr.Zero, FileMode.OpenOrCreate, 0, IntPtr.Zero);
             Logger.LogDebug($"CONOUT creation result: {Marshal.GetLastWin32Error()}");
 
-            Bridge.SetStdHandle(StdOutputHandle, outputFilePointer);
+            Bridge.SetStdHandle(Native.Constants.STD_OUTPUT_HANDLE, outputFilePointer);
             Logger.LogDebug($"SetStdHandle result: {Marshal.GetLastWin32Error()}");
 
             Console.SetOut(new StreamWriter(Console.OpenStandardOutput(), Console.OutputEncoding) { AutoFlush = true });
@@ -220,7 +215,7 @@ namespace Awake.Core
             try
             {
 #pragma warning disable CS8600 // Converting null literal or possible null value to non-nullable type.
-                RegistryKey registryKey = Registry.LocalMachine.OpenSubKey(BuildRegistryLocation);
+                RegistryKey registryKey = Registry.LocalMachine.OpenSubKey(InternalConstants.BuildRegistryLocation);
 #pragma warning restore CS8600 // Converting null literal or possible null value to non-nullable type.
 
                 if (registryKey != null)

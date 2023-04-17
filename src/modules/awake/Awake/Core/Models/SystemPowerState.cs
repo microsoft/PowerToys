@@ -4,8 +4,12 @@
 
 namespace Awake.Core.Models
 {
-    // Maps to the OS power state.
-    // See documentation: https://docs.microsoft.com/windows/win32/power/system-power-states
+    /// <summary>
+    /// Represents the system power state.
+    /// </summary>
+    /// <remarks>
+    /// See <see href="https://learn.microsoft.com/windows/win32/power/system-power-states">System power states</see>.
+    /// </remarks>
     public enum SystemPowerState
     {
         PowerSystemUnspecified = 0,
