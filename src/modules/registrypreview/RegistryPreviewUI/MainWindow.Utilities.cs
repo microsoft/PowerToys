@@ -962,7 +962,7 @@ namespace RegistryPreview
             }
         }
 
-        ///
+        /// <summary>
         /// Takes a binary registry value, sees if it has a ; and dumps the rest of the line - this does not work for REG_SZ values
         /// </summary>
         private string ScanAndRemoveComments(string value)
