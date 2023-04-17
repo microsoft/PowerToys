@@ -1341,6 +1341,7 @@ nullonfailure
 numberbox
 NUMLOCK
 NUMPAD
+numpad
 nwc
 Objbase
 OBJID
