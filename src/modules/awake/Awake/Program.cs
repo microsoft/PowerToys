@@ -149,8 +149,6 @@ namespace Awake
                 pidOption,
                 expireAtOption);
 
-            Logger.LogInfo("Parameter setup complete. Proceeding to the rest of the app initiation...");
-
             return rootCommand.InvokeAsync(args).Result;
         }
 

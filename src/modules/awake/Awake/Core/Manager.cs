@@ -210,7 +210,7 @@ namespace Awake.Core
         {
             try
             {
-                RegistryKey registryKey = Registry.LocalMachine.OpenSubKey(Constants.BuildRegistryLocation);
+                RegistryKey? registryKey = Registry.LocalMachine.OpenSubKey(Constants.BuildRegistryLocation);
 
                 if (registryKey != null)
                 {
