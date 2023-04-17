@@ -25,13 +25,13 @@ namespace Awake.Core
     /// Helper class that allows talking to Win32 APIs without having to rely on PInvoke in other parts
     /// of the codebase.
     /// </summary>
-    public class APIHelper
+    public class Manager
     {
         private static BlockingCollection<ExecutionState> _stateQueue;
 
         private static CancellationTokenSource _tokenSource;
 
-        static APIHelper()
+        static Manager()
         {
             _tokenSource = new CancellationTokenSource();
             _stateQueue = new BlockingCollection<ExecutionState>();
@@ -191,7 +191,7 @@ namespace Awake.Core
 
             if (windowHandle != IntPtr.Zero)
             {
-                Bridge.SendMessage(windowHandle, Constants.WM_CLOSE, 0, 0);
+                Bridge.SendMessage(windowHandle, Native.Constants.WM_CLOSE, 0, 0);
             }
 
             if (force)
@@ -215,7 +215,7 @@ namespace Awake.Core
             try
             {
 #pragma warning disable CS8600 // Converting null literal or possible null value to non-nullable type.
-                RegistryKey registryKey = Registry.LocalMachine.OpenSubKey(InternalConstants.BuildRegistryLocation);
+                RegistryKey registryKey = Registry.LocalMachine.OpenSubKey(Constants.BuildRegistryLocation);
 #pragma warning restore CS8600 // Converting null literal or possible null value to non-nullable type.
 
                 if (registryKey != null)
@@ -262,7 +262,7 @@ namespace Awake.Core
         {
             IEnumerable<IntPtr> windowHandles = EnumerateWindowsForProcess(Environment.ProcessId);
             var domain = AppDomain.CurrentDomain.GetHashCode().ToString("x");
-            string targetClass = $"{InternalConstants.TrayWindowId}{domain}";
+            string targetClass = $"{Constants.TrayWindowId}{domain}";
 
             foreach (var handle in windowHandles)
             {

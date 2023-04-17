@@ -36,7 +36,7 @@ namespace Awake.Core
 
             switch (m.Msg)
             {
-                case (int)Constants.WM_COMMAND:
+                case (int)Native.Constants.WM_COMMAND:
                     var targetCommandIndex = m.WParam.ToInt64() & 0xFFFF;
                     switch (targetCommandIndex)
                     {
@@ -44,26 +44,26 @@ namespace Awake.Core
                             ExitCommandHandler(_exitSignal);
                             break;
                         case (long)TrayCommands.TC_DISPLAY_SETTING:
-                            DisplaySettingCommandHandler(InternalConstants.AppName);
+                            DisplaySettingCommandHandler(Constants.AppName);
                             break;
                         case (long)TrayCommands.TC_MODE_INDEFINITE:
-                            IndefiniteKeepAwakeCommandHandler(InternalConstants.AppName);
+                            IndefiniteKeepAwakeCommandHandler(Constants.AppName);
                             break;
                         case (long)TrayCommands.TC_MODE_PASSIVE:
-                            PassiveKeepAwakeCommandHandler(InternalConstants.AppName);
+                            PassiveKeepAwakeCommandHandler(Constants.AppName);
                             break;
                         case var _ when targetCommandIndex >= trayCommandsSize:
                             // Format for the timer block:
                             // TrayCommands.TC_TIME + ZERO_BASED_INDEX_IN_SETTINGS
-                            AwakeSettings settings = ModuleSettings.GetSettings<AwakeSettings>(InternalConstants.AppName);
+                            AwakeSettings settings = ModuleSettings.GetSettings<AwakeSettings>(Constants.AppName);
                             if (settings.Properties.CustomTrayTimes.Count == 0)
                             {
-                                settings.Properties.CustomTrayTimes.AddRange(APIHelper.GetDefaultTrayOptions());
+                                settings.Properties.CustomTrayTimes.AddRange(Manager.GetDefaultTrayOptions());
                             }
 
                             int index = (int)targetCommandIndex - (int)TrayCommands.TC_TIME;
                             var targetTime = settings.Properties.CustomTrayTimes.ElementAt(index).Value;
-                            TimedKeepAwakeCommandHandler(InternalConstants.AppName, targetTime);
+                            TimedKeepAwakeCommandHandler(Constants.AppName, targetTime);
                             break;
                     }
 
@@ -75,7 +75,7 @@ namespace Awake.Core
 
         private static void ExitCommandHandler(ManualResetEvent? exitSignal)
         {
-            APIHelper.CompleteExit(0, exitSignal, true);
+            Manager.CompleteExit(0, exitSignal, true);
         }
 
         private static void DisplaySettingCommandHandler(string moduleName)
