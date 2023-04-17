@@ -960,6 +960,9 @@ namespace RegistryPreview
                     registryLine = registryLine.Substring(0, lastBracket + 1);
                 }
             }
+        }
+
+        ///
         /// Takes a binary registry value, sees if it has a ; and dumps the rest of the line - this does not work for REG_SZ values
         /// </summary>
         private string ScanAndRemoveComments(string value)
