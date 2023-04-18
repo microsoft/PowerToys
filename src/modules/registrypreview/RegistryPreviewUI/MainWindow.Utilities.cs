@@ -530,6 +530,7 @@ namespace RegistryPreview
         private TreeViewNode AddTextToTree(string keys, string image)
         {
             string[] individualKeys = keys.Split('\\');
+
             string fullPath = keys;
             TreeViewNode returnNewNode = null, newNode = null, previousNode = null;
 
@@ -959,6 +960,11 @@ namespace RegistryPreview
                 {
                     registryLine = registryLine.Substring(0, lastBracket + 1);
                 }
+
+                if (CheckForKnownGoodBranches(registryLine) == false)
+                {
+                    imageName = ERRORIMAGE;
+                }
             }
         }
 
@@ -976,6 +982,23 @@ namespace RegistryPreview
             }
 
             return value;
+        }
+
+        /// <summary>
+        /// Make sure the root of a full path start with one of the five "hard coded" roots.  Throw an error for the branch if it doesn't.
+        /// </summary>
+        private bool CheckForKnownGoodBranches(string key)
+        {
+            if (key.StartsWith("[HKEY_CLASSES_ROOT", StringComparison.InvariantCultureIgnoreCase) == false &&
+                key.StartsWith("[HKEY_CURRENT_USER", StringComparison.InvariantCultureIgnoreCase) == false &&
+                key.StartsWith("[HKEY_USERS", StringComparison.InvariantCultureIgnoreCase) == false &&
+                key.StartsWith("[HKEY_LOCAL_MACHINE", StringComparison.InvariantCultureIgnoreCase) == false &&
+                key.StartsWith("[HKEY_CURRENT_CONFIG", StringComparison.InvariantCultureIgnoreCase) == false)
+            {
+                return false;
+            }
+
+            return true;
         }
     }
 }
