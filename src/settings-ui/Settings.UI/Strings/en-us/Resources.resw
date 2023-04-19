@@ -3141,11 +3141,11 @@ Activate by holding the key for the character you want to add an accent to, then
     <value>pixels</value>
   </data>
   <data name="MouseUtils_MouseJump_ThumbnailSize_Edit_Height.Header" xml:space="preserve">
-    <value>Thumbnail height (px)</value>
+    <value>Maximum height (px)</value>
     <comment>px = pixels</comment>
   </data>
   <data name="MouseUtils_MouseJump_ThumbnailSize_Edit_Width.Header" xml:space="preserve">
-    <value>Thumbnail width (px)</value>
+    <value>Maximum width (px)</value>
     <comment>px = pixels</comment>
   </data>
 </root>
