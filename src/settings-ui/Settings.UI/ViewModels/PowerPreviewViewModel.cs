@@ -8,6 +8,7 @@ using global::PowerToys.GPOWrapper;
 using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.PowerToys.Settings.UI.Library.Helpers;
 using Microsoft.PowerToys.Settings.UI.Library.Interfaces;
+using Settings.UI.Library.Enumerations;
 
 namespace Microsoft.PowerToys.Settings.UI.ViewModels
 {
@@ -258,7 +259,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         {
             get
             {
-                return SVGRenderBackgroundColorMode == 1;
+                return (SvgPreviewColorMode)SVGRenderBackgroundColorMode == SvgPreviewColorMode.SolidColor;
             }
         }
 
@@ -284,7 +285,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         {
             get
             {
-                return SVGRenderBackgroundColorMode == 2;
+                return (SvgPreviewColorMode)SVGRenderBackgroundColorMode == SvgPreviewColorMode.Checkered;
             }
         }
 

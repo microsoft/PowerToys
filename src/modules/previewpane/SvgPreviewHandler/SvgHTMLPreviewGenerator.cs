@@ -2,8 +2,8 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-using System.Drawing;
 using System.Globalization;
+using Settings.UI.Library.Enumerations;
 
 namespace SvgPreviewHandler
 {
@@ -29,16 +29,16 @@ namespace SvgPreviewHandler
             </html>
             """;
 
-        private Settings settings = new Settings();
+        private readonly Settings settings = new();
 
         public string GeneratePreview(string svgData)
         {
-            var colorMode = settings.ColorMode;
+            var colorMode = (SvgPreviewColorMode)settings.ColorMode;
             return colorMode switch
             {
-                1 => string.Format(CultureInfo.InvariantCulture, HtmlTemplateSolidColor, ColorTranslator.ToHtml(settings.SolidColor), svgData),
-                2 => string.Format(CultureInfo.InvariantCulture, HtmlTemplateCheckered, CheckeredBackgroundShade1, svgData),
-                _ => string.Format(CultureInfo.InvariantCulture, HtmlTemplateSolidColor, ColorTranslator.ToHtml(settings.ThemeColor), svgData),
+                SvgPreviewColorMode.SolidColor => string.Format(CultureInfo.InvariantCulture, HtmlTemplateSolidColor, ColorTranslator.ToHtml(settings.SolidColor), svgData),
+                SvgPreviewColorMode.Checkered => string.Format(CultureInfo.InvariantCulture, HtmlTemplateCheckered, CheckeredBackgroundShade1, svgData),
+                SvgPreviewColorMode.Default or _ => string.Format(CultureInfo.InvariantCulture, HtmlTemplateSolidColor, ColorTranslator.ToHtml(settings.ThemeColor), svgData),
             };
         }
     }
