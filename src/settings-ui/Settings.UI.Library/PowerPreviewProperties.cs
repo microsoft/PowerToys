@@ -7,6 +7,7 @@ using System.Text.Json;
 using System.Text.Json.Serialization;
 using Microsoft.PowerToys.Settings.Telemetry;
 using Microsoft.PowerToys.Telemetry;
+using Settings.UI.Library.Enumerations;
 
 namespace Microsoft.PowerToys.Settings.UI.Library
 {
@@ -14,9 +15,9 @@ namespace Microsoft.PowerToys.Settings.UI.Library
     {
         public const string DefaultStlThumbnailColor = "#FFC924";
         public const int DefaultMonacoMaxFileSize = 50;
-        public const int DefaultSvgBackgroundColorMode = 0;
+        public const int DefaultSvgBackgroundColorMode = (int)SvgPreviewColorMode.Default;
         public const string DefaultSvgBackgroundSolidColor = "#FFFFFF";
-        public const int DefaultSvgBackgroundCheckeredShade = 0;
+        public const int DefaultSvgBackgroundCheckeredShade = (int)SvgPreviewCheckeredShade.Light;
 
         private bool enableSvgPreview = true;
 
