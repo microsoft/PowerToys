@@ -318,7 +318,7 @@ namespace RegistryPreview
                     }
                     else if (value.StartsWith("hex(2):", StringComparison.InvariantCultureIgnoreCase))
                     {
-                        registryValue.Type = "REG_EXAND_SZ";
+                        registryValue.Type = "REG_EXPAND_SZ";
                         value = value.Replace("hex(2):", string.Empty);
                     }
                     else if (value.StartsWith("hex(7):", StringComparison.InvariantCultureIgnoreCase))
@@ -327,11 +327,34 @@ namespace RegistryPreview
                         value = value.Replace("hex(7):", string.Empty);
                     }
 
+                    // Parse for the case where a \ is added immediately after hex is declared
+                    switch (registryValue.Type)
+                    {
+                        case "REG_QWORD":
+                        case "REG_BINARY":
+                        case "REG_EXPAND_SZ":
+                        case "REG_MULTI_SZ":
+                            if (value == @"\")
+                            {
+                                // pad the value, so the parsing below is triggered
+                                value = @",\";
+                            }
+
+                            break;
+                    }
+
                     // If the end of a decimal line ends in a \ then you have to keep
                     // reading the block as a single value!
                     while (value.EndsWith(@",\", StringComparison.InvariantCulture))
                     {
                         value = value.TrimEnd('\\');
+
+                        // checking for a "blank" hex value so we can skip t
+                        if (value == @",")
+                        {
+                            value = string.Empty;
+                        }
+
                         index++;
                         if (index >= registryLines.Length)
                         {
