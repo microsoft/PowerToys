@@ -762,6 +762,33 @@
     <value>.svg</value>
     <comment>File extension, should not be altered</comment>
   </data>
+  <data name="FileExplorerPreview_Preview_SVG_Color_Mode.Header" xml:space="preserve">
+    <value>Color mode</value>
+  </data>
+  <data name="FileExplorerPreview_Preview_SVG_Color_Mode_Default.Content" xml:space="preserve">
+    <value>Windows default</value>
+  </data>
+  <data name="FileExplorerPreview_Preview_SVG_Color_Solid_Color.Content" xml:space="preserve">
+    <value>Solid color</value>
+  </data>
+  <data name="FileExplorerPreview_Preview_SVG_Checkered_Shade.Content" xml:space="preserve">
+    <value>Checkered pattern</value>
+  </data>
+  <data name="FileExplorerPreview_Preview_SVG_Background_Color.Header" xml:space="preserve">
+    <value>Color</value>
+  </data>
+  <data name="FileExplorerPreview_Preview_SVG_Checkered_Shade_Mode.Header" xml:space="preserve">
+    <value>Checkered shade</value>
+  </data>
+  <data name="FileExplorerPreview_Preview_SVG_Checkered_Shade_1.Content" xml:space="preserve">
+    <value>Light</value>
+  </data>
+  <data name="FileExplorerPreview_Preview_SVG_Checkered_Shade_2.Content" xml:space="preserve">
+    <value>Medium</value>
+  </data>
+  <data name="FileExplorerPreview_Preview_SVG_Checkered_Shade_3.Content" xml:space="preserve">
+    <value>Dark</value>
+  </data>
   <data name="FileExplorerPreview_ToggleSwitch_Preview_PDF.Header" xml:space="preserve">
     <value>Portable Document Format</value>
     <comment>File type, do not translate</comment>

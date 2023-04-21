@@ -115,7 +115,7 @@
                                             IsOn="{x:Bind IsShown, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                                             OffContent=""
                                             OnContent="" />
-                                       
+
                                         <Button
                                             x:Uid="More_Options_Button"
                                             Grid.Column="1"
