@@ -13,13 +13,14 @@ using Microsoft.UI.Windowing;
 using Microsoft.UI.Xaml;
 using Windows.ApplicationModel.Resources;
 using Windows.Graphics;
+using WinUIEx;
 
 namespace Microsoft.PowerToys.Settings.UI
 {
     /// <summary>
     /// An empty window that can be used on its own or navigated to within a Frame.
     /// </summary>
-    public sealed partial class OobeWindow : Window
+    public sealed partial class OobeWindow : WindowEx
     {
         private PowerToysModules initialModule;
 
