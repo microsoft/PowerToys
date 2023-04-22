@@ -989,11 +989,17 @@ namespace RegistryPreview
         /// </summary>
         private bool CheckForKnownGoodBranches(string key)
         {
-            if (key.StartsWith("[HKEY_CLASSES_ROOT", StringComparison.InvariantCultureIgnoreCase) == false &&
-                key.StartsWith("[HKEY_CURRENT_USER", StringComparison.InvariantCultureIgnoreCase) == false &&
-                key.StartsWith("[HKEY_USERS", StringComparison.InvariantCultureIgnoreCase) == false &&
-                key.StartsWith("[HKEY_LOCAL_MACHINE", StringComparison.InvariantCultureIgnoreCase) == false &&
-                key.StartsWith("[HKEY_CURRENT_CONFIG", StringComparison.InvariantCultureIgnoreCase) == false)
+            if ((key.StartsWith("[HKEY_CLASSES_ROOT]", StringComparison.InvariantCultureIgnoreCase) == false &&
+                key.StartsWith("[HKEY_CURRENT_USER]", StringComparison.InvariantCultureIgnoreCase) == false &&
+                key.StartsWith("[HKEY_USERS]", StringComparison.InvariantCultureIgnoreCase) == false &&
+                key.StartsWith("[HKEY_LOCAL_MACHINE]", StringComparison.InvariantCultureIgnoreCase) == false &&
+                key.StartsWith("[HKEY_CURRENT_CONFIG]", StringComparison.InvariantCultureIgnoreCase) == false)
+                &&
+                (key.StartsWith(@"[HKEY_CLASSES_ROOT\", StringComparison.InvariantCultureIgnoreCase) == false &&
+                key.StartsWith(@"[HKEY_CURRENT_USER\", StringComparison.InvariantCultureIgnoreCase) == false &&
+                key.StartsWith(@"[HKEY_USERS\", StringComparison.InvariantCultureIgnoreCase) == false &&
+                key.StartsWith(@"[HKEY_LOCAL_MACHINE\", StringComparison.InvariantCultureIgnoreCase) == false &&
+                key.StartsWith(@"[HKEY_CURRENT_CONFIG\", StringComparison.InvariantCultureIgnoreCase) == false))
             {
                 return false;
             }
