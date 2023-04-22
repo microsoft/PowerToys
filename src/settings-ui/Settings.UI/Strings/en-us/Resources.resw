@@ -159,7 +159,7 @@
     <value>Default measure style</value>
   </data>
   <data name="MeasureTool_DefaultMeasureStyle.Description" xml:space="preserve">
-    <value>Measure style which shall be used as default</value>
+    <value>The utility will start having the selected style activated</value>
   </data>
   <data name="MeasureTool_DefaultMeasureStyle_None.Content" xml:space="preserve">
     <value>None</value>
