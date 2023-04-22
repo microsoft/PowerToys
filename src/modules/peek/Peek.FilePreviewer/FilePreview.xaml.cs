@@ -70,8 +70,11 @@ namespace Peek.FilePreviewer
                     _cancellationTokenSource.Cancel();
                     _cancellationTokenSource = new();
 
-                    Previewer = previewerFactory.CreateDefaultPreviewer(Item);
-                    await UpdatePreviewAsync(_cancellationTokenSource.Token);
+                    if (Previewer is not IUnsupportedFilePreviewer)
+                    {
+                        Previewer = previewerFactory.CreateDefaultPreviewer(Item);
+                        await UpdatePreviewAsync(_cancellationTokenSource.Token);
+                    }
                 }
             }
         }
@@ -250,7 +253,7 @@ namespace Peek.FilePreviewer
             string fileTypeFormatted = string.IsNullOrEmpty(fileType) ? string.Empty : "\n" + ReadableStringHelper.FormatResourceString("PreviewTooltip_FileType", fileType);
             sb.Append(fileTypeFormatted);
 
-            string dateModified = Item.DateModified.ToString();
+            string dateModified = Item.DateModified?.ToString() ?? string.Empty;
             string dateModifiedFormatted = string.IsNullOrEmpty(dateModified) ? string.Empty : "\n" + ReadableStringHelper.FormatResourceString("PreviewTooltip_DateModified", dateModified);
             sb.Append(dateModifiedFormatted);
 

@@ -10,6 +10,7 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.UI.Dispatching;
 using Microsoft.UI.Xaml.Media;
+using Microsoft.UI.Xaml.Media.Imaging;
 using Peek.Common.Extensions;
 using Peek.Common.Helpers;
 using Peek.Common.Models;
@@ -82,6 +83,10 @@ namespace Peek.FilePreviewer.Previewers
             {
                 State = PreviewState.Error;
             }
+            else
+            {
+                State = PreviewState.Loaded;
+            }
         }
 
         public async Task CopyAsync()
@@ -101,8 +106,8 @@ namespace Peek.FilePreviewer.Previewers
                 await Dispatcher.RunOnUiThread(async () =>
                 {
                     cancellationToken.ThrowIfCancellationRequested();
-                    var iconBitmap = await IconHelper.GetIconAsync(Path.GetFullPath(Item.Path), cancellationToken);
-                    IconPreview = iconBitmap;
+                    var iconBitmap = await IconHelper.GetIconAsync(Item.Path, cancellationToken);
+                    IconPreview = iconBitmap ?? new SvgImageSource(new Uri("ms-appx:///Assets/DefaultFileIcon.svg"));
                 });
             });
         }
@@ -128,20 +133,12 @@ namespace Peek.FilePreviewer.Previewers
             });
         }
 
-        partial void OnIconPreviewChanged(ImageSource? value)
-        {
-            if (IconPreview != null)
-            {
-                State = PreviewState.Loaded;
-            }
-        }
-
         private bool HasFailedLoadingPreview()
         {
             var hasFailedLoadingIconPreview = !(IconPreviewTask?.Result ?? true);
             var hasFailedLoadingDisplayInfo = !(DisplayInfoTask?.Result ?? true);
 
-            return hasFailedLoadingIconPreview && hasFailedLoadingDisplayInfo;
+            return hasFailedLoadingIconPreview || hasFailedLoadingDisplayInfo;
         }
     }
 }
