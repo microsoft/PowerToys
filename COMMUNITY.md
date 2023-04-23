@@ -28,7 +28,7 @@ Heiko has helped triaging, discussing, and creating a substantial number of issu
 Jay has helped triaging, discussing, creating a substantial number of issues and PRs.
 
 ### [@TheJoeFin](https://github.com/TheJoeFin) - [Joe Finney](https://joefinapps.com)
-Joe has helped traging, discussing, issues as well as fixing bugs and building features for Text Extractor.
+Joe has helped triaging, discussing, issues as well as fixing bugs and building features for Text Extractor.
 
 ### [@jsoref](https://github.com/jsoref) - [Josh Soref](https://check-spelling.dev/)
 Helping keep our spelling correct :)
