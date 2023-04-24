@@ -4,8 +4,8 @@
 
 using System.Collections.Generic;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using MouseJumpUI.Drawing.Models;
 using MouseJumpUI.Helpers;
+using MouseJumpUI.Models.Drawing;
 
 namespace MouseJumpUI.UnitTests.Helpers;
 
@@ -13,9 +13,9 @@ namespace MouseJumpUI.UnitTests.Helpers;
 public static class MouseHelperTests
 {
     [TestClass]
-    public class GetJumpLocationTests
+    public sealed class GetJumpLocationTests
     {
-        public class TestCase
+        public sealed class TestCase
         {
             public TestCase(PointInfo previewLocation, SizeInfo previewSize,  RectangleInfo desktopBounds, PointInfo expectedResult)
             {
