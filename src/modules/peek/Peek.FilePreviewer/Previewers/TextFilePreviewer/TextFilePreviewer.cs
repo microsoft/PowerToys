@@ -18,22 +18,22 @@ namespace Peek.FilePreviewer.Previewers
     public partial class TextFilePreviewer : ObservableObject, ITextFilePreviewer, IDisposable
     {
         [ObservableProperty]
-        private string? fileName;
-
-        [ObservableProperty]
-        private string? fileContent;
+        private Uri? preview;
 
         [ObservableProperty]
         private PreviewState state;
 
+        [ObservableProperty]
+        private string tempDataFolder = Environment.GetEnvironmentVariable("USERPROFILE") +
+                        "\\AppData\\LocalLow\\Microsoft\\PowerToys\\Peek-Temp";
+
         public TextFilePreviewer(IFileSystemItem file)
         {
             Item = file;
-            FileName = file.Name;
             Dispatcher = DispatcherQueue.GetForCurrentThread();
         }
 
-        public bool IsPreviewLoaded => fileContent != null;
+        public bool IsPreviewLoaded => preview != null;
 
         private IFileSystemItem Item { get; }
 
@@ -43,6 +43,7 @@ namespace Peek.FilePreviewer.Previewers
 
         public void Dispose()
         {
+            WebViewHelper.CleanupWebView2UserDataFolder(tempDataFolder);
             GC.SuppressFinalize(this);
         }
 
@@ -90,14 +91,15 @@ namespace Peek.FilePreviewer.Previewers
 
                 await Dispatcher.RunOnUiThread(async () =>
                 {
-                    FileContent = await ReadHelper.Read(Item.Path.ToString());
+                    var raw = await ReadHelper.Read(Item.Path.ToString());
+                    Preview = new Uri(WebViewHelper.Preview(raw, tempDataFolder));
                 });
             });
         }
 
-        partial void OnFileContentChanged(string? value)
+        partial void OnPreviewChanged(Uri? value)
         {
-            if (FileContent != null)
+            if (Preview != null)
             {
                 State = PreviewState.Loaded;
             }

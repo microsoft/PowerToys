@@ -36,8 +36,11 @@
 
         <controls:TextFilePreview
             x:Name="TextPreview"
-            FileName="{x:Bind TextFilePreviewer.FileName, Mode=OneWay}"
-            FileContent="{x:Bind TextFilePreviewer.FileContent, Mode=OneWay}"
+            x:Load="{x:Bind IsWebPreview(TextFilePreviewer, Previewer.State), Mode=OneWay}"
+            Source="{x:Bind TextFilePreviewer.Preview, Mode=OneWay}"
+            TempDataFolder="{x:Bind TextFilePreviewer.TempDataFolder, Mode=OneTime}"
+            DOMContentLoaded="TextPreview_DOMContentLoaded"
+            NavigationCompleted="TextPreview_NavigationCompleted"
             Visibility="{x:Bind IsPreviewVisible(TextFilePreviewer, Previewer.State), Mode=OneWay}" />
         
         <controls:UnsupportedFilePreview

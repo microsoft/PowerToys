@@ -7,6 +7,7 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:controls="using:Microsoft.UI.Xaml.Controls"
     mc:Ignorable="d">
 
     <Grid
@@ -17,10 +18,10 @@
             <ColumnDefinition x:Name="FileInfo" Width="*" />
         </Grid.ColumnDefinitions>
 
-        <ScrollViewer>
-            <TextBlock
-                Text="{x:Bind FileContent, Mode=OneWay}"
-                TextWrapping="WrapWholeWords" />
-        </ScrollViewer>
+        <controls:WebView2 Name ="PreviewText"
+                           Loading="PreviewText_Loading"
+                           CoreWebView2Initialized="PreviewText_CoreWebView2Initialized"
+                           NavigationStarting="PreviewText_NavigationStarting"
+                           NavigationCompleted="PreviewText_NavigationCompleted" />
     </Grid>
 </UserControl>
