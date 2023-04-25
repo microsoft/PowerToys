@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft Corporation
+// Copyright (c) Microsoft Corporation
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
@@ -38,24 +38,6 @@ namespace Peek.FilePreviewer.Previewers
             string filename = tempFolder + "\\" + Guid.NewGuid().ToString() + ".html";
             File.WriteAllText(filename, markdownHTML);
             return filename;
-        }
-
-        // Cleanup the previously created tmp html files from svg files bigger than 2MB.
-        public static void CleanupWebView2UserDataFolder(string folder)
-        {
-            try
-            {
-                // Cleanup temp dir
-                var dir = new DirectoryInfo(folder);
-
-                foreach (var file in dir.EnumerateFiles("*.html"))
-                {
-                    file.Delete();
-                }
-            }
-            catch (Exception)
-            {
-            }
         }
     }
 }

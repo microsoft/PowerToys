@@ -43,7 +43,7 @@ namespace Peek.FilePreviewer.Previewers
 
         public void Dispose()
         {
-            WebViewHelper.CleanupWebView2UserDataFolder(tempDataFolder);
+            FilePreviewCommon.Helper.CleanupTempDir(tempDataFolder);
             GC.SuppressFinalize(this);
         }
 
