@@ -142,7 +142,7 @@ namespace Microsoft.PowerToys.PreviewHandler.Markdown
                 return;
             }
 
-            CleanupWebView2UserDataFolder();
+            FilePreviewCommon.Helper.CleanupTempDir(_webView2UserDataFolder);
 
             _infoBarDisplayed = false;
 
@@ -311,26 +311,6 @@ namespace Microsoft.PowerToys.PreviewHandler.Markdown
         private void ImagesBlockedCallBack()
         {
             _infoBarDisplayed = true;
-        }
-
-        /// <summary>
-        /// Cleanup the previously created tmp html files from svg files bigger than 2MB.
-        /// </summary>
-        private void CleanupWebView2UserDataFolder()
-        {
-            try
-            {
-                // Cleanup temp dir
-                var dir = new DirectoryInfo(_webView2UserDataFolder);
-
-                foreach (var file in dir.EnumerateFiles("*.html"))
-                {
-                    file.Delete();
-                }
-            }
-            catch (Exception)
-            {
-            }
         }
     }
 }
