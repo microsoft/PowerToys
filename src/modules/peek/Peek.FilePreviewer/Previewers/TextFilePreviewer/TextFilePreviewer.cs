@@ -115,7 +115,7 @@ namespace Peek.FilePreviewer.Previewers
         private static readonly HashSet<string> _supportedFileTypes = new HashSet<string>
         {
             ".txt",
-            ".log",
+            ".md",
         };
     }
 }
