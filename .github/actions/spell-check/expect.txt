@@ -78,6 +78,7 @@ APARTMENTTHREADED
 APeriod
 APIENTRY
 APIIs
+Apm
 APPBARDATA
 appdata
 APPEXECLINK
@@ -120,6 +121,7 @@ atlcom
 atleast
 atlfile
 atlstr
+ATRIOX
 Attribs
 aumid
 Aut
@@ -133,6 +135,7 @@ AUTOUPDATE
 AValid
 awakeness
 awakeversion
+AWAYMODE
 AYUV
 azcli
 azman
@@ -791,6 +794,8 @@ hhk
 HHmmss
 HHOOK
 hhx
+Hiber
+Hiberboot
 HIBYTE
 HICON
 HIDEWINDOW
@@ -1078,6 +1083,7 @@ lpsz
 lpt
 LPTHREAD
 LPTOP
+lptpm
 LPTSTR
 LPVOID
 LPW
@@ -1133,6 +1139,7 @@ mdwn
 MEDIASUBTYPE
 mediatype
 Melman
+MENUBREAK
 MENUITEMINFO
 MENUITEMINFOW
 MERGECOPY
@@ -1272,8 +1279,10 @@ Newtonsoft
 niels
 nielslaute
 NIF
+nint
 NLD
 nlog
+NLog
 nls
 NLSTEXT
 NOACTIVATE
@@ -1330,6 +1339,7 @@ ntdll
 ntfs
 NTSTATUS
 nugets
+nuint
 nullonfailure
 numberbox
 NUMLOCK
@@ -1383,6 +1393,7 @@ OVERLAPPEDWINDOW
 overlaywindow
 Oversampling
 OWNDC
+OWNERDRAW
 Packagemanager
 PACL
 PAINTSTRUCT
@@ -1804,8 +1815,8 @@ spam
 spdisp
 spdlog
 spdo
-spec'ing
 specialfolder
+spec'ing
 spesi
 splitwstring
 spsi
