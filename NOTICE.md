@@ -281,7 +281,7 @@ SOFTWARE.
 
 ## NuGet Packages used by PowerToys
 
-- CommunityToolkit.Labs.WinUI.SettingsControls 0.0.17
+- CommunityToolkit.Labs.WinUI.SettingsControls 0.0.18
 - CommunityToolkit.Mvvm 8.0.0
 - CommunityToolkit.WinUI.UI 7.1.2
 - CommunityToolkit.WinUI.UI.Controls 7.1.2
