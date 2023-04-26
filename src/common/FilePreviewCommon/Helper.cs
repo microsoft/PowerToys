@@ -5,7 +5,7 @@
 using System;
 using System.IO;
 
-namespace FilePreviewCommon
+namespace Microsoft.PowerToys.FilePreviewCommon
 {
     public static class Helper
     {

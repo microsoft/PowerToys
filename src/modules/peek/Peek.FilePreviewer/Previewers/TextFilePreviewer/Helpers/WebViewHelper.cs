@@ -16,7 +16,7 @@ namespace Peek.FilePreviewer.Previewers
         public static string PreviewTempFile(string fileText, string filePath, string tempFolder)
         {
             string theme = ThemeManager.GetWindowsBaseColor().ToLowerInvariant();
-            string markdownHTML = FilePreviewCommon.MarkdownHelper.MarkdownHtml(fileText, theme, filePath, ImageBlockedCallback);
+            string markdownHTML = Microsoft.PowerToys.FilePreviewCommon.MarkdownHelper.MarkdownHtml(fileText, theme, filePath, ImageBlockedCallback);
 
             string filename = tempFolder + "\\" + Guid.NewGuid().ToString() + ".html";
             File.WriteAllText(filename, markdownHTML);

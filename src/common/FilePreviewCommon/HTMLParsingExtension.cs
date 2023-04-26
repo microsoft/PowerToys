@@ -10,7 +10,7 @@ using Markdig.Renderers.Html;
 using Markdig.Syntax;
 using Markdig.Syntax.Inlines;
 
-namespace FilePreviewCommon
+namespace Microsoft.PowerToys.FilePreviewCommon
 {
     /// <summary>
     /// Callback if extension blocks external images.

@@ -5,7 +5,7 @@
 using System.IO;
 using Markdig;
 
-namespace FilePreviewCommon
+namespace Microsoft.PowerToys.FilePreviewCommon
 {
     public static class MarkdownHelper
     {
