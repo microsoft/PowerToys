@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft Corporation
+﻿// Copyright (c) Microsoft Corporation
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
@@ -49,7 +49,12 @@ namespace Peek.FilePreviewer.Previewers
 
         public static bool IsFileTypeSupported(string fileExt)
         {
-            return _supportedFileTypes.Contains(fileExt);
+            return _supportedFileTypes.Contains(fileExt) || IsDevFile(fileExt);
+        }
+
+        public static bool IsDevFile(string fileExt)
+        {
+            return _supportedMonacoFileTypes.Contains(fileExt);
         }
 
         public Task<Size?> GetPreviewSizeAsync(CancellationToken cancellationToken)
@@ -92,7 +97,14 @@ namespace Peek.FilePreviewer.Previewers
                 await Dispatcher.RunOnUiThread(async () =>
                 {
                     var raw = await ReadHelper.Read(Item.Path.ToString());
-                    Preview = new Uri(WebViewHelper.Preview(raw, tempDataFolder));
+                    if (IsDevFile(Item.Extension))
+                    {
+                        Preview = new Uri(MonacoHelper.PreviewTempFile(raw, Item.Extension, tempDataFolder));
+                    }
+                    else
+                    {
+                        Preview = new Uri(WebViewHelper.PreviewTempFile(raw, Item.Path, tempDataFolder));
+                    }
                 });
             });
         }
@@ -117,5 +129,7 @@ namespace Peek.FilePreviewer.Previewers
             ".txt",
             ".md",
         };
+
+        private static readonly HashSet<string> _supportedMonacoFileTypes = MonacoHelper.GetExtensions();
     }
 }

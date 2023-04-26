@@ -141,7 +141,7 @@ namespace Peek.FilePreviewer.Controls
                 sender.CoreWebView2.Settings.AreHostObjectsAllowed = false;
                 sender.CoreWebView2.Settings.IsGeneralAutofillEnabled = false;
                 sender.CoreWebView2.Settings.IsPasswordAutosaveEnabled = false;
-                sender.CoreWebView2.Settings.IsScriptEnabled = false;
+                sender.CoreWebView2.Settings.IsScriptEnabled = true; // TODO: enable only for dev files
                 sender.CoreWebView2.Settings.IsWebMessageEnabled = false;
 
                 sender.CoreWebView2.DOMContentLoaded += CoreWebView2_DOMContentLoaded;
