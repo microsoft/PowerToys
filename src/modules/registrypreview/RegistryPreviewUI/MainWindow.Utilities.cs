@@ -237,18 +237,24 @@ namespace RegistryPreview
                     // remove the - as we won't need it but it will get special treatment in the UI
                     registryLine = registryLine.Remove(1, 1);
 
+                    string imageName = DELETEDKEYIMAGE;
+                    CheckKeyLineForBrackets(ref registryLine, ref imageName);
+
                     // this is a key, so remove the first [ and last ]
                     registryLine = StripFirstAndLast(registryLine);
 
                     // do not track the result of this node, since it should have no children
-                    AddTextToTree(registryLine, DELETEDKEYIMAGE);
+                    AddTextToTree(registryLine, imageName);
                 }
                 else if (registryLine.StartsWith("[", StringComparison.InvariantCulture))
                 {
+                    string imageName = KEYIMAGE;
+                    CheckKeyLineForBrackets(ref registryLine, ref imageName);
+
                     // this is a key, so remove the first [ and last ]
                     registryLine = StripFirstAndLast(registryLine);
 
-                    treeViewNode = AddTextToTree(registryLine, KEYIMAGE);
+                    treeViewNode = AddTextToTree(registryLine, imageName);
                 }
                 else if (registryLine.StartsWith("\"", StringComparison.InvariantCulture) && registryLine.EndsWith("=-", StringComparison.InvariantCulture))
                 {
@@ -293,7 +299,16 @@ namespace RegistryPreview
                     // Create a new listview item that will be used to display the value
                     registryValue = new RegistryValue(name, "REG_SZ", string.Empty);
 
-                    // if the first and last character is a " then this is a string value; get rid of the first and last "
+                    // if the first character is a " then this is a string value, so find the last most " which will avoid comments
+                    if (value.StartsWith("\"", StringComparison.InvariantCulture))
+                    {
+                        int last = value.LastIndexOf("\"", StringComparison.InvariantCulture);
+                        if (last >= 0)
+                        {
+                            value = value.Substring(0, last + 1);
+                        }
+                    }
+
                     if (value.StartsWith("\"", StringComparison.InvariantCulture) && value.EndsWith("\"", StringComparison.InvariantCulture))
                     {
                         value = StripFirstAndLast(value);
@@ -328,6 +343,32 @@ namespace RegistryPreview
                     {
                         registryValue.Type = "REG_MULTI_SZ";
                         value = value.Replace("hex(7):", string.Empty);
+                    }
+                    else if (value.StartsWith("hex(0):", StringComparison.InvariantCultureIgnoreCase))
+                    {
+                        registryValue.Type = "REG_NONE";
+                        value = value.Replace("hex(0):", string.Empty);
+                    }
+
+                    // special casing for various key types
+                    switch (registryValue.Type)
+                    {
+                        case "REG_SZ":
+                        case "ERROR":
+
+                            // no special handling for these two
+                            break;
+                        default:
+                            // check to see if a continuation marker is the first character
+                            if (value == @"\")
+                            {
+                                // pad the value, so the parsing below is triggered
+                                value = @",\";
+                            }
+
+                            value = ScanAndRemoveComments(value);
+
+                            break;
                     }
 
                     // Parse for the case where a \ is added immediately after hex is declared
@@ -366,6 +407,7 @@ namespace RegistryPreview
                         }
 
                         registryLine = registryLines[index];
+                        registryLine = ScanAndRemoveComments(registryLine);
                         registryLine = registryLine.TrimStart();
                         value += registryLine;
                     }
@@ -373,10 +415,25 @@ namespace RegistryPreview
                     // Clean out any escaped characters in the value, only for the preview
                     value = StripEscapedCharacters(value);
 
-                    // update the ListViewItem with this information
-                    if (registryValue.Type != "ERROR")
+                    // update the ListViewItem with the loaded value, based off REG value type
+                    switch (registryValue.Type)
                     {
-                        registryValue.Value = value;
+                        case "ERROR":
+                            // do nothing
+                            break;
+                        case "REG_BINARY":
+                        case "REG_NONE":
+                            if (value.Length <= 0)
+                            {
+                                value = resourceLoader.GetString("ZeroLength");
+                            }
+
+                            registryValue.Value = value;
+
+                            break;
+                        default:
+                            registryValue.Value = value;
+                            break;
                     }
 
                     // update the ToolTip
@@ -400,7 +457,9 @@ namespace RegistryPreview
                     // check to see if anything got parsed!
                     if (treeView.RootNodes.Count <= 0)
                     {
-                        ShowMessageBox(APPNAME, App.AppFilename + resourceLoader.GetString("InvalidRegistryFile"), resourceLoader.GetString("OkButtonText"));
+                        AddTextToTree(resourceLoader.GetString("NoNodesFoundInFile"), ERRORIMAGE);
+
+                        // ShowMessageBox(APPNAME, App.AppFilename + resourceLoader.GetString("InvalidRegistryFile"), resourceLoader.GetString("OkButtonText"));
                     }
 
                     ChangeCursor(gridPreview, false);
@@ -500,6 +559,7 @@ namespace RegistryPreview
         private TreeViewNode AddTextToTree(string keys, string image)
         {
             string[] individualKeys = keys.Split('\\');
+
             string fullPath = keys;
             TreeViewNode returnNewNode = null, newNode = null, previousNode = null;
 
@@ -874,6 +934,9 @@ namespace RegistryPreview
                 case KEYIMAGE:
                     value = resourceLoader.GetString("ToolTipAddedKey");
                     break;
+                case ERRORIMAGE:
+                    value = resourceLoader.GetString("ToolTipErrorKey");
+                    break;
             }
 
             return value;
@@ -904,6 +967,73 @@ namespace RegistryPreview
             }
 
             registryValue.ToolTipText = value;
+        }
+
+        /// <summary>
+        /// Checks a Key line for the closing bracket and treat it as an error if it cannot be found
+        /// </summary>
+        private void CheckKeyLineForBrackets(ref string registryLine, ref string imageName)
+        {
+            // following the current behavior of the registry editor, find the last ] and treat everything else as ignorable
+            int lastBracket = registryLine.LastIndexOf(']');
+            if (lastBracket == -1)
+            {
+                // since we don't have a last bracket yet, add an extra space and continue processing
+                registryLine += " ";
+                imageName = ERRORIMAGE;
+            }
+            else
+            {
+                // having found the last ] and there is text after it, drop the rest of the string on the floor
+                if (lastBracket < registryLine.Length - 1)
+                {
+                    registryLine = registryLine.Substring(0, lastBracket + 1);
+                }
+
+                if (CheckForKnownGoodBranches(registryLine) == false)
+                {
+                    imageName = ERRORIMAGE;
+                }
+            }
+        }
+
+        /// <summary>
+        /// Takes a binary registry value, sees if it has a ; and dumps the rest of the line - this does not work for REG_SZ values
+        /// </summary>
+        private string ScanAndRemoveComments(string value)
+        {
+            // scan for comments and remove them
+            int indexOf = value.IndexOf(";", StringComparison.InvariantCulture);
+            if (indexOf > -1)
+            {
+                // presume that there is nothing following the start of the comment
+                value = value.Remove(indexOf, value.Length - indexOf);
+            }
+
+            return value;
+        }
+
+        /// <summary>
+        /// Make sure the root of a full path start with one of the five "hard coded" roots.  Throw an error for the branch if it doesn't.
+        /// </summary>
+        private bool CheckForKnownGoodBranches(string key)
+        {
+            if ((key.StartsWith("[HKEY_CLASSES_ROOT]", StringComparison.InvariantCultureIgnoreCase) == false &&
+                key.StartsWith("[HKEY_CURRENT_USER]", StringComparison.InvariantCultureIgnoreCase) == false &&
+                key.StartsWith("[HKEY_USERS]", StringComparison.InvariantCultureIgnoreCase) == false &&
+                key.StartsWith("[HKEY_LOCAL_MACHINE]", StringComparison.InvariantCultureIgnoreCase) == false &&
+                key.StartsWith("[HKEY_CURRENT_CONFIG]", StringComparison.InvariantCultureIgnoreCase) == false)
+                &&
+                (key.StartsWith(@"[HKEY_CLASSES_ROOT\", StringComparison.InvariantCultureIgnoreCase) == false &&
+                key.StartsWith(@"[HKEY_CURRENT_USER\", StringComparison.InvariantCultureIgnoreCase) == false &&
+                key.StartsWith(@"[HKEY_USERS\", StringComparison.InvariantCultureIgnoreCase) == false &&
+                key.StartsWith(@"[HKEY_LOCAL_MACHINE\", StringComparison.InvariantCultureIgnoreCase) == false &&
+                key.StartsWith(@"[HKEY_CURRENT_CONFIG\", StringComparison.InvariantCultureIgnoreCase) == false))
+            {
+                return false;
+            }
+
+            return true;
         }
 
         /// <summary>
