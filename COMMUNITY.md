@@ -27,12 +27,18 @@ Heiko has helped triaging, discussing, and creating a substantial number of issu
 ### [@Jay-o-Way](https://github.com/Jay-o-Way) - Jay
 Jay has helped triaging, discussing, creating a substantial number of issues and PRs.
 
+### [@TheJoeFin](https://github.com/TheJoeFin) - [Joe Finney](https://joefinapps.com)
+Joe has helped triaging, discussing, issues as well as fixing bugs and building features for Text Extractor.
+
 ### [@jsoref](https://github.com/jsoref) - [Josh Soref](https://check-spelling.dev/)
 Helping keep our spelling correct :)
 
 ### [@martinchrzan](https://github.com/martinchrzan/) - Martin Chrzan
 
 Color Picker is from Martin.
+
+### [@mikeclayton](https://github.com/mikeclayton) - [Michael Clayton](https://michael-clayton.com)
+Michael contributed the [initial version](https://github.com/microsoft/PowerToys/issues/23216) of the Mouse Jump tool and [a number of updates](https://github.com/microsoft/PowerToys/pulls?q=is%3Apr+author%3Amikeclayton) based on his FancyMouse utility.
 
 ### [@riverar](https://github.com/riverar) - [Rafael Rivera](https://withinrafael.com/)
 
