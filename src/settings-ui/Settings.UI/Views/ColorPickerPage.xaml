@@ -22,7 +22,10 @@
     <controls:SettingsPageControl x:Uid="ColorPicker" ModuleImageSource="ms-appx:///Assets/Modules/ColorPicker.png">
         <controls:SettingsPageControl.ModuleContent>
 
-            <StackPanel x:Name="ColorPickerView" Orientation="Vertical" ChildrenTransitions="{StaticResource SettingsCardsAnimations}">
+            <StackPanel
+                x:Name="ColorPickerView"
+                ChildrenTransitions="{StaticResource SettingsCardsAnimations}"
+                Orientation="Vertical">
                 <labs:SettingsCard
                     x:Uid="ColorPicker_EnableColorPicker"
                     HeaderIcon="{ui:BitmapIcon Source=/Assets/FluentIcons/FluentIconsColorPicker.png}"
@@ -95,6 +98,7 @@
                     <ItemsControl
                         HorizontalAlignment="Stretch"
                         AutomationProperties.Name="{Binding ElementName=ColorFormatsSetting, Path=Header}"
+                        IsTabStop="False"
                         ItemsSource="{Binding ColorFormats, Mode=TwoWay}">
                         <ItemsControl.ItemTemplate>
                             <DataTemplate x:DataType="models:ColorFormatModel">
@@ -103,6 +107,7 @@
                                     Click="EditButton_Click"
                                     Description="{x:Bind Example, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                                     Header="{x:Bind Name, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                    IsActionIconVisible="False"
                                     IsClickEnabled="True">
                                     <labs:SettingsCard.Resources>
                                         <x:Double x:Key="SettingsCardLeftIndention">42</x:Double>
