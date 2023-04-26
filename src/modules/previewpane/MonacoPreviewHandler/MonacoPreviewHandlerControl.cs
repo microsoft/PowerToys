@@ -29,15 +29,6 @@ namespace Microsoft.PowerToys.PreviewHandler.Monaco
         private readonly Settings _settings = new Settings();
 
         /// <summary>
-        /// Formatters applied before rendering the preview
-        /// </summary>
-        private readonly IReadOnlyCollection<IFormatter> _formatters = new List<IFormatter>
-        {
-            new JsonFormatter(),
-            new XmlFormatter(),
-        }.AsReadOnly();
-
-        /// <summary>
         /// Text box to display the information about blocked elements from Svg.
         /// </summary>
         private RichTextBox _textBox;
@@ -386,7 +377,7 @@ namespace Microsoft.PowerToys.PreviewHandler.Monaco
 
                 if (_settings.TryFormat)
                 {
-                    var formatter = _formatters.SingleOrDefault(f => f.LangSet == _vsCodeLangSet);
+                    var formatter = FilePreviewCommon.MonacoHelper.Formatters.SingleOrDefault(f => f.LangSet == _vsCodeLangSet);
                     if (formatter != null)
                     {
                         try

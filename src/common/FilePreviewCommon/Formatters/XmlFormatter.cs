@@ -5,7 +5,7 @@
 using System.Text;
 using System.Xml;
 
-namespace Microsoft.PowerToys.PreviewHandler.Monaco.Formatters
+namespace Microsoft.PowerToys.FilePreviewCommon.Monaco.Formatters
 {
     public class XmlFormatter : IFormatter
     {

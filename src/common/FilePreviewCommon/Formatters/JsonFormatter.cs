@@ -5,7 +5,7 @@
 using System.Text.Encodings.Web;
 using System.Text.Json;
 
-namespace Microsoft.PowerToys.PreviewHandler.Monaco.Formatters
+namespace Microsoft.PowerToys.FilePreviewCommon.Monaco.Formatters
 {
     public class JsonFormatter : IFormatter
     {
