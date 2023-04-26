@@ -543,6 +543,14 @@
             <Directory Id="WinAppSDKDlls" Name="WinAppSDK" />
             <Directory Id="PowerToysInteropDlls" Name="Interop" />
           </Directory>
+          <Directory Id="CommonFolder" Name="common">
+            <Directory Id="FilePreviewCommonFolder" Name="FilePreviewCommon">
+              <Directory Id="FilePreviewCommonMonaco" Name="monaco">
+                <Directory Id="MonacoFilePreviewCommonMonacoCustomLanguagesFolder" Name="customLanguages" />
+                <Directory Id="MonacoFilePreviewCommonMonacoSRCFolder" Name="monacoSRC" />
+              </Directory>
+            </Directory>
+          </Directory>
           <Directory Id="ToolsFolder" Name="Tools"/>
           <Directory Id="ModulesInstallFolder" Name="modules">
             <Directory Id="ImageResizerInstallFolder" Name="$(var.ImageResizerProjectName)">
@@ -569,8 +577,6 @@
               <Directory Id="VideoConferenceIconsFolder" Name="Icons" />
             </Directory>
             <Directory Id="FileExplorerPreviewInstallFolder" Name="FileExplorerPreview">
-              <Directory Id="MonacoPreviewHandlerMonacoCustomLanguagesFolder" Name="customLanguages" />
-              <Directory Id="MonacoPreviewHandlerMonacoSRCFolder" Name="monacoSRC" />
             </Directory>
             <Directory Id="FancyZonesInstallFolder" Name="$(var.FancyZonesProjectName)" />
             <Directory Id="PowerOCRInstallFolder" Name="$(var.PowerOCRProjectName)" />
@@ -818,9 +824,6 @@
       <Component Id="Dlls_DotnetFiles_Component" Guid="19488F16-3399-40AB-B7C4-CE3F27C1B294" Win64="yes">
       <?foreach File in $(var.DotnetRuntimeFiles)?>
         <File Source="$(var.BinDir)Settings\$(var.File)" />
-      <?endforeach?>
-      <?foreach File in $(var.DotnetRuntimeWPFFiles)?>
-        <File Source="$(var.BinDir)\modules\\ColorPicker\$(var.File)" />
       <?endforeach?>
       </Component>
     </DirectoryRef>
@@ -1137,11 +1140,11 @@
       </Component>
     </DirectoryRef>
 
-      <DirectoryRef Id="PeekMicrosoftUIXamlAssetsInstallFolder" FileSource="$(var.BinDir)modules\$(var.PeekProjectName)\Microsoft.UI.Xaml\Assets">
-        <?foreach File in $(var.PeekMicrosoftUIXamlAssetsInstallFiles)?>
-        <Component Id="PeekMicrosoftUIXamlAssets_$(var.File)" Win64="yes">
-          <File Id="PeekMicrosoftUIXamlAssetsFile_$(var.File)" Source="$(var.BinDir)modules\$(var.PeekProjectName)\Microsoft.UI.Xaml\Assets\$(var.File)" />
-        </Component>
+    <DirectoryRef Id="PeekMicrosoftUIXamlAssetsInstallFolder" FileSource="$(var.BinDir)modules\$(var.PeekProjectName)\Microsoft.UI.Xaml\Assets">
+      <?foreach File in $(var.PeekMicrosoftUIXamlAssetsInstallFiles)?>
+      <Component Id="PeekMicrosoftUIXamlAssets_$(var.File)" Win64="yes">
+        <File Id="PeekMicrosoftUIXamlAssetsFile_$(var.File)" Source="$(var.BinDir)modules\$(var.PeekProjectName)\Microsoft.UI.Xaml\Assets\$(var.File)" />
+      </Component>
         <?endforeach?>
       </DirectoryRef>
 
@@ -1220,9 +1223,10 @@
       </Component>
       <?endforeach?>
     </DirectoryRef>
-    <DirectoryRef Id="MonacoPreviewHandlerMonacoCustomLanguagesFolder" FileSource="$(var.BinDir)modules\FileExplorerPreview\customLanguages">
-      <Component Id="MonacoPreviewHandlerMonacoCustomLanguagesRegJS" Win64="yes">
-        <File Id="MonacoPreviewHandler_MonacoCustomLanguagesRegJS" Source="$(var.BinDir)modules\FileExplorerPreview\customLanguages\reg.js" />
+
+    <DirectoryRef Id="MonacoFilePreviewCommonMonacoCustomLanguagesFolder" FileSource="$(var.BinDir)common\FilePreviewCommon\monaco\customLanguages">
+      <Component Id="MonacoFilePreviewCommonMonacoCustomLanguagesRegJS" Win64="yes">
+        <File Id="MonacoFilePreviewCommon_MonacoCustomLanguagesRegJS" Source="$(var.BinDir)common\FilePreviewCommon\monaco\customLanguages\reg.js" />
       </Component>
     </DirectoryRef>
 
@@ -1454,7 +1458,7 @@
       <?foreach File in $(var.PowerPreviewFiles)?>
       <ComponentRef Id="Module_PowerPreview_$(var.File)" />
       <?endforeach?>
-      <ComponentRef Id="MonacoPreviewHandlerMonacoCustomLanguagesRegJS" />
+      <ComponentRef Id="MonacoFilePreviewCommonMonacoCustomLanguagesRegJS" />
       <ComponentRef Id="Module_PowerPreview_Registry" />
       <ComponentRef Id="Module_KeyboardManager" />
       <ComponentRef Id="Module_KeyboardManager_Editor" />
