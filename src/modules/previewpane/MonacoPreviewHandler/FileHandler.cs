@@ -21,12 +21,7 @@ namespace Microsoft.PowerToys.PreviewHandler.Monaco
             fileExtension = fileExtension.ToLower(CultureInfo.CurrentCulture);
             try
             {
-                JsonDocument languageListDocument;
-                using (StreamReader jsonFileReader = new StreamReader(new FileStream(Settings.AssemblyDirectory + "\\monaco_languages.json", FileMode.Open, FileAccess.Read, FileShare.ReadWrite)))
-                {
-                    languageListDocument = JsonDocument.Parse(jsonFileReader.ReadToEnd());
-                    jsonFileReader.Close();
-                }
+                var languageListDocument = FilePreviewCommon.MonacoHelper.GetLanguages();
 
                 JsonElement languageList = languageListDocument.RootElement.GetProperty("list");
                 foreach (JsonElement e in languageList.EnumerateArray())
