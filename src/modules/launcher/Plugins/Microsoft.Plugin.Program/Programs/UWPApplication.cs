@@ -55,6 +55,9 @@ namespace Microsoft.Plugin.Program.Programs
 
         public string Location => Package.Location;
 
+        // Localized path based on windows display language
+        public string LocationLocalized => Package.LocationLocalized;
+
         public bool Enabled { get; set; }
 
         public bool CanRunElevated { get; set; }
@@ -119,7 +122,7 @@ namespace Microsoft.Plugin.Program.Programs
 
             // Using CurrentCulture since this is user facing
             var toolTipTitle = string.Format(CultureInfo.CurrentCulture, "{0}: {1}", Properties.Resources.powertoys_run_plugin_program_file_name, result.Title);
-            var toolTipText = string.Format(CultureInfo.CurrentCulture, "{0}: {1}", Properties.Resources.powertoys_run_plugin_program_file_path, Package.Location);
+            var toolTipText = string.Format(CultureInfo.CurrentCulture, "{0}: {1}", Properties.Resources.powertoys_run_plugin_program_file_path, LocationLocalized);
             result.ToolTipData = new ToolTipData(toolTipTitle, toolTipText);
 
             return result;
@@ -436,9 +439,9 @@ namespace Microsoft.Plugin.Program.Programs
                     paths.Add(path);
                 }
 
-                if (_scaleFactors.ContainsKey(Package.Version))
+                if (_scaleFactors.TryGetValue(Package.Version, out List<int> factors))
                 {
-                    foreach (var factor in _scaleFactors[Package.Version])
+                    foreach (var factor in factors)
                     {
                         if (highContrast)
                         {
@@ -586,10 +589,10 @@ namespace Microsoft.Plugin.Program.Programs
 
         internal void LogoPathFromUri(string uri, Theme theme)
         {
-            // all https://msdn.microsoft.com/windows/uwp/controls-and-patterns/tiles-and-notifications-app-assets
-            // windows 10 https://msdn.microsoft.com/en-us/library/windows/apps/dn934817.aspx
-            // windows 8.1 https://msdn.microsoft.com/en-us/library/windows/apps/hh965372.aspx#target_size
-            // windows 8 https://msdn.microsoft.com/en-us/library/windows/apps/br211475.aspx
+            // all https://learn.microsoft.com/windows/uwp/controls-and-patterns/tiles-and-notifications-app-assets
+            // windows 10 https://msdn.microsoft.com/library/windows/apps/dn934817.aspx
+            // windows 8.1 https://msdn.microsoft.com/library/windows/apps/hh965372.aspx#target_size
+            // windows 8 https://msdn.microsoft.com/library/windows/apps/br211475.aspx
             string path;
             bool isLogoUriSet;
 

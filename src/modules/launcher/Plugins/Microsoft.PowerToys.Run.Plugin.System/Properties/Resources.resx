@@ -244,6 +244,18 @@
     <value>Recycle Bin</value>
     <comment>Means the recycle bin folder in Explorer.</comment>
   </data>
+  <data name="Microsoft_plugin_sys_RecycleBinEmptyResult" xml:space="preserve">
+    <value>Empty Recycle Bin</value>
+    <comment>This should align to the action in Windows of emptying the recycle bin on your computer.</comment>
+  </data>
+  <data name="Microsoft_plugin_sys_RecycleBinEmpty_description" xml:space="preserve">
+    <value>Empty Recycle Bin</value>
+    <comment>This should align to the action in Windows of emptying the recycle bin on your computer.</comment>
+  </data>
+  <data name="Microsoft_plugin_sys_RecycleBinOpen" xml:space="preserve">
+    <value>Open Recycle Bin</value>
+    <comment>Means the recycle bin folder in Explorer.</comment>
+  </data>
   <data name="Microsoft_plugin_sys_RecycleBin_contextMenu" xml:space="preserve">
     <value>Empty Recycle Bin (Shift+Delete)</value>
     <comment>This should align to the action in Windows of emptying the recycle bin on your computer.</comment>
@@ -270,6 +282,9 @@
   <data name="Microsoft_plugin_sys_RecycleBin_searchTag" xml:space="preserve">
     <value>Empty Recycle Bin</value>
     <comment>This should align to the action in Windows of emptying the recycle bin on your computer.</comment>
+  </data>
+  <data name="Microsoft_plugin_sys_RecycleBin_ShowEmptySeparate" xml:space="preserve">
+    <value>Show separate result for Empty Recycle Bin command</value>
   </data>
   <data name="Microsoft_plugin_sys_RecycleBin_ShowEmptySuccessMessage" xml:space="preserve">
     <value>Show a success message after emptying the Recycle Bin</value>

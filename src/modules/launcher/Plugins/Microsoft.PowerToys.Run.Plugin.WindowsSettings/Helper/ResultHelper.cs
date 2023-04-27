@@ -45,7 +45,18 @@ namespace Microsoft.PowerToys.Run.Plugin.WindowsSettings.Helper
 
                 AddOptionalToolTip(entry, result);
 
-                resultList.Add(result);
+                // There is a case with MMC snap-ins where we don't have .msc files fort them. Then we need to show the note for this results in subtitle too.
+                // These results have mmc.exe as command and their note property is filled.
+                if (entry.Command == "mmc.exe" && !string.IsNullOrEmpty(entry.Note))
+                {
+                    result.SubTitle = result.SubTitle + $"\u0020\u0020\u002D\u0020\u0020{Resources.Note}: {entry.Note}"; // "\u0020\u0020\u002D\u0020\u0020" = "<space><space><minus><space><space>"
+                }
+
+                // To not show duplicate entries we check the existing results on the list before adding the new entry. Example: Device Manager entry for Control Panel and Device Manager entry for MMC.
+                if (!resultList.Any(x => x.Title == result.Title))
+                {
+                    resultList.Add(result);
+                }
             }
 
             SetScores(resultList, query);

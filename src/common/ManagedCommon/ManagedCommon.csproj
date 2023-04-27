@@ -13,10 +13,12 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="System.Management" Version="7.0.0" />
+    <PackageReference Include="System.IO.Abstractions" />
+    <PackageReference Include="System.Management" />
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\interop\PowerToys.Interop.vcxproj" />
     <ProjectReference Include="..\ManagedTelemetry\Telemetry\ManagedTelemetry.csproj" />
   </ItemGroup>
 

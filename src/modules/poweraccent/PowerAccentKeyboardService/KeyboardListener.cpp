@@ -94,7 +94,7 @@ namespace winrt::PowerToys::PowerAccentKeyboardService::implementation
     {
         std::vector<std::wstring> excludedApps;
         auto excludedUppercase = std::wstring(excludedAppsView);
-        CharUpperBuffW(excludedUppercase.data(), (DWORD)excludedUppercase.length());
+        CharUpperBuffW(excludedUppercase.data(), static_cast<DWORD>(excludedUppercase.length()));
         std::wstring_view view(excludedUppercase);
         view = left_trim<wchar_t>(trim<wchar_t>(view));
 
@@ -129,7 +129,7 @@ namespace winrt::PowerToys::PowerAccentKeyboardService::implementation
                 return m_prevForegroundAppExcl.second;
             }
             auto processPath = get_process_path(foregroundApp);
-            CharUpperBuffW(processPath.data(), (DWORD)processPath.length());
+            CharUpperBuffW(processPath.data(), static_cast<DWORD>(processPath.length()));
             m_prevForegroundAppExcl = { foregroundApp,
                                       find_app_name_in_path(processPath, m_settings.excludedApps) };
 

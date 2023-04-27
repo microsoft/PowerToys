@@ -295,6 +295,15 @@ namespace Microsoft.PowerToys.Run.Plugin.WindowsSettings.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Microsoft Management Console.
+        /// </summary>
+        internal static string AppMMC {
+            get {
+                return ResourceManager.GetString("AppMMC", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Apps &amp; Features.
         /// </summary>
         internal static string AppsAndFeatures {
@@ -610,6 +619,15 @@ namespace Microsoft.PowerToys.Run.Plugin.WindowsSettings.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Authorization Manager.
+        /// </summary>
+        internal static string AuthorizationManager {
+            get {
+                return ResourceManager.GetString("AuthorizationManager", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Automatic file downloads.
         /// </summary>
         internal static string AutomaticFileDownloads {
@@ -781,6 +799,15 @@ namespace Microsoft.PowerToys.Run.Plugin.WindowsSettings.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to bthprops.cpl.
+        /// </summary>
+        internal static string bthprops_cpl {
+            get {
+                return ResourceManager.GetString("bthprops.cpl", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Calendar.
         /// </summary>
         internal static string Calendar {
@@ -840,6 +867,24 @@ namespace Microsoft.PowerToys.Run.Plugin.WindowsSettings.Properties {
         internal static string CellularAndSim {
             get {
                 return ResourceManager.GetString("CellularAndSim", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Certificates - Current User.
+        /// </summary>
+        internal static string CertificatesCurrentUser {
+            get {
+                return ResourceManager.GetString("CertificatesCurrentUser", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Certificates - Local Computer.
+        /// </summary>
+        internal static string CertificatesLocalComputer {
+            get {
+                return ResourceManager.GetString("CertificatesLocalComputer", resourceCulture);
             }
         }
         
@@ -907,6 +952,15 @@ namespace Microsoft.PowerToys.Run.Plugin.WindowsSettings.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to collab.cpl.
+        /// </summary>
+        internal static string collab_cpl {
+            get {
+                return ResourceManager.GetString("collab.cpl", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Color filters.
         /// </summary>
         internal static string ColorFilters {
@@ -939,6 +993,33 @@ namespace Microsoft.PowerToys.Run.Plugin.WindowsSettings.Properties {
         internal static string Command {
             get {
                 return ResourceManager.GetString("Command", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to COM-Objects.
+        /// </summary>
+        internal static string ComObjects {
+            get {
+                return ResourceManager.GetString("ComObjects", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Component Services.
+        /// </summary>
+        internal static string ComponentServices {
+            get {
+                return ResourceManager.GetString("ComponentServices", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Computer Management.
+        /// </summary>
+        internal static string ComputerManagement {
+            get {
+                return ResourceManager.GetString("ComputerManagement", resourceCulture);
             }
         }
         
@@ -1038,6 +1119,15 @@ namespace Microsoft.PowerToys.Run.Plugin.WindowsSettings.Properties {
         internal static string CortanaLanguage {
             get {
                 return ResourceManager.GetString("CortanaLanguage", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Create and format hard disk partitions.
+        /// </summary>
+        internal static string CreateAndFormatHardDiskPartitions {
+            get {
+                return ResourceManager.GetString("CreateAndFormatHardDiskPartitions", resourceCulture);
             }
         }
         
@@ -1150,6 +1240,15 @@ namespace Microsoft.PowerToys.Run.Plugin.WindowsSettings.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Windows Defender Firewall with Advanced Security.
+        /// </summary>
+        internal static string DefenderFirewallAdvancedSecurity {
+            get {
+                return ResourceManager.GetString("DefenderFirewallAdvancedSecurity", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Delivery Optimization.
         /// </summary>
         internal static string DeliveryOptimization {
@@ -1204,6 +1303,15 @@ namespace Microsoft.PowerToys.Run.Plugin.WindowsSettings.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Device Manager.
+        /// </summary>
+        internal static string DeviceManagerSnapIn {
+            get {
+                return ResourceManager.GetString("DeviceManagerSnapIn", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Devices and printers.
         /// </summary>
         internal static string DevicesAndPrinters {
@@ -1245,6 +1353,15 @@ namespace Microsoft.PowerToys.Run.Plugin.WindowsSettings.Properties {
         internal static string DirectOpenYourPhone {
             get {
                 return ResourceManager.GetString("DirectOpenYourPhone", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Disk Management.
+        /// </summary>
+        internal static string DiskManagement {
+            get {
+                return ResourceManager.GetString("DiskManagement", resourceCulture);
             }
         }
         
@@ -1402,6 +1519,15 @@ namespace Microsoft.PowerToys.Run.Plugin.WindowsSettings.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Event Viewer.
+        /// </summary>
+        internal static string EventViewer {
+            get {
+                return ResourceManager.GetString("EventViewer", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Exploit Protection.
         /// </summary>
         internal static string ExploitProtection {
@@ -1497,6 +1623,15 @@ namespace Microsoft.PowerToys.Run.Plugin.WindowsSettings.Properties {
         internal static string Firewall {
             get {
                 return ResourceManager.GetString("Firewall", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Firewall.cpl.
+        /// </summary>
+        internal static string Firewall_cpl {
+            get {
+                return ResourceManager.GetString("Firewall.cpl", resourceCulture);
             }
         }
         
@@ -1627,6 +1762,15 @@ namespace Microsoft.PowerToys.Run.Plugin.WindowsSettings.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to GPT.
+        /// </summary>
+        internal static string GPT {
+            get {
+                return ResourceManager.GetString("GPT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Graphics settings.
         /// </summary>
         internal static string GraphicsSettings {
@@ -1650,6 +1794,24 @@ namespace Microsoft.PowerToys.Run.Plugin.WindowsSettings.Properties {
         internal static string GreenWeek {
             get {
                 return ResourceManager.GetString("GreenWeek", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Group Policy.
+        /// </summary>
+        internal static string GroupPolicy {
+            get {
+                return ResourceManager.GetString("GroupPolicy", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to hdwwiz.cpl.
+        /// </summary>
+        internal static string hdwwiz_cpl {
+            get {
+                return ResourceManager.GetString("hdwwiz.cpl", resourceCulture);
             }
         }
         
@@ -1807,6 +1969,33 @@ namespace Microsoft.PowerToys.Run.Plugin.WindowsSettings.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to IP Security Monitor.
+        /// </summary>
+        internal static string IpSecurityMonitor {
+            get {
+                return ResourceManager.GetString("IpSecurityMonitor", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to IP Security Policies on Local Computer.
+        /// </summary>
+        internal static string IpSecurityPoliciesOnLocalComputer {
+            get {
+                return ResourceManager.GetString("IpSecurityPoliciesOnLocalComputer", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to irprops.cpl.
+        /// </summary>
+        internal static string irprops_cpl {
+            get {
+                return ResourceManager.GetString("irprops.cpl", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Isolated Browsing.
         /// </summary>
         internal static string IsolatedBrowsing {
@@ -1906,6 +2095,24 @@ namespace Microsoft.PowerToys.Run.Plugin.WindowsSettings.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Local Computer Policy.
+        /// </summary>
+        internal static string LocalGroupPolicy {
+            get {
+                return ResourceManager.GetString("LocalGroupPolicy", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Local Users and Groups.
+        /// </summary>
+        internal static string LocalUsersAndGroups {
+            get {
+                return ResourceManager.GetString("LocalUsersAndGroups", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Location.
         /// </summary>
         internal static string Location {
@@ -1969,6 +2176,15 @@ namespace Microsoft.PowerToys.Run.Plugin.WindowsSettings.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to MBR.
+        /// </summary>
+        internal static string MBR {
+            get {
+                return ResourceManager.GetString("MBR", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Messaging.
         /// </summary>
         internal static string Messaging {
@@ -2010,6 +2226,195 @@ namespace Microsoft.PowerToys.Run.Plugin.WindowsSettings.Properties {
         internal static string mlcfg32_cpl {
             get {
                 return ResourceManager.GetString("mlcfg32.cpl", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to azman.msc.
+        /// </summary>
+        internal static string MMC_azman {
+            get {
+                return ResourceManager.GetString("MMC_azman", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to certlm.msc.
+        /// </summary>
+        internal static string MMC_certlm {
+            get {
+                return ResourceManager.GetString("MMC_certlm", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to certmgr.msc.
+        /// </summary>
+        internal static string MMC_certmgr {
+            get {
+                return ResourceManager.GetString("MMC_certmgr", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to comexp.msc.
+        /// </summary>
+        internal static string MMC_comexp {
+            get {
+                return ResourceManager.GetString("MMC_comexp", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to compmgmt.msc.
+        /// </summary>
+        internal static string MMC_compmgmt {
+            get {
+                return ResourceManager.GetString("MMC_compmgmt", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to devmgmt.msc.
+        /// </summary>
+        internal static string MMC_devmgmt {
+            get {
+                return ResourceManager.GetString("MMC_devmgmt", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to diskmgmt.msc.
+        /// </summary>
+        internal static string MMC_diskmgmt {
+            get {
+                return ResourceManager.GetString("MMC_diskmgmt", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to eventvwr.msc.
+        /// </summary>
+        internal static string MMC_eventvwr {
+            get {
+                return ResourceManager.GetString("MMC_eventvwr", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to fsmgmt.msc.
+        /// </summary>
+        internal static string MMC_fsmgmt {
+            get {
+                return ResourceManager.GetString("MMC_fsmgmt", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to gpedit.msc.
+        /// </summary>
+        internal static string MMC_gpedit {
+            get {
+                return ResourceManager.GetString("MMC_gpedit", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to lusrmgr.msc.
+        /// </summary>
+        internal static string MMC_lusrmgr {
+            get {
+                return ResourceManager.GetString("MMC_lusrmgr", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to mmc.exe.
+        /// </summary>
+        internal static string MMC_mmcexe {
+            get {
+                return ResourceManager.GetString("MMC_mmcexe", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to perfmon.msc.
+        /// </summary>
+        internal static string MMC_perfmon {
+            get {
+                return ResourceManager.GetString("MMC_perfmon", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to printmanagement.msc.
+        /// </summary>
+        internal static string MMC_printmanagement {
+            get {
+                return ResourceManager.GetString("MMC_printmanagement", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to rsop.msc.
+        /// </summary>
+        internal static string MMC_rsop {
+            get {
+                return ResourceManager.GetString("MMC_rsop", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to secpol.msc.
+        /// </summary>
+        internal static string MMC_secpol {
+            get {
+                return ResourceManager.GetString("MMC_secpol", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to services.msc.
+        /// </summary>
+        internal static string MMC_services {
+            get {
+                return ResourceManager.GetString("MMC_services", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to taskschd.msc.
+        /// </summary>
+        internal static string MMC_taskschd {
+            get {
+                return ResourceManager.GetString("MMC_taskschd", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to tpm.msc.
+        /// </summary>
+        internal static string MMC_tpm {
+            get {
+                return ResourceManager.GetString("MMC_tpm", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to WF.msc.
+        /// </summary>
+        internal static string MMC_wf {
+            get {
+                return ResourceManager.GetString("MMC_wf", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to WmiMgmt.msc.
+        /// </summary>
+        internal static string MMC_wmimgmt {
+            get {
+                return ResourceManager.GetString("MMC_wmimgmt", resourceCulture);
             }
         }
         
@@ -2149,7 +2554,16 @@ namespace Microsoft.PowerToys.Run.Plugin.WindowsSettings.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Nearby share settings.
+        ///   Looks up a localized string similar to ncpa.cpl.
+        /// </summary>
+        internal static string ncpa_cpl {
+            get {
+                return ResourceManager.GetString("ncpa.cpl", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Nearby sharing settings.
         /// </summary>
         internal static string NearbyShareSettings {
             get {
@@ -2208,6 +2622,15 @@ namespace Microsoft.PowerToys.Run.Plugin.WindowsSettings.Properties {
         internal static string NetworkProperties {
             get {
                 return ResourceManager.GetString("NetworkProperties", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Network sessions.
+        /// </summary>
+        internal static string NetworkSessions {
+            get {
+                return ResourceManager.GetString("NetworkSessions", resourceCulture);
             }
         }
         
@@ -2406,6 +2829,15 @@ namespace Microsoft.PowerToys.Run.Plugin.WindowsSettings.Properties {
         internal static string NoteMobileProvisioning {
             get {
                 return ResourceManager.GetString("NoteMobileProvisioning", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to You have to add this snap-in manually..
+        /// </summary>
+        internal static string NoteNoMscFileExist {
+            get {
+                return ResourceManager.GetString("NoteNoMscFileExist", resourceCulture);
             }
         }
         
@@ -2707,6 +3139,15 @@ namespace Microsoft.PowerToys.Run.Plugin.WindowsSettings.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Performance Monitor.
+        /// </summary>
+        internal static string PerformanceMonitor {
+            get {
+                return ResourceManager.GetString("PerformanceMonitor", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Permissions and history.
         /// </summary>
         internal static string PermissionsAndHistory {
@@ -2851,6 +3292,15 @@ namespace Microsoft.PowerToys.Run.Plugin.WindowsSettings.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to PNP Device.
+        /// </summary>
+        internal static string PnpDevice {
+            get {
+                return ResourceManager.GetString("PnpDevice", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Power and sleep.
         /// </summary>
         internal static string PowerAndSleep {
@@ -2901,6 +3351,24 @@ namespace Microsoft.PowerToys.Run.Plugin.WindowsSettings.Properties {
         internal static string PrintersAndScanners {
             get {
                 return ResourceManager.GetString("PrintersAndScanners", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Printer Spooler.
+        /// </summary>
+        internal static string PrinterSpooler {
+            get {
+                return ResourceManager.GetString("PrinterSpooler", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Print Management.
+        /// </summary>
+        internal static string PrintManagement {
+            get {
+                return ResourceManager.GetString("PrintManagement", resourceCulture);
             }
         }
         
@@ -3148,6 +3616,15 @@ namespace Microsoft.PowerToys.Run.Plugin.WindowsSettings.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Resultant Set of Policy.
+        /// </summary>
+        internal static string ResultantSetOfPolicy {
+            get {
+                return ResourceManager.GetString("ResultantSetOfPolicy", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Scanners and cameras.
         /// </summary>
         internal static string ScannersAndCameras {
@@ -3256,11 +3733,38 @@ namespace Microsoft.PowerToys.Run.Plugin.WindowsSettings.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Security Configuration and Analysis.
+        /// </summary>
+        internal static string SecurityConfigurationAndAnalysis {
+            get {
+                return ResourceManager.GetString("SecurityConfigurationAndAnalysis", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Security Processor.
         /// </summary>
         internal static string SecurityProcessor {
             get {
                 return ResourceManager.GetString("SecurityProcessor", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Security Templates.
+        /// </summary>
+        internal static string SecurityTemplates {
+            get {
+                return ResourceManager.GetString("SecurityTemplates", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Services.
+        /// </summary>
+        internal static string ServicesSnapIn {
+            get {
+                return ResourceManager.GetString("ServicesSnapIn", resourceCulture);
             }
         }
         
@@ -3310,6 +3814,15 @@ namespace Microsoft.PowerToys.Run.Plugin.WindowsSettings.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Shared Folders.
+        /// </summary>
+        internal static string SharedFolders {
+            get {
+                return ResourceManager.GetString("SharedFolders", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Shortcuts.
         /// </summary>
         internal static string Shortcuts {
@@ -3351,6 +3864,15 @@ namespace Microsoft.PowerToys.Run.Plugin.WindowsSettings.Properties {
         internal static string Size {
             get {
                 return ResourceManager.GetString("Size", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to SMB.
+        /// </summary>
+        internal static string SMB {
+            get {
+                return ResourceManager.GetString("SMB", resourceCulture);
             }
         }
         
@@ -3508,6 +4030,15 @@ namespace Microsoft.PowerToys.Run.Plugin.WindowsSettings.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to System Tools.
+        /// </summary>
+        internal static string SystemTools {
+            get {
+                return ResourceManager.GetString("SystemTools", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to System variables.
         /// </summary>
         internal static string SystemVariables {
@@ -3531,6 +4062,15 @@ namespace Microsoft.PowerToys.Run.Plugin.WindowsSettings.Properties {
         internal static string TabletMode {
             get {
                 return ResourceManager.GetString("TabletMode", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to TabletPC.cpl.
+        /// </summary>
+        internal static string TabletPC_cpl {
+            get {
+                return ResourceManager.GetString("TabletPC.cpl", resourceCulture);
             }
         }
         
@@ -3589,6 +4129,15 @@ namespace Microsoft.PowerToys.Run.Plugin.WindowsSettings.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Task Scheduler.
+        /// </summary>
+        internal static string TaskScheduler {
+            get {
+                return ResourceManager.GetString("TaskScheduler", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Team Conferencing.
         /// </summary>
         internal static string TeamConferencing {
@@ -3603,6 +4152,15 @@ namespace Microsoft.PowerToys.Run.Plugin.WindowsSettings.Properties {
         internal static string TeamDeviceManagement {
             get {
                 return ResourceManager.GetString("TeamDeviceManagement", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to telephon.cpl.
+        /// </summary>
+        internal static string telephon_cpl {
+            get {
+                return ResourceManager.GetString("telephon.cpl", resourceCulture);
             }
         }
         
@@ -3684,6 +4242,15 @@ namespace Microsoft.PowerToys.Run.Plugin.WindowsSettings.Properties {
         internal static string Touchpad {
             get {
                 return ResourceManager.GetString("Touchpad", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to TPM Management.
+        /// </summary>
+        internal static string TpmManagement {
+            get {
+                return ResourceManager.GetString("TpmManagement", resourceCulture);
             }
         }
         
@@ -4057,6 +4624,15 @@ namespace Microsoft.PowerToys.Run.Plugin.WindowsSettings.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Windows Management Instrumentation.
+        /// </summary>
+        internal static string WindowsManagementInstrumentation {
+            get {
+                return ResourceManager.GetString("WindowsManagementInstrumentation", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Windows Mobility Center.
         /// </summary>
         internal static string WindowsMobilityCenter {
@@ -4156,6 +4732,15 @@ namespace Microsoft.PowerToys.Run.Plugin.WindowsSettings.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to WMI Control.
+        /// </summary>
+        internal static string WmiControl {
+            get {
+                return ResourceManager.GetString("WmiControl", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Workplace.
         /// </summary>
         internal static string Workplace {
@@ -4170,6 +4755,15 @@ namespace Microsoft.PowerToys.Run.Plugin.WindowsSettings.Properties {
         internal static string WorkplaceProvisioning {
             get {
                 return ResourceManager.GetString("WorkplaceProvisioning", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to wscui.cpl.
+        /// </summary>
+        internal static string wscui_cpl {
+            get {
+                return ResourceManager.GetString("wscui.cpl", resourceCulture);
             }
         }
         

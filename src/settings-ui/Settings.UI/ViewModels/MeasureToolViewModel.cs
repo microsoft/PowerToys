@@ -36,6 +36,20 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
             GeneralSettingsConfig = settingsRepository.SettingsConfig;
 
+            InitializeEnabledValue();
+
+            if (measureToolSettingsRepository == null)
+            {
+                throw new ArgumentNullException(nameof(measureToolSettingsRepository));
+            }
+
+            Settings = measureToolSettingsRepository.SettingsConfig;
+
+            SendConfigMSG = ipcMSGCallBackFunc;
+        }
+
+        private void InitializeEnabledValue()
+        {
             _enabledGpoRuleConfiguration = GPOWrapper.GetConfiguredScreenRulerEnabledValue();
             if (_enabledGpoRuleConfiguration == GpoRuleConfigured.Disabled || _enabledGpoRuleConfiguration == GpoRuleConfigured.Enabled)
             {
@@ -47,15 +61,6 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             {
                 _isEnabled = GeneralSettingsConfig.Enabled.MeasureTool;
             }
-
-            if (measureToolSettingsRepository == null)
-            {
-                throw new ArgumentNullException(nameof(measureToolSettingsRepository));
-            }
-
-            Settings = measureToolSettingsRepository.SettingsConfig;
-
-            SendConfigMSG = ipcMSGCallBackFunc;
         }
 
         public bool IsEnabled
@@ -228,6 +233,13 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             }
 
             SettingsUtils.SaveSettings(Settings.ToJsonString(), MeasureToolSettings.ModuleName);
+        }
+
+        public void RefreshEnabledState()
+        {
+            InitializeEnabledValue();
+            OnPropertyChanged(nameof(IsEnabled));
+            OnPropertyChanged(nameof(ShowContinuousCaptureWarning));
         }
 
         public bool ShowContinuousCaptureWarning

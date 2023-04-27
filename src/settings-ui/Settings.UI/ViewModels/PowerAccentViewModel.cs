@@ -39,8 +39,10 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             "IS",
             "IT",
             "KU",
+            "LT",
             "MK",
             "MI",
+            "NO",
             "PI",
             "PL",
             "PT",
@@ -79,17 +81,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             _settingsUtils = settingsUtils ?? throw new ArgumentNullException(nameof(settingsUtils));
             GeneralSettingsConfig = settingsRepository.SettingsConfig;
 
-            _enabledGpoRuleConfiguration = GPOWrapper.GetConfiguredQuickAccentEnabledValue();
-            if (_enabledGpoRuleConfiguration == GpoRuleConfigured.Disabled || _enabledGpoRuleConfiguration == GpoRuleConfigured.Enabled)
-            {
-                // Get the enabled state from GPO.
-                _enabledStateIsGPOConfigured = true;
-                _isEnabled = _enabledGpoRuleConfiguration == GpoRuleConfigured.Enabled;
-            }
-            else
-            {
-                _isEnabled = GeneralSettingsConfig.Enabled.PowerAccent;
-            }
+            InitializeEnabledValue();
 
             if (_settingsUtils.SettingsExists(PowerAccentSettings.ModuleName))
             {
@@ -110,6 +102,21 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
             // set the callback functions value to hangle outgoing IPC message.
             SendConfigMSG = ipcMSGCallBackFunc;
+        }
+
+        private void InitializeEnabledValue()
+        {
+            _enabledGpoRuleConfiguration = GPOWrapper.GetConfiguredQuickAccentEnabledValue();
+            if (_enabledGpoRuleConfiguration == GpoRuleConfigured.Disabled || _enabledGpoRuleConfiguration == GpoRuleConfigured.Enabled)
+            {
+                // Get the enabled state from GPO.
+                _enabledStateIsGPOConfigured = true;
+                _isEnabled = _enabledGpoRuleConfiguration == GpoRuleConfigured.Enabled;
+            }
+            else
+            {
+                _isEnabled = GeneralSettingsConfig.Enabled.PowerAccent;
+            }
         }
 
         public bool IsEnabled
@@ -305,6 +312,12 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 SndModuleSettings<SndPowerAccentSettings> ipcMessage = new SndModuleSettings<SndPowerAccentSettings>(snd);
                 SendConfigMSG(ipcMessage.ToJsonString());
             }
+        }
+
+        public void RefreshEnabledState()
+        {
+            InitializeEnabledValue();
+            OnPropertyChanged(nameof(IsEnabled));
         }
 
         private GpoRuleConfigured _enabledGpoRuleConfiguration;

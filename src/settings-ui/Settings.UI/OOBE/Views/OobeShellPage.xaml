@@ -69,6 +69,10 @@
                     Icon="{ui:BitmapIcon Source=/Assets/FluentIcons/FluentIconsMouseUtils.png}"
                     Tag="MouseUtils" />
                 <NavigationViewItem
+                    x:Uid="Shell_PastePlain"
+                    Icon="{ui:BitmapIcon Source=/Assets/FluentIcons/FluentIconsPastePlain.png}"
+                    Tag="PastePlain" />
+                <NavigationViewItem
                     x:Uid="Shell_PowerRename"
                     Icon="{ui:BitmapIcon Source=/Assets/FluentIcons/FluentIconsPowerRename.png}"
                     Tag="PowerRename" />
@@ -80,6 +84,10 @@
                     x:Uid="Shell_QuickAccent"
                     Icon="{ui:BitmapIcon Source=/Assets/FluentIcons/FluentIconsPowerAccent.png}"
                     Tag="QuickAccent" />
+                <NavigationViewItem
+                    x:Uid="Shell_RegistryPreview"
+                    Icon="{ui:BitmapIcon Source=/Assets/FluentIcons/FluentIconsRegistryPreview.png}"
+                    Tag="RegistryPreview" />
                 <NavigationViewItem
                     x:Uid="Shell_MeasureTool"
                     Icon="{ui:BitmapIcon Source=/Assets/FluentIcons/FluentIconsScreenRuler.png}"

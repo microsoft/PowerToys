@@ -4,8 +4,9 @@
 
 using System;
 using System.Globalization;
+using ManagedCommon;
+using Microsoft.PowerToys.Settings.UI.Helpers;
 using Microsoft.PowerToys.Settings.UI.Library;
-using Microsoft.PowerToys.Settings.UI.Library.Utilities;
 using Microsoft.PowerToys.Settings.UI.ViewModels;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
@@ -13,7 +14,7 @@ using Windows.ApplicationModel.Resources;
 
 namespace Microsoft.PowerToys.Settings.UI.Views
 {
-    public sealed partial class ImageResizerPage : Page
+    public sealed partial class ImageResizerPage : Page, IRefreshablePage
     {
         public ImageResizerViewModel ViewModel { get; set; }
 
@@ -87,6 +88,11 @@ namespace Microsoft.PowerToys.Settings.UI.Views
                 // Reset the focus requested flag
                 ViewModel.IsListViewFocusRequested = false;
             }
+        }
+
+        public void RefreshEnabledState()
+        {
+            ViewModel.RefreshEnabledState();
         }
     }
 }

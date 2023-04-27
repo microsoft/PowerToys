@@ -12,6 +12,8 @@ using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Text.Json;
 using System.Threading.Tasks;
+using global::PowerToys.GPOWrapper;
+using ManagedCommon;
 using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.PowerToys.Settings.UI.Library.Helpers;
 using Microsoft.PowerToys.Settings.UI.Library.Interfaces;
@@ -125,6 +127,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
             _startup = GeneralSettingsConfig.Startup;
             _autoDownloadUpdates = GeneralSettingsConfig.AutoDownloadUpdates;
+            _enableExperimentation = GeneralSettingsConfig.EnableExperimentation;
 
             _isElevated = isElevated;
             _runElevated = GeneralSettingsConfig.RunElevated;
@@ -139,6 +142,9 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             _newAvailableVersionLink = UpdatingSettingsConfig.ReleasePageLink;
             _updateCheckedDate = UpdatingSettingsConfig.LastCheckedDateLocalized;
 
+            _experimentationIsGpoDisallowed = GPOWrapper.GetAllowExperimentationValue() == GpoRuleConfigured.Disabled;
+            _autoDownloadUpdatesIsGpoDisabled = GPOWrapper.GetDisableAutomaticUpdateDownloadValue() == GpoRuleConfigured.Enabled;
+
             if (dispatcherAction != null)
             {
                 _fileWatcher = Helper.GetFileWatcher(string.Empty, UpdatingSettings.SettingsFile, dispatcherAction);
@@ -152,6 +158,9 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         private int _themeIndex;
 
         private bool _autoDownloadUpdates;
+        private bool _autoDownloadUpdatesIsGpoDisabled;
+        private bool _enableExperimentation;
+        private bool _experimentationIsGpoDisallowed;
 
         private UpdatingSettings.UpdatingState _updatingState = UpdatingSettings.UpdatingState.UpToDate;
         private string _newAvailableVersion = string.Empty;
@@ -266,11 +275,20 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             }
         }
 
+        // Are we running a dev build? (Please note that we verify this in the code that gets the newest version from GitHub too.)
+        public static bool AutoUpdatesDisabledOnDevBuild
+        {
+            get
+            {
+                return Helper.GetProductVersion() == "v0.0.1";
+            }
+        }
+
         public bool AutoDownloadUpdates
         {
             get
             {
-                return _autoDownloadUpdates;
+                return _autoDownloadUpdates && !_autoDownloadUpdatesIsGpoDisabled;
             }
 
             set
@@ -284,12 +302,39 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             }
         }
 
-        public static bool AutoUpdatesEnabled
+        public bool IsAutoDownloadUpdatesCardEnabled
+        {
+            get => !AutoUpdatesDisabledOnDevBuild && !_autoDownloadUpdatesIsGpoDisabled;
+        }
+
+        // The settings card is hidden for users who are not a member of the Administrators group and in this case the GPO info should be hidden too.
+        // We hide it, because we don't want a normal user to enable the setting. He can't install the updates.
+        public bool ShowAutoDownloadUpdatesGpoInformation
+        {
+            get => _isAdmin && _autoDownloadUpdatesIsGpoDisabled;
+        }
+
+        public bool EnableExperimentation
         {
             get
             {
-                return Helper.GetProductVersion() != "v0.0.1";
+                return _enableExperimentation && !_experimentationIsGpoDisallowed;
             }
+
+            set
+            {
+                if (_enableExperimentation != value)
+                {
+                    _enableExperimentation = value;
+                    GeneralSettingsConfig.EnableExperimentation = value;
+                    NotifyPropertyChanged();
+                }
+            }
+        }
+
+        public bool IsExperimentationGpoDisallowed
+        {
+            get => _experimentationIsGpoDisallowed;
         }
 
         public string SettingsBackupAndRestoreDir
@@ -630,7 +675,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         {
             get
             {
-                return AutoUpdatesEnabled && !IsNewVersionDownloading;
+                return !AutoUpdatesDisabledOnDevBuild && !IsNewVersionDownloading;
             }
         }
 

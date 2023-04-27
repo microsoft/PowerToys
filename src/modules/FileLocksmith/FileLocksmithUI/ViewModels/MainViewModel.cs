@@ -12,7 +12,7 @@ using System.Threading.Tasks;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using FileLocksmith.Interop;
-using global::FileLocksmithUI.Helpers;
+using ManagedCommon;
 
 namespace PowerToys.FileLocksmithUI.ViewModels
 {

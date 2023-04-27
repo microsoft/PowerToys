@@ -23,6 +23,7 @@
                 "PowerToys.Settings.UI.Lib.dll",
                 "PowerToys.GPOWrapper.dll",
                 "PowerToys.GPOWrapperProjection.dll",
+                "PowerToys.AllExperiments.dll",
 
                 "modules\\AlwaysOnTop\\PowerToys.AlwaysOnTop.exe",
                 "modules\\AlwaysOnTop\\PowerToys.AlwaysOnTopModuleInterface.dll",
@@ -34,6 +35,8 @@
                 "modules\\PowerOCR\\PowerToys.PowerOCRModuleInterface.dll",
                 "modules\\PowerOCR\\PowerToys.PowerOCR.dll",
                 "modules\\PowerOCR\\PowerToys.PowerOCR.exe",
+
+                "modules\\PastePlain\\PowerToys.PastePlainModuleInterface.dll",
 
                 "modules\\Awake\\PowerToys.AwakeModuleInterface.dll",
                 "modules\\Awake\\PowerToys.Awake.exe",
@@ -125,7 +128,6 @@
                 "modules\\launcher\\Plugins\\Service\\Microsoft.PowerToys.Run.Plugin.Service.dll",
                 "modules\\launcher\\Plugins\\System\\Microsoft.PowerToys.Run.Plugin.System.dll",
                 "modules\\launcher\\Plugins\\TimeDate\\Microsoft.PowerToys.Run.Plugin.TimeDate.dll",
-                "modules\\launcher\\Plugins\\TimeZone\\Microsoft.PowerToys.Run.Plugin.TimeZone.dll",
                 "modules\\launcher\\Plugins\\WebSearch\\Community.PowerToys.Run.Plugin.WebSearch.dll",
                 "modules\\launcher\\Plugins\\WindowsTerminal\\Microsoft.PowerToys.Run.Plugin.WindowsTerminal.dll",
                 
@@ -136,7 +138,10 @@
 
                 "modules\\MouseUtils\\PowerToys.FindMyMouse.dll",
                 "modules\\MouseUtils\\PowerToys.MouseHighlighter.dll",
+                "modules\\MouseUtils\\PowerToys.MouseJump.dll",
                 "modules\\MouseUtils\\PowerToys.MousePointerCrosshairs.dll",
+                "modules\\MouseUtils\\MouseJumpUI\\PowerToys.MouseJumpUI.dll",
+                "modules\\MouseUtils\\MouseJumpUI\\PowerToys.MouseJumpUI.exe",
 
                 "modules\\PowerAccent\\PowerAccent.Core.dll",
                 "modules\\PowerAccent\\PowerToys.PowerAccent.dll",
@@ -148,6 +153,10 @@
                 "modules\\PowerRename\\PowerToys.PowerRename.exe",
                 "modules\\PowerRename\\PowerToys.PowerRenameContextMenu.dll",
                 "modules\\PowerRename\\PowerRenameContextMenuPackage.msix",
+
+                "modules\\RegistryPreview\\PowerToys.RegistryPreviewExt.dll",
+                "modules\\RegistryPreview\\PowerToys.RegistryPreview.dll",
+                "modules\\RegistryPreview\\PowerToys.RegistryPreview.exe",
 
                 "modules\\ShortcutGuide\\ShortcutGuide\\PowerToys.ShortcutGuide.exe",
                 "modules\\ShortcutGuide\\ShortcutGuideModuleInterface\\PowerToys.ShortcutGuideModuleInterface.dll",
@@ -209,6 +218,8 @@
                 "Mono.Cecil.Mdb.dll",
                 "Mono.Cecil.Pdb.dll",
                 "Mono.Cecil.Rocks.dll",
+                "Newtonsoft.Json.dll",
+                "Newtonsoft.Json.Bson.dll",
                 "NLog.dll",
                 "HtmlAgilityPack.dll",
                 "Markdig.Signed.dll",
@@ -240,11 +251,14 @@
                 "modules\\PowerAccent\\Vanara.PInvoke.Shell32.dll",
                 "modules\\PowerAccent\\Vanara.PInvoke.ShlwApi.dll",
                 "modules\\PowerAccent\\Vanara.PInvoke.User32.dll",
+                "modules\\RegistryPreview\\clrcompression.dll",
+                "modules\\RegistryPreview\\Microsoft.Graphics.Canvas.Interop.dll",
                 "modules\\FileExplorerPreview\\Microsoft.Web.WebView2.Core.dll",
                 "modules\\FileExplorerPreview\\Microsoft.Web.WebView2.WinForms.dll",
                 "modules\\FileExplorerPreview\\Microsoft.Web.WebView2.Wpf.dll",
                 "modules\\FileExplorerPreview\\WebView2Loader.dll",
                 "modules\\Hosts\\Microsoft.Graphics.Canvas.Interop.dll",
+                "modules\\Hosts\\clrcompression.dll",
                 "modules\\launcher\\e_sqlite3.dll",
                 "modules\\launcher\\LazyCache.dll",
                 "modules\\launcher\\SQLitePCLRaw.batteries_v2.dll",

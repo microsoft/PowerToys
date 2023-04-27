@@ -2,6 +2,7 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System.Net.Http;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 using Common;
@@ -10,6 +11,7 @@ using Microsoft.PowerToys.PreviewHandler.Svg.Telemetry.Events;
 using Microsoft.PowerToys.Telemetry;
 using Microsoft.Web.WebView2.Core;
 using Microsoft.Web.WebView2.WinForms;
+using SvgPreviewHandler;
 
 namespace Microsoft.PowerToys.PreviewHandler.Svg
 {
@@ -18,6 +20,11 @@ namespace Microsoft.PowerToys.PreviewHandler.Svg
     /// </summary>
     public class SvgPreviewControl : FormHandlerControl
     {
+        /// <summary>
+        /// Generator for the actual preview file
+        /// </summary>
+        private readonly SvgHTMLPreviewGenerator _previewGenerator = new();
+
         /// <summary>
         /// WebView2 Control to display Svg.
         /// </summary>
@@ -220,19 +227,21 @@ namespace Microsoft.PowerToys.PreviewHandler.Svg
                     _browser.CoreWebView2.AddWebResourceRequestedFilter("*", CoreWebView2WebResourceContext.All);
                     _browser.CoreWebView2.WebResourceRequested += CoreWebView2_BlockExternalResources;
 
+                    string generatedPreview = _previewGenerator.GeneratePreview(svgData);
+
                     // WebView2.NavigateToString() limitation
                     // See https://learn.microsoft.com/dotnet/api/microsoft.web.webview2.core.corewebview2.navigatetostring?view=webview2-dotnet-1.0.864.35#remarks
                     // While testing the limit, it turned out it is ~1.5MB, so to be on a safe side we go for 1.5m bytes
-                    if (svgData.Length > 1_500_000)
+                    if (generatedPreview.Length > 1_500_000)
                     {
                         string filename = _webView2UserDataFolder + "\\" + Guid.NewGuid().ToString() + ".html";
-                        File.WriteAllText(filename, svgData);
+                        File.WriteAllText(filename, generatedPreview);
                         _localFileURI = new Uri(filename);
                         _browser.Source = _localFileURI;
                     }
                     else
                     {
-                        _browser.NavigateToString(svgData);
+                        _browser.NavigateToString(generatedPreview);
                     }
 
                     Controls.Add(_browser);

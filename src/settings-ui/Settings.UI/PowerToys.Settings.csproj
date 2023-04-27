@@ -56,8 +56,19 @@
 		<RestoreAdditionalProjectSources>https://pkgs.dev.azure.com/dotnet/CommunityToolkit/_packaging/CommunityToolkit-Labs/nuget/v3/index.json</RestoreAdditionalProjectSources>
 	</PropertyGroup>
 	<ItemGroup>
+	  <None Remove="OOBE\Views\OobeOverviewPlaceholder.xaml" />
+	</ItemGroup>
+	<ItemGroup>
 	  <None Remove="Controls\ColorFormatEditor.xaml" />
 	</ItemGroup>
+
+  <ItemGroup>
+    <None Remove="FlyoutWindow.xaml" />
+    <None Remove="Flyout\AppsListPage.xaml" />
+    <None Remove="Controls\FlyoutMenuButton\FlyoutMenuButton.xaml" />
+    <None Remove="Flyout\LaunchPage.xaml" />
+    <None Remove="Flyout\ShellPage.xaml" />
+  </ItemGroup>
 
   <ItemGroup>
     <Content Include="Assets\SplashScreen.scale-200.png" />
@@ -70,38 +81,69 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="CommunityToolkit.Labs.WinUI.SettingsControls" Version="0.0.7" />
-    <PackageReference Include="Microsoft.Windows.CsWinRT" Version="2.0.0" />
-    <PackageReference Include="CommunityToolkit.WinUI.UI" Version="7.1.2" />
-    <PackageReference Include="CommunityToolkit.WinUI.UI.Controls" Version="7.1.2" />
-    <PackageReference Include="Microsoft.WindowsAppSDK" Version="1.2.221116.1" />
-    <PackageReference Include="Microsoft.Windows.SDK.BuildTools" Version="10.0.22621.755" />
-    <PackageReference Include="Microsoft.Xaml.Behaviors.WinUI.Managed" Version="2.0.9" />
+    <PackageReference Include="CommunityToolkit.Labs.WinUI.SettingsControls" />
+    <PackageReference Include="Microsoft.Windows.CsWinRT" />
+    <PackageReference Include="CommunityToolkit.WinUI.UI" />
+    <PackageReference Include="CommunityToolkit.WinUI.UI.Controls" />
+    <PackageReference Include="WinUIEx" />
+    <PackageReference Include="Microsoft.WindowsAppSDK" />
+    <PackageReference Include="Microsoft.Windows.SDK.BuildTools" />
+    <PackageReference Include="Microsoft.Xaml.Behaviors.WinUI.Managed" />
     <Manifest Include="$(ApplicationManifest)" />
   </ItemGroup>
   <!-- Defining the "Msix" ProjectCapability here allows the Single-project MSIX Packaging
        Tools extension to be activated for this project even if the Windows App SDK Nuget
        package has not yet been restored -->
+	
   <ItemGroup Condition="'$(DisableMsixProjectCapabilityAddedByProject)'!='true' and '$(EnablePreviewMsixTooling)'=='true'">
     <ProjectCapability Include="Msix" />
   </ItemGroup>
+	
   <ItemGroup>
+    <ProjectReference Include="..\..\common\AllExperiments\AllExperiments.csproj" />
     <ProjectReference Include="..\..\common\GPOWrapper\GPOWrapper.vcxproj" />
+    <ProjectReference Include="..\..\common\interop\PowerToys.Interop.vcxproj" />
     <ProjectReference Include="..\..\common\ManagedCommon\ManagedCommon.csproj" />
     <ProjectReference Include="..\..\common\ManagedTelemetry\Telemetry\ManagedTelemetry.csproj" />
     <ProjectReference Include="..\Settings.UI.Library\Settings.UI.Library.csproj" />
   </ItemGroup>
+	
   <ItemGroup>
+    <Page Update="FlyoutWindow.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Update="Flyout\LaunchPage.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Update="Flyout\ShellPage.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Update="Controls\ColorFormatEditor.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Update="Flyout\AppsListPage.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Update="Flyout\Controls\FlyoutMenuButton.xaml">
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <None Update="icon.ico">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
+    <Page Update="OOBE\Views\OobeOverviewPlaceholder.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Update="OOBE\Views\OobeHosts.xaml">
       <Generator>MSBuild:Compile</Generator>
     </Page>
+    <Page Update="OOBE\Views\OobeOverviewAlternate.xaml">
+      <XamlRuntime>$(DefaultXamlRuntime)</XamlRuntime>
+    </Page>
+    <Page Update="Views\RegistryPreviewPage.xaml">
+      <XamlRuntime>$(DefaultXamlRuntime)</XamlRuntime>
+    </Page>
   </ItemGroup>
+	
   <ItemGroup>
     <Page Update="OOBE\Views\OobePowerOCR.xaml">
       <XamlRuntime>$(DefaultXamlRuntime)</XamlRuntime>

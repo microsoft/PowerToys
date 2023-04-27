@@ -26,8 +26,11 @@ namespace Microsoft.PowerToys.ThumbnailHandler.Svg
 
                     _thumbnailProvider = new SvgThumbnailProvider(filePath);
                     Bitmap thumbnail = _thumbnailProvider.GetThumbnail(cx);
-                    filePath = filePath.Replace(".svg", ".bmp");
-                    thumbnail.Save(filePath, System.Drawing.Imaging.ImageFormat.Bmp);
+                    if (thumbnail != null )
+                    {
+                        filePath = filePath.Replace(".svg", ".bmp");
+                        thumbnail.Save(filePath, System.Drawing.Imaging.ImageFormat.Bmp);
+                    }
                 }
                 else
                 {

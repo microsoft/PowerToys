@@ -13,6 +13,7 @@ using Microsoft.PowerToys.Settings.UI.Helpers;
 using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.PowerToys.Settings.UI.Library.Telemetry.Events;
 using Microsoft.PowerToys.Settings.UI.Library.Utilities;
+using Microsoft.PowerToys.Settings.UI.Views;
 using Microsoft.PowerToys.Telemetry;
 using Microsoft.UI.Xaml;
 using Windows.UI.Popups;
@@ -35,12 +36,13 @@ namespace Microsoft.PowerToys.Settings.UI
             IsUserAdmin,
             ShowOobeWindow,
             ShowScoobeWindow,
-            SettingsWindow,
+            ShowFlyout,
+            ContainsSettingsWindow,
+            ContainsFlyoutPosition,
         }
 
         // Quantity of arguments
-        private const int RequiredArgumentsQty = 9;
-        private const int RequiredAndOptionalArgumentsQty = 10;
+        private const int RequiredArgumentsQty = 12;
 
         // Create an instance of the  IPC wrapper.
         private static TwoWayPipeMessageIPCManaged ipcmanager;
@@ -52,6 +54,8 @@ namespace Microsoft.PowerToys.Settings.UI
         public static int PowerToysPID { get; set; }
 
         public bool ShowOobe { get; set; }
+
+        public bool ShowFlyout { get; set; }
 
         public bool ShowScoobe { get; set; }
 
@@ -68,18 +72,29 @@ namespace Microsoft.PowerToys.Settings.UI
         /// </summary>
         public App()
         {
+            Logger.InitializeLogger("\\Settings\\Logs");
+
             this.InitializeComponent();
         }
 
-        public static void OpenSettingsWindow(Type type)
+        public static void OpenSettingsWindow(Type type = null, bool ensurePageIsSelected = false)
         {
             if (settingsWindow == null)
             {
                 settingsWindow = new MainWindow(IsDarkTheme());
+                type = typeof(GeneralPage);
             }
 
             settingsWindow.Activate();
-            settingsWindow.NavigateToSection(type);
+            if (type != null)
+            {
+                settingsWindow.NavigateToSection(type);
+            }
+
+            if (ensurePageIsSelected)
+            {
+                settingsWindow.EnsurePageIsSelected();
+            }
         }
 
         /// <summary>
@@ -90,6 +105,7 @@ namespace Microsoft.PowerToys.Settings.UI
         protected override void OnLaunched(Microsoft.UI.Xaml.LaunchActivatedEventArgs args)
         {
             var cmdArgs = Environment.GetCommandLineArgs();
+
             var isDark = IsDarkTheme();
 
             if (cmdArgs != null && cmdArgs.Length >= RequiredArgumentsQty)
@@ -107,11 +123,17 @@ namespace Microsoft.PowerToys.Settings.UI
                 IsUserAnAdmin = cmdArgs[(int)Arguments.IsUserAdmin] == "true";
                 ShowOobe = cmdArgs[(int)Arguments.ShowOobeWindow] == "true";
                 ShowScoobe = cmdArgs[(int)Arguments.ShowScoobeWindow] == "true";
+                ShowFlyout = cmdArgs[(int)Arguments.ShowFlyout] == "true";
+                bool containsSettingsWindow = cmdArgs[(int)Arguments.ContainsSettingsWindow] == "true";
+                bool containsFlyoutPosition = cmdArgs[(int)Arguments.ContainsFlyoutPosition] == "true";
 
-                if (cmdArgs.Length == RequiredAndOptionalArgumentsQty)
+                // To keep track of variable arguments
+                int currentArgumentIndex = RequiredArgumentsQty;
+
+                if (containsSettingsWindow)
                 {
                     // open specific window
-                    switch (cmdArgs[(int)Arguments.SettingsWindow])
+                    switch (cmdArgs[currentArgumentIndex])
                     {
                         case "Overview": StartupPage = typeof(Views.GeneralPage); break;
                         case "AlwaysOnTop": StartupPage = typeof(Views.AlwaysOnTopPage); break;
@@ -131,8 +153,21 @@ namespace Microsoft.PowerToys.Settings.UI
                         case "VideoConference": StartupPage = typeof(Views.VideoConferencePage); break;
                         case "MeasureTool": StartupPage = typeof(Views.MeasureToolPage); break;
                         case "Hosts": StartupPage = typeof(Views.HostsPage); break;
+                        case "RegistryPreview": StartupPage = typeof(Views.RegistryPreviewPage); break;
+                        case "PastePlain": StartupPage = typeof(Views.PastePlainPage); break;
                         default: Debug.Assert(false, "Unexpected SettingsWindow argument value"); break;
                     }
+
+                    currentArgumentIndex++;
+                }
+
+                int flyout_x = 0;
+                int flyout_y = 0;
+                if (containsFlyoutPosition)
+                {
+                    // get the flyout position arguments
+                    _ = int.TryParse(cmdArgs[currentArgumentIndex++], out flyout_x);
+                    _ = int.TryParse(cmdArgs[currentArgumentIndex++], out flyout_y);
                 }
 
                 RunnerHelper.WaitForPowerToysRunner(PowerToysPID, () =>
@@ -149,7 +184,7 @@ namespace Microsoft.PowerToys.Settings.UI
                 });
                 ipcmanager.Start();
 
-                if (!ShowOobe && !ShowScoobe)
+                if (!ShowOobe && !ShowScoobe && !ShowFlyout)
                 {
                     settingsWindow = new MainWindow(isDark);
                     settingsWindow.Activate();
@@ -175,6 +210,16 @@ namespace Microsoft.PowerToys.Settings.UI
                         OobeWindow scoobeWindow = new OobeWindow(OOBE.Enums.PowerToysModules.WhatsNew, isDark);
                         scoobeWindow.Activate();
                         SetOobeWindow(scoobeWindow);
+                    }
+                    else if (ShowFlyout)
+                    {
+                        POINT? p = null;
+                        if (containsFlyoutPosition)
+                        {
+                            p = new POINT(flyout_x, flyout_y);
+                        }
+
+                        ShellPage.OpenFlyoutCallback(p);
                     }
                 }
             }
@@ -277,6 +322,7 @@ namespace Microsoft.PowerToys.Settings.UI
 
         private static MainWindow settingsWindow;
         private static OobeWindow oobeWindow;
+        private static FlyoutWindow flyoutWindow;
         private static ThemeListener themeListener;
 
         public static void ClearSettingsWindow()
@@ -294,14 +340,29 @@ namespace Microsoft.PowerToys.Settings.UI
             return oobeWindow;
         }
 
+        public static FlyoutWindow GetFlyoutWindow()
+        {
+            return flyoutWindow;
+        }
+
         public static void SetOobeWindow(OobeWindow window)
         {
             oobeWindow = window;
         }
 
+        public static void SetFlyoutWindow(FlyoutWindow window)
+        {
+            flyoutWindow = window;
+        }
+
         public static void ClearOobeWindow()
         {
             oobeWindow = null;
+        }
+
+        public static void ClearFlyoutWindow()
+        {
+            flyoutWindow = null;
         }
     }
 }

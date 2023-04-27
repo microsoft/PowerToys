@@ -25,8 +25,11 @@ namespace Microsoft.PowerToys.ThumbnailHandler.Stl
 
                     _thumbnailProvider = new StlThumbnailProvider(filePath);
                     Bitmap thumbnail = _thumbnailProvider.GetThumbnail(cx);
-                    filePath = filePath.Replace(".stl", ".bmp");
-                    thumbnail.Save(filePath, System.Drawing.Imaging.ImageFormat.Bmp);
+                    if (thumbnail != null)
+                    {
+                        filePath = filePath.Replace(".stl", ".bmp");
+                        thumbnail.Save(filePath, System.Drawing.Imaging.ImageFormat.Bmp);
+                    }
                 }
                 else
                 {

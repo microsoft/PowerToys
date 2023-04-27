@@ -8,6 +8,7 @@ using global::PowerToys.GPOWrapper;
 using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.PowerToys.Settings.UI.Library.Helpers;
 using Microsoft.PowerToys.Settings.UI.Library.Interfaces;
+using Settings.UI.Library.Enumerations;
 
 namespace Microsoft.PowerToys.Settings.UI.ViewModels
 {
@@ -60,6 +61,10 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 _svgRenderIsEnabled = Settings.Properties.EnableSvgPreview;
             }
 
+            _svgBackgroundColorMode = Settings.Properties.SvgBackgroundColorMode.Value;
+            _svgBackgroundSolidColor = Settings.Properties.SvgBackgroundSolidColor.Value;
+            _svgBackgroundCheckeredShade = Settings.Properties.SvgBackgroundCheckeredShade.Value;
+
             _svgThumbnailEnabledGpoRuleConfiguration = GPOWrapper.GetConfiguredSvgThumbnailsEnabledValue();
             if (_svgThumbnailEnabledGpoRuleConfiguration == GpoRuleConfigured.Disabled || _svgThumbnailEnabledGpoRuleConfiguration == GpoRuleConfigured.Enabled)
             {
@@ -98,6 +103,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
             _monacoWrapText = Settings.Properties.EnableMonacoPreviewWordWrap;
             _monacoPreviewTryFormat = Settings.Properties.MonacoPreviewTryFormat;
+            _monacoMaxFileSize = Settings.Properties.MonacoPreviewMaxFileSize.Value;
 
             _pdfRenderEnabledGpoRuleConfiguration = GPOWrapper.GetConfiguredPdfPreviewEnabledValue();
             if (_pdfRenderEnabledGpoRuleConfiguration == GpoRuleConfigured.Disabled || _pdfRenderEnabledGpoRuleConfiguration == GpoRuleConfigured.Enabled)
@@ -165,6 +171,9 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         private GpoRuleConfigured _svgRenderEnabledGpoRuleConfiguration;
         private bool _svgRenderEnabledStateIsGPOConfigured;
         private bool _svgRenderIsEnabled;
+        private int _svgBackgroundColorMode;
+        private string _svgBackgroundSolidColor;
+        private int _svgBackgroundCheckeredShade;
 
         private GpoRuleConfigured _mdRenderEnabledGpoRuleConfiguration;
         private bool _mdRenderEnabledStateIsGPOConfigured;
@@ -175,6 +184,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         private bool _monacoRenderIsEnabled;
         private bool _monacoWrapText;
         private bool _monacoPreviewTryFormat;
+        private int _monacoMaxFileSize;
 
         private GpoRuleConfigured _pdfRenderEnabledGpoRuleConfiguration;
         private bool _pdfRenderEnabledStateIsGPOConfigured;
@@ -220,6 +230,78 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 {
                     _svgRenderIsEnabled = value;
                     Settings.Properties.EnableSvgPreview = value;
+                    RaisePropertyChanged();
+                }
+            }
+        }
+
+        public int SVGRenderBackgroundColorMode
+        {
+            get
+            {
+                return _svgBackgroundColorMode;
+            }
+
+            set
+            {
+                if (value != _svgBackgroundColorMode)
+                {
+                    _svgBackgroundColorMode = value;
+                    Settings.Properties.SvgBackgroundColorMode.Value = value;
+                    RaisePropertyChanged();
+                    RaisePropertyChanged(nameof(IsSvgBackgroundColorVisible));
+                    RaisePropertyChanged(nameof(IsSvgCheckeredShadeVisible));
+                }
+            }
+        }
+
+        public bool IsSvgBackgroundColorVisible
+        {
+            get
+            {
+                return (SvgPreviewColorMode)SVGRenderBackgroundColorMode == SvgPreviewColorMode.SolidColor;
+            }
+        }
+
+        public string SVGRenderBackgroundSolidColor
+        {
+            get
+            {
+                return _svgBackgroundSolidColor;
+            }
+
+            set
+            {
+                if (value != _svgBackgroundSolidColor)
+                {
+                    _svgBackgroundSolidColor = value;
+                    Settings.Properties.SvgBackgroundSolidColor = value;
+                    RaisePropertyChanged();
+                }
+            }
+        }
+
+        public bool IsSvgCheckeredShadeVisible
+        {
+            get
+            {
+                return (SvgPreviewColorMode)SVGRenderBackgroundColorMode == SvgPreviewColorMode.Checkered;
+            }
+        }
+
+        public int SVGRenderBackgroundCheckeredShade
+        {
+            get
+            {
+                return _svgBackgroundCheckeredShade;
+            }
+
+            set
+            {
+                if (value != _svgBackgroundCheckeredShade)
+                {
+                    _svgBackgroundCheckeredShade = value;
+                    Settings.Properties.SvgBackgroundCheckeredShade.Value = value;
                     RaisePropertyChanged();
                 }
             }
@@ -348,6 +430,24 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 {
                     _monacoPreviewTryFormat = value;
                     Settings.Properties.MonacoPreviewTryFormat = value;
+                    RaisePropertyChanged();
+                }
+            }
+        }
+
+        public int MonacoPreviewMaxFileSize
+        {
+            get
+            {
+                return _monacoMaxFileSize;
+            }
+
+            set
+            {
+                if (_monacoMaxFileSize != value)
+                {
+                    _monacoMaxFileSize = value;
+                    Settings.Properties.MonacoPreviewMaxFileSize.Value = value;
                     RaisePropertyChanged();
                 }
             }

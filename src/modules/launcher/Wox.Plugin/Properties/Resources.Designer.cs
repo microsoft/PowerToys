@@ -61,7 +61,7 @@ namespace Wox.Plugin.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Please contact plugin creator for help.
+        ///   Looks up a localized string similar to Fail to load plugin:.
         /// </summary>
         public static string FailedToLoadPluginDescription {
             get {
@@ -70,7 +70,16 @@ namespace Wox.Plugin.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Fail to Load {0} Plugin.
+        ///   Looks up a localized string similar to Please report the bug to https://aka.ms/powerToysReportBug. (For third-party plugins, please contact the plugin author.).
+        /// </summary>
+        public static string FailedToLoadPluginDescriptionPartTwo {
+            get {
+                return ResourceManager.GetString("FailedToLoadPluginDescriptionPartTwo", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to PowerToys Run - Plugin Loading Error.
         /// </summary>
         public static string FailedToLoadPluginTitle {
             get {

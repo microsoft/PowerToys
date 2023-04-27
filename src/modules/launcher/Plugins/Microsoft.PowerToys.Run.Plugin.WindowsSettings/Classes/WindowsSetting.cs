@@ -9,7 +9,7 @@ namespace Microsoft.PowerToys.Run.Plugin.WindowsSettings
     /// <summary>
     /// A windows setting
     /// </summary>
-    internal class WindowsSetting
+    internal sealed class WindowsSetting
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="WindowsSetting"/> class.

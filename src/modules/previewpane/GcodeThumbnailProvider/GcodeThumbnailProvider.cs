@@ -159,12 +159,10 @@ namespace Microsoft.PowerToys.ThumbnailHandler.Gcode
 
             using (var reader = new StreamReader(this.Stream))
             {
-                using (Bitmap thumbnail = GetThumbnail(reader, cx))
+                Bitmap thumbnail = GetThumbnail(reader, cx);
+                if (thumbnail != null && thumbnail.Size.Width > 0 && thumbnail.Size.Height > 0)
                 {
-                    if (thumbnail != null && thumbnail.Size.Width > 0 && thumbnail.Size.Height > 0)
-                    {
-                        return (Bitmap)thumbnail.Clone();
-                    }
+                    return thumbnail;
                 }
             }
 
