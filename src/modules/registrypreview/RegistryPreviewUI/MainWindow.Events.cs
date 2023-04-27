@@ -220,6 +220,26 @@ namespace RegistryPreview
         }
 
         /// <summary>
+        /// Opens the Registry Editor and tries to set "last used"; UAC is handled by the request to open
+        /// </summary>
+        private void RegistryJumpToKeyButton_Click(object sender, RoutedEventArgs e)
+        {
+            // Get the selected Key, if there is one
+            TreeViewNode currentNode = treeView.SelectedNode;
+            if (currentNode != null)
+            {
+                // since there is a valid node, get the FullPath of the key that was selected
+                string key = ((RegistryKey)currentNode.Content).FullPath;
+
+                // it's impossible to directly open a key via command-line option, so we must override the last remember key
+                Microsoft.Win32.Registry.SetValue(@"HKEY_Current_User\Software\Microsoft\Windows\CurrentVersion\Applets\Regedit", "LastKey", key);
+            }
+
+            // pass in an empty string as we have no file to open
+            OpenRegistryEditor(string.Empty);
+        }
+
+        /// <summary>
         /// Merges the currently saved file into the Registry Editor; UAC is handled by the request to open
         /// </summary>
         private async void WriteButton_Click(object sender, RoutedEventArgs e)
@@ -307,6 +327,9 @@ namespace RegistryPreview
             {
                 treeViewNode = treeView.SelectedNode;
             }
+
+            // Update the toolbar button for the tree
+            registryJumpToKeyButton.IsEnabled = CheckTreeForValidKey();
 
             // Grab the object that has Registry data in it from the currently selected treeView node
             RegistryKey registryKey = (RegistryKey)treeViewNode.Content;

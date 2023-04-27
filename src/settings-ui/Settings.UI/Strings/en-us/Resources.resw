@@ -762,6 +762,33 @@
     <value>.svg</value>
     <comment>File extension, should not be altered</comment>
   </data>
+  <data name="FileExplorerPreview_Preview_SVG_Color_Mode.Header" xml:space="preserve">
+    <value>Color mode</value>
+  </data>
+  <data name="FileExplorerPreview_Preview_SVG_Color_Mode_Default.Content" xml:space="preserve">
+    <value>Windows default</value>
+  </data>
+  <data name="FileExplorerPreview_Preview_SVG_Color_Solid_Color.Content" xml:space="preserve">
+    <value>Solid color</value>
+  </data>
+  <data name="FileExplorerPreview_Preview_SVG_Checkered_Shade.Content" xml:space="preserve">
+    <value>Checkered pattern</value>
+  </data>
+  <data name="FileExplorerPreview_Preview_SVG_Background_Color.Header" xml:space="preserve">
+    <value>Color</value>
+  </data>
+  <data name="FileExplorerPreview_Preview_SVG_Checkered_Shade_Mode.Header" xml:space="preserve">
+    <value>Checkered shade</value>
+  </data>
+  <data name="FileExplorerPreview_Preview_SVG_Checkered_Shade_1.Content" xml:space="preserve">
+    <value>Light</value>
+  </data>
+  <data name="FileExplorerPreview_Preview_SVG_Checkered_Shade_2.Content" xml:space="preserve">
+    <value>Medium</value>
+  </data>
+  <data name="FileExplorerPreview_Preview_SVG_Checkered_Shade_3.Content" xml:space="preserve">
+    <value>Dark</value>
+  </data>
   <data name="FileExplorerPreview_ToggleSwitch_Preview_PDF.Header" xml:space="preserve">
     <value>Portable Document Format</value>
     <comment>File type, do not translate</comment>
@@ -3130,5 +3157,22 @@ Activate by holding the key for the character you want to add an accent to, then
   </data>
   <data name="PastePlain_ShortcutWarning.Title" xml:space="preserve">
     <value>Using this shortcut may prevent non-text paste actions (e.g. images, files) or built-in paste plain text actions in other applications from functioning.</value>
+  </data>
+  <data name="MouseUtils_MouseJump_ThumbnailSize.Header" xml:space="preserve">
+    <value>Thumbnail Size</value>
+  </data>
+  <data name="MouseUtils_MouseJump_ThumbnailSize_Description_Prefix.Text" xml:space="preserve">
+    <value>Constrain thumbnail image size to a maximum of</value>
+  </data>
+  <data name="MouseUtils_MouseJump_ThumbnailSize_Description_Suffix.Text" xml:space="preserve">
+    <value>pixels</value>
+  </data>
+  <data name="MouseUtils_MouseJump_ThumbnailSize_Edit_Height.Header" xml:space="preserve">
+    <value>Maximum height (px)</value>
+    <comment>px = pixels</comment>
+  </data>
+  <data name="MouseUtils_MouseJump_ThumbnailSize_Edit_Width.Header" xml:space="preserve">
+    <value>Maximum width (px)</value>
+    <comment>px = pixels</comment>
   </data>
 </root>
