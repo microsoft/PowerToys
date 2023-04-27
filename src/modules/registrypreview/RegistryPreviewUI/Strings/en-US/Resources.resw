@@ -189,6 +189,9 @@
   <data name="textBox.PlaceholderText" xml:space="preserve">
     <value>Registry file text will appear here...</value>
   </data>
+  <data name="titleBarText.ApplicationTitle" xml:space="preserve">
+    <value>Registry Preview</value>
+  </data>
   <data name="ToolTipAddedKey" xml:space="preserve">
     <value>Key will be added, if needed</value>
   </data>
