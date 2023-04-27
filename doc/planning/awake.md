@@ -20,7 +20,7 @@ The build ID moniker is made up of two components - a reference to a [Halo](http
 
 - Moves from using `Task.Run` to spin up threads to actually using a blocking queue that properly sets thread parameters on the same thread.
 - Moves back to using native Windows APIs through P/Invoke instead of using a package.
-- Move away from NLog and to built-in logging that is consistent with the rest of PowerToys.
+- Move away from custom logging and to built-in logging that is consistent with the rest of PowerToys.
 - Updates `System.CommandLine` and `System.Reactive` to the latest preview versions of the package.
 
 ### `LIBRARIAN_03202022` (March 20, 2022)
