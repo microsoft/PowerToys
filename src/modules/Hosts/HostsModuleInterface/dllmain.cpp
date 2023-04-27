@@ -144,7 +144,7 @@ public:
 
         m_showEventWaiter = EventWaiter(CommonSharedConstants::SHOW_HOSTS_EVENT, [&](int err)
         {
-            if (err == ERROR_SUCCESS)
+            if (m_enabled && err == ERROR_SUCCESS)
             {
                 Logger::trace(L"{} event was signaled", CommonSharedConstants::SHOW_HOSTS_EVENT);
                 launch_process(false);
@@ -153,7 +153,7 @@ public:
 
         m_showAdminEventWaiter = EventWaiter(CommonSharedConstants::SHOW_HOSTS_ADMIN_EVENT, [&](int err)
         {
-            if (err == ERROR_SUCCESS)
+            if (m_enabled && err == ERROR_SUCCESS)
             {
                 Logger::trace(L"{} event was signaled", CommonSharedConstants::SHOW_HOSTS_ADMIN_EVENT);
                 launch_process(true);

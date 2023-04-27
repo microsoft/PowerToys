@@ -101,13 +101,13 @@ namespace Microsoft.PowerToys.Run.Plugin.PowerToys
                         {
                             switch (u.Key)
                             {
-                                case UtilityKey.ColorPicker: u.Enabled = generalSettings.Enabled.ColorPicker; break;
-                                case UtilityKey.FancyZones: u.Enabled = generalSettings.Enabled.FancyZones; break;
-                                case UtilityKey.Hosts: u.Enabled = generalSettings.Enabled.Hosts; break;
-                                case UtilityKey.PowerOCR: u.Enabled = generalSettings.Enabled.PowerOCR; break;
-                                case UtilityKey.MeasureTool: u.Enabled = generalSettings.Enabled.MeasureTool; break;
-                                case UtilityKey.ShortcutGuide: u.Enabled = generalSettings.Enabled.ShortcutGuide; break;
-                                case UtilityKey.RegistryPreview: u.Enabled = generalSettings.Enabled.RegistryPreview; break;
+                                case UtilityKey.ColorPicker: u.Enable(generalSettings.Enabled.ColorPicker); break;
+                                case UtilityKey.FancyZones: u.Enable(generalSettings.Enabled.FancyZones); break;
+                                case UtilityKey.Hosts: u.Enable(generalSettings.Enabled.Hosts); break;
+                                case UtilityKey.PowerOCR: u.Enable(generalSettings.Enabled.PowerOCR); break;
+                                case UtilityKey.MeasureTool: u.Enable(generalSettings.Enabled.MeasureTool); break;
+                                case UtilityKey.ShortcutGuide: u.Enable(generalSettings.Enabled.ShortcutGuide); break;
+                                case UtilityKey.RegistryPreview: u.Enable(generalSettings.Enabled.RegistryPreview); break;
                             }
                         }
 

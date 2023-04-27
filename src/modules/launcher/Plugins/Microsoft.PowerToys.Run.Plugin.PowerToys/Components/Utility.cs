@@ -19,7 +19,7 @@ namespace Microsoft.PowerToys.Run.Plugin.PowerToys.Components
 
         public string Name { get; }
 
-        public bool Enabled { get; set; }
+        public bool Enabled { get; private set; }
 
         public Utility(UtilityKey key, string name, bool enabled)
         {
@@ -86,6 +86,11 @@ namespace Microsoft.PowerToys.Run.Plugin.PowerToys.Components
             }
 
             return results;
+        }
+
+        public void Enable(bool enabled)
+        {
+            Enabled = enabled;
         }
     }
 }
