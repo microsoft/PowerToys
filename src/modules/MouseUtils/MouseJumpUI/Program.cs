@@ -3,15 +3,18 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.IO;
+using System.Text.Json;
 using System.Windows.Forms;
 using ManagedCommon;
+using Microsoft.PowerToys.Settings.UI.Library;
 
 namespace MouseJumpUI;
 
 internal static class Program
 {
     /// <summary>
-    ///  The main entry point for the application.
+    /// The main entry point for the application.
     /// </summary>
     [STAThread]
     private static void Main()
@@ -35,6 +38,34 @@ internal static class Program
             return;
         }
 
-        Application.Run(new MainForm());
+        var settings = Program.ReadSettings();
+        var mainForm = new MainForm(settings);
+
+        Application.Run(mainForm);
+    }
+
+    private static MouseJumpSettings ReadSettings()
+    {
+        var settingsUtils = new SettingsUtils();
+        var settingsPath = settingsUtils.GetSettingsFilePath(MouseJumpSettings.ModuleName);
+        if (!File.Exists(settingsPath))
+        {
+            var scaffoldSettings = new MouseJumpSettings();
+            settingsUtils.SaveSettings(JsonSerializer.Serialize(scaffoldSettings), MouseJumpSettings.ModuleName);
+        }
+
+        var settings = new MouseJumpSettings();
+        try
+        {
+            settings = settingsUtils.GetSettings<MouseJumpSettings>(MouseJumpSettings.ModuleName);
+        }
+        catch (Exception ex)
+        {
+            var errorMessage = $"There was a problem reading the configuration file. Error: {ex.GetType()} {ex.Message}";
+            Logger.LogInfo(errorMessage);
+            Logger.LogDebug(errorMessage);
+        }
+
+        return settings;
     }
 }

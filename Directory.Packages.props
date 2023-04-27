@@ -4,7 +4,7 @@
   </PropertyGroup>
   <ItemGroup>
     <PackageVersion Include="Appium.WebDriver" Version="4.2.1" />
-    <PackageVersion Include="CommunityToolkit.Labs.WinUI.SettingsControls" Version="0.0.17" />
+    <PackageVersion Include="CommunityToolkit.Labs.WinUI.SettingsControls" Version="0.0.18" />
     <PackageVersion Include="CommunityToolkit.Mvvm" Version="8.0.0" />
     <PackageVersion Include="CommunityToolkit.WinUI.UI" Version="7.1.2" />
     <PackageVersion Include="CommunityToolkit.WinUI.UI.Controls" Version="7.1.2" />

@@ -6,7 +6,6 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using Microsoft.UI;
-using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Windows.ApplicationModel.Resources;
 using Windows.Data.Json;
@@ -23,6 +22,7 @@ namespace RegistryPreview
         private const string APPNAME = "Registry Preview";
         private const string KEYIMAGE = "ms-appx:///Assets/folder32.png";
         private const string DELETEDKEYIMAGE = "ms-appx:///Assets/deleted-folder32.png";
+        private const string ERRORIMAGE = "ms-appx:///Assets/error32.png";
 
         // private members
         private Microsoft.UI.Windowing.AppWindow appWindow;
@@ -52,6 +52,10 @@ namespace RegistryPreview
             appWindow = Microsoft.UI.Windowing.AppWindow.GetFromWindowId(windowId);
             appWindow.SetIcon("app.ico");
             appWindow.Closing += AppWindow_Closing;
+
+            // Extend the canvas to include the title bar so the app can support theming
+            ExtendsContentIntoTitleBar = true;
+            SetTitleBar(titleBar);
 
             // if have settings, update the location of the window
             if (jsonSettings != null)

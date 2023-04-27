@@ -370,8 +370,6 @@ void run_settings_window(bool show_oobe_window, bool show_scoobe_window, std::op
         settings_theme = L"dark";
     }
 
-    GeneralSettings save_settings = get_general_settings();
-
     // Arg 6: elevated status
     bool isElevated{ get_general_settings().isElevated };
     std::wstring settings_elevatedStatus = isElevated ? L"true" : L"false";
@@ -396,10 +394,6 @@ void run_settings_window(bool show_oobe_window, bool show_scoobe_window, std::op
     std::wstring settings_containsFlyoutPosition = flyout_position.has_value() ? L"true" : L"false";
 
     // Args 13, .... : Optional arguments depending on the options presented before. All by the same value.
-
-    // create general settings file to initialize the settings file with installation configurations like :
-    // 1. Run on start up.
-    PTSettingsHelper::save_general_settings(save_settings.to_json());
 
     std::wstring executable_args = fmt::format(L"\"{}\" {} {} {} {} {} {} {} {} {} {} {}",
                                                    executable_path,
