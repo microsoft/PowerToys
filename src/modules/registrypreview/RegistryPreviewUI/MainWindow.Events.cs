@@ -134,18 +134,18 @@ namespace RegistryPreview
                 }
             }
 
-            // Pull in a new REG file
-            FileOpenPicker fileOpenPicker = new FileOpenPicker();
-            fileOpenPicker.ViewMode = PickerViewMode.List;
-            fileOpenPicker.CommitButtonText = resourceLoader.GetString("OpenButtonText");
-            fileOpenPicker.SuggestedStartLocation = PickerLocationId.DocumentsLibrary;
-            fileOpenPicker.FileTypeFilter.Add(".reg");
+            // Pull in a new REG file - we have to use the direct Win32 method because FileOpenPicker crashes when it's
+            // called while running as admin
+            string filename = OpenFilePicker.ShowDialog(
+                resourceLoader.GetString("FilterRegistryName") + '\0' + "*.reg" + '\0' + resourceLoader.GetString("FilterAllFiles") + '\0' + "*.*" + '\0' + '\0',
+                resourceLoader.GetString("OpenDialogTitle"));
 
-            // Get the HWND so we an open the modal
-            IntPtr hWnd = WinRT.Interop.WindowNative.GetWindowHandle(this);
-            InitializeWithWindow.Initialize(fileOpenPicker, hWnd);
+            if (filename == string.Empty || File.Exists(filename) == false)
+            {
+                return;
+            }
 
-            StorageFile storageFile = await fileOpenPicker.PickSingleFileAsync();
+            StorageFile storageFile = await StorageFile.GetFileFromPathAsync(filename);
 
             if (storageFile != null)
             {
@@ -174,27 +174,23 @@ namespace RegistryPreview
         /// <summary>
         /// Uses a picker to save out a copy of the current reg file
         /// </summary>
-        private async void SaveAsButton_Click(object sender, RoutedEventArgs e)
+        private void SaveAsButton_Click(object sender, RoutedEventArgs e)
         {
-            // Save out a new REG file and then open it
-            FileSavePicker fileSavePicker = new FileSavePicker();
-            fileSavePicker.CommitButtonText = resourceLoader.GetString("SaveButtonText");
-            fileSavePicker.SuggestedStartLocation = PickerLocationId.DocumentsLibrary;
-            fileSavePicker.FileTypeChoices.Add("Registry file", new List<string>() { ".reg" });
-            fileSavePicker.SuggestedFileName = resourceLoader.GetString("SuggestFileName");
+            // Save out a new REG file and then open it - we have to use the direct Win32 method because FileOpenPicker crashes when it's
+            // called while running as admin
+            string filename = SaveFilePicker.ShowDialog(
+                resourceLoader.GetString("SuggestFileName"),
+                resourceLoader.GetString("FilterRegistryName") + '\0' + "*.reg" + '\0' + resourceLoader.GetString("FilterAllFiles") + '\0' + "*.*" + '\0' + '\0',
+                resourceLoader.GetString("SaveDialogTitle"));
 
-            // Get the HWND so we an save the modal
-            IntPtr hWnd = WinRT.Interop.WindowNative.GetWindowHandle(this);
-            InitializeWithWindow.Initialize(fileSavePicker, hWnd);
-
-            StorageFile storageFile = await fileSavePicker.PickSaveFileAsync();
-
-            if (storageFile != null)
+            if (filename == string.Empty)
             {
-                App.AppFilename = storageFile.Path;
-                SaveFile();
-                UpdateToolBarAndUI(OpenRegistryFile(App.AppFilename));
+                return;
             }
+
+            App.AppFilename = filename;
+            SaveFile();
+            UpdateToolBarAndUI(OpenRegistryFile(App.AppFilename));
         }
 
         /// <summary>
@@ -219,6 +215,26 @@ namespace RegistryPreview
         /// </summary>
         private void RegistryButton_Click(object sender, RoutedEventArgs e)
         {
+            // pass in an empty string as we have no file to open
+            OpenRegistryEditor(string.Empty);
+        }
+
+        /// <summary>
+        /// Opens the Registry Editor and tries to set "last used"; UAC is handled by the request to open
+        /// </summary>
+        private void RegistryJumpToKeyButton_Click(object sender, RoutedEventArgs e)
+        {
+            // Get the selected Key, if there is one
+            TreeViewNode currentNode = treeView.SelectedNode;
+            if (currentNode != null)
+            {
+                // since there is a valid node, get the FullPath of the key that was selected
+                string key = ((RegistryKey)currentNode.Content).FullPath;
+
+                // it's impossible to directly open a key via command-line option, so we must override the last remember key
+                Microsoft.Win32.Registry.SetValue(@"HKEY_Current_User\Software\Microsoft\Windows\CurrentVersion\Applets\Regedit", "LastKey", key);
+            }
+
             // pass in an empty string as we have no file to open
             OpenRegistryEditor(string.Empty);
         }
@@ -311,6 +327,9 @@ namespace RegistryPreview
             {
                 treeViewNode = treeView.SelectedNode;
             }
+
+            // Update the toolbar button for the tree
+            registryJumpToKeyButton.IsEnabled = CheckTreeForValidKey();
 
             // Grab the object that has Registry data in it from the currently selected treeView node
             RegistryKey registryKey = (RegistryKey)treeViewNode.Content;

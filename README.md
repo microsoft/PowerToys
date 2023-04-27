@@ -37,10 +37,10 @@ Microsoft PowerToys is a set of utilities for power users to tune and streamline
 
 Go to [Microsoft PowerToys GitHub releases page][github-release-link], click on `Assets` at the bottom to show the files available in the release. Please use the appropriate PowerToys installer that matches your machine's architecture and install scope. For most, it is `x64` and per-user.
  
- - **For x64 processors (most common) per-user installer:** [PowerToysUserSetup-0.69.0-x64.exe](https://github.com/microsoft/PowerToys/releases/download/v0.69.0/PowerToysUserSetup-0.69.0-x64.exe)
- - **For x64 processors per-machine installer:** [PowerToysSetup-0.69.0-x64.exe](https://github.com/microsoft/PowerToys/releases/download/v0.69.0/PowerToysSetup-0.69.0-x64.exe)
- - **For ARM64 processors per-user installer:** [PowerToysUserSetup-0.69.0-arm64.exe](https://github.com/microsoft/PowerToys/releases/download/v0.69.0/PowerToysUserSetup-0.69.0-arm64.exe)
- - **For ARM64 processors per-machine installer:** [PowerToysSetup-0.69.0-arm64.exe](https://github.com/microsoft/PowerToys/releases/download/v0.69.0/PowerToysSetup-0.69.0-arm64.exe)
+ - **For x64 processors (most common) per-user installer:** [PowerToysUserSetup-0.69.1-x64.exe](https://github.com/microsoft/PowerToys/releases/download/v0.69.1/PowerToysUserSetup-0.69.1-x64.exe)
+ - **For x64 processors per-machine installer:** [PowerToysSetup-0.69.1-x64.exe](https://github.com/microsoft/PowerToys/releases/download/v0.69.1/PowerToysSetup-0.69.1-x64.exe)
+ - **For ARM64 processors per-user installer:** [PowerToysUserSetup-0.69.1-arm64.exe](https://github.com/microsoft/PowerToys/releases/download/v0.69.1/PowerToysUserSetup-0.69.1-arm64.exe)
+ - **For ARM64 processors per-machine installer:** [PowerToysSetup-0.69.1-arm64.exe](https://github.com/microsoft/PowerToys/releases/download/v0.69.1/PowerToysSetup-0.69.1-arm64.exe)
 
 This is our preferred method.
 

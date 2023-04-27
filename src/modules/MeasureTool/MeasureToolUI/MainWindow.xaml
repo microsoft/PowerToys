@@ -255,8 +255,10 @@
         <StackPanel
             HorizontalAlignment="Center"
             Orientation="Horizontal"
-            Spacing="8">
+            Spacing="8"
+            Loaded="StackPanel_Loaded">
             <ToggleButton
+                Name="btnBounds"
                 AutomationProperties.Name="{x:Bind p:Resources.Bounds}"
                 Click="BoundsTool_Click"
                 Content="&#xEF20;"
@@ -268,6 +270,7 @@
                 </ToggleButton.KeyboardAccelerators>
             </ToggleButton>
             <ToggleButton
+                Name="btnSpacing"
                 AutomationProperties.Name="{x:Bind p:Resources.Spacing}"
                 Click="MeasureTool_Click"
                 Style="{StaticResource ToggleButtonRadioButtonStyle}"
@@ -279,6 +282,7 @@
             </ToggleButton>
 
             <ToggleButton
+                Name="btnHorizontalSpacing"
                 AutomationProperties.Name="{x:Bind p:Resources.HorizontalSpacing}"
                 Click="HorizontalMeasureTool_Click"
                 Style="{StaticResource ToggleButtonRadioButtonStyle}"
@@ -289,6 +293,7 @@
                 </ToggleButton.KeyboardAccelerators>
             </ToggleButton>
             <ToggleButton
+                Name="btnVerticalSpacing"
                 AutomationProperties.Name="{x:Bind p:Resources.VerticalSpacing}"
                 Click="VerticalMeasureTool_Click"
                 Style="{StaticResource ToggleButtonRadioButtonStyle}"
