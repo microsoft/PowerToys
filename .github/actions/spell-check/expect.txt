@@ -88,7 +88,6 @@ Applets
 Applicationcan
 applicationconfiguration
 applicationframehost
-applog
 appmanifest
 APPNAME
 appref
@@ -134,7 +133,6 @@ Autorun
 AUTOUPDATE
 AValid
 awakeness
-awakeversion
 AWAYMODE
 AYUV
 azcli
@@ -1051,8 +1049,6 @@ LOCALPACKAGE
 localport
 LOCALSYSTEM
 LOCATIONCHANGE
-logconsole
-logfile
 LOGFONT
 LOGFONTW
 logon
@@ -1169,7 +1165,6 @@ MINIMIZEBOX
 MINIMIZEEND
 MINIMIZESTART
 miniz
-minlevel
 MINORVERSION
 Miracast
 mjpg
@@ -1281,7 +1276,6 @@ nielslaute
 NIF
 nint
 NLD
-nlog
 nls
 NLSTEXT
 NOACTIVATE
@@ -1442,7 +1436,6 @@ pgp
 pgsql
 pguid
 PHANDLE
-PHANDLER
 phbm
 phbmp
 phwnd
@@ -1814,7 +1807,6 @@ spam
 spdisp
 spdlog
 spdo
-specialfolder
 spec'ing
 spesi
 splitwstring
