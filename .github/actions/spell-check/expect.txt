@@ -1285,6 +1285,7 @@ nielslaute
 NIF
 nint
 NLD
+NLog
 nls
 NLSTEXT
 NOACTIVATE
