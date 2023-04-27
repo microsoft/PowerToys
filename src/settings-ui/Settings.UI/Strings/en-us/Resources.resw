@@ -155,6 +155,27 @@
     <value>Customize the shortcut to bring up the command bar</value>
     <comment>"Screen Ruler" is the name of the utility</comment>
   </data>
+  <data name="MeasureTool_DefaultMeasureStyle.Header" xml:space="preserve">
+    <value>Default measure style</value>
+  </data>
+  <data name="MeasureTool_DefaultMeasureStyle.Description" xml:space="preserve">
+    <value>The utility will start having the selected style activated</value>
+  </data>
+  <data name="MeasureTool_DefaultMeasureStyle_None.Content" xml:space="preserve">
+    <value>None</value>
+  </data>
+  <data name="MeasureTool_DefaultMeasureStyle_Bounds.Content" xml:space="preserve">
+    <value>Bounds</value>
+  </data>
+  <data name="MeasureTool_DefaultMeasureStyle_Spacing.Content" xml:space="preserve">
+    <value>Spacing</value>
+  </data>
+  <data name="MeasureTool_DefaultMeasureStyle_Horizontal_Spacing.Content" xml:space="preserve">
+    <value>Horizontal spacing</value>
+  </data>
+  <data name="MeasureTool_DefaultMeasureStyle_Vertical_Spacing.Content" xml:space="preserve">
+    <value>Vertical spacing</value>
+  </data>
   <data name="MeasureTool_UnitsOfMeasure.Header" xml:space="preserve">
     <value>Units of measurement</value>
   </data>
