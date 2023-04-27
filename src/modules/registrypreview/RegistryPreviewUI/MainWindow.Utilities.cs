@@ -29,7 +29,7 @@ namespace RegistryPreview
             try
             {
                 long fileLength = new System.IO.FileInfo(filename).Length;
-                if (fileLength > 1048576)
+                if (fileLength > 10485760)
                 {
                     ShowMessageBox(resourceLoader.GetString("LargeRegistryFileTitle"), App.AppFilename + resourceLoader.GetString("LargeRegistryFile"), resourceLoader.GetString("OkButtonText"));
                     ChangeCursor(gridPreview, false);
@@ -152,6 +152,9 @@ namespace RegistryPreview
                     treeView.SelectedNode = treeView.RootNodes[0];
                 }
             }
+
+            // Update the toolbar button for the trees
+            registryJumpToKeyButton.IsEnabled = CheckTreeForValidKey();
 
             // enable the UI
             ChangeCursor(gridPreview, false);
@@ -333,7 +336,7 @@ namespace RegistryPreview
                     }
                     else if (value.StartsWith("hex(2):", StringComparison.InvariantCultureIgnoreCase))
                     {
-                        registryValue.Type = "REG_EXAND_SZ";
+                        registryValue.Type = "REG_EXPAND_SZ";
                         value = value.Replace("hex(2):", string.Empty);
                     }
                     else if (value.StartsWith("hex(7):", StringComparison.InvariantCultureIgnoreCase))
@@ -368,11 +371,34 @@ namespace RegistryPreview
                             break;
                     }
 
+                    // Parse for the case where a \ is added immediately after hex is declared
+                    switch (registryValue.Type)
+                    {
+                        case "REG_QWORD":
+                        case "REG_BINARY":
+                        case "REG_EXPAND_SZ":
+                        case "REG_MULTI_SZ":
+                            if (value == @"\")
+                            {
+                                // pad the value, so the parsing below is triggered
+                                value = @",\";
+                            }
+
+                            break;
+                    }
+
                     // If the end of a decimal line ends in a \ then you have to keep
                     // reading the block as a single value!
                     while (value.EndsWith(@",\", StringComparison.InvariantCulture))
                     {
                         value = value.TrimEnd('\\');
+
+                        // checking for a "blank" hex value so we can skip t
+                        if (value == @",")
+                        {
+                            value = string.Empty;
+                        }
+
                         index++;
                         if (index >= registryLines.Length)
                         {
@@ -536,6 +562,9 @@ namespace RegistryPreview
             refreshButton.IsEnabled = enableRefresh;
             editButton.IsEnabled = enableEdit;
             writeButton.IsEnabled = enableWrite;
+
+            // Now check the tree and see if anything is in there
+            registryJumpToKeyButton.IsEnabled = CheckTreeForValidKey();
         }
 
         /// <summary>
@@ -1021,6 +1050,26 @@ namespace RegistryPreview
             }
 
             return true;
+        }
+
+        /// <summary>
+        /// Turns the Open Key button in the command bar on/off, depending on if a key is selected
+        /// </summary>
+        private bool CheckTreeForValidKey()
+        {
+            if (treeView == null)
+            {
+                return false;
+            }
+
+            // See if a key is available
+            TreeViewNode treeViewNode = treeView.SelectedNode;
+            if (treeViewNode != null && ((RegistryKey)treeViewNode.Content).Image != ERRORIMAGE)
+            {
+                return true;
+            }
+
+            return false;
         }
     }
 }

@@ -358,6 +358,7 @@ createdump
 CREATESCHEDULEDTASK
 CREATESTRUCT
 CREATEWINDOWFAILED
+CRECT
 critsec
 Crossdevice
 CRSEL
@@ -512,6 +513,7 @@ dreamsofameaningfullife
 drivedetectionwarning
 dshow
 DSTINVERT
+DUMMYUNIONNAME
 dutil
 DVASPECT
 DVASPECTINFO
@@ -959,6 +961,7 @@ jfif
 jgeosdfsdsgmkedfgdfgdfgbkmhcgcflmi
 jjw
 jobject
+joefinapps
 jpe
 JPN
 jpnime
@@ -1064,14 +1067,18 @@ LPBYTE
 LPCITEMIDLIST
 LPCMINVOKECOMMANDINFO
 LPCREATESTRUCT
+LPCRECT
 LPCTSTR
 LPCWSTR
 lpdw
 lpfn
+lpmi
 LPINPUT
 LPMINMAXINFO
+LPMONITORINFO
 LPOSVERSIONINFOEXW
 lprc
+LPPOINT
 LPRECT
 LPSAFEARRAY
 LPSTR
@@ -1181,6 +1188,7 @@ mockapi
 MODECHANGE
 modernwpf
 MODESPRUNED
+MONITORENUMPROC
 MONITORINFO
 MONITORINFOEX
 MONITORINFOEXW
@@ -1334,7 +1342,7 @@ nugets
 nullonfailure
 numberbox
 NUMLOCK
-NUMPAD
+numpad
 nwc
 Objbase
 OBJID
@@ -1971,6 +1979,7 @@ TRAYMOUSEMESSAGE
 triaging
 TRK
 trl
+Tsd
 TServer
 TStr
 TValue
@@ -2174,6 +2183,7 @@ winternl
 WINTHRESHOLD
 winui
 winuiex
+WINVER
 winxamlmanager
 wistd
 withinrafael
