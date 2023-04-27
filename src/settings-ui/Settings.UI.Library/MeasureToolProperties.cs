@@ -4,6 +4,7 @@
 
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using Settings.UI.Library.Enumerations;
 
 namespace Microsoft.PowerToys.Settings.UI.Library
 {
@@ -18,6 +19,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             DrawFeetOnCross = true;
             PerColorChannelEdgeDetection = false;
             MeasureCrossColor = new StringProperty("#FF4500");
+            DefaultMeasureStyle = new IntProperty((int)MeasureToolMeasureStyle.None);
         }
 
         public HotkeySettings ActivationShortcut { get; set; }
@@ -36,6 +38,8 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         public IntProperty PixelTolerance { get; set; }
 
         public StringProperty MeasureCrossColor { get; set; }
+
+        public IntProperty DefaultMeasureStyle { get; set; }
 
         public override string ToString() => JsonSerializer.Serialize(this);
     }
