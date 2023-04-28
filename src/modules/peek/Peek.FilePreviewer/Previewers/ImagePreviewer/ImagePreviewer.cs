@@ -14,6 +14,7 @@ using Microsoft.UI.Xaml.Media.Imaging;
 using Peek.Common.Extensions;
 using Peek.Common.Helpers;
 using Peek.Common.Models;
+using Peek.FilePreviewer.Exceptions;
 using Peek.FilePreviewer.Previewers.Helpers;
 using Peek.FilePreviewer.Previewers.Interfaces;
 using Windows.Foundation;
@@ -159,7 +160,7 @@ namespace Peek.FilePreviewer.Previewers
                 if (hr != HResult.Ok)
                 {
                     Logger.LogError("Error loading low quality thumbnail - hresult: " + hr);
-                    throw new ArgumentNullException(nameof(hbitmap));
+                    throw new ImageLoadingException(nameof(hbitmap));
                 }
 
                 cancellationToken.ThrowIfCancellationRequested();
@@ -186,7 +187,7 @@ namespace Peek.FilePreviewer.Previewers
                 if (hr != HResult.Ok)
                 {
                     Logger.LogError("Error loading high quality thumbnail - hresult: " + hr);
-                    throw new ArgumentNullException(nameof(hbitmap));
+                    throw new ImageLoadingException(nameof(hbitmap));
                 }
 
                 cancellationToken.ThrowIfCancellationRequested();
@@ -225,7 +226,7 @@ namespace Peek.FilePreviewer.Previewers
                         if (loadStatus != SvgImageSourceLoadStatus.Success)
                         {
                             Logger.LogError("Error loading SVG: " + loadStatus.ToString());
-                            throw new ArgumentNullException(nameof(source));
+                            throw new ImageLoadingException(nameof(source));
                         }
 
                         Preview = source;
