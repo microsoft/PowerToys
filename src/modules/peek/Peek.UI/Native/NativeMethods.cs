@@ -1,10 +1,9 @@
-// Copyright (c) Microsoft Corporation
+﻿// Copyright (c) Microsoft Corporation
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
 using System;
 using System.Runtime.InteropServices;
-using System.Runtime.Versioning;
 using System.Text;
 using Peek.Common.Models;
 
@@ -43,13 +42,13 @@ namespace Peek.UI.Native
             DDETopic,
         }
 
-        [DllImport("Shlwapi.dll", SetLastError = true, CharSet = CharSet.Auto)]
+        [DllImport("Shlwapi.dll", SetLastError = true, CharSet = CharSet.Unicode)]
         internal static extern HResult AssocQueryString(AssocF flags, AssocStr str, string pszAssoc, string? pszExtra, [Out] StringBuilder? pszOut, [In][Out] ref uint pcchOut);
 
-        [DllImport("user32.dll")]
+        [DllImport("user32.dll", CharSet = CharSet.Unicode)]
         internal static extern int GetWindowText(Windows.Win32.Foundation.HWND hWnd, StringBuilder lpString, int nMaxCount);
 
-        [DllImport("user32.dll")]
-        public static extern int GetClassName(IntPtr hWnd, StringBuilder buf, int nMaxCount);
+        [DllImport("user32.dll", CharSet = CharSet.Unicode)]
+        internal static extern int GetClassName(IntPtr hWnd, StringBuilder buf, int nMaxCount);
     }
 }
