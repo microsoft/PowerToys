@@ -20,9 +20,9 @@ namespace Peek.UI.Telemetry.Events
 
         public string FileExtension { get; set; } = string.Empty;
 
-        public bool IsAppToggledOn { get; set; } = false;
+        public bool IsAppToggledOn { get; set; }
 
-        public double HotKeytoVisibleTimeMs { get; set; } = 0;
+        public double HotKeytoVisibleTimeMs { get; set; }
 
         public PartA_PrivTags PartA_PrivTags => PartA_PrivTags.ProductAndServiceUsage;
     }

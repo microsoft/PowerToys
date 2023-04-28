@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft Corporation
+// Copyright (c) Microsoft Corporation
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
@@ -18,7 +18,7 @@ namespace Peek.UI.Native
             None = 0,
             Init_NoRemapCLSID = 0x1,
             Init_ByExeName = 0x2,
-            Open_ByExeName = 0x2,
+            Open_ByExeName = 0x3,
             Init_DefaultToStar = 0x4,
             Init_DefaultToFolder = 0x8,
             NoUserSettings = 0x10,
