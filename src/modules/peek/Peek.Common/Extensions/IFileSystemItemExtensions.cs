@@ -67,8 +67,8 @@ namespace Peek.Common.Extensions
                                     var viewBoxValues = viewBox.Split(' ');
                                     if (viewBoxValues.Length == 4)
                                     {
-                                        int viewBoxWidth = int.Parse(viewBoxValues[2]);
-                                        int viewBoxHeight = int.Parse(viewBoxValues[3]);
+                                        int viewBoxWidth = int.Parse(viewBoxValues[2], NumberStyles.Integer, CultureInfo.InvariantCulture);
+                                        int viewBoxHeight = int.Parse(viewBoxValues[3], NumberStyles.Integer, CultureInfo.InvariantCulture);
                                         size = new Size(viewBoxWidth, viewBoxHeight);
                                     }
                                 }

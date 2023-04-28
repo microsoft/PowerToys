@@ -4,6 +4,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Runtime.InteropServices;
 using Peek.Common.Models;
 using Windows.Win32.UI.Shell.PropertiesSystem;
@@ -29,14 +30,14 @@ namespace Peek.Common.Helpers
 
                 if (shellItem2 == null)
                 {
-                    throw new InvalidOperationException(string.Format("Unable to get an IShellItem2 reference from file {0}.", path));
+                    throw new InvalidOperationException(string.Format(CultureInfo.InvariantCulture, "Unable to get an IShellItem2 reference from file {0}.", path));
                 }
 
                 int hr = shellItem2.GetPropertyStore((int)flags, typeof(IPropertyStore).GUID, out ppPropertyStore);
 
                 if (hr != 0)
                 {
-                    throw new InvalidOperationException(string.Format("GetPropertyStore retunred hresult={0}", hr));
+                    throw new InvalidOperationException(string.Format(CultureInfo.InvariantCulture, "GetPropertyStore retunred hresult={0}", hr));
                 }
 
                 return (IPropertyStore)Marshal.GetObjectForIUnknown(ppPropertyStore);

@@ -4,6 +4,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using ManagedCommon;
@@ -252,7 +253,7 @@ namespace Peek.UI.Views
             if (NumberOfFiles > 1)
             {
                 string fileCountTextFormat = ResourceLoader.GetForViewIndependentUse().GetString("AppTitle_FileCounts_Text");
-                FileCountText = string.Format(fileCountTextFormat, FileIndex + 1, NumberOfFiles);
+                FileCountText = string.Format(CultureInfo.InvariantCulture, fileCountTextFormat, FileIndex + 1, NumberOfFiles);
             }
         }
 
@@ -262,10 +263,10 @@ namespace Peek.UI.Views
             DefaultAppName = DefaultAppHelper.TryGetDefaultAppName(Item.Extension);
 
             string openWithAppTextFormat = ResourceLoader.GetForViewIndependentUse().GetString("LaunchAppButton_OpenWithApp_Text");
-            OpenWithAppText = string.Format(openWithAppTextFormat, DefaultAppName);
+            OpenWithAppText = string.Format(CultureInfo.InvariantCulture, openWithAppTextFormat, DefaultAppName);
 
             string openWithAppToolTipFormat = ResourceLoader.GetForViewIndependentUse().GetString("LaunchAppButton_OpenWithApp_ToolTip");
-            OpenWithAppToolTip = string.Format(openWithAppToolTipFormat, DefaultAppName);
+            OpenWithAppToolTip = string.Format(CultureInfo.InvariantCulture, openWithAppToolTipFormat, DefaultAppName);
         }
     }
 }
