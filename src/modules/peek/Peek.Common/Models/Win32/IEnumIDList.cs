@@ -13,7 +13,9 @@ namespace Peek.Common.Models
     public interface IEnumIDList
     {
         [PreserveSig]
+#pragma warning disable CA1716
         int Next(int celt, out IntPtr rgelt, out int pceltFetched);
+#pragma warning restore CA1716
 
         [PreserveSig]
         int Skip(int celt);
