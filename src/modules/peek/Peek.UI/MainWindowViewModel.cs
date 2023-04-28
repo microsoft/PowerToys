@@ -44,7 +44,11 @@ namespace Peek.UI
         {
             Items = NeighboringItemsQuery.GetNeighboringItems();
             CurrentIndex = 0;
-            CurrentItem = Items?.FirstOrDefault();
+
+            if (Items != null && Items.Count > 0)
+            {
+                CurrentItem = Items[0];
+            }
         }
 
         public void Uninitialize()

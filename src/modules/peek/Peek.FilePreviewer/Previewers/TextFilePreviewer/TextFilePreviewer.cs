@@ -66,12 +66,8 @@ namespace Peek.FilePreviewer.Previewers
         public async Task LoadPreviewAsync(CancellationToken cancellationToken)
         {
             cancellationToken.ThrowIfCancellationRequested();
-
             State = PreviewState.Loading;
-
-            DisplayInfoTask = LoadDisplayInfoAsync(cancellationToken);
-
-            await Task.WhenAll(DisplayInfoTask);
+            await LoadDisplayInfoAsync(cancellationToken);
 
             if (HasFailedLoadingPreview())
             {
