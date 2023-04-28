@@ -6,8 +6,6 @@ using System.Globalization;
 using System.Runtime.CompilerServices;
 using Common;
 using ManagedCommon;
-using Microsoft.PowerToys.PreviewHandler.Monaco.Formatters;
-using Microsoft.PowerToys.PreviewHandler.Monaco.Helpers;
 using Microsoft.PowerToys.PreviewHandler.Monaco.Properties;
 using Microsoft.Web.WebView2.Core;
 using Microsoft.Web.WebView2.WinForms;
