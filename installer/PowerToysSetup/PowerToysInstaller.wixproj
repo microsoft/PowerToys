@@ -4,7 +4,7 @@
   <Import Project="..\..\src\Version.props" />
 
   <PropertyGroup Condition="'$(Platform)' == 'x64'">
-    <DefineConstants>Version=$(Version);MonacoSRCHarvestPath=$(ProjectDir)..\..\x64\$(Configuration)\common\FilePreviewCommon\monaco\monacoSRC</DefineConstants>
+    <DefineConstants>Version=$(Version);MonacoSRCHarvestPath=$(ProjectDir)..\..\x64\$(Configuration)\modules\FileExplorerPreview\monaco\monacoSRC</DefineConstants>
     <!-- THIS IS AN INNER LOOP OPTIMIZATION
     The build pipeline builds the Settings and Launcher projects for Publication
     using a specific profile. If you're doing local installer builds, this will
@@ -17,7 +17,7 @@ call "..\..\..\publish.cmd" x64
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Platform)' != 'x64'">
-    <DefineConstants>Version=$(Version);MonacoSRCHarvestPath=$(ProjectDir)..\..\ARM64\$(Configuration)\common\FilePreviewCommon\monaco\monacoSRC</DefineConstants>
+    <DefineConstants>Version=$(Version);MonacoSRCHarvestPath=$(ProjectDir)..\..\ARM64\$(Configuration)\modules\FileExplorerPreview\monaco\monacoSRC</DefineConstants>
     <PreBuildEvent>IF NOT DEFINED IsPipeline (
 call "$([MSBuild]::GetVsInstallRoot())\Common7\Tools\VsDevCmd.bat" -arch=arm64 -host_arch=amd64 -winsdk=10.0.19041.0
 SET PTRoot=..\..\..\..\..
@@ -179,7 +179,7 @@ call "..\..\..\publish.cmd" arm64
 	<Target Name="AfterBuild">
 	</Target>
   <Target Name="BeforeBuild">
-    <HeatDirectory Directory="..\..\src\common\FilePreviewCommon\monaco\monacoSRC"
+    <HeatDirectory Directory="..\..\src\modules\FileExplorerPreview\monaco\monacoSRC"
       PreprocessorVariable="var.MonacoSRCHarvestPath"
       OutputFile="MonacoSRC.wxs"
       ComponentGroupName="MonacoSRCHeatGenerated"

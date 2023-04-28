@@ -444,14 +444,6 @@
             <Directory Id="WinAppSDKDlls" Name="WinAppSDK" />
             <Directory Id="PowerToysInteropDlls" Name="Interop" />
           </Directory>
-          <Directory Id="CommonFolder" Name="common">
-            <Directory Id="FilePreviewCommonFolder" Name="FilePreviewCommon">
-              <Directory Id="FilePreviewCommonMonaco" Name="monaco">
-                <Directory Id="MonacoFilePreviewCommonMonacoCustomLanguagesFolder" Name="customLanguages" />
-                <Directory Id="MonacoFilePreviewCommonMonacoSRCFolder" Name="monacoSRC" />
-              </Directory>
-            </Directory>
-          </Directory>
           <Directory Id="ToolsFolder" Name="Tools"/>
           <Directory Id="ModulesInstallFolder" Name="modules">
             <Directory Id="ImageResizerInstallFolder" Name="$(var.ImageResizerProjectName)">
@@ -481,6 +473,10 @@
               <Directory Id="VideoConferenceIconsFolder" Name="Icons" />
             </Directory>
             <Directory Id="FileExplorerPreviewInstallFolder" Name="FileExplorerPreview">
+              <Directory Id="MonacoPreviewHandlerMonacoFolder" Name="monaco">
+                <Directory Id="MonacoPreviewHandlerMonacoCustomLanguagesFolder" Name="customLanguages" />
+                <Directory Id="MonacoPreviewHandlerMonacoSRCFolder" Name="monacoSRC" />
+              </Directory>
             </Directory>
             <Directory Id="FancyZonesInstallFolder" Name="$(var.FancyZonesProjectName)" />
             <Directory Id="PowerOCRInstallFolder" Name="$(var.PowerOCRProjectName)" />
@@ -538,9 +534,13 @@
             <!-- Peek -->
             <Directory Id="PeekInstallFolder" Name="$(var.PeekProjectName)">
               <Directory Id="PeekAssetsInstallFolder" Name="Assets" />
-                <Directory Id="PeekMicrosoftUIXamlInstallFolder" Name="Microsoft.UI.Xaml">
-                    <Directory Id="PeekMicrosoftUIXamlAssetsInstallFolder" Name="Assets" />
-                </Directory>
+              <Directory Id="PeekMicrosoftUIXamlInstallFolder" Name="Microsoft.UI.Xaml">
+                  <Directory Id="PeekMicrosoftUIXamlAssetsInstallFolder" Name="Assets" />
+              </Directory>
+              <Directory Id="MonacoPeekMonacoFolder" Name="monaco">
+                <Directory Id="MonacoPeekMonacoCustomLanguagesFolder" Name="customLanguages" />
+                <Directory Id="MonacoPeekMonacoSRCFolder" Name="monacoSRC" />
+              </Directory>
             </Directory>
 
               <!-- Launcher -->
