@@ -25,7 +25,7 @@ using Windows.ApplicationModel.Resources;
 namespace Peek.FilePreviewer
 {
     [INotifyPropertyChanged]
-    public sealed partial class FilePreview : UserControl
+    public sealed partial class FilePreview : UserControl, IDisposable
     {
         private readonly PreviewerFactory previewerFactory = new();
 
@@ -61,6 +61,11 @@ namespace Peek.FilePreviewer
         public FilePreview()
         {
             InitializeComponent();
+        }
+
+        public void Dispose()
+        {
+            _cancellationTokenSource.Dispose();
         }
 
         private async void Previewer_PropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)

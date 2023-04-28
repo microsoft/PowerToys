@@ -27,6 +27,7 @@ namespace Peek.UI.Models
 
         public void Dispose()
         {
+            GC.SuppressFinalize(this);
         }
 
         public bool MoveNext()
