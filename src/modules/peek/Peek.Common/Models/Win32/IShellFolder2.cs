@@ -53,7 +53,7 @@ namespace Peek.Common.Models
         int GetDefaultColumnState(int iColumn, out IntPtr pcsFlags);
 
         [PreserveSig]
-        int GetDefaultSearchGUID(out IntPtr guid);
+        int GetDefaultSearchGUID(out IntPtr pguid);
 
         [PreserveSig]
         int GetDetailsEx(IntPtr pidl, IntPtr pscid, out IntPtr pv);

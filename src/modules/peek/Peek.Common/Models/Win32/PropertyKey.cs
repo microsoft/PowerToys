@@ -13,9 +13,9 @@ namespace Peek.Common.Models
         public Guid FormatId;
         public int PropertyId;
 
-        public PropertyKey(Guid guid, int propertyId)
+        public PropertyKey(Guid keyGuid, int propertyId)
         {
-            this.FormatId = guid;
+            this.FormatId = keyGuid;
             this.PropertyId = propertyId;
         }
 
