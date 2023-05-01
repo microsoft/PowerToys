@@ -1,0 +1,14 @@
+{
+  "ID": "a26b1bb4dbd911edafa10242ac120002",
+  "ActionKeyword": "#",
+  "isGlobal": true,
+  "Name": "Hasher",
+  "Description": "A plugin to calculate hashes",
+  "Author": "IHorvalds",
+  "Version": "1.0.0",
+  "Language": "csharp",
+  "Website": "https://github/com/IHorvalds",
+  "IcoPathDark": "Images\\hasher.dark.png",
+  "IcoPathLight": "Images\\hasher.light.png",
+  "ExecuteFileName": "Community.PowerToys.Run.Plugin.Hasher.dll"
+}
