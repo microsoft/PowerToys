@@ -11,7 +11,7 @@
   <Fragment>
     <!-- Resource directories should be added only if the installer is built on the build farm -->
     <?ifdef env.IsPipeline?>
-      <?foreach ParentDirectory in LauncherInstallFolder;FancyZonesInstallFolder;ImageResizerInstallFolder;ColorPickerInstallFolder;FileExplorerPreviewInstallFolder;HistoryPluginFolder;CalculatorPluginFolder;FolderPluginFolder;ProgramPluginFolder;ShellPluginFolder;IndexerPluginFolder;UnitConverterPluginFolder;UriPluginFolder;WindowWalkerPluginFolder;OneNotePluginFolder;RegistryPluginFolder;VSCodeWorkspacesPluginFolder;ServicePluginFolder;SystemPluginFolder;TimeDatePluginFolder;WindowsSettingsPluginFolder;WindowsTerminalPluginFolder;WebSearchPluginFolder?>
+      <?foreach ParentDirectory in LauncherInstallFolder;FancyZonesInstallFolder;ImageResizerInstallFolder;ColorPickerInstallFolder;FileExplorerPreviewInstallFolder;PeekInstallFolder;HistoryPluginFolder;CalculatorPluginFolder;FolderPluginFolder;ProgramPluginFolder;ShellPluginFolder;IndexerPluginFolder;UnitConverterPluginFolder;UriPluginFolder;WindowWalkerPluginFolder;OneNotePluginFolder;RegistryPluginFolder;VSCodeWorkspacesPluginFolder;ServicePluginFolder;SystemPluginFolder;TimeDatePluginFolder;WindowsSettingsPluginFolder;WindowsTerminalPluginFolder;WebSearchPluginFolder?>
         <DirectoryRef Id="$(var.ParentDirectory)">
           <!-- Resource file directories -->
           <?foreach Language in $(var.LocLanguageList)?>
@@ -212,6 +212,15 @@
           <RegistryValue Type="string" Name="GcodePreviewHandler_$(var.IdSafeLanguage)_Component" Value="" KeyPath="yes"/>
         </RegistryKey>
         <File Id="GcodePreviewHandler_$(var.IdSafeLanguage)_File" Source="$(var.BinDir)modules\FileExplorerPreview\$(var.Language)\PowerToys.GcodePreviewHandler.resources.dll" />
+      </Component>
+      <Component
+          Id="Peek_$(var.IdSafeLanguage)_Component"
+          Directory="Resource$(var.IdSafeLanguage)PeekInstallFolder"
+          Guid="$(var.CompGUIDPrefix)03">
+        <RegistryKey Root="$(var.RegistryScope)" Key="Software\Classes\powertoys\components">
+          <RegistryValue Type="string" Name="Peek_$(var.IdSafeLanguage)_Component" Value="" KeyPath="yes"/>
+        </RegistryKey>
+        <File Id="Peek_$(var.IdSafeLanguage)_File" Source="$(var.BinDir)modules\$(var.PeekProjectName)\$(var.Language)\PowerToys.Peek.UI.resources.dll" />
       </Component>
       <!-- PowerToys Run aka Launcher plugin resources -->
       <Component
@@ -446,7 +455,8 @@
           <RemoveFolder Id="RemoveFolderResourcesResource$(var.IdSafeLanguage)ImageResizerInstallFolder" Directory="Resource$(var.IdSafeLanguage)ImageResizerInstallFolder" On="uninstall"/>
           <RemoveFolder Id="RemoveFolderResourcesResource$(var.IdSafeLanguage)ColorPickerInstallFolder" Directory="Resource$(var.IdSafeLanguage)ColorPickerInstallFolder" On="uninstall"/>
           <RemoveFolder Id="RemoveFolderResourcesResource$(var.IdSafeLanguage)FileExplorerPreviewInstallFolder" Directory="Resource$(var.IdSafeLanguage)FileExplorerPreviewInstallFolder" On="uninstall"/>
-          <RemoveFolder Id="RemoveFolderResourcesResource$(var.IdSafeLanguage)CalculatorPluginFolder" Directory="Resource$(var.IdSafeLanguage)CalculatorPluginFolder" On="uninstall"/>
+          <RemoveFolder Id="RemoveFolderResourcesResource$(var.IdSafeLanguage)PeekInstallFolder" Directory="Resource$(var.IdSafeLanguage)PeekInstallFolder" On="uninstall"/>
+		  <RemoveFolder Id="RemoveFolderResourcesResource$(var.IdSafeLanguage)CalculatorPluginFolder" Directory="Resource$(var.IdSafeLanguage)CalculatorPluginFolder" On="uninstall"/>
           <RemoveFolder Id="RemoveFolderResourcesResource$(var.IdSafeLanguage)FolderPluginFolder" Directory="Resource$(var.IdSafeLanguage)FolderPluginFolder" On="uninstall"/>
           <RemoveFolder Id="RemoveFolderResourcesResource$(var.IdSafeLanguage)ProgramPluginFolder" Directory="Resource$(var.IdSafeLanguage)ProgramPluginFolder" On="uninstall"/>
           <RemoveFolder Id="RemoveFolderResourcesResource$(var.IdSafeLanguage)ShellPluginFolder" Directory="Resource$(var.IdSafeLanguage)ShellPluginFolder" On="uninstall"/>
