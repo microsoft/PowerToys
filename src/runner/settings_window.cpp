@@ -586,7 +586,15 @@ void open_settings_window(std::optional<std::wstring> settings_window, bool show
             // bring_settings_to_front();
             if (current_settings_ipc)
             {
-                current_settings_ipc->send(L"{\"ShowYourself\":\"main_page\"}");
+                if (settings_window.has_value())
+                {
+                    std::wstring msg = L"{\"ShowYourself\":\"" + settings_window.value() + L"\"}";
+                    current_settings_ipc->send(msg);
+                }
+                else
+                {
+                    current_settings_ipc->send(L"{\"ShowYourself\":\"Overview\"}");
+                }
             }
         }
     }
@@ -657,6 +665,10 @@ std::string ESettingsWindowNames_to_string(ESettingsWindowNames value)
         return "VideoConference";
     case ESettingsWindowNames::Hosts:
         return "Hosts";
+    case ESettingsWindowNames::MeasureTool:
+        return "MeasureTool";
+    case ESettingsWindowNames::PowerOCR:
+        return "PowerOCR";
     case ESettingsWindowNames::RegistryPreview:
         return "RegistryPreview";
     default:
@@ -721,6 +733,14 @@ ESettingsWindowNames ESettingsWindowNames_from_string(std::string value)
     else if (value == "Hosts")
     {
         return ESettingsWindowNames::Hosts;
+    }
+    else if (value == "MeasureTool")
+    {
+        return ESettingsWindowNames::MeasureTool;
+    }
+    else if (value == "PowerOCR")
+    {
+        return ESettingsWindowNames::PowerOCR;
     }
     else if (value == "RegistryPreview")
     {
