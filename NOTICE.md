@@ -298,7 +298,7 @@ SOFTWARE.
 - Microsoft.Extensions.Hosting 7.0.0
 - Microsoft.NET.Test.Sdk 17.4.1
 - Microsoft.Toolkit.Uwp.Notifications 7.1.2
-- Microsoft.Web.WebView2 1.0.1343.22
+- Microsoft.Web.WebView2 1.0.1722.45
 - Microsoft.Windows.CsWin32 0.2.46-beta
 - Microsoft.Windows.CsWinRT 2.0.1
 - Microsoft.Windows.SDK.BuildTools 10.0.22621.755
@@ -330,3 +330,4 @@ SOFTWARE.
 - Vanara.PInvoke.Shell32 3.4.11
 - Vanara.PInvoke.User32 3.4.11
 - WinUIEx 2.1.0
+
