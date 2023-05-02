@@ -318,6 +318,16 @@ namespace PowerLauncher.ViewModel
             return Result.QueryTextDisplay;
         }
 
+        private double _height = 72;
+
+        public double Height
+        {
+            get
+            {
+                return _height;
+            }
+        }
+
         public override string ToString()
         {
             // Using CurrentCulture since this is user facing

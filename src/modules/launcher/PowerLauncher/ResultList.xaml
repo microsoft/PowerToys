@@ -186,7 +186,7 @@
             <ListView.ItemTemplate>
                 <DataTemplate>
                     <Grid 
-                        Height="72" 
+                        Height="{Binding Height}" 
                         Width="642" 
                         Background="Transparent"
                         ToolTipService.BetweenShowDelay="0"
