@@ -431,6 +431,21 @@ namespace RegistryPreview
                             registryValue.Value = value;
 
                             break;
+                        case "REG_DWORD":
+                            if (value.Length <= 0)
+                            {
+                                registryValue.Type = "ERROR";
+                            }
+
+                            break;
+                        case "REG_QWORD":
+                            if (value.Length <= 0)
+                            {
+                                value = resourceLoader.GetString("InvalidQword");
+                            }
+
+                            registryValue.Value = value;
+                            break;
                         default:
                             registryValue.Value = value;
                             break;
