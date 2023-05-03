@@ -102,6 +102,7 @@ namespace winrt::PowerToys::PowerAccentKeyboardService::implementation
                                                                LetterKey::VK_PERIOD,
                                                                LetterKey::VK_MINUS,
                                                                LetterKey::VK_SLASH,
+                                                               LetterKey::VK_DIVIDE,
                                                                LetterKey::VK_MULTIPLY };
         LetterKey letterPressed{};
 
