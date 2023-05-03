@@ -26,6 +26,26 @@ namespace PowerOCR;
 
 internal sealed class ImageMethods
 {
+    internal static Bitmap PadImage(Bitmap image, int minW = 64, int minH = 64)
+    {
+        if (image.Height >= minH && image.Width >= minW)
+        {
+            return image;
+        }
+
+        int width = Math.Max(image.Width + 16, minW + 16);
+        int height = Math.Max(image.Height + 16, minH + 16);
+
+        // Create a compatible bitmap
+        Bitmap dest = new(width, height, image.PixelFormat);
+        using Graphics gd = Graphics.FromImage(dest);
+
+        gd.Clear(image.GetPixel(0, 0));
+        gd.DrawImageUnscaled(image, 8, 8);
+
+        return dest;
+    }
+
     internal static ImageSource GetWindowBoundsImage(Window passedWindow)
     {
         bool isGrabFrame = false;
@@ -46,7 +66,7 @@ internal sealed class ImageMethods
             windowHeight -= (int)(70 * dpi.DpiScaleY);
         }
 
-        using Bitmap bmp = new Bitmap(windowWidth, windowHeight, System.Drawing.Imaging.PixelFormat.Format32bppArgb);
+        using Bitmap bmp = new(windowWidth, windowHeight, System.Drawing.Imaging.PixelFormat.Format32bppArgb);
         using Graphics g = Graphics.FromImage(bmp);
 
         g.CopyFromScreen(thisCorrectedLeft, thisCorrectedTop, 0, 0, bmp.Size, CopyPixelOperation.SourceCopy);
@@ -55,7 +75,7 @@ internal sealed class ImageMethods
 
     internal static async Task<string> GetRegionsText(Window? passedWindow, Rectangle selectedRegion, Language? preferredLanguage)
     {
-        using Bitmap bmp = new Bitmap(selectedRegion.Width, selectedRegion.Height, System.Drawing.Imaging.PixelFormat.Format32bppArgb);
+        Bitmap bmp = new(selectedRegion.Width, selectedRegion.Height, System.Drawing.Imaging.PixelFormat.Format32bppArgb);
         using Graphics g = Graphics.FromImage(bmp);
 
         System.Windows.Point absPosPoint = passedWindow == null ? default(System.Windows.Point) : passedWindow.GetAbsolutePosition();
@@ -65,7 +85,7 @@ internal sealed class ImageMethods
 
         g.CopyFromScreen(thisCorrectedLeft, thisCorrectedTop, 0, 0, bmp.Size, CopyPixelOperation.SourceCopy);
 
-        // bmp = PadImage(bmp);
+        bmp = PadImage(bmp);
         string? resultText = await ExtractText(bmp, preferredLanguage);
 
         return resultText != null ? resultText.Trim() : string.Empty;
