@@ -102,7 +102,7 @@ namespace winrt::PowerToys::PowerAccentKeyboardService::implementation
                                                                LetterKey::VK_PERIOD,
                                                                LetterKey::VK_MINUS,
                                                                LetterKey::VK_SLASH,
-                                                               LetterKey::VK_ASTERISK };
+                                                               LetterKey::VK_MULTIPLY };
         LetterKey letterPressed{};
 
         static inline const std::vector<TriggerKey> triggers = { TriggerKey::Right, TriggerKey::Left, TriggerKey::Space };
