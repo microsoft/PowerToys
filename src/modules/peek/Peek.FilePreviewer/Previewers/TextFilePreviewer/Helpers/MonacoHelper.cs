@@ -56,7 +56,7 @@ namespace Peek.FilePreviewer.Previewers
             html = html.Replace("[[PT_WRAP]]", "1", StringComparison.InvariantCulture); // TODO: setting?
             html = html.Replace("[[PT_THEME]]", theme, StringComparison.InvariantCulture);
             html = html.Replace("[[PT_CODE]]", base64FileCode, StringComparison.InvariantCulture);
-            html = html.Replace("[[PT_URL]]", Microsoft.PowerToys.FilePreviewCommon.MonacoHelper.AssemblyDirectory, StringComparison.InvariantCulture);
+            html = html.Replace("[[PT_URL]]", Microsoft.PowerToys.FilePreviewCommon.MonacoHelper.VirtualHostName, StringComparison.InvariantCulture);
 
             string filename = tempFolder + "\\" + Guid.NewGuid().ToString() + ".html";
             File.WriteAllText(filename, html);
