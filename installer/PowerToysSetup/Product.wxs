@@ -570,6 +570,9 @@
                 <Directory Id="OneNotePluginFolder" Name="OneNote">
                   <Directory Id="OneNoteImagesFolder" Name="Images" />
                 </Directory>
+                <Directory Id="PowerToysPluginFolder" Name="PowerToys">
+                  <Directory Id="PowerToysImagesFolder" Name="Images" />
+                </Directory>
                 <Directory Id="RegistryPluginFolder" Name="Registry">
                   <Directory Id="RegistryImagesFolder" Name="Images" />
                 </Directory>

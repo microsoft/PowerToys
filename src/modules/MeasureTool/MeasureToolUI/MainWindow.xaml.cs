@@ -11,6 +11,7 @@ using Microsoft.UI.Xaml.Automation.Provider;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Controls.Primitives;
 using Microsoft.UI.Xaml.Input;
+using Settings.UI.Library.Enumerations;
 using Windows.Graphics;
 using WinUIEx;
 using static NativeMethods;
@@ -24,6 +25,8 @@ namespace MeasureToolUI
     {
         private const int WindowWidth = 216;
         private const int WindowHeight = 50;
+
+        private readonly Settings settings = new();
 
         private PowerToys.MeasureToolCore.Core _coreLogic;
 
@@ -67,6 +70,11 @@ namespace MeasureToolUI
                 _initialPosition.Y + (int)(dpiScale * WindowHeight));
             OnPositionChanged(_initialPosition);
             SetWindowPos(hwnd, HWND_TOPMOST, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE);
+        }
+
+        private void StackPanel_Loaded(object sender, RoutedEventArgs e)
+        {
+            SelectDefaultMeasureStyle();
         }
 
         private void MainWindow_Closed(object sender, WindowEventArgs args)
@@ -146,6 +154,25 @@ namespace MeasureToolUI
         {
             _coreLogic.ResetState();
             this.Close();
+        }
+
+        private void SelectDefaultMeasureStyle()
+        {
+            ToggleButton responsibleBtn = settings.DefaultMeasureStyle switch
+            {
+                MeasureToolMeasureStyle.None => null,
+                MeasureToolMeasureStyle.Bounds => btnBounds,
+                MeasureToolMeasureStyle.Spacing => btnSpacing,
+                MeasureToolMeasureStyle.HorizontalSpacing => btnHorizontalSpacing,
+                MeasureToolMeasureStyle.VerticalSpacing => btnVerticalSpacing,
+                _ => null,
+            };
+
+            if (responsibleBtn is not null)
+            {
+                var peer = FrameworkElementAutomationPeer.FromElement(responsibleBtn) as ToggleButtonAutomationPeer;
+                peer.Toggle();
+            }
         }
 
         public void Dispose()
