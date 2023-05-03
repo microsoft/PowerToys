@@ -10,13 +10,13 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Text;
-using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Input;
 using System.Windows.Markup;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
+using PowerOCR.Helpers;
 using Windows.Globalization;
 using Windows.Graphics.Imaging;
 using Windows.Media.Ocr;
@@ -122,23 +122,10 @@ internal sealed class ImageMethods
             return string.Empty;
         }
 
-        bool isCJKLang = false;
-
-        if (selectedLanguage.LanguageTag.StartsWith("zh", StringComparison.InvariantCultureIgnoreCase) == true)
-        {
-            isCJKLang = true;
-        }
-        else if (selectedLanguage.LanguageTag.StartsWith("ja", StringComparison.InvariantCultureIgnoreCase) == true)
-        {
-            isCJKLang = true;
-        }
-        else if (selectedLanguage.LanguageTag.StartsWith("ko", StringComparison.InvariantCultureIgnoreCase) == true)
-        {
-            isCJKLang = true;
-        }
-
         XmlLanguage lang = XmlLanguage.GetLanguage(selectedLanguage.LanguageTag);
         CultureInfo culture = lang.GetEquivalentCulture();
+
+        bool isSpaceJoiningLang = LanguageHelper.IsLanguageSpaceJoining(selectedLanguage);
 
         bool scaleBMP = true;
 
@@ -149,9 +136,9 @@ internal sealed class ImageMethods
         }
 
         using Bitmap scaledBitmap = scaleBMP ? ScaleBitmapUniform(bmp, 1.5) : ScaleBitmapUniform(bmp, 1.0);
-        StringBuilder text = new StringBuilder();
+        StringBuilder text = new();
 
-        await using (MemoryStream memory = new MemoryStream())
+        await using (MemoryStream memory = new())
         {
             scaledBitmap.Save(memory, ImageFormat.Bmp);
             memory.Position = 0;
@@ -163,41 +150,9 @@ internal sealed class ImageMethods
 
             if (singlePoint == null)
             {
-                if (isCJKLang == false)
+                foreach (OcrLine ocrLine in ocrResult.Lines)
                 {
-                    foreach (OcrLine line in ocrResult.Lines)
-                    {
-                        text.AppendLine(line.Text);
-                    }
-                }
-                else
-                {
-                    // Kanji, Hiragana, Katakana, Hankaku-Katakana do not need blank.(not only the symbol in CJKUnifiedIdeographs).
-                    // Maybe there are more symbols that don't require spaces like \u3001 \u3002.
-                    // var cjkRegex = new Regex(@"\p{IsCJKUnifiedIdeographs}|\p{IsHiragana}|\p{IsKatakana}|[\uFF61-\uFF9F]|[\u3000-\u3003]");
-                    var cjkRegex = new Regex(@"\p{IsCJKUnifiedIdeographs}|\p{IsHiragana}|\p{IsKatakana}|[\uFF61-\uFF9F]");
-
-                    foreach (OcrLine ocrLine in ocrResult.Lines)
-                    {
-                        bool isBeginning = true;
-                        bool isCJKPrev = false;
-                        foreach (OcrWord ocrWord in ocrLine.Words)
-                        {
-                            bool isCJK = cjkRegex.IsMatch(ocrWord.Text);
-
-                            // Use spaces to separate non-CJK words.
-                            if (!isBeginning && (!isCJK || !isCJKPrev))
-                            {
-                                _ = text.Append(' ');
-                            }
-
-                            _ = text.Append(ocrWord.Text);
-                            isCJKPrev = isCJK;
-                            isBeginning = false;
-                        }
-
-                        text.Append(Environment.NewLine);
-                    }
+                    ocrLine.GetTextFromOcrLine(isSpaceJoiningLang, text);
                 }
             }
             else
@@ -225,7 +180,7 @@ internal sealed class ImageMethods
             {
                 List<string> wordArray = textLine.Split().ToList();
                 wordArray.Reverse();
-                _ = isCJKLang == true ? text.Append(string.Join(string.Empty, wordArray)) : text.Append(string.Join(' ', wordArray));
+                _ = isSpaceJoiningLang == true ? text.Append(string.Join(string.Empty, wordArray)) : text.Append(string.Join(' ', wordArray));
 
                 if (textLine.Length > 0)
                 {
