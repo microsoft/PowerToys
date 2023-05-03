@@ -7,7 +7,7 @@
   <?define PowerPreviewFiles=?>
   <?define PowerPreviewFilesPath=$(var.BinDir)modules\FileExplorerPreview\?>
   <?define MonacoPreviewHandlerCustomLanguagesFiles=?>
-  <?define MonacoPreviewHandlerCustomLanguagesFilesPath=$(var.BinDir)modules\FileExplorerPreview\monaco\customLanguages\?>
+  <?define MonacoPreviewHandlerCustomLanguagesFilesPath=$(var.BinDir)modules\FileExplorerPreview\customLanguages\?>
 
   <Fragment>
     <DirectoryRef Id="FileExplorerPreviewInstallFolder" FileSource="$(var.PowerPreviewFilesPath)">

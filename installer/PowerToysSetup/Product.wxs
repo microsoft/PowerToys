@@ -473,10 +473,8 @@
               <Directory Id="VideoConferenceIconsFolder" Name="Icons" />
             </Directory>
             <Directory Id="FileExplorerPreviewInstallFolder" Name="FileExplorerPreview">
-              <Directory Id="MonacoPreviewHandlerMonacoFolder" Name="monaco">
-                <Directory Id="MonacoPreviewHandlerMonacoCustomLanguagesFolder" Name="customLanguages" />
-                <Directory Id="MonacoPreviewHandlerMonacoSRCFolder" Name="monacoSRC" />
-              </Directory>
+              <Directory Id="MonacoPreviewHandlerMonacoCustomLanguagesFolder" Name="customLanguages" />
+              <Directory Id="MonacoPreviewHandlerMonacoSRCFolder" Name="monacoSRC" />
             </Directory>
             <Directory Id="FancyZonesInstallFolder" Name="$(var.FancyZonesProjectName)" />
             <Directory Id="PowerOCRInstallFolder" Name="$(var.PowerOCRProjectName)" />
@@ -537,10 +535,8 @@
               <Directory Id="PeekMicrosoftUIXamlInstallFolder" Name="Microsoft.UI.Xaml">
                   <Directory Id="PeekMicrosoftUIXamlAssetsInstallFolder" Name="Assets" />
               </Directory>
-              <Directory Id="MonacoPeekMonacoFolder" Name="monaco">
-                <Directory Id="MonacoPeekMonacoCustomLanguagesFolder" Name="customLanguages" />
-                <Directory Id="MonacoPeekMonacoSRCFolder" Name="monacoSRC" />
-              </Directory>
+              <Directory Id="MonacoPeekMonacoCustomLanguagesFolder" Name="customLanguages" />
+              <Directory Id="MonacoPeekMonacoSRCFolder" Name="monacoSRC" />
             </Directory>
 
               <!-- Launcher -->

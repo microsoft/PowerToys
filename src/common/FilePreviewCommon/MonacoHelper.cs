@@ -48,7 +48,7 @@ namespace Microsoft.PowerToys.FilePreviewCommon
         public static JsonDocument GetLanguages()
         {
             JsonDocument languageListDocument;
-            using (StreamReader jsonFileReader = new StreamReader(new FileStream(AssemblyDirectory + "\\monaco\\monaco_languages.json", FileMode.Open, FileAccess.Read, FileShare.ReadWrite)))
+            using (StreamReader jsonFileReader = new StreamReader(new FileStream(AssemblyDirectory + "\\monaco_languages.json", FileMode.Open, FileAccess.Read, FileShare.ReadWrite)))
             {
                 languageListDocument = JsonDocument.Parse(jsonFileReader.ReadToEnd());
                 jsonFileReader.Close();
@@ -91,7 +91,7 @@ namespace Microsoft.PowerToys.FilePreviewCommon
         public static string ReadIndexHtml()
         {
             string html;
-            using (StreamReader htmlFileReader = new StreamReader(new FileStream(AssemblyDirectory + "\\monaco\\index.html", FileMode.Open, FileAccess.Read, FileShare.ReadWrite)))
+            using (StreamReader htmlFileReader = new StreamReader(new FileStream(AssemblyDirectory + "\\index.html", FileMode.Open, FileAccess.Read, FileShare.ReadWrite)))
             {
                 html = htmlFileReader.ReadToEnd();
                 htmlFileReader.Close();
