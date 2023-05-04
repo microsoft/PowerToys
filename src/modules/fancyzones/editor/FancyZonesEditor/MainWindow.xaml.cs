@@ -5,11 +5,13 @@
 using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.Runtime.InteropServices;
 using System.Windows;
 using System.Windows.Automation;
 using System.Windows.Automation.Peers;
 using System.Windows.Controls;
 using System.Windows.Input;
+using System.Windows.Interop;
 using Common.UI;
 using FancyZonesEditor.Models;
 using FancyZonesEditor.Utils;
@@ -36,6 +38,25 @@ namespace FancyZonesEditor
 
         public int WrapPanelItemSize { get; set; } = DefaultWrapPanelItemSize;
 
+        [DllImport("user32.dll")]
+        [return: MarshalAs(UnmanagedType.Bool)]
+        private static extern bool SetForegroundWindow(IntPtr hWnd);
+
+        [DllImport("user32.dll")]
+        private static extern void SwitchToThisWindow(IntPtr hWnd, bool fAltTab);
+
+        [DllImport("user32.dll")]
+        private static extern IntPtr GetForegroundWindow();
+
+        [DllImport("user32.dll")]
+        private static extern uint GetWindowThreadProcessId(IntPtr hWnd, IntPtr processId);
+
+        [DllImport("kernel32.dll")]
+        private static extern uint GetCurrentThreadId();
+
+        [DllImport("user32.dll")]
+        private static extern bool AttachThreadInput(uint idAttach, uint idAttachTo, bool fAttach);
+
         public MainWindow(bool spanZonesAcrossMonitors, Rect workArea)
         {
             InitializeComponent();
@@ -61,6 +82,40 @@ namespace FancyZonesEditor
 
             // reinit considering work area rect
             _settings.InitModels();
+        }
+
+        private void BringToFront()
+        {
+            // Get the window handle of the FancyZones Editor window
+            IntPtr handle = new WindowInteropHelper(this).Handle;
+
+            // Get the handle of the window currently in the foreground
+            IntPtr foregroundWindowHandle = GetForegroundWindow();
+
+            // Get the thread IDs of the current thread and the thread of the foreground window
+            uint currentThreadId = GetCurrentThreadId();
+            uint activeThreadId = GetWindowThreadProcessId(foregroundWindowHandle, IntPtr.Zero);
+
+            // Check if the active thread is different from the current thread
+            if (activeThreadId != currentThreadId)
+            {
+                // Attach the input processing mechanism of the current thread to the active thread
+                AttachThreadInput(activeThreadId, currentThreadId, true);
+
+                // Set the FancyZones Editor window as the foreground window
+                SetForegroundWindow(handle);
+
+                // Detach the input processing mechanism of the current thread from the active thread
+                AttachThreadInput(activeThreadId, currentThreadId, false);
+            }
+            else
+            {
+                // Set the FancyZones Editor window as the foreground window
+                SetForegroundWindow(handle);
+            }
+
+            // Bring the FancyZones Editor window to the foreground and activate it
+            SwitchToThisWindow(handle, true);
         }
 
         public void Update()
@@ -408,6 +463,7 @@ namespace FancyZonesEditor
         // This is required to fix a WPF rendering bug when using custom chrome
         private void OnContentRendered(object sender, EventArgs e)
         {
+            BringToFront();
             InvalidateVisual();
         }
 
