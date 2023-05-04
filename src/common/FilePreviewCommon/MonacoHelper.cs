@@ -45,10 +45,22 @@ namespace Microsoft.PowerToys.FilePreviewCommon
             }
         }
 
+        public static string MonacoDirectory
+        {
+            get
+            {
+                string codeBase = Assembly.GetExecutingAssembly().Location;
+                codeBase += ".\\..\\FileExplorerPreview";
+                UriBuilder uri = new UriBuilder(codeBase);
+                string path = Uri.UnescapeDataString(uri.Path);
+                return Path.GetDirectoryName(path);
+            }
+        }
+
         public static JsonDocument GetLanguages()
         {
             JsonDocument languageListDocument;
-            using (StreamReader jsonFileReader = new StreamReader(new FileStream(AssemblyDirectory + "\\monaco_languages.json", FileMode.Open, FileAccess.Read, FileShare.ReadWrite)))
+            using (StreamReader jsonFileReader = new StreamReader(new FileStream(MonacoDirectory + "\\monaco_languages.json", FileMode.Open, FileAccess.Read, FileShare.ReadWrite)))
             {
                 languageListDocument = JsonDocument.Parse(jsonFileReader.ReadToEnd());
                 jsonFileReader.Close();
@@ -91,7 +103,7 @@ namespace Microsoft.PowerToys.FilePreviewCommon
         public static string ReadIndexHtml()
         {
             string html;
-            using (StreamReader htmlFileReader = new StreamReader(new FileStream(AssemblyDirectory + "\\index.html", FileMode.Open, FileAccess.Read, FileShare.ReadWrite)))
+            using (StreamReader htmlFileReader = new StreamReader(new FileStream(MonacoDirectory + "\\index.html", FileMode.Open, FileAccess.Read, FileShare.ReadWrite)))
             {
                 html = htmlFileReader.ReadToEnd();
                 htmlFileReader.Close();

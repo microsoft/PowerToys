@@ -144,7 +144,7 @@ namespace Peek.FilePreviewer.Controls
                 sender.CoreWebView2.Settings.IsScriptEnabled = true; // TODO: enable only for dev files
                 sender.CoreWebView2.Settings.IsWebMessageEnabled = false;
 
-                sender.CoreWebView2.SetVirtualHostNameToFolderMapping(Microsoft.PowerToys.FilePreviewCommon.MonacoHelper.VirtualHostName, Microsoft.PowerToys.FilePreviewCommon.MonacoHelper.AssemblyDirectory, CoreWebView2HostResourceAccessKind.Allow);
+                sender.CoreWebView2.SetVirtualHostNameToFolderMapping(Microsoft.PowerToys.FilePreviewCommon.MonacoHelper.VirtualHostName, Microsoft.PowerToys.FilePreviewCommon.MonacoHelper.MonacoDirectory, CoreWebView2HostResourceAccessKind.Allow);
 
                 sender.CoreWebView2.DOMContentLoaded += CoreWebView2_DOMContentLoaded;
 
