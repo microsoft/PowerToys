@@ -17,6 +17,7 @@ using System.Windows.Markup;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using PowerOCR.Helpers;
+using PowerOCR.Models;
 using Windows.Globalization;
 using Windows.Graphics.Imaging;
 using Windows.Media.Ocr;
@@ -94,7 +95,7 @@ internal sealed class ImageMethods
     internal static async Task<string> GetClickedWord(Window passedWindow, System.Windows.Point clickedPoint, Language? preferredLanguage)
     {
         DpiScale dpi = VisualTreeHelper.GetDpi(passedWindow);
-        Bitmap bmp = new Bitmap((int)(passedWindow.ActualWidth * dpi.DpiScaleX), (int)(passedWindow.ActualHeight * dpi.DpiScaleY), System.Drawing.Imaging.PixelFormat.Format32bppArgb);
+        Bitmap bmp = new((int)(passedWindow.ActualWidth * dpi.DpiScaleX), (int)(passedWindow.ActualHeight * dpi.DpiScaleY), System.Drawing.Imaging.PixelFormat.Format32bppArgb);
         Graphics g = Graphics.FromImage(bmp);
 
         System.Windows.Point absPosPoint = passedWindow.GetAbsolutePosition();
@@ -111,12 +112,7 @@ internal sealed class ImageMethods
 
     public static async Task<string> ExtractText(Bitmap bmp, Language? preferredLanguage, System.Windows.Point? singlePoint = null)
     {
-        Language? selectedLanguage = preferredLanguage;
-        if (selectedLanguage == null)
-        {
-            selectedLanguage = GetOCRLanguage();
-        }
-
+        Language? selectedLanguage = preferredLanguage ?? GetOCRLanguage();
         if (selectedLanguage == null)
         {
             return string.Empty;
@@ -138,34 +134,36 @@ internal sealed class ImageMethods
         using Bitmap scaledBitmap = scaleBMP ? ScaleBitmapUniform(bmp, 1.5) : ScaleBitmapUniform(bmp, 1.0);
         StringBuilder text = new();
 
-        await using (MemoryStream memory = new())
+        await using MemoryStream memoryStream = new();
+        using WrappingStream wrappingStream = new(memoryStream);
+
+        scaledBitmap.Save(wrappingStream, ImageFormat.Bmp);
+        wrappingStream.Position = 0;
+        BitmapDecoder bmpDecoder = await BitmapDecoder.CreateAsync(wrappingStream.AsRandomAccessStream());
+        SoftwareBitmap softwareBmp = await bmpDecoder.GetSoftwareBitmapAsync();
+
+        OcrEngine ocrEngine = OcrEngine.TryCreateFromLanguage(selectedLanguage);
+        OcrResult ocrResult = await ocrEngine.RecognizeAsync(softwareBmp);
+
+        GC.Collect();
+
+        if (singlePoint == null)
         {
-            scaledBitmap.Save(memory, ImageFormat.Bmp);
-            memory.Position = 0;
-            BitmapDecoder bmpDecoder = await BitmapDecoder.CreateAsync(memory.AsRandomAccessStream());
-            SoftwareBitmap softwareBmp = await bmpDecoder.GetSoftwareBitmapAsync();
-
-            OcrEngine ocrEngine = OcrEngine.TryCreateFromLanguage(selectedLanguage);
-            OcrResult ocrResult = await ocrEngine.RecognizeAsync(softwareBmp);
-
-            if (singlePoint == null)
+            foreach (OcrLine ocrLine in ocrResult.Lines)
             {
-                foreach (OcrLine ocrLine in ocrResult.Lines)
-                {
-                    ocrLine.GetTextFromOcrLine(isSpaceJoiningLang, text);
-                }
+                ocrLine.GetTextFromOcrLine(isSpaceJoiningLang, text);
             }
-            else
+        }
+        else
+        {
+            Windows.Foundation.Point fPoint = new Windows.Foundation.Point(singlePoint.Value.X, singlePoint.Value.Y);
+            foreach (OcrLine ocrLine in ocrResult.Lines)
             {
-                Windows.Foundation.Point fPoint = new Windows.Foundation.Point(singlePoint.Value.X, singlePoint.Value.Y);
-                foreach (OcrLine ocrLine in ocrResult.Lines)
+                foreach (OcrWord ocrWord in ocrLine.Words)
                 {
-                    foreach (OcrWord ocrWord in ocrLine.Words)
+                    if (ocrWord.BoundingRect.Contains(fPoint))
                     {
-                        if (ocrWord.BoundingRect.Contains(fPoint))
-                        {
-                            _ = text.Append(ocrWord.Text);
-                        }
+                        _ = text.Append(ocrWord.Text);
                     }
                 }
             }
@@ -198,27 +196,29 @@ internal sealed class ImageMethods
 
     public static Bitmap ScaleBitmapUniform(Bitmap passedBitmap, double scale)
     {
-        using MemoryStream memory = new MemoryStream();
-        passedBitmap.Save(memory, ImageFormat.Bmp);
-        memory.Position = 0;
-        BitmapImage bitmapimage = new BitmapImage();
+        using MemoryStream memoryStream = new();
+        using WrappingStream wrappingStream = new(memoryStream);
+        passedBitmap.Save(wrappingStream, ImageFormat.Bmp);
+        wrappingStream.Position = 0;
+        BitmapImage bitmapimage = new();
         bitmapimage.BeginInit();
-        bitmapimage.StreamSource = memory;
+        bitmapimage.StreamSource = wrappingStream;
         bitmapimage.CacheOption = BitmapCacheOption.OnLoad;
         bitmapimage.EndInit();
         bitmapimage.Freeze();
-        TransformedBitmap transformedBmp = new TransformedBitmap();
+        TransformedBitmap transformedBmp = new();
         transformedBmp.BeginInit();
         transformedBmp.Source = bitmapimage;
         transformedBmp.Transform = new ScaleTransform(scale, scale);
         transformedBmp.EndInit();
         transformedBmp.Freeze();
+        GC.Collect();
         return BitmapSourceToBitmap(transformedBmp);
     }
 
     public static Bitmap BitmapSourceToBitmap(BitmapSource source)
     {
-        Bitmap bmp = new Bitmap(
+        Bitmap bmp = new(
           source.PixelWidth,
           source.PixelHeight,
           System.Drawing.Imaging.PixelFormat.Format32bppPArgb);
@@ -232,21 +232,24 @@ internal sealed class ImageMethods
           data.Height * data.Stride,
           data.Stride);
         bmp.UnlockBits(data);
+        GC.Collect();
         return bmp;
     }
 
     internal static BitmapImage BitmapToImageSource(Bitmap bitmap)
     {
-        using MemoryStream memory = new MemoryStream();
-        bitmap.Save(memory, ImageFormat.Bmp);
-        memory.Position = 0;
-        BitmapImage bitmapimage = new BitmapImage();
+        using MemoryStream memoryStream = new();
+        using WrappingStream wrappingStream = new(memoryStream);
+
+        bitmap.Save(wrappingStream, ImageFormat.Bmp);
+        wrappingStream.Position = 0;
+        BitmapImage bitmapimage = new();
         bitmapimage.BeginInit();
-        bitmapimage.StreamSource = memory;
+        bitmapimage.StreamSource = wrappingStream;
         bitmapimage.CacheOption = BitmapCacheOption.OnLoad;
         bitmapimage.EndInit();
         bitmapimage.Freeze();
-
+        GC.Collect();
         return bitmapimage;
     }
 
@@ -255,7 +258,7 @@ internal sealed class ImageMethods
         // use currently selected Language
         string inputLang = InputLanguageManager.Current.CurrentInputLanguage.Name;
 
-        Language? selectedLanguage = new Language(inputLang);
+        Language? selectedLanguage = new(inputLang);
         List<Language> possibleOcrLanguages = OcrEngine.AvailableRecognizerLanguages.ToList();
 
         if (possibleOcrLanguages.Count < 1)
