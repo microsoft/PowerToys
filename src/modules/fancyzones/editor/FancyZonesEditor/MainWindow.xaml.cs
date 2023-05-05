@@ -36,6 +36,8 @@ namespace FancyZonesEditor
         private ContentDialog _openedDialog;
         private TextBlock _createLayoutAnnounce;
 
+        private bool haveTriedToGetFocusAlready;
+
         public int WrapPanelItemSize { get; set; } = DefaultWrapPanelItemSize;
 
         [DllImport("user32.dll")]
@@ -116,6 +118,8 @@ namespace FancyZonesEditor
 
             // Bring the FancyZones Editor window to the foreground and activate it
             SwitchToThisWindow(handle, true);
+
+            haveTriedToGetFocusAlready = true;
         }
 
         public void Update()
@@ -463,7 +467,11 @@ namespace FancyZonesEditor
         // This is required to fix a WPF rendering bug when using custom chrome
         private void OnContentRendered(object sender, EventArgs e)
         {
-            BringToFront();
+            if (!haveTriedToGetFocusAlready)
+            {
+                BringToFront();
+            }
+
             InvalidateVisual();
         }
 
