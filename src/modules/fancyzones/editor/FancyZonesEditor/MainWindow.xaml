@@ -370,7 +370,7 @@
                           Opened="Dialog_Opened"
                           Closed="Dialog_Closed">
             <ui:ContentDialog.Title>
-                <local:HeadingTextBlock x:Name="EditLayoutDialogTitle" MaxWidth="320" Margin="0,0,96,0" Style="{StaticResource HeadingTextBlock}" />
+                <local:HeadingTextBlock x:Name="EditLayoutDialogTitle" MaxWidth="320" Margin="0,0,96,0" Style="{StaticResource HeadingTextBlock}" Loaded="EditLayoutDialogTitle_Loaded"/>
             </ui:ContentDialog.Title>
             <Grid DataContext="{Binding SelectedModel}"
                  Margin="4,4,24,32">
