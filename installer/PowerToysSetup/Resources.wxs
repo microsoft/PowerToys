@@ -216,7 +216,7 @@
       <Component
           Id="Peek_$(var.IdSafeLanguage)_Component"
           Directory="Resource$(var.IdSafeLanguage)PeekInstallFolder"
-          Guid="$(var.CompGUIDPrefix)03">
+          Guid="$(var.CompGUIDPrefix)1С">
         <RegistryKey Root="$(var.RegistryScope)" Key="Software\Classes\powertoys\components">
           <RegistryValue Type="string" Name="Peek_$(var.IdSafeLanguage)_Component" Value="" KeyPath="yes"/>
         </RegistryKey>
