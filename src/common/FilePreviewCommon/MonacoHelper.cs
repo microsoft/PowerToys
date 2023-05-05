@@ -49,6 +49,7 @@ namespace Microsoft.PowerToys.FilePreviewCommon
         {
             get
             {
+                // TODO: common monaco folder
                 string codeBase = Assembly.GetExecutingAssembly().Location;
                 codeBase += ".\\..\\FileExplorerPreview";
                 UriBuilder uri = new UriBuilder(codeBase);
