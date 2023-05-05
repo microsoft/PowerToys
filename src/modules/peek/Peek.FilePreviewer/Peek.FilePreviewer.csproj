@@ -10,7 +10,6 @@
   </PropertyGroup>
   <ItemGroup>
     <None Remove="Controls\BrowserControl.xaml" />
-    <None Remove="Controls\TextFilePreview.xaml" />
     <None Remove="FilePreview.xaml" />
     <None Remove="UnsupportedFilePreview.xaml" />
   </ItemGroup>
@@ -50,11 +49,5 @@
 
   <ItemGroup>
     <Folder Include="Previewers\DrivePreviewer\" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Page Update="Controls\TextFilePreview.xaml">
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
   </ItemGroup>
 </Project>

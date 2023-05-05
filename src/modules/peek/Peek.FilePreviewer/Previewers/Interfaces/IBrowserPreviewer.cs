@@ -9,5 +9,9 @@ namespace Peek.FilePreviewer.Previewers
     public interface IBrowserPreviewer : IPreviewer
     {
         public Uri? Preview { get; }
+
+        public string TempDataFolder { get; }
+
+        public bool IsDevFilePreview { get; }
     }
 }

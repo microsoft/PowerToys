@@ -28,9 +28,6 @@ namespace Peek.FilePreviewer.Controls
 
         public event DOMContentLoadedHandler? DOMContentLoaded;
 
-        private string previewBrowserUserDataFolder = System.Environment.GetEnvironmentVariable("USERPROFILE") +
-                        "\\AppData\\LocalLow\\Microsoft\\PowerToys\\Peek-Temp";
-
         public static readonly DependencyProperty SourceProperty = DependencyProperty.Register(
                 nameof(Source),
                 typeof(Uri),
@@ -43,10 +40,40 @@ namespace Peek.FilePreviewer.Controls
             set { SetValue(SourceProperty, value); }
         }
 
+        public static readonly DependencyProperty IsDevFilePreviewProperty = DependencyProperty.Register(
+            nameof(IsDevFilePreview),
+            typeof(bool),
+            typeof(BrowserControl),
+            new PropertyMetadata(null, new PropertyChangedCallback((d, e) => ((BrowserControl)d).SourcePropertyChanged())));
+
+        public bool IsDevFilePreview
+        {
+            get
+            {
+                return (bool)GetValue(IsDevFilePreviewProperty);
+            }
+
+            set
+            {
+                SetValue(IsDevFilePreviewProperty, value);
+
+                if (PreviewBrowser.CoreWebView2 != null)
+                {
+                    PreviewBrowser.CoreWebView2.Settings.IsScriptEnabled = value;
+                    if (value)
+                    {
+                        PreviewBrowser.CoreWebView2.SetVirtualHostNameToFolderMapping(Microsoft.PowerToys.FilePreviewCommon.MonacoHelper.VirtualHostName, Microsoft.PowerToys.FilePreviewCommon.MonacoHelper.MonacoDirectory, CoreWebView2HostResourceAccessKind.Allow);
+                    }
+                }
+            }
+        }
+
+        public string? TempDataFolder { get; set; }
+
         public BrowserControl()
         {
             this.InitializeComponent();
-            Environment.SetEnvironmentVariable("WEBVIEW2_USER_DATA_FOLDER", previewBrowserUserDataFolder, EnvironmentVariableTarget.Process);
+            Environment.SetEnvironmentVariable("WEBVIEW2_USER_DATA_FOLDER", TempDataFolder, EnvironmentVariableTarget.Process);
         }
 
         public void Dispose()
@@ -68,7 +95,7 @@ namespace Peek.FilePreviewer.Controls
 
             _navigatedUri = null;
 
-            if (Source != null)
+            if (Source != null && PreviewBrowser.CoreWebView2 != null)
             {
                 /* CoreWebView2.Navigate() will always trigger a navigation even if the content/URI is the same.
                  * Use WebView2.Source to avoid re-navigating to the same content. */
@@ -93,8 +120,14 @@ namespace Peek.FilePreviewer.Controls
                 PreviewBrowser.CoreWebView2.Settings.AreHostObjectsAllowed = false;
                 PreviewBrowser.CoreWebView2.Settings.IsGeneralAutofillEnabled = false;
                 PreviewBrowser.CoreWebView2.Settings.IsPasswordAutosaveEnabled = false;
-                PreviewBrowser.CoreWebView2.Settings.IsScriptEnabled = false;
+                PreviewBrowser.CoreWebView2.Settings.IsScriptEnabled = IsDevFilePreview;
                 PreviewBrowser.CoreWebView2.Settings.IsWebMessageEnabled = false;
+
+                if (IsDevFilePreview)
+                {
+                    Logger.LogInfo("Set virtual host name to folder mapping: " + Microsoft.PowerToys.FilePreviewCommon.MonacoHelper.MonacoDirectory);
+                    PreviewBrowser.CoreWebView2.SetVirtualHostNameToFolderMapping(Microsoft.PowerToys.FilePreviewCommon.MonacoHelper.VirtualHostName, Microsoft.PowerToys.FilePreviewCommon.MonacoHelper.MonacoDirectory, CoreWebView2HostResourceAccessKind.Allow);
+                }
 
                 PreviewBrowser.CoreWebView2.DOMContentLoaded += CoreWebView2_DOMContentLoaded;
             }
@@ -102,6 +135,8 @@ namespace Peek.FilePreviewer.Controls
             {
                 Logger.LogError("WebView2 loading failed. " + ex.Message);
             }
+
+            Navigate();
         }
 
         private void CoreWebView2_DOMContentLoaded(CoreWebView2 sender, CoreWebView2DOMContentLoadedEventArgs args)

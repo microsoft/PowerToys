@@ -48,7 +48,6 @@ namespace Peek.FilePreviewer
         [ObservableProperty]
         [NotifyPropertyChangedFor(nameof(ImagePreviewer))]
         [NotifyPropertyChangedFor(nameof(BrowserPreviewer))]
-        [NotifyPropertyChangedFor(nameof(TextFilePreviewer))]
         [NotifyPropertyChangedFor(nameof(UnsupportedFilePreviewer))]
 
         private IPreviewer? previewer;
@@ -89,8 +88,6 @@ namespace Peek.FilePreviewer
 
         public IBrowserPreviewer? BrowserPreviewer => Previewer as IBrowserPreviewer;
 
-        public ITextFilePreviewer? TextFilePreviewer => Previewer as ITextFilePreviewer;
-
         public IUnsupportedFilePreviewer? UnsupportedFilePreviewer => Previewer as IUnsupportedFilePreviewer;
 
         public IFileSystemItem Item
@@ -126,7 +123,7 @@ namespace Peek.FilePreviewer
 
         public bool IsWebPreview(IPreviewer? previewer, PreviewState? state)
         {
-            var isWebViewPreview = previewer != null && (previewer is ITextFilePreviewer || previewer is IBrowserPreviewer);
+            var isWebViewPreview = previewer != null && previewer is IBrowserPreviewer;
             return isWebViewPreview && MatchPreviewState(state, PreviewState.Loaded);
         }
 
@@ -223,25 +220,6 @@ namespace Peek.FilePreviewer
             }
         }
 
-        private void TextPreview_DOMContentLoaded(CoreWebView2 sender, CoreWebView2DOMContentLoadedEventArgs args)
-        {
-            /*
-             * There is an odd behavior where the WebView2 would not raise the NavigationCompleted event
-             * for certain HTML files, even though it has already been loaded. Probably related to certain
-             * extra module that require more time to load. One example is saving and opening google.com locally.
-             *
-             * So to address this, we will make the Browser visible and display it as "Loaded" as soon the HTML document
-             * has been parsed and loaded with the DOMContentLoaded event.
-             *
-             * Similar issue: https://github.com/MicrosoftEdge/WebView2Feedback/issues/998
-             */
-
-            if (TextFilePreviewer != null)
-            {
-                TextFilePreviewer.State = PreviewState.Loaded;
-            }
-        }
-
         private void PreviewBrowser_NavigationCompleted(WebView2 sender, CoreWebView2NavigationCompletedEventArgs args)
         {
             /*
@@ -257,25 +235,6 @@ namespace Peek.FilePreviewer
                 if (BrowserPreviewer != null)
                 {
                     BrowserPreviewer.State = PreviewState.Error;
-                }
-            }
-        }
-
-        private void TextPreview_NavigationCompleted(WebView2 sender, CoreWebView2NavigationCompletedEventArgs args)
-        {
-            /*
-             * In theory most of navigation should work after DOM is loaded.
-             * But in case something fails we check NavigationCompleted event
-             * for failure and switch visibility accordingly.
-             *
-             * As an alternative, in the future, the preview control
-             * could also display error content.
-             */
-            if (!args.IsSuccess)
-            {
-                if (TextFilePreviewer != null)
-                {
-                    TextFilePreviewer.State = PreviewState.Error;
                 }
             }
         }

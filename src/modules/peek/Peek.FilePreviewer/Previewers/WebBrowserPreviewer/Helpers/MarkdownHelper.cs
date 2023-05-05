@@ -8,7 +8,7 @@ using Common.UI;
 
 namespace Peek.FilePreviewer.Previewers
 {
-    public class WebViewHelper
+    public class MarkdownHelper
     {
         /// <summary>
         /// Prepares temp html for the previewing

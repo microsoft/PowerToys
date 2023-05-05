@@ -32,17 +32,10 @@
             DOMContentLoaded="BrowserPreview_DOMContentLoaded"
             NavigationCompleted="PreviewBrowser_NavigationCompleted"
             Source="{x:Bind BrowserPreviewer.Preview, Mode=OneWay}"
+            TempDataFolder="{x:Bind BrowserPreviewer.TempDataFolder, Mode=OneTime}"
+            IsDevFilePreview="{x:Bind BrowserPreviewer.IsDevFilePreview, Mode=OneWay}"
             Visibility="{x:Bind IsPreviewVisible(BrowserPreviewer, Previewer.State), Mode=OneWay, FallbackValue=Collapsed}" />
 
-        <controls:TextFilePreview
-            x:Name="TextPreview"
-            x:Load="{x:Bind IsWebPreview(TextFilePreviewer, Previewer.State), Mode=OneWay}"
-            Source="{x:Bind TextFilePreviewer.Preview, Mode=OneWay}"
-            TempDataFolder="{x:Bind TextFilePreviewer.TempDataFolder, Mode=OneTime}"
-            DOMContentLoaded="TextPreview_DOMContentLoaded"
-            NavigationCompleted="TextPreview_NavigationCompleted"
-            Visibility="{x:Bind IsPreviewVisible(TextFilePreviewer, Previewer.State), Mode=OneWay}" />
-        
         <controls:UnsupportedFilePreview
             x:Name="UnsupportedFilePreview"
             DateModified="{x:Bind UnsupportedFilePreviewer.DateModified, Mode=OneWay}"
