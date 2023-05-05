@@ -10,8 +10,6 @@ namespace Peek.FilePreviewer.Previewers
     {
         public Uri? Preview { get; }
 
-        public string TempDataFolder { get; }
-
         public bool IsDevFilePreview { get; }
     }
 }

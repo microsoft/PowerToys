@@ -6,6 +6,7 @@ using System;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.Web.WebView2.Core;
+using Peek.Common.Constants;
 using Peek.Common.Helpers;
 using Windows.System;
 
@@ -68,12 +69,10 @@ namespace Peek.FilePreviewer.Controls
             }
         }
 
-        public string? TempDataFolder { get; set; }
-
         public BrowserControl()
         {
             this.InitializeComponent();
-            Environment.SetEnvironmentVariable("WEBVIEW2_USER_DATA_FOLDER", TempDataFolder, EnvironmentVariableTarget.Process);
+            Environment.SetEnvironmentVariable("WEBVIEW2_USER_DATA_FOLDER", TempFolderPath.Path, EnvironmentVariableTarget.Process);
         }
 
         public void Dispose()
@@ -125,7 +124,6 @@ namespace Peek.FilePreviewer.Controls
 
                 if (IsDevFilePreview)
                 {
-                    Logger.LogInfo("Set virtual host name to folder mapping: " + Microsoft.PowerToys.FilePreviewCommon.MonacoHelper.MonacoDirectory);
                     PreviewBrowser.CoreWebView2.SetVirtualHostNameToFolderMapping(Microsoft.PowerToys.FilePreviewCommon.MonacoHelper.VirtualHostName, Microsoft.PowerToys.FilePreviewCommon.MonacoHelper.MonacoDirectory, CoreWebView2HostResourceAccessKind.Allow);
                 }
 

@@ -8,6 +8,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using CommunityToolkit.Mvvm.ComponentModel;
 using Microsoft.UI.Dispatching;
+using Peek.Common.Constants;
 using Peek.Common.Extensions;
 using Peek.Common.Helpers;
 using Peek.Common.Models;
@@ -39,10 +40,6 @@ namespace Peek.FilePreviewer.Previewers
         private PreviewState state;
 
         [ObservableProperty]
-        private string tempDataFolder = Environment.GetEnvironmentVariable("USERPROFILE") +
-                        "\\AppData\\LocalLow\\Microsoft\\PowerToys\\Peek-Temp";
-
-        [ObservableProperty]
         private bool isDevFilePreview;
 
         public WebBrowserPreviewer(IFileSystemItem file)
@@ -53,7 +50,7 @@ namespace Peek.FilePreviewer.Previewers
 
         public void Dispose()
         {
-            Microsoft.PowerToys.FilePreviewCommon.Helper.CleanupTempDir(tempDataFolder);
+            Microsoft.PowerToys.FilePreviewCommon.Helper.CleanupTempDir(TempFolderPath.Path);
             GC.SuppressFinalize(this);
         }
 
@@ -95,12 +92,12 @@ namespace Peek.FilePreviewer.Previewers
                     if (IsDevFilePreview)
                     {
                         var raw = await ReadHelper.Read(File.Path.ToString());
-                        Preview = new Uri(MonacoHelper.PreviewTempFile(raw, File.Extension, tempDataFolder));
+                        Preview = new Uri(MonacoHelper.PreviewTempFile(raw, File.Extension, TempFolderPath.Path));
                     }
                     else if (File.Extension == ".md")
                     {
                         var raw = await ReadHelper.Read(File.Path.ToString());
-                        Preview = new Uri(MarkdownHelper.PreviewTempFile(raw, File.Path, tempDataFolder));
+                        Preview = new Uri(MarkdownHelper.PreviewTempFile(raw, File.Path, TempFolderPath.Path));
                     }
                     else
                     {
