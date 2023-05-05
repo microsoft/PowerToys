@@ -59,6 +59,7 @@ alekhyareddy
 ALLAPPS
 ALLINPUT
 ALLOWUNDO
+ALLVIEW
 ALPHATYPE
 Altdown
 alwaysontop
@@ -449,8 +450,8 @@ dcommon
 dcomp
 dcompi
 DComposition
-DCR
-DCs
+dcr
+dcs
 Dct
 DDCDD
 DDCE
@@ -771,6 +772,7 @@ GETDLGCODE
 GETDPISCALEDSIZE
 GETICON
 GETMINMAXINFO
+GETPROPERTYSTOREFLAGS
 GETSTATE
 GETTEXT
 GETTEXTLENGTH
@@ -857,6 +859,7 @@ hmodule
 hmonitor
 HOLDENTER
 HOLDESC
+holemenu
 HOMEPATH
 homljgmgpmcbpjbnjpfijnhipfkiclkd
 HOOKPROC
@@ -982,11 +985,12 @@ Interlop
 INTRESOURCE
 INVALIDARG
 invalidoperatioexception
+IPalette
 ipc
 ipcmanager
 IPlugin
 IPower
-IPREVIEW
+ipreview
 ipreviewhandlervisualssetfont
 IProperty
 IPublic
@@ -1004,7 +1008,7 @@ iss
 ISurface
 ITask
 ith
-ITHUMBNAIL
+ithumbnail
 Ittoqqortoormiit
 IUI
 IUnknown
@@ -1528,6 +1532,7 @@ pft
 pgp
 pgsql
 pguid
+pkey
 PHANDLE
 PHANDLER
 phbm
@@ -1576,6 +1581,7 @@ ppmt
 pprm
 pproc
 pprop
+ppshv
 ppsi
 ppsid
 ppsrm
@@ -1667,10 +1673,12 @@ raf
 RAII
 RAlt
 randyrants
+Rasterize
 RAWINPUT
 RAWINPUTDEVICE
 RAWINPUTHEADER
 RAWPATH
+rbhid
 Rbp
 RBUTTON
 RBUTTONDBLCLK
@@ -1852,7 +1860,7 @@ SFP
 sharpkeys
 SHCNE
 SHCNF
-Shcontf
+SHCONTF
 shcore
 shellapi
 SHELLDETAILS
@@ -1862,6 +1870,7 @@ SHELLEXECUTEINFO
 SHELLEXECUTEINFOW
 shellscalingapi
 SHFILEINFO
+SHGDNF
 SHGFI
 Shgno
 Shl
@@ -1893,6 +1902,7 @@ SHOWNOACTIVATE
 SHOWNORMAL
 SHOWWINDOW
 shtypes
+SIATTRIBFLAGS
 SICHINT
 sid
 siex
@@ -1977,7 +1987,7 @@ STDMETHODIMP
 stefan
 Stereolithography
 STGC
-stgm
+STGM
 STGMEDIUM
 STGTY
 sticpl
@@ -1986,6 +1996,7 @@ storelogo
 STRINGIZE
 stringtable
 stringval
+Strm
 Strmiids
 Stroe
 Strret
