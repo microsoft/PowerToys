@@ -278,6 +278,7 @@ chdir
 CHILDACTIVATE
 CHILDWINDOW
 chrdavis
+Chromakey
 Chrzan
 CHT
 Chukotka
@@ -929,6 +930,7 @@ IEXPLORE
 Iface
 IFACEMETHOD
 IFACEMETHODIMP
+IFile
 IFilter
 IGraphics
 iid
@@ -1051,6 +1053,7 @@ KEYEVENTF
 KEYIMAGE
 keynum
 keyremaps
+Keyto
 Keytool
 keyup
 Kfiles
