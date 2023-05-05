@@ -370,7 +370,7 @@
                           Opened="Dialog_Opened"
                           Closed="Dialog_Closed">
             <ui:ContentDialog.Title>
-                <TextBlock x:Name="EditLayoutDialogTitle" MaxWidth="320" Margin="0,0,96,0" Loaded="EditLayoutDialogTitle_Loaded"/>
+                <local:HeadingTextBlock x:Name="EditLayoutDialogTitle" MaxWidth="320" Margin="0,0,96,0" Style="{StaticResource HeadingTextBlock}" />
             </ui:ContentDialog.Title>
             <Grid DataContext="{Binding SelectedModel}"
                  Margin="4,4,24,32">
@@ -745,11 +745,16 @@
                           PrimaryButtonText="{x:Static props:Resources.Create}"
                           PrimaryButtonClick="NewLayoutDialog_PrimaryButtonClick"
                           IsPrimaryButtonEnabled="{Binding ElementName=LayoutNameText, Path=Text.Length}"
-                          Title="{x:Static props:Resources.Choose_layout_type}"
                           Opened="Dialog_Opened"
                           Closed="Dialog_Closed">
+            <ui:ContentDialog.TitleTemplate>
+                <DataTemplate>
+                    <local:HeadingTextBlock Text="{x:Static props:Resources.Choose_layout_type}"
+                       Style="{StaticResource HeadingTextBlock}" />
+                </DataTemplate>
+            </ui:ContentDialog.TitleTemplate>
             <StackPanel Margin="0,16,24,0">
-                <TextBlock x:Name="NameHeaderText"
+                    <TextBlock x:Name="NameHeaderText"
                            Text="{x:Static props:Resources.Name}" />
                 <TextBox Margin="3,6,3,0"
                          x:Name="LayoutNameText"
@@ -821,11 +826,11 @@
                                            Margin="0,4,0,0"
                                            Text="{x:Static props:Resources.Layout_Canvas_Description}"
                                            Foreground="{DynamicResource SecondaryForegroundBrush}" />
-                            </StackPanel>
-                        </Grid>
-                    </RadioButton.Content>
-                </RadioButton>
-            </StackPanel>
+                                </StackPanel>
+                            </Grid>
+                        </RadioButton.Content>
+                    </RadioButton>
+                </StackPanel>
         </ui:ContentDialog>
     </Grid>
 </Window>
