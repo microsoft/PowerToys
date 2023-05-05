@@ -39,7 +39,7 @@ namespace Peek.FilePreviewer.Previewers
         /// </summary>
         public static string PreviewTempFile(string fileText, string extension, string tempFolder)
         {
-            // TODO: check if file too big
+            // TODO: check if file is too big, add MaxFileSize to settings
             return InitializeIndexFileAndSelectedFile(fileText, extension, tempFolder);
         }
 
@@ -53,7 +53,7 @@ namespace Peek.FilePreviewer.Previewers
             string html = Microsoft.PowerToys.FilePreviewCommon.MonacoHelper.ReadIndexHtml();
 
             html = html.Replace("[[PT_LANG]]", vsCodeLangSet, StringComparison.InvariantCulture);
-            html = html.Replace("[[PT_WRAP]]", "1", StringComparison.InvariantCulture); // TODO: setting?
+            html = html.Replace("[[PT_WRAP]]", "1", StringComparison.InvariantCulture); // TODO: add to settings
             html = html.Replace("[[PT_THEME]]", theme, StringComparison.InvariantCulture);
             html = html.Replace("[[PT_CODE]]", base64FileCode, StringComparison.InvariantCulture);
             html = html.Replace("[[PT_URL]]", Microsoft.PowerToys.FilePreviewCommon.MonacoHelper.VirtualHostName, StringComparison.InvariantCulture);
