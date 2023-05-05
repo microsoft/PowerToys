@@ -82,113 +82,35 @@ For guidance on developing for PowerToys, please read the [developer docs](/doc/
 
 Our [prioritized roadmap][roadmap] of features and utilities that the core team is focusing on.
 
-### 0.69 - March 2023 Update
+### 0.70 - May 2023 Update
 
 In this release, we focused on releasing new features, stability and improvements. Early notice for v0.70, we will be releasing it later in May 2023.
 
 **Highlights**
 
-- New utility: Registry Preview is a utility to visualize and edit Windows Registry files. Thanks [@randyrants](https://github.com/randyrants)!
-- Support per-user scope installation.
-- Awake: Quality-of-life improvements and introduced keeping system awake until expiration time and date. Thanks [@dend](https://github.com/dend)!
-- PowerToys Run: Fix crashing issue caused by thumbnail image loading.
+- NOTES
 
 ### General
 
-- New utility: Registry Preview. Thanks [@randyrants](https://github.com/randyrants)!
-- Fix issue causing folders to not be removed on uninstall.
-- Support per-user scope installation.
-   - Companies can control this using the new GPO.
+- NOTES
 
 ### Awake
 
-- Quality-of-life improvements and introduced keeping system awake until expiration time and date. Thanks [@dend](https://github.com/dend)!
-
-### Color Picker
-
-- Fix issue sampling timing and grid issue causing Color Picker to sample the color of its own grid. Thanks [@IHorvalds](https://github.com/IHorvalds)!
-
-### FancyZones
-
-- Fix window cycling on multiple monitors issue.
-
-### File Locksmith
-
-- Add context menu icon. Thanks [@htcfreek](https://github.com/htcfreek)!
-
-### Mouse Utils
-
-- Mouse Jump - Simulate mouse input event on mouse jump in addition to cursor move.
-- Mouse Jump - Improve performance of screenshot generation. Thanks [@mikeclayton](https://github.com/mikeclayton)!
-
-### Paste as Plain Text
-
-- Support Ctrl+V as activation shortcut. (This was a hotfix for 0.67)
-- Repress modifier keys after plain paste. (This was a hotfix for 0.67) Thanks [@UnderKoen](https://github.com/UnderKoen)!
-- Set default shortcut to Ctrl+Win+Alt+V. (This was a hotfix for 0.67)
-- Update icons. Thanks [@niels9001](https://github.com/niels9001)!
-
-### PowerRename
-
-- Show PowerRename in directory background context menu.
-- Fix the crash on clicking Select/UnselectAll checkbox while showing only files to be renamed.
-- Improve performance on populating Renamed items when many items are being renamed.
-
-### PowerToys Run
-
-- Add setting to disable thumbnails generation for files. (This was a hotfix for 0.67)
-- Calculator plugin - handle implied multiplication expressions. Thanks [@jjavierdguezas](https://github.com/jjavierdguezas)!
-- Fix Calculator plugin unit tests to respect decimal separator locale. Thanks [@davidegiacometti](https://github.com/davidegiacometti)!
-- Fix crashing caused by thumbnail image loading.
-- Date & Time plugin - Add filename-compatible date & time format. Thanks [@Picazsoo](https://github.com/Picazsoo)!
-- Improved the error message shown on plugin loading error. Thanks [@htcfreek](https://github.com/htcfreek)!
-
-### Quick Accent
-
-- Fix existing and add missing Hebrew and Pinyin characters. Thanks [@stevenlele](https://github.com/stevenlele)!
-
-### Registry Preview
-
-- Added a new utility: Registry Preview.
-- Thanks [@htcfreek](https://github.com/htcfreek)! for the help shipping this utility!
-- Thanks [@niels9001](https://github.com/niels9001) for the help on the UI!
-
-### Video Conference Mute
-
-- Add toolbar DPI scaling support.
-- Fix selecting overlay image when Settings app is running elevated.
-- Add push-to-talk (and push-to-reverse) feature. Thanks [@pajawojciech](https://github.com/pajawojciech)!
-
-### Settings
-
-- Fix Experiment bitmap icon rendering on theme change and bump CommunityToolkit.Labs.WinUI.SettingsControls package version. Thanks [@niels9001](https://github.com/niels9001)!
-- Video Conference Mute page improvements. Thanks [@Jay-o-Way](https://github.com/Jay-o-Way)!
-- Add warning that PowerToys Run might get no focus if "Use centralized keyboard hook" settings is enabled. Thanks [@Aaron-Junker](https://github.com/Aaron-Junker)!
-- Fix ShortcutControl issues related to keyboard input focus, theme change and missing error badge when invalid key is pressed. Thanks [@htcfreek](https://github.com/htcfreek)!
-- Add warning when Ctrl+V and Ctrl+Shift+V is used as an activation shortcut for Paste as Plain Text. Thanks [@htcfreek](https://github.com/htcfreek)! 
+- Update to command-line output to match the arguements. Thanks [@rpr69](https://github.com/rpr69) for creating a PR to help fix this.
 
 ### Documentation
 
-- Update CONTRIBUTING.md with information about localization issues. Thanks [@Aaron-Junker](https://github.com/Aaron-Junker)!
-- Remove localization from URLs. Thanks [@Jay-o-Way](https://github.com/Jay-o-Way)!
-- Add dev docs for tools. Thanks [@Aaron-Junker](https://github.com/Aaron-Junker)!
+- NOTES
 
 ### Development
 
-- Ignore spellcheck for MouseJumpUI/MainForm.resx file. (This was a hotfix for 0.67)
-- Optimize versionAndSignCheck.ps1 script. Thanks [@snickler](https://github.com/snickler)!
-- Upgraded NetAnalyzers to 7.0.1. Thanks [@davidegiacometti](https://github.com/davidegiacometti)!
-- Move all DLL imports in Settings project to NativeMethods.cs file.
-- Fix FancyZones tools build issues. Thanks [@Aaron-Junker](https://github.com/Aaron-Junker)!
-- Centralize Logger used in C# projects. Thanks [@Aaron-Junker](https://github.com/Aaron-Junker)!
-- Add missing project references. Thanks [@ACGNnsj](https://github.com/ACGNnsj)!
+- NOTES
 
-#### What is being planned for version 0.70
+#### What is being planned for version 0.71
 
-For [v0.70][github-next-release-work], we'll work on below:
+For [v0.71][github-next-release-work], we'll work on below:
 
-- New utility: [PowerToys Peek](https://github.com/microsoft/PowerToys/issues/80)
-- Stability / bug fixes
+- Adjustments on feedback / stability / bug fixes
 
 ## PowerToys Community
 
