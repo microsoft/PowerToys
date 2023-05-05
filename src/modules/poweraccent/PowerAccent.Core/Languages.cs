@@ -547,6 +547,7 @@ namespace PowerAccent.Core
                 LetterKey.VK_O => new string[] { "ô" },
                 LetterKey.VK_U => new string[] { "û" },
                 LetterKey.VK_Y => new string[] { "ŷ" },
+                LetterKey.VK_W => new string[] { "ŵ" },
                 _ => Array.Empty<string>(),
             };
         }

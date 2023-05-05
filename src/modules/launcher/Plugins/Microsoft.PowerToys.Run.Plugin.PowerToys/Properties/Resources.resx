@@ -117,136 +117,47 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
-  <data name="EditButton.Label" xml:space="preserve">
-    <value>Edit file...</value>
+  <data name="Action_Open_Settings" xml:space="preserve">
+    <value>Open settings (Ctrl+Shift+S)</value>
   </data>
-  <data name="ErrorDialogTitle" xml:space="preserve">
-    <value>Error</value>
+  <data name="Action_Run_As_Administrator" xml:space="preserve">
+    <value>Run as administrator (Ctrl+Shift+Enter)</value>
   </data>
-  <data name="FileEditorError" xml:space="preserve">
-    <value>The REG file editor could not be opened.</value>
+  <data name="Color_Picker" xml:space="preserve">
+    <value>Color Picker</value>
+    <comment>"Color Picker" is the name of the utility</comment>
   </data>
-  <data name="FileNotFound" xml:space="preserve">
-    <value>File was not found!</value>
+  <data name="FancyZones_Editor" xml:space="preserve">
+    <value>FancyZones Editor</value>
+    <comment>"FancyZones" is the name of the utility</comment>
   </data>
-  <data name="FileSaveError" xml:space="preserve">
-    <value>The REG file cannot be written to.</value>
+  <data name="Hosts_File_Editor" xml:space="preserve">
+    <value>Hosts File Editor</value>
+    <comment>"Hosts File Editor" is the name of the utility</comment>
   </data>
-  <data name="FilterAllFiles" xml:space="preserve">
-    <value>All files (*.*)</value>
+  <data name="Plugin_Description" xml:space="preserve">
+    <value>Open PowerToys utilities and settings.</value>
   </data>
-  <data name="FilterRegistryName" xml:space="preserve">
-    <value>Registry files (*.reg)</value>
+  <data name="Plugin_Name" xml:space="preserve">
+    <value>PowerToys</value>
   </data>
-  <data name="InvalidQword" xml:space="preserve">
-    <value>(Invalid QWORD (64-bit) value)</value>
-  </data>
-  <data name="InvalidRegistryFile" xml:space="preserve">
-    <value> doesn't appear to be a valid registry file!</value>
-  </data>
-  <data name="InvalidRegistryFileTitle" xml:space="preserve">
-    <value>File was not a Registry file!</value>
-  </data>
-  <data name="LargeRegistryFile" xml:space="preserve">
-    <value> is larger than 10MB which is too large for this application.</value>
-  </data>
-  <data name="LargeRegistryFileTitle" xml:space="preserve">
-    <value>File is too large!</value>
-  </data>
-  <data name="NameColumn.Header" xml:space="preserve">
-    <value>Name</value>
-  </data>
-  <data name="NoNodesFoundInFile" xml:space="preserve">
-    <value>No valid Keys were found</value>
-  </data>
-  <data name="OkButtonText" xml:space="preserve">
-    <value>OK</value>
-  </data>
-  <data name="OpenButton.Label" xml:space="preserve">
-    <value>Open file...</value>
-  </data>
-  <data name="OpenDialogTitle" xml:space="preserve">
-    <value>Open Registry file...</value>
-  </data>
-  <data name="RefreshButton.Label" xml:space="preserve">
-    <value>Reload from file</value>
-  </data>
-  <data name="RegistryButton.Label" xml:space="preserve">
-    <value>Open Registry Editor...</value>
-  </data>
-  <data name="RegistryJumpToKeyButton.Label" xml:space="preserve">
-    <value>Open Key...</value>
-  </data>
-  <data name="SaveAsButton.Label" xml:space="preserve">
-    <value>Save file as...</value>
-  </data>
-  <data name="SaveButton.Label" xml:space="preserve">
-    <value>Save file</value>
-  </data>
-  <data name="SaveButtonText" xml:space="preserve">
-    <value>Save</value>
-  </data>
-  <data name="SuggestFileName" xml:space="preserve">
-    <value>New Registry File</value>
-  </data>
-  <data name="textBox.PlaceholderText" xml:space="preserve">
-    <value>Registry file text will appear here...</value>
-  </data>
-  <data name="titleBarText.ApplicationTitle" xml:space="preserve">
+  <data name="Registry_Preview" xml:space="preserve">
     <value>Registry Preview</value>
+    <comment>"Registry Preview" is the name of the utility</comment>
   </data>
-  <data name="ToolTipAddedKey" xml:space="preserve">
-    <value>Key will be added, if needed</value>
+  <data name="Screen_Ruler" xml:space="preserve">
+    <value>Screen Ruler</value>
+    <comment>"Screen Ruler" is the name of the utility</comment>
   </data>
-  <data name="ToolTipBinaryValue" xml:space="preserve">
-    <value>Binary value will be updated</value>
+  <data name="Shortcut_Guide" xml:space="preserve">
+    <value>Shortcut Guide</value>
+    <comment>"Shortcut Guide" is the name of the utility</comment>
   </data>
-  <data name="ToolTipDeletedKey" xml:space="preserve">
-    <value>Key will be deleted</value>
+  <data name="Subtitle_Powertoys_Utility" xml:space="preserve">
+    <value>PowerToys Utility</value>
   </data>
-  <data name="ToolTipDeletedValue" xml:space="preserve">
-    <value>Value will be deleted</value>
-  </data>
-  <data name="ToolTipErrorKey" xml:space="preserve">
-    <value>Key couldn't be parsed</value>
-  </data>
-  <data name="ToolTipErrorValue" xml:space="preserve">
-    <value>Value has a syntax error</value>
-  </data>
-  <data name="ToolTipStringValue" xml:space="preserve">
-    <value>String value will be updated</value>
-  </data>
-  <data name="TypeColumn.Header" xml:space="preserve">
-    <value>Type</value>
-  </data>
-  <data name="UACDialogError" xml:space="preserve">
-    <value>You must click Yes on the previous popup if you want to run the Registry application.</value>
-  </data>
-  <data name="UACDialogTitle" xml:space="preserve">
-    <value>User Account Control</value>
-  </data>
-  <data name="ValueColumn.Header" xml:space="preserve">
-    <value>Value</value>
-  </data>
-  <data name="WriteButton.Label" xml:space="preserve">
-    <value>Write to Registry...</value>
-  </data>
-  <data name="YesNoCancelDialogCloseButtonText" xml:space="preserve">
-    <value>Cancel</value>
-  </data>
-  <data name="YesNoCancelDialogContent" xml:space="preserve">
-    <value>Changes were made to the text file.  Do you want to save your changes?</value>
-  </data>
-  <data name="YesNoCancelDialogPrimaryButtonText" xml:space="preserve">
-    <value>Save</value>
-  </data>
-  <data name="YesNoCancelDialogSecondaryButtonText" xml:space="preserve">
-    <value>Don't save</value>
-  </data>
-  <data name="YesNoCancelDialogTitle" xml:space="preserve">
-    <value>Registry Preview</value>
-  </data>
-  <data name="ZeroLength" xml:space="preserve">
-    <value>(zero-length binary value)</value>
+  <data name="Text_Extractor" xml:space="preserve">
+    <value>Text Extractor</value>
+    <comment>"Text Extractor" is the name of the utility</comment>
   </data>
 </root>

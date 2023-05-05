@@ -188,7 +188,7 @@ public
         }
 
         static String ^ FZEToggleEvent() {
-          return gcnew String(CommonSharedConstants::FANCY_ZONES_EDITOR_TOGGLE_EVENT);
+            return gcnew String(CommonSharedConstants::FANCY_ZONES_EDITOR_TOGGLE_EVENT);
         }
 
         static String ^ ColorPickerSendSettingsTelemetryEvent() {
@@ -241,6 +241,14 @@ public
 
         static String ^ SvgPreviewResizeEvent() {
             return gcnew String(CommonSharedConstants::SVG_PREVIEW_RESIZE_EVENT);
+        }
+
+        static String ^ ShowHostsSharedEvent() {
+            return gcnew String(CommonSharedConstants::SHOW_HOSTS_EVENT);
+        }
+
+        static String ^ ShowHostsAdminSharedEvent() {
+            return gcnew String(CommonSharedConstants::SHOW_HOSTS_ADMIN_EVENT);
         }
     };
 }

@@ -17,6 +17,8 @@ enum class ESettingsWindowNames
     ShortcutGuide,
     VideoConference,
     Hosts,
+    MeasureTool,
+    PowerOCR,
     RegistryPreview,
 };
 

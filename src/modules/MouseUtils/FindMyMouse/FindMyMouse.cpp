@@ -54,7 +54,7 @@ protected:
     D* Shim() { return static_cast<D*>(this); }
     LRESULT BaseWndProc(UINT message, WPARAM wParam, LPARAM lParam) noexcept;
 
-    HWND m_hwnd;
+    HWND m_hwnd{};
     POINT m_sonarPos = ptNowhere;
 
     // Only consider double left control click if at least 100ms passed between the clicks, to avoid keyboards that might be sending rapid clicks.
@@ -118,7 +118,7 @@ private:
         ControlUp2,
     };
 
-    HWND m_hwndOwner;
+    HWND m_hwndOwner{};
     SonarState m_sonarState = SonarState::Idle;
     POINT m_lastKeyPos{};
     ULONGLONG m_lastKeyTime{};
