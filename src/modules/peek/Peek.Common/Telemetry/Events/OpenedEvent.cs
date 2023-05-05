@@ -22,7 +22,7 @@ namespace Peek.UI.Telemetry.Events
 
         public bool IsAppToggledOn { get; set; }
 
-        public double HotKeyToVisibleTimeMs { get; set; }
+        public double HotKeytoVisibleTimeMs { get; set; }
 
         public PartA_PrivTags PartA_PrivTags => PartA_PrivTags.ProductAndServiceUsage;
     }
