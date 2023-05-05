@@ -40,25 +40,6 @@ namespace FancyZonesEditor
 
         public int WrapPanelItemSize { get; set; } = DefaultWrapPanelItemSize;
 
-        [DllImport("user32.dll")]
-        [return: MarshalAs(UnmanagedType.Bool)]
-        private static extern bool SetForegroundWindow(IntPtr hWnd);
-
-        [DllImport("user32.dll")]
-        private static extern void SwitchToThisWindow(IntPtr hWnd, bool fAltTab);
-
-        [DllImport("user32.dll")]
-        private static extern IntPtr GetForegroundWindow();
-
-        [DllImport("user32.dll")]
-        private static extern uint GetWindowThreadProcessId(IntPtr hWnd, IntPtr processId);
-
-        [DllImport("kernel32.dll")]
-        private static extern uint GetCurrentThreadId();
-
-        [DllImport("user32.dll")]
-        private static extern bool AttachThreadInput(uint idAttach, uint idAttachTo, bool fAttach);
-
         public MainWindow(bool spanZonesAcrossMonitors, Rect workArea)
         {
             InitializeComponent();
@@ -92,32 +73,32 @@ namespace FancyZonesEditor
             IntPtr handle = new WindowInteropHelper(this).Handle;
 
             // Get the handle of the window currently in the foreground
-            IntPtr foregroundWindowHandle = GetForegroundWindow();
+            IntPtr foregroundWindowHandle = NativeMethods.GetForegroundWindow();
 
             // Get the thread IDs of the current thread and the thread of the foreground window
-            uint currentThreadId = GetCurrentThreadId();
-            uint activeThreadId = GetWindowThreadProcessId(foregroundWindowHandle, IntPtr.Zero);
+            uint currentThreadId = NativeMethods.GetCurrentThreadId();
+            uint activeThreadId = NativeMethods.GetWindowThreadProcessId(foregroundWindowHandle, IntPtr.Zero);
 
             // Check if the active thread is different from the current thread
             if (activeThreadId != currentThreadId)
             {
                 // Attach the input processing mechanism of the current thread to the active thread
-                AttachThreadInput(activeThreadId, currentThreadId, true);
+                NativeMethods.AttachThreadInput(activeThreadId, currentThreadId, true);
 
                 // Set the FancyZones Editor window as the foreground window
-                SetForegroundWindow(handle);
+                NativeMethods.SetForegroundWindow(handle);
 
                 // Detach the input processing mechanism of the current thread from the active thread
-                AttachThreadInput(activeThreadId, currentThreadId, false);
+                NativeMethods.AttachThreadInput(activeThreadId, currentThreadId, false);
             }
             else
             {
                 // Set the FancyZones Editor window as the foreground window
-                SetForegroundWindow(handle);
+                NativeMethods.SetForegroundWindow(handle);
             }
 
             // Bring the FancyZones Editor window to the foreground and activate it
-            SwitchToThisWindow(handle, true);
+            NativeMethods.SwitchToThisWindow(handle, true);
 
             haveTriedToGetFocusAlready = true;
         }
