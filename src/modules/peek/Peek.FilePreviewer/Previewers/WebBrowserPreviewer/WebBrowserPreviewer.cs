@@ -50,7 +50,6 @@ namespace Peek.FilePreviewer.Previewers
 
         public void Dispose()
         {
-            Microsoft.PowerToys.FilePreviewCommon.Helper.CleanupTempDir(TempFolderPath.Path);
             GC.SuppressFinalize(this);
         }
 

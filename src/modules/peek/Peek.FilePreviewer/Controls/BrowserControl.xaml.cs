@@ -81,6 +81,8 @@ namespace Peek.FilePreviewer.Controls
             {
                 PreviewBrowser.CoreWebView2.DOMContentLoaded -= CoreWebView2_DOMContentLoaded;
             }
+
+            Microsoft.PowerToys.FilePreviewCommon.Helper.CleanupTempDir(TempFolderPath.Path);
         }
 
         /// <summary>
