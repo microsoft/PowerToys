@@ -79,7 +79,7 @@ namespace Peek.UI
 
             bootTime.Stop();
 
-            PowerToysTelemetry.Log.WriteEvent(new OpenedEvent() { FileExtension = ViewModel.CurrentItem?.Extension ?? string.Empty, HotKeytoVisibleTimeMs = bootTime.ElapsedMilliseconds });
+            PowerToysTelemetry.Log.WriteEvent(new OpenedEvent() { FileExtension = ViewModel.CurrentItem?.Extension ?? string.Empty, HotKeyToVisibleTimeMs = bootTime.ElapsedMilliseconds });
         }
 
         private void Uninitialize()
