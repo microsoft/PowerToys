@@ -87,13 +87,16 @@ namespace Peek.FilePreviewer.Previewers
 
                 await Dispatcher.RunOnUiThread(async () =>
                 {
+                    bool isHtml = File.Extension == ".html";
+                    bool isMarkdown = File.Extension == ".md";
                     IsDevFilePreview = _supportedMonacoFileTypes.Contains(File.Extension);
-                    if (IsDevFilePreview)
+
+                    if (IsDevFilePreview && !isHtml && !isMarkdown)
                     {
                         var raw = await ReadHelper.Read(File.Path.ToString());
                         Preview = new Uri(MonacoHelper.PreviewTempFile(raw, File.Extension, TempFolderPath.Path));
                     }
-                    else if (File.Extension == ".md")
+                    else if (isMarkdown)
                     {
                         var raw = await ReadHelper.Read(File.Path.ToString());
                         Preview = new Uri(MarkdownHelper.PreviewTempFile(raw, File.Path, TempFolderPath.Path));
