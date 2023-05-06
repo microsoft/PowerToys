@@ -12,6 +12,7 @@
                 "Notifications.dll",
                 "os-detection.dll",
                 "PowerToys.exe",
+                "PowerToys.FilePreviewCommon.dll",
                 "PowerToys.Interop.dll",
                 "BugReportTool\\PowerToys.BugReportTool.exe",
                 "WebcamReportTool\\PowerToys.WebcamReportTool.exe",
