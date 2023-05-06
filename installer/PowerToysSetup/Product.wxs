@@ -531,12 +531,10 @@
 
             <!-- Peek -->
             <Directory Id="PeekInstallFolder" Name="$(var.PeekProjectName)">
-              <Directory Id="PeekAssetsInstallFolder" Name="Assets" />
+              <Directory Id="PeekAssetsFolder" Name="Assets" />
               <Directory Id="PeekMicrosoftUIXamlInstallFolder" Name="Microsoft.UI.Xaml">
                   <Directory Id="PeekMicrosoftUIXamlAssetsInstallFolder" Name="Assets" />
               </Directory>
-              <Directory Id="MonacoPeekMonacoCustomLanguagesFolder" Name="customLanguages" />
-              <Directory Id="MonacoPeekMonacoSRCFolder" Name="monacoSRC" />
             </Directory>
 
               <!-- Launcher -->

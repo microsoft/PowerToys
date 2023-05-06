@@ -78,9 +78,9 @@ Invoke-Expression -Command "$PSScriptRoot\generateFileComponents.ps1 -fileListNa
 
 #Peek
 Invoke-Expression -Command "$PSScriptRoot\generateFileList.ps1 -fileDepsJson ""$PSScriptRoot..\..\..\$platform\Release\modules\Peek\PowerToys.Peek.UI.deps.json"" -fileListName PeekFiles -wxsFilePath $PSScriptRoot\Peek.wxs"
-Invoke-Expression -Command "$PSScriptRoot\generateFileList.ps1 -fileDepsJson """" -fileListName MonacoPeekCustomLanguagesFiles -wxsFilePath $PSScriptRoot\Peek.wxs -depsPath ""$PSScriptRoot..\..\..\$platform\Release\modules\Peek\customLanguages"""
+Invoke-Expression -Command "$PSScriptRoot\generateFileList.ps1 -fileDepsJson """" -fileListName PeekAssetsFiles -wxsFilePath $PSScriptRoot\Peek.wxs -depsPath ""$PSScriptRoot..\..\..\$platform\Release\modules\Peek\Assets\"""
 Invoke-Expression -Command "$PSScriptRoot\generateFileComponents.ps1 -fileListName ""PeekFiles"" -wxsFilePath $PSScriptRoot\Peek.wxs -regroot $registryroot"
-Invoke-Expression -Command "$PSScriptRoot\generateFileComponents.ps1 -fileListName ""MonacoPeekCustomLanguagesFiles"" -wxsFilePath $PSScriptRoot\Peek.wxs -regroot $registryroot"
+Invoke-Expression -Command "$PSScriptRoot\generateFileComponents.ps1 -fileListName ""PeekAssetsFiles"" -wxsFilePath $PSScriptRoot\Peek.wxs -regroot $registryroot"
 
 #PowerAccent
 Invoke-Expression -Command "$PSScriptRoot\generateFileList.ps1 -fileDepsJson ""$PSScriptRoot..\..\..\$platform\Release\modules\PowerAccent\PowerToys.PowerAccent.deps.json"" -fileListName PowerAccentFiles -wxsFilePath $PSScriptRoot\PowerAccent.wxs"
