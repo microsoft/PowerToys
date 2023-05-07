@@ -26,6 +26,7 @@ $nullVersionExceptions = @(
     "vcamp140_app.dll",
     "marshal.dll",
     "Microsoft.UI.Composition.OSSupport.dll",
+    "Microsoft.UI.Windowing.dll",
     "Microsoft.UI.Xaml.Internal.dll",
     "Microsoft.Windows.ApplicationModel.Resources.dll",
     "Microsoft.WindowsAppRuntime.dll",
