@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft Corporation
+// Copyright (c) Microsoft Corporation
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
@@ -155,6 +155,7 @@ namespace Microsoft.PowerToys.Settings.UI
                         case "Hosts": StartupPage = typeof(Views.HostsPage); break;
                         case "RegistryPreview": StartupPage = typeof(Views.RegistryPreviewPage); break;
                         case "PastePlain": StartupPage = typeof(Views.PastePlainPage); break;
+                        case "Peek": StartupPage = typeof(Views.PeekPage); break;
                         default: Debug.Assert(false, "Unexpected SettingsWindow argument value"); break;
                     }
 

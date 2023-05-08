@@ -2035,6 +2035,10 @@ From there, simply click on one of the supported files in the File Explorer and 
     <value>Learn more about File Explorer add-ons</value>
     <comment>File Explorer is a product name, localize as Windows does</comment>
   </data>
+  <data name="LearnMore_Peek.Text" xml:space="preserve">
+    <value>Learn more about Peek</value>
+    <comment>Peek is a product name, do not loc</comment>
+  </data>
   <data name="LearnMore_PowerRename.Text" xml:space="preserve">
     <value>Learn more about PowerRename</value>
     <comment>PowerRename is a product name, do not loc</comment>
