@@ -196,11 +196,11 @@
                         <RowDefinition Height="Auto" />
                         <RowDefinition Height="Auto" />
                     </Grid.RowDefinitions>
-                    
-                    <TextBlock Text="{x:Static props:Resources.Templates}"
-                               x:Name="TemplatesHeaderBlock"
-                               FontWeight="SemiBold"
-                               FontSize="24" />
+
+                    <local:HeadingTextBlock Text="{x:Static props:Resources.Templates}"
+                        x:Name="TemplatesHeaderBlock"
+                        FontWeight="SemiBold"
+                        FontSize="24" />
 
                     <ui:GridView ItemsSource="{Binding TemplateModels}"
                                  Grid.Row="1"
@@ -223,7 +223,7 @@
                         </ui:GridView.ItemContainerStyle>
                     </ui:GridView>
 
-                    <TextBlock Text="{x:Static props:Resources.Custom}"
+                    <local:HeadingTextBlock Text="{x:Static props:Resources.Custom}"
                                x:Name="CustomHeaderBlock"
                                FontWeight="SemiBold"
                                Grid.Row="2"
