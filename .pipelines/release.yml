@@ -58,6 +58,13 @@ jobs:
       scriptName: .pipelines/versionSetting.ps1
       arguments: -versionNumber '${{ parameters.versionNumber }}' -DevEnvironment ''
 
+# Publishing the GPO files with a version number
+  - task: PublishBuildArtifacts@1
+    displayName: 'Publish Artifact: GPO Files'
+    inputs:
+      PathtoPublish: src\gpo\assets
+      ArtifactName: GroupPolicyObjectsFiles-${{ parameters.versionNumber }}
+
 # Guardian tool needs 'Microsoft.NETCore.App', version '2.1.0' (x64)
   - task: UseDotNet@2
     displayName: 'Use .NET Core 2.1 SDK'
