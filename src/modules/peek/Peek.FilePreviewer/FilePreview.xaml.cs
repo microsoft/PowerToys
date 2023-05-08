@@ -121,12 +121,6 @@ namespace Peek.FilePreviewer
             return isValidPreview ? Visibility.Visible : Visibility.Collapsed;
         }
 
-        public bool IsWebPreview(IPreviewer? previewer, PreviewState? state)
-        {
-            var isWebViewPreview = previewer != null && previewer is IBrowserPreviewer;
-            return isWebViewPreview && MatchPreviewState(state, PreviewState.Loaded);
-        }
-
         private async Task OnItemPropertyChanged()
         {
             // Cancel previous loading task
