@@ -2507,7 +2507,7 @@ From there, simply click on one of the supported files in the File Explorer and 
   <data name="Shell_Peek.Content" xml:space="preserve">
     <value>Peek</value>
     <comment>Product name: Navigation view item name for Peek</comment>
-  </data>	
+  </data>
   <data name="Peek.ModuleTitle" xml:space="preserve">
     <value>Peek</value>
   </data>
@@ -3192,5 +3192,14 @@ Activate by holding the key for the character you want to add an accent to, then
   <data name="MouseUtils_MouseJump_ThumbnailSize_Edit_Width.Header" xml:space="preserve">
     <value>Maximum width (px)</value>
     <comment>px = pixels</comment>
+  </data>
+  <data name="Oobe_Peek.Description" xml:space="preserve">
+    <value>A lightning fast file preview feature for Windows.</value>
+  </data>
+  <data name="Oobe_Peek.Title" xml:space="preserve">
+    <value>Peek</value>
+  </data>
+  <data name="Oobe_Peek_HowToUse.Text" xml:space="preserve">
+    <value>to preview the selected file.</value>
   </data>
 </root>
