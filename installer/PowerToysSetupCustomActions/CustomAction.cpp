@@ -1374,7 +1374,6 @@ UINT __stdcall TerminateProcessesCA(MSIHANDLE hInstall)
         L"PowerToys.MouseJumpUI.exe",
         L"PowerToys.ColorPickerUI.exe",
         L"PowerToys.AlwaysOnTop.exe",
-        L"PowerToys.exe",
         L"PowerToys.RegistryPreview.exe",
         L"PowerToys.Hosts.exe",
         L"PowerToys.PowerRename.exe",
@@ -1388,6 +1387,7 @@ UINT __stdcall TerminateProcessesCA(MSIHANDLE hInstall)
         L"PowerToys.GcodePreviewHandler.exe",
         L"PowerToys.PdfPreviewHandler.exe",
         L"PowerToys.SvgPreviewHandler.exe",
+        L"PowerToys.exe",
     };
 
     for (const auto procID : processes)
