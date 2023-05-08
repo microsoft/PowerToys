@@ -73,6 +73,10 @@
                     Icon="{ui:BitmapIcon Source=/Assets/FluentIcons/FluentIconsPastePlain.png}"
                     Tag="PastePlain" />
                 <NavigationViewItem
+                    x:Uid="Shell_Peek"
+                    Icon="{ui:BitmapIcon Source=/Assets/FluentIcons/FluentIconsPeek.png}"
+                    Tag="Peek" />
+                <NavigationViewItem
                     x:Uid="Shell_PowerRename"
                     Icon="{ui:BitmapIcon Source=/Assets/FluentIcons/FluentIconsPowerRename.png}"
                     Tag="PowerRename" />
