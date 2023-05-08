@@ -6,10 +6,11 @@ using System;
 using System.Globalization;
 using System.Runtime.CompilerServices;
 using System.Text.Json;
+using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.PowerToys.Settings.UI.Library.Helpers;
 using Microsoft.PowerToys.Settings.UI.Library.Interfaces;
 
-namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
+namespace Microsoft.PowerToys.Settings.UI.ViewModels
 {
     public class PeekViewModel : Observable
     {
@@ -42,9 +43,25 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
                 _peekSettings = new PeekSettings();
             }
 
-            _isEnabled = GeneralSettingsConfig.Enabled.Peek;
+            InitializeEnabledValue();
 
             SendConfigMSG = ipcMSGCallBackFunc;
+        }
+
+        private void InitializeEnabledValue()
+        {
+            /* TODO: GPO
+            _enabledGpoRuleConfiguration = GPOWrapper.GetConfiguredPeekEnabledValue();
+            if (_enabledGpoRuleConfiguration == GpoRuleConfigured.Disabled || _enabledGpoRuleConfiguration == GpoRuleConfigured.Enabled)
+            {
+                // Get the enabled state from GPO.
+                _enabledStateIsGPOConfigured = true;
+                _isEnabled = _enabledGpoRuleConfiguration == GpoRuleConfigured.Enabled;
+            }
+            else
+            {*/
+            _isEnabled = GeneralSettingsConfig.Enabled.Peek;
+            /*}*/
         }
 
         public bool IsEnabled
@@ -88,6 +105,12 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
                        "{{ \"powertoys\": {{ \"{0}\": {1} }} }}",
                        PeekSettings.ModuleName,
                        JsonSerializer.Serialize(_peekSettings)));
+        }
+
+        public void RefreshEnabledState()
+        {
+            InitializeEnabledValue();
+            OnPropertyChanged(nameof(IsEnabled));
         }
     }
 }
