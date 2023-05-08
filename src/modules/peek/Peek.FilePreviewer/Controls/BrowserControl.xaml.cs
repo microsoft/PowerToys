@@ -45,7 +45,7 @@ namespace Peek.FilePreviewer.Controls
             nameof(IsDevFilePreview),
             typeof(bool),
             typeof(BrowserControl),
-            new PropertyMetadata(null, new PropertyChangedCallback((d, e) => ((BrowserControl)d).SourcePropertyChanged())));
+            new PropertyMetadata(null, new PropertyChangedCallback((d, e) => ((BrowserControl)d).OnIsDevFilePreviewChanged())));
 
         public bool IsDevFilePreview
         {
@@ -57,15 +57,6 @@ namespace Peek.FilePreviewer.Controls
             set
             {
                 SetValue(IsDevFilePreviewProperty, value);
-
-                if (PreviewBrowser.CoreWebView2 != null)
-                {
-                    PreviewBrowser.CoreWebView2.Settings.IsScriptEnabled = value;
-                    if (value)
-                    {
-                        PreviewBrowser.CoreWebView2.SetVirtualHostNameToFolderMapping(Microsoft.PowerToys.FilePreviewCommon.MonacoHelper.VirtualHostName, Microsoft.PowerToys.FilePreviewCommon.MonacoHelper.MonacoDirectory, CoreWebView2HostResourceAccessKind.Allow);
-                    }
-                }
             }
         }
 
@@ -107,6 +98,18 @@ namespace Peek.FilePreviewer.Controls
         private void SourcePropertyChanged()
         {
             Navigate();
+        }
+
+        private void OnIsDevFilePreviewChanged()
+        {
+            if (PreviewBrowser.CoreWebView2 != null)
+            {
+                PreviewBrowser.CoreWebView2.Settings.IsScriptEnabled = IsDevFilePreview;
+                if (IsDevFilePreview)
+                {
+                    PreviewBrowser.CoreWebView2.SetVirtualHostNameToFolderMapping(Microsoft.PowerToys.FilePreviewCommon.MonacoHelper.VirtualHostName, Microsoft.PowerToys.FilePreviewCommon.MonacoHelper.MonacoDirectory, CoreWebView2HostResourceAccessKind.Allow);
+                }
+            }
         }
 
         private async void PreviewWV2_Loaded(object sender, RoutedEventArgs e)
