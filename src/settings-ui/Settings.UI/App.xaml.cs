@@ -104,7 +104,6 @@ namespace Microsoft.PowerToys.Settings.UI
         protected override void OnLaunched(Microsoft.UI.Xaml.LaunchActivatedEventArgs args)
         {
             var cmdArgs = Environment.GetCommandLineArgs();
-
             var isDark = IsDarkTheme();
 
             if (cmdArgs != null && cmdArgs.Length >= RequiredArgumentsQty)
@@ -264,19 +263,21 @@ namespace Microsoft.PowerToys.Settings.UI
             try
             {
                 var isDark = IsDarkTheme();
+                var selectedTheme = SelectedTheme();
                 if (settingsWindow != null)
                 {
                     var hWnd = WinRT.Interop.WindowNative.GetWindowHandle(settingsWindow);
                     ThemeHelpers.SetImmersiveDarkMode(hWnd, isDark);
+                    SetContentTheme(isDark, (FrameworkElement)settingsWindow.Content);
                 }
 
                 if (oobeWindow != null)
                 {
                     var hWnd = WinRT.Interop.WindowNative.GetWindowHandle(oobeWindow);
                     ThemeHelpers.SetImmersiveDarkMode(hWnd, isDark);
+                    SetContentTheme(isDark, (FrameworkElement)oobeWindow.Content);
                 }
 
-                var selectedTheme = SelectedTheme();
                 if (selectedTheme == "SYSTEM")
                 {
                     themeListener = new ThemeListener();
@@ -295,6 +296,14 @@ namespace Microsoft.PowerToys.Settings.UI
                     Logger.LogError($"HandleThemeChange exception. Please install .NET 4.", e);
                     loggedImmersiveDarkException = true;
                 }
+            }
+        }
+
+        private static void SetContentTheme(bool isDark, FrameworkElement el)
+        {
+            if (el != null)
+            {
+                el.RequestedTheme = isDark ? ElementTheme.Dark : ElementTheme.Light;
             }
         }
 

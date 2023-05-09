@@ -10,8 +10,10 @@
     MinHeight="480"
     Closed="Window_Closed"
     mc:Ignorable="d">
-
-    <Grid>
+    <winuiex:WindowEx.Backdrop>
+        <winuiex:MicaSystemBackdrop />
+    </winuiex:WindowEx.Backdrop>
+    <Grid x:Name="RootGrid">
         <local:OobeShellPage x:Name="shellPage" />
     </Grid>
 </winuiex:WindowEx>

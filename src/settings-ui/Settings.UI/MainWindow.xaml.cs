@@ -213,6 +213,7 @@ namespace Microsoft.PowerToys.Settings.UI
             });
 
             this.InitializeComponent();
+            RootGrid.RequestedTheme = isDark ? ElementTheme.Dark : ElementTheme.Light;
 
             // receive IPC Message
             App.IPCMessageReceivedCallback = (string msg) =>

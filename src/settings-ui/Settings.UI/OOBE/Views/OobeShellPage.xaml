@@ -9,11 +9,7 @@
     xmlns:ui="using:CommunityToolkit.WinUI.UI"
     HighContrastAdjustment="None"
     mc:Ignorable="d">
-    <!--
-        todo(Stefan):
-        BackdropMaterial.ApplyToRootOrPageBackground="True"
-    -->
-    <Grid Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
+    <Grid>
         <NavigationView
             x:Name="NavigationView"
             IsBackButtonVisible="Collapsed"
