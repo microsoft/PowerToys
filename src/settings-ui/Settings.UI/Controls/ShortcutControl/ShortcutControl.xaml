@@ -44,7 +44,7 @@
                     </ItemsControl>
                     <FontIcon
                         FontFamily="{ThemeResource SymbolThemeFontFamily}"
-                        FontSize="14"
+                        FontSize="16"
                         Glyph="&#xE70F;" />
                 </StackPanel>
             </Button>
