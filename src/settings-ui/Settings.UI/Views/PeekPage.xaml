@@ -1,4 +1,4 @@
-<Page
+﻿<Page
     x:Class="Microsoft.PowerToys.Settings.UI.Views.PeekPage"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
@@ -26,7 +26,9 @@
                     IsTabStop="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabledGpoConfigured}"
                     Severity="Informational" />
 
-                <labs:SettingsCard x:Uid="Shortcut" HeaderIcon="{ui:FontIcon FontFamily={StaticResource SymbolThemeFontFamily}, Glyph=&#xEDA7;}">
+                <labs:SettingsCard x:Uid="Shortcut" 
+                                   IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}"
+                                   HeaderIcon="{ui:FontIcon FontFamily={StaticResource SymbolThemeFontFamily}, Glyph=&#xEDA7;}">
                     <controls:ShortcutControl MinWidth="{StaticResource SettingActionControlMinWidth}" HotkeySettings="{x:Bind Path=ViewModel.ActivationShortcut, Mode=TwoWay}" />
                 </labs:SettingsCard>
             </StackPanel>
