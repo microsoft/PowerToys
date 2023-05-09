@@ -1,10 +1,9 @@
-﻿// Copyright (c) Microsoft Corporation
+// Copyright (c) Microsoft Corporation
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
@@ -15,6 +14,7 @@ using Microsoft.UI.Xaml.Media.Imaging;
 using Peek.Common.Extensions;
 using Peek.Common.Helpers;
 using Peek.Common.Models;
+using Peek.FilePreviewer.Exceptions;
 using Peek.FilePreviewer.Previewers.Helpers;
 using Peek.FilePreviewer.Previewers.Interfaces;
 using Windows.Foundation;
@@ -159,9 +159,8 @@ namespace Peek.FilePreviewer.Previewers
                 var hr = ThumbnailHelper.GetThumbnail(Item.Path, out IntPtr hbitmap, ThumbnailHelper.LowQualityThumbnailSize);
                 if (hr != HResult.Ok)
                 {
-                    Debug.WriteLine("Error loading low quality thumbnail - hresult: " + hr);
-
-                    throw new ArgumentNullException(nameof(hbitmap));
+                    Logger.LogError("Error loading low quality thumbnail - hresult: " + hr);
+                    throw new ImageLoadingException(nameof(hbitmap));
                 }
 
                 cancellationToken.ThrowIfCancellationRequested();
@@ -187,9 +186,8 @@ namespace Peek.FilePreviewer.Previewers
                 var hr = ThumbnailHelper.GetThumbnail(Item.Path, out IntPtr hbitmap, ThumbnailHelper.HighQualityThumbnailSize);
                 if (hr != HResult.Ok)
                 {
-                    Debug.WriteLine("Error loading high quality thumbnail - hresult: " + hr);
-
-                    throw new ArgumentNullException(nameof(hbitmap));
+                    Logger.LogError("Error loading high quality thumbnail - hresult: " + hr);
+                    throw new ImageLoadingException(nameof(hbitmap));
                 }
 
                 cancellationToken.ThrowIfCancellationRequested();
@@ -227,8 +225,8 @@ namespace Peek.FilePreviewer.Previewers
                         var loadStatus = await source.SetSourceAsync(stream.AsRandomAccessStream());
                         if (loadStatus != SvgImageSourceLoadStatus.Success)
                         {
-                            Debug.WriteLine("Error loading SVG: " + loadStatus.ToString());
-                            throw new ArgumentNullException(nameof(source));
+                            Logger.LogError("Error loading SVG: " + loadStatus.ToString());
+                            throw new ImageLoadingException(nameof(source));
                         }
 
                         Preview = source;

@@ -4,6 +4,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using Windows.ApplicationModel.Resources;
 
 namespace Peek.Common.Helpers
@@ -35,13 +36,13 @@ namespace Peek.Common.Helpers
                 number = Math.Round((bytes / Math.Pow(1024, index)) * DecimalPercision) / DecimalPercision;
             }
 
-            return string.Format(format[index], number);
+            return string.Format(CultureInfo.InvariantCulture, format[index], number);
         }
 
         public static string FormatResourceString(string resourceId, object? args)
         {
             var formatString = ResourceLoader.GetForViewIndependentUse()?.GetString(resourceId);
-            var formattedString = string.IsNullOrEmpty(formatString) ? string.Empty : string.Format(formatString, args);
+            var formattedString = string.IsNullOrEmpty(formatString) ? string.Empty : string.Format(CultureInfo.InvariantCulture, formatString, args);
 
             return formattedString;
         }
@@ -49,7 +50,7 @@ namespace Peek.Common.Helpers
         public static string FormatResourceString(string resourceId, object? args0, object? args1)
         {
             var formatString = ResourceLoader.GetForViewIndependentUse()?.GetString(resourceId);
-            var formattedString = string.IsNullOrEmpty(formatString) ? string.Empty : string.Format(formatString, args0, args1);
+            var formattedString = string.IsNullOrEmpty(formatString) ? string.Empty : string.Format(CultureInfo.InvariantCulture, formatString, args0, args1);
 
             return formattedString;
         }

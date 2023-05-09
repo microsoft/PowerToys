@@ -4,6 +4,7 @@
 
 using System;
 using System.IO;
+using Peek.Common.Helpers;
 using Peek.Common.Models;
 
 namespace Peek.UI.Extensions
@@ -17,9 +18,10 @@ namespace Peek.UI.Extensions
             {
                 path = shellItem.GetDisplayName(Windows.Win32.UI.Shell.SIGDN.SIGDN_FILESYSPATH);
             }
-            catch (Exception)
+            catch (Exception ex)
             {
                 // TODO: Handle cases that do not have a file system path like Recycle Bin.
+                Logger.LogError("Getting path failed. " + ex.Message);
             }
 
             return File.Exists(path) ? new FileItem(path) : new FolderItem(path);

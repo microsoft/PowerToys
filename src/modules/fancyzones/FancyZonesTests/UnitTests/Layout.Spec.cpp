@@ -65,8 +65,8 @@ namespace FancyZonesUnitTests
             for (const auto& zoneRect : zones)
             {
                 json::JsonObject zone{};
-                zone.SetNamedValue(NonLocalizable::CustomLayoutsIds::XID, json::value(zoneRect.left));
-                zone.SetNamedValue(NonLocalizable::CustomLayoutsIds::YID, json::value(zoneRect.top));
+                zone.SetNamedValue(NonLocalizable::CustomLayoutsIds::XAxisID, json::value(zoneRect.left));
+                zone.SetNamedValue(NonLocalizable::CustomLayoutsIds::YAxisID, json::value(zoneRect.top));
                 zone.SetNamedValue(NonLocalizable::CustomLayoutsIds::WidthID, json::value(zoneRect.right - zoneRect.left));
                 zone.SetNamedValue(NonLocalizable::CustomLayoutsIds::HeightID, json::value(zoneRect.bottom - zoneRect.top));
                 zonesArray.Append(zone);

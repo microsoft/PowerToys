@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.Globalization;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
@@ -43,7 +44,7 @@ namespace Peek.FilePreviewer.Previewers
         {
             Item = file;
             FileName = file.Name;
-            DateModified = file.DateModified.ToString();
+            DateModified = file.DateModified.ToString(CultureInfo.CurrentCulture);
             Dispatcher = DispatcherQueue.GetForCurrentThread();
         }
 

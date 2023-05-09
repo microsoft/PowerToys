@@ -28,7 +28,7 @@ namespace Hosts.Tests
         [DataRow("# # \t10.1.1.1 host#comment", "10.1.1.1", "host", "comment", false)]
         public void Valid_Entry_SingleHost(string line, string address, string host, string comment, bool active)
         {
-            var entry = new Entry(line);
+            var entry = new Entry(0, line);
 
             Assert.AreEqual(entry.Address, address);
             Assert.AreEqual(entry.Hosts, host);
@@ -52,7 +52,7 @@ namespace Hosts.Tests
         [DataRow("#10.1.1.1 host host.local#comment", "10.1.1.1", "host host.local", "comment", false)]
         public void Valid_Entry_MultipleHosts(string line, string address, string host, string comment, bool active)
         {
-            var entry = new Entry(line);
+            var entry = new Entry(0, line);
 
             Assert.AreEqual(entry.Address, address);
             Assert.AreEqual(entry.Hosts, host);
@@ -76,7 +76,7 @@ namespace Hosts.Tests
         [DataRow("host 10.1.1.1")]
         public void Not_Valid_Entry(string line)
         {
-            var entry = new Entry(line);
+            var entry = new Entry(0, line);
             Assert.IsFalse(entry.Valid);
         }
     }

@@ -4,9 +4,11 @@
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using ManagedCommon;
+using Microsoft.PowerToys.Telemetry;
 using Microsoft.UI;
 using Microsoft.UI.Windowing;
 using Microsoft.UI.Xaml;
@@ -14,6 +16,7 @@ using Microsoft.UI.Xaml.Controls;
 using Peek.Common.Models;
 using Peek.UI.Extensions;
 using Peek.UI.Helpers;
+using Peek.UI.Telemetry.Events;
 using Windows.ApplicationModel.Resources;
 using Windows.Graphics;
 using Windows.Storage;
@@ -137,6 +140,8 @@ namespace Peek.UI.Views
             StorageFile? storageFile = await fileItem.GetStorageFileAsync();
             LauncherOptions options = new();
 
+            PowerToysTelemetry.Log.WriteEvent(new OpenWithEvent() { App = DefaultAppName ?? string.Empty });
+
             if (string.IsNullOrEmpty(DefaultAppName))
             {
                 // If there's no default app found, open the App picker
@@ -248,7 +253,7 @@ namespace Peek.UI.Views
             if (NumberOfFiles > 1)
             {
                 string fileCountTextFormat = ResourceLoader.GetForViewIndependentUse().GetString("AppTitle_FileCounts_Text");
-                FileCountText = string.Format(fileCountTextFormat, FileIndex + 1, NumberOfFiles);
+                FileCountText = string.Format(CultureInfo.InvariantCulture, fileCountTextFormat, FileIndex + 1, NumberOfFiles);
             }
         }
 
@@ -258,10 +263,10 @@ namespace Peek.UI.Views
             DefaultAppName = DefaultAppHelper.TryGetDefaultAppName(Item.Extension);
 
             string openWithAppTextFormat = ResourceLoader.GetForViewIndependentUse().GetString("LaunchAppButton_OpenWithApp_Text");
-            OpenWithAppText = string.Format(openWithAppTextFormat, DefaultAppName);
+            OpenWithAppText = string.Format(CultureInfo.InvariantCulture, openWithAppTextFormat, DefaultAppName);
 
             string openWithAppToolTipFormat = ResourceLoader.GetForViewIndependentUse().GetString("LaunchAppButton_OpenWithApp_ToolTip");
-            OpenWithAppToolTip = string.Format(openWithAppToolTipFormat, DefaultAppName);
+            OpenWithAppToolTip = string.Format(CultureInfo.InvariantCulture, openWithAppToolTipFormat, DefaultAppName);
         }
     }
 }

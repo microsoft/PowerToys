@@ -11,7 +11,8 @@ namespace Awake.Core.Models
         TC_DISPLAY_SETTING = PInvoke.WM_USER + 1,
         TC_MODE_PASSIVE = PInvoke.WM_USER + 2,
         TC_MODE_INDEFINITE = PInvoke.WM_USER + 3,
-        TC_EXIT = PInvoke.WM_USER + 4,
-        TC_TIME = PInvoke.WM_USER + 5,
+        TC_MODE_EXPIRABLE = PInvoke.WM_USER + 4,
+        TC_EXIT = PInvoke.WM_USER + 100,
+        TC_TIME = PInvoke.WM_USER + 101,
     }
 }

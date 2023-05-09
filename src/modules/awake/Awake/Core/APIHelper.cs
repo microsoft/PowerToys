@@ -6,6 +6,8 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
+using System.Reactive.Concurrency;
+using System.Reactive.Linq;
 using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
@@ -82,31 +84,54 @@ namespace Awake.Core
             }
         }
 
-        public static void SetIndefiniteKeepAwake(Action<bool> callback, Action failureCallback, bool keepDisplayOn = false)
+        private static bool SetAwakeStateBasedOnDisplaySetting(bool keepDisplayOn)
         {
-            PowerToysTelemetry.Log.WriteEvent(new Awake.Telemetry.AwakeIndefinitelyKeepAwakeEvent());
+            if (keepDisplayOn)
+            {
+                return SetAwakeState(EXECUTION_STATE.ES_SYSTEM_REQUIRED | EXECUTION_STATE.ES_DISPLAY_REQUIRED | EXECUTION_STATE.ES_CONTINUOUS);
+            }
+            else
+            {
+                return SetAwakeState(EXECUTION_STATE.ES_SYSTEM_REQUIRED | EXECUTION_STATE.ES_CONTINUOUS);
+            }
+        }
 
+        public static void CancelExistingThread()
+        {
             _tokenSource.Cancel();
 
             try
             {
+                _log.Info("Attempting to ensure that the thread is properly cleaned up...");
+
                 if (_runnerThread != null && !_runnerThread.IsCanceled)
                 {
                     _runnerThread.Wait(_threadToken);
                 }
+
+                _log.Info("Thread is clean.");
             }
             catch (OperationCanceledException)
             {
-                _log.Info("Confirmed background thread cancellation when setting indefinite keep awake.");
+                _log.Info("Confirmed background thread cancellation when disabling explicit keep awake.");
             }
 
             _tokenSource = new CancellationTokenSource();
             _threadToken = _tokenSource.Token;
 
+            _log.Info("Instantiating of new token source and thread token completed.");
+        }
+
+        public static void SetIndefiniteKeepAwake(Action callback, Action failureCallback, bool keepDisplayOn = false)
+        {
+            PowerToysTelemetry.Log.WriteEvent(new Awake.Telemetry.AwakeIndefinitelyKeepAwakeEvent());
+
+            CancelExistingThread();
+
             try
             {
-                _runnerThread = Task.Run(() => RunIndefiniteLoop(keepDisplayOn), _threadToken)
-                    .ContinueWith((result) => callback(result.Result), TaskContinuationOptions.OnlyOnRanToCompletion)
+                _runnerThread = Task.Run(() => RunIndefiniteJob(keepDisplayOn), _threadToken)
+                    .ContinueWith((result) => callback, TaskContinuationOptions.OnlyOnRanToCompletion)
                     .ContinueWith((result) => failureCallback, TaskContinuationOptions.NotOnRanToCompletion);
             }
             catch (Exception ex)
@@ -117,80 +142,101 @@ namespace Awake.Core
 
         public static void SetNoKeepAwake()
         {
-            _tokenSource.Cancel();
+            PowerToysTelemetry.Log.WriteEvent(new Awake.Telemetry.AwakeNoKeepAwakeEvent());
 
-            try
-            {
-                if (_runnerThread != null && !_runnerThread.IsCanceled)
-                {
-                    _runnerThread.Wait(_threadToken);
-                }
-            }
-            catch (OperationCanceledException)
-            {
-                _log.Info("Confirmed background thread cancellation when disabling explicit keep awake.");
-            }
+            CancelExistingThread();
         }
 
-        public static void SetTimedKeepAwake(uint seconds, Action<bool> callback, Action failureCallback, bool keepDisplayOn = true)
+        public static void SetExpirableKeepAwake(DateTimeOffset expireAt, Action callback, Action failureCallback, bool keepDisplayOn = true)
         {
-            PowerToysTelemetry.Log.WriteEvent(new Awake.Telemetry.AwakeTimedKeepAwakeEvent());
+            PowerToysTelemetry.Log.WriteEvent(new Awake.Telemetry.AwakeExpirableKeepAwakeEvent());
 
-            _tokenSource.Cancel();
+            CancelExistingThread();
 
-            try
+            if (expireAt > DateTime.Now && expireAt != null)
             {
-                if (_runnerThread != null && !_runnerThread.IsCanceled)
-                {
-                    _runnerThread.Wait(_threadToken);
-                }
-            }
-            catch (OperationCanceledException)
-            {
-                _log.Info("Confirmed background thread cancellation when setting timed keep awake.");
-            }
-
-            _tokenSource = new CancellationTokenSource();
-            _threadToken = _tokenSource.Token;
-
-            _runnerThread = Task.Run(() => RunTimedLoop(seconds, keepDisplayOn), _threadToken)
-                .ContinueWith((result) => callback(result.Result), TaskContinuationOptions.OnlyOnRanToCompletion)
-                .ContinueWith((result) => failureCallback, TaskContinuationOptions.NotOnRanToCompletion);
-        }
-
-        private static bool RunIndefiniteLoop(bool keepDisplayOn = false)
-        {
-            bool success;
-            if (keepDisplayOn)
-            {
-                success = SetAwakeState(EXECUTION_STATE.ES_SYSTEM_REQUIRED | EXECUTION_STATE.ES_DISPLAY_REQUIRED | EXECUTION_STATE.ES_CONTINUOUS);
+                _runnerThread = Task.Run(() => RunExpiringJob(expireAt, keepDisplayOn), _threadToken)
+                    .ContinueWith((result) => callback, TaskContinuationOptions.OnlyOnRanToCompletion)
+                    .ContinueWith((result) => failureCallback, TaskContinuationOptions.NotOnRanToCompletion);
             }
             else
             {
-                success = SetAwakeState(EXECUTION_STATE.ES_SYSTEM_REQUIRED | EXECUTION_STATE.ES_CONTINUOUS);
+                // The target date is not in the future.
+                _log.Error("The specified target date and time is not in the future.");
+                _log.Error($"Current time: {DateTime.Now}\tTarget time: {expireAt}");
             }
+        }
+
+        public static void SetTimedKeepAwake(uint seconds, Action callback, Action failureCallback, bool keepDisplayOn = true)
+        {
+            PowerToysTelemetry.Log.WriteEvent(new Awake.Telemetry.AwakeTimedKeepAwakeEvent());
+
+            CancelExistingThread();
+
+            _runnerThread = Task.Run(() => RunTimedJob(seconds, keepDisplayOn), _threadToken)
+                .ContinueWith((result) => callback, TaskContinuationOptions.OnlyOnRanToCompletion)
+                .ContinueWith((result) => failureCallback, TaskContinuationOptions.NotOnRanToCompletion);
+        }
+
+        private static void RunExpiringJob(DateTimeOffset expireAt, bool keepDisplayOn = false)
+        {
+            bool success = false;
+
+            // In case cancellation was already requested.
+            _threadToken.ThrowIfCancellationRequested();
 
             try
             {
+                success = SetAwakeStateBasedOnDisplaySetting(keepDisplayOn);
+
                 if (success)
                 {
-                    _log.Info($"Initiated indefinite keep awake in background thread: {PInvoke.GetCurrentThreadId()}. Screen on: {keepDisplayOn}");
+                    _log.Info($"Initiated expirable keep awake in background thread: {PInvoke.GetCurrentThreadId()}. Screen on: {keepDisplayOn}");
 
-                    WaitHandle.WaitAny(new[] { _threadToken.WaitHandle });
-
-                    return success;
+                    Observable.Timer(expireAt, Scheduler.CurrentThread).Subscribe(
+                    _ =>
+                    {
+                        _log.Info($"Completed expirable thread in {PInvoke.GetCurrentThreadId()}.");
+                        CancelExistingThread();
+                    },
+                    _tokenSource.Token);
                 }
                 else
                 {
-                    _log.Info("Could not successfully set up indefinite keep awake.");
-                    return success;
+                    _log.Info("Could not successfully set up expirable keep awake.");
                 }
             }
             catch (OperationCanceledException ex)
             {
                 // Task was clearly cancelled.
                 _log.Info($"Background thread termination: {PInvoke.GetCurrentThreadId()}. Message: {ex.Message}");
-                return success;
+            }
+        }
+
+        private static void RunIndefiniteJob(bool keepDisplayOn = false)
+        {
+            // In case cancellation was already requested.
+            _threadToken.ThrowIfCancellationRequested();
+
+            try
+            {
+                bool success = SetAwakeStateBasedOnDisplaySetting(keepDisplayOn);
+
+                if (success)
+                {
+                    _log.Info($"Initiated indefinite keep awake in background thread: {PInvoke.GetCurrentThreadId()}. Screen on: {keepDisplayOn}");
+
+                    WaitHandle.WaitAny(new[] { _threadToken.WaitHandle });
+                }
+                else
+                {
+                    _log.Info("Could not successfully set up indefinite keep awake.");
+                }
+            }
+            catch (OperationCanceledException ex)
+            {
+                // Task was clearly cancelled.
+                _log.Info($"Background thread termination: {PInvoke.GetCurrentThreadId()}. Message: {ex.Message}");
             }
         }
 
@@ -221,59 +267,38 @@ namespace Awake.Core
             }
         }
 
-        private static bool RunTimedLoop(uint seconds, bool keepDisplayOn = true)
+        private static void RunTimedJob(uint seconds, bool keepDisplayOn = true)
         {
             bool success = false;
 
             // In case cancellation was already requested.
             _threadToken.ThrowIfCancellationRequested();
+
             try
             {
-                if (keepDisplayOn)
-                {
-                    success = SetAwakeState(EXECUTION_STATE.ES_SYSTEM_REQUIRED | EXECUTION_STATE.ES_DISPLAY_REQUIRED | EXECUTION_STATE.ES_CONTINUOUS);
-                }
-                else
-                {
-                    success = SetAwakeState(EXECUTION_STATE.ES_SYSTEM_REQUIRED | EXECUTION_STATE.ES_CONTINUOUS);
-                }
+                success = SetAwakeStateBasedOnDisplaySetting(keepDisplayOn);
 
                 if (success)
                 {
-                    _log.Info($"Initiated temporary keep awake in background thread: {PInvoke.GetCurrentThreadId()}. Screen on: {keepDisplayOn}");
+                    _log.Info($"Initiated timed keep awake in background thread: {PInvoke.GetCurrentThreadId()}. Screen on: {keepDisplayOn}");
 
-                    _timedLoopTimer = new System.Timers.Timer((seconds * 1000) + 1);
-                    _timedLoopTimer.Elapsed += (s, e) =>
-                    {
-                        _tokenSource.Cancel();
-
-                        _timedLoopTimer.Stop();
-                    };
-
-                    _timedLoopTimer.Disposed += (s, e) =>
-                    {
-                        _log.Info("Old timer disposed.");
-                    };
-
-                    _timedLoopTimer.Start();
-
-                    WaitHandle.WaitAny(new[] { _threadToken.WaitHandle });
-                    _timedLoopTimer.Stop();
-                    _timedLoopTimer.Dispose();
-
-                    return success;
+                    Observable.Timer(TimeSpan.FromSeconds(seconds), Scheduler.CurrentThread).Subscribe(
+                   _ =>
+                   {
+                       _log.Info($"Completed timed thread in {PInvoke.GetCurrentThreadId()}.");
+                       CancelExistingThread();
+                   },
+                   _tokenSource.Token);
                 }
                 else
                 {
                     _log.Info("Could not set up timed keep-awake with display on.");
-                    return success;
                 }
             }
             catch (OperationCanceledException ex)
             {
                 // Task was clearly cancelled.
                 _log.Info($"Background thread termination: {PInvoke.GetCurrentThreadId()}. Message: {ex.Message}");
-                return success;
             }
         }
 
@@ -357,10 +382,12 @@ namespace Awake.Core
 
         public static Dictionary<string, int> GetDefaultTrayOptions()
         {
-            Dictionary<string, int> optionsList = new Dictionary<string, int>();
-            optionsList.Add("30 minutes", 1800);
-            optionsList.Add("1 hour", 3600);
-            optionsList.Add("2 hours", 7200);
+            Dictionary<string, int> optionsList = new Dictionary<string, int>
+            {
+                { "30 minutes", 1800 },
+                { "1 hour", 3600 },
+                { "2 hours", 7200 },
+            };
             return optionsList;
         }
     }

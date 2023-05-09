@@ -1,0 +1,362 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Wix xmlns="http://schemas.microsoft.com/wix/2006/wi"
+     xmlns:util="http://schemas.microsoft.com/wix/UtilExtension" >
+
+  <?include $(sys.CURRENTDIR)\Common.wxi?>
+
+  <?define launcherFiles=?>
+  <?define launcherFilesPath=$(var.BinDir)modules\launcher\?>
+
+  <?define launcherImagesComponentFiles=?>
+  <?define launcherImagesComponentFilesPath=$(var.BinDir)modules\launcher\Images\?>
+
+  <?define calcComponentFiles=?>
+  <?define calcComponentFilesPath=$(var.BinDir)modules\launcher\Plugins\Calculator\?>
+  <?define calcImagesComponentFiles=?>
+  <?define calcImagesComponentFilesPath=$(var.BinDir)modules\launcher\Plugins\Calculator\Images\?>
+
+  <?define FolderComponentFiles=?>
+  <?define FolderComponentFilesPath=$(var.BinDir)modules\launcher\Plugins\Folder\?>
+  <?define FolderImagesComponentFiles=?>
+  <?define FolderImagesComponentFilesPath=$(var.BinDir)modules\launcher\Plugins\Folder\Images?>
+
+  <?define ProgramComponentFiles=?>
+  <?define ProgramComponentFilesPath=$(var.BinDir)modules\launcher\Plugins\Program\?>
+  <?define ProgramImagesComponentFiles=?>
+  <?define ProgramImagesComponentFilesPath=$(var.BinDir)modules\launcher\Plugins\Program\Images\?>
+
+  <?define ShellComponentFiles=?>
+  <?define ShellComponentFilesPath=$(var.BinDir)modules\launcher\Plugins\Shell\?>
+  <?define ShellImagesComponentFiles=?>
+  <?define ShellImagesComponentFilesPath=$(var.BinDir)modules\launcher\Plugins\Shell\Images\?>
+
+  <?define IndexerComponentFiles=?>
+  <?define IndexerComponentFilesPath=$(var.BinDir)modules\launcher\Plugins\Indexer\?>
+  <?define IndexerImagesComponentFiles=?>
+  <?define IndexerImagesComponentFilesPath=$(var.BinDir)modules\launcher\Plugins\Indexer\Images\?>
+
+  <?define UnitConvCompFiles=?>
+  <?define UnitConvCompFilesPath=$(var.BinDir)modules\launcher\Plugins\UnitConverter\?>
+  <?define UnitConvImagesCompFiles=?>
+  <?define UnitConvImagesCompFilesPath=$(var.BinDir)modules\launcher\Plugins\UnitConverter\Images\?>
+
+  <?define WebSrchCompFiles=?>
+  <?define WebSrchCompFilesPath=$(var.BinDir)modules\launcher\Plugins\WebSearch\?>
+  <?define WebSrchImagesCompFiles=?>
+  <?define WebSrchImagesCompFilesPath=$(var.BinDir)modules\launcher\Plugins\WebSearch\Images\?>
+
+  <?define HistoryPluginComponentFiles=?>
+  <?define HistoryPluginComponentFilesPath=$(var.BinDir)modules\launcher\Plugins\History\?>
+  <?define HistoryPluginImagesComponentFiles=?>
+  <?define HistoryPluginImagesComponentFilesPath=$(var.BinDir)modules\launcher\Plugins\History\Images\?>
+
+  <?define UriComponentFiles=?>
+  <?define UriComponentFilesPath=$(var.BinDir)modules\launcher\Plugins\Uri\?>
+  <?define UriImagesComponentFiles=?>
+  <?define UriImagesComponentFilesPath=$(var.BinDir)modules\launcher\Plugins\Uri\Images\?>
+
+  <?define VSCWrkCompFiles=?>
+  <?define VSCWrkCompFilesPath=$(var.BinDir)modules\launcher\Plugins\VSCodeWorkspaces\?>
+  <?define VSCWrkImagesCompFiles=?>
+  <?define VSCWrkImagesCompFilesPath=$(var.BinDir)modules\launcher\Plugins\VSCodeWorkspaces\Images\?>
+
+  <?define WindowWlkrCompFiles=?>
+  <?define WindowWlkrCompFilesPath=$(var.BinDir)modules\launcher\Plugins\WindowWalker\?>
+  <?define WindowWlkrImagesCompFiles=?>
+  <?define WindowWlkrImagesCompFilesPath=$(var.BinDir)modules\launcher\Plugins\WindowWalker\Images\?>
+
+  <?define OneNoteComponentFiles=?>
+  <?define OneNoteComponentFilesPath=$(var.BinDir)modules\launcher\Plugins\OneNote\?>
+  <?define OneNoteImagesComponentFiles=?>
+  <?define OneNoteImagesComponentFilesPath=$(var.BinDir)modules\launcher\Plugins\OneNote\Images\?>
+
+  <?define RegistryComponentFiles=?>
+  <?define RegistryComponentFilesPath=$(var.BinDir)modules\launcher\Plugins\Registry\?>
+  <?define RegistryImagesComponentFiles=?>
+  <?define RegistryImagesComponentFilesPath=$(var.BinDir)modules\launcher\Plugins\Registry\Images\?>
+
+  <?define ServiceComponentFiles=?>
+  <?define ServiceComponentFilesPath=$(var.BinDir)modules\launcher\Plugins\Service\?>
+  <?define ServiceImagesComponentFiles=?>
+  <?define ServiceImagesComponentFilesPath=$(var.BinDir)modules\launcher\Plugins\Service\Images\?>
+
+  <?define SystemComponentFiles=?>
+  <?define SystemComponentFilesPath=$(var.BinDir)modules\launcher\Plugins\System\?>
+  <?define SystemImagesComponentFiles=?>
+  <?define SystemImagesComponentFilesPath=$(var.BinDir)modules\launcher\Plugins\System\Images\?>
+
+  <?define TimeDateComponentFiles=?>
+  <?define TimeDateComponentFilesPath=$(var.BinDir)modules\launcher\Plugins\TimeDate\?>
+  <?define TimeDateImagesComponentFiles=?>
+  <?define TimeDateImagesComponentFilesPath=$(var.BinDir)modules\launcher\Plugins\TimeDate\Images\?>
+
+  <?define WinSetCmpFiles=?>
+  <?define WinSetCmpFilesPath=$(var.BinDir)modules\launcher\Plugins\WindowsSettings\?>
+  <?define WinSetImagesCmpFiles=?>
+  <?define WinSetImagesCmpFilesPath=$(var.BinDir)modules\launcher\Plugins\WindowsSettings\Images\?>
+
+  <?define WinTermCmpFiles=?>
+  <?define WinTermCmpFilesPath=$(var.BinDir)modules\launcher\Plugins\WindowsTerminal\?>
+  <?define WinTermImagesCmpFiles=?>
+  <?define WinTermImagesCmpFilesPath=$(var.BinDir)modules\launcher\Plugins\WindowsTerminal\Images\?>
+
+  <Fragment>
+    <Component Id="launcherShortcutComponent" Directory="LauncherInstallFolder" >
+      <!-- Toast Notification AUMID -->
+      <RegistryKey Root="$(var.RegistryScope)" Key="SOFTWARE\Classes\AppUserModelId\PowerToysRun">
+        <RegistryValue Type="string" Name="DisplayName" Value="PowerToys Run" />
+        <RegistryValue Type="string" Name="IconUri" Value="[LauncherImagesFolder]RunAsset.ico" />
+      </RegistryKey>
+    </Component>
+
+    <DirectoryRef Id="LauncherInstallFolder" FileSource="$(var.launcherFilesPath)">
+    <!-- Generated by generateFileComponents.ps1 -->
+    <!--launcherFiles_Component_Def-->
+    </DirectoryRef>
+
+
+    <DirectoryRef Id="LauncherImagesFolder" FileSource="$(var.launcherImagesComponentFilesPath)">
+    <!-- Generated by generateFileComponents.ps1 -->
+    <!--launcherImagesComponentFiles_Component_Def-->
+    </DirectoryRef>
+
+    <!-- Calculator Plugin -->
+    <DirectoryRef Id="CalculatorPluginFolder" FileSource="$(var.calcComponentFilesPath)">
+    <!-- Generated by generateFileComponents.ps1 -->
+    <!--calcComponentFiles_Component_Def-->
+    </DirectoryRef>
+
+    <DirectoryRef Id="CalculatorImagesFolder" FileSource="$(var.calcImagesComponentFilesPath)">
+    <!-- Generated by generateFileComponents.ps1 -->
+    <!--calcImagesComponentFiles_Component_Def-->
+    </DirectoryRef>
+
+    <!-- Folder Plugin -->
+    <DirectoryRef Id="FolderPluginFolder" FileSource="$(var.FolderComponentFilesPath)">
+    <!-- Generated by generateFileComponents.ps1 -->
+    <!--FolderComponentFiles_Component_Def-->
+    </DirectoryRef>
+    <DirectoryRef Id="FolderPluginImagesFolder" FileSource="$(var.FolderImagesComponentFilesPath)">
+    <!-- Generated by generateFileComponents.ps1 -->
+    <!--FolderImagesComponentFiles_Component_Def-->
+    </DirectoryRef>
+
+    <!-- Program Plugin -->
+    <DirectoryRef Id="ProgramPluginFolder" FileSource="$(var.ProgramComponentFilesPath)">
+    <!-- Generated by generateFileComponents.ps1 -->
+    <!--ProgramComponentFiles_Component_Def-->
+    </DirectoryRef>
+    <DirectoryRef Id="ProgramImagesFolder" FileSource="$(var.ProgramImagesComponentFilesPath)">
+    <!-- Generated by generateFileComponents.ps1 -->
+    <!--ProgramImagesComponentFiles_Component_Def-->
+    </DirectoryRef>
+
+    <!-- Shell Plugin -->
+    <DirectoryRef Id="ShellPluginFolder" FileSource="$(var.ShellComponentFilesPath)">
+    <!-- Generated by generateFileComponents.ps1 -->
+    <!--ShellComponentFiles_Component_Def-->
+    </DirectoryRef>
+    <DirectoryRef Id="ShellImagesFolder" FileSource="$(var.ShellImagesComponentFilesPath)">
+    <!-- Generated by generateFileComponents.ps1 -->
+    <!--ShellImagesComponentFiles_Component_Def-->
+    </DirectoryRef>
+
+    <!-- Indexer Plugin -->
+    <DirectoryRef Id="IndexerPluginFolder" FileSource="$(var.IndexerComponentFilesPath)">
+    <!-- Generated by generateFileComponents.ps1 -->
+    <!--IndexerComponentFiles_Component_Def-->
+    </DirectoryRef>
+    <DirectoryRef Id="IndexerImagesFolder" FileSource="$(var.IndexerImagesComponentFilesPath)">
+    <!-- Generated by generateFileComponents.ps1 -->
+    <!--IndexerImagesComponentFiles_Component_Def-->
+    </DirectoryRef>
+
+    <!-- UnitConverter Plugin -->
+    <DirectoryRef Id="UnitConverterPluginFolder" FileSource="$(var.UnitConvCompFilesPath)">
+    <!-- Generated by generateFileComponents.ps1 -->
+    <!--UnitConvCompFiles_Component_Def-->
+    </DirectoryRef>
+
+    <DirectoryRef Id="UnitConverterImagesFolder" FileSource="$(var.UnitConvImagesCompFilesPath)">
+    <!-- Generated by generateFileComponents.ps1 -->
+    <!--UnitConvImagesCompFiles_Component_Def-->
+    </DirectoryRef>
+
+    <!-- WebSearch Plugin -->
+    <DirectoryRef Id="WebSearchPluginFolder" FileSource="$(var.WebSrchCompFilesPath)">
+    <!-- Generated by generateFileComponents.ps1 -->
+    <!--WebSrchCompFiles_Component_Def-->
+    </DirectoryRef>
+
+    <DirectoryRef Id="WebSearchImagesFolder" FileSource="$(var.WebSrchImagesCompFilesPath)">
+    <!-- Generated by generateFileComponents.ps1 -->
+    <!--WebSrchImagesCompFiles_Component_Def-->
+    </DirectoryRef>
+
+    <!-- History Plugin -->
+    <DirectoryRef Id="HistoryPluginFolder" FileSource="$(var.HistoryPluginComponentFilesPath)">
+    <!-- Generated by generateFileComponents.ps1 -->
+    <!--HistoryPluginComponentFiles_Component_Def-->
+    </DirectoryRef>
+
+    <DirectoryRef Id="HistoryImagesFolder" FileSource="$(var.HistoryPluginImagesComponentFilesPath)">
+    <!-- Generated by generateFileComponents.ps1 -->
+    <!--HistoryPluginImagesComponentFiles_Component_Def-->
+    </DirectoryRef>
+
+    <!-- Uri Plugin -->
+    <DirectoryRef Id="UriPluginFolder" FileSource="$(var.UriComponentFilesPath)">
+    <!-- Generated by generateFileComponents.ps1 -->
+    <!--UriComponentFiles_Component_Def-->
+    </DirectoryRef>
+
+    <DirectoryRef Id="UriImagesFolder" FileSource="$(var.UriImagesComponentFilesPath)">
+    <!-- Generated by generateFileComponents.ps1 -->
+    <!--UriImagesComponentFiles_Component_Def-->
+    </DirectoryRef>
+
+    <!-- VSCodeWorkspaces Plugin -->
+    <DirectoryRef Id="VSCodeWorkspacesPluginFolder" FileSource="$(var.VSCWrkCompFilesPath)">
+    <!-- Generated by generateFileComponents.ps1 -->
+    <!--VSCWrkCompFiles_Component_Def-->
+    </DirectoryRef>
+
+    <DirectoryRef Id="VSCodeWorkspaceImagesFolder" FileSource="$(var.VSCWrkImagesCompFilesPath)">
+    <!-- Generated by generateFileComponents.ps1 -->
+    <!--VSCWrkImagesCompFiles_Component_Def-->
+    </DirectoryRef>
+
+    <!-- WindowWalker Plugin -->
+    <DirectoryRef Id="WindowWalkerPluginFolder" FileSource="$(var.WindowWlkrCompFilesPath)">
+    <!-- Generated by generateFileComponents.ps1 -->
+    <!--WindowWlkrCompFiles_Component_Def-->
+    </DirectoryRef>
+    <DirectoryRef Id="WindowWalkerImagesFolder" FileSource="$(var.WindowWlkrImagesCompFilesPath)">
+    <!-- Generated by generateFileComponents.ps1 -->
+    <!--WindowWlkrImagesCompFiles_Component_Def-->
+    </DirectoryRef>
+
+    <!-- OneNote Plugin -->
+    <DirectoryRef Id="OneNotePluginFolder" FileSource="$(var.OneNoteComponentFilesPath)">
+    <!-- Generated by generateFileComponents.ps1 -->
+    <!--OneNoteComponentFiles_Component_Def-->
+    </DirectoryRef>
+
+    <DirectoryRef Id="OneNoteImagesFolder" FileSource="$(var.OneNoteImagesComponentFilesPath)">
+    <!-- Generated by generateFileComponents.ps1 -->
+    <!--OneNoteImagesComponentFiles_Component_Def-->
+    </DirectoryRef>
+
+    <!-- Registry Plugin -->
+    <DirectoryRef Id="RegistryPluginFolder" FileSource="$(var.RegistryComponentFilesPath)">
+    <!-- Generated by generateFileComponents.ps1 -->
+    <!--RegistryComponentFiles_Component_Def-->
+    </DirectoryRef>
+
+    <DirectoryRef Id="RegistryImagesFolder" FileSource="$(var.RegistryImagesComponentFilesPath)">
+    <!-- Generated by generateFileComponents.ps1 -->
+    <!--RegistryImagesComponentFiles_Component_Def-->
+    </DirectoryRef>
+
+    <!-- Service Plugin -->
+    <DirectoryRef Id="ServicePluginFolder" FileSource="$(var.ServiceComponentFilesPath)">
+    <!-- Generated by generateFileComponents.ps1 -->
+    <!--ServiceComponentFiles_Component_Def-->
+    </DirectoryRef>
+
+    <DirectoryRef Id="ServiceImagesFolder" FileSource="$(var.ServiceImagesComponentFilesPath)">
+    <!-- Generated by generateFileComponents.ps1 -->
+    <!--ServiceImagesComponentFiles_Component_Def-->
+    </DirectoryRef>
+
+    <!-- System Plugin -->
+    <DirectoryRef Id="SystemPluginFolder" FileSource="$(var.SystemComponentFilesPath)">
+    <!-- Generated by generateFileComponents.ps1 -->
+    <!--SystemComponentFiles_Component_Def-->
+    </DirectoryRef>
+    <DirectoryRef Id="SystemImagesFolder" FileSource="$(var.SystemImagesComponentFilesPath)">
+    <!-- Generated by generateFileComponents.ps1 -->
+    <!--SystemImagesComponentFiles_Component_Def-->
+    </DirectoryRef>
+
+    <!-- TimeDate Plugin -->
+    <DirectoryRef Id="TimeDatePluginFolder" FileSource="$(var.TimeDateComponentFilesPath)">
+    <!-- Generated by generateFileComponents.ps1 -->
+    <!--TimeDateComponentFiles_Component_Def-->
+    </DirectoryRef>
+    <DirectoryRef Id="TimeDateImagesFolder" FileSource="$(var.TimeDateImagesComponentFilesPath)">
+    <!-- Generated by generateFileComponents.ps1 -->
+    <!--TimeDateImagesComponentFiles_Component_Def-->
+    </DirectoryRef>
+
+    <!-- WindowsSettings Plugin -->
+    <DirectoryRef Id="WindowsSettingsPluginFolder" FileSource="$(var.WinSetCmpFilesPath)">
+    <!-- Generated by generateFileComponents.ps1 -->
+    <!--WinSetCmpFiles_Component_Def-->
+    </DirectoryRef>
+
+    <DirectoryRef Id="WindowsSettingsImagesFolder" FileSource="$(var.WinSetImagesCmpFilesPath)">
+    <!-- Generated by generateFileComponents.ps1 -->
+    <!--WinSetImagesCmpFiles_Component_Def-->
+    </DirectoryRef>
+
+    <!-- WindowsTerminal Plugin -->
+    <DirectoryRef Id="WindowsTerminalPluginFolder" FileSource="$(var.WinTermCmpFilesPath)">
+    <!-- Generated by generateFileComponents.ps1 -->
+    <!--WinTermCmpFiles_Component_Def-->
+    </DirectoryRef>
+
+    <DirectoryRef Id="WindowsTerminalImagesFolder" FileSource="$(var.WinTermImagesCmpFilesPath)">
+    <!-- Generated by generateFileComponents.ps1 -->
+    <!--WinTermImagesCmpFiles_Component_Def-->
+    </DirectoryRef>
+
+    <ComponentGroup Id="RunComponentGroup">
+      <Component Id="RemoveLauncherFolder" Guid="3FFDC0B6-82BC-4C57-AEB1-C710DB108C23" Directory="LauncherInstallFolder" >
+        <RegistryKey Root="$(var.RegistryScope)" Key="Software\Classes\powertoys\components">
+          <RegistryValue Type="string" Name="RemoveLauncherFolder" Value="" KeyPath="yes"/>
+        </RegistryKey>
+        <RemoveFolder Id="RemoveFolderLauncherFolder" Directory="LauncherInstallFolder" On="uninstall"/>
+        <RemoveFolder Id="RemoveFolderLauncherImagesFolder" Directory="LauncherImagesFolder" On="uninstall"/>
+        <RemoveFolder Id="RemoveFolderLauncherPluginsFolder" Directory="LauncherPluginsFolder" On="uninstall"/>
+        <RemoveFolder Id="RemoveFolderCalculatorPluginFolder" Directory="CalculatorPluginFolder" On="uninstall"/>
+        <RemoveFolder Id="RemoveFolderCalculatorImagesFolder" Directory="CalculatorImagesFolder" On="uninstall"/>
+        <RemoveFolder Id="RemoveFolderFolderPluginFolder" Directory="FolderPluginFolder" On="uninstall"/>
+        <RemoveFolder Id="RemoveFolderFolderPluginImagesFolder" Directory="FolderPluginImagesFolder" On="uninstall"/>
+        <RemoveFolder Id="RemoveFolderProgramPluginFolder" Directory="ProgramPluginFolder" On="uninstall"/>
+        <RemoveFolder Id="RemoveFolderProgramImagesFolder" Directory="ProgramImagesFolder" On="uninstall"/>
+        <RemoveFolder Id="RemoveFolderShellPluginFolder" Directory="ShellPluginFolder" On="uninstall"/>
+        <RemoveFolder Id="RemoveFolderShellImagesFolder" Directory="ShellImagesFolder" On="uninstall"/>
+        <RemoveFolder Id="RemoveFolderIndexerPluginFolder" Directory="IndexerPluginFolder" On="uninstall"/>
+        <RemoveFolder Id="RemoveFolderIndexerImagesFolder" Directory="IndexerImagesFolder" On="uninstall"/>
+        <RemoveFolder Id="RemoveFolderUnitConverterPluginFolder" Directory="UnitConverterPluginFolder" On="uninstall"/>
+        <RemoveFolder Id="RemoveFolderUnitConverterImagesFolder" Directory="UnitConverterImagesFolder" On="uninstall"/>
+        <RemoveFolder Id="RemoveFolderWebSearchPluginFolder" Directory="WebSearchPluginFolder" On="uninstall"/>
+        <RemoveFolder Id="RemoveFolderWebSearchImagesFolder" Directory="WebSearchImagesFolder" On="uninstall"/>
+        <RemoveFolder Id="RemoveFolderHistoryPluginFolder" Directory="HistoryPluginFolder" On="uninstall"/>
+        <RemoveFolder Id="RemoveFolderHistoryImagesFolder" Directory="HistoryImagesFolder" On="uninstall"/>
+        <RemoveFolder Id="RemoveFolderUriPluginFolder" Directory="UriPluginFolder" On="uninstall"/>
+        <RemoveFolder Id="RemoveFolderUriImagesFolder" Directory="UriImagesFolder" On="uninstall"/>
+        <RemoveFolder Id="RemoveFolderVSCodeWorkspacesPluginFolder" Directory="VSCodeWorkspacesPluginFolder" On="uninstall"/>
+        <RemoveFolder Id="RemoveFolderVSCodeWorkspaceImagesFolder" Directory="VSCodeWorkspaceImagesFolder" On="uninstall"/>
+        <RemoveFolder Id="RemoveFolderWindowWalkerPluginFolder" Directory="WindowWalkerPluginFolder" On="uninstall"/>
+        <RemoveFolder Id="RemoveFolderWindowWalkerImagesFolder" Directory="WindowWalkerImagesFolder" On="uninstall"/>
+        <RemoveFolder Id="RemoveFolderOneNotePluginFolder" Directory="OneNotePluginFolder" On="uninstall"/>
+        <RemoveFolder Id="RemoveFolderOneNoteImagesFolder" Directory="OneNoteImagesFolder" On="uninstall"/>
+        <RemoveFolder Id="RemoveFolderRegistryPluginFolder" Directory="RegistryPluginFolder" On="uninstall"/>
+        <RemoveFolder Id="RemoveFolderRegistryImagesFolder" Directory="RegistryImagesFolder" On="uninstall"/>
+        <RemoveFolder Id="RemoveFolderServicePluginFolder" Directory="ServicePluginFolder" On="uninstall"/>
+        <RemoveFolder Id="RemoveFolderServiceImagesFolder" Directory="ServiceImagesFolder" On="uninstall"/>
+        <RemoveFolder Id="RemoveFolderSystemPluginFolder" Directory="SystemPluginFolder" On="uninstall"/>
+        <RemoveFolder Id="RemoveFolderSystemImagesFolder" Directory="SystemImagesFolder" On="uninstall"/>
+        <RemoveFolder Id="RemoveFolderTimeDatePluginFolder" Directory="TimeDatePluginFolder" On="uninstall"/>
+        <RemoveFolder Id="RemoveFolderTimeDateImagesFolder" Directory="TimeDateImagesFolder" On="uninstall"/>
+        <RemoveFolder Id="RemoveFolderWindowsSettingsPluginFolder" Directory="WindowsSettingsPluginFolder" On="uninstall"/>
+        <RemoveFolder Id="RemoveFolderWindowsSettingsImagesFolder" Directory="WindowsSettingsImagesFolder" On="uninstall"/>
+        <RemoveFolder Id="RemoveFolderWindowsTerminalPluginFolder" Directory="WindowsTerminalPluginFolder" On="uninstall"/>
+        <RemoveFolder Id="RemoveFolderWindowsTerminalImagesFolder" Directory="WindowsTerminalImagesFolder" On="uninstall"/>
+      </Component>
+      <ComponentRef Id="launcherShortcutComponent" />
+    </ComponentGroup>
+  </Fragment>
+</Wix>

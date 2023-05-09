@@ -9,7 +9,7 @@ using System.Text.Json;
 
 namespace Microsoft.PowerToys.Settings.UI.Helpers
 {
-    internal class Utils
+    internal sealed class Utils
     {
         private static string _placementPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), @"Microsoft\PowerToys\settings-placement.json");
 
@@ -44,6 +44,14 @@ namespace Microsoft.PowerToys.Settings.UI.Helpers
             catch (Exception)
             {
             }
+        }
+
+        public static void BecomeForegroundWindow(IntPtr hWnd)
+        {
+            NativeKeyboardHelper.INPUT input = new NativeKeyboardHelper.INPUT { type = NativeKeyboardHelper.INPUTTYPE.INPUT_MOUSE, data = { } };
+            NativeKeyboardHelper.INPUT[] inputs = new NativeKeyboardHelper.INPUT[] { input };
+            _ = NativeMethods.SendInput(1, inputs, NativeKeyboardHelper.INPUT.Size);
+            NativeMethods.SetForegroundWindow(hWnd);
         }
     }
 }

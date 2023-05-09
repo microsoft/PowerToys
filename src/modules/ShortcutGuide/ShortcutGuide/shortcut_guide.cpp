@@ -115,12 +115,12 @@ namespace
         return true;
     }
 
-    bool isWin(int key)
+    constexpr bool isWin(int key)
     {
         return key == VK_LWIN || key == VK_RWIN;
     }
 
-    bool isKeyDown(LowlevelKeyboardEvent event)
+    constexpr bool isKeyDown(LowlevelKeyboardEvent event)
     {
         return event.wParam == WM_KEYDOWN || event.wParam == WM_SYSKEYDOWN;
     }
@@ -160,6 +160,30 @@ namespace
         return CallNextHookEx(NULL, nCode, wParam, lParam);
     }
 
+    LRESULT CALLBACK LowLevelMouseProc(int nCode, WPARAM wParam, LPARAM lParam)
+    {
+        if (nCode >= 0)
+        {
+            switch (wParam)
+            {
+            case WM_LBUTTONUP:
+            case WM_RBUTTONUP:
+            case WM_MBUTTONUP:
+            case WM_XBUTTONUP:
+                // Don't close with mouse click if activation is windows key and the key is pressed
+                if (!overlay_window_instance->win_key_activation() || !isWinPressed())
+                {
+                    overlay_window_instance->CloseWindow(HideWindowType::MOUSE_BUTTONUP);
+                }
+                break;
+            default:
+                break;
+            }
+        }
+
+        return CallNextHookEx(0, nCode, wParam, lParam);
+    }
+
     std::wstring ToWstring(HideWindowType type)
     {
         switch (type)
@@ -172,6 +196,8 @@ namespace
             return L"WIN_SHORTCUT_PRESSED";
         case HideWindowType::THE_SHORTCUT_PRESSED:
             return L"THE_SHORTCUT_PRESSED";
+        case HideWindowType::MOUSE_BUTTONUP:
+            return L"MOUSE_BUTTONUP";
         }
 
         return L"";
@@ -191,12 +217,18 @@ OverlayWindow::OverlayWindow(HWND activeWindow)
     {
         Logger::warn(L"Failed to create low level keyboard hook. {}", get_last_error_or_default(GetLastError()));
     }
+
+    mouseHook = SetWindowsHookEx(WH_MOUSE_LL, LowLevelMouseProc, GetModuleHandle(NULL), NULL);
+    if (!mouseHook)
+    {
+        Logger::warn(L"Failed to create low level mouse hook. {}", get_last_error_or_default(GetLastError()));
+    }
 }
 
 void OverlayWindow::ShowWindow()
 {
     winkey_popup = std::make_unique<D2DOverlayWindow>();
-    winkey_popup->apply_overlay_opacity(((float)overlayOpacity.value) / 100.0f);
+    winkey_popup->apply_overlay_opacity(overlayOpacity.value / 100.0f);
     winkey_popup->set_theme(theme.value);
 
     // The press time only takes effect when the shortcut guide is activated by pressing the win key.
@@ -316,6 +348,11 @@ bool OverlayWindow::overlay_visible() const
     return target_state->active();
 }
 
+bool OverlayWindow::win_key_activation() const
+{
+    return shouldReactToPressedWinKey.value;
+}
+
 void OverlayWindow::init_settings()
 {
     auto settings = GetSettings();
@@ -336,7 +373,7 @@ bool OverlayWindow::is_disabled_app(wchar_t* exePath)
     }
 
     auto exePathUpper = std::wstring(exePath);
-    CharUpperBuffW(exePathUpper.data(), (DWORD)exePathUpper.length());
+    CharUpperBuffW(exePathUpper.data(), static_cast<DWORD>(exePathUpper.length()));
     for (const auto& row : disabled_apps_array)
     {
         const auto pos = exePathUpper.rfind(row);
@@ -354,7 +391,7 @@ void OverlayWindow::update_disabled_apps()
 {
     disabled_apps_array.clear();
     auto disabledUppercase = disabledApps.value;
-    CharUpperBuffW(disabledUppercase.data(), (DWORD)disabledUppercase.length());
+    CharUpperBuffW(disabledUppercase.data(), static_cast<DWORD>(disabledUppercase.length()));
     std::wstring_view view(disabledUppercase);
     view = trim(view);
     while (!view.empty())
@@ -418,7 +455,7 @@ ShortcutGuideSettings OverlayWindow::GetSettings() noexcept
 
     try
     {
-        settings.overlayOpacity = (int)properties.GetNamedObject(OverlayOpacity::name).GetNamedNumber(L"value");
+        settings.overlayOpacity = static_cast<int>(properties.GetNamedObject(OverlayOpacity::name).GetNamedNumber(L"value"));
     }
     catch (...)
     {
@@ -434,7 +471,7 @@ ShortcutGuideSettings OverlayWindow::GetSettings() noexcept
 
     try
     {
-        settings.windowsKeyPressTimeForGlobalWindowsShortcuts = (int)properties.GetNamedObject(WindowsKeyPressTimeForGlobalWindowsShortcuts::name).GetNamedNumber(L"value");
+        settings.windowsKeyPressTimeForGlobalWindowsShortcuts = static_cast<int>(properties.GetNamedObject(WindowsKeyPressTimeForGlobalWindowsShortcuts::name).GetNamedNumber(L"value"));
     }
     catch (...)
     {
@@ -442,7 +479,7 @@ ShortcutGuideSettings OverlayWindow::GetSettings() noexcept
 
     try
     {
-        settings.windowsKeyPressTimeForTaskbarIconShortcuts = (int)properties.GetNamedObject(WindowsKeyPressTimeForTaskbarIconShortcuts::name).GetNamedNumber(L"value");
+        settings.windowsKeyPressTimeForTaskbarIconShortcuts = static_cast<int>(properties.GetNamedObject(WindowsKeyPressTimeForTaskbarIconShortcuts::name).GetNamedNumber(L"value"));
     }
     catch (...)
     {

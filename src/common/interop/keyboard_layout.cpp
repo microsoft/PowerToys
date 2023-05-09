@@ -56,7 +56,7 @@ bool mapKeycodeToUnicode(const int vCode, HKL layout, const BYTE* keyState, std:
     const UINT scanCode = MapVirtualKeyExW(vCode, MAPVK_VK_TO_VSC, layout);
     // Get the unicode representation from the virtual key code and scan code pair
     const UINT wFlags = 1 << 2; // If bit 2 is set, keyboard state is not changed (Windows 10, version 1607 and newer)
-    const int result = ToUnicodeEx(vCode, scanCode, keyState, outBuffer.data(), (int)outBuffer.size(), wFlags, layout);
+    const int result = ToUnicodeEx(vCode, scanCode, keyState, outBuffer.data(), static_cast<int>(outBuffer.size()), wFlags, layout);
     return result != 0;
 }
 

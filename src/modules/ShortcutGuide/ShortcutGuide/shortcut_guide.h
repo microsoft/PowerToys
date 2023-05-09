@@ -18,7 +18,8 @@ enum class HideWindowType
     ESC_PRESSED,
     WIN_RELEASED,
     WIN_SHORTCUT_PRESSED,
-    THE_SHORTCUT_PRESSED
+    THE_SHORTCUT_PRESSED,
+    MOUSE_BUTTONUP
 };
 
 class OverlayWindow
@@ -34,6 +35,7 @@ public:
     void was_hidden();
 
     bool overlay_visible() const;
+    bool win_key_activation() const;
 
     bool is_disabled_app(wchar_t* exePath);
 
@@ -52,6 +54,7 @@ private:
     void update_disabled_apps();
     HWND activeWindow;
     HHOOK keyboardHook;
+    HHOOK mouseHook;
 
     struct OverlayOpacity
     {

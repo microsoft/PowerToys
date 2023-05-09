@@ -75,14 +75,14 @@ inline void CreateEditShortcutsWindowImpl(HINSTANCE hInst, KBMEditor::KeyboardMa
         windowClass.lpfnWndProc = EditShortcutsWindowProc;
         windowClass.hInstance = hInst;
         windowClass.lpszClassName = szWindowClass;
-        windowClass.hbrBackground = (HBRUSH)(COLOR_WINDOW);
-        windowClass.hIcon = (HICON)LoadImageW(
+        windowClass.hbrBackground = reinterpret_cast<HBRUSH>(COLOR_WINDOW);
+        windowClass.hIcon = static_cast<HICON>(LoadImageW(
             windowClass.hInstance,
             MAKEINTRESOURCE(IDS_KEYBOARDMANAGER_ICON),
             IMAGE_ICON,
             48,
             48,
-            LR_DEFAULTCOLOR);
+            LR_DEFAULTCOLOR));
         if (RegisterClassEx(&windowClass) == NULL)
         {
             MessageBox(NULL, GET_RESOURCE_STRING(IDS_REGISTERCLASSFAILED_ERRORMESSAGE).c_str(), GET_RESOURCE_STRING(IDS_REGISTERCLASSFAILED_ERRORTITLE).c_str(), NULL);
@@ -199,7 +199,7 @@ inline void CreateEditShortcutsWindowImpl(HINSTANCE hInst, KBMEditor::KeyboardMa
     StackPanel tableHeader = StackPanel();
     tableHeader.Orientation(Orientation::Horizontal);
     tableHeader.Margin({ 10, 0, 0, 10 });
-    auto originalShortcutContainer = UIHelpers::GetWrapped(originalShortcutHeader, EditorConstants::ShortcutOriginColumnWidth + (double)EditorConstants::ShortcutArrowColumnWidth);
+    auto originalShortcutContainer = UIHelpers::GetWrapped(originalShortcutHeader, EditorConstants::ShortcutOriginColumnWidth + static_cast<double>(EditorConstants::ShortcutArrowColumnWidth));
     tableHeader.Children().Append(originalShortcutContainer.as<FrameworkElement>());
     auto newShortcutHeaderContainer = UIHelpers::GetWrapped(newShortcutHeader, EditorConstants::ShortcutTargetColumnWidth);
     tableHeader.Children().Append(newShortcutHeaderContainer.as<FrameworkElement>());
@@ -386,7 +386,7 @@ LRESULT CALLBACK EditShortcutsWindowProc(HWND hWnd, UINT messageCode, WPARAM wPa
     // To avoid UI elements overlapping on making the window smaller enforce a minimum window size
     case WM_GETMINMAXINFO:
     {
-        LPMINMAXINFO mmi = (LPMINMAXINFO)lParam;
+        LPMINMAXINFO mmi = reinterpret_cast<LPMINMAXINFO>(lParam);
         float minWidth = EditorConstants::MinimumEditShortcutsWindowWidth;
         float minHeight = EditorConstants::MinimumEditShortcutsWindowHeight;
         DPIAware::Convert(MonitorFromWindow(hWnd, MONITOR_DEFAULTTONULL), minWidth, minHeight);

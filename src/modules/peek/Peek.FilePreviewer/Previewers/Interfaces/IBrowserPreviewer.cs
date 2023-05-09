@@ -9,5 +9,7 @@ namespace Peek.FilePreviewer.Previewers
     public interface IBrowserPreviewer : IPreviewer
     {
         public Uri? Preview { get; }
+
+        public bool IsDevFilePreview { get; }
     }
 }

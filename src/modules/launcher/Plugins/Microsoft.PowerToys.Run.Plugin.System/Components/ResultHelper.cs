@@ -7,7 +7,6 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Input;
-using System.Windows.Navigation;
 using Microsoft.PowerToys.Run.Plugin.System.Properties;
 using Wox.Plugin;
 using Wox.Plugin.Common.Win32;
@@ -114,7 +113,7 @@ namespace Microsoft.PowerToys.Run.Plugin.System.Components
         {
             executingEmptyRecycleBinTask = true;
 
-            // https://learn.microsoft.com/en-us/windows/win32/api/shellapi/nf-shellapi-shemptyrecyclebina/
+            // https://learn.microsoft.com/windows/win32/api/shellapi/nf-shellapi-shemptyrecyclebina/
             // http://www.pinvoke.net/default.aspx/shell32/SHEmptyRecycleBin.html/
             // If the recycle bin is already empty, it will return -2147418113 (0x8000FFFF (E_UNEXPECTED))
             // If the user canceled the deletion task it will return 2147943623 (0x800704C7 (E_CANCELLED - The operation was canceled by the user.))
@@ -129,7 +128,7 @@ namespace Microsoft.PowerToys.Run.Plugin.System.Components
                 var errorDesc = Win32Helpers.MessageFromHResult((int)result);
                 var name = "Plugin: " + Resources.Microsoft_plugin_sys_plugin_name;
                 var message = $"{Resources.Microsoft_plugin_sys_RecycleBin_ErrorMsg} {errorDesc}";
-                Log.Error(message + " - Please refer to https://msdn.microsoft.com/en-us/library/windows/desktop/aa378137 for more information.", typeof(Commands));
+                Log.Error(message + " - Please refer to https://msdn.microsoft.com/library/windows/desktop/aa378137 for more information.", typeof(Commands));
                 _ = MessageBox.Show(message, name, MessageBoxButton.OK, MessageBoxImage.Error);
             }
 

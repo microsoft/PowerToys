@@ -14,7 +14,7 @@ using System.Text.Json.Serialization;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using CommunityToolkit.WinUI.UI.Controls;
-using Microsoft.PowerToys.Settings.UI.Library.Utilities;
+using ManagedCommon;
 using Microsoft.PowerToys.Settings.UI.OOBE.Enums;
 using Microsoft.PowerToys.Settings.UI.OOBE.ViewModel;
 using Microsoft.UI.Xaml.Controls;
@@ -25,7 +25,7 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
     public sealed partial class OobeWhatsNew : Page
     {
         // Contains information for a release. Used to deserialize release JSON info from GitHub.
-        private class PowerToysReleaseInfo
+        private sealed class PowerToysReleaseInfo
         {
             [JsonPropertyName("published_at")]
             public DateTimeOffset PublishedDate { get; set; }
@@ -55,8 +55,9 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
         /// <summary>
         /// Regex to remove installer hash sections from the release notes.
         /// </summary>
-        private const string RemoveInstallerHashesRegex = @"((\r\n)+#+ installer hashes)?((\r\n)+#+( x64)?( arm64)? installer( SHA256)? hash(\r\n)+[0-9A-F]{64})+";
-        private const RegexOptions RemoveInstallerHashesRegexOptions = RegexOptions.Compiled | RegexOptions.Multiline | RegexOptions.IgnoreCase | RegexOptions.CultureInvariant;
+        private const string RemoveInstallerHashesRegex = @"(\r\n)+## Installer Hashes(\r\n.*)+## Highlights";
+        private const string RemoveHotFixInstallerHashesRegex = @"(\r\n)+## Installer Hashes(\r\n.*)+$";
+        private const RegexOptions RemoveInstallerHashesRegexOptions = RegexOptions.Compiled | RegexOptions.IgnoreCase | RegexOptions.CultureInvariant;
 
         private static async Task<string> GetReleaseNotesMarkdown()
         {
@@ -73,7 +74,7 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
             using var getReleaseInfoClient = new HttpClient(proxyClientHandler);
 
             // GitHub APIs require sending an user agent
-            // https://docs.github.com/en/rest/overview/resources-in-the-rest-api#user-agent-required
+            // https://docs.github.com/rest/overview/resources-in-the-rest-api#user-agent-required
             getReleaseInfoClient.DefaultRequestHeaders.TryAddWithoutValidation("User-Agent", "PowerToys");
             releaseNotesJSON = await getReleaseInfoClient.GetStringAsync("https://api.github.com/repos/microsoft/PowerToys/releases");
             IList<PowerToysReleaseInfo> releases = JsonSerializer.Deserialize<IList<PowerToysReleaseInfo>>(releaseNotesJSON);
@@ -86,10 +87,14 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
             // Regex to remove installer hash sections from the release notes.
             Regex removeHashRegex = new Regex(RemoveInstallerHashesRegex, RemoveInstallerHashesRegexOptions);
 
+            // Regex to remove installer hash sections from the release notes, since there'll be no Highlights section for hotfix releases.
+            Regex removeHotfixHashRegex = new Regex(RemoveHotFixInstallerHashesRegex, RemoveInstallerHashesRegexOptions);
+
             foreach (var release in latestReleases)
             {
                 releaseNotesHtmlBuilder.AppendLine("# " + release.Name);
-                var notes = removeHashRegex.Replace(release.ReleaseNotes, string.Empty);
+                var notes = removeHashRegex.Replace(release.ReleaseNotes, "\r\n## Highlights");
+                notes = removeHotfixHashRegex.Replace(notes, string.Empty);
                 releaseNotesHtmlBuilder.AppendLine(notes);
                 releaseNotesHtmlBuilder.AppendLine("&nbsp;");
             }

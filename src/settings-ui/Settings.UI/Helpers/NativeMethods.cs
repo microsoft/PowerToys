@@ -38,6 +38,15 @@ namespace Microsoft.PowerToys.Settings.UI.Helpers
         [DllImport("user32.dll")]
         internal static extern int SetWindowLong(IntPtr hWnd, int nIndex, int dwNewLong);
 
+        [DllImport("shell32.dll")]
+        internal static extern IntPtr SHBrowseForFolderW(ref ShellGetFolder.BrowseInformation browseInfo);
+
+        [DllImport("shell32.dll")]
+        internal static extern int SHGetPathFromIDListW(IntPtr pidl, IntPtr pszPath);
+
+        [DllImport("Comdlg32.dll", CharSet = CharSet.Unicode)]
+        internal static extern bool GetOpenFileName([In, Out] OpenFileName openFileName);
+
 #pragma warning disable CA1401 // P/Invokes should not be visible
         [DllImport("user32.dll")]
         public static extern bool ShowWindow(System.IntPtr hWnd, int nCmdShow);
@@ -51,11 +60,15 @@ namespace Microsoft.PowerToys.Settings.UI.Helpers
         [DllImport("user32.dll")]
         public static extern bool AllowSetForegroundWindow(int dwProcessId);
 
+        [System.Runtime.InteropServices.DllImport("User32.dll")]
+        public static extern bool SetForegroundWindow(IntPtr handle);
+
         [DllImport("kernel32.dll", CharSet = CharSet.Unicode)]
         public static extern IntPtr LoadLibrary(string dllToLoad);
 
         [DllImport("kernel32.dll", CharSet = CharSet.Unicode)]
         public static extern bool FreeLibrary(IntPtr hModule);
+
 #pragma warning restore CA1401 // P/Invokes should not be visible
 
         [DllImport("user32.dll", SetLastError = true, CharSet = CharSet.Unicode)]

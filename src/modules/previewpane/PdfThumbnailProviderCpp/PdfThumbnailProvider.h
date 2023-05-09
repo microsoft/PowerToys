@@ -19,7 +19,7 @@ public:
     // IInitializeWithStream
     IFACEMETHODIMP Initialize(IStream* pstream, DWORD grfMode);
 
-    // IPreviewHandler
+    // IThumbnailProvider
     IFACEMETHODIMP GetThumbnail(UINT cx, HBITMAP* phbmp, WTS_ALPHATYPE* pdwAlpha);
 
     PdfThumbnailProvider();

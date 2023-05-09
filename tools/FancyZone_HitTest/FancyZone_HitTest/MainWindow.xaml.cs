@@ -1,4 +1,8 @@
-﻿using System;
+﻿// Copyright (c) Microsoft Corporation
+// The Microsoft Corporation licenses this file to you under the MIT license.
+// See the LICENSE file in the project root for more information.
+
+using System;
 using System.Collections;
 using System.Linq;
 using System.Windows;
@@ -18,8 +22,8 @@ namespace FancyZone_HitTest
             InitializeComponent();
         }
 
-        static ArrayList _hitResultsList = new ArrayList();
-        static ArrayList _visualCalculationList = new ArrayList();
+        private static ArrayList _hitResultsList = new ArrayList();
+        private static ArrayList _visualCalculationList = new ArrayList();
 
         private void Grid_MouseMove(object sender, MouseEventArgs e)
         {
@@ -31,9 +35,7 @@ namespace FancyZone_HitTest
             _visualCalculationList.Clear();
 
             // Set up a callback to receive the hit test result enumeration.
-            VisualTreeHelper.HitTest(hitTestGrid, null,
-                new HitTestResultCallback(MyHitTestResult),
-                new PointHitTestParameters(gridMouseLocation));
+            VisualTreeHelper.HitTest(hitTestGrid, null, new HitTestResultCallback(MyHitTestResult), new PointHitTestParameters(gridMouseLocation));
 
             // Perform actions on the hit test results list.
             if (_hitResultsList.Count > 0)
@@ -73,18 +75,16 @@ namespace FancyZone_HitTest
                         item.RelativeMouseLocation, // 3
                         item.MouseDistanceFromCenter, // 4
                         item.Area, // 5
-                        item.Area / item.MouseDistanceFromCenter, //6
+                        item.Area / item.MouseDistanceFromCenter, // 6
                         item.Name, // 7
-                        item.DistanceFromEdge, //8
-                        item.DistanceFromEdgePercentage // 9
-                        );
+                        item.DistanceFromEdge, // 8
+                        item.DistanceFromEdgePercentage); // 9
                     itemsHit.Text += Environment.NewLine;
                 }
 
-
                 if (reorderedVisualData.Count() > 0)
                 {
-                    var rect = (hitTestGrid.FindName(reorderedVisualData.First().Name) as Rectangle);
+                    var rect = hitTestGrid.FindName(reorderedVisualData.First().Name) as Rectangle;
                     rect.Opacity = .75;
                     rect.Stroke = Brushes.Black;
                     rect.StrokeThickness = 5;
@@ -92,7 +92,7 @@ namespace FancyZone_HitTest
             }
             else
             {
-                itemsHit.Text = "";
+                itemsHit.Text = string.Empty;
             }
         }
 

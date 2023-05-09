@@ -2,10 +2,8 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-using System;
-using System.Linq;
 using interop;
-using Microsoft.PowerToys.Settings.UI.Library;
+using Microsoft.PowerToys.Telemetry;
 using Microsoft.UI.Windowing;
 using Microsoft.UI.Xaml.Input;
 using Peek.Common.Constants;
@@ -13,6 +11,7 @@ using Peek.FilePreviewer.Models;
 using Peek.UI.Extensions;
 using Peek.UI.Helpers;
 using Peek.UI.Native;
+using Peek.UI.Telemetry.Events;
 using Windows.Foundation;
 using WinUIEx;
 
@@ -72,8 +71,15 @@ namespace Peek.UI
 
         private void Initialize()
         {
+            var bootTime = new System.Diagnostics.Stopwatch();
+            bootTime.Start();
+
             ViewModel.Initialize();
             ViewModel.ScalingFactor = this.GetMonitorScale();
+
+            bootTime.Stop();
+
+            PowerToysTelemetry.Log.WriteEvent(new OpenedEvent() { FileExtension = ViewModel.CurrentItem?.Extension ?? string.Empty, HotKeyToVisibleTimeMs = bootTime.ElapsedMilliseconds });
         }
 
         private void Uninitialize()
@@ -135,6 +141,7 @@ namespace Peek.UI
         private void AppWindow_Closing(AppWindow sender, AppWindowClosingEventArgs args)
         {
             args.Cancel = true;
+            PowerToysTelemetry.Log.WriteEvent(new ClosedEvent());
             Uninitialize();
         }
 

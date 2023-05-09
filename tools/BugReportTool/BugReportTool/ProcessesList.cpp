@@ -15,6 +15,7 @@ std::vector<std::wstring> processes =
     L"PowerToys.PowerAccent.exe",
     L"PowerToys.PowerLauncher.exe",
     L"PowerToys.PowerOCR.exe",
+    L"PowerToys.MouseJumpUI.exe",
     L"PowerToys.MeasureToolUI.exe",
     L"PowerToys.ShortcutGuide.exe",
     L"PowerToys.PowerRename.exe",
@@ -31,5 +32,6 @@ std::vector<std::wstring> processes =
     L"PowerToys.PdfThumbnailProvider.exe",
     L"PowerToys.StlThumbnailProvider.exe",
     L"PowerToys.SvgPreviewHandler.exe",
-    L"PowerToys.SvgThumbnailProvider.exe"
+    L"PowerToys.SvgThumbnailProvider.exe",
+    L"PowerToys.RegistryPreview.exe"
 };

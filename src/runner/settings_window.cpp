@@ -11,12 +11,14 @@
 #include "restart_elevated.h"
 #include "UpdateUtils.h"
 #include "centralized_kb_hook.h"
+#include "Generated files/resource.h"
 
 #include <common/utils/json.h>
 #include <common/SettingsAPI/settings_helpers.cpp>
 #include <common/version/version.h>
 #include <common/version/helper.h>
 #include <common/logger/logger.h>
+#include <common/utils/resources.h>
 #include <common/utils/elevation.h>
 #include <common/utils/process_path.h>
 #include <common/utils/timeutil.h>
@@ -175,7 +177,7 @@ void dispatch_received_json(const std::wstring& json_to_parse)
             const std::wstring settings_string{ get_all_settings().Stringify().c_str() };
             {
                 std::unique_lock lock{ ipc_mutex };
-                if(current_settings_ipc)
+                if (current_settings_ipc)
                     current_settings_ipc->send(settings_string);
             }
         }
@@ -185,7 +187,7 @@ void dispatch_received_json(const std::wstring& json_to_parse)
             const std::wstring settings_string{ get_all_settings().Stringify().c_str() };
             {
                 std::unique_lock lock{ ipc_mutex };
-                if(current_settings_ipc)
+                if (current_settings_ipc)
                     current_settings_ipc->send(settings_string);
             }
         }
@@ -194,7 +196,7 @@ void dispatch_received_json(const std::wstring& json_to_parse)
             const std::wstring settings_string{ get_all_settings().Stringify().c_str() };
             {
                 std::unique_lock lock{ ipc_mutex };
-                if(current_settings_ipc)
+                if (current_settings_ipc)
                     current_settings_ipc->send(settings_string);
             }
         }
@@ -205,9 +207,33 @@ void dispatch_received_json(const std::wstring& json_to_parse)
             {
                 {
                     std::unique_lock lock{ ipc_mutex };
-                    if(current_settings_ipc)
+                    if (current_settings_ipc)
                         current_settings_ipc->send(result.value());
                 }
+            }
+        }
+        else if (name == L"bugreport")
+        {
+             std::wstring bug_report_path = get_module_folderpath();
+             bug_report_path += L"\\Tools\\PowerToys.BugReportTool.exe";
+             SHELLEXECUTEINFOW sei{ sizeof(sei) };
+             sei.fMask = { SEE_MASK_FLAG_NO_UI | SEE_MASK_NOASYNC | SEE_MASK_NOCLOSEPROCESS | SEE_MASK_NO_CONSOLE };
+             sei.lpFile = bug_report_path.c_str();
+             sei.nShow = SW_HIDE;
+             if (ShellExecuteExW(&sei))
+             {
+                WaitForSingleObject(sei.hProcess, INFINITE);
+                CloseHandle(sei.hProcess);
+                static const std::wstring bugreport_success = GET_RESOURCE_STRING(IDS_BUGREPORT_SUCCESS);
+                MessageBoxW(nullptr, bugreport_success.c_str(), L"PowerToys", MB_OK);
+             }
+        }
+        else if (name == L"killrunner")
+        {
+            const auto pt_main_window = FindWindowW(pt_tray_icon_window_class, nullptr);
+            if (pt_main_window != nullptr)
+            {
+                SendMessageW(pt_main_window, WM_CLOSE, 0, 0);
             }
         }
     }
@@ -216,7 +242,7 @@ void dispatch_received_json(const std::wstring& json_to_parse)
 
 void dispatch_received_json_callback(PVOID data)
 {
-    std::wstring* msg = (std::wstring*)data;
+    std::wstring* msg = static_cast<std::wstring*>(data);
     dispatch_received_json(*msg);
     delete msg;
 }
@@ -290,7 +316,7 @@ BOOL run_settings_non_elevated(LPCWSTR executable_path, LPWSTR executable_args, 
 
 DWORD g_settings_process_id = 0;
 
-void run_settings_window(bool show_oobe_window, bool show_scoobe_window, std::optional<std::wstring> settings_window)
+void run_settings_window(bool show_oobe_window, bool show_scoobe_window, std::optional<std::wstring> settings_window, bool show_flyout = false, const std::optional<POINT>& flyout_position = std::nullopt)
 {
     g_isLaunchInProgress = true;
 
@@ -319,7 +345,7 @@ void run_settings_window(bool show_oobe_window, bool show_scoobe_window, std::op
         auto val = get_last_error_message(GetLastError());
         Logger::warn(L"UuidCreate can not create guid. {}", val.has_value() ? val.value() : L"");
     }
-    else if (UuidToString(&temp_uuid, (RPC_WSTR*)&uuid_chars) != RPC_S_OK)
+    else if (UuidToString(&temp_uuid, reinterpret_cast<RPC_WSTR*>(&uuid_chars)) != RPC_S_OK)
     {
         auto val = get_last_error_message(GetLastError());
         Logger::warn(L"UuidToString can not convert to string. {}", val.has_value() ? val.value() : L"");
@@ -329,7 +355,7 @@ void run_settings_window(bool show_oobe_window, bool show_scoobe_window, std::op
     {
         powertoys_pipe_name += std::wstring(uuid_chars);
         settings_pipe_name += std::wstring(uuid_chars);
-        RpcStringFree((RPC_WSTR*)&uuid_chars);
+        RpcStringFree(reinterpret_cast<RPC_WSTR*>(&uuid_chars));
         uuid_chars = nullptr;
     }
 
@@ -343,8 +369,6 @@ void run_settings_window(bool show_oobe_window, bool show_scoobe_window, std::op
     {
         settings_theme = L"dark";
     }
-
-    GeneralSettings save_settings = get_general_settings();
 
     // Arg 6: elevated status
     bool isElevated{ get_general_settings().isElevated };
@@ -360,25 +384,43 @@ void run_settings_window(bool show_oobe_window, bool show_scoobe_window, std::op
     // Arg 9: should scoobe window be shown
     std::wstring settings_showScoobe = show_scoobe_window ? L"true" : L"false";
 
-    // create general settings file to initialize the settings file with installation configurations like :
-    // 1. Run on start up.
-    PTSettingsHelper::save_general_settings(save_settings.to_json());
+    // Arg 10: should flyout be shown
+    std::wstring settings_showFlyout = show_flyout ? L"true" : L"false";
 
-    std::wstring executable_args = fmt::format(L"\"{}\" {} {} {} {} {} {} {} {}",
-                                               executable_path,
-                                               powertoys_pipe_name,
-                                               settings_pipe_name,
-                                               std::to_wstring(powertoys_pid),
-                                               settings_theme,
-                                               settings_elevatedStatus,
-                                               settings_isUserAnAdmin,
-                                               settings_showOobe,
-                                               settings_showScoobe);
+    // Arg 11: contains if there's a settings window argument. If true, will add one extra argument with the value to the call.
+    std::wstring settings_containsSettingsWindow = settings_window.has_value() ? L"true" : L"false";
+
+    // Arg 12: contains if there's flyout coordinates. If true, will add two extra arguments to the call containing the x and y coordinates.
+    std::wstring settings_containsFlyoutPosition = flyout_position.has_value() ? L"true" : L"false";
+
+    // Args 13, .... : Optional arguments depending on the options presented before. All by the same value.
+
+    std::wstring executable_args = fmt::format(L"\"{}\" {} {} {} {} {} {} {} {} {} {} {}",
+                                                   executable_path,
+                                                   powertoys_pipe_name,
+                                                   settings_pipe_name,
+                                                   std::to_wstring(powertoys_pid),
+                                                   settings_theme,
+                                                   settings_elevatedStatus,
+                                                   settings_isUserAnAdmin,
+                                                   settings_showOobe,
+                                                   settings_showScoobe,
+                                                   settings_showFlyout,
+                                                   settings_containsSettingsWindow,
+                                                   settings_containsFlyoutPosition);
 
     if (settings_window.has_value())
     {
         executable_args.append(L" ");
         executable_args.append(settings_window.value());
+    }
+
+    if (flyout_position)
+    {
+        executable_args.append(L" ");
+        executable_args.append(std::to_wstring(flyout_position.value().x));
+        executable_args.append(L" ");
+        executable_args.append(std::to_wstring(flyout_position.value().y));
     }
 
     BOOL process_created = false;
@@ -520,18 +562,40 @@ void bring_settings_to_front()
     EnumWindows(callback, 0);
 }
 
-void open_settings_window(std::optional<std::wstring> settings_window)
+void open_settings_window(std::optional<std::wstring> settings_window, bool show_flyout = false, const std::optional<POINT>& flyout_position)
 {
     if (g_settings_process_id != 0)
     {
-        bring_settings_to_front();
+        if (show_flyout)
+        {
+            if (current_settings_ipc)
+            {
+                if (!flyout_position.has_value())
+                {
+                    current_settings_ipc->send(L"{\"ShowYourself\":\"flyout\"}");
+                }
+                else
+                {
+                    current_settings_ipc->send(fmt::format(L"{{\"ShowYourself\":\"flyout\", \"x_position\":{}, \"y_position\":{} }}", std::to_wstring(flyout_position.value().x), std::to_wstring(flyout_position.value().y)));
+                }
+            }
+        }
+        else
+        {
+            // nl instead of showing the window, send message to it (flyout might need to be hidden, main setting window activated)
+            // bring_settings_to_front();
+            if (current_settings_ipc)
+            {
+                current_settings_ipc->send(L"{\"ShowYourself\":\"main_page\"}");
+            }
+        }
     }
     else
     {
         if (!g_isLaunchInProgress)
         {
-            std::thread([settings_window]() {
-                run_settings_window(false, false, settings_window);
+            std::thread([settings_window, show_flyout, flyout_position]() {
+                run_settings_window(false, false, settings_window, show_flyout, flyout_position);
             }).detach();
         }
     }
@@ -593,6 +657,8 @@ std::string ESettingsWindowNames_to_string(ESettingsWindowNames value)
         return "VideoConference";
     case ESettingsWindowNames::Hosts:
         return "Hosts";
+    case ESettingsWindowNames::RegistryPreview:
+        return "RegistryPreview";
     default:
     {
         Logger::error(L"Can't convert ESettingsWindowNames value={} to string", static_cast<int>(value));
@@ -655,6 +721,10 @@ ESettingsWindowNames ESettingsWindowNames_from_string(std::string value)
     else if (value == "Hosts")
     {
         return ESettingsWindowNames::Hosts;
+    }
+    else if (value == "RegistryPreview")
+    {
+        return ESettingsWindowNames::RegistryPreview;
     }
     else
     {

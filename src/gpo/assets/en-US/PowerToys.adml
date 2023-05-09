@@ -1,14 +1,17 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- Copyright (c) Microsoft Corporation.
      Licensed under the MIT License. -->
-<policyDefinitionResources xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" revision="1.0" schemaVersion="1.0" xmlns="http://schemas.microsoft.com/GroupPolicy/2006/07/PolicyDefinitions">
+<policyDefinitionResources xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" revision="1.1" schemaVersion="1.0" xmlns="http://schemas.microsoft.com/GroupPolicy/2006/07/PolicyDefinitions">
   <displayName>PowerToys</displayName>
   <description>PowerToys</description>
   <resources>
     <stringTable>
       <string id="PowerToys">Microsoft PowerToys</string>
+	  <string id="InstallerUpdates">Installer and Updates</string>
 
       <string id="SUPPORTED_POWERTOYS_0_64_0">PowerToys version 0.64.0 or later</string>
+      <string id="SUPPORTED_POWERTOYS_0_68_0">PowerToys version 0.68.0 or later</string>
+      <string id="SUPPORTED_POWERTOYS_0_69_0">PowerToys version 0.69.0 or later</string>
 
       <string id="ConfigureEnabledUtilityDescription">This policy configures the enabled state for a PowerToys utility.
 
@@ -27,6 +30,38 @@ If you enable this setting, the utility will be always enabled and the user won'
 If you disable this setting, the utility will be always disabled and the user won't be able to enable it.
 
 If you don't configure this setting, users are able to disable or enable the utility.
+</string>
+      <string id="DisablePerUserInstallationDescription">This policy configures whether per-user PowerToys installation is allowed or not.
+
+If enabled, per-user installation is not allowed.
+
+If disabled or not configured, per-user installation is allowed.
+</string>
+      <string id="DisableAutomaticUpdateDownloadDescription">This policy configures whether automatic downloads of available updates are disabled or not. (On metered connections updates are never downloaded.)
+
+If enabled, automatic downloads are disabled.
+
+If disabled or not configured, the user is in control of automatic downloads setting.
+</string>
+      <string id="SuspendNewUpdateToastDescription">This policy configures whether the action center notification for new updates is suspended for 2 minor releases. (Example: if the installed version is v0.60.0, then the next notification is shown for the v0.63.* release.)
+
+If enabled, the notification is suspended.
+
+If disabled or not configured, the notification is shown.
+
+Note: The notification about new major versions is always displayed.
+</string>
+      <string id="DisablePeriodicUpdateCheckDescription">This policy allows you to disable automatic update checks running in the background. (The manual check in PT Settings is not affected by this policy.)
+
+If enabled, the automatic update checks are disabled.
+
+If disabled or not configured, the automatic update checks are enabled.
+</string>
+      <string id="AllowExperimentationDescription">This policy configures whether PowerToys experimentation is allowed. With experimentation allowed the user sees the new features being experimented if it gets selected as part of the test group. (Experimentation will only happen on Windows Insider builds.)
+
+If this setting is not configured or enabled, the user can control experimentation in the PowerToys settings menu.
+
+If this setting is disabled, experimentation is not allowed.
 </string>
       <string id="ConfigureEnabledUtilityAlwaysOnTop">Always On Top: Configure enabled state</string>
       <string id="ConfigureEnabledUtilityAwake">Awake: Configure enabled state</string>
@@ -47,14 +82,22 @@ If you don't configure this setting, users are able to disable or enable the uti
       <string id="ConfigureEnabledUtilityKeyboardManager">Keyboard Manager: Configure enabled state</string>
       <string id="ConfigureEnabledUtilityFindMyMouse">Find My Mouse: Configure enabled state</string>
       <string id="ConfigureEnabledUtilityMouseHighlighter">Mouse Highlighter: Configure enabled state</string>
+      <string id="ConfigureEnabledUtilityMouseJump">Mouse Jump: Configure enabled state</string>
       <string id="ConfigureEnabledUtilityMousePointerCrosshairs">Mouse Pointer Crosshairs: Configure enabled state</string>
+      <string id="ConfigureEnabledUtilityPastePlain">Paste as Plain Text: Configure enabled state</string>
       <string id="ConfigureEnabledUtilityPowerRename">Power Rename: Configure enabled state</string>
       <string id="ConfigureEnabledUtilityPowerLauncher">PowerToys Run: Configure enabled state</string>
       <string id="ConfigureEnabledUtilityQuickAccent">Quick Accent: Configure enabled state</string>
+      <string id="ConfigureEnabledUtilityRegistryPreview">Registry Preview: Configure enabled state</string>		
       <string id="ConfigureEnabledUtilityScreenRuler">Screen Ruler: Configure enabled state</string>
       <string id="ConfigureEnabledUtilityShortcutGuide">Shortcut Guide: Configure enabled state</string>
       <string id="ConfigureEnabledUtilityTextExtractor">Text Extractor: Configure enabled state</string>
       <string id="ConfigureEnabledUtilityVideoConferenceMute">Video Conference Mute: Configure enabled state</string>
+      <string id="DisablePerUserInstallation">Disable per-user installation</string>
+      <string id="DisableAutomaticUpdateDownload">Disable automatic downloads</string>
+      <string id="SuspendNewUpdateToast">Suspend Action Center notification for new updates</string>
+      <string id="DisablePeriodicUpdateCheck">Disable automatic update checks</string>
+      <string id="AllowExperimentation">Allow Experimentation</string>
     </stringTable>
   </resources>
 </policyDefinitionResources>

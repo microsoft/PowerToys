@@ -169,7 +169,7 @@ void AlwaysOnTopSettings::LoadSettings()
             std::wstring apps = std::move(*jsonVal);
             std::vector<std::wstring> excludedApps;
             auto excludedUppercase = apps;
-            CharUpperBuffW(excludedUppercase.data(), (DWORD)excludedUppercase.length());
+            CharUpperBuffW(excludedUppercase.data(), static_cast<DWORD>(excludedUppercase.length()));
             std::wstring_view view(excludedUppercase);
             view = left_trim<wchar_t>(trim<wchar_t>(view));
 

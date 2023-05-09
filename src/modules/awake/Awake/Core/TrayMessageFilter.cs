@@ -56,13 +56,13 @@ namespace Awake.Core
                             // Format for the timer block:
                             // TrayCommands.TC_TIME + ZERO_BASED_INDEX_IN_SETTINGS
                             AwakeSettings settings = ModuleSettings.GetSettings<AwakeSettings>(InternalConstants.AppName);
-                            if (settings.Properties.TrayTimeShortcuts.Count == 0)
+                            if (settings.Properties.CustomTrayTimes.Count == 0)
                             {
-                                settings.Properties.TrayTimeShortcuts.AddRange(APIHelper.GetDefaultTrayOptions());
+                                settings.Properties.CustomTrayTimes.AddRange(APIHelper.GetDefaultTrayOptions());
                             }
 
                             int index = (int)targetCommandIndex - (int)TrayCommands.TC_TIME;
-                            var targetTime = settings.Properties.TrayTimeShortcuts.ElementAt(index).Value;
+                            var targetTime = settings.Properties.CustomTrayTimes.ElementAt(index).Value;
                             TimedKeepAwakeCommandHandler(InternalConstants.AppName, targetTime);
                             break;
                     }
@@ -112,8 +112,8 @@ namespace Awake.Core
             }
 
             currentSettings.Properties.Mode = AwakeMode.TIMED;
-            currentSettings.Properties.Hours = (uint)timeSpan.Hours;
-            currentSettings.Properties.Minutes = (uint)timeSpan.Minutes;
+            currentSettings.Properties.IntervalHours = (uint)timeSpan.Hours;
+            currentSettings.Properties.IntervalMinutes = (uint)timeSpan.Minutes;
 
             ModuleSettings.SaveSettings(JsonSerializer.Serialize(currentSettings), moduleName);
         }

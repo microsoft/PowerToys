@@ -5,6 +5,7 @@
 using System.Windows;
 using ColorPicker.Helpers;
 using ColorPicker.Mouse;
+using ManagedCommon;
 using Microsoft.Xaml.Behaviors;
 
 namespace ColorPicker.Behaviors

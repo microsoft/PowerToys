@@ -2,9 +2,9 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-using System.Diagnostics;
 using System.Runtime.InteropServices;
 using System.Text;
+using Peek.Common.Helpers;
 using Peek.Common.Models;
 using Peek.UI.Native;
 
@@ -21,7 +21,7 @@ namespace Peek.UI.Helpers
             HResult ret = NativeMethods.AssocQueryString(NativeMethods.AssocF.Verify, NativeMethods.AssocStr.FriendlyAppName, extension, null, null, ref length);
             if (ret != HResult.False)
             {
-                Debug.WriteLine($"Error when getting accessString for {extension} file: {Marshal.GetExceptionForHR((int)ret)!.Message}");
+                Logger.LogError($"Error when getting accessString for {extension} file: {Marshal.GetExceptionForHR((int)ret)!.Message}");
                 return appName;
             }
 
@@ -30,7 +30,7 @@ namespace Peek.UI.Helpers
             ret = NativeMethods.AssocQueryString(NativeMethods.AssocF.Verify, NativeMethods.AssocStr.FriendlyAppName, extension, null, sb, ref length);
             if (ret != HResult.Ok)
             {
-                Debug.WriteLine($"Error when getting accessString for {extension} file: {Marshal.GetExceptionForHR((int)ret)!.Message}" );
+                Logger.LogError($"Error when getting accessString for {extension} file: {Marshal.GetExceptionForHR((int)ret)!.Message}" );
                 return appName;
             }
 

@@ -47,7 +47,9 @@ void ReportGPOValues(const std::filesystem::path& tmpDir)
     report << "getConfiguredKeyboardManagerEnabledValue: " << gpo_rule_configured_to_string(powertoys_gpo::getConfiguredKeyboardManagerEnabledValue()) << std::endl;
     report << "getConfiguredFindMyMouseEnabledValue: " << gpo_rule_configured_to_string(powertoys_gpo::getConfiguredFindMyMouseEnabledValue()) << std::endl;
     report << "getConfiguredMouseHighlighterEnabledValue: " << gpo_rule_configured_to_string(powertoys_gpo::getConfiguredMouseHighlighterEnabledValue()) << std::endl;
+    report << "getConfiguredMouseJumpEnabledValue: " << gpo_rule_configured_to_string(powertoys_gpo::getConfiguredMouseJumpEnabledValue()) << std::endl;
     report << "getConfiguredMousePointerCrosshairsEnabledValue: " << gpo_rule_configured_to_string(powertoys_gpo::getConfiguredMousePointerCrosshairsEnabledValue()) << std::endl;
+    report << "getConfiguredPastePlainEnabledValue: " << gpo_rule_configured_to_string(powertoys_gpo::getConfiguredPastePlainEnabledValue()) << std::endl;
     report << "getConfiguredPowerRenameEnabledValue: " << gpo_rule_configured_to_string(powertoys_gpo::getConfiguredPowerRenameEnabledValue()) << std::endl;
     report << "getConfiguredPowerLauncherEnabledValue: " << gpo_rule_configured_to_string(powertoys_gpo::getConfiguredPowerLauncherEnabledValue()) << std::endl;
     report << "getConfiguredQuickAccentEnabledValue: " << gpo_rule_configured_to_string(powertoys_gpo::getConfiguredQuickAccentEnabledValue()) << std::endl;
@@ -55,5 +57,9 @@ void ReportGPOValues(const std::filesystem::path& tmpDir)
     report << "getConfiguredShortcutGuideEnabledValue: " << gpo_rule_configured_to_string(powertoys_gpo::getConfiguredShortcutGuideEnabledValue()) << std::endl;
     report << "getConfiguredTextExtractorEnabledValue: " << gpo_rule_configured_to_string(powertoys_gpo::getConfiguredTextExtractorEnabledValue()) << std::endl;
     report << "getConfiguredVideoConferenceMuteEnabledValue: " << gpo_rule_configured_to_string(powertoys_gpo::getConfiguredVideoConferenceMuteEnabledValue()) << std::endl;
+    report << "getDisableAutomaticUpdateDownloadValue: " << gpo_rule_configured_to_string(powertoys_gpo::getDisableAutomaticUpdateDownloadValue()) << std::endl;
+    report << "getSuspendNewUpdateToastValue: " << gpo_rule_configured_to_string(powertoys_gpo::getSuspendNewUpdateToastValue()) << std::endl;
+    report << "getDisablePeriodicUpdateCheckValue: " << gpo_rule_configured_to_string(powertoys_gpo::getDisablePeriodicUpdateCheckValue()) << std::endl;
+    report << "getAllowExperimentationValue: " << gpo_rule_configured_to_string(powertoys_gpo::getAllowExperimentationValue()) << std::endl;
 
 }

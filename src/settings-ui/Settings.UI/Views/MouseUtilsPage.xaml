@@ -206,6 +206,106 @@
                     </labs:SettingsExpander>
                 </controls:SettingsGroup>
 
+                <controls:SettingsGroup x:Uid="MouseUtils_MouseJump">
+                    <labs:SettingsCard
+                        x:Uid="MouseUtils_Enable_MouseJump"
+                        HeaderIcon="{ui:BitmapIcon Source=/Assets/FluentIcons/FluentIconsMouseJump.png}"
+                        IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsJumpEnabledGpoConfigured, Converter={StaticResource BoolNegationConverter}}">
+                        <ToggleSwitch
+                            x:Uid="ToggleSwitch"
+                            IsOn="{x:Bind ViewModel.IsMouseJumpEnabled, Mode=TwoWay}" />
+                    </labs:SettingsCard>
+                    <InfoBar
+                        x:Uid="GPO_IsSettingForced"
+                        IsClosable="False"
+                        IsOpen="{x:Bind Mode=OneWay, Path=ViewModel.IsJumpEnabledGpoConfigured}"
+                        IsTabStop="{x:Bind Mode=OneWay, Path=ViewModel.IsJumpEnabledGpoConfigured}"
+                        Severity="Informational" />
+                    <labs:SettingsCard
+                        x:Uid="MouseUtils_MouseJump_ActivationShortcut"
+                        HeaderIcon="{ui:FontIcon FontFamily={StaticResource SymbolThemeFontFamily}, Glyph=&#xEDA7;}"
+                        IsEnabled="{x:Bind ViewModel.IsMouseJumpEnabled, Mode=OneWay}">
+                        <controls:ShortcutControl
+                            MinWidth="{StaticResource SettingActionControlMinWidth}"
+                            HotkeySettings="{x:Bind Path=ViewModel.MouseJumpActivationShortcut, Mode=TwoWay}" />
+                    </labs:SettingsCard>
+                    <labs:SettingsCard
+                            x:Uid="MouseUtils_MouseJump_ThumbnailSize"
+                            HeaderIcon="{ui:FontIcon FontFamily={StaticResource SymbolThemeFontFamily}, Glyph=&#xE740;}"
+                            IsEnabled="{x:Bind ViewModel.IsMouseJumpEnabled, Mode=OneWay}">
+                        <labs:SettingsCard.Description>
+                            <StackPanel
+                                Grid.Row="1"
+                                Grid.Column="1"
+                                Margin="0,4,0,0"
+                                Orientation="Horizontal">
+                                <TextBlock
+                                    x:Uid="MouseUtils_MouseJump_ThumbnailSize_Description_Prefix"
+                                    Margin="0,0,4,0"
+                                    Style="{ThemeResource SecondaryTextStyle}" />
+                                <TextBlock
+                                    Margin="0,0,4,0"
+                                    FontWeight="SemiBold"
+                                    Style="{ThemeResource SecondaryTextStyle}"
+                                    Text="{x:Bind ViewModel.MouseJumpThumbnailSize.Width, Mode=OneWay}" />
+                                <TextBlock
+                                    Margin="0,5,4,0"
+                                    AutomationProperties.AccessibilityView="Raw"
+                                    FontFamily="{ThemeResource SymbolThemeFontFamily}"
+                                    FontSize="10"
+                                    Foreground="{ThemeResource SystemBaseMediumColor}"
+                                    Style="{ThemeResource SecondaryTextStyle}"
+                                    Text="&#xE947;" />
+                                <TextBlock
+                                    Margin="0,0,4,0"
+                                    FontWeight="SemiBold"
+                                    Style="{ThemeResource SecondaryTextStyle}"
+                                    Text="{x:Bind ViewModel.MouseJumpThumbnailSize.Height, Mode=OneWay}" />
+                                <TextBlock
+                                    x:Uid="MouseUtils_MouseJump_ThumbnailSize_Description_Suffix"
+                                    Margin="0,0,4,0"
+                                    Foreground="{ThemeResource SystemBaseMediumColor}"
+                                    Style="{ThemeResource SecondaryTextStyle}" />
+                            </StackPanel>
+                        </labs:SettingsCard.Description>
+                        <StackPanel
+                            Grid.Column="2"
+                            HorizontalAlignment="Right"
+                            Orientation="Horizontal"
+                            Spacing="8">
+                            <Button
+                                x:Uid="EditButton"
+                                Width="40"
+                                Height="36"
+                                Content="&#xE70F;"
+                                FontFamily="{ThemeResource SymbolThemeFontFamily}"
+                                Style="{StaticResource SubtleButtonStyle}">
+                                <ToolTipService.ToolTip>
+                                    <TextBlock x:Uid="EditTooltip" />
+                                </ToolTipService.ToolTip>
+                                <Button.Flyout>
+                                    <Flyout x:Uid="MouseJumpThumbnailSize_Edit">
+                                        <StackPanel Margin="0,12,0,0" Spacing="16">
+                                            <NumberBox
+                                                x:Uid="MouseUtils_MouseJump_ThumbnailSize_Edit_Width"
+                                                Width="140"
+                                                Minimum="160"
+                                                SpinButtonPlacementMode="Compact"
+                                                Value="{x:Bind ViewModel.MouseJumpThumbnailSize.Width, Mode=TwoWay}" />
+                                            <NumberBox
+                                                x:Uid="MouseUtils_MouseJump_ThumbnailSize_Edit_Height"
+                                                Width="140"
+                                                Minimum="120"
+                                                SpinButtonPlacementMode="Compact"
+                                                Value="{x:Bind ViewModel.MouseJumpThumbnailSize.Height, Mode=TwoWay}" />
+                                        </StackPanel>
+                                    </Flyout>
+                                </Button.Flyout>
+                            </Button>
+                        </StackPanel>
+                    </labs:SettingsCard>
+                </controls:SettingsGroup>
+
                 <controls:SettingsGroup x:Uid="MouseUtils_MousePointerCrosshairs">
                     <labs:SettingsCard
                         x:Uid="MouseUtils_Enable_MousePointerCrosshairs"
@@ -296,6 +396,9 @@
             <controls:PageLink
                 Link="https://devblogs.microsoft.com/oldnewthing/author/oldnewthing"
                 Text="Raymond Chen's Find My Mouse" />
+            <controls:PageLink
+                Link="https://michael-clayton.com/projects/fancymouse"
+                Text="Michael Clayton's Mouse Jump (FancyMouse)" />
         </controls:SettingsPageControl.SecondaryLinks>
     </controls:SettingsPageControl>
 </Page>

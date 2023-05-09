@@ -420,7 +420,7 @@ BOOL GetEnumeratedFileName(__out_ecount(cchMax) PWSTR pszUniqueName, UINT cchMax
         if (!pszRest)
         {
             pszRest = PathFindExtension(pszTemplate);
-            cchStem = (int)(pszRest - pszTemplate);
+            cchStem = static_cast<int>(pszRest - pszTemplate);
 
             hr = StringCchCopy(szFormat, ARRAYSIZE(szFormat), L" (%lu)");
         }
@@ -428,7 +428,7 @@ BOOL GetEnumeratedFileName(__out_ecount(cchMax) PWSTR pszUniqueName, UINT cchMax
         {
             pszRest++;
 
-            cchStem = (int)(pszRest - pszTemplate);
+            cchStem = static_cast<int>(pszRest - pszTemplate);
 
             while (*pszRest && *pszRest >= L'0' && *pszRest <= L'9')
             {
@@ -551,7 +551,7 @@ bool DataObjectContainsRenamableItem(_In_ IUnknown* dataSource)
 {
     bool hasRenamable = false;
     CComPtr<IShellItemArray> spsia;
-    if (SUCCEEDED(GetShellItemArrayFromDataObject(dataSource, &spsia)))
+    if (dataSource && SUCCEEDED(GetShellItemArrayFromDataObject(dataSource, &spsia)))
     {
         CComPtr<IEnumShellItems> spesi;
         if (SUCCEEDED(spsia->EnumItems(&spesi)))
@@ -581,7 +581,7 @@ HWND CreateMsgWindow(_In_ HINSTANCE hInst, _In_ WNDPROC pfnWndProc, _In_ void* p
     wc.lpfnWndProc = DefWindowProc;
     wc.cbWndExtra = sizeof(void*);
     wc.hInstance = hInst;
-    wc.hbrBackground = (HBRUSH)(COLOR_BTNFACE + 1);
+    wc.hbrBackground = reinterpret_cast<HBRUSH>(COLOR_BTNFACE + 1);
     wc.lpszClassName = wndClassName;
 
     RegisterClass(&wc);
@@ -590,10 +590,10 @@ HWND CreateMsgWindow(_In_ HINSTANCE hInst, _In_ WNDPROC pfnWndProc, _In_ void* p
         0, wndClassName, nullptr, 0, 0, 0, 0, 0, HWND_MESSAGE, 0, hInst, nullptr);
     if (hwnd)
     {
-        SetWindowLongPtr(hwnd, 0, (LONG_PTR)p);
+        SetWindowLongPtr(hwnd, 0, reinterpret_cast<LONG_PTR>(p));
         if (pfnWndProc)
         {
-            SetWindowLongPtr(hwnd, GWLP_WNDPROC, (LONG_PTR)pfnWndProc);
+            SetWindowLongPtr(hwnd, GWLP_WNDPROC, reinterpret_cast<LONG_PTR>(pfnWndProc));
         }
     }
 

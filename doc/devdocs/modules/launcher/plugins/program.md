@@ -41,3 +41,7 @@ There are broadly two different categories of applications:
 
 ### Additional Notes
 - Arguments can be provided to the program plugin by entering them after `--` (a double dash).
+- The localization is done using the `Localization Helper`from `Wox.Plugin.Common` hosted at runtime in a variable of plugin's main class.
+- The `Run commands` differ in two points from the normal `Win32Programs`:
+   - The result title contains the executable type.
+   - The file types `.cpl` and `.msc` are supported too.

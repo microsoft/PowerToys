@@ -1,11 +1,13 @@
-﻿float2 mousePosition : register(C1);
+float2 mousePosition : register(C1);
 float radius : register(C2);
 float squareSize : register(c3);
 float textureSize : register(c4);
 
 sampler2D inputSampler : register(S0);
 
-float4 main(float2 uv : TEXCOORD) : COLOR
+float4 main(float2 uv
+            : TEXCOORD) :
+    COLOR
 {
     // do not draw grid where the mouse is
     if (uv.x == mousePosition.y && uv.y == mousePosition.y)
@@ -42,8 +44,8 @@ float4 main(float2 uv : TEXCOORD) : COLOR
     int2 topLeftRectangle = int2(mousePositionX - (mousePositionX % squareSize) - 1, mousePositionY - (mousePositionY % squareSize) - 1);
 
     // do not draw grid inside square even when grid (avoid drawing grid in that area later
-    if (((pixelPositionX >= topLeftRectangle.x + 1 && pixelPositionX <= topLeftRectangle.x + squareSize) && (pixelPositionY == topLeftRectangle.y + 1 || pixelPositionY == topLeftRectangle.y + squareSize)) ||
-        ((pixelPositionY >= topLeftRectangle.y + 1 && pixelPositionY <= topLeftRectangle.y + squareSize) && (pixelPositionX == topLeftRectangle.x + 1 || pixelPositionX == topLeftRectangle.x + squareSize)))
+    if (((pixelPositionX >= topLeftRectangle.x + 1 && pixelPositionX <= topLeftRectangle.x + squareSize + 1) && (pixelPositionY == topLeftRectangle.y + 1 || pixelPositionY == topLeftRectangle.y + squareSize + 1)) ||
+        ((pixelPositionY >= topLeftRectangle.y + 1 && pixelPositionY <= topLeftRectangle.y + squareSize + 1) && (pixelPositionX == topLeftRectangle.x + 1 || pixelPositionX == topLeftRectangle.x + squareSize + 1)))
     {
         return originalColor;
     }

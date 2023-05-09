@@ -25,7 +25,11 @@ namespace Peek.UI.Extensions
         internal static bool IsDesktopWindow(this HWND windowHandle)
         {
             StringBuilder strClassName = new StringBuilder(256);
-            NativeMethods.GetClassName(windowHandle, strClassName, 256);
+            var result = NativeMethods.GetClassName(windowHandle, strClassName, 256);
+            if (result == 0)
+            {
+                return false;
+            }
 
             var className = strClassName.ToString();
 

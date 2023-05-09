@@ -2,6 +2,7 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System;
 using Settings.UI.Library.Enumerations;
 
 namespace Hosts.Settings
@@ -10,6 +11,10 @@ namespace Hosts.Settings
     {
         public bool ShowStartupWarning { get; }
 
+        public bool LoopbackDuplicates { get; }
+
         public AdditionalLinesPosition AdditionalLinesPosition { get; }
+
+        event EventHandler LoopbackDuplicatesChanged;
     }
 }

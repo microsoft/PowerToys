@@ -4,7 +4,6 @@
 
 using System;
 using System.Runtime.InteropServices;
-using System.Runtime.Versioning;
 using System.Text;
 using Peek.Common.Models;
 
@@ -18,7 +17,7 @@ namespace Peek.UI.Native
             None = 0,
             Init_NoRemapCLSID = 0x1,
             Init_ByExeName = 0x2,
-            Open_ByExeName = 0x2,
+            Open_ByExeName = 0x3,
             Init_DefaultToStar = 0x4,
             Init_DefaultToFolder = 0x8,
             NoUserSettings = 0x10,
@@ -43,13 +42,13 @@ namespace Peek.UI.Native
             DDETopic,
         }
 
-        [DllImport("Shlwapi.dll", SetLastError = true, CharSet = CharSet.Auto)]
+        [DllImport("Shlwapi.dll", SetLastError = true, CharSet = CharSet.Unicode)]
         internal static extern HResult AssocQueryString(AssocF flags, AssocStr str, string pszAssoc, string? pszExtra, [Out] StringBuilder? pszOut, [In][Out] ref uint pcchOut);
 
-        [DllImport("user32.dll")]
+        [DllImport("user32.dll", CharSet = CharSet.Unicode)]
         internal static extern int GetWindowText(Windows.Win32.Foundation.HWND hWnd, StringBuilder lpString, int nMaxCount);
 
-        [DllImport("user32.dll")]
-        public static extern int GetClassName(IntPtr hWnd, StringBuilder buf, int nMaxCount);
+        [DllImport("user32.dll", CharSet = CharSet.Unicode)]
+        internal static extern int GetClassName(IntPtr hWnd, StringBuilder buf, int nMaxCount);
     }
 }
