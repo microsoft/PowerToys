@@ -11,6 +11,7 @@
       <definition name="SUPPORTED_POWERTOYS_0_64_0" displayName="$(string.SUPPORTED_POWERTOYS_0_64_0)"/>
       <definition name="SUPPORTED_POWERTOYS_0_68_0" displayName="$(string.SUPPORTED_POWERTOYS_0_68_0)"/>
       <definition name="SUPPORTED_POWERTOYS_0_69_0" displayName="$(string.SUPPORTED_POWERTOYS_0_69_0)"/>
+      <definition name="SUPPORTED_POWERTOYS_0_70_0" displayName="$(string.SUPPORTED_POWERTOYS_0_70_0)"/>
     </definitions>
   </supportedOn>
   <categories>
@@ -242,7 +243,7 @@
     </policy>
     <policy name="ConfigureEnabledUtilityPeek" class="Both" displayName="$(string.ConfigureEnabledUtilityPeek)" explainText="$(string.ConfigureEnabledUtilityDescription)" key="Software\Policies\PowerToys" valueName="ConfigureEnabledUtilityPeek">
       <parentCategory ref="PowerToys" />
-      <supportedOn ref="SUPPORTED_POWERTOYS_0_64_0" />
+      <supportedOn ref="SUPPORTED_POWERTOYS_0_70_0" />
       <enabledValue>
         <decimal value="1" />
       </enabledValue>
