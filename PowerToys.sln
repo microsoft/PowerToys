@@ -515,7 +515,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "RegistryPreview", "Registry
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "FilePreviewCommon", "src\common\FilePreviewCommon\FilePreviewCommon.csproj", "{9EBAA524-0EDA-470B-95D4-39383285CBB2}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.PowerToys.Run.Plugin.PowerToys", "src\modules\launcher\Plugins\Microsoft.PowerToys.Run.Plugin.PowerToys\Microsoft.PowerToys.Run.Plugin.PowerToys.csproj", "{500DED3E-CFB5-4ED5-ACC6-02B3D6DC336D}
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.PowerToys.Run.Plugin.PowerToys", "src\modules\launcher\Plugins\Microsoft.PowerToys.Run.Plugin.PowerToys\Microsoft.PowerToys.Run.Plugin.PowerToys.csproj", "{500DED3E-CFB5-4ED5-ACC6-02B3D6DC336D}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
