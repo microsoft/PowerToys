@@ -124,6 +124,12 @@ namespace Peek.FilePreviewer
             return isValidPreview ? Visibility.Visible : Visibility.Collapsed;
         }
 
+        public Visibility IsUnsupportedPreviewVisible(IUnsupportedFilePreviewer? previewer, PreviewState state)
+        {
+            var isValidPreview = previewer != null && (MatchPreviewState(state, PreviewState.Loaded) || MatchPreviewState(state, PreviewState.Error));
+            return isValidPreview ? Visibility.Visible : Visibility.Collapsed;
+        }
+
         private async Task OnItemPropertyChanged()
         {
             // Cancel previous loading task

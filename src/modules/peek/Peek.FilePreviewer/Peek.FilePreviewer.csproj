@@ -9,7 +9,17 @@
     <Nullable>enable</Nullable>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Remove="Previewers\DrivePreviewer\**" />
+    <Content Remove="Previewers\DrivePreviewer\**" />
+    <EmbeddedResource Remove="Previewers\DrivePreviewer\**" />
+    <None Remove="Previewers\DrivePreviewer\**" />
+    <Page Remove="Previewers\DrivePreviewer\**" />
+    <PRIResource Remove="Previewers\DrivePreviewer\**" />
+  </ItemGroup>
+  <ItemGroup>
     <None Remove="Controls\BrowserControl.xaml" />
+    <None Remove="Controls\UnsupportedFilePreview\FailedFallbackPreviewControl.xaml" />
+    <None Remove="Controls\UnsupportedFilePreview\InformationalPreviewControl.xaml" />
     <None Remove="FilePreview.xaml" />
     <None Remove="UnsupportedFilePreview.xaml" />
   </ItemGroup>
@@ -27,6 +37,12 @@
     <ProjectReference Include="..\..\..\settings-ui\Settings.UI.Library\Settings.UI.Library.csproj" />
     <ProjectReference Include="..\Peek.Common\Peek.Common.csproj" />
     <ProjectReference Include="..\WIC\WIC.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Page Update="Controls\UnsupportedFilePreview\FailedFallbackPreviewControl.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
   </ItemGroup>
 
   <ItemGroup>
@@ -48,6 +64,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Previewers\DrivePreviewer\" />
+    <Page Update="Controls\UnsupportedFilePreview\InformationalPreviewControl.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
   </ItemGroup>
 </Project>

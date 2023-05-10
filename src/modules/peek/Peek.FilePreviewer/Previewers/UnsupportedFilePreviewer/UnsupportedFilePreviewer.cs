@@ -4,17 +4,15 @@
 
 using System;
 using System.Globalization;
-using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 using CommunityToolkit.Mvvm.ComponentModel;
-using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.UI.Dispatching;
-using Microsoft.UI.Xaml.Media;
 using Microsoft.UI.Xaml.Media.Imaging;
 using Peek.Common.Extensions;
 using Peek.Common.Helpers;
 using Peek.Common.Models;
+using Peek.FilePreviewer.Models;
 using Peek.FilePreviewer.Previewers.Helpers;
 using Windows.Foundation;
 
@@ -23,19 +21,7 @@ namespace Peek.FilePreviewer.Previewers
     public partial class UnsupportedFilePreviewer : ObservableObject, IUnsupportedFilePreviewer, IDisposable
     {
         [ObservableProperty]
-        private ImageSource? iconPreview;
-
-        [ObservableProperty]
-        private string? fileName;
-
-        [ObservableProperty]
-        private string? fileType;
-
-        [ObservableProperty]
-        private string? fileSize;
-
-        [ObservableProperty]
-        private string? dateModified;
+        private UnsupportedFilePreviewData preview = new UnsupportedFilePreviewData();
 
         [ObservableProperty]
         private PreviewState state;
@@ -43,12 +29,12 @@ namespace Peek.FilePreviewer.Previewers
         public UnsupportedFilePreviewer(IFileSystemItem file)
         {
             Item = file;
-            FileName = file.Name;
-            DateModified = file.DateModified.ToString(CultureInfo.CurrentCulture);
+            Preview.FileName = file.Name;
+            Preview.DateModified = file.DateModified?.ToString(CultureInfo.CurrentCulture);
             Dispatcher = DispatcherQueue.GetForCurrentThread();
         }
 
-        public bool IsPreviewLoaded => iconPreview != null;
+        public bool IsPreviewLoaded => Preview.IconPreview != null;
 
         private IFileSystemItem Item { get; }
 
@@ -99,23 +85,35 @@ namespace Peek.FilePreviewer.Previewers
             });
         }
 
-        public Task<bool> LoadIconPreviewAsync(CancellationToken cancellationToken)
+        public async Task<bool> LoadIconPreviewAsync(CancellationToken cancellationToken)
         {
-            return TaskExtension.RunSafe(async () =>
+            bool isIconValid = false;
+
+            var isTaskSuccessful = await TaskExtension.RunSafe(async () =>
             {
                 cancellationToken.ThrowIfCancellationRequested();
                 await Dispatcher.RunOnUiThread(async () =>
                 {
                     cancellationToken.ThrowIfCancellationRequested();
+
                     var iconBitmap = await IconHelper.GetIconAsync(Item.Path, cancellationToken);
-                    IconPreview = iconBitmap ?? new SvgImageSource(new Uri("ms-appx:///Assets/DefaultFileIcon.svg"));
+
+                    cancellationToken.ThrowIfCancellationRequested();
+
+                    isIconValid = iconBitmap != null;
+
+                    Preview.IconPreview = iconBitmap ?? new SvgImageSource(new Uri("ms-appx:///Assets/DefaultFileIcon.svg"));
                 });
             });
+
+            return isIconValid && isTaskSuccessful;
         }
 
-        public Task<bool> LoadDisplayInfoAsync(CancellationToken cancellationToken)
+        public async Task<bool> LoadDisplayInfoAsync(CancellationToken cancellationToken)
         {
-            return TaskExtension.RunSafe(async () =>
+            bool isDisplayValid = false;
+
+            var isTaskSuccessful = await TaskExtension.RunSafe(async () =>
             {
                 // File Properties
                 cancellationToken.ThrowIfCancellationRequested();
@@ -123,23 +121,32 @@ namespace Peek.FilePreviewer.Previewers
                 var bytes = await Task.Run(Item.GetSizeInBytes);
 
                 cancellationToken.ThrowIfCancellationRequested();
+
                 var type = await Task.Run(Item.GetContentTypeAsync);
+
+                cancellationToken.ThrowIfCancellationRequested();
+
+                var readableFileSize = ReadableStringHelper.BytesToReadableString(bytes);
+
+                isDisplayValid = type != null;
 
                 await Dispatcher.RunOnUiThread(() =>
                 {
-                    FileSize = ReadableStringHelper.BytesToReadableString(bytes);
-                    FileType = type;
+                    Preview.FileSize = readableFileSize;
+                    Preview.FileType = type;
                     return Task.CompletedTask;
                 });
             });
+
+            return isDisplayValid && isTaskSuccessful;
         }
 
         private bool HasFailedLoadingPreview()
         {
-            var hasFailedLoadingIconPreview = !(IconPreviewTask?.Result ?? true);
-            var hasFailedLoadingDisplayInfo = !(DisplayInfoTask?.Result ?? true);
+            var isLoadingIconPreviewSuccessful = IconPreviewTask?.Result ?? false;
+            var isLoadingDisplayInfoSuccessful = DisplayInfoTask?.Result ?? false;
 
-            return hasFailedLoadingIconPreview || hasFailedLoadingDisplayInfo;
+            return !isLoadingIconPreviewSuccessful || !isLoadingDisplayInfoSuccessful;
         }
     }
 }
