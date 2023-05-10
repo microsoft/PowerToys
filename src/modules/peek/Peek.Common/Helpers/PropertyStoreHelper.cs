@@ -18,7 +18,7 @@ namespace Peek.Common.Helpers
         /// </summary>
         /// <param name="path">The file/folder path</param>
         /// <param name="key">The property key</param>
-        /// <returns>an IPropertyStroe interface</returns>
+        /// <returns>a nullable uint</returns>
         public static uint? TryGetUintProperty(string path, PropertyKey key)
         {
             using DisposablePropertyStore propertyStore = GetPropertyStoreFromPath(path);
@@ -30,7 +30,7 @@ namespace Peek.Common.Helpers
         /// </summary>
         /// <param name="path">The file/folder path</param>
         /// <param name="key">The property key</param>
-        /// <returns>an IPropertyStroe interface</returns>
+        /// <returns>a nullable ulong</returns>
         public static ulong? TryGetUlongProperty(string path, PropertyKey key)
         {
             using DisposablePropertyStore propertyStore = GetPropertyStoreFromPath(path);
@@ -42,7 +42,7 @@ namespace Peek.Common.Helpers
         /// </summary>
         /// <param name="path">The file/folder path</param>
         /// <param name="key">The property key</param>
-        /// <returns>an IPropertyStroe interface</returns>
+        /// <returns>a nullable string</returns>
         public static string? TryGetStringProperty(string path, PropertyKey key)
         {
             using DisposablePropertyStore propertyStore = GetPropertyStoreFromPath(path);
