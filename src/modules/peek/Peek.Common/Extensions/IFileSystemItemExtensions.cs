@@ -93,7 +93,7 @@ namespace Peek.Common.Extensions
                     sizeInBytes = (ulong)folder.Size;
                     break;
                 case FileItem _:
-                    var propertyStore = item.FileSizeBytes;
+                    sizeInBytes = item.FileSizeBytes;
                     break;
             }
 
