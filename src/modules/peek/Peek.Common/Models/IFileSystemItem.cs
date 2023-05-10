@@ -4,7 +4,6 @@
 
 using System;
 using System.Globalization;
-using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using Peek.Common.Extensions;
 using Peek.Common.Helpers;
@@ -28,9 +27,8 @@ namespace Peek.Common.Models
         {
             get
             {
-                var propertyStore = PropertyStoreHelper.GetPropertyStoreFromPath(Path);
+                using DisposablePropertyStore propertyStore = new(PropertyStoreHelper.GetPropertyStoreFromPath(Path));
                 uint? width = propertyStore.TryGetUInt(PropertyKey.ImageHorizontalSize);
-                Marshal.ReleaseComObject(propertyStore);
                 return width;
             }
         }
@@ -39,9 +37,8 @@ namespace Peek.Common.Models
         {
             get
             {
-                var propertyStore = PropertyStoreHelper.GetPropertyStoreFromPath(Path);
+                using DisposablePropertyStore propertyStore = new(PropertyStoreHelper.GetPropertyStoreFromPath(Path));
                 uint? height = propertyStore.TryGetUInt(PropertyKey.ImageVerticalSize);
-                Marshal.ReleaseComObject(propertyStore);
                 return height;
             }
         }
@@ -50,9 +47,8 @@ namespace Peek.Common.Models
         {
             get
             {
-                var propertyStore = PropertyStoreHelper.GetPropertyStoreFromPath(Path);
+                using DisposablePropertyStore propertyStore = new(PropertyStoreHelper.GetPropertyStoreFromPath(Path));
                 ulong fileSize = propertyStore.TryGetULong(PropertyKey.FileSizeBytes) ?? 0;
-                Marshal.ReleaseComObject(propertyStore);
                 return fileSize;
             }
         }
@@ -61,9 +57,8 @@ namespace Peek.Common.Models
         {
             get
             {
-                var propertyStore = PropertyStoreHelper.GetPropertyStoreFromPath(Path);
+                using DisposablePropertyStore propertyStore = new(PropertyStoreHelper.GetPropertyStoreFromPath(Path));
                 string fileType = propertyStore.TryGetString(PropertyKey.FileType) ?? string.Empty;
-                Marshal.ReleaseComObject(propertyStore);
                 return fileType;
             }
         }

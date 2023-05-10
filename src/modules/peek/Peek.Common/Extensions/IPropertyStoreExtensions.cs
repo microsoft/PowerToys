@@ -18,7 +18,7 @@ namespace Peek.Common.Extensions
         /// <param name="propertyStore">The property store</param>
         /// <param name="key">The pkey</param>
         /// <returns>The uint value</returns>
-        public static uint? TryGetUInt(this IPropertyStore propertyStore, PropertyKey key)
+        public static uint? TryGetUInt(this DisposablePropertyStore propertyStore, PropertyKey key)
         {
             if (propertyStore == null)
             {
@@ -54,7 +54,7 @@ namespace Peek.Common.Extensions
         /// <param name="propertyStore">The property store</param>
         /// <param name="key">the pkey</param>
         /// <returns>the ulong value</returns>
-        public static ulong? TryGetULong(this IPropertyStore propertyStore, PropertyKey key)
+        public static ulong? TryGetULong(this DisposablePropertyStore propertyStore, PropertyKey key)
         {
             if (propertyStore == null)
             {
@@ -89,7 +89,7 @@ namespace Peek.Common.Extensions
         /// <param name="propertyStore">The property store</param>
         /// <param name="key">The pkey</param>
         /// <returns>The string value</returns>
-        public static string? TryGetString(this IPropertyStore propertyStore, PropertyKey key)
+        public static string? TryGetString(this DisposablePropertyStore propertyStore, PropertyKey key)
         {
             if (propertyStore == null)
             {
@@ -123,7 +123,7 @@ namespace Peek.Common.Extensions
         /// <param name="propertyStore">The property store</param>
         /// <param name="key">The pkey</param>
         /// <returns>The array of string values</returns>
-        public static string[]? TryGetStringArray(this IPropertyStore propertyStore, PropertyKey key)
+        public static string[]? TryGetStringArray(this DisposablePropertyStore propertyStore, PropertyKey key)
         {
             if (propertyStore == null)
             {
