@@ -20,23 +20,9 @@ namespace Peek.Common.Models
         public FolderItem(string path)
         {
             Path = path;
-            var propertyStore = PropertyStoreHelper.GetPropertyStoreFromPath(Path);
-            FileSizeBytes = propertyStore.TryGetULong(PropertyKey.FileSizeBytes) ?? 0;
-            FileType = propertyStore.TryGetString(PropertyKey.FileType) ?? string.Empty;
-
-            // Release property store so it no longer holds the file open
-            Marshal.FinalReleaseComObject(propertyStore);
         }
 
         public string Path { get; init; }
-
-        public uint? Width { get; init; }
-
-        public uint? Height { get; init; }
-
-        public ulong FileSizeBytes { get; init; }
-
-        public string FileType { get; init; }
 
         public async Task<IStorageItem?> GetStorageItemAsync()
         {
