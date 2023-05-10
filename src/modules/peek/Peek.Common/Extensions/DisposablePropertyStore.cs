@@ -11,7 +11,7 @@ namespace Peek.Common.Extensions
 {
     public sealed class DisposablePropertyStore : IDisposable
     {
-        private IPropertyStore? _propertyStore;
+        private readonly IPropertyStore _propertyStore;
 
         public DisposablePropertyStore(IPropertyStore propertyStore)
         {
@@ -25,10 +25,7 @@ namespace Peek.Common.Extensions
 
         public void Dispose()
         {
-            if (_propertyStore != null)
-            {
-                Marshal.ReleaseComObject(_propertyStore);
-            }
+           Marshal.ReleaseComObject(_propertyStore);
         }
     }
 }
