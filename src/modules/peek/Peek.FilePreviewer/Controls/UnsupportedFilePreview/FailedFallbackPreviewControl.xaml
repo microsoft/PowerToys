@@ -9,9 +9,38 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     mc:Ignorable="d">
 
-    <IconSourceElement HorizontalAlignment="Center" VerticalAlignment="Center">
-        <IconSourceElement.IconSource>
-            <FontIconSource FontSize="180" Glyph="&#xE783;" />
-        </IconSourceElement.IconSource>
-    </IconSourceElement>
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+
+        <IconSourceElement
+            Grid.Row="0"
+            Margin="3"
+            HorizontalAlignment="Center"
+            VerticalAlignment="Center"
+            Foreground="{StaticResource TextFillColorSecondaryBrush}">
+            <IconSourceElement.IconSource>
+                <FontIconSource FontSize="135" Glyph="&#xE783;" />
+            </IconSourceElement.IconSource>
+        </IconSourceElement>
+
+        <TextBlock
+            Grid.Row="1"
+            Margin="3"
+            HorizontalAlignment="Center"
+            VerticalAlignment="Center"
+            Foreground="{StaticResource TextFillColorSecondaryBrush}"
+            Text="An error occured while previewing this file."
+            TextWrapping="Wrap" />
+
+        <HyperlinkButton
+            Grid.Row="2"
+            Margin="3"
+            HorizontalAlignment="Center"
+            VerticalAlignment="Center"
+            Content="Report a bug" />
+    </Grid>
 </UserControl>
