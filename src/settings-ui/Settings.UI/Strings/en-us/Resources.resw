@@ -3196,4 +3196,7 @@ Activate by holding the key for the character you want to add an accent to, then
     <value>Maximum width (px)</value>
     <comment>px = pixels</comment>
   </data>
+  <data name="SettingsWindow_TitleTxt.Text" xml:space="preserve">
+    <value>PowerToys Settings</value>
+  </data>
 </root>

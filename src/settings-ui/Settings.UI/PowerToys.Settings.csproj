@@ -82,6 +82,7 @@
 
   <ItemGroup>
     <PackageReference Include="CommunityToolkit.Labs.WinUI.SettingsControls" />
+    <PackageReference Include="CommunityToolkit.WinUI.UI.Animations" />
     <PackageReference Include="Microsoft.Windows.CsWinRT" />
     <PackageReference Include="CommunityToolkit.WinUI.UI" />
     <PackageReference Include="CommunityToolkit.WinUI.UI.Controls" />

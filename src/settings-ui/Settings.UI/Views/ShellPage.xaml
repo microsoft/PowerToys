@@ -2,6 +2,7 @@
     x:Class="Microsoft.PowerToys.Settings.UI.Views.ShellPage"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:animations="using:CommunityToolkit.WinUI.UI.Animations"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:helpers="using:Microsoft.PowerToys.Settings.UI.Helpers"
     xmlns:i="using:Microsoft.Xaml.Interactivity"
@@ -26,29 +27,43 @@
         </Grid.RowDefinitions>
         <Button
             x:Name="PaneToggleBtn"
-            Click="PaneToggleBtn_Click"
-            VerticalAlignment="Center"
             Width="48"
             HorizontalAlignment="Left"
+            VerticalAlignment="Center"
+            Click="PaneToggleBtn_Click"
             Style="{StaticResource PaneToggleButtonStyle}" />
         <Grid
             x:Name="AppTitleBar"
             Height="{Binding ElementName=navigationView, Path=CompactPaneLength}"
-            VerticalAlignment="Top"
             Margin="48,0,0,0"
+            VerticalAlignment="Top"
             IsHitTestVisible="True">
-            <Image
-                Width="16"
-                Height="16"
-                HorizontalAlignment="Left"
-                Source="/icon.ico" />
-            <TextBlock
-                x:Name="AppTitleBarText"
-                Margin="32,0,0,0"
-                VerticalAlignment="Center"
-                Style="{StaticResource CaptionTextBlockStyle}"
-                Text="PowerToys"
-                TextWrapping="NoWrap" />
+            <animations:Implicit.Animations>
+                <animations:OffsetAnimation Duration="0:0:0.3" />
+            </animations:Implicit.Animations>
+            <StackPanel Orientation="Horizontal">
+                <Image
+                    Width="16"
+                    Height="16"
+                    HorizontalAlignment="Left"
+                    Source="/icon.ico" />
+                <TextBlock
+                    x:Name="AppTitleBarText"
+                    x:Uid="SettingsWindow_TitleTxt"
+                    Margin="16,0,0,0"
+                    VerticalAlignment="Center"
+                    Style="{StaticResource CaptionTextBlockStyle}"
+                    TextWrapping="NoWrap" />
+                <TextBlock
+                    x:Name="DebugMessage"
+                    Margin="8,0,0,0"
+                    VerticalAlignment="Center"
+                    Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                    Style="{StaticResource CaptionTextBlockStyle}"
+                    Text="Debug"
+                    TextWrapping="NoWrap"
+                    Visibility="Collapsed" />
+            </StackPanel>
         </Grid>
         <NavigationView
             x:Name="navigationView"
