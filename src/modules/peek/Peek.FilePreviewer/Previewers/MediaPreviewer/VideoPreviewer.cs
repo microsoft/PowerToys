@@ -8,11 +8,15 @@ using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 using CommunityToolkit.Mvvm.ComponentModel;
+using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.UI.Dispatching;
-using Peek.Common.Constants;
+using Microsoft.UI.Xaml.Media;
+using Microsoft.UI.Xaml.Media.Imaging;
 using Peek.Common.Extensions;
 using Peek.Common.Helpers;
 using Peek.Common.Models;
+using Peek.FilePreviewer.Exceptions;
+using Peek.FilePreviewer.Previewers.Helpers;
 using Peek.FilePreviewer.Previewers.Interfaces;
 using Windows.Foundation;
 using Windows.Media.Core;
@@ -22,12 +26,6 @@ namespace Peek.FilePreviewer.Previewers
 {
     public partial class VideoPreviewer : ObservableObject, IVideoPreviewer, IDisposable
     {
-        private static readonly HashSet<string> _supportedFileTypes = new HashSet<string>
-        {
-            ".mp4", ".3g2", ".3gp", ".3gp2", ".3gpp", ".asf", ".avi", ".m2t", ".m2ts",
-            ".m4v", ".mkv", ".mov", ".mp4", ".mp4v", ".mts", ".wm", ".wmv",
-        };
-
         [ObservableProperty]
         private MediaSource? preview;
 
@@ -36,8 +34,23 @@ namespace Peek.FilePreviewer.Previewers
 
         public VideoPreviewer(IFileSystemItem file)
         {
-            File = file;
+            Item = file;
             Dispatcher = DispatcherQueue.GetForCurrentThread();
+        }
+
+        private IFileSystemItem Item { get; }
+
+        private DispatcherQueue Dispatcher { get; }
+
+        private Task<bool>? ThumbnailTask { get; set; }
+
+        private Task<bool>? VideoTask { get; set; }
+
+        /*private bool IsVideoLoaded => VideoTask?.Status == TaskStatus.RanToCompletion;*/
+
+        public static bool IsFileTypeSupported(string fileExt)
+        {
+            return _supportedFileTypes.Contains(fileExt);
         }
 
         public void Dispose()
@@ -45,25 +58,28 @@ namespace Peek.FilePreviewer.Previewers
             GC.SuppressFinalize(this);
         }
 
-        private IFileSystemItem File { get; }
-
-        public bool IsPreviewLoaded => preview != null;
-
-        private DispatcherQueue Dispatcher { get; }
-
-        private Task<bool>? DisplayInfoTask { get; set; }
-
-        public Task<Size?> GetPreviewSizeAsync(CancellationToken cancellationToken)
+        /*
+        public async Task LoadPreviewAsync(CancellationToken cancellationToken)
         {
-            Size? size = null;
-            return Task.FromResult(size);
-        }
+            State = PreviewState.Loading;
+
+            // ThumbnailTask = LoadThumbnailAsync(cancellationToken);
+            VideoTask = LoadVideoAsync(cancellationToken);
+            cancellationToken.ThrowIfCancellationRequested();
+
+            await Task.CompletedTask(VideoTask);
+
+            if (Preview == null && HasFailedLoadingPreview())
+            {
+                State = PreviewState.Error;
+            }
+        }*/
 
         public async Task LoadPreviewAsync(CancellationToken cancellationToken)
         {
             cancellationToken.ThrowIfCancellationRequested();
             State = PreviewState.Loading;
-            await LoadDisplayInfoAsync(cancellationToken);
+            await LoadVideoAsync(cancellationToken);
 
             if (HasFailedLoadingPreview())
             {
@@ -71,37 +87,87 @@ namespace Peek.FilePreviewer.Previewers
             }
         }
 
-        public Task<bool> LoadDisplayInfoAsync(CancellationToken cancellationToken)
+        partial void OnPreviewChanged(MediaSource? value)
         {
-            return TaskExtension.RunSafe(async () =>
+            if (Preview != null)
             {
-                cancellationToken.ThrowIfCancellationRequested();
+                State = PreviewState.Loaded;
+            }
+        }
 
-                await Dispatcher.RunOnUiThread(async () =>
-                {
-                    var storageItem = await File.GetStorageItemAsync();
-                    Preview = MediaSource.CreateFromStorageFile(storageItem as StorageFile);
-                });
-            });
+        public Task<Size?> GetPreviewSizeAsync(CancellationToken cancellationToken)
+        {
+            // Add real size
+            Size? size = new Size(680, 500);
+            return Task.FromResult(size);
         }
 
         public async Task CopyAsync()
         {
             await Dispatcher.RunOnUiThread(async () =>
             {
-                var storageItem = await File.GetStorageItemAsync();
+                var storageItem = await Item.GetStorageItemAsync();
                 ClipboardHelper.SaveToClipboard(storageItem);
             });
         }
 
-        public static bool IsFileTypeSupported(string fileExt)
+        /* private Task<bool> LoadThumbnailAsync(CancellationToken cancellationToken)
         {
-            return _supportedFileTypes.Contains(fileExt);
+            return TaskExtension.RunSafe(async () =>
+            {
+                cancellationToken.ThrowIfCancellationRequested();
+
+                var hr = ThumbnailHelper.GetThumbnail(Path.GetFullPath(Item.Path), out IntPtr hbitmap, ThumbnailHelper.LowQualityThumbnailSize);
+                if (hr != HResult.Ok)
+                {
+                    Logger.LogError("Error loading low quality thumbnail - hresult: " + hr);
+                    throw new ImageLoadingException(nameof(hbitmap));
+                }
+
+                cancellationToken.ThrowIfCancellationRequested();
+
+                await Dispatcher.RunOnUiThread(async () =>
+                {
+                    cancellationToken.ThrowIfCancellationRequested();
+                    var thumbnailBitmap = await BitmapHelper.GetBitmapFromHBitmapAsync(hbitmap, IsPng(Item), cancellationToken);
+                    if (!IsFullImageLoaded)
+                    {
+                        Preview = thumbnailBitmap;
+                    }
+                });
+            });
+        }*/
+
+        private Task<bool> LoadVideoAsync(CancellationToken cancellationToken)
+        {
+            return TaskExtension.RunSafe(async () =>
+            {
+                cancellationToken.ThrowIfCancellationRequested();
+
+                using FileStream stream = File.OpenRead(Item.Path);
+
+                await Dispatcher.RunOnUiThread(async () =>
+                {
+                    cancellationToken.ThrowIfCancellationRequested();
+
+                    var storageItem = await Item.GetStorageItemAsync();
+                    Preview = MediaSource.CreateFromStorageFile(storageItem as StorageFile);
+                });
+            });
         }
 
         private bool HasFailedLoadingPreview()
         {
-            return !(DisplayInfoTask?.Result ?? true);
+            // var hasFailedLoadingThumbnail = !(ThumbnailTask?.Result ?? true);
+            var hasFailedLoadingVideo = !(VideoTask?.Result ?? true);
+
+            return hasFailedLoadingVideo;
         }
+
+        private static readonly HashSet<string> _supportedFileTypes = new HashSet<string>
+        {
+            ".mp4", ".3g2", ".3gp", ".3gp2", ".3gpp", ".asf", ".avi", ".m2t", ".m2ts",
+            ".m4v", ".mkv", ".mov", ".mp4", ".mp4v", ".mts", ".wm", ".wmv",
+        };
     }
 }
