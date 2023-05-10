@@ -23,45 +23,13 @@ namespace Peek.Common.Models
 
         public string Path { get; init; }
 
-        public uint? Width
-        {
-            get
-            {
-                using DisposablePropertyStore propertyStore = PropertyStoreHelper.GetPropertyStoreFromPath(Path);
-                uint? width = propertyStore.TryGetUInt(PropertyKey.ImageHorizontalSize);
-                return width;
-            }
-        }
+        public uint? Width => PropertyStoreHelper.TryGetUintProperty(Path, PropertyKey.ImageHorizontalSize);
 
-        public uint? Height
-        {
-            get
-            {
-                using DisposablePropertyStore propertyStore = PropertyStoreHelper.GetPropertyStoreFromPath(Path);
-                uint? height = propertyStore.TryGetUInt(PropertyKey.ImageVerticalSize);
-                return height;
-            }
-        }
+        public uint? Height => PropertyStoreHelper.TryGetUintProperty(Path, PropertyKey.ImageVerticalSize);
 
-        public ulong FileSizeBytes
-        {
-            get
-            {
-                using DisposablePropertyStore propertyStore = PropertyStoreHelper.GetPropertyStoreFromPath(Path);
-                ulong fileSize = propertyStore.TryGetULong(PropertyKey.FileSizeBytes) ?? 0;
-                return fileSize;
-            }
-        }
+        public ulong FileSizeBytes => PropertyStoreHelper.TryGetUlongProperty(Path, PropertyKey.FileSizeBytes) ?? 0;
 
-        public string FileType
-        {
-            get
-            {
-                using DisposablePropertyStore propertyStore = PropertyStoreHelper.GetPropertyStoreFromPath(Path);
-                string fileType = propertyStore.TryGetString(PropertyKey.FileType) ?? string.Empty;
-                return fileType;
-            }
-        }
+        public string FileType => PropertyStoreHelper.TryGetStringProperty(Path, PropertyKey.FileType) ?? string.Empty;
 
         public Task<IStorageItem?> GetStorageItemAsync();
     }
