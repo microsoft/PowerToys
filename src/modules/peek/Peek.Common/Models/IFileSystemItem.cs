@@ -27,7 +27,7 @@ namespace Peek.Common.Models
         {
             get
             {
-                using DisposablePropertyStore propertyStore = new(PropertyStoreHelper.GetPropertyStoreFromPath(Path));
+                using DisposablePropertyStore propertyStore = PropertyStoreHelper.GetPropertyStoreFromPath(Path);
                 uint? width = propertyStore.TryGetUInt(PropertyKey.ImageHorizontalSize);
                 return width;
             }
@@ -37,7 +37,7 @@ namespace Peek.Common.Models
         {
             get
             {
-                using DisposablePropertyStore propertyStore = new(PropertyStoreHelper.GetPropertyStoreFromPath(Path));
+                using DisposablePropertyStore propertyStore = PropertyStoreHelper.GetPropertyStoreFromPath(Path);
                 uint? height = propertyStore.TryGetUInt(PropertyKey.ImageVerticalSize);
                 return height;
             }
@@ -47,7 +47,7 @@ namespace Peek.Common.Models
         {
             get
             {
-                using DisposablePropertyStore propertyStore = new(PropertyStoreHelper.GetPropertyStoreFromPath(Path));
+                using DisposablePropertyStore propertyStore = PropertyStoreHelper.GetPropertyStoreFromPath(Path);
                 ulong fileSize = propertyStore.TryGetULong(PropertyKey.FileSizeBytes) ?? 0;
                 return fileSize;
             }
@@ -57,7 +57,7 @@ namespace Peek.Common.Models
         {
             get
             {
-                using DisposablePropertyStore propertyStore = new(PropertyStoreHelper.GetPropertyStoreFromPath(Path));
+                using DisposablePropertyStore propertyStore = PropertyStoreHelper.GetPropertyStoreFromPath(Path);
                 string fileType = propertyStore.TryGetString(PropertyKey.FileType) ?? string.Empty;
                 return fileType;
             }
