@@ -22,7 +22,7 @@ namespace Peek.Common.Helpers
         public static uint? TryGetUintProperty(string path, PropertyKey key)
         {
             using DisposablePropertyStore propertyStore = GetPropertyStoreFromPath(path);
-            return propertyStore.TryGetUInt(PropertyKey.ImageVerticalSize);
+            return propertyStore.TryGetUInt(key);
         }
 
         /// <summary>
@@ -34,7 +34,7 @@ namespace Peek.Common.Helpers
         public static ulong? TryGetUlongProperty(string path, PropertyKey key)
         {
             using DisposablePropertyStore propertyStore = GetPropertyStoreFromPath(path);
-            return propertyStore.TryGetULong(PropertyKey.ImageVerticalSize);
+            return propertyStore.TryGetULong(key);
         }
 
         /// <summary>
@@ -46,7 +46,7 @@ namespace Peek.Common.Helpers
         public static string? TryGetStringProperty(string path, PropertyKey key)
         {
             using DisposablePropertyStore propertyStore = GetPropertyStoreFromPath(path);
-            return propertyStore.TryGetString(PropertyKey.ImageVerticalSize);
+            return propertyStore.TryGetString(key);
         }
 
         /// <summary>
