@@ -242,14 +242,17 @@ public:
     // Enable the powertoy
     virtual void enable()
     {
+        Logger::trace("Peek::enable()");
         ResetEvent(m_hInvokeEvent);
         launch_process();
         m_enabled = true;
+        Trace::EnablePeek(true);
     }
 
     // Disable the powertoy
     virtual void disable()
     {
+        Logger::trace("Peek::disable()");
         if (m_enabled)
         {
             ResetEvent(m_hInvokeEvent);
@@ -257,6 +260,7 @@ public:
         }
 
         m_enabled = false;
+        Trace::EnablePeek(false);
     }
 
     // Returns if the powertoys is enabled
@@ -296,10 +300,18 @@ public:
 
             SetEvent(m_hInvokeEvent);
 
+            Trace::PeekInvoked();
+
             return true;
         }
 
         return false;
+    }
+
+    virtual void send_settings_telemetry() override
+    {
+        Logger::info("Send settings telemetry");
+        Trace::SettingsTelemetry(m_hotkey);
     }
 };
 
