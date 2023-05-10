@@ -21,9 +21,8 @@ namespace Peek.Common.Extensions
         {
             Size? size = null;
 
-            var propertyStore = item.PropertyStore;
-            var width = propertyStore.TryGetUInt(PropertyKey.ImageHorizontalSize);
-            var height = propertyStore.TryGetUInt(PropertyKey.ImageVerticalSize);
+            var width = item.Width;
+            var height = item.Height;
 
             if (width != null && height != null)
             {
@@ -36,8 +35,7 @@ namespace Peek.Common.Extensions
         public static Size? GetSvgSize(this IFileSystemItem item)
         {
             Size? size = null;
-
-            using (FileStream stream = System.IO.File.OpenRead(item.Path))
+            using (FileStream stream = new FileStream(item.Path, FileMode.Open, FileAccess.Read, FileShare.ReadWrite | FileShare.Delete))
             {
                 XmlReaderSettings settings = new XmlReaderSettings();
                 settings.Async = true;
@@ -95,8 +93,7 @@ namespace Peek.Common.Extensions
                     sizeInBytes = (ulong)folder.Size;
                     break;
                 case FileItem _:
-                    var propertyStore = item.PropertyStore;
-                    sizeInBytes = propertyStore.TryGetULong(PropertyKey.FileSizeBytes) ?? 0;
+                    sizeInBytes = item.FileSizeBytes;
                     break;
             }
 
@@ -117,8 +114,7 @@ namespace Peek.Common.Extensions
                     contentType = storageFolder.DisplayType;
                     break;
                 default:
-                    var propertyStore = item.PropertyStore;
-                    contentType = propertyStore.TryGetString(PropertyKey.FileType) ?? string.Empty;
+                    contentType = item.FileType;
                     break;
             }
 

@@ -3,9 +3,9 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
-using System.Collections.Generic;
 using System.Globalization;
 using System.Runtime.InteropServices;
+using Peek.Common.Extensions;
 using Peek.Common.Models;
 using Windows.Win32.UI.Shell.PropertiesSystem;
 
@@ -14,12 +14,48 @@ namespace Peek.Common.Helpers
     public static partial class PropertyStoreHelper
     {
         /// <summary>
-        /// Gets a IPropertyStore interface from the given path.
+        /// Gets a uint type value from PropertyStore from the given item.
+        /// </summary>
+        /// <param name="path">The file/folder path</param>
+        /// <param name="key">The property key</param>
+        /// <returns>a nullable uint</returns>
+        public static uint? TryGetUintProperty(string path, PropertyKey key)
+        {
+            using DisposablePropertyStore propertyStore = GetPropertyStoreFromPath(path);
+            return propertyStore.TryGetUInt(key);
+        }
+
+        /// <summary>
+        /// Gets a ulong type value from PropertyStore from the given item.
+        /// </summary>
+        /// <param name="path">The file/folder path</param>
+        /// <param name="key">The property key</param>
+        /// <returns>a nullable ulong</returns>
+        public static ulong? TryGetUlongProperty(string path, PropertyKey key)
+        {
+            using DisposablePropertyStore propertyStore = GetPropertyStoreFromPath(path);
+            return propertyStore.TryGetULong(key);
+        }
+
+        /// <summary>
+        /// Gets a string type value from PropertyStore from the given item.
+        /// </summary>
+        /// <param name="path">The file/folder path</param>
+        /// <param name="key">The property key</param>
+        /// <returns>a nullable string</returns>
+        public static string? TryGetStringProperty(string path, PropertyKey key)
+        {
+            using DisposablePropertyStore propertyStore = GetPropertyStoreFromPath(path);
+            return propertyStore.TryGetString(key);
+        }
+
+        /// <summary>
+        /// Gets a IPropertyStore interface (wrapped in DisposablePropertyStore) from the given path.
         /// </summary>
         /// <param name="path">The file/folder path</param>
         /// <param name="flags">The property store flags</param>
         /// <returns>an IPropertyStroe interface</returns>
-        public static IPropertyStore GetPropertyStoreFromPath(string path, GETPROPERTYSTOREFLAGS flags = GETPROPERTYSTOREFLAGS.GPS_EXTRINSICPROPERTIES)
+        private static DisposablePropertyStore GetPropertyStoreFromPath(string path, GETPROPERTYSTOREFLAGS flags = GETPROPERTYSTOREFLAGS.GPS_EXTRINSICPROPERTIES)
         {
             IShellItem2? shellItem2 = null;
             IntPtr ppPropertyStore = IntPtr.Zero;
@@ -40,7 +76,7 @@ namespace Peek.Common.Helpers
                     throw new InvalidOperationException(string.Format(CultureInfo.InvariantCulture, "GetPropertyStore returned hresult={0}", hr));
                 }
 
-                return (IPropertyStore)Marshal.GetObjectForIUnknown(ppPropertyStore);
+                return new DisposablePropertyStore((IPropertyStore)Marshal.GetObjectForIUnknown(ppPropertyStore));
             }
             finally
             {

@@ -12,11 +12,16 @@ namespace Peek.FilePreviewer.Previewers
     {
         public static async Task<string> Read(string path)
         {
-            using var fs = new FileStream(path, FileMode.Open, FileAccess.Read);
+            using var fs = OpenReadOnly(path);
             using var sr = new StreamReader(fs, Encoding.UTF8);
 
             string content = await sr.ReadToEndAsync();
             return content;
+        }
+
+        public static FileStream OpenReadOnly(string path)
+        {
+            return new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.ReadWrite | FileShare.Delete);
         }
     }
 }
