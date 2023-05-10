@@ -114,7 +114,7 @@ namespace Peek.Common.Extensions
                     contentType = storageFolder.DisplayType;
                     break;
                 default:
-                    var propertyStore = item.FileType;
+                    contentType = item.FileType;
                     break;
             }
 
