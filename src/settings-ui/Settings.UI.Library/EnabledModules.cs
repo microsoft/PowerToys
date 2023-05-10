@@ -362,6 +362,22 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             }
         }
 
+        private bool peek = true;
+
+        [JsonPropertyName("Peek")]
+        public bool Peek
+        {
+            get => peek;
+            set
+            {
+                if (peek != value)
+                {
+                    LogTelemetryEvent(value);
+                    peek = value;
+                }
+            }
+        }
+
         private bool registryPreview = true;
 
         [JsonPropertyName("RegistryPreview")]

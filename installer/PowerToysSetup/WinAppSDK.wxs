@@ -16,7 +16,7 @@
     <!--WinAppSDKFiles_Component_Def-->
     </DirectoryRef>
 
-    <?foreach ParentDirectory in SettingsV2InstallFolder;PowerRenameInstallFolder;MeasureToolInstallFolder;HostsInstallFolder;FileLocksmithInstallFolder;RegistryPreviewInstallFolder?>
+    <?foreach ParentDirectory in SettingsV2InstallFolder;PowerRenameInstallFolder;MeasureToolInstallFolder;HostsInstallFolder;FileLocksmithInstallFolder;RegistryPreviewInstallFolder;PeekInstallFolder?>
       <DirectoryRef Id="$(var.ParentDirectory)">
         <?foreach Language in $(var.WinAppSDKLocLanguageList)?>
         <?if $(var.Language) = af-ZA?>
@@ -374,6 +374,16 @@
       <File Id="RegistryPreview_WinAppSDKLoc_$(var.IdSafeLanguage)_XamlMui_File" Source="$(var.BinDir)modules\$(var.RegistryPreviewProjectName)\$(var.Language)\Microsoft.ui.xaml.dll.mui" />
       <File Id="RegistryPreview_WinAppSDKLoc_$(var.IdSafeLanguage)_XamlPhoneMui_File" Source="$(var.BinDir)modules\$(var.RegistryPreviewProjectName)\$(var.Language)\Microsoft.UI.Xaml.Phone.dll.mui" />
       </Component>
+      <Component
+          Id="Peek_WinAppSDKLoc_$(var.IdSafeLanguage)_Component"
+          Directory="WinAppSDKLoc$(var.IdSafeLanguage)PeekInstallFolder"
+          Guid="$(var.CompGUIDPrefix)07">
+          <RegistryKey Root="$(var.RegistryScope)" Key="Software\Classes\powertoys\components">
+            <RegistryValue Type="string" Name="Peek_WinAppSDKLoc_$(var.IdSafeLanguage)_Component" Value="" KeyPath="yes"/>
+          </RegistryKey>
+      <File Id="Peek_WinAppSDKLoc_$(var.IdSafeLanguage)_XamlMui_File" Source="$(var.BinDir)modules\$(var.PeekProjectName)\$(var.Language)\Microsoft.ui.xaml.dll.mui" />
+      <File Id="Peek_WinAppSDKLoc_$(var.IdSafeLanguage)_XamlPhoneMui_File" Source="$(var.BinDir)modules\$(var.PeekProjectName)\$(var.Language)\Microsoft.UI.Xaml.Phone.dll.mui" />
+      </Component>
       <?undef IdSafeLanguage?>
       <?undef CompGUIDPrefix?>
       <?endforeach?>
@@ -504,6 +514,7 @@
           <RemoveFolder Id="RemoveFolderWinAppSDKLoc$(var.IdSafeLanguage)HostsInstallFolder" Directory="WinAppSDKLoc$(var.IdSafeLanguage)HostsInstallFolder" On="uninstall"/>
           <RemoveFolder Id="RemoveFolderWinAppSDKLoc$(var.IdSafeLanguage)FileLocksmithInstallFolder" Directory="WinAppSDKLoc$(var.IdSafeLanguage)FileLocksmithInstallFolder" On="uninstall"/>
           <RemoveFolder Id="RemoveFolderWinAppSDKLoc$(var.IdSafeLanguage)RegistryPreviewInstallFolder" Directory="WinAppSDKLoc$(var.IdSafeLanguage)RegistryPreviewInstallFolder" On="uninstall"/>
+          <RemoveFolder Id="RemoveFolderWinAppSDKLoc$(var.IdSafeLanguage)PeekInstallFolder" Directory="WinAppSDKLoc$(var.IdSafeLanguage)PeekInstallFolder" On="uninstall"/>
       <?undef IdSafeLanguage?>
         <?endforeach?>
       </Component>

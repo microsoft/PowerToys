@@ -115,6 +115,11 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
                 ModuleName = "MouseUtils",
                 IsNew = false,
             });
+            Modules.Insert((int)PowerToysModules.Peek, new OobePowerToysModule()
+            {
+                ModuleName = "Peek",
+                IsNew = true,
+            });
             Modules.Insert((int)PowerToysModules.PowerRename, new OobePowerToysModule()
             {
                 ModuleName = "PowerRename",
@@ -248,6 +253,7 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
                     case "Hosts": NavigationFrame.Navigate(typeof(OobeHosts)); break;
                     case "RegistryPreview": NavigationFrame.Navigate(typeof(OobeRegistryPreview)); break;
                     case "PastePlain": NavigationFrame.Navigate(typeof(OobePastePlain)); break;
+                    case "Peek": NavigationFrame.Navigate(typeof(OobePeek)); break;
                 }
             }
         }

@@ -1,0 +1,14 @@
+﻿MonitorFromWindow
+GetMonitorInfo
+GetDpiForWindow
+GetForegroundWindow
+GetWindowThreadProcessId
+GetCurrentThreadId
+AttachThreadInput
+BringWindowToTop
+ShowWindow
+GetWindowTextLength
+FindWindowEx
+SID_STopLevelBrowser
+GetClassName
+_SVGIO
