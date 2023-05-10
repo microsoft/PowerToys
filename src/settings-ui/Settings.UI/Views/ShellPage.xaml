@@ -10,6 +10,7 @@
     xmlns:ui="using:CommunityToolkit.WinUI.UI"
     xmlns:views="using:Microsoft.PowerToys.Settings.UI.Views"
     HighContrastAdjustment="None"
+    Loaded="UserControl_Loaded"
     mc:Ignorable="d">
 
     <i:Interaction.Behaviors>
@@ -18,28 +19,56 @@
         </ic:EventTriggerBehavior>
     </i:Interaction.Behaviors>
 
-    <Grid
-        x:Name="RootGrid">
-
+    <Grid x:Name="RootGrid">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="48" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+        <Button
+            x:Name="PaneToggleBtn"
+            Click="PaneToggleBtn_Click"
+            VerticalAlignment="Center"
+            Width="48"
+            HorizontalAlignment="Left"
+            Style="{StaticResource PaneToggleButtonStyle}" />
+        <Grid
+            x:Name="AppTitleBar"
+            Height="{Binding ElementName=navigationView, Path=CompactPaneLength}"
+            VerticalAlignment="Top"
+            Margin="48,0,0,0"
+            IsHitTestVisible="True">
+            <Image
+                Width="16"
+                Height="16"
+                HorizontalAlignment="Left"
+                Source="/icon.ico" />
+            <TextBlock
+                x:Name="AppTitleBarText"
+                Margin="32,0,0,0"
+                VerticalAlignment="Center"
+                Style="{StaticResource CaptionTextBlockStyle}"
+                Text="PowerToys"
+                TextWrapping="NoWrap" />
+        </Grid>
         <NavigationView
             x:Name="navigationView"
+            Grid.Row="1"
+            Canvas.ZIndex="0"
             CompactModeThresholdWidth="1007"
+            DisplayModeChanged="NavigationView_DisplayModeChanged"
             ExpandedModeThresholdWidth="1007"
             IsBackButtonVisible="Collapsed"
             IsBackEnabled="{x:Bind ViewModel.IsBackEnabled, Mode=OneWay}"
+            IsPaneToggleButtonVisible="False"
             IsSettingsVisible="False"
             IsTitleBarAutoPaddingEnabled="False"
             PaneClosed="NavigationView_PaneClosed"
             PaneOpened="NavigationView_PaneOpened"
-            SelectionChanged="NavigationView_SelectionChanged"
-            SelectedItem="{x:Bind ViewModel.Selected, Mode=OneWay}">
+            SelectedItem="{x:Bind ViewModel.Selected, Mode=OneWay}"
+            SelectionChanged="NavigationView_SelectionChanged">
             <NavigationView.Resources>
-                <SolidColorBrush
-                    x:Key="NavigationViewContentBackground"
-                    Color="Transparent" />
-                <SolidColorBrush
-                    x:Key="NavigationViewContentGridBorderBrush"
-                    Color="Transparent" />
+                <SolidColorBrush x:Key="NavigationViewContentBackground" Color="Transparent" />
+                <SolidColorBrush x:Key="NavigationViewContentGridBorderBrush" Color="Transparent" />
             </NavigationView.Resources>
             <NavigationView.MenuItems>
                 <NavigationViewItem
@@ -117,7 +146,7 @@
                 <NavigationViewItem
                     x:Uid="Shell_RegistryPreview"
                     helpers:NavHelper.NavigateTo="views:RegistryPreviewPage"
-                    Icon="{ui:BitmapIcon Source=/Assets/FluentIcons/FluentIconsRegistryPreview.png}"  />
+                    Icon="{ui:BitmapIcon Source=/Assets/FluentIcons/FluentIconsRegistryPreview.png}" />
 
                 <NavigationViewItem
                     x:Uid="Shell_MeasureTool"
@@ -144,11 +173,13 @@
                 <StackPanel Orientation="Vertical">
                     <NavigationViewItem
                         x:Uid="OOBE_NavViewItem"
-                        Icon="{ui:FontIcon FontFamily={StaticResource SymbolThemeFontFamily}, Glyph=&#xF133;}"
+                        Icon="{ui:FontIcon FontFamily={StaticResource SymbolThemeFontFamily},
+                                           Glyph=&#xF133;}"
                         Tapped="OOBEItem_Tapped" />
                     <NavigationViewItem
                         x:Uid="Feedback_NavViewItem"
-                        Icon="{ui:FontIcon FontFamily={StaticResource SymbolThemeFontFamily}, Glyph=&#xED15;}"
+                        Icon="{ui:FontIcon FontFamily={StaticResource SymbolThemeFontFamily},
+                                           Glyph=&#xED15;}"
                         Tapped="FeedbackItem_Tapped" />
                 </StackPanel>
             </NavigationView.PaneFooter>
