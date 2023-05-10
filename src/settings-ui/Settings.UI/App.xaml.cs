@@ -247,38 +247,43 @@ namespace Microsoft.PowerToys.Settings.UI
             return ipcmanager;
         }
 
-        public static string SelectedTheme()
+        public static ElementTheme SelectedTheme()
         {
-            return SettingsRepository<GeneralSettings>.GetInstance(settingsUtils).SettingsConfig.Theme.ToUpper(CultureInfo.InvariantCulture);
+            switch (SettingsRepository<GeneralSettings>.GetInstance(settingsUtils).SettingsConfig.Theme.ToUpper(CultureInfo.InvariantCulture))
+            {
+                case "DARK": return ElementTheme.Dark;
+                case "LIGHT": return ElementTheme.Light;
+                default: return ElementTheme.Default;
+            }
         }
 
         public static bool IsDarkTheme()
         {
             var selectedTheme = SelectedTheme();
-            return selectedTheme == "DARK" || (selectedTheme == "SYSTEM" && ThemeHelpers.GetAppTheme() == AppTheme.Dark);
+            return selectedTheme == ElementTheme.Dark || (selectedTheme == ElementTheme.Default && ThemeHelpers.GetAppTheme() == AppTheme.Dark);
         }
 
         public static void HandleThemeChange()
         {
             try
             {
-                var isDark = IsDarkTheme();
-                var selectedTheme = SelectedTheme();
+                bool isDark = IsDarkTheme();
+
                 if (settingsWindow != null)
                 {
                     var hWnd = WinRT.Interop.WindowNative.GetWindowHandle(settingsWindow);
                     ThemeHelpers.SetImmersiveDarkMode(hWnd, isDark);
-                    SetContentTheme(isDark, (FrameworkElement)settingsWindow.Content);
+                    SetContentTheme(isDark, settingsWindow);
                 }
 
                 if (oobeWindow != null)
                 {
                     var hWnd = WinRT.Interop.WindowNative.GetWindowHandle(oobeWindow);
                     ThemeHelpers.SetImmersiveDarkMode(hWnd, isDark);
-                    SetContentTheme(isDark, (FrameworkElement)oobeWindow.Content);
+                    SetContentTheme(isDark, oobeWindow);
                 }
 
-                if (selectedTheme == "SYSTEM")
+                if (SelectedTheme() == ElementTheme.Default)
                 {
                     themeListener = new ThemeListener();
                     themeListener.ThemeChanged += (_) => HandleThemeChange();
@@ -299,11 +304,19 @@ namespace Microsoft.PowerToys.Settings.UI
             }
         }
 
-        private static void SetContentTheme(bool isDark, FrameworkElement el)
+        public static void SetContentTheme(bool isDark, WindowEx window)
         {
-            if (el != null)
+            var rootGrid = (FrameworkElement)window.Content;
+            if (rootGrid != null)
             {
-                el.RequestedTheme = isDark ? ElementTheme.Dark : ElementTheme.Light;
+                if (isDark)
+                {
+                    rootGrid.RequestedTheme = ElementTheme.Dark;
+                }
+                else
+                {
+                    rootGrid.RequestedTheme = ElementTheme.Light;
+                }
             }
         }
 

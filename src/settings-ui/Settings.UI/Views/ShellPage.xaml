@@ -11,10 +11,6 @@
     xmlns:views="using:Microsoft.PowerToys.Settings.UI.Views"
     HighContrastAdjustment="None"
     mc:Ignorable="d">
-    <!--
-        TODO(stefan): Bring back Should be available in v1.1
-        BackdropMaterial.ApplyToRootOrPageBackground="True"
-    -->
 
     <i:Interaction.Behaviors>
         <ic:EventTriggerBehavior EventName="Loaded">
@@ -23,8 +19,7 @@
     </i:Interaction.Behaviors>
 
     <Grid
-        x:Name="RootGrid"
-        Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
+        x:Name="RootGrid">
 
         <NavigationView
             x:Name="navigationView"

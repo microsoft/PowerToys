@@ -62,7 +62,6 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
 
             DataContext = ViewModel;
             OobeShellHandler = this;
-            UpdateUITheme();
             Modules = new ObservableCollection<OobePowerToysModule>();
 
             Modules.Insert((int)PowerToysModules.Overview, new OobePowerToysModule()
@@ -249,22 +248,6 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
                     case "RegistryPreview": NavigationFrame.Navigate(typeof(OobeRegistryPreview)); break;
                     case "PastePlain": NavigationFrame.Navigate(typeof(OobePastePlain)); break;
                 }
-            }
-        }
-
-        public void UpdateUITheme()
-        {
-            switch (SettingsRepository<GeneralSettings>.GetInstance(new SettingsUtils()).SettingsConfig.Theme.ToUpperInvariant())
-            {
-                case "LIGHT":
-                    this.RequestedTheme = ElementTheme.Light;
-                    break;
-                case "DARK":
-                    this.RequestedTheme = ElementTheme.Dark;
-                    break;
-                case "SYSTEM":
-                    this.RequestedTheme = ElementTheme.Default;
-                    break;
             }
         }
     }

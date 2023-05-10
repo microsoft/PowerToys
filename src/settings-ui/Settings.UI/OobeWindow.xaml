@@ -13,7 +13,5 @@
     <winuiex:WindowEx.Backdrop>
         <winuiex:MicaSystemBackdrop />
     </winuiex:WindowEx.Backdrop>
-    <Grid x:Name="RootGrid">
-        <local:OobeShellPage x:Name="shellPage" />
-    </Grid>
+    <local:OobeShellPage x:Name="shellPage" />
 </winuiex:WindowEx>

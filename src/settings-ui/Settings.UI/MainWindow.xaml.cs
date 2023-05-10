@@ -213,7 +213,8 @@ namespace Microsoft.PowerToys.Settings.UI
             });
 
             this.InitializeComponent();
-            RootGrid.RequestedTheme = isDark ? ElementTheme.Dark : ElementTheme.Light;
+
+            SetTheme(isDark);
 
             // receive IPC Message
             App.IPCMessageReceivedCallback = (string msg) =>
@@ -273,6 +274,11 @@ namespace Microsoft.PowerToys.Settings.UI
         internal void EnsurePageIsSelected()
         {
             ShellPage.EnsurePageIsSelected();
+        }
+
+        private void SetTheme(bool isDark)
+        {
+            shellPage.RequestedTheme = isDark ? ElementTheme.Dark : ElementTheme.Light;
         }
     }
 }
