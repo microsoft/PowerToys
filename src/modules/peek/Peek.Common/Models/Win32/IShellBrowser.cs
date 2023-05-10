@@ -18,7 +18,7 @@ namespace Peek.Common.Models
 
         void InsertMenusSB(IntPtr hmenuShared, IntPtr lpMenuWidths);
 
-        void SetMenuSB(IntPtr hmenuShared, IntPtr holemenuRes, IntPtr hwndActiveObject);
+        void SetMenuSB(IntPtr hmenuShared, IntPtr holeMenuRes, IntPtr hwndActiveObject);
 
         void RemoveMenusSB(IntPtr hmenuShared);
 

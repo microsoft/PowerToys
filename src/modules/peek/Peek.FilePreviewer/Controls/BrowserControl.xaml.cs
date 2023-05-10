@@ -17,7 +17,7 @@ namespace Peek.FilePreviewer.Controls
         /// <summary>
         /// Helper private Uri where we cache the last navigated page
         /// so we can redirect internal PDF or Webpage links to external
-        /// webbrowser, avoiding WebView internal navigation.
+        /// web browser, avoiding WebView internal navigation.
         /// </summary>
         private Uri? _navigatedUri;
 
