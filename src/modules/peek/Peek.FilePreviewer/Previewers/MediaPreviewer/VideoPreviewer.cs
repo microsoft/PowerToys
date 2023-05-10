@@ -95,11 +95,17 @@ namespace Peek.FilePreviewer.Previewers
             }
         }
 
-        public Task<Size?> GetPreviewSizeAsync(CancellationToken cancellationToken)
+        public async Task<Size?> GetPreviewSizeAsync(CancellationToken cancellationToken)
         {
-            // Add real size
-            Size? size = new Size(680, 500);
-            return Task.FromResult(size);
+            Size? size = await Task.Run(Item.GetImageSize);
+            if (size != null)
+            {
+                return size.Value;
+            }
+            else
+            {
+                return null;
+            }
         }
 
         public async Task CopyAsync()
