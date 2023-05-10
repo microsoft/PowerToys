@@ -22,7 +22,13 @@ namespace Peek.Common.Models
 
         public string Path { get; init; }
 
-        public IPropertyStore PropertyStore { get; }
+        public uint? Width { get; init; }
+
+        public uint? Height { get; init; }
+
+        public ulong FileSizeBytes { get; init; }
+
+        public string FileType { get; init; }
 
         public Task<IStorageItem?> GetStorageItemAsync();
     }
