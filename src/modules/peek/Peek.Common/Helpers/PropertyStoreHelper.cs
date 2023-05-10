@@ -38,7 +38,7 @@ namespace Peek.Common.Helpers
         }
 
         /// <summary>
-        /// Gets a uint type value from PropertyStore from the given item.
+        /// Gets a string type value from PropertyStore from the given item.
         /// </summary>
         /// <param name="path">The file/folder path</param>
         /// <param name="key">The property key</param>
