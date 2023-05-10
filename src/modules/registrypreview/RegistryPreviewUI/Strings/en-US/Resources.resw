@@ -138,6 +138,9 @@
   <data name="FilterRegistryName" xml:space="preserve">
     <value>Registry files (*.reg)</value>
   </data>
+  <data name="InvalidQword" xml:space="preserve">
+    <value>(Invalid QWORD (64-bit) value)</value>
+  </data>
   <data name="InvalidRegistryFile" xml:space="preserve">
     <value> doesn't appear to be a valid registry file!</value>
   </data>
@@ -188,6 +191,9 @@
   </data>
   <data name="textBox.PlaceholderText" xml:space="preserve">
     <value>Registry file text will appear here...</value>
+  </data>
+  <data name="titleBarText.ApplicationTitle" xml:space="preserve">
+    <value>Registry Preview</value>
   </data>
   <data name="ToolTipAddedKey" xml:space="preserve">
     <value>Key will be added, if needed</value>

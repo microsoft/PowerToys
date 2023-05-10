@@ -123,7 +123,7 @@
   </data>
   <data name="AppTitle_FileCounts_Text" xml:space="preserve">
     <value>({0}/{1})</value>
-    <comment>Text for the file count in the titlebar. 0: the index of the current file. 1: the total number of files selected.</comment>
+    <comment>Text for the file count in the title bar. 0: the index of the current file. 1: the total number of files selected.</comment>
   </data>
   <data name="LaunchAppButton_OpenWith_Text" xml:space="preserve">
     <value>Open with</value>
@@ -155,31 +155,31 @@
   </data>
   <data name="ReadableString_ByteAbbreviationFormat" xml:space="preserve">
     <value>{0} bytes</value>
-    <comment>Abbrivation for the size unit byte.</comment>
+    <comment>Abbreviation for the size unit byte.</comment>
   </data>
   <data name="ReadableString_KiloByteAbbreviationFormat" xml:space="preserve">
     <value>{0} KB</value>
-    <comment>Abbrivation for the size unit kilobyte.</comment>
+    <comment>Abbreviation for the size unit kilobyte.</comment>
   </data>
   <data name="ReadableString_MegaByteAbbreviationFormat" xml:space="preserve">
     <value>{0} MB</value>
-    <comment>Abbrivation for the size unit megabyte.</comment>
+    <comment>Abbreviation for the size unit megabyte.</comment>
   </data>
   <data name="ReadableString_GigaByteAbbreviationFormat" xml:space="preserve">
     <value>{0} GB</value>
-    <comment>Abbrivation for the size unit gigabyte.</comment>
+    <comment>Abbreviation for the size unit gigabyte.</comment>
   </data>
   <data name="ReadableString_TeraByteAbbreviationFormat" xml:space="preserve">
     <value>{0} TB</value>
-    <comment>Abbrivation for the size unit terabyte.</comment>
+    <comment>Abbreviation for the size unit terabyte.</comment>
   </data>
   <data name="ReadableString_PetaByteAbbreviationFormat" xml:space="preserve">
     <value>{0} PB</value>
-    <comment>Abbrivation for the size unit petabyte.</comment>
+    <comment>Abbreviation for the size unit petabyte.</comment>
   </data>
   <data name="ReadableString_ExaByteAbbreviationFormat" xml:space="preserve">
     <value>{0} EB</value>
-    <comment>Abbrivation for the size unit exabyte.</comment>
+    <comment>Abbreviation for the size unit exabyte.</comment>
   </data>
   <data name="PreviewTooltip_FileName" xml:space="preserve">
     <value>Filename: {0}</value>

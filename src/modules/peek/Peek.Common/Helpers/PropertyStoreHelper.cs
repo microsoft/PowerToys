@@ -37,7 +37,7 @@ namespace Peek.Common.Helpers
 
                 if (hr != 0)
                 {
-                    throw new InvalidOperationException(string.Format(CultureInfo.InvariantCulture, "GetPropertyStore retunred hresult={0}", hr));
+                    throw new InvalidOperationException(string.Format(CultureInfo.InvariantCulture, "GetPropertyStore returned hresult={0}", hr));
                 }
 
                 return (IPropertyStore)Marshal.GetObjectForIUnknown(ppPropertyStore);

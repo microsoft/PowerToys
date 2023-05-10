@@ -238,6 +238,12 @@ public:
         return MODULE_NAME;
     }
 
+    // Return the configured status for the gpo policy for the module
+    virtual powertoys_gpo::gpo_rule_configured_t gpo_policy_enabled_configuration() override
+    {
+        return powertoys_gpo::getConfiguredPeekEnabledValue();
+    }
+
     // Return JSON with the configuration options.
     virtual bool get_config(wchar_t* buffer, int* buffer_size) override
     {
@@ -318,14 +324,17 @@ public:
     // Enable the powertoy
     virtual void enable()
     {
+        Logger::trace("Peek::enable()");
         ResetEvent(m_hInvokeEvent);
         launch_process();
         m_enabled = true;
+        Trace::EnablePeek(true);
     }
 
     // Disable the powertoy
     virtual void disable()
     {
+        Logger::trace("Peek::disable()");
         if (m_enabled)
         {
             ResetEvent(m_hInvokeEvent);
@@ -333,6 +342,7 @@ public:
         }
 
         m_enabled = false;
+        Trace::EnablePeek(false);
     }
 
     // Returns if the powertoys is enabled
@@ -372,6 +382,8 @@ public:
 
             SetEvent(m_hInvokeEvent);
 
+            Trace::PeekInvoked();
+
             return true;
         }
 
@@ -379,44 +391,12 @@ public:
     }
 };
 
-// This method of saving the module settings is only required if you need to do any
-// custom processing of the settings before saving them to disk.
-//void $projectname$::save_settings() {
-//  try {
-//    // Create a PowerToyValues object for this PowerToy
-//    PowerToysSettings::PowerToyValues values(get_name());
-//
-//    // Save a bool property.
-//    //values.add_property(
-//    //  L"bool_toggle_1", // property name
-//    //  g_settings.bool_prop // property value
-//    //);
-//
-//    // Save an int property.
-//    //values.add_property(
-//    //  L"int_spinner_1", // property name
-//    //  g_settings.int_prop // property value
-//    //);
-//
-//    // Save a string property.
-//    //values.add_property(
-//    //  L"string_text_1", // property name
-//    //  g_settings.string_prop // property value
-//    );
-//
-//    // Save a color property.
-//    //values.add_property(
-//    //  L"color_picker_1", // property name
-//    //  g_settings.color_prop // property value
-//    //);
-//
-//    // Save the PowerToyValues JSON to the power toy settings file.
-//    values.save_to_settings_file();
-//  }
-//  catch (std::exception ex) {
-//    // Couldn't save the settings.
-//  }
-//}
+    virtual void send_settings_telemetry() override
+    {
+        Logger::info("Send settings telemetry");
+        Trace::SettingsTelemetry(m_hotkey);
+    }
+};
 
 extern "C" __declspec(dllexport) PowertoyModuleIface* __cdecl powertoy_create()
 {

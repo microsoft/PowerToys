@@ -17,3 +17,42 @@ void Trace::UnregisterProvider()
 {
     TraceLoggingUnregister(g_hProvider);
 }
+
+// Log if the user has Peek enabled or disabled
+void Trace::EnablePeek(const bool enabled) noexcept
+{
+    TraceLoggingWrite(
+        g_hProvider,
+        "Peek_EnablePeek",
+        ProjectTelemetryPrivacyDataTag(ProjectTelemetryTag_ProductAndServicePerformance),
+        TraceLoggingKeyword(PROJECT_KEYWORD_MEASURE),
+        TraceLoggingBoolean(enabled, "Enabled"));
+}
+
+// Log if the user has invoked Peek
+void Trace::PeekInvoked() noexcept
+{
+    TraceLoggingWrite(
+        g_hProvider,
+        "Peek_InvokePeek",
+        ProjectTelemetryPrivacyDataTag(ProjectTelemetryTag_ProductAndServicePerformance),
+        TraceLoggingKeyword(PROJECT_KEYWORD_MEASURE));
+}
+
+// Event to send settings telemetry.
+void Trace::SettingsTelemetry(PowertoyModuleIface::Hotkey& hotkey) noexcept
+{
+    std::wstring hotKeyStr =
+        std::wstring(hotkey.win ? L"Win + " : L"") +
+        std::wstring(hotkey.ctrl ? L"Ctrl + " : L"") +
+        std::wstring(hotkey.shift ? L"Shift + " : L"") +
+        std::wstring(hotkey.alt ? L"Alt + " : L"") +
+        std::wstring(L"VK ") + std::to_wstring(hotkey.key);
+
+    TraceLoggingWrite(
+        g_hProvider,
+        "Peek_Settings",
+        ProjectTelemetryPrivacyDataTag(ProjectTelemetryTag_ProductAndServicePerformance),
+        TraceLoggingKeyword(PROJECT_KEYWORD_MEASURE),
+        TraceLoggingWideString(hotKeyStr.c_str(), "HotKey"));
+}

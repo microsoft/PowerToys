@@ -112,7 +112,6 @@ ARPPRODUCTICON
 ARRAYSIZE
 arsinh
 artanh
-Artsakh
 arw
 asdf
 AShortcut
@@ -281,8 +280,6 @@ chrdavis
 Chromakey
 Chrzan
 CHT
-Chukotka
-Chuuk
 cidl
 CIELAB
 CIEXYZ
@@ -421,7 +418,6 @@ dacl
 DAF
 damienleroy
 DANGEROUSLYCOMMITMERELYTODISKCACHE
-Danmarkshavn
 DARKPURPLE
 DARKTEAL
 DARKYELLOW
@@ -672,7 +668,6 @@ exstyle
 EXTENDEDKEY
 EXTENDEDVERBS
 EXTRINSICPROPERTIES
-EXTRINSICPROPERTIESONLY
 eyetracker
 FABC
 fabricbot
@@ -909,7 +904,6 @@ ICapture
 ICEBLUE
 IClass
 IColor
-icolumn
 ICONERROR
 IContext
 IData
@@ -1011,7 +1005,6 @@ ISurface
 ITask
 ith
 ithumbnail
-Ittoqqortoormiit
 IUI
 IUnknown
 IWbem
@@ -1038,7 +1031,6 @@ jyuwono
 KBDLLHOOKSTRUCT
 kbm
 kdc
-Keybd
 KEYBDINPUT
 keyboardeventhandlers
 keyboardmanager
@@ -1203,8 +1195,6 @@ MBUTTON
 MBUTTONDBLCLK
 MBUTTONDOWN
 MBUTTONUP
-MCDT
-MCST
 mdc
 MDICHILD
 MDL
@@ -1752,7 +1742,6 @@ resx
 retunred
 retval
 rfc
-rfid
 RGBE
 RGBQUAD
 rgbs
@@ -2074,7 +2063,6 @@ telem
 telephon
 Templated
 templatenamespace
-Tenggara
 terabyte
 testapp
 testcase

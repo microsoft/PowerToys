@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft Corporation
+// Copyright (c) Microsoft Corporation
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
@@ -24,6 +24,8 @@ namespace Common.UI
             ShortcutGuide,
             VideoConference,
             Hosts,
+            MeasureTool,
+            PowerOCR,
             RegistryPreview,
         }
 
@@ -57,6 +59,10 @@ namespace Common.UI
                     return "VideoConference";
                 case SettingsWindow.Hosts:
                     return "Hosts";
+                case SettingsWindow.MeasureTool:
+                    return "MeasureTool";
+                case SettingsWindow.PowerOCR:
+                    return "PowerOCR";
                 case SettingsWindow.RegistryPreview:
                     return "RegistryPreview";
                 default:

@@ -62,6 +62,6 @@ namespace Peek.Common.Models
         int GetDetailsOf(IntPtr pidl, int iColumn, ref SHELLDETAILS psd);
 
         [PreserveSig]
-        int MapColumnToSCID(int icolumn, IntPtr pscid);
+        int MapColumnToSCID(int iColumn, IntPtr pscid);
     }
 }

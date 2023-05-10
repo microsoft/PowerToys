@@ -17,6 +17,8 @@ namespace Peek.Common.Models
     {
         private StorageFolder? storageFolder;
 
+        private Lazy<IPropertyStore> _propertyStore;
+
         public FolderItem(string path)
         {
             Path = path;

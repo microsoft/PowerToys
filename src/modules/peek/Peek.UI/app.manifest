@@ -7,7 +7,7 @@
       <!--The ID below informs the system that this application is compatible with OS features first introduced in Windows 8. 
       For more info see https://docs.microsoft.com/windows/win32/sysinfo/targeting-your-application-at-windows-8-1 
       
-      It is also necessary to support features in unpackaged applications, for example the custom titlebar implementation.-->
+      It is also necessary to support features in unpackaged applications, for example the custom title bar implementation.-->
       <supportedOS Id="{4a2f28e3-53b9-4441-ba9c-d69d4a4a6e38}" />
     </application>
   </compatibility>
