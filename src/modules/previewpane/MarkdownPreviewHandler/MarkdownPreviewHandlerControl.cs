@@ -89,7 +89,7 @@ namespace Microsoft.PowerToys.PreviewHandler.Markdown
         /// Start the preview on the Control.
         /// </summary>
         /// <param name="dataSource">Path to the file.</param>
-        public override void DoPreview<T>(T dataSource)
+        public override async void DoPreview<T>(T dataSource)
         {
             if (global::PowerToys.GPOWrapper.GPOWrapper.GetConfiguredMarkdownPreviewEnabledValue() == global::PowerToys.GPOWrapper.GpoRuleConfigured.Disabled)
             {
@@ -103,7 +103,7 @@ namespace Microsoft.PowerToys.PreviewHandler.Markdown
                 return;
             }
 
-            FilePreviewCommon.Helper.CleanupTempDir(_webView2UserDataFolder);
+            await FilePreviewCommon.Helper.CleanupTempDir(_webView2UserDataFolder);
 
             _infoBarDisplayed = false;
 
