@@ -475,8 +475,6 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Peek.Common", "src\modules\
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Peek.FilePreviewer", "src\modules\peek\Peek.FilePreviewer\Peek.FilePreviewer.csproj", "{AA9F0AF8-7924-4D59-BAA1-E36F1304E0DC}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "WIC", "src\modules\peek\WIC\WIC.csproj", "{21B69DE5-59FD-4C5D-A142-EF1C1C430EAF}"
-EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "MarkdownPreviewHandlerCpp", "src\modules\previewpane\MarkdownPreviewHandlerCpp\MarkdownPreviewHandlerCpp.vcxproj", "{ED9A1AC6-AEB0-4569-A6E9-E1696182B545}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "GcodePreviewHandlerCpp", "src\modules\previewpane\GcodePreviewHandlerCpp\GcodePreviewHandlerCpp.vcxproj", "{5A5DD09D-723A-44D3-8F2B-293584C3D731}"
@@ -515,7 +513,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "RegistryPreview", "Registry
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "FilePreviewCommon", "src\common\FilePreviewCommon\FilePreviewCommon.csproj", "{9EBAA524-0EDA-470B-95D4-39383285CBB2}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.PowerToys.Run.Plugin.PowerToys", "src\modules\launcher\Plugins\Microsoft.PowerToys.Run.Plugin.PowerToys\Microsoft.PowerToys.Run.Plugin.PowerToys.csproj", "{500DED3E-CFB5-4ED5-ACC6-02B3D6DC336D}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.PowerToys.Run.Plugin.PowerToys", "src\modules\launcher\Plugins\Microsoft.PowerToys.Run.Plugin.PowerToys\Microsoft.PowerToys.Run.Plugin.PowerToys.csproj", "{500DED3E-CFB5-4ED5-ACC6-02B3D6DC336D}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -1975,18 +1973,6 @@ Global
 		{AA9F0AF8-7924-4D59-BAA1-E36F1304E0DC}.Release|x64.Build.0 = Release|x64
 		{AA9F0AF8-7924-4D59-BAA1-E36F1304E0DC}.Release|x86.ActiveCfg = Release|x64
 		{AA9F0AF8-7924-4D59-BAA1-E36F1304E0DC}.Release|x86.Build.0 = Release|x64
-		{21B69DE5-59FD-4C5D-A142-EF1C1C430EAF}.Debug|ARM64.ActiveCfg = Debug|ARM64
-		{21B69DE5-59FD-4C5D-A142-EF1C1C430EAF}.Debug|ARM64.Build.0 = Debug|ARM64
-		{21B69DE5-59FD-4C5D-A142-EF1C1C430EAF}.Debug|x64.ActiveCfg = Debug|x64
-		{21B69DE5-59FD-4C5D-A142-EF1C1C430EAF}.Debug|x64.Build.0 = Debug|x64
-		{21B69DE5-59FD-4C5D-A142-EF1C1C430EAF}.Debug|x86.ActiveCfg = Debug|x64
-		{21B69DE5-59FD-4C5D-A142-EF1C1C430EAF}.Debug|x86.Build.0 = Debug|x64
-		{21B69DE5-59FD-4C5D-A142-EF1C1C430EAF}.Release|ARM64.ActiveCfg = Release|ARM64
-		{21B69DE5-59FD-4C5D-A142-EF1C1C430EAF}.Release|ARM64.Build.0 = Release|ARM64
-		{21B69DE5-59FD-4C5D-A142-EF1C1C430EAF}.Release|x64.ActiveCfg = Release|x64
-		{21B69DE5-59FD-4C5D-A142-EF1C1C430EAF}.Release|x64.Build.0 = Release|x64
-		{21B69DE5-59FD-4C5D-A142-EF1C1C430EAF}.Release|x86.ActiveCfg = Release|x64
-		{21B69DE5-59FD-4C5D-A142-EF1C1C430EAF}.Release|x86.Build.0 = Release|x64
 		{ED9A1AC6-AEB0-4569-A6E9-E1696182B545}.Debug|ARM64.ActiveCfg = Debug|ARM64
 		{ED9A1AC6-AEB0-4569-A6E9-E1696182B545}.Debug|ARM64.Build.0 = Debug|ARM64
 		{ED9A1AC6-AEB0-4569-A6E9-E1696182B545}.Debug|x64.ActiveCfg = Debug|x64
@@ -2367,7 +2353,6 @@ Global
 		{9D7A6DE0-7D27-424D-ABAE-41B2161F9A03} = {17B4FA70-001E-4D33-BBBB-0D142DBC2E20}
 		{17A99C7C-0BFF-45BB-A9FD-63A0DDC105BB} = {17B4FA70-001E-4D33-BBBB-0D142DBC2E20}
 		{AA9F0AF8-7924-4D59-BAA1-E36F1304E0DC} = {17B4FA70-001E-4D33-BBBB-0D142DBC2E20}
-		{21B69DE5-59FD-4C5D-A142-EF1C1C430EAF} = {17B4FA70-001E-4D33-BBBB-0D142DBC2E20}
 		{ED9A1AC6-AEB0-4569-A6E9-E1696182B545} = {2F305555-C296-497E-AC20-5FA1B237996A}
 		{5A5DD09D-723A-44D3-8F2B-293584C3D731} = {2F305555-C296-497E-AC20-5FA1B237996A}
 		{B3E869C4-8210-4EBD-A621-FF4C4AFCBFA9} = {2F305555-C296-497E-AC20-5FA1B237996A}
