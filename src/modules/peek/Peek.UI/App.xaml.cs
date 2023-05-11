@@ -37,6 +37,7 @@ namespace Peek.UI
         public App()
         {
             InitializeComponent();
+            Logger.InitializeLogger("\\Peek\\Logs");
 
             Host = Microsoft.Extensions.Hosting.Host.
             CreateDefaultBuilder().
