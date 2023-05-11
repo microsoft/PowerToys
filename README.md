@@ -112,10 +112,6 @@ In this release, we focused on releasing new features, stability and improvement
 
 - Fix window cycling on multiple monitors issue.
 
-### File explorer add-ons
-
-- Added .log file support to the Monaco preview handler. Thanks [@Eagle3386](https://github.com/Eagle3386)!
-
 ### File Locksmith
 
 - Add context menu icon. Thanks [@htcfreek](https://github.com/htcfreek)!

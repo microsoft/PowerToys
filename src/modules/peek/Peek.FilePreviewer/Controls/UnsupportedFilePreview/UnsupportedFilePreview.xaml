@@ -20,8 +20,8 @@
         <controls:InformationalPreviewControl
             x:Name="InformationPreview"
             Source="{x:Bind Source, Mode=OneWay}"
-            Visibility="{x:Bind IsVisibileIfStatesMatch(LoadingState, prev:PreviewState.Loaded), Mode=OneWay}" />
+            Visibility="{x:Bind IsVisibleIfStatesMatch(LoadingState, prev:PreviewState.Loaded), Mode=OneWay}" />
 
-        <controls:FailedFallbackPreviewControl x:Name="FailedFallbackPreview" Visibility="{x:Bind IsVisibileIfStatesMatch(LoadingState, prev:PreviewState.Error), Mode=OneWay}" />
+        <controls:FailedFallbackPreviewControl x:Name="FailedFallbackPreview" Visibility="{x:Bind IsVisibleIfStatesMatch(LoadingState, prev:PreviewState.Error), Mode=OneWay}" />
     </Grid>
 </UserControl>

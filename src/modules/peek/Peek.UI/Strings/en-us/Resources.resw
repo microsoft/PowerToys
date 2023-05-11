@@ -218,7 +218,7 @@
     <comment>Failed fallback preview Report bug hyperlink button content.</comment>
   </data>
   <data name="FailedFallbackTextBlock.Text" xml:space="preserve">
-    <value>An error occured while previewing this file.</value>
+    <value>An error occurred while previewing this file.</value>
     <comment>Failed fallback preview text.</comment>
   </data>
 </root>

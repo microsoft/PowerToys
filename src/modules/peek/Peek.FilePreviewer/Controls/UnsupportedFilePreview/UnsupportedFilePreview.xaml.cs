@@ -43,6 +43,6 @@ namespace Peek.FilePreviewer.Controls
             InitializeComponent();
         }
 
-        public Visibility IsVisibileIfStatesMatch(PreviewState? a, PreviewState? b) => VisibilityConverter.Convert(a == b);
+        public Visibility IsVisibleIfStatesMatch(PreviewState? a, PreviewState? b) => VisibilityConverter.Convert(a == b);
     }
 }
