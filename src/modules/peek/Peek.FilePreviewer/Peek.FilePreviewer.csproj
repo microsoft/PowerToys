@@ -9,6 +9,11 @@
     <Nullable>enable</Nullable>
   </PropertyGroup>
   <ItemGroup>
+      <PRIResource Include="..\Peek.UI\Strings\en-US\Resources.resw" Link="Strings\en-US\Resources.resw">
+          <SubType>Designer</SubType>
+      </PRIResource>
+  </ItemGroup>
+  <ItemGroup>
     <Compile Remove="Previewers\DrivePreviewer\**" />
     <Content Remove="Previewers\DrivePreviewer\**" />
     <EmbeddedResource Remove="Previewers\DrivePreviewer\**" />

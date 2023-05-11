@@ -35,7 +35,7 @@ namespace Peek.Common.Models
 
         public string Extension => System.IO.Path.GetExtension(Path).ToLower(CultureInfo.InvariantCulture);
 
-        public string Name => System.IO.Path.GetFileName(Path);
+        public string Name { get; init; }
 
         public string Path { get; init; }
 

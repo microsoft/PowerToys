@@ -139,7 +139,6 @@ namespace Peek.FilePreviewer.Previewers
                     return Task.CompletedTask;
                 });
             });
-        }
 
             return isDisplayValid && isTaskSuccessful;
         }

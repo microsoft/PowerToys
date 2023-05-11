@@ -28,19 +28,20 @@
         </IconSourceElement>
 
         <TextBlock
+            x:Uid="FailedFallbackTextBlock"
             Grid.Row="1"
             Margin="3"
             HorizontalAlignment="Center"
             VerticalAlignment="Center"
             Foreground="{StaticResource TextFillColorSecondaryBrush}"
-            Text="An error occured while previewing this file."
             TextWrapping="Wrap" />
 
         <HyperlinkButton
+            x:Uid="FailedFallbackReportBugHyperlinkButton"
             Grid.Row="2"
             Margin="3"
             HorizontalAlignment="Center"
             VerticalAlignment="Center"
-            Content="Report a bug" />
+            NavigateUri="https://aka.ms/powerToysReportBug" />
     </Grid>
 </UserControl>
