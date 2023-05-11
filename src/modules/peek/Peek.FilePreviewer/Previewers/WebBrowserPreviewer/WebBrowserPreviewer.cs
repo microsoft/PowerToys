@@ -40,15 +40,32 @@ namespace Peek.FilePreviewer.Previewers
         [ObservableProperty]
         private bool isDevFilePreview;
 
+        private bool disposed;
+
         public WebBrowserPreviewer(IFileSystemItem file)
         {
             File = file;
             Dispatcher = DispatcherQueue.GetForCurrentThread();
         }
 
+        ~WebBrowserPreviewer()
+        {
+            Dispose(false);
+        }
+
         public void Dispose()
         {
+            Dispose(true);
             GC.SuppressFinalize(this);
+        }
+
+        protected virtual void Dispose(bool disposing)
+        {
+            if (!this.disposed)
+            {
+                Microsoft.PowerToys.FilePreviewCommon.Helper.CleanupTempDir(TempFolderPath.Path);
+                disposed = true;
+            }
         }
 
         private IFileSystemItem File { get; }
