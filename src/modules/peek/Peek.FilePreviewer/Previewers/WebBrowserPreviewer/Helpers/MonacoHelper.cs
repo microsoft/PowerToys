@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft Corporation
+// Copyright (c) Microsoft Corporation
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
@@ -7,11 +7,14 @@ using System.Collections.Generic;
 using System.IO;
 using System.Text.Json;
 using Common.UI;
+using ManagedCommon;
 
 namespace Peek.FilePreviewer.Previewers
 {
     public class MonacoHelper
     {
+        public static readonly HashSet<string> SupportedMonacoFileTypes = GetExtensions();
+
         public static HashSet<string> GetExtensions()
         {
             HashSet<string> set = new HashSet<string>();
@@ -20,15 +23,16 @@ namespace Peek.FilePreviewer.Previewers
                 JsonDocument languageListDocument = Microsoft.PowerToys.FilePreviewCommon.MonacoHelper.GetLanguages();
                 JsonElement languageList = languageListDocument.RootElement.GetProperty("list");
                 foreach (JsonElement e in languageList.EnumerateArray())
+            {
+                for (int j = 0; j < e.GetProperty("extensions").GetArrayLength(); j++)
                 {
-                    for (int j = 0; j < e.GetProperty("extensions").GetArrayLength(); j++)
-                    {
                         set.Add(e.GetProperty("extensions")[j].ToString());
                     }
                 }
             }
-            catch (Exception)
+            catch (Exception ex)
             {
+                Logger.LogError("Failed to get monaco extensions: " + ex.Message);
             }
 
             return set;
