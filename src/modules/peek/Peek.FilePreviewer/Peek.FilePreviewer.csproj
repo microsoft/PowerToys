@@ -42,6 +42,12 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Page Update="Controls\UnsupportedFilePreview\FailedFallbackPreviewControl.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+  </ItemGroup>
+
+  <ItemGroup>
     <Page Update="FilePreview.xaml">
       <Generator>MSBuild:Compile</Generator>
     </Page>
