@@ -163,7 +163,7 @@ namespace Peek.UI.Views
 
         public string PinGlyph(bool pinned)
         {
-            return pinned ? "\xE840" : "\xE718";
+            return pinned ? "\xE841" : "\xE77A";
         }
 
         public string PinToolTip(bool pinned)
