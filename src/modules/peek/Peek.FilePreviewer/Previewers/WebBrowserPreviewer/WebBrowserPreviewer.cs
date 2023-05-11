@@ -59,11 +59,11 @@ namespace Peek.FilePreviewer.Previewers
             GC.SuppressFinalize(this);
         }
 
-        protected virtual void Dispose(bool disposing)
+        protected virtual async void Dispose(bool disposing)
         {
             if (!this.disposed)
             {
-                Microsoft.PowerToys.FilePreviewCommon.Helper.CleanupTempDir(TempFolderPath.Path);
+                await Microsoft.PowerToys.FilePreviewCommon.Helper.CleanupTempDir(TempFolderPath.Path);
                 disposed = true;
             }
         }

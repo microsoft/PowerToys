@@ -4,24 +4,32 @@
 
 using System;
 using System.IO;
+using System.Threading.Tasks;
 
 namespace Microsoft.PowerToys.FilePreviewCommon
 {
     public static class Helper
     {
-        public static void CleanupTempDir(string folder)
+        public static Task<bool> CleanupTempDir(string folder)
         {
-            try
+            return Task.Run(() =>
             {
-                var dir = new DirectoryInfo(folder);
-                foreach (var file in dir.EnumerateFiles("*.html"))
+                try
                 {
-                    file.Delete();
+                    var dir = new DirectoryInfo(folder);
+                    foreach (var file in dir.EnumerateFiles("*.html"))
+                    {
+                        file.Delete();
+                    }
+
+                    return true;
                 }
-            }
-            catch (Exception)
-            {
-            }
+                catch (Exception)
+                {
+                }
+
+                return false;
+            });
         }
     }
 }
