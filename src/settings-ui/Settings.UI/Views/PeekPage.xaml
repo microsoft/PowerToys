@@ -1,0 +1,37 @@
+﻿<Page
+    x:Class="Microsoft.PowerToys.Settings.UI.Views.PeekPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:controls="using:Microsoft.PowerToys.Settings.UI.Controls"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:labs="using:CommunityToolkit.Labs.WinUI"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:ui="using:CommunityToolkit.WinUI.UI"
+    AutomationProperties.LandmarkType="Main"
+    mc:Ignorable="d">
+
+
+    <controls:SettingsPageControl x:Uid="Peek" ModuleImageSource="ms-appx:///Assets/Modules/Peek.png">
+        <controls:SettingsPageControl.ModuleContent>
+            <StackPanel Orientation="Vertical">
+                <labs:SettingsCard x:Uid="Peek_EnablePeek" 
+                                   HeaderIcon="{ui:BitmapIcon Source=/Assets/FluentIcons/FluentIconsPeek.png}"
+                                   IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabledGpoConfigured, Converter={StaticResource BoolNegationConverter}}">
+                    <ToggleSwitch IsOn="{x:Bind ViewModel.IsEnabled, Mode=TwoWay}" />
+                </labs:SettingsCard>
+                <InfoBar
+                    x:Uid="GPO_IsSettingForced"
+                    IsClosable="False"
+                    IsOpen="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabledGpoConfigured}"
+                    IsTabStop="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabledGpoConfigured}"
+                    Severity="Informational" />
+
+                <labs:SettingsCard x:Uid="Shortcut" 
+                                   IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}"
+                                   HeaderIcon="{ui:FontIcon FontFamily={StaticResource SymbolThemeFontFamily}, Glyph=&#xEDA7;}">
+                    <controls:ShortcutControl MinWidth="{StaticResource SettingActionControlMinWidth}" HotkeySettings="{x:Bind Path=ViewModel.ActivationShortcut, Mode=TwoWay}" />
+                </labs:SettingsCard>
+            </StackPanel>
+        </controls:SettingsPageControl.ModuleContent>
+    </controls:SettingsPageControl>
+</Page>

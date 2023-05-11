@@ -67,6 +67,7 @@
       <ComponentGroupRef Id="MeasureToolComponentGroup" />
       <ComponentGroupRef Id="MouseUtilsComponentGroup" />
       <ComponentGroupRef Id="PastePlainComponentGroup" />
+      <ComponentGroupRef Id="PeekComponentGroup" />
       <ComponentGroupRef Id="PowerAccentComponentGroup" />
       <ComponentGroupRef Id="PowerRenameComponentGroup" />
       <ComponentGroupRef Id="RegistryPreviewComponentGroup" />
@@ -527,8 +528,16 @@
                 <Directory Id="HostsMicrosoftUIXamlAssetsInstallFolder" Name="Assets" />
               </Directory>
             </Directory>
-            
-            <!-- Launcher -->
+
+            <!-- Peek -->
+            <Directory Id="PeekInstallFolder" Name="$(var.PeekProjectName)">
+              <Directory Id="PeekAssetsFolder" Name="Assets" />
+              <Directory Id="PeekMicrosoftUIXamlInstallFolder" Name="Microsoft.UI.Xaml">
+                  <Directory Id="PeekMicrosoftUIXamlAssetsInstallFolder" Name="Assets" />
+              </Directory>
+            </Directory>
+
+              <!-- Launcher -->
             <Directory Id="LauncherInstallFolder" Name="launcher">
               <Directory Id="LauncherImagesFolder" Name="Images" />
 

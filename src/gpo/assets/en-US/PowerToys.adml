@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- Copyright (c) Microsoft Corporation.
      Licensed under the MIT License. -->
-<policyDefinitionResources xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" revision="1.1" schemaVersion="1.0" xmlns="http://schemas.microsoft.com/GroupPolicy/2006/07/PolicyDefinitions">
+<policyDefinitionResources xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" revision="1.2" schemaVersion="1.0" xmlns="http://schemas.microsoft.com/GroupPolicy/2006/07/PolicyDefinitions">
   <displayName>PowerToys</displayName>
   <description>PowerToys</description>
   <resources>
@@ -12,6 +12,7 @@
       <string id="SUPPORTED_POWERTOYS_0_64_0">PowerToys version 0.64.0 or later</string>
       <string id="SUPPORTED_POWERTOYS_0_68_0">PowerToys version 0.68.0 or later</string>
       <string id="SUPPORTED_POWERTOYS_0_69_0">PowerToys version 0.69.0 or later</string>
+      <string id="SUPPORTED_POWERTOYS_0_70_0">PowerToys version 0.70.0 or later</string>
 
       <string id="ConfigureEnabledUtilityDescription">This policy configures the enabled state for a PowerToys utility.
 
@@ -85,6 +86,7 @@ If this setting is disabled, experimentation is not allowed.
       <string id="ConfigureEnabledUtilityMouseJump">Mouse Jump: Configure enabled state</string>
       <string id="ConfigureEnabledUtilityMousePointerCrosshairs">Mouse Pointer Crosshairs: Configure enabled state</string>
       <string id="ConfigureEnabledUtilityPastePlain">Paste as Plain Text: Configure enabled state</string>
+      <string id="ConfigureEnabledUtilityPeek">Peek: Configure enabled state</string>
       <string id="ConfigureEnabledUtilityPowerRename">Power Rename: Configure enabled state</string>
       <string id="ConfigureEnabledUtilityPowerLauncher">PowerToys Run: Configure enabled state</string>
       <string id="ConfigureEnabledUtilityQuickAccent">Quick Accent: Configure enabled state</string>

@@ -128,6 +128,9 @@ namespace Microsoft.PowerToys.Settings.UI
                     case "PastePlain":
                         needToUpdate = generalSettingsConfig.Enabled.PastePlain != isEnabled;
                         generalSettingsConfig.Enabled.PastePlain = isEnabled; break;
+                    case "Peek":
+                        needToUpdate = generalSettingsConfig.Enabled.Peek != isEnabled;
+                        generalSettingsConfig.Enabled.Peek = isEnabled; break;
                     case "PowerRename":
                         needToUpdate = generalSettingsConfig.Enabled.PowerRename != isEnabled;
                         generalSettingsConfig.Enabled.PowerRename = isEnabled; break;
