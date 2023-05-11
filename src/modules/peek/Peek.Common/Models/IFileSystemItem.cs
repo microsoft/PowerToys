@@ -15,11 +15,27 @@ namespace Peek.Common.Models
 {
     public interface IFileSystemItem
     {
-        public DateTime DateModified => System.IO.File.GetCreationTime(Path);
+        public DateTime? DateModified
+        {
+            get
+            {
+                DateTime? dateModified = null;
+                try
+                {
+                    dateModified = System.IO.File.GetCreationTime(Path);
+                }
+                catch
+                {
+                    dateModified = null;
+                }
+
+                return dateModified;
+            }
+        }
 
         public string Extension => System.IO.Path.GetExtension(Path).ToLower(CultureInfo.InvariantCulture);
 
-        public string Name => System.IO.Path.GetFileName(Path);
+        public string Name { get; init; }
 
         public string Path { get; init; }
 

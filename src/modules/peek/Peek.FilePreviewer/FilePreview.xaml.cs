@@ -78,8 +78,11 @@ namespace Peek.FilePreviewer
                     _cancellationTokenSource.Cancel();
                     _cancellationTokenSource = new();
 
-                    Previewer = previewerFactory.CreateDefaultPreviewer(Item);
-                    await UpdatePreviewAsync(_cancellationTokenSource.Token);
+                    if (Previewer is not IUnsupportedFilePreviewer)
+                    {
+                        Previewer = previewerFactory.CreateDefaultPreviewer(Item);
+                        await UpdatePreviewAsync(_cancellationTokenSource.Token);
+                    }
                 }
             }
         }
@@ -118,6 +121,12 @@ namespace Peek.FilePreviewer
         public Visibility IsPreviewVisible(IPreviewer? previewer, PreviewState? state)
         {
             var isValidPreview = previewer != null && MatchPreviewState(state, PreviewState.Loaded);
+            return isValidPreview ? Visibility.Visible : Visibility.Collapsed;
+        }
+
+        public Visibility IsUnsupportedPreviewVisible(IUnsupportedFilePreviewer? previewer, PreviewState state)
+        {
+            var isValidPreview = previewer != null && (MatchPreviewState(state, PreviewState.Loaded) || MatchPreviewState(state, PreviewState.Error));
             return isValidPreview ? Visibility.Visible : Visibility.Collapsed;
         }
 
@@ -259,7 +268,7 @@ namespace Peek.FilePreviewer
             string fileTypeFormatted = string.IsNullOrEmpty(fileType) ? string.Empty : "\n" + ReadableStringHelper.FormatResourceString("PreviewTooltip_FileType", fileType);
             sb.Append(fileTypeFormatted);
 
-            string dateModified = Item.DateModified.ToString(CultureInfo.CurrentCulture);
+            string dateModified = Item.DateModified?.ToString(CultureInfo.CurrentCulture) ?? string.Empty;
             string dateModifiedFormatted = string.IsNullOrEmpty(dateModified) ? string.Empty : "\n" + ReadableStringHelper.FormatResourceString("PreviewTooltip_DateModified", dateModified);
             sb.Append(dateModifiedFormatted);
 
