@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
   <Import Project="..\..\..\Version.props" />
   <PropertyGroup>
     <TargetFramework>net7.0-windows10.0.19041.0</TargetFramework>
@@ -9,7 +9,14 @@
     <Nullable>enable</Nullable>
   </PropertyGroup>
   <ItemGroup>
+      <PRIResource Include="..\Peek.UI\Strings\en-US\Resources.resw" Link="Strings\en-US\Resources.resw">
+          <SubType>Designer</SubType>
+      </PRIResource>
+  </ItemGroup>
+  <ItemGroup>
     <None Remove="Controls\BrowserControl.xaml" />
+    <None Remove="Controls\UnsupportedFilePreview\FailedFallbackPreviewControl.xaml" />
+    <None Remove="Controls\UnsupportedFilePreview\InformationalPreviewControl.xaml" />
     <None Remove="FilePreview.xaml" />
     <None Remove="UnsupportedFilePreview.xaml" />
   </ItemGroup>
@@ -27,6 +34,12 @@
     <ProjectReference Include="..\..\..\settings-ui\Settings.UI.Library\Settings.UI.Library.csproj" />
     <ProjectReference Include="..\Peek.Common\Peek.Common.csproj" />
     <ProjectReference Include="..\WIC\WIC.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Page Update="Controls\UnsupportedFilePreview\FailedFallbackPreviewControl.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
   </ItemGroup>
 
   <ItemGroup>
@@ -48,6 +61,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Previewers\DrivePreviewer\" />
+    <Page Update="Controls\UnsupportedFilePreview\InformationalPreviewControl.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
   </ItemGroup>
 </Project>

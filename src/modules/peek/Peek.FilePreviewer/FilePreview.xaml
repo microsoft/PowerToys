@@ -30,19 +30,16 @@
             x:Name="BrowserPreview"
             x:Load="True"
             DOMContentLoaded="BrowserPreview_DOMContentLoaded"
+            IsDevFilePreview="{x:Bind BrowserPreviewer.IsDevFilePreview, Mode=OneWay}"
             NavigationCompleted="PreviewBrowser_NavigationCompleted"
             Source="{x:Bind BrowserPreviewer.Preview, Mode=OneWay}"
-            IsDevFilePreview="{x:Bind BrowserPreviewer.IsDevFilePreview, Mode=OneWay}"
             Visibility="{x:Bind IsPreviewVisible(BrowserPreviewer, Previewer.State), Mode=OneWay, FallbackValue=Collapsed}" />
 
         <controls:UnsupportedFilePreview
             x:Name="UnsupportedFilePreview"
-            DateModified="{x:Bind UnsupportedFilePreviewer.DateModified, Mode=OneWay}"
-            FileName="{x:Bind UnsupportedFilePreviewer.FileName, Mode=OneWay}"
-            FileSize="{x:Bind UnsupportedFilePreviewer.FileSize, Mode=OneWay}"
-            FileType="{x:Bind UnsupportedFilePreviewer.FileType, Mode=OneWay}"
-            IconPreview="{x:Bind UnsupportedFilePreviewer.IconPreview, Mode=OneWay}"
-            Visibility="{x:Bind IsPreviewVisible(UnsupportedFilePreviewer, Previewer.State), Mode=OneWay}" />
+            LoadingState="{x:Bind UnsupportedFilePreviewer.State, Mode=OneWay}"
+            Source="{x:Bind UnsupportedFilePreviewer.Preview, Mode=OneWay}"
+            Visibility="{x:Bind IsUnsupportedPreviewVisible(UnsupportedFilePreviewer, Previewer.State), Mode=OneWay}" />
     </Grid>
     <UserControl.KeyboardAccelerators>
         <KeyboardAccelerator
