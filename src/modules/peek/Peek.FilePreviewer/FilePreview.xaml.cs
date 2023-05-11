@@ -147,11 +147,16 @@ namespace Peek.FilePreviewer
 
         private async Task OnScalingFactorPropertyChanged()
         {
-            // Cancel previous loading task
-            _cancellationTokenSource.Cancel();
-            _cancellationTokenSource = new();
+            await UpdatePreviewSizeAsync(_cancellationTokenSource.Token);
+        }
 
-            await UpdatePreviewAsync(_cancellationTokenSource.Token);
+        private async Task UpdatePreviewSizeAsync(CancellationToken cancellationToken)
+        {
+            if (Previewer != null)
+            {
+                var size = await Previewer.GetPreviewSizeAsync(cancellationToken);
+                PreviewSizeChanged?.Invoke(this, new PreviewSizeChangedArgs(size));
+            }
         }
 
         private async Task UpdatePreviewAsync(CancellationToken cancellationToken)
@@ -161,8 +166,8 @@ namespace Peek.FilePreviewer
                 try
                 {
                     cancellationToken.ThrowIfCancellationRequested();
-                    var size = await Previewer.GetPreviewSizeAsync(cancellationToken);
-                    PreviewSizeChanged?.Invoke(this, new PreviewSizeChangedArgs(size));
+                    await UpdatePreviewSizeAsync(cancellationToken);
+
                     cancellationToken.ThrowIfCancellationRequested();
                     await Previewer.LoadPreviewAsync(cancellationToken);
 
