@@ -44,22 +44,6 @@ const static wchar_t* MODULE_NAME = L"Peek";
 // Add a description that will we shown in the module settings page.
 const static wchar_t* MODULE_DESC = L"A module that previews an image file.";
 
-// These are the properties shown in the Settings page.
-struct ModuleSettings
-{
-    // Add the PowerToy module properties with default values.
-    // Currently available types:
-    // - int
-    // - bool
-    // - string
-
-    //bool bool_prop = true;
-    //int int_prop = 10;
-    //std::wstring string_prop = L"The quick brown fox jumps over the lazy dog";
-    //std::wstring color_prop = L"#1212FF";
-
-} g_settings;
-
 // Implement the PowerToy Module Interface and all the required methods.
 class Peek : public PowertoyModuleIface
 {
@@ -83,26 +67,6 @@ private:
                 PowerToysSettings::PowerToyValues::load_from_settings_file(Peek::get_name());
 
             parse_settings(settings);
-
-            // Load a bool property.
-            //if (auto v = settings.get_bool_value(L"bool_toggle_1")) {
-            //  g_settings.bool_prop = *v;
-            //}
-
-            // Load an int property.
-            //if (auto v = settings.get_int_value(L"int_spinner_1")) {
-            //  g_settings.int_prop = *v;
-            //}
-
-            // Load a string property.
-            //if (auto v = settings.get_string_value(L"string_text_1")) {
-            //  g_settings.string_prop = *v;
-            //}
-
-            // Load a color property.
-            //if (auto v = settings.get_string_value(L"color_picker_1")) {
-            //  g_settings.color_prop = *v;
-            //}
         }
         catch (std::exception&)
         {
@@ -238,6 +202,12 @@ public:
         return MODULE_NAME;
     }
 
+    // Return the configured status for the gpo policy for the module
+    virtual powertoys_gpo::gpo_rule_configured_t gpo_policy_enabled_configuration() override
+    {
+        return powertoys_gpo::getConfiguredPeekEnabledValue();
+    }
+
     // Return JSON with the configuration options.
     virtual bool get_config(wchar_t* buffer, int* buffer_size) override
     {
@@ -246,52 +216,6 @@ public:
         // Create a Settings object.
         PowerToysSettings::Settings settings(hinstance, get_name());
         settings.set_description(MODULE_DESC);
-
-        // Show an overview link in the Settings page
-        //settings.set_overview_link(L"https://");
-
-        // Show a video link in the Settings page.
-        //settings.set_video_link(L"https://");
-
-        // A bool property with a toggle editor.
-        //settings.add_bool_toogle(
-        //  L"bool_toggle_1", // property name.
-        //  L"This is what a BoolToggle property looks like", // description or resource id of the localized string.
-        //  g_settings.bool_prop // property value.
-        //);
-
-        // An integer property with a spinner editor.
-        //settings.add_int_spinner(
-        //  L"int_spinner_1", // property name
-        //  L"This is what a IntSpinner property looks like", // description or resource id of the localized string.
-        //  g_settings.int_prop, // property value.
-        //  0, // min value.
-        //  100, // max value.
-        //  10 // incremental step.
-        //);
-
-        // A string property with a textbox editor.
-        //settings.add_string(
-        //  L"string_text_1", // property name.
-        //  L"This is what a String property looks like", // description or resource id of the localized string.
-        //  g_settings.string_prop // property value.
-        //);
-
-        // A string property with a color picker editor.
-        //settings.add_color_picker(
-        //  L"color_picker_1", // property name.
-        //  L"This is what a ColorPicker property looks like", // description or resource id of the localized string.
-        //  g_settings.color_prop // property value.
-        //);
-
-        // A custom action property. When using this settings type, the "PowertoyModuleIface::call_custom_action()"
-        // method should be overriden as well.
-        //settings.add_custom_action(
-        //  L"custom_action_id", // action name.
-        //  L"This is what a CustomAction property looks like", // label above the field.
-        //  L"Call a custom action", // button text.
-        //  L"Press the button to call a custom action." // display values / extended info.
-        //);
 
         return settings.serialize_to_buffer(buffer, buffer_size);
     }
@@ -318,14 +242,17 @@ public:
     // Enable the powertoy
     virtual void enable()
     {
+        Logger::trace("Peek::enable()");
         ResetEvent(m_hInvokeEvent);
         launch_process();
         m_enabled = true;
+        Trace::EnablePeek(true);
     }
 
     // Disable the powertoy
     virtual void disable()
     {
+        Logger::trace("Peek::disable()");
         if (m_enabled)
         {
             ResetEvent(m_hInvokeEvent);
@@ -333,6 +260,7 @@ public:
         }
 
         m_enabled = false;
+        Trace::EnablePeek(false);
     }
 
     // Returns if the powertoys is enabled
@@ -372,51 +300,20 @@ public:
 
             SetEvent(m_hInvokeEvent);
 
+            Trace::PeekInvoked();
+
             return true;
         }
 
         return false;
     }
-};
 
-// This method of saving the module settings is only required if you need to do any
-// custom processing of the settings before saving them to disk.
-//void $projectname$::save_settings() {
-//  try {
-//    // Create a PowerToyValues object for this PowerToy
-//    PowerToysSettings::PowerToyValues values(get_name());
-//
-//    // Save a bool property.
-//    //values.add_property(
-//    //  L"bool_toggle_1", // property name
-//    //  g_settings.bool_prop // property value
-//    //);
-//
-//    // Save an int property.
-//    //values.add_property(
-//    //  L"int_spinner_1", // property name
-//    //  g_settings.int_prop // property value
-//    //);
-//
-//    // Save a string property.
-//    //values.add_property(
-//    //  L"string_text_1", // property name
-//    //  g_settings.string_prop // property value
-//    );
-//
-//    // Save a color property.
-//    //values.add_property(
-//    //  L"color_picker_1", // property name
-//    //  g_settings.color_prop // property value
-//    //);
-//
-//    // Save the PowerToyValues JSON to the power toy settings file.
-//    values.save_to_settings_file();
-//  }
-//  catch (std::exception ex) {
-//    // Couldn't save the settings.
-//  }
-//}
+    virtual void send_settings_telemetry() override
+    {
+        Logger::info("Send settings telemetry");
+        Trace::SettingsTelemetry(m_hotkey);
+    }
+};
 
 extern "C" __declspec(dllexport) PowertoyModuleIface* __cdecl powertoy_create()
 {

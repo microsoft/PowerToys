@@ -4,9 +4,11 @@
 
 using System;
 using System.Globalization;
+using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 using CommunityToolkit.Mvvm.ComponentModel;
+using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.UI.Dispatching;
 using Microsoft.UI.Xaml.Media.Imaging;
 using Peek.Common.Extensions;
@@ -73,7 +75,7 @@ namespace Peek.FilePreviewer.Previewers
             else
             {
                 State = PreviewState.Loaded;
-            }
+        }
         }
 
         public async Task CopyAsync()
@@ -137,6 +139,7 @@ namespace Peek.FilePreviewer.Previewers
                     return Task.CompletedTask;
                 });
             });
+        }
 
             return isDisplayValid && isTaskSuccessful;
         }

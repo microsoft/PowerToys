@@ -1,0 +1,44 @@
+<!--  Copyright (c) Microsoft Corporation and Contributors.  -->
+<!--  Licensed under the MIT License.  -->
+
+<UserControl
+    x:Class="Peek.FilePreviewer.Controls.UnsupportedFilePreview"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d">
+
+    <Grid
+        Margin="48"
+        HorizontalAlignment="Stretch"
+        VerticalAlignment="Center">
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition x:Name="Icon" Width="Auto" />
+            <ColumnDefinition x:Name="FileInfo" Width="*" />
+        </Grid.ColumnDefinitions>
+
+        <Image
+            x:Name="PreviewImage"
+            Grid.Column="0"
+            Width="180"
+            Height="180"
+            Margin="0,24,24,24"
+            Source="{x:Bind IconPreview, Mode=OneWay}" />
+
+        <StackPanel
+            Grid.Column="1"
+            VerticalAlignment="Center"
+            Spacing="5">
+
+            <TextBlock
+                FontSize="26"
+                FontWeight="SemiBold"
+                Text="{x:Bind FileName, Mode=OneWay}"
+                TextTrimming="CharacterEllipsis" />
+            <TextBlock Text="{x:Bind FormattedFileType, Mode=OneWay}" />
+            <TextBlock Text="{x:Bind FormattedFileSize, Mode=OneWay}" />
+            <TextBlock Text="{x:Bind FormattedDateModified, Mode=OneWay}" />
+        </StackPanel>
+    </Grid>
+</UserControl>

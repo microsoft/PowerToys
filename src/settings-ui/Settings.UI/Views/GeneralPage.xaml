@@ -243,15 +243,11 @@
                                     Spacing="8">
                                     <TextBlock
                                         x:Name="pathTextBlock"
-                                        Width="350"
-                                        HorizontalAlignment="Right"
                                         VerticalAlignment="Center"
-                                        FontSize="12"
-                                        Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                                         IsTextSelectionEnabled="True"
                                         Text="{x:Bind Mode=TwoWay, Path=ViewModel.SettingsBackupAndRestoreDir}"
-                                        TextAlignment="Right"
-                                        TextTrimming="CharacterEllipsis">
+                                        TextTrimming="CharacterEllipsis"
+                                        Foreground="{ThemeResource TextFillColorSecondaryBrush}">
                                         <ToolTipService.ToolTip>
                                             <ToolTip IsEnabled="{Binding ElementName=pathTextBlock, Path=IsTextTrimmed}">
                                                 <TextBlock Text="{x:Bind Mode=TwoWay, Path=ViewModel.SettingsBackupAndRestoreDir}" />
@@ -274,14 +270,9 @@
                                 x:Uid="General_SettingsBackupAndRestoreStatusInfo"
                                 HorizontalContentAlignment="Left"
                                 ContentAlignment="Vertical">
-                                <labs:SettingsCard.Resources>
-                                    <Style TargetType="TextBlock">
-                                        <Setter Property="FontSize" Value="12" />
-                                    </Style>
-                                </labs:SettingsCard.Resources>
                                 <Grid Margin="0,0,0,6" ColumnSpacing="8">
                                     <Grid.ColumnDefinitions>
-                                        <ColumnDefinition Width="Auto" />
+                                        <ColumnDefinition Width="Auto" MinWidth="{StaticResource SettingActionControlMinWidth}"/>
                                         <ColumnDefinition Width="*" />
                                     </Grid.ColumnDefinitions>
                                     <Grid.RowDefinitions>

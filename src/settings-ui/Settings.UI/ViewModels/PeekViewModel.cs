@@ -4,8 +4,8 @@
 
 using System;
 using System.Globalization;
-using System.Runtime.CompilerServices;
 using System.Text.Json;
+using global::PowerToys.GPOWrapper;
 using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.PowerToys.Settings.UI.Library.Helpers;
 using Microsoft.PowerToys.Settings.UI.Library.Interfaces;
@@ -20,6 +20,9 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         private readonly ISettingsUtils _settingsUtils;
         private readonly PeekSettings _peekSettings;
+
+        private GpoRuleConfigured _enabledGpoRuleConfiguration;
+        private bool _enabledStateIsGPOConfigured;
 
         private Func<string, int> SendConfigMSG { get; }
 
@@ -50,7 +53,6 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         private void InitializeEnabledValue()
         {
-            /* TODO: GPO
             _enabledGpoRuleConfiguration = GPOWrapper.GetConfiguredPeekEnabledValue();
             if (_enabledGpoRuleConfiguration == GpoRuleConfigured.Disabled || _enabledGpoRuleConfiguration == GpoRuleConfigured.Enabled)
             {
@@ -59,9 +61,9 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 _isEnabled = _enabledGpoRuleConfiguration == GpoRuleConfigured.Enabled;
             }
             else
-            {*/
-            _isEnabled = GeneralSettingsConfig.Enabled.Peek;
-            /*}*/
+            {
+                _isEnabled = GeneralSettingsConfig.Enabled.Peek;
+            }
         }
 
         public bool IsEnabled
@@ -69,6 +71,12 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             get => _isEnabled;
             set
             {
+                if (_enabledStateIsGPOConfigured)
+                {
+                    // If it's GPO configured, shouldn't be able to change this state.
+                    return;
+                }
+
                 if (_isEnabled != value)
                 {
                     _isEnabled = value;
@@ -80,6 +88,11 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                     SendConfigMSG(outgoing.ToString());
                 }
             }
+        }
+
+        public bool IsEnabledGpoConfigured
+        {
+            get => _enabledStateIsGPOConfigured;
         }
 
         public HotkeySettings ActivationShortcut

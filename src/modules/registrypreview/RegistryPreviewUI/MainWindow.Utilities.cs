@@ -431,6 +431,21 @@ namespace RegistryPreview
                             registryValue.Value = value;
 
                             break;
+                        case "REG_DWORD":
+                            if (value.Length <= 0)
+                            {
+                                registryValue.Type = "ERROR";
+                            }
+
+                            break;
+                        case "REG_QWORD":
+                            if (value.Length <= 0)
+                            {
+                                value = resourceLoader.GetString("InvalidQword");
+                            }
+
+                            registryValue.Value = value;
+                            break;
                         default:
                             registryValue.Value = value;
                             break;
@@ -513,12 +528,15 @@ namespace RegistryPreview
             string[] file = filename.Split('\\');
             if (file.Length > 0)
             {
-                appWindow.Title = file[file.Length - 1] + " - " + APPNAME;
+                titleBarText.Text = file[file.Length - 1] + " - " + APPNAME;
             }
             else
             {
-                appWindow.Title = filename + " - " + APPNAME;
+                titleBarText.Text = filename + " - " + APPNAME;
             }
+
+            // Continue to update the window's title, after updating the custom title bar
+            appWindow.Title = titleBarText.Text;
         }
 
         /// <summary>
@@ -526,6 +544,7 @@ namespace RegistryPreview
         /// </summary>
         private void UpdateWindowTitle()
         {
+            titleBarText.Text = APPNAME;
             appWindow.Title = APPNAME;
         }
 

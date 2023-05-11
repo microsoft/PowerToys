@@ -11,7 +11,7 @@
             Margin="12,16,12,0"
             Width="348"
             Height="36"
-            CornerRadius="2"
+            CornerRadius="4"
             HorizontalAlignment="Stretch"
             Background="{DynamicResource ColorControlBackgroundBrush}">
         <Grid>
@@ -22,17 +22,16 @@
             </Grid.ColumnDefinitions>
             <TextBlock x:Name="FormatNameTextBlock"
                        Opacity="0.6"
+                       Style="{DynamicResource BodyStrongTextBlockStyle}"
                        Foreground="{DynamicResource PrimaryForegroundBrush}"
                        Margin="8"
-                       FontWeight="SemiBold"
-                       FontSize="12"
                        VerticalAlignment="Center"/>
 
             <TextBox x:Name="ColorTextRepresentationTextBlock"
-                       Foreground="{DynamicResource PrimaryForegroundBrush}"
                        FontFamily="Consolas"
-                       Grid.Column="1"
                        FontSize="14"
+                       Foreground="{DynamicResource PrimaryForegroundBrush}"
+                       Grid.Column="1"
                        IsTabStop="False"
                        Background="Transparent"
                        BorderThickness="0"
@@ -45,17 +44,16 @@
             <Button x:Name="CopyToClipboardButton"
                     ToolTipService.ToolTip="{x:Static p:Resources.Copy_to_clipboard}"
                     Background="{DynamicResource ColorControlBackgroundBrush}"
+                    FontSize="16"
+                    FontFamily="{StaticResource SymbolThemeFontFamily}"
                     Foreground="{DynamicResource PrimaryForegroundBrush}"
                     Opacity="0.6"
                     Height="36"
                     Width="36"
                     Grid.Column="2"
-                    AutomationProperties.Name="{x:Static p:Resources.Copy_to_clipboard}"
-                    AutomationProperties.HelpText="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type local:Controls.ColorFormatControl}}, Path=SelectedColorCopyHelperText}"
-
-                    FontSize="12"
                     Style="{StaticResource DefaultButtonStyle}"
-                    FontFamily="Segoe MDL2 Assets">
+                    AutomationProperties.Name="{x:Static p:Resources.Copy_to_clipboard}"
+                    AutomationProperties.HelpText="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type local:Controls.ColorFormatControl}}, Path=SelectedColorCopyHelperText}">
                 <Button.Content>
                     <TextBlock Text="&#xE8C8;" AutomationProperties.Name="{x:Static p:Resources.Copy_to_clipboard}" />
                 </Button.Content>

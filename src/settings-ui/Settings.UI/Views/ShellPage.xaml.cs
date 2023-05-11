@@ -30,7 +30,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
         /// <summary>
         /// Declaration for the opening main window callback function.
         /// </summary>
-        public delegate void MainOpeningCallback();
+        public delegate void MainOpeningCallback(Type type);
 
         /// <summary>
         /// Declaration for the updating the general settings callback function.
@@ -351,9 +351,9 @@ namespace Microsoft.PowerToys.Settings.UI.Views
 
                         OpenFlyoutCallback(p);
                     }
-                    else if (whatToShowJson.ValueType == JsonValueType.String && whatToShowJson.GetString().Equals("main_page", StringComparison.Ordinal))
+                    else if (whatToShowJson.ValueType == JsonValueType.String)
                     {
-                        OpenMainWindowCallback();
+                        OpenMainWindowCallback(App.GetPage(whatToShowJson.GetString()));
                     }
                 }
             }

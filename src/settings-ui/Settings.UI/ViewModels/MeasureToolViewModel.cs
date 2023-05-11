@@ -223,6 +223,23 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             }
         }
 
+        public int DefaultMeasureStyle
+        {
+            get
+            {
+                return Settings.Properties.DefaultMeasureStyle.Value;
+            }
+
+            set
+            {
+                if (Settings.Properties.DefaultMeasureStyle.Value != value)
+                {
+                    Settings.Properties.DefaultMeasureStyle.Value = value;
+                    NotifyPropertyChanged();
+                }
+            }
+        }
+
         public void NotifyPropertyChanged([CallerMemberName] string propertyName = null)
         {
             OnPropertyChanged(propertyName);

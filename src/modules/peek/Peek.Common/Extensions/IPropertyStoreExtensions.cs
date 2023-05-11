@@ -18,7 +18,7 @@ namespace Peek.Common.Extensions
         /// <param name="propertyStore">The property store</param>
         /// <param name="key">The pkey</param>
         /// <returns>The uint value</returns>
-        public static uint? TryGetUInt(this IPropertyStore propertyStore, PropertyKey key)
+        public static uint? TryGetUInt(this DisposablePropertyStore propertyStore, PropertyKey key)
         {
             if (propertyStore == null)
             {
@@ -54,7 +54,7 @@ namespace Peek.Common.Extensions
         /// <param name="propertyStore">The property store</param>
         /// <param name="key">the pkey</param>
         /// <returns>the ulong value</returns>
-        public static ulong? TryGetULong(this IPropertyStore propertyStore, PropertyKey key)
+        public static ulong? TryGetULong(this DisposablePropertyStore propertyStore, PropertyKey key)
         {
             if (propertyStore == null)
             {
@@ -89,7 +89,7 @@ namespace Peek.Common.Extensions
         /// <param name="propertyStore">The property store</param>
         /// <param name="key">The pkey</param>
         /// <returns>The string value</returns>
-        public static string? TryGetString(this IPropertyStore propertyStore, PropertyKey key)
+        public static string? TryGetString(this DisposablePropertyStore propertyStore, PropertyKey key)
         {
             if (propertyStore == null)
             {
@@ -110,47 +110,6 @@ namespace Peek.Common.Extensions
                 {
                     return null;
                 }
-            }
-            catch (Exception)
-            {
-                return null;
-            }
-        }
-
-        /// <summary>
-        /// Helper method that retrieves an array of string values from the given property store.
-        /// </summary>
-        /// <param name="propertyStore">The property store</param>
-        /// <param name="key">The pkey</param>
-        /// <returns>The array of string values</returns>
-        public static string[]? TryGetStringArray(this IPropertyStore propertyStore, PropertyKey key)
-        {
-            if (propertyStore == null)
-            {
-                return null;
-            }
-
-            try
-            {
-                PropVariant propVar;
-                propertyStore.GetValue(ref key, out propVar);
-
-                List<string>? values = null;
-
-                if ((VarEnum)propVar.Vt == (VarEnum.VT_LPWSTR | VarEnum.VT_VECTOR))
-                {
-                    values = new List<string>();
-                    for (int elementIndex = 0; elementIndex < propVar.Calpwstr.CElems; elementIndex++)
-                    {
-                        var stringVal = Marshal.PtrToStringUni(Marshal.ReadIntPtr(propVar.Calpwstr.PElems, elementIndex));
-                        if (stringVal != null)
-                        {
-                            values.Add(stringVal);
-                        }
-                    }
-                }
-
-                return values?.ToArray();
             }
             catch (Exception)
             {

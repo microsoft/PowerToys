@@ -26,7 +26,7 @@
         Closing="OnClosing"
         ResizeMode="CanResize">
     <Window.Resources>
-        <Thickness x:Key="ContentDialogPadding">24,18,0,24</Thickness>
+        <Thickness x:Key="ContentDialogPadding">24,16,0,24</Thickness>
         <Thickness x:Key="ContentDialogCommandSpaceMargin">0,24,24,0</Thickness>
         <Converters:LayoutModelTypeToVisibilityConverter x:Key="LayoutModelTypeToVisibilityConverter" />
         <Converters:LayoutTypeCustomToVisibilityConverter x:Key="LayoutTypeCustomToVisibilityConverter" />
@@ -74,7 +74,7 @@
                 </MenuItem.Icon>
             </MenuItem>
         </ContextMenu>
-        
+
         <DataTemplate x:Key="MonitorItemTemplate">
             <Border x:Name="MonitorItem"
                     Width="{Binding DisplayWidth}"
@@ -95,10 +95,8 @@
                 <StackPanel Orientation="Vertical"
                             VerticalAlignment="Center">
                     <TextBlock Name="IndexText"
-                               TextTrimming="CharacterEllipsis"
                                Text="{Binding Index}"
-                               FontSize="26"
-                               Grid.Row="0"
+                               FontSize="28"
                                FontWeight="SemiBold"
                                HorizontalAlignment="Center"
                                VerticalAlignment="Center"
@@ -106,25 +104,19 @@
                     <TextBlock Name="ResolutionText"
                                TextTrimming="CharacterEllipsis"
                                Text="{Binding Dimensions}"
-                               Grid.Row="0"
-                               Margin="0,0,0,0"
-                               FontSize="11"
-                               FontWeight="SemiBold"
+                               FontSize="12"
                                HorizontalAlignment="Center"
                                VerticalAlignment="Center"
                                Foreground="{Binding (TextElement.Foreground), RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type ContentPresenter}}}" />
                     <TextBlock Name="ScalingText"
                                TextTrimming="CharacterEllipsis"
                                Text="{Binding Scaling}"
-                               Margin="0,0,0,0"
-                               FontSize="8"
+                               FontSize="12"
                                HorizontalAlignment="Center"
                                Foreground="{Binding (TextElement.Foreground), RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type ContentPresenter}}}" />
                 </StackPanel>
             </Border>
-
         </DataTemplate>
-
         <DataTemplate x:Key="LayoutItemTemplate">
             <Grid Background="Transparent">
                 <Grid Width="180"
@@ -138,7 +130,7 @@
                     <TextBlock Name="layoutName"
                                TextTrimming="CharacterEllipsis"
                                Text="{Binding Name}"
-                               FontSize="15"
+                               FontSize="16"
                                FontWeight="SemiBold"
                                Margin="0,0,24,0"
                                ToolTip="{Binding Name}"
@@ -168,8 +160,8 @@
                         ui:ControlHelper.CornerRadius="36">
                     <Button.Content>
                         <TextBlock Text="&#xE70F;" 
-                                       FontFamily="Segoe MDL2 Assets"
-                                        FontSize="14"
+                                       FontFamily="{DynamicResource SymbolThemeFontFamily}"
+                                       FontSize="16"
                                        AutomationProperties.Name="{x:Static props:Resources.Edit}" />
                     </Button.Content>
                 </Button>
@@ -294,7 +286,7 @@
                             Margin="8">
                     <TextBlock Text="&#xE710;"
                                AutomationProperties.Name="{x:Static props:Resources.Create_new_layout}"
-                               FontFamily="Segoe MDL2 Assets"
+                               FontFamily="{DynamicResource SymbolThemeFontFamily}"
                                Foreground="{DynamicResource AccentButtonForeground}" />
                     <TextBlock Text="{x:Static props:Resources.Create_new_layout}"
                                Margin="12,-3,0,0"
@@ -351,7 +343,7 @@
                     Style="{StaticResource IconOnlyButtonStyle}">
                 <Button.Content>
                     <TextBlock Text="&#xe713;"
-                               FontFamily="Segoe MDL2 Assets"
+                               FontFamily="{DynamicResource SymbolThemeFontFamily}"
                                AutomationProperties.Name="{x:Static props:Resources.OpenSettings}" />
                 </Button.Content>
             </Button>
@@ -384,11 +376,11 @@
                             AutomationProperties.Name="{x:Static props:Resources.Duplicate}"
                             ToolTip="{x:Static props:Resources.Duplicate}"
                             Style="{StaticResource IconOnlyButtonStyle}"
-
                             Visibility="{Binding Path=Type, Converter={StaticResource LayoutTypeCustomToVisibilityConverter}}">
                         <Button.Content>
-                            <TextBlock Text="&#xE8C8;" 
-                                       FontFamily="Segoe MDL2 Assets"
+                            <TextBlock Text="&#xE8C8;"
+                                       FontFamily="{DynamicResource SymbolThemeFontFamily}"
+                                       FontSize="16"
                                        AutomationProperties.Name="{x:Static props:Resources.Duplicate}" />
                         </Button.Content>
                     </Button>
@@ -401,22 +393,24 @@
                             Style="{StaticResource IconOnlyButtonStyle}"
                             Visibility="{Binding Path=Type, Converter={StaticResource LayoutTypeTemplateToVisibilityConverter}}">
                         <Button.Content>
-                            <TextBlock Text="&#xE8C8;" 
-                                       FontFamily="Segoe MDL2 Assets"
+                            <TextBlock Text="&#xE8C8;"
+                                       FontFamily="{DynamicResource SymbolThemeFontFamily}"
+                                       FontSize="16"
                                        AutomationProperties.Name="{x:Static props:Resources.Create_Custom_From_Template}" />
                         </Button.Content>
                     </Button>
 
-                        <Button Click="DeleteLayout_Click"
-                            x:Name="deleteLayoutButton"
-                            AutomationProperties.Name="{x:Static props:Resources.Delete}"
-                            ToolTip="{x:Static props:Resources.Delete}"   
-                            Style="{StaticResource IconOnlyButtonStyle}"
-                            Visibility="{Binding Path=Type, Converter={StaticResource LayoutTypeCustomToVisibilityConverter}}">
+                    <Button Click="DeleteLayout_Click"
+                        x:Name="deleteLayoutButton"
+                        AutomationProperties.Name="{x:Static props:Resources.Delete}"
+                        ToolTip="{x:Static props:Resources.Delete}"   
+                        Style="{StaticResource IconOnlyButtonStyle}"
+                        Visibility="{Binding Path=Type, Converter={StaticResource LayoutTypeCustomToVisibilityConverter}}">
                         <Button.Content>
-                            <TextBlock Text="&#xE74D;" 
-                                       FontFamily="Segoe MDL2 Assets"
-                                       Foreground="#c50500"
+                            <TextBlock Text="&#xE74D;"
+                                       FontFamily="{DynamicResource SymbolThemeFontFamily}"
+                                       FontSize="16"
+                                       Foreground="#C42B1C"
                                        AutomationProperties.Name="{x:Static props:Resources.Delete}" />
                         </Button.Content>
                     </Button>
@@ -428,7 +422,7 @@
                                 HorizontalAlignment="Stretch"
                                 Visibility="{Binding IsCustom, Converter={StaticResource BooleanToVisibilityConverter}}">
 
-                        <TextBlock FontFamily="Segoe MDL2 Assets"
+                        <TextBlock FontFamily="{DynamicResource SymbolThemeFontFamily}"
                                    ToolTip="{x:Static props:Resources.Name}"
                                    FontSize="16"
                                    VerticalAlignment="Bottom" Margin="0,0,0,8"
@@ -456,7 +450,7 @@
                                     Orientation="Horizontal">
                             <TextBlock x:Name="QuickKeyTitle"
                                        Text="{x:Static props:Resources.QuickKey_Title}" />
-                            <TextBlock FontFamily="Segoe MDL2 Assets"
+                            <TextBlock FontFamily="{DynamicResource SymbolThemeFontFamily}"
                                        Margin="8,4,0,0"
                                        Foreground="{DynamicResource SystemControlBackgroundAccentBrush}"
                                        Text="&#xE946;"
@@ -468,7 +462,7 @@
 
                         <StackPanel Orientation="Horizontal">
 
-                            <TextBlock FontFamily="Segoe MDL2 Assets"
+                            <TextBlock FontFamily="{DynamicResource SymbolThemeFontFamily}"
                                        VerticalAlignment="Center"
                                        FontSize="16"
                                        ToolTip="{x:Static props:Resources.QuickKey_Title}"
@@ -496,8 +490,8 @@
 
                         <Button Content="&#xE70F;"
                                 x:Name="editZoneLayoutButton"
-                                FontFamily="Segoe MDL2 Assets"
-                                FontSize="14"
+                                FontFamily="{DynamicResource SymbolThemeFontFamily}"
+                                FontSize="16"
                                 HorizontalAlignment="Center"
                                 VerticalAlignment="Center"
                                 Height="36"
@@ -520,7 +514,7 @@
                                 Margin="0,16,0,0"
                                 Visibility="{Binding Path=Type, Converter={StaticResource LayoutTypeTemplateToVisibilityConverter}}">
 
-                        <TextBlock FontFamily="Segoe MDL2 Assets"
+                        <TextBlock FontFamily="{DynamicResource SymbolThemeFontFamily}"
                                    VerticalAlignment="Center"
                                    FontSize="16"
                                    Margin="0,16,0,0"
@@ -573,7 +567,7 @@
                                    Margin="28,0,0,4"
                                    TextWrapping="Wrap" />
                         <StackPanel Orientation="Horizontal">
-                            <TextBlock FontFamily="Segoe MDL2 Assets"
+                            <TextBlock FontFamily="{DynamicResource SymbolThemeFontFamily}"
                                        VerticalAlignment="Center"
                                        FontSize="16"
                                        AutomationProperties.Name="{x:Static props:Resources.Space_Around_Zones}"
@@ -633,7 +627,7 @@
                                    Margin="28,0,0,4"
                                    TextWrapping="Wrap" />
                         <StackPanel Orientation="Horizontal">
-                            <TextBlock FontFamily="Segoe MDL2 Assets"
+                            <TextBlock FontFamily="{DynamicResource SymbolThemeFontFamily}"
                                        VerticalAlignment="Center"
                                        FontSize="16"
                                        ToolTip="{x:Static props:Resources.Distance_adjacent_zones}"
@@ -683,8 +677,8 @@
                             Visibility="{Binding CanBeSetAsHorizontalDefault, Converter={StaticResource BooleanToVisibilityConverter}}">
                             <Button.Content>
                                 <TextBlock AutomationProperties.Name="{x:Static props:Resources.Set_Layout_As_Horizontal_Default}"
-                                       FontSize="14">
-                                    <Run Text="&#xE734;" FontFamily="Segoe MDL2 Assets"/>
+                                       FontSize="16">
+                                    <Run Text="&#xE734;" FontFamily="{DynamicResource SymbolThemeFontFamily}"/>
                                     <Run Text="{x:Static props:Resources.Default_Layout_Horizontal}"/>
                                 </TextBlock>
                             </Button.Content>
@@ -697,8 +691,8 @@
                             Visibility="{Binding IsHorizontalDefault, Converter={StaticResource BooleanToVisibilityConverter}}">
                             <Button.Content>
                                 <TextBlock AutomationProperties.Name="{x:Static props:Resources.Default_Layout_Horizontal}"
-                                       FontSize="14">
-                                    <Run Text="&#xE735;" FontFamily="Segoe MDL2 Assets"/>
+                                       FontSize="16">
+                                    <Run Text="&#xE735;" FontFamily="{DynamicResource SymbolThemeFontFamily}"/>
                                     <Run Text="{x:Static props:Resources.Default_Layout_Horizontal}"/>
                                 </TextBlock>
                             </Button.Content>
@@ -712,8 +706,8 @@
                             Visibility="{Binding CanBeSetAsVerticalDefault, Converter={StaticResource BooleanToVisibilityConverter}}">
                             <Button.Content>
                                 <TextBlock AutomationProperties.Name="{x:Static props:Resources.Set_Layout_As_Vertical_Default}"
-                                       FontSize="14">
-                                    <Run Text="&#xE734;" FontFamily="Segoe MDL2 Assets"/>
+                                       FontSize="16">
+                                    <Run Text="&#xE734;" FontFamily="{DynamicResource SymbolThemeFontFamily}"/>
                                     <Run Text="{x:Static props:Resources.Default_Layout_Vertical}"/>
                                 </TextBlock>
                             </Button.Content>
@@ -726,8 +720,8 @@
                             Visibility="{Binding IsVerticalDefault, Converter={StaticResource BooleanToVisibilityConverter}}">
                             <Button.Content>
                                 <TextBlock AutomationProperties.Name="{x:Static props:Resources.Default_Layout_Vertical}"
-                                       FontSize="14">
-                                    <Run Text="&#xE735;" FontFamily="Segoe MDL2 Assets"/>
+                                       FontSize="16">
+                                    <Run Text="&#xE735;" FontFamily="{DynamicResource SymbolThemeFontFamily}"/>
                                     <Run Text="{x:Static props:Resources.Default_Layout_Vertical}"/>
                                 </TextBlock>
                             </Button.Content>
@@ -774,7 +768,7 @@
                                        Margin="0,4,0,0"
                                        AutomationProperties.Name="{x:Static props:Resources.Layout_Grid_Title}"
                                        HorizontalAlignment="Left"
-                                       FontFamily="Segoe MDL2 Assets" />
+                                       FontFamily="{DynamicResource SymbolThemeFontFamily}" />
                             <StackPanel Grid.Column="1"
                                         Orientation="Vertical">
                                 <TextBlock TextWrapping="Wrap"
@@ -810,7 +804,7 @@
                                        AutomationProperties.Name="{x:Static props:Resources.Layout_Canvas_Title}"
                                        Margin="0,4,0,0"
                                        HorizontalAlignment="Left"
-                                       FontFamily="Segoe MDL2 Assets" />
+                                       FontFamily="{DynamicResource SymbolThemeFontFamily}" />
                             <StackPanel Grid.Column="1"
                                         Orientation="Vertical">
                                 <TextBlock TextWrapping="Wrap"

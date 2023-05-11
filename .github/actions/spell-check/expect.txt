@@ -7,7 +7,6 @@ AACD
 AAD
 AADF
 abap
-Abbrivation
 ABE
 abgr
 abi
@@ -112,7 +111,6 @@ ARPPRODUCTICON
 ARRAYSIZE
 arsinh
 artanh
-Artsakh
 arw
 asdf
 AShortcut
@@ -163,8 +161,6 @@ BEB
 BEEAADF
 BEEC
 BEFA
-Belarus
-BESTEFFORT
 betadele
 betsegaw
 BFC
@@ -175,7 +171,6 @@ BFFA
 BGR
 bgra
 bhid
-BHIDSF
 bigbar
 bigobj
 binlog
@@ -221,8 +216,6 @@ bugreport
 BUILDNUMBER
 buildtask
 buildtransitive
-Burkina
-Buryatia
 BUTTONUP
 BVal
 BValue
@@ -281,8 +274,6 @@ chrdavis
 Chromakey
 Chrzan
 CHT
-Chukotka
-Chuuk
 cidl
 CIELAB
 CIEXYZ
@@ -421,7 +412,6 @@ dacl
 DAF
 damienleroy
 DANGEROUSLYCOMMITMERELYTODISKCACHE
-Danmarkshavn
 DARKPURPLE
 DARKTEAL
 DARKYELLOW
@@ -479,7 +469,6 @@ DEFERERASE
 DEFPUSHBUTTON
 deinitialization
 DELA
-DELAYCREATION
 DELETEDKEYIMAGE
 DELETESCANS
 deletethis
@@ -554,7 +543,6 @@ DVTARGETDEVICE
 DWINRT
 dwl
 dwm
-Dwma
 dwmapi
 DWMCOLORIZATIONCOLORCHANGED
 DWMCOMPOSITIONCHANGED
@@ -672,7 +660,6 @@ exstyle
 EXTENDEDKEY
 EXTENDEDVERBS
 EXTRINSICPROPERTIES
-EXTRINSICPROPERTIESONLY
 eyetracker
 FABC
 fabricbot
@@ -685,7 +672,6 @@ FANCYZONESDRAWLAYOUTTEST
 FANCYZONESEDITOR
 Farbraum
 FARPROC
-FASTPROPERTIESONLY
 FBB
 FBC
 FBDE
@@ -797,8 +783,6 @@ gwl
 GWLP
 HACCEL
 handlekeyboardhookevent
-HANDLERPROPERTIESONLY
-handlerroutine
 hangeul
 Hankaku
 hanselman
@@ -860,7 +844,6 @@ hmodule
 hmonitor
 HOLDENTER
 HOLDESC
-holemenu
 HOMEPATH
 homljgmgpmcbpjbnjpfijnhipfkiclkd
 HOOKPROC
@@ -909,7 +892,6 @@ ICapture
 ICEBLUE
 IClass
 IColor
-icolumn
 ICONERROR
 IContext
 IData
@@ -934,7 +916,6 @@ IFile
 IFilter
 IGraphics
 iid
-IIDI
 Iindex
 IIO
 iiq
@@ -1011,7 +992,6 @@ ISurface
 ITask
 ith
 ithumbnail
-Ittoqqortoormiit
 IUI
 IUnknown
 IWbem
@@ -1038,7 +1018,6 @@ jyuwono
 KBDLLHOOKSTRUCT
 kbm
 kdc
-Keybd
 KEYBDINPUT
 keyboardeventhandlers
 keyboardmanager
@@ -1203,8 +1182,6 @@ MBUTTON
 MBUTTONDBLCLK
 MBUTTONDOWN
 MBUTTONUP
-MCDT
-MCST
 mdc
 MDICHILD
 MDL
@@ -1339,7 +1316,6 @@ NCRBUTTONUP
 NCRENDERING
 ndp
 NEEDDISPATCH
-neighborings
 Nemeth
 NESW
 netcore
@@ -1451,11 +1427,8 @@ onstd
 oobe
 OOBEPT
 opencode
-OPENSLOWITEM
 opensource
-openspecs
 openxmlformats
-OPLOCK
 OPTIMIZEFORINVOKE
 ORAW
 ori
@@ -1475,7 +1448,6 @@ outro
 outsettings
 OVERLAPPEDWINDOW
 overlaywindow
-overriden
 Oversampling
 OWNDC
 Packagemanager
@@ -1593,11 +1565,9 @@ pptal
 ppv
 prc
 precomp
-PREFERQUERYPROPERTIES
 Prefixer
 Preinstalled
 prevhost
-Previer
 previewer
 PREVIEWHANDLERFRAMEINFO
 previewpane
@@ -1631,7 +1601,6 @@ psapi
 pscid
 PSECURITY
 psfgao
-psfi
 Psr
 psrm
 psrree
@@ -1749,10 +1718,8 @@ restrictederrorinfo
 resultlist
 resw
 resx
-retunred
 retval
 rfc
-rfid
 RGBE
 RGBQUAD
 rgbs
@@ -1874,7 +1841,6 @@ shellscalingapi
 SHFILEINFO
 SHGDNF
 SHGFI
-Shgno
 Shl
 shldisp
 shlobj
@@ -1931,7 +1897,6 @@ smartphone
 SMTO
 snd
 snwprintf
-Softcoded
 softline
 somil
 Soref
@@ -2074,7 +2039,6 @@ telem
 telephon
 Templated
 templatenamespace
-Tenggara
 terabyte
 testapp
 testcase
@@ -2095,8 +2059,6 @@ timedate
 timediff
 timeunion
 timeutil
-timezones
-titlebar
 Titlecase
 TKey
 TLayout
@@ -2105,7 +2067,6 @@ tlbimp
 TMPVAR
 TNP
 toggleswitch
-toogle
 toolkitcontrols
 toolkitconverters
 Toolset
@@ -2151,7 +2112,6 @@ uipi
 UIs
 ULARGE
 ULONGLONG
-UMsg
 unassign
 uncompilable
 UNCPRIORITY
@@ -2273,7 +2233,6 @@ WDA
 wdp
 wdupenv
 weakme
-webbrowser
 webcam
 webpage
 websearch
@@ -2352,7 +2311,6 @@ wmimgmt
 WMKEYDOWN
 WMKEYUP
 wmp
-WMSDK
 WMSYSKEYDOWN
 WMSYSKEYUP
 wnd
@@ -2378,12 +2336,10 @@ WResize
 writefile
 Wrk
 wrl
-WScan
 wscui
 wsf
 wsh
 wsl
-wsp
 wss
 wstr
 wsz
@@ -2394,7 +2350,6 @@ WTSAT
 Wubi
 wuceffectsi
 WVC
-WVk
 Wwan
 Wwanpp
 XAttribute

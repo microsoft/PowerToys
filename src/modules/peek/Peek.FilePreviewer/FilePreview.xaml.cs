@@ -80,11 +80,11 @@ namespace Peek.FilePreviewer
 
                     if (Previewer is not IUnsupportedFilePreviewer)
                     {
-                        Previewer = previewerFactory.CreateDefaultPreviewer(Item);
-                        await UpdatePreviewAsync(_cancellationTokenSource.Token);
-                    }
+                    Previewer = previewerFactory.CreateDefaultPreviewer(Item);
+                    await UpdatePreviewAsync(_cancellationTokenSource.Token);
                 }
             }
+        }
         }
 
         public IImagePreviewer? ImagePreviewer => Previewer as IImagePreviewer;

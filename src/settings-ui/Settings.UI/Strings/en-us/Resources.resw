@@ -155,6 +155,27 @@
     <value>Customize the shortcut to bring up the command bar</value>
     <comment>"Screen Ruler" is the name of the utility</comment>
   </data>
+  <data name="MeasureTool_DefaultMeasureStyle.Header" xml:space="preserve">
+    <value>Default measure style</value>
+  </data>
+  <data name="MeasureTool_DefaultMeasureStyle.Description" xml:space="preserve">
+    <value>The utility will start having the selected style activated</value>
+  </data>
+  <data name="MeasureTool_DefaultMeasureStyle_None.Content" xml:space="preserve">
+    <value>None</value>
+  </data>
+  <data name="MeasureTool_DefaultMeasureStyle_Bounds.Content" xml:space="preserve">
+    <value>Bounds</value>
+  </data>
+  <data name="MeasureTool_DefaultMeasureStyle_Spacing.Content" xml:space="preserve">
+    <value>Spacing</value>
+  </data>
+  <data name="MeasureTool_DefaultMeasureStyle_Horizontal_Spacing.Content" xml:space="preserve">
+    <value>Horizontal spacing</value>
+  </data>
+  <data name="MeasureTool_DefaultMeasureStyle_Vertical_Spacing.Content" xml:space="preserve">
+    <value>Vertical spacing</value>
+  </data>
   <data name="MeasureTool_UnitsOfMeasure.Header" xml:space="preserve">
     <value>Units of measurement</value>
   </data>
@@ -2512,7 +2533,7 @@ From there, simply click on one of the supported files in the File Explorer and 
     <value>Peek</value>
   </data>
   <data name="Peek.ModuleDescription" xml:space="preserve">
-    <value>Peek is a quick and easy way to preview files.</value>
+    <value>Peek is a quick and easy way to preview files. Select a file in File Explorer and press the shortcut to open the file preview.</value>
   </data>
   <data name="Peek_EnablePeek.Header" xml:space="preserve">
     <value>Enable Peek</value>
@@ -3200,6 +3221,6 @@ Activate by holding the key for the character you want to add an accent to, then
     <value>Peek</value>
   </data>
   <data name="Oobe_Peek_HowToUse.Text" xml:space="preserve">
-    <value>to preview the selected file.</value>
+    <value>to preview the file that's currently selected in File Explorer.</value>
   </data>
 </root>
