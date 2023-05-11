@@ -198,6 +198,7 @@
                     </Grid.RowDefinitions>
 
                     <local:HeadingTextBlock Text="{x:Static props:Resources.Templates}"
+                        AutomationProperties.HeadingLevel="Level1"
                         x:Name="TemplatesHeaderBlock"
                         FontWeight="SemiBold"
                         FontSize="24" />
@@ -224,6 +225,7 @@
                     </ui:GridView>
 
                     <local:HeadingTextBlock Text="{x:Static props:Resources.Custom}"
+                               AutomationProperties.HeadingLevel="Level1"
                                x:Name="CustomHeaderBlock"
                                FontWeight="SemiBold"
                                Grid.Row="2"
@@ -370,7 +372,13 @@
                           Opened="Dialog_Opened"
                           Closed="Dialog_Closed">
             <ui:ContentDialog.Title>
-                <local:HeadingTextBlock x:Name="EditLayoutDialogTitle" MaxWidth="320" Margin="0,0,96,0" Style="{StaticResource HeadingTextBlock}" Loaded="EditLayoutDialogTitle_Loaded"/>
+                <local:HeadingTextBlock 
+                    x:Name="EditLayoutDialogTitle" 
+                    MaxWidth="320" 
+                    Margin="0,0,96,0" 
+                    Style="{StaticResource HeadingTextBlock}" 
+                    Loaded="EditLayoutDialogTitle_Loaded" 
+                    AutomationProperties.HeadingLevel="Level1"/>
             </ui:ContentDialog.Title>
             <Grid DataContext="{Binding SelectedModel}"
                  Margin="4,4,24,32">
@@ -750,6 +758,7 @@
             <ui:ContentDialog.TitleTemplate>
                 <DataTemplate>
                     <local:HeadingTextBlock Text="{x:Static props:Resources.Choose_layout_type}"
+                       AutomationProperties.HeadingLevel="Level1"
                        Style="{StaticResource HeadingTextBlock}" />
                 </DataTemplate>
             </ui:ContentDialog.TitleTemplate>
