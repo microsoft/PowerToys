@@ -78,7 +78,7 @@ namespace Peek.FilePreviewer.Previewers
 
         public async Task<Size?> GetPreviewSizeAsync(CancellationToken cancellationToken)
         {
-            Size? size = await Task.Run(Item.GetItemDimensions);
+            Size? size = await Task.Run(Item.GetImageSize);
             return size != null ? size.Value : null;
         }
 

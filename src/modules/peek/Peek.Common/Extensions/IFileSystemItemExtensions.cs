@@ -17,7 +17,7 @@ namespace Peek.Common.Extensions
 {
     public static class IFileSystemItemExtensions
     {
-        public static Size? GetItemDimensions(this IFileSystemItem item)
+        public static Size? GetImageSize(this IFileSystemItem item)
         {
             Size? size = null;
 
