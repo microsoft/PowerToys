@@ -973,7 +973,7 @@ ipc
 ipcmanager
 IPlugin
 IPower
-ipreview
+IPREVIEW
 ipreviewhandlervisualssetfont
 IProperty
 IPublic
@@ -991,7 +991,7 @@ iss
 ISurface
 ITask
 ith
-ithumbnail
+ITHUMBNAIL
 IUI
 IUnknown
 IWbem
@@ -1473,7 +1473,7 @@ PATINVERT
 PATPAINT
 PAUDIO
 pbc
-pbgra
+Pbgra
 PBlob
 pcb
 pcch
