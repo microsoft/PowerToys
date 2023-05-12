@@ -57,11 +57,12 @@ namespace Peek.FilePreviewer.Previewers
 
         public async Task LoadPreviewAsync(CancellationToken cancellationToken)
         {
-            cancellationToken.ThrowIfCancellationRequested();
             State = PreviewState.Loading;
-            await LoadVideoAsync(cancellationToken);
+            VideoTask = LoadVideoAsync(cancellationToken);
+            cancellationToken.ThrowIfCancellationRequested();
+            await VideoTask;
 
-            if (HasFailedLoadingPreview())
+            if (Preview == null && HasFailedLoadingPreview())
             {
                 State = PreviewState.Error;
             }
