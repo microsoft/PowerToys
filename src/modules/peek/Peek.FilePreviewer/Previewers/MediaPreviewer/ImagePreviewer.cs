@@ -81,7 +81,7 @@ namespace Peek.FilePreviewer.Previewers
             }
             else
             {
-                ImageSize = await Task.Run(Item.GetImageSize);
+                ImageSize = await Task.Run(Item.GetItemDimensions);
                 if (ImageSize == null)
                 {
                     ImageSize = await WICHelper.GetImageSize(Item.Path);

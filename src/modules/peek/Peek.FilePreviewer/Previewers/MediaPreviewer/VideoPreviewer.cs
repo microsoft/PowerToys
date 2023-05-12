@@ -42,8 +42,6 @@ namespace Peek.FilePreviewer.Previewers
 
         private DispatcherQueue Dispatcher { get; }
 
-        private Task<bool>? ThumbnailTask { get; set; }
-
         private Task<bool>? VideoTask { get; set; }
 
         /*private bool IsVideoLoaded => VideoTask?.Status == TaskStatus.RanToCompletion;*/
@@ -57,23 +55,6 @@ namespace Peek.FilePreviewer.Previewers
         {
             GC.SuppressFinalize(this);
         }
-
-        /*
-        public async Task LoadPreviewAsync(CancellationToken cancellationToken)
-        {
-            State = PreviewState.Loading;
-
-            // ThumbnailTask = LoadThumbnailAsync(cancellationToken);
-            VideoTask = LoadVideoAsync(cancellationToken);
-            cancellationToken.ThrowIfCancellationRequested();
-
-            await Task.CompletedTask(VideoTask);
-
-            if (Preview == null && HasFailedLoadingPreview())
-            {
-                State = PreviewState.Error;
-            }
-        }*/
 
         public async Task LoadPreviewAsync(CancellationToken cancellationToken)
         {
@@ -95,11 +76,10 @@ namespace Peek.FilePreviewer.Previewers
             }
         }
 
-        public Task<Size?> GetPreviewSizeAsync(CancellationToken cancellationToken)
+        public async Task<Size?> GetPreviewSizeAsync(CancellationToken cancellationToken)
         {
-            // Add real size
-            Size? size = new Size(680, 500);
-            return Task.FromResult(size);
+            Size? size = await Task.Run(Item.GetItemDimensions);
+            return size != null ? size.Value : null;
         }
 
         public async Task CopyAsync()
@@ -110,33 +90,6 @@ namespace Peek.FilePreviewer.Previewers
                 ClipboardHelper.SaveToClipboard(storageItem);
             });
         }
-
-        /* private Task<bool> LoadThumbnailAsync(CancellationToken cancellationToken)
-        {
-            return TaskExtension.RunSafe(async () =>
-            {
-                cancellationToken.ThrowIfCancellationRequested();
-
-                var hr = ThumbnailHelper.GetThumbnail(Path.GetFullPath(Item.Path), out IntPtr hbitmap, ThumbnailHelper.LowQualityThumbnailSize);
-                if (hr != HResult.Ok)
-                {
-                    Logger.LogError("Error loading low quality thumbnail - hresult: " + hr);
-                    throw new ImageLoadingException(nameof(hbitmap));
-                }
-
-                cancellationToken.ThrowIfCancellationRequested();
-
-                await Dispatcher.RunOnUiThread(async () =>
-                {
-                    cancellationToken.ThrowIfCancellationRequested();
-                    var thumbnailBitmap = await BitmapHelper.GetBitmapFromHBitmapAsync(hbitmap, IsPng(Item), cancellationToken);
-                    if (!IsFullImageLoaded)
-                    {
-                        Preview = thumbnailBitmap;
-                    }
-                });
-            });
-        }*/
 
         private Task<bool> LoadVideoAsync(CancellationToken cancellationToken)
         {
@@ -158,10 +111,7 @@ namespace Peek.FilePreviewer.Previewers
 
         private bool HasFailedLoadingPreview()
         {
-            // var hasFailedLoadingThumbnail = !(ThumbnailTask?.Result ?? true);
-            var hasFailedLoadingVideo = !(VideoTask?.Result ?? true);
-
-            return hasFailedLoadingVideo;
+            return !(VideoTask?.Result ?? true);
         }
 
         private static readonly HashSet<string> _supportedFileTypes = new HashSet<string>
