@@ -15,18 +15,6 @@ namespace Peek.Common.Helpers
     public static partial class PropertyStoreHelper
     {
         /// <summary>
-        /// Gets a uint type value from PropertyStore from the given item.
-        /// </summary>
-        /// <param name="path">The file/folder path</param>
-        /// <param name="key">The property key</param>
-        /// <returns>a nullable uint</returns>
-        public static uint? TryGetUintProperty(string path, PropertyKey key)
-        {
-            using DisposablePropertyStore propertyStore = GetPropertyStoreFromPath(path);
-            return propertyStore.TryGetUInt(key);
-        }
-
-        /// <summary>
         /// Gets a ulong type value from PropertyStore from the given item.
         /// </summary>
         /// <param name="path">The file/folder path</param>
@@ -96,7 +84,6 @@ namespace Peek.Common.Helpers
 
                 if (hr != 0)
                 {
-                    int lastError = Marshal.GetLastWin32Error();
                     throw new InvalidOperationException(string.Format(CultureInfo.InvariantCulture, "GetPropertyStore returned hresult={0}", hr));
                 }
 
