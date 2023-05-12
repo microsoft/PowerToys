@@ -97,7 +97,7 @@ namespace Peek.FilePreviewer.Previewers
             {
                 cancellationToken.ThrowIfCancellationRequested();
 
-                using FileStream stream = File.OpenRead(Item.Path);
+                using FileStream stream = ReadHelper.OpenReadOnly(Item.Path);
 
                 await Dispatcher.RunOnUiThread(async () =>
                 {
