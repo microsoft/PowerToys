@@ -63,7 +63,7 @@ namespace Peek.FilePreviewer.Previewers
         {
             if (!this.disposed)
             {
-                await Microsoft.PowerToys.FilePreviewCommon.Helper.CleanupTempDir(TempFolderPath.Path);
+                await Microsoft.PowerToys.FilePreviewCommon.Helper.CleanupTempDirAsync(TempFolderPath.Path);
                 disposed = true;
             }
         }

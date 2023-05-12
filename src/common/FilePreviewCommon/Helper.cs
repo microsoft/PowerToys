@@ -10,26 +10,31 @@ namespace Microsoft.PowerToys.FilePreviewCommon
 {
     public static class Helper
     {
-        public static Task<bool> CleanupTempDir(string folder)
+        public static Task<bool> CleanupTempDirAsync(string folder)
         {
             return Task.Run(() =>
             {
-                try
-                {
-                    var dir = new DirectoryInfo(folder);
-                    foreach (var file in dir.EnumerateFiles("*.html"))
-                    {
-                        file.Delete();
-                    }
-
-                    return true;
-                }
-                catch (Exception)
-                {
-                }
-
-                return false;
+                return CleanupTempDir(folder);
             });
+        }
+
+        public static bool CleanupTempDir(string folder)
+        {
+            try
+            {
+                var dir = new DirectoryInfo(folder);
+                foreach (var file in dir.EnumerateFiles("*.html"))
+                {
+                    file.Delete();
+                }
+
+                return true;
+            }
+            catch (Exception)
+            {
+            }
+
+            return false;
         }
     }
 }
