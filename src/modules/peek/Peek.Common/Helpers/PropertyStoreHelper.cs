@@ -7,6 +7,7 @@ using System.Globalization;
 using System.Runtime.InteropServices;
 using Peek.Common.Extensions;
 using Peek.Common.Models;
+using Windows.Foundation;
 using Windows.Win32.UI.Shell.PropertiesSystem;
 
 namespace Peek.Common.Helpers
@@ -50,6 +51,28 @@ namespace Peek.Common.Helpers
         }
 
         /// <summary>
+        /// Gets Size composed of weight (uint) and height (uint) from PropertyStore from the given item.
+        /// </summary>
+        /// <param name="path">The file/folder path</param>
+        /// <param name="widthKey">The property key for width</param>
+        /// <param name="heightKey">The property key for height</param>
+        /// <returns>a nullable string</returns>
+        public static Size? TryGetUintSizeProperty(string path, PropertyKey widthKey, PropertyKey heightKey)
+        {
+            Size? size = null;
+            using DisposablePropertyStore propertyStore = GetPropertyStoreFromPath(path);
+            uint? width = propertyStore.TryGetUInt(widthKey);
+            uint? height = propertyStore.TryGetUInt(heightKey);
+
+            if (width != null && height != null)
+            {
+                size = new Size((float)width, (float)height);
+            }
+
+            return size;
+        }
+
+        /// <summary>
         /// Gets a IPropertyStore interface (wrapped in DisposablePropertyStore) from the given path.
         /// </summary>
         /// <param name="path">The file/folder path</param>
@@ -73,6 +96,7 @@ namespace Peek.Common.Helpers
 
                 if (hr != 0)
                 {
+                    int lastError = Marshal.GetLastWin32Error();
                     throw new InvalidOperationException(string.Format(CultureInfo.InvariantCulture, "GetPropertyStore returned hresult={0}", hr));
                 }
 

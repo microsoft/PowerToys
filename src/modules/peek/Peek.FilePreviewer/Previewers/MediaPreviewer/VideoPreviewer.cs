@@ -10,13 +10,9 @@ using System.Threading.Tasks;
 using CommunityToolkit.Mvvm.ComponentModel;
 using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.UI.Dispatching;
-using Microsoft.UI.Xaml.Media;
-using Microsoft.UI.Xaml.Media.Imaging;
 using Peek.Common.Extensions;
 using Peek.Common.Helpers;
 using Peek.Common.Models;
-using Peek.FilePreviewer.Exceptions;
-using Peek.FilePreviewer.Previewers.Helpers;
 using Peek.FilePreviewer.Previewers.Interfaces;
 using Windows.Foundation;
 using Windows.Media.Core;
@@ -31,6 +27,9 @@ namespace Peek.FilePreviewer.Previewers
 
         [ObservableProperty]
         private PreviewState state;
+
+        [ObservableProperty]
+        private Size videoSize;
 
         public VideoPreviewer(IFileSystemItem file)
         {
@@ -78,8 +77,8 @@ namespace Peek.FilePreviewer.Previewers
 
         public async Task<Size?> GetPreviewSizeAsync(CancellationToken cancellationToken)
         {
-            Size? size = await Task.Run(Item.GetImageSize);
-            return size != null ? size.Value : null;
+            cancellationToken.ThrowIfCancellationRequested();
+            return await Task.Run(Item.GetVideoSize);
         }
 
         public async Task CopyAsync()
