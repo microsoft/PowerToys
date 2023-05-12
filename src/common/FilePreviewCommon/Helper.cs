@@ -4,12 +4,21 @@
 
 using System;
 using System.IO;
+using System.Threading.Tasks;
 
 namespace Microsoft.PowerToys.FilePreviewCommon
 {
     public static class Helper
     {
-        public static void CleanupTempDir(string folder)
+        public static Task<bool> CleanupTempDirAsync(string folder)
+        {
+            return Task.Run(() =>
+            {
+                return CleanupTempDir(folder);
+            });
+        }
+
+        public static bool CleanupTempDir(string folder)
         {
             try
             {
@@ -18,10 +27,14 @@ namespace Microsoft.PowerToys.FilePreviewCommon
                 {
                     file.Delete();
                 }
+
+                return true;
             }
             catch (Exception)
             {
             }
+
+            return false;
         }
     }
 }
