@@ -621,7 +621,7 @@ namespace FancyZonesEditor
             SettingsDeepLink.OpenSettings(SettingsDeepLink.SettingsWindow.FancyZones);
         }
 
-        private void EditLayoutDialogTitle_Loaded(object sender, EventArgs e)
+        private void EditLayoutDialogTitle_Loaded(object sender, RoutedEventArgs e)
         {
             EditLayoutDialogTitle.TextTrimming = TextTrimming.CharacterEllipsis;
             EditLayoutDialogTitle.TextWrapping = TextWrapping.NoWrap;
