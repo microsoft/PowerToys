@@ -85,16 +85,23 @@ namespace Peek.Common.Extensions
         {
             ulong sizeInBytes = 0;
 
-            switch (item)
+            try
             {
-                case FolderItem _:
-                    FileSystemObject fileSystemObject = new FileSystemObject();
-                    Folder folder = fileSystemObject.GetFolder(item.Path);
-                    sizeInBytes = (ulong)folder.Size;
-                    break;
-                case FileItem _:
-                    sizeInBytes = item.FileSizeBytes;
-                    break;
+                switch (item)
+                {
+                    case FolderItem _:
+                        FileSystemObject fileSystemObject = new FileSystemObject();
+                        Folder folder = fileSystemObject.GetFolder(item.Path);
+                        sizeInBytes = (ulong)folder.Size;
+                        break;
+                    case FileItem _:
+                        sizeInBytes = item.FileSizeBytes;
+                        break;
+                }
+            }
+            catch
+            {
+                sizeInBytes = 0;
             }
 
             return sizeInBytes;

@@ -17,10 +17,13 @@ namespace Peek.Common.Models
     {
         private StorageFile? storageFile;
 
-        public FileItem(string path)
+        public FileItem(string path, string name)
         {
             Path = path;
+            Name = name;
         }
+
+        public string Name { get; init; }
 
         public string Path { get; init; }
 

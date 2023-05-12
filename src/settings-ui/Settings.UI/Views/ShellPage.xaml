@@ -22,9 +22,7 @@
         </ic:EventTriggerBehavior>
     </i:Interaction.Behaviors>
 
-    <Grid
-        x:Name="RootGrid"
-        Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
+    <Grid x:Name="RootGrid" Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
 
         <NavigationView
             x:Name="navigationView"
@@ -36,15 +34,11 @@
             IsTitleBarAutoPaddingEnabled="False"
             PaneClosed="NavigationView_PaneClosed"
             PaneOpened="NavigationView_PaneOpened"
-            SelectionChanged="NavigationView_SelectionChanged"
-            SelectedItem="{x:Bind ViewModel.Selected, Mode=OneWay}">
+            SelectedItem="{x:Bind ViewModel.Selected, Mode=OneWay}"
+            SelectionChanged="NavigationView_SelectionChanged">
             <NavigationView.Resources>
-                <SolidColorBrush
-                    x:Key="NavigationViewContentBackground"
-                    Color="Transparent" />
-                <SolidColorBrush
-                    x:Key="NavigationViewContentGridBorderBrush"
-                    Color="Transparent" />
+                <SolidColorBrush x:Key="NavigationViewContentBackground" Color="Transparent" />
+                <SolidColorBrush x:Key="NavigationViewContentGridBorderBrush" Color="Transparent" />
             </NavigationView.Resources>
             <NavigationView.MenuItems>
                 <NavigationViewItem
@@ -108,7 +102,7 @@
                 <NavigationViewItem
                     x:Uid="Shell_Peek"
                     helpers:NavHelper.NavigateTo="views:PeekPage"
-                    Icon="{ui:BitmapIcon Source=/Assets/FluentIcons/FluentIconsPeek.png}"/>
+                    Icon="{ui:BitmapIcon Source=/Assets/FluentIcons/FluentIconsPeek.png}" />
 
                 <NavigationViewItem
                     x:Uid="Shell_PowerRename"
@@ -127,7 +121,7 @@
                 <NavigationViewItem
                     x:Uid="Shell_RegistryPreview"
                     helpers:NavHelper.NavigateTo="views:RegistryPreviewPage"
-                    Icon="{ui:BitmapIcon Source=/Assets/FluentIcons/FluentIconsRegistryPreview.png}"  />
+                    Icon="{ui:BitmapIcon Source=/Assets/FluentIcons/FluentIconsRegistryPreview.png}" />
 
                 <NavigationViewItem
                     x:Uid="Shell_MeasureTool"
@@ -154,11 +148,13 @@
                 <StackPanel Orientation="Vertical">
                     <NavigationViewItem
                         x:Uid="OOBE_NavViewItem"
-                        Icon="{ui:FontIcon FontFamily={StaticResource SymbolThemeFontFamily}, Glyph=&#xF133;}"
+                        Icon="{ui:FontIcon FontFamily={StaticResource SymbolThemeFontFamily},
+                                           Glyph=&#xF133;}"
                         Tapped="OOBEItem_Tapped" />
                     <NavigationViewItem
                         x:Uid="Feedback_NavViewItem"
-                        Icon="{ui:FontIcon FontFamily={StaticResource SymbolThemeFontFamily}, Glyph=&#xED15;}"
+                        Icon="{ui:FontIcon FontFamily={StaticResource SymbolThemeFontFamily},
+                                           Glyph=&#xED15;}"
                         Tapped="FeedbackItem_Tapped" />
                 </StackPanel>
             </NavigationView.PaneFooter>
