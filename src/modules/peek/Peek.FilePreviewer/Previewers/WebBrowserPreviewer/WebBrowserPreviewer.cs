@@ -70,7 +70,7 @@ namespace Peek.FilePreviewer.Previewers
 
         private IFileSystemItem File { get; }
 
-        public bool IsPreviewLoaded => preview != null;
+        public bool IsPreviewLoaded => Preview != null;
 
         private DispatcherQueue Dispatcher { get; }
 
