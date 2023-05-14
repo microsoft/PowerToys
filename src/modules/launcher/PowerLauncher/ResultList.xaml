@@ -45,7 +45,7 @@
                     <Setter.Value>
                         <ControlTemplate TargetType="{x:Type Button}">
                             <Border x:Name="border"
-                                    CornerRadius="2"
+                                    CornerRadius="4"
                                     Background="Transparent"
                                     BorderThickness="{TemplateBinding BorderThickness}"
                                     BorderBrush="Transparent"

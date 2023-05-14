@@ -50,7 +50,7 @@
                                     VerticalAlignment="Stretch"
                                     UseLayoutRounding="False"
                                     Opacity="0"
-                                    CornerRadius="2"
+                                    CornerRadius="4"
                                     BorderThickness="2"
                                     BorderBrush="{DynamicResource SystemControlBackgroundAccentBrush}" />
 

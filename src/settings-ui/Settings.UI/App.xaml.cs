@@ -369,6 +369,7 @@ namespace Microsoft.PowerToys.Settings.UI
                 case "Hosts": return typeof(HostsPage);
                 case "RegistryPreview": return typeof(RegistryPreviewPage);
                 case "PastePlain": return typeof(PastePlainPage);
+                case "Peek": return typeof(PeekPage);
                 default:
                     // Fallback to general
                     Debug.Assert(false, "Unexpected SettingsWindow argument value");

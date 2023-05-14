@@ -61,6 +61,7 @@
       call cmd /C "copy ""$(ProjectDir)..\PowerToysSetup\KeyboardManager.wxs"" ""$(ProjectDir)..\PowerToysSetup\KeyboardManager.wxs.bk""""
       call cmd /C "copy ""$(ProjectDir)..\PowerToysSetup\MeasureTool.wxs"" ""$(ProjectDir)..\PowerToysSetup\MeasureTool.wxs.bk""""
       call cmd /C "copy ""$(ProjectDir)..\PowerToysSetup\MouseUtils.wxs"" ""$(ProjectDir)..\PowerToysSetup\MouseUtils.wxs.bk""""
+      call cmd /C "copy ""$(ProjectDir)..\PowerToysSetup\Peek.wxs"" ""$(ProjectDir)..\PowerToysSetup\Peek.wxs.bk""""
       call cmd /C "copy ""$(ProjectDir)..\PowerToysSetup\PowerAccent.wxs"" ""$(ProjectDir)..\PowerToysSetup\PowerAccent.wxs.bk""""
       call cmd /C "copy ""$(ProjectDir)..\PowerToysSetup\PowerRename.wxs"" ""$(ProjectDir)..\PowerToysSetup\PowerRename.wxs.bk""""
       call cmd /C "copy ""$(ProjectDir)..\PowerToysSetup\Product.wxs"" ""$(ProjectDir)..\PowerToysSetup\Product.wxs.bk""""

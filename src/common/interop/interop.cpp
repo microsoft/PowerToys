@@ -207,6 +207,10 @@ public
             return gcnew String(CommonSharedConstants::AWAKE_EXIT_EVENT);
         }
 
+        static String^ ShowPeekEvent() {
+            return gcnew String(CommonSharedConstants::SHOW_PEEK_SHARED_EVENT);
+        }
+        
         static String ^ PowerAccentExitEvent() {
             return gcnew String(CommonSharedConstants::POWERACCENT_EXIT_EVENT);
         }

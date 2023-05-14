@@ -2056,6 +2056,10 @@ From there, simply click on one of the supported files in the File Explorer and 
     <value>Learn more about File Explorer add-ons</value>
     <comment>File Explorer is a product name, localize as Windows does</comment>
   </data>
+  <data name="LearnMore_Peek.Text" xml:space="preserve">
+    <value>Learn more about Peek</value>
+    <comment>Peek is a product name, do not loc</comment>
+  </data>
   <data name="LearnMore_PowerRename.Text" xml:space="preserve">
     <value>Learn more about PowerRename</value>
     <comment>PowerRename is a product name, do not loc</comment>
@@ -2520,6 +2524,20 @@ From there, simply click on one of the supported files in the File Explorer and 
   </data>
   <data name="Shell_WhatsNew.Content" xml:space="preserve">
     <value>What's new</value>
+  </data>
+  <data name="Shell_Peek.Content" xml:space="preserve">
+    <value>Peek</value>
+    <comment>Product name: Navigation view item name for Peek</comment>
+  </data>
+  <data name="Peek.ModuleTitle" xml:space="preserve">
+    <value>Peek</value>
+  </data>
+  <data name="Peek.ModuleDescription" xml:space="preserve">
+    <value>Peek is a quick and easy way to preview files. Select a file in File Explorer and press the shortcut to open the file preview.</value>
+  </data>
+  <data name="Peek_EnablePeek.Header" xml:space="preserve">
+    <value>Enable Peek</value>
+    <comment>Peek is a product name, do not loc</comment>
   </data>
   <data name="FancyZones_DisableRoundCornersOnWindowSnap.Content" xml:space="preserve">
     <value>Disable round corners when window is snapped</value>
@@ -3195,5 +3213,14 @@ Activate by holding the key for the character you want to add an accent to, then
   <data name="MouseUtils_MouseJump_ThumbnailSize_Edit_Width.Header" xml:space="preserve">
     <value>Maximum width (px)</value>
     <comment>px = pixels</comment>
+  </data>
+  <data name="Oobe_Peek.Description" xml:space="preserve">
+    <value>A lightning fast file preview feature for Windows.</value>
+  </data>
+  <data name="Oobe_Peek.Title" xml:space="preserve">
+    <value>Peek</value>
+  </data>
+  <data name="Oobe_Peek_HowToUse.Text" xml:space="preserve">
+    <value>to preview the file that's currently selected in File Explorer.</value>
   </data>
 </root>
