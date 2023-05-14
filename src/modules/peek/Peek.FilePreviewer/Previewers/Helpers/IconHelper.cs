@@ -9,6 +9,7 @@ using System.Threading.Tasks;
 using Microsoft.UI.Xaml.Media;
 using Microsoft.UI.Xaml.Media.Imaging;
 using Peek.Common;
+using Peek.Common.Extensions;
 using Peek.Common.Models;
 
 namespace Peek.FilePreviewer.Previewers.Helpers
@@ -20,8 +21,14 @@ namespace Peek.FilePreviewer.Previewers.Helpers
 
         public static async Task<ImageSource?> GetIconAsync(string fileName, CancellationToken cancellationToken)
         {
+            if (string.IsNullOrEmpty(fileName))
+            {
+                return null;
+            }
+
             ImageSource? imageSource = null;
             IShellItem? nativeShellItem = null;
+
             try
             {
                 Guid shellItem2Guid = new(IShellItem2Guid);
@@ -39,15 +46,7 @@ namespace Peek.FilePreviewer.Previewers.Helpers
 
                 cancellationToken.ThrowIfCancellationRequested();
 
-                if (hr == HResult.Ok)
-                {
-                    imageSource = await BitmapHelper.GetBitmapFromHBitmapAsync(hbitmap, true, cancellationToken);
-                }
-                else
-                {
-                    var svgImageSource = new SvgImageSource(new Uri("ms-appx:///Assets/DefaultFileIcon.svg"));
-                    imageSource = svgImageSource;
-                }
+                imageSource = hr == HResult.Ok ? await BitmapHelper.GetBitmapFromHBitmapAsync(hbitmap, true, cancellationToken) : null;
             }
             finally
             {

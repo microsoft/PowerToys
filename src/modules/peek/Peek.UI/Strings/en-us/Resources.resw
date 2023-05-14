@@ -213,4 +213,12 @@
     <value>Unpin the window</value>
     <comment>Tooltip for button to unpin the Peek window.</comment>
   </data>
+  <data name="FailedFallbackReportBugHyperlinkButton.Content" xml:space="preserve">
+    <value>Report a bug</value>
+    <comment>Failed fallback preview Report bug hyperlink button content.</comment>
+  </data>
+  <data name="FailedFallbackTextBlock.Text" xml:space="preserve">
+    <value>An error occurred while previewing this file.</value>
+    <comment>Failed fallback preview text.</comment>
+  </data>
 </root>

@@ -156,7 +156,7 @@ namespace Peek.FilePreviewer.Previewers
             {
                 cancellationToken.ThrowIfCancellationRequested();
 
-                var hr = ThumbnailHelper.GetThumbnail(Path.GetFullPath(Item.Path), out IntPtr hbitmap, ThumbnailHelper.LowQualityThumbnailSize);
+                var hr = ThumbnailHelper.GetThumbnail(Item.Path, out IntPtr hbitmap, ThumbnailHelper.LowQualityThumbnailSize);
                 if (hr != HResult.Ok)
                 {
                     Logger.LogError("Error loading low quality thumbnail - hresult: " + hr);
@@ -183,7 +183,7 @@ namespace Peek.FilePreviewer.Previewers
             {
                 cancellationToken.ThrowIfCancellationRequested();
 
-                var hr = ThumbnailHelper.GetThumbnail(Path.GetFullPath(Item.Path), out IntPtr hbitmap, ThumbnailHelper.HighQualityThumbnailSize);
+                var hr = ThumbnailHelper.GetThumbnail(Item.Path, out IntPtr hbitmap, ThumbnailHelper.HighQualityThumbnailSize);
                 if (hr != HResult.Ok)
                 {
                     Logger.LogError("Error loading high quality thumbnail - hresult: " + hr);

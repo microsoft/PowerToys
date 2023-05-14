@@ -31,8 +31,6 @@ namespace Peek.FilePreviewer.Previewers
             ".md",
         };
 
-        private static readonly HashSet<string> _supportedMonacoFileTypes = MonacoHelper.GetExtensions();
-
         [ObservableProperty]
         private Uri? preview;
 
@@ -42,15 +40,32 @@ namespace Peek.FilePreviewer.Previewers
         [ObservableProperty]
         private bool isDevFilePreview;
 
+        private bool disposed;
+
         public WebBrowserPreviewer(IFileSystemItem file)
         {
             File = file;
             Dispatcher = DispatcherQueue.GetForCurrentThread();
         }
 
+        ~WebBrowserPreviewer()
+        {
+            Dispose(false);
+        }
+
         public void Dispose()
         {
+            Dispose(true);
             GC.SuppressFinalize(this);
+        }
+
+        protected virtual async void Dispose(bool disposing)
+        {
+            if (!this.disposed)
+            {
+                await Microsoft.PowerToys.FilePreviewCommon.Helper.CleanupTempDirAsync(TempFolderPath.Path);
+                disposed = true;
+            }
         }
 
         private IFileSystemItem File { get; }
@@ -89,7 +104,7 @@ namespace Peek.FilePreviewer.Previewers
                 {
                     bool isHtml = File.Extension == ".html";
                     bool isMarkdown = File.Extension == ".md";
-                    IsDevFilePreview = _supportedMonacoFileTypes.Contains(File.Extension);
+                    IsDevFilePreview = MonacoHelper.SupportedMonacoFileTypes.Contains(File.Extension);
 
                     if (IsDevFilePreview && !isHtml && !isMarkdown)
                     {
@@ -120,7 +135,7 @@ namespace Peek.FilePreviewer.Previewers
 
         public static bool IsFileTypeSupported(string fileExt)
         {
-            return _supportedFileTypes.Contains(fileExt) || _supportedMonacoFileTypes.Contains(fileExt);
+            return _supportedFileTypes.Contains(fileExt) || MonacoHelper.SupportedMonacoFileTypes.Contains(fileExt);
         }
 
         private bool HasFailedLoadingPreview()

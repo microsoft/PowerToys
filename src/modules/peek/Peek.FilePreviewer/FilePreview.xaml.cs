@@ -78,8 +78,11 @@ namespace Peek.FilePreviewer
                     _cancellationTokenSource.Cancel();
                     _cancellationTokenSource = new();
 
-                    Previewer = previewerFactory.CreateDefaultPreviewer(Item);
-                    await UpdatePreviewAsync(_cancellationTokenSource.Token);
+                    if (Previewer is not IUnsupportedFilePreviewer)
+                    {
+                        Previewer = previewerFactory.CreateDefaultPreviewer(Item);
+                        await UpdatePreviewAsync(_cancellationTokenSource.Token);
+                    }
                 }
             }
         }
@@ -121,6 +124,12 @@ namespace Peek.FilePreviewer
             return isValidPreview ? Visibility.Visible : Visibility.Collapsed;
         }
 
+        public Visibility IsUnsupportedPreviewVisible(IUnsupportedFilePreviewer? previewer, PreviewState state)
+        {
+            var isValidPreview = previewer != null && (MatchPreviewState(state, PreviewState.Loaded) || MatchPreviewState(state, PreviewState.Error));
+            return isValidPreview ? Visibility.Visible : Visibility.Collapsed;
+        }
+
         private async Task OnItemPropertyChanged()
         {
             // Cancel previous loading task
@@ -147,11 +156,16 @@ namespace Peek.FilePreviewer
 
         private async Task OnScalingFactorPropertyChanged()
         {
-            // Cancel previous loading task
-            _cancellationTokenSource.Cancel();
-            _cancellationTokenSource = new();
+            await UpdatePreviewSizeAsync(_cancellationTokenSource.Token);
+        }
 
-            await UpdatePreviewAsync(_cancellationTokenSource.Token);
+        private async Task UpdatePreviewSizeAsync(CancellationToken cancellationToken)
+        {
+            if (Previewer != null)
+            {
+                var size = await Previewer.GetPreviewSizeAsync(cancellationToken);
+                PreviewSizeChanged?.Invoke(this, new PreviewSizeChangedArgs(size));
+            }
         }
 
         private async Task UpdatePreviewAsync(CancellationToken cancellationToken)
@@ -161,8 +175,8 @@ namespace Peek.FilePreviewer
                 try
                 {
                     cancellationToken.ThrowIfCancellationRequested();
-                    var size = await Previewer.GetPreviewSizeAsync(cancellationToken);
-                    PreviewSizeChanged?.Invoke(this, new PreviewSizeChangedArgs(size));
+                    await UpdatePreviewSizeAsync(cancellationToken);
+
                     cancellationToken.ThrowIfCancellationRequested();
                     await Previewer.LoadPreviewAsync(cancellationToken);
 
@@ -259,7 +273,7 @@ namespace Peek.FilePreviewer
             string fileTypeFormatted = string.IsNullOrEmpty(fileType) ? string.Empty : "\n" + ReadableStringHelper.FormatResourceString("PreviewTooltip_FileType", fileType);
             sb.Append(fileTypeFormatted);
 
-            string dateModified = Item.DateModified.ToString(CultureInfo.CurrentCulture);
+            string dateModified = Item.DateModified?.ToString(CultureInfo.CurrentCulture) ?? string.Empty;
             string dateModifiedFormatted = string.IsNullOrEmpty(dateModified) ? string.Empty : "\n" + ReadableStringHelper.FormatResourceString("PreviewTooltip_DateModified", dateModified);
             sb.Append(dateModifiedFormatted);
 
