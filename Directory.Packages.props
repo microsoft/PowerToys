@@ -18,7 +18,7 @@
     <PackageVersion Include="LazyCache" Version="2.4.0" />
     <PackageVersion Include="Mages" Version="2.0.1" />
     <PackageVersion Include="Markdig.Signed" Version="0.27.0" />
-    <PackageVersion Include="Microsoft.CodeAnalysis.NetAnalyzers" Version="8.0.0-preview1.23165.1" />
+    <PackageVersion Include="Microsoft.CodeAnalysis.NetAnalyzers" Version="7.0.1" />
     <PackageVersion Include="Microsoft.Data.Sqlite" Version="7.0.0" />
     <PackageVersion Include="Microsoft.Extensions.Hosting" Version="7.0.0" />
     <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="17.4.1" />
@@ -49,7 +49,7 @@
     <PackageVersion Include="System.IO.Abstractions.TestingHelpers" Version="17.2.3" />
     <PackageVersion Include="System.Management" Version="7.0.0" />
     <PackageVersion Include="System.Reactive" Version="6.0.0-preview.9" />
-    <PackageVersion Include="System.Runtime.Caching" Version="8.0.0-preview.3.23174.8" />
+    <PackageVersion Include="System.Runtime.Caching" Version="7.0.0" />
     <PackageVersion Include="System.ServiceProcess.ServiceController" Version="7.0.0" />
     <PackageVersion Include="UnicodeInformation" Version="2.6.0" />
     <PackageVersion Include="UnitsNet" Version="4.145.0" />

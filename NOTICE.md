@@ -293,7 +293,7 @@ SOFTWARE.
 - LazyCache 2.4.0
 - Mages 2.0.1
 - Markdig.Signed 0.27.0
-- Microsoft.CodeAnalysis.NetAnalyzers 8.0.0-preview1.23165.1
+- Microsoft.CodeAnalysis.NetAnalyzers 7.0.1
 - Microsoft.Data.Sqlite 7.0.0
 - Microsoft.Extensions.Hosting 7.0.0
 - Microsoft.NET.Test.Sdk 17.4.1
@@ -322,7 +322,7 @@ SOFTWARE.
 - System.IO.Abstractions.TestingHelpers 17.2.3
 - System.Management 7.0.0
 - System.Reactive 6.0.0-preview.9
-- System.Runtime.Caching 8.0.0-preview.3.23174.8
+- System.Runtime.Caching 7.0.0
 - System.ServiceProcess.ServiceController 7.0.0
 - UnicodeInformation 2.6.0
 - UnitsNet 4.145.0
