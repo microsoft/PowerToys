@@ -380,7 +380,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             }
         }
 
-        private void UserControl_Loaded(object sender, RoutedEventArgs e)
+        private void ShellPage_Loaded(object sender, RoutedEventArgs e)
         {
             SetTitleBar();
         }
@@ -391,11 +391,13 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             {
                 PaneToggleBtn.Visibility = Visibility.Visible;
                 AppTitleBar.Margin = new Thickness(48, 0, 0, 0);
+                AppTitleBarText.Margin = new Thickness(12, 0, 0, 0);
             }
             else
             {
                 PaneToggleBtn.Visibility = Visibility.Collapsed;
                 AppTitleBar.Margin = new Thickness(16, 0, 0, 0);
+                AppTitleBarText.Margin = new Thickness(16, 0, 0, 0);
             }
         }
 

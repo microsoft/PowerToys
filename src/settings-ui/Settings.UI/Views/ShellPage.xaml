@@ -11,7 +11,7 @@
     xmlns:ui="using:CommunityToolkit.WinUI.UI"
     xmlns:views="using:Microsoft.PowerToys.Settings.UI.Views"
     HighContrastAdjustment="None"
-    Loaded="UserControl_Loaded"
+    Loaded="ShellPage_Loaded"
     mc:Ignorable="d">
 
     <i:Interaction.Behaviors>
@@ -50,7 +50,7 @@
                 <TextBlock
                     x:Name="AppTitleBarText"
                     x:Uid="SettingsWindow_TitleTxt"
-                    Margin="16,0,0,0"
+                    Margin="12,0,0,0"
                     VerticalAlignment="Center"
                     Style="{StaticResource CaptionTextBlockStyle}"
                     TextWrapping="NoWrap" />

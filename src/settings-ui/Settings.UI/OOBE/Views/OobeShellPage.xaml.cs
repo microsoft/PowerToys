@@ -59,7 +59,7 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
             InitializeComponent();
 
             ExperimentationToggleSwitchEnabled = SettingsRepository<GeneralSettings>.GetInstance(settingsUtils).SettingsConfig.EnableExperimentation;
-
+            SetTitleBar();
             DataContext = ViewModel;
             OobeShellHandler = this;
             Modules = new ObservableCollection<OobePowerToysModule>();
@@ -184,7 +184,7 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
 
         public void OnClosing()
         {
-            Microsoft.UI.Xaml.Controls.NavigationViewItem selectedItem = this.NavigationView.SelectedItem as Microsoft.UI.Xaml.Controls.NavigationViewItem;
+            Microsoft.UI.Xaml.Controls.NavigationViewItem selectedItem = this.navigationView.SelectedItem as Microsoft.UI.Xaml.Controls.NavigationViewItem;
             if (selectedItem != null)
             {
                 Modules[(int)(PowerToysModules)Enum.Parse(typeof(PowerToysModules), (string)selectedItem.Tag, true)].LogClosingModuleEvent();
@@ -195,11 +195,11 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
         {
             if (selectedModule == PowerToysModules.WhatsNew)
             {
-                NavigationView.SelectedItem = NavigationView.FooterMenuItems[0];
+                navigationView.SelectedItem = navigationView.FooterMenuItems[0];
             }
             else
             {
-                NavigationView.SelectedItem = NavigationView.MenuItems[(int)selectedModule];
+                navigationView.SelectedItem = navigationView.MenuItems[(int)selectedModule];
             }
         }
 
@@ -255,6 +255,44 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
                     case "Peek": NavigationFrame.Navigate(typeof(OobePeek)); break;
                 }
             }
+        }
+
+        private void SetTitleBar()
+        {
+            var u = App.GetOobeWindow();
+            if (u != null)
+            {
+                // A custom title bar is required for full window theme and Mica support.
+                // https://docs.microsoft.com/windows/apps/develop/title-bar?tabs=winui3#full-customization
+                u.ExtendsContentIntoTitleBar = true;
+                u.SetTitleBar(AppTitleBar);
+            }
+        }
+
+        private void ShellPage_Loaded(object sender, RoutedEventArgs e)
+        {
+            SetTitleBar();
+        }
+
+        private void NavigationView_DisplayModeChanged(NavigationView sender, NavigationViewDisplayModeChangedEventArgs args)
+        {
+            if (args.DisplayMode == NavigationViewDisplayMode.Compact || args.DisplayMode == NavigationViewDisplayMode.Minimal)
+            {
+                PaneToggleBtn.Visibility = Visibility.Visible;
+                AppTitleBar.Margin = new Thickness(48, 0, 0, 0);
+                AppTitleBarText.Margin = new Thickness(12, 0, 0, 0);
+            }
+            else
+            {
+                PaneToggleBtn.Visibility = Visibility.Collapsed;
+                AppTitleBar.Margin = new Thickness(16, 0, 0, 0);
+                AppTitleBarText.Margin = new Thickness(16, 0, 0, 0);
+            }
+        }
+
+        private void PaneToggleBtn_Click(object sender, RoutedEventArgs e)
+        {
+            navigationView.IsPaneOpen = !navigationView.IsPaneOpen;
         }
     }
 }
