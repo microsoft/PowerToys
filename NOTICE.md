@@ -300,7 +300,7 @@ SOFTWARE.
 - Microsoft.Toolkit.Uwp.Notifications 7.1.2
 - Microsoft.Web.WebView2 1.0.1722.45
 - Microsoft.Windows.CsWin32 0.2.46-beta
-- Microsoft.Windows.CsWinRT 2.0.1
+- Microsoft.Windows.CsWinRT 2.0.2
 - Microsoft.Windows.SDK.BuildTools 10.0.22621.755
 - Microsoft.WindowsAppSDK 1.3.230502000
 - Microsoft.Xaml.Behaviors.WinUI.Managed 2.0.9
@@ -309,12 +309,11 @@ SOFTWARE.
 - Moq 4.18.3
 - MSTest.TestAdapter 3.0.1
 - MSTest.TestFramework 3.0.1
-- NLog 5.0.4
 - NLog.Extensions.Logging 5.0.4
 - NLog.Schema 5.0.4
 - ScipBe.Common.Office.OneNote 3.0.1
 - StyleCop.Analyzers 1.2.0-beta.435
-- System.CommandLine 2.0.0-beta1.20071.2
+- System.CommandLine 2.0.0-beta4.22272.1
 - System.ComponentModel.Composition 7.0.0
 - System.Configuration.ConfigurationManager 6.0.0
 - System.Data.OleDb 7.0.0
@@ -322,7 +321,7 @@ SOFTWARE.
 - System.IO.Abstractions 17.2.3
 - System.IO.Abstractions.TestingHelpers 17.2.3
 - System.Management 7.0.0
-- System.Reactive 5.0.0
+- System.Reactive 6.0.0-preview.9
 - System.Runtime.Caching 7.0.0
 - System.ServiceProcess.ServiceController 7.0.0
 - UnicodeInformation 2.6.0

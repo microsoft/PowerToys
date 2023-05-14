@@ -4,10 +4,11 @@
 
 namespace Awake.Core
 {
-    internal static class InternalConstants
+    internal static class Constants
     {
         internal const string AppName = "Awake";
         internal const string FullAppName = "PowerToys " + AppName;
         internal const string TrayWindowId = "WindowsForms10.Window.0.app.0.";
+        internal const string BuildRegistryLocation = @"SOFTWARE\Microsoft\Windows NT\CurrentVersion";
     }
 }
