@@ -55,7 +55,7 @@
     <PackageVersion Include="UnitsNet" Version="4.145.0" />
     <PackageVersion Include="Vanara.PInvoke.User32" Version="3.4.11" />
     <PackageVersion Include="Vanara.PInvoke.Shell32" Version="3.4.11" />
-    <PackageVersion Include="WinUIEx" Version="2.1.0" />
+    <PackageVersion Include="WinUIEx" Version="2.2.0" />
   </ItemGroup>
   <ItemGroup Condition="'$(IsExperimentationLive)'!=''">
     <!-- Additional dependencies used by experimentation -->
