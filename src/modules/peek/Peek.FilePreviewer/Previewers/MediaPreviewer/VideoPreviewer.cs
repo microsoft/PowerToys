@@ -95,12 +95,13 @@ namespace Peek.FilePreviewer.Previewers
             {
                 cancellationToken.ThrowIfCancellationRequested();
 
-                await Dispatcher.RunOnUiThread(async () =>
+                var storageFile = await Item.GetStorageItemAsync() as StorageFile;
+
+                await Dispatcher.RunOnUiThread(() =>
                 {
                     cancellationToken.ThrowIfCancellationRequested();
 
-                    var storageItem = await Item.GetStorageItemAsync();
-                    Preview = MediaSource.CreateFromStorageFile(storageItem as StorageFile);
+                    Preview = MediaSource.CreateFromStorageFile(storageFile);
                 });
             });
         }
@@ -110,7 +111,7 @@ namespace Peek.FilePreviewer.Previewers
             return !(VideoTask?.Result ?? true);
         }
 
-        private static readonly HashSet<string> _supportedFileTypes = new HashSet<string>
+        private static readonly HashSet<string> _supportedFileTypes = new()
         {
             ".mp4", ".3g2", ".3gp", ".3gp2", ".3gpp", ".asf", ".avi", ".m2t", ".m2ts",
             ".m4v", ".mkv", ".mov", ".mp4", ".mp4v", ".mts", ".wm", ".wmv",
