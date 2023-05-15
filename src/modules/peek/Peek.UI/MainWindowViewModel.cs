@@ -42,7 +42,15 @@ namespace Peek.UI
 
         public void Initialize()
         {
-            Items = NeighboringItemsQuery.GetNeighboringItems();
+            try
+            {
+                Items = NeighboringItemsQuery.GetNeighboringItems();
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError("Failed to get File Explorer Items: " + ex.Message);
+            }
+
             CurrentIndex = 0;
 
             if (Items != null && Items.Count > 0)

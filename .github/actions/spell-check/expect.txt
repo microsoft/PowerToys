@@ -80,6 +80,7 @@ APeriod
 apidl
 APIENTRY
 APIIs
+Apm
 APPBARDATA
 appdata
 APPEXECLINK
@@ -89,7 +90,6 @@ Applets
 Applicationcan
 applicationconfiguration
 applicationframehost
-applog
 appmanifest
 APPNAME
 appref
@@ -125,6 +125,7 @@ atlcom
 atleast
 atlfile
 atlstr
+ATRIOX
 Attribs
 aumid
 Aut
@@ -137,7 +138,7 @@ Autorun
 AUTOUPDATE
 AValid
 awakeness
-awakeversion
+AWAYMODE
 AYUV
 azcli
 azman
@@ -821,6 +822,8 @@ hhk
 HHmmss
 HHOOK
 hhx
+Hiber
+Hiberboot
 HIBYTE
 hicon
 HIDEWINDOW
@@ -1100,8 +1103,6 @@ LOCALSYSTEM
 LOCATIONCHANGE
 LOCKBYTES
 LOCKTYPE
-logconsole
-logfile
 LOGFONT
 LOGFONTW
 logon
@@ -1136,6 +1137,7 @@ lpsz
 lpt
 LPTHREAD
 LPTOP
+lptpm
 LPTSTR
 LPVOID
 LPW
@@ -1195,6 +1197,7 @@ mediatype
 mef
 Mega
 Melman
+MENUBREAK
 MENUITEMINFO
 MENUITEMINFOW
 MERGECOPY
@@ -1224,7 +1227,6 @@ MINIMIZEBOX
 MINIMIZEEND
 MINIMIZESTART
 miniz
-minlevel
 MINORVERSION
 Miracast
 mjpg
@@ -1337,8 +1339,9 @@ Newtonsoft
 niels
 nielslaute
 NIF
+nint
 NLD
-nlog
+NLog
 nls
 NLSTEXT
 NOACTIVATE
@@ -1397,6 +1400,7 @@ ntdll
 ntfs
 NTSTATUS
 nugets
+nuint
 nullonfailure
 numberbox
 NUMLOCK
@@ -1453,6 +1457,7 @@ OVERLAPPEDWINDOW
 overlaywindow
 Oversampling
 OWNDC
+OWNERDRAW
 Packagemanager
 PACL
 PAINTSTRUCT
@@ -1510,7 +1515,6 @@ pgp
 pgsql
 pguid
 PHANDLE
-PHANDLER
 phbm
 phbmp
 phwnd
@@ -1910,7 +1914,6 @@ spam
 spdisp
 spdlog
 spdo
-specialfolder
 spec'ing
 spesi
 splitwstring

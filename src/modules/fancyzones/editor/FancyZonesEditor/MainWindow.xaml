@@ -188,11 +188,12 @@
                         <RowDefinition Height="Auto" />
                         <RowDefinition Height="Auto" />
                     </Grid.RowDefinitions>
-                    
-                    <TextBlock Text="{x:Static props:Resources.Templates}"
-                               x:Name="TemplatesHeaderBlock"
-                               FontWeight="SemiBold"
-                               FontSize="24" />
+
+                    <local:HeadingTextBlock Text="{x:Static props:Resources.Templates}"
+                        AutomationProperties.HeadingLevel="Level1"
+                        x:Name="TemplatesHeaderBlock"
+                        FontWeight="SemiBold"
+                        FontSize="24" />
 
                     <ui:GridView ItemsSource="{Binding TemplateModels}"
                                  Grid.Row="1"
@@ -215,7 +216,8 @@
                         </ui:GridView.ItemContainerStyle>
                     </ui:GridView>
 
-                    <TextBlock Text="{x:Static props:Resources.Custom}"
+                    <local:HeadingTextBlock Text="{x:Static props:Resources.Custom}"
+                               AutomationProperties.HeadingLevel="Level1"
                                x:Name="CustomHeaderBlock"
                                FontWeight="SemiBold"
                                Grid.Row="2"
@@ -362,7 +364,13 @@
                           Opened="Dialog_Opened"
                           Closed="Dialog_Closed">
             <ui:ContentDialog.Title>
-                <TextBlock x:Name="EditLayoutDialogTitle" MaxWidth="320" Margin="0,0,96,0" Loaded="EditLayoutDialogTitle_Loaded"/>
+                <local:HeadingTextBlock 
+                    x:Name="EditLayoutDialogTitle" 
+                    MaxWidth="320" 
+                    Margin="0,0,96,0" 
+                    Style="{StaticResource HeadingTextBlock}" 
+                    Loaded="EditLayoutDialogTitle_Loaded" 
+                    AutomationProperties.HeadingLevel="Level1"/>
             </ui:ContentDialog.Title>
             <Grid DataContext="{Binding SelectedModel}"
                  Margin="4,4,24,32">
@@ -739,11 +747,17 @@
                           PrimaryButtonText="{x:Static props:Resources.Create}"
                           PrimaryButtonClick="NewLayoutDialog_PrimaryButtonClick"
                           IsPrimaryButtonEnabled="{Binding ElementName=LayoutNameText, Path=Text.Length}"
-                          Title="{x:Static props:Resources.Choose_layout_type}"
                           Opened="Dialog_Opened"
                           Closed="Dialog_Closed">
+            <ui:ContentDialog.TitleTemplate>
+                <DataTemplate>
+                    <local:HeadingTextBlock Text="{x:Static props:Resources.Choose_layout_type}"
+                       AutomationProperties.HeadingLevel="Level1"
+                       Style="{StaticResource HeadingTextBlock}" />
+                </DataTemplate>
+            </ui:ContentDialog.TitleTemplate>
             <StackPanel Margin="0,16,24,0">
-                <TextBlock x:Name="NameHeaderText"
+                    <TextBlock x:Name="NameHeaderText"
                            Text="{x:Static props:Resources.Name}" />
                 <TextBox Margin="3,6,3,0"
                          x:Name="LayoutNameText"
@@ -815,11 +829,11 @@
                                            Margin="0,4,0,0"
                                            Text="{x:Static props:Resources.Layout_Canvas_Description}"
                                            Foreground="{DynamicResource SecondaryForegroundBrush}" />
-                            </StackPanel>
-                        </Grid>
-                    </RadioButton.Content>
-                </RadioButton>
-            </StackPanel>
+                                </StackPanel>
+                            </Grid>
+                        </RadioButton.Content>
+                    </RadioButton>
+                </StackPanel>
         </ui:ContentDialog>
     </Grid>
 </Window>
