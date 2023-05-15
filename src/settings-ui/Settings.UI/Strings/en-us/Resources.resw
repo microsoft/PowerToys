@@ -2428,6 +2428,9 @@ From there, simply click on one of the supported files in the File Explorer and 
   <data name="AlwaysOnTop_Activation_GroupSettings.Header" xml:space="preserve">
     <value>Activation</value>
   </data>
+  <data name="Peek_Activation_GroupSettings.Header" xml:space="preserve">
+    <value>Activation</value>
+  </data>
   <data name="AlwaysOnTop_EnableToggleControl_HeaderText.Header" xml:space="preserve">
     <value>Enable Always On Top</value>
     <comment>"Always On Top" is the name of the utility</comment>

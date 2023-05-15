@@ -14,9 +14,10 @@
     <controls:SettingsPageControl x:Uid="Peek" ModuleImageSource="ms-appx:///Assets/Modules/Peek.png">
         <controls:SettingsPageControl.ModuleContent>
             <StackPanel Orientation="Vertical">
-                <labs:SettingsCard x:Uid="Peek_EnablePeek" 
-                                   HeaderIcon="{ui:BitmapIcon Source=/Assets/FluentIcons/FluentIconsPeek.png}"
-                                   IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabledGpoConfigured, Converter={StaticResource BoolNegationConverter}}">
+                <labs:SettingsCard
+                    x:Uid="Peek_EnablePeek"
+                    HeaderIcon="{ui:BitmapIcon Source=/Assets/FluentIcons/FluentIconsPeek.png}"
+                    IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabledGpoConfigured, Converter={StaticResource BoolNegationConverter}}">
                     <ToggleSwitch IsOn="{x:Bind ViewModel.IsEnabled, Mode=TwoWay}" />
                 </labs:SettingsCard>
                 <InfoBar
@@ -26,11 +27,11 @@
                     IsTabStop="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabledGpoConfigured}"
                     Severity="Informational" />
 
-                <labs:SettingsCard x:Uid="Shortcut" 
-                                   IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}"
-                                   HeaderIcon="{ui:FontIcon FontFamily={StaticResource SymbolThemeFontFamily}, Glyph=&#xEDA7;}">
-                    <controls:ShortcutControl MinWidth="{StaticResource SettingActionControlMinWidth}" HotkeySettings="{x:Bind Path=ViewModel.ActivationShortcut, Mode=TwoWay}" />
-                </labs:SettingsCard>
+                <controls:SettingsGroup x:Uid="Peek_Activation_GroupSettings" IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}">
+                    <labs:SettingsCard x:Uid="Activation_Shortcut" HeaderIcon="{ui:FontIcon FontFamily={StaticResource SymbolThemeFontFamily}, Glyph=&#xEDA7;}">
+                        <controls:ShortcutControl MinWidth="{StaticResource SettingActionControlMinWidth}" HotkeySettings="{x:Bind Path=ViewModel.ActivationShortcut, Mode=TwoWay}" />
+                    </labs:SettingsCard>
+                </controls:SettingsGroup>
             </StackPanel>
         </controls:SettingsPageControl.ModuleContent>
     </controls:SettingsPageControl>
