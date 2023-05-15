@@ -4,7 +4,7 @@
 
 using System;
 using System.Threading.Tasks;
-using WIC;
+using Peek.Common.WIC;
 
 namespace Peek.FilePreviewer.Previewers
 {
@@ -15,7 +15,7 @@ namespace Peek.FilePreviewer.Previewers
             return Task.Run(() =>
             {
                 // TODO: Find a way to get file metadata without hydrating files. Look into Shell API/Windows Property System, e.g., IPropertyStore
-                IWICImagingFactory factory = (IWICImagingFactory)new WICImagingFactoryClass();
+                IWICImagingFactory factory = (IWICImagingFactory)new WICImagingFactory();
                 var decoder = factory.CreateDecoderFromFilename(filePath, IntPtr.Zero, StreamAccessMode.GENERIC_READ, WICDecodeOptions.WICDecodeMetadataCacheOnLoad);
                 var frame = decoder?.GetFrame(0);
                 int width = 0;
