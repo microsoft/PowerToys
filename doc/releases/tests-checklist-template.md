@@ -143,7 +143,6 @@ Disable FZ and clear `app-zone-history.json` before starting. FancyZones should 
     - [ ] Turn Show this window on all desktops on, verify you can snap this window to a zone.
     - [ ] Turn Show windows from this app on all desktops on, verify you can snap this window to a zone.
 
-
 ### Snapped window behavior
 - [ ] `Keep windows in their zones when the screen resolution changes` on, snap a window to a zone, change the screen resolution or scaling, verify window changed its size and position.
 - [ ] `Keep windows in their zones when the screen resolution changes` on, snap a window to a zone on the secondary monitor. Disconnect the secondary monitor (the window will be moved to the primary monitor). Reconnect the secondary monitor. Verify the window returned to its zone. 
@@ -230,9 +229,7 @@ Enable `Enable quick layout switch`, assign numbers to custom layouts.
 - [ ] Delete an applied custom layout in the Editor, verify that there is no layout applied instead of it.
 - [ ] Apply a grid layout, change the screen resolution or scaling, verify that the assigned layout fits the screen. NOTE: canvas layout could not fit the screen if it was created on a monitor with a different resolution.
 
-
 ### Layout reset
-
 * Test layout resetting.
 Before testing 
    * Remove all virtual desktops 
@@ -253,7 +250,6 @@ Before testing
    * Set default horizontal and vertical layouts
    * Delete `applied-layouts.json`
    * Verify that selected default layout is applied according to configuration
-
 
 ### Span zones across monitors
 - [ ] Switch between `Allow zones to span across monitors` on and off. Verify that layouts are applied correctly in both cases.

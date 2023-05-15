@@ -25,9 +25,11 @@ All:
 - File Locksmith
 - GPO
 - Paste As Plain Text
+- Registry Preview
+- Peek
 ```
 
-```
+``` Andrey
 Group 1:
 - Install
 - Functional
@@ -40,7 +42,7 @@ Group 1:
 - Paste As Plain Text
 ```
 
-```
+``` Gokce
 Group 2:
 - PowerRename
 - PowerToys Run
@@ -51,9 +53,11 @@ Group 2:
 - AlwaysOnTop
 - Hosts File Editor
 - File Locksmith
+- Registry Preview
+- Peek
 ```
 
-```
+``` Jaime
 Group 3:
 - Image Resizer
 - PowerRename
@@ -66,7 +70,7 @@ Group 3:
 - Paste As Plain Text
 ```
 
-```
+``` Laszlo
 Group 4:
 - Functional
 - Color Picker
@@ -79,7 +83,7 @@ Group 4:
 - Hosts File Editor
 ```
 
-```
+``` Seraphima
 Group 5:
 - Install
 - Localization
@@ -90,7 +94,7 @@ Group 5:
 - Awake
 ```
 
-```
+``` Stefan
 Group 6:
 - Color Picker
 - FZ Editor
@@ -99,4 +103,6 @@ Group 6:
 - VCM
 - Quick Accent
 - Text Extractor
+- Registry Preview
+- Peek
 ```
