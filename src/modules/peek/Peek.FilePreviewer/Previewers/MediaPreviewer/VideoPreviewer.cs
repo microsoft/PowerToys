@@ -43,8 +43,6 @@ namespace Peek.FilePreviewer.Previewers
 
         private Task<bool>? VideoTask { get; set; }
 
-        /*private bool IsVideoLoaded => VideoTask?.Status == TaskStatus.RanToCompletion;*/
-
         public static bool IsFileTypeSupported(string fileExt)
         {
             return _supportedFileTypes.Contains(fileExt);
