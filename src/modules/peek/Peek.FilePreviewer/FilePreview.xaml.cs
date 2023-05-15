@@ -203,6 +203,8 @@ namespace Peek.FilePreviewer
 
         partial void OnPreviewerChanging(IPreviewer? value)
         {
+            VideoPreview.MediaPlayer.Pause();
+
             if (Previewer != null)
             {
                 Previewer.PropertyChanged -= Previewer_PropertyChanged;
