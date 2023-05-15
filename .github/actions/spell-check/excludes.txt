@@ -81,6 +81,9 @@
 ^\Qsrc/common/ManagedCommon/ColorFormatHelper.cs\E$
 ^\Qsrc/modules/colorPicker/ColorPickerUI/Shaders/GridShader.cso\E$
 ^\Qsrc/modules/MouseUtils/MouseJumpUI/MainForm.resx\E$
+^\Qsrc/modules/MouseWithoutBorders/App/Form/frmAbout.cs\E$
+^\Qsrc/modules/MouseWithoutBorders/App/Properties/AssemblyInfo.cs\E$
+^\Qsrc/modules/MouseWithoutBorders/ModuleInterface/generateSecurityDescriptor.h\E$
 ^\Qsrc/settings-ui/Settings.UI.UnitTests/BackwardsCompatibility/TestFiles/CorruptJson/Microsoft/PowerToys/settings.json\E$
 ^\Qsrc/settings-ui/Settings.UI.UnitTests/BackwardsCompatibility/TestFiles/v0.18.2/Microsoft/PowerToys/PowerRename/power-rename-ui-flags\E$
 ^\Qsrc/settings-ui/Settings.UI.UnitTests/BackwardsCompatibility/TestFiles/v0.19.2/Microsoft/PowerToys/PowerRename/power-rename-ui-flags\E$
@@ -100,6 +103,10 @@
 ^src/modules/imageresizer/dll/ContextMenuHandler\.rgs$
 ^src/modules/imageresizer/dll/ImageResizerExt\.rgs$
 ^src/modules/MouseUtils/MouseJumpUI/NativeMethods/User32/UI/WindowsAndMessaging/User32.SYSTEM_METRICS_INDEX.cs$
+^src/modules/MouseWithoutBorders/App/Form/.*\.resx$
+^src/modules/MouseWithoutBorders/App/Form/.*\.Designer\.cs$
+^src/modules/MouseWithoutBorders/App/Helper/.*\.resx$
+^src/modules/MouseWithoutBorders/App/.*/NativeMethods\.cs$
 ^src/modules/peek/Peek\.Common/NativeMethods\.txt$
 ^src/modules/powerrename/testapp/PowerRenameTest\.vcxproj\.filters$
 ^src/modules/previewpane/PreviewPaneUnitTests/HelperFiles/MarkdownWithHTMLImageTag\.txt$

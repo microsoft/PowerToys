@@ -1,5 +1,6 @@
 [CmdletBinding()]
 Param(
+    # Can be multiple files separated by ; as long as they're on the same directory
     [Parameter(Mandatory = $True, Position = 1)]
     [AllowEmptyString()]
     [string]$fileDepsJson,
@@ -56,16 +57,22 @@ $dllsToIgnore = @("System.CodeDom.dll", "WindowsBase.dll")
 if ($fileDepsJson -eq [string]::Empty) {
     $fileDepsRoot = $depsPath
 } else {
-    $fileDepsRoot = (Get-ChildItem $fileDepsJson).Directory.FullName
-    $depsJson = Get-Content $fileDepsJson | ConvertFrom-Json
+    $multipleDepsJson = $fileDepsJson.Split(";")
 
-    $runtimeList = ([array]$depsJson.targets.PSObject.Properties)[-1].Value.PSObject.Properties | Where-Object {
-        $_.Name -match "runtimepack.*Runtime"
-    };
+    foreach ( $singleDepsJson in $multipleDepsJson )
+    {
 
-    $runtimeList | ForEach-Object {
-        $_.Value.PSObject.Properties.Value | ForEach-Object {
-            $fileExclusionList += $_.PSObject.Properties.Name
+        $fileDepsRoot = (Get-ChildItem $singleDepsJson).Directory.FullName
+        $depsJson = Get-Content $singleDepsJson | ConvertFrom-Json
+
+        $runtimeList = ([array]$depsJson.targets.PSObject.Properties)[-1].Value.PSObject.Properties | Where-Object {
+            $_.Name -match "runtimepack.*Runtime"
+        };
+
+        $runtimeList | ForEach-Object {
+            $_.Value.PSObject.Properties.Value | ForEach-Object {
+                $fileExclusionList += $_.PSObject.Properties.Name
+            }
         }
     }
 }

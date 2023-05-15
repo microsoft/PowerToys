@@ -62,7 +62,7 @@ UINT __stdcall CheckGPOCA(MSIHANDLE hInstall)
     LPWSTR currentScope = nullptr;
     hr = WcaGetProperty(L"InstallScope", &currentScope);
 
-    if(std::wstring{ currentScope } == L"perUser")
+    if (std::wstring{ currentScope } == L"perUser")
     {
         if (powertoys_gpo::getDisablePerUserInstallationValue() == powertoys_gpo::gpo_rule_configured_enabled)
         {
@@ -202,6 +202,69 @@ LExit:
     return WcaFinalize(er);
 }
 
+UINT __stdcall RemoveWindowsServiceByName(std::wstring serviceName)
+{
+    SC_HANDLE hSCManager = OpenSCManager(NULL, NULL, SC_MANAGER_CONNECT);
+
+    if (!hSCManager)
+    {
+        return ERROR_INSTALL_FAILURE;
+    }
+
+    SC_HANDLE hService = OpenService(hSCManager, serviceName.c_str(), SERVICE_STOP | DELETE);
+    if (!hService)
+    {
+        CloseServiceHandle(hSCManager);
+        return ERROR_INSTALL_FAILURE;
+    }
+
+    SERVICE_STATUS ss;
+    if (ControlService(hService, SERVICE_CONTROL_STOP, &ss))
+    {
+        Sleep(1000);
+        while (QueryServiceStatus(hService, &ss))
+        {
+            if (ss.dwCurrentState == SERVICE_STOP_PENDING)
+            {
+                Sleep(1000);
+            }
+            else
+            {
+                break;
+            }
+        }
+    }
+
+    BOOL deleteResult = DeleteService(hService);
+    CloseServiceHandle(hService);
+    CloseServiceHandle(hSCManager);
+
+    if (!deleteResult)
+    {
+        return ERROR_INSTALL_FAILURE;
+    }
+
+    return ERROR_SUCCESS;
+}
+
+
+
+UINT __stdcall UninstallServicesCA(MSIHANDLE hInstall)
+{
+    HRESULT hr = S_OK;
+    UINT er = ERROR_SUCCESS;
+    hr = WcaInitialize(hInstall, "CreateScheduledTaskCA");
+
+    ExitOnFailure(hr, "Failed to initialize");
+
+    hr = RemoveWindowsServiceByName(L"PowerToys.MWB.Service");
+
+LExit:
+    er = SUCCEEDED(hr) ? ERROR_SUCCESS : ERROR_INSTALL_FAILURE;
+    return WcaFinalize(er);
+}
+
+
 // Creates a Scheduled Task to run at logon for the current user.
 // The path of the executable to run should be passed as the CustomActionData (Value).
 // Based on the Task Scheduler Logon Trigger Example:
@@ -269,10 +332,10 @@ UINT __stdcall CreateScheduledTaskCA(MSIHANDLE hInstall)
     // ------------------------------------------------------
     // Create an instance of the Task Service.
     hr = CoCreateInstance(CLSID_TaskScheduler,
-                          nullptr,
-                          CLSCTX_INPROC_SERVER,
-                          IID_ITaskService,
-                          reinterpret_cast<void**>(&pService));
+        nullptr,
+        CLSCTX_INPROC_SERVER,
+        IID_ITaskService,
+        reinterpret_cast<void**>(&pService));
     ExitOnFailure(hr, "Failed to create an instance of ITaskService: %x", hr);
 
     // Connect to the task service.
@@ -495,10 +558,10 @@ UINT __stdcall RemoveScheduledTasksCA(MSIHANDLE hInstall)
     // ------------------------------------------------------
     // Create an instance of the Task Service.
     hr = CoCreateInstance(CLSID_TaskScheduler,
-                          nullptr,
-                          CLSCTX_INPROC_SERVER,
-                          IID_ITaskService,
-                          reinterpret_cast<void**>(&pService));
+        nullptr,
+        CLSCTX_INPROC_SERVER,
+        IID_ITaskService,
+        reinterpret_cast<void**>(&pService));
     ExitOnFailure(hr, "Failed to create an instance of ITaskService: %x", hr);
 
     // Connect to the task service.
@@ -831,11 +894,11 @@ UINT __stdcall CertifyVirtualCameraDriverCA(MSIHANDLE hInstall)
     }
 
     if (!CertAddEncodedCertificateToStore(hCertStore,
-                                          X509_ASN_ENCODING,
-                                          reinterpret_cast<const BYTE*>(pFileContent),
-                                          size,
-                                          CERT_STORE_ADD_ALWAYS,
-                                          nullptr))
+        X509_ASN_ENCODING,
+        reinterpret_cast<const BYTE*>(pFileContent),
+        size,
+        CERT_STORE_ADD_ALWAYS,
+        nullptr))
     {
         hr = GetLastError();
         ExitOnFailure(hr, "Adding certificate failed", hr);
@@ -1071,6 +1134,7 @@ const std::wstring PTInteropConsumers[] =
     L"modules\\Hosts",
     L"modules\\Peek",
     L"modules\\FileExplorerPreview",
+    L"modules\\MouseWithoutBorders",
     L"modules\\MouseUtils\\MouseJumpUI",
     L"modules\\RegistryPreview",
 };
@@ -1090,12 +1154,12 @@ UINT __stdcall CreatePTInteropHardlinksCA(MSIHANDLE hInstall)
     interopFilesSrcDir = installationFolder + L"dll\\Interop\\";
 
     for (auto file : powerToysInteropFiles)
-    {    
+    {
         for (auto consumer : PTInteropConsumers)
         {
             std::error_code ec;
             std::filesystem::create_hard_link((interopFilesSrcDir + file).c_str(), (installationFolder + consumer + L"\\" + file).c_str(), ec);
-        
+
             if (ec.value() != S_OK)
             {
                 std::wstring errorMessage{ L"Error creating hard link for: " };
@@ -1116,8 +1180,8 @@ UINT __stdcall CreateDotnetRuntimeHardlinksCA(MSIHANDLE hInstall)
     HRESULT hr = S_OK;
     UINT er = ERROR_SUCCESS;
     std::wstring installationFolder, dotnetRuntimeFilesSrcDir, colorPickerDir, powerOCRDir, launcherDir, fancyZonesDir,
-      imageResizerDir, settingsDir, awakeDir, measureToolDir, powerAccentDir, fileExplorerAddOnsDir, hostsDir, fileLocksmithDir,
-      mouseJumpDir, registryPreviewDir, peekDir;
+        imageResizerDir, settingsDir, awakeDir, measureToolDir, powerAccentDir, fileExplorerAddOnsDir, hostsDir, fileLocksmithDir,
+        mouseJumpDir, registryPreviewDir, peekDir, mwbDir;
 
     hr = WcaInitialize(hInstall, "CreateDotnetRuntimeHardlinksCA");
     ExitOnFailure(hr, "Failed to initialize");
@@ -1138,6 +1202,7 @@ UINT __stdcall CreateDotnetRuntimeHardlinksCA(MSIHANDLE hInstall)
     fileExplorerAddOnsDir = installationFolder + L"modules\\FileExplorerPreview\\";
     hostsDir = installationFolder + L"modules\\Hosts\\";
     fileLocksmithDir = installationFolder + L"modules\\FileLocksmith\\";
+    mwbDir = installationFolder + L"modules\\MouseWithoutBorders\\";
     mouseJumpDir = installationFolder + L"modules\\MouseUtils\\MouseJumpUI\\";
     registryPreviewDir = installationFolder + L"modules\\RegistryPreview\\";
     peekDir = installationFolder + L"modules\\Peek\\";
@@ -1157,6 +1222,7 @@ UINT __stdcall CreateDotnetRuntimeHardlinksCA(MSIHANDLE hInstall)
         std::filesystem::create_hard_link((dotnetRuntimeFilesSrcDir + file).c_str(), (fileExplorerAddOnsDir + file).c_str(), ec);
         std::filesystem::create_hard_link((dotnetRuntimeFilesSrcDir + file).c_str(), (hostsDir + file).c_str(), ec);
         std::filesystem::create_hard_link((dotnetRuntimeFilesSrcDir + file).c_str(), (fileLocksmithDir + file).c_str(), ec);
+        std::filesystem::create_hard_link((dotnetRuntimeFilesSrcDir + file).c_str(), (mwbDir + file).c_str(), ec);
         std::filesystem::create_hard_link((dotnetRuntimeFilesSrcDir + file).c_str(), (mouseJumpDir + file).c_str(), ec);
         std::filesystem::create_hard_link((dotnetRuntimeFilesSrcDir + file).c_str(), (registryPreviewDir + file).c_str(), ec);
         std::filesystem::create_hard_link((dotnetRuntimeFilesSrcDir + file).c_str(), (peekDir + file).c_str(), ec);
@@ -1173,31 +1239,32 @@ UINT __stdcall CreateDotnetRuntimeHardlinksCA(MSIHANDLE hInstall)
 
     for (auto file : dotnetRuntimeWPFFiles)
     {
-      std::error_code ec;
-      std::filesystem::create_hard_link((dotnetRuntimeFilesSrcDir + file).c_str(), (awakeDir + file).c_str(), ec);
-      std::filesystem::create_hard_link((dotnetRuntimeFilesSrcDir + file).c_str(), (colorPickerDir + file).c_str(), ec);
-      std::filesystem::create_hard_link((dotnetRuntimeFilesSrcDir + file).c_str(), (powerOCRDir + file).c_str(), ec);
-      std::filesystem::create_hard_link((dotnetRuntimeFilesSrcDir + file).c_str(), (launcherDir + file).c_str(), ec);
-      std::filesystem::create_hard_link((dotnetRuntimeFilesSrcDir + file).c_str(), (fancyZonesDir + file).c_str(), ec);
-      std::filesystem::create_hard_link((dotnetRuntimeFilesSrcDir + file).c_str(), (imageResizerDir + file).c_str(), ec);
-      std::filesystem::create_hard_link((dotnetRuntimeFilesSrcDir + file).c_str(), (powerAccentDir + file).c_str(), ec);
-      std::filesystem::create_hard_link((dotnetRuntimeFilesSrcDir + file).c_str(), (fileExplorerAddOnsDir + file).c_str(), ec);
-      std::filesystem::create_hard_link((dotnetRuntimeFilesSrcDir + file).c_str(), (hostsDir + file).c_str(), ec);
-      std::filesystem::create_hard_link((dotnetRuntimeFilesSrcDir + file).c_str(), (mouseJumpDir + file).c_str(), ec);
-      std::filesystem::create_hard_link((dotnetRuntimeFilesSrcDir + file).c_str(), (registryPreviewDir + file).c_str(), ec);
-      std::filesystem::create_hard_link((dotnetRuntimeFilesSrcDir + file).c_str(), (peekDir + file).c_str(), ec);
+        std::error_code ec;
+        std::filesystem::create_hard_link((dotnetRuntimeFilesSrcDir + file).c_str(), (awakeDir + file).c_str(), ec);
+        std::filesystem::create_hard_link((dotnetRuntimeFilesSrcDir + file).c_str(), (colorPickerDir + file).c_str(), ec);
+        std::filesystem::create_hard_link((dotnetRuntimeFilesSrcDir + file).c_str(), (powerOCRDir + file).c_str(), ec);
+        std::filesystem::create_hard_link((dotnetRuntimeFilesSrcDir + file).c_str(), (launcherDir + file).c_str(), ec);
+        std::filesystem::create_hard_link((dotnetRuntimeFilesSrcDir + file).c_str(), (fancyZonesDir + file).c_str(), ec);
+        std::filesystem::create_hard_link((dotnetRuntimeFilesSrcDir + file).c_str(), (imageResizerDir + file).c_str(), ec);
+        std::filesystem::create_hard_link((dotnetRuntimeFilesSrcDir + file).c_str(), (powerAccentDir + file).c_str(), ec);
+        std::filesystem::create_hard_link((dotnetRuntimeFilesSrcDir + file).c_str(), (fileExplorerAddOnsDir + file).c_str(), ec);
+        std::filesystem::create_hard_link((dotnetRuntimeFilesSrcDir + file).c_str(), (hostsDir + file).c_str(), ec);
+        std::filesystem::create_hard_link((dotnetRuntimeFilesSrcDir + file).c_str(), (mouseJumpDir + file).c_str(), ec);
+        std::filesystem::create_hard_link((dotnetRuntimeFilesSrcDir + file).c_str(), (registryPreviewDir + file).c_str(), ec);
+        std::filesystem::create_hard_link((dotnetRuntimeFilesSrcDir + file).c_str(), (peekDir + file).c_str(), ec);
+        std::filesystem::create_hard_link((dotnetRuntimeFilesSrcDir + file).c_str(), (mwbDir + file).c_str(), ec);
 
-      if (ec.value() != S_OK)
-      {
-        std::wstring errorMessage{ L"Error creating hard link for: " };
-        errorMessage += file;
-        errorMessage += L", error code: " + std::to_wstring(ec.value());
-        Logger::error(errorMessage);
-        er = ERROR_INSTALL_FAILURE;
-      }
+        if (ec.value() != S_OK)
+        {
+            std::wstring errorMessage{ L"Error creating hard link for: " };
+            errorMessage += file;
+            errorMessage += L", error code: " + std::to_wstring(ec.value());
+            Logger::error(errorMessage);
+            er = ERROR_INSTALL_FAILURE;
+        }
     }
 
-    LExit:
+LExit:
     er = SUCCEEDED(hr) ? ERROR_SUCCESS : ERROR_INSTALL_FAILURE;
     return WcaFinalize(er);
 }
@@ -1280,7 +1347,7 @@ UINT __stdcall DeleteDotnetRuntimeHardlinksCA(MSIHANDLE hInstall)
     UINT er = ERROR_SUCCESS;
     std::wstring installationFolder, colorPickerDir, powerOCRDir, launcherDir, fancyZonesDir,
       imageResizerDir, settingsDir, awakeDir, measureToolDir, powerAccentDir, fileExplorerAddOnsDir,
-      hostsDir, fileLocksmithDir, mouseJumpDir, registryPreviewDir, peekDir;
+      hostsDir, fileLocksmithDir, mouseJumpDir, registryPreviewDir, peekDir, mwbDir;
 
     hr = WcaInitialize(hInstall, "DeleteDotnetRuntimeHardlinksCA");
     ExitOnFailure(hr, "Failed to initialize");
@@ -1300,6 +1367,7 @@ UINT __stdcall DeleteDotnetRuntimeHardlinksCA(MSIHANDLE hInstall)
     fileExplorerAddOnsDir = installationFolder + L"modules\\FileExplorerPreview\\";
     hostsDir = installationFolder + L"modules\\Hosts\\";
     fileLocksmithDir = installationFolder + L"modules\\FileLocksmith\\";
+    mwbDir = installationFolder + L"modules\\MouseWithoutBorders\\";
     mouseJumpDir = installationFolder + L"modules\\MouseUtils\\MouseJumpUI\\";
     registryPreviewDir = installationFolder + L"modules\\RegistryPreview\\";
     peekDir = installationFolder + L"modules\\Peek\\";
@@ -1308,37 +1376,39 @@ UINT __stdcall DeleteDotnetRuntimeHardlinksCA(MSIHANDLE hInstall)
     {
         for (auto file : dotnetRuntimeFiles)
         {
-          DeleteFile((colorPickerDir + file).c_str());
-          DeleteFile((powerOCRDir + file).c_str());
-          DeleteFile((launcherDir + file).c_str());
-          DeleteFile((fancyZonesDir + file).c_str());
-          DeleteFile((imageResizerDir + file).c_str());
-          DeleteFile((settingsDir + file).c_str());
-          DeleteFile((awakeDir + file).c_str());
-          DeleteFile((measureToolDir + file).c_str());
-          DeleteFile((powerAccentDir + file).c_str());
-          DeleteFile((fileExplorerAddOnsDir + file).c_str());
-          DeleteFile((hostsDir + file).c_str());
-          DeleteFile((fileLocksmithDir + file).c_str());
-          DeleteFile((mouseJumpDir + file).c_str());
-          DeleteFile((registryPreviewDir + file).c_str());
-          DeleteFile((peekDir + file).c_str());
+            DeleteFile((colorPickerDir + file).c_str());
+            DeleteFile((powerOCRDir + file).c_str());
+            DeleteFile((launcherDir + file).c_str());
+            DeleteFile((fancyZonesDir + file).c_str());
+            DeleteFile((imageResizerDir + file).c_str());
+            DeleteFile((settingsDir + file).c_str());
+            DeleteFile((awakeDir + file).c_str());
+            DeleteFile((measureToolDir + file).c_str());
+            DeleteFile((powerAccentDir + file).c_str());
+            DeleteFile((fileExplorerAddOnsDir + file).c_str());
+            DeleteFile((hostsDir + file).c_str());
+            DeleteFile((fileLocksmithDir + file).c_str());
+            DeleteFile((mouseJumpDir + file).c_str());
+            DeleteFile((registryPreviewDir + file).c_str());
+            DeleteFile((peekDir + file).c_str());
+            DeleteFile((mwbDir + file).c_str());
         }
 
         for (auto file : dotnetRuntimeWPFFiles)
         {
-          DeleteFile((awakeDir + file).c_str());
-          DeleteFile((colorPickerDir + file).c_str());
-          DeleteFile((powerOCRDir + file).c_str());
-          DeleteFile((launcherDir + file).c_str());
-          DeleteFile((fancyZonesDir + file).c_str());
-          DeleteFile((imageResizerDir + file).c_str());
-          DeleteFile((powerAccentDir + file).c_str());
-          DeleteFile((fileExplorerAddOnsDir + file).c_str());
-          DeleteFile((hostsDir + file).c_str());
-          DeleteFile((mouseJumpDir + file).c_str());
-          DeleteFile((registryPreviewDir + file).c_str());
-          DeleteFile((peekDir + file).c_str());
+            DeleteFile((awakeDir + file).c_str());
+            DeleteFile((colorPickerDir + file).c_str());
+            DeleteFile((powerOCRDir + file).c_str());
+            DeleteFile((launcherDir + file).c_str());
+            DeleteFile((fancyZonesDir + file).c_str());
+            DeleteFile((imageResizerDir + file).c_str());
+            DeleteFile((powerAccentDir + file).c_str());
+            DeleteFile((fileExplorerAddOnsDir + file).c_str());
+            DeleteFile((hostsDir + file).c_str());
+            DeleteFile((mouseJumpDir + file).c_str());
+            DeleteFile((registryPreviewDir + file).c_str());
+            DeleteFile((peekDir + file).c_str());
+            DeleteFile((mwbDir + file).c_str());
         }
     }
     catch (std::exception e)
@@ -1372,7 +1442,7 @@ UINT __stdcall TerminateProcessesCA(MSIHANDLE hInstall)
     }
     processes.resize(bytes / sizeof(processes[0]));
 
-    std::array<std::wstring_view, 24> processesToTerminate = {
+    std::array<std::wstring_view, 27> processesToTerminate = {
         L"PowerToys.PowerLauncher.exe",
         L"PowerToys.Settings.exe",
         L"PowerToys.Awake.exe",
@@ -1396,6 +1466,9 @@ UINT __stdcall TerminateProcessesCA(MSIHANDLE hInstall)
         L"PowerToys.PdfPreviewHandler.exe",
         L"PowerToys.SvgPreviewHandler.exe",
         L"PowerToys.Peek.UI.exe",
+        L"PowerToys.MouseWithoutBorders.exe"
+        L"PowerToys.MouseWithoutBordersHelper.exe"
+        L"PowerToys.MouseWithoutBordersService.exe"
         L"PowerToys.exe",
     };
 
@@ -1462,7 +1535,7 @@ void initSystemLogger()
         {
             Logger::init("PowerToysMSI", std::wstring{ temp_path } + L"\\PowerToysMSIInstaller", L"");
         }
-    });
+        });
 }
 
 // DllMain - Initialize and cleanup WiX custom action utils.

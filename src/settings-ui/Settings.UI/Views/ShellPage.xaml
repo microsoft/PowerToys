@@ -95,6 +95,11 @@
                     Icon="{ui:BitmapIcon Source=/Assets/FluentIcons/FluentIconsMouseUtils.png}" />
 
                 <NavigationViewItem
+                    x:Uid="Shell_MouseWithoutBorders"
+                        helpers:NavHelper.NavigateTo="views:MouseWithoutBordersPage"
+                        Icon="{ui:BitmapIcon Source=/Assets/FluentIcons/FluentIconsMouseWithoutBorders.png}" />
+
+                <NavigationViewItem
                     x:Uid="Shell_PastePlain"
                     helpers:NavHelper.NavigateTo="views:PastePlainPage"
                     Icon="{ui:BitmapIcon Source=/Assets/FluentIcons/FluentIconsPastePlain.png}" />

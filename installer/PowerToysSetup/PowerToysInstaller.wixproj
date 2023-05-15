@@ -39,6 +39,7 @@ call "..\..\..\publish.cmd" arm64
     call move /Y ..\..\..\KeyboardManager.wxs.bk ..\..\..\KeyboardManager.wxs
     call move /Y ..\..\..\MeasureTool.wxs.bk ..\..\..\MeasureTool.wxs
     call move /Y ..\..\..\MouseUtils.wxs.bk ..\..\..\MouseUtils.wxs
+    call move /Y ..\..\..\MouseWithoutBorders.wxs.bk ..\..\..\MouseWithoutBorders.wxs
     call move /Y ..\..\..\Peek.wxs.bk ..\..\..\Peek.wxs
     call move /Y ..\..\..\PowerAccent.wxs.bk ..\..\..\PowerAccent.wxs
     call move /Y ..\..\..\PowerRename.wxs.bk ..\..\..\PowerRename.wxs
@@ -123,6 +124,7 @@ call "..\..\..\publish.cmd" arm64
     <Compile Include="TextExtractor.wxs" />
     <Compile Include="Tools.wxs" />
     <Compile Include="VideoConference.wxs" />
+    <Compile Include="MouseWithoutBorders.wxs" />
 
     <Compile Include="MonacoSRC.wxs" />
 
@@ -131,6 +133,10 @@ call "..\..\..\publish.cmd" arm64
     <Compile Include="WinAppSDK.wxs" />
   </ItemGroup>
   <ItemGroup>
+    <WixExtension Include="WixFirewallExtension">
+      <HintPath>$(WixExtDir)\WixFirewallExtension.dll</HintPath>
+      <Name>WixFirewallExtension</Name>
+    </WixExtension>
     <WixExtension Include="WixUtilExtension">
       <HintPath>$(WixExtDir)\WixUtilExtension.dll</HintPath>
       <Name>WixUtilExtension</Name>

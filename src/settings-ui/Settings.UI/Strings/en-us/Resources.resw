@@ -216,6 +216,275 @@
     <value>Enable Screen Ruler</value>
     <comment>"Screen Ruler" is the name of the utility</comment>
   </data>
+  <data name="MouseWithoutBorders_ActivationSettings.Header" xml:space="preserve">
+    <value>Activation</value>
+  </data>
+  <data name="MouseWithoutBorders_DeviceLayoutSettings.Header" xml:space="preserve">
+    <value>Device layout</value>
+  </data>
+  <data name="MouseWithoutBorders_DeviceLayoutSettings.Description" xml:space="preserve">
+    <value>Drag and drop a machine to rearrange the order.</value>
+  </data>
+  <data name="MouseWithoutBorders_CannotDragDropAsAdmin.Title" xml:space="preserve">
+    <value>It is not possible to use drag and drop while running PowerToys elevated. As a workaround, please restart PowerToys without elevation to edit the device layout.</value>
+  </data>
+  <data name="MouseWithoutBorders_KeySettings.Header" xml:space="preserve">
+    <value>Encryption Key</value>
+  </data>
+  <data name="MouseWithoutBorders_SecurityKey.Header" xml:space="preserve">
+    <value>Security key</value>
+  </data>
+  <data name="MouseWithoutBorders_SecurityKey.Description" xml:space="preserve">
+    <value>The key must be auto generated in one machine by click on New Key, then typed in other machines</value>
+  </data>
+  <data name="MouseWithoutBorders_NewKey.Content" xml:space="preserve">
+    <value>New key</value>
+  </data>
+  <data name="MouseWithoutBorders_CopyMachineName.Text" xml:space="preserve">
+    <value>Copy this PC name to the clipboard</value>
+  </data>
+  <data name="MouseWithoutBorders_ReconnectButton.Text" xml:space="preserve">
+    <value>Refresh connections</value>
+  </data>
+  <data name="MouseWithoutBorders_ReconnectTooltip.Text" xml:space="preserve">
+    <value>Reestablishes connections with other devices if you are experiencing issues.</value>
+  </data>
+  <data name="MouseWithoutBorders_ThisMachineNameLabel.Header" xml:space="preserve">
+    <value>The local machine's host name is:</value>
+  </data>
+  <data name="MouseWithoutBorders_Connect.Content" xml:space="preserve">
+    <value>Connect</value>
+  </data>
+  <data name="MouseWithoutBorders_UninstallService.Header" xml:space="preserve">
+    <value>Uninstall service</value>
+  </data>
+  <data name="MouseWithoutBorders_UninstallService.Description" xml:space="preserve">
+    <value>Removes the service from the computer. Needs to run as administrator.</value>
+  </data>
+  <data name="MouseWithoutBorders_Settings.Header" xml:space="preserve">
+    <value>Behavior</value>
+  </data>
+  <data name="MouseWithoutBorders_TroubleShooting.Header" xml:space="preserve">
+    <value>Troubleshooting</value>
+  </data>
+  <data name="MouseWithoutBorders_AddFirewallRuleButtonControl.Header" xml:space="preserve">
+    <value>Add a firewall rule for Mouse Without Borders</value>
+    <comment>"Mouse Without Borders" is a product name</comment>
+  </data>
+  <data name="MouseWithoutBorders_AddFirewallRuleButtonControl.Description" xml:space="preserve">
+    <value>Adding a firewall rule might help solve connection issues.</value>
+  </data>
+  <data name="MouseWithoutBorders_RunAsAdminText.Title" xml:space="preserve">
+    <value>You need to run as administrator to modify this setting.</value>
+  </data>
+  <data name="MouseWithoutBorders_ServiceUserUninstallWarning.Title" xml:space="preserve">
+    <value>If PowerToys is installed as a user, uninstalling/upgrading may require the Mouse Without Borders service to be removed manually later.</value>
+  </data>
+  <data name="MouseWithoutBorders_ServiceSettings.Header" xml:space="preserve">
+    <value>Service</value>
+  </data>
+  <data name="MouseWithoutBorders_Toggle_Enable.Header" xml:space="preserve">
+    <value>Enable Mouse Without Borders</value>
+  </data>
+  <data name="MouseWithoutBorders.SecondaryLinksHeader" xml:space="preserve">
+    <value>Attribution</value>
+    <comment>giving credit to the projects this utility was based on</comment>
+  </data>
+  <data name="MouseWithoutBorders.ModuleDescription" xml:space="preserve">
+    <value>Mouse Without Borders is a quick and easy way to move your cursor across multiple devices.</value>
+    <comment>"Mouse Without Borders" is the name of the utility</comment>
+  </data>
+  <data name="MouseWithoutBorders.ModuleTitle" xml:space="preserve">
+    <value>Mouse Without Borders</value>
+    <comment>"Mouse Without Borders" is the name of the utility</comment>
+  </data>
+  <data name="MouseWithoutBorders_UseService.Header" xml:space="preserve">
+    <value>Use Service</value>
+  </data>
+  <data name="MouseWithoutBorders_UseService.Description"
+      xml:space="preserve">
+      <value>Runs in service mode, that allows MWB to control remote machines when they're locked. Also allows control of system and administrator applications.</value>
+  </data>
+  <data name="MouseWithoutBorders_MatrixOneRow.Header" xml:space="preserve">
+    <value>Devices in a single row</value>
+  </data>
+  <data name="MouseWithoutBorders_MatrixOneRow.Description" xml:space="preserve">
+    <value>Sets whether the devices should are aligned on a single row. A two by two matrix is considered otherwise.</value>
+  </data>
+  <data name="MouseWithoutBorders_WrapMouse.Header" xml:space="preserve">
+    <value>Wrap mouse</value>
+  </data>
+  <data name="MouseWithoutBorders_WrapMouse.Description"
+      xml:space="preserve">
+      <value>Move control back to the first machine when mouse moves past the last one.</value>
+  </data>
+  <data name="MouseWithoutBorders_ShareClipboard.Header" xml:space="preserve">
+    <value>Share clipboard</value>
+  </data>
+  <data name="MouseWithoutBorders_TransferFile.Header" xml:space="preserve">
+    <value>Transfer file</value>
+  </data>
+  <data name="MouseWithoutBorders_HideMouseAtScreenEdge.Header" xml:space="preserve">
+    <value>Hide mouse at the screen edge</value>
+  </data>
+  <data name="MouseWithoutBorders_DrawMouseCursor.Header" xml:space="preserve">
+    <value>Draw mouse cursor</value>
+  </data>
+  <data name="MouseWithoutBorders_ValidateRemoteMachineIP.Header" xml:space="preserve">
+    <value>Validate remote machine IP</value>
+  </data>
+  <data name="MouseWithoutBorders_SameSubnetOnly.Header" xml:space="preserve">
+    <value>Same subnet only</value>
+  </data>
+  <data name="MouseWithoutBorders_BlockScreenSaverOnOtherMachines.Header" xml:space="preserve">
+    <value>Block screen saver on other machines</value>
+  </data>
+  <data name="MouseWithoutBorders_MoveMouseRelatively.Header" xml:space="preserve">
+    <value>Move mouse relatively</value>
+  </data>
+  <data name="MouseWithoutBorders_BlockMouseAtScreenCorners.Header" xml:space="preserve">
+    <value>Block mouse at screen corners</value>
+  </data>
+  <data name="MouseWithoutBorders_ShowClipboardAndNetworkStatusMessages.Header" xml:space="preserve">
+    <value>Show clipboard and network status messages</value>
+  </data>
+  <data name="MouseWithoutBorders_ShowOriginalUI.Header" xml:space="preserve">
+    <value>Show the original Mouse Without Borders UI</value>
+  </data>
+  <data name="MouseWithoutBorders_ShowOriginalUI.Description" xml:space="preserve">
+    <value>This is accessible from the system tray and requires a restart.</value>
+  </data>
+  <data name="MouseWithoutBorders_ShareClipboard.Description"
+      xml:space="preserve">
+      <value>If share clipboard stops working, Ctrl+Alt+Del then Esc may solve the problem.</value>
+  </data>
+  <data name="MouseWithoutBorders_TransferFile.Description"
+      xml:space="preserve">
+      <value>If a file (&lt;100MB) is copied, it will be transferred to the remote machine clipboard.</value>
+  </data>
+  <data name="MouseWithoutBorders_HideMouseAtScreenEdge.Description"
+      xml:space="preserve">
+      <value>Hide the mouse cursor at the top edge of the screen when switching to other machine. This option also steals the focus from any full-screen app to ensure the keyboard input is redirected.</value>
+  </data>
+  <data name="MouseWithoutBorders_DrawMouseCursor.Description"
+      xml:space="preserve">
+      <value>Mouse cursor may not be visible in Windows 10 and later versions of Windows when there is no physical mouse attached.</value>
+  </data>
+  <data name="MouseWithoutBorders_ValidateRemoteMachineIP.Description"
+      xml:space="preserve">
+      <value>Reverse DNS lookup to validate machine IP Address.</value>
+  </data>
+  <data name="MouseWithoutBorders_SameSubnetOnly.Description"
+      xml:space="preserve">
+      <value>Only connect to machines in the same intranet NNN.NNN.*.* (only works when both machines have IPv4 enabled)</value>
+  </data>
+  <data name="MouseWithoutBorders_BlockScreenSaverOnOtherMachines.Description"
+      xml:space="preserve">
+      <value>Prevent screen saver from starting on other machines when user is actively working on this machine.</value>
+  </data>
+  <data name="MouseWithoutBorders_MoveMouseRelatively.Description"
+      xml:space="preserve">
+      <value>Use this option when remote machine's monitor settings are different, or remote machine has multiple monitors.</value>
+  </data>
+  <data name="MouseWithoutBorders_BlockMouseAtScreenCorners.Description"
+      xml:space="preserve">
+      <value>To avoid accident machine-switch at screen corners.</value>
+  </data>
+  <data name="MouseWithoutBorders_ShowClipboardAndNetworkStatusMessages.Description"
+      xml:space="preserve">
+      <value>Show clipboard activities and network status in system tray notifications</value>
+  </data>
+  <data name="MouseWithoutBorders_KeyboardShortcuts_Group.Header" xml:space="preserve">
+    <value>Keyboard Shortcuts</value>
+    <comment>keyboard is the hardware peripheral</comment>
+  </data>
+  <data name="MouseWithoutBorders_EasyMouseOption.Header" xml:space="preserve">
+    <value>Easy Mouse: Move between machines by moving the mouse pointer to the screen edges.</value>
+  </data>
+  <data name="MouseWithoutBorders_EasyMouseOption.Description" xml:space="preserve">
+    <value>Can also be set to move only when pressing Shift or Ctrl.</value>
+    <comment>Shift and Ctrl are the keyboard keys</comment>
+  </data>
+  <data name="MouseWithoutBorders_EasyMouseOption_Disabled.Content" xml:space="preserve">
+    <value>Disabled</value>
+  </data>
+  <data name="MouseWithoutBorders_EasyMouseOption_Enabled.Content" xml:space="preserve">
+    <value>Enabled</value>
+  </data>
+  <data name="MouseWithoutBorders_EasyMouseOption_Ctrl.Content" xml:space="preserve">
+    <value>Ctrl</value>
+    <comment>This is the Ctrl keyboard key</comment>
+  </data>
+  <data name="MouseWithoutBorders_EasyMouseOption_Shift.Content" xml:space="preserve">
+    <value>Shift</value>
+    <comment>This is the Shift keyboard key</comment>
+  </data>
+  <data name="MouseWithoutBorders_ToggleEasyMouseShortcut.Header" xml:space="preserve">
+    <value>Shortcut to toggle Easy Mouse. Ctrl+Alt+:</value>
+    <comment>Ctrl and Alt are the keyboard keys</comment>
+  </data>
+  <data name="MouseWithoutBorders_ToggleEasyMouseShortcut.Description" xml:space="preserve">
+    <value>Only works if EasyMouse is set to Enabled or Disabled.</value>
+  </data>
+  <data name="MouseWithoutBorders_ToggleEasyMouseShortcut_Disabled.Content" xml:space="preserve">
+    <value>Disabled</value>
+  </data>
+  <data name="MouseWithoutBorders_SwitchBetweenMachineShortcut.Header" xml:space="preserve">
+    <value>Shortcut to switch between machines. Ctrl+Alt+:</value>
+    <comment>Ctrl and Alt are the keyboard keys</comment>
+  </data>
+  <data name="MouseWithoutBorders_SwitchBetweenMachineShortcut.Description" xml:space="preserve">
+    <value>Click on Ctrl+Alt+ the chosen option to switch between machines.</value>
+    <comment>Ctrl and Alt are the keyboard keys</comment>
+  </data>
+  <data name="MouseWithoutBorders_SwitchBetweenMachineShortcut_F1.Content" xml:space="preserve">
+    <value>F1, F2, F3, F4</value>
+    <comment>Don't localize. These are keyboard keys</comment>
+  </data>
+  <data name="MouseWithoutBorders_SwitchBetweenMachineShortcut_1.Content" xml:space="preserve">
+    <value>1, 2, 3, 4</value>
+    <comment>Don't localize. These are keyboard keys</comment>
+  </data>
+  <data name="MouseWithoutBorders_SwitchBetweenMachineShortcut_Disabled.Content" xml:space="preserve">
+    <value>Disabled</value>
+  </data>
+  <data name="MouseWithoutBorders_LockMachinesShortcut.Header" xml:space="preserve">
+    <value>Shortcut to press twice quickly to lock all machines. Ctrl+Alt+:</value>
+    <comment>Ctrl and Alt are the keyboard keys</comment>
+  </data>
+  <data name="MouseWithoutBorders_LockMachinesShortcut.Description" xml:space="preserve">
+    <value>Click on Ctrl+Alt+ the chosen option twice quickly to lock all machines. Note: Only the machines which have the same shortcut configured will be locked.</value>
+    <comment>Ctrl and Alt are the keyboard keys</comment>
+  </data>
+  <data name="MouseWithoutBorders_LockMachinesShortcut_Disabled.Content" xml:space="preserve">
+    <value>Disabled</value>
+  </data>
+  <data name="MouseWithoutBorders_ReconnectShortcut.Header" xml:space="preserve">
+    <value>Shortcut to try reconnecting. Ctrl+Alt+:</value>
+    <comment>Ctrl and Alt are the keyboard keys</comment>
+  </data>
+  <data name="MouseWithoutBorders_ReconnectShortcut.Description" xml:space="preserve">
+    <value>Click on Ctrl+Alt+ the chosen option to reconnect.</value>
+    <comment>Ctrl and Alt are the keyboard keys</comment>
+  </data>
+  <data name="MouseWithoutBorders_ReconnectShortcut_Disabled.Content" xml:space="preserve">
+    <value>Disabled</value>
+  </data>
+  <data name="MouseWithoutBorders_Switch2AllPcShortcut.Header" xml:space="preserve">
+    <value>Shortcut to switch to multiple machine mode. Ctrl+Alt+:</value>
+    <comment>Ctrl and Alt are the keyboard keys</comment>
+  </data>
+  <data name="MouseWithoutBorders_Switch2AllPcShortcut.Description" xml:space="preserve">
+    <value>Allows controlling all computers at once. Pressing Ctrl three times is also an option.</value>
+    <comment>This is the Ctrl keyboard key</comment>
+  </data>
+  <data name="MouseWithoutBorders_Switch2AllPcShortcut_Disabled.Content" xml:space="preserve">
+    <value>Disabled</value>
+  </data>
+  <data name="MouseWithoutBorders_Switch2AllPcShortcut_Ctrl3.Content" xml:space="preserve">
+    <value>Ctrl three times</value>
+    <comment>This is the Ctrl keyboard key</comment>
+  </data>
   <data name="VideoConference_Enable.Header" xml:space="preserve">
     <value>Enable Video Conference Mute</value>
   </data>
@@ -363,6 +632,10 @@
   <data name="Shell_KeyboardManager.Content" xml:space="preserve">
     <value>Keyboard Manager</value>
     <comment>Product name: Navigation view item name for Keyboard Manager</comment>
+  </data>
+  <data name="Shell_MouseWithoutBorders.Content" xml:space="preserve">
+    <value>Mouse Without Borders</value>
+    <comment>Product name: Navigation view item name for Mouse Without Borders</comment>
   </data>
   <data name="Shell_MouseUtilities.Content" xml:space="preserve">
     <value>Mouse utilities</value>
@@ -1674,6 +1947,9 @@ Made with 💗 by Microsoft and the PowerToys community.</value>
   <data name="Oobe_KBM.Description" xml:space="preserve">
     <value>Keyboard Manager allows you to customize the keyboard to be more productive by remapping keys and creating your own keyboard shortcuts.</value>
   </data>
+  <data name="Oobe_MouseWithoutBorders.Description" xml:space="preserve">
+    <value>Mouse Without Borders enables using the mouse pointer, keyboard, clipboard and drag and drop between machines in the same local network.</value>
+  </data>
   <data name="Oobe_PowerRename.Description" xml:space="preserve">
     <value>PowerRename enables you to perform simple bulk renaming, searching and replacing file names.</value>
   </data>
@@ -1753,6 +2029,12 @@ From there, simply click on one of the supported files in the File Explorer and 
   <data name="Oobe_KBM_TipsAndTricks.Text" xml:space="preserve">
     <value>Want to only have a shortcut work for a single application? Use the Target App field when creating the shortcut remapping.</value>
   </data>
+  <data name="Oobe_MouseWithoutBorders_HowToUse.Text" xml:space="preserve">
+    <value>Use the Settings screen on each machine to connect to the other machines using the same key. If a connection is not working, it may be necessary to add an exception to the Windows Firewall.</value>
+  </data>
+  <data name="Oobe_MouseWithoutBorders_TipsAndTricks.Text" xml:space="preserve">
+    <value>Use the service option in Settings to install a service enabling Mouse Without Borders to function even in the lock screen.</value>
+  </data>
   <data name="Oobe_PowerRename_HowToUse.Text" xml:space="preserve">
     <value>In File Explorer, right-click one or more selected files and select **PowerRename** from the context menu.</value>
   </data>
@@ -1811,6 +2093,10 @@ From there, simply click on one of the supported files in the File Explorer and 
   <data name="Oobe_KBM.Title" xml:space="preserve">
     <value>Keyboard Manager</value>
     <comment>Do not localize this string</comment>
+  </data>
+  <data name="Oobe_MouseWithoutBorders.Title" xml:space="preserve">
+    <value>Mouse Without Borders</value>
+    <comment>Product name. Do not localize this string</comment>
   </data>
   <data name="Oobe_PowerRename.Title" xml:space="preserve">
     <value>PowerRename</value>

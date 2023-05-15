@@ -7,6 +7,7 @@ AACD
 AAD
 AADF
 abap
+abcdefghjkmnpqrstuvxyz
 ABE
 abgr
 abi
@@ -24,6 +25,7 @@ ACFC
 ACFF
 Acl
 aclapi
+AClient
 AColumn
 acrt
 activatable
@@ -31,6 +33,7 @@ ACTIVATEAPP
 activationaction
 ADDUNDORECORD
 ADifferent
+adio
 administra
 ADMINS
 adml
@@ -60,7 +63,7 @@ ALLINPUT
 ALLOWUNDO
 ALLVIEW
 ALPHATYPE
-Altdown
+altdown
 alwaysontop
 amd
 AModifier
@@ -94,10 +97,12 @@ appmanifest
 APPNAME
 appref
 apps
+appsettings
 appwindow
 appwiz
 APSTUDIO
 AQS
+ARandom
 ARCHITEW
 arcosh
 ARemapped
@@ -153,6 +158,7 @@ BCB
 BCCE
 BCCEA
 bck
+Bcl
 BDB
 BDBAD
 BDCC
@@ -221,6 +227,7 @@ buildtransitive
 BUTTONUP
 BVal
 BValue
+byapp
 BYPOSITION
 bytearray
 CABD
@@ -267,6 +274,7 @@ CFEE
 CFFEE
 CFFF
 cguid
+CHANGECBCHAIN
 changecursor
 Changemove
 chdir
@@ -291,9 +299,11 @@ clickonce
 CLIENTEDGE
 clientid
 clientside
+CLIPBOARDUPDATE
 CLIPCHILDREN
 CLIPSIBLINGS
 Cloneable
+closesocket
 clrcall
 Cls
 CLSCTX
@@ -342,6 +352,7 @@ comsuppw
 comsuppwd
 comutil
 concrt
+CONFIGW
 CONFLICTINGMODIFIERKEY
 CONFLICTINGMODIFIERSHORTCUT
 CONOUT
@@ -458,6 +469,7 @@ debian
 debugbreak
 DECLAR
 declspec
+decryptor
 DED
 Dedup
 DEFAULTBOOTSTRAPPERINSTALLFOLDER
@@ -482,6 +494,8 @@ depersist
 deprioritized
 depsfileslistspath
 deref
+READOBJECTS
+WRITEOBJECTS
 DESKTOPABSOLUTEEDITING
 DESKTOPABSOLUTEPARSING
 desktopshorcutinstalled
@@ -525,6 +539,7 @@ DPolicy
 DPSAPI
 DQTAT
 DQTYPE
+DRAWCLIPBOARD
 DRAWFRAME
 drawingcolor
 dreamsofameaningfullife
@@ -607,8 +622,10 @@ Emoji
 ENABLEDELAYEDEXPANSION
 enabledisable
 ENABLEDPOPUP
+encryptor
 endpointvolume
 endregion
+ENDSESSION
 ENTERSIZEMOVE
 ENU
 EOAC
@@ -626,6 +643,7 @@ esize
 esrp
 estructuredtext
 etl
+etstat
 etw
 EUQ
 eurochange
@@ -721,6 +739,7 @@ FILEVERSION
 Filtergraph
 Filterkeyboard
 Filterx
+Finalizers
 findfast
 firefox
 FIXEDFILEINFO
@@ -733,6 +752,7 @@ FORCEMINIMIZE
 formatetc
 FRAMECHANGED
 frankychen
+frm
 Froml
 FROMTOUCH
 FSCTL
@@ -762,10 +782,13 @@ GETDPISCALEDSIZE
 GETICON
 GETMINMAXINFO
 GETPROPERTYSTOREFLAGS
+GETSCREENSAVERRUNNING
+GETSECKEY
 GETSTATE
 GETTEXT
 GETTEXTLENGTH
 GHND
+Globbing
 GMEM
 GNumber
 google
@@ -799,6 +822,7 @@ Hashtable
 hashtag
 HASHVAL
 hbitmap
+hbm
 hbmp
 hbr
 HBRBACKGROUND
@@ -973,6 +997,7 @@ Interlop
 INTRESOURCE
 INVALIDARG
 invalidoperatioexception
+invalidkey
 IPalette
 ipc
 ipcmanager
@@ -1023,6 +1048,8 @@ jyuwono
 KBDLLHOOKSTRUCT
 kbm
 kdc
+keybd
+KEYBDDATA
 KEYBDINPUT
 keyboardeventhandlers
 keyboardmanager
@@ -1124,6 +1151,7 @@ LPCWSTR
 lpdw
 lpfn
 LPINPUT
+LPQUERY
 lpmi
 LPMINMAXINFO
 LPMONITORINFO
@@ -1138,6 +1166,7 @@ lpt
 LPTHREAD
 LPTOP
 lptpm
+LPTR
 LPTSTR
 LPVOID
 LPW
@@ -1253,6 +1282,7 @@ monitorinfof
 Monthand
 Moq
 MOUSEACTIVATE
+MOUSEDATA
 MOUSEEVENTF
 MOUSEHWHEEL
 MOUSEINPUT
@@ -1283,6 +1313,7 @@ MSIXCA
 MSLLHOOKSTRUCT
 Mso
 msp
+mspaint
 msrc
 msstore
 mst
@@ -1296,8 +1327,12 @@ mvvm
 myfile
 MYICON
 mysql
+mwb
+MWBEx
 NAMECHANGE
 nameof
+namespaceanddescendants
+nao
 NCACTIVATE
 ncc
 NCCALCSIZE
@@ -1344,6 +1379,7 @@ NLD
 NLog
 nls
 NLSTEXT
+NNN
 NOACTIVATE
 NOAGGREGATION
 NOASYNC
@@ -1507,6 +1543,7 @@ perfmon
 pesi
 petabyte
 peteblois
+pevent
 PEXCEPTION
 pfn
 pfo
@@ -1704,6 +1741,7 @@ remappings
 REMAPSUCCESSFUL
 REMAPUNSUCCESSFUL
 Remotable
+remoteip
 Removedir
 Removelnk
 renamable
@@ -1770,6 +1808,7 @@ rungameid
 RUNLEVEL
 runsettings
 runtimeclass
+runtimeconfig
 runtimedepsjsonpath
 runtimeobject
 runtimepack
@@ -1816,6 +1855,7 @@ sendvirtualinput
 Seperate
 Seraphima
 serverside
+Ses
 SETCONTEXT
 setcursor
 setenv
@@ -1903,6 +1943,7 @@ SMALLICON
 smartphone
 SMTO
 snd
+sni
 snwprintf
 softline
 somil
@@ -2009,6 +2050,7 @@ SYSICONINDEX
 SYSKEY
 syskeydown
 SYSKEYUP
+SYSLIB
 SYSMENU
 SYSTEMAPPS
 systemroot
@@ -2036,6 +2078,7 @@ tchar
 tcl
 Tcollab
 tcs
+tcp
 tcscpy
 TCustom
 tdbuild
@@ -2141,6 +2184,7 @@ unremapped
 unsubscribe
 unvirtualized
 UOffset
+UOI
 Updatelayout
 UPGRADINGPRODUCTCODE
 Uptool
@@ -2285,6 +2329,7 @@ winget
 wingetcreate
 Winhook
 winkey
+winlogon
 WINL
 winmd
 winmm
@@ -2293,7 +2338,9 @@ winres
 winrt
 winsdk
 winsdkver
+Winsock
 winspool
+winsta
 winternl
 WINTHRESHOLD
 winui
@@ -2342,12 +2389,16 @@ WResize
 writefile
 Wrk
 wrl
+WSAEADDRINUSE
+WSAEADDRNOTAVAIL
+WSAECONNRESET
 wscui
 wsf
 wsh
 wsl
 wss
 wstr
+wsystem
 wsz
 wtoi
 WTS
@@ -2375,6 +2426,7 @@ XIncrement
 XLoc
 XNamespace
 XOffset
+XPels
 XPixel
 XResource
 xsi
@@ -2388,6 +2440,7 @@ yinle
 yinwang
 yinyue
 YOffset
+YPels
 ypescript
 YQuantized
 YResolution
