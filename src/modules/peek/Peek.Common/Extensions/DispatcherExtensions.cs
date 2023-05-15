@@ -33,5 +33,29 @@ namespace Peek.Common.Extensions
 
             return tcs.Task;
         }
+
+        /// <summary>
+        /// Run work on UI thread safely.
+        /// </summary>
+        /// <returns>True if the work was run successfully, False otherwise.</returns>
+        public static Task RunOnUiThread(this DispatcherQueue dispatcher, Action work)
+        {
+            var tcs = new TaskCompletionSource();
+            dispatcher.TryEnqueue(() =>
+            {
+                try
+                {
+                    work();
+
+                    tcs.SetResult();
+                }
+                catch (Exception e)
+                {
+                    tcs.SetException(e);
+                }
+            });
+
+            return tcs.Task;
+        }
     }
 }

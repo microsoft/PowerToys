@@ -113,6 +113,7 @@ arsinh
 artanh
 arw
 asdf
+asf
 AShortcut
 ASingle
 ASSOCCHANGED
@@ -225,8 +226,8 @@ bytearray
 CABD
 CALG
 callbackptr
-cameligo
 calpwstr
+cameligo
 Cangjie
 CANRENAME
 CAPTUREBLT
@@ -771,6 +772,7 @@ google
 gpedit
 gpo
 GPOCA
+gpp
 GPT
 gpu
 graphql
@@ -1121,13 +1123,13 @@ LPCTSTR
 LPCWSTR
 lpdw
 lpfn
-lpmi
 LPINPUT
+lpmi
 LPMINMAXINFO
 LPMONITORINFO
 LPOSVERSIONINFOEXW
-lprc
 LPPOINT
+lprc
 LPRECT
 LPSAFEARRAY
 LPSTR
@@ -1230,6 +1232,7 @@ Miracast
 mjpg
 mkd
 mkdn
+mkv
 mlcfg
 mmc
 mmcexe
@@ -1511,7 +1514,6 @@ pft
 pgp
 pgsql
 pguid
-pkey
 PHANDLE
 phbm
 phbmp
@@ -1525,6 +1527,7 @@ pinfo
 pinvoke
 pipename
 PKBDLLHOOKSTRUCT
+pkey
 PKEY
 plib
 PLK
