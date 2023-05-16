@@ -3,11 +3,11 @@
 (?:^|/)(?i)LICEN[CS]E
 (?:^|/)3rdparty/
 (?:^|/)go\.sum$
-(?:^|/)MonacoPreviewHandler/customLanguages/
-(?:^|/)MonacoPreviewHandler/generateLanguagesJson.html
-(?:^|/)MonacoPreviewHandler/index.html
-(?:^|/)MonacoPreviewHandler/monaco_languages.json
-(?:^|/)MonacoPreviewHandler/monacoSpecialLanguages.js
+(?:^|/)FilePreviewCommon/customLanguages/
+(?:^|/)FilePreviewCommon/generateLanguagesJson.html
+(?:^|/)FilePreviewCommon/index.html
+(?:^|/)FilePreviewCommon/monaco_languages.json
+(?:^|/)FilePreviewCommon/monacoSpecialLanguages.js
 (?:^|/)monacoSRC/
 (?:^|/)package(?:-lock|)\.json$
 (?:^|/)timezones\.json$
@@ -100,6 +100,7 @@
 ^src/modules/imageresizer/dll/ContextMenuHandler\.rgs$
 ^src/modules/imageresizer/dll/ImageResizerExt\.rgs$
 ^src/modules/MouseUtils/MouseJumpUI/NativeMethods/User32/UI/WindowsAndMessaging/User32.SYSTEM_METRICS_INDEX.cs$
+^src/modules/peek/Peek\.Common/NativeMethods\.txt$
 ^src/modules/powerrename/testapp/PowerRenameTest\.vcxproj\.filters$
 ^src/modules/previewpane/PreviewPaneUnitTests/HelperFiles/MarkdownWithHTMLImageTag\.txt$
 ^src/modules/previewpane/UnitTests-MarkdownPreviewHandler/HelperFiles/MarkdownWithHTMLImageTag.txt$

@@ -8,7 +8,7 @@
 
 if (Test-Path -Path $SettingsPath -PathType Any)
 {
-    Remove-Item –Path $SettingsPath –Recurse
+    Remove-Item -Path $SettingsPath -Recurse
 }
 
 #Deleting SuperFancyZones registry key
@@ -17,7 +17,7 @@ if (Test-Path -Path $SettingsPath -PathType Any)
 
 if (Test-Path -Path $SuperFancyZones -PathType Any)
 {
-    Remove-Item –Path $SuperFancyZones –Recurse
+    Remove-Item -Path $SuperFancyZones -Recurse
 }
 
 #Deleting PowerRename registry key
@@ -26,7 +26,7 @@ if (Test-Path -Path $SuperFancyZones -PathType Any)
 
 if (Test-Path -Path $PowerRename -PathType Any)
 {
-    Remove-Item –Path $PowerRename –Recurse
+    Remove-Item -Path $PowerRename -Recurse
 }
 
 #Deleting ImageResizer registry key
@@ -35,7 +35,7 @@ if (Test-Path -Path $PowerRename -PathType Any)
 
 if (Test-Path -Path $ImageResizer -PathType Any)
 {
-    Remove-Item –Path $ImageResizer –Recurse
+    Remove-Item -Path $ImageResizer -Recurse
 }
 
 #Deleting DontShowThisDialogAgain registry key
@@ -44,5 +44,5 @@ if (Test-Path -Path $ImageResizer -PathType Any)
 
 if (Test-Path -Path $DontShowThisDialogAgain -PathType Any)
 {
-    Remove-Item –Path $DontShowThisDialogAgain
+    Remove-Item -Path $DontShowThisDialogAgain
 }

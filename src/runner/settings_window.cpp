@@ -362,8 +362,10 @@ void run_settings_window(bool show_oobe_window, bool show_scoobe_window, std::op
     // Arg 4: process pid.
     DWORD powertoys_pid = GetCurrentProcessId();
 
+    GeneralSettings save_settings = get_general_settings();
+
     // Arg 5: settings theme.
-    const std::wstring settings_theme_setting{ get_general_settings().theme };
+    const std::wstring settings_theme_setting{ save_settings.theme };
     std::wstring settings_theme = L"system";
     if (settings_theme_setting == L"dark" || (settings_theme_setting == L"system" && WindowsColors::is_dark_mode()))
     {
@@ -371,11 +373,11 @@ void run_settings_window(bool show_oobe_window, bool show_scoobe_window, std::op
     }
 
     // Arg 6: elevated status
-    bool isElevated{ get_general_settings().isElevated };
+    bool isElevated{ save_settings.isElevated };
     std::wstring settings_elevatedStatus = isElevated ? L"true" : L"false";
 
     // Arg 7: is user an admin
-    bool isAdmin{ get_general_settings().isAdmin };
+    bool isAdmin{ save_settings.isAdmin };
     std::wstring settings_isUserAnAdmin = isAdmin ? L"true" : L"false";
 
     // Arg 8: should oobe window be shown
@@ -394,6 +396,10 @@ void run_settings_window(bool show_oobe_window, bool show_scoobe_window, std::op
     std::wstring settings_containsFlyoutPosition = flyout_position.has_value() ? L"true" : L"false";
 
     // Args 13, .... : Optional arguments depending on the options presented before. All by the same value.
+
+    // create general settings file to initialize the settings file with installation configurations like :
+    // 1. Run on start up.
+    PTSettingsHelper::save_general_settings(save_settings.to_json());
 
     std::wstring executable_args = fmt::format(L"\"{}\" {} {} {} {} {} {} {} {} {} {} {}",
                                                    executable_path,

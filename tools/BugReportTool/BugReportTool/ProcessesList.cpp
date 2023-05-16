@@ -33,5 +33,6 @@ std::vector<std::wstring> processes =
     L"PowerToys.StlThumbnailProvider.exe",
     L"PowerToys.SvgPreviewHandler.exe",
     L"PowerToys.SvgThumbnailProvider.exe",
-    L"PowerToys.RegistryPreview.exe"
+    L"PowerToys.RegistryPreview.exe",
+    L"PowerToys.Peek.UI.exe"
 };

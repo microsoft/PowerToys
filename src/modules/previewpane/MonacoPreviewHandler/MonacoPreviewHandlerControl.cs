@@ -2,18 +2,10 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-using System;
-using System.Collections.Generic;
-using System.Drawing;
 using System.Globalization;
-using System.IO;
-using System.Linq;
 using System.Runtime.CompilerServices;
-using System.Threading.Tasks;
-using System.Windows.Forms;
 using Common;
 using ManagedCommon;
-using Microsoft.PowerToys.PreviewHandler.Monaco.Formatters;
 using Microsoft.PowerToys.PreviewHandler.Monaco.Properties;
 using Microsoft.Web.WebView2.Core;
 using Microsoft.Web.WebView2.WinForms;
@@ -27,15 +19,6 @@ namespace Microsoft.PowerToys.PreviewHandler.Monaco
         /// Settings class
         /// </summary>
         private readonly Settings _settings = new Settings();
-
-        /// <summary>
-        /// Formatters applied before rendering the preview
-        /// </summary>
-        private readonly IReadOnlyCollection<IFormatter> _formatters = new List<IFormatter>
-        {
-            new JsonFormatter(),
-            new XmlFormatter(),
-        }.AsReadOnly();
 
         /// <summary>
         /// Text box to display the information about blocked elements from Svg.
@@ -76,11 +59,6 @@ namespace Microsoft.PowerToys.PreviewHandler.Monaco
         /// Grey background
         /// </summary>
         private Label _loadingBackground;
-
-        /// <summary>
-        /// Name of the virtual host
-        /// </summary>
-        public const string VirtualHostName = "PowerToysLocalMonaco";
 
         /// <summary>
         /// HTML code passed to the file
@@ -168,7 +146,7 @@ namespace Microsoft.PowerToys.PreviewHandler.Monaco
                             {
                                 await _webView.EnsureCoreWebView2Async(_webView2Environment).ConfigureAwait(true);
 
-                                _webView.CoreWebView2.SetVirtualHostNameToFolderMapping(VirtualHostName, Settings.AssemblyDirectory, CoreWebView2HostResourceAccessKind.Allow);
+                                _webView.CoreWebView2.SetVirtualHostNameToFolderMapping(FilePreviewCommon.MonacoHelper.VirtualHostName, Settings.AssemblyDirectory, CoreWebView2HostResourceAccessKind.Allow);
 
                                 Logger.LogInfo("Navigates to string of HTML file");
 
@@ -373,7 +351,7 @@ namespace Microsoft.PowerToys.PreviewHandler.Monaco
 
                 if (_settings.TryFormat)
                 {
-                    var formatter = _formatters.SingleOrDefault(f => f.LangSet == _vsCodeLangSet);
+                    var formatter = FilePreviewCommon.MonacoHelper.Formatters.SingleOrDefault(f => f.LangSet == _vsCodeLangSet);
                     if (formatter != null)
                     {
                         try
@@ -393,19 +371,12 @@ namespace Microsoft.PowerToys.PreviewHandler.Monaco
             }
 
             // prepping index html to load in
-            using (StreamReader htmlFileReader = new StreamReader(new FileStream(Settings.AssemblyDirectory + "\\index.html", FileMode.Open, FileAccess.Read, FileShare.ReadWrite)))
-            {
-                Logger.LogInfo("Starting reading HTML source file");
-                _html = htmlFileReader.ReadToEnd();
-                htmlFileReader.Close();
-                Logger.LogInfo("Reading HTML source file ended");
-            }
-
+            _html = FilePreviewCommon.MonacoHelper.ReadIndexHtml();
             _html = _html.Replace("[[PT_LANG]]", _vsCodeLangSet, StringComparison.InvariantCulture);
             _html = _html.Replace("[[PT_WRAP]]", _settings.Wrap ? "1" : "0", StringComparison.InvariantCulture);
             _html = _html.Replace("[[PT_THEME]]", Settings.GetTheme(), StringComparison.InvariantCulture);
             _html = _html.Replace("[[PT_CODE]]", _base64FileCode, StringComparison.InvariantCulture);
-            _html = _html.Replace("[[PT_URL]]", VirtualHostName, StringComparison.InvariantCulture);
+            _html = _html.Replace("[[PT_URL]]", FilePreviewCommon.MonacoHelper.VirtualHostName, StringComparison.InvariantCulture);
         }
 
         private async void DownloadLink_Click(object sender, EventArgs e)

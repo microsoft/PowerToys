@@ -464,6 +464,7 @@
           <RemoveFolder Id="RemoveFolderResourcesResource$(var.IdSafeLanguage)TimeDatePluginFolder" Directory="Resource$(var.IdSafeLanguage)TimeDatePluginFolder" On="uninstall"/>
           <RemoveFolder Id="RemoveFolderResourcesResource$(var.IdSafeLanguage)OneNotePluginFolder" Directory="Resource$(var.IdSafeLanguage)OneNotePluginFolder" On="uninstall"/>
           <RemoveFolder Id="RemoveFolderResourcesResource$(var.IdSafeLanguage)HistoryPluginFolder" Directory="Resource$(var.IdSafeLanguage)HistoryPluginFolder" On="uninstall"/>
+          <RemoveFolder Id="RemoveFolderResourcesResource$(var.IdSafeLanguage)PowerToysPluginFolder" Directory="Resource$(var.IdSafeLanguage)PowerToysPluginFolder" On="uninstall"/>
       <?undef IdSafeLanguage?>
         <?endforeach?>
       </Component>
