@@ -202,8 +202,8 @@
             ItemClick="Entries_ItemClick"
             KeyDown="Entries_KeyDown"
             GotFocus="Entries_GotFocus"
-            ItemsSource="{Binding Entries, Mode=TwoWay}"
-            SelectedItem="{Binding Selected, Mode=TwoWay}"
+            ItemsSource="{x:Bind ViewModel.Entries, Mode=TwoWay}"
+            SelectedItem="{x:Bind ViewModel.Selected, Mode=TwoWay}"
             Visibility="{x:Bind ViewModel.IsLoading, Converter={StaticResource BoolToInvertedVisibilityConverter}, Mode=OneWay}">
             <ListView.ItemTemplate>
                 <DataTemplate x:DataType="models:Entry">
@@ -373,7 +373,7 @@
             x:Name="EntryDialog"
             x:Uid="EntryDialog"
             Loaded="ContentDialog_Loaded_ApplyMargin"
-            IsPrimaryButtonEnabled="{Binding Valid, Mode=TwoWay}"
+            IsPrimaryButtonEnabled="{Binding Valid, Mode=OneWay}"
             PrimaryButtonStyle="{StaticResource AccentButtonStyle}">
             <ContentDialog.DataContext>
                 <models:Entry />
