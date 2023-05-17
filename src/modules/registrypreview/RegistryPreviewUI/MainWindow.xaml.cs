@@ -95,6 +95,11 @@ namespace RegistryPreview
                 UpdateToolBarAndUI(false);
                 UpdateWindowTitle(resourceLoader.GetString("FileNotFound"));
             }
+
+            // Register app with Open With...
+            // Currently makes sure the app is there on each run, since it doesn't impact the shell, but unclear if it should there if its
+            // disabled by the overall tool.  Could be better to put it in the launcher but look to PR review to comment.
+            RegisterApplicationWithManager();
         }
     }
 }
