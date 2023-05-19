@@ -104,7 +104,7 @@ In this release, we focused on releasing new features, stability and improvement
 
 ### Awake
 
-- Update to command-line output to match the arguements. Thanks [@rpr69](https://github.com/rpr69) for creating a PR to help fix this.
+- Update to command line output to match the arguments. Thanks [@rpr69](https://github.com/rpr69) for creating a PR to help fix this.
 
 ### Documentation
 
