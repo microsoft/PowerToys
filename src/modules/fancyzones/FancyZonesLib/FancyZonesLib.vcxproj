@@ -57,6 +57,7 @@
     <ClInclude Include="Layout.h" />
     <ClInclude Include="LayoutConfigurator.h" />
     <ClInclude Include="LayoutAssignedWindows.h" />
+    <ClInclude Include="MiddleMouseButtonsHook.h" />
     <ClInclude Include="ModuleConstants.h" />
     <ClInclude Include="MonitorUtils.h" />
     <ClInclude Include="MonitorWorkAreaMap.h" />
@@ -112,6 +113,7 @@
     <ClCompile Include="Layout.cpp" />
     <ClCompile Include="LayoutConfigurator.cpp" />
     <ClCompile Include="LayoutAssignedWindows.cpp" />
+    <ClCompile Include="MiddleMouseButtonsHook.cpp" />
     <ClCompile Include="MonitorUtils.cpp" />
     <ClCompile Include="MonitorWorkAreaMap.cpp" />
     <ClCompile Include="OnThreadExecutor.cpp" />

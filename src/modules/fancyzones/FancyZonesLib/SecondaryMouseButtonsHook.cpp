@@ -43,7 +43,7 @@ LRESULT CALLBACK SecondaryMouseButtonsHook::SecondaryMouseButtonsProc(int nCode,
 {
     if (nCode == HC_ACTION)
     {
-        if (wParam == WM_RBUTTONDOWN || wParam == WM_MBUTTONDOWN || wParam == WM_XBUTTONDOWN)
+        if (wParam == WM_RBUTTONDOWN || wParam == WM_XBUTTONDOWN)
         {
             callback();
         }
