@@ -232,7 +232,6 @@ Cangjie
 CANRENAME
 CAPTUREBLT
 CAPTURECHANGED
-CARRAY
 CAtl
 CBA
 CBB
@@ -273,7 +272,6 @@ chdir
 CHILDACTIVATE
 CHILDWINDOW
 chrdavis
-Chromakey
 Chrzan
 CHT
 cidl
@@ -413,7 +411,6 @@ Dac
 dacl
 DAF
 damienleroy
-DANGEROUSLYCOMMITMERELYTODISKCACHE
 DARKPURPLE
 DARKTEAL
 DARKYELLOW
@@ -445,13 +442,11 @@ dcompi
 DComposition
 dcr
 dcs
-Dct
 DDCDD
 DDCE
 DDEIf
 DDevice
 ddf
-Dds
 DDxgi
 Deact
 debian
@@ -582,8 +577,8 @@ Edid
 edis
 EDITKEYBOARD
 editkeyboardwindow
+editkeyboardwindoweditshortcutswindow
 EDITSHORTCUTS
-editshortcutswindow
 edshift
 EEA
 EEB
@@ -644,8 +639,6 @@ exabyte
 examplehandler
 examplepowertoy
 EXAND
-Excep
-EXCEPINFO
 EXCLUDEFROMCAPTURE
 exdisp
 executionpolicy
@@ -809,7 +802,6 @@ HCRYPTHASH
 HCRYPTPROV
 hcwhite
 hdc
-HDR
 hdrop
 hdwwiz
 HEB
@@ -891,17 +883,12 @@ HWNDPREV
 hyjiacan
 IBase
 IBeam
-IBitmap
-IBlock
 ICapture
 ICEBLUE
 IClass
-IColor
 ICONERROR
-IContext
 IData
 IDD
-IDecoder
 IDesktop
 IDirect
 idl
@@ -910,7 +897,6 @@ IDOn
 IDR
 idx
 IDXGI
-IEncoder
 IEnum
 IExec
 IEXPLORE
@@ -935,7 +921,6 @@ imageresizerinput
 imageresizersettings
 imagingdevices
 ime
-IMetadata
 imeutil
 inetcpl
 Infobar
@@ -973,7 +958,6 @@ Interlop
 INTRESOURCE
 INVALIDARG
 invalidoperatioexception
-IPalette
 ipc
 ipcmanager
 IPlugin
@@ -982,8 +966,6 @@ IPREVIEW
 ipreviewhandlervisualssetfont
 IProperty
 IPublic
-IQuery
-IReader
 irprops
 isbi
 ISearch
@@ -991,9 +973,7 @@ ISettings
 isfinite
 IShell
 isocpp
-ISource
 iss
-ISurface
 ITask
 ith
 ITHUMBNAIL
@@ -1101,8 +1081,6 @@ LOCALPACKAGE
 localport
 LOCALSYSTEM
 LOCATIONCHANGE
-LOCKBYTES
-LOCKTYPE
 LOGFONT
 LOGFONTW
 logon
@@ -1365,7 +1343,6 @@ NONCONVERT
 NONELEVATED
 NONINFRINGEMENT
 nonstd
-NOOPEN
 NOOWNERZORDER
 NOPARENTNOTIFY
 NOREDIRECTIONBITMAP
@@ -1428,8 +1405,6 @@ OLEDB
 OLIVEGREEN
 onebranch
 onenote
-ONLYIFCURRENT
-ONLYONCE
 onstd
 oobe
 OOBEPT
@@ -1527,8 +1502,8 @@ pinfo
 pinvoke
 pipename
 PKBDLLHOOKSTRUCT
-pkey
 PKEY
+pkey
 plib
 PLK
 ploc
@@ -1561,7 +1536,6 @@ ppidl
 ppmt
 pprm
 pproc
-pprop
 ppshv
 ppsi
 ppsid
@@ -1582,7 +1556,6 @@ previouscamera
 PREVIOUSINSTALLFOLDER
 PREVIOUSVERSIONSINSTALLED
 prevpane
-PRGBA
 prgms
 pri
 PRINTCLIENT
@@ -1599,9 +1572,7 @@ PROGRAMFILES
 projectname
 PROPBAG
 PROPERTYKEY
-PROPERTYNOTFOUND
 propkey
-PROPVARIANT
 propvarutil
 prvpane
 psapi
@@ -1611,8 +1582,6 @@ psfgao
 Psr
 psrm
 psrree
-pstatstg
-pstm
 pstr
 pstream
 pstrm
@@ -1626,7 +1595,6 @@ PToy
 ptstr
 pui
 PULONG
-pvar
 pwa
 pwcs
 pwsh
@@ -1727,7 +1695,6 @@ resw
 resx
 retval
 rfc
-RGBE
 RGBQUAD
 rgbs
 rgelt
@@ -1785,7 +1752,6 @@ ryanbodrug
 saahmedm
 sachaple
 sacl
-SAFEARRAY
 safeprojectname
 SAMEKEYPREVIOUSLYMAPPED
 SAMESHORTCUTPREVIOUSLYMAPPED
@@ -1930,7 +1896,6 @@ SRCPAINT
 sre
 SResize
 srf
-SRGB
 srme
 srre
 srw
@@ -1959,10 +1924,8 @@ STDMETHODCALLTYPE
 STDMETHODIMP
 stefan
 Stereolithography
-STGC
 STGM
 STGMEDIUM
-STGTY
 sticpl
 stl
 storelogo
@@ -2148,7 +2111,6 @@ Usb
 USEDEFAULT
 USEFILEATTRIBUTES
 USERDATA
-USERDEFINED
 USERDOMAIN
 userprofile
 USESHOWWINDOW
@@ -2165,7 +2127,6 @@ vabdq
 validmodulename
 Vanara
 variantassignment
-VARTYPE
 vcamp
 vccorlib
 vcdl
@@ -2185,7 +2146,6 @@ VERBSONLY
 VERBW
 VERIFYCONTEXT
 verrsrc
-VERSIONED
 VERSIONINFO
 Versioning
 VFT
@@ -2389,7 +2349,6 @@ yinwang
 yinyue
 YOffset
 ypescript
-YQuantized
 YResolution
 YStr
 YUY
