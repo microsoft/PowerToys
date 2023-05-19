@@ -111,7 +111,7 @@ In this release, we focused on releasing new features, stability and improvement
 ### Awake
 
 - Update to command line output to match the arguments. Thanks [@rpr69](https://github.com/rpr69) for creating a PR to help fix this.
-- Fix crash happening when setting an expiration date on timezones with a negative offset relative to UTC (This was a hotfix for 0.69).
+- Fix crash happening when setting an expiration date on time zones with a negative offset relative to UTC (This was a hotfix for 0.69).
 - Fix missing logging file when installing (This was a hotfix for 0.69).
 - Upgraded Awake to a new version, with Quality of Life improvements and fixing many issues regarding Awake not resetting or not keeping the computer awake when expected. Thanks [@dend](https://github.com/dend)!
 
@@ -129,7 +129,7 @@ In this release, we focused on releasing new features, stability and improvement
 
 ### Installer
 
-- Added more utilities to terminate when installing to help prevent files that are leftover from the uninstallation process.
+- Added more utilities to terminate when installing to help prevent files that sometimes are leftover from uninstall.
 
 ### Keyboard Manager
 
@@ -193,7 +193,7 @@ In this release, we focused on releasing new features, stability and improvement
 - Upgraded the WinAppSDK dependency to 1.3.1.
 - Fixed a typo preventing the clean up script to run. Thanks [@Sajad-Lx](https://github.com/Sajad-Lx)!
 - Fixed encoding on a test file to fix running tests in some configurations. Thanks [@VisualBasist](https://github.com/VisualBasist)!
-- Made the GPO release assets come already versioned out of the build CI.
+- Made the GPO release assets come named with a version in the build CI output.
 
 #### What is being planned for version 0.71
 
