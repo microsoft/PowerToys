@@ -30,21 +30,32 @@
                             <RowDefinition Height="24" />
                         </Grid.RowDefinitions>
                         <TextBlock Text="{Binding Name}"
-                                   FontWeight="SemiBold"
                                    FontSize="14"
-                                   Margin="0,0,0,0"
-                                   VerticalAlignment="Top"
-                                   Foreground="{DynamicResource PrimaryForegroundBrush}" />
+                                   FontWeight="SemiBold"/>
                         <StackPanel Orientation="Horizontal"
                                     Grid.Row="1"
                                     VerticalAlignment="Top">
-                            <TextBlock Text="{Binding Fit, Converter={StaticResource EnumValueConverter}, ConverterParameter=ThirdPersonSingular}" FontSize="12" Foreground="{DynamicResource SecondaryForegroundBrush}"/>
-                            <TextBlock Text="{Binding Width, Converter={StaticResource AutoDoubleConverter}, ConverterParameter=Auto}" FontWeight="SemiBold" FontSize="12" Margin="3,0,0,0" Foreground="{DynamicResource SecondaryForegroundBrush}"/>
-                            <TextBlock Text="&#xE947;" FontFamily="Segoe MDL2 Assets" FontSize="10" Visibility="{Binding ShowHeight, Converter={StaticResource BoolValueConverter}}" Margin="4,4,0,0" Foreground="{DynamicResource SecondaryForegroundBrush}"/>
-                            <TextBlock Text="{Binding Height, Converter={StaticResource AutoDoubleConverter}, ConverterParameter=Auto}" FontSize="12" Visibility="{Binding ShowHeight, Converter={StaticResource BoolValueConverter}}" FontWeight="SemiBold" Margin="4,0,0,0" Foreground="{DynamicResource SecondaryForegroundBrush}"/>
-                            <TextBlock Text="{Binding Unit, Converter={StaticResource EnumValueConverter}, ConverterParameter=ToLower}" FontSize="12"
+                            <TextBlock Text="{Binding Fit, Converter={StaticResource EnumValueConverter}, ConverterParameter=ThirdPersonSingular}"
+                                       Style="{StaticResource CaptionTextBlockStyle}"
+                                       Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
+                            <TextBlock Text="{Binding Width, Converter={StaticResource AutoDoubleConverter}, ConverterParameter=Auto}"
                                        Margin="4,0,0,0"
-                                       Foreground="{DynamicResource SecondaryForegroundBrush}" />
+                                       Style="{StaticResource CaptionTextBlockStyle}"
+                                       Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
+                            <TextBlock Text="×"
+                                       Margin="4,0,0,0"
+                                       Style="{StaticResource CaptionTextBlockStyle}"
+                                       Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                       Visibility="{Binding ShowHeight, Converter={StaticResource BoolValueConverter}}"/>
+                            <TextBlock Text="{Binding Height, Converter={StaticResource AutoDoubleConverter}, ConverterParameter=Auto}"
+                                       Margin="4,0,0,0"
+                                       Style="{StaticResource CaptionTextBlockStyle}"
+                                       Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                       Visibility="{Binding ShowHeight, Converter={StaticResource BoolValueConverter}}"/>
+                            <TextBlock Text="{Binding Unit, Converter={StaticResource EnumValueConverter}, ConverterParameter=ToLower}"
+                                       Margin="4,0,0,0"
+                                       Style="{StaticResource CaptionTextBlockStyle}"
+                                       Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
                         </StackPanel>
                     </Grid>
                 </DataTemplate>
@@ -54,10 +65,10 @@
                           AutomationProperties.Name="{Binding Name}">
 
                         <TextBlock Text="{Binding Name}"
-                                   FontWeight="SemiBold"
-                                   FontSize="14"
                                    Margin="0,0,0,0"
                                    VerticalAlignment="Center"
+                                   FontSize="14"
+                                   FontWeight="SemiBold"
                                    Foreground="{DynamicResource PrimaryForegroundBrush}" />
                     </Grid>
                 </DataTemplate>
@@ -86,8 +97,8 @@
             </ui:NumberBox>
             <TextBlock VerticalAlignment="Center"
                        Text="&#xE947;"
-                       FontFamily="Segoe MDL2 Assets"
-                       Width="25"
+                       FontFamily="{StaticResource SymbolThemeFontFamily}"
+                       Width="24"
                        Foreground="{DynamicResource SecondaryForegroundBrush}"
                        Name="Times_Symbol"
                        AutomationProperties.Name="{x:Static p:Resources.Times_Symbol}"
@@ -166,7 +177,7 @@
                     Margin="-8,0,0,0"
                     Content="&#xE713;"
                     Background="Transparent"
-                    FontFamily="Segoe MDL2 Assets"
+                    FontFamily="{StaticResource SymbolThemeFontFamily}"
                         FontSize="16"
                     HorizontalAlignment="Left"
                     ToolTipService.ToolTip="{x:Static p:Resources.Open_settings}"
