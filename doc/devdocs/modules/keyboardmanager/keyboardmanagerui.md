@@ -1,12 +1,12 @@
 # Keyboard Manager UI
 
 ## Table of Contents:
-1. [C++ XAML Islands](#c---xaml-islands)
+1. [C++ XAML Islands](#c-xaml-islands)
     1. [Debugging exceptions in XAML Islands](#debugging-exceptions-in-xaml-islands)
     2. [Build times](#build-times)
     3. [Setting custom backgrounds for Xaml Controls using brushes](#setting-custom-backgrounds-for-xaml-controls-using-brushes)
 2. [UI Structure](#ui-structure)
-3. [EditKeyboardWindow/EditShortcutsWindow](#editkeyboardwindow-editshortcutswindow)
+3. [EditKeyboardWindow/EditShortcutsWindow](#editkeyboardwindoweditshortcutswindow)
     1. [OK and Cancel button](#ok-and-cancel-button)
     2. [Delete button](#delete-button)
     3. [Handling common modifiers in EditKeyboardWindow](#handling-common-modifiers-in-editkeyboardwindow)
