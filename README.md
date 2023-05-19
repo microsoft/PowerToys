@@ -13,7 +13,7 @@
 
 ## About
 
-Microsoft PowerToys is a set of utilities for power users to tune and streamline their Windows experience for greater productivity. For more info on [PowerToys overviews and how to use the utilities][usingPowerToys-docs-link], or any other tools and resources for [Windows development environments](https://learn.microsoft.com/windows/dev-environment/overview), head over to [learn.microsoft.com][usingPowerToys-docs-link]! 
+Microsoft PowerToys is a set of utilities for power users to tune and streamline their Windows experience for greater productivity. For more info on [PowerToys overviews and how to use the utilities][usingPowerToys-docs-link], or any other tools and resources for [Windows development environments](https://learn.microsoft.com/windows/dev-environment/overview), head over to [learn.microsoft.com][usingPowerToys-docs-link]!
 
 |              | Current utilities: |              |
 |--------------|--------------------|--------------|
@@ -36,7 +36,7 @@ Microsoft PowerToys is a set of utilities for power users to tune and streamline
 ### Via GitHub with EXE [Recommended]
 
 Go to [Microsoft PowerToys GitHub releases page][github-release-link], click on `Assets` at the bottom to show the files available in the release. Please use the appropriate PowerToys installer that matches your machine's architecture and install scope. For most, it is `x64` and per-user.
- 
+
 [github-current-release-work]: https://github.com/microsoft/PowerToys/issues?q=issue+project%3Amicrosoft%2FPowerToys%2F43
 [ptUserX64]: https://github.com/microsoft/PowerToys/releases/download/v0.70.0/PowerToysUserSetup-0.70.0-x64.exe
 [ptUserArm64]: https://github.com/microsoft/PowerToys/releases/download/v0.70.0/PowerToysUserSetup-0.70.0-arm64.exe
@@ -45,9 +45,9 @@ Go to [Microsoft PowerToys GitHub releases page][github-release-link], click on 
 
 |  Description   | Filename | sha256 hash |
 |----------------|----------|-------------|
-| Per user - x64       | [PowerToysUserSetup-0.70.0-x64.exe][ptUserX64] | xxx | 
-| Per user - ARM64     | [PowerToysUserSetup-0.70.0-arm64.exe]() | xxx | 
-| Machine wide - x64   | [PowerToysSetup-0.70.0-x64.exe][ptMachineX64] | xxx | 
+| Per user - x64       | [PowerToysUserSetup-0.70.0-x64.exe][ptUserX64] | xxx |
+| Per user - ARM64     | [PowerToysUserSetup-0.70.0-arm64.exe][ptUserArm64] | xxx |
+| Machine wide - x64   | [PowerToysSetup-0.70.0-x64.exe][ptMachineX64] | xxx |
 | Machine wide - ARM64 | [PowerToysSetup-0.70.0-arm64.exe][ptMachineArm64] | xxx  |
 
 This is our preferred method.
@@ -92,27 +92,108 @@ Our [prioritized roadmap][roadmap] of features and utilities that the core team 
 
 ### 0.70 - May 2023 Update
 
-In this release, we focused on releasing new features, stability and improvements. Early notice for v0.70, we will be releasing it later in May 2023.
+In this release, we focused on releasing new features, stability and improvements.
 
 **Highlights**
 
-- NOTES
+- TODO
+- New utility: Peek is a utility that shows a quick preview of files selected in File Explorer when you press a shortcut (`Ctrl`+`Space` by default). Thanks [@SamChaps](https://github.com/SamChaps)!
+- Registry preview Quality of Life improvements. Thanks [@randyrants](https://github.com/randyrants)!
+- Awake Quality of Life improvements. Thanks [@dend](https://github.com/dend)!
+- Mouse Jump Quality of Life improvements. Thanks [@mikeclayton](https://github.com/mikeclayton)!
 
 ### General
-
-- NOTES
+- TODO
+- New utility: Peek. Thanks [@SamChaps](https://github.com/SamChaps)!
+- Fixed a bug causing saved settings to clear sometimes when upgrading PowerToys.
+- Font, icon and corner radius adjustments in the UI across utilities. Thanks [@Jay-o-Way](https://github.com/Jay-o-Way)!
 
 ### Awake
 
 - Update to command line output to match the arguments. Thanks [@rpr69](https://github.com/rpr69) for creating a PR to help fix this.
+- Fix crash happening when setting an expiration date on timezones with a negative offset relative to UTC (This was a hotfix for 0.69).
+- Fix missing logging file when installing (This was a hotfix for 0.69).
+- Upgraded Awake to a new version, with Quality of Life improvements and fixing many issues regarding Awake not resetting or not keeping the computer awake when expected. Thanks [@dend](https://github.com/dend)!
+
+### FancyZones
+
+- Fixed accessibility issues on the Editor.
+
+### File Locksmith
+
+- Fixed tooltips having a transparent background (This was a hotfix for 0.69).
+
+### File Explorer add-ons
+
+- Add a Setting to select a background for the SVG Preview. Thanks [@zanseb](https://github.com/zanseb)!
+
+### Installer
+
+- Added more utilities to terminate when installing to help prevent files that are leftover from the uninstallation process.
+
+### Keyboard Manager
+
+- Fixed an issue causing mapping to media keys to type additional characters.
+
+### Measure Tool
+
+- Created a setting to specify the default measure tool. Thanks [@zanseb](https://github.com/zanseb)!
+
+### Mouse Jump
+
+- Reduced dependency on WinForms utility classes. Thanks [@mikeclayton](https://github.com/mikeclayton)!
+- Improved popup responsiveness. Thanks [@mikeclayton](https://github.com/mikeclayton)!
+- Added a setting to set a custom sized window. Thanks [@mikeclayton](https://github.com/mikeclayton)!
+- Added some shortcuts for screen navigation. Thanks [@mikeclayton](https://github.com/mikeclayton)!
+
+### Peek
+- New utility: Peek. Thanks [@SamChaps](https://github.com/SamChaps), who drove the effort! Many thanks for all the contributors who made it possible: [@danielchau](https://github.com/danielchau), [@estebanm123](https://github.com/estebanm123), [@Joanna-Zhou](https://github.com/Joanna-Zhou), [@jth-ms](https://github.com/jth-ms), [@miksalmon](https://github.com/miksalmon), [@niels9001](https://github.com/niels9001), [@RobsonPontin](https://github.com/RobsonPontin), [@sujessie](https://github.com/sujessie), and [@Sytta](https://github.com/Sytta)!
+
+### PowerToys Run
+
+- Add a plugin to start other PowerToys. Thanks [@davidegiacometti](https://github.com/davidegiacometti)!
+- Added code to the Shell plugin to use Windows Terminal. Currently accessible only through manipulating the settings file directly. Thanks [@phoenix172](https://github.com/phoenix172)!
+
+### Quick Accent
+- Added a missing character to the Welsh language.
+
+### Registry Preview
+
+- Specify minimum size / position values for the UI (This was a hotfix for 0.69). Thanks [@randyrants](https://github.com/randyrants)!
+- Fixes in the UI command bar (This was a hotfix for 0.69). Thanks [@randyrants](https://github.com/randyrants)!
+- Fix crash on opening a file picker when running elevated (This was a hotfix for 0.69). Thanks [@randyrants](https://github.com/randyrants)!
+- Fixed tooltips having a transparent background (This was a hotfix for 0.69).
+- Fixed a file size limit typo. Thanks [@idma88](https://github.com/idma88)!
+- Improve hexadecimal value parsing. Thanks [@randyrants](https://github.com/randyrants)!
+- Added a button to open the Registry Editor at a selected key. Thanks [@randyrants](https://github.com/randyrants)!
+- Improve key and value parsing. Thanks [@randyrants](https://github.com/randyrants)!
+- Better theme support for caption bar. Thanks [@randyrants](https://github.com/randyrants)!
+- Fix an issue handling empty DWORD and QWORD values. Thanks [@randyrants](https://github.com/randyrants)!
+
+### Settings
+
+- Update the What's New screen to hide the installer hashes in the new format (This was a hotfix for 0.69).
+- Fix crashes happening when using the Shortcut Control (This was a hotfix for 0.69).
+- The Settings window now has a minimum width. Thanks [@niels9001](https://github.com/niels9001)!
+- Prevent a second Settings instance from being opened on upgrade.
+- Fix accessibility issues on many pages. Thanks [@niels9001](https://github.com/niels9001)!
 
 ### Documentation
 
-- NOTES
+- Fix a dead link in documentation that was pointing to the wrong settings specification. Thanks [@zanseb](https://github.com/zanseb)!
+- Added some missing contributors to COMMUNITY.md
 
 ### Development
 
-- NOTES
+- Fixed the CI release pipelines hash generation (This was a hotfix for 0.69).
+- Added per-user installers to the winget package submission script.
+- Upgraded the Community Toolkit Labs dependency. Thanks [@niels9001](https://github.com/niels9001)!
+- Fixed building with Visual Studio 17.6. Thanks [@snickler](https://github.com/snickler)!
+- Upgraded the WebView 2 dependency.
+- Upgraded the WinAppSDK dependency to 1.3.1.
+- Fixed a typo preventing the clean up script to run. Thanks [@Sajad-Lx](https://github.com/Sajad-Lx)!
+- Fixed encoding on a test file to fix running tests in some configurations. Thanks [@VisualBasist](https://github.com/VisualBasist)!
+- Made the GPO release assets come already versioned out of the build CI.
 
 #### What is being planned for version 0.71
 
@@ -145,5 +226,5 @@ The application logs basic telemetry. Our Telemetry Data page (Coming Soon) has 
 [usingPowerToys-docs-link]: https://aka.ms/powertoys-docs
 
 <!-- items that need to be updated release to release -->
-[github-next-release-work]: https://github.com/microsoft/PowerToys/issues?q=is%3Aopen+is%3Aissue+project%3Amicrosoft%2FPowerToys%2F43
-[github-current-release-work]: https://github.com/microsoft/PowerToys/issues?q=is%3Aopen+is%3Aissue+project%3Amicrosoft%2FPowerToys%2F42
+[github-next-release-work]: https://github.com/microsoft/PowerToys/issues?q=is%3Aopen+is%3Aissue+project%3Amicrosoft%2FPowerToys%2F44
+[github-current-release-work]: https://github.com/microsoft/PowerToys/issues?q=is%3Aopen+is%3Aissue+project%3Amicrosoft%2FPowerToys%2F43
