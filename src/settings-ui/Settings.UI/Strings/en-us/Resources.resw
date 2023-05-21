@@ -155,6 +155,27 @@
     <value>Customize the shortcut to bring up the command bar</value>
     <comment>"Screen Ruler" is the name of the utility</comment>
   </data>
+  <data name="MeasureTool_DefaultMeasureStyle.Header" xml:space="preserve">
+    <value>Default measure style</value>
+  </data>
+  <data name="MeasureTool_DefaultMeasureStyle.Description" xml:space="preserve">
+    <value>The utility will start having the selected style activated</value>
+  </data>
+  <data name="MeasureTool_DefaultMeasureStyle_None.Content" xml:space="preserve">
+    <value>None</value>
+  </data>
+  <data name="MeasureTool_DefaultMeasureStyle_Bounds.Content" xml:space="preserve">
+    <value>Bounds</value>
+  </data>
+  <data name="MeasureTool_DefaultMeasureStyle_Spacing.Content" xml:space="preserve">
+    <value>Spacing</value>
+  </data>
+  <data name="MeasureTool_DefaultMeasureStyle_Horizontal_Spacing.Content" xml:space="preserve">
+    <value>Horizontal spacing</value>
+  </data>
+  <data name="MeasureTool_DefaultMeasureStyle_Vertical_Spacing.Content" xml:space="preserve">
+    <value>Vertical spacing</value>
+  </data>
   <data name="MeasureTool_UnitsOfMeasure.Header" xml:space="preserve">
     <value>Units of measurement</value>
   </data>
@@ -761,6 +782,33 @@
   <data name="FileExplorerPreview_ToggleSwitch_Preview_SVG.Description" xml:space="preserve">
     <value>.svg</value>
     <comment>File extension, should not be altered</comment>
+  </data>
+  <data name="FileExplorerPreview_Preview_SVG_Color_Mode.Header" xml:space="preserve">
+    <value>Color mode</value>
+  </data>
+  <data name="FileExplorerPreview_Preview_SVG_Color_Mode_Default.Content" xml:space="preserve">
+    <value>Windows default</value>
+  </data>
+  <data name="FileExplorerPreview_Preview_SVG_Color_Solid_Color.Content" xml:space="preserve">
+    <value>Solid color</value>
+  </data>
+  <data name="FileExplorerPreview_Preview_SVG_Checkered_Shade.Content" xml:space="preserve">
+    <value>Checkered pattern</value>
+  </data>
+  <data name="FileExplorerPreview_Preview_SVG_Background_Color.Header" xml:space="preserve">
+    <value>Color</value>
+  </data>
+  <data name="FileExplorerPreview_Preview_SVG_Checkered_Shade_Mode.Header" xml:space="preserve">
+    <value>Checkered shade</value>
+  </data>
+  <data name="FileExplorerPreview_Preview_SVG_Checkered_Shade_1.Content" xml:space="preserve">
+    <value>Light</value>
+  </data>
+  <data name="FileExplorerPreview_Preview_SVG_Checkered_Shade_2.Content" xml:space="preserve">
+    <value>Medium</value>
+  </data>
+  <data name="FileExplorerPreview_Preview_SVG_Checkered_Shade_3.Content" xml:space="preserve">
+    <value>Dark</value>
   </data>
   <data name="FileExplorerPreview_ToggleSwitch_Preview_PDF.Header" xml:space="preserve">
     <value>Portable Document Format</value>
@@ -2008,6 +2056,10 @@ From there, simply click on one of the supported files in the File Explorer and 
     <value>Learn more about File Explorer add-ons</value>
     <comment>File Explorer is a product name, localize as Windows does</comment>
   </data>
+  <data name="LearnMore_Peek.Text" xml:space="preserve">
+    <value>Learn more about Peek</value>
+    <comment>Peek is a product name, do not loc</comment>
+  </data>
   <data name="LearnMore_PowerRename.Text" xml:space="preserve">
     <value>Learn more about PowerRename</value>
     <comment>PowerRename is a product name, do not loc</comment>
@@ -2376,6 +2428,9 @@ From there, simply click on one of the supported files in the File Explorer and 
   <data name="AlwaysOnTop_Activation_GroupSettings.Header" xml:space="preserve">
     <value>Activation</value>
   </data>
+  <data name="Peek_Activation_GroupSettings.Header" xml:space="preserve">
+    <value>Activation</value>
+  </data>
   <data name="AlwaysOnTop_EnableToggleControl_HeaderText.Header" xml:space="preserve">
     <value>Enable Always On Top</value>
     <comment>"Always On Top" is the name of the utility</comment>
@@ -2472,6 +2527,20 @@ From there, simply click on one of the supported files in the File Explorer and 
   </data>
   <data name="Shell_WhatsNew.Content" xml:space="preserve">
     <value>What's new</value>
+  </data>
+  <data name="Shell_Peek.Content" xml:space="preserve">
+    <value>Peek</value>
+    <comment>Product name: Navigation view item name for Peek</comment>
+  </data>
+  <data name="Peek.ModuleTitle" xml:space="preserve">
+    <value>Peek</value>
+  </data>
+  <data name="Peek.ModuleDescription" xml:space="preserve">
+    <value>Peek is a quick and easy way to preview files. Select a file in File Explorer and press the shortcut to open the file preview.</value>
+  </data>
+  <data name="Peek_EnablePeek.Header" xml:space="preserve">
+    <value>Enable Peek</value>
+    <comment>Peek is a product name, do not loc</comment>
   </data>
   <data name="FancyZones_DisableRoundCornersOnWindowSnap.Content" xml:space="preserve">
     <value>Disable round corners when window is snapped</value>
@@ -3130,5 +3199,31 @@ Activate by holding the key for the character you want to add an accent to, then
   </data>
   <data name="PastePlain_ShortcutWarning.Title" xml:space="preserve">
     <value>Using this shortcut may prevent non-text paste actions (e.g. images, files) or built-in paste plain text actions in other applications from functioning.</value>
+  </data>
+  <data name="MouseUtils_MouseJump_ThumbnailSize.Header" xml:space="preserve">
+    <value>Thumbnail Size</value>
+  </data>
+  <data name="MouseUtils_MouseJump_ThumbnailSize_Description_Prefix.Text" xml:space="preserve">
+    <value>Constrain thumbnail image size to a maximum of</value>
+  </data>
+  <data name="MouseUtils_MouseJump_ThumbnailSize_Description_Suffix.Text" xml:space="preserve">
+    <value>pixels</value>
+  </data>
+  <data name="MouseUtils_MouseJump_ThumbnailSize_Edit_Height.Header" xml:space="preserve">
+    <value>Maximum height (px)</value>
+    <comment>px = pixels</comment>
+  </data>
+  <data name="MouseUtils_MouseJump_ThumbnailSize_Edit_Width.Header" xml:space="preserve">
+    <value>Maximum width (px)</value>
+    <comment>px = pixels</comment>
+  </data>
+  <data name="Oobe_Peek.Description" xml:space="preserve">
+    <value>A lightning fast file preview feature for Windows.</value>
+  </data>
+  <data name="Oobe_Peek.Title" xml:space="preserve">
+    <value>Peek</value>
+  </data>
+  <data name="Oobe_Peek_HowToUse.Text" xml:space="preserve">
+    <value>to preview the file that's currently selected in File Explorer.</value>
   </data>
 </root>

@@ -1,0 +1,306 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <Import Project="..\..\Version.props" />
+
+  <PropertyGroup>
+    <TargetFramework>net7.0-windows</TargetFramework>
+	<RuntimeIdentifiers>win-x64;win-arm64</RuntimeIdentifiers>
+    <Version>$(Version).0</Version>
+    <Authors>Microsoft Corporation</Authors>
+    <Product>PowerToys</Product>
+    <Description>PowerToys FilePreviewCommon</Description>
+    <AssemblyName>PowerToys.FilePreviewCommon</AssemblyName>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Markdig.Signed" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="customLanguages\reg.js">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="index.html">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="monacoSpecialLanguages.js">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="monacoSRC\min\vs\base\browser\ui\codicons\codicon\codicon.ttf">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="monacoSRC\min\vs\base\worker\workerMain.js">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="monacoSRC\min\vs\basic-languages\abap\abap.js">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="monacoSRC\min\vs\basic-languages\apex\apex.js">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="monacoSRC\min\vs\basic-languages\azcli\azcli.js">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="monacoSRC\min\vs\basic-languages\bat\bat.js">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="monacoSRC\min\vs\basic-languages\cameligo\cameligo.js">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="monacoSRC\min\vs\basic-languages\clojure\clojure.js">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="monacoSRC\min\vs\basic-languages\coffee\coffee.js">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="monacoSRC\min\vs\basic-languages\cpp\cpp.js">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="monacoSRC\min\vs\basic-languages\csharp\csharp.js">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="monacoSRC\min\vs\basic-languages\csp\csp.js">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="monacoSRC\min\vs\basic-languages\css\css.js">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="monacoSRC\min\vs\basic-languages\dart\dart.js">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="monacoSRC\min\vs\basic-languages\dockerfile\dockerfile.js">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="monacoSRC\min\vs\basic-languages\ecl\ecl.js">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="monacoSRC\min\vs\basic-languages\fsharp\fsharp.js">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="monacoSRC\min\vs\basic-languages\go\go.js">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="monacoSRC\min\vs\basic-languages\graphql\graphql.js">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="monacoSRC\min\vs\basic-languages\handlebars\handlebars.js">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="monacoSRC\min\vs\basic-languages\hcl\hcl.js">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="monacoSRC\min\vs\basic-languages\html\html.js">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="monacoSRC\min\vs\basic-languages\ini\ini.js">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="monacoSRC\min\vs\basic-languages\javascript\javascript.js">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="monacoSRC\min\vs\basic-languages\java\java.js">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="monacoSRC\min\vs\basic-languages\julia\julia.js">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="monacoSRC\min\vs\basic-languages\kotlin\kotlin.js">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="monacoSRC\min\vs\basic-languages\less\less.js">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="monacoSRC\min\vs\basic-languages\lexon\lexon.js">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="monacoSRC\min\vs\basic-languages\lua\lua.js">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="monacoSRC\min\vs\basic-languages\m3\m3.js">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="monacoSRC\min\vs\basic-languages\markdown\markdown.js">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="monacoSRC\min\vs\basic-languages\mips\mips.js">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="monacoSRC\min\vs\basic-languages\msdax\msdax.js">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="monacoSRC\min\vs\basic-languages\mysql\mysql.js">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="monacoSRC\min\vs\basic-languages\objective-c\objective-c.js">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="monacoSRC\min\vs\basic-languages\pascaligo\pascaligo.js">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="monacoSRC\min\vs\basic-languages\pascal\pascal.js">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="monacoSRC\min\vs\basic-languages\perl\perl.js">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="monacoSRC\min\vs\basic-languages\pgsql\pgsql.js">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="monacoSRC\min\vs\basic-languages\php\php.js">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="monacoSRC\min\vs\basic-languages\postiats\postiats.js">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="monacoSRC\min\vs\basic-languages\powerquery\powerquery.js">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="monacoSRC\min\vs\basic-languages\powershell\powershell.js">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="monacoSRC\min\vs\basic-languages\pug\pug.js">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="monacoSRC\min\vs\basic-languages\python\python.js">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="monacoSRC\min\vs\basic-languages\razor\razor.js">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="monacoSRC\min\vs\basic-languages\redis\redis.js">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="monacoSRC\min\vs\basic-languages\redshift\redshift.js">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="monacoSRC\min\vs\basic-languages\restructuredtext\restructuredtext.js">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="monacoSRC\min\vs\basic-languages\ruby\ruby.js">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="monacoSRC\min\vs\basic-languages\rust\rust.js">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="monacoSRC\min\vs\basic-languages\r\r.js">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="monacoSRC\min\vs\basic-languages\sb\sb.js">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="monacoSRC\min\vs\basic-languages\scala\scala.js">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="monacoSRC\min\vs\basic-languages\scheme\scheme.js">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="monacoSRC\min\vs\basic-languages\scss\scss.js">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="monacoSRC\min\vs\basic-languages\shell\shell.js">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="monacoSRC\min\vs\basic-languages\solidity\solidity.js">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="monacoSRC\min\vs\basic-languages\sophia\sophia.js">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="monacoSRC\min\vs\basic-languages\sql\sql.js">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="monacoSRC\min\vs\basic-languages\st\st.js">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="monacoSRC\min\vs\basic-languages\swift\swift.js">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="monacoSRC\min\vs\basic-languages\systemverilog\systemverilog.js">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="monacoSRC\min\vs\basic-languages\tcl\tcl.js">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="monacoSRC\min\vs\basic-languages\twig\twig.js">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="monacoSRC\min\vs\basic-languages\typescript\typescript.js">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="monacoSRC\min\vs\basic-languages\vb\vb.js">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="monacoSRC\min\vs\basic-languages\xml\xml.js">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="monacoSRC\min\vs\basic-languages\yaml\yaml.js">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="monacoSRC\min\vs\editor\editor.main.css">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="monacoSRC\min\vs\editor\editor.main.js">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="monacoSRC\min\vs\editor\editor.main.nls.de.js">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="monacoSRC\min\vs\editor\editor.main.nls.es.js">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="monacoSRC\min\vs\editor\editor.main.nls.fr.js">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="monacoSRC\min\vs\editor\editor.main.nls.it.js">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="monacoSRC\min\vs\editor\editor.main.nls.ja.js">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="monacoSRC\min\vs\editor\editor.main.nls.js">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="monacoSRC\min\vs\editor\editor.main.nls.ko.js">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="monacoSRC\min\vs\editor\editor.main.nls.ru.js">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="monacoSRC\min\vs\editor\editor.main.nls.zh-cn.js">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="monacoSRC\min\vs\editor\editor.main.nls.zh-tw.js">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="monacoSRC\min\vs\language\css\cssMode.js">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="monacoSRC\min\vs\language\css\cssWorker.js">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="monacoSRC\min\vs\language\html\htmlMode.js">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="monacoSRC\min\vs\language\html\htmlWorker.js">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="monacoSRC\min\vs\language\json\jsonMode.js">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="monacoSRC\min\vs\language\json\jsonWorker.js">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="monacoSRC\min\vs\language\typescript\tsMode.js">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="monacoSRC\min\vs\language\typescript\tsWorker.js">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="monacoSRC\min\vs\loader.js">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="monaco_languages.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+</Project>

@@ -138,6 +138,9 @@
   <data name="FilterRegistryName" xml:space="preserve">
     <value>Registry files (*.reg)</value>
   </data>
+  <data name="InvalidQword" xml:space="preserve">
+    <value>(Invalid QWORD (64-bit) value)</value>
+  </data>
   <data name="InvalidRegistryFile" xml:space="preserve">
     <value> doesn't appear to be a valid registry file!</value>
   </data>
@@ -152,6 +155,9 @@
   </data>
   <data name="NameColumn.Header" xml:space="preserve">
     <value>Name</value>
+  </data>
+  <data name="NoNodesFoundInFile" xml:space="preserve">
+    <value>No valid Keys were found</value>
   </data>
   <data name="OkButtonText" xml:space="preserve">
     <value>OK</value>
@@ -168,6 +174,9 @@
   <data name="RegistryButton.Label" xml:space="preserve">
     <value>Open Registry Editor...</value>
   </data>
+  <data name="RegistryJumpToKeyButton.Label" xml:space="preserve">
+    <value>Open Key...</value>
+  </data>
   <data name="SaveAsButton.Label" xml:space="preserve">
     <value>Save file as...</value>
   </data>
@@ -183,6 +192,9 @@
   <data name="textBox.PlaceholderText" xml:space="preserve">
     <value>Registry file text will appear here...</value>
   </data>
+  <data name="titleBarText.ApplicationTitle" xml:space="preserve">
+    <value>Registry Preview</value>
+  </data>
   <data name="ToolTipAddedKey" xml:space="preserve">
     <value>Key will be added, if needed</value>
   </data>
@@ -194,6 +206,9 @@
   </data>
   <data name="ToolTipDeletedValue" xml:space="preserve">
     <value>Value will be deleted</value>
+  </data>
+  <data name="ToolTipErrorKey" xml:space="preserve">
+    <value>Key couldn't be parsed</value>
   </data>
   <data name="ToolTipErrorValue" xml:space="preserve">
     <value>Value has a syntax error</value>
@@ -230,5 +245,8 @@
   </data>
   <data name="YesNoCancelDialogTitle" xml:space="preserve">
     <value>Registry Preview</value>
+  </data>
+  <data name="ZeroLength" xml:space="preserve">
+    <value>(zero-length binary value)</value>
   </data>
 </root>

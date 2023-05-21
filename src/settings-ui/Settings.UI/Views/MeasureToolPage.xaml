@@ -39,6 +39,15 @@
                             MinWidth="{StaticResource SettingActionControlMinWidth}"
                             HotkeySettings="{x:Bind Path=ViewModel.ActivationShortcut, Mode=TwoWay}" />
                     </labs:SettingsCard>
+                    <labs:SettingsCard x:Uid="MeasureTool_DefaultMeasureStyle">
+                        <ComboBox MinWidth="{StaticResource SettingActionControlMinWidth}" SelectedIndex="{x:Bind Path=ViewModel.DefaultMeasureStyle, Mode=TwoWay}">
+                            <ComboBoxItem x:Uid="MeasureTool_DefaultMeasureStyle_None"/>
+                            <ComboBoxItem x:Uid="MeasureTool_DefaultMeasureStyle_Bounds" />
+                            <ComboBoxItem x:Uid="MeasureTool_DefaultMeasureStyle_Spacing" />
+                            <ComboBoxItem x:Uid="MeasureTool_DefaultMeasureStyle_Horizontal_Spacing" />
+                            <ComboBoxItem x:Uid="MeasureTool_DefaultMeasureStyle_Vertical_Spacing" />
+                        </ComboBox>
+                    </labs:SettingsCard>
 
                 </controls:SettingsGroup>
 

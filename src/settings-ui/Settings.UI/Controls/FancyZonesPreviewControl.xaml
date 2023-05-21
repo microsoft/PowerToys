@@ -42,8 +42,8 @@
                 x:Key="DefaultBorderBrush"
                 Color="{ThemeResource SystemAccentColor}" />
         </ResourceDictionary>
-
     </UserControl.Resources>
+    
     <Grid
         x:Name="RootGrid"
         MinWidth="170"
@@ -51,38 +51,34 @@
         HorizontalAlignment="Center"
         Background="Black"
         BorderBrush="Black"
-        BorderThickness="6"
-        CornerRadius="4">
+        BorderThickness="8"
+        CornerRadius="12">
         <Grid.RowDefinitions>
             <RowDefinition Height="*" />
             <RowDefinition Height="*" />
-            <RowDefinition Height="auto" />
         </Grid.RowDefinitions>
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="*" />
             <ColumnDefinition Width="*" />
         </Grid.ColumnDefinitions>
         <Border
-            Grid.RowSpan="3"
+            Grid.RowSpan="2"
             Grid.ColumnSpan="2"
-            CornerRadius="2"
-            Opacity="0.8">
+            Opacity="0.8"
+            CornerRadius="4">
             <Image
-                AutomationProperties.AccessibilityView="Raw"
+               AutomationProperties.AccessibilityView="Raw"
                 Source="{x:Bind WallpaperPath, Mode=OneWay}"
                 Stretch="UniformToFill" />
         </Border>
 
-        <Grid
-            Grid.Row="2"
-            Grid.ColumnSpan="2"
-            Background="{ThemeResource SystemControlAcrylicElementBrush}" />
         <Border
             x:Name="Zone1"
             Grid.RowSpan="2"
-            Margin="4,4,2,4"
             BorderThickness="1"
-            CornerRadius="2">
+            Margin="4,4,2,4"
+            CornerRadius="2"
+            Background="{ThemeResource SystemControlAcrylicElementBrush}">
             <TextBlock
                 x:Name="Zone1Number"
                 HorizontalAlignment="Center"
@@ -94,9 +90,10 @@
         <Border
             x:Name="Zone2"
             Grid.Column="1"
-            Margin="2,4,4,2"
             BorderThickness="1"
-            CornerRadius="2">
+            Margin="2,4,4,2"
+            CornerRadius="2"
+            Background="{ThemeResource SystemControlAcrylicElementBrush}">
             <TextBlock
                 x:Name="Zone2Number"
                 HorizontalAlignment="Center"
@@ -109,9 +106,10 @@
             x:Name="Zone3"
             Grid.Row="1"
             Grid.Column="1"
-            Margin="2,2,4,4"
             BorderThickness="1"
-            CornerRadius="2">
+            Margin="2,2,4,4"
+            CornerRadius="2"
+            Background="{ThemeResource SystemControlAcrylicElementBrush}">
             <TextBlock
                 x:Name="Zone3Number"
                 HorizontalAlignment="Center"
