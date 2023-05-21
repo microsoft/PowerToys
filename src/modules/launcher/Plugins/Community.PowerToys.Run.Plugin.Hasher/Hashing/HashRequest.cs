@@ -1,0 +1,69 @@
+﻿// Copyright (c) Microsoft Corporation
+// The Microsoft Corporation licenses this file to you under the MIT license.
+// See the LICENSE file in the project root for more information.
+
+using System;
+using System.Collections.Generic;
+using System.Security.Cryptography;
+using System.Text;
+
+namespace Community.PowerToys.Run.Plugin.Hasher.Hashing
+{
+    public class HashRequest : IComputeRequest
+    {
+        public byte[] Result { get; set; }
+
+        public string ErrorMessage { get; set; }
+
+        public HashAlgorithmName AlgorithmName { get; set; }
+
+        public byte[] DataToHash { get; set; }
+
+        private static Dictionary<HashAlgorithmName, HashAlgorithm> _algorithms = new Dictionary<HashAlgorithmName, HashAlgorithm>()
+        {
+#pragma warning disable CA5351 // Do Not Use Broken Cryptographic Algorithms
+            { HashAlgorithmName.MD5, MD5.Create() },
+#pragma warning restore CA5351 // Do Not Use Broken Cryptographic Algorithms
+
+#pragma warning disable CA5350 // Do Not Use Weak Cryptographic Algorithms
+            { HashAlgorithmName.SHA1, SHA1.Create() },
+#pragma warning restore CA5350 // Do Not Use Weak Cryptographic Algorithms
+            { HashAlgorithmName.SHA256, SHA256.Create() },
+            { HashAlgorithmName.SHA384, SHA384.Create() },
+            { HashAlgorithmName.SHA512, SHA512.Create() },
+        };
+
+        public HashRequest(HashAlgorithmName algorithmName, byte[] dataToHash)
+        {
+            AlgorithmName = algorithmName;
+            DataToHash = dataToHash;
+        }
+
+        public void Compute()
+        {
+            if (DataToHash == null)
+            {
+                ErrorMessage = "Null data passed to hash request";
+                return;
+            }
+
+            Result = _algorithms[AlgorithmName].ComputeHash(DataToHash);
+        }
+
+        public string ResultToString()
+        {
+            StringBuilder sb = new StringBuilder();
+            foreach (var b in Result)
+            {
+                sb.Append(b.ToString("X2", null));
+            }
+
+            return sb.ToString();
+        }
+
+        public string FormatResult(IFormatProvider provider = null)
+        {
+            return $"{AlgorithmName}: {ResultToString()}";
+        }
+    }
+}

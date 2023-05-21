@@ -2,77 +2,115 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System;
+using System.Linq;
+using System.Net.Http;
 using System.Security.Cryptography;
 using System.Text;
 using System.Text.RegularExpressions;
+using Community.PowerToys.Run.Plugin.Hasher.GUID;
+using Community.PowerToys.Run.Plugin.Hasher.Hashing;
+using ControlzEx.Standard;
+using Wox.Plugin;
+using Wox.Plugin.Logger;
 
 namespace Community.PowerToys.Run.Plugin.Hasher
 {
-    public static class InputParser
+    public class InputParser
     {
-        private static readonly Regex RegValidAlgorithms = new Regex(
-            @"^(MD|md)5(\s.+|\(.*\))$|" +
-            @"^((SHA|sha)(1|256|384|512))(\s.+|\(.*\))$",
-            RegexOptions.Compiled);
-
-        public static HashRequest RequestedHash(string input)
+        public IComputeRequest ParseInput(Query query)
         {
-            if (!RegValidAlgorithms.IsMatch(input))
+            IComputeRequest request;
+
+            if (query.Terms.Count == 0)
             {
-                return null;
+                throw new ArgumentOutOfRangeException(nameof(query), "No arguments passed to hasher plugin");
             }
 
-            HashRequest hashRequest = new HashRequest();
-            string content;
+            string command = query.Terms[0];
 
-            Regex md5Regex = new Regex(@"^(MD|md)5(\s.*|\(.*\))$", RegexOptions.Compiled);
-            Regex shaRegex = new Regex(@"^((SHA|sha)(1|256|384|512))(\s.+|\(.*\))$", RegexOptions.Compiled);
-
-            if (md5Regex.IsMatch(input))
+            if (command.ToLower(null) == "md5")
             {
-                content = md5Regex.Match(input).Groups[1].Value.Trim();
-
-                hashRequest.AlgorithmName = HashAlgorithmName.MD5;
+                string content = query.Search.Substring(command.Length).Trim();
+                Log.Debug($"Will calculate MD5 hash for: {content}", GetType());
+                request = new HashRequest(HashAlgorithmName.MD5, Encoding.UTF8.GetBytes(content));
             }
-            else if (shaRegex.IsMatch(input))
+            else if (command.StartsWith("sha", StringComparison.InvariantCultureIgnoreCase))
             {
-                var match = shaRegex.Match(input);
-                content = match.Groups[4].Value.Trim();
+                string content = query.Search.Substring(command.Length).Trim();
+                HashAlgorithmName algorithmName;
 
-                switch (match.Groups[3].Value)
+                switch (command.Substring(3))
                 {
                     case "1":
-                        hashRequest.AlgorithmName = HashAlgorithmName.SHA1;
+                        algorithmName = HashAlgorithmName.SHA1;
                         break;
 
                     case "256":
-                        hashRequest.AlgorithmName = HashAlgorithmName.SHA256;
+                        algorithmName = HashAlgorithmName.SHA256;
                         break;
 
                     case "384":
-                        hashRequest.AlgorithmName = HashAlgorithmName.SHA384;
+                        algorithmName = HashAlgorithmName.SHA384;
                         break;
 
                     case "512":
-                        hashRequest.AlgorithmName = HashAlgorithmName.SHA512;
+                        algorithmName = HashAlgorithmName.SHA512;
                         break;
                     default:
-                        return null;
+                        throw new ArgumentException("No SHA variant specified");
+                }
+
+                Log.Debug($"Will calculate {algorithmName} hash for: {content}", GetType());
+                request = new HashRequest(algorithmName, Encoding.UTF8.GetBytes(content));
+            }
+            else if (command.StartsWith("guid", StringComparison.InvariantCultureIgnoreCase) ||
+                     command.StartsWith("uuid", StringComparison.InvariantCultureIgnoreCase))
+            {
+                string content = query.Search.Substring(command.Length).Trim();
+
+                // Default to version 4
+                int version = 4;
+                string versionQuery = command.Substring(4);
+
+                if (versionQuery.Length > 0)
+                {
+                    if (versionQuery.StartsWith("v", StringComparison.InvariantCultureIgnoreCase))
+                    {
+                        versionQuery = versionQuery.Substring(1);
+                    }
+
+                    if (!int.TryParse(versionQuery, null, out version))
+                    {
+                        throw new ArgumentException("Could not determine requested GUID version");
+                    }
+                }
+
+                if (version == 3 || version == 5)
+                {
+                    string[] sParameters = content.Split(" ");
+
+                    if (sParameters.Length != 2)
+                    {
+                        throw new ArgumentException("GUID versions 3 and 5 require 2 parameters - a namespace GUID and a name");
+                    }
+
+                    string namespaceParameter = sParameters[0];
+                    string nameParameter = sParameters[1];
+
+                    request = new GUIDRequest(version, namespaceParameter, nameParameter);
+                }
+                else
+                {
+                    request = new GUIDRequest(version);
                 }
             }
             else
             {
-                return null;
+                throw new ArgumentException("Invalid Query");
             }
 
-            if (content.StartsWith('(') && content.EndsWith(')'))
-            {
-                content = content.Substring(1, content.Length - 2);
-            }
-
-            hashRequest.DataToHash = Encoding.UTF8.GetBytes(content);
-
-            return hashRequest;
+            return request;
         }
     }
 }

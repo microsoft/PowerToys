@@ -10,9 +10,11 @@ using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading;
 using System.Windows;
+using Community.PowerToys.Run.Plugin.Hasher.Hashing;
 using Community.PowerToys.Run.Plugin.Hasher.Properties;
 using ManagedCommon;
 using Wox.Plugin;
+using Wox.Plugin.Logger;
 
 namespace Community.PowerToys.Run.Plugin.Hasher
 {
@@ -25,6 +27,7 @@ namespace Community.PowerToys.Run.Plugin.Hasher
         private PluginInitContext _context;
         private static string _icon_path;
         private bool _disposed;
+        private static InputParser _inputParser = new InputParser();
 
         public void Init(PluginInitContext context)
         {
@@ -91,32 +94,31 @@ namespace Community.PowerToys.Run.Plugin.Hasher
                 throw new ArgumentNullException(paramName: nameof(query));
             }
 
-            HashRequest hashRequest = InputParser.RequestedHash(query.Search);
-
             var results = new List<Result>();
-            if (hashRequest == null)
+            try
             {
-                results = HashUtility.HashData(Encoding.UTF8.GetBytes(query.Search))
-                .Select(x => GetResult(x))
-                .ToList();
+                IComputeRequest computeRequest = _inputParser.ParseInput(query);
+                results.Add(GetResult(computeRequest));
             }
-            else
+            catch (ArgumentException e)
             {
-                results.Add(GetResult(HashUtility.ComputeHashRequest(hashRequest)));
+                Log.Debug(GetTranslatedPluginTitle() + ": " + e.Message, GetType());
             }
 
             return results;
         }
 
-        private Result GetResult(HashResult hashResult)
+        private Result GetResult(IComputeRequest request)
         {
+            request.Compute();
+
             return new Result
             {
-                ContextData = hashResult,
-                Title = hashResult.ToString(null),
+                ContextData = request.Result,
+                Title = request.FormatResult(null),
                 IcoPath = _icon_path,
                 Score = 300,
-                SubTitle = Encoding.UTF8.GetString(hashResult.Content),
+                SubTitle = request.ResultToString(),
                 Action = c =>
                 {
                     var ret = false;
@@ -124,7 +126,7 @@ namespace Community.PowerToys.Run.Plugin.Hasher
                     {
                         try
                         {
-                            Clipboard.SetText(hashResult.GetHashAsString());
+                            Clipboard.SetText(request.ResultToString());
                             ret = true;
                         }
                         catch (ExternalException)
