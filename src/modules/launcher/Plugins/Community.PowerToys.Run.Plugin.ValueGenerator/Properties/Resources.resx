@@ -123,6 +123,9 @@
   <data name="copy_to_clipboard" xml:space="preserve">
     <value>Copy {0} to clipboard</value>
   </data>
+  <data name="error_title" xml:space="preserve">
+    <value>Value Generator Error</value>
+  </data>
   <data name="plugin_description" xml:space="preserve">
     <value>A plugin to calculate hashes and generate values.</value>
   </data>

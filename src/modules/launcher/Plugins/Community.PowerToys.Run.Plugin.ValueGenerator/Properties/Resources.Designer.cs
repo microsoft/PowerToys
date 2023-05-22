@@ -79,6 +79,15 @@ namespace Community.PowerToys.Run.Plugin.ValueGenerator.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Value Generator Error.
+        /// </summary>
+        public static string error_title {
+            get {
+                return ResourceManager.GetString("error_title", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to A plugin to calculate hashes and generate values..
         /// </summary>
         public static string plugin_description {

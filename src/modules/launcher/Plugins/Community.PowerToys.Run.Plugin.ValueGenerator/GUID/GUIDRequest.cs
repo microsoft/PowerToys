@@ -34,13 +34,13 @@ namespace Community.PowerToys.Run.Plugin.ValueGenerator.GUID
                 {
                     GuidNamespace = guid;
                 }
-                else if (!Guid.TryParse(guidNamespace, out guid))
+                else if (Guid.TryParse(guidNamespace, out guid))
                 {
-                    throw new ArgumentException($"For GUIDs versions 3 and 5, the first parameter needs to be a valid GUID or one of: {string.Join(", ", GUIDGenerator.PredefinedNamespaces.Keys)}");
+                    GuidNamespace = guid;
                 }
                 else
                 {
-                    GuidNamespace = guid;
+                    throw new ArgumentException($"The first parameter needs to be a valid GUID or one of: {string.Join(", ", GUIDGenerator.PredefinedNamespaces.Keys)}");
                 }
             }
             else
@@ -109,7 +109,7 @@ namespace Community.PowerToys.Run.Plugin.ValueGenerator.GUID
 
         public string ResultToString()
         {
-            if (ErrorMessage != null)
+            if (!IsSuccessful)
             {
                 return ErrorMessage;
             }
@@ -119,7 +119,7 @@ namespace Community.PowerToys.Run.Plugin.ValueGenerator.GUID
 
         public string FormatResult(IFormatProvider provider = null)
         {
-            if (ErrorMessage != null)
+            if (!IsSuccessful)
             {
                 return ErrorMessage;
             }

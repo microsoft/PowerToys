@@ -3,14 +3,10 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
-using System.Linq;
-using System.Net.Http;
 using System.Security.Cryptography;
 using System.Text;
-using System.Text.RegularExpressions;
 using Community.PowerToys.Run.Plugin.ValueGenerator.GUID;
 using Community.PowerToys.Run.Plugin.ValueGenerator.Hashing;
-using ControlzEx.Standard;
 using Wox.Plugin;
 using Wox.Plugin.Logger;
 
@@ -24,7 +20,7 @@ namespace Community.PowerToys.Run.Plugin.ValueGenerator
 
             if (query.Terms.Count == 0)
             {
-                throw new ArgumentOutOfRangeException(nameof(query), "No arguments passed to hasher plugin");
+                throw new FormatException("No arguments passed to hasher plugin");
             }
 
             string command = query.Terms[0];
@@ -107,7 +103,7 @@ namespace Community.PowerToys.Run.Plugin.ValueGenerator
             }
             else
             {
-                throw new ArgumentException("Invalid Query");
+                throw new FormatException("Invalid Query");
             }
 
             return request;
