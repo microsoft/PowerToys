@@ -17,6 +17,14 @@ namespace Community.PowerToys.Run.Plugin.ValueGenerator.Hashing
 
         public string ErrorMessage { get; set; }
 
+        public string Description
+        {
+            get
+            {
+                return $"{AlgorithmName}({Encoding.UTF8.GetString(DataToHash)})";
+            }
+        }
+
         public HashAlgorithmName AlgorithmName { get; set; }
 
         public byte[] DataToHash { get; set; }

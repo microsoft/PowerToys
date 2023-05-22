@@ -10,6 +10,8 @@ namespace Community.PowerToys.Run.Plugin.ValueGenerator
     {
         public byte[] Result { get; set; }
 
+        public string Description { get; }
+
         public bool IsSuccessful { get; set; }
 
         public string ErrorMessage { get; set; }

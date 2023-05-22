@@ -116,10 +116,10 @@ namespace Community.PowerToys.Run.Plugin.ValueGenerator
             return new Result
             {
                 ContextData = request.Result,
-                Title = request.FormatResult(null),
+                Title = request.ResultToString(),
                 IcoPath = _icon_path,
                 Score = 300,
-                SubTitle = request.ResultToString(),
+                SubTitle = request.Description,
                 Action = c =>
                 {
                     var ret = false;
@@ -150,6 +150,7 @@ namespace Community.PowerToys.Run.Plugin.ValueGenerator
                 Title = Resources.error_title,
                 SubTitle = errorMessage,
                 IcoPath = _icon_path,
+                Action = _ => { return true; },
             };
         }
     }
