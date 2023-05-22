@@ -4,19 +4,15 @@
 
 using System;
 using System.Collections.Generic;
-using System.Globalization;
-using System.Linq;
 using System.Runtime.InteropServices;
-using System.Text;
 using System.Threading;
 using System.Windows;
-using Community.PowerToys.Run.Plugin.Hasher.Hashing;
-using Community.PowerToys.Run.Plugin.Hasher.Properties;
+using Community.PowerToys.Run.Plugin.ValueGenerator.Properties;
 using ManagedCommon;
 using Wox.Plugin;
 using Wox.Plugin.Logger;
 
-namespace Community.PowerToys.Run.Plugin.Hasher
+namespace Community.PowerToys.Run.Plugin.ValueGenerator
 {
     public class Main : IPlugin, IPluginI18n, IDisposable
     {
@@ -53,11 +49,11 @@ namespace Community.PowerToys.Run.Plugin.Hasher
         {
             if (theme == Theme.Light || theme == Theme.HighContrastWhite)
             {
-                _icon_path = "Images/hasher.light.png";
+                _icon_path = "Images/valuegen.light.png";
             }
             else
             {
-                _icon_path = "Images/hasher.dark.png";
+                _icon_path = "Images/valuegen.dark.png";
             }
         }
 

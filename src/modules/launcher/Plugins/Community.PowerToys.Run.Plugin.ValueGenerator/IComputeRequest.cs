@@ -4,15 +4,17 @@
 
 using System;
 
-namespace Community.PowerToys.Run.Plugin.Hasher
+namespace Community.PowerToys.Run.Plugin.ValueGenerator
 {
     public interface IComputeRequest
     {
         public byte[] Result { get; set; }
 
+        public bool IsSuccessful { get; set; }
+
         public string ErrorMessage { get; set; }
 
-        void Compute();
+        bool Compute();
 
         public string ResultToString();
 

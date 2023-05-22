@@ -124,9 +124,9 @@
     <value>Copy {0} to clipboard</value>
   </data>
   <data name="plugin_description" xml:space="preserve">
-    <value>A plugin to calculate hashes.</value>
+    <value>A plugin to calculate hashes and generate values.</value>
   </data>
   <data name="plugin_name" xml:space="preserve">
-    <value>Hasher</value>
+    <value>Value Generator</value>
   </data>
 </root>

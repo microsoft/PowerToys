@@ -8,7 +8,7 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-namespace Community.PowerToys.Run.Plugin.Hasher.Properties {
+namespace Community.PowerToys.Run.Plugin.ValueGenerator.Properties {
     using System;
     
     
@@ -39,7 +39,7 @@ namespace Community.PowerToys.Run.Plugin.Hasher.Properties {
         public static global::System.Resources.ResourceManager ResourceManager {
             get {
                 if (object.ReferenceEquals(resourceMan, null)) {
-                    global::System.Resources.ResourceManager temp = new global::System.Resources.ResourceManager("Community.PowerToys.Run.Plugin.Hasher.Properties.Resources", typeof(Resources).Assembly);
+                    global::System.Resources.ResourceManager temp = new global::System.Resources.ResourceManager("Community.PowerToys.Run.Plugin.ValueGenerator.Properties.Resources", typeof(Resources).Assembly);
                     resourceMan = temp;
                 }
                 return resourceMan;
@@ -79,7 +79,7 @@ namespace Community.PowerToys.Run.Plugin.Hasher.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to A plugin to calculate hashes..
+        ///   Looks up a localized string similar to A plugin to calculate hashes and generate values..
         /// </summary>
         public static string plugin_description {
             get {
@@ -88,7 +88,7 @@ namespace Community.PowerToys.Run.Plugin.Hasher.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Hasher.
+        ///   Looks up a localized string similar to Value Generator.
         /// </summary>
         public static string plugin_name {
             get {

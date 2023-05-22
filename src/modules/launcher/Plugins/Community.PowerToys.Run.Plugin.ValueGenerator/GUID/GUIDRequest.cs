@@ -5,11 +5,13 @@
 using System;
 using Wox.Plugin.Logger;
 
-namespace Community.PowerToys.Run.Plugin.Hasher.GUID
+namespace Community.PowerToys.Run.Plugin.ValueGenerator.GUID
 {
     public class GUIDRequest : IComputeRequest
     {
         public byte[] Result { get; set; }
+
+        public bool IsSuccessful { get; set; }
 
         public string ErrorMessage { get; set; }
 
@@ -36,6 +38,10 @@ namespace Community.PowerToys.Run.Plugin.Hasher.GUID
                 {
                     throw new ArgumentException($"For GUIDs versions 3 and 5, the first parameter needs to be a valid GUID or one of: {string.Join(", ", GUIDGenerator.PredefinedNamespaces.Keys)}");
                 }
+                else
+                {
+                    GuidNamespace = guid;
+                }
             }
             else
             {
@@ -46,8 +52,9 @@ namespace Community.PowerToys.Run.Plugin.Hasher.GUID
             ErrorMessage = null;
         }
 
-        public void Compute()
+        public bool Compute()
         {
+            IsSuccessful = true;
             try
             {
                 switch (Version)
@@ -94,7 +101,10 @@ namespace Community.PowerToys.Run.Plugin.Hasher.GUID
             {
                 Log.Exception(e.Message, e, GetType());
                 ErrorMessage = e.Message;
+                IsSuccessful = false;
             }
+
+            return IsSuccessful;
         }
 
         public string ResultToString()

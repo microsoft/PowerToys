@@ -7,11 +7,13 @@ using System.Collections.Generic;
 using System.Security.Cryptography;
 using System.Text;
 
-namespace Community.PowerToys.Run.Plugin.Hasher.Hashing
+namespace Community.PowerToys.Run.Plugin.ValueGenerator.Hashing
 {
     public class HashRequest : IComputeRequest
     {
         public byte[] Result { get; set; }
+
+        public bool IsSuccessful { get; set; }
 
         public string ErrorMessage { get; set; }
 
@@ -39,15 +41,20 @@ namespace Community.PowerToys.Run.Plugin.Hasher.Hashing
             DataToHash = dataToHash;
         }
 
-        public void Compute()
+        public bool Compute()
         {
             if (DataToHash == null)
             {
                 ErrorMessage = "Null data passed to hash request";
-                return;
+                IsSuccessful = false;
+            }
+            else
+            {
+                Result = _algorithms[AlgorithmName].ComputeHash(DataToHash);
+                IsSuccessful = true;
             }
 
-            Result = _algorithms[AlgorithmName].ComputeHash(DataToHash);
+            return IsSuccessful;
         }
 
         public string ResultToString()

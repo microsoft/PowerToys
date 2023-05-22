@@ -6,12 +6,12 @@
     <ProjectGuid>{D095BE44-1F2E-463E-A494-121892A75EA2}</ProjectGuid>
     <UseWPF>true</UseWPF>
     <Version>$(Version).0</Version>
-    <AssemblyName>Community.PowerToys.Run.Plugin.Hasher</AssemblyName>
-    <RootNamespace>Community.PowerToys.Run.Plugin.Hasher</RootNamespace>
+    <AssemblyName>Community.PowerToys.Run.Plugin.ValueGenerator</AssemblyName>
+    <RootNamespace>Community.PowerToys.Run.Plugin.ValueGenerator</RootNamespace>
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
     <AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
     <GenerateSatelliteAssembliesForCore>true</GenerateSatelliteAssembliesForCore>
-    <OutputPath>..\..\..\..\..\$(Platform)\$(Configuration)\modules\launcher\Plugins\Hasher\</OutputPath>
+    <OutputPath>..\..\..\..\..\$(Platform)\$(Configuration)\modules\launcher\Plugins\ValueGenerator\</OutputPath>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)'=='Debug'">
@@ -58,10 +58,10 @@
   </ItemGroup>
 
   <ItemGroup>
-    <None Update="Images\hasher.dark.png">
+    <None Update="Images\valuegen.dark.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Update="Images\hasher.light.png">
+    <None Update="Images\valuegen.light.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
   </ItemGroup>

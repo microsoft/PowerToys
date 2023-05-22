@@ -515,7 +515,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "FilePreviewCommon", "src\co
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.PowerToys.Run.Plugin.PowerToys", "src\modules\launcher\Plugins\Microsoft.PowerToys.Run.Plugin.PowerToys\Microsoft.PowerToys.Run.Plugin.PowerToys.csproj", "{500DED3E-CFB5-4ED5-ACC6-02B3D6DC336D}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Community.PowerToys.Run.Plugin.Hasher", "src\modules\launcher\Plugins\Community.PowerToys.Run.Plugin.Hasher\Community.PowerToys.Run.Plugin.Hasher.csproj", "{D095BE44-1F2E-463E-A494-121892A75EA2}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Community.PowerToys.Run.Plugin.ValueGenerator", "src\modules\launcher\Plugins\Community.PowerToys.Run.Plugin.ValueGenerator\Community.PowerToys.Run.Plugin.ValueGenerator.csproj", "{D095BE44-1F2E-463E-A494-121892A75EA2}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

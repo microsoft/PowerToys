@@ -4,13 +4,12 @@
 
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Net;
 using System.Security.Cryptography;
 using System.Text;
 using Wox.Plugin.Common.Win32;
 
-namespace Community.PowerToys.Run.Plugin.Hasher.GUID
+namespace Community.PowerToys.Run.Plugin.ValueGenerator.GUID
 {
     internal sealed class GUIDGenerator
     {
