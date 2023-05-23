@@ -229,7 +229,7 @@
     <value>It is not possible to use drag and drop while running PowerToys elevated. As a workaround, please restart PowerToys without elevation to edit the device layout.</value>
   </data>
   <data name="MouseWithoutBorders_KeySettings.Header" xml:space="preserve">
-    <value>Encryption Key</value>
+    <value>Encryption key</value>
   </data>
   <data name="MouseWithoutBorders_SecurityKey.Header" xml:space="preserve">
     <value>Security key</value>
@@ -241,7 +241,7 @@
     <value>New key</value>
   </data>
   <data name="MouseWithoutBorders_CopyMachineName.Text" xml:space="preserve">
-    <value>Copy this PC name to the clipboard</value>
+    <value>Copy to clipboard</value>
   </data>
   <data name="MouseWithoutBorders_ReconnectButton.Text" xml:space="preserve">
     <value>Refresh connections</value>
@@ -250,7 +250,7 @@
     <value>Reestablishes connections with other devices if you are experiencing issues.</value>
   </data>
   <data name="MouseWithoutBorders_ThisMachineNameLabel.Header" xml:space="preserve">
-    <value>The local machine's host name is:</value>
+    <value>Host name of this device</value>
   </data>
   <data name="MouseWithoutBorders_Connect.Content" xml:space="preserve">
     <value>Connect</value>
@@ -395,11 +395,11 @@
       <value>Show clipboard activities and network status in system tray notifications</value>
   </data>
   <data name="MouseWithoutBorders_KeyboardShortcuts_Group.Header" xml:space="preserve">
-    <value>Keyboard Shortcuts</value>
+    <value>Keyboard shortcuts</value>
     <comment>keyboard is the hardware peripheral</comment>
   </data>
   <data name="MouseWithoutBorders_EasyMouseOption.Header" xml:space="preserve">
-    <value>Easy Mouse: Move between machines by moving the mouse pointer to the screen edges.</value>
+    <value>Easy Mouse: move between machines by moving the mouse pointer to the screen edges.</value>
   </data>
   <data name="MouseWithoutBorders_EasyMouseOption.Description" xml:space="preserve">
     <value>Can also be set to move only when pressing Shift or Ctrl.</value>
@@ -2337,6 +2337,10 @@ From there, simply click on one of the supported files in the File Explorer and 
   <data name="LearnMore_PastePlain.Text" xml:space="preserve">
     <value>Learn more about Paste as Plain Text</value>
     <comment> Paste as Plain Text is the name of the module. </comment>
+  </data>
+	<data name="LearnMore_MouseWithoutBorders.Text" xml:space="preserve">
+    <value>Learn more about Mouse Without Borders</value>
+    <comment>Mouse Without Borders is the name of the module. </comment>
   </data>
   <data name="LearnMore_PowerPreview.Text" xml:space="preserve">
     <value>Learn more about File Explorer add-ons</value>
