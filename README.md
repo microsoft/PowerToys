@@ -96,14 +96,15 @@ In this release, we focused on releasing new features, stability and improvement
 
 **Highlights**
 
-- TODO
+- New utility: Mouse Without Borders enables you to interact with other computers from the same keyboard and mouse and share clipboard and files between the machines. We’ve upgraded it to .NET 7 and made a few small adjustments to fit inside the PowerToys model. Thanks [@truong2d](https://github.com/truong2d) and the rest of the contributors from the Microsoft Garage!
 - New utility: Peek is a utility that shows a quick preview of files selected in File Explorer when you press a shortcut (`Ctrl`+`Space` by default). Thanks [@SamChaps](https://github.com/SamChaps)!
 - Registry preview Quality of Life improvements. Thanks [@randyrants](https://github.com/randyrants)!
 - Awake Quality of Life improvements. Thanks [@dend](https://github.com/dend)!
 - Mouse Jump Quality of Life improvements. Thanks [@mikeclayton](https://github.com/mikeclayton)!
 
 ### General
-- TODO
+
+- New utility: Mouse Without Borders. Thanks [@truong2d](https://github.com/truong2d) and [other original contributors](https://github.com/microsoft/PowerToys/blob/main/COMMUNITY.md#mouse-without-borders-original-contributors)!
 - New utility: Peek. Thanks [@SamChaps](https://github.com/SamChaps)!
 - Fixed a bug causing saved settings to clear sometimes when upgrading PowerToys.
 - Font, icon and corner radius adjustments in the UI across utilities. Thanks [@Jay-o-Way](https://github.com/Jay-o-Way)!
