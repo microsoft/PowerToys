@@ -18,6 +18,7 @@
     <PackageProjectUrl>https://awake.den.dev</PackageProjectUrl>
     <RepositoryUrl>https://github.com/microsoft/powertoys</RepositoryUrl>
     <SelfContained>true</SelfContained>
+    <GenerateAssemblyInfo>true</GenerateAssemblyInfo>
   </PropertyGroup>
 
   <!-- SelfContained=true requires RuntimeIdentifier to be set -->
@@ -51,16 +52,16 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
 
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" />
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|ARM64'" />
+
   <ItemGroup>
     <None Remove="Images\Awake.ico" />
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.Windows.CsWin32">
-      <PrivateAssets>all</PrivateAssets>
-    </PackageReference>
     <PackageReference Include="Microsoft.Windows.CsWinRT" />
-    <PackageReference Include="NLog" />
     <PackageReference Include="System.CommandLine" />
     <PackageReference Include="System.Reactive" />
     <PackageReference Include="System.Runtime.Caching" />
@@ -80,15 +81,16 @@
   </ItemGroup>
 
   <ItemGroup>
-    <None Update="NLog.config">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-  </ItemGroup>
-
-  <ItemGroup>
     <Content Include="Images\Awake.ico">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Update="Microsoft.CodeAnalysis.NetAnalyzers">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
   </ItemGroup>
 
 </Project>

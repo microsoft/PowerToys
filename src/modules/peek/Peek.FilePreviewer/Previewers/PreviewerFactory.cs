@@ -16,6 +16,10 @@ namespace Peek.FilePreviewer.Previewers
             {
                 return new ImagePreviewer(file);
             }
+            else if (VideoPreviewer.IsFileTypeSupported(file.Extension))
+            {
+                return new VideoPreviewer(file);
+            }
             else if (WebBrowserPreviewer.IsFileTypeSupported(file.Extension))
             {
                 return new WebBrowserPreviewer(file);

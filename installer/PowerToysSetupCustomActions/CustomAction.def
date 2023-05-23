@@ -28,3 +28,4 @@ EXPORTS
 	UninstallVirtualCameraDriverCA
 	UnRegisterContextMenuPackagesCA
 	UninstallEmbeddedMSIXCA
+	UninstallServicesCA

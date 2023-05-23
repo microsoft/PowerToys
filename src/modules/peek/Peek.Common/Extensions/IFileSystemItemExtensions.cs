@@ -8,6 +8,7 @@ using System.IO;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Xml;
+using Peek.Common.Helpers;
 using Peek.Common.Models;
 using Scripting;
 using Windows.Foundation;
@@ -19,17 +20,12 @@ namespace Peek.Common.Extensions
     {
         public static Size? GetImageSize(this IFileSystemItem item)
         {
-            Size? size = null;
+            return PropertyStoreHelper.TryGetUintSizeProperty(item.Path, PropertyKey.ImageHorizontalSize, PropertyKey.ImageVerticalSize);
+        }
 
-            var width = item.Width;
-            var height = item.Height;
-
-            if (width != null && height != null)
-            {
-                size = new Size((int)width, (int)height);
-            }
-
-            return size;
+        public static Size? GetVideoSize(this IFileSystemItem item)
+        {
+            return PropertyStoreHelper.TryGetUintSizeProperty(item.Path, PropertyKey.FrameWidth, PropertyKey.FrameHeight);
         }
 
         public static Size? GetSvgSize(this IFileSystemItem item)

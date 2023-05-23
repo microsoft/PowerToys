@@ -7,6 +7,7 @@ AACD
 AAD
 AADF
 abap
+abcdefghjkmnpqrstuvxyz
 ABE
 abgr
 abi
@@ -24,6 +25,7 @@ ACFC
 ACFF
 Acl
 aclapi
+AClient
 AColumn
 acrt
 activatable
@@ -31,6 +33,7 @@ ACTIVATEAPP
 activationaction
 ADDUNDORECORD
 ADifferent
+adio
 administra
 ADMINS
 adml
@@ -60,7 +63,7 @@ ALLINPUT
 ALLOWUNDO
 ALLVIEW
 ALPHATYPE
-Altdown
+altdown
 alwaysontop
 amd
 AModifier
@@ -80,6 +83,7 @@ APeriod
 apidl
 APIENTRY
 APIIs
+Apm
 APPBARDATA
 appdata
 APPEXECLINK
@@ -89,15 +93,16 @@ Applets
 Applicationcan
 applicationconfiguration
 applicationframehost
-applog
 appmanifest
 APPNAME
 appref
 apps
+appsettings
 appwindow
 appwiz
 APSTUDIO
 AQS
+ARandom
 ARCHITEW
 arcosh
 ARemapped
@@ -113,6 +118,7 @@ arsinh
 artanh
 arw
 asdf
+asf
 AShortcut
 ASingle
 ASSOCCHANGED
@@ -124,6 +130,7 @@ atlcom
 atleast
 atlfile
 atlstr
+ATRIOX
 Attribs
 aumid
 Aut
@@ -136,7 +143,7 @@ Autorun
 AUTOUPDATE
 AValid
 awakeness
-awakeversion
+AWAYMODE
 AYUV
 azcli
 azman
@@ -151,6 +158,7 @@ BCB
 BCCE
 BCCEA
 bck
+Bcl
 BDB
 BDBAD
 BDCC
@@ -219,13 +227,14 @@ buildtransitive
 BUTTONUP
 BVal
 BValue
+byapp
 BYPOSITION
 bytearray
 CABD
 CALG
 callbackptr
-cameligo
 calpwstr
+cameligo
 Cangjie
 CANRENAME
 CAPTUREBLT
@@ -265,6 +274,7 @@ CFEE
 CFFEE
 CFFF
 cguid
+CHANGECBCHAIN
 changecursor
 Changemove
 chdir
@@ -289,9 +299,11 @@ clickonce
 CLIENTEDGE
 clientid
 clientside
+CLIPBOARDUPDATE
 CLIPCHILDREN
 CLIPSIBLINGS
 Cloneable
+closesocket
 clrcall
 Cls
 CLSCTX
@@ -340,6 +352,7 @@ comsuppw
 comsuppwd
 comutil
 concrt
+CONFIGW
 CONFLICTINGMODIFIERKEY
 CONFLICTINGMODIFIERSHORTCUT
 CONOUT
@@ -456,6 +469,7 @@ debian
 debugbreak
 DECLAR
 declspec
+decryptor
 DED
 Dedup
 DEFAULTBOOTSTRAPPERINSTALLFOLDER
@@ -480,6 +494,8 @@ depersist
 deprioritized
 depsfileslistspath
 deref
+READOBJECTS
+WRITEOBJECTS
 DESKTOPABSOLUTEEDITING
 DESKTOPABSOLUTEPARSING
 desktopshorcutinstalled
@@ -523,6 +539,7 @@ DPolicy
 DPSAPI
 DQTAT
 DQTYPE
+DRAWCLIPBOARD
 DRAWFRAME
 drawingcolor
 dreamsofameaningfullife
@@ -605,8 +622,10 @@ Emoji
 ENABLEDELAYEDEXPANSION
 enabledisable
 ENABLEDPOPUP
+encryptor
 endpointvolume
 endregion
+ENDSESSION
 ENTERSIZEMOVE
 ENU
 EOAC
@@ -624,6 +643,7 @@ esize
 esrp
 estructuredtext
 etl
+etstat
 etw
 EUQ
 eurochange
@@ -719,6 +739,7 @@ FILEVERSION
 Filtergraph
 Filterkeyboard
 Filterx
+Finalizers
 findfast
 firefox
 FIXEDFILEINFO
@@ -731,6 +752,7 @@ FORCEMINIMIZE
 formatetc
 FRAMECHANGED
 frankychen
+frm
 Froml
 FROMTOUCH
 FSCTL
@@ -760,16 +782,20 @@ GETDPISCALEDSIZE
 GETICON
 GETMINMAXINFO
 GETPROPERTYSTOREFLAGS
+GETSCREENSAVERRUNNING
+GETSECKEY
 GETSTATE
 GETTEXT
 GETTEXTLENGTH
 GHND
+Globbing
 GMEM
 GNumber
 google
 gpedit
 gpo
 GPOCA
+gpp
 GPT
 gpu
 graphql
@@ -796,6 +822,7 @@ Hashtable
 hashtag
 HASHVAL
 hbitmap
+hbm
 hbmp
 hbr
 HBRBACKGROUND
@@ -819,6 +846,8 @@ hhk
 HHmmss
 HHOOK
 hhx
+Hiber
+Hiberboot
 HIBYTE
 hicon
 HIDEWINDOW
@@ -968,12 +997,13 @@ Interlop
 INTRESOURCE
 INVALIDARG
 invalidoperatioexception
+invalidkey
 IPalette
 ipc
 ipcmanager
 IPlugin
 IPower
-ipreview
+IPREVIEW
 ipreviewhandlervisualssetfont
 IProperty
 IPublic
@@ -991,7 +1021,7 @@ iss
 ISurface
 ITask
 ith
-ithumbnail
+ITHUMBNAIL
 IUI
 IUnknown
 IWbem
@@ -1018,6 +1048,8 @@ jyuwono
 KBDLLHOOKSTRUCT
 kbm
 kdc
+keybd
+KEYBDDATA
 KEYBDINPUT
 keyboardeventhandlers
 keyboardmanager
@@ -1098,8 +1130,6 @@ LOCALSYSTEM
 LOCATIONCHANGE
 LOCKBYTES
 LOCKTYPE
-logconsole
-logfile
 LOGFONT
 LOGFONTW
 logon
@@ -1120,13 +1150,14 @@ LPCTSTR
 LPCWSTR
 lpdw
 lpfn
-lpmi
 LPINPUT
+LPQUERY
+lpmi
 LPMINMAXINFO
 LPMONITORINFO
 LPOSVERSIONINFOEXW
-lprc
 LPPOINT
+lprc
 LPRECT
 LPSAFEARRAY
 LPSTR
@@ -1134,6 +1165,8 @@ lpsz
 lpt
 LPTHREAD
 LPTOP
+lptpm
+LPTR
 LPTSTR
 LPVOID
 LPW
@@ -1193,6 +1226,7 @@ mediatype
 mef
 Mega
 Melman
+MENUBREAK
 MENUITEMINFO
 MENUITEMINFOW
 MERGECOPY
@@ -1222,12 +1256,12 @@ MINIMIZEBOX
 MINIMIZEEND
 MINIMIZESTART
 miniz
-minlevel
 MINORVERSION
 Miracast
 mjpg
 mkd
 mkdn
+mkv
 mlcfg
 mmc
 mmcexe
@@ -1248,6 +1282,7 @@ monitorinfof
 Monthand
 Moq
 MOUSEACTIVATE
+MOUSEDATA
 MOUSEEVENTF
 MOUSEHWHEEL
 MOUSEINPUT
@@ -1278,6 +1313,7 @@ MSIXCA
 MSLLHOOKSTRUCT
 Mso
 msp
+mspaint
 msrc
 msstore
 mst
@@ -1291,8 +1327,12 @@ mvvm
 myfile
 MYICON
 mysql
+mwb
+MWBEx
 NAMECHANGE
 nameof
+namespaceanddescendants
+nao
 NCACTIVATE
 ncc
 NCCALCSIZE
@@ -1334,10 +1374,12 @@ Newtonsoft
 niels
 nielslaute
 NIF
+nint
 NLD
-nlog
+NLog
 nls
 NLSTEXT
+NNN
 NOACTIVATE
 NOAGGREGATION
 NOASYNC
@@ -1394,6 +1436,7 @@ ntdll
 ntfs
 NTSTATUS
 nugets
+nuint
 nullonfailure
 numberbox
 NUMLOCK
@@ -1450,6 +1493,7 @@ OVERLAPPEDWINDOW
 overlaywindow
 Oversampling
 OWNDC
+OWNERDRAW
 Packagemanager
 PACL
 PAINTSTRUCT
@@ -1473,7 +1517,7 @@ PATINVERT
 PATPAINT
 PAUDIO
 pbc
-pbgra
+Pbgra
 PBlob
 pcb
 pcch
@@ -1499,6 +1543,7 @@ perfmon
 pesi
 petabyte
 peteblois
+pevent
 PEXCEPTION
 pfn
 pfo
@@ -1506,9 +1551,7 @@ pft
 pgp
 pgsql
 pguid
-pkey
 PHANDLE
-PHANDLER
 phbm
 phbmp
 phwnd
@@ -1521,6 +1564,7 @@ pinfo
 pinvoke
 pipename
 PKBDLLHOOKSTRUCT
+pkey
 PKEY
 plib
 PLK
@@ -1697,6 +1741,7 @@ remappings
 REMAPSUCCESSFUL
 REMAPUNSUCCESSFUL
 Remotable
+remoteip
 Removedir
 Removelnk
 renamable
@@ -1763,6 +1808,7 @@ rungameid
 RUNLEVEL
 runsettings
 runtimeclass
+runtimeconfig
 runtimedepsjsonpath
 runtimeobject
 runtimepack
@@ -1809,6 +1855,7 @@ sendvirtualinput
 Seperate
 Seraphima
 serverside
+Ses
 SETCONTEXT
 setcursor
 setenv
@@ -1896,6 +1943,7 @@ SMALLICON
 smartphone
 SMTO
 snd
+sni
 snwprintf
 softline
 somil
@@ -1908,7 +1956,6 @@ spdisp
 spdlog
 spdo
 spec'ing
-specialfolder
 spesi
 splitwstring
 spsi
@@ -2003,6 +2050,7 @@ SYSICONINDEX
 SYSKEY
 syskeydown
 SYSKEYUP
+SYSLIB
 SYSMENU
 SYSTEMAPPS
 systemroot
@@ -2030,6 +2078,7 @@ tchar
 tcl
 Tcollab
 tcs
+tcp
 tcscpy
 TCustom
 tdbuild
@@ -2135,6 +2184,7 @@ unremapped
 unsubscribe
 unvirtualized
 UOffset
+UOI
 Updatelayout
 UPGRADINGPRODUCTCODE
 Uptool
@@ -2279,6 +2329,7 @@ winget
 wingetcreate
 Winhook
 winkey
+winlogon
 WINL
 winmd
 winmm
@@ -2287,7 +2338,9 @@ winres
 winrt
 winsdk
 winsdkver
+Winsock
 winspool
+winsta
 winternl
 WINTHRESHOLD
 winui
@@ -2336,12 +2389,16 @@ WResize
 writefile
 Wrk
 wrl
+WSAEADDRINUSE
+WSAEADDRNOTAVAIL
+WSAECONNRESET
 wscui
 wsf
 wsh
 wsl
 wss
 wstr
+wsystem
 wsz
 wtoi
 WTS
@@ -2369,6 +2426,7 @@ XIncrement
 XLoc
 XNamespace
 XOffset
+XPels
 XPixel
 XResource
 xsi
@@ -2382,6 +2440,7 @@ yinle
 yinwang
 yinyue
 YOffset
+YPels
 ypescript
 YQuantized
 YResolution

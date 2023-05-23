@@ -49,6 +49,7 @@ void ReportGPOValues(const std::filesystem::path& tmpDir)
     report << "getConfiguredMouseHighlighterEnabledValue: " << gpo_rule_configured_to_string(powertoys_gpo::getConfiguredMouseHighlighterEnabledValue()) << std::endl;
     report << "getConfiguredMouseJumpEnabledValue: " << gpo_rule_configured_to_string(powertoys_gpo::getConfiguredMouseJumpEnabledValue()) << std::endl;
     report << "getConfiguredMousePointerCrosshairsEnabledValue: " << gpo_rule_configured_to_string(powertoys_gpo::getConfiguredMousePointerCrosshairsEnabledValue()) << std::endl;
+    report << "getConfiguredMouseWithoutBordersEnabledValue: " << gpo_rule_configured_to_string(powertoys_gpo::getConfiguredMouseWithoutBordersEnabledValue()) << std::endl;
     report << "getConfiguredPastePlainEnabledValue: " << gpo_rule_configured_to_string(powertoys_gpo::getConfiguredPastePlainEnabledValue()) << std::endl;
     report << "getConfiguredPowerRenameEnabledValue: " << gpo_rule_configured_to_string(powertoys_gpo::getConfiguredPowerRenameEnabledValue()) << std::endl;
     report << "getConfiguredPowerLauncherEnabledValue: " << gpo_rule_configured_to_string(powertoys_gpo::getConfiguredPowerLauncherEnabledValue()) << std::endl;

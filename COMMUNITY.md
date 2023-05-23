@@ -111,6 +111,41 @@ Find My Mouse is based on Raymond Chen's SuperSonar.
 
 This amazing team helped PowerToys develop PowerToys Run and Keyboard manager as well as update our Settings to v2.  @alekhyareddy28, @arjunbalgovind, @jyuwono @laviusmotileng-ms, @ryanbodrug-microsoft, @saahmedm, @somil55, @traies, @udit3333
 
+## Mouse Without Borders original contributors
+*Project creator: Truong Do (Đỗ Đức Trường)*
+
+Other contributors:
+  * Microsoft Garage: Quinn Hawkins, Michael Low, Joe Coplen, Nino Yuniardi, Gwyneth Marshall, David Andrews, Karen Luecking
+  * Peter Hauge - Visual Studio
+  * Bruce Dawson - Windows Fundamentals
+  * Alan Myrvold - Office Security
+  * Adrian Garside - WEX
+  * Scott Bradner - Surface
+  * Aleks Gershaft - Windows Azure
+  * Chinh Huynh - Windows Azure
+  * Long Nguyen - Data Center
+  * Triet Le - Cloud Engineering
+  * Luke Schoen - Excel
+  * Bao Nguyen - Bing
+  * Ross Nichols - Windows
+  * Ryan Baltazar - Windows
+  * Ed Essey - The Garage
+  * Mario Madden - The Garage
+  * Karthick Mahalingam - ACE
+  * Pooja Kamra - ACE
+  * Justin White - SA
+  * Chris Ransom - SA
+  * Mike Ricks - Red Team
+  * Randy Santossio - Surface
+  * Ashish Sen Jaswal - Device Health
+  * Zoltan Harmath - Security Tools
+  * Luciano Krigun - Security Products
+  * Jo Hemmerlein - Red Team
+  * Chris Johnson - Surface Hub
+  * Loren Ponten - Surface Hub
+  * Paul Schmitt - WWL
+  * And many other Users!
+
 ## PowerToys core team
 
 - [@crutkas](https://github.com/crutkas/) - Clint Rutkas - Lead
