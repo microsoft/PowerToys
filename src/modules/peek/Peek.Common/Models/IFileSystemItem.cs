@@ -5,7 +5,6 @@
 using System;
 using System.Globalization;
 using System.Threading.Tasks;
-using Peek.Common.Extensions;
 using Peek.Common.Helpers;
 using Windows.Storage;
 
@@ -38,10 +37,6 @@ namespace Peek.Common.Models
         public string Name { get; init; }
 
         public string Path { get; init; }
-
-        public uint? Width => PropertyStoreHelper.TryGetUintProperty(Path, PropertyKey.ImageHorizontalSize);
-
-        public uint? Height => PropertyStoreHelper.TryGetUintProperty(Path, PropertyKey.ImageVerticalSize);
 
         public ulong FileSizeBytes => PropertyStoreHelper.TryGetUlongProperty(Path, PropertyKey.FileSizeBytes) ?? 0;
 

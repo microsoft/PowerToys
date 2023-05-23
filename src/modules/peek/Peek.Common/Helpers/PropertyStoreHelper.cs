@@ -7,24 +7,13 @@ using System.Globalization;
 using System.Runtime.InteropServices;
 using Peek.Common.Extensions;
 using Peek.Common.Models;
+using Windows.Foundation;
 using Windows.Win32.UI.Shell.PropertiesSystem;
 
 namespace Peek.Common.Helpers
 {
     public static partial class PropertyStoreHelper
     {
-        /// <summary>
-        /// Gets a uint type value from PropertyStore from the given item.
-        /// </summary>
-        /// <param name="path">The file/folder path</param>
-        /// <param name="key">The property key</param>
-        /// <returns>a nullable uint</returns>
-        public static uint? TryGetUintProperty(string path, PropertyKey key)
-        {
-            using DisposablePropertyStore propertyStore = GetPropertyStoreFromPath(path);
-            return propertyStore.TryGetUInt(key);
-        }
-
         /// <summary>
         /// Gets a ulong type value from PropertyStore from the given item.
         /// </summary>
@@ -47,6 +36,28 @@ namespace Peek.Common.Helpers
         {
             using DisposablePropertyStore propertyStore = GetPropertyStoreFromPath(path);
             return propertyStore.TryGetString(key);
+        }
+
+        /// <summary>
+        /// Gets Size composed of weight (uint) and height (uint) from PropertyStore from the given item.
+        /// </summary>
+        /// <param name="path">The file/folder path</param>
+        /// <param name="widthKey">The property key for width</param>
+        /// <param name="heightKey">The property key for height</param>
+        /// <returns>a nullable string</returns>
+        public static Size? TryGetUintSizeProperty(string path, PropertyKey widthKey, PropertyKey heightKey)
+        {
+            Size? size = null;
+            using DisposablePropertyStore propertyStore = GetPropertyStoreFromPath(path);
+            uint? width = propertyStore.TryGetUInt(widthKey);
+            uint? height = propertyStore.TryGetUInt(heightKey);
+
+            if (width != null && height != null)
+            {
+                size = new Size((float)width, (float)height);
+            }
+
+            return size;
         }
 
         /// <summary>
@@ -73,7 +84,7 @@ namespace Peek.Common.Helpers
 
                 if (hr != 0)
                 {
-                    throw new InvalidOperationException(string.Format(CultureInfo.InvariantCulture, "GetPropertyStore returned hresult={0}", hr));
+                    throw new InvalidOperationException(string.Format(CultureInfo.InvariantCulture, "GetPropertyStore returned hresult={0}, errorMessage={1}", hr, Marshal.GetExceptionForHR(hr)!.Message));
                 }
 
                 return new DisposablePropertyStore((IPropertyStore)Marshal.GetObjectForIUnknown(ppPropertyStore));

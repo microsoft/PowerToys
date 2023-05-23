@@ -47,6 +47,7 @@ namespace Peek.FilePreviewer
 
         [ObservableProperty]
         [NotifyPropertyChangedFor(nameof(ImagePreviewer))]
+        [NotifyPropertyChangedFor(nameof(VideoPreviewer))]
         [NotifyPropertyChangedFor(nameof(BrowserPreviewer))]
         [NotifyPropertyChangedFor(nameof(UnsupportedFilePreviewer))]
 
@@ -88,6 +89,8 @@ namespace Peek.FilePreviewer
         }
 
         public IImagePreviewer? ImagePreviewer => Previewer as IImagePreviewer;
+
+        public IVideoPreviewer? VideoPreviewer => Previewer as IVideoPreviewer;
 
         public IBrowserPreviewer? BrowserPreviewer => Previewer as IBrowserPreviewer;
 
@@ -140,6 +143,7 @@ namespace Peek.FilePreviewer
             {
                 Previewer = null;
                 ImagePreview.Visibility = Visibility.Collapsed;
+                VideoPreview.Visibility = Visibility.Collapsed;
                 BrowserPreview.Visibility = Visibility.Collapsed;
                 UnsupportedFilePreview.Visibility = Visibility.Collapsed;
                 return;
@@ -199,6 +203,8 @@ namespace Peek.FilePreviewer
 
         partial void OnPreviewerChanging(IPreviewer? value)
         {
+            VideoPreview.MediaPlayer.Pause();
+
             if (Previewer != null)
             {
                 Previewer.PropertyChanged -= Previewer_PropertyChanged;

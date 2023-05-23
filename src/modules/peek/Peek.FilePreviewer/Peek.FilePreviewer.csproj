@@ -33,7 +33,12 @@
     <ProjectReference Include="..\..\..\common\FilePreviewCommon\FilePreviewCommon.csproj" />
     <ProjectReference Include="..\..\..\settings-ui\Settings.UI.Library\Settings.UI.Library.csproj" />
     <ProjectReference Include="..\Peek.Common\Peek.Common.csproj" />
-    <ProjectReference Include="..\WIC\WIC.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Page Update="Controls\UnsupportedFilePreview\FailedFallbackPreviewControl.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
   </ItemGroup>
 
   <ItemGroup>

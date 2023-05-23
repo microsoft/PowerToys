@@ -93,7 +93,6 @@
                 "modules\\Peek\\Peek.FilePreviewer.dll",
                 "modules\\Peek\\Powertoys.Peek.UI.dll",
                 "modules\\Peek\\Powertoys.Peek.UI.exe",
-                "modules\\Peek\\WIC.dll",
                 "modules\\Peek\\Powertoys.Peek.dll",
 
                 "modules\\ImageResizer\\PowerToys.ImageResizer.exe",
@@ -144,6 +143,14 @@
                 "modules\\MouseUtils\\PowerToys.MousePointerCrosshairs.dll",
                 "modules\\MouseUtils\\MouseJumpUI\\PowerToys.MouseJumpUI.dll",
                 "modules\\MouseUtils\\MouseJumpUI\\PowerToys.MouseJumpUI.exe",
+
+                "modules\\MouseWithoutBorders\\PowerToys.MouseWithoutBorders.dll",
+                "modules\\MouseWithoutBorders\\PowerToys.MouseWithoutBorders.exe",
+                "modules\\MouseWithoutBorders\\PowerToys.MouseWithoutBordersModuleInterface.dll",
+                "modules\\MouseWithoutBorders\\PowerToys.MouseWithoutBordersService.dll",
+                "modules\\MouseWithoutBorders\\PowerToys.MouseWithoutBordersService.exe",
+                "modules\\MouseWithoutBorders\\PowerToys.MouseWithoutBordersHelper.dll",
+                "modules\\MouseWithoutBorders\\PowerToys.MouseWithoutBordersHelper.exe",
 
                 "modules\\PowerAccent\\PowerAccent.Core.dll",
                 "modules\\PowerAccent\\PowerToys.PowerAccent.dll",
@@ -269,9 +276,15 @@
                 "modules\\launcher\\ScipBe.Common.Office.OneNote.dll",
                 "modules\\launcher\\Interop.Microsoft.Office.Interop.OneNote.dll",
                 "modules\\launcher\\hyjiacan.py4n.dll",
+                "modules\\MouseWithoutBorders\\MessagePack.Annotations.dll",
+                "modules\\MouseWithoutBorders\\MessagePack.dll",
+                "modules\\MouseWithoutBorders\\Nerdbank.Streams.dll",
                 "Settings\\Microsoft.Graphics.Canvas.Interop.dll",
                 "Settings\\clrcompression.dll",
                 "Settings\\CommunityToolkit.Labs.WinUI.SettingsControls.dll",
+                "Settings\\MessagePack.Annotations.dll",
+                "Settings\\MessagePack.dll",
+                "Settings\\Nerdbank.Streams.dll",
                 "ColorCode.Core.dll", 
                 "ColorCode.UWP.dll",
                 "UnitsNet.dll"

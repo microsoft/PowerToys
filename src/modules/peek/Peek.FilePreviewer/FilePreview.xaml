@@ -26,6 +26,22 @@
             ToolTipService.ToolTip="{x:Bind ImageInfoTooltip, Mode=OneWay}"
             Visibility="{x:Bind IsPreviewVisible(ImagePreviewer, Previewer.State), Mode=OneWay}" />
 
+        <MediaPlayerElement
+            x:Name="VideoPreview"
+            AreTransportControlsEnabled="True"
+            AutoPlay="True"
+            Source="{x:Bind VideoPreviewer.Preview, Mode=OneWay}"
+            ToolTipService.ToolTip="{x:Bind ImageInfoTooltip, Mode=OneWay}"
+            Visibility="{x:Bind IsPreviewVisible(VideoPreviewer, Previewer.State), Mode=OneWay}">
+            <MediaPlayerElement.TransportControls>
+                <MediaTransportControls
+                    x:Name="mediaTransport"
+                    Width="auto"
+                    MaxWidth="420"
+                    IsCompact="True" />
+            </MediaPlayerElement.TransportControls>
+        </MediaPlayerElement>
+
         <controls:BrowserControl
             x:Name="BrowserPreview"
             x:Load="True"

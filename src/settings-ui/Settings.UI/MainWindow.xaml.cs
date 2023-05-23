@@ -125,6 +125,9 @@ namespace Microsoft.PowerToys.Settings.UI
                     case "MousePointerCrosshairs":
                         needToUpdate = generalSettingsConfig.Enabled.MousePointerCrosshairs != isEnabled;
                         generalSettingsConfig.Enabled.MousePointerCrosshairs = isEnabled; break;
+                    case "MouseWithoutBorders":
+                        needToUpdate = generalSettingsConfig.Enabled.MouseWithoutBorders != isEnabled;
+                        generalSettingsConfig.Enabled.MouseWithoutBorders = isEnabled; break;
                     case "PastePlain":
                         needToUpdate = generalSettingsConfig.Enabled.PastePlain != isEnabled;
                         generalSettingsConfig.Enabled.PastePlain = isEnabled; break;
