@@ -47,15 +47,15 @@
                         IsExpanded="{x:Bind Mode=TwoWay, Path=ViewModel.ConnectFieldsVisible}">
                         <labs:SettingsExpander.Items>
                             <labs:SettingsCard ContentAlignment="Right">
-                                <StackPanel Orientation="Horizontal" Spacing="4">
+                                <StackPanel Orientation="Horizontal" Spacing="8">
                                     <TextBox
                                         x:Name="ConnectSecurityKeyTextBox"
                                         Width="250"
-                                        PlaceholderText="Security Key" />
+                                        PlaceholderText="MWB_SecurityKeyLabel" />
                                     <TextBox
                                         x:Name="ConnectPCNameTextBox"
-                                        Width="250"
-                                        PlaceholderText="PC Name" />
+                                        x:Uid="MWB_PCNameLabel"
+                                        Width="250" />
                                     <Button
                                         x:Uid="MouseWithoutBorders_Connect"
                                         Command="{x:Bind Mode=OneTime, Path=ConnectCommand}"
@@ -63,7 +63,7 @@
                                 </StackPanel>
                             </labs:SettingsCard>
                         </labs:SettingsExpander.Items>
-                        <StackPanel Orientation="Horizontal" Spacing="4">
+                        <StackPanel Orientation="Horizontal" Spacing="8">
                             <TextBox IsReadOnly="True" Text="{x:Bind Mode=TwoWay, Path=ViewModel.SecurityKey}" />
                             <Button
                                 x:Uid="MouseWithoutBorders_NewKey"
@@ -76,8 +76,8 @@
                                 Visibility="{x:Bind Path=ViewModel.ConnectFieldsVisible, Mode=OneWay, Converter={StaticResource negativeBoolToVisibilityConverter}}" />
                         </StackPanel>
                     </labs:SettingsExpander>
-        
-                <labs:SettingsCard x:Uid="MouseWithoutBorders_ThisMachineNameLabel">
+
+                    <labs:SettingsCard x:Uid="MouseWithoutBorders_ThisMachineNameLabel">
                         <StackPanel Orientation="Horizontal" Spacing="8">
                             <TextBlock
                                 VerticalAlignment="Center"
@@ -141,14 +141,14 @@
                                                     <RowDefinition Height="Auto" />
                                                 </Grid.RowDefinitions>
 
-
                                                 <FontIcon
+                                                    Margin="0,12,0,0"
                                                     VerticalAlignment="Center"
                                                     FontSize="32"
                                                     Glyph="&#xE7F8;" />
                                                 <TextBlock
                                                     Grid.Row="1"
-                                                    Margin="8"
+                                                    Margin="12"
                                                     HorizontalAlignment="Center"
                                                     Style="{StaticResource CaptionTextBlockStyle}"
                                                     Tag="DeviceName"
@@ -204,7 +204,6 @@
                     <labs:SettingsCard
                         x:Uid="MouseWithoutBorders_UninstallService"
                         ActionIcon="{ui:FontIcon FontFamily={StaticResource SymbolThemeFontFamily},
-                                                 FontSize=14,
                                                  Glyph=&#xE8A7;}"
                         Command="{x:Bind ViewModel.UninstallServiceEventHandler}"
                         IsClickEnabled="{x:Bind Mode=OneWay, Path=ViewModel.CanUninstallService}" />
@@ -391,7 +390,6 @@
                     <labs:SettingsCard
                         x:Uid="MouseWithoutBorders_AddFirewallRuleButtonControl"
                         ActionIcon="{ui:FontIcon FontFamily={StaticResource SymbolThemeFontFamily},
-                                                 FontSize=14,
                                                  Glyph=&#xE8A7;}"
                         Command="{x:Bind ViewModel.AddFirewallRuleEventHandler}"
                         IsClickEnabled="True" />
