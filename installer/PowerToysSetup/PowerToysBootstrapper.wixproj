@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0"
   DefaultTargets="Build"
   InitialTargets="EnsureNuGetPackageBuildImports"
@@ -11,6 +11,12 @@
     <Name>PowerToysBootstrapper</Name>
     <ProjectGuid>{31d72625-43c1-41b1-b784-bce4a8dc5543}</ProjectGuid>
   </PropertyGroup>
+  <PropertyGroup Label="UserMacros" Condition=" '$(PerUser)' == 'true' ">
+    <DefineConstants>$(DefineConstants);PerUser=true</DefineConstants>
+  </PropertyGroup>
+  <PropertyGroup Label="UserMacros" Condition=" '$(PerUser)' != 'true' ">
+    <DefineConstants>$(DefineConstants);PerUser=false</DefineConstants>
+  </PropertyGroup>
   <PropertyGroup>
     <Configuration>Release</Configuration>
     <Platform Condition="'$(Platform)'=='x64'">x64</Platform>
@@ -20,8 +26,10 @@
     <OutputName>PowerToysSetup-$(Version)-$(Platform)</OutputName>
     <OutputType>Bundle</OutputType>
     <SuppressAclReset>True</SuppressAclReset>
-    <OutputName>PowerToysSetup-$(Version)-$(Platform)</OutputName>
-    <OutputPath>$(Platform)\$(Configuration)\</OutputPath>
+    <OutputName Condition=" '$(PerUser)' != 'true' ">PowerToysSetup-$(Version)-$(Platform)</OutputName>
+    <OutputName Condition=" '$(PerUser)' == 'true' ">PowerToysUserSetup-$(Version)-$(Platform)</OutputName>
+    <OutputPath Condition=" '$(PerUser)' != 'true' ">$(Platform)\$(Configuration)\MachineSetup</OutputPath>
+    <OutputPath Condition=" '$(PerUser)' == 'true' ">$(Platform)\$(Configuration)\UserSetup</OutputPath>
     <IntermediateOutputPath>obj\$(Platform)\$(Configuration)\</IntermediateOutputPath>
     <NuGetPackageImportStamp />
   </PropertyGroup>

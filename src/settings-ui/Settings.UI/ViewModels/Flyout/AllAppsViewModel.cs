@@ -93,9 +93,19 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 FlyoutMenuItems.Add(new FlyoutMenuItem() { Label = resourceLoader.GetString("MouseUtils_MousePointerCrosshairs/Header"), IsEnabled = generalSettingsConfig.Enabled.MousePointerCrosshairs, Tag = "MousePointerCrosshairs", Icon = "ms-appx:///Assets/FluentIcons/FluentIconsMouseCrosshairs.png", EnabledChangedCallback = EnabledChangedOnUI });
             }
 
+            if ((gpo = GPOWrapper.GetConfiguredMouseWithoutBordersEnabledValue()) != GpoRuleConfigured.Disabled && gpo != GpoRuleConfigured.Enabled)
+            {
+                FlyoutMenuItems.Add(new FlyoutMenuItem() { Label = resourceLoader.GetString("MouseWithoutBorders/ModuleTitle"), IsEnabled = generalSettingsConfig.Enabled.MouseWithoutBorders, Tag = "MouseWithoutBorders", Icon = "ms-appx:///Assets/FluentIcons/FluentIconsMouseWithoutBorders.png", EnabledChangedCallback = EnabledChangedOnUI });
+            }
+
             if ((gpo = GPOWrapper.GetConfiguredPastePlainEnabledValue()) != GpoRuleConfigured.Disabled && gpo != GpoRuleConfigured.Enabled)
             {
                 FlyoutMenuItems.Add(new FlyoutMenuItem() { Label = resourceLoader.GetString("PastePlain/ModuleTitle"), IsEnabled = generalSettingsConfig.Enabled.PastePlain, Tag = "PastePlain", Icon = "ms-appx:///Assets/FluentIcons/FluentIconsPastePlain.png", EnabledChangedCallback = EnabledChangedOnUI });
+            }
+
+            if ((gpo = GPOWrapper.GetConfiguredPeekEnabledValue()) != GpoRuleConfigured.Disabled && gpo != GpoRuleConfigured.Enabled)
+            {
+                FlyoutMenuItems.Add(new FlyoutMenuItem() { Label = resourceLoader.GetString("Peek/ModuleTitle"), IsEnabled = generalSettingsConfig.Enabled.Peek, Tag = "Peek", Icon = "ms-appx:///Assets/FluentIcons/FluentIconsPeek.png", EnabledChangedCallback = EnabledChangedOnUI });
             }
 
             if ((gpo = GPOWrapper.GetConfiguredPowerRenameEnabledValue()) != GpoRuleConfigured.Disabled && gpo != GpoRuleConfigured.Enabled)
@@ -111,6 +121,11 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             if ((gpo = GPOWrapper.GetConfiguredQuickAccentEnabledValue()) != GpoRuleConfigured.Disabled && gpo != GpoRuleConfigured.Enabled)
             {
                 FlyoutMenuItems.Add(new FlyoutMenuItem() { Label = resourceLoader.GetString("QuickAccent/ModuleTitle"), IsEnabled = generalSettingsConfig.Enabled.PowerAccent, Tag = "PowerAccent", Icon = "ms-appx:///Assets/FluentIcons/FluentIconsPowerAccent.png", EnabledChangedCallback = EnabledChangedOnUI });
+            }
+
+            if ((gpo = GPOWrapper.GetConfiguredRegistryPreviewEnabledValue()) != GpoRuleConfigured.Disabled && gpo != GpoRuleConfigured.Enabled)
+            {
+                FlyoutMenuItems.Add(new FlyoutMenuItem() { Label = resourceLoader.GetString("RegistryPreview/ModuleTitle"), IsEnabled = generalSettingsConfig.Enabled.RegistryPreview, Tag = "RegistryPreview", Icon = "ms-appx:///Assets/FluentIcons/FluentIconsRegistryPreview.png", EnabledChangedCallback = EnabledChangedOnUI });
             }
 
             if ((gpo = GPOWrapper.GetConfiguredScreenRulerEnabledValue()) != GpoRuleConfigured.Disabled && gpo != GpoRuleConfigured.Enabled)
@@ -160,10 +175,13 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                     case "MouseHighlighter": item.IsEnabled = generalSettingsConfig.Enabled.MouseHighlighter; break;
                     case "MouseJump": item.IsEnabled = generalSettingsConfig.Enabled.MouseJump; break;
                     case "MousePointerCrosshairs": item.IsEnabled = generalSettingsConfig.Enabled.MousePointerCrosshairs; break;
+                    case "MouseWithoutBorders": item.IsEnabled = generalSettingsConfig.Enabled.MouseWithoutBorders; break;
                     case "PastePlain": item.IsEnabled = generalSettingsConfig.Enabled.PastePlain; break;
+                    case "Peek": item.IsEnabled = generalSettingsConfig.Enabled.Peek; break;
                     case "PowerRename": item.IsEnabled = generalSettingsConfig.Enabled.PowerRename; break;
                     case "PowerLauncher": item.IsEnabled = generalSettingsConfig.Enabled.PowerLauncher; break;
                     case "PowerAccent": item.IsEnabled = generalSettingsConfig.Enabled.PowerAccent; break;
+                    case "RegistryPreview": item.IsEnabled = generalSettingsConfig.Enabled.RegistryPreview; break;
                     case "MeasureTool": item.IsEnabled = generalSettingsConfig.Enabled.MeasureTool; break;
                     case "ShortcutGuide": item.IsEnabled = generalSettingsConfig.Enabled.ShortcutGuide; break;
                     case "PowerOCR": item.IsEnabled = generalSettingsConfig.Enabled.PowerOCR; break;

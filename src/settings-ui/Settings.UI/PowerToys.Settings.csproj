@@ -89,6 +89,7 @@
     <PackageReference Include="Microsoft.WindowsAppSDK" />
     <PackageReference Include="Microsoft.Windows.SDK.BuildTools" />
     <PackageReference Include="Microsoft.Xaml.Behaviors.WinUI.Managed" />
+    <PackageReference Include="StreamJsonRpc" />
     <Manifest Include="$(ApplicationManifest)" />
   </ItemGroup>
   <!-- Defining the "Msix" ProjectCapability here allows the Single-project MSIX Packaging
@@ -102,11 +103,19 @@
   <ItemGroup>
     <ProjectReference Include="..\..\common\AllExperiments\AllExperiments.csproj" />
     <ProjectReference Include="..\..\common\GPOWrapper\GPOWrapper.vcxproj" />
+    <ProjectReference Include="..\..\common\interop\PowerToys.Interop.vcxproj" />
     <ProjectReference Include="..\..\common\ManagedCommon\ManagedCommon.csproj" />
     <ProjectReference Include="..\..\common\ManagedTelemetry\Telemetry\ManagedTelemetry.csproj" />
     <ProjectReference Include="..\Settings.UI.Library\Settings.UI.Library.csproj" />
   </ItemGroup>
 	
+  <PropertyGroup>
+    <!-- TODO: fix issues and reenable -->
+    <!-- These are caused by streamjsonrpc dependency on Microsoft.VisualStudio.Threading.Analyzers -->
+    <!-- We might want to add that to the project and fix the issues as well -->
+    <NoWarn>VSTHRD002;VSTHRD110;VSTHRD100;VSTHRD200;VSTHRD101</NoWarn>
+  </PropertyGroup>
+
   <ItemGroup>
     <Page Update="FlyoutWindow.xaml">
       <Generator>MSBuild:Compile</Generator>
@@ -136,6 +145,9 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Update="OOBE\Views\OobeOverviewAlternate.xaml">
+      <XamlRuntime>$(DefaultXamlRuntime)</XamlRuntime>
+    </Page>
+    <Page Update="Views\RegistryPreviewPage.xaml">
       <XamlRuntime>$(DefaultXamlRuntime)</XamlRuntime>
     </Page>
   </ItemGroup>

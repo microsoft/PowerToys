@@ -1,6 +1,7 @@
 LIBRARY "PowerToysSetupCustomActions"
 
 EXPORTS
+	CheckGPOCA
 	ApplyModulesRegistryChangeSetsCA
 	CreateScheduledTaskCA
 	CreateWinAppSDKHardlinksCA
@@ -27,3 +28,4 @@ EXPORTS
 	UninstallVirtualCameraDriverCA
 	UnRegisterContextMenuPackagesCA
 	UninstallEmbeddedMSIXCA
+	UninstallServicesCA

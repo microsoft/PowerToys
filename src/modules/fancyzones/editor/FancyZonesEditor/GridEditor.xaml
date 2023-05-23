@@ -21,7 +21,7 @@
                 </Canvas.Effect>
                 <StackPanel x:Name="MergeButtons"
                             Orientation="Horizontal">
-                    <Border CornerRadius="2"
+                    <Border CornerRadius="4"
                             Background="{DynamicResource PrimaryBackgroundBrush}">
                         
                         <Button Width="134"
@@ -31,7 +31,7 @@
                                 Click="MergeClick">
                             <StackPanel Orientation="Horizontal">
                                 <TextBlock Text="&#xE746;"
-                                           FontFamily="Segoe MDL2 Assets"
+                                           FontFamily="{StaticResource SymbolThemeFontFamily}"
                                            Foreground="{DynamicResource PrimaryForegroundBrush}"
                                            Margin="0,3,8,0" />
                                 <TextBlock Text="{x:Static props:Resources.Merge_zones}"

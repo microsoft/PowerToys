@@ -6,15 +6,20 @@
 
   <?define PowerToysInteropFiles=concrt140.dll;msvcp140.dll;msvcp140_1.dll;msvcp140_2.dll;msvcp140_atomic_wait.dll;msvcp140_codecvt_ids.dll;PowerToys.Interop.dll;vcamp140.dll;vccorlib140.dll;vcomp140.dll;vcruntime140.dll;vcruntime140_1.dll?>
 
-  <?define DotnetRuntimeFiles= ?>
+  <?define DotnetRuntimeFiles=?>
 
-  <?define DotnetRuntimeWPFFiles= ?>
+  <?define DotnetRuntimeWPFFiles=?>
 
   <Fragment>
     <DirectoryRef Id="INSTALLFOLDER" FileSource="$(var.BinDir)">
+      <Component Id="powertoys_per_machine_comp" Win64="yes">
+        <RegistryKey Root="$(var.RegistryScope)" Key="Software\Classes\powertoys">
+            <RegistryValue Type="string" Name="InstallScope" Value="$(var.InstallScope)" />
+        </RegistryKey>
+      </Component>
       <Component Id="powertoys_toast_clsid" Win64="yes">
         <RemoveFolder Id='Remove_powertoys_toast_clsid' On='uninstall' />
-        <RegistryKey Root="HKCR" Key="Software\Classes\CLSID\{DD5CACDA-7C2E-4997-A62A-04A597B58F76}">
+        <RegistryKey Root="$(var.RegistryScope)" Key="Software\Classes\CLSID\{DD5CACDA-7C2E-4997-A62A-04A597B58F76}">
           <RegistryValue Type="string" Value="PowerToys Toast Notifications Background Activator" />
           <RegistryValue Type="string" Key="LocalServer32" Value="[INSTALLFOLDER]PowerToys.exe -ToastActivated" />
           <RegistryValue Type="string" Key="LocalServer32" Name="ThreadingModel" Value="Apartment" />
@@ -22,7 +27,7 @@
       </Component>
       <Component Id="powertoys_exe" Win64="yes" Guid="30261594-41A6-4509-AD09-FBC4E692F441">
         <File Id="PowerToys.exe" Checksum="yes" />
-        <RegistryKey Root="HKLM" Key="Software\Classes\powertoys">
+        <RegistryKey Root="$(var.RegistryScope)" Key="Software\Classes\powertoys">
           <RegistryValue Type="string" Name="URL Protocol" Value="" KeyPath="yes"/>
           <RegistryValue Type="string" Value="URL:PowerToys custom internal URI protocol"/>
           <RegistryKey Key="DefaultIcon">
@@ -33,20 +38,35 @@
           </RegistryKey>
         </RegistryKey>
       </Component>
-      <Component Id="BackgroundActivator_dll" Win64="yes">
-        <File Id="PowerToys.BackgroundActivatorDLL.dll" KeyPath="yes" Checksum="yes" />
+      <Component Id="BackgroundActivator_dll" Win64="yes" Guid="A75E2882-7A8D-4332-89DD-831FFD6E0DD7">
+        <RegistryKey Root="$(var.RegistryScope)" Key="Software\Classes\powertoys\components">
+          <RegistryValue Type="string" Name="BackgroundActivator_dll" Value="" KeyPath="yes"/>
+        </RegistryKey>
+        <File Id="PowerToys.BackgroundActivatorDLL.dll" Checksum="yes" />
       </Component>
-      <Component Id="PowerToys_ActionRunner_exe" Win64="yes">
-        <File Id="PowerToys.ActionRunner.exe" KeyPath="yes" Checksum="yes" />
+      <Component Id="PowerToys_ActionRunner_exe" Win64="yes" Guid="4AD4C092-1CE0-45F1-8A01-4D1C76A5D69E">
+        <RegistryKey Root="$(var.RegistryScope)" Key="Software\Classes\powertoys\components">
+          <RegistryValue Type="string" Name="PowerToys_ActionRunner_exe" Value="" KeyPath="yes"/>
+        </RegistryKey>
+        <File Id="PowerToys.ActionRunner.exe" Checksum="yes" />
       </Component>
-      <Component Id="PowerToys_Update_exe" Win64="yes">
-        <File Id="PowerToys.Update.exe" KeyPath="yes" Checksum="yes" />
+      <Component Id="PowerToys_Update_exe" Win64="yes" Guid="A0BEAE0A-577A-40AC-8005-93BFF2ECE66C">
+        <RegistryKey Root="$(var.RegistryScope)" Key="Software\Classes\powertoys\components">
+          <RegistryValue Type="string" Name="PowerToys_Update_exe" Value="" KeyPath="yes"/>
+        </RegistryKey>
+        <File Id="PowerToys.Update.exe" Checksum="yes" />
       </Component>
-      <Component Id="License_rtf" Win64="yes">
-        <File Source="$(var.RepoDir)\installer\License.rtf" Id="License.rtf" KeyPath="yes" />
+      <Component Id="License_rtf" Win64="yes" Guid="632C60DF-0DDC-4F14-8F2B-A28136CD9E63">
+        <RegistryKey Root="$(var.RegistryScope)" Key="Software\Classes\powertoys\components">
+          <RegistryValue Type="string" Name="License_rtf" Value="" KeyPath="yes"/>
+        </RegistryKey>
+        <File Source="$(var.RepoDir)\installer\License.rtf" Id="License.rtf" />
       </Component>
-      <Component Id="Notice_md" Win64="yes">
-        <File Source="$(var.RepoDir)\Notice.md" Id="Notice.md" KeyPath="yes" />
+      <Component Id="Notice_md" Win64="yes" Guid="1671B5F5-1260-42CF-83A8-9B3430DFF8C5">
+        <RegistryKey Root="$(var.RegistryScope)" Key="Software\Classes\powertoys\components">
+          <RegistryValue Type="string" Name="Notice_md" Value="" KeyPath="yes"/>
+        </RegistryKey>
+        <File Source="$(var.RepoDir)\Notice.md" Id="Notice.md" />
       </Component>
     </DirectoryRef>
 
@@ -70,33 +90,26 @@
     <DirectoryRef Id="DotnetDlls">
       <!-- !Warning! Make sure to change Component Guid if you update the file list -->
       <Component Id="Dlls_DotnetFiles_Component" Guid="19488F16-3399-40AB-B7C4-CE3F27C1B294" Win64="yes">
-      <?foreach File in $(var.DotnetRuntimeFiles)?>
-        <File Source="$(var.BinDir)Settings\$(var.File)" />
-      <?endforeach?>
-      <?foreach File in $(var.DotnetRuntimeWPFFiles)?>
-        <File Source="$(var.BinDir)\modules\\ColorPicker\$(var.File)" />
-      <?endforeach?>
+        <RegistryKey Root="$(var.RegistryScope)" Key="Software\Classes\powertoys\components">
+          <RegistryValue Type="string" Name="Dlls_DotnetFiles_Component" Value="" KeyPath="yes"/>
+        </RegistryKey>
+        <?foreach File in $(var.DotnetRuntimeFiles)?>
+          <File Source="$(var.BinDir)Settings\$(var.File)" />
+        <?endforeach?>
+        <?foreach File in $(var.DotnetRuntimeWPFFiles)?>
+          <File Source="$(var.BinDir)\modules\\ColorPicker\$(var.File)" />
+        <?endforeach?>
       </Component>
     </DirectoryRef>
 
     <DirectoryRef Id="PowerToysInteropDlls">
-      <?foreach File in $(var.PowerToysInteropFiles)?>
-      <Component Id="Dlls_PowerToysInteropFiles_$(var.File)" Win64="yes">
-        <File Id="Dlls_PowerToysInterop_File_$(var.File)" Source="$(var.BinDir)\$(var.File)" />
-      </Component>
-      <?endforeach?>
-    </DirectoryRef>
-
-    <DirectoryRef Id="ModulesInstallFolder" FileSource="$(var.BinDir)modules\">
-      <Component Id="Module_PowerPreview_Registry" Win64="yes">
-        <!-- TODO: Remove this - Update Key to use IE11 for prevhost.exe -->
-        <RegistryKey Root="HKLM" Key="Software\Microsoft\Internet Explorer\Main\FeatureControl\FEATURE_BROWSER_EMULATION">
-          <RegistryValue Type="integer" Name="prevhost.exe" Value="11000" />
+      <Component Id="Dlls_PowerToysInteropFiles_Component" Win64="yes" Guid="9ED70966-805B-4E7E-AFB0-879D4DE23818">
+        <RegistryKey Root="$(var.RegistryScope)" Key="Software\Classes\powertoys\components">
+          <RegistryValue Type="string" Name="Dlls_PowerToysInteropFiles_Component" Value="" KeyPath="yes"/>
         </RegistryKey>
-        <!-- TODO: Remove this - Update Key to use IE11 for dllhost.exe -->
-        <RegistryKey Root="HKLM" Key="Software\Microsoft\Internet Explorer\Main\FeatureControl\FEATURE_BROWSER_EMULATION">
-          <RegistryValue Type="integer" Name="dllhost.exe" Value="11000" />
-        </RegistryKey>
+        <?foreach File in $(var.PowerToysInteropFiles)?>
+          <File Id="Dlls_PowerToysInterop_File_$(var.File)" Source="$(var.BinDir)\$(var.File)" />
+        <?endforeach?>
       </Component>
     </DirectoryRef>
 
@@ -121,22 +134,30 @@
     </DirectoryRef>
   </Fragment>
   <Fragment>
-    <ComponentGroup Id="CoreComponents" Directory="INSTALLFOLDER">
+    <ComponentGroup Id="CoreComponents">
+        <Component Id="RemoveCoreFolder" Guid="9330BD69-2D12-4D98-B0C7-66C99564D619" Directory="INSTALLFOLDER" >
+          <RegistryKey Root="$(var.RegistryScope)" Key="Software\Classes\powertoys\components">
+            <RegistryValue Type="string" Name="RemoveCoreFolder" Value="" KeyPath="yes"/>
+          </RegistryKey>
+          <RemoveFolder Id="RemoveDotnetDlls" Directory="DotnetDlls" On="uninstall"/>
+          <RemoveFolder Id="RemovePowerToysInteropDlls" Directory="PowerToysInteropDlls" On="uninstall"/>
+          <RemoveFolder Id="RemoveModulesInstallFolder" Directory="ModulesInstallFolder" On="uninstall"/>
+          <RemoveFolder Id="RemoveDllsFolder" Directory="DllsFolder" On="uninstall"/>
+          <RemoveFolder Id="RemoveINSTALLFOLDER" Directory="INSTALLFOLDER" On="uninstall"/>
+        </Component>
         <ComponentRef Id="powertoys_exe" />
         <ComponentRef Id="PowerToysStartMenuShortcut"/>
         <ComponentRef Id="BackgroundActivator_dll" />
         <ComponentRef Id="PowerToys_ActionRunner_exe" />
         <ComponentRef Id="PowerToys_Update_exe" />
+        <ComponentRef Id="powertoys_per_machine_comp" />
         <ComponentRef Id="powertoys_toast_clsid" />
         <ComponentRef Id="License_rtf" />
         <ComponentRef Id="Notice_md" />
         <ComponentRef Id="DesktopShortcut" />
-        <ComponentRef Id="Module_PowerPreview_Registry" />
 
         <ComponentRef Id="Dlls_DotnetFiles_Component" />
-        <?foreach File in $(var.PowerToysInteropFiles)?>
-        <ComponentRef Id="Dlls_PowerToysInteropFiles_$(var.File)" />
-        <?endforeach?>
+        <ComponentRef Id="Dlls_PowerToysInteropFiles_Component" />
     </ComponentGroup>
   </Fragment>
 </Wix>

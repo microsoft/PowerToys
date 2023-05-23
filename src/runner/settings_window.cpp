@@ -362,22 +362,22 @@ void run_settings_window(bool show_oobe_window, bool show_scoobe_window, std::op
     // Arg 4: process pid.
     DWORD powertoys_pid = GetCurrentProcessId();
 
+    GeneralSettings save_settings = get_general_settings();
+
     // Arg 5: settings theme.
-    const std::wstring settings_theme_setting{ get_general_settings().theme };
+    const std::wstring settings_theme_setting{ save_settings.theme };
     std::wstring settings_theme = L"system";
     if (settings_theme_setting == L"dark" || (settings_theme_setting == L"system" && WindowsColors::is_dark_mode()))
     {
         settings_theme = L"dark";
     }
 
-    GeneralSettings save_settings = get_general_settings();
-
     // Arg 6: elevated status
-    bool isElevated{ get_general_settings().isElevated };
+    bool isElevated{ save_settings.isElevated };
     std::wstring settings_elevatedStatus = isElevated ? L"true" : L"false";
 
     // Arg 7: is user an admin
-    bool isAdmin{ get_general_settings().isAdmin };
+    bool isAdmin{ save_settings.isAdmin };
     std::wstring settings_isUserAnAdmin = isAdmin ? L"true" : L"false";
 
     // Arg 8: should oobe window be shown
@@ -592,7 +592,15 @@ void open_settings_window(std::optional<std::wstring> settings_window, bool show
             // bring_settings_to_front();
             if (current_settings_ipc)
             {
-                current_settings_ipc->send(L"{\"ShowYourself\":\"main_page\"}");
+                if (settings_window.has_value())
+                {
+                    std::wstring msg = L"{\"ShowYourself\":\"" + settings_window.value() + L"\"}";
+                    current_settings_ipc->send(msg);
+                }
+                else
+                {
+                    current_settings_ipc->send(L"{\"ShowYourself\":\"Overview\"}");
+                }
             }
         }
     }
@@ -663,6 +671,12 @@ std::string ESettingsWindowNames_to_string(ESettingsWindowNames value)
         return "VideoConference";
     case ESettingsWindowNames::Hosts:
         return "Hosts";
+    case ESettingsWindowNames::MeasureTool:
+        return "MeasureTool";
+    case ESettingsWindowNames::PowerOCR:
+        return "PowerOCR";
+    case ESettingsWindowNames::RegistryPreview:
+        return "RegistryPreview";
     default:
     {
         Logger::error(L"Can't convert ESettingsWindowNames value={} to string", static_cast<int>(value));
@@ -725,6 +739,18 @@ ESettingsWindowNames ESettingsWindowNames_from_string(std::string value)
     else if (value == "Hosts")
     {
         return ESettingsWindowNames::Hosts;
+    }
+    else if (value == "MeasureTool")
+    {
+        return ESettingsWindowNames::MeasureTool;
+    }
+    else if (value == "PowerOCR")
+    {
+        return ESettingsWindowNames::PowerOCR;
+    }
+    else if (value == "RegistryPreview")
+    {
+        return ESettingsWindowNames::RegistryPreview;
     }
     else
     {

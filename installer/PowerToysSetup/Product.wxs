@@ -23,16 +23,17 @@
        Language="1033"
        Version="$(var.Version)"
        Manufacturer="Microsoft Corporation"
-       UpgradeCode="42B84BF7-5FBF-473B-9C8B-049DC16F7708">
+       UpgradeCode="$(var.UpgradeCodeGUID)">
 
-        <Package InstallerVersion="500" Compressed="yes" InstallScope="perMachine" InstallPrivileges="elevated" Platform="$(var.PlatformLK)" />
+
+      <Package InstallerVersion="500" Compressed="yes" InstallScope="$(var.InstallScope)" InstallPrivileges="$(var.InstallPrivileges)" Platform="$(var.PlatformLK)" />
 
     <MajorUpgrade DowngradeErrorMessage="A later version of [ProductName] is already installed." />
 
-    <Upgrade Id="42B84BF7-5FBF-473B-9C8B-049DC16F7708">
+    <Upgrade Id="$(var.UpgradeCodeGUID)">
       <UpgradeVersion
          Minimum="0.0.0" Maximum="$(var.Version)"
-         Property="PREVIOUSVERSIONSINSTALLED"
+         Property="PREVIOUSVERSIONSINSTALLED" 
          IncludeMinimum="yes" IncludeMaximum="no" />
     </Upgrade>
 
@@ -51,7 +52,7 @@
     <Property Id="ARPPRODUCTICON" Value="powertoys.exe" />
 
     <Feature Id="CoreFeature" Title="PowerToys" AllowAdvertise="no" Absent="disallow" TypicalDefault="install"
-             Description="Contains the Shortcut Guide and Fancy Zones features.">
+             Description="Contains all PowerToys features.">
       <ComponentGroupRef Id="CoreComponents" />
 
       <ComponentGroupRef Id="AlwaysOnTopComponentGroup" />
@@ -66,14 +67,17 @@
       <ComponentGroupRef Id="MeasureToolComponentGroup" />
       <ComponentGroupRef Id="MouseUtilsComponentGroup" />
       <ComponentGroupRef Id="PastePlainComponentGroup" />
+      <ComponentGroupRef Id="PeekComponentGroup" />
       <ComponentGroupRef Id="PowerAccentComponentGroup" />
       <ComponentGroupRef Id="PowerRenameComponentGroup" />
+      <ComponentGroupRef Id="RegistryPreviewComponentGroup" />
       <ComponentGroupRef Id="RunComponentGroup" />
       <ComponentGroupRef Id="SettingsComponentGroup" />
       <ComponentGroupRef Id="ShortcutGuideComponentGroup" />
       <ComponentGroupRef Id="TextExtractorComponentGroup" />
       <ComponentGroupRef Id="VideoConferenceComponentGroup" />
-
+      <ComponentGroupRef Id="MouseWithoutBordersComponentGroup" />
+        
       <ComponentGroupRef Id="ResourcesComponentGroup" />
       <ComponentGroupRef Id="WindowsAppSDKComponentGroup" />
       <ComponentGroupRef Id="ToolComponentGroup" />
@@ -117,13 +121,13 @@
     <Property Id="CREATESCHEDULEDTASK" Value="1"/>
     <Property Id="WixShellExecTarget" Value="[#PowerToys_ActionRunner.exe]" />
 
-    <SetProperty Action="SetDEFAULTBOOTSTRAPPERINSTALLFOLDER" Id="DEFAULTBOOTSTRAPPERINSTALLFOLDER" Value="[ProgramFiles64Folder]PowerToys" Before="SetBOOTSTRAPPERINSTALLFOLDER" Sequence="execute">
-    </SetProperty>
+    <SetProperty Action="SetDEFAULTBOOTSTRAPPERINSTALLFOLDER" Id="DEFAULTBOOTSTRAPPERINSTALLFOLDER" Value="[$(var.DefaultInstallDir)]PowerToys" Before="SetBOOTSTRAPPERINSTALLFOLDER" Sequence="execute"></SetProperty>
+
     <!-- In case we didn't receive a value from the bootstrapper. -->
     <SetProperty Action="SetBOOTSTRAPPERINSTALLFOLDER" Id="BOOTSTRAPPERINSTALLFOLDER" Value="[DEFAULTBOOTSTRAPPERINSTALLFOLDER]" Before="DetectPrevInstallPath" Sequence="execute">
       <![CDATA[BOOTSTRAPPERINSTALLFOLDER = ""]]>
     </SetProperty>
-    <!-- Have to compare value sent by bootstrapper to default to avoid using it, as a check to verify it's not default. This hack can be removed if it's possible to set the bootstrapper option to the previous install folder -->
+    <!-- Have to compare value sent by bootstrapper to default to avoid using it, as a check to verify it's not default. This hack can be removed if it's possible to set the bootstrapper option to the previous install folder--> 
     <SetProperty Action="SetINSTALLFOLDERTOPREVIOUSINSTALLFOLDER" Id="INSTALLFOLDER" Value="[PREVIOUSINSTALLFOLDER]" After="DetectPrevInstallPath" Sequence="execute">
       <![CDATA[BOOTSTRAPPERINSTALLFOLDER = DEFAULTBOOTSTRAPPERINSTALLFOLDER AND PREVIOUSINSTALLFOLDER <> ""]]>
     </SetProperty>
@@ -131,6 +135,7 @@
       <![CDATA[BOOTSTRAPPERINSTALLFOLDER <> DEFAULTBOOTSTRAPPERINSTALLFOLDER OR PREVIOUSINSTALLFOLDER = ""]]>
     </SetProperty>
 
+    <SetProperty Id="InstallScope" Value="$(var.InstallScope)" Before="DetectPrevInstallPath" Sequence="execute"></SetProperty>
     <InstallExecuteSequence>
       <Custom Action="DetectPrevInstallPath" After="AppSearch" />
       <Custom Action="SetRegisterPowerToysSchTaskParam" Before="RegisterPowerToysSchTask" />
@@ -144,6 +149,9 @@
       <Custom Action="SetDeleteDotnetRuntimeHardlinksParam" Before="DeleteDotnetRuntimeHardlinks" />
       <Custom Action="RegisterPowerToysSchTask" After="InstallFiles">
         NOT Installed and CREATESCHEDULEDTASK = 1
+      </Custom>
+      <Custom Action="CheckGPO" After="InstallInitialize">
+        NOT Installed
       </Custom>
       <Custom Action="ApplyModulesRegistryChangeSets" After="InstallFiles">
         NOT Installed
@@ -178,13 +186,17 @@
       <Custom Action="DeleteWinAppSDKHardlinks" Before="RemoveFiles">
         Installed AND (REMOVE="ALL")
       </Custom>
-      <Custom Action="DeletePTInteropHardlinks" Before="CreatePTInteropHardlinks" />
+
+      <Custom Action="DeletePTInteropHardlinks" After="InstallInitialize" />
 
       <Custom Action="DeleteDotnetRuntimeHardlinks" Before="RemoveFiles">
         Installed AND (REMOVE="ALL")
       </Custom>
 
-      <!-- TODO: Use to activate embedded MSIX -->
+      <Custom Action="UninstallServicesTask" After="InstallFinalize">
+          Installed AND (REMOVE="ALL")
+      </Custom>
+        <!-- TODO: Use to activate embedded MSIX -->
       <!--<Custom Action="UninstallEmbeddedMSIXTask" After="InstallFinalize">
         Installed AND (REMOVE="ALL")
       </Custom>-->
@@ -322,7 +334,14 @@
                   DllEntry="UninstallEmbeddedMSIXCA"
                    />
 
-    <CustomAction Id="TelemetryLogInstallSuccess"
+      <CustomAction Id="UninstallServicesTask"
+                    Return="ignore"
+                    Impersonate="yes"
+                    BinaryKey="PTCustomActions"
+                    DllEntry="UninstallServicesCA"
+                   />
+      
+      <CustomAction Id="TelemetryLogInstallSuccess"
               Return="ignore"
               Impersonate="yes"
               BinaryKey="PTCustomActions"
@@ -409,6 +428,13 @@
                 DllEntry="UnRegisterContextMenuPackagesCA"
                   />
 
+    <CustomAction Id="CheckGPO"
+                  Return="check"
+                  Impersonate="yes"
+                  BinaryKey="PTCustomActions"
+                  DllEntry="CheckGPOCA"
+                  />
+
     <!-- Close 'PowerToys.exe' before uninstall-->
     <Property Id="MSIRESTARTMANAGERCONTROL" Value="DisableShutdown" />
     <Property Id="MSIFASTINSTALL" Value="DisableShutdown" />
@@ -422,7 +448,7 @@
   <!-- Installation directory structure -->
   <Fragment>
     <Directory Id="TARGETDIR" Name="SourceDir">
-      <Directory Id="ProgramFiles64Folder">
+      <Directory Id="$(var.DefaultInstallDir)">
         <Directory Id="INSTALLFOLDER" Name="PowerToys">
           <Directory Id="DllsFolder" Name="dll">
             <Directory Id="DotnetDlls" Name="dotnet" />
@@ -438,6 +464,9 @@
             </Directory>
             <Directory Id="FileLocksmithInstallFolder" Name="$(var.FileLocksmithProjectName)">
               <Directory Id="FileLocksmithAssetsInstallFolder" Name="Assets" />
+              <Directory Id="FileLocksmithMicrosoftUIXamlInstallFolder" Name="Microsoft.UI.Xaml">
+                <Directory Id="FileLocksmithMicrosoftUIXamlAssetsInstallFolder" Name="Assets" />
+              </Directory>
             </Directory>
             <Directory Id="PowerRenameInstallFolder" Name="$(var.PowerRenameProjectName)">
               <Directory Id="PowerRenameAssetsFolder" Name="Assets" />
@@ -484,6 +513,14 @@
             <Directory Id="PastePlainInstallFolder" Name="$(var.PastePlainProjectName)">
             </Directory>
 
+            <!-- RegistryPreview -->
+            <Directory Id="RegistryPreviewInstallFolder" Name="$(var.RegistryPreviewProjectName)">
+              <Directory Id="RegistryPreviewAssetsInstallFolder" Name="Assets" />
+              <Directory Id="RegistryPreviewMicrosoftUIXamlInstallFolder" Name="Microsoft.UI.Xaml">
+                <Directory Id="RegistryPreviewMicrosoftUIXamlAssetsInstallFolder" Name="Assets" />
+              </Directory>
+            </Directory>
+
             <!-- AlwaysOnTop -->
             <Directory Id="AlwaysOnTopInstallFolder" Name="$(var.AlwaysOnTopProjectName)">
             </Directory>
@@ -502,83 +539,81 @@
                 <Directory Id="HostsMicrosoftUIXamlAssetsInstallFolder" Name="Assets" />
               </Directory>
             </Directory>
-            
+
+            <!-- MouseWithoutBorders -->
+            <Directory Id="MouseWithoutBordersInstallFolder" Name="$(var.MouseWithoutBordersProjectName)">
+            </Directory>
+
+            <!-- Peek -->
+            <Directory Id="PeekInstallFolder" Name="$(var.PeekProjectName)">
+              <Directory Id="PeekAssetsFolder" Name="Assets" />
+              <Directory Id="PeekMicrosoftUIXamlInstallFolder" Name="Microsoft.UI.Xaml">
+                  <Directory Id="PeekMicrosoftUIXamlAssetsInstallFolder" Name="Assets" />
+              </Directory>
+            </Directory>
+
             <!-- Launcher -->
             <Directory Id="LauncherInstallFolder" Name="launcher">
               <Directory Id="LauncherImagesFolder" Name="Images" />
-              <Directory Id="LauncherPropertiesFolder" Name="Properties" />
 
               <!-- Plugins -->
               <Directory Id="LauncherPluginsFolder" Name="Plugins">
                 <Directory Id="WebSearchPluginFolder" Name="WebSearch">
                   <Directory Id="WebSearchImagesFolder" Name="Images" />
-                  <Directory Id="WebSearchLanguagesFolder" Name="Languages" />
                 </Directory>
                 <Directory Id="CalculatorPluginFolder" Name="Calculator">
                   <Directory Id="CalculatorImagesFolder" Name="Images" />
-                  <Directory Id="CalculatorLanguagesFolder" Name="Languages" />
                 </Directory>
                 <Directory Id="FolderPluginFolder" Name="Folder">
                   <Directory Id="FolderPluginImagesFolder" Name="Images" />
-                  <Directory Id="FolderPluginLanguagesFolder" Name="Languages" />
                 </Directory>
                 <Directory Id="ProgramPluginFolder" Name="Program">
                   <Directory Id="ProgramImagesFolder" Name="Images" />
-                  <Directory Id="ProgramLanguagesFolder" Name="Languages" />
                 </Directory>
                 <Directory Id="ShellPluginFolder" Name="Shell">
                   <Directory Id="ShellImagesFolder" Name="Images" />
-                  <Directory Id="ShellLanguagesFolder" Name="Languages" />
                 </Directory>
                 <Directory Id="IndexerPluginFolder" Name="Indexer">
                   <Directory Id="IndexerImagesFolder" Name="Images" />
-                  <Directory Id="IndexerLanguagesFolder" Name="Languages" />
                 </Directory>
                 <Directory Id="UriPluginFolder" Name="Uri">
                   <Directory Id="UriImagesFolder" Name="Images" />
-                  <Directory Id="UriLanguagesFolder" Name="Languages" />
                 </Directory>
                 <Directory Id="HistoryPluginFolder" Name="History">
                   <Directory Id="HistoryImagesFolder" Name="Images" />
-                  <Directory Id="HistoryLanguagesFolder" Name="Languages" />
                 </Directory>								
                 <Directory Id="UnitConverterPluginFolder" Name="UnitConverter">
                   <Directory Id="UnitConverterImagesFolder" Name="Images" />
-                  <Directory Id="UnitConverterLanguagesFolder" Name="Languages" />
                 </Directory>
                 <Directory Id="VSCodeWorkspacesPluginFolder" Name="VSCodeWorkspace">
                   <Directory Id="VSCodeWorkspaceImagesFolder" Name="Images" />
-                  <Directory Id="VSCodeWorkspaceLanguagesFolder" Name="Languages" />
                 </Directory>
                 <Directory Id="WindowWalkerPluginFolder" Name="WindowWalker">
                   <Directory Id="WindowWalkerImagesFolder" Name="Images" />
-                  <Directory Id="WindowWalkerLanguagesFolder" Name="Languages" />
                 </Directory>
                 <Directory Id="OneNotePluginFolder" Name="OneNote">
                   <Directory Id="OneNoteImagesFolder" Name="Images" />
-                  <Directory Id="OneNoteLanguagesFolder" Name="Languages" />
+                </Directory>
+                <Directory Id="PowerToysPluginFolder" Name="PowerToys">
+                  <Directory Id="PowerToysImagesFolder" Name="Images" />
                 </Directory>
                 <Directory Id="RegistryPluginFolder" Name="Registry">
                   <Directory Id="RegistryImagesFolder" Name="Images" />
-                  <Directory Id="RegistryLanguagesFolder" Name="Languages" />
                 </Directory>
                 <Directory Id="ServicePluginFolder" Name="Service">
                   <Directory Id="ServiceImagesFolder" Name="Images" />
                 </Directory>
                 <Directory Id="WindowsTerminalPluginFolder" Name="WindowsTerminal">
                   <Directory Id="WindowsTerminalImagesFolder" Name="Images" />
-                  <Directory Id="WindowsTerminalLanguagesFolder" Name="Languages" />
                 </Directory>
                 <Directory Id="SystemPluginFolder" Name="System">
                   <Directory Id="SystemImagesFolder" Name="Images" />
                 </Directory>
                 <Directory Id="TimeDatePluginFolder" Name="TimeDate">
                   <Directory Id="TimeDateImagesFolder" Name="Images" />
-                  <Directory Id="TimeDateLanguagesFolder" Name="Languages" />
                 </Directory>
                 <Directory Id="WindowsSettingsPluginFolder" Name="WindowsSettings">
                   <Directory Id="WindowsSettingsImagesFolder" Name="Images" />
-                  <Directory Id="WindowsSettingsLanguagesFolder" Name="Languages" />
                 </Directory>
               </Directory>
             </Directory>

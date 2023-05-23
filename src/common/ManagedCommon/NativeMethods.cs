@@ -14,5 +14,17 @@ namespace ManagedCommon
 
         [DllImport("kernel32.dll", SetLastError = true)]
         internal static extern uint WaitForSingleObject(IntPtr hHandle, uint dwMilliseconds);
+
+        [DllImport("psapi.dll", SetLastError = true)]
+        internal static extern bool EnumProcesses(int[] processIds, uint arraySizeBytes, out uint bytesCopied);
+
+        [DllImport("kernel32.dll", SetLastError = true, CharSet = CharSet.Unicode)]
+        internal static extern bool QueryFullProcessImageName(IntPtr hProcess, uint dwFlags, System.Text.StringBuilder lpExeName, ref uint lpdwSize);
+
+        [DllImport("kernel32.dll", SetLastError = true)]
+        internal static extern bool GetExitCodeProcess(IntPtr hProcess, out uint lpExitCode);
+
+        [DllImport("kernel32.dll", SetLastError = true)]
+        internal static extern bool CloseHandle(IntPtr hObject);
     }
 }

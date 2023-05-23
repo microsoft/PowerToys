@@ -35,6 +35,8 @@ struct LogSettings
     inline const static std::wstring svgThumbLogPath = L"logs\\FileExplorer_localLow\\SvgThumbnailProvider\\svg-thumbnail-provider-log.txt";
     inline const static std::string launcherLoggerName = "launcher";
     inline const static std::wstring launcherLogPath = L"LogsModuleInterface\\launcher-log.txt";
+    inline const static std::string mouseWithoutBordersLoggerName = "mouseWithoutBorders";
+    inline const static std::wstring mouseWithoutBordersLogPath = L"LogsModuleInterface\\mouseWithoutBorders-log.txt";
     inline const static std::wstring awakeLogPath = L"Logs\\awake-log.txt";
     inline const static std::wstring powerAccentLogPath = L"quick-accent-log.txt";
     inline const static std::string fancyZonesLoggerName = "fancyzones";
@@ -57,6 +59,8 @@ struct LogSettings
     inline const static std::wstring alwaysOnTopLogPath = L"always-on-top-log.txt";
     inline const static std::string hostsLoggerName = "hosts";
     inline const static std::wstring hostsLogPath = L"Logs\\hosts-log.txt";
+    inline const static std::string registryPreviewLoggerName = "registrypreview"; 
+    inline const static std::wstring registryPreviewLogPath = L"Logs\\registryPreview-log.txt";
     inline const static int retention = 30;
     std::wstring logLevel;
     LogSettings();

@@ -4,7 +4,6 @@
 
 using System;
 using ManagedCommon;
-using MeasureToolUI.Helpers;
 using Microsoft.UI.Dispatching;
 using Microsoft.UI.Xaml;
 
@@ -22,6 +21,8 @@ namespace MeasureToolUI
         /// </summary>
         public App()
         {
+            Logger.InitializeLogger("\\Measure Tool\\MeasureToolUI\\Logs");
+
             this.InitializeComponent();
         }
 

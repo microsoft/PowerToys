@@ -10,8 +10,8 @@ namespace FancyZonesEditor.ViewModels
 {
     public class MonitorViewModel : INotifyPropertyChanged
     {
-        private const int MaxPreviewDisplaySize = 160;
-        private const int MinPreviewDisplaySize = 98;
+        private const int MaxPreviewDisplaySize = 180;
+        private const int MinPreviewDisplaySize = 120;
 
         public event PropertyChangedEventHandler PropertyChanged;
 

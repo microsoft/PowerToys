@@ -10,9 +10,6 @@ using System.Threading;
 using System.Windows.Forms;
 using Awake.Core.Models;
 using Microsoft.PowerToys.Settings.UI.Library;
-using Windows.Win32;
-
-#pragma warning disable CS8603 // Possible null reference return.
 
 namespace Awake.Core
 {
@@ -20,7 +17,7 @@ namespace Awake.Core
     {
         private static SettingsUtils? _moduleSettings;
 
-        private static SettingsUtils ModuleSettings { get => _moduleSettings; set => _moduleSettings = value; }
+        private static SettingsUtils? ModuleSettings { get => _moduleSettings; set => _moduleSettings = value; }
 
         private static ManualResetEvent? _exitSignal;
 
@@ -36,7 +33,7 @@ namespace Awake.Core
 
             switch (m.Msg)
             {
-                case (int)PInvoke.WM_COMMAND:
+                case (int)Native.Constants.WM_COMMAND:
                     var targetCommandIndex = m.WParam.ToInt64() & 0xFFFF;
                     switch (targetCommandIndex)
                     {
@@ -44,26 +41,26 @@ namespace Awake.Core
                             ExitCommandHandler(_exitSignal);
                             break;
                         case (long)TrayCommands.TC_DISPLAY_SETTING:
-                            DisplaySettingCommandHandler(InternalConstants.AppName);
+                            DisplaySettingCommandHandler(Constants.AppName);
                             break;
                         case (long)TrayCommands.TC_MODE_INDEFINITE:
-                            IndefiniteKeepAwakeCommandHandler(InternalConstants.AppName);
+                            IndefiniteKeepAwakeCommandHandler(Constants.AppName);
                             break;
                         case (long)TrayCommands.TC_MODE_PASSIVE:
-                            PassiveKeepAwakeCommandHandler(InternalConstants.AppName);
+                            PassiveKeepAwakeCommandHandler(Constants.AppName);
                             break;
                         case var _ when targetCommandIndex >= trayCommandsSize:
                             // Format for the timer block:
                             // TrayCommands.TC_TIME + ZERO_BASED_INDEX_IN_SETTINGS
-                            AwakeSettings settings = ModuleSettings.GetSettings<AwakeSettings>(InternalConstants.AppName);
-                            if (settings.Properties.TrayTimeShortcuts.Count == 0)
+                            AwakeSettings settings = ModuleSettings!.GetSettings<AwakeSettings>(Constants.AppName);
+                            if (settings.Properties.CustomTrayTimes.Count == 0)
                             {
-                                settings.Properties.TrayTimeShortcuts.AddRange(APIHelper.GetDefaultTrayOptions());
+                                settings.Properties.CustomTrayTimes.AddRange(Manager.GetDefaultTrayOptions());
                             }
 
                             int index = (int)targetCommandIndex - (int)TrayCommands.TC_TIME;
-                            var targetTime = settings.Properties.TrayTimeShortcuts.ElementAt(index).Value;
-                            TimedKeepAwakeCommandHandler(InternalConstants.AppName, targetTime);
+                            var targetTime = settings.Properties.CustomTrayTimes.ElementAt(index).Value;
+                            TimedKeepAwakeCommandHandler(Constants.AppName, targetTime);
                             break;
                     }
 
@@ -75,7 +72,7 @@ namespace Awake.Core
 
         private static void ExitCommandHandler(ManualResetEvent? exitSignal)
         {
-            APIHelper.CompleteExit(0, exitSignal, true);
+            Manager.CompleteExit(0, exitSignal, true);
         }
 
         private static void DisplaySettingCommandHandler(string moduleName)
@@ -84,7 +81,7 @@ namespace Awake.Core
 
             try
             {
-                currentSettings = ModuleSettings.GetSettings<AwakeSettings>(moduleName);
+                currentSettings = ModuleSettings!.GetSettings<AwakeSettings>(moduleName);
             }
             catch (FileNotFoundException)
             {
@@ -93,7 +90,7 @@ namespace Awake.Core
 
             currentSettings.Properties.KeepDisplayOn = !currentSettings.Properties.KeepDisplayOn;
 
-            ModuleSettings.SaveSettings(JsonSerializer.Serialize(currentSettings), moduleName);
+            ModuleSettings!.SaveSettings(JsonSerializer.Serialize(currentSettings), moduleName);
         }
 
         private static void TimedKeepAwakeCommandHandler(string moduleName, int seconds)
@@ -104,7 +101,7 @@ namespace Awake.Core
 
             try
             {
-                currentSettings = ModuleSettings.GetSettings<AwakeSettings>(moduleName);
+                currentSettings = ModuleSettings!.GetSettings<AwakeSettings>(moduleName);
             }
             catch (FileNotFoundException)
             {
@@ -112,10 +109,10 @@ namespace Awake.Core
             }
 
             currentSettings.Properties.Mode = AwakeMode.TIMED;
-            currentSettings.Properties.Hours = (uint)timeSpan.Hours;
-            currentSettings.Properties.Minutes = (uint)timeSpan.Minutes;
+            currentSettings.Properties.IntervalHours = (uint)timeSpan.Hours;
+            currentSettings.Properties.IntervalMinutes = (uint)timeSpan.Minutes;
 
-            ModuleSettings.SaveSettings(JsonSerializer.Serialize(currentSettings), moduleName);
+            ModuleSettings!.SaveSettings(JsonSerializer.Serialize(currentSettings), moduleName);
         }
 
         private static void PassiveKeepAwakeCommandHandler(string moduleName)
@@ -124,7 +121,7 @@ namespace Awake.Core
 
             try
             {
-                currentSettings = ModuleSettings.GetSettings<AwakeSettings>(moduleName);
+                currentSettings = ModuleSettings!.GetSettings<AwakeSettings>(moduleName);
             }
             catch (FileNotFoundException)
             {
@@ -133,7 +130,7 @@ namespace Awake.Core
 
             currentSettings.Properties.Mode = AwakeMode.PASSIVE;
 
-            ModuleSettings.SaveSettings(JsonSerializer.Serialize(currentSettings), moduleName);
+            ModuleSettings!.SaveSettings(JsonSerializer.Serialize(currentSettings), moduleName);
         }
 
         private static void IndefiniteKeepAwakeCommandHandler(string moduleName)
@@ -142,7 +139,7 @@ namespace Awake.Core
 
             try
             {
-                currentSettings = ModuleSettings.GetSettings<AwakeSettings>(moduleName);
+                currentSettings = ModuleSettings!.GetSettings<AwakeSettings>(moduleName);
             }
             catch (FileNotFoundException)
             {
@@ -151,7 +148,7 @@ namespace Awake.Core
 
             currentSettings.Properties.Mode = AwakeMode.INDEFINITE;
 
-            ModuleSettings.SaveSettings(JsonSerializer.Serialize(currentSettings), moduleName);
+            ModuleSettings!.SaveSettings(JsonSerializer.Serialize(currentSettings), moduleName);
         }
     }
 }

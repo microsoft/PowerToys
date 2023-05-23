@@ -115,6 +115,16 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
                 ModuleName = "MouseUtils",
                 IsNew = false,
             });
+            Modules.Insert((int)PowerToysModules.MouseWithoutBorders, new OobePowerToysModule()
+            {
+                ModuleName = "MouseWithoutBorders",
+                IsNew = true,
+            });
+            Modules.Insert((int)PowerToysModules.Peek, new OobePowerToysModule()
+            {
+                ModuleName = "Peek",
+                IsNew = true,
+            });
             Modules.Insert((int)PowerToysModules.PowerRename, new OobePowerToysModule()
             {
                 ModuleName = "PowerRename",
@@ -169,6 +179,12 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
             {
                 ModuleName = "WhatsNew",
                 IsNew = false,
+            });
+
+            Modules.Insert((int)PowerToysModules.RegistryPreview, new OobePowerToysModule()
+            {
+                ModuleName = "RegistryPreview",
+                IsNew = true,
             });
         }
 
@@ -238,9 +254,12 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
                     case "TextExtractor": NavigationFrame.Navigate(typeof(OobePowerOCR)); break;
                     case "VideoConference": NavigationFrame.Navigate(typeof(OobeVideoConference)); break;
                     case "MouseUtils": NavigationFrame.Navigate(typeof(OobeMouseUtils)); break;
+                    case "MouseWithoutBorders": NavigationFrame.Navigate(typeof(OobeMouseWithoutBorders)); break;
                     case "MeasureTool": NavigationFrame.Navigate(typeof(OobeMeasureTool)); break;
                     case "Hosts": NavigationFrame.Navigate(typeof(OobeHosts)); break;
+                    case "RegistryPreview": NavigationFrame.Navigate(typeof(OobeRegistryPreview)); break;
                     case "PastePlain": NavigationFrame.Navigate(typeof(OobePastePlain)); break;
+                    case "Peek": NavigationFrame.Navigate(typeof(OobePeek)); break;
                 }
             }
         }

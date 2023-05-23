@@ -175,6 +175,10 @@
     <value>ISO 8601 UTC with time zone</value>
     <comment>'UTC' means here 'Universal Time Convention'</comment>
   </data>
+  <data name="Microsoft_plugin_timedate_filename_compatible" xml:space="preserve">
+    <value>Date and time in filename-compatible format</value>
+    <comment>The format allows for embedding in filenames</comment>
+  </data>
   <data name="Microsoft_plugin_timedate_Millisecond" xml:space="preserve">
     <value>Millisecond</value>
   </data>

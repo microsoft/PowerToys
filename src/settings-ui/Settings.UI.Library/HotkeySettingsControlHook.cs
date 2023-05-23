@@ -60,7 +60,9 @@ namespace Microsoft.PowerToys.Settings.UI.Library
 
         private bool FilterKeyboardEvents(KeyboardEvent ev)
         {
+#pragma warning disable CA2020 // Prevent from behavioral change
             return _filterKeyboardEvent(ev.key, (UIntPtr)ev.dwExtraInfo);
+#pragma warning restore CA2020 // Prevent from behavioral change
         }
 
         protected virtual void Dispose(bool disposing)
@@ -76,6 +78,8 @@ namespace Microsoft.PowerToys.Settings.UI.Library
                 disposedValue = true;
             }
         }
+
+        public bool GetDisposedState() => disposedValue;
 
         public void Dispose()
         {
