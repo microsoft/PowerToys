@@ -12,7 +12,7 @@ body:
 - type: input
   attributes:
     label: Microsoft PowerToys version
-    placeholder: 0.68.0
+    placeholder: 0.70.0
     description: Hover over system tray icon or look at Settings
   validations:
     required: true
@@ -34,7 +34,9 @@ body:
     - Installer
     - Keyboard Manager
     - Mouse Utilities
+    - Mouse Without Borders
     - Paste as Plain Text
+    - Peek
     - PowerRename
     - PowerToys Run
     - Quick Accent

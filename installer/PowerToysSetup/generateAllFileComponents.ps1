@@ -72,6 +72,10 @@ Invoke-Expression -Command "$PSScriptRoot\generateFileComponents.ps1 -fileListNa
 Invoke-Expression -Command "$PSScriptRoot\generateFileList.ps1 -fileDepsJson ""$PSScriptRoot..\..\..\$platform\Release\modules\MouseUtils\MouseJumpUI\PowerToys.MouseJumpUI.deps.json"" -fileListName MouseJumpUIFiles -wxsFilePath $PSScriptRoot\MouseUtils.wxs"
 Invoke-Expression -Command "$PSScriptRoot\generateFileComponents.ps1 -fileListName ""MouseJumpUIFiles"" -wxsFilePath $PSScriptRoot\MouseUtils.wxs -regroot $registryroot"
 
+#MouseWithoutBorders
+Invoke-Expression -Command "$PSScriptRoot\generateFileList.ps1 -fileDepsJson ""$PSScriptRoot..\..\..\$platform\Release\modules\MouseWithoutBorders\PowerToys.MouseWithoutBorders.deps.json;$PSScriptRoot..\..\..\$platform\Release\modules\MouseWithoutBorders\PowerToys.MouseWithoutBordersHelper.deps.json;$PSScriptRoot..\..\..\$platform\Release\modules\MouseWithoutBorders\PowerToys.MouseWithoutBordersService.deps.json"" -fileListName MouseWithoutBordersFiles -wxsFilePath $PSScriptRoot\MouseWithoutBorders.wxs"
+Invoke-Expression -Command "$PSScriptRoot\generateFileComponents.ps1 -fileListName ""MouseWithoutBordersFiles"" -wxsFilePath $PSScriptRoot\MouseWithoutBorders.wxs -regroot $registryroot"
+
 #MeasureTool
 Invoke-Expression -Command "$PSScriptRoot\generateFileList.ps1 -fileDepsJson ""$PSScriptRoot..\..\..\$platform\Release\modules\MeasureTool\PowerToys.MeasureToolUI.deps.json"" -fileListName MeasureToolFiles -wxsFilePath $PSScriptRoot\MeasureTool.wxs -isWinAppSdkProj 1"
 Invoke-Expression -Command "$PSScriptRoot\generateFileComponents.ps1 -fileListName ""MeasureToolFiles"" -wxsFilePath $PSScriptRoot\MeasureTool.wxs -regroot $registryroot"

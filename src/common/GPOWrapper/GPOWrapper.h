@@ -15,6 +15,7 @@ namespace winrt::PowerToys::GPOWrapper::implementation
         static GpoRuleConfigured GetConfiguredSvgPreviewEnabledValue();
         static GpoRuleConfigured GetConfiguredMarkdownPreviewEnabledValue();
         static GpoRuleConfigured GetConfiguredMonacoPreviewEnabledValue();
+        static GpoRuleConfigured GetConfiguredMouseWithoutBordersEnabledValue();
         static GpoRuleConfigured GetConfiguredPdfPreviewEnabledValue();
         static GpoRuleConfigured GetConfiguredGcodePreviewEnabledValue();
         static GpoRuleConfigured GetConfiguredSvgThumbnailsEnabledValue();
