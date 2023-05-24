@@ -21,7 +21,7 @@ namespace Community.PowerToys.Run.Plugin.ValueGenerator
         public string Description => Resources.plugin_description;
 
         private PluginInitContext _context;
-        private static string _icon_path;
+        private static bool _isLightTheme = true;
         private bool _disposed;
         private static InputParser _inputParser = new InputParser();
 
@@ -49,11 +49,11 @@ namespace Community.PowerToys.Run.Plugin.ValueGenerator
         {
             if (theme == Theme.Light || theme == Theme.HighContrastWhite)
             {
-                _icon_path = "Images/valuegen.light.png";
+                _isLightTheme = true;
             }
             else
             {
-                _icon_path = "Images/valuegen.dark.png";
+                _isLightTheme = false;
             }
         }
 
@@ -117,7 +117,7 @@ namespace Community.PowerToys.Run.Plugin.ValueGenerator
             {
                 ContextData = request.Result,
                 Title = request.ResultToString(),
-                IcoPath = _icon_path,
+                IcoPath = _isLightTheme ? "Images/ValueGenerator.dark.png" : "Images/ValueGenerator.light.png",
                 Score = 300,
                 SubTitle = request.Description,
                 Action = c =>
@@ -149,7 +149,7 @@ namespace Community.PowerToys.Run.Plugin.ValueGenerator
             {
                 Title = Resources.error_title,
                 SubTitle = errorMessage,
-                IcoPath = _icon_path,
+                IcoPath = _isLightTheme ? "Images/Warning.light.png" : "Images/Warning.dark.png",
                 Action = _ => { return true; },
             };
         }
