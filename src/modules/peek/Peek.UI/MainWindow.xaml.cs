@@ -69,6 +69,11 @@ namespace Peek.UI
             ViewModel.AttemptRightNavigation();
         }
 
+        private void EscKeyInvoked(KeyboardAccelerator sender, KeyboardAcceleratorInvokedEventArgs args)
+        {
+            Uninitialize();
+        }
+
         private void Initialize()
         {
             var bootTime = new System.Diagnostics.Stopwatch();
