@@ -50,12 +50,12 @@
                                 <StackPanel Orientation="Horizontal" Spacing="8">
                                     <TextBox
                                         x:Name="ConnectSecurityKeyTextBox"
-                                        Width="250"
-                                        PlaceholderText="MWB_SecurityKeyLabel" />
+                                        Width="248"
+                                        x:Uid="MWB_SecurityKeyLabel" />
                                     <TextBox
                                         x:Name="ConnectPCNameTextBox"
                                         x:Uid="MWB_PCNameLabel"
-                                        Width="250" />
+                                        Width="248" />
                                     <Button
                                         x:Uid="MouseWithoutBorders_Connect"
                                         Command="{x:Bind Mode=OneTime, Path=ConnectCommand}"
