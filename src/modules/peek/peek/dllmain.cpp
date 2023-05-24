@@ -6,6 +6,9 @@
 #include <common/utils/winapi_error.h>
 #include <filesystem>
 #include <common/interop/shared_constants.h>
+#include <atlbase.h>
+#include <exdisp.h>
+#include <comdef.h>
 
 extern "C" IMAGE_DOS_HEADER __ImageBase;
 
@@ -133,6 +136,102 @@ private:
             m_hotkey.ctrl = true;
             m_hotkey.key = ' ';
         }
+    }
+
+    bool is_desktop_window(HWND windowHandle)
+    {
+        // Similar to the logic in IsDesktopWindow in Peek UI. Keep logic synced.
+        // TODO: Refactor into same C++ class consumed by both.
+        wchar_t className[MAX_PATH];
+        if (GetClassName(windowHandle, className, MAX_PATH) == 0)
+        {
+            return false;
+        }
+        if (wcsncmp(className, L"Progman", MAX_PATH) !=0 && wcsncmp(className, L"WorkerW", MAX_PATH) != 0)
+        {
+            return false;
+        }
+        return FindWindowEx(windowHandle, NULL, L"SHELLDLL_DefView", NULL);
+    }
+
+    inline std::wstring GetErrorString(HRESULT handle)
+    {
+        _com_error err(handle);
+        return err.ErrorMessage();
+    }
+
+    bool is_explorer_window(HWND windowHandle)
+    {
+        CComPtr<IShellWindows> spShellWindows;
+        auto result = spShellWindows.CoCreateInstance(CLSID_ShellWindows);
+        if (result != S_OK || spShellWindows == nullptr)
+        {
+            Logger::warn(L"Failed to create instance. {}", GetErrorString(result));
+            return true; // Might as well assume it's possible it's an explorer window.
+        }
+
+        // Enumerate all Shell Windows to compare the window handle against.
+        IUnknownPtr spEnum{};
+        result = spShellWindows->_NewEnum(&spEnum);
+        if (result != S_OK || spEnum == nullptr)
+        {
+            Logger::warn(L"Failed to list explorer Windows. {}", GetErrorString(result));
+            return true; // Might as well assume it's possible it's an explorer window.
+        }
+
+        IEnumVARIANTPtr spEnumVariant{};
+        result = spEnum.QueryInterface(__uuidof(spEnumVariant), &spEnumVariant);
+        if (result != S_OK || spEnumVariant == nullptr)
+        {
+            Logger::warn(L"Failed to enum explorer Windows. {}", GetErrorString(result));
+            spEnum->Release();
+            return true; // Might as well assume it's possible it's an explorer window.
+        }
+
+        variant_t variantElement{};
+        while (spEnumVariant->Next(1, &variantElement, NULL) == S_OK)
+        {
+            IWebBrowserApp* spWebBrowserApp;
+            result = variantElement.pdispVal->QueryInterface(IID_IWebBrowserApp, reinterpret_cast<void**>(&spWebBrowserApp));
+            if (result == S_OK)
+            {
+                HWND hwnd;
+                result = spWebBrowserApp->get_HWND(reinterpret_cast<SHANDLE_PTR*>(&hwnd));
+                if (result == S_OK)
+                {
+                    if (hwnd == windowHandle)
+                    {
+                        VariantClear(&variantElement);
+                        spWebBrowserApp->Release();
+                        spEnumVariant->Release();
+                        spEnum->Release();
+                        return true;
+                    }
+                }
+                spWebBrowserApp->Release();
+            }
+            VariantClear(&variantElement);
+        }
+
+        spEnumVariant->Release();
+        spEnum->Release();
+        return false;
+    }
+
+    bool is_explorer_or_desktop_window_focused()
+    {
+        HWND foregroundWindowHandle = GetForegroundWindow();
+        if (foregroundWindowHandle == NULL)
+        {
+            return false;
+        }
+
+        if (is_desktop_window(foregroundWindowHandle))
+        {
+            return true;
+        }
+
+        return is_explorer_window(foregroundWindowHandle);
     }
 
     bool is_viewer_running()
@@ -291,18 +390,21 @@ public:
         if (m_enabled)
         {
             Logger::trace(L"Peek hotkey pressed");
-            
-            // TODO: fix VK_SPACE DestroyWindow in viewer app
-            if (!is_viewer_running())
+
+            // Only activate and consume the shortcut if it is an explorer or desktop window is the foreground application.
+            if (is_explorer_or_desktop_window_focused())
             {
-                launch_process();
+                // TODO: fix VK_SPACE DestroyWindow in viewer app
+                if (!is_viewer_running())
+                {
+                    launch_process();
+                }
+
+                SetEvent(m_hInvokeEvent);
+
+                Trace::PeekInvoked();
+                return true;
             }
-
-            SetEvent(m_hInvokeEvent);
-
-            Trace::PeekInvoked();
-
-            return true;
         }
 
         return false;
