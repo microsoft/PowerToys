@@ -736,6 +736,25 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             }
         }
 
+        public string Name2IP
+        {
+            get
+            {
+                return Settings.Properties.Name2IP.Value.Replace("\r\n", "\r");
+            }
+
+            set
+            {
+                var newValue = value.Replace("\r\n", "\n").Replace("\r", "\n").Replace("\n", "\r\n");
+
+                if (Settings.Properties.Name2IP.Value != newValue)
+                {
+                    Settings.Properties.Name2IP.Value = newValue;
+                    NotifyPropertyChanged();
+                }
+            }
+        }
+
         public bool SameSubnetOnly
         {
             get

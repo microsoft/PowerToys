@@ -370,6 +370,16 @@
   <data name="MouseWithoutBorders_SameSubnetOnly.Description" xml:space="preserve">
     <value>Only connect to machines in the same intranet NNN.NNN.*.* (only works when both machines have IPv4 enabled)</value>
   </data>
+  <data name="MouseWithoutBorders_IPAddressMapping_TextBoxControl.PlaceholderText" xml:space="preserve">
+    <value>Example: MyLaptop 192.168.0.24</value>
+    <comment>Don't translate MyLaptop</comment>
+  </data>
+  <data name="MouseWithoutBorders_IPAddressMapping.Header" xml:space="preserve">
+    <value>IP address mapping</value>
+  </data>
+  <data name="MouseWithoutBorders_IPAddressMapping.Description" xml:space="preserve">
+    <value>Resolve machine's IP address using manually entered mappings below.</value>
+  </data>
   <data name="MouseWithoutBorders_BlockScreenSaverOnOtherMachines.Description" xml:space="preserve">
     <value>Prevent screen saver from starting on other machines when user is actively working on this machine.</value>
   </data>
@@ -385,6 +395,9 @@
   <data name="MouseWithoutBorders_KeyboardShortcuts_Group.Header" xml:space="preserve">
     <value>Keyboard shortcuts</value>
     <comment>keyboard is the hardware peripheral</comment>
+  </data>
+  <data name="MouseWithoutBorders_AdvancedSettings_Group.Header" xml:space="preserve">
+    <value>Advanced</value>
   </data>
   <data name="MouseWithoutBorders_EasyMouseOption.Header" xml:space="preserve">
     <value>Easy Mouse: move between machines by moving the mouse pointer to the screen edges.</value>
