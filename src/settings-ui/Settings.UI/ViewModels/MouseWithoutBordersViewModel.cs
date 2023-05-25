@@ -740,7 +740,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         {
             // Due to https://github.com/microsoft/microsoft-ui-xaml/issues/1826, we must
             // add back \n chars on set and remove them on get for the widget
-            // to make its behavior consistent.
+            // to make its behavior consistent with the old UI and MWB internal code.
             get
             {
                 return Settings.Properties.Name2IP.Value.Replace("\r\n", "\r");
