@@ -229,7 +229,7 @@
     <value>It is not possible to use drag and drop while running PowerToys elevated. As a workaround, please restart PowerToys without elevation to edit the device layout.</value>
   </data>
   <data name="MouseWithoutBorders_KeySettings.Header" xml:space="preserve">
-    <value>Encryption Key</value>
+    <value>Encryption key</value>
   </data>
   <data name="MouseWithoutBorders_SecurityKey.Header" xml:space="preserve">
     <value>Security key</value>
@@ -241,7 +241,7 @@
     <value>New key</value>
   </data>
   <data name="MouseWithoutBorders_CopyMachineName.Text" xml:space="preserve">
-    <value>Copy this PC name to the clipboard</value>
+    <value>Copy to clipboard</value>
   </data>
   <data name="MouseWithoutBorders_ReconnectButton.Text" xml:space="preserve">
     <value>Refresh connections</value>
@@ -250,7 +250,7 @@
     <value>Reestablishes connections with other devices if you are experiencing issues.</value>
   </data>
   <data name="MouseWithoutBorders_ThisMachineNameLabel.Header" xml:space="preserve">
-    <value>The local machine's host name is:</value>
+    <value>Host name of this device</value>
   </data>
   <data name="MouseWithoutBorders_Connect.Content" xml:space="preserve">
     <value>Connect</value>
@@ -301,9 +301,8 @@
   <data name="MouseWithoutBorders_UseService.Header" xml:space="preserve">
     <value>Use Service</value>
   </data>
-  <data name="MouseWithoutBorders_UseService.Description"
-      xml:space="preserve">
-      <value>Runs in service mode, that allows MWB to control remote machines when they're locked. Also allows control of system and administrator applications.</value>
+  <data name="MouseWithoutBorders_UseService.Description" xml:space="preserve">
+    <value>Runs in service mode, that allows MWB to control remote machines when they're locked. Also allows control of system and administrator applications.</value>
   </data>
   <data name="MouseWithoutBorders_MatrixOneRow.Header" xml:space="preserve">
     <value>Devices in a single row</value>
@@ -314,9 +313,8 @@
   <data name="MouseWithoutBorders_WrapMouse.Header" xml:space="preserve">
     <value>Wrap mouse</value>
   </data>
-  <data name="MouseWithoutBorders_WrapMouse.Description"
-      xml:space="preserve">
-      <value>Move control back to the first machine when mouse moves past the last one.</value>
+  <data name="MouseWithoutBorders_WrapMouse.Description" xml:space="preserve">
+    <value>Move control back to the first machine when mouse moves past the last one.</value>
   </data>
   <data name="MouseWithoutBorders_ShareClipboard.Header" xml:space="preserve">
     <value>Share clipboard</value>
@@ -354,52 +352,42 @@
   <data name="MouseWithoutBorders_ShowOriginalUI.Description" xml:space="preserve">
     <value>This is accessible from the system tray and requires a restart.</value>
   </data>
-  <data name="MouseWithoutBorders_ShareClipboard.Description"
-      xml:space="preserve">
-      <value>If share clipboard stops working, Ctrl+Alt+Del then Esc may solve the problem.</value>
+  <data name="MouseWithoutBorders_ShareClipboard.Description" xml:space="preserve">
+    <value>If share clipboard stops working, Ctrl+Alt+Del then Esc may solve the problem.</value>
   </data>
-  <data name="MouseWithoutBorders_TransferFile.Description"
-      xml:space="preserve">
-      <value>If a file (&lt;100MB) is copied, it will be transferred to the remote machine clipboard.</value>
+  <data name="MouseWithoutBorders_TransferFile.Description" xml:space="preserve">
+    <value>If a file (&lt;100MB) is copied, it will be transferred to the remote machine clipboard.</value>
   </data>
-  <data name="MouseWithoutBorders_HideMouseAtScreenEdge.Description"
-      xml:space="preserve">
-      <value>Hide the mouse cursor at the top edge of the screen when switching to other machine. This option also steals the focus from any full-screen app to ensure the keyboard input is redirected.</value>
+  <data name="MouseWithoutBorders_HideMouseAtScreenEdge.Description" xml:space="preserve">
+    <value>Hide the mouse cursor at the top edge of the screen when switching to other machine. This option also steals the focus from any full-screen app to ensure the keyboard input is redirected.</value>
   </data>
-  <data name="MouseWithoutBorders_DrawMouseCursor.Description"
-      xml:space="preserve">
-      <value>Mouse cursor may not be visible in Windows 10 and later versions of Windows when there is no physical mouse attached.</value>
+  <data name="MouseWithoutBorders_DrawMouseCursor.Description" xml:space="preserve">
+    <value>Mouse cursor may not be visible in Windows 10 and later versions of Windows when there is no physical mouse attached.</value>
   </data>
-  <data name="MouseWithoutBorders_ValidateRemoteMachineIP.Description"
-      xml:space="preserve">
-      <value>Reverse DNS lookup to validate machine IP Address.</value>
+  <data name="MouseWithoutBorders_ValidateRemoteMachineIP.Description" xml:space="preserve">
+    <value>Reverse DNS lookup to validate machine IP Address.</value>
   </data>
-  <data name="MouseWithoutBorders_SameSubnetOnly.Description"
-      xml:space="preserve">
-      <value>Only connect to machines in the same intranet NNN.NNN.*.* (only works when both machines have IPv4 enabled)</value>
+  <data name="MouseWithoutBorders_SameSubnetOnly.Description" xml:space="preserve">
+    <value>Only connect to machines in the same intranet NNN.NNN.*.* (only works when both machines have IPv4 enabled)</value>
   </data>
-  <data name="MouseWithoutBorders_BlockScreenSaverOnOtherMachines.Description"
-      xml:space="preserve">
-      <value>Prevent screen saver from starting on other machines when user is actively working on this machine.</value>
+  <data name="MouseWithoutBorders_BlockScreenSaverOnOtherMachines.Description" xml:space="preserve">
+    <value>Prevent screen saver from starting on other machines when user is actively working on this machine.</value>
   </data>
-  <data name="MouseWithoutBorders_MoveMouseRelatively.Description"
-      xml:space="preserve">
-      <value>Use this option when remote machine's monitor settings are different, or remote machine has multiple monitors.</value>
+  <data name="MouseWithoutBorders_MoveMouseRelatively.Description" xml:space="preserve">
+    <value>Use this option when remote machine's monitor settings are different, or remote machine has multiple monitors.</value>
   </data>
-  <data name="MouseWithoutBorders_BlockMouseAtScreenCorners.Description"
-      xml:space="preserve">
-      <value>To avoid accident machine-switch at screen corners.</value>
+  <data name="MouseWithoutBorders_BlockMouseAtScreenCorners.Description" xml:space="preserve">
+    <value>To avoid accident machine-switch at screen corners.</value>
   </data>
-  <data name="MouseWithoutBorders_ShowClipboardAndNetworkStatusMessages.Description"
-      xml:space="preserve">
-      <value>Show clipboard activities and network status in system tray notifications</value>
+  <data name="MouseWithoutBorders_ShowClipboardAndNetworkStatusMessages.Description" xml:space="preserve">
+    <value>Show clipboard activities and network status in system tray notifications</value>
   </data>
   <data name="MouseWithoutBorders_KeyboardShortcuts_Group.Header" xml:space="preserve">
-    <value>Keyboard Shortcuts</value>
+    <value>Keyboard shortcuts</value>
     <comment>keyboard is the hardware peripheral</comment>
   </data>
   <data name="MouseWithoutBorders_EasyMouseOption.Header" xml:space="preserve">
-    <value>Easy Mouse: Move between machines by moving the mouse pointer to the screen edges.</value>
+    <value>Easy Mouse: move between machines by moving the mouse pointer to the screen edges.</value>
   </data>
   <data name="MouseWithoutBorders_EasyMouseOption.Description" xml:space="preserve">
     <value>Can also be set to move only when pressing Shift or Ctrl.</value>
@@ -2338,6 +2326,10 @@ From there, simply click on one of the supported files in the File Explorer and 
     <value>Learn more about Paste as Plain Text</value>
     <comment> Paste as Plain Text is the name of the module. </comment>
   </data>
+  <data name="LearnMore_MouseWithoutBorders.Text" xml:space="preserve">
+    <value>Learn more about Mouse Without Borders</value>
+    <comment>Mouse Without Borders is the name of the module. </comment>
+  </data>
   <data name="LearnMore_PowerPreview.Text" xml:space="preserve">
     <value>Learn more about File Explorer add-ons</value>
     <comment>File Explorer is a product name, localize as Windows does</comment>
@@ -3511,5 +3503,11 @@ Activate by holding the key for the character you want to add an accent to, then
   </data>
   <data name="Oobe_Peek_HowToUse.Text" xml:space="preserve">
     <value>to preview the file that's currently selected in File Explorer.</value>
+  </data>
+  <data name="MWB_PCNameLabel.PlaceholderText" xml:space="preserve">
+    <value>Device name</value>
+  </data>
+  <data name="MWB_SecurityKeyLabel.PlaceholderText" xml:space="preserve">
+    <value>Security key</value>
   </data>
 </root>

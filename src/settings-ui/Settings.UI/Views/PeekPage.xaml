@@ -10,7 +10,6 @@
     AutomationProperties.LandmarkType="Main"
     mc:Ignorable="d">
 
-
     <controls:SettingsPageControl x:Uid="Peek" ModuleImageSource="ms-appx:///Assets/Modules/Peek.png">
         <controls:SettingsPageControl.ModuleContent>
             <StackPanel Orientation="Vertical">
@@ -34,5 +33,8 @@
                 </controls:SettingsGroup>
             </StackPanel>
         </controls:SettingsPageControl.ModuleContent>
+        <controls:SettingsPageControl.PrimaryLinks>
+            <controls:PageLink x:Uid="LearnMore_Peek" Link="https://aka.ms/PowerToysOverview_Peek" />
+        </controls:SettingsPageControl.PrimaryLinks>
     </controls:SettingsPageControl>
 </Page>
