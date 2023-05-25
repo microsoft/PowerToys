@@ -397,7 +397,7 @@
     <comment>keyboard is the hardware peripheral</comment>
   </data>
   <data name="MouseWithoutBorders_AdvancedSettings_Group.Header" xml:space="preserve">
-    <value>Advanced</value>
+    <value>Advanced Settings</value>
   </data>
   <data name="MouseWithoutBorders_EasyMouseOption.Header" xml:space="preserve">
     <value>Easy Mouse: move between machines by moving the mouse pointer to the screen edges.</value>
