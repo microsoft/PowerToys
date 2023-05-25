@@ -273,7 +273,7 @@ private:
             const auto modulePath = get_module_folderpath();
             std::wstring runExecutablePath = modulePath;
             runExecutablePath += L"\\modules\\Peek\\PowerToys.Peek.UI.exe";
-            std::optional<ProcessInfo> processStartedInfo = RunNonElevatedFailsafe(runExecutablePath, executable_args, modulePath);
+            std::optional<ProcessInfo> processStartedInfo = RunNonElevatedFailsafe(runExecutablePath, executable_args, modulePath, PROCESS_QUERY_INFORMATION | SYNCHRONIZE | PROCESS_TERMINATE);
             if (processStartedInfo.has_value())
             {
                 m_hProcess = processStartedInfo.value().processHandle.release();
