@@ -736,6 +736,28 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             }
         }
 
+        public string Name2IP
+        {
+            // Due to https://github.com/microsoft/microsoft-ui-xaml/issues/1826, we must
+            // add back \n chars on set and remove them on get for the widget
+            // to make its behavior consistent with the old UI and MWB internal code.
+            get
+            {
+                return Settings.Properties.Name2IP.Value.Replace("\r\n", "\r");
+            }
+
+            set
+            {
+                var newValue = value.Replace("\r\n", "\n").Replace("\r", "\n").Replace("\n", "\r\n");
+
+                if (Settings.Properties.Name2IP.Value != newValue)
+                {
+                    Settings.Properties.Name2IP.Value = newValue;
+                    NotifyPropertyChanged();
+                }
+            }
+        }
+
         public bool SameSubnetOnly
         {
             get

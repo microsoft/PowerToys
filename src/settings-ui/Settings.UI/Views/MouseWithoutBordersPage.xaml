@@ -386,6 +386,28 @@
                         </ComboBox>
                     </labs:SettingsCard>
                 </controls:SettingsGroup>
+                <controls:SettingsGroup
+                        x:Uid="MouseWithoutBorders_AdvancedSettings_Group"
+                        IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}">
+                    <labs:SettingsExpander
+                            x:Uid="MouseWithoutBorders_IPAddressMapping"
+                            IsExpanded="True">
+                        <labs:SettingsExpander.Items>
+                            <labs:SettingsCard ContentAlignment="Vertical"
+                                    HorizontalContentAlignment="Stretch">
+                                <TextBox
+                                        x:Uid="MouseWithoutBorders_IPAddressMapping_TextBoxControl"
+                                        MinWidth="240" MinHeight="160"
+                                        AcceptsReturn="True"
+                                        ScrollViewer.IsVerticalRailEnabled="True"
+                                        ScrollViewer.VerticalScrollBarVisibility="Visible"
+                                        ScrollViewer.VerticalScrollMode="Enabled"
+                                        Text="{x:Bind Mode=TwoWay, Path=ViewModel.Name2IP, UpdateSourceTrigger=PropertyChanged}"
+                                        TextWrapping="Wrap" />
+                            </labs:SettingsCard>
+                        </labs:SettingsExpander.Items>
+                    </labs:SettingsExpander>
+                </controls:SettingsGroup>                
                 <controls:SettingsGroup x:Uid="MouseWithoutBorders_TroubleShooting" IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}">
                     <labs:SettingsCard
                         x:Uid="MouseWithoutBorders_AddFirewallRuleButtonControl"
