@@ -5,7 +5,7 @@
         tokenizer: {
             root: [
                 [/^#.*$/, 'comment'],
-                [/^\s*!/, 'negation'],
+                [/^\s*!.*/, 'invalid'],
                 [/^\s*[^#]+/, "tag"]
             ]
         }
