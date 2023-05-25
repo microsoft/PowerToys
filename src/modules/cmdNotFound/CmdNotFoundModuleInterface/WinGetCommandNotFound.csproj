@@ -1,0 +1,44 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+	<PropertyGroup>
+		<TargetFramework>net8.0-windows10.0.22621.0</TargetFramework>
+		<Platform>AnyCPU</Platform>
+		<ImplicitUsings>enable</ImplicitUsings>
+		<Nullable>enable</Nullable>
+		<GenerateDependencyFile>false</GenerateDependencyFile>
+		<PublishDir>..\bin\WinGetCommandNotFound</PublishDir>
+		<CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
+		<RuntimeIdentifiers>win-arm64;win-x64</RuntimeIdentifiers>
+	</PropertyGroup>
+
+	<PropertyGroup>
+		<CsWinRTIncludes>Microsoft.Management.Deployment</CsWinRTIncludes>
+		<CsWinRTWindowsMetadata>10.0.22621.0</CsWinRTWindowsMetadata>
+		<CsWinRTGeneratedFilesDir>$(OutDir)</CsWinRTGeneratedFilesDir>
+	</PropertyGroup>
+
+	<ItemGroup>
+		<ReferencePath Include="Microsoft.Management.Deployment.winmd" />
+	</ItemGroup>
+
+	<PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
+		<!-- Disable PDB generation for the Release build -->
+		<DebugSymbols>false</DebugSymbols>
+		<DebugType>None</DebugType>
+	</PropertyGroup>
+
+	<ItemGroup>
+		<PackageReference Include="System.Management.Automation" Version="7.4.0-preview.3">
+			<ExcludeAssets>contentFiles</ExcludeAssets>
+			<PrivateAssets>all</PrivateAssets>
+			<IncludeAssets>runtime; compile; build; native; analyzers; buildtransitive</IncludeAssets>
+		</PackageReference>
+		<PackageReference Include="Microsoft.Windows.CsWinRT" Version="2.0.1" />
+		<PackageReference Include="Microsoft.WindowsPackageManager.Utils" Version="1.3.8" />
+		<Content Include="WinGetCommandNotFound.psd1">
+			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+			<CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+		</Content>
+	</ItemGroup>
+
+</Project>

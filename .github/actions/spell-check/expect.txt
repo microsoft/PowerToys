@@ -1631,6 +1631,7 @@ rundll
 rungameid
 RUNLEVEL
 runsettings
+runspace
 runtimeclass
 runtimeobject
 runtimepack
@@ -2141,6 +2142,7 @@ winexe
 winforms
 winfx
 winget
+wingetprovider
 wingetcreate
 Winhook
 winkey
@@ -2151,6 +2153,7 @@ winmm
 winnt
 winres
 winrt
+winrtact
 winsdk
 winsdkver
 Winsock

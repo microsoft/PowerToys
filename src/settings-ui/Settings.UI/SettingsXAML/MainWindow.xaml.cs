@@ -94,6 +94,9 @@ namespace Microsoft.PowerToys.Settings.UI
                     case "Awake":
                         needToUpdate = generalSettingsConfig.Enabled.Awake != isEnabled;
                         generalSettingsConfig.Enabled.Awake = isEnabled; break;
+                    case "CmdNotFound":
+                        needToUpdate = generalSettingsConfig.Enabled.CmdNotFound != isEnabled;
+                        generalSettingsConfig.Enabled.CmdNotFound = isEnabled; break;
                     case "ColorPicker":
                         needToUpdate = generalSettingsConfig.Enabled.ColorPicker != isEnabled;
                         generalSettingsConfig.Enabled.ColorPicker = isEnabled; break;

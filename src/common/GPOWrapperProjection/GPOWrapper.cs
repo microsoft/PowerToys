@@ -27,6 +27,11 @@ namespace PowerToys.GPOWrapperProjection
             return (GpoRuleConfigured)PowerToys.GPOWrapper.GPOWrapper.GetConfiguredFancyZonesEnabledValue();
         }
 
+        public static GpoRuleConfigured GetConfiguredCmdNotFoundEnabledValue()
+        {
+            return (GpoRuleConfigured)PowerToys.GPOWrapper.GPOWrapper.GetConfiguredCmdNotFoundEnabledValue();
+        }
+
         public static GpoRuleConfigured GetConfiguredColorPickerEnabledValue()
         {
             return (GpoRuleConfigured)PowerToys.GPOWrapper.GPOWrapper.GetConfiguredColorPickerEnabledValue();

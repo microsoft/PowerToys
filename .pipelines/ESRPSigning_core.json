@@ -28,7 +28,9 @@
 
                 "PowerToys.AlwaysOnTop.exe",
                 "PowerToys.AlwaysOnTopModuleInterface.dll",
-                
+
+                "PowerToys.CmdNotFoundModuleInterface.dll",
+
                 "PowerToys.ColorPicker.dll",
                 "PowerToys.ColorPickerUI.dll",
                 "PowerToys.ColorPickerUI.exe",

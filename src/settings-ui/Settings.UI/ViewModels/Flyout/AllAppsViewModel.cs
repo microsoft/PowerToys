@@ -42,6 +42,11 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 FlyoutMenuItems.Add(new FlyoutMenuItem() { Label = resourceLoader.GetString("Awake/ModuleTitle"), IsEnabled = generalSettingsConfig.Enabled.Awake, Tag = "Awake", Icon = "ms-appx:///Assets/Settings/FluentIcons/FluentIconsAwake.png", EnabledChangedCallback = EnabledChangedOnUI });
             }
 
+            if ((gpo = GPOWrapper.GetConfiguredCmdNotFoundEnabledValue()) != GpoRuleConfigured.Disabled && gpo != GpoRuleConfigured.Enabled)
+            {
+                FlyoutMenuItems.Add(new FlyoutMenuItem() { Label = resourceLoader.GetString("CmdNotFound/ModuleTitle"), IsEnabled = generalSettingsConfig.Enabled.CmdNotFound, Tag = "CmdNotFound", Icon = "ms-appx:///Assets/FluentIcons/FluentIconsCmdNotFound.png", EnabledChangedCallback = EnabledChangedOnUI });
+            }
+
             if ((gpo = GPOWrapper.GetConfiguredColorPickerEnabledValue()) != GpoRuleConfigured.Disabled && gpo != GpoRuleConfigured.Enabled)
             {
                 FlyoutMenuItems.Add(new FlyoutMenuItem() { Label = resourceLoader.GetString("ColorPicker/ModuleTitle"), IsEnabled = generalSettingsConfig.Enabled.ColorPicker, Tag = "ColorPicker", Icon = "ms-appx:///Assets/Settings/FluentIcons/FluentIconsColorPicker.png", EnabledChangedCallback = EnabledChangedOnUI });
@@ -169,6 +174,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 {
                     case "AlwaysOnTop": item.IsEnabled = generalSettingsConfig.Enabled.AlwaysOnTop; break;
                     case "Awake": item.IsEnabled = generalSettingsConfig.Enabled.Awake; break;
+                    case "CmdNotFound": item.IsEnabled = generalSettingsConfig.Enabled.CmdNotFound; break;
                     case "ColorPicker": item.IsEnabled = generalSettingsConfig.Enabled.ColorPicker; break;
                     case "CropAndLock": item.IsEnabled = generalSettingsConfig.Enabled.CropAndLock; break;
                     case "FancyZones": item.IsEnabled = generalSettingsConfig.Enabled.FancyZones; break;
