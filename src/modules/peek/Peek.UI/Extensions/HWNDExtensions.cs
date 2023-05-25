@@ -22,6 +22,8 @@ namespace Peek.UI.Extensions
             return activeTab;
         }
 
+        // Keep logic synced with the similar function in the C++ module interface.
+        // TODO: Refactor into same C++ class consumed by both.
         internal static bool IsDesktopWindow(this HWND windowHandle)
         {
             StringBuilder strClassName = new StringBuilder(256);
