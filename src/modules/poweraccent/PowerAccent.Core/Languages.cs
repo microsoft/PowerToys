@@ -223,7 +223,7 @@ namespace PowerAccent.Core
                 LetterKey.VK_N => new string[] { "ñ" },
                 LetterKey.VK_O => new string[] { "ó" },
                 LetterKey.VK_U => new string[] { "ú", "ü" },
-                LetterKey.VK_COMMA => new string[] { "¿", "?" },
+                LetterKey.VK_COMMA => new string[] { "¿", "?", "¡", "!" },
                 _ => Array.Empty<string>(),
             };
         }
@@ -241,7 +241,7 @@ namespace PowerAccent.Core
                 LetterKey.VK_O => new string[] { "ò", "ó" },
                 LetterKey.VK_U => new string[] { "ù", "ú", "ü" },
                 LetterKey.VK_L => new string[] { "·" },
-                LetterKey.VK_COMMA => new string[] { "¿", "?" },
+                LetterKey.VK_COMMA => new string[] { "¿", "?", "¡", "!" },
                 _ => Array.Empty<string>(),
             };
         }
