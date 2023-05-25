@@ -35,7 +35,6 @@
             NumberOfFiles="{x:Bind ViewModel.Items.Count, Mode=OneWay}" />
 
         <fp:FilePreview
-            Name="FilePreviewer"
             Grid.Row="1"
             Item="{x:Bind ViewModel.CurrentItem, Mode=OneWay}"
             PreviewSizeChanged="FilePreviewer_PreviewSizeChanged"
