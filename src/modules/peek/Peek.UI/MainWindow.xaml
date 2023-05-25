@@ -14,11 +14,11 @@
     <winuiex:WindowEx.Backdrop>
         <winuiex:MicaSystemBackdrop />
     </winuiex:WindowEx.Backdrop>
-
     <Grid KeyboardAcceleratorPlacementMode="Hidden">
         <Grid.KeyboardAccelerators>
             <KeyboardAccelerator Key="Left" Invoked="LeftNavigationInvoked" />
             <KeyboardAccelerator Key="Right" Invoked="RightNavigationInvoked" />
+            <KeyboardAccelerator Key="Escape" Invoked="EscKeyInvoked" />
         </Grid.KeyboardAccelerators>
 
         <Grid.RowDefinitions>
