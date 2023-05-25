@@ -9,6 +9,7 @@
 #include <atlbase.h>
 #include <exdisp.h>
 #include <comdef.h>
+#include <common/utils/elevation.h>
 
 extern "C" IMAGE_DOS_HEADER __ImageBase;
 
@@ -40,6 +41,7 @@ namespace
     const wchar_t JSON_KEY_SHIFT[] = L"shift";
     const wchar_t JSON_KEY_CODE[] = L"code";
     const wchar_t JSON_KEY_ACTIVATION_SHORTCUT[] = L"ActivationShortcut";
+    const wchar_t JSON_KEY_ALWAYS_RUN_NOT_ELEVATED[] = L"AlwaysRunNotElevated";
 }
 
 // The PowerToy name that will be shown in the settings.
@@ -56,7 +58,10 @@ private:
 
     Hotkey m_hotkey;
 
-    HANDLE m_hProcess;
+    // If we should always try to run Peek non-elevated.
+    bool m_alwaysRunNotElevated = true;
+
+    HANDLE m_hProcess = 0;
 
     HANDLE m_hInvokeEvent;
 
@@ -89,22 +94,32 @@ private:
             }
             catch (...)
             {
-                Logger::error("Failed to initialize Peek start settings");
+                Logger::error("Failed to initialize Peek hotkey settings");
 
-                set_default_settings();
+                set_default_key_settings();
+            }
+            try
+            {
+                auto jsonAlwaysRunNotElevatedObject = settingsObject.GetNamedObject(JSON_KEY_PROPERTIES).GetNamedObject(JSON_KEY_ALWAYS_RUN_NOT_ELEVATED);
+                m_alwaysRunNotElevated = jsonAlwaysRunNotElevatedObject.GetNamedBoolean(L"value");
+            }
+            catch (...)
+            {
+                Logger::error("Failed to initialize Always Run Not Elevated option. Setting to default.");
+
+                m_alwaysRunNotElevated = true;
             }
         }
         else
         {
             Logger::info("Peek settings are empty");
-
-            set_default_settings();
+            set_default_key_settings();
         }
     }
 
-    void set_default_settings()
+    void set_default_key_settings()
     {
-        Logger::info("Peek is going to use default settings");
+        Logger::info("Peek is going to use default key settings");
         m_hotkey.win = false;
         m_hotkey.alt = false;
         m_hotkey.shift = false;
@@ -236,6 +251,10 @@ private:
 
     bool is_viewer_running()
     {
+        if (m_hProcess == 0)
+        {
+            return false;
+        }
         return WaitForSingleObject(m_hProcess, 0) == WAIT_TIMEOUT;
     }
 
@@ -248,24 +267,43 @@ private:
         std::wstring executable_args = L"";
         executable_args.append(std::to_wstring(powertoys_pid));
 
-        SHELLEXECUTEINFOW sei{ sizeof(sei) };
-
-        sei.fMask = { SEE_MASK_NOCLOSEPROCESS };
-        sei.lpVerb = L"open";
-        sei.lpFile = L"modules\\Peek\\Powertoys.Peek.UI.exe";
-        sei.nShow = SW_SHOWNORMAL;
-        sei.lpParameters = executable_args.data();
-
-        if (ShellExecuteExW(&sei))
+        if (m_alwaysRunNotElevated && is_process_elevated(false))
         {
-            Logger::trace("Successfully started the PeekViewer process");
+            Logger::trace("Starting Peek non elevated from elevated process");
+            const auto modulePath = get_module_folderpath();
+            std::wstring runExecutablePath = modulePath;
+            runExecutablePath += L"\\modules\\Peek\\PowerToys.Peek.UI.exe";
+            std::optional<ProcessInfo> processStartedInfo = RunNonElevatedFailsafe(runExecutablePath, executable_args, modulePath, PROCESS_QUERY_INFORMATION | SYNCHRONIZE | PROCESS_TERMINATE);
+            if (processStartedInfo.has_value())
+            {
+                m_hProcess = processStartedInfo.value().processHandle.release();
+            }
+            else
+            {
+                Logger::error(L"PeekViewer failed to start not elevated.");
+            }
         }
         else
         {
-            Logger::error(L"PeekViewer failed to start. {}", get_last_error_or_default(GetLastError()));
-        }
+            SHELLEXECUTEINFOW sei{ sizeof(sei) };
 
-        m_hProcess = sei.hProcess;
+            sei.fMask = { SEE_MASK_NOCLOSEPROCESS };
+            sei.lpVerb = L"open";
+            sei.lpFile = L"modules\\Peek\\PowerToys.Peek.UI.exe";
+            sei.nShow = SW_SHOWNORMAL;
+            sei.lpParameters = executable_args.data();
+
+            if (ShellExecuteExW(&sei))
+            {
+                Logger::trace("Successfully started the PeekViewer process");
+            }
+            else
+            {
+                Logger::error(L"PeekViewer failed to start. {}", get_last_error_or_default(GetLastError()));
+            }
+
+            m_hProcess = sei.hProcess;
+        }
     }
 
 public:
@@ -355,7 +393,14 @@ public:
         if (m_enabled)
         {
             ResetEvent(m_hInvokeEvent);
-            TerminateProcess(m_hProcess, 1);
+            auto result = TerminateProcess(m_hProcess, 1);
+            if (result == 0)
+            {
+                int error = GetLastError();
+                Logger::trace("Couldn't terminate the process. Last error: {}", error);
+            }
+            CloseHandle(m_hProcess);
+            m_hProcess = 0;
         }
 
         m_enabled = false;

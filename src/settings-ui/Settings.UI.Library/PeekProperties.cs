@@ -11,9 +11,12 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         public PeekProperties()
         {
             ActivationShortcut = new HotkeySettings(false, true, false, false, 0x20);
+            AlwaysRunNotElevated = new BoolProperty(true);
         }
 
         public HotkeySettings ActivationShortcut { get; set; }
+
+        public BoolProperty AlwaysRunNotElevated { get; set; }
 
         public override string ToString() => JsonSerializer.Serialize(this);
     }
