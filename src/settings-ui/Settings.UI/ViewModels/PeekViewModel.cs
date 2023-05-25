@@ -109,6 +109,20 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             }
         }
 
+        public bool AlwaysRunNotElevated
+        {
+            get => _peekSettings.Properties.AlwaysRunNotElevated.Value;
+            set
+            {
+                if (_peekSettings.Properties.AlwaysRunNotElevated.Value != value)
+                {
+                    _peekSettings.Properties.AlwaysRunNotElevated.Value = value;
+                    OnPropertyChanged(nameof(AlwaysRunNotElevated));
+                    NotifySettingsChanged();
+                }
+            }
+        }
+
         private void NotifySettingsChanged()
         {
             // Using InvariantCulture as this is an IPC message

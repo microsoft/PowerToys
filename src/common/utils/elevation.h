@@ -373,7 +373,7 @@ inline std::optional<ProcessInfo> RunNonElevatedFailsafe(const std::wstring& fil
         }
     }
 
-    auto handles = getProcessHandlesByName(std::filesystem::path{ file }.filename().wstring(), PROCESS_QUERY_INFORMATION | SYNCHRONIZE);
+    auto handles = getProcessHandlesByName(std::filesystem::path{ file }.filename().wstring(), PROCESS_QUERY_INFORMATION | SYNCHRONIZE | PROCESS_TERMINATE );
 
     if (handles.empty())
         return std::nullopt;
