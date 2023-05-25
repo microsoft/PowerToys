@@ -89,6 +89,7 @@ namespace Peek.UI
 
             ViewModel.Uninitialize();
             ViewModel.ScalingFactor = 1;
+            FilePreviewer.ResetSource();
         }
 
         /// <summary>

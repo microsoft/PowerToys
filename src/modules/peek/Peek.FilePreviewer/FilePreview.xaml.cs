@@ -68,6 +68,13 @@ namespace Peek.FilePreviewer
             _cancellationTokenSource.Dispose();
         }
 
+        public void ResetSource()
+        {
+            ImagePreview.Source = null;
+            VideoPreview.Source = null;
+            BrowserPreview.Source = null;
+        }
+
         private async void Previewer_PropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
         {
             // Fallback on DefaultPreviewer if we fail to load the correct Preview
