@@ -99,9 +99,9 @@ void handle_tray_command(HWND window, const WPARAM command_id, LPARAM lparam)
         std::wstring bug_report_path = get_module_folderpath();
         bug_report_path += L"\\Tools\\PowerToys.BugReportTool.exe";
         
-        if (!isBugReportThreadRunning)
-        {
-            isBugReportThreadRunning = true;
+         bool expected_isBugReportThreadRunning = false;
+        if (isBugReportThreadRunning.compare_exchange_strong(expected_isBugReportThreadRunning, true))
+         {
             std::thread([bug_report_path]() {
                 SHELLEXECUTEINFOW sei{ sizeof(sei) };
                 sei.fMask = { SEE_MASK_FLAG_NO_UI | SEE_MASK_NOASYNC | SEE_MASK_NOCLOSEPROCESS | SEE_MASK_NO_CONSOLE };
@@ -115,7 +115,7 @@ void handle_tray_command(HWND window, const WPARAM command_id, LPARAM lparam)
                     MessageBoxW(nullptr, bugreport_success.c_str(), L"PowerToys", MB_OK);
                 }
 
-                isBugReportThreadRunning = false;
+                isBugReportThreadRunning.store(false);
             }).detach();
         }
 

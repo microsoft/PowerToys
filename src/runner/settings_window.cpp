@@ -107,12 +107,12 @@ std::optional<std::wstring> dispatch_json_action_to_module(const json::JsonObjec
                 }
                 else if (action == L"check_for_updates")
                 {
-                    if (!isUpdateCheckThreadRunning)
+                    bool expected_isUpdateCheckThreadRunning = false;
+                    if (isUpdateCheckThreadRunning.compare_exchange_strong(expected_isUpdateCheckThreadRunning,true))
                     {
-                        isUpdateCheckThreadRunning = true;
                         std::thread([]() {
                             CheckForUpdatesCallback();
-                            isUpdateCheckThreadRunning = false;
+                            isUpdateCheckThreadRunning.store(false);
                         }).detach();
                     }
                 }

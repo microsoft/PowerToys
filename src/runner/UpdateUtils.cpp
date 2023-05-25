@@ -30,8 +30,6 @@ namespace
 using namespace notifications;
 using namespace updating;
 
-std::mutex state_mutex;
-
 std::wstring CurrentVersionToNextVersion(const new_version_download_info& info)
 {
     auto result = VersionHelper{ VERSION_MAJOR, VERSION_MINOR, VERSION_REVISION }.toWstring();
@@ -279,7 +277,6 @@ void CheckForUpdatesCallback()
         
         ProcessNewVersionInfo(*new_version_info, state, download_update, false);
 
-        std::lock_guard<std::mutex> lock(state_mutex);
         UpdateState::store([&](UpdateState& v) {
             v = std::move(state);
         });
