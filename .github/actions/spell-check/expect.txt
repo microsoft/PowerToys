@@ -530,6 +530,7 @@ drawingcolor
 dreamsofameaningfullife
 drf
 drivedetectionwarning
+dsc
 dshow
 DSTINVERT
 DUMMYUNIONNAME
