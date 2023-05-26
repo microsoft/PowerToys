@@ -4,8 +4,10 @@
 
 using System.Text;
 using Peek.UI.Native;
+using Windows.Foundation;
 using Windows.Win32;
 using Windows.Win32.Foundation;
+using Windows.Win32.Graphics.Gdi;
 
 namespace Peek.UI.Extensions
 {
@@ -46,6 +48,15 @@ namespace Peek.UI.Extensions
         internal static HWND FindChildWindow(this HWND windowHandle, string className)
         {
             return PInvoke.FindWindowEx(windowHandle, HWND.Null, className, null);
+        }
+
+        internal static Size GetMonitorSize(this HWND hwnd)
+        {
+            var monitor = PInvoke.MonitorFromWindow(hwnd, MONITOR_FROM_FLAGS.MONITOR_DEFAULTTONEAREST);
+            MONITORINFO info = default(MONITORINFO);
+            info.cbSize = 40;
+            PInvoke.GetMonitorInfo(monitor, ref info);
+            return new Size(info.rcMonitor.Size.Width, info.rcMonitor.Size.Height);
         }
     }
 }
