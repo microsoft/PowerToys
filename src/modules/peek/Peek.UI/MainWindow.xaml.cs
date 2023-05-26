@@ -2,6 +2,7 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System;
 using interop;
 using Microsoft.PowerToys.Telemetry;
 using Microsoft.UI.Windowing;
@@ -104,40 +105,46 @@ namespace Peek.UI
         private void FilePreviewer_PreviewSizeChanged(object sender, PreviewSizeChangedArgs e)
         {
             var foregroundWindowHandle = Windows.Win32.PInvoke.GetForegroundWindow();
-
             var monitorSize = foregroundWindowHandle.GetMonitorSize();
+            var monitorScale = foregroundWindowHandle.GetMonitorScale();
 
             // If no size is requested, try to fit to the monitor size.
-            Size requestedSize = e.WindowSizeRequested ?? monitorSize;
+            Size requestedSize = e.PreviewSize.MonitorSize ?? monitorSize;
+            var contentScale = e.PreviewSize.UseEffectivePixels ? 1 : monitorScale;
+            Size scaledRequestedSize = new Size(requestedSize.Width / contentScale, requestedSize.Height / contentScale);
 
-            double titleBarHeight = TitleBarControl.ActualHeight;
-
-            double maxContentWidth = monitorSize.Width * WindowConstants.MaxWindowToMonitorRatio;
-            double maxContentHeight = (monitorSize.Height - titleBarHeight) * WindowConstants.MaxWindowToMonitorRatio;
-            Size maxContentSize = new(maxContentWidth, maxContentHeight);
-
-            double minContentWidth = WindowConstants.MinWindowWidth;
-            double minContentHeight = WindowConstants.MinWindowHeight - titleBarHeight;
-            Size minContentSize = new(minContentWidth, minContentHeight);
-
-            Size adjustedContentSize = requestedSize.Fit(maxContentSize, minContentSize);
-
-            // TODO: Only re-center if window has not been resized by user (or use design-defined logic).
             // TODO: Investigate why portrait images do not perfectly fit edge-to-edge
-            double monitorScale = this.GetMonitorScale();
-            double scaledWindowWidth = adjustedContentSize.Width / monitorScale;
-            double scaledWindowHeight = adjustedContentSize.Height / monitorScale;
+            Size monitorMinContentSize = GetMonitorMinContentSize(monitorScale);
+            Size monitorMaxContentSize = GetMonitorMaxContentSize(monitorSize, monitorScale);
+            Size adjustedContentSize = scaledRequestedSize.Fit(monitorMaxContentSize, monitorMinContentSize);
 
-            double desiredScaledHeight = scaledWindowHeight + titleBarHeight + WindowConstants.WindowWidthContentPadding;
-            double desiredScaledWidth = scaledWindowWidth + WindowConstants.WindowHeightContentPadding;
+            var titleBarHeight = TitleBarControl.ActualHeight;
+            var desiredWindowHeight = adjustedContentSize.Height + titleBarHeight + WindowConstants.WindowWidthContentPadding;
+            var desiredWindowWidth = adjustedContentSize.Width + WindowConstants.WindowHeightContentPadding;
 
             if (!TitleBarControl.Pinned)
             {
-                this.CenterOnMonitor(foregroundWindowHandle, desiredScaledWidth, desiredScaledHeight); // re-center if not pinned
+                this.CenterOnMonitor(foregroundWindowHandle, desiredWindowWidth, desiredWindowHeight);
             }
 
             this.Show();
             this.BringToForeground();
+        }
+
+        private Size GetMonitorMaxContentSize(Size monitorSize, double scaling)
+        {
+            var titleBarHeight = TitleBarControl.ActualHeight;
+            var maxContentWidth = monitorSize.Width * WindowConstants.MaxWindowToMonitorRatio;
+            var maxContentHeight = (monitorSize.Height - titleBarHeight) * WindowConstants.MaxWindowToMonitorRatio;
+            return new Size(maxContentWidth / scaling, maxContentHeight / scaling);
+        }
+
+        private Size GetMonitorMinContentSize(double scaling)
+        {
+            var titleBarHeight = TitleBarControl.ActualHeight;
+            var minContentWidth = WindowConstants.MinWindowWidth;
+            var minContentHeight = WindowConstants.MinWindowHeight - titleBarHeight;
+            return new Size(minContentWidth / scaling, minContentHeight / scaling);
         }
 
         /// <summary>
