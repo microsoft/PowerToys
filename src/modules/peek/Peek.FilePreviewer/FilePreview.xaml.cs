@@ -204,6 +204,7 @@ namespace Peek.FilePreviewer
         partial void OnPreviewerChanging(IPreviewer? value)
         {
             VideoPreview.MediaPlayer.Pause();
+            VideoPreview.Source = null;
 
             if (Previewer != null)
             {

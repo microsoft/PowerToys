@@ -104,8 +104,9 @@ namespace Peek.UI
         /// <param name="e">PreviewSizeChangedArgs</param>
         private void FilePreviewer_PreviewSizeChanged(object sender, PreviewSizeChangedArgs e)
         {
-            var monitorSize = this.GetMonitorSize();
-            var monitorScale = this.GetMonitorScale();
+            var foregroundWindowHandle = Windows.Win32.PInvoke.GetForegroundWindow();
+            var monitorSize = foregroundWindowHandle.GetMonitorSize();
+            var monitorScale = foregroundWindowHandle.GetMonitorScale();
 
             // If no size is requested, try to fit to the monitor size.
             Size requestedSize = e.PreviewSize.MonitorSize ?? monitorSize;
@@ -123,7 +124,7 @@ namespace Peek.UI
 
             if (!TitleBarControl.Pinned)
             {
-                this.CenterOnScreen(desiredWindowWidth, desiredWindowHeight);
+                this.CenterOnMonitor(foregroundWindowHandle, desiredWindowWidth, desiredWindowHeight);
             }
 
             this.Show();
