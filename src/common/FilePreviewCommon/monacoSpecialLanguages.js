@@ -11,7 +11,7 @@ export async function registerAdditionalLanguages(monaco){
     registerAdditionalLanguage("razorExt", [".razor"], "razor", monaco)
     registerAdditionalLanguage("logExt", [".log"], "log", monaco)
     registerAdditionalLanguage("vbExt", [".vbs"], "vb", monaco)
-    registerAdditionalLanguage("iniExt", [".inf"], "ini", monaco)
+    registerAdditionalLanguage("iniExt", [".inf", ".gitconfig", ".gitattributes", ".editorconfig"], "ini", monaco)
     registerAdditionalNewLanguage("reg", [".reg"], regDefinition(), monaco)
 }
 
