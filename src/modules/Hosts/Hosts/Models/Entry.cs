@@ -12,6 +12,8 @@ namespace Hosts.Models
 {
     public partial class Entry : ObservableObject
     {
+        private static readonly char[] _spaceCharacters = new char[] { ' ', '\t' };
+
         private string _line;
 
         private string _address;
@@ -96,7 +98,7 @@ namespace Hosts.Models
 
             var addressHost = lineSplit[0];
 
-            var addressHostSplit = addressHost.Split(' ', '\t');
+            var addressHostSplit = addressHost.Split(_spaceCharacters, StringSplitOptions.RemoveEmptyEntries);
             var hostsBuilder = new StringBuilder();
             var commentBuilder = new StringBuilder();
 
@@ -104,17 +106,9 @@ namespace Hosts.Models
             {
                 var element = addressHostSplit[i].Trim();
 
-                if (string.IsNullOrWhiteSpace(element))
+                if (i == 0 && IPAddress.TryParse(element, out var _) && (element.Contains(':') || element.Contains('.')))
                 {
-                    continue;
-                }
-
-                if (Address == null)
-                {
-                    if (IPAddress.TryParse(element, out var _) && (element.Contains(':') || element.Contains('.')))
-                    {
-                        Address = element;
-                    }
+                    Address = element;
                 }
                 else
                 {
