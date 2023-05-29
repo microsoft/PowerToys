@@ -12,9 +12,11 @@ namespace Microsoft.PowerToys.Settings.UI.Library
 {
     public class ColorPickerProperties
     {
+        public HotkeySettings DefaultActivationShortcut => new HotkeySettings(true, false, false, true, 0x43);
+
         public ColorPickerProperties()
         {
-            ActivationShortcut = new HotkeySettings(true, false, false, true, 0x43);
+            ActivationShortcut = DefaultActivationShortcut;
             ChangeCursor = false;
             ColorHistory = new List<string>();
             ColorHistoryLimit = 20;
