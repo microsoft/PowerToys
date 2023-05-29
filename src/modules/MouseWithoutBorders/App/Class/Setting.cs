@@ -923,7 +923,9 @@ namespace MouseWithoutBorders.Class
             }
         }
 
-        internal bool StealFocusWhenSwitchingMachine => _properties.StealFocusWhenSwitchingMachine;
+        // Was a value read from registry on original Mouse Without Border, but default should be true. We wrongly released it as false, so we're forcing true here.
+        // This value wasn't changeable from UI, anyway.
+        internal bool StealFocusWhenSwitchingMachine => true;
 
         private string deviceId;
 
