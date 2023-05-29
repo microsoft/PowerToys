@@ -125,6 +125,7 @@
                                             Width="136"
                                             Height="90"
                                             Margin="4"
+                                            BorderThickness="2" 
                                             AllowDrop="{Binding Mode=OneWay, Path=Item.CanDragDrop}"
                                             Background="{ThemeResource SolidBackgroundFillColorBaseAltBrush}"
                                             BorderBrush="{Binding Item.StatusBrush}"

@@ -1,6 +1,5 @@
 $fileWxs = Get-Content "MonacoSRC.wxs";
 
-
 $fileWxs = $fileWxs -replace " KeyPath=`"yes`" ", " "
 
 $newFileContent = ""

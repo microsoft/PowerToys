@@ -167,8 +167,8 @@ namespace Peek.FilePreviewer
         {
             if (Previewer != null)
             {
-                var size = await Previewer.GetPreviewSizeAsync(cancellationToken);
-                PreviewSizeChanged?.Invoke(this, new PreviewSizeChangedArgs(size));
+                var previewSize = await Previewer.GetPreviewSizeAsync(cancellationToken);
+                PreviewSizeChanged?.Invoke(this, new PreviewSizeChangedArgs(previewSize));
             }
         }
 
@@ -205,6 +205,9 @@ namespace Peek.FilePreviewer
         {
             VideoPreview.MediaPlayer.Pause();
             VideoPreview.Source = null;
+
+            ImagePreview.Source = null;
+            BrowserPreview.Source = null;
 
             if (Previewer != null)
             {

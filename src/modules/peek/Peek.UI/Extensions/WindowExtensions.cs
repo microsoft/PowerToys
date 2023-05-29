@@ -17,10 +17,7 @@ namespace Peek.UI.Extensions
         public static double GetMonitorScale(this Window window)
         {
             var hwnd = new HWND(window.GetWindowHandle());
-            var dpi = PInvoke.GetDpiForWindow(new HWND(hwnd));
-            double scalingFactor = dpi / 96d;
-
-            return scalingFactor;
+            return hwnd.GetMonitorScale();
         }
 
         public static void BringToForeground(this Window window)
