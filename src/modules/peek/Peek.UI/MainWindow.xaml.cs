@@ -49,7 +49,11 @@ namespace Peek.UI
 
             if (args.WindowActivationState == Microsoft.UI.Xaml.WindowActivationState.Deactivated)
             {
-                Uninitialize();
+                var userSettings = App.GetService<IUserSettings>();
+                if (userSettings.CloseAfterLosingFocus)
+                {
+                    Uninitialize();
+                }
             }
         }
 
