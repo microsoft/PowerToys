@@ -58,5 +58,12 @@ namespace Peek.UI.Extensions
             PInvoke.GetMonitorInfo(monitor, ref info);
             return new Size(info.rcMonitor.Size.Width, info.rcMonitor.Size.Height);
         }
+
+        internal static double GetMonitorScale(this HWND hwnd)
+        {
+            var dpi = PInvoke.GetDpiForWindow(hwnd);
+            var scalingFactor = dpi / 96d;
+            return scalingFactor;
+        }
     }
 }

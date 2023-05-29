@@ -51,10 +51,11 @@ namespace Peek.FilePreviewer.Previewers
             GC.SuppressFinalize(this);
         }
 
-        public Task<Size?> GetPreviewSizeAsync(CancellationToken cancellationToken)
+        public Task<PreviewSize> GetPreviewSizeAsync(CancellationToken cancellationToken)
         {
             Size? size = new Size(680, 500);
-            return Task.FromResult(size);
+            var previewSize = new PreviewSize { MonitorSize = size, UseEffectivePixels = true };
+            return Task.FromResult(previewSize);
         }
 
         public async Task LoadPreviewAsync(CancellationToken cancellationToken)
