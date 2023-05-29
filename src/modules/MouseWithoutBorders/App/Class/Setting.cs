@@ -303,7 +303,7 @@ namespace MouseWithoutBorders.Class
             {
                 lock (_loadingSettingsLock)
                 {
-                    _properties.MatrixOneRow = true;
+                    _properties.MatrixOneRow = value;
                     if (!PauseInstantSaving)
                     {
                         SaveSettings();
