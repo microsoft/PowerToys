@@ -206,6 +206,9 @@ namespace Peek.FilePreviewer
             VideoPreview.MediaPlayer.Pause();
             VideoPreview.Source = null;
 
+            ImagePreview.Source = null;
+            BrowserPreview.Source = null;
+
             if (Previewer != null)
             {
                 Previewer.PropertyChanged -= Previewer_PropertyChanged;
