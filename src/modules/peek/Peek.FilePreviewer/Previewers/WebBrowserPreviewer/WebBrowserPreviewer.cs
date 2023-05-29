@@ -12,6 +12,7 @@ using Peek.Common.Constants;
 using Peek.Common.Extensions;
 using Peek.Common.Helpers;
 using Peek.Common.Models;
+using Peek.FilePreviewer.Models;
 using Windows.Foundation;
 
 namespace Peek.FilePreviewer.Previewers
@@ -76,10 +77,9 @@ namespace Peek.FilePreviewer.Previewers
 
         private Task<bool>? DisplayInfoTask { get; set; }
 
-        public Task<Size?> GetPreviewSizeAsync(CancellationToken cancellationToken)
+        public Task<PreviewSize> GetPreviewSizeAsync(CancellationToken cancellationToken)
         {
-            Size? size = null;
-            return Task.FromResult(size);
+            return Task.FromResult(new PreviewSize { MonitorSize = null });
         }
 
         public async Task LoadPreviewAsync(CancellationToken cancellationToken)

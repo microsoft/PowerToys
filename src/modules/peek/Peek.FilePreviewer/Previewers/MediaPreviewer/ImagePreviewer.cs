@@ -15,6 +15,7 @@ using Peek.Common.Extensions;
 using Peek.Common.Helpers;
 using Peek.Common.Models;
 using Peek.FilePreviewer.Exceptions;
+using Peek.FilePreviewer.Models;
 using Peek.FilePreviewer.Previewers.Helpers;
 using Peek.FilePreviewer.Previewers.Interfaces;
 using Windows.Foundation;
@@ -68,7 +69,7 @@ namespace Peek.FilePreviewer.Previewers
             GC.SuppressFinalize(this);
         }
 
-        public async Task<Size?> GetPreviewSizeAsync(CancellationToken cancellationToken)
+        public async Task<PreviewSize> GetPreviewSizeAsync(CancellationToken cancellationToken)
         {
             cancellationToken.ThrowIfCancellationRequested();
             if (IsSvg(Item))
@@ -88,7 +89,7 @@ namespace Peek.FilePreviewer.Previewers
                 }
             }
 
-            return ImageSize;
+            return new PreviewSize { MonitorSize = ImageSize };
         }
 
         public async Task LoadPreviewAsync(CancellationToken cancellationToken)

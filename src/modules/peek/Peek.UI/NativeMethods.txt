@@ -12,3 +12,7 @@ FindWindowEx
 SID_STopLevelBrowser
 GetClassName
 _SVGIO
+MONITORINFO
+GetWindowRect
+SET_WINDOW_POS_FLAGS
+SetWindowPos
