@@ -48,6 +48,12 @@
                         Glyph="&#xE70F;" />
                 </StackPanel>
             </Button>
+            <Button Click="ResetButton_Click" Margin="12,12,12,12" VerticalAlignment="Stretch">
+                <FontIcon
+                        FontFamily="{ThemeResource SymbolThemeFontFamily}"
+                        FontSize="16"
+                        Glyph="&#xE7A7;" />
+            </Button>
         </StackPanel>
     </Grid>
 </UserControl>

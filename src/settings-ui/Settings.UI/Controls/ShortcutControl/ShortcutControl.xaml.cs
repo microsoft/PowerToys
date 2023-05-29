@@ -355,6 +355,14 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
             await shortcutDialog.ShowAsync();
         }
 
+        private void ResetButton_Click(object sender, RoutedEventArgs e)
+        {
+            hotkeySettings = null;
+
+            SetValue(HotkeySettingsProperty, hotkeySettings);
+            PreviewKeysControl.ItemsSource = HotkeySettings.GetKeysList();
+        }
+
         private void ShortcutDialog_PrimaryButtonClick(ContentDialog sender, ContentDialogButtonClickEventArgs args)
         {
             if (ComboIsValid(lastValidSettings))
