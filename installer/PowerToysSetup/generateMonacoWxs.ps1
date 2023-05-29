@@ -1,4 +1,10 @@
-$fileWxs = Get-Content "MonacoSRC.wxs";
+[CmdletBinding()]
+Param(
+    [Parameter(Mandatory = $True, Position = 1)]
+    [string]$monacoWxsFile
+)
+
+$fileWxs = Get-Content $monacoWxsFile;
 
 $fileWxs = $fileWxs -replace " KeyPath=`"yes`" ", " "
 
@@ -9,6 +15,13 @@ $directories = @()
 
 $fileWxs | ForEach-Object {
     $line = $_;
+    if ($line -match "<Wix xmlns=`".*`">") {
+        $line +=
+@"
+`r`n
+    <?include `$(sys.CURRENTDIR)\Common.wxi?>`r`n
+"@
+    }
     if ($line -match "<Component Id=`"(.*)`" Directory") {
         $componentId = $matches[1]
     }
@@ -54,4 +67,4 @@ $removeFolderEntries +=
 
 $newFileContent = $newFileContent -replace "\s+(</ComponentGroup>)", "$removeFolderEntries`r`n        </ComponentGroup>"
 
-Set-Content -Path "MonacoSRC.wxs" -Value $newFileContent
+Set-Content -Path $monacoWxsFile -Value $newFileContent
