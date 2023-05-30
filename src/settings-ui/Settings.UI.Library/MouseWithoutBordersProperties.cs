@@ -107,9 +107,6 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         [JsonConverter(typeof(BoolPropertyJsonConverter))]
         public bool FirstCtrlShiftS { get; set; }
 
-        [JsonConverter(typeof(BoolPropertyJsonConverter))]
-        public bool StealFocusWhenSwitchingMachine { get; set; }
-
         public StringProperty DeviceID { get; set; }
 
         public MouseWithoutBordersProperties()
@@ -151,7 +148,6 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             Name2IP = new StringProperty(string.Empty);
             UseVKMap = false;
             FirstCtrlShiftS = false;
-            StealFocusWhenSwitchingMachine = false;
         }
 
         public object Clone()
