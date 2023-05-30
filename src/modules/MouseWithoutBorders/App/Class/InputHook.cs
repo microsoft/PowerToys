@@ -645,6 +645,7 @@ namespace MouseWithoutBorders.Class
                         }
                     }
                 }
+/*
                 else if (shiftDown && Setting.Values.VKMap != null && vkCode == (Setting.Values.VKMap.ContainsKey(0) ? (int)Setting.Values.VKMap[0] : 'K'))
                 {
                     if (Common.DesMachineID == Common.MachineID || Common.DesMachineID == ID.ALL)
@@ -653,6 +654,7 @@ namespace MouseWithoutBorders.Class
                         return Common.DesMachineID == ID.ALL;
                     }
                 }
+*/
             }
 
             return true;
