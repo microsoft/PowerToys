@@ -235,7 +235,7 @@
     <value>Security key</value>
   </data>
   <data name="MouseWithoutBorders_SecurityKey.Description" xml:space="preserve">
-    <value>The key must be auto generated in one machine by click on New Key, then typed in other machines</value>
+    <value>The key must be auto generated in one machine by clicking on 'New Key', then typed into the other machine(s)</value>
   </data>
   <data name="MouseWithoutBorders_NewKey.Content" xml:space="preserve">
     <value>New key</value>
