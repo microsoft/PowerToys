@@ -38,6 +38,8 @@ namespace Hosts.Helpers
 
         public event EventHandler FileChanged;
 
+        public Encoding Encoding => _userSettings.Encoding == HostsEncoding.Utf8 ? new UTF8Encoding(false) : new UTF8Encoding(true);
+
         public HostsService(
             IFileSystem fileSystem,
             IUserSettings userSettings,
@@ -72,7 +74,7 @@ namespace Hosts.Helpers
                 return (unparsedBuilder.ToString(), entries);
             }
 
-            var lines = await _fileSystem.File.ReadAllLinesAsync(HostsFilePath);
+            var lines = await _fileSystem.File.ReadAllLinesAsync(HostsFilePath, Encoding);
 
             for (var i = 0; i < lines.Length; i++)
             {
@@ -153,11 +155,11 @@ namespace Hosts.Helpers
 
             if (!string.IsNullOrWhiteSpace(additionalLines))
             {
-                if (_userSettings.AdditionalLinesPosition == AdditionalLinesPosition.Top)
+                if (_userSettings.AdditionalLinesPosition == HostsAdditionalLinesPosition.Top)
                 {
                     lines.Insert(0, additionalLines);
                 }
-                else if (_userSettings.AdditionalLinesPosition == AdditionalLinesPosition.Bottom)
+                else if (_userSettings.AdditionalLinesPosition == HostsAdditionalLinesPosition.Bottom)
                 {
                     lines.Add(additionalLines);
                 }
@@ -174,7 +176,7 @@ namespace Hosts.Helpers
                     _backupDone = true;
                 }
 
-                await _fileSystem.File.WriteAllLinesAsync(HostsFilePath, lines);
+                await _fileSystem.File.WriteAllLinesAsync(HostsFilePath, lines, Encoding);
             }
             catch (Exception ex)
             {
