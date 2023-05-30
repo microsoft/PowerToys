@@ -43,11 +43,6 @@ namespace Peek.UI
 
         private void PeekWindow_Activated(object sender, Microsoft.UI.Xaml.WindowActivatedEventArgs args)
         {
-            if (args.WindowActivationState == Microsoft.UI.Xaml.WindowActivationState.CodeActivated)
-            {
-                this.BringToForeground();
-            }
-
             if (args.WindowActivationState == Microsoft.UI.Xaml.WindowActivationState.Deactivated)
             {
                 var userSettings = App.GetService<IUserSettings>();
