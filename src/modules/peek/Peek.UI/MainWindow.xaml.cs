@@ -9,6 +9,7 @@ using Microsoft.UI.Windowing;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Input;
 using Peek.Common.Constants;
+using Peek.Common.Helpers;
 using Peek.FilePreviewer.Models;
 using Peek.UI.Extensions;
 using Peek.UI.Helpers;
@@ -180,23 +181,32 @@ namespace Peek.UI
 
         private bool IsNewSingleSelectedItem()
         {
-            var foregroundWindowHandle = Windows.Win32.PInvoke.GetForegroundWindow();
-
-            var selectedItems = FileExplorerHelper.GetSelectedItems(foregroundWindowHandle);
-            var selectedItemsCount = selectedItems?.GetCount() ?? 0;
-            if (selectedItems == null || selectedItemsCount == 0 || selectedItemsCount > 1)
+            try
             {
-                return false;
+                var foregroundWindowHandle = Windows.Win32.PInvoke.GetForegroundWindow();
+
+                var selectedItems = FileExplorerHelper.GetSelectedItems(foregroundWindowHandle);
+                var selectedItemsCount = selectedItems?.GetCount() ?? 0;
+                if (selectedItems == null || selectedItemsCount == 0 || selectedItemsCount > 1)
+                {
+                    return false;
+                }
+
+                var fileExplorerSelectedItemPath = selectedItems.GetItemAt(0).ToIFileSystemItem().Path;
+                var currentItemPath = ViewModel.CurrentItem?.Path;
+                if (fileExplorerSelectedItemPath == null || currentItemPath == null || fileExplorerSelectedItemPath == currentItemPath)
+                {
+                    return false;
+                }
+
+                return true;
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError(ex.Message);
             }
 
-            var fileExplorerSelectedItemPath = selectedItems.GetItemAt(0).ToIFileSystemItem().Path;
-            var currentItemPath = ViewModel.CurrentItem?.Path;
-            if (fileExplorerSelectedItemPath == null || currentItemPath == null || fileExplorerSelectedItemPath == currentItemPath)
-            {
-                return false;
-            }
-
-            return true;
+            return false;
         }
     }
 }
