@@ -62,7 +62,11 @@ namespace Peek.FilePreviewer.Previewers
 
         private IntPtr lowQualityThumbnail;
 
+        private ImageSource? lowQualityThumbnailPreview;
+
         private IntPtr highQualityThumbnail;
+
+        private ImageSource? highQualityThumbnailPreview;
 
         public static bool IsFileTypeSupported(string fileExt)
         {
@@ -109,6 +113,19 @@ namespace Peek.FilePreviewer.Previewers
             cancellationToken.ThrowIfCancellationRequested();
 
             await Task.WhenAll(LowQualityThumbnailTask, HighQualityThumbnailTask, FullQualityImageTask);
+
+            // If Preview is still null, FullQualityImage was not available. Preview the thumbnail instead.
+            if (Preview == null)
+            {
+                if (highQualityThumbnailPreview != null)
+                {
+                    Preview = highQualityThumbnailPreview;
+                }
+                else
+                {
+                    Preview = lowQualityThumbnailPreview;
+                }
+            }
 
             if (Preview == null && HasFailedLoadingPreview())
             {
@@ -179,7 +196,7 @@ namespace Peek.FilePreviewer.Previewers
                     if (!IsFullImageLoaded && !IsHighQualityThumbnailLoaded)
                     {
                         var thumbnailBitmap = await BitmapHelper.GetBitmapFromHBitmapAsync(lowQualityThumbnail, IsPng(Item), cancellationToken);
-                        Preview = thumbnailBitmap;
+                        lowQualityThumbnailPreview = thumbnailBitmap;
                     }
                 });
             });
@@ -206,7 +223,7 @@ namespace Peek.FilePreviewer.Previewers
                     if (!IsFullImageLoaded)
                     {
                         var thumbnailBitmap = await BitmapHelper.GetBitmapFromHBitmapAsync(highQualityThumbnail, IsPng(Item), cancellationToken);
-                        Preview = thumbnailBitmap;
+                        highQualityThumbnailPreview = thumbnailBitmap;
                     }
                 });
             });
@@ -270,6 +287,8 @@ namespace Peek.FilePreviewer.Previewers
 
         private void Clear()
         {
+            lowQualityThumbnailPreview = null;
+            highQualityThumbnailPreview = null;
             Preview = null;
 
             if (lowQualityThumbnail != IntPtr.Zero)
