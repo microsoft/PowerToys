@@ -411,8 +411,8 @@ namespace MouseWithoutBorders
                 AddNewMachine();
             }
 
-            checkBoxVKMap.Checked = Setting.Values.UseVKMap;
-
+            // NOTE(@yuyoyuppe): this option is deprecated
+            // checkBoxVKMap.Checked = Setting.Values.UseVKMap;
             foreach (Machine m in machines)
             {
                 if (m.StatusClient != SocketStatus.NA)
@@ -729,8 +729,9 @@ namespace MouseWithoutBorders
             checkBoxDrawMouse.Checked = Setting.Values.DrawMouse;
             checkBoxReverseLookup.Checked = Setting.Values.ReverseLookup;
             checkBoxSameSubNet.Checked = Setting.Values.SameSubNetOnly;
-            checkBoxVKMap.Checked = Setting.Values.UseVKMap;
 
+            // NOTE(@yuyoyuppe): this option is deprecated
+            // checkBoxVKMap.Checked = Setting.Values.UseVKMap;
             foreach (Machine m in machines)
             {
                 m.MachineName = string.Empty;
@@ -1088,7 +1089,8 @@ namespace MouseWithoutBorders
 
         private void CheckBoxVKMap_CheckedChanged(object sender, EventArgs e)
         {
-            Setting.Values.UseVKMap = checkBoxVKMap.Checked;
+            // NOTE(@yuyoyuppe): this option is deprecated
+            // Setting.Values.UseVKMap = checkBoxVKMap.Checked;
             ShowUpdateMessage();
         }
 

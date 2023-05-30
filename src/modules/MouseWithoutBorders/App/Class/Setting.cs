@@ -858,25 +858,6 @@ namespace MouseWithoutBorders.Class
             }
         }
 
-        internal bool UseVKMap
-        {
-            get
-            {
-                lock (_loadingSettingsLock)
-                {
-                    return _properties.UseVKMap;
-                }
-            }
-
-            set
-            {
-                lock (_loadingSettingsLock)
-                {
-                    _properties.UseVKMap = value;
-                }
-            }
-        }
-
         internal bool FirstCtrlShiftS
         {
             get
@@ -893,14 +874,6 @@ namespace MouseWithoutBorders.Class
                 {
                     _properties.FirstCtrlShiftS = value;
                 }
-            }
-        }
-
-        internal Hashtable VKMap
-        {
-            get
-            {
-                return new Hashtable();
             }
         }
 
