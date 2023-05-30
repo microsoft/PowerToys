@@ -2,7 +2,9 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System;
 using System.Runtime.InteropServices;
+using ManagedCommon;
 using Microsoft.UI.Xaml;
 using Windows.Win32;
 using Windows.Win32.Foundation;
@@ -22,21 +24,15 @@ namespace Peek.UI.Extensions
 
         public static void BringToForeground(this Window window)
         {
-            var foregroundWindowHandle = PInvoke.GetForegroundWindow();
-
-            uint targetProcessId = 0;
-            uint windowThreadProcessId = 0;
-            unsafe
-            {
-                windowThreadProcessId = PInvoke.GetWindowThreadProcessId(foregroundWindowHandle, &targetProcessId);
-            }
-
+            // Ability to be able to set the Window to the Foreground is very limited. A current workaround is simulating mouse input before bringing to the foreground.
             var windowHandle = window.GetWindowHandle();
-            var currentThreadId = PInvoke.GetCurrentThreadId();
-            PInvoke.AttachThreadInput(windowThreadProcessId, currentThreadId, true);
-            PInvoke.BringWindowToTop(new HWND(windowHandle));
-            PInvoke.ShowWindow(new HWND(windowHandle), Windows.Win32.UI.WindowsAndMessaging.SHOW_WINDOW_CMD.SW_SHOW);
-            PInvoke.AttachThreadInput(windowThreadProcessId, currentThreadId, false);
+            Windows.Win32.UI.Input.KeyboardAndMouse.INPUT input = new Windows.Win32.UI.Input.KeyboardAndMouse.INPUT { type = Windows.Win32.UI.Input.KeyboardAndMouse.INPUT_TYPE.INPUT_MOUSE, Anonymous = { } };
+            Windows.Win32.UI.Input.KeyboardAndMouse.INPUT[] inputs = new Windows.Win32.UI.Input.KeyboardAndMouse.INPUT[] { input };
+            _ = PInvoke.SendInput(inputs.AsSpan<Windows.Win32.UI.Input.KeyboardAndMouse.INPUT>(), Marshal.SizeOf(typeof(Windows.Win32.UI.Input.KeyboardAndMouse.INPUT)));
+            if (PInvoke.SetForegroundWindow(new HWND(windowHandle)) == 0)
+            {
+                Logger.LogWarning("Couldn't set the Peek window as the foreground window.");
+            }
         }
 
         internal static void CenterOnMonitor(this Window window, HWND hwndDesktop, double? width = null, double? height = null)
