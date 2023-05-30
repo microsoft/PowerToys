@@ -6,6 +6,7 @@ using System;
 using interop;
 using Microsoft.PowerToys.Telemetry;
 using Microsoft.UI.Windowing;
+using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Input;
 using Peek.Common.Constants;
 using Peek.FilePreviewer.Models;
@@ -28,6 +29,7 @@ namespace Peek.UI
         public MainWindow()
         {
             InitializeComponent();
+            this.Activated += PeekWindow_Activated;
 
             ViewModel = App.GetService<MainWindowViewModel>();
 
@@ -36,6 +38,23 @@ namespace Peek.UI
             TitleBarControl.SetTitleBarToWindow(this);
 
             AppWindow.Closing += AppWindow_Closing;
+        }
+
+        private void PeekWindow_Activated(object sender, Microsoft.UI.Xaml.WindowActivatedEventArgs args)
+        {
+            if (args.WindowActivationState == Microsoft.UI.Xaml.WindowActivationState.CodeActivated)
+            {
+                this.BringToForeground();
+            }
+
+            if (args.WindowActivationState == Microsoft.UI.Xaml.WindowActivationState.Deactivated)
+            {
+                var userSettings = App.GetService<IUserSettings>();
+                if (userSettings.CloseAfterLosingFocus)
+                {
+                    Uninitialize();
+                }
+            }
         }
 
         /// <summary>
