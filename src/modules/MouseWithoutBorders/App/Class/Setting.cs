@@ -501,25 +501,6 @@ namespace MouseWithoutBorders.Class
             }
         }
 
-        internal bool BlockScreenSaverEx
-        {
-            get
-            {
-                lock (_loadingSettingsLock)
-                {
-                    return _properties.BlockScreenSaverOnOtherMachines;
-                }
-            }
-
-            set
-            {
-                lock (_loadingSettingsLock)
-                {
-                    _properties.BlockScreenSaverOnOtherMachines = value;
-                }
-            }
-        }
-
         internal bool MoveMouseRelatively
         {
             get
