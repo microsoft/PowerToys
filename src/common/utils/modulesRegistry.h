@@ -76,25 +76,31 @@ inline registry::ChangeSet getMonacoPreviewHandlerChangeSet(const std::wstring i
             for (uint32_t i = 0; i < list.Size(); ++i)
             {
                 auto entry = list.GetObjectAt(i);
-                auto extensionsList = entry.GetNamedArray(NonLocalizable::ExtensionsID);
-
-                for (uint32_t j = 0; j < extensionsList.Size(); ++j)
+                if (entry.HasKey(NonLocalizable::ExtensionsID))
                 {
-                    auto extension = extensionsList.GetStringAt(j);
-                    
-                    // Ignore extensions in the exclusion list
-                    IsExcluded = false;
-                    
-                    for (std::wstring k : ExtExclusions)
+                    auto extensionsList = entry.GetNamedArray(NonLocalizable::ExtensionsID);
+
+                    for (uint32_t j = 0; j < extensionsList.Size(); ++j)
                     {
-                        if (std::wstring{ extension } == k)
+                        auto extension = extensionsList.GetStringAt(j);
+
+                        // Ignore extensions in the exclusion list
+                        IsExcluded = false;
+
+                        for (std::wstring k : ExtExclusions)
                         {
-                            IsExcluded = true;
-                            break;
+                            if (std::wstring{ extension } == k)
+                            {
+                                IsExcluded = true;
+                                break;
+                            }
                         }
+                        if (IsExcluded)
+                        {
+                            continue;
+                        }
+                        extensions.push_back(std::wstring{ extension });
                     }
-                    if (IsExcluded) { continue; }
-                    extensions.push_back(std::wstring{ extension });
                 }
             }
         }
