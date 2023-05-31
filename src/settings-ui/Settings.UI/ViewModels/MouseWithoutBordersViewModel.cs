@@ -42,7 +42,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         private static readonly Dictionary<SocketStatus, Brush> StatusColors = new Dictionary<SocketStatus, Brush>()
 {
-    { SocketStatus.NA, new SolidColorBrush(ColorHelper.FromArgb(0x71, 0x71, 0x71, 0x71)) },
+    { SocketStatus.NA, new SolidColorBrush(ColorHelper.FromArgb(0, 0x71, 0x71, 0x71)) },
     { SocketStatus.Resolving, new SolidColorBrush(Colors.Yellow) },
     { SocketStatus.Connecting, new SolidColorBrush(Colors.Orange) },
     { SocketStatus.Handshaking, new SolidColorBrush(Colors.Blue) },
@@ -731,6 +731,28 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 if (Settings.Properties.ValidateRemoteMachineIP != value)
                 {
                     Settings.Properties.ValidateRemoteMachineIP = value;
+                    NotifyPropertyChanged();
+                }
+            }
+        }
+
+        public string Name2IP
+        {
+            // Due to https://github.com/microsoft/microsoft-ui-xaml/issues/1826, we must
+            // add back \n chars on set and remove them on get for the widget
+            // to make its behavior consistent with the old UI and MWB internal code.
+            get
+            {
+                return Settings.Properties.Name2IP.Value.Replace("\r\n", "\r");
+            }
+
+            set
+            {
+                var newValue = value.Replace("\r\n", "\n").Replace("\r", "\n").Replace("\n", "\r\n");
+
+                if (Settings.Properties.Name2IP.Value != newValue)
+                {
+                    Settings.Properties.Name2IP.Value = newValue;
                     NotifyPropertyChanged();
                 }
             }

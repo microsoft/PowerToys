@@ -353,7 +353,7 @@ struct ProcessInfo
     DWORD processID = {};
 };
 
-inline std::optional<ProcessInfo> RunNonElevatedFailsafe(const std::wstring& file, const std::wstring& params, const std::wstring& working_dir)
+inline std::optional<ProcessInfo> RunNonElevatedFailsafe(const std::wstring& file, const std::wstring& params, const std::wstring& working_dir, DWORD handleAccess = 0)
 {
     bool launched = RunNonElevatedEx(file, params, working_dir);
     if (!launched)
@@ -373,7 +373,7 @@ inline std::optional<ProcessInfo> RunNonElevatedFailsafe(const std::wstring& fil
         }
     }
 
-    auto handles = getProcessHandlesByName(std::filesystem::path{ file }.filename().wstring(), PROCESS_QUERY_INFORMATION | SYNCHRONIZE);
+    auto handles = getProcessHandlesByName(std::filesystem::path{ file }.filename().wstring(), PROCESS_QUERY_INFORMATION | SYNCHRONIZE | handleAccess );
 
     if (handles.empty())
         return std::nullopt;
