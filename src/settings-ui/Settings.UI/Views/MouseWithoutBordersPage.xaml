@@ -203,6 +203,7 @@
                         IsTabStop="True"
                         Severity="Warning" />
                     <labs:SettingsCard
+                        IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.CanUninstallService}"
                         x:Uid="MouseWithoutBorders_UninstallService"
                         ActionIcon="{ui:FontIcon FontFamily={StaticResource SymbolThemeFontFamily},
                                                  Glyph=&#xE8A7;}"
