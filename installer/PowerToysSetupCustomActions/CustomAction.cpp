@@ -1466,9 +1466,9 @@ UINT __stdcall TerminateProcessesCA(MSIHANDLE hInstall)
         L"PowerToys.PdfPreviewHandler.exe",
         L"PowerToys.SvgPreviewHandler.exe",
         L"PowerToys.Peek.UI.exe",
-        L"PowerToys.MouseWithoutBorders.exe"
-        L"PowerToys.MouseWithoutBordersHelper.exe"
-        L"PowerToys.MouseWithoutBordersService.exe"
+        L"PowerToys.MouseWithoutBorders.exe",
+        L"PowerToys.MouseWithoutBordersHelper.exe",
+        L"PowerToys.MouseWithoutBordersService.exe",
         L"PowerToys.exe",
     };
 

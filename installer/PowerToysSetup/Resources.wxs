@@ -383,7 +383,16 @@
           <RegistryValue Type="string" Name="Launcher_History_$(var.IdSafeLanguage)_Component" Value="" KeyPath="yes"/>
         </RegistryKey>
         <File Id="Launcher_History_$(var.IdSafeLanguage)_File" Source="$(var.BinDir)modules\launcher\Plugins\History\$(var.Language)\Microsoft.PowerToys.Run.Plugin.History.resources.dll" />
-      </Component>	  
+      </Component>
+      <Component
+          Id="Launcher_PowerToys_$(var.IdSafeLanguage)_Component"
+          Directory="Resource$(var.IdSafeLanguage)PowerToysPluginFolder"
+          Guid="$(var.CompGUIDPrefix)1C">
+        <RegistryKey Root="$(var.RegistryScope)" Key="Software\Classes\powertoys\components">
+          <RegistryValue Type="string" Name="Launcher_PowerToys_$(var.IdSafeLanguage)_Component" Value="" KeyPath="yes"/>
+        </RegistryKey>
+        <File Id="Launcher_PowerToys_$(var.IdSafeLanguage)_File" Source="$(var.BinDir)modules\launcher\Plugins\PowerToys\$(var.Language)\Microsoft.PowerToys.Run.Plugin.PowerToys.resources.dll" />
+      </Component>
       <?undef IdSafeLanguage?>
       <?undef CompGUIDPrefix?>
       <?endforeach?>

@@ -433,6 +433,11 @@ namespace MouseWithoutBorders
                     Program.DotForm.TopMost = true;
                     Program.DotForm.Show();
                     Application.DoEvents();
+
+                    // Simulate input to help bring to the foreground, as it doesn't seem to work in every case otherwise.
+                    NativeMethods.INPUT input = new NativeMethods.INPUT { type = (int)NativeMethods.InputType.INPUT_MOUSE, mi = { } };
+                    NativeMethods.INPUT[] inputs = new NativeMethods.INPUT[] { input };
+                    _ = NativeMethods.SendInput(1, inputs, Marshal.SizeOf(typeof(NativeMethods.INPUT)));
                     m.Result = SetForeGround() ? new IntPtr(1) : IntPtr.Zero;
                     break;
 
