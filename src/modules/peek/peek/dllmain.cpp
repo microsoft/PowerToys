@@ -62,6 +62,7 @@ private:
     bool m_alwaysRunNotElevated = true;
 
     HANDLE m_hProcess = 0;
+    DWORD m_processPid = 0;
 
     HANDLE m_hInvokeEvent;
 
@@ -233,12 +234,22 @@ private:
         return false;
     }
 
-    bool is_explorer_or_desktop_window_focused()
+    bool is_peek_or_explorer_or_desktop_window_focused()
     {
         HWND foregroundWindowHandle = GetForegroundWindow();
         if (foregroundWindowHandle == NULL)
         {
             return false;
+        }
+
+        DWORD pid{};
+        if (GetWindowThreadProcessId(foregroundWindowHandle, &pid)!=0)
+        {
+            // If the foreground window is the Peek window, send activation signal.
+            if (m_processPid != 0 && pid == m_processPid)
+            {
+                return true;
+            }
         }
 
         if (is_desktop_window(foregroundWindowHandle))
@@ -276,6 +287,7 @@ private:
             std::optional<ProcessInfo> processStartedInfo = RunNonElevatedFailsafe(runExecutablePath, executable_args, modulePath, PROCESS_QUERY_INFORMATION | SYNCHRONIZE | PROCESS_TERMINATE);
             if (processStartedInfo.has_value())
             {
+                m_processPid = processStartedInfo.value().processID;
                 m_hProcess = processStartedInfo.value().processHandle.release();
             }
             else
@@ -303,6 +315,7 @@ private:
             }
 
             m_hProcess = sei.hProcess;
+            m_processPid = GetProcessId(m_hProcess);
         }
     }
 
@@ -401,6 +414,7 @@ public:
             }
             CloseHandle(m_hProcess);
             m_hProcess = 0;
+            m_processPid = 0;
         }
 
         m_enabled = false;
@@ -436,8 +450,8 @@ public:
         {
             Logger::trace(L"Peek hotkey pressed");
 
-            // Only activate and consume the shortcut if it is an explorer or desktop window is the foreground application.
-            if (is_explorer_or_desktop_window_focused())
+            // Only activate and consume the shortcut if a Peek, explorer or desktop window is the foreground application.
+            if (is_peek_or_explorer_or_desktop_window_focused())
             {
                 // TODO: fix VK_SPACE DestroyWindow in viewer app
                 if (!is_viewer_running())
