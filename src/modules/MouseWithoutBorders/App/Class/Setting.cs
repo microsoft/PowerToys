@@ -303,7 +303,7 @@ namespace MouseWithoutBorders.Class
             {
                 lock (_loadingSettingsLock)
                 {
-                    _properties.MatrixOneRow = true;
+                    _properties.MatrixOneRow = value;
                     if (!PauseInstantSaving)
                     {
                         SaveSettings();
@@ -483,25 +483,6 @@ namespace MouseWithoutBorders.Class
         }
 
         internal bool BlockScreenSaver
-        {
-            get
-            {
-                lock (_loadingSettingsLock)
-                {
-                    return _properties.BlockScreenSaverOnOtherMachines;
-                }
-            }
-
-            set
-            {
-                lock (_loadingSettingsLock)
-                {
-                    _properties.BlockScreenSaverOnOtherMachines = value;
-                }
-            }
-        }
-
-        internal bool BlockScreenSaverEx
         {
             get
             {
@@ -877,25 +858,6 @@ namespace MouseWithoutBorders.Class
             }
         }
 
-        internal bool UseVKMap
-        {
-            get
-            {
-                lock (_loadingSettingsLock)
-                {
-                    return _properties.UseVKMap;
-                }
-            }
-
-            set
-            {
-                lock (_loadingSettingsLock)
-                {
-                    _properties.UseVKMap = value;
-                }
-            }
-        }
-
         internal bool FirstCtrlShiftS
         {
             get
@@ -915,15 +877,9 @@ namespace MouseWithoutBorders.Class
             }
         }
 
-        internal Hashtable VKMap
-        {
-            get
-            {
-                return new Hashtable();
-            }
-        }
-
-        internal bool StealFocusWhenSwitchingMachine => _properties.StealFocusWhenSwitchingMachine;
+        // Was a value read from registry on original Mouse Without Border, but default should be true. We wrongly released it as false, so we're forcing true here.
+        // This value wasn't changeable from UI, anyway.
+        internal bool StealFocusWhenSwitchingMachine => true;
 
         private string deviceId;
 

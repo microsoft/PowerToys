@@ -2,6 +2,9 @@
 GetMonitorInfo
 GetDpiForWindow
 GetForegroundWindow
+SetForegroundWindow
+SetActiveWindow
+SendInput
 GetWindowThreadProcessId
 GetCurrentThreadId
 AttachThreadInput

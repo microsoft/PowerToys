@@ -350,7 +350,6 @@ namespace MouseWithoutBorders.Class
 
         internal static void StartInputCallbackThread()
         {
-            System.Collections.Hashtable dummy = Setting.Values.VKMap; // Reading from registry to memory.
             Thread inputCallback = new(new ThreadStart(InputCallbackThread), "InputCallback Thread");
             inputCallback.SetApartmentState(ApartmentState.STA);
             inputCallback.Priority = ThreadPriority.Highest;
