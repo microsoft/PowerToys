@@ -28,14 +28,15 @@ steps:
 - task: MicrosoftTDBuild.tdbuild-task.tdbuild-task.TouchdownBuildTask@1
   displayName: 'Touchdown Build - 37400, PRODEXT'
   inputs:
+    isPreview: true
     teamId: 37400
     authId: '$(TouchdownApplicationID)'
     authKey: '$(TouchdownApplicationKey)'
     resourceFilePath: |
+     !(\src\modules\MouseWithoutBorders\App\Properties\Resources.resx)
      **\Resources.resx
      **\Resource.resx
      **\Resources.resw
-     !(src\modules\MouseWithoutBorders\App\Properties\Resources.resx)
     outputDirectoryRoot: LocOutput
     appendRelativeDir: true
     pseudoSetting: Included
