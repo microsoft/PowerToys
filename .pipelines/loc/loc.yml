@@ -35,7 +35,7 @@ steps:
      **\Resources.resx
      **\Resource.resx
      **\Resources.resw
-     -src\modules\MouseWithoutBorders\App\Properties\Resources.resx
+     !(src\modules\MouseWithoutBorders\App\Properties\Resources.resx)
     outputDirectoryRoot: LocOutput
     appendRelativeDir: true
     pseudoSetting: Included
