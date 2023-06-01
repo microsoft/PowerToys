@@ -34,7 +34,7 @@ steps:
     authKey: '$(TouchdownApplicationKey)'
     resourceFilePath: |
      **\Resources.resx
-     !**\MouseWithoutBorders\**\Resources.resx
+     !**\MouseWithoutBorders\**
      !**\src\modules\launcher\PowerLauncher\Properties\Resources.resx
      #**\Resource.resx
      #**\Resources.resw
