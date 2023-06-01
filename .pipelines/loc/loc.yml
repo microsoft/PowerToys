@@ -35,6 +35,7 @@ steps:
     resourceFilePath: |
      #**\Resources.resx
      **\MouseWithoutBorders\**\Resources.resx
+     **\src\modules\launcher\PowerLauncher\Properties\Resources.resx
      #**\Resource.resx
      #**\Resources.resw
     outputDirectoryRoot: LocOutput
