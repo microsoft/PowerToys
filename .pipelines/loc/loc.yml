@@ -33,8 +33,8 @@ steps:
     authId: '$(TouchdownApplicationID)'
     authKey: '$(TouchdownApplicationKey)'
     resourceFilePath: |
-     !**\MouseWithoutBorders\App\Properties\Resources.resx
      **\Resources.resx
+     !**\MouseWithoutBorders\App\Properties\Resources.resx
      #**\Resource.resx
      #**\Resources.resw
     outputDirectoryRoot: LocOutput
