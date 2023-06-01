@@ -226,6 +226,14 @@ namespace Peek.UI.Views
                 appWindow.TitleBar.ExtendsContentIntoTitleBar = true;
                 appWindow.TitleBar.ButtonBackgroundColor = Colors.Transparent;
                 appWindow.TitleBar.ButtonInactiveBackgroundColor = Colors.Transparent;
+                if (ThemeHelpers.GetAppTheme() == AppTheme.Light)
+                {
+                    appWindow.TitleBar.ButtonForegroundColor = Colors.DarkSlateGray;
+                }
+                else
+                {
+                    appWindow.TitleBar.ButtonForegroundColor = Colors.White;
+                }
 
                 mainWindow.SetTitleBar(this);
             }
