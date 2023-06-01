@@ -33,10 +33,10 @@ steps:
     authId: '$(TouchdownApplicationID)'
     authKey: '$(TouchdownApplicationKey)'
     resourceFilePath: |
-     -**/MouseWithoutBorders/App/Properties/Resources.resx
-     **\Resources.resx
-     **\Resource.resx
-     **\Resources.resw
+     **\MouseWithoutBorders\App\Properties\Resources.resx
+     #**\Resources.resx
+     #**\Resource.resx
+     #**\Resources.resw
     outputDirectoryRoot: LocOutput
     appendRelativeDir: true
     pseudoSetting: Included
