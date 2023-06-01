@@ -72,13 +72,13 @@
             // 
             this.DoneButton.BackColor = System.Drawing.Color.Transparent;
             this.DoneButton.DisabledImage = null;
-            this.DoneButton.DownImage = global::MouseWithoutBorders.Properties.Resources.done_button_click;
-            this.DoneButton.HoverImage = global::MouseWithoutBorders.Properties.Resources.done_button_hover;
-            this.DoneButton.Image = global::MouseWithoutBorders.Properties.Resources.done_button_normal;
-            this.DoneButton.InitialImage = global::MouseWithoutBorders.Properties.Resources.yes_button_normal;
+            this.DoneButton.DownImage = global::MouseWithoutBorders.Properties.Images.done_button_click;
+            this.DoneButton.HoverImage = global::MouseWithoutBorders.Properties.Images.done_button_hover;
+            this.DoneButton.Image = global::MouseWithoutBorders.Properties.Images.done_button_normal;
+            this.DoneButton.InitialImage = global::MouseWithoutBorders.Properties.Images.yes_button_normal;
             this.DoneButton.Location = new System.Drawing.Point(199, 366);
             this.DoneButton.Name = "DoneButton";
-            this.DoneButton.NormalImage = global::MouseWithoutBorders.Properties.Resources.done_button_normal;
+            this.DoneButton.NormalImage = global::MouseWithoutBorders.Properties.Images.done_button_normal;
             this.DoneButton.Size = new System.Drawing.Size(55, 55);
             this.DoneButton.TabIndex = 8;
             this.DoneButton.TabStop = false;
@@ -89,13 +89,13 @@
             // 
             this.CloseButton.BackColor = System.Drawing.Color.Transparent;
             this.CloseButton.DisabledImage = null;
-            this.CloseButton.DownImage = global::MouseWithoutBorders.Properties.Resources.close_button_click;
-            this.CloseButton.HoverImage = global::MouseWithoutBorders.Properties.Resources.close_button_hover;
-            this.CloseButton.Image = global::MouseWithoutBorders.Properties.Resources.close_button_normal;
-            this.CloseButton.InitialImage = global::MouseWithoutBorders.Properties.Resources.yes_button_normal;
+            this.CloseButton.DownImage = global::MouseWithoutBorders.Properties.Images.close_button_click;
+            this.CloseButton.HoverImage = global::MouseWithoutBorders.Properties.Images.close_button_hover;
+            this.CloseButton.Image = global::MouseWithoutBorders.Properties.Images.close_button_normal;
+            this.CloseButton.InitialImage = global::MouseWithoutBorders.Properties.Images.yes_button_normal;
             this.CloseButton.Location = new System.Drawing.Point(199, 366);
             this.CloseButton.Name = "CloseButton";
-            this.CloseButton.NormalImage = global::MouseWithoutBorders.Properties.Resources.close_button_normal;
+            this.CloseButton.NormalImage = global::MouseWithoutBorders.Properties.Images.close_button_normal;
             this.CloseButton.Size = new System.Drawing.Size(55, 55);
             this.CloseButton.TabIndex = 7;
             this.CloseButton.TabStop = false;

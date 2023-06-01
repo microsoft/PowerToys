@@ -237,7 +237,7 @@
             // picLogonLogo
             // 
             this.picLogonLogo.BackgroundImageLayout = System.Windows.Forms.ImageLayout.None;
-            this.picLogonLogo.Image = global::MouseWithoutBorders.Properties.Resources.MouseWithoutBorders;
+            this.picLogonLogo.Image = global::MouseWithoutBorders.Properties.Images.MouseWithoutBorders;
             this.picLogonLogo.Location = new System.Drawing.Point(99, 62);
             this.picLogonLogo.Name = "picLogonLogo";
             this.picLogonLogo.Size = new System.Drawing.Size(95, 17);
