@@ -2,6 +2,7 @@
 
 #include "pch.h"
 #include <common/utils/gpo.h>
+#include <iostream>
 
 class FileLocksmithSettings
 {
@@ -25,6 +26,11 @@ public:
         Save();
     }
 
+    inline bool GetShowInExtendedContextMenu() const
+    {
+        return settings.showInExtendedContextMenu;
+    }
+
     void Save();
     void Load();
 
@@ -32,6 +38,7 @@ private:
     struct Settings
     {
         bool enabled{ true };
+        bool showInExtendedContextMenu{ true };
     };
 
     void Reload();
