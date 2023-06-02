@@ -53,7 +53,7 @@
     <!-- Script -->
     <script src="http://[[PT_URL]]/monacoSRC/min/vs/loader.js"></script>
     <script src="http://[[PT_URL]]/monacoSpecialLanguages.js" type="module"></script>
-    <script type="module">
+<script type="module">
         var editor;
         import { registerAdditionalLanguages } from "http://[[PT_URL]]/monacoSpecialLanguages.js"
         require.config({ paths: { vs: 'http://[[PT_URL]]/monacoSRC/min/vs' } });
@@ -126,6 +126,7 @@
             let removeById = (list, ids) => {
                 let node = list._first
                 do {
+                    if (node.element == undefined) break;
                     let shouldRemove = ids.includes(node.element?.command?.id)
                     if (shouldRemove) { list._remove(node) }
                 } while ((node = node.next))
