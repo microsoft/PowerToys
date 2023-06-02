@@ -3533,4 +3533,10 @@ Activate by holding the key for the character you want to add an accent to, then
   <data name="MWB_SecurityKeyLabel.PlaceholderText" xml:space="preserve">
     <value>Security key</value>
   </data>
+  <data name="ResetButton.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>Reset</value>
+  </data>
+  <data name="ResetTooltip.Text" xml:space="preserve">
+    <value>Reset</value>
+  </data>
 </root>
