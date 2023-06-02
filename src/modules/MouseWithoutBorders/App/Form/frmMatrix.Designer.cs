@@ -452,6 +452,7 @@ namespace MouseWithoutBorders
             // 
             // checkBoxVKMap
             // 
+            this.checkBoxVKMap.Enabled = false;
             this.checkBoxVKMap.AutoSize = true;
             this.checkBoxVKMap.Location = new System.Drawing.Point(268, 98);
             this.checkBoxVKMap.Name = "checkBoxVKMap";

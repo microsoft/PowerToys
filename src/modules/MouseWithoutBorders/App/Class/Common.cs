@@ -540,11 +540,6 @@ namespace MouseWithoutBorders
             else
             {
                 SendHeartBeat();
-
-                if (Setting.Values.BlockScreenSaverEx && lastInputEventCount == Common.InputEventCount && Common.DesMachineID == Common.MachineID)
-                {
-                    PokeMyself();
-                }
             }
 
             lastInputEventCount = Common.InputEventCount;

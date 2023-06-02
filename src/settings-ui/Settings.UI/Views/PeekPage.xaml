@@ -37,6 +37,11 @@
                             x:Uid="ToggleSwitch"
                             IsOn="{x:Bind Mode=TwoWay, Path=ViewModel.AlwaysRunNotElevated}" />
                     </labs:SettingsCard>
+                    <labs:SettingsCard x:Uid="Peek_CloseAfterLosingFocus">
+                        <ToggleSwitch
+                            x:Uid="ToggleSwitch"
+                            IsOn="{x:Bind Mode=TwoWay, Path=ViewModel.CloseAfterLosingFocus}" />
+                    </labs:SettingsCard>
                 </controls:SettingsGroup>
 
             </StackPanel>
