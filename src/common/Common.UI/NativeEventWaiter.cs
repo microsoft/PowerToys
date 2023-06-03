@@ -15,7 +15,7 @@ namespace Common.UI
         {
             new Thread(() =>
             {
-                var eventHandle = new EventWaitHandle(false, EventResetMode.ManualReset, eventName);
+                var eventHandle = new EventWaitHandle(false, EventResetMode.AutoReset, eventName);
                 while (true)
                 {
                     if (WaitHandle.WaitAny(new WaitHandle[] { cancel.WaitHandle, eventHandle }) == 1)

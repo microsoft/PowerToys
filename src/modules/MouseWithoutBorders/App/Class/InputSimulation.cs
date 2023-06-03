@@ -96,11 +96,6 @@ namespace MouseWithoutBorders.Class
 
             InputProcessKeyEx(kd.wVk, kd.dwFlags, out bool eatKey);
 
-            if (Setting.Values.UseVKMap && Setting.Values.VKMap != null && Setting.Values.VKMap.ContainsKey(kd.wVk) && !ctrlDown)
-            {
-                kd.wVk = (int)Setting.Values.VKMap[kd.wVk];
-            }
-
             if (!eatKey)
             {
                 InputHook.RealData = false;
@@ -378,15 +373,6 @@ namespace MouseWithoutBorders.Class
                             Common.ReleaseAllKeys();
                             _ = NativeMethods.LockWorkStation();
                         }
-                    }
-                }
-                else if (Setting.Values.VKMap != null && vkCode == (Setting.Values.VKMap.ContainsKey(0) ? (int)Setting.Values.VKMap[0] : 'K'))
-                {
-                    if (ctrlDown && altDown && shiftDown)
-                    {
-                        ctrlDown = altDown = shiftDown = false;
-                        Setting.Values.UseVKMap = !Setting.Values.UseVKMap;
-                        eatKey = true;
                     }
                 }
                 else if (vkCode == Setting.Values.HotKeyCaptureScreen && ctrlDown && shiftDown && !altDown)

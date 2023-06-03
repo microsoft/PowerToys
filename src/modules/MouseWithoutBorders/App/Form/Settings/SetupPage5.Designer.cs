@@ -43,7 +43,7 @@ namespace MouseWithoutBorders
             // 
             // pictureBox1
             // 
-            this.pictureBox1.Image = global::MouseWithoutBorders.Properties.Resources.Mouse;
+            this.pictureBox1.Image = global::MouseWithoutBorders.Properties.Images.Mouse;
             this.pictureBox1.Location = new System.Drawing.Point(206, 40);
             this.pictureBox1.Margin = new System.Windows.Forms.Padding(0);
             this.pictureBox1.Name = "pictureBox1";
@@ -106,12 +106,12 @@ namespace MouseWithoutBorders
             // DoneButton
             // 
             this.DoneButton.DisabledImage = null;
-            this.DoneButton.DownImage = global::MouseWithoutBorders.Properties.Resources.done_button_click;
-            this.DoneButton.HoverImage = global::MouseWithoutBorders.Properties.Resources.done_button_hover;
-            this.DoneButton.Image = global::MouseWithoutBorders.Properties.Resources.done_button_normal;
+            this.DoneButton.DownImage = global::MouseWithoutBorders.Properties.Images.done_button_click;
+            this.DoneButton.HoverImage = global::MouseWithoutBorders.Properties.Images.done_button_hover;
+            this.DoneButton.Image = global::MouseWithoutBorders.Properties.Images.done_button_normal;
             this.DoneButton.Location = new System.Drawing.Point(199, 366);
             this.DoneButton.Name = "DoneButton";
-            this.DoneButton.NormalImage = global::MouseWithoutBorders.Properties.Resources.done_button_normal;
+            this.DoneButton.NormalImage = global::MouseWithoutBorders.Properties.Images.done_button_normal;
             this.DoneButton.Size = new System.Drawing.Size(55, 56);
             this.DoneButton.TabIndex = 26;
             this.DoneButton.TabStop = false;

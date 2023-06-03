@@ -6,6 +6,10 @@
 #include <common/utils/winapi_error.h>
 #include <filesystem>
 #include <common/interop/shared_constants.h>
+#include <atlbase.h>
+#include <exdisp.h>
+#include <comdef.h>
+#include <common/utils/elevation.h>
 
 extern "C" IMAGE_DOS_HEADER __ImageBase;
 
@@ -37,6 +41,7 @@ namespace
     const wchar_t JSON_KEY_SHIFT[] = L"shift";
     const wchar_t JSON_KEY_CODE[] = L"code";
     const wchar_t JSON_KEY_ACTIVATION_SHORTCUT[] = L"ActivationShortcut";
+    const wchar_t JSON_KEY_ALWAYS_RUN_NOT_ELEVATED[] = L"AlwaysRunNotElevated";
 }
 
 // The PowerToy name that will be shown in the settings.
@@ -53,7 +58,11 @@ private:
 
     Hotkey m_hotkey;
 
-    HANDLE m_hProcess;
+    // If we should always try to run Peek non-elevated.
+    bool m_alwaysRunNotElevated = true;
+
+    HANDLE m_hProcess = 0;
+    DWORD m_processPid = 0;
 
     HANDLE m_hInvokeEvent;
 
@@ -86,22 +95,32 @@ private:
             }
             catch (...)
             {
-                Logger::error("Failed to initialize Peek start settings");
+                Logger::error("Failed to initialize Peek hotkey settings");
 
-                set_default_settings();
+                set_default_key_settings();
+            }
+            try
+            {
+                auto jsonAlwaysRunNotElevatedObject = settingsObject.GetNamedObject(JSON_KEY_PROPERTIES).GetNamedObject(JSON_KEY_ALWAYS_RUN_NOT_ELEVATED);
+                m_alwaysRunNotElevated = jsonAlwaysRunNotElevatedObject.GetNamedBoolean(L"value");
+            }
+            catch (...)
+            {
+                Logger::error("Failed to initialize Always Run Not Elevated option. Setting to default.");
+
+                m_alwaysRunNotElevated = true;
             }
         }
         else
         {
             Logger::info("Peek settings are empty");
-
-            set_default_settings();
+            set_default_key_settings();
         }
     }
 
-    void set_default_settings()
+    void set_default_key_settings()
     {
-        Logger::info("Peek is going to use default settings");
+        Logger::info("Peek is going to use default key settings");
         m_hotkey.win = false;
         m_hotkey.alt = false;
         m_hotkey.shift = false;
@@ -135,8 +154,118 @@ private:
         }
     }
 
+    bool is_desktop_window(HWND windowHandle)
+    {
+        // Similar to the logic in IsDesktopWindow in Peek UI. Keep logic synced.
+        // TODO: Refactor into same C++ class consumed by both.
+        wchar_t className[MAX_PATH];
+        if (GetClassName(windowHandle, className, MAX_PATH) == 0)
+        {
+            return false;
+        }
+        if (wcsncmp(className, L"Progman", MAX_PATH) !=0 && wcsncmp(className, L"WorkerW", MAX_PATH) != 0)
+        {
+            return false;
+        }
+        return FindWindowEx(windowHandle, NULL, L"SHELLDLL_DefView", NULL);
+    }
+
+    inline std::wstring GetErrorString(HRESULT handle)
+    {
+        _com_error err(handle);
+        return err.ErrorMessage();
+    }
+
+    bool is_explorer_window(HWND windowHandle)
+    {
+        CComPtr<IShellWindows> spShellWindows;
+        auto result = spShellWindows.CoCreateInstance(CLSID_ShellWindows);
+        if (result != S_OK || spShellWindows == nullptr)
+        {
+            Logger::warn(L"Failed to create instance. {}", GetErrorString(result));
+            return true; // Might as well assume it's possible it's an explorer window.
+        }
+
+        // Enumerate all Shell Windows to compare the window handle against.
+        IUnknownPtr spEnum{};
+        result = spShellWindows->_NewEnum(&spEnum);
+        if (result != S_OK || spEnum == nullptr)
+        {
+            Logger::warn(L"Failed to list explorer Windows. {}", GetErrorString(result));
+            return true; // Might as well assume it's possible it's an explorer window.
+        }
+
+        IEnumVARIANTPtr spEnumVariant{};
+        result = spEnum.QueryInterface(__uuidof(spEnumVariant), &spEnumVariant);
+        if (result != S_OK || spEnumVariant == nullptr)
+        {
+            Logger::warn(L"Failed to enum explorer Windows. {}", GetErrorString(result));
+            spEnum->Release();
+            return true; // Might as well assume it's possible it's an explorer window.
+        }
+
+        variant_t variantElement{};
+        while (spEnumVariant->Next(1, &variantElement, NULL) == S_OK)
+        {
+            IWebBrowserApp* spWebBrowserApp;
+            result = variantElement.pdispVal->QueryInterface(IID_IWebBrowserApp, reinterpret_cast<void**>(&spWebBrowserApp));
+            if (result == S_OK)
+            {
+                HWND hwnd;
+                result = spWebBrowserApp->get_HWND(reinterpret_cast<SHANDLE_PTR*>(&hwnd));
+                if (result == S_OK)
+                {
+                    if (hwnd == windowHandle)
+                    {
+                        VariantClear(&variantElement);
+                        spWebBrowserApp->Release();
+                        spEnumVariant->Release();
+                        spEnum->Release();
+                        return true;
+                    }
+                }
+                spWebBrowserApp->Release();
+            }
+            VariantClear(&variantElement);
+        }
+
+        spEnumVariant->Release();
+        spEnum->Release();
+        return false;
+    }
+
+    bool is_peek_or_explorer_or_desktop_window_focused()
+    {
+        HWND foregroundWindowHandle = GetForegroundWindow();
+        if (foregroundWindowHandle == NULL)
+        {
+            return false;
+        }
+
+        DWORD pid{};
+        if (GetWindowThreadProcessId(foregroundWindowHandle, &pid)!=0)
+        {
+            // If the foreground window is the Peek window, send activation signal.
+            if (m_processPid != 0 && pid == m_processPid)
+            {
+                return true;
+            }
+        }
+
+        if (is_desktop_window(foregroundWindowHandle))
+        {
+            return true;
+        }
+
+        return is_explorer_window(foregroundWindowHandle);
+    }
+
     bool is_viewer_running()
     {
+        if (m_hProcess == 0)
+        {
+            return false;
+        }
         return WaitForSingleObject(m_hProcess, 0) == WAIT_TIMEOUT;
     }
 
@@ -149,24 +278,45 @@ private:
         std::wstring executable_args = L"";
         executable_args.append(std::to_wstring(powertoys_pid));
 
-        SHELLEXECUTEINFOW sei{ sizeof(sei) };
-
-        sei.fMask = { SEE_MASK_NOCLOSEPROCESS };
-        sei.lpVerb = L"open";
-        sei.lpFile = L"modules\\Peek\\Powertoys.Peek.UI.exe";
-        sei.nShow = SW_SHOWNORMAL;
-        sei.lpParameters = executable_args.data();
-
-        if (ShellExecuteExW(&sei))
+        if (m_alwaysRunNotElevated && is_process_elevated(false))
         {
-            Logger::trace("Successfully started the PeekViewer process");
+            Logger::trace("Starting Peek non elevated from elevated process");
+            const auto modulePath = get_module_folderpath();
+            std::wstring runExecutablePath = modulePath;
+            runExecutablePath += L"\\modules\\Peek\\PowerToys.Peek.UI.exe";
+            std::optional<ProcessInfo> processStartedInfo = RunNonElevatedFailsafe(runExecutablePath, executable_args, modulePath, PROCESS_QUERY_INFORMATION | SYNCHRONIZE | PROCESS_TERMINATE);
+            if (processStartedInfo.has_value())
+            {
+                m_processPid = processStartedInfo.value().processID;
+                m_hProcess = processStartedInfo.value().processHandle.release();
+            }
+            else
+            {
+                Logger::error(L"PeekViewer failed to start not elevated.");
+            }
         }
         else
         {
-            Logger::error(L"PeekViewer failed to start. {}", get_last_error_or_default(GetLastError()));
-        }
+            SHELLEXECUTEINFOW sei{ sizeof(sei) };
 
-        m_hProcess = sei.hProcess;
+            sei.fMask = { SEE_MASK_NOCLOSEPROCESS };
+            sei.lpVerb = L"open";
+            sei.lpFile = L"modules\\Peek\\PowerToys.Peek.UI.exe";
+            sei.nShow = SW_SHOWNORMAL;
+            sei.lpParameters = executable_args.data();
+
+            if (ShellExecuteExW(&sei))
+            {
+                Logger::trace("Successfully started the PeekViewer process");
+            }
+            else
+            {
+                Logger::error(L"PeekViewer failed to start. {}", get_last_error_or_default(GetLastError()));
+            }
+
+            m_hProcess = sei.hProcess;
+            m_processPid = GetProcessId(m_hProcess);
+        }
     }
 
 public:
@@ -256,7 +406,15 @@ public:
         if (m_enabled)
         {
             ResetEvent(m_hInvokeEvent);
-            TerminateProcess(m_hProcess, 1);
+            auto result = TerminateProcess(m_hProcess, 1);
+            if (result == 0)
+            {
+                int error = GetLastError();
+                Logger::trace("Couldn't terminate the process. Last error: {}", error);
+            }
+            CloseHandle(m_hProcess);
+            m_hProcess = 0;
+            m_processPid = 0;
         }
 
         m_enabled = false;
@@ -291,18 +449,21 @@ public:
         if (m_enabled)
         {
             Logger::trace(L"Peek hotkey pressed");
-            
-            // TODO: fix VK_SPACE DestroyWindow in viewer app
-            if (!is_viewer_running())
+
+            // Only activate and consume the shortcut if a Peek, explorer or desktop window is the foreground application.
+            if (is_peek_or_explorer_or_desktop_window_focused())
             {
-                launch_process();
+                // TODO: fix VK_SPACE DestroyWindow in viewer app
+                if (!is_viewer_running())
+                {
+                    launch_process();
+                }
+
+                SetEvent(m_hInvokeEvent);
+
+                Trace::PeekInvoked();
+                return true;
             }
-
-            SetEvent(m_hInvokeEvent);
-
-            Trace::PeekInvoked();
-
-            return true;
         }
 
         return false;

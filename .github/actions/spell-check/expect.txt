@@ -545,6 +545,7 @@ drawingcolor
 dreamsofameaningfullife
 drf
 drivedetectionwarning
+dsc
 dshow
 DSTINVERT
 DUMMYUNIONNAME
@@ -1025,6 +1026,7 @@ ITHUMBNAIL
 IUI
 IUnknown
 IWbem
+IWeb
 IWIC
 iwr
 IYUV
@@ -1528,6 +1530,7 @@ pcs
 PCWSTR
 pdb
 pdbonly
+pdisp
 pdo
 pdto
 pdtobj
@@ -1873,6 +1876,7 @@ setzero
 sfgao
 SFGAOF
 SFP
+SHANDLE
 sharpkeys
 SHCNE
 SHCNF

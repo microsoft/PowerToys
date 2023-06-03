@@ -52,12 +52,12 @@
             // BackButton
             // 
             this.BackButton.DisabledImage = null;
-            this.BackButton.DownImage = global::MouseWithoutBorders.Properties.Resources.back_button_click;
-            this.BackButton.HoverImage = global::MouseWithoutBorders.Properties.Resources.back_button_hover;
-            this.BackButton.Image = global::MouseWithoutBorders.Properties.Resources.back_button_normal;
+            this.BackButton.DownImage = global::MouseWithoutBorders.Properties.Images.back_button_click;
+            this.BackButton.HoverImage = global::MouseWithoutBorders.Properties.Images.back_button_hover;
+            this.BackButton.Image = global::MouseWithoutBorders.Properties.Images.back_button_normal;
             this.BackButton.Location = new System.Drawing.Point(6, 6);
             this.BackButton.Name = "BackButton";
-            this.BackButton.NormalImage = global::MouseWithoutBorders.Properties.Resources.back_button_normal;
+            this.BackButton.NormalImage = global::MouseWithoutBorders.Properties.Images.back_button_normal;
             this.BackButton.Size = new System.Drawing.Size(24, 24);
             this.BackButton.SizeMode = System.Windows.Forms.PictureBoxSizeMode.StretchImage;
             this.BackButton.TabIndex = 0;

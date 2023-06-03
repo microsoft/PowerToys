@@ -194,7 +194,7 @@
       </Custom>
 
       <Custom Action="UninstallServicesTask" After="InstallFinalize">
-          Installed AND (REMOVE="ALL")
+          Installed AND (NOT UPGRADINGPRODUCTCODE) AND (REMOVE="ALL")
       </Custom>
         <!-- TODO: Use to activate embedded MSIX -->
       <!--<Custom Action="UninstallEmbeddedMSIXTask" After="InstallFinalize">
