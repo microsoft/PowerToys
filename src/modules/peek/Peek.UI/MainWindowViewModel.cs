@@ -66,7 +66,7 @@ namespace Peek.UI
             Items = null;
         }
 
-        public void AttemptLeftNavigation()
+        public void AttemptPreviousNavigation()
         {
             if (NavigationThrottleTimer.IsEnabled)
             {
@@ -80,7 +80,7 @@ namespace Peek.UI
             CurrentItem = Items?.ElementAtOrDefault(CurrentIndex);
         }
 
-        public void AttemptRightNavigation()
+        public void AttemptNextNavigation()
         {
             if (NavigationThrottleTimer.IsEnabled)
             {
