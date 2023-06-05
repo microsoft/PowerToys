@@ -53,12 +53,12 @@
             // AddComputerButton
             // 
             this.AddComputerButton.DisabledImage = null;
-            this.AddComputerButton.DownImage = global::MouseWithoutBorders.Properties.Resources.computer_button_click;
-            this.AddComputerButton.HoverImage = global::MouseWithoutBorders.Properties.Resources.computer_button_hover;
-            this.AddComputerButton.Image = global::MouseWithoutBorders.Properties.Resources.computer_button_normal;
+            this.AddComputerButton.DownImage = global::MouseWithoutBorders.Properties.Images.computer_button_click;
+            this.AddComputerButton.HoverImage = global::MouseWithoutBorders.Properties.Images.computer_button_hover;
+            this.AddComputerButton.Image = global::MouseWithoutBorders.Properties.Images.computer_button_normal;
             this.AddComputerButton.Location = new System.Drawing.Point(50, 317);
             this.AddComputerButton.Name = "AddComputerButton";
-            this.AddComputerButton.NormalImage = global::MouseWithoutBorders.Properties.Resources.computer_button_normal;
+            this.AddComputerButton.NormalImage = global::MouseWithoutBorders.Properties.Images.computer_button_normal;
             this.AddComputerButton.Size = new System.Drawing.Size(74, 23);
             this.AddComputerButton.TabIndex = 9;
             this.AddComputerButton.TabStop = false;
@@ -67,12 +67,12 @@
             // KeyboardShortcutsButton
             // 
             this.KeyboardShortcutsButton.DisabledImage = null;
-            this.KeyboardShortcutsButton.DownImage = global::MouseWithoutBorders.Properties.Resources.keyboard_button_click;
-            this.KeyboardShortcutsButton.HoverImage = global::MouseWithoutBorders.Properties.Resources.keyboard_button_hover;
-            this.KeyboardShortcutsButton.Image = global::MouseWithoutBorders.Properties.Resources.keyboard_button_normal;
+            this.KeyboardShortcutsButton.DownImage = global::MouseWithoutBorders.Properties.Images.keyboard_button_click;
+            this.KeyboardShortcutsButton.HoverImage = global::MouseWithoutBorders.Properties.Images.keyboard_button_hover;
+            this.KeyboardShortcutsButton.Image = global::MouseWithoutBorders.Properties.Images.keyboard_button_normal;
             this.KeyboardShortcutsButton.Location = new System.Drawing.Point(327, 317);
             this.KeyboardShortcutsButton.Name = "KeyboardShortcutsButton";
-            this.KeyboardShortcutsButton.NormalImage = global::MouseWithoutBorders.Properties.Resources.keyboard_button_normal;
+            this.KeyboardShortcutsButton.NormalImage = global::MouseWithoutBorders.Properties.Images.keyboard_button_normal;
             this.KeyboardShortcutsButton.Size = new System.Drawing.Size(84, 23);
             this.KeyboardShortcutsButton.TabIndex = 11;
             this.KeyboardShortcutsButton.TabStop = false;
@@ -81,12 +81,12 @@
             // AdvancedOptionsButton
             // 
             this.AdvancedOptionsButton.DisabledImage = null;
-            this.AdvancedOptionsButton.DownImage = global::MouseWithoutBorders.Properties.Resources.advanced_button_click;
-            this.AdvancedOptionsButton.HoverImage = global::MouseWithoutBorders.Properties.Resources.advanced_button_hover;
-            this.AdvancedOptionsButton.Image = global::MouseWithoutBorders.Properties.Resources.advanced_button_normal;
+            this.AdvancedOptionsButton.DownImage = global::MouseWithoutBorders.Properties.Images.advanced_button_click;
+            this.AdvancedOptionsButton.HoverImage = global::MouseWithoutBorders.Properties.Images.advanced_button_hover;
+            this.AdvancedOptionsButton.Image = global::MouseWithoutBorders.Properties.Images.advanced_button_normal;
             this.AdvancedOptionsButton.Location = new System.Drawing.Point(244, 317);
             this.AdvancedOptionsButton.Name = "AdvancedOptionsButton";
-            this.AdvancedOptionsButton.NormalImage = global::MouseWithoutBorders.Properties.Resources.advanced_button_normal;
+            this.AdvancedOptionsButton.NormalImage = global::MouseWithoutBorders.Properties.Images.advanced_button_normal;
             this.AdvancedOptionsButton.Size = new System.Drawing.Size(74, 23);
             this.AdvancedOptionsButton.TabIndex = 12;
             this.AdvancedOptionsButton.TabStop = false;
@@ -95,12 +95,12 @@
             // LinkComputerButton
             // 
             this.LinkComputerButton.DisabledImage = null;
-            this.LinkComputerButton.DownImage = global::MouseWithoutBorders.Properties.Resources.small_link_button_click;
-            this.LinkComputerButton.HoverImage = global::MouseWithoutBorders.Properties.Resources.small_link_button_hover;
-            this.LinkComputerButton.Image = global::MouseWithoutBorders.Properties.Resources.small_link_button_normal;
+            this.LinkComputerButton.DownImage = global::MouseWithoutBorders.Properties.Images.small_link_button_click;
+            this.LinkComputerButton.HoverImage = global::MouseWithoutBorders.Properties.Images.small_link_button_hover;
+            this.LinkComputerButton.Image = global::MouseWithoutBorders.Properties.Images.small_link_button_normal;
             this.LinkComputerButton.Location = new System.Drawing.Point(133, 317);
             this.LinkComputerButton.Name = "LinkComputerButton";
-            this.LinkComputerButton.NormalImage = global::MouseWithoutBorders.Properties.Resources.small_link_button_normal;
+            this.LinkComputerButton.NormalImage = global::MouseWithoutBorders.Properties.Images.small_link_button_normal;
             this.LinkComputerButton.Size = new System.Drawing.Size(74, 23);
             this.LinkComputerButton.TabIndex = 13;
             this.LinkComputerButton.TabStop = false;

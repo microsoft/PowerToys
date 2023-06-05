@@ -74,7 +74,7 @@
             // 
             // ComputerPictureBox
             // 
-            this.ComputerPictureBox.Image = global::MouseWithoutBorders.Properties.Resources.computer_connected;
+            this.ComputerPictureBox.Image = global::MouseWithoutBorders.Properties.Images.computer_connected;
             this.ComputerPictureBox.Location = new System.Drawing.Point(5, 5);
             this.ComputerPictureBox.Name = "ComputerPictureBox";
             this.ComputerPictureBox.Padding = new System.Windows.Forms.Padding(0, 10, 0, 0);
@@ -86,12 +86,12 @@
             // RemoveButton
             // 
             this.RemoveButton.DisabledImage = null;
-            this.RemoveButton.DownImage = global::MouseWithoutBorders.Properties.Resources.red_close_button_click;
-            this.RemoveButton.HoverImage = global::MouseWithoutBorders.Properties.Resources.red_close_button_hover;
-            this.RemoveButton.Image = global::MouseWithoutBorders.Properties.Resources.red_close_button_normal;
+            this.RemoveButton.DownImage = global::MouseWithoutBorders.Properties.Images.red_close_button_click;
+            this.RemoveButton.HoverImage = global::MouseWithoutBorders.Properties.Images.red_close_button_hover;
+            this.RemoveButton.Image = global::MouseWithoutBorders.Properties.Images.red_close_button_normal;
             this.RemoveButton.Location = new System.Drawing.Point(224, 15);
             this.RemoveButton.Name = "RemoveButton";
-            this.RemoveButton.NormalImage = global::MouseWithoutBorders.Properties.Resources.red_close_button_normal;
+            this.RemoveButton.NormalImage = global::MouseWithoutBorders.Properties.Images.red_close_button_normal;
             this.RemoveButton.Size = new System.Drawing.Size(12, 12);
             this.RemoveButton.TabIndex = 5;
             this.RemoveButton.TabStop = false;
@@ -101,12 +101,12 @@
             // 
             this.OnButton.BackColor = System.Drawing.Color.Transparent;
             this.OnButton.DisabledImage = null;
-            this.OnButton.DownImage = global::MouseWithoutBorders.Properties.Resources.switch_on_click;
-            this.OnButton.HoverImage = global::MouseWithoutBorders.Properties.Resources.switch_on_hover;
-            this.OnButton.Image = global::MouseWithoutBorders.Properties.Resources.switch_on_normal;
+            this.OnButton.DownImage = global::MouseWithoutBorders.Properties.Images.switch_on_click;
+            this.OnButton.HoverImage = global::MouseWithoutBorders.Properties.Images.switch_on_hover;
+            this.OnButton.Image = global::MouseWithoutBorders.Properties.Images.switch_on_normal;
             this.OnButton.Location = new System.Drawing.Point(277, 20);
             this.OnButton.Name = "OnButton";
-            this.OnButton.NormalImage = global::MouseWithoutBorders.Properties.Resources.switch_on_normal;
+            this.OnButton.NormalImage = global::MouseWithoutBorders.Properties.Images.switch_on_normal;
             this.OnButton.Size = new System.Drawing.Size(30, 15);
             this.OnButton.TabIndex = 3;
             this.OnButton.TabStop = false;
@@ -116,12 +116,12 @@
             // 
             this.OffButton.BackColor = System.Drawing.Color.Transparent;
             this.OffButton.DisabledImage = null;
-            this.OffButton.DownImage = global::MouseWithoutBorders.Properties.Resources.switch_off_click;
-            this.OffButton.HoverImage = global::MouseWithoutBorders.Properties.Resources.switch_off_hover;
-            this.OffButton.Image = global::MouseWithoutBorders.Properties.Resources.switch_off_normal;
+            this.OffButton.DownImage = global::MouseWithoutBorders.Properties.Images.switch_off_click;
+            this.OffButton.HoverImage = global::MouseWithoutBorders.Properties.Images.switch_off_hover;
+            this.OffButton.Image = global::MouseWithoutBorders.Properties.Images.switch_off_normal;
             this.OffButton.Location = new System.Drawing.Point(241, 42);
             this.OffButton.Name = "OffButton";
-            this.OffButton.NormalImage = global::MouseWithoutBorders.Properties.Resources.switch_off_normal;
+            this.OffButton.NormalImage = global::MouseWithoutBorders.Properties.Images.switch_off_normal;
             this.OffButton.Size = new System.Drawing.Size(30, 15);
             this.OffButton.TabIndex = 4;
             this.OffButton.TabStop = false;

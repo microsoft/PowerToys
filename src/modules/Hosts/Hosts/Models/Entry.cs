@@ -12,32 +12,33 @@ namespace Hosts.Models
 {
     public partial class Entry : ObservableObject
     {
-        private string _line;
-
+        [ObservableProperty]
+        [NotifyPropertyChangedFor(nameof(Valid))]
         private string _address;
 
-        public string Address
+        partial void OnAddressChanged(string value)
         {
-            get => _address;
-            set
+            if (ValidationHelper.ValidIPv4(value))
             {
-                SetProperty(ref _address, value);
-                SetAddressType();
-                OnPropertyChanged(nameof(Valid));
+                Type = AddressType.IPv4;
+            }
+            else if (ValidationHelper.ValidIPv6(value))
+            {
+                Type = AddressType.IPv6;
+            }
+            else
+            {
+                Type = AddressType.Invalid;
             }
         }
 
+        [ObservableProperty]
+        [NotifyPropertyChangedFor(nameof(Valid))]
         private string _hosts;
 
-        public string Hosts
+        partial void OnHostsChanged(string value)
         {
-            get => _hosts;
-            set
-            {
-                SetProperty(ref _hosts, value);
-                OnPropertyChanged(nameof(Valid));
-                SplittedHosts = _hosts.Split(' ');
-            }
+            SplittedHosts = value.Split(' ');
         }
 
         [ObservableProperty]
@@ -55,7 +56,9 @@ namespace Hosts.Models
         [ObservableProperty]
         private bool _duplicate;
 
-        public bool Valid => ValidationHelper.ValidHosts(_hosts) && Type != AddressType.Invalid;
+        public bool Valid => ValidationHelper.ValidHosts(Hosts) && Type != AddressType.Invalid;
+
+        public string Line { get; private set; }
 
         public AddressType Type { get; private set; }
 
@@ -70,7 +73,7 @@ namespace Hosts.Models
         public Entry(int id, string line)
         {
             Id = id;
-            _line = line.Trim();
+            Line = line.Trim();
             Parse();
         }
 
@@ -85,9 +88,9 @@ namespace Hosts.Models
 
         public void Parse()
         {
-            Active = !_line.StartsWith("#", StringComparison.InvariantCultureIgnoreCase);
+            Active = !Line.StartsWith("#", StringComparison.InvariantCultureIgnoreCase);
 
-            var lineSplit = _line.TrimStart(' ', '#').Split('#');
+            var lineSplit = Line.TrimStart(' ', '#').Split('#');
 
             if (lineSplit.Length == 0)
             {
@@ -146,33 +149,12 @@ namespace Hosts.Models
         {
             return new Entry
             {
-                _line = _line,
+                Line = Line,
                 Address = Address,
                 Hosts = Hosts,
                 Comment = Comment,
                 Active = Active,
             };
-        }
-
-        public string GetLine()
-        {
-            return _line;
-        }
-
-        private void SetAddressType()
-        {
-            if (ValidationHelper.ValidIPv4(_address))
-            {
-                Type = AddressType.IPv4;
-            }
-            else if (ValidationHelper.ValidIPv6(_address))
-            {
-                Type = AddressType.IPv6;
-            }
-            else
-            {
-                Type = AddressType.Invalid;
-            }
         }
     }
 }
