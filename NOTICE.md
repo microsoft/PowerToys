@@ -334,5 +334,5 @@ SOFTWARE.
 - UnitsNet 4.145.0
 - Vanara.PInvoke.Shell32 3.4.11
 - Vanara.PInvoke.User32 3.4.11
-- WinUIEx 2.1.0
+- WinUIEx 2.2.0
 
