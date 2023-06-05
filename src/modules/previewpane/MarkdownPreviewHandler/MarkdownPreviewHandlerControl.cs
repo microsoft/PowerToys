@@ -83,6 +83,7 @@ namespace Microsoft.PowerToys.PreviewHandler.Markdown
         /// </summary>
         public MarkdownPreviewHandlerControl()
         {
+            this.SetBackgroundColor(GetTheme() == "dark" ? ColorTranslator.FromHtml("#1e1e1e") : Color.White);
         }
 
         /// <summary>
@@ -121,11 +122,12 @@ namespace Microsoft.PowerToys.PreviewHandler.Markdown
                     _infoBarDisplayed = true;
                 }
 
-                string markdownHTML = FilePreviewCommon.MarkdownHelper.MarkdownHtml(fileText, Common.UI.ThemeManager.GetWindowsBaseColor().ToLowerInvariant(), filePath, ImagesBlockedCallBack);
+                string markdownHTML = FilePreviewCommon.MarkdownHelper.MarkdownHtml(fileText, GetTheme(), filePath, ImagesBlockedCallBack);
 
                 _browser = new WebView2()
                 {
                     Dock = DockStyle.Fill,
+                    DefaultBackgroundColor = Color.Transparent,
                 };
 
                 var webView2Options = new CoreWebView2EnvironmentOptions("--block-new-web-contents");
@@ -268,6 +270,15 @@ namespace Microsoft.PowerToys.PreviewHandler.Markdown
         private void ImagesBlockedCallBack()
         {
             _infoBarDisplayed = true;
+        }
+
+        /// <summary>
+        /// Returns the theme.
+        /// </summary>
+        /// <returns>Theme that should be used.</returns>
+        public static string GetTheme()
+        {
+            return Common.UI.ThemeManager.GetWindowsBaseColor().ToLowerInvariant();
         }
     }
 }
