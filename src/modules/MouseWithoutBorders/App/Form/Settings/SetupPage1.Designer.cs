@@ -110,13 +110,13 @@ namespace MouseWithoutBorders
             // 
             this.NoButton.BackColor = System.Drawing.Color.Transparent;
             this.NoButton.DisabledImage = null;
-            this.NoButton.DownImage = global::MouseWithoutBorders.Properties.Resources.no_button_click;
-            this.NoButton.HoverImage = global::MouseWithoutBorders.Properties.Resources.no_button_hover;
-            this.NoButton.Image = global::MouseWithoutBorders.Properties.Resources.no_button_normal;
-            this.NoButton.InitialImage = global::MouseWithoutBorders.Properties.Resources.yes_button_normal;
+            this.NoButton.DownImage = global::MouseWithoutBorders.Properties.Images.no_button_click;
+            this.NoButton.HoverImage = global::MouseWithoutBorders.Properties.Images.no_button_hover;
+            this.NoButton.Image = global::MouseWithoutBorders.Properties.Images.no_button_normal;
+            this.NoButton.InitialImage = global::MouseWithoutBorders.Properties.Images.yes_button_normal;
             this.NoButton.Location = new System.Drawing.Point(234, 366);
             this.NoButton.Name = "NoButton";
-            this.NoButton.NormalImage = global::MouseWithoutBorders.Properties.Resources.no_button_normal;
+            this.NoButton.NormalImage = global::MouseWithoutBorders.Properties.Images.no_button_normal;
             this.NoButton.Size = new System.Drawing.Size(55, 55);
             this.NoButton.TabIndex = 7;
             this.NoButton.TabStop = false;
@@ -126,13 +126,13 @@ namespace MouseWithoutBorders
             // 
             this.YesButton.BackColor = System.Drawing.Color.Transparent;
             this.YesButton.DisabledImage = null;
-            this.YesButton.DownImage = global::MouseWithoutBorders.Properties.Resources.yes_button_click;
-            this.YesButton.HoverImage = global::MouseWithoutBorders.Properties.Resources.yes_button_hover;
-            this.YesButton.Image = global::MouseWithoutBorders.Properties.Resources.yes_button_normal;
-            this.YesButton.InitialImage = global::MouseWithoutBorders.Properties.Resources.yes_button_normal;
+            this.YesButton.DownImage = global::MouseWithoutBorders.Properties.Images.yes_button_click;
+            this.YesButton.HoverImage = global::MouseWithoutBorders.Properties.Images.yes_button_hover;
+            this.YesButton.Image = global::MouseWithoutBorders.Properties.Images.yes_button_normal;
+            this.YesButton.InitialImage = global::MouseWithoutBorders.Properties.Images.yes_button_normal;
             this.YesButton.Location = new System.Drawing.Point(164, 366);
             this.YesButton.Name = "YesButton";
-            this.YesButton.NormalImage = global::MouseWithoutBorders.Properties.Resources.yes_button_normal;
+            this.YesButton.NormalImage = global::MouseWithoutBorders.Properties.Images.yes_button_normal;
             this.YesButton.Size = new System.Drawing.Size(55, 55);
             this.YesButton.TabIndex = 6;
             this.YesButton.TabStop = false;
@@ -140,7 +140,7 @@ namespace MouseWithoutBorders
             // 
             // pictureBox1
             // 
-            this.pictureBox1.Image = global::MouseWithoutBorders.Properties.Resources.Mouse;
+            this.pictureBox1.Image = global::MouseWithoutBorders.Properties.Images.Mouse;
             this.pictureBox1.Location = new System.Drawing.Point(206, 40);
             this.pictureBox1.Margin = new System.Windows.Forms.Padding(0);
             this.pictureBox1.Name = "pictureBox1";

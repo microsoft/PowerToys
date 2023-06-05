@@ -5,7 +5,7 @@
   <ItemGroup>
     <PackageVersion Include="Appium.WebDriver" Version="4.2.1" />
     <PackageVersion Include="CommunityToolkit.Labs.WinUI.SettingsControls" Version="0.0.18" />
-    <PackageVersion Include="CommunityToolkit.Mvvm" Version="8.0.0" />
+    <PackageVersion Include="CommunityToolkit.Mvvm" Version="8.2.0" />
     <PackageVersion Include="CommunityToolkit.WinUI.UI" Version="7.1.2" />
     <PackageVersion Include="CommunityToolkit.WinUI.UI.Controls" Version="7.1.2" />
     <PackageVersion Include="ControlzEx" Version="5.0.1" />
@@ -61,7 +61,7 @@
     <PackageVersion Include="UnitsNet" Version="4.145.0" />
     <PackageVersion Include="Vanara.PInvoke.User32" Version="3.4.11" />
     <PackageVersion Include="Vanara.PInvoke.Shell32" Version="3.4.11" />
-    <PackageVersion Include="WinUIEx" Version="2.1.0" />
+    <PackageVersion Include="WinUIEx" Version="2.2.0" />
   </ItemGroup>
   <ItemGroup Condition="'$(IsExperimentationLive)'!=''">
     <!-- Additional dependencies used by experimentation -->

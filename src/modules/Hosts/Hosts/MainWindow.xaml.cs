@@ -3,7 +3,6 @@
 // See the LICENSE file in the project root for more information.
 
 using Hosts.Helpers;
-using Microsoft.UI.Windowing;
 using WinUIEx;
 
 namespace Hosts

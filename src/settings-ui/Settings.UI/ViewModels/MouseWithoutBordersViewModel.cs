@@ -42,7 +42,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         private static readonly Dictionary<SocketStatus, Brush> StatusColors = new Dictionary<SocketStatus, Brush>()
 {
-    { SocketStatus.NA, new SolidColorBrush(ColorHelper.FromArgb(0x71, 0x71, 0x71, 0x71)) },
+    { SocketStatus.NA, new SolidColorBrush(ColorHelper.FromArgb(0, 0x71, 0x71, 0x71)) },
     { SocketStatus.Resolving, new SolidColorBrush(Colors.Yellow) },
     { SocketStatus.Connecting, new SolidColorBrush(Colors.Orange) },
     { SocketStatus.Handshaking, new SolidColorBrush(Colors.Blue) },
@@ -91,6 +91,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 {
                     Settings.Properties.UseService = value;
                     OnPropertyChanged(nameof(UseService));
+                    OnPropertyChanged(nameof(CanUninstallService));
 
                     // Must block here until the process exits
                     Task.Run(async () =>

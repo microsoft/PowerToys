@@ -87,10 +87,20 @@ namespace Peek.UI.Helpers
 
         private static IShellItemArray? GetShellItemArray(IShellBrowser shellBrowser, bool onlySelectedFiles)
         {
-            var shellView = (IFolderView)shellBrowser.QueryActiveShellView();
-            var selectionFlag = onlySelectedFiles ? (uint)_SVGIO.SVGIO_SELECTION : (uint)_SVGIO.SVGIO_ALLVIEW;
-            shellView.Items(selectionFlag, typeof(IShellItemArray).GUID, out var items);
-            return items as IShellItemArray;
+            var shellViewObject = shellBrowser.QueryActiveShellView();
+            var shellView = shellViewObject as IFolderView;
+            if (shellView != null)
+            {
+                var selectionFlag = onlySelectedFiles ? (uint)_SVGIO.SVGIO_SELECTION : (uint)_SVGIO.SVGIO_ALLVIEW;
+                shellView.ItemCount(selectionFlag, out var countItems);
+                if (countItems > 0)
+                {
+                    shellView.Items(selectionFlag, typeof(IShellItemArray).GUID, out var items);
+                    return items as IShellItemArray;
+                }
+            }
+
+            return null;
         }
     }
 }

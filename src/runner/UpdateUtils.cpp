@@ -276,6 +276,7 @@ void CheckForUpdatesCallback()
         }
         
         ProcessNewVersionInfo(*new_version_info, state, download_update, false);
+
         UpdateState::store([&](UpdateState& v) {
             v = std::move(state);
         });

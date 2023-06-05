@@ -189,7 +189,7 @@ namespace Peek.UI.Views
                 return;
             }
 
-            var appWindow = MainWindow.GetAppWindow();
+            var appWindow = MainWindow.AppWindow;
             if (AppWindowTitleBar.IsCustomizationSupported() && appWindow != null && appWindow.TitleBar.ExtendsContentIntoTitleBar)
             {
                 var scale = MainWindow.GetMonitorScale();
@@ -222,7 +222,7 @@ namespace Peek.UI.Views
         {
             if (AppWindowTitleBar.IsCustomizationSupported())
             {
-                AppWindow appWindow = mainWindow.GetAppWindow();
+                AppWindow appWindow = mainWindow.AppWindow;
                 appWindow.TitleBar.ExtendsContentIntoTitleBar = true;
                 appWindow.TitleBar.ButtonBackgroundColor = Colors.Transparent;
                 appWindow.TitleBar.ButtonInactiveBackgroundColor = Colors.Transparent;

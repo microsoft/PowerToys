@@ -40,8 +40,8 @@
             // 
             this.closeWindowButton.BackColor = System.Drawing.Color.Transparent;
             this.closeWindowButton.DisabledImage = null;
-            this.closeWindowButton.DownImage = global::MouseWithoutBorders.Properties.Resources.close_window_click;
-            this.closeWindowButton.HoverImage = global::MouseWithoutBorders.Properties.Resources.close_window_hover;
+            this.closeWindowButton.DownImage = global::MouseWithoutBorders.Properties.Images.close_window_click;
+            this.closeWindowButton.HoverImage = global::MouseWithoutBorders.Properties.Images.close_window_hover;
             this.closeWindowButton.Location = new System.Drawing.Point(454, 6);
             this.closeWindowButton.Name = "closeWindowButton";
             this.closeWindowButton.NormalImage = null;
@@ -67,7 +67,7 @@
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.BackgroundImage = global::MouseWithoutBorders.Properties.Resources.dialog_background;
+            this.BackgroundImage = global::MouseWithoutBorders.Properties.Images.dialog_background;
             this.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Stretch;
             this.ClientSize = new System.Drawing.Size(477, 476);
             this.Controls.Add(this.closeWindowButton);
