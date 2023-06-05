@@ -77,6 +77,11 @@ namespace Microsoft.PowerToys.PreviewHandler.Monaco
         /// </summary>
         private string _base64FileCode;
 
+        public MonacoPreviewHandlerControl()
+        {
+            this.SetBackgroundColor(Settings.BackgroundColor);
+        }
+
         [STAThread]
         public override void DoPreview<T>(T dataSource)
         {
@@ -103,6 +108,7 @@ namespace Microsoft.PowerToys.PreviewHandler.Monaco
 
             // New webview2 element
             _webView = new WebView2();
+            _webView.DefaultBackgroundColor = Color.Transparent;
 
             // Checks if dataSource is a string
             if (!(dataSource is string filePath))
