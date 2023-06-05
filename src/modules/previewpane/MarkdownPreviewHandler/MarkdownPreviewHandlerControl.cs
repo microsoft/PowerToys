@@ -83,7 +83,7 @@ namespace Microsoft.PowerToys.PreviewHandler.Markdown
         /// </summary>
         public MarkdownPreviewHandlerControl()
         {
-            this.SetBackgroundColor(GetTheme() == "dark" ? ColorTranslator.FromHtml("#1e1e1e") : Color.White);
+            this.SetBackgroundColor(Settings.BackgroundColor);
         }
 
         /// <summary>
