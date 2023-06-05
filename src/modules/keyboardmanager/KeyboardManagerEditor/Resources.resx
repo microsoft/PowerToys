@@ -182,7 +182,7 @@
     <value>Select the key you want to change ("Press") and then the key or shortcut you want it to send ("To send").</value>
   </data>
   <data name="EditKeyboard_InfoExample" xml:space="preserve">
-    <value>Example of a remapping: Press A and get "Ctrl+C", "A" would be your "Physical Key" and "Ctrl+C" would be your "Mapped To" command.</value>
+    <value>Example of a remapping: Press A and get "Ctrl+C", "A" would be your "Press" and "Ctrl+C" would be your "To send" command.</value>
     <comment>Key on a keyboard</comment>
   </data>
   <data name="EditShortcuts_Info" xml:space="preserve">
