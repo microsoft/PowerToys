@@ -1,0 +1,12 @@
+{
+  "ID": "5AB1A4D8264EC4BFA41CB45A571D0CF3",
+  "ActionKeyword": "ip",
+  "Name": "IP Lookup",
+  "Author": "Pistasjis",
+  "Version": "1.0.0",
+  "Language": "csharp",
+  "Website": "https://pistasjis.net",
+  "ExecuteFileName": "Community.PowerToys.Run.Plugin.IPLookup.dll",
+  "IcoPathDark": "Images\\IPLookup_icon_dark.png",
+  "IcoPathLight": "Images\\IPLookup_icon_light.png"
+}
