@@ -21,7 +21,7 @@ namespace Microsoft.PowerToys.PreviewHandler.Markdown
             {
                 if (GetTheme() == "dark")
                 {
-                    return System.Drawing.ColorTranslator.FromHtml("#1e1e1e");
+                    return Color.FromArgb(30, 30, 30); // #1e1e1e
                 }
                 else
                 {
