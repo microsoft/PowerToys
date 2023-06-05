@@ -118,7 +118,7 @@ IFACEMETHODIMP ExplorerCommand::QueryContextMenu(HMENU hmenu, UINT indexMenu, UI
 
     if (FileLocksmithSettingsInstance().GetShowInExtendedContextMenu() && !(uFlags & CMF_EXTENDEDVERBS))
     {
-        return E_FAIL;
+        return S_OK;
     }
 
     HRESULT hr = E_UNEXPECTED;
