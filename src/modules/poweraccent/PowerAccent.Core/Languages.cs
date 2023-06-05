@@ -116,12 +116,15 @@ namespace PowerAccent.Core
                 LetterKey.VK_T => new string[] { "ţ", "ť", "ț", "ṫ", "ŧ", "θ", "τ", "þ" },
                 LetterKey.VK_U => new string[] { "û", "ú", "ü", "ŭ", "ű", "ù", "ů", "ū", "ų", "ǔ", "υ", "ǖ", "ǘ", "ǚ", "ǜ" },
                 LetterKey.VK_W => new string[] { "ẇ", "ŵ", "₩" },
-                LetterKey.VK_X => new string[] { "ẋ", "ξ" },
+                LetterKey.VK_X => new string[] { "ẋ", "ξ", "×" },
                 LetterKey.VK_Y => new string[] { "ÿ", "ŷ", "ý", "ẏ" },
                 LetterKey.VK_Z => new string[] { "ź", "ž", "ż", "ʒ", "ǯ", "ζ" },
                 LetterKey.VK_COMMA => new string[] { "¿", "¡", "∙", "₋", "⁻", "–", "≤", "≥", "≠", "≈", "≙", "±", "₊", "⁺" },
                 LetterKey.VK_PERIOD => new string[] { "\u0300", "\u0301", "\u0302", "\u0303", "\u0304", "\u0308", "\u030C" },
                 LetterKey.VK_MINUS => new string[] { "~", "‐", "‑", "‒", "–", "—", "―", "⁓", "−", "⸺", "⸻" },
+                LetterKey.VK_SLASH_ => new string[] { "÷" },
+                LetterKey.VK_DIVIDE_ => new string[] { "÷" },
+                LetterKey.VK_MULTIPLY_ => new string[] { "×", "⋅" },
                 _ => Array.Empty<string>(),
             };
         }
