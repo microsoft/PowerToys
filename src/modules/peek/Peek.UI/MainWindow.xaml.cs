@@ -18,9 +18,6 @@ using Peek.UI.Telemetry.Events;
 using Windows.Foundation;
 using WinUIEx;
 
-using AppWindow = Microsoft.UI.Windowing.AppWindow;
-using Logger = Peek.Common.Helpers.Logger;
-
 namespace Peek.UI
 {
     /// <summary>
