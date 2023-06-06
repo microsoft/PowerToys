@@ -178,7 +178,7 @@ internal sealed class ImageMethods
             {
                 List<string> wordArray = textLine.Split().ToList();
                 wordArray.Reverse();
-                _ = isSpaceJoiningLang == true ? text.Append(string.Join(string.Empty, wordArray)) : text.Append(string.Join(' ', wordArray));
+                _ = text.Append(string.Join(' ', wordArray));
 
                 if (textLine.Length > 0)
                 {
