@@ -11,14 +11,14 @@
     xmlns:views="using:Peek.UI.Views"
     xmlns:winuiex="using:WinUIEx"
     mc:Ignorable="d">
-    <winuiex:WindowEx.Backdrop>
-        <winuiex:MicaSystemBackdrop />
-    </winuiex:WindowEx.Backdrop>
-
+    <Window.SystemBackdrop>
+        <MicaBackdrop />
+    </Window.SystemBackdrop>
     <Grid KeyboardAcceleratorPlacementMode="Hidden">
         <Grid.KeyboardAccelerators>
             <KeyboardAccelerator Key="Left" Invoked="LeftNavigationInvoked" />
             <KeyboardAccelerator Key="Right" Invoked="RightNavigationInvoked" />
+            <KeyboardAccelerator Key="Escape" Invoked="EscKeyInvoked" />
         </Grid.KeyboardAccelerators>
 
         <Grid.RowDefinitions>

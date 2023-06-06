@@ -10,7 +10,6 @@
     AutomationProperties.LandmarkType="Main"
     mc:Ignorable="d">
 
-
     <controls:SettingsPageControl x:Uid="Peek" ModuleImageSource="ms-appx:///Assets/Modules/Peek.png">
         <controls:SettingsPageControl.ModuleContent>
             <StackPanel Orientation="Vertical">
@@ -32,7 +31,23 @@
                         <controls:ShortcutControl MinWidth="{StaticResource SettingActionControlMinWidth}" HotkeySettings="{x:Bind Path=ViewModel.ActivationShortcut, Mode=TwoWay}" />
                     </labs:SettingsCard>
                 </controls:SettingsGroup>
+                <controls:SettingsGroup x:Uid="Peek_BehaviorHeader" IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}">
+                    <labs:SettingsCard x:Uid="Peek_AlwaysRunNotElevated" HeaderIcon="{ui:FontIcon FontFamily={StaticResource SymbolThemeFontFamily}, Glyph=&#xE7EF;}">
+                        <ToggleSwitch
+                            x:Uid="ToggleSwitch"
+                            IsOn="{x:Bind Mode=TwoWay, Path=ViewModel.AlwaysRunNotElevated}" />
+                    </labs:SettingsCard>
+                    <labs:SettingsCard x:Uid="Peek_CloseAfterLosingFocus">
+                        <ToggleSwitch
+                            x:Uid="ToggleSwitch"
+                            IsOn="{x:Bind Mode=TwoWay, Path=ViewModel.CloseAfterLosingFocus}" />
+                    </labs:SettingsCard>
+                </controls:SettingsGroup>
+
             </StackPanel>
         </controls:SettingsPageControl.ModuleContent>
+        <controls:SettingsPageControl.PrimaryLinks>
+            <controls:PageLink x:Uid="LearnMore_Peek" Link="https://aka.ms/PowerToysOverview_Peek" />
+        </controls:SettingsPageControl.PrimaryLinks>
     </controls:SettingsPageControl>
 </Page>

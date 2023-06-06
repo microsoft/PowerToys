@@ -282,7 +282,7 @@ SOFTWARE.
 ## NuGet Packages used by PowerToys
 
 - CommunityToolkit.Labs.WinUI.SettingsControls 0.0.18
-- CommunityToolkit.Mvvm 8.0.0
+- CommunityToolkit.Mvvm 8.2.0
 - CommunityToolkit.WinUI.UI 7.1.2
 - CommunityToolkit.WinUI.UI.Controls 7.1.2
 - ControlzEx 5.0.1
@@ -295,10 +295,15 @@ SOFTWARE.
 - Markdig.Signed 0.27.0
 - Microsoft.CodeAnalysis.NetAnalyzers 7.0.1
 - Microsoft.Data.Sqlite 7.0.0
-- Microsoft.Extensions.Hosting 7.0.0
+- Microsoft.DotNet.UpgradeAssistant.Extensions.Default.Analyzers 0.4.336902
+- Microsoft.Extensions.DependencyInjection 7.0.0
+- Microsoft.Extensions.Hosting 7.0.1
+- Microsoft.Extensions.Hosting.WindowsServices 7.0.0
+- Microsoft.Extensions.Logging 7.0.0
 - Microsoft.NET.Test.Sdk 17.4.1
 - Microsoft.Toolkit.Uwp.Notifications 7.1.2
 - Microsoft.Web.WebView2 1.0.1722.45
+- Microsoft.Windows.Compatibility 7.0.1
 - Microsoft.Windows.CsWin32 0.2.46-beta
 - Microsoft.Windows.CsWinRT 2.0.2
 - Microsoft.Windows.SDK.BuildTools 10.0.22621.755
@@ -312,6 +317,7 @@ SOFTWARE.
 - NLog.Extensions.Logging 5.0.4
 - NLog.Schema 5.0.4
 - ScipBe.Common.Office.OneNote 3.0.1
+- StreamJsonRpc 2.14.24
 - StyleCop.Analyzers 1.2.0-beta.435
 - System.CommandLine 2.0.0-beta4.22272.1
 - System.ComponentModel.Composition 7.0.0
@@ -328,5 +334,5 @@ SOFTWARE.
 - UnitsNet 4.145.0
 - Vanara.PInvoke.Shell32 3.4.11
 - Vanara.PInvoke.User32 3.4.11
-- WinUIEx 2.1.0
+- WinUIEx 2.2.0
 

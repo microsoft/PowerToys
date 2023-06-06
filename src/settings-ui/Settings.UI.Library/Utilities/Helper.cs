@@ -7,6 +7,8 @@ using System.Diagnostics;
 using System.IO;
 using System.IO.Abstractions;
 using System.Linq;
+using System.Net.NetworkInformation;
+using System.Security.Principal;
 using Microsoft.PowerToys.Settings.UI.Library.CustomAction;
 
 namespace Microsoft.PowerToys.Settings.UI.Library.Utilities
@@ -14,6 +16,8 @@ namespace Microsoft.PowerToys.Settings.UI.Library.Utilities
     public static class Helper
     {
         public static readonly IFileSystem FileSystem = new FileSystem();
+
+        public static string UserLocalAppDataPath { get; set; } = string.Empty;
 
         public static bool AllowRunnerToForeground()
         {
@@ -69,9 +73,20 @@ namespace Microsoft.PowerToys.Settings.UI.Library.Utilities
             return watcher;
         }
 
-        private static string LocalApplicationDataFolder()
+        public static string LocalApplicationDataFolder()
         {
-            return Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
+            WindowsIdentity currentUser = WindowsIdentity.GetCurrent();
+            SecurityIdentifier currentUserSID = currentUser.User;
+
+            SecurityIdentifier localSystemSID = new SecurityIdentifier(WellKnownSidType.LocalSystemSid, null);
+            if (currentUserSID.Equals(localSystemSID) && UserLocalAppDataPath != string.Empty)
+            {
+                return UserLocalAppDataPath;
+            }
+            else
+            {
+                return Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
+            }
         }
 
         public static string GetPowerToysInstallationFolder()

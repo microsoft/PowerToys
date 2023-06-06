@@ -13,6 +13,7 @@ using Microsoft.UI.Dispatching;
 using Peek.Common.Extensions;
 using Peek.Common.Helpers;
 using Peek.Common.Models;
+using Peek.FilePreviewer.Models;
 using Peek.FilePreviewer.Previewers.Interfaces;
 using Windows.Foundation;
 using Windows.Media.Core;
@@ -74,10 +75,11 @@ namespace Peek.FilePreviewer.Previewers
             }
         }
 
-        public async Task<Size?> GetPreviewSizeAsync(CancellationToken cancellationToken)
+        public async Task<PreviewSize> GetPreviewSizeAsync(CancellationToken cancellationToken)
         {
             cancellationToken.ThrowIfCancellationRequested();
-            return await Task.Run(Item.GetVideoSize);
+            var videoSize = await Task.Run(Item.GetVideoSize);
+            return new PreviewSize { MonitorSize = videoSize };
         }
 
         public async Task CopyAsync()

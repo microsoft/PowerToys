@@ -46,6 +46,7 @@ namespace Peek.UI
             {
                 // Core Services
                 services.AddTransient<NeighboringItemsQuery>();
+                services.AddSingleton<IUserSettings, UserSettings>();
 
                 // Views and ViewModels
                 services.AddTransient<TitleBar>();

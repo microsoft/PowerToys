@@ -8,11 +8,11 @@ namespace Peek.FilePreviewer.Models
 {
     public class PreviewSizeChangedArgs
     {
-        public PreviewSizeChangedArgs(Size? windowSizeRequested)
+        public PreviewSizeChangedArgs(PreviewSize previewSize)
         {
-            WindowSizeRequested = windowSizeRequested;
+            PreviewSize = previewSize;
         }
 
-        public Size? WindowSizeRequested { get; init; }
+        public PreviewSize PreviewSize { get; init; }
     }
 }
