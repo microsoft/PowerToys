@@ -9,6 +9,7 @@ using Microsoft.Web.WebView2.Core;
 using Peek.Common.Constants;
 using Peek.Common.Helpers;
 using Windows.System;
+using Windows.UI;
 
 namespace Peek.FilePreviewer.Controls
 {
@@ -115,6 +116,9 @@ namespace Peek.FilePreviewer.Controls
             try
             {
                 await PreviewBrowser.EnsureCoreWebView2Async();
+
+                // transparent background when loading the page
+                PreviewBrowser.DefaultBackgroundColor = Color.FromArgb(0, 0, 0, 0);
 
                 PreviewBrowser.CoreWebView2.Settings.AreDefaultScriptDialogsEnabled = false;
                 PreviewBrowser.CoreWebView2.Settings.AreDefaultContextMenusEnabled = false;

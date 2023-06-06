@@ -356,15 +356,7 @@ namespace MouseWithoutBorders.Class
 
             if (Common.DesMachineID == ID.NONE || Common.DesMachineID == ID.ALL || Common.DesMachineID == Common.MachineID)
             {
-                if (nCode >= 0 && Setting.Values.UseVKMap && Setting.Values.VKMap != null && Setting.Values.VKMap.ContainsKey(hookCallbackKeybdData.wVk) && !CtrlDown)
-                {
-                    InputSimulation.SendKey(hookCallbackKeybdData);
-                    return 1;
-                }
-                else
-                {
-                    return NativeMethods.CallNextHookEx(hKeyboardHook, nCode, wParam, lParam);
-                }
+                return NativeMethods.CallNextHookEx(hKeyboardHook, nCode, wParam, lParam);
             }
             else
             {
@@ -643,14 +635,6 @@ namespace MouseWithoutBorders.Class
                             Common.ShowToolTip($"Easy Mouse has been toggled to [{(EasyMouseOption)Setting.Values.EasyMouse}] by a hotkey. You can change the hotkey in the Settings form.", 5000);
                             return false;
                         }
-                    }
-                }
-                else if (shiftDown && Setting.Values.VKMap != null && vkCode == (Setting.Values.VKMap.ContainsKey(0) ? (int)Setting.Values.VKMap[0] : 'K'))
-                {
-                    if (Common.DesMachineID == Common.MachineID || Common.DesMachineID == ID.ALL)
-                    {
-                        Setting.Values.UseVKMap = !Setting.Values.UseVKMap;
-                        return Common.DesMachineID == ID.ALL;
                     }
                 }
             }

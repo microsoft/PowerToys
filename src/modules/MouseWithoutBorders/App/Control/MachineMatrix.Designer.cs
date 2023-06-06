@@ -48,7 +48,7 @@
             // SingleRowRadioButton
             // 
             this.SingleRowRadioButton.Checked = true;
-            this.SingleRowRadioButton.CheckedImage = global::MouseWithoutBorders.Properties.Resources.one_row_button_checked;
+            this.SingleRowRadioButton.CheckedImage = global::MouseWithoutBorders.Properties.Images.one_row_button_checked;
             this.SingleRowRadioButton.ImageLocation = new System.Drawing.Point(0, 0);
             this.SingleRowRadioButton.Location = new System.Drawing.Point(0, 0);
             this.SingleRowRadioButton.Margin = new System.Windows.Forms.Padding(0);
@@ -57,13 +57,13 @@
             this.SingleRowRadioButton.TabIndex = 4;
             this.SingleRowRadioButton.TabStop = true;
             this.SingleRowRadioButton.TextLocation = new System.Drawing.Point(0, 0);
-            this.SingleRowRadioButton.UncheckedImage = global::MouseWithoutBorders.Properties.Resources.one_row_button_unchecked;
+            this.SingleRowRadioButton.UncheckedImage = global::MouseWithoutBorders.Properties.Images.one_row_button_unchecked;
             this.SingleRowRadioButton.UseVisualStyleBackColor = true;
             this.SingleRowRadioButton.CheckedChanged += new System.EventHandler(this.SingleRowRadioButtonCheckedChanged);
             // 
             // TwoRowsRadioButton
             // 
-            this.TwoRowsRadioButton.CheckedImage = global::MouseWithoutBorders.Properties.Resources.two_row_button_checked;
+            this.TwoRowsRadioButton.CheckedImage = global::MouseWithoutBorders.Properties.Images.two_row_button_checked;
             this.TwoRowsRadioButton.ImageLocation = new System.Drawing.Point(0, 0);
             this.TwoRowsRadioButton.Location = new System.Drawing.Point(0, 27);
             this.TwoRowsRadioButton.Margin = new System.Windows.Forms.Padding(0, 3, 0, 3);
@@ -71,7 +71,7 @@
             this.TwoRowsRadioButton.Size = new System.Drawing.Size(27, 24);
             this.TwoRowsRadioButton.TabIndex = 5;
             this.TwoRowsRadioButton.TextLocation = new System.Drawing.Point(0, 0);
-            this.TwoRowsRadioButton.UncheckedImage = global::MouseWithoutBorders.Properties.Resources.two_row_button_unchecked;
+            this.TwoRowsRadioButton.UncheckedImage = global::MouseWithoutBorders.Properties.Images.two_row_button_unchecked;
             this.TwoRowsRadioButton.UseVisualStyleBackColor = true;
             this.TwoRowsRadioButton.CheckedChanged += new System.EventHandler(this.TwoRowsRadioButtonCheckedChanged);
             // 

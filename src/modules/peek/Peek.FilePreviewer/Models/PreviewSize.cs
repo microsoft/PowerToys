@@ -6,13 +6,10 @@ using Windows.Foundation;
 
 namespace Peek.FilePreviewer.Models
 {
-    public class PreviewSizeChangedArgs
+    public record PreviewSize
     {
-        public PreviewSizeChangedArgs(PreviewSize previewSize)
-        {
-            PreviewSize = previewSize;
-        }
+        public Size? MonitorSize { get; init; }
 
-        public PreviewSize PreviewSize { get; init; }
+        public bool UseEffectivePixels { get; init; }
     }
 }

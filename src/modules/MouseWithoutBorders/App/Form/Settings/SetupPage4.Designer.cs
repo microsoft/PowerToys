@@ -78,7 +78,7 @@ namespace MouseWithoutBorders
             // 
             // ExamplePicture
             // 
-            this.ExamplePicture.Image = global::MouseWithoutBorders.Properties.Resources.combined_example;
+            this.ExamplePicture.Image = global::MouseWithoutBorders.Properties.Images.combined_example;
             this.ExamplePicture.Location = new System.Drawing.Point(75, 283);
             this.ExamplePicture.Name = "ExamplePicture";
             this.ExamplePicture.Size = new System.Drawing.Size(307, 25);
@@ -119,12 +119,12 @@ namespace MouseWithoutBorders
             // NextButton
             // 
             this.NextButton.DisabledImage = null;
-            this.NextButton.DownImage = global::MouseWithoutBorders.Properties.Resources.next_button_click;
-            this.NextButton.HoverImage = global::MouseWithoutBorders.Properties.Resources.next_button_hover;
-            this.NextButton.Image = global::MouseWithoutBorders.Properties.Resources.next_button_normal;
+            this.NextButton.DownImage = global::MouseWithoutBorders.Properties.Images.next_button_click;
+            this.NextButton.HoverImage = global::MouseWithoutBorders.Properties.Images.next_button_hover;
+            this.NextButton.Image = global::MouseWithoutBorders.Properties.Images.next_button_normal;
             this.NextButton.Location = new System.Drawing.Point(199, 366);
             this.NextButton.Name = "NextButton";
-            this.NextButton.NormalImage = global::MouseWithoutBorders.Properties.Resources.next_button_normal;
+            this.NextButton.NormalImage = global::MouseWithoutBorders.Properties.Images.next_button_normal;
             this.NextButton.Size = new System.Drawing.Size(55, 55);
             this.NextButton.TabIndex = 16;
             this.NextButton.TabStop = false;

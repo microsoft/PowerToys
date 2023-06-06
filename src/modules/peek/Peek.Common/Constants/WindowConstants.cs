@@ -8,7 +8,7 @@ namespace Peek.Common.Constants
     {
         public const double MaxWindowToMonitorRatio = 0.80;
         public const double MinWindowHeight = 500;
-        public const double MinWindowWidth = 680;
+        public const double MinWindowWidth = 500;
         public const double WindowWidthContentPadding = 7;
         public const double WindowHeightContentPadding = 16;
     }

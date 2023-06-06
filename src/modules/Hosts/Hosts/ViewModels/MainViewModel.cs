@@ -65,16 +65,12 @@ namespace Hosts.ViewModels
         [ObservableProperty]
         private bool _filtered;
 
+        [ObservableProperty]
         private bool _showOnlyDuplicates;
 
-        public bool ShowOnlyDuplicates
+        partial void OnShowOnlyDuplicatesChanged(bool value)
         {
-            get => _showOnlyDuplicates;
-            set
-            {
-                SetProperty(ref _showOnlyDuplicates, value);
-                ApplyFilters();
-            }
+            ApplyFilters();
         }
 
         private ObservableCollection<Entry> _entries;
@@ -126,11 +122,11 @@ namespace Hosts.ViewModels
 
         public void UpdateAdditionalLines(string lines)
         {
-            _additionalLines = lines;
+            AdditionalLines = lines;
 
             Task.Run(async () =>
             {
-                var error = !await _hostsService.WriteAsync(_additionalLines, _entries);
+                var error = !await _hostsService.WriteAsync(AdditionalLines, _entries);
                 await _dispatcherQueue.EnqueueAsync(() => Error = error);
             });
         }
@@ -168,10 +164,11 @@ namespace Hosts.ViewModels
             Task.Run(async () =>
             {
                 _readingHosts = true;
-                (_additionalLines, var entries) = await _hostsService.ReadAsync();
+                var (additionalLines, entries) = await _hostsService.ReadAsync();
 
                 await _dispatcherQueue.EnqueueAsync(() =>
                 {
+                    AdditionalLines = additionalLines;
                     _entries = new ObservableCollection<Entry>(entries);
 
                     foreach (var e in _entries)
@@ -199,22 +196,22 @@ namespace Hosts.ViewModels
         {
             var expressions = new List<Expression<Func<object, bool>>>(4);
 
-            if (!string.IsNullOrWhiteSpace(_addressFilter))
+            if (!string.IsNullOrWhiteSpace(AddressFilter))
             {
-                expressions.Add(e => ((Entry)e).Address.Contains(_addressFilter, StringComparison.OrdinalIgnoreCase));
+                expressions.Add(e => ((Entry)e).Address.Contains(AddressFilter, StringComparison.OrdinalIgnoreCase));
             }
 
-            if (!string.IsNullOrWhiteSpace(_hostsFilter))
+            if (!string.IsNullOrWhiteSpace(HostsFilter))
             {
-                expressions.Add(e => ((Entry)e).Hosts.Contains(_hostsFilter, StringComparison.OrdinalIgnoreCase));
+                expressions.Add(e => ((Entry)e).Hosts.Contains(HostsFilter, StringComparison.OrdinalIgnoreCase));
             }
 
-            if (!string.IsNullOrWhiteSpace(_commentFilter))
+            if (!string.IsNullOrWhiteSpace(CommentFilter))
             {
-                expressions.Add(e => ((Entry)e).Comment.Contains(_commentFilter, StringComparison.OrdinalIgnoreCase));
+                expressions.Add(e => ((Entry)e).Comment.Contains(CommentFilter, StringComparison.OrdinalIgnoreCase));
             }
 
-            if (_showOnlyDuplicates)
+            if (ShowOnlyDuplicates)
             {
                 expressions.Add(e => ((Entry)e).Duplicate);
             }
@@ -244,10 +241,10 @@ namespace Hosts.ViewModels
 
         public async Task PingSelectedAsync()
         {
-            var selected = _selected;
+            var selected = Selected;
             selected.Ping = null;
             selected.Pinging = true;
-            selected.Ping = await _hostsService.PingAsync(_selected.Address);
+            selected.Ping = await _hostsService.PingAsync(Selected.Address);
             selected.Pinging = false;
         }
 
@@ -289,7 +286,7 @@ namespace Hosts.ViewModels
 
             Task.Run(async () =>
             {
-                var error = !await _hostsService.WriteAsync(_additionalLines, _entries);
+                var error = !await _hostsService.WriteAsync(AdditionalLines, _entries);
                 await _dispatcherQueue.EnqueueAsync(() => Error = error);
             });
         }
@@ -298,7 +295,7 @@ namespace Hosts.ViewModels
         {
             Task.Run(async () =>
             {
-                var error = !await _hostsService.WriteAsync(_additionalLines, _entries);
+                var error = !await _hostsService.WriteAsync(AdditionalLines, _entries);
                 await _dispatcherQueue.EnqueueAsync(() => Error = error);
             });
         }
