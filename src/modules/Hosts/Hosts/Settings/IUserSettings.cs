@@ -13,7 +13,9 @@ namespace Hosts.Settings
 
         public bool LoopbackDuplicates { get; }
 
-        public AdditionalLinesPosition AdditionalLinesPosition { get; }
+        public HostsAdditionalLinesPosition AdditionalLinesPosition { get; }
+
+        public HostsEncoding Encoding { get; }
 
         event EventHandler LoopbackDuplicatesChanged;
     }

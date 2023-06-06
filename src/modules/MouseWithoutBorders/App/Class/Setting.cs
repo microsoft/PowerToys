@@ -979,6 +979,30 @@ namespace MouseWithoutBorders.Class
             }
         }
 
+        // If starting the service fails, work in not service mode.
+        internal bool UseService
+        {
+            get
+            {
+                lock (_loadingSettingsLock)
+                {
+                    return _properties.UseService;
+                }
+            }
+
+            set
+            {
+                lock (_loadingSettingsLock)
+                {
+                    _properties.UseService = value;
+                    if (!PauseInstantSaving)
+                    {
+                        SaveSettings();
+                    }
+                }
+            }
+        }
+
         internal bool SendErrorLogV2
         {
             get

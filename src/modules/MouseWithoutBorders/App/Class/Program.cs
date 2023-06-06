@@ -86,15 +86,25 @@ namespace MouseWithoutBorders.Class
 
                 // If we're started from the .dll module or from the service process, we should
                 // assume the service mode.
-                if (serviceMode || runningAsSystem)
+                if (serviceMode && !runningAsSystem)
                 {
-                    if (!runningAsSystem)
+                    try
                     {
                         var sc = new ServiceController(ServiceName);
                         sc.Start();
                         return;
                     }
+                    catch (Exception ex)
+                    {
+                        Common.Log("Couldn't start the service. Will try to continue as not a service.");
+                        Common.Log(ex);
+                        serviceMode = false;
+                        Setting.Values.UseService = false;
+                    }
+                }
 
+                if (serviceMode || runningAsSystem)
+                {
                     if (args.Length > 2)
                     {
                         Helper.UserLocalAppDataPath = args[2].Trim();

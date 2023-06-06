@@ -4,9 +4,9 @@
 
 namespace Settings.UI.Library.Enumerations
 {
-    public enum AdditionalLinesPosition
+    public enum HostsEncoding
     {
-        Top = 0,
-        Bottom = 1,
+        Utf8 = 0,
+        Utf8Bom = 1,
     }
 }

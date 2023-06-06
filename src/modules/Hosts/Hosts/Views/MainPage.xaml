@@ -56,6 +56,11 @@
                         Glyph="&#xe710;" />
                     <TextBlock x:Uid="AddEntry" />
                 </StackPanel>
+                <Button.KeyboardAccelerators>
+                    <KeyboardAccelerator
+                        Modifiers="Control"
+                        Key="N" />
+                </Button.KeyboardAccelerators>
             </Button>
 
             <StackPanel
@@ -195,8 +200,10 @@
             CornerRadius="8"
             IsItemClickEnabled="True"
             ItemClick="Entries_ItemClick"
-            ItemsSource="{Binding Entries, Mode=TwoWay}"
-            SelectedItem="{Binding Selected, Mode=TwoWay}"
+            KeyDown="Entries_KeyDown"
+            GotFocus="Entries_GotFocus"
+            ItemsSource="{x:Bind ViewModel.Entries, Mode=TwoWay}"
+            SelectedItem="{x:Bind ViewModel.Selected, Mode=TwoWay}"
             Visibility="{x:Bind ViewModel.IsLoading, Converter={StaticResource BoolToInvertedVisibilityConverter}, Mode=OneWay}">
             <ListView.ItemTemplate>
                 <DataTemplate x:DataType="models:Entry">
@@ -213,11 +220,27 @@
                             <ColumnDefinition Width="Auto" />
                         </Grid.ColumnDefinitions>
                         <FlyoutBase.AttachedFlyout>
-                            <MenuFlyout>
+                            <MenuFlyout Opened="MenuFlyout_Opened">
+                                <MenuFlyoutItem
+                                    x:Uid="Edit"
+                                    Click="Edit_Click"
+                                    Icon="Edit">
+                                    <MenuFlyoutItem.KeyboardAccelerators>
+                                        <KeyboardAccelerator
+                                            Modifiers="Control"
+                                            Key="E" />
+                                    </MenuFlyoutItem.KeyboardAccelerators>
+                                </MenuFlyoutItem>
                                 <MenuFlyoutItem
                                     x:Uid="Ping"
                                     Click="Ping_Click"
-                                    Icon="TwoBars" />
+                                    Icon="TwoBars">
+                                    <MenuFlyoutItem.KeyboardAccelerators>
+                                        <KeyboardAccelerator
+                                            Modifiers="Control"
+                                            Key="P" />
+                                    </MenuFlyoutItem.KeyboardAccelerators>
+                                </MenuFlyoutItem>
                                 <MenuFlyoutItem
                                     x:Uid="MoveUp"
                                     Click="ReorderButtonUp_Click"
@@ -238,7 +261,11 @@
                                 <MenuFlyoutItem
                                     x:Uid="Delete"
                                     Click="Delete_Click"
-                                    Icon="Delete" />
+                                    Icon="Delete">
+                                     <MenuFlyoutItem.KeyboardAccelerators>
+                                        <KeyboardAccelerator Key="Delete" />
+                                    </MenuFlyoutItem.KeyboardAccelerators>
+                                </MenuFlyoutItem>
                             </MenuFlyout>
                         </FlyoutBase.AttachedFlyout>
                         <TextBlock
@@ -346,7 +373,7 @@
             x:Name="EntryDialog"
             x:Uid="EntryDialog"
             Loaded="ContentDialog_Loaded_ApplyMargin"
-            IsPrimaryButtonEnabled="{Binding Valid, Mode=TwoWay}"
+            IsPrimaryButtonEnabled="{Binding Valid, Mode=OneWay}"
             PrimaryButtonStyle="{StaticResource AccentButtonStyle}">
             <ContentDialog.DataContext>
                 <models:Entry />

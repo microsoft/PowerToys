@@ -405,7 +405,7 @@ namespace MouseWithoutBorders
             CallingConvention = CallingConvention.StdCall)]
         internal static extern int CallNextHookEx(int idHook, int nCode, int wParam, IntPtr lParam);
 
-        private enum InputType
+        internal enum InputType
         {
             INPUT_MOUSE = 0,
             INPUT_KEYBOARD = 1,
