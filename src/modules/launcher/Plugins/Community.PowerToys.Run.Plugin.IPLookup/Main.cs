@@ -2,10 +2,12 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System.Runtime.InteropServices;
 using System.Windows;
 using System.Windows.Controls;
 using ManagedCommon;
 using Wox.Plugin;
+using Wox.Plugin.Logger;
 
 namespace Community.PowerToys.Run.Plugin.IPLookup
 {
@@ -99,9 +101,17 @@ namespace Community.PowerToys.Run.Plugin.IPLookup
 
         public bool CopyToClipboard(string? text)
         {
-            Clipboard.Clear();
-            Clipboard.SetText(text);
-            return true;
+            try
+            {
+                Clipboard.Clear();
+                Clipboard.SetText(text);
+                return true;
+            }
+            catch (Exception exception)
+            {
+                Log.Exception("Could not copy to clipboard", exception, typeof(Main));
+                return false;
+            }
         }
     }
 }
