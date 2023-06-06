@@ -102,13 +102,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         public StringProperty Name2IP { get; set; }
 
         [JsonConverter(typeof(BoolPropertyJsonConverter))]
-        public bool UseVKMap { get; set; }
-
-        [JsonConverter(typeof(BoolPropertyJsonConverter))]
         public bool FirstCtrlShiftS { get; set; }
-
-        [JsonConverter(typeof(BoolPropertyJsonConverter))]
-        public bool StealFocusWhenSwitchingMachine { get; set; }
 
         public StringProperty DeviceID { get; set; }
 
@@ -149,9 +143,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             TCPPort = new IntProperty(15100);
             DrawMouseEx = true;
             Name2IP = new StringProperty(string.Empty);
-            UseVKMap = false;
             FirstCtrlShiftS = false;
-            StealFocusWhenSwitchingMachine = false;
         }
 
         public object Clone()

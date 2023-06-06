@@ -99,7 +99,7 @@ namespace MouseWithoutBorders
             // 
             // pictureBox1
             // 
-            this.pictureBox1.Image = global::MouseWithoutBorders.Properties.Resources.Mouse;
+            this.pictureBox1.Image = global::MouseWithoutBorders.Properties.Images.Mouse;
             this.pictureBox1.Location = new System.Drawing.Point(206, 365);
             this.pictureBox1.Margin = new System.Windows.Forms.Padding(0);
             this.pictureBox1.Name = "pictureBox1";

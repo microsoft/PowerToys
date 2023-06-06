@@ -282,7 +282,7 @@ SOFTWARE.
 ## NuGet Packages used by PowerToys
 
 - CommunityToolkit.Labs.WinUI.SettingsControls 0.0.18
-- CommunityToolkit.Mvvm 8.0.0
+- CommunityToolkit.Mvvm 8.2.0
 - CommunityToolkit.WinUI.UI 7.1.2
 - CommunityToolkit.WinUI.UI.Controls 7.1.2
 - ControlzEx 5.0.1
@@ -334,5 +334,5 @@ SOFTWARE.
 - UnitsNet 4.145.0
 - Vanara.PInvoke.Shell32 3.4.11
 - Vanara.PInvoke.User32 3.4.11
-- WinUIEx 2.1.0
+- WinUIEx 2.2.0
 

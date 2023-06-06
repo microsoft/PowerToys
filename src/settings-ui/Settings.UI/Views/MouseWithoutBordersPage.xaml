@@ -92,7 +92,7 @@
                                 Content="&#xE8C8;"
                                 FontFamily="{StaticResource SymbolThemeFontFamily}">
                                 <ToolTipService.ToolTip>
-                                    <TextBlock x:Uid="MouseWithoutBorders_CopyMachineName" />
+                                    <TextBlock x:Uid="MouseWithoutBorders_CopyMachineName" TextWrapping="Wrap" />
                                 </ToolTipService.ToolTip>
                             </Button>
                         </StackPanel>
@@ -161,7 +161,7 @@
                             </ItemsControl>
                             <Button HorizontalAlignment="Right" Command="{x:Bind Mode=OneTime, Path=ReconnectCommand}">
                                 <ToolTipService.ToolTip>
-                                    <TextBlock x:Uid="MouseWithoutBorders_ReconnectTooltip" />
+                                    <TextBlock x:Uid="MouseWithoutBorders_ReconnectTooltip" TextWrapping="Wrap"/>
                                 </ToolTipService.ToolTip>
                                 <TextBlock x:Uid="MouseWithoutBorders_ReconnectButton" />
                             </Button>
@@ -203,6 +203,7 @@
                         IsTabStop="True"
                         Severity="Warning" />
                     <labs:SettingsCard
+                        IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.CanUninstallService}"
                         x:Uid="MouseWithoutBorders_UninstallService"
                         ActionIcon="{ui:FontIcon FontFamily={StaticResource SymbolThemeFontFamily},
                                                  Glyph=&#xE8A7;}"

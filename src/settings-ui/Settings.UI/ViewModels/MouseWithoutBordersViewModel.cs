@@ -91,6 +91,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 {
                     Settings.Properties.UseService = value;
                     OnPropertyChanged(nameof(UseService));
+                    OnPropertyChanged(nameof(CanUninstallService));
 
                     // Must block here until the process exits
                     Task.Run(async () =>

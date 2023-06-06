@@ -12,7 +12,7 @@ namespace MouseWithoutBorders
 {
     public partial class SetupPage3a : SettingsFormPage
     {
-        private readonly Image[] _frames = { Resources.copy_paste_example, Resources.drag_example, Resources.keyboard_example };
+        private readonly Image[] _frames = { Images.copy_paste_example, Images.drag_example, Images.keyboard_example };
         private readonly string[] _messages =
         {
                                                   "Copy && paste across screens",

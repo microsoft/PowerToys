@@ -123,6 +123,20 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             }
         }
 
+        public bool CloseAfterLosingFocus
+        {
+            get => _peekSettings.Properties.CloseAfterLosingFocus.Value;
+            set
+            {
+                if (_peekSettings.Properties.CloseAfterLosingFocus.Value != value)
+                {
+                    _peekSettings.Properties.CloseAfterLosingFocus.Value = value;
+                    OnPropertyChanged(nameof(CloseAfterLosingFocus));
+                    NotifySettingsChanged();
+                }
+            }
+        }
+
         private void NotifySettingsChanged()
         {
             // Using InvariantCulture as this is an IPC message

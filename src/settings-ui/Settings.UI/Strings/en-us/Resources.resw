@@ -2843,6 +2843,10 @@ From there, simply click on one of the supported files in the File Explorer and 
     <value>Tries to run Peek without elevated permissions, to fix access to network shares. You need to disable and re-enable Peek for changes to this value to take effect.</value>
     <comment>Peek is a product name, do not loc</comment>
   </data>
+  <data name="Peek_CloseAfterLosingFocus.Header" xml:space="preserve">
+    <value>Automatically close the Peek window after it loses focus</value>
+    <comment>Peek is a product name, do not loc</comment>
+  </data>
   <data name="FancyZones_DisableRoundCornersOnWindowSnap.Content" xml:space="preserve">
     <value>Disable round corners when window is snapped</value>
   </data>
