@@ -124,7 +124,7 @@ namespace Hosts.Helpers
 
                     if (!e.Valid)
                     {
-                        lineBuilder.Append(e.GetLine());
+                        lineBuilder.Append(e.Line);
                     }
                     else
                     {
