@@ -85,7 +85,6 @@ namespace PowerAccent.Core
         {
             return letter switch
             {
-
                 LetterKey.VK_0 => new[] { "₀", "⁰" },
                 LetterKey.VK_1 => new[] { "₁", "¹" },
                 LetterKey.VK_2 => new[] { "₂", "²" },
