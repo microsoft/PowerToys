@@ -113,7 +113,7 @@ namespace PowerAccent.Core
                 LetterKey.VK_P => new[] { "ṗ", "₽", "π", "φ", "ψ", "℗" },
                 LetterKey.VK_Q => new[] { "ℚ" },
                 LetterKey.VK_R => new[] { "ŕ", "ř", "ṙ", "₹", "ρ", "®", "ℝ" },
-                LetterKey.VK_S => new[] { "ś", "ş", "š", "ș", "ṡ", "ŝ", "ß", "σ", "$" },
+                LetterKey.VK_S => new[] { "ś", "ş", "š", "ș", "ṡ", "ŝ", "ß", "σ", "$", "\u00A7" },
                 LetterKey.VK_T => new[] { "ţ", "ť", "ț", "ṫ", "ŧ", "θ", "τ", "þ", "™" },
                 LetterKey.VK_U => new[] { "û", "ú", "ü", "ŭ", "ű", "ù", "ů", "ū", "ų", "ǔ", "υ", "ǖ", "ǘ", "ǚ", "ǜ" },
                 LetterKey.VK_V => new[] { "V̇" },
