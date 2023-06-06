@@ -168,7 +168,7 @@ namespace Hosts.Tests
 
             var fileSystem = new CustomMockFileSystem();
             var userSettings = new Mock<IUserSettings>();
-            userSettings.Setup(m => m.AdditionalLinesPosition).Returns(AdditionalLinesPosition.Top);
+            userSettings.Setup(m => m.AdditionalLinesPosition).Returns(HostsAdditionalLinesPosition.Top);
             var service = new HostsService(fileSystem, userSettings.Object, _elevationHelper.Object);
             fileSystem.AddFile(service.HostsFilePath, new MockFileData(content));
 
@@ -200,7 +200,7 @@ namespace Hosts.Tests
 
             var fileSystem = new CustomMockFileSystem();
             var userSettings = new Mock<IUserSettings>();
-            userSettings.Setup(m => m.AdditionalLinesPosition).Returns(AdditionalLinesPosition.Bottom);
+            userSettings.Setup(m => m.AdditionalLinesPosition).Returns(HostsAdditionalLinesPosition.Bottom);
 
             var service = new HostsService(fileSystem, userSettings.Object, _elevationHelper.Object);
             fileSystem.AddFile(service.HostsFilePath, new MockFileData(content));
