@@ -1,6 +1,7 @@
 // This file adds new languages to monaco
 
 import { regDefinition } from './customLanguages/reg.js';
+import { gitignoreDefinition } from './customLanguages/gitignore.js';
 
 export async function registerAdditionalLanguages(monaco){
     await languageDefinitions();
@@ -13,6 +14,7 @@ export async function registerAdditionalLanguages(monaco){
     registerAdditionalLanguage("vbExt", [".vbs"], "vb", monaco)
     registerAdditionalLanguage("iniExt", [".inf", ".gitconfig", ".gitattributes", ".editorconfig"], "ini", monaco)
     registerAdditionalNewLanguage("reg", [".reg"], regDefinition(), monaco)
+    registerAdditionalNewLanguage("gitignore", [".gitignore"], gitignoreDefinition(), monaco)
 }
 
 // Language definitions taken from Monaco source code
