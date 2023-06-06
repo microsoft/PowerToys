@@ -138,6 +138,11 @@ namespace Peek.UI.Views
             }
 
             StorageFile? storageFile = await fileItem.GetStorageFileAsync();
+            if (storageFile == null)
+            {
+                return;
+            }
+
             LauncherOptions options = new();
 
             PowerToysTelemetry.Log.WriteEvent(new OpenWithEvent() { App = DefaultAppName ?? string.Empty });
