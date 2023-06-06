@@ -74,6 +74,7 @@ namespace Hosts.Tests
         [DataRow("\t\thost\t\t10.1.1.1")]
         [DataRow("  host  10.1.1.1")]
         [DataRow("host 10.1.1.1")]
+        [DataRow("# comment 10.1.1.1 host # comment")]
         public void Not_Valid_Entry(string line)
         {
             var entry = new Entry(0, line);
