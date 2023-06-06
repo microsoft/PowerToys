@@ -123,7 +123,10 @@ namespace ColorPicker.Settings
                                     string filePath = _settingsUtils.GetSettingsFilePath(ColorPickerModuleName, ColorPickerHistoryFilename);
                                     if (!File.Exists(filePath))
                                     {
-                                        savedColorHistory = settings.Properties.ColorHistory;
+                                        if (settings.Properties.ColorHistory != null)
+                                        {
+                                            savedColorHistory = settings.Properties.ColorHistory;
+                                        }
                                     }
                                     else
                                     {
