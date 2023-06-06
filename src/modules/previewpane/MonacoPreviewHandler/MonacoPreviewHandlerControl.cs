@@ -79,7 +79,7 @@ namespace Microsoft.PowerToys.PreviewHandler.Monaco
 
         public MonacoPreviewHandlerControl()
         {
-            this.SetBackgroundColor(Settings.BackgroundColor);
+            this.SetBackground();
         }
 
         [STAThread]
@@ -99,9 +99,6 @@ namespace Microsoft.PowerToys.PreviewHandler.Monaco
             }
 
             base.DoPreview(dataSource);
-
-            // Sets background color
-            SetBackground();
 
             // Starts loading screen
             InitializeLoadingScreen();
