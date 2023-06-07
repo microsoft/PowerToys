@@ -204,6 +204,8 @@ public:
             Logger::error(L"Applying registry changes failed");
         }
 
+        SHChangeNotify(SHCNE_ASSOCCHANGED, SHCNF_IDLIST, NULL, NULL);
+
         // let the DLL enable the app
         m_enabled = true;
         Trace::EnableRegistryPreview(true);
@@ -226,6 +228,8 @@ public:
             {
                 Logger::error(L"Unapplying registry changes failed");
             }
+
+            SHChangeNotify(SHCNE_ASSOCCHANGED, SHCNF_IDLIST, NULL, NULL);
         }
 
         m_enabled = false;

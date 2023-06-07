@@ -12,7 +12,6 @@ using System.Reflection;
 using Microsoft.UI.Input;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
-using Microsoft.Windows.AppLifecycle;
 using Windows.Foundation.Metadata;
 using Windows.Storage;
 using WinUIEx;
@@ -1059,42 +1058,6 @@ namespace RegistryPreview
             }
 
             return false;
-        }
-
-        /// <summary>
-        /// Add this app to the "Open with..." popup for .REG files.
-        /// </summary>
-        private void RegisterApplicationWithManager()
-        {
-            string executablePath = AppDomain.CurrentDomain.BaseDirectory + @"PowerToys.RegistryPreview.exe";
-            string displayName = resourceLoader.GetString("YesNoCancelDialogTitle");
-            string[] fileTypes = { ".reg" };
-            string[] verbs = { "open" };
-            ActivationRegistrationManager.RegisterForFileTypeActivation(
-                fileTypes,
-                executablePath,
-                displayName,
-                verbs,
-                executablePath);
-        }
-
-        /// <summary>
-        /// Removes this app from the "Open with..." popup for .REG files.
-        /// </summary>
-        private void UnregisterApplicationFromManager()
-        {
-            // Unregister one or more registered filetypes.
-            try
-            {
-                string executablePath = AppDomain.CurrentDomain.BaseDirectory + @"PowerToys.RegistryPreview.exe";
-                string[] myFileTypes = { ".reg" };
-                ActivationRegistrationManager.UnregisterForFileTypeActivation(
-                    myFileTypes,
-                    executablePath);
-            }
-            catch
-            {
-            }
         }
     }
 }

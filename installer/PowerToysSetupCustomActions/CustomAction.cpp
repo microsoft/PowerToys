@@ -123,6 +123,8 @@ UINT __stdcall UnApplyModulesRegistryChangeSetsCA(MSIHANDLE hInstall)
         changeSet.unApply();
     }
 
+    SHChangeNotify(SHCNE_ASSOCCHANGED, SHCNF_IDLIST, NULL, NULL);
+
     ExitOnFailure(hr, "Failed to extract msix");
 
 LExit:
