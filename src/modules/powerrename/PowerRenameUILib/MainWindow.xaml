@@ -113,6 +113,7 @@
                 HorizontalAlignment="Stretch"
                 VerticalAlignment="Bottom"
                 Fill="{ThemeResource DividerStrokeColorDefaultBrush}" />
+            <!--Changing VirtualizationMode to Standard fixes the issue with popping indent/icons, but makes scrolling too slow-->
             <ListView
                 Grid.Row="1"
                 Grid.ColumnSpan="6"
@@ -120,7 +121,23 @@
                 IsTabStop="false"
                 ItemsSource="{x:Bind ExplorerItems, Mode=OneWay}"
                 SelectionMode="None"
-                XYFocusKeyboardNavigation="Enabled">
+                x:Name="listView_ExplorerItems"
+                XYFocusKeyboardNavigation="Enabled"
+                VirtualizingStackPanel.VirtualizationMode="Recycling">
+                <ListView.ItemTemplate>
+                    <DataTemplate x:DataType="local:ExplorerItemViewModel">
+                        <local:ExplorerItem 
+                            Id="{x:Bind IdVM, Mode=OneWay}"
+                            IdStr="{x:Bind IdStrVM}"
+                            Original="{x:Bind OriginalVM}"
+                            Renamed="{x:Bind RenamedVM}"
+                            Indentation="{x:Bind IndentationVM}"
+                            ImagePath="{x:Bind ImagePathVM}"
+                            Type="{x:Bind TypeVM}"
+                            Checked="{x:Bind CheckedVM, Mode=TwoWay, FallbackValue=True}"
+                            State="{x:Bind StateVM}" />
+                    </DataTemplate >
+                </ListView.ItemTemplate>
                 <ListView.ItemsPanel>
                     <ItemsPanelTemplate>
                         <VirtualizingStackPanel />

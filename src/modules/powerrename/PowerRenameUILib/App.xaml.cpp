@@ -21,10 +21,7 @@ using namespace PowerRenameUI::implementation;
 
 namespace fs = std::filesystem;
 
-//#define DEBUG_BENCHMARK_1M_ENTRIES
-
-// To learn more about WinUI, the WinUI project structure,
-// and more about our project templates, see: http://aka.ms/winui-project-info.
+//#define DEBUG_BENCHMARK_100K_ENTRIES
 
 std::vector<std::wstring> g_files;
 
@@ -116,35 +113,47 @@ void App::OnLaunched(LaunchActivatedEventArgs const&)
         ExitProcess(1);
     }
 
-#ifdef DEBUG_BENCHMARK_1M_ENTRIES
+#ifdef DEBUG_BENCHMARK_100K_ENTRIES
     const std::wstring_view ROOT_PATH = L"R:\\PowerRenameBenchmark";
-    // g_files shouldn't consume more than ~250MB of RAM. Assuming that WinUI with a virtualized panel should take another 250MB. So the PowerRename process should peak around 500MB.
 
     std::wstring subdirectory_name = L"0";
+    std::error_code _;
 
-    for (int i = 0; i < 1e6; ++i)
+#if 1
+    constexpr bool recreate_files = true;
+#else
+    constexpr bool recreate_files = false;
+#endif
+    if constexpr (recreate_files)
+        fs::remove_all(ROOT_PATH, _);
+
+    g_files.push_back(fs::path{ ROOT_PATH });
+    for (int i = 0; i < 1e5; ++i)
     {
         fs::path file_path{ ROOT_PATH };
         // Create a subdirectory for each subsequent 2^10 files, o/w filesystem becomes too slow to create them in a reasonable time.
         if ((i & ((1 << 10) - 1)) == 0)
+        {
             subdirectory_name = std::to_wstring(i >> 10);
+        }
 
         file_path /= subdirectory_name;
-        file_path /= std::to_wstring(i) + L".txt";
-#if 0
-        std::error_code _;
         fs::create_directories(file_path, _);
-        HANDLE hFile = CreateFileW(
-            file_path.c_str(),
-            GENERIC_WRITE,
-            0,
-            nullptr,
-            CREATE_NEW,
-            FILE_ATTRIBUTE_NORMAL,
-            nullptr);
-        CloseHandle(hFile);
-#endif
-        g_files.push_back(std::move(file_path));
+        if constexpr (recreate_files)
+        {
+            file_path /= std::to_wstring(i) + L".txt";
+            HANDLE hFile = CreateFileW(
+                file_path.c_str(),
+                GENERIC_WRITE,
+                0,
+                nullptr,
+                CREATE_NEW,
+                FILE_ATTRIBUTE_NORMAL,
+                nullptr);
+            CloseHandle(hFile);
+        }
+        else
+            file_path /= std::to_wstring(i) + L".txt";
     }
 #else
 #define BUFSIZE 4096 * 4

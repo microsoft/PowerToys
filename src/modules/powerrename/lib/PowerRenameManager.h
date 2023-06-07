@@ -11,12 +11,12 @@ class CPowerRenameManager :
 {
 public:
     // IUnknown
-    IFACEMETHODIMP  QueryInterface(_In_ REFIID iid, _Outptr_ void** resultInterface);
+    IFACEMETHODIMP QueryInterface(_In_ REFIID iid, _Outptr_ void** resultInterface);
     IFACEMETHODIMP_(ULONG) AddRef();
     IFACEMETHODIMP_(ULONG) Release();
 
     // IPowerRenameManager
-    IFACEMETHODIMP Advise(_In_ IPowerRenameManagerEvents* renameOpEvent, _Out_ DWORD *cookie);
+    IFACEMETHODIMP Advise(_In_ IPowerRenameManagerEvents* renameOpEvent, _Out_ DWORD* cookie);
     IFACEMETHODIMP UnAdvise(_In_ DWORD cookie);
     IFACEMETHODIMP Start();
     IFACEMETHODIMP Stop();
@@ -42,6 +42,9 @@ public:
     IFACEMETHODIMP PutRenameRegEx(_In_ IPowerRenameRegEx* pRegEx);
     IFACEMETHODIMP GetRenameItemFactory(_COM_Outptr_ IPowerRenameItemFactory** ppItemFactory);
     IFACEMETHODIMP PutRenameItemFactory(_In_ IPowerRenameItemFactory* pItemFactory);
+    
+    const std::vector<uint32_t>& GetRenamedItemsIndices() const override;
+    IFACEMETHODIMP PutRenamedItemsIndices(_In_ std::vector<uint32_t> indices);
 
     // IPowerRenameRegExEvents
     IFACEMETHODIMP OnSearchTermChanged(_In_ PCWSTR searchTerm);
@@ -60,8 +63,6 @@ protected:
 
     void _Cancel();
 
-    void _OnItemAdded(_In_ IPowerRenameItem* renameItem);
-    void _OnUpdate(_In_ IPowerRenameItem* renameItem);
     void _OnRename(_In_ IPowerRenameItem* renameItem);
     void _OnError(_In_ IPowerRenameItem* renameItem);
     void _OnRegExStarted(_In_ DWORD threadId);
@@ -111,6 +112,8 @@ protected:
     DWORD m_regExAdviseCookie = 0;
 
     DWORD m_filter = PowerRenameFilters::None;
+
+    std::vector<uint32_t> m_renamedItemsIndices;
 
     struct RENAME_MGR_EVENT
     {
