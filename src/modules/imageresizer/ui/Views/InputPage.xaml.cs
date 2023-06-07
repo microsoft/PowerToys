@@ -15,8 +15,14 @@ namespace ImageResizer.Views
         public InputPage()
             => InitializeComponent();
 
+        /// <summary>
+        /// This function handles the KeyDown event for a NumberBox control.
+        /// It checks if the key pressed is 'Enter'.
+        /// According to the NumberBox name, it creates an instance of the KeyPressParams class with the appropriate dimension (Width or Height) and the parsed double value.
+        /// </summary>
         private void Button_KeyDown(object sender, KeyEventArgs e)
         {
+            // Check if the key pressed is the 'Enter' key
             if (e.Key == Key.Enter)
             {
                 var numberBox = sender as NumberBox;
@@ -25,6 +31,7 @@ namespace ImageResizer.Views
                 KeyPressParams keyParams;
                 if (double.TryParse(((TextBox)e.OriginalSource).Text, out number))
                 {
+                    // Determine which NumberBox triggered the event based on its name
                     switch (numberBox.Name)
                     {
                         case "WidthNumberBox":

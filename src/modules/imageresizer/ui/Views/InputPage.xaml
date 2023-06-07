@@ -191,7 +191,7 @@
                         Style="{StaticResource AccentButtonStyle}"
                         MinWidth="76"
                         Margin="12,0,0,0"
-                        Command="{Binding ResizeCommand}"                        
+                        Command="{Binding ResizeCommand}"
                         AutomationProperties.Name="{x:Static p:Resources.Resize_Tooltip}"
                         Content="{x:Static p:Resources.Input_Resize}"
                         IsDefault="True"/>
