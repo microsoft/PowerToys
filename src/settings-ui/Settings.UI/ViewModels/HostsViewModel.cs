@@ -109,7 +109,20 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             {
                 if (value != (int)Settings.Properties.AdditionalLinesPosition)
                 {
-                    Settings.Properties.AdditionalLinesPosition = (AdditionalLinesPosition)value;
+                    Settings.Properties.AdditionalLinesPosition = (HostsAdditionalLinesPosition)value;
+                    NotifyPropertyChanged();
+                }
+            }
+        }
+
+        public int Encoding
+        {
+            get => (int)Settings.Properties.Encoding;
+            set
+            {
+                if (value != (int)Settings.Properties.Encoding)
+                {
+                    Settings.Properties.Encoding = (HostsEncoding)value;
                     NotifyPropertyChanged();
                 }
             }
