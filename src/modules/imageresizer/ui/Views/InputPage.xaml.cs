@@ -16,6 +16,8 @@ namespace ImageResizer.Views
             => InitializeComponent();
 
         /// <summary>
+        /// Pressing Enter key doesn't update value. PropertyChanged is only updated after losing focus to NumberBox.
+        /// We add this workaround the UI limitations and might need to be revisited or not needed anymore if we upgrade to WinUI3.
         /// This function handles the KeyDown event for a NumberBox control.
         /// It checks if the key pressed is 'Enter'.
         /// According to the NumberBox name, it creates an instance of the KeyPressParams class with the appropriate dimension (Width or Height) and the parsed double value.
