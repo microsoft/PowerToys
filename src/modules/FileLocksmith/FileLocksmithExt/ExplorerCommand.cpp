@@ -80,8 +80,7 @@ IFACEMETHODIMP ExplorerCommand::GetState(IShellItemArray* psiItemArray, BOOL fOk
         return S_OK;
     }
 
-    // When right clicking directory background, selection is empty. This prevents checking if there
-    // are renamable items, but internal PowerRename logic will prevent renaming non-renamable items anyway.
+    // When right clicking directory background, selection is empty.
     if (nullptr == psiItemArray)
     {
         *pCmdState = ECS_HIDDEN;
