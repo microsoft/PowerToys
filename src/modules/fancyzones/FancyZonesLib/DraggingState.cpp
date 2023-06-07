@@ -7,8 +7,7 @@
 DraggingState::DraggingState(const std::function<void()>& keyUpdateCallback) :
     m_mouseState(false),
     m_middleMouseState(false),
-    m_mouseHook(std::bind(&DraggingState::OnMouseDown, this)),
-    m_middleMouseHook(std::bind(&DraggingState::OnMiddleMouseDown, this)),
+    m_mouseHook(std::bind(&DraggingState::OnMouseDown, this), std::bind(&DraggingState::OnMiddleMouseDown, this)),
     m_leftShiftKeyState(keyUpdateCallback),
     m_rightShiftKeyState(keyUpdateCallback),
     m_ctrlKeyState(keyUpdateCallback),
@@ -21,7 +20,6 @@ void DraggingState::Enable()
     if (FancyZonesSettings::settings().mouseSwitch)
     {
         m_mouseHook.enable();
-        m_middleMouseHook.enable();
     }
 
     m_leftShiftKeyState.enable();
@@ -52,7 +50,6 @@ void DraggingState::Disable()
     m_middleMouseState = false;
 
     m_mouseHook.disable();
-    m_middleMouseHook.disable();
     m_leftShiftKeyState.disable();
     m_rightShiftKeyState.disable();
     m_ctrlKeyState.disable();
@@ -79,6 +76,11 @@ void DraggingState::OnMouseDown()
 
 void DraggingState::OnMiddleMouseDown()
 {
+    if (!this->IsDragging())
+    {
+        return;
+    }
+
     m_middleMouseState = !m_middleMouseState;
     m_keyUpdateCallback();
 }

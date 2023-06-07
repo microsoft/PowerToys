@@ -57,7 +57,6 @@
     <ClInclude Include="Layout.h" />
     <ClInclude Include="LayoutConfigurator.h" />
     <ClInclude Include="LayoutAssignedWindows.h" />
-    <ClInclude Include="MiddleMouseButtonsHook.h" />
     <ClInclude Include="ModuleConstants.h" />
     <ClInclude Include="MonitorUtils.h" />
     <ClInclude Include="MonitorWorkAreaMap.h" />
@@ -65,7 +64,7 @@
     <ClInclude Include="pch.h" />
     <ClInclude Include="Generated Files/resource.h" />
     <None Include="resource.base.h" />
-    <ClInclude Include="SecondaryMouseButtonsHook.h" />
+    <ClInclude Include="MouseButtonsHook.h" />
     <ClInclude Include="Settings.h" />
     <ClInclude Include="SettingsConstants.h" />
     <ClInclude Include="SettingsObserver.h" />
@@ -113,14 +112,13 @@
     <ClCompile Include="Layout.cpp" />
     <ClCompile Include="LayoutConfigurator.cpp" />
     <ClCompile Include="LayoutAssignedWindows.cpp" />
-    <ClCompile Include="MiddleMouseButtonsHook.cpp" />
     <ClCompile Include="MonitorUtils.cpp" />
     <ClCompile Include="MonitorWorkAreaMap.cpp" />
     <ClCompile Include="OnThreadExecutor.cpp" />
     <ClCompile Include="pch.cpp">
       <PrecompiledHeader Condition="'$(CIBuild)'!='true'">Create</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="SecondaryMouseButtonsHook.cpp" />
+    <ClCompile Include="MouseButtonsHook.cpp" />
     <ClCompile Include="Settings.cpp" />
     <ClCompile Include="trace.cpp" />
     <ClCompile Include="util.cpp" />

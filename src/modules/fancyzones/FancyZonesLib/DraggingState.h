@@ -1,8 +1,7 @@
 #pragma once
 
 #include <FancyZonesLib/KeyState.h>
-#include <FancyZonesLib/MiddleMouseButtonsHook.h>
-#include <FancyZonesLib/SecondaryMouseButtonsHook.h>
+#include <FancyZonesLib/MouseButtonsHook.h>
 
 class DraggingState
 {
@@ -23,8 +22,7 @@ private:
 
     std::atomic<bool> m_mouseState;
     std::atomic<bool> m_middleMouseState;
-    SecondaryMouseButtonsHook m_mouseHook;
-    MiddleMouseButtonsHook m_middleMouseHook;
+    MouseButtonsHook m_mouseHook;
     KeyState<VK_LSHIFT> m_leftShiftKeyState;
     KeyState<VK_RSHIFT> m_rightShiftKeyState;
     KeyState<VK_LCONTROL, VK_RCONTROL> m_ctrlKeyState;
