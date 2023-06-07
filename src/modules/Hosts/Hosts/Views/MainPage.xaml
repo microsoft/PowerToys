@@ -372,7 +372,6 @@
         <ContentDialog
             x:Name="EntryDialog"
             x:Uid="EntryDialog"
-            Loaded="ContentDialog_Loaded_ApplyMargin"
             IsPrimaryButtonEnabled="{Binding Valid, Mode=OneWay}"
             PrimaryButtonStyle="{StaticResource AccentButtonStyle}">
             <ContentDialog.DataContext>
@@ -418,7 +417,6 @@
         <ContentDialog
             x:Name="AdditionalLinesDialog"
             x:Uid="AdditionalLinesDialog"
-            Loaded="ContentDialog_Loaded_ApplyMargin"
             PrimaryButtonCommand="{x:Bind UpdateAdditionalLinesCommand}"
             PrimaryButtonStyle="{StaticResource AccentButtonStyle}">
 
