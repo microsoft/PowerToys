@@ -48,6 +48,7 @@
                     Checked="SelectAll"
                     Content=""
                     IsChecked="True"
+                    Style="{StaticResource CheckBoxDefaultStyleOverride}"
                     Unchecked="SelectAll" />
                 <Image
                     Width="16"
@@ -120,6 +121,12 @@
                 ItemsSource="{x:Bind ExplorerItems, Mode=OneWay}"
                 SelectionMode="None"
                 XYFocusKeyboardNavigation="Enabled">
+                <ListView.ItemsPanel>
+                    <ItemsPanelTemplate>
+                        <VirtualizingStackPanel />
+                    </ItemsPanelTemplate>
+                </ListView.ItemsPanel>
+                
                 <ListView.ItemContainerStyle>
                     <Style TargetType="ListViewItem">
                         <Setter Property="IsTabStop" Value="False" />

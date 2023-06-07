@@ -5,6 +5,7 @@
 
 #include <vector>
 #include <string>
+#include <filesystem>
 
 #include <common/logger/logger.h>
 #include <common/logger/logger_settings.h>
@@ -17,6 +18,10 @@ using namespace winrt::Microsoft::UI::Xaml::Controls;
 using namespace winrt::Microsoft::UI::Xaml::Navigation;
 using namespace PowerRenameUI;
 using namespace PowerRenameUI::implementation;
+
+namespace fs = std::filesystem;
+
+//#define DEBUG_BENCHMARK_1M_ENTRIES
 
 // To learn more about WinUI, the WinUI project structure,
 // and more about our project templates, see: http://aka.ms/winui-project-info.
@@ -34,8 +39,7 @@ App::App()
     InitializeComponent();
 
 #if defined _DEBUG && !defined DISABLE_XAML_GENERATED_BREAK_ON_UNHANDLED_EXCEPTION
-    UnhandledException([this](IInspectable const&, UnhandledExceptionEventArgs const& e)
-    {
+    UnhandledException([this](IInspectable const&, UnhandledExceptionEventArgs const& e) {
         if (IsDebuggerPresent())
         {
             auto errorMessage = e.Message();
@@ -112,6 +116,37 @@ void App::OnLaunched(LaunchActivatedEventArgs const&)
         ExitProcess(1);
     }
 
+#ifdef DEBUG_BENCHMARK_1M_ENTRIES
+    const std::wstring_view ROOT_PATH = L"R:\\PowerRenameBenchmark";
+    // g_files shouldn't consume more than ~250MB of RAM. Assuming that WinUI with a virtualized panel should take another 250MB. So the PowerRename process should peak around 500MB.
+
+    std::wstring subdirectory_name = L"0";
+
+    for (int i = 0; i < 1e6; ++i)
+    {
+        fs::path file_path{ ROOT_PATH };
+        // Create a subdirectory for each subsequent 2^10 files, o/w filesystem becomes too slow to create them in a reasonable time.
+        if ((i & ((1 << 10) - 1)) == 0)
+            subdirectory_name = std::to_wstring(i >> 10);
+
+        file_path /= subdirectory_name;
+        file_path /= std::to_wstring(i) + L".txt";
+#if 0
+        std::error_code _;
+        fs::create_directories(file_path, _);
+        HANDLE hFile = CreateFileW(
+            file_path.c_str(),
+            GENERIC_WRITE,
+            0,
+            nullptr,
+            CREATE_NEW,
+            FILE_ATTRIBUTE_NORMAL,
+            nullptr);
+        CloseHandle(hFile);
+#endif
+        g_files.push_back(std::move(file_path));
+    }
+#else
 #define BUFSIZE 4096 * 4
 
     BOOL bSuccess;
@@ -139,6 +174,7 @@ void App::OnLaunched(LaunchActivatedEventArgs const&)
             break;
     }
     CloseHandle(hStdin);
+#endif
 
     Logger::debug(L"Starting PowerRename with {} files selected", g_files.size());
 

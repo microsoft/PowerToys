@@ -1060,7 +1060,36 @@
                     </Setter.Value>
                 </Setter>
             </Style>
-
+            <!-- Copied from https://github.com/microsoft/microsoft-ui-xaml/blob/210349d9d1e0aeb8ee144ec027071a68ac578bdb/dev/CommonStyles/CheckBox_themeresources.xaml#L794 to remove the AnimatedIcon that caused crashes (see #18478). -->
+            <Style x:Key="CheckBoxDefaultStyleOverride" TargetType="CheckBox">
+                <Setter Property="Background"
+                        Value="{ThemeResource CheckBoxBackgroundUnchecked}" />
+                <Setter Property="Foreground"
+                        Value="{ThemeResource CheckBoxForegroundUnchecked}" />
+                <Setter Property="BorderBrush"
+                        Value="{ThemeResource CheckBoxBorderBrushUnchecked}" />
+                <Setter Property="Padding"
+                        Value="{StaticResource CheckBoxPadding}" />
+                <Setter Property="HorizontalAlignment" Value="Left" />
+                <Setter Property="VerticalAlignment" Value="Center" />
+                <Setter Property="HorizontalContentAlignment" Value="Left" />
+                <Setter Property="VerticalContentAlignment" Value="Top" />
+                <Setter Property="FontFamily"
+                        Value="{ThemeResource ContentControlThemeFontFamily}" />
+                <Setter Property="FontSize"
+                        Value="{ThemeResource ControlContentThemeFontSize}" />
+                <Setter Property="MinWidth"
+                        Value="{StaticResource CheckBoxMinWidth}" />
+                <Setter Property="MinHeight"
+                        Value="{StaticResource CheckBoxHeight}" />
+                <Setter Property="UseSystemFocusVisuals"
+                        Value="{StaticResource UseSystemFocusVisuals}" />
+                <Setter Property="FocusVisualMargin"
+                        Value="{StaticResource CheckBoxFocusVisualMargin}" />
+                <Setter Property="CornerRadius"
+                        Value="{ThemeResource ControlCornerRadius}" />
+                
+            </Style>
         </ResourceDictionary>
     </Application.Resources>
 </Application>
