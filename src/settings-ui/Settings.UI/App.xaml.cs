@@ -191,7 +191,7 @@ namespace Microsoft.PowerToys.Settings.UI
                         PowerToysTelemetry.Log.WriteEvent(new ScoobeStartedEvent());
                         OobeWindow scoobeWindow = new OobeWindow(OOBE.Enums.PowerToysModules.WhatsNew, isDark);
                         scoobeWindow.Activate();
-                        oobeWindow.ExtendsContentIntoTitleBar = true;
+                        scoobeWindow.ExtendsContentIntoTitleBar = true;
                         SetOobeWindow(scoobeWindow);
                     }
                     else if (ShowFlyout)
