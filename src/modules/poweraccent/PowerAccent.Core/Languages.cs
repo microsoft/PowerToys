@@ -150,7 +150,7 @@ namespace PowerAccent.Core
                 LetterKey.VK_9 => new string[] { "₉", "⁹" },
                 LetterKey.VK_A => new string[] { "α", "∀" },
                 LetterKey.VK_B => new string[] { "β" },
-                LetterKey.VK_C => new string[] { "χ" }
+                LetterKey.VK_C => new string[] { "χ" },
                 LetterKey.VK_D => new string[] { "δ" },
                 LetterKey.VK_E => new string[] { "ε", "∃", "∄" },
                 LetterKey.VK_F => new string[] { "ƒ" },
@@ -166,7 +166,7 @@ namespace PowerAccent.Core
                 LetterKey.VK_U => new string[] { "υ"},
                 LetterKey.VK_X => new string[] { "ξ", "⊕" },
                 LetterKey.VK_Z => new string[] { "ζ" },
-                LetterKey.VK_BACKSLASH => new string { "⋃", "⋁" }
+                LetterKey.VK_BACKSLASH => new string { "⋃", "⋁" },
                 LetterKey.VK_EQUALS => new string[] {"≠","≈","⇔","≡", "≙", "±", "₊", "⁺" },
                 LetterKey.VK_COMMA => new string[] { "≤", "⇐", "⊆", "⊂", "⊄", "∌", "∋", "≪"},
                 LetterKey.VK_PERIOD => new string[] { "≥", "⇒", "⊇", "⊃", "⊅", "∈", "∉", "≫" },
