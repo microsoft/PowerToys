@@ -34,7 +34,7 @@
                                     NavigateUri="https://github.com/microsoft/PowerToys/releases/" />
                             </StackPanel>
                         </labs:SettingsCard.Description>
-                        <Grid Visibility="{Binding PowerToysUpdatingState, Mode=OneWay, Converter={StaticResource UpdateStateToBoolConverter}, ConverterParameter=UpToDate}">
+                        <Grid Visibility="{Binding IsUpdatePanelVisible, Mode=OneWay}">
                             <StackPanel
                                 VerticalAlignment="Center"
                                 Orientation="Horizontal"

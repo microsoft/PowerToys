@@ -679,6 +679,14 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             }
         }
 
+        public bool IsUpdatePanelVisible
+        {
+            get
+            {
+                return PowerToysUpdatingState == UpdatingSettings.UpdatingState.UpToDate || PowerToysUpdatingState == UpdatingSettings.UpdatingState.NetworkError;
+            }
+        }
+
         public void NotifyPropertyChanged([CallerMemberName] string propertyName = null, bool reDoBackupDryRun = true)
         {
             // Notify UI of property change
@@ -792,23 +800,6 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         // callback function to launch the URL to check for updates.
         private void CheckForUpdatesClick()
         {
-            // check if network is available
-            bool isNetAvailable = IsNetworkAvailable();
-
-            // check if the state changed
-            bool prevState = _isNoNetwork;
-            _isNoNetwork = !isNetAvailable;
-            if (prevState != _isNoNetwork)
-            {
-                NotifyPropertyChanged(nameof(IsNoNetwork));
-            }
-
-            if (!isNetAvailable)
-            {
-                _isNewVersionDownloading = false;
-                return;
-            }
-
             RefreshUpdatingState();
             IsNewVersionDownloading = string.IsNullOrEmpty(UpdatingSettingsConfig.DownloadedInstallerFilename);
             NotifyPropertyChanged(nameof(IsDownloadAllowed));
@@ -952,6 +943,10 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 PowerToysNewAvailableVersionLink = UpdatingSettingsConfig.ReleasePageLink;
                 UpdateCheckedDate = UpdatingSettingsConfig.LastCheckedDateLocalized;
 
+                _isNoNetwork = PowerToysUpdatingState == UpdatingSettings.UpdatingState.NetworkError;
+                NotifyPropertyChanged(nameof(IsNoNetwork));
+                NotifyPropertyChanged(nameof(IsNewVersionDownloading));
+                NotifyPropertyChanged(nameof(IsUpdatePanelVisible));
                 _isNewVersionChecked = PowerToysUpdatingState == UpdatingSettings.UpdatingState.UpToDate && !IsNewVersionDownloading;
                 NotifyPropertyChanged(nameof(IsNewVersionCheckedAndUpToDate));
 
