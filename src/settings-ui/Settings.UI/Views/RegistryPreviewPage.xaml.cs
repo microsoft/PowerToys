@@ -16,7 +16,10 @@ namespace Microsoft.PowerToys.Settings.UI.Views
         public RegistryPreviewPage()
         {
             var settingsUtils = new SettingsUtils();
-            ViewModel = new RegistryPreviewViewModel(SettingsRepository<GeneralSettings>.GetInstance(settingsUtils), ShellPage.SendDefaultIPCMessage);
+            ViewModel = new RegistryPreviewViewModel(
+                SettingsRepository<GeneralSettings>.GetInstance(settingsUtils),
+                SettingsRepository<RegistryPreviewSettings>.GetInstance(settingsUtils),
+                ShellPage.SendDefaultIPCMessage);
             DataContext = ViewModel;
             InitializeComponent();
         }

@@ -229,10 +229,6 @@ inline registry::ChangeSet getRegistryPreviewChangeSet(const std::wstring instal
     icon_path.append(L"\\modules\\RegistryPreview\\app.ico");
     changes.push_back({ scope, L"Software\\Classes\\regfile\\shell\\preview", L"icon", icon_path });
 
-    auto setDefaultAppChangeSet = getRegistryPreviewSetDefaultAppChangeSet(installationDir, perUser);
-
-    changes.insert(changes.begin(), setDefaultAppChangeSet.changes.begin(), setDefaultAppChangeSet.changes.end());
-
     return { changes };
 }
 
@@ -261,5 +257,6 @@ inline std::vector<registry::ChangeSet> getAllModulesChangeSets(const std::wstri
              getPdfThumbnailHandlerChangeSet(installationDir, PER_USER),
              getGcodeThumbnailHandlerChangeSet(installationDir, PER_USER),
              getStlThumbnailHandlerChangeSet(installationDir, PER_USER),
-             getRegistryPreviewChangeSet(installationDir, PER_USER) };
+             getRegistryPreviewChangeSet(installationDir, PER_USER),
+             getRegistryPreviewSetDefaultAppChangeSet(installationDir, PER_USER) };
 }
