@@ -7,7 +7,6 @@ using ManagedCommon;
 using Microsoft.PowerLauncher.Telemetry;
 using Microsoft.PowerToys.Settings.UI.Helpers;
 using Microsoft.PowerToys.Settings.UI.Library;
-using Microsoft.PowerToys.Settings.UI.Library.Utilities;
 using Microsoft.PowerToys.Settings.UI.Views;
 using Microsoft.PowerToys.Telemetry;
 using Microsoft.UI;
@@ -76,10 +75,10 @@ namespace Microsoft.PowerToys.Settings.UI
             });
 
             // open main window
-            ShellPage.SetOpenMainWindowCallback(() =>
+            ShellPage.SetOpenMainWindowCallback(type =>
             {
-                this.DispatcherQueue.TryEnqueue(Microsoft.UI.Dispatching.DispatcherQueuePriority.Normal, () =>
-                     App.OpenSettingsWindow(typeof(GeneralPage)));
+                DispatcherQueue.TryEnqueue(Microsoft.UI.Dispatching.DispatcherQueuePriority.Normal, () =>
+                     App.OpenSettingsWindow(type));
             });
 
             // open main window
@@ -126,9 +125,15 @@ namespace Microsoft.PowerToys.Settings.UI
                     case "MousePointerCrosshairs":
                         needToUpdate = generalSettingsConfig.Enabled.MousePointerCrosshairs != isEnabled;
                         generalSettingsConfig.Enabled.MousePointerCrosshairs = isEnabled; break;
+                    case "MouseWithoutBorders":
+                        needToUpdate = generalSettingsConfig.Enabled.MouseWithoutBorders != isEnabled;
+                        generalSettingsConfig.Enabled.MouseWithoutBorders = isEnabled; break;
                     case "PastePlain":
                         needToUpdate = generalSettingsConfig.Enabled.PastePlain != isEnabled;
                         generalSettingsConfig.Enabled.PastePlain = isEnabled; break;
+                    case "Peek":
+                        needToUpdate = generalSettingsConfig.Enabled.Peek != isEnabled;
+                        generalSettingsConfig.Enabled.Peek = isEnabled; break;
                     case "PowerRename":
                         needToUpdate = generalSettingsConfig.Enabled.PowerRename != isEnabled;
                         generalSettingsConfig.Enabled.PowerRename = isEnabled; break;

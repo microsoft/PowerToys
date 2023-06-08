@@ -161,7 +161,7 @@
                      <Run x:Name="WidthLabel" />
                      <Run Text="&#xE947;"
                           FontSize="10"
-                          FontFamily="Segoe MDL2 Assets" />
+                          FontFamily="{StaticResource SymbolThemeFontFamily}" />
                     <Run x:Name="HeightLabel" />
                 </TextBlock>
             </DockPanel>
@@ -189,7 +189,7 @@
                     Focusable="False"
                     Grid.Row="2"
                     Grid.Column="2"
-                    FontFamily="Segoe MDL2 Assets"
+                    FontFamily="{StaticResource SymbolThemeFontFamily}"
                     HorizontalAlignment="Right"
                     VerticalAlignment="Top" Style="{DynamicResource CloseButtonStyle}"/>
 

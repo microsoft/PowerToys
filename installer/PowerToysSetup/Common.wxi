@@ -14,8 +14,10 @@
   <?define AlwaysOnTopProjectName="AlwaysOnTop"?>
   <?define MeasureToolProjectName="MeasureTool"?>
   <?define HostsProjectName="Hosts"?>
+  <?define MouseWithoutBordersProjectName="MouseWithoutBorders"?>
   <?define PastePlainProjectName="PastePlain"?>
   <?define RegistryPreviewProjectName="RegistryPreview"?>
+  <?define PeekProjectName="Peek"?>
   
   <?define RepoDir="$(var.ProjectDir)..\..\" ?>
   <?if $(var.Platform) = x64?>

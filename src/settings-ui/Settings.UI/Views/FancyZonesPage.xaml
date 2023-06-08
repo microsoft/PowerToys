@@ -35,7 +35,9 @@
                     IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}">
                     <labs:SettingsCard
                         x:Uid="FancyZones_LaunchEditorButtonControl"
-                        ActionIcon="{ui:FontIcon FontFamily={StaticResource SymbolThemeFontFamily}, FontSize=14, Glyph=&#xE8A7;}"
+                        ActionIcon="{ui:FontIcon FontFamily={StaticResource SymbolThemeFontFamily},
+                            FontSize=14,
+                            Glyph=&#xE8A7;}"
                         Command="{x:Bind ViewModel.LaunchEditorEventHandler}"
                         HeaderIcon="{ui:FontIcon FontFamily={StaticResource SymbolThemeFontFamily}, Glyph=&#xEB3C;}"
                         IsClickEnabled="True" />
@@ -115,8 +117,8 @@
                         <labs:SettingsExpander.Items>
                             <labs:SettingsCard ContentAlignment="Left">
                                 <controls:FancyZonesPreviewControl
-                                    Width="170"
-                                    Height="86"
+                                    Width="192"
+                                    Height="108"
                                     CustomBorderColor="{x:Bind Path=ViewModel.ZoneBorderColor, Mode=OneWay}"
                                     CustomHighlightColor="{x:Bind Path=ViewModel.ZoneHighlightColor, Mode=OneWay}"
                                     CustomInActiveColor="{x:Bind Path=ViewModel.ZoneInActiveColor, Mode=OneWay}"

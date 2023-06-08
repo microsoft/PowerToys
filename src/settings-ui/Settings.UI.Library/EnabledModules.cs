@@ -182,6 +182,22 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             }
         }
 
+        private bool mouseWithoutBorders = true;
+
+        [JsonPropertyName("MouseWithoutBorders")]
+        public bool MouseWithoutBorders
+        {
+            get => mouseWithoutBorders;
+            set
+            {
+                if (mouseWithoutBorders != value)
+                {
+                    LogTelemetryEvent(value);
+                    mouseWithoutBorders = value;
+                }
+            }
+        }
+
         private bool findMyMouse = true;
 
         [JsonPropertyName("FindMyMouse")]
@@ -358,6 +374,22 @@ namespace Microsoft.PowerToys.Settings.UI.Library
                 {
                     LogTelemetryEvent(value);
                     fileLocksmith = value;
+                }
+            }
+        }
+
+        private bool peek = true;
+
+        [JsonPropertyName("Peek")]
+        public bool Peek
+        {
+            get => peek;
+            set
+            {
+                if (peek != value)
+                {
+                    LogTelemetryEvent(value);
+                    peek = value;
                 }
             }
         }
