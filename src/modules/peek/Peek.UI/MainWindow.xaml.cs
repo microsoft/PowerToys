@@ -48,7 +48,7 @@ namespace Peek.UI
 
         private void HandleThemeChange()
         {
-            AppWindow appWindow = this.GetAppWindow();
+            AppWindow appWindow = this.AppWindow;
 
             if (ThemeHelpers.GetAppTheme() == AppTheme.Light)
             {
