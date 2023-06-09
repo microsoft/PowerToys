@@ -166,7 +166,7 @@ namespace PowerAccent.Core
                 LetterKey.VK_U => new string[] { "υ"},
                 LetterKey.VK_X => new string[] { "ξ", "⊕" },
                 LetterKey.VK_Z => new string[] { "ζ" },
-                //LetterKey.VK_BACKSLASH => new string[] { "⋃", "⋁" },
+                LetterKey.VK_BACKSLASH => new string[] { "⋃", "⋁" },
                 LetterKey.VK_EQUALS => new string[] {"≠","≈","⇔","≡", "≙", "±", "₊", "⁺" },
                 LetterKey.VK_COMMA => new string[] { "≤", "⇐", "⊆", "⊂", "⊄", "∌", "∋", "≪"},
                 LetterKey.VK_PERIOD => new string[] { "≥", "⇒", "⊇", "⊃", "⊅", "∈", "∉", "≫" },
