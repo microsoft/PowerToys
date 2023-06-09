@@ -140,7 +140,7 @@ namespace PowerAccent.Core
             {
                 LetterKey.VK_0 => new string[] { "₀", "⁰", "°" },
                 LetterKey.VK_1 => new string[] { "₁", "¹", "¬" },
-                LetterKey.VK_2 => new string[] { "₂", "²",  "√" },
+                LetterKey.VK_2 => new string[] { "₂", "²", "√" },
                 LetterKey.VK_3 => new string[] { "₃", "³", "∛" },
                 LetterKey.VK_4 => new string[] { "₄", "⁴" },
                 LetterKey.VK_5 => new string[] { "₅", "⁵", "‰" },
@@ -164,14 +164,14 @@ namespace PowerAccent.Core
                 LetterKey.VK_R => new string[] { "ℝ", "ρ" },
                 LetterKey.VK_S => new string[] { "σ", "ß", "∫" },
                 LetterKey.VK_T => new string[] { "θ", "τ", "þ" },
-                LetterKey.VK_U => new string[] { "υ"},
+                LetterKey.VK_U => new string[] { "υ" },
                 LetterKey.VK_X => new string[] { "ξ", "⊕" },
                 LetterKey.VK_Z => new string[] { "ℤ", "ζ" },
                 LetterKey.VK_BACKSLASH => new string[] { "⋃", "⋁" },
-                LetterKey.VK_EQUALS => new string[] {"≠", "≈", "⇔", "≡", "≙", "±", "₊", "⁺" },
-                LetterKey.VK_COMMA => new string[] { "≤", "⇐", "⊆", "⊂", "⊄", "∌", "∋", "≪"},
+                LetterKey.VK_EQUALS => new string[] { "≠", "≈", "⇔", "≡", "≙", "±", "₊", "⁺" },
+                LetterKey.VK_COMMA => new string[] { "≤", "⇐", "⊆", "⊂", "⊄", "∌", "∋", "≪" },
                 LetterKey.VK_PERIOD => new string[] { "≥", "⇒", "⊇", "⊃", "⊅", "∈", "∉", "≫" },
-                LetterKey.VK_SLASH_ => new string[] {  "÷", "½", "⅓", "⅔", "¼", "¾" },
+                LetterKey.VK_SLASH_ => new string[] { "÷", "½", "⅓", "⅔", "¼", "¾" },
                 _ => Array.Empty<string>(),
             };
         }
