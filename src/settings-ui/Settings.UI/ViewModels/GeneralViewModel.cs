@@ -953,48 +953,5 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 NotifyPropertyChanged(nameof(IsDownloadAllowed));
             }
         }
-
-        /// <summary>
-        /// Indicates whether any network connection is available
-        /// Filter virtual network cards.
-        /// </summary>
-        /// <returns>
-        ///     <c>true</c> if a network connection is available; otherwise, <c>false</c>.
-        /// </returns>
-        public static bool IsNetworkAvailable()
-        {
-            if (!NetworkInterface.GetIsNetworkAvailable())
-            {
-                return false;
-            }
-
-            foreach (NetworkInterface ni in NetworkInterface.GetAllNetworkInterfaces())
-            {
-                // discard because of standard reasons
-                if ((ni.OperationalStatus != OperationalStatus.Up) ||
-                    (ni.NetworkInterfaceType == NetworkInterfaceType.Loopback) ||
-                    (ni.NetworkInterfaceType == NetworkInterfaceType.Tunnel))
-                {
-                    continue;
-                }
-
-                // discard virtual cards (virtual box, virtual pc, etc.)
-                if (ni.Description.Contains("virtual", StringComparison.OrdinalIgnoreCase) ||
-                    ni.Name.Contains("virtual", StringComparison.OrdinalIgnoreCase))
-                {
-                    continue;
-                }
-
-                // discard "Microsoft Loopback Adapter", it will not show as NetworkInterfaceType.Loopback but as Ethernet Card.
-                if (ni.Description.Equals("Microsoft Loopback Adapter", StringComparison.OrdinalIgnoreCase))
-                {
-                    continue;
-                }
-
-                return true;
-            }
-
-            return false;
-        }
     }
 }
