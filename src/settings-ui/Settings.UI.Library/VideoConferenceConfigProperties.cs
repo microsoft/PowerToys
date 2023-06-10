@@ -9,53 +9,54 @@ namespace Microsoft.PowerToys.Settings.UI.Library
 {
     public class VideoConferenceConfigProperties
     {
+        public HotkeySettings DefaultMuteCameraAndMicrophoneHotkey => new HotkeySettings()
+        {
+            Win = true,
+            Ctrl = false,
+            Alt = false,
+            Shift = true,
+            Key = "Q",
+            Code = 81,
+        };
+
+        public HotkeySettings DefaultMuteMicrophoneHotkey => new HotkeySettings()
+        {
+            Win = true,
+            Ctrl = false,
+            Alt = false,
+            Shift = true,
+            Key = "A",
+            Code = 65,
+        };
+
+        public HotkeySettings DefaultPushToTalkMicrophoneHotkey => new HotkeySettings()
+        {
+            Win = true,
+            Ctrl = false,
+            Alt = false,
+            Shift = true,
+            Key = "I",
+            Code = 73,
+        };
+
+        public HotkeySettings DefaultMuteCameraHotkey => new HotkeySettings()
+        {
+            Win = true,
+            Ctrl = false,
+            Alt = false,
+            Shift = true,
+            Key = "O",
+            Code = 79,
+        };
+
         public VideoConferenceConfigProperties()
         {
-            this.MuteCameraAndMicrophoneHotkey = new KeyboardKeysProperty(
-                new HotkeySettings()
-                {
-                    Win = true,
-                    Ctrl = false,
-                    Alt = false,
-                    Shift = true,
-                    Key = "Q",
-                    Code = 81,
-                });
+            MuteCameraAndMicrophoneHotkey = new KeyboardKeysProperty(DefaultMuteCameraAndMicrophoneHotkey);
+            MuteMicrophoneHotkey = new KeyboardKeysProperty(DefaultMuteMicrophoneHotkey);
+            PushToTalkMicrophoneHotkey = new KeyboardKeysProperty(DefaultPushToTalkMicrophoneHotkey);
+            MuteCameraHotkey = new KeyboardKeysProperty(DefaultMuteCameraHotkey);
 
-            this.MuteMicrophoneHotkey = new KeyboardKeysProperty(
-                new HotkeySettings()
-                {
-                    Win = true,
-                    Ctrl = false,
-                    Alt = false,
-                    Shift = true,
-                    Key = "A",
-                    Code = 65,
-                });
-
-            this.PushToTalkMicrophoneHotkey = new KeyboardKeysProperty(
-                new HotkeySettings()
-                {
-                    Win = true,
-                    Ctrl = false,
-                    Alt = false,
-                    Shift = true,
-                    Key = "I",
-                    Code = 73,
-                });
-
-            this.MuteCameraHotkey = new KeyboardKeysProperty(
-            new HotkeySettings()
-            {
-                Win = true,
-                Ctrl = false,
-                Alt = false,
-                Shift = true,
-                Key = "O",
-                Code = 79,
-            });
-
-            this.PushToReverseEnabled = new BoolProperty(false);
+            PushToReverseEnabled = new BoolProperty(false);
         }
 
         [JsonPropertyName("mute_camera_and_microphone_hotkey")]
