@@ -48,17 +48,6 @@
                         Glyph="&#xE70F;" />
                 </StackPanel>
             </Button>
-            <Button Click="ResetButton_Click"
-                x:Uid="ResetButton"
-                Margin="12 0 0 0"
-                VerticalAlignment="Center"
-                Content="&#xE845;"
-                FontFamily= "{ThemeResource SymbolThemeFontFamily}"
-                Style="{StaticResource SubtleButtonStyle}">
-                <ToolTipService.ToolTip>
-                    <TextBlock x:Uid="ResetTooltip" />
-                </ToolTipService.ToolTip>
-            </Button>
         </StackPanel>
     </Grid>
 </UserControl>
