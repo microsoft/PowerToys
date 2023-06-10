@@ -11,8 +11,12 @@ namespace Microsoft.PowerToys.Settings.UI.Library
     {
         public const string ModuleName = "RegistryPreview";
 
+        [JsonPropertyName("properties")]
+        public RegistryPreviewProperties Properties { get; set; }
+
         public RegistryPreviewSettings()
         {
+            Properties = new RegistryPreviewProperties();
             Version = "1";
             Name = ModuleName;
         }
