@@ -86,7 +86,9 @@
             <ui:NumberBox SpinButtonPlacementMode="Compact"
                           Minimum="0"
                           Width="102"
-                          AutomationProperties.Name="{x:Static p:Resources.Width}"
+                          Name="WidthNumberBox"
+                          KeyDown="Button_KeyDown"
+                          AutomationProperties.Name="{x:Static p:Resources.Width}"                          
                           Margin="8,0,0,0">
                 <ui:ControlHelper.Header>
                     <TextBlock Text="{x:Static p:Resources.Width}" Margin="0,0,0,-1" />
@@ -110,6 +112,8 @@
                           SpinButtonPlacementMode="Compact"
                           Minimum="0"
                           Width="102"
+                          Name="HeightNumberBox"
+                          KeyDown="Button_KeyDown"
                           AutomationProperties.Name="{x:Static p:Resources.Height}"
                           Visibility="{Binding ElementName=SizeComboBox, Path= SelectedValue.ShowHeight, Converter={StaticResource BoolValueConverter}}">
                 <ui:ControlHelper.Header>
