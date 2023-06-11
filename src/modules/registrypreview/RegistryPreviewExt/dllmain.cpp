@@ -37,11 +37,19 @@ BOOL APIENTRY DllMain(HMODULE /*hModule*/, DWORD ul_reason_for_call, LPVOID /*lp
 const static wchar_t* MODULE_NAME = L"RegistryPreview";
 const static wchar_t* MODULE_DESC = L"A quick little utility to visualize and edit complex Windows Registry files.";
 
+namespace
+{
+    const wchar_t JSON_KEY_PROPERTIES[] = L"properties";
+    const wchar_t JSON_KEY_ENABLED[] = L"enabled";
+    const wchar_t JSON_KEY_DEFAULT_APP[] = L"default_reg_app";
+}
+
 class RegistryPreviewModule : public PowertoyModuleIface
 {
 
 private:
     bool m_enabled = false;
+    bool m_default_app = false;
 
     //Hotkey m_hotkey;
     HANDLE m_hProcess;
@@ -87,23 +95,70 @@ private:
         TerminateProcess(m_hProcess, 1);
     }
 
+    void parse_default_app_settings(PowerToysSettings::PowerToyValues settings)
+    {
+        const std::wstring installationDir = get_module_folderpath();
+        auto changeSet = getRegistryPreviewSetDefaultAppChangeSet(installationDir, true);
+
+        auto settingsObject = settings.get_raw_json();
+        if (settingsObject.GetView().Size())
+        {
+            auto default_app = settingsObject.GetNamedObject(JSON_KEY_PROPERTIES).GetNamedBoolean(JSON_KEY_DEFAULT_APP);
+
+            if (default_app != m_default_app)
+            {
+                m_default_app = default_app;
+                auto result = default_app ? changeSet.apply() : changeSet.unApply();
+
+                if (!result)
+                {
+                    Logger::error(L"Failed to {} default app registry change set.", default_app ? L"apply" : L"unapply");
+                }
+
+                SHChangeNotify(SHCNE_ASSOCCHANGED, SHCNF_IDLIST, NULL, NULL);
+            }
+        }
+        else
+        {
+            Logger::info("Registry Preview settings are empty");
+        }
+    }
+
+    // Load the settings file.
+    void init_settings()
+    {
+        try
+        {
+            // Load and parse the settings file for this PowerToy.
+            PowerToysSettings::PowerToyValues settings =
+                PowerToysSettings::PowerToyValues::load_from_settings_file(get_key());
+            
+            auto enabled = settings.get_bool_value(JSON_KEY_ENABLED);
+            auto result = true;
+            const std::wstring installationDir = get_module_folderpath();
+            auto enabledChangeSet = getRegistryPreviewChangeSet(installationDir, true);
+
+            result = enabled ? enabledChangeSet.apply() : enabledChangeSet.unApply();
+            if (!result)
+            {
+                Logger::error(L"Failed to {} enabled registry change set.", enabled ? L"apply" : L"unapply");
+            }
+
+            parse_default_app_settings(settings);
+        }
+        catch (std::exception&)
+        {
+            Logger::error("Invalid json when trying to load the Registry Preview settings json from file.");
+        }
+    }
+
 public:
     RegistryPreviewModule()
     {
         LoggerHelpers::init_logger(GET_RESOURCE_STRING(IDS_REGISTRYPREVIEW_NAME), L"ModuleInterface", "RegistryPreview");
         Logger::info("Registry Preview object is constructing");
 
-        if (!m_enabled)
-        {
-            const std::wstring installationDir = get_module_folderpath();
-
-            auto regChanges = getRegistryPreviewChangeSet(installationDir, true);
-
-            if (!regChanges.unApply())
-            {
-                Logger::error(L"Unapplying registry changes failed");
-            }
-        }
+        init_settings();
 
         triggerEvent = CreateEvent(nullptr, false, false, CommonSharedConstants::REGISTRY_PREVIEW_TRIGGER_EVENT);
         triggerEventWaiter = EventWaiter(CommonSharedConstants::REGISTRY_PREVIEW_TRIGGER_EVENT, [this](int) {
@@ -184,13 +239,13 @@ public:
             // Parse the input JSON string.
             PowerToysSettings::PowerToyValues values = PowerToysSettings::PowerToyValues::from_json_string(config, get_key());
 
-            // If you don't need to do any custom processing of the settings, proceed
-            // to persists the values.
+            parse_default_app_settings(values);
+
             values.save_to_settings_file();
         }
         catch (std::exception&)
         {
-            // Improper JSON.
+            Logger::error(L"Invalid json when trying to parse Registry Preview settings json.");
         }
     }
 
@@ -226,6 +281,8 @@ public:
             {
                 Logger::error(L"Unapplying registry changes failed");
             }
+
+            SHChangeNotify(SHCNE_ASSOCCHANGED, SHCNF_IDLIST, NULL, NULL);
         }
 
         m_enabled = false;

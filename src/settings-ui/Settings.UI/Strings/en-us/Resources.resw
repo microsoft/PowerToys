@@ -3502,6 +3502,13 @@ Activate by holding the key for the character you want to add an accent to, then
   <data name="RegistryPreview_LaunchButtonControl.Header" xml:space="preserve">
     <value>Launch Registry Preview</value>
   </data>
+  <data name="RegistryPreview_DefaultRegApp.Header" xml:space="preserve">
+    <value>Default app</value>
+  </data>
+  <data name="RegistryPreview_DefaultRegApp.Description" xml:space="preserve">
+    <value>Make Registry Preview default app for opening .reg files</value>
+    <comment>Registry Preview is app name. Do not localize.</comment>
+  </data>
   <data name="PastePlain_ShortcutWarning.Title" xml:space="preserve">
     <value>Using this shortcut may prevent non-text paste actions (e.g. images, files) or built-in paste plain text actions in other applications from functioning.</value>
   </data>
@@ -3536,5 +3543,18 @@ Activate by holding the key for the character you want to add an accent to, then
   </data>
   <data name="MWB_SecurityKeyLabel.PlaceholderText" xml:space="preserve">
     <value>Security key</value>
+  </data>
+  <data name="Hosts_Encoding.Description" xml:space="preserve">
+    <value>Chose the encoding of the hosts file</value>
+    <comment>"Hosts" refers to the system hosts file, do not loc</comment>
+  </data>
+  <data name="Hosts_Encoding.Header" xml:space="preserve">
+    <value>Encoding</value>
+  </data>
+  <data name="Hosts_Encoding_Utf8.Content" xml:space="preserve">
+    <value>UTF-8</value>
+  </data>
+  <data name="Hosts_Encoding_Utf8Bom.Content" xml:space="preserve">
+    <value>UTF-8 with BOM</value>
   </data>
 </root>
