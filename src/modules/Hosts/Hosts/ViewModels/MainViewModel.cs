@@ -77,7 +77,7 @@ namespace Hosts.ViewModels
 
         public AdvancedCollectionView Entries { get; set; }
 
-        public int NextId => _entries.Max(e => e.Id) + 1;
+        public int NextId => _entries?.Count > 0 ? _entries.Max(e => e.Id) + 1 : 0;
 
         public MainViewModel(IHostsService hostService, IUserSettings userSettings)
         {
@@ -235,8 +235,7 @@ namespace Hosts.ViewModels
             HostsFilter = null;
             CommentFilter = null;
             ShowOnlyDuplicates = false;
-            Entries.Filter = null;
-            Entries.RefreshFilter();
+            ApplyFilters();
         }
 
         public async Task PingSelectedAsync()

@@ -135,6 +135,9 @@
   <data name="AddEntryBtn.[using:Microsoft.UI.Xaml.Controls]ToolTipService.ToolTip" xml:space="preserve">
     <value>New entry (CTRL+N)</value>
   </data>
+  <data name="AddEntryLink.Content" xml:space="preserve">
+    <value>Add an entry</value>
+  </data>
   <data name="AdditionalLinesBtn.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
     <value>Additional content</value>
   </data>
@@ -167,6 +170,9 @@
   <data name="ClearFiltersBtn.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
     <value>Clear filters</value>
   </data>
+  <data name="ClearFiltersLink.Content" xml:space="preserve">
+    <value>Clear filters</value>
+  </data>
   <data name="Comment.Header" xml:space="preserve">
     <value>Comment</value>
     <comment>"Comment" refers to the comment of the entry</comment>
@@ -192,6 +198,13 @@
   </data>
   <data name="Edit.Text" xml:space="preserve">
     <value>Edit</value>
+  </data>
+  <data name="EmptyFilterResults.Text" xml:space="preserve">
+    <value>No filter results</value>
+  </data>
+  <data name="EmptyHosts.Text" xml:space="preserve">
+    <value>No entries in the hosts file</value>
+    <comment>"Hosts" refers to the system hosts file, do not loc</comment>
   </data>
   <data name="Entries.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
     <value>Entries</value>
