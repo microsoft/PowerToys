@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft Corporation
+// Copyright (c) Microsoft Corporation
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
@@ -10,7 +10,6 @@ using CommunityToolkit.Mvvm.Input;
 using Hosts.Models;
 using Hosts.Settings;
 using Hosts.ViewModels;
-using ManagedCommon;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Controls.Primitives;
@@ -208,20 +207,6 @@ namespace Hosts.Views
                 {
                     ViewModel.Move(index, index + 1);
                 }
-            }
-        }
-
-        private void ContentDialog_Loaded_ApplyMargin(object sender, RoutedEventArgs e)
-        {
-            try
-            {
-                // Based on the template from dev/CommonStyles/ContentDialog_themeresources.xaml in https://github.com/microsoft/microsoft-ui-xaml
-                var border = Helpers.VisualTreeUtils.FindVisualChildByName(sender as ContentDialog, "BackgroundElement") as Border;
-                border.Margin = new Thickness(0, 32, 0, 0); // Should be the size reserved for the title bar as in MainWindow.xaml
-            }
-            catch (Exception ex)
-            {
-                Logger.LogError("Couldn't set the margin for a content dialog. It will appear on top of the title bar.", ex);
             }
         }
 
