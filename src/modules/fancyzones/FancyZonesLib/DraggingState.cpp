@@ -5,9 +5,9 @@
 #include <FancyZonesLib/util.h>
 
 DraggingState::DraggingState(const std::function<void()>& keyUpdateCallback) :
-    m_mouseState(false),
+    m_secondaryMouseState(false),
     m_middleMouseState(false),
-    m_mouseHook(std::bind(&DraggingState::OnMouseDown, this), std::bind(&DraggingState::OnMiddleMouseDown, this)),
+    m_mouseHook(std::bind(&DraggingState::OnSecondaryMouseDown, this), std::bind(&DraggingState::OnMiddleMouseDown, this)),
     m_leftShiftKeyState(keyUpdateCallback),
     m_rightShiftKeyState(keyUpdateCallback),
     m_ctrlKeyState(keyUpdateCallback),
@@ -46,7 +46,7 @@ void DraggingState::Disable()
     }
 
     m_dragging = false;
-    m_mouseState = false;
+    m_secondaryMouseState = false;
     m_middleMouseState = false;
 
     m_mouseHook.disable();
@@ -60,17 +60,17 @@ void DraggingState::UpdateDraggingState() noexcept
     // This updates m_dragEnabled depending on if the shift key is being held down
     if (FancyZonesSettings::settings().shiftDrag)
     {
-        m_dragging = ((m_leftShiftKeyState.state() || m_rightShiftKeyState.state()) ^ m_mouseState);
+        m_dragging = ((m_leftShiftKeyState.state() || m_rightShiftKeyState.state()) ^ m_secondaryMouseState);
     }
     else
     {
-        m_dragging = !((m_leftShiftKeyState.state() || m_rightShiftKeyState.state()) ^ m_mouseState);
+        m_dragging = !((m_leftShiftKeyState.state() || m_rightShiftKeyState.state()) ^ m_secondaryMouseState);
     }
 }
 
-void DraggingState::OnMouseDown()
+void DraggingState::OnSecondaryMouseDown()
 {
-    m_mouseState = !m_mouseState;
+    m_secondaryMouseState = !m_secondaryMouseState;
     m_keyUpdateCallback();
 }
 
@@ -92,5 +92,5 @@ bool DraggingState::IsDragging() const noexcept
 
 bool DraggingState::IsSelectManyZonesState() const noexcept
 {
-    return m_ctrlKeyState.state() ^ m_middleMouseState;
+    return m_ctrlKeyState.state() || m_middleMouseState;
 }

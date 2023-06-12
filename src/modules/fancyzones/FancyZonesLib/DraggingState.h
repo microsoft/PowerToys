@@ -17,10 +17,10 @@ public:
     bool IsSelectManyZonesState() const noexcept;
 
 private:
-    void OnMouseDown();
+    void OnSecondaryMouseDown();
     void OnMiddleMouseDown();
 
-    std::atomic<bool> m_mouseState;
+    std::atomic<bool> m_secondaryMouseState;
     std::atomic<bool> m_middleMouseState;
     MouseButtonsHook m_mouseHook;
     KeyState<VK_LSHIFT> m_leftShiftKeyState;
