@@ -8,6 +8,7 @@
 #include <common/utils/string_utils.h>
 #include <common/utils/process_path.h>
 #include <common/utils/excluded_apps.h>
+#include <common/utils/window.h>
 
 namespace winrt::PowerToys::PowerAccentKeyboardService::implementation
 {
@@ -133,22 +134,12 @@ namespace winrt::PowerToys::PowerAccentKeyboardService::implementation
             m_prevForegroundAppExcl = { foregroundApp,
                                       find_app_name_in_path(processPath, m_settings.excludedApps) };
 
-            if (!m_prevForegroundAppExcl.second) // Check applications running under some other applications with window name 
+            if (!m_prevForegroundAppExcl.second) // Check applications running under some other applications with window name
             {
-                WCHAR title[100];
-                GetWindowTextW(foregroundApp, title, 100);
-                Logger::debug(L"Application window name: {}", title);
-
-                std::wstring titleStr(title);
-                auto lastBackslashPos = processPath.find_last_of(L'\\');
-                if (lastBackslashPos != std::wstring::npos)
-                {
-                    processPath = processPath.substr(0, lastBackslashPos + 1); // retain up to the last backslash
-                    processPath.append(titleStr).append(L".exe"); // append the title and ".exe"
-                }
-                CharUpperBuffW(processPath.data(), static_cast<DWORD>(processPath.length()));
                 m_prevForegroundAppExcl = { foregroundApp,
-                                            find_app_name_in_path(processPath, m_settings.excludedApps) };
+                                            check_excluded_app_with_windowname(foregroundApp, processPath, m_settings.excludedApps) };
+
+                Logger::debug(L"Application window name: {}", processPath);
             }
 
             return m_prevForegroundAppExcl.second;

@@ -6,6 +6,7 @@
 #include "common/utils/game_mode.h"
 #include "common/utils/process_path.h"
 #include "common/utils/excluded_apps.h"
+#include <common/utils/window.h>
 #include <vector>
 
 #ifdef COMPOSITION
@@ -593,7 +594,14 @@ bool SuperSonar<D>::IsForegroundAppExcluded()
     {
         auto processPath = get_process_path(foregroundApp);
         CharUpperBuffW(processPath.data(), static_cast<DWORD>(processPath.length()));
-        return find_app_name_in_path(processPath, m_excludedApps);
+        bool res = find_app_name_in_path(processPath, m_excludedApps);
+
+        if (res == false)
+        {
+            res = check_excluded_app_with_windowname(foregroundApp, processPath, m_excludedApps);
+        }
+
+        return res;
     }
     else
     {

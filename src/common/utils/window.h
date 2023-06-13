@@ -6,6 +6,7 @@
 
 #include <array>
 #include <optional>
+#include "excluded_apps.h"
 
 // Initializes and runs windows message loop
 inline int run_message_loop(const bool until_idle = false, const std::optional<uint32_t> timeout_ms = {})
@@ -54,6 +55,27 @@ inline bool is_system_window(HWND hwnd, const char* class_name)
         }
     }
     return false;
+}
+
+#define MAX_TITLE_LENGTH 255
+inline bool check_excluded_app_with_windowname(const HWND& hwnd, std::wstring& processPath, const std::vector<std::wstring>& excludedApps)
+{
+    WCHAR title[MAX_TITLE_LENGTH];    
+    int len = GetWindowTextW(hwnd, title, MAX_TITLE_LENGTH);
+    if (len <= 0)
+    {
+        return false;
+    }
+
+    std::wstring titleStr(title);
+    auto lastBackslashPos = processPath.find_last_of(L'\\');
+    if (lastBackslashPos != std::wstring::npos)
+    {
+        processPath = processPath.substr(0, lastBackslashPos + 1); // retain up to the last backslash
+        processPath.append(titleStr); // append the title
+    }
+    CharUpperBuffW(processPath.data(), static_cast<DWORD>(processPath.length()));
+    return find_app_name_in_path(processPath, excludedApps);
 }
 
 template<typename T>

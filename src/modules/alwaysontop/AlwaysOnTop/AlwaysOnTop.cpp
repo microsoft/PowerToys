@@ -12,6 +12,7 @@
 
 #include <trace.h>
 #include <WinHookEventIDs.h>
+#include <utils/window.h>
 
 
 namespace NonLocalizable
@@ -24,7 +25,15 @@ bool isExcluded(HWND window)
 {
     auto processPath = get_process_path(window);
     CharUpperBuffW(processPath.data(), static_cast<DWORD>(processPath.length()));
-    return find_app_name_in_path(processPath, AlwaysOnTopSettings::settings().excludedApps);
+
+    bool res = find_app_name_in_path(processPath, AlwaysOnTopSettings::settings().excludedApps);
+
+    if ( res == false )
+    {
+        res = check_excluded_app_with_windowname(window, processPath, AlwaysOnTopSettings::settings().excludedApps);
+    }
+
+    return res;
 }
 
 AlwaysOnTop::AlwaysOnTop(bool useLLKH) :

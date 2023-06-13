@@ -26,6 +26,7 @@ namespace NonLocalizable
 enum DWMWINDOWATTRIBUTE_CUSTOM
 {
     DWMWA_WINDOW_CORNER_PREFERENCE = 33
+
 };
 
 enum DWM_WINDOW_CORNER_PREFERENCE
@@ -227,12 +228,12 @@ bool FancyZonesWindowUtils::IsCandidateForZoning(HWND window)
 
     std::wstring processPath = get_process_path_waiting_uwp(window);
     CharUpperBuffW(const_cast<std::wstring&>(processPath).data(), static_cast<DWORD>(processPath.length()));
-    if (IsExcludedByUser(processPath))
+    if (IsExcludedByUser(processPath) || check_excluded_app_with_windowname(window, processPath, FancyZonesSettings::settings().excludedAppsArray))
     {
         return false;
     }
 
-    if (IsExcludedByDefault(processPath))
+    if (IsExcludedByDefault(processPath) || check_excluded_app_with_windowname(window, processPath, FancyZonesSettings::settings().excludedAppsArray))
     {
         return false;
     }
