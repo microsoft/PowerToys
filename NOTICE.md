@@ -284,6 +284,7 @@ SOFTWARE.
 - CommunityToolkit.Labs.WinUI.SettingsControls 0.0.18
 - CommunityToolkit.Mvvm 8.2.0
 - CommunityToolkit.WinUI.UI 7.1.2
+- CommunityToolkit.WinUI.UI.Animations 7.1.2
 - CommunityToolkit.WinUI.UI.Controls 7.1.2
 - ControlzEx 5.0.1
 - HelixToolkit 2.20.2

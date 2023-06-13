@@ -16,8 +16,10 @@
     </Window.SystemBackdrop>
     <Grid KeyboardAcceleratorPlacementMode="Hidden">
         <Grid.KeyboardAccelerators>
-            <KeyboardAccelerator Key="Left" Invoked="LeftNavigationInvoked" />
-            <KeyboardAccelerator Key="Right" Invoked="RightNavigationInvoked" />
+            <KeyboardAccelerator Key="Left" Invoked="PreviousNavigationInvoked" />
+            <KeyboardAccelerator Key="Up" Invoked="PreviousNavigationInvoked" />
+            <KeyboardAccelerator Key="Right" Invoked="NextNavigationInvoked" />
+            <KeyboardAccelerator Key="Down" Invoked="NextNavigationInvoked" />
             <KeyboardAccelerator Key="Escape" Invoked="EscKeyInvoked" />
         </Grid.KeyboardAccelerators>
 

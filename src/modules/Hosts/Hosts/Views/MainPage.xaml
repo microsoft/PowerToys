@@ -30,6 +30,11 @@
             x:Key="BoolToInvertedVisibilityConverter"
             TrueValue="Collapsed"
             FalseValue="Visible" />
+        <converters:DoubleToVisibilityConverter
+            x:Key="DoubleToVisibilityConverter"
+            FalseValue="Visible"
+            GreaterThan="0"
+            TrueValue="Collapsed" />
     </Page.Resources>
 
     <Grid>
@@ -43,7 +48,7 @@
             <Button
                 x:Uid="AddEntryBtn"
                 Height="36"
-                Margin="16,0,0,0"
+                Margin="18,0,0,0"
                 Command="{x:Bind NewDialogCommand}">
                 <StackPanel
                     Orientation="Horizontal"
@@ -64,7 +69,7 @@
             </Button>
 
             <StackPanel
-                Padding="0,0,16,0"
+                Padding="0,0,18,0"
                 HorizontalAlignment="Right"
                 Orientation="Horizontal">
                 <Button
@@ -189,190 +194,238 @@
             CanDragItems="{x:Bind ViewModel.Filtered, Mode=OneWay, Converter={StaticResource BoolNegationConverter}}"
             CanReorderItems="{x:Bind ViewModel.Filtered, Mode=OneWay, Converter={StaticResource BoolNegationConverter}}"
         -->
-        <ListView
-            x:Name="Entries"
-            x:Uid="Entries"
+        <Grid
             Grid.Row="1"
-            Margin="16,8,16,16"
-            Background="{ThemeResource LayerFillColorDefaultBrush}"
-            BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
-            BorderThickness="1"
-            CornerRadius="8"
-            IsItemClickEnabled="True"
-            ItemClick="Entries_ItemClick"
-            KeyDown="Entries_KeyDown"
-            GotFocus="Entries_GotFocus"
-            ItemsSource="{x:Bind ViewModel.Entries, Mode=TwoWay}"
-            SelectedItem="{x:Bind ViewModel.Selected, Mode=TwoWay}"
-            Visibility="{x:Bind ViewModel.IsLoading, Converter={StaticResource BoolToInvertedVisibilityConverter}, Mode=OneWay}">
-            <ListView.ItemTemplate>
-                <DataTemplate x:DataType="models:Entry">
-                    <Grid
-                        AutomationProperties.Name="{x:Bind Address, Mode=OneWay}"
-                        Background="Transparent"
-                        IsRightTapEnabled="True"
-                        RightTapped="Grid_RightTapped">
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="300" />
-                            <ColumnDefinition Width="*" />
-                            <ColumnDefinition Width="Auto" />
-                            <ColumnDefinition Width="Auto" />
-                            <ColumnDefinition Width="Auto" />
-                        </Grid.ColumnDefinitions>
-                        <FlyoutBase.AttachedFlyout>
-                            <MenuFlyout Opened="MenuFlyout_Opened">
-                                <MenuFlyoutItem
-                                    x:Uid="Edit"
-                                    Click="Edit_Click"
-                                    Icon="Edit">
-                                    <MenuFlyoutItem.KeyboardAccelerators>
-                                        <KeyboardAccelerator
-                                            Modifiers="Control"
-                                            Key="E" />
-                                    </MenuFlyoutItem.KeyboardAccelerators>
-                                </MenuFlyoutItem>
-                                <MenuFlyoutItem
-                                    x:Uid="Ping"
-                                    Click="Ping_Click"
-                                    Icon="TwoBars">
-                                    <MenuFlyoutItem.KeyboardAccelerators>
-                                        <KeyboardAccelerator
-                                            Modifiers="Control"
-                                            Key="P" />
-                                    </MenuFlyoutItem.KeyboardAccelerators>
-                                </MenuFlyoutItem>
-                                <MenuFlyoutItem
-                                    x:Uid="MoveUp"
-                                    Click="ReorderButtonUp_Click"
-                                    IsEnabled="{Binding DataContext.Filtered, ElementName=Page, Mode=OneWay, Converter={StaticResource BoolNegationConverter}}">
-                                    <MenuFlyoutItem.Icon>
-                                        <FontIcon Glyph="&#xE74A;" />
-                                    </MenuFlyoutItem.Icon>
-                                </MenuFlyoutItem>
-                                <MenuFlyoutItem
-                                    x:Uid="MoveDown"
-                                    Click="ReorderButtonDown_Click"
-                                    IsEnabled="{Binding DataContext.Filtered, ElementName=Page, Mode=OneWay, Converter={StaticResource BoolNegationConverter}}">
-                                    <MenuFlyoutItem.Icon>
-                                        <FontIcon Glyph="&#xE74B;" />
-                                    </MenuFlyoutItem.Icon>
-                                </MenuFlyoutItem>
-                                <MenuFlyoutSeparator />
-                                <MenuFlyoutItem
-                                    x:Uid="Delete"
-                                    Click="Delete_Click"
-                                    Icon="Delete">
-                                     <MenuFlyoutItem.KeyboardAccelerators>
-                                        <KeyboardAccelerator Key="Delete" />
-                                    </MenuFlyoutItem.KeyboardAccelerators>
-                                </MenuFlyoutItem>
-                            </MenuFlyout>
-                        </FlyoutBase.AttachedFlyout>
-                        <TextBlock
-                            Grid.Column="0"
-                            VerticalAlignment="Center"
-                            Text="{x:Bind Address, Mode=OneWay}"
-                            TextWrapping="Wrap" />
-                        <TextBlock
-                            Grid.Column="1"
-                            VerticalAlignment="Center"
-                            Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                            Style="{StaticResource CaptionTextBlockStyle}"
-                            Text="{x:Bind helpers:StringHelper.GetHostsWithComment(Hosts, Comment), Mode=OneWay}"
-                            TextWrapping="WrapWholeWords" />
-                        <ProgressRing
-                            Grid.Column="2"
-                            Width="20"
-                            Height="20"
-                            Margin="0,0,8,0"
-                            IsActive="{x:Bind Pinging, Mode=OneWay}" />
-                        <FontIcon
-                            x:Uid="PingIcon"
-                            x:Name="PingIcon"
-                            Grid.Column="2"
-                            Margin="0,0,8,0"
-                            FontFamily="{ThemeResource SymbolThemeFontFamily}"
-                            FontSize="18"
-                            Visibility="Collapsed">
-                            <i:Interaction.Behaviors>
-                                <ic:DataTriggerBehavior
-                                    Binding="{x:Bind Ping, Mode=OneWay}"
-                                    ComparisonCondition="Equal"
-                                    Value="True">
-                                    <ic:ChangePropertyAction
-                                        PropertyName="Glyph"
-                                        TargetObject="{Binding ElementName=PingIcon}"
-                                        Value="&#xe8fb;" />
-                                    <ic:ChangePropertyAction
-                                        PropertyName="Visibility"
-                                        TargetObject="{Binding ElementName=PingIcon}"
-                                        Value="Visible" />
-                                    <ic:ChangePropertyAction
-                                        PropertyName="Foreground"
-                                        TargetObject="{Binding ElementName=PingIcon}"
-                                        Value="{StaticResource SystemFillColorSuccessBrush}" />
-                                </ic:DataTriggerBehavior>
-                                <ic:DataTriggerBehavior
-                                    Binding="{x:Bind Ping, Mode=OneWay}"
-                                    ComparisonCondition="Equal"
-                                    Value="False">
-                                    <ic:ChangePropertyAction
-                                        PropertyName="Glyph"
-                                        TargetObject="{Binding ElementName=PingIcon}"
-                                        Value="&#xe894;" />
-                                    <ic:ChangePropertyAction
-                                        PropertyName="Visibility"
-                                        TargetObject="{Binding ElementName=PingIcon}"
-                                        Value="Visible" />
-                                    <ic:ChangePropertyAction
-                                        PropertyName="Foreground"
-                                        TargetObject="{Binding ElementName=PingIcon}"
-                                        Value="{StaticResource SystemFillColorCriticalBrush}" />
-                                </ic:DataTriggerBehavior>
-                                <ic:DataTriggerBehavior
-                                    Binding="{x:Bind Ping, Mode=OneWay}"
-                                    ComparisonCondition="Equal"
-                                    Value="{x:Null}">
-                                    <ic:ChangePropertyAction
-                                        PropertyName="Visibility"
-                                        TargetObject="{Binding ElementName=PingIcon}"
-                                        Value="Collapsed" />
-                                </ic:DataTriggerBehavior>
-                            </i:Interaction.Behaviors>
-                        </FontIcon>
-                        <FontIcon
-                            x:Uid="DuplicateEntryIcon"
-                            Grid.Column="3"
-                            Margin="0,0,8,0"
-                            Foreground="{StaticResource SystemControlErrorTextForegroundBrush}"
-                            FontFamily="{ThemeResource SymbolThemeFontFamily}"
-                            FontSize="18"
-                            Glyph="&#xe7BA;"
-                            Visibility="{x:Bind Duplicate, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}" />
-                        <ToggleSwitch
-                            x:Uid="ActiveToggle"
-                            Grid.Column="4"
-                            Width="40"
-                            MinWidth="0"
-                            HorizontalAlignment="Right"
-                            IsOn="{x:Bind Active, Mode=TwoWay}"
-                            OffContent=""
-                            OnContent="" />
-                    </Grid>
-                </DataTemplate>
-            </ListView.ItemTemplate>
-        </ListView>
-
+            Visibility="{x:Bind ViewModel.IsLoading, Converter={StaticResource BoolToInvertedVisibilityConverter}, Mode=OneWay}">          
+            <ListView
+                x:Name="Entries"
+                x:Uid="Entries"
+                Grid.Row="1"
+                Margin="16,8,16,16"
+                Background="{ThemeResource LayerFillColorDefaultBrush}"
+                BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+                BorderThickness="1"
+                CornerRadius="8"
+                IsItemClickEnabled="True"
+                ItemClick="Entries_ItemClick"
+                KeyDown="Entries_KeyDown"
+                GotFocus="Entries_GotFocus"
+                ItemsSource="{x:Bind ViewModel.Entries, Mode=TwoWay}"
+                SelectedItem="{x:Bind ViewModel.Selected, Mode=TwoWay}"
+                Visibility="{x:Bind ViewModel.IsLoading, Converter={StaticResource BoolToInvertedVisibilityConverter}, Mode=OneWay}">
+                <ListView.ItemTemplate>
+                    <DataTemplate x:DataType="models:Entry">
+                        <Grid
+                            AutomationProperties.Name="{x:Bind Address, Mode=OneWay}"
+                            Background="Transparent"
+                            IsRightTapEnabled="True"
+                            RightTapped="Grid_RightTapped">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="300" />
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="Auto" />
+                                <ColumnDefinition Width="Auto" />
+                                <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
+                            <FlyoutBase.AttachedFlyout>
+                                <MenuFlyout Opened="MenuFlyout_Opened">
+                                    <MenuFlyoutItem
+                                        x:Uid="Edit"
+                                        Click="Edit_Click"
+                                        Icon="Edit">
+                                        <MenuFlyoutItem.KeyboardAccelerators>
+                                            <KeyboardAccelerator
+                                                Modifiers="Control"
+                                                Key="E" />
+                                        </MenuFlyoutItem.KeyboardAccelerators>
+                                    </MenuFlyoutItem>
+                                    <MenuFlyoutItem
+                                        x:Uid="Ping"
+                                        Click="Ping_Click"
+                                        Icon="TwoBars">
+                                        <MenuFlyoutItem.KeyboardAccelerators>
+                                            <KeyboardAccelerator
+                                                Modifiers="Control"
+                                                Key="P" />
+                                        </MenuFlyoutItem.KeyboardAccelerators>
+                                    </MenuFlyoutItem>
+                                    <MenuFlyoutItem
+                                        x:Uid="MoveUp"
+                                        Click="ReorderButtonUp_Click"
+                                        IsEnabled="{Binding DataContext.Filtered, ElementName=Page, Mode=OneWay, Converter={StaticResource BoolNegationConverter}}">
+                                        <MenuFlyoutItem.Icon>
+                                            <FontIcon Glyph="&#xE74A;" />
+                                        </MenuFlyoutItem.Icon>
+                                    </MenuFlyoutItem>
+                                    <MenuFlyoutItem
+                                        x:Uid="MoveDown"
+                                        Click="ReorderButtonDown_Click"
+                                        IsEnabled="{Binding DataContext.Filtered, ElementName=Page, Mode=OneWay, Converter={StaticResource BoolNegationConverter}}">
+                                        <MenuFlyoutItem.Icon>
+                                            <FontIcon Glyph="&#xE74B;" />
+                                        </MenuFlyoutItem.Icon>
+                                    </MenuFlyoutItem>
+                                    <MenuFlyoutSeparator />
+                                    <MenuFlyoutItem
+                                        x:Uid="Delete"
+                                        Click="Delete_Click"
+                                        Icon="Delete">
+                                         <MenuFlyoutItem.KeyboardAccelerators>
+                                            <KeyboardAccelerator Key="Delete" />
+                                        </MenuFlyoutItem.KeyboardAccelerators>
+                                    </MenuFlyoutItem>
+                                </MenuFlyout>
+                            </FlyoutBase.AttachedFlyout>
+                            <TextBlock
+                                Grid.Column="0"
+                                VerticalAlignment="Center"
+                                Text="{x:Bind Address, Mode=OneWay}"
+                                TextWrapping="Wrap" />
+                            <TextBlock
+                                Grid.Column="1"
+                                VerticalAlignment="Center"
+                                Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                Style="{StaticResource CaptionTextBlockStyle}"
+                                Text="{x:Bind helpers:StringHelper.GetHostsWithComment(Hosts, Comment), Mode=OneWay}"
+                                TextWrapping="WrapWholeWords" />
+                            <ProgressRing
+                                Grid.Column="2"
+                                Width="20"
+                                Height="20"
+                                Margin="0,0,8,0"
+                                IsActive="{x:Bind Pinging, Mode=OneWay}" />
+                            <FontIcon
+                                x:Uid="PingIcon"
+                                x:Name="PingIcon"
+                                Grid.Column="2"
+                                Margin="0,0,8,0"
+                                FontFamily="{ThemeResource SymbolThemeFontFamily}"
+                                FontSize="18"
+                                Visibility="Collapsed">
+                                <i:Interaction.Behaviors>
+                                    <ic:DataTriggerBehavior
+                                        Binding="{x:Bind Ping, Mode=OneWay}"
+                                        ComparisonCondition="Equal"
+                                        Value="True">
+                                        <ic:ChangePropertyAction
+                                            PropertyName="Glyph"
+                                            TargetObject="{Binding ElementName=PingIcon}"
+                                            Value="&#xe8fb;" />
+                                        <ic:ChangePropertyAction
+                                            PropertyName="Visibility"
+                                            TargetObject="{Binding ElementName=PingIcon}"
+                                            Value="Visible" />
+                                        <ic:ChangePropertyAction
+                                            PropertyName="Foreground"
+                                            TargetObject="{Binding ElementName=PingIcon}"
+                                            Value="{StaticResource SystemFillColorSuccessBrush}" />
+                                    </ic:DataTriggerBehavior>
+                                    <ic:DataTriggerBehavior
+                                        Binding="{x:Bind Ping, Mode=OneWay}"
+                                        ComparisonCondition="Equal"
+                                        Value="False">
+                                        <ic:ChangePropertyAction
+                                            PropertyName="Glyph"
+                                            TargetObject="{Binding ElementName=PingIcon}"
+                                            Value="&#xe894;" />
+                                        <ic:ChangePropertyAction
+                                            PropertyName="Visibility"
+                                            TargetObject="{Binding ElementName=PingIcon}"
+                                            Value="Visible" />
+                                        <ic:ChangePropertyAction
+                                            PropertyName="Foreground"
+                                            TargetObject="{Binding ElementName=PingIcon}"
+                                            Value="{StaticResource SystemFillColorCriticalBrush}" />
+                                    </ic:DataTriggerBehavior>
+                                    <ic:DataTriggerBehavior
+                                        Binding="{x:Bind Ping, Mode=OneWay}"
+                                        ComparisonCondition="Equal"
+                                        Value="{x:Null}">
+                                        <ic:ChangePropertyAction
+                                            PropertyName="Visibility"
+                                            TargetObject="{Binding ElementName=PingIcon}"
+                                            Value="Collapsed" />
+                                    </ic:DataTriggerBehavior>
+                                </i:Interaction.Behaviors>
+                            </FontIcon>
+                            <FontIcon
+                                x:Uid="DuplicateEntryIcon"
+                                Grid.Column="3"
+                                Margin="0,0,8,0"
+                                Foreground="{StaticResource SystemControlErrorTextForegroundBrush}"
+                                FontFamily="{ThemeResource SymbolThemeFontFamily}"
+                                FontSize="18"
+                                Glyph="&#xe7BA;"
+                                Visibility="{x:Bind Duplicate, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}" />
+                            <ToggleSwitch
+                                x:Uid="ActiveToggle"
+                                Grid.Column="4"
+                                Width="40"
+                                MinWidth="0"
+                                HorizontalAlignment="Right"
+                                IsOn="{x:Bind Active, Mode=TwoWay}"
+                                OffContent=""
+                                OnContent="" />
+                        </Grid>
+                    </DataTemplate>
+                </ListView.ItemTemplate>
+            </ListView>
+            
+            <StackPanel
+                HorizontalAlignment="Center"
+                VerticalAlignment="Center"
+                Visibility="{x:Bind ViewModel.Entries.Count, Mode=OneWay, Converter={StaticResource DoubleToVisibilityConverter}}">
+                <StackPanel
+                    HorizontalAlignment="Center"
+                    VerticalAlignment="Center"
+                    Spacing="8"
+                    Visibility="{x:Bind ViewModel.Filtered, Mode=OneWay, Converter={StaticResource BoolToInvertedVisibilityConverter}}">
+                    <FontIcon
+                        FontFamily="{StaticResource SymbolThemeFontFamily}"
+                        FontSize="32"
+                        Glyph="&#xe774;" />
+                    <TextBlock
+                        x:Uid="EmptyHosts"
+                        HorizontalAlignment="Center"
+                        TextWrapping="Wrap"
+                        Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                    <HyperlinkButton
+                        x:Uid="AddEntryLink"
+                        HorizontalAlignment="Center"
+                        Command="{x:Bind NewDialogCommand}" />
+                </StackPanel>
+                
+                <StackPanel
+                    HorizontalAlignment="Center"
+                    VerticalAlignment="Center"
+                    Spacing="8"
+                    Visibility="{x:Bind ViewModel.Filtered, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}">
+                    <FontIcon
+                        FontFamily="{StaticResource SymbolThemeFontFamily}"
+                        FontSize="32"
+                        Glyph="&#xf78b;" />
+                    <TextBlock
+                        x:Uid="EmptyFilterResults"
+                        HorizontalAlignment="Center"
+                        TextWrapping="Wrap"
+                        Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                    <HyperlinkButton
+                        x:Uid="ClearFiltersLink"
+                        HorizontalAlignment="Center"
+                        Command="{x:Bind ViewModel.ClearFiltersCommand}" />
+                </StackPanel>
+            </StackPanel>
+        </Grid>
+        
         <ProgressRing
             Width="48"
             Height="48"
             Grid.Row="1"
             IsActive="{x:Bind ViewModel.IsLoading, Mode=OneWay}" />
-
+        
         <ContentDialog
             x:Name="EntryDialog"
             x:Uid="EntryDialog"
-            Loaded="ContentDialog_Loaded_ApplyMargin"
             IsPrimaryButtonEnabled="{Binding Valid, Mode=OneWay}"
             PrimaryButtonStyle="{StaticResource AccentButtonStyle}">
             <ContentDialog.DataContext>
@@ -418,7 +471,6 @@
         <ContentDialog
             x:Name="AdditionalLinesDialog"
             x:Uid="AdditionalLinesDialog"
-            Loaded="ContentDialog_Loaded_ApplyMargin"
             PrimaryButtonCommand="{x:Bind UpdateAdditionalLinesCommand}"
             PrimaryButtonStyle="{StaticResource AccentButtonStyle}">
 

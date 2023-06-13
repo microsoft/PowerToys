@@ -2003,7 +2003,7 @@ Take a moment to preview the various utilities listed or view our comprehensive 
     <value>Press the **Restart Elevated** button from the File Locksmith UI to also get information on elevated processes that might be using the files.</value>
   </data>
   <data name="Oobe_FileExplorer_HowToEnable.Text" xml:space="preserve">
-    <value>Open File Explorer, select the **View** tab in the File Explorer ribbon, then select **Preview Pane**. 
+    <value>Select **View** which is located at the top of File Explorer, followed by **Show**, and then **Preview pane**. 
 From there, simply click on one of the supported files in the File Explorer and observe the content on the preview pane!</value>
   </data>
   <data name="Oobe_HowToCreateMappings.Text" xml:space="preserve">
@@ -2148,6 +2148,9 @@ From there, simply click on one of the supported files in the File Explorer and 
     <value>Give feedback</value>
   </data>
   <data name="OobeWindow_Title" xml:space="preserve">
+    <value>Welcome to PowerToys</value>
+  </data>
+	<data name="OobeWindow_TitleTxt.Text" xml:space="preserve">
     <value>Welcome to PowerToys</value>
   </data>
   <data name="SettingsWindow_Title" xml:space="preserve">
@@ -3502,6 +3505,13 @@ Activate by holding the key for the character you want to add an accent to, then
   <data name="RegistryPreview_LaunchButtonControl.Header" xml:space="preserve">
     <value>Launch Registry Preview</value>
   </data>
+  <data name="RegistryPreview_DefaultRegApp.Header" xml:space="preserve">
+    <value>Default app</value>
+  </data>
+  <data name="RegistryPreview_DefaultRegApp.Description" xml:space="preserve">
+    <value>Make Registry Preview default app for opening .reg files</value>
+    <comment>Registry Preview is app name. Do not localize.</comment>
+  </data>
   <data name="PastePlain_ShortcutWarning.Title" xml:space="preserve">
     <value>Using this shortcut may prevent non-text paste actions (e.g. images, files) or built-in paste plain text actions in other applications from functioning.</value>
   </data>
@@ -3522,6 +3532,9 @@ Activate by holding the key for the character you want to add an accent to, then
     <value>Maximum width (px)</value>
     <comment>px = pixels</comment>
   </data>
+	<data name="SettingsWindow_TitleTxt.Text" xml:space="preserve">
+    <value>PowerToys Settings</value>
+	  </data>
   <data name="Oobe_Peek.Description" xml:space="preserve">
     <value>A lightning fast file preview feature for Windows.</value>
   </data>

@@ -59,10 +59,9 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
             InitializeComponent();
 
             ExperimentationToggleSwitchEnabled = SettingsRepository<GeneralSettings>.GetInstance(settingsUtils).SettingsConfig.EnableExperimentation;
-
+            SetTitleBar();
             DataContext = ViewModel;
             OobeShellHandler = this;
-            UpdateUITheme();
             Modules = new ObservableCollection<OobePowerToysModule>();
 
             Modules.Insert((int)PowerToysModules.Overview, new OobePowerToysModule()
@@ -190,7 +189,7 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
 
         public void OnClosing()
         {
-            Microsoft.UI.Xaml.Controls.NavigationViewItem selectedItem = this.NavigationView.SelectedItem as Microsoft.UI.Xaml.Controls.NavigationViewItem;
+            Microsoft.UI.Xaml.Controls.NavigationViewItem selectedItem = this.navigationView.SelectedItem as Microsoft.UI.Xaml.Controls.NavigationViewItem;
             if (selectedItem != null)
             {
                 Modules[(int)(PowerToysModules)Enum.Parse(typeof(PowerToysModules), (string)selectedItem.Tag, true)].LogClosingModuleEvent();
@@ -201,11 +200,11 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
         {
             if (selectedModule == PowerToysModules.WhatsNew)
             {
-                NavigationView.SelectedItem = NavigationView.FooterMenuItems[0];
+                navigationView.SelectedItem = navigationView.FooterMenuItems[0];
             }
             else
             {
-                NavigationView.SelectedItem = NavigationView.MenuItems[(int)selectedModule];
+                navigationView.SelectedItem = navigationView.MenuItems[(int)selectedModule];
             }
         }
 
@@ -264,20 +263,42 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
             }
         }
 
-        public void UpdateUITheme()
+        private void SetTitleBar()
         {
-            switch (SettingsRepository<GeneralSettings>.GetInstance(new SettingsUtils()).SettingsConfig.Theme.ToUpperInvariant())
+            var u = App.GetOobeWindow();
+            if (u != null)
             {
-                case "LIGHT":
-                    this.RequestedTheme = ElementTheme.Light;
-                    break;
-                case "DARK":
-                    this.RequestedTheme = ElementTheme.Dark;
-                    break;
-                case "SYSTEM":
-                    this.RequestedTheme = ElementTheme.Default;
-                    break;
+                // A custom title bar is required for full window theme and Mica support.
+                // https://docs.microsoft.com/windows/apps/develop/title-bar?tabs=winui3#full-customization
+                u.ExtendsContentIntoTitleBar = true;
+                u.SetTitleBar(AppTitleBar);
             }
+        }
+
+        private void ShellPage_Loaded(object sender, RoutedEventArgs e)
+        {
+            SetTitleBar();
+        }
+
+        private void NavigationView_DisplayModeChanged(NavigationView sender, NavigationViewDisplayModeChangedEventArgs args)
+        {
+            if (args.DisplayMode == NavigationViewDisplayMode.Compact || args.DisplayMode == NavigationViewDisplayMode.Minimal)
+            {
+                PaneToggleBtn.Visibility = Visibility.Visible;
+                AppTitleBar.Margin = new Thickness(48, 0, 0, 0);
+                AppTitleBarText.Margin = new Thickness(12, 0, 0, 0);
+            }
+            else
+            {
+                PaneToggleBtn.Visibility = Visibility.Collapsed;
+                AppTitleBar.Margin = new Thickness(16, 0, 0, 0);
+                AppTitleBarText.Margin = new Thickness(16, 0, 0, 0);
+            }
+        }
+
+        private void PaneToggleBtn_Click(object sender, RoutedEventArgs e)
+        {
+            navigationView.IsPaneOpen = !navigationView.IsPaneOpen;
         }
     }
 }

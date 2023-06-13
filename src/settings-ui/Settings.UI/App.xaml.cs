@@ -85,6 +85,7 @@ namespace Microsoft.PowerToys.Settings.UI
             }
 
             settingsWindow.Activate();
+
             if (type != null)
             {
                 settingsWindow.NavigateToSection(type);
@@ -104,7 +105,6 @@ namespace Microsoft.PowerToys.Settings.UI
         protected override void OnLaunched(Microsoft.UI.Xaml.LaunchActivatedEventArgs args)
         {
             var cmdArgs = Environment.GetCommandLineArgs();
-
             var isDark = IsDarkTheme();
 
             if (cmdArgs != null && cmdArgs.Length >= RequiredArgumentsQty)
@@ -164,6 +164,7 @@ namespace Microsoft.PowerToys.Settings.UI
                 {
                     settingsWindow = new MainWindow(isDark);
                     settingsWindow.Activate();
+                    settingsWindow.ExtendsContentIntoTitleBar = true;
                     settingsWindow.NavigateToSection(StartupPage);
 
                     // https://github.com/microsoft/microsoft-ui-xaml/issues/7595 - Activate doesn't bring window to the foreground
@@ -182,6 +183,7 @@ namespace Microsoft.PowerToys.Settings.UI
                         PowerToysTelemetry.Log.WriteEvent(new OobeStartedEvent());
                         OobeWindow oobeWindow = new OobeWindow(OOBE.Enums.PowerToysModules.Overview, isDark);
                         oobeWindow.Activate();
+                        oobeWindow.ExtendsContentIntoTitleBar = true;
                         SetOobeWindow(oobeWindow);
                     }
                     else if (ShowScoobe)
@@ -189,6 +191,7 @@ namespace Microsoft.PowerToys.Settings.UI
                         PowerToysTelemetry.Log.WriteEvent(new ScoobeStartedEvent());
                         OobeWindow scoobeWindow = new OobeWindow(OOBE.Enums.PowerToysModules.WhatsNew, isDark);
                         scoobeWindow.Activate();
+                        scoobeWindow.ExtendsContentIntoTitleBar = true;
                         SetOobeWindow(scoobeWindow);
                     }
                     else if (ShowFlyout)
@@ -208,7 +211,9 @@ namespace Microsoft.PowerToys.Settings.UI
                 // For debugging purposes
                 // Window is also needed to show MessageDialog
                 settingsWindow = new MainWindow(isDark);
+                settingsWindow.ExtendsContentIntoTitleBar = true;
                 settingsWindow.Activate();
+                settingsWindow.NavigateToSection(StartupPage);
 
 #if !DEBUG
                 ShowMessageDialogAndExit("The application cannot be run as a standalone process. Please start the application through the runner.", "Forbidden");
@@ -248,36 +253,43 @@ namespace Microsoft.PowerToys.Settings.UI
             return ipcmanager;
         }
 
-        public static string SelectedTheme()
+        public static ElementTheme SelectedTheme()
         {
-            return SettingsRepository<GeneralSettings>.GetInstance(settingsUtils).SettingsConfig.Theme.ToUpper(CultureInfo.InvariantCulture);
+            switch (SettingsRepository<GeneralSettings>.GetInstance(settingsUtils).SettingsConfig.Theme.ToUpper(CultureInfo.InvariantCulture))
+            {
+                case "DARK": return ElementTheme.Dark;
+                case "LIGHT": return ElementTheme.Light;
+                default: return ElementTheme.Default;
+            }
         }
 
         public static bool IsDarkTheme()
         {
             var selectedTheme = SelectedTheme();
-            return selectedTheme == "DARK" || (selectedTheme == "SYSTEM" && ThemeHelpers.GetAppTheme() == AppTheme.Dark);
+            return selectedTheme == ElementTheme.Dark || (selectedTheme == ElementTheme.Default && ThemeHelpers.GetAppTheme() == AppTheme.Dark);
         }
 
         public static void HandleThemeChange()
         {
             try
             {
-                var isDark = IsDarkTheme();
+                bool isDark = IsDarkTheme();
+
                 if (settingsWindow != null)
                 {
                     var hWnd = WinRT.Interop.WindowNative.GetWindowHandle(settingsWindow);
                     ThemeHelpers.SetImmersiveDarkMode(hWnd, isDark);
+                    SetContentTheme(isDark, settingsWindow);
                 }
 
                 if (oobeWindow != null)
                 {
                     var hWnd = WinRT.Interop.WindowNative.GetWindowHandle(oobeWindow);
                     ThemeHelpers.SetImmersiveDarkMode(hWnd, isDark);
+                    SetContentTheme(isDark, oobeWindow);
                 }
 
-                var selectedTheme = SelectedTheme();
-                if (selectedTheme == "SYSTEM")
+                if (SelectedTheme() == ElementTheme.Default)
                 {
                     themeListener = new ThemeListener();
                     themeListener.ThemeChanged += (_) => HandleThemeChange();
@@ -294,6 +306,22 @@ namespace Microsoft.PowerToys.Settings.UI
                 {
                     Logger.LogError($"HandleThemeChange exception. Please install .NET 4.", e);
                     loggedImmersiveDarkException = true;
+                }
+            }
+        }
+
+        public static void SetContentTheme(bool isDark, WindowEx window)
+        {
+            var rootGrid = (FrameworkElement)window.Content;
+            if (rootGrid != null)
+            {
+                if (isDark)
+                {
+                    rootGrid.RequestedTheme = ElementTheme.Dark;
+                }
+                else
+                {
+                    rootGrid.RequestedTheme = ElementTheme.Light;
                 }
             }
         }
