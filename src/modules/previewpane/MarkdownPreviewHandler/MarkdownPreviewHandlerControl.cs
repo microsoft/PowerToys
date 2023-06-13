@@ -122,7 +122,7 @@ namespace Microsoft.PowerToys.PreviewHandler.Markdown
                     _infoBarDisplayed = true;
                 }
 
-                string markdownHTML = FilePreviewCommon.MarkdownHelper.MarkdownHtml(fileText, GetTheme(), filePath, ImagesBlockedCallBack);
+                string markdownHTML = FilePreviewCommon.MarkdownHelper.MarkdownHtml(fileText, Settings.GetTheme(), filePath, ImagesBlockedCallBack);
 
                 _browser = new WebView2()
                 {
@@ -270,15 +270,6 @@ namespace Microsoft.PowerToys.PreviewHandler.Markdown
         private void ImagesBlockedCallBack()
         {
             _infoBarDisplayed = true;
-        }
-
-        /// <summary>
-        /// Returns the theme.
-        /// </summary>
-        /// <returns>Theme that should be used.</returns>
-        public static string GetTheme()
-        {
-            return Common.UI.ThemeManager.GetWindowsBaseColor().ToLowerInvariant();
         }
     }
 }
