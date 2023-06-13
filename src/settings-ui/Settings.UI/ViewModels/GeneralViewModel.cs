@@ -800,16 +800,6 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         // callback function to launch the URL to check for updates.
         private void CheckForUpdatesClick()
         {
-            RefreshUpdatingState();
-            IsNewVersionDownloading = string.IsNullOrEmpty(UpdatingSettingsConfig.DownloadedInstallerFilename);
-            NotifyPropertyChanged(nameof(IsDownloadAllowed));
-
-            if (_isNewVersionChecked)
-            {
-                _isNewVersionChecked = !IsNewVersionDownloading;
-                NotifyPropertyChanged(nameof(IsNewVersionCheckedAndUpToDate));
-            }
-
             GeneralSettingsConfig.CustomActionName = "check_for_updates";
 
             OutGoingGeneralSettings outsettings = new OutGoingGeneralSettings(GeneralSettingsConfig);
