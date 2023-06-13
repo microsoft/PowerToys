@@ -616,26 +616,26 @@ namespace Microsoft.PowerToys.Settings.UI.Library
 
                     if (string.IsNullOrEmpty(settingsBackupAndRestoreDir))
                     {
-                        return (false, $"General_SettingsBackupAndRestore_NoBackupSyncPath", "Error", lastBackupExists, string.Empty);
+                        return (false, $"General_SettingsBackupAndRestore_NoBackupSyncPath", "Error", lastBackupExists, "\n" + settingsBackupAndRestoreDir);
                     }
 
                     if (!Path.IsPathRooted(settingsBackupAndRestoreDir))
                     {
-                        return (false, $"Invalid settingsBackupAndRestoreDir, not rooted", "Error", lastBackupExists, string.Empty);
+                        return (false, $"Invalid settingsBackupAndRestoreDir, not rooted", "Error", lastBackupExists, "\n" + settingsBackupAndRestoreDir);
                     }
 
                     if (settingsBackupAndRestoreDir.StartsWith(appBasePath, StringComparison.InvariantCultureIgnoreCase))
                     {
                         // backup cannot be under app
                         Logger.LogError($"BackupSettings, backup cannot be under app");
-                        return (false, "General_SettingsBackupAndRestore_InvalidBackupLocation", "Error", lastBackupExists, string.Empty);
+                        return (false, "General_SettingsBackupAndRestore_InvalidBackupLocation", "Error", lastBackupExists, "\n" + appBasePath);
                     }
 
                     var dirExists = TryCreateDirectory(settingsBackupAndRestoreDir);
                     if (!dirExists)
                     {
                         Logger.LogError($"Failed to create dir {settingsBackupAndRestoreDir}");
-                        return (false, $"General_SettingsBackupAndRestore_BackupError", "Error", lastBackupExists, string.Empty);
+                        return (false, $"General_SettingsBackupAndRestore_BackupError", "Error", lastBackupExists, "\n" + settingsBackupAndRestoreDir);
                     }
 
                     // get data needed for process
@@ -714,7 +714,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
                     if (!anyFileBackedUp)
                     {
                         // nothing was done!
-                        return (false, $"General_SettingsBackupAndRestore_NothingToBackup", "Informational", lastBackupExists, string.Empty);
+                        return (false, $"General_SettingsBackupAndRestore_NothingToBackup", "Informational", lastBackupExists, "\n" + tempFile.Value);
                     }
 
                     // add skipped.
