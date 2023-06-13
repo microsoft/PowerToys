@@ -30,7 +30,7 @@ bool isExcluded(HWND window)
 
     if ( res == false )
     {
-        res = check_excluded_app_with_windowname(window, processPath, AlwaysOnTopSettings::settings().excludedApps);
+        res = check_excluded_app_with_title(window, processPath, AlwaysOnTopSettings::settings().excludedApps);
     }
 
     return res;

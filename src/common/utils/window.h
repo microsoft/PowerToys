@@ -58,7 +58,7 @@ inline bool is_system_window(HWND hwnd, const char* class_name)
 }
 
 #define MAX_TITLE_LENGTH 255
-inline bool check_excluded_app_with_windowname(const HWND& hwnd, std::wstring& processPath, const std::vector<std::wstring>& excludedApps)
+inline bool check_excluded_app_with_title(const HWND& hwnd, std::wstring& processPath, const std::vector<std::wstring>& excludedApps)
 {
     WCHAR title[MAX_TITLE_LENGTH];    
     int len = GetWindowTextW(hwnd, title, MAX_TITLE_LENGTH);

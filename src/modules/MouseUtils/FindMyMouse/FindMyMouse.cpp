@@ -598,7 +598,7 @@ bool SuperSonar<D>::IsForegroundAppExcluded()
 
         if (res == false)
         {
-            res = check_excluded_app_with_windowname(foregroundApp, processPath, m_excludedApps);
+            res = check_excluded_app_with_title(foregroundApp, processPath, m_excludedApps);
         }
 
         return res;

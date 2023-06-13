@@ -137,7 +137,7 @@ namespace winrt::PowerToys::PowerAccentKeyboardService::implementation
             if (!m_prevForegroundAppExcl.second) // Check applications running under some other applications with window name
             {
                 m_prevForegroundAppExcl = { foregroundApp,
-                                            check_excluded_app_with_windowname(foregroundApp, processPath, m_settings.excludedApps) };
+                                            check_excluded_app_with_title(foregroundApp, processPath, m_settings.excludedApps) };
 
                 Logger::debug(L"Application window name: {}", processPath);
             }
