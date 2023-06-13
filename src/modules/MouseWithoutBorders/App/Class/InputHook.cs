@@ -563,8 +563,8 @@ namespace MouseWithoutBorders.Class
                 }
                 else if (shiftDown || winDown)
                 {
-                    // the following else cases should work if control and alt is pressed, the hotkeys should be captured.
-                    // But if the other 2 modifiers (shift or win) are pressed, they hotkeys should not be activated
+                    // The following else cases should work if control and alt modifiers are pressed. The hotkeys should still be captured.
+                    // But if any of the other 2 modifiers (shift or win) are pressed, they hotkeys should not be activated.
                     // Issue #26597
                     return true;
                 }
