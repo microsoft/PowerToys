@@ -94,14 +94,14 @@ namespace Peek.UI
             }
         }
 
-        private void LeftNavigationInvoked(KeyboardAccelerator sender, KeyboardAcceleratorInvokedEventArgs args)
+        private void PreviousNavigationInvoked(KeyboardAccelerator sender, KeyboardAcceleratorInvokedEventArgs args)
         {
-            ViewModel.AttemptLeftNavigation();
+            ViewModel.AttemptPreviousNavigation();
         }
 
-        private void RightNavigationInvoked(KeyboardAccelerator sender, KeyboardAcceleratorInvokedEventArgs args)
+        private void NextNavigationInvoked(KeyboardAccelerator sender, KeyboardAcceleratorInvokedEventArgs args)
         {
-            ViewModel.AttemptRightNavigation();
+            ViewModel.AttemptNextNavigation();
         }
 
         private void EscKeyInvoked(KeyboardAccelerator sender, KeyboardAcceleratorInvokedEventArgs args)
