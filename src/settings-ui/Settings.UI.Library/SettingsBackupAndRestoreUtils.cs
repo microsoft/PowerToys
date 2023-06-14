@@ -555,7 +555,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         /// <remarks>
         /// This is a wrapper for BackupSettingsInternal, so we can check the time to run.
         /// </remarks>
-        public (bool Success, string Message, string Severity, bool LastBackupExists) BackupSettings(string appBasePath, string settingsBackupAndRestoreDir, bool dryRun)
+        public (bool Success, string Message, string Severity, bool LastBackupExists, string OptionalMessage) BackupSettings(string appBasePath, string settingsBackupAndRestoreDir, bool dryRun)
         {
             var sw = Stopwatch.StartNew();
             var results = BackupSettingsInternal(appBasePath, settingsBackupAndRestoreDir, dryRun);
@@ -568,7 +568,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         /// <summary>
         /// Method <c>DryRunBackup</c> wrapper function to do a dry-run backup
         /// </summary>
-        public (bool Success, string Message, string Severity, bool LastBackupExists) DryRunBackup()
+        public (bool Success, string Message, string Severity, bool LastBackupExists, string OptionalMessage) DryRunBackup()
         {
             var settingsUtils = new SettingsUtils();
             var appBasePath = Path.GetDirectoryName(settingsUtils.GetSettingsFilePath());
@@ -596,7 +596,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         /// A tuple that indicates if the backup was done or not, and a message.
         /// The message usually is a localized reference key.
         /// </returns>
-        private (bool Success, string Message, string Severity, bool LastBackupExists) BackupSettingsInternal(string appBasePath, string settingsBackupAndRestoreDir, bool dryRun)
+        private (bool Success, string Message, string Severity, bool LastBackupExists, string OptionalMessage) BackupSettingsInternal(string appBasePath, string settingsBackupAndRestoreDir, bool dryRun)
         {
             var lastBackupExists = false;
 
@@ -604,36 +604,38 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             {
                 // simulated delay to validate behavior
                 // Thread.Sleep(1000);
+                KeyValuePair<string, string> tempFile = default(KeyValuePair<string, string>);
+
                 try
                 {
                     // verify inputs
                     if (!Directory.Exists(appBasePath))
                     {
-                        return (false, $"Invalid appBasePath {appBasePath}", "Error", lastBackupExists);
+                        return (false, $"Invalid appBasePath {appBasePath}", "Error", lastBackupExists, string.Empty);
                     }
 
                     if (string.IsNullOrEmpty(settingsBackupAndRestoreDir))
                     {
-                        return (false, $"General_SettingsBackupAndRestore_NoBackupSyncPath", "Error", lastBackupExists);
+                        return (false, $"General_SettingsBackupAndRestore_NoBackupSyncPath", "Error", lastBackupExists, "\n" + settingsBackupAndRestoreDir);
                     }
 
                     if (!Path.IsPathRooted(settingsBackupAndRestoreDir))
                     {
-                        return (false, $"Invalid settingsBackupAndRestoreDir, not rooted", "Error", lastBackupExists);
+                        return (false, $"Invalid settingsBackupAndRestoreDir, not rooted", "Error", lastBackupExists, "\n" + settingsBackupAndRestoreDir);
                     }
 
                     if (settingsBackupAndRestoreDir.StartsWith(appBasePath, StringComparison.InvariantCultureIgnoreCase))
                     {
                         // backup cannot be under app
                         Logger.LogError($"BackupSettings, backup cannot be under app");
-                        return (false, "General_SettingsBackupAndRestore_InvalidBackupLocation", "Error", lastBackupExists);
+                        return (false, "General_SettingsBackupAndRestore_InvalidBackupLocation", "Error", lastBackupExists, "\n" + appBasePath);
                     }
 
                     var dirExists = TryCreateDirectory(settingsBackupAndRestoreDir);
                     if (!dirExists)
                     {
                         Logger.LogError($"Failed to create dir {settingsBackupAndRestoreDir}");
-                        return (false, $"General_SettingsBackupAndRestore_BackupError", "Error", lastBackupExists);
+                        return (false, $"General_SettingsBackupAndRestore_BackupError", "Error", lastBackupExists, "\n" + settingsBackupAndRestoreDir);
                     }
 
                     // get data needed for process
@@ -647,7 +649,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
 
                     if (currentSettingsFiles.Count == 0)
                     {
-                        return (false, "General_SettingsBackupAndRestore_NoSettingsFilesFound", "Error", lastBackupExists);
+                        return (false, "General_SettingsBackupAndRestore_NoSettingsFilesFound", "Error", lastBackupExists, string.Empty);
                     }
 
                     var anyFileBackedUp = false;
@@ -656,6 +658,8 @@ namespace Microsoft.PowerToys.Settings.UI.Library
 
                     foreach (var currentFile in currentSettingsFiles)
                     {
+                        tempFile = currentFile;
+
                         // need to check and back this up;
                         var currentSettingsFileToBackup = GetExportVersion(backupRetoreSettings, currentFile.Key, currentFile.Value);
 
@@ -710,7 +714,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
                     if (!anyFileBackedUp)
                     {
                         // nothing was done!
-                        return (false, $"General_SettingsBackupAndRestore_NothingToBackup", "Informational", lastBackupExists);
+                        return (false, $"General_SettingsBackupAndRestore_NothingToBackup", "Informational", lastBackupExists, "\n" + tempFile.Value);
                     }
 
                     // add skipped.
@@ -756,12 +760,12 @@ namespace Microsoft.PowerToys.Settings.UI.Library
                         TryDeleteDirectory(fullBackupDir);
                     }
 
-                    return (true, $"General_SettingsBackupAndRestore_BackupComplete", "Success", lastBackupExists);
+                    return (true, $"General_SettingsBackupAndRestore_BackupComplete", "Success", lastBackupExists, string.Empty);
                 }
                 catch (Exception ex2)
                 {
-                    Logger.LogError($"There was an error: {ex2.Message}", ex2);
-                    return (false, $"General_SettingsBackupAndRestore_BackupError", "Error", lastBackupExists);
+                    Logger.LogError($"There was an error in {tempFile.Value} : {ex2.Message}", ex2);
+                    return (false, $"General_SettingsBackupAndRestore_SettingsFormatError", "Error", lastBackupExists, "\n" + tempFile.Value);
                 }
             }
         }

@@ -774,7 +774,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
             _settingsBackupRestoreMessageVisible = true;
             _backupRestoreMessageSeverity = results.Severity;
-            _settingsBackupMessage = GetResourceString(results.Message);
+            _settingsBackupMessage = GetResourceString(results.Message) + results.OptionalMessage;
 
             // now we do a dry run to get the results for "setting match"
             var settingsUtils = new SettingsUtils();
