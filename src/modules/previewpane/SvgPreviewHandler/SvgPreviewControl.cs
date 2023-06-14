@@ -21,6 +21,11 @@ namespace Microsoft.PowerToys.PreviewHandler.Svg
     public class SvgPreviewControl : FormHandlerControl
     {
         /// <summary>
+        /// Settings class
+        /// </summary>
+        private readonly SvgPreviewHandler.Settings _settings = new();
+
+        /// <summary>
         /// Generator for the actual preview file
         /// </summary>
         private readonly SvgHTMLPreviewGenerator _previewGenerator = new();
@@ -77,6 +82,11 @@ namespace Microsoft.PowerToys.PreviewHandler.Svg
         /// </summary>
         private string _webView2UserDataFolder = System.Environment.GetEnvironmentVariable("USERPROFILE") +
                                 "\\AppData\\LocalLow\\Microsoft\\PowerToys\\SvgPreview-Temp";
+
+        public SvgPreviewControl()
+        {
+            this.SetBackgroundColor(_settings.ThemeColor);
+        }
 
         /// <summary>
         /// Start the preview on the Control.
@@ -199,6 +209,7 @@ namespace Microsoft.PowerToys.PreviewHandler.Svg
         private void AddWebViewControl(string svgData)
         {
             _browser = new WebView2();
+            _browser.DefaultBackgroundColor = Color.Transparent;
             _browser.Dock = DockStyle.Fill;
 
             // Prevent new windows from being opened.
