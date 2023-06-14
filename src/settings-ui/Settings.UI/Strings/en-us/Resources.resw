@@ -3034,7 +3034,7 @@ Activate by holding the key for the character you want to add an accent to, then
     <value>There was an error. Try another backup location.</value>
   </data>
   <data name="General_SettingsBackupAndRestore_SettingsFormatError" xml:space="preserve">
-    <value>There was an error in settings format. Please check the settings file:</value>
+    <value>There was an error in the settings format. Please check the settings file:</value>
   </data>
   <data name="General_SettingsBackupAndRestore_BackupComplete" xml:space="preserve">
     <value>Backup completed.</value>
