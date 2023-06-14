@@ -262,20 +262,22 @@ void CheckForUpdatesCallback()
         auto new_version_info = get_github_version_info_async().get();
         if (!new_version_info)
         {
-            // If we couldn't get a new version from github for some reason, assume we're up to date, but also log error
-            new_version_info = version_up_to_date{};
+            // We couldn't get a new version from github for some reason, log error
+            state.state = UpdateState::networkError;
             Logger::error(L"Couldn't obtain version info from github: {}", new_version_info.error());
         }
-
-        // Auto download setting
-        bool download_update = !IsMeteredConnection() && get_general_settings().downloadUpdatesAutomatically;
-        if (powertoys_gpo::getDisableAutomaticUpdateDownloadValue() == powertoys_gpo::gpo_rule_configured_enabled)
+        else
         {
-            Logger::info(L"Automatic download of updates is disabled by GPO.");
-            download_update = false;
+            // Auto download setting
+            bool download_update = !IsMeteredConnection() && get_general_settings().downloadUpdatesAutomatically;
+            if (powertoys_gpo::getDisableAutomaticUpdateDownloadValue() == powertoys_gpo::gpo_rule_configured_enabled)
+            {
+                Logger::info(L"Automatic download of updates is disabled by GPO.");
+                download_update = false;
+            }
+
+            ProcessNewVersionInfo(*new_version_info, state, download_update, false);
         }
-        
-        ProcessNewVersionInfo(*new_version_info, state, download_update, false);
 
         UpdateState::store([&](UpdateState& v) {
             v = std::move(state);
