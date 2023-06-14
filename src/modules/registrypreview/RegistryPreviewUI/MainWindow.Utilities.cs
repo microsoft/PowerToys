@@ -9,6 +9,7 @@ using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 using System.Reflection;
+using System.Threading.Tasks;
 using Microsoft.UI.Input;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
@@ -859,6 +860,10 @@ namespace RegistryPreview
                     // set up default JSON blob
                     fileContents = "{ }";
                 }
+            }
+            else
+            {
+                Task.Run(() => SaveSettingsFile(path, filename)).GetAwaiter().GetResult();
             }
 
             try

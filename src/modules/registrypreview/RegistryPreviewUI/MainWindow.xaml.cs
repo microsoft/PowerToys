@@ -19,7 +19,7 @@ namespace RegistryPreview
         // Const values
         private const string REGISTRYHEADER4 = "regedit4";
         private const string REGISTRYHEADER5 = "windows registry editor version 5.00";
-        private const string APPNAME = "Registry Preview";
+        private const string APPNAME = "RegistryPreview";
         private const string KEYIMAGE = "ms-appx:///Assets/folder32.png";
         private const string DELETEDKEYIMAGE = "ms-appx:///Assets/deleted-folder32.png";
         private const string ERRORIMAGE = "ms-appx:///Assets/error32.png";
@@ -32,7 +32,7 @@ namespace RegistryPreview
         private List<RegistryValue> listRegistryValues;
         private JsonObject jsonSettings;
         private string settingsFolder = string.Empty;
-        private string settingsFile = string.Empty;
+        private string settingsFile = "settings.json";
 
         internal MainWindow()
         {
@@ -43,7 +43,6 @@ namespace RegistryPreview
 
             // Open settings file; this moved to after the window tweak because it gives the window time to start up
             settingsFolder = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData) + @"\Microsoft\PowerToys\" + APPNAME;
-            settingsFile = APPNAME + "_settings.json";
             OpenSettingsFile(settingsFolder, settingsFile);
 
             // Update the Win32 looking window with the correct icon (and grab the appWindow handle for later)
