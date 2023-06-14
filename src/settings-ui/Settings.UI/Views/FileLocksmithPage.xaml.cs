@@ -16,7 +16,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
         public FileLocksmithPage()
         {
             var settingsUtils = new SettingsUtils();
-            ViewModel = new FileLocksmithViewModel(SettingsRepository<GeneralSettings>.GetInstance(settingsUtils), ShellPage.SendDefaultIPCMessage);
+            ViewModel = new FileLocksmithViewModel(settingsUtils, SettingsRepository<GeneralSettings>.GetInstance(settingsUtils), ShellPage.SendDefaultIPCMessage);
             DataContext = ViewModel;
             InitializeComponent();
         }
