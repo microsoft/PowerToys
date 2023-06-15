@@ -75,14 +75,17 @@
             <RowDefinition Height="*" />
             <RowDefinition Height="auto" />
         </Grid.RowDefinitions>
-        <TreeView
-            x:Name="ArchivePreview"
+        <ScrollViewer
             Grid.Row="0"
-            ItemsSource="{x:Bind Source, Mode=OneWay}"
-            ItemTemplateSelector="{StaticResource ArchiveItemTemplateSelector}"
-            SelectionMode="None"
-            CanReorderItems="False"
-            CanDragItems="False" />
+            HorizontalScrollBarVisibility="Auto">
+            <TreeView
+                x:Name="ArchivePreview"
+                ItemsSource="{x:Bind Source, Mode=OneWay}"
+                ItemTemplateSelector="{StaticResource ArchiveItemTemplateSelector}"
+                SelectionMode="None"
+                CanReorderItems="False"
+                CanDragItems="False" />
+        </ScrollViewer>
         <Border
             Grid.Row="1"
             MinWidth="300"
