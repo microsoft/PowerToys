@@ -5,7 +5,7 @@
 using System.Windows.Controls;
 using System.Windows.Input;
 using ImageResizer.ViewModels;
-using ModernWpf.Controls;
+using Wpf.Ui.Controls.NumberBoxControl;
 using static ImageResizer.ViewModels.InputViewModel;
 
 namespace ImageResizer.Views

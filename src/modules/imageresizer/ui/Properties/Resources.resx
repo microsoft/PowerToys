@@ -278,7 +278,7 @@
     <value>Width</value>
   </data>
   <data name="Open_settings" xml:space="preserve">
-    <value>Open settings</value>
+    <value>Settings</value>
   </data>
   <data name="Input_RemoveMetadata" xml:space="preserve">
     <value>Remove metadata that doesn't affect rendering</value>
