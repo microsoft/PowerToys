@@ -6,8 +6,9 @@
     <AssemblyTitle>PowerToys.SvgPreviewHandler</AssemblyTitle>
     <AssemblyDescription>PowerToys SvgPreviewHandler</AssemblyDescription>
     <Description>PowerToys SvgPreviewHandler</Description>
-    <OutputPath>..\..\..\..\$(Platform)\$(Configuration)\modules\FileExplorerPreview\</OutputPath>
-    <DocumentationFile>$(SolutionDir)$(Platform)\$(Configuration)\modules\FileExplorerPreview\SvgPreviewHandler.xml</DocumentationFile>
+    <OutputPath>..\..\..\..\$(Platform)\$(Configuration)</OutputPath>
+    <UseCommonOutputDirectory>true</UseCommonOutputDirectory>
+    <DocumentationFile>..\..\..\..\$(Platform)\$(Configuration)\SvgPreviewHandler.xml</DocumentationFile>
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
     <AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
     <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>

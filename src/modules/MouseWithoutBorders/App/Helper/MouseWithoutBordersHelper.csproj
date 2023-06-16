@@ -9,7 +9,8 @@
     <AssemblyName>PowerToys.MouseWithoutBordersHelper</AssemblyName>    
     <DisableWinExeOutputInference>true</DisableWinExeOutputInference>    
     <ImportWindowsDesktopTargets>true</ImportWindowsDesktopTargets>
-    <OutputPath>$(SolutionDir)$(Platform)\$(Configuration)\modules\MouseWithoutBorders</OutputPath>
+    <OutputPath>..\..\..\..\$(Platform)\$(Configuration)</OutputPath>
+    <UseCommonOutputDirectory>true</UseCommonOutputDirectory>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <SelfContained>true</SelfContained>
     <Version>$(Version).0</Version>

@@ -11,7 +11,8 @@
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
     <AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
     <GenerateSatelliteAssembliesForCore>true</GenerateSatelliteAssembliesForCore>
-    <OutputPath>$(SolutionDir)$(Platform)\$(Configuration)\modules\FancyZones</OutputPath>
+    <OutputPath>..\..\..\..\$(Platform)\$(Configuration)</OutputPath>
+    <UseCommonOutputDirectory>true</UseCommonOutputDirectory>
     <SelfContained>true</SelfContained>
   </PropertyGroup>
 

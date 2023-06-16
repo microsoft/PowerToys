@@ -68,7 +68,8 @@
   <PropertyGroup Label="Configuration">
     <PlatformToolset>v143</PlatformToolset>
     <IntDir>$(SolutionDir)$(Platform)\$(Configuration)\obj\$(ProjectName)\</IntDir>
-    <OutDir>$(SolutionDir)$(Platform)\$(Configuration)\modules\KeyboardManager\$(MSBuildProjectName)\</OutDir>
+    <OutDir>..\..\..\..\$(Platform)\$(Configuration)\</OutDir>
+    <UseCommonOutputDirectory>true</UseCommonOutputDirectory>
     <CharacterSet>Unicode</CharacterSet>
     <SpectreMitigation>Spectre</SpectreMitigation>
     <ConfigurationType>Application</ConfigurationType>

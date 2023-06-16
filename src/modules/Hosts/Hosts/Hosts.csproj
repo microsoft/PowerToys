@@ -14,7 +14,8 @@
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
     <AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
     <WindowsAppSDKSelfContained>true</WindowsAppSDKSelfContained>
-    <OutputPath>$(SolutionDir)$(Platform)\$(Configuration)\modules\$(AssemblyName)</OutputPath>
+    <OutputPath>..\..\..\..\$(Platform)\$(Configuration)</OutputPath>
+    <UseCommonOutputDirectory>true</UseCommonOutputDirectory>
     <IntermediateOutputPath>$(SolutionDir)$(Platform)\$(Configuration)\obj\$(AssemblyName)</IntermediateOutputPath>
     <RootNamespace>Hosts</RootNamespace>
     <AssemblyName>PowerToys.Hosts</AssemblyName>

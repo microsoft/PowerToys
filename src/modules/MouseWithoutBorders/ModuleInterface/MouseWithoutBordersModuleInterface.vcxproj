@@ -22,7 +22,8 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup>
-    <OutDir>$(SolutionDir)$(Platform)\$(Configuration)\modules\MouseWithoutBorders\</OutDir>
+    <OutDir>..\..\..\..\$(Platform)\$(Configuration)\</OutDir>
+    <UseCommonOutputDirectory>true</UseCommonOutputDirectory>
     <TargetName>PowerToys.MouseWithoutBordersModuleInterface</TargetName>
   </PropertyGroup>
   <ItemDefinitionGroup>

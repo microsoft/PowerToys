@@ -4,8 +4,9 @@
     <AssemblyTitle>PowerToys.PreviewHandlerCommon</AssemblyTitle>
     <AssemblyDescription>PowerToys PreviewHandlerCommon</AssemblyDescription>
     <Description>PowerToys PreviewHandlerCommon</Description>
-    <DocumentationFile>$(SolutionDir)$(Platform)\$(Configuration)\modules\FileExplorerPreview\PreviewHandlerCommonDocumentation.xml</DocumentationFile>
-    <OutputPath>..\..\..\..\$(Platform)\$(Configuration)\modules\FileExplorerPreview\</OutputPath>
+    <DocumentationFile>..\..\..\..\$(Platform)\$(Configuration)\PreviewHandlerCommonDocumentation.xml</DocumentationFile>
+    <OutputPath>..\..\..\..\$(Platform)\$(Configuration)</OutputPath>
+    <UseCommonOutputDirectory>true</UseCommonOutputDirectory>
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
     <AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
     <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>

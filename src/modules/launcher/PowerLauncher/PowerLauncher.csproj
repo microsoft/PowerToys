@@ -17,7 +17,8 @@
     <Authors>Microsoft Corporation</Authors>
     <Description>PowerToys PowerLauncher</Description>
     <AssemblyName>PowerToys.PowerLauncher</AssemblyName>
-    <OutputPath>..\..\..\..\$(Platform)\$(Configuration)\modules\launcher\</OutputPath>
+    <OutputPath>..\..\..\..\$(Platform)\$(Configuration)</OutputPath>
+    <UseCommonOutputDirectory>true</UseCommonOutputDirectory>
     <GenerateSatelliteAssembliesForCore>true</GenerateSatelliteAssembliesForCore>
     <SelfContained>true</SelfContained>
   </PropertyGroup>

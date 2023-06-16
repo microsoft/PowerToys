@@ -5,7 +5,8 @@
     <AssemblyTitle>PowerToys.MonacoPreviewHandler</AssemblyTitle>
     <AssemblyDescription>PowerToys MonacoPreviewHandler</AssemblyDescription>
     <Description>PowerToys MonacoPreviewHandler</Description>
-    <OutputPath>..\..\..\..\$(Platform)\$(Configuration)\modules\FileExplorerPreview\</OutputPath>
+    <OutputPath>..\..\..\..\$(Platform)\$(Configuration)</OutputPath>
+    <UseCommonOutputDirectory>true</UseCommonOutputDirectory>
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
     <AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
     <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>

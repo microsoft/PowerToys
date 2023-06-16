@@ -7,7 +7,8 @@
     <OutputType>WinExe</OutputType>
     <TargetFramework>net7.0-windows10.0.19041.0</TargetFramework>
     <TargetPlatformMinVersion>10.0.19041.0</TargetPlatformMinVersion>
-    <OutputPath>..\..\..\..\$(Platform)\$(Configuration)\modules\FileLocksmith</OutputPath>
+    <OutputPath>..\..\..\..\$(Platform)\$(Configuration)</OutputPath>
+    <UseCommonOutputDirectory>true</UseCommonOutputDirectory>
     <RootNamespace>PowerToys.FileLocksmithUI</RootNamespace>
     <AssemblyName>PowerToys.FileLocksmithUI</AssemblyName>
     <ApplicationManifest>app.manifest</ApplicationManifest>

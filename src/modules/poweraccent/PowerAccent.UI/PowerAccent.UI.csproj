@@ -11,7 +11,8 @@
 		<AssemblyName>PowerToys.PowerAccent</AssemblyName>
 		<XamlDebuggingInformation>True</XamlDebuggingInformation>
 		<StartupObject>PowerAccent.UI.Program</StartupObject>
-		<OutputPath>$(SolutionDir)$(Platform)\$(Configuration)\modules\PowerAccent</OutputPath>
+		<OutputPath>..\..\..\..\$(Platform)\$(Configuration)</OutputPath>
+		<UseCommonOutputDirectory>true</UseCommonOutputDirectory>
 		<AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
 		<AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
 		<SelfContained>true</SelfContained>

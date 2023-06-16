@@ -12,6 +12,7 @@
     <ProjectGuid>{9412D5C6-2CF2-4FC2-A601-B55508EA9B27}</ProjectGuid>
     <RootNamespace>powertoys</RootNamespace>
     <ProjectName>runner</ProjectName>
+    <UseCommonOutputDirectory>true</UseCommonOutputDirectory>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <Import Project="..\..\deps\expected.props" />

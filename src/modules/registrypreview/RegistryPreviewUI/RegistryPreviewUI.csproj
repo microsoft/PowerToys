@@ -5,7 +5,8 @@
 		<TargetFramework>net7.0-windows10.0.19041.0</TargetFramework>
 		<TargetPlatformMinVersion>10.0.19041.0</TargetPlatformMinVersion>
 		<Platforms>x86;x64;arm64</Platforms>
-		<OutputPath>$(SolutionDir)$(Platform)\$(Configuration)\modules\RegistryPreview</OutputPath>
+		<OutputPath>..\..\..\..\$(Platform)\$(Configuration)</OutputPath>
+		<UseCommonOutputDirectory>true</UseCommonOutputDirectory>
 		<UseWinUI>true</UseWinUI>
 		<UseWindowsForms>False</UseWindowsForms>
 		<ApplicationIcon>app.ico</ApplicationIcon>

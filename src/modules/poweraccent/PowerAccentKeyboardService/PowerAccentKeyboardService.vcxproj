@@ -48,7 +48,8 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup>
     <TargetName>PowerToys.PowerAccentKeyboardService</TargetName>
-    <OutDir>$(SolutionDir)$(Platform)\$(Configuration)\modules\PowerAccent\</OutDir>
+    <OutDir>..\..\..\..\$(Platform)\$(Configuration)\</OutDir>
+    <UseCommonOutputDirectory>true</UseCommonOutputDirectory>
   </PropertyGroup>
   <ItemDefinitionGroup>
     <ClCompile>
