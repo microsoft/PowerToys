@@ -12,7 +12,6 @@
     <AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
     <GenerateSatelliteAssembliesForCore>true</GenerateSatelliteAssembliesForCore>
     <OutputPath>..\..\..\..\$(Platform)\$(Configuration)</OutputPath>
-    <UseCommonOutputDirectory>true</UseCommonOutputDirectory>
     <SelfContained>true</SelfContained>
   </PropertyGroup>
 

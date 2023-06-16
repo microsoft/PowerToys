@@ -69,7 +69,6 @@
     <PlatformToolset>v143</PlatformToolset>
     <IntDir>$(SolutionDir)$(Platform)\$(Configuration)\obj\$(ProjectName)\</IntDir>
     <OutDir>..\..\..\..\$(Platform)\$(Configuration)\</OutDir>
-    <UseCommonOutputDirectory>true</UseCommonOutputDirectory>
     <CharacterSet>Unicode</CharacterSet>
     <SpectreMitigation>Spectre</SpectreMitigation>
     <ConfigurationType>Application</ConfigurationType>

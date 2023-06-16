@@ -16,7 +16,6 @@
     <WindowsAppSDKSelfContained>true</WindowsAppSDKSelfContained>
     <!-- OutputPath looks like this because it has to be called both by settings and publish.cmd -->
     <OutputPath>..\..\..\$(Platform)\$(Configuration)</OutputPath>
-    <UseCommonOutputDirectory>true</UseCommonOutputDirectory>
     <SelfContained>true</SelfContained>
   </PropertyGroup>
 

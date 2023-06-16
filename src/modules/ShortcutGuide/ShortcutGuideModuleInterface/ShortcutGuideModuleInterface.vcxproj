@@ -39,7 +39,6 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup>
     <OutDir>..\..\..\..\$(Platform)\$(Configuration)\</OutDir>
-    <UseCommonOutputDirectory>true</UseCommonOutputDirectory>
     <IntDir>$(SolutionDir)$(Platform)\$(Configuration)\obj\ShortcutGuide\$(ProjectName)\</IntDir>
     <TargetName>PowerToys.ShortcutGuideModuleInterface</TargetName>
   </PropertyGroup>

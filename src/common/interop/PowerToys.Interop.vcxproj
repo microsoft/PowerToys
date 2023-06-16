@@ -48,7 +48,6 @@
   <PropertyGroup>
     <TargetName>PowerToys.Interop</TargetName>
     <OutDir>..\..\..\$(Platform)\$(Configuration)\</OutDir>
-    <UseCommonOutputDirectory>true</UseCommonOutputDirectory>
   </PropertyGroup>
   <PropertyGroup>
     <CopyCppRuntimeToOutputDir>true</CopyCppRuntimeToOutputDir>

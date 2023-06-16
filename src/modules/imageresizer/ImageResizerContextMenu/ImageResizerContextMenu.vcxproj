@@ -33,7 +33,6 @@
   <PropertyGroup>
     <TargetName>PowerToys.ImageResizerContextMenu</TargetName>
     <OutDir>..\..\..\..\$(Platform)\$(Configuration)\</OutDir>
-    <UseCommonOutputDirectory>true</UseCommonOutputDirectory>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)'=='Debug'">
     <ClCompile>

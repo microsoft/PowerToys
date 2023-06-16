@@ -49,7 +49,6 @@
   </PropertyGroup>
   <PropertyGroup>
     <OutDir>..\..\..\..\$(Platform)\$(Configuration)\</OutDir>
-    <UseCommonOutputDirectory>true</UseCommonOutputDirectory>
     <IntDir>$(SolutionDir)$(Platform)\$(Configuration)\obj\ShortcutGuide\$(ProjectName)\</IntDir>
   </PropertyGroup>
   <ItemDefinitionGroup>

@@ -15,7 +15,6 @@
     <ConfigurationType>DynamicLibrary</ConfigurationType>
     <TargetName>PowerToys.PowerRenameExt</TargetName>
     <OutDir>..\..\..\..\$(Platform)\$(Configuration)\</OutDir>
-    <UseCommonOutputDirectory>true</UseCommonOutputDirectory>
   </PropertyGroup>
   <PropertyGroup Label="Configuration">
     <PlatformToolset>v143</PlatformToolset>

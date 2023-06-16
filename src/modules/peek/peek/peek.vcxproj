@@ -25,7 +25,6 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup>
     <OutDir>..\..\..\..\$(Platform)\$(Configuration)\</OutDir>
-    <UseCommonOutputDirectory>true</UseCommonOutputDirectory>
     <TargetName>PowerToys.Peek</TargetName>
   </PropertyGroup>
   <ItemDefinitionGroup>

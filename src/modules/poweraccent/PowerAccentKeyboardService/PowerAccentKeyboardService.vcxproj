@@ -49,7 +49,6 @@
   <PropertyGroup>
     <TargetName>PowerToys.PowerAccentKeyboardService</TargetName>
     <OutDir>..\..\..\..\$(Platform)\$(Configuration)\</OutDir>
-    <UseCommonOutputDirectory>true</UseCommonOutputDirectory>
   </PropertyGroup>
   <ItemDefinitionGroup>
     <ClCompile>

@@ -6,7 +6,6 @@
     <Description>PowerToys PreviewHandlerCommon</Description>
     <DocumentationFile>..\..\..\..\$(Platform)\$(Configuration)\PreviewHandlerCommonDocumentation.xml</DocumentationFile>
     <OutputPath>..\..\..\..\$(Platform)\$(Configuration)</OutputPath>
-    <UseCommonOutputDirectory>true</UseCommonOutputDirectory>
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
     <AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
     <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>

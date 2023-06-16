@@ -27,7 +27,6 @@
   <PropertyGroup>
     <IgnoreImportLibrary>true</IgnoreImportLibrary>
     <OutDir>..\..\..\..\$(Platform)\$(Configuration)\</OutDir>
-    <UseCommonOutputDirectory>true</UseCommonOutputDirectory>
     <TargetName>PowerToys.ImageResizerExt</TargetName>
   </PropertyGroup>
   <ItemDefinitionGroup>

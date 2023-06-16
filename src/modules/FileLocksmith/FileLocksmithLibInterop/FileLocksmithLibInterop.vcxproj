@@ -35,7 +35,6 @@
     <TargetFramework>net7.0-windows</TargetFramework>
     <OutDir>..\..\..\..\$(Platform)\$(Configuration)\</OutDir>
     <TargetName>PowerToys.FileLocksmithLib.Interop</TargetName>
-    <UseCommonOutputDirectory>true</UseCommonOutputDirectory>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">

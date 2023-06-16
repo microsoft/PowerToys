@@ -7,7 +7,6 @@
     <AssemblyDescription>PowerToys SvgPreviewHandler</AssemblyDescription>
     <Description>PowerToys SvgPreviewHandler</Description>
     <OutputPath>..\..\..\..\$(Platform)\$(Configuration)</OutputPath>
-    <UseCommonOutputDirectory>true</UseCommonOutputDirectory>
     <DocumentationFile>..\..\..\..\$(Platform)\$(Configuration)\SvgPreviewHandler.xml</DocumentationFile>
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
     <AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>

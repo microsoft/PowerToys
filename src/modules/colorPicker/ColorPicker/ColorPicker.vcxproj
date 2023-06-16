@@ -27,7 +27,6 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup>
     <OutDir>..\..\..\..\$(Platform)\$(Configuration)\</OutDir>
-    <UseCommonOutputDirectory>true</UseCommonOutputDirectory>
     <TargetName>PowerToys.ColorPicker</TargetName>
   </PropertyGroup>
   <ItemDefinitionGroup>

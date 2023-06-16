@@ -91,7 +91,6 @@
   <PropertyGroup>
     <TargetName>PowerToys.$(MSBuildProjectName)</TargetName>
     <OutDir>..\..\..\..\$(Platform)\$(Configuration)\</OutDir>
-    <UseCommonOutputDirectory>true</UseCommonOutputDirectory>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)'=='Debug'">
     <ClCompile>
