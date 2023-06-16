@@ -1083,6 +1083,7 @@ lexon
 lhs
 lhwnd
 LIBID
+licate
 LIGHTORANGE
 LIGHTTURQUOISE
 lindex
@@ -1331,6 +1332,7 @@ NCRBUTTONUP
 NCRENDERING
 ndp
 NEEDDISPATCH
+needinfo
 Nemeth
 NESW
 netcore
@@ -1714,6 +1716,7 @@ renamable
 RENAMEONCOLLISION
 Renamer
 reparse
+reportbug
 requery
 requerying
 rescap
