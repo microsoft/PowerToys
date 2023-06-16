@@ -97,7 +97,7 @@ configuration:
       - payloadType: Pull_Request
       then:
       - inPrLabel:
-          label: In progress
+          label: In-progress
       description: 
     - if:
       - payloadType: Issue_Comment
