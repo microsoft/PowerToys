@@ -18,13 +18,13 @@
             FalseValue="2"
             TrueValue="4" />
     </Page.Resources>
-    <controls:SettingsPageControl x:Uid="MouseWithoutBorders" ModuleImageSource="ms-appx:///Assets/Modules/MouseWithoutBorders.png">
+    <controls:SettingsPageControl x:Uid="MouseWithoutBorders" ModuleImageSource="ms-appx:///Assets/Settings/Modules/MouseWithoutBorders.png">
         <controls:SettingsPageControl.ModuleContent>
             <StackPanel Orientation="Vertical">
                 <controls:SettingsGroup x:Uid="MouseWithoutBorders_ActivationSettings">
                     <labs:SettingsCard
                         x:Uid="MouseWithoutBorders_Toggle_Enable"
-                        HeaderIcon="{ui:BitmapIcon Source=/Assets/FluentIcons/FluentIconsMouseWithoutBorders.png}"
+                        HeaderIcon="{ui:BitmapIcon Source=/Assets/Settings/FluentIcons/FluentIconsMouseWithoutBorders.png}"
                         IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabledGpoConfigured, Converter={StaticResource BoolNegationConverter}}">
                         <ToggleSwitch
                             x:Uid="ToggleSwitch"

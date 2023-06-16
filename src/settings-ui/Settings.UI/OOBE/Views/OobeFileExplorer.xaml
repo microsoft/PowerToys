@@ -11,7 +11,7 @@
 
     <controls:OOBEPageControl
         x:Uid="Oobe_FileExplorer"
-        HeroImage="ms-appx:///Assets/Modules/OOBE/FileExplorer.png">
+        HeroImage="ms-appx:///Assets/Settings/Modules/OOBE/FileExplorer.png">
 
         <controls:OOBEPageControl.PageContent>
             <StackPanel Orientation="Vertical">

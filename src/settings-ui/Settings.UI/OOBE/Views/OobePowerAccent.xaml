@@ -11,7 +11,7 @@
 
     <controls:OOBEPageControl
         x:Uid="Oobe_QuickAccent"
-        HeroImage="ms-appx:///Assets/Modules/OOBE/PowerAccent.gif">
+        HeroImage="ms-appx:///Assets/Settings/Modules/OOBE/PowerAccent.gif">
 
         <controls:OOBEPageControl.PageContent>
             <StackPanel Orientation="Vertical">

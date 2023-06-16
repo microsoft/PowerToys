@@ -11,7 +11,7 @@
 
     <controls:OOBEPageControl
         x:Uid="Oobe_ImageResizer"
-        HeroImage="ms-appx:///Assets/Modules/OOBE/ImageResizer.gif">
+        HeroImage="ms-appx:///Assets/Settings/Modules/OOBE/ImageResizer.gif">
 
         <controls:OOBEPageControl.PageContent>
             <StackPanel Orientation="Vertical">

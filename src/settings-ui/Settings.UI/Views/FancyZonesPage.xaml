@@ -12,12 +12,12 @@
 
     <controls:SettingsPageControl
         x:Uid="FancyZones"
-        ModuleImageSource="ms-appx:///Assets/Modules/FancyZones.png">
+        ModuleImageSource="ms-appx:///Assets/Settings/Modules/FancyZones.png">
         <controls:SettingsPageControl.ModuleContent>
             <StackPanel Orientation="Vertical" ChildrenTransitions="{StaticResource SettingsCardsAnimations}">
                 <labs:SettingsCard
                     x:Uid="FancyZones_EnableToggleControl_HeaderText"
-                    HeaderIcon="{ui:BitmapIcon Source=/Assets/FluentIcons/FluentIconsFancyZones.png}"
+                    HeaderIcon="{ui:BitmapIcon Source=/Assets/Settings/FluentIcons/FluentIconsFancyZones.png}"
                     IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabledGpoConfigured, Converter={StaticResource BoolNegationConverter}}">
                     <ToggleSwitch
                         x:Uid="ToggleSwitch"

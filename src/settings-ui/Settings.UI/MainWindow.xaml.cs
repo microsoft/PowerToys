@@ -35,7 +35,7 @@ namespace Microsoft.PowerToys.Settings.UI
             var hWnd = WinRT.Interop.WindowNative.GetWindowHandle(this);
             WindowId windowId = Win32Interop.GetWindowIdFromWindow(hWnd);
             AppWindow appWindow = AppWindow.GetFromWindowId(windowId);
-            appWindow.SetIcon("icon.ico");
+            appWindow.SetIcon("Assets\\Settings\\icon.ico");
 
             // Passed by parameter, as it needs to be evaluated ASAP, otherwise there is a white flash
             if (isDark)

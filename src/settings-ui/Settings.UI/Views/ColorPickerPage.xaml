@@ -19,7 +19,7 @@
         <converters:BoolToVisibilityConverter x:Key="BoolToVis" />
     </Page.Resources>
 
-    <controls:SettingsPageControl x:Uid="ColorPicker" ModuleImageSource="ms-appx:///Assets/Modules/ColorPicker.png">
+    <controls:SettingsPageControl x:Uid="ColorPicker" ModuleImageSource="ms-appx:///Assets/Settings/Modules/ColorPicker.png">
         <controls:SettingsPageControl.ModuleContent>
 
             <StackPanel
@@ -28,7 +28,7 @@
                 Orientation="Vertical">
                 <labs:SettingsCard
                     x:Uid="ColorPicker_EnableColorPicker"
-                    HeaderIcon="{ui:BitmapIcon Source=/Assets/FluentIcons/FluentIconsColorPicker.png}"
+                    HeaderIcon="{ui:BitmapIcon Source=/Assets/Settings/FluentIcons/FluentIconsColorPicker.png}"
                     IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabledGpoConfigured, Converter={StaticResource BoolNegationConverter}}">
                     <ToggleSwitch x:Uid="ToggleSwitch" IsOn="{x:Bind ViewModel.IsEnabled, Mode=TwoWay}" />
                 </labs:SettingsCard>

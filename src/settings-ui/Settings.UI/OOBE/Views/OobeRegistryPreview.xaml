@@ -10,7 +10,7 @@
     mc:Ignorable="d">
     <controls:OOBEPageControl
         x:Uid="Oobe_RegistryPreview"
-        HeroImage="ms-appx:///Assets/Modules/OOBE/RegistryPreview.png">
+        HeroImage="ms-appx:///Assets/Settings/Modules/OOBE/RegistryPreview.png">
 
         <controls:OOBEPageControl.PageContent>
             <StackPanel Orientation="Vertical">

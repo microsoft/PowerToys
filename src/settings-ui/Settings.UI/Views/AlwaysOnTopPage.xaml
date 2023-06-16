@@ -13,12 +13,12 @@
     <controls:SettingsPageControl
         x:Uid="AlwaysOnTop"
         IsTabStop="False"
-        ModuleImageSource="ms-appx:///Assets/Modules/AlwaysOnTop.png">
+        ModuleImageSource="ms-appx:///Assets/Settings/Modules/AlwaysOnTop.png">
         <controls:SettingsPageControl.ModuleContent>
             <StackPanel Orientation="Vertical" ChildrenTransitions="{StaticResource SettingsCardsAnimations}">
                 <labs:SettingsCard
                     x:Uid="AlwaysOnTop_EnableToggleControl_HeaderText"
-                    HeaderIcon="{ui:BitmapIcon Source=/Assets/FluentIcons/FluentIconsAlwaysOnTop.png}"
+                    HeaderIcon="{ui:BitmapIcon Source=/Assets/Settings/FluentIcons/FluentIconsAlwaysOnTop.png}"
                     IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabledGpoConfigured, Converter={StaticResource BoolNegationConverter}}">
                     <ToggleSwitch
                         x:Uid="ToggleSwitch"

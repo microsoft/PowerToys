@@ -11,7 +11,7 @@
 
     <controls:OOBEPageControl
         x:Uid="Oobe_AlwaysOnTop"
-        HeroImage="ms-appx:///Assets/Modules/OOBE/AlwaysOnTop.png">
+        HeroImage="ms-appx:///Assets/Settings/Modules/OOBE/AlwaysOnTop.png">
         <controls:OOBEPageControl.PageContent>
             <StackPanel Orientation="Vertical">
                 <TextBlock

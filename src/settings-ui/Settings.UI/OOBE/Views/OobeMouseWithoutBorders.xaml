@@ -10,7 +10,7 @@
     mc:Ignorable="d">
     <controls:OOBEPageControl
         x:Uid="Oobe_MouseWithoutBorders"
-        HeroImage="ms-appx:///Assets/Modules/OOBE/MouseWithoutBorders.png">
+        HeroImage="ms-appx:///Assets/Settings/Modules/OOBE/MouseWithoutBorders.png">
 
         <controls:OOBEPageControl.PageContent>
             <StackPanel Orientation="Vertical">

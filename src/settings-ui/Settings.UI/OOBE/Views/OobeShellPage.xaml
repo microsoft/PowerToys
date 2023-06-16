@@ -53,7 +53,7 @@
                     Width="16"
                     Height="16"
                     HorizontalAlignment="Left"
-                    Source="/icon.ico" />
+                    Source="/Assets/Settings/icon.ico" />
                 <TextBlock
                     x:Name="AppTitleBarText"
                     x:Uid="OobeWindow_TitleTxt"
@@ -77,91 +77,91 @@
             <NavigationView.MenuItems>
                 <NavigationViewItem
                     x:Uid="Shell_General"
-                    Icon="{ui:BitmapIcon Source=/Assets/FluentIcons/FluentIconsPowerToys.png}"
+                    Icon="{ui:BitmapIcon Source=/Assets/Settings/FluentIcons/FluentIconsPowerToys.png}"
                     Tag="Overview" />
                 <NavigationViewItem
                     x:Uid="Shell_AlwaysOnTop"
-                    Icon="{ui:BitmapIcon Source=/Assets/FluentIcons/FluentIconsAlwaysOnTop.png}"
+                    Icon="{ui:BitmapIcon Source=/Assets/Settings/FluentIcons/FluentIconsAlwaysOnTop.png}"
                     Tag="AlwaysOnTop" />
                 <NavigationViewItem
                     x:Uid="Shell_Awake"
-                    Icon="{ui:BitmapIcon Source=/Assets/FluentIcons/FluentIconsAwake.png}"
+                    Icon="{ui:BitmapIcon Source=/Assets/Settings/FluentIcons/FluentIconsAwake.png}"
                     Tag="Awake" />
                 <NavigationViewItem
                     x:Uid="Shell_ColorPicker"
-                    Icon="{ui:BitmapIcon Source=/Assets/FluentIcons/FluentIconsColorPicker.png}"
+                    Icon="{ui:BitmapIcon Source=/Assets/Settings/FluentIcons/FluentIconsColorPicker.png}"
                     Tag="ColorPicker" />
                 <NavigationViewItem
                     x:Uid="Shell_FancyZones"
-                    Icon="{ui:BitmapIcon Source=/Assets/FluentIcons/FluentIconsFancyZones.png}"
+                    Icon="{ui:BitmapIcon Source=/Assets/Settings/FluentIcons/FluentIconsFancyZones.png}"
                     Tag="FancyZones" />
                 <NavigationViewItem
                     x:Uid="Shell_FileLocksmith"
-                    Icon="{ui:BitmapIcon Source=/Assets/FluentIcons/FluentIconsFileLocksmith.png}"
+                    Icon="{ui:BitmapIcon Source=/Assets/Settings/FluentIcons/FluentIconsFileLocksmith.png}"
                     Tag="FileLocksmith" />
                 <NavigationViewItem
                     x:Uid="Shell_PowerPreview"
-                    Icon="{ui:BitmapIcon Source=/Assets/FluentIcons/FluentIconsFileExplorerPreview.png}"
+                    Icon="{ui:BitmapIcon Source=/Assets/Settings/FluentIcons/FluentIconsFileExplorerPreview.png}"
                     Tag="FileExplorer" />
                 <NavigationViewItem
                     x:Uid="Shell_Hosts"
-                    Icon="{ui:BitmapIcon Source=/Assets/FluentIcons/FluentIconsHosts.png}"
+                    Icon="{ui:BitmapIcon Source=/Assets/Settings/FluentIcons/FluentIconsHosts.png}"
                     Tag="Hosts" />
                 <NavigationViewItem
                     x:Uid="Shell_ImageResizer"
-                    Icon="{ui:BitmapIcon Source=/Assets/FluentIcons/FluentIconsImageResizer.png}"
+                    Icon="{ui:BitmapIcon Source=/Assets/Settings/FluentIcons/FluentIconsImageResizer.png}"
                     Tag="ImageResizer" />
                 <NavigationViewItem
                     x:Uid="Shell_KeyboardManager"
-                    Icon="{ui:BitmapIcon Source=/Assets/FluentIcons/FluentIconsKeyboardManager.png}"
+                    Icon="{ui:BitmapIcon Source=/Assets/Settings/FluentIcons/FluentIconsKeyboardManager.png}"
                     Tag="KBM" />
                 <NavigationViewItem
                     x:Uid="Shell_MouseUtilities"
-                    Icon="{ui:BitmapIcon Source=/Assets/FluentIcons/FluentIconsMouseUtils.png}"
+                    Icon="{ui:BitmapIcon Source=/Assets/Settings/FluentIcons/FluentIconsMouseUtils.png}"
                     Tag="MouseUtils" />
                 <NavigationViewItem
                     x:Uid="Shell_MouseWithoutBorders"
-                    Icon="{ui:BitmapIcon Source=/Assets/FluentIcons/FluentIconsMouseWithoutBorders.png}"
+                    Icon="{ui:BitmapIcon Source=/Assets/Settings/FluentIcons/FluentIconsMouseWithoutBorders.png}"
                     Tag="MouseWithoutBorders" />
                 <NavigationViewItem
                     x:Uid="Shell_PastePlain"
-                    Icon="{ui:BitmapIcon Source=/Assets/FluentIcons/FluentIconsPastePlain.png}"
+                    Icon="{ui:BitmapIcon Source=/Assets/Settings/FluentIcons/FluentIconsPastePlain.png}"
                     Tag="PastePlain" />
                 <NavigationViewItem
                     x:Uid="Shell_Peek"
-                    Icon="{ui:BitmapIcon Source=/Assets/FluentIcons/FluentIconsPeek.png}"
+                    Icon="{ui:BitmapIcon Source=/Assets/Settings/FluentIcons/FluentIconsPeek.png}"
                     Tag="Peek" />
                 <NavigationViewItem
                     x:Uid="Shell_PowerRename"
-                    Icon="{ui:BitmapIcon Source=/Assets/FluentIcons/FluentIconsPowerRename.png}"
+                    Icon="{ui:BitmapIcon Source=/Assets/Settings/FluentIcons/FluentIconsPowerRename.png}"
                     Tag="PowerRename" />
                 <NavigationViewItem
                     x:Uid="Shell_PowerLauncher"
-                    Icon="{ui:BitmapIcon Source=/Assets/FluentIcons/FluentIconsPowerToysRun.png}"
+                    Icon="{ui:BitmapIcon Source=/Assets/Settings/FluentIcons/FluentIconsPowerToysRun.png}"
                     Tag="Run" />
                 <NavigationViewItem
                     x:Uid="Shell_QuickAccent"
-                    Icon="{ui:BitmapIcon Source=/Assets/FluentIcons/FluentIconsPowerAccent.png}"
+                    Icon="{ui:BitmapIcon Source=/Assets/Settings/FluentIcons/FluentIconsPowerAccent.png}"
                     Tag="QuickAccent" />
                 <NavigationViewItem
                     x:Uid="Shell_RegistryPreview"
-                    Icon="{ui:BitmapIcon Source=/Assets/FluentIcons/FluentIconsRegistryPreview.png}"
+                    Icon="{ui:BitmapIcon Source=/Assets/Settings/FluentIcons/FluentIconsRegistryPreview.png}"
                     Tag="RegistryPreview" />
                 <NavigationViewItem
                     x:Uid="Shell_MeasureTool"
-                    Icon="{ui:BitmapIcon Source=/Assets/FluentIcons/FluentIconsScreenRuler.png}"
+                    Icon="{ui:BitmapIcon Source=/Assets/Settings/FluentIcons/FluentIconsScreenRuler.png}"
                     Tag="MeasureTool" />
                 <NavigationViewItem
                     x:Uid="Shell_ShortcutGuide"
-                    Icon="{ui:BitmapIcon Source=/Assets/FluentIcons/FluentIconsShortcutGuide.png}"
+                    Icon="{ui:BitmapIcon Source=/Assets/Settings/FluentIcons/FluentIconsShortcutGuide.png}"
                     Tag="ShortcutGuide" />
                 <NavigationViewItem
                     x:Uid="Shell_TextExtractor"
-                    Icon="{ui:BitmapIcon Source=/Assets/FluentIcons/FluentIconsPowerOCR.png}"
+                    Icon="{ui:BitmapIcon Source=/Assets/Settings/FluentIcons/FluentIconsPowerOCR.png}"
                     Tag="TextExtractor" />
                 <NavigationViewItem
                     x:Uid="Shell_VideoConference"
-                    Icon="{ui:BitmapIcon Source=/Assets/FluentIcons/FluentIconsVideoConferenceMute.png}"
+                    Icon="{ui:BitmapIcon Source=/Assets/Settings/FluentIcons/FluentIconsVideoConferenceMute.png}"
                     Tag="VideoConference" />
             </NavigationView.MenuItems>
             <NavigationView.FooterMenuItems>

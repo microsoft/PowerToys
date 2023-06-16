@@ -10,7 +10,7 @@
 
     <controls:OOBEPageControl
         x:Uid="Oobe_Overview"
-        HeroImage="ms-appx:///Assets/Modules/OOBE/OOBEPTHeroShort.png"
+        HeroImage="ms-appx:///Assets/Settings/Modules/OOBE/OOBEPTHeroShort.png"
         HeroImageHeight="120">
 
         <controls:OOBEPageControl.PageContent>
@@ -40,7 +40,7 @@
                             <Image
                                 Width="36"
                                 HorizontalAlignment="Left"
-                                Source="ms-appx:///Assets/FluentIcons/FluentIconsFancyZones.png" />
+                                Source="ms-appx:///Assets/Settings/FluentIcons/FluentIconsFancyZones.png" />
                             <TextBlock
                                 x:Uid="Alternate_OOBE_FancyZones_Title"
                                 Grid.Row="1"
@@ -81,7 +81,7 @@
                             <Image
                                 Width="36"
                                 HorizontalAlignment="Left"
-                                Source="ms-appx:///Assets/FluentIcons/FluentIconsPowerToysRun.png" />
+                                Source="ms-appx:///Assets/Settings/FluentIcons/FluentIconsPowerToysRun.png" />
                             <TextBlock
                                 x:Uid="Alternate_OOBE_Run_Title"
                                 Grid.Row="1"
@@ -122,7 +122,7 @@
                             <Image
                                 Width="36"
                                 HorizontalAlignment="Left"
-                                Source="ms-appx:///Assets/FluentIcons/FluentIconsColorPicker.png" />
+                                Source="ms-appx:///Assets/Settings/FluentIcons/FluentIconsColorPicker.png" />
                             <TextBlock
                                 x:Uid="Alternate_OOBE_ColorPicker_Title"
                                 Grid.Row="1"
@@ -164,7 +164,7 @@
                             <Image
                                 Width="36"
                                 HorizontalAlignment="Left"
-                                Source="ms-appx:///Assets/FluentIcons/FluentIconsAlwaysOnTop.png" />
+                                Source="ms-appx:///Assets/Settings/FluentIcons/FluentIconsAlwaysOnTop.png" />
                             <TextBlock
                                 x:Uid="Alternate_OOBE_AlwaysOnTop_Title"
                                 Grid.Row="1"

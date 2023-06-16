@@ -10,7 +10,7 @@
 
     <controls:OOBEPageControl
         x:Uid="Oobe_MouseUtils"
-        HeroImage="ms-appx:///Assets/Modules/OOBE/MouseUtils.gif">
+        HeroImage="ms-appx:///Assets/Settings/Modules/OOBE/MouseUtils.gif">
 
         <controls:OOBEPageControl.PageContent>
             <StackPanel Orientation="Vertical">

@@ -12,7 +12,7 @@
     <WindowsPackageType>None</WindowsPackageType>
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
     <AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
-    <ApplicationIcon>icon.ico</ApplicationIcon>
+    <ApplicationIcon>Assets\Settings\icon.ico</ApplicationIcon>
     <WindowsAppSDKSelfContained>true</WindowsAppSDKSelfContained>
     <!-- OutputPath looks like this because it has to be called both by settings and publish.cmd -->
     <OutputPath>..\..\..\$(Platform)\$(Configuration)</OutputPath>
@@ -56,29 +56,15 @@
 	<PropertyGroup>
 		<RestoreAdditionalProjectSources>https://pkgs.dev.azure.com/dotnet/CommunityToolkit/_packaging/CommunityToolkit-Labs/nuget/v3/index.json</RestoreAdditionalProjectSources>
 	</PropertyGroup>
-	<ItemGroup>
-	  <None Remove="OOBE\Views\OobeOverviewPlaceholder.xaml" />
-	</ItemGroup>
-	<ItemGroup>
-	  <None Remove="Controls\ColorFormatEditor.xaml" />
-	</ItemGroup>
 
   <ItemGroup>
-    <None Remove="FlyoutWindow.xaml" />
-    <None Remove="Flyout\AppsListPage.xaml" />
-    <None Remove="Controls\FlyoutMenuButton\FlyoutMenuButton.xaml" />
-    <None Remove="Flyout\LaunchPage.xaml" />
-    <None Remove="Flyout\ShellPage.xaml" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Content Include="Assets\SplashScreen.scale-200.png" />
-    <Content Include="Assets\LockScreenLogo.scale-200.png" />
-    <Content Include="Assets\Square150x150Logo.scale-200.png" />
-    <Content Include="Assets\Square44x44Logo.scale-200.png" />
-    <Content Include="Assets\Square44x44Logo.targetsize-24_altform-unplated.png" />
-    <Content Include="Assets\StoreLogo.png" />
-    <Content Include="Assets\Wide310x150Logo.scale-200.png" />
+    <Content Include="Assets\Settings\SplashScreen.scale-200.png" />
+    <Content Include="Assets\Settings\LockScreenLogo.scale-200.png" />
+    <Content Include="Assets\Settings\Square150x150Logo.scale-200.png" />
+    <Content Include="Assets\Settings\Square44x44Logo.scale-200.png" />
+    <Content Include="Assets\Settings\Square44x44Logo.targetsize-24_altform-unplated.png" />
+    <Content Include="Assets\Settings\StoreLogo.png" />
+    <Content Include="Assets\Settings\Wide310x150Logo.scale-200.png" />
   </ItemGroup>
 
   <ItemGroup>
@@ -119,44 +105,9 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Page Update="FlyoutWindow.xaml">
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Update="Flyout\LaunchPage.xaml">
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Update="Flyout\ShellPage.xaml">
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Update="Controls\ColorFormatEditor.xaml">
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Update="Flyout\AppsListPage.xaml">
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Update="Flyout\Controls\FlyoutMenuButton.xaml">
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <None Update="icon.ico">
+    <None Update="Assets\Settings\icon.ico">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
-    <Page Update="OOBE\Views\OobeOverviewPlaceholder.xaml">
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Update="OOBE\Views\OobeHosts.xaml">
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Update="OOBE\Views\OobeOverviewAlternate.xaml">
-      <XamlRuntime>$(DefaultXamlRuntime)</XamlRuntime>
-    </Page>
-    <Page Update="Views\RegistryPreviewPage.xaml">
-      <XamlRuntime>$(DefaultXamlRuntime)</XamlRuntime>
-    </Page>
   </ItemGroup>
 	
-  <ItemGroup>
-    <Page Update="OOBE\Views\OobePowerOCR.xaml">
-      <XamlRuntime>$(DefaultXamlRuntime)</XamlRuntime>
-    </Page>
-  </ItemGroup>
 </Project>

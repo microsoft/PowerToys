@@ -10,7 +10,7 @@
 
     <controls:OOBEPageControl
         x:Uid="Oobe_Awake"
-        HeroImage="ms-appx:///Assets/Modules/OOBE/Awake.png">
+        HeroImage="ms-appx:///Assets/Settings/Modules/OOBE/Awake.png">
 
         <controls:OOBEPageControl.PageContent>
             <StackPanel Orientation="Vertical">

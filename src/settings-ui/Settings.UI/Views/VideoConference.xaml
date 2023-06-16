@@ -23,7 +23,7 @@
 
     <controls:SettingsPageControl
         x:Uid="VideoConference"
-        ModuleImageSource="ms-appx:///Assets/Modules/VideoConference.png">
+        ModuleImageSource="ms-appx:///Assets/Settings/Modules/VideoConference.png">
         <controls:SettingsPageControl.ModuleContent>
 
             <StackPanel Orientation="Vertical" ChildrenTransitions="{StaticResource SettingsCardsAnimations}">
@@ -44,7 +44,7 @@
 
                 <labs:SettingsCard
                     x:Uid="VideoConference_Enable"
-                    HeaderIcon="{ui:BitmapIcon Source=/Assets/FluentIcons/FluentIconsVideoConferenceMute.png}"
+                    HeaderIcon="{ui:BitmapIcon Source=/Assets/Settings/FluentIcons/FluentIconsVideoConferenceMute.png}"
                     IsEnabled="{Binding Mode=OneWay, Path=IsElevated}">
                     <ToggleSwitch
                         x:Uid="ToggleSwitch"

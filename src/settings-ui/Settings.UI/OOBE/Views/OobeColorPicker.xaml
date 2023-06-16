@@ -11,7 +11,7 @@
 
     <controls:OOBEPageControl
         x:Uid="Oobe_ColorPicker"
-        HeroImage="ms-appx:///Assets/Modules/OOBE/ColorPicker.gif">
+        HeroImage="ms-appx:///Assets/Settings/Modules/OOBE/ColorPicker.gif">
 
         <controls:OOBEPageControl.PageContent>
             <StackPanel Orientation="Vertical">

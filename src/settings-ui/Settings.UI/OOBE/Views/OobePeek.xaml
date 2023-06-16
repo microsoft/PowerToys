@@ -15,7 +15,7 @@
 
     <controls:OOBEPageControl
         x:Uid="Oobe_Peek"
-        HeroImage="ms-appx:///Assets/Modules/OOBE/Peek.gif">
+        HeroImage="ms-appx:///Assets/Settings/Modules/OOBE/Peek.gif">
 
         <controls:OOBEPageControl.PageContent>
             <StackPanel Orientation="Vertical">

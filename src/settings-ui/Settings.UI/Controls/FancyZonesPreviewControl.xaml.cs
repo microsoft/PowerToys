@@ -53,7 +53,7 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
             set { SetValue(WallpaperPathProperty, value); }
         }
 
-        public static readonly DependencyProperty WallpaperPathProperty = DependencyProperty.Register("WallpaperPath", typeof(string), typeof(FancyZonesPreviewControl), new PropertyMetadata("ms-appx:///Assets/Modules/Wallpaper.png"));
+        public static readonly DependencyProperty WallpaperPathProperty = DependencyProperty.Register("WallpaperPath", typeof(string), typeof(FancyZonesPreviewControl), new PropertyMetadata("ms-appx:///Assets/Settings/Modules/Wallpaper.png"));
 
         public Color CustomBorderColor
         {

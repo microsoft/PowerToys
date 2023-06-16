@@ -11,7 +11,7 @@
 
     <controls:OOBEPageControl
         x:Uid="Oobe_VideoConference"
-        HeroImage="ms-appx:///Assets/Modules/OOBE/VideoConferenceMute.png">
+        HeroImage="ms-appx:///Assets/Settings/Modules/OOBE/VideoConferenceMute.png">
 
         <controls:OOBEPageControl.PageContent>
             <StackPanel Orientation="Vertical">

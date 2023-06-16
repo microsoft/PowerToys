@@ -10,7 +10,7 @@
     mc:Ignorable="d">
     <controls:OOBEPageControl
         x:Uid="Oobe_ShortcutGuide"
-        HeroImage="ms-appx:///Assets/Modules/OOBE/OOBEShortcutGuide.png">
+        HeroImage="ms-appx:///Assets/Settings/Modules/OOBE/OOBEShortcutGuide.png">
         <controls:OOBEPageControl.PageContent>
             <StackPanel Orientation="Vertical">
 

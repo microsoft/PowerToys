@@ -10,12 +10,12 @@
     AutomationProperties.LandmarkType="Main"
     mc:Ignorable="d">
 
-    <controls:SettingsPageControl x:Uid="Peek" ModuleImageSource="ms-appx:///Assets/Modules/Peek.png">
+    <controls:SettingsPageControl x:Uid="Peek" ModuleImageSource="ms-appx:///Assets/Settings/Modules/Peek.png">
         <controls:SettingsPageControl.ModuleContent>
             <StackPanel Orientation="Vertical">
                 <labs:SettingsCard
                     x:Uid="Peek_EnablePeek"
-                    HeaderIcon="{ui:BitmapIcon Source=/Assets/FluentIcons/FluentIconsPeek.png}"
+                    HeaderIcon="{ui:BitmapIcon Source=/Assets/Settings/FluentIcons/FluentIconsPeek.png}"
                     IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabledGpoConfigured, Converter={StaticResource BoolNegationConverter}}">
                     <ToggleSwitch IsOn="{x:Bind ViewModel.IsEnabled, Mode=TwoWay}" />
                 </labs:SettingsCard>

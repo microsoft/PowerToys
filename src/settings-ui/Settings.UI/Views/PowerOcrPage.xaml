@@ -12,13 +12,13 @@
 
     <controls:SettingsPageControl
         x:Uid="TextExtractor"
-        ModuleImageSource="ms-appx:///Assets/Modules/PowerOCR.png">
+        ModuleImageSource="ms-appx:///Assets/Settings/Modules/PowerOCR.png">
         <controls:SettingsPageControl.ModuleContent>
             <StackPanel ChildrenTransitions="{StaticResource SettingsCardsAnimations}"
                 Orientation="Vertical" Spacing="2">
                 <labs:SettingsCard
                     x:Uid="TextExtractor_EnableToggleControl_HeaderText"
-                    HeaderIcon="{ui:BitmapIcon Source=/Assets/FluentIcons/FluentIconsPowerOcr.png}"
+                    HeaderIcon="{ui:BitmapIcon Source=/Assets/Settings/FluentIcons/FluentIconsPowerOcr.png}"
                     IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabledGpoConfigured, Converter={StaticResource BoolNegationConverter}}">
                     <ToggleSwitch
                         x:Uid="ToggleSwitch"

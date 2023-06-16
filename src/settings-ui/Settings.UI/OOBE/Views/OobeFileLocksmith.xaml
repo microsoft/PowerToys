@@ -10,7 +10,7 @@
     mc:Ignorable="d">
     <controls:OOBEPageControl
         x:Uid="Oobe_FileLocksmith"
-        HeroImage="ms-appx:///Assets/Modules/OOBE/FileLocksmith.gif">
+        HeroImage="ms-appx:///Assets/Settings/Modules/OOBE/FileLocksmith.gif">
 
         <controls:OOBEPageControl.PageContent>
             <StackPanel Orientation="Vertical">

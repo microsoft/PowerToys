@@ -12,12 +12,12 @@
 
     <controls:SettingsPageControl
         x:Uid="ShortcutGuide"
-        ModuleImageSource="ms-appx:///Assets/Modules/ShortcutGuide.png">
+        ModuleImageSource="ms-appx:///Assets/Settings/Modules/ShortcutGuide.png">
         <controls:SettingsPageControl.ModuleContent>
             <StackPanel Orientation="Vertical" ChildrenTransitions="{StaticResource SettingsCardsAnimations}">
                 <labs:SettingsCard
                     x:Uid="ShortcutGuide_Enable"
-                    HeaderIcon="{ui:BitmapIcon Source=/Assets/FluentIcons/FluentIconsShortcutGuide.png}"
+                    HeaderIcon="{ui:BitmapIcon Source=/Assets/Settings/FluentIcons/FluentIconsShortcutGuide.png}"
                     IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabledGpoConfigured, Converter={StaticResource BoolNegationConverter}}">
                     <ToggleSwitch
                         x:Uid="ToggleSwitch"

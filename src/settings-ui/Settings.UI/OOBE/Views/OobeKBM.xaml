@@ -9,7 +9,7 @@
     mc:Ignorable="d">
     <controls:OOBEPageControl
         x:Uid="Oobe_KBM"
-        HeroImage="ms-appx:///Assets/Modules/OOBE/KBM.gif">
+        HeroImage="ms-appx:///Assets/Settings/Modules/OOBE/KBM.gif">
 
         <controls:OOBEPageControl.PageContent>
             <StackPanel Orientation="Vertical">

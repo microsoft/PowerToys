@@ -10,7 +10,7 @@
 
     <controls:OOBEPageControl
         x:Uid="Oobe_FancyZones"
-        HeroImage="ms-appx:///Assets/Modules/OOBE/FancyZones.gif">
+        HeroImage="ms-appx:///Assets/Settings/Modules/OOBE/FancyZones.gif">
 
         <controls:OOBEPageControl.PageContent>
             <StackPanel Orientation="Vertical">

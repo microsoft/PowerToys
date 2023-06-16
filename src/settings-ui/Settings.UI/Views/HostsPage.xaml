@@ -9,12 +9,12 @@
     xmlns:ui="using:CommunityToolkit.WinUI.UI"
     mc:Ignorable="d">
 
-    <controls:SettingsPageControl x:Uid="Hosts" ModuleImageSource="ms-appx:///Assets/Modules/HostsFileEditor.png">
+    <controls:SettingsPageControl x:Uid="Hosts" ModuleImageSource="ms-appx:///Assets/Settings/Modules/HostsFileEditor.png">
         <controls:SettingsPageControl.ModuleContent>
             <StackPanel Orientation="Vertical" ChildrenTransitions="{StaticResource SettingsCardsAnimations}">
                 <labs:SettingsCard
                     x:Uid="Hosts_EnableToggleControl_HeaderText"
-                    HeaderIcon="{ui:BitmapIcon Source=/Assets/FluentIcons/FluentIconsHosts.png}"
+                    HeaderIcon="{ui:BitmapIcon Source=/Assets/Settings/FluentIcons/FluentIconsHosts.png}"
                     IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabledGpoConfigured, Converter={StaticResource BoolNegationConverter}}">
                     <ToggleSwitch x:Uid="ToggleSwitch" IsOn="{x:Bind ViewModel.IsEnabled, Mode=TwoWay}" />
                 </labs:SettingsCard>

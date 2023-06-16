@@ -21,12 +21,12 @@
             FalseValue="1"
             TrueValue="0" />
     </Page.Resources>
-    <controls:SettingsPageControl x:Uid="ImageResizer" ModuleImageSource="ms-appx:///Assets/Modules/ImageResizer.png">
+    <controls:SettingsPageControl x:Uid="ImageResizer" ModuleImageSource="ms-appx:///Assets/Settings/Modules/ImageResizer.png">
         <controls:SettingsPageControl.ModuleContent>
             <StackPanel ChildrenTransitions="{StaticResource SettingsCardsAnimations}">
                 <labs:SettingsCard
                     x:Uid="ImageResizer_EnableToggle"
-                    HeaderIcon="{ui:BitmapIcon Source=/Assets/FluentIcons/FluentIconsImageResizer.png}"
+                    HeaderIcon="{ui:BitmapIcon Source=/Assets/Settings/FluentIcons/FluentIconsImageResizer.png}"
                     IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabledGpoConfigured, Converter={StaticResource BoolNegationConverter}}">
                     <ToggleSwitch x:Uid="ToggleSwitch" IsOn="{x:Bind ViewModel.IsEnabled, Mode=TwoWay}" />
                 </labs:SettingsCard>

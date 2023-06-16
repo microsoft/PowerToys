@@ -11,7 +11,7 @@
 
     <controls:OOBEPageControl
         x:Uid="Oobe_TextExtractor"
-        HeroImage="ms-appx:///Assets/Modules/OOBE/PowerOCR.gif">
+        HeroImage="ms-appx:///Assets/Settings/Modules/OOBE/PowerOCR.gif">
 
         <controls:OOBEPageControl.PageContent>
             <StackPanel Orientation="Vertical">

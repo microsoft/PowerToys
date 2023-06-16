@@ -12,12 +12,12 @@
 
     <controls:SettingsPageControl
         x:Uid="MeasureTool"
-        ModuleImageSource="ms-appx:///Assets/Modules/ScreenRuler.png">
+        ModuleImageSource="ms-appx:///Assets/Settings/Modules/ScreenRuler.png">
         <controls:SettingsPageControl.ModuleContent>
             <StackPanel Orientation="Vertical" ChildrenTransitions="{StaticResource SettingsCardsAnimations}">
                 <labs:SettingsCard
                     x:Uid="MeasureTool_EnableMeasureTool"
-                    HeaderIcon="{ui:BitmapIcon Source=/Assets/FluentIcons/FluentIconsScreenRuler.png}"
+                    HeaderIcon="{ui:BitmapIcon Source=/Assets/Settings/FluentIcons/FluentIconsScreenRuler.png}"
                     IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabledGpoConfigured, Converter={StaticResource BoolNegationConverter}}">
                     <ToggleSwitch
                         x:Uid="ToggleSwitch"

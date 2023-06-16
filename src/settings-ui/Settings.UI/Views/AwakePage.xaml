@@ -20,12 +20,12 @@
     <controls:SettingsPageControl
         x:Uid="Awake"
         IsTabStop="False"
-        ModuleImageSource="ms-appx:///Assets/Modules/Awake.png">
+        ModuleImageSource="ms-appx:///Assets/Settings/Modules/Awake.png">
         <controls:SettingsPageControl.ModuleContent>
             <StackPanel Orientation="Vertical" ChildrenTransitions="{StaticResource SettingsCardsAnimations}">
                 <labs:SettingsCard
                     x:Uid="Awake_EnableSettingsCard"
-                    HeaderIcon="{ui:BitmapIcon Source=/Assets/FluentIcons/FluentIconsAwake.png}"
+                    HeaderIcon="{ui:BitmapIcon Source=/Assets/Settings/FluentIcons/FluentIconsAwake.png}"
                     IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabledGpoConfigured, Converter={StaticResource BoolNegationConverter}}">
                     <ToggleSwitch
                         x:Uid="ToggleSwitch"
