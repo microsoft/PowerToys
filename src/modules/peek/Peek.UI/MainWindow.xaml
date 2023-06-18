@@ -13,7 +13,6 @@
     MinWidth="450"
     MinHeight="400"
     mc:Ignorable="d">
-    <!-- Minimal windows size: We use the size from UnsupportedFilePreview: 380(w) x 500(h) -->
     <Window.SystemBackdrop>
         <MicaBackdrop />
     </Window.SystemBackdrop>
