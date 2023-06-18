@@ -10,7 +10,10 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:views="using:Peek.UI.Views"
     xmlns:winuiex="using:WinUIEx"
+    MinWidth="285"
+    MinHeight="375"
     mc:Ignorable="d">
+    <!-- Used the size from UnsupportedFilePreview and multiplied with 0.75: 380(w) x 500(h) => 285(w) x 375(h) -->
     <Window.SystemBackdrop>
         <MicaBackdrop />
     </Window.SystemBackdrop>
