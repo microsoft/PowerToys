@@ -211,5 +211,30 @@ namespace Hosts.Tests
             var result = fileSystem.GetFile(service.HostsFilePath);
             Assert.AreEqual(result.TextContents, contentResult);
         }
+
+        [TestMethod]
+        public async Task LongHosts_Splitted()
+        {
+            var content =
+@"10.1.1.1 host01 host02 host03 host04 host05 host06 host07 host08 host09 host10 host11 host12 host13 host14 host15 host16 host17 host18 host19 # comment
+";
+
+            var contentResult =
+@"10.1.1.1 host01 host02 host03 host04 host05 host06 host07 host08 host09 # comment
+10.1.1.1 host10 host11 host12 host13 host14 host15 host16 host17 host18 # comment
+10.1.1.1 host19                                                         # comment
+";
+
+            var fileSystem = new CustomMockFileSystem();
+            var userSettings = new Mock<IUserSettings>();
+            var service = new HostsService(fileSystem, userSettings.Object, _elevationHelper.Object);
+            fileSystem.AddFile(service.HostsFilePath, new MockFileData(content));
+
+            var (_, entries) = await service.ReadAsync();
+            await service.WriteAsync(string.Empty, entries);
+
+            var result = fileSystem.GetFile(service.HostsFilePath);
+            Assert.AreEqual(result.TextContents, contentResult);
+        }
     }
 }

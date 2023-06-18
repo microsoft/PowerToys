@@ -76,6 +76,8 @@ namespace Hosts.Helpers
 
             var lines = await _fileSystem.File.ReadAllLinesAsync(HostsFilePath, Encoding);
 
+            var id = 0;
+
             for (var i = 0; i < lines.Length; i++)
             {
                 var line = lines[i];
@@ -85,11 +87,23 @@ namespace Hosts.Helpers
                     continue;
                 }
 
-                var entry = new Entry(i, line);
+                var entry = new Entry(id, line);
 
                 if (entry.Valid)
                 {
                     entries.Add(entry);
+                    id++;
+                }
+                else if (entry.Validate(false))
+                {
+                    foreach (var hostsChunk in entry.SplittedHosts.Chunk(Consts.MaxHostsCount))
+                    {
+                        var clonedEntry = entry.Clone();
+                        clonedEntry.Id = id;
+                        clonedEntry.Hosts = string.Join(' ', hostsChunk);
+                        entries.Add(clonedEntry);
+                        id++;
+                    }
                 }
                 else
                 {
