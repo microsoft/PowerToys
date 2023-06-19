@@ -113,7 +113,6 @@
                     TextWrapping="Wrap" />
                 <Border
                     Grid.Column="1"
-                    MaxHeight="32"
                     BorderBrush="{ThemeResource TextFillColorPrimaryBrush}"
                     BorderThickness="0 0 1 0" />
                 <TextBlock
@@ -124,7 +123,6 @@
                     TextWrapping="Wrap" />
                 <Border
                     Grid.Column="3"
-                    MaxHeight="32"
                     BorderBrush="{ThemeResource TextFillColorPrimaryBrush}"
                     BorderThickness="0 0 1 0" />
                 <TextBlock
