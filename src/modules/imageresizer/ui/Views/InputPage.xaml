@@ -15,7 +15,7 @@
         </Grid.RowDefinitions>
         <ui:TitleBar
             x:Name="TitleBar"
-            Title="asdada"
+            Title="{x:Static p:Resources.ImageResizer}"
             Grid.Row="0"
             Height="32"
             Padding="16,0,16,0"
