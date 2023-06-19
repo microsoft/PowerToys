@@ -272,6 +272,17 @@
   <data name="ShowOnlyDuplicates.Header" xml:space="preserve">
     <value>Show only duplicates</value>
   </data>
+  <data name="TooManyHostsTeachingTip.Subtitle" xml:space="preserve">
+    <value>Only 9 hosts per line are supported</value>
+    <comment>"Hosts" refers to the system hosts file, do not loc</comment>
+  </data>
+  <data name="TooManyHostsTeachingTip.Title" xml:space="preserve">
+    <value>Lines with too many hosts found</value>
+    <comment>"Hosts" refers to the system hosts file, do not loc</comment>
+  </data>
+  <data name="TooManyHostsTeachingTipContent.Text" xml:space="preserve">
+    <value>The affected entries have been splitted. Changes won't take effect until the next saving.</value>
+  </data>
   <data name="UpdateBtn" xml:space="preserve">
     <value>Update</value>
   </data>

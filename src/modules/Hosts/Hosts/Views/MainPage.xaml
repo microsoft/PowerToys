@@ -498,5 +498,20 @@
                 ScrollViewer.VerticalScrollMode="Enabled"
                 TextWrapping="Wrap" />
         </ContentDialog>
+        
+        <TeachingTip
+            x:Uid="TooManyHostsTeachingTip"
+            IsOpen="{x:Bind ViewModel.ShowSplittedEntriesTooltip, Mode=OneWay}"
+	        PreferredPlacement="Top"
+	        PlacementMargin="20">
+            <TeachingTip.IconSource>
+                <FontIconSource Glyph="&#xe946;" />
+            </TeachingTip.IconSource>
+            <TeachingTip.Content>
+                <TextBlock x:Uid="TooManyHostsTeachingTipContent"
+                           TextWrapping="Wrap"
+                           Margin="0,16,0,0" />
+            </TeachingTip.Content>
+        </TeachingTip>
     </Grid>
 </Page>

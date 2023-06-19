@@ -64,14 +64,15 @@ namespace Hosts.Helpers
             return _fileSystem.File.Exists(HostsFilePath);
         }
 
-        public async Task<(string Unparsed, List<Entry> Entries)> ReadAsync()
+        public async Task<HostsData> ReadAsync()
         {
             var entries = new List<Entry>();
             var unparsedBuilder = new StringBuilder();
+            var splittedEntries = false;
 
             if (!Exists())
             {
-                return (unparsedBuilder.ToString(), entries);
+                return new HostsData(entries, unparsedBuilder.ToString(), false);
             }
 
             var lines = await _fileSystem.File.ReadAllLinesAsync(HostsFilePath, Encoding);
@@ -104,6 +105,8 @@ namespace Hosts.Helpers
                         entries.Add(clonedEntry);
                         id++;
                     }
+
+                    splittedEntries = true;
                 }
                 else
                 {
@@ -116,7 +119,7 @@ namespace Hosts.Helpers
                 }
             }
 
-            return (unparsedBuilder.ToString(), entries);
+            return new HostsData(entries, unparsedBuilder.ToString(), splittedEntries);
         }
 
         public async Task<bool> WriteAsync(string additionalLines, IEnumerable<Entry> entries)

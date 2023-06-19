@@ -68,6 +68,9 @@ namespace Hosts.ViewModels
         [ObservableProperty]
         private bool _showOnlyDuplicates;
 
+        [ObservableProperty]
+        private bool _showSplittedEntriesTooltip;
+
         partial void OnShowOnlyDuplicatesChanged(bool value)
         {
             ApplyFilters();
@@ -164,12 +167,13 @@ namespace Hosts.ViewModels
             Task.Run(async () =>
             {
                 _readingHosts = true;
-                var (additionalLines, entries) = await _hostsService.ReadAsync();
+                var data = await _hostsService.ReadAsync();
 
                 await _dispatcherQueue.EnqueueAsync(() =>
                 {
-                    AdditionalLines = additionalLines;
-                    _entries = new ObservableCollection<Entry>(entries);
+                    ShowSplittedEntriesTooltip = data.SplittedEntries;
+                    AdditionalLines = data.AdditionalLines;
+                    _entries = new ObservableCollection<Entry>(data.Entries);
 
                     foreach (var e in _entries)
                     {
