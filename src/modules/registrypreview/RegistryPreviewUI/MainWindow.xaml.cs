@@ -20,9 +20,9 @@ namespace RegistryPreview
         private const string REGISTRYHEADER4 = "regedit4";
         private const string REGISTRYHEADER5 = "windows registry editor version 5.00";
         private const string APPNAME = "Registry Preview";
-        private const string KEYIMAGE = "ms-appx:///Assets/folder32.png";
-        private const string DELETEDKEYIMAGE = "ms-appx:///Assets/deleted-folder32.png";
-        private const string ERRORIMAGE = "ms-appx:///Assets/error32.png";
+        private const string KEYIMAGE = "ms-appx:///Assets/RegistryPreview/folder32.png";
+        private const string DELETEDKEYIMAGE = "ms-appx:///Assets/RegistryPreview/deleted-folder32.png";
+        private const string ERRORIMAGE = "ms-appx:///Assets/RegistryPreview/error32.png";
 
         // private members
         private Microsoft.UI.Windowing.AppWindow appWindow;
@@ -50,7 +50,7 @@ namespace RegistryPreview
             IntPtr windowHandle = WinRT.Interop.WindowNative.GetWindowHandle(this);
             WindowId windowId = Win32Interop.GetWindowIdFromWindow(windowHandle);
             appWindow = Microsoft.UI.Windowing.AppWindow.GetFromWindowId(windowId);
-            appWindow.SetIcon("app.ico");
+            appWindow.SetIcon("Assets\\RegistryPreview\\app.ico");
             appWindow.Closing += AppWindow_Closing;
 
             // Extend the canvas to include the title bar so the app can support theming

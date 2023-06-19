@@ -31,7 +31,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         private const string PowerToyName = KeyboardManagerSettings.ModuleName;
         private const string JsonFileType = ".json";
 
-        private const string KeyboardManagerEditorPath = "modules\\KeyboardManager\\KeyboardManagerEditor\\PowerToys.KeyboardManagerEditor.exe";
+        private const string KeyboardManagerEditorPath = "PowerToys.KeyboardManagerEditor.exe";
         private Process editor;
 
         private enum KeyboardManagerEditorType

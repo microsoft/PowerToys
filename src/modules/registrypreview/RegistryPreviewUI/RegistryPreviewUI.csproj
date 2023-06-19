@@ -8,7 +8,7 @@
 		<OutputPath>..\..\..\..\$(Platform)\$(Configuration)</OutputPath>
 		<UseWinUI>true</UseWinUI>
 		<UseWindowsForms>False</UseWindowsForms>
-		<ApplicationIcon>app.ico</ApplicationIcon>
+		<ApplicationIcon>Assets\RegistryPreview\app.ico</ApplicationIcon>
 		<ApplicationManifest>app.manifest</ApplicationManifest>
 		<GenerateSatelliteAssembliesForCore>true</GenerateSatelliteAssembliesForCore>
 		<AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
@@ -36,7 +36,7 @@
 	</PropertyGroup>
 	
 	<ItemGroup>
-		<Content Include="app.ico" />
+		<Content Include="Assets\RegistryPreview\app.ico" />
 	</ItemGroup>
 
 	<!-- Needed for CommunityToolkit.Labs.WinUI.SettingsControls, on local builds and PR CI. -->
@@ -58,10 +58,10 @@
 	</ItemGroup>
 	
 	<ItemGroup>
-		<Content Update="Assets\data32.png">
+		<Content Update="Assets\RegistryPreview\data32.png">
 			<CopyToOutputDirectory>Never</CopyToOutputDirectory>
 		</Content>
-		<Content Update="Assets\string32.png">
+		<Content Update="Assets\RegistryPreview\string32.png">
 			<CopyToOutputDirectory>Never</CopyToOutputDirectory>
 		</Content>
 	</ItemGroup>

@@ -57,7 +57,7 @@ constexpr wchar_t* DisplayChangeTypeName (const DisplayChangeType type){
 namespace NonLocalizable
 {
     const wchar_t ToolWindowClassName[] = L"SuperFancyZones";
-    const wchar_t FZEditorExecutablePath[] = L"modules\\FancyZones\\PowerToys.FancyZonesEditor.exe";
+    const wchar_t FZEditorExecutablePath[] = L"PowerToys.FancyZonesEditor.exe";
 }
 
 struct FancyZones : public winrt::implements<FancyZones, IFancyZones, IFancyZonesCallback>, public SettingsObserver
