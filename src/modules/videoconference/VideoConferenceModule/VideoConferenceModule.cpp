@@ -687,7 +687,7 @@ void VideoConferenceModule::sendOverlayImageUpdate()
     PathRemoveFileSpecW(powertoysDirectory);
 
     std::wstring blankImagePath(powertoysDirectory);
-    blankImagePath += L"\\modules\\VideoConference\\black.bmp";
+    blankImagePath += L"\\Assets\\VCM\\black.bmp";
 
     _imageOverlayChannel = SerializedSharedMemory::create_readonly(CameraOverlayImageChannel::endpoint(),
                                                                    settings.imageOverlayPath != L"" ? settings.imageOverlayPath : blankImagePath);
