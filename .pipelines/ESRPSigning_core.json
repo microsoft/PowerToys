@@ -246,6 +246,7 @@
                 "vcomp140_app.dll",
                 "vcruntime140_1_app.dll",
                 "vcruntime140_app.dll",
+                "modules\\ImageResizer\\ImageResizerFiles_File_Wpf.Ui.dll",
                 "modules\\FileLocksmith\\CommunityToolkit.Labs.WinUI.SettingsControls.dll",
                 "modules\\PowerAccent\\UnicodeInformation.dll",
                 "modules\\PowerAccent\\Vanara.Core.dll",
