@@ -273,11 +273,11 @@
     <value>Show only duplicates</value>
   </data>
   <data name="TooManyHostsTeachingTip.Subtitle" xml:space="preserve">
-    <value>Only 9 hosts per line are supported</value>
+    <value>Only 9 hosts per entry are supported</value>
     <comment>"Hosts" refers to the system hosts file, do not loc</comment>
   </data>
   <data name="TooManyHostsTeachingTip.Title" xml:space="preserve">
-    <value>Lines with too many hosts found</value>
+    <value>Entries with too many hosts found</value>
     <comment>"Hosts" refers to the system hosts file, do not loc</comment>
   </data>
   <data name="TooManyHostsTeachingTipContent.Text" xml:space="preserve">
