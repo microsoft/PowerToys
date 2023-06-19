@@ -294,7 +294,7 @@ SOFTWARE.
 - LazyCache 2.4.0
 - Mages 2.0.1
 - Markdig.Signed 0.27.0
-- Microsoft.CodeAnalysis.NetAnalyzers 7.0.1
+- Microsoft.CodeAnalysis.NetAnalyzers 7.0.3
 - Microsoft.Data.Sqlite 7.0.0
 - Microsoft.DotNet.UpgradeAssistant.Extensions.Default.Analyzers 0.4.336902
 - Microsoft.Extensions.DependencyInjection 7.0.0
