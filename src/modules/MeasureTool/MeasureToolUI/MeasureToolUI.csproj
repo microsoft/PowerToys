@@ -61,13 +61,13 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Content Include="Assets\SplashScreen.scale-200.png" />
-    <Content Include="Assets\LockScreenLogo.scale-200.png" />
-    <Content Include="Assets\Square150x150Logo.scale-200.png" />
-    <Content Include="Assets\Square44x44Logo.scale-200.png" />
-    <Content Include="Assets\Square44x44Logo.targetsize-24_altform-unplated.png" />
-    <Content Include="Assets\StoreLogo.png" />
-    <Content Include="Assets\Wide310x150Logo.scale-200.png" />
+    <Content Include="Assets\MeasureTool\SplashScreen.scale-200.png" />
+    <Content Include="Assets\MeasureTool\LockScreenLogo.scale-200.png" />
+    <Content Include="Assets\MeasureTool\Square150x150Logo.scale-200.png" />
+    <Content Include="Assets\MeasureTool\Square44x44Logo.scale-200.png" />
+    <Content Include="Assets\MeasureTool\Square44x44Logo.targetsize-24_altform-unplated.png" />
+    <Content Include="Assets\MeasureTool\StoreLogo.png" />
+    <Content Include="Assets\MeasureTool\Wide310x150Logo.scale-200.png" />
   </ItemGroup>
 
   <ItemGroup>
@@ -83,9 +83,6 @@
        package has not yet been restored -->
   <ItemGroup Condition="'$(DisableMsixProjectCapabilityAddedByProject)'!='true' and '$(EnablePreviewMsixTooling)'=='true'">
     <ProjectCapability Include="Msix" />
-  </ItemGroup>
-  <ItemGroup>
-    <Folder Include="Assets\Icons\" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\..\common\GPOWrapper\GPOWrapper.vcxproj" />
