@@ -52,6 +52,10 @@ if ($items.Count -eq 0) {
 }
 
 $items | ForEach-Object {
+    Write-Host "AAAAAAAAA: " + $_
+}
+
+$items | ForEach-Object {
     if ($_.VersionInfo.FileVersion -eq "1.0.0.0" -and $_.Name -notmatch $versionExceptions) {
         # These items are exceptions that actually have the 1.0.0.0 version.
         Write-Host "Version set to 1.0.0.0: " + $_.FullName
