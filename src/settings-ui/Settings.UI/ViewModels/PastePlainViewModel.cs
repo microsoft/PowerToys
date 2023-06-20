@@ -126,7 +126,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             {
                 if (_pastePlainSettings.Properties.ActivationShortcut != value)
                 {
-                    _pastePlainSettings.Properties.ActivationShortcut = value;
+                    _pastePlainSettings.Properties.ActivationShortcut = value ?? _pastePlainSettings.Properties.DefaultActivationShortcut;
                     OnPropertyChanged(nameof(ActivationShortcut));
                     OnPropertyChanged(nameof(IsConflictingCopyShortcut));
 

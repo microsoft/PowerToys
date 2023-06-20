@@ -101,10 +101,12 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
                 Title = resourceLoader.GetString("Activation_Shortcut_Title"),
                 Content = c,
                 PrimaryButtonText = resourceLoader.GetString("Activation_Shortcut_Save"),
+                SecondaryButtonText = resourceLoader.GetString("Activation_Shortcut_Reset"),
                 CloseButtonText = resourceLoader.GetString("Activation_Shortcut_Cancel"),
                 DefaultButton = ContentDialogButton.Primary,
             };
             shortcutDialog.PrimaryButtonClick += ShortcutDialog_PrimaryButtonClick;
+            shortcutDialog.SecondaryButtonClick += ShortcutDialog_Reset;
             shortcutDialog.Opened += ShortcutDialog_Opened;
             shortcutDialog.Closing += ShortcutDialog_Closing;
             AutomationProperties.SetName(EditButton, resourceLoader.GetString("Activation_Shortcut_Title"));
@@ -353,6 +355,19 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
             shortcutDialog.XamlRoot = this.XamlRoot;
             shortcutDialog.RequestedTheme = this.ActualTheme;
             await shortcutDialog.ShowAsync();
+        }
+
+        private void ShortcutDialog_Reset(ContentDialog sender, ContentDialogButtonClickEventArgs args)
+        {
+            hotkeySettings = null;
+
+            SetValue(HotkeySettingsProperty, hotkeySettings);
+            PreviewKeysControl.ItemsSource = HotkeySettings.GetKeysList();
+
+            lastValidSettings = hotkeySettings;
+
+            AutomationProperties.SetHelpText(EditButton, HotkeySettings.ToString());
+            shortcutDialog.Hide();
         }
 
         private void ShortcutDialog_PrimaryButtonClick(ContentDialog sender, ContentDialogButtonClickEventArgs args)

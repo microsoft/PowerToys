@@ -10,9 +10,11 @@ namespace Microsoft.PowerToys.Settings.UI.Library
 {
     public class MeasureToolProperties
     {
+        public HotkeySettings DefaultActivationShortcut => new HotkeySettings(true, false, false, true, 0x4D);
+
         public MeasureToolProperties()
         {
-            ActivationShortcut = new HotkeySettings(true, false, false, true, 0x4D);
+            ActivationShortcut = DefaultActivationShortcut;
             UnitsOfMeasure = new IntProperty(0);
             PixelTolerance = new IntProperty(30);
             ContinuousCapture = false;
