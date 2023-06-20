@@ -23,10 +23,10 @@
     <Nullable>Enable</Nullable>
     <ApplicationIcon>Assets\Peek\Icon.ico</ApplicationIcon>
     <!-- MRT from windows app sdk will search for a pri file with the same name of the module before defaulting to resources.pri -->
-		<ProjectPriFileName>PowerToys.Peek.UI.pri</ProjectPriFileName>
+    <ProjectPriFileName>PowerToys.Peek.UI.pri</ProjectPriFileName>
     <SelfContained>true</SelfContained>
   </PropertyGroup>
-	
+
   <!-- SelfContained=true requires RuntimeIdentifier to be set -->
   <PropertyGroup Condition="'$(Platform)'=='x64'">
     <RuntimeIdentifier>win10-x64</RuntimeIdentifier>

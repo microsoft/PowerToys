@@ -23,7 +23,7 @@
     <SupportedOSPlatformVersion>10.0.19041.0</SupportedOSPlatformVersion>
     <SelfContained>true</SelfContained>
     <!-- MRT from windows app sdk will search for a pri file with the same name of the module before defaulting to resources.pri -->
-		<ProjectPriFileName>PowerToys.MeasureToolUI.pri</ProjectPriFileName>
+    <ProjectPriFileName>PowerToys.MeasureToolUI.pri</ProjectPriFileName>
   </PropertyGroup>
   <!-- SelfContained=true requires RuntimeIdentifier to be set -->
   <PropertyGroup Condition="'$(Platform)'=='x64'">
