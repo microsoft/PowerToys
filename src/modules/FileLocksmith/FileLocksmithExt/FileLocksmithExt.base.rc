@@ -54,4 +54,4 @@ END
 
 // Icon with lowest ID value placed first to ensure application icon
 // remains consistent on all systems.
-IDI_FILELOCKSMITH ICON "..\\FileLocksmithUI\\Assets\\Icon.ico"
+IDI_FILELOCKSMITH ICON "..\\FileLocksmithUI\\Assets\\FileLocksmith\\Icon.ico"
