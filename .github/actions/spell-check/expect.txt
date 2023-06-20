@@ -1269,6 +1269,7 @@ MOVESIZESTART
 mozilla
 mpmc
 MRM
+MRT
 mru
 mrw
 msbuild
