@@ -283,4 +283,12 @@
   <data name="Input_RemoveMetadata" xml:space="preserve">
     <value>Remove metadata that doesn't affect rendering</value>
   </data>
+  <data name="HeightChar" xml:space="preserve">
+    <value>H</value>
+    <comment>First character of 'Height'</comment>
+  </data>
+  <data name="WidthChar" xml:space="preserve">
+    <value>W</value>
+    <comment>First character of 'Width'</comment>
+  </data>
 </root>

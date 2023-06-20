@@ -88,6 +88,15 @@ namespace ImageResizer.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to H.
+        /// </summary>
+        public static string HeightChar {
+            get {
+                return ResourceManager.GetString("HeightChar", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Image Resizer.
         /// </summary>
         public static string ImageResizer {
@@ -552,6 +561,15 @@ namespace ImageResizer.Properties {
         public static string Width {
             get {
                 return ResourceManager.GetString("Width", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to W.
+        /// </summary>
+        public static string WidthChar {
+            get {
+                return ResourceManager.GetString("WidthChar", resourceCulture);
             }
         }
     }

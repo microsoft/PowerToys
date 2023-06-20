@@ -89,12 +89,12 @@
             <Grid.RowDefinitions>
                 <RowDefinition Height="120" />
                 <RowDefinition Height="*" />
-                <RowDefinition Height="AUto" />
+                <RowDefinition Height="Auto" />
                 <RowDefinition Height="Auto" />
                 <RowDefinition Height="Auto" />
             </Grid.RowDefinitions>
             <Border
-                Grid.RowSpan="4"
+                Grid.RowSpan="5"
                 Background="{DynamicResource LayerFillColorDefaultBrush}"
                 BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}"
                 BorderThickness="0,1,0,0" />
@@ -117,11 +117,11 @@
                 <TextBlock
                     HorizontalAlignment="Left"
                     VerticalAlignment="Center"
-                    AutomationProperties.Name="{x:Static p:Resources.Height}"
+                    AutomationProperties.Name="{x:Static p:Resources.Width}"
                     FontSize="12"
                     FontWeight="SemiBold"
                     Foreground="{DynamicResource TextFillColorSecondaryBrush}"
-                    Text="W"
+                    Text="{x:Static p:Resources.WidthChar}"
                     ToolTipService.ToolTip="{x:Static p:Resources.Width}" />
                 <ui:NumberBox
                     Name="WidthNumberBox"
@@ -131,7 +131,6 @@
                     KeyDown="Button_KeyDown"
                     Minimum="0"
                     SpinButtonPlacementMode="Inline">
-
                     <ui:NumberBox.Value>
                         <Binding
                             ElementName="SizeComboBox"
@@ -148,8 +147,9 @@
                     FontSize="12"
                     FontWeight="SemiBold"
                     Foreground="{DynamicResource TextFillColorSecondaryBrush}"
-                    Text="H"
-                    ToolTipService.ToolTip="{x:Static p:Resources.Height}" />
+                    Text="{x:Static p:Resources.HeightChar}"
+                    ToolTipService.ToolTip="{x:Static p:Resources.Height}"
+                    Visibility="{Binding ElementName=SizeComboBox, Path=SelectedValue.ShowHeight, Converter={StaticResource BoolValueConverter}}" />
                 <ui:NumberBox
                     Name="HeightNumberBox"
                     Grid.Column="4"
@@ -189,11 +189,11 @@
 
                 <ui:SymbolIcon
                     Grid.Row="2"
+                    Grid.Column="3"
                     Margin="-2,0,0,0"
                     HorizontalAlignment="Left"
                     VerticalAlignment="Center"
                     FontSize="18"
-                    Grid.Column="3"
                     Foreground="{DynamicResource TextFillColorSecondaryBrush}"
                     Symbol="Ruler16"
                     ToolTipService.ToolTip="{x:Static p:Resources.Unit}" />
