@@ -7,8 +7,10 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Reflection;
+using System.Text;
 using System.Text.Json;
 using Microsoft.PowerToys.FilePreviewCommon.Monaco.Formatters;
+using UtfUnknown;
 
 namespace Microsoft.PowerToys.FilePreviewCommon
 {
@@ -102,7 +104,11 @@ namespace Microsoft.PowerToys.FilePreviewCommon
         public static string ReadIndexHtml()
         {
             string html;
-            using (StreamReader htmlFileReader = new StreamReader(new FileStream(MonacoDirectory + "\\index.html", FileMode.Open, FileAccess.Read, FileShare.ReadWrite)))
+            string path = MonacoDirectory + "\\index.html";
+
+            DetectionResult result = CharsetDetector.DetectFromFile(path);
+            Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
+            using (StreamReader htmlFileReader = new StreamReader(new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.ReadWrite), result.Detected.Encoding))
             {
                 html = htmlFileReader.ReadToEnd();
                 htmlFileReader.Close();

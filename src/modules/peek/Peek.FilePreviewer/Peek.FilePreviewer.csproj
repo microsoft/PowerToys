@@ -26,6 +26,8 @@
       <PackageReference Include="Microsoft.WindowsAppSDK" />
       <PackageReference Include="Microsoft.Windows.SDK.BuildTools" />
       <PackageReference Include="System.Drawing.Common" />
+      <PackageReference Include="System.Text.Encoding.CodePages" />
+      <PackageReference Include="UTF.Unknown" />
   </ItemGroup>
 
   <ItemGroup>
