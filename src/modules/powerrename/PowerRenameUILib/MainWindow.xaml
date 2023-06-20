@@ -53,7 +53,7 @@
                     Width="16"
                     Margin="4,0,0,0"
                     HorizontalAlignment="Left"
-                    Source="ms-appx:///Assets/file.png" />
+                    Source="ms-appx:///Assets/PowerRename/file.png" />
 
                 <StackPanel
                     Grid.Column="2"
@@ -565,7 +565,7 @@
         </SplitButton>
 
         <!--<StackPanel x:Name="TitleBar" Orientation="Horizontal">
-            <Image Source="Assets/PowerRename.png" Width="16" Height="16" VerticalAlignment="Top" Margin="20,9,0,0"/>
+            <Image Source="Assets/PowerRename/PowerRename.png" Width="16" Height="16" VerticalAlignment="Top" Margin="20,9,0,0"/>
             <TextBlock Text="PowerRename" Style="{StaticResource CaptionTextBlockStyle}" Margin="18,8,8,0" VerticalAlignment="Top" />
         </StackPanel>-->
     </Grid>

@@ -34,10 +34,10 @@
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
-    <Image Include="Assets\file.png">
+    <Image Include="Assets\PowerRename\file.png">
       <Filter>Assets</Filter>
     </Image>
-    <Image Include="Assets\folder.png">
+    <Image Include="Assets\PowerRename\folder.png">
       <Filter>Assets</Filter>
     </Image>
     <Image Include="PowerRenameUI.ico" />

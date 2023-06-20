@@ -155,8 +155,8 @@
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
-    <Image Include="Assets\file.png" />
-    <Image Include="Assets\folder.png" />
+    <Image Include="Assets\PowerRename\file.png" />
+    <Image Include="Assets\PowerRename\folder.png" />
     <Image Include="PowerRenameUI.ico">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Image>

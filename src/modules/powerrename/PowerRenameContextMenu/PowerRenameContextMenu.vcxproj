@@ -98,7 +98,7 @@ MakeAppx.exe pack /d . /p $(OutDir)PowerRenameContextMenuPackage.msix /nv</Comma
     <ResourceCompile Include="PowerRenameContextMenu.rc" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="Assets\**" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="Assets\PowerRename\**" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
   <ItemGroup>
     <None Include="PowerRenameUI.ico" CopyToOutputDirectory="PreserveNewest" />
