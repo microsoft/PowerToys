@@ -105,7 +105,7 @@ namespace Peek.FilePreviewer.Previewers
 
                     isIconValid = iconBitmap != null;
 
-                    Preview.IconPreview = iconBitmap ?? new SvgImageSource(new Uri("ms-appx:///Assets/DefaultFileIcon.svg"));
+                    Preview.IconPreview = iconBitmap ?? new SvgImageSource(new Uri("ms-appx:///Assets/Peek/DefaultFileIcon.svg"));
                 });
             });
 

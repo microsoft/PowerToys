@@ -21,7 +21,7 @@
     <WindowsAppSDKSelfContained>true</WindowsAppSDKSelfContained>
     <SupportedOSPlatformVersion>10.0.19041.0</SupportedOSPlatformVersion>
     <Nullable>Enable</Nullable>
-    <ApplicationIcon>Assets\Icon.ico</ApplicationIcon>
+    <ApplicationIcon>Assets\Peek\Icon.ico</ApplicationIcon>
     <!-- MRT from windows app sdk will search for a pri file with the same name of the module before defaulting to resources.pri -->
 		<ProjectPriFileName>PowerToys.Peek.UI.pri</ProjectPriFileName>
     <SelfContained>true</SelfContained>
@@ -43,14 +43,14 @@
   </PropertyGroup>
 
   <ItemGroup>
-      <Content Include="Assets\Icon.ico" />
+      <Content Include="Assets\Peek\Icon.ico" />
   </ItemGroup>
   <ItemGroup>
-    <None Remove="Assets\AppList.scale-100.png" />
-    <None Remove="Assets\AppList.scale-125.png" />
-    <None Remove="Assets\AppList.scale-150.png" />
-    <None Remove="Assets\AppList.scale-200.png" />
-    <None Remove="Assets\AppList.scale-400.png" />
+    <None Remove="Assets\Peek\AppList.scale-100.png" />
+    <None Remove="Assets\Peek\AppList.scale-125.png" />
+    <None Remove="Assets\Peek\AppList.scale-150.png" />
+    <None Remove="Assets\Peek\AppList.scale-200.png" />
+    <None Remove="Assets\Peek\AppList.scale-400.png" />
     <None Remove="Views\TitleBar.xaml" />
     <None Remove="Views\UnsupportedFile.xaml" />
   </ItemGroup>
@@ -105,7 +105,7 @@
     <ProjectReference Include="..\Peek.FilePreviewer\Peek.FilePreviewer.csproj" />
   </ItemGroup>
   <ItemGroup>
-    <Resource Include="Assets\Icon.ico" />
+    <Resource Include="Assets\Peek\Icon.ico" />
   </ItemGroup>
   <ItemGroup>
     <Page Update="Views\UnsupportedFile.xaml">
