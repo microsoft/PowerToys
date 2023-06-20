@@ -185,7 +185,7 @@
     <value>Resizing your pictures...</value>
   </data>
   <data name="Progress_Stop" xml:space="preserve">
-    <value>_Stop</value>
+    <value>Stop</value>
   </data>
   <data name="Progress_TimeRemaining_HourMinute" xml:space="preserve">
     <value>About {0} hour, {1} minute remaining.</value>

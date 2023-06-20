@@ -286,7 +286,7 @@ namespace ImageResizer.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to _Stop.
+        ///   Looks up a localized string similar to Stop.
         /// </summary>
         public static string Progress_Stop {
             get {

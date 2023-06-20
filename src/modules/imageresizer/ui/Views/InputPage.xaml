@@ -4,8 +4,7 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:m="clr-namespace:ImageResizer.Models"
     xmlns:p="clr-namespace:ImageResizer.Properties"
-    xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
-    MinWidth="350">
+    xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml">
 
     <Grid>
         <Grid.RowDefinitions>
@@ -13,58 +12,53 @@
             <RowDefinition Height="Auto" />
             <RowDefinition Height="*" />
         </Grid.RowDefinitions>
-        <ui:TitleBar
-            x:Name="TitleBar"
-            Title="{x:Static p:Resources.ImageResizer}"
-            Grid.Row="0"
-            Height="32"
-            Padding="16,0,16,0"
-            ShowMaximize="False"
-            ShowMinimize="False">
-            <ui:TitleBar.Icon>
-                <ui:ImageIcon Source="/PowerToys.ImageResizer;component/Resources/ImageResizer.ico" />
-            </ui:TitleBar.Icon>
-        </ui:TitleBar>
+
         <ComboBox
             x:Name="SizeComboBox"
             Grid.Row="1"
             Height="64"
             Margin="16,16,16,24"
             HorizontalAlignment="Stretch"
+            VerticalAlignment="Stretch"
+            VerticalContentAlignment="Stretch"
             ItemsSource="{Binding Settings.AllSizes}"
             SelectedIndex="{Binding Settings.SelectedSizeIndex}">
             <ComboBox.Resources>
                 <DataTemplate DataType="{x:Type m:ResizeSize}">
-                    <Grid Margin="0,4,0,0" AutomationProperties.Name="{Binding Name}">
+                    <Grid Margin="2,0,0,0" VerticalAlignment="Center" AutomationProperties.Name="{Binding Name}">
                         <Grid.RowDefinitions>
-                            <RowDefinition Height="20" />
-                            <RowDefinition Height="24" />
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
                         </Grid.RowDefinitions>
-                        <TextBlock
-                            FontSize="14"
-                            FontWeight="SemiBold"
-                            Text="{Binding Name}" />
+                        <TextBlock FontWeight="SemiBold" Text="{Binding Name}" />
                         <StackPanel
                             Grid.Row="1"
                             VerticalAlignment="Top"
                             Orientation="Horizontal">
-                            <TextBlock Foreground="{DynamicResource TextFillColorSecondaryBrush}" Text="{Binding Fit, Converter={StaticResource EnumValueConverter}, ConverterParameter=ThirdPersonSingular}" />
+                            <TextBlock
+                                FontSize="12"
+                                Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                Text="{Binding Fit, Converter={StaticResource EnumValueConverter}, ConverterParameter=ThirdPersonSingular}" />
                             <TextBlock
                                 Margin="4,0,0,0"
+                                FontSize="12"
                                 FontWeight="SemiBold"
                                 Text="{Binding Width, Converter={StaticResource AutoDoubleConverter}, ConverterParameter=Auto}" />
                             <TextBlock
                                 Margin="4,0,0,0"
+                                FontSize="12"
                                 Foreground="{DynamicResource TextFillColorSecondaryBrush}"
                                 Text="×"
                                 Visibility="{Binding ShowHeight, Converter={StaticResource BoolValueConverter}}" />
                             <TextBlock
                                 Margin="4,0,0,0"
+                                FontSize="12"
                                 FontWeight="SemiBold"
                                 Text="{Binding Height, Converter={StaticResource AutoDoubleConverter}, ConverterParameter=Auto}"
                                 Visibility="{Binding ShowHeight, Converter={StaticResource BoolValueConverter}}" />
                             <TextBlock
                                 Margin="4,0,0,0"
+                                FontSize="12"
                                 Foreground="{DynamicResource TextFillColorSecondaryBrush}"
                                 Text="{Binding Unit, Converter={StaticResource EnumValueConverter}, ConverterParameter=ToLower}" />
                         </StackPanel>
@@ -72,12 +66,8 @@
                 </DataTemplate>
 
                 <DataTemplate DataType="{x:Type m:CustomSize}">
-                    <Grid Height="50" AutomationProperties.Name="{Binding Name}">
-
+                    <Grid VerticalAlignment="Center" AutomationProperties.Name="{Binding Name}">
                         <TextBlock
-                            Margin="0,0,0,0"
-                            VerticalAlignment="Center"
-                            FontSize="14"
                             FontWeight="SemiBold"
                             Text="{Binding Name}" />
                     </Grid>
@@ -87,7 +77,7 @@
 
         <Grid Grid.Row="2">
             <Grid.RowDefinitions>
-                <RowDefinition Height="120" />
+                <RowDefinition Height="Auto" />
                 <RowDefinition Height="*" />
                 <RowDefinition Height="Auto" />
                 <RowDefinition Height="Auto" />
@@ -99,7 +89,10 @@
                 BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}"
                 BorderThickness="0,1,0,0" />
 
-            <Grid Margin="18,16,16,16" Visibility="{Binding ElementName=SizeComboBox, Path=SelectedValue, Converter={StaticResource SizeTypeToVisibilityConverter}}">
+            <Grid
+                Height="86"
+                Margin="18,16,16,16"
+                Visibility="{Binding ElementName=SizeComboBox, Path=SelectedValue, Converter={StaticResource SizeTypeToVisibilityConverter}}">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="20" />
                     <ColumnDefinition Width="*" />
@@ -109,7 +102,7 @@
                 </Grid.ColumnDefinitions>
                 <Grid.RowDefinitions>
                     <RowDefinition Height="Auto" />
-                    <RowDefinition Height="12" />
+                    <RowDefinition Height="8" />
                     <RowDefinition Height="Auto" />
                 </Grid.RowDefinitions>
 
@@ -209,7 +202,7 @@
 
             <StackPanel
                 Grid.Row="1"
-                VerticalAlignment="Bottom"
+                VerticalAlignment="Top"
                 Orientation="Vertical">
 
                 <CheckBox
@@ -239,7 +232,7 @@
             <Border
                 Grid.Row="2"
                 Height="1"
-                Margin="16,16,16,8"
+                Margin="0,12,0,8"
                 HorizontalAlignment="Stretch"
                 VerticalAlignment="Top"
                 Background="{DynamicResource DividerStrokeColorDefaultBrush}" />

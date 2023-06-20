@@ -4,8 +4,7 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:behaviors="http://schemas.microsoft.com/xaml/behaviors"
     xmlns:local="clr-namespace:ImageResizer.Views"
-    xmlns:p="clr-namespace:ImageResizer.Properties"
-    MinWidth="350">
+    xmlns:p="clr-namespace:ImageResizer.Properties">
 
     <UserControl.Resources>
         <local:TimeRemainingConverter x:Key="TimeRemainingConverter" />
