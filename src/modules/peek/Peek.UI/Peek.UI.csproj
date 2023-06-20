@@ -6,8 +6,9 @@
     <AssemblyDescription>PowerToys Peek UI</AssemblyDescription>
     <RootNamespace>Peek.UI</RootNamespace>
     <OutputType>WinExe</OutputType>
-    <TargetFramework>net7.0-windows10.0.19041.0</TargetFramework>
+    <TargetFramework>net7.0-windows10.0.20348.0</TargetFramework>
     <TargetPlatformMinVersion>10.0.19041.0</TargetPlatformMinVersion>
+    <SupportedOSPlatformVersion>10.0.19041.0</SupportedOSPlatformVersion>
     <OutputPath>..\..\..\..\$(Platform)\$(Configuration)</OutputPath>
     <ApplicationManifest>app.manifest</ApplicationManifest>
     <Platforms>x86;x64;ARM64</Platforms>

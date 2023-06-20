@@ -2,8 +2,9 @@
 	<Import Project="..\..\..\Version.props" />
 	<PropertyGroup>
 		<OutputType>WinExe</OutputType>
-		<TargetFramework>net7.0-windows10.0.19041.0</TargetFramework>
+		<TargetFramework>net7.0-windows10.0.20348.0</TargetFramework>
 		<TargetPlatformMinVersion>10.0.19041.0</TargetPlatformMinVersion>
+		<SupportedOSPlatformVersion>10.0.19041.0</SupportedOSPlatformVersion>
 		<Platforms>x86;x64;arm64</Platforms>
 		<OutputPath>..\..\..\..\$(Platform)\$(Configuration)</OutputPath>
 		<UseWinUI>true</UseWinUI>
@@ -16,7 +17,6 @@
 		<EnablePreviewMsixTooling>true</EnablePreviewMsixTooling>
 		<WindowsPackageType>None</WindowsPackageType>
 		<WindowsAppSDKSelfContained>true</WindowsAppSDKSelfContained>
-		<SupportedOSPlatformVersion>10.0.19041.0</SupportedOSPlatformVersion>
 		<SelfContained>true</SelfContained>
 		<Product>$(AssemblyName)</Product>
 		<AssemblyName>PowerToys.RegistryPreview</AssemblyName>

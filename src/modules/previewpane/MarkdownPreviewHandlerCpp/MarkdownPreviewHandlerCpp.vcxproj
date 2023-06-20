@@ -9,7 +9,8 @@
     <Keyword>Win32Proj</Keyword>
     <ProjectGuid>{ed9a1ac6-aeb0-4569-a6e9-e1696182b545}</ProjectGuid>
     <RootNamespace>MarkdownPreviewHandlerCpp</RootNamespace>
-    <WindowsTargetPlatformVersion>10.0.19041.0</WindowsTargetPlatformVersion>
+    <WindowsTargetPlatformVersion>10.0.20348.0</WindowsTargetPlatformVersion>
+    <WindowsTargetPlatformMinVersion>10.0.19041.0</WindowsTargetPlatformMinVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)'=='Debug'" Label="Configuration">

@@ -22,7 +22,8 @@
     <VCProjectVersion>16.0</VCProjectVersion>
     <ProjectGuid>{784E01FE-25D9-4E7B-9F2D-30B71B66FB05}</ProjectGuid>
     <RootNamespace>FancyZoneszonabletester</RootNamespace>
-    <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
+    <WindowsTargetPlatformVersion>10.0.20348.0</WindowsTargetPlatformVersion>
+    <WindowsTargetPlatformMinVersion>10.0.19041.0</WindowsTargetPlatformMinVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
