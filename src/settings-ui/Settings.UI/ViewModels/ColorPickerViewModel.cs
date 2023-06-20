@@ -147,7 +147,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             {
                 if (_colorPickerSettings.Properties.ActivationShortcut != value)
                 {
-                    _colorPickerSettings.Properties.ActivationShortcut = value;
+                    _colorPickerSettings.Properties.ActivationShortcut = value ?? _colorPickerSettings.Properties.DefaultActivationShortcut;
                     OnPropertyChanged(nameof(ActivationShortcut));
                     NotifySettingsChanged();
                 }
