@@ -9,7 +9,7 @@
     xmlns:vm="clr-namespace:ImageResizer.ViewModels"
     Name="_this"
     Width="360"
-    Height="520"
+    Height="506"
     ui:Design.Background="{DynamicResource ApplicationBackgroundBrush}"
     ui:Design.Foreground="{DynamicResource TextFillColorPrimaryBrush}"
     AutomationProperties.Name="{x:Static p:Resources.ImageResizer}"
