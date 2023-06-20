@@ -14,7 +14,6 @@ using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Controls.Primitives;
 using Microsoft.UI.Xaml.Input;
-using Windows.ApplicationModel.Resources;
 using Windows.System;
 using Windows.UI.Core;
 
@@ -47,7 +46,7 @@ namespace Hosts.Views
 
         private async Task OpenNewDialogAsync()
         {
-            var resourceLoader = ResourceLoader.GetForViewIndependentUse();
+            var resourceLoader = Helpers.ResourceLoaderInstance.ResourceLoader;
             EntryDialog.Title = resourceLoader.GetString("AddNewEntryDialog_Title");
             EntryDialog.PrimaryButtonText = resourceLoader.GetString("AddBtn");
             EntryDialog.PrimaryButtonCommand = AddCommand;
@@ -68,7 +67,7 @@ namespace Hosts.Views
 
         public async Task ShowEditDialogAsync(Entry entry)
         {
-            var resourceLoader = ResourceLoader.GetForViewIndependentUse();
+            var resourceLoader = Helpers.ResourceLoaderInstance.ResourceLoader;
             ViewModel.Selected = entry;
             EntryDialog.Title = resourceLoader.GetString("UpdateEntry_Title");
             EntryDialog.PrimaryButtonText = resourceLoader.GetString("UpdateBtn");
@@ -160,7 +159,7 @@ namespace Hosts.Views
             var userSettings = App.GetService<IUserSettings>();
             if (userSettings.ShowStartupWarning)
             {
-                var resourceLoader = ResourceLoader.GetForViewIndependentUse();
+                var resourceLoader = Helpers.ResourceLoaderInstance.ResourceLoader;
                 var dialog = new ContentDialog();
 
                 dialog.XamlRoot = XamlRoot;
