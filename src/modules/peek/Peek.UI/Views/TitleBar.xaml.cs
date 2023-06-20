@@ -13,11 +13,11 @@ using Microsoft.UI;
 using Microsoft.UI.Windowing;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
+using Peek.Common.Helpers;
 using Peek.Common.Models;
 using Peek.UI.Extensions;
 using Peek.UI.Helpers;
 using Peek.UI.Telemetry.Events;
-using Windows.ApplicationModel.Resources;
 using Windows.Graphics;
 using Windows.Storage;
 using Windows.System;
@@ -57,10 +57,10 @@ namespace Peek.UI.Views
                new PropertyMetadata(null, null));
 
         [ObservableProperty]
-        private string openWithAppText = ResourceLoader.GetForViewIndependentUse().GetString("LaunchAppButton_OpenWith_Text");
+        private string openWithAppText = ResourceLoaderInstance.ResourceLoader.GetString("LaunchAppButton_OpenWith_Text");
 
         [ObservableProperty]
-        private string openWithAppToolTip = ResourceLoader.GetForViewIndependentUse().GetString("LaunchAppButton_OpenWith_ToolTip");
+        private string openWithAppToolTip = ResourceLoaderInstance.ResourceLoader.GetString("LaunchAppButton_OpenWith_ToolTip");
 
         [ObservableProperty]
         private string? fileCountText;
@@ -168,7 +168,7 @@ namespace Peek.UI.Views
 
         public string PinToolTip(bool pinned)
         {
-            return pinned ? ResourceLoader.GetForViewIndependentUse().GetString("UnpinButton_ToolTip") : ResourceLoader.GetForViewIndependentUse().GetString("PinButton_ToolTip");
+            return pinned ? ResourceLoaderInstance.ResourceLoader.GetString("UnpinButton_ToolTip") : ResourceLoaderInstance.ResourceLoader.GetString("PinButton_ToolTip");
         }
 
         [RelayCommand]
@@ -260,7 +260,7 @@ namespace Peek.UI.Views
             // Update file count
             if (NumberOfFiles > 1)
             {
-                string fileCountTextFormat = ResourceLoader.GetForViewIndependentUse().GetString("AppTitle_FileCounts_Text");
+                string fileCountTextFormat = ResourceLoaderInstance.ResourceLoader.GetString("AppTitle_FileCounts_Text");
                 FileCountText = string.Format(CultureInfo.InvariantCulture, fileCountTextFormat, FileIndex + 1, NumberOfFiles);
             }
         }
@@ -270,10 +270,10 @@ namespace Peek.UI.Views
             // Update the name of default app to launch
             DefaultAppName = DefaultAppHelper.TryGetDefaultAppName(Item.Extension);
 
-            string openWithAppTextFormat = ResourceLoader.GetForViewIndependentUse().GetString("LaunchAppButton_OpenWithApp_Text");
+            string openWithAppTextFormat = ResourceLoaderInstance.ResourceLoader.GetString("LaunchAppButton_OpenWithApp_Text");
             OpenWithAppText = string.Format(CultureInfo.InvariantCulture, openWithAppTextFormat, DefaultAppName);
 
-            string openWithAppToolTipFormat = ResourceLoader.GetForViewIndependentUse().GetString("LaunchAppButton_OpenWithApp_ToolTip");
+            string openWithAppToolTipFormat = ResourceLoaderInstance.ResourceLoader.GetString("LaunchAppButton_OpenWithApp_ToolTip");
             OpenWithAppToolTip = string.Format(CultureInfo.InvariantCulture, openWithAppToolTipFormat, DefaultAppName);
         }
     }
