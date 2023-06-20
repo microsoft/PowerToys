@@ -100,8 +100,7 @@
                 "modules\\ImageResizer\\PowerToys.ImageResizerExt.dll",
                 "modules\\ImageResizer\\PowerToys.ImageResizerContextMenu.dll",
                 "modules\\ImageResizer\\ImageResizerContextMenuPackage.msix",
-                "ImageResizerFiles_File_Wpf.Ui.dll",
-                "modules\\ImageResizer\\ImageResizerFiles_File_Wpf.Ui.dll",
+                "*ImageResizerFiles_File_Wpf.Ui.dll",
 
 
                 "modules\\KeyboardManager\\PowerToys.KeyboardManager.dll",
