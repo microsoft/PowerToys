@@ -10,7 +10,7 @@ using Microsoft.PowerToys.Settings.UI.Helpers;
 using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.PowerToys.Settings.UI.ViewModels;
 using Microsoft.UI.Xaml.Controls;
-using Windows.ApplicationModel.Resources;
+using Microsoft.Windows.ApplicationModel.Resources;
 
 namespace Microsoft.PowerToys.Settings.UI.Views
 {
@@ -22,7 +22,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
 
         public ICommand UpdateCommand => new RelayCommand(Update);
 
-        private ResourceLoader resourceLoader = ResourceLoader.GetForViewIndependentUse();
+        private ResourceLoader resourceLoader = ResourceLoaderInstance.ResourceLoader;
 
         public ColorPickerPage()
         {

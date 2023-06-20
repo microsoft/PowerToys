@@ -11,7 +11,6 @@ using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.PowerToys.Settings.UI.Library.Utilities;
 using Microsoft.PowerToys.Settings.UI.ViewModels;
 using Microsoft.UI.Xaml.Controls;
-using Windows.ApplicationModel.Resources;
 
 namespace Microsoft.PowerToys.Settings.UI.Views
 {
@@ -68,7 +67,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
                 }
             });
 
-            var loader = ResourceLoader.GetForViewIndependentUse();
+            var loader = Helpers.ResourceLoaderInstance.ResourceLoader;
 
             searchResultPreferencesOptions = new ObservableCollection<Tuple<string, string>>();
             searchResultPreferencesOptions.Add(Tuple.Create(loader.GetString("PowerLauncher_SearchResultPreference_AlphabeticalOrder"), "alphabetical_order"));

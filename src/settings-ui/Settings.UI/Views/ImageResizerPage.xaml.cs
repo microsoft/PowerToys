@@ -10,7 +10,6 @@ using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.PowerToys.Settings.UI.ViewModels;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
-using Windows.ApplicationModel.Resources;
 
 namespace Microsoft.PowerToys.Settings.UI.Views
 {
@@ -22,7 +21,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
         {
             InitializeComponent();
             var settingsUtils = new SettingsUtils();
-            var resourceLoader = ResourceLoader.GetForViewIndependentUse();
+            var resourceLoader = Helpers.ResourceLoaderInstance.ResourceLoader;
             Func<string, string> loader = (string name) =>
             {
                 return resourceLoader.GetString(name);
@@ -39,7 +38,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             if (deleteRowButton != null)
             {
                 ImageSize x = (ImageSize)deleteRowButton.DataContext;
-                ResourceLoader resourceLoader = ResourceLoader.GetForViewIndependentUse();
+                var resourceLoader = Helpers.ResourceLoaderInstance.ResourceLoader;
 
                 ContentDialog dialog = new ContentDialog();
                 dialog.XamlRoot = RootPage.XamlRoot;
@@ -69,7 +68,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
         {
             try
             {
-                ViewModel.AddRow(ResourceLoader.GetForViewIndependentUse().GetString("ImageResizer_DefaultSize_NewSizePrefix"));
+                ViewModel.AddRow(Helpers.ResourceLoaderInstance.ResourceLoader.GetString("ImageResizer_DefaultSize_NewSizePrefix"));
             }
             catch (Exception ex)
             {

@@ -12,7 +12,6 @@ using Microsoft.PowerToys.Settings.UI.OOBE.Views;
 using Microsoft.PowerToys.Settings.UI.ViewModels;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
-using Windows.ApplicationModel.Resources;
 using Windows.Storage.Pickers;
 
 namespace Microsoft.PowerToys.Settings.UI.Views
@@ -38,7 +37,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             InitializeComponent();
 
             // Load string resources
-            ResourceLoader loader = ResourceLoader.GetForViewIndependentUse();
+            var loader = Helpers.ResourceLoaderInstance.ResourceLoader;
             var settingsUtils = new SettingsUtils();
 
             Action stateUpdatingAction = () =>

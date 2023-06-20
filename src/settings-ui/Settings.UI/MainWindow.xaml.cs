@@ -12,7 +12,6 @@ using Microsoft.PowerToys.Telemetry;
 using Microsoft.UI;
 using Microsoft.UI.Windowing;
 using Microsoft.UI.Xaml;
-using Windows.ApplicationModel.Resources;
 using Windows.Data.Json;
 using WinUIEx;
 
@@ -51,7 +50,7 @@ namespace Microsoft.PowerToys.Settings.UI
 
             NativeMethods.SetWindowPlacement(hWnd, ref placement);
 
-            ResourceLoader loader = ResourceLoader.GetForViewIndependentUse();
+            var loader = Helpers.ResourceLoaderInstance.ResourceLoader;
             Title = loader.GetString("SettingsWindow_Title");
 
             // send IPC Message

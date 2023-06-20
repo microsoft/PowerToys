@@ -9,7 +9,6 @@ using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.PowerToys.Settings.UI.Library.Helpers;
 using Microsoft.PowerToys.Settings.UI.Library.Interfaces;
 using Microsoft.PowerToys.Settings.UI.Views;
-using Windows.ApplicationModel.Resources;
 
 namespace Microsoft.PowerToys.Settings.UI.ViewModels
 {
@@ -33,7 +32,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
             // set the callback functions value to hangle outgoing IPC message.
             SendIPCMessage = ipcMSGCallBackFunc;
-            ResourceLoader resourceLoader = ResourceLoader.GetForViewIndependentUse();
+            var resourceLoader = Helpers.ResourceLoaderInstance.ResourceLoader;
             FlyoutMenuItems = new ObservableCollection<FlyoutMenuItem>();
             if (GPOWrapper.GetConfiguredColorPickerEnabledValue() != GpoRuleConfigured.Disabled)
             {

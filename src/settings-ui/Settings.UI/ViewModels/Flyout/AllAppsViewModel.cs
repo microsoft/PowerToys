@@ -10,7 +10,6 @@ using Microsoft.PowerToys.Settings.UI.Flyout;
 using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.PowerToys.Settings.UI.Library.Helpers;
 using Microsoft.PowerToys.Settings.UI.Library.Interfaces;
-using Windows.ApplicationModel.Resources;
 
 namespace Microsoft.PowerToys.Settings.UI.ViewModels
 {
@@ -31,7 +30,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
             FlyoutMenuItems = new ObservableCollection<FlyoutMenuItem>();
 
-            ResourceLoader resourceLoader = ResourceLoader.GetForViewIndependentUse();
+            var resourceLoader = Helpers.ResourceLoaderInstance.ResourceLoader;
             GpoRuleConfigured gpo;
             if ((gpo = GPOWrapper.GetConfiguredAlwaysOnTopEnabledValue()) != GpoRuleConfigured.Disabled && gpo != GpoRuleConfigured.Enabled)
             {

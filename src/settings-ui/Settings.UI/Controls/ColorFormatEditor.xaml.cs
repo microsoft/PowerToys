@@ -12,7 +12,7 @@ using Microsoft.PowerToys.Settings.UI.Helpers;
 using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.PowerToys.Settings.UI.ViewModels;
 using Microsoft.UI.Xaml.Controls;
-using Windows.ApplicationModel.Resources;
+using Microsoft.Windows.ApplicationModel.Resources;
 using Windows.System;
 
 namespace Microsoft.PowerToys.Settings.UI.Controls
@@ -27,7 +27,7 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
 
         public void LoadParameters()
         {
-            ResourceLoader resourceLoader = ResourceLoader.GetForViewIndependentUse();
+            ResourceLoader resourceLoader = ResourceLoaderInstance.ResourceLoader;
             ParametersItemsControl.ItemsSource = new List<ColorFormatParameter>
             {
                 new ColorFormatParameter() { Parameter = "%Re", Description = resourceLoader.GetString("Help_red") },

@@ -10,7 +10,6 @@ using Microsoft.PowerToys.Settings.UI.ViewModels;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Automation.Peers;
 using Microsoft.UI.Xaml.Controls;
-using Windows.ApplicationModel.Resources;
 using Windows.Data.Json;
 using Windows.System;
 
@@ -273,7 +272,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
 
             if (AutomationPeer.ListenerExists(AutomationEvents.MenuOpened))
             {
-                var loader = ResourceLoader.GetForViewIndependentUse();
+                var loader = Helpers.ResourceLoaderInstance.ResourceLoader;
                 peer.RaiseNotificationEvent(
                     AutomationNotificationKind.ActionCompleted,
                     AutomationNotificationProcessing.ImportantMostRecent,
@@ -298,7 +297,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
 
             if (AutomationPeer.ListenerExists(AutomationEvents.MenuClosed))
             {
-                var loader = ResourceLoader.GetForViewIndependentUse();
+                var loader = Helpers.ResourceLoaderInstance.ResourceLoader;
                 peer.RaiseNotificationEvent(
                     AutomationNotificationKind.ActionCompleted,
                     AutomationNotificationProcessing.ImportantMostRecent,

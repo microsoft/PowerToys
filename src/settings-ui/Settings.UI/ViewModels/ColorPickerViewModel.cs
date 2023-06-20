@@ -15,7 +15,6 @@ using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.PowerToys.Settings.UI.Library.Enumerations;
 using Microsoft.PowerToys.Settings.UI.Library.Helpers;
 using Microsoft.PowerToys.Settings.UI.Library.Interfaces;
-using Windows.ApplicationModel.Resources;
 
 namespace Microsoft.PowerToys.Settings.UI.ViewModels
 {
@@ -392,7 +391,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         internal ColorFormatModel GetNewColorFormatModel()
         {
-            var resourceLoader = ResourceLoader.GetForViewIndependentUse();
+            var resourceLoader = Helpers.ResourceLoaderInstance.ResourceLoader;
             string defaultName = resourceLoader.GetString("CustomColorFormatDefaultName");
             ColorFormatModel newColorFormatModel = new ColorFormatModel();
             newColorFormatModel.Name = defaultName;
