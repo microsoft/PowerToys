@@ -19,7 +19,7 @@
     <PackageVersion Include="LazyCache" Version="2.4.0" />
     <PackageVersion Include="Mages" Version="2.0.1" />
     <PackageVersion Include="Markdig.Signed" Version="0.27.0" />
-    <PackageVersion Include="Microsoft.CodeAnalysis.NetAnalyzers" Version="7.0.1" />
+    <PackageVersion Include="Microsoft.CodeAnalysis.NetAnalyzers" Version="7.0.3" />
     <PackageVersion Include="Microsoft.Data.Sqlite" Version="7.0.0" />
     <PackageVersion Include="Microsoft.DotNet.UpgradeAssistant.Extensions.Default.Analyzers" Version="0.4.336902" />
     <PackageVersion Include="Microsoft.Extensions.DependencyInjection" Version="7.0.0" />
