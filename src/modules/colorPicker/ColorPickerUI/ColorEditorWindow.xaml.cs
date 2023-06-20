@@ -5,19 +5,21 @@
 using System;
 using System.Windows;
 using ColorPicker.Helpers;
+using Wpf.Ui.Controls.Window;
 
 namespace ColorPicker
 {
     /// <summary>
     /// Interaction logic for ColorEditorWindow.xaml
     /// </summary>
-    public partial class ColorEditorWindow : Window
+    public partial class ColorEditorWindow : FluentWindow
     {
         private readonly AppStateHandler _appStateHandler;
 
         public ColorEditorWindow(AppStateHandler appStateHandler)
         {
             InitializeComponent();
+            Wpf.Ui.Appearance.Watcher.Watch(this);
             _appStateHandler = appStateHandler;
             Closing += ColorEditorWindow_Closing;
         }

@@ -18,8 +18,8 @@
         </Grid.ColumnDefinitions>
 
         <!-- Side bar -->
-        <Grid Background="{DynamicResource SecondaryBackgroundBrush}">
-            <ui:ListView x:Name="HistoryColors" 
+        <Grid>
+            <!-- <ui:ListView x:Name="HistoryColors" 
                          Margin="0,48,0,0"
                          Grid.Row="1"
                          Padding="0"
@@ -28,20 +28,20 @@
                          Width="64"
                          AutomationProperties.Name="{x:Static p:Resources.Color_History}"
                          HorizontalAlignment="Center"
-                         ui:FocusVisualHelper.UseSystemFocusVisuals="True"
+                         
                          ItemsSource="{Binding ColorsHistory}"
                          SelectedIndex="{Binding SelectedColorIndex}"
                          ItemContainerStyle="{DynamicResource ColorHistoryListViewStyle}"
                          IsItemClickEnabled="True"
                          SelectionMode="Extended"
                          ItemClick="HistoryColors_ItemClick">
-                <ui:ListView.ContextMenu>
+               <ui:ListView.ContextMenu>
                     <ContextMenu Visibility="{Binding ColorsHistory.Count, Converter={StaticResource numberToVisibilityConverter}}">
                         <MenuItem Header="{x:Static p:Resources.Remove}"
                                   Command="{Binding RemoveColorsCommand}" 
                                   CommandParameter="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type ContextMenu}}, Path=PlacementTarget.SelectedItems}">
                             <MenuItem.Icon>
-                                <ui:FontIcon Glyph="&#xE74D;" />
+                                --><!--<ui:FontIcon Glyph="&#xE74D;" />--><!--
                             </MenuItem.Icon>
                         </MenuItem>
                         <MenuItem Header="{x:Static p:Resources.Export_by}" >
@@ -82,7 +82,7 @@
                         </Grid>
                     </DataTemplate>
                 </ui:ListView.ItemTemplate>
-            </ui:ListView>
+            </ui:ListView>-->
         </Grid>
 
         <!-- Title bar -->
@@ -96,7 +96,7 @@
                 <behaviors:DragWindowBehavior/>
             </e:Interaction.Behaviors>
             <Border
-                Background="{DynamicResource TitleBarSecondaryForegroundBrush}"
+           
                 Grid.ColumnSpan="2"
                 Width="30"
                 Height="3"
@@ -123,7 +123,7 @@
                     Command="{Binding OpenColorPickerCommand}"
                     Background="Transparent"
                     FontFamily="Segoe MDL2 Assets"
-                    ui:FocusVisualHelper.FocusVisualMargin="-1"
+       
                     ToolTipService.ToolTip="{x:Static p:Resources.Pick_color}"
                     AutomationProperties.Name="{x:Static p:Resources.Pick_color}">
                 <Button.Content>
@@ -182,12 +182,12 @@
                        FontFamily="Segoe MDL2 Assets"
                        FontSize="44"
                        HorizontalAlignment="Center"
-                       Foreground="{DynamicResource SecondaryForegroundBrush}" />
+                       />
             <TextBlock Margin="0,16,0,0"
                        TextWrapping="Wrap"
                        TextAlignment="Center"
                        HorizontalAlignment="Center"
-                       Foreground="{DynamicResource SecondaryForegroundBrush}"
+               
                        Text="{x:Static p:Resources.No_colors_yet}"/>
         </StackPanel>
 
@@ -197,7 +197,7 @@
                 HorizontalAlignment="Stretch"
                 VerticalAlignment="Bottom"
                 Height="0"
-                Background="{DynamicResource SystemControlBackgroundAccentBrush}">
+                >
 
             <TextBlock FontSize="16"
                        Foreground="White"

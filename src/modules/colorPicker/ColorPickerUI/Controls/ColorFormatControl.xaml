@@ -45,7 +45,7 @@
                     ToolTipService.ToolTip="{x:Static p:Resources.Copy_to_clipboard}"
                     Background="{DynamicResource ColorControlBackgroundBrush}"
                     FontSize="16"
-                    FontFamily="{StaticResource SymbolThemeFontFamily}"
+                 
                     Foreground="{DynamicResource PrimaryForegroundBrush}"
                     Opacity="0.6"
                     Height="36"

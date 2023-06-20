@@ -50,11 +50,11 @@
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Microsoft.Windows.CsWinRT" />
-    <PackageReference Include="ModernWpfUI" />
     <PackageReference Include="System.ComponentModel.Composition" />
     <PackageReference Include="System.IO.Abstractions" />
     <PackageReference Include="Microsoft.Xaml.Behaviors.Wpf" />
     <PackageReference Include="System.Drawing.Common" />
+    <PackageReference Include="WPF-UI" />
   </ItemGroup>
   <ItemGroup>
     <None Update="Properties\Settings.settings">

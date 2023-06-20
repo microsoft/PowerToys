@@ -13,8 +13,7 @@ using System.Windows.Media;
 using System.Windows.Media.Animation;
 using ColorPicker.Helpers;
 using ManagedCommon;
-using ModernWpf.Controls;
-using ModernWpf.Controls.Primitives;
+using Wpf.Ui.Controls.NumberBoxControl;
 
 namespace ColorPicker.Controls
 {
@@ -199,7 +198,6 @@ namespace ColorPicker.Controls
                 var moveColor = new ThicknessAnimation(new Thickness(0), new Duration(TimeSpan.FromMilliseconds(250)));
                 moveColor.EasingFunction = new ExponentialEase() { EasingMode = EasingMode.EaseInOut };
 
-                ControlHelper.SetCornerRadius(CurrentColorButton, new CornerRadius(2));
                 CurrentColorButton.BeginAnimation(Button.WidthProperty, resizeColor);
                 CurrentColorButton.BeginAnimation(Button.MarginProperty, moveColor);
                 CurrentColorButton.IsEnabled = false;
@@ -219,7 +217,6 @@ namespace ColorPicker.Controls
                 var moveColor = new ThicknessAnimation(new Thickness(92, 0, 0, 0), new Duration(TimeSpan.FromMilliseconds(150)));
                 moveColor.EasingFunction = new ExponentialEase() { EasingMode = EasingMode.EaseInOut };
 
-                ControlHelper.SetCornerRadius(CurrentColorButton, new CornerRadius(0));
                 CurrentColorButton.BeginAnimation(Button.WidthProperty, resizeColor);
                 CurrentColorButton.BeginAnimation(Button.MarginProperty, moveColor);
                 CurrentColorButton.IsEnabled = true;
@@ -380,15 +377,6 @@ namespace ColorPicker.Controls
         private static byte GetValueFromNumberBox(NumberBox numberBox)
         {
             var internalTextBox = GetChildOfType<TextBox>(numberBox);
-            var parsedValue = numberBox.NumberFormatter.ParseDouble(internalTextBox.Text);
-            if (parsedValue != null)
-            {
-                var parsedValueByte = (byte)parsedValue;
-                if (parsedValueByte >= numberBox.Minimum && parsedValueByte <= numberBox.Maximum)
-                {
-                    return parsedValueByte;
-                }
-            }
 
             // not valid input, return previous value
             return (byte)numberBox.Value;

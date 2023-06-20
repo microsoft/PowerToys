@@ -1,16 +1,17 @@
-﻿<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-                    xmlns:viewModels="clr-namespace:ColorPicker.ViewModels"
-                    xmlns:views="clr-namespace:ColorPicker.Views">
+﻿<ResourceDictionary
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:viewModels="clr-namespace:ColorPicker.ViewModels"
+    xmlns:views="clr-namespace:ColorPicker.Views">
     <DataTemplate DataType="{x:Type viewModels:MainViewModel}">
-        <views:MainView/>
+        <views:MainView />
     </DataTemplate>
 
     <DataTemplate DataType="{x:Type viewModels:ZoomViewModel}">
-        <views:ZoomView/>
+        <views:ZoomView />
     </DataTemplate>
 
     <DataTemplate DataType="{x:Type viewModels:ColorEditorViewModel}">
-        <views:ColorEditorView/>
+        <views:ColorEditorView />
     </DataTemplate>
 </ResourceDictionary>
