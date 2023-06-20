@@ -7,7 +7,7 @@ using System.Collections.Generic;
 using System.IO;
 using Microsoft.UI;
 using Microsoft.UI.Xaml.Controls;
-using Windows.ApplicationModel.Resources;
+using Microsoft.Windows.ApplicationModel.Resources;
 using Windows.Data.Json;
 using Windows.Graphics;
 using WinUIEx;
@@ -39,7 +39,7 @@ namespace RegistryPreview
             this.InitializeComponent();
 
             // Initialize the string table
-            resourceLoader = ResourceLoader.GetForViewIndependentUse();
+            resourceLoader = ResourceLoaderInstance.ResourceLoader;
 
             // Open settings file; this moved to after the window tweak because it gives the window time to start up
             settingsFolder = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData) + @"\Microsoft\PowerToys\" + APPNAME;

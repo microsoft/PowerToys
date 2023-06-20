@@ -25,6 +25,8 @@
 		<RootNamespace>RegistryPreview</RootNamespace>
 		<DisableWinExeOutputInference>true</DisableWinExeOutputInference>
 		<AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+		<!-- MRT from windows app sdk will search for a pri file with the same name of the module before defaulting to resources.pri -->
+		<ProjectPriFileName>PowerToys.RegistryPreview.pri</ProjectPriFileName>
 	</PropertyGroup>
 
 	<!-- SelfContained=true requires RuntimeIdentifier to be set -->
