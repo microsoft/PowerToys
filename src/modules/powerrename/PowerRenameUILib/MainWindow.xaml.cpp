@@ -105,7 +105,7 @@ namespace winrt::PowerRenameUI::implementation
 
         m_searchRegExShortcuts = winrt::single_threaded_observable_vector<PowerRenameUI::PatternSnippet>();
         auto factory = winrt::get_activation_factory<ResourceManager, IResourceManagerFactory>();
-        ResourceManager manager = factory.CreateInstance(L"resources.pri");
+        ResourceManager manager = factory.CreateInstance(L"PowerToys.PowerRename.pri");
 
         m_searchRegExShortcuts.Append(winrt::make<PatternSnippet>(L".", manager.MainResourceMap().GetValue(L"Resources/RegExCheatSheet_MatchAny").ValueAsString()));
         m_searchRegExShortcuts.Append(winrt::make<PatternSnippet>(L"\\d", manager.MainResourceMap().GetValue(L"Resources/RegExCheatSheet_MatchDigit").ValueAsString()));

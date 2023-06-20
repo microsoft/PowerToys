@@ -27,6 +27,8 @@
     <UseWinUI>true</UseWinUI>
     <WindowsAppSDKSelfContained>true</WindowsAppSDKSelfContained>
     <EnablePreviewMsixTooling>true</EnablePreviewMsixTooling>
+    <!-- MRT from windows app sdk will search for a pri file with the same name of the module before defaulting to resources.pri -->
+		<ProjectPriFileName>PowerToys.PowerRename.pri</ProjectPriFileName>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <Import Project="..\..\..\..\deps\spdlog.props" />

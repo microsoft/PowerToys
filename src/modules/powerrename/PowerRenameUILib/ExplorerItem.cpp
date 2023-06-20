@@ -165,7 +165,7 @@ namespace winrt::PowerRenameUI::implementation
     std::wstring ExplorerItem::StateToErrorMessage()
     {
         static auto factory = winrt::get_activation_factory<ResourceManager, IResourceManagerFactory>();
-        static ResourceManager manager = factory.CreateInstance(L"resources.pri");
+        static ResourceManager manager = factory.CreateInstance(L"PowerToys.PowerRename.pri");
         static auto invalid_char_error = manager.MainResourceMap().GetValue(L"Resources/ErrorMessage_InvalidChar").ValueAsString(); 
         static auto name_too_long_error = manager.MainResourceMap().GetValue(L"Resources/ErrorMessage_FileNameTooLong").ValueAsString();
 
