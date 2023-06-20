@@ -99,7 +99,7 @@ MakeAppx.exe pack /d . /p $(OutDir)ImageResizerContextMenuPackage.msix /nv</Comm
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="Assets\**" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="Assets\ImageResizer\**" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
   <ItemGroup>
     <None Include="ImageResizer.ico" CopyToOutputDirectory="PreserveNewest" />
