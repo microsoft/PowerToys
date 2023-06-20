@@ -4,8 +4,7 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:m="clr-namespace:ImageResizer.Models"
     xmlns:p="clr-namespace:ImageResizer.Properties"
-    xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
-    MinWidth="350">
+    xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml">
 
     <Grid>
         <Grid.RowDefinitions>
@@ -13,18 +12,7 @@
             <RowDefinition Height="Auto" />
             <RowDefinition Height="*" />
         </Grid.RowDefinitions>
-        <ui:TitleBar
-            x:Name="TitleBar"
-            Title="{x:Static p:Resources.ImageResizer}"
-            Grid.Row="0"
-            Height="32"
-            Padding="16,0,16,0"
-            ShowMaximize="False"
-            ShowMinimize="False">
-            <ui:TitleBar.Icon>
-                <ui:ImageIcon Source="/PowerToys.ImageResizer;component/Resources/ImageResizer.ico" />
-            </ui:TitleBar.Icon>
-        </ui:TitleBar>
+       
         <ComboBox
             x:Name="SizeComboBox"
             Grid.Row="1"

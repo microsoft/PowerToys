@@ -9,14 +9,13 @@
     xmlns:vm="clr-namespace:ImageResizer.ViewModels"
     Name="_this"
     Width="360"
-    ResizeMode="NoResize"
     Height="520"
     ui:Design.Background="{DynamicResource ApplicationBackgroundBrush}"
     ui:Design.Foreground="{DynamicResource TextFillColorPrimaryBrush}"
     AutomationProperties.Name="{x:Static p:Resources.ImageResizer}"
-    Content="{Binding CurrentPage}"
     ExtendsContentIntoTitleBar="True"
     Icon="/PowerToys.ImageResizer;component/Resources/ImageResizer.ico"
+    ResizeMode="NoResize"
     WindowBackdropType="Mica"
     WindowCornerPreference="Default"
     WindowStartupLocation="CenterScreen">
@@ -42,4 +41,24 @@
             <behaviors:InvokeCommandAction Command="{Binding LoadCommand}" CommandParameter="{Binding ElementName=_this}" />
         </behaviors:EventTrigger>
     </behaviors:Interaction.Triggers>
+
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+        <ui:TitleBar
+            x:Name="TitleBar"
+            Title="{x:Static p:Resources.ImageResizer}"
+            Grid.Row="0"
+            Height="32"
+            Padding="16,0,16,0"
+            ShowMaximize="False"
+            ShowMinimize="False">
+            <ui:TitleBar.Icon>
+                <ui:ImageIcon Source="/PowerToys.ImageResizer;component/Resources/ImageResizer.ico" />
+            </ui:TitleBar.Icon>
+        </ui:TitleBar>
+        <ContentPresenter Grid.Row="1" Content="{Binding CurrentPage}" />
+    </Grid>
 </ui:FluentWindow>

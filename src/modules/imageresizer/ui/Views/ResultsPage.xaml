@@ -2,10 +2,9 @@
     x:Class="ImageResizer.Views.ResultsPage"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-    xmlns:p="clr-namespace:ImageResizer.Properties"
-    MinWidth="350">
+    xmlns:p="clr-namespace:ImageResizer.Properties">
 
-    <!--<StackPanel>
+    <StackPanel>
         <TextBlock
             Margin="12,12,12,0"
             FontSize="16"
@@ -44,5 +43,5 @@
                     IsDefault="True" />
             </StackPanel>
         </Border>
-    </StackPanel>-->
+    </StackPanel>
 </UserControl>
