@@ -175,21 +175,15 @@
     </UserControl.Resources>
     <Grid
         x:Name="PickerPanel"
-        Margin="12,2,12,2"
-        HorizontalAlignment="Stretch">
-        <Grid.Effect>
-            <DropShadowEffect
-                BlurRadius="6"
-                Opacity="0.32"
-                ShadowDepth="2" />
-        </Grid.Effect>
-        <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="46" />
-            <ColumnDefinition Width="46" />
-            <ColumnDefinition Width="165" />
-            <ColumnDefinition Width="46" />
-            <ColumnDefinition Width="46" />
-        </Grid.ColumnDefinitions>
+        HorizontalAlignment="Stretch"
+        Background="Red">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="32" />
+            <RowDefinition Height="32" />
+            <RowDefinition Height="86" />
+            <RowDefinition Height="32" />
+            <RowDefinition Height="32" />
+        </Grid.RowDefinitions>
 
         <Button
             x:Name="colorVariation1Button"
@@ -202,7 +196,7 @@
             ToolTipService.ToolTip="{x:Static p:Resources.Select_color}" />
         <Button
             x:Name="colorVariation2Button"
-            Grid.Column="1"
+            Grid.Row="1"
             AutomationProperties.Name="{x:Static p:Resources.Lighter_color}"
             Background="LightPink"
             Click="ColorVariationButton_Click"
@@ -210,7 +204,7 @@
             ToolTipService.ToolTip="{x:Static p:Resources.Select_color}" />
         <Button
             x:Name="colorVariation3Button"
-            Grid.Column="3"
+            Grid.Row="3"
             AutomationProperties.Name="{x:Static p:Resources.Darker_color}"
             Background="LightPink"
             Click="ColorVariationButton_Click"
@@ -218,7 +212,7 @@
             ToolTipService.ToolTip="{x:Static p:Resources.Select_color}" />
         <Button
             x:Name="colorVariation4Button"
-            Grid.Column="4"
+            Grid.Row="4"
             AutomationProperties.Name="{x:Static p:Resources.Darkest_color}"
             Background="LightPink"
             Click="ColorVariationButton_Click"
@@ -227,12 +221,8 @@
 
         <Button
             x:Name="CurrentColorButton"
-            Grid.Column="0"
-            Grid.ColumnSpan="5"
-            Width="165"
-            Height="48"
-            Margin="92,0,0,0"
-            HorizontalAlignment="Left"
+            Grid.RowSpan="5"
+            Height="165"
             AutomationProperties.HelpText="{x:Static p:Resources.Selected_color_helptext}"
             AutomationProperties.Name="{x:Static p:Resources.Selected_color}"
             Background="Red"
@@ -394,7 +384,7 @@
                             HorizontalAlignment="Stretch"
                             AutomationProperties.Name="{x:Static p:Resources.Select}"
                             Click="OKButton_Click"
-                            Content="{x:Static p:Resources.Select}"/>
+                            Content="{x:Static p:Resources.Select}" />
                     </StackPanel>
                 </Grid>
             </ui:Flyout>

@@ -14,7 +14,7 @@
     <Grid Background="Transparent">
 
         <Border
-            Margin="12"
+            Margin="0"
            
             BorderThickness="1"
             CornerRadius="4">

@@ -198,7 +198,7 @@ namespace ColorPicker.Controls
                 var moveColor = new ThicknessAnimation(new Thickness(0), new Duration(TimeSpan.FromMilliseconds(250)));
                 moveColor.EasingFunction = new ExponentialEase() { EasingMode = EasingMode.EaseInOut };
 
-                CurrentColorButton.BeginAnimation(Button.WidthProperty, resizeColor);
+                CurrentColorButton.BeginAnimation(Button.HeightProperty, resizeColor);
                 CurrentColorButton.BeginAnimation(Button.MarginProperty, moveColor);
                 CurrentColorButton.IsEnabled = false;
                 SessionEventHelper.Event.EditorAdjustColorOpened = true;
@@ -217,7 +217,7 @@ namespace ColorPicker.Controls
                 var moveColor = new ThicknessAnimation(new Thickness(92, 0, 0, 0), new Duration(TimeSpan.FromMilliseconds(150)));
                 moveColor.EasingFunction = new ExponentialEase() { EasingMode = EasingMode.EaseInOut };
 
-                CurrentColorButton.BeginAnimation(Button.WidthProperty, resizeColor);
+                CurrentColorButton.BeginAnimation(Button.HeightProperty, resizeColor);
                 CurrentColorButton.BeginAnimation(Button.MarginProperty, moveColor);
                 CurrentColorButton.IsEnabled = true;
             }

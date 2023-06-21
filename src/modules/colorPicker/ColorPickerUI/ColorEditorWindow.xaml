@@ -14,7 +14,6 @@
     ui:Design.Background="{DynamicResource ApplicationBackgroundBrush}"
     ui:Design.Foreground="{DynamicResource TextFillColorPrimaryBrush}"
     AutomationProperties.Name="{x:Static p:Resources.cp_editor}"
-    BorderThickness="1"
     ExtendsContentIntoTitleBar="True"
     ResizeMode="NoResize"
     Topmost="True"
@@ -25,4 +24,23 @@
     <e:Interaction.Behaviors>
         <behaviors:CloseZoomWindowBehavior />
     </e:Interaction.Behaviors>
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+        <ui:TitleBar
+            x:Name="TitleBar"
+            Title="Color Picker"
+            Grid.Row="0"
+            Height="32"
+            Padding="16,0,16,0"
+            ShowMaximize="False"
+            ShowMinimize="False">
+            <!--<ui:TitleBar.Icon>
+                <ui:ImageIcon Source="/Resources/icon.ico" />
+            </ui:TitleBar.Icon>-->
+        </ui:TitleBar>
+        <ContentPresenter x:Name="Presenterrr"  Grid.Row="1" Content="{Binding Content}" />
+    </Grid>
 </ui:FluentWindow>

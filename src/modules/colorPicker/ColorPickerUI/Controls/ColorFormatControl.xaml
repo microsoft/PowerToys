@@ -1,66 +1,62 @@
-﻿<UserControl x:Class="ColorPicker.Controls.ColorFormatControl"
-             xmlns:local="clr-namespace:ColorPicker"
-             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-             xmlns:p="clr-namespace:ColorPicker.Properties" xmlns:ui="http://schemas.modernwpf.com/2019"
-             mc:Ignorable="d">
+﻿<UserControl
+    x:Class="ColorPicker.Controls.ColorFormatControl"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:local="clr-namespace:ColorPicker"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:p="clr-namespace:ColorPicker.Properties"
+    xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
+    mc:Ignorable="d">
 
-    <Border x:Name="MainBorder"
-            Margin="12,16,12,0"
-            Width="348"
-            Height="36"
-            CornerRadius="4"
-            HorizontalAlignment="Stretch"
-            Background="{DynamicResource ColorControlBackgroundBrush}">
-        <Grid>
+    <Border
+        x:Name="MainBorder"
+        Margin="0,0,0,8"
+        HorizontalAlignment="Stretch"
+        Background="{DynamicResource CardBackgroundFillColorDefaultBrush}"
+        BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}"
+        BorderThickness="1"
+        CornerRadius="4">
+        <Grid Margin="12,0,12,0">
             <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="64"/>
-                <ColumnDefinition Width="*"/>
-                <ColumnDefinition Width="36"/>
+                <ColumnDefinition Width="78" />
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="48" />
             </Grid.ColumnDefinitions>
-            <TextBlock x:Name="FormatNameTextBlock"
-                       Opacity="0.6"
-                       Style="{DynamicResource BodyStrongTextBlockStyle}"
-                       Foreground="{DynamicResource PrimaryForegroundBrush}"
-                       Margin="8"
-                       VerticalAlignment="Center"/>
+            <TextBlock
+                x:Name="FormatNameTextBlock"
+                VerticalAlignment="Center"
+                FontSize="12"
+                FontWeight="SemiBold"
+                Foreground="{DynamicResource TextFillColorSecondaryBrush}" />
 
-            <TextBox x:Name="ColorTextRepresentationTextBlock"
-                       FontFamily="Consolas"
-                       FontSize="14"
-                       Foreground="{DynamicResource PrimaryForegroundBrush}"
-                       Grid.Column="1"
-                       IsTabStop="False"
-                       Background="Transparent"
-                       BorderThickness="0"
-                       IsReadOnly="True"
-                       VerticalAlignment="Center"
-                       Padding="8"
-                       AutomationProperties.Name="{x:Static p:Resources.Color_Code}"
-                     />
+            <TextBox
+                x:Name="ColorTextRepresentationTextBlock"
+                Grid.Column="1"
+                VerticalAlignment="Center"
+                AutomationProperties.Name="{x:Static p:Resources.Color_Code}"
+                Background="Transparent"
+                BorderThickness="0"
+                FontWeight="SemiBold"
+                IsReadOnly="True"
+                IsTabStop="False" />
 
-            <Button x:Name="CopyToClipboardButton"
-                    ToolTipService.ToolTip="{x:Static p:Resources.Copy_to_clipboard}"
-                    Background="{DynamicResource ColorControlBackgroundBrush}"
-                    FontSize="16"
-                 
-                    Foreground="{DynamicResource PrimaryForegroundBrush}"
-                    Opacity="0.6"
-                    Height="36"
-                    Width="36"
-                    Grid.Column="2"
-                    Style="{StaticResource DefaultButtonStyle}"
-                    AutomationProperties.Name="{x:Static p:Resources.Copy_to_clipboard}"
-                    AutomationProperties.HelpText="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type local:Controls.ColorFormatControl}}, Path=SelectedColorCopyHelperText}">
+            <Button
+                x:Name="CopyToClipboardButton"
+                Grid.Column="2"
+                Width="36"
+                Height="36"
+                AutomationProperties.HelpText="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type local:Controls.ColorFormatControl}}, Path=SelectedColorCopyHelperText}"
+                AutomationProperties.Name="{x:Static p:Resources.Copy_to_clipboard}"
+                Background="Transparent"
+                BorderBrush="Transparent"
+                Style="{StaticResource DefaultButtonStyle}"
+                ToolTipService.ToolTip="{x:Static p:Resources.Copy_to_clipboard}">
                 <Button.Content>
-                    <TextBlock Text="&#xE8C8;" AutomationProperties.Name="{x:Static p:Resources.Copy_to_clipboard}" />
+                    <ui:SymbolIcon Symbol="Copy20" />
                 </Button.Content>
             </Button>
         </Grid>
-        <Border.Effect>
-            <DropShadowEffect BlurRadius="6" Opacity="0.24" ShadowDepth="1" />
-        </Border.Effect>
+
     </Border>
 </UserControl>

@@ -6,18 +6,20 @@ using System.ComponentModel.Composition;
 using System.Windows;
 using System.Windows.Interop;
 using ColorPicker.ViewModelContracts;
+using Wpf.Ui.Controls.Window;
 
 namespace ColorPicker
 {
     /// <summary>
     /// Interaction logic for MainWindow.xaml
     /// </summary>
-    public partial class MainWindow : Window
+    public partial class MainWindow : FluentWindow
     {
         public MainWindow()
         {
             Closing += MainWindow_Closing;
             Bootstrapper.InitializeContainer(this);
+            Wpf.Ui.Appearance.Watcher.Watch(this);
             InitializeComponent();
             DataContext = this;
             Show(); // Call show just to make sure source is initialized at startup.
