@@ -330,7 +330,7 @@ SOFTWARE.
 - System.Management 7.0.0
 - System.Reactive 6.0.0-preview.9
 - System.Runtime.Caching 7.0.0
-- System.ServiceProcess.ServiceController 7.0.0
+- System.ServiceProcess.ServiceController 7.0.1
 - UnicodeInformation 2.6.0
 - UnitsNet 4.145.0
 - Vanara.PInvoke.Shell32 3.4.11
