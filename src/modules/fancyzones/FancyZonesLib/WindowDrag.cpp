@@ -151,7 +151,6 @@ void WindowDrag::SwitchSnappingMode(bool isSnapping)
 {
     if (!m_snappingMode && isSnapping) // turn on
     {
-        m_highlightedZones.Reset();
         SetWindowTransparency();
 
         if (FancyZonesSettings::settings().showZonesOnAllMonitors)
