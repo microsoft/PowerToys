@@ -286,7 +286,7 @@ SOFTWARE.
 - CommunityToolkit.WinUI.UI 7.1.2
 - CommunityToolkit.WinUI.UI.Animations 7.1.2
 - CommunityToolkit.WinUI.UI.Controls 7.1.2
-- ControlzEx 5.0.1
+- ControlzEx 6.0.0
 - HelixToolkit 2.20.2
 - HelixToolkit.Core.Wpf 2.20.2
 - hyjiacan.pinyin4net 4.1.1
