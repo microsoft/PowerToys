@@ -41,12 +41,20 @@
 		<Content Include="Assets\RegistryPreview\app.ico" />
 	</ItemGroup>
 
+	<!-- See https://learn.microsoft.com/windows/apps/develop/platform/csharp-winrt/net-projection-from-cppwinrt-component for more info -->
+	<PropertyGroup>
+		<CsWinRTIncludes>PowerToys.GPOWrapper</CsWinRTIncludes>
+		<CsWinRTGeneratedFilesDir>$(OutDir)</CsWinRTGeneratedFilesDir>
+		<ErrorOnDuplicatePublishOutputFiles>false</ErrorOnDuplicatePublishOutputFiles>
+	</PropertyGroup>
+
 	<!-- Needed for CommunityToolkit.Labs.WinUI.SettingsControls, on local builds and PR CI. -->
 	<PropertyGroup Condition="'$(IsPipeline)' == ''">
 		<RestoreAdditionalProjectSources>https://pkgs.dev.azure.com/dotnet/CommunityToolkit/_packaging/CommunityToolkit-Labs/nuget/v3/index.json</RestoreAdditionalProjectSources>
 	</PropertyGroup>
 	
 	<ItemGroup>
+		<PackageReference Include="Microsoft.Windows.CsWinRT" />
 		<PackageReference Include="CommunityToolkit.WinUI.UI.Controls" />
 		<PackageReference Include="Microsoft.Windows.SDK.BuildTools" />
 		<PackageReference Include="Microsoft.WindowsAppSDK" />
@@ -56,6 +64,7 @@
 
 	<ItemGroup>
 		<ProjectReference Include="..\..\..\common\Common.UI\Common.UI.csproj" />
+		<ProjectReference Include="..\..\..\common\GPOWrapper\GPOWrapper.vcxproj" />
 		<ProjectReference Include="..\..\..\settings-ui\Settings.UI.Library\Settings.UI.Library.csproj" />
 	</ItemGroup>
 	
