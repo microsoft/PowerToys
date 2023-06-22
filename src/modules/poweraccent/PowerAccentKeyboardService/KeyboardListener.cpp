@@ -8,7 +8,6 @@
 #include <common/utils/string_utils.h>
 #include <common/utils/process_path.h>
 #include <common/utils/excluded_apps.h>
-#include <common/utils/window.h>
 
 namespace winrt::PowerToys::PowerAccentKeyboardService::implementation
 {

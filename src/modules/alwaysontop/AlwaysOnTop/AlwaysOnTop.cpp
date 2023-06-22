@@ -12,7 +12,6 @@
 
 #include <trace.h>
 #include <WinHookEventIDs.h>
-#include <utils/window.h>
 
 
 namespace NonLocalizable

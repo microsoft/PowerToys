@@ -6,7 +6,6 @@
 #include "common/utils/game_mode.h"
 #include "common/utils/process_path.h"
 #include "common/utils/excluded_apps.h"
-#include <common/utils/window.h>
 #include <vector>
 
 #ifdef COMPOSITION
