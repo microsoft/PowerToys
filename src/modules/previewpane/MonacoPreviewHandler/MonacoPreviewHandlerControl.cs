@@ -4,11 +4,13 @@
 
 using System.Globalization;
 using System.Runtime.CompilerServices;
+using System.Text;
 using Common;
 using ManagedCommon;
 using Microsoft.PowerToys.PreviewHandler.Monaco.Properties;
 using Microsoft.Web.WebView2.Core;
 using Microsoft.Web.WebView2.WinForms;
+using UtfUnknown;
 using Windows.System;
 
 namespace Microsoft.PowerToys.PreviewHandler.Monaco
@@ -344,7 +346,10 @@ namespace Microsoft.PowerToys.PreviewHandler.Monaco
             Logger.LogInfo("Starting getting monaco language id out of filetype");
             _vsCodeLangSet = FileHandler.GetLanguage(Path.GetExtension(filePath));
 
-            using (StreamReader fileReader = new StreamReader(new FileStream(filePath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite)))
+            DetectionResult result = CharsetDetector.DetectFromFile(filePath);
+            Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
+
+            using (StreamReader fileReader = new StreamReader(new FileStream(filePath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite), result.Detected.Encoding))
             {
                 Logger.LogInfo("Starting reading requested file");
                 var fileContent = fileReader.ReadToEnd();
