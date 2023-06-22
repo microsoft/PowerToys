@@ -32,7 +32,7 @@
       <PreprocessorDefinitions>WIN32;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <Link>
-      <AdditionalDependencies>$(OutDir)\..\..\PowerRenameLib.lib;Pathcch.lib;comctl32.lib;shlwapi.lib;shcore.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>$(OutDir)\..\..\WinUI3Apps\PowerRenameLib.lib;Pathcch.lib;comctl32.lib;shlwapi.lib;shcore.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>

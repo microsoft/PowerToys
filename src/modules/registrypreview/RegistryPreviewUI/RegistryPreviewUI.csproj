@@ -6,7 +6,7 @@
 		<TargetPlatformMinVersion>10.0.19041.0</TargetPlatformMinVersion>
 		<SupportedOSPlatformVersion>10.0.19041.0</SupportedOSPlatformVersion>
 		<Platforms>x86;x64;arm64</Platforms>
-		<OutputPath>..\..\..\..\$(Platform)\$(Configuration)</OutputPath>
+		<OutputPath>..\..\..\..\$(Platform)\$(Configuration)\WinUI3Apps</OutputPath>
 		<UseWinUI>true</UseWinUI>
 		<UseWindowsForms>False</UseWindowsForms>
 		<ApplicationIcon>Assets\RegistryPreview\app.ico</ApplicationIcon>

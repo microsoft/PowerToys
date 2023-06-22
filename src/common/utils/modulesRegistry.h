@@ -203,7 +203,7 @@ inline registry::ChangeSet getRegistryPreviewSetDefaultAppChangeSet(const std::w
     std::wstring fullAppName = L"PowerToys.RegistryPreview";
     std::wstring registryKeyPrefix = L"Software\\Classes\\";
 
-    std::wstring appPath = installationDir + L"\\PowerToys.RegistryPreview.exe";
+    std::wstring appPath = installationDir + L"\\WinUI3Apps\\PowerToys.RegistryPreview.exe";
     std::wstring command = appPath + L" \"----ms-protocol:ms-encodedlaunch:App?ContractId=Windows.File&Verb=open&File=%1\"";
 
     changes.push_back({ scope, registryKeyPrefix + fullAppName + L"\\" + L"Application", L"ApplicationName", appName });
@@ -222,11 +222,11 @@ inline registry::ChangeSet getRegistryPreviewChangeSet(const std::wstring instal
     vec_t changes;
 
     std::wstring command = installationDir;
-    command.append(L"\\PowerToys.RegistryPreview.exe \"%1\"");
+    command.append(L"\\WinUI3Apps\\PowerToys.RegistryPreview.exe \"%1\"");
     changes.push_back({ scope, L"Software\\Classes\\regfile\\shell\\preview\\command", std::nullopt, command });
 
     std::wstring icon_path = installationDir;
-    icon_path.append(L"\\Assets\\RegistryPreview\\app.ico");
+    icon_path.append(L"\\WinUI3Apps\\Assets\\RegistryPreview\\app.ico");
     changes.push_back({ scope, L"Software\\Classes\\regfile\\shell\\preview", L"icon", icon_path });
 
     return { changes };
