@@ -11,7 +11,7 @@
     <AssemblyName>PowerToys.MouseWithoutBordersHelper</AssemblyName>    
     <DisableWinExeOutputInference>true</DisableWinExeOutputInference>    
     <ImportWindowsDesktopTargets>true</ImportWindowsDesktopTargets>
-    <OutputPath>..\..\..\..\$(Platform)\$(Configuration)</OutputPath>
+    <OutputPath>..\..\..\..\..\$(Platform)\$(Configuration)</OutputPath>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <SelfContained>true</SelfContained>
     <Version>$(Version).0</Version>
