@@ -51,7 +51,7 @@ namespace Microsoft.PowerToys.FilePreviewCommon
             {
                 // TODO: common monaco folder
                 string codeBase = Assembly.GetExecutingAssembly().Location;
-                string path = Path.GetFullPath(Path.Combine(Path.GetDirectoryName(codeBase), "..", "FileExplorerPreview"));
+                string path = Path.GetFullPath(Path.Combine(Path.GetDirectoryName(codeBase)));
                 return path;
             }
         }
