@@ -67,8 +67,8 @@
   <!-- Props that are constant for both Debug and Release configurations -->
   <PropertyGroup Label="Configuration">
     <PlatformToolset>v143</PlatformToolset>
-    <IntDir>$(SolutionDir)$(Platform)\$(Configuration)\obj\$(ProjectName)\</IntDir>
-    <OutDir>..\..\..\..\$(Platform)\$(Configuration)\</OutDir>
+    <IntDir>$(SolutionDir)$(Platform)\$(Configuration)\obj\$(MSBuildProjectName)\</IntDir>
+    <OutDir>..\..\..\..\$(Platform)\$(Configuration)\$(MSBuildProjectName)\</OutDir>
     <CharacterSet>Unicode</CharacterSet>
     <SpectreMitigation>Spectre</SpectreMitigation>
     <ConfigurationType>Application</ConfigurationType>
