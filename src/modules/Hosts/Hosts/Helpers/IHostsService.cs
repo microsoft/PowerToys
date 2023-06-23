@@ -15,7 +15,7 @@ namespace Hosts.Helpers
 
         event EventHandler FileChanged;
 
-        Task<(string Unparsed, List<Entry> Entries)> ReadAsync();
+        Task<HostsData> ReadAsync();
 
         Task<bool> WriteAsync(string additionalLines, IEnumerable<Entry> entries);
 

@@ -435,7 +435,7 @@
                 HorizontalScrollBarVisibility="Auto"
                 HorizontalScrollMode="Auto">
                 <StackPanel
-                    MinWidth="480"
+                    Width="480"
                     Margin="0,12,0,0"
                     HorizontalAlignment="Stretch"
                     Spacing="24">
@@ -446,10 +446,22 @@
                     <TextBox
                         x:Uid="Hosts"
                         IsSpellCheckEnabled="False"
+                        AcceptsReturn="False"
+                        TextWrapping="Wrap"
+                        Height="100"
+                        ScrollViewer.IsVerticalRailEnabled="True"
+                        ScrollViewer.VerticalScrollBarVisibility="Visible"
+                        ScrollViewer.VerticalScrollMode="Enabled"
                         Text="{Binding Hosts, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
                     <TextBox
                         x:Uid="Comment"
-                        IsSpellCheckEnabled="False"
+                        IsSpellCheckEnabled="False" 
+                        AcceptsReturn="False"
+                        TextWrapping="Wrap"
+                        Height="100"
+                        ScrollViewer.IsVerticalRailEnabled="True"
+                        ScrollViewer.VerticalScrollBarVisibility="Visible"
+                        ScrollViewer.VerticalScrollMode="Enabled"
                         Text="{Binding Comment, Mode=TwoWay}" />
                     <ToggleSwitch
                         x:Uid="Active"
@@ -486,5 +498,20 @@
                 ScrollViewer.VerticalScrollMode="Enabled"
                 TextWrapping="Wrap" />
         </ContentDialog>
+        
+        <TeachingTip
+            x:Uid="TooManyHostsTeachingTip"
+            IsOpen="{x:Bind ViewModel.ShowSplittedEntriesTooltip, Mode=OneWay}"
+	        PreferredPlacement="Top"
+	        PlacementMargin="20">
+            <TeachingTip.IconSource>
+                <FontIconSource Glyph="&#xe946;" />
+            </TeachingTip.IconSource>
+            <TeachingTip.Content>
+                <TextBlock x:Uid="TooManyHostsTeachingTipContent"
+                           TextWrapping="Wrap"
+                           Margin="0,16,0,0" />
+            </TeachingTip.Content>
+        </TeachingTip>
     </Grid>
 </Page>
