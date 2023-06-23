@@ -366,6 +366,12 @@ namespace MonitorUtils
             retryCounter++;
         }
         
+        if (!displays.has_value())
+        {
+            Logger::error("Failed to identify displays");
+            return {};
+        }
+
         for (const auto& monitor : monitors)
         {
             for (auto& display : displays.value())
