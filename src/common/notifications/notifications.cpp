@@ -49,7 +49,6 @@ namespace // Strings in this namespace should not be localized
     constexpr std::wstring_view TASK_NAME = L"PowerToysBackgroundNotificationsHandler";
     constexpr std::wstring_view TASK_ENTRYPOINT = L"BackgroundActivator.BackgroundHandler";
     constexpr std::wstring_view PACKAGED_APPLICATION_ID = L"PowerToys";
-    constexpr std::wstring_view APPIDS_REGISTRY = LR"(Software\Classes\AppUserModelId\)";
 
     std::wstring APPLICATION_ID = L"Microsoft.PowerToysWin32";
     constexpr std::wstring_view DEFAULT_TOAST_GROUP = L"PowerToysToastTag";
@@ -130,68 +129,6 @@ void notifications::run_desktop_app_activator_loop()
 
     run_message_loop();
     CoRevokeClassObject(token);
-}
-
-bool notifications::register_application_id(const std::wstring_view appName, const std::wstring_view iconPath)
-{
-    std::wstring aumidPath{ APPIDS_REGISTRY };
-    aumidPath += APPLICATION_ID;
-    wil::unique_hkey aumidKey;
-    if (FAILED(RegCreateKeyW(HKEY_CURRENT_USER, aumidPath.c_str(), &aumidKey)))
-    {
-        return false;
-    }
-    if (FAILED(RegSetKeyValueW(aumidKey.get(),
-                               nullptr,
-                               L"DisplayName",
-                               REG_SZ,
-                               appName.data(),
-                               static_cast<DWORD>((size(appName) + 1) * sizeof(wchar_t)))))
-    {
-        return false;
-    }
-
-    if (FAILED(RegSetKeyValueW(aumidKey.get(),
-                               nullptr,
-                               L"IconUri",
-                               REG_SZ,
-                               iconPath.data(),
-                               static_cast<DWORD>((size(iconPath) + 1) * sizeof(wchar_t)))))
-    {
-        return false;
-    }
-
-    const std::wstring_view iconColor = L"FFDDDDDD";
-    if (FAILED(RegSetKeyValueW(aumidKey.get(),
-                               nullptr,
-                               L"IconBackgroundColor",
-                               REG_SZ,
-                               iconColor.data(),
-                               static_cast<DWORD>((size(iconColor) + 1) * sizeof(wchar_t)))))
-    {
-        return false;
-    }
-    return true;
-}
-
-void notifications::unregister_application_id()
-{
-    std::wstring aumidPath{ APPIDS_REGISTRY };
-    aumidPath += APPLICATION_ID;
-    wil::unique_hkey registryRoot;
-    RegOpenKeyW(HKEY_CURRENT_USER, aumidPath.c_str(), &registryRoot);
-    if (!registryRoot)
-    {
-        return;
-    }
-    RegDeleteTreeW(registryRoot.get(), nullptr);
-    registryRoot.reset();
-    RegOpenKeyW(HKEY_CURRENT_USER, APPIDS_REGISTRY.data(), &registryRoot);
-    if (!registryRoot)
-    {
-        return;
-    }
-    RegDeleteKeyW(registryRoot.get(), APPLICATION_ID.data());
 }
 
 void notifications::override_application_id(const std::wstring_view appID)
