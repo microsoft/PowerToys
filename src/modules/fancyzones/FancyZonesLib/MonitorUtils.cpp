@@ -219,11 +219,12 @@ namespace MonitorUtils
             return result;
         }
 
-        std::optional<std::vector<FancyZonesDataTypes::MonitorId>> GetDisplays()
+        std::pair<bool, std::vector<FancyZonesDataTypes::MonitorId>> GetDisplays()
         {
-            auto allMonitors = FancyZonesUtils::GetAllMonitorInfo<&MONITORINFOEX::rcWork>();
+            bool success = true;
             std::vector<FancyZonesDataTypes::MonitorId> result{};
-
+            
+            auto allMonitors = FancyZonesUtils::GetAllMonitorInfo<&MONITORINFOEX::rcWork>();
             for (auto& monitorData : allMonitors)
             {
                 auto monitorInfo = monitorData.second;
@@ -269,13 +270,29 @@ namespace MonitorUtils
                 }
                 else
                 {
-                    return std::nullopt;
+                    success = false;
+
+                    // Use the display name as a fallback value when no proper device was found.
+                    monitorId.deviceId.id = monitorInfo.szDevice;
+                    monitorId.deviceId.instanceId = L"";
+
+                    try
+                    {
+                        std::wstring numberStr = monitorInfo.szDevice; // \\.\DISPLAY1
+                        numberStr = remove_non_digits(numberStr);
+                        monitorId.deviceId.number = std::stoi(numberStr);
+                    }
+                    catch (...)
+                    {
+                        Logger::error(L"Failed to get display number from {}", monitorInfo.szDevice);
+                        monitorId.deviceId.number = 0;
+                    }
                 }
 
                 result.push_back(std::move(monitorId));
             }
 
-            return result;
+            return {success, result};
         }
     }
 
@@ -353,28 +370,22 @@ namespace MonitorUtils
     {
         Logger::info(L"Identifying monitors");
 
-        auto displays = Display::GetDisplays();
+        auto displaysResult = Display::GetDisplays();
         auto monitors = WMI::GetHardwareMonitorIds();
 
         // retry 
         int retryCounter = 0;
-        while (!displays.has_value() && retryCounter < 100)
+        while (!displaysResult.first && retryCounter < 100)
         {
             Logger::info("Retry display identification");
             std::this_thread::sleep_for(std::chrono::milliseconds(30));
-            displays = Display::GetDisplays();
+            displaysResult = Display::GetDisplays();
             retryCounter++;
-        }
-        
-        if (!displays.has_value())
-        {
-            Logger::error("Failed to identify displays");
-            return {};
         }
 
         for (const auto& monitor : monitors)
         {
-            for (auto& display : displays.value())
+            for (auto& display : displaysResult.second)
             {
                 if (monitor.deviceId.id == display.deviceId.id)
                 {
@@ -383,7 +394,7 @@ namespace MonitorUtils
             }
         }
         
-        return displays.value();
+        return displaysResult.second;
     }
 
     FancyZonesUtils::Rect GetWorkAreaRect(HMONITOR monitor)
