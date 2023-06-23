@@ -281,7 +281,7 @@
     <comment>"Hosts" refers to the system hosts file, do not loc</comment>
   </data>
   <data name="TooManyHostsTeachingTipContent.Text" xml:space="preserve">
-    <value>The affected entries have been splitted. Changes won't take effect until the next saving.</value>
+    <value>The affected entries have been splitted. This will take effect on next change.</value>
   </data>
   <data name="UpdateBtn" xml:space="preserve">
     <value>Update</value>
