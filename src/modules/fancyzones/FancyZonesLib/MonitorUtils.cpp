@@ -219,7 +219,7 @@ namespace MonitorUtils
             return result;
         }
 
-        std::vector<FancyZonesDataTypes::MonitorId> GetDisplays()
+        std::optional<std::vector<FancyZonesDataTypes::MonitorId>> GetDisplays()
         {
             auto allMonitors = FancyZonesUtils::GetAllMonitorInfo<&MONITORINFOEX::rcWork>();
             std::vector<FancyZonesDataTypes::MonitorId> result{};
@@ -269,21 +269,7 @@ namespace MonitorUtils
                 }
                 else
                 {
-                    // Use the display name when no proper device was found.
-                    monitorId.deviceId.id = monitorInfo.szDevice;
-                    monitorId.deviceId.instanceId = L"";
-                    Logger::info(L"No active monitor found for {} : {}", monitorInfo.szDevice, get_last_error_or_default(GetLastError()));
-                    try
-                    {
-                        std::wstring numberStr = monitorInfo.szDevice; // \\.\DISPLAY1
-                        numberStr = remove_non_digits(numberStr);
-                        monitorId.deviceId.number = std::stoi(numberStr);
-                    }
-                    catch (...)
-                    {
-                        Logger::error(L"Failed to get display number from {}", monitorInfo.szDevice);
-                        monitorId.deviceId.number = 0;
-                    }
+                    return std::nullopt;
                 }
 
                 result.push_back(std::move(monitorId));
@@ -369,10 +355,20 @@ namespace MonitorUtils
 
         auto displays = Display::GetDisplays();
         auto monitors = WMI::GetHardwareMonitorIds();
+
+        // retry 
+        int retryCounter = 0;
+        while (!displays.has_value() && retryCounter < 100)
+        {
+            Logger::info("Retry display identification");
+            std::this_thread::sleep_for(std::chrono::milliseconds(100));
+            displays = Display::GetDisplays();
+            retryCounter++;
+        }
         
         for (const auto& monitor : monitors)
         {
-            for (auto& display : displays)
+            for (auto& display : displays.value())
             {
                 if (monitor.deviceId.id == display.deviceId.id)
                 {
@@ -381,7 +377,7 @@ namespace MonitorUtils
             }
         }
         
-        return displays;
+        return displays.value();
     }
 
     FancyZonesUtils::Rect GetWorkAreaRect(HMONITOR monitor)
