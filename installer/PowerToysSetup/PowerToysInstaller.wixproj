@@ -11,7 +11,8 @@
     simulate the build pipeline doing that for you. -->
     <PreBuildEvent>IF NOT DEFINED IsPipeline (
 call "$([MSBuild]::GetVsInstallRoot())\Common7\Tools\VsDevCmd.bat" -arch=amd64 -host_arch=amd64 -winsdk=10.0.19041.0
-SET PTRoot=..\..\..\..\..
+SET PTRoot=$(SolutionDir)\..
+echo PTRoot is %myvar%
 call "..\..\..\publish.cmd" x64
 )</PreBuildEvent>
   </PropertyGroup>
@@ -20,7 +21,7 @@ call "..\..\..\publish.cmd" x64
     <DefineConstants>Version=$(Version);MonacoSRCHarvestPath=$(ProjectDir)..\..\ARM64\$(Configuration)\modules\FileExplorerPreview\monacoSRC</DefineConstants>
     <PreBuildEvent>IF NOT DEFINED IsPipeline (
 call "$([MSBuild]::GetVsInstallRoot())\Common7\Tools\VsDevCmd.bat" -arch=arm64 -host_arch=amd64 -winsdk=10.0.19041.0
-SET PTRoot=..\..\..\..\..
+SET PTRoot=$(SolutionDir)\..
 call "..\..\..\publish.cmd" arm64
 )</PreBuildEvent>
   </PropertyGroup>
