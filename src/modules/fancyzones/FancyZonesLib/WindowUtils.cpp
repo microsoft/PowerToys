@@ -228,12 +228,12 @@ bool FancyZonesWindowUtils::IsCandidateForZoning(HWND window)
 
     std::wstring processPath = get_process_path_waiting_uwp(window);
     CharUpperBuffW(const_cast<std::wstring&>(processPath).data(), static_cast<DWORD>(processPath.length()));
-    if (IsExcludedByUser(processPath) || check_excluded_app_with_title(window, processPath, FancyZonesSettings::settings().excludedAppsArray))
+    if (IsExcludedByUser(window, processPath))
     {
         return false;
     }
 
-    if (IsExcludedByDefault(processPath) || check_excluded_app_with_title(window, processPath, FancyZonesSettings::settings().excludedAppsArray))
+    if (IsExcludedByDefault(window, processPath))
     {
         return false;
     }
@@ -268,12 +268,12 @@ bool FancyZonesWindowUtils::IsProcessOfWindowElevated(HWND window)
     return false;
 }
 
-bool FancyZonesWindowUtils::IsExcludedByUser(const std::wstring& processPath) noexcept
+bool FancyZonesWindowUtils::IsExcludedByUser(const HWND& hwnd, std::wstring& processPath) noexcept
 {
-    return (find_app_name_in_path(processPath, FancyZonesSettings::settings().excludedAppsArray));
+    return (check_excluded_app(hwnd, processPath, FancyZonesSettings::settings().excludedAppsArray));
 }
 
-bool FancyZonesWindowUtils::IsExcludedByDefault(const std::wstring& processPath) noexcept
+bool FancyZonesWindowUtils::IsExcludedByDefault(const HWND& hwnd, std::wstring& processPath) noexcept
 {
     static std::vector<std::wstring> defaultExcludedFolders = { NonLocalizable::SystemAppsFolder };
     if (find_folder_in_path(processPath, defaultExcludedFolders))
@@ -282,7 +282,7 @@ bool FancyZonesWindowUtils::IsExcludedByDefault(const std::wstring& processPath)
     }
 
     static std::vector<std::wstring> defaultExcludedApps = { NonLocalizable::PowerToysAppFZEditor, NonLocalizable::CoreWindow, NonLocalizable::SearchUI };
-    return (find_app_name_in_path(processPath, defaultExcludedApps));
+    return (check_excluded_app(hwnd, processPath, defaultExcludedApps));
 }
 
 void FancyZonesWindowUtils::SwitchToWindow(HWND window) noexcept
