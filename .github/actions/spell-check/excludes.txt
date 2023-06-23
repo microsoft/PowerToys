@@ -3,11 +3,11 @@
 (?:^|/)(?i)LICEN[CS]E
 (?:^|/)3rdparty/
 (?:^|/)go\.sum$
-(?:^|/)FilePreviewCommon/customLanguages/
-(?:^|/)FilePreviewCommon/generateLanguagesJson.html
-(?:^|/)FilePreviewCommon/index.html
-(?:^|/)FilePreviewCommon/monaco_languages.json
-(?:^|/)FilePreviewCommon/monacoSpecialLanguages.js
+(?:^|/)FilePreviewCommon/Assets/Monaco/customLanguages/
+(?:^|/)FilePreviewCommon/Assets/Monaco/generateLanguagesJson.html
+(?:^|/)FilePreviewCommon/Assets/Monaco/index.html
+(?:^|/)FilePreviewCommon/Assets/Monaco/monaco_languages.json
+(?:^|/)FilePreviewCommon/Assets/Monaco/monacoSpecialLanguages.js
 (?:^|/)monacoSRC/
 (?:^|/)package(?:-lock|)\.json$
 (?:^|/)timezones\.json$
