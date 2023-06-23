@@ -4,12 +4,6 @@ EXPORTS
 	CheckGPOCA
 	ApplyModulesRegistryChangeSetsCA
 	CreateScheduledTaskCA
-	CreateWinAppSDKHardlinksCA
-	DeleteWinAppSDKHardlinksCA
-	CreatePTInteropHardlinksCA
-	DeletePTInteropHardlinksCA
-	CreateDotnetRuntimeHardlinksCA
-	DeleteDotnetRuntimeHardlinksCA
 	DetectPrevInstallPathCA
 	RemoveScheduledTasksCA
 	TelemetryLogInstallSuccessCA

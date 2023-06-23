@@ -45,15 +45,6 @@
     <!--SettingsV2OOBEAssetsFluentIconsFiles_Component_Def-->
     </DirectoryRef>
 
-    <DirectoryRef Id="SettingsV2MicrosoftUIXamlAssetsInstallFolder" FileSource="$(var.BinDir)Settings\Microsoft.UI.Xaml\Assets">
-      <Component Id="SettingsV2MicrosoftUIXamlAssets_NoiseAsset_256x256_PNG.png" Win64="yes" Guid="8F33803D-E220-4D7E-9FFA-761FD4679517">
-        <RegistryKey Root="$(var.RegistryScope)" Key="Software\Classes\powertoys\components">
-          <RegistryValue Type="string" Name="SettingsV2MicrosoftUIXamlAssets_NoiseAsset_256x256_PNG.png" Value="" KeyPath="yes"/>
-        </RegistryKey>
-        <File Id="SettingsV2MicrosoftUIXamlAssetsFile_NoiseAsset_256x256_PNG.png" Source="$(var.BinDir)Settings\Microsoft.UI.Xaml\Assets\NoiseAsset_256x256_PNG.png" />
-      </Component>
-    </DirectoryRef>
-
     <ComponentGroup Id="SettingsComponentGroup">
 
       <Component Id="RemoveSettingsFolder" Guid="2D3AEF68-4E5A-4FF9-A5C0-9E53391AC754" Directory="SettingsV2InstallFolder" >
@@ -65,10 +56,7 @@
         <RemoveFolder Id="RemoveFolderSettingsV2OOBEAssetsFluentIconsInstallFolder" Directory="SettingsV2OOBEAssetsFluentIconsInstallFolder" On="uninstall"/>
         <RemoveFolder Id="RemoveFolderSettingsV2AssetsModulesInstallFolder" Directory="SettingsV2AssetsModulesInstallFolder" On="uninstall"/>
         <RemoveFolder Id="RemoveFolderSettingsV2OOBEAssetsModulesInstallFolder" Directory="SettingsV2OOBEAssetsModulesInstallFolder" On="uninstall"/>
-        <RemoveFolder Id="RemoveFolderSettingsV2MicrosoftUIXamlInstallFolder" Directory="SettingsV2MicrosoftUIXamlInstallFolder" On="uninstall"/>
-        <RemoveFolder Id="RemoveFolderSettingsV2MicrosoftUIXamlAssetsInstallFolder" Directory="SettingsV2MicrosoftUIXamlAssetsInstallFolder" On="uninstall"/>
       </Component>
-      <ComponentRef Id="SettingsV2MicrosoftUIXamlAssets_NoiseAsset_256x256_PNG.png" />
     </ComponentGroup>
 
   </Fragment>

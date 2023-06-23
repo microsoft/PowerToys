@@ -16,8 +16,6 @@
 #include <winrt/Windows.Foundation.h>
 #include <winrt/Windows.Management.Deployment.h>
 
-#include "DepsFilesLists.h"
-
 using namespace std;
 
 HINSTANCE DLL_HANDLE = nullptr;

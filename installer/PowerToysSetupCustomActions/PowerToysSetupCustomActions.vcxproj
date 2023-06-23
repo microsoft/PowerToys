@@ -52,6 +52,7 @@
       call cmd /C "copy ""$(ProjectDir)DepsFilesLists.h"" ""$(ProjectDir)DepsFilesLists.h.bk"""
       call cmd /C "copy ""$(ProjectDir)..\PowerToysSetup\AlwaysOnTop.wxs"" ""$(ProjectDir)..\PowerToysSetup\AlwaysOnTop.wxs.bk""""
       call cmd /C "copy ""$(ProjectDir)..\PowerToysSetup\Awake.wxs"" ""$(ProjectDir)..\PowerToysSetup\Awake.wxs.bk""""
+      call cmd /C "copy ""$(ProjectDir)..\PowerToysSetup\BaseApplications.wxs"" ""$(ProjectDir)..\PowerToysSetup\BaseApplications.wxs.bk""""
       call cmd /C "copy ""$(ProjectDir)..\PowerToysSetup\ColorPicker.wxs"" ""$(ProjectDir)..\PowerToysSetup\ColorPicker.wxs.bk""""
       call cmd /C "copy ""$(ProjectDir)..\PowerToysSetup\Core.wxs"" ""$(ProjectDir)..\PowerToysSetup\Core.wxs.bk""""
       call cmd /C "copy ""$(ProjectDir)..\PowerToysSetup\FancyZones.wxs"" ""$(ProjectDir)..\PowerToysSetup\FancyZones.wxs.bk""""
@@ -76,7 +77,7 @@
       call cmd /C "copy ""$(ProjectDir)..\PowerToysSetup\Tools.wxs"" ""$(ProjectDir)..\PowerToysSetup\Tools.wxs.bk""""
       call cmd /C "copy ""$(ProjectDir)..\PowerToysSetup\VideoConference.wxs"" ""$(ProjectDir)..\PowerToysSetup\VideoConference.wxs.bk""""
       call cmd /C "copy ""$(ProjectDir)..\PowerToysSetup\WinAppSDK.wxs"" ""$(ProjectDir)..\PowerToysSetup\WinAppSDK.wxs.bk""""
-      call powershell.exe -NonInteractive -executionpolicy Unrestricted -File parseRuntimes.ps1 -runtimedepsjsonpath "$(ProjectDir)..\..\$(Platform)\$(Configuration)\Settings\PowerToys.Settings.deps.json" -wpfdepsjsonpath "$(ProjectDir)..\..\$(Platform)\$(Configuration)\modules\ColorPicker\PowerToys.ColorPickerUI.deps.json" -depsfileslistspath "$(ProjectDir)DepsFilesLists.h" -productwxspath "$(ProjectDir)..\PowerToysSetup\Core.wxs"
+      call cmd /C "copy ""$(ProjectDir)..\PowerToysSetup\WinUI3Applications.wxs"" ""$(ProjectDir)..\PowerToysSetup\WinUI3Applications.wxs.bk""""
       if not "$(PerUser)" == "true" call powershell.exe -NonInteractive -executionpolicy Unrestricted -File ..\PowerToysSetup\generateAllFileComponents.ps1 -platform $(Platform)
       if "$(PerUser)" == "true" call powershell.exe -NonInteractive -executionpolicy Unrestricted -File ..\PowerToysSetup\generateAllFileComponents.ps1 -platform $(Platform) -installscopeperuser $(PerUser)
       </Command>

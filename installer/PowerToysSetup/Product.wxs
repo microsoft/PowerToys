@@ -54,7 +54,7 @@
     <Feature Id="CoreFeature" Title="PowerToys" AllowAdvertise="no" Absent="disallow" TypicalDefault="install"
              Description="Contains all PowerToys features.">
       <ComponentGroupRef Id="CoreComponents" />
-
+      <ComponentGroupRef Id="BaseApplicationsComponentGroup" />
       <ComponentGroupRef Id="AlwaysOnTopComponentGroup" />
       <ComponentGroupRef Id="AwakeComponentGroup" />
       <ComponentGroupRef Id="ColorPickerComponentGroup" />
@@ -66,7 +66,6 @@
       <ComponentGroupRef Id="KeyboardManagerComponentGroup" />
       <ComponentGroupRef Id="MeasureToolComponentGroup" />
       <ComponentGroupRef Id="MouseUtilsComponentGroup" />
-      <ComponentGroupRef Id="PastePlainComponentGroup" />
       <ComponentGroupRef Id="PeekComponentGroup" />
       <ComponentGroupRef Id="PowerAccentComponentGroup" />
       <ComponentGroupRef Id="PowerRenameComponentGroup" />
@@ -150,15 +149,6 @@
       <Custom Action="ApplyModulesRegistryChangeSets" After="InstallFiles">
         NOT Installed
       </Custom>
-      <Custom Action="CreateWinAppSDKHardlinks" After="InstallFiles">
-        NOT Installed
-      </Custom>
-      <Custom Action="CreatePTInteropHardlinks" After="InstallFiles">
-        NOT Installed
-      </Custom>
-      <Custom Action="CreateDotnetRuntimeHardlinks" After="InstallFiles">
-        NOT Installed
-      </Custom>
       <Custom Action="WixCloseApplications" Before="RemoveFiles" />
       <Custom Action="RemovePowerToysSchTasks" After="RemoveFiles" />
       <!-- TODO: Use to activate embedded MSIX -->
@@ -177,16 +167,6 @@
       <Custom Action="UnRegisterContextMenuPackages" Before="RemoveFiles">
         Installed AND (REMOVE="ALL")
       </Custom>
-      <Custom Action="DeleteWinAppSDKHardlinks" Before="RemoveFiles">
-        Installed AND (REMOVE="ALL")
-      </Custom>
-
-      <Custom Action="DeletePTInteropHardlinks" After="InstallInitialize" />
-
-      <Custom Action="DeleteDotnetRuntimeHardlinks" Before="RemoveFiles">
-        Installed AND (REMOVE="ALL")
-      </Custom>
-
       <Custom Action="UninstallServicesTask" After="InstallFinalize">
           Installed AND (NOT UPGRADINGPRODUCTCODE) AND (REMOVE="ALL")
       </Custom>
@@ -398,6 +378,19 @@
     <Directory Id="TARGETDIR" Name="SourceDir">
       <Directory Id="$(var.DefaultInstallDir)">
         <Directory Id="INSTALLFOLDER" Name="PowerToys">
+          <Directory Id="BaseApplicationsAssetsFolder" Name="Assets">
+            <Directory Id="MonacoAssetsFolder" Name="Monaco">
+              <Directory Id="MonacoPreviewHandlerMonacoCustomLanguagesFolder" Name="customLanguages" />
+              <Directory Id="MonacoPreviewHandlerMonacoSRCFolder" Name="monacoSRC" />
+            </Directory>
+          </Directory>
+          <Directory Id="WinUI3AppsInstallFolder" Name="WinUI3Apps">
+              <Directory Id="WinUI3AppsMicrosoftUIXamlInstallFolder" Name="Microsoft.UI.Xaml">
+                <Directory Id="WinUI3AppsMicrosoftUIXamlAssetsInstallFolder" Name="Assets" />
+              </Directory>
+            <Directory Id="WinUI3AppsAssetsFolder" Name="Assets">
+            </Directory>
+          </Directory>
           <Directory Id="DllsFolder" Name="dll">
             <Directory Id="DotnetDlls" Name="dotnet" />
             <Directory Id="WinAppSDKDlls" Name="WinAppSDK" />
@@ -432,19 +425,11 @@
               <Directory Id="VideoConferenceIconsFolder" Name="Icons" />
             </Directory>
             <Directory Id="FileExplorerPreviewInstallFolder" Name="FileExplorerPreview">
-              <Directory Id="MonacoPreviewHandlerMonacoCustomLanguagesFolder" Name="customLanguages" />
-              <Directory Id="MonacoPreviewHandlerMonacoSRCFolder" Name="monacoSRC" />
             </Directory>
             <Directory Id="FancyZonesInstallFolder" Name="$(var.FancyZonesProjectName)" />
             <Directory Id="PowerOCRInstallFolder" Name="$(var.PowerOCRProjectName)" />
             <Directory Id="AwakeInstallFolder" Name="$(var.AwakeProjectName)">
               <Directory Id="AwakeImagesFolder" Name="Images" />
-            </Directory>
-
-            <!-- KBM -->
-            <Directory Id="KeyboardManagerInstallFolder" Name="$(var.KeyboardManagerProjectName)">
-              <Directory Id="KeyboardManagerEditorInstallFolder" Name="KeyboardManagerEditor" />
-              <Directory Id="KeyboardManagerEngineInstallFolder" Name="KeyboardManagerEngine" />
             </Directory>
 
             <!-- Color Picker -->

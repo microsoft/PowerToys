@@ -16,6 +16,15 @@ if ($installscopeperuser -eq "true") {
     $registryroot = "HKLM"
 }
 
+#BaseApplications
+Invoke-Expression -Command "$PSScriptRoot\generateFileList.ps1 -fileDepsJson """" -fileListName BaseApplicationsFiles -wxsFilePath $PSScriptRoot\BaseApplications.wxs -depsPath ""$PSScriptRoot..\..\..\$platform\Release"""
+Invoke-Expression -Command "$PSScriptRoot\generateFileComponents.ps1 -fileListName ""BaseApplicationsFiles"" -wxsFilePath $PSScriptRoot\BaseApplications.wxs -regroot $registryroot"
+
+#WinUI3Applications
+Invoke-Expression -Command "$PSScriptRoot\generateFileList.ps1 -fileDepsJson """" -fileListName WinUI3ApplicationsFiles -wxsFilePath $PSScriptRoot\WinUI3Applications.wxs -depsPath ""$PSScriptRoot..\..\..\$platform\Release\WinUI3Apps"""
+Invoke-Expression -Command "$PSScriptRoot\generateFileComponents.ps1 -fileListName ""WinUI3pplicationsFiles"" -wxsFilePath $PSScriptRoot\WinUI3Applications.wxs -regroot $registryroot"
+
+<#
 #AlwaysOnTop
 Invoke-Expression -Command "$PSScriptRoot\generateFileList.ps1 -fileDepsJson """" -fileListName AlwaysOnTopFiles -wxsFilePath $PSScriptRoot\AlwaysOnTop.wxs -depsPath ""$PSScriptRoot..\..\..\$platform\Release\modules\AlwaysOnTop"""
 Invoke-Expression -Command "$PSScriptRoot\generateFileComponents.ps1 -fileListName ""AlwaysOnTopFiles"" -wxsFilePath $PSScriptRoot\AlwaysOnTop.wxs -regroot $registryroot"
@@ -227,3 +236,4 @@ Invoke-Expression -Command "$PSScriptRoot\generateFileComponents.ps1 -fileListNa
 
 #WinAppSdk
 Invoke-Expression -Command "$PSScriptRoot\generateFileComponents.ps1 -fileListName ""WinAppSDKFiles"" -wxsFilePath $PSScriptRoot\WinAppSDK.wxs -regroot $registryroot"
+#>

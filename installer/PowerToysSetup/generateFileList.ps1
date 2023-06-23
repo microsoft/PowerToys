@@ -48,7 +48,7 @@ if ($isWinAppSdkProj -eq $True) {
     }
 }
 
-$fileExclusionList = @("*Test*", "*.pdb", "*.lastcodeanalysissucceeded", "createdump.exe") + $interopFilesList + $winAppSDKfilesList
+$fileExclusionList = @("*Test*", "*.pdb", "*.lastcodeanalysissucceeded", "createdump.exe", "powertoys.exe") + $interopFilesList + $winAppSDKfilesList
 
 $fileInclusionList = @("*.dll", "*.exe", "*.json", "*.msix", "*.png", "*.gif", "*.ico", "*.cur", "*.svg", "index.html", "reg.js", "gitignore.js", "monacoSpecialLanguages.js", "*.pri")
 
