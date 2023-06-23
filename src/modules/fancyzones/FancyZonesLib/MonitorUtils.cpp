@@ -361,7 +361,7 @@ namespace MonitorUtils
         while (!displays.has_value() && retryCounter < 100)
         {
             Logger::info("Retry display identification");
-            std::this_thread::sleep_for(std::chrono::milliseconds(100));
+            std::this_thread::sleep_for(std::chrono::milliseconds(10));
             displays = Display::GetDisplays();
             retryCounter++;
         }
