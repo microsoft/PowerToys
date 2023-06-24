@@ -14,7 +14,9 @@ jobs:
     clean: true
 
   - task: PowerShell@2
+    displayName: Verify Build Request
     inputs:
       filePath: '$(build.sourcesdirectory)\.pipelines\verifyBuildRequest.ps1'
       arguments: -commit '$(system.pullRequest.sourceCommitId)'
       pwsh: true
+    name: verifyBuildRequest
