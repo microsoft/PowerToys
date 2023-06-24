@@ -1,7 +1,18 @@
 # yaml-language-server: $schema=https://raw.githubusercontent.com/microsoft/azure-pipelines-vscode/master/service-schema.json
 jobs:
 - job: Precheck
+  pool:
+    demands: ImageOverride -equals WinDevVS17-latest
+    ${{ if eq(variables['System.CollectionUri'], 'https://dev.azure.com/ms/') }}:
+      name: WinDevPoolOSS-L
+    ${{ if ne(variables['System.CollectionUri'], 'https://dev.azure.com/ms/') }}:
+      name: WinDevPool-L
   steps:
+  - checkout: self
+    fetchDepth: 1
+    submodules: true
+    clean: true
+
   - task: PowerShell@2
     inputs:
       filePath: '$(build.sourcesdirectory)\.pipelines\verifyBuildRequest.ps1'
