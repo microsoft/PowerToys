@@ -1,0 +1,9 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/microsoft/azure-pipelines-vscode/master/service-schema.json
+jobs:
+- job: Precheck
+  steps:
+  - task: PowerShell@2
+    inputs:
+      filePath: '$(build.sourcesdirectory)\.pipelines\verifyBuildRequest.ps1'
+      arguments: -commit '$(system.pullRequest.sourceCommitId)'
+      pwsh: true
