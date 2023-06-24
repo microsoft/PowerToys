@@ -6,6 +6,8 @@ parameters:
 jobs:
 - job: Build${{ parameters.platform }}${{ parameters.configuration }}
   displayName: Build ${{ parameters.platform }} ${{ parameters.configuration }}
+  dependsOn: Precheck
+  condition: and(succeeded(),ne(dependencies.Precheck.outputs['skipBuild'], 'Yes'))
   variables:
     BuildConfiguration: ${{ parameters.configuration }}
     BuildPlatform: ${{ parameters.platform }}
@@ -30,5 +32,3 @@ jobs:
   - task: ms.vss-governance-buildtask.governance-build-task-component-detection.ComponentGovernanceComponentDetection@0
     displayName: 'Component Detection'
     condition: and(succeededOrFailed(), not(eq(variables['Build.Reason'], 'PullRequest')))
-  dependsOn: Precheck
-  condition: ne(dependencies.Precheck.outputs['skipBuild'], 'Yes')
