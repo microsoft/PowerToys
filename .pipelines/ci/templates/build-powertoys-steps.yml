@@ -55,9 +55,6 @@ steps:
     packageType: sdk
     version: '7.x'
 
-- task: NuGetToolInstaller@1
-  displayName: Ensure NuGet Installer
-
 - task: VisualStudioTestPlatformInstaller@1
   displayName: Ensure VSTest Platform
 
