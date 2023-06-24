@@ -3,17 +3,16 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
-using System.Diagnostics;
 using System.Threading;
 using System.Threading.Tasks;
+using ManagedCommon;
 using Microsoft.PowerToys.Settings.UI.Helpers;
 using Microsoft.PowerToys.Settings.UI.Library;
-using Microsoft.PowerToys.Settings.UI.Library.Utilities;
+using Microsoft.PowerToys.Settings.UI.OOBE.Views;
 using Microsoft.PowerToys.Settings.UI.ViewModels;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Windows.ApplicationModel.Resources;
-using Windows.Storage;
 using Windows.Storage.Pickers;
 
 namespace Microsoft.PowerToys.Settings.UI.Views
@@ -96,12 +95,15 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             switch (themeName?.ToUpperInvariant())
             {
                 case "LIGHT":
+                    // OobeShellPage.OobeShellHandler.RequestedTheme = ElementTheme.Light;
                     ShellPage.ShellHandler.RequestedTheme = ElementTheme.Light;
                     break;
                 case "DARK":
+                    // OobeShellPage.OobeShellHandler.RequestedTheme = ElementTheme.Dark;
                     ShellPage.ShellHandler.RequestedTheme = ElementTheme.Dark;
                     break;
                 case "SYSTEM":
+                    // OobeShellPage.OobeShellHandler.RequestedTheme = ElementTheme.Default;
                     ShellPage.ShellHandler.RequestedTheme = ElementTheme.Default;
                     break;
                 default:

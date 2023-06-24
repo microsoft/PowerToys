@@ -25,6 +25,16 @@ public:
         Save();
     }
 
+    inline bool GetShowInExtendedContextMenu() const
+    {
+        return settings.showInExtendedContextMenu;
+    }
+
+    inline void SetExtendedContextMenuOnly(bool extendedOnly)
+    {
+        settings.showInExtendedContextMenu = extendedOnly;
+    }
+
     void Save();
     void Load();
 
@@ -32,6 +42,7 @@ private:
     struct Settings
     {
         bool enabled{ true };
+        bool showInExtendedContextMenu{ false };
     };
 
     void Reload();

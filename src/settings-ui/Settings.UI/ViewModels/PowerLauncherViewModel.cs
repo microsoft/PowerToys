@@ -319,7 +319,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             {
                 if (settings.Properties.OpenPowerLauncher != value)
                 {
-                    settings.Properties.OpenPowerLauncher = value;
+                    settings.Properties.OpenPowerLauncher = value ?? settings.Properties.DefaultOpenPowerLauncher;
                     UpdateSettings();
                 }
             }
@@ -455,7 +455,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             {
                 if (settings.Properties.OpenFileLocation != value)
                 {
-                    settings.Properties.OpenFileLocation = value;
+                    settings.Properties.OpenFileLocation = value ?? settings.Properties.DefaultOpenFileLocation;
                     UpdateSettings();
                 }
             }
@@ -472,7 +472,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             {
                 if (settings.Properties.CopyPathLocation != value)
                 {
-                    settings.Properties.CopyPathLocation = value;
+                    settings.Properties.CopyPathLocation = value ?? settings.Properties.DefaultCopyPathLocation;
                     UpdateSettings();
                 }
             }
@@ -558,6 +558,23 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 if (settings.Properties.TabSelectsContextButtons != value)
                 {
                     settings.Properties.TabSelectsContextButtons = value;
+                    UpdateSettings();
+                }
+            }
+        }
+
+        public bool GenerateThumbnailsFromFiles
+        {
+            get
+            {
+                return settings.Properties.GenerateThumbnailsFromFiles;
+            }
+
+            set
+            {
+                if (settings.Properties.GenerateThumbnailsFromFiles != value)
+                {
+                    settings.Properties.GenerateThumbnailsFromFiles = value;
                     UpdateSettings();
                 }
             }

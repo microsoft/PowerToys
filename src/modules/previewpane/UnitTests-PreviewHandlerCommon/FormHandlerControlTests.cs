@@ -13,7 +13,7 @@ namespace PreviewHandlerCommonUnitTests
     [TestClass]
     public class FormHandlerControlTests
     {
-        private class TestFormControl : FormHandlerControl
+        private sealed class TestFormControl : FormHandlerControl
         {
         }
 

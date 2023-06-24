@@ -55,9 +55,9 @@ namespace Community.PowerToys.Run.Plugin.UnitConverter.UnitTest
 
         [DataTestMethod]
         [DataRow(new string[] { "5", "CeLsIuS", "in", "faHrenheiT" }, new string[] { "5", "DegreeCelsius", "in", "DegreeFahrenheit" })]
-        [DataRow(new string[] { "5", "f", "in", "celsius" }, new string[] { "5", "컀", "in", "DegreeCelsius" })]
-        [DataRow(new string[] { "5", "c", "in", "f" }, new string[] { "5", "캽", "in", "컀" })]
-        [DataRow(new string[] { "5", "f", "in", "c" }, new string[] { "5", "컀", "in", "캽" })]
+        [DataRow(new string[] { "5", "f", "in", "celsius" }, new string[] { "5", "째f", "in", "DegreeCelsius" })]
+        [DataRow(new string[] { "5", "c", "in", "f" }, new string[] { "5", "째c", "in", "째f" })]
+        [DataRow(new string[] { "5", "f", "in", "c" }, new string[] { "5", "째f", "in", "째c" })]
         public void PrefixesDegrees(string[] input, string[] expectedResult)
         {
             InputInterpreter.DegreePrefixer(ref input);

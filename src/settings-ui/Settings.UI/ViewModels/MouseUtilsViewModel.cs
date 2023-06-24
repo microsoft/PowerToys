@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using global::PowerToys.GPOWrapper;
 using Microsoft.PowerToys.Settings.UI.Library;
@@ -86,6 +87,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             }
 
             MouseJumpSettingsConfig = mouseJumpSettingsRepository.SettingsConfig;
+            MouseJumpSettingsConfig.Properties.ThumbnailSize.PropertyChanged += MouseJumpThumbnailSizePropertyChanged;
 
             if (mousePointerCrosshairsSettingsRepository == null)
             {
@@ -425,7 +427,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             {
                 if (MouseHighlighterSettingsConfig.Properties.ActivationShortcut != value)
                 {
-                    MouseHighlighterSettingsConfig.Properties.ActivationShortcut = value;
+                    MouseHighlighterSettingsConfig.Properties.ActivationShortcut = value ?? MouseHighlighterSettingsConfig.Properties.DefaultActivationShortcut;
                     NotifyMouseHighlighterPropertyChanged();
                 }
             }
@@ -593,10 +595,33 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             {
                 if (MouseJumpSettingsConfig.Properties.ActivationShortcut != value)
                 {
-                    MouseJumpSettingsConfig.Properties.ActivationShortcut = value;
+                    MouseJumpSettingsConfig.Properties.ActivationShortcut = value ?? MouseJumpSettingsConfig.Properties.DefaultActivationShortcut;
                     NotifyMouseJumpPropertyChanged();
                 }
             }
+        }
+
+        public MouseJumpThumbnailSize MouseJumpThumbnailSize
+        {
+            get
+            {
+                return MouseJumpSettingsConfig.Properties.ThumbnailSize;
+            }
+
+            set
+            {
+                if ((MouseJumpSettingsConfig.Properties.ThumbnailSize.Width != value?.Width)
+                    && (MouseJumpSettingsConfig.Properties.ThumbnailSize.Height != value?.Height))
+                {
+                    MouseJumpSettingsConfig.Properties.ThumbnailSize = value;
+                    NotifyMouseJumpPropertyChanged();
+                }
+            }
+        }
+
+        public void MouseJumpThumbnailSizePropertyChanged(object sender, PropertyChangedEventArgs e)
+        {
+            NotifyMouseJumpPropertyChanged(nameof(MouseJumpThumbnailSize));
         }
 
         public void NotifyMouseJumpPropertyChanged([CallerMemberName] string propertyName = null)
@@ -651,7 +676,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             {
                 if (MousePointerCrosshairsSettingsConfig.Properties.ActivationShortcut != value)
                 {
-                    MousePointerCrosshairsSettingsConfig.Properties.ActivationShortcut = value;
+                    MousePointerCrosshairsSettingsConfig.Properties.ActivationShortcut = value ?? MousePointerCrosshairsSettingsConfig.Properties.DefaultActivationShortcut;
                     NotifyMousePointerCrosshairsPropertyChanged();
                 }
             }

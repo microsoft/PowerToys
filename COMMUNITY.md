@@ -27,12 +27,18 @@ Heiko has helped triaging, discussing, and creating a substantial number of issu
 ### [@Jay-o-Way](https://github.com/Jay-o-Way) - Jay
 Jay has helped triaging, discussing, creating a substantial number of issues and PRs.
 
+### [@TheJoeFin](https://github.com/TheJoeFin) - [Joe Finney](https://joefinapps.com)
+Joe has helped triaging, discussing, issues as well as fixing bugs and building features for Text Extractor.
+
 ### [@jsoref](https://github.com/jsoref) - [Josh Soref](https://check-spelling.dev/)
 Helping keep our spelling correct :)
 
 ### [@martinchrzan](https://github.com/martinchrzan/) - Martin Chrzan
 
 Color Picker is from Martin.
+
+### [@mikeclayton](https://github.com/mikeclayton) - [Michael Clayton](https://michael-clayton.com)
+Michael contributed the [initial version](https://github.com/microsoft/PowerToys/issues/23216) of the Mouse Jump tool and [a number of updates](https://github.com/microsoft/PowerToys/pulls?q=is%3Apr+author%3Amikeclayton) based on his FancyMouse utility.
 
 ### [@riverar](https://github.com/riverar) - [Rafael Rivera](https://withinrafael.com/)
 
@@ -93,6 +99,10 @@ PowerToys Awake is a tool to keep your computer awake.
 
 Niels has helped drive large sums of our update toward a new [consistent and modern UX](https://github.com/microsoft/PowerToys/issues/891). This includes the [launcher work](https://github.com/microsoft/PowerToys/issues/44), color picker UX update and [icon design](https://github.com/microsoft/PowerToys/issues/1118).
 
+### [@randyrants](https://github.com/randyrants) - [Randy Santossio](https://www.randyrants.com)
+
+Randy contributed Registry Preview and some very early conversations about keyboard remapping.
+
 ### [@oldnewthing](https://github.com/oldnewthing) - Raymond Chen
 
 Find My Mouse is based on Raymond Chen's SuperSonar.
@@ -100,6 +110,41 @@ Find My Mouse is based on Raymond Chen's SuperSonar.
 ### Microsoft InVEST team
 
 This amazing team helped PowerToys develop PowerToys Run and Keyboard manager as well as update our Settings to v2.  @alekhyareddy28, @arjunbalgovind, @jyuwono @laviusmotileng-ms, @ryanbodrug-microsoft, @saahmedm, @somil55, @traies, @udit3333
+
+## Mouse Without Borders original contributors
+*Project creator: Truong Do (Đỗ Đức Trường)*
+
+Other contributors:
+  * Microsoft Garage: Quinn Hawkins, Michael Low, Joe Coplen, Nino Yuniardi, Gwyneth Marshall, David Andrews, Karen Luecking
+  * Peter Hauge - Visual Studio
+  * Bruce Dawson - Windows Fundamentals
+  * Alan Myrvold - Office Security
+  * Adrian Garside - WEX
+  * Scott Bradner - Surface
+  * Aleks Gershaft - Windows Azure
+  * Chinh Huynh - Windows Azure
+  * Long Nguyen - Data Center
+  * Triet Le - Cloud Engineering
+  * Luke Schoen - Excel
+  * Bao Nguyen - Bing
+  * Ross Nichols - Windows
+  * Ryan Baltazar - Windows
+  * Ed Essey - The Garage
+  * Mario Madden - The Garage
+  * Karthick Mahalingam - ACE
+  * Pooja Kamra - ACE
+  * Justin White - SA
+  * Chris Ransom - SA
+  * Mike Ricks - Red Team
+  * Randy Santossio - Surface
+  * Ashish Sen Jaswal - Device Health
+  * Zoltan Harmath - Security Tools
+  * Luciano Krigun - Security Products
+  * Jo Hemmerlein - Red Team
+  * Chris Johnson - Surface Hub
+  * Loren Ponten - Surface Hub
+  * Paul Schmitt - WWL
+  * And many other Users!
 
 ## PowerToys core team
 

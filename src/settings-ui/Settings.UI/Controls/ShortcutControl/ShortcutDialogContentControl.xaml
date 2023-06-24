@@ -56,39 +56,14 @@
             VerticalAlignment="Top"
             Orientation="Vertical"
             Spacing="8">
-            <Grid Height="36">
+            <Grid Height="62">
 
-                <Border
-                    x:Name="WarningBanner"
-                    Margin="-2,0,0,0"
-                    Padding="8"
-                    Background="{ThemeResource InfoBarErrorSeverityBackgroundBrush}"
-                    BorderBrush="{ThemeResource InfoBarBorderBrush}"
-                    BorderThickness="{ThemeResource InfoBarBorderThickness}"
-                    CornerRadius="{ThemeResource ControlCornerRadius}"
-                    Visibility="{Binding ElementName=ShortcutContentControl, Path=IsError, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}">
-                    <Grid>
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="Auto" />
-                            <ColumnDefinition Width="*" />
-                        </Grid.ColumnDefinitions>
+                <InfoBar x:Uid="InvalidShortcut"
+                         IsClosable="False"
+                         IsOpen="{Binding ElementName=ShortcutContentControl, Path=IsError, Mode=OneWay}"
+                         IsTabStop="{Binding ElementName=ShortcutContentControl, Path=IsError, Mode=OneWay}"
+                         Severity="Error" />
 
-                        <!--TODO(stefan) InfoBadge not available
-                        <InfoBadge AutomationProperties.AccessibilityView="Raw"
-                                        Margin="2,0,12,0"
-                                        Style="{StaticResource CriticalIconInfoBadgeStyle}" />
-                        -->
-
-                        <TextBlock
-                            x:Name="InvalidShortcutWarningLabel"
-                            x:Uid="InvalidShortcut"
-                            Grid.Column="1"
-                            Margin="0,-1,0,0"
-                            VerticalAlignment="Center"
-                            FontWeight="{ThemeResource InfoBarTitleFontWeight}"
-                            Foreground="{ThemeResource InfoBarTitleForeground}" />
-                    </Grid>
-                </Border>
             </Grid>
             <toolkitcontrols:MarkdownTextBlock
                 x:Uid="InvalidShortcutWarningLabel"

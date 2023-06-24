@@ -6,6 +6,7 @@ using System.Globalization;
 using System.Windows.Threading;
 using Common.UI;
 using interop;
+using ManagedCommon;
 
 namespace Microsoft.PowerToys.PreviewHandler.Monaco
 {
@@ -21,6 +22,8 @@ namespace Microsoft.PowerToys.PreviewHandler.Monaco
         [STAThread]
         public static void Main(string[] args)
         {
+            Logger.InitializeLogger("\\FileExplorer_localLow\\Monaco\\logs", true);
+
             ApplicationConfiguration.Initialize();
             if (args != null)
             {

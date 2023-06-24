@@ -14,6 +14,8 @@
                 <ResourceDictionary Source="pack://application:,,,/Styles/GridViewStyles.xaml" />
                 <ResourceDictionary Source="pack://application:,,,/Styles/LayoutPreviewStyles.xaml" />
             </ResourceDictionary.MergedDictionaries>
+
+            <Style x:Key="HeadingTextBlock" TargetType="TextBlock"/>
         </ResourceDictionary>
     </Application.Resources>
 </Application>

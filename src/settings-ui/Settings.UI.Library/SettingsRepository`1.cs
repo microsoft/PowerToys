@@ -44,6 +44,23 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         {
         }
 
+        public bool ReloadSettings()
+        {
+            try
+            {
+                T settingsItem = new T();
+                settingsConfig = _settingsUtils.GetSettingsOrDefault<T>(settingsItem.GetModuleName());
+
+                SettingsConfig = settingsConfig;
+
+                return true;
+            }
+            catch
+            {
+                return false;
+            }
+        }
+
         // Settings configurations shared across all viewmodels
         public T SettingsConfig
         {

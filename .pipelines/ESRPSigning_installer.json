@@ -5,8 +5,8 @@
         {
             "MatchedPath": [
                 "PowerToysSetupCustomActions.dll",
-                "PowerToysSetup-*.exe",
-                "PowerToysSetup-*.msi"
+                "PowerToys*Setup-*.exe",
+                "PowerToys*Setup-*.msi"
             ],
             "SigningInfo": {
                 "Operations": [

@@ -5,6 +5,7 @@
 using System;
 using System.IO.Abstractions;
 using System.Threading;
+using ManagedCommon;
 using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.PowerToys.Settings.UI.Library.Utilities;
 using Settings.UI.Library.Enumerations;
@@ -37,14 +38,17 @@ namespace Hosts.Settings
             }
         }
 
-        public AdditionalLinesPosition AdditionalLinesPosition { get; private set; }
+        public HostsAdditionalLinesPosition AdditionalLinesPosition { get; private set; }
+
+        public HostsEncoding Encoding { get; set; }
 
         public UserSettings()
         {
             _settingsUtils = new SettingsUtils();
             ShowStartupWarning = true;
             LoopbackDuplicates = false;
-            AdditionalLinesPosition = AdditionalLinesPosition.Top;
+            AdditionalLinesPosition = HostsAdditionalLinesPosition.Top;
+            Encoding = HostsEncoding.Utf8;
 
             LoadSettingsFromJson();
 
@@ -78,6 +82,7 @@ namespace Hosts.Settings
                         {
                             ShowStartupWarning = settings.Properties.ShowStartupWarning;
                             AdditionalLinesPosition = settings.Properties.AdditionalLinesPosition;
+                            Encoding = settings.Properties.Encoding;
                             LoopbackDuplicates = settings.Properties.LoopbackDuplicates;
                         }
 

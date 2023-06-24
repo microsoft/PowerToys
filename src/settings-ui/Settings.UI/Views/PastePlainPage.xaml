@@ -42,6 +42,12 @@
                             MinWidth="{StaticResource SettingActionControlMinWidth}"
                             HotkeySettings="{x:Bind Path=ViewModel.ActivationShortcut, Mode=TwoWay}" />
                     </labs:SettingsCard>
+                    <InfoBar
+                        x:Uid="PastePlain_ShortcutWarning"
+                        IsClosable="False"
+                        IsOpen="{x:Bind Mode=OneWay, Path=ViewModel.IsConflictingCopyShortcut}"
+                        IsTabStop="{x:Bind Mode=OneWay, Path=ViewModel.IsConflictingCopyShortcut}"
+                        Severity="Warning" />
                 </controls:SettingsGroup>
             </StackPanel>
         </controls:SettingsPageControl.ModuleContent>

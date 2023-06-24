@@ -8,6 +8,7 @@ using global::PowerToys.GPOWrapper;
 using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.PowerToys.Settings.UI.Library.Helpers;
 using Microsoft.PowerToys.Settings.UI.Library.Interfaces;
+using Microsoft.PowerToys.Settings.UI.Views;
 using Windows.ApplicationModel.Resources;
 
 namespace Microsoft.PowerToys.Settings.UI.ViewModels
@@ -93,6 +94,17 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 });
             }
 
+            if (GPOWrapper.GetConfiguredRegistryPreviewEnabledValue() != GpoRuleConfigured.Disabled)
+            {
+                FlyoutMenuItems.Add(new FlyoutMenuItem()
+                {
+                    Label = resourceLoader.GetString("RegistryPreview/ModuleTitle"),
+                    Tag = "RegistryPreview",
+                    Visible = generalSettingsConfig.Enabled.RegistryPreview,
+                    Icon = "ms-appx:///Assets/FluentIcons/FluentIconsRegistryPreview.png",
+                });
+            }
+
             if (GPOWrapper.GetConfiguredScreenRulerEnabledValue() != GpoRuleConfigured.Disabled)
             {
                 FlyoutMenuItems.Add(new FlyoutMenuItem()
@@ -147,6 +159,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                     case "Hosts": item.Visible = generalSettingsConfig.Enabled.Hosts; break;
                     case "PowerLauncher": item.Visible = generalSettingsConfig.Enabled.PowerLauncher; break;
                     case "PowerOCR": item.Visible = generalSettingsConfig.Enabled.PowerOCR; break;
+                    case "RegistryPreview": item.Visible = generalSettingsConfig.Enabled.RegistryPreview; break;
                     case "MeasureTool": item.Visible = generalSettingsConfig.Enabled.MeasureTool; break;
                     case "ShortcutGuide": item.Visible = generalSettingsConfig.Enabled.ShortcutGuide; break;
                 }

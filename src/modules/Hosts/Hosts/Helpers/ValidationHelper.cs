@@ -2,6 +2,7 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System;
 using System.Text.RegularExpressions;
 
 namespace Hosts.Helpers
@@ -39,16 +40,23 @@ namespace Hosts.Helpers
         /// <summary>
         /// Determines whether the hosts are valid
         /// </summary>
-        public static bool ValidHosts(string hosts)
+        public static bool ValidHosts(string hosts, bool validateHostsLength)
         {
             if (string.IsNullOrWhiteSpace(hosts))
             {
                 return false;
             }
 
-            foreach (var host in hosts.Split(' '))
+            var splittedHosts = hosts.Split(' ');
+
+            if (validateHostsLength && splittedHosts.Length > Consts.MaxHostsCount)
             {
-                if (System.Uri.CheckHostName(host) == System.UriHostNameType.Unknown)
+                return false;
+            }
+
+            foreach (var host in splittedHosts)
+            {
+                if (Uri.CheckHostName(host) == UriHostNameType.Unknown)
                 {
                     return false;
                 }

@@ -16,6 +16,8 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Enums
         ImageResizer,
         KBM,
         MouseUtils,
+        MouseWithoutBorders,
+        Peek,
         PowerRename,
         Run,
         QuickAccent,
@@ -26,5 +28,6 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Enums
         Hosts,
         PastePlain,
         WhatsNew,
+        RegistryPreview,
     }
 }

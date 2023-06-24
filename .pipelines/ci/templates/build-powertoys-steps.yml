@@ -153,7 +153,7 @@ steps:
     filePath: '$(build.sourcesdirectory)\.pipelines\installWiX.ps1'
 
 - task: VSBuild@1
-  displayName: 'Build PowerToys MSI'
+  displayName: 'Build PowerToys per-machine MSI'
   inputs:
     solution: '**\installer\PowerToysSetup.sln'
     vsVersion: 17.0
@@ -163,13 +163,50 @@ steps:
     maximumCpuCount: true
 
 - task: VSBuild@1
-  displayName: 'Build PowerToys Bootstrapper'
+  displayName: 'Build PowerToys per-machine Bootstrapper'
   inputs:
     solution: '**\installer\PowerToysSetup.sln'
     vsVersion: 17.0
     platform: '$(BuildPlatform)'
     configuration: '$(BuildConfiguration)'
     msbuildArgs: /t:PowerToysBootstrapper ${{ parameters.additionalBuildArguments }}
+    clean: false
+    maximumCpuCount: true
+
+- task: PowerShell@2
+  displayName: Clean installer dir before building per-user installer
+  inputs:
+    targetType: inline
+    script: git clean -xfd  -e *exe -- .\installer\
+    pwsh: true
+
+- task: NuGetCommand@2
+  displayName: Restore NuGet packages for PowerToysSetup.sln
+  inputs:
+    command: restore
+    feedsToUse: config
+    configPath: NuGet.config
+    restoreSolution: installer\PowerToysSetup.sln
+    restoreDirectory: '$(Build.SourcesDirectory)\installer\packages'
+
+- task: VSBuild@1
+  displayName: 'Build PowerToys per-user MSI'
+  inputs:
+    solution: '**\installer\PowerToysSetup.sln'
+    vsVersion: 17.0
+    platform: '$(BuildPlatform)'
+    configuration: '$(BuildConfiguration)'
+    msbuildArgs: /t:PowerToysInstaller ${{ parameters.additionalBuildArguments }} /p:PerUser=true
+    maximumCpuCount: true
+
+- task: VSBuild@1
+  displayName: 'Build PowerToys per-user Bootstrapper'
+  inputs:
+    solution: '**\installer\PowerToysSetup.sln'
+    vsVersion: 17.0
+    platform: '$(BuildPlatform)'
+    configuration: '$(BuildConfiguration)'
+    msbuildArgs: /t:PowerToysBootstrapper ${{ parameters.additionalBuildArguments }} /p:PerUser=true
     clean: false
     maximumCpuCount: true
 

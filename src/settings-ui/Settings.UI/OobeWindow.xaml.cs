@@ -13,13 +13,14 @@ using Microsoft.UI.Windowing;
 using Microsoft.UI.Xaml;
 using Windows.ApplicationModel.Resources;
 using Windows.Graphics;
+using WinUIEx;
 
 namespace Microsoft.PowerToys.Settings.UI
 {
     /// <summary>
     /// An empty window that can be used on its own or navigated to within a Frame.
     /// </summary>
-    public sealed partial class OobeWindow : Window
+    public sealed partial class OobeWindow : WindowEx
     {
         private PowerToysModules initialModule;
 
@@ -46,6 +47,8 @@ namespace Microsoft.PowerToys.Settings.UI
             {
                 ThemeHelpers.SetImmersiveDarkMode(_hWnd, isDark);
             }
+
+            SetTheme(isDark);
 
             OverlappedPresenter presenter = _appWindow.Presenter as OverlappedPresenter;
             presenter.IsMinimizable = false;
@@ -116,6 +119,11 @@ namespace Microsoft.PowerToys.Settings.UI
             {
                 mainWindow.CloseHiddenWindow();
             }
+        }
+
+        private void SetTheme(bool isDark)
+        {
+            shellPage.RequestedTheme = isDark ? ElementTheme.Dark : ElementTheme.Light;
         }
     }
 }

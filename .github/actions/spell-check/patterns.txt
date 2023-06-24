@@ -57,6 +57,7 @@ https?://(?:(?:www\.|)youtube\.com|youtu.be)/[-a-zA-Z0-9?&=]*
 
 # msdn
 \b(?:download\.visualstudio|docs|msdn|learn)\.microsoft\.com/[-_a-zA-Z0-9()=./]*
+aka\.ms/[a-zA-Z0-9]+
 
 # medium
 link\.medium\.com/[a-zA-Z0-9]+

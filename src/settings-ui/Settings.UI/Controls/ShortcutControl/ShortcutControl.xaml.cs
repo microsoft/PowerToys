@@ -89,6 +89,11 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
             hook = new HotkeySettingsControlHook(Hotkey_KeyDown, Hotkey_KeyUp, Hotkey_IsActive, FilterAccessibleKeyboardEvents);
             ResourceLoader resourceLoader = ResourceLoader.GetForViewIndependentUse();
 
+            if (App.GetSettingsWindow() != null)
+            {
+                App.GetSettingsWindow().Activated += ShortcutDialog_SettingsWindow_Activated;
+            }
+
             // We create the Dialog in C# because doing it in XAML is giving WinUI/XAML Island bugs when using dark theme.
             shortcutDialog = new ContentDialog
             {
@@ -96,10 +101,12 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
                 Title = resourceLoader.GetString("Activation_Shortcut_Title"),
                 Content = c,
                 PrimaryButtonText = resourceLoader.GetString("Activation_Shortcut_Save"),
+                SecondaryButtonText = resourceLoader.GetString("Activation_Shortcut_Reset"),
                 CloseButtonText = resourceLoader.GetString("Activation_Shortcut_Cancel"),
                 DefaultButton = ContentDialogButton.Primary,
             };
             shortcutDialog.PrimaryButtonClick += ShortcutDialog_PrimaryButtonClick;
+            shortcutDialog.SecondaryButtonClick += ShortcutDialog_Reset;
             shortcutDialog.Opened += ShortcutDialog_Opened;
             shortcutDialog.Closing += ShortcutDialog_Closing;
             AutomationProperties.SetName(EditButton, resourceLoader.GetString("Activation_Shortcut_Title"));
@@ -111,8 +118,18 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
             shortcutDialog.Opened -= ShortcutDialog_Opened;
             shortcutDialog.Closing -= ShortcutDialog_Closing;
 
+            if (App.GetSettingsWindow() != null)
+            {
+                App.GetSettingsWindow().Activated -= ShortcutDialog_SettingsWindow_Activated;
+            }
+
             // Dispose the HotkeySettingsControlHook object to terminate the hook threads when the textbox is unloaded
-            hook.Dispose();
+            if (hook != null)
+            {
+                hook.Dispose();
+            }
+
+            hook = null;
         }
 
         private void KeyEventHandler(int key, bool matchValue, int matchValueCode)
@@ -336,7 +353,21 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
             c.Keys = HotkeySettings.GetKeysList();
 
             shortcutDialog.XamlRoot = this.XamlRoot;
+            shortcutDialog.RequestedTheme = this.ActualTheme;
             await shortcutDialog.ShowAsync();
+        }
+
+        private void ShortcutDialog_Reset(ContentDialog sender, ContentDialogButtonClickEventArgs args)
+        {
+            hotkeySettings = null;
+
+            SetValue(HotkeySettingsProperty, hotkeySettings);
+            PreviewKeysControl.ItemsSource = HotkeySettings.GetKeysList();
+
+            lastValidSettings = hotkeySettings;
+
+            AutomationProperties.SetHelpText(EditButton, HotkeySettings.ToString());
+            shortcutDialog.Hide();
         }
 
         private void ShortcutDialog_PrimaryButtonClick(ContentDialog sender, ContentDialogButtonClickEventArgs args)
@@ -363,6 +394,22 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
             }
         }
 
+        private void ShortcutDialog_SettingsWindow_Activated(object sender, WindowActivatedEventArgs args)
+        {
+            args.Handled = true;
+            if (args.WindowActivationState != WindowActivationState.Deactivated && (hook == null || hook.GetDisposedState() == true))
+            {
+                // If the PT settings window gets focussed/activated again, we enable the keyboard hook to catch the keyboard input.
+                hook = new HotkeySettingsControlHook(Hotkey_KeyDown, Hotkey_KeyUp, Hotkey_IsActive, FilterAccessibleKeyboardEvents);
+            }
+            else if (args.WindowActivationState == WindowActivationState.Deactivated && hook != null && hook.GetDisposedState() == false)
+            {
+                // If the PT settings window lost focus/activation, we disable the keyboard hook to allow keyboard input on other windows.
+                hook.Dispose();
+                hook = null;
+            }
+        }
+
         private void ShortcutDialog_Closing(ContentDialog sender, ContentDialogClosingEventArgs args)
         {
             _isActive = false;
@@ -374,7 +421,12 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
             {
                 if (disposing)
                 {
-                    hook.Dispose();
+                    if (hook != null)
+                    {
+                        hook.Dispose();
+                    }
+
+                    hook = null;
                 }
 
                 disposedValue = true;

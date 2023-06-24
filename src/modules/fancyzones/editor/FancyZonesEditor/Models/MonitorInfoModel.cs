@@ -60,7 +60,7 @@ namespace FancyZonesEditor.Utils
                 }
                 else
                 {
-                    return ScreenBoundsWidth + " x " + ScreenBoundsHeight;
+                    return ScreenBoundsWidth + " × " + ScreenBoundsHeight;
                 }
             }
         }

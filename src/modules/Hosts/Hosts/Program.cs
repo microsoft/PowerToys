@@ -4,7 +4,7 @@
 
 using System;
 using System.Threading;
-using Hosts.Helpers;
+using ManagedCommon;
 using Microsoft.UI.Dispatching;
 using Microsoft.Windows.AppLifecycle;
 
@@ -15,6 +15,8 @@ namespace Hosts
         [STAThread]
         public static void Main(string[] args)
         {
+            Logger.InitializeLogger("\\Hosts\\Logs");
+
             WinRT.ComWrappersSupport.InitializeComWrappers();
 
             if (PowerToys.GPOWrapper.GPOWrapper.GetConfiguredHostsFileEditorEnabledValue() == PowerToys.GPOWrapper.GpoRuleConfigured.Disabled)

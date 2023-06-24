@@ -178,6 +178,15 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Date and time in filename-compatible format.
+        /// </summary>
+        internal static string Microsoft_plugin_timedate_filename_compatible {
+            get {
+                return ResourceManager.GetString("Microsoft_plugin_timedate_filename_compatible", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Hour.
         /// </summary>
         internal static string Microsoft_plugin_timedate_Hour {

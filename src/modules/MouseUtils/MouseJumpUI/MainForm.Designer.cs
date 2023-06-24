@@ -60,7 +60,7 @@ partial class MainForm
         Thumbnail.Location = new System.Drawing.Point(5, 5);
         Thumbnail.Name = "Thumbnail";
         Thumbnail.Size = new System.Drawing.Size(790, 440);
-        Thumbnail.SizeMode = PictureBoxSizeMode.StretchImage;
+        Thumbnail.SizeMode = PictureBoxSizeMode.Normal;
         Thumbnail.TabIndex = 1;
         Thumbnail.TabStop = false;
         Thumbnail.Click += Thumbnail_Click;
