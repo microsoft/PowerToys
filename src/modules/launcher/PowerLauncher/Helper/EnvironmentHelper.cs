@@ -68,7 +68,7 @@ namespace PowerLauncher.Helper
         }
 
         /// <summary>
-        /// This method is used as a function wrapper to start the update twice. We have to do it twice to get correct variable sets if they contain nesthed variables (e.g. PATH contains %JAVA_HOME%).
+        /// This method is used as a function wrapper to start the update twice. We have to do it twice to get correct variable sets if they contain nested variables (e.g. PATH contains %JAVA_HOME%).
         /// It is called when we receive a special WindowMessage.
         /// </summary>
         internal static void UpdateEnvironment()
