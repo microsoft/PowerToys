@@ -60,7 +60,7 @@ registerAdditionalLanguage("id", [".fileExtension"], "existingId", monaco)
 
 ### monaco_languages.json
 
-[`monaco_languages.json`](/src/common/FilePreviewCommon/monaco_languages.json) contains all extensions and Id's for the languages supported by Monaco. The [`MonacoHelper`](/src/common/FilePreviewCommon/MonacoHelper.cs) class and the installer are using this file to register preview handlers for defined extensions.
+[`monaco_languages.json`](/src/common/FilePreviewCommon/monaco_languages.json) contains all extensions and IDs for the languages supported by Monaco. The [`MonacoHelper`](/src/common/FilePreviewCommon/MonacoHelper.cs) class and the installer are using this file to register preview handlers for the defined extensions.
 
 After updating Monaco Editor and/or adding a new language you should update the [`monaco_languages.json`](/src/common/FilePreviewCommon/monaco_languages.json) file.
 
