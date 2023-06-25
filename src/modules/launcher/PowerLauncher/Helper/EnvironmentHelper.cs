@@ -77,7 +77,6 @@ namespace PowerLauncher.Helper
             {
                 ExecuteEnvironmentUpdate();
 
-                // Thread.Sleep(250);
                 ExecuteEnvironmentUpdate();
             });
         }
