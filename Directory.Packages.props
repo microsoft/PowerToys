@@ -19,7 +19,7 @@
     <PackageVersion Include="LazyCache" Version="2.4.0" />
     <PackageVersion Include="Mages" Version="2.0.1" />
     <PackageVersion Include="Markdig.Signed" Version="0.27.0" />
-    <PackageVersion Include="Microsoft.CodeAnalysis.NetAnalyzers" Version="7.0.1" />
+    <PackageVersion Include="Microsoft.CodeAnalysis.NetAnalyzers" Version="7.0.3" />
     <PackageVersion Include="Microsoft.Data.Sqlite" Version="7.0.0" />
     <PackageVersion Include="Microsoft.DotNet.UpgradeAssistant.Extensions.Default.Analyzers" Version="0.4.336902" />
     <PackageVersion Include="Microsoft.Extensions.DependencyInjection" Version="7.0.0" />
@@ -29,7 +29,7 @@
     <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="17.4.1" />
     <PackageVersion Include="Microsoft.Toolkit.Uwp.Notifications" Version="7.1.2" />
     <PackageVersion Include="Microsoft.Web.WebView2" Version="1.0.1722.45" />
-    <PackageVersion Include="Microsoft.Windows.Compatibility" Version="7.0.1" />
+    <PackageVersion Include="Microsoft.Windows.Compatibility" Version="7.0.3" />
     <PackageVersion Include="Microsoft.Windows.CsWin32" Version="0.2.46-beta" />
     <PackageVersion Include="Microsoft.Windows.CsWinRT" Version="2.0.2" />
     <PackageVersion Include="Microsoft.Windows.SDK.BuildTools" Version="10.0.22621.755" />

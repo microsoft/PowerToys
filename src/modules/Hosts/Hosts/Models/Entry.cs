@@ -58,7 +58,7 @@ namespace Hosts.Models
         [ObservableProperty]
         private bool _duplicate;
 
-        public bool Valid => ValidationHelper.ValidHosts(Hosts) && Type != AddressType.Invalid;
+        public bool Valid => Validate(true);
 
         public string Line { get; private set; }
 
@@ -149,6 +149,11 @@ namespace Hosts.Models
                 Comment = Comment,
                 Active = Active,
             };
+        }
+
+        public bool Validate(bool validateHostsLength)
+        {
+            return Type != AddressType.Invalid && ValidationHelper.ValidHosts(Hosts, validateHostsLength);
         }
     }
 }

@@ -231,7 +231,7 @@
     <comment>"Hosts" refers to the system hosts file, do not loc</comment>
   </data>
   <data name="Hosts.[using:Microsoft.UI.Xaml.Controls]ToolTipService.ToolTip" xml:space="preserve">
-    <value>Seperate multiple hosts by space (e.g. server server.local).</value>
+    <value>Seperate multiple hosts by space (e.g. server server.local). Maximum 9 hosts per entry.</value>
     <comment>Do not localize "server" and "server.local"</comment>
   </data>
   <data name="HostsFilter.Header" xml:space="preserve">
@@ -271,6 +271,17 @@
   </data>
   <data name="ShowOnlyDuplicates.Header" xml:space="preserve">
     <value>Show only duplicates</value>
+  </data>
+  <data name="TooManyHostsTeachingTip.Subtitle" xml:space="preserve">
+    <value>Only 9 hosts per entry are supported</value>
+    <comment>"Hosts" refers to the system hosts file, do not loc</comment>
+  </data>
+  <data name="TooManyHostsTeachingTip.Title" xml:space="preserve">
+    <value>Entries with too many hosts found</value>
+    <comment>"Hosts" refers to the system hosts file, do not loc</comment>
+  </data>
+  <data name="TooManyHostsTeachingTipContent.Text" xml:space="preserve">
+    <value>The affected entries have been splitted. This will take effect on next change.</value>
   </data>
   <data name="UpdateBtn" xml:space="preserve">
     <value>Update</value>

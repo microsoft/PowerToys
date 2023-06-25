@@ -2469,7 +2469,10 @@ From there, simply click on one of the supported files in the File Explorer and 
     <value>Cancel</value>
   </data>
   <data name="Activation_Shortcut_Description.Text" xml:space="preserve">
-    <value>Press a combination of keys to change this shortcut</value>
+	<value>Press a combination of keys to change this shortcut</value>
+  </data>
+  <data name="Activation_Shortcut_Reset" xml:space="preserve">
+	<value>Reset</value>
   </data>
   <data name="Activation_Shortcut_Save" xml:space="preserve">
     <value>Save</value>
