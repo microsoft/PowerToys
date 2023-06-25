@@ -65,6 +65,6 @@ registerAdditionalLanguage("id", [".fileExtension"], "existingId", monaco)
 After updating Monaco Editor and/or adding a new language you should update the [`monaco_languages.json`](/src/common/FilePreviewCommon/monaco_languages.json) file.
 
 1. Run the file on a local webserver (as webbrowsers will block certain needed features when running the file locally.)
-  *  This can for example be achieved by using the [Preview Server](https://marketplace.visualstudio.com/items?itemName=yuichinukiyama.vscode-preview-server) extension for Visual Studio Code: Open the file in Visual Studio Code right click in the code editor and select `vscode-preview-server: Launch on browser`. The file will then be opened in a browser.
+  *  This can for example be achieved by using the [Preview Server](https://marketplace.visualstudio.com/items?itemName=yuichinukiyama.vscode-preview-server) extension for Visual Studio Code: Open the file in Visual Studio Code, right click in the code editor and select `vscode-preview-server: Launch on browser`. The file will be opened in a browser.
 2. The browser will download the new `monaco_languages.json` file
 3. Replace the old file with the newly downloaded one in the source code folder.
