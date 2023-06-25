@@ -76,7 +76,6 @@ namespace PowerLauncher.Helper
             Stopwatch.Normal("EnvironmentHelper.UpdateEnvironment - Duration cost", () =>
             {
                 ExecuteEnvironmentUpdate();
-
                 ExecuteEnvironmentUpdate();
             });
         }
