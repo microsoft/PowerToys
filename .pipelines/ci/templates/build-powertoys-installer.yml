@@ -1,7 +1,7 @@
 parameters:
   configuration: 'Release'
   platform: ''
-  additionalBuildArguments: '/p:RestorePackagesConfig=true /p:RestoreUseStaticGraphEvaluation=true -m'
+  additionalBuildArguments: '/p:RestorePackagesConfig=true -m'
 
 jobs:
 - job: Build${{ parameters.platform }}${{ parameters.configuration }}
