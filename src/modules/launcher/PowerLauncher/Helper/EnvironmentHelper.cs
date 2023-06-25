@@ -43,7 +43,6 @@ namespace PowerLauncher.Helper
                 // Getting environment variables
                 processVars = GetEnvironmentVariablesWithErrorLog(EnvironmentVariableTarget.Process);
                 GetMergedMachineAndUserVariables(machineAndUserVars);
-                ExpandEnvironmentVariableValues(machineAndUserVars);
 
                 // Adding names of variables that are different on process level or existing only on process level
                 foreach (DictionaryEntry pVar in processVars)
@@ -79,7 +78,6 @@ namespace PowerLauncher.Helper
                 IDictionary oldProcessEnvironment = GetEnvironmentVariablesWithErrorLog(EnvironmentVariableTarget.Process);
                 var newEnvironment = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
                 GetMergedMachineAndUserVariables(newEnvironment);
-                ExpandEnvironmentVariableValues(newEnvironment);
 
                 // Determine deleted variables and add them with a "string.Empty" value as marker to the dictionary
                 foreach (DictionaryEntry pVar in oldProcessEnvironment)
@@ -154,36 +152,6 @@ namespace PowerLauncher.Helper
                     }
                 }
             });
-        }
-
-        /// <summary>
-        /// We have to expand environment varibale values manually on update.
-        /// </summary>
-        /// <param name="environment">The dictionary with variables.</param>
-        /// <remarks>If no varibale has to be expandet then <see cref="Environment.ExpandEnvironmentVariables(string)"/> returns the original string.</remarks>
-        private static void ExpandEnvironmentVariableValues(Dictionary<string, string> environment)
-        {
-            foreach (KeyValuePair<string, string> var in environment)
-            {
-                if (var.Value.Contains('%', StringComparison.OrdinalIgnoreCase))
-                {
-                    // The variable name of the path variable can be upper case, lower case ore mixed case. So we have to compare case insensitive.
-                    if (!var.Key.Equals(PathVariableName, StringComparison.OrdinalIgnoreCase))
-                    {
-                        environment[var.Key] = Environment.ExpandEnvironmentVariables(var.Value);
-                    }
-                    else
-                    {
-                        // Because the path variable can be very long we replace each path individually
-                        var pathValues = var.Value.Split(';');
-                        foreach (string path in pathValues)
-                        {
-                            string newPathList = var.Value.Replace(path, Environment.ExpandEnvironmentVariables(var.Value));
-                            environment[var.Key] = newPathList;
-                        }
-                    }
-                }
-            }
         }
 
         /// <summary>
