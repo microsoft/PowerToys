@@ -5,7 +5,7 @@
   <?include $(sys.CURRENTDIR)\Common.wxi?>
 
   <Fragment>
-    <DirectoryRef Id="INSTALLATIONFOLDER" FileSource="$(var.BinDir)">
+    <DirectoryRef Id="INSTALLFOLDER" FileSource="$(var.BinDir)">
       <!-- !Warning! Make sure to change Component Guid if you update the file list -->
       <Component Id="Module_VideoConference" Guid="CCE30DCC-AC6B-4A2D-9BD8-2E9598E5B785" Win64="yes">
         <Condition>WINDOWSBUILDNUMBER >= 19041</Condition>
