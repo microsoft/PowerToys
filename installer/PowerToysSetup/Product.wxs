@@ -62,7 +62,6 @@
       <ComponentGroupRef Id="HostsComponentGroup" />
       <ComponentGroupRef Id="ImageResizerComponentGroup" />
       <ComponentGroupRef Id="KeyboardManagerComponentGroup" />
-      <ComponentGroupRef Id="MeasureToolComponentGroup" />
       <ComponentGroupRef Id="PeekComponentGroup" />
       <ComponentGroupRef Id="PowerRenameComponentGroup" />
       <ComponentGroupRef Id="RegistryPreviewComponentGroup" />
@@ -422,13 +421,6 @@
               </Directory>
             </Directory>
 
-            <!-- MeasureTool -->
-            <Directory Id="MeasureToolInstallFolder" Name="$(var.MeasureToolProjectName)">
-                <Directory Id="MeasureToolMicrosoftUIXamlInstallFolder" Name="Microsoft.UI.Xaml">
-                  <Directory Id="MeasureToolMicrosoftUIXamlAssetsInstallFolder" Name="Assets" />
-                </Directory>
-            </Directory>
-            
             <!-- Peek -->
             <Directory Id="PeekInstallFolder" Name="$(var.PeekProjectName)">
               <Directory Id="PeekAssetsFolder" Name="Assets" />

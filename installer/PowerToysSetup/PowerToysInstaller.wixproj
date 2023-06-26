@@ -36,7 +36,6 @@ call "..\..\..\publish.cmd" arm64
     call move /Y ..\..\..\Hosts.wxs.bk ..\..\..\Hosts.wxs
     call move /Y ..\..\..\ImageResizer.wxs.bk ..\..\..\ImageResizer.wxs
     call move /Y ..\..\..\KeyboardManager.wxs.bk ..\..\..\KeyboardManager.wxs
-    call move /Y ..\..\..\MeasureTool.wxs.bk ..\..\..\MeasureTool.wxs
     call move /Y ..\..\..\MouseWithoutBorders.wxs.bk ..\..\..\MouseWithoutBorders.wxs
     call move /Y ..\..\..\Peek.wxs.bk ..\..\..\Peek.wxs
     call move /Y ..\..\..\PowerRename.wxs.bk ..\..\..\PowerRename.wxs
@@ -106,7 +105,6 @@ call "..\..\..\publish.cmd" arm64
     <Compile Include="Hosts.wxs" />
     <Compile Include="ImageResizer.wxs" />
     <Compile Include="KeyboardManager.wxs" />
-    <Compile Include="MeasureTool.wxs" />
     <Compile Include="Peek.wxs" />
     <Compile Include="PowerRename.wxs" />
     <Compile Include="RegistryPreview.wxs" />

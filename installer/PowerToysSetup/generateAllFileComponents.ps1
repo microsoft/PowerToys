@@ -154,14 +154,6 @@ Invoke-Expression -Command "$PSScriptRoot\generateFileList.ps1 -fileDepsJson """
 Invoke-Expression -Command "$PSScriptRoot\generateFileComponents.ps1 -fileListName ""AwakeFiles"" -wxsFilePath $PSScriptRoot\Awake.wxs -regroot $registryroot"
 Invoke-Expression -Command "$PSScriptRoot\generateFileComponents.ps1 -fileListName ""AwakeImagesFiles"" -wxsFilePath $PSScriptRoot\Awake.wxs -regroot $registryroot"
 
-#MouseWithoutBorders
-Invoke-Expression -Command "$PSScriptRoot\generateFileList.ps1 -fileDepsJson ""$PSScriptRoot..\..\..\$platform\Release\modules\MouseWithoutBorders\PowerToys.MouseWithoutBorders.deps.json;$PSScriptRoot..\..\..\$platform\Release\modules\MouseWithoutBorders\PowerToys.MouseWithoutBordersHelper.deps.json;$PSScriptRoot..\..\..\$platform\Release\modules\MouseWithoutBorders\PowerToys.MouseWithoutBordersService.deps.json"" -fileListName MouseWithoutBordersFiles -wxsFilePath $PSScriptRoot\MouseWithoutBorders.wxs"
-Invoke-Expression -Command "$PSScriptRoot\generateFileComponents.ps1 -fileListName ""MouseWithoutBordersFiles"" -wxsFilePath $PSScriptRoot\MouseWithoutBorders.wxs -regroot $registryroot"
-
-#MeasureTool
-Invoke-Expression -Command "$PSScriptRoot\generateFileList.ps1 -fileDepsJson ""$PSScriptRoot..\..\..\$platform\Release\modules\MeasureTool\PowerToys.MeasureToolUI.deps.json"" -fileListName MeasureToolFiles -wxsFilePath $PSScriptRoot\MeasureTool.wxs -isWinAppSdkProj 1"
-Invoke-Expression -Command "$PSScriptRoot\generateFileComponents.ps1 -fileListName ""MeasureToolFiles"" -wxsFilePath $PSScriptRoot\MeasureTool.wxs -regroot $registryroot"
-
 #Peek
 Invoke-Expression -Command "$PSScriptRoot\generateFileList.ps1 -fileDepsJson ""$PSScriptRoot..\..\..\$platform\Release\modules\Peek\PowerToys.Peek.UI.deps.json"" -fileListName PeekFiles -wxsFilePath $PSScriptRoot\Peek.wxs"
 Invoke-Expression -Command "$PSScriptRoot\generateFileList.ps1 -fileDepsJson """" -fileListName PeekAssetsFiles -wxsFilePath $PSScriptRoot\Peek.wxs -depsPath ""$PSScriptRoot..\..\..\$platform\Release\modules\Peek\Assets\"""
