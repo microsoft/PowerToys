@@ -393,12 +393,6 @@
             <Directory Id="ImageResizerInstallFolder" Name="$(var.ImageResizerProjectName)">
               <Directory Id="ImageResizerAssetsFolder" Name="Assets" />
             </Directory>
-            <Directory Id="FileLocksmithInstallFolder" Name="$(var.FileLocksmithProjectName)">
-              <Directory Id="FileLocksmithAssetsInstallFolder" Name="Assets" />
-              <Directory Id="FileLocksmithMicrosoftUIXamlInstallFolder" Name="Microsoft.UI.Xaml">
-                <Directory Id="FileLocksmithMicrosoftUIXamlAssetsInstallFolder" Name="Assets" />
-              </Directory>
-            </Directory>
             <Directory Id="PowerRenameInstallFolder" Name="$(var.PowerRenameProjectName)">
               <Directory Id="PowerRenameAssetsFolder" Name="Assets" />
 							<Directory Id="PowerRenameMicrosoftUIXamlInstallFolder" Name="Microsoft.UI.Xaml">

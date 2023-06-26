@@ -34,6 +34,10 @@ Invoke-Expression -Command "$PSScriptRoot\generateFileList.ps1 -fileDepsJson """
 Invoke-Expression -Command "$PSScriptRoot\generateFileComponents.ps1 -fileListName ""MonacoPreviewHandlerMonacoAssetsFiles"" -wxsFilePath $PSScriptRoot\FileExplorerPreview.wxs -regroot $registryroot"
 Invoke-Expression -Command "$PSScriptRoot\generateFileComponents.ps1 -fileListName ""MonacoPreviewHandlerCustomLanguagesFiles"" -wxsFilePath $PSScriptRoot\FileExplorerPreview.wxs -regroot $registryroot"
 
+#FileLocksmith
+Invoke-Expression -Command "$PSScriptRoot\generateFileList.ps1 -fileDepsJson """" -fileListName FileLocksmithAssetsFiles -wxsFilePath $PSScriptRoot\FileLocksmith.wxs -depsPath ""$PSScriptRoot..\..\..\$platform\Release\WinUI3Apps\Assets\FileLocksmith"""
+Invoke-Expression -Command "$PSScriptRoot\generateFileComponents.ps1 -fileListName ""FileLocksmithAssetsFiles"" -wxsFilePath $PSScriptRoot\FileLocksmith.wxs -regroot $registryroot"
+
 #Run
 Invoke-Expression -Command "$PSScriptRoot\generateFileList.ps1 -fileDepsJson """" -fileListName launcherImagesComponentFiles -wxsFilePath $PSScriptRoot\Run.wxs -depsPath ""$PSScriptRoot..\..\..\$platform\Release\Images"""
 Invoke-Expression -Command "$PSScriptRoot\generateFileComponents.ps1 -fileListName ""launcherImagesComponentFiles"" -wxsFilePath $PSScriptRoot\Run.wxs -regroot $registryroot"
@@ -141,13 +145,6 @@ Invoke-Expression -Command "$PSScriptRoot\generateFileList.ps1 -fileDepsJson ""$
 Invoke-Expression -Command "$PSScriptRoot\generateFileList.ps1 -fileDepsJson """" -fileListName AwakeImagesFiles -wxsFilePath $PSScriptRoot\Awake.wxs -depsPath ""$PSScriptRoot..\..\..\$platform\Release\modules\Awake\Images"""
 Invoke-Expression -Command "$PSScriptRoot\generateFileComponents.ps1 -fileListName ""AwakeFiles"" -wxsFilePath $PSScriptRoot\Awake.wxs -regroot $registryroot"
 Invoke-Expression -Command "$PSScriptRoot\generateFileComponents.ps1 -fileListName ""AwakeImagesFiles"" -wxsFilePath $PSScriptRoot\Awake.wxs -regroot $registryroot"
-
-#FileLocksmith
-#TODO: There are multiple .deps.json files, make sure it works as expected
-Invoke-Expression -Command "$PSScriptRoot\generateFileList.ps1 -fileDepsJson ""$PSScriptRoot..\..\..\$platform\Release\modules\FileLocksmith\PowerToys.FileLocksmithUI.deps.json"" -fileListName FileLocksmithFiles -wxsFilePath $PSScriptRoot\FileLocksmith.wxs -isWinAppSdkProj 1"
-Invoke-Expression -Command "$PSScriptRoot\generateFileList.ps1 -fileDepsJson """" -fileListName FileLocksmithAssetsFiles -wxsFilePath $PSScriptRoot\FileLocksmith.wxs -depsPath ""$PSScriptRoot..\..\..\$platform\Release\modules\FileLocksmith\Assets\"""
-Invoke-Expression -Command "$PSScriptRoot\generateFileComponents.ps1 -fileListName ""FileLocksmithFiles"" -wxsFilePath $PSScriptRoot\FileLocksmith.wxs -regroot $registryroot"
-Invoke-Expression -Command "$PSScriptRoot\generateFileComponents.ps1 -fileListName ""FileLocksmithAssetsFiles"" -wxsFilePath $PSScriptRoot\FileLocksmith.wxs -regroot $registryroot"
 
 #Hosts
 Invoke-Expression -Command "$PSScriptRoot\generateFileList.ps1 -fileDepsJson ""$PSScriptRoot..\..\..\$platform\Release\modules\Hosts\PowerToys.Hosts.deps.json"" -fileListName HostsFiles -wxsFilePath $PSScriptRoot\Hosts.wxs -isWinAppSdkProj 1"
