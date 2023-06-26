@@ -138,16 +138,18 @@ namespace Peek.UI.Views
             }
 
             StorageFile? storageFile = await fileItem.GetStorageFileAsync();
-            if (storageFile == null)
-            {
-                return;
-            }
-
             LauncherOptions options = new();
 
             PowerToysTelemetry.Log.WriteEvent(new OpenWithEvent() { App = DefaultAppName ?? string.Empty });
 
-            if (string.IsNullOrEmpty(DefaultAppName))
+            // StorageFile objects can't represent files that are ".lnk", ".url", or ".wsh" file types.
+            // https://learn.microsoft.com/en-us/uwp/api/windows.storage.storagefile?view=winrt-22621
+            if (storageFile == null)
+            {
+                options.DisplayApplicationPicker = true;
+                await Launcher.LaunchUriAsync(new Uri(Item.Path), options);
+            }
+            else if (string.IsNullOrEmpty(DefaultAppName))
             {
                 // If there's no default app found, open the App picker
                 options.DisplayApplicationPicker = true;
