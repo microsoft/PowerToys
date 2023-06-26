@@ -92,7 +92,6 @@
           <RemoveFolder Id="RemoveDotnetDlls" Directory="DotnetDlls" On="uninstall"/>
           <RemoveFolder Id="RemovePowerToysInteropDlls" Directory="PowerToysInteropDlls" On="uninstall"/>
           <RemoveFolder Id="RemoveBaseApplicationsAssetsFolder" Directory="BaseApplicationsAssetsFolder" On="uninstall"/>
-          <RemoveFolder Id="RemoveMonacoAssetsFolder" Directory="MonacoAssetsFolder" On="uninstall"/>
           <RemoveFolder Id="RemoveWinUI3AppsInstallFolder" Directory="WinUI3AppsInstallFolder" On="uninstall"/>
           <RemoveFolder Id="RemoveWinUI3AppsAssetsFolder" Directory="WinUI3AppsAssetsFolder" On="uninstall"/>
           <RemoveFolder Id="RemoveModulesInstallFolder" Directory="ModulesInstallFolder" On="uninstall"/>

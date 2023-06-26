@@ -375,10 +375,6 @@
       <Directory Id="$(var.DefaultInstallDir)">
         <Directory Id="INSTALLFOLDER" Name="PowerToys">
           <Directory Id="BaseApplicationsAssetsFolder" Name="Assets">
-            <Directory Id="MonacoAssetsFolder" Name="Monaco">
-              <Directory Id="MonacoPreviewHandlerMonacoCustomLanguagesFolder" Name="customLanguages" />
-              <Directory Id="MonacoPreviewHandlerMonacoSRCFolder" Name="monacoSRC" />
-            </Directory>
           </Directory>
           <Directory Id="WinUI3AppsInstallFolder" Name="WinUI3Apps">
               <Directory Id="WinUI3AppsMicrosoftUIXamlInstallFolder" Name="Microsoft.UI.Xaml">
