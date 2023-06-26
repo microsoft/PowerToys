@@ -402,19 +402,6 @@
             </Directory>
 
           </Directory>
-
-          <!-- Settings -->
-          <Directory Id="SettingsV2InstallFolder" Name="Settings">
-            <Directory Id="SettingsV2AssetsInstallFolder" Name="Assets">
-              <Directory Id="SettingsV2OOBEAssetsFluentIconsInstallFolder" Name="FluentIcons" />
-              <Directory Id="SettingsV2AssetsModulesInstallFolder" Name="Modules" >
-                <Directory Id="SettingsV2OOBEAssetsModulesInstallFolder" Name="OOBE" />
-              </Directory>
-            </Directory>
-            <Directory Id="SettingsV2MicrosoftUIXamlInstallFolder" Name="Microsoft.UI.Xaml">
-              <Directory Id="SettingsV2MicrosoftUIXamlAssetsInstallFolder" Name="Assets" />
-            </Directory>
-          </Directory>
         </Directory>
       </Directory>
       <Directory Id="ProgramMenuFolder">
