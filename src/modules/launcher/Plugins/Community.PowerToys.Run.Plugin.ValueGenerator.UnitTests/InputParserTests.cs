@@ -22,6 +22,7 @@ namespace Community.PowerToys.Run.Plugin.ValueGenerator.UnitTests
         [DataRow("sha1111 abc", null)]
         [DataRow("uuid", typeof(GUID.GUIDRequest))]
         [DataRow("guidv3 ns:DNS abc", typeof(GUID.GUIDRequest))]
+        [DataRow("guidv2 ns:DNS abc", null)]
         [DataRow("uUiD5 ns:URL abc", typeof(GUID.GUIDRequest))]
         [DataRow("Guidvv ns:DNS abc", null)]
         [DataRow("guidv4", typeof(GUID.GUIDRequest))]

@@ -59,7 +59,7 @@ namespace Community.PowerToys.Run.Plugin.ValueGenerator.GUID
         {
             Version = version;
 
-            if (Version < 1 || Version > 5)
+            if (Version < 1 || Version > 5 || Version == 2)
             {
                 throw new ArgumentException("Undefined GUID version");
             }
