@@ -14,19 +14,6 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         [JsonPropertyName("properties")]
         public RegistryPreviewProperties Properties { get; set; }
 
-        // These properties are never used. Defined to properly save settings json file.
-        [JsonPropertyName("appWindow.Position.X")]
-        public int X { get; set; }
-
-        [JsonPropertyName("appWindow.Position.Y")]
-        public int Y { get; set; }
-
-        [JsonPropertyName("appWindow.Size.Width")]
-        public int Width { get; set; }
-
-        [JsonPropertyName("appWindow.Size.Height")]
-        public int Height { get; set; }
-
         public RegistryPreviewSettings()
         {
             Properties = new RegistryPreviewProperties();
