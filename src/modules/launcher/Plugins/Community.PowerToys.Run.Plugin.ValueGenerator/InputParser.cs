@@ -5,6 +5,7 @@
 using System;
 using System.Security.Cryptography;
 using System.Text;
+using Community.PowerToys.Run.Plugin.ValueGenerator.Base64;
 using Community.PowerToys.Run.Plugin.ValueGenerator.GUID;
 using Community.PowerToys.Run.Plugin.ValueGenerator.Hashing;
 using Wox.Plugin;
@@ -100,6 +101,11 @@ namespace Community.PowerToys.Run.Plugin.ValueGenerator
                 {
                     request = new GUIDRequest(version);
                 }
+            }
+            else if (command.StartsWith("base64", StringComparison.InvariantCultureIgnoreCase))
+            {
+                string content = query.Search.Substring(command.Length).Trim();
+                request = new Base64Request(Encoding.UTF8.GetBytes(content));
             }
             else
             {

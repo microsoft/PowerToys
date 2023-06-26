@@ -27,7 +27,7 @@ namespace Community.PowerToys.Run.Plugin.ValueGenerator.Hashing
 
         public HashAlgorithmName AlgorithmName { get; set; }
 
-        public byte[] DataToHash { get; set; }
+        private byte[] DataToHash { get; set; }
 
         private static Dictionary<HashAlgorithmName, HashAlgorithm> _algorithms = new Dictionary<HashAlgorithmName, HashAlgorithm>()
         {

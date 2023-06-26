@@ -53,12 +53,24 @@ namespace Community.PowerToys.Run.Plugin.ValueGenerator.GUID
 
         private Guid GuidResult { get; set; }
 
+        private static readonly string NullNamespaceError = $"The first parameter needs to be a valid GUID or one of: {string.Join(", ", GUIDGenerator.PredefinedNamespaces.Keys)}";
+
         public GUIDRequest(int version, string guidNamespace = null, string name = null)
         {
             Version = version;
 
-            if (guidNamespace != null)
+            if (Version < 1 || Version > 5)
             {
+                throw new ArgumentException("Undefined GUID version");
+            }
+
+            if (version == 3 || version == 5)
+            {
+                if (guidNamespace == null)
+                {
+                    throw new ArgumentNullException(nameof(guidNamespace), NullNamespaceError);
+                }
+
                 Guid guid;
                 if (GUIDGenerator.PredefinedNamespaces.TryGetValue(guidNamespace, out guid))
                 {
@@ -70,7 +82,16 @@ namespace Community.PowerToys.Run.Plugin.ValueGenerator.GUID
                 }
                 else
                 {
-                    throw new ArgumentException($"The first parameter needs to be a valid GUID or one of: {string.Join(", ", GUIDGenerator.PredefinedNamespaces.Keys)}");
+                    throw new ArgumentNullException(nameof(guidNamespace), NullNamespaceError);
+                }
+
+                if (name == null)
+                {
+                    throw new ArgumentNullException(nameof(name));
+                }
+                else
+                {
+                    GuidName = name;
                 }
             }
             else
@@ -78,7 +99,6 @@ namespace Community.PowerToys.Run.Plugin.ValueGenerator.GUID
                 GuidNamespace = null;
             }
 
-            GuidName = name;
             ErrorMessage = null;
         }
 
@@ -93,36 +113,14 @@ namespace Community.PowerToys.Run.Plugin.ValueGenerator.GUID
                         GuidResult = GUIDGenerator.V1();
                         break;
                     case 3:
-                        if (GuidNamespace == null)
-                        {
-                            throw new InvalidOperationException("Null GUID namespace for version 3");
-                        }
-
-                        if (GuidName == null)
-                        {
-                            throw new InvalidOperationException("Null GUID name for version 3");
-                        }
-
                         GuidResult = GUIDGenerator.V3(GuidNamespace.Value, GuidName);
                         break;
                     case 4:
                         GuidResult = GUIDGenerator.V4();
                         break;
                     case 5:
-                        if (GuidNamespace == null)
-                        {
-                            throw new InvalidOperationException("Null GUID namespace for version 3");
-                        }
-
-                        if (GuidName == null)
-                        {
-                            throw new InvalidOperationException("Null GUID name for version 3");
-                        }
-
                         GuidResult = GUIDGenerator.V5(GuidNamespace.Value, GuidName);
                         break;
-                    default:
-                        throw new ArgumentException("Undefined GUID version");
                 }
 
                 Result = GuidResult.ToByteArray();
