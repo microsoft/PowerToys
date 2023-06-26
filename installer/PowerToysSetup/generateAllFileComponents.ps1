@@ -24,6 +24,10 @@ Invoke-Expression -Command "$PSScriptRoot\generateFileComponents.ps1 -fileListNa
 Invoke-Expression -Command "$PSScriptRoot\generateFileList.ps1 -fileDepsJson """" -fileListName WinUI3ApplicationsFiles -wxsFilePath $PSScriptRoot\WinUI3Applications.wxs -depsPath ""$PSScriptRoot..\..\..\$platform\Release\WinUI3Apps"""
 Invoke-Expression -Command "$PSScriptRoot\generateFileComponents.ps1 -fileListName ""WinUI3ApplicationsFiles"" -wxsFilePath $PSScriptRoot\WinUI3Applications.wxs -regroot $registryroot"
 
+#ColorPicker
+Invoke-Expression -Command "$PSScriptRoot\generateFileList.ps1 -fileDepsJson """" -fileListName ColorPickerResourcesFiles -wxsFilePath $PSScriptRoot\ColorPicker.wxs -depsPath ""$PSScriptRoot..\..\..\$platform\Release\Resources"""
+Invoke-Expression -Command "$PSScriptRoot\generateFileComponents.ps1 -fileListName ""ColorPickerResourcesFiles"" -wxsFilePath $PSScriptRoot\ColorPicker.wxs -regroot $registryroot"
+
 #Run
 Invoke-Expression -Command "$PSScriptRoot\generateFileList.ps1 -fileDepsJson """" -fileListName launcherImagesComponentFiles -wxsFilePath $PSScriptRoot\Run.wxs -depsPath ""$PSScriptRoot..\..\..\$platform\Release\Images"""
 Invoke-Expression -Command "$PSScriptRoot\generateFileComponents.ps1 -fileListName ""launcherImagesComponentFiles"" -wxsFilePath $PSScriptRoot\Run.wxs -regroot $registryroot"
@@ -131,15 +135,6 @@ Invoke-Expression -Command "$PSScriptRoot\generateFileList.ps1 -fileDepsJson ""$
 Invoke-Expression -Command "$PSScriptRoot\generateFileList.ps1 -fileDepsJson """" -fileListName AwakeImagesFiles -wxsFilePath $PSScriptRoot\Awake.wxs -depsPath ""$PSScriptRoot..\..\..\$platform\Release\modules\Awake\Images"""
 Invoke-Expression -Command "$PSScriptRoot\generateFileComponents.ps1 -fileListName ""AwakeFiles"" -wxsFilePath $PSScriptRoot\Awake.wxs -regroot $registryroot"
 Invoke-Expression -Command "$PSScriptRoot\generateFileComponents.ps1 -fileListName ""AwakeImagesFiles"" -wxsFilePath $PSScriptRoot\Awake.wxs -regroot $registryroot"
-
-#ColorPicker
-Invoke-Expression -Command "$PSScriptRoot\generateFileList.ps1 -fileDepsJson ""$PSScriptRoot..\..\..\$platform\Release\modules\ColorPicker\PowerToys.ColorPickerUI.deps.json"" -fileListName ColorPickerFiles -wxsFilePath $PSScriptRoot\ColorPicker.wxs"
-Invoke-Expression -Command "$PSScriptRoot\generateFileList.ps1 -fileDepsJson """" -fileListName ColorPickerResourcesFiles -wxsFilePath $PSScriptRoot\ColorPicker.wxs -depsPath ""$PSScriptRoot..\..\..\$platform\Release\modules\ColorPicker\Resources"""
-Invoke-Expression -Command "$PSScriptRoot\generateFileComponents.ps1 -fileListName ""ColorPickerFiles"" -wxsFilePath $PSScriptRoot\ColorPicker.wxs -regroot $registryroot"
-Invoke-Expression -Command "$PSScriptRoot\generateFileComponents.ps1 -fileListName ""ColorPickerResourcesFiles"" -wxsFilePath $PSScriptRoot\ColorPicker.wxs -regroot $registryroot"
-
-Invoke-Expression -Command "$PSScriptRoot\generateFileList.ps1 -fileDepsJson ""$PSScriptRoot..\..\..\$platform\Release\modules\ColorPicker\PowerToys.ColorPickerUI.deps.json"" -fileListName ColorPickerFiles -wxsFilePath $PSScriptRoot\ColorPicker.wxs"
-Invoke-Expression -Command "$PSScriptRoot\generateFileComponents.ps1 -fileListName ""ColorPickerFiles"" -wxsFilePath $PSScriptRoot\ColorPicker.wxs -regroot $registryroot"
 
 #FileExplorerAdd-ons
 #TODO: There are multiple .deps.json files, make sure it works as expected

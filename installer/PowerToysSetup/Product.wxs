@@ -424,11 +424,6 @@
               <Directory Id="AwakeImagesFolder" Name="Images" />
             </Directory>
 
-            <!-- Color Picker -->
-            <Directory Id="ColorPickerInstallFolder" Name="$(var.ColorPickerProjectName)">
-              <Directory Id="ColorPickerResourcesFolder" Name="Resources"/>
-            </Directory>
-
             <!-- Mouse Utils -->
             <Directory Id="MouseUtilsInstallFolder" Name="$(var.MouseUtilsProjectName)">
               <Directory Id="MouseJumpUIFolder" Name="MouseJumpUI" />
