@@ -1,20 +1,22 @@
-﻿// Copyright (c) Microsoft Corporation
+// Copyright (c) Microsoft Corporation
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.Linq;
 using System.Threading.Tasks;
 using System.Windows.Input;
 using CommunityToolkit.Mvvm.Input;
 using Hosts.Models;
 using Hosts.Settings;
 using Hosts.ViewModels;
-using ManagedCommon;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Controls.Primitives;
 using Microsoft.UI.Xaml.Input;
 using Windows.ApplicationModel.Resources;
+using Windows.System;
+using Windows.UI.Core;
 
 namespace Hosts.Views
 {
@@ -61,8 +63,13 @@ namespace Hosts.Views
 
         private async void Entries_ItemClick(object sender, ItemClickEventArgs e)
         {
+            await ShowEditDialogAsync(e.ClickedItem as Entry);
+        }
+
+        public async Task ShowEditDialogAsync(Entry entry)
+        {
             var resourceLoader = ResourceLoader.GetForViewIndependentUse();
-            ViewModel.Selected = e.ClickedItem as Entry;
+            ViewModel.Selected = entry;
             EntryDialog.Title = resourceLoader.GetString("UpdateEntry_Title");
             EntryDialog.PrimaryButtonText = resourceLoader.GetString("UpdateBtn");
             EntryDialog.PrimaryButtonCommand = UpdateCommand;
@@ -111,11 +118,15 @@ namespace Hosts.Views
 
             if (menuFlyoutItem != null)
             {
-                var selectedEntry = menuFlyoutItem.DataContext as Entry;
-                ViewModel.Selected = selectedEntry;
-                DeleteDialog.Title = selectedEntry.Address;
-                await DeleteDialog.ShowAsync();
+                await ShowDeleteDialogAsync(menuFlyoutItem.DataContext as Entry);
             }
+        }
+
+        public async Task ShowDeleteDialogAsync(Entry entry)
+        {
+            ViewModel.Selected = entry;
+            DeleteDialog.Title = entry.Address;
+            await DeleteDialog.ShowAsync();
         }
 
         private async void Ping_Click(object sender, RoutedEventArgs e)
@@ -124,8 +135,23 @@ namespace Hosts.Views
 
             if (menuFlyoutItem != null)
             {
-                ViewModel.Selected = menuFlyoutItem.DataContext as Entry;
-                await ViewModel.PingSelectedAsync();
+                await PingAsync(menuFlyoutItem.DataContext as Entry);
+            }
+        }
+
+        private async Task PingAsync(Entry entry)
+        {
+            ViewModel.Selected = entry;
+            await ViewModel.PingSelectedAsync();
+        }
+
+        private async void Edit_Click(object sender, RoutedEventArgs e)
+        {
+            var menuFlyoutItem = sender as MenuFlyoutItem;
+
+            if (menuFlyoutItem != null)
+            {
+                await ShowEditDialogAsync(menuFlyoutItem.DataContext as Entry);
             }
         }
 
@@ -184,17 +210,54 @@ namespace Hosts.Views
             }
         }
 
-        private void ContentDialog_Loaded_ApplyMargin(object sender, RoutedEventArgs e)
+        /// <summary>
+        /// Handle the keyboard shortcuts at list view level since
+        /// KeyboardAccelerators in FlyoutBase.AttachedFlyout works only when the flyout is open
+        /// </summary>
+        private async void Entries_KeyDown(object sender, KeyRoutedEventArgs e)
         {
-            try
+            var listView = sender as ListView;
+            if (listView != null && e.KeyStatus.WasKeyDown == false)
             {
-                // Based on the template from dev/CommonStyles/ContentDialog_themeresources.xaml in https://github.com/microsoft/microsoft-ui-xaml
-                var border = Helpers.VisualTreeUtils.FindVisualChildByName(sender as ContentDialog, "BackgroundElement") as Border;
-                border.Margin = new Thickness(0, 32, 0, 0); // Should be the size reserved for the title bar as in MainWindow.xaml
+                var entry = listView.SelectedItem as Entry;
+
+                if (Microsoft.UI.Input.InputKeyboardSource.GetKeyStateForCurrentThread(VirtualKey.Control).HasFlag(CoreVirtualKeyStates.Down))
+                {
+                    if (e.Key == VirtualKey.E)
+                    {
+                        await ShowEditDialogAsync(entry);
+                    }
+                    else if (e.Key == VirtualKey.P)
+                    {
+                        await PingAsync(entry);
+                    }
+                }
+                else if (e.Key == VirtualKey.Delete)
+                {
+                    await ShowDeleteDialogAsync(entry);
+                }
             }
-            catch (Exception ex)
+        }
+
+        /// <summary>
+        /// Focus the first item when the list view gets the focus with keyboard
+        /// </summary>
+        private void Entries_GotFocus(object sender, RoutedEventArgs e)
+        {
+            var listView = sender as ListView;
+            if (listView.SelectedItem == null && listView.Items.Count > 0)
             {
-                Logger.LogError("Couldn't set the margin for a content dialog. It will appear on top of the title bar.", ex);
+                listView.SelectedIndex = 0;
+            }
+        }
+
+        private void MenuFlyout_Opened(object sender, object e)
+        {
+            // Focus the first item: required for workaround https://github.com/microsoft/PowerToys/issues/21263
+            var menuFlyout = sender as MenuFlyout;
+            if (menuFlyout != null && menuFlyout.Items.Count > 0)
+            {
+                menuFlyout.Items.First().Focus(FocusState.Programmatic);
             }
         }
     }

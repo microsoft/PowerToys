@@ -10,8 +10,8 @@
     MinHeight="480"
     Closed="Window_Closed"
     mc:Ignorable="d">
-
-    <Grid>
-        <local:ShellPage />
-    </Grid>
+    <Window.SystemBackdrop>
+        <MicaBackdrop/>
+    </Window.SystemBackdrop>
+    <local:ShellPage x:Name="shellPage" />
 </winuiex:WindowEx>

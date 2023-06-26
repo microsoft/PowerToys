@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft Corporation
+// Copyright (c) Microsoft Corporation
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
@@ -71,7 +71,7 @@ namespace Peek.FilePreviewer.Previewers
 
         private IFileSystemItem File { get; }
 
-        public bool IsPreviewLoaded => preview != null;
+        public bool IsPreviewLoaded => Preview != null;
 
         private DispatcherQueue Dispatcher { get; }
 
@@ -102,7 +102,7 @@ namespace Peek.FilePreviewer.Previewers
 
                 await Dispatcher.RunOnUiThread(async () =>
                 {
-                    bool isHtml = File.Extension == ".html";
+                    bool isHtml = File.Extension == ".html" || File.Extension == ".htm";
                     bool isMarkdown = File.Extension == ".md";
                     IsDevFilePreview = MonacoHelper.SupportedMonacoFileTypes.Contains(File.Extension);
 

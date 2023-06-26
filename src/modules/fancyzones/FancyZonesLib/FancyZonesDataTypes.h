@@ -16,7 +16,7 @@ namespace FancyZonesDataTypes
 {
     enum class ZoneSetLayoutType : int
     {
-        Blank = -1,
+        Blank,
         Focus,
         Columns,
         Rows,

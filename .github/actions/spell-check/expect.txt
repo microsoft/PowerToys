@@ -91,7 +91,6 @@ APPIDS
 appium
 Applets
 Applicationcan
-applicationconfiguration
 applicationframehost
 appmanifest
 APPNAME
@@ -158,7 +157,6 @@ BCB
 BCCE
 BCCEA
 bck
-Bcl
 BDB
 BDBAD
 BDCC
@@ -239,7 +237,6 @@ Cangjie
 CANRENAME
 CAPTUREBLT
 CAPTURECHANGED
-CARRAY
 CAtl
 CBA
 CBB
@@ -281,7 +278,6 @@ chdir
 CHILDACTIVATE
 CHILDWINDOW
 chrdavis
-Chromakey
 Chrzan
 CHT
 cidl
@@ -424,7 +420,6 @@ Dac
 dacl
 DAF
 damienleroy
-DANGEROUSLYCOMMITMERELYTODISKCACHE
 DARKPURPLE
 DARKTEAL
 DARKYELLOW
@@ -456,13 +451,11 @@ dcompi
 DComposition
 dcr
 dcs
-Dct
 DDCDD
 DDCE
 DDEIf
 DDevice
 ddf
-Dds
 DDxgi
 Deact
 debian
@@ -494,8 +487,6 @@ depersist
 deprioritized
 depsfileslistspath
 deref
-READOBJECTS
-WRITEOBJECTS
 DESKTOPABSOLUTEEDITING
 DESKTOPABSOLUTEPARSING
 desktopshorcutinstalled
@@ -623,6 +614,7 @@ Emoji
 ENABLEDELAYEDEXPANSION
 enabledisable
 ENABLEDPOPUP
+encodedlaunch
 encryptor
 endpointvolume
 endregion
@@ -663,8 +655,6 @@ exabyte
 examplehandler
 examplepowertoy
 EXAND
-Excep
-EXCEPINFO
 EXCLUDEFROMCAPTURE
 exdisp
 executionpolicy
@@ -789,7 +779,6 @@ GETSTATE
 GETTEXT
 GETTEXTLENGTH
 GHND
-Globbing
 GMEM
 GNumber
 google
@@ -834,7 +823,6 @@ HCRYPTHASH
 HCRYPTPROV
 hcwhite
 hdc
-HDR
 hdrop
 hdwwiz
 HEB
@@ -916,17 +904,12 @@ HWNDPREV
 hyjiacan
 IBase
 IBeam
-IBitmap
-IBlock
 ICapture
 ICEBLUE
 IClass
-IColor
 ICONERROR
-IContext
 IData
 IDD
-IDecoder
 IDesktop
 IDirect
 idl
@@ -935,7 +918,6 @@ IDOn
 IDR
 idx
 IDXGI
-IEncoder
 IEnum
 IExec
 IEXPLORE
@@ -960,7 +942,6 @@ imageresizerinput
 imageresizersettings
 imagingdevices
 ime
-IMetadata
 imeutil
 inetcpl
 Infobar
@@ -998,8 +979,6 @@ Interlop
 INTRESOURCE
 INVALIDARG
 invalidoperatioexception
-invalidkey
-IPalette
 ipc
 ipcmanager
 IPlugin
@@ -1008,8 +987,6 @@ IPREVIEW
 ipreviewhandlervisualssetfont
 IProperty
 IPublic
-IQuery
-IReader
 irprops
 isbi
 ISearch
@@ -1017,9 +994,7 @@ ISettings
 isfinite
 IShell
 isocpp
-ISource
 iss
-ISurface
 ITask
 ith
 ITHUMBNAIL
@@ -1130,8 +1105,6 @@ LOCALPACKAGE
 localport
 LOCALSYSTEM
 LOCATIONCHANGE
-LOCKBYTES
-LOCKTYPE
 LOGFONT
 LOGFONTW
 logon
@@ -1153,12 +1126,12 @@ LPCWSTR
 lpdw
 lpfn
 LPINPUT
-LPQUERY
 lpmi
 LPMINMAXINFO
 LPMONITORINFO
 LPOSVERSIONINFOEXW
 LPPOINT
+LPQUERY
 lprc
 LPRECT
 LPSAFEARRAY
@@ -1326,11 +1299,11 @@ Mul
 MULTIPLEUSE
 multizone
 mvvm
+mwb
+MWBEx
 myfile
 MYICON
 mysql
-mwb
-MWBEx
 NAMECHANGE
 nameof
 namespaceanddescendants
@@ -1403,7 +1376,6 @@ NONCONVERT
 NONELEVATED
 NONINFRINGEMENT
 nonstd
-NOOPEN
 NOOWNERZORDER
 NOPARENTNOTIFY
 NOREDIRECTIONBITMAP
@@ -1466,8 +1438,6 @@ OLEDB
 OLIVEGREEN
 onebranch
 onenote
-ONLYIFCURRENT
-ONLYONCE
 onstd
 oobe
 OOBEPT
@@ -1568,7 +1538,6 @@ pinvoke
 pipename
 PKBDLLHOOKSTRUCT
 pkey
-PKEY
 plib
 PLK
 ploc
@@ -1601,7 +1570,6 @@ ppidl
 ppmt
 pprm
 pproc
-pprop
 ppshv
 ppsi
 ppsid
@@ -1622,7 +1590,6 @@ previouscamera
 PREVIOUSINSTALLFOLDER
 PREVIOUSVERSIONSINSTALLED
 prevpane
-PRGBA
 prgms
 pri
 PRINTCLIENT
@@ -1639,9 +1606,7 @@ PROGRAMFILES
 projectname
 PROPBAG
 PROPERTYKEY
-PROPERTYNOTFOUND
 propkey
-PROPVARIANT
 propvarutil
 prvpane
 psapi
@@ -1651,8 +1616,6 @@ psfgao
 Psr
 psrm
 psrree
-pstatstg
-pstm
 pstr
 pstream
 pstrm
@@ -1666,7 +1629,6 @@ PToy
 ptstr
 pui
 PULONG
-pvar
 pwa
 pwcs
 pwsh
@@ -1706,6 +1668,7 @@ rclsid
 RCONTROL
 RCtrl
 READMODE
+READOBJECTS
 READWRITE
 RECTDESTINATION
 RECTL
@@ -1768,7 +1731,6 @@ resw
 resx
 retval
 rfc
-RGBE
 RGBQUAD
 rgbs
 rgelt
@@ -1811,7 +1773,6 @@ rungameid
 RUNLEVEL
 runsettings
 runtimeclass
-runtimeconfig
 runtimedepsjsonpath
 runtimeobject
 runtimepack
@@ -1827,7 +1788,6 @@ ryanbodrug
 saahmedm
 sachaple
 sacl
-SAFEARRAY
 safeprojectname
 SAMEKEYPREVIOUSLYMAPPED
 SAMESHORTCUTPREVIOUSLYMAPPED
@@ -1858,7 +1818,6 @@ sendvirtualinput
 Seperate
 Seraphima
 serverside
-Ses
 SETCONTEXT
 setcursor
 setenv
@@ -1947,7 +1906,6 @@ SMALLICON
 smartphone
 SMTO
 snd
-sni
 snwprintf
 softline
 somil
@@ -1975,7 +1933,6 @@ SRCPAINT
 sre
 SResize
 srf
-SRGB
 srme
 srre
 srw
@@ -2004,10 +1961,8 @@ STDMETHODCALLTYPE
 STDMETHODIMP
 stefan
 Stereolithography
-STGC
 STGM
 STGMEDIUM
-STGTY
 sticpl
 stl
 storelogo
@@ -2081,8 +2036,8 @@ taskschd
 tchar
 tcl
 Tcollab
-tcs
 tcp
+tcs
 tcscpy
 TCustom
 tdbuild
@@ -2165,6 +2120,7 @@ uipi
 UIs
 ULARGE
 ULONGLONG
+unapply
 unassign
 uncompilable
 UNCPRIORITY
@@ -2196,7 +2152,6 @@ Usb
 USEDEFAULT
 USEFILEATTRIBUTES
 USERDATA
-USERDEFINED
 USERDOMAIN
 userprofile
 USESHOWWINDOW
@@ -2213,7 +2168,6 @@ vabdq
 validmodulename
 Vanara
 variantassignment
-VARTYPE
 vcamp
 vccorlib
 vcdl
@@ -2233,7 +2187,6 @@ VERBSONLY
 VERBW
 VERIFYCONTEXT
 verrsrc
-VERSIONED
 VERSIONINFO
 Versioning
 VFT
@@ -2333,8 +2286,8 @@ winget
 wingetcreate
 Winhook
 winkey
-winlogon
 WINL
+winlogon
 winmd
 winmm
 WINNT
@@ -2391,6 +2344,7 @@ wregex
 WReserved
 WResize
 writefile
+WRITEOBJECTS
 Wrk
 wrl
 WSAEADDRINUSE
@@ -2402,7 +2356,6 @@ wsh
 wsl
 wss
 wstr
-wsystem
 wsz
 wtoi
 WTS
@@ -2446,7 +2399,6 @@ yinyue
 YOffset
 YPels
 ypescript
-YQuantized
 YResolution
 YStr
 YUY

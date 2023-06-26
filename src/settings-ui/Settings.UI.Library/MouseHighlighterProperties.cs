@@ -8,6 +8,8 @@ namespace Microsoft.PowerToys.Settings.UI.Library
 {
     public class MouseHighlighterProperties
     {
+        public HotkeySettings DefaultActivationShortcut => new HotkeySettings(true, false, false, true, 0x48);
+
         [JsonPropertyName("activation_shortcut")]
         public HotkeySettings ActivationShortcut { get; set; }
 
@@ -31,7 +33,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
 
         public MouseHighlighterProperties()
         {
-            ActivationShortcut = new HotkeySettings(true, false, false, true, 0x48);
+            ActivationShortcut = DefaultActivationShortcut;
             LeftButtonClickColor = new StringProperty("#FFFF00");
             RightButtonClickColor = new StringProperty("#0000FF");
             HighlightOpacity = new IntProperty(65);

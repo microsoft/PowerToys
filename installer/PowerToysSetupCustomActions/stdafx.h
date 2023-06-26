@@ -8,6 +8,7 @@
 #include <strsafe.h>
 #include <msiquery.h>
 #include <Msi.h>
+#include <shlobj_core.h>
 
 // WiX Header Files:
 #include <wcautil.h>

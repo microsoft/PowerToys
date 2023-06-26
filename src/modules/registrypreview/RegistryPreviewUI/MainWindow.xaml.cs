@@ -19,7 +19,7 @@ namespace RegistryPreview
         // Const values
         private const string REGISTRYHEADER4 = "regedit4";
         private const string REGISTRYHEADER5 = "windows registry editor version 5.00";
-        private const string APPNAME = "Registry Preview";
+        private const string APPNAME = "RegistryPreview";
         private const string KEYIMAGE = "ms-appx:///Assets/folder32.png";
         private const string DELETEDKEYIMAGE = "ms-appx:///Assets/deleted-folder32.png";
         private const string ERRORIMAGE = "ms-appx:///Assets/error32.png";
@@ -30,9 +30,9 @@ namespace RegistryPreview
         private bool visualTreeReady;
         private Dictionary<string, TreeViewNode> mapRegistryKeys;
         private List<RegistryValue> listRegistryValues;
-        private JsonObject jsonSettings;
+        private JsonObject jsonWindowPlacement;
         private string settingsFolder = string.Empty;
-        private string settingsFile = string.Empty;
+        private string windowPlacementFile = "app-placement.json";
 
         internal MainWindow()
         {
@@ -43,8 +43,7 @@ namespace RegistryPreview
 
             // Open settings file; this moved to after the window tweak because it gives the window time to start up
             settingsFolder = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData) + @"\Microsoft\PowerToys\" + APPNAME;
-            settingsFile = APPNAME + "_settings.json";
-            OpenSettingsFile(settingsFolder, settingsFile);
+            OpenWindowPlacementFile(settingsFolder, windowPlacementFile);
 
             // Update the Win32 looking window with the correct icon (and grab the appWindow handle for later)
             IntPtr windowHandle = WinRT.Interop.WindowNative.GetWindowHandle(this);
@@ -58,14 +57,14 @@ namespace RegistryPreview
             SetTitleBar(titleBar);
 
             // if have settings, update the location of the window
-            if (jsonSettings != null)
+            if (jsonWindowPlacement != null)
             {
                 // resize the window
-                if (jsonSettings.ContainsKey("appWindow.Size.Width") && jsonSettings.ContainsKey("appWindow.Size.Height"))
+                if (jsonWindowPlacement.ContainsKey("appWindow.Size.Width") && jsonWindowPlacement.ContainsKey("appWindow.Size.Height"))
                 {
                     SizeInt32 size;
-                    size.Width = (int)jsonSettings.GetNamedNumber("appWindow.Size.Width");
-                    size.Height = (int)jsonSettings.GetNamedNumber("appWindow.Size.Height");
+                    size.Width = (int)jsonWindowPlacement.GetNamedNumber("appWindow.Size.Width");
+                    size.Height = (int)jsonWindowPlacement.GetNamedNumber("appWindow.Size.Height");
 
                     // check to make sure the size values are reasonable before attempting to restore the last saved size
                     if (size.Width >= 320 && size.Height >= 240)
@@ -75,11 +74,11 @@ namespace RegistryPreview
                 }
 
                 // reposition the window
-                if (jsonSettings.ContainsKey("appWindow.Position.X") && jsonSettings.ContainsKey("appWindow.Position.Y"))
+                if (jsonWindowPlacement.ContainsKey("appWindow.Position.X") && jsonWindowPlacement.ContainsKey("appWindow.Position.Y"))
                 {
                     PointInt32 point;
-                    point.X = (int)jsonSettings.GetNamedNumber("appWindow.Position.X");
-                    point.Y = (int)jsonSettings.GetNamedNumber("appWindow.Position.Y");
+                    point.X = (int)jsonWindowPlacement.GetNamedNumber("appWindow.Position.X");
+                    point.Y = (int)jsonWindowPlacement.GetNamedNumber("appWindow.Position.Y");
 
                     // check to make sure the move values are reasonable before attempting to restore the last saved location
                     if (point.X >= 0 && point.Y >= 0)

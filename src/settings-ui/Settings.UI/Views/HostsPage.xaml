@@ -60,6 +60,12 @@
                             x:Uid="ToggleSwitch"
                             IsOn="{x:Bind Mode=TwoWay, Path=ViewModel.LoopbackDuplicates}" />
                     </labs:SettingsCard>
+                    <labs:SettingsCard x:Uid="Hosts_Encoding">
+                         <ComboBox MinWidth="{StaticResource SettingActionControlMinWidth}" SelectedIndex="{x:Bind Path=ViewModel.Encoding, Mode=TwoWay}">
+                             <ComboBoxItem x:Uid="Hosts_Encoding_Utf8" />
+                             <ComboBoxItem x:Uid="Hosts_Encoding_Utf8Bom" />
+                         </ComboBox>
+                    </labs:SettingsCard>
                 </controls:SettingsGroup>
             </StackPanel>
         </controls:SettingsPageControl.ModuleContent>

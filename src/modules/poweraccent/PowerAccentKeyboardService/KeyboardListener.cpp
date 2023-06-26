@@ -131,7 +131,7 @@ namespace winrt::PowerToys::PowerAccentKeyboardService::implementation
             auto processPath = get_process_path(foregroundApp);
             CharUpperBuffW(processPath.data(), static_cast<DWORD>(processPath.length()));
             m_prevForegroundAppExcl = { foregroundApp,
-                                      find_app_name_in_path(processPath, m_settings.excludedApps) };
+                                        check_excluded_app(foregroundApp, processPath, m_settings.excludedApps) };
 
             return m_prevForegroundAppExcl.second;
         }

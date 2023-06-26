@@ -14,9 +14,6 @@ namespace notifications
     void override_application_id(const std::wstring_view appID);
     void run_desktop_app_activator_loop();
 
-    bool register_application_id(const std::wstring_view appName, const std::wstring_view iconPath);
-    void unregister_application_id();
-
     struct snooze_duration
     {
         std::wstring label;

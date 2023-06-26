@@ -48,6 +48,8 @@ namespace Microsoft.PowerToys.Settings.UI
                 ThemeHelpers.SetImmersiveDarkMode(_hWnd, isDark);
             }
 
+            SetTheme(isDark);
+
             OverlappedPresenter presenter = _appWindow.Presenter as OverlappedPresenter;
             presenter.IsMinimizable = false;
             presenter.IsMaximizable = false;
@@ -117,6 +119,11 @@ namespace Microsoft.PowerToys.Settings.UI
             {
                 mainWindow.CloseHiddenWindow();
             }
+        }
+
+        private void SetTheme(bool isDark)
+        {
+            shellPage.RequestedTheme = isDark ? ElementTheme.Dark : ElementTheme.Light;
         }
     }
 }

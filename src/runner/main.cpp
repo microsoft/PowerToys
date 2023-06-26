@@ -82,7 +82,7 @@ void open_menu_from_another_instance(std::optional<std::string> settings_window)
 {
     const HWND hwnd_main = FindWindowW(L"PToyTrayIconWindow", nullptr);
     LPARAM msg = static_cast<LPARAM>(ESettingsWindowNames::Overview);
-    if (settings_window.has_value())
+    if (settings_window.has_value() && settings_window.value() != "")
     {
         msg = static_cast<LPARAM>(ESettingsWindowNames_from_string(settings_window.value()));
     }
@@ -95,9 +95,7 @@ void debug_verify_launcher_assets()
     {
         namespace fs = std::filesystem;
         const fs::path powertoysRoot = get_module_folderpath();
-        constexpr std::array<std::string_view, 4> assetsToCheck = { "modules\\launcher\\Images\\app.dark.png",
-                                                                    "modules\\launcher\\Images\\app.light.png",
-                                                                    "modules\\launcher\\Images\\app_error.dark.png",
+        constexpr std::array<std::string_view, 2> assetsToCheck = { "modules\\launcher\\Images\\app_error.dark.png",
                                                                     "modules\\launcher\\Images\\app_error.light.png" };
         for (const auto asset : assetsToCheck)
         {
