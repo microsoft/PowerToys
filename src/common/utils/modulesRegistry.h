@@ -10,7 +10,7 @@ namespace fs = std::filesystem;
 
 namespace NonLocalizable
 {
-    const static wchar_t* MONACO_LANGUAGES_FILE_NAME = L"monaco_languages.json";
+    const static wchar_t* MONACO_LANGUAGES_FILE_NAME = L"Assets\\Monaco\\monaco_languages.json";
     const static wchar_t* ListID = L"list";
     const static wchar_t* ExtensionsID = L"extensions";
     const static std::vector<std::wstring> ExtSVG      = { L".svg" };
