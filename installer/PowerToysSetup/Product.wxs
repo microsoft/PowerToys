@@ -438,14 +438,6 @@
                 </Directory>
             </Directory>
             
-            <!-- Hosts -->
-            <Directory Id="HostsInstallFolder" Name="$(var.HostsProjectName)">
-              <Directory Id="HostsAssetsFolder" Name="Assets" />
-              <Directory Id="HostsMicrosoftUIXamlInstallFolder" Name="Microsoft.UI.Xaml">
-                <Directory Id="HostsMicrosoftUIXamlAssetsInstallFolder" Name="Assets" />
-              </Directory>
-            </Directory>
-
             <!-- MouseWithoutBorders -->
             <Directory Id="MouseWithoutBordersInstallFolder" Name="$(var.MouseWithoutBordersProjectName)">
             </Directory>
