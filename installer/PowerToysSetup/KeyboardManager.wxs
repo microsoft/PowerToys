@@ -5,7 +5,7 @@
   <?include $(sys.CURRENTDIR)\Common.wxi?>
 
   <Fragment>
-    <DirectoryRef Id="BaseApplicationsAssetsFolder">
+    <DirectoryRef Id="INSTALLFOLDER">
       <Directory Id="KeyboardManagerEditorInstallFolder" Name="KeyboardManagerEditor" />
       <Directory Id="KeyboardManagerEngineInstallFolder" Name="KeyboardManagerEngine" />
     </DirectoryRef>
@@ -31,7 +31,7 @@
     </DirectoryRef>
 
     <ComponentGroup Id="KeyboardManagerComponentGroup">
-      <Component Id="RemoveKeyboardManagerFolder" Guid="C411CB11-4617-40A4-B6DA-1823B49FB9FF" Directory="BaseApplicationsAssetsFolder" >
+      <Component Id="RemoveKeyboardManagerFolder" Guid="C411CB11-4617-40A4-B6DA-1823B49FB9FF" Directory="INSTALLFOLDER" >
         <RegistryKey Root="$(var.RegistryScope)" Key="Software\Classes\powertoys\components">
           <RegistryValue Type="string" Name="RemoveKeyboardManagerFolder" Value="" KeyPath="yes"/>
         </RegistryKey>

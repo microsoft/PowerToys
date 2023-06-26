@@ -16,7 +16,7 @@
       </Component>
     </DirectoryRef>
     <DirectoryRef Id="BaseApplicationsAssetsFolder">
-      <Directory Id="VideoConferenceAssetsFolder"/>
+      <Directory Id="VideoConferenceAssetsFolder" Name="VCM"/>
     </DirectoryRef>
     <DirectoryRef Id="VideoConferenceAssetsFolder" FileSource="$(var.BinDir)\Assets\VCM">
       <!-- !Warning! Make sure to change Component Guid if you update the file list -->

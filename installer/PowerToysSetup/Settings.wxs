@@ -18,7 +18,7 @@
 
   <Fragment>
     <DirectoryRef Id="WinUI3AppsAssetsFolder">
-      <Directory Id="SettingsV2AssetsInstallFolder" Name="Assets">
+      <Directory Id="SettingsV2AssetsInstallFolder" Name="Settings">
         <Directory Id="SettingsV2OOBEAssetsFluentIconsInstallFolder" Name="FluentIcons" />
         <Directory Id="SettingsV2AssetsModulesInstallFolder" Name="Modules" >
           <Directory Id="SettingsV2OOBEAssetsModulesInstallFolder" Name="OOBE" />
