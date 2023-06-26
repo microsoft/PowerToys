@@ -4,114 +4,171 @@
 
   <?include $(sys.CURRENTDIR)\Common.wxi?>
 
-  <?define launcherFiles=?>
-  <?define launcherFilesPath=$(var.BinDir)modules\launcher\?>
-
   <?define launcherImagesComponentFiles=?>
-  <?define launcherImagesComponentFilesPath=$(var.BinDir)modules\launcher\Images\?>
+  <?define launcherImagesComponentFilesPath=$(var.BinDir)Images\?>
 
   <?define calcComponentFiles=?>
-  <?define calcComponentFilesPath=$(var.BinDir)modules\launcher\Plugins\Calculator\?>
+  <?define calcComponentFilesPath=$(var.BinDir)Plugins\Calculator\?>
   <?define calcImagesComponentFiles=?>
-  <?define calcImagesComponentFilesPath=$(var.BinDir)modules\launcher\Plugins\Calculator\Images\?>
+  <?define calcImagesComponentFilesPath=$(var.BinDir)Plugins\Calculator\Images\?>
 
   <?define FolderComponentFiles=?>
-  <?define FolderComponentFilesPath=$(var.BinDir)modules\launcher\Plugins\Folder\?>
+  <?define FolderComponentFilesPath=$(var.BinDir)Plugins\Folder\?>
   <?define FolderImagesComponentFiles=?>
-  <?define FolderImagesComponentFilesPath=$(var.BinDir)modules\launcher\Plugins\Folder\Images?>
+  <?define FolderImagesComponentFilesPath=$(var.BinDir)Plugins\Folder\Images?>
 
   <?define ProgramComponentFiles=?>
-  <?define ProgramComponentFilesPath=$(var.BinDir)modules\launcher\Plugins\Program\?>
+  <?define ProgramComponentFilesPath=$(var.BinDir)Plugins\Program\?>
   <?define ProgramImagesComponentFiles=?>
-  <?define ProgramImagesComponentFilesPath=$(var.BinDir)modules\launcher\Plugins\Program\Images\?>
+  <?define ProgramImagesComponentFilesPath=$(var.BinDir)Plugins\Program\Images\?>
 
   <?define ShellComponentFiles=?>
-  <?define ShellComponentFilesPath=$(var.BinDir)modules\launcher\Plugins\Shell\?>
+  <?define ShellComponentFilesPath=$(var.BinDir)Plugins\Shell\?>
   <?define ShellImagesComponentFiles=?>
-  <?define ShellImagesComponentFilesPath=$(var.BinDir)modules\launcher\Plugins\Shell\Images\?>
+  <?define ShellImagesComponentFilesPath=$(var.BinDir)Plugins\Shell\Images\?>
 
   <?define IndexerComponentFiles=?>
-  <?define IndexerComponentFilesPath=$(var.BinDir)modules\launcher\Plugins\Indexer\?>
+  <?define IndexerComponentFilesPath=$(var.BinDir)Plugins\Indexer\?>
   <?define IndexerImagesComponentFiles=?>
-  <?define IndexerImagesComponentFilesPath=$(var.BinDir)modules\launcher\Plugins\Indexer\Images\?>
+  <?define IndexerImagesComponentFilesPath=$(var.BinDir)Plugins\Indexer\Images\?>
 
   <?define UnitConvCompFiles=?>
-  <?define UnitConvCompFilesPath=$(var.BinDir)modules\launcher\Plugins\UnitConverter\?>
+  <?define UnitConvCompFilesPath=$(var.BinDir)Plugins\UnitConverter\?>
   <?define UnitConvImagesCompFiles=?>
-  <?define UnitConvImagesCompFilesPath=$(var.BinDir)modules\launcher\Plugins\UnitConverter\Images\?>
+  <?define UnitConvImagesCompFilesPath=$(var.BinDir)Plugins\UnitConverter\Images\?>
 
   <?define WebSrchCompFiles=?>
-  <?define WebSrchCompFilesPath=$(var.BinDir)modules\launcher\Plugins\WebSearch\?>
+  <?define WebSrchCompFilesPath=$(var.BinDir)Plugins\WebSearch\?>
   <?define WebSrchImagesCompFiles=?>
-  <?define WebSrchImagesCompFilesPath=$(var.BinDir)modules\launcher\Plugins\WebSearch\Images\?>
+  <?define WebSrchImagesCompFilesPath=$(var.BinDir)Plugins\WebSearch\Images\?>
 
   <?define HistoryPluginComponentFiles=?>
-  <?define HistoryPluginComponentFilesPath=$(var.BinDir)modules\launcher\Plugins\History\?>
+  <?define HistoryPluginComponentFilesPath=$(var.BinDir)Plugins\History\?>
   <?define HistoryPluginImagesComponentFiles=?>
-  <?define HistoryPluginImagesComponentFilesPath=$(var.BinDir)modules\launcher\Plugins\History\Images\?>
+  <?define HistoryPluginImagesComponentFilesPath=$(var.BinDir)Plugins\History\Images\?>
 
   <?define UriComponentFiles=?>
-  <?define UriComponentFilesPath=$(var.BinDir)modules\launcher\Plugins\Uri\?>
+  <?define UriComponentFilesPath=$(var.BinDir)Plugins\Uri\?>
   <?define UriImagesComponentFiles=?>
-  <?define UriImagesComponentFilesPath=$(var.BinDir)modules\launcher\Plugins\Uri\Images\?>
+  <?define UriImagesComponentFilesPath=$(var.BinDir)Plugins\Uri\Images\?>
 
   <?define VSCWrkCompFiles=?>
-  <?define VSCWrkCompFilesPath=$(var.BinDir)modules\launcher\Plugins\VSCodeWorkspaces\?>
+  <?define VSCWrkCompFilesPath=$(var.BinDir)Plugins\VSCodeWorkspaces\?>
   <?define VSCWrkImagesCompFiles=?>
-  <?define VSCWrkImagesCompFilesPath=$(var.BinDir)modules\launcher\Plugins\VSCodeWorkspaces\Images\?>
+  <?define VSCWrkImagesCompFilesPath=$(var.BinDir)Plugins\VSCodeWorkspaces\Images\?>
 
   <?define WindowWlkrCompFiles=?>
-  <?define WindowWlkrCompFilesPath=$(var.BinDir)modules\launcher\Plugins\WindowWalker\?>
+  <?define WindowWlkrCompFilesPath=$(var.BinDir)Plugins\WindowWalker\?>
   <?define WindowWlkrImagesCompFiles=?>
-  <?define WindowWlkrImagesCompFilesPath=$(var.BinDir)modules\launcher\Plugins\WindowWalker\Images\?>
+  <?define WindowWlkrImagesCompFilesPath=$(var.BinDir)Plugins\WindowWalker\Images\?>
 
   <?define OneNoteComponentFiles=?>
-  <?define OneNoteComponentFilesPath=$(var.BinDir)modules\launcher\Plugins\OneNote\?>
+  <?define OneNoteComponentFilesPath=$(var.BinDir)Plugins\OneNote\?>
   <?define OneNoteImagesComponentFiles=?>
-  <?define OneNoteImagesComponentFilesPath=$(var.BinDir)modules\launcher\Plugins\OneNote\Images\?>
+  <?define OneNoteImagesComponentFilesPath=$(var.BinDir)Plugins\OneNote\Images\?>
 
   <?define RegistryComponentFiles=?>
-  <?define RegistryComponentFilesPath=$(var.BinDir)modules\launcher\Plugins\Registry\?>
+  <?define RegistryComponentFilesPath=$(var.BinDir)Plugins\Registry\?>
   <?define RegistryImagesComponentFiles=?>
-  <?define RegistryImagesComponentFilesPath=$(var.BinDir)modules\launcher\Plugins\Registry\Images\?>
+  <?define RegistryImagesComponentFilesPath=$(var.BinDir)Plugins\Registry\Images\?>
 
   <?define ServiceComponentFiles=?>
-  <?define ServiceComponentFilesPath=$(var.BinDir)modules\launcher\Plugins\Service\?>
+  <?define ServiceComponentFilesPath=$(var.BinDir)Plugins\Service\?>
   <?define ServiceImagesComponentFiles=?>
-  <?define ServiceImagesComponentFilesPath=$(var.BinDir)modules\launcher\Plugins\Service\Images\?>
+  <?define ServiceImagesComponentFilesPath=$(var.BinDir)Plugins\Service\Images\?>
 
   <?define SystemComponentFiles=?>
-  <?define SystemComponentFilesPath=$(var.BinDir)modules\launcher\Plugins\System\?>
+  <?define SystemComponentFilesPath=$(var.BinDir)Plugins\System\?>
   <?define SystemImagesComponentFiles=?>
-  <?define SystemImagesComponentFilesPath=$(var.BinDir)modules\launcher\Plugins\System\Images\?>
+  <?define SystemImagesComponentFilesPath=$(var.BinDir)Plugins\System\Images\?>
 
   <?define TimeDateComponentFiles=?>
-  <?define TimeDateComponentFilesPath=$(var.BinDir)modules\launcher\Plugins\TimeDate\?>
+  <?define TimeDateComponentFilesPath=$(var.BinDir)Plugins\TimeDate\?>
   <?define TimeDateImagesComponentFiles=?>
-  <?define TimeDateImagesComponentFilesPath=$(var.BinDir)modules\launcher\Plugins\TimeDate\Images\?>
+  <?define TimeDateImagesComponentFilesPath=$(var.BinDir)Plugins\TimeDate\Images\?>
 
   <?define WinSetCmpFiles=?>
-  <?define WinSetCmpFilesPath=$(var.BinDir)modules\launcher\Plugins\WindowsSettings\?>
+  <?define WinSetCmpFilesPath=$(var.BinDir)Plugins\WindowsSettings\?>
   <?define WinSetImagesCmpFiles=?>
-  <?define WinSetImagesCmpFilesPath=$(var.BinDir)modules\launcher\Plugins\WindowsSettings\Images\?>
+  <?define WinSetImagesCmpFilesPath=$(var.BinDir)Plugins\WindowsSettings\Images\?>
 
   <?define WinTermCmpFiles=?>
-  <?define WinTermCmpFilesPath=$(var.BinDir)modules\launcher\Plugins\WindowsTerminal\?>
+  <?define WinTermCmpFilesPath=$(var.BinDir)Plugins\WindowsTerminal\?>
   <?define WinTermImagesCmpFiles=?>
-  <?define WinTermImagesCmpFilesPath=$(var.BinDir)modules\launcher\Plugins\WindowsTerminal\Images\?>
+  <?define WinTermImagesCmpFilesPath=$(var.BinDir)Plugins\WindowsTerminal\Images\?>
 
   <?define PowerToysCmpFiles=?>
-  <?define PowerToysCmpFilesPath=$(var.BinDir)modules\launcher\Plugins\PowerToys\?>
+  <?define PowerToysCmpFilesPath=$(var.BinDir)Plugins\PowerToys\?>
   <?define PowerToysImagesCmpFiles=?>
-  <?define PowerToysImagesCmpFilesPath=$(var.BinDir)modules\launcher\Plugins\PowerToys\Images\?>
+  <?define PowerToysImagesCmpFilesPath=$(var.BinDir)Plugins\PowerToys\Images\?>
 
   <Fragment>
-    <DirectoryRef Id="LauncherInstallFolder" FileSource="$(var.launcherFilesPath)">
-    <!-- Generated by generateFileComponents.ps1 -->
-    <!--launcherFiles_Component_Def-->
+    <DirectoryRef Id="INSTALLFOLDER">
+      <Directory Id="LauncherImagesFolder" Name="Images" />
+      <!-- Plugins -->
+      <Directory Id="LauncherPluginsFolder" Name="Plugins">
+        <Directory Id="WebSearchPluginFolder" Name="WebSearch">
+          <Directory Id="WebSearchImagesFolder" Name="Images" />
+        </Directory>
+        <Directory Id="CalculatorPluginFolder" Name="Calculator">
+          <Directory Id="CalculatorImagesFolder" Name="Images" />
+        </Directory>
+        <Directory Id="FolderPluginFolder" Name="Folder">
+          <Directory Id="FolderPluginImagesFolder" Name="Images" />
+        </Directory>
+        <Directory Id="ProgramPluginFolder" Name="Program">
+          <Directory Id="ProgramImagesFolder" Name="Images" />
+        </Directory>
+        <Directory Id="ShellPluginFolder" Name="Shell">
+          <Directory Id="ShellImagesFolder" Name="Images" />
+        </Directory>
+        <Directory Id="IndexerPluginFolder" Name="Indexer">
+          <Directory Id="IndexerImagesFolder" Name="Images" />
+        </Directory>
+        <Directory Id="UriPluginFolder" Name="Uri">
+          <Directory Id="UriImagesFolder" Name="Images" />
+        </Directory>
+        <Directory Id="HistoryPluginFolder" Name="History">
+          <Directory Id="HistoryImagesFolder" Name="Images" />
+        </Directory>
+        <Directory Id="UnitConverterPluginFolder" Name="UnitConverter">
+          <Directory Id="UnitConverterImagesFolder" Name="Images" />
+        </Directory>
+        <Directory Id="VSCodeWorkspacesPluginFolder" Name="VSCodeWorkspace">
+          <Directory Id="VSCodeWorkspaceImagesFolder" Name="Images" />
+        </Directory>
+        <Directory Id="WindowWalkerPluginFolder" Name="WindowWalker">
+          <Directory Id="WindowWalkerImagesFolder" Name="Images" />
+        </Directory>
+        <Directory Id="OneNotePluginFolder" Name="OneNote">
+          <Directory Id="OneNoteImagesFolder" Name="Images" />
+        </Directory>
+        <Directory Id="PowerToysPluginFolder" Name="PowerToys">
+          <Directory Id="PowerToysImagesFolder" Name="Images" />
+        </Directory>
+        <Directory Id="RegistryPluginFolder" Name="Registry">
+          <Directory Id="RegistryImagesFolder" Name="Images" />
+        </Directory>
+        <Directory Id="ServicePluginFolder" Name="Service">
+          <Directory Id="ServiceImagesFolder" Name="Images" />
+        </Directory>
+        <Directory Id="WindowsTerminalPluginFolder" Name="WindowsTerminal">
+          <Directory Id="WindowsTerminalImagesFolder" Name="Images" />
+        </Directory>
+        <Directory Id="SystemPluginFolder" Name="System">
+          <Directory Id="SystemImagesFolder" Name="Images" />
+        </Directory>
+        <Directory Id="TimeDatePluginFolder" Name="TimeDate">
+          <Directory Id="TimeDateImagesFolder" Name="Images" />
+        </Directory>
+        <Directory Id="WindowsSettingsPluginFolder" Name="WindowsSettings">
+          <Directory Id="WindowsSettingsImagesFolder" Name="Images" />
+        </Directory>
+      </Directory>
     </DirectoryRef>
 
 
+    <!-- This needs to be divided between Awake and Run when they finally get moved into Assets -->
     <DirectoryRef Id="LauncherImagesFolder" FileSource="$(var.launcherImagesComponentFilesPath)">
     <!-- Generated by generateFileComponents.ps1 -->
     <!--launcherImagesComponentFiles_Component_Def-->
@@ -320,11 +377,10 @@
     </DirectoryRef>
 
     <ComponentGroup Id="RunComponentGroup">
-      <Component Id="RemoveLauncherFolder" Guid="3FFDC0B6-82BC-4C57-AEB1-C710DB108C23" Directory="LauncherInstallFolder" >
+      <Component Id="RemoveLauncherFolder" Guid="3FFDC0B6-82BC-4C57-AEB1-C710DB108C23" Directory="INSTALLFOLDER" >
         <RegistryKey Root="$(var.RegistryScope)" Key="Software\Classes\powertoys\components">
           <RegistryValue Type="string" Name="RemoveLauncherFolder" Value="" KeyPath="yes"/>
         </RegistryKey>
-        <RemoveFolder Id="RemoveFolderLauncherFolder" Directory="LauncherInstallFolder" On="uninstall"/>
         <RemoveFolder Id="RemoveFolderLauncherImagesFolder" Directory="LauncherImagesFolder" On="uninstall"/>
         <RemoveFolder Id="RemoveFolderLauncherPluginsFolder" Directory="LauncherPluginsFolder" On="uninstall"/>
         <RemoveFolder Id="RemoveFolderCalculatorPluginFolder" Directory="CalculatorPluginFolder" On="uninstall"/>
