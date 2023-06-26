@@ -429,10 +429,6 @@
                 </Directory>
             </Directory>
             
-            <!-- MouseWithoutBorders -->
-            <Directory Id="MouseWithoutBordersInstallFolder" Name="$(var.MouseWithoutBordersProjectName)">
-            </Directory>
-
             <!-- Peek -->
             <Directory Id="PeekInstallFolder" Name="$(var.PeekProjectName)">
               <Directory Id="PeekAssetsFolder" Name="Assets" />
