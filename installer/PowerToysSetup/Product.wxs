@@ -390,9 +390,6 @@
           </Directory>
           <Directory Id="ToolsFolder" Name="Tools"/>
           <Directory Id="ModulesInstallFolder" Name="modules">
-            <Directory Id="ImageResizerInstallFolder" Name="$(var.ImageResizerProjectName)">
-              <Directory Id="ImageResizerAssetsFolder" Name="Assets" />
-            </Directory>
             <Directory Id="PowerRenameInstallFolder" Name="$(var.PowerRenameProjectName)">
               <Directory Id="PowerRenameAssetsFolder" Name="Assets" />
 							<Directory Id="PowerRenameMicrosoftUIXamlInstallFolder" Name="Microsoft.UI.Xaml">
