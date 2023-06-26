@@ -421,13 +421,6 @@
               </Directory>
             </Directory>
 
-            <!-- Peek -->
-            <Directory Id="PeekInstallFolder" Name="$(var.PeekProjectName)">
-              <Directory Id="PeekAssetsFolder" Name="Assets" />
-              <Directory Id="PeekMicrosoftUIXamlInstallFolder" Name="Microsoft.UI.Xaml">
-                  <Directory Id="PeekMicrosoftUIXamlAssetsInstallFolder" Name="Assets" />
-              </Directory>
-            </Directory>
           </Directory>
 
           <!-- Settings -->

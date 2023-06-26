@@ -46,6 +46,10 @@ Invoke-Expression -Command "$PSScriptRoot\generateFileComponents.ps1 -fileListNa
 Invoke-Expression -Command "$PSScriptRoot\generateFileList.ps1 -fileDepsJson """" -fileListName ImageResizerAssetsFiles -wxsFilePath $PSScriptRoot\ImageResizer.wxs -depsPath ""$PSScriptRoot..\..\..\$platform\Release\Assets\ImageResizer"""
 Invoke-Expression -Command "$PSScriptRoot\generateFileComponents.ps1 -fileListName ""ImageResizerAssetsFiles"" -wxsFilePath $PSScriptRoot\ImageResizer.wxs -regroot $registryroot"
 
+#Peek
+Invoke-Expression -Command "$PSScriptRoot\generateFileList.ps1 -fileDepsJson """" -fileListName PeekAssetsFiles -wxsFilePath $PSScriptRoot\Peek.wxs -depsPath ""$PSScriptRoot..\..\..\$platform\Release\WinUI3Apps\Assets\Peek\"""
+Invoke-Expression -Command "$PSScriptRoot\generateFileComponents.ps1 -fileListName ""PeekAssetsFiles"" -wxsFilePath $PSScriptRoot\Peek.wxs -regroot $registryroot"
+
 #Run
 Invoke-Expression -Command "$PSScriptRoot\generateFileList.ps1 -fileDepsJson """" -fileListName launcherImagesComponentFiles -wxsFilePath $PSScriptRoot\Run.wxs -depsPath ""$PSScriptRoot..\..\..\$platform\Release\Images"""
 Invoke-Expression -Command "$PSScriptRoot\generateFileComponents.ps1 -fileListName ""launcherImagesComponentFiles"" -wxsFilePath $PSScriptRoot\Run.wxs -regroot $registryroot"
@@ -153,12 +157,6 @@ Invoke-Expression -Command "$PSScriptRoot\generateFileList.ps1 -fileDepsJson ""$
 Invoke-Expression -Command "$PSScriptRoot\generateFileList.ps1 -fileDepsJson """" -fileListName AwakeImagesFiles -wxsFilePath $PSScriptRoot\Awake.wxs -depsPath ""$PSScriptRoot..\..\..\$platform\Release\modules\Awake\Images"""
 Invoke-Expression -Command "$PSScriptRoot\generateFileComponents.ps1 -fileListName ""AwakeFiles"" -wxsFilePath $PSScriptRoot\Awake.wxs -regroot $registryroot"
 Invoke-Expression -Command "$PSScriptRoot\generateFileComponents.ps1 -fileListName ""AwakeImagesFiles"" -wxsFilePath $PSScriptRoot\Awake.wxs -regroot $registryroot"
-
-#Peek
-Invoke-Expression -Command "$PSScriptRoot\generateFileList.ps1 -fileDepsJson ""$PSScriptRoot..\..\..\$platform\Release\modules\Peek\PowerToys.Peek.UI.deps.json"" -fileListName PeekFiles -wxsFilePath $PSScriptRoot\Peek.wxs"
-Invoke-Expression -Command "$PSScriptRoot\generateFileList.ps1 -fileDepsJson """" -fileListName PeekAssetsFiles -wxsFilePath $PSScriptRoot\Peek.wxs -depsPath ""$PSScriptRoot..\..\..\$platform\Release\modules\Peek\Assets\"""
-Invoke-Expression -Command "$PSScriptRoot\generateFileComponents.ps1 -fileListName ""PeekFiles"" -wxsFilePath $PSScriptRoot\Peek.wxs -regroot $registryroot"
-Invoke-Expression -Command "$PSScriptRoot\generateFileComponents.ps1 -fileListName ""PeekAssetsFiles"" -wxsFilePath $PSScriptRoot\Peek.wxs -regroot $registryroot"
 
 #PowerRename
 Invoke-Expression -Command "$PSScriptRoot\generateFileList.ps1 -fileDepsJson """" -fileListName PowerRenameFiles -wxsFilePath $PSScriptRoot\PowerRename.wxs -depsPath ""$PSScriptRoot..\..\..\$platform\Release\modules\PowerRename\"" -isWinAppSdkProj 1"
