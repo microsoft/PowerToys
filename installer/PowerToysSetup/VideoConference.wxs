@@ -42,7 +42,7 @@
     </DirectoryRef>
 
     <ComponentGroup Id="VideoConferenceComponentGroup">
-      <Component Id="RemoveVideoConferenceFolder" Guid="C6F2BE3D-FDE3-4CDB-BB51-A43E1B7B1606" Directory="VideoConferenceInstallFolder" >
+      <Component Id="RemoveVideoConferenceFolder" Guid="C6F2BE3D-FDE3-4CDB-BB51-A43E1B7B1606" Directory="INSTALLFOLDER" >
         <RegistryKey Root="$(var.RegistryScope)" Key="Software\Classes\powertoys\components">
           <RegistryValue Type="string" Name="RemoveVideoConferenceFolder" Value="" KeyPath="yes"/>
         </RegistryKey>

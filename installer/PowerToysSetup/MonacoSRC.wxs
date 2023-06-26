@@ -556,7 +556,7 @@
                     <RegistryValue Type="string" Name="cmp3F09647B702F5ED8BB82F951A49BC992" Value="" KeyPath="yes"/>
                 </RegistryKey>
             </Component>
-            <Component Id="RemoveMonacoSRCFolders" Guid="E3EC9362-0AC8-453A-BB41-01451E61CF71" Directory="FileExplorerPreviewInstallFolder" >
+            <Component Id="RemoveMonacoSRCFolders" Guid="E3EC9362-0AC8-453A-BB41-01451E61CF71" Directory="MonacoPreviewHandlerMonacoSRCFolder" >
                 <RegistryKey Root="$(var.RegistryScope)" Key="Software\Classes\powertoys\components">
                     <RegistryValue Type="string" Name="RemoveMonacoSRCFolders" Value="" KeyPath="yes"/>
                 </RegistryKey>

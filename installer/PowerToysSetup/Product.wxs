@@ -387,21 +387,6 @@
             <Directory Id="PowerToysInteropDlls" Name="Interop" />
           </Directory>
           <Directory Id="ToolsFolder" Name="Tools"/>
-          <Directory Id="ModulesInstallFolder" Name="modules">
-            <Directory Id="VideoConferenceInstallFolder" Name="$(var.VideoConferenceProjectName)">
-              <Directory Id="VideoConferenceIconsFolder" Name="Icons" />
-            </Directory>
-            <Directory Id="FileExplorerPreviewInstallFolder" Name="FileExplorerPreview">
-            </Directory>
-            <Directory Id="AwakeInstallFolder" Name="$(var.AwakeProjectName)">
-              <Directory Id="AwakeImagesFolder" Name="Images" />
-            </Directory>
-
-            <!-- PastePlain -->
-            <Directory Id="PastePlainInstallFolder" Name="$(var.PastePlainProjectName)">
-            </Directory>
-
-          </Directory>
         </Directory>
       </Directory>
       <Directory Id="ProgramMenuFolder">

@@ -94,7 +94,6 @@
           <RemoveFolder Id="RemoveBaseApplicationsAssetsFolder" Directory="BaseApplicationsAssetsFolder" On="uninstall"/>
           <RemoveFolder Id="RemoveWinUI3AppsInstallFolder" Directory="WinUI3AppsInstallFolder" On="uninstall"/>
           <RemoveFolder Id="RemoveWinUI3AppsAssetsFolder" Directory="WinUI3AppsAssetsFolder" On="uninstall"/>
-          <RemoveFolder Id="RemoveModulesInstallFolder" Directory="ModulesInstallFolder" On="uninstall"/>
           <RemoveFolder Id="RemoveDllsFolder" Directory="DllsFolder" On="uninstall"/>
           <RemoveFolder Id="RemoveINSTALLFOLDER" Directory="INSTALLFOLDER" On="uninstall"/>
         </Component>
