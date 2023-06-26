@@ -388,12 +388,6 @@
           </Directory>
           <Directory Id="ToolsFolder" Name="Tools"/>
           <Directory Id="ModulesInstallFolder" Name="modules">
-            <Directory Id="ShortcutGuideInstallFolder" Name="ShortcutGuide">
-              <Directory Id="ShortcutGuideExecutableInstallFolder" Name="ShortcutGuide">
-                <Directory Id="ShortcutGuideSvgsInstallFolder" Name="svgs"/>
-              </Directory>
-              <Directory Id="ShortcutGuideModuleInterfaceInstallFolder" Name="ShortcutGuideModuleInterface"/>
-            </Directory>
             <Directory Id="VideoConferenceInstallFolder" Name="$(var.VideoConferenceProjectName)">
               <Directory Id="VideoConferenceIconsFolder" Name="Icons" />
             </Directory>
