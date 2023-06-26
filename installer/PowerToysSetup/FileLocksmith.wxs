@@ -19,7 +19,7 @@
         <RegistryKey Root="$(var.RegistryScope)" Key="Software\Classes\CLSID\{84D68575-E186-46AD-B0CB-BAEB45EE29C0}">
           <RegistryValue Type="string" Value="File Locksmith Shell Extension" />
           <RegistryValue Type="string" Name="ContextMenuOptIn" Value="" />
-          <RegistryValue Type="string" Key="InprocServer32" Value="[FileLocksmithInstallFolder]PowerToys.FileLocksmithExt.dll" />
+          <RegistryValue Type="string" Key="InprocServer32" Value="[WinUI3AppsInstallFolder]PowerToys.FileLocksmithExt.dll" />
           <RegistryValue Type="string" Key="InprocServer32" Name="ThreadingModel" Value="Apartment" />
         </RegistryKey>
         <RegistryKey Root="$(var.RegistryScope)" Key="Software\Classes\AllFileSystemObjects\ShellEx\ContextMenuHandlers\FileLocksmithExt">
