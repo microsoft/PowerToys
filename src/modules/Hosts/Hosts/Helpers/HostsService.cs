@@ -64,17 +64,20 @@ namespace Hosts.Helpers
             return _fileSystem.File.Exists(HostsFilePath);
         }
 
-        public async Task<(string Unparsed, List<Entry> Entries)> ReadAsync()
+        public async Task<HostsData> ReadAsync()
         {
             var entries = new List<Entry>();
             var unparsedBuilder = new StringBuilder();
+            var splittedEntries = false;
 
             if (!Exists())
             {
-                return (unparsedBuilder.ToString(), entries);
+                return new HostsData(entries, unparsedBuilder.ToString(), false);
             }
 
             var lines = await _fileSystem.File.ReadAllLinesAsync(HostsFilePath, Encoding);
+
+            var id = 0;
 
             for (var i = 0; i < lines.Length; i++)
             {
@@ -85,11 +88,25 @@ namespace Hosts.Helpers
                     continue;
                 }
 
-                var entry = new Entry(i, line);
+                var entry = new Entry(id, line);
 
                 if (entry.Valid)
                 {
                     entries.Add(entry);
+                    id++;
+                }
+                else if (entry.Validate(false))
+                {
+                    foreach (var hostsChunk in entry.SplittedHosts.Chunk(Consts.MaxHostsCount))
+                    {
+                        var clonedEntry = entry.Clone();
+                        clonedEntry.Id = id;
+                        clonedEntry.Hosts = string.Join(' ', hostsChunk);
+                        entries.Add(clonedEntry);
+                        id++;
+                    }
+
+                    splittedEntries = true;
                 }
                 else
                 {
@@ -102,7 +119,7 @@ namespace Hosts.Helpers
                 }
             }
 
-            return (unparsedBuilder.ToString(), entries);
+            return new HostsData(entries, unparsedBuilder.ToString(), splittedEntries);
         }
 
         public async Task<bool> WriteAsync(string additionalLines, IEnumerable<Entry> entries)

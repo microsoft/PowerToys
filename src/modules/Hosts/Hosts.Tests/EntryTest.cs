@@ -75,6 +75,7 @@ namespace Hosts.Tests
         [DataRow("  host  10.1.1.1")]
         [DataRow("host 10.1.1.1")]
         [DataRow("# comment 10.1.1.1 host # comment")]
+        [DataRow("10.1.1.1 host01 host02 host03 host04 host05 host06 host07 host08 host09 host10")]
         public void Not_Valid_Entry(string line)
         {
             var entry = new Entry(0, line);
