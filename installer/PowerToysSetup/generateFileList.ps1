@@ -14,41 +14,12 @@ Param(
     # launcher plugins are being loaded into launcher process,
     # so there are some additional dependencies to skip
     [Parameter(Mandatory = $False, Position = 5)]
-    [bool]$isLauncherPlugin,
-    # Skip winAppSDK dlls as those are hard-linked
-    [Parameter(Mandatory = $False, Position = 6)]
-    [bool]$isWinAppSdkProj
+    [bool]$isLauncherPlugin
 )
 
 $fileWxs = Get-Content $wxsFilePath;
 
-#Skip PowerToysInterop files
-$coreWxs = Get-Content $PSScriptRoot/"Core.wxs"
-$coreWxs | ForEach-Object {
-    if ($_ -match "(<?define PowerToysInteropFiles=)(.*)\?>") {
-        [Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseDeclaredVarsMoreThanAssignments', 'fileList',
-        Justification = 'variable is used in another scope')]
-
-        $interopFilesList = $matches[2] -split ';'
-        return
-    }
-}
-
-#Skip WinAppSdk files
-if ($isWinAppSdkProj -eq $True) {
-    $winAppSDKWxs = Get-Content $PSScriptRoot/"WinAppSDK.wxs"
-    $winAppSDKWxs | ForEach-Object {
-        if ($_ -match "(<?define WinAppSDKFiles=)(.*)\?>") {
-            [Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseDeclaredVarsMoreThanAssignments', 'fileList',
-            Justification = 'variable is used in another scope')]
-
-            $winAppSDKfilesList = $matches[2] -split ';'
-            return
-        }
-    }
-}
-
-$fileExclusionList = @("*Test*", "*.pdb", "*.lastcodeanalysissucceeded", "createdump.exe", "powertoys.exe") + $interopFilesList + $winAppSDKfilesList
+$fileExclusionList = @("*Test*", "*.pdb", "*.lastcodeanalysissucceeded", "createdump.exe", "powertoys.exe")
 
 $fileInclusionList = @("*.dll", "*.exe", "*.json", "*.msix", "*.png", "*.gif", "*.ico", "*.cur", "*.svg", "index.html", "reg.js", "gitignore.js", "monacoSpecialLanguages.js", "*.pri")
 
