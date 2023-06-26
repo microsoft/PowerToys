@@ -25,10 +25,6 @@ Invoke-Expression -Command "$PSScriptRoot\generateFileList.ps1 -fileDepsJson """
 Invoke-Expression -Command "$PSScriptRoot\generateFileComponents.ps1 -fileListName ""WinUI3ApplicationsFiles"" -wxsFilePath $PSScriptRoot\WinUI3Applications.wxs -regroot $registryroot"
 
 <#
-#AlwaysOnTop
-Invoke-Expression -Command "$PSScriptRoot\generateFileList.ps1 -fileDepsJson """" -fileListName AlwaysOnTopFiles -wxsFilePath $PSScriptRoot\AlwaysOnTop.wxs -depsPath ""$PSScriptRoot..\..\..\$platform\Release\modules\AlwaysOnTop"""
-Invoke-Expression -Command "$PSScriptRoot\generateFileComponents.ps1 -fileListName ""AlwaysOnTopFiles"" -wxsFilePath $PSScriptRoot\AlwaysOnTop.wxs -regroot $registryroot"
-
 #AwakeFiles
 Invoke-Expression -Command "$PSScriptRoot\generateFileList.ps1 -fileDepsJson ""$PSScriptRoot..\..\..\$platform\Release\modules\Awake\PowerToys.Awake.deps.json"" -fileListName AwakeFiles -wxsFilePath $PSScriptRoot\Awake.wxs"
 Invoke-Expression -Command "$PSScriptRoot\generateFileList.ps1 -fileDepsJson """" -fileListName AwakeImagesFiles -wxsFilePath $PSScriptRoot\Awake.wxs -depsPath ""$PSScriptRoot..\..\..\$platform\Release\modules\Awake\Images"""
@@ -43,10 +39,6 @@ Invoke-Expression -Command "$PSScriptRoot\generateFileComponents.ps1 -fileListNa
 
 Invoke-Expression -Command "$PSScriptRoot\generateFileList.ps1 -fileDepsJson ""$PSScriptRoot..\..\..\$platform\Release\modules\ColorPicker\PowerToys.ColorPickerUI.deps.json"" -fileListName ColorPickerFiles -wxsFilePath $PSScriptRoot\ColorPicker.wxs"
 Invoke-Expression -Command "$PSScriptRoot\generateFileComponents.ps1 -fileListName ""ColorPickerFiles"" -wxsFilePath $PSScriptRoot\ColorPicker.wxs -regroot $registryroot"
-
-#FancyZones
-Invoke-Expression -Command "$PSScriptRoot\generateFileList.ps1 -fileDepsJson ""$PSScriptRoot..\..\..\$platform\Release\modules\FancyZones\PowerToys.FancyZonesEditor.deps.json"" -fileListName FancyZonesFiles -wxsFilePath $PSScriptRoot\FancyZones.wxs"
-Invoke-Expression -Command "$PSScriptRoot\generateFileComponents.ps1 -fileListName ""FancyZonesFiles"" -wxsFilePath $PSScriptRoot\FancyZones.wxs -regroot $registryroot"
 
 #FileExplorerAdd-ons
 #TODO: There are multiple .deps.json files, make sure it works as expected
@@ -94,10 +86,6 @@ Invoke-Expression -Command "$PSScriptRoot\generateFileList.ps1 -fileDepsJson ""$
 Invoke-Expression -Command "$PSScriptRoot\generateFileList.ps1 -fileDepsJson """" -fileListName PeekAssetsFiles -wxsFilePath $PSScriptRoot\Peek.wxs -depsPath ""$PSScriptRoot..\..\..\$platform\Release\modules\Peek\Assets\"""
 Invoke-Expression -Command "$PSScriptRoot\generateFileComponents.ps1 -fileListName ""PeekFiles"" -wxsFilePath $PSScriptRoot\Peek.wxs -regroot $registryroot"
 Invoke-Expression -Command "$PSScriptRoot\generateFileComponents.ps1 -fileListName ""PeekAssetsFiles"" -wxsFilePath $PSScriptRoot\Peek.wxs -regroot $registryroot"
-
-#PowerAccent
-Invoke-Expression -Command "$PSScriptRoot\generateFileList.ps1 -fileDepsJson ""$PSScriptRoot..\..\..\$platform\Release\modules\PowerAccent\PowerToys.PowerAccent.deps.json"" -fileListName PowerAccentFiles -wxsFilePath $PSScriptRoot\PowerAccent.wxs"
-Invoke-Expression -Command "$PSScriptRoot\generateFileComponents.ps1 -fileListName ""PowerAccentFiles"" -wxsFilePath $PSScriptRoot\PowerAccent.wxs -regroot $registryroot"
 
 #PowerRename
 Invoke-Expression -Command "$PSScriptRoot\generateFileList.ps1 -fileDepsJson """" -fileListName PowerRenameFiles -wxsFilePath $PSScriptRoot\PowerRename.wxs -depsPath ""$PSScriptRoot..\..\..\$platform\Release\modules\PowerRename\"" -isWinAppSdkProj 1"
@@ -217,10 +205,6 @@ Invoke-Expression -Command "$PSScriptRoot\generateFileComponents.ps1 -fileListNa
 #ShortcutGuide
 Invoke-Expression -Command "$PSScriptRoot\generateFileList.ps1 -fileDepsJson """" -fileListName ShortcutGuideSvgFiles -wxsFilePath $PSScriptRoot\ShortcutGuide.wxs -depsPath ""$PSScriptRoot..\..\..\$platform\Release\modules\ShortcutGuide\ShortcutGuide\svgs\"""
 Invoke-Expression -Command "$PSScriptRoot\generateFileComponents.ps1 -fileListName ""ShortcutGuideSvgFiles"" -wxsFilePath $PSScriptRoot\ShortcutGuide.wxs -regroot $registryroot"
-
-#TextExtractor
-Invoke-Expression -Command "$PSScriptRoot\generateFileList.ps1 -fileDepsJson ""$PSScriptRoot..\..\..\$platform\Release\modules\PowerOCR\PowerToys.PowerOCR.deps.json"" -fileListName TextExtractorFiles -wxsFilePath $PSScriptRoot\TextExtractor.wxs"
-Invoke-Expression -Command "$PSScriptRoot\generateFileComponents.ps1 -fileListName ""TextExtractorFiles"" -wxsFilePath $PSScriptRoot\TextExtractor.wxs -regroot $registryroot"
 
 #Settings
 Invoke-Expression -Command "$PSScriptRoot\generateFileList.ps1 -fileDepsJson ""$PSScriptRoot..\..\..\$platform\Release\Settings\PowerToys.Settings.deps.json"" -fileListName SettingsV2Files -wxsFilePath $PSScriptRoot\Settings.wxs"

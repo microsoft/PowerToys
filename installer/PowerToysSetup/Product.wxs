@@ -55,10 +55,8 @@
              Description="Contains all PowerToys features.">
       <ComponentGroupRef Id="CoreComponents" />
       <ComponentGroupRef Id="BaseApplicationsComponentGroup" />
-      <ComponentGroupRef Id="AlwaysOnTopComponentGroup" />
       <ComponentGroupRef Id="AwakeComponentGroup" />
       <ComponentGroupRef Id="ColorPickerComponentGroup" />
-      <ComponentGroupRef Id="FancyZonesComponentGroup" />
       <ComponentGroupRef Id="FileExplorerPreviewComponentGroup" />
       <ComponentGroupRef Id="FileLocksmithComponentGroup" />
       <ComponentGroupRef Id="HostsComponentGroup" />
@@ -67,13 +65,11 @@
       <ComponentGroupRef Id="MeasureToolComponentGroup" />
       <ComponentGroupRef Id="MouseUtilsComponentGroup" />
       <ComponentGroupRef Id="PeekComponentGroup" />
-      <ComponentGroupRef Id="PowerAccentComponentGroup" />
       <ComponentGroupRef Id="PowerRenameComponentGroup" />
       <ComponentGroupRef Id="RegistryPreviewComponentGroup" />
       <ComponentGroupRef Id="RunComponentGroup" />
       <ComponentGroupRef Id="SettingsComponentGroup" />
       <ComponentGroupRef Id="ShortcutGuideComponentGroup" />
-      <ComponentGroupRef Id="TextExtractorComponentGroup" />
       <ComponentGroupRef Id="VideoConferenceComponentGroup" />
       <ComponentGroupRef Id="MouseWithoutBordersComponentGroup" />
         
@@ -401,8 +397,6 @@
             <Directory Id="ImageResizerInstallFolder" Name="$(var.ImageResizerProjectName)">
               <Directory Id="ImageResizerAssetsFolder" Name="Assets" />
             </Directory>
-            <Directory Id="PowerAccentInstallFolder" Name="$(var.PowerAccentProjectName)">
-            </Directory>
             <Directory Id="FileLocksmithInstallFolder" Name="$(var.FileLocksmithProjectName)">
               <Directory Id="FileLocksmithAssetsInstallFolder" Name="Assets" />
               <Directory Id="FileLocksmithMicrosoftUIXamlInstallFolder" Name="Microsoft.UI.Xaml">
@@ -426,8 +420,6 @@
             </Directory>
             <Directory Id="FileExplorerPreviewInstallFolder" Name="FileExplorerPreview">
             </Directory>
-            <Directory Id="FancyZonesInstallFolder" Name="$(var.FancyZonesProjectName)" />
-            <Directory Id="PowerOCRInstallFolder" Name="$(var.PowerOCRProjectName)" />
             <Directory Id="AwakeInstallFolder" Name="$(var.AwakeProjectName)">
               <Directory Id="AwakeImagesFolder" Name="Images" />
             </Directory>
@@ -452,10 +444,6 @@
               <Directory Id="RegistryPreviewMicrosoftUIXamlInstallFolder" Name="Microsoft.UI.Xaml">
                 <Directory Id="RegistryPreviewMicrosoftUIXamlAssetsInstallFolder" Name="Assets" />
               </Directory>
-            </Directory>
-
-            <!-- AlwaysOnTop -->
-            <Directory Id="AlwaysOnTopInstallFolder" Name="$(var.AlwaysOnTopProjectName)">
             </Directory>
 
             <!-- MeasureTool -->

@@ -27,12 +27,10 @@ call "..\..\..\publish.cmd" arm64
   <PropertyGroup>
     <RunPostBuildEvent>Always</RunPostBuildEvent>
     <PostBuildEvent>
-    call move /Y ..\..\..\AlwaysOnTop.wxs.bk ..\..\..\AlwaysOnTop.wxs
     call move /Y ..\..\..\Awake.wxs.bk ..\..\..\Awake.wxs
     call move /Y ..\..\..\BaseApplications.wxs.bk ..\..\..\BaseApplications.wxs
     call move /Y ..\..\..\ColorPicker.wxs.bk ..\..\..\ColorPicker.wxs
     call move /Y ..\..\..\Core.wxs.bk ..\..\..\Core.wxs
-    call move /Y ..\..\..\FancyZones.wxs.bk ..\..\..\FancyZones.wxs
     call move /Y ..\..\..\FileExplorerPreview.wxs.bk ..\..\..\FileExplorerPreview.wxs
     call move /Y ..\..\..\FileLocksmith.wxs.bk ..\..\..\FileLocksmith.wxs
     call move /Y ..\..\..\Hosts.wxs.bk ..\..\..\Hosts.wxs
@@ -42,7 +40,6 @@ call "..\..\..\publish.cmd" arm64
     call move /Y ..\..\..\MouseUtils.wxs.bk ..\..\..\MouseUtils.wxs
     call move /Y ..\..\..\MouseWithoutBorders.wxs.bk ..\..\..\MouseWithoutBorders.wxs
     call move /Y ..\..\..\Peek.wxs.bk ..\..\..\Peek.wxs
-    call move /Y ..\..\..\PowerAccent.wxs.bk ..\..\..\PowerAccent.wxs
     call move /Y ..\..\..\PowerRename.wxs.bk ..\..\..\PowerRename.wxs
     call move /Y ..\..\..\Product.wxs.bk ..\..\..\Product.wxs
     call move /Y ..\..\..\RegistryPreview.wxs.bk ..\..\..\RegistryPreview.wxs
@@ -50,7 +47,6 @@ call "..\..\..\publish.cmd" arm64
     call move /Y ..\..\..\Run.wxs.bk ..\..\..\Run.wxs
     call move /Y ..\..\..\Settings.wxs.bk ..\..\..\Settings.wxs
     call move /Y ..\..\..\ShortcutGuide.wxs.bk ..\..\..\ShortcutGuide.wxs
-    call move /Y ..\..\..\TextExtractor.wxs.bk ..\..\..\TextExtractor.wxs
     call move /Y ..\..\..\Tools.wxs.bk ..\..\..\Tools.wxs
     call move /Y ..\..\..\VideoConference.wxs.bk ..\..\..\VideoConference.wxs
     call move /Y ..\..\..\WinAppSDK.wxs.bk ..\..\..\WinAppSDK.wxs
@@ -103,11 +99,9 @@ call "..\..\..\publish.cmd" arm64
     <Compile Include="CustomDialogs\WixUI_PTInstallDir.wxs" />
     <Compile Include="Product.wxs" />
 
-    <Compile Include="AlwaysOnTop.wxs" />
     <Compile Include="Awake.wxs" />
     <Compile Include="BaseApplications.wxs" />
     <Compile Include="ColorPicker.wxs" />
-    <Compile Include="FancyZones.wxs" />
     <Compile Include="FileExplorerPreview.wxs" />
     <Compile Include="FileLocksmith.wxs" />
     <Compile Include="Hosts.wxs" />
@@ -116,13 +110,11 @@ call "..\..\..\publish.cmd" arm64
     <Compile Include="MeasureTool.wxs" />
     <Compile Include="MouseUtils.wxs" />
     <Compile Include="Peek.wxs" />
-    <Compile Include="PowerAccent.wxs" />
     <Compile Include="PowerRename.wxs" />
     <Compile Include="RegistryPreview.wxs" />
     <Compile Include="Run.wxs" />
     <Compile Include="Settings.wxs" />
     <Compile Include="ShortcutGuide.wxs" />
-    <Compile Include="TextExtractor.wxs" />
     <Compile Include="Tools.wxs" />
     <Compile Include="VideoConference.wxs" />
     <Compile Include="MouseWithoutBorders.wxs" />
