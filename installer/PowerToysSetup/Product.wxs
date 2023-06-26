@@ -63,7 +63,6 @@
       <ComponentGroupRef Id="ImageResizerComponentGroup" />
       <ComponentGroupRef Id="KeyboardManagerComponentGroup" />
       <ComponentGroupRef Id="MeasureToolComponentGroup" />
-      <ComponentGroupRef Id="MouseUtilsComponentGroup" />
       <ComponentGroupRef Id="PeekComponentGroup" />
       <ComponentGroupRef Id="PowerRenameComponentGroup" />
       <ComponentGroupRef Id="RegistryPreviewComponentGroup" />
@@ -409,11 +408,6 @@
             </Directory>
             <Directory Id="AwakeInstallFolder" Name="$(var.AwakeProjectName)">
               <Directory Id="AwakeImagesFolder" Name="Images" />
-            </Directory>
-
-            <!-- Mouse Utils -->
-            <Directory Id="MouseUtilsInstallFolder" Name="$(var.MouseUtilsProjectName)">
-              <Directory Id="MouseJumpUIFolder" Name="MouseJumpUI" />
             </Directory>
 
             <!-- PastePlain -->

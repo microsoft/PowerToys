@@ -154,13 +154,6 @@ Invoke-Expression -Command "$PSScriptRoot\generateFileList.ps1 -fileDepsJson """
 Invoke-Expression -Command "$PSScriptRoot\generateFileComponents.ps1 -fileListName ""AwakeFiles"" -wxsFilePath $PSScriptRoot\Awake.wxs -regroot $registryroot"
 Invoke-Expression -Command "$PSScriptRoot\generateFileComponents.ps1 -fileListName ""AwakeImagesFiles"" -wxsFilePath $PSScriptRoot\Awake.wxs -regroot $registryroot"
 
-#MouseUtils
-Invoke-Expression -Command "$PSScriptRoot\generateFileList.ps1 -fileDepsJson """" -fileListName MouseUtilsFiles -wxsFilePath $PSScriptRoot\MouseUtils.wxs -depsPath ""$PSScriptRoot..\..\..\$platform\Release\modules\MouseUtils\"""
-Invoke-Expression -Command "$PSScriptRoot\generateFileComponents.ps1 -fileListName ""MouseUtilsFiles"" -wxsFilePath $PSScriptRoot\MouseUtils.wxs -regroot $registryroot"
-#MouseJumpUI
-Invoke-Expression -Command "$PSScriptRoot\generateFileList.ps1 -fileDepsJson ""$PSScriptRoot..\..\..\$platform\Release\modules\MouseUtils\MouseJumpUI\PowerToys.MouseJumpUI.deps.json"" -fileListName MouseJumpUIFiles -wxsFilePath $PSScriptRoot\MouseUtils.wxs"
-Invoke-Expression -Command "$PSScriptRoot\generateFileComponents.ps1 -fileListName ""MouseJumpUIFiles"" -wxsFilePath $PSScriptRoot\MouseUtils.wxs -regroot $registryroot"
-
 #MouseWithoutBorders
 Invoke-Expression -Command "$PSScriptRoot\generateFileList.ps1 -fileDepsJson ""$PSScriptRoot..\..\..\$platform\Release\modules\MouseWithoutBorders\PowerToys.MouseWithoutBorders.deps.json;$PSScriptRoot..\..\..\$platform\Release\modules\MouseWithoutBorders\PowerToys.MouseWithoutBordersHelper.deps.json;$PSScriptRoot..\..\..\$platform\Release\modules\MouseWithoutBorders\PowerToys.MouseWithoutBordersService.deps.json"" -fileListName MouseWithoutBordersFiles -wxsFilePath $PSScriptRoot\MouseWithoutBorders.wxs"
 Invoke-Expression -Command "$PSScriptRoot\generateFileComponents.ps1 -fileListName ""MouseWithoutBordersFiles"" -wxsFilePath $PSScriptRoot\MouseWithoutBorders.wxs -regroot $registryroot"
