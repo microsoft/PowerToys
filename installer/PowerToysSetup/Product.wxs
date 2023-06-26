@@ -407,14 +407,6 @@
             <Directory Id="PastePlainInstallFolder" Name="$(var.PastePlainProjectName)">
             </Directory>
 
-            <!-- RegistryPreview -->
-            <Directory Id="RegistryPreviewInstallFolder" Name="$(var.RegistryPreviewProjectName)">
-              <Directory Id="RegistryPreviewAssetsInstallFolder" Name="Assets" />
-              <Directory Id="RegistryPreviewMicrosoftUIXamlInstallFolder" Name="Microsoft.UI.Xaml">
-                <Directory Id="RegistryPreviewMicrosoftUIXamlAssetsInstallFolder" Name="Assets" />
-              </Directory>
-            </Directory>
-
           </Directory>
 
           <!-- Settings -->
