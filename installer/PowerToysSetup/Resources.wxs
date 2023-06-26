@@ -399,7 +399,7 @@
       <?endif?>
 
     <?ifdef env.IsPipeline?>
-      <Component Id="RemoveResourcesFolder" Guid="9BC0A5A1-CBC5-47C8-8544-3F8A8C0D45F5" Directory="WinAppSDKDlls" >
+      <Component Id="RemoveResourcesFolder" Guid="9BC0A5A1-CBC5-47C8-8544-3F8A8C0D45F5" Directory="INSTALLFOLDER" >
         <RegistryKey Root="$(var.RegistryScope)" Key="Software\Classes\powertoys\components">
           <RegistryValue Type="string" Name="RemoveResourcesFolder" Value="" KeyPath="yes"/>
         </RegistryKey>

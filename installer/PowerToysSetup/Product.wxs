@@ -381,11 +381,6 @@
             <Directory Id="WinUI3AppsAssetsFolder" Name="Assets">
             </Directory>
           </Directory>
-          <Directory Id="DllsFolder" Name="dll">
-            <Directory Id="DotnetDlls" Name="dotnet" />
-            <Directory Id="WinAppSDKDlls" Name="WinAppSDK" />
-            <Directory Id="PowerToysInteropDlls" Name="Interop" />
-          </Directory>
           <Directory Id="ToolsFolder" Name="Tools"/>
         </Directory>
       </Directory>
