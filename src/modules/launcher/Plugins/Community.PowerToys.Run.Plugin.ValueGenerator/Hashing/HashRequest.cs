@@ -6,6 +6,7 @@ using System;
 using System.Collections.Generic;
 using System.Security.Cryptography;
 using System.Text;
+using Wox.Plugin.Logger;
 
 namespace Community.PowerToys.Run.Plugin.ValueGenerator.Hashing
 {
@@ -46,7 +47,7 @@ namespace Community.PowerToys.Run.Plugin.ValueGenerator.Hashing
         public HashRequest(HashAlgorithmName algorithmName, byte[] dataToHash)
         {
             AlgorithmName = algorithmName;
-            DataToHash = dataToHash;
+            DataToHash = dataToHash ?? throw new ArgumentNullException(nameof(dataToHash));
         }
 
         public bool Compute()
@@ -54,6 +55,7 @@ namespace Community.PowerToys.Run.Plugin.ValueGenerator.Hashing
             if (DataToHash == null)
             {
                 ErrorMessage = "Null data passed to hash request";
+                Log.Exception(ErrorMessage, new InvalidOperationException(ErrorMessage), GetType());
                 IsSuccessful = false;
             }
             else

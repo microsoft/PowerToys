@@ -22,12 +22,7 @@ namespace Community.PowerToys.Run.Plugin.ValueGenerator.Base64
 
         public Base64Request(byte[] dataToEncode)
         {
-            if (dataToEncode == null)
-            {
-                throw new ArgumentNullException(nameof(dataToEncode));
-            }
-
-            DataToEncode = dataToEncode;
+            DataToEncode = dataToEncode ?? throw new ArgumentNullException(nameof(dataToEncode));
         }
 
         public bool Compute()
