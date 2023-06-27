@@ -65,7 +65,7 @@ steps:
     vsVersion: 17.0
     platform: '$(BuildPlatform)'
     configuration: '$(BuildConfiguration)'
-    msbuildArgs: /t:restore,build /p:Restore /p:RestoreUseStaticGraphEvaluation=true /p:RestorePackagesPath='$(Build.SourcesDirectory)\packages' ${{ parameters.additionalBuildArguments }}
+    msbuildArgs: /t:restore,build /p:RestoreUseStaticGraphEvaluation=true /p:RestorePackagesPath='$(Build.SourcesDirectory)\packages' ${{ parameters.additionalBuildArguments }}
     maximumCpuCount: true
 
 - task: VSBuild@1
