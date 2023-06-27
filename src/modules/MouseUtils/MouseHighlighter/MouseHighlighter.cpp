@@ -97,7 +97,7 @@ bool Highlighter::CreateHighlighter()
         // Create the compositor for our window.
         m_compositor = winrt::Compositor();
         ABI::IDesktopWindowTarget* target;
-        winrt::check_hresult(m_compositor.as<ABI::ICompositorDesktopInterop>()->CreateDesktopWindowTarget(m_hwnd, false, &target));
+        winrt::check_hresult(m_compositor.as<ABI::ICompositorDesktopInterop>()->CreateDesktopWindowTarget(m_hwnd, true, &target));
         *winrt::put_abi(m_target) = target;
 
         // Create visual root
