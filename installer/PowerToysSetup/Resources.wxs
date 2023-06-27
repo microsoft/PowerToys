@@ -11,7 +11,7 @@
   <Fragment>
     <!-- Resource directories should be added only if the installer is built on the build farm -->
     <?ifdef env.IsPipeline?>
-      <?foreach ParentDirectory in LauncherInstallFolder;FancyZonesInstallFolder;ImageResizerInstallFolder;ColorPickerInstallFolder;FileExplorerPreviewInstallFolder;HistoryPluginFolder;CalculatorPluginFolder;FolderPluginFolder;ProgramPluginFolder;ShellPluginFolder;IndexerPluginFolder;UnitConverterPluginFolder;UriPluginFolder;WindowWalkerPluginFolder;OneNotePluginFolder;RegistryPluginFolder;VSCodeWorkspacesPluginFolder;ServicePluginFolder;SystemPluginFolder;TimeDatePluginFolder;WindowsSettingsPluginFolder;WindowsTerminalPluginFolder;WebSearchPluginFolder;PowerToysPluginFolder?>
+      <?foreach ParentDirectory in LauncherInstallFolder;FancyZonesInstallFolder;ImageResizerInstallFolder;ColorPickerInstallFolder;FileExplorerPreviewInstallFolder;HistoryPluginFolder;CalculatorPluginFolder;FolderPluginFolder;ProgramPluginFolder;ShellPluginFolder;IndexerPluginFolder;UnitConverterPluginFolder;ValueGeneratorPluginFolder;UriPluginFolder;WindowWalkerPluginFolder;OneNotePluginFolder;RegistryPluginFolder;VSCodeWorkspacesPluginFolder;ServicePluginFolder;SystemPluginFolder;TimeDatePluginFolder;WindowsSettingsPluginFolder;WindowsTerminalPluginFolder;WebSearchPluginFolder;PowerToysPluginFolder?>
         <DirectoryRef Id="$(var.ParentDirectory)">
           <!-- Resource file directories -->
           <?foreach Language in $(var.LocLanguageList)?>
@@ -392,6 +392,15 @@
           <RegistryValue Type="string" Name="Launcher_PowerToys_$(var.IdSafeLanguage)_Component" Value="" KeyPath="yes"/>
         </RegistryKey>
         <File Id="Launcher_PowerToys_$(var.IdSafeLanguage)_File" Source="$(var.BinDir)modules\launcher\Plugins\PowerToys\$(var.Language)\Microsoft.PowerToys.Run.Plugin.PowerToys.resources.dll" />
+      </Component>
+      <Component
+         Id="Launcher_ValueGenerator_$(var.IdSafeLanguage)_Component"
+         Guid="$(var.CompGUIDPrefix)1D"
+         Directory="Resource$(var.IdSafeLanguage)ValueGeneratorPluginFolder">
+        <RegistryKey Root="$(var.RegistryScope)" Key="Software\Classes\powertoys\components">
+          <RegistryValue Type="string" Name="Launcher_ValueGenerator_$(var.IdSafeLanguage)_Component" Value="" KeyPath="yes"/>
+        </RegistryKey>
+        <File Id="Launcher_ValueGenerator_$(var.IdSafeLanguage)_File" Source="$(var.BinDir)modules\launcher\Plugins\ValueGenerator\$(var.Language)\Community.PowerToys.Run.Plugin.ValueGenerator.resources.dll" />
       </Component>
       <?undef IdSafeLanguage?>
       <?undef CompGUIDPrefix?>

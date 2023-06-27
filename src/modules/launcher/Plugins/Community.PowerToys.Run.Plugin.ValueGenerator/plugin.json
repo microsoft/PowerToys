@@ -1,7 +1,7 @@
 {
   "ID": "a26b1bb4dbd911edafa10242ac120002",
   "ActionKeyword": "#",
-  "isGlobal": true,
+  "isGlobal": false,
   "Name": "ValueGenerator",
   "Description": "A plugin to calculate hashes and generate values",
   "Author": "IHorvalds",

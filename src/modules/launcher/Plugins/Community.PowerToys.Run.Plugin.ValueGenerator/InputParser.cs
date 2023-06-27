@@ -104,7 +104,7 @@ namespace Community.PowerToys.Run.Plugin.ValueGenerator
                     request = new GUIDRequest(version);
                 }
             }
-            else if (command.StartsWith("base64", StringComparison.InvariantCultureIgnoreCase))
+            else if (command.ToLower(null) == "base64")
             {
                 int commandIndex = query.RawUserQuery.IndexOf(command, StringComparison.InvariantCultureIgnoreCase);
                 string content = query.RawUserQuery.Substring(commandIndex + command.Length).Trim();

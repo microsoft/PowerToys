@@ -28,6 +28,7 @@ namespace Community.PowerToys.Run.Plugin.ValueGenerator.UnitTests
         [DataRow("guidv4", typeof(GUID.GUIDRequest))]
         [DataRow("base64 abc", typeof(Base64.Base64Request))]
         [DataRow("base99 abc", null)]
+        [DataRow("base64s abc", null)]
         public void ParserTest(string input, Type? expectedRequestType)
         {
             var parser = new InputParser();
