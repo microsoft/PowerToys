@@ -639,6 +639,80 @@
       "capabilityId": "IssueResponder",
       "subCapability": "IssueCommentResponder",
       "version": "1.0",
+      "id": "VyV9JJSA8SbOyeWEwjyfL",
+      "config": {
+        "conditions": {
+          "operator": "and",
+          "operands": [
+            {
+              "name": "commentContains",
+              "parameters": {
+                "commentPattern": "\\/helped",
+                "isRegex": true
+              }
+            },
+            {
+              "operator": "or",
+              "operands": [
+                {
+                  "name": "activitySenderHasAssociation",
+                  "parameters": {
+                    "permissions": "admin",
+                    "association": "MEMBER"
+                  }
+                },
+                {
+                  "name": "activitySenderHasAssociation",
+                  "parameters": {
+                    "association": "OWNER"
+                  }
+                },
+                {
+                  "name": "activitySenderHasAssociation",
+                  "parameters": {
+                    "association": "COLLABORATOR"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        "eventType": "issue",
+        "eventNames": [
+          "issue_comment"
+        ],
+        "taskName": "Closing issue, because user got help and the issue is now resolved",
+        "actions": [
+          {
+            "name": "removeLabel",
+            "parameters": {
+              "label": "Needs-Triage"
+            }
+          },
+          {
+            "name": "addLabel",
+            "parameters": {
+              "label": "Resolution-Helped User"
+            }
+          },
+          {
+            "name": "addReply",
+            "parameters": {
+              "comment": "This issue is now marked as resolved. If you have any follow-up questions, please don't hesitate to ask. You can find more about PowerToys functionalities and limitations in our [end-user documentation](https://aka.ms/powertoy-docs]."
+            }
+          },
+          {
+            "name": "closeIssue",
+            "parameters": {}
+          }
+        ]
+      }
+    },
+    {
+      "taskType": "trigger",
+      "capabilityId": "IssueResponder",
+      "subCapability": "IssueCommentResponder",
+      "version": "1.0",
       "id": "bvMkigH2HPgUniYFCNco9",
       "config": {
         "conditions": {
