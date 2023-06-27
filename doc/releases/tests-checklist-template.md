@@ -594,6 +594,7 @@ Mouse Jump:
    - [ ] Launch Host File Editor again and click "Accept". The module should not close. Open the hosts file (`%WinDir%\System32\Drivers\Etc`) in a text editor that auto-refreshes so you can see the changes applied by the editor in real time. (VSCode is an editor like this, for example)
    - [ ] Enable and disable lines and verify they are applied to the file.
    - [ ] Add a new entry and verify it's applied.
+   - [ ] Add manually an entry with more than 9 hosts in hosts file (Windows limitation) and verify it is split correctly on loading and the info bar is shown.
    - [ ] Try to filter for lines and verify you can find them.
    - [ ] Click the "Open hosts file" button and verify it opens in your default editor. (likely Notepad)
  * Test the different settings and verify they are applied:
@@ -663,6 +664,7 @@ Mouse Jump:
    - [ ] Enable Registry Preview again and ensure that Preview context menu option for .reg files appears and that it starts Registry Preview correctly. 
    - [ ] Try to launch Registry Preview from it's Settings page and ensure that it is launched properly.
    - [ ] Try to launch Registry Preview from it's OOBE page and ensure that it is launched properly.
+   - [ ] Enable Default app setting. Verify that .reg files are opened with Registry Preview by default. Disable Default app setting. Verify that Registry Editor is now default app.
    
 ### Peek   
  * Open different files to check that they're shown properly
