@@ -68,7 +68,7 @@ namespace Community.PowerToys.Run.Plugin.ValueGenerator.GUID
             {
                 if (guidNamespace == null)
                 {
-                    throw new ArgumentNullException(nameof(guidNamespace), NullNamespaceError);
+                    throw new ArgumentNullException(null, NullNamespaceError);
                 }
 
                 Guid guid;
@@ -82,7 +82,7 @@ namespace Community.PowerToys.Run.Plugin.ValueGenerator.GUID
                 }
                 else
                 {
-                    throw new ArgumentNullException(nameof(guidNamespace), NullNamespaceError);
+                    throw new ArgumentNullException(null, NullNamespaceError);
                 }
 
                 if (name == null)

@@ -28,13 +28,15 @@ namespace Community.PowerToys.Run.Plugin.ValueGenerator
 
             if (command.ToLower(null) == "md5")
             {
-                string content = query.Search.Substring(command.Length).Trim();
+                int commandIndex = query.RawUserQuery.IndexOf(command, StringComparison.InvariantCultureIgnoreCase);
+                string content = query.RawUserQuery.Substring(commandIndex + command.Length).Trim();
                 Log.Debug($"Will calculate MD5 hash for: {content}", GetType());
                 request = new HashRequest(HashAlgorithmName.MD5, Encoding.UTF8.GetBytes(content));
             }
             else if (command.StartsWith("sha", StringComparison.InvariantCultureIgnoreCase))
             {
-                string content = query.Search.Substring(command.Length).Trim();
+                int commandIndex = query.RawUserQuery.IndexOf(command, StringComparison.InvariantCultureIgnoreCase);
+                string content = query.RawUserQuery.Substring(commandIndex + command.Length).Trim();
                 HashAlgorithmName algorithmName;
 
                 switch (command.Substring(3))
@@ -104,7 +106,8 @@ namespace Community.PowerToys.Run.Plugin.ValueGenerator
             }
             else if (command.StartsWith("base64", StringComparison.InvariantCultureIgnoreCase))
             {
-                string content = query.Search.Substring(command.Length).Trim();
+                int commandIndex = query.RawUserQuery.IndexOf(command, StringComparison.InvariantCultureIgnoreCase);
+                string content = query.RawUserQuery.Substring(commandIndex + command.Length).Trim();
                 request = new Base64Request(Encoding.UTF8.GetBytes(content));
             }
             else
