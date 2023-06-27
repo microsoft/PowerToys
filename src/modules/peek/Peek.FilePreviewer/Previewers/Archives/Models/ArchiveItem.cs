@@ -20,7 +20,7 @@ namespace Peek.FilePreviewer.Previewers.Archives.Models
         private ImageSource? _icon;
 
         [ObservableProperty]
-        private long _size;
+        private ulong _size;
 
         [ObservableProperty]
         private bool _isExpanded;

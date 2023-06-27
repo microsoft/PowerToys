@@ -8,13 +8,13 @@ using Peek.Common.Helpers;
 
 namespace Peek.Common.Converters
 {
-    public class SizeToStringConverter : IValueConverter
+    public class BytesToStringConverter : IValueConverter
     {
         public object Convert(object value, Type targetType, object parameter, string language)
         {
-            if (value is long size)
+            if (value is ulong size)
             {
-                return SizeHelper.GetHumanSize(size);
+                return ReadableStringHelper.BytesToReadableString(size);
             }
             else
             {

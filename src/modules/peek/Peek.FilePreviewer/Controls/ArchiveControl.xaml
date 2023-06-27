@@ -58,7 +58,7 @@
                         <TextBlock
                             Grid.Column="2"
                             Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                            Text="{Binding Size, Converter={StaticResource SizeToStringConverter}}" />
+                            Text="{Binding Size, Converter={StaticResource BytesToStringConverter}}" />
                     </Grid>
                 </TreeViewItem>
             </DataTemplate>
@@ -68,7 +68,7 @@
                 DirectoryTemplate="{StaticResource DirectoryTemplate}"
                 FileTemplate="{StaticResource FileTemplate}" />
 
-        <converters:SizeToStringConverter x:Key="SizeToStringConverter" />
+        <converters:BytesToStringConverter x:Key="BytesToStringConverter" />
     </UserControl.Resources>
     <Grid>
         <Grid.RowDefinitions>

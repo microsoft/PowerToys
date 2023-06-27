@@ -32,8 +32,8 @@ namespace Peek.FilePreviewer.Previewers.Archives
         private readonly IconCache _iconCache = new();
         private int _directoryCount;
         private int _fileCount;
-        private long _size;
-        private long _extractedSize;
+        private ulong _size;
+        private ulong _extractedSize;
 
         [ObservableProperty]
         private PreviewState state;
@@ -82,7 +82,7 @@ namespace Peek.FilePreviewer.Previewers.Archives
             if (Item.Path.EndsWith(".tar.gz", StringComparison.OrdinalIgnoreCase) || Item.Path.EndsWith(".tgz", StringComparison.OrdinalIgnoreCase))
             {
                 using var archive = ArchiveFactory.Open(stream);
-                _extractedSize = archive.TotalUncompressSize;
+                _extractedSize = (ulong)archive.TotalUncompressSize;
                 stream.Seek(0, SeekOrigin.Begin);
 
                 using var reader = ReaderFactory.Open(stream);
@@ -95,7 +95,7 @@ namespace Peek.FilePreviewer.Previewers.Archives
             else
             {
                 using var archive = ArchiveFactory.Open(stream);
-                _extractedSize = archive.TotalUncompressSize;
+                _extractedSize = (ulong)archive.TotalUncompressSize;
 
                 foreach (var entry in archive.Entries)
                 {
@@ -104,10 +104,10 @@ namespace Peek.FilePreviewer.Previewers.Archives
                 }
             }
 
-            _size = new FileInfo(Item.Path).Length; // archive.TotalSize isn't accurate
+            _size = (ulong)new FileInfo(Item.Path).Length; // archive.TotalSize isn't accurate
             DirectoryCountText = string.Format(CultureInfo.CurrentCulture, ResourceLoader.GetForViewIndependentUse().GetString("Archive_Directory_Count"), _directoryCount);
             FileCountText = string.Format(CultureInfo.CurrentCulture, ResourceLoader.GetForViewIndependentUse().GetString("Archive_File_Count"), _fileCount);
-            SizeText = string.Format(CultureInfo.CurrentCulture, ResourceLoader.GetForViewIndependentUse().GetString("Archive_Size"), SizeHelper.GetHumanSize(_size), SizeHelper.GetHumanSize(_extractedSize));
+            SizeText = string.Format(CultureInfo.CurrentCulture, ResourceLoader.GetForViewIndependentUse().GetString("Archive_Size"), ReadableStringHelper.BytesToReadableString(_size), ReadableStringHelper.BytesToReadableString(_extractedSize));
 
             State = PreviewState.Loaded;
         }
@@ -148,7 +148,7 @@ namespace Peek.FilePreviewer.Previewers.Archives
                 }
                 else if (type == ArchiveItemType.File)
                 {
-                    item.Size = entry.Size;
+                    item.Size = (ulong)entry.Size;
                 }
 
                 if (parent == null)
