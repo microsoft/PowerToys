@@ -26,6 +26,8 @@ All:
 - GPO
 - Paste as plain text
 - Registry Preview
+- Peek
+- MWB
 ```
 
 ```
@@ -40,8 +42,9 @@ Group 1:
 - Keyboard Manager
 - Screen Ruler
 - VCM
-- Paste as plain text
+- Peek
 ```
+
 ```
 Group 2:
 - Color Picker
@@ -50,12 +53,13 @@ Group 2:
 - Shortcut Guide
 - OOBE
 - Mouse Utils
-- VCM
 - AlwaysOnTop
 - Screen Ruler
 - Hosts File Editor
 - Paste as plain text
+- MWB
 ```
+
 ```
 Group 3:
 - Image Resizer
@@ -68,7 +72,9 @@ Group 3:
 - Hosts File Editor
 - GPO
 - Registry Preview
+- MWB
 ```
+
 ```
 Group 4:
 - Install
@@ -81,7 +87,9 @@ Group 4:
 - Quick Accent
 - Text Extractor
 - File Locksmith
+- Paste as plain text
 ```
+
 ```
 Group 5:
 - Functional
@@ -94,4 +102,5 @@ Group 5:
 - Quick Accent
 - GPO
 - Registry Preview
+- Peek
 ```
