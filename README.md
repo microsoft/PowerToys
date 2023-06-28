@@ -221,7 +221,7 @@ In this release, we focused on stability and improvements.
 
 ### Development
 
- - Added Peek and Mouse Without Borders to Github templates. (This was a hotfix for 0.70)
+ - Added Peek and Mouse Without Borders to github templates. (This was a hotfix for 0.70)
  - Fixed the CI release pipelines winget package submission. (This was a hotfix for 0.70)
  - Fixed process report and termination lists for Peek and Mouse Without Borders. (This was a hotfix for 0.70)
  - Added Winget configuration file. (This was a hotfix for 0.70) Thanks [@ryfu-msft](https://github.com/ryfu-msft)!
