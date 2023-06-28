@@ -261,21 +261,21 @@ Mouse Jump:
    - [x] Test MWB performance under various network conditions (e.g., low bandwidth, high latency). Verify that the tool maintains a stable connection and functions correctly.
 
  * Clipboard Sharing:
-   - [ ] Copy some text on one PC and verify that the same text can be pasted on another PC.
-   - [ ] Use the screenshot key and Win+Shift+S to take a screenshot on one PC and verify that the screenshot can be pasted on another PC.
-   - [ ] Copy a file in Windows Explorer and verify that the file can be pasted on another PC. Make sure the file size is below 100MB.
-   - [ ] Try to copy multiple files and directories and verify that it's not possible (only the first selected file is being copied).
+   - [x] Copy some text on one PC and verify that the same text can be pasted on another PC.
+   - [x] Use the screenshot key and Win+Shift+S to take a screenshot on one PC and verify that the screenshot can be pasted on another PC.
+   - [x] Copy a file in Windows Explorer and verify that the file can be pasted on another PC. Make sure the file size is below 100MB.
+   - [x] Try to copy multiple files and directories and verify that it's not possible (only the first selected file is being copied).
  
  * Drag and Drop:
-   - [ ] Drag a file from Windows Explorer on one PC, cross the screen border onto another PC, and release it there. Verify that the file is copied to the other PC. Make sure the file size is below 100MB.
-   - [ ] While dragging the file, verify that a corresponding icon is displayed under the mouse cursor.
-   - [ ] Without moving the mouse from one PC to the target PC, press CTRL+ALT+F1/2/3/4 hotkey to switch to the target PC directly and verify that file sharing/dropping is not working.
+   - [x] Drag a file from Windows Explorer on one PC, cross the screen border onto another PC, and release it there. Verify that the file is copied to the other PC. Make sure the file size is below 100MB.
+   - [x] While dragging the file, verify that a corresponding icon is displayed under the mouse cursor.
+   - [x] Without moving the mouse from one PC to the target PC, press CTRL+ALT+F1/2/3/4 hotkey to switch to the target PC directly and verify that file sharing/dropping is not working.
 
  * Lock and Unlock with "Use Service" Enabled:
-   - [ ] Enable "Use Service" in MWB's settings.
-   - [ ] Lock a remote PC using Win+L, move the mouse to it remotely, and try to unlock it. Verify that you can unlock the remote PC.
-   - [ ] Disable "Use Service" in MWB's settings, lock the remote PC, move the mouse to it remotely, and try to unlock it. Verify that you can't unlock the remote PC.
+   - [x] Enable "Use Service" in MWB's settings.
+   - [x] Lock a remote PC using Win+L, move the mouse to it remotely, and try to unlock it. Verify that you can unlock the remote PC.
+   - [x] Disable "Use Service" in MWB's settings, lock the remote PC, move the mouse to it remotely, and try to unlock it. Verify that you can't unlock the remote PC.
 
  * Test Settings:
-   - [ ] Change the rest of available settings on MWB page and verify that each setting works as described.
+   - [x] Change the rest of available settings on MWB page and verify that each setting works as described.
    
