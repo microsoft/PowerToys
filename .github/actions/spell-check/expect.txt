@@ -1087,6 +1087,7 @@ LIGHTORANGE
 LIGHTTURQUOISE
 lindex
 linkedin
+LINKOVERLAY
 linq
 LINQTo
 listview
@@ -1415,6 +1416,7 @@ nullonfailure
 numberbox
 NUMLOCK
 numpad
+nupkg
 nwc
 Objbase
 OBJID
@@ -1613,6 +1615,7 @@ psapi
 pscid
 PSECURITY
 psfgao
+psfi
 Psr
 psrm
 psrree
@@ -1851,6 +1854,7 @@ shellscalingapi
 SHFILEINFO
 SHGDNF
 SHGFI
+shinfo
 Shl
 shldisp
 shlobj
@@ -2056,6 +2060,7 @@ TEXCOORD
 textblock
 TEXTEXTRACTOR
 TEXTINCLUDE
+tgz
 themeresources
 THH
 THICKFRAME
@@ -2123,6 +2128,7 @@ ULONGLONG
 unapply
 unassign
 uncompilable
+Uncompress
 UNCPRIORITY
 UNDNAME
 UNICODETEXT
