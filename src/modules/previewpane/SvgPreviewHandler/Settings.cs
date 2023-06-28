@@ -47,7 +47,7 @@ namespace SvgPreviewHandler
             {
                 if (Common.UI.ThemeManager.GetWindowsBaseColor().ToLowerInvariant() == "dark")
                 {
-                    return Color.FromArgb(30, 30, 30); // #1e1e1e
+                    return ColorTranslator.FromHtml("#1e1e1e");
                 }
                 else
                 {

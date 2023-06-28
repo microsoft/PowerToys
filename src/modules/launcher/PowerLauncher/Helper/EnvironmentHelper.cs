@@ -68,12 +68,23 @@ namespace PowerLauncher.Helper
         }
 
         /// <summary>
-        /// This method updates the environment of PT Run's process when called. It is called when we receive a special WindowMessage.
+        /// This method is used as a function wrapper to do the update twice. We have to do it twice to get correct variable sets if they contain nested variables (e.g. PATH contains %JAVA_HOME%).
+        /// It is called when we receive a special WindowMessage.
         /// </summary>
         internal static void UpdateEnvironment()
         {
             Stopwatch.Normal("EnvironmentHelper.UpdateEnvironment - Duration cost", () =>
             {
+                ExecuteEnvironmentUpdate();
+                ExecuteEnvironmentUpdate();
+            });
+        }
+
+        /// <summary>
+        /// This method updates the environment of PT Run's process when called.
+        /// </summary>
+        private static void ExecuteEnvironmentUpdate()
+        {
                 // Caching existing process environment and getting updated environment variables
                 IDictionary oldProcessEnvironment = GetEnvironmentVariablesWithErrorLog(EnvironmentVariableTarget.Process);
                 var newEnvironment = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
@@ -151,7 +162,6 @@ namespace PowerLauncher.Helper
                         Log.Error($"Failed to update the environment variable [{kv.Key}] for the PT Run process. Their name is null or empty. (The variable value has a length of [{varValueLength}].)", typeof(PowerLauncher.Helper.EnvironmentHelper));
                     }
                 }
-            });
         }
 
         /// <summary>

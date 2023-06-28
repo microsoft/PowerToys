@@ -83,7 +83,6 @@ namespace Microsoft.PowerToys.PreviewHandler.Markdown
         /// </summary>
         public MarkdownPreviewHandlerControl()
         {
-            this.SetBackgroundColor(Settings.BackgroundColor);
         }
 
         /// <summary>
@@ -122,12 +121,11 @@ namespace Microsoft.PowerToys.PreviewHandler.Markdown
                     _infoBarDisplayed = true;
                 }
 
-                string markdownHTML = FilePreviewCommon.MarkdownHelper.MarkdownHtml(fileText, Settings.GetTheme(), filePath, ImagesBlockedCallBack);
+                string markdownHTML = FilePreviewCommon.MarkdownHelper.MarkdownHtml(fileText, Common.UI.ThemeManager.GetWindowsBaseColor().ToLowerInvariant(), filePath, ImagesBlockedCallBack);
 
                 _browser = new WebView2()
                 {
                     Dock = DockStyle.Fill,
-                    DefaultBackgroundColor = Color.Transparent,
                 };
 
                 var webView2Options = new CoreWebView2EnvironmentOptions("--block-new-web-contents");

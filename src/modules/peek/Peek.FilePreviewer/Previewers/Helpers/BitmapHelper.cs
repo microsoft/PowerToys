@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.Drawing;
 using System.Drawing.Imaging;
 using System.IO;
 using System.Threading;
@@ -18,7 +19,7 @@ namespace Peek.FilePreviewer.Previewers.Helpers
         {
             try
             {
-                var bitmap = System.Drawing.Image.FromHbitmap(hbitmap);
+                var bitmap = Image.FromHbitmap(hbitmap);
                 if (isSupportingTransparency)
                 {
                     bitmap.MakeTransparent();
@@ -42,6 +43,33 @@ namespace Peek.FilePreviewer.Previewers.Helpers
             {
                 // delete HBitmap to avoid memory leaks
                 NativeMethods.DeleteObject(hbitmap);
+            }
+        }
+
+        public static async Task<BitmapSource> GetBitmapFromHIconAsync(IntPtr hicon, CancellationToken cancellationToken)
+        {
+            try
+            {
+                var icon = (Icon)Icon.FromHandle(hicon).Clone();
+                var bitmap = icon.ToBitmap();
+
+                var bitmapImage = new BitmapImage();
+
+                using (var stream = new MemoryStream())
+                {
+                    bitmap.Save(stream, ImageFormat.Png);
+                    stream.Position = 0;
+
+                    cancellationToken.ThrowIfCancellationRequested();
+                    await bitmapImage.SetSourceAsync(stream.AsRandomAccessStream());
+                }
+
+                return bitmapImage;
+            }
+            finally
+            {
+                // Delete HIcon to avoid memory leaks
+                _ = NativeMethods.DestroyIcon(hicon);
             }
         }
     }
