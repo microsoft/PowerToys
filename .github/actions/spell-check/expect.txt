@@ -2176,6 +2176,7 @@ VCINSTALLDIR
 vcm
 vcomp
 Vcpkg
+vcproj
 VCRT
 vcruntime
 vcvars
