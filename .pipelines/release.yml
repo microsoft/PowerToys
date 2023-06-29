@@ -71,7 +71,7 @@ jobs:
       packageType: sdk
       version: '7.x'
 
-  - task: NuGetAuthenticate@0
+  - task: NuGetAuthenticate@1
       
   - task: NuGetToolInstaller@1
     displayName: Use NuGet Installer latest
