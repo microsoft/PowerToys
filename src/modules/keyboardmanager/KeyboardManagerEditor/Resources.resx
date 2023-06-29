@@ -119,6 +119,7 @@
   </resheader>
   <data name="Settings_Description" xml:space="preserve">
     <value>This feature requires Windows 10 version 1903 or higher</value>
+    <comment>Windows = the OS</comment>
   </data>
   <data name="KeyboardManager" xml:space="preserve">
     <value>Keyboard Manager</value>
@@ -138,6 +139,7 @@
   </data>
   <data name="EditKeyboard_WindowName" xml:space="preserve">
     <value>Remap keys</value>
+    <comment>keys on a keyboard</comment>
   </data>
   <data name="EditShortcuts_WindowName" xml:space="preserve">
     <value>Remap shortcuts</value>
@@ -152,15 +154,11 @@
     <value>Continue anyway</value>
   </data>
   <data name="EditKeyboard_SourceHeader" xml:space="preserve">
-    <value>Press:</value>
-    <comment>verb</comment>
+    <value>Select:</value>
+    <comment>verb, alternative to "type a key on a keyboard"</comment>
   </data>
   <data name="EditKeyboard_TargetHeader" xml:space="preserve">
     <value>To send:</value>
-  </data>
-  <data name="EditShortcuts_SourceHeader" xml:space="preserve">
-    <value>Press:</value>
-    <comment>key sequence on a keyboard, example Control+C to copy a string</comment>
   </data>
   <data name="EditShortcuts_TargetHeader" xml:space="preserve">
     <value>To send:</value>
@@ -179,36 +177,38 @@
     <value>Some of the shortcuts could not be remapped. Continue anyway?</value>
   </data>
   <data name="EditKeyboard_Info" xml:space="preserve">
-    <value>Select the key you want to change ("Press") and then the key or shortcut you want it to send ("To send").</value>
+    <value>Select the key you want to change ("Select") and then the key or shortcut you want it to send ("To send").</value>
   </data>
   <data name="EditKeyboard_InfoExample" xml:space="preserve">
-    <value>Example of a remapping: Press A and get "Ctrl+C", "A" would be your "Press" and "Ctrl+C" would be your "To send" command.</value>
+    <value>Example of a remapping: Select A and send "Ctrl+C", "A" would be your "Select" and "Ctrl+C" would be your "To send" command.</value>
     <comment>Key on a keyboard</comment>
   </data>
   <data name="EditShortcuts_Info" xml:space="preserve">
-    <value>Select the shortcut you want to change ("Press") and then the key or shortcut you want it to invoke ("To send").</value>
+    <value>Select the shortcut you want to change ("Select") and then the key or shortcut you want it to invoke ("To send").</value>
+    <comment>Key on a keyboard</comment>
   </data>
   <data name="EditShortcuts_InfoExample" xml:space="preserve">
-    <value>Example of a remapping: Press "Alt+T" and send "Ctrl+T" only on Microsoft Edge. "MSEdge" (exe name) would be your "Target app". Note: if you remapped a key, that will influence the shortcut.</value>
+    <value>Example of a remapping: Select "Alt+T" and send "Ctrl+T" only on Microsoft Edge. "MSEdge" (exe name) would be your "Target app". Note: if you remapped a key, that will influence the shortcut.</value>
+    <comment>Key on a keyboard</comment>
   </data>
   <data name="Type_Button" xml:space="preserve">
-    <value>Type</value>
-    <comment>verb, as in "type a key on a keyboard"</comment>
+    <value>Select</value>
+    <comment>verb, alternative to "type a key on a keyboard"</comment>
   </data>
   <data name="TypeKey_Title" xml:space="preserve">
-    <value>Press a key on selected keyboard</value>
+    <value>Select a key on selected keyboard</value>
     <comment>Key on a keyboard</comment>
   </data>
   <data name="TypeShortcut_Title" xml:space="preserve">
-    <value>Press the keys in the shortcut</value>
+    <value>Select the keys in the shortcut</value>
     <comment>Keys on a keyboard</comment>
   </data>
   <data name="TypeKey_Header" xml:space="preserve">
-    <value>Key pressed:</value>
+    <value>Key selected:</value>
     <comment>Key on a keyboard</comment>
   </data>
   <data name="TypeShortcut_Header" xml:space="preserve">
-    <value>Keys pressed:</value>
+    <value>Keys selected:</value>
     <comment>Keys on a keyboard</comment>
   </data>
   <data name="Type_HoldEnter" xml:space="preserve">
@@ -249,7 +249,7 @@
   </data>
   <data name="ErrorMessage_WinL" xml:space="preserve">
     <value>Cannot remap from/to Win L</value>
-    <comment>Win refers to Windows as in the OS</comment>
+    <comment>Win refers to the key on a keyboard</comment>
   </data>
   <data name="ErrorMessage_CtrlAltDel" xml:space="preserve">
     <value>Cannot remap from/to Ctrl Alt Del</value>
@@ -307,5 +307,9 @@
   <data name="ERRORMESSAGE_DISABLEASACTIONKEY" xml:space="preserve">
     <value>Disable can not be an action or a modifier key</value>
     <comment>Key on a keyboard</comment>
+  </data>
+  <data name="EditShortcuts_SourceHeader" xml:space="preserve">
+    <value>Select:</value>
+    <comment>key sequence on a keyboard, example: Ctrl+C to copy a string</comment>
   </data>
 </root>
