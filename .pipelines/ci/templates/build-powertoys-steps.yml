@@ -65,7 +65,7 @@ steps:
     vsVersion: 17.0
     platform: '$(BuildPlatform)'
     configuration: '$(BuildConfiguration)'
-    msbuildArgs: -restore /p:RestorePackagesPath="$(Build.SourcesDirectory)\packages" ${{ parameters.additionalBuildArguments }}
+    msbuildArgs: -restore ${{ parameters.additionalBuildArguments }}
     maximumCpuCount: true
 
 - task: VSBuild@1
@@ -75,7 +75,7 @@ steps:
     vsVersion: 17.0
     platform: '$(BuildPlatform)'
     configuration: '$(BuildConfiguration)'
-    msbuildArgs: -restore /p:RestorePackagesPath="$(Build.SourcesDirectory)\tools\BugReportTool\packages" ${{ parameters.additionalBuildArguments }}
+    msbuildArgs: -restore ${{ parameters.additionalBuildArguments }}
     maximumCpuCount: true
 
 - task: VSBuild@1
@@ -85,7 +85,7 @@ steps:
     vsVersion: 17.0
     platform: '$(BuildPlatform)'
     configuration: '$(BuildConfiguration)'
-    msbuildArgs: -restore /p:RestorePackagesPath="$(Build.SourcesDirectory)\tools\WebcamReportTool\packages" ${{ parameters.additionalBuildArguments }}
+    msbuildArgs: -restore ${{ parameters.additionalBuildArguments }}
     maximumCpuCount: true
 
 - task: VSBuild@1
@@ -95,7 +95,7 @@ steps:
     vsVersion: 17.0
     platform: '$(BuildPlatform)'
     configuration: '$(BuildConfiguration)'
-    msbuildArgs: -restore /p:RestorePackagesPath="$(Build.SourcesDirectory)\tools\StylesReportTool\packages" ${{ parameters.additionalBuildArguments }}
+    msbuildArgs: -restore ${{ parameters.additionalBuildArguments }}
     maximumCpuCount: true
 
 - task: PowerShell@2
@@ -111,7 +111,7 @@ steps:
     vsVersion: 17.0
     platform: '$(BuildPlatform)'
     configuration: '$(BuildConfiguration)'
-    msbuildArgs: /t:PowerToysInstaller -restore /p:RestorePackagesPath="$(Build.SourcesDirectory)\installer\packages" ${{ parameters.additionalBuildArguments }}
+    msbuildArgs: /t:PowerToysInstaller -restore ${{ parameters.additionalBuildArguments }}
     maximumCpuCount: true
 
 - task: VSBuild@1
@@ -139,7 +139,7 @@ steps:
     vsVersion: 17.0
     platform: '$(BuildPlatform)'
     configuration: '$(BuildConfiguration)'
-    msbuildArgs: /t:PowerToysInstaller -restore /p:RestorePackagesPath="$(Build.SourcesDirectory)\installer\packages" ${{ parameters.additionalBuildArguments }} /p:PerUser=true
+    msbuildArgs: /t:PowerToysInstaller -restore ${{ parameters.additionalBuildArguments }} /p:PerUser=true
     maximumCpuCount: true
 
 - task: VSBuild@1
