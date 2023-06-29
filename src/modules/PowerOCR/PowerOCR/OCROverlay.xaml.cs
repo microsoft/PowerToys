@@ -30,7 +30,7 @@ public partial class OCROverlay : Window
 
     private bool IsSelecting { get; set; }
 
-    private Border selectBorder = new Border();
+    private Border selectBorder = new();
 
     private DpiScale? dpiScale;
 
@@ -57,7 +57,7 @@ public partial class OCROverlay : Window
     {
         InitializeComponent();
 
-        var userSettings = new UserSettings(new Helpers.ThrottledActionInvoker());
+        var userSettings = new UserSettings(new ThrottledActionInvoker());
         string? selectedLanguageName = userSettings.PreferredLanguage.Value;
 
         // build context menu
@@ -70,7 +70,7 @@ public partial class OCROverlay : Window
         List<Language> possibleOcrLanguages = OcrEngine.AvailableRecognizerLanguages.ToList();
         foreach (Language language in possibleOcrLanguages)
         {
-            MenuItem menuItem = new MenuItem() { Header = language.NativeName, Tag = language, IsCheckable = true };
+            MenuItem menuItem = new() { Header = language.NativeName, Tag = language, IsCheckable = true };
             menuItem.IsChecked = language.DisplayName.Equals(selectedLanguageName, StringComparison.Ordinal);
             if (language.DisplayName.Equals(selectedLanguageName, StringComparison.Ordinal))
             {
@@ -94,9 +94,8 @@ public partial class OCROverlay : Window
         MenuItem menuItem = (MenuItem)sender;
         foreach (var item in CanvasContextMenu.Items)
         {
-            if (item is MenuItem)
+            if (item is MenuItem menuItemLoop)
             {
-                MenuItem menuItemLoop = (MenuItem)item;
                 menuItemLoop.IsChecked = item.Equals(menuItem);
             }
         }
@@ -195,7 +194,7 @@ public partial class OCROverlay : Window
         Canvas.SetTop(selectBorder, clickedPoint.Y);
 
         var screens = System.Windows.Forms.Screen.AllScreens;
-        System.Drawing.Point formsPoint = new System.Drawing.Point((int)clickedPoint.X, (int)clickedPoint.Y);
+        System.Drawing.Point formsPoint = new((int)clickedPoint.X, (int)clickedPoint.Y);
         foreach (var scr in screens)
         {
             if (scr.Bounds.Contains(formsPoint))
@@ -295,7 +294,7 @@ public partial class OCROverlay : Window
         double xDimScaled = Canvas.GetLeft(selectBorder) * m.M11;
         double yDimScaled = Canvas.GetTop(selectBorder) * m.M22;
 
-        System.Drawing.Rectangle regionScaled = new System.Drawing.Rectangle(
+        System.Drawing.Rectangle regionScaled = new(
             (int)xDimScaled,
             (int)yDimScaled,
             (int)(selectBorder.Width * m.M11),

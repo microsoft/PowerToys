@@ -221,4 +221,16 @@
     <value>An error occurred while previewing this file.</value>
     <comment>Failed fallback preview text.</comment>
   </data>
+  <data name="Archive_Directory_Count" xml:space="preserve">
+    <value>{0} directories</value>
+    <comment>{0} is the number of directories in the archive</comment>
+  </data>
+  <data name="Archive_File_Count" xml:space="preserve">
+    <value>{0} files</value>
+    <comment>{0} is the number of files in the archive</comment>
+  </data>
+  <data name="Archive_Size" xml:space="preserve">
+    <value>{0} (extracted {1})</value>
+    <comment>{0} is the size of the archive, {1} is the extracted size</comment>
+  </data>
 </root>

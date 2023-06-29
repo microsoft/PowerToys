@@ -8,9 +8,11 @@ namespace Microsoft.PowerToys.Settings.UI.Library
 {
     public class PowerOcrProperties
     {
+        public HotkeySettings DefaultActivationShortcut => new HotkeySettings(true, false, false, true, 0x54); // Win+Shift+T
+
         public PowerOcrProperties()
         {
-            ActivationShortcut = new HotkeySettings(true, false, false, true, 0x54); // Win+Shift+T
+            ActivationShortcut = DefaultActivationShortcut;
             PreferredLanguage = string.Empty;
         }
 

@@ -142,7 +142,14 @@ namespace Peek.UI.Views
 
             PowerToysTelemetry.Log.WriteEvent(new OpenWithEvent() { App = DefaultAppName ?? string.Empty });
 
-            if (string.IsNullOrEmpty(DefaultAppName))
+            // StorageFile objects can't represent files that are ".lnk", ".url", or ".wsh" file types.
+            // https://learn.microsoft.com/en-us/uwp/api/windows.storage.storagefile?view=winrt-22621
+            if (storageFile == null)
+            {
+                options.DisplayApplicationPicker = true;
+                await Launcher.LaunchUriAsync(new Uri(Item.Path), options);
+            }
+            else if (string.IsNullOrEmpty(DefaultAppName))
             {
                 // If there's no default app found, open the App picker
                 options.DisplayApplicationPicker = true;
@@ -189,7 +196,7 @@ namespace Peek.UI.Views
                 return;
             }
 
-            var appWindow = MainWindow.GetAppWindow();
+            var appWindow = MainWindow.AppWindow;
             if (AppWindowTitleBar.IsCustomizationSupported() && appWindow != null && appWindow.TitleBar.ExtendsContentIntoTitleBar)
             {
                 var scale = MainWindow.GetMonitorScale();
@@ -222,10 +229,18 @@ namespace Peek.UI.Views
         {
             if (AppWindowTitleBar.IsCustomizationSupported())
             {
-                AppWindow appWindow = mainWindow.GetAppWindow();
+                AppWindow appWindow = mainWindow.AppWindow;
                 appWindow.TitleBar.ExtendsContentIntoTitleBar = true;
                 appWindow.TitleBar.ButtonBackgroundColor = Colors.Transparent;
                 appWindow.TitleBar.ButtonInactiveBackgroundColor = Colors.Transparent;
+                if (ThemeHelpers.GetAppTheme() == AppTheme.Light)
+                {
+                    appWindow.TitleBar.ButtonForegroundColor = Colors.DarkSlateGray;
+                }
+                else
+                {
+                    appWindow.TitleBar.ButtonForegroundColor = Colors.White;
+                }
 
                 mainWindow.SetTitleBar(this);
             }

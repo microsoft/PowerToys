@@ -593,7 +593,8 @@ bool SuperSonar<D>::IsForegroundAppExcluded()
     {
         auto processPath = get_process_path(foregroundApp);
         CharUpperBuffW(processPath.data(), static_cast<DWORD>(processPath.length()));
-        return find_app_name_in_path(processPath, m_excludedApps);
+
+        return check_excluded_app(foregroundApp, processPath, m_excludedApps);
     }
     else
     {

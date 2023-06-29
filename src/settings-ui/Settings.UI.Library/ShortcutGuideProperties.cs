@@ -8,6 +8,8 @@ namespace Microsoft.PowerToys.Settings.UI.Library
 {
     public class ShortcutGuideProperties
     {
+        public HotkeySettings DefaultOpenShortcutGuide => new HotkeySettings(true, false, false, true, 0xBF);
+
         public ShortcutGuideProperties()
         {
             OverlayOpacity = new IntProperty(90);
@@ -16,7 +18,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             PressTimeForTaskbarIconShortcuts = new IntProperty(900);
             Theme = new StringProperty("system");
             DisabledApps = new StringProperty();
-            OpenShortcutGuide = new HotkeySettings(true, false, false, true, 0xBF);
+            OpenShortcutGuide = DefaultOpenShortcutGuide;
         }
 
         [JsonPropertyName("open_shortcutguide")]

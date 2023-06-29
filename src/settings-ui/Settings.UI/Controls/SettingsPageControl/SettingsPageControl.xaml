@@ -46,7 +46,6 @@
         <TextBlock
             x:Name="Header"
             MaxWidth="{StaticResource PageMaxWidth}"
-            Margin="0,44,0,0"
             HorizontalAlignment="Stretch"
             VerticalAlignment="Stretch"
             AutomationProperties.HeadingLevel="1"

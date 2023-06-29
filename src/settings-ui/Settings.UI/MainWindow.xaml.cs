@@ -125,6 +125,9 @@ namespace Microsoft.PowerToys.Settings.UI
                     case "MousePointerCrosshairs":
                         needToUpdate = generalSettingsConfig.Enabled.MousePointerCrosshairs != isEnabled;
                         generalSettingsConfig.Enabled.MousePointerCrosshairs = isEnabled; break;
+                    case "MouseWithoutBorders":
+                        needToUpdate = generalSettingsConfig.Enabled.MouseWithoutBorders != isEnabled;
+                        generalSettingsConfig.Enabled.MouseWithoutBorders = isEnabled; break;
                     case "PastePlain":
                         needToUpdate = generalSettingsConfig.Enabled.PastePlain != isEnabled;
                         generalSettingsConfig.Enabled.PastePlain = isEnabled; break;
@@ -217,6 +220,8 @@ namespace Microsoft.PowerToys.Settings.UI
 
             this.InitializeComponent();
 
+            SetTheme(isDark);
+
             // receive IPC Message
             App.IPCMessageReceivedCallback = (string msg) =>
             {
@@ -275,6 +280,11 @@ namespace Microsoft.PowerToys.Settings.UI
         internal void EnsurePageIsSelected()
         {
             ShellPage.EnsurePageIsSelected();
+        }
+
+        private void SetTheme(bool isDark)
+        {
+            shellPage.RequestedTheme = isDark ? ElementTheme.Dark : ElementTheme.Light;
         }
     }
 }

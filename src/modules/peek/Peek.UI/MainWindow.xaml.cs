@@ -2,8 +2,11 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System;
 using interop;
+using ManagedCommon;
 using Microsoft.PowerToys.Telemetry;
+using Microsoft.UI;
 using Microsoft.UI.Windowing;
 using Microsoft.UI.Xaml.Input;
 using Peek.Common.Constants;
@@ -20,13 +23,19 @@ namespace Peek.UI
     /// <summary>
     /// An empty window that can be used on its own or navigated to within a Frame.
     /// </summary>
-    public sealed partial class MainWindow : WindowEx
+    public sealed partial class MainWindow : WindowEx, IDisposable
     {
         public MainWindowViewModel ViewModel { get; }
+
+        private ThemeListener themeListener;
 
         public MainWindow()
         {
             InitializeComponent();
+            this.Activated += PeekWindow_Activated;
+
+            themeListener = new ThemeListener();
+            themeListener.ThemeChanged += (_) => HandleThemeChange();
 
             ViewModel = App.GetService<MainWindowViewModel>();
 
@@ -35,6 +44,32 @@ namespace Peek.UI
             TitleBarControl.SetTitleBarToWindow(this);
 
             AppWindow.Closing += AppWindow_Closing;
+        }
+
+        private void HandleThemeChange()
+        {
+            AppWindow appWindow = this.AppWindow;
+
+            if (ThemeHelpers.GetAppTheme() == AppTheme.Light)
+            {
+                appWindow.TitleBar.ButtonForegroundColor = Colors.DarkSlateGray;
+            }
+            else
+            {
+                appWindow.TitleBar.ButtonForegroundColor = Colors.White;
+            }
+        }
+
+        private void PeekWindow_Activated(object sender, Microsoft.UI.Xaml.WindowActivatedEventArgs args)
+        {
+            if (args.WindowActivationState == Microsoft.UI.Xaml.WindowActivationState.Deactivated)
+            {
+                var userSettings = App.GetService<IUserSettings>();
+                if (userSettings.CloseAfterLosingFocus)
+                {
+                    Uninitialize();
+                }
+            }
         }
 
         /// <summary>
@@ -59,14 +94,19 @@ namespace Peek.UI
             }
         }
 
-        private void LeftNavigationInvoked(KeyboardAccelerator sender, KeyboardAcceleratorInvokedEventArgs args)
+        private void PreviousNavigationInvoked(KeyboardAccelerator sender, KeyboardAcceleratorInvokedEventArgs args)
         {
-            ViewModel.AttemptLeftNavigation();
+            ViewModel.AttemptPreviousNavigation();
         }
 
-        private void RightNavigationInvoked(KeyboardAccelerator sender, KeyboardAcceleratorInvokedEventArgs args)
+        private void NextNavigationInvoked(KeyboardAccelerator sender, KeyboardAcceleratorInvokedEventArgs args)
         {
-            ViewModel.AttemptRightNavigation();
+            ViewModel.AttemptNextNavigation();
+        }
+
+        private void EscKeyInvoked(KeyboardAccelerator sender, KeyboardAcceleratorInvokedEventArgs args)
+        {
+            Uninitialize();
         }
 
         private void Initialize()
@@ -98,39 +138,47 @@ namespace Peek.UI
         /// <param name="e">PreviewSizeChangedArgs</param>
         private void FilePreviewer_PreviewSizeChanged(object sender, PreviewSizeChangedArgs e)
         {
-            var monitorSize = this.GetMonitorSize();
+            var foregroundWindowHandle = Windows.Win32.PInvoke.GetForegroundWindow();
+            var monitorSize = foregroundWindowHandle.GetMonitorSize();
+            var monitorScale = foregroundWindowHandle.GetMonitorScale();
 
             // If no size is requested, try to fit to the monitor size.
-            Size requestedSize = e.WindowSizeRequested ?? monitorSize;
+            Size requestedSize = e.PreviewSize.MonitorSize ?? monitorSize;
+            var contentScale = e.PreviewSize.UseEffectivePixels ? 1 : monitorScale;
+            Size scaledRequestedSize = new Size(requestedSize.Width / contentScale, requestedSize.Height / contentScale);
 
-            double titleBarHeight = TitleBarControl.ActualHeight;
-
-            double maxContentWidth = monitorSize.Width * WindowConstants.MaxWindowToMonitorRatio;
-            double maxContentHeight = (monitorSize.Height - titleBarHeight) * WindowConstants.MaxWindowToMonitorRatio;
-            Size maxContentSize = new(maxContentWidth, maxContentHeight);
-
-            double minContentWidth = WindowConstants.MinWindowWidth;
-            double minContentHeight = WindowConstants.MinWindowHeight - titleBarHeight;
-            Size minContentSize = new(minContentWidth, minContentHeight);
-
-            Size adjustedContentSize = requestedSize.Fit(maxContentSize, minContentSize);
-
-            // TODO: Only re-center if window has not been resized by user (or use design-defined logic).
             // TODO: Investigate why portrait images do not perfectly fit edge-to-edge
-            double monitorScale = this.GetMonitorScale();
-            double scaledWindowWidth = adjustedContentSize.Width / monitorScale;
-            double scaledWindowHeight = adjustedContentSize.Height / monitorScale;
+            Size monitorMinContentSize = GetMonitorMinContentSize(monitorScale);
+            Size monitorMaxContentSize = GetMonitorMaxContentSize(monitorSize, monitorScale);
+            Size adjustedContentSize = scaledRequestedSize.Fit(monitorMaxContentSize, monitorMinContentSize);
 
-            double desiredScaledHeight = scaledWindowHeight + titleBarHeight + WindowConstants.WindowWidthContentPadding;
-            double desiredScaledWidth = scaledWindowWidth + WindowConstants.WindowHeightContentPadding;
+            var titleBarHeight = TitleBarControl.ActualHeight;
+            var desiredWindowHeight = adjustedContentSize.Height + titleBarHeight + WindowConstants.WindowWidthContentPadding;
+            var desiredWindowWidth = adjustedContentSize.Width + WindowConstants.WindowHeightContentPadding;
 
             if (!TitleBarControl.Pinned)
             {
-                this.CenterOnScreen(desiredScaledWidth, desiredScaledHeight); // re-center if not pinned
+                this.CenterOnMonitor(foregroundWindowHandle, desiredWindowWidth, desiredWindowHeight);
             }
 
             this.Show();
             this.BringToForeground();
+        }
+
+        private Size GetMonitorMaxContentSize(Size monitorSize, double scaling)
+        {
+            var titleBarHeight = TitleBarControl.ActualHeight;
+            var maxContentWidth = monitorSize.Width * WindowConstants.MaxWindowToMonitorRatio;
+            var maxContentHeight = (monitorSize.Height - titleBarHeight) * WindowConstants.MaxWindowToMonitorRatio;
+            return new Size(maxContentWidth / scaling, maxContentHeight / scaling);
+        }
+
+        private Size GetMonitorMinContentSize(double scaling)
+        {
+            var titleBarHeight = TitleBarControl.ActualHeight;
+            var minContentWidth = WindowConstants.MinWindowWidth;
+            var minContentHeight = WindowConstants.MinWindowHeight - titleBarHeight;
+            return new Size(minContentWidth / scaling, minContentHeight / scaling);
         }
 
         /// <summary>
@@ -147,23 +195,37 @@ namespace Peek.UI
 
         private bool IsNewSingleSelectedItem()
         {
-            var foregroundWindowHandle = Windows.Win32.PInvoke.GetForegroundWindow();
-
-            var selectedItems = FileExplorerHelper.GetSelectedItems(foregroundWindowHandle);
-            var selectedItemsCount = selectedItems?.GetCount() ?? 0;
-            if (selectedItems == null || selectedItemsCount == 0 || selectedItemsCount > 1)
+            try
             {
-                return false;
+                var foregroundWindowHandle = Windows.Win32.PInvoke.GetForegroundWindow();
+
+                var selectedItems = FileExplorerHelper.GetSelectedItems(foregroundWindowHandle);
+                var selectedItemsCount = selectedItems?.GetCount() ?? 0;
+                if (selectedItems == null || selectedItemsCount == 0 || selectedItemsCount > 1)
+                {
+                    return false;
+                }
+
+                var fileExplorerSelectedItemPath = selectedItems.GetItemAt(0).ToIFileSystemItem().Path;
+                var currentItemPath = ViewModel.CurrentItem?.Path;
+                if (fileExplorerSelectedItemPath == null || currentItemPath == null || fileExplorerSelectedItemPath == currentItemPath)
+                {
+                    return false;
+                }
+
+                return true;
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError(ex.Message);
             }
 
-            var fileExplorerSelectedItemPath = selectedItems.GetItemAt(0).ToIFileSystemItem().Path;
-            var currentItemPath = ViewModel.CurrentItem?.Path;
-            if (fileExplorerSelectedItemPath == null || currentItemPath == null || fileExplorerSelectedItemPath == currentItemPath)
-            {
-                return false;
-            }
+            return false;
+        }
 
-            return true;
+        public void Dispose()
+        {
+            themeListener?.Dispose();
         }
     }
 }

@@ -3,6 +3,8 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.Globalization;
+using System.Text.Json;
 using global::PowerToys.GPOWrapper;
 using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.PowerToys.Settings.UI.Library.Helpers;
@@ -17,7 +19,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         public ButtonClickCommand LaunchEventHandler => new ButtonClickCommand(Launch);
 
-        public RegistryPreviewViewModel(ISettingsRepository<GeneralSettings> settingsRepository, Func<string, int> ipcMSGCallBackFunc)
+        public RegistryPreviewViewModel(ISettingsRepository<GeneralSettings> settingsRepository, ISettingsRepository<RegistryPreviewSettings> registryPreviewSettingsRepository, Func<string, int> ipcMSGCallBackFunc)
         {
             // To obtain the general settings configurations of PowerToys Settings.
             if (settingsRepository == null)
@@ -26,6 +28,8 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             }
 
             GeneralSettingsConfig = settingsRepository.SettingsConfig;
+
+            _settings = registryPreviewSettingsRepository.SettingsConfig;
 
             InitializeEnabledValue();
 
@@ -71,6 +75,21 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             }
         }
 
+        public bool IsRegistryPreviewDefaultRegApp
+        {
+            get => _settings.Properties.DefaultRegApp;
+            set
+            {
+                if (_settings.Properties.DefaultRegApp != value)
+                {
+                    _settings.Properties.DefaultRegApp = value;
+                    OnPropertyChanged(nameof(IsRegistryPreviewDefaultRegApp));
+
+                    NotifySettingsChanged();
+                }
+            }
+        }
+
         public bool IsEnabledGpoConfigured
         {
             get => _enabledStateIsGPOConfigured;
@@ -88,11 +107,23 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         private GpoRuleConfigured _enabledGpoRuleConfiguration;
         private bool _enabledStateIsGPOConfigured;
         private bool _isRegistryPreviewEnabled;
+        private RegistryPreviewSettings _settings;
 
         public void RefreshEnabledState()
         {
             InitializeEnabledValue();
             OnPropertyChanged(nameof(IsRegistryPreviewEnabled));
+        }
+
+        private void NotifySettingsChanged()
+        {
+            // Using InvariantCulture as this is an IPC message
+            SendConfigMSG(
+                   string.Format(
+                       CultureInfo.InvariantCulture,
+                       "{{ \"powertoys\": {{ \"{0}\": {1} }} }}",
+                       RegistryPreviewSettings.ModuleName,
+                       JsonSerializer.Serialize(_settings)));
         }
     }
 }

@@ -7,6 +7,7 @@ AACD
 AAD
 AADF
 abap
+abcdefghjkmnpqrstuvxyz
 ABE
 abgr
 abi
@@ -24,6 +25,7 @@ ACFC
 ACFF
 Acl
 aclapi
+AClient
 AColumn
 acrt
 activatable
@@ -31,6 +33,7 @@ ACTIVATEAPP
 activationaction
 ADDUNDORECORD
 ADifferent
+adio
 administra
 ADMINS
 adml
@@ -60,7 +63,7 @@ ALLINPUT
 ALLOWUNDO
 ALLVIEW
 ALPHATYPE
-Altdown
+altdown
 alwaysontop
 amd
 AModifier
@@ -88,16 +91,17 @@ APPIDS
 appium
 Applets
 Applicationcan
-applicationconfiguration
 applicationframehost
 appmanifest
 APPNAME
 appref
 apps
+appsettings
 appwindow
 appwiz
 APSTUDIO
 AQS
+ARandom
 ARCHITEW
 arcosh
 ARemapped
@@ -221,6 +225,7 @@ buildtransitive
 BUTTONUP
 BVal
 BValue
+byapp
 BYPOSITION
 bytearray
 CABD
@@ -266,6 +271,7 @@ CFEE
 CFFEE
 CFFF
 cguid
+CHANGECBCHAIN
 changecursor
 Changemove
 chdir
@@ -289,9 +295,11 @@ clickonce
 CLIENTEDGE
 clientid
 clientside
+CLIPBOARDUPDATE
 CLIPCHILDREN
 CLIPSIBLINGS
 Cloneable
+closesocket
 clrcall
 Cls
 CLSCTX
@@ -340,6 +348,7 @@ comsuppw
 comsuppwd
 comutil
 concrt
+CONFIGW
 CONFLICTINGMODIFIERKEY
 CONFLICTINGMODIFIERSHORTCUT
 CONOUT
@@ -453,6 +462,7 @@ debian
 debugbreak
 DECLAR
 declspec
+decryptor
 DED
 Dedup
 DEFAULTBOOTSTRAPPERINSTALLFOLDER
@@ -520,11 +530,13 @@ DPolicy
 DPSAPI
 DQTAT
 DQTYPE
+DRAWCLIPBOARD
 DRAWFRAME
 drawingcolor
 dreamsofameaningfullife
 drf
 drivedetectionwarning
+dsc
 dshow
 DSTINVERT
 DUMMYUNIONNAME
@@ -602,8 +614,11 @@ Emoji
 ENABLEDELAYEDEXPANSION
 enabledisable
 ENABLEDPOPUP
+encodedlaunch
+encryptor
 endpointvolume
 endregion
+ENDSESSION
 ENTERSIZEMOVE
 ENU
 EOAC
@@ -621,6 +636,7 @@ esize
 esrp
 estructuredtext
 etl
+etstat
 etw
 EUQ
 eurochange
@@ -714,6 +730,7 @@ FILEVERSION
 Filtergraph
 Filterkeyboard
 Filterx
+Finalizers
 findfast
 firefox
 FIXEDFILEINFO
@@ -726,6 +743,7 @@ FORCEMINIMIZE
 formatetc
 FRAMECHANGED
 frankychen
+frm
 Froml
 FROMTOUCH
 FSCTL
@@ -755,6 +773,8 @@ GETDPISCALEDSIZE
 GETICON
 GETMINMAXINFO
 GETPROPERTYSTOREFLAGS
+GETSCREENSAVERRUNNING
+GETSECKEY
 GETSTATE
 GETTEXT
 GETTEXTLENGTH
@@ -792,6 +812,7 @@ Hashtable
 hashtag
 HASHVAL
 hbitmap
+hbm
 hbmp
 hbr
 HBRBACKGROUND
@@ -980,6 +1001,7 @@ ITHUMBNAIL
 IUI
 IUnknown
 IWbem
+IWeb
 IWIC
 iwr
 IYUV
@@ -1003,6 +1025,8 @@ jyuwono
 KBDLLHOOKSTRUCT
 kbm
 kdc
+keybd
+KEYBDDATA
 KEYBDINPUT
 keyboardeventhandlers
 keyboardmanager
@@ -1059,10 +1083,12 @@ lexon
 lhs
 lhwnd
 LIBID
+licate
 LIGHTORANGE
 LIGHTTURQUOISE
 lindex
 linkedin
+LINKOVERLAY
 linq
 LINQTo
 listview
@@ -1107,6 +1133,7 @@ LPMINMAXINFO
 LPMONITORINFO
 LPOSVERSIONINFOEXW
 LPPOINT
+LPQUERY
 lprc
 LPRECT
 LPSAFEARRAY
@@ -1116,6 +1143,7 @@ lpt
 LPTHREAD
 LPTOP
 lptpm
+LPTR
 LPTSTR
 LPVOID
 LPW
@@ -1231,6 +1259,7 @@ monitorinfof
 Monthand
 Moq
 MOUSEACTIVATE
+MOUSEDATA
 MOUSEEVENTF
 MOUSEHWHEEL
 MOUSEINPUT
@@ -1261,6 +1290,7 @@ MSIXCA
 MSLLHOOKSTRUCT
 Mso
 msp
+mspaint
 msrc
 msstore
 mst
@@ -1271,11 +1301,15 @@ Mul
 MULTIPLEUSE
 multizone
 mvvm
+mwb
+MWBEx
 myfile
 MYICON
 mysql
 NAMECHANGE
 nameof
+namespaceanddescendants
+nao
 NCACTIVATE
 ncc
 NCCALCSIZE
@@ -1299,6 +1333,7 @@ NCRBUTTONUP
 NCRENDERING
 ndp
 NEEDDISPATCH
+needinfo
 Nemeth
 NESW
 netcore
@@ -1322,6 +1357,7 @@ NLD
 NLog
 nls
 NLSTEXT
+NNN
 NOACTIVATE
 NOAGGREGATION
 NOASYNC
@@ -1382,6 +1418,7 @@ nullonfailure
 numberbox
 NUMLOCK
 numpad
+nupkg
 nwc
 Objbase
 OBJID
@@ -1467,6 +1504,7 @@ pcs
 PCWSTR
 pdb
 pdbonly
+pdisp
 pdo
 pdto
 pdtobj
@@ -1482,6 +1520,7 @@ perfmon
 pesi
 petabyte
 peteblois
+pevent
 PEXCEPTION
 pfn
 pfo
@@ -1578,6 +1617,7 @@ psapi
 pscid
 PSECURITY
 psfgao
+psfi
 Psr
 psrm
 psrree
@@ -1633,6 +1673,7 @@ rclsid
 RCONTROL
 RCtrl
 READMODE
+READOBJECTS
 READWRITE
 RECTDESTINATION
 RECTL
@@ -1671,12 +1712,14 @@ remappings
 REMAPSUCCESSFUL
 REMAPUNSUCCESSFUL
 Remotable
+remoteip
 Removedir
 Removelnk
 renamable
 RENAMEONCOLLISION
 Renamer
 reparse
+reportbug
 requery
 requerying
 rescap
@@ -1798,6 +1841,7 @@ setzero
 sfgao
 SFGAOF
 SFP
+SHANDLE
 sharpkeys
 SHCNE
 SHCNF
@@ -1813,6 +1857,7 @@ shellscalingapi
 SHFILEINFO
 SHGDNF
 SHGFI
+shinfo
 Shl
 shldisp
 shlobj
@@ -1971,6 +2016,7 @@ SYSICONINDEX
 SYSKEY
 syskeydown
 SYSKEYUP
+SYSLIB
 SYSMENU
 SYSTEMAPPS
 systemroot
@@ -1997,6 +2043,7 @@ taskschd
 tchar
 tcl
 Tcollab
+tcp
 tcs
 tcscpy
 TCustom
@@ -2016,6 +2063,7 @@ TEXCOORD
 textblock
 TEXTEXTRACTOR
 TEXTINCLUDE
+tgz
 themeresources
 THH
 THICKFRAME
@@ -2080,8 +2128,10 @@ uipi
 UIs
 ULARGE
 ULONGLONG
+unapply
 unassign
 uncompilable
+Uncompress
 UNCPRIORITY
 UNDNAME
 UNICODETEXT
@@ -2103,6 +2153,7 @@ unremapped
 unsubscribe
 unvirtualized
 UOffset
+UOI
 Updatelayout
 UPGRADINGPRODUCTCODE
 Uptool
@@ -2245,6 +2296,7 @@ wingetcreate
 Winhook
 winkey
 WINL
+winlogon
 winmd
 winmm
 WINNT
@@ -2252,7 +2304,9 @@ winres
 winrt
 winsdk
 winsdkver
+Winsock
 winspool
+winsta
 winternl
 WINTHRESHOLD
 winui
@@ -2299,8 +2353,12 @@ wregex
 WReserved
 WResize
 writefile
+WRITEOBJECTS
 Wrk
 wrl
+WSAEADDRINUSE
+WSAEADDRNOTAVAIL
+WSAECONNRESET
 wscui
 wsf
 wsh
@@ -2334,6 +2392,7 @@ XIncrement
 XLoc
 XNamespace
 XOffset
+XPels
 XPixel
 XResource
 xsi
@@ -2347,6 +2406,7 @@ yinle
 yinwang
 yinyue
 YOffset
+YPels
 ypescript
 YResolution
 YStr

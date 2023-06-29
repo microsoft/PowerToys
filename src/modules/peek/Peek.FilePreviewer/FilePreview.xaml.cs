@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft Corporation
+﻿// Copyright (c) Microsoft Corporation
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
@@ -49,6 +49,7 @@ namespace Peek.FilePreviewer
         [NotifyPropertyChangedFor(nameof(ImagePreviewer))]
         [NotifyPropertyChangedFor(nameof(VideoPreviewer))]
         [NotifyPropertyChangedFor(nameof(BrowserPreviewer))]
+        [NotifyPropertyChangedFor(nameof(ArchivePreviewer))]
         [NotifyPropertyChangedFor(nameof(UnsupportedFilePreviewer))]
 
         private IPreviewer? previewer;
@@ -93,6 +94,8 @@ namespace Peek.FilePreviewer
         public IVideoPreviewer? VideoPreviewer => Previewer as IVideoPreviewer;
 
         public IBrowserPreviewer? BrowserPreviewer => Previewer as IBrowserPreviewer;
+
+        public IArchivePreviewer? ArchivePreviewer => Previewer as IArchivePreviewer;
 
         public IUnsupportedFilePreviewer? UnsupportedFilePreviewer => Previewer as IUnsupportedFilePreviewer;
 
@@ -145,6 +148,7 @@ namespace Peek.FilePreviewer
                 ImagePreview.Visibility = Visibility.Collapsed;
                 VideoPreview.Visibility = Visibility.Collapsed;
                 BrowserPreview.Visibility = Visibility.Collapsed;
+                ArchivePreview.Visibility = Visibility.Collapsed;
                 UnsupportedFilePreview.Visibility = Visibility.Collapsed;
                 return;
             }
@@ -167,8 +171,8 @@ namespace Peek.FilePreviewer
         {
             if (Previewer != null)
             {
-                var size = await Previewer.GetPreviewSizeAsync(cancellationToken);
-                PreviewSizeChanged?.Invoke(this, new PreviewSizeChangedArgs(size));
+                var previewSize = await Previewer.GetPreviewSizeAsync(cancellationToken);
+                PreviewSizeChanged?.Invoke(this, new PreviewSizeChangedArgs(previewSize));
             }
         }
 
@@ -204,6 +208,11 @@ namespace Peek.FilePreviewer
         partial void OnPreviewerChanging(IPreviewer? value)
         {
             VideoPreview.MediaPlayer.Pause();
+            VideoPreview.Source = null;
+
+            ImagePreview.Source = null;
+            ArchivePreview.Source = null;
+            BrowserPreview.Source = null;
 
             if (Previewer != null)
             {

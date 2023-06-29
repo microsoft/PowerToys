@@ -102,8 +102,36 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             {
                 if (_peekSettings.Properties.ActivationShortcut != value)
                 {
-                    _peekSettings.Properties.ActivationShortcut = value;
+                    _peekSettings.Properties.ActivationShortcut = value ?? _peekSettings.Properties.DefaultActivationShortcut;
                     OnPropertyChanged(nameof(ActivationShortcut));
+                    NotifySettingsChanged();
+                }
+            }
+        }
+
+        public bool AlwaysRunNotElevated
+        {
+            get => _peekSettings.Properties.AlwaysRunNotElevated.Value;
+            set
+            {
+                if (_peekSettings.Properties.AlwaysRunNotElevated.Value != value)
+                {
+                    _peekSettings.Properties.AlwaysRunNotElevated.Value = value;
+                    OnPropertyChanged(nameof(AlwaysRunNotElevated));
+                    NotifySettingsChanged();
+                }
+            }
+        }
+
+        public bool CloseAfterLosingFocus
+        {
+            get => _peekSettings.Properties.CloseAfterLosingFocus.Value;
+            set
+            {
+                if (_peekSettings.Properties.CloseAfterLosingFocus.Value != value)
+                {
+                    _peekSettings.Properties.CloseAfterLosingFocus.Value = value;
+                    OnPropertyChanged(nameof(CloseAfterLosingFocus));
                     NotifySettingsChanged();
                 }
             }

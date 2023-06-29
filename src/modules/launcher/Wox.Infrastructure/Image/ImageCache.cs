@@ -53,7 +53,7 @@ namespace Wox.Infrastructure.Image
                     foreach (var key in _data.Keys)
                     {
                         // Using Ordinal since this is internal
-                        if (!Usage.TryGetValue(key, out _) && !(key.Equals(Constant.ErrorIcon, StringComparison.Ordinal) || key.Equals(Constant.DefaultIcon, StringComparison.Ordinal) || key.Equals(Constant.LightThemedErrorIcon, StringComparison.Ordinal) || key.Equals(Constant.LightThemedDefaultIcon, StringComparison.Ordinal)))
+                        if (!Usage.TryGetValue(key, out _) && !(key.Equals(Constant.ErrorIcon, StringComparison.Ordinal) || key.Equals(Constant.LightThemedErrorIcon, StringComparison.Ordinal)))
                         {
                             _data.TryRemove(key, out _);
                         }

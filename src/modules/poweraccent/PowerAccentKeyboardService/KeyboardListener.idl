@@ -43,7 +43,10 @@ namespace PowerToys
             VK_Z = 0x5A,
             VK_COMMA = 0xBC,
             VK_PERIOD = 0xBE,
-            VK_MINUS = 0xBD
+            VK_MINUS = 0xBD,
+            VK_MULTIPLY_ = 0x6A,
+            VK_SLASH_ = 0xBF,
+            VK_DIVIDE_ = 0x6F
         };
 
         enum TriggerKey
