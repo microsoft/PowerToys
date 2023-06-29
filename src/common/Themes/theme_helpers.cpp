@@ -3,6 +3,7 @@
 #include "dwmapi.h"
 #include <windows.h>
 #include <vector>
+#pragma comment (lib,"Dwmapi.lib")
 
 #define DWMWA_USE_IMMERSIVE_DARK_MODE 20
 #define HKEY_WINDOWS_THEME L"Software\\Microsoft\\Windows\\CurrentVersion\\Themes\\Personalize"
