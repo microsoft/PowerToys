@@ -589,7 +589,6 @@ Edid
 edis
 EDITKEYBOARD
 editkeyboardwindow
-editkeyboardwindoweditshortcutswindow
 EDITSHORTCUTS
 edshift
 EEA
