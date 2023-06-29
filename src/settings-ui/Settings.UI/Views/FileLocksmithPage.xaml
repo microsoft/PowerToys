@@ -30,6 +30,20 @@
                     IsTabStop="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabledGpoConfigured}"
                     Severity="Informational" />
 
+                <controls:SettingsGroup
+                    x:Uid="FileLocksmith_ShellIntegration"
+                    IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsFileLocksmithEnabled}">
+                    <labs:SettingsExpander
+                        x:Uid="FileLocksmith_Toggle_ContextMenu"
+                        IsExpanded="True">
+                        <ComboBox
+                            MinWidth="{StaticResource SettingActionControlMinWidth}"
+                            SelectedIndex="{x:Bind Mode=TwoWay, Path=ViewModel.EnabledOnContextExtendedMenu, Converter={StaticResource BoolToComboBoxIndexConverter}}">
+                            <ComboBoxItem x:Uid="FileLocksmith_Toggle_StandardContextMenu" />
+                            <ComboBoxItem x:Uid="FileLocksmith_Toggle_ExtendedContextMenu" />
+                        </ComboBox>                        
+                    </labs:SettingsExpander>
+                </controls:SettingsGroup>
             </StackPanel>
         </controls:SettingsPageControl.ModuleContent>
         <controls:SettingsPageControl.PrimaryLinks>

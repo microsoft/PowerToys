@@ -138,7 +138,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             {
                 if (Settings.Properties.OpenShortcutGuide != value)
                 {
-                    Settings.Properties.OpenShortcutGuide = value;
+                    Settings.Properties.OpenShortcutGuide = value ?? Settings.Properties.DefaultOpenShortcutGuide;
                     NotifyPropertyChanged();
                 }
             }

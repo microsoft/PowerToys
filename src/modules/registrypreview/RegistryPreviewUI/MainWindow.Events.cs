@@ -29,10 +29,10 @@ namespace RegistryPreview
         /// </summary>
         private void AppWindow_Closing(Microsoft.UI.Windowing.AppWindow sender, Microsoft.UI.Windowing.AppWindowClosingEventArgs args)
         {
-            jsonSettings.SetNamedValue("appWindow.Position.X", JsonValue.CreateNumberValue(appWindow.Position.X));
-            jsonSettings.SetNamedValue("appWindow.Position.Y", JsonValue.CreateNumberValue(appWindow.Position.Y));
-            jsonSettings.SetNamedValue("appWindow.Size.Width", JsonValue.CreateNumberValue(appWindow.Size.Width));
-            jsonSettings.SetNamedValue("appWindow.Size.Height", JsonValue.CreateNumberValue(appWindow.Size.Height));
+            jsonWindowPlacement.SetNamedValue("appWindow.Position.X", JsonValue.CreateNumberValue(appWindow.Position.X));
+            jsonWindowPlacement.SetNamedValue("appWindow.Position.Y", JsonValue.CreateNumberValue(appWindow.Position.Y));
+            jsonWindowPlacement.SetNamedValue("appWindow.Size.Width", JsonValue.CreateNumberValue(appWindow.Size.Width));
+            jsonWindowPlacement.SetNamedValue("appWindow.Size.Height", JsonValue.CreateNumberValue(appWindow.Size.Height));
         }
 
         /// <summary>
@@ -55,8 +55,8 @@ namespace RegistryPreview
                     resourceLoader.GetString("YesNoCancelDialogCloseButtonText"));
             }
 
-            // Save app settings
-            SaveSettingsFile(settingsFolder, settingsFile);
+            // Save window placement
+            SaveWindowPlacementFile(settingsFolder, windowPlacementFile);
         }
 
         /// <summary>

@@ -150,7 +150,9 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             // This, while not totally ideal, does work around the problem by trimming the end.
             // The file itself did write the content correctly but something is off with the actual end of the file, hence the 0x00 bug
             var jsonSettingsString = _file.ReadAllText(_settingsPath.GetSettingsPath(powertoyFolderName, fileName)).Trim('\0');
-            return JsonSerializer.Deserialize<T>(jsonSettingsString);
+
+            var options = new JsonSerializerOptions { MaxDepth = 0, IncludeFields = true };
+            return JsonSerializer.Deserialize<T>(jsonSettingsString, options);
         }
 
         // Save settings to a json file.
@@ -189,7 +191,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         /// <summary>
         /// Method <c>BackupSettings</c> Mostly a wrapper for SettingsBackupAndRestoreUtils.BackupSettings
         /// </summary>
-        public static (bool Success, string Message, string Severity, bool LastBackupExists) BackupSettings()
+        public static (bool Success, string Message, string Severity, bool LastBackupExists, string OptionalMessage) BackupSettings()
         {
             var settingsBackupAndRestoreUtilsX = SettingsBackupAndRestoreUtils.Instance;
             var settingsUtils = new SettingsUtils();

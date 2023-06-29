@@ -124,6 +124,14 @@ namespace winrt::PowerToys::GPOWrapper::implementation
     {
         return static_cast<GpoRuleConfigured>(powertoys_gpo::getConfiguredVideoConferenceMuteEnabledValue());
     }
+    GpoRuleConfigured GPOWrapper::GetConfiguredMouseWithoutBordersEnabledValue()
+    {
+        return static_cast<GpoRuleConfigured>(powertoys_gpo::getConfiguredMouseWithoutBordersEnabledValue());
+    }
+    GpoRuleConfigured GPOWrapper::GetConfiguredPeekEnabledValue()
+    {
+        return static_cast<GpoRuleConfigured>(powertoys_gpo::getConfiguredPeekEnabledValue());
+    }
     GpoRuleConfigured GPOWrapper::GetDisableAutomaticUpdateDownloadValue()
     {
         return static_cast<GpoRuleConfigured>(powertoys_gpo::getDisableAutomaticUpdateDownloadValue());

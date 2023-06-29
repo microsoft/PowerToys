@@ -32,6 +32,7 @@
 TwoWayPipeMessageIPC* current_settings_ipc = NULL;
 std::mutex ipc_mutex;
 std::atomic_bool g_isLaunchInProgress = false;
+std::atomic_bool isUpdateCheckThreadRunning = false;
 
 json::JsonObject get_power_toys_settings()
 {
@@ -106,7 +107,14 @@ std::optional<std::wstring> dispatch_json_action_to_module(const json::JsonObjec
                 }
                 else if (action == L"check_for_updates")
                 {
-                    CheckForUpdatesCallback();
+                    bool expected_isUpdateCheckThreadRunning = false;
+                    if (isUpdateCheckThreadRunning.compare_exchange_strong(expected_isUpdateCheckThreadRunning,true))
+                    {
+                        std::thread([]() {
+                            CheckForUpdatesCallback();
+                            isUpdateCheckThreadRunning.store(false);
+                        }).detach();
+                    }
                 }
                 else if (action == L"request_update_state_date")
                 {
@@ -362,8 +370,10 @@ void run_settings_window(bool show_oobe_window, bool show_scoobe_window, std::op
     // Arg 4: process pid.
     DWORD powertoys_pid = GetCurrentProcessId();
 
+    GeneralSettings save_settings = get_general_settings();
+
     // Arg 5: settings theme.
-    const std::wstring settings_theme_setting{ get_general_settings().theme };
+    const std::wstring settings_theme_setting{ save_settings.theme };
     std::wstring settings_theme = L"system";
     if (settings_theme_setting == L"dark" || (settings_theme_setting == L"system" && WindowsColors::is_dark_mode()))
     {
@@ -371,11 +381,11 @@ void run_settings_window(bool show_oobe_window, bool show_scoobe_window, std::op
     }
 
     // Arg 6: elevated status
-    bool isElevated{ get_general_settings().isElevated };
+    bool isElevated{ save_settings.isElevated };
     std::wstring settings_elevatedStatus = isElevated ? L"true" : L"false";
 
     // Arg 7: is user an admin
-    bool isAdmin{ get_general_settings().isAdmin };
+    bool isAdmin{ save_settings.isAdmin };
     std::wstring settings_isUserAnAdmin = isAdmin ? L"true" : L"false";
 
     // Arg 8: should oobe window be shown
@@ -394,6 +404,10 @@ void run_settings_window(bool show_oobe_window, bool show_scoobe_window, std::op
     std::wstring settings_containsFlyoutPosition = flyout_position.has_value() ? L"true" : L"false";
 
     // Args 13, .... : Optional arguments depending on the options presented before. All by the same value.
+
+    // create general settings file to initialize the settings file with installation configurations like :
+    // 1. Run on start up.
+    PTSettingsHelper::save_general_settings(save_settings.to_json());
 
     std::wstring executable_args = fmt::format(L"\"{}\" {} {} {} {} {} {} {} {} {} {} {}",
                                                    executable_path,
@@ -586,7 +600,15 @@ void open_settings_window(std::optional<std::wstring> settings_window, bool show
             // bring_settings_to_front();
             if (current_settings_ipc)
             {
-                current_settings_ipc->send(L"{\"ShowYourself\":\"main_page\"}");
+                if (settings_window.has_value())
+                {
+                    std::wstring msg = L"{\"ShowYourself\":\"" + settings_window.value() + L"\"}";
+                    current_settings_ipc->send(msg);
+                }
+                else
+                {
+                    current_settings_ipc->send(L"{\"ShowYourself\":\"Overview\"}");
+                }
             }
         }
     }
@@ -657,6 +679,10 @@ std::string ESettingsWindowNames_to_string(ESettingsWindowNames value)
         return "VideoConference";
     case ESettingsWindowNames::Hosts:
         return "Hosts";
+    case ESettingsWindowNames::MeasureTool:
+        return "MeasureTool";
+    case ESettingsWindowNames::PowerOCR:
+        return "PowerOCR";
     case ESettingsWindowNames::RegistryPreview:
         return "RegistryPreview";
     default:
@@ -721,6 +747,14 @@ ESettingsWindowNames ESettingsWindowNames_from_string(std::string value)
     else if (value == "Hosts")
     {
         return ESettingsWindowNames::Hosts;
+    }
+    else if (value == "MeasureTool")
+    {
+        return ESettingsWindowNames::MeasureTool;
+    }
+    else if (value == "PowerOCR")
+    {
+        return ESettingsWindowNames::PowerOCR;
     }
     else if (value == "RegistryPreview")
     {

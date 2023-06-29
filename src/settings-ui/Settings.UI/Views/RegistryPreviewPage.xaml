@@ -11,11 +11,9 @@
     AutomationProperties.LandmarkType="Main"
     mc:Ignorable="d">
 
-    <controls:SettingsPageControl
-        x:Uid="RegistryPreview"
-        ModuleImageSource="ms-appx:///Assets/Modules/RegistryPreview.png">
+    <controls:SettingsPageControl x:Uid="RegistryPreview" ModuleImageSource="ms-appx:///Assets/Modules/RegistryPreview.png">
         <controls:SettingsPageControl.ModuleContent>
-            <StackPanel Orientation="Vertical" ChildrenTransitions="{StaticResource SettingsCardsAnimations}">
+            <StackPanel ChildrenTransitions="{StaticResource SettingsCardsAnimations}" Orientation="Vertical">
                 <labs:SettingsCard
                     x:Uid="RegistryPreview_Enable_RegistryPreview"
                     HeaderIcon="{ui:BitmapIcon Source=/Assets/FluentIcons/FluentIconsRegistryPreview.png}"
@@ -40,15 +38,17 @@
                         HeaderIcon="{ui:FontIcon FontFamily={StaticResource SymbolThemeFontFamily},
                                                  Glyph=&#xEA37;}"
                         IsClickEnabled="True" />
+
+                    <labs:SettingsCard x:Uid="RegistryPreview_DefaultRegApp" HeaderIcon="{ui:FontIcon FontFamily={StaticResource SymbolThemeFontFamily}, Glyph=&#xE7AC;}">
+                        <ToggleSwitch x:Uid="RegistryPreview_DefaultRegApp_ToggleSwitch" IsOn="{x:Bind Mode=TwoWay, Path=ViewModel.IsRegistryPreviewDefaultRegApp}" />
+                    </labs:SettingsCard>
                 </controls:SettingsGroup>
 
             </StackPanel>
         </controls:SettingsPageControl.ModuleContent>
-        
+
         <controls:SettingsPageControl.PrimaryLinks>
-            <controls:PageLink
-                x:Uid="LearnMore_RegistryPreview"
-                Link="https://aka.ms/PowerToysOverview_RegistryPreview" />
+            <controls:PageLink x:Uid="LearnMore_RegistryPreview" Link="https://aka.ms/PowerToysOverview_RegistryPreview" />
         </controls:SettingsPageControl.PrimaryLinks>
     </controls:SettingsPageControl>
 </Page>

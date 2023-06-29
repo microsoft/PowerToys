@@ -446,11 +446,12 @@ jobs:
       PathtoPublish: $(System.ArtifactsDirectory)
       ArtifactName: setup-$(BuildPlatform)
 
+# Publishing the GPO files with a version number
   - task: PublishBuildArtifacts@1
     displayName: 'Publish Artifact: GPO Files'
     inputs:
       PathtoPublish: src\gpo\assets
-      ArtifactName: GroupPolicyObjectsFiles
+      ArtifactName: GroupPolicyObjectsFiles-${{ parameters.versionNumber }}
 
 
 ...

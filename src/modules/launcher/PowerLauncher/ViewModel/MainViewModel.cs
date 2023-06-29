@@ -41,7 +41,7 @@ namespace PowerLauncher.ViewModel
         private readonly PowerToysRunSettings _settings;
         private readonly QueryHistory _history;
         private readonly UserSelectedRecord _userSelectedRecord;
-        private readonly object _addResultsLock = new object();
+        private static readonly object _addResultsLock = new object();
         private readonly System.Diagnostics.Stopwatch _hotkeyTimer = new System.Diagnostics.Stopwatch();
 
         private string _queryTextBeforeLeaveResults;
@@ -736,27 +736,30 @@ namespace PowerLauncher.ViewModel
         {
             Application.Current.Dispatcher.BeginInvoke(new Action(() =>
             {
-                // Using CurrentCultureIgnoreCase since this is user facing
-                if (queryText.Equals(_currentQuery, StringComparison.CurrentCultureIgnoreCase))
+                lock (_addResultsLock)
                 {
-                    Results.Results.NotifyChanges();
-                }
-
-                if (Results.Results.Count > 0)
-                {
-                    Results.Visibility = Visibility.Visible;
-                    if (!isDelayedInvoke || noInitialResults)
+                    // Using CurrentCultureIgnoreCase since this is user facing
+                    if (queryText.Equals(_currentQuery, StringComparison.CurrentCultureIgnoreCase))
                     {
-                        Results.SelectedIndex = 0;
-                        if (noInitialResults)
+                        Results.Results.NotifyChanges();
+                    }
+
+                    if (Results.Results.Count > 0)
+                    {
+                        Results.Visibility = Visibility.Visible;
+                        if (!isDelayedInvoke || noInitialResults)
                         {
-                            Results.SelectedItem = Results.Results.FirstOrDefault();
+                            Results.SelectedIndex = 0;
+                            if (noInitialResults)
+                            {
+                                Results.SelectedItem = Results.Results.FirstOrDefault();
+                            }
                         }
                     }
-                }
-                else
-                {
-                    Results.Visibility = Visibility.Hidden;
+                    else
+                    {
+                        Results.Visibility = Visibility.Hidden;
+                    }
                 }
             }));
         }
@@ -1216,6 +1219,14 @@ namespace PowerLauncher.ViewModel
         public bool GetSearchWaitForSlowResults()
         {
             return _settings.SearchWaitForSlowResults;
+        }
+
+        public static void PerformSafeAction(Action action)
+        {
+            lock (_addResultsLock)
+            {
+                action.Invoke();
+            }
         }
     }
 }

@@ -209,7 +209,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             {
                 if (Settings.Properties.ActivationShortcut != value)
                 {
-                    Settings.Properties.ActivationShortcut = value;
+                    Settings.Properties.ActivationShortcut = value ?? Settings.Properties.DefaultActivationShortcut;
 
                     NotifyPropertyChanged();
 

@@ -19,6 +19,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             ErrorDownloading,
             ReadyToDownload,
             ReadyToInstall,
+            NetworkError,
         }
 
         // Gets or sets a value of the updating state

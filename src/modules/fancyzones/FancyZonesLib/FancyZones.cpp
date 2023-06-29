@@ -1236,7 +1236,7 @@ bool FancyZones::ShouldProcessSnapHotkey(DWORD vkCode) noexcept
             return false;
         }
 
-        if (layout->Type() != FancyZonesDataTypes::ZoneSetLayoutType::Blank)
+        if (layout->Zones().size() > 0)
         {
             if (vkCode == VK_UP || vkCode == VK_DOWN)
             {

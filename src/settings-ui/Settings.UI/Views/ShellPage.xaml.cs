@@ -30,7 +30,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
         /// <summary>
         /// Declaration for the opening main window callback function.
         /// </summary>
-        public delegate void MainOpeningCallback();
+        public delegate void MainOpeningCallback(Type type);
 
         /// <summary>
         /// Declaration for the updating the general settings callback function.
@@ -126,6 +126,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             // NL moved navigation to general page to the moment when the window is first activated (to not make flyout window disappear)
             // shellFrame.Navigate(typeof(GeneralPage));
             IPCResponseHandleList.Add(ReceiveMessage);
+            SetTitleBar();
         }
 
         public static int SendDefaultIPCMessage(string msg)
@@ -351,9 +352,9 @@ namespace Microsoft.PowerToys.Settings.UI.Views
 
                         OpenFlyoutCallback(p);
                     }
-                    else if (whatToShowJson.ValueType == JsonValueType.String && whatToShowJson.GetString().Equals("main_page", StringComparison.Ordinal))
+                    else if (whatToShowJson.ValueType == JsonValueType.String)
                     {
-                        OpenMainWindowCallback();
+                        OpenMainWindowCallback(App.GetPage(whatToShowJson.GetString()));
                     }
                 }
             }
@@ -362,6 +363,47 @@ namespace Microsoft.PowerToys.Settings.UI.Views
         internal static void EnsurePageIsSelected()
         {
             NavigationService.EnsurePageIsSelected(typeof(GeneralPage));
+        }
+
+        private void SetTitleBar()
+        {
+            var u = App.GetSettingsWindow();
+            if (u != null)
+            {
+                // A custom title bar is required for full window theme and Mica support.
+                // https://docs.microsoft.com/windows/apps/develop/title-bar?tabs=winui3#full-customization
+                u.ExtendsContentIntoTitleBar = true;
+                u.SetTitleBar(AppTitleBar);
+#if DEBUG
+                DebugMessage.Visibility = Visibility.Visible;
+#endif
+            }
+        }
+
+        private void ShellPage_Loaded(object sender, RoutedEventArgs e)
+        {
+            SetTitleBar();
+        }
+
+        private void NavigationView_DisplayModeChanged(NavigationView sender, NavigationViewDisplayModeChangedEventArgs args)
+        {
+            if (args.DisplayMode == NavigationViewDisplayMode.Compact || args.DisplayMode == NavigationViewDisplayMode.Minimal)
+            {
+                PaneToggleBtn.Visibility = Visibility.Visible;
+                AppTitleBar.Margin = new Thickness(48, 0, 0, 0);
+                AppTitleBarText.Margin = new Thickness(12, 0, 0, 0);
+            }
+            else
+            {
+                PaneToggleBtn.Visibility = Visibility.Collapsed;
+                AppTitleBar.Margin = new Thickness(16, 0, 0, 0);
+                AppTitleBarText.Margin = new Thickness(16, 0, 0, 0);
+            }
+        }
+
+        private void PaneToggleBtn_Click(object sender, RoutedEventArgs e)
+        {
+            navigationView.IsPaneOpen = !navigationView.IsPaneOpen;
         }
     }
 }

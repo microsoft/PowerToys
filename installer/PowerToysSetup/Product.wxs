@@ -67,6 +67,7 @@
       <ComponentGroupRef Id="MeasureToolComponentGroup" />
       <ComponentGroupRef Id="MouseUtilsComponentGroup" />
       <ComponentGroupRef Id="PastePlainComponentGroup" />
+      <ComponentGroupRef Id="PeekComponentGroup" />
       <ComponentGroupRef Id="PowerAccentComponentGroup" />
       <ComponentGroupRef Id="PowerRenameComponentGroup" />
       <ComponentGroupRef Id="RegistryPreviewComponentGroup" />
@@ -75,7 +76,8 @@
       <ComponentGroupRef Id="ShortcutGuideComponentGroup" />
       <ComponentGroupRef Id="TextExtractorComponentGroup" />
       <ComponentGroupRef Id="VideoConferenceComponentGroup" />
-
+      <ComponentGroupRef Id="MouseWithoutBordersComponentGroup" />
+        
       <ComponentGroupRef Id="ResourcesComponentGroup" />
       <ComponentGroupRef Id="WindowsAppSDKComponentGroup" />
       <ComponentGroupRef Id="ToolComponentGroup" />
@@ -191,7 +193,10 @@
         Installed AND (REMOVE="ALL")
       </Custom>
 
-      <!-- TODO: Use to activate embedded MSIX -->
+      <Custom Action="UninstallServicesTask" After="InstallFinalize">
+          Installed AND (NOT UPGRADINGPRODUCTCODE) AND (REMOVE="ALL")
+      </Custom>
+        <!-- TODO: Use to activate embedded MSIX -->
       <!--<Custom Action="UninstallEmbeddedMSIXTask" After="InstallFinalize">
         Installed AND (REMOVE="ALL")
       </Custom>-->
@@ -329,7 +334,14 @@
                   DllEntry="UninstallEmbeddedMSIXCA"
                    />
 
-    <CustomAction Id="TelemetryLogInstallSuccess"
+      <CustomAction Id="UninstallServicesTask"
+                    Return="ignore"
+                    Impersonate="yes"
+                    BinaryKey="PTCustomActions"
+                    DllEntry="UninstallServicesCA"
+                   />
+      
+      <CustomAction Id="TelemetryLogInstallSuccess"
               Return="ignore"
               Impersonate="yes"
               BinaryKey="PTCustomActions"
@@ -527,7 +539,19 @@
                 <Directory Id="HostsMicrosoftUIXamlAssetsInstallFolder" Name="Assets" />
               </Directory>
             </Directory>
-            
+
+            <!-- MouseWithoutBorders -->
+            <Directory Id="MouseWithoutBordersInstallFolder" Name="$(var.MouseWithoutBordersProjectName)">
+            </Directory>
+
+            <!-- Peek -->
+            <Directory Id="PeekInstallFolder" Name="$(var.PeekProjectName)">
+              <Directory Id="PeekAssetsFolder" Name="Assets" />
+              <Directory Id="PeekMicrosoftUIXamlInstallFolder" Name="Microsoft.UI.Xaml">
+                  <Directory Id="PeekMicrosoftUIXamlAssetsInstallFolder" Name="Assets" />
+              </Directory>
+            </Directory>
+
             <!-- Launcher -->
             <Directory Id="LauncherInstallFolder" Name="launcher">
               <Directory Id="LauncherImagesFolder" Name="Images" />
@@ -569,6 +593,9 @@
                 </Directory>
                 <Directory Id="OneNotePluginFolder" Name="OneNote">
                   <Directory Id="OneNoteImagesFolder" Name="Images" />
+                </Directory>
+                <Directory Id="PowerToysPluginFolder" Name="PowerToys">
+                  <Directory Id="PowerToysImagesFolder" Name="Images" />
                 </Directory>
                 <Directory Id="RegistryPluginFolder" Name="Registry">
                   <Directory Id="RegistryImagesFolder" Name="Images" />

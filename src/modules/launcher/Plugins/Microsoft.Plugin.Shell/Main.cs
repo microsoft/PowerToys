@@ -190,6 +190,20 @@ namespace Microsoft.Plugin.Shell
 
                 info = ShellCommand.SetProcessStartInfo("powershell.exe", workingDirectory, arguments, runAsVerbArg);
             }
+            else if (_settings.Shell == ExecutionShell.WindowsTerminal)
+            {
+                string arguments;
+                if (_settings.LeaveShellOpen)
+                {
+                    arguments = $"powershell -NoExit \"{command}\"";
+                }
+                else
+                {
+                    arguments = $"powershell \"{command}\"";
+                }
+
+                info = ShellCommand.SetProcessStartInfo("wt.exe", workingDirectory, arguments, runAsVerbArg);
+            }
             else if (_settings.Shell == ExecutionShell.RunCommand)
             {
                 // Open explorer if the path is a file or directory

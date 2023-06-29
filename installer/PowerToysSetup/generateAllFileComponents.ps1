@@ -42,9 +42,9 @@ Invoke-Expression -Command "$PSScriptRoot\generateFileComponents.ps1 -fileListNa
 #FileExplorerAdd-ons
 #TODO: There are multiple .deps.json files, make sure it works as expected
 Invoke-Expression -Command "$PSScriptRoot\generateFileList.ps1 -fileDepsJson ""$PSScriptRoot..\..\..\$platform\Release\modules\FileExplorerPreview\PowerToys.SvgThumbnailProvider.deps.json"" -fileListName PowerPreviewFiles -wxsFilePath $PSScriptRoot\FileExplorerPreview.wxs"
-Invoke-Expression -Command "$PSScriptRoot\generateFileList.ps1 -fileDepsJson """" -fileListName MonacoCustomLanguagesFiles -wxsFilePath $PSScriptRoot\FileExplorerPreview.wxs -depsPath ""$PSScriptRoot..\..\..\$platform\Release\modules\FileExplorerPreview\customLanguages"""
+Invoke-Expression -Command "$PSScriptRoot\generateFileList.ps1 -fileDepsJson """" -fileListName MonacoPreviewHandlerCustomLanguagesFiles -wxsFilePath $PSScriptRoot\FileExplorerPreview.wxs -depsPath ""$PSScriptRoot..\..\..\$platform\Release\modules\FileExplorerPreview\customLanguages"""
 Invoke-Expression -Command "$PSScriptRoot\generateFileComponents.ps1 -fileListName ""PowerPreviewFiles"" -wxsFilePath $PSScriptRoot\FileExplorerPreview.wxs -regroot $registryroot"
-Invoke-Expression -Command "$PSScriptRoot\generateFileComponents.ps1 -fileListName ""MonacoCustomLanguagesFiles"" -wxsFilePath $PSScriptRoot\FileExplorerPreview.wxs -regroot $registryroot"
+Invoke-Expression -Command "$PSScriptRoot\generateFileComponents.ps1 -fileListName ""MonacoPreviewHandlerCustomLanguagesFiles"" -wxsFilePath $PSScriptRoot\FileExplorerPreview.wxs -regroot $registryroot"
 
 #FileLocksmith
 #TODO: There are multiple .deps.json files, make sure it works as expected
@@ -72,9 +72,19 @@ Invoke-Expression -Command "$PSScriptRoot\generateFileComponents.ps1 -fileListNa
 Invoke-Expression -Command "$PSScriptRoot\generateFileList.ps1 -fileDepsJson ""$PSScriptRoot..\..\..\$platform\Release\modules\MouseUtils\MouseJumpUI\PowerToys.MouseJumpUI.deps.json"" -fileListName MouseJumpUIFiles -wxsFilePath $PSScriptRoot\MouseUtils.wxs"
 Invoke-Expression -Command "$PSScriptRoot\generateFileComponents.ps1 -fileListName ""MouseJumpUIFiles"" -wxsFilePath $PSScriptRoot\MouseUtils.wxs -regroot $registryroot"
 
+#MouseWithoutBorders
+Invoke-Expression -Command "$PSScriptRoot\generateFileList.ps1 -fileDepsJson ""$PSScriptRoot..\..\..\$platform\Release\modules\MouseWithoutBorders\PowerToys.MouseWithoutBorders.deps.json;$PSScriptRoot..\..\..\$platform\Release\modules\MouseWithoutBorders\PowerToys.MouseWithoutBordersHelper.deps.json;$PSScriptRoot..\..\..\$platform\Release\modules\MouseWithoutBorders\PowerToys.MouseWithoutBordersService.deps.json"" -fileListName MouseWithoutBordersFiles -wxsFilePath $PSScriptRoot\MouseWithoutBorders.wxs"
+Invoke-Expression -Command "$PSScriptRoot\generateFileComponents.ps1 -fileListName ""MouseWithoutBordersFiles"" -wxsFilePath $PSScriptRoot\MouseWithoutBorders.wxs -regroot $registryroot"
+
 #MeasureTool
 Invoke-Expression -Command "$PSScriptRoot\generateFileList.ps1 -fileDepsJson ""$PSScriptRoot..\..\..\$platform\Release\modules\MeasureTool\PowerToys.MeasureToolUI.deps.json"" -fileListName MeasureToolFiles -wxsFilePath $PSScriptRoot\MeasureTool.wxs -isWinAppSdkProj 1"
 Invoke-Expression -Command "$PSScriptRoot\generateFileComponents.ps1 -fileListName ""MeasureToolFiles"" -wxsFilePath $PSScriptRoot\MeasureTool.wxs -regroot $registryroot"
+
+#Peek
+Invoke-Expression -Command "$PSScriptRoot\generateFileList.ps1 -fileDepsJson ""$PSScriptRoot..\..\..\$platform\Release\modules\Peek\PowerToys.Peek.UI.deps.json"" -fileListName PeekFiles -wxsFilePath $PSScriptRoot\Peek.wxs"
+Invoke-Expression -Command "$PSScriptRoot\generateFileList.ps1 -fileDepsJson """" -fileListName PeekAssetsFiles -wxsFilePath $PSScriptRoot\Peek.wxs -depsPath ""$PSScriptRoot..\..\..\$platform\Release\modules\Peek\Assets\"""
+Invoke-Expression -Command "$PSScriptRoot\generateFileComponents.ps1 -fileListName ""PeekFiles"" -wxsFilePath $PSScriptRoot\Peek.wxs -regroot $registryroot"
+Invoke-Expression -Command "$PSScriptRoot\generateFileComponents.ps1 -fileListName ""PeekAssetsFiles"" -wxsFilePath $PSScriptRoot\Peek.wxs -regroot $registryroot"
 
 #PowerAccent
 Invoke-Expression -Command "$PSScriptRoot\generateFileList.ps1 -fileDepsJson ""$PSScriptRoot..\..\..\$platform\Release\modules\PowerAccent\PowerToys.PowerAccent.deps.json"" -fileListName PowerAccentFiles -wxsFilePath $PSScriptRoot\PowerAccent.wxs"
@@ -188,6 +198,11 @@ Invoke-Expression -Command "$PSScriptRoot\generateFileList.ps1 -fileDepsJson ""$
 Invoke-Expression -Command "$PSScriptRoot\generateFileList.ps1 -fileDepsJson """" -fileListName WinTermImagesCmpFiles -wxsFilePath $PSScriptRoot\Run.wxs -depsPath ""$PSScriptRoot..\..\..\$platform\Release\modules\launcher\Plugins\WindowsTerminal\Images"""
 Invoke-Expression -Command "$PSScriptRoot\generateFileComponents.ps1 -fileListName ""WinTermCmpFiles"" -wxsFilePath $PSScriptRoot\Run.wxs -regroot $registryroot"
 Invoke-Expression -Command "$PSScriptRoot\generateFileComponents.ps1 -fileListName ""WinTermImagesCmpFiles"" -wxsFilePath $PSScriptRoot\Run.wxs -regroot $registryroot"
+###PowerToys
+Invoke-Expression -Command "$PSScriptRoot\generateFileList.ps1 -fileDepsJson ""$PSScriptRoot..\..\..\$platform\Release\modules\launcher\Plugins\PowerToys\Microsoft.PowerToys.Run.Plugin.PowerToys.deps.json"" -fileListName PowerToysCmpFiles -wxsFilePath $PSScriptRoot\Run.wxs -isLauncherPlugin 1"
+Invoke-Expression -Command "$PSScriptRoot\generateFileList.ps1 -fileDepsJson """" -fileListName PowerToysImagesCmpFiles -wxsFilePath $PSScriptRoot\Run.wxs -depsPath ""$PSScriptRoot..\..\..\$platform\Release\modules\launcher\Plugins\PowerToys\Images"""
+Invoke-Expression -Command "$PSScriptRoot\generateFileComponents.ps1 -fileListName ""PowerToysCmpFiles"" -wxsFilePath $PSScriptRoot\Run.wxs -regroot $registryroot"
+Invoke-Expression -Command "$PSScriptRoot\generateFileComponents.ps1 -fileListName ""PowerToysImagesCmpFiles"" -wxsFilePath $PSScriptRoot\Run.wxs -regroot $registryroot"
 ## Plugins
 
 #ShortcutGuide

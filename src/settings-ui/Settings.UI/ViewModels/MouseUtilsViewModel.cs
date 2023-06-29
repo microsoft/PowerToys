@@ -427,7 +427,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             {
                 if (MouseHighlighterSettingsConfig.Properties.ActivationShortcut != value)
                 {
-                    MouseHighlighterSettingsConfig.Properties.ActivationShortcut = value;
+                    MouseHighlighterSettingsConfig.Properties.ActivationShortcut = value ?? MouseHighlighterSettingsConfig.Properties.DefaultActivationShortcut;
                     NotifyMouseHighlighterPropertyChanged();
                 }
             }
@@ -595,7 +595,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             {
                 if (MouseJumpSettingsConfig.Properties.ActivationShortcut != value)
                 {
-                    MouseJumpSettingsConfig.Properties.ActivationShortcut = value;
+                    MouseJumpSettingsConfig.Properties.ActivationShortcut = value ?? MouseJumpSettingsConfig.Properties.DefaultActivationShortcut;
                     NotifyMouseJumpPropertyChanged();
                 }
             }
@@ -676,7 +676,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             {
                 if (MousePointerCrosshairsSettingsConfig.Properties.ActivationShortcut != value)
                 {
-                    MousePointerCrosshairsSettingsConfig.Properties.ActivationShortcut = value;
+                    MousePointerCrosshairsSettingsConfig.Properties.ActivationShortcut = value ?? MousePointerCrosshairsSettingsConfig.Properties.DefaultActivationShortcut;
                     NotifyMousePointerCrosshairsPropertyChanged();
                 }
             }

@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft Corporation
+// Copyright (c) Microsoft Corporation
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
@@ -12,12 +12,12 @@ using ManagedCommon;
 using Microsoft.PowerToys.Settings.UI.Helpers;
 using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.PowerToys.Settings.UI.Library.Telemetry.Events;
-using Microsoft.PowerToys.Settings.UI.Library.Utilities;
 using Microsoft.PowerToys.Settings.UI.Views;
 using Microsoft.PowerToys.Telemetry;
 using Microsoft.UI.Xaml;
 using Windows.UI.Popups;
 using WinRT.Interop;
+using WinUIEx;
 
 namespace Microsoft.PowerToys.Settings.UI
 {
@@ -82,10 +82,10 @@ namespace Microsoft.PowerToys.Settings.UI
             if (settingsWindow == null)
             {
                 settingsWindow = new MainWindow(IsDarkTheme());
-                type = typeof(GeneralPage);
             }
 
             settingsWindow.Activate();
+
             if (type != null)
             {
                 settingsWindow.NavigateToSection(type);
@@ -105,7 +105,6 @@ namespace Microsoft.PowerToys.Settings.UI
         protected override void OnLaunched(Microsoft.UI.Xaml.LaunchActivatedEventArgs args)
         {
             var cmdArgs = Environment.GetCommandLineArgs();
-
             var isDark = IsDarkTheme();
 
             if (cmdArgs != null && cmdArgs.Length >= RequiredArgumentsQty)
@@ -132,31 +131,8 @@ namespace Microsoft.PowerToys.Settings.UI
 
                 if (containsSettingsWindow)
                 {
-                    // open specific window
-                    switch (cmdArgs[currentArgumentIndex])
-                    {
-                        case "Overview": StartupPage = typeof(Views.GeneralPage); break;
-                        case "AlwaysOnTop": StartupPage = typeof(Views.AlwaysOnTopPage); break;
-                        case "Awake": StartupPage = typeof(Views.AwakePage); break;
-                        case "ColorPicker": StartupPage = typeof(Views.ColorPickerPage); break;
-                        case "FancyZones": StartupPage = typeof(Views.FancyZonesPage); break;
-                        case "FileLocksmith": StartupPage = typeof(Views.FileLocksmithPage); break;
-                        case "Run": StartupPage = typeof(Views.PowerLauncherPage); break;
-                        case "ImageResizer": StartupPage = typeof(Views.ImageResizerPage); break;
-                        case "KBM": StartupPage = typeof(Views.KeyboardManagerPage); break;
-                        case "MouseUtils": StartupPage = typeof(Views.MouseUtilsPage); break;
-                        case "PowerRename": StartupPage = typeof(Views.PowerRenamePage); break;
-                        case "QuickAccent": StartupPage = typeof(Views.PowerAccentPage); break;
-                        case "FileExplorer": StartupPage = typeof(Views.PowerPreviewPage); break;
-                        case "ShortcutGuide": StartupPage = typeof(Views.ShortcutGuidePage); break;
-                        case "TextExtractor": StartupPage = typeof(Views.PowerOcrPage); break;
-                        case "VideoConference": StartupPage = typeof(Views.VideoConferencePage); break;
-                        case "MeasureTool": StartupPage = typeof(Views.MeasureToolPage); break;
-                        case "Hosts": StartupPage = typeof(Views.HostsPage); break;
-                        case "RegistryPreview": StartupPage = typeof(Views.RegistryPreviewPage); break;
-                        case "PastePlain": StartupPage = typeof(Views.PastePlainPage); break;
-                        default: Debug.Assert(false, "Unexpected SettingsWindow argument value"); break;
-                    }
+                    // Open specific window
+                    StartupPage = GetPage(cmdArgs[currentArgumentIndex]);
 
                     currentArgumentIndex++;
                 }
@@ -188,7 +164,12 @@ namespace Microsoft.PowerToys.Settings.UI
                 {
                     settingsWindow = new MainWindow(isDark);
                     settingsWindow.Activate();
+                    settingsWindow.ExtendsContentIntoTitleBar = true;
                     settingsWindow.NavigateToSection(StartupPage);
+
+                    // https://github.com/microsoft/microsoft-ui-xaml/issues/7595 - Activate doesn't bring window to the foreground
+                    // Need to call SetForegroundWindow to actually gain focus.
+                    Utils.BecomeForegroundWindow(settingsWindow.GetWindowHandle());
                 }
                 else
                 {
@@ -202,6 +183,7 @@ namespace Microsoft.PowerToys.Settings.UI
                         PowerToysTelemetry.Log.WriteEvent(new OobeStartedEvent());
                         OobeWindow oobeWindow = new OobeWindow(OOBE.Enums.PowerToysModules.Overview, isDark);
                         oobeWindow.Activate();
+                        oobeWindow.ExtendsContentIntoTitleBar = true;
                         SetOobeWindow(oobeWindow);
                     }
                     else if (ShowScoobe)
@@ -209,6 +191,7 @@ namespace Microsoft.PowerToys.Settings.UI
                         PowerToysTelemetry.Log.WriteEvent(new ScoobeStartedEvent());
                         OobeWindow scoobeWindow = new OobeWindow(OOBE.Enums.PowerToysModules.WhatsNew, isDark);
                         scoobeWindow.Activate();
+                        scoobeWindow.ExtendsContentIntoTitleBar = true;
                         SetOobeWindow(scoobeWindow);
                     }
                     else if (ShowFlyout)
@@ -228,7 +211,9 @@ namespace Microsoft.PowerToys.Settings.UI
                 // For debugging purposes
                 // Window is also needed to show MessageDialog
                 settingsWindow = new MainWindow(isDark);
+                settingsWindow.ExtendsContentIntoTitleBar = true;
                 settingsWindow.Activate();
+                settingsWindow.NavigateToSection(StartupPage);
 
 #if !DEBUG
                 ShowMessageDialogAndExit("The application cannot be run as a standalone process. Please start the application through the runner.", "Forbidden");
@@ -268,36 +253,43 @@ namespace Microsoft.PowerToys.Settings.UI
             return ipcmanager;
         }
 
-        public static string SelectedTheme()
+        public static ElementTheme SelectedTheme()
         {
-            return SettingsRepository<GeneralSettings>.GetInstance(settingsUtils).SettingsConfig.Theme.ToUpper(CultureInfo.InvariantCulture);
+            switch (SettingsRepository<GeneralSettings>.GetInstance(settingsUtils).SettingsConfig.Theme.ToUpper(CultureInfo.InvariantCulture))
+            {
+                case "DARK": return ElementTheme.Dark;
+                case "LIGHT": return ElementTheme.Light;
+                default: return ElementTheme.Default;
+            }
         }
 
         public static bool IsDarkTheme()
         {
             var selectedTheme = SelectedTheme();
-            return selectedTheme == "DARK" || (selectedTheme == "SYSTEM" && ThemeHelpers.GetAppTheme() == AppTheme.Dark);
+            return selectedTheme == ElementTheme.Dark || (selectedTheme == ElementTheme.Default && ThemeHelpers.GetAppTheme() == AppTheme.Dark);
         }
 
         public static void HandleThemeChange()
         {
             try
             {
-                var isDark = IsDarkTheme();
+                bool isDark = IsDarkTheme();
+
                 if (settingsWindow != null)
                 {
                     var hWnd = WinRT.Interop.WindowNative.GetWindowHandle(settingsWindow);
                     ThemeHelpers.SetImmersiveDarkMode(hWnd, isDark);
+                    SetContentTheme(isDark, settingsWindow);
                 }
 
                 if (oobeWindow != null)
                 {
                     var hWnd = WinRT.Interop.WindowNative.GetWindowHandle(oobeWindow);
                     ThemeHelpers.SetImmersiveDarkMode(hWnd, isDark);
+                    SetContentTheme(isDark, oobeWindow);
                 }
 
-                var selectedTheme = SelectedTheme();
-                if (selectedTheme == "SYSTEM")
+                if (SelectedTheme() == ElementTheme.Default)
                 {
                     themeListener = new ThemeListener();
                     themeListener.ThemeChanged += (_) => HandleThemeChange();
@@ -314,6 +306,22 @@ namespace Microsoft.PowerToys.Settings.UI
                 {
                     Logger.LogError($"HandleThemeChange exception. Please install .NET 4.", e);
                     loggedImmersiveDarkException = true;
+                }
+            }
+        }
+
+        public static void SetContentTheme(bool isDark, WindowEx window)
+        {
+            var rootGrid = (FrameworkElement)window.Content;
+            if (rootGrid != null)
+            {
+                if (isDark)
+                {
+                    rootGrid.RequestedTheme = ElementTheme.Dark;
+                }
+                else
+                {
+                    rootGrid.RequestedTheme = ElementTheme.Light;
                 }
             }
         }
@@ -363,6 +371,39 @@ namespace Microsoft.PowerToys.Settings.UI
         public static void ClearFlyoutWindow()
         {
             flyoutWindow = null;
+        }
+
+        public static Type GetPage(string settingWindow)
+        {
+            switch (settingWindow)
+            {
+                case "Overview": return typeof(GeneralPage);
+                case "AlwaysOnTop": return typeof(AlwaysOnTopPage);
+                case "Awake": return typeof(AwakePage);
+                case "ColorPicker": return typeof(ColorPickerPage);
+                case "FancyZones": return typeof(FancyZonesPage);
+                case "FileLocksmith": return typeof(FileLocksmithPage);
+                case "Run": return typeof(PowerLauncherPage);
+                case "ImageResizer": return typeof(ImageResizerPage);
+                case "KBM": return typeof(KeyboardManagerPage);
+                case "MouseUtils": return typeof(MouseUtilsPage);
+                case "MouseWithoutBorders": return typeof(MouseWithoutBordersPage);
+                case "PowerRename": return typeof(PowerRenamePage);
+                case "QuickAccent": return typeof(PowerAccentPage);
+                case "FileExplorer": return typeof(PowerPreviewPage);
+                case "ShortcutGuide": return typeof(ShortcutGuidePage);
+                case "PowerOCR": return typeof(PowerOcrPage);
+                case "VideoConference": return typeof(VideoConferencePage);
+                case "MeasureTool": return typeof(MeasureToolPage);
+                case "Hosts": return typeof(HostsPage);
+                case "RegistryPreview": return typeof(RegistryPreviewPage);
+                case "PastePlain": return typeof(PastePlainPage);
+                case "Peek": return typeof(PeekPage);
+                default:
+                    // Fallback to general
+                    Debug.Assert(false, "Unexpected SettingsWindow argument value");
+                    return typeof(GeneralPage);
+            }
         }
     }
 }

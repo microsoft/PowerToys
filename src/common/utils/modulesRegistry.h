@@ -192,6 +192,28 @@ inline registry::ChangeSet getStlThumbnailHandlerChangeSet(const std::wstring in
                                   NonLocalizable::ExtSTL);
 }
 
+inline registry::ChangeSet getRegistryPreviewSetDefaultAppChangeSet(const std::wstring installationDir, const bool perUser)
+{
+    const HKEY scope = perUser ? HKEY_CURRENT_USER : HKEY_LOCAL_MACHINE;
+
+    using vec_t = std::vector<registry::ValueChange>;
+    vec_t changes;
+
+    std::wstring appName = L"Registry Preview";
+    std::wstring fullAppName = L"PowerToys.RegistryPreview";
+    std::wstring registryKeyPrefix = L"Software\\Classes\\";
+
+    std::wstring appPath = installationDir + L"\\modules\\RegistryPreview\\PowerToys.RegistryPreview.exe";
+    std::wstring command = appPath + L" \"----ms-protocol:ms-encodedlaunch:App?ContractId=Windows.File&Verb=open&File=%1\"";
+
+    changes.push_back({ scope, registryKeyPrefix + fullAppName + L"\\" + L"Application", L"ApplicationName", appName });
+    changes.push_back({ scope, registryKeyPrefix + fullAppName + L"\\" + L"DefaultIcon", std::nullopt, appPath });
+    changes.push_back({ scope, registryKeyPrefix + fullAppName + L"\\" + L"shell\\open\\command", std::nullopt, command });
+    changes.push_back({ scope, registryKeyPrefix + L".reg\\OpenWithProgIDs", fullAppName, L"" });
+
+    return { changes };
+}
+
 inline registry::ChangeSet getRegistryPreviewChangeSet(const std::wstring installationDir,const bool perUser)
 {
     const HKEY scope = perUser ? HKEY_CURRENT_USER : HKEY_LOCAL_MACHINE;
@@ -235,5 +257,6 @@ inline std::vector<registry::ChangeSet> getAllModulesChangeSets(const std::wstri
              getPdfThumbnailHandlerChangeSet(installationDir, PER_USER),
              getGcodeThumbnailHandlerChangeSet(installationDir, PER_USER),
              getStlThumbnailHandlerChangeSet(installationDir, PER_USER),
-             getRegistryPreviewChangeSet(installationDir, PER_USER) };
+             getRegistryPreviewChangeSet(installationDir, PER_USER),
+             getRegistryPreviewSetDefaultAppChangeSet(installationDir, PER_USER) };
 }
