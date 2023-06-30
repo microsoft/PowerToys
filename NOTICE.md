@@ -328,7 +328,7 @@ SOFTWARE.
 - System.Drawing.Common 7.0.0
 - System.IO.Abstractions 17.2.3
 - System.IO.Abstractions.TestingHelpers 17.2.3
-- System.Management 7.0.0
+- System.Management 7.0.2
 - System.Reactive 6.0.0-preview.9
 - System.Runtime.Caching 7.0.0
 - System.ServiceProcess.ServiceController 7.0.0
