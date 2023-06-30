@@ -43,6 +43,7 @@ private:
     void UpdateDrawingPointPosition(MouseButton button);
     void StartDrawingPointFading(MouseButton button);
     void ClearDrawing();
+    void BringToFront();
     HHOOK m_mouseHook = NULL;
     static LRESULT CALLBACK MouseHookProc(int nCode, WPARAM wParam, LPARAM lParam) noexcept;
 
@@ -64,6 +65,7 @@ private:
     winrt::CompositionSpriteShape m_rightPointer{ nullptr };
     bool m_leftButtonPressed = false;
     bool m_rightButtonPressed = false;
+    UINT_PTR m_timer_id = {};
 
     bool m_visible = false;
 
@@ -76,7 +78,7 @@ private:
     winrt::Windows::UI::Color m_leftClickColor = MOUSE_HIGHLIGHTER_DEFAULT_LEFT_BUTTON_COLOR;
     winrt::Windows::UI::Color m_rightClickColor = MOUSE_HIGHLIGHTER_DEFAULT_RIGHT_BUTTON_COLOR;
 };
-
+static const uint32_t BRING_TO_FRONT_TIMER_ID = 123;
 Highlighter* Highlighter::instance = nullptr;
 
 bool Highlighter::CreateHighlighter()
@@ -97,7 +99,7 @@ bool Highlighter::CreateHighlighter()
         // Create the compositor for our window.
         m_compositor = winrt::Compositor();
         ABI::IDesktopWindowTarget* target;
-        winrt::check_hresult(m_compositor.as<ABI::ICompositorDesktopInterop>()->CreateDesktopWindowTarget(m_hwnd, true, &target));
+        winrt::check_hresult(m_compositor.as<ABI::ICompositorDesktopInterop>()->CreateDesktopWindowTarget(m_hwnd, false, &target));
         *winrt::put_abi(m_target) = target;
 
         // Create visual root
@@ -300,6 +302,11 @@ void Highlighter::ApplySettings(MouseHighlighterSettings settings) {
     m_rightClickColor = settings.rightButtonColor;
 }
 
+void Highlighter::BringToFront() {
+    // HACK: Draw with 1 pixel off. Otherwise Windows glitches the task bar transparency when a transparent window fill the whole screen.
+    SetWindowPos(m_hwnd, HWND_TOPMOST, GetSystemMetrics(SM_XVIRTUALSCREEN) + 1, GetSystemMetrics(SM_YVIRTUALSCREEN) + 1, GetSystemMetrics(SM_CXVIRTUALSCREEN) - 2, GetSystemMetrics(SM_CYVIRTUALSCREEN) - 2, 0);
+}
+
 void Highlighter::DestroyHighlighter()
 {
     StopDrawing();
@@ -330,6 +337,29 @@ LRESULT CALLBACK Highlighter::WndProc(HWND hWnd, UINT message, WPARAM wParam, LP
     case WM_DESTROY:
         instance->DestroyHighlighter();
         break;
+    case WM_WINDOWPOSCHANGING:
+    {
+        // this message is sent when we are losing topmost Z order position, which occurs in case the user clicks 
+        // on a pinned to top window, which was not focused. That window is pushed to the top causing we aren't on the top afterwards. 
+        // To solve it we have to bring our window to the top position again, we have to do it after this massage is processed by the system
+        // therefore we need a small timer (10 ms). When the timer rings, we position our window to the top again.
+        if (instance->m_visible)
+        {
+            instance->m_timer_id = SetTimer(instance->m_hwnd, BRING_TO_FRONT_TIMER_ID, 10, nullptr);
+        }
+        return DefWindowProc(hWnd, message, wParam, lParam);
+    }
+    case WM_TIMER:
+    {
+        switch (wParam)
+        {
+        case BRING_TO_FRONT_TIMER_ID:
+            KillTimer(instance->m_hwnd, instance->m_timer_id);
+            instance->BringToFront();
+            break;
+        }
+        break;
+    }
     default:
         return DefWindowProc(hWnd, message, wParam, lParam);
     }
