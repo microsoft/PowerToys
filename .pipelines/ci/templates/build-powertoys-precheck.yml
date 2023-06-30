@@ -8,15 +8,20 @@ jobs:
     ${{ if ne(variables['System.CollectionUri'], 'https://dev.azure.com/ms/') }}:
       name: WinDevPool-L
   steps:
-  - checkout: self
-    fetchDepth: 1
-    submodules: true
-    clean: true
+  - checkout: none
 
   - task: PowerShell@2
     displayName: Verify Build Request
     inputs:
-      filePath: '$(build.sourcesdirectory)\.pipelines\verifyBuildRequest.ps1'
-      arguments: -commit '$(system.pullRequest.sourceCommitId)'
-      pwsh: true
+      targetType: 'inline'
+      script: |
+        $commit = "$(system.pullRequest.sourceCommitId)";
+        $gitHubCommit = Invoke-RestMethod -Method Get "https://api.github.com/repos/microsoft/PowerToys/commits/$commit"
+        # If there are no files updated in the commit that are .md, set skipBuild variable
+        if(($githubCommit.files.filename -notmatch ".md").Length -eq 0)
+        {
+            Write-Host '##vso[task.setvariable variable=skipBuild;isOutput=true]Yes'
+            Write-Host 'Skipping Build'
+        }
+    pwsh: true
     name: verifyBuildRequest
