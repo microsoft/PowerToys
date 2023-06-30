@@ -225,10 +225,12 @@ LRESULT CALLBACK Highlighter::MouseHookProc(int nCode, WPARAM wParam, LPARAM lPa
         case WM_LBUTTONDOWN:
             instance->AddDrawingPoint(MouseButton::Left);
             instance->m_leftButtonPressed = true;
+            instance->m_timer_id = SetTimer(instance->m_hwnd, BRING_TO_FRONT_TIMER_ID, 10, nullptr);
             break;
         case WM_RBUTTONDOWN:
             instance->AddDrawingPoint(MouseButton::Right);
             instance->m_rightButtonPressed = true;
+            instance->m_timer_id = SetTimer(instance->m_hwnd, BRING_TO_FRONT_TIMER_ID, 10, nullptr);
             break;
         case WM_MOUSEMOVE:
             if (instance->m_leftButtonPressed)
@@ -337,24 +339,17 @@ LRESULT CALLBACK Highlighter::WndProc(HWND hWnd, UINT message, WPARAM wParam, LP
     case WM_DESTROY:
         instance->DestroyHighlighter();
         break;
-    case WM_WINDOWPOSCHANGING:
-    {
-        // this message is sent when we are losing topmost Z order position, which occurs in case the user clicks 
-        // on a pinned to top window, which was not focused. That window is pushed to the top causing we aren't on the top afterwards. 
-        // To solve it we have to bring our window to the top position again, we have to do it after this massage is processed by the system
-        // therefore we need a small timer (10 ms). When the timer rings, we position our window to the top again.
-        if (instance->m_visible)
-        {
-            instance->m_timer_id = SetTimer(instance->m_hwnd, BRING_TO_FRONT_TIMER_ID, 10, nullptr);
-        }
-        return DefWindowProc(hWnd, message, wParam, lParam);
-    }
     case WM_TIMER:
     {
         switch (wParam)
         {
         case BRING_TO_FRONT_TIMER_ID:
-            KillTimer(instance->m_hwnd, instance->m_timer_id);
+            static int fireCount = 0;
+            if (fireCount > 4)
+            {
+                KillTimer(instance->m_hwnd, instance->m_timer_id);
+                fireCount = 0;
+            }
             instance->BringToFront();
             break;
         }
