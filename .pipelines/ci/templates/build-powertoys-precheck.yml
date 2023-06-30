@@ -23,5 +23,5 @@ jobs:
             Write-Host '##vso[task.setvariable variable=skipBuild;isOutput=true]Yes'
             Write-Host 'Skipping Build'
         }
-    pwsh: true
+      pwsh: true
     name: verifyBuildRequest
