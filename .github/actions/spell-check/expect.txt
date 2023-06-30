@@ -1830,6 +1830,7 @@ SETTEXT
 SETTINGCHANGE
 settingsheader
 settingshotkeycontrol
+setvariable
 SETWORKAREA
 setzero
 sfgao
@@ -2219,6 +2220,7 @@ vscdb
 vsconfig
 VSCROLL
 vsetq
+vso
 vsonline
 vstemplate
 VSTHRD
