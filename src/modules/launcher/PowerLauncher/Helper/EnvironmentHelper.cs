@@ -68,13 +68,14 @@ namespace PowerLauncher.Helper
         }
 
         /// <summary>
-        /// This method is used as a function wrapper to do the update twice. We have to do it twice to get correct variable sets if they contain nested variables (e.g. PATH contains %JAVA_HOME%).
-        /// It is called when we receive a special WindowMessage.
+        /// This method is used as a function wrapper to do the update twice. It is called when we receive a special WindowMessage.
         /// </summary>
         internal static void UpdateEnvironment()
         {
             Stopwatch.Normal("EnvironmentHelper.UpdateEnvironment - Duration cost", () =>
             {
+                // We have to do the update twice to get a correct variable set, if some variables reference other variables in their value (e.g. PATH contains %JAVA_HOME%). [https://github.com/microsoft/PowerToys/issues/26864]
+                // The cause of this is a bug in .Net which reads the variables from the Registry (HKLM/HKCU), but expands the REG_EXPAND_SZ values against the current process environment when reading the Registry value.
                 ExecuteEnvironmentUpdate();
                 ExecuteEnvironmentUpdate();
             });
