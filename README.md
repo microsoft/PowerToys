@@ -196,7 +196,7 @@ In this release, we focused on stability and improvements.
 
  - Added multiplication and division signs. Thanks [@ailintom](https://github.com/ailintom)!
  - Added opening exclamation mark to Catalan and Spanish language. Thanks [@Aaron-Junker](https://github.com/Aaron-Junker)!
- - Added the section sign (U+00A7). Thanks [@EikeJoo](https://github.com/EikeJoo)!
+ - Added the section sign ("§", U+00A7). Thanks [@EikeJoo](https://github.com/EikeJoo)!
  - Added accent units and more additional signs. Thanks [@WilkoLu](https://github.com/WilkoLu)!
 
 ### Registry Preview
