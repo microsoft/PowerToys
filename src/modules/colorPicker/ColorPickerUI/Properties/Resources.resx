@@ -400,4 +400,8 @@
     <value>Plum</value>
     <comment>Plum color</comment>
   </data>
+  <data name="New_Label" xml:space="preserve">
+    <value>New</value>
+    <comment>Button label to pick a new color</comment>
+  </data>
 </root>

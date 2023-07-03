@@ -7,6 +7,7 @@
     xmlns:e="http://schemas.microsoft.com/xaml/behaviors"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:shaders="clr-namespace:ColorPicker.Shaders"
+    xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
     Background="Transparent"
     Focusable="False"
     mc:Ignorable="d">
@@ -16,10 +17,10 @@
         Margin="12"
         HorizontalAlignment="Center"
         VerticalAlignment="Center"
-        Background="Yellow"
-        BorderBrush="Red"
+        Background="{DynamicResource LayerFillColorDefaultBrush}"
+        BorderBrush="{DynamicResource SurfaceStrokeColorDefaultBrush}"
         BorderThickness="1"
-        CornerRadius="4">
+        CornerRadius="{DynamicResource ControlCornerRadius}">
         <!--  Disabled due to the poor performance of drawing shadows in WPF  -->
         <!--<Border.Effect>
             <DropShadowEffect BlurRadius="16" Opacity="0.28" ShadowDepth="1" />
@@ -45,7 +46,6 @@
             <Border
                 HorizontalAlignment="Right"
                 VerticalAlignment="Top"
-                Background="Yellow"
                 CornerRadius="0,4,0,4"
                 Visibility="Collapsed">
                 <Border.Style>
@@ -60,9 +60,9 @@
                 <Button
                     Width="40"
                     Height="40"
-                    Background="Transparent"
-                    Content="&#xE8BB;"
-                    FontFamily="Segoe MDL2 Assets" />
+                    Background="Transparent">
+                    <ui:SymbolIcon Symbol="Dismiss20" />
+                </Button>
             </Border>
         </Grid>
     </Border>

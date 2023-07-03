@@ -2,10 +2,8 @@
     x:Class="ColorPicker.Views.ColorEditorView"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-    xmlns:behaviors="clr-namespace:ColorPicker.Behaviors"
     xmlns:controls="clr-namespace:ColorPicker.Controls"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-    xmlns:e="http://schemas.microsoft.com/xaml/behaviors"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:p="clr-namespace:ColorPicker.Properties"
     xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
@@ -19,8 +17,7 @@
         </Grid.RowDefinitions>
 
         <!--  Side bar  -->
-
-        <Grid Margin="16,0,16,0">
+        <Grid Margin="16,16,16,0">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="Auto" />
                 <ColumnDefinition Width="*" />
@@ -28,6 +25,7 @@
             </Grid.ColumnDefinitions>
             <ui:Button
                 Height="36"
+                VerticalAlignment="Top"
                 AutomationProperties.Name="{x:Static p:Resources.Pick_color}"
                 Command="{Binding OpenColorPickerCommand}"
                 TabIndex="0"
@@ -35,20 +33,23 @@
                 <Button.Content>
                     <StackPanel Orientation="Horizontal">
                         <ui:SymbolIcon FontSize="18" Symbol="Eyedropper24" />
-                        <TextBlock Margin="8,0,0,0" Text="Pick" />
+                        <TextBlock Margin="8,0,0,0" Text="{x:Static p:Resources.New_Label}" />
                     </StackPanel>
 
                 </Button.Content>
             </ui:Button>
+
             <ListView
                 x:Name="HistoryColors"
                 Grid.Column="1"
-                Height="48"
-                Margin="12,16,12,0"
+                Margin="12,4,12,0"
                 Padding="0"
+                VerticalAlignment="Top"
+                VerticalContentAlignment="Top"
                 AutomationProperties.Name="{x:Static p:Resources.Color_History}"
                 ItemsSource="{Binding ColorsHistory}"
                 KeyboardNavigation.DirectionalNavigation="Contained"
+                ScrollViewer.HorizontalScrollBarVisibility="Auto"
                 SelectedIndex="{Binding SelectedColorIndex}"
                 SelectionMode="Extended"
                 TabIndex="2">
@@ -64,20 +65,19 @@
                             CommandParameter="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type ContextMenu}}, Path=PlacementTarget.SelectedItems}"
                             Header="{x:Static p:Resources.Remove}">
                             <MenuItem.Icon>
-                                <ui:FontIcon Glyph="&#xE74D;" />
-
+                                <ui:SymbolIcon Symbol="Delete24" />
                             </MenuItem.Icon>
                         </MenuItem>
                         <MenuItem Header="{x:Static p:Resources.Export_by}">
                             <MenuItem.Icon>
-                                <ui:FontIcon Glyph="&#xEDE1;" />
+                                <ui:SymbolIcon Symbol="ArrowExportLtr24" />
                             </MenuItem.Icon>
                             <MenuItem
                                 Command="{Binding ExportColorsGroupedByColorCommand}"
                                 CommandParameter="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type ContextMenu}}, Path=PlacementTarget.SelectedItems}"
                                 Header="{x:Static p:Resources.Export_by_color}">
                                 <MenuItem.Icon>
-                                    <ui:FontIcon Glyph="&#xE790;" />
+                                    <ui:SymbolIcon Symbol="Color20" />
                                 </MenuItem.Icon>
                             </MenuItem>
                             <MenuItem
@@ -85,7 +85,7 @@
                                 CommandParameter="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type ContextMenu}}, Path=PlacementTarget.SelectedItems}"
                                 Header="{x:Static p:Resources.Export_by_format}">
                                 <MenuItem.Icon>
-                                    <ui:FontIcon Glyph="&#xE943;" />
+                                    <ui:SymbolIcon Symbol="Code20" />
                                 </MenuItem.Icon>
                             </MenuItem>
                         </MenuItem>
@@ -97,7 +97,7 @@
                             <Ellipse
                                 Width="20"
                                 Height="20"
-                                Stroke="{DynamicResource CardStrokeColorDefaultBrush}"
+                                Stroke="{DynamicResource SurfaceStrokeColorDefaultBrush}"
                                 StrokeThickness="1">
                                 <Ellipse.Fill>
                                     <SolidColorBrush Color="{Binding Path=.}" />
@@ -108,15 +108,7 @@
                 </ListView.ItemTemplate>
                 <ListView.ItemContainerStyle>
                     <Style TargetType="{x:Type ListViewItem}">
-
-
-
                         <Setter Property="KeyboardNavigation.TabNavigation" Value="Local" />
-                        <!--<Setter Property="IsHoldingEnabled" Value="True" />-->
-
-                        <!--<Setter Property="Margin" Value="8" />-->
-
-
                         <Setter Property="Template">
                             <Setter.Value>
                                 <ControlTemplate TargetType="ListViewItem">
@@ -128,7 +120,6 @@
                                             Fill="Transparent"
                                             Opacity="0"
                                             StrokeThickness="2">
-
                                             <Ellipse.Stroke>
                                                 <SolidColorBrush Color="{Binding Path=.}" />
                                             </Ellipse.Stroke>
@@ -187,13 +178,13 @@
                 </ListView.ItemContainerStyle>
             </ListView>
 
-
             <Button
                 Grid.Column="2"
                 Width="36"
                 Height="36"
                 Padding="0"
                 HorizontalAlignment="Right"
+                VerticalAlignment="Top"
                 AutomationProperties.Name="{x:Static p:Resources.Open_settings}"
                 Background="Transparent"
                 BorderBrush="Transparent"
@@ -217,7 +208,6 @@
                 BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}"
                 BorderThickness="0,1,0,0" />
 
-
             <controls:ColorPickerControl
                 Margin="16,0,16,0"
                 HorizontalAlignment="Center"
@@ -228,8 +218,6 @@
                 SelectedColorChangedCommand="{Binding SelectedColorChangedCommand}"
                 TabIndex="2"
                 Visibility="{Binding ColorsHistory.Count, Converter={StaticResource numberToVisibilityConverter}}" />
-
-
 
             <!--  Main grid  -->
             <Grid Grid.Column="1" Visibility="{Binding ColorsHistory.Count, Converter={StaticResource numberToVisibilityConverter}}">
@@ -261,41 +249,44 @@
         </Grid>
         <!--  Empty history  -->
         <StackPanel
-            Grid.Column="1"
-            Margin="24,12"
+            Grid.Row="1"
+            Grid.ColumnSpan="2"
+            Margin="0,-12,0,0"
             VerticalAlignment="Center"
             Orientation="Vertical"
             Visibility="{Binding ColorsHistory.Count, Converter={StaticResource numberToInvertedVisibilityConverter}}">
+            <ui:SymbolIcon FontSize="44" Symbol="Eyedropper20" />
             <TextBlock
+                Margin="24,16,24,16"
                 HorizontalAlignment="Center"
-                FontFamily="Segoe MDL2 Assets"
-                FontSize="44"
-                Text="&#xEF3C;" />
-            <TextBlock
-                Margin="0,16,0,0"
-                HorizontalAlignment="Center"
+                Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                Style="{StaticResource CaptionTextBlockStyle}"
                 Text="{x:Static p:Resources.No_colors_yet}"
                 TextAlignment="Center"
                 TextWrapping="Wrap" />
         </StackPanel>
-
         <Border
             x:Name="CopiedBorderIndicator"
+            Grid.Row="1"
             Grid.ColumnSpan="2"
             Height="0"
             HorizontalAlignment="Stretch"
             VerticalAlignment="Bottom"
+            Background="{DynamicResource CardBackgroundFillColorDefaultBrush}"
+            BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}"
+            BorderThickness="0,1,0,0"
             Opacity="0">
-
             <TextBlock
                 HorizontalAlignment="Center"
                 VerticalAlignment="Center"
                 AutomationProperties.LiveSetting="Assertive"
                 AutomationProperties.Name="{x:Static p:Resources.Copied_to_clipboard}"
-                FontSize="16"
                 Foreground="White">
-                <Run FontFamily="Segoe MDL2 Assets" Text="&#xE8C8; " />
-                <Run FontWeight="SemiBold" Text="{x:Static p:Resources.Copied_to_clipboard}" />
+                <Run
+                    FontFamily="Segoe Fluent Icons"
+                    FontSize="16"
+                    Text="&#xE8C8; " />
+                <Run Text="{x:Static p:Resources.Copied_to_clipboard}" />
             </TextBlock>
         </Border>
     </Grid>

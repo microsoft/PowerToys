@@ -106,6 +106,7 @@ namespace ColorPicker.Controls
             ColorCopiedNotificationBorder.BeginAnimation(Border.HeightProperty, resize);
 
             var clipboardNotification = ((Decorator)ColorCopiedNotificationBorder).Child;
+
             if (clipboardNotification == null)
             {
                 return;

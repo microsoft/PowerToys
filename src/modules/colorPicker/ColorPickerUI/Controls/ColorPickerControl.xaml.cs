@@ -14,6 +14,7 @@ using System.Windows.Media.Animation;
 using ColorPicker.Helpers;
 using ManagedCommon;
 using Wpf.Ui.Controls.NumberBoxControl;
+using static System.Net.Mime.MediaTypeNames;
 
 namespace ColorPicker.Controls
 {
@@ -73,9 +74,9 @@ namespace ColorPicker.Controls
             control._ignoreRGBChanges = true;
 
             control.HexCode.Text = ColorToHex(newColor);
-            control.RNumberBox.Text = newColor.R.ToString(CultureInfo.InvariantCulture);
-            control.GNumberBox.Text = newColor.G.ToString(CultureInfo.InvariantCulture);
-            control.BNumberBox.Text = newColor.B.ToString(CultureInfo.InvariantCulture);
+            control.RNumberBox.Value = newColor.R;
+            control.GNumberBox.Value = newColor.G;
+            control.BNumberBox.Value = newColor.B;
             control.SetColorFromTextBoxes(System.Drawing.Color.FromArgb(newColor.R, newColor.G, newColor.B));
 
             control._ignoreRGBChanges = false;
@@ -172,9 +173,9 @@ namespace ColorPicker.Controls
 
             if (!_ignoreRGBChanges)
             {
-                RNumberBox.Text = currentColor.R.ToString(CultureInfo.InvariantCulture);
-                GNumberBox.Text = currentColor.G.ToString(CultureInfo.InvariantCulture);
-                BNumberBox.Text = currentColor.B.ToString(CultureInfo.InvariantCulture);
+                RNumberBox.Value = currentColor.R;
+                GNumberBox.Value = currentColor.G;
+                BNumberBox.Value = currentColor.B;
             }
 
             _currentColor = currentColor;
@@ -192,7 +193,7 @@ namespace ColorPicker.Controls
             {
                 _isCollapsed = false;
 
-                var resizeColor = new DoubleAnimation(349, new Duration(TimeSpan.FromMilliseconds(250)));
+                var resizeColor = new DoubleAnimation(256, new Duration(TimeSpan.FromMilliseconds(250)));
                 resizeColor.EasingFunction = new ExponentialEase() { EasingMode = EasingMode.EaseInOut };
 
                 var moveColor = new ThicknessAnimation(new Thickness(0), new Duration(TimeSpan.FromMilliseconds(250)));
@@ -202,6 +203,7 @@ namespace ColorPicker.Controls
                 CurrentColorButton.BeginAnimation(Button.MarginProperty, moveColor);
                 CurrentColorButton.IsEnabled = false;
                 SessionEventHelper.Event.EditorAdjustColorOpened = true;
+                DetailsFlyout.IsOpen = true;
             }
         }
 
@@ -359,9 +361,11 @@ namespace ColorPicker.Controls
             if (!_ignoreRGBChanges)
             {
                 var numberBox = sender as NumberBox;
-                var r = numberBox.Name == "RNumberBox" ? GetValueFromNumberBox(numberBox) : (byte)RNumberBox.Value;
-                var g = numberBox.Name == "GNumberBox" ? GetValueFromNumberBox(numberBox) : (byte)GNumberBox.Value;
-                var b = numberBox.Name == "BNumberBox" ? GetValueFromNumberBox(numberBox) : (byte)BNumberBox.Value;
+
+                byte r = numberBox.Name == "RNumberBox" ? GetValueFromNumberBox(numberBox) : (byte)RNumberBox.Value;
+                byte g = numberBox.Name == "GNumberBox" ? GetValueFromNumberBox(numberBox) : (byte)GNumberBox.Value;
+                byte b = numberBox.Name == "BNumberBox" ? GetValueFromNumberBox(numberBox) : (byte)BNumberBox.Value;
+
                 _ignoreRGBChanges = true;
                 SetColorFromTextBoxes(System.Drawing.Color.FromArgb(r, g, b));
                 _ignoreRGBChanges = false;
@@ -376,10 +380,30 @@ namespace ColorPicker.Controls
         /// <returns>Validated value as per numberbox conditions, if content is invalid it returns previous value</returns>
         private static byte GetValueFromNumberBox(NumberBox numberBox)
         {
-            var internalTextBox = GetChildOfType<TextBox>(numberBox);
+            double? parsedValue = ParseDouble(numberBox.Text);
+
+            if (parsedValue != null)
+            {
+                var parsedValueByte = (byte)parsedValue;
+
+                if (parsedValueByte >= numberBox.Minimum && parsedValueByte <= numberBox.Maximum)
+                {
+                    return parsedValueByte;
+                }
+            }
 
             // not valid input, return previous value
             return (byte)numberBox.Value;
+        }
+
+        public static double? ParseDouble(string text)
+        {
+            if (double.TryParse(text, out double result))
+            {
+                return result;
+            }
+
+            return null;
         }
 
         public static T GetChildOfType<T>(DependencyObject depObj)

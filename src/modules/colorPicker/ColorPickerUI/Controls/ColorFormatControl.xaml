@@ -8,7 +8,130 @@
     xmlns:p="clr-namespace:ColorPicker.Properties"
     xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
     mc:Ignorable="d">
-
+    <UserControl.Resources>
+        <Style x:Key="ReadonlyTextBoxStyle" TargetType="{x:Type TextBox}">
+            <!--  Universal WPF UI focus  -->
+            <Setter Property="FocusVisualStyle" Value="{DynamicResource DefaultControlFocusVisualStyle}" />
+            <!--  Universal WPF UI focus  -->
+            <!--  Universal WPF UI ContextMenu  -->
+            <Setter Property="ContextMenu" Value="{DynamicResource DefaultControlContextMenu}" />
+            <!--  Universal WPF UI ContextMenu  -->
+            <Setter Property="Foreground">
+                <Setter.Value>
+                    <SolidColorBrush Color="{DynamicResource TextFillColorPrimary}" />
+                </Setter.Value>
+            </Setter>
+            <Setter Property="CaretBrush">
+                <Setter.Value>
+                    <SolidColorBrush Color="{DynamicResource TextFillColorPrimary}" />
+                </Setter.Value>
+            </Setter>
+            <Setter Property="Background">
+                <Setter.Value>
+                    <SolidColorBrush Color="Transparent" />
+                </Setter.Value>
+            </Setter>
+            <Setter Property="BorderBrush" Value="Transparent" />
+            <Setter Property="BorderThickness" Value="{StaticResource TextBoxBorderThemeThickness}" />
+            <Setter Property="FontSize" Value="{DynamicResource ControlContentThemeFontSize}" />
+            <Setter Property="ScrollViewer.CanContentScroll" Value="False" />
+            <Setter Property="ScrollViewer.HorizontalScrollBarVisibility" Value="Hidden" />
+            <Setter Property="ScrollViewer.VerticalScrollBarVisibility" Value="Hidden" />
+            <Setter Property="ScrollViewer.IsDeferredScrollingEnabled" Value="False" />
+            <Setter Property="HorizontalAlignment" Value="Stretch" />
+            <Setter Property="VerticalAlignment" Value="Center" />
+            <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+            <Setter Property="VerticalContentAlignment" Value="Top" />
+            <Setter Property="MinHeight" Value="{DynamicResource TextControlThemeMinHeight}" />
+            <Setter Property="MinWidth" Value="{DynamicResource TextControlThemeMinWidth}" />
+            <Setter Property="Padding" Value="{DynamicResource TextControlThemePadding}" />
+            <Setter Property="Border.CornerRadius" Value="{DynamicResource ControlCornerRadius}" />
+            <Setter Property="SnapsToDevicePixels" Value="True" />
+            <Setter Property="OverridesDefaultStyle" Value="True" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="{x:Type TextBox}">
+                        <Grid HorizontalAlignment="{TemplateBinding HorizontalAlignment}" VerticalAlignment="{TemplateBinding VerticalAlignment}">
+                            <Border
+                                x:Name="ContentBorder"
+                                MinWidth="{TemplateBinding MinWidth}"
+                                MinHeight="{TemplateBinding MinHeight}"
+                                Padding="0"
+                                HorizontalAlignment="Stretch"
+                                VerticalAlignment="Stretch"
+                                Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                CornerRadius="{TemplateBinding Border.CornerRadius}">
+                                <Grid
+                                    Margin="{TemplateBinding Padding}"
+                                    HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+                                    VerticalAlignment="{TemplateBinding VerticalContentAlignment}">
+                                    <ScrollViewer
+                                        x:Name="PART_ContentHost"
+                                        VerticalAlignment="Center"
+                                        CanContentScroll="{TemplateBinding ScrollViewer.CanContentScroll}"
+                                        HorizontalScrollBarVisibility="{TemplateBinding ScrollViewer.HorizontalScrollBarVisibility}"
+                                        IsDeferredScrollingEnabled="{TemplateBinding ScrollViewer.IsDeferredScrollingEnabled}"
+                                        IsTabStop="{TemplateBinding ScrollViewer.IsTabStop}"
+                                        Style="{StaticResource DefaultTextBoxScrollViewerStyle}"
+                                        TextElement.Foreground="{TemplateBinding Foreground}"
+                                        VerticalScrollBarVisibility="{TemplateBinding ScrollViewer.VerticalScrollBarVisibility}" />
+                                </Grid>
+                            </Border>
+                            <!--  The Accent Border is a separate element so that changes to the border thickness do not affect the position of the element  -->
+                            <Border
+                                x:Name="AccentBorder"
+                                HorizontalAlignment="Stretch"
+                                VerticalAlignment="Stretch"
+                                BorderThickness="{StaticResource TextBoxAccentBorderThemeThickness}"
+                                CornerRadius="{TemplateBinding Border.CornerRadius}">
+                                <Border.BorderBrush>
+                                    <SolidColorBrush Color="Transparent" />
+                                </Border.BorderBrush>
+                            </Border>
+                        </Grid>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsFocused" Value="True">
+                                <Setter TargetName="AccentBorder" Property="BorderThickness" Value="0,0,0,0" />
+                                <Setter TargetName="AccentBorder" Property="BorderBrush">
+                                    <Setter.Value>
+                                        <SolidColorBrush Color="Transparent" />
+                                    </Setter.Value>
+                                </Setter>
+                                <Setter TargetName="ContentBorder" Property="Background">
+                                    <Setter.Value>
+                                        <SolidColorBrush Color="Transparent" />
+                                    </Setter.Value>
+                                </Setter>
+                            </Trigger>
+                            <MultiTrigger>
+                                <MultiTrigger.Conditions>
+                                    <Condition Property="IsEnabled" Value="True" />
+                                    <Condition Property="IsMouseOver" Value="True" />
+                                    <Condition Property="IsFocused" Value="False" />
+                                </MultiTrigger.Conditions>
+                                <Setter TargetName="ContentBorder" Property="Background">
+                                    <Setter.Value>
+                                        <SolidColorBrush Color="Transparent" />
+                                    </Setter.Value>
+                                </Setter>
+                            </MultiTrigger>
+                            <Trigger Property="IsEnabled" Value="True">
+                                <Setter Property="Cursor" Value="IBeam" />
+                            </Trigger>
+                            <Trigger Property="IsEnabled" Value="False">
+                                <Setter TargetName="ContentBorder" Property="Background" Value="Transparent" />
+                                <Setter TargetName="ContentBorder" Property="BorderBrush" Value="Transparent" />
+                                <Setter TargetName="AccentBorder" Property="BorderBrush" Value="Transparent" />
+                                <Setter Property="Foreground" Value="{DynamicResource TextFillColorDisabledBrush}" />
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+    </UserControl.Resources>
     <Border
         x:Name="MainBorder"
         Margin="0,0,0,8"
@@ -16,18 +139,17 @@
         Background="{DynamicResource CardBackgroundFillColorDefaultBrush}"
         BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}"
         BorderThickness="1"
-        CornerRadius="4">
-        <Grid Margin="12,0,12,0">
+        CornerRadius="{DynamicResource ControlCornerRadius}">
+        <Grid Margin="12,0,0,0">
             <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="78" />
+                <ColumnDefinition Width="56" />
                 <ColumnDefinition Width="*" />
-                <ColumnDefinition Width="48" />
+                <ColumnDefinition Width="36" />
             </Grid.ColumnDefinitions>
             <TextBlock
                 x:Name="FormatNameTextBlock"
                 VerticalAlignment="Center"
-                FontSize="12"
-                FontWeight="SemiBold"
+             Style="{StaticResource CaptionTextBlockStyle}"
                 Foreground="{DynamicResource TextFillColorSecondaryBrush}" />
 
             <TextBox
@@ -36,16 +158,18 @@
                 VerticalAlignment="Center"
                 AutomationProperties.Name="{x:Static p:Resources.Color_Code}"
                 Background="Transparent"
+                BorderBrush="Transparent"
                 BorderThickness="0"
-                FontWeight="SemiBold"
                 IsReadOnly="True"
-                IsTabStop="False" />
+                IsTabStop="False"
+                Style="{StaticResource ReadonlyTextBoxStyle}" />
 
             <Button
                 x:Name="CopyToClipboardButton"
                 Grid.Column="2"
                 Width="36"
                 Height="36"
+                Padding="0"
                 AutomationProperties.HelpText="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type local:Controls.ColorFormatControl}}, Path=SelectedColorCopyHelperText}"
                 AutomationProperties.Name="{x:Static p:Resources.Copy_to_clipboard}"
                 Background="Transparent"
@@ -53,10 +177,9 @@
                 Style="{StaticResource DefaultButtonStyle}"
                 ToolTipService.ToolTip="{x:Static p:Resources.Copy_to_clipboard}">
                 <Button.Content>
-                    <ui:SymbolIcon Symbol="Copy20" />
+                    <ui:SymbolIcon FontSize="18" Symbol="Copy20" />
                 </Button.Content>
             </Button>
         </Grid>
-
     </Border>
 </UserControl>

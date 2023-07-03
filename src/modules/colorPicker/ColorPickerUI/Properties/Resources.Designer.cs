@@ -232,6 +232,15 @@ namespace ColorPicker.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to New.
+        /// </summary>
+        public static string New_Label {
+            get {
+                return ResourceManager.GetString("New_Label", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Press the Color Picker icon to capture a color from your screen..
         /// </summary>
         public static string No_colors_yet {
