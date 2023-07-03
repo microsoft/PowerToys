@@ -98,7 +98,7 @@ In this release, we focused on stability and improvements.
  - Support previewing archive files with Peek. Thanks [@davidegiacometti](https://github.com/davidegiacometti)!
  - Fixed PT Run crash caused by missing App.Dark.png file.
  - Added setting to set Registry Preview as default app for opening .reg files. Thanks [@randyrants](https://github.com/randyrants)!
- - Modernized Settings app title bar and styling (Mica background material) to be inline with Windows11 guidelines. Thanks [@niels9001](https://github.com/niels9001)!
+ - Modernized Settings app title bar and styling (Mica background material) to be inline with Windows 11 guidelines. Thanks [@niels9001](https://github.com/niels9001)!
 
 ### General
 
