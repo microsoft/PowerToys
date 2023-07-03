@@ -673,7 +673,8 @@ Mouse Jump:
    - [ ] Markdown file
    - [ ] PDF
    - [ ] HTML
-   - [ ] Any other not mentioned file (.zip for example) to verify the unsupported file view is shown
+   - [ ] Archive files (.zip, .tar, .rar)
+   - [ ] Any other not mentioned file (.exe for example) to verify the unsupported file view is shown
    
  * Pinning/unpinning
    - [ ] Pin the window, switch between images of different size, verify the window stays at the same place and the same size.
