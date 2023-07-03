@@ -6,136 +6,136 @@
 
 ## Localization
  Change the Windows language to a language different than English. Then verify if the following screens change their language:
- - [ ] System tray menu items
- - [ ] Settings
- - [ ] OOBE (What's new)
- - [ ] Keyboard Manager Editor
- - [ ] Color Picker (check the tooltips)
- - [ ] FancyZones Editor
- - [ ] Power Rename (new WinUI 3 may not be localized)
- - [ ] PowerToys Run ("Start typing" string is localized, for example)
- - [ ] Image Resizer
- - [ ] Shortcut Guide (Windows controls are localized)
- - [ ] File Explorer menu entries for Image Resizer, Power Rename and FileLocksmith
- - [ ] Hosts File Editor
- - [ ] File Locksmith
+ - [x] System tray menu items
+ - [x] Settings
+ - [x] OOBE (What's new)
+ - [x] Keyboard Manager Editor
+ - [x] Color Picker (check the tooltips)
+ - [x] FancyZones Editor
+ - [x] Power Rename (new WinUI 3 may not be localized)
+ - [x] PowerToys Run ("Start typing" string is localized, for example)
+ - [x] Image Resizer
+ - [x] Shortcut Guide (Windows controls are localized)
+ - [x] File Explorer menu entries for Image Resizer, Power Rename and FileLocksmith
+ - [x] Hosts File Editor
+ - [x] File Locksmith
 
 ## File Explorer Add-ons
  * Running as user:
    * go to PowerToys repo root
-   - [ ] verify the README.md Preview Pane shows the correct content
+   - [x] verify the README.md Preview Pane shows the correct content
    * go to PowerToys repo and visit src\modules\ShortcutGuide\ShortcutGuide\svgs
-   - [ ] verify Preview Pane works for the SVG files
-   - [ ] verify the Icon Preview works for the SVG file (loop through different icon preview sizes)
+   - [x] verify Preview Pane works for the SVG files
+   - [x] verify the Icon Preview works for the SVG file (loop through different icon preview sizes)
    * go to PowerToys repo and visit src\modules\previewpane\UnitTests-PdfPreviewHandler\HelperFiles
-   - [ ] verify Preview Pane works for the PDF file
-   - [ ] verify the Icon Preview works for the PDF file (loop through different icon preview sizes)
+   - [x] verify Preview Pane works for the PDF file
+   - [x] verify the Icon Preview works for the PDF file (loop through different icon preview sizes)
    * go to PowerToys repo and visit src\modules\previewpane\UnitTests-GcodePreviewHandler\HelperFiles
-   - [ ] verify Preview Pane works for the gcode file
-   - [ ] verify the Icon Preview works for the gcode file (loop through different icon preview sizes)
+   - [x] verify Preview Pane works for the gcode file
+   - [x] verify the Icon Preview works for the gcode file (loop through different icon preview sizes)
    * go to PowerToys repo and visit src\modules\previewpane\UnitTests-StlThumbnailProvider\HelperFiles
-   - [ ] verify the Icon Preview works for the stl file (loop through different icon preview sizes)
+   - [X] verify the Icon Preview works for the stl file (loop through different icon preview sizes)
    * go to PowerToys repo and visit src\runner
-   - [ ] verify Preview Pane works for source files (shows syntax highlighting)
+   - [X] verify Preview Pane works for source files (shows syntax highlighting)
  * Running as admin (or user since recently):
    * open the Settings and turn off the Preview Pane and Icon Previous toggles
    * go to PowerToys repo root
-   - [ ] verify the README.md Preview Pane doesn't show any content
+   - [x] verify the README.md Preview Pane doesn't show any content
    * go to PowerToys repo and visit src\modules\ShortcutGuide\ShortcutGuide\svgs
-   - [ ] verify Preview Pane doesn't show the preview for the SVG files
+   - [x] verify Preview Pane doesn't show the preview for the SVG files
    * the Icon Preview for the existing SVG will still show since the icons are cached (you can also use `cleanmgr.exe` to clean all thumbnails cached in your system). You may need to restart the machine for this setting to apply as well.
-   - [ ] copy and paste one of the SVG file and verify the new file show the generic SVG icon
+   - [x] copy and paste one of the SVG file and verify the new file show the generic SVG icon
    * go to PowerToys repo and visit src\modules\previewpane\UnitTests-PdfPreviewHandler\HelperFiles
-   - [ ] verify Preview Pane doesn't show the preview for the PDF file
+   - [x] verify Preview Pane doesn't show the preview for the PDF file
    * go to PowerToys repo and visit src\modules\previewpane\UnitTests-GcodePreviewHandler\HelperFiles
-   - [ ] verify Preview Pane doesn't show the preview for the gcode file
+   - [x] verify Preview Pane doesn't show the preview for the gcode file
    * go to PowerToys repo and visit src\modules\previewpane\UnitTests-StlThumbnailProvider\HelperFiles
-   - [ ] verify Preview Pane doesn't show the preview for the stl file (a generated thumbnail would show when there's no preview)
+   - [x] verify Preview Pane doesn't show the preview for the stl file (a generated thumbnail would show when there's no preview)
    * go to PowerToys repo and visit src\runner
-   - [ ] verify Preview Pane doesn't show the preview for source code files or that it's a default previewer instead of Monaco
+   - [X] verify Preview Pane doesn't show the preview for source code files or that it's a default previewer instead of Monaco
 
 ## Image Resizer
-- [ ] Disable the Image Resizer and check that `Resize images` is absent in the context menu
-- [ ] Enable the Image Resizer and check that `Resize images` is present in the context menu. (On Win11) Check if both old context menu and Win11 tier1 context menu items are present when module is enabled.
-- [ ] Remove one image size and add a custom image size. Open the Image Resize window from the context menu and verify that changes are populated
-- [ ] Resize one image
-- [ ] Resize multiple images
-- [ ] Open the image resizer to resize a `.gif` file and verify the "Gif files with animations may not be correctly resized." warning appears.
+- [x] Disable the Image Resizer and check that `Resize images` is absent in the context menu
+- [x] Enable the Image Resizer and check that `Resize images` is present in the context menu. (On Win11) Check if both old context menu and Win11 tier1 context menu items are present when module is enabled.
+- [x] Remove one image size and add a custom image size. Open the Image Resize window from the context menu and verify that changes are populated
+- [x] Resize one image
+- [x] Resize multiple images
+- [x] Open the image resizer to resize a `.gif` file and verify the "Gif files with animations may not be correctly resized." warning appears.
 
-- [ ] Resize images with `Fill` option
-- [ ] Resize images with `Fit` option
-- [ ] Resize images with `Stretch` option
+- [x] Resize images with `Fill` option
+- [x] Resize images with `Fit` option
+- [x] Resize images with `Stretch` option
 
-- [ ] Resize images using dimension: Centimeters
-- [ ] Resize images using dimension: Inches
-- [ ] Resize images using dimension: Percents
-- [ ] Resize images using dimension: Pixels
+- [x] Resize images using dimension: Centimeters
+- [x] Resize images using dimension: Inches
+- [x] Resize images using dimension: Percents
+- [x] Resize images using dimension: Pixels
 
-- [ ] Change `Filename format` to `%1 - %2 - %3 - %4 - %5 - %6` and check if the new format is applied to resized images
-- [ ] Check `Use original date modified` and verify that modified date is not changed for resized images. Take into account that `Resize the original pictures(don't create copy)` should be selected
-- [ ] Check `Make pictures smaller but not larger` and verify that smaller pictures are not resized
-- [ ] Check `Resize the original pictures (don't create copies)` and verify that the original picture is resized and a copy is not created
-- [ ] Uncheck `Ignore the orientation of pictures` and verify that swapped width and height will actually resize a picture if the width is not equal to the height
+- [x] Change `Filename format` to `%1 - %2 - %3 - %4 - %5 - %6` and check if the new format is applied to resized images
+- [x] Check `Use original date modified` and verify that modified date is not changed for resized images. Take into account that `Resize the original pictures(don't create copy)` should be selected
+- [x] Check `Make pictures smaller but not larger` and verify that smaller pictures are not resized
+- [x] Check `Resize the original pictures (don't create copies)` and verify that the original picture is resized and a copy is not created
+- [x] Uncheck `Ignore the orientation of pictures` and verify that swapped width and height will actually resize a picture if the width is not equal to the height
 
 ## PowerRename
-- [ ] Check if disable and enable of the module works. (On Win11) Check if both old context menu and Win11 tier1 context menu items are present when module is enabled.
-- [ ] Check that with the `Show icon on context menu` icon is shown and vice versa.
-- [ ] Check if `Appear only in extended context menu` works.
-- [ ] Enable/disable autocomplete.
-- [ ] Enable/disable `Show values from last use`.
+- [x] Check if disable and enable of the module works. (On Win11) Check if both old context menu and Win11 tier1 context menu items are present when module is enabled.
+- [x] Check that with the `Show icon on context menu` icon is shown and vice versa.
+- [x] Check if `Appear only in extended context menu` works.
+- [x] Enable/disable autocomplete.
+- [x] Enable/disable `Show values from last use`.
 * Select several files and folders and check PowerRename options:
-    - [ ] Make Uppercase/Lowercase/Titlecase (could be selected only one at the time)
-    - [ ] Exclude Folders/Files/Subfolder Items (could be selected several)
-    - [ ] Item Name/Extension Only (one at the time)
-    - [ ] Enumerate Items
-    - [ ] Case Sensitive
-    - [ ] Match All Occurrences. If checked, all matches of text in the `Search` field will be replaced with the Replace text. Otherwise, only the first instance of the `Search` for text in the file name will be replaced (left to right).
+    - [x] Make Uppercase/Lowercase/Titlecase (could be selected only one at the time)
+    - [x] Exclude Folders/Files/Subfolder Items (could be selected several)
+    - [X] Item Name/Extension Only (one at the time)
+    - [X] Enumerate Items
+    - [x] Case Sensitive
+    - [x] Match All Occurrences. If checked, all matches of text in the `Search` field will be replaced with the Replace text. Otherwise, only the first instance of the `Search` for text in the file name will be replaced (left to right).
     * Use regular expressions
-        - [ ] Search with an expression (e.g. `(.*).png`)
-        - [ ] Replace with an expression (e.g. `foo_$1.png`)
-        - [ ] Replace using file creation date and time (e.g. `$hh-$mm-$ss-$fff` `$DD_$MMMM_$YYYY`)
-        - [ ] Turn on `Use Boost library` and test with Perl Regular Expression Syntax (e.g. `(?<=t)est`)
+        - [X] Search with an expression (e.g. `(.*).png`)
+        - [x] Replace with an expression (e.g. `foo_$1.png`)
+        - [x] Replace using file creation date and time (e.g. `$hh-$mm-$ss-$fff` `$DD_$MMMM_$YYYY`)
+        - [x] Turn on `Use Boost library` and test with Perl Regular Expression Syntax (e.g. `(?<=t)est`)
     * File list filters.
-        - [ ] In the `preview` window uncheck some items to exclude them from renaming.
-        - [ ] Click on the `Renamed` column to filter results.
-        - [ ] Click on the `Original` column to cycle between checked and unchecked items.
+        - [x] In the `preview` window uncheck some items to exclude them from renaming.
+        - [x] Click on the `Renamed` column to filter results.
+        - [x] Click on the `Original` column to cycle between checked and unchecked items.
 
 ## Shortcut Guide
  * Run PowerToys as user:
-   - [ ] Verify `Win + Shift + /` opens the guide
-   - [ ] Change the hotkey to a different shortcut (e.g. `Win + /`) and verify it works
-   - [ ] Set Shortcut Guide to start with a Windows key press and verify it works.
+   - [x] Verify `Win + Shift + /` opens the guide
+   - [x] Change the hotkey to a different shortcut (e.g. `Win + /`) and verify it works
+   - [x] Set Shortcut Guide to start with a Windows key press and verify it works.
  * Restore the `Win + Shift + /` hotkey.
-   - [ ] Open the guide and close it pressing `Esc`
-   - [ ] Open the guide and close it pressing and releasing the `Win` key
+   - [x] Open the guide and close it pressing `Esc`
+   - [x] Open the guide and close it pressing and releasing the `Win` key
  * With PowerToys running as a user, open an elevated app and keep it on foreground:
-   - [ ] Verify `Win + Shift + /` opens the guide
-   - [ ] Verify some of the shortcuts shown in the guide work and the guide is closed when pressed
+   - [x] Verify `Win + Shift + /` opens the guide
+   - [x] Verify some of the shortcuts shown in the guide work and the guide is closed when pressed
 
 ## Always on Top
- - [ ] Pin/unpin a window, verify it's topmost/not topmost.
- - [ ] Pin/unpin a window, verify the border appeared/disappeared.
- - [ ] Switch virtual desktop, verify border doesn't show up on another desktop.
- - [ ] Minimize and maximize pinned window, verify the border looks as usual.
- - [ ] Change border color and thickness.
- - [ ] Verify if sound is played according to the sound setting.
- - [ ] Exclude app, try to pin it.
- - [ ] Exclude already pinned app, verify it was unpinned.
- - [ ] Try to pin the app in the Game Mode.
+ - [x] Pin/unpin a window, verify it's topmost/not topmost.
+ - [x] Pin/unpin a window, verify the border appeared/disappeared.
+ - [x] Switch virtual desktop, verify border doesn't show up on another desktop.
+ - [x] Minimize and maximize pinned window, verify the border looks as usual.
+ - [x] Change border color and thickness.
+ - [x] Verify if sound is played according to the sound setting.
+ - [X] Exclude app, try to pin it.
+ - [x] Exclude already pinned app, verify it was unpinned.
+ - [x] Try to pin the app in the Game Mode.
 
 ### Quick Accent
  * Enable Quick Accent and open notepad. Then:
-   - [ ] Press `a` and the left or right arrow and verify the accent menu appears and adds the accented letter you've selected. Use left and arrow keys to cycle through the options.
-   - [ ] Press `a` and the space key and verify the accent menu appears and adds the accented letter you've selected. Use <kbd>Space</kbd> to navigate forward, <kbd>Space</kbd> + <kbd>Shift</kbd> to navigate backward.
-   - [ ] Disable Quick Accent and verify you can no longer add accented characters through Quick Accent.
+   - [x] Press `a` and the left or right arrow and verify the accent menu appears and adds the accented letter you've selected. Use left and arrow keys to cycle through the options.
+   - [x] Press `a` and the space key and verify the accent menu appears and adds the accented letter you've selected. Use <kbd>Space</kbd> to navigate forward, <kbd>Space</kbd> + <kbd>Shift</kbd> to navigate backward.
+   - [x] Disable Quick Accent and verify you can no longer add accented characters through Quick Accent.
  * Test the different settings and verify they are applied:
-   - [ ] Activation key
-   - [ ] Language (for example, Currency has no accents for 'a' but has for 's')
-   - [ ] Toolbar position (test every option, some had issues before)
-   - [ ] Input delay
-   - [ ] Exclude some apps. Verify that Quick Accent is not activated for them.
-   - [ ] Sort characters by frequency.
-   - [ ] Always start on the first character when using left/right arrows as activation method.
+   - [x] Activation key
+   - [x] Language (for example, Currency has no accents for 'a' but has for 's')
+   - [x] Toolbar position (test every option, some had issues before)
+   - [x] Input delay
+   - [x] Exclude some apps. Verify that Quick Accent is not activated for them.
+   - [x] Sort characters by frequency.
+   - [x] Always start on the first character when using left/right arrows as activation method.
 
 ### GPO
  * Copy the "PowerToys.admx" file to your Policy Definition template folder. (Example: C:\Windows\PolicyDefinitions) and copy the "PowerToys.adml" file to the matching language folder in your Policy Definition folder. (Example: C:\Windows\PolicyDefinitions\en-US)
