@@ -531,7 +531,7 @@ Mouse Jump:
  - [ ] Exclude already pinned app, verify it was unpinned.
  - [ ] Try to pin the app in the Game Mode.
 
-### Screen Ruler
+## Screen Ruler
  * Enable Screen Ruler. Then:
    - [ ] Press the activation shortcut and verify the toolbar appears.
    - [ ] Press the activation shortcut again and verify the toolbar disappears.
@@ -558,7 +558,7 @@ Mouse Jump:
    - [ ] Draw feet on cross
    - [ ] Line color
 
-### Quick Accent
+## Quick Accent
  * Enable Quick Accent and open notepad. Then:
    - [ ] Press `a` and the left or right arrow and verify the accent menu appears and adds the accented letter you've selected. Use left and arrow keys to cycle through the options.
    - [ ] Press `a` and the space key and verify the accent menu appears and adds the accented letter you've selected. Use <kbd>Space</kbd> to navigate forward, <kbd>Space</kbd> + <kbd>Shift</kbd> to navigate backward.
@@ -572,7 +572,7 @@ Mouse Jump:
    - [ ] Sort characters by frequency.
    - [ ] Always start on the first character when using left/right arrows as activation method.
 
-### Text Extractor
+## Text Extractor
  * Enable Text Extractor. Then:
    - [ ] Press the activation shortcut and verify the overlay appears.
    - [ ] Press Escape and verify the overlay disappears.
@@ -588,7 +588,7 @@ Mouse Jump:
    - [ ] Activation shortcut
    - [ ] OCR Language
 
-### Hosts File Editor
+## Hosts File Editor
  * Launch Host File Editor:
    - [ ] Verify the application exits if "Quit" is clicked on the initial warning.
    - [ ] Launch Host File Editor again and click "Accept". The module should not close. Open the hosts file (`%WinDir%\System32\Drivers\Etc`) in a text editor that auto-refreshes so you can see the changes applied by the editor in real time. (VSCode is an editor like this, for example)
@@ -602,7 +602,7 @@ Mouse Jump:
    - [ ] Show a warning at startup.
    - [ ] Additional lines position.
 
-### File Locksmith
+## File Locksmith
  * Start the PowerToys installer executable and let it stay in the initial screen.
    - [ ] Right-click the executable file, select "What's using this file?" and verify it shows up. (2 entries will show, since the installer starts two processes)
    - [ ] End the tasks in File Locksmith UI and verify that closes the installer.
@@ -617,7 +617,7 @@ Mouse Jump:
  - [ ] Right-click the drive where Windows is installed, select "What's using this file?" and scroll down and up, verify File Locksmith doesn't crash with all those entries being shown. Repeat after clicking the File Locksmith "Restart as an administrator" button.
  - [ ] Disable File Locksmith in Settings and verify the context menu entry no longer appears.
 
-### GPO
+## GPO
  * Copy the "PowerToys.admx" file to your Policy Definition template folder. (Example: C:\Windows\PolicyDefinitions) and copy the "PowerToys.adml" file to the matching language folder in your Policy Definition folder. (Example: C:\Windows\PolicyDefinitions\en-US)
    - [ ] Open the "Local Group Policy Editor" on Windows and verify there is a "Microsoft PowerToys" folder in Administrative Templates for both Computer Configuration and User Configuration.
  * In GPO, disable a module that can run as a standalone (FancyZones sounds good for this). Restart PowerToys.
@@ -641,7 +641,7 @@ Mouse Jump:
    - [ ] Open settings and verify the module is not enabled and you can't enable it.
  * Remember to reset all you Settings to Not Configured after the tests, both in Conputer and User Configurations.
 
-### Paste As Plain Text
+## Paste As Plain Text
  * Copy some rich text (e.g word of the text is different color, another work is bold, underlined, etd.). Then:
    - [ ] Paste the text using standard Windows Ctrl + V shortcut and ensure that rich text is pasted (with all colors, formatting, etc.)
    - [ ] Paste the text using Paste As Plain Text activation shortcut and ensure that plain text without any formatting is pasted.
@@ -649,7 +649,7 @@ Mouse Jump:
    - [ ] Change the activation shorctut and ensure that Paste As Plain Text is triggered using new shortcut.
    - [ ] Disable the module and ensure that text is not being pasted using activation shortcut. 
 
-### Registry Preview
+## Registry Preview
  * Open Registry Editor, add new registry key with 1 string value and 1 binary value in e.g. HKLM/Software/Classes/PowerToysTest. Right click new registry key->export and export it to file.
  * Launch Registry Preview by right-clicking exported .reg file->'Preview'. Then:
    - [ ] Edit file content. Ensure that visual try is being re-populated while typing. Save the file by pressing Save file button. Confirm that file is properly saved by pressing Edit file... button which will open file in Notepad. Try saving file using Save file as... button.
@@ -666,7 +666,7 @@ Mouse Jump:
    - [ ] Try to launch Registry Preview from it's OOBE page and ensure that it is launched properly.
    - [ ] Enable Default app setting. Verify that .reg files are opened with Registry Preview by default. Disable Default app setting. Verify that Registry Editor is now default app.
    
-### Peek   
+## Peek   
  * Open different files to check that they're shown properly
    - [ ] Image
    - [ ] Text or dev file
@@ -689,7 +689,7 @@ Mouse Jump:
  - [ ] Open multiple files, verify you can switch only between selected files.
  - [ ] Change the shortcut, verify the new one works.
 
-### Mouse Without Borders
+## Mouse Without Borders
  * Install PowerToys on two PCs in the same local network:
    - [ ] Verify that PowerToys is properly installed on both PCs.
    
