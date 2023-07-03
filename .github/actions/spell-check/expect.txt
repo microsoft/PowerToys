@@ -1083,10 +1083,12 @@ lexon
 lhs
 lhwnd
 LIBID
+licate
 LIGHTORANGE
 LIGHTTURQUOISE
 lindex
 linkedin
+LINKOVERLAY
 linq
 LINQTo
 listview
@@ -1332,6 +1334,7 @@ NCRBUTTONUP
 NCRENDERING
 ndp
 NEEDDISPATCH
+needinfo
 Nemeth
 NESW
 netcore
@@ -1416,6 +1419,7 @@ nullonfailure
 numberbox
 NUMLOCK
 numpad
+nupkg
 nwc
 Objbase
 OBJID
@@ -1614,6 +1618,7 @@ psapi
 pscid
 PSECURITY
 psfgao
+psfi
 Psr
 psrm
 psrree
@@ -1715,6 +1720,7 @@ renamable
 RENAMEONCOLLISION
 Renamer
 reparse
+reportbug
 requery
 requerying
 rescap
@@ -1852,6 +1858,7 @@ shellscalingapi
 SHFILEINFO
 SHGDNF
 SHGFI
+shinfo
 Shl
 shldisp
 shlobj
@@ -2057,6 +2064,7 @@ TEXCOORD
 textblock
 TEXTEXTRACTOR
 TEXTINCLUDE
+tgz
 themeresources
 THH
 THICKFRAME
@@ -2124,6 +2132,7 @@ ULONGLONG
 unapply
 unassign
 uncompilable
+Uncompress
 UNCPRIORITY
 UNDNAME
 UNICODETEXT

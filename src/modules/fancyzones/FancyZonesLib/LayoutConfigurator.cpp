@@ -234,6 +234,11 @@ ZonesMap LayoutConfigurator::Focus(FancyZonesUtils::Rect workArea, int zoneCount
 
 ZonesMap LayoutConfigurator::Rows(FancyZonesUtils::Rect workArea, int zoneCount, int spacing) noexcept
 {
+    if (zoneCount == 0)
+    {
+        return {};
+    }
+
     ZonesMap zones;
     
     long totalWidth = workArea.width() - (spacing * 2);
@@ -275,6 +280,11 @@ ZonesMap LayoutConfigurator::Rows(FancyZonesUtils::Rect workArea, int zoneCount,
 
 ZonesMap LayoutConfigurator::Columns(FancyZonesUtils::Rect workArea, int zoneCount, int spacing) noexcept
 {
+    if (zoneCount == 0)
+    {
+        return {};
+    }
+
     ZonesMap zones;
 
     long totalWidth = workArea.width() - (spacing * (zoneCount + 1));
@@ -316,6 +326,11 @@ ZonesMap LayoutConfigurator::Columns(FancyZonesUtils::Rect workArea, int zoneCou
 
 ZonesMap LayoutConfigurator::Grid(FancyZonesUtils::Rect workArea, int zoneCount, int spacing) noexcept
 {
+    if (zoneCount == 0)
+    {
+        return {};
+    }
+
     int rows = 1, columns = 1;
     while (zoneCount / rows >= rows)
     {

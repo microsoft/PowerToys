@@ -45,6 +45,7 @@
     <PackageVersion Include="NLog.Extensions.Logging" Version="5.0.4" />
     <PackageVersion Include="NLog.Schema" Version="5.0.4" />
     <PackageVersion Include="ScipBe.Common.Office.OneNote" Version="3.0.1" />
+    <PackageVersion Include="SharpCompress" Version="0.33.0" />
     <PackageVersion Include="StreamJsonRpc" Version="2.14.24" />
     <PackageVersion Include="StyleCop.Analyzers" Version="1.2.0-beta.435" />
     <PackageVersion Include="System.CommandLine" Version="2.0.0-beta4.22272.1" />

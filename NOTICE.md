@@ -318,6 +318,7 @@ SOFTWARE.
 - NLog.Extensions.Logging 5.0.4
 - NLog.Schema 5.0.4
 - ScipBe.Common.Office.OneNote 3.0.1
+- SharpCompress 0.33.0
 - StreamJsonRpc 2.14.24
 - StyleCop.Analyzers 1.2.0-beta.435
 - System.CommandLine 2.0.0-beta4.22272.1

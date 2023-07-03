@@ -112,15 +112,15 @@ namespace FancyZonesUnitTests
         TEST_METHOD (ZoneSetLayoutTypeToString)
         {
             std::map<int, std::wstring> expectedMap = {
-                std::make_pair(-2, L"TypeToString_ERROR"),
-                std::make_pair(-1, L"blank"),
-                std::make_pair(0, L"focus"),
-                std::make_pair(1, L"columns"),
-                std::make_pair(2, L"rows"),
-                std::make_pair(3, L"grid"),
-                std::make_pair(4, L"priority-grid"),
-                std::make_pair(5, L"custom"),
-                std::make_pair(6, L"TypeToString_ERROR"),
+                std::make_pair(-1, L"TypeToString_ERROR"),
+                std::make_pair(0, L"blank"),
+                std::make_pair(1, L"focus"),
+                std::make_pair(2, L"columns"),
+                std::make_pair(3, L"rows"),
+                std::make_pair(4, L"grid"),
+                std::make_pair(5, L"priority-grid"),
+                std::make_pair(6, L"custom"),
+                std::make_pair(7, L"TypeToString_ERROR"),
             };
 
             for (const auto& expected : expectedMap)
