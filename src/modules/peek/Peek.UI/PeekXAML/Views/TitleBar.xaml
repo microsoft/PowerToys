@@ -40,7 +40,7 @@
                 Height="24"
                 HorizontalAlignment="Center"
                 VerticalAlignment="Center"
-                Source="../Assets/Peek/AppList.scale-400.png"
+                Source="../../Assets/Peek/AppList.scale-400.png"
                 Stretch="UniformToFill" />
 
             <Grid
