@@ -25,6 +25,14 @@
     <!-- MRT from windows app sdk will search for a pri file with the same name of the module before defaulting to resources.pri -->
     <ProjectPriFileName>PowerToys.MeasureToolUI.pri</ProjectPriFileName>
   </PropertyGroup>
+
+  <ItemGroup>
+    <Page Remove="MeasureToolXAML\App.xaml" />
+  </ItemGroup>
+  <ItemGroup>
+    <ApplicationDefinition Include="MeasureToolXAML\App.xaml" />
+  </ItemGroup>
+
   <!-- SelfContained=true requires RuntimeIdentifier to be set -->
   <PropertyGroup Condition="'$(Platform)'=='x64'">
     <RuntimeIdentifier>win10-x64</RuntimeIdentifier>
