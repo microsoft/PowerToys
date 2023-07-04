@@ -24,7 +24,7 @@
                 Margin="8,8,8,8"
                 VerticalAlignment="Bottom"
                 Orientation="Horizontal">
-                <Image Source="Assets/RegistryPreview/app.ico"/>
+                <Image Source="../Assets/RegistryPreview/app.ico"/>
                 <TextBlock
                     x:Name="titleBarText"
                     Margin="8,0,0,0"
