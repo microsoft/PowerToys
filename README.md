@@ -110,6 +110,8 @@ In this release, we focused on stability and improvements.
  - Fixed network errors when checking for updates on virtual machines.
  - Bump Microsoft.CodeAnalysis.NetAnalyzers package version to 7.0.3. Thanks [@davidegiacometti](https://github.com/davidegiacometti)!
  - Bump Microsoft.Windows.Compatibility package version to 7.0.3.
+ - Bump System.Management package version to 7.0.2.
+ - Fixed issue causing PowerToys to start with Below Normal priority on startup.
 
 ### ColorPicker
 
@@ -132,6 +134,7 @@ In this release, we focused on stability and improvements.
  - Developer files preview support .vbs, .inf, .gitconfig, .gitattributes and .editorconfig files. (This was a hotfix for 0.70) Thanks [@Aaron-Junker](https://github.com/Aaron-Junker)!
  - Changed order of developer files preview` context menu items. Thanks [@Aaron-Junker](https://github.com/Aaron-Junker)!
  - Developer files preview support for .gitignore files. (This was a hotfix for 0.70) Thanks [@Aaron-Junker](https://github.com/Aaron-Junker)!
+ - Fixed issue causing preview pane flickering on file selection and resizing. Thanks [@tanchekwei](https://github.com/tanchekwei)!
 
 ### Hosts
 
@@ -203,6 +206,7 @@ In this release, we focused on stability and improvements.
 
  - Added setting to set the app as default app for opening .reg files. Thanks [@randyrants](https://github.com/randyrants)!
  - Merge settings to single folder.
+ - Fixed issue of saving files without truncation. Thanks [@qwerty472123](https://github.com/qwerty472123)!
 
 ### Text Extractor
 
