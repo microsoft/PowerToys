@@ -26,6 +26,13 @@
     <ProjectPriFileName>PowerToys.Hosts.pri</ProjectPriFileName>
   </PropertyGroup>
 
+  <ItemGroup>
+    <Page Remove="HostsXAML\App.xaml" />
+  </ItemGroup>
+  <ItemGroup>
+    <ApplicationDefinition Include="HostsXAML\App.xaml" />
+  </ItemGroup>
+
   <!-- SelfContained=true requires RuntimeIdentifier to be set -->
   <PropertyGroup Condition="'$(Platform)'=='x64'">
     <RuntimeIdentifier>win10-x64</RuntimeIdentifier>
@@ -72,9 +79,4 @@
     <ProjectReference Include="..\..\..\settings-ui\Settings.UI.Library\Settings.UI.Library.csproj" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Page Update="Views\MainPage.xaml">
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-  </ItemGroup>
 </Project>
