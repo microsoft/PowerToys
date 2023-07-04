@@ -2,7 +2,6 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 using System;
-using System.Collections.ObjectModel;
 using System.Threading;
 using global::Windows.System;
 using interop;
@@ -10,7 +9,6 @@ using Microsoft.PowerToys.Settings.UI.Controls;
 using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.PowerToys.Settings.UI.Library.Telemetry.Events;
 using Microsoft.PowerToys.Settings.UI.ViewModels;
-using Microsoft.PowerToys.Settings.UI.Views;
 using Microsoft.PowerToys.Telemetry;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
@@ -54,13 +52,11 @@ namespace Microsoft.PowerToys.Settings.UI.Flyout
                 case "Hosts": // Launch Hosts
                     {
                         bool launchAdmin = SettingsRepository<HostsSettings>.GetInstance(new SettingsUtils()).SettingsConfig.Properties.LaunchAdministrator;
-                        var actionName = "Launch";
-                        if (!App.IsElevated && launchAdmin)
+                        string eventName = App.IsElevated || !launchAdmin ? Constants.ShowHostsSharedEvent() : Constants.ShowHostsAdminSharedEvent();
+                        using (var eventHandle = new EventWaitHandle(false, EventResetMode.AutoReset, eventName))
                         {
-                            actionName = "LaunchAdministrator";
+                            eventHandle.Set();
                         }
-
-                        Views.ShellPage.SendDefaultIPCMessage("{\"action\":{\"Hosts\":{\"action_name\":\"" + actionName + "\", \"value\":\"\"}}}");
                     }
 
                     break;
