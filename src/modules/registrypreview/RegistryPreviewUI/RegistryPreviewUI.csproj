@@ -29,6 +29,13 @@
 		<ProjectPriFileName>PowerToys.RegistryPreview.pri</ProjectPriFileName>
 	</PropertyGroup>
 
+	<ItemGroup>
+		<Page Remove="RegistryPreviewXAML\App.xaml" />
+	</ItemGroup>
+	<ItemGroup>
+		<ApplicationDefinition Include="RegistryPreviewXAML\App.xaml" />
+	</ItemGroup>
+
 	<!-- SelfContained=true requires RuntimeIdentifier to be set -->
 	<PropertyGroup Condition="'$(Platform)'=='x64'">
 		<RuntimeIdentifier>win10-x64</RuntimeIdentifier>
