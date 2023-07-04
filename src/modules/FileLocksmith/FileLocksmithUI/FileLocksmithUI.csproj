@@ -26,6 +26,13 @@
     <ProjectPriFileName>PowerToys.FileLocksmithUI.pri</ProjectPriFileName>
   </PropertyGroup>
 
+  <ItemGroup>
+    <Page Remove="FileLocksmithXAML\App.xaml" />
+  </ItemGroup>
+  <ItemGroup>
+    <ApplicationDefinition Include="FileLocksmithXAML\App.xaml" />
+  </ItemGroup>
+
   <!-- SelfContained=true requires RuntimeIdentifier to be set -->
   <PropertyGroup Condition="'$(Platform)'=='x64'">
     <RuntimeIdentifier>win10-x64</RuntimeIdentifier>
@@ -48,7 +55,6 @@
     <None Remove="Assets\FileLocksmith\AppList.scale-150.png" />
     <None Remove="Assets\FileLocksmith\AppList.scale-200.png" />
     <None Remove="Assets\FileLocksmith\AppList.scale-400.png" />
-    <None Remove="Views\MainPage.xaml" />
   </ItemGroup>
 
   <!-- See https://learn.microsoft.com/windows/apps/develop/platform/csharp-winrt/net-projection-from-cppwinrt-component for more info -->
@@ -92,10 +98,5 @@
     <ProjectReference Include="..\..\..\common\interop\PowerToys.Interop.vcxproj" />
     <ProjectReference Include="..\..\..\common\ManagedCommon\ManagedCommon.csproj" />
     <ProjectReference Include="..\FileLocksmithLibInterop\FileLocksmithLibInterop.vcxproj" />
-  </ItemGroup>
-  <ItemGroup>
-    <Page Update="Views\MainPage.xaml">
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
   </ItemGroup>
 </Project>
