@@ -102,7 +102,7 @@ HRESULT CPowerRenameEnum::_ParseEnumItems(_In_ IEnumShellItems* pesi, _In_ int d
             l->Compare(r, SICHINT_DISPLAY, &res);
             return res < 0;
         };
-        std::sort(std::execution::par_unseq, begin(items), end(items), cmpShellItems);
+        std::sort(begin(items), end(items), cmpShellItems);
 
         for (const auto& item : items)
         {
