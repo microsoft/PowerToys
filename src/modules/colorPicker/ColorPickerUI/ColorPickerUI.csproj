@@ -43,7 +43,7 @@
     <Optimize>true</Optimize>
   </PropertyGroup>
   <PropertyGroup>
-    <ApplicationIcon>Resources\icon.ico</ApplicationIcon>
+    <ApplicationIcon>Assets\ColorPicker\icon.ico</ApplicationIcon>
     <NeutralLanguage>en-US</NeutralLanguage>
     <ApplicationManifest>App.manifest</ApplicationManifest>
   </PropertyGroup>
@@ -63,10 +63,10 @@
       <Generator>SettingsSingleFileGenerator</Generator>
       <LastGenOutput>Settings.Designer.cs</LastGenOutput>
     </None>
-    <None Update="Resources\colorPicker.cur">
+    <None Update="Assets\ColorPicker\colorPicker.cur">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
-    <None Update="Resources\icon.ico">
+    <None Update="Assets\ColorPicker\icon.ico">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
   </ItemGroup>
