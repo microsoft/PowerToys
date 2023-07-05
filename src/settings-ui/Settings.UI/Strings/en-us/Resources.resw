@@ -2600,9 +2600,6 @@ From there, simply click on one of the supported files in the File Explorer and 
   <data name="MouseUtils_MouseHighlighter_SecondaryButtonClickColor.Header" xml:space="preserve">
     <value>Secondary button highlight color</value>
   </data>
-  <data name="MouseUtils_MouseHighlighter_HighlightOpacity.Header" xml:space="preserve">
-    <value>Opacity (%)</value>
-  </data>
   <data name="MouseUtils_MouseHighlighter_HighlightRadius.Header" xml:space="preserve">
     <value>Radius (px)</value>
     <comment>px = pixels</comment>
@@ -3581,5 +3578,8 @@ Activate by holding the key for the character you want to add an accent to, then
   </data>
   <data name="Hosts_Encoding_Utf8Bom.Content" xml:space="preserve">
     <value>UTF-8 with BOM</value>
+  </data>
+  <data name="MouseUtils_MouseHighlighter_AlwaysColor.Header" xml:space="preserve">
+    <value>Always highlight color</value>
   </data>
 </root>

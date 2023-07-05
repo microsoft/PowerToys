@@ -31,7 +31,8 @@ private:
     enum class MouseButton
     {
         Left,
-        Right
+        Right,
+        None
     };
 
     void DestroyHighlighter();
@@ -42,6 +43,7 @@ private:
     void AddDrawingPoint(MouseButton button);
     void UpdateDrawingPointPosition(MouseButton button);
     void StartDrawingPointFading(MouseButton button);
+    void ClearDrawingPoint(MouseButton button);
     void ClearDrawing();
     HHOOK m_mouseHook = NULL;
     static LRESULT CALLBACK MouseHookProc(int nCode, WPARAM wParam, LPARAM lParam) noexcept;
@@ -62,6 +64,12 @@ private:
 
     winrt::CompositionSpriteShape m_leftPointer{ nullptr };
     winrt::CompositionSpriteShape m_rightPointer{ nullptr };
+    winrt::CompositionSpriteShape m_alwaysPointer{ nullptr };
+
+    bool m_leftPointerEnabled = true;
+    bool m_rightPointerEnabled = true;
+    bool m_alwaysPointerEnabled = true;
+
     bool m_leftButtonPressed = false;
     bool m_rightButtonPressed = false;
 
@@ -75,6 +83,7 @@ private:
 
     winrt::Windows::UI::Color m_leftClickColor = MOUSE_HIGHLIGHTER_DEFAULT_LEFT_BUTTON_COLOR;
     winrt::Windows::UI::Color m_rightClickColor = MOUSE_HIGHLIGHTER_DEFAULT_RIGHT_BUTTON_COLOR;
+    winrt::Windows::UI::Color m_alwaysColor = MOUSE_HIGHLIGHTER_DEFAULT_ALWAYS_COLOR;
 };
 
 Highlighter* Highlighter::instance = nullptr;
@@ -132,17 +141,22 @@ void Highlighter::AddDrawingPoint(MouseButton button)
     auto circleGeometry = m_compositor.CreateEllipseGeometry();
     circleGeometry.Radius({ m_radius, m_radius });
     auto circleShape = m_compositor.CreateSpriteShape(circleGeometry);
-    circleShape.Offset({ static_cast<float>(pt.x), static_cast<float>(pt.y )});
+    circleShape.Offset({ static_cast<float>(pt.x), static_cast<float>(pt.y) });
     if (button == MouseButton::Left)
     {
         circleShape.FillBrush(m_compositor.CreateColorBrush(m_leftClickColor));
         m_leftPointer = circleShape;
     }
-    else
+    else if (button == MouseButton::Right)
     {
-        //right
         circleShape.FillBrush(m_compositor.CreateColorBrush(m_rightClickColor));
         m_rightPointer = circleShape;
+    }
+    else
+    {
+        // always
+        circleShape.FillBrush(m_compositor.CreateColorBrush(m_alwaysColor));
+        m_alwaysPointer = circleShape;
     }
     m_shape.Shapes().Append(circleShape);
 
@@ -166,12 +180,16 @@ void Highlighter::UpdateDrawingPointPosition(MouseButton button)
 
     if (button == MouseButton::Left)
     {
-        m_leftPointer.Offset({ static_cast<float>(pt.x), static_cast<float>(pt.y )});
+        m_leftPointer.Offset({ static_cast<float>(pt.x), static_cast<float>(pt.y) });
+    }
+    else if (button == MouseButton::Right)
+    {
+        m_rightPointer.Offset({ static_cast<float>(pt.x), static_cast<float>(pt.y) });
     }
     else
     {
-        //right
-        m_rightPointer.Offset({ static_cast<float>(pt.x), static_cast<float>(pt.y )});
+        // always
+        m_alwaysPointer.Offset({ static_cast<float>(pt.x), static_cast<float>(pt.y) });
     }
 }
 void Highlighter::StartDrawingPointFading(MouseButton button)
@@ -183,7 +201,7 @@ void Highlighter::StartDrawingPointFading(MouseButton button)
     }
     else
     {
-        //right
+        // right
         circleShape = m_rightPointer;
     }
 
@@ -201,6 +219,15 @@ void Highlighter::StartDrawingPointFading(MouseButton button)
     circleShape.FillBrush().StartAnimation(L"Color", animation);
 }
 
+void Highlighter::ClearDrawingPoint(MouseButton _button)
+{
+    winrt::Windows::UI::Composition::CompositionSpriteShape circleShape{ nullptr };
+
+    // always
+    circleShape = m_alwaysPointer;
+
+    circleShape.FillBrush().as<winrt::Windows::UI::Composition::CompositionColorBrush>().Color(winrt::Windows::UI::ColorHelper::FromArgb(0, 0, 0, 0));
+}
 
 void Highlighter::ClearDrawing()
 {
@@ -221,12 +248,28 @@ LRESULT CALLBACK Highlighter::MouseHookProc(int nCode, WPARAM wParam, LPARAM lPa
         switch (wParam)
         {
         case WM_LBUTTONDOWN:
-            instance->AddDrawingPoint(MouseButton::Left);
-            instance->m_leftButtonPressed = true;
+            if (instance->m_leftPointerEnabled)
+            {
+                if (instance->m_alwaysPointerEnabled && !instance->m_rightButtonPressed)
+                {
+                    // Clear AlwaysPointer only when it's enabled and RightPointer is not active
+                    instance->ClearDrawingPoint(MouseButton::None);
+                }
+                instance->AddDrawingPoint(MouseButton::Left);
+                instance->m_leftButtonPressed = true;
+            }
             break;
         case WM_RBUTTONDOWN:
-            instance->AddDrawingPoint(MouseButton::Right);
-            instance->m_rightButtonPressed = true;
+            if (instance->m_rightPointerEnabled)
+            {
+                if (instance->m_alwaysPointerEnabled && !instance->m_leftButtonPressed)
+                {
+                    // Clear AlwaysPointer only when it's enabled and LeftPointer is not active
+                    instance->ClearDrawingPoint(MouseButton::None);
+                }
+                instance->AddDrawingPoint(MouseButton::Right);
+                instance->m_rightButtonPressed = true;
+            }
             break;
         case WM_MOUSEMOVE:
             if (instance->m_leftButtonPressed)
@@ -237,12 +280,21 @@ LRESULT CALLBACK Highlighter::MouseHookProc(int nCode, WPARAM wParam, LPARAM lPa
             {
                 instance->UpdateDrawingPointPosition(MouseButton::Right);
             }
+            if (instance->m_alwaysPointerEnabled && !instance->m_leftButtonPressed && !instance->m_rightButtonPressed)
+            {
+                instance->UpdateDrawingPointPosition(MouseButton::None);
+            }
             break;
         case WM_LBUTTONUP:
             if (instance->m_leftButtonPressed)
             {
                 instance->StartDrawingPointFading(MouseButton::Left);
                 instance->m_leftButtonPressed = false;
+                if (instance->m_alwaysPointerEnabled && !instance->m_rightButtonPressed)
+                {
+                    // Add AlwaysPointer only when it's enabled and RightPointer is not active
+                    instance->AddDrawingPoint(MouseButton::None);
+                }
             }
             break;
         case WM_RBUTTONUP:
@@ -250,6 +302,11 @@ LRESULT CALLBACK Highlighter::MouseHookProc(int nCode, WPARAM wParam, LPARAM lPa
             {
                 instance->StartDrawingPointFading(MouseButton::Right);
                 instance->m_rightButtonPressed = false;
+                if (instance->m_alwaysPointerEnabled && !instance->m_leftButtonPressed)
+                {
+                    // Add AlwaysPointer only when it's enabled and LeftPointer is not active
+                    instance->AddDrawingPoint(MouseButton::None);
+                }
             }
             break;
         default:
@@ -270,6 +327,7 @@ void Highlighter::StartDrawing()
     SetWindowPos(m_hwnd, HWND_TOPMOST, GetSystemMetrics(SM_XVIRTUALSCREEN) + 1, GetSystemMetrics(SM_YVIRTUALSCREEN) + 1, GetSystemMetrics(SM_CXVIRTUALSCREEN) - 2, GetSystemMetrics(SM_CYVIRTUALSCREEN) - 2, 0);
     ClearDrawing();
     ShowWindow(m_hwnd, SW_SHOWNOACTIVATE);
+    instance->AddDrawingPoint(MouseButton::None);
     m_mouseHook = SetWindowsHookEx(WH_MOUSE_LL, MouseHookProc, m_hinstance, 0);
 }
 
@@ -281,6 +339,7 @@ void Highlighter::StopDrawing()
     m_rightButtonPressed = false;
     m_leftPointer = nullptr;
     m_rightPointer = nullptr;
+    m_alwaysPointer = nullptr;
     ShowWindow(m_hwnd, SW_HIDE);
     UnhookWindowsHookEx(m_mouseHook);
     ClearDrawing();
@@ -298,6 +357,10 @@ void Highlighter::ApplySettings(MouseHighlighterSettings settings) {
     m_fadeDuration_ms = settings.fadeDurationMs;
     m_leftClickColor = settings.leftButtonColor;
     m_rightClickColor = settings.rightButtonColor;
+    m_alwaysColor = settings.alwaysColor;
+    m_leftPointerEnabled = settings.leftButtonColor.A != 0;
+    m_rightPointerEnabled = settings.rightButtonColor.A != 0;
+    m_alwaysPointerEnabled = settings.alwaysColor.A != 0;
 }
 
 void Highlighter::DestroyHighlighter()
