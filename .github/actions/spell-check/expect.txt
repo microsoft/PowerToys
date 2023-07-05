@@ -87,7 +87,6 @@ Apm
 APPBARDATA
 appdata
 APPEXECLINK
-APPIDS
 appium
 Applets
 Applicationcan
@@ -673,7 +672,6 @@ EXTENDEDVERBS
 EXTRINSICPROPERTIES
 eyetracker
 FABC
-fabricbot
 FAEDDA
 FAF
 FAFD
@@ -800,7 +798,6 @@ GWLP
 HACCEL
 handlekeyboardhookevent
 hangeul
-Hankaku
 hanselman
 Hanzi
 Hardlines
@@ -2185,6 +2182,7 @@ VCINSTALLDIR
 vcm
 vcomp
 Vcpkg
+vcproj
 VCRT
 vcruntime
 vcvars
