@@ -6,7 +6,7 @@
     2. [Build times](#build-times)
     3. [Setting custom backgrounds for Xaml Controls using brushes](#setting-custom-backgrounds-for-xaml-controls-using-brushes)
 2. [UI Structure](#ui-structure)
-3. [Edit Keyboard Window Edit Shortcuts Window](#edit-keyboard-window-edit-shortcuts-window)
+3. [EditKeyboardWindow/EditShortcutsWindow](#edit-keyboard-window-edit-shortcuts-window)
     1. [OK and Cancel button](#ok-and-cancel-button)
     2. [Delete button](#delete-button)
     3. [Handling common modifiers in EditKeyboardWindow](#handling-common-modifiers-in-editkeyboardwindow)
