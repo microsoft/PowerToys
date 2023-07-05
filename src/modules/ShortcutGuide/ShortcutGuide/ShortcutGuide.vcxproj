@@ -97,57 +97,57 @@
   <ItemGroup>
     <None Include="packages.config" />
     <None Include="PropertySheet.props" />
-    <CopyFileToFolders Include="svgs\0.svg">
+    <CopyFileToFolders Include="Assets\ShortcutGuide\0.svg">
       <FileType>Document</FileType>
-      <DestinationFolders>$(OutDir)\svgs</DestinationFolders>
+      <DestinationFolders>$(OutDir)\Assets\ShortcutGuide</DestinationFolders>
     </CopyFileToFolders>
-    <CopyFileToFolders Include="svgs\1.svg">
+    <CopyFileToFolders Include="Assets\ShortcutGuide\1.svg">
       <FileType>Document</FileType>
-      <DestinationFolders>$(OutDir)\svgs</DestinationFolders>
+      <DestinationFolders>$(OutDir)\Assets\ShortcutGuide</DestinationFolders>
     </CopyFileToFolders>
-    <CopyFileToFolders Include="svgs\2.svg">
+    <CopyFileToFolders Include="Assets\ShortcutGuide\2.svg">
       <FileType>Document</FileType>
-      <DestinationFolders>$(OutDir)\svgs</DestinationFolders>
+      <DestinationFolders>$(OutDir)\Assets\ShortcutGuide</DestinationFolders>
     </CopyFileToFolders>
-    <CopyFileToFolders Include="svgs\3.svg">
+    <CopyFileToFolders Include="Assets\ShortcutGuide\3.svg">
       <FileType>Document</FileType>
-      <DestinationFolders>$(OutDir)\svgs</DestinationFolders>
+      <DestinationFolders>$(OutDir)\Assets\ShortcutGuide</DestinationFolders>
     </CopyFileToFolders>
-    <CopyFileToFolders Include="svgs\4.svg">
+    <CopyFileToFolders Include="Assets\ShortcutGuide\4.svg">
       <FileType>Document</FileType>
-      <DestinationFolders>$(OutDir)\svgs</DestinationFolders>
+      <DestinationFolders>$(OutDir)\Assets\ShortcutGuide</DestinationFolders>
     </CopyFileToFolders>
-    <CopyFileToFolders Include="svgs\5.svg">
+    <CopyFileToFolders Include="Assets\ShortcutGuide\5.svg">
       <FileType>Document</FileType>
-      <DestinationFolders>$(OutDir)\svgs</DestinationFolders>
+      <DestinationFolders>$(OutDir)\Assets\ShortcutGuide</DestinationFolders>
     </CopyFileToFolders>
-    <CopyFileToFolders Include="svgs\6.svg">
+    <CopyFileToFolders Include="Assets\ShortcutGuide\6.svg">
       <FileType>Document</FileType>
-      <DestinationFolders>$(OutDir)\svgs</DestinationFolders>
+      <DestinationFolders>$(OutDir)\Assets\ShortcutGuide</DestinationFolders>
     </CopyFileToFolders>
-    <CopyFileToFolders Include="svgs\7.svg">
+    <CopyFileToFolders Include="Assets\ShortcutGuide\7.svg">
       <FileType>Document</FileType>
-      <DestinationFolders>$(OutDir)\svgs</DestinationFolders>
+      <DestinationFolders>$(OutDir)\Assets\ShortcutGuide</DestinationFolders>
     </CopyFileToFolders>
-    <CopyFileToFolders Include="svgs\8.svg">
+    <CopyFileToFolders Include="Assets\ShortcutGuide\8.svg">
       <FileType>Document</FileType>
-      <DestinationFolders>$(OutDir)\svgs</DestinationFolders>
+      <DestinationFolders>$(OutDir)\Assets\ShortcutGuide</DestinationFolders>
     </CopyFileToFolders>
-    <CopyFileToFolders Include="svgs\9.svg">
+    <CopyFileToFolders Include="Assets\ShortcutGuide\9.svg">
       <FileType>Document</FileType>
-      <DestinationFolders>$(OutDir)\svgs</DestinationFolders>
+      <DestinationFolders>$(OutDir)\Assets\ShortcutGuide</DestinationFolders>
     </CopyFileToFolders>
-    <CopyFileToFolders Include="svgs\no_active_window.svg">
+    <CopyFileToFolders Include="Assets\ShortcutGuide\no_active_window.svg">
       <FileType>Document</FileType>
-      <DestinationFolders>$(OutDir)\svgs</DestinationFolders>
+      <DestinationFolders>$(OutDir)\Assets\ShortcutGuide</DestinationFolders>
     </CopyFileToFolders>
-    <CopyFileToFolders Include="svgs\overlay.svg">
+    <CopyFileToFolders Include="Assets\ShortcutGuide\overlay.svg">
       <FileType>Document</FileType>
-      <DestinationFolders>$(OutDir)\svgs</DestinationFolders>
+      <DestinationFolders>$(OutDir)\Assets\ShortcutGuide</DestinationFolders>
     </CopyFileToFolders>
-    <CopyFileToFolders Include="svgs\overlay_portrait.svg">
+    <CopyFileToFolders Include="Assets\ShortcutGuide\overlay_portrait.svg">
       <FileType>Document</FileType>
-      <DestinationFolders>$(OutDir)\svgs</DestinationFolders>
+      <DestinationFolders>$(OutDir)\Assets\ShortcutGuide</DestinationFolders>
     </CopyFileToFolders>
   </ItemGroup>
   <ItemGroup>

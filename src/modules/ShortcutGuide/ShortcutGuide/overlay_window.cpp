@@ -499,19 +499,19 @@ float D2DOverlayWindow::get_overlay_opacity()
 void D2DOverlayWindow::init()
 {
     colors.update();
-    landscape.load(L"svgs\\overlay.svg", d2d_dc.get())
+    landscape.load(L"Assets\\ShortcutGuide\\overlay.svg", d2d_dc.get())
         .find_thumbnail(L"monitorRect")
         .find_window_group(L"WindowControlsGroup")
         .recolor(0x2582FB, colors.start_color_menu);
-    portrait.load(L"svgs\\overlay_portrait.svg", d2d_dc.get())
+    portrait.load(L"Assets\\ShortcutGuide\\overlay_portrait.svg", d2d_dc.get())
         .find_thumbnail(L"monitorRect")
         .find_window_group(L"WindowControlsGroup")
         .recolor(0x2582FB, colors.start_color_menu);
-    no_active.load(L"svgs\\no_active_window.svg", d2d_dc.get());
+    no_active.load(L"Assets\\ShortcutGuide\\no_active_window.svg", d2d_dc.get());
     arrows.resize(10);
     for (unsigned i = 0; i < arrows.size(); ++i)
     {
-        arrows[i].load(L"svgs\\" + std::to_wstring((i + 1) % 10) + L".svg", d2d_dc.get()).recolor(0x2582FB, colors.start_color_menu);
+        arrows[i].load(L"Assets\\ShortcutGuide\\" + std::to_wstring((i + 1) % 10) + L".svg", d2d_dc.get()).recolor(0x2582FB, colors.start_color_menu);
     }
     light_mode = (theme_setting == Light) || (theme_setting == System && colors.light_mode);
     if (light_mode)
