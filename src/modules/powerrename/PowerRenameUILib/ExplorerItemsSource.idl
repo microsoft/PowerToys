@@ -1,5 +1,3 @@
-import "ExplorerItemViewModel.idl";
-
 namespace PowerRenameUI
 {
     [default_interface] runtimeclass ExplorerItemsSource : 

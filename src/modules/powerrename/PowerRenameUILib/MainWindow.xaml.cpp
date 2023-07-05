@@ -233,7 +233,7 @@ namespace winrt::PowerRenameUI::implementation
                     if (SUCCEEDED(m_prManager->Advise(&m_managerEvents, &m_cookie)))
                     {
                         CComPtr<IShellItemArray> shellItemArray;
-                        // To test PowerRename uncomment DEBUG_BENCHMARK_1M_ENTRIES define
+                        // To test PowerRename uncomment DEBUG_BENCHMARK_100K_ENTRIES define
                         if (!g_files.empty())
                         {
                             if (SUCCEEDED(CreateShellItemArrayFromPaths(std::move(g_files), &shellItemArray)))

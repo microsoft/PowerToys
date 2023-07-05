@@ -92,6 +92,7 @@
       <SubType>Code</SubType>
     </ClInclude>
     <ClInclude Include="ExplorerItemsSource.h">
+      <DependentUpon>ExplorerItemsSource.idl</DependentUpon>
       <SubType>Code</SubType>
     </ClInclude>
     <ClInclude Include="ExplorerItemViewModel.h">
@@ -123,6 +124,7 @@
       <SubType>Code</SubType>
     </ClCompile>
     <ClCompile Include="ExplorerItemsSource.cpp">
+      <DependentUpon>ExplorerItemsSource.idl</DependentUpon>
       <SubType>Code</SubType>
     </ClCompile>
     <ClCompile Include="ExplorerItemViewModel.cpp">

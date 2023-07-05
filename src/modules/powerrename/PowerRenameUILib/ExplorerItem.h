@@ -34,7 +34,7 @@ namespace winrt::PowerRenameUI::implementation
         void Renamed(hstring const& value);
 
         double Indentation();
-        void Indentation(double);
+        void Indentation(double value);
 
         hstring ImagePath();
         void ImagePath(hstring const& value);

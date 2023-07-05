@@ -152,8 +152,6 @@ void App::OnLaunched(LaunchActivatedEventArgs const&)
                 nullptr);
             CloseHandle(hFile);
         }
-        else
-            file_path /= std::to_wstring(i) + L".txt";
     }
 #else
 #define BUFSIZE 4096 * 4

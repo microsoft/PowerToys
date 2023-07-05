@@ -54,10 +54,6 @@ namespace winrt::PowerRenameUI::implementation
     }
     hstring ExplorerItemViewModel::RenamedVM()
     {
-        CComPtr<IPowerRenameRegEx> spRenameRegEx;
-
-        winrt::check_hresult(g_prManager->GetRenameRegEx(&spRenameRegEx));
-
         CComPtr<IPowerRenameItem> spItem;
         winrt::check_hresult(g_prManager->GetItemByIndex(_index, &spItem));
 

@@ -10,8 +10,6 @@ using namespace winrt;
 using namespace Microsoft::UI::Xaml;
 using namespace Microsoft::Windows::ApplicationModel::Resources;
 
-extern winrt::Microsoft::UI::Xaml::Controls::ListView g_ExplorerItemsListView;
-
 namespace
 {
     const wchar_t fileImagePath[] = L"ms-appx:///Assets/file.png";
@@ -56,7 +54,7 @@ namespace winrt::PowerRenameUI::implementation
                     L"Checked",
                     xaml_typename<bool>(),
                     xaml_typename<PowerRenameUI::ExplorerItem>(),
-                    PropertyMetadata{ box_value(false) });
+                    PropertyMetadata{ box_value(true) });
         }
     }
 
