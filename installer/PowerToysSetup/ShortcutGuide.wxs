@@ -10,7 +10,6 @@
   <Fragment>
     <!-- Shortcut guide files -->
     <DirectoryRef Id="BaseApplicationsAssetsFolder">
-      <!-- TODO: This should be on its own assets path -->
       <Directory Id="ShortcutGuideSvgsInstallFolder" Name="ShortcutGuide" />
     </DirectoryRef>
     <DirectoryRef Id="ShortcutGuideSvgsInstallFolder" FileSource="$(var.ShortcutGuideSvgFilesPath)">

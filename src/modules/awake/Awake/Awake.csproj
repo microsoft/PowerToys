@@ -15,7 +15,7 @@
     <DisableWinExeOutputInference>true</DisableWinExeOutputInference>
     <AssemblyName>PowerToys.Awake</AssemblyName>
     <Version>$(Version).0</Version>
-    <ApplicationIcon>Images\Awake.ico</ApplicationIcon>
+    <ApplicationIcon>Assets\Awake\Awake.ico</ApplicationIcon>
     <PackageProjectUrl>https://awake.den.dev</PackageProjectUrl>
     <RepositoryUrl>https://github.com/microsoft/powertoys</RepositoryUrl>
     <SelfContained>true</SelfContained>
@@ -58,7 +58,7 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|ARM64'" />
 
   <ItemGroup>
-    <None Remove="Images\Awake.ico" />
+    <None Remove="Assets\Awake\Awake.ico" />
   </ItemGroup>
 
   <ItemGroup>
@@ -82,7 +82,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Content Include="Images\Awake.ico">
+    <Content Include="Assets\Awake\Awake.ico">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
   </ItemGroup>
