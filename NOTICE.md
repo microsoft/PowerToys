@@ -282,8 +282,9 @@ SOFTWARE.
 ## NuGet Packages used by PowerToys
 
 - CommunityToolkit.Labs.WinUI.SettingsControls 0.0.18
-- CommunityToolkit.Mvvm 8.0.0
+- CommunityToolkit.Mvvm 8.2.0
 - CommunityToolkit.WinUI.UI 7.1.2
+- CommunityToolkit.WinUI.UI.Animations 7.1.2
 - CommunityToolkit.WinUI.UI.Controls 7.1.2
 - ControlzEx 5.0.1
 - HelixToolkit 2.20.2
@@ -293,7 +294,7 @@ SOFTWARE.
 - LazyCache 2.4.0
 - Mages 2.0.1
 - Markdig.Signed 0.27.0
-- Microsoft.CodeAnalysis.NetAnalyzers 7.0.1
+- Microsoft.CodeAnalysis.NetAnalyzers 7.0.3
 - Microsoft.Data.Sqlite 7.0.0
 - Microsoft.DotNet.UpgradeAssistant.Extensions.Default.Analyzers 0.4.336902
 - Microsoft.Extensions.DependencyInjection 7.0.0
@@ -303,7 +304,7 @@ SOFTWARE.
 - Microsoft.NET.Test.Sdk 17.4.1
 - Microsoft.Toolkit.Uwp.Notifications 7.1.2
 - Microsoft.Web.WebView2 1.0.1722.45
-- Microsoft.Windows.Compatibility 7.0.1
+- Microsoft.Windows.Compatibility 7.0.3
 - Microsoft.Windows.CsWin32 0.2.46-beta
 - Microsoft.Windows.CsWinRT 2.0.2
 - Microsoft.Windows.SDK.BuildTools 10.0.22621.755
@@ -317,6 +318,7 @@ SOFTWARE.
 - NLog.Extensions.Logging 5.0.4
 - NLog.Schema 5.0.4
 - ScipBe.Common.Office.OneNote 3.0.1
+- SharpCompress 0.33.0
 - StreamJsonRpc 2.14.24
 - StyleCop.Analyzers 1.2.0-beta.435
 - System.CommandLine 2.0.0-beta4.22272.1
@@ -326,7 +328,7 @@ SOFTWARE.
 - System.Drawing.Common 7.0.0
 - System.IO.Abstractions 17.2.3
 - System.IO.Abstractions.TestingHelpers 17.2.3
-- System.Management 7.0.0
+- System.Management 7.0.2
 - System.Reactive 6.0.0-preview.9
 - System.Runtime.Caching 7.0.0
 - System.ServiceProcess.ServiceController 7.0.0
@@ -334,5 +336,5 @@ SOFTWARE.
 - UnitsNet 4.145.0
 - Vanara.PInvoke.Shell32 3.4.11
 - Vanara.PInvoke.User32 3.4.11
-- WinUIEx 2.1.0
+- WinUIEx 2.2.0
 

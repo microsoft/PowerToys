@@ -123,6 +123,8 @@ UINT __stdcall UnApplyModulesRegistryChangeSetsCA(MSIHANDLE hInstall)
         changeSet.unApply();
     }
 
+    SHChangeNotify(SHCNE_ASSOCCHANGED, SHCNF_IDLIST, NULL, NULL);
+
     ExitOnFailure(hr, "Failed to extract msix");
 
 LExit:
@@ -387,6 +389,8 @@ UINT __stdcall CreateScheduledTaskCA(MSIHANDLE hInstall)
     ExitOnFailure(hr, "Cannot put_ExecutionTimeLimit setting info: %x", hr);
     hr = pSettings->put_DisallowStartIfOnBatteries(VARIANT_FALSE);
     ExitOnFailure(hr, "Cannot put_DisallowStartIfOnBatteries setting info: %x", hr);
+    hr = pSettings->put_Priority(4);
+    ExitOnFailure(hr, "Cannot put_Priority setting info : %x", hr);
 
     // ------------------------------------------------------
     // Get the trigger collection to insert the logon trigger.

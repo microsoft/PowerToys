@@ -279,6 +279,7 @@
                 "modules\\MouseWithoutBorders\\MessagePack.Annotations.dll",
                 "modules\\MouseWithoutBorders\\MessagePack.dll",
                 "modules\\MouseWithoutBorders\\Nerdbank.Streams.dll",
+                "modules\\Peek\\SharpCompress.dll",
                 "Settings\\Microsoft.Graphics.Canvas.Interop.dll",
                 "Settings\\clrcompression.dll",
                 "Settings\\CommunityToolkit.Labs.WinUI.SettingsControls.dll",

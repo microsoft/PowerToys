@@ -62,7 +62,8 @@ public:
             PowerToysSettings::PowerToyValues values =
                 PowerToysSettings::PowerToyValues::from_json_string(config, get_key());
 
-            // Currently, there are no settings, so we don't do anything.
+            toggle_extended_only(values.get_bool_value(L"bool_show_extended_menu").value());
+            save_settings();
         }
         catch (std::exception& e)
         {
@@ -89,6 +90,18 @@ public:
         return m_enabled;
     }
 
+    virtual void toggle_extended_only(bool extended_only)
+    {
+        Logger::info(L"File Locksmith toggle extended only");
+        m_extended_only = extended_only;
+        save_settings();
+    }
+
+    virtual bool is_extended_only()
+    {
+        return m_extended_only;
+    }
+
     virtual void destroy() override
     {
         delete this;
@@ -96,10 +109,12 @@ public:
 
 private:
     bool m_enabled;
+    bool m_extended_only;
 
     void init_settings()
     {
         m_enabled = FileLocksmithSettingsInstance().GetEnabled();
+        m_extended_only = FileLocksmithSettingsInstance().GetShowInExtendedContextMenu();
         Trace::EnableFileLocksmith(m_enabled);
     }
 
@@ -107,6 +122,8 @@ private:
     {
         auto& settings = FileLocksmithSettingsInstance();
         settings.SetEnabled(m_enabled);
+        settings.SetExtendedContextMenuOnly(m_extended_only);
+
         settings.Save();
         Trace::EnableFileLocksmith(m_enabled);
     }

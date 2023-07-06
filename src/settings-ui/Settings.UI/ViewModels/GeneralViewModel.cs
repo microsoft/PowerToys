@@ -679,6 +679,14 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             }
         }
 
+        public bool IsUpdatePanelVisible
+        {
+            get
+            {
+                return PowerToysUpdatingState == UpdatingSettings.UpdatingState.UpToDate || PowerToysUpdatingState == UpdatingSettings.UpdatingState.NetworkError;
+            }
+        }
+
         public void NotifyPropertyChanged([CallerMemberName] string propertyName = null, bool reDoBackupDryRun = true)
         {
             // Notify UI of property change
@@ -766,7 +774,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
             _settingsBackupRestoreMessageVisible = true;
             _backupRestoreMessageSeverity = results.Severity;
-            _settingsBackupMessage = GetResourceString(results.Message);
+            _settingsBackupMessage = GetResourceString(results.Message) + results.OptionalMessage;
 
             // now we do a dry run to get the results for "setting match"
             var settingsUtils = new SettingsUtils();
@@ -792,33 +800,6 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         // callback function to launch the URL to check for updates.
         private void CheckForUpdatesClick()
         {
-            // check if network is available
-            bool isNetAvailable = IsNetworkAvailable();
-
-            // check if the state changed
-            bool prevState = _isNoNetwork;
-            _isNoNetwork = !isNetAvailable;
-            if (prevState != _isNoNetwork)
-            {
-                NotifyPropertyChanged(nameof(IsNoNetwork));
-            }
-
-            if (!isNetAvailable)
-            {
-                _isNewVersionDownloading = false;
-                return;
-            }
-
-            RefreshUpdatingState();
-            IsNewVersionDownloading = string.IsNullOrEmpty(UpdatingSettingsConfig.DownloadedInstallerFilename);
-            NotifyPropertyChanged(nameof(IsDownloadAllowed));
-
-            if (_isNewVersionChecked)
-            {
-                _isNewVersionChecked = !IsNewVersionDownloading;
-                NotifyPropertyChanged(nameof(IsNewVersionCheckedAndUpToDate));
-            }
-
             GeneralSettingsConfig.CustomActionName = "check_for_updates";
 
             OutGoingGeneralSettings outsettings = new OutGoingGeneralSettings(GeneralSettingsConfig);
@@ -952,54 +933,15 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 PowerToysNewAvailableVersionLink = UpdatingSettingsConfig.ReleasePageLink;
                 UpdateCheckedDate = UpdatingSettingsConfig.LastCheckedDateLocalized;
 
+                _isNoNetwork = PowerToysUpdatingState == UpdatingSettings.UpdatingState.NetworkError;
+                NotifyPropertyChanged(nameof(IsNoNetwork));
+                NotifyPropertyChanged(nameof(IsNewVersionDownloading));
+                NotifyPropertyChanged(nameof(IsUpdatePanelVisible));
                 _isNewVersionChecked = PowerToysUpdatingState == UpdatingSettings.UpdatingState.UpToDate && !IsNewVersionDownloading;
                 NotifyPropertyChanged(nameof(IsNewVersionCheckedAndUpToDate));
 
                 NotifyPropertyChanged(nameof(IsDownloadAllowed));
             }
-        }
-
-        /// <summary>
-        /// Indicates whether any network connection is available
-        /// Filter virtual network cards.
-        /// </summary>
-        /// <returns>
-        ///     <c>true</c> if a network connection is available; otherwise, <c>false</c>.
-        /// </returns>
-        public static bool IsNetworkAvailable()
-        {
-            if (!NetworkInterface.GetIsNetworkAvailable())
-            {
-                return false;
-            }
-
-            foreach (NetworkInterface ni in NetworkInterface.GetAllNetworkInterfaces())
-            {
-                // discard because of standard reasons
-                if ((ni.OperationalStatus != OperationalStatus.Up) ||
-                    (ni.NetworkInterfaceType == NetworkInterfaceType.Loopback) ||
-                    (ni.NetworkInterfaceType == NetworkInterfaceType.Tunnel))
-                {
-                    continue;
-                }
-
-                // discard virtual cards (virtual box, virtual pc, etc.)
-                if (ni.Description.Contains("virtual", StringComparison.OrdinalIgnoreCase) ||
-                    ni.Name.Contains("virtual", StringComparison.OrdinalIgnoreCase))
-                {
-                    continue;
-                }
-
-                // discard "Microsoft Loopback Adapter", it will not show as NetworkInterfaceType.Loopback but as Ethernet Card.
-                if (ni.Description.Equals("Microsoft Loopback Adapter", StringComparison.OrdinalIgnoreCase))
-                {
-                    continue;
-                }
-
-                return true;
-            }
-
-            return false;
         }
     }
 }

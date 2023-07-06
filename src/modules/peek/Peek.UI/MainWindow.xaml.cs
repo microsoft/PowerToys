@@ -4,12 +4,12 @@
 
 using System;
 using interop;
+using ManagedCommon;
 using Microsoft.PowerToys.Telemetry;
+using Microsoft.UI;
 using Microsoft.UI.Windowing;
-using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Input;
 using Peek.Common.Constants;
-using Peek.Common.Helpers;
 using Peek.FilePreviewer.Models;
 using Peek.UI.Extensions;
 using Peek.UI.Helpers;
@@ -23,14 +23,26 @@ namespace Peek.UI
     /// <summary>
     /// An empty window that can be used on its own or navigated to within a Frame.
     /// </summary>
-    public sealed partial class MainWindow : WindowEx
+    public sealed partial class MainWindow : WindowEx, IDisposable
     {
         public MainWindowViewModel ViewModel { get; }
+
+        private ThemeListener? themeListener;
 
         public MainWindow()
         {
             InitializeComponent();
             this.Activated += PeekWindow_Activated;
+
+            try
+            {
+                themeListener = new ThemeListener();
+                themeListener.ThemeChanged += (_) => HandleThemeChange();
+            }
+            catch (Exception e)
+            {
+                Logger.LogError($"HandleThemeChange exception. Please install .NET 4.", e);
+            }
 
             ViewModel = App.GetService<MainWindowViewModel>();
 
@@ -39,6 +51,20 @@ namespace Peek.UI
             TitleBarControl.SetTitleBarToWindow(this);
 
             AppWindow.Closing += AppWindow_Closing;
+        }
+
+        private void HandleThemeChange()
+        {
+            AppWindow appWindow = this.AppWindow;
+
+            if (ThemeHelpers.GetAppTheme() == AppTheme.Light)
+            {
+                appWindow.TitleBar.ButtonForegroundColor = Colors.DarkSlateGray;
+            }
+            else
+            {
+                appWindow.TitleBar.ButtonForegroundColor = Colors.White;
+            }
         }
 
         private void PeekWindow_Activated(object sender, Microsoft.UI.Xaml.WindowActivatedEventArgs args)
@@ -75,14 +101,14 @@ namespace Peek.UI
             }
         }
 
-        private void LeftNavigationInvoked(KeyboardAccelerator sender, KeyboardAcceleratorInvokedEventArgs args)
+        private void PreviousNavigationInvoked(KeyboardAccelerator sender, KeyboardAcceleratorInvokedEventArgs args)
         {
-            ViewModel.AttemptLeftNavigation();
+            ViewModel.AttemptPreviousNavigation();
         }
 
-        private void RightNavigationInvoked(KeyboardAccelerator sender, KeyboardAcceleratorInvokedEventArgs args)
+        private void NextNavigationInvoked(KeyboardAccelerator sender, KeyboardAcceleratorInvokedEventArgs args)
         {
-            ViewModel.AttemptRightNavigation();
+            ViewModel.AttemptNextNavigation();
         }
 
         private void EscKeyInvoked(KeyboardAccelerator sender, KeyboardAcceleratorInvokedEventArgs args)
@@ -202,6 +228,11 @@ namespace Peek.UI
             }
 
             return false;
+        }
+
+        public void Dispose()
+        {
+            themeListener?.Dispose();
         }
     }
 }

@@ -319,7 +319,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             {
                 if (settings.Properties.OpenPowerLauncher != value)
                 {
-                    settings.Properties.OpenPowerLauncher = value;
+                    settings.Properties.OpenPowerLauncher = value ?? settings.Properties.DefaultOpenPowerLauncher;
                     UpdateSettings();
                 }
             }
@@ -455,7 +455,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             {
                 if (settings.Properties.OpenFileLocation != value)
                 {
-                    settings.Properties.OpenFileLocation = value;
+                    settings.Properties.OpenFileLocation = value ?? settings.Properties.DefaultOpenFileLocation;
                     UpdateSettings();
                 }
             }
@@ -472,7 +472,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             {
                 if (settings.Properties.CopyPathLocation != value)
                 {
-                    settings.Properties.CopyPathLocation = value;
+                    settings.Properties.CopyPathLocation = value ?? settings.Properties.DefaultCopyPathLocation;
                     UpdateSettings();
                 }
             }

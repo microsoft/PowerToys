@@ -151,22 +151,17 @@ void WindowDrag::SwitchSnappingMode(bool isSnapping)
 {
     if (!m_snappingMode && isSnapping) // turn on
     {
-        m_highlightedZones.Reset();
         SetWindowTransparency();
 
         if (FancyZonesSettings::settings().showZonesOnAllMonitors)
         {
             for (const auto& [_, workArea] : m_activeWorkAreas)
             {
-                if (workArea)
+                if (workArea && workArea.get() != m_currentWorkArea)
                 {
                     workArea->ShowZonesOverlay({}, m_window);
                 }
             }
-        }
-        else if (m_currentWorkArea)
-        {
-            m_currentWorkArea->ShowZonesOverlay({}, m_window);
         }
 
         if (m_currentWorkArea)

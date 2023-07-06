@@ -561,6 +561,13 @@ namespace MouseWithoutBorders.Class
                         Common.MainForm.Quit(false, false);
                     });
                 }
+                else if (shiftDown || winDown)
+                {
+                    // The following else cases should work if control and alt modifiers are pressed. The hotkeys should still be captured.
+                    // But if any of the other 2 modifiers (shift or win) are pressed, they hotkeys should not be activated.
+                    // Issue #26597
+                    return true;
+                }
                 else if (vkCode == Setting.Values.HotKeySwitchMachine ||
                      vkCode == Setting.Values.HotKeySwitchMachine + 1 ||
                      vkCode == Setting.Values.HotKeySwitchMachine + 2 ||
