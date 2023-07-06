@@ -15,6 +15,8 @@ using System.Globalization;
 using System.Runtime.InteropServices;
 using System.ServiceProcess;
 using System.Threading.Tasks;
+using Windows.UI.Input.Preview.Injection;
+using static MouseWithoutBorders.Class.NativeMethods;
 
 [module: SuppressMessage("Microsoft.Portability", "CA1901:PInvokeDeclarationsShouldBePortable", Scope = "member", Target = "MouseWithoutBorders.InputSimulation.#keybd_event(System.Byte,System.Byte,System.UInt32,System.Int32)", MessageId = "3", Justification = "Dotnet port with style preservation")]
 [module: SuppressMessage("Microsoft.Usage", "CA1806:DoNotIgnoreMethodResults", Scope = "member", Target = "MouseWithoutBorders.InputSimulation.#InputProcessKeyEx(System.Int32,System.Int32,System.Boolean&)", MessageId = "MouseWithoutBorders.NativeMethods.LockWorkStation", Justification = "Dotnet port with style preservation")]
@@ -23,15 +25,30 @@ namespace MouseWithoutBorders.Class
 {
     internal class InputSimulation
     {
+        public static InputInjector Injector;
+
         private InputSimulation()
         {
+        }
+
+        internal static InjectedInputMouseInfo MouseInputToInjectedInputMouseInfo(MOUSEINPUT mouseInput)
+        {
+            var injectedInput = new InjectedInputMouseInfo();
+
+            injectedInput.DeltaX = mouseInput.dx;
+            injectedInput.DeltaY = mouseInput.dy;
+            injectedInput.MouseData = (uint)mouseInput.mouseData;
+            injectedInput.MouseOptions = (InjectedInputMouseOptions)mouseInput.dwFlags;
+            injectedInput.TimeOffsetInMilliseconds = (uint)mouseInput.time;
+
+            return injectedInput;
         }
 
         private static uint SendInputEx(NativeMethods.INPUT input)
         {
             Common.PaintCount = 0;
 
-            uint rv;
+            uint rv = 0;
             if (Common.Is64bitOS)
             {
                 NativeMethods.INPUT64 input64 = default;
@@ -58,18 +75,27 @@ namespace MouseWithoutBorders.Class
                     input64.mi.dwExtraInfo = input.mi.dwExtraInfo;
                 }
 
-                NativeMethods.INPUT64[] inputs = { input64 };
-
-                // mouse click simulation
-                // TODO: Find alternative API that simulates mouse input more directly
-                rv = NativeMethods.SendInput64(1, inputs, Marshal.SizeOf(input64));
+                if (input.type == 0 && (input.mi.dwFlags & (int)NativeMethods.MOUSEEVENTF.MOVE) != 0 && NativeMethods.InjectMouseInputAvailable)
+                {
+                    Injector.InjectMouseInput(new[] { MouseInputToInjectedInputMouseInfo(input64.mi) });
+                }
+                else
+                {
+                    NativeMethods.INPUT64[] inputs = { input64 };
+                    rv = NativeMethods.SendInput64(1, inputs, Marshal.SizeOf(input64));
+                }
             }
             else
             {
-                NativeMethods.INPUT[] inputs = { input };
-
-                // TODO: Find alternative API that simulates mouse input more directly
-                rv = NativeMethods.SendInput(1, inputs, Marshal.SizeOf(input));
+                if (input.type == 0 && (input.mi.dwFlags & (int)NativeMethods.MOUSEEVENTF.MOVE) != 0 && NativeMethods.InjectMouseInputAvailable)
+                {
+                    Injector.InjectMouseInput(new[] { MouseInputToInjectedInputMouseInfo(input.mi) });
+                }
+                else
+                {
+                    NativeMethods.INPUT[] inputs = { input };
+                    rv = NativeMethods.SendInput(1, inputs, Marshal.SizeOf(input));
+                }
             }
 
             return rv;
