@@ -10,6 +10,7 @@
 //     2009-... modified by Truong Do (TruongDo).
 //     2023- Included in PowerToys.
 // </history>
+using Microsoft.PowerToys.Settings.UI.Library;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Runtime.InteropServices;
@@ -353,6 +354,14 @@ namespace MouseWithoutBorders.Class
         private static bool altDown;
         private static bool shiftDown;
 
+        private static void ResetModifiersState(HotkeySettings matchingHotkey)
+        {
+            ctrlDown = ctrlDown && matchingHotkey.Ctrl;
+            altDown = altDown && matchingHotkey.Alt;
+            shiftDown = shiftDown && matchingHotkey.Shift;
+            winDown = winDown && matchingHotkey.Win;
+        }
+
         private static void InputProcessKeyEx(int vkCode, int flags, out bool eatKey)
         {
             eatKey = false;
@@ -387,23 +396,20 @@ namespace MouseWithoutBorders.Class
             }
             else
             {
-                if (vkCode == Setting.Values.HotKeyLockMachine)
+                if (Common.HotkeyMatched(vkCode, winDown, ctrlDown, altDown, shiftDown, Setting.Values.HotKeyLockMachine))
                 {
                     if (!Common.RunOnLogonDesktop
                         && !Common.RunOnScrSaverDesktop)
                     {
-                        if (ctrlDown && altDown)
-                        {
-                            ctrlDown = altDown = false;
-                            eatKey = true;
-                            Common.ReleaseAllKeys();
-                            _ = NativeMethods.LockWorkStation();
-                        }
+                        ResetModifiersState(Setting.Values.HotKeyLockMachine);
+                        eatKey = true;
+                        Common.ReleaseAllKeys();
+                        _ = NativeMethods.LockWorkStation();
                     }
                 }
-                else if (vkCode == Setting.Values.HotKeyCaptureScreen && ctrlDown && shiftDown && !altDown)
+                else if (Common.HotkeyMatched(vkCode, winDown, ctrlDown, altDown, shiftDown, Setting.Values.HotKeyCaptureScreen))
                 {
-                    ctrlDown = shiftDown = false;
+                    ResetModifiersState(Setting.Values.HotKeyCaptureScreen);
 
                     if (!Common.RunOnLogonDesktop && !Common.RunOnScrSaverDesktop)
                     {
