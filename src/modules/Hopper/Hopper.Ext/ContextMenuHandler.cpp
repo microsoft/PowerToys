@@ -89,7 +89,6 @@ HRESULT CContextMenuHandler::QueryContextMenu(_In_ HMENU hmenu, UINT indexMenu, 
     AssocGetPerceivedType(pszExt, &type, &flag, nullptr);
 
     free(pszPath);
-    bool dragDropFlag = false;
     HRESULT hr;
     wchar_t strResizePictures[64] = { 0 };
     // Suppressing C6031 warning since return value is not required.
@@ -116,26 +115,19 @@ HRESULT CContextMenuHandler::QueryContextMenu(_In_ HMENU hmenu, UINT indexMenu, 
         DestroyIcon(hIcon);
     }
 
-    if (dragDropFlag)
+
+    // indexMenu gets the first possible menu item index based on the location of the shellex registry key.
+    // If the registry entry is under SystemFileAssociations for the image formats, ShellImagePreview (in Windows by default) will be at indexMenu=0
+    // Shell ImagePreview consists of 4 menu items, a separator, Rotate right, Rotate left, and another separator
+    // Check if the entry at indexMenu is a separator, insert the new menu item at indexMenu+1 if true
+    MENUITEMINFO miiExisting;
+    miiExisting.dwTypeData = nullptr;
+    miiExisting.fMask = MIIM_TYPE;
+    miiExisting.cbSize = sizeof(MENUITEMINFO);
+    GetMenuItemInfo(hmenu, indexMenu, TRUE, &miiExisting);
+    if (miiExisting.fType == MFT_SEPARATOR)
     {
-        // Insert the menu entry at indexMenu+1 since the first entry should be "Copy here"
         indexMenu++;
-    }
-    else
-    {
-        // indexMenu gets the first possible menu item index based on the location of the shellex registry key.
-        // If the registry entry is under SystemFileAssociations for the image formats, ShellImagePreview (in Windows by default) will be at indexMenu=0
-        // Shell ImagePreview consists of 4 menu items, a separator, Rotate right, Rotate left, and another separator
-        // Check if the entry at indexMenu is a separator, insert the new menu item at indexMenu+1 if true
-        MENUITEMINFO miiExisting;
-        miiExisting.dwTypeData = nullptr;
-        miiExisting.fMask = MIIM_TYPE;
-        miiExisting.cbSize = sizeof(MENUITEMINFO);
-        GetMenuItemInfo(hmenu, indexMenu, TRUE, &miiExisting);
-        if (miiExisting.fType == MFT_SEPARATOR)
-        {
-            indexMenu++;
-        }
     }
 
     if (!InsertMenuItem(hmenu, indexMenu, TRUE, &mii))
