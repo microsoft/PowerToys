@@ -41,13 +41,6 @@
                         FontSize="16"
                     HorizontalAlignment="Left" />
 
-                <Button x:Name="CreateFolderButton"
-                        Grid.Column="1"
-                        MinWidth="76"
-                        Margin="12,0,0,0"
-                        Content="Create folder"
-                        IsDefault="True" Click="CreateFolderButton_Click" />
-
                 <Button Grid.Column="2"
                         MinWidth="76"
                         Margin="12,0,0,0"

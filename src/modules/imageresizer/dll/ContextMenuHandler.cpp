@@ -6,7 +6,6 @@
 #include <Settings.h>
 #include <trace.h>
 
-#include <common/themes/icon_helpers.h>
 #include <common/utils/process_path.h>
 #include <common/utils/resources.h>
 #include <common/utils/HDropIterator.h>
@@ -100,81 +99,6 @@ HRESULT CContextMenuHandler::QueryContextMenu(_In_ HMENU hmenu, UINT indexMenu, 
     AssocGetPerceivedType(pszExt, &type, &flag, NULL);
 
     free(pszPath);
-    bool dragDropFlag = false;
-    // If selected file is an image...
-    if (type == PERCEIVED_TYPE_IMAGE)
-    {
-        HRESULT hr = E_UNEXPECTED;
-        wchar_t strResizePictures[64] = { 0 };
-        // If handling drag-and-drop...
-        if (m_pidlFolder)
-        {
-            // Suppressing C6031 warning since return value is not required.
-#pragma warning(suppress : 6031)
-            // Load 'Resize pictures here' string
-            LoadString(g_hInst_imageResizer, IDS_RESIZE_PICTURES_HERE, strResizePictures, ARRAYSIZE(strResizePictures));
-            dragDropFlag = true;
-        }
-        else
-        {
-            // Suppressing C6031 warning since return value is not required.
-#pragma warning(suppress : 6031)
-            // Load 'Resize pictures' string
-            LoadString(g_hInst_imageResizer, IDS_RESIZE_PICTURES, strResizePictures, ARRAYSIZE(strResizePictures));
-        }
-
-        MENUITEMINFO mii;
-        mii.cbSize = sizeof(MENUITEMINFO);
-        mii.fMask = MIIM_STRING | MIIM_FTYPE | MIIM_ID | MIIM_STATE;
-        mii.wID = idCmdFirst + ID_RESIZE_PICTURES;
-        mii.fType = MFT_STRING;
-        mii.dwTypeData = (PWSTR)strResizePictures;
-        mii.fState = MFS_ENABLED;
-        HICON hIcon = static_cast<HICON>(LoadImage(g_hInst_imageResizer, MAKEINTRESOURCE(IDI_RESIZE_PICTURES), IMAGE_ICON, 16, 16, 0));
-        if (hIcon)
-        {
-            mii.fMask |= MIIM_BITMAP;
-            if (m_hbmpIcon == NULL)
-            {
-                m_hbmpIcon = CreateBitmapFromIcon(hIcon);
-            }
-            mii.hbmpItem = m_hbmpIcon;
-            DestroyIcon(hIcon);
-        }
-
-        if (dragDropFlag)
-        {
-            // Insert the menu entry at indexMenu+1 since the first entry should be "Copy here"
-            indexMenu++;
-        }
-        else
-        {
-            // indexMenu gets the first possible menu item index based on the location of the shellex registry key.
-            // If the registry entry is under SystemFileAssociations for the image formats, ShellImagePreview (in Windows by default) will be at indexMenu=0
-            // Shell ImagePreview consists of 4 menu items, a separator, Rotate right, Rotate left, and another separator
-            // Check if the entry at indexMenu is a separator, insert the new menu item at indexMenu+1 if true
-            MENUITEMINFO miiExisting;
-            miiExisting.dwTypeData = NULL;
-            miiExisting.fMask = MIIM_TYPE;
-            miiExisting.cbSize = sizeof(MENUITEMINFO);
-            GetMenuItemInfo(hmenu, indexMenu, TRUE, &miiExisting);
-            if (miiExisting.fType == MFT_SEPARATOR)
-            {
-                indexMenu++;
-            }
-        }
-
-        if (!InsertMenuItem(hmenu, indexMenu, TRUE, &mii))
-        {
-            hr = HRESULT_FROM_WIN32(GetLastError());
-            Trace::QueryContextMenuError(hr);
-        }
-        else
-        {
-            hr = MAKE_HRESULT(SEVERITY_SUCCESS, FACILITY_NULL, 1);
-        }
-        return hr;
-    }
 
     return S_OK;
 }
@@ -213,19 +137,19 @@ HRESULT CContextMenuHandler::InvokeCommand(_In_ CMINVOKECOMMANDINFO* pici)
     {
         if (wcscmp((reinterpret_cast<CMINVOKECOMMANDINFOEX*>(pici))->lpVerbW, RESIZE_PICTURES_VERBW) == 0)
         {
-            hr = ResizePictures(pici, nullptr);
+            hr = SelectedFiles(pici, nullptr);
         }
     }
     else if (LOWORD(pici->lpVerb) == ID_RESIZE_PICTURES)
     {
-        hr = ResizePictures(pici, nullptr);
+        hr = SelectedFiles(pici, nullptr);
     }
     Trace::InvokedRet(hr);
     return hr;
 }
 
 // This function is used for both MSI and MSIX. If pici is null and psiItemArray is not null then this is called by Invoke(MSIX). If pici is not null and psiItemArray is null then this is called by InvokeCommand(MSI).
-HRESULT CContextMenuHandler::ResizePictures(CMINVOKECOMMANDINFO* pici, IShellItemArray* psiItemArray)
+HRESULT CContextMenuHandler::SelectedFiles(CMINVOKECOMMANDINFO* pici, IShellItemArray* psiItemArray)
 {
     // Set the application path based on the location of the dll
     std::wstring path = get_module_folderpath(g_hInst_imageResizer);
@@ -238,7 +162,7 @@ HRESULT CContextMenuHandler::ResizePictures(CMINVOKECOMMANDINFO* pici, IShellIte
     sa.nLength = sizeof(SECURITY_ATTRIBUTES);
     sa.lpSecurityDescriptor = NULL;
     sa.bInheritHandle = TRUE;
-    HRESULT hr = E_FAIL;
+    HRESULT hr;
     if (!CreatePipe(&hReadPipe, &hWritePipe, &sa, 0))
     {
         hr = HRESULT_FROM_WIN32(GetLastError());
@@ -433,7 +357,7 @@ HRESULT __stdcall CContextMenuHandler::EnumSubCommands(IEnumExplorerCommand** pp
 HRESULT __stdcall CContextMenuHandler::Invoke(IShellItemArray* psiItemArray, IBindCtx* /*pbc*/)
 {
     Trace::Invoked();
-    HRESULT hr = ResizePictures(nullptr, psiItemArray);
+    HRESULT hr = SelectedFiles(nullptr, psiItemArray);
     Trace::InvokedRet(hr);
     return hr;
 }

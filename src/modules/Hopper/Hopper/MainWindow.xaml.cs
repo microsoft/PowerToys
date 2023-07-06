@@ -69,13 +69,6 @@ namespace PowerToys.Hopper
             };
         }
 
-        private void CreateFolderButton_Click(object sender, RoutedEventArgs e)
-        {
-            Window con = new ContentPropertiesWindow((string[])FileList.ItemsSource);
-            con.Show();
-            Close();
-        }
-
         private void Window_Drop(object sender, DragEventArgs e)
         {
             if (e.Data.GetDataPresent(DataFormats.FileDrop))

@@ -120,19 +120,16 @@
   <data name="Resize_Pictures" xml:space="preserve">
     <value>PowerToys Hopper</value>
   </data>
-  <data name="Resize_Pictures_Here" xml:space="preserve">
-    <value>Resize pictures here</value>
-  </data>
   <data name="ImageResizer" xml:space="preserve">
     <value>Image Resizer</value>
   </data>
   <data name="Settings_Description" xml:space="preserve">
-    <value>A Windows Shell extension for bulk image resizing.</value>
+    <value>A Windows Shell extension for bulking move/copy files.</value>
   </data>
   <data name="Settings_Header" xml:space="preserve">
-    <value>Settings can be accessed from within Image Resizer.</value>
+    <value>Settings can be accessed from within Hopper.</value>
   </data>
   <data name="Settings_Header_Description" xml:space="preserve">
-    <value>Settings header for Image Resizer</value>
+    <value>Settings header for Hopper</value>
   </data>
 </root>

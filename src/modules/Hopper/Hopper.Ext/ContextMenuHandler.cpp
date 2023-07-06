@@ -13,8 +13,8 @@ extern HINSTANCE g_hInst_Hopper;
 
 CContextMenuHandler::CContextMenuHandler()
 {
-    m_pidlFolder = NULL;
-    m_pdtobj = NULL;
+    m_pidlFolder = nullptr;
+    m_pdtobj = nullptr;
     app_name = GET_RESOURCE_STRING(IDS_RESIZE_PICTURES);
 }
 
@@ -26,12 +26,12 @@ CContextMenuHandler::~CContextMenuHandler()
 void CContextMenuHandler::Uninitialize()
 {
     CoTaskMemFree((LPVOID)m_pidlFolder);
-    m_pidlFolder = NULL;
+    m_pidlFolder = nullptr;
 
     if (m_pdtobj)
     {
         m_pdtobj->Release();
-        m_pdtobj = NULL;
+        m_pdtobj = nullptr;
     }
 }
 
@@ -86,29 +86,16 @@ HRESULT CContextMenuHandler::QueryContextMenu(_In_ HMENU hmenu, UINT indexMenu, 
     }
 
     // TODO: Instead, detect whether there's a WIC codec installed that can handle this file
-    AssocGetPerceivedType(pszExt, &type, &flag, NULL);
+    AssocGetPerceivedType(pszExt, &type, &flag, nullptr);
 
     free(pszPath);
     bool dragDropFlag = false;
-    // If selected file is an image...
-    HRESULT hr = E_UNEXPECTED;
+    HRESULT hr;
     wchar_t strResizePictures[64] = { 0 };
-    // If handling drag-and-drop...
-    if (m_pidlFolder)
-    {
-        // Suppressing C6031 warning since return value is not required.
+    // Suppressing C6031 warning since return value is not required.
 #pragma warning(suppress : 6031)
-        // Load 'Resize pictures here' string
-        LoadString(g_hInst_Hopper, IDS_RESIZE_PICTURES_HERE, strResizePictures, ARRAYSIZE(strResizePictures));
-        dragDropFlag = true;
-    }
-    else
-    {
-        // Suppressing C6031 warning since return value is not required.
-#pragma warning(suppress : 6031)
-        // Load 'Resize pictures' string
-        LoadString(g_hInst_Hopper, IDS_RESIZE_PICTURES, strResizePictures, ARRAYSIZE(strResizePictures));
-    }
+    // Load 'Resize pictures' string
+    LoadString(g_hInst_Hopper, IDS_RESIZE_PICTURES, strResizePictures, ARRAYSIZE(strResizePictures));
 
     MENUITEMINFO mii;
     mii.cbSize = sizeof(MENUITEMINFO);
@@ -121,7 +108,7 @@ HRESULT CContextMenuHandler::QueryContextMenu(_In_ HMENU hmenu, UINT indexMenu, 
     if (hIcon)
     {
         mii.fMask |= MIIM_BITMAP;
-        if (m_hbmpIcon == NULL)
+        if (m_hbmpIcon == nullptr)
         {
             m_hbmpIcon = CreateBitmapFromIcon(hIcon);
         }
@@ -141,7 +128,7 @@ HRESULT CContextMenuHandler::QueryContextMenu(_In_ HMENU hmenu, UINT indexMenu, 
         // Shell ImagePreview consists of 4 menu items, a separator, Rotate right, Rotate left, and another separator
         // Check if the entry at indexMenu is a separator, insert the new menu item at indexMenu+1 if true
         MENUITEMINFO miiExisting;
-        miiExisting.dwTypeData = NULL;
+        miiExisting.dwTypeData = nullptr;
         miiExisting.fMask = MIIM_TYPE;
         miiExisting.cbSize = sizeof(MENUITEMINFO);
         GetMenuItemInfo(hmenu, indexMenu, TRUE, &miiExisting);
@@ -160,9 +147,6 @@ HRESULT CContextMenuHandler::QueryContextMenu(_In_ HMENU hmenu, UINT indexMenu, 
         hr = MAKE_HRESULT(SEVERITY_SUCCESS, FACILITY_NULL, 1);
     }
     return hr;
-    
-
-    return S_OK;
 }
 
 HRESULT CContextMenuHandler::GetCommandString(UINT_PTR idCmd, UINT uType, _In_ UINT* /*pReserved*/, LPSTR pszName, UINT cchMax)
@@ -198,18 +182,18 @@ HRESULT CContextMenuHandler::InvokeCommand(_In_ CMINVOKECOMMANDINFO* pici)
     {
         if (wcscmp((reinterpret_cast<CMINVOKECOMMANDINFOEX*>(pici))->lpVerbW, RESIZE_PICTURES_VERBW) == 0)
         {
-            hr = ResizePictures(pici, nullptr);
+            hr = SelectedFiles(pici, nullptr);
         }
     }
     else if (LOWORD(pici->lpVerb) == ID_RESIZE_PICTURES)
     {
-        hr = ResizePictures(pici, nullptr);
+        hr = SelectedFiles(pici, nullptr);
     }
     return hr;
 }
 
 // This function is used for both MSI and MSIX. If pici is null and psiItemArray is not null then this is called by Invoke(MSIX). If pici is not null and psiItemArray is null then this is called by InvokeCommand(MSI).
-HRESULT CContextMenuHandler::ResizePictures(CMINVOKECOMMANDINFO* pici, IShellItemArray* psiItemArray)
+HRESULT CContextMenuHandler::SelectedFiles(CMINVOKECOMMANDINFO* pici, IShellItemArray* psiItemArray)
 {
     // Set the application path based on the location of the dll
     std::wstring path = get_module_folderpath(g_hInst_Hopper);
@@ -220,9 +204,9 @@ HRESULT CContextMenuHandler::ResizePictures(CMINVOKECOMMANDINFO* pici, IShellIte
     HANDLE hReadPipe;
     HANDLE hWritePipe;
     sa.nLength = sizeof(SECURITY_ATTRIBUTES);
-    sa.lpSecurityDescriptor = NULL;
+    sa.lpSecurityDescriptor = nullptr;
     sa.bInheritHandle = TRUE;
-    HRESULT hr = E_FAIL;
+    HRESULT hr;
     if (!CreatePipe(&hReadPipe, &hWritePipe, &sa, 0))
     {
         hr = HRESULT_FROM_WIN32(GetLastError());
@@ -269,14 +253,14 @@ HRESULT CContextMenuHandler::ResizePictures(CMINVOKECOMMANDINFO* pici, IShellIte
 
     // Start the resizer
     CreateProcess(
-        NULL,
+        nullptr,
         lpszCommandLine,
-        NULL,
-        NULL,
+        nullptr,
+        nullptr,
         TRUE,
         0,
-        NULL,
-        NULL,
+        nullptr,
+        nullptr,
         &startupInfo,
         &processInformation);
     delete[] lpszCommandLine;
@@ -320,7 +304,7 @@ HRESULT CContextMenuHandler::ResizePictures(CMINVOKECOMMANDINFO* pici, IShellIte
             shellItem->GetDisplayName(SIGDN_FILESYSPATH, &itemName);
             CString fileName(itemName);
             fileName.Append(_T("\r\n"));
-            // Write the file path into the input stream for image resizer
+            // Write the file path into the input stream for hopper
             writePipe.Write(fileName, fileName.GetLength() * sizeof(TCHAR));
         }
     }
@@ -383,14 +367,12 @@ HRESULT __stdcall CContextMenuHandler::GetState(IShellItemArray* psiItemArray, B
     }
 
     // TODO: Instead, detect whether there's a WIC codec installed that can handle this file
-    AssocGetPerceivedType(pszExt, &type, &flag, NULL);
+    AssocGetPerceivedType(pszExt, &type, &flag, nullptr);
 
     CoTaskMemFree(pszPath);
-    // If selected file is an image...
-    if (type == PERCEIVED_TYPE_IMAGE)
-    {
-        *pCmdState = ECS_ENABLED;
-    }
+
+    *pCmdState = ECS_ENABLED;
+
     return S_OK;
 }
 
@@ -409,6 +391,5 @@ HRESULT __stdcall CContextMenuHandler::EnumSubCommands(IEnumExplorerCommand** pp
 // psiItemArray contains the list of files that have been selected when the context menu entry is invoked
 HRESULT __stdcall CContextMenuHandler::Invoke(IShellItemArray* psiItemArray, IBindCtx* /*pbc*/)
 {
-    HRESULT hr = ResizePictures(nullptr, psiItemArray);
-    return hr;
+    return SelectedFiles(nullptr, psiItemArray);
 }

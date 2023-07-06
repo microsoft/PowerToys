@@ -47,7 +47,7 @@ public:
 
 private:
     void Uninitialize();
-    HRESULT ResizePictures(CMINVOKECOMMANDINFO* pici, IShellItemArray* psiItemArray);
+    HRESULT SelectedFiles(CMINVOKECOMMANDINFO* pici, IShellItemArray* psiItemArray);
     PCIDLIST_ABSOLUTE m_pidlFolder;
     IDataObject* m_pdtobj;
     HBITMAP m_hbmpIcon = nullptr;
