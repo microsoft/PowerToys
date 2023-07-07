@@ -40,9 +40,6 @@
     <None Include="Assets\ImageResizer\**">
       <Filter>Resource Files</Filter>
     </None>
-    <None Include="ImageResizer.ico">
-      <Filter>Resource Files</Filter>
-    </None>
     <None Include="packages.config" />
     <None Include="resource.base.h">
       <Filter>Header Files</Filter>
