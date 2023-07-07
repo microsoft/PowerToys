@@ -89,28 +89,6 @@ void open_menu_from_another_instance(std::optional<std::string> settings_window)
     PostMessageW(hwnd_main, WM_COMMAND, ID_SETTINGS_MENU_COMMAND, msg);
 }
 
-void debug_verify_launcher_assets()
-{
-    try
-    {
-        namespace fs = std::filesystem;
-        const fs::path powertoysRoot = get_module_folderpath();
-        constexpr std::array<std::string_view, 2> assetsToCheck = { "modules\\launcher\\Images\\app_error.dark.png",
-                                                                    "modules\\launcher\\Images\\app_error.light.png" };
-        for (const auto asset : assetsToCheck)
-        {
-            const auto assetPath = powertoysRoot / asset;
-            if (!fs::is_regular_file(assetPath))
-            {
-                Logger::error("{} couldn't be found.", assetPath.string());
-            }
-        }
-    }
-    catch (...)
-    {
-    }
-}
-
 int runner(bool isProcessElevated, bool openSettings, std::string settingsWindow, bool openOobe, bool openScoobe)
 {
     Logger::info("Runner is starting. Elevated={}", isProcessElevated);
@@ -128,8 +106,6 @@ int runner(bool isProcessElevated, bool openSettings, std::string settingsWindow
     int result = -1;
     try
     {
-        debug_verify_launcher_assets();
-
         std::thread{ [] {
             PeriodicUpdateWorker();
         } }.detach();
