@@ -17,20 +17,19 @@
         <MicaBackdrop />
     </Window.SystemBackdrop>
     <Grid>
-
         <Grid.RowDefinitions>
             <RowDefinition Height="32" />
             <RowDefinition Height="*" />
         </Grid.RowDefinitions>
         <Grid x:Name="titleBar">
             <StackPanel
-                Margin="16,8,8,8"
-                VerticalAlignment="Top"
-                Orientation="Horizontal">
-                <Image Source="Assets/AppList.png" />
+                Margin="16,16,16,0"
+                Orientation="Horizontal"
+                Spacing="12">
+                <Image Source="Assets/Icon.ico"
+                       Width="16" />
                 <TextBlock
                     x:Uid="AppTitleText"
-                    Margin="12,0,0,0"
                     Style="{StaticResource CaptionTextBlockStyle}" />
             </StackPanel>
         </Grid>
