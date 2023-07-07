@@ -37,25 +37,23 @@
             TrueValue="Collapsed" />
     </Page.Resources>
 
-    <Grid>
+    <Grid
+        Margin="16,0,16,16"
+        RowSpacing="8">
         <Grid.RowDefinitions>
-            <RowDefinition Height="64" />
-            <RowDefinition Height="*" />
             <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
         </Grid.RowDefinitions>
 
         <Grid>
             <Button
                 x:Uid="AddEntryBtn"
-                Height="36"
-                Margin="18,0,0,0"
                 Command="{x:Bind NewDialogCommand}">
                 <StackPanel
                     Orientation="Horizontal"
                     Spacing="8">
                     <FontIcon
                         x:Name="Icon"
-                        FontFamily="{ThemeResource SymbolThemeFontFamily}"
                         FontSize="16"
                         Foreground="{ThemeResource AccentTextFillColorPrimaryBrush}"
                         Glyph="&#xe710;" />
@@ -69,26 +67,24 @@
             </Button>
 
             <StackPanel
-                Padding="0,0,18,0"
                 HorizontalAlignment="Right"
-                Orientation="Horizontal">
+                Orientation="Horizontal"
+                Spacing="8">
                 <Button
                     x:Uid="AdditionalLinesBtn"
-                    Height="36"
+                    Height="32"
                     Command="{x:Bind AdditionalLinesDialogCommand}"
                     Style="{StaticResource SubtleButtonStyle}">
                     <FontIcon
-                        FontFamily="{StaticResource SymbolThemeFontFamily}"
                         FontSize="16"
                         Glyph="&#xe8a5;" />
                 </Button>
 
                 <Button
                     x:Uid="FilterBtn"
-                    Height="36"
+                    Height="32"
                     Style="{StaticResource SubtleButtonStyle}">
                     <FontIcon
-                        FontFamily="{StaticResource SymbolThemeFontFamily}"
                         FontSize="16"
                         Glyph="&#xe71c;" />
                     <Button.Flyout>
@@ -133,7 +129,6 @@
                                     IsOn="{x:Bind ViewModel.ShowOnlyDuplicates, Mode=TwoWay}" />
                                 <Button
                                     x:Uid="ClearFiltersBtn"
-                                    Margin="0,6,0,0"
                                     HorizontalAlignment="Right"
                                     Command="{x:Bind ViewModel.ClearFiltersCommand}"
                                     Style="{StaticResource AccentButtonStyle}" />
@@ -144,49 +139,25 @@
 
                 <Button
                     x:Uid="OpenHostsFileBtn"
-                    Height="36"
+                    Height="32"
                     Command="{x:Bind ViewModel.OpenHostsFileCommand}"
                     Style="{StaticResource SubtleButtonStyle}">
                     <FontIcon
-                        FontFamily="{StaticResource SymbolThemeFontFamily}"
                         FontSize="16"
                         Glyph="&#xe8a7;" />
                 </Button>
 
                 <Button
                     x:Uid="SettingsBtn"
-                    Height="36"
+                    Height="32"
                     Command="{x:Bind ViewModel.OpenSettingsCommand}"
                     Style="{StaticResource SubtleButtonStyle}">
                     <FontIcon
-                        FontFamily="{StaticResource SymbolThemeFontFamily}"
                         FontSize="16"
                         Glyph="&#xe713;" />
                 </Button>
             </StackPanel>
         </Grid>
-
-        <StackPanel
-            Grid.Row="2"
-            Orientation="Vertical"
-            Visibility="Visible">
-            <InfoBar
-                x:Uid="FileSaveError"
-                CornerRadius="0"
-                IsOpen="{x:Bind ViewModel.Error, Mode=TwoWay}"
-                Severity="Error" />
-
-            <InfoBar
-                x:Uid="FileChanged"
-                IsOpen="{x:Bind ViewModel.FileChanged, Mode=TwoWay}"
-                Severity="Informational">
-                <InfoBar.ActionButton>
-                    <Button
-                        x:Uid="Reload"
-                        Command="{x:Bind ViewModel.ReadHostsCommand}" />
-                </InfoBar.ActionButton>
-            </InfoBar>
-        </StackPanel>
 
         <!--
             https://github.com/microsoft/microsoft-ui-xaml/issues/7690
@@ -201,11 +172,10 @@
                 x:Name="Entries"
                 x:Uid="Entries"
                 Grid.Row="1"
-                Margin="16,8,16,16"
                 Background="{ThemeResource LayerFillColorDefaultBrush}"
                 BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
                 BorderThickness="1"
-                CornerRadius="8"
+                CornerRadius="{StaticResource OverlayCornerRadius}"
                 IsItemClickEnabled="True"
                 ItemClick="Entries_ItemClick"
                 KeyDown="Entries_KeyDown"
@@ -219,13 +189,14 @@
                             AutomationProperties.Name="{x:Bind Address, Mode=OneWay}"
                             Background="Transparent"
                             IsRightTapEnabled="True"
-                            RightTapped="Grid_RightTapped">
+                            RightTapped="Grid_RightTapped"
+                            ColumnSpacing="8">
                             <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="300" />
-                                <ColumnDefinition Width="*" />
-                                <ColumnDefinition Width="Auto" />
-                                <ColumnDefinition Width="Auto" />
-                                <ColumnDefinition Width="Auto" />
+                                <ColumnDefinition Width="256" x:Name="address"/>
+                                <ColumnDefinition Width="*" x:Name="comment"/>
+                                <ColumnDefinition Width="Auto" x:Name="status"/>
+                                <ColumnDefinition Width="Auto" x:Name="duplicate"/>
+                                <ColumnDefinition Width="Auto" x:Name="toggleswitch"/>
                             </Grid.ColumnDefinitions>
                             <FlyoutBase.AttachedFlyout>
                                 <MenuFlyout Opened="MenuFlyout_Opened">
@@ -292,15 +263,12 @@
                                 Grid.Column="2"
                                 Width="20"
                                 Height="20"
-                                Margin="0,0,8,0"
                                 IsActive="{x:Bind Pinging, Mode=OneWay}" />
                             <FontIcon
                                 x:Uid="PingIcon"
                                 x:Name="PingIcon"
                                 Grid.Column="2"
-                                Margin="0,0,8,0"
-                                FontFamily="{ThemeResource SymbolThemeFontFamily}"
-                                FontSize="18"
+                                FontSize="16"
                                 Visibility="Collapsed">
                                 <i:Interaction.Behaviors>
                                     <ic:DataTriggerBehavior
@@ -351,10 +319,8 @@
                             <FontIcon
                                 x:Uid="DuplicateEntryIcon"
                                 Grid.Column="3"
-                                Margin="0,0,8,0"
                                 Foreground="{StaticResource SystemControlErrorTextForegroundBrush}"
-                                FontFamily="{ThemeResource SymbolThemeFontFamily}"
-                                FontSize="18"
+                                FontSize="16"
                                 Glyph="&#xe7BA;"
                                 Visibility="{x:Bind Duplicate, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}" />
                             <ToggleSwitch
@@ -381,7 +347,6 @@
                     Spacing="8"
                     Visibility="{x:Bind ViewModel.Filtered, Mode=OneWay, Converter={StaticResource BoolToInvertedVisibilityConverter}}">
                     <FontIcon
-                        FontFamily="{StaticResource SymbolThemeFontFamily}"
                         FontSize="32"
                         Glyph="&#xe774;" />
                     <TextBlock
@@ -401,7 +366,6 @@
                     Spacing="8"
                     Visibility="{x:Bind ViewModel.Filtered, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}">
                     <FontIcon
-                        FontFamily="{StaticResource SymbolThemeFontFamily}"
                         FontSize="32"
                         Glyph="&#xf78b;" />
                     <TextBlock
@@ -422,7 +386,27 @@
             Height="48"
             Grid.Row="1"
             IsActive="{x:Bind ViewModel.IsLoading, Mode=OneWay}" />
-        
+
+        <StackPanel
+            Grid.Row="1"
+            Orientation="Vertical">
+            <InfoBar
+                x:Uid="FileSaveError"
+                IsOpen="{x:Bind ViewModel.Error, Mode=TwoWay}"
+                Severity="Error" />
+
+            <InfoBar
+                x:Uid="FileChanged"
+                IsOpen="{x:Bind ViewModel.FileChanged, Mode=TwoWay}"
+                Severity="Informational">
+                <InfoBar.ActionButton>
+                    <Button
+                        x:Uid="Reload"
+                        Command="{x:Bind ViewModel.ReadHostsCommand}" />
+                </InfoBar.ActionButton>
+            </InfoBar>
+        </StackPanel>
+
         <ContentDialog
             x:Name="EntryDialog"
             x:Uid="EntryDialog"
@@ -432,13 +416,10 @@
                 <models:Entry />
             </ContentDialog.DataContext>
             <ScrollViewer
-                HorizontalScrollBarVisibility="Auto"
-                HorizontalScrollMode="Auto">
+                Padding="0,0,16,0">
                 <StackPanel
-                    Width="480"
-                    Margin="0,12,0,0"
                     HorizontalAlignment="Stretch"
-                    Spacing="24">
+                    Spacing="12">
                     <TextBox
                         x:Uid="Address"
                         IsSpellCheckEnabled="False"
@@ -448,7 +429,6 @@
                         IsSpellCheckEnabled="False"
                         AcceptsReturn="False"
                         TextWrapping="Wrap"
-                        Height="100"
                         ScrollViewer.IsVerticalRailEnabled="True"
                         ScrollViewer.VerticalScrollBarVisibility="Visible"
                         ScrollViewer.VerticalScrollMode="Enabled"
@@ -458,7 +438,6 @@
                         IsSpellCheckEnabled="False" 
                         AcceptsReturn="False"
                         TextWrapping="Wrap"
-                        Height="100"
                         ScrollViewer.IsVerticalRailEnabled="True"
                         ScrollViewer.VerticalScrollBarVisibility="Visible"
                         ScrollViewer.VerticalScrollMode="Enabled"
@@ -488,10 +467,9 @@
 
             <TextBox
                 x:Name="AdditionalLines"
-                Height="300"
-                MinWidth="480"
-                Margin="0,12,0,0"
                 HorizontalAlignment="Stretch"
+                MinHeight="40"
+                Padding="16,0"
                 AcceptsReturn="True"
                 ScrollViewer.IsVerticalRailEnabled="True"
                 ScrollViewer.VerticalScrollBarVisibility="Visible"
