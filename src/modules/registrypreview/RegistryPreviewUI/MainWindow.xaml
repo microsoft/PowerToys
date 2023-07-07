@@ -23,11 +23,13 @@
             Grid.Row="0"
             IsHitTestVisible="True">
             <StackPanel
-                Margin="8"
+                Margin="16,0"
                 VerticalAlignment="Bottom"
                 Orientation="Horizontal"
                 Spacing="12">
-                <Image Source="app.ico"/>
+                <Image Source="app.ico"
+                       Width="16"
+                       Height="16"/>
                 <TextBlock
                     x:Name="titleBarText"
                     Style="{StaticResource CaptionTextBlockStyle}"
@@ -69,20 +71,17 @@
             </Grid.RowDefinitions>
 
             <CommandBar
+                Name="commandBar"
                 Grid.Row="0"
                 Grid.Column="0"
                 Grid.ColumnSpan="3"
-                Name="commandBar"
                 HorizontalAlignment="Left"
-                DefaultLabelPosition="Right"
-                IsTabStop="False">
+                DefaultLabelPosition="Right">
 
                 <AppBarButton
                         x:Name="openButton"
                         x:Uid="OpenButton"
-                        HorizontalAlignment="Left"
-                        Click="OpenButton_Click"
-                        IsTabStop="False">
+                        Click="OpenButton_Click">
                     <AppBarButton.Icon>
                         <FontIcon Glyph="&#xe8e5;"/>
                     </AppBarButton.Icon>
@@ -90,14 +89,23 @@
                         <KeyboardAccelerator Key="O" Modifiers="Control" />
                     </AppBarButton.KeyboardAccelerators>
                 </AppBarButton>
+                <AppBarButton
+                        x:Name="refreshButton"
+                        x:Uid="RefreshButton"
+                        Click="RefreshButton_Click">
+                    <AppBarButton.Icon>
+                        <FontIcon Glyph="&#xe72c;"/>
+                    </AppBarButton.Icon>
+                    <AppBarButton.KeyboardAccelerators>
+                        <KeyboardAccelerator Key="F5" />
+                    </AppBarButton.KeyboardAccelerators>
+                </AppBarButton>
                 <AppBarSeparator />
                 <AppBarButton
                         x:Name="saveButton"
                         x:Uid="SaveButton"
-                        HorizontalAlignment="Left"
                         Click="SaveButton_Click"
-                        IsEnabled="False"
-                        IsTabStop="False">
+                        IsEnabled="False">
                     <AppBarButton.Icon>
                         <FontIcon Glyph="&#xe74e;"/>
                     </AppBarButton.Icon>
@@ -108,10 +116,8 @@
                 <AppBarButton
                         x:Name="saveAsButton"
                         x:Uid="SaveAsButton"
-                        HorizontalAlignment="Left"
                         Click="SaveAsButton_Click"
-                        IsEnabled="True"
-                        IsTabStop="False">
+                        IsEnabled="True">
                     <AppBarButton.Icon>
                         <FontIcon Glyph="&#xe792;"/>
                     </AppBarButton.Icon>
@@ -119,39 +125,22 @@
                         <KeyboardAccelerator Key="S" Modifiers="Control,Shift" />
                     </AppBarButton.KeyboardAccelerators>
                 </AppBarButton>
+                <AppBarSeparator />
                 <AppBarButton
                         x:Name="editButton"
                         x:Uid="EditButton"
-                        HorizontalAlignment="Left"
-                        Click="EditButton_Click"
-                        IsTabStop="False">
+                        Click="EditButton_Click">
                     <AppBarButton.Icon>
-                        <FontIcon Glyph="&#xe8a7;"/>
+                        <FontIcon Glyph="&#xE70F;"/>
                     </AppBarButton.Icon>
                     <AppBarButton.KeyboardAccelerators>
                         <KeyboardAccelerator Key="E" Modifiers="Control" />
                     </AppBarButton.KeyboardAccelerators>
                 </AppBarButton>
                 <AppBarButton
-                        x:Name="refreshButton"
-                        x:Uid="RefreshButton"
-                        HorizontalAlignment="Left"
-                        Click="RefreshButton_Click"
-                        IsTabStop="False">
-                    <AppBarButton.Icon>
-                        <FontIcon Glyph="&#xe72c;"/>
-                    </AppBarButton.Icon>
-                    <AppBarButton.KeyboardAccelerators>
-                        <KeyboardAccelerator Key="F5" />
-                    </AppBarButton.KeyboardAccelerators>
-                </AppBarButton>
-                <AppBarSeparator />
-                <AppBarButton
                         x:Name="writeButton"
                         x:Uid="WriteButton"
-                        HorizontalAlignment="Left"
-                        Click="WriteButton_Click"
-                        IsTabStop="False">
+                        Click="WriteButton_Click">
                     <AppBarButton.Icon>
                         <FontIcon Glyph="&#xe72d;"/>
                     </AppBarButton.Icon>
@@ -159,16 +148,10 @@
                         <KeyboardAccelerator Key="W" Modifiers="Control" />
                     </AppBarButton.KeyboardAccelerators>
                 </AppBarButton>
-                <AppBarSeparator />
                 <AppBarButton
                         x:Name="registryButton"
                         x:Uid="RegistryButton"
-                        HorizontalAlignment="Left"
-                        Click="RegistryButton_Click"
-                        IsTabStop="False">
-                    <AppBarButton.Icon>
-                        <FontIcon Glyph="&#xe8ad;"/>
-                    </AppBarButton.Icon>
+                        Click="RegistryButton_Click">
                     <AppBarButton.KeyboardAccelerators>
                         <KeyboardAccelerator Key="R" Modifiers="Control" />
                     </AppBarButton.KeyboardAccelerators>
@@ -176,13 +159,8 @@
                 <AppBarButton
                         x:Name="registryJumpToKeyButton"
                         x:Uid="RegistryJumpToKeyButton"
-                        HorizontalAlignment="Left"
                         Click="RegistryJumpToKeyButton_Click"
-                        IsTabStop="False"
                         IsEnabled="True">
-                    <AppBarButton.Icon>
-                        <FontIcon Glyph="&#xe78b;"/>
-                    </AppBarButton.Icon>
                     <AppBarButton.KeyboardAccelerators>
                         <KeyboardAccelerator Key="R" Modifiers="Control,Shift" />
                     </AppBarButton.KeyboardAccelerators>
@@ -214,8 +192,8 @@
                 />
 
             <Border Style="{StaticResource GridCardStyle}"
-                    Grid.Column="2"
-                    Grid.Row="1">
+                Grid.Column="2"
+                Grid.Row="1">
                 <TreeView
                     x:Name="treeView"
                     AllowDrop="False"
