@@ -48,6 +48,9 @@ void handleTheme()
     ThemeHelpers::SetImmersiveDarkMode(CurrentWindow, isDark);
 }
 
+// Disabled for now, because it causes indentation and icons to appear "asynchronously"
+// #define ENABLE_RECYCLING_VIRTUALIZATION_MODE
+
 CComPtr<IPowerRenameManager> g_prManager;
 std::function<void(void)> g_itemToggledCallback;
 
@@ -199,6 +202,7 @@ namespace winrt::PowerRenameUI::implementation
         g_ExplorerItemsListView = listView_ExplorerItems();
 
         g_ExplorerItemsListView.ApplyTemplate();
+#ifdef ENABLE_RECYCLING_VIRTUALIZATION_MODE
         if (auto scrollViewer = FindScrollViewer(g_ExplorerItemsListView); scrollViewer)
         {
             Microsoft::UI::Xaml::DispatcherTimer debounceTimer = nullptr;
@@ -221,6 +225,7 @@ namespace winrt::PowerRenameUI::implementation
                 timer.Start();
             });
         }
+#endif
         if (SUCCEEDED(CPowerRenameManager::s_CreateInstance(&m_prManager)))
         {
             g_prManager = m_prManager;

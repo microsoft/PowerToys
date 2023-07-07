@@ -128,19 +128,22 @@ void App::OnLaunched(LaunchActivatedEventArgs const&)
         fs::remove_all(ROOT_PATH, _);
 
     g_files.push_back(fs::path{ ROOT_PATH });
-    for (int i = 0; i < 1e5; ++i)
+    constexpr int pow2_threshold = 10;
+    constexpr int num_files = 100'000;
+    for (int i = 0; i < num_files; ++i)
     {
         fs::path file_path{ ROOT_PATH };
-        // Create a subdirectory for each subsequent 2^10 files, o/w filesystem becomes too slow to create them in a reasonable time.
-        if ((i & ((1 << 10) - 1)) == 0)
+        // Create a subdirectory for each subsequent 2^pow2_threshold files, o/w filesystem becomes too slow to create them in a reasonable time.
+        if ((i & ((1 << pow2_threshold) - 1)) == 0)
         {
-            subdirectory_name = std::to_wstring(i >> 10);
+            subdirectory_name = std::to_wstring(i >> pow2_threshold);
         }
 
         file_path /= subdirectory_name;
-        fs::create_directories(file_path, _);
+
         if constexpr (recreate_files)
         {
+            fs::create_directories(file_path, _);
             file_path /= std::to_wstring(i) + L".txt";
             HANDLE hFile = CreateFileW(
                 file_path.c_str(),
