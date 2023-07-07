@@ -52,7 +52,10 @@ namespace Microsoft.PowerToys.Settings.UI.Flyout
                 case "Hosts": // Launch Hosts
                     {
                         bool launchAdmin = SettingsRepository<HostsSettings>.GetInstance(new SettingsUtils()).SettingsConfig.Properties.LaunchAdministrator;
-                        string eventName = App.IsElevated || !launchAdmin ? Constants.ShowHostsSharedEvent() : Constants.ShowHostsAdminSharedEvent();
+                        string eventName = !App.IsElevated && launchAdmin
+                            ? Constants.ShowHostsAdminSharedEvent()
+                            : Constants.ShowHostsSharedEvent();
+
                         using (var eventHandle = new EventWaitHandle(false, EventResetMode.AutoReset, eventName))
                         {
                             eventHandle.Set();
