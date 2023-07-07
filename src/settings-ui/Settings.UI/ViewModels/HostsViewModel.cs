@@ -157,7 +157,10 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         public void Launch()
         {
-            string eventName = _isElevated || !LaunchAdministrator ? Constants.ShowHostsSharedEvent() : Constants.ShowHostsAdminSharedEvent();
+            string eventName = !_isElevated && LaunchAdministrator
+                ? Constants.ShowHostsAdminSharedEvent()
+                : Constants.ShowHostsSharedEvent();
+
             using (var eventHandle = new EventWaitHandle(false, EventResetMode.AutoReset, eventName))
             {
                 eventHandle.Set();
