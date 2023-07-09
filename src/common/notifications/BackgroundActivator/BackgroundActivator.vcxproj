@@ -45,7 +45,6 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup>
     <TargetName>notifications</TargetName>
-    <IntDir>$(SolutionDir)$(Platform)\$(Configuration)\obj\$(ProjectName)\</IntDir>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)'=='Debug'">
     <ClCompile>
