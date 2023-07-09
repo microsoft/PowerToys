@@ -16,7 +16,6 @@
     <AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
     <WindowsAppSDKSelfContained>true</WindowsAppSDKSelfContained>
     <OutputPath>..\..\..\..\$(Platform)\$(Configuration)\WinUI3Apps</OutputPath>
-    <IntermediateOutputPath>$(SolutionDir)$(Platform)\$(Configuration)\obj\$(AssemblyName)</IntermediateOutputPath>
     <RootNamespace>Hosts</RootNamespace>
     <AssemblyName>PowerToys.Hosts</AssemblyName>
     <DefineConstants>DISABLE_XAML_GENERATED_MAIN,TRACE</DefineConstants>

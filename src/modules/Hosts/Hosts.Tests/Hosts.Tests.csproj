@@ -10,7 +10,6 @@
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
     <AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
     <OutputPath>$(SolutionDir)$(Platform)\$(Configuration)\modules\Hosts\Hosts.Tests\</OutputPath>
-    <IntermediateOutputPath>$(SolutionDir)$(Platform)\$(Configuration)\obj\$(AssemblyName)\</IntermediateOutputPath>
     <RootNamespace>Hosts.Tests</RootNamespace>
     <AssemblyName>PowerToys.Hosts.Tests</AssemblyName>
   </PropertyGroup>

@@ -12,7 +12,6 @@
     <AssemblyName>ImageResizer.Test</AssemblyName>
     <Version>$(Version).0</Version>
     <OutputPath>$(SolutionDir)$(Platform)\$(Configuration)\modules\ImageResizer\$(AssemblyName)\</OutputPath>
-    <IntermediateOutputPath>$(SolutionDir)$(Platform)\$(Configuration)\obj\$(AssemblyName)\</IntermediateOutputPath>
   </PropertyGroup>
 
   <ItemGroup>
