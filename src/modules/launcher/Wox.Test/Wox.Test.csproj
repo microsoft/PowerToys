@@ -13,7 +13,7 @@
     <Version>$(Version).0</Version>
     <ApplicationIcon />
     <StartupObject />
-    <OutputPath>..\..\..\..\$(Platform)\$(Configuration)\modules\launcher\WoxTest</OutputPath>
+    <OutputPath>..\..\..\..\$(Platform)\$(Configuration)\tests\WoxTest</OutputPath>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)' == 'Debug'">

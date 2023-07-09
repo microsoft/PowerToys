@@ -25,7 +25,7 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup>
-    <OutDir>$(SolutionDir)$(Platform)\$(Configuration)\modules\KeyboardManager\KeyboardManagerEditor\</OutDir>
+    <OutDir>$(SolutionDir)$(Platform)\$(Configuration)\tests\KeyboardManagerEditor\</OutDir>
   </PropertyGroup>
   <ItemDefinitionGroup>
     <ClCompile>

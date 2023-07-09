@@ -14,7 +14,7 @@
   </PropertyGroup>
 
   <PropertyGroup>
-    <OutputPath>..\..\..\..\$(Platform)\$(Configuration)\modules\MouseUtils\MouseJumpUI.UnitTests\</OutputPath>
+    <OutputPath>..\..\..\..\$(Platform)\$(Configuration)\tests\MouseJumpUI.UnitTests\</OutputPath>
   </PropertyGroup>
 
   <ItemGroup>
