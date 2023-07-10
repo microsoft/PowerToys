@@ -210,6 +210,7 @@ steps:
     clean: false
     maximumCpuCount: true
 
+# Check if deps.json files on the main application paths don't reference different dll versions.
 - task: PowerShell@2
   displayName: Audit base applications path deps.json files
   inputs:
