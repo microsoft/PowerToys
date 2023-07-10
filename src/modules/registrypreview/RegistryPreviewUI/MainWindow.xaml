@@ -13,28 +13,36 @@
     <Window.SystemBackdrop>
         <MicaBackdrop />
     </Window.SystemBackdrop>
+    
     <Grid>
         <Grid.RowDefinitions>
-            <RowDefinition Height="32" />
+            <RowDefinition Height="Auto" />
             <RowDefinition Height="*" />
         </Grid.RowDefinitions>
         <Grid 
             x:Name="titleBar"
             Grid.Row="0"
+            Height="32"
+            ColumnSpacing="16"
             IsHitTestVisible="True">
-            <StackPanel
-                Margin="16,0"
-                VerticalAlignment="Bottom"
-                Orientation="Horizontal"
-                Spacing="12">
-                <Image Source="app.ico"
-                       Width="16"
-                       Height="16"/>
-                <TextBlock
-                    x:Name="titleBarText"
-                    Style="{StaticResource CaptionTextBlockStyle}"
-                    Text="{Binding ApplicationTitle}" />
-            </StackPanel>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition x:Name="LeftPaddingColumn" Width="0"/>
+                <ColumnDefinition x:Name="IconColumn" Width="Auto"/>
+                <ColumnDefinition x:Name="TitleColumn" Width="Auto"/>
+                <ColumnDefinition x:Name="RightPaddingColumn" Width="0"/>
+            </Grid.ColumnDefinitions>
+            <Image
+                Source="app.ico"
+                Grid.Column="1"
+                VerticalAlignment="Center"
+                Width="16"
+                Height="16"/>
+            <TextBlock
+                x:Name="titleBarText"
+                Grid.Column="2"
+                VerticalAlignment="Center"
+                Style="{StaticResource CaptionTextBlockStyle}"
+                Text="{Binding ApplicationTitle}" />
         </Grid>
 
         <Grid
@@ -45,7 +53,7 @@
             x:FieldModifier="public"
             Loaded="GridPreview_Loaded"
             TabFocusNavigation="Cycle"
-            Margin="16">
+            Margin="16,0,16,16">
             <Grid.Resources>
                 <Style x:Key="GridCardStyle" TargetType="Border">
                     <Style.Setters>
@@ -252,7 +260,7 @@
                             <controls:DataGridTemplateColumn.CellTemplate>
                                 <DataTemplate>
                                     <StackPanel VerticalAlignment="Center" Orientation="Horizontal"
-                                                Margin="4" Spacing="4">
+                                                Margin="4" Spacing="8">
                                         <Image
                                             MaxWidth="16"
                                             MaxHeight="16"
@@ -261,7 +269,8 @@
                                             ToolTipService.ToolTip="{Binding ToolTipText}" />
                                         <TextBlock
                                             IsTabStop="False"
-                                            Text="{Binding Name}" />
+                                            Text="{Binding Name}"
+                                            Style="{StaticResource CaptionTextBlockStyle}"/>
                                     </StackPanel>
                                 </DataTemplate>
                             </controls:DataGridTemplateColumn.CellTemplate>
@@ -270,12 +279,12 @@
                             x:Uid="TypeColumn"
                             Width="Auto"
                             Binding="{Binding Type}"
-                            FontSize="16" />
+                            FontSize="{StaticResource CaptionTextBlockFontSize}" />
                         <controls:DataGridTextColumn
                             x:Uid="ValueColumn"
                             Width="Auto"
                             Binding="{Binding Value}"
-                            FontSize="16" />
+                            FontSize="{StaticResource CaptionTextBlockFontSize}" />
                     </controls:DataGrid.Columns>
                 </controls:DataGrid>
             </Border>
