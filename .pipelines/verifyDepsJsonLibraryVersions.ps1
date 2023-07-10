@@ -38,7 +38,7 @@ Get-ChildItem $targetDir -Filter *.deps.json | ForEach-Object {
                     $_.Value.PSObject.Properties | ForEach-Object {
                         if($_.Name.EndsWith('.dll')) {
                             $dllName = Split-Path $_.Name -leaf
-                            if([bool]($_.Value.PSobject.Properties.name -match 'fileVersion')) {
+                            if([bool]($_.Value.PSObject.Properties.name -match 'fileVersion')) {
                                 $dllFileVersion = $_.Value.fileVersion
                                 
                                 # Add the entry to the dictionary of dictionary of lists
