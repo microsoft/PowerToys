@@ -210,6 +210,20 @@ steps:
     clean: false
     maximumCpuCount: true
 
+- task: PowerShell@2
+  displayName: Audit base applications path deps.json files
+  inputs:
+    filePath: '$(build.sourcesdirectory)\.pipelines\verifyDepsJsonLibraryVersions.ps1'
+    arguments: -targetDir '$(build.sourcesdirectory)\$(BuildPlatform)\$(BuildConfiguration)'
+    pwsh: true
+
+- task: PowerShell@2
+  displayName: Audit WinAppSDK applications path deps.json files
+  inputs:
+    filePath: '$(build.sourcesdirectory)\.pipelines\verifyDepsJsonLibraryVersions.ps1'
+    arguments: -targetDir '$(build.sourcesdirectory)\$(BuildPlatform)\$(BuildConfiguration)\WinUI3Apps'
+    pwsh: true
+
 # directly not doing WinAppDriver testing
 - task: VSTest@2
   displayName: 'MS Tests'
