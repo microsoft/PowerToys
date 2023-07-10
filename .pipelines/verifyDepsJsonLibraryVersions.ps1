@@ -15,7 +15,7 @@ Param(
 $referencedFileVersionsPerDll = @{}
 $totalFailures = 0
 
-Get-ChildItem $targetDir -Filter *.deps.json | ForEach-Object {
+Get-ChildItem $targetDir -Recurse -Filter *.deps.json | ForEach-Object {
     $depsJsonFullFileName = $_.FullName
     $depsJsonFileName = $_.Name
     $depsJson = Get-Content $depsJsonFullFileName | ConvertFrom-Json
