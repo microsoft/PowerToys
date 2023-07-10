@@ -306,7 +306,7 @@ SOFTWARE.
 - Microsoft.Web.WebView2 1.0.1722.45
 - Microsoft.Windows.Compatibility 7.0.3
 - Microsoft.Windows.CsWin32 0.2.46-beta
-- Microsoft.Windows.CsWinRT 2.0.2
+- Microsoft.Windows.CsWinRT 2.0.1
 - Microsoft.Windows.SDK.BuildTools 10.0.22621.755
 - Microsoft.WindowsAppSDK 1.3.230502000
 - Microsoft.Xaml.Behaviors.WinUI.Managed 2.0.9
