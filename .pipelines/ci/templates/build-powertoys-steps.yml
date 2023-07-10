@@ -212,7 +212,7 @@ steps:
 
 # Check if deps.json files don't reference different dll versions.
 - task: PowerShell@2
-  displayName: Audit base applications path deps.json files
+  displayName: Audit deps.json files for all applications
   inputs:
     filePath: '$(build.sourcesdirectory)\.pipelines\verifyDepsJsonLibraryVersions.ps1'
     arguments: -targetDir '$(build.sourcesdirectory)\$(BuildPlatform)\$(BuildConfiguration)'
