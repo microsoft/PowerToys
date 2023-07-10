@@ -16,10 +16,10 @@ $targetAssetsDir = $targetDir + "/Assets"
 $nonDirectoryAssetsItems = Get-ChildItem $targetAssetsDir -Attributes !Directory
 $directoryAssetsItems = Get-ChildItem $targetAssetsDir -Attributes Directory
 
-if ($directoryAssetsItems -le 0) {
+if ($directoryAssetsItems.Count -le 0) {
     Write-Host -ForegroundColor Red "No directories detected in " $nonDirectoryAssetsItems ". Are you sure this is the right path?`r`n"
     $totalFailures++;
-} elseif ($nonDirectoryAssetsItems -gt 0) {
+} elseif ($nonDirectoryAssetsItems.Count -gt 0) {
     Write-Host -ForegroundColor Red "Detected " $nonDirectoryAssetsItems " files in " $targetAssetsDir "`r`n"
     $totalFailures++;
 } else {
@@ -28,7 +28,7 @@ if ($directoryAssetsItems -le 0) {
 
 # Make sure there's no resources.pri file. Each application should use a different name for their own resources file path.
 $resourcesPriFiles = Get-ChildItem $targetDir -Filter resources.pri
-if ($resourcesPriFiles -gt 0) {
+if ($resourcesPriFiles.Count -gt 0) {
     Write-Host -ForegroundColor Red "Detected a resources.pri file in " $targetDir "`r`n"
     $totalFailures++;
 } else {
