@@ -6,7 +6,9 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using Microsoft.UI;
+using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
+using Microsoft.UI.Xaml.Media;
 using Windows.ApplicationModel.Resources;
 using Windows.Data.Json;
 using Windows.Graphics;
@@ -51,6 +53,7 @@ namespace RegistryPreview
             appWindow = Microsoft.UI.Windowing.AppWindow.GetFromWindowId(windowId);
             appWindow.SetIcon("app.ico");
             appWindow.Closing += AppWindow_Closing;
+            Activated += MainWindow_Activated;
 
             // Extend the canvas to include the title bar so the app can support theming
             ExtendsContentIntoTitleBar = true;
@@ -93,6 +96,20 @@ namespace RegistryPreview
             {
                 UpdateToolBarAndUI(false);
                 UpdateWindowTitle(resourceLoader.GetString("FileNotFound"));
+            }
+        }
+
+        private void MainWindow_Activated(object sender, WindowActivatedEventArgs args)
+        {
+            if (args.WindowActivationState == WindowActivationState.Deactivated)
+            {
+                titleBarText.Foreground =
+                    (SolidColorBrush)App.Current.Resources["WindowCaptionForegroundDisabled"];
+            }
+            else
+            {
+                titleBarText.Foreground =
+                    (SolidColorBrush)App.Current.Resources["WindowCaptionForeground"];
             }
         }
     }
