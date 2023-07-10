@@ -18,7 +18,7 @@
     </Window.SystemBackdrop>
     <Grid>
         <Grid.RowDefinitions>
-            <RowDefinition Height="32" />
+            <RowDefinition Height="Auto" />
             <RowDefinition Height="*" />
         </Grid.RowDefinitions>
         <Grid x:Name="titleBar"
@@ -34,16 +34,17 @@
             <Image
                 Grid.Column="1"
                 Source="Assets/Icon.ico"
-                VerticalAlignment="Bottom"
+                VerticalAlignment="Center"
                 Width="16"
                 Height="16"/>
             <TextBlock
                 x:Name="AppTitleTextBlock"
                 x:Uid="AppTitleText"
                 Grid.Column="2"
-                VerticalAlignment="Bottom"
+                VerticalAlignment="Center"
                 Style="{StaticResource CaptionTextBlockStyle}" />
         </Grid>
+        
         <views:MainPage x:Name="mainPage" Grid.Row="1" />
     </Grid>
 </winuiex:WindowEx>
