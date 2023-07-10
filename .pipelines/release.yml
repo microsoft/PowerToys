@@ -286,6 +286,21 @@ jobs:
       configuration: $(BuildConfiguration)
       maximumCpuCount: true
 
+  # Check if asset files on the main application paths are playing nice and avoiding basic conflicts.
+  - task: PowerShell@2
+    displayName: Audit base applications path asset conflicts
+    inputs:
+      filePath: '$(build.sourcesdirectory)\.pipelines\verifyPossibleAssetConflicts.ps1'
+      arguments: -targetDir '$(build.sourcesdirectory)\$(BuildPlatform)\$(BuildConfiguration)'
+      pwsh: true
+
+  - task: PowerShell@2
+    displayName: Audit WinAppSDK applications path asset conflicts
+    inputs:
+      filePath: '$(build.sourcesdirectory)\.pipelines\verifyPossibleAssetConflicts.ps1'
+      arguments: -targetDir '$(build.sourcesdirectory)\$(BuildPlatform)\$(BuildConfiguration)\WinUI3Apps'
+      pwsh: true
+
 #### MAIN SIGNING AREA
 # reference https://dev.azure.com/microsoft/Dart/_git/AppDriver?path=/ESRPSigning.json&version=GBarm64-netcore&_a=contents for winappdriver
 # https://dev.azure.com/microsoft/Dart/_git/AppDriver?path=/CIPolicy.xml&version=GBarm64-netcore&_a=contents
