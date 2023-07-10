@@ -34,6 +34,7 @@
                 Width="16"
                 Height="16"/>
             <TextBlock
+                x:Name="AppTitleTextBlock"
                 Grid.Column="2"
                 Style="{StaticResource CaptionTextBlockStyle}"
                 VerticalAlignment="Center"
