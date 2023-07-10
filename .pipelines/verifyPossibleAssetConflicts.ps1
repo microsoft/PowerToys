@@ -14,7 +14,7 @@ $totalFailures = 0
 $targetAssetsDir = $targetDir + "/Assets"
 
 $nonDirectoryAssetsItems = Get-ChildItem $targetAssetsDir -Attributes !Directory
-$directoryAssetsItems = Get-ChildItem $targetAssetsDir - Attributes Directory
+$directoryAssetsItems = Get-ChildItem $targetAssetsDir -Attributes Directory
 
 if ($directoryAssetsItems -le 0) {
     Write-Host -ForegroundColor Red "No directories detected in " $nonDirectoryAssetsItems ". Are you sure this is the right path?`r`n"
