@@ -38,6 +38,7 @@
                 Width="16"
                 Height="16"/>
             <TextBlock
+                x:Name="AppTitleTextBlock"
                 x:Uid="AppTitleText"
                 Grid.Column="2"
                 VerticalAlignment="Bottom"
