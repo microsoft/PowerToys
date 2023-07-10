@@ -54,8 +54,8 @@
                 </Button.Template>
                 <ToolTipService.ToolTip>
                     <TextBlock
-                        x:Uid="PathsTooltipDescription"
-                        TextWrapping="WrapWholeWords" />
+                    x:Uid="PathsTooltipDescription"
+                    TextWrapping="WrapWholeWords" />
                 </ToolTipService.ToolTip>
             </Button>
 
@@ -64,7 +64,6 @@
                 Orientation="Horizontal"
                 Spacing="8">
                 <Button
-                    Padding="0"
                     Command="{Binding LoadProcessesCommand}"
                     Style="{StaticResource SubtleButtonStyle}">
                     <FontIcon
@@ -76,7 +75,6 @@
                 </Button>
                 <Button
                     x:Name="RestartAsAdminBtn"
-                    Padding="0"
                     Command="{Binding RestartElevatedCommand}"
                     Style="{StaticResource SubtleButtonStyle}"
                     Visibility="{x:Bind ViewModel.IsElevated, Converter={StaticResource boolToVisibilityConverter}}">
@@ -187,6 +185,7 @@
                         </DataTemplate>
                     </ListView.ItemTemplate>
                 </ListView>
+                
                 <StackPanel
                     HorizontalAlignment="Center"
                     VerticalAlignment="Center"
@@ -217,18 +216,14 @@
                 Height="48"
                 IsActive="{x:Bind ViewModel.IsLoading, Mode=OneWay}" />
         </Grid>
+        
         <ContentDialog
             x:Name="SelectedFilesListDialog"
             x:Uid="SelectedFilesListDialog">
-            <ScrollViewer
-                HorizontalScrollBarVisibility="Auto"
-                HorizontalScrollMode="Auto"
-                VerticalScrollBarVisibility="Auto"
-                VerticalScrollMode="Auto">
-                <TextBlock
-                    IsTextSelectionEnabled="True"
-                    Text="{x:Bind ViewModel.PathsToString, Mode=OneWay}" />
-            </ScrollViewer>
+            <TextBlock
+                IsTextSelectionEnabled="True"
+                TextWrapping="WrapWholeWords"
+                Text="{x:Bind ViewModel.PathsToString, Mode=OneWay}" />
         </ContentDialog>
     </Grid>
 </Page>

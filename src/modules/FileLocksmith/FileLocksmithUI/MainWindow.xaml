@@ -18,21 +18,32 @@
     </Window.SystemBackdrop>
     <Grid>
         <Grid.RowDefinitions>
-            <RowDefinition Height="32" />
+            <RowDefinition Height="Auto" />
             <RowDefinition Height="*" />
         </Grid.RowDefinitions>
-        <Grid x:Name="titleBar">
-            <StackPanel
-                Margin="16,16,16,0"
-                Orientation="Horizontal"
-                Spacing="12">
-                <Image Source="Assets/Icon.ico"
-                       Width="16" />
-                <TextBlock
-                    x:Uid="AppTitleText"
-                    Style="{StaticResource CaptionTextBlockStyle}" />
-            </StackPanel>
+        <Grid x:Name="titleBar"
+              Height="32"
+              ColumnSpacing="16">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition x:Name="LeftPaddingColumn" Width="0"/>
+                <ColumnDefinition x:Name="IconColumn" Width="Auto"/>
+                <ColumnDefinition x:Name="TitleColumn" Width="Auto"/>
+                <ColumnDefinition x:Name="RightDragColumn" Width="*"/>
+                <ColumnDefinition x:Name="RightPaddingColumn" Width="0"/>
+            </Grid.ColumnDefinitions>
+            <Image
+                Grid.Column="1"
+                Source="Assets/Icon.ico"
+                VerticalAlignment="Bottom"
+                Width="16"
+                Height="16"/>
+            <TextBlock
+                x:Uid="AppTitleText"
+                Grid.Column="2"
+                VerticalAlignment="Bottom"
+                Style="{StaticResource CaptionTextBlockStyle}" />
         </Grid>
+        
         <views:MainPage x:Name="mainPage" Grid.Row="1" />
     </Grid>
 </winuiex:WindowEx>
