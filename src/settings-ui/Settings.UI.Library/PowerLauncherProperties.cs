@@ -97,6 +97,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             Position = StartupPosition.Cursor;
             UseCentralizedKeyboardHook = false;
             SearchQueryResultsWithDelay = true;
+            SearchInputDelayFast = 50;
             SearchInputDelay = 150;
             SearchClickedItemWeight = 5;
             SearchQueryTuningEnabled = false;

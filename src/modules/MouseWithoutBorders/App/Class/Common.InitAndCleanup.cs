@@ -20,6 +20,7 @@ using System.Threading;
 using Microsoft.Win32;
 using MouseWithoutBorders.Class;
 using MouseWithoutBorders.Form;
+using Windows.UI.Input.Preview.Injection;
 
 namespace MouseWithoutBorders
 {
@@ -108,6 +109,21 @@ namespace MouseWithoutBorders
                 Common.KeyCorrupted = true;
                 Setting.Values.MyKey = Common.MyKey = Common.CreateRandomKey();
                 Common.Log(e.Message);
+            }
+
+            try
+            {
+                InputSimulation.Injector = InputInjector.TryCreate();
+                if (InputSimulation.Injector != null)
+                {
+                    InputSimulation.MoveMouseRelative(0, 0);
+                    NativeMethods.InjectMouseInputAvailable = true;
+                }
+            }
+            catch (EntryPointNotFoundException)
+            {
+                NativeMethods.InjectMouseInputAvailable = false;
+                Common.Log($"{nameof(NativeMethods.InjectMouseInputAvailable)} = false");
             }
 
             bool dummy = Setting.Values.DrawMouseEx;
