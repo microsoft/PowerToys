@@ -893,14 +893,23 @@ namespace MouseWithoutBorders
             }
         }
 
-        internal void ShowToolTip(string txt, int timeOutInMilliseconds, ToolTipIcon icon = ToolTipIcon.Info)
+        internal void ShowToolTip(string txt, int timeOutInMilliseconds, ToolTipIcon icon = ToolTipIcon.Info, bool forceEvenIfHidingOldUI = false)
         {
             if (!Common.RunOnLogonDesktop && !Common.RunOnScrSaverDesktop)
             {
+                var oldNotifyVisibility = NotifyIcon.Visible;
+
                 // In order to show tooltips, the icon needs to be shown.
-                NotifyIcon.Visible = true;
+                if (forceEvenIfHidingOldUI)
+                {
+                    NotifyIcon.Visible = true;
+                }
+
                 NotifyIcon.ShowBalloonTip(timeOutInMilliseconds, Application.ProductName, txt, icon);
-                NotifyIcon.Visible = Setting.Values.ShowOriginalUI;
+                if (forceEvenIfHidingOldUI)
+                {
+                    NotifyIcon.Visible = oldNotifyVisibility;
+                }
             }
         }
 
@@ -945,7 +954,7 @@ namespace MouseWithoutBorders
 
             if (Program.ShowServiceModeErrorTooltip)
             {
-                Common.ShowToolTip("Couldn't start the service. Will continue as not a service. Service mode must be enabled in the Settings again.", 10000);
+                Common.ShowToolTip("Couldn't start the service. Will continue as not a service. Service mode must be enabled in the Settings again.", 10000, forceEvenIfHidingOldUI: true);
             }
         }
 
