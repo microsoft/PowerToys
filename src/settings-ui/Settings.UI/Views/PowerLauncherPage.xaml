@@ -104,7 +104,9 @@
                         IsExpanded="True">
                         <ToggleSwitch IsOn="{x:Bind Mode=TwoWay, Path=ViewModel.SearchQueryResultsWithDelay}" />
                         <labs:SettingsExpander.Items>
-                            <labs:SettingsCard x:Uid="PowerLauncher_FastSearchInputDelayMs">
+                            <labs:SettingsCard 
+                                x:Uid="PowerLauncher_FastSearchInputDelayMs"
+                                IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.SearchQueryResultsWithDelay}">
                                 <NumberBox
                                     MinWidth="{StaticResource SettingActionControlMinWidth}"
                                     LargeChange="50"
