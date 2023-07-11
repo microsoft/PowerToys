@@ -345,7 +345,7 @@ LRESULT CALLBACK Highlighter::WndProc(HWND hWnd, UINT message, WPARAM wParam, LP
         {
         case BRING_TO_FRONT_TIMER_ID:
             static int fireCount = 0;
-            if (fireCount > 4)
+            if (fireCount++ >= 4)
             {
                 KillTimer(instance->m_hwnd, instance->m_timer_id);
                 fireCount = 0;
