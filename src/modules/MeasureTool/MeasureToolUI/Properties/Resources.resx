@@ -118,15 +118,18 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="Bounds" xml:space="preserve">
-    <value>Bounds</value>
+    <value>Bounds (Ctrl+1)</value>
   </data>
   <data name="Spacing" xml:space="preserve">
-    <value>Spacing</value>
+    <value>Spacing (Ctrl+2)</value>
   </data>
   <data name="HorizontalSpacing" xml:space="preserve">
-    <value>Horizontal spacing</value>
+    <value>Horizontal spacing (Ctrl+3)</value>
   </data>
   <data name="VerticalSpacing" xml:space="preserve">
-    <value>Vertical spacing</value>
+    <value>Vertical spacing (Ctrl+4)</value>
+  </data>
+  <data name="Close" xml:space="preserve">
+    <value>Close (Esc)</value>
   </data>
 </root>
