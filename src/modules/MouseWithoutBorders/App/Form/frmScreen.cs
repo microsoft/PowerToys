@@ -897,7 +897,10 @@ namespace MouseWithoutBorders
         {
             if (!Common.RunOnLogonDesktop && !Common.RunOnScrSaverDesktop)
             {
+                // In order to show tooltips, the icon needs to be shown.
+                NotifyIcon.Visible = true;
                 NotifyIcon.ShowBalloonTip(timeOutInMilliseconds, Application.ProductName, txt, icon);
+                NotifyIcon.Visible = Setting.Values.ShowOriginalUI;
             }
         }
 
@@ -938,6 +941,11 @@ namespace MouseWithoutBorders
             {
                 NotifyIcon.Visible = false;
                 NotifyIcon.Visible = Setting.Values.ShowOriginalUI;
+            }
+
+            if (Program.ShowServiceModeErrorTooltip)
+            {
+                Common.ShowToolTip("Couldn't start the service. Will continue as not a service. Service mode must be enabled in the Settings again.", 10000);
             }
         }
 
