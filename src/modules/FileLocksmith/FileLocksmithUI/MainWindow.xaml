@@ -21,7 +21,7 @@
             <RowDefinition Height="Auto" />
             <RowDefinition Height="*" />
         </Grid.RowDefinitions>
-        <Grid x:Name="titleBar"
+        <Grid x:Name="AppTitleBar"
               Height="32"
               ColumnSpacing="16">
             <Grid.ColumnDefinitions>

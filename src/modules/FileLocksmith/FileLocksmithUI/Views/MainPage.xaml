@@ -34,13 +34,13 @@
         </core:EventTriggerBehavior>
     </interactivity:Interaction.Behaviors>
 
-    <Grid Margin="16" RowSpacing="16">
+    <Grid RowSpacing="16">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" x:Name="ButtonsRow" />
             <RowDefinition Height="*" />
         </Grid.RowDefinitions>
 
-        <Grid>
+        <Grid Margin="16,0">
             <Button
                 Click="ShowSelectedPathsButton_Click"
                 Content="{x:Bind ViewModel.Paths, Converter={StaticResource fileListToDescriptionConverter}}">
@@ -97,7 +97,7 @@
                     SelectionMode="None">
                     <ListView.ItemTemplate>
                         <DataTemplate x:DataType="interop:ProcessResult">
-                            <labs:SettingsExpander Margin="0,4">
+                            <labs:SettingsExpander Margin="0,0,0,4">
                                 <labs:SettingsExpander.Resources>
                                     <x:Double x:Key="SettingsCardWrapThreshold">0</x:Double>
                                 </labs:SettingsExpander.Resources>
@@ -219,11 +219,10 @@
         
         <ContentDialog
             x:Name="SelectedFilesListDialog"
-            x:Uid="SelectedFilesListDialog">
-            <TextBlock
-                IsTextSelectionEnabled="True"
-                TextWrapping="WrapWholeWords"
-                Text="{x:Bind ViewModel.PathsToString, Mode=OneWay}" />
-        </ContentDialog>
+            x:Uid="SelectedFilesListDialog"
+            ScrollViewer.IsVerticalRailEnabled="True"
+            ScrollViewer.VerticalScrollMode="Enabled"
+            ScrollViewer.VerticalScrollBarVisibility="Visible"
+            Content="{x:Bind ViewModel.PathsToString, Mode=OneWay}" />
     </Grid>
 </Page>

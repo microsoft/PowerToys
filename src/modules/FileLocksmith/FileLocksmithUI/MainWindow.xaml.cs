@@ -5,6 +5,7 @@
 using System;
 using Microsoft.UI.Windowing;
 using Microsoft.UI.Xaml;
+using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Media;
 using WinUIEx;
 
@@ -16,8 +17,10 @@ namespace FileLocksmithUI
         {
             InitializeComponent();
             mainPage.ViewModel.IsElevated = isElevated;
-            SetTitleBar();
+            ExtendsContentIntoTitleBar = true;
+            SetTitleBar(AppTitleBar);
             Activated += MainWindow_Activated;
+            AppWindow.SetIcon("Assets/Icon.ico");
         }
 
         private void MainWindow_Activated(object sender, WindowActivatedEventArgs args)
@@ -32,12 +35,6 @@ namespace FileLocksmithUI
                 AppTitleTextBlock.Foreground =
                     (SolidColorBrush)App.Current.Resources["WindowCaptionForeground"];
             }
-        }
-
-        private void SetTitleBar()
-        {
-            ExtendsContentIntoTitleBar = true;
-            SetTitleBar(titleBar);
         }
 
         public void Dispose()
