@@ -34,7 +34,7 @@
         </core:EventTriggerBehavior>
     </interactivity:Interaction.Behaviors>
 
-    <Grid RowSpacing="16">
+    <Grid RowSpacing="8">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" x:Name="ButtonsRow" />
             <RowDefinition Height="*" />
@@ -94,7 +94,8 @@
                     x:Name="ProcessesListView"
                     IncrementalLoadingThreshold="10"
                     ItemsSource="{x:Bind ViewModel.Processes}"
-                    SelectionMode="None">
+                    SelectionMode="None"
+                    Padding="12,0,12,12">
                     <ListView.ItemTemplate>
                         <DataTemplate x:DataType="interop:ProcessResult">
                             <labs:SettingsExpander Margin="0,0,0,4">
@@ -216,13 +217,16 @@
                 Height="48"
                 IsActive="{x:Bind ViewModel.IsLoading, Mode=OneWay}" />
         </Grid>
-        
+
         <ContentDialog
             x:Name="SelectedFilesListDialog"
-            x:Uid="SelectedFilesListDialog"
-            ScrollViewer.IsVerticalRailEnabled="True"
-            ScrollViewer.VerticalScrollMode="Enabled"
-            ScrollViewer.VerticalScrollBarVisibility="Visible"
-            Content="{x:Bind ViewModel.PathsToString, Mode=OneWay}" />
+            x:Uid="SelectedFilesListDialog">
+            <ScrollViewer
+                Padding="0,0,16,0">
+                <TextBlock
+                    IsTextSelectionEnabled="True"
+                    Text="{x:Bind ViewModel.PathsToString, Mode=OneWay}" />
+            </ScrollViewer>
+        </ContentDialog>
     </Grid>
 </Page>
