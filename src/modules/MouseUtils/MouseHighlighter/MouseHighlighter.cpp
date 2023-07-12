@@ -223,6 +223,9 @@ LRESULT CALLBACK Highlighter::MouseHookProc(int nCode, WPARAM wParam, LPARAM lPa
         case WM_LBUTTONDOWN:
             instance->AddDrawingPoint(MouseButton::Left);
             instance->m_leftButtonPressed = true;
+            // start a timer for the scenario, when the user clickes a pinned window which has no focus.
+            // after we drow the highlighting circle the pinned window will jump in front of us,
+            // we have to bring our window back to topmost position
             if (instance->m_timer_id == 0)
             {
                 instance->m_timer_id = SetTimer(instance->m_hwnd, BRING_TO_FRONT_TIMER_ID, 10, nullptr);
@@ -231,6 +234,7 @@ LRESULT CALLBACK Highlighter::MouseHookProc(int nCode, WPARAM wParam, LPARAM lPa
         case WM_RBUTTONDOWN:
             instance->AddDrawingPoint(MouseButton::Right);
             instance->m_rightButtonPressed = true;
+            // same as for the left button, start a timer for reposition ourselves to topmost position
             if (instance->m_timer_id == 0)
             {
                 instance->m_timer_id = SetTimer(instance->m_hwnd, BRING_TO_FRONT_TIMER_ID, 10, nullptr);
@@ -346,6 +350,11 @@ LRESULT CALLBACK Highlighter::WndProc(HWND hWnd, UINT message, WPARAM wParam, LP
     {
         switch (wParam)
         {
+            // when the bring-to-front-timer expires (every 10 ms), we are repositionig our window to topmost Z order position
+            // As we experience that it takes 0-30 ms that the pinned window hides our window,
+            // we await 5 timer ticks (50 ms together) and then we stop the timer.
+            // If we would use a timer with a 50 ms period, there would be a flickering on the UI, as in most of the cases
+            // the pinned window hides our window in a few milliseconds.
         case BRING_TO_FRONT_TIMER_ID:
             static int fireCount = 0;
             if (fireCount++ >= 4)
