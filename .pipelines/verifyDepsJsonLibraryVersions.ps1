@@ -60,8 +60,14 @@ Get-ChildItem $targetDir -Recurse -Filter *.deps.json | ForEach-Object {
 # Report on the files that are referenced for more than one version.
 $referencedFileVersionsPerDll.keys | ForEach-Object {
     if($referencedFileVersionsPerDll[$_].Count -gt 1) {
-        echo $_
-        echo $referencedFileVersionsPerDll[$_]
+        $dllName = $_
+        Write-Host $dllName
+        $referencedFileVersionsPerDll[$dllName].keys | ForEach-Object {
+            Write-Host "`t" $_ 
+            $referencedFileVersionsPerDll[$dllName][$_] | ForEach-Object {
+                Write-Host "`t`t" $_
+            }
+        }
         $totalFailures++;
     }
 }
