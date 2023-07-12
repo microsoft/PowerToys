@@ -65,7 +65,7 @@ private:
     winrt::CompositionSpriteShape m_rightPointer{ nullptr };
     bool m_leftButtonPressed = false;
     bool m_rightButtonPressed = false;
-    UINT_PTR m_timer_id = {};
+    UINT_PTR m_timer_id = 0;
 
     bool m_visible = false;
 
@@ -119,11 +119,10 @@ bool Highlighter::CreateHighlighter()
     }
 }
 
-
 void Highlighter::AddDrawingPoint(MouseButton button)
 {
     POINT pt;
-        
+
     // Applies DPIs.
     GetCursorPos(&pt);
 
@@ -134,7 +133,7 @@ void Highlighter::AddDrawingPoint(MouseButton button)
     auto circleGeometry = m_compositor.CreateEllipseGeometry();
     circleGeometry.Radius({ m_radius, m_radius });
     auto circleShape = m_compositor.CreateSpriteShape(circleGeometry);
-    circleShape.Offset({ static_cast<float>(pt.x), static_cast<float>(pt.y )});
+    circleShape.Offset({ static_cast<float>(pt.x), static_cast<float>(pt.y) });
     if (button == MouseButton::Left)
     {
         circleShape.FillBrush(m_compositor.CreateColorBrush(m_leftClickColor));
@@ -168,12 +167,12 @@ void Highlighter::UpdateDrawingPointPosition(MouseButton button)
 
     if (button == MouseButton::Left)
     {
-        m_leftPointer.Offset({ static_cast<float>(pt.x), static_cast<float>(pt.y )});
+        m_leftPointer.Offset({ static_cast<float>(pt.x), static_cast<float>(pt.y) });
     }
     else
     {
         //right
-        m_rightPointer.Offset({ static_cast<float>(pt.x), static_cast<float>(pt.y )});
+        m_rightPointer.Offset({ static_cast<float>(pt.x), static_cast<float>(pt.y) });
     }
 }
 void Highlighter::StartDrawingPointFading(MouseButton button)
@@ -203,7 +202,6 @@ void Highlighter::StartDrawingPointFading(MouseButton button)
     circleShape.FillBrush().StartAnimation(L"Color", animation);
 }
 
-
 void Highlighter::ClearDrawing()
 {
     if (nullptr == m_shape || nullptr == m_shape.Shapes())
@@ -225,12 +223,18 @@ LRESULT CALLBACK Highlighter::MouseHookProc(int nCode, WPARAM wParam, LPARAM lPa
         case WM_LBUTTONDOWN:
             instance->AddDrawingPoint(MouseButton::Left);
             instance->m_leftButtonPressed = true;
-            instance->m_timer_id = SetTimer(instance->m_hwnd, BRING_TO_FRONT_TIMER_ID, 10, nullptr);
+            if (instance->m_timer_id == 0)
+            {
+                instance->m_timer_id = SetTimer(instance->m_hwnd, BRING_TO_FRONT_TIMER_ID, 10, nullptr);
+            }
             break;
         case WM_RBUTTONDOWN:
             instance->AddDrawingPoint(MouseButton::Right);
             instance->m_rightButtonPressed = true;
-            instance->m_timer_id = SetTimer(instance->m_hwnd, BRING_TO_FRONT_TIMER_ID, 10, nullptr);
+            if (instance->m_timer_id == 0)
+            {
+                instance->m_timer_id = SetTimer(instance->m_hwnd, BRING_TO_FRONT_TIMER_ID, 10, nullptr);
+            }
             break;
         case WM_MOUSEMOVE:
             if (instance->m_leftButtonPressed)
@@ -262,7 +266,6 @@ LRESULT CALLBACK Highlighter::MouseHookProc(int nCode, WPARAM wParam, LPARAM lPa
     }
     return CallNextHookEx(0, nCode, wParam, lParam);
 }
-
 
 void Highlighter::StartDrawing()
 {
@@ -348,6 +351,7 @@ LRESULT CALLBACK Highlighter::WndProc(HWND hWnd, UINT message, WPARAM wParam, LP
             if (fireCount++ >= 4)
             {
                 KillTimer(instance->m_hwnd, instance->m_timer_id);
+                instance->m_timer_id = 0;
                 fireCount = 0;
             }
             instance->BringToFront();
