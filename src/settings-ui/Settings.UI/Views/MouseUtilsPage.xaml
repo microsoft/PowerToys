@@ -382,6 +382,12 @@
                                     SpinButtonPlacementMode="Compact"
                                     Value="{x:Bind Mode=TwoWay, Path=ViewModel.MousePointerCrosshairsBorderSize}" />
                             </labs:SettingsCard>
+                            
+                            <labs:SettingsCard ContentAlignment="Left">
+                                <CheckBox
+                                    x:Uid="MouseUtils_MousePointerCrosshairs_CrosshairsAutoHide"
+                                    IsChecked="{x:Bind ViewModel.MousePointerCrosshairsAutoHide, Mode=TwoWay}" />
+                            </labs:SettingsCard>
                         </labs:SettingsExpander.Items>
                     </labs:SettingsExpander>
                 </controls:SettingsGroup>

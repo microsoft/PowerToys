@@ -7,6 +7,7 @@ const winrt::Windows::UI::Color INCLUSIVE_MOUSE_DEFAULT_CROSSHAIRS_BORDER_COLOR 
 constexpr int INCLUSIVE_MOUSE_DEFAULT_CROSSHAIRS_RADIUS = 20;
 constexpr int INCLUSIVE_MOUSE_DEFAULT_CROSSHAIRS_THICKNESS = 5;
 constexpr int INCLUSIVE_MOUSE_DEFAULT_CROSSHAIRS_BORDER_SIZE = 1;
+constexpr bool INCLUSIVE_MOUSE_DEFAULT_AUTO_HIDE = false;
 
 struct InclusiveCrosshairsSettings
 {
@@ -16,6 +17,7 @@ struct InclusiveCrosshairsSettings
     int crosshairsThickness = INCLUSIVE_MOUSE_DEFAULT_CROSSHAIRS_THICKNESS;
     int crosshairsOpacity = INCLUSIVE_MOUSE_DEFAULT_CROSSHAIRS_OPACITY;
     int crosshairsBorderSize = INCLUSIVE_MOUSE_DEFAULT_CROSSHAIRS_BORDER_SIZE;
+    bool crosshairsAutoHide = INCLUSIVE_MOUSE_DEFAULT_AUTO_HIDE;
 };
 
 int InclusiveCrosshairsMain(HINSTANCE hinst, InclusiveCrosshairsSettings& settings);
