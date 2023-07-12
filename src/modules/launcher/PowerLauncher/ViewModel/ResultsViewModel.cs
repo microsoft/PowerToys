@@ -221,9 +221,8 @@ namespace PowerLauncher.ViewModel
                 // Do nothing if there is no selected item
                 if (SelectedItem != null)
                 {
-                    // Tabbing backwards should highlight the last item of the previous row
+                    // Tabbing backwards
                     SelectPrevResult();
-                    SelectedItem?.SelectLastContextButton();
                 }
             }
         }
