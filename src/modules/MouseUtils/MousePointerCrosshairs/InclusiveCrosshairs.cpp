@@ -221,7 +221,7 @@ void InclusiveCrosshairs::UpdateCrosshairsPosition()
     m_left_crosshairs.Offset({ ptCursor.x - m_crosshairs_radius + halfPixelAdjustment * 2.f, ptCursor.y + halfPixelAdjustment, .0f });
     m_left_crosshairs.Size({ ptCursor.x - ptMonitorUpperLeft.x - m_crosshairs_radius + halfPixelAdjustment * 2, static_cast<float>(m_crosshairs_thickness) });
 
-    m_right_crosshairs_border.Offset({static_cast<float>(ptCursor.x) + m_crosshairs_radius - m_crosshairs_border_size, ptCursor.y + halfPixelAdjustment, .0f });
+    m_right_crosshairs_border.Offset({ static_cast<float>(ptCursor.x) + m_crosshairs_radius - m_crosshairs_border_size, ptCursor.y + halfPixelAdjustment, .0f });
     m_right_crosshairs_border.Size({ static_cast<float>(ptMonitorBottomRight.x) - ptCursor.x - m_crosshairs_radius + m_crosshairs_border_size, m_crosshairs_thickness + m_crosshairs_border_size * 2.f });
     m_right_crosshairs.Offset({ static_cast<float>(ptCursor.x) + m_crosshairs_radius, ptCursor.y + halfPixelAdjustment, .0f });
     m_right_crosshairs.Size({ static_cast<float>(ptMonitorBottomRight.x) - ptCursor.x - m_crosshairs_radius, static_cast<float>(m_crosshairs_thickness) });
@@ -231,11 +231,10 @@ void InclusiveCrosshairs::UpdateCrosshairsPosition()
     m_top_crosshairs.Offset({ ptCursor.x + halfPixelAdjustment, ptCursor.y - m_crosshairs_radius + halfPixelAdjustment * 2, .0f });
     m_top_crosshairs.Size({ static_cast<float>(m_crosshairs_thickness), ptCursor.y - ptMonitorUpperLeft.y - m_crosshairs_radius + halfPixelAdjustment * 2 });
 
-    m_bottom_crosshairs_border.Offset({ ptCursor.x + halfPixelAdjustment,  static_cast<float>(ptCursor.y) + m_crosshairs_radius - m_crosshairs_border_size, .0f });
-    m_bottom_crosshairs_border.Size({ m_crosshairs_thickness + m_crosshairs_border_size * 2.f,  static_cast<float>(ptMonitorBottomRight.y) - ptCursor.y - m_crosshairs_radius + m_crosshairs_border_size });
-    m_bottom_crosshairs.Offset({ ptCursor.x + halfPixelAdjustment,  static_cast<float>(ptCursor.y) + m_crosshairs_radius, .0f });
-    m_bottom_crosshairs.Size({  static_cast<float>(m_crosshairs_thickness),  static_cast<float>(ptMonitorBottomRight.y) - ptCursor.y - m_crosshairs_radius });
-
+    m_bottom_crosshairs_border.Offset({ ptCursor.x + halfPixelAdjustment, static_cast<float>(ptCursor.y) + m_crosshairs_radius - m_crosshairs_border_size, .0f });
+    m_bottom_crosshairs_border.Size({ m_crosshairs_thickness + m_crosshairs_border_size * 2.f, static_cast<float>(ptMonitorBottomRight.y) - ptCursor.y - m_crosshairs_radius + m_crosshairs_border_size });
+    m_bottom_crosshairs.Offset({ ptCursor.x + halfPixelAdjustment, static_cast<float>(ptCursor.y) + m_crosshairs_radius, .0f });
+    m_bottom_crosshairs.Size({ static_cast<float>(m_crosshairs_thickness), static_cast<float>(ptMonitorBottomRight.y) - ptCursor.y - m_crosshairs_radius });
 }
 
 LRESULT CALLBACK InclusiveCrosshairs::MouseHookProc(int nCode, WPARAM wParam, LPARAM lParam) noexcept
@@ -243,7 +242,8 @@ LRESULT CALLBACK InclusiveCrosshairs::MouseHookProc(int nCode, WPARAM wParam, LP
     if (nCode >= 0)
     {
         MSLLHOOKSTRUCT* hookData = reinterpret_cast<MSLLHOOKSTRUCT*>(lParam);
-        if (wParam == WM_MOUSEMOVE) {
+        if (wParam == WM_MOUSEMOVE)
+        {
             instance->UpdateCrosshairsPosition();
         }
     }
@@ -255,7 +255,7 @@ void InclusiveCrosshairs::StartDrawing()
     Logger::info("Start drawing crosshairs.");
     Trace::StartDrawingCrosshairs();
     UpdateCrosshairsPosition();
-  
+
     m_hiddenCursor = false;
     if (m_crosshairs_auto_hide)
     {
@@ -311,7 +311,7 @@ void InclusiveCrosshairs::ApplySettings(InclusiveCrosshairsSettings& settings, b
             if (m_crosshairs_auto_hide)
             {
                 SetAutoHideTimer();
-			}
+            }
             else
             {
                 KillTimer(m_hwnd, AUTO_HIDE_TIMER_ID);
@@ -322,7 +322,7 @@ void InclusiveCrosshairs::ApplySettings(InclusiveCrosshairsSettings& settings, b
                     instance->m_hiddenCursor = false;
                     ShowWindow(instance->m_hwnd, SW_SHOWNOACTIVATE);
                 }
-			}
+            }
         }
 
         // Runtime objects already created. Should update in the owner thread.
@@ -468,7 +468,6 @@ void InclusiveCrosshairs::SetAutoHideTimer() noexcept
         Logger::trace("Failed to create auto hide timer. Last error: {}", error);
     }
 }
-
 
 #pragma region InclusiveCrosshairs_API
 
