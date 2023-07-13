@@ -213,7 +213,7 @@
     <value>Cancel</value>
   </data>
   <data name="FileChanged.Message" xml:space="preserve">
-    <value>Hosts file was changed by another application. Do you want to reload it?</value>
+    <value>Hosts file was modified externally.</value>
     <comment>"Hosts" refers to the system hosts file, do not loc</comment>
   </data>
   <data name="FileSaveError.Message" xml:space="preserve">

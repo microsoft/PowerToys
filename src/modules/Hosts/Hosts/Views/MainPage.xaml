@@ -38,11 +38,12 @@
     </Page.Resources>
 
     <Grid
-        Margin="16,0,16,16"
+        Margin="16"
         RowSpacing="8">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
             <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
 
         <Grid>
@@ -69,7 +70,7 @@
             <StackPanel
                 HorizontalAlignment="Right"
                 Orientation="Horizontal"
-                Spacing="8">
+                Spacing="4">
                 <Button
                     x:Uid="AdditionalLinesBtn"
                     Height="32"
@@ -192,11 +193,11 @@
                             RightTapped="Grid_RightTapped"
                             ColumnSpacing="8">
                             <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="256" x:Name="address"/>
-                                <ColumnDefinition Width="*" x:Name="comment"/>
-                                <ColumnDefinition Width="Auto" x:Name="status"/>
-                                <ColumnDefinition Width="Auto" x:Name="duplicate"/>
-                                <ColumnDefinition Width="Auto" x:Name="toggleswitch"/>
+                                <ColumnDefinition Width="256"/> <!--address-->
+                                <ColumnDefinition Width="*"/> <!--comment-->
+                                <ColumnDefinition Width="Auto"/> <!--status-->
+                                <ColumnDefinition Width="Auto"/> <!--duplicate-->
+                                <ColumnDefinition Width="Auto"/> <!--toggleswitch-->
                             </Grid.ColumnDefinitions>
                             <FlyoutBase.AttachedFlyout>
                                 <MenuFlyout Opened="MenuFlyout_Opened">
@@ -388,8 +389,7 @@
             IsActive="{x:Bind ViewModel.IsLoading, Mode=OneWay}" />
 
         <StackPanel
-            Grid.Row="1"
-            Orientation="Vertical">
+            Grid.Row="2">
             <InfoBar
                 x:Uid="FileSaveError"
                 IsOpen="{x:Bind ViewModel.Error, Mode=TwoWay}"
@@ -415,9 +415,9 @@
             <ContentDialog.DataContext>
                 <models:Entry />
             </ContentDialog.DataContext>
-            <ScrollViewer
-                Padding="0,0,16,0">
+            <ScrollViewer>
                 <StackPanel
+                    MinWidth="320"
                     HorizontalAlignment="Stretch"
                     Spacing="12">
                     <TextBox

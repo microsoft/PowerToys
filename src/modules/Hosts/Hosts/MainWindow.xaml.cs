@@ -27,13 +27,11 @@ namespace Hosts
         {
             if (args.WindowActivationState == WindowActivationState.Deactivated)
             {
-                AppTitleTextBlock.Foreground =
-                    (SolidColorBrush)App.Current.Resources["WindowCaptionForegroundDisabled"];
+                AppTitleTextBlock.Foreground = (SolidColorBrush)App.Current.Resources["WindowCaptionForegroundDisabled"];
             }
             else
             {
-                AppTitleTextBlock.Foreground =
-                    (SolidColorBrush)App.Current.Resources["WindowCaptionForeground"];
+                AppTitleTextBlock.Foreground = (SolidColorBrush)App.Current.Resources["WindowCaptionForeground"];
             }
         }
 
