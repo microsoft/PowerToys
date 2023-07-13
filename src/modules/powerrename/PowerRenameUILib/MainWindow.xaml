@@ -48,6 +48,7 @@
                     Checked="SelectAll"
                     Content=""
                     IsChecked="True"
+                    Style="{StaticResource CheckBoxDefaultStyleOverride}"
                     Unchecked="SelectAll" />
                 <Image
                     Width="16"
@@ -112,6 +113,7 @@
                 HorizontalAlignment="Stretch"
                 VerticalAlignment="Bottom"
                 Fill="{ThemeResource DividerStrokeColorDefaultBrush}" />
+            <!--Changing VirtualizationMode to Recycling introduces the issue with popping indent/icons, but makes scrolling slightly faster -->
             <ListView
                 Grid.Row="1"
                 Grid.ColumnSpan="6"
@@ -119,7 +121,29 @@
                 IsTabStop="false"
                 ItemsSource="{x:Bind ExplorerItems, Mode=OneWay}"
                 SelectionMode="None"
-                XYFocusKeyboardNavigation="Enabled">
+                x:Name="listView_ExplorerItems"
+                XYFocusKeyboardNavigation="Enabled"
+                VirtualizingStackPanel.VirtualizationMode="Standard">
+                <ListView.ItemTemplate>
+                    <DataTemplate x:DataType="local:ExplorerItemViewModel">
+                        <local:ExplorerItem 
+                            Id="{x:Bind IdVM, Mode=OneWay}"
+                            IdStr="{x:Bind IdStrVM}"
+                            Original="{x:Bind OriginalVM}"
+                            Renamed="{x:Bind RenamedVM}"
+                            Indentation="{x:Bind IndentationVM}"
+                            ImagePath="{x:Bind ImagePathVM}"
+                            Type="{x:Bind TypeVM}"
+                            Checked="{x:Bind CheckedVM, Mode=TwoWay, FallbackValue=True}"
+                            State="{x:Bind StateVM}" />
+                    </DataTemplate >
+                </ListView.ItemTemplate>
+                <ListView.ItemsPanel>
+                    <ItemsPanelTemplate>
+                        <VirtualizingStackPanel />
+                    </ItemsPanelTemplate>
+                </ListView.ItemsPanel>
+                
                 <ListView.ItemContainerStyle>
                     <Style TargetType="ListViewItem">
                         <Setter Property="IsTabStop" Value="False" />
