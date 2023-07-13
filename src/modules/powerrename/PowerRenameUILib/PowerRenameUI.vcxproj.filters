@@ -12,15 +12,19 @@
     <Midl Include="MainWindow.idl" />
     <Midl Include="PatternSnippet.idl" />
     <Midl Include="ExplorerItem.idl" />
+    <Midl Include="ExplorerItemsSource.idl" />
+    <Midl Include="ExplorerItemViewModel.idl" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="pch.cpp" />
     <ClCompile Include="$(GeneratedFilesDir)module.g.cpp" />
     <ClCompile Include="PatternSnippet.cpp" />
+    <ClCompile Include="ExplorerItemsSource.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h" />
     <ClInclude Include="PatternSnippet.h" />
+    <ClInclude Include="ExplorerItemsSource.h" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Assets">

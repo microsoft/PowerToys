@@ -28,7 +28,6 @@
 using namespace winrt;
 using namespace Windows::UI::Xaml;
 using namespace winrt::Microsoft::Windows::ApplicationModel::Resources;
-
 // Non-localizable
 const std::wstring PowerRenameUIIco = L"PowerRenameUI.ico";
 const wchar_t c_WindowClass[] = L"PowerRename";
@@ -40,11 +39,63 @@ extern std::vector<std::wstring> g_files;
 ThemeListener theme_listener{};
 HWND CurrentWindow;
 
-void handleTheme() {
+void handleTheme()
+{
     auto theme = theme_listener.AppTheme;
     auto isDark = theme == AppTheme::Dark;
     Logger::info(L"Theme is now {}", isDark ? L"Dark" : L"Light");
     ThemeHelpers::SetImmersiveDarkMode(CurrentWindow, isDark);
+}
+
+// Disabled for now, because it causes indentation and icons to appear "asynchronously"
+// #define ENABLE_RECYCLING_VIRTUALIZATION_MODE
+
+CComPtr<IPowerRenameManager> g_prManager;
+std::function<void(void)> g_itemToggledCallback;
+
+winrt::Microsoft::UI::Xaml::Controls::ScrollViewer FindScrollViewer(winrt::Microsoft::UI::Xaml::DependencyObject start)
+{
+    int childrenCount = winrt::Microsoft::UI::Xaml::Media::VisualTreeHelper::GetChildrenCount(start);
+    for (int i = 0; i < childrenCount; i++)
+    {
+        auto obj = winrt::Microsoft::UI::Xaml::Media::VisualTreeHelper::GetChild(start, i);
+
+        if (auto sv = obj.try_as<winrt::Microsoft::UI::Xaml::Controls::ScrollViewer>())
+        {
+            return sv;
+        }
+        else
+        {
+            auto result = FindScrollViewer(obj);
+            if (result)
+            {
+                return result;
+            }
+        }
+    }
+    return nullptr;
+}
+
+PowerRenameUI::ExplorerItem FindFirstExplorerItemRecursive(winrt::Microsoft::UI::Xaml::DependencyObject startNode)
+{
+    auto explorerItem = startNode.try_as<PowerRenameUI::ExplorerItem>();
+    if (explorerItem)
+    {
+        return explorerItem;
+    }
+
+    int childCount = winrt::Microsoft::UI::Xaml::Media::VisualTreeHelper::GetChildrenCount(startNode);
+    for (int i = 0; i < childCount; ++i)
+    {
+        auto child = winrt::Microsoft::UI::Xaml::Media::VisualTreeHelper::GetChild(startNode, i);
+        explorerItem = FindFirstExplorerItemRecursive(child);
+        if (explorerItem)
+        {
+            return explorerItem;
+        }
+    }
+
+    return nullptr;
 }
 
 namespace winrt::PowerRenameUI::implementation
@@ -71,7 +122,7 @@ namespace winrt::PowerRenameUI::implementation
         POINT cursorPosition{};
         if (GetCursorPos(&cursorPosition))
         {
-            ::Windows::Graphics::PointInt32 point{ cursorPosition.x, cursorPosition.y};
+            ::Windows::Graphics::PointInt32 point{ cursorPosition.x, cursorPosition.y };
             Microsoft::UI::Windowing::DisplayArea displayArea = Microsoft::UI::Windowing::DisplayArea::GetFromPoint(point, Microsoft::UI::Windowing::DisplayAreaFallback::Nearest);
 
             HMONITOR hMonitor = MonitorFromPoint(cursorPosition, MONITOR_DEFAULTTOPRIMARY);
@@ -97,11 +148,19 @@ namespace winrt::PowerRenameUI::implementation
         }
 
         Title(hstring{ L"PowerRename" });
-        
+
         m_searchMRUList = winrt::single_threaded_observable_vector<hstring>();
         m_replaceMRUList = winrt::single_threaded_observable_vector<hstring>();
 
-        m_explorerItems = winrt::single_threaded_observable_vector<PowerRenameUI::ExplorerItem>();
+        std::function<void(void)> toggledCallback = [this] {
+            _TRACER_;
+            UpdateCounts();
+        };
+
+        g_itemToggledCallback.swap(toggledCallback);
+
+        m_explorerItems = winrt::make<ExplorerItemsSource>();
+        get_self<ExplorerItemsSource>(m_explorerItems)->SetIsFiltered(false);
 
         m_searchRegExShortcuts = winrt::single_threaded_observable_vector<PowerRenameUI::PatternSnippet>();
         auto factory = winrt::get_activation_factory<ResourceManager, IResourceManagerFactory>();
@@ -139,8 +198,34 @@ namespace winrt::PowerRenameUI::implementation
 
         InitializeComponent();
 
+        listView_ExplorerItems().ApplyTemplate();
+#ifdef ENABLE_RECYCLING_VIRTUALIZATION_MODE
+        if (auto scrollViewer = FindScrollViewer(listView_ExplorerItems()); scrollViewer)
+        {
+            Microsoft::UI::Xaml::DispatcherTimer debounceTimer = nullptr;
+
+            scrollViewer.ViewChanged([this, scrollViewer, timer = std::move(debounceTimer)](IInspectable const&, Microsoft::UI::Xaml::Controls::ScrollViewerViewChangedEventArgs const&) mutable {
+                if (!timer)
+                {
+                    timer = {};
+                    timer.Tick([this, &timer](auto&, auto&) {
+                        get_self<ExplorerItemsSource>(m_explorerItems)->InvalidateCollection();
+                        timer.Stop();
+                        timer = nullptr;
+                    });
+                }
+
+                using namespace std::chrono_literals;
+
+                winrt::Windows::Foundation::TimeSpan timeSpan{ 200ms };
+                timer.Interval(timeSpan);
+                timer.Start();
+            });
+        }
+#endif
         if (SUCCEEDED(CPowerRenameManager::s_CreateInstance(&m_prManager)))
         {
+            g_prManager = m_prManager;
             // Create the factory for our items
             CComPtr<IPowerRenameItemFactory> prItemFactory;
             if (SUCCEEDED(CPowerRenameItem::s_CreateInstance(nullptr, IID_PPV_ARGS(&prItemFactory))))
@@ -150,13 +235,10 @@ namespace winrt::PowerRenameUI::implementation
                     if (SUCCEEDED(m_prManager->Advise(&m_managerEvents, &m_cookie)))
                     {
                         CComPtr<IShellItemArray> shellItemArray;
-                        // To test PowerRename uncomment this line and update the path to
-                        // your local (absolute or relative) path which you want to see in PowerRename
-                        // g_files.push_back(<path>);
-
+                        // To test PowerRename uncomment DEBUG_BENCHMARK_100K_ENTRIES define
                         if (!g_files.empty())
                         {
-                            if (SUCCEEDED(CreateShellItemArrayFromPaths(g_files, &shellItemArray)))
+                            if (SUCCEEDED(CreateShellItemArrayFromPaths(std::move(g_files), &shellItemArray)))
                             {
                                 CComPtr<IEnumShellItems> enumShellItems;
                                 if (SUCCEEDED(shellItemArray->EnumItems(&enumShellItems)))
@@ -195,6 +277,12 @@ namespace winrt::PowerRenameUI::implementation
         button_rename().IsEnabled(false);
         InitAutoComplete();
         SearchReplaceChanged();
+        InvalidateItemListViewState();
+    }
+
+    void MainWindow::InvalidateItemListViewState()
+    {
+        get_self<ExplorerItemsSource>(m_explorerItems)->InvalidateCollection();
     }
 
     winrt::event_token MainWindow::PropertyChanged(Microsoft::UI::Xaml::Data::PropertyChangedEventHandler const& handler)
@@ -209,7 +297,9 @@ namespace winrt::PowerRenameUI::implementation
 
     hstring MainWindow::OriginalCount()
     {
-        return hstring{ std::to_wstring(m_explorerItems.Size()) };
+        UINT count = 0;
+        m_prManager->GetItemCount(&count);
+        return hstring{ std::to_wstring(count) };
     }
 
     void MainWindow::OriginalCount(hstring)
@@ -227,46 +317,6 @@ namespace winrt::PowerRenameUI::implementation
         m_propertyChanged(*this, Microsoft::UI::Xaml::Data::PropertyChangedEventArgs{ L"RenamedCount" });
     }
 
-    void MainWindow::AddExplorerItem(int32_t id, hstring const& original, hstring const& renamed, int32_t type, uint32_t depth, bool checked)
-    {
-        auto newItem = winrt::make<PowerRenameUI::implementation::ExplorerItem>(id, original, renamed, type, depth, checked);
-        newItem.PropertyChanged([this](Windows::Foundation::IInspectable const& sender, Microsoft::UI::Xaml::Data::PropertyChangedEventArgs const& e) {
-            auto item = sender.as<ExplorerItem>();
-            std::wstring property{ e.PropertyName() };
-
-            if (item && property == L"Checked")
-            {
-                ToggleItem(item->Id(), item->Checked());
-            }
-        });
-        m_explorerItems.Append(newItem);
-        m_explorerItemsMap[id] = newItem;
-    }
-
-    void MainWindow::UpdateExplorerItem(int32_t id, std::optional<hstring> newOriginalName, std::optional<hstring> newName, PowerRenameItemRenameStatus itemStatus)
-    {
-        auto itemToUpdate = FindById(id);
-        if (itemToUpdate != NULL)
-        {
-            if (newOriginalName.has_value())
-            {
-                itemToUpdate.Original(*newOriginalName);
-            }
-
-            if (newName.has_value())
-            {
-                itemToUpdate.Renamed(*newName);
-            }
-
-            itemToUpdate.State(static_cast<int32_t>(itemStatus));
-        }
-    }
-
-    PowerRenameUI::ExplorerItem MainWindow::FindById(int32_t id)
-    {
-        return m_explorerItemsMap.contains(id) ? m_explorerItemsMap[id] : NULL;
-    }
-
     void MainWindow::SelectAll(winrt::Windows::Foundation::IInspectable const&, winrt::Microsoft::UI::Xaml::RoutedEventArgs const&)
     {
         if (checkBox_selectAll().IsChecked().GetBoolean() != m_allSelected)
@@ -275,11 +325,9 @@ namespace winrt::PowerRenameUI::implementation
             m_allSelected = !m_allSelected;
             if (button_showRenamed().IsChecked())
             {
-                m_explorerItems.Clear();
-                m_explorerItemsMap.clear();
-                PopulateExplorerItems();
                 UpdateCounts();
             }
+            InvalidateItemListViewState();
         }
     }
 
@@ -292,11 +340,9 @@ namespace winrt::PowerRenameUI::implementation
         m_prManager->GetFilter(&filter);
         if (filter != PowerRenameFilters::None)
         {
-            m_explorerItems.Clear();
-            m_explorerItemsMap.clear();
             m_prManager->SwitchFilter(0);
-            PopulateExplorerItems();
-            UpdateCounts();
+            get_self<ExplorerItemsSource>(m_explorerItems)->SetIsFiltered(false);
+            InvalidateItemListViewState();
         }
     }
 
@@ -309,11 +355,10 @@ namespace winrt::PowerRenameUI::implementation
         m_prManager->GetFilter(&filter);
         if (filter != PowerRenameFilters::ShouldRename)
         {
-            m_explorerItems.Clear();
-            m_explorerItemsMap.clear();
             m_prManager->SwitchFilter(0);
-            PopulateExplorerItems();
             UpdateCounts();
+            get_self<ExplorerItemsSource>(m_explorerItems)->SetIsFiltered(true);
+            InvalidateItemListViewState();
         }
     }
 
@@ -391,42 +436,6 @@ namespace winrt::PowerRenameUI::implementation
 
         delete[] itemList;
         return hr;
-    }
-
-    void MainWindow::PopulateExplorerItems()
-    {
-        _TRACER_;
-
-        UINT count = 0;
-        m_prManager->GetVisibleItemCount(&count);
-        Logger::debug(L"Number of visible items: {}", count);
-
-        for (UINT i = 0; i < count; ++i)
-        {
-            CComPtr<IPowerRenameItem> renameItem;
-            if (SUCCEEDED(m_prManager->GetVisibleItemByIndex(i, &renameItem)))
-            {
-                int id = 0;
-                renameItem->GetId(&id);
-
-                PWSTR originalName = nullptr;
-                renameItem->GetOriginalName(&originalName);
-                PWSTR newName = nullptr;
-                renameItem->GetNewName(&newName);
-
-                bool selected;
-                renameItem->GetSelected(&selected);
-
-                UINT depth = 0;
-                renameItem->GetDepth(&depth);
-
-                bool isFolder = false;
-                winrt::check_hresult(renameItem->GetIsFolder(&isFolder));
-
-                AddExplorerItem(
-                    id, originalName, newName == nullptr ? hstring{} : hstring{ newName }, isFolder ? 0 : 1, depth, selected);
-            }
-        }
     }
 
     HRESULT MainWindow::InitAutoComplete()
@@ -573,6 +582,8 @@ namespace winrt::PowerRenameUI::implementation
         {
             m_prManager->PutFlags(flags);
         }
+
+        InvalidateItemListViewState();
     }
 
     void MainWindow::SetHandlers()
@@ -742,11 +753,6 @@ namespace winrt::PowerRenameUI::implementation
             if (SUCCEEDED(m_prManager->GetItemByIndex(i, &spItem)))
             {
                 spItem->PutSelected(selected);
-                int id = 0;
-                spItem->GetId(&id);
-                auto item = FindById(id);
-                if (item)
-                    item.Checked(selected);
             }
         }
         UpdateCounts();
@@ -757,7 +763,6 @@ namespace winrt::PowerRenameUI::implementation
         _TRACER_;
 
         m_prManager->SwitchFilter(0);
-        PopulateExplorerItems();
         UpdateCounts();
     }
 
@@ -976,73 +981,11 @@ namespace winrt::PowerRenameUI::implementation
             button_rename().IsEnabled(renamingCount > 0);
         }
 
-        OriginalCount(hstring{ std::to_wstring(m_explorerItems.Size()) });
         RenamedCount(hstring{ std::to_wstring(m_renamingCount) });
     }
 
-    HRESULT MainWindow::OnItemAdded(_In_ IPowerRenameItem* renameItem)
+    HRESULT MainWindow::OnRename(_In_ IPowerRenameItem* /*renameItem*/)
     {
-        int id = 0;
-        renameItem->GetId(&id);
-
-        PWSTR originalName = nullptr;
-        renameItem->GetOriginalName(&originalName);
-        PWSTR newName = nullptr;
-        renameItem->GetNewName(&newName);
-
-        bool selected;
-        renameItem->GetSelected(&selected);
-
-        UINT depth = 0;
-        renameItem->GetDepth(&depth);
-
-        bool isFolder = false;
-        winrt::check_hresult(renameItem->GetIsFolder(&isFolder));
-
-        AddExplorerItem(
-            id, originalName, newName == nullptr ? hstring{} : hstring{ newName }, isFolder ? 0 : 1, depth, selected);
-
-        return S_OK;
-    }
-
-    HRESULT MainWindow::OnUpdate(_In_ IPowerRenameItem* renameItem)
-    {
-        int id;
-        HRESULT hr = renameItem->GetId(&id);
-        if (SUCCEEDED(hr))
-        {
-            PWSTR newName = nullptr;
-            hr = renameItem->GetNewName(&newName);
-            if (SUCCEEDED(hr))
-            {
-                PowerRenameItemRenameStatus status;
-                hr = renameItem->GetStatus(&status);
-                if (SUCCEEDED(hr))
-                {
-                    hstring newNameStr = newName == nullptr ? hstring{} : newName;
-                    UpdateExplorerItem(id, std::nullopt, newNameStr, status);
-                }
-            }
-        }
-
-        return S_OK;
-    }
-
-    HRESULT MainWindow::OnRename(_In_ IPowerRenameItem* renameItem)
-    {
-        int id;
-        HRESULT hr = renameItem->GetId(&id);
-        if (SUCCEEDED(hr))
-        {
-            PWSTR newName = nullptr;
-            hr = renameItem->GetOriginalName(&newName);
-            if (SUCCEEDED(hr))
-            {
-                hstring newNameStr = newName == nullptr ? hstring{} : newName;
-                UpdateExplorerItem(id, newNameStr, L"", PowerRenameItemRenameStatus::Init);
-            }
-        }
-
         UpdateCounts();
         return S_OK;
     }
@@ -1055,18 +998,9 @@ namespace winrt::PowerRenameUI::implementation
         {
             m_flagValidationInProgress = false;
         }
-        else
-        {
-            DWORD filter = 0;
-            m_prManager->GetFilter(&filter);
-            if (filter == PowerRenameFilters::ShouldRename)
-            {
-                m_explorerItems.Clear();
-                PopulateExplorerItems();
-            }
-        }
 
         UpdateCounts();
+        InvalidateItemListViewState();
         return S_OK;
     }
 
@@ -1078,14 +1012,16 @@ namespace winrt::PowerRenameUI::implementation
         if (closeUIWindowAfterRenaming)
         {
             // Close the window
-            PostMessage(m_window, WM_CLOSE, static_cast<WPARAM>(0),  static_cast<LPARAM>(0));
+            PostMessage(m_window, WM_CLOSE, static_cast<WPARAM>(0), static_cast<LPARAM>(0));
         }
         else
         {
             // Force renaming work to start so newly renamed items are processed right away
             SearchReplaceChanged(true);
         }
+
+        InvalidateItemListViewState();
+
         return S_OK;
     }
 }
-
