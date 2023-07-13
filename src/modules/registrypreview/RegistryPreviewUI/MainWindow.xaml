@@ -13,7 +13,7 @@
     <Window.SystemBackdrop>
         <MicaBackdrop />
     </Window.SystemBackdrop>
-    
+
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
@@ -24,36 +24,38 @@
             Grid.Row="0"
             Height="32"
             ColumnSpacing="16"
+            Margin="16,0"
             IsHitTestVisible="True">
             <Grid.ColumnDefinitions>
-                <ColumnDefinition x:Name="LeftPaddingColumn" Width="0"/>
+                <!--<ColumnDefinition x:Name="LeftPaddingColumn" Width="0"/>-->
                 <ColumnDefinition x:Name="IconColumn" Width="Auto"/>
                 <ColumnDefinition x:Name="TitleColumn" Width="Auto"/>
-                <ColumnDefinition x:Name="RightPaddingColumn" Width="0"/>
+                <!--<ColumnDefinition x:Name="RightPaddingColumn" Width="0"/>-->
             </Grid.ColumnDefinitions>
             <Image
                 Source="app.ico"
-                Grid.Column="1"
+                Grid.Column="0"
                 VerticalAlignment="Center"
                 Width="16"
                 Height="16"/>
             <TextBlock
                 x:Name="titleBarText"
-                Grid.Column="2"
+                Grid.Column="1"
                 VerticalAlignment="Center"
                 Style="{StaticResource CaptionTextBlockStyle}"
                 Text="{Binding ApplicationTitle}" />
         </Grid>
 
         <Grid
-            Grid.Row="1"
             x:Name="gridPreview"
+            Grid.Row="1"
             Width="Auto"
             Height="Auto"
             x:FieldModifier="public"
             Loaded="GridPreview_Loaded"
             TabFocusNavigation="Cycle"
-            Margin="16,0,16,16">
+            Margin="12"
+            RowSpacing="12">
             <Grid.Resources>
                 <Style x:Key="GridCardStyle" TargetType="Border">
                     <Style.Setters>
@@ -78,102 +80,96 @@
                 <RowDefinition Height="*" />
             </Grid.RowDefinitions>
 
-            <CommandBar
-                Name="commandBar"
+            <Border Style="{StaticResource GridCardStyle}"
                 Grid.Row="0"
                 Grid.Column="0"
-                Grid.ColumnSpan="3"
-                HorizontalAlignment="Left"
-                DefaultLabelPosition="Right">
+                Grid.ColumnSpan="3">
 
-                <AppBarButton
-                        x:Name="openButton"
-                        x:Uid="OpenButton"
-                        Click="OpenButton_Click">
-                    <AppBarButton.Icon>
-                        <FontIcon Glyph="&#xe8e5;"/>
-                    </AppBarButton.Icon>
-                    <AppBarButton.KeyboardAccelerators>
-                        <KeyboardAccelerator Key="O" Modifiers="Control" />
-                    </AppBarButton.KeyboardAccelerators>
-                </AppBarButton>
-                <AppBarButton
-                        x:Name="refreshButton"
-                        x:Uid="RefreshButton"
-                        Click="RefreshButton_Click">
-                    <AppBarButton.Icon>
-                        <FontIcon Glyph="&#xe72c;"/>
-                    </AppBarButton.Icon>
-                    <AppBarButton.KeyboardAccelerators>
-                        <KeyboardAccelerator Key="F5" />
-                    </AppBarButton.KeyboardAccelerators>
-                </AppBarButton>
-                <AppBarSeparator />
-                <AppBarButton
-                        x:Name="saveButton"
-                        x:Uid="SaveButton"
-                        Click="SaveButton_Click"
-                        IsEnabled="False">
-                    <AppBarButton.Icon>
-                        <FontIcon Glyph="&#xe74e;"/>
-                    </AppBarButton.Icon>
-                    <AppBarButton.KeyboardAccelerators>
-                        <KeyboardAccelerator Key="S" Modifiers="Control" />
-                    </AppBarButton.KeyboardAccelerators>
-                </AppBarButton>
-                <AppBarButton
-                        x:Name="saveAsButton"
-                        x:Uid="SaveAsButton"
-                        Click="SaveAsButton_Click"
-                        IsEnabled="True">
-                    <AppBarButton.Icon>
-                        <FontIcon Glyph="&#xe792;"/>
-                    </AppBarButton.Icon>
-                    <AppBarButton.KeyboardAccelerators>
-                        <KeyboardAccelerator Key="S" Modifiers="Control,Shift" />
-                    </AppBarButton.KeyboardAccelerators>
-                </AppBarButton>
-                <AppBarSeparator />
-                <AppBarButton
-                        x:Name="editButton"
-                        x:Uid="EditButton"
-                        Click="EditButton_Click">
-                    <AppBarButton.Icon>
-                        <FontIcon Glyph="&#xE70F;"/>
-                    </AppBarButton.Icon>
-                    <AppBarButton.KeyboardAccelerators>
-                        <KeyboardAccelerator Key="E" Modifiers="Control" />
-                    </AppBarButton.KeyboardAccelerators>
-                </AppBarButton>
-                <AppBarButton
+                <CommandBar
+                    Name="commandBar"
+                    HorizontalAlignment="Left"
+                    DefaultLabelPosition="Right">
+
+                    <AppBarButton
+                    x:Name="openButton"
+                    x:Uid="OpenButton"
+                    Click="OpenButton_Click">
+                        <AppBarButton.Icon>
+                            <FontIcon Glyph="&#xe8e5;"/>
+                        </AppBarButton.Icon>
+                        <AppBarButton.KeyboardAccelerators>
+                            <KeyboardAccelerator Key="O" Modifiers="Control" />
+                        </AppBarButton.KeyboardAccelerators>
+                    </AppBarButton>
+                    <AppBarButton
+                    x:Name="refreshButton"
+                    x:Uid="RefreshButton"
+                    Icon="Refresh"
+                    Click="RefreshButton_Click">
+                        <AppBarButton.KeyboardAccelerators>
+                            <KeyboardAccelerator Key="F5" />
+                        </AppBarButton.KeyboardAccelerators>
+                    </AppBarButton>
+                    <AppBarSeparator />
+                    <AppBarButton
+                    x:Name="saveButton"
+                    x:Uid="SaveButton"
+                    Icon="Save"
+                    Click="SaveButton_Click"
+                    IsEnabled="False">
+                        <AppBarButton.KeyboardAccelerators>
+                            <KeyboardAccelerator Key="S" Modifiers="Control" />
+                        </AppBarButton.KeyboardAccelerators>
+                    </AppBarButton>
+                    <AppBarButton
+                    x:Name="saveAsButton"
+                    x:Uid="SaveAsButton"
+                    Click="SaveAsButton_Click"
+                    IsEnabled="True">
+                        <AppBarButton.Icon>
+                            <FontIcon Glyph="&#xe792;"/>
+                        </AppBarButton.Icon>
+                        <AppBarButton.KeyboardAccelerators>
+                            <KeyboardAccelerator Key="S" Modifiers="Control,Shift" />
+                        </AppBarButton.KeyboardAccelerators>
+                    </AppBarButton>
+                    <AppBarSeparator />
+                    <AppBarButton
+                    x:Name="editButton"
+                    x:Uid="EditButton"
+                    Icon="Edit"
+                    Click="EditButton_Click">
+                        <AppBarButton.KeyboardAccelerators>
+                            <KeyboardAccelerator Key="E" Modifiers="Control" />
+                        </AppBarButton.KeyboardAccelerators>
+                    </AppBarButton>
+                    <AppBarButton
                         x:Name="writeButton"
                         x:Uid="WriteButton"
                         Click="WriteButton_Click">
-                    <AppBarButton.Icon>
-                        <FontIcon Glyph="&#xe72d;"/>
-                    </AppBarButton.Icon>
-                    <AppBarButton.KeyboardAccelerators>
-                        <KeyboardAccelerator Key="W" Modifiers="Control" />
-                    </AppBarButton.KeyboardAccelerators>
-                </AppBarButton>
-                <AppBarButton
+                        <AppBarButton.KeyboardAccelerators>
+                            <KeyboardAccelerator Key="W" Modifiers="Control" />
+                        </AppBarButton.KeyboardAccelerators>
+                    </AppBarButton>
+                    <AppBarButton
                         x:Name="registryButton"
                         x:Uid="RegistryButton"
                         Click="RegistryButton_Click">
-                    <AppBarButton.KeyboardAccelerators>
-                        <KeyboardAccelerator Key="R" Modifiers="Control" />
-                    </AppBarButton.KeyboardAccelerators>
-                </AppBarButton>
-                <AppBarButton
+                        <AppBarButton.KeyboardAccelerators>
+                            <KeyboardAccelerator Key="R" Modifiers="Control" />
+                        </AppBarButton.KeyboardAccelerators>
+                    </AppBarButton>
+                    <AppBarButton
                         x:Name="registryJumpToKeyButton"
                         x:Uid="RegistryJumpToKeyButton"
                         Click="RegistryJumpToKeyButton_Click"
                         IsEnabled="True">
-                    <AppBarButton.KeyboardAccelerators>
-                        <KeyboardAccelerator Key="R" Modifiers="Control,Shift" />
-                    </AppBarButton.KeyboardAccelerators>
-                </AppBarButton>
-            </CommandBar>
+                        <AppBarButton.KeyboardAccelerators>
+                            <KeyboardAccelerator Key="R" Modifiers="Control,Shift" />
+                        </AppBarButton.KeyboardAccelerators>
+                    </AppBarButton>
+                </CommandBar>
+            </Border>
 
             <TextBox
                 x:Name="textBox"

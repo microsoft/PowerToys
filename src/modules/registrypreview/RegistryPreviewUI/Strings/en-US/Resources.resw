@@ -173,7 +173,7 @@
     <value>Reload</value>
   </data>
   <data name="RegistryButton.Label" xml:space="preserve">
-    <value>Open Registry editor</value>
+    <value>Open Registry Editor</value>
   </data>
   <data name="RegistryJumpToKeyButton.Label" xml:space="preserve">
     <value>Open Key</value>
