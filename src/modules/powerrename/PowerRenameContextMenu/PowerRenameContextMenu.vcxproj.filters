@@ -34,10 +34,31 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <None Include="packages.config" />
     <None Include="Assets\**">
       <Filter>Resource Files</Filter>
     </None>
+    <None Include="Assets\**">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="Assets\**">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="Assets\**">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="Assets\**">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="Assets\**">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="Assets\**">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="PowerRenameUI.ico">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="PowerRenameContextMenu.rc">
@@ -63,11 +84,11 @@
     <Image Include="Assets\Wide310x150Logo.png">
       <Filter>Resource Files</Filter>
     </Image>
-    <Image Include="Assets\*.png">
-      <Filter>Resource Files</Filter>
-    </Image>
     <Image Include="Assets\SplashScreen.png">
       <Filter>Resource Files</Filter>
     </Image>
+  </ItemGroup>
+  <ItemGroup>
+    <Natvis Include="$(MSBuildThisFileDirectory)..\..\natvis\wil.natvis" />
   </ItemGroup>
 </Project>

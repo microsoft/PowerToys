@@ -103,13 +103,16 @@
     <CopyFileToFolders Include="svgs\icon.ico" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="packages.config" />
     <None Include="runner.base.rc" />
+    <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
     <Manifest Include="PowerToys.exe.manifest" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="Generated Files/runner.rc" />
+  </ItemGroup>
+  <ItemGroup>
+    <Natvis Include="$(MSBuildThisFileDirectory)..\..\natvis\wil.natvis" />
   </ItemGroup>
 </Project>

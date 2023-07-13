@@ -57,7 +57,6 @@
     </Image>
   </ItemGroup>
   <ItemGroup>
-    <None Include="packages.config" />
     <None Include="Icons\Off-NotInUse Dark.svg">
       <Filter>Icons</Filter>
     </None>
@@ -94,6 +93,7 @@
     <None Include="Icons\On-On Light.svg">
       <Filter>Icons</Filter>
     </None>
+    <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Icons">
@@ -102,5 +102,8 @@
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="VideoConferenceModule.rc" />
+  </ItemGroup>
+  <ItemGroup>
+    <Natvis Include="$(MSBuildThisFileDirectory)..\..\natvis\wil.natvis" />
   </ItemGroup>
 </Project>
