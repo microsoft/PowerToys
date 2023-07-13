@@ -96,7 +96,6 @@ namespace winrt::PowerRenameUI::implementation
     using ItemT = IInspectable;
     struct ExplorerItemsSource : ExplorerItemsSourceT<ExplorerItemsSource>, winrt::vector_view_base<ExplorerItemsSource, ItemT>
     {
-        std::vector<PowerRenameUI::ExplorerItemViewModel> items;
         bool filtered = false;
 
         struct Container
