@@ -469,7 +469,7 @@ namespace PowerLauncher
                 return;
             }
 
-            if (e.Key == Key.Tab && Keyboard.IsKeyDown(Key.LeftShift))
+            if (e.Key == Key.Tab && (Keyboard.IsKeyDown(Key.LeftShift) || Keyboard.IsKeyDown(Key.RightShift)))
             {
                 _viewModel.SelectPrevTabItemCommand.Execute(null);
                 UpdateTextBoxToSelectedItem();
