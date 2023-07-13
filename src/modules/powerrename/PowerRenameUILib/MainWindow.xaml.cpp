@@ -277,6 +277,7 @@ namespace winrt::PowerRenameUI::implementation
         button_rename().IsEnabled(false);
         InitAutoComplete();
         SearchReplaceChanged();
+        InvalidateItemListViewState();
     }
 
     void MainWindow::InvalidateItemListViewState()
