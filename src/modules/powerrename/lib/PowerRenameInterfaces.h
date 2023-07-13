@@ -133,8 +133,7 @@ public:
     IFACEMETHOD(PutRenameRegEx)(_In_ IPowerRenameRegEx* pRegEx) = 0;
     IFACEMETHOD(GetRenameItemFactory)(_COM_Outptr_ IPowerRenameItemFactory** ppItemFactory) = 0;
     IFACEMETHOD(PutRenameItemFactory)(_In_ IPowerRenameItemFactory* pItemFactory) = 0;
-    virtual const std::vector<uint32_t>& GetRenamedItemsIndices() const = 0;
-    IFACEMETHOD(PutRenamedItemsIndices)(_In_ std::vector<uint32_t> indices) = 0;
+    virtual uint32_t GetVisibleItemRealIndex(const uint32_t index) const = 0;
 };
 
 interface __declspec(uuid("04AAFABE-B76E-4E13-993A-B5941F52B139")) IPowerRenameMRU : public IUnknown

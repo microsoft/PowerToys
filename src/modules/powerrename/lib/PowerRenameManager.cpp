@@ -206,23 +206,30 @@ IFACEMETHODIMP CPowerRenameManager::GetVisibleItemByIndex(_In_ UINT index, _COM_
     }
     else if (SUCCEEDED(GetVisibleItemCount(&count)) && index < count)
     {
-        UINT realIndex = 0, visibleIndex = 0;
-        for (size_t i = 0; i < m_isVisible.size(); i++)
-        {
-            if (m_isVisible[i] && visibleIndex == index)
-            {
-                realIndex = static_cast<UINT>(i);
-                break;
-            }
-            if (m_isVisible[i])
-            {
-                visibleIndex++;
-            }
-        }
+        const UINT realIndex = GetVisibleItemRealIndex(index);
         hr = GetItemByIndex(realIndex, ppItem);
     }
 
     return hr;
+}
+
+uint32_t CPowerRenameManager::GetVisibleItemRealIndex(const uint32_t index) const
+{
+    UINT realIndex = 0, visibleIndex = 0;
+    for (size_t i = 0; i < m_isVisible.size(); i++)
+    {
+        if (m_isVisible[i] && visibleIndex == index)
+        {
+            realIndex = static_cast<UINT>(i);
+            break;
+        }
+        if (m_isVisible[i])
+        {
+            visibleIndex++;
+        }
+    }
+
+    return realIndex;
 }
 
 IFACEMETHODIMP CPowerRenameManager::GetItemById(_In_ int id, _COM_Outptr_ IPowerRenameItem** ppItem)
@@ -423,17 +430,6 @@ IFACEMETHODIMP CPowerRenameManager::GetRenameItemFactory(_COM_Outptr_ IPowerRena
     return hr;
 }
 
-const std::vector<uint32_t>& CPowerRenameManager::GetRenamedItemsIndices() const
-{
-    return m_renamedItemsIndices;
-}
-
-IFACEMETHODIMP CPowerRenameManager::PutRenamedItemsIndices(_In_ std::vector<uint32_t> indices)
-{
-    m_renamedItemsIndices = std::move(indices);
-    return S_OK;
-}
-
 IFACEMETHODIMP CPowerRenameManager::PutRenameItemFactory(_In_ IPowerRenameItemFactory* pItemFactory)
 {
     m_spItemFactory = pItemFactory;
@@ -556,7 +552,7 @@ LRESULT CPowerRenameManager::_WndProc(_In_ HWND hwnd, _In_ UINT msg, _In_ WPARAM
     AddRef();
 
     switch (msg)
-    { 
+    {
     case SRM_REGEX_ITEM_UPDATED:
     {
         // Do nothing.
@@ -930,7 +926,6 @@ DWORD WINAPI CPowerRenameManager::s_regexWorkerThread(_In_ void* pv)
                 unsigned long itemEnumIndex = 1;
                 winrt::check_hresult(pwtd->spsrm->GetItemCount(&itemCount));
 
-                std::vector<uint32_t> itemsToBeRenamed;
                 for (UINT u = 0; u < itemCount; u++)
                 {
                     // Check if cancel event is signaled
@@ -945,13 +940,8 @@ DWORD WINAPI CPowerRenameManager::s_regexWorkerThread(_In_ void* pv)
                     CComPtr<IPowerRenameItem> spItem;
                     winrt::check_hresult(pwtd->spsrm->GetItemByIndex(u, &spItem));
 
-                    if (DoRename(spRenameRegEx, itemEnumIndex, spItem))
-                    {
-                        itemsToBeRenamed.push_back(u);
-                    }
+                    DoRename(spRenameRegEx, itemEnumIndex, spItem);
                 }
-
-                pwtd->spsrm->PutRenamedItemsIndices(std::move(itemsToBeRenamed));
             }
 
             // Send the manager thread the completion message

@@ -43,9 +43,8 @@ public:
     IFACEMETHODIMP GetRenameItemFactory(_COM_Outptr_ IPowerRenameItemFactory** ppItemFactory);
     IFACEMETHODIMP PutRenameItemFactory(_In_ IPowerRenameItemFactory* pItemFactory);
     
-    const std::vector<uint32_t>& GetRenamedItemsIndices() const override;
-    IFACEMETHODIMP PutRenamedItemsIndices(_In_ std::vector<uint32_t> indices);
-
+    uint32_t GetVisibleItemRealIndex(const uint32_t index) const override;
+    
     // IPowerRenameRegExEvents
     IFACEMETHODIMP OnSearchTermChanged(_In_ PCWSTR searchTerm);
     IFACEMETHODIMP OnReplaceTermChanged(_In_ PCWSTR replaceTerm);
@@ -112,8 +111,6 @@ protected:
     DWORD m_regExAdviseCookie = 0;
 
     DWORD m_filter = PowerRenameFilters::None;
-
-    std::vector<uint32_t> m_renamedItemsIndices;
 
     struct RENAME_MGR_EVENT
     {

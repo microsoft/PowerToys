@@ -32,11 +32,10 @@ namespace winrt::PowerRenameUI::implementation
 
         reference operator*() const
         {
-            const auto& indices = g_prManager->GetRenamedItemsIndices();
-            const bool filteringEnded = _index < indices.size();
-            if (*_filtered && filteringEnded)
+            const uint32_t realIndex = g_prManager->GetVisibleItemRealIndex(_index);
+            if (*_filtered)
             {
-                return winrt::make<ExplorerItemViewModel>(indices[_index]);
+                return winrt::make<ExplorerItemViewModel>(realIndex);
             }
             else
                 return winrt::make<ExplorerItemViewModel>(_index);
@@ -123,7 +122,7 @@ namespace winrt::PowerRenameUI::implementation
 
             uint32_t item_count = 0;
             if (value)
-                winrt::check_hresult(g_prManager->GetRenameItemCount(&item_count));
+                winrt::check_hresult(g_prManager->GetVisibleItemCount(&item_count));
             else
                 winrt::check_hresult(g_prManager->GetItemCount(&item_count));
 
