@@ -95,7 +95,7 @@
                     IncrementalLoadingThreshold="10"
                     ItemsSource="{x:Bind ViewModel.Processes}"
                     SelectionMode="None"
-                    Padding="12,0,12,12">
+                    Padding="0,0,0,12">
                     <ListView.ItemTemplate>
                         <DataTemplate x:DataType="interop:ProcessResult">
                             <labs:SettingsExpander Margin="0,0,0,4">
@@ -139,8 +139,7 @@
                                                     FontSize="16"
                                                     Glyph="&#xf140;" />
                                                 <TextBlock
-                                                    x:Uid="EndTask"
-                                                    FontSize="16" />
+                                                    x:Uid="EndTask"/>
                                             </StackPanel>
                                         </Button>
                                     </StackPanel>
