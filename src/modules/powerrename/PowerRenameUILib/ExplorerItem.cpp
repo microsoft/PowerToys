@@ -4,8 +4,6 @@
 #include "ExplorerItem.g.cpp"
 #endif
 
-#include <ExplorerItemsSource.h>
-
 using namespace winrt;
 using namespace Microsoft::UI::Xaml;
 using namespace Microsoft::Windows::ApplicationModel::Resources;
