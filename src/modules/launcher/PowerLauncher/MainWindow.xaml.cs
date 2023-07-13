@@ -358,10 +358,18 @@ namespace PowerLauncher
                 _isTextSetProgrammatically = true;
                 if (_viewModel.Results != null)
                 {
-                    SearchBox.QueryTextBox.Text = MainViewModel.GetSearchText(
+                    string newText = MainViewModel.GetSearchText(
                         _viewModel.Results.SelectedIndex,
                         _viewModel.SystemQueryText,
                         _viewModel.QueryText);
+                    if (SearchBox.QueryTextBox.Text != newText)
+                    {
+                        SearchBox.QueryTextBox.Text = newText;
+                    }
+                    else
+                    {
+                        _isTextSetProgrammatically = false;
+                    }
                 }
             }
         }
@@ -455,6 +463,12 @@ namespace PowerLauncher
 
         private void Launcher_KeyDown(object sender, KeyEventArgs e)
         {
+            // ignoring key presses while the previous key press processing is ongoing (affects only the down, up keys)
+            if (_isTextSetProgrammatically)
+            {
+                return;
+            }
+
             if (e.Key == Key.Tab && Keyboard.IsKeyDown(Key.LeftShift))
             {
                 _viewModel.SelectPrevTabItemCommand.Execute(null);
