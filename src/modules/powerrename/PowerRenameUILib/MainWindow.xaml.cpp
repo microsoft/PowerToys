@@ -32,7 +32,6 @@ using namespace winrt::Microsoft::Windows::ApplicationModel::Resources;
 const std::wstring PowerRenameUIIco = L"PowerRenameUI.ico";
 const wchar_t c_WindowClass[] = L"PowerRename";
 HINSTANCE g_hostHInst;
-winrt::Microsoft::UI::Xaml::Controls::ListView g_ExplorerItemsListView = nullptr;
 
 extern std::vector<std::wstring> g_files;
 
@@ -199,11 +198,9 @@ namespace winrt::PowerRenameUI::implementation
 
         InitializeComponent();
 
-        g_ExplorerItemsListView = listView_ExplorerItems();
-
-        g_ExplorerItemsListView.ApplyTemplate();
+        listView_ExplorerItems().ApplyTemplate();
 #ifdef ENABLE_RECYCLING_VIRTUALIZATION_MODE
-        if (auto scrollViewer = FindScrollViewer(g_ExplorerItemsListView); scrollViewer)
+        if (auto scrollViewer = FindScrollViewer(listView_ExplorerItems()); scrollViewer)
         {
             Microsoft::UI::Xaml::DispatcherTimer debounceTimer = nullptr;
 
