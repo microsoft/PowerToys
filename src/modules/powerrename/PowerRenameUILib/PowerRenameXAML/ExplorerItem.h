@@ -6,7 +6,7 @@
 #include "winrt/Microsoft.UI.Xaml.Controls.Primitives.h"
 #include "ExplorerItem.g.h"
 #include "PowerRenameInterfaces.h"
-#include "Utils.h"
+#include "..\Utils.h"
 
 namespace winrt::PowerRenameUI::implementation
 {

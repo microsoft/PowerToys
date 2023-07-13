@@ -1,4 +1,4 @@
-import "ExplorerItem.idl";
+import "PowerRenameXAML\ExplorerItem.idl";
 import "ExplorerItemsSource.idl";
 import "PatternSnippet.idl";
 
