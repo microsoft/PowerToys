@@ -183,9 +183,9 @@ call "..\..\..\publish.cmd" arm64
 	<Target Name="BeforeBuild">
 	</Target>
 	<Target Name="AfterBuild">
-	</Target>
+	</Target> -->
   <Target Name="BeforeBuild">
-    <HeatDirectory Directory="..\..\src\modules\FileExplorerPreview\monacoSRC"
+    <HeatDirectory Directory="..\..\src\common\FilePreviewCommon\monacoSRC"
       PreprocessorVariable="var.MonacoSRCHarvestPath"
       OutputFile="MonacoSRC.wxs"
       ComponentGroupName="MonacoSRCHeatGenerated"
@@ -197,6 +197,6 @@ call "..\..\..\publish.cmd" arm64
       SuppressFragments="false"
       SuppressRegistry="false"
       SuppressRootDirectory="true"/>
-  </Target>	-->
+  </Target>
 
 </Project>
