@@ -220,7 +220,7 @@ FancyZones::Run() noexcept
 
     UpdateHotkey(static_cast<int>(HotkeyId::Editor), FancyZonesSettings::settings().editorHotkey, true);
     UpdateHotkey(static_cast<int>(HotkeyId::PrevTab), FancyZonesSettings::settings().prevTabHotkey, FancyZonesSettings::settings().windowSwitching);
-    UpdateHotkey(static_cast<int>(HotkeyId::NextTab), FancyZonesSettings::settings().prevTabHotkey, FancyZonesSettings::settings().windowSwitching);
+    UpdateHotkey(static_cast<int>(HotkeyId::NextTab), FancyZonesSettings::settings().nextTabHotkey, FancyZonesSettings::settings().windowSwitching);
 
     // Initialize COM. Needed for WMI monitor identifying
     HRESULT comInitHres = CoInitializeEx(0, COINIT_MULTITHREADED);
@@ -1161,7 +1161,7 @@ void FancyZones::SettingsUpdate(SettingId id)
     case SettingId::WindowSwitching:
     {
         UpdateHotkey(static_cast<int>(HotkeyId::PrevTab), FancyZonesSettings::settings().prevTabHotkey, FancyZonesSettings::settings().windowSwitching);
-        UpdateHotkey(static_cast<int>(HotkeyId::NextTab), FancyZonesSettings::settings().prevTabHotkey, FancyZonesSettings::settings().windowSwitching);
+        UpdateHotkey(static_cast<int>(HotkeyId::NextTab), FancyZonesSettings::settings().nextTabHotkey, FancyZonesSettings::settings().windowSwitching);
     }
     break;
     case SettingId::PrevTabHotkey:
