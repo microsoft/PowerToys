@@ -853,7 +853,7 @@ namespace winrt::PowerRenameUI::implementation
     HRESULT MainWindow::OpenSettingsApp()
     {
         std::wstring path = get_module_folderpath(g_hostHInst);
-        path += L"\\..\\..\\PowerToys.exe";
+        path += L"\\..\\PowerToys.exe";
 
         std::wstring openSettings = L"--open-settings=PowerRename";
 
