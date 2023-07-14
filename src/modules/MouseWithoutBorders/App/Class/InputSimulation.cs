@@ -10,12 +10,12 @@
 //     2009-... modified by Truong Do (TruongDo).
 //     2023- Included in PowerToys.
 // </history>
-using Microsoft.PowerToys.Settings.UI.Library;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Runtime.InteropServices;
 using System.ServiceProcess;
 using System.Threading.Tasks;
+using Microsoft.PowerToys.Settings.UI.Library;
 using Windows.UI.Input.Preview.Injection;
 using static MouseWithoutBorders.Class.NativeMethods;
 

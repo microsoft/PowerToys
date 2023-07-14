@@ -659,7 +659,6 @@ namespace MouseWithoutBorders.Class
             }
         }
 
-
         internal HotkeySettings HotKeyToggleEasyMouse
         {
             get
