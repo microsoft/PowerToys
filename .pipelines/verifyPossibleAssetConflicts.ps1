@@ -35,8 +35,14 @@ if ($resourcesPriFiles.Count -gt 0) {
     Write-Host -ForegroundColor Green "No resources.pri file detected in " $targetDir "`r`n"
 }
 
-# TODO: Verify there are no xbf files in the root, after isolating PowerRename as well. These can cause build racing conditions when packaging pri files.
 # Each application should have their XAML files in their own paths to avoid these conflicts.
+$resourcesPriFiles = Get-ChildItem $targetDir -Filter *.xbf
+if ($resourcesPriFiles.Count -gt 0) {
+    Write-Host -ForegroundColor Red "Detected a .xbf file in " $targetDir "`r`n"
+    $totalFailures++;
+} else {
+    Write-Host -ForegroundColor Green "No .xbf files detected in " $targetDir "`r`n"
+}
 
 if ($totalFailures -gt 0) {
     Write-Host -ForegroundColor Red "Found some errors when verifying " $targetDir "`r`n"
