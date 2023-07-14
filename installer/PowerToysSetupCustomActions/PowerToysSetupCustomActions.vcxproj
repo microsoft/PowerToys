@@ -75,7 +75,6 @@
       call cmd /C "copy ""$(ProjectDir)..\PowerToysSetup\Tools.wxs"" ""$(ProjectDir)..\PowerToysSetup\Tools.wxs.bk""""
       call cmd /C "copy ""$(ProjectDir)..\PowerToysSetup\VideoConference.wxs"" ""$(ProjectDir)..\PowerToysSetup\VideoConference.wxs.bk""""
       call cmd /C "copy ""$(ProjectDir)..\PowerToysSetup\WinAppSDK.wxs"" ""$(ProjectDir)..\PowerToysSetup\WinAppSDK.wxs.bk""""
-      call powershell.exe -NonInteractive -executionpolicy Unrestricted -File ..\PowerToysSetup\generateMonacoWxs.ps1 -monacoWxsFile "$(ProjectDir)..\PowerToysSetup\MonacoSRC.wxs"
       call powershell.exe -NonInteractive -executionpolicy Unrestricted -File parseRuntimes.ps1 -runtimedepsjsonpath "$(ProjectDir)..\..\$(Platform)\$(Configuration)\Settings\PowerToys.Settings.deps.json" -wpfdepsjsonpath "$(ProjectDir)..\..\$(Platform)\$(Configuration)\modules\ColorPicker\PowerToys.ColorPickerUI.deps.json" -depsfileslistspath "$(ProjectDir)DepsFilesLists.h" -productwxspath "$(ProjectDir)..\PowerToysSetup\Core.wxs"
       if not "$(PerUser)" == "true" call powershell.exe -NonInteractive -executionpolicy Unrestricted -File ..\PowerToysSetup\generateAllFileComponents.ps1 -platform $(Platform)
       if "$(PerUser)" == "true" call powershell.exe -NonInteractive -executionpolicy Unrestricted -File ..\PowerToysSetup\generateAllFileComponents.ps1 -platform $(Platform) -installscopeperuser $(PerUser)
