@@ -4,7 +4,9 @@
 
 using System;
 using System.Runtime.CompilerServices;
+using System.Threading;
 using global::PowerToys.GPOWrapper;
+using interop;
 using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.PowerToys.Settings.UI.Library.Helpers;
 using Microsoft.PowerToys.Settings.UI.Library.Interfaces;
@@ -155,14 +157,14 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         public void Launch()
         {
-            var actionName = "Launch";
+            string eventName = !_isElevated && LaunchAdministrator
+                ? Constants.ShowHostsAdminSharedEvent()
+                : Constants.ShowHostsSharedEvent();
 
-            if (!_isElevated && LaunchAdministrator)
+            using (var eventHandle = new EventWaitHandle(false, EventResetMode.AutoReset, eventName))
             {
-                actionName = "LaunchAdministrator";
+                eventHandle.Set();
             }
-
-            SendConfigMSG("{\"action\":{\"Hosts\":{\"action_name\":\"" + actionName + "\", \"value\":\"\"}}}");
         }
 
         public void NotifyPropertyChanged([CallerMemberName] string propertyName = null)
