@@ -39,6 +39,7 @@
     <ClInclude Include="PowerRenameManager.h" />
     <ClInclude Include="PowerRenameMRU.h" />
     <ClInclude Include="PowerRenameRegEx.h" />
+    <ClInclude Include="Renaming.h" />
     <ClInclude Include="Settings.h" />
     <ClInclude Include="srwlock.h" />
     <ClInclude Include="pch.h" />
@@ -53,6 +54,7 @@
     <ClCompile Include="PowerRenameManager.cpp" />
     <ClCompile Include="PowerRenameMRU.cpp" />
     <ClCompile Include="PowerRenameRegEx.cpp" />
+    <ClCompile Include="Renaming.cpp" />
     <ClCompile Include="Settings.cpp" />
     <ClCompile Include="pch.cpp">
       <PrecompiledHeader Condition="'$(CIBuild)'!='true'">Create</PrecompiledHeader>

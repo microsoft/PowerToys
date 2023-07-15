@@ -140,6 +140,8 @@ bool create_auto_start_task_for_this_user(bool runElevated)
     ExitOnFailure(hr, "Cannot put_ExecutionTimeLimit setting info: %x", hr);
     hr = pSettings->put_DisallowStartIfOnBatteries(VARIANT_FALSE);
     ExitOnFailure(hr, "Cannot put_DisallowStartIfOnBatteries setting info: %x", hr);
+    hr = pSettings->put_Priority(4);
+    ExitOnFailure(hr, "Cannot put_Priority setting info : %x", hr);
 
     // ------------------------------------------------------
     // Get the trigger collection to insert the logon trigger.

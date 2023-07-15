@@ -235,7 +235,7 @@
     <value>Security key</value>
   </data>
   <data name="MouseWithoutBorders_SecurityKey.Description" xml:space="preserve">
-    <value>The key must be auto generated in one machine by click on New Key, then typed in other machines</value>
+    <value>The key must be auto generated in one machine by clicking on New Key, then typed in other machines</value>
   </data>
   <data name="MouseWithoutBorders_NewKey.Content" xml:space="preserve">
     <value>New key</value>
@@ -308,7 +308,7 @@
     <value>Devices in a single row</value>
   </data>
   <data name="MouseWithoutBorders_MatrixOneRow.Description" xml:space="preserve">
-    <value>Sets whether the devices should are aligned on a single row. A two by two matrix is considered otherwise.</value>
+    <value>Sets whether the devices are aligned on a single row. A two by two matrix is considered otherwise.</value>
   </data>
   <data name="MouseWithoutBorders_WrapMouse.Header" xml:space="preserve">
     <value>Wrap mouse</value>

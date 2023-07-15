@@ -1,0 +1,12 @@
+namespace PowerRenameUI
+{
+    [default_interface] runtimeclass ExplorerItemsSource : 
+        Microsoft.UI.Xaml.Data.IItemsRangeInfo, 
+        Microsoft.UI.Xaml.Data.ISelectionInfo,
+        Windows.Foundation.Collections.IVectorView<IInspectable>,
+        Windows.Foundation.Collections.IObservableVector<IInspectable>,
+        Microsoft.UI.Xaml.Data.INotifyPropertyChanged
+    {
+        ExplorerItemsSource();
+    }
+}

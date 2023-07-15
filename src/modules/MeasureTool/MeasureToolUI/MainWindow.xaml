@@ -26,6 +26,7 @@
             LightTintColor="#F3F3F3"
             LightTintOpacity="0" />
     </winuiex:WindowEx.Backdrop>
+    
     <Grid>
         <Grid.Resources>
             <SolidColorBrush x:Key="ToggleButtonBackground" Color="Transparent" />
@@ -33,20 +34,16 @@
             <StaticResource x:Key="ButtonBackgroundPointerOver" ResourceKey="ControlSolidFillColorDefaultBrush" />
 
             <Style BasedOn="{StaticResource DefaultButtonStyle}" TargetType="Button">
-                <Setter Property="MinHeight" Value="30" />
-                <Setter Property="MinWidth" Value="30" />
-                <Setter Property="Width" Value="30" />
-                <Setter Property="Height" Value="30" />
+                <Setter Property="Width" Value="32" />
+                <Setter Property="Height" Value="32" />
                 <Setter Property="BorderThickness" Value="0" />
                 <Setter Property="FontFamily" Value="{ThemeResource SymbolThemeFontFamily}" />
-                <Setter Property="FontSize" Value="10" />
+                <Setter Property="FontSize" Value="12" />
                 <Setter Property="Padding" Value="0" />
             </Style>
             <Style x:Key="ToggleButtonRadioButtonStyle" TargetType="ToggleButton">
-                <Setter Property="MinHeight" Value="30" />
-                <Setter Property="MinWidth" Value="30" />
-                <Setter Property="Width" Value="30" />
-                <Setter Property="Height" Value="30" />
+                <Setter Property="Width" Value="32" />
+                <Setter Property="Height" Value="32" />
                 <Setter Property="BorderThickness" Value="0" />
                 <Setter Property="FontFamily" Value="{ThemeResource SymbolThemeFontFamily}" />
                 <Setter Property="FontSize" Value="16" />
@@ -57,7 +54,6 @@
 
                 <Setter Property="HorizontalContentAlignment" Value="Center" />
                 <Setter Property="VerticalContentAlignment" Value="Center" />
-                <Setter Property="VerticalAlignment" Value="Center" />
                 <Setter Property="HorizontalAlignment" Value="Center" />
                 <Setter Property="VerticalAlignment" Value="Center" />
                 <Setter Property="UseSystemFocusVisuals" Value="{StaticResource UseSystemFocusVisuals}" />
@@ -249,7 +245,6 @@
                 </Setter>
             </Style>
 
-
         </Grid.Resources>
 
         <StackPanel
@@ -275,7 +270,7 @@
                 Click="MeasureTool_Click"
                 Style="{StaticResource ToggleButtonRadioButtonStyle}"
                 ToolTipService.ToolTip="{x:Bind p:Resources.Spacing}">
-                <FontIcon Margin="1,0,0,0" Glyph="&#xE948;" />
+                <FontIcon Glyph="&#xE948;" />
                 <ToggleButton.KeyboardAccelerators>
                     <KeyboardAccelerator Key="Number2" Modifiers="Control" Invoked="KeyboardAccelerator_Invoked"/>
                 </ToggleButton.KeyboardAccelerators>
@@ -287,7 +282,7 @@
                 Click="HorizontalMeasureTool_Click"
                 Style="{StaticResource ToggleButtonRadioButtonStyle}"
                 ToolTipService.ToolTip="{x:Bind p:Resources.HorizontalSpacing}">
-                <FontIcon Margin="1,0,0,0" Glyph="&#xE949;" />
+                <FontIcon Glyph="&#xE949;" />
                 <ToggleButton.KeyboardAccelerators>
                     <KeyboardAccelerator Key="Number3" Modifiers="Control" Invoked="KeyboardAccelerator_Invoked"/>
                 </ToggleButton.KeyboardAccelerators>
@@ -307,11 +302,12 @@
                     <KeyboardAccelerator Key="Number4" Modifiers="Control" Invoked="KeyboardAccelerator_Invoked"/>
                 </ToggleButton.KeyboardAccelerators>
             </ToggleButton>
-            <AppBarSeparator Height="36" />
+            <AppBarSeparator/>
             <Button
                 Click="ClosePanelTool_Click"
                 Content="&#xE8BB;"
-                ToolTipService.ToolTip="Close">
+                ToolTipService.ToolTip="{x:Bind p:Resources.Close}"
+                Foreground="{StaticResource CloseButtonBackgroundPointerOver}">
                 <Button.KeyboardAccelerators>
                     <KeyboardAccelerator Key="Escape" Invoked="KeyboardAccelerator_Invoked"/>
                 </Button.KeyboardAccelerators>
