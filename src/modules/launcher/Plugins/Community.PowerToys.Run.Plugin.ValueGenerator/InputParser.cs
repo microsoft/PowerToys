@@ -21,7 +21,7 @@ namespace Community.PowerToys.Run.Plugin.ValueGenerator
 
             if (query.Terms.Count == 0)
             {
-                throw new FormatException("No arguments passed to hasher plugin");
+                throw new FormatException("Empty request");
             }
 
             string command = query.Terms[0];
@@ -30,6 +30,12 @@ namespace Community.PowerToys.Run.Plugin.ValueGenerator
             {
                 int commandIndex = query.RawUserQuery.IndexOf(command, StringComparison.InvariantCultureIgnoreCase);
                 string content = query.RawUserQuery.Substring(commandIndex + command.Length).Trim();
+
+                if (content == string.Empty)
+                {
+                    throw new FormatException("Empty hash request");
+                }
+
                 Log.Debug($"Will calculate MD5 hash for: {content}", GetType());
                 request = new HashRequest(HashAlgorithmName.MD5, Encoding.UTF8.GetBytes(content));
             }
@@ -57,7 +63,12 @@ namespace Community.PowerToys.Run.Plugin.ValueGenerator
                         algorithmName = HashAlgorithmName.SHA512;
                         break;
                     default:
-                        throw new ArgumentException("No SHA variant specified");
+                        throw new ArgumentException("Unknown SHA variant. Supported variants: SHA1, SHA256, SHA384, SHA512");
+                }
+
+                if (content == string.Empty)
+                {
+                    throw new FormatException("Empty hash request");
                 }
 
                 Log.Debug($"Will calculate {algorithmName} hash for: {content}", GetType());
@@ -112,7 +123,7 @@ namespace Community.PowerToys.Run.Plugin.ValueGenerator
             }
             else
             {
-                throw new FormatException("Invalid Query");
+                throw new FormatException($"Invalid Query: {query.RawUserQuery}");
             }
 
             return request;

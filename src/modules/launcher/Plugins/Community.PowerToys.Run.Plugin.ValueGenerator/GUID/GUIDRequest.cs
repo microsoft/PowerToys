@@ -72,7 +72,7 @@ namespace Community.PowerToys.Run.Plugin.ValueGenerator.GUID
                 }
 
                 Guid guid;
-                if (GUIDGenerator.PredefinedNamespaces.TryGetValue(guidNamespace, out guid))
+                if (GUIDGenerator.PredefinedNamespaces.TryGetValue(guidNamespace.ToLowerInvariant(), out guid))
                 {
                     GuidNamespace = guid;
                 }
@@ -143,16 +143,6 @@ namespace Community.PowerToys.Run.Plugin.ValueGenerator.GUID
             }
 
             return GuidResult.ToString();
-        }
-
-        public string FormatResult(IFormatProvider provider = null)
-        {
-            if (!IsSuccessful)
-            {
-                return ErrorMessage;
-            }
-
-            return $"GUIDv{Version}: {ResultToString()}";
         }
     }
 }

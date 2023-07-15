@@ -42,11 +42,6 @@ namespace Community.PowerToys.Run.Plugin.ValueGenerator.Base64
             return IsSuccessful;
         }
 
-        public string FormatResult(IFormatProvider provider = null)
-        {
-            return Encoding.UTF8.GetString(Result);
-        }
-
         public string ResultToString()
         {
             return Encoding.UTF8.GetString(Result);

@@ -19,7 +19,5 @@ namespace Community.PowerToys.Run.Plugin.ValueGenerator
         bool Compute();
 
         public string ResultToString();
-
-        public string FormatResult(IFormatProvider provider = null);
     }
 }

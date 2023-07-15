@@ -98,12 +98,11 @@ namespace Community.PowerToys.Run.Plugin.ValueGenerator
             }
             catch (ArgumentException e)
             {
-                Log.Debug(GetTranslatedPluginTitle() + ": " + e.Message, GetType());
                 results.Add(GetErrorResult(e.Message));
             }
             catch (FormatException e)
             {
-                Log.Debug(GetTranslatedPluginTitle() + ": " + e.Message, GetType());
+               Log.Debug(GetTranslatedPluginTitle() + ": " + e.Message, GetType());
             }
 
             return results;

@@ -77,10 +77,5 @@ namespace Community.PowerToys.Run.Plugin.ValueGenerator.Hashing
 
             return sb.ToString();
         }
-
-        public string FormatResult(IFormatProvider provider = null)
-        {
-            return $"{AlgorithmName}: {ResultToString()}";
-        }
     }
 }
