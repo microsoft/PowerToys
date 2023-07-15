@@ -520,7 +520,7 @@ dllexport
 dllhost
 dllmain
 DNLEN
-Dns
+dns
 DONOTROUND
 DONTVALIDATEPATH
 dotnet
@@ -793,6 +793,7 @@ gtm
 gui
 guiddata
 guiddef
+guidgenerator
 GUIDv
 GUITHREADINFO
 GValue
@@ -961,6 +962,7 @@ INPUTHARDWARE
 INPUTKEYBOARD
 INPUTLANGCHANGED
 INPUTMOUSE
+inputparser
 INPUTSINK
 INPUTTYPE
 INSTALLDESKTOPSHORTCUT
@@ -1433,7 +1435,7 @@ odbccp
 Oem
 officehubintl
 ofs
-OID
+oid
 oldcolor
 olditem
 oldnewthing
