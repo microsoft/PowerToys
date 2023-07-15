@@ -423,6 +423,7 @@ DARKPURPLE
 DARKTEAL
 DARKYELLOW
 datareader
+datatracker
 Datavalue
 dataversion
 DATAW
@@ -790,7 +791,9 @@ graphql
 GSM
 gtm
 gui
+GUIDDATA
 guiddef
+GUIDv
 GUITHREADINFO
 GValue
 gwl
@@ -862,6 +865,7 @@ HOLDESC
 HOMEPATH
 homljgmgpmcbpjbnjpfijnhipfkiclkd
 HOOKPROC
+Horvalds
 Hostbackdropbrush
 hotkeycontrol
 hotkeys
@@ -916,6 +920,7 @@ IDR
 idx
 IDXGI
 IEnum
+ietf
 IExec
 IEXPLORE
 Iface
@@ -1428,6 +1433,7 @@ odbccp
 Oem
 officehubintl
 ofs
+OID
 oldcolor
 olditem
 oldnewthing
@@ -1760,6 +1766,7 @@ roslyn
 roundf
 ROUNDSMALL
 Rpc
+rpcrt
 RRF
 rrr
 RSAT
@@ -2172,6 +2179,7 @@ uxtheme
 UYVY
 vabdq
 validmodulename
+valuegenerator
 Vanara
 variantassignment
 vcamp
