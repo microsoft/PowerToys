@@ -13,7 +13,9 @@
 call "$([MSBuild]::GetVsInstallRoot())\Common7\Tools\VsDevCmd.bat" -arch=amd64 -host_arch=amd64 -winsdk=10.0.19041.0
 SET PTRoot=..\..\..\..\..
 call "..\..\..\publish.cmd" x64
-)</PreBuildEvent>
+)
+call powershell.exe -NonInteractive -executionpolicy Unrestricted -File $(MSBuildThisFileDirectory)\generateMonacoWxs.ps1 -monacoWxsFile "$(MSBuildThisFileDirectory)\MonacoSRC.wxs"
+</PreBuildEvent>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Platform)' != 'x64'">
@@ -22,7 +24,9 @@ call "..\..\..\publish.cmd" x64
 call "$([MSBuild]::GetVsInstallRoot())\Common7\Tools\VsDevCmd.bat" -arch=arm64 -host_arch=amd64 -winsdk=10.0.19041.0
 SET PTRoot=..\..\..\..\..
 call "..\..\..\publish.cmd" arm64
-)</PreBuildEvent>
+)
+call powershell.exe -NonInteractive -executionpolicy Unrestricted -File $(MSBuildThisFileDirectory)\generateMonacoWxs.ps1 -monacoWxsFile "$(MSBuildThisFileDirectory)\MonacoSRC.wxs"
+</PreBuildEvent>
   </PropertyGroup>
   <PropertyGroup>
     <RunPostBuildEvent>Always</RunPostBuildEvent>
