@@ -791,7 +791,6 @@ graphql
 GSM
 gtm
 gui
-GUIDDATA
 guiddata
 guiddef
 GUIDv
