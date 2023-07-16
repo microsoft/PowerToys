@@ -37,10 +37,10 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         public MouseHighlighterProperties()
         {
             ActivationShortcut = DefaultActivationShortcut;
-            LeftButtonClickColor = new StringProperty("#41FFFF00");
-            RightButtonClickColor = new StringProperty("#410000FF");
+            LeftButtonClickColor = new StringProperty("#a6FFFF00");
+            RightButtonClickColor = new StringProperty("#a60000FF");
             AlwaysColor = new StringProperty("#00FF0000");
-            HighlightOpacity = new IntProperty(65); // for migration from <=1.1 to 1.2
+            HighlightOpacity = new IntProperty(166); // for migration from <=1.1 to 1.2
             HighlightRadius = new IntProperty(20);
             HighlightFadeDelayMs = new IntProperty(500);
             HighlightFadeDurationMs = new IntProperty(250);
