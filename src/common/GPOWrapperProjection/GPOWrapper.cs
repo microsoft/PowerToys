@@ -51,5 +51,10 @@ namespace PowerToys.GPOWrapperProjection
         {
             return (GpoRuleConfigured)PowerToys.GPOWrapper.GPOWrapper.GetConfiguredPeekEnabledValue();
         }
+
+        public static GpoRuleConfigured GetRunPluginEnabledValuel(string pluginID)
+        {
+            return (GpoRuleConfigured)PowerToys.GPOWrapper.GPOWrapper.GetRunPluginEnabledValuel(pluginID);
+        }
     }
 }

@@ -299,4 +299,10 @@ namespace powertoys_gpo {
         return getConfiguredValue(POLICY_ALLOW_EXPERIMENTATION);
     }
 
+    inline gpo_rule_configured_t getRunPluginEnabledValue(LPCWSTR pluginID)
+    {
+        // Later we read the registry value for the specified plugin ID or if it not exist the default enbaled state.
+        return gpo_rule_configured_disabled;
+    }
+
 }

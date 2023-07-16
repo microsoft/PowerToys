@@ -41,6 +41,7 @@ namespace winrt::PowerToys::GPOWrapper::implementation
         static GpoRuleConfigured GetConfiguredPeekEnabledValue();
         static GpoRuleConfigured GetDisableAutomaticUpdateDownloadValue();
         static GpoRuleConfigured GetAllowExperimentationValue();
+        static GpoRuleConfigured GetRunPluginEnabledValue(LPCWSTR pluginID);
     };
 }
 

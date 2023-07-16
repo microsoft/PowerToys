@@ -8,6 +8,7 @@ using System.ComponentModel;
 using System.IO;
 using System.Linq;
 using System.Runtime.CompilerServices;
+using global::PowerToys.GPOWrapper;
 using Microsoft.PowerToys.Settings.UI.Library;
 
 namespace Microsoft.PowerToys.Settings.UI.ViewModels
@@ -33,6 +34,8 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                     NotifyPropertyChanged(nameof(AdditionalOptions));
                 };
             }
+
+            _enabledGpoRuleConfiguration = GPOWrapper.GetRunPluginEnabledValuel(settings.Id);
         }
 
         public string Id { get => settings.Id; }
@@ -43,11 +46,13 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         public string Author { get => settings.Author; }
 
+        private GpoRuleConfigured _enabledGpoRuleConfiguration;
+
         public bool Disabled
         {
             get
             {
-                return settings.Disabled;
+                return settings.Disabled && _enabledGpoRuleConfiguration == GpoRuleConfigured.Disabled;
             }
 
             set
@@ -65,7 +70,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             }
         }
 
-        public bool Enabled => !Disabled;
+        public bool Enabled => !Disabled && _enabledGpoRuleConfiguration != GpoRuleConfigured.Disabled;
 
         public double DisabledOpacity => Disabled ? 0.5 : 1;
 
