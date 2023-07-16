@@ -35,7 +35,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 };
             }
 
-            _enabledGpoRuleConfiguration = GPOWrapper.GetRunPluginEnabledValuel(settings.Id);
+            _enabledGpoRuleConfiguration = GPOWrapper.GetRunPluginEnabledValue(settings.Id);
         }
 
         public string Id { get => settings.Id; }
