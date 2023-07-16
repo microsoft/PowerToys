@@ -61,7 +61,7 @@ namespace Community.PowerToys.Run.Plugin.ValueGenerator.GUID
 
             if (Version < 1 || Version > 5 || Version == 2)
             {
-                throw new ArgumentException("Undefined GUID version");
+                throw new ArgumentException("Unsupported GUID version. Supported versions are 1, 3, 4 and 5");
             }
 
             if (version == 3 || version == 5)
