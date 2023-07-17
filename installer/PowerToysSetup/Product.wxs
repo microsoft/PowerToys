@@ -597,6 +597,9 @@
                 <Directory Id="PowerToysPluginFolder" Name="PowerToys">
                   <Directory Id="PowerToysImagesFolder" Name="Images" />
                 </Directory>
+                <Directory Id="ValueGeneratorPluginFolder" Name="ValueGenerator">
+                  <Directory Id="ValueGeneratorImagesFolder" Name="Images" />
+                </Directory>
                 <Directory Id="RegistryPluginFolder" Name="Registry">
                   <Directory Id="RegistryImagesFolder" Name="Images" />
                 </Directory>
