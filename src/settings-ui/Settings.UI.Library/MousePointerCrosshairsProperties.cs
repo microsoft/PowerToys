@@ -31,6 +31,12 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         [JsonPropertyName("crosshairs_border_size")]
         public IntProperty CrosshairsBorderSize { get; set; }
 
+        [JsonPropertyName("crosshairs_is_fixed_length_enabled")]
+        public BoolProperty CrosshairsIsFixedLengthEnabled { get; set; }
+
+        [JsonPropertyName("crosshairs_fixed_length")]
+        public IntProperty CrosshairsFixedLength { get; set; }
+
         public MousePointerCrosshairsProperties()
         {
             ActivationShortcut = DefaultActivationShortcut;
@@ -40,6 +46,8 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             CrosshairsThickness = new IntProperty(5);
             CrosshairsBorderColor = new StringProperty("#FFFFFF");
             CrosshairsBorderSize = new IntProperty(1);
+            CrosshairsIsFixedLengthEnabled = new BoolProperty(false);
+            CrosshairsFixedLength = new IntProperty(1);
         }
     }
 }

@@ -2662,6 +2662,13 @@ From there, simply click on one of the supported files in the File Explorer and 
     <value>Crosshairs border size (px)</value>
     <comment>px = pixels</comment>
   </data>
+  <data name="MouseUtils_MousePointerCrosshairs_IsCrosshairsFixedLengthEnabled.Header" xml:space="preserve">
+    <value>Fix crosshairs length</value>
+  </data>
+  <data name="MouseUtils_MousePointerCrosshairs_CrosshairsFixedLength.Header" xml:space="preserve">
+    <value>Crosshairs fixed length (px)</value>
+    <comment>px = pixels</comment>
+  </data>
   <data name="FancyZones_Radio_Custom_Colors.Content" xml:space="preserve">
     <value>Custom colors</value>
   </data>
