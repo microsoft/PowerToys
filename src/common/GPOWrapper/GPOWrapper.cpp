@@ -140,8 +140,8 @@ namespace winrt::PowerToys::GPOWrapper::implementation
     {
         return static_cast<GpoRuleConfigured>(powertoys_gpo::getAllowExperimentationValue());
     }
-    GpoRuleConfigured GPOWrapper::GetRunPluginEnabledValue(LPCWSTR pluginID)
+    GpoRuleConfigured GPOWrapper::GetRunPluginEnabledValue(winrt::hstring const& pluginID)
     {
-        return static_cast<GpoRuleConfigured>(powertoys_gpo)::getRunPluginEnabledValue(pluginID));
+        return static_cast<GpoRuleConfigured>(powertoys_gpo::getRunPluginEnabledValue(winrt::to_string(pluginID)));
     }
 }

@@ -45,7 +45,7 @@ namespace PowerToys
             static GpoRuleConfigured GetConfiguredPeekEnabledValue();
             static GpoRuleConfigured GetDisableAutomaticUpdateDownloadValue();
             static GpoRuleConfigured GetAllowExperimentationValue();
-            static GpoRuleConfigured GetRunPluginEnabledValue(LPCWSTR pluginID);
+            static GpoRuleConfigured GetRunPluginEnabledValue(String pluginID);
         }
     }
 }

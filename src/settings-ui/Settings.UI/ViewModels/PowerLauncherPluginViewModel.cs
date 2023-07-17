@@ -52,7 +52,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         {
             get
             {
-                return settings.Disabled && _enabledGpoRuleConfiguration == GpoRuleConfigured.Disabled;
+                return _enabledGpoRuleConfiguration == GpoRuleConfigured.Disabled || settings.Disabled;
             }
 
             set
@@ -70,7 +70,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             }
         }
 
-        public bool Enabled => !Disabled && _enabledGpoRuleConfiguration != GpoRuleConfigured.Disabled;
+        public bool Enabled => _enabledGpoRuleConfiguration == GpoRuleConfigured.Enabled || !Disabled;
 
         public double DisabledOpacity => Disabled ? 0.5 : 1;
 
