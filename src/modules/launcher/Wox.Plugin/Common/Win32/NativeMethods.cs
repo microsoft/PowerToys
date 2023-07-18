@@ -118,6 +118,9 @@ namespace Wox.Plugin.Common.Win32
 
         [DllImport("shell32.dll", CharSet = CharSet.Unicode, SetLastError = true)]
         public static extern int SHCreateItemFromParsingName([MarshalAs(UnmanagedType.LPWStr)] string path, IntPtr pbc, ref Guid riid, [MarshalAs(UnmanagedType.Interface)] out IShellItem shellItem);
+
+        [DllImport("rpcrt4.dll")]
+        public static extern int UuidCreateSequential(out GUIDDATA Uuid);
     }
 
     [SuppressMessage("StyleCop.CSharp.NamingRules", "SA1310:Field names should not contain underscore", Justification = "These are the names used by win32.")]
@@ -143,6 +146,16 @@ namespace Wox.Plugin.Common.Win32
         /// Closes the window
         /// </summary>
         public const int SC_CLOSE = 0xF060;
+
+        /// <summary>
+        /// RPC call succeeded
+        /// </summary>
+        public const int RPC_S_OK = 0;
+
+        /// <summary>
+        /// The UUID is guaranteed to be unique to this computer only.
+        /// </summary>
+        public const int RPC_S_UUID_LOCAL_ONLY = 0x720;
     }
 
     public static class ShellItemTypeConstants
@@ -616,6 +629,16 @@ namespace Wox.Plugin.Common.Win32
         /// All possible access rights for a process object.
         /// </summary>
         AllAccess = StandardRightsRequired | Synchronize | 0xFFFF,
+    }
+
+    [StructLayout(LayoutKind.Sequential)]
+    public struct GUIDDATA
+    {
+        public int Data1;
+        public short Data2;
+        public short Data3;
+        [System.Runtime.InteropServices.MarshalAsAttribute(System.Runtime.InteropServices.UnmanagedType.ByValArray, SizeConst = 8)]
+        public byte[] Data4;
     }
 
     /// <summary>
