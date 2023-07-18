@@ -499,18 +499,6 @@ namespace MouseWithoutBorders.Class
 
         private bool ProcessHotKeys(int vkCode, KEYBDDATA hookCallbackKeybdData)
         {
-            if (Common.HotkeyMatched(vkCode, winDown, CtrlDown, altDown, shiftDown, Setting.Values.HotKeyCaptureScreen) &&
-                (Common.DesMachineID == Common.MachineID || Common.DesMachineID == ID.ALL))
-            {
-                ResetModifiersState(Setting.Values.HotKeyCaptureScreen);
-
-                if (!Common.RunOnLogonDesktop && !Common.RunOnScrSaverDesktop)
-                {
-                    Common.PrepareScreenCapture();
-                    return false;
-                }
-            }
-
             if (Common.HotkeyMatched(vkCode, winDown, CtrlDown, altDown, shiftDown, Setting.Values.HotKeySwitch2AllPC))
             {
                 ResetLastSwitchKeys();

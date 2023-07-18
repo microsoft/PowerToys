@@ -716,11 +716,6 @@ namespace MouseWithoutBorders.Class
             }
         }
 
-        internal HotkeySettings HotKeyCaptureScreen
-        {
-            get => _properties.CaptureScreenShortcut;
-        }
-
         internal int HotKeyExitMM
         {
             get

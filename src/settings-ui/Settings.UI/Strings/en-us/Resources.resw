@@ -467,13 +467,6 @@
   <data name="MouseWithoutBorders_ReconnectShortcut_Disabled.Content" xml:space="preserve">
     <value>Disabled</value>
   </data>
-  <data name="MouseWithoutBorders_HotKeyCaptureScreen.Header" xml:space="preserve">
-    <value>Custom screen capture.</value>
-    <comment>Ctrl and Alt are the keyboard keys</comment>
-  </data>
-  <data name="MouseWithoutBorders_HotKeyCaptureScreen.Description" xml:space="preserve">
-    <value>Capture a selected area on the screen. Press this hotkey then hold left mouse button down and drag to select a screen area.</value>
-  </data>
   <data name="MouseWithoutBorders_Switch2AllPcShortcut.Header" xml:space="preserve">
     <value>Shortcut to switch to multiple machine mode.</value>
   </data>

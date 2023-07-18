@@ -407,16 +407,6 @@ namespace MouseWithoutBorders.Class
                         _ = NativeMethods.LockWorkStation();
                     }
                 }
-                else if (Common.HotkeyMatched(vkCode, winDown, ctrlDown, altDown, shiftDown, Setting.Values.HotKeyCaptureScreen))
-                {
-                    ResetModifiersState(Setting.Values.HotKeyCaptureScreen);
-
-                    if (!Common.RunOnLogonDesktop && !Common.RunOnScrSaverDesktop)
-                    {
-                        Common.PrepareScreenCapture();
-                        eatKey = true;
-                    }
-                }
 
                 switch ((VK)vkCode)
                 {

@@ -835,8 +835,6 @@ namespace MouseWithoutBorders
 
             comboBoxReconnect.Text = Setting.Values.HotKeyReconnect == 0 ? "Disable" : new string(new char[] { (char)Setting.Values.HotKeyReconnect });
 
-            comboBoxScreenCapture.Text = Setting.Values.HotKeyCaptureScreen == 0 ? "Disable" : new string(new char[] { (char)Setting.Values.HotKeyCaptureScreen });
-
             comboBoxSwitchToAllPC.Text = Setting.Values.HotKeySwitch2AllPC == 1
                 ? "Ctrl*3"
                 : Setting.Values.HotKeySwitch2AllPC == 0 ? "Disable" : new string(new char[] { (char)Setting.Values.HotKeySwitch2AllPC });

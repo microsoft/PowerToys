@@ -852,21 +852,6 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             }
         }
 
-        public HotkeySettings HotKeyCaptureScreen
-        {
-            get => Settings.Properties.CaptureScreenShortcut;
-
-            set
-            {
-                if (Settings.Properties.CaptureScreenShortcut != value)
-                {
-                    Settings.Properties.CaptureScreenShortcut = value;
-                    Settings.Properties.CaptureScreenShortcut = value ?? MouseWithoutBordersProperties.DefaultHotKeyCaptureScreen;
-                    NotifyPropertyChanged();
-                }
-            }
-        }
-
         public HotkeySettings ReconnectShortcut
         {
             get => Settings.Properties.ReconnectShortcut;

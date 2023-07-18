@@ -284,14 +284,6 @@
                                 HotkeySettings="{x:Bind Path=ViewModel.ReconnectShortcut, Mode=TwoWay}" />
                     </labs:SettingsCard>
                     
-                    <labs:SettingsCard
-                            x:Uid="MouseWithoutBorders_HotKeyCaptureScreen"
-                            HeaderIcon="{ui:FontIcon FontFamily={StaticResource SymbolThemeFontFamily}, Glyph=&#xEDA7;}">
-                        <controls:ShortcutControl
-                                MinWidth="{StaticResource SettingActionControlMinWidth}"
-                                HotkeySettings="{x:Bind Path=ViewModel.HotKeyCaptureScreen, Mode=TwoWay}" />
-                    </labs:SettingsCard>
-                    
                     <labs:SettingsCard x:Uid="MouseWithoutBorders_SwitchBetweenMachineShortcut" HeaderIcon="{ui:FontIcon FontFamily={StaticResource SymbolThemeFontFamily}, Glyph=&#xE92E;}">
                         <ComboBox MinWidth="{StaticResource SettingActionControlMinWidth}" SelectedIndex="{x:Bind Path=ViewModel.SelectedSwitchBetweenMachineShortcutOptionsIndex, Mode=TwoWay}">
                             <!--  These should be in the same order as the array items in MouseWithoutBordersViewModel.cs  -->

@@ -31,8 +31,6 @@ namespace Microsoft.PowerToys.Settings.UI.Library
 
         public static HotkeySettings DefaultHotKeyToggleEasyMouse => new HotkeySettings(true, true, true, false, 0x45);
 
-        public static HotkeySettings DefaultHotKeyCaptureScreen => new HotkeySettings();
-
         public StringProperty SecurityKey { get; set; }
 
         [JsonConverter(typeof(BoolPropertyJsonConverter))]
@@ -120,8 +118,6 @@ namespace Microsoft.PowerToys.Settings.UI.Library
 
         public HotkeySettings Switch2AllPCShortcut { get; set; }
 
-        public HotkeySettings CaptureScreenShortcut { get; set; }
-
         public IntProperty TCPPort { get; set; }
 
         [JsonConverter(typeof(BoolPropertyJsonConverter))]
@@ -159,7 +155,6 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             LockMachineShortcut = DefaultHotKeyLockMachine;
             ReconnectShortcut = DefaultHotKeyReconnect;
             Switch2AllPCShortcut = DefaultHotKeySwitch2AllPC;
-            CaptureScreenShortcut = DefaultHotKeyCaptureScreen;
 
             // These are internal, i.e. cannot be edited directly from UI
             MachinePool = ":,:,:,:";
