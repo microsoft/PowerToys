@@ -106,6 +106,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             _mousePointerCrosshairsRadius = MousePointerCrosshairsSettingsConfig.Properties.CrosshairsRadius.Value;
             _mousePointerCrosshairsThickness = MousePointerCrosshairsSettingsConfig.Properties.CrosshairsThickness.Value;
             _mousePointerCrosshairsBorderSize = MousePointerCrosshairsSettingsConfig.Properties.CrosshairsBorderSize.Value;
+            _mousePointerCrosshairsAutoHide = MousePointerCrosshairsSettingsConfig.Properties.CrosshairsAutoHide.Value;
 
             // set the callback functions value to handle outgoing IPC message.
             SendConfigMSG = ipcMSGCallBackFunc;
@@ -792,6 +793,24 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             }
         }
 
+        public bool MousePointerCrosshairsAutoHide
+        {
+            get
+            {
+                return _mousePointerCrosshairsAutoHide;
+            }
+
+            set
+            {
+                if (value != _mousePointerCrosshairsAutoHide)
+                {
+                    _mousePointerCrosshairsAutoHide = value;
+                    MousePointerCrosshairsSettingsConfig.Properties.CrosshairsAutoHide.Value = value;
+                    NotifyMousePointerCrosshairsPropertyChanged();
+                }
+            }
+        }
+
         public void NotifyMousePointerCrosshairsPropertyChanged([CallerMemberName] string propertyName = null)
         {
             OnPropertyChanged(propertyName);
@@ -850,5 +869,6 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         private int _mousePointerCrosshairsThickness;
         private string _mousePointerCrosshairsBorderColor;
         private int _mousePointerCrosshairsBorderSize;
+        private bool _mousePointerCrosshairsAutoHide;
     }
 }
