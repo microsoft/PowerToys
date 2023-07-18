@@ -231,6 +231,7 @@ steps:
       **\Microsoft.Interop.Tests.dll
       **\ImageResizer.Test.dll
       **\Community.PowerToys.Run.Plugin.UnitConverter.UnitTest.dll
+      **\Community.PowerToys.Run.Plugin.ValueGenerator.UnitTests.dll
       **\Microsoft.Plugin.Folder.UnitTests.dll
       **\Microsoft.Plugin.Program.UnitTests.dll
       **\Microsoft.PowerToys.Run.Plugin.Calculator.UnitTest.dll

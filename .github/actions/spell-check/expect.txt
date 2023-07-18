@@ -423,6 +423,7 @@ DARKPURPLE
 DARKTEAL
 DARKYELLOW
 datareader
+datatracker
 Datavalue
 dataversion
 DATAW
@@ -519,7 +520,7 @@ dllexport
 dllhost
 dllmain
 DNLEN
-Dns
+dns
 DONOTROUND
 DONTVALIDATEPATH
 dotnet
@@ -790,7 +791,10 @@ graphql
 GSM
 gtm
 gui
+guiddata
 guiddef
+guidgenerator
+GUIDv
 GUITHREADINFO
 GValue
 gwl
@@ -862,6 +866,7 @@ HOLDESC
 HOMEPATH
 homljgmgpmcbpjbnjpfijnhipfkiclkd
 HOOKPROC
+Horvalds
 Hostbackdropbrush
 hotkeycontrol
 hotkeys
@@ -916,6 +921,7 @@ IDR
 idx
 IDXGI
 IEnum
+ietf
 IExec
 IEXPLORE
 Iface
@@ -956,6 +962,7 @@ INPUTHARDWARE
 INPUTKEYBOARD
 INPUTLANGCHANGED
 INPUTMOUSE
+inputparser
 INPUTSINK
 INPUTTYPE
 INSTALLDESKTOPSHORTCUT
@@ -1428,6 +1435,7 @@ odbccp
 Oem
 officehubintl
 ofs
+oid
 oldcolor
 olditem
 oldnewthing
@@ -1760,6 +1768,7 @@ roslyn
 roundf
 ROUNDSMALL
 Rpc
+rpcrt
 RRF
 rrr
 RSAT
@@ -2172,6 +2181,7 @@ uxtheme
 UYVY
 vabdq
 validmodulename
+valuegenerator
 Vanara
 variantassignment
 vcamp

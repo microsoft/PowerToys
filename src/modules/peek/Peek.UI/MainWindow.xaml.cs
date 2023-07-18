@@ -28,6 +28,7 @@ namespace Peek.UI
         public MainWindowViewModel ViewModel { get; }
 
         private ThemeListener? themeListener;
+        private bool activated;
 
         public MainWindow()
         {
@@ -84,6 +85,15 @@ namespace Peek.UI
         /// </summary>
         private void OnPeekHotkey()
         {
+            // First Peek activation
+            if (!activated)
+            {
+                Activate();
+                Initialize();
+                activated = true;
+                return;
+            }
+
             if (AppWindow.IsVisible)
             {
                 if (IsNewSingleSelectedItem())
