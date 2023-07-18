@@ -49,7 +49,9 @@
                 IsChecked="{x:Bind Checked, Mode=TwoWay}"
                 IsTabStop="True"
                 TabIndex="0"
+                Style="{StaticResource CheckBoxDefaultStyleOverride}"
                 XYFocusKeyboardNavigation="Enabled" />
+            
             <Image
                 Grid.Column="2"
                 Width="16"

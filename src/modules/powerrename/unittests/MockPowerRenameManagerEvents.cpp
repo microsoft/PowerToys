@@ -29,18 +29,6 @@ CMockPowerRenameManagerEvents::Release()
 }
 
 // IPowerRenameManagerEvents
-IFACEMETHODIMP CMockPowerRenameManagerEvents::OnItemAdded(_In_ IPowerRenameItem* pItem)
-{
-    m_itemAdded = pItem;
-    return S_OK;
-}
-
-IFACEMETHODIMP CMockPowerRenameManagerEvents::OnUpdate(_In_ IPowerRenameItem* pItem)
-{
-    m_itemUpdated = pItem;
-    return S_OK;
-}
-
 IFACEMETHODIMP CMockPowerRenameManagerEvents::OnRename(_In_ IPowerRenameItem* pItem)
 {
     m_itemRenamed = pItem;

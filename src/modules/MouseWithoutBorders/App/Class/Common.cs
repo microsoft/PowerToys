@@ -735,7 +735,7 @@ namespace MouseWithoutBorders
             SendPackage(src, PackageType.ClipboardCapture);
         }
 
-        internal static void ShowToolTip(string tip, int timeOutInMilliseconds = 5000, ToolTipIcon icon = ToolTipIcon.Info, bool showBalloonTip = true)
+        internal static void ShowToolTip(string tip, int timeOutInMilliseconds = 5000, ToolTipIcon icon = ToolTipIcon.Info, bool showBalloonTip = true, bool forceEvenIfHidingOldUI = false)
         {
             if (!Common.RunOnLogonDesktop && !Common.RunOnScrSaverDesktop)
             {
@@ -752,7 +752,7 @@ namespace MouseWithoutBorders
                     {
                         if (MainForm != null)
                         {
-                            MainForm.ShowToolTip(tip, timeOutInMilliseconds);
+                            MainForm.ShowToolTip(tip, timeOutInMilliseconds, forceEvenIfHidingOldUI: forceEvenIfHidingOldUI);
                         }
                         else
                         {

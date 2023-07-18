@@ -69,9 +69,10 @@ namespace Hosts.Tests
             var service = new HostsService(fileSystem, userSettings.Object, _elevationHelper.Object);
             fileSystem.AddFile(service.HostsFilePath, new MockFileData(content));
 
-            var (_, entries) = await service.ReadAsync();
+            var data = await service.ReadAsync();
+            var entries = data.Entries.ToList();
             entries.Add(new Entry(0, "10.1.1.30", "host30 host30.local", "new entry", false));
-            await service.WriteAsync(string.Empty, entries);
+            await service.WriteAsync(data.AdditionalLines, entries);
 
             var result = fileSystem.GetFile(service.HostsFilePath);
             Assert.AreEqual(result.TextContents, contentResult);
@@ -94,9 +95,10 @@ namespace Hosts.Tests
             var service = new HostsService(fileSystem, userSettings.Object, _elevationHelper.Object);
             fileSystem.AddFile(service.HostsFilePath, new MockFileData(content));
 
-            var (_, entries) = await service.ReadAsync();
+            var data = await service.ReadAsync();
+            var entries = data.Entries.ToList();
             entries.RemoveAt(0);
-            await service.WriteAsync(string.Empty, entries);
+            await service.WriteAsync(data.AdditionalLines, entries);
 
             var result = fileSystem.GetFile(service.HostsFilePath);
             Assert.AreEqual(result.TextContents, contentResult);
@@ -120,13 +122,13 @@ namespace Hosts.Tests
             var service = new HostsService(fileSystem, userSettings.Object, _elevationHelper.Object);
             fileSystem.AddFile(service.HostsFilePath, new MockFileData(content));
 
-            var (_, entries) = await service.ReadAsync();
-            var entry = entries[0];
+            var data = await service.ReadAsync();
+            var entry = data.Entries[0];
             entry.Address = "10.1.1.10";
             entry.Hosts = "host host.local host1.local";
             entry.Comment = "updated comment";
             entry.Active = false;
-            await service.WriteAsync(string.Empty, entries);
+            await service.WriteAsync(data.AdditionalLines, data.Entries);
 
             var result = fileSystem.GetFile(service.HostsFilePath);
             Assert.AreEqual(result.TextContents, contentResult);
@@ -172,8 +174,8 @@ namespace Hosts.Tests
             var service = new HostsService(fileSystem, userSettings.Object, _elevationHelper.Object);
             fileSystem.AddFile(service.HostsFilePath, new MockFileData(content));
 
-            var (additionalLines, entries) = await service.ReadAsync();
-            await service.WriteAsync(additionalLines, entries);
+            var data = await service.ReadAsync();
+            await service.WriteAsync(data.AdditionalLines, data.Entries);
 
             var result = fileSystem.GetFile(service.HostsFilePath);
             Assert.AreEqual(result.TextContents, contentResult);
@@ -205,8 +207,33 @@ namespace Hosts.Tests
             var service = new HostsService(fileSystem, userSettings.Object, _elevationHelper.Object);
             fileSystem.AddFile(service.HostsFilePath, new MockFileData(content));
 
-            var (additionalLines, entries) = await service.ReadAsync();
-            await service.WriteAsync(additionalLines, entries);
+            var data = await service.ReadAsync();
+            await service.WriteAsync(data.AdditionalLines, data.Entries);
+
+            var result = fileSystem.GetFile(service.HostsFilePath);
+            Assert.AreEqual(result.TextContents, contentResult);
+        }
+
+        [TestMethod]
+        public async Task LongHosts_Splitted()
+        {
+            var content =
+@"10.1.1.1 host01 host02 host03 host04 host05 host06 host07 host08 host09 host10 host11 host12 host13 host14 host15 host16 host17 host18 host19 # comment
+";
+
+            var contentResult =
+@"10.1.1.1 host01 host02 host03 host04 host05 host06 host07 host08 host09 # comment
+10.1.1.1 host10 host11 host12 host13 host14 host15 host16 host17 host18 # comment
+10.1.1.1 host19                                                         # comment
+";
+
+            var fileSystem = new CustomMockFileSystem();
+            var userSettings = new Mock<IUserSettings>();
+            var service = new HostsService(fileSystem, userSettings.Object, _elevationHelper.Object);
+            fileSystem.AddFile(service.HostsFilePath, new MockFileData(content));
+
+            var data = await service.ReadAsync();
+            await service.WriteAsync(data.AdditionalLines, data.Entries);
 
             var result = fileSystem.GetFile(service.HostsFilePath);
             Assert.AreEqual(result.TextContents, contentResult);

@@ -8,6 +8,8 @@ namespace Microsoft.PowerToys.Settings.UI.Library
 {
     public class MouseJumpProperties
     {
+        public HotkeySettings DefaultActivationShortcut => new HotkeySettings(true, false, false, true, 0x44);
+
         [JsonPropertyName("activation_shortcut")]
         public HotkeySettings ActivationShortcut { get; set; }
 
@@ -16,7 +18,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
 
         public MouseJumpProperties()
         {
-            ActivationShortcut = new HotkeySettings(true, false, false, true, 0x44);
+            ActivationShortcut = DefaultActivationShortcut;
             ThumbnailSize = new MouseJumpThumbnailSize();
         }
     }

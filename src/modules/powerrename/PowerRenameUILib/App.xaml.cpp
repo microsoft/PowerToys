@@ -5,6 +5,7 @@
 
 #include <vector>
 #include <string>
+#include <filesystem>
 
 #include <common/logger/logger.h>
 #include <common/logger/logger_settings.h>
@@ -18,8 +19,9 @@ using namespace winrt::Microsoft::UI::Xaml::Navigation;
 using namespace PowerRenameUI;
 using namespace PowerRenameUI::implementation;
 
-// To learn more about WinUI, the WinUI project structure,
-// and more about our project templates, see: http://aka.ms/winui-project-info.
+namespace fs = std::filesystem;
+
+//#define DEBUG_BENCHMARK_100K_ENTRIES
 
 std::vector<std::wstring> g_files;
 
@@ -34,8 +36,7 @@ App::App()
     InitializeComponent();
 
 #if defined _DEBUG && !defined DISABLE_XAML_GENERATED_BREAK_ON_UNHANDLED_EXCEPTION
-    UnhandledException([this](IInspectable const&, UnhandledExceptionEventArgs const& e)
-    {
+    UnhandledException([this](IInspectable const&, UnhandledExceptionEventArgs const& e) {
         if (IsDebuggerPresent())
         {
             auto errorMessage = e.Message();
@@ -112,6 +113,50 @@ void App::OnLaunched(LaunchActivatedEventArgs const&)
         ExitProcess(1);
     }
 
+#ifdef DEBUG_BENCHMARK_100K_ENTRIES
+    const std::wstring_view ROOT_PATH = L"R:\\PowerRenameBenchmark";
+
+    std::wstring subdirectory_name = L"0";
+    std::error_code _;
+
+#if 1
+    constexpr bool recreate_files = true;
+#else
+    constexpr bool recreate_files = false;
+#endif
+    if constexpr (recreate_files)
+        fs::remove_all(ROOT_PATH, _);
+
+    g_files.push_back(fs::path{ ROOT_PATH });
+    constexpr int pow2_threshold = 10;
+    constexpr int num_files = 100'000;
+    for (int i = 0; i < num_files; ++i)
+    {
+        fs::path file_path{ ROOT_PATH };
+        // Create a subdirectory for each subsequent 2^pow2_threshold files, o/w filesystem becomes too slow to create them in a reasonable time.
+        if ((i & ((1 << pow2_threshold) - 1)) == 0)
+        {
+            subdirectory_name = std::to_wstring(i >> pow2_threshold);
+        }
+
+        file_path /= subdirectory_name;
+
+        if constexpr (recreate_files)
+        {
+            fs::create_directories(file_path, _);
+            file_path /= std::to_wstring(i) + L".txt";
+            HANDLE hFile = CreateFileW(
+                file_path.c_str(),
+                GENERIC_WRITE,
+                0,
+                nullptr,
+                CREATE_NEW,
+                FILE_ATTRIBUTE_NORMAL,
+                nullptr);
+            CloseHandle(hFile);
+        }
+    }
+#else
 #define BUFSIZE 4096 * 4
 
     BOOL bSuccess;
@@ -139,6 +184,7 @@ void App::OnLaunched(LaunchActivatedEventArgs const&)
             break;
     }
     CloseHandle(hStdin);
+#endif
 
     Logger::debug(L"Starting PowerRename with {} files selected", g_files.size());
 

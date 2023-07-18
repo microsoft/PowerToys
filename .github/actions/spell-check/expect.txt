@@ -87,7 +87,6 @@ Apm
 APPBARDATA
 appdata
 APPEXECLINK
-APPIDS
 appium
 Applets
 Applicationcan
@@ -424,6 +423,7 @@ DARKPURPLE
 DARKTEAL
 DARKYELLOW
 datareader
+datatracker
 Datavalue
 dataversion
 DATAW
@@ -520,7 +520,7 @@ dllexport
 dllhost
 dllmain
 DNLEN
-Dns
+dns
 DONOTROUND
 DONTVALIDATEPATH
 dotnet
@@ -673,7 +673,6 @@ EXTENDEDVERBS
 EXTRINSICPROPERTIES
 eyetracker
 FABC
-fabricbot
 FAEDDA
 FAF
 FAFD
@@ -792,7 +791,10 @@ graphql
 GSM
 gtm
 gui
+guiddata
 guiddef
+guidgenerator
+GUIDv
 GUITHREADINFO
 GValue
 gwl
@@ -800,7 +802,6 @@ GWLP
 HACCEL
 handlekeyboardhookevent
 hangeul
-Hankaku
 hanselman
 Hanzi
 Hardlines
@@ -865,6 +866,7 @@ HOLDESC
 HOMEPATH
 homljgmgpmcbpjbnjpfijnhipfkiclkd
 HOOKPROC
+Horvalds
 Hostbackdropbrush
 hotkeycontrol
 hotkeys
@@ -919,6 +921,7 @@ IDR
 idx
 IDXGI
 IEnum
+ietf
 IExec
 IEXPLORE
 Iface
@@ -959,6 +962,7 @@ INPUTHARDWARE
 INPUTKEYBOARD
 INPUTLANGCHANGED
 INPUTMOUSE
+inputparser
 INPUTSINK
 INPUTTYPE
 INSTALLDESKTOPSHORTCUT
@@ -1084,10 +1088,12 @@ lexon
 lhs
 lhwnd
 LIBID
+licate
 LIGHTORANGE
 LIGHTTURQUOISE
 lindex
 linkedin
+LINKOVERLAY
 linq
 LINQTo
 listview
@@ -1332,6 +1338,7 @@ NCRBUTTONUP
 NCRENDERING
 ndp
 NEEDDISPATCH
+needinfo
 Nemeth
 NESW
 netcore
@@ -1416,6 +1423,7 @@ nullonfailure
 numberbox
 NUMLOCK
 numpad
+nupkg
 nwc
 Objbase
 OBJID
@@ -1428,6 +1436,7 @@ odbccp
 Oem
 officehubintl
 ofs
+oid
 oldcolor
 olditem
 oldnewthing
@@ -1614,6 +1623,7 @@ psapi
 pscid
 PSECURITY
 psfgao
+psfi
 Psr
 psrm
 psrree
@@ -1715,6 +1725,7 @@ renamable
 RENAMEONCOLLISION
 Renamer
 reparse
+reportbug
 requery
 requerying
 rescap
@@ -1758,6 +1769,7 @@ roslyn
 roundf
 ROUNDSMALL
 Rpc
+rpcrt
 RRF
 rrr
 RSAT
@@ -1852,6 +1864,7 @@ shellscalingapi
 SHFILEINFO
 SHGDNF
 SHGFI
+shinfo
 Shl
 shldisp
 shlobj
@@ -2057,6 +2070,7 @@ TEXCOORD
 textblock
 TEXTEXTRACTOR
 TEXTINCLUDE
+tgz
 themeresources
 THH
 THICKFRAME
@@ -2124,6 +2138,7 @@ ULONGLONG
 unapply
 unassign
 uncompilable
+Uncompress
 UNCPRIORITY
 UNDNAME
 UNICODETEXT
@@ -2167,6 +2182,7 @@ uxtheme
 UYVY
 vabdq
 validmodulename
+valuegenerator
 Vanara
 variantassignment
 vcamp
@@ -2177,6 +2193,7 @@ VCINSTALLDIR
 vcm
 vcomp
 Vcpkg
+vcproj
 VCRT
 vcruntime
 vcvars

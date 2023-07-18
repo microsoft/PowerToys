@@ -382,7 +382,7 @@ namespace FancyZonesUnitTests
 
         TEST_METHOD (ZeroZoneCount)
         {
-            for (int type = static_cast<int>(ZoneSetLayoutType::Focus); type < static_cast<int>(ZoneSetLayoutType::Custom); type++)
+            for (int type = static_cast<int>(ZoneSetLayoutType::Columns); type < static_cast<int>(ZoneSetLayoutType::Custom); type++)
             {
                 LayoutData data = m_data;
                 data.type = static_cast<ZoneSetLayoutType>(type);
@@ -393,6 +393,32 @@ namespace FancyZonesUnitTests
                 {
                     auto result = layout->Init(rect, Mocks::Monitor());
                     Assert::IsFalse(result);
+                }
+            }
+
+            {
+                LayoutData data = m_data;
+                data.type = static_cast<ZoneSetLayoutType>(ZoneSetLayoutType::Blank);
+                data.zoneCount = 0;
+                auto layout = std::make_unique<Layout>(data);
+
+                for (const auto& rect : m_workAreaRects)
+                {
+                    auto result = layout->Init(rect, Mocks::Monitor());
+                    Assert::IsTrue(result);
+                }
+            }
+
+            {
+                LayoutData data = m_data;
+                data.type = static_cast<ZoneSetLayoutType>(ZoneSetLayoutType::Focus);
+                data.zoneCount = 0;
+                auto layout = std::make_unique<Layout>(data);
+
+                for (const auto& rect : m_workAreaRects)
+                {
+                    auto result = layout->Init(rect, Mocks::Monitor());
+                    Assert::IsTrue(result);
                 }
             }
         }

@@ -75,11 +75,17 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         [JsonPropertyName("generate_thumbnails_from_files")]
         public bool GenerateThumbnailsFromFiles { get; set; }
 
+        public HotkeySettings DefaultOpenPowerLauncher => new HotkeySettings(false, false, true, false, 32);
+
+        public HotkeySettings DefaultOpenFileLocation => new HotkeySettings();
+
+        public HotkeySettings DefaultCopyPathLocation => new HotkeySettings();
+
         public PowerLauncherProperties()
         {
-            OpenPowerLauncher = new HotkeySettings(false, false, true, false, 32);
-            OpenFileLocation = new HotkeySettings();
-            CopyPathLocation = new HotkeySettings();
+            OpenPowerLauncher = DefaultOpenPowerLauncher;
+            OpenFileLocation = DefaultOpenFileLocation;
+            CopyPathLocation = DefaultCopyPathLocation;
             OpenConsole = new HotkeySettings();
             SearchResultPreference = "most_recently_used";
             SearchTypePreference = "application_name";
@@ -91,6 +97,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             Position = StartupPosition.Cursor;
             UseCentralizedKeyboardHook = false;
             SearchQueryResultsWithDelay = true;
+            SearchInputDelayFast = 50;
             SearchInputDelay = 150;
             SearchClickedItemWeight = 5;
             SearchQueryTuningEnabled = false;

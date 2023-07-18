@@ -1,4 +1,5 @@
 import "ExplorerItem.idl";
+import "ExplorerItemsSource.idl";
 import "PatternSnippet.idl";
 
 namespace PowerRenameUI
@@ -10,7 +11,7 @@ namespace PowerRenameUI
         Windows.Foundation.Collections.IObservableVector<String> SearchMRU { get; };
         Windows.Foundation.Collections.IObservableVector<String> ReplaceMRU { get; };
 
-        Windows.Foundation.Collections.IObservableVector<ExplorerItem> ExplorerItems { get; };
+        ExplorerItemsSource ExplorerItems { get; };
         Windows.Foundation.Collections.IObservableVector<PatternSnippet> SearchRegExShortcuts { get; };
         Windows.Foundation.Collections.IObservableVector<PatternSnippet> DateTimeShortcuts { get; };
 

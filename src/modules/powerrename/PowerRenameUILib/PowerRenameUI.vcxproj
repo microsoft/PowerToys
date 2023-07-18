@@ -91,6 +91,14 @@
       <DependentUpon>ExplorerItem.xaml</DependentUpon>
       <SubType>Code</SubType>
     </ClInclude>
+    <ClInclude Include="ExplorerItemsSource.h">
+      <DependentUpon>ExplorerItemsSource.idl</DependentUpon>
+      <SubType>Code</SubType>
+    </ClInclude>
+    <ClInclude Include="ExplorerItemViewModel.h">
+      <DependentUpon>ExplorerItemViewModel.idl</DependentUpon>
+      <SubType>Code</SubType>
+    </ClInclude>
     <ClInclude Include="PatternSnippet.h">
       <DependentUpon>PatternSnippet.idl</DependentUpon>
     </ClInclude>
@@ -101,6 +109,7 @@
     <ClInclude Include="MainWindow.xaml.h">
       <DependentUpon>MainWindow.xaml</DependentUpon>
     </ClInclude>
+    <ClInclude Include="Utils.h" />
   </ItemGroup>
   <ItemGroup>
     <ApplicationDefinition Include="App.xaml" />
@@ -112,6 +121,14 @@
   <ItemGroup>
     <ClCompile Include="ExplorerItem.cpp">
       <DependentUpon>ExplorerItem.xaml</DependentUpon>
+      <SubType>Code</SubType>
+    </ClCompile>
+    <ClCompile Include="ExplorerItemsSource.cpp">
+      <DependentUpon>ExplorerItemsSource.idl</DependentUpon>
+      <SubType>Code</SubType>
+    </ClCompile>
+    <ClCompile Include="ExplorerItemViewModel.cpp">
+      <DependentUpon>ExplorerItemViewModel.idl</DependentUpon>
       <SubType>Code</SubType>
     </ClCompile>
     <ClCompile Include="PatternSnippet.cpp">
@@ -136,6 +153,12 @@
     <Midl Include="ExplorerItem.idl">
       <DependentUpon>ExplorerItem.xaml</DependentUpon>
       <SubType>Code</SubType>
+    </Midl>
+    <Midl Include="ExplorerItemsSource.idl">
+      <SubType>Code</SubType>
+    </Midl>
+    <Midl Include="ExplorerItemViewModel.idl">
+      <SubType>Designer</SubType>
     </Midl>
     <Midl Include="MainWindow.idl">
       <SubType>Code</SubType>

@@ -27,15 +27,22 @@ namespace Peek.UI
     {
         public MainWindowViewModel ViewModel { get; }
 
-        private ThemeListener themeListener;
+        private ThemeListener? themeListener;
 
         public MainWindow()
         {
             InitializeComponent();
             this.Activated += PeekWindow_Activated;
 
-            themeListener = new ThemeListener();
-            themeListener.ThemeChanged += (_) => HandleThemeChange();
+            try
+            {
+                themeListener = new ThemeListener();
+                themeListener.ThemeChanged += (_) => HandleThemeChange();
+            }
+            catch (Exception e)
+            {
+                Logger.LogError($"HandleThemeChange exception. Please install .NET 4.", e);
+            }
 
             ViewModel = App.GetService<MainWindowViewModel>();
 
