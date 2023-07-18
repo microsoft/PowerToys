@@ -4,14 +4,17 @@ namespace PowerRenameUI
     {
         ExplorerItem();
         ExplorerItem(Int32 id, String original, String renamed, Int32 type, UInt32 depth, Boolean checked);
-        Int32 Id { get; };
-        String IdStr { get; };
+        
+        Int32 Id;
+        String IdStr;
         String Original;
         String Renamed;
-        Double Indentation { get; };
-        String ImagePath { get; };
+        Double Indentation;
+        String ImagePath;
         Int32 Type;
         Boolean Checked;
         Int32 State;
+        
+        static Microsoft.UI.Xaml.DependencyProperty CheckedProperty { get; };
     }
 }

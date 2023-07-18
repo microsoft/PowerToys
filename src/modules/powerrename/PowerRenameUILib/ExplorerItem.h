@@ -6,6 +6,7 @@
 #include "winrt/Microsoft.UI.Xaml.Controls.Primitives.h"
 #include "ExplorerItem.g.h"
 #include "PowerRenameInterfaces.h"
+#include "Utils.h"
 
 namespace winrt::PowerRenameUI::implementation
 {
@@ -17,27 +18,39 @@ namespace winrt::PowerRenameUI::implementation
             File = 1
         };
 
-        ExplorerItem() = default;
+        ExplorerItem();
 
         ExplorerItem(int32_t id, hstring const& original, hstring const& renamed, int32_t type, uint32_t depth, bool checked);
         int32_t Id();
+        void Id(int32_t);
+
         hstring IdStr();
+        void IdStr(hstring const& value);
+
         hstring Original();
         void Original(hstring const& value);
+
         hstring Renamed();
         void Renamed(hstring const& value);
+
         double Indentation();
+        void Indentation(double value);
+
         hstring ImagePath();
+        void ImagePath(hstring const& value);
         int32_t Type();
         void Type(int32_t value);
-        bool Checked();
-        void Checked(bool value);
         int32_t State();
         void State(int32_t value);
         winrt::event_token PropertyChanged(winrt::Microsoft::UI::Xaml::Data::PropertyChangedEventHandler const& handler);
         void PropertyChanged(winrt::event_token const& token) noexcept;
 
+        DEPENDENCY_PROPERTY(bool, Checked);
+
     private:
+
+        static void _InitializeProperties();
+
         std::wstring StateToErrorMessage();
 
         int32_t m_id{};
@@ -47,7 +60,6 @@ namespace winrt::PowerRenameUI::implementation
         uint32_t m_depth{};
         hstring m_imagePath;
         int32_t m_type{};
-        bool m_checked{};
         PowerRenameItemRenameStatus m_state{};
         winrt::event<Microsoft::UI::Xaml::Data::PropertyChangedEventHandler> m_propertyChanged;
     };

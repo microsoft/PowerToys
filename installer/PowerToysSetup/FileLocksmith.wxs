@@ -27,9 +27,6 @@
         <RegistryKey Root="$(var.RegistryScope)" Key="Software\Classes\Drive\ShellEx\ContextMenuHandlers\FileLocksmithExt">
           <RegistryValue Type="string" Value="{84D68575-E186-46AD-B0CB-BAEB45EE29C0}"/>
         </RegistryKey>
-		<RegistryKey Root="$(var.RegistryScope)" Key="SOFTWARE\Classes\Directory\background\ShellEx\ContextMenuHandlers\FileLocksmithExt">
-          <RegistryValue Type="string" Value="{84D68575-E186-46AD-B0CB-BAEB45EE29C0}"/>
-        </RegistryKey>
       </Component>
     </DirectoryRef>
 

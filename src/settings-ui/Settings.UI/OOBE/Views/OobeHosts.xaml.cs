@@ -2,6 +2,8 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System.Threading;
+using interop;
 using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.PowerToys.Settings.UI.OOBE.Enums;
 using Microsoft.PowerToys.Settings.UI.OOBE.ViewModel;
@@ -35,14 +37,14 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
         private void Launch_Hosts_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
         {
             bool launchAdmin = SettingsRepository<HostsSettings>.GetInstance(new SettingsUtils()).SettingsConfig.Properties.LaunchAdministrator;
-            var actionName = "Launch";
+            string eventName = !App.IsElevated && launchAdmin
+                ? Constants.ShowHostsAdminSharedEvent()
+                : Constants.ShowHostsSharedEvent();
 
-            if (!App.IsElevated && launchAdmin)
+            using (var eventHandle = new EventWaitHandle(false, EventResetMode.AutoReset, eventName))
             {
-                actionName = "LaunchAdministrator";
+                eventHandle.Set();
             }
-
-            ShellPage.SendDefaultIPCMessage("{\"action\":{\"Hosts\":{\"action_name\":\"" + actionName + "\", \"value\":\"\"}}}");
         }
 
         private void Launch_Settings_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
