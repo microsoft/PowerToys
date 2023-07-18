@@ -8,6 +8,7 @@
 #include "MainWindow.g.h"
 #include "PatternSnippet.h"
 #include "ExplorerItem.h"
+#include "ExplorerItemsSource.h"
 
 #include <map>
 #include <wil/resource.h>
@@ -58,8 +59,6 @@ namespace winrt::PowerRenameUI::implementation
                 return QISearch(this, qit, riid, ppv);
             }
 
-            HRESULT OnItemAdded(_In_ IPowerRenameItem* renameItem) override { return m_app->OnItemAdded(renameItem); }
-            HRESULT OnUpdate(_In_ IPowerRenameItem* renameItem) override { return m_app->OnUpdate(renameItem); }
             HRESULT OnRename(_In_ IPowerRenameItem* renameItem) override { return m_app->OnRename(renameItem); }
             HRESULT OnError(_In_ IPowerRenameItem* renameItem) override { return m_app->OnError(renameItem); }
             HRESULT OnRegExStarted(_In_ DWORD threadId) override { return m_app->OnRegExStarted(threadId); }
@@ -75,9 +74,11 @@ namespace winrt::PowerRenameUI::implementation
 
         MainWindow();
 
+        void InvalidateItemListViewState();
+
         Windows::Foundation::Collections::IObservableVector<hstring> SearchMRU() { return m_searchMRUList; }
         Windows::Foundation::Collections::IObservableVector<hstring> ReplaceMRU() { return m_replaceMRUList; }
-        winrt::Windows::Foundation::Collections::IObservableVector<PowerRenameUI::ExplorerItem> ExplorerItems() { return m_explorerItems; }
+        PowerRenameUI::ExplorerItemsSource ExplorerItems() { return m_explorerItems; }
         winrt::Windows::Foundation::Collections::IObservableVector<PowerRenameUI::PatternSnippet> SearchRegExShortcuts() { return m_searchRegExShortcuts; }
         winrt::Windows::Foundation::Collections::IObservableVector<PowerRenameUI::PatternSnippet> DateTimeShortcuts() { return m_dateTimeShortcuts; }
         hstring OriginalCount();
@@ -87,27 +88,20 @@ namespace winrt::PowerRenameUI::implementation
         winrt::event_token PropertyChanged(winrt::Microsoft::UI::Xaml::Data::PropertyChangedEventHandler const& handler);
         void PropertyChanged(winrt::event_token const& token) noexcept;
 
-        void AddExplorerItem(int32_t id, hstring const& original, hstring const& renamed, int32_t type, uint32_t depth, bool checked);
-        void UpdateExplorerItem(int32_t id, std::optional<hstring> newOriginalName, std::optional<hstring> newName, PowerRenameItemRenameStatus itemStatus);
-
         void SelectAll(winrt::Windows::Foundation::IInspectable const& sender, winrt::Microsoft::UI::Xaml::RoutedEventArgs const& e);
         void ShowAll(winrt::Windows::Foundation::IInspectable const& sender, winrt::Microsoft::UI::Xaml::RoutedEventArgs const& e);
         void ShowRenamed(winrt::Windows::Foundation::IInspectable const& sender, winrt::Microsoft::UI::Xaml::RoutedEventArgs const& e);
 
     private:
         bool m_allSelected;
-        inline PowerRenameUI::ExplorerItem FindById(int32_t id);
 
         winrt::Windows::Foundation::Collections::IObservableVector<hstring> m_searchMRUList;
         winrt::Windows::Foundation::Collections::IObservableVector<hstring> m_replaceMRUList;
-        winrt::Windows::Foundation::Collections::IObservableVector<PowerRenameUI::ExplorerItem> m_explorerItems;
-        std::map<int32_t, PowerRenameUI::ExplorerItem> m_explorerItemsMap;
+        PowerRenameUI::ExplorerItemsSource m_explorerItems;
         winrt::Windows::Foundation::Collections::IObservableVector<PowerRenameUI::PatternSnippet> m_searchRegExShortcuts;
         winrt::Windows::Foundation::Collections::IObservableVector<PowerRenameUI::PatternSnippet> m_dateTimeShortcuts;
 
         // Used by PowerRenameManagerEvents
-        HRESULT OnItemAdded(_In_ IPowerRenameItem* renameItem);
-        HRESULT OnUpdate(_In_ IPowerRenameItem* renameItem);
         HRESULT OnRename(_In_ IPowerRenameItem* renameItem);
         HRESULT OnError(_In_ IPowerRenameItem*) { return S_OK; }
         HRESULT OnRegExStarted(_In_ DWORD) { return S_OK; }
@@ -124,7 +118,6 @@ namespace winrt::PowerRenameUI::implementation
 
         HRESULT CreateShellItemArrayFromPaths(std::vector<std::wstring> files, IShellItemArray** shellItemArray);
 
-        void PopulateExplorerItems();
         HRESULT InitAutoComplete();
         HRESULT EnumerateShellItems(_In_ IEnumShellItems* enumShellItems);
         void SearchReplaceChanged(bool forceRenaming = false);
@@ -155,6 +148,7 @@ namespace winrt::PowerRenameUI::implementation
         winrt::event<Microsoft::UI::Xaml::Data::PropertyChangedEventHandler> m_propertyChanged;
 
         bool m_flagValidationInProgress = false;
+
     public:
         void RegExItemClick(winrt::Windows::Foundation::IInspectable const& sender, winrt::Microsoft::UI::Xaml::Controls::ItemClickEventArgs const& e);
         void DateTimeItemClick(winrt::Windows::Foundation::IInspectable const& sender, winrt::Microsoft::UI::Xaml::Controls::ItemClickEventArgs const& e);

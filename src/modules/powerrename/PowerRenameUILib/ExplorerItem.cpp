@@ -41,10 +41,33 @@ namespace
 
 namespace winrt::PowerRenameUI::implementation
 {
-    ExplorerItem::ExplorerItem(int32_t id, hstring const& original, hstring const& renamed, int32_t type, uint32_t depth, bool checked) :
-        m_id{ id }, m_idStr{ std::to_wstring(id) }, m_original{ original }, m_renamed{ renamed }, m_type{ type }, m_depth{ depth }, m_checked{ checked }
+    DependencyProperty ExplorerItem::_CheckedProperty{ nullptr };
+
+    void ExplorerItem::_InitializeProperties()
     {
+        if (!_CheckedProperty)
+        {
+            _CheckedProperty =
+                DependencyProperty::Register(
+                    L"Checked",
+                    xaml_typename<bool>(),
+                    xaml_typename<PowerRenameUI::ExplorerItem>(),
+                    PropertyMetadata{ box_value(true) });
+        }
+    }
+
+    ExplorerItem::ExplorerItem()
+    {
+        _InitializeProperties();
+    }
+
+    ExplorerItem::ExplorerItem(int32_t id, hstring const& original, hstring const& renamed, int32_t type, uint32_t depth, bool checked) :
+        m_id{ id }, m_idStr{ std::to_wstring(id) }, m_original{ original }, m_renamed{ renamed }, m_type{ type }, m_depth{ depth }
+    {
+        _InitializeProperties();
+
         m_imagePath = (m_type == static_cast<UINT>(ExplorerItemType::Folder)) ? folderImagePath : fileImagePath;
+        Checked(checked);
     }
 
     int32_t ExplorerItem::Id()
@@ -52,9 +75,27 @@ namespace winrt::PowerRenameUI::implementation
         return m_id;
     }
 
+    void ExplorerItem::Id(const int32_t value)
+    {
+        if (m_id != value)
+        {
+            m_id = value;
+            m_propertyChanged(*this, Microsoft::UI::Xaml::Data::PropertyChangedEventArgs{ L"Id" });
+        }
+    }
+
     hstring ExplorerItem::IdStr()
     {
         return m_idStr;
+    }
+
+    void ExplorerItem::IdStr(hstring const& value)
+    {
+        if (m_idStr != value)
+        {
+            m_idStr = value;
+            m_propertyChanged(*this, Microsoft::UI::Xaml::Data::PropertyChangedEventArgs{ L"IdStr" });
+        }
     }
 
     hstring ExplorerItem::Original()
@@ -90,9 +131,27 @@ namespace winrt::PowerRenameUI::implementation
         return static_cast<double>(m_depth) * 12;
     }
 
+    void ExplorerItem::Indentation(double value)
+    {
+        if (m_depth != value)
+        {
+            m_depth = static_cast<uint32_t>(value / 12);
+            m_propertyChanged(*this, Microsoft::UI::Xaml::Data::PropertyChangedEventArgs{ L"Indentation" });
+        }
+    }
+
     hstring ExplorerItem::ImagePath()
     {
         return m_imagePath;
+    }
+
+    void ExplorerItem::ImagePath(hstring const& value)
+    {
+        if (m_imagePath != value)
+        {
+            m_imagePath = value;
+            m_propertyChanged(*this, Microsoft::UI::Xaml::Data::PropertyChangedEventArgs{ L"ImagePath" });
+        }
     }
 
     int32_t ExplorerItem::Type()
@@ -106,29 +165,6 @@ namespace winrt::PowerRenameUI::implementation
         {
             m_type = value;
             m_propertyChanged(*this, Microsoft::UI::Xaml::Data::PropertyChangedEventArgs{ L"Type" });
-        }
-    }
-
-    bool ExplorerItem::Checked()
-    {
-        return m_checked;
-    }
-
-    void ExplorerItem::Checked(bool value)
-    {
-        if (m_checked != value)
-        {
-            m_checked = value;
-            m_propertyChanged(*this, Microsoft::UI::Xaml::Data::PropertyChangedEventArgs{ L"Checked" });
-
-            if (m_checked && !m_renamed.empty())
-            {
-                VisualStateManager::GoToState(*this, PowerRenameItemRenameStatusToString(m_state), false);
-            }
-            else
-            {
-                VisualStateManager::GoToState(*this, L"Normal", false);
-            }
         }
     }
 
@@ -166,7 +202,7 @@ namespace winrt::PowerRenameUI::implementation
     {
         static auto factory = winrt::get_activation_factory<ResourceManager, IResourceManagerFactory>();
         static ResourceManager manager = factory.CreateInstance(L"resources.pri");
-        static auto invalid_char_error = manager.MainResourceMap().GetValue(L"Resources/ErrorMessage_InvalidChar").ValueAsString(); 
+        static auto invalid_char_error = manager.MainResourceMap().GetValue(L"Resources/ErrorMessage_InvalidChar").ValueAsString();
         static auto name_too_long_error = manager.MainResourceMap().GetValue(L"Resources/ErrorMessage_FileNameTooLong").ValueAsString();
 
         switch (m_state)
@@ -182,7 +218,6 @@ namespace winrt::PowerRenameUI::implementation
         default:
             return {};
         }
-
     }
 
 }

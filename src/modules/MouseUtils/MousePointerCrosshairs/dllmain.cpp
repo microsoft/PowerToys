@@ -17,6 +17,7 @@ namespace
     const wchar_t JSON_KEY_CROSSHAIRS_THICKNESS[] = L"crosshairs_thickness";
     const wchar_t JSON_KEY_CROSSHAIRS_BORDER_COLOR[] = L"crosshairs_border_color";
     const wchar_t JSON_KEY_CROSSHAIRS_BORDER_SIZE[] = L"crosshairs_border_size";
+    const wchar_t JSON_KEY_CROSSHAIRS_AUTO_HIDE[] = L"crosshairs_auto_hide";
 }
 
 extern "C" IMAGE_DOS_HEADER __ImageBase;
@@ -329,6 +330,16 @@ public:
             catch (...)
             {
                 Logger::warn("Failed to initialize border color from settings. Will use default value");
+            }
+            try
+            {
+                // Parse auto hide
+                auto jsonPropertiesObject = settingsObject.GetNamedObject(JSON_KEY_PROPERTIES).GetNamedObject(JSON_KEY_CROSSHAIRS_AUTO_HIDE);
+                inclusiveCrosshairsSettings.crosshairsAutoHide = static_cast<bool>(jsonPropertiesObject.GetNamedBoolean(JSON_KEY_VALUE));
+            }
+            catch (...)
+            {
+                Logger::warn("Failed to initialize auto hide from settings. Will use default value");
             }
         }
         else

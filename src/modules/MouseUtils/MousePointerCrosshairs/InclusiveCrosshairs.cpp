@@ -45,6 +45,7 @@ private:
 
     static constexpr auto m_className = L"MousePointerCrosshairs";
     static constexpr auto m_windowTitle = L"PowerToys Mouse Pointer Crosshairs";
+    static constexpr DWORD AUTO_HIDE_TIMER_ID = 101;
     HWND m_hwndOwner = NULL;
     HWND m_hwnd = NULL;
     HINSTANCE m_hinstance = NULL;
@@ -65,8 +66,10 @@ private:
     winrt::SpriteVisual m_bottom_crosshairs_border{ nullptr };
     winrt::SpriteVisual m_bottom_crosshairs{ nullptr };
 
-    bool m_visible = false;
+    bool m_drawing = false;
     bool m_destroyed = false;
+    bool m_hiddenCursor = false;
+    void SetAutoHideTimer() noexcept;
 
     // Configurable Settings
     winrt::Windows::UI::Color m_crosshairs_border_color = INCLUSIVE_MOUSE_DEFAULT_CROSSHAIRS_BORDER_COLOR;
@@ -75,6 +78,7 @@ private:
     int m_crosshairs_thickness = INCLUSIVE_MOUSE_DEFAULT_CROSSHAIRS_THICKNESS;
     int m_crosshairs_border_size = INCLUSIVE_MOUSE_DEFAULT_CROSSHAIRS_BORDER_SIZE;
     float m_crosshairs_opacity = max(0.f, min(1.f, (float)INCLUSIVE_MOUSE_DEFAULT_CROSSHAIRS_OPACITY / 100.0f));
+    bool m_crosshairs_auto_hide = INCLUSIVE_MOUSE_DEFAULT_AUTO_HIDE;
 };
 
 InclusiveCrosshairs* InclusiveCrosshairs::instance = nullptr;
@@ -217,7 +221,7 @@ void InclusiveCrosshairs::UpdateCrosshairsPosition()
     m_left_crosshairs.Offset({ ptCursor.x - m_crosshairs_radius + halfPixelAdjustment * 2.f, ptCursor.y + halfPixelAdjustment, .0f });
     m_left_crosshairs.Size({ ptCursor.x - ptMonitorUpperLeft.x - m_crosshairs_radius + halfPixelAdjustment * 2, static_cast<float>(m_crosshairs_thickness) });
 
-    m_right_crosshairs_border.Offset({static_cast<float>(ptCursor.x) + m_crosshairs_radius - m_crosshairs_border_size, ptCursor.y + halfPixelAdjustment, .0f });
+    m_right_crosshairs_border.Offset({ static_cast<float>(ptCursor.x) + m_crosshairs_radius - m_crosshairs_border_size, ptCursor.y + halfPixelAdjustment, .0f });
     m_right_crosshairs_border.Size({ static_cast<float>(ptMonitorBottomRight.x) - ptCursor.x - m_crosshairs_radius + m_crosshairs_border_size, m_crosshairs_thickness + m_crosshairs_border_size * 2.f });
     m_right_crosshairs.Offset({ static_cast<float>(ptCursor.x) + m_crosshairs_radius, ptCursor.y + halfPixelAdjustment, .0f });
     m_right_crosshairs.Size({ static_cast<float>(ptMonitorBottomRight.x) - ptCursor.x - m_crosshairs_radius, static_cast<float>(m_crosshairs_thickness) });
@@ -227,11 +231,10 @@ void InclusiveCrosshairs::UpdateCrosshairsPosition()
     m_top_crosshairs.Offset({ ptCursor.x + halfPixelAdjustment, ptCursor.y - m_crosshairs_radius + halfPixelAdjustment * 2, .0f });
     m_top_crosshairs.Size({ static_cast<float>(m_crosshairs_thickness), ptCursor.y - ptMonitorUpperLeft.y - m_crosshairs_radius + halfPixelAdjustment * 2 });
 
-    m_bottom_crosshairs_border.Offset({ ptCursor.x + halfPixelAdjustment,  static_cast<float>(ptCursor.y) + m_crosshairs_radius - m_crosshairs_border_size, .0f });
-    m_bottom_crosshairs_border.Size({ m_crosshairs_thickness + m_crosshairs_border_size * 2.f,  static_cast<float>(ptMonitorBottomRight.y) - ptCursor.y - m_crosshairs_radius + m_crosshairs_border_size });
-    m_bottom_crosshairs.Offset({ ptCursor.x + halfPixelAdjustment,  static_cast<float>(ptCursor.y) + m_crosshairs_radius, .0f });
-    m_bottom_crosshairs.Size({  static_cast<float>(m_crosshairs_thickness),  static_cast<float>(ptMonitorBottomRight.y) - ptCursor.y - m_crosshairs_radius });
-
+    m_bottom_crosshairs_border.Offset({ ptCursor.x + halfPixelAdjustment, static_cast<float>(ptCursor.y) + m_crosshairs_radius - m_crosshairs_border_size, .0f });
+    m_bottom_crosshairs_border.Size({ m_crosshairs_thickness + m_crosshairs_border_size * 2.f, static_cast<float>(ptMonitorBottomRight.y) - ptCursor.y - m_crosshairs_radius + m_crosshairs_border_size });
+    m_bottom_crosshairs.Offset({ ptCursor.x + halfPixelAdjustment, static_cast<float>(ptCursor.y) + m_crosshairs_radius, .0f });
+    m_bottom_crosshairs.Size({ static_cast<float>(m_crosshairs_thickness), static_cast<float>(ptMonitorBottomRight.y) - ptCursor.y - m_crosshairs_radius });
 }
 
 LRESULT CALLBACK InclusiveCrosshairs::MouseHookProc(int nCode, WPARAM wParam, LPARAM lParam) noexcept
@@ -239,7 +242,8 @@ LRESULT CALLBACK InclusiveCrosshairs::MouseHookProc(int nCode, WPARAM wParam, LP
     if (nCode >= 0)
     {
         MSLLHOOKSTRUCT* hookData = reinterpret_cast<MSLLHOOKSTRUCT*>(lParam);
-        if (wParam == WM_MOUSEMOVE) {
+        if (wParam == WM_MOUSEMOVE)
+        {
             instance->UpdateCrosshairsPosition();
         }
     }
@@ -251,18 +255,37 @@ void InclusiveCrosshairs::StartDrawing()
     Logger::info("Start drawing crosshairs.");
     Trace::StartDrawingCrosshairs();
     UpdateCrosshairsPosition();
-    ShowWindow(m_hwnd, SW_SHOWNOACTIVATE);
-    m_visible = true;
+
+    m_hiddenCursor = false;
+    if (m_crosshairs_auto_hide)
+    {
+        CURSORINFO cursorInfo{};
+        cursorInfo.cbSize = sizeof(cursorInfo);
+        if (GetCursorInfo(&cursorInfo))
+        {
+            m_hiddenCursor = !(cursorInfo.flags & CURSOR_SHOWING);
+        }
+
+        SetAutoHideTimer();
+    }
+
+    if (!m_hiddenCursor)
+    {
+        ShowWindow(m_hwnd, SW_SHOWNOACTIVATE);
+    }
+
+    m_drawing = true;
     m_mouseHook = SetWindowsHookEx(WH_MOUSE_LL, MouseHookProc, m_hinstance, 0);
 }
 
 void InclusiveCrosshairs::StopDrawing()
 {
     Logger::info("Stop drawing crosshairs.");
-    m_visible = false;
+    m_drawing = false;
     ShowWindow(m_hwnd, SW_HIDE);
     UnhookWindowsHookEx(m_mouseHook);
     m_mouseHook = NULL;
+    KillTimer(m_hwnd, AUTO_HIDE_TIMER_ID);
 }
 
 void InclusiveCrosshairs::SwitchActivationMode()
@@ -278,9 +301,30 @@ void InclusiveCrosshairs::ApplySettings(InclusiveCrosshairsSettings& settings, b
     m_crosshairs_opacity = max(0.f, min(1.f, (float)settings.crosshairsOpacity / 100.0f));
     m_crosshairs_border_color = settings.crosshairsBorderColor;
     m_crosshairs_border_size = settings.crosshairsBorderSize;
+    bool autoHideChanged = m_crosshairs_auto_hide != settings.crosshairsAutoHide;
+    m_crosshairs_auto_hide = settings.crosshairsAutoHide;
 
     if (applyToRunTimeObjects)
     {
+        if (autoHideChanged)
+        {
+            if (m_crosshairs_auto_hide)
+            {
+                SetAutoHideTimer();
+            }
+            else
+            {
+                KillTimer(m_hwnd, AUTO_HIDE_TIMER_ID);
+
+                // Edge case of settings being changed with hidden crosshairs: timer time-out is 1 seconds
+                if (m_drawing && m_hiddenCursor)
+                {
+                    instance->m_hiddenCursor = false;
+                    ShowWindow(instance->m_hwnd, SW_SHOWNOACTIVATE);
+                }
+            }
+        }
+
         // Runtime objects already created. Should update in the owner thread.
         if (m_dispatcherQueueController == nullptr)
         {
@@ -331,7 +375,7 @@ LRESULT CALLBACK InclusiveCrosshairs::WndProc(HWND hWnd, UINT message, WPARAM wP
     case WM_NCHITTEST:
         return HTTRANSPARENT;
     case WM_SWITCH_ACTIVATION_MODE:
-        if (instance->m_visible)
+        if (instance->m_drawing)
         {
             instance->StopDrawing();
         }
@@ -342,6 +386,32 @@ LRESULT CALLBACK InclusiveCrosshairs::WndProc(HWND hWnd, UINT message, WPARAM wP
         break;
     case WM_DESTROY:
         instance->DestroyInclusiveCrosshairs();
+        break;
+    case WM_TIMER:
+        if (wParam == AUTO_HIDE_TIMER_ID && instance->m_drawing)
+        {
+            CURSORINFO cursorInfo{};
+            cursorInfo.cbSize = sizeof(cursorInfo);
+            if (GetCursorInfo(&cursorInfo))
+            {
+                if (cursorInfo.flags & CURSOR_SHOWING)
+                {
+                    if (instance->m_hiddenCursor)
+                    {
+                        instance->m_hiddenCursor = false;
+                        ShowWindow(instance->m_hwnd, SW_SHOWNOACTIVATE);
+                    }
+                }
+                else
+                {
+                    if (!instance->m_hiddenCursor)
+                    {
+                        instance->m_hiddenCursor = true;
+                        ShowWindow(instance->m_hwnd, SW_HIDE);
+                    }
+                }
+            }
+        }
         break;
     default:
         return DefWindowProc(hWnd, message, wParam, lParam);
@@ -387,6 +457,15 @@ void InclusiveCrosshairs::Terminate()
     if (!enqueueSucceeded)
     {
         Logger::error("Couldn't enqueue message to destroy the window.");
+    }
+}
+
+void InclusiveCrosshairs::SetAutoHideTimer() noexcept
+{
+    if (SetTimer(m_hwnd, AUTO_HIDE_TIMER_ID, 1000, NULL) == 0)
+    {
+        int error = GetLastError();
+        Logger::trace("Failed to create auto hide timer. Last error: {}", error);
     }
 }
 
