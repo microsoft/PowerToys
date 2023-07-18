@@ -41,12 +41,11 @@
         Margin="16"
         RowSpacing="8">
         <Grid.RowDefinitions>
-            <RowDefinition Height="Auto" />
-            <RowDefinition Height="*" />
-            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" /><!-- buttons -->
+            <RowDefinition Height="*" /><!-- content -->
         </Grid.RowDefinitions>
 
-        <Grid>
+        <Grid><!-- buttons -->
             <Button
                 x:Uid="AddEntryBtn"
                 Command="{x:Bind NewDialogCommand}">
@@ -132,7 +131,8 @@
                                     x:Uid="ClearFiltersBtn"
                                     HorizontalAlignment="Right"
                                     Command="{x:Bind ViewModel.ClearFiltersCommand}"
-                                    Style="{StaticResource AccentButtonStyle}" />
+                                    Style="{StaticResource AccentButtonStyle}"
+                                    IsEnabled="{x:Bind ViewModel.Filtered, Mode=OneWay}"/>
                             </StackPanel>
                         </Flyout>
                     </Button.Flyout>
@@ -168,11 +168,15 @@
         -->
         <Grid
             Grid.Row="1"
-            Visibility="{x:Bind ViewModel.IsLoading, Converter={StaticResource BoolToInvertedVisibilityConverter}, Mode=OneWay}">          
+            Visibility="{x:Bind ViewModel.IsLoading, Converter={StaticResource BoolToInvertedVisibilityConverter}, Mode=OneWay}">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="*" />
+                <RowDefinition Height="Auto" />
+            </Grid.RowDefinitions>
+
             <ListView
                 x:Name="Entries"
                 x:Uid="Entries"
-                Grid.Row="1"
                 Background="{ThemeResource LayerFillColorDefaultBrush}"
                 BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
                 BorderThickness="1"
@@ -182,8 +186,7 @@
                 KeyDown="Entries_KeyDown"
                 GotFocus="Entries_GotFocus"
                 ItemsSource="{x:Bind ViewModel.Entries, Mode=TwoWay}"
-                SelectedItem="{x:Bind ViewModel.Selected, Mode=TwoWay}"
-                Visibility="{x:Bind ViewModel.IsLoading, Converter={StaticResource BoolToInvertedVisibilityConverter}, Mode=OneWay}">
+                SelectedItem="{x:Bind ViewModel.Selected, Mode=TwoWay}">
                 <ListView.ItemTemplate>
                     <DataTemplate x:DataType="models:Entry">
                         <Grid
@@ -193,11 +196,11 @@
                             RightTapped="Grid_RightTapped"
                             ColumnSpacing="8">
                             <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="256"/> <!--address-->
-                                <ColumnDefinition Width="*"/> <!--comment-->
-                                <ColumnDefinition Width="Auto"/> <!--status-->
-                                <ColumnDefinition Width="Auto"/> <!--duplicate-->
-                                <ColumnDefinition Width="Auto"/> <!--toggleswitch-->
+                                <ColumnDefinition Width="256"/><!--address-->
+                                <ColumnDefinition Width="*"/><!--comment-->
+                                <ColumnDefinition Width="Auto"/><!--status-->
+                                <ColumnDefinition Width="Auto"/><!--duplicate-->
+                                <ColumnDefinition Width="Auto"/><!--toggleswitch-->
                             </Grid.ColumnDefinitions>
                             <FlyoutBase.AttachedFlyout>
                                 <MenuFlyout Opened="MenuFlyout_Opened">
@@ -242,7 +245,7 @@
                                         x:Uid="Delete"
                                         Click="Delete_Click"
                                         Icon="Delete">
-                                         <MenuFlyoutItem.KeyboardAccelerators>
+                                        <MenuFlyoutItem.KeyboardAccelerators>
                                             <KeyboardAccelerator Key="Delete" />
                                         </MenuFlyoutItem.KeyboardAccelerators>
                                     </MenuFlyoutItem>
@@ -337,7 +340,7 @@
                     </DataTemplate>
                 </ListView.ItemTemplate>
             </ListView>
-            
+
             <StackPanel
                 HorizontalAlignment="Center"
                 VerticalAlignment="Center"
@@ -360,7 +363,7 @@
                         HorizontalAlignment="Center"
                         Command="{x:Bind NewDialogCommand}" />
                 </StackPanel>
-                
+
                 <StackPanel
                     HorizontalAlignment="Center"
                     VerticalAlignment="Center"
@@ -380,32 +383,36 @@
                         Command="{x:Bind ViewModel.ClearFiltersCommand}" />
                 </StackPanel>
             </StackPanel>
+
+            <StackPanel
+                Grid.Row="1">
+                <InfoBar
+                    x:Uid="FileSaveError"
+                    Margin="0,8,0,0"
+                    Severity="Error"
+                    IsOpen="{x:Bind ViewModel.Error, Mode=TwoWay}"
+                    Visibility="{x:Bind ViewModel.Error, Mode=TwoWay, Converter={StaticResource BoolToVisibilityConverter}}" />
+
+                <InfoBar
+                    x:Uid="FileChanged"
+                    Margin="0,8,0,0"
+                    Severity="Informational"
+                    IsOpen="{x:Bind ViewModel.FileChanged, Mode=TwoWay}"
+                    Visibility="{x:Bind ViewModel.FileChanged, Mode=TwoWay, Converter={StaticResource BoolToVisibilityConverter}}">
+                    <InfoBar.ActionButton>
+                        <Button
+                            x:Uid="Reload"
+                            Command="{x:Bind ViewModel.ReadHostsCommand}" />
+                    </InfoBar.ActionButton>
+                </InfoBar>
+            </StackPanel>
         </Grid>
-        
+
         <ProgressRing
             Width="48"
             Height="48"
             Grid.Row="1"
             IsActive="{x:Bind ViewModel.IsLoading, Mode=OneWay}" />
-
-        <StackPanel
-            Grid.Row="2">
-            <InfoBar
-                x:Uid="FileSaveError"
-                IsOpen="{x:Bind ViewModel.Error, Mode=TwoWay}"
-                Severity="Error" />
-
-            <InfoBar
-                x:Uid="FileChanged"
-                IsOpen="{x:Bind ViewModel.FileChanged, Mode=TwoWay}"
-                Severity="Informational">
-                <InfoBar.ActionButton>
-                    <Button
-                        x:Uid="Reload"
-                        Command="{x:Bind ViewModel.ReadHostsCommand}" />
-                </InfoBar.ActionButton>
-            </InfoBar>
-        </StackPanel>
 
         <ContentDialog
             x:Name="EntryDialog"
@@ -476,7 +483,7 @@
                 ScrollViewer.VerticalScrollMode="Enabled"
                 TextWrapping="Wrap" />
         </ContentDialog>
-        
+
         <TeachingTip
             x:Uid="TooManyHostsTeachingTip"
             IsOpen="{x:Bind ViewModel.ShowSplittedEntriesTooltip, Mode=OneWay}"
@@ -487,8 +494,7 @@
             </TeachingTip.IconSource>
             <TeachingTip.Content>
                 <TextBlock x:Uid="TooManyHostsTeachingTipContent"
-                           TextWrapping="Wrap"
-                           Margin="0,16,0,0" />
+                           TextWrapping="Wrap"/>
             </TeachingTip.Content>
         </TeachingTip>
     </Grid>
