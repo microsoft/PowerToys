@@ -16,7 +16,10 @@ namespace Hosts
         {
             InitializeComponent();
 
-            SetTitleBar();
+            ExtendsContentIntoTitleBar = true;
+            SetTitleBar(titleBar);
+            AppWindow.SetIcon("Assets/Hosts.ico");
+            Title = Windows.ApplicationModel.Resources.ResourceLoader.GetForViewIndependentUse().GetString("WindowTitle");
 
             BringToForeground();
 
@@ -33,12 +36,6 @@ namespace Hosts
             {
                 AppTitleTextBlock.Foreground = (SolidColorBrush)App.Current.Resources["WindowCaptionForeground"];
             }
-        }
-
-        private void SetTitleBar()
-        {
-            ExtendsContentIntoTitleBar = true;
-            SetTitleBar(titleBar);
         }
 
         private void BringToForeground()
