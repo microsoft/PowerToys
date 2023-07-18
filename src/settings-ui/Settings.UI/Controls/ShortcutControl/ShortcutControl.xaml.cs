@@ -107,6 +107,7 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
             };
             shortcutDialog.PrimaryButtonClick += ShortcutDialog_PrimaryButtonClick;
             shortcutDialog.SecondaryButtonClick += ShortcutDialog_Reset;
+            shortcutDialog.RightTapped += ShortcutDialog_Disable;
             shortcutDialog.Opened += ShortcutDialog_Opened;
             shortcutDialog.Closing += ShortcutDialog_Closing;
             AutomationProperties.SetName(EditButton, resourceLoader.GetString("Activation_Shortcut_Title"));
@@ -378,6 +379,16 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
             }
 
             PreviewKeysControl.ItemsSource = hotkeySettings.GetKeysList();
+            AutomationProperties.SetHelpText(EditButton, HotkeySettings.ToString());
+            shortcutDialog.Hide();
+        }
+
+        private void ShortcutDialog_Disable(object sender, RightTappedRoutedEventArgs e)
+        {
+            var empty = new HotkeySettings();
+            HotkeySettings = empty;
+
+            PreviewKeysControl.ItemsSource = HotkeySettings.GetKeysList();
             AutomationProperties.SetHelpText(EditButton, HotkeySettings.ToString());
             shortcutDialog.Hide();
         }
