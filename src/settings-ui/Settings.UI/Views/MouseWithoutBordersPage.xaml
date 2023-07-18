@@ -258,6 +258,7 @@
                     <labs:SettingsCard x:Uid="MouseWithoutBorders_ToggleEasyMouseShortcut"
                             HeaderIcon="{ui:FontIcon FontFamily={StaticResource SymbolThemeFontFamily}, Glyph=&#xEDA7;}">
                         <controls:ShortcutControl
+                                AllowDisable="True"
                                 MinWidth="{StaticResource SettingActionControlMinWidth}"
                                 HotkeySettings="{x:Bind Path=ViewModel.ToggleEasyMouseShortcut, Mode=TwoWay}" />
                     </labs:SettingsCard>
@@ -265,6 +266,7 @@
                     <labs:SettingsCard x:Uid="MouseWithoutBorders_LockMachinesShortcut"
                             HeaderIcon="{ui:FontIcon FontFamily={StaticResource SymbolThemeFontFamily}, Glyph=&#xEDA7;}">
                         <controls:ShortcutControl
+                                AllowDisable="True"
                                 MinWidth="{StaticResource SettingActionControlMinWidth}"
                                 HotkeySettings="{x:Bind Path=ViewModel.LockMachinesShortcut, Mode=TwoWay}" />
                     </labs:SettingsCard>
@@ -272,6 +274,7 @@
                     <labs:SettingsCard x:Uid="MouseWithoutBorders_Switch2AllPcShortcut"
                             HeaderIcon="{ui:FontIcon FontFamily={StaticResource SymbolThemeFontFamily}, Glyph=&#xEDA7;}">
                         <controls:ShortcutControl
+                                AllowDisable="True"                            
                                 MinWidth="{StaticResource SettingActionControlMinWidth}"
                                 HotkeySettings="{x:Bind Path=ViewModel.HotKeySwitch2AllPC, Mode=TwoWay}" />
                     </labs:SettingsCard>                  
@@ -280,6 +283,7 @@
                             x:Uid="MouseWithoutBorders_ReconnectShortcut"
                             HeaderIcon="{ui:FontIcon FontFamily={StaticResource SymbolThemeFontFamily}, Glyph=&#xEDA7;}">
                         <controls:ShortcutControl
+                                AllowDisable="True"                            
                                 MinWidth="{StaticResource SettingActionControlMinWidth}"
                                 HotkeySettings="{x:Bind Path=ViewModel.ReconnectShortcut, Mode=TwoWay}" />
                     </labs:SettingsCard>

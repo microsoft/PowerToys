@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using CommunityToolkit.WinUI.UI;
 using Microsoft.PowerToys.Settings.UI.Helpers;
 using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.UI.Xaml;
@@ -34,8 +35,38 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
         public static readonly DependencyProperty IsActiveProperty = DependencyProperty.Register("Enabled", typeof(bool), typeof(ShortcutControl), null);
         public static readonly DependencyProperty HotkeySettingsProperty = DependencyProperty.Register("HotkeySettings", typeof(HotkeySettings), typeof(ShortcutControl), null);
 
+        public static readonly DependencyProperty AllowDisableProperty = DependencyProperty.Register("AllowDisable", typeof(bool), typeof(ShortcutControl), new PropertyMetadata(false, OnAllowDisableChanged));
+
+        private static void OnAllowDisableChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+        {
+            var me = d as ShortcutControl;
+            if (me == null)
+            {
+                return;
+            }
+
+            var description = me.c?.FindDescendant<TextBlock>();
+            if (description == null)
+            {
+                return;
+            }
+
+            var resourceLoader = ResourceLoader.GetForViewIndependentUse();
+
+            var newValue = (bool)(e?.NewValue ?? false);
+
+            var text = newValue ? resourceLoader.GetString("Activation_Shortcut_With_Disable_Description") : resourceLoader.GetString("Activation_Shortcut_Description");
+            description.Text = text;
+        }
+
         private ShortcutDialogContentControl c = new ShortcutDialogContentControl();
         private ContentDialog shortcutDialog;
+
+        public bool AllowDisable
+        {
+            get => (bool)GetValue(AllowDisableProperty);
+            set => SetValue(AllowDisableProperty, value);
+        }
 
         public bool Enabled
         {
@@ -111,6 +142,8 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
             shortcutDialog.Opened += ShortcutDialog_Opened;
             shortcutDialog.Closing += ShortcutDialog_Closing;
             AutomationProperties.SetName(EditButton, resourceLoader.GetString("Activation_Shortcut_Title"));
+
+            OnAllowDisableChanged(this, null);
         }
 
         private void ShortcutControl_Unloaded(object sender, RoutedEventArgs e)
@@ -385,6 +418,11 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
 
         private void ShortcutDialog_Disable(object sender, RightTappedRoutedEventArgs e)
         {
+            if (!AllowDisable)
+            {
+                return;
+            }
+
             var empty = new HotkeySettings();
             HotkeySettings = empty;
 

@@ -18,7 +18,6 @@
         </Grid.RowDefinitions>
 
         <TextBlock
-            x:Uid="Activation_Shortcut_Description"
             Grid.Row="0" />
 
         <ItemsControl

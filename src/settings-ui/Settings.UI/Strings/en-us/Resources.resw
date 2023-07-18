@@ -2462,7 +2462,10 @@ From there, simply click on one of the supported files in the File Explorer and 
   <data name="Activation_Shortcut_Cancel" xml:space="preserve">
     <value>Cancel</value>
   </data>
-  <data name="Activation_Shortcut_Description.Text" xml:space="preserve">
+  <data name="Activation_Shortcut_Description" xml:space="preserve">
+	<value>Press a combination of keys to change this shortcut</value>
+  </data>
+  <data name="Activation_Shortcut_With_Disable_Description" xml:space="preserve">
 	<value>Press a combination of keys to change this shortcut.
 Right-click to remove the key combination, thereby deactivating the shortcut.</value>
   </data>
