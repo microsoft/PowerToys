@@ -54,8 +54,7 @@
             x:FieldModifier="public"
             Loaded="GridPreview_Loaded"
             TabFocusNavigation="Cycle"
-            Margin="12"
-            RowSpacing="12">
+            Margin="12">
             <Grid.Resources>
                 <Style x:Key="GridCardStyle" TargetType="Border">
                     <Style.Setters>
@@ -83,7 +82,8 @@
             <Border Style="{StaticResource GridCardStyle}"
                 Grid.Row="0"
                 Grid.Column="0"
-                Grid.ColumnSpan="3">
+                Grid.ColumnSpan="3"
+                Margin="0,0,0,12">
 
                 <CommandBar
                     Name="commandBar"
