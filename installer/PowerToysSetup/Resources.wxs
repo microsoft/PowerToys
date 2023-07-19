@@ -221,7 +221,7 @@
         <RegistryKey Root="$(var.RegistryScope)" Key="Software\Classes\powertoys\components">
           <RegistryValue Type="string" Name="Launcher_Calculator_$(var.IdSafeLanguage)_Component" Value="" KeyPath="yes"/>
         </RegistryKey>
-        <File Id="Launcher_Calculator_$(var.IdSafeLanguage)_File" Source="$(var.BinDir)Plugins\Calculator\$(var.Language)\Microsoft.PowerToys.Run.Plugin.Calculator.resources.dll" />
+        <File Id="Launcher_Calculator_$(var.IdSafeLanguage)_File" Source="$(var.BinDir)RunPlugins\Calculator\$(var.Language)\Microsoft.PowerToys.Run.Plugin.Calculator.resources.dll" />
       </Component>
       <Component
           Id="Launcher_Folder_$(var.IdSafeLanguage)_Component"
@@ -230,7 +230,7 @@
         <RegistryKey Root="$(var.RegistryScope)" Key="Software\Classes\powertoys\components">
           <RegistryValue Type="string" Name="Launcher_Folder_$(var.IdSafeLanguage)_Component" Value="" KeyPath="yes"/>
         </RegistryKey>
-        <File Id="Launcher_Folder_$(var.IdSafeLanguage)_File" Source="$(var.BinDir)Plugins\Folder\$(var.Language)\Microsoft.Plugin.Folder.resources.dll" />
+        <File Id="Launcher_Folder_$(var.IdSafeLanguage)_File" Source="$(var.BinDir)RunPlugins\Folder\$(var.Language)\Microsoft.Plugin.Folder.resources.dll" />
       </Component>
       <Component
           Id="Launcher_Program_$(var.IdSafeLanguage)_Component"
@@ -239,7 +239,7 @@
         <RegistryKey Root="$(var.RegistryScope)" Key="Software\Classes\powertoys\components">
           <RegistryValue Type="string" Name="Launcher_Program_$(var.IdSafeLanguage)_Component" Value="" KeyPath="yes"/>
         </RegistryKey>
-        <File Id="Launcher_Program_$(var.IdSafeLanguage)_File" Source="$(var.BinDir)Plugins\Program\$(var.Language)\Microsoft.Plugin.Program.resources.dll" />
+        <File Id="Launcher_Program_$(var.IdSafeLanguage)_File" Source="$(var.BinDir)RunPlugins\Program\$(var.Language)\Microsoft.Plugin.Program.resources.dll" />
       </Component>
       <Component
           Id="Launcher_Shell_$(var.IdSafeLanguage)_Component"
@@ -248,7 +248,7 @@
         <RegistryKey Root="$(var.RegistryScope)" Key="Software\Classes\powertoys\components">
           <RegistryValue Type="string" Name="Launcher_Shell_$(var.IdSafeLanguage)_Component" Value="" KeyPath="yes"/>
         </RegistryKey>
-        <File Id="Launcher_Shell_$(var.IdSafeLanguage)_File" Source="$(var.BinDir)Plugins\Shell\$(var.Language)\Microsoft.Plugin.Shell.resources.dll" />
+        <File Id="Launcher_Shell_$(var.IdSafeLanguage)_File" Source="$(var.BinDir)RunPlugins\Shell\$(var.Language)\Microsoft.Plugin.Shell.resources.dll" />
       </Component>
       <Component
           Id="Launcher_Indexer_$(var.IdSafeLanguage)_Component"
@@ -257,7 +257,7 @@
         <RegistryKey Root="$(var.RegistryScope)" Key="Software\Classes\powertoys\components">
           <RegistryValue Type="string" Name="Launcher_Indexer_$(var.IdSafeLanguage)_Component" Value="" KeyPath="yes"/>
         </RegistryKey>
-        <File Id="Launcher_Indexer_$(var.IdSafeLanguage)_File" Source="$(var.BinDir)Plugins\Indexer\$(var.Language)\Microsoft.Plugin.Indexer.resources.dll" />
+        <File Id="Launcher_Indexer_$(var.IdSafeLanguage)_File" Source="$(var.BinDir)RunPlugins\Indexer\$(var.Language)\Microsoft.Plugin.Indexer.resources.dll" />
       </Component>
       <Component
           Id="Launcher_Uri_$(var.IdSafeLanguage)_Component"
@@ -266,7 +266,7 @@
         <RegistryKey Root="$(var.RegistryScope)" Key="Software\Classes\powertoys\components">
           <RegistryValue Type="string" Name="Launcher_Uri_$(var.IdSafeLanguage)_Component" Value="" KeyPath="yes"/>
         </RegistryKey>
-        <File Id="Launcher_Uri_$(var.IdSafeLanguage)_File" Source="$(var.BinDir)Plugins\Uri\$(var.Language)\Microsoft.Plugin.Uri.resources.dll" />
+        <File Id="Launcher_Uri_$(var.IdSafeLanguage)_File" Source="$(var.BinDir)RunPlugins\Uri\$(var.Language)\Microsoft.Plugin.Uri.resources.dll" />
       </Component>
       <Component
           Id="Launcher_VSCodeWorkspaces_$(var.IdSafeLanguage)_Component"
@@ -275,7 +275,7 @@
         <RegistryKey Root="$(var.RegistryScope)" Key="Software\Classes\powertoys\components">
           <RegistryValue Type="string" Name="Launcher_VSCodeWorkspaces_$(var.IdSafeLanguage)_Component" Value="" KeyPath="yes"/>
         </RegistryKey>
-        <File Id="Launcher_VSCodeWorkspaces_$(var.IdSafeLanguage)_File" Source="$(var.BinDir)Plugins\VSCodeWorkspaces\$(var.Language)\Community.PowerToys.Run.Plugin.VSCodeWorkspaces.resources.dll" />
+        <File Id="Launcher_VSCodeWorkspaces_$(var.IdSafeLanguage)_File" Source="$(var.BinDir)RunPlugins\VSCodeWorkspaces\$(var.Language)\Community.PowerToys.Run.Plugin.VSCodeWorkspaces.resources.dll" />
       </Component>
       <Component Id="Launcher_WindowWalker_$(var.IdSafeLanguage)_Component"
                  Guid="$(var.CompGUIDPrefix)0F"
@@ -283,7 +283,7 @@
         <RegistryKey Root="$(var.RegistryScope)" Key="Software\Classes\powertoys\components">
           <RegistryValue Type="string" Name="Launcher_WindowWalker_$(var.IdSafeLanguage)_Component" Value="" KeyPath="yes"/>
         </RegistryKey>
-        <File Id="Launcher_WindowWalker_$(var.IdSafeLanguage)_File" Source="$(var.BinDir)Plugins\WindowWalker\$(var.Language)\Microsoft.Plugin.WindowWalker.resources.dll" />
+        <File Id="Launcher_WindowWalker_$(var.IdSafeLanguage)_File" Source="$(var.BinDir)RunPlugins\WindowWalker\$(var.Language)\Microsoft.Plugin.WindowWalker.resources.dll" />
       </Component>
       <Component
           Id="Launcher_Registry_$(var.IdSafeLanguage)_Component"
@@ -292,7 +292,7 @@
         <RegistryKey Root="$(var.RegistryScope)" Key="Software\Classes\powertoys\components">
           <RegistryValue Type="string" Name="Launcher_Registry_$(var.IdSafeLanguage)_Component" Value="" KeyPath="yes"/>
         </RegistryKey>
-        <File Id="Launcher_Registry_$(var.IdSafeLanguage)_File" Source="$(var.BinDir)Plugins\Registry\$(var.Language)\Microsoft.PowerToys.Run.Plugin.Registry.resources.dll" />
+        <File Id="Launcher_Registry_$(var.IdSafeLanguage)_File" Source="$(var.BinDir)RunPlugins\Registry\$(var.Language)\Microsoft.PowerToys.Run.Plugin.Registry.resources.dll" />
       </Component>
       <Component
           Id="Launcher_Service_$(var.IdSafeLanguage)_Component"
@@ -301,7 +301,7 @@
         <RegistryKey Root="$(var.RegistryScope)" Key="Software\Classes\powertoys\components">
           <RegistryValue Type="string" Name="Launcher_Service_$(var.IdSafeLanguage)_Component" Value="" KeyPath="yes"/>
         </RegistryKey>
-        <File Id="Launcher_Service_$(var.IdSafeLanguage)_File" Source="$(var.BinDir)Plugins\Service\$(var.Language)\Microsoft.PowerToys.Run.Plugin.Service.resources.dll" />
+        <File Id="Launcher_Service_$(var.IdSafeLanguage)_File" Source="$(var.BinDir)RunPlugins\Service\$(var.Language)\Microsoft.PowerToys.Run.Plugin.Service.resources.dll" />
       </Component>
       <Component
           Id="Launcher_System_$(var.IdSafeLanguage)_Component"
@@ -310,7 +310,7 @@
         <RegistryKey Root="$(var.RegistryScope)" Key="Software\Classes\powertoys\components">
           <RegistryValue Type="string" Name="Launcher_System_$(var.IdSafeLanguage)_Component" Value="" KeyPath="yes"/>
         </RegistryKey>
-        <File Id="Launcher_System_$(var.IdSafeLanguage)_File" Source="$(var.BinDir)Plugins\System\$(var.Language)\Microsoft.PowerToys.Run.Plugin.System.resources.dll" />
+        <File Id="Launcher_System_$(var.IdSafeLanguage)_File" Source="$(var.BinDir)RunPlugins\System\$(var.Language)\Microsoft.PowerToys.Run.Plugin.System.resources.dll" />
       </Component>
       <Component
           Id="Launcher_WindowsSettings_$(var.IdSafeLanguage)_Component"
@@ -319,7 +319,7 @@
         <RegistryKey Root="$(var.RegistryScope)" Key="Software\Classes\powertoys\components">
           <RegistryValue Type="string" Name="Launcher_WindowsSettings_$(var.IdSafeLanguage)_Component" Value="" KeyPath="yes"/>
         </RegistryKey>
-        <File Id="Launcher_WindowsSettings_$(var.IdSafeLanguage)_File" Source="$(var.BinDir)Plugins\WindowsSettings\$(var.Language)\Microsoft.PowerToys.Run.Plugin.WindowsSettings.resources.dll" />
+        <File Id="Launcher_WindowsSettings_$(var.IdSafeLanguage)_File" Source="$(var.BinDir)RunPlugins\WindowsSettings\$(var.Language)\Microsoft.PowerToys.Run.Plugin.WindowsSettings.resources.dll" />
       </Component>
       <Component
           Id="Launcher_WindowsTerminal_$(var.IdSafeLanguage)_Component"
@@ -328,7 +328,7 @@
         <RegistryKey Root="$(var.RegistryScope)" Key="Software\Classes\powertoys\components">
           <RegistryValue Type="string" Name="Launcher_WindowsTerminal_$(var.IdSafeLanguage)_Component" Value="" KeyPath="yes"/>
         </RegistryKey>
-        <File Id="Launcher_WindowsTerminal_$(var.IdSafeLanguage)_File" Source="$(var.BinDir)Plugins\WindowsTerminal\$(var.Language)\Microsoft.PowerToys.Run.Plugin.WindowsTerminal.resources.dll" />
+        <File Id="Launcher_WindowsTerminal_$(var.IdSafeLanguage)_File" Source="$(var.BinDir)RunPlugins\WindowsTerminal\$(var.Language)\Microsoft.PowerToys.Run.Plugin.WindowsTerminal.resources.dll" />
       </Component>
       <Component
           Id="Launcher_WebSearch_$(var.IdSafeLanguage)_Component"
@@ -337,7 +337,7 @@
         <RegistryKey Root="$(var.RegistryScope)" Key="Software\Classes\powertoys\components">
           <RegistryValue Type="string" Name="Launcher_WebSearch_$(var.IdSafeLanguage)_Component" Value="" KeyPath="yes"/>
         </RegistryKey>
-        <File Id="Launcher_WebSearch_$(var.IdSafeLanguage)_File" Source="$(var.BinDir)Plugins\WebSearch\$(var.Language)\Community.PowerToys.Run.Plugin.WebSearch.resources.dll" />
+        <File Id="Launcher_WebSearch_$(var.IdSafeLanguage)_File" Source="$(var.BinDir)RunPlugins\WebSearch\$(var.Language)\Community.PowerToys.Run.Plugin.WebSearch.resources.dll" />
       </Component>
       <Component
           Id="Launcher_UnitConverter_$(var.IdSafeLanguage)_Component"
@@ -346,7 +346,7 @@
         <RegistryKey Root="$(var.RegistryScope)" Key="Software\Classes\powertoys\components">
           <RegistryValue Type="string" Name="Launcher_UnitConverter_$(var.IdSafeLanguage)_Component" Value="" KeyPath="yes"/>
         </RegistryKey>
-        <File Id="Launcher_UnitConverter_$(var.IdSafeLanguage)_File" Source="$(var.BinDir)Plugins\UnitConverter\$(var.Language)\Community.PowerToys.Run.Plugin.UnitConverter.resources.dll" />
+        <File Id="Launcher_UnitConverter_$(var.IdSafeLanguage)_File" Source="$(var.BinDir)RunPlugins\UnitConverter\$(var.Language)\Community.PowerToys.Run.Plugin.UnitConverter.resources.dll" />
       </Component>
       <Component
                 Id="Launcher_TimeDate_$(var.IdSafeLanguage)_Component"
@@ -355,7 +355,7 @@
         <RegistryKey Root="$(var.RegistryScope)" Key="Software\Classes\powertoys\components">
           <RegistryValue Type="string" Name="Launcher_TimeDate_$(var.IdSafeLanguage)_Component" Value="" KeyPath="yes"/>
         </RegistryKey>
-        <File Id="Launcher_TimeDate_$(var.IdSafeLanguage)_File" Source="$(var.BinDir)Plugins\TimeDate\$(var.Language)\Microsoft.PowerToys.Run.Plugin.TimeDate.resources.dll" />
+        <File Id="Launcher_TimeDate_$(var.IdSafeLanguage)_File" Source="$(var.BinDir)RunPlugins\TimeDate\$(var.Language)\Microsoft.PowerToys.Run.Plugin.TimeDate.resources.dll" />
       </Component>
       <Component
           Id="Launcher_OneNote_$(var.IdSafeLanguage)_Component"
@@ -364,7 +364,7 @@
         <RegistryKey Root="$(var.RegistryScope)" Key="Software\Classes\powertoys\components">
           <RegistryValue Type="string" Name="Resource$(var.IdSafeLanguage)OneNotePluginFolder" Value="" KeyPath="yes"/>
         </RegistryKey>
-        <File Id="Launcher_OneNote_$(var.IdSafeLanguage)_File" Source="$(var.BinDir)Plugins\OneNote\$(var.Language)\Microsoft.PowerToys.Run.Plugin.OneNote.resources.dll" />
+        <File Id="Launcher_OneNote_$(var.IdSafeLanguage)_File" Source="$(var.BinDir)RunPlugins\OneNote\$(var.Language)\Microsoft.PowerToys.Run.Plugin.OneNote.resources.dll" />
       </Component>
       <Component
           Id="MonacoPreviewHandler_$(var.IdSafeLanguage)_Component"
@@ -382,7 +382,7 @@
         <RegistryKey Root="$(var.RegistryScope)" Key="Software\Classes\powertoys\components">
           <RegistryValue Type="string" Name="Launcher_History_$(var.IdSafeLanguage)_Component" Value="" KeyPath="yes"/>
         </RegistryKey>
-        <File Id="Launcher_History_$(var.IdSafeLanguage)_File" Source="$(var.BinDir)Plugins\History\$(var.Language)\Microsoft.PowerToys.Run.Plugin.History.resources.dll" />
+        <File Id="Launcher_History_$(var.IdSafeLanguage)_File" Source="$(var.BinDir)RunPlugins\History\$(var.Language)\Microsoft.PowerToys.Run.Plugin.History.resources.dll" />
       </Component>
       <Component
           Id="Launcher_PowerToys_$(var.IdSafeLanguage)_Component"
@@ -391,7 +391,7 @@
         <RegistryKey Root="$(var.RegistryScope)" Key="Software\Classes\powertoys\components">
           <RegistryValue Type="string" Name="Launcher_PowerToys_$(var.IdSafeLanguage)_Component" Value="" KeyPath="yes"/>
         </RegistryKey>
-        <File Id="Launcher_PowerToys_$(var.IdSafeLanguage)_File" Source="$(var.BinDir)Plugins\PowerToys\$(var.Language)\Microsoft.PowerToys.Run.Plugin.PowerToys.resources.dll" />
+        <File Id="Launcher_PowerToys_$(var.IdSafeLanguage)_File" Source="$(var.BinDir)RunPlugins\PowerToys\$(var.Language)\Microsoft.PowerToys.Run.Plugin.PowerToys.resources.dll" />
       </Component>
       <?undef IdSafeLanguage?>
       <?undef CompGUIDPrefix?>

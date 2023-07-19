@@ -8,99 +8,99 @@
   <?define launcherImagesComponentFilesPath=$(var.BinDir)Assets\PowerLauncher\?>
 
   <?define calcComponentFiles=?>
-  <?define calcComponentFilesPath=$(var.BinDir)Plugins\Calculator\?>
+  <?define calcComponentFilesPath=$(var.BinDir)RunPlugins\Calculator\?>
   <?define calcImagesComponentFiles=?>
-  <?define calcImagesComponentFilesPath=$(var.BinDir)Plugins\Calculator\Images\?>
+  <?define calcImagesComponentFilesPath=$(var.BinDir)RunPlugins\Calculator\Images\?>
 
   <?define FolderComponentFiles=?>
-  <?define FolderComponentFilesPath=$(var.BinDir)Plugins\Folder\?>
+  <?define FolderComponentFilesPath=$(var.BinDir)RunPlugins\Folder\?>
   <?define FolderImagesComponentFiles=?>
-  <?define FolderImagesComponentFilesPath=$(var.BinDir)Plugins\Folder\Images?>
+  <?define FolderImagesComponentFilesPath=$(var.BinDir)RunPlugins\Folder\Images?>
 
   <?define ProgramComponentFiles=?>
-  <?define ProgramComponentFilesPath=$(var.BinDir)Plugins\Program\?>
+  <?define ProgramComponentFilesPath=$(var.BinDir)RunPlugins\Program\?>
   <?define ProgramImagesComponentFiles=?>
-  <?define ProgramImagesComponentFilesPath=$(var.BinDir)Plugins\Program\Images\?>
+  <?define ProgramImagesComponentFilesPath=$(var.BinDir)RunPlugins\Program\Images\?>
 
   <?define ShellComponentFiles=?>
-  <?define ShellComponentFilesPath=$(var.BinDir)Plugins\Shell\?>
+  <?define ShellComponentFilesPath=$(var.BinDir)RunPlugins\Shell\?>
   <?define ShellImagesComponentFiles=?>
-  <?define ShellImagesComponentFilesPath=$(var.BinDir)Plugins\Shell\Images\?>
+  <?define ShellImagesComponentFilesPath=$(var.BinDir)RunPlugins\Shell\Images\?>
 
   <?define IndexerComponentFiles=?>
-  <?define IndexerComponentFilesPath=$(var.BinDir)Plugins\Indexer\?>
+  <?define IndexerComponentFilesPath=$(var.BinDir)RunPlugins\Indexer\?>
   <?define IndexerImagesComponentFiles=?>
-  <?define IndexerImagesComponentFilesPath=$(var.BinDir)Plugins\Indexer\Images\?>
+  <?define IndexerImagesComponentFilesPath=$(var.BinDir)RunPlugins\Indexer\Images\?>
 
   <?define UnitConvCompFiles=?>
-  <?define UnitConvCompFilesPath=$(var.BinDir)Plugins\UnitConverter\?>
+  <?define UnitConvCompFilesPath=$(var.BinDir)RunPlugins\UnitConverter\?>
   <?define UnitConvImagesCompFiles=?>
-  <?define UnitConvImagesCompFilesPath=$(var.BinDir)Plugins\UnitConverter\Images\?>
+  <?define UnitConvImagesCompFilesPath=$(var.BinDir)RunPlugins\UnitConverter\Images\?>
 
   <?define WebSrchCompFiles=?>
-  <?define WebSrchCompFilesPath=$(var.BinDir)Plugins\WebSearch\?>
+  <?define WebSrchCompFilesPath=$(var.BinDir)RunPlugins\WebSearch\?>
   <?define WebSrchImagesCompFiles=?>
-  <?define WebSrchImagesCompFilesPath=$(var.BinDir)Plugins\WebSearch\Images\?>
+  <?define WebSrchImagesCompFilesPath=$(var.BinDir)RunPlugins\WebSearch\Images\?>
 
   <?define HistoryPluginComponentFiles=?>
-  <?define HistoryPluginComponentFilesPath=$(var.BinDir)Plugins\History\?>
+  <?define HistoryPluginComponentFilesPath=$(var.BinDir)RunPlugins\History\?>
   <?define HistoryPluginImagesComponentFiles=?>
-  <?define HistoryPluginImagesComponentFilesPath=$(var.BinDir)Plugins\History\Images\?>
+  <?define HistoryPluginImagesComponentFilesPath=$(var.BinDir)RunPlugins\History\Images\?>
 
   <?define UriComponentFiles=?>
-  <?define UriComponentFilesPath=$(var.BinDir)Plugins\Uri\?>
+  <?define UriComponentFilesPath=$(var.BinDir)RunPlugins\Uri\?>
   <?define UriImagesComponentFiles=?>
-  <?define UriImagesComponentFilesPath=$(var.BinDir)Plugins\Uri\Images\?>
+  <?define UriImagesComponentFilesPath=$(var.BinDir)RunPlugins\Uri\Images\?>
 
   <?define VSCWrkCompFiles=?>
-  <?define VSCWrkCompFilesPath=$(var.BinDir)Plugins\VSCodeWorkspaces\?>
+  <?define VSCWrkCompFilesPath=$(var.BinDir)RunPlugins\VSCodeWorkspaces\?>
   <?define VSCWrkImagesCompFiles=?>
-  <?define VSCWrkImagesCompFilesPath=$(var.BinDir)Plugins\VSCodeWorkspaces\Images\?>
+  <?define VSCWrkImagesCompFilesPath=$(var.BinDir)RunPlugins\VSCodeWorkspaces\Images\?>
 
   <?define WindowWlkrCompFiles=?>
-  <?define WindowWlkrCompFilesPath=$(var.BinDir)Plugins\WindowWalker\?>
+  <?define WindowWlkrCompFilesPath=$(var.BinDir)RunPlugins\WindowWalker\?>
   <?define WindowWlkrImagesCompFiles=?>
-  <?define WindowWlkrImagesCompFilesPath=$(var.BinDir)Plugins\WindowWalker\Images\?>
+  <?define WindowWlkrImagesCompFilesPath=$(var.BinDir)RunPlugins\WindowWalker\Images\?>
 
   <?define OneNoteComponentFiles=?>
-  <?define OneNoteComponentFilesPath=$(var.BinDir)Plugins\OneNote\?>
+  <?define OneNoteComponentFilesPath=$(var.BinDir)RunPlugins\OneNote\?>
   <?define OneNoteImagesComponentFiles=?>
-  <?define OneNoteImagesComponentFilesPath=$(var.BinDir)Plugins\OneNote\Images\?>
+  <?define OneNoteImagesComponentFilesPath=$(var.BinDir)RunPlugins\OneNote\Images\?>
 
   <?define RegistryComponentFiles=?>
-  <?define RegistryComponentFilesPath=$(var.BinDir)Plugins\Registry\?>
+  <?define RegistryComponentFilesPath=$(var.BinDir)RunPlugins\Registry\?>
   <?define RegistryImagesComponentFiles=?>
-  <?define RegistryImagesComponentFilesPath=$(var.BinDir)Plugins\Registry\Images\?>
+  <?define RegistryImagesComponentFilesPath=$(var.BinDir)RunPlugins\Registry\Images\?>
 
   <?define ServiceComponentFiles=?>
-  <?define ServiceComponentFilesPath=$(var.BinDir)Plugins\Service\?>
+  <?define ServiceComponentFilesPath=$(var.BinDir)RunPlugins\Service\?>
   <?define ServiceImagesComponentFiles=?>
-  <?define ServiceImagesComponentFilesPath=$(var.BinDir)Plugins\Service\Images\?>
+  <?define ServiceImagesComponentFilesPath=$(var.BinDir)RunPlugins\Service\Images\?>
 
   <?define SystemComponentFiles=?>
-  <?define SystemComponentFilesPath=$(var.BinDir)Plugins\System\?>
+  <?define SystemComponentFilesPath=$(var.BinDir)RunPlugins\System\?>
   <?define SystemImagesComponentFiles=?>
-  <?define SystemImagesComponentFilesPath=$(var.BinDir)Plugins\System\Images\?>
+  <?define SystemImagesComponentFilesPath=$(var.BinDir)RunPlugins\System\Images\?>
 
   <?define TimeDateComponentFiles=?>
-  <?define TimeDateComponentFilesPath=$(var.BinDir)Plugins\TimeDate\?>
+  <?define TimeDateComponentFilesPath=$(var.BinDir)RunPlugins\TimeDate\?>
   <?define TimeDateImagesComponentFiles=?>
-  <?define TimeDateImagesComponentFilesPath=$(var.BinDir)Plugins\TimeDate\Images\?>
+  <?define TimeDateImagesComponentFilesPath=$(var.BinDir)RunPlugins\TimeDate\Images\?>
 
   <?define WinSetCmpFiles=?>
-  <?define WinSetCmpFilesPath=$(var.BinDir)Plugins\WindowsSettings\?>
+  <?define WinSetCmpFilesPath=$(var.BinDir)RunPlugins\WindowsSettings\?>
   <?define WinSetImagesCmpFiles=?>
-  <?define WinSetImagesCmpFilesPath=$(var.BinDir)Plugins\WindowsSettings\Images\?>
+  <?define WinSetImagesCmpFilesPath=$(var.BinDir)RunPlugins\WindowsSettings\Images\?>
 
   <?define WinTermCmpFiles=?>
-  <?define WinTermCmpFilesPath=$(var.BinDir)Plugins\WindowsTerminal\?>
+  <?define WinTermCmpFilesPath=$(var.BinDir)RunPlugins\WindowsTerminal\?>
   <?define WinTermImagesCmpFiles=?>
-  <?define WinTermImagesCmpFilesPath=$(var.BinDir)Plugins\WindowsTerminal\Images\?>
+  <?define WinTermImagesCmpFilesPath=$(var.BinDir)RunPlugins\WindowsTerminal\Images\?>
 
   <?define PowerToysCmpFiles=?>
-  <?define PowerToysCmpFilesPath=$(var.BinDir)Plugins\PowerToys\?>
+  <?define PowerToysCmpFilesPath=$(var.BinDir)RunPlugins\PowerToys\?>
   <?define PowerToysImagesCmpFiles=?>
-  <?define PowerToysImagesCmpFilesPath=$(var.BinDir)Plugins\PowerToys\Images\?>
+  <?define PowerToysImagesCmpFilesPath=$(var.BinDir)RunPlugins\PowerToys\Images\?>
 
   <Fragment>
     <DirectoryRef Id="BaseApplicationsAssetsFolder">
@@ -109,7 +109,7 @@
 
     <DirectoryRef Id="INSTALLFOLDER">
       <!-- Plugins -->
-      <Directory Id="LauncherPluginsFolder" Name="Plugins">
+      <Directory Id="LauncherPluginsFolder" Name="RunPlugins">
         <Directory Id="WebSearchPluginFolder" Name="WebSearch">
           <Directory Id="WebSearchImagesFolder" Name="Images" />
         </Directory>
