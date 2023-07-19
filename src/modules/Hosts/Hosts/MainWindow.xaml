@@ -17,22 +17,30 @@
     </Window.SystemBackdrop>
     <Grid>
         <Grid.RowDefinitions>
-            <RowDefinition Height="32" />
+            <RowDefinition Height="Auto" />
             <RowDefinition Height="*" />
         </Grid.RowDefinitions>
-        <Grid x:Name="titleBar">
-            <StackPanel
-                Margin="16,8,8,8"
-                VerticalAlignment="Top"
-                Orientation="Horizontal">
-                <Image Source="Assets/AppList.png" />
-                <TextBlock
-                    Margin="12,0,0,0"
-                    FontSize="12"
-                    Style="{StaticResource CaptionTextBlockStyle}"
-                    Text="Hosts File Editor" />
-            </StackPanel>
+        <Grid x:Name="titleBar" Height="32" ColumnSpacing="16">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition x:Name="LeftPaddingColumn" Width="0"/>
+                <ColumnDefinition x:Name="IconColumn" Width="Auto"/>
+                <ColumnDefinition x:Name="TitleColumn" Width="Auto"/>
+                <ColumnDefinition x:Name="RightPaddingColumn" Width="0"/>
+            </Grid.ColumnDefinitions>
+            <Image
+                Grid.Column="1"
+                Source="../Assets/Hosts.ico"
+                VerticalAlignment="Center"
+                Width="16"
+                Height="16"/>
+            <TextBlock
+                x:Name="AppTitleTextBlock"
+                Grid.Column="2"
+                Style="{StaticResource CaptionTextBlockStyle}"
+                VerticalAlignment="Center"
+                Text="Hosts File Editor" />
         </Grid>
+        
         <views:MainPage Grid.Row="1" />
     </Grid>
 </winuiex:WindowEx>

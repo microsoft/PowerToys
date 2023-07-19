@@ -37,25 +37,23 @@
             TrueValue="Collapsed" />
     </Page.Resources>
 
-    <Grid>
+    <Grid
+        Margin="16"
+        RowSpacing="8">
         <Grid.RowDefinitions>
-            <RowDefinition Height="64" />
-            <RowDefinition Height="*" />
-            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" /><!-- buttons -->
+            <RowDefinition Height="*" /><!-- content -->
         </Grid.RowDefinitions>
 
-        <Grid>
+        <Grid><!-- buttons -->
             <Button
                 x:Uid="AddEntryBtn"
-                Height="36"
-                Margin="18,0,0,0"
                 Command="{x:Bind NewDialogCommand}">
                 <StackPanel
                     Orientation="Horizontal"
                     Spacing="8">
                     <FontIcon
                         x:Name="Icon"
-                        FontFamily="{ThemeResource SymbolThemeFontFamily}"
                         FontSize="16"
                         Foreground="{ThemeResource AccentTextFillColorPrimaryBrush}"
                         Glyph="&#xe710;" />
@@ -69,26 +67,24 @@
             </Button>
 
             <StackPanel
-                Padding="0,0,18,0"
                 HorizontalAlignment="Right"
-                Orientation="Horizontal">
+                Orientation="Horizontal"
+                Spacing="4">
                 <Button
                     x:Uid="AdditionalLinesBtn"
-                    Height="36"
+                    Height="32"
                     Command="{x:Bind AdditionalLinesDialogCommand}"
                     Style="{StaticResource SubtleButtonStyle}">
                     <FontIcon
-                        FontFamily="{StaticResource SymbolThemeFontFamily}"
                         FontSize="16"
                         Glyph="&#xe8a5;" />
                 </Button>
 
                 <Button
                     x:Uid="FilterBtn"
-                    Height="36"
+                    Height="32"
                     Style="{StaticResource SubtleButtonStyle}">
                     <FontIcon
-                        FontFamily="{StaticResource SymbolThemeFontFamily}"
                         FontSize="16"
                         Glyph="&#xe71c;" />
                     <Button.Flyout>
@@ -133,10 +129,10 @@
                                     IsOn="{x:Bind ViewModel.ShowOnlyDuplicates, Mode=TwoWay}" />
                                 <Button
                                     x:Uid="ClearFiltersBtn"
-                                    Margin="0,6,0,0"
                                     HorizontalAlignment="Right"
                                     Command="{x:Bind ViewModel.ClearFiltersCommand}"
-                                    Style="{StaticResource AccentButtonStyle}" />
+                                    Style="{StaticResource AccentButtonStyle}"
+                                    IsEnabled="{x:Bind ViewModel.Filtered, Mode=OneWay}"/>
                             </StackPanel>
                         </Flyout>
                     </Button.Flyout>
@@ -144,49 +140,25 @@
 
                 <Button
                     x:Uid="OpenHostsFileBtn"
-                    Height="36"
+                    Height="32"
                     Command="{x:Bind ViewModel.OpenHostsFileCommand}"
                     Style="{StaticResource SubtleButtonStyle}">
                     <FontIcon
-                        FontFamily="{StaticResource SymbolThemeFontFamily}"
                         FontSize="16"
                         Glyph="&#xe8a7;" />
                 </Button>
 
                 <Button
                     x:Uid="SettingsBtn"
-                    Height="36"
+                    Height="32"
                     Command="{x:Bind ViewModel.OpenSettingsCommand}"
                     Style="{StaticResource SubtleButtonStyle}">
                     <FontIcon
-                        FontFamily="{StaticResource SymbolThemeFontFamily}"
                         FontSize="16"
                         Glyph="&#xe713;" />
                 </Button>
             </StackPanel>
         </Grid>
-
-        <StackPanel
-            Grid.Row="2"
-            Orientation="Vertical"
-            Visibility="Visible">
-            <InfoBar
-                x:Uid="FileSaveError"
-                CornerRadius="0"
-                IsOpen="{x:Bind ViewModel.Error, Mode=TwoWay}"
-                Severity="Error" />
-
-            <InfoBar
-                x:Uid="FileChanged"
-                IsOpen="{x:Bind ViewModel.FileChanged, Mode=TwoWay}"
-                Severity="Informational">
-                <InfoBar.ActionButton>
-                    <Button
-                        x:Uid="Reload"
-                        Command="{x:Bind ViewModel.ReadHostsCommand}" />
-                </InfoBar.ActionButton>
-            </InfoBar>
-        </StackPanel>
 
         <!--
             https://github.com/microsoft/microsoft-ui-xaml/issues/7690
@@ -196,36 +168,39 @@
         -->
         <Grid
             Grid.Row="1"
-            Visibility="{x:Bind ViewModel.IsLoading, Converter={StaticResource BoolToInvertedVisibilityConverter}, Mode=OneWay}">          
+            Visibility="{x:Bind ViewModel.IsLoading, Converter={StaticResource BoolToInvertedVisibilityConverter}, Mode=OneWay}">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="*" />
+                <RowDefinition Height="Auto" />
+            </Grid.RowDefinitions>
+
             <ListView
                 x:Name="Entries"
                 x:Uid="Entries"
-                Grid.Row="1"
-                Margin="16,8,16,16"
                 Background="{ThemeResource LayerFillColorDefaultBrush}"
                 BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
                 BorderThickness="1"
-                CornerRadius="8"
+                CornerRadius="{StaticResource OverlayCornerRadius}"
                 IsItemClickEnabled="True"
                 ItemClick="Entries_ItemClick"
                 KeyDown="Entries_KeyDown"
                 GotFocus="Entries_GotFocus"
                 ItemsSource="{x:Bind ViewModel.Entries, Mode=TwoWay}"
-                SelectedItem="{x:Bind ViewModel.Selected, Mode=TwoWay}"
-                Visibility="{x:Bind ViewModel.IsLoading, Converter={StaticResource BoolToInvertedVisibilityConverter}, Mode=OneWay}">
+                SelectedItem="{x:Bind ViewModel.Selected, Mode=TwoWay}">
                 <ListView.ItemTemplate>
                     <DataTemplate x:DataType="models:Entry">
                         <Grid
                             AutomationProperties.Name="{x:Bind Address, Mode=OneWay}"
                             Background="Transparent"
                             IsRightTapEnabled="True"
-                            RightTapped="Grid_RightTapped">
+                            RightTapped="Grid_RightTapped"
+                            ColumnSpacing="8">
                             <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="300" />
-                                <ColumnDefinition Width="*" />
-                                <ColumnDefinition Width="Auto" />
-                                <ColumnDefinition Width="Auto" />
-                                <ColumnDefinition Width="Auto" />
+                                <ColumnDefinition Width="256"/><!--address-->
+                                <ColumnDefinition Width="*"/><!--comment-->
+                                <ColumnDefinition Width="Auto"/><!--status-->
+                                <ColumnDefinition Width="Auto"/><!--duplicate-->
+                                <ColumnDefinition Width="Auto"/><!--toggleswitch-->
                             </Grid.ColumnDefinitions>
                             <FlyoutBase.AttachedFlyout>
                                 <MenuFlyout Opened="MenuFlyout_Opened">
@@ -270,7 +245,7 @@
                                         x:Uid="Delete"
                                         Click="Delete_Click"
                                         Icon="Delete">
-                                         <MenuFlyoutItem.KeyboardAccelerators>
+                                        <MenuFlyoutItem.KeyboardAccelerators>
                                             <KeyboardAccelerator Key="Delete" />
                                         </MenuFlyoutItem.KeyboardAccelerators>
                                     </MenuFlyoutItem>
@@ -292,15 +267,12 @@
                                 Grid.Column="2"
                                 Width="20"
                                 Height="20"
-                                Margin="0,0,8,0"
                                 IsActive="{x:Bind Pinging, Mode=OneWay}" />
                             <FontIcon
                                 x:Uid="PingIcon"
                                 x:Name="PingIcon"
                                 Grid.Column="2"
-                                Margin="0,0,8,0"
-                                FontFamily="{ThemeResource SymbolThemeFontFamily}"
-                                FontSize="18"
+                                FontSize="16"
                                 Visibility="Collapsed">
                                 <i:Interaction.Behaviors>
                                     <ic:DataTriggerBehavior
@@ -351,10 +323,8 @@
                             <FontIcon
                                 x:Uid="DuplicateEntryIcon"
                                 Grid.Column="3"
-                                Margin="0,0,8,0"
                                 Foreground="{StaticResource SystemControlErrorTextForegroundBrush}"
-                                FontFamily="{ThemeResource SymbolThemeFontFamily}"
-                                FontSize="18"
+                                FontSize="16"
                                 Glyph="&#xe7BA;"
                                 Visibility="{x:Bind Duplicate, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}" />
                             <ToggleSwitch
@@ -370,7 +340,7 @@
                     </DataTemplate>
                 </ListView.ItemTemplate>
             </ListView>
-            
+
             <StackPanel
                 HorizontalAlignment="Center"
                 VerticalAlignment="Center"
@@ -381,7 +351,6 @@
                     Spacing="8"
                     Visibility="{x:Bind ViewModel.Filtered, Mode=OneWay, Converter={StaticResource BoolToInvertedVisibilityConverter}}">
                     <FontIcon
-                        FontFamily="{StaticResource SymbolThemeFontFamily}"
                         FontSize="32"
                         Glyph="&#xe774;" />
                     <TextBlock
@@ -394,14 +363,13 @@
                         HorizontalAlignment="Center"
                         Command="{x:Bind NewDialogCommand}" />
                 </StackPanel>
-                
+
                 <StackPanel
                     HorizontalAlignment="Center"
                     VerticalAlignment="Center"
                     Spacing="8"
                     Visibility="{x:Bind ViewModel.Filtered, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}">
                     <FontIcon
-                        FontFamily="{StaticResource SymbolThemeFontFamily}"
                         FontSize="32"
                         Glyph="&#xf78b;" />
                     <TextBlock
@@ -415,14 +383,37 @@
                         Command="{x:Bind ViewModel.ClearFiltersCommand}" />
                 </StackPanel>
             </StackPanel>
+
+            <StackPanel
+                Grid.Row="1">
+                <InfoBar
+                    x:Uid="FileSaveError"
+                    Margin="0,8,0,0"
+                    Severity="Error"
+                    IsOpen="{x:Bind ViewModel.Error, Mode=TwoWay}"
+                    Visibility="{x:Bind ViewModel.Error, Mode=TwoWay, Converter={StaticResource BoolToVisibilityConverter}}" />
+
+                <InfoBar
+                    x:Uid="FileChanged"
+                    Margin="0,8,0,0"
+                    Severity="Informational"
+                    IsOpen="{x:Bind ViewModel.FileChanged, Mode=TwoWay}"
+                    Visibility="{x:Bind ViewModel.FileChanged, Mode=TwoWay, Converter={StaticResource BoolToVisibilityConverter}}">
+                    <InfoBar.ActionButton>
+                        <Button
+                            x:Uid="Reload"
+                            Command="{x:Bind ViewModel.ReadHostsCommand}" />
+                    </InfoBar.ActionButton>
+                </InfoBar>
+            </StackPanel>
         </Grid>
-        
+
         <ProgressRing
             Width="48"
             Height="48"
             Grid.Row="1"
             IsActive="{x:Bind ViewModel.IsLoading, Mode=OneWay}" />
-        
+
         <ContentDialog
             x:Name="EntryDialog"
             x:Uid="EntryDialog"
@@ -431,14 +422,11 @@
             <ContentDialog.DataContext>
                 <models:Entry />
             </ContentDialog.DataContext>
-            <ScrollViewer
-                HorizontalScrollBarVisibility="Auto"
-                HorizontalScrollMode="Auto">
+            <ScrollViewer>
                 <StackPanel
-                    Width="480"
-                    Margin="0,12,0,0"
+                    MinWidth="320"
                     HorizontalAlignment="Stretch"
-                    Spacing="24">
+                    Spacing="12">
                     <TextBox
                         x:Uid="Address"
                         IsSpellCheckEnabled="False"
@@ -448,7 +436,6 @@
                         IsSpellCheckEnabled="False"
                         AcceptsReturn="False"
                         TextWrapping="Wrap"
-                        Height="100"
                         ScrollViewer.IsVerticalRailEnabled="True"
                         ScrollViewer.VerticalScrollBarVisibility="Visible"
                         ScrollViewer.VerticalScrollMode="Enabled"
@@ -458,7 +445,6 @@
                         IsSpellCheckEnabled="False" 
                         AcceptsReturn="False"
                         TextWrapping="Wrap"
-                        Height="100"
                         ScrollViewer.IsVerticalRailEnabled="True"
                         ScrollViewer.VerticalScrollBarVisibility="Visible"
                         ScrollViewer.VerticalScrollMode="Enabled"
@@ -488,17 +474,16 @@
 
             <TextBox
                 x:Name="AdditionalLines"
-                Height="300"
-                MinWidth="480"
-                Margin="0,12,0,0"
                 HorizontalAlignment="Stretch"
+                MinHeight="40"
+                Padding="16,0"
                 AcceptsReturn="True"
                 ScrollViewer.IsVerticalRailEnabled="True"
                 ScrollViewer.VerticalScrollBarVisibility="Visible"
                 ScrollViewer.VerticalScrollMode="Enabled"
                 TextWrapping="Wrap" />
         </ContentDialog>
-        
+
         <TeachingTip
             x:Uid="TooManyHostsTeachingTip"
             IsOpen="{x:Bind ViewModel.ShowSplittedEntriesTooltip, Mode=OneWay}"
@@ -509,8 +494,7 @@
             </TeachingTip.IconSource>
             <TeachingTip.Content>
                 <TextBlock x:Uid="TooManyHostsTeachingTipContent"
-                           TextWrapping="Wrap"
-                           Margin="0,16,0,0" />
+                           TextWrapping="Wrap"/>
             </TeachingTip.Content>
         </TeachingTip>
     </Grid>
