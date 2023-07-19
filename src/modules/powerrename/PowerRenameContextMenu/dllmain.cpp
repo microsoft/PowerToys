@@ -72,7 +72,7 @@ public:
         }
 
         std::wstring iconResourcePath = get_module_folderpath(g_hInst);
-        iconResourcePath += L"\\";
+        iconResourcePath += L"\\Assets\\PowerRename\\";
         iconResourcePath += L"PowerRenameUI.ico";
         return SHStrDup(iconResourcePath.c_str(), icon);
     }

@@ -6,7 +6,6 @@
     <ProjectGuid>{32f3882b-f2d6-4586-b5ed-11e39e522bd3}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
     <RootNamespace>PowerToysSetupCustomActions</RootNamespace>
-    <WindowsTargetPlatformVersion>10.0.19041.0</WindowsTargetPlatformVersion>
     <ProjectName>PowerToysSetupCustomActions</ProjectName>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
@@ -49,21 +48,17 @@
     <PreBuildEvent>
       <Command>
       call cmd /C "copy ""$(ProjectDir)DepsFilesLists.h"" ""$(ProjectDir)DepsFilesLists.h.bk"""
-      call cmd /C "copy ""$(ProjectDir)..\PowerToysSetup\AlwaysOnTop.wxs"" ""$(ProjectDir)..\PowerToysSetup\AlwaysOnTop.wxs.bk""""
       call cmd /C "copy ""$(ProjectDir)..\PowerToysSetup\Awake.wxs"" ""$(ProjectDir)..\PowerToysSetup\Awake.wxs.bk""""
+      call cmd /C "copy ""$(ProjectDir)..\PowerToysSetup\BaseApplications.wxs"" ""$(ProjectDir)..\PowerToysSetup\BaseApplications.wxs.bk""""
       call cmd /C "copy ""$(ProjectDir)..\PowerToysSetup\ColorPicker.wxs"" ""$(ProjectDir)..\PowerToysSetup\ColorPicker.wxs.bk""""
       call cmd /C "copy ""$(ProjectDir)..\PowerToysSetup\Core.wxs"" ""$(ProjectDir)..\PowerToysSetup\Core.wxs.bk""""
-      call cmd /C "copy ""$(ProjectDir)..\PowerToysSetup\FancyZones.wxs"" ""$(ProjectDir)..\PowerToysSetup\FancyZones.wxs.bk""""
       call cmd /C "copy ""$(ProjectDir)..\PowerToysSetup\FileExplorerPreview.wxs"" ""$(ProjectDir)..\PowerToysSetup\FileExplorerPreview.wxs.bk""""
       call cmd /C "copy ""$(ProjectDir)..\PowerToysSetup\FileLocksmith.wxs"" ""$(ProjectDir)..\PowerToysSetup\FileLocksmith.wxs.bk""""
       call cmd /C "copy ""$(ProjectDir)..\PowerToysSetup\Hosts.wxs"" ""$(ProjectDir)..\PowerToysSetup\Hosts.wxs.bk""""
       call cmd /C "copy ""$(ProjectDir)..\PowerToysSetup\ImageResizer.wxs"" ""$(ProjectDir)..\PowerToysSetup\ImageResizer.wxs.bk""""
       call cmd /C "copy ""$(ProjectDir)..\PowerToysSetup\KeyboardManager.wxs"" ""$(ProjectDir)..\PowerToysSetup\KeyboardManager.wxs.bk""""
-      call cmd /C "copy ""$(ProjectDir)..\PowerToysSetup\MeasureTool.wxs"" ""$(ProjectDir)..\PowerToysSetup\MeasureTool.wxs.bk""""
-      call cmd /C "copy ""$(ProjectDir)..\PowerToysSetup\MouseUtils.wxs"" ""$(ProjectDir)..\PowerToysSetup\MouseUtils.wxs.bk""""
       call cmd /C "copy ""$(ProjectDir)..\PowerToysSetup\MouseWithoutBorders.wxs"" ""$(ProjectDir)..\PowerToysSetup\MouseWithoutBorders.wxs.bk""""
       call cmd /C "copy ""$(ProjectDir)..\PowerToysSetup\Peek.wxs"" ""$(ProjectDir)..\PowerToysSetup\Peek.wxs.bk""""
-      call cmd /C "copy ""$(ProjectDir)..\PowerToysSetup\PowerAccent.wxs"" ""$(ProjectDir)..\PowerToysSetup\PowerAccent.wxs.bk""""
       call cmd /C "copy ""$(ProjectDir)..\PowerToysSetup\PowerRename.wxs"" ""$(ProjectDir)..\PowerToysSetup\PowerRename.wxs.bk""""
       call cmd /C "copy ""$(ProjectDir)..\PowerToysSetup\Product.wxs"" ""$(ProjectDir)..\PowerToysSetup\Product.wxs.bk""""
       call cmd /C "copy ""$(ProjectDir)..\PowerToysSetup\RegistryPreview.wxs"" ""$(ProjectDir)..\PowerToysSetup\RegistryPreview.wxs.bk""""
@@ -71,11 +66,10 @@
       call cmd /C "copy ""$(ProjectDir)..\PowerToysSetup\Run.wxs"" ""$(ProjectDir)..\PowerToysSetup\Run.wxs.bk""""
       call cmd /C "copy ""$(ProjectDir)..\PowerToysSetup\Settings.wxs"" ""$(ProjectDir)..\PowerToysSetup\Settings.wxs.bk""""
       call cmd /C "copy ""$(ProjectDir)..\PowerToysSetup\ShortcutGuide.wxs"" ""$(ProjectDir)..\PowerToysSetup\ShortcutGuide.wxs.bk""""
-      call cmd /C "copy ""$(ProjectDir)..\PowerToysSetup\TextExtractor.wxs"" ""$(ProjectDir)..\PowerToysSetup\TextExtractor.wxs.bk""""
       call cmd /C "copy ""$(ProjectDir)..\PowerToysSetup\Tools.wxs"" ""$(ProjectDir)..\PowerToysSetup\Tools.wxs.bk""""
       call cmd /C "copy ""$(ProjectDir)..\PowerToysSetup\VideoConference.wxs"" ""$(ProjectDir)..\PowerToysSetup\VideoConference.wxs.bk""""
       call cmd /C "copy ""$(ProjectDir)..\PowerToysSetup\WinAppSDK.wxs"" ""$(ProjectDir)..\PowerToysSetup\WinAppSDK.wxs.bk""""
-      call powershell.exe -NonInteractive -executionpolicy Unrestricted -File parseRuntimes.ps1 -runtimedepsjsonpath "$(ProjectDir)..\..\$(Platform)\$(Configuration)\Settings\PowerToys.Settings.deps.json" -wpfdepsjsonpath "$(ProjectDir)..\..\$(Platform)\$(Configuration)\modules\ColorPicker\PowerToys.ColorPickerUI.deps.json" -depsfileslistspath "$(ProjectDir)DepsFilesLists.h" -productwxspath "$(ProjectDir)..\PowerToysSetup\Core.wxs"
+      call cmd /C "copy ""$(ProjectDir)..\PowerToysSetup\WinUI3Applications.wxs"" ""$(ProjectDir)..\PowerToysSetup\WinUI3Applications.wxs.bk""""
       if not "$(PerUser)" == "true" call powershell.exe -NonInteractive -executionpolicy Unrestricted -File ..\PowerToysSetup\generateAllFileComponents.ps1 -platform $(Platform)
       if "$(PerUser)" == "true" call powershell.exe -NonInteractive -executionpolicy Unrestricted -File ..\PowerToysSetup\generateAllFileComponents.ps1 -platform $(Platform) -installscopeperuser $(PerUser)
       </Command>

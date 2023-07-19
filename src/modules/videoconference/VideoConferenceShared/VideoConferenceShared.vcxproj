@@ -55,12 +55,10 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Platform)'!='Win32'">
-    <OutDir>$(SolutionDir)$(Platform)\$(Configuration)\modules\VideoConference\</OutDir>
-    <IntDir>$(SolutionDir)$(Platform)\$(Configuration)\obj\$(ProjectName)\</IntDir>
+    <OutDir>..\..\..\..\$(Platform)\$(Configuration)\</OutDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Platform)'=='Win32'">
-    <OutDir>..\..\..\..\x86\$(Configuration)\modules\VideoConference\</OutDir>
-    <IntDir>..\..\..\..\x86\$(Configuration)\obj\$(ProjectName)\</IntDir>
+    <OutDir>..\..\..\..\x86\$(Configuration)\</OutDir>
   </PropertyGroup>
   <PropertyGroup>
     <LinkIncremental>true</LinkIncremental>

@@ -28,20 +28,20 @@ namespace Microsoft.PowerToys.FilePreviewCommon
             new XmlFormatter(),
         }.AsReadOnly();
 
-        /// <summary>
-        /// Gets the path of the current assembly.
-        /// </summary>
-        /// <remarks>
-        /// Source: https://stackoverflow.com/a/283917/14774889
-        /// </remarks>
-        public static string AssemblyDirectory
+        private static string _monacoDirectory;
+
+        public static string GetRuntimeMonacoDirectory()
         {
-            get
+            string codeBase = Assembly.GetExecutingAssembly().Location;
+            string path = Path.GetFullPath(Path.Combine(Path.GetDirectoryName(codeBase), "Assets", "Monaco"));
+            if (Path.Exists(path))
             {
-                string codeBase = Assembly.GetExecutingAssembly().Location;
-                UriBuilder uri = new UriBuilder(codeBase);
-                string path = Uri.UnescapeDataString(uri.Path);
-                return Path.GetDirectoryName(path);
+                return path;
+            }
+            else
+            {
+                // We're likely in WinUI3Apps directory and need to go back to the base directory.
+                return Path.GetFullPath(Path.Combine(Path.GetDirectoryName(codeBase), "..", "Assets", "Monaco"));
             }
         }
 
@@ -49,10 +49,12 @@ namespace Microsoft.PowerToys.FilePreviewCommon
         {
             get
             {
-                // TODO: common monaco folder
-                string codeBase = Assembly.GetExecutingAssembly().Location;
-                string path = Path.GetFullPath(Path.Combine(Path.GetDirectoryName(codeBase), "..", "FileExplorerPreview"));
-                return path;
+                if (string.IsNullOrEmpty(_monacoDirectory))
+                {
+                    _monacoDirectory = GetRuntimeMonacoDirectory();
+                }
+
+                return _monacoDirectory;
             }
         }
 

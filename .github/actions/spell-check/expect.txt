@@ -1275,6 +1275,7 @@ MOVESIZESTART
 mozilla
 mpmc
 MRM
+MRT
 mru
 mrw
 msbuild
@@ -2385,6 +2386,7 @@ Wwan
 Wwanpp
 XAttribute
 XAxis
+xbf
 Xbox
 XBUTTON
 XBUTTONDBLCLK
