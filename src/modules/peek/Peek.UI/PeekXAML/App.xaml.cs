@@ -11,7 +11,6 @@ using Microsoft.UI.Xaml;
 using Peek.FilePreviewer;
 using Peek.UI.Telemetry.Events;
 using Peek.UI.Views;
-using WinUIEx;
 
 namespace Peek.UI
 {
@@ -95,9 +94,6 @@ namespace Peek.UI
             }
 
             Window = new MainWindow();
-
-            Window.Activate();
-            Window.Hide();
         }
 
         private void App_UnhandledException(object sender, Microsoft.UI.Xaml.UnhandledExceptionEventArgs e)

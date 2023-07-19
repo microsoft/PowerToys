@@ -34,22 +34,19 @@
         </core:EventTriggerBehavior>
     </interactivity:Interaction.Behaviors>
 
-    <Grid>
+    <Grid RowSpacing="8">
         <Grid.RowDefinitions>
-            <RowDefinition Height="48" />
+            <RowDefinition Height="Auto" x:Name="ButtonsRow" />
             <RowDefinition Height="*" />
         </Grid.RowDefinitions>
 
-        <Grid
-            Padding="18,0,18,4"
-            VerticalAlignment="Bottom">
+        <Grid Margin="16,0">
             <Button
                 Click="ShowSelectedPathsButton_Click"
                 Content="{x:Bind ViewModel.Paths, Converter={StaticResource fileListToDescriptionConverter}}">
                 <Button.Template>
                     <ControlTemplate TargetType="Button">
                         <TextBlock
-                            Margin="0,8,0,0"
                             HorizontalAlignment="Left"
                             Style="{ThemeResource BodyStrongTextBlockStyle}"
                             Text="{TemplateBinding Content}" />
@@ -57,23 +54,19 @@
                 </Button.Template>
                 <ToolTipService.ToolTip>
                     <TextBlock
-                        x:Uid="PathsTooltipDescription"
-                        TextWrapping="WrapWholeWords" />
+                    x:Uid="PathsTooltipDescription"
+                    TextWrapping="WrapWholeWords" />
                 </ToolTipService.ToolTip>
             </Button>
 
             <StackPanel
                 HorizontalAlignment="Right"
-                VerticalAlignment="Bottom"
                 Orientation="Horizontal"
-                Spacing="6">
+                Spacing="8">
                 <Button
-                    Padding="0"
-                    HorizontalAlignment="Right"
                     Command="{Binding LoadProcessesCommand}"
                     Style="{StaticResource SubtleButtonStyle}">
                     <FontIcon
-                        FontFamily="{ThemeResource SymbolThemeFontFamily}"
                         FontSize="16"
                         Glyph="&#xe72c;" />
                     <ToolTipService.ToolTip>
@@ -82,12 +75,10 @@
                 </Button>
                 <Button
                     x:Name="RestartAsAdminBtn"
-                    Padding="0"
                     Command="{Binding RestartElevatedCommand}"
                     Style="{StaticResource SubtleButtonStyle}"
                     Visibility="{x:Bind ViewModel.IsElevated, Converter={StaticResource boolToVisibilityConverter}}">
                     <FontIcon
-                        FontFamily="{ThemeResource SymbolThemeFontFamily}"
                         FontSize="16"
                         Glyph="&#xe7ef;" />
                     <ToolTipService.ToolTip>
@@ -101,23 +92,22 @@
             <Grid Visibility="{x:Bind ViewModel.IsLoading, Converter={StaticResource boolToVisibilityConverter}, Mode=OneWay}">
                 <ListView
                     x:Name="ProcessesListView"
-                    Grid.Row="1"
                     IncrementalLoadingThreshold="10"
                     ItemsSource="{x:Bind ViewModel.Processes}"
-                    SelectionMode="None">
+                    SelectionMode="None"
+                    Padding="0,0,0,12">
                     <ListView.ItemTemplate>
                         <DataTemplate x:DataType="interop:ProcessResult">
-                            <labs:SettingsExpander Margin="0,3,0,0">
+                            <labs:SettingsExpander Margin="0,0,0,4">
                                 <labs:SettingsExpander.Resources>
                                     <x:Double x:Key="SettingsCardWrapThreshold">0</x:Double>
                                 </labs:SettingsExpander.Resources>
                                 <labs:SettingsExpander.Header>
                                     <!--  We can't use the HeaderIcon because it only support a BitmapIcon, which only supports UriSource - not a direct BitmapImage  -->
-                                    <StackPanel Orientation="Horizontal">
+                                    <StackPanel Orientation="Horizontal" Spacing="8">
                                         <Image
                                             Width="16"
                                             Height="16"
-                                            Margin="2,0,24,0"
                                             Source="{x:Bind pid, Converter={StaticResource pidToIconConverter}}" />
                                         <TextBlock
                                             IsTextSelectionEnabled="True"
@@ -139,19 +129,17 @@
                                             </ToolTipService.ToolTip>
                                         </FontIcon>
                                         <Button
-                                            MinWidth="132"
+                                            MinWidth="128"
                                             Command="{Binding Path=DataContext.EndTaskCommand, ElementName=ProcessesListView}"
                                             CommandParameter="{Binding}">
                                             <StackPanel
                                                 Orientation="Horizontal"
-                                                Spacing="6">
+                                                Spacing="8">
                                                 <FontIcon
-                                                    FontFamily="{ThemeResource SymbolThemeFontFamily}"
-                                                    FontSize="14"
+                                                    FontSize="16"
                                                     Glyph="&#xf140;" />
                                                 <TextBlock
-                                                    x:Uid="EndTask"
-                                                    FontSize="14" />
+                                                    x:Uid="EndTask"/>
                                             </StackPanel>
                                         </Button>
                                     </StackPanel>
@@ -177,13 +165,10 @@
                                             </TextBlock>
                                         </labs:SettingsCard.Header>
                                         <ItemsRepeater
-                                            Margin="-16,0,0,0"
                                             ItemsSource="{x:Bind files}">
                                             <ItemsRepeater.ItemTemplate>
                                                 <DataTemplate x:DataType="x:String">
                                                     <TextBlock
-                                                        Margin="16,0,0,4"
-                                                        FontSize="12"
                                                         Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                                                         IsTextSelectionEnabled="True"
                                                         Style="{StaticResource CaptionTextBlockStyle}"
@@ -200,6 +185,7 @@
                         </DataTemplate>
                     </ListView.ItemTemplate>
                 </ListView>
+                
                 <StackPanel
                     HorizontalAlignment="Center"
                     VerticalAlignment="Center"
@@ -230,14 +216,12 @@
                 Height="48"
                 IsActive="{x:Bind ViewModel.IsLoading, Mode=OneWay}" />
         </Grid>
+
         <ContentDialog
             x:Name="SelectedFilesListDialog"
             x:Uid="SelectedFilesListDialog">
             <ScrollViewer
-                HorizontalScrollBarVisibility="Auto"
-                HorizontalScrollMode="Auto"
-                VerticalScrollBarVisibility="Auto"
-                VerticalScrollMode="Auto">
+                Padding="0,0,16,0">
                 <TextBlock
                     IsTextSelectionEnabled="True"
                     Text="{x:Bind ViewModel.PathsToString, Mode=OneWay}" />

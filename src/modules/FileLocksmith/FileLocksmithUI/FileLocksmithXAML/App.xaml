@@ -31,7 +31,6 @@
                 <Setter Property="Width" Value="36" />
                 <Setter Property="Padding" Value="0" />
                 <Setter Property="Height" Value="36" />
-                <Setter Property="Padding" Value="{StaticResource ButtonPadding}" />
                 <Setter Property="HorizontalAlignment" Value="Left" />
                 <Setter Property="VerticalAlignment" Value="Center" />
                 <Setter Property="FontFamily" Value="{ThemeResource ContentControlThemeFontFamily}" />

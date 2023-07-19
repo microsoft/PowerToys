@@ -161,6 +161,11 @@ Invoke-Expression -Command "$PSScriptRoot\generateFileList.ps1 -fileDepsJson ""$
 Invoke-Expression -Command "$PSScriptRoot\generateFileList.ps1 -fileDepsJson """" -fileListName PowerToysImagesCmpFiles -wxsFilePath $PSScriptRoot\Run.wxs -depsPath ""$PSScriptRoot..\..\..\$platform\Release\RunPlugins\PowerToys\Images"""
 Invoke-Expression -Command "$PSScriptRoot\generateFileComponents.ps1 -fileListName ""PowerToysCmpFiles"" -wxsFilePath $PSScriptRoot\Run.wxs -regroot $registryroot"
 Invoke-Expression -Command "$PSScriptRoot\generateFileComponents.ps1 -fileListName ""PowerToysImagesCmpFiles"" -wxsFilePath $PSScriptRoot\Run.wxs -regroot $registryroot"
+###ValueGenerator
+Invoke-Expression -Command "$PSScriptRoot\generateFileList.ps1 -fileDepsJson ""$PSScriptRoot..\..\..\$platform\Release\RunPlugins\ValueGenerator\Community.PowerToys.Run.Plugin.ValueGenerator.deps.json"" -fileListName ValueGeneratorCmpFiles -wxsFilePath $PSScriptRoot\Run.wxs -isLauncherPlugin 1"
+Invoke-Expression -Command "$PSScriptRoot\generateFileList.ps1 -fileDepsJson """" -fileListName ValueGeneratorImagesCmpFiles -wxsFilePath $PSScriptRoot\Run.wxs -depsPath ""$PSScriptRoot..\..\..\$platform\Release\RunPlugins\ValueGenerator\Images"""
+Invoke-Expression -Command "$PSScriptRoot\generateFileComponents.ps1 -fileListName ""ValueGeneratorCmpFiles"" -wxsFilePath $PSScriptRoot\Run.wxs -regroot $registryroot"
+Invoke-Expression -Command "$PSScriptRoot\generateFileComponents.ps1 -fileListName ""ValueGeneratorImagesCmpFiles"" -wxsFilePath $PSScriptRoot\Run.wxs -regroot $registryroot"
 ## Plugins
 
 #ShortcutGuide
