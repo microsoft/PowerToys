@@ -11,13 +11,7 @@
     </Filter>
     <Filter Include="Resource Files">
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
-      <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
-    </Filter>
-    <Filter Include="Assets">
-      <UniqueIdentifier>{B46FFE4E-E3D8-4FE5-9482-E6127F51ED34}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Assets\ShortcutGuide">
-      <UniqueIdentifier>{800507f8-718d-48d1-aa56-96c040795b8a}</UniqueIdentifier>
+      <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;svg;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
     <Filter Include="Generated Files">
       <UniqueIdentifier>{cb917ac7-30da-494b-81f1-cbe4415e91f4}</UniqueIdentifier>
@@ -122,44 +116,8 @@
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
-    <CopyFileToFolders Include="Assets\ShortcutGuide\0.svg">
-      <Filter>Assets\ShortcutGuide</Filter>
-    </CopyFileToFolders>
-    <CopyFileToFolders Include="Assets\ShortcutGuide\1.svg">
-      <Filter>Assets\ShortcutGuide</Filter>
-    </CopyFileToFolders>
-    <CopyFileToFolders Include="Assets\ShortcutGuide\2.svg">
-      <Filter>Assets\ShortcutGuide</Filter>
-    </CopyFileToFolders>
-    <CopyFileToFolders Include="Assets\ShortcutGuide\3.svg">
-      <Filter>Assets\ShortcutGuide</Filter>
-    </CopyFileToFolders>
-    <CopyFileToFolders Include="Assets\ShortcutGuide\4.svg">
-      <Filter>Assets\ShortcutGuide</Filter>
-    </CopyFileToFolders>
-    <CopyFileToFolders Include="Assets\ShortcutGuide\5.svg">
-      <Filter>Assets\ShortcutGuide</Filter>
-    </CopyFileToFolders>
-    <CopyFileToFolders Include="Assets\ShortcutGuide\6.svg">
-      <Filter>Assets\ShortcutGuide</Filter>
-    </CopyFileToFolders>
-    <CopyFileToFolders Include="Assets\ShortcutGuide\7.svg">
-      <Filter>Assets\ShortcutGuide</Filter>
-    </CopyFileToFolders>
-    <CopyFileToFolders Include="Assets\ShortcutGuide\8.svg">
-      <Filter>Assets\ShortcutGuide</Filter>
-    </CopyFileToFolders>
-    <CopyFileToFolders Include="Assets\ShortcutGuide\9.svg">
-      <Filter>Assets\ShortcutGuide</Filter>
-    </CopyFileToFolders>
-    <CopyFileToFolders Include="Assets\ShortcutGuide\no_active_window.svg">
-      <Filter>Assets\ShortcutGuide</Filter>
-    </CopyFileToFolders>
-    <CopyFileToFolders Include="Assets\ShortcutGuide\overlay.svg">
-      <Filter>Assets\ShortcutGuide</Filter>
-    </CopyFileToFolders>
-    <CopyFileToFolders Include="Assets\ShortcutGuide\overlay_portrait.svg">
-      <Filter>Assets\ShortcutGuide</Filter>
+    <CopyFileToFolders Include="Assets\ShortcutGuide\**">
+      <Filter>Resource Files</Filter>
     </CopyFileToFolders>
   </ItemGroup>
   <ItemGroup>
