@@ -14,8 +14,6 @@ namespace Wox.Plugin.Common
     /// </summary>
     public class ShellLocalization
     {
-        private readonly object _cacheLock = new object();
-
         // Cache for already localized names. This makes localization of already localized string faster.
         private Dictionary<string, string> _localizationCache = new Dictionary<string, string>();
 
@@ -41,14 +39,11 @@ namespace Wox.Plugin.Common
 
             shellItem.GetDisplayName(SIGDN.NORMALDISPLAY, out string filename);
 
-            lock (_cacheLock)
+            if (!_localizationCache.ContainsKey(path.ToLowerInvariant()))
             {
-                if (!_localizationCache.ContainsKey(path.ToLowerInvariant()))
-                {
-                    // The if condition is required to not get timing problems when called from an parallel execution.
-                    // Without the check we will get "key exists" exceptions.
-                    _localizationCache.Add(path.ToLowerInvariant(), filename);
-                }
+                // The if condition is required to not get timing problems when called from an parallel execution.
+                // Without the check we will get "key exists" exceptions.
+                _localizationCache.Add(path.ToLowerInvariant(), filename);
             }
 
             return filename;
