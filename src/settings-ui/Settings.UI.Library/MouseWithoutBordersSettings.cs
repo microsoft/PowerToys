@@ -47,7 +47,12 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         public bool UpgradeSettingsConfiguration()
         {
 #pragma warning disable CS0618 // We use obsolete members to upgrade them
-            if (Version == "1.0")
+            bool downgradedThenUpgraded = Version != "1.0" && (Properties.HotKeyToggleEasyMouse != null ||
+                Properties.HotKeyLockMachine != null ||
+                Properties.HotKeyReconnect != null ||
+                Properties.HotKeySwitch2AllPC != null);
+
+            if (Version == "1.0" || downgradedThenUpgraded)
             {
                 Version = "1.1";
 
