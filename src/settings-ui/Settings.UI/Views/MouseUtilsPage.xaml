@@ -388,6 +388,24 @@
                                     x:Uid="MouseUtils_MousePointerCrosshairs_CrosshairsAutoHide"
                                     IsChecked="{x:Bind ViewModel.MousePointerCrosshairsAutoHide, Mode=TwoWay}" />
                             </labs:SettingsCard>
+
+                            <labs:SettingsCard x:Uid="MouseUtils_MousePointerCrosshairs_IsCrosshairsFixedLengthEnabled">
+                                <ToggleSwitch
+                                    x:Uid="ToggleSwitch"
+                                    IsOn="{x:Bind ViewModel.MousePointerCrosshairsIsFixedLengthEnabled, Mode=TwoWay}" />
+                            </labs:SettingsCard>
+
+                            <labs:SettingsCard
+                                x:Uid="MouseUtils_MousePointerCrosshairs_CrosshairsFixedLength"
+                                IsEnabled="{x:Bind ViewModel.MousePointerCrosshairsIsFixedLengthEnabled, Mode=OneWay}">
+                                <NumberBox
+                                    MinWidth="{StaticResource SettingActionControlMinWidth}"
+                                    LargeChange="10"
+                                    Minimum="1"
+                                    SmallChange="1"
+                                    SpinButtonPlacementMode="Compact"
+                                    Value="{x:Bind Mode=TwoWay, Path=ViewModel.MousePointerCrosshairsFixedLength}" />
+                            </labs:SettingsCard>
                         </labs:SettingsExpander.Items>
                     </labs:SettingsExpander>
                 </controls:SettingsGroup>
