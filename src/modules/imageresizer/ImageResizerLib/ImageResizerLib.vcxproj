@@ -4,8 +4,6 @@
     <Keyword>Win32Proj</Keyword>
     <ProjectGuid>{18b3db45-4ffe-4d01-97d6-5223feee1853}</ProjectGuid>
     <RootNamespace>ImageResizerLib</RootNamespace>
-    <WindowsTargetPlatformVersion>10.0.1.20348</WindowsTargetPlatformVersion>
-    <WindowsTargetPlatformMinVersion>10.0.19041.0</WindowsTargetPlatformMinVersion>
   </PropertyGroup>
   <PropertyGroup Label="Configuration">
     <ConfigurationType>StaticLibrary</ConfigurationType>

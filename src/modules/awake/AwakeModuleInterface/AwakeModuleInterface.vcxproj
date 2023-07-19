@@ -7,8 +7,6 @@
     <Keyword>Win32Proj</Keyword>
     <RootNamespace>Awake</RootNamespace>
     <ProjectName>AwakeModuleInterface</ProjectName>
-    <WindowsTargetPlatformVersion>10.0.20348.0</WindowsTargetPlatformVersion>
-    <WindowsTargetPlatformMinVersion>10.0.19041.0</WindowsTargetPlatformMinVersion>
     <TargetName>PowerToys.AwakeModuleInterface</TargetName>
     <PlatformToolset>v143</PlatformToolset>
   </PropertyGroup>

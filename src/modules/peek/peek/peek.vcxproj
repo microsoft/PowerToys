@@ -6,8 +6,6 @@
     <ProjectGuid>{a1425b53-3d61-4679-8623-e64a0d3d0a48}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
     <RootNamespace>peek</RootNamespace>
-    <WindowsTargetPlatformVersion>10.0.20348.0</WindowsTargetPlatformVersion>
-    <WindowsTargetPlatformMinVersion>10.0.19041.0</WindowsTargetPlatformMinVersion>
     <ProjectName>Peek</ProjectName>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />

@@ -31,8 +31,6 @@
     <Keyword>Win32Proj</Keyword>
     <ProjectGuid>{c604b37e-9d0e-4484-8778-e8b31b0e1b3a}</ProjectGuid>
     <RootNamespace>FileLocksmithLibInterop</RootNamespace>
-    <WindowsTargetPlatformVersion>10.0.20348.0</WindowsTargetPlatformVersion>
-    <WindowsTargetPlatformMinVersion>10.0.19041.0</WindowsTargetPlatformMinVersion>
     <TargetFramework>net7.0-windows</TargetFramework>
     <OutDir>..\..\..\..\$(Platform)\$(Configuration)\WinUI3Apps\</OutDir>
     <TargetName>PowerToys.FileLocksmithLib.Interop</TargetName>

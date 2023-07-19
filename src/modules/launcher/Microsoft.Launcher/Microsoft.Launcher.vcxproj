@@ -10,8 +10,6 @@
     <Keyword>Win32Proj</Keyword>
     <RootNamespace>Wox_Launcher</RootNamespace>
     <ProjectName>Microsoft.Launcher</ProjectName>
-    <WindowsTargetPlatformVersion>10.0.20348.0</WindowsTargetPlatformVersion>
-    <WindowsTargetPlatformMinVersion>10.0.19041.0</WindowsTargetPlatformMinVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Label="Configuration">

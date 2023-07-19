@@ -24,8 +24,6 @@
     <ProjectGuid>{697C6AF9-0A48-49A9-866C-67DA12384015}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
     <RootNamespace>RegistryPreviewExt</RootNamespace>
-    <WindowsTargetPlatformVersion>10.0.20348.0</WindowsTargetPlatformVersion>
-    <WindowsTargetPlatformMinVersion>10.0.19041.0</WindowsTargetPlatformMinVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)'=='Debug'" Label="Configuration">
