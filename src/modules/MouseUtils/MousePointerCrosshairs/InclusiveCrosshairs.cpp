@@ -77,6 +77,8 @@ private:
     int m_crosshairs_radius = INCLUSIVE_MOUSE_DEFAULT_CROSSHAIRS_RADIUS;
     int m_crosshairs_thickness = INCLUSIVE_MOUSE_DEFAULT_CROSSHAIRS_THICKNESS;
     int m_crosshairs_border_size = INCLUSIVE_MOUSE_DEFAULT_CROSSHAIRS_BORDER_SIZE;
+    bool m_crosshairs_is_fixed_length_enabled = INCLUSIVE_MOUSE_DEFAULT_CROSSHAIRS_IS_FIXED_LENGTH_ENABLED;
+    int m_crosshairs_fixed_length = INCLUSIVE_MOUSE_DEFAULT_CROSSHAIRS_FIXED_LENGTH;
     float m_crosshairs_opacity = max(0.f, min(1.f, (float)INCLUSIVE_MOUSE_DEFAULT_CROSSHAIRS_OPACITY / 100.0f));
     bool m_crosshairs_auto_hide = INCLUSIVE_MOUSE_DEFAULT_AUTO_HIDE;
 };
@@ -214,27 +216,47 @@ void InclusiveCrosshairs::UpdateCrosshairsPosition()
 
     // Crosshair position should receive a minor adjustment for odd values to prevent anti-aliasing due to half pixels, while still looking like it's centered around the mouse pointer.
     float halfPixelAdjustment = m_crosshairs_thickness % 2 == 1 ? 0.5f : 0.0f;
+    float borderSizePadding = m_crosshairs_border_size * 2.f;
 
-    // Position crosshairs components around the mouse pointer.
-    m_left_crosshairs_border.Offset({ ptCursor.x - m_crosshairs_radius + m_crosshairs_border_size + halfPixelAdjustment * 2, ptCursor.y + halfPixelAdjustment, .0f });
-    m_left_crosshairs_border.Size({ ptCursor.x - ptMonitorUpperLeft.x - m_crosshairs_radius + m_crosshairs_border_size + halfPixelAdjustment * 2, m_crosshairs_thickness + m_crosshairs_border_size * 2.f });
-    m_left_crosshairs.Offset({ ptCursor.x - m_crosshairs_radius + halfPixelAdjustment * 2.f, ptCursor.y + halfPixelAdjustment, .0f });
-    m_left_crosshairs.Size({ ptCursor.x - ptMonitorUpperLeft.x - m_crosshairs_radius + halfPixelAdjustment * 2, static_cast<float>(m_crosshairs_thickness) });
+    {
+        float leftCrosshairsFullScreenLength = ptCursor.x - ptMonitorUpperLeft.x - m_crosshairs_radius + halfPixelAdjustment * 2.f;
+        float leftCrosshairsLength = m_crosshairs_is_fixed_length_enabled ? m_crosshairs_fixed_length : leftCrosshairsFullScreenLength;
+        float leftCrosshairsBorderLength = m_crosshairs_is_fixed_length_enabled ? m_crosshairs_fixed_length + borderSizePadding : leftCrosshairsFullScreenLength + m_crosshairs_border_size;
+        m_left_crosshairs_border.Offset({ ptCursor.x - m_crosshairs_radius + m_crosshairs_border_size + halfPixelAdjustment * 2.f, ptCursor.y + halfPixelAdjustment, .0f });
+        m_left_crosshairs_border.Size({ leftCrosshairsBorderLength, m_crosshairs_thickness + borderSizePadding });
+        m_left_crosshairs.Offset({ ptCursor.x - m_crosshairs_radius + halfPixelAdjustment * 2.f, ptCursor.y + halfPixelAdjustment, .0f });
+        m_left_crosshairs.Size({ leftCrosshairsLength, static_cast<float>(m_crosshairs_thickness) });
+    }
 
-    m_right_crosshairs_border.Offset({ static_cast<float>(ptCursor.x) + m_crosshairs_radius - m_crosshairs_border_size, ptCursor.y + halfPixelAdjustment, .0f });
-    m_right_crosshairs_border.Size({ static_cast<float>(ptMonitorBottomRight.x) - ptCursor.x - m_crosshairs_radius + m_crosshairs_border_size, m_crosshairs_thickness + m_crosshairs_border_size * 2.f });
-    m_right_crosshairs.Offset({ static_cast<float>(ptCursor.x) + m_crosshairs_radius, ptCursor.y + halfPixelAdjustment, .0f });
-    m_right_crosshairs.Size({ static_cast<float>(ptMonitorBottomRight.x) - ptCursor.x - m_crosshairs_radius, static_cast<float>(m_crosshairs_thickness) });
+    {
+        float rightCrosshairsFullScreenLength = static_cast<float>(ptMonitorBottomRight.x) - ptCursor.x - m_crosshairs_radius;
+        float rightCrosshairsLength = m_crosshairs_is_fixed_length_enabled ? m_crosshairs_fixed_length : rightCrosshairsFullScreenLength;
+        float rightCrosshairsBorderLength = m_crosshairs_is_fixed_length_enabled ? m_crosshairs_fixed_length + borderSizePadding : rightCrosshairsFullScreenLength + m_crosshairs_border_size;
+        m_right_crosshairs_border.Offset({ static_cast<float>(ptCursor.x) + m_crosshairs_radius - m_crosshairs_border_size, ptCursor.y + halfPixelAdjustment, .0f });
+        m_right_crosshairs_border.Size({ rightCrosshairsBorderLength, m_crosshairs_thickness + borderSizePadding });
+        m_right_crosshairs.Offset({ static_cast<float>(ptCursor.x) + m_crosshairs_radius, ptCursor.y + halfPixelAdjustment, .0f });
+        m_right_crosshairs.Size({ rightCrosshairsLength, static_cast<float>(m_crosshairs_thickness) });
+    }
 
-    m_top_crosshairs_border.Offset({ ptCursor.x + halfPixelAdjustment, ptCursor.y - m_crosshairs_radius + m_crosshairs_border_size + halfPixelAdjustment * 2, .0f });
-    m_top_crosshairs_border.Size({ m_crosshairs_thickness + m_crosshairs_border_size * 2.f, ptCursor.y - ptMonitorUpperLeft.y - m_crosshairs_radius + m_crosshairs_border_size + halfPixelAdjustment * 2 });
-    m_top_crosshairs.Offset({ ptCursor.x + halfPixelAdjustment, ptCursor.y - m_crosshairs_radius + halfPixelAdjustment * 2, .0f });
-    m_top_crosshairs.Size({ static_cast<float>(m_crosshairs_thickness), ptCursor.y - ptMonitorUpperLeft.y - m_crosshairs_radius + halfPixelAdjustment * 2 });
+    {
+        float topCrosshairsFullScreenLength = ptCursor.y - ptMonitorUpperLeft.y - m_crosshairs_radius + halfPixelAdjustment * 2.f;
+        float topCrosshairsLength = m_crosshairs_is_fixed_length_enabled ? m_crosshairs_fixed_length : topCrosshairsFullScreenLength;
+        float topCrosshairsBorderLength = m_crosshairs_is_fixed_length_enabled ? m_crosshairs_fixed_length + borderSizePadding : topCrosshairsFullScreenLength + m_crosshairs_border_size;
+        m_top_crosshairs_border.Offset({ ptCursor.x + halfPixelAdjustment, ptCursor.y - m_crosshairs_radius + m_crosshairs_border_size + halfPixelAdjustment * 2.f, .0f });
+        m_top_crosshairs_border.Size({ m_crosshairs_thickness + borderSizePadding, topCrosshairsBorderLength });
+        m_top_crosshairs.Offset({ ptCursor.x + halfPixelAdjustment, ptCursor.y - m_crosshairs_radius + halfPixelAdjustment * 2.f, .0f });
+        m_top_crosshairs.Size({ static_cast<float>(m_crosshairs_thickness), topCrosshairsLength });
+    }
 
-    m_bottom_crosshairs_border.Offset({ ptCursor.x + halfPixelAdjustment, static_cast<float>(ptCursor.y) + m_crosshairs_radius - m_crosshairs_border_size, .0f });
-    m_bottom_crosshairs_border.Size({ m_crosshairs_thickness + m_crosshairs_border_size * 2.f, static_cast<float>(ptMonitorBottomRight.y) - ptCursor.y - m_crosshairs_radius + m_crosshairs_border_size });
-    m_bottom_crosshairs.Offset({ ptCursor.x + halfPixelAdjustment, static_cast<float>(ptCursor.y) + m_crosshairs_radius, .0f });
-    m_bottom_crosshairs.Size({ static_cast<float>(m_crosshairs_thickness), static_cast<float>(ptMonitorBottomRight.y) - ptCursor.y - m_crosshairs_radius });
+    {
+        float bottomCrosshairsFullScreenLength = static_cast<float>(ptMonitorBottomRight.y) - ptCursor.y - m_crosshairs_radius;
+        float bottomCrosshairsLength = m_crosshairs_is_fixed_length_enabled ? m_crosshairs_fixed_length : bottomCrosshairsFullScreenLength;
+        float bottomCrosshairsBorderLength = m_crosshairs_is_fixed_length_enabled ? m_crosshairs_fixed_length + borderSizePadding : bottomCrosshairsFullScreenLength + m_crosshairs_border_size;
+        m_bottom_crosshairs_border.Offset({ ptCursor.x + halfPixelAdjustment, static_cast<float>(ptCursor.y) + m_crosshairs_radius - m_crosshairs_border_size, .0f });
+        m_bottom_crosshairs_border.Size({ m_crosshairs_thickness + borderSizePadding, bottomCrosshairsBorderLength });
+        m_bottom_crosshairs.Offset({ ptCursor.x + halfPixelAdjustment, static_cast<float>(ptCursor.y) + m_crosshairs_radius, .0f });
+        m_bottom_crosshairs.Size({ static_cast<float>(m_crosshairs_thickness), bottomCrosshairsLength });
+    }
 }
 
 LRESULT CALLBACK InclusiveCrosshairs::MouseHookProc(int nCode, WPARAM wParam, LPARAM lParam) noexcept
@@ -303,6 +325,8 @@ void InclusiveCrosshairs::ApplySettings(InclusiveCrosshairsSettings& settings, b
     m_crosshairs_border_size = settings.crosshairsBorderSize;
     bool autoHideChanged = m_crosshairs_auto_hide != settings.crosshairsAutoHide;
     m_crosshairs_auto_hide = settings.crosshairsAutoHide;
+    m_crosshairs_is_fixed_length_enabled = settings.crosshairsIsFixedLengthEnabled;
+    m_crosshairs_fixed_length = settings.crosshairsFixedLength;
 
     if (applyToRunTimeObjects)
     {

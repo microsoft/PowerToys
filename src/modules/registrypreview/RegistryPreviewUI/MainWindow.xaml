@@ -7,173 +7,154 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:winuiex="using:WinUIEx"
     Closed="Window_Closed"
+    MinWidth="480"
+    MinHeight="320"
     mc:Ignorable="d">
     <Window.SystemBackdrop>
         <MicaBackdrop />
     </Window.SystemBackdrop>
+
     <Grid>
         <Grid.RowDefinitions>
-            <RowDefinition Height="32" />
+            <RowDefinition Height="Auto" />
             <RowDefinition Height="*" />
         </Grid.RowDefinitions>
         <Grid 
-            x:Name="titleBar" 
+            x:Name="titleBar"
             Grid.Row="0"
+            Height="32"
+            ColumnSpacing="16"
+            Margin="16,0"
             IsHitTestVisible="True">
-            <StackPanel
-                Margin="8,8,8,8"
-                VerticalAlignment="Bottom"
-                Orientation="Horizontal">
-                <Image Source="app.ico"/>
-                <TextBlock
-                    x:Name="titleBarText"
-                    Margin="8,0,0,0"
-                    FontSize="12"
-                    Style="{StaticResource CaptionTextBlockStyle}"
-                    Text="{Binding ApplicationTitle}" />
-            </StackPanel>
+            <Grid.ColumnDefinitions>
+                <!--<ColumnDefinition x:Name="LeftPaddingColumn" Width="0"/>-->
+                <ColumnDefinition x:Name="IconColumn" Width="Auto"/>
+                <ColumnDefinition x:Name="TitleColumn" Width="Auto"/>
+                <!--<ColumnDefinition x:Name="RightPaddingColumn" Width="0"/>-->
+            </Grid.ColumnDefinitions>
+            <Image
+                Source="app.ico"
+                Grid.Column="0"
+                VerticalAlignment="Center"
+                Width="16"
+                Height="16"/>
+            <TextBlock
+                x:Name="titleBarText"
+                Grid.Column="1"
+                VerticalAlignment="Center"
+                Style="{StaticResource CaptionTextBlockStyle}"
+                Text="{Binding ApplicationTitle}" />
         </Grid>
 
         <Grid
-            Grid.Row="1"
             x:Name="gridPreview"
+            Grid.Row="1"
             Width="Auto"
             Height="Auto"
             x:FieldModifier="public"
             Loaded="GridPreview_Loaded"
-            TabFocusNavigation="Cycle">
+            TabFocusNavigation="Cycle"
+            Margin="12">
             <Grid.Resources>
-                <Style x:Key="GridCardStyle" TargetType="Grid">
+                <Style x:Key="GridCardStyle" TargetType="Border">
                     <Style.Setters>
                         <Setter Property="Background" Value="{ThemeResource CardBackgroundFillColorDefaultBrush}" />
                         <Setter Property="BorderThickness" Value="1" />
                         <Setter Property="BorderBrush" Value="{ThemeResource CardStrokeColorDefaultBrush}" />
+                        <Setter Property="CornerRadius" Value="{StaticResource OverlayCornerRadius}"/>
                     </Style.Setters>
                 </Style>
             </Grid.Resources>
             <Grid.ColumnDefinitions>
                 <!--  Left, Splitter, Right  -->
                 <ColumnDefinition Width="*" />
-                <ColumnDefinition Width="6" />
+                <ColumnDefinition Width="8" />
                 <ColumnDefinition Width="*" />
             </Grid.ColumnDefinitions>
             <Grid.RowDefinitions>
-                <!--  CommandBar, Tree, Splitter, List, StackPanel  -->
+                <!--  CommandBar, Tree, Splitter, List  -->
                 <RowDefinition Height="Auto" />
                 <RowDefinition Height="*" />
-                <RowDefinition Height="6" />
+                <RowDefinition Height="8" />
                 <RowDefinition Height="*" />
             </Grid.RowDefinitions>
 
-            <Grid
+            <Border Style="{StaticResource GridCardStyle}"
                 Grid.Row="0"
                 Grid.Column="0"
                 Grid.ColumnSpan="3"
-                Margin="8,0,8,8"
-                CornerRadius="{StaticResource OverlayCornerRadius}"
-                Style="{StaticResource GridCardStyle}">
+                Margin="0,0,0,12">
+
                 <CommandBar
                     Name="commandBar"
                     HorizontalAlignment="Left"
-                    Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
-                    BorderBrush="Transparent"
-                    BorderThickness="0"
-                    DefaultLabelPosition="Right"
-                    IsOpen="True"
-                    IsTabStop="False">
+                    DefaultLabelPosition="Right">
 
                     <AppBarButton
-                        x:Name="openButton"
-                        x:Uid="OpenButton"
-                        HorizontalAlignment="Left"
-                        Click="OpenButton_Click"
-                        IsTabStop="False">
+                    x:Name="openButton"
+                    x:Uid="OpenButton"
+                    Click="OpenButton_Click">
                         <AppBarButton.Icon>
-                            <FontIcon FontFamily="{StaticResource SymbolThemeFontFamily}" Glyph="&#xe8e5;"/>
+                            <FontIcon Glyph="&#xe8e5;"/>
                         </AppBarButton.Icon>
                         <AppBarButton.KeyboardAccelerators>
                             <KeyboardAccelerator Key="O" Modifiers="Control" />
                         </AppBarButton.KeyboardAccelerators>
                     </AppBarButton>
-                    <AppBarSeparator />
                     <AppBarButton
-                        x:Name="saveButton"
-                        x:Uid="SaveButton"
-                        HorizontalAlignment="Left"
-                        Click="SaveButton_Click"
-                        IsEnabled="False"
-                        IsTabStop="False">
-                        <AppBarButton.Icon>
-                            <FontIcon FontFamily="{StaticResource SymbolThemeFontFamily}" Glyph="&#xe74e;"/>
-                        </AppBarButton.Icon>
-                        <AppBarButton.KeyboardAccelerators>
-                            <KeyboardAccelerator Key="S" Modifiers="Control" />
-                        </AppBarButton.KeyboardAccelerators>
-                    </AppBarButton>
-                    <AppBarButton
-                        x:Name="saveAsButton"
-                        x:Uid="SaveAsButton"
-                        HorizontalAlignment="Left"
-                        Click="SaveAsButton_Click"
-                        IsEnabled="True"
-                        IsTabStop="False">
-                        <AppBarButton.Icon>
-                            <FontIcon FontFamily="{StaticResource SymbolThemeFontFamily}" Glyph="&#xe792;"/>
-                        </AppBarButton.Icon>
-                        <AppBarButton.KeyboardAccelerators>
-                            <KeyboardAccelerator Key="S" Modifiers="Control,Shift" />
-                        </AppBarButton.KeyboardAccelerators>
-                    </AppBarButton>
-                    <AppBarButton
-                        x:Name="editButton"
-                        x:Uid="EditButton"
-                        HorizontalAlignment="Left"
-                        Click="EditButton_Click"
-                        IsTabStop="False">
-                        <AppBarButton.Icon>
-                            <FontIcon FontFamily="{StaticResource SymbolThemeFontFamily}" Glyph="&#xe8a7;"/>
-                        </AppBarButton.Icon>
-                        <AppBarButton.KeyboardAccelerators>
-                            <KeyboardAccelerator Key="E" Modifiers="Control" />
-                        </AppBarButton.KeyboardAccelerators>
-                    </AppBarButton>
-                    <AppBarButton
-                        x:Name="refreshButton"
-                        x:Uid="RefreshButton"
-                        HorizontalAlignment="Left"
-                        Click="RefreshButton_Click"
-                        IsTabStop="False">
-                        <AppBarButton.Icon>
-                            <FontIcon FontFamily="{StaticResource SymbolThemeFontFamily}" Glyph="&#xe72c;"/>
-                        </AppBarButton.Icon>
+                    x:Name="refreshButton"
+                    x:Uid="RefreshButton"
+                    Icon="Refresh"
+                    Click="RefreshButton_Click">
                         <AppBarButton.KeyboardAccelerators>
                             <KeyboardAccelerator Key="F5" />
                         </AppBarButton.KeyboardAccelerators>
                     </AppBarButton>
                     <AppBarSeparator />
                     <AppBarButton
-                        x:Name="writeButton"
-                        x:Uid="WriteButton"
-                        HorizontalAlignment="Left"
-                        Click="WriteButton_Click"
-                        IsTabStop="False">
+                    x:Name="saveButton"
+                    x:Uid="SaveButton"
+                    Icon="Save"
+                    Click="SaveButton_Click"
+                    IsEnabled="False">
+                        <AppBarButton.KeyboardAccelerators>
+                            <KeyboardAccelerator Key="S" Modifiers="Control" />
+                        </AppBarButton.KeyboardAccelerators>
+                    </AppBarButton>
+                    <AppBarButton
+                    x:Name="saveAsButton"
+                    x:Uid="SaveAsButton"
+                    Click="SaveAsButton_Click"
+                    IsEnabled="True">
                         <AppBarButton.Icon>
-                            <FontIcon FontFamily="{StaticResource SymbolThemeFontFamily}" Glyph="&#xe72d;"/>
+                            <FontIcon Glyph="&#xe792;"/>
                         </AppBarButton.Icon>
                         <AppBarButton.KeyboardAccelerators>
-                            <KeyboardAccelerator Key="W" Modifiers="Control" />
+                            <KeyboardAccelerator Key="S" Modifiers="Control,Shift" />
                         </AppBarButton.KeyboardAccelerators>
                     </AppBarButton>
                     <AppBarSeparator />
                     <AppBarButton
+                    x:Name="editButton"
+                    x:Uid="EditButton"
+                    Icon="Edit"
+                    Click="EditButton_Click">
+                        <AppBarButton.KeyboardAccelerators>
+                            <KeyboardAccelerator Key="E" Modifiers="Control" />
+                        </AppBarButton.KeyboardAccelerators>
+                    </AppBarButton>
+                    <AppBarButton
+                        x:Name="writeButton"
+                        x:Uid="WriteButton"
+                        Click="WriteButton_Click">
+                        <AppBarButton.KeyboardAccelerators>
+                            <KeyboardAccelerator Key="W" Modifiers="Control" />
+                        </AppBarButton.KeyboardAccelerators>
+                    </AppBarButton>
+                    <AppBarButton
                         x:Name="registryButton"
                         x:Uid="RegistryButton"
-                        HorizontalAlignment="Left"
-                        Click="RegistryButton_Click"
-                        IsTabStop="False">
-                        <AppBarButton.Icon>
-                            <FontIcon FontFamily="{StaticResource SymbolThemeFontFamily}" Glyph="&#xe8ad;"/>
-                        </AppBarButton.Icon>
+                        Click="RegistryButton_Click">
                         <AppBarButton.KeyboardAccelerators>
                             <KeyboardAccelerator Key="R" Modifiers="Control" />
                         </AppBarButton.KeyboardAccelerators>
@@ -181,26 +162,21 @@
                     <AppBarButton
                         x:Name="registryJumpToKeyButton"
                         x:Uid="RegistryJumpToKeyButton"
-                        HorizontalAlignment="Left"
                         Click="RegistryJumpToKeyButton_Click"
-                        IsTabStop="False"
                         IsEnabled="True">
-                        <AppBarButton.Icon>
-                            <FontIcon FontFamily="{StaticResource SymbolThemeFontFamily}" Glyph="&#xe78b;"/>
-                        </AppBarButton.Icon>
                         <AppBarButton.KeyboardAccelerators>
                             <KeyboardAccelerator Key="R" Modifiers="Control,Shift" />
                         </AppBarButton.KeyboardAccelerators>
                     </AppBarButton>
                 </CommandBar>
-            </Grid>
+            </Border>
+
             <TextBox
                 x:Name="textBox"
                 x:Uid="textBox"
                 Grid.Row="1"
                 Grid.RowSpan="3"
                 Grid.Column="0"
-                Margin="8,0,0,8"
                 HorizontalAlignment="Stretch"
                 VerticalAlignment="Stretch"
                 AcceptsReturn="True"
@@ -219,18 +195,13 @@
                 CornerRadius="{StaticResource OverlayCornerRadius}"
                 />
 
-            <Grid
-                Grid.Row="1"
+            <Border Style="{StaticResource GridCardStyle}"
                 Grid.Column="2"
-                Margin="0,0,8,0"
-                CornerRadius="{StaticResource OverlayCornerRadius}"
-                Style="{StaticResource GridCardStyle}">
+                Grid.Row="1">
                 <TreeView
                     x:Name="treeView"
-                    Padding="0,0,0,0"
                     AllowDrop="False"
                     AllowFocusOnInteraction="True"
-                    Background="Transparent"
                     CanDragItems="False"
                     CanReorderItems="False"
                     IsEnabled="True"
@@ -245,36 +216,31 @@
                     <TreeView.ItemTemplate>
                         <DataTemplate>
                             <StackPanel
-                                Padding="0,0,0,0"
                                 VerticalAlignment="Center"
                                 IsTabStop="False"
-                                Orientation="Horizontal">
+                                Orientation="Horizontal"
+                                Spacing="8">
                                 <Image
                                     MaxWidth="16"
                                     MaxHeight="16"
                                     Source="{Binding Path=Content.Image}"
                                     ToolTipService.ToolTip="{Binding Path=Content.ToolTipText}" />
-                                <TextBlock Padding="5,0,0,0" Text="{Binding Path=Content.Name}" />
+                                <TextBlock Text="{Binding Path=Content.Name}" />
                             </StackPanel>
                         </DataTemplate>
                     </TreeView.ItemTemplate>
                 </TreeView>
-            </Grid>
-            <Grid
+            </Border>
+
+            <Border Style="{StaticResource GridCardStyle}"
                 Grid.Row="3"
-                Grid.RowSpan="2"
-                Grid.Column="2"
-                Margin="0,0,8,8"
-                CornerRadius="{StaticResource OverlayCornerRadius}"
-                Style="{StaticResource GridCardStyle}">
+                Grid.Column="2">
                 <controls:DataGrid
                     x:Name="dataGrid"
                     AllowDrop="False"
                     AreRowDetailsFrozen="True"
                     AutoGenerateColumns="False"
-                    Background="Transparent"
                     CanDrag="False"
-                    CornerRadius="{StaticResource OverlayCornerRadius}"
                     HeadersVisibility="Column"
                     IsReadOnly="True"
                     IsTabStop="true"
@@ -289,12 +255,8 @@
                             IsReadOnly="True">
                             <controls:DataGridTemplateColumn.CellTemplate>
                                 <DataTemplate>
-                                    <StackPanel VerticalAlignment="Center" Orientation="Horizontal">
-                                        <TextBlock
-                                            Padding="10,0,0,0"
-                                            FontSize="14"
-                                            IsTabStop="False"
-                                            Text=" " />
+                                    <StackPanel VerticalAlignment="Center" Orientation="Horizontal"
+                                                Margin="4" Spacing="8">
                                         <Image
                                             MaxWidth="16"
                                             MaxHeight="16"
@@ -302,10 +264,9 @@
                                             Source="{Binding ImageUri}"
                                             ToolTipService.ToolTip="{Binding ToolTipText}" />
                                         <TextBlock
-                                            Padding="5,0,10,0"
-                                            FontSize="14"
                                             IsTabStop="False"
-                                            Text="{Binding Name}" />
+                                            Text="{Binding Name}"
+                                            Style="{StaticResource CaptionTextBlockStyle}"/>
                                     </StackPanel>
                                 </DataTemplate>
                             </controls:DataGridTemplateColumn.CellTemplate>
@@ -314,20 +275,22 @@
                             x:Uid="TypeColumn"
                             Width="Auto"
                             Binding="{Binding Type}"
-                            FontSize="14" />
+                            FontSize="{StaticResource CaptionTextBlockFontSize}" />
                         <controls:DataGridTextColumn
                             x:Uid="ValueColumn"
                             Width="Auto"
                             Binding="{Binding Value}"
-                            FontSize="14" />
+                            FontSize="{StaticResource CaptionTextBlockFontSize}" />
                     </controls:DataGrid.Columns>
                 </controls:DataGrid>
-            </Grid>
+            </Border>
+
             <controls:GridSplitter
                 x:Name="verticalSplitter"
                 Grid.Row="1"
-                Grid.RowSpan="4"
+                Grid.RowSpan="3"
                 Grid.Column="1"
+                HorizontalAlignment="Center"
                 VerticalAlignment="Stretch"
                 Background="Transparent"
                 CursorBehavior="ChangeOnSplitterHover"
@@ -338,8 +301,8 @@
                 Grid.Row="2"
                 Grid.Column="2"
                 HorizontalAlignment="Stretch"
+                VerticalAlignment="Center"
                 Background="Transparent"
-                CornerRadius="4"
                 CursorBehavior="ChangeOnSplitterHover"
                 GripperCursor="SizeNorthSouth"
                 IsTabStop="False" />

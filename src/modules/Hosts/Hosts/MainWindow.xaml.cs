@@ -2,7 +2,10 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System;
 using Hosts.Helpers;
+using Microsoft.UI.Xaml;
+using Microsoft.UI.Xaml.Media;
 using WinUIEx;
 
 namespace Hosts
@@ -13,15 +16,26 @@ namespace Hosts
         {
             InitializeComponent();
 
-            SetTitleBar();
-
-            BringToForeground();
-        }
-
-        private void SetTitleBar()
-        {
             ExtendsContentIntoTitleBar = true;
             SetTitleBar(titleBar);
+            AppWindow.SetIcon("Assets/Hosts.ico");
+            Title = Windows.ApplicationModel.Resources.ResourceLoader.GetForViewIndependentUse().GetString("WindowTitle");
+
+            BringToForeground();
+
+            Activated += MainWindow_Activated;
+        }
+
+        private void MainWindow_Activated(object sender, WindowActivatedEventArgs args)
+        {
+            if (args.WindowActivationState == WindowActivationState.Deactivated)
+            {
+                AppTitleTextBlock.Foreground = (SolidColorBrush)App.Current.Resources["WindowCaptionForegroundDisabled"];
+            }
+            else
+            {
+                AppTitleTextBlock.Foreground = (SolidColorBrush)App.Current.Resources["WindowCaptionForeground"];
+            }
         }
 
         private void BringToForeground()

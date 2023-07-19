@@ -17,6 +17,27 @@
             <!--  Error tooltip  -->
         </Grid.ColumnDefinitions>
 
+        <VisualStateManager.VisualStateGroups>
+            <VisualStateGroup x:Name="CommonStates">
+                <VisualState x:Name="Normal" />
+                <VisualState x:Name="Highlight">
+                    <VisualState.Setters>
+                        <Setter Target="HighlightBorder.Opacity" Value="0.1" />
+                        <Setter Target="HighlightBorder.BorderBrush" Value="{ThemeResource AccentTextFillColorPrimaryBrush}" />
+                        <Setter Target="HighlightBorder.Background" Value="{ThemeResource AccentTextFillColorPrimaryBrush}" />
+                    </VisualState.Setters>
+                </VisualState>
+                <VisualState x:Name="Error">
+                    <VisualState.Setters>
+                        <Setter Target="HighlightBorder.Opacity" Value="1" />
+                        <Setter Target="HighlightBorder.BorderBrush" Value="{ThemeResource SystemFillColorCriticalBackgroundBrush}" />
+                        <Setter Target="HighlightBorder.Background" Value="{ThemeResource SystemFillColorCriticalBackgroundBrush}" />
+                        <Setter Target="ErrorIcon.Visibility" Value="Visible" />
+                    </VisualState.Setters>
+                </VisualState>
+            </VisualStateGroup>
+        </VisualStateManager.VisualStateGroups>
+
         <Border
             Name="HighlightBorder"
             Grid.ColumnSpan="4"
@@ -48,10 +69,10 @@
                 Content=""
                 IsChecked="{x:Bind Checked, Mode=TwoWay}"
                 IsTabStop="True"
-                TabIndex="0"
                 Style="{StaticResource CheckBoxDefaultStyleOverride}"
+                TabIndex="0"
                 XYFocusKeyboardNavigation="Enabled" />
-            
+
             <Image
                 Grid.Column="2"
                 Width="16"
@@ -82,16 +103,16 @@
             Grid.Column="3"
             Width="12"
             Height="12"
-            CornerRadius="12"
             Margin="4,0,8,0"
             Background="{ThemeResource SystemFillColorCriticalBrush}"
+            CornerRadius="12"
             Visibility="Collapsed">
             <TextBlock
                 HorizontalAlignment="Center"
                 VerticalAlignment="Center"
                 FontFamily="{ThemeResource SymbolThemeFontFamily}"
-                Foreground="White"
                 FontSize="8"
+                Foreground="White"
                 Text="&#xE10A;" />
             <ToolTipService.ToolTip>
                 <TextBlock
@@ -100,26 +121,5 @@
                     TextWrapping="Wrap" />
             </ToolTipService.ToolTip>
         </Border>
-
-        <VisualStateManager.VisualStateGroups>
-            <VisualStateGroup x:Name="CommonStates">
-                <VisualState x:Name="Normal" />
-                <VisualState x:Name="Highlight">
-                    <VisualState.Setters>
-                        <Setter Target="HighlightBorder.Opacity" Value="0.1" />
-                        <Setter Target="HighlightBorder.BorderBrush" Value="{ThemeResource AccentTextFillColorPrimaryBrush}" />
-                        <Setter Target="HighlightBorder.Background" Value="{ThemeResource AccentTextFillColorPrimaryBrush}" />
-                    </VisualState.Setters>
-                </VisualState>
-                <VisualState x:Name="Error">
-                    <VisualState.Setters>
-                        <Setter Target="HighlightBorder.Opacity" Value="1" />
-                        <Setter Target="HighlightBorder.BorderBrush" Value="{ThemeResource SystemFillColorCriticalBackgroundBrush}" />
-                        <Setter Target="HighlightBorder.Background" Value="{ThemeResource SystemFillColorCriticalBackgroundBrush}" />
-                        <Setter Target="ErrorIcon.Visibility" Value="Visible" />
-                    </VisualState.Setters>
-                </VisualState>
-            </VisualStateGroup>
-        </VisualStateManager.VisualStateGroups>
     </Grid>
 </UserControl>

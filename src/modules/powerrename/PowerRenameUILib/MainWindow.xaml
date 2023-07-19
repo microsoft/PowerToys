@@ -8,8 +8,10 @@
     xmlns:local="using:PowerRenameUI"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     mc:Ignorable="d">
-
-    <Grid Padding="12" Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
+    <Window.SystemBackdrop>
+        <MicaBackdrop />
+    </Window.SystemBackdrop>
+    <Grid Padding="12">
         <Grid.RowDefinitions>
             <RowDefinition Height="0" />
             <!--  48 if we need to draw the title bar ourself  -->
@@ -62,7 +64,7 @@
                     VerticalAlignment="Center"
                     Orientation="Horizontal">
                     <TextBlock x:Uid="TxtBlock_Original" FontWeight="Medium" />
-                    <TextBlock FontWeight="Medium" Margin="4,0,0,0" >
+                    <TextBlock Margin="4,0,0,0" FontWeight="Medium">
                         <Run Text="(" /><Run Text="{x:Bind OriginalCount, Mode=OneWay}" /><Run Text=")" />
                     </TextBlock>
                 </StackPanel>
@@ -75,8 +77,8 @@
                 VerticalAlignment="Center"
                 Orientation="Horizontal">
                 <TextBlock x:Uid="TxtBlock_Renamed" FontWeight="Medium" />
-                <TextBlock FontWeight="Medium" Margin="4,0,0,0" >
-                        <Run Text="(" /><Run Text="{x:Bind RenamedCount, Mode=OneWay}" /><Run Text=")" />
+                <TextBlock Margin="4,0,0,0" FontWeight="Medium">
+                    <Run Text="(" /><Run Text="{x:Bind RenamedCount, Mode=OneWay}" /><Run Text=")" />
                 </TextBlock>
             </StackPanel>
 
@@ -85,9 +87,9 @@
                 Grid.Column="1"
                 Height="32"
                 Margin="0,0,8,0"
-                BorderThickness="0"
                 HorizontalAlignment="Right"
                 Background="Transparent"
+                BorderThickness="0"
                 Content="&#xE71C;"
                 FontFamily="{ThemeResource SymbolThemeFontFamily}">
                 <Button.Flyout>
@@ -113,37 +115,37 @@
                 HorizontalAlignment="Stretch"
                 VerticalAlignment="Bottom"
                 Fill="{ThemeResource DividerStrokeColorDefaultBrush}" />
-            <!--Changing VirtualizationMode to Recycling introduces the issue with popping indent/icons, but makes scrolling slightly faster -->
+            <!--  Changing VirtualizationMode to Recycling introduces the issue with popping indent/icons, but makes scrolling slightly faster  -->
             <ListView
+                x:Name="listView_ExplorerItems"
                 Grid.Row="1"
                 Grid.ColumnSpan="6"
                 IsItemClickEnabled="False"
                 IsTabStop="false"
                 ItemsSource="{x:Bind ExplorerItems, Mode=OneWay}"
                 SelectionMode="None"
-                x:Name="listView_ExplorerItems"
-                XYFocusKeyboardNavigation="Enabled"
-                VirtualizingStackPanel.VirtualizationMode="Standard">
+                VirtualizingStackPanel.VirtualizationMode="Standard"
+                XYFocusKeyboardNavigation="Enabled">
                 <ListView.ItemTemplate>
                     <DataTemplate x:DataType="local:ExplorerItemViewModel">
-                        <local:ExplorerItem 
+                        <local:ExplorerItem
+                            Checked="{x:Bind CheckedVM, Mode=TwoWay, FallbackValue=True}"
                             Id="{x:Bind IdVM, Mode=OneWay}"
                             IdStr="{x:Bind IdStrVM}"
+                            ImagePath="{x:Bind ImagePathVM}"
+                            Indentation="{x:Bind IndentationVM}"
                             Original="{x:Bind OriginalVM}"
                             Renamed="{x:Bind RenamedVM}"
-                            Indentation="{x:Bind IndentationVM}"
-                            ImagePath="{x:Bind ImagePathVM}"
-                            Type="{x:Bind TypeVM}"
-                            Checked="{x:Bind CheckedVM, Mode=TwoWay, FallbackValue=True}"
-                            State="{x:Bind StateVM}" />
-                    </DataTemplate >
+                            State="{x:Bind StateVM}"
+                            Type="{x:Bind TypeVM}" />
+                    </DataTemplate>
                 </ListView.ItemTemplate>
                 <ListView.ItemsPanel>
                     <ItemsPanelTemplate>
                         <VirtualizingStackPanel />
                     </ItemsPanelTemplate>
                 </ListView.ItemsPanel>
-                
+
                 <ListView.ItemContainerStyle>
                     <Style TargetType="ListViewItem">
                         <Setter Property="IsTabStop" Value="False" />
@@ -372,7 +374,7 @@
                 <TextBlock
                     x:Name="ApplyToLabel"
                     x:Uid="TextBox_ApplyTo"
-                    Margin="0,12,0,8"
+                    Margin="0,16,0,8"
                     FontSize="12"
                     Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
 
@@ -397,36 +399,32 @@
                     <ToggleButton
                         x:Name="toggleButton_includeFiles"
                         x:Uid="ToggleButton_IncludeFiles"
-                        Height="31"
+                        Height="32"
                         MinHeight="0"
                         Content="&#xE7C3;"
                         FontFamily="{ThemeResource SymbolThemeFontFamily}"
-                        IsChecked="True"
-                        Style="{StaticResource CustomToggleButtonStyle}" />
+                        IsChecked="True" />
                     <ToggleButton
                         x:Name="toggleButton_includeFolders"
                         x:Uid="ToggleButton_IncludeFolders"
-                        Height="31"
+                        Height="32"
                         MinHeight="0"
                         Content="&#xE8B7;"
                         FontFamily="{ThemeResource SymbolThemeFontFamily}"
-                        IsChecked="True"
-                        Style="{StaticResource CustomToggleButtonStyle}" />
+                        IsChecked="True" />
                     <ToggleButton
                         x:Name="toggleButton_includeSubfolders"
                         x:Uid="ToggleButton_IncludeSubFolders"
-                        Height="31"
+                        Height="32"
                         MinHeight="0"
                         Content="&#xED41;"
                         FontFamily="{ThemeResource SymbolThemeFontFamily}"
-                        IsChecked="True"
-                        Style="{StaticResource CustomToggleButtonStyle}" />
+                        IsChecked="True" />
                 </StackPanel>
-
 
                 <TextBlock
                     x:Uid="TextBlock_TextFormatting"
-                    Margin="0,12,0,8"
+                    Margin="0,16,0,8"
                     FontSize="12"
                     Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
 
@@ -435,47 +433,41 @@
                     <ToggleButton
                         x:Name="toggleButton_lowerCase"
                         x:Uid="ToggleButton_Lowercase"
-                        Height="31"
+                        Height="32"
                         MinHeight="0"
                         Content="aa"
-                        FontWeight="Medium"
-                        Style="{StaticResource CustomToggleButtonStyle}" />
+                        FontWeight="Medium" />
                     <ToggleButton
                         x:Name="toggleButton_upperCase"
                         x:Uid="ToggleButton_Uppercase"
-                        Height="31"
+                        Height="32"
                         MinHeight="0"
                         Content="AA"
-                        FontWeight="Medium"
-                        Style="{StaticResource CustomToggleButtonStyle}" />
+                        FontWeight="Medium" />
                     <ToggleButton
                         x:Name="toggleButton_titleCase"
                         x:Uid="ToggleButton_TitleCase"
-                        Height="31"
+                        Height="32"
                         MinHeight="0"
                         Content="Aa"
-                        FontWeight="Medium"
-                        Style="{StaticResource CustomToggleButtonStyle}" />
+                        FontWeight="Medium" />
                     <ToggleButton
                         x:Name="toggleButton_capitalize"
                         x:Uid="ToggleButton_Capitalize"
-                        Height="31"
+                        Height="32"
                         MinHeight="0"
                         Content="Aa Aa"
-                        FontWeight="Medium"
-                        Style="{StaticResource CustomToggleButtonStyle}" />
+                        FontWeight="Medium" />
                     <AppBarSeparator Margin="5,0,5,0" />
 
                     <ToggleButton
                         x:Name="toggleButton_enumItems"
                         x:Uid="ToggleButton_EnumItems"
-                        MinHeight="32"
+                        Height="32"
                         Content="&#xEA40;"
-                        FontFamily="{ThemeResource SymbolThemeFontFamily}"
-                        Style="{StaticResource CustomToggleButtonStyle}" />
+                        FontFamily="{ThemeResource SymbolThemeFontFamily}" />
                 </StackPanel>
             </StackPanel>
-
 
             <Rectangle
                 Grid.Row="1"
@@ -484,9 +476,6 @@
                 HorizontalAlignment="Stretch"
                 VerticalAlignment="Top"
                 Fill="{ThemeResource CardStrokeColorDefaultBrush}" />
-
-
-
         </Grid>
 
         <StackPanel
@@ -534,7 +523,6 @@
                 Content="&#xE897;"
                 FontFamily="{ThemeResource SymbolThemeFontFamily}" />
 
-
             <!--<Button Content="&#xE728;"
                         FontFamily="{ThemeResource SymbolThemeFontFamily}"
                         ToolTipService.ToolTip="Presets"
@@ -552,10 +540,7 @@
                         </MenuFlyout>
                     </Button.Flyout>
                 </Button>-->
-
         </StackPanel>
-
-
 
         <SplitButton
             x:Name="button_rename"
@@ -587,10 +572,5 @@
                 </MenuFlyout>
             </SplitButton.Flyout>
         </SplitButton>
-
-        <!--<StackPanel x:Name="TitleBar" Orientation="Horizontal">
-            <Image Source="Assets/PowerRename.png" Width="16" Height="16" VerticalAlignment="Top" Margin="20,9,0,0"/>
-            <TextBlock Text="PowerRename" Style="{StaticResource CaptionTextBlockStyle}" Margin="18,8,8,0" VerticalAlignment="Top" />
-        </StackPanel>-->
     </Grid>
 </Window>

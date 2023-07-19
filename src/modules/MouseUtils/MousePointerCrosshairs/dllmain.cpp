@@ -18,6 +18,8 @@ namespace
     const wchar_t JSON_KEY_CROSSHAIRS_BORDER_COLOR[] = L"crosshairs_border_color";
     const wchar_t JSON_KEY_CROSSHAIRS_BORDER_SIZE[] = L"crosshairs_border_size";
     const wchar_t JSON_KEY_CROSSHAIRS_AUTO_HIDE[] = L"crosshairs_auto_hide";
+    const wchar_t JSON_KEY_CROSSHAIRS_IS_FIXED_LENGTH_ENABLED[] = L"crosshairs_is_fixed_length_enabled";
+    const wchar_t JSON_KEY_CROSSHAIRS_FIXED_LENGTH[] = L"crosshairs_fixed_length";
 }
 
 extern "C" IMAGE_DOS_HEADER __ImageBase;
@@ -340,6 +342,35 @@ public:
             catch (...)
             {
                 Logger::warn("Failed to initialize auto hide from settings. Will use default value");
+            }
+            try
+            {
+                // Parse whether the fixed length is enabled
+                auto jsonPropertiesObject = settingsObject.GetNamedObject(JSON_KEY_PROPERTIES).GetNamedObject(JSON_KEY_CROSSHAIRS_IS_FIXED_LENGTH_ENABLED);
+                bool value = jsonPropertiesObject.GetNamedBoolean(JSON_KEY_VALUE);
+                inclusiveCrosshairsSettings.crosshairsIsFixedLengthEnabled = value;
+            }
+            catch (...)
+            {
+                Logger::warn("Failed to initialize fixed length enabled from settings. Will use default value");
+            }
+            try
+            {
+                // Parse fixed length
+                auto jsonPropertiesObject = settingsObject.GetNamedObject(JSON_KEY_PROPERTIES).GetNamedObject(JSON_KEY_CROSSHAIRS_FIXED_LENGTH);
+                int value = static_cast<int>(jsonPropertiesObject.GetNamedNumber(JSON_KEY_VALUE));
+                if (value >= 0)
+                {
+                    inclusiveCrosshairsSettings.crosshairsFixedLength = value;
+                }
+                else
+                {
+                    throw;
+                }
+            }
+            catch (...)
+            {
+                Logger::warn("Failed to initialize fixed length from settings. Will use default value");
             }
         }
         else
