@@ -399,7 +399,7 @@
                     <ToggleButton
                         x:Name="toggleButton_includeFiles"
                         x:Uid="ToggleButton_IncludeFiles"
-                        Height="31"
+                        Height="32"
                         MinHeight="0"
                         Content="&#xE7C3;"
                         FontFamily="{ThemeResource SymbolThemeFontFamily}"
@@ -407,7 +407,7 @@
                     <ToggleButton
                         x:Name="toggleButton_includeFolders"
                         x:Uid="ToggleButton_IncludeFolders"
-                        Height="31"
+                        Height="32"
                         MinHeight="0"
                         Content="&#xE8B7;"
                         FontFamily="{ThemeResource SymbolThemeFontFamily}"
@@ -415,7 +415,7 @@
                     <ToggleButton
                         x:Name="toggleButton_includeSubfolders"
                         x:Uid="ToggleButton_IncludeSubFolders"
-                        Height="31"
+                        Height="32"
                         MinHeight="0"
                         Content="&#xED41;"
                         FontFamily="{ThemeResource SymbolThemeFontFamily}"
@@ -433,28 +433,28 @@
                     <ToggleButton
                         x:Name="toggleButton_lowerCase"
                         x:Uid="ToggleButton_Lowercase"
-                        Height="31"
+                        Height="32"
                         MinHeight="0"
                         Content="aa"
                         FontWeight="Medium" />
                     <ToggleButton
                         x:Name="toggleButton_upperCase"
                         x:Uid="ToggleButton_Uppercase"
-                        Height="31"
+                        Height="32"
                         MinHeight="0"
                         Content="AA"
                         FontWeight="Medium" />
                     <ToggleButton
                         x:Name="toggleButton_titleCase"
                         x:Uid="ToggleButton_TitleCase"
-                        Height="31"
+                        Height="32"
                         MinHeight="0"
                         Content="Aa"
                         FontWeight="Medium" />
                     <ToggleButton
                         x:Name="toggleButton_capitalize"
                         x:Uid="ToggleButton_Capitalize"
-                        Height="31"
+                        Height="32"
                         MinHeight="0"
                         Content="Aa Aa"
                         FontWeight="Medium" />
@@ -463,7 +463,7 @@
                     <ToggleButton
                         x:Name="toggleButton_enumItems"
                         x:Uid="ToggleButton_EnumItems"
-                        MinHeight="32"
+                        Height="32"
                         Content="&#xEA40;"
                         FontFamily="{ThemeResource SymbolThemeFontFamily}" />
                 </StackPanel>
@@ -572,10 +572,5 @@
                 </MenuFlyout>
             </SplitButton.Flyout>
         </SplitButton>
-
-        <!--<StackPanel x:Name="TitleBar" Orientation="Horizontal">
-            <Image Source="Assets/PowerRename.png" Width="16" Height="16" VerticalAlignment="Top" Margin="20,9,0,0"/>
-            <TextBlock Text="PowerRename" Style="{StaticResource CaptionTextBlockStyle}" Margin="18,8,8,0" VerticalAlignment="Top" />
-        </StackPanel>-->
     </Grid>
 </Window>
