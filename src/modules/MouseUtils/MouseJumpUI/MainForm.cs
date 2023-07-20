@@ -23,7 +23,6 @@ internal partial class MainForm : Form
     {
         this.InitializeComponent();
         this.Settings = settings ?? throw new ArgumentNullException(nameof(settings));
-        this.ShowThumbnail();
     }
 
     public MouseJumpSettings Settings
@@ -104,24 +103,20 @@ internal partial class MainForm : Form
 
     private void MainForm_Deactivate(object sender, EventArgs e)
     {
-        this.Close();
-
-        if (this.Thumbnail.Image is not null)
-        {
-            var tmp = this.Thumbnail.Image;
-            this.Thumbnail.Image = null;
-            tmp.Dispose();
-        }
+        this.Hide();
+        this.ClearPreview();
     }
 
     private void Thumbnail_Click(object sender, EventArgs e)
     {
         var mouseEventArgs = (MouseEventArgs)e;
+        /*
         Logger.LogInfo(string.Join(
             '\n',
-            $"Reporting mouse event args",
+            "Reporting mouse event args",
             $"\tbutton   = {mouseEventArgs.Button}",
             $"\tlocation = {mouseEventArgs.Location}"));
+        */
 
         if (mouseEventArgs.Button == MouseButtons.Left)
         {
@@ -131,7 +126,7 @@ internal partial class MainForm : Form
                 new PointInfo(mouseEventArgs.X, mouseEventArgs.Y),
                 new SizeInfo(this.Thumbnail.Size),
                 virtualScreen);
-            Logger.LogInfo($"scaled location = {scaledLocation}");
+            /* Logger.LogInfo($"scaled location = {scaledLocation}"); */
             MouseHelper.SetCursorPosition(scaledLocation);
             Microsoft.PowerToys.Telemetry.PowerToysTelemetry.Log.WriteEvent(new Telemetry.MouseJumpTeleportCursorEvent());
         }
@@ -139,11 +134,14 @@ internal partial class MainForm : Form
         this.OnDeactivate(EventArgs.Empty);
     }
 
-    public void ShowThumbnail()
+    public void ShowPreview()
     {
+        // hide the form while we redraw it...
+        this.Visible = false;
+
         var stopwatch = Stopwatch.StartNew();
         var layoutInfo = MainForm.GetLayoutInfo(this);
-        LayoutHelper.PositionForm(this, layoutInfo.FormBounds);
+        this.PositionForm(layoutInfo.FormBounds);
         MainForm.RenderPreview(this, layoutInfo);
         stopwatch.Stop();
 
@@ -158,6 +156,7 @@ internal partial class MainForm : Form
         var screens = ScreenHelper.GetAllScreens()
             .Select((screen, index) => new { Screen = screen, Index = index, Number = index + 1 })
             .ToList();
+        /*
         foreach (var screen in screens)
         {
             Logger.LogInfo(string.Join(
@@ -167,6 +166,7 @@ internal partial class MainForm : Form
                 $"\tdisplay area = {screen.Screen.DisplayArea}",
                 $"\tworking area = {screen.Screen.WorkingArea}"));
         }
+        */
 
         // collect together some values that we need for calculating layout
         var activatedLocation = MouseHelper.GetCursorPosition();
@@ -190,6 +190,7 @@ internal partial class MainForm : Form
                 form.panel1.Padding.Right,
                 form.panel1.Padding.Bottom),
             previewPadding: new(0));
+        /*
         Logger.LogInfo(string.Join(
             '\n',
             $"Layout config",
@@ -201,9 +202,11 @@ internal partial class MainForm : Form
             $"maximum form size       = {layoutConfig.MaximumFormSize}",
             $"form padding            = {layoutConfig.FormPadding}",
             $"preview padding         = {layoutConfig.PreviewPadding}"));
+        */
 
         // calculate the layout coordinates for everything
         var layoutInfo = LayoutHelper.CalculateLayoutInfo(layoutConfig);
+        /*
         Logger.LogInfo(string.Join(
             '\n',
             $"Layout info",
@@ -211,6 +214,7 @@ internal partial class MainForm : Form
             $"form bounds      = {layoutInfo.FormBounds}",
             $"preview bounds   = {layoutInfo.PreviewBounds}",
             $"activated screen = {layoutInfo.ActivatedScreenBounds}"));
+        */
 
         return layoutInfo;
     }
@@ -278,7 +282,7 @@ internal partial class MainForm : Form
                         placeholdersDrawn = true;
                     }
 
-                    MainForm.RefreshPreview(form);
+                    form.OnPreviewImageUpdated();
 
                     // we've still got more screens to draw so open the device context again
                     DrawingHelper.EnsurePreviewDeviceContext(previewGraphics, ref previewHdc);
@@ -291,17 +295,50 @@ internal partial class MainForm : Form
             DrawingHelper.FreePreviewDeviceContext(previewGraphics, ref previewHdc);
         }
 
-        MainForm.RefreshPreview(form);
+        form.OnPreviewImageUpdated();
         stopwatch.Stop();
     }
 
-    private static void RefreshPreview(MainForm form)
+    private void ClearPreview()
     {
-        if (!form.Visible)
+        if (this.Thumbnail.Image is null)
         {
-            form.Show();
+            return;
         }
 
-        form.Thumbnail.Refresh();
+        var tmp = this.Thumbnail.Image;
+        this.Thumbnail.Image = null;
+        tmp.Dispose();
+
+        // force preview image memory to be released, otherwise
+        // all the disposed images can pile up without being GC'ed
+        GC.Collect();
+    }
+
+    /// <summary>
+    /// Resize and position the specified form.
+    /// </summary>
+    private void PositionForm(RectangleInfo bounds)
+    {
+        // note - do this in two steps rather than "this.Bounds = formBounds" as there
+        // appears to be an issue in WinForms with dpi scaling even when using PerMonitorV2,
+        // where the form scaling uses either the *primary* screen scaling or the *previous*
+        // screen's scaling when the form is moved to a different screen. i've got no idea
+        // *why*, but the exact sequence of calls below seems to be a workaround...
+        // see https://github.com/mikeclayton/FancyMouse/issues/2
+        var rect = bounds.ToRectangle();
+        this.Location = rect.Location;
+        _ = this.PointToScreen(Point.Empty);
+        this.Size = rect.Size;
+    }
+
+    private void OnPreviewImageUpdated()
+    {
+        if (!this.Visible)
+        {
+            this.Show();
+        }
+
+        this.Thumbnail.Refresh();
     }
 }

@@ -7,29 +7,35 @@ using System.Runtime.InteropServices;
 
 namespace MouseJumpUI.NativeMethods;
 
-internal static partial class Core
+internal static partial class User32
 {
-    internal readonly struct LPCRECT
+    /// <remarks>
+    /// See https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-getmessagew
+    /// </remarks>
+    internal readonly struct LPMSG
     {
-        public static readonly LPCRECT Null = new(IntPtr.Zero);
+        public static readonly LPMSG Null = new(IntPtr.Zero);
 
         public readonly IntPtr Value;
 
-        public LPCRECT(IntPtr value)
+        public LPMSG(IntPtr value)
         {
             this.Value = value;
         }
 
-        public LPCRECT(CRECT value)
+        public LPMSG(MSG value)
         {
-            this.Value = LPCRECT.ToPtr(value);
+            this.Value = LPMSG.ToPtr(value);
         }
 
-        public bool IsNull => this.Value == LPCRECT.Null.Value;
-
-        private static IntPtr ToPtr(CRECT value)
+        public MSG ToStructure()
         {
-            var ptr = Marshal.AllocHGlobal(CRECT.Size);
+            return Marshal.PtrToStructure<MSG>(this.Value);
+        }
+
+        private static IntPtr ToPtr(MSG value)
+        {
+            var ptr = Marshal.AllocHGlobal(MSG.Size);
             Marshal.StructureToPtr(value, ptr, false);
             return ptr;
         }
@@ -38,10 +44,6 @@ internal static partial class Core
         {
             Marshal.FreeHGlobal(this.Value);
         }
-
-        public static implicit operator IntPtr(LPCRECT value) => value.Value;
-
-        public static explicit operator LPCRECT(IntPtr value) => new(value);
 
         public override string ToString()
         {

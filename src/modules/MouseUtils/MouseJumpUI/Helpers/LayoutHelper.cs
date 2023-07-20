@@ -71,22 +71,4 @@ internal static class LayoutHelper
 
         return builder.Build();
     }
-
-    /// <summary>
-    /// Resize and position the specified form.
-    /// </summary>
-    public static void PositionForm(
-        Form form, RectangleInfo formBounds)
-    {
-        // note - do this in two steps rather than "this.Bounds = formBounds" as there
-        // appears to be an issue in WinForms with dpi scaling even when using PerMonitorV2,
-        // where the form scaling uses either the *primary* screen scaling or the *previous*
-        // screen's scaling when the form is moved to a different screen. i've got no idea
-        // *why*, but the exact sequence of calls below seems to be a workaround...
-        // see https://github.com/mikeclayton/FancyMouse/issues/2
-        var bounds = formBounds.ToRectangle();
-        form.Location = bounds.Location;
-        _ = form.PointToScreen(Point.Empty);
-        form.Size = bounds.Size;
-    }
 }

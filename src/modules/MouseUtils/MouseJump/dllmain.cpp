@@ -52,45 +52,7 @@ class MouseJump : public PowertoyModuleIface
 private:
     // The PowerToy state.
     bool m_enabled = false;
-
-    // Hotkey to invoke the module
-    Hotkey m_hotkey;
-    HANDLE m_hProcess;
-
-    void parse_hotkey(PowerToysSettings::PowerToyValues& settings)
-    {
-        auto settingsObject = settings.get_raw_json();
-        if (settingsObject.GetView().Size())
-        {
-            try
-            {
-                auto jsonHotkeyObject = settingsObject.GetNamedObject(JSON_KEY_PROPERTIES).GetNamedObject(JSON_KEY_ACTIVATION_SHORTCUT);
-                m_hotkey.win = jsonHotkeyObject.GetNamedBoolean(JSON_KEY_WIN);
-                m_hotkey.alt = jsonHotkeyObject.GetNamedBoolean(JSON_KEY_ALT);
-                m_hotkey.shift = jsonHotkeyObject.GetNamedBoolean(JSON_KEY_SHIFT);
-                m_hotkey.ctrl = jsonHotkeyObject.GetNamedBoolean(JSON_KEY_CTRL);
-                m_hotkey.key = static_cast<unsigned char>(jsonHotkeyObject.GetNamedNumber(JSON_KEY_CODE));
-            }
-            catch (...)
-            {
-                Logger::error("Failed to initialize Mouse Jump start shortcut");
-            }
-        }
-        else
-        {
-            Logger::info("MouseJump settings are empty");
-        }
-
-        if (!m_hotkey.key)
-        {
-            Logger::info("MouseJump is going to use default shortcut");
-            m_hotkey.win = true;
-            m_hotkey.alt = false;
-            m_hotkey.shift = true;
-            m_hotkey.ctrl = false;
-            m_hotkey.key = 'D';
-        }
-    }
+    HANDLE m_hProcess = nullptr;
 
     bool is_process_running()
     {
@@ -99,6 +61,7 @@ private:
 
     void launch_process()
     {
+        Logger::info("calling launch_process()");
         Logger::trace(L"Starting MouseJump process");
         unsigned long powertoys_pid = GetCurrentProcessId();
 
@@ -122,11 +85,9 @@ private:
         m_hProcess = sei.hProcess;
     }
 
-    // Load initial settings from the persisted values.
-    void init_settings();
-
     void terminate_process()
     {
+        Logger::info("calling terminate_process()");
         TerminateProcess(m_hProcess, 1);
     }
 
@@ -135,21 +96,18 @@ public:
     MouseJump()
     {
         LoggerHelpers::init_logger(MODULE_NAME, L"ModuleInterface", LogSettings::mouseJumpLoggerName);
-        init_settings();
+        Logger::info(L"calling MouseJump()");
     };
 
     ~MouseJump()
     {
-        if (m_enabled)
-        {
-            terminate_process();
-        }
-        m_enabled = false;
+        disable();
     }
 
     // Destroy the powertoy and free memory
     virtual void destroy() override
     {
+        disable();
         delete this;
     }
 
@@ -174,13 +132,7 @@ public:
     // Return JSON with the configuration options.
     virtual bool get_config(wchar_t* buffer, int* buffer_size) override
     {
-        HINSTANCE hinstance = reinterpret_cast<HINSTANCE>(&__ImageBase);
-
-        // Create a Settings object.
-        PowerToysSettings::Settings settings(hinstance, get_name());
-        settings.set_description(MODULE_DESC);
-
-        return settings.serialize_to_buffer(buffer, buffer_size);
+        return false;
     }
 
     // Signal from the Settings editor to call a custom action.
@@ -192,37 +144,25 @@ public:
     // Called by the runner to pass the updated settings values as a serialized JSON.
     virtual void set_config(const wchar_t* config) override
     {
-        try
-        {
-            // Parse the input JSON string.
-            PowerToysSettings::PowerToyValues values =
-                PowerToysSettings::PowerToyValues::from_json_string(config, get_key());
-
-            parse_hotkey(values);
-
-            values.save_to_settings_file();
-        }
-        catch (std::exception&)
-        {
-            // Improper JSON.
-        }
     }
 
     // Enable the powertoy
     virtual void enable()
     {
+        Logger::info("calling enable()");
         m_enabled = true;
+        launch_process();
         Trace::EnableJumpTool(true);
     }
 
     // Disable the powertoy
     virtual void disable()
     {
+        Logger::info("calling disable()");
         if (m_enabled)
         {
             terminate_process();
         }
-
         m_enabled = false;
         Trace::EnableJumpTool(false);
     }
@@ -233,41 +173,6 @@ public:
         return m_enabled;
     }
 
-    virtual bool on_hotkey(size_t /*hotkeyId*/) override
-    {
-        if (m_enabled)
-        {
-            Logger::trace(L"MouseJump hotkey pressed");
-            Trace::InvokeJumpTool();
-            if (is_process_running())
-            {
-                terminate_process();
-            }
-            launch_process();
-
-            return true;
-        }
-
-        return false;
-    }
-
-    virtual size_t get_hotkeys(Hotkey* hotkeys, size_t buffer_size) override
-    {
-        if (m_hotkey.key)
-        {
-            if (hotkeys && buffer_size >= 1)
-            {
-                hotkeys[0] = m_hotkey;
-            }
-
-            return 1;
-        }
-        else
-        {
-            return 0;
-        }
-    }
-
     // Returns whether the PowerToys should be enabled by default
     virtual bool is_enabled_by_default() const override
     {
@@ -275,26 +180,6 @@ public:
     }
 
 };
-
-// Load the settings file.
-void MouseJump::init_settings()
-{
-    try
-    {
-        // Load and parse the settings file for this PowerToy.
-        PowerToysSettings::PowerToyValues settings =
-            PowerToysSettings::PowerToyValues::load_from_settings_file(MouseJump::get_name());
-
-        parse_hotkey(settings);
-
-    }
-    catch (std::exception&)
-    {
-        Logger::warn(L"An exception occurred while loading the settings file");
-        // Error while loading from the settings file. Let default values stay as they are.
-    }
-}
-
 
 extern "C" __declspec(dllexport) PowertoyModuleIface* __cdecl powertoy_create()
 {

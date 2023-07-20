@@ -31,7 +31,7 @@ internal static partial class Core
 
         public static implicit operator IntPtr(HANDLE value) => value.Value;
 
-        public static implicit operator HANDLE(IntPtr value) => new(value);
+        public static explicit operator HANDLE(IntPtr value) => new(value);
 
         public override string ToString()
         {

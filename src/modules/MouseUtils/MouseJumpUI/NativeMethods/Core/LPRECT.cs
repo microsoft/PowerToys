@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft Corporation
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
+
 using System;
 using System.Runtime.InteropServices;
 
@@ -24,6 +25,8 @@ internal static partial class Core
             this.Value = LPRECT.ToPtr(value);
         }
 
+        public bool IsNull => this.Value == LPRECT.Null.Value;
+
         private static IntPtr ToPtr(RECT value)
         {
             var ptr = Marshal.AllocHGlobal(RECT.Size);
@@ -38,7 +41,7 @@ internal static partial class Core
 
         public static implicit operator IntPtr(LPRECT value) => value.Value;
 
-        public static implicit operator LPRECT(IntPtr value) => new(value);
+        public static explicit operator LPRECT(IntPtr value) => new(value);
 
         public override string ToString()
         {

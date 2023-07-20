@@ -8,6 +8,8 @@ using System.Text.Json;
 using System.Windows.Forms;
 using ManagedCommon;
 using Microsoft.PowerToys.Settings.UI.Library;
+using MouseJumpUI.Helpers;
+using MouseJumpUI.HotKeys;
 
 namespace MouseJumpUI;
 
@@ -41,7 +43,18 @@ internal static class Program
         var settings = Program.ReadSettings();
         var mainForm = new MainForm(settings);
 
-        Application.Run(mainForm);
+        var keystroke = SettingsHelper.ConvertToKeystroke(settings.Properties.ActivationShortcut);
+        var hotKeyManager = new HotKeyManager(keystroke);
+        hotKeyManager.HotKeyPressed +=
+            (_, _) =>
+            {
+                mainForm.ShowPreview();
+            };
+        hotKeyManager.Start();
+
+        Application.Run();
+
+        hotKeyManager.Stop();
     }
 
     private static MouseJumpSettings ReadSettings()

@@ -4,7 +4,6 @@
 
 using System.Diagnostics.CodeAnalysis;
 using System.Runtime.InteropServices;
-using static MouseJumpUI.NativeMethods.Core;
 
 namespace MouseJumpUI.NativeMethods;
 
