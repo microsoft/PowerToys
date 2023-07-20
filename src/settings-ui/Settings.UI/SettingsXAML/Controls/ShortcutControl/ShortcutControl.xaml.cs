@@ -50,7 +50,7 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
                 return;
             }
 
-            var resourceLoader = ResourceLoader.GetForViewIndependentUse();
+            var resourceLoader = Helpers.ResourceLoaderInstance.ResourceLoader;
 
             var newValue = (bool)(e?.NewValue ?? false);
 
