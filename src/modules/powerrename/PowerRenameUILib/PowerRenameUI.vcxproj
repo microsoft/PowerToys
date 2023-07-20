@@ -22,11 +22,11 @@
     <WindowsPackageType>None</WindowsPackageType>
     <ApplicationType>Windows Store</ApplicationType>
     <ApplicationTypeRevision>10.0</ApplicationTypeRevision>
-    <WindowsTargetPlatformVersion>10.0.19041.0</WindowsTargetPlatformVersion>
-    <WindowsTargetPlatformMinVersion>10.0.17763.0</WindowsTargetPlatformMinVersion>
     <UseWinUI>true</UseWinUI>
     <WindowsAppSDKSelfContained>true</WindowsAppSDKSelfContained>
     <EnablePreviewMsixTooling>true</EnablePreviewMsixTooling>
+    <!-- MRT from windows app sdk will search for a pri file with the same name of the module before defaulting to resources.pri -->
+    <ProjectPriFileName>PowerToys.PowerRename.pri</ProjectPriFileName>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <Import Project="..\..\..\..\deps\spdlog.props" />
@@ -53,7 +53,7 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup>
-    <OutDir>$(SolutionDir)$(Platform)\$(Configuration)\modules\PowerRename\</OutDir>
+    <OutDir>..\..\..\..\$(Platform)\$(Configuration)\WinUI3Apps\</OutDir>
   </PropertyGroup>
   <ItemDefinitionGroup>
     <ClCompile>
@@ -62,7 +62,8 @@
       <PrecompiledHeaderOutputFile>$(IntDir)pch.pch</PrecompiledHeaderOutputFile>
       <WarningLevel>Level4</WarningLevel>
       <AdditionalOptions>%(AdditionalOptions) /bigobj</AdditionalOptions>
-      <AdditionalIncludeDirectories>$(ProjectDir)..\..\..\common\Telemetry;$(ProjectDir)..\..\..\;$(ProjectDir)..\lib;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <!-- Need to add $(ProjectDir)\Generated Files\PowerRenameXAML files directly because of https://github.com/microsoft/microsoft-ui-xaml/issues/7652 -->
+      <AdditionalIncludeDirectories>$(ProjectDir)\Generated Files\PowerRenameXAML;$(ProjectDir)..\..\..\common\Telemetry;$(ProjectDir)..\..\..\;$(ProjectDir)..\lib;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)'=='Debug'">
@@ -87,8 +88,8 @@
     <Manifest Include="app.manifest" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="ExplorerItem.h">
-      <DependentUpon>ExplorerItem.xaml</DependentUpon>
+    <ClInclude Include="PowerRenameXAML\ExplorerItem.h">
+      <DependentUpon>PowerRenameXAML\ExplorerItem.xaml</DependentUpon>
       <SubType>Code</SubType>
     </ClInclude>
     <ClInclude Include="ExplorerItemsSource.h">
@@ -103,24 +104,24 @@
       <DependentUpon>PatternSnippet.idl</DependentUpon>
     </ClInclude>
     <ClInclude Include="pch.h" />
-    <ClInclude Include="App.xaml.h">
-      <DependentUpon>App.xaml</DependentUpon>
+    <ClInclude Include="PowerRenameXAML\App.xaml.h">
+      <DependentUpon>PowerRenameXAML\App.xaml</DependentUpon>
     </ClInclude>
-    <ClInclude Include="MainWindow.xaml.h">
-      <DependentUpon>MainWindow.xaml</DependentUpon>
+    <ClInclude Include="PowerRenameXAML\MainWindow.xaml.h">
+      <DependentUpon>PowerRenameXAML\MainWindow.xaml</DependentUpon>
     </ClInclude>
     <ClInclude Include="Utils.h" />
   </ItemGroup>
   <ItemGroup>
-    <ApplicationDefinition Include="App.xaml" />
-    <Page Include="ExplorerItem.xaml">
+    <ApplicationDefinition Include="PowerRenameXAML\App.xaml" />
+    <Page Include="PowerRenameXAML\ExplorerItem.xaml">
       <SubType>Designer</SubType>
     </Page>
-    <Page Include="MainWindow.xaml" />
+    <Page Include="PowerRenameXAML\MainWindow.xaml" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="ExplorerItem.cpp">
-      <DependentUpon>ExplorerItem.xaml</DependentUpon>
+    <ClCompile Include="PowerRenameXAML\ExplorerItem.cpp">
+      <DependentUpon>PowerRenameXAML\ExplorerItem.xaml</DependentUpon>
       <SubType>Code</SubType>
     </ClCompile>
     <ClCompile Include="ExplorerItemsSource.cpp">
@@ -137,21 +138,21 @@
     <ClCompile Include="pch.cpp">
       <PrecompiledHeader>Create</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="App.xaml.cpp">
-      <DependentUpon>App.xaml</DependentUpon>
+    <ClCompile Include="PowerRenameXAML\App.xaml.cpp">
+      <DependentUpon>PowerRenameXAML\App.xaml</DependentUpon>
     </ClCompile>
-    <ClCompile Include="MainWindow.xaml.cpp">
-      <DependentUpon>MainWindow.xaml</DependentUpon>
+    <ClCompile Include="PowerRenameXAML\MainWindow.xaml.cpp">
+      <DependentUpon>PowerRenameXAML\MainWindow.xaml</DependentUpon>
     </ClCompile>
     <ClCompile Include="$(GeneratedFilesDir)module.g.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <Midl Include="App.idl">
+    <Midl Include="PowerRenameXAML\App.idl">
       <SubType>Code</SubType>
-      <DependentUpon>App.xaml</DependentUpon>
+      <DependentUpon>PowerRenameXAML\App.xaml</DependentUpon>
     </Midl>
-    <Midl Include="ExplorerItem.idl">
-      <DependentUpon>ExplorerItem.xaml</DependentUpon>
+    <Midl Include="PowerRenameXAML\ExplorerItem.idl">
+      <DependentUpon>PowerRenameXAML\ExplorerItem.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Midl>
     <Midl Include="ExplorerItemsSource.idl">
@@ -160,9 +161,9 @@
     <Midl Include="ExplorerItemViewModel.idl">
       <SubType>Designer</SubType>
     </Midl>
-    <Midl Include="MainWindow.idl">
+    <Midl Include="PowerRenameXAML\MainWindow.idl">
       <SubType>Code</SubType>
-      <DependentUpon>MainWindow.xaml</DependentUpon>
+      <DependentUpon>PowerRenameXAML\MainWindow.xaml</DependentUpon>
     </Midl>
     <Midl Include="PatternSnippet.idl" />
   </ItemGroup>
@@ -176,8 +177,8 @@
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
-    <Image Include="Assets\file.png" />
-    <Image Include="Assets\folder.png" />
+    <Image Include="Assets\PowerRename\file.png" />
+    <Image Include="Assets\PowerRename\folder.png" />
     <Image Include="PowerRenameUI.ico">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Image>

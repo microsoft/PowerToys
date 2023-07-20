@@ -80,7 +80,7 @@ namespace ImageResizer.ViewModels
 
         public static void OpenSettings()
         {
-            SettingsDeepLink.OpenSettings(SettingsDeepLink.SettingsWindow.ImageResizer);
+            SettingsDeepLink.OpenSettings(SettingsDeepLink.SettingsWindow.ImageResizer, false);
         }
 
         private void HandleEnterKeyPress(KeyPressParams parameters)

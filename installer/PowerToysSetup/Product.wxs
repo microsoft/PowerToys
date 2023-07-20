@@ -54,27 +54,21 @@
     <Feature Id="CoreFeature" Title="PowerToys" AllowAdvertise="no" Absent="disallow" TypicalDefault="install"
              Description="Contains all PowerToys features.">
       <ComponentGroupRef Id="CoreComponents" />
-
-      <ComponentGroupRef Id="AlwaysOnTopComponentGroup" />
+      <ComponentGroupRef Id="BaseApplicationsComponentGroup" />
+      <ComponentGroupRef Id="WinUI3ApplicationsComponentGroup" />
       <ComponentGroupRef Id="AwakeComponentGroup" />
       <ComponentGroupRef Id="ColorPickerComponentGroup" />
-      <ComponentGroupRef Id="FancyZonesComponentGroup" />
       <ComponentGroupRef Id="FileExplorerPreviewComponentGroup" />
       <ComponentGroupRef Id="FileLocksmithComponentGroup" />
       <ComponentGroupRef Id="HostsComponentGroup" />
       <ComponentGroupRef Id="ImageResizerComponentGroup" />
       <ComponentGroupRef Id="KeyboardManagerComponentGroup" />
-      <ComponentGroupRef Id="MeasureToolComponentGroup" />
-      <ComponentGroupRef Id="MouseUtilsComponentGroup" />
-      <ComponentGroupRef Id="PastePlainComponentGroup" />
       <ComponentGroupRef Id="PeekComponentGroup" />
-      <ComponentGroupRef Id="PowerAccentComponentGroup" />
       <ComponentGroupRef Id="PowerRenameComponentGroup" />
       <ComponentGroupRef Id="RegistryPreviewComponentGroup" />
       <ComponentGroupRef Id="RunComponentGroup" />
       <ComponentGroupRef Id="SettingsComponentGroup" />
       <ComponentGroupRef Id="ShortcutGuideComponentGroup" />
-      <ComponentGroupRef Id="TextExtractorComponentGroup" />
       <ComponentGroupRef Id="VideoConferenceComponentGroup" />
       <ComponentGroupRef Id="MouseWithoutBordersComponentGroup" />
         
@@ -141,12 +135,6 @@
       <Custom Action="SetRegisterPowerToysSchTaskParam" Before="RegisterPowerToysSchTask" />
       <Custom Action="SetApplyModulesRegistryChangeSetsParam" Before="ApplyModulesRegistryChangeSets" />
       <Custom Action="SetUnApplyModulesRegistryChangeSetsParam" Before="UnApplyModulesRegistryChangeSets" />
-      <Custom Action="SetCreateWinAppSDKHardlinksParam" Before="CreateWinAppSDKHardlinks" />
-      <Custom Action="SetDeleteWinAppSDKHardlinksParam" Before="DeleteWinAppSDKHardlinks" />
-      <Custom Action="SetCreatePTInteropHardlinksParam" Before="CreatePTInteropHardlinks" />
-      <Custom Action="SetDeletePTInteropHardlinksParam" Before="DeletePTInteropHardlinks" />
-      <Custom Action="SetCreateDotnetRuntimeHardlinksParam" Before="CreateDotnetRuntimeHardlinks" />
-      <Custom Action="SetDeleteDotnetRuntimeHardlinksParam" Before="DeleteDotnetRuntimeHardlinks" />
       <Custom Action="RegisterPowerToysSchTask" After="InstallFiles">
         NOT Installed and CREATESCHEDULEDTASK = 1
       </Custom>
@@ -154,15 +142,6 @@
         NOT Installed
       </Custom>
       <Custom Action="ApplyModulesRegistryChangeSets" After="InstallFiles">
-        NOT Installed
-      </Custom>
-      <Custom Action="CreateWinAppSDKHardlinks" After="InstallFiles">
-        NOT Installed
-      </Custom>
-      <Custom Action="CreatePTInteropHardlinks" After="InstallFiles">
-        NOT Installed
-      </Custom>
-      <Custom Action="CreateDotnetRuntimeHardlinks" After="InstallFiles">
         NOT Installed
       </Custom>
       <Custom Action="WixCloseApplications" Before="RemoveFiles" />
@@ -183,16 +162,6 @@
       <Custom Action="UnRegisterContextMenuPackages" Before="RemoveFiles">
         Installed AND (REMOVE="ALL")
       </Custom>
-      <Custom Action="DeleteWinAppSDKHardlinks" Before="RemoveFiles">
-        Installed AND (REMOVE="ALL")
-      </Custom>
-
-      <Custom Action="DeletePTInteropHardlinks" After="InstallInitialize" />
-
-      <Custom Action="DeleteDotnetRuntimeHardlinks" Before="RemoveFiles">
-        Installed AND (REMOVE="ALL")
-      </Custom>
-
       <Custom Action="UninstallServicesTask" After="InstallFinalize">
           Installed AND (NOT UPGRADINGPRODUCTCODE) AND (REMOVE="ALL")
       </Custom>
@@ -265,52 +234,6 @@
                   BinaryKey="PTCustomActions"
                   DllEntry="CreateScheduledTaskCA"
                    />
-
-    <CustomAction Id="DeleteWinAppSDKHardlinks"
-                      Return="ignore"
-                Impersonate="no"
-                Execute="deferred"
-                BinaryKey="PTCustomActions"
-                DllEntry="DeleteWinAppSDKHardlinksCA"
-                  />
-
-    <CustomAction Id="CreateWinAppSDKHardlinks"
-                      Return="ignore"
-                Impersonate="no"
-                Execute="deferred"
-                BinaryKey="PTCustomActions"
-                DllEntry="CreateWinAppSDKHardlinksCA"
-                  />
-
-    <CustomAction Id="DeletePTInteropHardlinks"
-                      Return="ignore"
-                Impersonate="no"
-                Execute="deferred"
-                BinaryKey="PTCustomActions"
-                DllEntry="DeletePTInteropHardlinksCA"
-                  />
-
-    <CustomAction Id="CreatePTInteropHardlinks"
-                      Return="ignore"
-                Impersonate="no"
-                Execute="deferred"
-                BinaryKey="PTCustomActions"
-                DllEntry="CreatePTInteropHardlinksCA"
-                  />
-
-    <CustomAction Id="DeleteDotnetRuntimeHardlinks"
-                Impersonate="no"
-                Execute="deferred"
-                BinaryKey="PTCustomActions"
-                DllEntry="DeleteDotnetRuntimeHardlinksCA"
-                  />
-
-    <CustomAction Id="CreateDotnetRuntimeHardlinks"
-                Impersonate="no"
-                Execute="deferred"
-                BinaryKey="PTCustomActions"
-                DllEntry="CreateDotnetRuntimeHardlinksCA"
-                  />
 
     <CustomAction Id="RemovePowerToysSchTasks"
                   Return="ignore"
@@ -450,190 +373,16 @@
     <Directory Id="TARGETDIR" Name="SourceDir">
       <Directory Id="$(var.DefaultInstallDir)">
         <Directory Id="INSTALLFOLDER" Name="PowerToys">
-          <Directory Id="DllsFolder" Name="dll">
-            <Directory Id="DotnetDlls" Name="dotnet" />
-            <Directory Id="WinAppSDKDlls" Name="WinAppSDK" />
-            <Directory Id="PowerToysInteropDlls" Name="Interop" />
+          <Directory Id="BaseApplicationsAssetsFolder" Name="Assets">
+          </Directory>
+          <Directory Id="WinUI3AppsInstallFolder" Name="WinUI3Apps">
+              <Directory Id="WinUI3AppsMicrosoftUIXamlInstallFolder" Name="Microsoft.UI.Xaml">
+                <Directory Id="WinUI3AppsMicrosoftUIXamlAssetsInstallFolder" Name="Assets" />
+              </Directory>
+            <Directory Id="WinUI3AppsAssetsFolder" Name="Assets">
+            </Directory>
           </Directory>
           <Directory Id="ToolsFolder" Name="Tools"/>
-          <Directory Id="ModulesInstallFolder" Name="modules">
-            <Directory Id="ImageResizerInstallFolder" Name="$(var.ImageResizerProjectName)">
-              <Directory Id="ImageResizerAssetsFolder" Name="Assets" />
-            </Directory>
-            <Directory Id="PowerAccentInstallFolder" Name="$(var.PowerAccentProjectName)">
-            </Directory>
-            <Directory Id="FileLocksmithInstallFolder" Name="$(var.FileLocksmithProjectName)">
-              <Directory Id="FileLocksmithAssetsInstallFolder" Name="Assets" />
-              <Directory Id="FileLocksmithMicrosoftUIXamlInstallFolder" Name="Microsoft.UI.Xaml">
-                <Directory Id="FileLocksmithMicrosoftUIXamlAssetsInstallFolder" Name="Assets" />
-              </Directory>
-            </Directory>
-            <Directory Id="PowerRenameInstallFolder" Name="$(var.PowerRenameProjectName)">
-              <Directory Id="PowerRenameAssetsFolder" Name="Assets" />
-							<Directory Id="PowerRenameMicrosoftUIXamlInstallFolder" Name="Microsoft.UI.Xaml">
-                <Directory Id="PowerRenameMicrosoftUIXamlAssetsInstallFolder" Name="Assets" />
-              </Directory>
-            </Directory>
-            <Directory Id="ShortcutGuideInstallFolder" Name="ShortcutGuide">
-              <Directory Id="ShortcutGuideExecutableInstallFolder" Name="ShortcutGuide">
-                <Directory Id="ShortcutGuideSvgsInstallFolder" Name="svgs"/>
-              </Directory>
-              <Directory Id="ShortcutGuideModuleInterfaceInstallFolder" Name="ShortcutGuideModuleInterface"/>
-            </Directory>
-            <Directory Id="VideoConferenceInstallFolder" Name="$(var.VideoConferenceProjectName)">
-              <Directory Id="VideoConferenceIconsFolder" Name="Icons" />
-            </Directory>
-            <Directory Id="FileExplorerPreviewInstallFolder" Name="FileExplorerPreview">
-              <Directory Id="MonacoPreviewHandlerMonacoCustomLanguagesFolder" Name="customLanguages" />
-              <Directory Id="MonacoPreviewHandlerMonacoSRCFolder" Name="monacoSRC" />
-            </Directory>
-            <Directory Id="FancyZonesInstallFolder" Name="$(var.FancyZonesProjectName)" />
-            <Directory Id="PowerOCRInstallFolder" Name="$(var.PowerOCRProjectName)" />
-            <Directory Id="AwakeInstallFolder" Name="$(var.AwakeProjectName)">
-              <Directory Id="AwakeImagesFolder" Name="Images" />
-            </Directory>
-
-            <!-- KBM -->
-            <Directory Id="KeyboardManagerInstallFolder" Name="$(var.KeyboardManagerProjectName)">
-              <Directory Id="KeyboardManagerEditorInstallFolder" Name="KeyboardManagerEditor" />
-              <Directory Id="KeyboardManagerEngineInstallFolder" Name="KeyboardManagerEngine" />
-            </Directory>
-
-            <!-- Color Picker -->
-            <Directory Id="ColorPickerInstallFolder" Name="$(var.ColorPickerProjectName)">
-              <Directory Id="ColorPickerResourcesFolder" Name="Resources"/>
-            </Directory>
-
-            <!-- Mouse Utils -->
-            <Directory Id="MouseUtilsInstallFolder" Name="$(var.MouseUtilsProjectName)">
-              <Directory Id="MouseJumpUIFolder" Name="MouseJumpUI" />
-            </Directory>
-
-            <!-- PastePlain -->
-            <Directory Id="PastePlainInstallFolder" Name="$(var.PastePlainProjectName)">
-            </Directory>
-
-            <!-- RegistryPreview -->
-            <Directory Id="RegistryPreviewInstallFolder" Name="$(var.RegistryPreviewProjectName)">
-              <Directory Id="RegistryPreviewAssetsInstallFolder" Name="Assets" />
-              <Directory Id="RegistryPreviewMicrosoftUIXamlInstallFolder" Name="Microsoft.UI.Xaml">
-                <Directory Id="RegistryPreviewMicrosoftUIXamlAssetsInstallFolder" Name="Assets" />
-              </Directory>
-            </Directory>
-
-            <!-- AlwaysOnTop -->
-            <Directory Id="AlwaysOnTopInstallFolder" Name="$(var.AlwaysOnTopProjectName)">
-            </Directory>
-
-            <!-- MeasureTool -->
-            <Directory Id="MeasureToolInstallFolder" Name="$(var.MeasureToolProjectName)">
-                <Directory Id="MeasureToolMicrosoftUIXamlInstallFolder" Name="Microsoft.UI.Xaml">
-                  <Directory Id="MeasureToolMicrosoftUIXamlAssetsInstallFolder" Name="Assets" />
-                </Directory>
-            </Directory>
-            
-            <!-- Hosts -->
-            <Directory Id="HostsInstallFolder" Name="$(var.HostsProjectName)">
-              <Directory Id="HostsAssetsFolder" Name="Assets" />
-              <Directory Id="HostsMicrosoftUIXamlInstallFolder" Name="Microsoft.UI.Xaml">
-                <Directory Id="HostsMicrosoftUIXamlAssetsInstallFolder" Name="Assets" />
-              </Directory>
-            </Directory>
-
-            <!-- MouseWithoutBorders -->
-            <Directory Id="MouseWithoutBordersInstallFolder" Name="$(var.MouseWithoutBordersProjectName)">
-            </Directory>
-
-            <!-- Peek -->
-            <Directory Id="PeekInstallFolder" Name="$(var.PeekProjectName)">
-              <Directory Id="PeekAssetsFolder" Name="Assets" />
-              <Directory Id="PeekMicrosoftUIXamlInstallFolder" Name="Microsoft.UI.Xaml">
-                  <Directory Id="PeekMicrosoftUIXamlAssetsInstallFolder" Name="Assets" />
-              </Directory>
-            </Directory>
-
-            <!-- Launcher -->
-            <Directory Id="LauncherInstallFolder" Name="launcher">
-              <Directory Id="LauncherImagesFolder" Name="Images" />
-
-              <!-- Plugins -->
-              <Directory Id="LauncherPluginsFolder" Name="Plugins">
-                <Directory Id="WebSearchPluginFolder" Name="WebSearch">
-                  <Directory Id="WebSearchImagesFolder" Name="Images" />
-                </Directory>
-                <Directory Id="CalculatorPluginFolder" Name="Calculator">
-                  <Directory Id="CalculatorImagesFolder" Name="Images" />
-                </Directory>
-                <Directory Id="FolderPluginFolder" Name="Folder">
-                  <Directory Id="FolderPluginImagesFolder" Name="Images" />
-                </Directory>
-                <Directory Id="ProgramPluginFolder" Name="Program">
-                  <Directory Id="ProgramImagesFolder" Name="Images" />
-                </Directory>
-                <Directory Id="ShellPluginFolder" Name="Shell">
-                  <Directory Id="ShellImagesFolder" Name="Images" />
-                </Directory>
-                <Directory Id="IndexerPluginFolder" Name="Indexer">
-                  <Directory Id="IndexerImagesFolder" Name="Images" />
-                </Directory>
-                <Directory Id="UriPluginFolder" Name="Uri">
-                  <Directory Id="UriImagesFolder" Name="Images" />
-                </Directory>
-                <Directory Id="HistoryPluginFolder" Name="History">
-                  <Directory Id="HistoryImagesFolder" Name="Images" />
-                </Directory>								
-                <Directory Id="UnitConverterPluginFolder" Name="UnitConverter">
-                  <Directory Id="UnitConverterImagesFolder" Name="Images" />
-                </Directory>
-                <Directory Id="VSCodeWorkspacesPluginFolder" Name="VSCodeWorkspace">
-                  <Directory Id="VSCodeWorkspaceImagesFolder" Name="Images" />
-                </Directory>
-                <Directory Id="WindowWalkerPluginFolder" Name="WindowWalker">
-                  <Directory Id="WindowWalkerImagesFolder" Name="Images" />
-                </Directory>
-                <Directory Id="OneNotePluginFolder" Name="OneNote">
-                  <Directory Id="OneNoteImagesFolder" Name="Images" />
-                </Directory>
-                <Directory Id="PowerToysPluginFolder" Name="PowerToys">
-                  <Directory Id="PowerToysImagesFolder" Name="Images" />
-                </Directory>
-                <Directory Id="ValueGeneratorPluginFolder" Name="ValueGenerator">
-                  <Directory Id="ValueGeneratorImagesFolder" Name="Images" />
-                </Directory>
-                <Directory Id="RegistryPluginFolder" Name="Registry">
-                  <Directory Id="RegistryImagesFolder" Name="Images" />
-                </Directory>
-                <Directory Id="ServicePluginFolder" Name="Service">
-                  <Directory Id="ServiceImagesFolder" Name="Images" />
-                </Directory>
-                <Directory Id="WindowsTerminalPluginFolder" Name="WindowsTerminal">
-                  <Directory Id="WindowsTerminalImagesFolder" Name="Images" />
-                </Directory>
-                <Directory Id="SystemPluginFolder" Name="System">
-                  <Directory Id="SystemImagesFolder" Name="Images" />
-                </Directory>
-                <Directory Id="TimeDatePluginFolder" Name="TimeDate">
-                  <Directory Id="TimeDateImagesFolder" Name="Images" />
-                </Directory>
-                <Directory Id="WindowsSettingsPluginFolder" Name="WindowsSettings">
-                  <Directory Id="WindowsSettingsImagesFolder" Name="Images" />
-                </Directory>
-              </Directory>
-            </Directory>
-          </Directory>
-
-          <!-- Settings -->
-          <Directory Id="SettingsV2InstallFolder" Name="Settings">
-            <Directory Id="SettingsV2AssetsInstallFolder" Name="Assets">
-              <Directory Id="SettingsV2OOBEAssetsFluentIconsInstallFolder" Name="FluentIcons" />
-              <Directory Id="SettingsV2AssetsModulesInstallFolder" Name="Modules" >
-                <Directory Id="SettingsV2OOBEAssetsModulesInstallFolder" Name="OOBE" />
-              </Directory>
-            </Directory>
-            <Directory Id="SettingsV2MicrosoftUIXamlInstallFolder" Name="Microsoft.UI.Xaml">
-              <Directory Id="SettingsV2MicrosoftUIXamlAssetsInstallFolder" Name="Assets" />
-            </Directory>
-          </Directory>
         </Directory>
       </Directory>
       <Directory Id="ProgramMenuFolder">

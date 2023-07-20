@@ -4,7 +4,6 @@
     <Keyword>Win32Proj</Keyword>
     <ProjectGuid>{18b3db45-4ffe-4d01-97d6-5223feee1853}</ProjectGuid>
     <RootNamespace>ImageResizerLib</RootNamespace>
-    <WindowsTargetPlatformVersion>10.0.19041.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <PropertyGroup Label="Configuration">
     <ConfigurationType>StaticLibrary</ConfigurationType>
@@ -29,7 +28,7 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup>
-    <OutDir>$(SolutionDir)$(Platform)\$(Configuration)\modules\ImageResizer\</OutDir>
+    <OutDir>..\..\..\..\$(Platform)\$(Configuration)\</OutDir>
   </PropertyGroup>
   <PropertyGroup >
     <TargetName>PowerToys.$(ProjectName)</TargetName>

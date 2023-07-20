@@ -210,6 +210,29 @@ steps:
     clean: false
     maximumCpuCount: true
 
+# Check if deps.json files don't reference different dll versions.
+- task: PowerShell@2
+  displayName: Audit deps.json files for all applications
+  inputs:
+    filePath: '$(build.sourcesdirectory)\.pipelines\verifyDepsJsonLibraryVersions.ps1'
+    arguments: -targetDir '$(build.sourcesdirectory)\$(BuildPlatform)\$(BuildConfiguration)'
+    pwsh: true
+
+# Check if asset files on the main application paths are playing nice and avoiding basic conflicts.
+- task: PowerShell@2
+  displayName: Audit base applications path asset conflicts
+  inputs:
+    filePath: '$(build.sourcesdirectory)\.pipelines\verifyPossibleAssetConflicts.ps1'
+    arguments: -targetDir '$(build.sourcesdirectory)\$(BuildPlatform)\$(BuildConfiguration)'
+    pwsh: true
+
+- task: PowerShell@2
+  displayName: Audit WinAppSDK applications path asset conflicts
+  inputs:
+    filePath: '$(build.sourcesdirectory)\.pipelines\verifyPossibleAssetConflicts.ps1'
+    arguments: -targetDir '$(build.sourcesdirectory)\$(BuildPlatform)\$(BuildConfiguration)\WinUI3Apps'
+    pwsh: true
+
 # directly not doing WinAppDriver testing
 - task: VSTest@2
   displayName: 'MS Tests'
