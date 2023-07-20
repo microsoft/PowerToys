@@ -21,6 +21,7 @@ ACCEPTFILES
 ACCESSDENIED
 accessibilityinsights
 ACDB
+Aceept
 ACFC
 ACFF
 Acl
@@ -921,7 +922,7 @@ HWNDLAST
 HWNDNEXT
 HWNDPREV
 hyjiacan
-IActiveIMMap
+IActive
 IBase
 IBeam
 ICapture
@@ -2442,6 +2443,7 @@ Wwanpp
 XAttribute
 XAxis
 Xbox
+xbutton
 XBUTTON
 XBUTTONDBLCLK
 XBUTTONDOWN
