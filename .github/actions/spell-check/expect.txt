@@ -202,6 +202,7 @@ BOKMAL
 bootstrapper
 BOOTSTRAPPERINSTALLFOLDER
 Bopomofo
+bostrot
 BOTTOMALIGN
 BPBF
 bpmf
@@ -754,6 +755,7 @@ FZE
 gabime
 GAC
 gacutil
+Galaxi
 Gaeilge
 Gaidhlig
 GBarm
@@ -766,6 +768,7 @@ gcode
 gdi
 gdiplus
 GDISCALED
+GEmoji
 GETDESKWALLPAPER
 GETDLGCODE
 GETDPISCALEDSIZE
@@ -856,6 +859,7 @@ HKL
 HKLM
 HKPD
 HKU
+hlaueriksson
 HLOCAL
 HMD
 hmenu
@@ -1637,6 +1641,7 @@ ptc
 ptd
 PTOKEN
 PToy
+ptrun
 ptstr
 pui
 PULONG
@@ -1681,6 +1686,7 @@ RCtrl
 READMODE
 READOBJECTS
 READWRITE
+recents
 RECTDESTINATION
 RECTL
 rectp
@@ -1913,6 +1919,7 @@ SIZENWSE
 sizeread
 SIZEWE
 SKIPOWNPROCESS
+skttl
 sku
 SLGP
 sln
@@ -2047,6 +2054,7 @@ taskbar
 taskkill
 tasklist
 taskschd
+TBM
 tchar
 tcl
 Tcollab
@@ -2410,12 +2418,14 @@ XStr
 XUP
 XVIRTUALSCREEN
 YAxis
+ycv
 Yeet
 YIncrement
 yinle
 yinwang
 yinyue
 YOffset
+Youdao
 YPels
 ypescript
 YResolution
