@@ -81,6 +81,9 @@
     <CharacterSet>Unicode</CharacterSet>
     <CLRSupport>NetCore</CLRSupport>
   </PropertyGroup>
+  <PropertyGroup>
+    <CopyCppRuntimeToOutputDir>true</CopyCppRuntimeToOutputDir>
+  </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
   <ImportGroup Label="ExtensionSettings">
   </ImportGroup>
