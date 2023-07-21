@@ -72,7 +72,11 @@ winget install --scope machine Microsoft.PowerToys -s winget
 
 ### Other install methods
 
-There are [community driven install methods](./doc/unofficialInstallMethods.md) such as Chocolatey and Scoop. If these are your preferred install solutions, you can find the install instructions there.
+There are [community driven install methods](./doc/thirdPartyRunPlugins.md) such as Chocolatey and Scoop. If these are your preferred install solutions, you can find the install instructions there.
+
+## Third-Party Run Plugins
+
+Collection of [third-party plugins](./doc/unofficialInstallMethods.md) created by the community that aren't distributed with PowerToys.
 
 ## Contributing
 
