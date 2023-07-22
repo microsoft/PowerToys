@@ -90,19 +90,27 @@ HRESULT CContextMenuHandler::QueryContextMenu(_In_ HMENU hmenu, UINT indexMenu, 
 
     free(pszPath);
     HRESULT hr;
-    wchar_t strResizePictures[64] = { 0 };
+
+    HMENU hSubMenu = CreatePopupMenu();
+
+    wchar_t strAddToHopper[64] = { 0 };
+    wchar_t strFetchHopper[64] = { 0 };
+    wchar_t strMoveHere[64] = { 0 };
     // Suppressing C6031 warning since return value is not required.
 #pragma warning(suppress : 6031)
-    // Load 'Resize pictures' string
-    LoadString(g_hInst_Hopper, IDS_RESIZE_PICTURES, strResizePictures, ARRAYSIZE(strResizePictures));
+    // Load 'PowerToys Hopper' string
+    LoadString(g_hInst_Hopper, IDS_RESIZE_PICTURES, strAddToHopper, ARRAYSIZE(strAddToHopper));
+    LoadString(g_hInst_Hopper, IDS_HOPPER_FETCH, strFetchHopper, ARRAYSIZE(strFetchHopper));
+    LoadString(g_hInst_Hopper, IDS_HOPPER_MOVE_HERE, strMoveHere, ARRAYSIZE(strMoveHere));
 
     MENUITEMINFO mii;
     mii.cbSize = sizeof(MENUITEMINFO);
-    mii.fMask = MIIM_STRING | MIIM_FTYPE | MIIM_ID | MIIM_STATE;
-    mii.wID = idCmdFirst + ID_RESIZE_PICTURES;
-    mii.fType = MFT_STRING;
-    mii.dwTypeData = (PWSTR)strResizePictures;
+    mii.fMask = MIIM_STRING | MIIM_ID | MIIM_STATE;
+    mii.wID = idCmdFirst++;
+    //mii.fType = MFT_STRING;
+    mii.dwTypeData = (PWSTR)strAddToHopper;
     mii.fState = MFS_ENABLED;
+
     HICON hIcon = static_cast<HICON>(LoadImage(g_hInst_Hopper, MAKEINTRESOURCE(IDI_RESIZE_PICTURES), IMAGE_ICON, 16, 16, 0));
     if (hIcon)
     {
@@ -114,7 +122,7 @@ HRESULT CContextMenuHandler::QueryContextMenu(_In_ HMENU hmenu, UINT indexMenu, 
         mii.hbmpItem = m_hbmpIcon;
         DestroyIcon(hIcon);
     }
-
+    
 
     // indexMenu gets the first possible menu item index based on the location of the shellex registry key.
     // If the registry entry is under SystemFileAssociations for the image formats, ShellImagePreview (in Windows by default) will be at indexMenu=0
@@ -130,24 +138,42 @@ HRESULT CContextMenuHandler::QueryContextMenu(_In_ HMENU hmenu, UINT indexMenu, 
         indexMenu++;
     }
 
-    if (!InsertMenuItem(hmenu, indexMenu, TRUE, &mii))
+    mii.dwTypeData = strFetchHopper;
+
+    if (!InsertMenuItem(hSubMenu, 1, TRUE, &mii))
     {
         hr = HRESULT_FROM_WIN32(GetLastError());
     }
     else
     {
+        mii.dwTypeData = strMoveHere;
+        ;
+        if (!InsertMenuItem(hSubMenu, 2, TRUE, &mii))
+        {
+            hr = HRESULT_FROM_WIN32(GetLastError());
+        }
+
+        mii.fMask = MIIM_SUBMENU | MIIM_STRING;
+        mii.hSubMenu = hSubMenu;
+        mii.dwTypeData = (PWSTR)strAddToHopper;
+        if (!InsertMenuItem(hmenu, indexMenu, TRUE, &mii))
+        {
+            return HRESULT_FROM_WIN32(GetLastError());
+        }
+
         hr = MAKE_HRESULT(SEVERITY_SUCCESS, FACILITY_NULL, 1);
     }
+
     return hr;
 }
 
 HRESULT CContextMenuHandler::GetCommandString(UINT_PTR idCmd, UINT uType, _In_ UINT* /*pReserved*/, LPSTR pszName, UINT cchMax)
 {
-    if (idCmd == ID_RESIZE_PICTURES)
+    if (idCmd == ID_HOPPER)
     {
         if (uType == GCS_VERBW)
         {
-            wcscpy_s(reinterpret_cast<LPWSTR>(pszName), cchMax, RESIZE_PICTURES_VERBW);
+            wcscpy_s(reinterpret_cast<LPWSTR>(pszName), cchMax, HOPPER_VERBW);
         }
     }
     else
@@ -172,12 +198,12 @@ HRESULT CContextMenuHandler::InvokeCommand(_In_ CMINVOKECOMMANDINFO* pici)
     }
     else if (fUnicode && HIWORD(((CMINVOKECOMMANDINFOEX*)pici)->lpVerbW))
     {
-        if (wcscmp((reinterpret_cast<CMINVOKECOMMANDINFOEX*>(pici))->lpVerbW, RESIZE_PICTURES_VERBW) == 0)
+        if (wcscmp((reinterpret_cast<CMINVOKECOMMANDINFOEX*>(pici))->lpVerbW, HOPPER_VERBW) == 0)
         {
             hr = SelectedFiles(pici, nullptr);
         }
     }
-    else if (LOWORD(pici->lpVerb) == ID_RESIZE_PICTURES)
+    else if (LOWORD(pici->lpVerb) == ID_HOPPER)
     {
         hr = SelectedFiles(pici, nullptr);
     }
@@ -370,7 +396,7 @@ HRESULT __stdcall CContextMenuHandler::GetState(IShellItemArray* psiItemArray, B
 
 HRESULT __stdcall CContextMenuHandler::GetFlags(EXPCMDFLAGS* pFlags)
 {
-    *pFlags = ECF_DEFAULT;
+    *pFlags = ECF_HASSUBCOMMANDS;
     return S_OK;
 }
 

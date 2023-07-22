@@ -105,11 +105,11 @@ HRESULT CContextMenuHandler::QueryContextMenu(_In_ HMENU hmenu, UINT indexMenu, 
 
 HRESULT CContextMenuHandler::GetCommandString(UINT_PTR idCmd, UINT uType, _In_ UINT* /*pReserved*/, LPSTR pszName, UINT cchMax)
 {
-    if (idCmd == ID_RESIZE_PICTURES)
+    if (idCmd == ID_HOPPER)
     {
         if (uType == GCS_VERBW)
         {
-            wcscpy_s(reinterpret_cast<LPWSTR>(pszName), cchMax, RESIZE_PICTURES_VERBW);
+            wcscpy_s(reinterpret_cast<LPWSTR>(pszName), cchMax, HOPPER_VERBW);
         }
     }
     else
@@ -135,12 +135,12 @@ HRESULT CContextMenuHandler::InvokeCommand(_In_ CMINVOKECOMMANDINFO* pici)
     }
     else if (fUnicode && HIWORD(((CMINVOKECOMMANDINFOEX*)pici)->lpVerbW))
     {
-        if (wcscmp((reinterpret_cast<CMINVOKECOMMANDINFOEX*>(pici))->lpVerbW, RESIZE_PICTURES_VERBW) == 0)
+        if (wcscmp((reinterpret_cast<CMINVOKECOMMANDINFOEX*>(pici))->lpVerbW, HOPPER_VERBW) == 0)
         {
             hr = SelectedFiles(pici, nullptr);
         }
     }
-    else if (LOWORD(pici->lpVerb) == ID_RESIZE_PICTURES)
+    else if (LOWORD(pici->lpVerb) == ID_HOPPER)
     {
         hr = SelectedFiles(pici, nullptr);
     }

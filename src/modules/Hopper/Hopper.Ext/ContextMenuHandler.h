@@ -1,7 +1,7 @@
 #pragma once
 
-#define ID_RESIZE_PICTURES 0
-#define RESIZE_PICTURES_VERBW L"resize"
+#define ID_HOPPER 0
+#define HOPPER_VERBW L"PowerToysHopper"
 #include "pch.h"
 #include "Generated Files/resource.h"
 #include "HopperExt_i.h"

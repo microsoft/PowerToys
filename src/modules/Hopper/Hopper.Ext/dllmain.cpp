@@ -5,7 +5,6 @@
 
 #include <common/logger/logger.h>
 #include <common/SettingsAPI/settings_objects.h>
-#include <common/utils/package.h>
 #include <common/utils/process_path.h>
 #include <common/utils/resources.h>
 #include <common/utils/logger_helper.h>
@@ -64,7 +63,7 @@ public:
         PowerToysSettings::Settings settings(hinstance, get_name());
         settings.set_description(GET_RESOURCE_STRING(IDS_SETTINGS_DESCRIPTION));
         settings.set_overview_link(L"https://aka.ms/PowerToysOverview_Hopper");
-        settings.set_icon_key(L"pt-image-resizer");
+        settings.set_icon_key(L"pt-hopper");
         settings.add_header_szLarge(L"Hopper_settingsheader", GET_RESOURCE_STRING(IDS_SETTINGS_HEADER_DESCRIPTION), GET_RESOURCE_STRING(IDS_SETTINGS_HEADER));
         return settings.serialize_to_buffer(buffer, buffer_size);
     }

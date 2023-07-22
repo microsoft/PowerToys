@@ -132,4 +132,10 @@
   <data name="Settings_Header_Description" xml:space="preserve">
     <value>Settings header for Hopper</value>
   </data>
+  <data name="Hopper_Fetch" xml:space="preserve">
+    <value>Fetch</value>
+  </data>
+  <data name="Hopper_Move_Here" xml:space="preserve">
+    <value>Move here</value>
+  </data>
 </root>
