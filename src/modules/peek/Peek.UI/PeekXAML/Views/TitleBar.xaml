@@ -7,22 +7,13 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:local="using:Peek.UI.Views"
+    FlowDirection="{x:Bind TitleBarFlowDirection, Mode=OneWay}"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     mc:Ignorable="d">
 
     <Grid x:Name="TitleBarRootContainer" Height="48">
-        <Grid.ColumnDefinitions>
-            <ColumnDefinition x:Name="SystemLeftPaddingColumn" Width="0" />
-            <ColumnDefinition x:Name="DraggableColumn" Width="*" />
-            <ColumnDefinition x:Name="LaunchAppButtonColumn" Width="Auto" />
-            <ColumnDefinition x:Name="AppRightPaddingColumn" Width="65" />
-            <ColumnDefinition x:Name="PinButtonColumn" Width="40" />
-            <ColumnDefinition x:Name="SystemRightPaddingColumn" Width="0" />
-        </Grid.ColumnDefinitions>
-
         <Grid
             x:Name="AppIconAndFileTitleContainer"
-            Grid.Column="1"
             Margin="8,0"
             HorizontalAlignment="Left"
             VerticalAlignment="Center"
@@ -46,7 +37,6 @@
             <Grid
                 x:Name="FileCountAndNameContainer"
                 Grid.Column="1"
-                HorizontalAlignment="Left"
                 VerticalAlignment="Center"
                 ColumnSpacing="4">
                 <Grid.ColumnDefinitions>
@@ -76,7 +66,6 @@
         <Button
             x:Name="LaunchAppButton"
             x:Uid="LaunchAppButton"
-            Grid.Column="2"
             VerticalAlignment="Center"
             Command="{x:Bind LaunchDefaultAppButtonAsyncCommand, Mode=OneWay}"
             ToolTipService.ToolTip="{x:Bind OpenWithAppToolTip, Mode=OneWay}"
@@ -103,7 +92,6 @@
         <Button
             x:Name="PinButton"
             x:Uid="PinButton"
-            Grid.Column="4"
             VerticalAlignment="Center"
             Command="{x:Bind PinCommand, Mode=OneWay}"
             ToolTipService.ToolTip="{x:Bind PinToolTip(Pinned), Mode=OneWay}">
