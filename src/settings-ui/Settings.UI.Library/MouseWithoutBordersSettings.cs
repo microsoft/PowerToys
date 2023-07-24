@@ -39,7 +39,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             else
             {
                 // Disabled state
-                return new HotkeySettings(false, false, false, false, value);
+                return new HotkeySettings(false, false, false, false, 0);
             }
         }
 
