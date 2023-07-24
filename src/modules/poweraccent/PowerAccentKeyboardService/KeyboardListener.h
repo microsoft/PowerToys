@@ -55,6 +55,8 @@ namespace winrt::PowerToys::PowerAccentKeyboardService::implementation
         std::function<void(TriggerKey, bool)> m_nextCharCb;
         std::function<bool(LetterKey)> m_isLanguageLetterCb;
         bool m_triggeredWithSpace;
+        bool m_triggeredWithLeftArrow;
+        bool m_triggeredWithRightArrow;
         spdlog::stopwatch m_stopwatch;
         bool m_leftShiftPressed;
         bool m_rightShiftPressed;
