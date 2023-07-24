@@ -14,8 +14,8 @@ extern std::function<void(void)> g_itemToggledCallback;
 
 namespace
 {
-    const wchar_t fileImagePath[] = L"ms-appx:///Assets/file.png";
-    const wchar_t folderImagePath[] = L"ms-appx:///Assets/folder.png";
+    const wchar_t fileImagePath[] = L"ms-appx:///Assets/PowerRename/file.png";
+    const wchar_t folderImagePath[] = L"ms-appx:///Assets/PowerRename/folder.png";
 }
 
 namespace winrt::PowerRenameUI::implementation

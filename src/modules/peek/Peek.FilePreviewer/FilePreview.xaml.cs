@@ -20,7 +20,6 @@ using Peek.FilePreviewer.Models;
 using Peek.FilePreviewer.Previewers;
 using Peek.FilePreviewer.Previewers.Interfaces;
 using Peek.UI.Telemetry.Events;
-using Windows.ApplicationModel.Resources;
 
 namespace Peek.FilePreviewer
 {
@@ -55,7 +54,7 @@ namespace Peek.FilePreviewer
         private IPreviewer? previewer;
 
         [ObservableProperty]
-        private string imageInfoTooltip = ResourceLoader.GetForViewIndependentUse().GetString("PreviewTooltip_Blank");
+        private string imageInfoTooltip = ResourceLoaderInstance.ResourceLoader.GetString("PreviewTooltip_Blank");
 
         private CancellationTokenSource _cancellationTokenSource = new();
 

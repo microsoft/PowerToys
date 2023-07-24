@@ -4,14 +4,14 @@
   <Import Project="..\..\src\Version.props" />
 
   <PropertyGroup Condition="'$(Platform)' == 'x64'">
-    <DefineConstants>Version=$(Version);MonacoSRCHarvestPath=$(ProjectDir)..\..\x64\$(Configuration)\modules\FileExplorerPreview\monacoSRC</DefineConstants>
+    <DefineConstants>Version=$(Version);MonacoSRCHarvestPath=$(ProjectDir)..\..\x64\$(Configuration)\Assets\Monaco\monacoSRC</DefineConstants>
     <!-- THIS IS AN INNER LOOP OPTIMIZATION
     The build pipeline builds the Settings and Launcher projects for Publication
     using a specific profile. If you're doing local installer builds, this will
     simulate the build pipeline doing that for you. -->
     <PreBuildEvent>IF NOT DEFINED IsPipeline (
 call "$([MSBuild]::GetVsInstallRoot())\Common7\Tools\VsDevCmd.bat" -arch=amd64 -host_arch=amd64 -winsdk=10.0.19041.0
-SET PTRoot=..\..\..\..\..
+SET PTRoot=$(SolutionDir)\..
 call "..\..\..\publish.cmd" x64
 )
 call powershell.exe -NonInteractive -executionpolicy Unrestricted -File $(MSBuildThisFileDirectory)\generateMonacoWxs.ps1 -monacoWxsFile "$(MSBuildThisFileDirectory)\MonacoSRC.wxs"
@@ -19,10 +19,10 @@ call powershell.exe -NonInteractive -executionpolicy Unrestricted -File $(MSBuil
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Platform)' != 'x64'">
-    <DefineConstants>Version=$(Version);MonacoSRCHarvestPath=$(ProjectDir)..\..\ARM64\$(Configuration)\modules\FileExplorerPreview\monacoSRC</DefineConstants>
+    <DefineConstants>Version=$(Version);MonacoSRCHarvestPath=$(ProjectDir)..\..\ARM64\$(Configuration)\Assets\Monaco\monacoSRC</DefineConstants>
     <PreBuildEvent>IF NOT DEFINED IsPipeline (
 call "$([MSBuild]::GetVsInstallRoot())\Common7\Tools\VsDevCmd.bat" -arch=arm64 -host_arch=amd64 -winsdk=10.0.19041.0
-SET PTRoot=..\..\..\..\..
+SET PTRoot=$(SolutionDir)\..
 call "..\..\..\publish.cmd" arm64
 )
 call powershell.exe -NonInteractive -executionpolicy Unrestricted -File $(MSBuildThisFileDirectory)\generateMonacoWxs.ps1 -monacoWxsFile "$(MSBuildThisFileDirectory)\MonacoSRC.wxs"
@@ -31,21 +31,17 @@ call powershell.exe -NonInteractive -executionpolicy Unrestricted -File $(MSBuil
   <PropertyGroup>
     <RunPostBuildEvent>Always</RunPostBuildEvent>
     <PostBuildEvent>
-    call move /Y ..\..\..\AlwaysOnTop.wxs.bk ..\..\..\AlwaysOnTop.wxs
     call move /Y ..\..\..\Awake.wxs.bk ..\..\..\Awake.wxs
+    call move /Y ..\..\..\BaseApplications.wxs.bk ..\..\..\BaseApplications.wxs
     call move /Y ..\..\..\ColorPicker.wxs.bk ..\..\..\ColorPicker.wxs
     call move /Y ..\..\..\Core.wxs.bk ..\..\..\Core.wxs
-    call move /Y ..\..\..\FancyZones.wxs.bk ..\..\..\FancyZones.wxs
     call move /Y ..\..\..\FileExplorerPreview.wxs.bk ..\..\..\FileExplorerPreview.wxs
     call move /Y ..\..\..\FileLocksmith.wxs.bk ..\..\..\FileLocksmith.wxs
     call move /Y ..\..\..\Hosts.wxs.bk ..\..\..\Hosts.wxs
     call move /Y ..\..\..\ImageResizer.wxs.bk ..\..\..\ImageResizer.wxs
     call move /Y ..\..\..\KeyboardManager.wxs.bk ..\..\..\KeyboardManager.wxs
-    call move /Y ..\..\..\MeasureTool.wxs.bk ..\..\..\MeasureTool.wxs
-    call move /Y ..\..\..\MouseUtils.wxs.bk ..\..\..\MouseUtils.wxs
     call move /Y ..\..\..\MouseWithoutBorders.wxs.bk ..\..\..\MouseWithoutBorders.wxs
     call move /Y ..\..\..\Peek.wxs.bk ..\..\..\Peek.wxs
-    call move /Y ..\..\..\PowerAccent.wxs.bk ..\..\..\PowerAccent.wxs
     call move /Y ..\..\..\PowerRename.wxs.bk ..\..\..\PowerRename.wxs
     call move /Y ..\..\..\Product.wxs.bk ..\..\..\Product.wxs
     call move /Y ..\..\..\RegistryPreview.wxs.bk ..\..\..\RegistryPreview.wxs
@@ -53,11 +49,10 @@ call powershell.exe -NonInteractive -executionpolicy Unrestricted -File $(MSBuil
     call move /Y ..\..\..\Run.wxs.bk ..\..\..\Run.wxs
     call move /Y ..\..\..\Settings.wxs.bk ..\..\..\Settings.wxs
     call move /Y ..\..\..\ShortcutGuide.wxs.bk ..\..\..\ShortcutGuide.wxs
-    call move /Y ..\..\..\TextExtractor.wxs.bk ..\..\..\TextExtractor.wxs
     call move /Y ..\..\..\Tools.wxs.bk ..\..\..\Tools.wxs
     call move /Y ..\..\..\VideoConference.wxs.bk ..\..\..\VideoConference.wxs
     call move /Y ..\..\..\WinAppSDK.wxs.bk ..\..\..\WinAppSDK.wxs
-    call move /Y ..\..\..\..\PowerToysSetupCustomActions\DepsFilesLists.h.bk ..\..\..\..\PowerToysSetupCustomActions\DepsFilesLists.h
+    call move /Y ..\..\..\WinUI3Applications.wxs.bk ..\..\..\WinUI3Applications.wxs
     </PostBuildEvent>
   </PropertyGroup>
   <PropertyGroup>
@@ -106,29 +101,24 @@ call powershell.exe -NonInteractive -executionpolicy Unrestricted -File $(MSBuil
     <Compile Include="CustomDialogs\WixUI_PTInstallDir.wxs" />
     <Compile Include="Product.wxs" />
 
-    <Compile Include="AlwaysOnTop.wxs" />
     <Compile Include="Awake.wxs" />
+    <Compile Include="BaseApplications.wxs" />
     <Compile Include="ColorPicker.wxs" />
-    <Compile Include="FancyZones.wxs" />
     <Compile Include="FileExplorerPreview.wxs" />
     <Compile Include="FileLocksmith.wxs" />
     <Compile Include="Hosts.wxs" />
     <Compile Include="ImageResizer.wxs" />
     <Compile Include="KeyboardManager.wxs" />
-    <Compile Include="MeasureTool.wxs" />
-    <Compile Include="MouseUtils.wxs" />
-    <Compile Include="PastePlain.wxs" />
     <Compile Include="Peek.wxs" />
-    <Compile Include="PowerAccent.wxs" />
     <Compile Include="PowerRename.wxs" />
     <Compile Include="RegistryPreview.wxs" />
     <Compile Include="Run.wxs" />
     <Compile Include="Settings.wxs" />
     <Compile Include="ShortcutGuide.wxs" />
-    <Compile Include="TextExtractor.wxs" />
     <Compile Include="Tools.wxs" />
     <Compile Include="VideoConference.wxs" />
     <Compile Include="MouseWithoutBorders.wxs" />
+    <Compile Include="WinUI3Applications.wxs" />
 
     <Compile Include="MonacoSRC.wxs" />
 
@@ -189,7 +179,7 @@ call powershell.exe -NonInteractive -executionpolicy Unrestricted -File $(MSBuil
 	<Target Name="AfterBuild">
 	</Target> -->
   <Target Name="BeforeBuild">
-    <HeatDirectory Directory="..\..\src\common\FilePreviewCommon\monacoSRC"
+    <HeatDirectory Directory="..\..\src\common\FilePreviewCommon\Assets\Monaco\monacoSRC"
       PreprocessorVariable="var.MonacoSRCHarvestPath"
       OutputFile="MonacoSRC.wxs"
       ComponentGroupName="MonacoSRCHeatGenerated"

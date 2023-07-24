@@ -18,89 +18,55 @@
     <ClInclude Include="resource.h" />
   </ItemGroup>
   <ItemGroup>
-    <Image Include="black.bmp" />
-    <Image Include="Icons\Off-NotInUse Dark.png">
-      <Filter>Icons</Filter>
-    </Image>
-    <Image Include="Icons\Off-NotInUse Light.png">
-      <Filter>Icons</Filter>
-    </Image>
-    <Image Include="Icons\Off-Off Dark.png">
-      <Filter>Icons</Filter>
-    </Image>
-    <Image Include="Icons\Off-Off Light.png">
-      <Filter>Icons</Filter>
-    </Image>
-    <Image Include="Icons\Off-On Dark.png">
-      <Filter>Icons</Filter>
-    </Image>
-    <Image Include="Icons\Off-On Light.png">
-      <Filter>Icons</Filter>
-    </Image>
-    <Image Include="Icons\On-NotInUse Dark.png">
-      <Filter>Icons</Filter>
-    </Image>
-    <Image Include="Icons\On-NotInUse Light.png">
-      <Filter>Icons</Filter>
-    </Image>
-    <Image Include="Icons\On-Off Dark.png">
-      <Filter>Icons</Filter>
-    </Image>
-    <Image Include="Icons\On-Off Light.png">
-      <Filter>Icons</Filter>
-    </Image>
-    <Image Include="Icons\On-On Dark.png">
-      <Filter>Icons</Filter>
-    </Image>
-    <Image Include="Icons\On-On Light.png">
-      <Filter>Icons</Filter>
-    </Image>
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="packages.config" />
-    <None Include="Icons\Off-NotInUse Dark.svg">
-      <Filter>Icons</Filter>
-    </None>
-    <None Include="Icons\Off-NotInUse Light.svg">
-      <Filter>Icons</Filter>
-    </None>
-    <None Include="Icons\Off-Off Dark.svg">
-      <Filter>Icons</Filter>
-    </None>
-    <None Include="Icons\Off-Off Light.svg">
-      <Filter>Icons</Filter>
-    </None>
-    <None Include="Icons\Off-On Dark.svg">
-      <Filter>Icons</Filter>
-    </None>
-    <None Include="Icons\Off-On Light.svg">
-      <Filter>Icons</Filter>
-    </None>
-    <None Include="Icons\On-NotInUse Dark.svg">
-      <Filter>Icons</Filter>
-    </None>
-    <None Include="Icons\On-NotInUse Light.svg">
-      <Filter>Icons</Filter>
-    </None>
-    <None Include="Icons\On-Off Dark.svg">
-      <Filter>Icons</Filter>
-    </None>
-    <None Include="Icons\On-Off Light.svg">
-      <Filter>Icons</Filter>
-    </None>
-    <None Include="Icons\On-On Dark.svg">
-      <Filter>Icons</Filter>
-    </None>
-    <None Include="Icons\On-On Light.svg">
-      <Filter>Icons</Filter>
-    </None>
-  </ItemGroup>
-  <ItemGroup>
-    <Filter Include="Icons">
-      <UniqueIdentifier>{735361e2-82fa-4034-b9c9-cd6aa099eaa5}</UniqueIdentifier>
+    <Filter Include="Assets">
+      <UniqueIdentifier>{efd98846-4568-41d4-a425-451c246802cd}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Assets\VCM">
+      <UniqueIdentifier>{e79f8c1a-b78b-4ba5-b923-f7db79eba776}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="VideoConferenceModule.rc" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="Assets\VCM\Off-NotInUse Dark.png">
+      <Filter>Assets\VCM</Filter>
+    </Content>
+    <Content Include="Assets\VCM\Off-NotInUse Light.png">
+      <Filter>Assets\VCM</Filter>
+    </Content>
+    <Content Include="Assets\VCM\Off-Off Dark.png">
+      <Filter>Assets\VCM</Filter>
+    </Content>
+    <Content Include="Assets\VCM\Off-Off Light.png">
+      <Filter>Assets\VCM</Filter>
+    </Content>
+    <Content Include="Assets\VCM\Off-On Dark.png">
+      <Filter>Assets\VCM</Filter>
+    </Content>
+    <Content Include="Assets\VCM\Off-On Light.png">
+      <Filter>Assets\VCM</Filter>
+    </Content>
+    <Content Include="Assets\VCM\On-NotInUse Dark.png">
+      <Filter>Assets\VCM</Filter>
+    </Content>
+    <Content Include="Assets\VCM\On-NotInUse Light.png">
+      <Filter>Assets\VCM</Filter>
+    </Content>
+    <Content Include="Assets\VCM\On-Off Dark.png">
+      <Filter>Assets\VCM</Filter>
+    </Content>
+    <Content Include="Assets\VCM\On-Off Light.png">
+      <Filter>Assets\VCM</Filter>
+    </Content>
+    <Content Include="Assets\VCM\On-On Dark.png">
+      <Filter>Assets\VCM</Filter>
+    </Content>
+    <Content Include="Assets\VCM\On-On Light.png">
+      <Filter>Assets\VCM</Filter>
+    </Content>
+    <Content Include="Assets\VCM\black.bmp">
+      <Filter>Assets\VCM</Filter>
+    </Content>
   </ItemGroup>
 </Project>

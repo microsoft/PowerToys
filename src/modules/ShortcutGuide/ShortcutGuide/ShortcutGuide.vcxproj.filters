@@ -11,10 +11,7 @@
     </Filter>
     <Filter Include="Resource Files">
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
-      <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
-    </Filter>
-    <Filter Include="svgs">
-      <UniqueIdentifier>{800507f8-718d-48d1-aa56-96c040795b8a}</UniqueIdentifier>
+      <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;svg;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
     <Filter Include="Generated Files">
       <UniqueIdentifier>{cb917ac7-30da-494b-81f1-cbe4415e91f4}</UniqueIdentifier>
@@ -119,44 +116,8 @@
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
-    <CopyFileToFolders Include="svgs\0.svg">
-      <Filter>svgs</Filter>
-    </CopyFileToFolders>
-    <CopyFileToFolders Include="svgs\1.svg">
-      <Filter>svgs</Filter>
-    </CopyFileToFolders>
-    <CopyFileToFolders Include="svgs\2.svg">
-      <Filter>svgs</Filter>
-    </CopyFileToFolders>
-    <CopyFileToFolders Include="svgs\3.svg">
-      <Filter>svgs</Filter>
-    </CopyFileToFolders>
-    <CopyFileToFolders Include="svgs\4.svg">
-      <Filter>svgs</Filter>
-    </CopyFileToFolders>
-    <CopyFileToFolders Include="svgs\5.svg">
-      <Filter>svgs</Filter>
-    </CopyFileToFolders>
-    <CopyFileToFolders Include="svgs\6.svg">
-      <Filter>svgs</Filter>
-    </CopyFileToFolders>
-    <CopyFileToFolders Include="svgs\7.svg">
-      <Filter>svgs</Filter>
-    </CopyFileToFolders>
-    <CopyFileToFolders Include="svgs\8.svg">
-      <Filter>svgs</Filter>
-    </CopyFileToFolders>
-    <CopyFileToFolders Include="svgs\9.svg">
-      <Filter>svgs</Filter>
-    </CopyFileToFolders>
-    <CopyFileToFolders Include="svgs\no_active_window.svg">
-      <Filter>svgs</Filter>
-    </CopyFileToFolders>
-    <CopyFileToFolders Include="svgs\overlay.svg">
-      <Filter>svgs</Filter>
-    </CopyFileToFolders>
-    <CopyFileToFolders Include="svgs\overlay_portrait.svg">
-      <Filter>svgs</Filter>
+    <CopyFileToFolders Include="Assets\ShortcutGuide\**">
+      <Filter>Resource Files</Filter>
     </CopyFileToFolders>
   </ItemGroup>
   <ItemGroup>

@@ -140,7 +140,7 @@ private:
     void launch_process()
     {
         Logger::trace(L"Launching PowerToys MouseWithoutBorders process");
-        const std::wstring application_path = L"modules\\MouseWithoutBorders\\PowerToys.MouseWithoutBorders.exe";
+        const std::wstring application_path = L"PowerToys.MouseWithoutBorders.exe";
         STARTUPINFO info = { sizeof(info) };
         std::wstring full_command_path = application_path;
         if (run_in_service_mode)
@@ -558,7 +558,7 @@ public:
         Logger::trace(L"Starting Process to add firewall rule");
 
         std::wstring executable_path = get_module_folderpath();
-        executable_path.append(L"\\modules\\MouseWithoutBorders\\PowerToys.MouseWithoutBorders.exe");
+        executable_path.append(L"\\PowerToys.MouseWithoutBorders.exe");
 
         std::wstring executable_args = L"";
         executable_args.append(L"/S /c \"");

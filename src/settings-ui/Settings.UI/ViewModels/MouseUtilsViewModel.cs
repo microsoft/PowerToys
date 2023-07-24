@@ -107,6 +107,8 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             _mousePointerCrosshairsThickness = MousePointerCrosshairsSettingsConfig.Properties.CrosshairsThickness.Value;
             _mousePointerCrosshairsBorderSize = MousePointerCrosshairsSettingsConfig.Properties.CrosshairsBorderSize.Value;
             _mousePointerCrosshairsAutoHide = MousePointerCrosshairsSettingsConfig.Properties.CrosshairsAutoHide.Value;
+            _mousePointerCrosshairsIsFixedLengthEnabled = MousePointerCrosshairsSettingsConfig.Properties.CrosshairsIsFixedLengthEnabled.Value;
+            _mousePointerCrosshairsFixedLength = MousePointerCrosshairsSettingsConfig.Properties.CrosshairsFixedLength.Value;
 
             // set the callback functions value to handle outgoing IPC message.
             SendConfigMSG = ipcMSGCallBackFunc;
@@ -811,6 +813,42 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             }
         }
 
+        public bool MousePointerCrosshairsIsFixedLengthEnabled
+        {
+            get
+            {
+                return _mousePointerCrosshairsIsFixedLengthEnabled;
+            }
+
+            set
+            {
+                if (value != _mousePointerCrosshairsIsFixedLengthEnabled)
+                {
+                    _mousePointerCrosshairsIsFixedLengthEnabled = value;
+                    MousePointerCrosshairsSettingsConfig.Properties.CrosshairsIsFixedLengthEnabled.Value = value;
+                    NotifyMousePointerCrosshairsPropertyChanged();
+                }
+            }
+        }
+
+        public int MousePointerCrosshairsFixedLength
+        {
+            get
+            {
+                return _mousePointerCrosshairsFixedLength;
+            }
+
+            set
+            {
+                if (value != _mousePointerCrosshairsFixedLength)
+                {
+                    _mousePointerCrosshairsFixedLength = value;
+                    MousePointerCrosshairsSettingsConfig.Properties.CrosshairsFixedLength.Value = value;
+                    NotifyMousePointerCrosshairsPropertyChanged();
+                }
+            }
+        }
+
         public void NotifyMousePointerCrosshairsPropertyChanged([CallerMemberName] string propertyName = null)
         {
             OnPropertyChanged(propertyName);
@@ -870,5 +908,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         private string _mousePointerCrosshairsBorderColor;
         private int _mousePointerCrosshairsBorderSize;
         private bool _mousePointerCrosshairsAutoHide;
+        private bool _mousePointerCrosshairsIsFixedLengthEnabled;
+        private int _mousePointerCrosshairsFixedLength;
     }
 }

@@ -149,7 +149,7 @@ namespace Microsoft.PowerToys.PreviewHandler.Monaco
                             {
                                 await _webView.EnsureCoreWebView2Async(_webView2Environment).ConfigureAwait(true);
 
-                                _webView.CoreWebView2.SetVirtualHostNameToFolderMapping(FilePreviewCommon.MonacoHelper.VirtualHostName, Settings.AssemblyDirectory, CoreWebView2HostResourceAccessKind.Allow);
+                                _webView.CoreWebView2.SetVirtualHostNameToFolderMapping(FilePreviewCommon.MonacoHelper.VirtualHostName, FilePreviewCommon.MonacoHelper.MonacoDirectory, CoreWebView2HostResourceAccessKind.Allow);
 
                                 Logger.LogInfo("Navigates to string of HTML file");
 
