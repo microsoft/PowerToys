@@ -12,6 +12,7 @@ namespace
     const wchar_t JSON_KEY_ACTIVATION_SHORTCUT[] = L"activation_shortcut";
     const wchar_t JSON_KEY_LEFT_BUTTON_CLICK_COLOR[] = L"left_button_click_color";
     const wchar_t JSON_KEY_RIGHT_BUTTON_CLICK_COLOR[] = L"right_button_click_color";
+    const wchar_t JSON_KEY_HIGHLIGHT_OPACITY[] = L"highlight_opacity";
     const wchar_t JSON_KEY_ALWAYS_COLOR[] = L"always_color";
     const wchar_t JSON_KEY_HIGHLIGHT_RADIUS[] = L"highlight_radius";
     const wchar_t JSON_KEY_HIGHLIGHT_FADE_DELAY_MS[] = L"highlight_fade_delay_ms";
@@ -210,13 +211,47 @@ public:
             {
                 Logger::warn("Failed to initialize Mouse Highlighter activation shortcut");
             }
+            // Migration from <=1.1
+            auto version = (std::wstring)settingsObject.GetNamedString(L"version");
+            auto migration = false;
+            uint8_t opacity = 166;
+            if (version == L"1.0" || version == L"1.1")
+            {
+                migration = true;
+                try
+                {
+                    // Parse Opacity
+                    auto jsonPropertiesObject = settingsObject.GetNamedObject(JSON_KEY_PROPERTIES).GetNamedObject(JSON_KEY_HIGHLIGHT_OPACITY);
+                    int value = static_cast<int>(jsonPropertiesObject.GetNamedNumber(JSON_KEY_VALUE));
+                    if (value >= 0)
+                    {
+                        if (version == L"1.0")
+                        {
+                            opacity = value;
+                        }
+                        else
+                        {
+                            // 1.1
+                            opacity = value * 255 / 100;
+                        }
+                    }
+                    else
+                    {
+                        throw;
+                    }
+                }
+                catch (...)
+                {
+                    Logger::warn("Failed to initialize Opacity from settings. Will use default value");
+                }
+            }
             try
             {
                 // Parse left button click color
                 auto jsonPropertiesObject = settingsObject.GetNamedObject(JSON_KEY_PROPERTIES).GetNamedObject(JSON_KEY_LEFT_BUTTON_CLICK_COLOR);
                 auto leftColor = (std::wstring)jsonPropertiesObject.GetNamedString(JSON_KEY_VALUE);
-                uint8_t a, r, g, b;
-                if (!checkValidARGB(leftColor, &a, &r, &g, &b))
+                uint8_t a = opacity, r, g, b;
+                if (!migration && !checkValidARGB(leftColor, &a, &r, &g, &b) || migration && !checkValidRGB(leftColor, &r, &g, &b))
                 {
                     Logger::error("Left click color ARGB value is invalid. Will use default value");
                 }
@@ -234,8 +269,8 @@ public:
                 // Parse right button click color
                 auto jsonPropertiesObject = settingsObject.GetNamedObject(JSON_KEY_PROPERTIES).GetNamedObject(JSON_KEY_RIGHT_BUTTON_CLICK_COLOR);
                 auto rightColor = (std::wstring)jsonPropertiesObject.GetNamedString(JSON_KEY_VALUE);
-                uint8_t a, r, g, b;
-                if (!checkValidARGB(rightColor, &a, &r, &g, &b))
+                uint8_t a = opacity, r, g, b;
+                if (!migration && !checkValidARGB(rightColor, &a, &r, &g, &b) || migration && !checkValidRGB(rightColor, &r, &g, &b))
                 {
                     Logger::error("Right click color ARGB value is invalid. Will use default value");
                 }
@@ -254,7 +289,7 @@ public:
                 auto jsonPropertiesObject = settingsObject.GetNamedObject(JSON_KEY_PROPERTIES).GetNamedObject(JSON_KEY_ALWAYS_COLOR);
                 auto alwaysColor = (std::wstring)jsonPropertiesObject.GetNamedString(JSON_KEY_VALUE);
                 uint8_t a, r, g, b;
-                if (!checkValidARGB(alwaysColor, &a, &r, &g, &b))
+                if (!migration && !checkValidARGB(alwaysColor, &a, &r, &g, &b))
                 {
                     Logger::error("Always color ARGB value is invalid. Will use default value");
                 }
