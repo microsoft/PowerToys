@@ -897,6 +897,9 @@
   <data name="FancyZones_MouseDragCheckBoxControl_Header.Content" xml:space="preserve">
     <value>Use a non-primary mouse button to toggle zone activation</value>
   </data>
+  <data name="FancyZones_MouseMiddleClickSpanningMultipleZonesCheckBoxControl_Header.Content" xml:space="preserve">
+    <value>Use middle-click mouse button to toggle multiple zones spanning</value>
+  </data>
   <data name="FancyZones_MoveWindowsAcrossAllMonitorsCheckBoxControl.Content" xml:space="preserve">
     <value>Move windows between zones across all monitors</value>
   </data>

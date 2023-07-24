@@ -76,12 +76,15 @@ void DraggingState::OnSecondaryMouseDown()
 
 void DraggingState::OnMiddleMouseDown()
 {
-    if (!this->IsDragging())
+    if (FancyZonesSettings::settings().mouseMiddleClickSpanningMultipleZones)
     {
-        return;
+        m_middleMouseState = !m_middleMouseState;
+    }
+    else
+    {
+        m_secondaryMouseState = !m_secondaryMouseState;
     }
 
-    m_middleMouseState = !m_middleMouseState;
     m_keyUpdateCallback();
 }
 
