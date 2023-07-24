@@ -93,16 +93,16 @@ HRESULT CPowerRenameEnum::_ParseEnumItems(_In_ IEnumShellItems* pesi, _In_ int d
 
         while ((S_OK == pesi->Next(1, &spsi, &celtFetched)))
         {
-            items.push_back(spsi);
+            items.push_back(std::move(spsi));
             spsi = nullptr;
         }
 
-        auto cmpShellItems = [](CComPtr<IShellItem> l, CComPtr<IShellItem> r) {
+        auto cmpShellItems = [](const CComPtr<IShellItem>& l, const CComPtr<IShellItem>& r) {
             int res = 0;
             l->Compare(r, SICHINT_DISPLAY, &res);
             return res < 0;
         };
-        std::sort(items.begin(), items.end(), cmpShellItems);
+        std::sort(begin(items), end(items), cmpShellItems);
 
         for (const auto& item : items)
         {

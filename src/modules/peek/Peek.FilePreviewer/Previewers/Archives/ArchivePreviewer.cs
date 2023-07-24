@@ -23,7 +23,6 @@ using Peek.FilePreviewer.Previewers.Interfaces;
 using SharpCompress.Archives;
 using SharpCompress.Common;
 using SharpCompress.Readers;
-using Windows.ApplicationModel.Resources;
 
 namespace Peek.FilePreviewer.Previewers.Archives
 {
@@ -105,9 +104,9 @@ namespace Peek.FilePreviewer.Previewers.Archives
             }
 
             _size = (ulong)new FileInfo(Item.Path).Length; // archive.TotalSize isn't accurate
-            DirectoryCountText = string.Format(CultureInfo.CurrentCulture, ResourceLoader.GetForViewIndependentUse().GetString("Archive_Directory_Count"), _directoryCount);
-            FileCountText = string.Format(CultureInfo.CurrentCulture, ResourceLoader.GetForViewIndependentUse().GetString("Archive_File_Count"), _fileCount);
-            SizeText = string.Format(CultureInfo.CurrentCulture, ResourceLoader.GetForViewIndependentUse().GetString("Archive_Size"), ReadableStringHelper.BytesToReadableString(_size), ReadableStringHelper.BytesToReadableString(_extractedSize));
+            DirectoryCountText = string.Format(CultureInfo.CurrentCulture, ResourceLoaderInstance.ResourceLoader.GetString("Archive_Directory_Count"), _directoryCount);
+            FileCountText = string.Format(CultureInfo.CurrentCulture, ResourceLoaderInstance.ResourceLoader.GetString("Archive_File_Count"), _fileCount);
+            SizeText = string.Format(CultureInfo.CurrentCulture, ResourceLoaderInstance.ResourceLoader.GetString("Archive_Size"), ReadableStringHelper.BytesToReadableString(_size), ReadableStringHelper.BytesToReadableString(_extractedSize));
 
             State = PreviewState.Loaded;
         }

@@ -11,7 +11,6 @@ namespace globals
 {
     HMODULE instance;
     std::atomic<ULONG> ref_count;
-    std::atomic<bool> enabled;
 }
 
 BOOL APIENTRY DllMain( HMODULE hModule,

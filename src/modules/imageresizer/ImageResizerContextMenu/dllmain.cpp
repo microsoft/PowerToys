@@ -60,7 +60,7 @@ public:
     IFACEMETHODIMP GetIcon(_In_opt_ IShellItemArray*, _Outptr_result_nullonfailure_ PWSTR* icon)
     {
         std::wstring iconResourcePath = get_module_folderpath(g_hInst);
-        iconResourcePath += L"\\";
+        iconResourcePath += L"\\Assets\\ImageResizer\\";
         iconResourcePath += L"ImageResizer.ico";
         return SHStrDup(iconResourcePath.c_str(), icon);
     }

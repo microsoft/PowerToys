@@ -32,8 +32,6 @@ public:
     {
     }
 
-    CComPtr<IPowerRenameItem> m_itemAdded;
-    CComPtr<IPowerRenameItem> m_itemUpdated;
     CComPtr<IPowerRenameItem> m_itemRenamed;
     CComPtr<IPowerRenameItem> m_itemError;
     bool m_regExStarted = false;

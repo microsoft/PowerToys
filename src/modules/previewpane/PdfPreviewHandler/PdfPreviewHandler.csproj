@@ -6,8 +6,8 @@
     <AssemblyTitle>PowerToys.PdfPreviewHandler</AssemblyTitle>
     <AssemblyDescription>PowerToys PdfPreviewHandler</AssemblyDescription>
     <Description>PowerToys PdfPreviewHandler</Description>
-    <DocumentationFile>$(SolutionDir)$(Platform)\$(Configuration)\modules\FileExplorerPreview\PdfPreviewPaneDocumentation.xml</DocumentationFile>
-    <OutputPath>$(SolutionDir)$(Platform)\$(Configuration)\modules\FileExplorerPreview\</OutputPath>
+    <DocumentationFile>..\..\..\..\$(Platform)\$(Configuration)\PdfPreviewPaneDocumentation.xml</DocumentationFile>
+    <OutputPath>..\..\..\..\$(Platform)\$(Configuration)</OutputPath>
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
     <AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
     <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
@@ -26,7 +26,9 @@
   <PropertyGroup>
     <ProjectGuid>{69E1EE8D-143A-4060-9129-4658ACF14AAF}</ProjectGuid>
     <RootNamespace>Microsoft.PowerToys.PreviewHandler.Pdf</RootNamespace>
-    <TargetFramework>net7.0-windows10.0.19041.0</TargetFramework>
+    <TargetFramework>net7.0-windows10.0.20348.0</TargetFramework>
+    <TargetPlatformMinVersion>10.0.19041.0</TargetPlatformMinVersion>
+    <SupportedOSPlatformVersion>10.0.19041.0</SupportedOSPlatformVersion>
     <AssemblyName>PowerToys.PdfPreviewHandler</AssemblyName>
   </PropertyGroup>
 

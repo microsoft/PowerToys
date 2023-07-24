@@ -3,8 +3,9 @@
   
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
-    <TargetFramework>net7.0-windows10.0.19041.0</TargetFramework>
-    <TargetPlatformMinVersion>10.0.17763.0</TargetPlatformMinVersion>
+    <TargetFramework>net7.0-windows10.0.20348.0</TargetFramework>
+    <TargetPlatformMinVersion>10.0.19041.0</TargetPlatformMinVersion>
+    <SupportedOSPlatformVersion>10.0.19041.0</SupportedOSPlatformVersion>
     <RootNamespace>Hosts</RootNamespace>
     <ApplicationManifest>app.manifest</ApplicationManifest>
     <RuntimeIdentifiers>win10-x64;win10-arm64</RuntimeIdentifiers>
@@ -14,14 +15,22 @@
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
     <AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
     <WindowsAppSDKSelfContained>true</WindowsAppSDKSelfContained>
-    <OutputPath>$(SolutionDir)$(Platform)\$(Configuration)\modules\$(AssemblyName)</OutputPath>
-    <IntermediateOutputPath>$(SolutionDir)$(Platform)\$(Configuration)\obj\$(AssemblyName)</IntermediateOutputPath>
+    <OutputPath>..\..\..\..\$(Platform)\$(Configuration)\WinUI3Apps</OutputPath>
     <RootNamespace>Hosts</RootNamespace>
     <AssemblyName>PowerToys.Hosts</AssemblyName>
     <DefineConstants>DISABLE_XAML_GENERATED_MAIN,TRACE</DefineConstants>
-    <ApplicationIcon>Assets/Hosts.ico</ApplicationIcon>
+    <ApplicationIcon>Assets/Hosts/Hosts.ico</ApplicationIcon>
     <SelfContained>true</SelfContained>
+    <!-- MRT from windows app sdk will search for a pri file with the same name of the module before defaulting to resources.pri -->
+    <ProjectPriFileName>PowerToys.Hosts.pri</ProjectPriFileName>
   </PropertyGroup>
+
+  <ItemGroup>
+    <Page Remove="HostsXAML\App.xaml" />
+  </ItemGroup>
+  <ItemGroup>
+    <ApplicationDefinition Include="HostsXAML\App.xaml" />
+  </ItemGroup>
 
   <!-- SelfContained=true requires RuntimeIdentifier to be set -->
   <PropertyGroup Condition="'$(Platform)'=='x64'">
@@ -38,11 +47,11 @@
     <ErrorOnDuplicatePublishOutputFiles>false</ErrorOnDuplicatePublishOutputFiles>
   </PropertyGroup>
   <ItemGroup>
-    <None Remove="Assets\AppList.scale-100.png" />
-    <None Remove="Assets\AppList.scale-125.png" />
-    <None Remove="Assets\AppList.scale-150.png" />
-    <None Remove="Assets\AppList.scale-200.png" />
-    <None Remove="Assets\AppList.scale-400.png" />
+    <None Remove="Assets\Hosts\AppList.scale-100.png" />
+    <None Remove="Assets\Hosts\AppList.scale-125.png" />
+    <None Remove="Assets\Hosts\AppList.scale-150.png" />
+    <None Remove="Assets\Hosts\AppList.scale-200.png" />
+    <None Remove="Assets\Hosts\AppList.scale-400.png" />
   </ItemGroup>
 
   <ItemGroup>
@@ -69,9 +78,4 @@
     <ProjectReference Include="..\..\..\settings-ui\Settings.UI.Library\Settings.UI.Library.csproj" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Page Update="Views\MainPage.xaml">
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-  </ItemGroup>
 </Project>

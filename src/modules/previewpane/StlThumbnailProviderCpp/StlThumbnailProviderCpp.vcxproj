@@ -6,7 +6,6 @@
     <Keyword>Win32Proj</Keyword>
     <ProjectGuid>{d6dcc3ae-18c0-488a-b978-baa9e3cff09d}</ProjectGuid>
     <RootNamespace>StlThumbnailProviderCpp</RootNamespace>
-    <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)'=='Debug'" Label="Configuration">
@@ -32,7 +31,7 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup>
-    <OutDir>$(SolutionDir)$(Platform)\$(Configuration)\modules\FileExplorerPreview\</OutDir>
+    <OutDir>..\..\..\..\$(Platform)\$(Configuration)\</OutDir>
   </PropertyGroup>
   <PropertyGroup>
     <TargetName>PowerToys.$(ProjectName)</TargetName>
