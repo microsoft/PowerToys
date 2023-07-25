@@ -18,8 +18,8 @@ internal sealed class AppSettings
 {
     public static readonly AppSettings DefaultSettings = new(
         hotkey: new(
-            key: Keys.F,
-            modifiers: KeyModifiers.Control | KeyModifiers.Alt | KeyModifiers.Shift
+            key: Keys.D,
+            modifiers: KeyModifiers.Windows | KeyModifiers.Shift
         ),
         previewStyle: new(
             canvasSize: new(
