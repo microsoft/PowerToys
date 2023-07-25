@@ -20,19 +20,19 @@ std::wstring cached_position = L"";
 Toolbar::Toolbar()
 {
     toolbar = this;
-    darkImages.camOnMicOn = Gdiplus::Image::FromFile(L"modules/VideoConference/Icons/On-On Dark.png");
-    darkImages.camOffMicOn = Gdiplus::Image::FromFile(L"modules/VideoConference/Icons/On-Off Dark.png");
-    darkImages.camOnMicOff = Gdiplus::Image::FromFile(L"modules/VideoConference/Icons/Off-On Dark.png");
-    darkImages.camOffMicOff = Gdiplus::Image::FromFile(L"modules/VideoConference/Icons/Off-Off Dark.png");
-    darkImages.camUnusedMicOn = Gdiplus::Image::FromFile(L"modules/VideoConference/Icons/On-NotInUse Dark.png");
-    darkImages.camUnusedMicOff = Gdiplus::Image::FromFile(L"modules/VideoConference/Icons/Off-NotInUse Dark.png");
+    darkImages.camOnMicOn = Gdiplus::Image::FromFile(L"Assets/VCM/On-On Dark.png");
+    darkImages.camOffMicOn = Gdiplus::Image::FromFile(L"Assets/VCM/On-Off Dark.png");
+    darkImages.camOnMicOff = Gdiplus::Image::FromFile(L"Assets/VCM/Off-On Dark.png");
+    darkImages.camOffMicOff = Gdiplus::Image::FromFile(L"Assets/VCM/Off-Off Dark.png");
+    darkImages.camUnusedMicOn = Gdiplus::Image::FromFile(L"Assets/VCM/On-NotInUse Dark.png");
+    darkImages.camUnusedMicOff = Gdiplus::Image::FromFile(L"Assets/VCM/Off-NotInUse Dark.png");
 
-    lightImages.camOnMicOn = Gdiplus::Image::FromFile(L"modules/VideoConference/Icons/On-On Light.png");
-    lightImages.camOffMicOn = Gdiplus::Image::FromFile(L"modules/VideoConference/Icons/On-Off Light.png");
-    lightImages.camOnMicOff = Gdiplus::Image::FromFile(L"modules/VideoConference/Icons/Off-On Light.png");
-    lightImages.camOffMicOff = Gdiplus::Image::FromFile(L"modules/VideoConference/Icons/Off-Off Light.png");
-    lightImages.camUnusedMicOn = Gdiplus::Image::FromFile(L"modules/VideoConference/Icons/On-NotInUse Light.png");
-    lightImages.camUnusedMicOff = Gdiplus::Image::FromFile(L"modules/VideoConference/Icons/Off-NotInUse Light.png");
+    lightImages.camOnMicOn = Gdiplus::Image::FromFile(L"Assets/VCM/On-On Light.png");
+    lightImages.camOffMicOn = Gdiplus::Image::FromFile(L"Assets/VCM/On-Off Light.png");
+    lightImages.camOnMicOff = Gdiplus::Image::FromFile(L"Assets/VCM/Off-On Light.png");
+    lightImages.camOffMicOff = Gdiplus::Image::FromFile(L"Assets/VCM/Off-Off Light.png");
+    lightImages.camUnusedMicOn = Gdiplus::Image::FromFile(L"Assets/VCM/On-NotInUse Light.png");
+    lightImages.camUnusedMicOff = Gdiplus::Image::FromFile(L"Assets/VCM/Off-NotInUse Light.png");
 }
 
 void Toolbar::scheduleModuleSettingsUpdate()

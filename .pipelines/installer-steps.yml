@@ -53,6 +53,14 @@ steps:
         "C:\Program Files (x86)\WiX Toolset v3.14\bin\dark.exe" -x $(build.sourcesdirectory)\extractedMsi installer\PowerToysSetup\$(BuildPlatform)\$(BuildConfiguration)\${{parameters.buildSubDir}}\${{parameters.installerPrefix}}-${{ parameters.versionNumber }}-$(BuildPlatform).msi
         dir $(build.sourcesdirectory)\extractedMsi
 
+  # Check if deps.json files don't reference different dll versions.
+  - task: PowerShell@2
+    displayName: Audit deps.json in MSI extracted files
+    inputs:
+      filePath: '.pipelines/verifyDepsJsonLibraryVersions.ps1'
+      arguments: -targetDir '$(build.sourcesdirectory)\extractedMsi\File'
+      pwsh: true
+
   # Did we sign all files
   - task: PowerShell@1
     displayName: Verifying entire build is signed and version set

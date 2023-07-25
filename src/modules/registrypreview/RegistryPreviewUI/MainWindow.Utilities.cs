@@ -438,6 +438,8 @@ namespace RegistryPreview
                                 registryValue.Type = "ERROR";
                             }
 
+                            registryValue.Value = value;
+
                             break;
                         case "REG_QWORD":
                             if (value.Length <= 0)

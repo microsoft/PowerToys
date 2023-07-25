@@ -98,7 +98,7 @@ namespace PowerAccent.Core
                 LetterKey.VK_A => new[] { "á", "à", "ä", "â", "ă", "å", "α", "ā", "ą", "ȧ", "ã", "ǎ", "æ" },
                 LetterKey.VK_B => new[] { "ḃ", "β" },
                 LetterKey.VK_C => new[] { "ç", "ć", "ĉ", "č", "ċ", "¢", "χ", "°C", "©", "ℂ" },
-                LetterKey.VK_D => new[] { "ď", "ḋ", "đ", "δ", "ð" },
+                LetterKey.VK_D => new[] { "ď", "ḍ", "ḋ", "đ", "δ", "ð" },
                 LetterKey.VK_E => new[] { "é", "è", "ê", "ë", "ě", "ē", "ę", "ė", "ε", "η", "€", "∈" },
                 LetterKey.VK_F => new[] { "ƒ", "ḟ", "°F" },
                 LetterKey.VK_G => new[] { "ğ", "ģ", "ǧ", "ġ", "ĝ", "ǥ", "γ" },

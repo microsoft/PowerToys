@@ -6,8 +6,9 @@
     <ProjectGuid>{5ABA70DE-3A3F-41F6-A1F5-D1F74F54F9BB}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
     <RootNamespace>overlaywindow</RootNamespace>
-    <WindowsTargetPlatformVersion>10.0.19041.0</WindowsTargetPlatformVersion>
     <ProjectName>VideoConferenceModule</ProjectName>
+    <OutDir>..\..\..\..\$(Platform)\$(Configuration)\</OutDir>
+    <TargetName>PowerToys.VideoConferenceModule</TargetName>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)'=='Debug'" Label="Configuration">
@@ -35,15 +36,9 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)'=='Release'">
     <LinkIncremental>false</LinkIncremental>
-    <OutDir>$(SolutionDir)$(Platform)\$(Configuration)\modules\VideoConference\</OutDir>
-    <IntDir>$(SolutionDir)$(Platform)\$(Configuration)\obj\$(ProjectName)\</IntDir>
-    <TargetName>PowerToys.VideoConferenceModule</TargetName>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)'=='Debug'">
     <LinkIncremental>true</LinkIncremental>
-    <OutDir>$(SolutionDir)$(Platform)\$(Configuration)\modules\VideoConference\</OutDir>
-    <IntDir>$(SolutionDir)$(Platform)\$(Configuration)\obj\$(ProjectName)\</IntDir>
-    <TargetName>PowerToys.VideoConferenceModule</TargetName>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)'=='Release'">
     <ClCompile>
@@ -67,10 +62,6 @@
       <OutputFile>$(OutDir)$(TargetName)$(TargetExt)</OutputFile>
       <AdditionalDependencies>shlwapi.lib;gdiplus.lib;dwmapi.lib;uxtheme.lib;shcore.lib;Wtsapi32.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
-    <PostBuildEvent>
-      <Command>xcopy /y /I  "$(ProjectDir)Icons\*" "$(OutDir)Icons"
-xcopy /y /I  "$(ProjectDir)black.bmp*" "$(OutDir)"</Command>
-    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)'=='Debug'">
     <ClCompile>
@@ -90,10 +81,6 @@ xcopy /y /I  "$(ProjectDir)black.bmp*" "$(OutDir)"</Command>
       <OutputFile>$(OutDir)$(TargetName)$(TargetExt)</OutputFile>
       <AdditionalDependencies>shlwapi.lib;gdiplus.lib;dwmapi.lib;uxtheme.lib;shcore.lib;Wtsapi32.lib;dxguid.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
-    <PostBuildEvent>
-      <Command>xcopy /y /I  "$(ProjectDir)Icons\*" "$(OutDir)Icons"
-xcopy /y /I  "$(ProjectDir)black.bmp*" "$(OutDir)"</Command>
-    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="AudioDeviceNotificationClient.h" />
@@ -121,34 +108,58 @@ xcopy /y /I  "$(ProjectDir)black.bmp*" "$(OutDir)"</Command>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
-    <None Include="Icons\Off-NotInUse Dark.svg" />
-    <None Include="Icons\Off-NotInUse Light.svg" />
-    <None Include="Icons\Off-Off Dark.svg" />
-    <None Include="Icons\Off-Off Light.svg" />
-    <None Include="Icons\Off-On Dark.svg" />
-    <None Include="Icons\Off-On Light.svg" />
-    <None Include="Icons\On-NotInUse Dark.svg" />
-    <None Include="Icons\On-NotInUse Light.svg" />
-    <None Include="Icons\On-Off Dark.svg" />
-    <None Include="Icons\On-Off Light.svg" />
-    <None Include="Icons\On-On Dark.svg" />
-    <None Include="Icons\On-On Light.svg" />
-    <None Include="packages.config" />
-  </ItemGroup>
-  <ItemGroup>
-    <Image Include="black.bmp" />
-    <Image Include="Icons\Off-NotInUse Dark.png" />
-    <Image Include="Icons\Off-NotInUse Light.png" />
-    <Image Include="Icons\Off-Off Dark.png" />
-    <Image Include="Icons\Off-Off Light.png" />
-    <Image Include="Icons\Off-On Dark.png" />
-    <Image Include="Icons\Off-On Light.png" />
-    <Image Include="Icons\On-NotInUse Dark.png" />
-    <Image Include="Icons\On-NotInUse Light.png" />
-    <Image Include="Icons\On-Off Dark.png" />
-    <Image Include="Icons\On-Off Light.png" />
-    <Image Include="Icons\On-On Dark.png" />
-    <Image Include="Icons\On-On Light.png" />
+    <Content Include="Assets\VCM\black.bmp">
+      <DeploymentContent>true</DeploymentContent>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Assets\VCM\Off-NotInUse Dark.png">
+      <DeploymentContent>true</DeploymentContent>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Assets\VCM\Off-NotInUse Light.png">
+      <DeploymentContent>true</DeploymentContent>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Assets\VCM\Off-Off Dark.png">
+      <DeploymentContent>true</DeploymentContent>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Assets\VCM\Off-Off Light.png">
+      <DeploymentContent>true</DeploymentContent>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Assets\VCM\Off-On Dark.png">
+      <DeploymentContent>true</DeploymentContent>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Assets\VCM\Off-On Light.png">
+      <DeploymentContent>true</DeploymentContent>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Assets\VCM\On-NotInUse Dark.png">
+      <DeploymentContent>true</DeploymentContent>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Assets\VCM\On-NotInUse Light.png">
+      <DeploymentContent>true</DeploymentContent>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Assets\VCM\On-Off Dark.png">
+      <DeploymentContent>true</DeploymentContent>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Assets\VCM\On-Off Light.png">
+      <DeploymentContent>true</DeploymentContent>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Assets\VCM\On-On Dark.png">
+      <DeploymentContent>true</DeploymentContent>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Assets\VCM\On-On Light.png">
+      <DeploymentContent>true</DeploymentContent>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

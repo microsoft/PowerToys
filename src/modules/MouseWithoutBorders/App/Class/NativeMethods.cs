@@ -576,6 +576,8 @@ namespace MouseWithoutBorders.Class
         [DllImport("user32.dll", EntryPoint = "SendInput", SetLastError = true)]
         internal static extern uint SendInput64(uint nInputs, INPUT64[] pInputs, int cbSize);
 
+        internal static bool InjectMouseInputAvailable { get; set; }
+
         [DllImport("user32.dll", EntryPoint = "GetMessageExtraInfo", SetLastError = true)]
         internal static extern IntPtr GetMessageExtraInfo();
 

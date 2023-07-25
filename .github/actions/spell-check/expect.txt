@@ -87,7 +87,6 @@ Apm
 APPBARDATA
 appdata
 APPEXECLINK
-APPIDS
 appium
 Applets
 Applicationcan
@@ -424,6 +423,7 @@ DARKPURPLE
 DARKTEAL
 DARKYELLOW
 datareader
+datatracker
 Datavalue
 dataversion
 DATAW
@@ -520,7 +520,7 @@ dllexport
 dllhost
 dllmain
 DNLEN
-Dns
+dns
 DONOTROUND
 DONTVALIDATEPATH
 dotnet
@@ -673,7 +673,6 @@ EXTENDEDVERBS
 EXTRINSICPROPERTIES
 eyetracker
 FABC
-fabricbot
 FAEDDA
 FAF
 FAFD
@@ -792,7 +791,10 @@ graphql
 GSM
 gtm
 gui
+guiddata
 guiddef
+guidgenerator
+GUIDv
 GUITHREADINFO
 GValue
 gwl
@@ -800,7 +802,6 @@ GWLP
 HACCEL
 handlekeyboardhookevent
 hangeul
-Hankaku
 hanselman
 Hanzi
 Hardlines
@@ -865,6 +866,7 @@ HOLDESC
 HOMEPATH
 homljgmgpmcbpjbnjpfijnhipfkiclkd
 HOOKPROC
+Horvalds
 Hostbackdropbrush
 hotkeycontrol
 hotkeys
@@ -919,6 +921,7 @@ IDR
 idx
 IDXGI
 IEnum
+ietf
 IExec
 IEXPLORE
 Iface
@@ -959,6 +962,7 @@ INPUTHARDWARE
 INPUTKEYBOARD
 INPUTLANGCHANGED
 INPUTMOUSE
+inputparser
 INPUTSINK
 INPUTTYPE
 INSTALLDESKTOPSHORTCUT
@@ -1271,6 +1275,7 @@ MOVESIZESTART
 mozilla
 mpmc
 MRM
+MRT
 mru
 mrw
 msbuild
@@ -1431,6 +1436,7 @@ odbccp
 Oem
 officehubintl
 ofs
+oid
 oldcolor
 olditem
 oldnewthing
@@ -1763,6 +1769,7 @@ roslyn
 roundf
 ROUNDSMALL
 Rpc
+rpcrt
 RRF
 rrr
 RSAT
@@ -2175,6 +2182,7 @@ uxtheme
 UYVY
 vabdq
 validmodulename
+valuegenerator
 Vanara
 variantassignment
 vcamp
@@ -2185,6 +2193,7 @@ VCINSTALLDIR
 vcm
 vcomp
 Vcpkg
+vcproj
 VCRT
 vcruntime
 vcvars
@@ -2377,6 +2386,7 @@ Wwan
 Wwanpp
 XAttribute
 XAxis
+xbf
 Xbox
 XBUTTON
 XBUTTONDBLCLK

@@ -15,7 +15,7 @@
 #include <shellapi.h>
 
 // Non-localizable
-const std::wstring fancyZonesPath = L"modules\\FancyZones\\PowerToys.FancyZones.exe";
+const std::wstring fancyZonesPath = L"PowerToys.FancyZones.exe";
 
 BOOL APIENTRY DllMain(HMODULE /*hModule*/, DWORD ul_reason_for_call, LPVOID /*lpReserved*/)
 {

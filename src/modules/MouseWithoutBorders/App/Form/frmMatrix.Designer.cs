@@ -577,7 +577,7 @@ namespace MouseWithoutBorders
             this.textBoxEnc.PasswordChar = '*';
             this.textBoxEnc.Size = new System.Drawing.Size(304, 20);
             this.textBoxEnc.TabIndex = 3;
-            this.toolTip.SetToolTip(this.textBoxEnc, "The key must be auto generated in one machine by click on New Key, then typed in " +
+            this.toolTip.SetToolTip(this.textBoxEnc, "The key must be auto generated in one machine by clicking on New Key, then typed in " +
         "other machines.");
             // 
             // LabelEnc
