@@ -1,0 +1,437 @@
+﻿<Page
+    x:Class="Microsoft.PowerToys.Settings.UI.Views.MouseWithoutBordersPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:controls="using:Microsoft.PowerToys.Settings.UI.Controls"
+    xmlns:converters="using:Microsoft.PowerToys.Settings.UI.Converters"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:labs="using:CommunityToolkit.Labs.WinUI"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:toolkitConverters="using:CommunityToolkit.WinUI.UI.Converters"
+    xmlns:ui="using:CommunityToolkit.WinUI.UI"
+    AutomationProperties.LandmarkType="Main"
+    mc:Ignorable="d">
+    <Page.Resources>
+        <converters:NegativeBoolToVisibilityConverter x:Key="negativeBoolToVisibilityConverter" />
+        <toolkitConverters:BoolToObjectConverter
+            x:Key="OneRowMatrixBoolToNumberOfRowsConverter"
+            FalseValue="2"
+            TrueValue="4" />
+    </Page.Resources>
+    <controls:SettingsPageControl x:Uid="MouseWithoutBorders" ModuleImageSource="ms-appx:///Assets/Settings/Modules/MouseWithoutBorders.png">
+        <controls:SettingsPageControl.ModuleContent>
+            <StackPanel Orientation="Vertical">
+                <controls:SettingsGroup x:Uid="MouseWithoutBorders_ActivationSettings">
+                    <labs:SettingsCard
+                        x:Uid="MouseWithoutBorders_Toggle_Enable"
+                        HeaderIcon="{ui:BitmapIcon Source=/Assets/Settings/FluentIcons/FluentIconsMouseWithoutBorders.png}"
+                        IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabledGpoConfigured, Converter={StaticResource BoolNegationConverter}}">
+                        <ToggleSwitch
+                            x:Uid="ToggleSwitch"
+                            IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.CanBeEnabled}"
+                            IsOn="{x:Bind Mode=TwoWay, Path=ViewModel.IsEnabled}" />
+                    </labs:SettingsCard>
+                    <InfoBar
+                        x:Uid="GPO_IsSettingForced"
+                        IsClosable="False"
+                        IsOpen="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabledGpoConfigured}"
+                        IsTabStop="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabledGpoConfigured}"
+                        Severity="Informational" />
+                </controls:SettingsGroup>
+                <controls:SettingsGroup x:Uid="MouseWithoutBorders_KeySettings" IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}">
+                    <labs:SettingsExpander
+                        x:Name="MouseWithoutBorders_ConnectSettings"
+                        x:Uid="MouseWithoutBorders_SecurityKey"
+                        HeaderIcon="{ui:FontIcon FontFamily={StaticResource SymbolThemeFontFamily},
+                                                 Glyph=&#xE8D7;}"
+                        IsExpanded="{x:Bind Mode=TwoWay, Path=ViewModel.ConnectFieldsVisible}">
+                        <labs:SettingsExpander.Items>
+                            <labs:SettingsCard ContentAlignment="Right">
+                                <StackPanel Orientation="Horizontal" Spacing="8">
+                                    <TextBox
+                                        x:Name="ConnectSecurityKeyTextBox"
+                                        Width="248"
+                                        x:Uid="MWB_SecurityKeyLabel" />
+                                    <TextBox
+                                        x:Name="ConnectPCNameTextBox"
+                                        x:Uid="MWB_PCNameLabel"
+                                        Width="248" />
+                                    <Button
+                                        x:Uid="MouseWithoutBorders_Connect"
+                                        Command="{x:Bind Mode=OneTime, Path=ConnectCommand}"
+                                        Style="{StaticResource AccentButtonStyle}" />
+                                </StackPanel>
+                            </labs:SettingsCard>
+                        </labs:SettingsExpander.Items>
+                        <StackPanel Orientation="Horizontal" Spacing="8">
+                            <TextBox IsReadOnly="True" Text="{x:Bind Mode=TwoWay, Path=ViewModel.SecurityKey}" />
+                            <Button
+                                x:Uid="MouseWithoutBorders_NewKey"
+                                Command="{x:Bind Mode=OneTime, Path=GenerateNewKeyCommand}"
+                                Style="{StaticResource AccentButtonStyle}" />
+                            <Button
+                                x:Uid="MouseWithoutBorders_Connect"
+                                Command="{x:Bind Mode=OneTime, Path=ShowConnectFieldsCommand}"
+                                Style="{StaticResource AccentButtonStyle}"
+                                Visibility="{x:Bind Path=ViewModel.ConnectFieldsVisible, Mode=OneWay, Converter={StaticResource negativeBoolToVisibilityConverter}}" />
+                        </StackPanel>
+                    </labs:SettingsExpander>
+
+                    <labs:SettingsCard x:Uid="MouseWithoutBorders_ThisMachineNameLabel">
+                        <StackPanel Orientation="Horizontal" Spacing="8">
+                            <TextBlock
+                                VerticalAlignment="Center"
+                                Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                IsTextSelectionEnabled="True"
+                                Text="{x:Bind Mode=OneTime, Path=ViewModel.MachineHostName}" />
+                            <Button
+                                Width="32"
+                                Height="32"
+                                Padding="4"
+                                Command="{x:Bind Mode=OneTime, Path=CopyPCNameCommand}"
+                                Content="&#xE8C8;"
+                                FontFamily="{StaticResource SymbolThemeFontFamily}">
+                                <ToolTipService.ToolTip>
+                                    <TextBlock x:Uid="MouseWithoutBorders_CopyMachineName" TextWrapping="Wrap" />
+                                </ToolTipService.ToolTip>
+                            </Button>
+                        </StackPanel>
+                    </labs:SettingsCard>
+                </controls:SettingsGroup>
+                <controls:SettingsGroup x:Uid="MouseWithoutBorders_DeviceLayoutSettings" IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}">
+                    <labs:SettingsCard
+                        HorizontalContentAlignment="Stretch"
+                        Background="{ThemeResource CardBackgroundFillColorSecondaryBrush}"
+                        ContentAlignment="Vertical">
+                        <StackPanel Orientation="Vertical" Spacing="8">
+                            <ItemsControl
+                                x:Name="DevicesItemsControl"
+                                HorizontalAlignment="Center"
+                                ItemsSource="{Binding MachineMatrixString, Mode=TwoWay}">
+                                <ItemsControl.ItemsPanel>
+                                    <ItemsPanelTemplate>
+                                        <WrapGrid MaximumRowsOrColumns="{Binding MatrixOneRow, Mode=OneWay, Converter={StaticResource OneRowMatrixBoolToNumberOfRowsConverter}}" Orientation="Horizontal" />
+                                    </ItemsPanelTemplate>
+                                </ItemsControl.ItemsPanel>
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate>
+                                        <!--  TODO: colors?  -->
+                                        <!--
+                                            BorderBrush="#DFDFDF"
+                                            Background="#d4d4d4"
+                                        -->
+                                        <!--  Dragging while elevated crashes on WinUI3: https://github.com/microsoft/microsoft-ui-xaml/issues/7690  -->
+                                        <Border
+                                            Width="136"
+                                            Height="90"
+                                            Margin="4"
+                                            BorderThickness="2" 
+                                            AllowDrop="{Binding Mode=OneWay, Path=Item.CanDragDrop}"
+                                            Background="{ThemeResource SolidBackgroundFillColorBaseAltBrush}"
+                                            BorderBrush="{Binding Item.StatusBrush}"
+                                            CanDrag="{Binding Mode=OneWay, Path=Item.CanDragDrop}"
+                                            CornerRadius="4"
+                                            DataContext="{Binding}"
+                                            DragOver="Device_DragOver"
+                                            DragStarting="Device_DragStarting"
+                                            Drop="Device_Drop"
+                                            ToolTipService.ToolTip="{Binding Item.Name, Mode=OneWay}">
+                                            <Grid>
+                                                <Grid.RowDefinitions>
+                                                    <RowDefinition Height="*" />
+                                                    <RowDefinition Height="Auto" />
+                                                </Grid.RowDefinitions>
+
+                                                <FontIcon
+                                                    Margin="0,12,0,0"
+                                                    VerticalAlignment="Center"
+                                                    FontSize="32"
+                                                    Glyph="&#xE7F8;" />
+                                                <TextBlock
+                                                    Grid.Row="1"
+                                                    Margin="12"
+                                                    HorizontalAlignment="Center"
+                                                    Style="{StaticResource CaptionTextBlockStyle}"
+                                                    Tag="DeviceName"
+                                                    Text="{Binding Item.Name}" />
+                                            </Grid>
+                                        </Border>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                            <Button HorizontalAlignment="Right" Command="{x:Bind Mode=OneTime, Path=ReconnectCommand}">
+                                <ToolTipService.ToolTip>
+                                    <TextBlock x:Uid="MouseWithoutBorders_ReconnectTooltip" TextWrapping="Wrap"/>
+                                </ToolTipService.ToolTip>
+                                <TextBlock x:Uid="MouseWithoutBorders_ReconnectButton" />
+                            </Button>
+
+
+                        </StackPanel>
+                    </labs:SettingsCard>
+
+                    <InfoBar
+                        x:Uid="MouseWithoutBorders_CannotDragDropAsAdmin"
+                        IsClosable="True"
+                        IsOpen="{x:Bind Mode=OneWay, Path=ViewModel.IsElevated}"
+                        IsTabStop="True"
+                        Severity="Informational" />
+
+
+
+                    <labs:SettingsCard x:Uid="MouseWithoutBorders_MatrixOneRow">
+                        <ToggleSwitch x:Uid="MouseWithoutBorders_MatrixOneRow_ToggleSwitch" IsOn="{x:Bind ViewModel.MatrixOneRow, Mode=TwoWay}" />
+                    </labs:SettingsCard>
+                </controls:SettingsGroup>
+                <controls:SettingsGroup x:Uid="MouseWithoutBorders_ServiceSettings" IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.CanToggleUseService}">
+                    <labs:SettingsCard x:Uid="MouseWithoutBorders_UseService">
+                        <ToggleSwitch
+                            x:Uid="MouseWithoutBorders_UseService_ToggleSwitch"
+                            IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}"
+                            IsOn="{x:Bind ViewModel.UseService, Mode=TwoWay}" />
+                    </labs:SettingsCard>
+                    <InfoBar
+                        x:Uid="MouseWithoutBorders_RunAsAdminText"
+                        IsClosable="False"
+                        IsOpen="{x:Bind Mode=OneWay, Path=ViewModel.CanToggleUseService, Converter={StaticResource BoolNegationConverter}}"
+                        IsTabStop="True"
+                        Severity="Informational" />
+                    <InfoBar
+                        x:Uid="MouseWithoutBorders_ServiceUserUninstallWarning"
+                        IsClosable="True"
+                        IsOpen="True"
+                        IsTabStop="True"
+                        Severity="Warning" />
+                    <labs:SettingsCard
+                        IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.CanUninstallService}"
+                        x:Uid="MouseWithoutBorders_UninstallService"
+                        ActionIcon="{ui:FontIcon FontFamily={StaticResource SymbolThemeFontFamily},
+                                                 Glyph=&#xE8A7;}"
+                        Command="{x:Bind ViewModel.UninstallServiceEventHandler}"
+                        IsClickEnabled="{x:Bind Mode=OneWay, Path=ViewModel.CanUninstallService}" />
+                </controls:SettingsGroup>
+                <controls:SettingsGroup x:Uid="MouseWithoutBorders_Settings" IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}">
+                    <labs:SettingsCard x:Uid="MouseWithoutBorders_WrapMouse">
+                        <ToggleSwitch x:Uid="MouseWithoutBorders_WrapMouse_ToggleSwitch" IsOn="{x:Bind ViewModel.WrapMouse, Mode=TwoWay}" />
+                    </labs:SettingsCard>
+                    <labs:SettingsCard x:Uid="MouseWithoutBorders_ShareClipboard">
+                        <ToggleSwitch x:Uid="MouseWithoutBorders_ShareClipboard_ToggleSwitch" IsOn="{x:Bind ViewModel.ShareClipboard, Mode=TwoWay}" />
+                    </labs:SettingsCard>
+                    <labs:SettingsCard x:Uid="MouseWithoutBorders_TransferFile">
+                        <ToggleSwitch x:Uid="MouseWithoutBorders_TransferFile_ToggleSwitch" IsOn="{x:Bind ViewModel.TransferFile, Mode=TwoWay}" />
+                    </labs:SettingsCard>
+                    <labs:SettingsCard x:Uid="MouseWithoutBorders_HideMouseAtScreenEdge">
+                        <ToggleSwitch x:Uid="MouseWithoutBorders_HideMouseAtScreenEdge_ToggleSwitch" IsOn="{x:Bind ViewModel.HideMouseAtScreenEdge, Mode=TwoWay}" />
+                    </labs:SettingsCard>
+                    <labs:SettingsCard x:Uid="MouseWithoutBorders_DrawMouseCursor">
+                        <ToggleSwitch x:Uid="MouseWithoutBorders_DrawMouseCursor_ToggleSwitch" IsOn="{x:Bind ViewModel.DrawMouseCursor, Mode=TwoWay}" />
+                    </labs:SettingsCard>
+                    <labs:SettingsCard x:Uid="MouseWithoutBorders_ValidateRemoteMachineIP">
+                        <ToggleSwitch x:Uid="MouseWithoutBorders_ValidateRemoteMachineIP_ToggleSwitch" IsOn="{x:Bind ViewModel.ValidateRemoteMachineIP, Mode=TwoWay}" />
+                    </labs:SettingsCard>
+                    <labs:SettingsCard x:Uid="MouseWithoutBorders_SameSubnetOnly">
+                        <ToggleSwitch x:Uid="MouseWithoutBorders_SameSubnetOnly_ToggleSwitch" IsOn="{x:Bind ViewModel.SameSubnetOnly, Mode=TwoWay}" />
+                    </labs:SettingsCard>
+                    <labs:SettingsCard x:Uid="MouseWithoutBorders_BlockScreenSaverOnOtherMachines">
+                        <ToggleSwitch x:Uid="MouseWithoutBorders_BlockScreenSaverOnOtherMachines_ToggleSwitch" IsOn="{x:Bind ViewModel.BlockScreenSaverOnOtherMachines, Mode=TwoWay}" />
+                    </labs:SettingsCard>
+                    <labs:SettingsCard x:Uid="MouseWithoutBorders_MoveMouseRelatively">
+                        <ToggleSwitch x:Uid="MouseWithoutBorders_MoveMouseRelatively_ToggleSwitch" IsOn="{x:Bind ViewModel.MoveMouseRelatively, Mode=TwoWay}" />
+                    </labs:SettingsCard>
+                    <labs:SettingsCard x:Uid="MouseWithoutBorders_BlockMouseAtScreenCorners">
+                        <ToggleSwitch x:Uid="MouseWithoutBorders_BlockMouseAtScreenCorners_ToggleSwitch" IsOn="{x:Bind ViewModel.BlockMouseAtScreenCorners, Mode=TwoWay}" />
+                    </labs:SettingsCard>
+                    <labs:SettingsCard x:Uid="MouseWithoutBorders_ShowClipboardAndNetworkStatusMessages">
+                        <ToggleSwitch x:Uid="MouseWithoutBorders_ShowClipboardAndNetworkStatusMessages_ToggleSwitch" IsOn="{x:Bind ViewModel.ShowClipboardAndNetworkStatusMessages, Mode=TwoWay}" />
+                    </labs:SettingsCard>
+                </controls:SettingsGroup>
+                <controls:SettingsGroup x:Uid="MouseWithoutBorders_KeyboardShortcuts_Group" IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}">
+                    <labs:SettingsCard x:Uid="MouseWithoutBorders_EasyMouseOption">
+                        <ComboBox MinWidth="{StaticResource SettingActionControlMinWidth}" SelectedIndex="{x:Bind Path=ViewModel.EasyMouseOptionIndex, Mode=TwoWay}">
+                            <ComboBoxItem x:Uid="MouseWithoutBorders_EasyMouseOption_Disabled" />
+                            <ComboBoxItem x:Uid="MouseWithoutBorders_EasyMouseOption_Enabled" />
+                            <ComboBoxItem x:Uid="MouseWithoutBorders_EasyMouseOption_Ctrl" />
+                            <ComboBoxItem x:Uid="MouseWithoutBorders_EasyMouseOption_Shift" />
+                        </ComboBox>
+                    </labs:SettingsCard>
+                    <labs:SettingsCard x:Uid="MouseWithoutBorders_ToggleEasyMouseShortcut">
+                        <ComboBox MinWidth="{StaticResource SettingActionControlMinWidth}" SelectedIndex="{x:Bind Path=ViewModel.ToggleEasyMouseShortcutIndex, Mode=TwoWay}">
+                            <ComboBoxItem x:Uid="MouseWithoutBorders_ToggleEasyMouseShortcut_Disabled" />
+                            <ComboBoxItem>A</ComboBoxItem>
+                            <ComboBoxItem>B</ComboBoxItem>
+                            <ComboBoxItem>C</ComboBoxItem>
+                            <ComboBoxItem>D</ComboBoxItem>
+                            <ComboBoxItem>E</ComboBoxItem>
+                            <ComboBoxItem>F</ComboBoxItem>
+                            <ComboBoxItem>G</ComboBoxItem>
+                            <ComboBoxItem>H</ComboBoxItem>
+                            <ComboBoxItem>I</ComboBoxItem>
+                            <ComboBoxItem>J</ComboBoxItem>
+                            <ComboBoxItem>K</ComboBoxItem>
+                            <ComboBoxItem>L</ComboBoxItem>
+                            <ComboBoxItem>M</ComboBoxItem>
+                            <ComboBoxItem>N</ComboBoxItem>
+                            <ComboBoxItem>O</ComboBoxItem>
+                            <ComboBoxItem>P</ComboBoxItem>
+                            <ComboBoxItem>Q</ComboBoxItem>
+                            <ComboBoxItem>R</ComboBoxItem>
+                            <ComboBoxItem>S</ComboBoxItem>
+                            <ComboBoxItem>T</ComboBoxItem>
+                            <ComboBoxItem>U</ComboBoxItem>
+                            <ComboBoxItem>V</ComboBoxItem>
+                            <ComboBoxItem>W</ComboBoxItem>
+                            <ComboBoxItem>X</ComboBoxItem>
+                            <ComboBoxItem>Y</ComboBoxItem>
+                            <ComboBoxItem>Z</ComboBoxItem>
+                        </ComboBox>
+                    </labs:SettingsCard>
+                    <labs:SettingsCard x:Uid="MouseWithoutBorders_LockMachinesShortcut">
+                        <ComboBox MinWidth="{StaticResource SettingActionControlMinWidth}" SelectedIndex="{x:Bind Path=ViewModel.LockMachinesShortcutIndex, Mode=TwoWay}">
+                            <ComboBoxItem x:Uid="MouseWithoutBorders_LockMachinesShortcut_Disabled" />
+                            <ComboBoxItem>A</ComboBoxItem>
+                            <ComboBoxItem>B</ComboBoxItem>
+                            <ComboBoxItem>C</ComboBoxItem>
+                            <ComboBoxItem>D</ComboBoxItem>
+                            <ComboBoxItem>E</ComboBoxItem>
+                            <ComboBoxItem>F</ComboBoxItem>
+                            <ComboBoxItem>G</ComboBoxItem>
+                            <ComboBoxItem>H</ComboBoxItem>
+                            <ComboBoxItem>I</ComboBoxItem>
+                            <ComboBoxItem>J</ComboBoxItem>
+                            <ComboBoxItem>K</ComboBoxItem>
+                            <ComboBoxItem>L</ComboBoxItem>
+                            <ComboBoxItem>M</ComboBoxItem>
+                            <ComboBoxItem>N</ComboBoxItem>
+                            <ComboBoxItem>O</ComboBoxItem>
+                            <ComboBoxItem>P</ComboBoxItem>
+                            <ComboBoxItem>Q</ComboBoxItem>
+                            <ComboBoxItem>R</ComboBoxItem>
+                            <ComboBoxItem>S</ComboBoxItem>
+                            <ComboBoxItem>T</ComboBoxItem>
+                            <ComboBoxItem>U</ComboBoxItem>
+                            <ComboBoxItem>V</ComboBoxItem>
+                            <ComboBoxItem>W</ComboBoxItem>
+                            <ComboBoxItem>X</ComboBoxItem>
+                            <ComboBoxItem>Y</ComboBoxItem>
+                            <ComboBoxItem>Z</ComboBoxItem>
+                        </ComboBox>
+                    </labs:SettingsCard>
+                    <labs:SettingsCard x:Uid="MouseWithoutBorders_ReconnectShortcut">
+                        <ComboBox MinWidth="{StaticResource SettingActionControlMinWidth}" SelectedIndex="{x:Bind Path=ViewModel.ReconnectShortcutIndex, Mode=TwoWay}">
+                            <ComboBoxItem x:Uid="MouseWithoutBorders_ReconnectShortcut_Disabled" />
+                            <ComboBoxItem>A</ComboBoxItem>
+                            <ComboBoxItem>B</ComboBoxItem>
+                            <ComboBoxItem>C</ComboBoxItem>
+                            <ComboBoxItem>D</ComboBoxItem>
+                            <ComboBoxItem>E</ComboBoxItem>
+                            <ComboBoxItem>F</ComboBoxItem>
+                            <ComboBoxItem>G</ComboBoxItem>
+                            <ComboBoxItem>H</ComboBoxItem>
+                            <ComboBoxItem>I</ComboBoxItem>
+                            <ComboBoxItem>J</ComboBoxItem>
+                            <ComboBoxItem>K</ComboBoxItem>
+                            <ComboBoxItem>L</ComboBoxItem>
+                            <ComboBoxItem>M</ComboBoxItem>
+                            <ComboBoxItem>N</ComboBoxItem>
+                            <ComboBoxItem>O</ComboBoxItem>
+                            <ComboBoxItem>P</ComboBoxItem>
+                            <ComboBoxItem>Q</ComboBoxItem>
+                            <ComboBoxItem>R</ComboBoxItem>
+                            <ComboBoxItem>S</ComboBoxItem>
+                            <ComboBoxItem>T</ComboBoxItem>
+                            <ComboBoxItem>U</ComboBoxItem>
+                            <ComboBoxItem>V</ComboBoxItem>
+                            <ComboBoxItem>W</ComboBoxItem>
+                            <ComboBoxItem>X</ComboBoxItem>
+                            <ComboBoxItem>Y</ComboBoxItem>
+                            <ComboBoxItem>Z</ComboBoxItem>
+                        </ComboBox>
+                    </labs:SettingsCard>
+                    <labs:SettingsCard x:Uid="MouseWithoutBorders_Switch2AllPcShortcut">
+                        <ComboBox MinWidth="{StaticResource SettingActionControlMinWidth}" SelectedIndex="{x:Bind Path=ViewModel.Switch2AllPcShortcutIndex, Mode=TwoWay}">
+                            <ComboBoxItem x:Uid="MouseWithoutBorders_Switch2AllPcShortcut_Disabled" />
+                            <ComboBoxItem x:Uid="MouseWithoutBorders_Switch2AllPcShortcut_Ctrl3" />
+                            <ComboBoxItem>A</ComboBoxItem>
+                            <ComboBoxItem>B</ComboBoxItem>
+                            <ComboBoxItem>C</ComboBoxItem>
+                            <ComboBoxItem>D</ComboBoxItem>
+                            <ComboBoxItem>E</ComboBoxItem>
+                            <ComboBoxItem>F</ComboBoxItem>
+                            <ComboBoxItem>G</ComboBoxItem>
+                            <ComboBoxItem>H</ComboBoxItem>
+                            <ComboBoxItem>I</ComboBoxItem>
+                            <ComboBoxItem>J</ComboBoxItem>
+                            <ComboBoxItem>K</ComboBoxItem>
+                            <ComboBoxItem>L</ComboBoxItem>
+                            <ComboBoxItem>M</ComboBoxItem>
+                            <ComboBoxItem>N</ComboBoxItem>
+                            <ComboBoxItem>O</ComboBoxItem>
+                            <ComboBoxItem>P</ComboBoxItem>
+                            <ComboBoxItem>Q</ComboBoxItem>
+                            <ComboBoxItem>R</ComboBoxItem>
+                            <ComboBoxItem>S</ComboBoxItem>
+                            <ComboBoxItem>T</ComboBoxItem>
+                            <ComboBoxItem>U</ComboBoxItem>
+                            <ComboBoxItem>V</ComboBoxItem>
+                            <ComboBoxItem>W</ComboBoxItem>
+                            <ComboBoxItem>X</ComboBoxItem>
+                            <ComboBoxItem>Y</ComboBoxItem>
+                            <ComboBoxItem>Z</ComboBoxItem>
+                        </ComboBox>
+                    </labs:SettingsCard>
+                    <labs:SettingsCard x:Uid="MouseWithoutBorders_SwitchBetweenMachineShortcut" HeaderIcon="{ui:FontIcon FontFamily={StaticResource SymbolThemeFontFamily}, Glyph=&#xE92E;}">
+                        <ComboBox MinWidth="{StaticResource SettingActionControlMinWidth}" SelectedIndex="{x:Bind Path=ViewModel.SelectedSwitchBetweenMachineShortcutOptionsIndex, Mode=TwoWay}">
+                            <!--  These should be in the same order as the array items in MouseWithoutBordersViewModel.cs  -->
+                            <ComboBoxItem x:Uid="MouseWithoutBorders_SwitchBetweenMachineShortcut_F1" />
+                            <ComboBoxItem x:Uid="MouseWithoutBorders_SwitchBetweenMachineShortcut_1" />
+                            <ComboBoxItem x:Uid="MouseWithoutBorders_SwitchBetweenMachineShortcut_Disabled" />
+                        </ComboBox>
+                    </labs:SettingsCard>
+                </controls:SettingsGroup>
+                <controls:SettingsGroup
+                        x:Uid="MouseWithoutBorders_AdvancedSettings_Group"
+                        IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}">
+                    <labs:SettingsExpander
+                            x:Uid="MouseWithoutBorders_IPAddressMapping"
+                            IsExpanded="True">
+                        <labs:SettingsExpander.Items>
+                            <labs:SettingsCard ContentAlignment="Vertical"
+                                    HorizontalContentAlignment="Stretch">
+                                <TextBox
+                                        x:Uid="MouseWithoutBorders_IPAddressMapping_TextBoxControl"
+                                        MinWidth="240" MinHeight="160"
+                                        AcceptsReturn="True"
+                                        ScrollViewer.IsVerticalRailEnabled="True"
+                                        ScrollViewer.VerticalScrollBarVisibility="Visible"
+                                        ScrollViewer.VerticalScrollMode="Enabled"
+                                        Text="{x:Bind Mode=TwoWay, Path=ViewModel.Name2IP, UpdateSourceTrigger=PropertyChanged}"
+                                        TextWrapping="Wrap" />
+                            </labs:SettingsCard>
+                        </labs:SettingsExpander.Items>
+                    </labs:SettingsExpander>
+                </controls:SettingsGroup>                
+                <controls:SettingsGroup x:Uid="MouseWithoutBorders_TroubleShooting" IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}">
+                    <labs:SettingsCard
+                        x:Uid="MouseWithoutBorders_AddFirewallRuleButtonControl"
+                        ActionIcon="{ui:FontIcon FontFamily={StaticResource SymbolThemeFontFamily},
+                                                 Glyph=&#xE8A7;}"
+                        Command="{x:Bind ViewModel.AddFirewallRuleEventHandler}"
+                        IsClickEnabled="True" />
+                    <labs:SettingsCard x:Uid="MouseWithoutBorders_ShowOriginalUI">
+                        <ToggleSwitch
+                            x:Uid="MouseWithoutBorders_ShowOriginalUI_ToggleSwitch"
+                            IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}"
+                            IsOn="{x:Bind ViewModel.ShowOriginalUI, Mode=TwoWay}" />
+                    </labs:SettingsCard>
+                </controls:SettingsGroup>
+            </StackPanel>
+        </controls:SettingsPageControl.ModuleContent>
+        <controls:SettingsPageControl.PrimaryLinks>
+            <controls:PageLink x:Uid="LearnMore_MouseWithoutBorders" Link="https://aka.ms/PowerToysOverview_MouseWithoutBorders" />
+        </controls:SettingsPageControl.PrimaryLinks>
+        <controls:SettingsPageControl.SecondaryLinks>
+            <controls:PageLink Link="http://aka.ms/mm" Text="Mouse without Borders" />
+            <controls:PageLink Link="https://github.com/microsoft/PowerToys/blob/main/COMMUNITY.md#mouse-without-borders-original-contributors" Text="Truong Do (Đỗ Đức Trường) and other original contributors" />
+        </controls:SettingsPageControl.SecondaryLinks>
+    </controls:SettingsPageControl>
+</Page>

@@ -15,7 +15,7 @@
   <Properties>
     <DisplayName>PowerToys PowerRename Context Menu</DisplayName>
     <PublisherDisplayName>Microsoft</PublisherDisplayName>
-    <Logo>Assets\storelogo.png</Logo>
+    <Logo>Assets\PowerRename\storelogo.png</Logo>
     <uap10:AllowExternalContent>true</uap10:AllowExternalContent>
   </Properties>
   <Resources>
@@ -30,9 +30,9 @@
   </Capabilities>
   <Applications>
     <Application Id="Microsoft.PowerToys.PowerRenameContextMenu" Executable="PowerRename.exe" uap10:TrustLevel="mediumIL" uap10:RuntimeBehavior="win32App">
-      <uap:VisualElements AppListEntry="none" DisplayName="PowerToys PowerRename Context Menu" Description="PowerRenameContextMenu" BackgroundColor="transparent" Square150x150Logo="Assets\Square150x150Logo.png" Square44x44Logo="Assets\Square44x44Logo.png">
-        <uap:DefaultTile Wide310x150Logo="Assets\Wide310x150Logo.png" Square310x310Logo="Assets\LargeTile.png" Square71x71Logo="Assets\SmallTile.png"></uap:DefaultTile>
-        <uap:SplashScreen Image="Assets\SplashScreen.png" />
+      <uap:VisualElements AppListEntry="none" DisplayName="PowerToys PowerRename Context Menu" Description="PowerRenameContextMenu" BackgroundColor="transparent" Square150x150Logo="Assets\PowerRename\Square150x150Logo.png" Square44x44Logo="Assets\PowerRename\Square44x44Logo.png">
+        <uap:DefaultTile Wide310x150Logo="Assets\PowerRename\Wide310x150Logo.png" Square310x310Logo="Assets\PowerRename\LargeTile.png" Square71x71Logo="Assets\PowerRename\SmallTile.png"></uap:DefaultTile>
+        <uap:SplashScreen Image="Assets\PowerRename\SplashScreen.png" />
       </uap:VisualElements>
       <Extensions>
         <desktop4:Extension Category="windows.fileExplorerContextMenus">

@@ -5,7 +5,6 @@
 using System;
 using System.Collections.Generic;
 using System.Globalization;
-using Windows.ApplicationModel.Resources;
 
 namespace Peek.Common.Helpers
 {
@@ -15,7 +14,7 @@ namespace Peek.Common.Helpers
 
         public static string BytesToReadableString(ulong bytes)
         {
-            var resourceLoader = ResourceLoader.GetForViewIndependentUse();
+            var resourceLoader = ResourceLoaderInstance.ResourceLoader;
             List<string> format = new List<string>
             {
                 resourceLoader.GetString("ReadableString_ByteAbbreviationFormat"),     // "B"
@@ -41,7 +40,7 @@ namespace Peek.Common.Helpers
 
         public static string FormatResourceString(string resourceId, object? args)
         {
-            var formatString = ResourceLoader.GetForViewIndependentUse()?.GetString(resourceId);
+            var formatString = ResourceLoaderInstance.ResourceLoader.GetString(resourceId);
             var formattedString = string.IsNullOrEmpty(formatString) ? string.Empty : string.Format(CultureInfo.InvariantCulture, formatString, args);
 
             return formattedString;
@@ -49,7 +48,7 @@ namespace Peek.Common.Helpers
 
         public static string FormatResourceString(string resourceId, object? args0, object? args1)
         {
-            var formatString = ResourceLoader.GetForViewIndependentUse()?.GetString(resourceId);
+            var formatString = ResourceLoaderInstance.ResourceLoader.GetString(resourceId);
             var formattedString = string.IsNullOrEmpty(formatString) ? string.Empty : string.Format(CultureInfo.InvariantCulture, formatString, args0, args1);
 
             return formattedString;

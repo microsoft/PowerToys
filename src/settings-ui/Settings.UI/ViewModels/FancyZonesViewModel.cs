@@ -74,6 +74,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
             _shiftDrag = Settings.Properties.FancyzonesShiftDrag.Value;
             _mouseSwitch = Settings.Properties.FancyzonesMouseSwitch.Value;
+            _mouseMiddleButtonSpanningMultipleZones = Settings.Properties.FancyzonesMouseMiddleClickSpanningMultipleZones.Value;
             _overrideSnapHotkeys = Settings.Properties.FancyzonesOverrideSnapHotkeys.Value;
             _moveWindowsAcrossMonitors = Settings.Properties.FancyzonesMoveWindowsAcrossMonitors.Value;
             _moveWindowBehaviour = Settings.Properties.FancyzonesMoveWindowsBasedOnPosition.Value ? MoveWindowBehaviour.MoveWindowBasedOnPosition : MoveWindowBehaviour.MoveWindowBasedOnZoneIndex;
@@ -147,6 +148,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         private bool _isEnabled;
         private bool _shiftDrag;
         private bool _mouseSwitch;
+        private bool _mouseMiddleButtonSpanningMultipleZones;
         private bool _overrideSnapHotkeys;
         private bool _moveWindowsAcrossMonitors;
         private MoveWindowBehaviour _moveWindowBehaviour;
@@ -271,6 +273,24 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 {
                     _mouseSwitch = value;
                     Settings.Properties.FancyzonesMouseSwitch.Value = value;
+                    NotifyPropertyChanged();
+                }
+            }
+        }
+
+        public bool MouseMiddleClickSpanningMultipleZones
+        {
+            get
+            {
+                return _mouseMiddleButtonSpanningMultipleZones;
+            }
+
+            set
+            {
+                if (value != _mouseMiddleButtonSpanningMultipleZones)
+                {
+                    _mouseMiddleButtonSpanningMultipleZones = value;
+                    Settings.Properties.FancyzonesMouseMiddleClickSpanningMultipleZones.Value = value;
                     NotifyPropertyChanged();
                 }
             }

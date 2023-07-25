@@ -28,7 +28,7 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup>
-    <OutDir>$(SolutionDir)$(Platform)\$(Configuration)\modules\FileExplorerPreview\</OutDir>
+    <OutDir>..\..\..\..\$(Platform)\$(Configuration)\</OutDir>
   </PropertyGroup>
   <PropertyGroup>
     <TargetName>PowerToys.powerpreview</TargetName>
