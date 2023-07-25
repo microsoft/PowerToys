@@ -2,7 +2,7 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 using System;
-using System.Collections.Generic;
+using System.Collections.Concurrent;
 using System.IO;
 using Wox.Plugin.Common.Interfaces;
 using Wox.Plugin.Common.Win32;
@@ -14,10 +14,8 @@ namespace Wox.Plugin.Common
     /// </summary>
     public class ShellLocalization
     {
-        private readonly object _cacheLock = new object();
-
         // Cache for already localized names. This makes localization of already localized string faster.
-        private Dictionary<string, string> _localizationCache = new Dictionary<string, string>();
+        private ConcurrentDictionary<string, string> _localizationCache = new ConcurrentDictionary<string, string>();
 
         /// <summary>
         /// Returns the localized name of a shell item.
@@ -26,8 +24,10 @@ namespace Wox.Plugin.Common
         /// <returns>The localized name as string or <see cref="string.Empty"/>.</returns>
         public string GetLocalizedName(string path)
         {
+            string lowerInvariantPath = path.ToLowerInvariant();
+
             // Checking cache if path is already localized
-            if (_localizationCache.TryGetValue(path.ToLowerInvariant(), out string value))
+            if (_localizationCache.TryGetValue(lowerInvariantPath, out string value))
             {
                 return value;
             }
@@ -41,15 +41,7 @@ namespace Wox.Plugin.Common
 
             shellItem.GetDisplayName(SIGDN.NORMALDISPLAY, out string filename);
 
-            lock (_cacheLock)
-            {
-                if (!_localizationCache.ContainsKey(path.ToLowerInvariant()))
-                {
-                    // The if condition is required to not get timing problems when called from an parallel execution.
-                    // Without the check we will get "key exists" exceptions.
-                    _localizationCache.Add(path.ToLowerInvariant(), filename);
-                }
-            }
+            _localizationCache.TryAdd(lowerInvariantPath, filename);
 
             return filename;
         }
