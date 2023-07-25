@@ -11,6 +11,7 @@
 //     2023- Included in PowerToys.
 // </history>
 using System;
+using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Reflection;
@@ -444,24 +445,6 @@ namespace MouseWithoutBorders.Class
 
                         break;
 
-                    case (VK)'L':
-                        if (winDown)
-                        {
-                            winDown = false;
-
-                            if (Common.DesMachineID != ID.ALL)
-                            {
-                                KeyboardEvent(hookCallbackKeybdData);
-                                Common.SwitchToMachine(Common.MachineName.Trim());
-                            }
-                        }
-                        else
-                        {
-                            return ProcessHotKeys(vkCode, hookCallbackKeybdData);
-                        }
-
-                        break;
-
                     case VK.ESCAPE:
                         if (Common.IsTopMostMessageNotNull())
                         {
@@ -497,6 +480,37 @@ namespace MouseWithoutBorders.Class
             winDown = winDown && matchingHotkey.Win;
         }
 
+        private List<short> GetVkCodesList(HotkeySettings hotkey)
+        {
+            var list = new List<short>();
+            if (hotkey.Alt)
+            {
+                list.Add((short)VK.MENU);
+            }
+
+            if (hotkey.Shift)
+            {
+                list.Add((short)VK.SHIFT);
+            }
+
+            if (hotkey.Win)
+            {
+                list.Add((short)VK.LWIN);
+            }
+
+            if (hotkey.Ctrl)
+            {
+                list.Add((short)VK.CONTROL);
+            }
+
+            if (hotkey.Code != 0)
+            {
+                list.Add((short)hotkey.Code);
+            }
+
+            return list;
+        }
+
         private bool ProcessHotKeys(int vkCode, KEYBDDATA hookCallbackKeybdData)
         {
             if (Common.HotkeyMatched(vkCode, winDown, CtrlDown, altDown, shiftDown, Setting.Values.HotKeySwitch2AllPC))
@@ -529,21 +543,21 @@ namespace MouseWithoutBorders.Class
                     {
                         Common.SwitchToMultipleMode(true, true);
 
-                        hookCallbackKeybdData.wVk = (short)VK.LCONTROL;
-                        KeyboardEvent(hookCallbackKeybdData);
-                        hookCallbackKeybdData.wVk = (short)VK.LMENU;
-                        KeyboardEvent(hookCallbackKeybdData);
-                        hookCallbackKeybdData.wVk = vkCode;
-                        KeyboardEvent(hookCallbackKeybdData);
+                        var codes = GetVkCodesList(Setting.Values.HotKeyLockMachine);
+
+                        foreach (var code in codes)
+                        {
+                            hookCallbackKeybdData.wVk = code;
+                            KeyboardEvent(hookCallbackKeybdData);
+                        }
 
                         hookCallbackKeybdData.dwFlags |= (int)Common.LLKHF.UP;
 
-                        hookCallbackKeybdData.wVk = (short)VK.LCONTROL;
-                        KeyboardEvent(hookCallbackKeybdData);
-                        hookCallbackKeybdData.wVk = (short)VK.LMENU;
-                        KeyboardEvent(hookCallbackKeybdData);
-                        hookCallbackKeybdData.wVk = vkCode;
-                        KeyboardEvent(hookCallbackKeybdData);
+                        foreach (var code in codes)
+                        {
+                            hookCallbackKeybdData.wVk = code;
+                            KeyboardEvent(hookCallbackKeybdData);
+                        }
 
                         Common.SwitchToMultipleMode(false, true);
 
