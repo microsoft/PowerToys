@@ -13,7 +13,6 @@ namespace MouseJumpUI.HotKeys;
 /// <remarks>
 /// See https://stackoverflow.com/a/3654821/3156906
 ///     https://learn.microsoft.com/en-us/archive/msdn-magazine/2007/june/net-matters-handling-messages-in-console-apps
-///     https://www.codeproject.com/Articles/5274425/Understanding-Windows-Message-Queues-for-the-Cshar
 /// </remarks>
 public sealed class HotKeyManager
 {
