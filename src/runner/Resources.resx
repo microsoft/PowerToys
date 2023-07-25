@@ -122,4 +122,8 @@
   <data name="BUGREPORT_SUCCESS" xml:space="preserve">
     <value>Bug report .zip file has been created on your Desktop.</value>
   </data>
+  <data name="PT_VERSION_CHANGE_ASK_FOR_COMPUTER_RESTART" xml:space="preserve">
+    <value>A new PowerToys version has been installed. Please restart the computer when possible, to fully reload File Explorer extensions.</value>
+    <comment>File Explorer refers to the Windows File Explorer application.</comment>
+  </data>
 </root>

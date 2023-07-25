@@ -274,7 +274,7 @@ void start_tray_icon()
     auto icon = LoadIcon(h_instance, MAKEINTRESOURCE(APPICON));
     if (icon)
     {
-        UINT id_tray_icon = wm_icon_notify = RegisterWindowMessageW(L"WM_PowerToysIconNotify");
+        wm_icon_notify = RegisterWindowMessageW(L"WM_PowerToysIconNotify");
 
         WNDCLASS wc = {};
         wc.hCursor = LoadCursor(nullptr, IDC_ARROW);
@@ -302,11 +302,13 @@ void start_tray_icon()
         tray_icon_data.cbSize = sizeof(tray_icon_data);
         tray_icon_data.hIcon = icon;
         tray_icon_data.hWnd = hwnd;
-        tray_icon_data.uID = id_tray_icon;
+        GUID guid;
+        CLSIDFromString(tray_icon_guid, &guid);
+        tray_icon_data.guidItem = guid;
         tray_icon_data.uCallbackMessage = wm_icon_notify;
         std::wstring about_msg_pt_version = L"PowerToys " + get_product_version();
         wcscpy_s(tray_icon_data.szTip, sizeof(tray_icon_data.szTip) / sizeof(WCHAR), about_msg_pt_version.c_str());
-        tray_icon_data.uFlags = NIF_ICON | NIF_TIP | NIF_MESSAGE;
+        tray_icon_data.uFlags = NIF_ICON | NIF_TIP | NIF_MESSAGE | NIF_GUID;
         ChangeWindowMessageFilterEx(hwnd, WM_COMMAND, MSGFLT_ALLOW, nullptr);
 
         tray_icon_created = Shell_NotifyIcon(NIM_ADD, &tray_icon_data) == TRUE;
