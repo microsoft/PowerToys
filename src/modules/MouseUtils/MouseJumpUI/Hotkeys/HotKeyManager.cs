@@ -3,9 +3,6 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
-using System.ComponentModel;
-using System.Diagnostics;
-using System.Runtime.InteropServices;
 using System.Threading;
 using MouseJumpUI.NativeMethods;
 using static MouseJumpUI.NativeMethods.Core;
@@ -16,42 +13,85 @@ namespace MouseJumpUI.HotKeys;
 /// <remarks>
 /// See https://stackoverflow.com/a/3654821/3156906
 ///     https://learn.microsoft.com/en-us/archive/msdn-magazine/2007/june/net-matters-handling-messages-in-console-apps
+///     https://www.codeproject.com/Articles/5274425/Understanding-Windows-Message-Queues-for-the-Cshar
 /// </remarks>
 public sealed class HotKeyManager
 {
-    private int _id;
-
     public event EventHandler<HotKeyEventArgs>? HotKeyPressed;
 
-    public HotKeyManager(Keystroke hotkey)
+    public HotKeyManager()
     {
-        this.HotKey = hotkey ?? throw new ArgumentNullException(nameof(hotkey));
-
         // cache the window proc delegate so it doesn't get garbage-collected
         this.WndProc = this.WindowProc;
-        this.HWnd = HWND.Null;
-    }
 
-    public Keystroke HotKey
-    {
-        get;
+        this.MessageSemaphore = new(0, 1);
+        this.MessageLoop = new MessageLoop(
+            name: "MouseJumpMessageLoop",
+            hwndCallback: () =>
+            {
+                if (this.Hwnd.IsNull)
+                {
+                    (this.WndClass, this.Hwnd) = HotKeyHelper.CreateWindow(this.WndProc);
+                }
+
+                return this.Hwnd;
+            });
+        this.MessageLoop.Start();
     }
 
     private WNDPROC WndProc
     {
         get;
+        set;
     }
 
-    private HWND HWnd
+    private ATOM? WndClass
     {
         get;
         set;
     }
 
-    private MessageLoop? MessageLoop
+    private HWND Hwnd
     {
         get;
         set;
+    }
+
+    private MessageLoop MessageLoop
+    {
+        get;
+    }
+
+    public Keystroke? HotKey
+    {
+        get;
+        private set;
+    }
+
+    private SemaphoreSlim MessageSemaphore
+    {
+        get;
+    }
+
+    public void SetHoKey(Keystroke? hotKey)
+    {
+        var hwnd = this.MessageLoop.Hwnd;
+
+        // do we need to unregister the existing hotkey first?
+        if ((this.HotKey is not null) && hwnd.HasValue)
+        {
+            HotKeyHelper.PostPrivateMessage(hwnd.Value, HotKeyHelper.WM_PRIV_UNREGISTER_HOTKEY);
+            this.MessageSemaphore.Wait();
+        }
+
+        this.HotKey = hotKey;
+
+        // register the new hotkey
+        if ((this.HotKey is not null) && hwnd.HasValue)
+        {
+            HotKeyHelper.PostPrivateMessage(hwnd.Value, HotKeyHelper.WM_PRIV_REGISTER_HOTKEY);
+            this.MessageSemaphore.Wait();
+        }
     }
 
     private LRESULT WindowProc(HWND hWnd, MESSAGE_TYPE msg, WPARAM wParam, LPARAM lParam)
@@ -59,6 +99,7 @@ public sealed class HotKeyManager
         switch (msg)
         {
             case MESSAGE_TYPE.WM_HOTKEY:
+            {
                 // https://learn.microsoft.com/en-us/windows/win32/inputdev/wm-hotkey
                 // https://stackoverflow.com/a/47831305/3156906
                 var param = (uint)lParam.Value.ToInt64();
@@ -67,99 +108,29 @@ public sealed class HotKeyManager
                 var e = new HotKeyEventArgs(key, modifiers);
                 this.OnHotKeyPressed(e);
                 break;
+            }
+
+            case (MESSAGE_TYPE)HotKeyHelper.WM_PRIV_REGISTER_HOTKEY:
+            {
+                var hwnd = this.MessageLoop.Hwnd ?? throw new InvalidOperationException();
+                HotKeyHelper.RegisterHotKey(hwnd, this.HotKey!, 1);
+                this.MessageSemaphore.Release();
+                break;
+            }
+
+            case (MESSAGE_TYPE)HotKeyHelper.WM_PRIV_UNREGISTER_HOTKEY:
+            {
+                var hwnd = this.MessageLoop.Hwnd ?? throw new InvalidOperationException();
+                HotKeyHelper.UnregisterHotKey(hwnd, 1);
+                this.MessageSemaphore.Release();
+                break;
+            }
         }
 
-        return User32.DefWindowProcW(hWnd, msg, wParam, lParam);
-    }
-
-    public void Start()
-    {
-        // see https://learn.microsoft.com/en-us/windows/win32/winmsg/using-messages-and-message-queues
-        var hInstance = (HINSTANCE)Process.GetCurrentProcess().Handle;
-
-        // see https://stackoverflow.com/a/30992796/3156906
-        var wndClass = new WNDCLASSEXW(
-            cbSize: (uint)Marshal.SizeOf(typeof(WNDCLASSEXW)),
-            style: 0,
-            lpfnWndProc: this.WndProc,
-            cbClsExtra: 0,
-            cbWndExtra: 0,
-            hInstance: hInstance,
-            hIcon: HICON.Null,
-            hCursor: HCURSOR.Null,
-            hbrBackground: HBRUSH.Null,
-            lpszMenuName: PCWSTR.Null,
-            lpszClassName: "MouseJumpMessageClass",
-            hIconSm: HICON.Null);
-
-        // wndClassAtom
-        var atom = User32.RegisterClassExW(
-            unnamedParam1: wndClass);
-        if (atom.Value == 0)
         {
-            var lastWin32Error = Marshal.GetLastWin32Error();
-            throw new InvalidOperationException(
-                $"{nameof(User32.RegisterClassExW)} failed with result {atom}. GetLastWin32Error returned '{lastWin32Error}'.",
-                new Win32Exception(lastWin32Error));
+            var result = User32.DefWindowProcW(hWnd, msg, wParam, lParam);
+            return result;
         }
-
-        // see https://learn.microsoft.com/en-us/windows/win32/winmsg/window-features#message-only-windows
-        //     https://devblogs.microsoft.com/oldnewthing/20171218-00/?p=97595
-        //     https://stackoverflow.com/a/30992796/3156906
-        this.HWnd = User32.CreateWindowExW(
-            dwExStyle: 0,
-            lpClassName: "MouseJumpMessageClass",
-            lpWindowName: "MouseJumpMessageWindow",
-            dwStyle: 0,
-            x: 0,
-            y: 0,
-            nWidth: 300,
-            nHeight: 400,
-            hWndParent: HWND.HWND_MESSAGE, // message-only window
-            hMenu: HMENU.Null,
-            hInstance: hInstance,
-            lpParam: LPVOID.Null);
-        if (this.HWnd.IsNull)
-        {
-            var lastWin32Error = Marshal.GetLastWin32Error();
-            throw new InvalidOperationException(
-                $"{nameof(User32.CreateWindowExW)} failed with result {this.HWnd}. GetLastWin32Error returned '{lastWin32Error}'.",
-                new Win32Exception(lastWin32Error));
-        }
-
-        this.MessageLoop = new MessageLoop(
-            name: "MouseJumpMessageLoop");
-
-        this.MessageLoop.Start();
-
-        var result = User32.RegisterHotKey(
-            hWnd: this.HWnd,
-            id: Interlocked.Increment(ref _id),
-            fsModifiers: (HOT_KEY_MODIFIERS)this.HotKey.Modifiers,
-            vk: (uint)this.HotKey.Key);
-        if (!result)
-        {
-            var lastWin32Error = Marshal.GetLastWin32Error();
-            throw new InvalidOperationException(
-                $"{nameof(User32.RegisterHotKey)} failed with result {result}. GetLastWin32Error returned '{lastWin32Error}'.",
-                new Win32Exception(lastWin32Error));
-        }
-    }
-
-    public void Stop()
-    {
-        var result = User32.UnregisterHotKey(
-            hWnd: this.HWnd,
-            id: this._id);
-        if (!result)
-        {
-            var lastWin32Error = Marshal.GetLastWin32Error();
-            throw new InvalidOperationException(
-                $"{nameof(User32.UnregisterHotKey)} failed with result {result}. GetLastWin32Error returned '{lastWin32Error}'.",
-                new Win32Exception(lastWin32Error));
-        }
-
-        this.MessageLoop?.Stop();
     }
 
     private void OnHotKeyPressed(HotKeyEventArgs e)

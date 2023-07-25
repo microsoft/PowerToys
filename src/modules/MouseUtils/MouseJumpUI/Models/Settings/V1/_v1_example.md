@@ -1,0 +1,30 @@
+﻿Example **Version 1.0** config file
+
+```
+{
+  "properties": {
+    "DefaultActivationShortcut": {
+      "win":   true,
+      "ctrl":  false,
+      "alt":   false,
+      "shift": true,
+      "code":  68,
+      "key":   ""
+    },
+    "activation_shortcut": {
+      "win":   false,
+      "ctrl":  true,
+      "alt":   true,
+      "shift": true,
+      "code":  70,
+      "key":   ""
+    },
+    "thumbnail_size": {
+      "width":  1600,
+      "height": 1200
+    }
+  },
+  "name":    "MouseJump",
+  "version": "1.0"
+}
+```

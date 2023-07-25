@@ -14,9 +14,11 @@ namespace MouseJumpUI.HotKeys;
 
 internal sealed class MessageLoop
 {
-    public MessageLoop(string name)
+    public MessageLoop(string name, Func<HWND> hwndCallback)
     {
         this.Name = name ?? throw new ArgumentNullException(nameof(name));
+        this.HwndCallback = hwndCallback ?? throw new ArgumentNullException(nameof(hwndCallback));
+
         this.RunningSemaphore = new SemaphoreSlim(1);
         this.CancellationTokenSource = new CancellationTokenSource();
     }
@@ -24,6 +26,23 @@ internal sealed class MessageLoop
     private string Name
     {
         get;
+    }
+
+    /// <summary>
+    /// Gets the callback to use to retrieve the hwnd to run the
+    /// message loop against. This callback is run in the context
+    /// of the message loop thread and can be used to create a hwnd
+    /// which will be owned by the message loop thread.
+    /// </summary>
+    private Func<HWND> HwndCallback
+    {
+        get;
+    }
+
+    public HWND? Hwnd
+    {
+        get;
+        private set;
     }
 
     /// <summary>
@@ -42,13 +61,13 @@ internal sealed class MessageLoop
         get;
     }
 
-    private Thread? ManagedThread
+    private Thread? MessageLoopThread
     {
         get;
         set;
     }
 
-    private Core.DWORD NativeThreadId
+    private DWORD? NativeThreadId
     {
         get;
         set;
@@ -69,24 +88,25 @@ internal sealed class MessageLoop
         }
 
         // start a new internal message loop thread
-        this.ManagedThread = new Thread(() =>
+        this.MessageLoopThread = new Thread(() =>
         {
             this.NativeThreadId = Kernel32.GetCurrentThreadId();
+            this.Hwnd = this.HwndCallback.Invoke();
             this.RunMessageLoop();
         })
         {
             Name = this.Name,
             IsBackground = true,
         };
-        this.ManagedThread.Start();
+        this.MessageLoopThread.Start();
     }
 
     private void RunMessageLoop()
     {
-        var lpMsg = new User32.LPMSG(
-            new User32.MSG(
-                hwnd: Core.HWND.Null,
-                message: User32.MESSAGE_TYPE.WM_NULL,
+        var lpMsg = new LPMSG(
+            new MSG(
+                hwnd: HWND.Null,
+                message: MESSAGE_TYPE.WM_NULL,
                 wParam: new(0),
                 lParam: new(0),
                 time: new(0),
@@ -105,9 +125,10 @@ internal sealed class MessageLoop
                 break;
             }
 
+            var hwnd = this.Hwnd ?? throw new InvalidOperationException();
             var result = User32.GetMessageW(
                 lpMsg: lpMsg,
-                hWnd: Core.HWND.Null,
+                hWnd: hwnd,
                 wMsgFilterMin: 0,
                 wMsgFilterMax: 0);
 
@@ -117,7 +138,7 @@ internal sealed class MessageLoop
             }
 
             var msg = lpMsg.ToStructure();
-            if (msg.message == User32.MESSAGE_TYPE.WM_QUIT)
+            if (msg.message == MESSAGE_TYPE.WM_QUIT)
             {
                 break;
             }
@@ -127,8 +148,8 @@ internal sealed class MessageLoop
         }
 
         // clean up
-        this.ManagedThread = null;
-        this.NativeThreadId = 0;
+        this.MessageLoopThread = null;
+        this.NativeThreadId = null;
 
         // the message loop is no longer running
         this.RunningSemaphore.Release(1);
@@ -143,15 +164,15 @@ internal sealed class MessageLoop
         }
 
         // signal to the internal message loop that it should stop
-        (this.CancellationTokenSource ?? throw new InvalidOperationException())
-            .Cancel();
+        this.CancellationTokenSource.Cancel();
 
         // post a null message just in case GetMessageW needs a nudge to stop blocking the
         // message loop - the loop will then notice that we've set the cancellation token,
         // and exit the loop...
         // (see https://devblogs.microsoft.com/oldnewthing/20050405-46/?p=35973)
-        var result = User32.PostThreadMessageW(
-            idThread: this.NativeThreadId,
+        var hwnd = this.Hwnd ?? throw new InvalidOperationException();
+        var result = User32.PostMessageW(
+            hWnd: hwnd,
             Msg: MESSAGE_TYPE.WM_NULL,
             wParam: WPARAM.Null,
             lParam: LPARAM.Null);

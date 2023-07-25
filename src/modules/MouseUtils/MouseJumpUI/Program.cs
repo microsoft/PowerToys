@@ -34,51 +34,45 @@ internal static class Program
             return;
         }
 
+        // make sure we're in the right high dpi mode otherwise pixel positions and sizes for
+        // screen captures get distorted and coordinates aren't various calculated correctly.
         if (Application.HighDpiMode != HighDpiMode.PerMonitorV2)
         {
             Logger.LogError("High dpi mode is not set to PerMonitorV2.");
             return;
         }
 
-        var settings = Program.ReadSettings();
-        var mainForm = new MainForm(settings);
+        var previewForm = new MainForm();
 
-        var keystroke = SettingsHelper.ConvertToKeystroke(settings.Properties.ActivationShortcut);
-        var hotKeyManager = new HotKeyManager(keystroke);
-        hotKeyManager.HotKeyPressed +=
+        // touch the form handle - this will force the handle to be created if it hasn't
+        // been already (we'll get an error from previewForm.BeginInvoke() if the form
+        // handle doesn't exist). note that BeginInvoke() will block whatever thread is
+        // the owner of the handle so we need to make sure it gets created on the main
+        // application thread otherwise we might block something important like the the
+        // hotkey message loop
+        var previewHwnd = previewForm.Handle;
+
+        ConfigHelper.SetAppSettingsPath(
+                new SettingsUtils().GetSettingsFilePath(MouseJumpSettings.ModuleName));
+        Logger.LogInfo($"app settings path = '{ConfigHelper.AppSettingsPath}'");
+        ConfigHelper.SetHotKeyEventHandler(
             (_, _) =>
             {
-                mainForm.ShowPreview();
-            };
-        hotKeyManager.Start();
+                // invoke on the thread the form was created on. this avoids
+                // blocking the calling thread (e.g. the message loop as a
+                // result of hotkey activation)
+                previewForm.BeginInvoke(
+                    () =>
+                    {
+                        previewForm.ShowPreview();
+                    });
+            });
+
+        // load the application settings and start the filesystem watcher
+        // so we reload if it changes
+        ConfigHelper.LoadAppSettings();
+        ConfigHelper.StartWatcher();
 
         Application.Run();
-
-        hotKeyManager.Stop();
-    }
-
-    private static MouseJumpSettings ReadSettings()
-    {
-        var settingsUtils = new SettingsUtils();
-        var settingsPath = settingsUtils.GetSettingsFilePath(MouseJumpSettings.ModuleName);
-        if (!File.Exists(settingsPath))
-        {
-            var scaffoldSettings = new MouseJumpSettings();
-            settingsUtils.SaveSettings(JsonSerializer.Serialize(scaffoldSettings), MouseJumpSettings.ModuleName);
-        }
-
-        var settings = new MouseJumpSettings();
-        try
-        {
-            settings = settingsUtils.GetSettings<MouseJumpSettings>(MouseJumpSettings.ModuleName);
-        }
-        catch (Exception ex)
-        {
-            var errorMessage = $"There was a problem reading the configuration file. Error: {ex.GetType()} {ex.Message}";
-            Logger.LogInfo(errorMessage);
-            Logger.LogDebug(errorMessage);
-        }
-
-        return settings;
     }
 }

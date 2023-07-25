@@ -16,6 +16,8 @@ internal static partial class User32
     [SuppressMessage("SA1515", "SA1515:SingleLineCommentMustBePrecededByBlankLine\r\n", Justification = "Allow rule here")]
     internal enum MESSAGE_TYPE : uint
     {
+        WM_USER = 0x0400d,
+
         #region Learn / Windows / Apps / Win32 / Desktop Technologies / Accessibility / Windows Accessibility features
         // see https://learn.microsoft.com/en-us/windows/win32/winauto/about-windows-accessibility-features
 

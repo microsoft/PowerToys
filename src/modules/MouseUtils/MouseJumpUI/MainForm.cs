@@ -19,15 +19,9 @@ namespace MouseJumpUI;
 
 internal partial class MainForm : Form
 {
-    public MainForm(MouseJumpSettings settings)
+    public MainForm()
     {
         this.InitializeComponent();
-        this.Settings = settings ?? throw new ArgumentNullException(nameof(settings));
-    }
-
-    public MouseJumpSettings Settings
-    {
-        get;
     }
 
     private void MainForm_Load(object sender, EventArgs e)
@@ -110,13 +104,6 @@ internal partial class MainForm : Form
     private void Thumbnail_Click(object sender, EventArgs e)
     {
         var mouseEventArgs = (MouseEventArgs)e;
-        /*
-        Logger.LogInfo(string.Join(
-            '\n',
-            "Reporting mouse event args",
-            $"\tbutton   = {mouseEventArgs.Button}",
-            $"\tlocation = {mouseEventArgs.Location}"));
-        */
 
         if (mouseEventArgs.Button == MouseButtons.Left)
         {
@@ -126,7 +113,6 @@ internal partial class MainForm : Form
                 new PointInfo(mouseEventArgs.X, mouseEventArgs.Y),
                 new SizeInfo(this.Thumbnail.Size),
                 virtualScreen);
-            /* Logger.LogInfo($"scaled location = {scaledLocation}"); */
             MouseHelper.SetCursorPosition(scaledLocation);
             Microsoft.PowerToys.Telemetry.PowerToysTelemetry.Log.WriteEvent(new Telemetry.MouseJumpTeleportCursorEvent());
         }
@@ -156,17 +142,6 @@ internal partial class MainForm : Form
         var screens = ScreenHelper.GetAllScreens()
             .Select((screen, index) => new { Screen = screen, Index = index, Number = index + 1 })
             .ToList();
-        /*
-        foreach (var screen in screens)
-        {
-            Logger.LogInfo(string.Join(
-                '\n',
-                $"screen[{screen.Number}]",
-                $"\tprimary      = {screen.Screen.Primary}",
-                $"\tdisplay area = {screen.Screen.DisplayArea}",
-                $"\tworking area = {screen.Screen.WorkingArea}"));
-        }
-        */
 
         // collect together some values that we need for calculating layout
         var activatedLocation = MouseHelper.GetCursorPosition();
@@ -175,46 +150,24 @@ internal partial class MainForm : Form
             .Single(item => item.Screen.Handle == activatedScreenHandle.Value)
             .Index;
 
+        var appSettings = ConfigHelper.AppSettings ?? throw new InvalidOperationException();
+
         var layoutConfig = new LayoutConfig(
             virtualScreenBounds: ScreenHelper.GetVirtualScreen(),
             screens: screens.Select(item => item.Screen).ToList(),
             activatedLocation: activatedLocation,
             activatedScreenIndex: activatedScreenIndex,
             activatedScreenNumber: activatedScreenIndex + 1,
-            maximumFormSize: new(
-                form.Settings.Properties.ThumbnailSize.Width,
-                form.Settings.Properties.ThumbnailSize.Height),
+            maximumFormSize: appSettings.PreviewStyle.CanvasSize,
             formPadding: new(
                 form.panel1.Padding.Left,
                 form.panel1.Padding.Top,
                 form.panel1.Padding.Right,
                 form.panel1.Padding.Bottom),
             previewPadding: new(0));
-        /*
-        Logger.LogInfo(string.Join(
-            '\n',
-            $"Layout config",
-            $"-------------",
-            $"virtual screen          = {layoutConfig.VirtualScreenBounds}",
-            $"activated location      = {layoutConfig.ActivatedLocation}",
-            $"activated screen index  = {layoutConfig.ActivatedScreenIndex}",
-            $"activated screen number = {layoutConfig.ActivatedScreenNumber}",
-            $"maximum form size       = {layoutConfig.MaximumFormSize}",
-            $"form padding            = {layoutConfig.FormPadding}",
-            $"preview padding         = {layoutConfig.PreviewPadding}"));
-        */
 
         // calculate the layout coordinates for everything
         var layoutInfo = LayoutHelper.CalculateLayoutInfo(layoutConfig);
-        /*
-        Logger.LogInfo(string.Join(
-            '\n',
-            $"Layout info",
-            $"-----------",
-            $"form bounds      = {layoutInfo.FormBounds}",
-            $"preview bounds   = {layoutInfo.PreviewBounds}",
-            $"activated screen = {layoutInfo.ActivatedScreenBounds}"));
-        */
 
         return layoutInfo;
     }
