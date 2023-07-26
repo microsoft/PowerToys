@@ -272,15 +272,6 @@ HRESULT CContextMenuHandler::QueryContextMenu(_In_ HMENU hmenu, UINT indexMenu, 
         return HRESULT_FROM_WIN32(GetLastError());
     }
 
-    mii.fMask = MIIM_SUBMENU | MIIM_STRING | MIIM_ID;
-    mii.wID = idCmdFirst;
-    mii.hSubMenu = hSubMenu;
-    mii.dwTypeData = strAddToHopper;
-    if (!InsertMenuItem(hmenu, indexMenu + 1, TRUE, &mii))
-    {
-        return HRESULT_FROM_WIN32(GetLastError());
-    }
-
     return MAKE_HRESULT(SEVERITY_SUCCESS, FACILITY_NULL, 1);
 }
 
