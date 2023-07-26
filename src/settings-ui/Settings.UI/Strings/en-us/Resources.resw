@@ -1024,7 +1024,7 @@
   <data name="PowerRename_Toggle_ExtendedContextMenu.Content" xml:space="preserve">
     <value>Extended context menu only</value>
   </data>
-  <data name="PowerRename_Toggle_EnableOnExtendedContextMenu.Description" xml:space="preserve">
+  <data name="PowerRename_ExtendedContextMenuInfo.Title" xml:space="preserve">
     <value>Press Shift + right-click on files to open the extended menu</value>
   </data>
   <data name="PowerRename_Toggle_MaxDispListNum.Header" xml:space="preserve">
