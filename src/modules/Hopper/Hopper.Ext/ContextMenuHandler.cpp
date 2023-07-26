@@ -15,7 +15,7 @@ CContextMenuHandler::CContextMenuHandler()
 {
     m_pidlFolder = nullptr;
     m_pdtobj = nullptr;
-    app_name = GET_RESOURCE_STRING(IDS_RESIZE_PICTURES);
+    app_name = GET_RESOURCE_STRING(IDS_HOPPER);
 }
 
 CContextMenuHandler::~CContextMenuHandler()
@@ -55,6 +55,7 @@ HRESULT CContextMenuHandler::Initialize(_In_opt_ PCIDLIST_ABSOLUTE pidlFolder, _
 
 HRESULT CContextMenuHandler::QueryContextMenu(_In_ HMENU hmenu, UINT indexMenu, UINT idCmdFirst, UINT /*idCmdLast*/, UINT uFlags)
 {
+    //idCmdFirst = idCmdLast;
     if (uFlags & CMF_DEFAULTONLY)
         return S_OK;
 
@@ -89,29 +90,47 @@ HRESULT CContextMenuHandler::QueryContextMenu(_In_ HMENU hmenu, UINT indexMenu, 
     AssocGetPerceivedType(pszExt, &type, &flag, nullptr);
 
     free(pszPath);
-    HRESULT hr;
 
     HMENU hSubMenu = CreatePopupMenu();
+    HMENU hFetchSubMenu = CreatePopupMenu();
+    HMENU hAddSubMenu = CreatePopupMenu();
 
     wchar_t strAddToHopper[64] = { 0 };
     wchar_t strFetchHopper[64] = { 0 };
     wchar_t strMoveHere[64] = { 0 };
+    wchar_t strCopyHere[64] = { 0 };
+    wchar_t strViewHopper[64] = { 0 };
+    wchar_t strAddHopper[64] = { 0 };
+    wchar_t strAppendToRootHopper[64] = { 0 };
+    wchar_t strAppendWithFoldersHopper[64] = { 0 };
+    wchar_t strReplaceToRootHopper[64] = { 0 };
+    wchar_t strReplaceWithFoldersHopper[64] = { 0 };
+    wchar_t strClearHopper[64] = { 0 };
+
     // Suppressing C6031 warning since return value is not required.
 #pragma warning(suppress : 6031)
     // Load 'PowerToys Hopper' string
-    LoadString(g_hInst_Hopper, IDS_RESIZE_PICTURES, strAddToHopper, ARRAYSIZE(strAddToHopper));
+    LoadString(g_hInst_Hopper, IDS_HOPPER, strAddToHopper, ARRAYSIZE(strAddToHopper));
     LoadString(g_hInst_Hopper, IDS_HOPPER_FETCH, strFetchHopper, ARRAYSIZE(strFetchHopper));
     LoadString(g_hInst_Hopper, IDS_HOPPER_MOVE_HERE, strMoveHere, ARRAYSIZE(strMoveHere));
+    LoadString(g_hInst_Hopper, IDS_HOPPER_COPY_HERE, strCopyHere, ARRAYSIZE(strCopyHere));
+    LoadString(g_hInst_Hopper, IDS_HOPPER_VIEW_HOPPER, strViewHopper, ARRAYSIZE(strViewHopper));
+    LoadString(g_hInst_Hopper, IDS_HOPPER_ADD, strAddHopper, ARRAYSIZE(strAddHopper));
+    LoadString(g_hInst_Hopper, IDS_HOPPER_APPEND_ROOT, strAppendToRootHopper, ARRAYSIZE(strAppendToRootHopper));
+    LoadString(g_hInst_Hopper, IDS_HOPPER_APPEND_FOLDERS, strAppendWithFoldersHopper, ARRAYSIZE(strAppendWithFoldersHopper));
+    LoadString(g_hInst_Hopper, IDS_HOPPER_REPLACE_ROOT, strReplaceToRootHopper, ARRAYSIZE(strReplaceToRootHopper));
+    LoadString(g_hInst_Hopper, IDS_HOPPER_REPLACE_FOLDERS, strReplaceWithFoldersHopper, ARRAYSIZE(strReplaceWithFoldersHopper));
+    LoadString(g_hInst_Hopper, IDS_HOPPER_CLEAR, strClearHopper, ARRAYSIZE(strClearHopper));
 
     MENUITEMINFO mii;
     mii.cbSize = sizeof(MENUITEMINFO);
-    mii.fMask = MIIM_STRING | MIIM_ID | MIIM_STATE;
-    mii.wID = idCmdFirst++;
+    //mii.fMask = MIIM_STRING | MIIM_ID;
+    //mii.wID = idCmdFirst++;
     //mii.fType = MFT_STRING;
-    mii.dwTypeData = (PWSTR)strAddToHopper;
-    mii.fState = MFS_ENABLED;
+    //mii.dwTypeData = (PWSTR)strAddToHopper;
+    //mii.fState = MFS_ENABLED;
 
-    HICON hIcon = static_cast<HICON>(LoadImage(g_hInst_Hopper, MAKEINTRESOURCE(IDI_RESIZE_PICTURES), IMAGE_ICON, 16, 16, 0));
+    /*HICON hIcon = static_cast<HICON>(LoadImage(g_hInst_Hopper, MAKEINTRESOURCE(IDI_RESIZE_PICTURES), IMAGE_ICON, 16, 16, 0));
     if (hIcon)
     {
         mii.fMask |= MIIM_BITMAP;
@@ -121,14 +140,14 @@ HRESULT CContextMenuHandler::QueryContextMenu(_In_ HMENU hmenu, UINT indexMenu, 
         }
         mii.hbmpItem = m_hbmpIcon;
         DestroyIcon(hIcon);
-    }
+    }*/
     
 
     // indexMenu gets the first possible menu item index based on the location of the shellex registry key.
     // If the registry entry is under SystemFileAssociations for the image formats, ShellImagePreview (in Windows by default) will be at indexMenu=0
     // Shell ImagePreview consists of 4 menu items, a separator, Rotate right, Rotate left, and another separator
     // Check if the entry at indexMenu is a separator, insert the new menu item at indexMenu+1 if true
-    MENUITEMINFO miiExisting;
+    /*MENUITEMINFO miiExisting;
     miiExisting.dwTypeData = nullptr;
     miiExisting.fMask = MIIM_TYPE;
     miiExisting.cbSize = sizeof(MENUITEMINFO);
@@ -136,51 +155,153 @@ HRESULT CContextMenuHandler::QueryContextMenu(_In_ HMENU hmenu, UINT indexMenu, 
     if (miiExisting.fType == MFT_SEPARATOR)
     {
         indexMenu++;
+    }*/
+
+    
+
+    // sub menu
+    int currentMenuPos = 0;
+
+    mii.fMask = MIIM_SUBMENU | MIIM_STRING | MIIM_ID;
+    mii.wID = idCmdFirst++;
+    mii.hSubMenu = hSubMenu;
+    mii.dwTypeData = strAddToHopper;
+    if (!InsertMenuItem(hmenu, indexMenu, TRUE, &mii))
+    {
+        return HRESULT_FROM_WIN32(GetLastError());
     }
 
+    mii.fMask = MIIM_STRING | MIIM_ID;
+    mii.wID = idCmdFirst++;
+    mii.dwTypeData = strViewHopper;
+    if (!InsertMenuItem(hSubMenu, currentMenuPos++, TRUE, &mii))
+    {
+        return HRESULT_FROM_WIN32(GetLastError());
+    }
+
+    mii.wID = idCmdFirst++;
+    mii.dwTypeData = strClearHopper;
+    if (!InsertMenuItem(hSubMenu, currentMenuPos++, TRUE, &mii))
+    {
+        return HRESULT_FROM_WIN32(GetLastError());
+    }
+
+    mii.fMask = MIIM_FTYPE | MIIM_ID;
+    mii.wID = idCmdFirst++;
+    mii.fType = MFT_SEPARATOR;
+    if (!InsertMenuItem(hSubMenu, currentMenuPos++, TRUE, &mii))
+    {
+        return HRESULT_FROM_WIN32(GetLastError());
+    }
+
+    mii.fMask = MIIM_SUBMENU | MIIM_STRING | MIIM_ID;
+    mii.wID = idCmdFirst++;
+    mii.hSubMenu = hFetchSubMenu;
     mii.dwTypeData = strFetchHopper;
-
-    if (!InsertMenuItem(hSubMenu, 1, TRUE, &mii))
+    if (!InsertMenuItem(hSubMenu, currentMenuPos++, TRUE, &mii))
     {
-        hr = HRESULT_FROM_WIN32(GetLastError());
-    }
-    else
-    {
-        mii.dwTypeData = strMoveHere;
-        ;
-        if (!InsertMenuItem(hSubMenu, 2, TRUE, &mii))
-        {
-            hr = HRESULT_FROM_WIN32(GetLastError());
-        }
-
-        mii.fMask = MIIM_SUBMENU | MIIM_STRING;
-        mii.hSubMenu = hSubMenu;
-        mii.dwTypeData = (PWSTR)strAddToHopper;
-        if (!InsertMenuItem(hmenu, indexMenu, TRUE, &mii))
-        {
-            return HRESULT_FROM_WIN32(GetLastError());
-        }
-
-        hr = MAKE_HRESULT(SEVERITY_SUCCESS, FACILITY_NULL, 1);
+        return HRESULT_FROM_WIN32(GetLastError());
     }
 
-    return hr;
+    mii.hSubMenu = hAddSubMenu;
+    mii.dwTypeData = strAddHopper;
+    mii.wID = idCmdFirst++;
+    if (!InsertMenuItem(hSubMenu, currentMenuPos++, TRUE, &mii))
+    {
+        return  HRESULT_FROM_WIN32(GetLastError());
+    }
+    
+    // "Fetch" menu
+    currentMenuPos = 0;
+
+    mii.fMask = MIIM_STRING | MIIM_ID;
+    mii.wID = idCmdFirst++;
+    mii.dwTypeData = strMoveHere;
+    if (!InsertMenuItem(hFetchSubMenu, currentMenuPos++, TRUE, &mii))
+    {
+        return  HRESULT_FROM_WIN32(GetLastError());
+    }
+
+    mii.fMask = MIIM_STRING | MIIM_ID;
+    mii.wID = idCmdFirst++;
+    mii.dwTypeData = strCopyHere;
+    if (!InsertMenuItem(hFetchSubMenu, currentMenuPos++, TRUE, &mii))
+    {
+        return HRESULT_FROM_WIN32(GetLastError());
+    }
+
+    // "Add" menu
+    currentMenuPos = 0;
+    mii.fMask = MIIM_STRING | MIIM_ID;
+    mii.wID = idCmdFirst++;
+    mii.dwTypeData = strAppendToRootHopper;
+    if (!InsertMenuItem(hAddSubMenu, currentMenuPos++, TRUE, &mii))
+    {
+        return HRESULT_FROM_WIN32(GetLastError());
+    }
+
+    mii.fMask = MIIM_STRING | MIIM_ID;
+    mii.wID = idCmdFirst++;
+    mii.dwTypeData = strAppendWithFoldersHopper;
+    if (!InsertMenuItem(hAddSubMenu, currentMenuPos++, TRUE, &mii))
+    {
+        return HRESULT_FROM_WIN32(GetLastError());
+    }
+
+    mii.fMask = MIIM_FTYPE | MIIM_ID;
+    mii.wID = idCmdFirst++;
+    mii.fType = MFT_SEPARATOR;
+    if (!InsertMenuItem(hAddSubMenu, currentMenuPos++, TRUE, &mii))
+    {
+        return HRESULT_FROM_WIN32(GetLastError());
+    }
+        
+    mii.fMask = MIIM_STRING | MIIM_ID;
+    mii.wID = idCmdFirst++;
+    mii.dwTypeData = strReplaceToRootHopper;
+    if (!InsertMenuItem(hAddSubMenu, currentMenuPos++, TRUE, &mii))
+    {
+        return HRESULT_FROM_WIN32(GetLastError());
+    }
+
+    mii.fMask = MIIM_STRING | MIIM_ID;
+    mii.wID = idCmdFirst++;
+    mii.dwTypeData = strReplaceWithFoldersHopper;
+    if (!InsertMenuItem(hAddSubMenu, currentMenuPos++, TRUE, &mii))
+    {
+        return HRESULT_FROM_WIN32(GetLastError());
+    }
+
+    mii.fMask = MIIM_SUBMENU | MIIM_STRING | MIIM_ID;
+    mii.wID = idCmdFirst;
+    mii.hSubMenu = hSubMenu;
+    mii.dwTypeData = strAddToHopper;
+    if (!InsertMenuItem(hmenu, indexMenu + 1, TRUE, &mii))
+    {
+        return HRESULT_FROM_WIN32(GetLastError());
+    }
+
+    return MAKE_HRESULT(SEVERITY_SUCCESS, FACILITY_NULL, 1);
 }
 
 HRESULT CContextMenuHandler::GetCommandString(UINT_PTR idCmd, UINT uType, _In_ UINT* /*pReserved*/, LPSTR pszName, UINT cchMax)
 {
-    if (idCmd == ID_HOPPER)
-    {
-        if (uType == GCS_VERBW)
-        {
-            wcscpy_s(reinterpret_cast<LPWSTR>(pszName), cchMax, HOPPER_VERBW);
-        }
-    }
-    else
-    {
-        return E_INVALIDARG;
-    }
 
+    if (uType == GCS_VERBW)
+    {
+        switch (idCmd) {
+        case 0:
+                wcscpy_s(reinterpret_cast<LPWSTR>(pszName), cchMax, HOPPER_VERBW);
+                break;
+        case 1:
+                wcscpy_s(reinterpret_cast<LPWSTR>(pszName), cchMax, L"PowerToysHopperMoveHere");
+                break;
+        default:
+                return E_INVALIDARG;
+        }
+        
+    }
+    
     return S_OK;
 }
 
@@ -201,6 +322,10 @@ HRESULT CContextMenuHandler::InvokeCommand(_In_ CMINVOKECOMMANDINFO* pici)
         if (wcscmp((reinterpret_cast<CMINVOKECOMMANDINFOEX*>(pici))->lpVerbW, HOPPER_VERBW) == 0)
         {
             hr = SelectedFiles(pici, nullptr);
+        }
+        else if (wcscmp((reinterpret_cast<CMINVOKECOMMANDINFOEX*>(pici))->lpVerbW, L"PowerToysHopperMoveHere") == 0)
+        {
+            MessageBox(NULL, L"Hello, World!", L"My Message Box", MB_OK);
         }
     }
     else if (LOWORD(pici->lpVerb) == ID_HOPPER)
@@ -339,6 +464,7 @@ HRESULT __stdcall CContextMenuHandler::GetTitle(IShellItemArray* /*psiItemArray*
 
 HRESULT __stdcall CContextMenuHandler::GetIcon(IShellItemArray* /*psiItemArray*/, LPWSTR* ppszIcon)
 {
+    return E_NOTIMPL;
     // Since Hopper is registered as a COM SurrogateServer the current module filename would be dllhost.exe. To get the icon we need the path of PowerToys.HopperExt.dll, which can be obtained by passing the HINSTANCE of the dll
     std::wstring iconResourcePath = get_module_filename(g_hInst_Hopper);
     iconResourcePath += L",-";
@@ -401,7 +527,7 @@ HRESULT __stdcall CContextMenuHandler::GetFlags(EXPCMDFLAGS* pFlags)
 }
 
 HRESULT __stdcall CContextMenuHandler::EnumSubCommands(IEnumExplorerCommand** ppEnum)
-{
+{ 
     *ppEnum = nullptr;
     return E_NOTIMPL;
 }

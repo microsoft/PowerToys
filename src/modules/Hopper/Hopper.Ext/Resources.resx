@@ -117,7 +117,7 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
-  <data name="Resize_Pictures" xml:space="preserve">
+  <data name="Hopper" xml:space="preserve">
     <value>PowerToys Hopper</value>
   </data>
   <data name="ImageResizer" xml:space="preserve">
@@ -137,5 +137,29 @@
   </data>
   <data name="Hopper_Move_Here" xml:space="preserve">
     <value>Move here</value>
+  </data>
+  <data name="Hopper_Add" xml:space="preserve">
+    <value>Add to Hopper</value>
+  </data>
+  <data name="Hopper_Append_Folders" xml:space="preserve">
+    <value>Append with folders</value>
+  </data>
+  <data name="Hopper_Append_Root" xml:space="preserve">
+    <value>Append to root</value>
+  </data>
+  <data name="Hopper_Clear" xml:space="preserve">
+    <value>Clear Hopper</value>
+  </data>
+  <data name="Hopper_Copy_Here" xml:space="preserve">
+    <value>Copy here</value>
+  </data>
+  <data name="Hopper_Replace_Folders" xml:space="preserve">
+    <value>Replace with folders</value>
+  </data>
+  <data name="Hopper_Replace_Root" xml:space="preserve">
+    <value>Replace to root</value>
+  </data>
+  <data name="Hopper_View_Hopper" xml:space="preserve">
+    <value>View Hopper</value>
   </data>
 </root>
