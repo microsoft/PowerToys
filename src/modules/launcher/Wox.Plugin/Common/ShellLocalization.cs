@@ -41,7 +41,7 @@ namespace Wox.Plugin.Common
 
             shellItem.GetDisplayName(SIGDN.NORMALDISPLAY, out string filename);
 
-            _localizationCache.TryAdd(lowerInvariantPath, filename);
+            _ = _localizationCache.TryAdd(lowerInvariantPath, filename);
 
             return filename;
         }
