@@ -106,6 +106,11 @@ int runner(bool isProcessElevated, bool openSettings, std::string settingsWindow
     int result = -1;
     try
     {
+        if (!openOobe && openScoobe)
+        {
+            notifications::show_toast(GET_RESOURCE_STRING(IDS_PT_VERSION_CHANGE_ASK_FOR_COMPUTER_RESTART).c_str(), L"PowerToys");
+        }
+
         std::thread{ [] {
             PeriodicUpdateWorker();
         } }.detach();
