@@ -163,17 +163,13 @@
                         IsEnabled="{x:Bind ViewModel.IsMouseHighlighterEnabled, Mode=OneWay}">
                         <labs:SettingsExpander.Items>
                             <labs:SettingsCard x:Uid="MouseUtils_MouseHighlighter_PrimaryButtonClickColor">
-                                <controls:ColorPickerButton SelectedColor="{x:Bind Path=ViewModel.MouseHighlighterLeftButtonClickColor, Mode=TwoWay}" />
+                                <controls:AlphaColorPickerButton SelectedColor="{x:Bind Path=ViewModel.MouseHighlighterLeftButtonClickColor, Mode=TwoWay}" />
                             </labs:SettingsCard>
                             <labs:SettingsCard x:Uid="MouseUtils_MouseHighlighter_SecondaryButtonClickColor">
-                                <controls:ColorPickerButton SelectedColor="{x:Bind Path=ViewModel.MouseHighlighterRightButtonClickColor, Mode=TwoWay}" />
+                                <controls:AlphaColorPickerButton SelectedColor="{x:Bind Path=ViewModel.MouseHighlighterRightButtonClickColor, Mode=TwoWay}" />
                             </labs:SettingsCard>
-                            <labs:SettingsCard x:Uid="MouseUtils_MouseHighlighter_HighlightOpacity">
-                                <Slider
-                                    MinWidth="{StaticResource SettingActionControlMinWidth}"
-                                    Maximum="100"
-                                    Minimum="1"
-                                    Value="{x:Bind Mode=TwoWay, Path=ViewModel.MouseHighlighterOpacity}" />
+                            <labs:SettingsCard x:Uid="MouseUtils_MouseHighlighter_AlwaysColor">
+                                <controls:AlphaColorPickerButton SelectedColor="{x:Bind Path=ViewModel.MouseHighlighterAlwaysColor, Mode=TwoWay}" />
                             </labs:SettingsCard>
                             <labs:SettingsCard x:Uid="MouseUtils_MouseHighlighter_HighlightRadius">
                                 <NumberBox
