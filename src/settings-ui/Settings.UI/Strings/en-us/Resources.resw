@@ -420,8 +420,14 @@
     <value>Shift</value>
     <comment>This is the Shift keyboard key</comment>
   </data>
+  <data name="MouseWithoutBorders_LockMachinesShortcut.Header" xml:space="preserve">
+    <value>Shortcut to lock all machines.</value>
+  </data>
+  <data name="MouseWithoutBorders_LockMachinesShortcut.Description" xml:space="preserve">
+    <value>Hit this hotkey twice to lock all machines. Note: Only the machines which have the same shortcut configured will be locked.</value>
+  </data>
   <data name="MouseWithoutBorders_ToggleEasyMouseShortcut.Header" xml:space="preserve">
-    <value>Shortcut to toggle Easy Mouse. Ctrl+Alt+:</value>
+    <value>Shortcut to toggle Easy Mouse.</value>
     <comment>Ctrl and Alt are the keyboard keys</comment>
   </data>
   <data name="MouseWithoutBorders_ToggleEasyMouseShortcut.Description" xml:space="preserve">
@@ -449,35 +455,23 @@
   <data name="MouseWithoutBorders_SwitchBetweenMachineShortcut_Disabled.Content" xml:space="preserve">
     <value>Disabled</value>
   </data>
-  <data name="MouseWithoutBorders_LockMachinesShortcut.Header" xml:space="preserve">
-    <value>Shortcut to press twice quickly to lock all machines. Ctrl+Alt+:</value>
-    <comment>Ctrl and Alt are the keyboard keys</comment>
-  </data>
-  <data name="MouseWithoutBorders_LockMachinesShortcut.Description" xml:space="preserve">
-    <value>Click on Ctrl+Alt+ the chosen option twice quickly to lock all machines. Note: Only the machines which have the same shortcut configured will be locked.</value>
-    <comment>Ctrl and Alt are the keyboard keys</comment>
-  </data>
   <data name="MouseWithoutBorders_LockMachinesShortcut_Disabled.Content" xml:space="preserve">
     <value>Disabled</value>
   </data>
   <data name="MouseWithoutBorders_ReconnectShortcut.Header" xml:space="preserve">
-    <value>Shortcut to try reconnecting. Ctrl+Alt+:</value>
-    <comment>Ctrl and Alt are the keyboard keys</comment>
+    <value>Shortcut to try reconnecting</value>
   </data>
   <data name="MouseWithoutBorders_ReconnectShortcut.Description" xml:space="preserve">
-    <value>Click on Ctrl+Alt+ the chosen option to reconnect.</value>
-    <comment>Ctrl and Alt are the keyboard keys</comment>
+    <value>Just in case the connection is lost for any reason.</value>
   </data>
   <data name="MouseWithoutBorders_ReconnectShortcut_Disabled.Content" xml:space="preserve">
     <value>Disabled</value>
   </data>
   <data name="MouseWithoutBorders_Switch2AllPcShortcut.Header" xml:space="preserve">
-    <value>Shortcut to switch to multiple machine mode. Ctrl+Alt+:</value>
-    <comment>Ctrl and Alt are the keyboard keys</comment>
+    <value>Shortcut to switch to multiple machine mode.</value>
   </data>
   <data name="MouseWithoutBorders_Switch2AllPcShortcut.Description" xml:space="preserve">
-    <value>Allows controlling all computers at once. Pressing Ctrl three times is also an option.</value>
-    <comment>This is the Ctrl keyboard key</comment>
+    <value>Allows controlling all computers at once.</value>
   </data>
   <data name="MouseWithoutBorders_Switch2AllPcShortcut_Disabled.Content" xml:space="preserve">
     <value>Disabled</value>
@@ -2471,8 +2465,12 @@ From there, simply click on one of the supported files in the File Explorer and 
   <data name="Activation_Shortcut_Cancel" xml:space="preserve">
     <value>Cancel</value>
   </data>
-  <data name="Activation_Shortcut_Description.Text" xml:space="preserve">
-    <value>Press a combination of keys to change this shortcut</value>
+  <data name="Activation_Shortcut_Description" xml:space="preserve">
+	<value>Press a combination of keys to change this shortcut</value>
+  </data>
+  <data name="Activation_Shortcut_With_Disable_Description" xml:space="preserve">
+	<value>Press a combination of keys to change this shortcut.
+Right-click to remove the key combination, thereby deactivating the shortcut.</value>
   </data>
   <data name="Activation_Shortcut_Reset" xml:space="preserve">
     <value>Reset</value>
