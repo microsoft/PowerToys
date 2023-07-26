@@ -60,8 +60,8 @@ namespace PowerToys
         {
             None,
             Space,
-			Left,
-			Right,
+            Left,
+            Right,
             Char
         };
 
