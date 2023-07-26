@@ -52,7 +52,7 @@
                         </labs:SettingsExpander.Items>
                     </labs:SettingsExpander>
                     <InfoBar
-                        x:Uid="PowerRename_ExtendedContextMenuInfo"
+                        x:Uid="ExtendedContextMenuInfo"
                         IsClosable="False"
                         IsOpen="True"
                         IsTabStop="True"
