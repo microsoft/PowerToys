@@ -185,7 +185,7 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
                     if (!matchValue && _modifierKeysOnEntering.Contains(VirtualKey.Control))
                     {
                         SendSingleKeyboardInput((short)virtualKey, (uint)NativeKeyboardHelper.KeyEventF.KeyUp);
-                        _ = _modifierKeysOnEntering.Remove(virtualKey);
+                        _ = _modifierKeysOnEntering.Remove(VirtualKey.Control);
                     }
 
                     internalSettings.Ctrl = matchValue;
@@ -196,7 +196,7 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
                     if (!matchValue && _modifierKeysOnEntering.Contains(VirtualKey.Menu))
                     {
                         SendSingleKeyboardInput((short)virtualKey, (uint)NativeKeyboardHelper.KeyEventF.KeyUp);
-                        _ = _modifierKeysOnEntering.Remove(virtualKey);
+                        _ = _modifierKeysOnEntering.Remove(VirtualKey.Menu);
                     }
 
                     internalSettings.Alt = matchValue;
@@ -207,7 +207,7 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
                     if (!matchValue && _modifierKeysOnEntering.Contains(VirtualKey.Shift))
                     {
                         SendSingleKeyboardInput((short)virtualKey, (uint)NativeKeyboardHelper.KeyEventF.KeyUp);
-                        _ = _modifierKeysOnEntering.Remove(virtualKey);
+                        _ = _modifierKeysOnEntering.Remove(VirtualKey.Shift);
                     }
 
                     internalSettings.Shift = matchValue;
