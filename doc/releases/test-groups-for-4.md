@@ -26,16 +26,18 @@ All:
 - GPO
 - Paste as plain text
 - Registry Preview
+- Peek
+- MWB
 ```
 
 ```
 Group 1:
+- Install
 - Functional
 - Localization
 - General
 - PowerRename
 - PowerToys Run
-- OOBE
 - Mouse Utils
 - VCM
 - AlwaysOnTop
@@ -43,40 +45,44 @@ Group 1:
 - Hosts File Editor
 - File Locksmith
 - Registry Preview
+- Peek
+- MWB
 ```
 
 ```
 Group 2:
-- Install
+- Functional
 - Localization
-- General
-- FZ Editor
-- FZ
+- Color Picker
 - File Explorer Add-ons
 - Image Resizer
 - Keyboard Manager
-- Mouse Utils
-- Awake
-- File Locksmith
-- GPO
-- Paste as plain text
-```
-
-```
-Group 3:
-- Functional
-- Color Picker
-- Image Resizer
-- Keyboard Manager
-- PowerRename
-- PowerToys Run
 - Shortcut Guide
 - OOBE
 - AlwaysOnTop
 - Screen Ruler
 - Quick Accent
 - Text Extractor
+- GPO
 - Registry Preview
+- Peek
+```
+
+```
+Group 3:
+- General
+- FZ Editor
+- FZ
+- Image Resizer
+- PowerRename
+- PowerToys Run
+- OOBE
+- Mouse Utils
+- Awake
+- Text Extractor
+- File Locksmith
+- Paste as plain text
+- MWB
 ```
 
 ```
@@ -86,11 +92,11 @@ Group 4:
 - FZ Editor
 - FZ
 - File Explorer Add-ons
+- Keyboard Manager
 - Shortcut Guide
 - VCM
 - Awake
 - Quick Accent
-- Text Extractor
 - Hosts File Editor
 - GPO
 - Paste as plain text
