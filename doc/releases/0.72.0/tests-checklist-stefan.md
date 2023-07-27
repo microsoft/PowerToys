@@ -297,45 +297,45 @@ For all the remapping below, try pressing and releasing the remapped key/shortcu
    - [x] Verify some of the shortcuts shown in the guide work and the guide is closed when pressed
 
 ## VCM
- - [ ] Check "Hide toolbar when both camera and microphone are unmuted" and verify that it works
- - [ ] Uncheck it, mute the microphone with the hotkey and make sure the toolbar doesn't hide after a timeout
- - [ ] Go to some video conference application settings, e.g. meet.google.com, Microsoft Teams, Skype. "Select PowerToys VideoConference Mute" camera as an active device and try to mute it with a hotkey
- - [ ] Go to Control Panel -> Sound -> Recording -> select default mic -> open its properties -> Levels.  Now mute the microphone with a corresponding hotkey and verify that mute icon on the right side of volume slider reflects its muted status.
- - [ ] Go to Control Panel -> Sound -> Recording -> select default mic -> open its properties -> Levels.  Now press and release push-to-talk hotkey and verify that mute icon on the right side of volume slider reflects the actions.
- - [ ] Verify that changing "toolbar position" setting works 
- - [ ] Select an overlay image and verify that muting camera now shows the image instead of black screen. (Don't forget to restart the application which uses the camera).
- - [ ] Try to select an overlay image when PT process is elevated.
+ - [x] Check "Hide toolbar when both camera and microphone are unmuted" and verify that it works
+ - [x] Uncheck it, mute the microphone with the hotkey and make sure the toolbar doesn't hide after a timeout
+ - [x] Go to some video conference application settings, e.g. meet.google.com, Microsoft Teams, Skype. "Select PowerToys VideoConference Mute" camera as an active device and try to mute it with a hotkey
+ - [x] Go to Control Panel -> Sound -> Recording -> select default mic -> open its properties -> Levels.  Now mute the microphone with a corresponding hotkey and verify that mute icon on the right side of volume slider reflects its muted status.
+ - [x] Go to Control Panel -> Sound -> Recording -> select default mic -> open its properties -> Levels.  Now press and release push-to-talk hotkey and verify that mute icon on the right side of volume slider reflects the actions.
+ - [x] Verify that changing "toolbar position" setting works 
+ - [x] Select an overlay image and verify that muting camera now shows the image instead of black screen. (Don't forget to restart the application which uses the camera).
+ - [x] Try to select an overlay image when PT process is elevated.
 
 ## Awake
  - [ ] Try out the features and see if they work, no list at this time.
 
 ## Quick Accent
  * Enable Quick Accent and open notepad. Then:
-   - [ ] Press `a` and the left or right arrow and verify the accent menu appears and adds the accented letter you've selected. Use left and arrow keys to cycle through the options.
-   - [ ] Press `a` and the space key and verify the accent menu appears and adds the accented letter you've selected. Use <kbd>Space</kbd> to navigate forward, <kbd>Space</kbd> + <kbd>Shift</kbd> to navigate backward.
-   - [ ] Disable Quick Accent and verify you can no longer add accented characters through Quick Accent.
+   - [x] Press `a` and the left or right arrow and verify the accent menu appears and adds the accented letter you've selected. Use left and arrow keys to cycle through the options.
+   - [x] Press `a` and the space key and verify the accent menu appears and adds the accented letter you've selected. Use <kbd>Space</kbd> to navigate forward, <kbd>Space</kbd> + <kbd>Shift</kbd> to navigate backward.
+   - [x] Disable Quick Accent and verify you can no longer add accented characters through Quick Accent.
  * Test the different settings and verify they are applied:
-   - [ ] Activation key
-   - [ ] Language (for example, Currency has no accents for 'a' but has for 's')
-   - [ ] Toolbar position (test every option, some had issues before)
-   - [ ] Input delay
-   - [ ] Exclude some apps. Verify that Quick Accent is not activated for them.
-   - [ ] Sort characters by frequency.
-   - [ ] Always start on the first character when using left/right arrows as activation method.
+   - [x] Activation key
+   - [x] Language (for example, Currency has no accents for 'a' but has for 's')
+   - [x] Toolbar position (test every option, some had issues before)
+   - [x] Input delay
+   - [x] Exclude some apps. Verify that Quick Accent is not activated for them.
+   - [x] Sort characters by frequency.
+   - [x] Always start on the first character when using left/right arrows as activation method.
 
 ## Hosts File Editor
  * Launch Host File Editor:
-   - [ ] Verify the application exits if "Quit" is clicked on the initial warning.
-   - [ ] Launch Host File Editor again and click "Accept". The module should not close. Open the hosts file (`%WinDir%\System32\Drivers\Etc`) in a text editor that auto-refreshes so you can see the changes applied by the editor in real time. (VSCode is an editor like this, for example)
-   - [ ] Enable and disable lines and verify they are applied to the file.
-   - [ ] Add a new entry and verify it's applied.
-   - [ ] Add manually an entry with more than 9 hosts in hosts file (Windows limitation) and verify it is split correctly on loading and the info bar is shown.
-   - [ ] Try to filter for lines and verify you can find them.
-   - [ ] Click the "Open hosts file" button and verify it opens in your default editor. (likely Notepad)
+   - [x] Verify the application exits if "Quit" is clicked on the initial warning.
+   - [x] Launch Host File Editor again and click "Accept". The module should not close. Open the hosts file (`%WinDir%\System32\Drivers\Etc`) in a text editor that auto-refreshes so you can see the changes applied by the editor in real time. (VSCode is an editor like this, for example)
+   - [x] Enable and disable lines and verify they are applied to the file.
+   - [x] Add a new entry and verify it's applied.
+   - [x] Add manually an entry with more than 9 hosts in hosts file (Windows limitation) and verify it is split correctly on loading and the info bar is shown.
+   - [x] Try to filter for lines and verify you can find them.
+   - [x] Click the "Open hosts file" button and verify it opens in your default editor. (likely Notepad)
  * Test the different settings and verify they are applied:
-   - [ ] Launch as Administrator.
-   - [ ] Show a warning at startup.
-   - [ ] Additional lines position.
+   - [x] Launch as Administrator.
+   - [x] Show a warning at startup.
+   - [x] Additional lines position.
 
 ## GPO
  * Copy the "PowerToys.admx" file to your Policy Definition template folder. (Example: C:\Windows\PolicyDefinitions) and copy the "PowerToys.adml" file to the matching language folder in your Policy Definition folder. (Example: C:\Windows\PolicyDefinitions\en-US)
