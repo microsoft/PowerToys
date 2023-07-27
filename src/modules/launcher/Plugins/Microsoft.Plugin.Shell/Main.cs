@@ -220,16 +220,40 @@ namespace Microsoft.Plugin.Shell
                         if (ExistInPath(filename))
                         {
                             var arguments = parts[1];
-                            info = ShellCommand.SetProcessStartInfo(filename, workingDirectory, arguments, runAsVerbArg);
+                            if (_settings.LeaveShellOpen)
+                            {
+                                // Wrap the command in a cmd.exe process
+                                info = ShellCommand.SetProcessStartInfo("cmd.exe", workingDirectory, $"/k \"{filename} {arguments}\"", runAsVerbArg);
+                            }
+                            else
+                            {
+                                info = ShellCommand.SetProcessStartInfo(filename, workingDirectory, arguments, runAsVerbArg);
+                            }
+                        }
+                        else
+                        {
+                            if (_settings.LeaveShellOpen)
+                            {
+                                // Wrap the command in a cmd.exe process
+                                info = ShellCommand.SetProcessStartInfo("cmd.exe", workingDirectory, $"/k \"{command}\"", runAsVerbArg);
+                            }
+                            else
+                            {
+                                info = ShellCommand.SetProcessStartInfo(command, verb: runAsVerbArg);
+                            }
+                        }
+                    }
+                    else
+                    {
+                        if (_settings.LeaveShellOpen)
+                        {
+                            // Wrap the command in a cmd.exe process
+                            info = ShellCommand.SetProcessStartInfo("cmd.exe", workingDirectory, $"/k \"{command}\"", runAsVerbArg);
                         }
                         else
                         {
                             info = ShellCommand.SetProcessStartInfo(command, verb: runAsVerbArg);
                         }
-                    }
-                    else
-                    {
-                        info = ShellCommand.SetProcessStartInfo(command, verb: runAsVerbArg);
                     }
                 }
             }
