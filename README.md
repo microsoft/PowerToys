@@ -132,7 +132,7 @@ In this release, we focused on stability and improvements.
 
 ### Installer
 
- - Refactored the Monaco dependency inclusion. What to install is now being generated automatically. Thanks [@Aaron-Junker](https://github.com/Aaron-Junker)!
+ - Refactored the Monaco dependency inclusion. What to install is now being generated automatically.
  - Removed hardlinks and simplified the installer files, now that many utilities use the same paths.
 
 ### Mouse Highlighter
