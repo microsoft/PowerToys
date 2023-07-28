@@ -123,7 +123,7 @@ In this release, we focused on stability and improvements.
 
 ### File Explorer add-ons
 
- - Updated the Monaco dependency for Developer Files Preview, supporting new files extensions and fixing issues. Thanks [@Aaron-Junker](https://github.com/Aaron-Junker)!
+ - Updated the Monaco dependency for Developer Files Preview, supporting new file extensions and fixing issues. Thanks [@Aaron-Junker](https://github.com/Aaron-Junker)!
 
 ### Hosts File Editor
 
