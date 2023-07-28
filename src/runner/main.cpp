@@ -91,7 +91,7 @@ void open_menu_from_another_instance(std::optional<std::string> settings_window)
 
 int runner(bool isProcessElevated, bool openSettings, std::string settingsWindow, bool openOobe, bool openScoobe)
 {
-    Logger::info("Runner is starting. Elevated={}", isProcessElevated);
+    Logger::info("Runner is starting. Elevated={} openOobe={} openScoobe={}", isProcessElevated, openOobe, openScoobe);
     DPIAware::EnableDPIAwarenessForThisProcess();
 
 #if _DEBUG && _WIN64
@@ -108,7 +108,14 @@ int runner(bool isProcessElevated, bool openSettings, std::string settingsWindow
     {
         if (!openOobe && openScoobe)
         {
-            notifications::show_toast(GET_RESOURCE_STRING(IDS_PT_VERSION_CHANGE_ASK_FOR_COMPUTER_RESTART).c_str(), L"PowerToys");
+            std::thread{
+                [] {
+                    // Wait a bit, because Windows has a delay until it picks up toast notification registration in the registry
+                    Sleep(10000);
+                    Logger::info("Showing toast notification asking to restart PC");
+                    notifications::show_toast(GET_RESOURCE_STRING(IDS_PT_VERSION_CHANGE_ASK_FOR_COMPUTER_RESTART).c_str(), L"PowerToys");
+                }
+            }.detach();
         }
 
         std::thread{ [] {
@@ -430,7 +437,9 @@ int WINAPI WinMain(HINSTANCE /*hInstance*/, HINSTANCE /*hPrevInstance*/, LPSTR l
     try
     {
         std::wstring last_version_run = PTSettingsHelper::get_last_version_run();
-        openScoobe = last_version_run != get_product_version();
+        const auto product_version = get_product_version();
+        openScoobe = product_version != last_version_run;
+        Logger::info(L"Scoobe: product_version={} last_version_run={}", product_version, last_version_run);
     }
     catch (const std::exception& e)
     {
