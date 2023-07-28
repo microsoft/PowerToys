@@ -185,7 +185,6 @@ In this release, we focused on stability and improvements.
 
 ### Runner
 
- - Fixed the issue causing users to get duplicated items for the PowerToys in the "Personalization > Taskbar" Windows Settings page.
  - Show a warning asking the user to restart the computer after updating the PowerToys version.
 
 ### Screen Ruler
