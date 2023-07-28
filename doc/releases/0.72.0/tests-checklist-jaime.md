@@ -399,11 +399,11 @@ Mouse Jump:
 
 ## Paste As Plain Text
  * Copy some rich text (e.g word of the text is different color, another work is bold, underlined, etd.). Then:
-   - [ ] Paste the text using standard Windows Ctrl + V shortcut and ensure that rich text is pasted (with all colors, formatting, etc.)
-   - [ ] Paste the text using Paste As Plain Text activation shortcut and ensure that plain text without any formatting is pasted.
-   - [ ] Paste again the text using standard Windows Ctrl + V shortcut and ensure the text is now pasted plain without formatting as well.
-   - [ ] Change the activation shorctut and ensure that Paste As Plain Text is triggered using new shortcut.
-   - [ ] Disable the module and ensure that text is not being pasted using activation shortcut. 
+   - [x] Paste the text using standard Windows Ctrl + V shortcut and ensure that rich text is pasted (with all colors, formatting, etc.)
+   - [x] Paste the text using Paste As Plain Text activation shortcut and ensure that plain text without any formatting is pasted.
+   - [x] Paste again the text using standard Windows Ctrl + V shortcut and ensure the text is now pasted plain without formatting as well.
+   - [x] Change the activation shorctut and ensure that Paste As Plain Text is triggered using new shortcut.
+   - [x] Disable the module and ensure that text is not being pasted using activation shortcut. 
 
 ## Mouse Without Borders
  * Install PowerToys on two PCs in the same local network:
