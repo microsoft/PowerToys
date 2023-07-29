@@ -49,20 +49,20 @@
 ## FancyZones
 
 ### Appearance
-- [ ] Change colors, opacity and `Show zone number` options. Verify they're applied.
+- [x] Change colors, opacity and `Show zone number` options. Verify they're applied.
 
 ### Excluded apps
-- [ ] Exclude some apps, verify that they're not applicable to a zone.
+- [x] Exclude some apps, verify that they're not applicable to a zone.
 
 ### Dragging
-- [ ] `Hold Shift key to activate zones while dragging` on, `Use a non-primary mouse button to toggle zone activation` off. Start dragging a window, then press shift. Zones are shown when dragging a window with shift pressed, hidden when you released shift or snapped zone.
-- [ ] `Hold Shift key to activate zones while dragging` on, `Use a non-primary mouse button to toggle zone activation` off. Press shift first, then start dragging a window. Zones are shown when dragging a window with shift pressed, hidden when you released shift or snapped zone.
-- [ ]  `Hold Shift key to activate zones while dragging` off, `Use a non-primary mouse button to toggle zone activation` on. Zones are shown immediately when dragging a window and hidden when you click a non-primary mouse button or press shift.
-- [ ] `Hold Shift key to activate zones while dragging` off, `Use a non-primary mouse button to toggle zone activation` off. Zones are shown immediately when dragging a window, hidden when you press shift.
-- [ ] `Hold Shift key to activate zones while dragging` on, `Use a non-primary mouse button to toggle zone activation` on. Zones aren't shown immediately, only when shift is pressed or when a non-primary mouse click changes the state.  
-- [ ] `Show zones on all monitor whilw dragging a window` - turn on,off, verify behavior.
-- [ ] Create a canvas layout with overlapping zones, check zone activation behavior with all `When multiple zones overlap` options
-- [ ] `Make dragged window transparent` - turn on, off, verify behavior
+- [x] `Hold Shift key to activate zones while dragging` on, `Use a non-primary mouse button to toggle zone activation` off. Start dragging a window, then press shift. Zones are shown when dragging a window with shift pressed, hidden when you released shift or snapped zone.
+- [x] `Hold Shift key to activate zones while dragging` on, `Use a non-primary mouse button to toggle zone activation` off. Press shift first, then start dragging a window. Zones are shown when dragging a window with shift pressed, hidden when you released shift or snapped zone.
+- [x]  `Hold Shift key to activate zones while dragging` off, `Use a non-primary mouse button to toggle zone activation` on. Zones are shown immediately when dragging a window and hidden when you click a non-primary mouse button or press shift.
+- [x] `Hold Shift key to activate zones while dragging` off, `Use a non-primary mouse button to toggle zone activation` off. Zones are shown immediately when dragging a window, hidden when you press shift.
+- [x] `Hold Shift key to activate zones while dragging` on, `Use a non-primary mouse button to toggle zone activation` on. Zones aren't shown immediately, only when shift is pressed or when a non-primary mouse click changes the state.  
+- [x] `Show zones on all monitor whilw dragging a window` - turn on,off, verify behavior.
+- [x] Create a canvas layout with overlapping zones, check zone activation behavior with all `When multiple zones overlap` options
+- [x] `Make dragged window transparent` - turn on, off, verify behavior
 
 ### Snapping
 Disable FZ and clear `app-zone-history.json` before starting. FancyZones should be disabled, otherwise, it'll save cashed values back to the file.
