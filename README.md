@@ -47,10 +47,10 @@ Go to [Microsoft PowerToys GitHub releases page][github-release-link], click on 
 
 |  Description   | Filename | sha256 hash |
 |----------------|----------|-------------|
-| Per user - x64       | [PowerToysUserSetup-0.72.0-x64.exe][ptUserX64] | CE2A4F4FE39516DB9D973E8A2D7A4D730187F814C643080AAC34A365B0EF259E | 
-| Per user - ARM64     | [PowerToysUserSetup-0.72.0-arm64.exe][ptUserArm64] | 67E301D53055EA8407E87C253A1A14C8ED506056DCD0B55F94E87DC0966DA2B1 | 
-| Machine wide - x64   | [PowerToysSetup-0.72.0-x64.exe][ptMachineX64] | E72BEC15E4D471CC1E7A5E6BB2D8E59F1B02A56E313262A463A85CBD87559737 | 
-| Machine wide - ARM64 | [PowerToysSetup-0.72.0-arm64.exe][ptMachineArm64] | A2C1D7FD764F582A5F2DCA583B3664D212C8FDD780ECD2114D32DE3AC7862410 |
+| Per user - x64       | [PowerToysUserSetup-0.72.0-x64.exe][ptUserX64] | 9925894D797458C78A8C3DF6FE4BD748580638B01BB43680477763662915109A |
+| Per user - ARM64     | [PowerToysUserSetup-0.72.0-arm64.exe][ptUserArm64] | 2E68139C22C56648E64514E4E8E0A0D12882F6CF30B48EB20ECC66B4CCDD5909 |
+| Machine wide - x64   | [PowerToysSetup-0.72.0-x64.exe][ptMachineX64] | 788EE4D828169F092737A739030B218CEFEC79583E42858BB8F9F036B701BE6F |
+| Machine wide - ARM64 | [PowerToysSetup-0.72.0-arm64.exe][ptMachineArm64] | 39C1D430A538B0F3D7869D39DF7F636A64AAFAD8DFB3C82059A97F4EBD3369C4 |
 
 This is our preferred method.
 
@@ -97,12 +97,14 @@ Our [prioritized roadmap][roadmap] of features and utilities that the core team 
 In this release, we focused on stability and improvements.
 
 **Highlights**
+
  - Greatly reduced the PowerToys installed space by having utilities share the same installed path. When compared to 0.71, the 0.72 x64 machine installed version of PowerToys reduces the size reported in the Installed Apps screen from 1.15GB to 785 MB and the size in File Explorer properties for the installation folder from 3.10GB to 554 MB.
  - Value Generator - A new PowerToys Run plugin that generates hashes and GUID values. Thanks [@IHorvalds](https://github.com/IHorvalds)!
  - Mouse Highlighter has a new feature to have a highlight always follow the mouse pointer. Thanks [@hayatogh](https://github.com/hayatogh)!
  - PowerRename was reworked to support a bigger number of files without crashing.
 
 ### Known issues
+
  - Due to changing paths in the installation folder, the Mouse Without Borders service might be pointing to the wrong place. Users not running as admin will have to enable service mode again after install. A toast notification will appear if Mouse Without Borders is unable to start the service correctly.
  - File Explorer extensions changed paths might not be loaded correctly until File Explorer and Preview Host processes are restarted, so we advise restarting the computer when possible after updating PowerToys.
 
