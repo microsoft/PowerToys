@@ -296,7 +296,6 @@ SOFTWARE.
 - Markdig.Signed 0.27.0
 - Microsoft.CodeAnalysis.NetAnalyzers 7.0.3
 - Microsoft.Data.Sqlite 7.0.0
-- Microsoft.DotNet.UpgradeAssistant.Extensions.Default.Analyzers 0.4.336902
 - Microsoft.Extensions.DependencyInjection 7.0.0
 - Microsoft.Extensions.Hosting 7.0.1
 - Microsoft.Extensions.Hosting.WindowsServices 7.0.0
