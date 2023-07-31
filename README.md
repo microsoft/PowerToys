@@ -213,6 +213,7 @@ For [v0.73][github-next-release-work], we'll work on below:
  - PowerRename enumeration keywords
  - Modernize and refresh UX of PowerToys based on WPF
  - Stability / bug fixes
+- Peek: UI improvements
 
 ## PowerToys Community
 
