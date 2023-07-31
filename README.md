@@ -118,7 +118,7 @@ In this release, we focused on stability and improvements.
 
 ### File Locksmith
 
- - Fixed a File Explorer crash when deleting a file, upgrading PowerToys and then trying to right-click the background of a folder in File Explorer.
+ - Fixed a File Explorer crash when deleting a file, updating PowerToys and then trying to right-click the background of a folder in File Explorer.
  - UI tweaks. Thanks [@Jay-o-Way](https://github.com/Jay-o-Way)!
 
 ### File Explorer add-ons
