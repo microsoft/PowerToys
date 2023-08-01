@@ -17,7 +17,7 @@ namespace
     HWND tray_icon_hwnd = NULL;
 
     // Message code that Windows will use for tray icon notifications.
-    UINT wm_icon_notify = 0;
+    enum { wm_icon_notify = WM_APP };
 
     // Contains the Windows Message for taskbar creation.
     UINT wm_taskbar_restart = 0;
@@ -274,7 +274,7 @@ void start_tray_icon()
     auto icon = LoadIcon(h_instance, MAKEINTRESOURCE(APPICON));
     if (icon)
     {
-        UINT id_tray_icon = wm_icon_notify = RegisterWindowMessageW(L"WM_PowerToysIconNotify");
+        UINT id_tray_icon = 1;
 
         WNDCLASS wc = {};
         wc.hCursor = LoadCursor(nullptr, IDC_ARROW);
