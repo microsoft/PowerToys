@@ -61,7 +61,7 @@ namespace PowerToys.MeasureToolUI.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Bounds.
+        ///   Looks up a localized string similar to Bounds (Ctrl+1).
         /// </summary>
         public static string Bounds {
             get {
@@ -70,7 +70,16 @@ namespace PowerToys.MeasureToolUI.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Horizontal spacing.
+        ///   Looks up a localized string similar to Close (Esc).
+        /// </summary>
+        public static string Close {
+            get {
+                return ResourceManager.GetString("Close", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Horizontal spacing (Ctrl+3).
         /// </summary>
         public static string HorizontalSpacing {
             get {
@@ -79,7 +88,7 @@ namespace PowerToys.MeasureToolUI.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Spacing.
+        ///   Looks up a localized string similar to Spacing (Ctrl+2).
         /// </summary>
         public static string Spacing {
             get {
@@ -88,7 +97,7 @@ namespace PowerToys.MeasureToolUI.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Vertical spacing.
+        ///   Looks up a localized string similar to Vertical spacing (Ctrl+4).
         /// </summary>
         public static string VerticalSpacing {
             get {

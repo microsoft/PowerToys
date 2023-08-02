@@ -51,7 +51,7 @@
     <ClInclude Include="FancyZonesWinHookEventIDs.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="SecondaryMouseButtonsHook.h">
+    <ClInclude Include="MouseButtonsHook.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="MonitorWorkAreaMap.h">
@@ -194,7 +194,7 @@
     <ClCompile Include="FancyZonesWinHookEventIDs.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="SecondaryMouseButtonsHook.cpp">
+    <ClCompile Include="MouseButtonsHook.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="MonitorWorkAreaMap.cpp">

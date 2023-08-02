@@ -126,12 +126,21 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             {
                 if (_pastePlainSettings.Properties.ActivationShortcut != value)
                 {
-                    _pastePlainSettings.Properties.ActivationShortcut = value;
+                    _pastePlainSettings.Properties.ActivationShortcut = value ?? _pastePlainSettings.Properties.DefaultActivationShortcut;
                     OnPropertyChanged(nameof(ActivationShortcut));
+                    OnPropertyChanged(nameof(IsConflictingCopyShortcut));
 
                     _settingsUtils.SaveSettings(_pastePlainSettings.ToJsonString(), PastePlainSettings.ModuleName);
                     NotifySettingsChanged();
                 }
+            }
+        }
+
+        public bool IsConflictingCopyShortcut
+        {
+            get
+            {
+                return ActivationShortcut.ToString() == "Ctrl + V" || ActivationShortcut.ToString() == "Ctrl + Shift + V";
             }
         }
 

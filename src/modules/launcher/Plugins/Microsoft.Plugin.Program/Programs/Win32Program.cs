@@ -821,7 +821,7 @@ namespace Microsoft.Plugin.Program.Programs
 
         private static IEnumerable<string> RegistryAppProgramPaths(IList<string> suffixes)
         {
-            // https://msdn.microsoft.com/en-us/library/windows/desktop/ee872121
+            // https://msdn.microsoft.com/library/windows/desktop/ee872121
             const string appPaths = @"SOFTWARE\Microsoft\Windows\CurrentVersion\App Paths";
             var paths = new List<string>();
             using (var root = Registry.LocalMachine.OpenSubKey(appPaths))
@@ -954,7 +954,7 @@ namespace Microsoft.Plugin.Program.Programs
                 return false;
             }
 
-            // https://msdn.microsoft.com/en-us/library/windows/desktop/ee872121
+            // https://msdn.microsoft.com/library/windows/desktop/ee872121
             try
             {
                 var redirectionPath = ReparsePoint.GetTarget(program.FullPath);

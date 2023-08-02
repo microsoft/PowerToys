@@ -4,6 +4,7 @@ enum class SettingId
 {
     ShiftDrag = 0,
     MouseSwitch,
+    MouseMiddleClickSpanningMultipleZones,
     OverrideSnapHotkeys,
     MoveWindowAcrossMonitors,
     MoveWindowsBasedOnPosition,

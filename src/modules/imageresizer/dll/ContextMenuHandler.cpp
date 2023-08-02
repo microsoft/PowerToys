@@ -62,6 +62,11 @@ HRESULT CContextMenuHandler::Initialize(_In_opt_ PCIDLIST_ABSOLUTE pidlFolder, _
 
 HRESULT CContextMenuHandler::QueryContextMenu(_In_ HMENU hmenu, UINT indexMenu, UINT idCmdFirst, UINT /*idCmdLast*/, UINT uFlags)
 {
+    // Suppress C4100 warnings
+    (void)hmenu;
+    (void)indexMenu;
+    (void)idCmdFirst;
+
     if (uFlags & CMF_DEFAULTONLY)
         return S_OK;
 

@@ -7,6 +7,8 @@
 #include "Generated Files/resource.h"
 
 #include <shellapi.h>
+#include <common/interop/shared_constants.h>
+#include <common/utils/EventWaiter.h>
 #include <common/utils/resources.h>
 #include <common/utils/winapi_error.h>
 #include <common/SettingsAPI/settings_objects.h>
@@ -49,6 +51,10 @@ private:
 
     HANDLE m_hProcess;
 
+    HANDLE m_hShowEvent;
+
+    HANDLE m_hShowAdminEvent;
+
     bool is_process_running()
     {
         return WaitForSingleObject(m_hProcess, 0) == WAIT_TIMEOUT;
@@ -82,7 +88,7 @@ private:
 
         SHELLEXECUTEINFOW sei{ sizeof(sei) };
         sei.fMask = { SEE_MASK_NOCLOSEPROCESS | SEE_MASK_FLAG_NO_UI };
-        sei.lpFile = L"modules\\Hosts\\PowerToys.Hosts.exe";
+        sei.lpFile = L"WinUI3Apps\\PowerToys.Hosts.exe";
         sei.nShow = SW_SHOWNORMAL;
         sei.lpParameters = executable_args.data();
 
@@ -104,11 +110,75 @@ private:
     }
 
 public:
+    EventWaiter m_showEventWaiter;
+
+    EventWaiter m_showAdminEventWaiter;
+
     HostsModuleInterface()
     {
         app_name = GET_RESOURCE_STRING(IDS_HOSTS_NAME);
         app_key = ModuleKey;
         LoggerHelpers::init_logger(app_key, L"ModuleInterface", LogSettings::hostsLoggerName);
+
+        m_hShowEvent = CreateDefaultEvent(CommonSharedConstants::SHOW_HOSTS_EVENT);
+        if (!m_hShowEvent)
+        {
+            Logger::error(L"Failed to create show hosts event");
+            auto message = get_last_error_message(GetLastError());
+            if (message.has_value())
+            {
+                Logger::error(message.value());
+            }
+        }
+
+        m_hShowAdminEvent = CreateDefaultEvent(CommonSharedConstants::SHOW_HOSTS_ADMIN_EVENT);
+        if (!m_hShowEvent)
+        {
+            Logger::error(L"Failed to create show hosts admin event");
+            auto message = get_last_error_message(GetLastError());
+            if (message.has_value())
+            {
+                Logger::error(message.value());
+            }
+        }
+
+        m_showEventWaiter = EventWaiter(CommonSharedConstants::SHOW_HOSTS_EVENT, [&](int err)
+        {
+            if (m_enabled && err == ERROR_SUCCESS)
+            {
+                Logger::trace(L"{} event was signaled", CommonSharedConstants::SHOW_HOSTS_EVENT);
+
+                if (is_process_running())
+                {
+                    bring_process_to_front();
+                }
+                else
+                {
+                    launch_process(false);
+                }
+
+                Trace::ActivateEditor();
+            }
+        });
+
+        m_showAdminEventWaiter = EventWaiter(CommonSharedConstants::SHOW_HOSTS_ADMIN_EVENT, [&](int err)
+        {
+            if (m_enabled && err == ERROR_SUCCESS)
+            {
+                Logger::trace(L"{} event was signaled", CommonSharedConstants::SHOW_HOSTS_ADMIN_EVENT);
+                
+                if (is_process_running())
+                {
+                    bring_process_to_front();
+                }
+                else
+                {
+                    launch_process(true);
+                }
+
+                Trace::ActivateEditor();
+            }
+        });
     }
 
     ~HostsModuleInterface()
@@ -120,6 +190,19 @@ public:
     virtual void destroy() override
     {
         Logger::trace("HostsModuleInterface::destroy()");
+
+        if (m_hShowEvent)
+        {
+            CloseHandle(m_hShowEvent);
+            m_hShowEvent = nullptr;
+        }
+
+        if (m_hShowAdminEvent)
+        {
+            CloseHandle(m_hShowAdminEvent);
+            m_hShowAdminEvent = nullptr;
+        }
+
         delete this;
     }
 
@@ -146,31 +229,8 @@ public:
         return false;
     }
 
-    virtual void call_custom_action(const wchar_t* action) override
+    virtual void call_custom_action(const wchar_t* /*action*/) override
     {
-        try
-        {
-            PowerToysSettings::CustomActionObject action_object =
-                PowerToysSettings::CustomActionObject::from_json_string(action);
-
-            if (is_process_running())
-            {
-                bring_process_to_front();
-            }
-            else if (action_object.get_name() == L"Launch")
-            {
-                launch_process(false);
-            }
-            else if (action_object.get_name() == L"LaunchAdministrator")
-            {
-                launch_process(true);
-            }
-            Trace::ActivateEditor();
-        }
-        catch (std::exception&)
-        {
-            Logger::error(L"Failed to parse action. {}", action);
-        }
     }
 
     virtual void set_config(const wchar_t* /*config*/) override
@@ -194,6 +254,16 @@ public:
         Logger::trace("HostsModuleInterface::disable()");
         if (m_enabled)
         {
+            if (m_hShowEvent)
+            {
+                ResetEvent(m_hShowEvent);
+            }
+
+            if (m_hShowAdminEvent)
+            {
+                ResetEvent(m_hShowAdminEvent);
+            }
+
             TerminateProcess(m_hProcess, 1);
         }
 

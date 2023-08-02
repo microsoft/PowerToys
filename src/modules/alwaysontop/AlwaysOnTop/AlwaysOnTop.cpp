@@ -24,7 +24,8 @@ bool isExcluded(HWND window)
 {
     auto processPath = get_process_path(window);
     CharUpperBuffW(processPath.data(), static_cast<DWORD>(processPath.length()));
-    return find_app_name_in_path(processPath, AlwaysOnTopSettings::settings().excludedApps);
+
+    return check_excluded_app(window, processPath, AlwaysOnTopSettings::settings().excludedApps);
 }
 
 AlwaysOnTop::AlwaysOnTop(bool useLLKH) :

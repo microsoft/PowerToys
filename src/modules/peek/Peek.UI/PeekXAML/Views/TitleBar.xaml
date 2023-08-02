@@ -1,0 +1,137 @@
+<!--  Copyright (c) Microsoft Corporation and Contributors.  -->
+<!--  Licensed under the MIT License.  -->
+
+<UserControl
+    x:Class="Peek.UI.Views.TitleBar"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:local="using:Peek.UI.Views"
+    FlowDirection="{x:Bind TitleBarFlowDirection, Mode=OneWay}"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d">
+
+    <Grid x:Name="TitleBarRootContainer" Height="48">
+        <Grid
+            x:Name="AppIconAndFileTitleContainer"
+            Margin="8,0"
+            HorizontalAlignment="Left"
+            VerticalAlignment="Center"
+            ColumnSpacing="4">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition x:Name="AppIconColumn" Width="32" />
+                <ColumnDefinition x:Name="FileTitleColumn" Width="*" />
+            </Grid.ColumnDefinitions>
+
+            <Image
+                x:Name="PeekLogo"
+                x:Uid="PeekLogo"
+                Grid.Column="0"
+                Width="24"
+                Height="24"
+                HorizontalAlignment="Center"
+                VerticalAlignment="Center"
+                Source="../../Assets/Peek/AppList.scale-400.png"
+                Stretch="UniformToFill" />
+
+            <Grid
+                x:Name="FileCountAndNameContainer"
+                Grid.Column="1"
+                VerticalAlignment="Center"
+                ColumnSpacing="4">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition x:Name="FileCountColumn" Width="auto" />
+                    <ColumnDefinition x:Name="FileNameColumn" Width="*" />
+                </Grid.ColumnDefinitions>
+
+                <TextBlock
+                    x:Name="AppTitle_FileCount"
+                    x:Uid="AppTitle_FileCount"
+                    Grid.Column="0"
+                    FontWeight="Bold"
+                    Style="{StaticResource CaptionTextBlockStyle}"
+                    Text="{x:Bind FileCountText, Mode=OneWay}"
+                    Visibility="{x:Bind IsMultiSelection, Mode=OneWay}" />
+
+                <TextBlock
+                    x:Name="AppTitle_FileName"
+                    x:Uid="AppTitle_FileName"
+                    Grid.Column="1"
+                    Style="{StaticResource CaptionTextBlockStyle}"
+                    Text="{x:Bind Item.Name, Mode=OneWay}"
+                    TextWrapping="NoWrap" />
+            </Grid>
+        </Grid>
+
+        <Button
+            x:Name="LaunchAppButton"
+            x:Uid="LaunchAppButton"
+            VerticalAlignment="Center"
+            Command="{x:Bind LaunchDefaultAppButtonAsyncCommand, Mode=OneWay}"
+            ToolTipService.ToolTip="{x:Bind OpenWithAppToolTip, Mode=OneWay}"
+            Visibility="{x:Bind IsLaunchDefaultAppButtonVisible(DefaultAppName), Mode=OneWay}">
+            <Button.Content>
+                <StackPanel Orientation="Horizontal" Spacing="4">
+                    <FontIcon
+                        x:Name="LaunchAppButton_Icon"
+                        x:Uid="LaunchAppButton_Icon"
+                        FontSize="{StaticResource CaptionTextBlockFontSize}"
+                        Glyph="&#xE8E5;" />
+                    <TextBlock
+                        x:Name="LaunchAppButton_Text"
+                        x:Uid="LaunchAppButton_Text"
+                        Style="{StaticResource CaptionTextBlockStyle}"
+                        Text="{x:Bind OpenWithAppText, Mode=OneWay}" />
+                </StackPanel>
+            </Button.Content>
+            <Button.KeyboardAccelerators>
+                <KeyboardAccelerator Key="Enter" />
+            </Button.KeyboardAccelerators>
+        </Button>
+
+        <Button
+            x:Name="PinButton"
+            x:Uid="PinButton"
+            VerticalAlignment="Center"
+            Command="{x:Bind PinCommand, Mode=OneWay}"
+            ToolTipService.ToolTip="{x:Bind PinToolTip(Pinned), Mode=OneWay}">
+            <Button.Content>
+                <FontIcon
+                    x:Name="PinButton_Icon"
+                    x:Uid="PinButton_Icon"
+                    FontSize="{StaticResource CaptionTextBlockFontSize}"
+                    Glyph="{x:Bind PinGlyph(Pinned), Mode=OneWay}" />
+            </Button.Content>
+        </Button>
+
+        <VisualStateManager.VisualStateGroups>
+            <VisualStateGroup x:Name="AdaptiveWidth">
+                <VisualState x:Name="MaximumLayout">
+                    <VisualState.StateTriggers>
+                        <AdaptiveTrigger MinWindowWidth="560" />
+                    </VisualState.StateTriggers>
+                    <VisualState.Setters>
+                        <Setter Target="LaunchAppButton_Text.Visibility" Value="Visible" />
+                    </VisualState.Setters>
+                </VisualState>
+                <VisualState x:Name="MediumLayout">
+                    <VisualState.StateTriggers>
+                        <AdaptiveTrigger MinWindowWidth="340" />
+                    </VisualState.StateTriggers>
+                    <VisualState.Setters>
+                        <Setter Target="LaunchAppButton_Text.Visibility" Value="Collapsed" />
+                    </VisualState.Setters>
+                </VisualState>
+                <VisualState x:Name="MinimumLayout">
+                    <VisualState.StateTriggers>
+                        <AdaptiveTrigger MinWindowWidth="0" />
+                    </VisualState.StateTriggers>
+                    <VisualState.Setters>
+                        <Setter Target="LaunchAppButton_Text.Visibility" Value="Collapsed" />
+                        <Setter Target="LaunchAppButton.Visibility" Value="Collapsed" />
+                    </VisualState.Setters>
+                </VisualState>
+            </VisualStateGroup>
+        </VisualStateManager.VisualStateGroups>
+    </Grid>
+</UserControl>

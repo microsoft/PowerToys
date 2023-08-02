@@ -3,10 +3,12 @@
 // See the LICENSE file in the project root for more information.
 
 using System.Collections.Generic;
-using System.Drawing;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using MouseJumpUI.Drawing.Models;
 using MouseJumpUI.Helpers;
+using MouseJumpUI.Models.Drawing;
+using MouseJumpUI.Models.Layout;
+using MouseJumpUI.Models.Screen;
+using static MouseJumpUI.NativeMethods.Core;
 
 namespace MouseJumpUI.UnitTests.Helpers;
 
@@ -14,9 +16,9 @@ namespace MouseJumpUI.UnitTests.Helpers;
 public static class DrawingHelperTests
 {
     [TestClass]
-    public class CalculateLayoutInfoTests
+    public sealed class CalculateLayoutInfoTests
     {
-        public class TestCase
+        public sealed class TestCase
         {
             public TestCase(LayoutConfig layoutConfig, LayoutInfo expectedResult)
             {
@@ -40,13 +42,14 @@ public static class DrawingHelperTests
             // |                |
             // +----------------+
             var layoutConfig = new LayoutConfig(
-                virtualScreen: new(0, 0, 5120, 1440),
-                screenBounds: new List<Rectangle>
+                virtualScreenBounds: new(0, 0, 5120, 1440),
+                screens: new List<ScreenInfo>
                 {
-                    new(0, 0, 5120, 1440),
+                    new ScreenInfo(HMONITOR.Null, false, new(0, 0, 5120, 1440), new(0, 0, 5120, 1440)),
                 },
                 activatedLocation: new(5120 / 2, 1440 / 2),
-                activatedScreen: 0,
+                activatedScreenIndex: 0,
+                activatedScreenNumber: 1,
                 maximumFormSize: new(1600, 1200),
                 formPadding: new(5, 5, 5, 5),
                 previewPadding: new(0, 0, 0, 0));
@@ -58,7 +61,7 @@ public static class DrawingHelperTests
                 {
                     new(0, 0, 1590, 447.1875M),
                 },
-                activatedScreen: new(0, 0, 5120, 1440));
+                activatedScreenBounds: new(0, 0, 5120, 1440));
             yield return new[] { new TestCase(layoutConfig, layoutInfo) };
 
             // primary monitor not topmost / leftmost - if there are screens
@@ -74,14 +77,15 @@ public static class DrawingHelperTests
             //         |                |
             //         +----------------+
             layoutConfig = new LayoutConfig(
-                virtualScreen: new(-1920, -472, 7040, 1912),
-                screenBounds: new List<Rectangle>
+                virtualScreenBounds: new(-1920, -472, 7040, 1912),
+                screens: new List<ScreenInfo>
                 {
-                    new(-1920, -472, 1920, 1080),
-                    new(0, 0, 5120, 1440),
+                    new ScreenInfo(HMONITOR.Null, false, new(-1920, -472, 1920, 1080), new(-1920, -472, 1920, 1080)),
+                    new ScreenInfo(HMONITOR.Null, false, new(0, 0, 5120, 1440), new(0, 0, 5120, 1440)),
                 },
                 activatedLocation: new(-960, -236),
-                activatedScreen: 0,
+                activatedScreenIndex: 0,
+                activatedScreenNumber: 1,
                 maximumFormSize: new(1600, 1200),
                 formPadding: new(5, 5, 5, 5),
                 previewPadding: new(0, 0, 0, 0));
@@ -99,7 +103,7 @@ public static class DrawingHelperTests
                     new(0, 0, 433.63636M, 243.92045M),
                     new(433.63636M, 106.602270M, 1156.36363M, 325.22727M),
                 },
-                activatedScreen: new(-1920, -472, 1920, 1080));
+                activatedScreenBounds: new(-1920, -472, 1920, 1080));
             yield return new[] { new TestCase(layoutConfig, layoutInfo) };
 
             // check we handle rounding errors in scaling the preview form
@@ -115,14 +119,15 @@ public static class DrawingHelperTests
             // |                |   0   |
             // +----------------+-------+
             layoutConfig = new LayoutConfig(
-                virtualScreen: new(0, 0, 7168, 1440),
-                screenBounds: new List<Rectangle>
+                virtualScreenBounds: new(0, 0, 7168, 1440),
+                screens: new List<ScreenInfo>
                 {
-                    new(6144, 0, 1024, 768),
-                    new(0, 0, 6144, 1440),
+                    new ScreenInfo(HMONITOR.Null, false, new(6144, 0, 1024, 768), new(6144, 0, 1024, 768)),
+                    new ScreenInfo(HMONITOR.Null, false, new(0, 0, 6144, 1440), new(0, 0, 6144, 1440)),
                 },
                 activatedLocation: new(6656, 384),
-                activatedScreen: 0,
+                activatedScreenIndex: 0,
+                activatedScreenNumber: 1,
                 maximumFormSize: new(1600, 1200),
                 formPadding: new(5, 5, 5, 5),
                 previewPadding: new(0, 0, 0, 0));
@@ -135,7 +140,7 @@ public static class DrawingHelperTests
                     new(869.14285M, 0, 144.85714M, 108.642857M),
                     new(0, 0, 869.142857M, 203.705357M),
                 },
-                activatedScreen: new(6144, 0, 1024, 768));
+                activatedScreenBounds: new(6144, 0, 1024, 768));
             yield return new[] { new TestCase(layoutConfig, layoutInfo) };
 
             // check we handle rounding errors in scaling the preview form
@@ -151,14 +156,15 @@ public static class DrawingHelperTests
             // |                |   0   |
             // +----------------+-------+
             layoutConfig = new LayoutConfig(
-                virtualScreen: new(0, 0, 7424, 1440),
-                screenBounds: new List<Rectangle>
+                virtualScreenBounds: new(0, 0, 7424, 1440),
+                screens: new List<ScreenInfo>
                 {
-                    new(6144, 0, 1280, 768),
-                    new(0, 0, 6144, 1440),
+                    new ScreenInfo(HMONITOR.Null, false, new(6144, 0, 1280, 768), new(6144, 0, 1280, 768)),
+                    new ScreenInfo(HMONITOR.Null, false, new(0, 0, 6144, 1440), new(0, 0, 6144, 1440)),
                 },
                 activatedLocation: new(6784, 384),
-                activatedScreen: 0,
+                activatedScreenIndex: 0,
+                activatedScreenNumber: 1,
                 maximumFormSize: new(1600, 1200),
                 formPadding: new(5, 5, 5, 5),
                 previewPadding: new(0, 0, 0, 0));
@@ -176,7 +182,7 @@ public static class DrawingHelperTests
                     new(1051.03448M, 0, 218.96551M, 131.37931M),
                     new(0, 0M, 1051.03448M, 246.33620M),
                 },
-                activatedScreen: new(6144, 0, 1280, 768));
+                activatedScreenBounds: new(6144, 0, 1280, 768));
             yield return new[] { new TestCase(layoutConfig, layoutInfo) };
         }
 
@@ -191,7 +197,7 @@ public static class DrawingHelperTests
             // (int)1280.000000000000 -> 1280
             // so we'll compare the raw values, *and* convert to an int-based
             // Rectangle to compare rounded values
-            var actual = DrawingHelper.CalculateLayoutInfo(data.LayoutConfig);
+            var actual = LayoutHelper.CalculateLayoutInfo(data.LayoutConfig);
             var expected = data.ExpectedResult;
             Assert.AreEqual(expected.FormBounds.X, actual.FormBounds.X, 0.00001M, "FormBounds.X");
             Assert.AreEqual(expected.FormBounds.Y, actual.FormBounds.Y, 0.00001M, "FormBounds.Y");
@@ -213,11 +219,11 @@ public static class DrawingHelperTests
                 Assert.AreEqual(expected.ScreenBounds[i].ToRectangle(), actual.ScreenBounds[i].ToRectangle(), "ActivatedScreen.ToRectangle");
             }
 
-            Assert.AreEqual(expected.ActivatedScreen.X, actual.ActivatedScreen.X, "ActivatedScreen.X");
-            Assert.AreEqual(expected.ActivatedScreen.Y, actual.ActivatedScreen.Y, "ActivatedScreen.Y");
-            Assert.AreEqual(expected.ActivatedScreen.Width, actual.ActivatedScreen.Width, "ActivatedScreen.Width");
-            Assert.AreEqual(expected.ActivatedScreen.Height, actual.ActivatedScreen.Height, "ActivatedScreen.Height");
-            Assert.AreEqual(expected.ActivatedScreen.ToRectangle(), actual.ActivatedScreen.ToRectangle(), "ActivatedScreen.ToRectangle");
+            Assert.AreEqual(expected.ActivatedScreenBounds.X, actual.ActivatedScreenBounds.X, "ActivatedScreen.X");
+            Assert.AreEqual(expected.ActivatedScreenBounds.Y, actual.ActivatedScreenBounds.Y, "ActivatedScreen.Y");
+            Assert.AreEqual(expected.ActivatedScreenBounds.Width, actual.ActivatedScreenBounds.Width, "ActivatedScreen.Width");
+            Assert.AreEqual(expected.ActivatedScreenBounds.Height, actual.ActivatedScreenBounds.Height, "ActivatedScreen.Height");
+            Assert.AreEqual(expected.ActivatedScreenBounds.ToRectangle(), actual.ActivatedScreenBounds.ToRectangle(), "ActivatedScreen.ToRectangle");
         }
     }
 }

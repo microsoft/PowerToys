@@ -4,32 +4,38 @@
 
   <?include $(sys.CURRENTDIR)\Common.wxi?>
 
-  <?if $(var.Platform) = x64?>
-    <?define PowerPreviewFiles=System.CodeDom.dll;System.Text.Json.dll;WindowsBase.dll;mfc140.dll;mfc140chs.dll;mfc140cht.dll;mfc140deu.dll;mfc140enu.dll;mfc140esn.dll;mfc140fra.dll;mfc140ita.dll;mfc140jpn.dll;mfc140kor.dll;mfc140rus.dll;mfc140u.dll;mfcm140.dll;mfcm140u.dll;PowerToys.MarkdownPreviewHandlerCpp.dll;PowerToys.powerpreview.dll;PowerToys.PreviewHandlerCommon.dll;PowerToys.PreviewHandlerCommon.deps.json;PowerToys.ManagedCommon.dll;System.Management.dll;PowerToys.ManagedTelemetry.dll;PowerToys.SvgPreviewHandlerCpp.dll;PowerToys.SvgPreviewHandler.dll;PowerToys.SvgPreviewHandler.exe;PowerToys.SvgPreviewHandler.runtimeconfig.json;PowerToys.SvgPreviewHandler.deps.json;PowerToys.SvgThumbnailProvider.exe;PowerToys.SvgThumbnailProvider.dll;PowerToys.SvgThumbnailProviderCpp.dll;PowerToys.SvgThumbnailProvider.runtimeconfig.json;PowerToys.SvgThumbnailProvider.deps.json;PowerToys.MarkdownPreviewHandler.dll;PowerToys.MarkdownPreviewHandler.exe;PowerToys.MarkdownPreviewHandler.runtimeconfig.json;PowerToys.MarkdownPreviewHandler.deps.json;Markdig.Signed.dll;System.IO.Abstractions.dll;monaco_languages.json;monacoSpecialLanguages.js;PowerToys.Common.UI.dll;PowerToys.Settings.UI.Lib.dll;PowerToys.MonacoPreviewHandlerCpp.dll;PowerToys.MonacoPreviewHandler.dll;PowerToys.MonacoPreviewHandler.exe;PowerToys.MonacoPreviewHandler.runtimeconfig.json;PowerToys.MonacoPreviewHandler.deps.json;ControlzEx.dll;Microsoft.Web.WebView2.Core.dll;Microsoft.Web.WebView2.WinForms.dll;Microsoft.Web.WebView2.Wpf.dll;WebView2Loader.dll;index.html;PowerToys.PdfPreviewHandlerCpp.dll;PowerToys.PdfPreviewHandler.dll;PowerToys.PdfPreviewHandler.exe;PowerToys.PdfPreviewHandler.runtimeconfig.json;PowerToys.PdfPreviewHandler.deps.json;Microsoft.Windows.SDK.NET.dll;WinRT.Runtime.dll;PowerToys.PdfThumbnailProvider.exe;PowerToys.PdfThumbnailProvider.dll;PowerToys.PdfThumbnailProviderCpp.dll;PowerToys.PdfThumbnailProvider.runtimeconfig.json;PowerToys.PdfThumbnailProvider.deps.json;PowerToys.GcodePreviewHandler.dll;PowerToys.GcodePreviewHandlerCpp.dll;PowerToys.GcodePreviewHandler.exe;PowerToys.GcodePreviewHandler.runtimeconfig.json;PowerToys.GcodePreviewHandler.deps.json;PowerToys.GcodeThumbnailProvider.dll;PowerToys.GcodeThumbnailProvider.exe;PowerToys.GcodeThumbnailProviderCpp.dll;PowerToys.GcodeThumbnailProvider.runtimeconfig.json;PowerToys.GcodeThumbnailProvider.deps.json;PowerToys.StlThumbnailProvider.exe;PowerToys.StlThumbnailProvider.dll;PowerToys.StlThumbnailProviderCpp.dll;PowerToys.StlThumbnailProvider.runtimeconfig.json;PowerToys.StlThumbnailProvider.deps.json;HelixToolkit.dll;HelixToolkit.Core.Wpf.dll;Ijwhost.dll;Microsoft.Xaml.Behaviors.dll;PowerToys.GPOWrapper.dll?>
-  <?else?>
-    <?define PowerPreviewFiles=System.CodeDom.dll;System.Text.Json.dll;WindowsBase.dll;PowerToys.MarkdownPreviewHandlerCpp.dll;PowerToys.powerpreview.dll;PowerToys.PreviewHandlerCommon.dll;PowerToys.PreviewHandlerCommon.deps.json;PowerToys.ManagedCommon.dll;System.Management.dll;PowerToys.ManagedTelemetry.dll;PowerToys.SvgPreviewHandlerCpp.dll;PowerToys.SvgPreviewHandler.dll;PowerToys.SvgPreviewHandler.exe;PowerToys.SvgPreviewHandler.runtimeconfig.json;PowerToys.SvgPreviewHandler.deps.json;PowerToys.SvgThumbnailProvider.exe;PowerToys.SvgThumbnailProvider.dll;PowerToys.SvgThumbnailProviderCpp.dll;PowerToys.SvgThumbnailProvider.runtimeconfig.json;PowerToys.SvgThumbnailProvider.deps.json;PowerToys.MarkdownPreviewHandler.dll;PowerToys.MarkdownPreviewHandler.exe;PowerToys.MarkdownPreviewHandler.runtimeconfig.json;PowerToys.MarkdownPreviewHandler.deps.json;Markdig.Signed.dll;System.IO.Abstractions.dll;monaco_languages.json;monacoSpecialLanguages.js;PowerToys.Common.UI.dll;PowerToys.Settings.UI.Lib.dll;PowerToys.MonacoPreviewHandlerCpp.dll;PowerToys.MonacoPreviewHandler.dll;PowerToys.MonacoPreviewHandler.exe;PowerToys.MonacoPreviewHandler.runtimeconfig.json;PowerToys.MonacoPreviewHandler.deps.json;ControlzEx.dll;Microsoft.Web.WebView2.Core.dll;Microsoft.Web.WebView2.WinForms.dll;Microsoft.Web.WebView2.Wpf.dll;WebView2Loader.dll;index.html;PowerToys.PdfPreviewHandlerCpp.dll;PowerToys.PdfPreviewHandler.dll;PowerToys.PdfPreviewHandler.exe;PowerToys.PdfPreviewHandler.runtimeconfig.json;PowerToys.PdfPreviewHandler.deps.json;Microsoft.Windows.SDK.NET.dll;WinRT.Runtime.dll;PowerToys.PdfThumbnailProvider.exe;PowerToys.PdfThumbnailProvider.dll;PowerToys.PdfThumbnailProviderCpp.dll;PowerToys.PdfThumbnailProvider.runtimeconfig.json;PowerToys.PdfThumbnailProvider.deps.json;PowerToys.GcodePreviewHandler.dll;PowerToys.GcodePreviewHandlerCpp.dll;PowerToys.GcodePreviewHandler.exe;PowerToys.GcodePreviewHandler.runtimeconfig.json;PowerToys.GcodePreviewHandler.deps.json;PowerToys.GcodeThumbnailProvider.dll;PowerToys.GcodeThumbnailProvider.exe;PowerToys.GcodeThumbnailProviderCpp.dll;PowerToys.GcodeThumbnailProvider.runtimeconfig.json;PowerToys.GcodeThumbnailProvider.deps.json;PowerToys.StlThumbnailProvider.exe;PowerToys.StlThumbnailProvider.dll;PowerToys.StlThumbnailProviderCpp.dll;PowerToys.StlThumbnailProvider.runtimeconfig.json;PowerToys.StlThumbnailProvider.deps.json;HelixToolkit.dll;HelixToolkit.Core.Wpf.dll;Ijwhost.dll;Microsoft.Xaml.Behaviors.dll;PowerToys.GPOWrapper.dll?>
-  <?endif?>
+  <?define MonacoPreviewHandlerMonacoAssetsFiles=?>
+  <?define MonacoPreviewHandlerMonacoAssetsFilesPath=$(var.BinDir)Assets\Monaco\?>
+  <?define MonacoPreviewHandlerCustomLanguagesFiles=?>
+  <?define MonacoPreviewHandlerCustomLanguagesFilesPath=$(var.BinDir)Assets\Monaco\customLanguages\?>
 
   <Fragment>
-    <DirectoryRef Id="FileExplorerPreviewInstallFolder" FileSource="$(var.RepoDir)\modules\FileExplorerPreview\">
-      <?foreach File in $(var.PowerPreviewFiles)?>
-        <Component Id="Module_PowerPreview_$(var.File)" Win64="yes">
-          <File Id="Module_PowerPreview_$(var.File)" Source="$(var.BinDir)modules\FileExplorerPreview\$(var.File)" />
-        </Component>
-      <?endforeach?>
+    <DirectoryRef Id="BaseApplicationsAssetsFolder">
+      <Directory Id="MonacoAssetsFolder" Name="Monaco">
+        <Directory Id="MonacoPreviewHandlerMonacoCustomLanguagesFolder" Name="customLanguages" />
+        <Directory Id="MonacoPreviewHandlerMonacoSRCFolder" Name="monacoSRC" />
+      </Directory>
     </DirectoryRef>
 
-    <DirectoryRef Id="MonacoPreviewHandlerMonacoCustomLanguagesFolder" FileSource="$(var.BinDir)modules\FileExplorerPreview\customLanguages">
-      <Component Id="MonacoPreviewHandlerMonacoCustomLanguagesRegJS" Win64="yes">
-        <File Id="MonacoPreviewHandler_MonacoCustomLanguagesRegJS" Source="$(var.BinDir)modules\FileExplorerPreview\customLanguages\reg.js" />
+    <DirectoryRef Id="MonacoAssetsFolder" FileSource="$(var.MonacoPreviewHandlerMonacoAssetsFilesPath)">
+    <!-- Generated by generateFileComponents.ps1 -->
+    <!--MonacoPreviewHandlerMonacoAssetsFiles_Component_Def-->
+    </DirectoryRef>
+
+    <DirectoryRef Id="MonacoPreviewHandlerMonacoCustomLanguagesFolder" FileSource="$(var.MonacoPreviewHandlerCustomLanguagesFilesPath)">
+    <!-- Generated by generateFileComponents.ps1 -->
+    <!--MonacoPreviewHandlerCustomLanguagesFiles_Component_Def-->
+    </DirectoryRef>
+
+    <ComponentGroup Id="FileExplorerPreviewComponentGroup">
+      <Component Id="RemoveFileExplorerPreviewFolder" Guid="4AB83E58-17F1-41AF-B67F-F6C36EFED28D" Directory="MonacoAssetsFolder" >
+        <RegistryKey Root="$(var.RegistryScope)" Key="Software\Classes\powertoys\components">
+          <RegistryValue Type="string" Name="RemoveFileExplorerPreviewFolder" Value="" KeyPath="yes"/>
+        </RegistryKey>
+        <RemoveFolder Id="RemoveMonacoAssetsFolder" Directory="MonacoAssetsFolder" On="uninstall"/>
+        <RemoveFolder Id="RemoveFolderMonacoPreviewHandlerCustomLanguagesFolder" Directory="MonacoPreviewHandlerMonacoCustomLanguagesFolder" On="uninstall"/>
+        <RemoveFolder Id="RemoveFolderMonacoPreviewHandlerMonacoSRCFolder" Directory="MonacoPreviewHandlerMonacoSRCFolder" On="uninstall"/>
       </Component>
-    </DirectoryRef>
-
-    <ComponentGroup Id="FileExplorerPreviewComponentGroup" Directory="INSTALLFOLDER">
-      <?foreach File in $(var.PowerPreviewFiles)?>
-        <ComponentRef Id="Module_PowerPreview_$(var.File)" />
-      <?endforeach?>
-      <ComponentRef Id="MonacoPreviewHandlerMonacoCustomLanguagesRegJS" />
     </ComponentGroup>
   </Fragment>
 </Wix>

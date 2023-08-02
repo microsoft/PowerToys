@@ -455,12 +455,15 @@ HRESULT __stdcall CContextMenuHandler::GetTitle(IShellItemArray* /*psiItemArray*
 
 HRESULT __stdcall CContextMenuHandler::GetIcon(IShellItemArray* /*psiItemArray*/, LPWSTR* ppszIcon)
 {
+    // Suppress C4100 warnings
+    (void)ppszIcon;
+
     return E_NOTIMPL;
     // Since Hopper is registered as a COM SurrogateServer the current module filename would be dllhost.exe. To get the icon we need the path of PowerToys.HopperExt.dll, which can be obtained by passing the HINSTANCE of the dll
-    std::wstring iconResourcePath = get_module_filename(g_hInst_Hopper);
+    /* std::wstring iconResourcePath = get_module_filename(g_hInst_Hopper);
     iconResourcePath += L",-";
     iconResourcePath += std::to_wstring(IDI_RESIZE_PICTURES);
-    return SHStrDup(iconResourcePath.c_str(), ppszIcon);
+    return SHStrDup(iconResourcePath.c_str(), ppszIcon);*/
 }
 
 HRESULT __stdcall CContextMenuHandler::GetToolTip(IShellItemArray* /*psiItemArray*/, LPWSTR* ppszInfotip)

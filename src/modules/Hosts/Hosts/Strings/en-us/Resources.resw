@@ -132,6 +132,12 @@
   <data name="AddEntryBtn.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
     <value>New entry</value>
   </data>
+  <data name="AddEntryBtn.[using:Microsoft.UI.Xaml.Controls]ToolTipService.ToolTip" xml:space="preserve">
+    <value>New entry (Ctrl+N)</value>
+  </data>
+  <data name="AddEntryLink.Content" xml:space="preserve">
+    <value>Add an entry</value>
+  </data>
   <data name="AdditionalLinesBtn.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
     <value>Additional content</value>
   </data>
@@ -164,6 +170,9 @@
   <data name="ClearFiltersBtn.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
     <value>Clear filters</value>
   </data>
+  <data name="ClearFiltersLink.Content" xml:space="preserve">
+    <value>Clear filters</value>
+  </data>
   <data name="Comment.Header" xml:space="preserve">
     <value>Comment</value>
     <comment>"Comment" refers to the comment of the entry</comment>
@@ -187,6 +196,16 @@
   <data name="DuplicateEntryIcon.[using:Microsoft.UI.Xaml.Controls]ToolTipService.ToolTip" xml:space="preserve">
     <value>Duplicate entry</value>
   </data>
+  <data name="Edit.Text" xml:space="preserve">
+    <value>Edit</value>
+  </data>
+  <data name="EmptyFilterResults.Text" xml:space="preserve">
+    <value>No filter results</value>
+  </data>
+  <data name="EmptyHosts.Text" xml:space="preserve">
+    <value>No entries in the hosts file</value>
+    <comment>"Hosts" refers to the system hosts file, do not loc</comment>
+  </data>
   <data name="Entries.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
     <value>Entries</value>
   </data>
@@ -194,7 +213,7 @@
     <value>Cancel</value>
   </data>
   <data name="FileChanged.Message" xml:space="preserve">
-    <value>Hosts file has changed by another application. Do you want to reload it?</value>
+    <value>Hosts file was modified externally.</value>
     <comment>"Hosts" refers to the system hosts file, do not loc</comment>
   </data>
   <data name="FileSaveError.Message" xml:space="preserve">
@@ -212,7 +231,7 @@
     <comment>"Hosts" refers to the system hosts file, do not loc</comment>
   </data>
   <data name="Hosts.[using:Microsoft.UI.Xaml.Controls]ToolTipService.ToolTip" xml:space="preserve">
-    <value>Seperate multiple hosts by space (e.g. server server.local).</value>
+    <value>Seperate multiple hosts by space (e.g. server server.local). Maximum 9 hosts per entry.</value>
     <comment>Do not localize "server" and "server.local"</comment>
   </data>
   <data name="HostsFilter.Header" xml:space="preserve">
@@ -253,6 +272,14 @@
   <data name="ShowOnlyDuplicates.Header" xml:space="preserve">
     <value>Show only duplicates</value>
   </data>
+  <data name="TooManyHostsTeachingTip.Subtitle" xml:space="preserve">
+    <value>Only 9 hosts per entry are supported. The affected entries have been split. This will take effect on next change.</value>
+    <comment>"Hosts" refers to the system hosts file, do not loc</comment>
+  </data>
+  <data name="TooManyHostsTeachingTip.Title" xml:space="preserve">
+    <value>Entries contain too many hosts</value>
+    <comment>"Hosts" refers to the system hosts file, do not loc</comment>
+  </data>
   <data name="UpdateBtn" xml:space="preserve">
     <value>Update</value>
   </data>
@@ -272,7 +299,7 @@
   <data name="WarningDialog_Title" xml:space="preserve">
     <value>Warning</value>
   </data>
-  <data name="Window.Title" xml:space="preserve">
+  <data name="WindowTitle" xml:space="preserve">
     <value>Hosts File Editor</value>
     <comment>"Hosts File Editor" is the name of the utility. "Hosts" refers to the system hosts file, do not loc</comment>
   </data>

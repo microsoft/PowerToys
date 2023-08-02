@@ -455,7 +455,7 @@ namespace PowerLauncher
 
         private void Launcher_KeyDown(object sender, KeyEventArgs e)
         {
-            if (e.Key == Key.Tab && Keyboard.IsKeyDown(Key.LeftShift))
+            if (e.Key == Key.Tab && (Keyboard.IsKeyDown(Key.LeftShift) || Keyboard.IsKeyDown(Key.RightShift)))
             {
                 _viewModel.SelectPrevTabItemCommand.Execute(null);
                 UpdateTextBoxToSelectedItem();
@@ -606,14 +606,17 @@ namespace PowerLauncher
 
         private void ClearResults()
         {
-            _viewModel.Results.SelectedItem = null;
-            System.Threading.Tasks.Task.Run(() =>
+            MainViewModel.PerformSafeAction(() =>
             {
-                Application.Current.Dispatcher.BeginInvoke(System.Windows.Threading.DispatcherPriority.Normal, new Action(() =>
+                _viewModel.Results.SelectedItem = null;
+                System.Threading.Tasks.Task.Run(() =>
                 {
-                    _viewModel.Results.Clear();
-                    _viewModel.Results.Results.NotifyChanges();
-                }));
+                    Application.Current.Dispatcher.BeginInvoke(System.Windows.Threading.DispatcherPriority.Normal, new Action(() =>
+                    {
+                        _viewModel.Results.Clear();
+                        _viewModel.Results.Results.NotifyChanges();
+                    }));
+                });
             });
         }
 

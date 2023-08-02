@@ -15,6 +15,7 @@ namespace winrt::PowerToys::GPOWrapper::implementation
         static GpoRuleConfigured GetConfiguredSvgPreviewEnabledValue();
         static GpoRuleConfigured GetConfiguredMarkdownPreviewEnabledValue();
         static GpoRuleConfigured GetConfiguredMonacoPreviewEnabledValue();
+        static GpoRuleConfigured GetConfiguredMouseWithoutBordersEnabledValue();
         static GpoRuleConfigured GetConfiguredPdfPreviewEnabledValue();
         static GpoRuleConfigured GetConfiguredGcodePreviewEnabledValue();
         static GpoRuleConfigured GetConfiguredSvgThumbnailsEnabledValue();
@@ -31,11 +32,13 @@ namespace winrt::PowerToys::GPOWrapper::implementation
         static GpoRuleConfigured GetConfiguredPowerRenameEnabledValue();
         static GpoRuleConfigured GetConfiguredPowerLauncherEnabledValue();
         static GpoRuleConfigured GetConfiguredQuickAccentEnabledValue();
+        static GpoRuleConfigured GetConfiguredRegistryPreviewEnabledValue();
         static GpoRuleConfigured GetConfiguredScreenRulerEnabledValue();
         static GpoRuleConfigured GetConfiguredShortcutGuideEnabledValue();
         static GpoRuleConfigured GetConfiguredTextExtractorEnabledValue();
         static GpoRuleConfigured GetConfiguredPastePlainEnabledValue();
         static GpoRuleConfigured GetConfiguredVideoConferenceMuteEnabledValue();
+        static GpoRuleConfigured GetConfiguredPeekEnabledValue();
         static GpoRuleConfigured GetDisableAutomaticUpdateDownloadValue();
         static GpoRuleConfigured GetAllowExperimentationValue();
     };

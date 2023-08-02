@@ -537,43 +537,6 @@ void WorkArea::InitLayout(const FancyZonesDataTypes::WorkAreaId& parentUniqueId)
     CalculateZoneSet();
 }
 
-void WorkArea::InitSnappedWindows()
-{
-    Logger::info(L"Init work area windows: {}", m_uniqueId.toString());
-
-    for (const auto& window : VirtualDesktop::instance().GetWindowsFromCurrentDesktop())
-    {
-        auto indexes = FancyZonesWindowProperties::RetrieveZoneIndexProperty(window);
-        if (indexes.size() == 0)
-        {
-            continue;
-        }
-
-        if (!m_uniqueId.monitorId.monitor) // one work area across monitors
-        {
-            MoveWindowIntoZoneByIndexSet(window, indexes, false);
-        }
-        else
-        {
-            const auto monitor = MonitorFromWindow(window, MONITOR_DEFAULTTONULL);
-            if (monitor && m_uniqueId.monitorId.monitor == monitor)
-            {
-                // prioritize snapping on the current monitor if the window was snapped to several work areas
-                MoveWindowIntoZoneByIndexSet(window, indexes, false);
-            }
-            else
-            {
-                // if the window is not snapped on the current monitor, then check the others
-                auto savedIndexes = GetWindowZoneIndexes(window);
-                if (savedIndexes == indexes)
-                {
-                    MoveWindowIntoZoneByIndexSet(window, indexes, false);
-                }
-            }
-        }
-    }
-}
-
 void WorkArea::CalculateZoneSet()
 {
     const auto appliedLayout = AppliedLayouts::instance().GetDeviceLayout(m_uniqueId);

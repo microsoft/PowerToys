@@ -30,3 +30,36 @@ inline bool find_folder_in_path(const std::wstring& where, const std::vector<std
     }
     return false;
 }
+
+#define MAX_TITLE_LENGTH 255
+inline bool check_excluded_app_with_title(const HWND& hwnd, std::wstring& processPath, const std::vector<std::wstring>& excludedApps)
+{
+    WCHAR title[MAX_TITLE_LENGTH];
+    int len = GetWindowTextW(hwnd, title, MAX_TITLE_LENGTH);
+    if (len <= 0)
+    {
+        return false;
+    }
+
+    std::wstring titleStr(title);
+    auto lastBackslashPos = processPath.find_last_of(L'\\');
+    if (lastBackslashPos != std::wstring::npos)
+    {
+        processPath = processPath.substr(0, lastBackslashPos + 1); // retain up to the last backslash
+        processPath.append(titleStr); // append the title
+    }
+    CharUpperBuffW(processPath.data(), static_cast<DWORD>(processPath.length()));
+    return find_app_name_in_path(processPath, excludedApps);
+}
+
+inline bool check_excluded_app(const HWND& hwnd, std::wstring& processPath, const std::vector<std::wstring>& excludedApps)
+{
+    bool res = find_app_name_in_path(processPath, excludedApps);
+
+    if (!res)
+    {
+        res = check_excluded_app_with_title(hwnd, processPath, excludedApps);
+    }
+
+    return res;
+}

@@ -31,4 +31,5 @@ namespace updating
 
     // non-localized
     constexpr inline std::wstring_view INSTALLER_FILENAME_PATTERN = L"powertoyssetup";
+    constexpr inline std::wstring_view INSTALLER_FILENAME_PATTERN_USER = L"powertoysusersetup";
 }
