@@ -128,7 +128,8 @@ void SettingsWindow::Hide()
 
 void SettingsWindow::CreateControls(HINSTANCE instance)
 {
-    auto dpi = GetDpiForWindow(m_window);
+    // TODO: actually use dpi for some adjustments.
+    // auto dpi = GetDpiForWindow(m_window);
 
     m_controls = std::make_unique<util::StackPanel>(m_window, instance, m_font, 10, 10, 40, 250, 30);
 
