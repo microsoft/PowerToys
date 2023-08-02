@@ -578,7 +578,12 @@ namespace PowerLauncher
 
         private void ClearAutoCompleteText(TextBox textBox, System.Reactive.EventPattern<TextChangedEventWithInitiatorArgs> @event)
         {
-            @event.EventArgs.IsTextSetProgrammatically = _isTextSetProgrammatically;
+            bool isTextSetProgrammaticallyAtStart = _isTextSetProgrammatically;
+            if (@event != null)
+            {
+                @event.EventArgs.IsTextSetProgrammatically = isTextSetProgrammaticallyAtStart;
+            }
+
             var text = textBox.Text;
             var autoCompleteText = SearchBox.AutoCompleteTextBlock.Text;
 
@@ -598,7 +603,7 @@ namespace PowerLauncher
                 if (pTRunStartNewSearchAction == "DeSelect")
                 {
                     // leave the results, be deselect anything to it will not be activated by <enter> key, can still be arrow-key or clicked though
-                    if (!@event.EventArgs.IsTextSetProgrammatically)
+                    if (!isTextSetProgrammaticallyAtStart)
                     {
                         DeselectAllResults();
                     }
@@ -606,7 +611,7 @@ namespace PowerLauncher
                 else if (pTRunStartNewSearchAction == "Clear")
                 {
                     // remove all results to prepare for new results, this causes flashing usually and is not cool
-                    if (!@event.EventArgs.IsTextSetProgrammatically)
+                    if (!isTextSetProgrammaticallyAtStart)
                     {
                         ClearResults();
                     }
