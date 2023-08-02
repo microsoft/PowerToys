@@ -135,6 +135,7 @@ namespace Peek.FilePreviewer.Controls
                 }
 
                 PreviewBrowser.CoreWebView2.DOMContentLoaded += CoreWebView2_DOMContentLoaded;
+                PreviewBrowser.CoreWebView2.NewWindowRequested += CoreWebView2_NewWindowRequested;
             }
             catch (Exception ex)
             {
@@ -147,6 +148,16 @@ namespace Peek.FilePreviewer.Controls
         private void CoreWebView2_DOMContentLoaded(CoreWebView2 sender, CoreWebView2DOMContentLoadedEventArgs args)
         {
             DOMContentLoaded?.Invoke(sender, args);
+        }
+
+        private async void CoreWebView2_NewWindowRequested(CoreWebView2 sender, CoreWebView2NewWindowRequestedEventArgs args)
+        {
+            // Monaco opens URI in a new window. We open the URI in the default web browser.
+            if (args.Uri != null && args.IsUserInitiated)
+            {
+                args.Handled = true;
+                await Launcher.LaunchUriAsync(new Uri(args.Uri));
+            }
         }
 
         private async void PreviewBrowser_NavigationStarting(WebView2 sender, Microsoft.Web.WebView2.Core.CoreWebView2NavigationStartingEventArgs args)
