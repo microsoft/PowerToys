@@ -218,14 +218,15 @@ namespace PowerLauncher
 
             if (showResultsWithDelay)
             {
-                _reactiveSubscription = Observable.FromEventPattern<TextChangedEventHandler, TextChangedEventArgs>(
+                _reactiveSubscription = Observable.FromEventPattern<TextChangedEventHandler, TextChangedEventWithInitiatorArgs>(
+                    conversion => (sender, eventArg) => conversion(sender, new TextChangedEventWithInitiatorArgs(eventArg.RoutedEvent, eventArg.UndoAction)),
                     add => SearchBox.QueryTextBox.TextChanged += add,
                     remove => SearchBox.QueryTextBox.TextChanged -= remove)
-                    .Do(@event => ClearAutoCompleteText((TextBox)@event.Sender))
+                    .Do(@event => ClearAutoCompleteText((TextBox)@event.Sender, @event))
                     .Throttle(TimeSpan.FromMilliseconds(_settings.SearchInputDelayFast))
-                    .Do(@event => Dispatcher.InvokeAsync(() => PerformSearchQuery((TextBox)@event.Sender, false)))
+                    .Do(@event => Dispatcher.InvokeAsync(() => PerformSearchQuery((TextBox)@event.Sender, false, @event)))
                     .Throttle(TimeSpan.FromMilliseconds(_settings.SearchInputDelay))
-                    .Do(@event => Dispatcher.InvokeAsync(() => PerformSearchQuery((TextBox)@event.Sender, true)))
+                    .Do(@event => Dispatcher.InvokeAsync(() => PerformSearchQuery((TextBox)@event.Sender, true, @event)))
                     .Subscribe();
 
                 /*
@@ -463,12 +464,6 @@ namespace PowerLauncher
 
         private void Launcher_KeyDown(object sender, KeyEventArgs e)
         {
-            // ignoring key presses while the previous key press processing is ongoing (affects only the down, up keys)
-            if (_isTextSetProgrammatically)
-            {
-                return;
-            }
-
             if (e.Key == Key.Tab && (Keyboard.IsKeyDown(Key.LeftShift) || Keyboard.IsKeyDown(Key.RightShift)))
             {
                 _viewModel.SelectPrevTabItemCommand.Execute(null);
@@ -577,12 +572,13 @@ namespace PowerLauncher
         private void QueryTextBox_TextChanged(object sender, TextChangedEventArgs e)
         {
             var textBox = (TextBox)sender;
-            ClearAutoCompleteText(textBox);
+            ClearAutoCompleteText(textBox, null);
             PerformSearchQuery(textBox);
         }
 
-        private void ClearAutoCompleteText(TextBox textBox)
+        private void ClearAutoCompleteText(TextBox textBox, System.Reactive.EventPattern<TextChangedEventWithInitiatorArgs> @event)
         {
+            @event.EventArgs.IsTextSetProgrammatically = _isTextSetProgrammatically;
             var text = textBox.Text;
             var autoCompleteText = SearchBox.AutoCompleteTextBlock.Text;
 
@@ -602,7 +598,7 @@ namespace PowerLauncher
                 if (pTRunStartNewSearchAction == "DeSelect")
                 {
                     // leave the results, be deselect anything to it will not be activated by <enter> key, can still be arrow-key or clicked though
-                    if (!_isTextSetProgrammatically)
+                    if (!@event.EventArgs.IsTextSetProgrammatically)
                     {
                         DeselectAllResults();
                     }
@@ -610,7 +606,7 @@ namespace PowerLauncher
                 else if (pTRunStartNewSearchAction == "Clear")
                 {
                     // remove all results to prepare for new results, this causes flashing usually and is not cool
-                    if (!_isTextSetProgrammatically)
+                    if (!@event.EventArgs.IsTextSetProgrammatically)
                     {
                         ClearResults();
                     }
@@ -644,14 +640,20 @@ namespace PowerLauncher
 
         private void PerformSearchQuery(TextBox textBox)
         {
-            PerformSearchQuery(textBox, null);
+            PerformSearchQuery(textBox, null, null);
         }
 
-        private void PerformSearchQuery(TextBox textBox, bool? delayedExecution)
+        private void PerformSearchQuery(TextBox textBox, bool? delayedExecution, System.Reactive.EventPattern<TextChangedEventWithInitiatorArgs> @event)
         {
             var text = textBox.Text;
+            bool isTextSetProgrammaticallyForEvent = _isTextSetProgrammatically;
 
-            if (_isTextSetProgrammatically)
+            if (@event != null)
+            {
+                isTextSetProgrammaticallyForEvent = @event.EventArgs.IsTextSetProgrammatically;
+            }
+
+            if (isTextSetProgrammaticallyForEvent)
             {
                 textBox.SelectionStart = textBox.Text.Length;
 
