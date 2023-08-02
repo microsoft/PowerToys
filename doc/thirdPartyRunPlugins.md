@@ -17,7 +17,7 @@ Refer to plugin instruction for more details.
 
 The following plugins are created and maintained by third-party and not officially supported or recognized by Microsoft.  
 Users install and use these plugins at their own risk, and Microsoft takes no responsibility for their functionality or any potential issues they may cause.  
-For assistance, please contact the respective plugin developers directly.
+Contact the developers of a plugin directly for assistance with a specific plugin.
 
 ## Plugins
 
