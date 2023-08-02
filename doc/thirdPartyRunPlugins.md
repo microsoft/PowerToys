@@ -1,4 +1,4 @@
-# Third-Party Run Plugins
+# Third-Party plugins for PowerToy Run
 
 This is a collection of third-party plugins for PowerToys Run created by the community.
 
