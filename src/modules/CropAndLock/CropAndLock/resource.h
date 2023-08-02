@@ -1,6 +1,6 @@
 //{{NO_DEPENDENCIES}}
 // Microsoft Visual C++ generated include file.
-// Used by CropAndLockDemo.rc
+// Used by CropAndLock.rc
 //
 #define IDI_ICON1                       101
 

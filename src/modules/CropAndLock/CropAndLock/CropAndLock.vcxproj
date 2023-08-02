@@ -9,7 +9,7 @@
     <VCProjectVersion>15.0</VCProjectVersion>
     <ProjectGuid>{f5e1146e-b7b3-4e11-85fd-270a500bd78c}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
-    <RootNamespace>CropAndLockDemo</RootNamespace>
+    <RootNamespace>CropAndLock</RootNamespace>
     <WindowsTargetPlatformVersion Condition=" '$(WindowsTargetPlatformVersion)' == '' ">10.0.20348.0</WindowsTargetPlatformVersion>
     <WindowsTargetPlatformMinVersion>10.0.19041.0</WindowsTargetPlatformMinVersion>
   </PropertyGroup>
@@ -170,7 +170,7 @@
     <ClInclude Include="WindowRectUtil.h" />
   </ItemGroup>
   <ItemGroup>
-    <ResourceCompile Include="CropAndLockDemo.rc" />
+    <ResourceCompile Include="CropAndLock.rc" />
   </ItemGroup>
   <ItemGroup>
     <Image Include="icon1.ico" />

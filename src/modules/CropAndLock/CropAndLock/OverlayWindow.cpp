@@ -12,7 +12,7 @@ namespace util
     using namespace robmikh::common::desktop;
 }
 
-const std::wstring OverlayWindow::ClassName = L"CropAndLockDemo.OverlayWindow";
+const std::wstring OverlayWindow::ClassName = L"CropAndLock.OverlayWindow";
 const float OverlayWindow::BorderThickness = 5;
 std::once_flag OverlayWindowClassRegistration;
 

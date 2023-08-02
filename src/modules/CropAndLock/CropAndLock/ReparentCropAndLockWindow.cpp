@@ -1,7 +1,7 @@
 #include "pch.h"
 #include "ReparentCropAndLockWindow.h"
 
-const std::wstring ReparentCropAndLockWindow::ClassName = L"CropAndLockDemo.ReparentCropAndLockWindow";
+const std::wstring ReparentCropAndLockWindow::ClassName = L"CropAndLock.ReparentCropAndLockWindow";
 std::once_flag ReparentCropAndLockWindowClassRegistration;
 
 void ReparentCropAndLockWindow::RegisterWindowClass()

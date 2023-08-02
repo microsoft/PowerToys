@@ -7,7 +7,7 @@ namespace util
     using namespace robmikh::common::desktop::controls;
 }
 
-const std::wstring ChildWindow::ClassName = L"CropAndLockDemo.ChildWindow";
+const std::wstring ChildWindow::ClassName = L"CropAndLock.ChildWindow";
 std::once_flag ChildWindowClassRegistration;
 
 void ChildWindow::RegisterWindowClass()

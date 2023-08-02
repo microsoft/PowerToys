@@ -7,7 +7,7 @@ namespace util
     using namespace robmikh::common::desktop::controls;
 }
 
-const std::wstring SettingsWindow::ClassName = L"CropAndLockDemo.SettingsWindow";
+const std::wstring SettingsWindow::ClassName = L"CropAndLock.SettingsWindow";
 std::once_flag SettingsWindowClassRegistration;
 
 void SettingsWindow::RegisterWindowClass()

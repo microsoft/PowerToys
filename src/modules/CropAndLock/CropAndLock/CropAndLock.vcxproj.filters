@@ -28,7 +28,7 @@
     <ClInclude Include="ProcessUtil.h" />
   </ItemGroup>
   <ItemGroup>
-    <ResourceCompile Include="CropAndLockDemo.rc" />
+    <ResourceCompile Include="CropAndLock.rc" />
   </ItemGroup>
   <ItemGroup>
     <Image Include="icon1.ico" />

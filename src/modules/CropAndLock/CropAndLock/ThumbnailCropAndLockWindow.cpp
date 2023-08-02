@@ -1,7 +1,7 @@
 #include "pch.h"
 #include "ThumbnailCropAndLockWindow.h"
 
-const std::wstring ThumbnailCropAndLockWindow::ClassName = L"CropAndLockDemo.ThumbnailCropAndLockWindow";
+const std::wstring ThumbnailCropAndLockWindow::ClassName = L"CropAndLock.ThumbnailCropAndLockWindow";
 std::once_flag ThumbnailCropAndLockWindowClassRegistration;
 
 float ComputeScaleFactor(RECT const& windowRect, RECT const& contentRect)

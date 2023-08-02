@@ -29,9 +29,9 @@ int __stdcall WinMain(HINSTANCE, HINSTANCE, PSTR, int)
     auto currentPid = GetCurrentProcessId();
     for (auto&& process : processes)
     {
-        if (process.Name == L"CropAndLockDemo.exe" && process.Pid != currentPid)
+        if (process.Name == L"CropAndLock.exe" && process.Pid != currentPid)
         {
-            MessageBoxW(nullptr, L"CropAndLockDemo is already open! Please close it first by going to the icon in the system tray.", L"CropAndLockDemo", MB_ICONERROR);
+            MessageBoxW(nullptr, L"CropAndLock is already open! Please close it first by going to the icon in the system tray.", L"CropAndLock", MB_ICONERROR);
             return 1;
         }
     }
@@ -48,12 +48,12 @@ int __stdcall WinMain(HINSTANCE, HINSTANCE, PSTR, int)
     auto controller = util::CreateDispatcherQueueControllerForCurrentThread();
 
     // Create our settings window
-    auto settingsWindow = SettingsWindow(L"CropAndLockDemo Settings", 300, 225);
+    auto settingsWindow = SettingsWindow(L"CropAndLock Settings", 300, 225);
 
     // Create a tray icon
     auto instance = winrt::check_pointer(GetModuleHandleW(nullptr));
     wil::unique_hicon iconResource(winrt::check_pointer(LoadIconW(instance, MAIN_ICON)));
-    auto trayIcon = util::TrayIcon(settingsWindow.m_window, iconResource.get(), SettingsWindow::TrayIconMessage, 0, L"CropAndLockDemo");
+    auto trayIcon = util::TrayIcon(settingsWindow.m_window, iconResource.get(), SettingsWindow::TrayIconMessage, 0, L"CropAndLock");
 
     // Setup hot key
     auto hotKey = util::HotKey(MOD_CONTROL | MOD_SHIFT, 0x4C); // L 
