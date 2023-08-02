@@ -2,7 +2,7 @@
 
 This is a collection of third-party plugins for PowerToys Run created by the community.
 
-## Installing / Upgrading
+## Installing and upgrading third-party PowerToys Run plugins
 
 The recommended path for the plugins is `%LOCALAPPDATA%\Microsoft\PowerToys\PowerToys Run\Plugins`.
 
