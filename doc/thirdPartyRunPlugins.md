@@ -23,7 +23,7 @@ Contact the developers of a plugin directly for assistance with a specific plugi
 
 | Plugin | Author | Description |
 | ------ | ------ | ----------- |
-| [BrowserSearch](https://github.com/TBM13/BrowserSearch) | [TBM13](https://github.com/TBM13) | Search in your browser history |
+| [BrowserSearch](https://github.com/TBM13/BrowserSearch) | [TBM13](https://github.com/TBM13) | Search your browser history |
 | [Edge Favorite](https://github.com/davidegiacometti/PowerToys-Run-EdgeFavorite) | [davidegiacometti](https://github.com/davidegiacometti) | Open Microsoft Edge favorites |
 | [Everything](https://github.com/lin-ycv/EverythingPowerToys) | [Yu Chieh (Victor) Lin](https://github.com/Lin-ycv) | Get search results from Everything |
 | [GitHub Emoji](https://github.com/hlaueriksson/GEmojiSharp) | [hlaueriksson](https://github.com/hlaueriksson) | Search GitHub Emoji |
