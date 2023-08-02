@@ -1,6 +1,6 @@
 # Third-Party Run Plugins
 
-Collection of third-party Run plugins created by the community that aren't distributed with PowerToys.
+This is a collection of third-party plugins for PowerToys Run created by the community.
 
 ## Installing / Upgrading
 
