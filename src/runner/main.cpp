@@ -464,6 +464,7 @@ int WINAPI WinMain(HINSTANCE /*hInstance*/, HINSTANCE /*hPrevInstance*/, LPSTR l
         const bool elevated = is_process_elevated();
         const bool with_dont_elevate_arg = cmdLine.find("--dont-elevate") != std::string::npos;
         const bool run_elevated_setting = general_settings.GetNamedBoolean(L"run_elevated", false);
+        const bool with_restartedElevated_arg = cmdLine.find("--restartedElevated") != std::string::npos;
 
         if (elevated && with_dont_elevate_arg && !run_elevated_setting)
         {
@@ -471,8 +472,9 @@ int WINAPI WinMain(HINSTANCE /*hInstance*/, HINSTANCE /*hPrevInstance*/, LPSTR l
             schedule_restart_as_non_elevated();
             result = 0;
         }
-        else if (elevated || !run_elevated_setting || with_dont_elevate_arg)
+        else if (elevated || !run_elevated_setting || with_dont_elevate_arg || (!elevated && with_restartedElevated_arg))
         {
+            // if (!elevated && with_restartedElevated_arg): issue #19307 Restart elevated loop detected, running non-elevated
             result = runner(elevated, open_settings, settings_window, openOobe, openScoobe);
 
             if (result == 0)
