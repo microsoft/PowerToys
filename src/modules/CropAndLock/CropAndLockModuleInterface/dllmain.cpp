@@ -3,10 +3,17 @@
 #include <interface/powertoy_module_interface.h>
 #include <common/SettingsAPI/settings_objects.h>
 
+#include <common/logger/logger.h>
+#include <common/utils/logger_helper.h>
 #include <common/utils/resources.h>
 
 #include <CropAndLock/trace.h>
 #include <CropAndLock/ModuleConstants.h>
+
+namespace NonLocalizable
+{
+    const wchar_t ModulePath[] = L"PowerToys.CropAndLock.exe";
+}
 
 BOOL APIENTRY DllMain( HMODULE /*hModule*/,
                        DWORD  ul_reason_for_call,
@@ -67,14 +74,14 @@ public:
     // Enable the powertoy
     virtual void enable()
     {
-        // Logger::info("CropAndLock enabling");
+        Logger::info("CropAndLock enabling");
         Enable();
     }
 
     // Disable the powertoy
     virtual void disable()
     {
-        // Logger::info("CropAndLock disabling");
+        Logger::info("CropAndLock disabling");
         Disable(true);
     }
 
@@ -95,6 +102,7 @@ public:
     {
         app_name = L"CropAndLock";
         app_key = NonLocalizable::ModuleKey;
+        LoggerHelpers::init_logger(app_key, L"ModuleInterface", LogSettings::cropAndLockLoggerName);
         // TODO: Create Events for thumbnails and reparenting.
 
         // init_settings();
