@@ -69,6 +69,7 @@
       <PreprocessorDefinitions>_CONSOLE;WIN32_LEAN_AND_MEAN;WINRT_LEAN_AND_MEAN;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <WarningLevel>Level4</WarningLevel>
       <AdditionalOptions>%(AdditionalOptions) /permissive- /bigobj</AdditionalOptions>
+      <AdditionalIncludeDirectories>$(SolutionDir)src\common\Telemetry;$(SolutionDir)src\common;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)'=='Debug'">
@@ -119,11 +120,13 @@
     <ClCompile Include="SettingsWindow.cpp" />
     <ClCompile Include="OverlayWindow.cpp" />
     <ClCompile Include="pch.cpp" />
+    <ClCompile Include="trace.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="ChildWindow.h" />
     <ClInclude Include="CropAndLockWindow.h" />
     <ClInclude Include="DisplaysUtil.h" />
+    <ClInclude Include="ModuleConstants.h" />
     <ClInclude Include="ProcessUtil.h" />
     <ClInclude Include="ReparentCropAndLockWindow.h" />
     <ClInclude Include="ThumbnailCropAndLockWindow.h" />
@@ -132,6 +135,7 @@
     <ClInclude Include="pch.h" />
     <ClInclude Include="resource.h" />
     <ClInclude Include="ThumbnailUtil.h" />
+    <ClInclude Include="trace.h" />
     <ClInclude Include="WindowRectUtil.h" />
   </ItemGroup>
   <ItemGroup>

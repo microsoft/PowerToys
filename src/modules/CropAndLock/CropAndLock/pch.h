@@ -69,6 +69,9 @@
 #include "WindowRectUtil.h"
 #include "ProcessUtil.h"
 
+// PowerToys
+#include <ProjectTelemetry.h>
+
 // Application resources
 #include "resource.h"
 #define MAIN_ICON MAKEINTRESOURCEW(IDI_ICON1)

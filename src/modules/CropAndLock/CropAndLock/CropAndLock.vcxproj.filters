@@ -12,6 +12,7 @@
     <ClCompile Include="OverlayWindow.cpp" />
     <ClCompile Include="ReparentCropAndLockWindow.cpp" />
     <ClCompile Include="ChildWindow.cpp" />
+    <ClCompile Include="trace.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h" />
@@ -26,6 +27,8 @@
     <ClInclude Include="ReparentCropAndLockWindow.h" />
     <ClInclude Include="ChildWindow.h" />
     <ClInclude Include="ProcessUtil.h" />
+    <ClInclude Include="trace.h" />
+    <ClInclude Include="ModuleConstants.h" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="CropAndLock.rc" />
