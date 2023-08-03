@@ -93,6 +93,52 @@ BOOL IsLocalSystem()
     return bSystem;
 }
 
+BOOL ImpersonateLoggedInUserAndDoSomething(std::function<bool(HANDLE userToken)> action)
+{
+    HRESULT hr = S_OK;
+    HANDLE hUserToken = NULL;
+    DWORD dwSessionId;
+    ProcessIdToSessionId(GetCurrentProcessId(), &dwSessionId);
+    auto rv = WTSQueryUserToken(dwSessionId, &hUserToken);
+
+    if (rv == 0)
+    {
+        hr = E_ABORT;
+        ExitOnFailure(hr, "Failed to query user token");
+    }
+
+    HANDLE hUserTokenDup;
+    if (DuplicateTokenEx(hUserToken, TOKEN_ALL_ACCESS, NULL, SECURITY_IMPERSONATION_LEVEL::SecurityImpersonation, TOKEN_TYPE::TokenPrimary, &hUserTokenDup) == 0)
+    {
+        CloseHandle(hUserToken);
+        CloseHandle(hUserTokenDup);
+        hr = E_ABORT;
+        ExitOnFailure(hr, "Failed to duplicate user token");
+    }
+
+    if (ImpersonateLoggedOnUser(hUserTokenDup))
+    {
+
+        if (!action(hUserTokenDup))
+        {
+            hr = E_ABORT;
+            ExitOnFailure(hr, "Failed to execute action");
+        }
+
+        RevertToSelf();
+        CloseHandle(hUserToken);
+        CloseHandle(hUserTokenDup);
+    }
+    else
+    {
+        hr = E_ABORT;
+        ExitOnFailure(hr, "Failed to duplicate user token");
+    }
+
+LExit:
+    return SUCCEEDED(hr) ? true : false;
+}
+
 UINT __stdcall LaunchPowerToysCA(MSIHANDLE hInstall)
 {
     HRESULT hr = S_OK;
@@ -117,34 +163,15 @@ UINT __stdcall LaunchPowerToysCA(MSIHANDLE hInstall)
 
     if (isSystemUser) {
     
-        HANDLE hUserToken = NULL;
-        DWORD dwSessionId;
-        ProcessIdToSessionId(GetCurrentProcessId(), &dwSessionId);
-        auto rv = WTSQueryUserToken(dwSessionId, &hUserToken);
-
-        if (rv == 0)
-        {
-            ExitOnFailure(hr, "Failed to query user token");
-        }
-
-        HANDLE hUserTokenDup;
-        if (DuplicateTokenEx(hUserToken, TOKEN_ALL_ACCESS, NULL, SECURITY_IMPERSONATION_LEVEL::SecurityImpersonation, TOKEN_TYPE::TokenPrimary, &hUserTokenDup) == 0)
-        {
-            CloseHandle(hUserToken);
-            CloseHandle(hUserTokenDup);
-            ExitOnFailure(hr, "Failed to duplicate user token");
-        }
-
-        if (ImpersonateLoggedOnUser(hUserTokenDup))
-        {
+        auto action = [&commandLine](HANDLE userToken) {
             STARTUPINFO startupInfo{ .cb = sizeof(STARTUPINFO),  .wShowWindow = SW_SHOWNORMAL };
             PROCESS_INFORMATION processInformation;
 
             PVOID lpEnvironment = NULL;
-            CreateEnvironmentBlock(&lpEnvironment, hUserTokenDup, FALSE);
+            CreateEnvironmentBlock(&lpEnvironment, userToken, FALSE);
 
             CreateProcessAsUser(
-                hUserTokenDup,
+                userToken,
                 NULL,
                 commandLine.data(),
                 NULL,
@@ -158,20 +185,20 @@ UINT __stdcall LaunchPowerToysCA(MSIHANDLE hInstall)
 
             if (!CloseHandle(processInformation.hProcess))
             {
-                er = ERROR_INSTALL_FAILURE;
+                return false;
             }
             if (!CloseHandle(processInformation.hThread))
             {
-                er = ERROR_INSTALL_FAILURE;
+                return false;
             }
 
-            RevertToSelf();
-            CloseHandle(hUserToken);
-            CloseHandle(hUserTokenDup);
-        }
-        else
+            return true;
+        };
+
+        if (!ImpersonateLoggedInUserAndDoSomething(action))
         {
-            ExitOnFailure(hr, "Failed to duplicate user token");
+            hr = E_ABORT;
+            ExitOnFailure(hr, "ImpersonateLoggedInUserAndDoSomething failed");
         }
     }
     else
@@ -195,10 +222,12 @@ UINT __stdcall LaunchPowerToysCA(MSIHANDLE hInstall)
 
         if (!CloseHandle(processInformation.hProcess))
         {
+            hr = E_ABORT;
             ExitOnFailure(hr, "Failed to close process handle");
         }
         if (!CloseHandle(processInformation.hThread))
         {
+            hr = E_ABORT;
             ExitOnFailure(hr, "Failed to close thread handle");
         }
     }
