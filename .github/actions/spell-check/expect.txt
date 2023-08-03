@@ -2021,7 +2021,6 @@ vcgtq
 VCINSTALLDIR
 vcm
 Vcpkg
-vcproj
 VCRT
 vcvars
 VDesktop
@@ -2135,7 +2134,7 @@ WINL
 winlogon
 winmd
 winmm
-WINNT
+winnt
 winres
 winrt
 winsdk
