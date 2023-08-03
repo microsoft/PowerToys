@@ -18,6 +18,7 @@
 #include <wtsapi32.h>
 #include <processthreadsapi.h>
 #include <UserEnv.h>
+#include <winnt.h>
 
 using namespace std;
 
@@ -128,7 +129,6 @@ UINT __stdcall LaunchPowerToysCA(MSIHANDLE hInstall)
 
         HANDLE hUserTokenDup;
         if (DuplicateTokenEx(hUserToken, TOKEN_ALL_ACCESS, NULL, SECURITY_IMPERSONATION_LEVEL::SecurityImpersonation, TOKEN_TYPE::TokenPrimary, &hUserTokenDup) == 0)
-            // if (DuplicateToken(hUserToken, SECURITY_IMPERSONATION_LEVEL::SecurityImpersonation, &hUserTokenDup) == 0)
         {
             CloseHandle(hUserToken);
             CloseHandle(hUserTokenDup);
@@ -137,11 +137,7 @@ UINT __stdcall LaunchPowerToysCA(MSIHANDLE hInstall)
 
         if (ImpersonateLoggedOnUser(hUserTokenDup))
         {
-            STARTUPINFO startupInfo;
-            ZeroMemory(&startupInfo, sizeof(STARTUPINFO));
-            startupInfo.cb = sizeof(STARTUPINFO);
-            startupInfo.wShowWindow = SW_SHOWNORMAL;
-
+            STARTUPINFO startupInfo{ .cb = sizeof(STARTUPINFO),  .wShowWindow = SW_SHOWNORMAL };
             PROCESS_INFORMATION processInformation;
 
             PVOID lpEnvironment = NULL;
@@ -180,10 +176,7 @@ UINT __stdcall LaunchPowerToysCA(MSIHANDLE hInstall)
     }
     else
     {
-        STARTUPINFO startupInfo;
-        ZeroMemory(&startupInfo, sizeof(STARTUPINFO));
-        startupInfo.cb = sizeof(STARTUPINFO);
-        startupInfo.wShowWindow = SW_SHOWNORMAL;
+        STARTUPINFO startupInfo{ .cb = sizeof(STARTUPINFO),  .wShowWindow = SW_SHOWNORMAL };
 
         PROCESS_INFORMATION processInformation;
 
