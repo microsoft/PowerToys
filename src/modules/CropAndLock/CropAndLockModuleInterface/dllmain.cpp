@@ -6,9 +6,12 @@
 #include <common/logger/logger.h>
 #include <common/utils/logger_helper.h>
 #include <common/utils/resources.h>
+#include <common/utils/winapi_error.h>
 
 #include <CropAndLock/trace.h>
 #include <CropAndLock/ModuleConstants.h>
+
+#include <shellapi.h>
 
 namespace NonLocalizable
 {
@@ -113,7 +116,32 @@ private:
     {
         m_enabled = true;
 
-        // TODO: Actual enable logic
+        // TODO: Log telemetry
+
+        // TODO: Actually pass the PID.
+        unsigned long powertoys_pid = GetCurrentProcessId();
+        std::wstring executable_args = L"";
+        executable_args.append(std::to_wstring(powertoys_pid));
+        // TODO: Reset events
+
+        SHELLEXECUTEINFOW sei{ sizeof(sei) };
+        sei.fMask = { SEE_MASK_NOCLOSEPROCESS | SEE_MASK_FLAG_NO_UI };
+        sei.lpFile = NonLocalizable::ModulePath;
+        sei.nShow = SW_SHOWNORMAL;
+        sei.lpParameters = executable_args.data();
+        if (ShellExecuteExW(&sei) == false)
+        {
+            Logger::error(L"Failed to start CropAndLock");
+            auto message = get_last_error_message(GetLastError());
+            if (message.has_value())
+            {
+                Logger::error(message.value());
+            }
+        }
+        else
+        {
+            m_hProcess = sei.hProcess;
+        }
 
     }
 
@@ -121,14 +149,34 @@ private:
     {
         m_enabled = false;
 
-        // TODO: Actual disable logic
+        // TODO: Figure out a better disable... Crop And Lock might need to run clean up to free the reparented windows.
 
+        // TODO: Reset Events
+
+        // TODO: Log telemetry
+        /*if (traceEvent)
+        {
+            
+        }*/
+
+        if (m_hProcess)
+        {
+            TerminateProcess(m_hProcess, 0);
+            m_hProcess = nullptr;
+        }
+
+    }
+
+    bool is_process_running()
+    {
+        return WaitForSingleObject(m_hProcess, 0) == WAIT_TIMEOUT;
     }
 
     std::wstring app_name;
     std::wstring app_key; //contains the non localized key of the powertoy
 
     bool m_enabled = false;
+    HANDLE m_hProcess = nullptr;
 
 };
 
