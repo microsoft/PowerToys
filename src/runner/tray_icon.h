@@ -14,5 +14,3 @@ typedef void (*main_loop_callback_function)(PVOID);
 bool dispatch_run_on_main_ui_thread(main_loop_callback_function _callback, PVOID data);
 
 const inline wchar_t* pt_tray_icon_window_class = L"PToyTrayIconWindow";
-
-const inline wchar_t* tray_icon_guid = L"{F933F1D8-B8AE-41A4-A134-FB36323E0095}";

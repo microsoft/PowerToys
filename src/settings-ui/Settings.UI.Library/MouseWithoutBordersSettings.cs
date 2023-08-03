@@ -56,13 +56,25 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             {
                 Version = "1.1";
 
-                Properties.ToggleEasyMouseShortcut = ConvertMouseWithoutBordersHotKeyToPowerToys(Properties.HotKeyToggleEasyMouse.Value);
+                if (Properties.HotKeyToggleEasyMouse != null)
+                {
+                    Properties.ToggleEasyMouseShortcut = ConvertMouseWithoutBordersHotKeyToPowerToys(Properties.HotKeyToggleEasyMouse.Value);
+                }
 
-                Properties.LockMachineShortcut = ConvertMouseWithoutBordersHotKeyToPowerToys(Properties.HotKeyLockMachine.Value);
+                if (Properties.HotKeyLockMachine != null)
+                {
+                    Properties.LockMachineShortcut = ConvertMouseWithoutBordersHotKeyToPowerToys(Properties.HotKeyLockMachine.Value);
+                }
 
-                Properties.ReconnectShortcut = ConvertMouseWithoutBordersHotKeyToPowerToys(Properties.HotKeyReconnect.Value);
+                if (Properties.HotKeyReconnect != null)
+                {
+                    Properties.ReconnectShortcut = ConvertMouseWithoutBordersHotKeyToPowerToys(Properties.HotKeyReconnect.Value);
+                }
 
-                Properties.Switch2AllPCShortcut = ConvertMouseWithoutBordersHotKeyToPowerToys(Properties.HotKeySwitch2AllPC.Value);
+                if (Properties.HotKeySwitch2AllPC != null)
+                {
+                    Properties.Switch2AllPCShortcut = ConvertMouseWithoutBordersHotKeyToPowerToys(Properties.HotKeySwitch2AllPC.Value);
+                }
 
                 Properties.HotKeyToggleEasyMouse = null;
                 Properties.HotKeyLockMachine = null;

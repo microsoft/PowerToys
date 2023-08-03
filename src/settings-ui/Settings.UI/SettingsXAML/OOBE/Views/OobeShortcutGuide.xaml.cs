@@ -31,7 +31,7 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
 
         private void Start_ShortcutGuide_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
         {
-            var executablePath = Path.Combine(System.AppDomain.CurrentDomain.BaseDirectory, @"PowerToys.ShortcutGuide.exe");
+            var executablePath = Path.Combine(System.AppDomain.CurrentDomain.BaseDirectory, "..", @"PowerToys.ShortcutGuide.exe");
             var id = System.Environment.ProcessId.ToString(CultureInfo.InvariantCulture);
             var p = Process.Start(executablePath, id);
             if (p != null)
