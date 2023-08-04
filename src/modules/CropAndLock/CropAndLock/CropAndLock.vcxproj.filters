@@ -26,7 +26,6 @@
     <ClInclude Include="CropAndLockWindow.h" />
     <ClInclude Include="ReparentCropAndLockWindow.h" />
     <ClInclude Include="ChildWindow.h" />
-    <ClInclude Include="ProcessUtil.h" />
     <ClInclude Include="trace.h" />
     <ClInclude Include="ModuleConstants.h" />
   </ItemGroup>

@@ -68,7 +68,6 @@
 #include "DisplaysUtil.h"
 #include "ThumbnailUtil.h"
 #include "WindowRectUtil.h"
-#include "ProcessUtil.h"
 
 // PowerToys
 #include <ProjectTelemetry.h>

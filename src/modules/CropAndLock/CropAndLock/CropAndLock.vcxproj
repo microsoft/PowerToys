@@ -126,7 +126,6 @@
     <ClInclude Include="CropAndLockWindow.h" />
     <ClInclude Include="DisplaysUtil.h" />
     <ClInclude Include="ModuleConstants.h" />
-    <ClInclude Include="ProcessUtil.h" />
     <ClInclude Include="ReparentCropAndLockWindow.h" />
     <ClInclude Include="ThumbnailCropAndLockWindow.h" />
     <ClInclude Include="SettingsWindow.h" />

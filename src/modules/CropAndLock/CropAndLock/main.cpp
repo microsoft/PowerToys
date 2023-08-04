@@ -25,6 +25,8 @@ namespace util
     using namespace robmikh::common::desktop;
 }
 
+const std::wstring instanceMutexName = L"Local\\PowerToys_CropAndLock_InstanceMutex";
+
 int __stdcall WinMain(HINSTANCE, HINSTANCE, PSTR, int)
 {
     // Initialize COM
@@ -37,15 +39,16 @@ int __stdcall WinMain(HINSTANCE, HINSTANCE, PSTR, int)
     // Before we do anything, check to see if we're already running. If we are,
     // the hotkey won't register and we'll fail. Instead, we should tell the user
     // to kill the other instance and exit this one.
-    auto processes = GetAllProcesses();
-    auto currentPid = GetCurrentProcessId();
-    for (auto&& process : processes)
+    auto mutex = CreateMutex(nullptr, true, instanceMutexName.c_str());
+    if (mutex == nullptr)
     {
-        if (process.Name == L"CropAndLock.exe" && process.Pid != currentPid)
-        {
-            MessageBoxW(nullptr, L"CropAndLock is already open! Please close it first by going to the icon in the system tray.", L"CropAndLock", MB_ICONERROR);
-            return 1;
-        }
+        Logger::error(L"Failed to create mutex. {}", get_last_error_or_default(GetLastError()));
+    }
+
+    if (GetLastError() == ERROR_ALREADY_EXISTS)
+    {
+        MessageBoxW(nullptr, L"CropAndLock is already open! Please close it first from the Task Manager.", L"CropAndLock", MB_ICONERROR);
+        return 1;
     }
 
     // NOTE: Reparenting a window with a different DPI context has consequences.
