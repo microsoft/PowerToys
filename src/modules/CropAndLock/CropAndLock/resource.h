@@ -14,3 +14,13 @@
 #define _APS_NEXT_SYMED_VALUE           101
 #endif
 #endif
+
+//////////////////////////////
+// Non-localizable
+
+#define FILE_DESCRIPTION "PowerToys CropAndLock"
+#define INTERNAL_NAME "PowerToys.CropAndLock"
+#define ORIGINAL_FILENAME "PowerToys.CropAndLock.exe"
+
+// Non-localizable
+//////////////////////////////
