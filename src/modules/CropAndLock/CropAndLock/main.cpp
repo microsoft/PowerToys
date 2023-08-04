@@ -83,14 +83,6 @@ int WINAPI wWinMain(_In_ HINSTANCE, _In_opt_ HINSTANCE, _In_ PWSTR lpCmdLine, _I
     // Create the DispatcherQueue that the compositor needs to run
     auto controller = util::CreateDispatcherQueueControllerForCurrentThread();
 
-    // Create our settings window
-    auto settingsWindow = SettingsWindow(L"CropAndLock Settings", 300, 225);
-
-    // Create a tray icon
-    auto instance = winrt::check_pointer(GetModuleHandleW(nullptr));
-    wil::unique_hicon iconResource(winrt::check_pointer(LoadIconW(instance, MAIN_ICON)));
-    auto trayIcon = util::TrayIcon(settingsWindow.m_window, iconResource.get(), SettingsWindow::TrayIconMessage, 0, L"CropAndLock");
-
     // Setup hot key
     auto hotKey = util::HotKey(MOD_CONTROL | MOD_SHIFT, 0x4C); // L 
 
