@@ -20,7 +20,7 @@ void ChildWindow::RegisterWindowClass()
     wcex.hInstance = instance;
     wcex.hIcon = LoadIconW(instance, IDI_APPLICATION);
     wcex.hCursor = LoadCursorW(nullptr, IDC_ARROW);
-    wcex.hbrBackground = (HBRUSH)(COLOR_WINDOW + 1);
+    wcex.hbrBackground = reinterpret_cast<HBRUSH>(COLOR_WINDOW + 1);
     wcex.lpszClassName = ClassName.c_str();
     wcex.hIconSm = LoadIconW(wcex.hInstance, IDI_APPLICATION);
     winrt::check_bool(RegisterClassExW(&wcex));
