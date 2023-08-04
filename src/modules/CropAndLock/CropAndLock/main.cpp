@@ -9,6 +9,7 @@
 #include <common/utils/logger_helper.h>
 #include <common/utils/UnhandledExceptionHandler.h>
 #include "ModuleConstants.h"
+#include <common/utils/ProcessWaiter.h>
 
 #pragma comment(linker,"/manifestdependency:\"type='win32' name='Microsoft.Windows.Common-Controls' version='6.0.0.0' processorArchitecture='*' publicKeyToken='6595b64144ccf1df' language='*'\"")
 
@@ -27,7 +28,7 @@ namespace util
 
 const std::wstring instanceMutexName = L"Local\\PowerToys_CropAndLock_InstanceMutex";
 
-int __stdcall WinMain(HINSTANCE, HINSTANCE, PSTR, int)
+int WINAPI wWinMain(_In_ HINSTANCE, _In_opt_ HINSTANCE, _In_ PWSTR lpCmdLine, _In_ int)
 {
     // Initialize COM
     winrt::init_apartment(winrt::apartment_type::single_threaded);
@@ -49,6 +50,25 @@ int __stdcall WinMain(HINSTANCE, HINSTANCE, PSTR, int)
     {
         MessageBoxW(nullptr, L"CropAndLock is already open! Please close it first from the Task Manager.", L"CropAndLock", MB_ICONERROR);
         return 1;
+    }
+
+    std::wstring pid = std::wstring(lpCmdLine);
+    if (!pid.empty())
+    {
+        auto mainThreadId = GetCurrentThreadId();
+        ProcessWaiter::OnProcessTerminate(pid, [mainThreadId](int err) {
+            if (err != ERROR_SUCCESS)
+            {
+                Logger::error(L"Failed to wait for parent process exit. {}", get_last_error_or_default(err));
+            }
+            else
+            {
+                Logger::trace(L"PowerToys runner exited.");
+            }
+
+            Logger::trace(L"Exiting CropAndLock");
+            PostThreadMessage(mainThreadId, WM_QUIT, 0, 0);
+        });
     }
 
     // NOTE: Reparenting a window with a different DPI context has consequences.
