@@ -53,23 +53,27 @@ int WINAPI wWinMain(_In_ HINSTANCE, _In_opt_ HINSTANCE, _In_ PWSTR lpCmdLine, _I
     }
 
     std::wstring pid = std::wstring(lpCmdLine);
-    if (!pid.empty())
+    if (pid.empty())
     {
-        auto mainThreadId = GetCurrentThreadId();
-        ProcessWaiter::OnProcessTerminate(pid, [mainThreadId](int err) {
-            if (err != ERROR_SUCCESS)
-            {
-                Logger::error(L"Failed to wait for parent process exit. {}", get_last_error_or_default(err));
-            }
-            else
-            {
-                Logger::trace(L"PowerToys runner exited.");
-            }
-
-            Logger::trace(L"Exiting CropAndLock");
-            PostThreadMessage(mainThreadId, WM_QUIT, 0, 0);
-        });
+        Logger::warn(L"Tried to run Crop And Lock as a standalone.");
+        MessageBoxW(nullptr, L"CropAndLock can't run as a standalone. Start it from PowerToys.", L"CropAndLock", MB_ICONERROR);
+        return 1;
     }
+
+    auto mainThreadId = GetCurrentThreadId();
+    ProcessWaiter::OnProcessTerminate(pid, [mainThreadId](int err) {
+        if (err != ERROR_SUCCESS)
+        {
+            Logger::error(L"Failed to wait for parent process exit. {}", get_last_error_or_default(err));
+        }
+        else
+        {
+            Logger::trace(L"PowerToys runner exited.");
+        }
+
+        Logger::trace(L"Exiting CropAndLock");
+        PostThreadMessage(mainThreadId, WM_QUIT, 0, 0);
+    });
 
     // NOTE: Reparenting a window with a different DPI context has consequences.
     //       See https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-setparent#remarks
