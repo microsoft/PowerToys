@@ -169,6 +169,7 @@ public:
 
         m_reparent_event_handle = CreateDefaultEvent(CommonSharedConstants::CROP_AND_LOCK_REPARENT_EVENT);
         m_thumbnail_event_handle = CreateDefaultEvent(CommonSharedConstants::CROP_AND_LOCK_THUMBNAIL_EVENT);
+        m_exit_event_handle = CreateDefaultEvent(CommonSharedConstants::CROP_AND_LOCK_EXIT_EVENT);
 
         init_settings();
     }
@@ -187,6 +188,7 @@ private:
         
         ResetEvent(m_reparent_event_handle);
         ResetEvent(m_thumbnail_event_handle);
+        ResetEvent(m_exit_event_handle);
 
         SHELLEXECUTEINFOW sei{ sizeof(sei) };
         sei.fMask = { SEE_MASK_NOCLOSEPROCESS | SEE_MASK_FLAG_NO_UI };
@@ -213,11 +215,11 @@ private:
     {
         m_enabled = false;
 
-        // TODO: Figure out a better disable... Crop And Lock might need to run clean up to free the reparented windows.
+        // We can't just kill the process, since Crop and Lock might need to release any reparented windows first.
+        SetEvent(m_exit_event_handle);
 
         ResetEvent(m_reparent_event_handle);
         ResetEvent(m_thumbnail_event_handle);
-
         // TODO: Log telemetry
         /*if (traceEvent)
         {
@@ -226,7 +228,6 @@ private:
 
         if (m_hProcess)
         {
-            TerminateProcess(m_hProcess, 0);
             m_hProcess = nullptr;
         }
 
@@ -308,6 +309,7 @@ private:
 
     HANDLE m_reparent_event_handle;
     HANDLE m_thumbnail_event_handle;
+    HANDLE m_exit_event_handle;
 
 };
 

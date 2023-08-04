@@ -102,6 +102,7 @@ int WINAPI wWinMain(_In_ HINSTANCE, _In_opt_ HINSTANCE, _In_ PWSTR lpCmdLine, _I
     // Handles and thread for the events sent from runner
     HANDLE m_reparent_event_handle;
     HANDLE m_thumbnail_event_handle;
+    HANDLE m_exit_event_handle;
     std::thread m_event_triggers_thread;
     bool m_running = true;
 
@@ -175,7 +176,8 @@ int WINAPI wWinMain(_In_ HINSTANCE, _In_opt_ HINSTANCE, _In_ PWSTR lpCmdLine, _I
     // Start a thread to listen on the events.
     m_reparent_event_handle = CreateEventW(nullptr, false, false, CommonSharedConstants::CROP_AND_LOCK_REPARENT_EVENT);
     m_thumbnail_event_handle = CreateEventW(nullptr, false, false, CommonSharedConstants::CROP_AND_LOCK_THUMBNAIL_EVENT);
-    if (!m_reparent_event_handle || !m_reparent_event_handle)
+    m_exit_event_handle = CreateEventW(nullptr, false, false, CommonSharedConstants::CROP_AND_LOCK_EXIT_EVENT);
+    if (!m_reparent_event_handle || !m_reparent_event_handle || !m_exit_event_handle)
     {
         Logger::warn(L"Failed to create events. {}", get_last_error_or_default(GetLastError()));
         return 1;
@@ -183,7 +185,7 @@ int WINAPI wWinMain(_In_ HINSTANCE, _In_opt_ HINSTANCE, _In_ PWSTR lpCmdLine, _I
 
     m_event_triggers_thread = std::thread([&]() {
         MSG msg;
-        HANDLE event_handles[2] = {m_reparent_event_handle, m_thumbnail_event_handle};
+        HANDLE event_handles[3] = {m_reparent_event_handle, m_thumbnail_event_handle, m_exit_event_handle};
         while (m_running)
         {
             DWORD dwEvt = MsgWaitForMultipleObjects(2, event_handles, false, INFINITE, QS_ALLINPUT);
@@ -195,6 +197,7 @@ int WINAPI wWinMain(_In_ HINSTANCE, _In_opt_ HINSTANCE, _In_ PWSTR lpCmdLine, _I
             {
             case WAIT_OBJECT_0:
             {
+                // Reparent Event
                 bool enqueueSucceeded = controller.DispatcherQueue().TryEnqueue([&]() {
                     ProcessCommand(CropAndLockType::Reparent);
                 });
@@ -206,6 +209,7 @@ int WINAPI wWinMain(_In_ HINSTANCE, _In_opt_ HINSTANCE, _In_ PWSTR lpCmdLine, _I
             }
             case WAIT_OBJECT_0 + 1:
             {
+                // Thumbnail Event
                 bool enqueueSucceeded = controller.DispatcherQueue().TryEnqueue([&]() {
                     ProcessCommand(CropAndLockType::Thumbnail);
                 });
@@ -216,6 +220,12 @@ int WINAPI wWinMain(_In_ HINSTANCE, _In_opt_ HINSTANCE, _In_ PWSTR lpCmdLine, _I
                 break;
             }
             case WAIT_OBJECT_0 + 2:
+            {
+                // Exit Event
+                PostQuitMessage(0);
+                break;
+            }
+            case WAIT_OBJECT_0 + 3:
                 if (PeekMessageW(&msg, nullptr, 0, 0, PM_REMOVE))
                 {
                     TranslateMessage(&msg);
@@ -240,8 +250,8 @@ int WINAPI wWinMain(_In_ HINSTANCE, _In_opt_ HINSTANCE, _In_ PWSTR lpCmdLine, _I
     // Needed to unblock MsgWaitForMultipleObjects one last time
     SetEvent(m_reparent_event_handle);
     CloseHandle(m_reparent_event_handle);
-    SetEvent(m_thumbnail_event_handle);
     CloseHandle(m_thumbnail_event_handle);
+    CloseHandle(m_exit_event_handle);
     m_event_triggers_thread.join();
 
     return util::ShutdownDispatcherQueueControllerAndWait(controller, static_cast<int>(msg.wParam));
