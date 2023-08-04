@@ -1,4 +1,4 @@
-﻿// MouseHighlighter.cpp : Defines the entry point for the application.
+// MouseHighlighter.cpp : Defines the entry point for the application.
 //
 
 #include "pch.h"
