@@ -184,7 +184,7 @@ int WINAPI wWinMain(_In_ HINSTANCE, _In_opt_ HINSTANCE, _In_ PWSTR lpCmdLine, _I
         HANDLE event_handles[3] = {m_reparent_event_handle, m_thumbnail_event_handle, m_exit_event_handle};
         while (m_running)
         {
-            DWORD dwEvt = MsgWaitForMultipleObjects(2, event_handles, false, INFINITE, QS_ALLINPUT);
+            DWORD dwEvt = MsgWaitForMultipleObjects(3, event_handles, false, INFINITE, QS_ALLINPUT);
             if (!m_running)
             {
                 break;
@@ -218,7 +218,7 @@ int WINAPI wWinMain(_In_ HINSTANCE, _In_opt_ HINSTANCE, _In_ PWSTR lpCmdLine, _I
             case WAIT_OBJECT_0 + 2:
             {
                 // Exit Event
-                PostQuitMessage(0);
+                PostThreadMessage(mainThreadId, WM_QUIT, 0, 0);
                 break;
             }
             case WAIT_OBJECT_0 + 3:
