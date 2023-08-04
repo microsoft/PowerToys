@@ -8,7 +8,6 @@
     <ClCompile Include="main.cpp" />
     <ClCompile Include="pch.cpp" />
     <ClCompile Include="ThumbnailCropAndLockWindow.cpp" />
-    <ClCompile Include="SettingsWindow.cpp" />
     <ClCompile Include="OverlayWindow.cpp" />
     <ClCompile Include="ReparentCropAndLockWindow.cpp" />
     <ClCompile Include="ChildWindow.cpp" />
