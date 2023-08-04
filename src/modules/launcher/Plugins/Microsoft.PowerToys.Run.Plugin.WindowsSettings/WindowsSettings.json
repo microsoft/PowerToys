@@ -190,7 +190,7 @@
       "DeprecatedInBuild": 22000
     },
     {
-      "Name": "Devices11",
+      "Name": "Devices",
       "Areas": [ "AreaBluetoothAndDevices11" ],
       "Type": "AppSettingsApp",
       "Command": "ms-settings:bluetooth",
