@@ -34,6 +34,9 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         [JsonPropertyName("highlight_fade_duration_ms")]
         public IntProperty HighlightFadeDurationMs { get; set; }
 
+        [JsonPropertyName("auto_activate")]
+        public BoolProperty AutoActivate { get; set; }
+
         public MouseHighlighterProperties()
         {
             ActivationShortcut = DefaultActivationShortcut;
@@ -44,6 +47,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             HighlightRadius = new IntProperty(20);
             HighlightFadeDelayMs = new IntProperty(500);
             HighlightFadeDurationMs = new IntProperty(250);
+            AutoActivate = new BoolProperty(false);
         }
     }
 }

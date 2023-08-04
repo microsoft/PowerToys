@@ -40,6 +40,9 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         [JsonPropertyName("crosshairs_fixed_length")]
         public IntProperty CrosshairsFixedLength { get; set; }
 
+        [JsonPropertyName("auto_activate")]
+        public BoolProperty AutoActivate { get; set; }
+
         public MousePointerCrosshairsProperties()
         {
             ActivationShortcut = DefaultActivationShortcut;
@@ -52,6 +55,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             CrosshairsAutoHide = new BoolProperty(false);
             CrosshairsIsFixedLengthEnabled = new BoolProperty(false);
             CrosshairsFixedLength = new IntProperty(1);
+            AutoActivate = new BoolProperty(false);
         }
     }
 }

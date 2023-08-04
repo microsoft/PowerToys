@@ -1,4 +1,4 @@
-// MouseHighlighter.cpp : Defines the entry point for the application.
+﻿// MouseHighlighter.cpp : Defines the entry point for the application.
 //
 
 #include "pch.h"
@@ -494,6 +494,11 @@ int MouseHighlighterMain(HINSTANCE hInstance, MouseHighlighterSettings settings)
         return FALSE;
     }
     Logger::info("Initialized the highlighter instance.");
+
+    if (settings.autoActivate)
+    {
+        highlighter.SwitchActivationMode();
+    }
 
     MSG msg;
 
