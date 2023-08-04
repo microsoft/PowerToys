@@ -12,6 +12,7 @@
 #include <CropAndLock/ModuleConstants.h>
 
 #include <shellapi.h>
+#include <common/interop/shared_constants.h>
 
 namespace NonLocalizable
 {
@@ -74,6 +75,39 @@ public:
         // TODO: Actual set config code
     }
 
+    virtual bool on_hotkey(size_t hotkeyId) override
+    {
+        if (m_enabled)
+        {
+            Logger::trace(L"AlwaysOnTop hotkey pressed");
+            if (!is_process_running())
+            {
+                Enable();
+            }
+
+            if (hotkeyId == 0) { // Same order as set by get_hotkeys
+                SetEvent(m_reparent_event_handle);
+            }
+            if (hotkeyId == 1) { // Same order as set by get_hotkeys
+                SetEvent(m_thumbnail_event_handle);
+            }
+
+            return true;
+        }
+
+        return false;
+    }
+
+    virtual size_t get_hotkeys(Hotkey* hotkeys, size_t buffer_size) override
+    {
+        if (hotkeys && buffer_size >= 2)
+        {
+            hotkeys[0] = m_reparent_hotkey;
+            hotkeys[1] = m_thumbnail_hotkey;
+        }
+        return 2;
+    }
+
     // Enable the powertoy
     virtual void enable()
     {
@@ -106,7 +140,9 @@ public:
         app_name = L"CropAndLock";
         app_key = NonLocalizable::ModuleKey;
         LoggerHelpers::init_logger(app_key, L"ModuleInterface", LogSettings::cropAndLockLoggerName);
-        // TODO: Create Events for thumbnails and reparenting.
+
+        m_reparent_event_handle = CreateDefaultEvent(CommonSharedConstants::CROP_AND_LOCK_REPARENT_EVENT);
+        m_thumbnail_event_handle = CreateDefaultEvent(CommonSharedConstants::CROP_AND_LOCK_THUMBNAIL_EVENT);
 
         // init_settings();
     }
@@ -122,7 +158,9 @@ private:
         unsigned long powertoys_pid = GetCurrentProcessId();
         std::wstring executable_args = L"";
         executable_args.append(std::to_wstring(powertoys_pid));
-        // TODO: Reset events
+        
+        ResetEvent(m_reparent_event_handle);
+        ResetEvent(m_thumbnail_event_handle);
 
         SHELLEXECUTEINFOW sei{ sizeof(sei) };
         sei.fMask = { SEE_MASK_NOCLOSEPROCESS | SEE_MASK_FLAG_NO_UI };
@@ -151,7 +189,8 @@ private:
 
         // TODO: Figure out a better disable... Crop And Lock might need to run clean up to free the reparented windows.
 
-        // TODO: Reset Events
+        ResetEvent(m_reparent_event_handle);
+        ResetEvent(m_thumbnail_event_handle);
 
         // TODO: Log telemetry
         /*if (traceEvent)
@@ -177,6 +216,13 @@ private:
 
     bool m_enabled = false;
     HANDLE m_hProcess = nullptr;
+
+    // TODO: actual default hotkey setting in line with other PowerToys.
+    Hotkey m_reparent_hotkey = { .win = true, .ctrl = true, .shift = true, .alt = false, .key = 'R' };
+    Hotkey m_thumbnail_hotkey = { .win = true, .ctrl = true, .shift = true, .alt = false, .key = 'T' };
+
+    HANDLE m_reparent_event_handle;
+    HANDLE m_thumbnail_event_handle;
 
 };
 
