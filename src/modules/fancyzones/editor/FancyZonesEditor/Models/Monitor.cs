@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft Corporation
+// Copyright (c) Microsoft Corporation
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
@@ -63,6 +63,30 @@ namespace FancyZonesEditor.Models
             Window.Top = workArea.Y;
             Window.Width = workArea.Width;
             Window.Height = workArea.Height;
+        }
+
+        public void SetLayoutSettings(LayoutModel model)
+        {
+            if (model == null)
+            {
+                return;
+            }
+
+            Settings.ZonesetUuid = model.Uuid;
+            Settings.Type = model.Type;
+            Settings.SensitivityRadius = model.SensitivityRadius;
+            Settings.ZoneCount = model.TemplateZoneCount;
+
+            if (model is GridLayoutModel grid)
+            {
+                Settings.ShowSpacing = grid.ShowSpacing;
+                Settings.Spacing = grid.Spacing;
+            }
+            else
+            {
+                Settings.ShowSpacing = false;
+                Settings.Spacing = 0;
+            }
         }
     }
 }
