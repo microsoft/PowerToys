@@ -80,6 +80,7 @@
     <ClInclude Include="..\CropAndLock\ModuleConstants.h" />
     <ClInclude Include="..\CropAndLock\trace.h" />
     <ClInclude Include="pch.h" />
+    <ClInclude Include="resource.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\CropAndLock\trace.cpp" />
@@ -87,6 +88,9 @@
     <ClCompile Include="pch.cpp">
       <PrecompiledHeader Condition="'$(CIBuild)'!='true'">Create</PrecompiledHeader>
     </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="CropAndLockModuleInterface.rc" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\..\common\logger\logger.vcxproj">
