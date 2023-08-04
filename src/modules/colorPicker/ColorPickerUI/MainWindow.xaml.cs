@@ -17,6 +17,8 @@ namespace ColorPicker
         public MainWindow()
         {
             Closing += MainWindow_Closing;
+            ColorPicker.Properties.Resources.Culture = new System.Globalization.CultureInfo("de-DE");
+
             Bootstrapper.InitializeContainer(this);
             InitializeComponent();
             DataContext = this;
