@@ -27,6 +27,7 @@ namespace util
 }
 
 const std::wstring instanceMutexName = L"Local\\PowerToys_CropAndLock_InstanceMutex";
+bool m_running = true;
 
 int WINAPI wWinMain(_In_ HINSTANCE, _In_opt_ HINSTANCE, _In_ PWSTR lpCmdLine, _In_ int)
 {
@@ -100,10 +101,15 @@ int WINAPI wWinMain(_In_ HINSTANCE, _In_opt_ HINSTANCE, _In_ PWSTR lpCmdLine, _I
     HANDLE m_thumbnail_event_handle;
     HANDLE m_exit_event_handle;
     std::thread m_event_triggers_thread;
-    bool m_running = true;
 
     std::function<void(HWND)> removeWindowCallback = [&](HWND windowHandle)
     {
+        if (!m_running)
+        {
+            // If we're not running, the reference to croppedWindows might no longer be valid and cause a crash at exit time, due to being called by destructors after wWinMain returns.
+            return;
+        }
+
         auto pos = std::find_if(croppedWindows.begin(), croppedWindows.end(), [windowHandle](auto window) { return window->Handle() == windowHandle; });
         if (pos != croppedWindows.end())
         {
