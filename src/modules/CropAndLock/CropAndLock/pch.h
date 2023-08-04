@@ -2,6 +2,7 @@
 
 // Collision from minwindef min/max and std
 #define NOMINMAX
+#define WIN32_LEAN_AND_MEAN
 
 // Windows
 #include <windows.h>
@@ -71,6 +72,7 @@
 
 // PowerToys
 #include <ProjectTelemetry.h>
+#include <common/logger/logger.h>
 
 // Application resources
 #include "resource.h"
