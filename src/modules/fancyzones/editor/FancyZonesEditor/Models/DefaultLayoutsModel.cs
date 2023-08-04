@@ -13,7 +13,7 @@ namespace FancyZonesEditor.Models
     {
         private static int Count { get; } = Enum.GetValues(typeof(MonitorConfigurationType)).Length;
 
-        public List<LayoutModel> DefaultLayouts { get; } = new List<LayoutModel>(Count);
+        public List<LayoutModel> Layouts { get; } = new List<LayoutModel>(Count);
 
         public DefaultLayoutsModel()
         {
@@ -30,7 +30,7 @@ namespace FancyZonesEditor.Models
         {
             for (int i = 0; i < Count; i++)
             {
-                if (DefaultLayouts[i].Uuid == uuid)
+                if (Layouts[i].Uuid == uuid)
                 {
                     Set(MainWindowSettingsModel.TemplateModels[(int)LayoutType.PriorityGrid], (MonitorConfigurationType)i);
                     break;
@@ -40,13 +40,13 @@ namespace FancyZonesEditor.Models
 
         public void Set(LayoutModel layout, MonitorConfigurationType type)
         {
-            if (DefaultLayouts.Count <= (int)type)
+            if (Layouts.Count <= (int)type)
             {
-                DefaultLayouts.Insert((int)type, layout);
+                Layouts.Insert((int)type, layout);
             }
             else
             {
-                DefaultLayouts[(int)type] = layout;
+                Layouts[(int)type] = layout;
             }
 
             FirePropertyChanged();

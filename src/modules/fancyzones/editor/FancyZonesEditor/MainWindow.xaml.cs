@@ -366,7 +366,7 @@ namespace FancyZonesEditor
                 _backup = new CanvasLayoutModel(canvas);
             }
 
-            _defaultLayoutsBackup = new List<LayoutModel>(MainWindowSettingsModel.DefaultLayouts.DefaultLayouts);
+            _defaultLayoutsBackup = new List<LayoutModel>(MainWindowSettingsModel.DefaultLayouts.Layouts);
 
             Keyboard.ClearFocus();
             EditLayoutDialogTitle.Text = string.Format(CultureInfo.CurrentCulture, Properties.Resources.Edit_Template, ((LayoutModel)dataContext).Name);
