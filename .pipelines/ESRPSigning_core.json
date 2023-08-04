@@ -33,6 +33,9 @@
                 "PowerToys.ColorPickerUI.dll",
                 "PowerToys.ColorPickerUI.exe",
 
+                "PowerToys.CropAndLockModuleInterface.dll",
+                "PowerToys.CropAndLock.exe",
+
                 "PowerToys.PowerOCRModuleInterface.dll",
                 "PowerToys.PowerOCR.dll",
                 "PowerToys.PowerOCR.exe",
