@@ -7,6 +7,7 @@
 #include <common/interop/shared_constants.h>
 #include <common/utils/winapi_error.h>
 #include <common/utils/logger_helper.h>
+#include <common/utils/UnhandledExceptionHandler.h>
 #include "ModuleConstants.h"
 
 #pragma comment(linker,"/manifestdependency:\"type='win32' name='Microsoft.Windows.Common-Controls' version='6.0.0.0' processorArchitecture='*' publicKeyToken='6595b64144ccf1df' language='*'\"")
@@ -26,6 +27,13 @@ namespace util
 
 int __stdcall WinMain(HINSTANCE, HINSTANCE, PSTR, int)
 {
+    // Initialize COM
+    winrt::init_apartment(winrt::apartment_type::single_threaded);
+
+    // Initialize logger automatic logging of exceptions.
+    LoggerHelpers::init_logger(NonLocalizable::ModuleKey, L"", LogSettings::cropAndLockLoggerName);
+    InitUnhandledExceptionHandler();
+
     // Before we do anything, check to see if we're already running. If we are,
     // the hotkey won't register and we'll fail. Instead, we should tell the user
     // to kill the other instance and exit this one.
@@ -40,15 +48,10 @@ int __stdcall WinMain(HINSTANCE, HINSTANCE, PSTR, int)
         }
     }
 
-    LoggerHelpers::init_logger(NonLocalizable::ModuleKey, L"", LogSettings::cropAndLockLoggerName);
-
     // NOTE: Reparenting a window with a different DPI context has consequences.
     //       See https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-setparent#remarks
     //       for more info.
     winrt::check_bool(SetProcessDpiAwarenessContext(DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE_V2));
-
-    // Initialize COM
-    winrt::init_apartment(winrt::apartment_type::single_threaded);
 
     // Create the DispatcherQueue that the compositor needs to run
     auto controller = util::CreateDispatcherQueueControllerForCurrentThread();
