@@ -261,11 +261,6 @@ namespace FancyZonesEditor
                 }
             }
 
-            if (foundModel == null)
-            {
-                foundModel = TemplateModels[(int)LayoutType.PriorityGrid];
-            }
-
             SetSelectedModel(foundModel);
             SetAppliedModel(foundModel);
             FirePropertyChanged(nameof(IsCustomLayoutActive));

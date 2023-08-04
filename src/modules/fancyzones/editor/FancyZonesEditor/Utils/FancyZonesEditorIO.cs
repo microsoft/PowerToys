@@ -1159,15 +1159,17 @@ namespace FancyZonesEditor.Utils
 
             foreach (var layout in layouts)
             {
+                LayoutModel defaultLayoutModel = null;
+                MonitorConfigurationType type = JsonTagToMonitorConfigurationType(layout.MonitorConfiguration);
+
                 if (layout.Layout.Uuid != null && layout.Layout.Uuid != string.Empty)
                 {
-                    MonitorConfigurationType type = JsonTagToMonitorConfigurationType(layout.MonitorConfiguration);
-
                     foreach (var customLayout in MainWindowSettingsModel.CustomModels)
                     {
                         if (customLayout.Uuid == layout.Layout.Uuid)
                         {
                             MainWindowSettingsModel.DefaultLayouts.Set(customLayout, type);
+                            defaultLayoutModel = customLayout;
                             break;
                         }
                     }
@@ -1175,8 +1177,19 @@ namespace FancyZonesEditor.Utils
                 else
                 {
                     LayoutType layoutType = JsonTagToLayoutType(layout.Layout.Type);
-                    MonitorConfigurationType type = JsonTagToMonitorConfigurationType(layout.MonitorConfiguration);
                     MainWindowSettingsModel.DefaultLayouts.Set(MainWindowSettingsModel.TemplateModels[(int)layoutType], type);
+                    defaultLayoutModel = MainWindowSettingsModel.TemplateModels[(int)layoutType];
+                }
+
+                if (defaultLayoutModel != null)
+                {
+                    foreach (Monitor monitor in App.Overlay.Monitors)
+                    {
+                        if (!monitor.IsInitialized && monitor.MonitorConfigurationType == type)
+                        {
+                            monitor.SetLayoutSettings(defaultLayoutModel);
+                        }
+                    }
                 }
             }
 
