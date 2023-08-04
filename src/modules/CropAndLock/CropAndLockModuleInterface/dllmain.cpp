@@ -19,6 +19,19 @@ namespace NonLocalizable
     const wchar_t ModulePath[] = L"PowerToys.CropAndLock.exe";
 }
 
+namespace
+{
+    const wchar_t JSON_KEY_PROPERTIES[] = L"properties";
+    const wchar_t JSON_KEY_WIN[] = L"win";
+    const wchar_t JSON_KEY_ALT[] = L"alt";
+    const wchar_t JSON_KEY_CTRL[] = L"ctrl";
+    const wchar_t JSON_KEY_SHIFT[] = L"shift";
+    const wchar_t JSON_KEY_CODE[] = L"code";
+    const wchar_t JSON_KEY_REPARENT_HOTKEY[] = L"reparent-hotkey";
+    const wchar_t JSON_KEY_THUMBNAIL_HOTKEY[] = L"thumbnail-hotkey";
+    const wchar_t JSON_KEY_VALUE[] = L"value";
+}
+
 BOOL APIENTRY DllMain( HMODULE /*hModule*/,
                        DWORD  ul_reason_for_call,
                        LPVOID /*lpReserved*/
@@ -70,16 +83,29 @@ public:
 
     // Passes JSON with the configuration settings for the powertoy.
     // This is called when the user hits Save on the settings page.
-    virtual void set_config(const wchar_t* /*config*/) override
+    virtual void set_config(const wchar_t* config) override
     {
-        // TODO: Actual set config code
+        try
+        {
+            // Parse the input JSON string.
+            PowerToysSettings::PowerToyValues values =
+                PowerToysSettings::PowerToyValues::from_json_string(config, get_key());
+
+            parse_hotkey(values);
+
+            values.save_to_settings_file();
+        }
+        catch (std::exception&)
+        {
+            // Improper JSON.
+        }
     }
 
     virtual bool on_hotkey(size_t hotkeyId) override
     {
         if (m_enabled)
         {
-            Logger::trace(L"AlwaysOnTop hotkey pressed");
+            Logger::trace(L"CropAndLock hotkey pressed");
             if (!is_process_running())
             {
                 Enable();
@@ -144,7 +170,7 @@ public:
         m_reparent_event_handle = CreateDefaultEvent(CommonSharedConstants::CROP_AND_LOCK_REPARENT_EVENT);
         m_thumbnail_event_handle = CreateDefaultEvent(CommonSharedConstants::CROP_AND_LOCK_THUMBNAIL_EVENT);
 
-        // init_settings();
+        init_settings();
     }
 
 private:
@@ -206,9 +232,68 @@ private:
 
     }
 
+    void parse_hotkey(PowerToysSettings::PowerToyValues& settings)
+    {
+        auto settingsObject = settings.get_raw_json();
+        if (settingsObject.GetView().Size())
+        {
+            try
+            {
+                Hotkey _temp_reparent;
+                auto jsonHotkeyObject = settingsObject.GetNamedObject(JSON_KEY_PROPERTIES).GetNamedObject(JSON_KEY_REPARENT_HOTKEY).GetNamedObject(JSON_KEY_VALUE);
+                _temp_reparent.win = jsonHotkeyObject.GetNamedBoolean(JSON_KEY_WIN);
+                _temp_reparent.alt = jsonHotkeyObject.GetNamedBoolean(JSON_KEY_ALT);
+                _temp_reparent.shift = jsonHotkeyObject.GetNamedBoolean(JSON_KEY_SHIFT);
+                _temp_reparent.ctrl = jsonHotkeyObject.GetNamedBoolean(JSON_KEY_CTRL);
+                _temp_reparent.key = static_cast<unsigned char>(jsonHotkeyObject.GetNamedNumber(JSON_KEY_CODE));
+                m_reparent_hotkey = _temp_reparent;
+            }
+            catch (...)
+            {
+                Logger::error("Failed to initialize CropAndLock reparent shortcut from settings. Value will keep unchanged.");
+            }
+            try
+            {
+                Hotkey _temp_thumbnail;
+                auto jsonHotkeyObject = settingsObject.GetNamedObject(JSON_KEY_PROPERTIES).GetNamedObject(JSON_KEY_THUMBNAIL_HOTKEY).GetNamedObject(JSON_KEY_VALUE);
+                _temp_thumbnail.win = jsonHotkeyObject.GetNamedBoolean(JSON_KEY_WIN);
+                _temp_thumbnail.alt = jsonHotkeyObject.GetNamedBoolean(JSON_KEY_ALT);
+                _temp_thumbnail.shift = jsonHotkeyObject.GetNamedBoolean(JSON_KEY_SHIFT);
+                _temp_thumbnail.ctrl = jsonHotkeyObject.GetNamedBoolean(JSON_KEY_CTRL);
+                _temp_thumbnail.key = static_cast<unsigned char>(jsonHotkeyObject.GetNamedNumber(JSON_KEY_CODE));
+                m_thumbnail_hotkey = _temp_thumbnail;
+            }
+            catch (...)
+            {
+                Logger::error("Failed to initialize CropAndLock thumbnail shortcut from settings. Value will keep unchanged.");
+            }
+        }
+        else
+        {
+            Logger::info("CropAndLock settings are empty");
+        }
+    }
+
     bool is_process_running()
     {
         return WaitForSingleObject(m_hProcess, 0) == WAIT_TIMEOUT;
+    }
+
+    void init_settings()
+    {
+        try
+        {
+            // Load and parse the settings file for this PowerToy.
+            PowerToysSettings::PowerToyValues settings =
+                PowerToysSettings::PowerToyValues::load_from_settings_file(get_key());
+
+            parse_hotkey(settings);
+        }
+        catch (std::exception&)
+        {
+            Logger::warn(L"An exception occurred while loading the settings file");
+            // Error while loading from the settings file. Let default values stay as they are.
+        }
     }
 
     std::wstring app_name;
