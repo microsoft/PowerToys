@@ -71,12 +71,14 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
             MouseHighlighterSettingsConfig = mouseHighlighterSettingsRepository.SettingsConfig;
             string leftClickColor = MouseHighlighterSettingsConfig.Properties.LeftButtonClickColor.Value;
-            _highlighterLeftButtonClickColor = !string.IsNullOrEmpty(leftClickColor) ? leftClickColor : "#FFFF00";
+            _highlighterLeftButtonClickColor = !string.IsNullOrEmpty(leftClickColor) ? leftClickColor : "#a6FFFF00";
 
             string rightClickColor = MouseHighlighterSettingsConfig.Properties.RightButtonClickColor.Value;
-            _highlighterRightButtonClickColor = !string.IsNullOrEmpty(rightClickColor) ? rightClickColor : "#0000FF";
+            _highlighterRightButtonClickColor = !string.IsNullOrEmpty(rightClickColor) ? rightClickColor : "#a60000FF";
 
-            _highlighterOpacity = MouseHighlighterSettingsConfig.Properties.HighlightOpacity.Value;
+            string alwaysColor = MouseHighlighterSettingsConfig.Properties.AlwaysColor.Value;
+            _highlighterAlwaysColor = !string.IsNullOrEmpty(alwaysColor) ? alwaysColor : "#00FF0000";
+
             _highlighterRadius = MouseHighlighterSettingsConfig.Properties.HighlightRadius.Value;
             _highlightFadeDelayMs = MouseHighlighterSettingsConfig.Properties.HighlightFadeDelayMs.Value;
             _highlightFadeDurationMs = MouseHighlighterSettingsConfig.Properties.HighlightFadeDurationMs.Value;
@@ -106,6 +108,9 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             _mousePointerCrosshairsRadius = MousePointerCrosshairsSettingsConfig.Properties.CrosshairsRadius.Value;
             _mousePointerCrosshairsThickness = MousePointerCrosshairsSettingsConfig.Properties.CrosshairsThickness.Value;
             _mousePointerCrosshairsBorderSize = MousePointerCrosshairsSettingsConfig.Properties.CrosshairsBorderSize.Value;
+            _mousePointerCrosshairsAutoHide = MousePointerCrosshairsSettingsConfig.Properties.CrosshairsAutoHide.Value;
+            _mousePointerCrosshairsIsFixedLengthEnabled = MousePointerCrosshairsSettingsConfig.Properties.CrosshairsIsFixedLengthEnabled.Value;
+            _mousePointerCrosshairsFixedLength = MousePointerCrosshairsSettingsConfig.Properties.CrosshairsFixedLength.Value;
 
             // set the callback functions value to handle outgoing IPC message.
             SendConfigMSG = ipcMSGCallBackFunc;
@@ -442,7 +447,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
             set
             {
-                value = SettingsUtilities.ToRGBHex(value);
+                value = SettingsUtilities.ToARGBHex(value);
                 if (!value.Equals(_highlighterLeftButtonClickColor, StringComparison.OrdinalIgnoreCase))
                 {
                     _highlighterLeftButtonClickColor = value;
@@ -461,7 +466,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
             set
             {
-                value = SettingsUtilities.ToRGBHex(value);
+                value = SettingsUtilities.ToARGBHex(value);
                 if (!value.Equals(_highlighterRightButtonClickColor, StringComparison.OrdinalIgnoreCase))
                 {
                     _highlighterRightButtonClickColor = value;
@@ -471,19 +476,20 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             }
         }
 
-        public int MouseHighlighterOpacity
+        public string MouseHighlighterAlwaysColor
         {
             get
             {
-                return _highlighterOpacity;
+                return _highlighterAlwaysColor;
             }
 
             set
             {
-                if (value != _highlighterOpacity)
+                value = SettingsUtilities.ToARGBHex(value);
+                if (!value.Equals(_highlighterAlwaysColor, StringComparison.OrdinalIgnoreCase))
                 {
-                    _highlighterOpacity = value;
-                    MouseHighlighterSettingsConfig.Properties.HighlightOpacity.Value = value;
+                    _highlighterAlwaysColor = value;
+                    MouseHighlighterSettingsConfig.Properties.AlwaysColor.Value = value;
                     NotifyMouseHighlighterPropertyChanged();
                 }
             }
@@ -792,6 +798,60 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             }
         }
 
+        public bool MousePointerCrosshairsAutoHide
+        {
+            get
+            {
+                return _mousePointerCrosshairsAutoHide;
+            }
+
+            set
+            {
+                if (value != _mousePointerCrosshairsAutoHide)
+                {
+                    _mousePointerCrosshairsAutoHide = value;
+                    MousePointerCrosshairsSettingsConfig.Properties.CrosshairsAutoHide.Value = value;
+                    NotifyMousePointerCrosshairsPropertyChanged();
+                }
+            }
+        }
+
+        public bool MousePointerCrosshairsIsFixedLengthEnabled
+        {
+            get
+            {
+                return _mousePointerCrosshairsIsFixedLengthEnabled;
+            }
+
+            set
+            {
+                if (value != _mousePointerCrosshairsIsFixedLengthEnabled)
+                {
+                    _mousePointerCrosshairsIsFixedLengthEnabled = value;
+                    MousePointerCrosshairsSettingsConfig.Properties.CrosshairsIsFixedLengthEnabled.Value = value;
+                    NotifyMousePointerCrosshairsPropertyChanged();
+                }
+            }
+        }
+
+        public int MousePointerCrosshairsFixedLength
+        {
+            get
+            {
+                return _mousePointerCrosshairsFixedLength;
+            }
+
+            set
+            {
+                if (value != _mousePointerCrosshairsFixedLength)
+                {
+                    _mousePointerCrosshairsFixedLength = value;
+                    MousePointerCrosshairsSettingsConfig.Properties.CrosshairsFixedLength.Value = value;
+                    NotifyMousePointerCrosshairsPropertyChanged();
+                }
+            }
+        }
+
         public void NotifyMousePointerCrosshairsPropertyChanged([CallerMemberName] string propertyName = null)
         {
             OnPropertyChanged(propertyName);
@@ -832,7 +892,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         private bool _isMouseHighlighterEnabled;
         private string _highlighterLeftButtonClickColor;
         private string _highlighterRightButtonClickColor;
-        private int _highlighterOpacity;
+        private string _highlighterAlwaysColor;
         private int _highlighterRadius;
         private int _highlightFadeDelayMs;
         private int _highlightFadeDurationMs;
@@ -850,5 +910,8 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         private int _mousePointerCrosshairsThickness;
         private string _mousePointerCrosshairsBorderColor;
         private int _mousePointerCrosshairsBorderSize;
+        private bool _mousePointerCrosshairsAutoHide;
+        private bool _mousePointerCrosshairsIsFixedLengthEnabled;
+        private int _mousePointerCrosshairsFixedLength;
     }
 }

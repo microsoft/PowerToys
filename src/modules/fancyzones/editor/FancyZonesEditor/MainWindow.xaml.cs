@@ -618,7 +618,7 @@ namespace FancyZonesEditor
 
         private void SettingsBtn_Click(object sender, RoutedEventArgs e)
         {
-            SettingsDeepLink.OpenSettings(SettingsDeepLink.SettingsWindow.FancyZones);
+            SettingsDeepLink.OpenSettings(SettingsDeepLink.SettingsWindow.FancyZones, false);
         }
 
         private void EditLayoutDialogTitle_Loaded(object sender, RoutedEventArgs e)

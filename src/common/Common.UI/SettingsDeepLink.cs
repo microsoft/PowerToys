@@ -72,13 +72,24 @@ namespace Common.UI
             }
         }
 
-        public static void OpenSettings(SettingsWindow window)
+        public static void OpenSettings(SettingsWindow window, bool mainExecutableIsOnTheParentFolder)
         {
             try
             {
                 var assemblyPath = Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location);
-                var fullPath = Directory.GetParent(assemblyPath).FullName;
-                Process.Start(new ProcessStartInfo(fullPath + "\\..\\PowerToys.exe") { Arguments = "--open-settings=" + SettingsWindowNameToString(window) });
+                var fullPath = new DirectoryInfo(assemblyPath).FullName;
+                if (mainExecutableIsOnTheParentFolder)
+                {
+                    // Need to go into parent folder for PowerToys.exe. Likely a WinUI3 App SDK application.
+                    fullPath = fullPath + "\\..\\PowerToys.exe";
+                }
+                else
+                {
+                    // PowerToys.exe is in the same path as the application.
+                    fullPath = fullPath + "\\PowerToys.exe";
+                }
+
+                Process.Start(new ProcessStartInfo(fullPath) { Arguments = "--open-settings=" + SettingsWindowNameToString(window) });
             }
             catch
             {

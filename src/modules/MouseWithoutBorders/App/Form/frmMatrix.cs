@@ -830,12 +830,10 @@ namespace MouseWithoutBorders
             comboBoxShowSettings.Text = "Disable";
 
             comboBoxExitMM.Text = Setting.Values.HotKeyExitMM == 0 ? "Disable" : new string(new char[] { (char)Setting.Values.HotKeyExitMM });
-
+#if OBSOLETE_SHORTCUTS
             comboBoxLockMachine.Text = Setting.Values.HotKeyLockMachine == 0 ? "Disable" : new string(new char[] { (char)Setting.Values.HotKeyLockMachine });
 
             comboBoxReconnect.Text = Setting.Values.HotKeyReconnect == 0 ? "Disable" : new string(new char[] { (char)Setting.Values.HotKeyReconnect });
-
-            comboBoxScreenCapture.Text = Setting.Values.HotKeyCaptureScreen == 0 ? "Disable" : new string(new char[] { (char)Setting.Values.HotKeyCaptureScreen });
 
             comboBoxSwitchToAllPC.Text = Setting.Values.HotKeySwitch2AllPC == 1
                 ? "Ctrl*3"
@@ -844,6 +842,7 @@ namespace MouseWithoutBorders
             comboBoxEasyMouseOption.Text = ((EasyMouseOption)Setting.Values.EasyMouse).ToString();
 
             comboBoxEasyMouse.Text = Setting.Values.HotKeyToggleEasyMouse == 0 ? "Disable" : new string(new char[] { (char)Setting.Values.HotKeyToggleEasyMouse });
+#endif
         }
 
         private void RadioButton_CheckedChanged(object sender, EventArgs e)
@@ -870,6 +869,7 @@ namespace MouseWithoutBorders
 
         private void ComboBoxLockMachine_TextChanged(object sender, EventArgs e)
         {
+#if OBSOLETE_SHORTCUTS
             if (comboBoxLockMachine.Text.Contains("Disable"))
             {
                 Setting.Values.HotKeyLockMachine = 0;
@@ -878,10 +878,12 @@ namespace MouseWithoutBorders
             {
                 Setting.Values.HotKeyLockMachine = comboBoxLockMachine.Text[0];
             }
+#endif
         }
 
         private void ComboBoxSwitchToAllPC_TextChanged(object sender, EventArgs e)
         {
+#if OBSOLETE_SHORTCUTS
             if (comboBoxSwitchToAllPC.Text.Contains("Disable"))
             {
                 Setting.Values.HotKeySwitch2AllPC = 0;
@@ -894,7 +896,7 @@ namespace MouseWithoutBorders
             {
                 Setting.Values.HotKeySwitch2AllPC = comboBoxSwitchToAllPC.Text[0];
             }
-
+#endif
             ShowUpdateMessage();
         }
 
@@ -957,6 +959,7 @@ namespace MouseWithoutBorders
 
         private void ComboBoxReconnect_TextChanged(object sender, EventArgs e)
         {
+#if OBSOLETE_SHORTCUTS
             if (comboBoxReconnect.Text.Contains("Disable"))
             {
                 Setting.Values.HotKeyReconnect = 0;
@@ -965,7 +968,7 @@ namespace MouseWithoutBorders
             {
                 Setting.Values.HotKeyReconnect = comboBoxReconnect.Text[0];
             }
-
+#endif
             ShowUpdateMessage();
         }
 
@@ -1006,6 +1009,7 @@ namespace MouseWithoutBorders
 
         private void ComboBoxEasyMouse_TextChanged(object sender, EventArgs e)
         {
+#if OBSOLETE_SHORTCUTS
             if (comboBoxEasyMouse.Text.Contains("Disable"))
             {
                 Setting.Values.HotKeyToggleEasyMouse = 0;
@@ -1014,7 +1018,7 @@ namespace MouseWithoutBorders
             {
                 Setting.Values.HotKeyToggleEasyMouse = comboBoxEasyMouse.Text[0];
             }
-
+#endif
             ShowUpdateMessage();
         }
 

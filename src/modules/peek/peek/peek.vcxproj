@@ -6,7 +6,6 @@
     <ProjectGuid>{a1425b53-3d61-4679-8623-e64a0d3d0a48}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
     <RootNamespace>peek</RootNamespace>
-    <WindowsTargetPlatformVersion>10.0.18362.0</WindowsTargetPlatformVersion>
     <ProjectName>Peek</ProjectName>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
@@ -24,7 +23,7 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup>
-    <OutDir>$(SolutionDir)$(Platform)\$(Configuration)\modules\$(ProjectName)\</OutDir>
+    <OutDir>..\..\..\..\$(Platform)\$(Configuration)\WinUI3Apps\</OutDir>
     <TargetName>PowerToys.Peek</TargetName>
   </PropertyGroup>
   <ItemDefinitionGroup>

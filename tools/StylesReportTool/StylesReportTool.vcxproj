@@ -5,7 +5,6 @@
     <Keyword>Win32Proj</Keyword>
     <ProjectGuid>{0febafaf-cb77-41f0-8ef9-8e3ad4b4f842}</ProjectGuid>
     <RootNamespace>StylesReportTool</RootNamespace>
-    <WindowsTargetPlatformVersion>10.0.19041.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)'=='Debug'" Label="Configuration">
@@ -38,7 +37,6 @@
   </PropertyGroup>
   <PropertyGroup>
     <OutDir>$(SolutionDir)..\..\$(Platform)\$(Configuration)\$(ProjectName)\</OutDir>
-    <IntDir>$(SolutionDir)..\..\$(Platform)\$(Configuration)\obj\$(ProjectName)\</IntDir>
     <TargetName>PowerToys.$(ProjectName)</TargetName>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)'=='Debug'">

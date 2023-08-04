@@ -46,6 +46,8 @@ namespace MouseWithoutBorders.Class
 
         private static readonly string ServiceModeArg = "UseService";
 
+        public static bool ShowServiceModeErrorTooltip;
+
         [STAThread]
         private static void Main()
         {
@@ -98,6 +100,7 @@ namespace MouseWithoutBorders.Class
                     {
                         Common.Log("Couldn't start the service. Will try to continue as not a service.");
                         Common.Log(ex);
+                        ShowServiceModeErrorTooltip = true;
                         serviceMode = false;
                         Setting.Values.UseService = false;
                     }

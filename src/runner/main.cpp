@@ -89,31 +89,9 @@ void open_menu_from_another_instance(std::optional<std::string> settings_window)
     PostMessageW(hwnd_main, WM_COMMAND, ID_SETTINGS_MENU_COMMAND, msg);
 }
 
-void debug_verify_launcher_assets()
-{
-    try
-    {
-        namespace fs = std::filesystem;
-        const fs::path powertoysRoot = get_module_folderpath();
-        constexpr std::array<std::string_view, 2> assetsToCheck = { "modules\\launcher\\Images\\app_error.dark.png",
-                                                                    "modules\\launcher\\Images\\app_error.light.png" };
-        for (const auto asset : assetsToCheck)
-        {
-            const auto assetPath = powertoysRoot / asset;
-            if (!fs::is_regular_file(assetPath))
-            {
-                Logger::error("{} couldn't be found.", assetPath.string());
-            }
-        }
-    }
-    catch (...)
-    {
-    }
-}
-
 int runner(bool isProcessElevated, bool openSettings, std::string settingsWindow, bool openOobe, bool openScoobe)
 {
-    Logger::info("Runner is starting. Elevated={}", isProcessElevated);
+    Logger::info("Runner is starting. Elevated={} openOobe={} openScoobe={}", isProcessElevated, openOobe, openScoobe);
     DPIAware::EnableDPIAwarenessForThisProcess();
 
 #if _DEBUG && _WIN64
@@ -128,7 +106,17 @@ int runner(bool isProcessElevated, bool openSettings, std::string settingsWindow
     int result = -1;
     try
     {
-        debug_verify_launcher_assets();
+        if (!openOobe && openScoobe)
+        {
+            std::thread{
+                [] {
+                    // Wait a bit, because Windows has a delay until it picks up toast notification registration in the registry
+                    Sleep(10000);
+                    Logger::info("Showing toast notification asking to restart PC");
+                    notifications::show_toast(GET_RESOURCE_STRING(IDS_PT_VERSION_CHANGE_ASK_FOR_COMPUTER_RESTART).c_str(), L"PowerToys");
+                }
+            }.detach();
+        }
 
         std::thread{ [] {
             PeriodicUpdateWorker();
@@ -145,31 +133,31 @@ int runner(bool isProcessElevated, bool openSettings, std::string settingsWindow
         // Load Powertoys DLLs
 
         std::vector<std::wstring_view> knownModules = {
-            L"modules/FancyZones/PowerToys.FancyZonesModuleInterface.dll",
-            L"modules/FileExplorerPreview/PowerToys.powerpreview.dll",
-            L"modules/ImageResizer/PowerToys.ImageResizerExt.dll",
-            L"modules/KeyboardManager/PowerToys.KeyboardManager.dll",
-            L"modules/Launcher/PowerToys.Launcher.dll",
-            L"modules/PowerRename/PowerToys.PowerRenameExt.dll",
-            L"modules/ShortcutGuide/ShortcutGuideModuleInterface/PowerToys.ShortcutGuideModuleInterface.dll",
-            L"modules/ColorPicker/PowerToys.ColorPicker.dll",
-            L"modules/Awake/PowerToys.AwakeModuleInterface.dll",
-            L"modules/MouseUtils/PowerToys.FindMyMouse.dll",
-            L"modules/MouseUtils/PowerToys.MouseHighlighter.dll",
-            L"modules/MouseUtils/PowerToys.MouseJump.dll",
-            L"modules/AlwaysOnTop/PowerToys.AlwaysOnTopModuleInterface.dll",
-            L"modules/MouseUtils/PowerToys.MousePointerCrosshairs.dll",
-            L"modules/PowerAccent/PowerToys.PowerAccentModuleInterface.dll",
-            L"modules/PowerOCR/PowerToys.PowerOCRModuleInterface.dll",
-            L"modules/PastePlain/PowerToys.PastePlainModuleInterface.dll",
-            L"modules/FileLocksmith/PowerToys.FileLocksmithExt.dll",
-            L"modules/RegistryPreview/PowerToys.RegistryPreviewExt.dll",
-            L"modules/MeasureTool/PowerToys.MeasureToolModuleInterface.dll",
-            L"modules/Hosts/PowerToys.HostsModuleInterface.dll",
-            L"modules/Peek/PowerToys.Peek.dll",
-            L"modules/MouseWithoutBorders/PowerToys.MouseWithoutBordersModuleInterface.dll",
+            L"PowerToys.FancyZonesModuleInterface.dll",
+            L"PowerToys.powerpreview.dll",
+            L"PowerToys.ImageResizerExt.dll",
+            L"PowerToys.KeyboardManager.dll",
+            L"PowerToys.Launcher.dll",
+            L"WinUI3Apps/PowerToys.PowerRenameExt.dll",
+            L"PowerToys.ShortcutGuideModuleInterface.dll",
+            L"PowerToys.ColorPicker.dll",
+            L"PowerToys.AwakeModuleInterface.dll",
+            L"PowerToys.FindMyMouse.dll",
+            L"PowerToys.MouseHighlighter.dll",
+            L"PowerToys.MouseJump.dll",
+            L"PowerToys.AlwaysOnTopModuleInterface.dll",
+            L"PowerToys.MousePointerCrosshairs.dll",
+            L"PowerToys.PowerAccentModuleInterface.dll",
+            L"PowerToys.PowerOCRModuleInterface.dll",
+            L"PowerToys.PastePlainModuleInterface.dll",
+            L"WinUI3Apps/PowerToys.FileLocksmithExt.dll",
+            L"WinUI3Apps/PowerToys.RegistryPreviewExt.dll",
+            L"WinUI3Apps/PowerToys.MeasureToolModuleInterface.dll",
+            L"WinUI3Apps/PowerToys.HostsModuleInterface.dll",
+            L"WinUI3Apps/PowerToys.Peek.dll",
+            L"PowerToys.MouseWithoutBordersModuleInterface.dll",
         };
-        const auto VCM_PATH = L"modules/VideoConference/PowerToys.VideoConferenceModule.dll";
+        const auto VCM_PATH = L"PowerToys.VideoConferenceModule.dll";
         if (const auto mf = LoadLibraryA("mf.dll"))
         {
             FreeLibrary(mf);
@@ -449,7 +437,9 @@ int WINAPI WinMain(HINSTANCE /*hInstance*/, HINSTANCE /*hPrevInstance*/, LPSTR l
     try
     {
         std::wstring last_version_run = PTSettingsHelper::get_last_version_run();
-        openScoobe = last_version_run != get_product_version();
+        const auto product_version = get_product_version();
+        openScoobe = product_version != last_version_run;
+        Logger::info(L"Scoobe: product_version={} last_version_run={}", product_version, last_version_run);
     }
     catch (const std::exception& e)
     {

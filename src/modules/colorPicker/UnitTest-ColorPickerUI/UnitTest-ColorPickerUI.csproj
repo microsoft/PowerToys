@@ -2,7 +2,9 @@
   <Import Project="..\..\..\Version.props" />
 
   <PropertyGroup>
-    <TargetFramework>net7.0-windows10.0.19041.0</TargetFramework>
+    <TargetFramework>net7.0-windows10.0.20348.0</TargetFramework>
+    <TargetPlatformMinVersion>10.0.19041.0</TargetPlatformMinVersion>
+    <SupportedOSPlatformVersion>10.0.19041.0</SupportedOSPlatformVersion>
     <ProjectGuid>{090CD7B7-3B0C-4D1D-BC98-83EB5D799BC1}</ProjectGuid>
     <RootNamespace>Microsoft.ColorPicker.UnitTests</RootNamespace>
     <IsPackable>false</IsPackable>
@@ -12,7 +14,7 @@
   </PropertyGroup>
 
   <PropertyGroup>
-    <OutputPath>..\..\..\..\$(Platform)\$(Configuration)\modules\ColorPicker\UnitTest-ColorPickerUI\</OutputPath>
+    <OutputPath>..\..\..\..\$(Platform)\$(Configuration)\tests\UnitTest-ColorPickerUI\</OutputPath>
   </PropertyGroup>
 
   <ItemGroup>

@@ -140,7 +140,7 @@ private:
     void launch_process()
     {
         Logger::trace(L"Launching PowerToys MouseWithoutBorders process");
-        const std::wstring application_path = L"modules\\MouseWithoutBorders\\PowerToys.MouseWithoutBorders.exe";
+        const std::wstring application_path = L"PowerToys.MouseWithoutBorders.exe";
         STARTUPINFO info = { sizeof(info) };
         std::wstring full_command_path = application_path;
         if (run_in_service_mode)
@@ -243,13 +243,27 @@ private:
             }
         }
 
+        // Pass local app data of the current user to the service
+        PWSTR cLocalAppPath;
+        winrt::check_hresult(SHGetKnownFolderPath(FOLDERID_LocalAppData, 0, nullptr, &cLocalAppPath));
+        CoTaskMemFree(cLocalAppPath);
+
+        std::wstring localAppPath{ cLocalAppPath };
+        std::wstring binaryWithArgsPath = L"\"";
+        binaryWithArgsPath += servicePath;
+        binaryWithArgsPath += L"\" ";
+        binaryWithArgsPath += escapeDoubleQuotes(localAppPath);
+
         bool alreadyRegistered = false;
+        bool isServicePathCorrect = true;
         if (pServiceConfig)
         {
             std::wstring_view existingServicePath{ pServiceConfig->lpBinaryPathName };
-            existingServicePath = existingServicePath.substr(1, existingServicePath.find(L'"', 1) - 1);
-            alreadyRegistered = std::filesystem::path{ existingServicePath } == servicePath;
-            LocalFree(pServiceConfig);
+            alreadyRegistered = true;
+            isServicePathCorrect = (existingServicePath == binaryWithArgsPath);
+            if (isServicePathCorrect) {
+                Logger::warn(L"The service path is not correct. Current: {} Expected: {}", existingServicePath, binaryWithArgsPath);
+            }
 
             if (alreadyRegistered && pServiceConfig->dwStartType == SERVICE_DISABLED)
             {
@@ -274,46 +288,33 @@ private:
                     }
                 }
             }
-
-            if (alreadyRegistered)
-            {
-                SERVICE_DELAYED_AUTO_START_INFO delayedAutoStartInfo;
-                if (!QueryServiceConfig2W(schService, SERVICE_CONFIG_DELAYED_AUTO_START_INFO, reinterpret_cast<LPBYTE>(&delayedAutoStartInfo), sizeof(delayedAutoStartInfo), &bytesNeeded) || delayedAutoStartInfo.fDelayedAutostart)
-                {
-                    alreadyRegistered = false;
-                    // Wait until the service has been actually deleted so we can recreate it again
-                    for (int i = 0; i < 10; ++i)
-                    {
-                        schService = OpenServiceW(schSCManager, SERVICE_NAME, SERVICE_QUERY_STATUS | SERVICE_QUERY_CONFIG | SERVICE_CHANGE_CONFIG);
-                        if (schService)
-                        {
-                            CloseServiceHandle(schService);
-                            Sleep(1000);
-                        }
-                        else
-                        {
-                            break;
-                        }
-                    }
-                }
-            }
+            LocalFree(pServiceConfig);
         }
 
         if (alreadyRegistered)
         {
+            if (!isServicePathCorrect) {
+                if (!ChangeServiceConfigW(schService,
+                    SERVICE_NO_CHANGE,
+                    SERVICE_NO_CHANGE,
+                    SERVICE_NO_CHANGE,
+                    binaryWithArgsPath.c_str(),
+                    nullptr,
+                    nullptr,
+                    nullptr,
+                    nullptr,
+                    nullptr,
+                    nullptr))
+                {
+                    Logger::error(L"Failed to update the service's path. ERROR: {}", GetLastError());
+                }
+                else
+                {
+                    Logger::info(L"Updated the service's path.");
+                }
+            }
             return;
         }
-
-        // Pass local app data of the current user to the service
-        PWSTR cLocalAppPath;
-        winrt::check_hresult(SHGetKnownFolderPath(FOLDERID_LocalAppData, 0, nullptr, &cLocalAppPath));
-        CoTaskMemFree(cLocalAppPath);
-
-        std::wstring localAppPath{ cLocalAppPath };
-        std::wstring binaryWithArgsPath = L"\"";
-        binaryWithArgsPath += servicePath;
-        binaryWithArgsPath += L"\" ";
-        binaryWithArgsPath += escapeDoubleQuotes(localAppPath);
 
         schService = CreateServiceW(
             schSCManager,
@@ -557,7 +558,7 @@ public:
         Logger::trace(L"Starting Process to add firewall rule");
 
         std::wstring executable_path = get_module_folderpath();
-        executable_path.append(L"\\modules\\MouseWithoutBorders\\PowerToys.MouseWithoutBorders.exe");
+        executable_path.append(L"\\PowerToys.MouseWithoutBorders.exe");
 
         std::wstring executable_args = L"";
         executable_args.append(L"/S /c \"");

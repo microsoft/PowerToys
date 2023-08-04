@@ -57,14 +57,14 @@ constexpr wchar_t* DisplayChangeTypeName (const DisplayChangeType type){
 namespace NonLocalizable
 {
     const wchar_t ToolWindowClassName[] = L"SuperFancyZones";
-    const wchar_t FZEditorExecutablePath[] = L"modules\\FancyZones\\PowerToys.FancyZonesEditor.exe";
+    const wchar_t FZEditorExecutablePath[] = L"PowerToys.FancyZonesEditor.exe";
 }
 
 struct FancyZones : public winrt::implements<FancyZones, IFancyZones, IFancyZonesCallback>, public SettingsObserver
 {
 public:
     FancyZones(HINSTANCE hinstance, std::function<void()> disableModuleCallbackFunction) noexcept :
-        SettingsObserver({ SettingId::EditorHotkey, SettingId::PrevTabHotkey, SettingId::NextTabHotkey, SettingId::SpanZonesAcrossMonitors }),
+        SettingsObserver({ SettingId::EditorHotkey, SettingId::WindowSwitching, SettingId::PrevTabHotkey, SettingId::NextTabHotkey, SettingId::SpanZonesAcrossMonitors }),
         m_hinstance(hinstance),
         m_draggingState([this]() {
             PostMessageW(m_window, WM_PRIV_LOCATIONCHANGE, NULL, NULL);
@@ -218,23 +218,9 @@ FancyZones::Run() noexcept
         return;
     }
 
-    if (!RegisterHotKey(m_window, static_cast<int>(HotkeyId::Editor), FancyZonesSettings::settings().editorHotkey.get_modifiers(), FancyZonesSettings::settings().editorHotkey.get_code()))
-    {
-        Logger::error(L"Failed to register hotkey: {}", get_last_error_or_default(GetLastError()));
-    }
-
-    if (FancyZonesSettings::settings().windowSwitching)
-    {
-        if (!RegisterHotKey(m_window, static_cast<int>(HotkeyId::NextTab), FancyZonesSettings::settings().nextTabHotkey.get_modifiers(), FancyZonesSettings::settings().nextTabHotkey.get_code()))
-        {
-            Logger::error(L"Failed to register hotkey: {}", get_last_error_or_default(GetLastError()));
-        }
-
-        if (!RegisterHotKey(m_window, static_cast<int>(HotkeyId::PrevTab), FancyZonesSettings::settings().prevTabHotkey.get_modifiers(), FancyZonesSettings::settings().prevTabHotkey.get_code()))
-        {
-            Logger::error(L"Failed to register hotkey: {}", get_last_error_or_default(GetLastError()));
-        }
-    }
+    UpdateHotkey(static_cast<int>(HotkeyId::Editor), FancyZonesSettings::settings().editorHotkey, true);
+    UpdateHotkey(static_cast<int>(HotkeyId::PrevTab), FancyZonesSettings::settings().prevTabHotkey, FancyZonesSettings::settings().windowSwitching);
+    UpdateHotkey(static_cast<int>(HotkeyId::NextTab), FancyZonesSettings::settings().nextTabHotkey, FancyZonesSettings::settings().windowSwitching);
 
     // Initialize COM. Needed for WMI monitor identifying
     HRESULT comInitHres = CoInitializeEx(0, COINIT_MULTITHREADED);
@@ -1172,6 +1158,12 @@ void FancyZones::SettingsUpdate(SettingId id)
         UpdateHotkey(static_cast<int>(HotkeyId::Editor), FancyZonesSettings::settings().editorHotkey, true);
     }
     break;
+    case SettingId::WindowSwitching:
+    {
+        UpdateHotkey(static_cast<int>(HotkeyId::PrevTab), FancyZonesSettings::settings().prevTabHotkey, FancyZonesSettings::settings().windowSwitching);
+        UpdateHotkey(static_cast<int>(HotkeyId::NextTab), FancyZonesSettings::settings().nextTabHotkey, FancyZonesSettings::settings().windowSwitching);
+    }
+    break;
     case SettingId::PrevTabHotkey:
     {
         UpdateHotkey(static_cast<int>(HotkeyId::PrevTab), FancyZonesSettings::settings().prevTabHotkey, FancyZonesSettings::settings().windowSwitching);
@@ -1236,7 +1228,7 @@ bool FancyZones::ShouldProcessSnapHotkey(DWORD vkCode) noexcept
             return false;
         }
 
-        if (layout->Type() != FancyZonesDataTypes::ZoneSetLayoutType::Blank)
+        if (layout->Zones().size() > 0)
         {
             if (vkCode == VK_UP || vkCode == VK_DOWN)
             {

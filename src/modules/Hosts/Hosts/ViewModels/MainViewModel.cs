@@ -254,7 +254,7 @@ namespace Hosts.ViewModels
         [RelayCommand]
         public void OpenSettings()
         {
-            SettingsDeepLink.OpenSettings(SettingsDeepLink.SettingsWindow.Hosts);
+            SettingsDeepLink.OpenSettings(SettingsDeepLink.SettingsWindow.Hosts, true);
         }
 
         [RelayCommand]

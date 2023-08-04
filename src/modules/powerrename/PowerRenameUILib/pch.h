@@ -1,4 +1,7 @@
 ﻿#pragma once
+
+#define NOMINMAX
+
 #include <windows.h>
 #include <unknwn.h>
 #include <restrictederrorinfo.h>

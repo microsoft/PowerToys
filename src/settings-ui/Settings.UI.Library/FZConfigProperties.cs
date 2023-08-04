@@ -23,6 +23,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             FancyzonesShiftDrag = new BoolProperty(ConfigDefaults.DefaultFancyzonesShiftDrag);
             FancyzonesOverrideSnapHotkeys = new BoolProperty();
             FancyzonesMouseSwitch = new BoolProperty();
+            FancyzonesMouseMiddleClickSpanningMultipleZones = new BoolProperty();
             FancyzonesMoveWindowsAcrossMonitors = new BoolProperty();
             FancyzonesMoveWindowsBasedOnPosition = new BoolProperty();
             FancyzonesOverlappingZonesAlgorithm = new IntProperty();
@@ -59,6 +60,9 @@ namespace Microsoft.PowerToys.Settings.UI.Library
 
         [JsonPropertyName("fancyzones_mouseSwitch")]
         public BoolProperty FancyzonesMouseSwitch { get; set; }
+
+        [JsonPropertyName("fancyzones_mouseMiddleClickSpanningMultipleZones")]
+        public BoolProperty FancyzonesMouseMiddleClickSpanningMultipleZones { get; set; }
 
         [JsonPropertyName("fancyzones_overrideSnapHotkeys")]
         public BoolProperty FancyzonesOverrideSnapHotkeys { get; set; }

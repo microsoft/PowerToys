@@ -35,5 +35,33 @@ namespace Microsoft.PowerToys.Settings.UI.Library.Helpers
                 return "#FFFFFF";
             }
         }
+
+        public static string ToARGBHex(string color)
+        {
+            if (color == null)
+            {
+                return "#FFFFFFFF";
+            }
+
+            // Using InvariantCulture as these are expected to be hex codes.
+            bool success = int.TryParse(
+                color.Replace("#", string.Empty),
+                System.Globalization.NumberStyles.HexNumber,
+                CultureInfo.InvariantCulture,
+                out int argb);
+
+            if (success)
+            {
+                Color clr = Color.FromArgb(argb);
+                return "#" + clr.A.ToString("X2", CultureInfo.InvariantCulture) +
+                    clr.R.ToString("X2", CultureInfo.InvariantCulture) +
+                    clr.G.ToString("X2", CultureInfo.InvariantCulture) +
+                    clr.B.ToString("X2", CultureInfo.InvariantCulture);
+            }
+            else
+            {
+                return "#FFFFFFFF";
+            }
+        }
     }
 }
