@@ -75,7 +75,7 @@ int WINAPI wWinMain(_In_ HINSTANCE, _In_opt_ HINSTANCE, _In_ PWSTR lpCmdLine, _I
         PostThreadMessage(mainThreadId, WM_QUIT, 0, 0);
     });
 
-    // NOTE: Reparenting a window with a different DPI context has consequences.
+    // NOTE: reparenting a window with a different DPI context has consequences.
     //       See https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-setparent#remarks
     //       for more info.
     winrt::check_bool(SetProcessDpiAwarenessContext(DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE_V2));

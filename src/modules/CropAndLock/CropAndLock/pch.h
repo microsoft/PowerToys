@@ -1,6 +1,6 @@
 ﻿#pragma once
 
-// Collision from minwindef min/max and std
+// Collision from minWinDef min/max and std
 #define NOMINMAX
 #define WIN32_LEAN_AND_MEAN
 
@@ -53,7 +53,7 @@
 #include <robmikh.common/direct3d11.interop.h>
 #include <robmikh.common/d3dHelpers.h>
 #include <robmikh.common/graphics.interop.h>
-#include <robmikh.common/dispatcherqueue.desktop.interop.h>
+#include <robmikh.common/dispatcherQueue.desktop.interop.h>
 #include <robmikh.common/d3dHelpers.desktop.h>
 #include <robmikh.common/composition.desktop.interop.h>
 #include <robmikh.common/hwnd.interop.h>
