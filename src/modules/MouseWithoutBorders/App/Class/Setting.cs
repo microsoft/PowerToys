@@ -648,13 +648,24 @@ namespace MouseWithoutBorders.Class
             }
         }
 
-        internal int HotKeyToggleEasyMouse
+        internal HotkeySettings HotKeySwitch2AllPC
         {
             get
             {
                 lock (_loadingSettingsLock)
                 {
-                    return _properties.HotKeyToggleEasyMouse.Value;
+                    return _properties.Switch2AllPCShortcut;
+                }
+            }
+        }
+
+        internal HotkeySettings HotKeyToggleEasyMouse
+        {
+            get
+            {
+                lock (_loadingSettingsLock)
+                {
+                    return _properties.ToggleEasyMouseShortcut;
                 }
             }
 
@@ -662,18 +673,18 @@ namespace MouseWithoutBorders.Class
             {
                 lock (_loadingSettingsLock)
                 {
-                    _properties.HotKeyToggleEasyMouse.Value = value;
+                    _properties.ToggleEasyMouseShortcut = value;
                 }
             }
         }
 
-        internal int HotKeyLockMachine
+        internal HotkeySettings HotKeyLockMachine
         {
             get
             {
                 lock (_loadingSettingsLock)
                 {
-                    return _properties.HotKeyLockMachine.Value;
+                    return _properties.LockMachineShortcut;
                 }
             }
 
@@ -681,18 +692,18 @@ namespace MouseWithoutBorders.Class
             {
                 lock (_loadingSettingsLock)
                 {
-                    _properties.HotKeyLockMachine.Value = value;
+                    _properties.LockMachineShortcut = value;
                 }
             }
         }
 
-        internal int HotKeyReconnect
+        internal HotkeySettings HotKeyReconnect
         {
             get
             {
                 lock (_loadingSettingsLock)
                 {
-                    return _properties.HotKeyReconnect.Value;
+                    return _properties.ReconnectShortcut;
                 }
             }
 
@@ -700,16 +711,8 @@ namespace MouseWithoutBorders.Class
             {
                 lock (_loadingSettingsLock)
                 {
-                    _properties.HotKeyReconnect.Value = value;
+                    _properties.ReconnectShortcut = value;
                 }
-            }
-        }
-
-        internal int HotKeyCaptureScreen
-        {
-            get
-            {
-                return 0;
             }
         }
 
@@ -718,25 +721,6 @@ namespace MouseWithoutBorders.Class
             get
             {
                 return 0;
-            }
-        }
-
-        internal int HotKeySwitch2AllPC
-        {
-            get
-            {
-                lock (_loadingSettingsLock)
-                {
-                    return _properties.HotKeySwitch2AllPC.Value;
-                }
-            }
-
-            set
-            {
-                lock (_loadingSettingsLock)
-                {
-                    _properties.HotKeySwitch2AllPC.Value = value;
-                }
             }
         }
 

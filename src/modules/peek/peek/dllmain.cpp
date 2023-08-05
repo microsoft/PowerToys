@@ -283,7 +283,7 @@ private:
             Logger::trace("Starting Peek non elevated from elevated process");
             const auto modulePath = get_module_folderpath();
             std::wstring runExecutablePath = modulePath;
-            runExecutablePath += L"\\modules\\Peek\\PowerToys.Peek.UI.exe";
+            runExecutablePath += L"\\WinUI3Apps\\PowerToys.Peek.UI.exe";
             std::optional<ProcessInfo> processStartedInfo = RunNonElevatedFailsafe(runExecutablePath, executable_args, modulePath, PROCESS_QUERY_INFORMATION | SYNCHRONIZE | PROCESS_TERMINATE);
             if (processStartedInfo.has_value())
             {
@@ -301,7 +301,7 @@ private:
 
             sei.fMask = { SEE_MASK_NOCLOSEPROCESS };
             sei.lpVerb = L"open";
-            sei.lpFile = L"modules\\Peek\\PowerToys.Peek.UI.exe";
+            sei.lpFile = L"WinUI3Apps\\PowerToys.Peek.UI.exe";
             sei.nShow = SW_SHOWNORMAL;
             sei.lpParameters = executable_args.data();
 

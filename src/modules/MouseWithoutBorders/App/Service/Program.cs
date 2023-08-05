@@ -49,9 +49,14 @@ namespace MouseWithoutBordersService
             })
             .Build();
 
+            // These warning are disabled because StreamJsonRpc brings in thread analyzers to the project. Enable warnings once we adopt thread analyzers globally.
+#pragma warning disable VSTHRD101 // Avoid unsupported async delegates
+#pragma warning disable VSTHRD110 // Observe result of async calls
             CmdArgs.StopServiceDelegate = async () => { await host.StopAsync(); };
             host.Run();
             host.StopAsync();
+#pragma warning restore VSTHRD110 // Observe result of async calls
+#pragma warning restore VSTHRD101 // Avoid unsupported async delegates
         }
     }
 }

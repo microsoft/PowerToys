@@ -34,7 +34,7 @@
     <TargetName>PowerToys.$(MSBuildProjectName)</TargetName>
   </PropertyGroup>
   <PropertyGroup>
-    <OutDir>$(SolutionDir)$(Platform)\$(Configuration)\modules\KeyboardManager\$(ProjectName)\</OutDir>
+    <OutDir>..\..\..\..\$(Platform)\$(Configuration)\$(ProjectName)\</OutDir>
   </PropertyGroup>
   <ItemDefinitionGroup>
     <ClCompile>

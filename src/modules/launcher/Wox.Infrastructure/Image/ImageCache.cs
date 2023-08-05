@@ -9,6 +9,7 @@ using System.Linq;
 using System.Windows.Media;
 using Wox.Infrastructure.Storage;
 using Wox.Plugin;
+using Wox.Plugin.Logger;
 
 namespace Wox.Infrastructure.Image
 {
@@ -34,7 +35,13 @@ namespace Wox.Infrastructure.Image
             get
             {
                 Usage.AddOrUpdate(path, 1, (k, v) => v + 1);
-                var i = _data[path];
+                _data.TryGetValue(path, out ImageSource i);
+
+                if (i == null)
+                {
+                    Log.Warn($"ImageSource is null for path: {path}", GetType());
+                }
+
                 return i;
             }
 

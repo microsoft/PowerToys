@@ -3,21 +3,23 @@
   <PropertyGroup>
     <AssemblyTitle>PowerToys.Run</AssemblyTitle>
     <OutputType>WinExe</OutputType>
-    <TargetFramework>net7.0-windows10.0.19041.0</TargetFramework>
+    <TargetFramework>net7.0-windows10.0.20348.0</TargetFramework>
+    <TargetPlatformMinVersion>10.0.19041.0</TargetPlatformMinVersion>
+    <SupportedOSPlatformVersion>10.0.19041.0</SupportedOSPlatformVersion>
     <UseWPF>true</UseWPF>
     <UseWindowsForms>true</UseWindowsForms>
     <StartupObject>PowerLauncher.App</StartupObject>
-    <ApplicationIcon>Images\RunResource.ico</ApplicationIcon>
+    <ApplicationIcon>Assets\PowerLauncher\RunResource.ico</ApplicationIcon>
     <ApplicationManifest>app.manifest</ApplicationManifest>
     <RuntimeIdentifiers>win-x64;win-arm64</RuntimeIdentifiers>
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
     <AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
-    <AssetTargetFallback>uap10.0.18362</AssetTargetFallback>
+    <AssetTargetFallback>uap10.0.19041</AssetTargetFallback>
     <Version>$(Version).0</Version>
     <Authors>Microsoft Corporation</Authors>
     <Description>PowerToys PowerLauncher</Description>
     <AssemblyName>PowerToys.PowerLauncher</AssemblyName>
-    <OutputPath>..\..\..\..\$(Platform)\$(Configuration)\modules\launcher\</OutputPath>
+    <OutputPath>..\..\..\..\$(Platform)\$(Configuration)</OutputPath>
     <GenerateSatelliteAssembliesForCore>true</GenerateSatelliteAssembliesForCore>
     <SelfContained>true</SelfContained>
   </PropertyGroup>
@@ -52,20 +54,16 @@
   </ItemGroup>
 
   <ItemGroup>
-    <None Remove="app.png" />
-    <None Remove="Images\app_error.dark.png" />
-    <None Remove="Images\app_error.light.png" />
-    <None Remove="Images\RunResource.ico" />
+    <None Remove="Assets\PowerLauncher\app_error.dark.png" />
+    <None Remove="Assets\PowerLauncher\app_error.light.png" />
+    <None Remove="Assets\PowerLauncher\RunResource.ico" />
   </ItemGroup>
 
   <ItemGroup>
-    <Content Include="app.png">
+    <Content Include="Assets\PowerLauncher\app_error.dark.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="Images\app_error.dark.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Images\app_error.light.png">
+    <Content Include="Assets\PowerLauncher\app_error.light.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
   </ItemGroup>
@@ -88,6 +86,8 @@
     <PackageReference Include="System.Data.OleDb" />
     <PackageReference Include="System.ServiceProcess.ServiceController" />
     <PackageReference Include="UnitsNet" />
+    <!-- HACK: Microsoft.Extensions.Hosting is referenced, even if it is not used, to force dll versions to be the same as in other projects. Really only needed since OneNote uses the LazyCache and NLog dependencies, which references older assemblies. -->
+    <PackageReference Include="Microsoft.Extensions.Hosting" />
   </ItemGroup>
 
   <ItemGroup>
@@ -109,7 +109,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <None Update="Images\RunAsset.ico">
+    <None Update="Assets\PowerLauncher\RunAsset.ico">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
     <None Update="Properties\Settings.settings">
@@ -139,7 +139,7 @@
     </Page>
   </ItemGroup>
   <ItemGroup>
-    <Resource Include="Images\RunResource.ico" />
+    <Resource Include="Assets\PowerLauncher\RunResource.ico" />
   </ItemGroup>
   <ItemGroup>
     <Compile Update="Properties\Resources.Designer.cs">

@@ -20,7 +20,6 @@ using Peek.FilePreviewer.Models;
 using Peek.FilePreviewer.Previewers;
 using Peek.FilePreviewer.Previewers.Interfaces;
 using Peek.UI.Telemetry.Events;
-using Windows.ApplicationModel.Resources;
 
 namespace Peek.FilePreviewer
 {
@@ -55,7 +54,7 @@ namespace Peek.FilePreviewer
         private IPreviewer? previewer;
 
         [ObservableProperty]
-        private string imageInfoTooltip = ResourceLoader.GetForViewIndependentUse().GetString("PreviewTooltip_Blank");
+        private string imageInfoTooltip = ResourceLoaderInstance.ResourceLoader.GetString("PreviewTooltip_Blank");
 
         private CancellationTokenSource _cancellationTokenSource = new();
 
@@ -150,6 +149,13 @@ namespace Peek.FilePreviewer
                 BrowserPreview.Visibility = Visibility.Collapsed;
                 ArchivePreview.Visibility = Visibility.Collapsed;
                 UnsupportedFilePreview.Visibility = Visibility.Collapsed;
+
+                ImagePreview.FlowDirection = FlowDirection.LeftToRight;
+                VideoPreview.FlowDirection = FlowDirection.LeftToRight;
+                BrowserPreview.FlowDirection = FlowDirection.LeftToRight;
+                ArchivePreview.FlowDirection = FlowDirection.LeftToRight;
+                UnsupportedFilePreview.FlowDirection = FlowDirection.LeftToRight;
+
                 return;
             }
 

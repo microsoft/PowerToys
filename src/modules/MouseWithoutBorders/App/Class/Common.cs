@@ -17,6 +17,7 @@ using System.Security.Cryptography;
 using System.Text;
 using System.Threading;
 using System.Windows.Forms;
+using Microsoft.PowerToys.Settings.UI.Library;
 
 // <summary>
 //     Most of the helper methods.
@@ -114,6 +115,11 @@ namespace MouseWithoutBorders
         private static string binaryName;
 
         internal static Process CurrentProcess { get; set; }
+
+        internal static bool HotkeyMatched(int vkCode, bool winDown, bool ctrlDown, bool altDown, bool shiftDown, HotkeySettings hotkey)
+        {
+            return !hotkey.IsEmpty() && (vkCode == hotkey.Code) && (!hotkey.Win || winDown) && (!hotkey.Alt || altDown) && (!hotkey.Shift || shiftDown) && (!hotkey.Ctrl || ctrlDown);
+        }
 
         public static string BinaryName
         {

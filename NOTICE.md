@@ -286,7 +286,7 @@ SOFTWARE.
 - CommunityToolkit.WinUI.UI 7.1.2
 - CommunityToolkit.WinUI.UI.Animations 7.1.2
 - CommunityToolkit.WinUI.UI.Controls 7.1.2
-- ControlzEx 5.0.1
+- ControlzEx 6.0.0
 - HelixToolkit 2.20.2
 - HelixToolkit.Core.Wpf 2.20.2
 - hyjiacan.pinyin4net 4.1.1
@@ -306,7 +306,7 @@ SOFTWARE.
 - Microsoft.Web.WebView2 1.0.1722.45
 - Microsoft.Windows.Compatibility 7.0.3
 - Microsoft.Windows.CsWin32 0.2.46-beta
-- Microsoft.Windows.CsWinRT 2.0.2
+- Microsoft.Windows.CsWinRT 2.0.3
 - Microsoft.Windows.SDK.BuildTools 10.0.22621.755
 - Microsoft.Windows.SDK.Contracts 10.0.19041.1
 - Microsoft.WindowsAppSDK 1.3.230502000
@@ -332,7 +332,7 @@ SOFTWARE.
 - System.Management 7.0.2
 - System.Reactive 6.0.0-preview.9
 - System.Runtime.Caching 7.0.0
-- System.ServiceProcess.ServiceController 7.0.0
+- System.ServiceProcess.ServiceController 7.0.1
 - UnicodeInformation 2.6.0
 - UnitsNet 4.145.0
 - Vanara.PInvoke.Shell32 3.4.11

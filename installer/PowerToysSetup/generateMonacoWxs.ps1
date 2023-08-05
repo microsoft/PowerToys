@@ -43,7 +43,7 @@ $fileWxs | ForEach-Object {
 
 $removeFolderEntries =
 @"
-`r`n            <Component Id="RemoveMonacoSRCFolders" Guid="$((New-Guid).ToString().ToUpper())" Directory="FileExplorerPreviewInstallFolder" >
+`r`n            <Component Id="RemoveMonacoSRCFolders" Guid="$((New-Guid).ToString().ToUpper())" Directory="MonacoPreviewHandlerMonacoSRCFolder" >
                 <RegistryKey Root="`$(var.RegistryScope)" Key="Software\Classes\powertoys\components">
                     <RegistryValue Type="string" Name="RemoveMonacoSRCFolders" Value="" KeyPath="yes"/>
                 </RegistryKey>`r`n

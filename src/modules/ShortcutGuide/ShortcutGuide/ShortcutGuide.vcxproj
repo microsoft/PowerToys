@@ -13,7 +13,6 @@
     <ProjectGuid>{2edb3eb4-fa92-4bff-b2d8-566584837231}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
     <RootNamespace>ShortcutGuide</RootNamespace>
-    <WindowsTargetPlatformMinVersion>10.0.19041.0</WindowsTargetPlatformMinVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Label="Configuration">
@@ -48,8 +47,7 @@
     <TargetName>PowerToys.$(MSBuildProjectName)</TargetName>
   </PropertyGroup>
   <PropertyGroup>
-    <OutDir>$(SolutionDir)$(Platform)\$(Configuration)\modules\ShortcutGuide\$(ProjectName)\</OutDir>
-    <IntDir>$(SolutionDir)$(Platform)\$(Configuration)\obj\ShortcutGuide\$(ProjectName)\</IntDir>
+    <OutDir>..\..\..\..\$(Platform)\$(Configuration)\</OutDir>
   </PropertyGroup>
   <ItemDefinitionGroup>
     <ClCompile>
@@ -97,57 +95,9 @@
   <ItemGroup>
     <None Include="packages.config" />
     <None Include="PropertySheet.props" />
-    <CopyFileToFolders Include="svgs\0.svg">
+    <CopyFileToFolders Include="Assets\ShortcutGuide\**">
       <FileType>Document</FileType>
-      <DestinationFolders>$(OutDir)\svgs</DestinationFolders>
-    </CopyFileToFolders>
-    <CopyFileToFolders Include="svgs\1.svg">
-      <FileType>Document</FileType>
-      <DestinationFolders>$(OutDir)\svgs</DestinationFolders>
-    </CopyFileToFolders>
-    <CopyFileToFolders Include="svgs\2.svg">
-      <FileType>Document</FileType>
-      <DestinationFolders>$(OutDir)\svgs</DestinationFolders>
-    </CopyFileToFolders>
-    <CopyFileToFolders Include="svgs\3.svg">
-      <FileType>Document</FileType>
-      <DestinationFolders>$(OutDir)\svgs</DestinationFolders>
-    </CopyFileToFolders>
-    <CopyFileToFolders Include="svgs\4.svg">
-      <FileType>Document</FileType>
-      <DestinationFolders>$(OutDir)\svgs</DestinationFolders>
-    </CopyFileToFolders>
-    <CopyFileToFolders Include="svgs\5.svg">
-      <FileType>Document</FileType>
-      <DestinationFolders>$(OutDir)\svgs</DestinationFolders>
-    </CopyFileToFolders>
-    <CopyFileToFolders Include="svgs\6.svg">
-      <FileType>Document</FileType>
-      <DestinationFolders>$(OutDir)\svgs</DestinationFolders>
-    </CopyFileToFolders>
-    <CopyFileToFolders Include="svgs\7.svg">
-      <FileType>Document</FileType>
-      <DestinationFolders>$(OutDir)\svgs</DestinationFolders>
-    </CopyFileToFolders>
-    <CopyFileToFolders Include="svgs\8.svg">
-      <FileType>Document</FileType>
-      <DestinationFolders>$(OutDir)\svgs</DestinationFolders>
-    </CopyFileToFolders>
-    <CopyFileToFolders Include="svgs\9.svg">
-      <FileType>Document</FileType>
-      <DestinationFolders>$(OutDir)\svgs</DestinationFolders>
-    </CopyFileToFolders>
-    <CopyFileToFolders Include="svgs\no_active_window.svg">
-      <FileType>Document</FileType>
-      <DestinationFolders>$(OutDir)\svgs</DestinationFolders>
-    </CopyFileToFolders>
-    <CopyFileToFolders Include="svgs\overlay.svg">
-      <FileType>Document</FileType>
-      <DestinationFolders>$(OutDir)\svgs</DestinationFolders>
-    </CopyFileToFolders>
-    <CopyFileToFolders Include="svgs\overlay_portrait.svg">
-      <FileType>Document</FileType>
-      <DestinationFolders>$(OutDir)\svgs</DestinationFolders>
+      <DestinationFolders>$(OutDir)\Assets\ShortcutGuide</DestinationFolders>
     </CopyFileToFolders>
   </ItemGroup>
   <ItemGroup>
