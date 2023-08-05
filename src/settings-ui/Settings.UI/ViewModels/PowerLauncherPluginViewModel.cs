@@ -36,6 +36,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             }
 
             _enabledGpoRuleConfiguration = GPOWrapper.GetRunPluginEnabledValue(settings.Id);
+            _enabledGpoRuleIsConfigured = _enabledGpoRuleConfiguration == GpoRuleConfigured.Disabled || _enabledGpoRuleConfiguration == GpoRuleConfigured.Enabled;
         }
 
         public string Id { get => settings.Id; }
@@ -47,12 +48,13 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         public string Author { get => settings.Author; }
 
         private GpoRuleConfigured _enabledGpoRuleConfiguration;
+        private bool _enabledGpoRuleIsConfigured;
 
         public bool Disabled
         {
             get
             {
-                return _enabledGpoRuleConfiguration == GpoRuleConfigured.Disabled || settings.Disabled;
+                return _enabledGpoRuleConfiguration == GpoRuleConfigured.Disabled || !(_enabledGpoRuleConfiguration == GpoRuleConfigured.Enabled) || settings.Disabled;
             }
 
             set
@@ -70,7 +72,9 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             }
         }
 
-        public bool Enabled => _enabledGpoRuleConfiguration == GpoRuleConfigured.Enabled || !Disabled;
+        public bool Enabled => !Disabled;
+
+        public bool EnabledGpoRuleIsConfigured => _enabledGpoRuleIsConfigured;
 
         public double DisabledOpacity => Disabled ? 0.5 : 1;
 
