@@ -160,7 +160,7 @@ namespace powertoys_gpo {
                 DWORD dwType = REG_SZ;
                 char string_value[1024];
                 DWORD string_value_length = 1024;
-                auto resValue = RegQueryValueEx(key, registry_list_enabled_value.c_str(), NULL, &dwType, (LPBYTE)&string_value, &string_value_length);
+                auto resValue = RegQueryValueEx(key, registry_list_value_name.c_str(), NULL, &dwType, (LPBYTE)&string_value, &string_value_length);
                 RegCloseKey(key);
                 
                 if (resValue != ERROR_SUCCESS)
@@ -215,7 +215,7 @@ namespace powertoys_gpo {
                 DWORD dwType = REG_SZ;
                 char string_value[1024];
                 DWORD string_value_length = 1024;
-                auto resValue = RegQueryValueEx(key, registry_list_enabled_value.c_str(), NULL, &dwType, (LPBYTE)&string_value, &string_value_length);
+                auto resValue = RegQueryValueEx(key, registry_list_value_name.c_str(), NULL, &dwType, (LPBYTE)&string_value, &string_value_length);
                 RegCloseKey(key);
 
                 if (resValue != ERROR_SUCCESS)
