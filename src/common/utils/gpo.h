@@ -120,7 +120,7 @@ namespace powertoys_gpo {
 
     inline std::string getPolicyListValue(const std::wstring& registry_list_enabled_value, const std::wstring& registry_list_path, const std::wstring& registry_list_value_name)
     {
-        // This function returns the value of an entry of an policy list. The user scoope is only checked if the list is not enabled for the machine (registry_list_enabled_value) to not mix them. If the no value or no list is found in the registry we return an empty string.
+        // This function returns the value of an entry of an policy list. The user scope is only checked if the list is not enabled for the machine (registry_list_enabled_value) to not mix them. If the no value or no list is found in the registry we return an empty string.
 
         HKEY key{};
         DWORD value = 0xFFFFFFFE;
@@ -146,7 +146,7 @@ namespace powertoys_gpo {
             else
             {
                 // value found and equals to 1 
-                bool machine_list_found = true;
+                machine_list_found = true;
             }
         }
 
@@ -170,7 +170,7 @@ namespace powertoys_gpo {
                 }
                 else
                 {
-                    // machine list exists; but vlaue doesn't; therefore return empty string.
+                    // machine list exists; but value doesn't; therefore return empty string.
                     return "";
                 }
             }
@@ -202,7 +202,7 @@ namespace powertoys_gpo {
             else
             {
                 // value found and equals to 1
-                bool user_list_found = true;
+                user_list_found = true;
             }
         }
 
@@ -225,7 +225,7 @@ namespace powertoys_gpo {
                 }
                 else
                 {
-                    // user list exists; but vlaue doesn't; therefore return empty string.
+                    // user list exists; but value doesn't; therefore return empty string.
                     return "";
                 }
             }
