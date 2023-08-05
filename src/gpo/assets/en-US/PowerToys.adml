@@ -67,7 +67,7 @@ If this setting is not configured or enabled, the user can control experimentati
 If this setting is disabled, experimentation is not allowed.
 </string>
 
-      <string id="PTRunGlobalPluginEnabledStateDescription">This policy configures the global enabled state for all PowerToys Run plugin. All plugins will have the same state.
+      <string id="PowerToysRunAllPluginsEnabledStateDescription">This policy configures the enabled state for all PowerToys Run plugins. All plugins will have the same state.
 
 If you enable this setting, the plugins will be always enabled and the user won't be able to disable it.
 
@@ -76,6 +76,22 @@ If you disable this setting, the plugins will be always disabled and the user wo
 If you don't configure this setting, users are able to disable or enable the plugins.
 
 Note: You can override this policy for individual plugins using the policy "Configure enabled state for individual plugins".
+</string>
+
+      <string id="PowerToysRunIndividualPluginEnabledStateDescription">This policy configures the enabled state for each listed PowerToys Run plugin. Each plugin will have the configured state.
+
+
+If you enable this setting, you can define the list of plugins and their enabled states:
+  - The value name (first column) is the plugin ID. You can find it in the plugin.json which is located in the plugin folder.
+  - The value (second column) is a numeric value: 0 for disabled, 1 for enabled and 2 for usaer takes control.
+
+  Example to disable Program plugin: 791FC278BA414111B8D1886DFE447410 | 0
+
+
+If you disable or don't configure this policy, either the user or the policy "Configure global plugin enabled state" takes control over the enabled state of the plugins.
+
+
+Note: You can set a global enabled state for all plugins not listed here using the policy "Configure enabled state for all plugins".
 </string>
 
       <string id="ConfigureEnabledUtilityAlwaysOnTop">Always On Top: Configure enabled state</string>
@@ -115,8 +131,14 @@ Note: You can override this policy for individual plugins using the policy "Conf
       <string id="SuspendNewUpdateToast">Suspend Action Center notification for new updates</string>
       <string id="DisablePeriodicUpdateCheck">Disable automatic update checks</string>
       <string id="AllowExperimentation">Allow Experimentation</string>
-      <string id="PTRunGlobalPluginEnabledState">Configure global plugin enbaled state</string>
+      <string id="PowerToysRunAllPluginsEnabledState">Configure enabled state for all plugins</string>
+      <string id="PowerToysRunIndividualPluginEnabledState">Configure enabled state for individual plugins</string>
     </stringTable>
+	<presentationTable>
+	  <presentation id="PowerToysRunIndividualPluginEnabledState">
+        <listBox refId="PowerToysRunIndividualPluginEnabledList">List of managed plugins</listBox>
+      </presentation>
+	</presentationTable>
   </resources>
 </policyDefinitionResources>
 

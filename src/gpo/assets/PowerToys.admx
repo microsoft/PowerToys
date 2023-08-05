@@ -398,7 +398,7 @@
       </disabledValue>
     </policy>
 	
-	<policy name="PTRunGlobalPluginEnabledState" class="Both" displayName="$(string.PTRunGlobalPluginEnabledState)" explainText="$(string.PTRunGlobalPluginEnabledStateDescription)" key="Software\Policies\PowerToys" valueName="PTRunGlobalPluginEnabledState">
+	<policy name="PowerToysRunAllPluginsEnabledState" class="Both" displayName="$(string.PowerToysRunAllPluginsEnabledState)" explainText="$(string.PowerToysRunAllPluginsEnabledStateDescription)" key="Software\Policies\PowerToys" valueName="PowerLauncherAllPluginsEnabledState">
       <parentCategory ref="PowerToysRun" />
       <supportedOn ref="SUPPORTED_POWERTOYS_DEV" />
       <enabledValue>
@@ -409,6 +409,27 @@
       </disabledValue>
     </policy>
 	
+	<policy name="PowerToysRunIndividualPluginEnabledState" class="Both" displayName="$(string.PowerToysRunIndividualPluginEnabledState)" explainText="$(string.PowerToysRunIndividualPluginEnabledStateDescription)" presentation="$(presentation.PowerToysRunIndividualPluginEnabledState)" key="Software\Policies\PowerToys\PowerLauncherIndividualPluginEnabledList">
+      <parentCategory ref="PowerToysRun" />
+      <supportedOn ref="SUPPORTED_POWERTOYS_DEV"/>
+      <enabledList>
+		<item key="Software\Policies\PowerToys" valueName="PowerLauncherIndividualPluginEnabledState">
+			<value>
+				<decimal value="1" />
+			</value>
+		</item>
+      </enabledList>
+      <disabledList>
+		<item key="Software\Policies\PowerToys" valueName="PowerLauncherIndividualPluginEnabledState">
+			<value>
+				<delete />
+			</value>
+		</item>
+      </disabledList>
+	  <elements>
+		<list id="PowerToysRunIndividualPluginEnabledList" explicitValue="true" />
+	  </elements>
+    </policy>
 	
   </policies>
 </policyDefinitions>
