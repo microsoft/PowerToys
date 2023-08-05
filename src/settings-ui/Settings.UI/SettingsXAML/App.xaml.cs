@@ -7,6 +7,7 @@ using System.Diagnostics;
 using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
+using Common.UI;
 using interop;
 using ManagedCommon;
 using Microsoft.PowerToys.Settings.UI.Helpers;
@@ -208,17 +209,16 @@ namespace Microsoft.PowerToys.Settings.UI
             }
             else
             {
+#if DEBUG
                 // For debugging purposes
                 // Window is also needed to show MessageDialog
                 settingsWindow = new MainWindow(isDark);
                 settingsWindow.ExtendsContentIntoTitleBar = true;
                 settingsWindow.Activate();
                 settingsWindow.NavigateToSection(StartupPage);
-
-#if !DEBUG
-                ShowMessageDialogAndExit("The application cannot be run as a standalone process. Please start the application through the runner.", "Forbidden");
+                ShowMessageDialog("The application is running in Debug mode.", "DEBUG");
 #else
-                ShowMessageDialog("The application cannot be run as a standalone process. Please start the application through the runner.", "Forbidden");
+                SettingsDeepLink.OpenSettings(SettingsDeepLink.SettingsWindow.Overview, true);
 #endif
             }
         }
