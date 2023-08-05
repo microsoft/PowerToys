@@ -397,7 +397,6 @@
         <decimal value="0" />
       </disabledValue>
     </policy>
-	
 	<policy name="PowerToysRunAllPluginsEnabledState" class="Both" displayName="$(string.PowerToysRunAllPluginsEnabledState)" explainText="$(string.PowerToysRunAllPluginsEnabledStateDescription)" key="Software\Policies\PowerToys" valueName="PowerLauncherAllPluginsEnabledState">
       <parentCategory ref="PowerToysRun" />
       <supportedOn ref="SUPPORTED_POWERTOYS_DEV" />
@@ -408,7 +407,6 @@
         <decimal value="0" />
       </disabledValue>
     </policy>
-	
 	<policy name="PowerToysRunIndividualPluginEnabledState" class="Both" displayName="$(string.PowerToysRunIndividualPluginEnabledState)" explainText="$(string.PowerToysRunIndividualPluginEnabledStateDescription)" presentation="$(presentation.PowerToysRunIndividualPluginEnabledState)" key="Software\Policies\PowerToys\PowerLauncherIndividualPluginEnabledList">
       <parentCategory ref="PowerToysRun" />
       <supportedOn ref="SUPPORTED_POWERTOYS_DEV"/>
@@ -430,6 +428,5 @@
 		<list id="PowerToysRunIndividualPluginEnabledList" explicitValue="true" />
 	  </elements>
     </policy>
-	
   </policies>
 </policyDefinitions>

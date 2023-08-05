@@ -66,7 +66,6 @@ If this setting is not configured or enabled, the user can control experimentati
 
 If this setting is disabled, experimentation is not allowed.
 </string>
-
       <string id="PowerToysRunAllPluginsEnabledStateDescription">This policy configures the enabled state for all PowerToys Run plugins. All plugins will have the same state.
 
 If you enable this setting, the plugins will be always enabled and the user won't be able to disable it.
@@ -77,7 +76,6 @@ If you don't configure this setting, users are able to disable or enable the plu
 
 Note: You can override this policy for individual plugins using the policy "Configure enabled state for individual plugins".
 </string>
-
       <string id="PowerToysRunIndividualPluginEnabledStateDescription">With this policy you can configures an individual enabled state for each PowerToys Run plugin that you add to the list.
 
 
@@ -134,11 +132,13 @@ Note: You can set the enabled state for all plugins not listed here using the po
       <string id="PowerToysRunAllPluginsEnabledState">Configure enabled state for all plugins</string>
       <string id="PowerToysRunIndividualPluginEnabledState">Configure enabled state for individual plugins</string>
     </stringTable>
+	
 	<presentationTable>
 	  <presentation id="PowerToysRunIndividualPluginEnabledState">
-        <listBox refId="PowerToysRunIndividualPluginEnabledList">List of managed plugins</listBox>
+        <listBox refId="PowerToysRunIndividualPluginEnabledList">List of managed plugins:</listBox>
       </presentation>
 	</presentationTable>
+	
   </resources>
 </policyDefinitionResources>
 
