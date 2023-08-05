@@ -78,20 +78,20 @@ If you don't configure this setting, users are able to disable or enable the plu
 Note: You can override this policy for individual plugins using the policy "Configure enabled state for individual plugins".
 </string>
 
-      <string id="PowerToysRunIndividualPluginEnabledStateDescription">This policy configures the enabled state for each listed PowerToys Run plugin. Each plugin will have the configured state.
+      <string id="PowerToysRunIndividualPluginEnabledStateDescription">With this policy you can configures an individual enabled state for each PowerToys Run plugin that you add to the list.
 
 
 If you enable this setting, you can define the list of plugins and their enabled states:
-  - The value name (first column) is the plugin ID. You can find it in the plugin.json which is located in the plugin folder.
-  - The value (second column) is a numeric value: 0 for disabled, 1 for enabled and 2 for usaer takes control.
+  - The value name (first column) is the plugin ID. You will find it in the plugin.json which is located in the plugin folder.
+  - The value (second column) is a numeric value: 0 for disabled, 1 for enabled and 2 for user takes control.
 
-  Example to disable Program plugin: 791FC278BA414111B8D1886DFE447410 | 0
-
-
-If you disable or don't configure this policy, either the user or the policy "Configure global plugin enabled state" takes control over the enabled state of the plugins.
+  Example to disable the Program plugin: 791FC278BA414111B8D1886DFE447410 | 0
 
 
-Note: You can set a global enabled state for all plugins not listed here using the policy "Configure enabled state for all plugins".
+If you disable or don't configure this policy, either the user or the policy "Configure enabled state for all plugins" takes control over the enabled state of the plugins.
+
+
+Note: You can set the enabled state for all plugins not listed here using the policy "Configure enabled state for all plugins".
 </string>
 
       <string id="ConfigureEnabledUtilityAlwaysOnTop">Always On Top: Configure enabled state</string>
