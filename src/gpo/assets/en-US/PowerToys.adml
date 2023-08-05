@@ -8,11 +8,13 @@
     <stringTable>
       <string id="PowerToys">Microsoft PowerToys</string>
 	  <string id="InstallerUpdates">Installer and Updates</string>
+	  <string id="PowerToysRun">PowerToys Run</string>
 
       <string id="SUPPORTED_POWERTOYS_0_64_0">PowerToys version 0.64.0 or later</string>
       <string id="SUPPORTED_POWERTOYS_0_68_0">PowerToys version 0.68.0 or later</string>
       <string id="SUPPORTED_POWERTOYS_0_69_0">PowerToys version 0.69.0 or later</string>
       <string id="SUPPORTED_POWERTOYS_0_70_0">PowerToys version 0.70.0 or later</string>
+      <string id="SUPPORTED_POWERTOYS_DEV">PowerToys version DEV BUILD or later</string>
 
       <string id="ConfigureEnabledUtilityDescription">This policy configures the enabled state for a PowerToys utility.
 
@@ -64,6 +66,18 @@ If this setting is not configured or enabled, the user can control experimentati
 
 If this setting is disabled, experimentation is not allowed.
 </string>
+
+      <string id="PTRunGlobalPluginEnabledStateDescription">This policy configures the global enabled state for all PowerToys Run plugin. All plugins will have the same state.
+
+If you enable this setting, the plugins will be always enabled and the user won't be able to disable it.
+
+If you disable this setting, the plugins will be always disabled and the user won't be able to enable it.
+
+If you don't configure this setting, users are able to disable or enable the plugins.
+
+Note: You can override this policy for individual plugins using the policy "Configure enabled state for individual plugins".
+</string>
+
       <string id="ConfigureEnabledUtilityAlwaysOnTop">Always On Top: Configure enabled state</string>
       <string id="ConfigureEnabledUtilityAwake">Awake: Configure enabled state</string>
       <string id="ConfigureEnabledUtilityColorPicker">Color Picker: Configure enabled state</string>
@@ -101,6 +115,7 @@ If this setting is disabled, experimentation is not allowed.
       <string id="SuspendNewUpdateToast">Suspend Action Center notification for new updates</string>
       <string id="DisablePeriodicUpdateCheck">Disable automatic update checks</string>
       <string id="AllowExperimentation">Allow Experimentation</string>
+      <string id="PTRunGlobalPluginEnabledState">Configure global plugin enbaled state</string>
     </stringTable>
   </resources>
 </policyDefinitionResources>

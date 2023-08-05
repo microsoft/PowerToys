@@ -12,11 +12,15 @@
       <definition name="SUPPORTED_POWERTOYS_0_68_0" displayName="$(string.SUPPORTED_POWERTOYS_0_68_0)"/>
       <definition name="SUPPORTED_POWERTOYS_0_69_0" displayName="$(string.SUPPORTED_POWERTOYS_0_69_0)"/>
       <definition name="SUPPORTED_POWERTOYS_0_70_0" displayName="$(string.SUPPORTED_POWERTOYS_0_70_0)"/>
+      <definition name="SUPPORTED_POWERTOYS_DEV" displayName="$(string.SUPPORTED_POWERTOYS_DEV)"/>
     </definitions>
   </supportedOn>
   <categories>
     <category name="PowerToys" displayName="$(string.PowerToys)" />
 	<category name="InstallerUpdates" displayName="$(string.InstallerUpdates)">
+		<parentCategory ref="PowerToys" />
+    </category>
+	<category name="PowerToysRun" displayName="$(string.PowerToysRun)">
 		<parentCategory ref="PowerToys" />
     </category>
   </categories>
@@ -393,5 +397,18 @@
         <decimal value="0" />
       </disabledValue>
     </policy>
+	
+	<policy name="PTRunGlobalPluginEnabledState" class="Both" displayName="$(string.PTRunGlobalPluginEnabledState)" explainText="$(string.PTRunGlobalPluginEnabledStateDescription)" key="Software\Policies\PowerToys" valueName="PTRunGlobalPluginEnabledState">
+      <parentCategory ref="PowerToysRun" />
+      <supportedOn ref="SUPPORTED_POWERTOYS_DEV" />
+      <enabledValue>
+        <decimal value="1" />
+      </enabledValue>
+      <disabledValue>
+        <decimal value="0" />
+      </disabledValue>
+    </policy>
+	
+	
   </policies>
 </policyDefinitions>
