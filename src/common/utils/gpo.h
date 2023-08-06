@@ -123,18 +123,18 @@ namespace powertoys_gpo {
         // This function returns the value of an entry of an policy list. The user scope is only checked if the list is not enabled for the machine (registry_list_enabled_value) to not mix them. If the no value or no list is found in the registry we return an empty string.
 
         HKEY key{};
-        DWORD szType = REG_SZ;
-        char string_value[1024];
+        DWORD reg_value_type = REG_SZ;
+        char string_value[1024]{};
         DWORD string_value_length = 1024;
 
         // read value from machine list
-        bool machine_list_found= false;
+        bool machine_list_found = false;
         if (auto res = RegOpenKeyExW(POLICIES_SCOPE_MACHINE, registry_list_path.c_str(), 0, KEY_READ, &key); res == ERROR_SUCCESS)
         {
             machine_list_found = true;
 
             // If the path exists in the machine, we try to read the value
-            auto resValue = RegQueryValueEx(key, registry_list_value_name.c_str(), NULL, &szType, reinterpret_cast<LPBYTE>(&string_value), &string_value_length);
+            auto resValue = RegQueryValueEx(key, registry_list_value_name.c_str(), NULL, &reg_value_type, reinterpret_cast<LPBYTE>(&string_value), &string_value_length);
             RegCloseKey(key);
 
             if (resValue == ERROR_SUCCESS)
@@ -150,7 +150,7 @@ namespace powertoys_gpo {
             if (auto res = RegOpenKeyExW(POLICIES_SCOPE_USER, registry_list_path.c_str(), 0, KEY_READ, &key); res == ERROR_SUCCESS)
             {
                 // If the path exists in the user, we try to read the value
-                auto resValue = RegQueryValueEx(key, registry_list_value_name.c_str(), NULL, &szType, reinterpret_cast<LPBYTE>(&string_value), &string_value_length);
+                auto resValue = RegQueryValueEx(key, registry_list_value_name.c_str(), NULL, &reg_value_type, reinterpret_cast<LPBYTE>(&string_value), &string_value_length);
                 RegCloseKey(key);
 
                 if (resValue == ERROR_SUCCESS)
