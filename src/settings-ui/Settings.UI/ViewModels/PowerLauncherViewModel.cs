@@ -601,7 +601,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         public bool ShowAllPluginsDisabledWarning
         {
-            get => EnablePowerLauncher && settings.Plugins.Any() && settings.Plugins.All(x => x.Disabled);
+            get => EnablePowerLauncher && settings.Plugins.Any() && Plugins.All(x => x.Disabled);
         }
 
         public bool ShowPluginsLoadingMessage
