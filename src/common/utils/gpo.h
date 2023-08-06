@@ -126,7 +126,8 @@ namespace powertoys_gpo {
         DWORD value = 0xFFFFFFFE;
         DWORD valueSize = sizeof(value);
 
-        bool machine_list_found = false;
+        // check if machine list exists
+        bool machine_list_enabled = false;
         if (auto res = RegOpenKeyExW(POLICIES_SCOPE_MACHINE, POLICIES_PATH.c_str(), 0, KEY_READ, &key); res == ERROR_SUCCESS)
         {
             // If the path was found in the machine, we need to check if the value for the policy exists.
@@ -139,13 +140,13 @@ namespace powertoys_gpo {
                 if (value == 1)
                 {
                     // Value is 1 (enabled)
-                    machine_list_found = true;
+                    machine_list_enabled = true;
                 }
             }
         }
 
         // read value from machine list
-        if (machine_list_found)
+        if (machine_list_enabled)
         {
             if (auto res = RegOpenKeyExW(POLICIES_SCOPE_MACHINE, registry_list_path.c_str(), 0, KEY_READ, &key); res == ERROR_SUCCESS)
             {
@@ -162,40 +163,14 @@ namespace powertoys_gpo {
                     // return value from machine list
                     return string_value;
                 }
-                else
-                {
-                    // machine list exists; but value doesn't; therefore return empty string.
-                    return "";
-                }
             }
-            else
-            {
-                // some error; therefore return empty string.
-                return "";
-            }
+            
+            // No value found or error occured.
+            return "";
         }
 
-        // If list not exist on machine, we need to check user
-        bool user_list_found = false;
-        if (auto res = RegOpenKeyExW(POLICIES_SCOPE_USER, POLICIES_PATH.c_str(), 0, KEY_READ, &key); res == ERROR_SUCCESS)
-        {
-            // If the path was found in the user, we need to check if the value for the policy exists.
-            auto resValue = RegQueryValueExW(key, registry_list_enabled_value.c_str(), nullptr, nullptr, reinterpret_cast<LPBYTE>(&value), &valueSize);
-            RegCloseKey(key);
-
-            if (resValue == ERROR_SUCCESS)
-            {
-                // Value found on the path.
-                if (value == 1)
-                {
-                    // Value is 1 (enabled)
-                    user_list_found = true;
-                }
-            }
-        }
-
-        // read value from machine list
-        if (user_list_found)
+        // If no list exists for machine, we try to read from user list
+        if (!machine_list_enabled)
         {
             if (auto res = RegOpenKeyExW(POLICIES_SCOPE_USER, registry_list_path.c_str(), 0, KEY_READ, &key); res == ERROR_SUCCESS)
             {
@@ -211,17 +186,10 @@ namespace powertoys_gpo {
                     // return value from user list
                     return string_value;
                 }
-                else
-                {
-                    // user list exists; but value doesn't; therefore return empty string.
-                    return "";
-                }
             }
-            else
-            {
-                // some error; therefore return empty string.
-                return "";
-            }
+
+            // No value found or error occured.
+            return "";
         }
 
         // No list exists for machine and user
