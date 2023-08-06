@@ -124,8 +124,8 @@ namespace powertoys_gpo {
 
         HKEY key{};
         DWORD szType = REG_SZ;
-        char* string_value;
-        DWORD string_value_length = sizeof(char*);
+        char string_value[1024];
+        DWORD string_value_length = 1024;
 
         // read value from machine list
         bool machine_list_found= false;
@@ -161,7 +161,7 @@ namespace powertoys_gpo {
             }
         }
 
-        // No list exists for machine and user, or no value was found in the list, or an error occured while reading the value.
+        // No list exists for machine and user, or no value was found in the list, or an error ocurred while reading the value.
         return "";
     }
 
