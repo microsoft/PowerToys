@@ -120,42 +120,42 @@ namespace powertoys_gpo {
 
     inline std::string getPolicyListValue(const std::wstring& registry_list_path, const std::wstring& registry_list_value_name)
     {
-        // This function returns the value of an entry of an policy list. The user scope is only checked if the list is not enabled for the machine (registry_list_enabled_value) to not mix them. If the no value or no list is found in the registry we return an empty string.
+        // This function returns the value of an entry of an policy list. The user scope is only checked, if the list is not enabled for the machine to not mix the lists. If there is no value or no list is found in the registry we return an empty string.
 
         HKEY key{};
         DWORD reg_value_type = REG_SZ;
         char* string_value{};
         DWORD string_value_length = sizeof(char*);
 
-        // read value from machine list
+        // Try to read from the machine list.
         bool machine_list_found = false;
         if (auto res = RegOpenKeyExW(POLICIES_SCOPE_MACHINE, registry_list_path.c_str(), 0, KEY_READ, &key); res == ERROR_SUCCESS)
         {
             machine_list_found = true;
 
-            // If the path exists in the machine, we try to read the value
+            // If the path exists in the machine registry, we try to read the value.
             auto resValue = RegQueryValueEx(key, registry_list_value_name.c_str(), NULL, &reg_value_type, reinterpret_cast<LPBYTE>(&string_value), &string_value_length);
             RegCloseKey(key);
 
             if (resValue == ERROR_SUCCESS)
             {
-                // return value from machine list
+                // Return the value from the machine list.
                 return string_value;
             }
         }
 
-        // If no list exists for machine, we try to read from user list
+        // If no list exists for machine, we try to read from the user list.
         if (!machine_list_found)
         {
             if (auto res = RegOpenKeyExW(POLICIES_SCOPE_USER, registry_list_path.c_str(), 0, KEY_READ, &key); res == ERROR_SUCCESS)
             {
-                // If the path exists in the user, we try to read the value
+                // If the path exists in the user registry, we try to read the value.
                 auto resValue = RegQueryValueEx(key, registry_list_value_name.c_str(), NULL, &reg_value_type, reinterpret_cast<LPBYTE>(&string_value), &string_value_length);
                 RegCloseKey(key);
 
                 if (resValue == ERROR_SUCCESS)
                 {
-                    // return value from user list
+                    // Return the value from the user list.
                     return string_value;
                 }
             }
@@ -384,6 +384,7 @@ namespace powertoys_gpo {
         }
         else
         {
+            // If no individual plugin policy exists, we check the policy with the setting for all plugins.
             return getConfiguredValue(POLICY_CONFIGURE_ENABLED_POWER_LAUNCHER_ALL_PLUGINS);
         }        
     }
