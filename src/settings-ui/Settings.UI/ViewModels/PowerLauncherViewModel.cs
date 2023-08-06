@@ -599,6 +599,11 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             }
         }
 
+        public bool ShowPluginsAreGpoManagedInfo
+        {
+            get => EnablePowerLauncher && settings.Plugins.Any() && Plugins.Any(x => x.EnabledGpoRuleIsConfigured);
+        }
+
         public bool ShowAllPluginsDisabledWarning
         {
             get => EnablePowerLauncher && settings.Plugins.Any() && Plugins.All(x => x.Disabled);

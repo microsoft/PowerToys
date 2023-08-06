@@ -287,7 +287,12 @@
                     </labs:SettingsCard>
 
 
-
+                    <InfoBar
+                        x:Uid="Run_SomePluginsAreGpoManaged"
+                        IsClosable="False"
+                        IsOpen="{x:Bind ViewModel.ShowPluginsAreGpoManagedInfo, Mode=OneWay}"
+                        IsTabStop="{x:Bind ViewModel.ShowPluginsAreGpoManagedInfo, Mode=OneWay}"
+                        Severity="Informational" />
                     <InfoBar
                         x:Uid="Run_AllPluginsDisabled"
                         IsClosable="False"
