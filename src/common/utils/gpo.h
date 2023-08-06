@@ -188,7 +188,7 @@ namespace powertoys_gpo {
                 }
             }
 
-            // No value found or error occured.
+            // No value found or error ocurred.
             return "";
         }
 
