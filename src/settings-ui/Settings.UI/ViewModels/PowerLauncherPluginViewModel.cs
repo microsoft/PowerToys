@@ -54,7 +54,18 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         {
             get
             {
-                return _enabledGpoRuleConfiguration == GpoRuleConfigured.Disabled || !(_enabledGpoRuleConfiguration == GpoRuleConfigured.Enabled) || settings.Disabled;
+                if (_enabledGpoRuleConfiguration == GpoRuleConfigured.Disabled)
+                {
+                    return true;
+                }
+                else if (_enabledGpoRuleConfiguration == GpoRuleConfigured.Enabled)
+                {
+                    return false;
+                }
+                else
+                {
+                    return settings.Disabled;
+                }
             }
 
             set
@@ -62,6 +73,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 if (settings.Disabled != value)
                 {
                     settings.Disabled = value;
+
                     NotifyPropertyChanged();
                     NotifyPropertyChanged(nameof(ShowNotAccessibleWarning));
                     NotifyPropertyChanged(nameof(Enabled));

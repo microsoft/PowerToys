@@ -133,20 +133,14 @@ namespace powertoys_gpo {
             auto resValue = RegQueryValueExW(key, registry_list_enabled_value.c_str(), nullptr, nullptr, reinterpret_cast<LPBYTE>(&value), &valueSize);
             RegCloseKey(key);
 
-            if (resValue != ERROR_SUCCESS)
+            if (resValue == ERROR_SUCCESS)
             {
-                // Value not found on the path.
-                machine_list_found = false;
-            }
-            else if (value != 1)
-            {
-                // Value not found on the path.
-                machine_list_found = false;
-            }
-            else
-            {
-                // value found and equals to 1 
-                machine_list_found = true;
+                // Value found on the path.
+                if (value == 1)
+                {
+                    // Value is 1 (enabled)
+                    machine_list_found = true;
+                }
             }
         }
 
@@ -163,7 +157,7 @@ namespace powertoys_gpo {
                 auto resValue = RegQueryValueEx(key, registry_list_value_name.c_str(), NULL, &dwType, reinterpret_cast<LPBYTE>(&string_value), &string_value_length);
                 RegCloseKey(key);
                 
-                if (resValue != ERROR_SUCCESS)
+                if (resValue == ERROR_SUCCESS)
                 {
                     // return value from machine list
                     return string_value;
@@ -189,20 +183,14 @@ namespace powertoys_gpo {
             auto resValue = RegQueryValueExW(key, registry_list_enabled_value.c_str(), nullptr, nullptr, reinterpret_cast<LPBYTE>(&value), &valueSize);
             RegCloseKey(key);
 
-            if (resValue != ERROR_SUCCESS)
+            if (resValue == ERROR_SUCCESS)
             {
-                // Value not found on the path.
-                user_list_found = false;
-            }
-            else if (value != 1)
-            {
-                // Value not found on the path.
-                user_list_found = false;
-            }
-            else
-            {
-                // value found and equals to 1
-                user_list_found = true;
+                // Value found on the path.
+                if (value == 1)
+                {
+                    // Value is 1 (enabled)
+                    user_list_found = true;
+                }
             }
         }
 
@@ -218,7 +206,7 @@ namespace powertoys_gpo {
                 auto resValue = RegQueryValueEx(key, registry_list_value_name.c_str(), NULL, &dwType, reinterpret_cast<LPBYTE>(&string_value), &string_value_length);
                 RegCloseKey(key);
 
-                if (resValue != ERROR_SUCCESS)
+                if (resValue == ERROR_SUCCESS)
                 {
                     // return value from user list
                     return string_value;
@@ -236,7 +224,7 @@ namespace powertoys_gpo {
             }
         }
 
-        // No list exists
+        // No list exists for machine and user
         return "";
     }
 
