@@ -124,8 +124,8 @@ namespace powertoys_gpo {
 
         HKEY key{};
         DWORD reg_value_type = REG_SZ;
-        char string_value[1024]{};
-        DWORD string_value_length = 1024;
+        char* string_value{};
+        DWORD string_value_length = sizeof(char*);
 
         // read value from machine list
         bool machine_list_found = false;
