@@ -62,7 +62,7 @@ namespace powertoys_gpo {
     // The registry value names for other PowerToys policies.
     const std::wstring POLICY_ALLOW_EXPERIMENTATION = L"AllowExperimentation";
     const std::wstring POLICY_CONFIGURE_ENABLED_POWER_LAUNCHER_ALL_PLUGINS = L"PowerLauncherAllPluginsEnabledState";
-    const std::wstring POLICY_CONFIGURE_ENABLED_POWER_LAUNCHER_INDIVIDUAL_PLUGIN = L"PowerLauncherIndividualPluginEnabledState";
+
 
     inline gpo_rule_configured_t getConfiguredValue(const std::wstring& registry_value_name)
     {
@@ -118,67 +118,39 @@ namespace powertoys_gpo {
         }
     }
 
-    inline std::string getPolicyListValue(const std::wstring& registry_list_enabled_value, const std::wstring& registry_list_path, const std::wstring& registry_list_value_name)
+    inline std::string getPolicyListValue(const std::wstring& registry_list_path, const std::wstring& registry_list_value_name)
     {
         // This function returns the value of an entry of an policy list. The user scope is only checked if the list is not enabled for the machine (registry_list_enabled_value) to not mix them. If the no value or no list is found in the registry we return an empty string.
 
         HKEY key{};
-        DWORD value = 0xFFFFFFFE;
-        DWORD valueSize = sizeof(value);
+        DWORD szType = REG_SZ;
+        char* string_value;
+        DWORD string_value_length = sizeof(char*);
 
-        // check if machine list exists
-        bool machine_list_enabled = false;
-        if (auto res = RegOpenKeyExW(POLICIES_SCOPE_MACHINE, POLICIES_PATH.c_str(), 0, KEY_READ, &key); res == ERROR_SUCCESS)
+        // read value from machine list
+        bool machine_list_found= false;
+        if (auto res = RegOpenKeyExW(POLICIES_SCOPE_MACHINE, registry_list_path.c_str(), 0, KEY_READ, &key); res == ERROR_SUCCESS)
         {
-            // If the path was found in the machine, we need to check if the value for the policy exists.
-            auto resValue = RegQueryValueExW(key, registry_list_enabled_value.c_str(), nullptr, nullptr, reinterpret_cast<LPBYTE>(&value), &valueSize);
+            machine_list_found = true;
+
+            // If the path exists in the machine, we try to read the value
+            auto resValue = RegQueryValueEx(key, registry_list_value_name.c_str(), NULL, &szType, reinterpret_cast<LPBYTE>(&string_value), &string_value_length);
             RegCloseKey(key);
 
             if (resValue == ERROR_SUCCESS)
             {
-                // Value found on the path.
-                if (value == 1)
-                {
-                    // Value is 1 (enabled)
-                    machine_list_enabled = true;
-                }
+                // return value from machine list
+                return string_value;
             }
-        }
-
-        // read value from machine list
-        if (machine_list_enabled)
-        {
-            if (auto res = RegOpenKeyExW(POLICIES_SCOPE_MACHINE, registry_list_path.c_str(), 0, KEY_READ, &key); res == ERROR_SUCCESS)
-            {
-
-                // If the path exists in the machine, we try to read the value
-                DWORD dwType = REG_SZ;
-                char string_value[1024];
-                DWORD string_value_length = 1024;
-                auto resValue = RegQueryValueEx(key, registry_list_value_name.c_str(), NULL, &dwType, reinterpret_cast<LPBYTE>(&string_value), &string_value_length);
-                RegCloseKey(key);
-                
-                if (resValue == ERROR_SUCCESS)
-                {
-                    // return value from machine list
-                    return string_value;
-                }
-            }
-            
-            // No value found or error ocurred.
-            return "";
         }
 
         // If no list exists for machine, we try to read from user list
-        if (!machine_list_enabled)
+        if (!machine_list_found)
         {
             if (auto res = RegOpenKeyExW(POLICIES_SCOPE_USER, registry_list_path.c_str(), 0, KEY_READ, &key); res == ERROR_SUCCESS)
             {
                 // If the path exists in the user, we try to read the value
-                DWORD dwType = REG_SZ;
-                char string_value[1024];
-                DWORD string_value_length = 1024;
-                auto resValue = RegQueryValueEx(key, registry_list_value_name.c_str(), NULL, &dwType, reinterpret_cast<LPBYTE>(&string_value), &string_value_length);
+                auto resValue = RegQueryValueEx(key, registry_list_value_name.c_str(), NULL, &szType, reinterpret_cast<LPBYTE>(&string_value), &string_value_length);
                 RegCloseKey(key);
 
                 if (resValue == ERROR_SUCCESS)
@@ -187,12 +159,9 @@ namespace powertoys_gpo {
                     return string_value;
                 }
             }
-
-            // No value found or error ocurred.
-            return "";
         }
 
-        // No list exists for machine and user
+        // No list exists for machine and user, or no value was found in the list, or an error occured while reading the value.
         return "";
     }
 
@@ -389,7 +358,7 @@ namespace powertoys_gpo {
         }
 
         std::wstring plugin_id(pluginID.begin(), pluginID.end());
-        std::string individual_plugin_setting = getPolicyListValue(POLICY_CONFIGURE_ENABLED_POWER_LAUNCHER_INDIVIDUAL_PLUGIN, POWER_LAUNCHER_INDIVIDUAL_PLUGIN_ENABLED_LIST_PATH, plugin_id);
+        std::string individual_plugin_setting = getPolicyListValue(POWER_LAUNCHER_INDIVIDUAL_PLUGIN_ENABLED_LIST_PATH, plugin_id);
         
         if (individual_plugin_setting != "")
         {
