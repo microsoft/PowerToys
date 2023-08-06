@@ -122,7 +122,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             }
             catch (Exception ex)
             {
-                Logger.LogError($"Error while trying to open the system color settings: {ex.Message}");
+                Logger.LogError("Error while trying to open the system color settings", ex);
             }
         }
 
