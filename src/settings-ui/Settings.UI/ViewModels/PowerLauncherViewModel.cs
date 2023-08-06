@@ -135,6 +135,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             }
 
             OnPropertyChanged(nameof(ShowAllPluginsDisabledWarning));
+            OnPropertyChanged(nameof(ShowPluginsAreGpoManagedInfo));
             UpdateSettings();
         }
 
@@ -174,6 +175,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                     OnPropertyChanged(nameof(EnablePowerLauncher));
                     OnPropertyChanged(nameof(ShowAllPluginsDisabledWarning));
                     OnPropertyChanged(nameof(ShowPluginsLoadingMessage));
+                    OnPropertyChanged(nameof(ShowPluginsAreGpoManagedInfo));
                     OutGoingGeneralSettings outgoing = new OutGoingGeneralSettings(GeneralSettingsConfig);
                     SendConfigMSG(outgoing.ToString());
                 }
@@ -186,6 +188,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             OnPropertyChanged(nameof(EnablePowerLauncher));
             OnPropertyChanged(nameof(ShowAllPluginsDisabledWarning));
             OnPropertyChanged(nameof(ShowPluginsLoadingMessage));
+            OnPropertyChanged(nameof(ShowPluginsAreGpoManagedInfo));
         }
 
         public bool IsEnabledGpoConfigured
