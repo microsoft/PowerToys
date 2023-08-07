@@ -14,6 +14,7 @@ using System.Threading.Tasks;
 using System.Windows;
 using FancyZonesEditor.Models;
 using ManagedCommon;
+using Microsoft.PowerToys.Settings.UI.Library;
 
 namespace FancyZonesEditor.Utils
 {
@@ -37,6 +38,7 @@ namespace FancyZonesEditor.Utils
         private const string CustomLayoutsFile = "\\Microsoft\\PowerToys\\FancyZones\\custom-layouts.json";
         private const string DefaultLayoutsFile = "\\Microsoft\\PowerToys\\FancyZones\\default-layouts.json";
         private const string ParamsFile = "\\Microsoft\\PowerToys\\FancyZones\\editor-parameters.json";
+        private const string LanguageFile = "\\Microsoft\\PowerToys\\language.json";
 
         // Non-localizable string: default virtual desktop id
         private const string DefaultVirtualDesktopGuid = "{00000000-0000-0000-0000-000000000000}";
@@ -62,6 +64,8 @@ namespace FancyZonesEditor.Utils
         public string FancyZonesDefaultLayoutsFile { get; private set; }
 
         public string FancyZonesEditorParamsFile { get; private set; }
+
+        public string GlobalLanguageFile { get; private set; }
 
         private enum CmdArgs
         {
@@ -332,6 +336,31 @@ namespace FancyZonesEditor.Utils
             FancyZonesCustomLayoutsFile = localAppDataDir + CustomLayoutsFile;
             FancyZonesDefaultLayoutsFile = localAppDataDir + DefaultLayoutsFile;
             FancyZonesEditorParamsFile = localAppDataDir + ParamsFile;
+            GlobalLanguageFile = localAppDataDir + LanguageFile;
+        }
+
+        public string LoadLanguage()
+        {
+            string ret = string.Empty;
+
+            if (!File.Exists(GlobalLanguageFile))
+            {
+                return string.Empty;
+            }
+            else
+            {
+                try
+                {
+                    string jsonSettingsString = System.IO.File.ReadAllText(GlobalLanguageFile);
+                    ret = JsonSerializer.Deserialize<OutGoingLanguageSettings>(jsonSettingsString).LanguageTag;
+                }
+                catch (Exception)
+                {
+                    return string.Empty;
+                }
+            }
+
+            return ret;
         }
 
         public ParsingResult ParseParams()

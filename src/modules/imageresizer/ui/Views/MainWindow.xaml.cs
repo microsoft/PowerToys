@@ -4,6 +4,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Windows;
 using ImageResizer.ViewModels;
@@ -20,7 +21,14 @@ namespace ImageResizer.Views
 
             if (!string.IsNullOrEmpty(viewModel.LanguageTag))
             {
-                ImageResizer.Properties.Resources.Culture = new System.Globalization.CultureInfo(viewModel.LanguageTag);
+                try
+                {
+                    ImageResizer.Properties.Resources.Culture = new System.Globalization.CultureInfo(viewModel.LanguageTag);
+                }
+                catch (CultureNotFoundException)
+                {
+                    // Add logging here
+                }
             }
 
             InitializeComponent();

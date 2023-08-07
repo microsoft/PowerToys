@@ -42,6 +42,20 @@ namespace FancyZonesEditor
 
         public MainWindow(bool spanZonesAcrossMonitors, Rect workArea)
         {
+            var languageTag = App.FancyZonesEditorIO.LoadLanguage();
+
+            if (!string.IsNullOrEmpty(languageTag))
+            {
+                try
+                {
+                    FancyZonesEditor.Properties.Resources.Culture = new System.Globalization.CultureInfo(languageTag);
+                }
+                catch (CultureNotFoundException ex)
+                {
+                    Logger.LogError("CultureNotFoundException: " + ex.Message);
+                }
+            }
+
             InitializeComponent();
             _createLayoutAnnounce = (TextBlock)FindName("LayoutCreationAnnounce");
             DataContext = _settings;

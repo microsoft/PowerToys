@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System.ComponentModel.Composition;
+using System.Globalization;
 using System.Windows;
 using System.Windows.Interop;
 using ColorPicker.ViewModelContracts;
@@ -22,7 +23,14 @@ namespace ColorPicker
 
             if (!string.IsNullOrEmpty(MainViewModel.LanguageTag))
             {
-                ColorPicker.Properties.Resources.Culture = new System.Globalization.CultureInfo(MainViewModel.LanguageTag);
+                try
+                {
+                    ColorPicker.Properties.Resources.Culture = new System.Globalization.CultureInfo(MainViewModel.LanguageTag);
+                }
+                catch (CultureNotFoundException)
+                {
+                    // Add logging here
+                }
             }
 
             InitializeComponent();
