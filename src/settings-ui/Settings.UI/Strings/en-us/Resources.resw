@@ -2754,6 +2754,20 @@ Right-click to remove the key combination, thereby deactivating the shortcut.</v
   <data name="CropAndLock_ThumbnailActivation_Shortcut.Description" xml:space="preserve">
     <value>Shortcut to crop and create a thumbnail of another window. The application isn't controllable through the thumbnail but it'll have less compatibility issues. </value>
   </data>
+  <data name="Oobe_CropAndLock.Title" xml:space="preserve">
+    <value>Crop And Lock</value>
+    <comment>"Crop And Lock" is the name of the utility</comment>
+  </data>
+  <data name="Oobe_CropAndLock.Description" xml:space="preserve">
+    <value>Crop And Lock allow you to crop a current application into a smaller window or just create a thumbnail. Focus the target window and press the shortcut to start cropping.</value>
+    <comment>"Crop And Lock" is the name of the utility</comment>
+  </data>
+  <data name="Oobe_CropAndLock_HowToUse_Thumbnail.Text" xml:space="preserve">
+    <value>to crop and create a thumbnail of another window. The application isn't controllable through the thumbnail but it'll have less compatibility issues.</value>
+  </data>
+  <data name="Oobe_CropAndLock_HowToUse_Reparent.Text" xml:space="preserve">
+    <value>to crop an application's window into a cropped window. This is experimental and can cause issues with some applications, since the cropped window will contain the original application window.</value>
+  </data>
   <data name="AlwaysOnTop.ModuleDescription" xml:space="preserve">
     <value>Always On Top is a quick and easy way to pin windows on top.</value>
     <comment>"Always On Top" is the name of the utility</comment>
