@@ -21,20 +21,20 @@ namespace ImageResizer.Properties
         public SettingsTests()
         {
             // Change settings.json path to a temp file
-            Settings.SettingsPath = ".\\test_settings.json";
+            ImageResizerSettings.SettingsPath = ".\\test_settings.json";
         }
 
         [ClassInitialize]
         public static void ClassInitialize(TestContext context)
         {
-            // new App() needs to be created since Settings.Reload() uses App.Current to update properties on the UI thread. App() can be created only once otherwise it results in System.InvalidOperationException : Cannot create more than one System.Windows.Application instance in the same AppDomain.
+            // new App() needs to be created since ImageResizerSettings.Reload() uses App.Current to update properties on the UI thread. App() can be created only once otherwise it results in System.InvalidOperationException : Cannot create more than one System.Windows.Application instance in the same AppDomain.
             _imageResizerApp = new App();
         }
 
         [TestMethod]
         public void AllSizesPropagatesSizesCollectionEvents()
         {
-            var settings = new Settings
+            var settings = new ImageResizerSettings
             {
                 CustomSize = new CustomSize(),
             };
@@ -53,7 +53,7 @@ namespace ImageResizer.Properties
         [TestMethod]
         public void AllSizesPropagatesSizesPropertyEvents()
         {
-            var settings = new Settings
+            var settings = new ImageResizerSettings
             {
                 CustomSize = new CustomSize(),
             };
@@ -77,7 +77,7 @@ namespace ImageResizer.Properties
         [TestMethod]
         public void AllSizesContainsSizes()
         {
-            var settings = new Settings
+            var settings = new ImageResizerSettings
             {
                 CustomSize = new CustomSize(),
             };
@@ -89,7 +89,7 @@ namespace ImageResizer.Properties
         [TestMethod]
         public void AllSizesContainsCustomSize()
         {
-            var settings = new Settings
+            var settings = new ImageResizerSettings
             {
                 CustomSize = new CustomSize(),
             };
@@ -102,7 +102,7 @@ namespace ImageResizer.Properties
         public void AllSizesHandlesPropertyEventsForCustomSize()
         {
             var originalCustomSize = new CustomSize();
-            var settings = new Settings
+            var settings = new ImageResizerSettings
             {
                 CustomSize = originalCustomSize,
             };
@@ -127,7 +127,7 @@ namespace ImageResizer.Properties
         [TestMethod]
         public void FileNameFormatWorks()
         {
-            var settings = new Settings { FileName = "{T}%1e%2s%3t%4%5%6%7" };
+            var settings = new ImageResizerSettings { FileName = "{T}%1e%2s%3t%4%5%6%7" };
 
             var result = settings.FileNameFormat;
 
@@ -140,7 +140,7 @@ namespace ImageResizer.Properties
         [DataRow(2)]
         public void SelectedSizeReturnsCustomSizeWhenOutOfRange(int index)
         {
-            var settings = new Settings
+            var settings = new ImageResizerSettings
             {
                 SelectedSizeIndex = index,
                 CustomSize = new CustomSize(),
@@ -155,7 +155,7 @@ namespace ImageResizer.Properties
         [TestMethod]
         public void SelectedSizeReturnsSizeWhenInRange()
         {
-            var settings = new Settings
+            var settings = new ImageResizerSettings
             {
                 SelectedSizeIndex = 0,
             };
@@ -169,7 +169,7 @@ namespace ImageResizer.Properties
         [TestMethod]
         public void IDataErrorInfoErrorReturnsEmpty()
         {
-            var settings = new Settings();
+            var settings = new ImageResizerSettings();
 
             var result = ((IDataErrorInfo)settings).Error;
 
@@ -181,7 +181,7 @@ namespace ImageResizer.Properties
         [DataRow(101)]
         public void IDataErrorInfoItemJpegQualityLevelReturnsErrorWhenOutOfRange(int value)
         {
-            var settings = new Settings { JpegQualityLevel = value };
+            var settings = new ImageResizerSettings { JpegQualityLevel = value };
 
             var result = ((IDataErrorInfo)settings)["JpegQualityLevel"];
 
@@ -196,7 +196,7 @@ namespace ImageResizer.Properties
         [DataRow(100)]
         public void IDataErrorInfoItemJpegQualityLevelReturnsEmptyWhenInRange(int value)
         {
-            var settings = new Settings { JpegQualityLevel = value };
+            var settings = new ImageResizerSettings { JpegQualityLevel = value };
 
             var result = ((IDataErrorInfo)settings)["JpegQualityLevel"];
 
@@ -206,7 +206,7 @@ namespace ImageResizer.Properties
         [TestMethod]
         public void IDataErrorInfoItemReturnsEmptyWhenNotJpegQualityLevel()
         {
-            var settings = new Settings();
+            var settings = new ImageResizerSettings();
 
             var result = ((IDataErrorInfo)settings)["Unknown"];
 
@@ -217,56 +217,56 @@ namespace ImageResizer.Properties
         public void ReloadCreatesFileWhenFileNotFound()
         {
             // Arrange
-            var settings = new Settings();
+            var settings = new ImageResizerSettings();
 
             // Assert
-            Assert.IsFalse(System.IO.File.Exists(Settings.SettingsPath));
+            Assert.IsFalse(System.IO.File.Exists(ImageResizerSettings.SettingsPath));
 
             // Act
             settings.Reload();
 
             // Assert
-            Assert.IsTrue(System.IO.File.Exists(Settings.SettingsPath));
+            Assert.IsTrue(System.IO.File.Exists(ImageResizerSettings.SettingsPath));
         }
 
         [TestMethod]
         public void SaveCreatesFile()
         {
             // Arrange
-            var settings = new Settings();
+            var settings = new ImageResizerSettings();
 
             // Assert
-            Assert.IsFalse(System.IO.File.Exists(Settings.SettingsPath));
+            Assert.IsFalse(System.IO.File.Exists(ImageResizerSettings.SettingsPath));
 
             // Act
             settings.Save();
 
             // Assert
-            Assert.IsTrue(System.IO.File.Exists(Settings.SettingsPath));
+            Assert.IsTrue(System.IO.File.Exists(ImageResizerSettings.SettingsPath));
         }
 
         [TestMethod]
         public void SaveJsonIsReadableByReload()
         {
             // Arrange
-            var settings = new Settings();
+            var settings = new ImageResizerSettings();
 
             // Assert
-            Assert.IsFalse(System.IO.File.Exists(Settings.SettingsPath));
+            Assert.IsFalse(System.IO.File.Exists(ImageResizerSettings.SettingsPath));
 
             // Act
             settings.Save();
             settings.Reload();  // If the JSON file created by Save() is not readable this function will throw an error
 
             // Assert
-            Assert.IsTrue(System.IO.File.Exists(Settings.SettingsPath));
+            Assert.IsTrue(System.IO.File.Exists(ImageResizerSettings.SettingsPath));
         }
 
         [TestMethod]
         public void ReloadRaisesPropertyChanged()
         {
             // Arrange
-            var settings = new Settings();
+            var settings = new ImageResizerSettings();
             settings.Save();    // To create the settings file
 
             var shrinkOnlyChanged = false;
@@ -349,7 +349,7 @@ namespace ImageResizer.Properties
         [TestMethod]
         public void SystemTextJsonDeserializesCorrectly()
         {
-            // Generated Settings file in 0.72
+            // Generated ImageResizerSettings file in 0.72
             var defaultInput =
                 "{\r\n  \"properties\": {\r\n    \"imageresizer_selectedSizeIndex\": {\r\n      \"value\": 1\r\n    },\r\n    \"imageresizer_shrinkOnly\": {\r\n      \"value\": true\r\n    },\r\n    \"imageresizer_replace\": {\r\n      \"value\": true\r\n    },\r\n    \"imageresizer_ignoreOrientation\": {\r\n      \"value\": false\r\n    },\r\n    \"imageresizer_jpegQualityLevel\": {\r\n      \"value\": 91\r\n    },\r\n    \"imageresizer_pngInterlaceOption\": {\r\n      \"value\": 1\r\n    },\r\n    \"imageresizer_tiffCompressOption\": {\r\n      \"value\": 1\r\n    },\r\n    \"imageresizer_fileName\": {\r\n      \"value\": \"%1 %1 (%2)\"\r\n    },\r\n    \"imageresizer_sizes\": {\r\n      \"value\": [\r\n        {\r\n          \"Id\": 0,\r\n          \"ExtraBoxOpacity\": 100,\r\n          \"EnableEtraBoxes\": true,\r\n          \"name\": \"Small-NotDefault\",\r\n          \"fit\": 1,\r\n          \"width\": 854,\r\n          \"height\": 480,\r\n          \"unit\": 3\r\n        },\r\n        {\r\n          \"Id\": 3,\r\n          \"ExtraBoxOpacity\": 100,\r\n          \"EnableEtraBoxes\": true,\r\n          \"name\": \"Phone\",\r\n          \"fit\": 1,\r\n          \"width\": 320,\r\n          \"height\": 568,\r\n          \"unit\": 3\r\n        }\r\n      ]\r\n    },\r\n    \"imageresizer_keepDateModified\": {\r\n      \"value\": false\r\n    },\r\n    \"imageresizer_fallbackEncoder\": {\r\n      \"value\": \"19e4a5aa-5662-4fc5-a0c0-1758028e1057\"\r\n    },\r\n    \"imageresizer_customSize\": {\r\n      \"value\": {\r\n        \"Id\": 4,\r\n        \"ExtraBoxOpacity\": 100,\r\n        \"EnableEtraBoxes\": true,\r\n        \"name\": \"custom\",\r\n        \"fit\": 1,\r\n        \"width\": 1024,\r\n        \"height\": 640,\r\n        \"unit\": 3\r\n      }\r\n    }\r\n  },\r\n  \"name\": \"Image Resizer\",\r\n  \"version\": \"1\"\r\n}";
 
@@ -384,9 +384,9 @@ namespace ImageResizer.Properties
         [TestCleanup]
         public void TestCleanUp()
         {
-            if (System.IO.File.Exists(Settings.SettingsPath))
+            if (System.IO.File.Exists(ImageResizerSettings.SettingsPath))
             {
-                System.IO.File.Delete(Settings.SettingsPath);
+                System.IO.File.Delete(ImageResizerSettings.SettingsPath);
             }
         }
     }

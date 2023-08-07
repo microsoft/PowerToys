@@ -17,6 +17,12 @@ namespace ImageResizer.Views
         public MainWindow(MainViewModel viewModel)
         {
             DataContext = viewModel;
+
+            if (!string.IsNullOrEmpty(viewModel.LanguageTag))
+            {
+                ImageResizer.Properties.Resources.Culture = new System.Globalization.CultureInfo(viewModel.LanguageTag);
+            }
+
             InitializeComponent();
         }
 

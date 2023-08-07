@@ -116,6 +116,6 @@ namespace ImageResizer.Models
         }
 
         protected virtual void Execute(string file)
-            => new ResizeOperation(file, DestinationDirectory, Settings.Default).Execute();
+            => new ResizeOperation(file, DestinationDirectory, ImageResizerSettings.Default).Execute();
     }
 }

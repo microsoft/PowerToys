@@ -9,16 +9,18 @@ using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.ComponentModel;
 using System.Globalization;
+using System.IO;
 using System.IO.Abstractions;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Threading;
 using System.Windows.Media.Imaging;
 using ImageResizer.Models;
+using OutGoingLanguageSettings = Microsoft.PowerToys.Settings.UI.Library.OutGoingLanguageSettings;
 
 namespace ImageResizer.Properties
 {
-    public sealed partial class Settings : IDataErrorInfo, INotifyPropertyChanged
+    public sealed partial class ImageResizerSettings : IDataErrorInfo, INotifyPropertyChanged
     {
         private static readonly IFileSystem _fileSystem = new FileSystem();
         private static readonly JsonSerializerOptions _jsonSerializerOptions = new JsonSerializerOptions
@@ -30,6 +32,7 @@ namespace ImageResizer.Properties
         // Used to synchronize access to the settings.json file
         private static Mutex _jsonMutex = new Mutex();
         private static string _settingsPath = _fileSystem.Path.Combine(System.Environment.GetFolderPath(System.Environment.SpecialFolder.LocalApplicationData), "Microsoft", "PowerToys", "Image Resizer", "settings.json");
+        private static string _languagePath = _fileSystem.Path.Combine(System.Environment.GetFolderPath(System.Environment.SpecialFolder.LocalApplicationData), "Microsoft", "PowerToys", "language.json");
         private string _fileNameFormat;
         private bool _shrinkOnly;
         private int _selectedSizeIndex;
@@ -43,8 +46,9 @@ namespace ImageResizer.Properties
         private bool _keepDateModified;
         private System.Guid _fallbackEncoder;
         private CustomSize _customSize;
+        private string _languageTag;
 
-        public Settings()
+        public ImageResizerSettings()
         {
             SelectedSizeIndex = 0;
             ShrinkOnly = false;
@@ -66,6 +70,21 @@ namespace ImageResizer.Properties
             FallbackEncoder = new System.Guid("19e4a5aa-5662-4fc5-a0c0-1758028e1057");
             CustomSize = new CustomSize(ResizeFit.Fit, 1024, 640, ResizeUnit.Pixel);
             AllSizes = new AllSizesCollection(this);
+
+            LoadLanguage();
+        }
+
+        private void LoadLanguage()
+        {
+            if (!File.Exists(_languagePath))
+            {
+                LanguageTag = string.Empty;
+            }
+            else
+            {
+                string jsonSettingsString = System.IO.File.ReadAllText(_languagePath);
+                LanguageTag = JsonSerializer.Deserialize<OutGoingLanguageSettings>(jsonSettingsString).LanguageTag;
+            }
         }
 
         [JsonIgnore]
@@ -134,7 +153,7 @@ namespace ImageResizer.Properties
             private ObservableCollection<ResizeSize> _sizes;
             private CustomSize _customSize;
 
-            public AllSizesCollection(Settings settings)
+            public AllSizesCollection(ImageResizerSettings settings)
             {
                 _sizes = settings.Sizes;
                 _customSize = settings.CustomSize;
@@ -227,10 +246,10 @@ namespace ImageResizer.Properties
             }
         }
 
-        private static Settings defaultInstance = new Settings();
+        private static ImageResizerSettings defaultInstance = new ImageResizerSettings();
 
         [JsonIgnore]
-        public static Settings Default
+        public static ImageResizerSettings Default
         {
             get
             {
@@ -402,6 +421,15 @@ namespace ImageResizer.Properties
             }
         }
 
+        public string LanguageTag
+        {
+            get => _languageTag;
+            set
+            {
+                _languageTag = value;
+            }
+        }
+
         public static string SettingsPath { get => _settingsPath; set => _settingsPath = value; }
 
         public event PropertyChangedEventHandler PropertyChanged;
@@ -444,7 +472,7 @@ namespace ImageResizer.Properties
             }
 
             string jsonData = _fileSystem.File.ReadAllText(SettingsPath);
-            var jsonSettings = new Settings();
+            var jsonSettings = new ImageResizerSettings();
             try
             {
                 jsonSettings = JsonSerializer.Deserialize<SettingsWrapper>(jsonData, _jsonSerializerOptions)?.Properties;

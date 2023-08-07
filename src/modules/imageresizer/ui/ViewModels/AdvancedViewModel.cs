@@ -35,7 +35,7 @@ namespace ImageResizer.ViewModels
             };
         }
 
-        public AdvancedViewModel(Settings settings)
+        public AdvancedViewModel(ImageResizerSettings settings)
         {
             RemoveSizeCommand = new RelayCommand<ResizeSize>(RemoveSize);
             AddSizeCommand = new RelayCommand(AddSize);
@@ -44,7 +44,7 @@ namespace ImageResizer.ViewModels
 
         public static IDictionary<Guid, string> EncoderMap { get; } = InitEncoderMap();
 
-        public Settings Settings { get; }
+        public ImageResizerSettings Settings { get; }
 
         public static string Version
             => typeof(AdvancedViewModel).Assembly.GetCustomAttribute<AssemblyInformationalVersionAttribute>()

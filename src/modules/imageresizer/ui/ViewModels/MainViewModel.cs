@@ -13,16 +13,18 @@ namespace ImageResizer.ViewModels
 {
     public class MainViewModel : Observable
     {
-        private readonly Settings _settings;
+        private readonly ImageResizerSettings _settings;
         private readonly ResizeBatch _batch;
 
         private object _currentPage;
         private double _progress;
+        private string _languageTag;
 
-        public MainViewModel(ResizeBatch batch, Settings settings)
+        public MainViewModel(ResizeBatch batch, ImageResizerSettings settings)
         {
             _batch = batch;
             _settings = settings;
+            _languageTag = settings.LanguageTag;
             LoadCommand = new RelayCommand<IMainView>(Load);
         }
 
@@ -38,6 +40,12 @@ namespace ImageResizer.ViewModels
         {
             get => _progress;
             set => Set(ref _progress, value);
+        }
+
+        public string LanguageTag
+        {
+            get => _languageTag;
+            set => Set(ref _languageTag, value);
         }
 
         public void Load(IMainView view)

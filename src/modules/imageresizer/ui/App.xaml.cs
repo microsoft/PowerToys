@@ -41,7 +41,7 @@ namespace ImageResizer
             var batch = ResizeBatch.FromCommandLine(Console.In, e?.Args);
 
             // TODO: Add command-line parameters that can be used in lieu of the input page (issue #14)
-            var mainWindow = new MainWindow(new MainViewModel(batch, Settings.Default));
+            var mainWindow = new MainWindow(new MainViewModel(batch, ImageResizerSettings.Default));
             mainWindow.Show();
 
             _themeManager = new ThemeManager(this);

@@ -32,7 +32,7 @@ namespace ImageResizer.ViewModels
         }
 
         public InputViewModel(
-            Settings settings,
+            ImageResizerSettings settings,
             MainViewModel mainViewModel,
             IMainView mainView,
             ResizeBatch batch)
@@ -53,7 +53,7 @@ namespace ImageResizer.ViewModels
             EnterKeyPressedCommand = new RelayCommand<KeyPressParams>(HandleEnterKeyPress);
         }
 
-        public Settings Settings { get; }
+        public ImageResizerSettings Settings { get; }
 
         public ICommand ResizeCommand { get; }
 

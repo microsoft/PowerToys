@@ -15,6 +15,6 @@ namespace ImageResizer.Properties
         public string Version { get; set; } = "1";
 
         [JsonPropertyName("properties")]
-        public Settings Properties { get; set; }
+        public ImageResizerSettings Properties { get; set; }
     }
 }
