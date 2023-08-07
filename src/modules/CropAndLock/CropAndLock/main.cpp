@@ -8,6 +8,7 @@
 #include <common/utils/winapi_error.h>
 #include <common/utils/logger_helper.h>
 #include <common/utils/UnhandledExceptionHandler.h>
+#include <common/utils/gpo.h>
 #include "ModuleConstants.h"
 #include <common/utils/ProcessWaiter.h>
 
@@ -37,6 +38,12 @@ int WINAPI wWinMain(_In_ HINSTANCE, _In_opt_ HINSTANCE, _In_ PWSTR lpCmdLine, _I
     // Initialize logger automatic logging of exceptions.
     LoggerHelpers::init_logger(NonLocalizable::ModuleKey, L"", LogSettings::cropAndLockLoggerName);
     InitUnhandledExceptionHandler();
+
+    if (powertoys_gpo::getConfiguredCropAndLockEnabledValue() == powertoys_gpo::gpo_rule_configured_disabled)
+    {
+        Logger::warn(L"Tried to start with a GPO policy setting the utility to always be disabled. Please contact your systems administrator.");
+        return 0;
+    }
 
     // Before we do anything, check to see if we're already running. If we are,
     // the hotkey won't register and we'll fail. Instead, we should tell the user

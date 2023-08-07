@@ -60,7 +60,6 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         private void InitializeEnabledValue()
         {
-            /* TODO: GPO
             _enabledGpoRuleConfiguration = GPOWrapper.GetConfiguredCropAndLockEnabledValue();
             if (_enabledGpoRuleConfiguration == GpoRuleConfigured.Disabled || _enabledGpoRuleConfiguration == GpoRuleConfigured.Enabled)
             {
@@ -72,8 +71,6 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             {
                 _isEnabled = GeneralSettingsConfig.Enabled.CropAndLock;
             }
-            */
-            _isEnabled = GeneralSettingsConfig.Enabled.CropAndLock;
         }
 
         public bool IsEnabled
@@ -82,11 +79,11 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
             set
             {
-                /*if (_enabledStateIsGPOConfigured)
+                if (_enabledStateIsGPOConfigured)
                 {
                     // If it's GPO configured, shouldn't be able to change this state.
                     return;
-                }*/
+                }
 
                 if (value != _isEnabled)
                 {
@@ -181,8 +178,8 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             OnPropertyChanged(nameof(IsEnabled));
         }
 
-        /*private GpoRuleConfigured _enabledGpoRuleConfiguration;*/
-        private const bool _enabledStateIsGPOConfigured = false;
+        private GpoRuleConfigured _enabledGpoRuleConfiguration;
+        private bool _enabledStateIsGPOConfigured;
         private bool _isEnabled;
         private HotkeySettings _reparentHotkey;
         private HotkeySettings _thumbnailHotkey;
