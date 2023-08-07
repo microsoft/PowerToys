@@ -41,6 +41,11 @@ namespace ColorPicker.ViewModels
         /// </summary>
         private string _colorName;
 
+        /// <summary>
+        /// Backing field for <see cref="LanguageTag"/>
+        /// </summary>
+        private string _languageTag;
+
         [ImportingConstructor]
         public MainViewModel(
             IMouseInfoProvider mouseInfoProvider,
@@ -75,6 +80,8 @@ namespace ColorPicker.ViewModels
             }
 
             _userSettings.ShowColorName.PropertyChanged += (s, e) => { OnPropertyChanged(nameof(ShowColorName)); };
+
+            LanguageTag = _userSettings.LanguageTag.Value;
 
             // Only start a local keyboard low level hook if running as a standalone.
             // Otherwise, the global keyboard hook from runner will be used to activate Color Picker through ShowColorPickerSharedEvent
@@ -119,6 +126,15 @@ namespace ColorPicker.ViewModels
             {
                 _colorName = value;
                 OnPropertyChanged();
+            }
+        }
+
+        public string LanguageTag
+        {
+            get => _languageTag;
+            private set
+            {
+                _languageTag = value;
             }
         }
 

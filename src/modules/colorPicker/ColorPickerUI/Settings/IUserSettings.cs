@@ -28,6 +28,8 @@ namespace ColorPicker.Settings
 
         SettingItem<bool> ShowColorName { get; }
 
+        SettingItem<string> LanguageTag { get; }
+
         void SendSettingsTelemetry();
     }
 }

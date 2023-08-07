@@ -10,6 +10,7 @@ using System.IO;
 using System.IO.Abstractions;
 using System.Text.Json;
 using System.Threading;
+using System.Windows;
 using ColorPicker.Common;
 using ManagedCommon;
 using Microsoft.PowerToys.Settings.UI.Library;
@@ -25,6 +26,7 @@ namespace ColorPicker.Settings
         private readonly ISettingsUtils _settingsUtils;
         private const string ColorPickerModuleName = "ColorPicker";
         private const string ColorPickerHistoryFilename = "colorHistory.json";
+        private const string LanguageFilename = "language.json";
         private const string DefaultActivationShortcut = "Ctrl + Break";
         private const int MaxNumberOfRetry = 5;
         private const int SettingsReadOnChangeDelayInMs = 300;
@@ -47,8 +49,10 @@ namespace ColorPicker.Settings
             ColorHistoryLimit = new SettingItem<int>(20);
             ColorHistory.CollectionChanged += ColorHistory_CollectionChanged;
             ShowColorName = new SettingItem<bool>(false);
+            LanguageTag = new SettingItem<string>(string.Empty);
 
             LoadSettingsFromJson();
+            LoadLanguage();
 
             // delay loading settings on change by some time to avoid file in use exception
             _watcher = Helper.GetFileWatcher(ColorPickerModuleName, "settings.json", () => throttledActionInvoker.ScheduleAction(LoadSettingsFromJson, SettingsReadOnChangeDelayInMs));
@@ -79,6 +83,22 @@ namespace ColorPicker.Settings
         public ObservableCollection<System.Collections.Generic.KeyValuePair<string, string>> VisibleColorFormats { get; private set; } = new ObservableCollection<System.Collections.Generic.KeyValuePair<string, string>>();
 
         public SettingItem<bool> ShowColorName { get; }
+
+        public SettingItem<string> LanguageTag { get; private set; }
+
+        private void LoadLanguage()
+        {
+            string filePath = _settingsUtils.GetSettingsFilePath(string.Empty, LanguageFilename);
+            if (!File.Exists(filePath))
+            {
+                LanguageTag.Value = string.Empty;
+            }
+            else
+            {
+                string jsonSettingsString = System.IO.File.ReadAllText(filePath);
+                LanguageTag.Value = JsonSerializer.Deserialize<OutGoingLanguageSettings>(jsonSettingsString).LanguageTag;
+            }
+        }
 
         private void LoadSettingsFromJson()
         {

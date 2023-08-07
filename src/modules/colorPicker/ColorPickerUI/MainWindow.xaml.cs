@@ -17,9 +17,14 @@ namespace ColorPicker
         public MainWindow()
         {
             Closing += MainWindow_Closing;
-            ColorPicker.Properties.Resources.Culture = new System.Globalization.CultureInfo("de-DE");
 
             Bootstrapper.InitializeContainer(this);
+
+            if (!string.IsNullOrEmpty(MainViewModel.LanguageTag))
+            {
+                ColorPicker.Properties.Resources.Culture = new System.Globalization.CultureInfo(MainViewModel.LanguageTag);
+            }
+
             InitializeComponent();
             DataContext = this;
             Show(); // Call show just to make sure source is initialized at startup.

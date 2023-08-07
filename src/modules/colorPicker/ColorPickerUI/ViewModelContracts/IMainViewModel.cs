@@ -28,6 +28,11 @@ namespace ColorPicker.ViewModelContracts
         /// </summary>
         bool ShowColorName { get; }
 
+        /// <summary>
+        /// Gets a value indicating the language of the app
+        /// </summary>
+        string LanguageTag { get; }
+
         void RegisterWindowHandle(System.Windows.Interop.HwndSource hwndSource);
     }
 }
