@@ -140,11 +140,12 @@ namespace PowerLauncher
                 StringMatcher.Instance = _stringMatcher;
                 _stringMatcher.UserSettingSearchPrecision = _settings.QuerySearchPrecision;
 
+                _settingsReader = new SettingsReader(_settings, _themeManager);
+                _settingsReader.ReadSettings();
+
                 _mainVM = new MainViewModel(_settings, NativeThreadCTS.Token);
                 _mainWindow = new MainWindow(_settings, _mainVM, NativeThreadCTS.Token);
                 API = new PublicAPIInstance(_settingsVM, _mainVM, _alphabet, _themeManager);
-                _settingsReader = new SettingsReader(_settings, _themeManager);
-                _settingsReader.ReadSettings();
 
                 PluginManager.InitializePlugins(API);
 

@@ -4,6 +4,7 @@
 
 using System;
 using System.ComponentModel;
+using System.Globalization;
 using System.Linq;
 using System.Reactive.Linq;
 using System.Runtime.InteropServices;
@@ -54,6 +55,18 @@ namespace PowerLauncher
             _viewModel = mainVM;
             _nativeWaiterCancelToken = nativeWaiterCancelToken;
             _settings = settings;
+
+            if (!string.IsNullOrEmpty(_settings.Language))
+            {
+                try
+                {
+                    PowerLauncher.Properties.Resources.Culture = new System.Globalization.CultureInfo(_settings.Language);
+                }
+                catch (CultureNotFoundException ex)
+                {
+                    Log.Exception("Error setting language: ", ex, GetType());
+                }
+            }
 
             InitializeComponent();
 

@@ -2,6 +2,7 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.IO.Abstractions;
@@ -44,6 +45,36 @@ namespace PowerLauncher
 
             // Apply theme at startup
             _themeManager.ChangeTheme(_settings.Theme, true);
+
+            LoadLanguage();
+        }
+
+        private void LoadLanguage()
+        {
+            FileSystem fs = new FileSystem();
+
+            string languagePath = fs.Path.Combine(System.Environment.GetFolderPath(System.Environment.SpecialFolder.LocalApplicationData), "Microsoft", "PowerToys", "language.json");
+
+            if (fs.File.Exists(languagePath))
+            {
+                try
+                {
+                    string languageJson = fs.File.ReadAllText(languagePath);
+                    var language = System.Text.Json.JsonSerializer.Deserialize<OutGoingLanguageSettings>(languageJson);
+                    if (language != null)
+                    {
+                        _settings.Language = language.LanguageTag;
+                    }
+                }
+                catch (JsonException e)
+                {
+                    Log.Exception("Exception when loading language file", e, GetType());
+                }
+            }
+            else
+            {
+                _settings.Language = string.Empty;
+            }
         }
 
         public void CreateSettingsIfNotExists()

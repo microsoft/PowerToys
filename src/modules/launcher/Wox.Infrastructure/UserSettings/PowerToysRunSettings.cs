@@ -177,7 +177,8 @@ namespace Wox.Infrastructure.UserSettings
             }
         }
 
-        public string Language { get; set; } = "en";
+        [JsonIgnore]
+        public string Language { get; set; } = string.Empty;
 
         public Theme Theme { get; set; } = Theme.System;
 
