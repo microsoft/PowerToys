@@ -3,15 +3,19 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 using System.IO.Abstractions;
+using System.Linq;
 using System.Net.NetworkInformation;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Text.Json;
 using System.Threading.Tasks;
+using System.Windows.Documents;
 using global::PowerToys.GPOWrapper;
 using ManagedCommon;
 using Microsoft.PowerToys.Settings.UI.Library;
@@ -19,6 +23,8 @@ using Microsoft.PowerToys.Settings.UI.Library.Helpers;
 using Microsoft.PowerToys.Settings.UI.Library.Interfaces;
 using Microsoft.PowerToys.Settings.UI.Library.Utilities;
 using Microsoft.PowerToys.Settings.UI.Library.ViewModels.Commands;
+using Microsoft.Windows.ApplicationModel.Resources;
+using Settings.UI.Library;
 
 namespace Microsoft.PowerToys.Settings.UI.ViewModels
 {
@@ -149,6 +155,58 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             {
                 _fileWatcher = Helper.GetFileWatcher(string.Empty, UpdatingSettings.SettingsFile, dispatcherAction);
             }
+
+            InitializeLanguages();
+        }
+
+        // Supported languages. Taken from Resources.wxs + default + en-US
+        private Dictionary<string, string> langTagsAndIds = new Dictionary<string, string>
+            {
+                { string.Empty, "Default_language" },
+                { "cs-CZ", "Czech_Language" },
+                { "de-DE", "German_Language" },
+                { "en-US", "English_Language" },
+                { "es-ES", "Spanish_Language" },
+                { "fr-FR", "French_Language" },
+                { "hu-HU", "Hungarian_Language" },
+                { "it-IT", "Italian_Language" },
+                { "ja-JP", "Japanese_Language" },
+                { "ko-KR", "Korean_Language" },
+                { "nl-NL", "Dutch_Language" },
+                { "pl-PL", "Polish_Language" },
+                { "pt-BR", "Portuguese_Brazil_Language" },
+                { "pt-PT", "Portuguese_Portugal_Language" },
+                { "ru-RU", "Russian_Language" },
+                { "sv-SE", "Swedish_Language" },
+                { "tr-TR", "Turkish_Language" },
+                { "zh-CN", "Chinese_Simplified_Language" },
+                { "zh-TW", "Chinese_Traditional_Language" },
+            };
+
+        private void InitializeLanguages()
+        {
+            var lang = LanguageModel.LoadSetting();
+            int i = 0;
+
+            foreach (var item in langTagsAndIds)
+            {
+                Languages.Add(new LanguageModel { Tag = item.Key, ResourceID = item.Value, Language = GetResourceString(item.Value) });
+
+                if (item.Key.Equals(lang, StringComparison.Ordinal))
+                {
+                    _initlanguagesIndex = i;
+                    LanguagesIndex = i;
+                }
+
+                i++;
+            }
+        }
+
+        private void NotifyLanguageChanged()
+        {
+            OutGoingLanguageSettings outsettings = new OutGoingLanguageSettings(langTagsAndIds.ElementAt(LanguagesIndex).Key);
+
+            SendConfigMSG(outsettings.ToString());
         }
 
         private bool _startup;
@@ -174,6 +232,10 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         private bool _settingsBackupRestoreMessageVisible;
         private string _settingsBackupMessage;
         private string _backupRestoreMessageSeverity;
+
+        private int _languagesIndex;
+        private int _initlanguagesIndex;
+        private bool _languageChanged;
 
         // Gets or sets a value indicating whether run powertoys on start-up.
         public bool Startup
@@ -684,6 +746,51 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             get
             {
                 return PowerToysUpdatingState == UpdatingSettings.UpdatingState.UpToDate || PowerToysUpdatingState == UpdatingSettings.UpdatingState.NetworkError;
+            }
+        }
+
+        public ObservableCollection<LanguageModel> Languages { get; } = new ObservableCollection<LanguageModel>();
+
+        public int LanguagesIndex
+        {
+            get
+            {
+                return _languagesIndex;
+            }
+
+            set
+            {
+                if (_languagesIndex != value)
+                {
+                    _languagesIndex = value;
+                    OnPropertyChanged(nameof(LanguagesIndex));
+                    NotifyLanguageChanged();
+                    if (_initlanguagesIndex != value)
+                    {
+                        LanguageChanged = true;
+                    }
+                    else
+                    {
+                        LanguageChanged = false;
+                    }
+                }
+            }
+        }
+
+        public bool LanguageChanged
+        {
+            get
+            {
+                return _languageChanged;
+            }
+
+            set
+            {
+                if (_languageChanged != value)
+                {
+                    _languageChanged = value;
+                    OnPropertyChanged(nameof(LanguageChanged));
+                }
             }
         }
 

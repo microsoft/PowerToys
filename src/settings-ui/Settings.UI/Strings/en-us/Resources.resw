@@ -2676,6 +2676,18 @@ Right-click to remove the key combination, thereby deactivating the shortcut.</v
   <data name="ColorModeHeader.Header" xml:space="preserve">
     <value>App theme</value>
   </data>
+  <data name="LanguageHeader.Header" xml:space="preserve">
+    <value>App language</value>
+  </data>
+  <data name="LanguageHeader.Description" xml:space="preserve">
+    <value>PowerToys will use OS language setting as default.</value>
+  </data>
+  <data name="LanguageRestartInfo.Title" xml:space="preserve">
+    <value>Restart PowerToys for language change to take effect.</value>
+  </data>
+  <data name="LanguageRestartInfoButton.Content" xml:space="preserve">
+    <value>Restart</value>
+  </data>
   <data name="FancyZones_Zone_Appearance.Description" xml:space="preserve">
     <value>Customize the way zones look</value>
   </data>
@@ -3592,5 +3604,62 @@ Activate by holding the key for the character you want to add an accent to, then
   </data>
   <data name="MouseUtils_MousePointerCrosshairs_CrosshairsAutoHide.Content" xml:space="preserve">
     <value>Automatically hide crosshairs when the mouse pointer is hidden</value>
+  </data>
+  <data name="Default_Language" xml:space="preserve">
+    <value>Windows default</value>
+  </data>
+  <data name="Czech_Language" xml:space="preserve">
+    <value>Czech</value>
+  </data>
+  <data name="German_Language" xml:space="preserve">
+    <value>German</value>
+  </data>
+  <data name="English_Language" xml:space="preserve">
+    <value>English</value>
+  </data>
+  <data name="Spanish_Language" xml:space="preserve">
+    <value>Spanish</value>
+  </data>
+  <data name="French_Language" xml:space="preserve">
+    <value>French</value>
+  </data>
+  <data name="Hungarian_Language" xml:space="preserve">
+    <value>Hungarian</value>
+  </data>
+  <data name="Italian_Language" xml:space="preserve">
+    <value>Italian</value>
+  </data>
+  <data name="Japanese_Language" xml:space="preserve">
+    <value>Japanese</value>
+  </data>
+  <data name="Korean_Language" xml:space="preserve">
+    <value>Korean</value>
+  </data>
+  <data name="Dutch_Language" xml:space="preserve">
+    <value>Dutch</value>
+  </data>
+  <data name="Polish_Language" xml:space="preserve">
+    <value>Polish</value>
+  </data>
+  <data name="Portuguese_Brazil_Language" xml:space="preserve">
+    <value>Portuguese (Brazil)</value>
+  </data>
+  <data name="Portuguese_Portugal_Language" xml:space="preserve">
+    <value>Portuguese (Portugal)</value>
+  </data>
+  <data name="Russian_Language" xml:space="preserve">
+    <value>Russian</value>
+  </data>
+  <data name="Swedish_Language" xml:space="preserve">
+    <value>Swedish</value>
+  </data>
+  <data name="Turkish_Language" xml:space="preserve">
+    <value>Turkish</value>
+  </data>
+  <data name="Chinese_Simplified_Language" xml:space="preserve">
+    <value>Chinese (Simplified)</value>
+  </data>
+  <data name="Chinese_Traditional_Language" xml:space="preserve">
+    <value>Chinese (Traditional)</value>
   </data>
 </root>

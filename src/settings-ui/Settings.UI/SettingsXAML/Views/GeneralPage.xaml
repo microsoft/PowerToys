@@ -213,6 +213,25 @@
                 </controls:SettingsGroup>
 
                 <controls:SettingsGroup x:Uid="Appearance_Behavior" IsEnabled="True">
+                    <labs:SettingsCard x:Uid="LanguageHeader" HeaderIcon="{ui:FontIcon FontFamily={StaticResource SymbolThemeFontFamily}, Glyph=&#xF2B7;}">
+                        <ComboBox
+                            x:Name="Languages_ComboBox"
+                            MinWidth="{StaticResource SettingActionControlMinWidth}"
+                            DisplayMemberPath="Language"
+                            ItemsSource="{Binding Languages, Mode=TwoWay}"
+                            SelectedIndex="{Binding LanguagesIndex, Mode=TwoWay}" />
+                    </labs:SettingsCard>
+                    <InfoBar
+                        x:Uid="LanguageRestartInfo"
+                        IsClosable="False"
+                        IsOpen="{x:Bind Mode=OneWay, Path=ViewModel.LanguageChanged}"
+                        IsTabStop="True"
+                        Severity="Informational">
+                        <InfoBar.ActionButton>
+                            <Button x:Uid="LanguageRestartInfoButton" Click="Click_LanguageRestart" />
+                        </InfoBar.ActionButton>
+                    </InfoBar>
+
                     <labs:SettingsCard x:Uid="ColorModeHeader" HeaderIcon="{ui:FontIcon FontFamily={StaticResource SymbolThemeFontFamily}, Glyph=&#xE790;}">
                         <labs:SettingsCard.Description>
                             <HyperlinkButton x:Uid="Windows_Color_Settings" Click="OpenColorsSettings_Click" />
@@ -244,10 +263,10 @@
                                     <TextBlock
                                         x:Name="pathTextBlock"
                                         VerticalAlignment="Center"
+                                        Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                                         IsTextSelectionEnabled="True"
                                         Text="{x:Bind Mode=TwoWay, Path=ViewModel.SettingsBackupAndRestoreDir}"
-                                        TextTrimming="CharacterEllipsis"
-                                        Foreground="{ThemeResource TextFillColorSecondaryBrush}">
+                                        TextTrimming="CharacterEllipsis">
                                         <ToolTipService.ToolTip>
                                             <ToolTip IsEnabled="{Binding ElementName=pathTextBlock, Path=IsTextTrimmed}">
                                                 <TextBlock Text="{x:Bind Mode=TwoWay, Path=ViewModel.SettingsBackupAndRestoreDir}" />
@@ -272,7 +291,7 @@
                                 ContentAlignment="Vertical">
                                 <Grid Margin="0,0,0,6" ColumnSpacing="8">
                                     <Grid.ColumnDefinitions>
-                                        <ColumnDefinition Width="Auto" MinWidth="{StaticResource SettingActionControlMinWidth}"/>
+                                        <ColumnDefinition Width="Auto" MinWidth="{StaticResource SettingActionControlMinWidth}" />
                                         <ColumnDefinition Width="*" />
                                     </Grid.ColumnDefinitions>
                                     <Grid.RowDefinitions>
