@@ -10,6 +10,7 @@ using Microsoft.UI;
 using Microsoft.UI.Windowing;
 using Microsoft.UI.Xaml.Input;
 using Peek.Common.Constants;
+using Peek.Common.Helpers;
 using Peek.FilePreviewer.Models;
 using Peek.UI.Extensions;
 using Peek.UI.Helpers;
@@ -17,6 +18,7 @@ using Peek.UI.Native;
 using Peek.UI.Telemetry.Events;
 using Windows.Foundation;
 using WinUIEx;
+using Logger = ManagedCommon.Logger;
 
 namespace Peek.UI
 {
@@ -33,7 +35,8 @@ namespace Peek.UI
         public MainWindow()
         {
             InitializeComponent();
-            this.Activated += PeekWindow_Activated;
+            Title = ResourceLoaderInstance.ResourceLoader.GetString("AppTitle");
+            TitleBarControl.SetTitleBarToWindow(this);
 
             try
             {
@@ -49,8 +52,7 @@ namespace Peek.UI
 
             NativeEventWaiter.WaitForEventLoop(Constants.ShowPeekEvent(), OnPeekHotkey);
 
-            TitleBarControl.SetTitleBarToWindow(this);
-
+            Activated += PeekWindow_Activated;
             AppWindow.Closing += AppWindow_Closing;
         }
 
@@ -72,11 +74,16 @@ namespace Peek.UI
         {
             if (args.WindowActivationState == Microsoft.UI.Xaml.WindowActivationState.Deactivated)
             {
+                // TitleBarControl.FileCountAndNameContainer.AppTitle_FileName.Foreground = (SolidColorBrush)App.Current.Resources["WindowCaptionForeground"];
                 var userSettings = App.GetService<IUserSettings>();
                 if (userSettings.CloseAfterLosingFocus)
                 {
                     Uninitialize();
                 }
+            }
+            else
+            {
+                // TitleBarControl.FileCountAndNameContainer.AppTitle_FileName.Foreground = (SolidColorBrush)App.Current.Resources["WindowCaptionForegroundDisabled"];
             }
         }
 
@@ -162,7 +169,7 @@ namespace Peek.UI
             // If no size is requested, try to fit to the monitor size.
             Size requestedSize = e.PreviewSize.MonitorSize ?? monitorSize;
             var contentScale = e.PreviewSize.UseEffectivePixels ? 1 : monitorScale;
-            Size scaledRequestedSize = new Size(requestedSize.Width / contentScale, requestedSize.Height / contentScale);
+            Size scaledRequestedSize = new(requestedSize.Width / contentScale, requestedSize.Height / contentScale);
 
             // TODO: Investigate why portrait images do not perfectly fit edge-to-edge
             Size monitorMinContentSize = GetMonitorMinContentSize(monitorScale);
@@ -170,8 +177,8 @@ namespace Peek.UI
             Size adjustedContentSize = scaledRequestedSize.Fit(monitorMaxContentSize, monitorMinContentSize);
 
             var titleBarHeight = TitleBarControl.ActualHeight;
-            var desiredWindowHeight = adjustedContentSize.Height + titleBarHeight + WindowConstants.WindowWidthContentPadding;
-            var desiredWindowWidth = adjustedContentSize.Width + WindowConstants.WindowHeightContentPadding;
+            var desiredWindowHeight = adjustedContentSize.Height + titleBarHeight + WindowConstants.WindowHeightContentPadding;
+            var desiredWindowWidth = adjustedContentSize.Width + WindowConstants.WindowWidthContentPadding;
 
             if (!TitleBarControl.Pinned)
             {

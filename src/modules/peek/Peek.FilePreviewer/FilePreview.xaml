@@ -68,8 +68,8 @@
     </Grid>
     <UserControl.KeyboardAccelerators>
         <KeyboardAccelerator
-            Key="C"
             Invoked="KeyboardAccelerator_CtrlC_Invoked"
+            Key="C"
             Modifiers="Control" />
     </UserControl.KeyboardAccelerators>
 </UserControl>
