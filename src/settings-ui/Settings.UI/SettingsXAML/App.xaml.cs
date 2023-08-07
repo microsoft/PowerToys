@@ -219,6 +219,7 @@ namespace Microsoft.PowerToys.Settings.UI
                 ShowMessageDialog("The application is running in Debug mode.", "DEBUG");
 #else
                 SettingsDeepLink.OpenSettings(SettingsDeepLink.SettingsWindow.Overview, true);
+                Exit();
 #endif
             }
         }
