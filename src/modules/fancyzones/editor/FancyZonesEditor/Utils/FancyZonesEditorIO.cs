@@ -1177,8 +1177,17 @@ namespace FancyZonesEditor.Utils
                 else
                 {
                     LayoutType layoutType = JsonTagToLayoutType(layout.Layout.Type);
-                    MainWindowSettingsModel.DefaultLayouts.Set(MainWindowSettingsModel.TemplateModels[(int)layoutType], type);
                     defaultLayoutModel = MainWindowSettingsModel.TemplateModels[(int)layoutType];
+                    defaultLayoutModel.TemplateZoneCount = layout.Layout.ZoneCount;
+                    defaultLayoutModel.SensitivityRadius = layout.Layout.SensitivityRadius;
+
+                    if (defaultLayoutModel is GridLayoutModel gridDefaultLayoutModel)
+                    {
+                        gridDefaultLayoutModel.ShowSpacing = layout.Layout.ShowSpacing;
+                        gridDefaultLayoutModel.Spacing = layout.Layout.Spacing;
+                    }
+
+                    MainWindowSettingsModel.DefaultLayouts.Set(defaultLayoutModel, type);
                 }
 
                 if (defaultLayoutModel != null)
