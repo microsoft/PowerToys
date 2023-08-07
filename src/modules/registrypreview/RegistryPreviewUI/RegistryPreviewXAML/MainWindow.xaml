@@ -176,9 +176,6 @@
                         x:Uid="RegistryJumpToKeyButton"
                         Click="RegistryJumpToKeyButton_Click"
                         IsEnabled="True">
-                        <AppBarButton.Icon>
-                            <FontIcon FontFamily="{StaticResource SymbolThemeFontFamily}" Glyph="&#xee49;"/>
-                        </AppBarButton.Icon>
                         <AppBarButton.KeyboardAccelerators>
                             <KeyboardAccelerator Key="R" Modifiers="Control,Shift" />
                         </AppBarButton.KeyboardAccelerators>
