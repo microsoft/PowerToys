@@ -149,6 +149,13 @@ namespace Peek.FilePreviewer
                 BrowserPreview.Visibility = Visibility.Collapsed;
                 ArchivePreview.Visibility = Visibility.Collapsed;
                 UnsupportedFilePreview.Visibility = Visibility.Collapsed;
+
+                ImagePreview.FlowDirection = FlowDirection.LeftToRight;
+                VideoPreview.FlowDirection = FlowDirection.LeftToRight;
+                BrowserPreview.FlowDirection = FlowDirection.LeftToRight;
+                ArchivePreview.FlowDirection = FlowDirection.LeftToRight;
+                UnsupportedFilePreview.FlowDirection = FlowDirection.LeftToRight;
+
                 return;
             }
 

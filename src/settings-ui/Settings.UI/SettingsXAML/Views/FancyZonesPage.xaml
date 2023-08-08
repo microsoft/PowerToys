@@ -83,6 +83,11 @@
                             </labs:SettingsCard>
                             <labs:SettingsCard ContentAlignment="Left">
                                 <CheckBox
+                                    x:Uid="FancyZones_MouseMiddleClickSpanningMultipleZonesCheckBoxControl_Header"
+                                    IsChecked="{x:Bind Mode=TwoWay, Path=ViewModel.MouseMiddleClickSpanningMultipleZones}" />
+                            </labs:SettingsCard>
+                            <labs:SettingsCard ContentAlignment="Left">
+                                <CheckBox
                                     x:Uid="FancyZones_ShowZonesOnAllMonitorsCheckBoxControl"
                                     IsChecked="{x:Bind Mode=TwoWay, Path=ViewModel.ShowOnAllMonitors}" />
                             </labs:SettingsCard>

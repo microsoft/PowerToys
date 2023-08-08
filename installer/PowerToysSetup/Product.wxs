@@ -133,6 +133,7 @@
     <InstallExecuteSequence>
       <Custom Action="DetectPrevInstallPath" After="AppSearch" />
       <Custom Action="SetRegisterPowerToysSchTaskParam" Before="RegisterPowerToysSchTask" />
+      <Custom Action="SetLaunchPowerToysParam" Before="LaunchPowerToys" />
       <Custom Action="SetApplyModulesRegistryChangeSetsParam" Before="ApplyModulesRegistryChangeSets" />
       <Custom Action="SetUnApplyModulesRegistryChangeSetsParam" Before="UnApplyModulesRegistryChangeSets" />
       <Custom Action="RegisterPowerToysSchTask" After="InstallFiles">
@@ -171,17 +172,22 @@
       </Custom>-->
       <Custom Action="TerminateProcesses" Before="InstallValidate" />
 
-      <Custom Action="LaunchPowerToys" After="InstallFinalize">NOT Installed</Custom>
+      <Custom Action="LaunchPowerToys" Before="InstallFinalize">NOT Installed</Custom>
 
     </InstallExecuteSequence>
 
+    <CustomAction Id="SetLaunchPowerToysParam"
+                    Property="LaunchPowerToys"
+                    Value="[INSTALLFOLDER]" />
+
     <CustomAction
       Id="LaunchPowerToys"
-      Execute="immediate"
+      Return="ignore"
       Impersonate="yes"
-      Return="asyncNoWait"
-      FileKey="PowerToys.exe"
-      ExeCommand="--dont-elevate" />
+      Execute="deferred"
+      BinaryKey="PTCustomActions"
+      DllEntry="LaunchPowerToysCA"
+      />
 
     <CustomAction
       Id="TerminateProcesses"

@@ -26,6 +26,7 @@ struct Settings
     // The values specified here are the defaults.
     bool shiftDrag = true;
     bool mouseSwitch = false;
+    bool mouseMiddleClickSpanningMultipleZones = false;
     bool displayChange_moveWindows = false;
     bool zoneSetChange_flashZones = false;
     bool zoneSetChange_moveWindows = false;

@@ -1,6 +1,7 @@
 LIBRARY "PowerToysSetupCustomActions"
 
 EXPORTS
+	LaunchPowerToysCA
 	CheckGPOCA
 	ApplyModulesRegistryChangeSetsCA
 	CreateScheduledTaskCA

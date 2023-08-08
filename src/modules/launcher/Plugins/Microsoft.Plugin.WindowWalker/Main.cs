@@ -4,6 +4,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Threading;
 using System.Windows.Controls;
 using ManagedCommon;
 using Microsoft.Plugin.WindowWalker.Components;
@@ -13,8 +14,11 @@ using Wox.Plugin.Common.VirtualDesktop.Helper;
 
 namespace Microsoft.Plugin.WindowWalker
 {
-    public class Main : IPlugin, IPluginI18n, ISettingProvider, IContextMenu
+    public class Main : IPlugin, IPluginI18n, ISettingProvider, IContextMenu, IDisposable
     {
+        private CancellationTokenSource _cancellationTokenSource = new();
+        private bool _disposed;
+
         private string IconPath { get; set; }
 
         private string InfoIconPath { get; set; }
@@ -27,11 +31,6 @@ namespace Microsoft.Plugin.WindowWalker
 
         internal static readonly VirtualDesktopHelper VirtualDesktopHelperInstance = new VirtualDesktopHelper();
 
-        static Main()
-        {
-            OpenWindows.Instance.UpdateOpenWindowsList();
-        }
-
         public List<Result> Query(Query query)
         {
             if (query == null)
@@ -39,8 +38,12 @@ namespace Microsoft.Plugin.WindowWalker
                 throw new ArgumentNullException(nameof(query));
             }
 
+            _cancellationTokenSource?.Cancel();
+            _cancellationTokenSource?.Dispose();
+            _cancellationTokenSource = new CancellationTokenSource();
+
             VirtualDesktopHelperInstance.UpdateDesktopList();
-            OpenWindows.Instance.UpdateOpenWindowsList();
+            OpenWindows.Instance.UpdateOpenWindowsList(_cancellationTokenSource.Token);
             SearchController.Instance.UpdateSearchText(query.Search);
             List<SearchResult> searchControllerResults = SearchController.Instance.SearchMatches;
 
@@ -102,6 +105,24 @@ namespace Microsoft.Plugin.WindowWalker
         public void UpdateSettings(PowerLauncherPluginSettings settings)
         {
             WindowWalkerSettings.Instance.UpdateSettings(settings);
+        }
+
+        public void Dispose()
+        {
+            Dispose(disposing: true);
+            GC.SuppressFinalize(this);
+        }
+
+        protected virtual void Dispose(bool disposing)
+        {
+            if (!_disposed)
+            {
+                if (disposing)
+                {
+                    _cancellationTokenSource?.Dispose();
+                    _disposed = true;
+                }
+            }
         }
     }
 }

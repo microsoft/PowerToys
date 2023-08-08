@@ -2,7 +2,6 @@
 #include "resource.h"
 #include "RcResource.h"
 #include <ProjectTelemetry.h>
-
 #include <spdlog/sinks/base_sink.h>
 
 #include "../../src/common/logger/logger.h"
@@ -15,6 +14,11 @@
 #include <winrt/Windows.ApplicationModel.h>
 #include <winrt/Windows.Foundation.h>
 #include <winrt/Windows.Management.Deployment.h>
+
+#include <wtsapi32.h>
+#include <processthreadsapi.h>
+#include <UserEnv.h>
+#include <winnt.h>
 
 using namespace std;
 
@@ -48,6 +52,160 @@ HRESULT getInstallFolder(MSIHANDLE hInstall, std::wstring& installationDir)
     ExitOnFailure(hr, "Failed to get INSTALLFOLDER property.");
 LExit:
     return hr;
+}
+
+BOOL IsLocalSystem()
+{
+    HANDLE hToken;
+    UCHAR bTokenUser[sizeof(TOKEN_USER) + 8 + 4 * SID_MAX_SUB_AUTHORITIES];
+    PTOKEN_USER pTokenUser = (PTOKEN_USER)bTokenUser;
+    ULONG cbTokenUser;
+    SID_IDENTIFIER_AUTHORITY siaNT = SECURITY_NT_AUTHORITY;
+    PSID pSystemSid;
+    BOOL bSystem;
+
+    // open process token
+    if (!OpenProcessToken(GetCurrentProcess(),
+        TOKEN_QUERY,
+        &hToken))
+        return FALSE;
+
+    // retrieve user SID
+    if (!GetTokenInformation(hToken, TokenUser, pTokenUser,
+        sizeof(bTokenUser), &cbTokenUser))
+    {
+        CloseHandle(hToken);
+        return FALSE;
+    }
+
+    CloseHandle(hToken);
+
+    // allocate LocalSystem well-known SID
+    if (!AllocateAndInitializeSid(&siaNT, 1, SECURITY_LOCAL_SYSTEM_RID,
+        0, 0, 0, 0, 0, 0, 0, &pSystemSid))
+        return FALSE;
+
+    // compare the user SID from the token with the LocalSystem SID
+    bSystem = EqualSid(pTokenUser->User.Sid, pSystemSid);
+
+    FreeSid(pSystemSid);
+
+    return bSystem;
+}
+
+UINT __stdcall LaunchPowerToysCA(MSIHANDLE hInstall)
+{
+    HRESULT hr = S_OK;
+    UINT er = ERROR_SUCCESS;
+    std::wstring installationFolder, path, args;
+    std::wstring commandLine;
+
+    hr = WcaInitialize(hInstall, "LaunchPowerToys");
+    ExitOnFailure(hr, "Failed to initialize");
+    hr = getInstallFolder(hInstall, installationFolder);
+    ExitOnFailure(hr, "Failed to get installFolder.");
+
+    path = installationFolder;
+    path += L"\\PowerToys.exe";
+
+    args = L"--dont-elevate";
+
+    commandLine = L"\"" + path + L"\" ";
+    commandLine += args;
+
+    BOOL isSystemUser = IsLocalSystem();
+
+    if (isSystemUser) {
+    
+        HANDLE hUserToken = NULL;
+        DWORD dwSessionId;
+        ProcessIdToSessionId(GetCurrentProcessId(), &dwSessionId);
+        auto rv = WTSQueryUserToken(dwSessionId, &hUserToken);
+
+        if (rv == 0)
+        {
+            ExitOnFailure(hr, "Failed to query user token");
+        }
+
+        HANDLE hUserTokenDup;
+        if (DuplicateTokenEx(hUserToken, TOKEN_ALL_ACCESS, NULL, SECURITY_IMPERSONATION_LEVEL::SecurityImpersonation, TOKEN_TYPE::TokenPrimary, &hUserTokenDup) == 0)
+        {
+            CloseHandle(hUserToken);
+            CloseHandle(hUserTokenDup);
+            ExitOnFailure(hr, "Failed to duplicate user token");
+        }
+
+        if (ImpersonateLoggedOnUser(hUserTokenDup))
+        {
+            STARTUPINFO startupInfo{ .cb = sizeof(STARTUPINFO),  .wShowWindow = SW_SHOWNORMAL };
+            PROCESS_INFORMATION processInformation;
+
+            PVOID lpEnvironment = NULL;
+            CreateEnvironmentBlock(&lpEnvironment, hUserTokenDup, FALSE);
+
+            CreateProcessAsUser(
+                hUserTokenDup,
+                NULL,
+                commandLine.data(),
+                NULL,
+                NULL,
+                FALSE,
+                CREATE_DEFAULT_ERROR_MODE | CREATE_UNICODE_ENVIRONMENT,
+                lpEnvironment,
+                NULL,
+                &startupInfo,
+                &processInformation);
+
+            if (!CloseHandle(processInformation.hProcess))
+            {
+                er = ERROR_INSTALL_FAILURE;
+            }
+            if (!CloseHandle(processInformation.hThread))
+            {
+                er = ERROR_INSTALL_FAILURE;
+            }
+
+            RevertToSelf();
+            CloseHandle(hUserToken);
+            CloseHandle(hUserTokenDup);
+        }
+        else
+        {
+            ExitOnFailure(hr, "Failed to duplicate user token");
+        }
+    }
+    else
+    {
+        STARTUPINFO startupInfo{ .cb = sizeof(STARTUPINFO),  .wShowWindow = SW_SHOWNORMAL };
+
+        PROCESS_INFORMATION processInformation;
+
+        // Start the resizer
+        CreateProcess(
+            NULL,
+            commandLine.data(),
+            NULL,
+            NULL,
+            TRUE,
+            0,
+            NULL,
+            NULL,
+            &startupInfo,
+            &processInformation);
+
+        if (!CloseHandle(processInformation.hProcess))
+        {
+            ExitOnFailure(hr, "Failed to close process handle");
+        }
+        if (!CloseHandle(processInformation.hThread))
+        {
+            ExitOnFailure(hr, "Failed to close thread handle");
+        }
+    }
+
+LExit:
+    er = SUCCEEDED(hr) ? ERROR_SUCCESS : ERROR_INSTALL_FAILURE;
+    return WcaFinalize(er);
 }
 
 UINT __stdcall CheckGPOCA(MSIHANDLE hInstall)
