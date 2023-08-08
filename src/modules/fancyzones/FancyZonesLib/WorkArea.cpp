@@ -117,11 +117,11 @@ WorkArea::~WorkArea()
     windowPool.FreeZonesOverlayWindow(m_window);
 }
 
-void WorkArea::Snap(HWND window, const ZoneIndexSet& zones, bool updatePosition)
+bool WorkArea::Snap(HWND window, const ZoneIndexSet& zones, bool updatePosition)
 {
     if (!m_layout || zones.empty())
     {
-        return;
+        return false;
     }
 
     m_layoutWindows.Assign(window, zones);
@@ -135,19 +135,21 @@ void WorkArea::Snap(HWND window, const ZoneIndexSet& zones, bool updatePosition)
         FancyZonesWindowUtils::SizeWindowToRect(window, adjustedRect);
     }
 
-    FancyZonesWindowProperties::StampZoneIndexProperty(window, zones);
+    return true;
 }
 
-void WorkArea::Unsnap(HWND window)
+bool WorkArea::Unsnap(HWND window)
 {
     if (!m_layout)
     {
-        return;
+        return false;
     }
     
     m_layoutWindows.Dismiss(window);
     AppZoneHistory::instance().RemoveAppLastZone(window, m_uniqueId, m_layout->Id());
     FancyZonesWindowProperties::RemoveZoneIndexProperty(window);
+
+    return true;
 }
 
 const GUID WorkArea::GetLayoutId() const noexcept
