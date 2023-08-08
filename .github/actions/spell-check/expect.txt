@@ -929,6 +929,7 @@ LEFTSCROLLBAR
 LEFTUP
 lego
 len
+lepo
 LError
 Lessthan
 LEVELID
@@ -2189,6 +2190,7 @@ wox
 wparam
 wpf
 wpftmp
+wpfui
 wpr
 wprp
 wql

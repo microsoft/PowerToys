@@ -281,7 +281,8 @@
                 "WinUI3Apps\\SharpCompress.dll",
                 "ColorCode.Core.dll", 
                 "ColorCode.UWP.dll",
-                "UnitsNet.dll"
+                "UnitsNet.dll",
+                "Wpf.Ui.dll"
             ],
             "SigningInfo": {
                 "Operations": [
