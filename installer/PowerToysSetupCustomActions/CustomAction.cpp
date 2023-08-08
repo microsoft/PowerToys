@@ -136,7 +136,7 @@ BOOL ImpersonateLoggedInUserAndDoSomething(std::function<bool(HANDLE userToken)>
     }
 
 LExit:
-    return SUCCEEDED(hr) ? true : false;
+    return SUCCEEDED(hr);
 }
 
 UINT __stdcall LaunchPowerToysCA(MSIHANDLE hInstall)
