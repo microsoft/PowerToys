@@ -95,7 +95,7 @@
                     x:Uid="OpenButton"
                     Click="OpenButton_Click">
                         <AppBarButton.Icon>
-                            <FontIcon Glyph="&#xe8e5;"/>
+                            <FontIcon FontFamily="{StaticResource SymbolThemeFontFamily}" Glyph="&#xe8e5;"/>
                         </AppBarButton.Icon>
                         <AppBarButton.KeyboardAccelerators>
                             <KeyboardAccelerator Key="O" Modifiers="Control" />
@@ -104,8 +104,10 @@
                     <AppBarButton
                     x:Name="refreshButton"
                     x:Uid="RefreshButton"
-                    Icon="Refresh"
                     Click="RefreshButton_Click">
+                        <AppBarButton.Icon>
+                            <FontIcon FontFamily="{StaticResource SymbolThemeFontFamily}" Glyph="&#xe72c;"/>
+                        </AppBarButton.Icon>
                         <AppBarButton.KeyboardAccelerators>
                             <KeyboardAccelerator Key="F5" />
                         </AppBarButton.KeyboardAccelerators>
@@ -114,9 +116,11 @@
                     <AppBarButton
                     x:Name="saveButton"
                     x:Uid="SaveButton"
-                    Icon="Save"
                     Click="SaveButton_Click"
                     IsEnabled="False">
+                        <AppBarButton.Icon>
+                            <FontIcon FontFamily="{StaticResource SymbolThemeFontFamily}" Glyph="&#xe74e;"/>
+                        </AppBarButton.Icon>
                         <AppBarButton.KeyboardAccelerators>
                             <KeyboardAccelerator Key="S" Modifiers="Control" />
                         </AppBarButton.KeyboardAccelerators>
@@ -127,7 +131,7 @@
                     Click="SaveAsButton_Click"
                     IsEnabled="True">
                         <AppBarButton.Icon>
-                            <FontIcon Glyph="&#xe792;"/>
+                            <FontIcon FontFamily="{StaticResource SymbolThemeFontFamily}" Glyph="&#xe792;"/>
                         </AppBarButton.Icon>
                         <AppBarButton.KeyboardAccelerators>
                             <KeyboardAccelerator Key="S" Modifiers="Control,Shift" />
@@ -137,8 +141,10 @@
                     <AppBarButton
                     x:Name="editButton"
                     x:Uid="EditButton"
-                    Icon="Edit"
                     Click="EditButton_Click">
+                        <AppBarButton.Icon>
+                            <FontIcon FontFamily="{StaticResource SymbolThemeFontFamily}" Glyph="&#xe8a7;"/>
+                        </AppBarButton.Icon>
                         <AppBarButton.KeyboardAccelerators>
                             <KeyboardAccelerator Key="E" Modifiers="Control" />
                         </AppBarButton.KeyboardAccelerators>
@@ -147,6 +153,9 @@
                         x:Name="writeButton"
                         x:Uid="WriteButton"
                         Click="WriteButton_Click">
+                        <AppBarButton.Icon>
+                            <FontIcon FontFamily="{StaticResource SymbolThemeFontFamily}" Glyph="&#xe72d;"/>
+                        </AppBarButton.Icon>
                         <AppBarButton.KeyboardAccelerators>
                             <KeyboardAccelerator Key="W" Modifiers="Control" />
                         </AppBarButton.KeyboardAccelerators>
@@ -155,6 +164,9 @@
                         x:Name="registryButton"
                         x:Uid="RegistryButton"
                         Click="RegistryButton_Click">
+                        <AppBarButton.Icon>
+                            <FontIcon FontFamily="{StaticResource SymbolThemeFontFamily}" Glyph="&#xe8ad;"/>
+                        </AppBarButton.Icon>
                         <AppBarButton.KeyboardAccelerators>
                             <KeyboardAccelerator Key="R" Modifiers="Control" />
                         </AppBarButton.KeyboardAccelerators>

@@ -123,6 +123,7 @@ backtracer
 bak
 bbwe
 bck
+BESTEFFORT
 betadele
 betsegaw
 BGR
@@ -154,6 +155,7 @@ BOKMAL
 bootstrapper
 BOOTSTRAPPERINSTALLFOLDER
 Bopomofo
+bostrot
 BOTTOMALIGN
 BPBF
 bpmf
@@ -604,6 +606,7 @@ FZE
 gabime
 GAC
 gacutil
+Galaxi
 Gaeilge
 Gaidhlig
 GBarm
@@ -616,6 +619,7 @@ gcode
 gdi
 gdiplus
 GDISCALED
+GEmoji
 GETDESKWALLPAPER
 GETDLGCODE
 GETDPISCALEDSIZE
@@ -704,6 +708,7 @@ HKL
 HKLM
 HKPD
 HKU
+hlaueriksson
 HLOCAL
 HMD
 hmenu
@@ -924,6 +929,7 @@ LEFTSCROLLBAR
 LEFTUP
 lego
 len
+lepo
 LError
 Lessthan
 LEVELID
@@ -1473,6 +1479,7 @@ ptc
 ptd
 PTOKEN
 PToy
+ptrun
 ptstr
 pui
 PULONG
@@ -1517,6 +1524,7 @@ RCtrl
 READMODE
 READOBJECTS
 READWRITE
+recents
 RECTDESTINATION
 RECTL
 rectp
@@ -1747,6 +1755,7 @@ SIZENWSE
 sizeread
 SIZEWE
 SKIPOWNPROCESS
+skttl
 sku
 SLGP
 sln
@@ -1880,6 +1889,7 @@ taskbar
 taskkill
 tasklist
 taskschd
+TBM
 tchar
 Tcollab
 tcp
@@ -2180,6 +2190,7 @@ wox
 wparam
 wpf
 wpftmp
+wpfui
 wpr
 wprp
 wql
@@ -2233,12 +2244,14 @@ XStr
 XUP
 XVIRTUALSCREEN
 YAxis
+ycv
 Yeet
 YIncrement
 yinle
 yinwang
 yinyue
 YOffset
+Youdao
 YPels
 YResolution
 YStr
