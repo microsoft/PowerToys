@@ -2754,6 +2754,10 @@ Right-click to remove the key combination, thereby deactivating the shortcut.</v
   <data name="CropAndLock_ThumbnailActivation_Shortcut.Description" xml:space="preserve">
     <value>Shortcut to crop and create a thumbnail of another window. The application isn't controllable through the thumbnail but it'll have less compatibility issues. </value>
   </data>
+  <data name="CropAndLock.SecondaryLinksHeader" xml:space="preserve">
+    <value>Attribution</value>
+    <comment>giving credit to the projects this utility was based on</comment>
+  </data>
   <data name="Oobe_CropAndLock.Title" xml:space="preserve">
     <value>Crop And Lock</value>
     <comment>"Crop And Lock" is the name of the utility</comment>

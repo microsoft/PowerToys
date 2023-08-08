@@ -61,5 +61,10 @@
                 x:Uid="LearnMore_CropAndLock"
                 Link="https://aka.ms/PowerToysOverview_CropAndLock" />
         </controls:SettingsPageControl.PrimaryLinks>
+        <controls:SettingsPageControl.SecondaryLinks>
+            <controls:PageLink
+                Link="https://github.com/robmikh"
+                Text="Robert Mikhayelyan's Crop And Lock" />
+        </controls:SettingsPageControl.SecondaryLinks>
     </controls:SettingsPageControl>
 </Page>
