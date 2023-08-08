@@ -534,6 +534,11 @@ int MouseHighlighterMain(HINSTANCE hInstance, MouseHighlighterSettings settings)
     }
     Logger::info("Initialized the highlighter instance.");
 
+    if (settings.autoActivate)
+    {
+        highlighter.SwitchActivationMode();
+    }
+
     MSG msg;
 
     // Main message loop:
