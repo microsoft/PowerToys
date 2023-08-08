@@ -118,7 +118,6 @@ BOOL ImpersonateLoggedInUserAndDoSomething(std::function<bool(HANDLE userToken)>
 
     if (ImpersonateLoggedOnUser(hUserTokenDup))
     {
-
         if (!action(hUserTokenDup))
         {
             hr = E_ABORT;
