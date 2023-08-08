@@ -1350,7 +1350,7 @@
       "Name": "BluetoothDevices",
       "Areas": [ "AreaHardwareAndSound", "bthprops.cpl" ],
       "Type": "AppControlPanel",
-      "Command": "control /name Microsoft.BluetoothDevices"
+      "Command": "control /bthprops.cpl"
     },
     {
       "Name": "ColorManagement",
