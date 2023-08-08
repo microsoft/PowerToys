@@ -116,7 +116,14 @@ namespace Microsoft.PowerToys.Settings.UI.Views
 
         private void OpenColorsSettings_Click(object sender, RoutedEventArgs e)
         {
-            Helpers.StartProcessHelper.Start(Helpers.StartProcessHelper.ColorsSettings);
+            try
+            {
+                Helpers.StartProcessHelper.Start(Helpers.StartProcessHelper.ColorsSettings);
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError("Error while trying to open the system color settings", ex);
+            }
         }
 
         private void RefreshBackupRestoreStatus(int delayMs = 0)
