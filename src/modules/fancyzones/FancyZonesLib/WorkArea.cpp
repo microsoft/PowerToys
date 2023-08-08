@@ -125,12 +125,7 @@ void WorkArea::Snap(HWND window, const ZoneIndexSet& zones, bool updatePosition)
     }
 
     m_layoutWindows.Assign(window, zones);
-
-    auto guidStr = FancyZonesUtils::GuidToString(m_layout->Id());
-    if (guidStr.has_value())
-    {
-        AppZoneHistory::instance().SetAppLastZones(window, m_uniqueId, guidStr.value(), zones);
-    }
+    AppZoneHistory::instance().SetAppLastZones(window, m_uniqueId, m_layout->Id(), zones);
 
     if (updatePosition)
     {
@@ -151,13 +146,7 @@ void WorkArea::Unsnap(HWND window)
     }
     
     m_layoutWindows.Dismiss(window);
-
-    auto guidStr = FancyZonesUtils::GuidToString(m_layout->Id());
-    if (guidStr.has_value())
-    {
-        AppZoneHistory::instance().RemoveAppLastZone(window, m_uniqueId, guidStr.value());
-    }
-
+    AppZoneHistory::instance().RemoveAppLastZone(window, m_uniqueId, m_layout->Id());
     FancyZonesWindowProperties::RemoveZoneIndexProperty(window);
 }
 

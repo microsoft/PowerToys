@@ -277,12 +277,15 @@ namespace
             .monitorId = { .deviceId = MonitorUtils::Display::ConvertObsoleteDeviceId(deviceId->deviceName) },
             .virtualDesktopId = deviceId->virtualDesktopId
         };
-        data.zoneSetUuid = json.GetNamedString(NonLocalizable::ZoneSetUuidStr);
 
-        if (!FancyZonesUtils::IsValidGuid(data.zoneSetUuid))
+        std::wstring layoutIdStr = json.GetNamedString(NonLocalizable::ZoneSetUuidStr).c_str();
+        auto layoutIdOpt = FancyZonesUtils::GuidFromString(layoutIdStr);
+        if (!layoutIdOpt.has_value())
         {
             return std::nullopt;
         }
+
+        data.layoutId = layoutIdOpt.value();
 
         return data;
     }
