@@ -21,3 +21,75 @@ void Trace::UnregisterProvider() noexcept
     TraceLoggingUnregister(g_hProvider);
 }
 
+void Trace::CropAndLock::Enable(bool enabled) noexcept
+{
+    TraceLoggingWrite(
+        g_hProvider,
+        "CropAndLock_EnableCropAndLock",
+        ProjectTelemetryPrivacyDataTag(ProjectTelemetryTag_ProductAndServicePerformance),
+        TraceLoggingKeyword(PROJECT_KEYWORD_MEASURE),
+        TraceLoggingBoolean(enabled, "Enabled"));
+}
+
+void Trace::CropAndLock::ActivateReparent() noexcept
+{
+    TraceLoggingWrite(
+        g_hProvider,
+        "CropAndLock_ActivateReparent",
+        ProjectTelemetryPrivacyDataTag(ProjectTelemetryTag_ProductAndServicePerformance),
+        TraceLoggingKeyword(PROJECT_KEYWORD_MEASURE));
+}
+
+void Trace::CropAndLock::ActivateThumbnail() noexcept
+{
+    TraceLoggingWrite(
+        g_hProvider,
+        "CropAndLock_ActivateThumbnail",
+        ProjectTelemetryPrivacyDataTag(ProjectTelemetryTag_ProductAndServicePerformance),
+        TraceLoggingKeyword(PROJECT_KEYWORD_MEASURE));
+}
+
+void Trace::CropAndLock::CreateReparentWindow() noexcept
+{
+    TraceLoggingWrite(
+        g_hProvider,
+        "CropAndLock_CreateReparentWindow",
+        ProjectTelemetryPrivacyDataTag(ProjectTelemetryTag_ProductAndServicePerformance),
+        TraceLoggingKeyword(PROJECT_KEYWORD_MEASURE));
+}
+
+void Trace::CropAndLock::CreateThumbnailWindow() noexcept
+{
+    TraceLoggingWrite(
+        g_hProvider,
+        "CropAndLock_CreateThumbnailWindow",
+        ProjectTelemetryPrivacyDataTag(ProjectTelemetryTag_ProductAndServicePerformance),
+        TraceLoggingKeyword(PROJECT_KEYWORD_MEASURE));
+}
+
+// Event to send settings telemetry.
+void Trace::CropAndLock::SettingsTelemetry(PowertoyModuleIface::Hotkey& reparentHotkey, PowertoyModuleIface::Hotkey& thumbnailHotkey) noexcept
+{
+    std::wstring hotKeyStrReparent =
+        std::wstring(reparentHotkey.win ? L"Win + " : L"") +
+        std::wstring(reparentHotkey.ctrl ? L"Ctrl + " : L"") +
+        std::wstring(reparentHotkey.shift ? L"Shift + " : L"") +
+        std::wstring(reparentHotkey.alt ? L"Alt + " : L"") +
+        std::wstring(L"VK ") + std::to_wstring(reparentHotkey.key);
+
+    std::wstring hotKeyStrThumbnail =
+        std::wstring(thumbnailHotkey.win ? L"Win + " : L"") +
+        std::wstring(thumbnailHotkey.ctrl ? L"Ctrl + " : L"") +
+        std::wstring(thumbnailHotkey.shift ? L"Shift + " : L"") +
+        std::wstring(thumbnailHotkey.alt ? L"Alt + " : L"") +
+        std::wstring(L"VK ") + std::to_wstring(thumbnailHotkey.key);
+
+    TraceLoggingWrite(
+        g_hProvider,
+        "CropAndLock_Settings",
+        ProjectTelemetryPrivacyDataTag(ProjectTelemetryTag_ProductAndServicePerformance),
+        TraceLoggingKeyword(PROJECT_KEYWORD_MEASURE),
+        TraceLoggingWideString(hotKeyStrReparent.c_str(), "ReparentHotKey"),
+        TraceLoggingWideString(hotKeyStrThumbnail.c_str(), "ThumbnailHotkey")
+    );
+}

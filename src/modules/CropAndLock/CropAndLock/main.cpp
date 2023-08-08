@@ -11,6 +11,7 @@
 #include <common/utils/gpo.h>
 #include "ModuleConstants.h"
 #include <common/utils/ProcessWaiter.h>
+#include "trace.h"
 
 #pragma comment(linker,"/manifestdependency:\"type='win32' name='Microsoft.Windows.Common-Controls' version='6.0.0.0' processorArchitecture='*' publicKeyToken='6595b64144ccf1df' language='*'\"")
 
@@ -148,9 +149,11 @@ int WINAPI wWinMain(_In_ HINSTANCE, _In_opt_ HINSTANCE, _In_ PWSTR lpCmdLine, _I
             {
             case CropAndLockType::Reparent:
                 croppedWindow = std::make_shared<ReparentCropAndLockWindow>(title, 800, 600);
+                Trace::CropAndLock::CreateReparentWindow();
                 break;
             case CropAndLockType::Thumbnail:
                 croppedWindow = std::make_shared<ThumbnailCropAndLockWindow>(title, 800, 600);
+                Trace::CropAndLock::CreateThumbnailWindow();
                 break;
             default:
                 return;

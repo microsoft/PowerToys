@@ -1,6 +1,6 @@
 #include "pch.h"
 
-#include <interface/powertoy_module_interface.h>
+#include <modules/interface/powertoy_module_interface.h>
 #include <common/SettingsAPI/settings_objects.h>
 
 #include <common/logger/logger.h>
@@ -118,9 +118,11 @@ public:
 
             if (hotkeyId == 0) { // Same order as set by get_hotkeys
                 SetEvent(m_reparent_event_handle);
+                Trace::CropAndLock::ActivateReparent();
             }
             if (hotkeyId == 1) { // Same order as set by get_hotkeys
                 SetEvent(m_thumbnail_event_handle);
+                Trace::CropAndLock::ActivateThumbnail();
             }
 
             return true;
@@ -166,6 +168,12 @@ public:
         delete this;
     }
 
+    virtual void send_settings_telemetry() override
+    {
+        Logger::info("Send settings telemetry");
+        Trace::CropAndLock::SettingsTelemetry(m_reparent_hotkey, m_thumbnail_hotkey);
+    }
+
     CropAndLockModuleInterface()
     {
         app_name = L"CropAndLock";
@@ -184,9 +192,10 @@ private:
     {
         m_enabled = true;
 
-        // TODO: Log telemetry
+        // Log telemetry
+        Trace::CropAndLock::Enable(true);
 
-        // TODO: Actually pass the PID.
+        // Pass the PID.
         unsigned long powertoys_pid = GetCurrentProcessId();
         std::wstring executable_args = L"";
         executable_args.append(std::to_wstring(powertoys_pid));
@@ -216,7 +225,7 @@ private:
 
     }
 
-    void Disable(bool const /*traceEvent*/)
+    void Disable(bool const traceEvent)
     {
         m_enabled = false;
 
@@ -225,11 +234,12 @@ private:
 
         ResetEvent(m_reparent_event_handle);
         ResetEvent(m_thumbnail_event_handle);
-        // TODO: Log telemetry
-        /*if (traceEvent)
+
+        // Log telemetry
+        if (traceEvent)
         {
-            
-        }*/
+            Trace::CropAndLock::Enable(false);
+        }
 
         if (m_hProcess)
         {
