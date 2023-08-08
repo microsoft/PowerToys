@@ -149,10 +149,12 @@ int WINAPI wWinMain(_In_ HINSTANCE, _In_opt_ HINSTANCE, _In_ PWSTR lpCmdLine, _I
             {
             case CropAndLockType::Reparent:
                 croppedWindow = std::make_shared<ReparentCropAndLockWindow>(title, 800, 600);
+                Logger::trace(L"Creating a reparent window");
                 Trace::CropAndLock::CreateReparentWindow();
                 break;
             case CropAndLockType::Thumbnail:
                 croppedWindow = std::make_shared<ThumbnailCropAndLockWindow>(title, 800, 600);
+                Logger::trace(L"Creating a thumbnail window");
                 Trace::CropAndLock::CreateThumbnailWindow();
                 break;
             default:
@@ -234,6 +236,7 @@ int WINAPI wWinMain(_In_ HINSTANCE, _In_opt_ HINSTANCE, _In_ PWSTR lpCmdLine, _I
             case WAIT_OBJECT_0 + 2:
             {
                 // Exit Event
+                Logger::trace(L"Received an exit event.");
                 PostThreadMessage(mainThreadId, WM_QUIT, 0, 0);
                 break;
             }
