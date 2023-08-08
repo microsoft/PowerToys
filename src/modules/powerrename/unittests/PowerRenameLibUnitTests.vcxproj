@@ -38,6 +38,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="CppUnitTestInclude.h" />
     <ClInclude Include="MockPowerRenameItem.h" />
     <ClInclude Include="MockPowerRenameManagerEvents.h" />
     <ClInclude Include="MockPowerRenameRegExEvents.h" />
@@ -45,6 +46,7 @@
     <ClInclude Include="resource.h" />
     <ClInclude Include="targetver.h" />
     <ClInclude Include="TestFileHelper.h" />
+    <ClInclude Include="CommonRegExTests.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="MockPowerRenameItem.cpp" />
