@@ -196,6 +196,13 @@ namespace winrt::PowerRenameUI::implementation
         m_dateTimeShortcuts.Append(winrt::make<PatternSnippet>(L"$ff", manager.MainResourceMap().GetValue(L"Resources/DateTimeCheatSheet_MilliSeconds2D").ValueAsString()));
         m_dateTimeShortcuts.Append(winrt::make<PatternSnippet>(L"$f", manager.MainResourceMap().GetValue(L"Resources/DateTimeCheatSheet_MilliSeconds1D").ValueAsString()));
 
+        m_CounterShortcuts = winrt::single_threaded_observable_vector<PowerRenameUI::PatternSnippet>();
+        m_CounterShortcuts.Append(winrt::make<PatternSnippet>(L"${}", manager.MainResourceMap().GetValue(L"Resources/CounterCheatSheet_Simple").ValueAsString()));
+        m_CounterShortcuts.Append(winrt::make<PatternSnippet>(L"${start=10}", manager.MainResourceMap().GetValue(L"Resources/CounterCheatSheet_Start").ValueAsString()));
+        m_CounterShortcuts.Append(winrt::make<PatternSnippet>(L"${increment=5}", manager.MainResourceMap().GetValue(L"Resources/CounterCheatSheet_Increment").ValueAsString()));
+        m_CounterShortcuts.Append(winrt::make<PatternSnippet>(L"${padding=8}", manager.MainResourceMap().GetValue(L"Resources/CounterCheatSheet_Padding").ValueAsString()));
+        m_CounterShortcuts.Append(winrt::make<PatternSnippet>(L"${increment=3,padding=4,start=900}", manager.MainResourceMap().GetValue(L"Resources/CounterCheatSheet_Complex").ValueAsString()));
+
         InitializeComponent();
 
         listView_ExplorerItems().ApplyTemplate();

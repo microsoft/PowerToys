@@ -21,6 +21,13 @@
 #include <shlwapi.h>
 #include <ShlObj_core.h>
 #include <filesystem>
+#include <compare>
+#include <regex>
+#include <vector>
+#include <variant>
+#include <charconv>
+#include <compare>
+#include <string>
 
 #include <ProjectTelemetry.h>
 
