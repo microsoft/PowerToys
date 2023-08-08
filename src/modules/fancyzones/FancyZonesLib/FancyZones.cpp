@@ -808,7 +808,7 @@ void FancyZones::UpdateWorkAreas(bool updateWindowPositions) noexcept
             const auto zones = iter->second;
             const auto monitor = MonitorFromWindow(window, MONITOR_DEFAULTTONULL);
             const auto workAreaForMonitor = m_workAreaHandler.GetWorkArea(monitor);
-            if (workAreaForMonitor && workAreaForMonitor->GetWindowZoneIndexes(window) == zones)
+            if (workAreaForMonitor && AppZoneHistory::instance().GetAppLastZoneIndexSet(window, workAreaForMonitor->UniqueId(), workAreaForMonitor->GetLayoutId()) == zones)
             {
                 workAreaForMonitor->Snap(window, zones, false);
                 iter = windowsToSnap.erase(iter);
@@ -824,7 +824,7 @@ void FancyZones::UpdateWorkAreas(bool updateWindowPositions) noexcept
         {
             for (const auto& [_, workArea] : m_workAreaHandler.GetAllWorkAreas())
             {
-                const auto savedIndexes = workArea->GetWindowZoneIndexes(window);
+                const auto savedIndexes = AppZoneHistory::instance().GetAppLastZoneIndexSet(window, workArea->UniqueId(), workArea->GetLayoutId());
                 if (savedIndexes == zones)
                 {
                     workArea->Snap(window, zones, false);
