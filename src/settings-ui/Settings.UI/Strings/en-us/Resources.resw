@@ -1853,10 +1853,10 @@ Made with 💗 by Microsoft and the PowerToys community.</value>
   <data name="Run_AllPluginsDisabled.Message" xml:space="preserve">
     <value>Enable at least one plugin to get started</value>
   </data>
-  <data name="Run_PluginUseDescription.Header" xml:space="preserve">
+  <data name="Run_PluginUse.Header" xml:space="preserve">
     <value>Plugins</value>
   </data>
-  <data name="Run_PluginUseDescription.Description" xml:space="preserve">
+  <data name="Run_PluginUseDescription.Text" xml:space="preserve">
     <value>Include or remove plugins from the global results, change the direct activation phrase and configure additional options</value>
   </data>
   <data name="Run_PositionAppearance_GroupSettings.Header" xml:space="preserve">
@@ -3592,5 +3592,11 @@ Activate by holding the key for the character you want to add an accent to, then
   </data>
   <data name="MouseUtils_MousePointerCrosshairs_CrosshairsAutoHide.Content" xml:space="preserve">
     <value>Automatically hide crosshairs when the mouse pointer is hidden</value>
+  </data>
+  <data name="Run_FindMorePlugins.Text" xml:space="preserve">
+    <value>Find more plugins</value>
+  </data>
+  <data name="Run_PluginUseFindMorePlugins.Content" xml:space="preserve">
+    <value>Find more plugins</value>
   </data>
 </root>
