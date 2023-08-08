@@ -56,18 +56,6 @@ namespace PowerLauncher
             _nativeWaiterCancelToken = nativeWaiterCancelToken;
             _settings = settings;
 
-            if (!string.IsNullOrEmpty(_settings.Language))
-            {
-                try
-                {
-                    PowerLauncher.Properties.Resources.Culture = new System.Globalization.CultureInfo(_settings.Language);
-                }
-                catch (CultureNotFoundException ex)
-                {
-                    Log.Exception("Error setting language: ", ex, GetType());
-                }
-            }
-
             InitializeComponent();
 
             _firstDeleteTimer.Elapsed += CheckForFirstDelete;

@@ -143,6 +143,18 @@ namespace PowerLauncher
                 _settingsReader = new SettingsReader(_settings, _themeManager);
                 _settingsReader.ReadSettings();
 
+                if (!string.IsNullOrEmpty(_settings.Language))
+                {
+                    try
+                    {
+                        PowerLauncher.Properties.Resources.Culture = new System.Globalization.CultureInfo(_settings.Language);
+                    }
+                    catch (CultureNotFoundException ex)
+                    {
+                        Log.Exception("Error setting language: ", ex, GetType());
+                    }
+                }
+
                 _mainVM = new MainViewModel(_settings, NativeThreadCTS.Token);
                 _mainWindow = new MainWindow(_settings, _mainVM, NativeThreadCTS.Token);
                 API = new PublicAPIInstance(_settingsVM, _mainVM, _alphabet, _themeManager);
