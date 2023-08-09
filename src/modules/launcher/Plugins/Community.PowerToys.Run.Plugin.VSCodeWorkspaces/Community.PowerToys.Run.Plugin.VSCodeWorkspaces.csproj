@@ -2,7 +2,7 @@
 	<Import Project="..\..\..\..\Version.props" />
 
 	<PropertyGroup>
-		<TargetFramework>net7.0-windows</TargetFramework>
+		<TargetFramework>net8.0-windows</TargetFramework>
 		<ProjectGuid>{4D971245-7A70-41D5-BAA0-DDB5684CAF51}</ProjectGuid>
 		<AppDesignerFolder>Properties</AppDesignerFolder>
 		<RootNamespace>Community.PowerToys.Run.Plugin.VSCodeWorkspaces</RootNamespace>

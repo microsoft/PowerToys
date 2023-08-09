@@ -5,7 +5,7 @@
     <AssemblyTitle>PowerToys.MeasureTool</AssemblyTitle>
     <AssemblyDescription>PowerToys MeasureTool</AssemblyDescription>
     <OutputType>WinExe</OutputType>
-    <TargetFramework>net7.0-windows10.0.20348.0</TargetFramework>
+    <TargetFramework>net8.0-windows10.0.20348.0</TargetFramework>
     <TargetPlatformMinVersion>10.0.19041.0</TargetPlatformMinVersion>
     <OutputPath>..\..\..\..\$(Platform)\$(Configuration)\WinUI3Apps</OutputPath>
     <RootNamespace>PowerToys.MeasureToolUI</RootNamespace>

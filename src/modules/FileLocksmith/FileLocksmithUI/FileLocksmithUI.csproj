@@ -5,7 +5,7 @@
     <AssemblyTitle>PowerToys.FileLocksmith</AssemblyTitle>
     <AssemblyDescription>PowerToys File Locksmith</AssemblyDescription>
     <OutputType>WinExe</OutputType>
-    <TargetFramework>net7.0-windows10.0.20348.0</TargetFramework>
+    <TargetFramework>net8.0-windows10.0.20348.0</TargetFramework>
     <TargetPlatformMinVersion>10.0.19041.0</TargetPlatformMinVersion>
     <SupportedOSPlatformVersion>10.0.19041.0</SupportedOSPlatformVersion>
     <OutputPath>..\..\..\..\$(Platform)\$(Configuration)\WinUI3Apps</OutputPath>
