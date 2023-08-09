@@ -109,7 +109,7 @@ Find My Mouse is based on Raymond Chen's SuperSonar.
 
 ### [@robmikh](https://github.com/robmikh) - Robert Mikhayelyan
 
-Crop And Lock is based on the original work of Robert Mikhayelyan. Other members of Microsoft community members who supported Crop And Lock's original development include Kevin Guo and Matt Worley.
+Crop And Lock is based on the original work of Robert Mikhayelyan. Other members of Microsoft community who supported Crop And Lock's original development include Kevin Guo and Matt Worley.
 
 ### Microsoft InVEST team
 
