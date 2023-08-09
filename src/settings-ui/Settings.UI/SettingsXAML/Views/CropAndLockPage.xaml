@@ -64,7 +64,10 @@
         <controls:SettingsPageControl.SecondaryLinks>
             <controls:PageLink
                 Link="https://github.com/robmikh"
-                Text="Robert Mikhayelyan's Crop And Lock" />
+                Text="Robert Mikhayelyan" />
+            <controls:PageLink
+                Link="https://github.com/kevinguo305"
+                Text="Kevin Guo" />
         </controls:SettingsPageControl.SecondaryLinks>
     </controls:SettingsPageControl>
 </Page>
