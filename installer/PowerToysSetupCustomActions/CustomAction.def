@@ -4,7 +4,6 @@ EXPORTS
 	LaunchPowerToysCA
 	CheckGPOCA
 	ApplyModulesRegistryChangeSetsCA
-	CreateScheduledTaskCA
 	DetectPrevInstallPathCA
 	RemoveScheduledTasksCA
 	TelemetryLogInstallSuccessCA
