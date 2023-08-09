@@ -92,9 +92,6 @@ int WINAPI wWinMain(_In_ HINSTANCE, _In_opt_ HINSTANCE, _In_ PWSTR lpCmdLine, _I
     // Create the DispatcherQueue that the compositor needs to run
     auto controller = util::CreateDispatcherQueueControllerForCurrentThread();
 
-    // Setup hot key
-    auto hotKey = util::HotKey(MOD_CONTROL | MOD_SHIFT, 0x4C); // L 
-
     // Setup Composition
     auto compositor = winrt::Compositor();
 
