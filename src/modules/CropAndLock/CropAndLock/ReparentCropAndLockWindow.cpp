@@ -144,6 +144,12 @@ void ReparentCropAndLockWindow::DisconnectTarget()
 {
     if (m_currentTarget != nullptr)
     {
+        if (!IsWindow(m_currentTarget))
+        {
+            // The child window was closed by other means?
+            m_currentTarget = nullptr;
+            return;
+        }
         winrt::check_bool(SetWindowPos(m_currentTarget, nullptr, m_previousPosition.x, m_previousPosition.y, 0, 0, SWP_NOSIZE | SWP_NOACTIVATE | SWP_FRAMECHANGED));
         SetParent(m_currentTarget, nullptr);
         auto targetStyle = static_cast<DWORD>(GetWindowLongPtrW(m_currentTarget, GWL_STYLE));
