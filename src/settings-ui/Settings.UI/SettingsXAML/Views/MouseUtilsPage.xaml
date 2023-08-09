@@ -149,14 +149,22 @@
                         IsOpen="{x:Bind Mode=OneWay, Path=ViewModel.IsHighlighterEnabledGpoConfigured}"
                         IsTabStop="{x:Bind Mode=OneWay, Path=ViewModel.IsHighlighterEnabledGpoConfigured}"
                         Severity="Informational" />
-                    <labs:SettingsCard
+                    <labs:SettingsExpander
                         x:Uid="MouseUtils_MouseHighlighter_ActivationShortcut"
                         HeaderIcon="{ui:FontIcon FontFamily={StaticResource SymbolThemeFontFamily}, Glyph=&#xEDA7;}"
-                        IsEnabled="{x:Bind ViewModel.IsMouseHighlighterEnabled, Mode=OneWay}">
+                        IsEnabled="{x:Bind ViewModel.IsMouseHighlighterEnabled, Mode=OneWay}"
+                        IsExpanded="True">
                         <controls:ShortcutControl
                             MinWidth="{StaticResource SettingActionControlMinWidth}"
                             HotkeySettings="{x:Bind Path=ViewModel.MouseHighlighterActivationShortcut, Mode=TwoWay}" />
-                    </labs:SettingsCard>
+                        <labs:SettingsExpander.Items>
+                            <labs:SettingsCard ContentAlignment="Left">
+                                <CheckBox
+                                    x:Uid="MouseUtils_AutoActivate"
+                                    IsChecked="{x:Bind ViewModel.MouseHighlighterAutoActivate, Mode=TwoWay}" />
+                            </labs:SettingsCard>
+                        </labs:SettingsExpander.Items>
+                    </labs:SettingsExpander>
                     <labs:SettingsExpander
                         x:Uid="Appearance_Behavior"
                         HeaderIcon="{ui:FontIcon FontFamily={StaticResource SymbolThemeFontFamily}, Glyph=&#xEB3C;}"
@@ -317,14 +325,22 @@
                         IsOpen="{x:Bind Mode=OneWay, Path=ViewModel.IsMousePointerCrosshairsEnabledGpoConfigured}"
                         IsTabStop="{x:Bind Mode=OneWay, Path=ViewModel.IsMousePointerCrosshairsEnabledGpoConfigured}"
                         Severity="Informational" />
-                    <labs:SettingsCard
+                    <labs:SettingsExpander
                         x:Uid="MouseUtils_MousePointerCrosshairs_ActivationShortcut"
                         HeaderIcon="{ui:FontIcon FontFamily={StaticResource SymbolThemeFontFamily}, Glyph=&#xEDA7;}"
-                        IsEnabled="{x:Bind ViewModel.IsMousePointerCrosshairsEnabled, Mode=OneWay}">
+                        IsEnabled="{x:Bind ViewModel.IsMousePointerCrosshairsEnabled, Mode=OneWay}"
+                        IsExpanded="True">
                         <controls:ShortcutControl
                             MinWidth="{StaticResource SettingActionControlMinWidth}"
                             HotkeySettings="{x:Bind Path=ViewModel.MousePointerCrosshairsActivationShortcut, Mode=TwoWay}" />
-                    </labs:SettingsCard>
+                        <labs:SettingsExpander.Items>
+                            <labs:SettingsCard ContentAlignment="Left">
+                                <CheckBox
+                                    x:Uid="MouseUtils_AutoActivate"
+                                    IsChecked="{x:Bind ViewModel.MousePointerCrosshairsAutoActivate, Mode=TwoWay}" />
+                            </labs:SettingsCard>
+                        </labs:SettingsExpander.Items>
+                    </labs:SettingsExpander>
 
                     <labs:SettingsExpander
                         x:Uid="Appearance_Behavior"

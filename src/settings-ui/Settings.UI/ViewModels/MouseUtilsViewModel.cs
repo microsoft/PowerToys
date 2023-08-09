@@ -82,6 +82,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             _highlighterRadius = MouseHighlighterSettingsConfig.Properties.HighlightRadius.Value;
             _highlightFadeDelayMs = MouseHighlighterSettingsConfig.Properties.HighlightFadeDelayMs.Value;
             _highlightFadeDurationMs = MouseHighlighterSettingsConfig.Properties.HighlightFadeDurationMs.Value;
+            _highlighterAutoActivate = MouseHighlighterSettingsConfig.Properties.AutoActivate.Value;
 
             if (mouseJumpSettingsRepository == null)
             {
@@ -111,6 +112,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             _mousePointerCrosshairsAutoHide = MousePointerCrosshairsSettingsConfig.Properties.CrosshairsAutoHide.Value;
             _mousePointerCrosshairsIsFixedLengthEnabled = MousePointerCrosshairsSettingsConfig.Properties.CrosshairsIsFixedLengthEnabled.Value;
             _mousePointerCrosshairsFixedLength = MousePointerCrosshairsSettingsConfig.Properties.CrosshairsFixedLength.Value;
+            _mousePointerCrosshairsAutoActivate = MousePointerCrosshairsSettingsConfig.Properties.AutoActivate.Value;
 
             // set the callback functions value to handle outgoing IPC message.
             SendConfigMSG = ipcMSGCallBackFunc;
@@ -549,6 +551,24 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             }
         }
 
+        public bool MouseHighlighterAutoActivate
+        {
+            get
+            {
+                return _highlighterAutoActivate;
+            }
+
+            set
+            {
+                if (value != _highlighterAutoActivate)
+                {
+                    _highlighterAutoActivate = value;
+                    MouseHighlighterSettingsConfig.Properties.AutoActivate.Value = value;
+                    NotifyMouseHighlighterPropertyChanged();
+                }
+            }
+        }
+
         public void NotifyMouseHighlighterPropertyChanged([CallerMemberName] string propertyName = null)
         {
             OnPropertyChanged(propertyName);
@@ -852,6 +872,24 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             }
         }
 
+        public bool MousePointerCrosshairsAutoActivate
+        {
+            get
+            {
+                return _mousePointerCrosshairsAutoActivate;
+            }
+
+            set
+            {
+                if (value != _mousePointerCrosshairsAutoActivate)
+                {
+                    _mousePointerCrosshairsAutoActivate = value;
+                    MousePointerCrosshairsSettingsConfig.Properties.AutoActivate.Value = value;
+                    NotifyMousePointerCrosshairsPropertyChanged();
+                }
+            }
+        }
+
         public void NotifyMousePointerCrosshairsPropertyChanged([CallerMemberName] string propertyName = null)
         {
             OnPropertyChanged(propertyName);
@@ -896,6 +934,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         private int _highlighterRadius;
         private int _highlightFadeDelayMs;
         private int _highlightFadeDurationMs;
+        private bool _highlighterAutoActivate;
 
         private GpoRuleConfigured _jumpEnabledGpoRuleConfiguration;
         private bool _jumpEnabledStateIsGPOConfigured;
@@ -913,5 +952,6 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         private bool _mousePointerCrosshairsAutoHide;
         private bool _mousePointerCrosshairsIsFixedLengthEnabled;
         private int _mousePointerCrosshairsFixedLength;
+        private bool _mousePointerCrosshairsAutoActivate;
     }
 }
