@@ -57,7 +57,7 @@ int WINAPI wWinMain(_In_ HINSTANCE, _In_opt_ HINSTANCE, _In_ PWSTR lpCmdLine, _I
 
     if (GetLastError() == ERROR_ALREADY_EXISTS)
     {
-        MessageBoxW(nullptr, L"CropAndLock is already open! Please close it first from the Task Manager.", L"CropAndLock", MB_ICONERROR);
+        // CropAndLock is already open.
         return 1;
     }
 
