@@ -92,6 +92,7 @@
           <RemoveFolder Id="RemoveBaseApplicationsAssetsFolder" Directory="BaseApplicationsAssetsFolder" On="uninstall"/>
           <RemoveFolder Id="RemoveWinUI3AppsInstallFolder" Directory="WinUI3AppsInstallFolder" On="uninstall"/>
           <RemoveFolder Id="RemoveWinUI3AppsAssetsFolder" Directory="WinUI3AppsAssetsFolder" On="uninstall"/>
+          <RemoveFolder Id="RemoveWinUI3AppsStringsFolder" Directory="WinUI3AppsStringsFolder" On="uninstall"/>
           <RemoveFolder Id="RemoveINSTALLFOLDER" Directory="INSTALLFOLDER" On="uninstall"/>
         </Component>
         <ComponentRef Id="powertoys_exe" />

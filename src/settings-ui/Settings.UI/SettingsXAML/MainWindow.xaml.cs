@@ -13,6 +13,7 @@ using Microsoft.UI;
 using Microsoft.UI.Windowing;
 using Microsoft.UI.Xaml;
 using Windows.Data.Json;
+using WinUI3Localizer;
 using WinUIEx;
 
 namespace Microsoft.PowerToys.Settings.UI
@@ -51,7 +52,7 @@ namespace Microsoft.PowerToys.Settings.UI
             NativeMethods.SetWindowPlacement(hWnd, ref placement);
 
             var loader = Helpers.ResourceLoaderInstance.ResourceLoader;
-            Title = loader.GetString("SettingsWindow_Title");
+            Title = LocalizerInstance.Instance.GetLocalizedString("SettingsWindow_Title");
 
             // send IPC Message
             ShellPage.SetDefaultSndMessageCallback(msg =>

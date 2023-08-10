@@ -82,8 +82,9 @@
     <PackageReference Include="Microsoft.Windows.CsWinRT" />
     <PackageReference Include="CommunityToolkit.WinUI.UI" />
     <PackageReference Include="CommunityToolkit.WinUI.UI.Controls" />
-    <PackageReference Include="WinUIEx" />
-    <PackageReference Include="Microsoft.WindowsAppSDK" />
+	<PackageReference Include="WinUIEx" />
+	<PackageReference Include="WinUI3Localizer" />
+	<PackageReference Include="Microsoft.WindowsAppSDK" />
     <PackageReference Include="Microsoft.Windows.SDK.BuildTools" />
     <PackageReference Include="Microsoft.Xaml.Behaviors.WinUI.Managed" />
     <PackageReference Include="StreamJsonRpc" />
@@ -122,5 +123,10 @@
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
   </ItemGroup>
+
+  <Target Name="PostBuild" AfterTargets="PostBuildEvent">
+	  <Exec Command="RD /S /Q &quot;$(ProjectDir)$(OutDir)Strings\Settings\&quot;&#xD;&#xA;" />
+	  <Exec Command="xcopy &quot;$(ProjectDir)Strings\&quot;  &quot;$(ProjectDir)$(OutDir)Strings\Settings\&quot; /S&#xD;&#xA;" />
+  </Target>
 	
 </Project>
