@@ -49,7 +49,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
             if ((gpo = GPOWrapper.GetConfiguredCropAndLockEnabledValue()) != GpoRuleConfigured.Disabled && gpo != GpoRuleConfigured.Enabled)
             {
-                FlyoutMenuItems.Add(new FlyoutMenuItem() { Label = resourceLoader.GetString("CropAndLock/ModuleTitle"), IsEnabled = generalSettingsConfig.Enabled.CropAndLock, Tag = "CropAndLock", Icon = "ms-appx:///Assets/Settings/FluentIcons/FluentIconsCropAndLock.png", EnabledChangedCallback = EnabledChangedOnUI });
+                FlyoutMenuItems.Add(new FlyoutMenuItem() { Label = LocalizerInstance.Instance.GetLocalizedString("CropAndLock/ModuleTitle"), IsEnabled = generalSettingsConfig.Enabled.CropAndLock, Tag = "CropAndLock", Icon = "ms-appx:///Assets/Settings/FluentIcons/FluentIconsCropAndLock.png", EnabledChangedCallback = EnabledChangedOnUI });
             }
 
             if ((gpo = GPOWrapper.GetConfiguredFancyZonesEnabledValue()) != GpoRuleConfigured.Disabled && gpo != GpoRuleConfigured.Enabled)
