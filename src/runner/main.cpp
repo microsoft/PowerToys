@@ -475,6 +475,11 @@ int WINAPI WinMain(HINSTANCE /*hInstance*/, HINSTANCE /*hPrevInstance*/, LPSTR l
         else if (elevated || !run_elevated_setting || with_dont_elevate_arg || (!elevated && with_restartedElevated_arg))
         {
             // The condition (!elevated && with_restartedElevated_arg) solves issue #19307. Restart elevated loop detected, running non-elevated
+            if (!elevated && with_restartedElevated_arg)
+            {
+                Logger::info("Restart as elevated failed. Running non-elevated.");
+            }
+
             result = runner(elevated, open_settings, settings_window, openOobe, openScoobe);
 
             if (result == 0)
