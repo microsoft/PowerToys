@@ -218,6 +218,7 @@ namespace Microsoft.PowerToys.Settings.UI
                 settingsWindow.NavigateToSection(StartupPage);
                 ShowMessageDialog("The application is running in Debug mode.", "DEBUG");
 #else
+                /* If we try to run Settings as a standalone app, it will start PowerToys.exe if not running and open Settings again through it in the General page. */
                 SettingsDeepLink.OpenSettings(SettingsDeepLink.SettingsWindow.Overview, true);
                 Exit();
 #endif
