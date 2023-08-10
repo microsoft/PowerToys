@@ -104,7 +104,7 @@ void apply_general_settings(const json::JsonObject& general_configs, bool save)
             if (is_process_elevated())
             {
                 delete_auto_start_task_for_this_user();
-                create_auto_start_task_for_this_user(general_configs.GetNamedBoolean(L"run_elevated", false));
+                create_auto_start_task_for_this_user(run_as_elevated);
             }
             else
             {
@@ -127,6 +127,12 @@ void apply_general_settings(const json::JsonObject& general_configs, bool save)
             delete_auto_start_task_for_this_user();
         }
     }
+    else
+    {
+        delete_auto_start_task_for_this_user();
+        create_auto_start_task_for_this_user(run_as_elevated);
+    }
+
     if (json::has(general_configs, L"enabled"))
     {
         for (const auto& enabled_element : general_configs.GetNamedObject(L"enabled"))

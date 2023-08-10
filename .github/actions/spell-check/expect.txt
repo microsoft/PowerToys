@@ -674,6 +674,7 @@ hcblack
 HCERTSTORE
 HCRYPTHASH
 HCRYPTPROV
+hcursor
 hcwhite
 hdc
 hdrop
@@ -742,7 +743,7 @@ hstring
 hsv
 htcfreek
 HTCLIENT
-HTHUMBNAIL
+hthumbnail
 HTOUCHINPUT
 HTTRANSPARENT
 HVal
@@ -1529,6 +1530,7 @@ RECTDESTINATION
 RECTL
 rectp
 rects
+RECTSOURCE
 redirectedfrom
 Redist
 redistributable
@@ -1566,6 +1568,9 @@ Removelnk
 renamable
 RENAMEONCOLLISION
 Renamer
+reparent
+reparented
+reparenting
 reparse
 reportbug
 requery

@@ -627,6 +627,7 @@ LRESULT FancyZones::WndProc(HWND window, UINT message, WPARAM wparam, LPARAM lpa
             if (auto monitor = MonitorFromPoint(ptScreen, MONITOR_DEFAULTTONULL))
             {
                 MoveSizeStart(hwnd, monitor);
+                MoveSizeUpdate(monitor, ptScreen);
             }
         }
         else if (message == WM_PRIV_MOVESIZEEND)

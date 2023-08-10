@@ -107,6 +107,10 @@ Randy contributed Registry Preview and some very early conversations about keybo
 
 Find My Mouse is based on Raymond Chen's SuperSonar.
 
+### [@robmikh](https://github.com/robmikh) - Robert Mikhayelyan
+
+Crop And Lock is based on the original work of Robert Mikhayelyan, with Program Manager support from [@kevinguo305](https://github.com/kevinguo305) - Kevin Guo.
+
 ### Microsoft InVEST team
 
 This amazing team helped PowerToys develop PowerToys Run and Keyboard manager as well as update our Settings to v2.  @alekhyareddy28, @arjunbalgovind, @jyuwono @laviusmotileng-ms, @ryanbodrug-microsoft, @saahmedm, @somil55, @traies, @udit3333
