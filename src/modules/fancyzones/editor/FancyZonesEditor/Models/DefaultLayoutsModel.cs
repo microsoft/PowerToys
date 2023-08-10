@@ -23,18 +23,27 @@ namespace FancyZonesEditor.Models
 
         public void Reset(MonitorConfigurationType type)
         {
-            Set(MainWindowSettingsModel.TemplateModels[(int)LayoutType.PriorityGrid], type);
+            switch (type)
+            {
+                case MonitorConfigurationType.Horizontal:
+                    Set(MainWindowSettingsModel.TemplateModels[(int)LayoutType.PriorityGrid], type);
+                    break;
+                case MonitorConfigurationType.Vertical:
+                    Set(MainWindowSettingsModel.TemplateModels[(int)LayoutType.Rows], type);
+                    break;
+            }
         }
 
         public void Reset(string uuid)
         {
-            for (int i = 0; i < Count; i++)
+            if (Layouts[(int)MonitorConfigurationType.Horizontal].Uuid == uuid)
             {
-                if (Layouts[i].Uuid == uuid)
-                {
-                    Set(MainWindowSettingsModel.TemplateModels[(int)LayoutType.PriorityGrid], (MonitorConfigurationType)i);
-                    break;
-                }
+                Set(MainWindowSettingsModel.TemplateModels[(int)LayoutType.PriorityGrid], MonitorConfigurationType.Horizontal);
+            }
+
+            if (Layouts[(int)MonitorConfigurationType.Vertical].Uuid == uuid)
+            {
+                Set(MainWindowSettingsModel.TemplateModels[(int)LayoutType.Rows], MonitorConfigurationType.Vertical);
             }
         }
 
