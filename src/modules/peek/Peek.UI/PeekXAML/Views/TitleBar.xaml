@@ -12,13 +12,13 @@
 
     <Grid x:Name="TitleBarRootContainer" Height="48">
         <Grid.ColumnDefinitions>
-            <ColumnDefinition x:Name="SystemLeftPaddingColumn" Width="0" />
+            <ColumnDefinition x:Name="SystemLeftPaddingColumn" Width="Auto" />
             <ColumnDefinition x:Name="IconColumn" Width="Auto" />
             <ColumnDefinition x:Name="TitleColumn" Width="Auto" />
             <ColumnDefinition x:Name="LeftDragColumn" Width="*"/>
             <ColumnDefinition x:Name="ButtonsColumn" Width="Auto" />
             <ColumnDefinition x:Name="RightDragColumn" Width="*"/>
-            <ColumnDefinition x:Name="SystemRightPaddingColumn" Width="0" />
+            <ColumnDefinition x:Name="SystemRightPaddingColumn" Width="Auto" />
         </Grid.ColumnDefinitions>
 
         <Image
@@ -38,7 +38,7 @@
             VerticalAlignment="Center"
             ColumnSpacing="8">
             <Grid.ColumnDefinitions>
-                <ColumnDefinition x:Name="FileCountColumn" Width="auto" />
+                <ColumnDefinition x:Name="FileCountColumn" Width="Auto" />
                 <ColumnDefinition x:Name="FileNameColumn" Width="*" />
             </Grid.ColumnDefinitions>
 

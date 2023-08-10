@@ -207,22 +207,19 @@ namespace Peek.UI.Views
             {
                 double scale = MainWindow.GetMonitorScale();
 
-                SystemRightPaddingColumn.Width = new GridLength(appWindow.TitleBar.RightInset / scale);
-                SystemLeftPaddingColumn.Width = new GridLength(appWindow.TitleBar.LeftInset / scale);
-
                 var dragRectsList = new List<RectInt32>();
 
                 RectInt32 dragRectangleLeft;
-                dragRectangleLeft.X = (int)(SystemLeftPaddingColumn.ActualWidth * scale);
-                dragRectangleLeft.Y = 0;
-                dragRectangleLeft.Height = (int)(TitleBarRootContainer.ActualHeight * scale);
+                dragRectangleLeft.X = (int)((appWindow.TitleBar.RightInset + IconColumn.ActualWidth + TitleColumn.ActualWidth) * scale);
+                dragRectangleLeft.Y = 1;
                 dragRectangleLeft.Width = (int)(LeftDragColumn.ActualWidth * scale);
+                dragRectangleLeft.Height = (int)(TitleBarRootContainer.ActualHeight * scale);
 
                 RectInt32 dragRectangleRight;
-                dragRectangleRight.X = (int)((SystemLeftPaddingColumn.ActualWidth + LeftDragColumn.ActualWidth + ButtonsColumn.ActualWidth) * scale);
-                dragRectangleRight.Y = 0;
-                dragRectangleRight.Height = (int)(TitleBarRootContainer.ActualHeight * scale);
+                dragRectangleRight.X = (int)((appWindow.TitleBar.LeftInset + IconColumn.ActualWidth + TitleColumn.ActualWidth + LeftDragColumn.ActualWidth + ButtonsColumn.ActualWidth) * scale);
+                dragRectangleRight.Y = 1;
                 dragRectangleRight.Width = (int)(SystemRightPaddingColumn.ActualWidth * scale);
+                dragRectangleRight.Height = (int)(TitleBarRootContainer.ActualHeight * scale);
 
                 dragRectsList.Add(dragRectangleLeft);
                 dragRectsList.Add(dragRectangleRight);
