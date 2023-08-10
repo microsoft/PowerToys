@@ -12,9 +12,15 @@
     mc:Ignorable="d">
 
     <Grid>
-        <controls:WebView2 x:Name="PreviewBrowser"
-                           Loaded="PreviewWV2_Loaded"
-                           NavigationStarting="PreviewBrowser_NavigationStarting"
-                           NavigationCompleted="PreviewWV2_NavigationCompleted"/>
+        <controls:WebView2
+            x:Name="PreviewBrowser"
+            Loaded="PreviewWV2_Loaded"
+            NavigationStarting="PreviewBrowser_NavigationStarting"
+            NavigationCompleted="PreviewWV2_NavigationCompleted" />
+        <ContentDialog
+            x:Name="OpenUriDialog"
+            x:Uid="OpenUriDialog"
+            PrimaryButtonStyle="{ThemeResource AccentButtonStyle}"
+            SecondaryButtonClick="OpenUriDialog_SecondaryButtonClick" />
     </Grid>
 </UserControl>

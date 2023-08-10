@@ -3,11 +3,13 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.Threading.Tasks;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.Web.WebView2.Core;
 using Peek.Common.Constants;
 using Peek.Common.Helpers;
+using Windows.ApplicationModel.DataTransfer;
 using Windows.System;
 using Windows.UI;
 
@@ -96,6 +98,7 @@ namespace Peek.FilePreviewer.Controls
 
         private void SourcePropertyChanged()
         {
+            OpenUriDialog.Hide();
             Navigate();
         }
 
@@ -156,7 +159,7 @@ namespace Peek.FilePreviewer.Controls
             if (args.Uri != null && args.IsUserInitiated)
             {
                 args.Handled = true;
-                await Launcher.LaunchUriAsync(new Uri(args.Uri));
+                await ShowOpenUriDialogAsync(new Uri(args.Uri));
             }
         }
 
@@ -168,10 +171,11 @@ namespace Peek.FilePreviewer.Controls
             }
 
             // In case user starts or tries to navigate from within the HTML file we launch default web browser for navigation.
-            if (args.Uri != null && args.Uri != _navigatedUri?.ToString() && args.IsUserInitiated)
+            // TODO: && args.IsUserInitiated - always false for PDF files, revert the workaround when fixed in WebView2: https://github.com/microsoft/PowerToys/issues/27403
+            if (args.Uri != null && args.Uri != _navigatedUri?.ToString())
             {
                 args.Cancel = true;
-                await Launcher.LaunchUriAsync(new Uri(args.Uri));
+                await ShowOpenUriDialogAsync(new Uri(args.Uri));
             }
         }
 
@@ -182,7 +186,29 @@ namespace Peek.FilePreviewer.Controls
                 _navigatedUri = Source;
             }
 
-            NavigationCompleted?.Invoke(sender, args);
+            // Don't raise NavigationCompleted event if NavigationStarting has been cancelled
+            if (args.WebErrorStatus != CoreWebView2WebErrorStatus.OperationCanceled)
+            {
+                NavigationCompleted?.Invoke(sender, args);
+            }
+        }
+
+        private async Task ShowOpenUriDialogAsync(Uri uri)
+        {
+            OpenUriDialog.Content = uri.ToString();
+            var result = await OpenUriDialog.ShowAsync();
+
+            if (result == ContentDialogResult.Primary)
+            {
+                await Launcher.LaunchUriAsync(uri);
+            }
+        }
+
+        private void OpenUriDialog_SecondaryButtonClick(ContentDialog sender, ContentDialogButtonClickEventArgs args)
+        {
+            var dataPackage = new DataPackage();
+            dataPackage.SetText(sender.Content.ToString());
+            Clipboard.SetContent(dataPackage);
         }
     }
 }
